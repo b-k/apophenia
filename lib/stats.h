@@ -18,14 +18,21 @@ inline double covar(gsl_vector *ina, gsl_vector *inb);
 inline double cov(gsl_vector *ina, gsl_vector *inb);
 
 
-void normalize_vector(gsl_vector *in, gsl_vector **out);
-	//Give me a vector of input data of any old mean and variance,
-	//and I'll put in your output vector's address a vector with 
-	//mean zero and variance one.
-	//Uses sample variance (stuff/N-1, not stuff/N).
-	//call: 
-	//	gsl_vector, *unnormed, *normed;
-	//	normalize_vector(unnormed, &normed)
+void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type);
+/*
+	normalization_type:
+		1: out will have mean = 0, std deviation = 1 [Uses sample variance (stuff/N-1, not stuff/N).]
+		2: out will have min = 0, max = 1;
+	in_place:
+		0: out will be allocated and filled, in will be	unchanged.
+		1: in will be normalized in place. 
+	call: 
+		gsl_vector  *unnormed, *normed;
+		[allocate and fill unnormed with data; do not allocate normed.]
+		normalize_vector(unnormed, &normed, 1, 1);
+		[or:]
+		normalize_vector(unnormed, NULL, 0, 1);
+*/
 
 void normalize_data_matrix(gsl_matrix *data);
 	//Move every column of the data matrix to the mean; often required for regressions.

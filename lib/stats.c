@@ -20,15 +20,33 @@ inline double covar(gsl_vector *ina, gsl_vector *inb){
 
 inline double cov(gsl_vector *ina, gsl_vector *inb){return  covar(ina,inb);}
 
-void normalize_vector(gsl_vector *in, gsl_vector **out){
-double		mu,sigma;
-int		i;
-	*out 	=gsl_vector_alloc (in->size);
-	mu	=mean(in);
-	sigma	=sqrt(var_m(in, mu));
-	for (i=in->size;i--;)
-		gsl_vector_set(*out,i,(gsl_vector_get(in,i)-mu)/sigma);
+
+void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type){
+	//normalization_type:
+	//1: mean = 0, std deviation = 1
+	//2: min = 0, max = 1;
+double		mu, min, max;
+	if (in_place) 	
+		out	= &in;
+	else {
+		*out 	= gsl_vector_alloc (in->size);
+		gsl_vector_memcpy(*out,in);
+	}
+
+	if (normalization_type == 1){
+		mu	= mean(in);
+		gsl_vector_add_constant(*out, -mu);			//subtract the mean
+		gsl_vector_scale(*out, 1/(sqrt(var_m(in, mu))));	//divide by the std dev.
+	} 
+	else if (normalization_type == 2){
+		min	= gsl_vector_min(in);
+		max	= gsl_vector_max(in);
+		gsl_vector_add_constant(*out, -min);
+		gsl_vector_scale(*out, 1/(max-min));	
+
+	}
 }
+
 
 void normalize_data_matrix(gsl_matrix *data){
 gsl_vector_view v;
@@ -46,7 +64,7 @@ inline double test_chi_squared_var_not_zero(gsl_vector *in){
 gsl_vector	*normed;
 int		i;
 double 		sum=0;
-	normalize_vector(in,&normed);
+	apop_normalize_vector(in,&normed, 0, 1);
 	gsl_vector_mul(normed,normed);
 	for(i=0;i< normed->size; 
 			sum +=gsl_vector_get(normed,i++));

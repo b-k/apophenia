@@ -42,10 +42,9 @@ gsl_vector *beta_dot_x ;
 int	beta_dot_x_is_current	= 0;
 
 void	dot(const gsl_vector *beta, gsl_matrix *data){
-gsl_matrix_view p      		= gsl_matrix_submatrix(data,0,1,data->size1,data->size2-1);
-		beta_dot_x 	= gsl_vector_alloc(data->size1);
-
-        gsl_blas_dgemv (CblasNoTrans, 1.0, &p.matrix, beta, 0.0, beta_dot_x);//dot product
+gsl_matrix_view p 	= gsl_matrix_submatrix(data,0,1,data->size1,data->size2-1);
+	beta_dot_x 	= gsl_vector_alloc(data->size1);			//global var
+        gsl_blas_dgemv (CblasNoTrans, 1.0, &p.matrix, beta, 0.0, beta_dot_x);	//dot product
 }
 
 double probit_likelihood(const gsl_vector *beta, void *d){
@@ -54,7 +53,7 @@ double probit_likelihood(const gsl_vector *beta, void *d){
 	//on the choice the data made.
 int		i;
 long double	n, total_prob	= 0;
-gsl_matrix *data 		= (gsl_matrix *) d;		//just type casting.
+gsl_matrix 	*data 		= (gsl_matrix *) d;		//just type casting.
 
 	dot(beta,data);
 	for(i=0;i< data->size1; i++){
@@ -90,7 +89,7 @@ if (beta_dot_x_is_current==0) 	dot(beta,data);
 
 
 void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
-	*f=probit_likelihood(beta, d);
+	*f	= probit_likelihood(beta, d);
 	beta_dot_x_is_current	=1;
 	d_probit_likelihood(beta, d, df);
 	beta_dot_x_is_current	=0;
@@ -98,7 +97,7 @@ void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 
 
 double mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
-	return	maximum_likelihood_w_d(data, beta, data->size1 - 1, 
+	return	maximum_likelihood_w_d(data, beta, data->size2 - 1, 
 					probit_likelihood, d_probit_likelihood, probit_fdf, 
 					starting_pt, step_size, verbose);
 }
@@ -340,11 +339,12 @@ gsl_vector 			*x, *ss;
 int				iter =0, status;
 	//s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
 	s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
-	//x	= gsl_vector_alloc(betasize);
 	*betas	= gsl_vector_alloc(betasize);
 	ss	= gsl_vector_alloc(betasize);
-	if (starting_pt==NULL)
+	if (starting_pt==NULL){
+		x	= gsl_vector_alloc(betasize);
   		gsl_vector_set_all (x,  0);
+	}
 	else
 		convert_array_to_vector(starting_pt, &x, betasize);
   	gsl_vector_set_all (ss,  step_size);
