@@ -69,7 +69,8 @@ char		*err;
 	return 0;
 	}
 
-int apop_query_to_matrix(gsl_matrix **output, const char *query){
+gsl_matrix * apop_query_to_matrix(const char *query){
+gsl_matrix	*output;
 int		totalrows=0,currentrow=0;
 char		*q2, *err=NULL;
 
@@ -96,13 +97,13 @@ char		*q2, *err=NULL;
 	sqlite3_exec(db,"SELECT count(*) FROM completely_temporary_table",length_callback,NULL, &err);
 	ERRCHECK
 	if (totalrows==0){
-		*output	= NULL;
+		output	= NULL;
 	} else {
-		*output	= gsl_matrix_alloc(totalrows, apop_count_cols("completely_temporary_table"));
-		sqlite3_exec(db,"SELECT * FROM completely_temporary_table",db_to_table,*output, &err); ERRCHECK
+		output	= gsl_matrix_alloc(totalrows, apop_count_cols("completely_temporary_table"));
+		sqlite3_exec(db,"SELECT * FROM completely_temporary_table",db_to_table,output, &err); ERRCHECK
 	}
 	sqlite3_exec(db,"DROP TABLE completely_temporary_table",NULL,NULL, &err);  ERRCHECK
-	return totalrows;
+	return output;
 }
 
 int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
