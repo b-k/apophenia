@@ -1,4 +1,4 @@
-#include "conversions.h"
+#include "apop_conversions.h"
 
 
 int convert_vector_to_array(gsl_vector *in, double **out){

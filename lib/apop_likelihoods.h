@@ -4,7 +4,7 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_multimin.h>
 #include "apop_linear_algebra.h"
-#include "conversions.h"
+#include "apop_conversions.h"
 
 #define MAX_ITERATIONS 		500
 #define MAX_ITERATIONS_w_d	500
