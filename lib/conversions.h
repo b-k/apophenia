@@ -1,4 +1,4 @@
-/*conversions.h
+/*conversions.h 		Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 
   Convenience functions to convert among vectors (gsl_vector), matrices (gsl_matrix), 
   arrays (double **), and database tables

@@ -1,3 +1,4 @@
+//stats.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "stats.h"
 
 inline double apop_mean(gsl_vector *in){

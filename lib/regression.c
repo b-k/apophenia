@@ -1,3 +1,4 @@
+//regression.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "regression.h"
 #include <gsl/gsl_blas.h>
 #include "stats.h"

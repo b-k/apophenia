@@ -1,3 +1,4 @@
+//likelihoods.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "likelihoods.h"
 
 //This file includes a number of distributions and models whose parameters

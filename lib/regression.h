@@ -1,3 +1,4 @@
+//regression.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <gsl/gsl_matrix.h>
 
 void apop_GLS(gsl_matrix *data, gsl_matrix *sigma, gsl_vector **beta);

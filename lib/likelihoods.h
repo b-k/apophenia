@@ -1,3 +1,4 @@
+//likelihoods.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_matrix.h>

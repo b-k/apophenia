@@ -1,3 +1,4 @@
+//linear_algebra.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 #include "math.h" //pow!

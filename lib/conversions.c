@@ -1,3 +1,4 @@
+//conversions.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "conversions.h"
 
 
