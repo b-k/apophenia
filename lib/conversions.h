@@ -1,4 +1,4 @@
-/*apop_conversions.h
+/*conversions.h
 
   Convenience functions to convert among vectors (gsl_vector), matrices (gsl_matrix), 
   arrays (double *), and (database) tables
@@ -8,7 +8,7 @@
 */
 
 
-#include "apop_db.h"
+#include "db.h"
 #include <string.h>
 #include <gsl/gsl_matrix.h>
 

@@ -1,4 +1,4 @@
-#include "apop_stats.h"
+#include "stats.h"
 
 inline double mean(gsl_vector *in){
 	return gsl_stats_mean(in->data,in->stride, in->size); }

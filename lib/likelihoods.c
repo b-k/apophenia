@@ -1,4 +1,4 @@
-#include <likelihoods.h>
+#include "likelihoods.h"
 
 //This file includes a number of distributions and models whose parameters
 //one would estimate using maximum likelihood techniques.

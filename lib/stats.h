@@ -5,7 +5,7 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_statistics_double.h>
-#include "apop_linear_algebra.h"
+#include "linear_algebra.h"
 
 
 	//The following are just convenient hooks to gsl vector functions.

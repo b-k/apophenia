@@ -1,4 +1,4 @@
-#include "apop_db.h"
+#include "db.h"
 #include <string.h>
 
 int query_db(const char *q){

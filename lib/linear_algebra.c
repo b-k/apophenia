@@ -1,7 +1,8 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 #include "math.h" //pow!
-void invert_matrix(gsl_matrix *in, gsl_matrix *out) {
+
+void apop_invert_matrix(gsl_matrix *in, gsl_matrix *out) {
 int 		dummy;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
 	gsl_permutation * perm = gsl_permutation_alloc(in->size1);
@@ -13,7 +14,7 @@ int 		dummy;
 	gsl_permutation_free(perm);
 }
 
-double det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv) {
+double apop_det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv) {
 int 		sign;
 double 		the_determinant = 0;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
@@ -30,18 +31,17 @@ double 		the_determinant = 0;
 	return(the_determinant);
 }
 
-double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
+double apop_x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
 //This comes up often enough that it deserves its own convenience function.
 gsl_vector * 	sigma_dot_x	= gsl_vector_calloc(x->size);
 double		the_result;
-	//gsl_blas_dgemv(CblasNoTrans, 1, sigma, x, 0, sigma_dot_x);
 	gsl_blas_dsymv(CblasUpper, 1, sigma, x, 0, sigma_dot_x); //sigma should be symmetric
 	gsl_blas_ddot(x, sigma_dot_x, &the_result);
 	gsl_vector_free(sigma_dot_x);
 	return(the_result);
 }
 
-void normalize_for_svd(gsl_matrix *in){
+void apop_normalize_for_svd(gsl_matrix *in){
 //Greene (2nd ed, p 271) recommends pre- and post-multiplying by sqrt(diag(X'X)) so that X'X = I.
 gsl_vector_view	v;
 gsl_vector	*diagonal = gsl_vector_alloc(in->size1);
@@ -61,7 +61,7 @@ int 		i;
 	gsl_vector_free(diagonal);
 }
 
-void sv_decomposition(gsl_matrix *data, int dimensions_we_want, gsl_matrix ** pc_space, gsl_vector **total_explained) {
+void apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want, gsl_matrix ** pc_space, gsl_vector **total_explained) {
 //Get X'X
 gsl_matrix * 	eigenvectors 	= gsl_matrix_alloc(data->size2, data->size2);
 gsl_vector * 	dummy_v 	= gsl_vector_alloc(data->size2);
@@ -73,7 +73,7 @@ double		eigentotals	= 0;
 	*pc_space	= gsl_matrix_alloc(data->size2, dimensions_we_want);
 	*total_explained= gsl_vector_alloc(dimensions_we_want);
 	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, square);
-	normalize_for_svd(square);	
+	apop_normalize_for_svd(square);	
 	gsl_linalg_SV_decomp(square, eigenvectors, all_evalues, dummy_v);
 	for (i=0; i< all_evalues->size; i++)
 		eigentotals	+= gsl_vector_get(all_evalues, i);
@@ -86,7 +86,7 @@ double		eigentotals	= 0;
 	gsl_matrix_free(square); 	gsl_matrix_free(eigenvectors);
 }
 
-void print_matrix(gsl_matrix *data){
+void apop_print_matrix(gsl_matrix *data){
 int 		i,j;
 	for (i=0; i<data->size1; i++){
 		for (j=0; j<data->size2; j++)
@@ -95,14 +95,14 @@ int 		i,j;
 	}
 }
 
-void print_vector(gsl_vector *data){
+void apop_print_vector(gsl_vector *data){
 int 		i;
 	for (i=0; i<data->size; i++)
 			printf("% 5f\t", gsl_vector_get(data, i));
 	printf("\n");
 }
 
-void print_matrix_int(gsl_matrix *data){
+void apop_print_matrix_int(gsl_matrix *data){
 int 		i,j;
 	for (i=0; i<data->size1; i++){
 		for (j=0; j<data->size2; j++)
@@ -111,7 +111,7 @@ int 		i,j;
 	}
 }
 
-void print_vector_int(gsl_vector *data){
+void apop_print_vector_int(gsl_vector *data){
 int 		i;
 	for (i=0; i<data->size; i++)
 			printf("% i\t", (int) gsl_vector_get(data, i));
