@@ -3,6 +3,8 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_multimin.h>
+#include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_sf_psi.h>
 #include "linear_algebra.h"
 #include "conversions.h"
 
@@ -11,6 +13,7 @@
 
 double apop_mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
 
+double apop_mle_gamma(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
 double apop_mle_waring(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
 double apop_mle_yule(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
 double apop_mle_zipf(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);

@@ -30,6 +30,68 @@ likely betas back out.  The return value of the function itself is the
 likelihood evaluated with the most likely betas.  */
 
 
+////////////////////////
+//The Gamma distribution
+////////////////////////
+// G(x, a, b) 	= $1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}$
+// ln G(x, a, b)= $-ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$
+// d ln G/ da	= $ -\psi(a) - ln b + ln(x) $	//d ln \gamma = \psi
+// d ln G/ db	= $ -a/b - x $
+
+double gamma_likelihood(const gsl_vector *beta, void *d){
+float		a	= gsl_vector_get(beta, 0),
+		b	= gsl_vector_get(beta, 1);
+	if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
+						//a sign to the minimizer to look elsewhere.
+int 		i, k;
+gsl_matrix	*data		= d;
+float 		llikelihood 	= 0,
+		ln_ga		= gsl_sf_lngamma(a),
+		ln_b		= log(b),
+		x;
+	for (i=1; i< data->size1; i++)
+		for (k=0; k< data->size2; k++){
+			x		 = gsl_matrix_get(data, i, k);
+			if (x!=0)
+				llikelihood	+= -ln_ga - a * ln_b + (a-1) * log(x) - x/b;
+		}
+	return -llikelihood;
+}
+
+void d_gamma_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+float		a	= gsl_vector_get(beta, 0),
+		b	= gsl_vector_get(beta, 1);
+	if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
+						//a sign to the minimizer to look elsewhere.
+int 		i, k;
+gsl_matrix	*data	= d;
+float 		d_a 	= 0,
+		d_b	= 0,
+		psi_a	= gsl_sf_psi(a),
+		ln_b	= log(b),
+		x;
+	for (i=1; i< data->size1; i++)
+		for (k=0; k< data->size2; k++){
+			x		 = gsl_matrix_get(data, i, k);
+			if (x!=0){
+				d_a	+= -psi_a - ln_b + log(x);
+				d_b	+= -a/b - x;
+			}
+		}
+	gsl_vector_set(gradient,0, -d_a);
+	gsl_vector_set(gradient,1, -d_b);
+}
+
+void gamma_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
+	*f	= gamma_likelihood(beta, d);
+	d_gamma_likelihood(beta, d, df);
+}
+
+double apop_mle_gamma(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
+	return maximum_likelihood_w_d(data, beta, 2, &gamma_likelihood, d_gamma_likelihood, gamma_fdf, 
+							starting_pt, step_size, verbose);
+}
+
 
 
 //////////////////
@@ -107,9 +169,6 @@ double apop_mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt,
 /////////////////////////
 //The Waring distribution
 /////////////////////////
-
-#include <gsl/gsl_sf_gamma.h>
-#include <gsl/gsl_sf_psi.h>
 
 
 double waring_likelihood(const gsl_vector *beta, void *d){
