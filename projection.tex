@@ -25,45 +25,44 @@ I will assume that we have already read a data matrix in to {\tt gsl\_matrix *da
 values are the first column of data, so we would like to extract that to a separate variable:
 \begin{verbatim}
 #include <gsl/gsl_matrix>
-gsl_vector y_data = gsl_vector_alloc(data->size1);
+gsl_vector      *y_data         = gsl_vector_alloc(data->size1);
 gsl_matrix_get_col(y_data, data, 0);
 \end{verbatim}
 
-We now have the $Y$-values safely stored. When doing an OLS projection, there needs to be a column of
+
+We now have the $Y$-values safely stored.  When doing an OLS projection, there needs to be a column of
 ones in the data set (because OLS is an {\sl affine} linear projection), so we can overwrite the first
-column with ones:
+column with ones. Also, remember that every other variable is actually
+$X_i - \bar{X_i}$; that is, subtract out the means for every column.
 \begin{verbatim}
-int i;
-for (i=0; i< data->size2; i++)
-    gsl_matrix_set(data, 0, i, 1);
+#include <apophenia/stats.h>
+        apop_normalize_matrix(data);            //every column should have mean zero.
+gsl_vector_view v         = gsl_matrix_column(data, 0);
+        gsl_vector_set_all(&(v.vector), 1);     //affine: first column is ones.
 \end{verbatim}
 
-Now we have both the $Y$ and the $X$ in the equation, so we can find the components of $(X'X)^{-1}X'Y$.
+
+
+
+Now we have both the $Y$ and the $X$ in the equation, so we can find $(X'X)$ and $X'Y$.
 The second part, $X'Y$, is a simple application of the BLAS function from the last chapter. It is a
 matrix $\cdot$ a vector, so:
 \begin{verbatim}
 #include <gsl/gsl_blas.h>
-//the variable beta will hold X'Y here, and will later
-//become the coefficients we seek.
-gsl_vector beta = gsl_vector_calloc(data->size1);
-gsl_blas_dgemv(CblasTrans, 1, data, 0, beta);	//Find X'Y
+gsl_vector      *xpy            = gsl_vector_calloc(data->size2);
+gsl_matrix      *xpx            = gsl_matrix_calloc(data->size2, data->size2);
+        gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, xpx); //(X'X)
+        gsl_blas_dgemv(CblasTrans, 1, data, y_data, 0, xpy); //(X'y)
 \end{verbatim}
 
-The $(X'X)^{-1}$ part can be found by one BLAS function plus the inversion function in Figure \ref{invertmatrix}: \label{ols}
+The GSL has a function to solve equations of the type ${\bf X} \beta =
+{\bf Y}$; which is exactly the form we have here---$(X'X)\beta = (X'Y)$.  \label{ols}
 \begin{verbatim}
-#include "matrix_convenience_fns.h"
-gsl_matrix xpx = gsl_matrix_calloc(data->size1, data->size1);
-gsl_matrix xpx_inverse;
-gsl_blas_dgemm(CblasTrans,CblasNoTrans, data, data, xpx);	//Find X'X
-invert_matrix(xpx, xpx_inverse);				//invert X'X
+        gsl_linalg_HH_solve (xpx, xpy, *beta);
 \end{verbatim}
 
-Finally, we find the product of the two:
-\begin{verbatim}
-gsl_blas_dgemv(CblasNoTrans, 1, xpx_inverse, 0, beta);	//inv(X'X) X'Y
-\end{verbatim}
-
-The vector {\tt beta} now lives up to its name, holding the coefficients $\beta$.
+The vector {\tt beta} now lives up to its name, holding the coefficients
+$\beta$. Notice that we never had to take an inverse.  
 
 We may want to do some more with the data that we have here. For example, after the assumptions of the
 next chapter, the covariance matrix of the coefficients in $\beta$ is {\tt xpx\_inv}.
