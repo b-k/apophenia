@@ -1,0 +1,413 @@
+\chapter{Databases} \label{sql}
+
+SQL and matrix operations are excellent complements. Some things, like
+making a crosstab, are a bit of a pain using traditional techniques of
+matrix manipulation. Meanwhile, some things just can't be done via SQL
+queries. With both, your data analysis technique will be unstoppable.
+
+As a very broad rule, try to do data manipulation, like pulling subsets
+from the data or merging together multiple data tables, using SQL. Then,
+as a last step, pull the perfectly formatted data into a GSL matrix and
+do the statistical analysis. 
+
+One especially nice thing about keeping your data in an SQL database
+is that it will give your data names again. Here's some valid SQL: {\tt
+select age, gender, year from survey}. Why, that's proper English. It
+goes downhill from there in terms of properness, but at its worst, it's
+still pretty easy to look at a query and know what's actually going on.
+
+\section{Getting data into the database}
+Apophenia provides a set of functions to facilitate querying databases,
+in the {\tt <apophenia/db.h>} header file. It will open
+a single database, into which you can add all the tables you'd like.
+
+The first command you will need is \ttind{apop\_open\_db}. If you give
+it the name of a file, like {\tt apop\_open\_db("study.db")}, then the
+database will live on your hard drive. This is slower than memory, but
+will exist after you stop and restart the program, and so other programs
+will be able to use the file, and you can re-run the program without
+re-reading in the data.
+
+Conversely, if you give a null argument: {\tt apop\_open\_db(NULL)},
+then the database is kept in memory, and will run faster but 
+disappear when the program exits.
+
+When you are done with all of your queries, run
+{\tt apop\_close\_db} to close the database. If you send the function a
+one---{\tt apop\_close\_db(1)}---then SQLite will take a minute to clean
+up the database before exiting, leaving you with a smaller file on disk;
+sending in a zero doesn't bother with this step. Of course, if your
+database is in memory, it's all moot and you can forget to close the
+database without consequence.
+
+Once you have opened your database, you can read in a table. The {\tt
+apop\_text\_to\_db} function will do this for you. The first line of the
+text file can be column names, and the remaining rows are the data. 
+
+
+\section{Basic queries}
+This section discusses some of the methods of data slicing and joining
+which are easy using database queries, but which are difficult via
+matrix operations.
+
+For example, pulling a subset of your data is almost trivial in SQL. If
+you need all of the data for those subjects over 175cm, you can ask for
+it thusly:
+
+\begin{verbatim}
+select * 
+   from data 
+   where height >=175;
+\end{verbatim}
+
+You can read this like English (once you know that {\tt *} means `all
+columns'): it will find all of the rows in a table named {\tt data}
+where the {\tt height} in that row is greater than or equal to 175, and
+return all the columns for those rows.
+
+
+Generally, the {\tt select} statment gives a list of columns which the output
+table will have; the {\tt from} clause declares where the source data
+comes from; finally, there are modifiers or restrictions (in this case
+{\tt where}) on the rows to be output.  And that's it. Every query
+you run will have these three parts in this order: column specification, input data,
+row specification.\footnote{You may have
+no row restrictions, in which case your query will just have the first
+two parts and a null third part.} However, the means of specifying rows, columns,
+source data allows for a huge range of possibilities.
+
+\paragraph{Select}
+The \ttind{select} clause will specify the columns of the table which will
+be output. The easiest list is {\tt *}, which means `all the columns'.
+
+Other options:
+
+Explicitly list the columns: {\tt select age, height, weight}
+
+Explicitly mention the table you are pulling from: {\tt select data.age,
+data.height, data.weight}. This is unnecessary here, but will become
+essential when dealing with multiple tables below.
+
+Rename the output columns: {\tt select data.age as age, height as
+height\_in\_cm}. Notice that if you do not rename {\tt data.age as 
+age}, then you will need to use {\tt data$\backslash$.age} in future
+queries, which is a
+bit annoying.
+
+Generate your own new columns: {\tt select height, weight, (height/weight)
+as hwr}. The {\tt as hwr} subclause is again more-or-less
+essential if you hope to easily refer to this column in the future. Of
+course, if you are dumping the query output to a {\tt gsl\_matrix}, the column
+names will be lost anyway.
+
+\paragraph{From} The \ttind{from} clause specifies the tables from which
+you will be pulling data. The simplest case is a single table: {\tt from
+data\_tab}, but you can specify as many tables as necessary: {\tt from
+data\_tab1, data\_tab2}. 
+
+You can alias the tables, for easier reference. The clause {\tt from
+data\_tab1 d1, data\_tab2 d2} gives short names to both tables, which can
+be used for lines like {\tt select d1.age, d2.height}. 
+
+Aliasing is generally optional but very convenient, but one case where
+it is necessary is when you are joining a table to itself.
+For now, simply note the syntax: {\tt from data t1, data t2} will let
+you refer to the {\tt data} table as if it were two entirely independent
+tables. 
+
+\paragraph{Where}
+The \ttind{where} clause is your chance to pick out only those rows which
+interest you. With no {\tt where} clause, the query will return one line
+for every line in your original table (and the columns returned will
+match those you specified in the {\tt select} clause).
+
+Join as many subclauses as you wish, using the Boolean operators you
+know and love: {\tt where ((age > 13) or (height >= 175)) and (weight == 70)}.
+
+\subsection{Folding queries into C code} 
+
+
+\paragraph{apop\_query\_db} Now for the queries. The simplest function
+is \ttind{apop\_query\_db}, which takes a single text argument: the
+query. For example,
+
+\begin{verbatim}
+#include <apophenia/db.h>
+apop_query_db(" select *        \
+                  from data     \
+                  where height >=175;");
+\end{verbatim}
+A string is easiest for you as a human to read if it is
+broken up over several lines; to do this, end every line with a
+backslash, until you reach the end of the string. The line above runs
+the query and returns nothing. [Not very useful for a {\tt select}; but see
+{\tt create} and  {\tt insert} below.]
+
+\paragraph{sprintf} This is a standard C function which is essential for
+the production of queries. 
+\begin{verbatim}
+#include <string.h>>
+#include <apophenia/db.h>
+char q[10000];
+int min_height;
+sprintf(q, " select *        \
+               from data     \
+               where height >=%i;", min_height);
+apop_query_db(q);
+\end{verbatim}
+The {\tt sprintf} function is just like {\tt printf}, except it begins
+with a pre-declared string (which must be large enough to hold the
+string; I suggest just declaring an obnoxiously large string as above).
+It does the usual substitutions of {\tt \%i}, {\tt \%g}, et cetera, and
+then dumps the result to the specified string. Then you can pass that
+string to {\tt apop\_query\_db}. Thus, if {\tt min\_height==175}, the above
+two pieces of code would be identical.
+
+\paragraph{apop\_query\_to\_matrix} This function takes both a
+gsl\_matrix and a query string. It will run the query and return the
+resulting string for your analysis. E.g., if {\tt q} was defined as
+above, then 
+\begin{verbatim}
+#include <gsl/gsl_matrix.h>
+gsl_matrix *tall_people;
+
+//q was defined to be a query string above.
+tall_people = apop_query_to_matrix(q);
+\end{verbatim}
+will run the above query, allocate {\tt tall\_people} to be an
+appropriately-sized matrix, and fill it with data.
+
+\subsection{Joining}
+If you specify two tables in your {\tt from} line, then, lacking any
+restrictions, the database will return a line for every pair of lines.
+If {\tt data1} has 15 lines, and {\tt data2} has 8 lines, then {\tt select *
+from data1, data2} will return 15$\times$8 = 120 lines.  Such a product
+quickly gets overwhelming: joining a thousand-row table with another
+thousand-row table will produce a million rows.
+
+Thus, the {\tt where} clause becomes essential. Its most typical use is
+when one column in each table represents identical information. For
+example, say that one data source gave you mean income by ZIP code,
+while another gave you mean heights by ZIP code. Joining the two tables
+would give you a multitude of lines which include height from a ZIP code
+in Alaska and an income for a ZIP in Kansas; clearly, the only ones you
+are interested in are those where the ZIP code is the same in both data
+sets. Here is a query which would keep only those lines which make
+sense:
+
+\begin{verbatim}
+select t1.income, t2.height
+   from econ_data t1, health_data t2
+   where t1.zip == t2.zip_code
+\end{verbatim}
+
+You can see that using the table-dot-column format for the columns is now
+essential. Also, notice that we did not have to include either ZIP code
+in the output if it is not used later. If you do want to include a ZIP
+code, then you can use either {\tt t1.zip} or {\tt t2.zip\_code}; since
+the two will be by definition identical, using both will be a waste of
+space.
+
+\paragraph{Speeding it up}
+You can ask the SQL engine to create an index for a table which you
+intend to use in a join later. The command:
+\begin{verbatim}
+create index an_index on econ_data(zip, age, income)
+\end{verbatim}
+would index the table {\tt econ\_data} on the three columns specified.
+The name of the index, {\tt an\_index}, is basically irrelevant and can
+be any gibberish which sounds nice to you. Once you have created this
+index, a join using any of these three columns goes {\sl much} faster.
+For the query above, you will want to create an index for both {\tt
+econ\_data(zip)} and {\tt health\_data(zip\_code)}.
+
+\subsection{Aggregation}
+Here is how to get the number of rows in your data table:
+\begin{verbatim}
+select count(*) as row_ct 
+from data;
+\end{verbatim}
+This produces a table with one column and one row, which lists the total number of rows in the {\tt data} table.
+
+You probably want more refinement than that; if you would like to
+know how much data you have in each ZIP code, then use the \ttind{group
+by} clause to say so:
+\begin{verbatim}
+select zip, count(*) as ct_per_zip
+from data
+group by zip;
+\end{verbatim}
+This will group the rows into groups, where each group has the same ZIP
+code, and return a single line for each group.
+
+
+The two other aggregation commands which will be useful to you are {\tt
+sum()} and {\tt average()}. These take an existing row as an argument.
+For example, to search for height disparities by ZIP code, try:
+\begin{verbatim}
+select  average(height) as avg_height
+from data
+group by zip;
+\end{verbatim}
+Notice that we don't have to include ZIP code as a column in the output
+if we aren't interested in it.
+
+Feel free to specify multiple {\sl group by} clauses; this creates what
+some call a \ind{cross tab}. For example, to get average income by
+height and ZIP code: 
+\begin{verbatim}
+select  average(income) as avg_income
+from data
+group by zip, height;
+\end{verbatim}
+
+The function {\tt sum()} works the same. That's all the aggregators you
+get, but you can specify more than just a column name, so you can get
+away with a few more. Here's the variance of income in each subgroup:
+\begin{verbatim}
+select  sum((income - average(income))*(income - average(income))) 
+               as income_variance
+from data
+group by zip, height;
+\end{verbatim}
+
+\subsection{More trickery} Frankly, SQL is not very good for
+creating new data from the existing. But the few things that you can do
+are very easy.
+
+\paragraph{A time lag} Here is a simple example:
+\begin{verbatim}
+select year, (t1.income - t2.income) as diff
+   from data t1, data t2
+   where t1.year=(t2.year -1);
+\end{verbatim}
+
+The {\tt where} clause will line up the table with a copy of itself
+lagged by one year, and then the {\tt diff} variable will be the
+one-year change in income.
+
+
+\paragraph{subqueries}
+
+One of SQL's nicest tricks is that it allows for the input tables to be
+queries themselves. For example: what is the mean number of observations per
+ZIP code?
+
+You first need to get a {\tt count(*)} grouped by ZIP, and then get an
+average of that. You could run a query to produce a table of counts,
+save the table, and then run a query on that table to find the averages.
+Here is how to do all of this in one query: 
+\begin{verbatim}
+select average(ct) 
+   from (select count(*) as ct
+            from data
+            group by zip)
+\end{verbatim}
+The query inside the {\tt from} clause will return a table, and even
+though that table has no name, it can be used as a data source like any other
+table. So the example will first produce a table with one line for each
+ZIP code, listing the number of observations it has, and then it will
+take that table and find the average of its {\tt ct} column.
+
+Everywhere you would put a table name, you could put a query 
+instead. Of course, the query output has no name, so you may need to
+alias the result: {\tt from (select ...) t1} will allow you to refer to
+the query's output as {\tt t1} elsewhere in the query.
+
+
+\subsection{Getting data in and out}
+We now have three different ways to represent a matrix of data: as a {\tt gsl\_matrix}, as a text file,
+or as a database table. This section will show you how to best shunt your data between a database and
+the other two formats.
+
+\section{An example: dummy variables}
+Here's a neat trick: using SQL's {\tt case} a few dozen times, we can turn a
+variable which is discrete but not ordered (such as district numbers in the
+following example) into a series of dummy variables. It requires writing down a
+separate {\tt case} statement for each value the variable could take, but that's
+what {\tt for} loops are for.
+
+\codefig{dummy}{A sample of using SQL to create dummy variables}
+
+[Note to editor: I just cut and pasted figure \ref{dummy} from my hard drive. Will clean it up
+later. The gist is that we first query out the list of districts; then we write a
+select statement with a line {\tt case district when district\_no then 1 else 0} for
+each and every district\_no. You can then run your regression on the output of the
+query without any further manipulation.
+
+Notice that the for loop goes from i=1, not i=0; this is because when including
+dummy variables, you always have to exclude one value, which will be the baseline;
+using i=1 means district[0] will be the baseline.]
+
+
+
+
+\section{An example: the easiest t-test you'll ever run.}
+Say we have a set of observations of our sample's years of education, and their annual income. We want to
+know if getting that grad school education is {\it really} worth it. The null hypothesis is: (Income for
+people with education less than 16 years) $\leq$ (income for people with greater than or equal to 16 years
+of education).
+
+That first data set is:
+\begin{verbatim}
+#include <gsl/gsl.h>
+#include <gsl/gsl_matrix.h>
+#include <apophenia/db.h>
+gsl_vector	*undereducated;
+   undereducated = apop_query_to_vector(
+      "select income from survey \
+      where education < 16");
+\end{verbatim}
+while the second group is:
+\begin{verbatim}
+gsl_vector	*overeducated;
+   overeducated = apop_query_to_vector(
+      "select income from survey \
+      where education >=16");
+\end{verbatim}
+
+Here's a factoid for you: incomes are usually distributed log-normally, so we should do a t-test on the
+log of income:
+\begin{verbatim}
+#include <gsl/gsl_sf_log.h>
+int i;
+for(i=0;i< overeducated->size; i++)
+   gsl_vector_set(overeducated, i, 
+               gsl_sf_log(gsl_vector_get(overeducated, i)));
+for(i=0;i< undereducated->size; i++)
+   gsl_vector_set(undereducated, i, 
+               gsl_sf_log(gsl_vector_get(undereducated, i)));
+\end{verbatim}
+
+We've already written functions to find the mean and variance of a vector:
+
+\begin{verbatim}
+#include <apophenia/stats.h>
+double	mean_over, mean_under, var_over, var_under;
+mean_over  = apop_mean(overeducated);
+mean_under = apop_mean(undereducated);
+var_over   = apop_variance(overeducated);
+var_under  = apop_variance(undereducated);
+\end{verbatim}
+
+The other factoid you'll need is that the difference of two normal
+distributions is also normal, and the variance of the difference is
+the sum of the two original variances.\footnote{Your stats textbook
+will tell you that the sum of two Normals is normal: ${\cal N}(\mu_1,
+\sigma_1) + {\cal N}(\mu_2, \sigma_2) \sim {\cal N}(\mu_1 + \mu_2,
+\sigma_1 + \sigma_2)$. Now, subtracting a ${\cal N}(\mu_2, \sigma_2)$
+is exactly equivalent to adding a ${\cal N}(-\mu_2, \sigma_2)$, so we
+get the result in the text.} That is, we can write down:
+
+\begin{verbatim}
+#include <gsl/gsl_cdf.h>
+double	test_me = gsl_cdf_gaussian_P(mean_over-mean_under, 
+                                       var_over+var_under);
+\end{verbatim}
+
+and {\tt test\_me} is the probability that the difference between the
+means is less than or equal to zero. If {\tt test\_me} turns out to be greater
+than your preferred confidence interval, (e.g., 95\%), then reject the
+null and go to grad school. Else, there isn't enough information to
+distinguish between the two with confidence.
+

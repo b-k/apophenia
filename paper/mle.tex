@@ -1,0 +1,93 @@
+\chapter{Maximum likelihood estimation} \label{mle}
+\index{maximum likelihood estimation|ff}
+\index{MLE|see{maximum likelihood estimation}}
+
+Maximum likelihood estimators (MLEs) are the bread and butter of
+statistics. Most of the techniques we've handled so far are MLE
+techniques, except mathematicians over the ages have found ways to hide
+that fact from you. But if there isn't a nice, convenient way to get
+around doing the maximization, you'll have to do it yourself. Fortunately,
+the GSL has the {\tt gsl\_multimin} family of objects, to help you find
+the optimal parameters.
+
+\section{Why likelihood functions are great} There are two reasons, with four names.
+
+\paragraph{MLEs achieve the Cramer-Rao lower bound} The CRLB of variance
+is the inverse of the derivative of the derivative of the log of the
+likelihood function. [I'll get around to writing it nicely later.] It's
+called a `lower bound' because Mr.s Cramer and Rao proved that any
+estimator of $\beta$ must have a variance greater than or equal to the
+CRLB. Your favorite statistics textbook will also prove that for the MLE,
+the variance is actually equal to the CRLB, meaning that we can not get
+an estimator of $\beta$ which will have any smaller a variance.
+
+\paragraph{The Neyman-Pearson lemma} There are two types of error we could
+have with a hypothesis test: Type I is that we reject the null when it's
+true; Type II is that we accept the null when it's false. The first type
+is the one we focus on, because it's what we mean when we say that our
+test has $\alpha=95\%$ confidence. What about Type II errors? Well, Neyman
+and Pearson showed that a likelihood ratio test will have the minimum
+possible Type II error of any test with the $\alpha$ that we selected. After establishing this fact, we
+just ignore Type II errors.
+
+\section{Writing your likelihood function} 
+This section is about writing down the likelihood function for those situations where a linear least
+squares function is not appropriate.
+Writing down your function
+is pretty darn straightforward, but there are details you'll need to take into account.\\
+--Take logs. This is important from a practical standpoint because the product of a thousand probabilities
+$\in (0,1)$ will quickly underflow your likelihood function. \\
+--Follow the {\tt gsl\_multimin} template.\\
+
+[I'll eventually write this out, but for now, here's an example:]
+
+
+\begin{verbatim}
+#include "gsl_convenience_fns.h"
+double probit_likelihood(const gsl_vector *beta, void *d){
+int		i;
+long double	n, total_prob	= 0;
+gsl_matrix *data 		= d;		//just type casting.
+
+   dot(beta,data);    //a wrapper for gsl_blas_dgemm.
+   for(i=0;i< data->size1; i++){
+      n	=gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1);
+      if (gsl_matrix_get(data, i, 0)==0) 	total_prob	+= log(n);
+      else 					total_prob	+= log((1 - n));
+   }
+   return -total_prob;
+}
+\end{verbatim}
+
+\section{Description: Maximum likelihood estimators} 
+If you've written
+down the function correctly in the last section, you'll have no problem
+getting the GSL to find the optimal parameters given your data.  It helps
+if you know the derivative of your data, which I'll also discuss a little
+further.
+
+\subsection{The GSL's multimin functions} The process of finding a minimum consists of trying a
+value, picking a direction to move in, and checking whether the change is a good enough one. The GSL
+gives you a function to do all of these things, which you'll have to put together to do a complete
+minimization.
+
+\section{Hypothesis testing: Likelihood ratio tests} Every test
+in the last chapter was a likelihood ratio test---I just didn't tell
+you what the likelihood function was. Those functions are easy because
+they've been carefully studied and methods have been found to let you
+calculate them without explicitly writing down a likelihood function
+and calculating its value at various locations.
+
+But if your data is at all interesting, then you'll need to write down
+the likelihood function yourself.  Fortunately, we have a computer to
+do the tedious math, unlike poor Mr. Gauss, who had no such conveniences.
+
+
+\paragraph{What if you don't know the variance or distribution?} The main convenience of the canned methods of the last
+chapter is that we have mathematical proofs telling us exactly what the distribution looks like. What if
+our data doesn't fit the assumptions of any of the proofs in the textbook?
+
+Then we bootstrap to find the distribution! I'll put an example here which puts together the techniques
+from the last chapter and this one, constructing a likelihood function like the one above using the
+bootstrap.
+

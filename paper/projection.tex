@@ -1,0 +1,210 @@
+\chapter{Describing data with projections} \label{projections}
+
+A good part of statistical analysis is about projecting your
+$N$-dimensional data onto the best subspace of significantly less than
+$N$ dimensions. This chapter will cover the best way to effect this projection
+given different definitions of `best'.
+ For example, the standard OLS regression consists of
+finding the one-dimensional line which minimizes the sum of squared
+distances between the data and that line. Factor analysis consists
+of finding the few dimensions where the data's variance is maximized, after being
+projected onto the subspace.
+
+\section{Ordinary least-squares} The linear OLS method
+projects a data matrix onto a one-dimensional space. 
+
+
+
+In this chapter, we won't be concerned with testing hypotheses, but simply finding the 
+the coefficients that describe the line of best fit.
+
+Our stats textbook tells us that the coefficients of  that line are the value of $\beta$ which solves:
+$ \beta = (X'X)^{-1}X'Y$.
+
+I will assume that we have already read a data matrix in to {\tt gsl\_matrix *data}. Typically, the $Y$
+values are the first column of data, so we would like to extract that to a separate variable:
+\begin{verbatim}
+#include <gsl/gsl_matrix>
+gsl_vector      *y_data         = gsl_vector_alloc(data->size1);
+gsl_matrix_get_col(y_data, data, 0);
+\end{verbatim}
+
+
+We now have the $Y$-values safely stored.  When doing an OLS projection, there needs to be a column of
+ones in the data set (because OLS is an {\sl affine} linear projection), so we can overwrite the first
+column with ones. Also, remember that every other variable is actually
+$X_i - \bar{X_i}$; that is, subtract out the means for every column.
+\begin{verbatim}
+#include <apophenia/stats.h>
+        apop_normalize_matrix(data);            //every column should have mean zero.
+gsl_vector_view v         = gsl_matrix_column(data, 0);
+        gsl_vector_set_all(&(v.vector), 1);     //affine: first column is ones.
+\end{verbatim}
+
+
+
+
+Now we have both the $Y$ and the $X$ in the equation, so we can find $(X'X)$ and $X'Y$.
+The second part, $X'Y$, is a simple application of the BLAS function from the last chapter. It is a
+matrix $\cdot$ a vector, so:
+\begin{verbatim}
+#include <gsl/gsl_blas.h>
+gsl_vector      *xpy            = gsl_vector_calloc(data->size2);
+gsl_matrix      *xpx            = gsl_matrix_calloc(data->size2, data->size2);
+        gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, xpx); //(X'X)
+        gsl_blas_dgemv(CblasTrans, 1, data, y_data, 0, xpy); //(X'y)
+\end{verbatim}
+
+The GSL has a function to solve equations of the type ${\bf X} \beta =
+{\bf Y}$; which is exactly the form we have here---$(X'X)\beta = (X'Y)$.  \label{ols}
+\begin{verbatim}
+        gsl_linalg_HH_solve (xpx, xpy, *beta);
+\end{verbatim}
+
+The vector {\tt beta} now lives up to its name, holding the coefficients
+$\beta$. Notice that we never had to take an inverse.  
+
+We may want to do some more with the data that we have here. For example, after the assumptions of the
+next chapter, the covariance matrix of the coefficients in $\beta$ is {\tt xpx\_inv}.
+
+The matrix which projects data onto the space defined by $X$, often
+called the `hat matrix', is $H = X(X'X)^{-1}X'$. Two more lines of algebra will calculate the hat matrix
+for us:
+
+\begin{verbatim}
+gsl_matrix * first_part = gsl_matrix_calloc(data->size1,data->size1);
+gsl_matrix * hat_matrix = gsl_matrix_calloc(data->size1,data->size1);
+gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, data, xpx_inv, first_part);	//Find X inv(X'X)
+gsl_blas_dgemm(CblasNoTrans,CblasTrans, first_part, data, hat_matrix);	//Find X inv(X'X) X'
+gsl_matrix_free(first_part);
+\end{verbatim}
+
+If we have a second data set {\tt data2} of the appropriate number of
+rows (meaning that {\tt (data-$>$size1 == data2-$>$size1)}, then we can use the hat matrix to do the projection:\\
+{\tt
+gsl\_matrix * projected\_data = gsl\_matrix\_calloc(data-$>$size1,data2-$>$size2);\\
+gsl\_blas\_dgemm(CblasNoTrans,CblasNoTrans, hat\_matrix, data, projected\_data);
+}
+
+
+
+
+\section{Principal component analysis} This is also known as factor
+analysis or as spectral decomposition, depending upon your field. 
+
+This is a purely descriptive method.  The idea is that we want a few
+dimensions that will capture the most variance possible---usually two,
+because we can plot two dimensions. That is, we will project the data
+onto the best plane, where `best' means that it captures as much
+variance in the data as possible.
+
+After plotting the data, perhaps with markers for certain observations,
+we may find intuitive descriptions for the dimensions that we had just plotted the
+data on. My favorite example of this is the work of Poole \& Rosenthal,
+who did a principal component analysis\footnote{They actually did
+the analysis using an intriguing maximum likelihood method, rather
+than the eigenvector method here. Nonetheless, the end result and its
+interpretation is the same.} on all of the U.S. Congresses. They found
+that 90\% of the variance in vote patterns could be explained by two dimensions.
+Studying the data points, they determined that one of these dimensions could be
+described as `fiscal issues' and the other as `social issues'. This method stands
+out because Poole \& Rosenthal didn't have to look at bills and place them on
+either scale---the data placed itself, and they just had to name the scales.
+
+
+It can be shown that the best $n$ axes, in the sense above, are the
+$n$ eigenvectors of the data's covariance matrix with the $n$ largest
+associated eigenvalues.
+
+\subsection{Coding it}
+This section will first take you through all of the steps described above, to give you another example
+of the math-to-code translation that this book is built around. After that, I will show you the quick-and-easy
+way, using the GSL's built-in singular value decomposition function.
+
+The only hard part is finding the eigenvalues of
+$(X'X)$; the GSL saw us coming, and gives us the {\tt gsl\_eigen\_symm} functions
+to calculate the eigenvectors of a symmetric matrix.
+
+The GSL is too polite to allocate large vectors behind our backs, so
+it asks that we pass in pre-allocated workspaces when it needs such
+things. The eigenvalue-finding function requires such a workspace, so
+here is a function which allocates the workspace, calls the function,
+then frees the workspace:
+\begin{verbatim}
+void find_eigens(gsl_matrix *subject, gsl_vector *eigenvals, 
+                            gsl_matrix *eigenvecs){
+   gsl_eigen_symmv_workspace * w 
+                        = gsl_eigen_symmv_alloc(subject->size1);
+   gsl_eigen_symmv(subject, eigenvals, eigenvecs, w);
+   gsl_eigen_symmv_free (w);
+   gsl_matrix_free(subject);
+}
+\end{verbatim}
+
+Notice that I free the matrix whose eigenvalues are being calculated at the end.
+This is because, for all intents and purposes, the matrix is destroyed in the
+calculations, and shouldn't be referred to again. 
+
+Here's how this function is used. In the tradition of C, the code is
+mostly declarations, and in the last two lines, it will calculate the
+covariance matrix $X'X$ for the data set, and then find its eigenvalues
+and eigenvectors.
+
+I will assume that you've already got a data matrix ready, named {\tt
+data}, as per the last chapter, and you've subtracted the means of each
+column.
+
+\begin{verbatim}
+#include <gsl/gsl_eigen.h>
+int ds=data->size2;
+gsl_matrix *xpx  = gsl_matrix_calloc(ds, ds);
+gsl_vector *eigenvals   = gsl_vector_alloc(ds);
+gsl_matrix *eigenvecs   = gsl_matrix_alloc(ds, ds);
+
+gsl_blas_dgemm(CblasTrans,CblasNoTrans, x, x, xpx);
+find_eigens(xpx, eigenvals, eigenvecs);
+\end{verbatim}
+
+Now we have the eigenvectors and their associated eigenvalues; we need only find
+the largest eigenvalues, and project the data onto their associated eigenvectors.
+The GSL helps us by giving us functions for
+finding the indices of the largest elements of a vector.
+\begin{verbatim}
+#include <gsl/gsl_sort_vector.h>
+const int dimensions_we_want = 2;
+gsl_matrix *pc_space 
+               = gsl_matrix_alloc(ds,dimensions_we_want);
+gsl_vector *temp_vector = gsl_vector_alloc(ds);
+int indexes[dimensions_we_want];
+int i;
+
+gsl_sort_vector_largest_index(indexes, dimensions_we_want, eigenvals);
+
+for (i=0;i<dimensions_we_want; i++){
+   gsl_matrix_get_col(temp_vector, eigenvecs, indexes[i]);
+   gsl_matrix_set_col(pc_space, i, temp_vector);
+}
+\end{verbatim}
+
+All that's left to do is the projection. Notice the convention I used:
+the {\tt pc\_space} has eigenvectors on its columns, and as many columns as the
+dimensionality we want in the end. Below, I transpose that before premultiplying
+the data set by the principal component matrix.
+
+\begin{verbatim}
+gsl_matrix *projected 
+                 = gsl_matrix_alloc(data->size1, dimensions_we_want);
+gsl_blas_dgemm(CblasTrans,CblasNoTrans, pc_space, data, projected);
+\end{verbatim}
+
+You'll probably want to plot the {\tt projected} matrix; I'll continue this example in the chapter on
+plotting.
+
+\paragraph{The easy way}
+
+Here's a function which takes some shortcuts from the above, which we would use in practice. It simply
+makes a copy of the data and feeds that in to the GSL's built-in singular-value decomposition function
+(which eats the copy, and must also be fed an additional dummy vector for its work). The function then
+returns the first {\tt dimensions\_we\_want} eigenvectors and all of the eigenvalues. I assume that all of
+the input arguments have had space allocated before calling the function.
+\codefig{svdecomposition}{A function to find the singluar-value decomposition of a data set}

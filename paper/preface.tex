@@ -1,0 +1,132 @@
+
+[First, let me warn you that this book is very incomplete. The first two chapters are finished, and it
+tapers off from there, to the point that the last chapter is just a placeholder. I feel that it should
+already have utility to many people, so it is here for your perusal.]
+\vskip .5cm
+
+This book is a write-up of my experience writing statistical analyses.
+The methods I advocate go against the current orthodoxy, as described
+in full-color advertisements in leading journals and magazines, so I want to
+use this preface to be especially explicit in explaining why I eschew
+the statistics packages that others love so much.
+
+\comment{
+There are two reasons I went through the effort of writing down my experiences in
+complete sentences.
+
+The first is that I want more people to take an interest in my methods of
+computing. More people working like I do means more support for me, in terms of
+software available, debugging, critique, and people who don't look at me funny
+when I describe my methods. 
+}
+
+\index{statistics packages!rants regarding|(}
+Here is what I look for in software, based on many years of experience with a large range of programs. I hope you agree that all of these features are desirable: \\
+$\bf 1.$ It should be extensible and flexible: all arbitrary limits are bad.  \\
+$\bf 2.$ It should be portable: I should be able to sit down at a computer at work, at home, or while travelling,
+and work on my projects.\\
+$\bf 3.$ It should be transparent: if something breaks I know if it's
+my fault or the software's fault, and can fix it in either case.
+
+Conversely, here is the list which many people go by:\\
+$\bf 4.$ It should be easy to sit down and use immediately.\\
+
+Ease-of-initial-use is undeniably a good thing---but if it is at the cost
+of items 1-3, then the software which gave you an initial jump-start will
+bog you down over the course of weeks, months, or years. There is
+undoubtedly a trade-off: the designers of the software can hide details
+from the user so that the user won't have to bother learning them---but
+the hidden details very frequently come at the cost of \#1 and \#3. Some
+programs have beautiful graphical interfaces, but these are very difficult
+to program without a specific machine in mind, so \#2 gets thrown out.
+
+\paragraph{The long run}
+I have certainly benefited from easy-to-learn software, because I've had to learn
+so many programming languages and so many stats packages. Each time, I thought
+this would be the one I could do all my work in from now on, and each time, I
+found that there were arbitrary limits and I had to start over with yet another software package.
+Sometimes this was because I ran into failures of \#3 (transparency): the package
+didn't do what I'd expected, and after several hours of trying to work
+out why, I either failed to determine it or found that there was a bug
+in the code which I could do nothing about. The value of \#2 (portability) hit me
+when I started a new job, and all my Unix-based R code wouldn't run
+on the new Windows machine at work. I do work in a field for which the
+assumptions of OLS frequently fail, so failures in \#1 (extensibility) hit me often and hard,
+as discussed below. Other researchers have told me many a sob story
+about how they designed the perfect method around a small sample, and
+then their stats package couldn't handle the full data set, due to
+arbitrary limitations hard-coded by the designers.
+
+You should ask yourself where you will be in five years. If you expect that you will never do
+anything more difficult than a linear regression on well-formed IID data, or if you are trying to slog
+through your department's stats requirement so you can never look at another data set again, then by all means, use a
+stats package. But if you expect to be doing statistical work for a larger part of your career, then using a
+stats package which skimps on criteria \#1-\#3 for the sake of \#4 will prove to be
+hour wise but month foolish. 
+
+\paragraph{Barriers to rigorous analysis}
+Another reason I am writing this book is that, like all authors, I hope
+that this book will save the world. In this case, I hope to save the
+world from the not-quite-correct statistics.  The reader should have
+no problem finding published examples in academic journals where a
+least-squares regression was run on a data set for which least-squares
+was inappropriate; it is my opinion that the stats packages facilitate
+and encourage this.
+
+Most software, including all that I discuss here, has a hump: the
+point where you can't get by on what you learned in the basic tutorial
+and have to sit down and read the manual in earnest. For C, that hump
+will coincide with your first program; after that, it will be about as
+easy for you to implement the easy methods as the methods take into account
+every statistical nuance you feel is important. But for stats packages
+built around a fixed set of methods, the hump typically comes right after
+basic GLS regressions. Implementing an off-the-shelf GLS regression
+is very easy, and implementing something a touch more complicated
+is difficult.  From my casual observation,
+when the {\tt regress} function gets most of the assumptions right and
+is basically `good enough', many will choose to just fudge things and
+go with the off-the-shelf procedure.\footnote{This is not the place for
+a literature review, but this ties in with an abundance of experimental
+evidence that people make time-inconsistent decisions. That is, there
+are many situations where being tied to the mast can make a person
+better off and less regretful than when left to his or her own devices,
+even if the future is entirely certain.}
+
+Perhaps my lazy-researchers explanation is a bit baroque, and there is
+a simpler story: many people simply aren't clear on what their stats package is doing.
+Just as people who eat hot dogs don't really spend any
+time thinking about what went in to their food, a researcher who has
+a prepackaged {\tt regress} function can quickly forget the procedure
+and underlying assumptions at the function's guts.  The ad copy on the
+box only makes this worse, reassuring the user that the {\tt regress}
+function will have no problem handling everything, so no need to worry
+about reading the manual (if there is one). Again, having a pre-packaged
+procedure facilitates and even encourages data analysis which is OK
+but which doesn't go through the same rigor and scrutiny that the data gathering
+process went through.
+
+I don't mean to demonize stats packages or their users. I have two
+packages on the computer I am writing this on, and use them regularly.
+If I
+were in the business of writing a statistics package for consumption by
+thousands of people I've never met, most of whom are undergrads who have
+just seen a regression for the first time and have just had a new piece
+of software foisted upon them, then I would probably write something
+that looks very much like the average stats package on the market today.
+Things such as extensibility to other languages, pleasing graphics,
+and of course ease of initial use, would be very important.
+\index{statistics packages!rants regarding|)}
+
+Fortunately, that's not the sort of software this book is about.
+This book is intended for people who know their stats reasonably well,
+have an earnest interest in doing quantitative analysis, and have
+high standards of statistical correctness for their own work. For such a
+person, ease of inital use is nice, but takes a back seat to ease of
+getting the details right, on this project and in the long run.
+
+So, there you have two reasons to read this book: there is the practical
+position, that this book is not about ease-of-use over all other goals,
+but for this very reason it will save you time over the next several
+years of your career; and there is the ethical position, that in academic
+research, `good enough' is not good enough, and we need software which
+will accommodate an arbitrary quantity of academic rigor.
