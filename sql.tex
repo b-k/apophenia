@@ -1,0 +1,123 @@
+\chapter{Databases} \label{sql}
+
+If you've been reading sequentially, you've already got all the techniques you'll need to do statistics.
+This chapter is basically a convenience, although as conveniences go, it's a great one. 
+
+One especially nice thing about keeping your data in an SQL database is
+that it'll give your data names again. Here's some valid SQL: {\tt select age, gender, year from
+survey}. Why, that's proper English. It goes downhill from there in terms of properness, but at its worst,
+it's still pretty easy to look at a query and know what's actually going on.
+
+\section{Basic queries}
+[This section will discuss the syntax of selection, with focus on the joys of {\tt group by}, which is
+one of the things that SQL does easily and matrix-oriented programs do poorly. Joins will be covered,
+but not comprehensively, since they're not particularly essential for the work we're doing here.]
+
+\section{Using SQLite}
+
+[Most of the hard part of dealing with SQLite is in writing good callback
+functions.  I've written a few functions to get matrices in and out of
+the GSL's matrices which are a good example of doing that, and probably
+all the reader needs. I'll describe them here.
+
+And did you know how to use in-memory databases? Hint: it's supported,
+but isn't in the documentation; you have to read the source code
+to find the trick. ]
+
+\subsection{Getting data in and out}
+We now have three different ways to represent a matrix of data: as a {\tt gsl\_matrix}, as a text file,
+or as a database table. This section will show you how to best shunt your data between a database and
+the other two formats.
+
+\section{An example: dummy variables}
+Here's a neat trick: using SQL's {\tt case} a few dozen times, we can turn a
+variable which is discrete but not ordered (such as district numbers in the
+following example) into a series of dummy variables. It requires writing down a
+separate {\tt case} statement for each value the variable could take, but that's
+what {\tt for} loops are for.
+
+\codefig{dummy}{A sample of using SQL to create dummy variables}
+
+[Note to editor: I just cut and pasted figure \ref{dummy} from my hard drive. Will clean it up
+later. The gist is that we first query out the list of districts; then we write a
+select statement with a line {\tt case district when district\_no then 1 else 0} for
+each and every district\_no. You can then run your regression on the output of the
+query without any further manipulation.
+
+Notice that the for loop goes from i=1, not i=0; this is because when including
+dummy variables, you always have to exclude one value, which will be the baseline;
+using i=1 means district[0] will be the baseline.]
+
+
+
+
+\section{An example: the easiest t-test you'll ever run.}
+Say we have a set of observations of our sample's years of education, and their annual income. We want to
+know if getting that grad school education is {\it really} worth it. The null hypothesis is: (Income for
+people with education less than 16 years) $\leq$ (income for people with greater than or equal to 16 years
+of education).
+
+That first data set is:
+\begin{verbatim}
+#include <gsl/gsl.h>
+#include <gsl/gsl_matrix.h>
+#include "sqlite_wrappers.h"
+gsl_vector	*undereducated;
+   query_to_vector(&undereducated, 
+      "select income from survey \
+      where education <16");
+\end{verbatim}
+while the second group is:
+\begin{verbatim}
+gsl_vector	*overeducated;
+   query_to_vector(&overeducated, 
+      "select income from survey \
+      where education >=16");
+\end{verbatim}
+
+Here's a factoid for you: incomes are usually distributed log-normally, so we should do a t-test on the
+log of income:
+\begin{verbatim}
+#include <gsl/gsl_sf_log.h>
+int i;
+for(i=0;i< overeducated->size; i++)
+   gsl_vector_set(overeducated, i, 
+               gsl_sf_log(gsl_vector_get(overeducated, i)));
+for(i=0;i< undereducated->size; i++)
+   gsl_vector_set(undereducated, i, 
+               gsl_sf_log(gsl_vector_get(undereducated, i)));
+\end{verbatim}
+
+We've already written functions to find the mean and variance of a vector
+[though I've omitted them from this overview]:
+
+\begin{verbatim}
+#include "gsl_wrappers.h"
+double	mean_over, mean_under, var_over, var_under;
+mean_over  = mean(overeducated);
+mean_under = mean(undereducated);
+var_over   = variance(overeducated);
+var_under  = variance(undereducated);
+\end{verbatim}
+
+The other factoid you'll need is that the difference of two normal
+distributions is also normal, and the variance of the difference is
+the sum of the two original variances.\footnote{Your stats textbook
+will tell you that the sum of two Normals is normal: ${\cal N}(\mu_1,
+\sigma_1) + {\cal N}(\mu_2, \sigma_2) \sim {\cal N}(\mu_1 + \mu_2,
+\sigma_1 + \sigma_2)$. Now, subtracting a ${\cal N}(\mu_2, \sigma_2)$
+is exactly equivalent to adding a ${\cal N}(-\mu_2, \sigma_2)$, so we
+get the result in the text.} That is, we can write down:
+
+\begin{verbatim}
+#include <gsl/gsl_cdf.h>
+double	test_me = gsl_cdf_gaussian_P(mean_over-mean_under, 
+                                       var_over+var_under);
+\end{verbatim}
+
+and {\tt test\_me} is the probability that the difference between the
+means is less than or equal to zero. If {\tt test\_me} turns out to be greater
+than your preferred confidence interval, (e.g., 95\%), then reject the
+null and go to grad school. Else, there isn't enough information to
+distinguish between the two with confidence.
+
