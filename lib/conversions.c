@@ -53,7 +53,7 @@ int 		i, use_names_in_file	= 0;
 		apop_query_db(q);
 		while(fgets(instr,1000,infile)!=NULL)
 			if(instr[0]!='#') {
-				sprintf(q, "INSERT INTO survey VALUES (%s);", instr);
+				sprintf(q, "INSERT INTO %s VALUES (%s);", tabname, instr);
 				apop_query_db(q);
 			}
 		apop_query_db("commit;");

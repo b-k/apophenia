@@ -36,8 +36,8 @@ void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int n
 		normalize_vector(unnormed, NULL, 0, 1);
 */
 
-void apop_normalize_data_matrix(gsl_matrix *data);
-	//Move every column of the data matrix to the mean; often required for regressions.
+void apop_normalize_matrix(gsl_matrix *data);
+	//Regression methods often require that the mean of each colum of the data matrix have mean zero.
 
 inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
 	//As described: give it a vector, and it'll tell you the confidence 

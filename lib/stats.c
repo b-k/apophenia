@@ -47,16 +47,12 @@ double		mu, min, max;
 	}
 }
 
-
-void apop_normalize_data_matrix(gsl_matrix *data){
+void apop_normalize_matrix(gsl_matrix *data){
 gsl_vector_view v;
-double          m;
-int             j,k;
+int             j;
         for (j = 0; j < data->size2; j++){
-                v               = gsl_matrix_column(data, j);
-                m               = apop_mean(&(v.vector));
-                for (k = 0; k < data->size1; k++)
-                        gsl_matrix_set(data, k, j, gsl_matrix_get(data, k,j) - m);
+                v	= gsl_matrix_column(data, j);
+		gsl_vector_add_constant(&(v.vector), -apop_mean(&(v.vector)));
         }
 }
 

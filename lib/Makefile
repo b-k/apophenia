@@ -1,6 +1,6 @@
 
 LLIBDIR = /usr/local/lib
-objects = stats.lo db.lo linear_algebra.lo likelihoods.lo conversions.lo
+objects = stats.lo db.lo linear_algebra.lo likelihoods.lo conversions.lo regression.lo
 #CFLAGS = -g -Wall -O3
 CFLAGS = -g -Wall
 LINKFLAGS = -L/usr/local/lib -lgsl -lgslcblas -lsqlite3

@@ -30,7 +30,8 @@ int apop_query_db(const char *q);
 	//	commit;
 
 int apop_query_to_matrix(gsl_matrix **output, const char *query);
-	//dump a query to a matrix;
+	//dump a query to a matrix. 
+	//do not preallocate *output.
 	//	char q[1000]="select a, b, c from some_table";
 	//	gsl_matrix * outmatrix;
 	//	query_to_matrix(&outmatrix,q);
