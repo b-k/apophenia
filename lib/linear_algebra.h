@@ -1,5 +1,6 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
+
 void invert_matrix(gsl_matrix *in, gsl_matrix *out);
 double det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv);
 double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma);

@@ -38,8 +38,6 @@ inline double double_abs(double a);
 	//This has to exist somewhere...
 
 
-
-
 double randombeta(double m, double v, gsl_rng *r) ;
 	/*Give me mean m and variance v, and I'll give you
 	 * n draws from the appropriate beta dist.

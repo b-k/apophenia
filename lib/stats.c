@@ -12,11 +12,6 @@ inline double kurtosis(gsl_vector *in){
 inline double kurt(gsl_vector *in){
 	return gsl_stats_kurtosis(in->data,in->stride, in->size); }
 
-	/*
-inline double var_view(gsl_vector_view *in){
-	return gsl_stats_variance(in->data,in->stride, in->size); }
-	*/
-
 inline double var_m(gsl_vector *in, double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
@@ -33,7 +28,7 @@ int		i;
 	sigma	=sqrt(var_m(in, mu));
 	for (i=in->size;i--;)
 		gsl_vector_set(*out,i,(gsl_vector_get(in,i)-mu)/sigma);
-	}
+}
 
 void normalize_data_matrix(gsl_matrix *data){
 gsl_vector_view v;
@@ -47,7 +42,6 @@ int             j,k;
         }
 }
 
-
 inline double test_chi_squared_var_not_zero(gsl_vector *in){
 gsl_vector	*normed;
 int		i;
@@ -56,33 +50,19 @@ double 		sum=0;
 	gsl_vector_mul(normed,normed);
 	for(i=0;i< normed->size; 
 			sum +=gsl_vector_get(normed,i++));
-	return gsl_cdf_chisq_P(sum,in->size); }
+	return gsl_cdf_chisq_P(sum,in->size); 
+}
 
 inline double double_abs(double a) {if(a>0) return a; else return -a;}
 
 void view_matrix(gsl_matrix *a){
-int i,j;
+int 		i,j;
 	for(i=0;i< a->size1; i++){
 		for(j=0;j< a->size2; j++)
 			printf("%g ", gsl_matrix_get(a,i,j));
 		printf("\n");
 	}
 }
-
-/*
-gsl_matrix *dot_prod(gsl_matrix *a, gsl_matrix *b){
-int i,j, a1,a2, b1, b2;
-	a1=a->size1; a2=a->size2;
-	b1=b->size1; b2=b->size2;
-	if(a2!= b1){ 
-		printf("you're asking me to take the dot product of a %i X %i and a %i X %i matrix. With all due respect, no.\n", a1, a2,b1,b2);
-		return a;}
-	//Else:
-	for (i=0;i<a1;i++)
-
-}
-	*/
-
 
 double randombeta(double m, double v, gsl_rng *r) {
 	/*Give me mean m and variance v, and I'll give you
@@ -92,9 +72,6 @@ double randombeta(double m, double v, gsl_rng *r) {
 double 		k        = (m * (1- m)/ v) -1 ;
         return gsl_ran_beta(r, m* k ,  k*(1 - m) );
 }
-
-
-
 
 double multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* sigma, int first_use){
 	//Evaluate a multivariate normal(mu, sigma) at the point x.

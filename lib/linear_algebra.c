@@ -1,41 +1,39 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 #include "math.h" //pow!
-void invert_matrix(gsl_matrix *in, gsl_matrix *out)
-{
-    gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
-    gsl_permutation * perm = gsl_permutation_alloc(in->size1);
-    int dummy;
-    invert_me = gsl_matrix_alloc(in->size1, in->size1);
-    gsl_matrix_memcpy (invert_me, in);
-    gsl_linalg_LU_decomp(invert_me, perm, &dummy);
-    gsl_linalg_LU_invert(invert_me, perm, out);
-    gsl_matrix_free(invert_me);
-    gsl_permutation_free(perm);
+void invert_matrix(gsl_matrix *in, gsl_matrix *out) {
+int 		dummy;
+	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
+	gsl_permutation * perm = gsl_permutation_alloc(in->size1);
+	invert_me = gsl_matrix_alloc(in->size1, in->size1);
+	gsl_matrix_memcpy (invert_me, in);
+	gsl_linalg_LU_decomp(invert_me, perm, &dummy);
+	gsl_linalg_LU_invert(invert_me, perm, out);
+	gsl_matrix_free(invert_me);
+	gsl_permutation_free(perm);
 }
 
-double det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv)
-{
-    gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
-    gsl_permutation * perm = gsl_permutation_alloc(in->size1);
-    int sign;
-    double the_determinant = 0;
-    invert_me = gsl_matrix_alloc(in->size1, in->size1);
-    gsl_matrix_memcpy (invert_me, in);
-    gsl_linalg_LU_decomp(invert_me, perm, &sign);
-    if (calc_inv)
-    	gsl_linalg_LU_invert(invert_me, perm, out);
-    if (calc_det)
-    	the_determinant	= gsl_linalg_LU_det(invert_me, sign);
-    gsl_matrix_free(invert_me);
-    gsl_permutation_free(perm);
-    return(the_determinant);
+double det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv) {
+int 		sign;
+double 		the_determinant = 0;
+	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
+	gsl_permutation * perm = gsl_permutation_alloc(in->size1);
+	invert_me = gsl_matrix_alloc(in->size1, in->size1);
+	gsl_matrix_memcpy (invert_me, in);
+	gsl_linalg_LU_decomp(invert_me, perm, &sign);
+	if (calc_inv)
+		gsl_linalg_LU_invert(invert_me, perm, out);
+	if (calc_det)
+		the_determinant	= gsl_linalg_LU_det(invert_me, sign);
+	gsl_matrix_free(invert_me);
+	gsl_permutation_free(perm);
+	return(the_determinant);
 }
 
 double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
 //This comes up often enough that it deserves its own convenience function.
-gsl_vector * sigma_dot_x	= gsl_vector_calloc(x->size);
-double	the_result;
+gsl_vector * 	sigma_dot_x	= gsl_vector_calloc(x->size);
+double		the_result;
 	//gsl_blas_dgemv(CblasNoTrans, 1, sigma, x, 0, sigma_dot_x);
 	gsl_blas_dsymv(CblasUpper, 1, sigma, x, 0, sigma_dot_x); //sigma should be symmetric
 	gsl_blas_ddot(x, sigma_dot_x, &the_result);
@@ -45,9 +43,9 @@ double	the_result;
 
 void normalize_for_svd(gsl_matrix *in){
 //Greene (2nd ed, p 271) recommends pre- and post-multiplying by sqrt(diag(X'X)) so that X'X = I.
-gsl_vector_view 	v;
-gsl_vector		*diagonal = gsl_vector_alloc(in->size1);
-int 			i;
+gsl_vector_view	v;
+gsl_vector	*diagonal = gsl_vector_alloc(in->size1);
+int 		i;
 	//Get the diagonal, take the square root
 	v	= gsl_matrix_diagonal(in);
 	gsl_vector_memcpy(diagonal, &(v.vector));
@@ -89,7 +87,7 @@ double		eigentotals	= 0;
 }
 
 void print_matrix(gsl_matrix *data){
-int i,j;
+int 		i,j;
 	for (i=0; i<data->size1; i++){
 		for (j=0; j<data->size2; j++)
 			printf("% 5f\t", gsl_matrix_get(data, i, j));
@@ -98,14 +96,14 @@ int i,j;
 }
 
 void print_vector(gsl_vector *data){
-int i;
+int 		i;
 	for (i=0; i<data->size; i++)
 			printf("% 5f\t", gsl_vector_get(data, i));
 	printf("\n");
 }
 
 void print_matrix_int(gsl_matrix *data){
-int i,j;
+int 		i,j;
 	for (i=0; i<data->size1; i++){
 		for (j=0; j<data->size2; j++)
 			printf("% i\t", (int) gsl_matrix_get(data, i, j));
@@ -114,7 +112,7 @@ int i,j;
 }
 
 void print_vector_int(gsl_vector *data){
-int i;
+int 		i;
 	for (i=0; i<data->size; i++)
 			printf("% i\t", (int) gsl_vector_get(data, i));
 	printf("\n");

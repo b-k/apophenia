@@ -113,13 +113,10 @@ double mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt, doub
 #include <gsl/gsl_sf_psi.h>
 
 
-
-//Waring parameters. 
 double waring_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0),
 		a	= gsl_vector_get(beta, 1);
-	//if (bb <=2 || a <= -1) return GSL_POSINF;	//a sign to the minimizer to look elsewhere.
-	if (bb <=0 || a <= -1) return GSL_POSINF;	//a sign to the minimizer to look elsewhere.
+	if (bb <=2 || a <= -1) return GSL_POSINF;	//a sign to the minimizer to look elsewhere.
 int 		i, k;
 gsl_matrix*	data		= d;
 double 		ln_a_k, ln_bb_a_k,
