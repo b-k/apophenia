@@ -109,7 +109,7 @@ gsl_matrix_view p 	= gsl_matrix_submatrix(data,0,1,data->size1,data->size2-1);
         gsl_blas_dgemv (CblasNoTrans, 1.0, &p.matrix, beta, 0.0, beta_dot_x);	//dot product
 }
 
-double probit_likelihood(const gsl_vector *beta, void *d){
+double apop_probit_likelihood(const gsl_vector *beta, void *d){
 	//find (data dot beta'), then find the integral of the Normal (0,1)
 	//up to that point. Multiply likelihood either by that or by 1-that, depending 
 	//on the choice the data made.
@@ -151,7 +151,7 @@ if (beta_dot_x_is_current==0) 	dot(beta,data);
 
 
 void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
-	*f	= probit_likelihood(beta, d);
+	*f	= apop_probit_likelihood(beta, d);
 	beta_dot_x_is_current	=1;
 	d_probit_likelihood(beta, d, df);
 	beta_dot_x_is_current	=0;
@@ -160,7 +160,7 @@ void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 
 double apop_mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
 	return	maximum_likelihood_w_d(data, beta, data->size2 - 1, 
-					probit_likelihood, d_probit_likelihood, probit_fdf, 
+					apop_probit_likelihood, d_probit_likelihood, probit_fdf, 
 					starting_pt, step_size, verbose);
 }
 
@@ -171,7 +171,7 @@ double apop_mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt,
 /////////////////////////
 
 
-double waring_likelihood(const gsl_vector *beta, void *d){
+double apop_waring_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0),
 		a	= gsl_vector_get(beta, 1);
 	if (bb <=2 || a <= -1) return GSL_POSINF;	//a sign to the minimizer to look elsewhere.
@@ -215,12 +215,12 @@ double		bb_minus_one_inv= 1/(bb-1),
 }
 
 void waring_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
-	*f	= waring_likelihood(beta, d);
+	*f	= apop_waring_likelihood(beta, d);
 	d_waring_likelihood(beta, d, df);
 }
 
 double apop_mle_waring(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
-	return maximum_likelihood_w_d(data, beta, 2, &waring_likelihood, d_waring_likelihood, waring_fdf, 
+	return maximum_likelihood_w_d(data, beta, 2, &apop_waring_likelihood, d_waring_likelihood, waring_fdf, 
 							starting_pt, step_size, verbose);
 }
 
@@ -230,7 +230,7 @@ double apop_mle_waring(gsl_matrix *data, gsl_vector **beta, double *starting_pt,
 ///////////////////////
 
 //Yule likelihood fn. The special case of Waring where alpha = 0.
-double yule_likelihood(const gsl_vector *beta, void *d){
+double apop_yule_likelihood(const gsl_vector *beta, void *d){
 float		bb		= gsl_vector_get(beta, 0);
 	if (bb <=2) return GSL_POSINF;	//a sign to the minimizer to look elsewhere.
 int 		i, k;
@@ -269,12 +269,12 @@ double		bb_minus_one_inv= 1/(bb-1),
 }
 
 void yule_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
-	*f	= yule_likelihood(beta, d);
+	*f	= apop_yule_likelihood(beta, d);
 	d_yule_likelihood(beta, d, df);
 }
 
 double apop_mle_yule(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
-	return maximum_likelihood_w_d(data, beta, 1, &yule_likelihood, d_yule_likelihood, yule_fdf, 
+	return maximum_likelihood_w_d(data, beta, 1, &apop_yule_likelihood, d_yule_likelihood, yule_fdf, 
 							starting_pt, step_size, verbose);
 }
 
@@ -284,7 +284,7 @@ double apop_mle_yule(gsl_matrix *data, gsl_vector **beta, double *starting_pt, d
 //The Zipf distribution
 ///////////////////////
 
-double zipf_likelihood(const gsl_vector *beta, void *d){
+double apop_zipf_likelihood(const gsl_vector *beta, void *d){
 // P(link ct==k) = C^{-k}. So the PDF is [ln(C) * C^{-k}], which integrates to one;
 // The log likelihood that a draw has degree k is ln(ln(C)) - [ln(C) * k],
 // I don't need the first part in the search for the best C.
@@ -317,12 +317,12 @@ float 		d_likelihood 	= 0,
 }
 
 void zipf_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
-	*f	= zipf_likelihood(beta, d);
+	*f	= apop_zipf_likelihood(beta, d);
 	d_zipf_likelihood(beta, d, df);
 }
 
 double apop_mle_zipf(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
-	return maximum_likelihood_w_d(data, beta, 1, &zipf_likelihood, d_zipf_likelihood, zipf_fdf, 
+	return maximum_likelihood_w_d(data, beta, 1, &apop_zipf_likelihood, d_zipf_likelihood, zipf_fdf, 
 							starting_pt, step_size, verbose);
 }
 
