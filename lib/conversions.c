@@ -1,7 +1,7 @@
 #include "conversions.h"
 
 
-int convert_vector_to_array(gsl_vector *in, double **out){
+int apop_convert_vector_to_array(gsl_vector *in, double **out){
 int		i;	
 	*out	= malloc(sizeof(double) * in->size);
 	for (i=0; i < in->size; i++)
@@ -9,7 +9,7 @@ int		i;
 	return in->size;
 }
 
-void convert_array_to_vector(double *in, gsl_vector **out, int size){
+void apop_convert_array_to_vector(double *in, gsl_vector **out, int size){
 int		i;
 	*out	= gsl_vector_alloc(size);
 	for(i=0; i < size; i++)
@@ -18,12 +18,12 @@ int		i;
 
 
 
-void convert_text_to_db(char *text_file, char *db, char *tabname, int ct, char **field_names, char *field_types){
+void apop_convert_text_to_db(char *text_file, char *db, char *tabname, int ct, char **field_names, char *field_types){
 FILE * 		infile;
 char		q[20000], instr[10000], **fn, *astring;
 int 		i, use_names_in_file	= 0;
-	open_db(db);
-	if (table_exists(tabname,0)) printf("%s table exists; not recreating it.\n", tabname);
+	apop_open_db(db);
+	if (apop_table_exists(tabname,0)) printf("%s table exists; not recreating it.\n", tabname);
 	else{
 		infile	= fopen(text_file,"r");
 		if (field_names == NULL){
@@ -50,13 +50,13 @@ int 		i, use_names_in_file	= 0;
 				strcat(q, " INTEGER" );
 		}
 		strcat(q, "); commit; begin;");
-		query_db(q);
+		apop_query_db(q);
 		while(fgets(instr,1000,infile)!=NULL)
 			if(instr[0]!='#') {
 				sprintf(q, "INSERT INTO survey VALUES (%s);", instr);
-				query_db(q);
+				apop_query_db(q);
 			}
-		query_db("commit;");
+		apop_query_db("commit;");
 		fclose(infile);
 		if (use_names_in_file){
 			free(astring); 

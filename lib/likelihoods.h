@@ -9,11 +9,11 @@
 #define MAX_ITERATIONS 		500
 #define MAX_ITERATIONS_w_d	500
 
-double mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
+double apop_mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
 
-double mle_waring(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
-double mle_yule(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
-double mle_zipf(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
+double apop_mle_waring(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
+double apop_mle_yule(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
+double apop_mle_zipf(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
 
 /*
 For the Probit, the first column of the data matrix is the dependent

@@ -1,24 +1,24 @@
 #include "stats.h"
 
-inline double mean(gsl_vector *in){
+inline double apop_mean(gsl_vector *in){
 	return gsl_stats_mean(in->data,in->stride, in->size); }
 
-inline double var(gsl_vector *in){
+inline double apop_var(gsl_vector *in){
 	return gsl_stats_variance(in->data,in->stride, in->size); }
 
-inline double kurtosis(gsl_vector *in){
+inline double apop_kurtosis(gsl_vector *in){
 	return gsl_stats_kurtosis(in->data,in->stride, in->size); }
 
-inline double kurt(gsl_vector *in){
+inline double apop_kurt(gsl_vector *in){
 	return gsl_stats_kurtosis(in->data,in->stride, in->size); }
 
-inline double var_m(gsl_vector *in, double mean){
+inline double apop_var_m(gsl_vector *in, double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
-inline double covar(gsl_vector *ina, gsl_vector *inb){
+inline double apop_covar(gsl_vector *ina, gsl_vector *inb){
 	return gsl_stats_covariance(ina->data,ina->stride,inb->data,inb->stride,inb->size); }
 
-inline double cov(gsl_vector *ina, gsl_vector *inb){return  covar(ina,inb);}
+inline double apop_cov(gsl_vector *ina, gsl_vector *inb){return  apop_covar(ina,inb);}
 
 
 void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type){
@@ -34,9 +34,9 @@ double		mu, min, max;
 	}
 
 	if (normalization_type == 1){
-		mu	= mean(in);
+		mu	= apop_mean(in);
 		gsl_vector_add_constant(*out, -mu);			//subtract the mean
-		gsl_vector_scale(*out, 1/(sqrt(var_m(in, mu))));	//divide by the std dev.
+		gsl_vector_scale(*out, 1/(sqrt(apop_var_m(in, mu))));	//divide by the std dev.
 	} 
 	else if (normalization_type == 2){
 		min	= gsl_vector_min(in);
@@ -48,19 +48,19 @@ double		mu, min, max;
 }
 
 
-void normalize_data_matrix(gsl_matrix *data){
+void apop_normalize_data_matrix(gsl_matrix *data){
 gsl_vector_view v;
 double          m;
 int             j,k;
         for (j = 0; j < data->size2; j++){
                 v               = gsl_matrix_column(data, j);
-                m               = mean(&(v.vector));
+                m               = apop_mean(&(v.vector));
                 for (k = 0; k < data->size1; k++)
                         gsl_matrix_set(data, k, j, gsl_matrix_get(data, k,j) - m);
         }
 }
 
-inline double test_chi_squared_var_not_zero(gsl_vector *in){
+inline double apop_test_chi_squared_var_not_zero(gsl_vector *in){
 gsl_vector	*normed;
 int		i;
 double 		sum=0;
@@ -71,9 +71,9 @@ double 		sum=0;
 	return gsl_cdf_chisq_P(sum,in->size); 
 }
 
-inline double double_abs(double a) {if(a>0) return a; else return -a;}
+inline double apop_double_abs(double a) {if(a>0) return a; else return -a;}
 
-void view_matrix(gsl_matrix *a){
+void apop_view_matrix(gsl_matrix *a){
 int 		i,j;
 	for(i=0;i< a->size1; i++){
 		for(j=0;j< a->size2; j++)
@@ -82,7 +82,7 @@ int 		i,j;
 	}
 }
 
-double randombeta(double m, double v, gsl_rng *r) {
+double apop_random_beta(double m, double v, gsl_rng *r) {
 	/*Give me mean m and variance v, and I'll give you
 	 * n draws from the appropriate beta dist.
 	 * remember: 0<m<1, and v is tiny (<<1/12). You get NaNs if no
@@ -91,7 +91,7 @@ double 		k        = (m * (1- m)/ v) -1 ;
         return gsl_ran_beta(r, m* k ,  k*(1 - m) );
 }
 
-double multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* sigma, int first_use){
+double apop_multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* sigma, int first_use){
 	//Evaluate a multivariate normal(mu, sigma) at the point x.
 //The equation:
 //	exp(-1/2 (X-mu)' sigma^-1 (x-mu))

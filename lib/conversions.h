@@ -13,17 +13,17 @@
 #include <gsl/gsl_matrix.h>
 
 // vector ==>array
-int convert_vector_to_array(gsl_vector *in, double **out);
+int apop_convert_vector_to_array(gsl_vector *in, double **out);
 //Returns the length of the array (i.e., in->size);
 
 //array ==> vector
-void convert_array_to_vector(double *in, gsl_vector **out, int size);
+void apop_convert_array_to_vector(double *in, gsl_vector **out, int size);
 
 
 
 
 //text ==> db
-void convert_text_to_db(char *text_file, char *db, char *tabname, int ct, 
+void apop_convert_text_to_db(char *text_file, char *db, char *tabname, int ct, 
 				char **field_names, char *field_types);
 
 /* text_file: the input file. At the moment, it needs to be comma delimited.

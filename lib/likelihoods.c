@@ -96,7 +96,7 @@ void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 }
 
 
-double mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
+double apop_mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
 	return	maximum_likelihood_w_d(data, beta, data->size2 - 1, 
 					probit_likelihood, d_probit_likelihood, probit_fdf, 
 					starting_pt, step_size, verbose);
@@ -160,7 +160,7 @@ void waring_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 	d_waring_likelihood(beta, d, df);
 }
 
-double mle_waring(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
+double apop_mle_waring(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
 	return maximum_likelihood_w_d(data, beta, 2, &waring_likelihood, d_waring_likelihood, waring_fdf, 
 							starting_pt, step_size, verbose);
 }
@@ -214,7 +214,7 @@ void yule_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 	d_yule_likelihood(beta, d, df);
 }
 
-double mle_yule(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
+double apop_mle_yule(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
 	return maximum_likelihood_w_d(data, beta, 1, &yule_likelihood, d_yule_likelihood, yule_fdf, 
 							starting_pt, step_size, verbose);
 }
@@ -262,7 +262,7 @@ void zipf_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 	d_zipf_likelihood(beta, d, df);
 }
 
-double mle_zipf(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
+double apop_mle_zipf(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
 	return maximum_likelihood_w_d(data, beta, 1, &zipf_likelihood, d_zipf_likelihood, zipf_fdf, 
 							starting_pt, step_size, verbose);
 }
@@ -291,7 +291,7 @@ double			size;
 	if (starting_pt==NULL)
   		gsl_vector_set_all (x,  0);
 	else
-		convert_array_to_vector(starting_pt, &x, betasize);
+		apop_convert_array_to_vector(starting_pt, &x, betasize);
   	gsl_vector_set_all (ss,  step_size);
 
 	minme.f		= likelihood;
@@ -346,7 +346,7 @@ int				iter =0, status;
   		gsl_vector_set_all (x,  0);
 	}
 	else
-		convert_array_to_vector(starting_pt, &x, betasize);
+		apop_convert_array_to_vector(starting_pt, &x, betasize);
   	gsl_vector_set_all (ss,  step_size);
 	minme.f		= likelihood;
 	minme.df	= d_likelihood;

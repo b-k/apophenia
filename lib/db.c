@@ -1,14 +1,14 @@
 #include "db.h"
 #include <string.h>
 
-int query_db(const char *q){
+int apop_query_db(const char *q){
 char 		*err;
 	sqlite3_exec(db, q, NULL,NULL, &err);
 	ERRCHECK
 	return 1;
 }
 
-int table_exists(const char *q, int whattodo){
+int apop_table_exists(const char *q, int whattodo){
 	//whattodo==1	==>kill table so it can be recreated in main.
 	//whattodo==0	==>return error so program can continue.
 char 		*err, q2[5000];
@@ -29,7 +29,7 @@ int 		isthere=0;
 	return isthere;
 }
 
-int count_cols(const char *name){
+int apop_count_cols(const char *name){
 char 		*err, q2[5000];
 int		colct	= 1;
 
@@ -47,7 +47,7 @@ int		colct	= 1;
 	return colct;
 }
 
-int open_db(char *filename){
+int apop_open_db(char *filename){
 //char	*err;
 	//if (filename==NULL) 	db	=sqlite_open(":memory:",0,&err);
 	//else			db	=sqlite_open(filename,0,&err);
@@ -56,7 +56,7 @@ int open_db(char *filename){
 	return 0;
 }
 
-int close_db(int vacuum){
+int apop_close_db(int vacuum){
 char		*err;
 	if (vacuum) sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
 //	ERRCHECK
@@ -64,7 +64,7 @@ char		*err;
 	return 0;
 	}
 
-int query_to_matrix(gsl_matrix **output, const char *query){
+int apop_query_to_matrix(gsl_matrix **output, const char *query){
 int		totalrows=0,currentrow=0;
 char		*q2, *err=NULL;
 
@@ -85,7 +85,7 @@ char		*q2, *err=NULL;
 	}
 
 	q2	= malloc(sizeof(char)*(strlen(query)+300));
-	table_exists("completely_temporary_table",1);
+	apop_table_exists("completely_temporary_table",1);
 	sqlite3_exec(db,strcat(strcpy(q2,
 		"CREATE TABLE completely_temporary_table AS "),query),NULL,NULL, &err); ERRCHECK
 	sqlite3_exec(db,"SELECT count(*) FROM completely_temporary_table",length_callback,NULL, &err);
@@ -93,14 +93,14 @@ char		*q2, *err=NULL;
 	if (totalrows==0){
 		*output	= NULL;
 	} else {
-		*output	= gsl_matrix_alloc(totalrows, count_cols("completely_temporary_table"));
+		*output	= gsl_matrix_alloc(totalrows, apop_count_cols("completely_temporary_table"));
 		sqlite3_exec(db,"SELECT * FROM completely_temporary_table",db_to_table,*output, &err); ERRCHECK
 	}
 	sqlite3_exec(db,"DROP TABLE completely_temporary_table",NULL,NULL, &err);  ERRCHECK
 	return totalrows;
 }
 
-int matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
+int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 int		i,j;
 char		*q 	=malloc(sizeof(char)*1000);
 	sprintf(q, "create table %s (", tabname);
@@ -119,6 +119,6 @@ char		*q 	=malloc(sizeof(char)*1000);
 			else			sprintf(q,"%s %g);",q,gsl_matrix_get(data,i,j));
 	}
 	sprintf(q, "%s; end;", q);
-	query_db(q);
+	apop_query_db(q);
 	return 0;
 }

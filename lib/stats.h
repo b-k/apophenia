@@ -11,11 +11,13 @@
 	//The following are just convenient hooks to gsl vector functions.
 	//var_m lets you input a mean if you've already calculated it, saving
 	//some repetition.
-inline double mean(gsl_vector *in);
-inline double var(gsl_vector *in);
-inline double var_m(gsl_vector *in, double mean);
-inline double covar(gsl_vector *ina, gsl_vector *inb);
-inline double cov(gsl_vector *ina, gsl_vector *inb);
+inline double apop_mean(gsl_vector *in);
+inline double apop_var(gsl_vector *in);
+inline double apop_var_m(gsl_vector *in, double mean);
+inline double apop_covar(gsl_vector *ina, gsl_vector *inb);
+inline double apop_cov(gsl_vector *ina, gsl_vector *inb);
+inline double apop_kurtosis(gsl_vector *in);
+inline double apop_kurt(gsl_vector *in);
 
 
 void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type);
@@ -34,25 +36,25 @@ void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int n
 		normalize_vector(unnormed, NULL, 0, 1);
 */
 
-void normalize_data_matrix(gsl_matrix *data);
+void apop_normalize_data_matrix(gsl_matrix *data);
 	//Move every column of the data matrix to the mean; often required for regressions.
 
-inline double test_chi_squared_var_not_zero(gsl_vector *in);
+inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
 	//As described: give it a vector, and it'll tell you the confidence 
 	//with which you can say that the vector is not zero.
 
-inline double double_abs(double a);
+inline double apop_double_abs(double a);
 	//This has to exist somewhere...
 
 
-double randombeta(double m, double v, gsl_rng *r) ;
+double apop_random_beta(double m, double v, gsl_rng *r) ;
 	/*Give me mean m and variance v, and I'll give you
 	 * n draws from the appropriate beta dist.
 	 * remember: 0<m<1, and v is tiny (<<1/12). You get NaNs if no
 	 * appropriate distribution exists.*/
 
 
-double multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* sigma, int first_use);
+double apop_multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* sigma, int first_use);
 	//Evaluate a multivariate normal(mu, sigma) at the point x.
 //The equation:
 //	exp(-1/2 (X-mu)' sigma^-1 (x-mu))
