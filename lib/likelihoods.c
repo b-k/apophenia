@@ -38,7 +38,7 @@ likelihood evaluated with the most likely betas.  */
 // d ln G/ da	= $ -\psi(a) - ln b + ln(x) $	//d ln \gamma = \psi
 // d ln G/ db	= $ -a/b - x $
 
-double gamma_likelihood(const gsl_vector *beta, void *d){
+double apop_gamma_likelihood(const gsl_vector *beta, void *d){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
 	if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
@@ -49,7 +49,7 @@ float 		llikelihood 	= 0,
 		ln_ga		= gsl_sf_lngamma(a),
 		ln_b		= log(b),
 		x;
-	for (i=1; i< data->size1; i++)
+	for (i=0; i< data->size1; i++)
 		for (k=0; k< data->size2; k++){
 			x		 = gsl_matrix_get(data, i, k);
 			if (x!=0)
@@ -70,7 +70,7 @@ float 		d_a 	= 0,
 		psi_a	= gsl_sf_psi(a),
 		ln_b	= log(b),
 		x;
-	for (i=1; i< data->size1; i++)
+	for (i=0; i< data->size1; i++)
 		for (k=0; k< data->size2; k++){
 			x		 = gsl_matrix_get(data, i, k);
 			if (x!=0){
@@ -83,12 +83,12 @@ float 		d_a 	= 0,
 }
 
 void gamma_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
-	*f	= gamma_likelihood(beta, d);
+	*f	= apop_gamma_likelihood(beta, d);
 	d_gamma_likelihood(beta, d, df);
 }
 
 double apop_mle_gamma(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose){
-	return maximum_likelihood_w_d(data, beta, 2, &gamma_likelihood, d_gamma_likelihood, gamma_fdf, 
+	return maximum_likelihood_w_d(data, beta, 2, &apop_gamma_likelihood, d_gamma_likelihood, gamma_fdf, 
 							starting_pt, step_size, verbose);
 }
 
@@ -174,7 +174,7 @@ double apop_mle_probit(gsl_matrix *data, gsl_vector **beta, double *starting_pt,
 double apop_waring_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0),
 		a	= gsl_vector_get(beta, 1);
-	if (bb <=2 || a <= -1) return GSL_POSINF;	//a sign to the minimizer to look elsewhere.
+	if (bb <=2 || a <= 0) return GSL_POSINF;	//a sign to the minimizer to look elsewhere.
 int 		i, k;
 gsl_matrix*	data		= d;
 double 		ln_a_k, ln_bb_a_k,
@@ -182,7 +182,7 @@ double 		ln_a_k, ln_bb_a_k,
 		ln_bb_a		= gsl_sf_lngamma(bb + a),
 		ln_a_mas_1	= gsl_sf_lngamma(a + 1),
 		ln_bb_less_1	= log(bb - 1);
-	for (k=1; k< data->size2; k++)	//more efficient to go column-by-column
+	for (k=0; k< data->size2; k++)	//more efficient to go column-by-column
 		for (i=0; i< data->size1; i++){
 			ln_bb_a_k	 = gsl_sf_lngamma(k  + a + bb);
 			ln_a_k		 = gsl_sf_lngamma(k  + a);
@@ -203,7 +203,7 @@ double		bb_minus_one_inv= 1/(bb-1),
 		psi_bb_a_k,
 		d_bb		= 0,
 		d_a		= 0;
-	for (k=1; k< data->size2; k++)	//more efficient to go column-by-column
+	for (k=0; k< data->size2; k++)	//more efficient to go column-by-column
 		for (i=0; i< data->size1; i++){
 			psi_bb_a_k	 = gsl_sf_psi(k  + a + bb);
 			psi_a_k		 = gsl_sf_psi(k  + a);
@@ -239,7 +239,7 @@ float 		ln_k, ln_bb_k,
 	likelihood 	= 0,
 	ln_bb		= gsl_sf_lngamma(bb),
 	ln_bb_less_1	= log(bb-1);
-	for (k=1; k< data->size2; k++)	
+	for (k=0; k< data->size2; k++)	
 		for (i=0; i< data->size1; i++){
 			//if (k>1) 	ln_k	= gsl_sf_lngamma(k+1);
 			if (k>1) 	ln_k	= gsl_sf_lngamma(k);
@@ -260,7 +260,7 @@ double		bb_minus_one_inv= 1/(bb-1),
 		psi_bb		= gsl_sf_psi(bb),
 		psi_bb_k,
 		d_bb		= 0;
-	for (k=1; k< data->size2; k++)	//more efficient to go column-by-column
+	for (k=0; k< data->size2; k++)	//more efficient to go column-by-column
 		for (i=0; i< data->size1; i++){
 			psi_bb_k	 = gsl_sf_psi(k + bb);
 			d_bb		+= gsl_matrix_get(data, i, k) *(bb_minus_one_inv + psi_bb - psi_bb_k);
@@ -296,7 +296,7 @@ gsl_matrix	*data		= d;
 float 		llikelihood 	= 0,
 		ln_c		= log(bb),
 		ln_ln_c		= log(ln_c);
-	for (i=1; i< data->size1; i++)
+	for (i=0; i< data->size1; i++)
 		for (k=0; k< data->size2; k++)
 			llikelihood	+= gsl_matrix_get(data, i, k) * (ln_ln_c - ln_c * k);
 	return -llikelihood;
@@ -309,7 +309,7 @@ int 		i, k;
 gsl_matrix	*data		= d;
 float 		d_likelihood 	= 0,
 		ln_c		= log(bb);
-	for (i=1; i< data->size1; i++)
+	for (i=0; i< data->size1; i++)
 		for (k=0; k< data->size2; k++){
 			d_likelihood	+= gsl_matrix_get(data, i, k)  * (1/ln_c - k)/bb;
 		}

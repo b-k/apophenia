@@ -18,9 +18,9 @@ double apop_mle_gamma(gsl_matrix *data, gsl_vector **beta, double *starting_pt, 
 double apop_mle_waring(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
 double apop_mle_yule(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
 double apop_mle_zipf(gsl_matrix *data, gsl_vector **beta, double *starting_pt, double step_size, int verbose);
+double apop_gamma_likelihood(const gsl_vector *beta, void *d);
 double apop_waring_likelihood(const gsl_vector *beta, void *d);
 double apop_yule_likelihood(const gsl_vector *beta, void *d);
-double apop_zipf_likelihood(const gsl_vector *beta, void *d);
 double apop_zipf_likelihood(const gsl_vector *beta, void *d);
 
 /*
