@@ -1,0 +1,13 @@
+export outlib=apophenia_install
+export junkdir=tttt
+mkdir $junkdir
+cp * $junkdir
+cd $junkdir
+	aclocal
+	autoconf
+	automake -a
+	mkdir $outlib
+	cp *c *.h configure.in config.guess mkinstalldirs missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog $outlib 
+	mv $outlib ..
+cd ..
+rm -rf $junkdir

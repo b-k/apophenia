@@ -32,25 +32,42 @@ double		*line;
 	convert_array_to_line(in, &line, rows, cols);
 	m	= gsl_matrix_view_array(line, rows,cols);
 	gsl_matrix_memcpy(*out,&(m.matrix));
-apop_print_matrix(*out);
 	free(line);
 }
 
 
-
-int apop_convert_text_to_array(char *text_file, double ***tab, int ct, int has_field_names){
+int count_cols_in_text(char *text_file){
+//Open file, find the first valid row, count columns, close file.
 FILE * 		infile;
-char		instr[10000], *astring;
+char		instr[100000], *astring;
+int		ct	= 0;
+	infile	= fopen(text_file,"r");
+	fgets(instr, 100000, infile);
+	while(instr[0]=='#')	//burn off comment files
+		fgets(instr, 10000, infile);
+	astring	= strtok(instr,",");
+	while (astring !=NULL){
+		ct++;
+		astring	= strtok(NULL,",");
+	}
+	return ct;
+}
+
+
+int apop_convert_text_to_array(char *text_file, double ***tab, int has_field_names){
+FILE * 		infile;
+char		instr[100000], *astring;
 int 		i	= 0,
-		colno;
+		ct, colno;
+	ct	= count_cols_in_text(text_file);
 	*tab	= malloc(sizeof(double));
 	infile	= fopen(text_file,"r");
 	if (has_field_names == 1){
-		fgets(instr, 10000, infile);
+		fgets(instr, 100000, infile);
 		while(instr[0]=='#')	//burn off comment files
 			fgets(instr, 10000, infile);
 	}
-	while(fgets(instr,1000,infile)!=NULL){
+	while(fgets(instr,10000,infile)!=NULL){
 		colno	= 0;
 		if(instr[0]!='#') {
 			i	++;
@@ -69,12 +86,14 @@ int 		i	= 0,
 }
 
 
-int apop_convert_text_to_db(char *text_file, char *tabname, int ct, char **field_names){
+int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names){
 FILE * 		infile;
-char		q[20000], instr[10000], **fn, *astring;
-int 		i, 
+char		q[20000], instr[100000], **fn, *astring;
+int 		ct,
+		i			= 0, 
 		use_names_in_file	= 0,
 		rows			= 0;
+	ct	= count_cols_in_text(text_file);
 	if (apop_table_exists(tabname,0)){
 	       	printf("%s table exists; not recreating it.\n", tabname);
 		return 0; //to do: return the length of the table.
@@ -82,7 +101,7 @@ int 		i,
 		infile	= fopen(text_file,"r");
 		if (field_names == NULL){
 			use_names_in_file++;
-			fgets(instr, 10000, infile);
+			fgets(instr, 100000, infile);
 			while(instr[0]=='#')	//burn off comment files
 				fgets(instr, 10000, infile);
 			fn	= malloc(ct * sizeof(char*));
@@ -103,7 +122,7 @@ int 		i,
 		}
 		strcat(q, "); commit; begin;");
 		apop_query_db(q);
-		while(fgets(instr,1000,infile)!=NULL){
+		while(fgets(instr,10000,infile)!=NULL){
 			rows	++;
 			if(instr[0]!='#') {
 				sprintf(q, "INSERT INTO %s VALUES (%s);", tabname, instr);

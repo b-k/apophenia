@@ -27,7 +27,7 @@ void apop_convert_array_to_matrix(double **in, gsl_matrix **out, int rows, int c
 ///////////
 //From text
 ///////////
-int apop_convert_text_to_array(char *text_file, double ***tab, int ct, int has_field_names);
+int apop_convert_text_to_array(char *text_file, double ***tab, int has_field_names);
 
 /* text_file: the input file. At the moment, it needs to be comma delimited.
 	Lines with a # at the head are taken to be comments and ignored.
@@ -35,12 +35,11 @@ int apop_convert_text_to_array(char *text_file, double ***tab, int ct, int has_f
 	the file is taken to be strings giving the (comma-delimited)
 	field names.
    tab: the array to hold the data. Do not preallocate.
-   ct: the number of fields the table will have
    has_field_names: Is there a line of text at the top that I should ignore?
    returns: the number of rows
 */
 
-int apop_convert_text_to_db(char *text_file, char *tabname, int ct, char **field_names);
+int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names);
 
 /* text_file: the input file. At the moment, it needs to be comma delimited.
 	Lines with a # at the head are taken to be comments and ignored.

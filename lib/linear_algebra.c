@@ -74,34 +74,67 @@ double		eigentotals	= 0;
 	gsl_matrix_free(square); 	gsl_matrix_free(eigenvectors);
 }
 
-void apop_print_matrix(gsl_matrix *data){
-int 		i,j;
-	for (i=0; i<data->size1; i++){
-		for (j=0; j<data->size2; j++)
-			printf("% 5f\t", gsl_matrix_get(data, i, j));
-		printf("\n");
-	}
+
+
+inline void apop_vector_increment(gsl_vector * v, int i, double amt){
+	v->data[i * v->stride]	+= amt;
 }
 
-void apop_print_vector(gsl_vector *data){
+inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
+	m->data[i * m->tda +j]	+= amt;
+}
+
+
+////////////////////////////
+/////The printing functions.
+////////////////////////////
+
+void print_core_v(gsl_vector *data, char *separator, char *filename, 
+			void (* p_fn)(FILE * f, double number)){
 int 		i;
-	for (i=0; i<data->size; i++)
-			printf("% 5f\t", gsl_vector_get(data, i));
-	printf("\n");
-}
-
-void apop_print_matrix_int(gsl_matrix *data){
-int 		i,j;
-	for (i=0; i<data->size1; i++){
-		for (j=0; j<data->size2; j++)
-			printf("% i\t", (int) gsl_matrix_get(data, i, j));
-		printf("\n");
+FILE * 		f;
+	if (filename == NULL)
+		f	= stdout;
+	else	f	= fopen(filename, "w");
+	for (i=0; i<data->size; i++){
+		p_fn(f, gsl_vector_get(data, i));
+		if (i< data->size -1)	fprintf(f, "%s", separator);
 	}
+	fprintf(f,"\n");
+	if (filename !=NULL)	fclose(f);
 }
 
-void apop_print_vector_int(gsl_vector *data){
-int 		i;
-	for (i=0; i<data->size; i++)
-			printf("% i\t", (int) gsl_vector_get(data, i));
-	printf("\n");
+void print_core_m(gsl_matrix *data, char *separator, char *filename, 
+			void (* p_fn)(FILE * f, double number)){
+FILE * 		f;
+int 		i,j;
+	if (filename == NULL)
+		f	= stdout;
+	else	f	= fopen(filename, "w");
+	for (i=0; i<data->size1; i++){
+		for (j=0; j<data->size2; j++){
+			p_fn(f, gsl_matrix_get(data, i,j));
+			if (j< data->size2 -1)	fprintf(f, "%s", separator);
+		}
+		fprintf(f,"\n");
+	}
+	if (filename !=NULL)	fclose(f);
 }
+
+void dumb_little_pf_f(FILE * f, double data){
+	fprintf(f, "%5f", data); }
+
+void dumb_little_pf_i(FILE * f, double data){
+	fprintf(f, "%5i", (int) data); }
+
+void apop_print_vector(gsl_vector *data, char *separator, char *filename){
+	print_core_v(data, separator, filename, dumb_little_pf_f); }
+
+void apop_print_vector_int(gsl_vector *data, char *separator, char *filename){
+	print_core_v(data, separator, filename, dumb_little_pf_i); }
+
+void apop_print_matrix(gsl_matrix *data, char *separator, char *filename){
+	print_core_m(data, separator, filename, dumb_little_pf_f); }
+
+void apop_print_matrix_int(gsl_matrix *data, char *separator, char *filename){
+	print_core_m(data, separator, filename, dumb_little_pf_i); }
