@@ -1,6 +1,9 @@
 #include "db.h"
 #include <string.h>
 
+
+sqlite3	*db=NULL;	//There's only one database handle. Here it is.
+
 int apop_query_db(const char *q){
 char 		*err;
 	sqlite3_exec(db, q, NULL,NULL, &err);
@@ -53,6 +56,7 @@ int apop_open_db(char *filename){
 	//else			db	=sqlite_open(filename,0,&err);
 	if (filename==NULL) 	sqlite3_open(":memory:",&db);
 	else			sqlite3_open(filename,&db);
+	if (db == NULL)	printf("Not sure why, but the database didn't open.\n");
 	return 0;
 }
 

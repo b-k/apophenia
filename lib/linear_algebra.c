@@ -2,20 +2,6 @@
 #include <gsl/gsl_blas.h>
 #include "math.h" //pow!
 
-/*
-void apop_invert_matrix(gsl_matrix *in, gsl_matrix *out) {
-int 		dummy;
-	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
-	gsl_permutation * perm = gsl_permutation_alloc(in->size1);
-	invert_me = gsl_matrix_alloc(in->size1, in->size1);
-	gsl_matrix_memcpy (invert_me, in);
-	gsl_linalg_LU_decomp(invert_me, perm, &dummy);
-	gsl_linalg_LU_invert(invert_me, perm, out);
-	gsl_matrix_free(invert_me);
-	gsl_permutation_free(perm);
-}
-*/
-
 double apop_det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv) {
 int 		sign;
 double 		the_determinant = 0;

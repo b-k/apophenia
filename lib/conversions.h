@@ -40,8 +40,7 @@ int apop_convert_text_to_array(char *text_file, double ***tab, int ct, int has_f
    returns: the number of rows
 */
 
-int apop_convert_text_to_db(char *text_file, char *tabname, int ct, 
-				char **field_names, char *field_types);
+int apop_convert_text_to_db(char *text_file, char *tabname, int ct, char **field_names);
 
 /* text_file: the input file. At the moment, it needs to be comma delimited.
 	Lines with a # at the head are taken to be comments and ignored.
@@ -52,8 +51,6 @@ int apop_convert_text_to_db(char *text_file, char *tabname, int ct,
    ct: the number of fields the table will have
    field_names: the list of field names, which will be the columns for
    	the table. If NULL, read the names from the file.
-   field_types: A string of ct Is, like "IIIII". Come back later and
-   	I'll take other types as well.
    returns: the number of rows
    [Don't forget to open the db with apop_open_db first.]
 */

@@ -69,7 +69,7 @@ int 		i	= 0,
 }
 
 
-int apop_convert_text_to_db(char *text_file, char *tabname, int ct, char **field_names, char *field_types){
+int apop_convert_text_to_db(char *text_file, char *tabname, int ct, char **field_names){
 FILE * 		infile;
 char		q[20000], instr[10000], **fn, *astring;
 int 		i, 
@@ -100,8 +100,6 @@ int 		i,
 			if (i==0) 	strcat(q, " (");
 			else		strcat(q, " , ");
 			sprintf(q, "%s %s", q, fn[i]);
-			if (field_types[i] =='I')
-				strcat(q, " INTEGER" );
 		}
 		strcat(q, "); commit; begin;");
 		apop_query_db(q);

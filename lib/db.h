@@ -2,7 +2,6 @@
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
-sqlite3	*db;
 
 int apop_table_exists(const char *q, int whattodo);
 	//whattodo==1	==>kill table so it can be recreated in the main.
