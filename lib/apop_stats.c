@@ -1,4 +1,4 @@
-#include "stats.h"
+#include "apop_stats.h"
 
 inline double mean(gsl_vector *in){
 	return gsl_stats_mean(in->data,in->stride, in->size); }
@@ -112,10 +112,10 @@ double		numerator;
 		if (inverse !=NULL) free(inverse);
 		dimensions	= x->size;
 		inverse 	= gsl_matrix_alloc(dimensions, dimensions);
-		determinant	= det_and_inv(sigma, inverse, 1,1);
+		determinant	= apop_det_and_inv(sigma, inverse, 1,1);
 	}
 	if (determinant == 0) {printf("x"); return(GSL_NEGINF);} //tell minimizer to look elsewhere.
-	numerator	= exp(- x_prime_sigma_x(x_minus_mu, inverse) / 2);
-printf("(%g %g %g)", numerator, x_prime_sigma_x(x_minus_mu, inverse), (numerator / pow(2 * M_PI, (float)dimensions/2) * sqrt(determinant)));
+	numerator	= exp(- apop_x_prime_sigma_x(x_minus_mu, inverse) / 2);
+printf("(%g %g %g)", numerator, apop_x_prime_sigma_x(x_minus_mu, inverse), (numerator / pow(2 * M_PI, (float)dimensions/2) * sqrt(determinant)));
 	return(numerator / pow(2 * M_PI, (float)dimensions/2) * sqrt(determinant));
 }
