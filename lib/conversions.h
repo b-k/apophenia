@@ -18,6 +18,13 @@
 int apop_convert_vector_to_array(gsl_vector *in, double **out);
 //Returns the length of the array (i.e., in->size);
 
+/////////////
+//From matrix
+/////////////
+gsl_matrix * apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2);
+//takes a three-column table (dim1, dim2, data) and creates a 2D crosstab.
+//Returns the crosstab, and the dimension names (if d1!=NULL and d2!=NULL).
+
 ////////////
 //From array
 ////////////
@@ -28,7 +35,6 @@ void apop_convert_array_to_matrix(double **in, gsl_matrix **out, int rows, int c
 //From text
 ///////////
 int apop_convert_text_to_array(char *text_file, double ***tab, int has_field_names);
-
 /* text_file: the input file. At the moment, it needs to be comma delimited.
 	Lines with a # at the head are taken to be comments and ignored.
 	If field_names is NULL, then the first non-comment line of

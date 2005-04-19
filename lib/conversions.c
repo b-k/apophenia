@@ -36,6 +36,61 @@ double		*line;
 	free(line);
 }
 
+int find_index(gsl_matrix *d, double r, int start_from){
+//used for apop_db_to_crosstab.
+int	i	= start_from;	//i is probably the same or i+1.
+	while(i!=(start_from-1)){
+		if(gsl_matrix_get(d, i,0) == r) 
+			return i;
+		i	++;
+		if (i == d->size1)
+			i = 0;
+	}
+	printf("something went wrong in the crosstabbing.\n");
+	return 0;
+}
+
+
+gsl_matrix * apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2){
+//Give the name of a table in the database, and names of three of its
+//columns: the x-dimension, the y-dimension, and the data.
+//the output is a 2D matrix with rows indexed by r1 and cols by
+//r2. if !=NULL, d1 and d2 will list the labels on the dimensions.
+
+gsl_matrix	*pre_d1, *pre_d2, *datatab, *out;
+int		i	= 0,
+		j	= 0,
+		k, r,c,datum;
+gsl_vector_view	v;
+char		q[10000];
+	sprintf(q,"select distinct %s from %s order by %s", r1, tabname, r1);
+	pre_d1	= apop_query_to_matrix(q);
+	sprintf(q,"select distinct %s from %s order by %s", r2, tabname, r2);
+	pre_d2	= apop_query_to_matrix(q);
+	sprintf(q,"select %s, %s, %s from %s", r1, r2, datacol, tabname);
+	datatab	= apop_query_to_matrix(q);
+	out	= gsl_matrix_calloc(pre_d1->size1, pre_d2->size1);
+	for(k =0; k< datatab->size1; k++){
+		r	= gsl_matrix_get(datatab, k, 0);
+		c	= gsl_matrix_get(datatab, k, 1);
+		datum	= gsl_matrix_get(datatab, k, 2);
+		i	= find_index(pre_d1, r, i);
+		j	= find_index(pre_d2, c, j);
+		gsl_matrix_set(out, i, j, datum);
+	}
+	if(d1!=NULL && d2!= NULL){
+		*d1	= gsl_vector_alloc(pre_d1->size1);
+		*d2	= gsl_vector_alloc(pre_d2->size1);
+		v	= gsl_matrix_column(pre_d1, 0);
+		gsl_vector_memcpy(&(v.vector), *d1);
+		v	= gsl_matrix_column(pre_d2, 0);
+		gsl_vector_memcpy(&(v.vector), *d2);
+	}
+	free(pre_d1); free(pre_d2); free(datatab);
+	return out;
+}
+
+
 
 int count_cols_in_text(char *text_file){
 //Open file, find the first valid row, count columns, close file.
@@ -139,3 +194,4 @@ int 		ct,
 		return rows;
 	}
 }
+

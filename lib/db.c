@@ -1,13 +1,19 @@
 //db.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "db.h"
 #include <string.h>
+#include <stdarg.h>
 
 
 sqlite3	*db=NULL;	//There's only one database handle. Here it is.
 
-int apop_query_db(const char *q){
-char 		*err;
+int apop_query_db(const char *fmt, ...){
+char 		*err, *q;
+va_list		argp;
+	va_start(argp, fmt);
+	vasprintf(&q, fmt, argp);
+	va_end(argp);
 	sqlite3_exec(db, q, NULL,NULL, &err);
+	free(q);
 	ERRCHECK
 	return 1;
 }
@@ -69,10 +75,11 @@ char		*err;
 	return 0;
 	}
 
-gsl_matrix * apop_query_to_matrix(const char *query){
+gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 gsl_matrix	*output;
 int		totalrows=0,currentrow=0;
-char		*q2, *err=NULL;
+char		*q2, *err=NULL, *query;
+va_list		argp;
 
 	int db_to_table(void *o,int argc, char **argv, char **whatever){
 	int		jj;
@@ -90,11 +97,16 @@ char		*q2, *err=NULL;
 		return 0;
 	}
 
+	va_start(argp, fmt);
+	vasprintf(&query, fmt, argp);
+	va_end(argp);
+
 	q2	= malloc(sizeof(char)*(strlen(query)+300));
 	apop_table_exists("completely_temporary_table",1);
 	sqlite3_exec(db,strcat(strcpy(q2,
 		"CREATE TABLE completely_temporary_table AS "),query),NULL,NULL, &err); ERRCHECK
 	sqlite3_exec(db,"SELECT count(*) FROM completely_temporary_table",length_callback,NULL, &err);
+	free(query);
 	ERRCHECK
 	if (totalrows==0){
 		output	= NULL;
