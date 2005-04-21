@@ -1,5 +1,6 @@
 //db.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "db.h"
+#include "gnulib/vasprintf.h"
 #include <string.h>
 #include <stdarg.h>
 

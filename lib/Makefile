@@ -40,9 +40,9 @@ pkgincludedir = $(includedir)/apophenia
 
 top_builddir = .
 
-ACLOCAL = aclocal-1.4
+ACLOCAL = aclocal-1.7
 AUTOCONF = autoconf
-AUTOMAKE = automake-1.4
+AUTOMAKE = automake-1.7
 AUTOHEADER = autoheader
 
 INSTALL = /usr/bin/install -c

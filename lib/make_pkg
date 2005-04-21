@@ -3,16 +3,19 @@ su -c "rm -rf $outlib"
 export junkdir=tttt
 mkdir $junkdir
 cp * $junkdir
+cp -r gnulib $junkdir
 cd $junkdir
 	aclocal
 	autoconf
 	automake -a
 	mkdir $outlib
-	cp *c *.h configure.in config.guess mkinstalldirs missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog $outlib 
+	cp *.c *.h config.guess mkinstalldirs missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp $outlib 
+	cp -rf gnulib $outlib
 	mv $outlib ..
 cd ..
 rm -rf $junkdir
 tar czf apophenia.tgz $outlib
 cd $outlib
+mv gnulib/configure.ac .
 ./configure; make; su -c "make install"
 cd ..
