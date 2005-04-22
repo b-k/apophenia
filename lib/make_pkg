@@ -5,6 +5,7 @@ mkdir $junkdir
 cp * $junkdir
 cp -r gnulib $junkdir
 cd $junkdir
+	libtoolize
 	aclocal
 	autoconf
 	automake -a
@@ -17,5 +18,6 @@ rm -rf $junkdir
 tar czf apophenia.tgz $outlib
 cd $outlib
 mv gnulib/configure.ac .
+echo "***********Done with packing; now compiling***********"
 ./configure; make; su -c "make install"
 cd ..

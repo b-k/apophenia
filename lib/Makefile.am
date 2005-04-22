@@ -4,4 +4,5 @@ pkginclude_HEADERS = conversions.h db.h likelihoods.h linear_algebra.h regressio
 AM_CFLAGS = -g -Wall
 SUBDIRS = gnulib
 ACLOCAL_AMFLAGS = -I gnulib/m4
-LIBADD = gnulib/libgnu.la
+LIBADD = gnulib/libgnu.la -lgsl -lgslcblas -lsqlite3
+#AUTOMAKE_OPTIONS = no-dependencies
