@@ -20,7 +20,6 @@ int apop_close_db(int vacuum);
 	//vacuum==1: do some cleanup to minimize hard disk space
 	//vacuum==0: just close the thing.
 
-//int apop_query_db(const char *q);
 int apop_query_db(const char *q, ...);
 	//Run a query but output nothing outside the DB.
 	//It's fastest to compound as many queries as possible here;
@@ -29,14 +28,14 @@ int apop_query_db(const char *q, ...);
 	//	create table blah ...;
 	//	insert into blah ...;
 	//	commit;
+	//Also, you may use printf-type queries:
+	//apop_query_db("select * from %s where date > %i", tabname, earliest);
 
-//gsl_matrix * apop_query_to_matrix(const char *query);
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...);
 	//dump a query to a matrix. 
 	//do not preallocate *output.
-	//	char q[1000]="select a, b, c from some_table";
 	//	gsl_matrix * outmatrix;
-	//	outmatrix = apop_query_to_matrix(q);
+	//	outmatrix = apop_query_to_matrix("select a, b, c from some_table");
 
 int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
 	//dump a matrix to a database table named tabname.

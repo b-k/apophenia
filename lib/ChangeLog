@@ -1,0 +1,5 @@
+0.05
+--added a little crosstab utility
+--queries now accept printf-type arguments. 
+	==>GNU vasprintf was added.
+		==>updated to work with autoconf 1.7

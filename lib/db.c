@@ -1,11 +1,113 @@
 //db.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "db.h"
+#include <math.h> 	//sqrt
 #include "gnulib/vasprintf.h"
 #include <string.h>
 #include <stdarg.h>
 
 
 sqlite3	*db=NULL;	//There's only one database handle. Here it is.
+
+
+                                                                                                                               
+////////////////////////////////////////////////
+// Part one: additional aggregate functions for calculating higher moments
+////////////////////////////////////////////////
+
+typedef struct StdDevCtx StdDevCtx;
+struct StdDevCtx {
+  double sum = 0;     /* Sum of terms */
+  double sum2 = 0;    /* Sum of the squares of terms */
+  double sum3 = 0;    /* Sum of the cube of terms */
+  double sum4 = 0;    /* Sum of the fourth-power of terms */
+  int cnt = 0;        /* Number of terms counted */
+};
+
+static void twoStep(sqlite3_context *context, int argc, sqlite3_value **argv){
+  StdDevCtx *p;
+  double x;
+  if( argc<1 ) return;
+  p = sqlite3_aggregate_context(context, sizeof(*p));
+  if( p && argv[0] ){
+    x = sqlite3_value_double(argv[0]);
+    p->sum += x;
+    p->sum2 += x*x;
+    p->cnt++;
+  }
+}
+
+static void threeStep(sqlite3_context *context, int argc, sqlite3_value **argv){
+  StdDevCtx *p;
+  double x;
+  if( argc<1 ) return;
+  p = sqlite3_aggregate_context(context, sizeof(*p));
+  if( p && argv[0] ){
+    x = sqlite3_value_double(argv[0]);
+    p->sum += x;
+    p->sum2 += x*x;
+    p->sum3 += x*x*x;
+    p->cnt++;
+  }
+}
+
+static void fourStep(sqlite3_context *context, int argc, sqlite3_value **argv){
+  StdDevCtx *p;
+  double x;
+  if( argc<1 ) return;
+  p = sqlite3_aggregate_context(context, sizeof(*p));
+  if( p && argv[0] ){
+    x = sqlite3_value_double(argv[0]);
+    p->sum += x;
+    p->sum2 += x*x;
+    p->sum3 += x*x*x;
+    p->sum4 += x*x*x*x;
+    p->cnt++;
+  }
+}
+
+static void stdDevFinalize(sqlite3_context *context){
+  StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+  if( p && p->cnt>1 ){
+    double rCnt = p->cnt;
+    sqlite3_result_double(context,
+       sqrt((p->sum2 - p->sum*p->sum/rCnt)/(rCnt-1.0)));
+  }
+}
+
+static void varFinalize(sqlite3_context *context){
+  StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+  if( p && p->cnt>1 ){
+    double rCnt = p->cnt;
+    sqlite3_result_double(context,
+       (p->sum2 - p->sum*p->sum/rCnt)/(rCnt-1.0));
+  }
+}
+
+static void skewFinalize(sqlite3_context *context){
+  StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+  if( p && p->cnt>1 ){
+    double rCnt = p->cnt;
+    sqlite3_result_double(context,
+       (p->sum3 - 3*p->sum2*p->sum/rCnt + 2 * pow(p->sum,3))/pow(rCnt,2) / (rCnt-1.0));
+  }
+}
+
+static void kurtFinalize(sqlite3_context *context){
+  StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+  if( p && p->cnt>1 ){
+    double rCnt = p->cnt;
+    sqlite3_result_double(context,
+       (p->sum4 - 4*p->sum3*p->sum/rCnt + 6 * pow(p->sum2,2)*pow(p->sum,2)/((rCnt-1) *pow(rCnt,2)) 
+						- 3*pow(p->sum,4)/pow(rCnt,3))/(rCnt-1.0));
+  }
+}
+
+
+////////////////////////////////////////////////
+// Part two: database querying functions, so the user doesn't have to
+// touch sqlite3.
+////////////////////////////////////////////////
+
 
 int apop_query_db(const char *fmt, ...){
 char 		*err, *q;
@@ -64,7 +166,15 @@ int apop_open_db(char *filename){
 	//else			db	=sqlite_open(filename,0,&err);
 	if (filename==NULL) 	sqlite3_open(":memory:",&db);
 	else			sqlite3_open(filename,&db);
-	if (db == NULL)	printf("Not sure why, but the database didn't open.\n");
+	if (db == NULL)	
+		{printf("Not sure why, but the database didn't open.\n");
+		return 1; }
+	sqlite3_create_function(db, "stddev", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalize);
+	sqlite3_create_function(db, "var", 1, SQLITE_ANY, NULL, NULL, &twoStep, &varFinalize);
+	sqlite3_create_function(db, "variance", 1, SQLITE_ANY, NULL, NULL, &twoStep, &varFinalize);
+	sqlite3_create_function(db, "skew", 1, SQLITE_ANY, NULL, NULL, &threeStep, &skewFinalize);
+	sqlite3_create_function(db, "kurt", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
+	sqlite3_create_function(db, "kurtosis", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
 	return 0;
 }
 

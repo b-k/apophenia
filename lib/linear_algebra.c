@@ -1,6 +1,8 @@
 //linear_algebra.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
+#include <stdio.h>
+#include <stdlib.h>	//popen, I think.
 #include "math.h" //pow!
 
 double apop_det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv) {
@@ -139,3 +141,34 @@ void apop_print_matrix(gsl_matrix *data, char *separator, char *filename){
 
 void apop_print_matrix_int(gsl_matrix *data, char *separator, char *filename){
 	print_core_m(data, separator, filename, dumb_little_pf_i); }
+
+
+void apop_plot(gsl_matrix *data, char plot_type, int delay){
+/* This is a dumb little function to call gnuplot for you,
+   in case you're so exceptionally lazy that you can't call
+   apop_print_matrix(data, "\t", "outfile") yourself.
+   It's so silly, I don't even document it.
+   plot_type: 's'=surface plot; anything else = 2D x-y plot
+   delay: the amount of time before gnuplot closes itself.
+*/
+FILE 		*output;
+int		i,j;
+	output = popen ("gnuplot", "w");
+	if (!output) {
+		fprintf (stderr, "Can't find gnuplot.\n");
+		return;
+	}
+  	if (plot_type == 's')
+		fprintf(output, "splot \"-\"\n");
+  	if (plot_type != 's')
+		fprintf(output, "plot \"-\" using 1:2\n");
+	for (i=0; i<data->size1; i++){
+		for (j=0; j<data->size2; j++){
+			fprintf(output, "%g", gsl_matrix_get(data, i,j));
+			if (j< data->size2 -1)	fprintf(output, "\t");
+		}
+		fprintf(output,"\n");
+	}
+	fprintf(output,"e\n pause %i\n", delay);
+	pclose (output);
+}
