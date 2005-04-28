@@ -16,11 +16,11 @@ sqlite3	*db=NULL;	//There's only one database handle. Here it is.
 
 typedef struct StdDevCtx StdDevCtx;
 struct StdDevCtx {
-  double sum = 0;     /* Sum of terms */
-  double sum2 = 0;    /* Sum of the squares of terms */
-  double sum3 = 0;    /* Sum of the cube of terms */
-  double sum4 = 0;    /* Sum of the fourth-power of terms */
-  int cnt = 0;        /* Number of terms counted */
+  double sum;     /* Sum of terms */
+  double sum2;    /* Sum of the squares of terms */
+  double sum3;    /* Sum of the cube of terms */
+  double sum4;    /* Sum of the fourth-power of terms */
+  int cnt;        /* Number of terms counted */
 };
 
 static void twoStep(sqlite3_context *context, int argc, sqlite3_value **argv){
@@ -97,7 +97,7 @@ static void kurtFinalize(sqlite3_context *context){
   if( p && p->cnt>1 ){
     double rCnt = p->cnt;
     sqlite3_result_double(context,
-       (p->sum4 - 4*p->sum3*p->sum/rCnt + 6 * pow(p->sum2,2)*pow(p->sum,2)/((rCnt-1) *pow(rCnt,2)) 
+       (p->sum4 - 4*p->sum3*p->sum/rCnt + 6 * pow(p->sum2,2)*pow(p->sum,2)/pow(rCnt,3)
 						- 3*pow(p->sum,4)/pow(rCnt,3))/(rCnt-1.0));
   }
 }
@@ -109,9 +109,28 @@ static void kurtFinalize(sqlite3_context *context){
 ////////////////////////////////////////////////
 
 
+int apop_open_db(char *filename){
+//char	*err;
+	//if (filename==NULL) 	db	=sqlite_open(":memory:",0,&err);
+	//else			db	=sqlite_open(filename,0,&err);
+	if (filename==NULL) 	sqlite3_open(":memory:",&db);
+	else			sqlite3_open(filename,&db);
+	if (db == NULL)	
+		{printf("Not sure why, but the database didn't open.\n");
+		return 1; }
+	sqlite3_create_function(db, "stddev", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalize);
+	sqlite3_create_function(db, "var", 1, SQLITE_ANY, NULL, NULL, &twoStep, &varFinalize);
+	sqlite3_create_function(db, "variance", 1, SQLITE_ANY, NULL, NULL, &twoStep, &varFinalize);
+	sqlite3_create_function(db, "skew", 1, SQLITE_ANY, NULL, NULL, &threeStep, &skewFinalize);
+	sqlite3_create_function(db, "kurt", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
+	sqlite3_create_function(db, "kurtosis", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
+	return 0;
+}
+
 int apop_query_db(const char *fmt, ...){
 char 		*err, *q;
 va_list		argp;
+	if (db==NULL) apop_open_db(NULL);
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
 	va_end(argp);
@@ -135,6 +154,7 @@ int 		isthere=0;
 		return 0;
 	}
 
+	if (db==NULL) {apop_open_db(NULL); return 0;}
 	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,NULL, &err); 
 	ERRCHECK
 	if (whattodo==1 && isthere)
@@ -154,28 +174,11 @@ int		colct	= 1;
 		return 0;
 	}
 
+	if (db==NULL) {printf("No database open yet."); return 0;}
 	sprintf(q2, "select sql from sqlite_master where type='table' and name=\"%s\"",name);
 	sqlite3_exec(db, q2, count_cols_callback,NULL, &err); 
 	ERRCHECK
 	return colct;
-}
-
-int apop_open_db(char *filename){
-//char	*err;
-	//if (filename==NULL) 	db	=sqlite_open(":memory:",0,&err);
-	//else			db	=sqlite_open(filename,0,&err);
-	if (filename==NULL) 	sqlite3_open(":memory:",&db);
-	else			sqlite3_open(filename,&db);
-	if (db == NULL)	
-		{printf("Not sure why, but the database didn't open.\n");
-		return 1; }
-	sqlite3_create_function(db, "stddev", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalize);
-	sqlite3_create_function(db, "var", 1, SQLITE_ANY, NULL, NULL, &twoStep, &varFinalize);
-	sqlite3_create_function(db, "variance", 1, SQLITE_ANY, NULL, NULL, &twoStep, &varFinalize);
-	sqlite3_create_function(db, "skew", 1, SQLITE_ANY, NULL, NULL, &threeStep, &skewFinalize);
-	sqlite3_create_function(db, "kurt", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
-	sqlite3_create_function(db, "kurtosis", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
-	return 0;
 }
 
 int apop_close_db(int vacuum){
@@ -208,6 +211,7 @@ va_list		argp;
 		return 0;
 	}
 
+	if (db==NULL) apop_open_db(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
@@ -230,8 +234,11 @@ va_list		argp;
 }
 
 int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
-int		i,j;
-char		*q 	=malloc(sizeof(char)*1000);
+int		i,j; 
+int		ctr		= 0;
+int		batch_size	= 100;
+char		*q 		= malloc(sizeof(char)*1000);
+	if (db==NULL) apop_open_db(NULL);
 	sprintf(q, "create table %s (", tabname);
 	for(i=0;i< data->size2; i++){
 		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
@@ -244,10 +251,17 @@ char		*q 	=malloc(sizeof(char)*1000);
 		q	=realloc(q,sizeof(char)*(strlen(q)+(1+data->size2)*1000));
 		sprintf(q,"%s \n insert into %s values(",q,tabname);
 		for(j=0;j< data->size2; j++)
-			if(j< data->size2 -1) 	sprintf(q,"%s %g, ",q,gsl_matrix_get(data,i,j));
-			else			sprintf(q,"%s %g);",q,gsl_matrix_get(data,i,j));
+			if(j< data->size2 -1 && ctr<batch_size) {
+				sprintf(q,"%s %g, ",q,gsl_matrix_get(data,i,j));
+				ctr++;
+			} else	{
+				sprintf(q,"%s %g);",q,gsl_matrix_get(data,i,j));
+				sprintf(q, "%s; end;", q);
+				apop_query_db(q);
+				ctr = 0;
+				sprintf(q,"begin; \n insert into %s values(",tabname);
+			}
+		sprintf(q,"%s )",q);
 	}
-	sprintf(q, "%s; end;", q);
-	apop_query_db(q);
 	return 0;
 }

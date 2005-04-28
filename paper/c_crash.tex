@@ -595,7 +595,11 @@ int is_even(int number){
         return 0;
 }
 \end{verbatim}
-Notice that 2 is an {\tt int}, while 2.0 is a {\tt float}.
+Notice that 2 is an {\tt int}, while 2.0 is a {\tt float}. This provides
+a relatively painless way to solve the problem that {\tt 7/2=3}: just
+remember to always include a decimal point in your constants, because
+{\tt 7.0/2.0 = 3.5}, as intended. Get into this habit now,
+because unintended roundoff is a very hard-to-debug error.
 
 Finally, note that when casting from {\tt float} to {\tt int}, numbers
 are truncated, not rounded.  The following function uses type casting
@@ -869,9 +873,12 @@ put your code in one window and compile in another, so you can see the errors an
 
 The other possibility is that there were no errors at all. The compiler will not give you positive feedback
 in this case, instead simply returning you to the command prompt. But if you then look in your directory
-(with {\tt ls}), then you'll see that you now have your original {\tt .c} files, but also new files with a
-{\tt .o} ending and the {\tt run\_me} executable program. You can type {\tt ./run\_me} and see your
-program work. 
+(with {\tt ls}), then you'll see that you now have your original {\tt .c}
+files, but also new files with a {\tt .o} ending and the {\tt run\_me}
+executable program. You can type {\tt ./run\_me} and see your program
+work. [Unless you're a star programmer, it will still somehow fail. To
+continue fixing it, you will need to run the program under the debugger;
+see section \ref{debug}.]
 
 \paragraph{The preprocessing step}
 As noted above, {\tt gcc} takes your code through three steps.
@@ -1197,7 +1204,7 @@ back. Then the program will give you an answer which may or may not look
 correct, and which you may or may not notice before you present to the
 grantmaking board. 
 
-\section{The debugger} \index{debugging|(} \index{gdb@{\tt gdb}|see{debugging}}
+\section{The debugger} \index{debugging|(} \index{gdb@{\tt gdb}|see{debugging}} \label{debug}
 Which brings us to the debugger. The debugger will run the program for
 you, taking notes on the variables therein. When your program segfaults,
 the debugger will let you look at where you
