@@ -1,5 +1,5 @@
 export outlib=apophenia_install
-su -c "rm -rf $outlib"
+rm -rf $outlib
 export junkdir=tttt
 mkdir $junkdir
 cp * $junkdir
