@@ -10,7 +10,7 @@ cd $junkdir
 	autoconf
 	automake -a
 	mkdir $outlib
-	cp *.c *.h config.guess mkinstalldirs missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp $outlib 
+	cp *.c *.h configure.ac config.guess mkinstalldirs missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp $outlib 
 	cp -rf gnulib $outlib
 	mv $outlib ..
 cd ..
