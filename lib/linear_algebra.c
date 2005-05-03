@@ -125,10 +125,10 @@ int 		i,j;
 }
 
 void dumb_little_pf_f(FILE * f, double data){
-	fprintf(f, "%5f", data); }
+	fprintf(f, "% 5f", data); }
 
 void dumb_little_pf_i(FILE * f, double data){
-	fprintf(f, "%5i", (int) data); }
+	fprintf(f, "% 5i", (int) data); }
 
 void apop_print_vector(gsl_vector *data, char *separator, char *filename){
 	print_core_v(data, separator, filename, dumb_little_pf_f); }
