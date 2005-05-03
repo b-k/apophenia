@@ -3,3 +3,9 @@
 --queries now accept printf-type arguments. 
 	==>GNU vasprintf was added.
 		==>updated to work with autoconf 1.7
+
+0.06
+--var(x), skew(x), kurtosis(x) added to SQL understood by Apophenia.
+
+0.07
+--uses the apop_estimate structure to return heaps of data from regressions & MLEs
