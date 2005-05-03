@@ -52,17 +52,17 @@ void apop_estimate_free(apop_estimate * free_me){
 
 void apop_print_estimate(apop_estimate * print_me, char *out){
 	if (print_me->uses.parameters){
-		print_to_file(out, "Parameter estimates:\n");
+		apop_print_to_file(out, "Parameter estimates:\t");
 		apop_print_vector(print_me->parameters, "\t", out);
 	}
 	if (print_me->uses.covariance){
-		print_to_file(out, "The variance/covariance matrix:\n");
+		apop_print_to_file(out, "The variance/covariance matrix:\n");
 		apop_print_matrix(print_me->covariance, "\t", out);
 	}
 	if (print_me->uses.confidence){
-		print_to_file(out, "Confidence intervals (H_0: beta == 0):\n");
+		apop_print_to_file(out, "Confidence intervals (H_0: beta == 0):\t");
 		apop_print_vector(print_me->confidence, "\t", out);
 	}
 	if (print_me->uses.log_likelihood)
-		print_to_file(out, "log likelihood: %g\n", print_me->log_likelihood);
+		apop_print_to_file(out, "log likelihood: \t%g\n", print_me->log_likelihood);
 }

@@ -95,7 +95,7 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 ////////////////////////////
 
 
-void print_to_file(char *filename, const char *fmt, ...){
+void apop_print_to_file(char *filename, const char *fmt, ...){
 FILE * 		f;
 char *		q;
 	if (filename == NULL)
@@ -107,6 +107,7 @@ va_list		argp;
 	va_end(argp);
 	fprintf(f, q);
 	free(q);
+	if (filename !=NULL)	fclose(f);
 }
 
 
