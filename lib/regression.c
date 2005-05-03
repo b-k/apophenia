@@ -5,7 +5,7 @@
 #include "linear_algebra.h"
 #include "estimate.h"
 
-void prep_inventory(apop_inventory *in, apop_inventory *out){
+void prep_inventory_OLS(apop_inventory *in, apop_inventory *out){
 //These are the rules going from what you can ask for to what you'll get.
 	if (in == NULL){ 	//then give the user the works.
 		apop_set_inventory(out, 1);
@@ -43,7 +43,7 @@ double		upu;
 	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters);
 	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters, 0, error);
 	if (out->uses.predicted)	
-		gsl_memcpy(out->predicted, error);
+		gsl_vector_memcpy(out->predicted, error);
 	gsl_vector_sub(y_data, error);	//until this line, 'error' is the predicted values
 	gsl_blas_ddot(error, error, &upu);
 	gsl_matrix_scale(cov, 1/upu);
@@ -56,7 +56,7 @@ apop_estimate * apop_GLS(gsl_matrix *data, gsl_matrix *sigma, apop_inventory *us
 //Returns GLS parameter estimates in beta.
 //Destroys the data in the process.
 apop_inventory	actual_uses;
-	prep_inventory(uses, &actual_uses);
+	prep_inventory_OLS(uses, &actual_uses);
 apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, actual_uses);
 gsl_vector 	*y_data		= gsl_vector_alloc(data->size1);
 gsl_matrix 	*temp		= gsl_matrix_calloc(data->size2, data->size1);
@@ -82,7 +82,7 @@ apop_estimate * apop_OLS(gsl_matrix *data, apop_inventory *uses){
 //Returns GLS parameter estimates in beta.
 //Destroys the data in the process.
 apop_inventory	actual_uses;
-	prep_inventory(uses, &actual_uses);
+	prep_inventory_OLS(uses, &actual_uses);
 apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, actual_uses);
 gsl_vector 	*y_data		= gsl_vector_alloc(data->size1);
 gsl_vector 	*xpy 		= gsl_vector_calloc(data->size2);

@@ -1,4 +1,4 @@
-//db.c			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+//db.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <sqlite3.h>
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}

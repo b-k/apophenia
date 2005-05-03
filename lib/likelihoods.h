@@ -8,17 +8,23 @@
 #include <gsl/gsl_sf_psi.h>
 #include "linear_algebra.h"
 #include "conversions.h"
+#include "estimate.h"
 
 #define MAX_ITERATIONS 		500
 #define MAX_ITERATIONS_w_d	500
 
-gsl_vector * apop_mle_probit(gsl_matrix *data, double *likelihood, double *starting_pt, double step_size, int verbose);
+apop_estimate * apop_mle_probit(gsl_matrix *data, double *starting_pt, 
+					double step_size, apop_inventory *uses, int verbose);
+apop_estimate * apop_mle_gamma(gsl_matrix *data, double *starting_pt, 
+					double step_size, apop_inventory *uses, int verbose);
 double apop_probit_likelihood(const gsl_vector *beta, void *d);
 
-gsl_vector * apop_mle_gamma(gsl_matrix *data, double *likelihood, double *starting_pt, double step_size, int verbose);
-gsl_vector * apop_mle_waring(gsl_matrix *data, double *likelihood, double *starting_pt, double step_size, int verbose);
-gsl_vector * apop_mle_yule(gsl_matrix *data, double *likelihood, double *starting_pt, double step_size, int verbose);
-gsl_vector * apop_mle_zipf(gsl_matrix *data, double *likelihood, double *starting_pt, double step_size, int verbose);
+apop_estimate * apop_mle_waring(gsl_matrix *data, double *starting_pt, 
+					double step_size, apop_inventory *uses, int verbose);
+apop_estimate * apop_mle_yule(gsl_matrix *data, double *starting_pt, 
+					double step_size, apop_inventory *uses, int verbose);
+apop_estimate * apop_mle_zipf(gsl_matrix *data, double *starting_pt, 
+					double step_size, apop_inventory *uses, int verbose);
 double apop_gamma_likelihood(const gsl_vector *beta, void *d);
 double apop_waring_likelihood(const gsl_vector *beta, void *d);
 double apop_yule_likelihood(const gsl_vector *beta, void *d);

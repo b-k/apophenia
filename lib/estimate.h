@@ -11,6 +11,7 @@ typedef struct apop_i{
 typedef struct apop_e{
 	gsl_vector 	*parameters, *params, *confidence, *predicted, *residuals;
 	gsl_matrix 	*covariance, *cov;
+	double		log_likelihood;
 	apop_inventory	uses;
 } apop_estimate;
 

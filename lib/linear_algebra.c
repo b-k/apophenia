@@ -1,9 +1,11 @@
 //linear_algebra.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
-#include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>	//popen, I think.
+#include "linear_algebra.h" 
 #include "math.h" //pow!
+#include "gnulib/vasprintf.h"
 
 double apop_det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv) {
 int 		sign;
@@ -92,13 +94,29 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 /////The printing functions.
 ////////////////////////////
 
+
+void print_to_file(char *filename, const char *fmt, ...){
+FILE * 		f;
+char *		q;
+	if (filename == NULL)
+		f	= stdout;
+	else	f	= fopen(filename, "a");
+va_list		argp;
+	va_start(argp, fmt);
+	vasprintf(&q, fmt, argp);
+	va_end(argp);
+	fprintf(f, q);
+	free(q);
+}
+
+
 void print_core_v(gsl_vector *data, char *separator, char *filename, 
 			void (* p_fn)(FILE * f, double number)){
 int 		i;
 FILE * 		f;
 	if (filename == NULL)
 		f	= stdout;
-	else	f	= fopen(filename, "w");
+	else	f	= fopen(filename, "a");
 	for (i=0; i<data->size; i++){
 		p_fn(f, gsl_vector_get(data, i));
 		if (i< data->size -1)	fprintf(f, "%s", separator);
@@ -113,7 +131,7 @@ FILE * 		f;
 int 		i,j;
 	if (filename == NULL)
 		f	= stdout;
-	else	f	= fopen(filename, "w");
+	else	f	= fopen(filename, "a");
 	for (i=0; i<data->size1; i++){
 		for (j=0; j<data->size2; j++){
 			p_fn(f, gsl_matrix_get(data, i,j));
