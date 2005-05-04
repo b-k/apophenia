@@ -3,9 +3,10 @@
 #define __apop_estimate__
 
 #include <gsl/gsl_matrix.h>
+#include <apophenia/name.h>
 
 typedef struct apop_i{
-	int	parameters, covariance, confidence, predicted, residuals, log_likelihood;
+	int	parameters, covariance, confidence, predicted, residuals, log_likelihood, names;
 } apop_inventory;
 
 typedef struct apop_e{
@@ -13,6 +14,7 @@ typedef struct apop_e{
 	gsl_matrix 	*covariance, *cov;
 	double		log_likelihood;
 	apop_inventory	uses;
+	apop_name	*names;
 } apop_estimate;
 
 apop_estimate *	apop_estimate_alloc(int data_size, int param_size, apop_inventory uses);

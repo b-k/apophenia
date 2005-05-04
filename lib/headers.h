@@ -1,4 +1,5 @@
 #include <apophenia/db.h>
+#include <apophenia/name.h>
 #include <apophenia/stats.h>
 #include <apophenia/regression.h>
 #include <apophenia/conversions.h>

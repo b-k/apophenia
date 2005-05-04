@@ -1,5 +1,6 @@
 //db.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <sqlite3.h>
+#include <apophenia/name.h>
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
@@ -41,3 +42,6 @@ int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
 	//dump a matrix to a database table named tabname.
 	//At the moment, the headers are ignored. 
 	//With no headers specified, you get columns C0, C1, C2...
+
+apop_name * apop_get_query_names(void);
+	//give the column names from the last query.

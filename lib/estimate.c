@@ -1,5 +1,6 @@
 //estimate.c			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <gsl/gsl_matrix.h>
+#include "name.h"
 #include "estimate.h"
 #include "linear_algebra.h"
 
@@ -47,10 +48,16 @@ void apop_estimate_free(apop_estimate * free_me){
 		gsl_vector_free(free_me->confidence);
 	if (free_me->uses.covariance)
 		gsl_matrix_free(free_me->covariance);
+	if (free_me->uses.names)
+		apop_name_free(free_me->names);
 	free(free_me);
 }
 
 void apop_print_estimate(apop_estimate * print_me, char *out){
+	if (print_me->uses.names){
+		apop_name_print(out, print_me->names);
+		apop_print_vector(print_me->parameters, "\t", out);
+	}
 	if (print_me->uses.parameters){
 		apop_print_to_file(out, "Parameter estimates:\t");
 		apop_print_vector(print_me->parameters, "\t", out);

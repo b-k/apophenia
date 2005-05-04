@@ -1,13 +1,15 @@
 //db.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
-#include "db.h"
 #include <math.h> 	//sqrt
 #include "gnulib/vasprintf.h"
 #include <string.h>
 #include <stdarg.h>
+#include "name.h"
+#include "db.h"
 
 
 sqlite3	*db=NULL;	//There's only one database handle. Here it is.
 
+apop_name *last_names = NULL;	//The column names from the last query to matrix
 
                                                                                                                                
 ////////////////////////////////////////////////
@@ -211,6 +213,11 @@ va_list		argp;
 		return 0;
 	}
 
+	int names_callback(void *o,int argc, char **argv, char **whatever){
+		apop_name_add(last_names, argv[1], 1); 
+		return 0;
+	}
+
 	if (db==NULL) apop_open_db(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
@@ -228,10 +235,18 @@ va_list		argp;
 	} else {
 		output	= gsl_matrix_alloc(totalrows, apop_count_cols("completely_temporary_table"));
 		sqlite3_exec(db,"SELECT * FROM completely_temporary_table",db_to_table,output, &err); ERRCHECK
+		if (last_names !=NULL) 
+			apop_name_free(last_names); 
+		last_names = apop_name_alloc();
+		sqlite3_exec(db,"pragma table_info(completely_temporary_table)",names_callback, NULL, &err); ERRCHECK
 	}
 	sqlite3_exec(db,"DROP TABLE completely_temporary_table",NULL,NULL, &err);  ERRCHECK
 	free(q2);
 	return output;
+}
+
+apop_name * apop_get_query_names(void){
+	return last_names;
 }
 
 int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
