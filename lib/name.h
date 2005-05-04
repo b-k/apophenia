@@ -12,6 +12,6 @@ typedef struct apop_nnn{
 apop_name * apop_name_alloc(void);
 int apop_name_add(apop_name * n, char *add_me, int is_column);
 void  apop_name_free(apop_name * free_me);
-void  apop_name_print(char *file, apop_name * n);
+void  apop_name_print(apop_name * n);
 
 #endif

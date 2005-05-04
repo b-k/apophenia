@@ -53,23 +53,23 @@ void apop_estimate_free(apop_estimate * free_me){
 	free(free_me);
 }
 
-void apop_print_estimate(apop_estimate * print_me, char *out){
+void apop_print_estimate(apop_estimate * print_me){
 	if (print_me->uses.names){
-		apop_name_print(out, print_me->names);
-		apop_print_vector(print_me->parameters, "\t", out);
+		apop_name_print(print_me->names);
+		apop_print_vector(print_me->parameters, "\t");
 	}
 	if (print_me->uses.parameters){
-		apop_print_to_file(out, "Parameter estimates:\t");
-		apop_print_vector(print_me->parameters, "\t", out);
+		printf("Parameter estimates:\t");
+		apop_print_vector(print_me->parameters, "\t");
 	}
 	if (print_me->uses.covariance){
-		apop_print_to_file(out, "The variance/covariance matrix:\n");
-		apop_print_matrix(print_me->covariance, "\t", out);
+		printf("The variance/covariance matrix:\n");
+		apop_print_matrix(print_me->covariance, "\t");
 	}
 	if (print_me->uses.confidence){
-		apop_print_to_file(out, "Confidence intervals (H_0: beta == 0):\t");
-		apop_print_vector(print_me->confidence, "\t", out);
+		printf("Confidence intervals (H_0: beta == 0):\t");
+		apop_print_vector(print_me->confidence, "\t");
 	}
 	if (print_me->uses.log_likelihood)
-		apop_print_to_file(out, "log likelihood: \t%g\n", print_me->log_likelihood);
+		printf("log likelihood: \t%g\n", print_me->log_likelihood);
 }

@@ -27,26 +27,21 @@ int apop_name_add(apop_name * n, char *add_me, int is_column){
 		return n->rownamect;
 }
 
-void  apop_name_print(char *filename, apop_name * n){
-FILE * 		f;
+void  apop_name_print(apop_name * n){
 int		i;
-	if (filename == NULL)
-		f	= stdout;
-	else	f	= fopen(filename, "a");
 	if (n->colnamect > 0){
-		fprintf(f, "\t\t\t");
+		printf("\t\t\t");
 		for (i=0; i < n->colnamect; i++)
-			fprintf(f, "\t%s", n->colnames[i]);
-		fprintf(f, "\n");
+			printf("\t%s", n->colnames[i]);
+		printf("\n");
 
 	}
 	if (n->rownamect > 0){
-		fprintf(f, "\t\t\t");
+		printf("\t\t\t");
 		for (i=0; i < n->rownamect; i++)
-			fprintf(f, "\t%s", n->rownames[i]);
-		fprintf(f, "\n");
+			printf("\t%s", n->rownames[i]);
+		printf("\n");
 	}
-	if (filename !=NULL)	fclose(f);
 }
 	
 void  apop_name_free(apop_name * free_me){
