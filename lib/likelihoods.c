@@ -467,7 +467,7 @@ double			size;
 		printf("Minimization reached maximum number of iterations.");
 
 	gsl_vector_memcpy(*betas, s->x);
-	return likelihood(*betas, data);
+	return -likelihood(*betas, data);
 }
 
 
@@ -517,7 +517,7 @@ int				betasize	= betas->size;
 
 	gsl_vector_memcpy(betas, s->x);
 	gsl_multimin_fdfminimizer_free(s);
-	return likelihood(betas, data);
+	return -likelihood(betas, data);
 }
 
 

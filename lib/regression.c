@@ -30,15 +30,14 @@ void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters);
 		return;
 	} //else:
-gsl_vector 	*error, *confidence;
+gsl_vector 	*error;
 gsl_matrix	*cov;
 double		upu;
+int		i;
 	if (out->uses.residuals)	error		= out->residuals;
 	else				error		= gsl_vector_alloc(data->size1);
 	if (out->uses.covariance)	cov		= out->covariance;
 	else				cov		= gsl_matrix_alloc(data->size2, data->size2);
-	if (out->uses.confidence)	confidence	= out->confidence;
-	else				confidence	= gsl_vector_alloc(data->size2);
 	apop_det_and_inv(xpx, cov, 0, 1);		//(X'X)^{-1} (not yet cov)
 	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters);
 	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters, 0, error);
@@ -46,9 +45,13 @@ double		upu;
 		gsl_vector_memcpy(out->predicted, error);
 	gsl_vector_sub(y_data, error);	//until this line, 'error' is the predicted values
 	gsl_blas_ddot(error, error, &upu);
-	gsl_matrix_scale(cov, 1/upu);
+	gsl_matrix_scale(cov, upu);
+	if (out->uses.confidence)
+		for (i=0; i < data->size2; i++)  // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
+			gsl_vector_set(out->confidence, i,
+				fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(out->parameters, i), 
+				gsl_matrix_get(out->covariance, i, i)))*2));
 	if (out->uses.residuals == 0) 	gsl_vector_free(error);
-	if (out->uses.confidence == 0) 	gsl_vector_free(confidence);
 	if (out->uses.covariance == 0) 	gsl_matrix_free(cov);
 }
 

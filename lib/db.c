@@ -230,6 +230,7 @@ va_list		argp;
 		sqlite3_exec(db,"SELECT * FROM completely_temporary_table",db_to_table,output, &err); ERRCHECK
 	}
 	sqlite3_exec(db,"DROP TABLE completely_temporary_table",NULL,NULL, &err);  ERRCHECK
+	free(q2);
 	return output;
 }
 
@@ -263,5 +264,6 @@ char		*q 		= malloc(sizeof(char)*1000);
 			}
 		sprintf(q,"%s )",q);
 	}
+	free(q);
 	return 0;
 }
