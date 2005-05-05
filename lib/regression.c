@@ -10,6 +10,7 @@ void prep_inventory_OLS(apop_inventory *in, apop_inventory *out){
 	if (in == NULL){ 	//then give the user the works.
 		apop_set_inventory(out, 1);
 		out->log_likelihood	= 0;
+		out->names		= 0;
 		return;
 	}//else:
 	apop_copy_inventory(*in, out);
@@ -22,6 +23,8 @@ void prep_inventory_OLS(apop_inventory *in, apop_inventory *out){
 		out->covariance	= 1;
 		out->confidence	= 1;
 	}
+	//not yet supported.
+	out->names		= 0;
 }
 
 void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_estimate *out){

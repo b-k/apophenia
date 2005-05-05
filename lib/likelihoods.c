@@ -15,7 +15,7 @@
 //Use the with-derivative version wherever possible---in fact, it is at
 //the moment entirely unused, but is just here for future use.
 
-double	maximum_likelihood_w_d(void * data, gsl_vector *betas, 
+void	maximum_likelihood_w_d(void * data, apop_estimate *est,
 					double (* likelihood)(const gsl_vector *beta, void *d),
 					void (* d_likelihood)(const gsl_vector *beta, void *d, gsl_vector *df), 
 					void (* fdf)(const gsl_vector *beta, void *d, double *f, gsl_vector *df), 
@@ -105,9 +105,8 @@ apop_estimate * apop_mle_gamma(gsl_matrix *data, double *starting_pt,
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
 apop_estimate	*out	= apop_estimate_alloc(data->size1, 2, actual_uses);
-	out->log_likelihood =  maximum_likelihood_w_d(data, out->parameters,
-				&apop_gamma_likelihood, d_gamma_likelihood, gamma_fdf, 
-				starting_pt, step_size, verbose);
+	maximum_likelihood_w_d(data, out, &apop_gamma_likelihood, d_gamma_likelihood, 
+			gamma_fdf, starting_pt, step_size, verbose);
 	return out;
 }
 
@@ -193,9 +192,8 @@ apop_estimate * apop_mle_probit(gsl_matrix *data, double *starting_pt,
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
 apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2 - 1, actual_uses);
-	out->log_likelihood =  maximum_likelihood_w_d(data, out->parameters,
-				&apop_probit_likelihood, d_probit_likelihood, probit_fdf, 
-				starting_pt, step_size, verbose);
+	maximum_likelihood_w_d(data, out, &apop_probit_likelihood, d_probit_likelihood, probit_fdf, 
+			starting_pt, step_size, verbose);
 	return out;
 }
 
@@ -260,25 +258,12 @@ void waring_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 	d_waring_likelihood(beta, d, df);
 }
 
-/*
-gsl_vector * apop_mle_waring(gsl_matrix *data, double *likelihood, double *starting_pt, double step_size, int verbose){
-gsl_vector	*beta;
-double		ll;
-	ll	=  maximum_likelihood_w_d(data, &beta, 2, &apop_waring_likelihood, d_waring_likelihood, waring_fdf, 
-							starting_pt, step_size, verbose);
-	if (likelihood != NULL)	*likelihood	= ll;
-	return beta;
-}
-*/
-
-
 apop_estimate * apop_mle_waring(gsl_matrix *data, double *starting_pt, 
 					double step_size, apop_inventory *uses, int verbose){
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
 apop_estimate	*out		= apop_estimate_alloc(data->size1, 2, actual_uses);
-	out->log_likelihood =  maximum_likelihood_w_d(data, out->parameters,
-				&apop_waring_likelihood, d_waring_likelihood, waring_fdf, 
+	maximum_likelihood_w_d(data, out, &apop_waring_likelihood, d_waring_likelihood, waring_fdf, 
 				starting_pt, step_size, verbose);
 	return out;
 }
@@ -341,9 +326,8 @@ apop_estimate * apop_mle_yule(gsl_matrix *data, double *starting_pt,
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
 apop_estimate	*out		= apop_estimate_alloc(data->size1, 1, actual_uses);
-	out->log_likelihood =  maximum_likelihood_w_d(data, out->parameters,
-				&apop_yule_likelihood, d_yule_likelihood, yule_fdf, 
-				starting_pt, step_size, verbose);
+	maximum_likelihood_w_d(data, out, &apop_yule_likelihood, d_yule_likelihood, yule_fdf, 
+			starting_pt, step_size, verbose);
 	return out;
 }
 
@@ -389,25 +373,13 @@ void zipf_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 	d_zipf_likelihood(beta, d, df);
 }
 
-/*
-gsl_vector * apop_mle_zipf(gsl_matrix *data, double *likelihood, double *starting_pt, double step_size, int verbose){
-gsl_vector	*beta;
-double		ll;
-	ll	= maximum_likelihood_w_d(data, &beta, 1, &apop_zipf_likelihood, d_zipf_likelihood, zipf_fdf, 
-							starting_pt, step_size, verbose);
-	if (likelihood != NULL)	*likelihood	= ll;
-	return beta;
-}
-*/
-
 apop_estimate * apop_mle_zipf(gsl_matrix *data, double *starting_pt, 
 					double step_size, apop_inventory *uses, int verbose){
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
 apop_estimate	*out	= apop_estimate_alloc(data->size1, 1, actual_uses);
-	out->log_likelihood 	=  maximum_likelihood_w_d(data, out->parameters,
-					&apop_zipf_likelihood, d_zipf_likelihood, zipf_fdf, 
-					starting_pt, step_size, verbose);
+	maximum_likelihood_w_d(data, out, &apop_zipf_likelihood, d_zipf_likelihood, zipf_fdf, 
+			starting_pt, step_size, verbose);
 	return out;
 }
 
@@ -472,16 +444,16 @@ double			size;
 
 
 
-double	maximum_likelihood_w_d(void * data, gsl_vector *betas,
+void	maximum_likelihood_w_d(void * data, apop_estimate *estimate,
 			double (* likelihood)(const gsl_vector *beta, void *d),
 			void (* d_likelihood)(const gsl_vector *beta, void *d, gsl_vector *df), 
 			void (* fdf)(const gsl_vector *beta, void *d, double *f, gsl_vector *df),
 			double *starting_pt, double step_size, int verbose){
 gsl_multimin_function_fdf 	minme;
 gsl_multimin_fdfminimizer 	*s;
-gsl_vector 			*x, *ss;
+gsl_vector 			*x, *ss, *diff;
 int				iter =0, status;
-int				betasize	= betas->size;
+int				betasize	= estimate->parameters->size;
 	//s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
 	s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
 	ss	= gsl_vector_alloc(betasize);
@@ -515,9 +487,21 @@ int				betasize	= betas->size;
        	while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d);
 	if(iter==MAX_ITERATIONS_w_d) printf("No min!!\n");
 
-	gsl_vector_memcpy(betas, s->x);
+	gsl_vector_memcpy(estimate->parameters, s->x);
 	gsl_multimin_fdfminimizer_free(s);
-	return -likelihood(betas, data);
+
+
+	/*
+	//Epilogue:
+	//find the variance-covariance matrix, using $d[df/d\theta]/dx \cdot d[df/d\theta]/dx $
+	
+	diff	= gsl_vector_alloc(betasize);
+	d_likelihood(estimate->parameters, data, diff);
+	estimate->
+	*/
+
+	estimate->log_likelihood	= -likelihood(estimate->parameters, data);
+	return;
 }
 
 
@@ -547,6 +531,7 @@ void prep_inventory_mle(apop_inventory *in, apop_inventory *out){
 	out->log_likelihood	= 1;
 	out->parameters		= 1;
 	//OK, some things are not yet implemented.
+	out->names		= 0;
 	out->covariance		= 0;
 	out->confidence		= 0;
 	out->residuals		= 0;

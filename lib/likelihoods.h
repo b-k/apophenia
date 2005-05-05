@@ -70,7 +70,7 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v,
 				double (*likelihood_fn)(const gsl_vector *beta, void *d), gsl_vector* fn_beta);
 /*This function goes row by row through m and calculates the likelihood
   of the given row, putting the result in v. You will need this to find
-  the variance of the estimator.
+  the variance of the estimator via some means.
   The likelihood function can be any of &apop_xxx_likelihood from above, 
   and fn_beta will probably be the beta calculated using the corresponding
   apop_xxx_mle function.
