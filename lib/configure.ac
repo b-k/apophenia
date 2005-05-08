@@ -6,6 +6,7 @@ dnl Checks for library functions.
 AC_CONFIG_FILES(gnulib/Makefile)
 dnl AC_CONFIG_SUBDIRS(gnulib)
 
+AM_CONFIG_HEADER(config.h)
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_LIBTOOL
