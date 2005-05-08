@@ -14,17 +14,17 @@
 #define MAX_ITERATIONS_w_d	500
 
 apop_estimate * apop_mle_probit(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose);
-apop_estimate * apop_mle_gamma(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose);
+					double step_size, apop_name *n, apop_inventory *uses, int verbose);
 double apop_probit_likelihood(const gsl_vector *beta, void *d);
 
+apop_estimate * apop_mle_gamma(gsl_matrix *data, double *starting_pt, 
+					double step_size, apop_name *n, apop_inventory *uses, int verbose);
 apop_estimate * apop_mle_waring(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose);
+					double step_size, apop_name *n, apop_inventory *uses, int verbose);
 apop_estimate * apop_mle_yule(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose);
+					double step_size, apop_name *n, apop_inventory *uses, int verbose);
 apop_estimate * apop_mle_zipf(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose);
+					double step_size, apop_name *n, apop_inventory *uses, int verbose);
 double apop_gamma_likelihood(const gsl_vector *beta, void *d);
 double apop_waring_likelihood(const gsl_vector *beta, void *d);
 double apop_yule_likelihood(const gsl_vector *beta, void *d);

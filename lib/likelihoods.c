@@ -101,10 +101,10 @@ double		ll;
 */
 
 apop_estimate * apop_mle_gamma(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose){
+					double step_size, apop_name *n, apop_inventory *uses, int verbose){
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
-apop_estimate	*out	= apop_estimate_alloc(data->size1, 2, actual_uses);
+apop_estimate	*out	= apop_estimate_alloc(data->size1, 2,n,  actual_uses);
 	maximum_likelihood_w_d(data, out, &apop_gamma_likelihood, d_gamma_likelihood, 
 			gamma_fdf, starting_pt, step_size, verbose);
 	return out;
@@ -188,10 +188,10 @@ double		ll;
 */
 
 apop_estimate * apop_mle_probit(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose){
+					double step_size, apop_name *n, apop_inventory *uses, int verbose){
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
-apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2 - 1, actual_uses);
+apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2 - 1, n, actual_uses);
 	maximum_likelihood_w_d(data, out, &apop_probit_likelihood, d_probit_likelihood, probit_fdf, 
 			starting_pt, step_size, verbose);
 	return out;
@@ -259,10 +259,10 @@ void waring_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 }
 
 apop_estimate * apop_mle_waring(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose){
+					double step_size, apop_name *n, apop_inventory *uses, int verbose){
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
-apop_estimate	*out		= apop_estimate_alloc(data->size1, 2, actual_uses);
+apop_estimate	*out		= apop_estimate_alloc(data->size1, 2, n, actual_uses);
 	maximum_likelihood_w_d(data, out, &apop_waring_likelihood, d_waring_likelihood, waring_fdf, 
 				starting_pt, step_size, verbose);
 	return out;
@@ -322,10 +322,10 @@ void yule_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 }
 
 apop_estimate * apop_mle_yule(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose){
+					double step_size, apop_name *n, apop_inventory *uses, int verbose){
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
-apop_estimate	*out		= apop_estimate_alloc(data->size1, 1, actual_uses);
+apop_estimate	*out		= apop_estimate_alloc(data->size1, 1, n, actual_uses);
 	maximum_likelihood_w_d(data, out, &apop_yule_likelihood, d_yule_likelihood, yule_fdf, 
 			starting_pt, step_size, verbose);
 	return out;
@@ -374,10 +374,10 @@ void zipf_fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 }
 
 apop_estimate * apop_mle_zipf(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_inventory *uses, int verbose){
+					double step_size, apop_name *n, apop_inventory *uses, int verbose){
 apop_inventory	actual_uses;
 	prep_inventory_mle(uses, &actual_uses);
-apop_estimate	*out	= apop_estimate_alloc(data->size1, 1, actual_uses);
+apop_estimate	*out	= apop_estimate_alloc(data->size1, 1, n, actual_uses);
 	maximum_likelihood_w_d(data, out, &apop_zipf_likelihood, d_zipf_likelihood, zipf_fdf, 
 			starting_pt, step_size, verbose);
 	return out;

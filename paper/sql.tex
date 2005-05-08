@@ -1,6 +1,6 @@
 \chapter{Databases} \label{sql}
 
-SQL and matrix operations are excellent complements. Some things, like
+Structured Query Language and matrix operations are excellent complements. Some things, like
 making a crosstab, are a bit of a pain using traditional techniques of
 matrix manipulation. Meanwhile, some things just can't be done via SQL
 queries. With both, your data analysis technique will be unstoppable.
@@ -143,25 +143,16 @@ backslash, until you reach the end of the string. The line above runs
 the query and returns nothing. [Not very useful for a {\tt select}; but see
 {\tt create} and  {\tt insert} below.]
 
-\paragraph{sprintf} This is a standard C function which is essential for
-the production of queries. 
+{\tt apop\_query\_db} accepts {\tt printf}-style arguments. For example,
+say that you calculate a minimum height earlier in the program, and want
+to write a query that uses that variable:
 \begin{verbatim}
-#include <string.h>>
 #include <apophenia/db.h>
-char q[10000];
-int min_height;
-sprintf(q, " select *        \
+int min_height	= 175;
+apop_query_db(" select *     \
                from data     \
                where height >=%i;", min_height);
-apop_query_db(q);
 \end{verbatim}
-The {\tt sprintf} function is just like {\tt printf}, except it begins
-with a pre-declared string (which must be large enough to hold the
-string; I suggest just declaring an obnoxiously large string as above).
-It does the usual substitutions of {\tt \%i}, {\tt \%g}, et cetera, and
-then dumps the result to the specified string. Then you can pass that
-string to {\tt apop\_query\_db}. Thus, if {\tt min\_height==175}, the above
-two pieces of code would be identical.
 
 \paragraph{apop\_query\_to\_matrix} This function takes both a
 gsl\_matrix and a query string. It will run the query and return the
@@ -171,11 +162,10 @@ above, then
 #include <gsl/gsl_matrix.h>
 gsl_matrix *tall_people;
 
-//q was defined to be a query string above.
-tall_people = apop_query_to_matrix(q);
+tall_people = apop_query_to_matrix("select * from data");
 \end{verbatim}
-will run the above query, allocate {\tt tall\_people} to be an
-appropriately-sized matrix, and fill it with data.
+will query {\tt data} for all its information, allocate {\tt tall\_people} to be an
+appropriately-sized matrix, and fill it with the data.
 
 \subsection{Joining}
 If you specify two tables in your {\tt from} line, then, lacking any

@@ -20,7 +20,7 @@ void apop_set_inventory(apop_inventory *out, int value){
 	out->log_likelihood = value;
 }
 
-apop_estimate * apop_estimate_alloc(int data_size, int param_size, apop_inventory uses){
+apop_estimate * apop_estimate_alloc(int data_size, int param_size, apop_name * n, apop_inventory uses){
 apop_estimate * prep_me;
 	prep_me	= malloc(sizeof(apop_estimate));
 	if (uses.parameters)
@@ -33,6 +33,10 @@ apop_estimate * prep_me;
 		prep_me->residuals	= gsl_vector_alloc(data_size);
 	if (uses.covariance)
 		prep_me->covariance	= gsl_matrix_alloc(param_size,param_size);
+	if (uses.names) {
+		if (n != NULL) 	prep_me->names		= n;
+		else 		prep_me->names		= apop_name_alloc();
+	}
 	apop_copy_inventory(uses, &(prep_me->uses));
 	return prep_me;
 }
@@ -56,19 +60,18 @@ void apop_estimate_free(apop_estimate * free_me){
 void apop_print_estimate(apop_estimate * print_me){
 	if (print_me->uses.names){
 		apop_name_print(print_me->names);
-		apop_print_vector(print_me->parameters, "\t");
 	}
 	if (print_me->uses.parameters){
 		printf("Parameter estimates:\t");
-		apop_print_vector(print_me->parameters, "\t");
+		apop_print_vector(print_me->parameters, "\t", NULL);
 	}
 	if (print_me->uses.covariance){
 		printf("The variance/covariance matrix:\n");
-		apop_print_matrix(print_me->covariance, "\t");
+		apop_print_matrix(print_me->covariance, "\t", NULL);
 	}
 	if (print_me->uses.confidence){
 		printf("Confidence intervals (H_0: beta == 0):\t");
-		apop_print_vector(print_me->confidence, "\t");
+		apop_print_vector(print_me->confidence, "\t", NULL);
 	}
 	if (print_me->uses.log_likelihood)
 		printf("log likelihood: \t%g\n", print_me->log_likelihood);

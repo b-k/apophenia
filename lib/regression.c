@@ -5,26 +5,29 @@
 #include "linear_algebra.h"
 #include "estimate.h"
 
-void prep_inventory_OLS(apop_inventory *in, apop_inventory *out){
+void prep_inventory_OLS(apop_name *n, apop_inventory *in, apop_inventory *out){
 //These are the rules going from what you can ask for to what you'll get.
-	if (in == NULL){ 	//then give the user the works.
+	if (in == NULL) 	//then give the user the works.
 		apop_set_inventory(out, 1);
-		out->log_likelihood	= 0;
-		out->names		= 0;
-		return;
-	}//else:
-	apop_copy_inventory(*in, out);
+	else {
+		apop_copy_inventory(*in, out);
+		if (out->residuals){
+			out->covariance	= 1;
+		}
+		if (out->covariance || out->confidence){
+			out->covariance	= 1;
+			out->confidence	= 1;
+		}
+	}
 	out->log_likelihood	= 0;
 	out->parameters		= 1;
-	if (out->residuals){
-		out->covariance	= 1;
+	if (n == NULL)
+		out->names		= 0;
+	else {		//shift first col to depvar, rename first col "one".
+		out->names		= 1;
+		apop_name_add(n, n->colnames[0], 'd');
+		sprintf(n->colnames[0], "1");
 	}
-	if (out->covariance || out->confidence){
-		out->covariance	= 1;
-		out->confidence	= 1;
-	}
-	//not yet supported.
-	out->names		= 0;
 }
 
 void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_estimate *out){
@@ -58,12 +61,12 @@ int		i;
 	if (out->uses.covariance == 0) 	gsl_matrix_free(cov);
 }
 
-apop_estimate * apop_GLS(gsl_matrix *data, gsl_matrix *sigma, apop_inventory *uses){
+apop_estimate * apop_GLS(gsl_matrix *data, gsl_matrix *sigma, apop_name * n, apop_inventory *uses){
 //Returns GLS parameter estimates in beta.
 //Destroys the data in the process.
 apop_inventory	actual_uses;
-	prep_inventory_OLS(uses, &actual_uses);
-apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, actual_uses);
+	prep_inventory_OLS(n, uses, &actual_uses);
+apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, n, actual_uses);
 gsl_vector 	*y_data		= gsl_vector_alloc(data->size1);
 gsl_matrix 	*temp		= gsl_matrix_calloc(data->size2, data->size1);
 gsl_vector 	*xsy 		= gsl_vector_calloc(data->size2);
@@ -84,12 +87,12 @@ gsl_vector_view	v 		= gsl_matrix_column(data, 0);
 	return out;
 }
 
-apop_estimate * apop_OLS(gsl_matrix *data, apop_inventory *uses){
+apop_estimate * apop_OLS(gsl_matrix *data, apop_name * n, apop_inventory *uses){
 //Returns GLS parameter estimates in beta.
 //Destroys the data in the process.
 apop_inventory	actual_uses;
-	prep_inventory_OLS(uses, &actual_uses);
-apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, actual_uses);
+	prep_inventory_OLS(n, uses, &actual_uses);
+apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, n, actual_uses);
 gsl_vector 	*y_data		= gsl_vector_alloc(data->size1);
 gsl_vector 	*xpy 		= gsl_vector_calloc(data->size2);
 gsl_matrix 	*xpx 		= gsl_matrix_calloc(data->size2, data->size2);

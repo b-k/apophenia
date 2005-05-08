@@ -214,7 +214,7 @@ va_list		argp;
 	}
 
 	int names_callback(void *o,int argc, char **argv, char **whatever){
-		apop_name_add(last_names, argv[1], 1); 
+		apop_name_add(last_names, argv[1], 'c'); 
 		return 0;
 	}
 
@@ -245,7 +245,7 @@ va_list		argp;
 	return output;
 }
 
-apop_name * apop_get_query_names(void){
+apop_name * apop_db_get_names(void){
 	return last_names;
 }
 

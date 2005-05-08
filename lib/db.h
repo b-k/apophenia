@@ -43,5 +43,5 @@ int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
 	//At the moment, the headers are ignored. 
 	//With no headers specified, you get columns C0, C1, C2...
 
-apop_name * apop_get_query_names(void);
+apop_name * apop_db_get_names(void);
 	//give the column names from the last query.

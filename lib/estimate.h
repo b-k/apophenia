@@ -17,7 +17,7 @@ typedef struct apop_e{
 	apop_name	*names;
 } apop_estimate;
 
-apop_estimate *	apop_estimate_alloc(int data_size, int param_size, apop_inventory uses);
+apop_estimate *	apop_estimate_alloc(int data_size, int param_size, apop_name *n, apop_inventory uses);
 void 		apop_estimate_free(apop_estimate * free_me);
 void 		apop_print_estimate(apop_estimate * print_me);
 
