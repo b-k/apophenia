@@ -4,7 +4,7 @@
 #include "estimate.h"
 #include "linear_algebra.h"
 
-void apop_copy_inventory(apop_inventory in, apop_inventory *out){
+void apop_inventory_copy(apop_inventory in, apop_inventory *out){
 	out->parameters	= in.parameters;
 	out->predicted	= in.predicted;
 	out->confidence	= in.confidence;
@@ -12,7 +12,7 @@ void apop_copy_inventory(apop_inventory in, apop_inventory *out){
 	out->log_likelihood = in.log_likelihood;
 }
 
-void apop_set_inventory(apop_inventory *out, int value){
+void apop_inventory_set(apop_inventory *out, int value){
 	out->parameters	= 
 	out->predicted	= 
 	out->confidence	= 
@@ -57,7 +57,7 @@ void apop_estimate_free(apop_estimate * free_me){
 	free(free_me);
 }
 
-void apop_print_estimate(apop_estimate * print_me){
+void apop_estimate_print(apop_estimate * print_me){
 	if (print_me->uses.names){
 		apop_name_print(print_me->names);
 	}

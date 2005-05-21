@@ -520,14 +520,14 @@ int             i;
 void prep_inventory_mle(apop_inventory *in, apop_inventory *out){
 //These are the rules going from what you can ask for to what you'll get.
 	if (in == NULL){ 	//then give the user the works.
-		apop_set_inventory(out, 1);
+		apop_inventory_set(out, 1);
 	//OK, some things are not yet implemented.
 	out->covariance		= 0;
 	out->confidence		= 0;
 	out->residuals		= 0;
 		return;
 	}//else:
-	apop_copy_inventory(*in, out);
+	apop_inventory_copy(*in, out);
 	out->log_likelihood	= 1;
 	out->parameters		= 1;
 	//OK, some things are not yet implemented.

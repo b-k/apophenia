@@ -142,6 +142,8 @@ va_list		argp;
 	return 1;
 }
 
+
+
 int apop_table_exists(const char *q, int whattodo){
 	//whattodo==1	==>kill table so it can be recreated in main.
 	//whattodo==0	==>return error so program can continue.
@@ -163,6 +165,7 @@ int 		isthere=0;
 		sqlite3_exec(db,strcat(strcpy(q2, "DROP TABLE "),q),NULL,NULL, &err); ERRCHECK
 	return isthere;
 }
+
 
 int apop_count_cols(const char *name){
 char 		*err, q2[5000];
@@ -190,6 +193,7 @@ char		*err;
 	sqlite3_close(db);
 	return 0;
 	}
+
 
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 gsl_matrix	*output;

@@ -8,9 +8,9 @@
 void prep_inventory_OLS(apop_name *n, apop_inventory *in, apop_inventory *out){
 //These are the rules going from what you can ask for to what you'll get.
 	if (in == NULL) 	//then give the user the works.
-		apop_set_inventory(out, 1);
+		apop_inventory_set(out, 1);
 	else {
-		apop_copy_inventory(*in, out);
+		apop_inventory_copy(*in, out);
 		if (out->residuals){
 			out->covariance	= 1;
 		}
