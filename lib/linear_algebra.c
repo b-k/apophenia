@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>	//popen, I think.
 #include "linear_algebra.h" 
+#include "stats.h" 
 #include "math.h" //pow!
 #include "gnulib/vasprintf.h"
 
@@ -173,4 +174,19 @@ int		i,j;
 	}
 	fprintf(output,"e\n pause %i\n", delay);
 	pclose (output);
+}
+
+void apop_table_summarize(gsl_matrix *data, apop_name *names){
+int		i;
+gsl_vector_view	v;
+	if (names !=NULL)
+		printf("names");
+	printf("\tmean:\tstd dev:\n");
+	for (i=0; i< data->size2; i++){
+                v       = gsl_matrix_column(data, i);
+		if (names !=NULL)
+			printf("%s\t%5f\t%5f\n",names->colnames[i],apop_mean(&(v.vector)),sqrt(apop_var(&(v.vector))));
+		else
+			printf("col %i\t%5f\t%5f\n",i,apop_mean(&(v.vector)),sqrt(apop_var(&(v.vector))));
+	}	
 }

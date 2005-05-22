@@ -165,6 +165,7 @@ int 		ct,
 				astring	= strtok(NULL,",");
 				i++;
 			}
+			free(astring); 
 		} else	fn	= field_names;
 		strcpy(q, "begin; CREATE TABLE ");
 		strcat(q, tabname);
@@ -185,7 +186,6 @@ int 		ct,
 		apop_query_db("commit;");
 		fclose(infile);
 		if (use_names_in_file){
-			free(astring); 
 			free(fn);
 		}
 		return rows;

@@ -1,5 +1,6 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
+#include <apophenia/name.h>
 
 double apop_det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv);
 double apop_x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma);
@@ -12,3 +13,4 @@ void apop_print_vector_int(gsl_vector *data, char *separator, char* file);
 inline void apop_vector_increment(gsl_vector * v, int i, double amt);
 inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt);
 void apop_plot(gsl_matrix *data, char plot_type, int delay);
+void apop_table_summarize(gsl_matrix *data, apop_name *names);
