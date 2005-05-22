@@ -62,13 +62,11 @@ int		i	= 0,
 		j	= 0,
 		k, r,c,datum;
 gsl_vector_view	v;
-char		q[10000];
-	sprintf(q,"select distinct %s from %s order by %s", r1, tabname, r1);
-	pre_d1	= apop_query_to_matrix(q);
-	sprintf(q,"select distinct %s from %s order by %s", r2, tabname, r2);
-	pre_d2	= apop_query_to_matrix(q);
-	sprintf(q,"select %s, %s, %s from %s", r1, r2, datacol, tabname);
-	datatab	= apop_query_to_matrix(q);
+	pre_d1	= apop_query_to_matrix("select distinct %s from %s order by %s", r1, tabname, r1);
+	if (pre_d1 == NULL) printf ("Selecting %s from %s returned an empty table.\n", r1, tabname);
+	pre_d2	= apop_query_to_matrix("select distinct %s from %s order by %s", r2, tabname, r2);
+	if (pre_d2 == NULL) printf ("Selecting %s from %s returned an empty table.\n", r2, tabname);
+	datatab	= apop_query_to_matrix("select %s, %s, %s from %s", r1, r2, datacol, tabname);
 	out	= gsl_matrix_calloc(pre_d1->size1, pre_d2->size1);
 	for(k =0; k< datatab->size1; k++){
 		r	= gsl_matrix_get(datatab, k, 0);
@@ -89,7 +87,6 @@ char		q[10000];
 	free(pre_d1); free(pre_d2); free(datatab);
 	return out;
 }
-
 
 
 int count_cols_in_text(char *text_file){
