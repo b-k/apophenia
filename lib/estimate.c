@@ -37,7 +37,7 @@ apop_estimate * prep_me;
 		if (n != NULL) 	prep_me->names		= n;
 		else 		prep_me->names		= apop_name_alloc();
 	}
-	apop_copy_inventory(uses, &(prep_me->uses));
+	apop_inventory_copy(uses, &(prep_me->uses));
 	return prep_me;
 }
 
