@@ -176,7 +176,7 @@ int		i,j;
 	pclose (output);
 }
 
-void apop_table_summarize(gsl_matrix *data, apop_name *names){
+void apop_matrix_summarize(gsl_matrix *data, apop_name *names){
 int		i;
 gsl_vector_view	v;
 	if (names !=NULL)
