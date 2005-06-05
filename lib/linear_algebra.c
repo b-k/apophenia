@@ -8,6 +8,32 @@
 #include "math.h" //pow!
 #include "gnulib/vasprintf.h"
 
+gsl_matrix *apop_covariance_matrix(gsl_matrix *in, int normalize){
+gsl_matrix	*out;
+int		i,j,k;
+double		means[in->size2];
+gsl_vector_view	v;
+	if (normalize){
+		out	= gsl_matrix_alloc(in->size2, in->size2);
+		apop_normalize_matrix(in);
+		gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, in, in, 0, out);
+	}
+	else{
+		out	= gsl_matrix_calloc(in->size2, in->size2);
+		for(i=0; i< in->size2; i++){
+			v		= gsl_matrix_column(in, i);
+			means[i]	= apop_mean(&(v.vector));
+		}
+		for(i=0; i< in->size2; i++)
+			for(j=0; j< in->size2; j++)
+				for(k=0; k< in->size1; k++)
+					apop_matrix_increment(out, i, j, 
+					   (gsl_matrix_get(in,k,i)-means[i])* (gsl_matrix_get(in,k,j)-means[j]));
+	}
+	gsl_matrix_scale(out, 1.0/in->size2);
+	return out;
+}
+
 double apop_det_and_inv(gsl_matrix *in, gsl_matrix *out, int calc_det, int calc_inv) {
 int 		sign;
 double 		the_determinant = 0;
@@ -143,6 +169,18 @@ void apop_print_matrix(gsl_matrix *data, char *separator, char *filename){
 	print_core_m(data, separator, filename, dumb_little_pf_f); }
 
 void apop_print_matrix_int(gsl_matrix *data, char *separator, char *filename){
+	print_core_m(data, separator, filename, dumb_little_pf_i); }
+
+void apop_vector_print(gsl_vector *data, char *separator, char *filename){
+	print_core_v(data, separator, filename, dumb_little_pf_f); }
+
+void apop_vector_print_int(gsl_vector *data, char *separator, char *filename){
+	print_core_v(data, separator, filename, dumb_little_pf_i); }
+
+void apop_matrix_print(gsl_matrix *data, char *separator, char *filename){
+	print_core_m(data, separator, filename, dumb_little_pf_f); }
+
+void apop_matrix_print_int(gsl_matrix *data, char *separator, char *filename){
 	print_core_m(data, separator, filename, dumb_little_pf_i); }
 
 

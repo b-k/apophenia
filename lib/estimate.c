@@ -58,21 +58,43 @@ void apop_estimate_free(apop_estimate * free_me){
 }
 
 void apop_estimate_print(apop_estimate * print_me){
-	if (print_me->uses.names){
-		apop_name_print(print_me->names);
-	}
-	if (print_me->uses.parameters){
-		printf("Parameter estimates:\t");
-		apop_print_vector(print_me->parameters, "\t", NULL);
+int		i,j;
+	printf("\n");
+	if (print_me->uses.names) 	printf("\t");
+	if (print_me->uses.parameters) 	printf("value\t\t");
+	if (print_me->uses.confidence) 	printf("Confidence\n");
+	for (i=0; i<print_me->parameters->size; i++){
+		if (print_me->uses.names)	printf("%s\t", print_me->names->colnames[i]);
+		if (print_me->uses.parameters)	printf("% 7f\t", gsl_vector_get(print_me->parameters,i));
+		if (print_me->uses.confidence)	printf("% 7f\t", gsl_vector_get(print_me->confidence,i));
+		printf("\n");
+		/*
+		if (print_me->uses.parameters){
+			printf("Parameter estimates:\t");
+			apop_print_vector(print_me->parameters, "\t", NULL);
+		}
+		if (print_me->uses.confidence){
+			printf("Confidence intervals (H_0: beta == 0):\t");
+			apop_print_vector(print_me->confidence, "\t", NULL);
+		}
+		*/
 	}
 	if (print_me->uses.covariance){
-		printf("The variance/covariance matrix:\n");
-		apop_print_matrix(print_me->covariance, "\t", NULL);
-	}
-	if (print_me->uses.confidence){
-		printf("Confidence intervals (H_0: beta == 0):\t");
-		apop_print_vector(print_me->confidence, "\t", NULL);
+		printf("\nThe variance/covariance matrix:\n");
+		if (print_me->uses.names){
+			printf("\t");
+			for (j=0; j<print_me->covariance->size1; j++)
+				printf("%s\t\t", print_me->names->colnames[j]);
+			printf("\n");
+			for (i=0; i<print_me->covariance->size1; i++){
+				printf("%s\t", print_me->names->colnames[i]);
+				for (j=0; j<print_me->covariance->size2; j++)
+					printf("% 6.6g\t", gsl_matrix_get(print_me->covariance, i,j));
+				printf("\n");
+			}
+		} else	
+			apop_print_matrix(print_me->covariance, "\t", NULL);
 	}
 	if (print_me->uses.log_likelihood)
-		printf("log likelihood: \t%g\n", print_me->log_likelihood);
+		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);
 }
