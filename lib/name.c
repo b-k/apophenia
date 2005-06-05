@@ -1,4 +1,4 @@
-#include "name.h"
+#include <apophenia/name.h>
 #include <stdio.h>
 #include <malloc.h>
 

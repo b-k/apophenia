@@ -1,5 +1,5 @@
 //conversions.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
-#include "conversions.h"
+#include <apophenia/conversions.h>
 
 
 int apop_convert_vector_to_array(gsl_vector *in, double **out){
@@ -60,7 +60,8 @@ gsl_matrix * apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *dataco
 gsl_matrix	*pre_d1, *pre_d2, *datatab, *out;
 int		i	= 0,
 		j	= 0,
-		k, r,c,datum;
+		k, r,c;
+double		datum;
 gsl_vector_view	v;
 	pre_d1	= apop_query_to_matrix("select distinct %s from %s order by %s", r1, tabname, r1);
 	if (pre_d1 == NULL) printf ("Selecting %s from %s returned an empty table.\n", r1, tabname);

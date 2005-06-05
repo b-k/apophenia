@@ -1,5 +1,5 @@
 //stats.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
-#include "stats.h"
+#include <apophenia/stats.h>
 
 inline double apop_mean(gsl_vector *in){
 	return gsl_stats_mean(in->data,in->stride, in->size); }

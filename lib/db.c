@@ -3,8 +3,8 @@
 #include "gnulib/vasprintf.h"
 #include <string.h>
 #include <stdarg.h>
-#include "name.h"
-#include "db.h"
+#include <apophenia/name.h>
+#include <apophenia/db.h>
 
 
 sqlite3	*db=NULL;	//There's only one database handle. Here it is.
@@ -126,6 +126,7 @@ int apop_open_db(char *filename){
 	sqlite3_create_function(db, "skew", 1, SQLITE_ANY, NULL, NULL, &threeStep, &skewFinalize);
 	sqlite3_create_function(db, "kurt", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
 	sqlite3_create_function(db, "kurtosis", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
+	apop_query_db("pragma short_column_names");
 	return 0;
 }
 

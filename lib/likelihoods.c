@@ -1,5 +1,5 @@
 //likelihoods.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
-#include "likelihoods.h"
+#include <apophenia/likelihoods.h>
 
 //This file includes a number of distributions and models whose parameters
 //one would estimate using maximum likelihood techniques.
@@ -442,8 +442,6 @@ double			size;
 	return -likelihood(*betas, data);
 }
 
-
-
 void	maximum_likelihood_w_d(void * data, apop_estimate *estimate,
 			double (* likelihood)(const gsl_vector *beta, void *d),
 			void (* d_likelihood)(const gsl_vector *beta, void *d, gsl_vector *df), 
@@ -452,7 +450,8 @@ void	maximum_likelihood_w_d(void * data, apop_estimate *estimate,
 gsl_multimin_function_fdf 	minme;
 gsl_multimin_fdfminimizer 	*s;
 gsl_vector 			*x, *ss, *diff;
-int				iter =0, status;
+gsl_vector_view 		v;
+int				iter =0, status, i;
 int				betasize	= estimate->parameters->size;
 	//s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
 	s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
@@ -491,16 +490,18 @@ int				betasize	= estimate->parameters->size;
 	gsl_multimin_fdfminimizer_free(s);
 
 
-	/*
 	//Epilogue:
-	//find the variance-covariance matrix, using $d[df/d\theta]/dx \cdot d[df/d\theta]/dx $
-	
-	diff	= gsl_vector_alloc(betasize);
+	//find the variance-covariance matrix, using $df/d\theta \cdot df/d\theta$
+	estimate->covariance	= gsl_matrix_alloc(betasize, betasize);
+	diff			= gsl_vector_alloc(betasize);
 	d_likelihood(estimate->parameters, data, diff);
-	estimate->
-	*/
-
+	for (i=0; i< betasize; i++)
+		gsl_matrix_set_row(estimate->covariance, i, diff);
+		v	= gsl_matrix_row(estimate->covariance, i);
+		gsl_vector_scale(&(v.vector), gsl_vector_get(diff, i));
+	}
 	estimate->log_likelihood	= -likelihood(estimate->parameters, data);
+	gsl_vector_free(diff);
 	return;
 }
 
@@ -522,7 +523,6 @@ void prep_inventory_mle(apop_inventory *in, apop_inventory *out){
 	if (in == NULL){ 	//then give the user the works.
 		apop_inventory_set(out, 1);
 	//OK, some things are not yet implemented.
-	out->covariance		= 0;
 	out->confidence		= 0;
 	out->residuals		= 0;
 		return;
@@ -532,7 +532,6 @@ void prep_inventory_mle(apop_inventory *in, apop_inventory *out){
 	out->parameters		= 1;
 	//OK, some things are not yet implemented.
 	out->names		= 0;
-	out->covariance		= 0;
 	out->confidence		= 0;
 	out->residuals		= 0;
 }

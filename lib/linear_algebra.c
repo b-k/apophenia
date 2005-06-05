@@ -3,8 +3,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>	//popen, I think.
-#include "linear_algebra.h" 
-#include "stats.h" 
+#include <apophenia/linear_algebra.h> 
+#include <apophenia/stats.h>
 #include "math.h" //pow!
 #include "gnulib/vasprintf.h"
 

@@ -1,9 +1,9 @@
 //regression.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
-#include "regression.h"
+#include <apophenia/regression.h>
 #include <gsl/gsl_blas.h>
-#include "stats.h"
-#include "linear_algebra.h"
-#include "estimate.h"
+#include <apophenia/stats.h>
+#include <apophenia/linear_algebra.h>
+#include <apophenia/estimate.h>
 
 void prep_inventory_OLS(apop_name *n, apop_inventory *in, apop_inventory *out){
 //These are the rules going from what you can ask for to what you'll get.
@@ -11,13 +11,7 @@ void prep_inventory_OLS(apop_name *n, apop_inventory *in, apop_inventory *out){
 		apop_inventory_set(out, 1);
 	else {
 		apop_inventory_copy(*in, out);
-		if (out->residuals){
-			out->covariance	= 1;
-		}
-		if (out->covariance || out->confidence){
-			out->covariance	= 1;
-			out->confidence	= 1;
-		}
+		out->covariance	= 1;	//always calculated.
 	}
 	out->log_likelihood	= 0;
 	out->parameters		= 1;
@@ -40,10 +34,8 @@ gsl_vector 	*error;
 gsl_matrix	*cov;
 double		upu;
 int		i;
-	if (out->uses.residuals)	error		= out->residuals;
-	else				error		= gsl_vector_alloc(data->size1);
-	if (out->uses.covariance)	cov		= out->covariance;
-	else				cov		= gsl_matrix_alloc(data->size2, data->size2);
+	error	= gsl_vector_alloc(data->size1);
+	cov	= gsl_matrix_alloc(data->size2, data->size2);
 	apop_det_and_inv(xpx, cov, 0, 1);		//(X'X)^{-1} (not yet cov)
 	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters);
 	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters, 0, error);
@@ -51,14 +43,16 @@ int		i;
 		gsl_vector_memcpy(out->predicted, error);
 	gsl_vector_sub(y_data, error);	//until this line, 'error' is the predicted values
 	gsl_blas_ddot(error, error, &upu);
-	gsl_matrix_scale(cov, upu);
+	gsl_matrix_scale(cov, upu/data->size2);	//Having multiplied by the variance, it's now it's the covariance.
 	if (out->uses.confidence)
 		for (i=0; i < data->size2; i++)  // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 			gsl_vector_set(out->confidence, i,
 				fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(out->parameters, i), 
-				gsl_matrix_get(out->covariance, i, i)))*2));
+				gsl_matrix_get(cov, i, i)))*2));
 	if (out->uses.residuals == 0) 	gsl_vector_free(error);
+	else 				out->residuals	= error;
 	if (out->uses.covariance == 0) 	gsl_matrix_free(cov);
+	else 				out->covariance	= cov;
 }
 
 apop_estimate * apop_GLS(gsl_matrix *data, gsl_matrix *sigma, apop_name * n, apop_inventory *uses){
@@ -73,8 +67,8 @@ gsl_vector 	*xsy 		= gsl_vector_calloc(data->size2);
 gsl_matrix 	*xsx 		= gsl_matrix_calloc(data->size2, data->size2);
 gsl_matrix 	*sigma_inverse	= gsl_matrix_alloc(data->size1, data->size1);
 gsl_vector_view	v 		= gsl_matrix_column(data, 0);
-	gsl_matrix_get_col(y_data, data, 0);
 	apop_normalize_matrix(data);		//every column should have mean zero.
+	gsl_matrix_get_col(y_data, data, 0);
 	gsl_vector_set_all(&(v.vector), 1);	//affine: first column is ones.
 	apop_det_and_inv(sigma, sigma_inverse, 0, 1);					//find sigma^{-1}
 	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, sigma_inverse, 0, temp); 	//temp = X' \sigma^{-1}.
@@ -83,7 +77,7 @@ gsl_vector_view	v 		= gsl_matrix_column(data, 0);
 	gsl_blas_dgemv(CblasNoTrans, 1, temp, y_data, 0, xsy);     			//(X' \sigma^{-1} y)
 	gsl_matrix_free(temp);
 	xpxinvxpy(data, y_data, xsx, xsy, out);
-	gsl_matrix_free(xsx); gsl_vector_free(y_data); gsl_vector_free(xsy);
+	gsl_vector_free(y_data); gsl_vector_free(xsy);
 	return out;
 }
 
@@ -103,6 +97,6 @@ gsl_vector_view	v 		= gsl_matrix_column(data, 0);
 	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, xpx);	//(X'X)
 	gsl_blas_dgemv(CblasTrans, 1, data, y_data, 0, xpy);     	//(X'y)
 	xpxinvxpy(data, y_data, xpx, xpy, out);
-	gsl_matrix_free(xpx); gsl_vector_free(y_data); gsl_vector_free(xpy);
+	gsl_vector_free(y_data); gsl_vector_free(xpy);
 	return out;
 }

@@ -1,8 +1,8 @@
 //estimate.c			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <gsl/gsl_matrix.h>
-#include "name.h"
-#include "estimate.h"
-#include "linear_algebra.h"
+#include <apophenia/name.h>
+#include <apophenia/estimate.h>
+#include <apophenia/linear_algebra.h>
 
 void apop_inventory_copy(apop_inventory in, apop_inventory *out){
 	out->parameters	= in.parameters;

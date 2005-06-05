@@ -15,6 +15,11 @@ cd $junkdir
 	mv $outlib ..
 cd ..
 rm -rf $junkdir
+cd $outlib
+	mkdir apophenia
+	cd apophenia
+		ln -s ../*.h ./
+cd ..
 tar czf apophenia.tgz $outlib
 cd $outlib
 mv gnulib/configure.ac .
