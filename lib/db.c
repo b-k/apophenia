@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <apophenia/name.h>
+#include <gsl/gsl_math.h> //GSL_NAN
 #include <apophenia/db.h>
 
 
@@ -204,10 +205,15 @@ va_list		argp;
 
 	int db_to_table(void *o,int argc, char **argv, char **whatever){
 	int		jj;
+	char		nil[]	= "(null)\0";
 	gsl_matrix * 	output = (gsl_matrix *) o;
 		if (*argv !=NULL){
-			for (jj=0;jj<argc;jj++)
-				gsl_matrix_set(output,currentrow,jj, atof(argv[jj]));
+			for (jj=0;jj<argc;jj++){
+				if (argv[jj]==NULL)
+					gsl_matrix_set(output,currentrow,jj, GSL_NAN);
+				else
+					gsl_matrix_set(output,currentrow,jj, atof(argv[jj]));
+			}
 			currentrow++;
 		}
 		return 0;

@@ -19,7 +19,7 @@ cd $outlib
 	mkdir apophenia
 	cd apophenia
 		ln -s ../*.h ./
-cd ..
+cd ../..
 tar czf apophenia.tgz $outlib
 cd $outlib
 mv gnulib/configure.ac .

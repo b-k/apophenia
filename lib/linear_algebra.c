@@ -25,10 +25,13 @@ gsl_vector_view	v;
 			means[i]	= apop_mean(&(v.vector));
 		}
 		for(i=0; i< in->size2; i++)
-			for(j=0; j< in->size2; j++)
+			for(j=i; j< in->size2; j++){
 				for(k=0; k< in->size1; k++)
 					apop_matrix_increment(out, i, j, 
 					   (gsl_matrix_get(in,k,i)-means[i])* (gsl_matrix_get(in,k,j)-means[j]));
+				if (i != j)	//set the symmetric element.
+					gsl_matrix_set(out, j, i, gsl_matrix_get(out, i, j));
+			}
 	}
 	gsl_matrix_scale(out, 1.0/in->size2);
 	return out;
