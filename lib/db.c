@@ -144,24 +144,22 @@ va_list		argp;
 	return 1;
 }
 
+int 		isthere;//used for the next two fns only.
 
+int tab_exists_callback(void *in, int argc, char **argv, char *whatever){
+char *q	= in;
+	if (!strcmp(argv[argc-1],q))
+		isthere=1;
+	return isthere;
+}
 
 int apop_table_exists(const char *q, int whattodo){
 	//whattodo==1	==>kill table so it can be recreated in main.
 	//whattodo==0	==>return error so program can continue.
-char 		*err, q2[5000];
-int 		isthere=0;
-
-	int tab_exists_callback(void *whatever, int argc, char **argv, char **andever){
-	int 		i;
-		for(i=argc;i--;)
-			if (!strcmp(argv[i],q))
-				isthere=1;
-		return 0;
-	}
-
+char 		*err, q2[10000];
+	isthere=0;
 	if (db==NULL) {apop_open_db(NULL); return 0;}
-	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,NULL, &err); 
+	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,q, &err); 
 	ERRCHECK
 	if (whattodo==1 && isthere)
 		sqlite3_exec(db,strcat(strcpy(q2, "DROP TABLE "),q),NULL,NULL, &err); ERRCHECK
@@ -205,7 +203,6 @@ va_list		argp;
 
 	int db_to_table(void *o,int argc, char **argv, char **whatever){
 	int		jj;
-	char		nil[]	= "(null)\0";
 	gsl_matrix * 	output = (gsl_matrix *) o;
 		if (*argv !=NULL){
 			for (jj=0;jj<argc;jj++){
