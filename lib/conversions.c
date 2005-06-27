@@ -1,6 +1,8 @@
 //conversions.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <apophenia/conversions.h>
 
+#define Text_Size_Limit 1000000
+
 
 int apop_convert_vector_to_array(gsl_vector *in, double **out){
 int		i;	
@@ -90,48 +92,102 @@ gsl_vector_view	v;
 }
 
 
-int count_cols_in_text(char *text_file){
+
+int apop_count_cols_in_text(char *text_file){
 //Open file, find the first valid row, count columns, close file.
 FILE * 		infile;
-char		instr[100000], *astring;
+char		instr[Text_Size_Limit], *astring;
 int		ct	= 0;
 	infile	= fopen(text_file,"r");
-	fgets(instr, 100000, infile);
-	while(instr[0]=='#')	//burn off comment files
-		fgets(instr, 10000, infile);
+	fgets(instr, Text_Size_Limit, infile);
+	while(instr[0]=='#')	//burn off comment lines
+		fgets(instr, Text_Size_Limit, infile);
 	astring	= strtok(instr,",");
 	while (astring !=NULL){
 		ct++;
 		astring	= strtok(NULL,",");
 	}
+	fclose(infile);
 	return ct;
 }
 
+char * strip(char *in){
+//OK, OK. C sucks.
+char 		*out 	= malloc(sizeof(char) * (1+strlen(in)));
+int		i	= 0, 
+		done	= 0,
+		first_ok= 0,
+		last_ok	= 0;
+	while (!done)
+		if (in[first_ok]==' ' || in[first_ok]=='\n' || in[first_ok]=='\t')
+			first_ok	++;
+		else	done		++;
+	for (i=first_ok  ; i< strlen(in); i++){
+		out[i-first_ok]	= in[i];
+		if (in[i]!=' ' && in[i]!='\n' && in[i]!='\t')
+			last_ok	= i-first_ok;
+	}
+	out[last_ok+1]	= '\0';
+	return out;
+}
 
-int apop_convert_text_to_array(char *text_file, double ***tab, int has_field_names){
+void add_a_name(int *ct, char*** list, char *addme){
+char		*stripped;
+	(*ct)	++;
+	*list	= realloc(*list, (*ct) * sizeof(char*));
+	(*list)[(*ct)-1]	=malloc(sizeof(char) * (strlen(addme)+1));
+	stripped	= strip(addme);
+	strcpy((*list)[(*ct)-1],stripped);
+	free(stripped);
+}
+
+int apop_convert_text_to_array(char *text_file, char *delimiters, double ***tab, apop_name *names){
 FILE * 		infile;
-char		instr[100000], *astring;
+char		instr[Text_Size_Limit], *astring, *str;
 int 		i	= 0,
 		ct, colno;
-	ct	= count_cols_in_text(text_file);
+	ct	= apop_count_cols_in_text(text_file);
 	*tab	= malloc(sizeof(double));
 	infile	= fopen(text_file,"r");
-	if (has_field_names == 1){
-		fgets(instr, 100000, infile);
-		while(instr[0]=='#')	//burn off comment files
-			fgets(instr, 10000, infile);
+	if (names != NULL){
+		fgets(instr, Text_Size_Limit, infile);
+		while(instr[0]=='#')	//burn off comment lines
+			fgets(instr, Text_Size_Limit, infile);
+		if (names->colnamect !=0){
+			astring	= strtok(instr,delimiters);
+			names->colnamect= 0;
+			names->colnames	= malloc(sizeof(char*));
+			while (astring !=NULL){
+				add_a_name(&(names->colnamect), &(names->colnames), astring);
+				astring	= strtok(NULL,delimiters);
+			}
+		}
+		if (names->rownamect !=0){
+			names->rownamect= 0;
+			names->rownames	= malloc(sizeof(char*));
+		} else 	names->rownames	= NULL;
 	}
-	while(fgets(instr,10000,infile)!=NULL){
+	while(fgets(instr,Text_Size_Limit,infile)!=NULL){
 		colno	= 0;
 		if(instr[0]!='#') {
 			i	++;
 			(*tab)	= realloc(*tab, sizeof(double) * i);
 			(*tab)[i-1]= malloc(sizeof(double)*ct);
-			astring	= strtok(instr,",");
+			astring	= strtok(instr,delimiters);
+				if (names !=NULL && names->rownames !=NULL){
+					add_a_name(&(names->rownamect), &(names->rownames), astring);
+					astring	= strtok(NULL,delimiters);
+					if (astring==NULL){
+						printf("row name with no data on line %i.\n", i);
+						return 1;
+					}
+				}
 			while (astring !=NULL){
 				colno++;
-				(*tab)[i-1][colno-1]	= atof(astring);
-				astring	= strtok(NULL,",");
+				(*tab)[i-1][colno-1]	= strtod(astring, &str);
+				if (!strcmp(astring, str))
+					printf("trouble converting item %i on line %i; am using zero and continuing.\n", colno, i);
+				astring	= strtok(NULL,delimiters);
 			}
 		}
 	}
@@ -140,14 +196,15 @@ int 		i	= 0,
 }
 
 
+
 int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names){
 FILE * 		infile;
-char		q[20000], instr[100000], **fn, *astring;
+char		q[20000], instr[Text_Size_Limit], **fn, *astring;
 int 		ct,
 		i			= 0, 
 		use_names_in_file	= 0,
 		rows			= 0;
-	ct	= count_cols_in_text(text_file);
+	ct	= apop_count_cols_in_text(text_file);
 	if (apop_table_exists(tabname,0)){
 	       	printf("%s table exists; not recreating it.\n", tabname);
 		return 0; //to do: return the length of the table.
@@ -155,9 +212,9 @@ int 		ct,
 		infile	= fopen(text_file,"r");
 		if (field_names == NULL){
 			use_names_in_file++;
-			fgets(instr, 100000, infile);
+			fgets(instr, Text_Size_Limit, infile);
 			while(instr[0]=='#')	//burn off comment files
-				fgets(instr, 10000, infile);
+				fgets(instr, Text_Size_Limit, infile);
 			fn	= malloc(ct * sizeof(char*));
 			astring	= strtok(instr,",");
 			while(astring !=NULL){
@@ -177,7 +234,7 @@ int 		ct,
 		}
 		strcat(q, "); commit; begin;");
 		apop_query_db(q);
-		while(fgets(instr,10000,infile)!=NULL){
+		while(fgets(instr,Text_Size_Limit,infile)!=NULL){
 			rows	++;
 			if(instr[0]!='#') {
 				sprintf(q, "INSERT INTO %s VALUES (%s);", tabname, instr);
@@ -193,3 +250,13 @@ int 		ct,
 	}
 }
 
+int apop_crosstab_to_db(gsl_matrix *in, apop_name n, char *tabname, char *row_col_name, 
+						char *col_col_name, char *data_col_name){
+int		i,j;
+	apop_query_db("CREATE TABLE %s (%s , %s , %s);", tabname, row_col_name, col_col_name, data_col_name);
+	for (i=0; i< n.colnamect; i++)
+		for (j=0; j< n.rownamect; j++)
+			apop_query_db("INSERT INTO %s VALUES (%s, %s,%g);", tabname, 
+					n.rownames[j], n.colnames[i], gsl_matrix_get(in, j, i));
+	return 0;
+}

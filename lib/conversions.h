@@ -34,7 +34,8 @@ void apop_convert_array_to_matrix(double **in, gsl_matrix **out, int rows, int c
 ///////////
 //From text
 ///////////
-int apop_convert_text_to_array(char *text_file, double ***tab, int has_field_names);
+int apop_convert_text_to_array(char *text_file, char *delimiters, double ***tab, apop_name *names);
+//int apop_convert_text_to_array(char *text_file, double ***tab, int has_field_names);
 /* text_file: the input file. At the moment, it needs to be comma delimited.
 	Lines with a # at the head are taken to be comments and ignored.
 	If field_names is NULL, then the first non-comment line of
