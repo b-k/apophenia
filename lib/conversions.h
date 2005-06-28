@@ -60,3 +60,10 @@ int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names);
    returns: the number of rows
    [Don't forget to open the db with apop_open_db first.]
 */
+
+
+///////////
+//From crosstabs
+///////////
+int apop_crosstab_to_db(gsl_matrix *in, apop_name n, char *tabname, char *row_col_name, 
+						char *col_col_name, char *data_col_name);

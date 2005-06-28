@@ -99,6 +99,7 @@ FILE * 		infile;
 char		instr[Text_Size_Limit], *astring;
 int		ct	= 0;
 	infile	= fopen(text_file,"r");
+	if (infile==NULL) {printf("Error opening %s", text_file); return 1;}
 	fgets(instr, Text_Size_Limit, infile);
 	while(instr[0]=='#')	//burn off comment lines
 		fgets(instr, Text_Size_Limit, infile);
@@ -140,6 +141,7 @@ char		*stripped;
 	strcpy((*list)[(*ct)-1],stripped);
 	free(stripped);
 }
+
 
 int apop_convert_text_to_array(char *text_file, char *delimiters, double ***tab, apop_name *names){
 FILE * 		infile;
@@ -195,11 +197,39 @@ int 		i	= 0,
 	return i;
 }
 
+char * prep_string_for_sqlite(char *astring){
+//If the string isn't a number, it needs quotes.
+char		*tmpstring, 
+		*out	= NULL,
+		*str	= NULL;
+	strtod(astring, &str);
+	if (!strcmp(astring, str)){	//then it's not a number.
+		tmpstring=strip(astring);
+		if (tmpstring[0]!='"'){
+			out	= malloc(sizeof(char) * (strlen(tmpstring)+3));
+			sprintf(out, "\"%s\"",tmpstring);
+		}
+		free(tmpstring);
+		return out;
+	} else {			//sqlite wants 0.1, not .1
+		tmpstring=strip(astring);
+		if (tmpstring[0]=='.'){
+			out	= malloc(sizeof(char) * (strlen(tmpstring)+2));
+			sprintf(out, "0%s",tmpstring);
+			free(tmpstring);
+			return out;
+		}
+		free(tmpstring);
+	} 
+	out	= malloc(sizeof(char) * (strlen(astring)+1));
+	strcpy(out, astring);
+	return out;
+}
 
 
 int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names){
 FILE * 		infile;
-char		q[20000], instr[Text_Size_Limit], **fn, *astring, *str=NULL, *tmpstring;
+char		q[20000], instr[Text_Size_Limit], **fn, *astring;
 char		delimiters[]	=",";
 int 		ct, one_in,
 		i			= 0, 
@@ -207,10 +237,14 @@ int 		ct, one_in,
 		rows			= 0;
 	ct	= apop_count_cols_in_text(text_file);
 	if (apop_table_exists(tabname,0)){
-	       	printf("%s table exists; not recreating it.\n", tabname);
+	       	printf("apop: %s table exists; not recreating it.\n", tabname);
 		return 0; //to do: return the length of the table.
 	} else{
 		infile	= fopen(text_file,"r");
+	       	if (infile==NULL) {
+			printf("apop, %s: %i. Trouble opening %s.\n", __FILE__, __LINE__, text_file);
+			return 0;
+		}
 		if (field_names == NULL){
 			use_names_in_file++;
 			fgets(instr, Text_Size_Limit, infile);
@@ -235,25 +269,15 @@ int 		ct, one_in,
 		strcat(q, "); commit; begin;");
 		apop_query_db(q);
 		while(fgets(instr,Text_Size_Limit,infile)!=NULL){
-			rows	++;
-			if(instr[0]!='#') {
+			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
+				rows	++;
 				i++;
 				one_in=0;
 				sprintf(q, "INSERT INTO %s VALUES (", tabname);
 				astring	= strtok(instr,delimiters);
 				while(astring !=NULL){
-					//If the string isn't a number, it needs quotes.
-					strtod(astring, &str);
-					if (!strcmp(astring, str)){	//then it's not a number.
-						tmpstring=strip(astring);
-						if (tmpstring[0]!='"'){
-							astring= malloc(sizeof(char) * (strlen(tmpstring)+3));
-							sprintf(astring, "\"%s\"",tmpstring);
-						}
-					free(tmpstring);
-					}
-					if(one_in++) 	sprintf(q, "%s, %s", q, astring);
-					else 		sprintf(q, "%s %s", q, astring);
+					if(one_in++) 	strcat(q, ", ");
+					strcat(q, prep_string_for_sqlite(astring));
 					astring	= strtok(NULL,delimiters);
 				}
 				apop_query_db("%s);",q);
@@ -272,9 +296,12 @@ int apop_crosstab_to_db(gsl_matrix *in, apop_name n, char *tabname, char *row_co
 						char *col_col_name, char *data_col_name){
 int		i,j;
 	apop_query_db("CREATE TABLE %s (%s , %s , %s);", tabname, row_col_name, col_col_name, data_col_name);
-	for (i=0; i< n.colnamect; i++)
+	for (i=0; i< n.colnamect; i++){
+		apop_query_db("begin;");
 		for (j=0; j< n.rownamect; j++)
 			apop_query_db("INSERT INTO %s VALUES (%s, %s,%g);", tabname, 
 					n.rownames[j], n.colnames[i], gsl_matrix_get(in, j, i));
+		apop_query_db("commit;");
+	}
 	return 0;
 }
