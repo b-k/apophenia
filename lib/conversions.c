@@ -199,8 +199,9 @@ int 		i	= 0,
 
 int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names){
 FILE * 		infile;
-char		q[20000], instr[Text_Size_Limit], **fn, *astring;
-int 		ct,
+char		q[20000], instr[Text_Size_Limit], **fn, *astring, *str=NULL, *tmpstring;
+char		delimiters[]	=",";
+int 		ct, one_in,
 		i			= 0, 
 		use_names_in_file	= 0,
 		rows			= 0;
@@ -216,14 +217,13 @@ int 		ct,
 			while(instr[0]=='#')	//burn off comment files
 				fgets(instr, Text_Size_Limit, infile);
 			fn	= malloc(ct * sizeof(char*));
-			astring	= strtok(instr,",");
+			astring	= strtok(instr,delimiters);
 			while(astring !=NULL){
 				fn[i]	= malloc(1000 * sizeof(char));
 				strcpy(fn[i], astring);
-				astring	= strtok(NULL,",");
+				astring	= strtok(NULL,delimiters);
 				i++;
 			}
-			free(astring); 
 		} else	fn	= field_names;
 		strcpy(q, "begin; CREATE TABLE ");
 		strcat(q, tabname);
@@ -237,8 +237,26 @@ int 		ct,
 		while(fgets(instr,Text_Size_Limit,infile)!=NULL){
 			rows	++;
 			if(instr[0]!='#') {
-				sprintf(q, "INSERT INTO %s VALUES (%s);", tabname, instr);
-				apop_query_db(q);
+				i++;
+				one_in=0;
+				sprintf(q, "INSERT INTO %s VALUES (", tabname);
+				astring	= strtok(instr,delimiters);
+				while(astring !=NULL){
+					//If the string isn't a number, it needs quotes.
+					strtod(astring, &str);
+					if (!strcmp(astring, str)){	//then it's not a number.
+						tmpstring=strip(astring);
+						if (tmpstring[0]!='"'){
+							astring= malloc(sizeof(char) * (strlen(tmpstring)+3));
+							sprintf(astring, "\"%s\"",tmpstring);
+						}
+					free(tmpstring);
+					}
+					if(one_in++) 	sprintf(q, "%s, %s", q, astring);
+					else 		sprintf(q, "%s %s", q, astring);
+					astring	= strtok(NULL,delimiters);
+				}
+				apop_query_db("%s);",q);
 			}
 		}
 		apop_query_db("commit;");
