@@ -220,7 +220,7 @@ char		*tmpstring,
 			return out;
 		}
 		free(tmpstring);
-	} 
+	} //If you're here, then it's a number which needs no fixing.
 	out	= malloc(sizeof(char) * (strlen(astring)+1));
 	strcpy(out, astring);
 	return out;

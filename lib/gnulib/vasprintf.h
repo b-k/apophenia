@@ -18,7 +18,7 @@
 #ifndef _VASPRINTF_H
 #define _VASPRINTF_H
 
-#if HAVE_VASPRINTF
+#if HAVE_VASPRINTFXX
 
 /* Get asprintf(), vasprintf() declarations.  */
 #include <stdio.h>

@@ -5,7 +5,7 @@
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
 
-int apop_table_exists(const char *q, int whattodo);
+int apop_table_exists(char *q, int whattodo);
 	//whattodo==1	==>kill table so it can be recreated in the main.
 	//whattodo==0	==>just return the status: 1=exists 0=doesn't. 
 
@@ -37,6 +37,9 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...);
 	//do not preallocate *output.
 	//	gsl_matrix * outmatrix;
 	//	outmatrix = apop_query_to_matrix("select a, b, c from some_table");
+
+float apop_query_to_float(const char * fmt, ...);
+	//like query_to_matrix, but returns a single number.
 
 int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
 	//dump a matrix to a database table named tabname.

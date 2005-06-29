@@ -146,14 +146,14 @@ va_list		argp;
 
 int 		isthere;//used for the next two fns only.
 
-int tab_exists_callback(void *in, int argc, char **argv, char *whatever){
+int tab_exists_callback(void *in, int argc, char **argv, char **whatever){
 char *q	= in;
 	if (!strcmp(argv[argc-1],q))
 		isthere=1;
 	return isthere;
 }
 
-int apop_table_exists(const char *q, int whattodo){
+int apop_table_exists(char *q, int whattodo){
 	//whattodo==1	==>kill table so it can be recreated in main.
 	//whattodo==0	==>return error so program can continue.
 char 		*err, q2[10000];
@@ -251,6 +251,27 @@ va_list		argp;
 	sqlite3_exec(db,"DROP TABLE completely_temporary_table",NULL,NULL, &err);  ERRCHECK
 	free(q2);
 	return output;
+}
+
+float apop_query_to_float(const char * fmt, ...){
+//just like the above, but returns a single number, which will be the
+//(0,0)th entry in the matrix.
+gsl_matrix	*m=NULL;
+va_list		argp;
+char		*query;
+float		out;
+	va_start(argp, fmt);
+	vasprintf(&query, fmt, argp);
+	va_end(argp);
+	m	= apop_query_to_matrix(query);
+	if (m==NULL){
+		printf("apop, %s, %i: query turned up a blank table. Returning zero.", __FILE__, __LINE__);
+		return 0;
+	} //else
+	out	= gsl_matrix_get(m, 0, 0);
+	gsl_matrix_free(m);
+	return out;
+
 }
 
 apop_name * apop_db_get_names(void){
