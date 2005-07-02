@@ -489,9 +489,12 @@ int				betasize	= estimate->parameters->size;
 	gsl_vector_memcpy(estimate->parameters, s->x);
 	gsl_multimin_fdfminimizer_free(s);
 
-
+	estimate->log_likelihood	= -likelihood(estimate->parameters, data);
 	//Epilogue:
 	//find the variance-covariance matrix, using $df/d\theta \cdot df/d\theta$
+	if (estimate->uses.covariance == 0) 
+		return;
+	//else:
 gsl_matrix	*pre_cov;
 	pre_cov			= gsl_matrix_alloc(betasize, betasize);
 	estimate->covariance	= gsl_matrix_alloc(betasize, betasize);
@@ -503,8 +506,15 @@ gsl_matrix	*pre_cov;
 		gsl_vector_scale(&(v.vector), gsl_vector_get(diff, i));
 	}
 	apop_det_and_inv(pre_cov, estimate->covariance, 0,1);
-	estimate->log_likelihood	= -likelihood(estimate->parameters, data);
 	gsl_vector_free(diff);
+
+	if (estimate->uses.confidence == 0)
+		return;
+	//else:
+	for (i=0; i<betasize; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
+		gsl_vector_set(estimate->confidence, i,
+			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(estimate->parameters, i), 
+			gsl_matrix_get(estimate->covariance, i, i)))*2));
 	return;
 }
 
@@ -526,7 +536,6 @@ void prep_inventory_mle(apop_inventory *in, apop_inventory *out){
 	if (in == NULL){ 	//then give the user the works.
 		apop_inventory_set(out, 1);
 	//OK, some things are not yet implemented.
-	out->confidence		= 0;
 	out->residuals		= 0;
 		return;
 	}//else:
@@ -537,4 +546,6 @@ void prep_inventory_mle(apop_inventory *in, apop_inventory *out){
 	out->names		= 0;
 	out->confidence		= 0;
 	out->residuals		= 0;
+	if (out->confidence==1)
+		out->covariance = 1;
 }
