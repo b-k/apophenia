@@ -1,9 +1,39 @@
 //regression.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+
+//Generally, if it assumes a Normal distribution of something, it's
+//here.
 #include <apophenia/regression.h>
 #include <gsl/gsl_blas.h>
 #include <apophenia/stats.h>
 #include <apophenia/linear_algebra.h>
 #include <apophenia/estimate.h>
+
+double two_tailify(double in){
+//GSL gives me a one-tailed test; convert it to two.
+	return	fabs(1 - (1 - in)*2);
+}
+
+double	apop_t_test(gsl_vector *a, gsl_vector *b){
+double		a_avg	= apop_mean(a),
+		a_var	= apop_var(a),
+		a_count	= a->size,
+		b_avg	= apop_mean(b),
+		b_var	= apop_var(b),
+		b_count	= b->size,
+		stat	= (a_avg - b_avg)/ sqrt(b_var/(b_count-1) + a_var/(a_count-1));
+	return two_tailify(gsl_cdf_tdist_P(stat, a_count+b_count-2));
+}
+
+double	apop_paired_t_test(gsl_vector *a, gsl_vector *b){
+gsl_vector	*diff	= gsl_vector_alloc(a->size);
+	gsl_vector_memcpy(diff, a);
+	gsl_vector_sub(diff, b);
+double		avg	= apop_mean(diff),
+		var	= apop_var(diff),
+		count	= a->size,
+		stat	= avg/ sqrt(var/(count-1));
+	return two_tailify(gsl_cdf_tdist_P(stat, count-1));
+}
 
 void prep_inventory_OLS(apop_name *n, apop_inventory *in, apop_inventory *out){
 //These are the rules going from what you can ask for to what you'll get.
@@ -47,8 +77,7 @@ int		i;
 	if (out->uses.confidence)
 		for (i=0; i < data->size2; i++)  // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 			gsl_vector_set(out->confidence, i,
-				fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(out->parameters, i), 
-				gsl_matrix_get(cov, i, i)))*2));
+			   two_tailify(gsl_cdf_gaussian_P(gsl_vector_get(out->parameters, i), gsl_matrix_get(cov, i, i))));
 	if (out->uses.residuals == 0) 	gsl_vector_free(error);
 	else 				out->residuals	= error;
 	if (out->uses.covariance == 0) 	gsl_matrix_free(cov);
