@@ -1,12 +1,13 @@
 //db.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <math.h> 	//sqrt
-#include "gnulib/vasprintf.h"
+//#include "gnulib/vasprintf.h"
 #include <string.h>
 #include <stdarg.h>
 #include <apophenia/name.h>
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <apophenia/db.h>
 
+#include <apophenia/vasprintf.h>
 
 sqlite3	*db=NULL;	//There's only one database handle. Here it is.
 

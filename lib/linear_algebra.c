@@ -6,7 +6,9 @@
 #include <apophenia/linear_algebra.h> 
 #include <apophenia/stats.h>
 #include "math.h" //pow!
-#include "gnulib/vasprintf.h"
+//#include "gnulib/vasprintf.h"
+#include <apophenia/vasprintf.h>
+//int vasprintf (char **result, const char *format, va_list args);
 
 gsl_matrix *apop_covariance_matrix(gsl_matrix *in, int normalize){
 gsl_matrix	*out;

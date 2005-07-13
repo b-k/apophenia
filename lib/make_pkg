@@ -1,17 +1,17 @@
 export outlib=apophenia_install
-rm -rf $outlib
 export junkdir=tttt
+
+rm -rf $outlib
+rm -rf $junkdir
 mkdir $junkdir
 cp * $junkdir
-cp -r gnulib $junkdir
 cd $junkdir
 	libtoolize
 	aclocal
 	autoconf
 	automake -a
 	mkdir $outlib
-	cp *.c *.h configure.ac config.guess mkinstalldirs missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp $outlib 
-	cp -rf gnulib $outlib
+	cp *.c *.h configure.ac config.guess missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp $outlib 
 	mv $outlib ..
 cd ..
 rm -rf $junkdir
@@ -22,7 +22,6 @@ cd $outlib
 cd ../..
 tar czf apophenia.tgz $outlib
 cd $outlib
-mv gnulib/configure.ac .
 echo "***********Done with packing; now compiling***********"
-./configure; make; su -c "make install"
+./configure; make; sudo -s  "make install"
 cd ..

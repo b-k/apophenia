@@ -32,6 +32,7 @@ double		avg	= apop_mean(diff),
 		var	= apop_var(diff),
 		count	= a->size,
 		stat	= avg/ sqrt(var/(count-1));
+	gsl_vector_free(diff);
 	return two_tailify(gsl_cdf_tdist_P(stat, count-1));
 }
 

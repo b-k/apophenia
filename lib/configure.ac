@@ -1,9 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(db.c)
-AM_INIT_AUTOMAKE(apophenia, .07)
+AM_INIT_AUTOMAKE(apophenia, .09)
 
 dnl Checks for library functions.
-AC_CONFIG_FILES(gnulib/Makefile)
+dnl AC_CONFIG_FILES(gnulib/Makefile)
 dnl AC_CONFIG_SUBDIRS(gnulib)
 
 dnl Checks for programs.
@@ -12,7 +12,7 @@ AC_PROG_LIBTOOL
 
 dnl Checks for libraries.
 dnl Replace `main' with a function in -lgsl:
-AC_CHECK_LIB(gsl, main)
+AC_CHECK_LIB(gsl, gsl_matrix_alloc)
 dnl Replace `main' with a function in -lgslcblas:
 AC_CHECK_LIB(gslcblas, main)
 dnl Replace `main' with a function in -lsqlite3:

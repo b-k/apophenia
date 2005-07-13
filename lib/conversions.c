@@ -229,7 +229,6 @@ char		*tmpstring,
 	return out;
 }
 
-
 int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names){
 FILE * 		infile;
 char		q[20000], instr[Text_Size_Limit], **fn, *astring;
@@ -293,6 +292,11 @@ int 		ct, one_in,
 		}
 		return rows;
 	}
+}
+
+int apop_text_to_db(char *text_file, char *tabname, char **field_names){
+	//just an alias.
+	return apop_convert_text_to_db(text_file, tabname, field_names);
 }
 
 int apop_crosstab_to_db(gsl_matrix *in, apop_name n, char *tabname, char *row_col_name, 

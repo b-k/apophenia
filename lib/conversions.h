@@ -47,6 +47,7 @@ int apop_convert_text_to_array(char *text_file, char *delimiters, double ***tab,
 */
 
 int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names);
+int apop_text_to_db(char *text_file, char *tabname, char **field_names);
 
 /* text_file: the input file. At the moment, it needs to be comma delimited.
 	Lines with a # at the head are taken to be comments and ignored.
