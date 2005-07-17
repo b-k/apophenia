@@ -20,52 +20,64 @@ apop_name *last_names = NULL;	//The column names from the last query to matrix
 
 typedef struct StdDevCtx StdDevCtx;
 struct StdDevCtx {
-  double sum;     /* Sum of terms */
-  double sum2;    /* Sum of the squares of terms */
-  double sum3;    /* Sum of the cube of terms */
-  double sum4;    /* Sum of the fourth-power of terms */
+  double avg;     /* avg of terms */
+  double avg2;    /* avg of the squares of terms */
+  double avg3;    /* avg of the cube of terms */
+  double avg4;    /* avg of the fourth-power of terms */
   int cnt;        /* Number of terms counted */
 };
 
 static void twoStep(sqlite3_context *context, int argc, sqlite3_value **argv){
   StdDevCtx *p;
-  double x;
+double 		x, ratio;
   if( argc<1 ) return;
   p = sqlite3_aggregate_context(context, sizeof(*p));
   if( p && argv[0] ){
     x = sqlite3_value_double(argv[0]);
-    p->sum += x;
-    p->sum2 += x*x;
+    ratio	= (p->cnt/(p->cnt+1));
+    p->avg	/= ratio;
+    p->avg2	/= ratio;
     p->cnt++;
+    p->avg += x/p->cnt;
+    p->avg2 += gsl_pow_2(x)/p->cnt;
   }
 }
 
 static void threeStep(sqlite3_context *context, int argc, sqlite3_value **argv){
-  StdDevCtx *p;
-  double x;
+StdDevCtx 	*p;
+double 		x, ratio;
   if( argc<1 ) return;
   p = sqlite3_aggregate_context(context, sizeof(*p));
   if( p && argv[0] ){
     x = sqlite3_value_double(argv[0]);
-    p->sum += x;
-    p->sum2 += x*x;
-    p->sum3 += x*x*x;
+    ratio	= (p->cnt/(p->cnt+1));
+    p->avg	/= ratio;
+    p->avg2	/= ratio;
+    p->avg3	/= ratio;
     p->cnt++;
+    p->avg += x/p->cnt;
+    p->avg2 += gsl_pow_2(x)/p->cnt;
+    p->avg3 += gsl_pow_3(x)/p->cnt;
   }
 }
 
 static void fourStep(sqlite3_context *context, int argc, sqlite3_value **argv){
-  StdDevCtx *p;
-  double x;
+StdDevCtx 	*p;
+double 		x,ratio;
   if( argc<1 ) return;
   p = sqlite3_aggregate_context(context, sizeof(*p));
   if( p && argv[0] ){
     x = sqlite3_value_double(argv[0]);
-    p->sum += x;
-    p->sum2 += x*x;
-    p->sum3 += x*x*x;
-    p->sum4 += x*x*x*x;
+    ratio	= (p->cnt/(p->cnt+1));
+    p->avg	/= ratio;
+    p->avg2	/= ratio;
+    p->avg3	/= ratio;
+    p->avg4	/= ratio;
+    p->avg += x/p->cnt;
     p->cnt++;
+    p->avg2 += gsl_pow_2(x)/p->cnt;
+    p->avg3 += gsl_pow_3(x)/p->cnt;
+    p->avg4 += gsl_pow_4(x)/p->cnt;
   }
 }
 
@@ -74,7 +86,7 @@ static void stdDevFinalize(sqlite3_context *context){
   if( p && p->cnt>1 ){
     double rCnt = p->cnt;
     sqlite3_result_double(context,
-       sqrt((p->sum2 - p->sum*p->sum/rCnt)/(rCnt-1.0)));
+       sqrt((p->avg2*rCnt - p->avg*p->avg)/(rCnt-1.0)));
   }
 }
 
@@ -83,7 +95,7 @@ static void varFinalize(sqlite3_context *context){
   if( p && p->cnt>1 ){
     double rCnt = p->cnt;
     sqlite3_result_double(context,
-       (p->sum2 - p->sum*p->sum/rCnt)/(rCnt-1.0));
+       (p->avg2*rCnt - p->avg*p->avg)/(rCnt-1.0));
   }
 }
 
@@ -92,7 +104,7 @@ static void skewFinalize(sqlite3_context *context){
   if( p && p->cnt>1 ){
     double rCnt = p->cnt;
     sqlite3_result_double(context,
-       (p->sum3 - 3*p->sum2*p->sum/rCnt + 2 * pow(p->sum,3))/pow(rCnt,2) / (rCnt-1.0));
+       (p->avg3*rCnt - 3*p->avg2*p->avg*rCnt + (3*rCnt-1) * gsl_pow_3(p->avg)) / (rCnt-1.0));
   }
 }
 
@@ -101,8 +113,8 @@ static void kurtFinalize(sqlite3_context *context){
   if( p && p->cnt>1 ){
     double rCnt = p->cnt;
     sqlite3_result_double(context,
-       (p->sum4 - 4*p->sum3*p->sum/rCnt + 6 * pow(p->sum2,2)*pow(p->sum,2)/pow(rCnt,3)
-						- 3*pow(p->sum,4)/pow(rCnt,3))/(rCnt-1.0));
+       (p->avg4*rCnt - 4*p->avg3*p->avg*rCnt + 6 * gsl_pow_2(p->avg2)*gsl_pow_2(p->avg)*rCnt
+						- (4*rCnt+1)* gsl_pow_4(p->avg))/(rCnt-1.0));
   }
 }
 
