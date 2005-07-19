@@ -21,6 +21,7 @@ int apop_close_db(int vacuum);
 	//vacuum==1: do some cleanup to minimize hard disk space
 	//vacuum==0: just close the thing.
 
+int apop_query(const char *q, ...);
 int apop_query_db(const char *q, ...);
 	//Run a query but output nothing outside the DB.
 	//It's fastest to compound as many queries as possible here;

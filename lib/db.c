@@ -144,6 +144,20 @@ int apop_open_db(char *filename){
 	return 0;
 }
 
+int apop_query(const char *fmt, ...){
+char 		*err, *q;
+va_list		argp;
+	if (db==NULL) apop_open_db(NULL);
+	va_start(argp, fmt);
+	vasprintf(&q, fmt, argp);
+	va_end(argp);
+	sqlite3_exec(db, q, NULL,NULL, &err);
+	free(q);
+	ERRCHECK
+	return 1;
+}
+
+//an identical alias:
 int apop_query_db(const char *fmt, ...){
 char 		*err, *q;
 va_list		argp;

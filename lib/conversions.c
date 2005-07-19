@@ -151,7 +151,7 @@ FILE * 		infile;
 char		instr[Text_Size_Limit], *astring, *str;
 int 		i	= 0,
 		ct, colno;
-	ct	= apop_count_cols_in_text(text_file);
+	ct	= apop_count_cols_in_text(text_file)+1;
 	*tab	= malloc(sizeof(double));
 	infile	= fopen(text_file,"r");
 	if (names != NULL){
@@ -176,7 +176,7 @@ int 		i	= 0,
 		colno	= 0;
 		if(instr[0]!='#') {
 			i	++;
-			(*tab)	= realloc(*tab, sizeof(double) * i);
+			*tab	= realloc(*tab, sizeof(double*) * i);
 			(*tab)[i-1]= malloc(sizeof(double)*ct);
 			astring	= strtok(instr,delimiters);
 				if (names !=NULL && names->rownames !=NULL){
@@ -191,7 +191,7 @@ int 		i	= 0,
 				colno++;
 				(*tab)[i-1][colno-1]	= strtod(astring, &str);
 				if (!strcmp(astring, str))
-					printf("trouble converting item %i on line %i; am using zero and continuing.\n", colno, i);
+					printf("trouble converting item %i on line %i; using zero.\n", colno, i);
 				astring	= strtok(NULL,delimiters);
 			}
 		}
