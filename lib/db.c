@@ -13,6 +13,8 @@ sqlite3	*db=NULL;	//There's only one database handle. Here it is.
 
 apop_name *last_names = NULL;	//The column names from the last query to matrix
 
+int	total_rows, total_cols;		//the counts from the last query.
+
                                                                                                                                
 ////////////////////////////////////////////////
 // Part one: additional aggregate functions for calculating higher moments
@@ -221,10 +223,74 @@ char		*err;
 	return 0;
 	}
 
+int names_callback(void *o,int argc, char **argv, char **whatever){
+	apop_name_add(last_names, argv[1], 'c'); 
+	return 0;
+}
+
+int length_callback(void *o,int argc, char **argv, char **whatever){
+	total_rows=atoi(argv[0]); 
+	return 0;
+}
+
+char *** apop_query_to_chars(const char * fmt, ...){
+char		***output;
+int		currentrow=0;
+char		*q2, *err=NULL, *query;
+va_list		argp;
+
+	int db_to_chars(void *o,int argc, char **argv, char **whatever){
+	int		jj;
+	char ****	output = (char ****) o;
+		if (*argv !=NULL){
+			(*output)[currentrow]	= malloc(sizeof(char**) * argc);
+			for (jj=0;jj<argc;jj++){
+				if (argv[jj]==NULL){
+					(*output)[currentrow][jj]	= malloc(sizeof(char*));
+					strcpy((*output)[currentrow][jj], "");
+				}
+				else{
+					(*output)[currentrow][jj]	= malloc(sizeof(char*) * strlen(argv[jj]));
+					strcpy((*output)[currentrow][jj], argv[jj]);
+				}
+			}
+			currentrow++;
+		}
+		return 0;
+	}
+
+	if (db==NULL) apop_open_db(NULL);
+	va_start(argp, fmt);
+	vasprintf(&query, fmt, argp);
+	va_end(argp);
+
+	total_rows	= 0;
+	q2		= malloc(sizeof(char)*(strlen(query)+300));
+	apop_table_exists("completely_temporary_table",1);
+	sqlite3_exec(db,strcat(strcpy(q2,
+		"CREATE TABLE completely_temporary_table AS "),query),NULL,NULL, &err); ERRCHECK
+	sqlite3_exec(db,"SELECT count(*) FROM completely_temporary_table",length_callback,NULL, &err);
+	free(query);
+	ERRCHECK
+	if (total_rows==0){
+		output	= NULL;
+	} else {
+		total_cols	= apop_count_cols("completely_temporary_table");
+		output		= malloc(sizeof(char***) * total_rows);
+		sqlite3_exec(db,"SELECT * FROM completely_temporary_table",db_to_chars,&output, &err); ERRCHECK
+		if (last_names !=NULL) 
+			apop_name_free(last_names); 
+		last_names = apop_name_alloc();
+		sqlite3_exec(db,"pragma table_info(completely_temporary_table)",names_callback, NULL, &err); ERRCHECK
+	}
+	sqlite3_exec(db,"DROP TABLE completely_temporary_table",NULL,NULL, &err);  ERRCHECK
+	free(q2);
+	return output;
+}
 
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 gsl_matrix	*output;
-int		totalrows=0,currentrow=0;
+int		currentrow=0;
 char		*q2, *err=NULL, *query;
 va_list		argp;
 
@@ -243,32 +309,23 @@ va_list		argp;
 		return 0;
 	}
 
-	int length_callback(void *o,int argc, char **argv, char **whatever){
-		totalrows=atoi(argv[0]); 
-		return 0;
-	}
-
-	int names_callback(void *o,int argc, char **argv, char **whatever){
-		apop_name_add(last_names, argv[1], 'c'); 
-		return 0;
-	}
-
 	if (db==NULL) apop_open_db(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
-
-	q2	= malloc(sizeof(char)*(strlen(query)+300));
+	total_rows= 0;
+	q2	 = malloc(sizeof(char)*(strlen(query)+300));
 	apop_table_exists("completely_temporary_table",1);
 	sqlite3_exec(db,strcat(strcpy(q2,
 		"CREATE TABLE completely_temporary_table AS "),query),NULL,NULL, &err); ERRCHECK
 	sqlite3_exec(db,"SELECT count(*) FROM completely_temporary_table",length_callback,NULL, &err);
 	free(query);
 	ERRCHECK
-	if (totalrows==0){
+	if (total_rows==0){
 		output	= NULL;
 	} else {
-		output	= gsl_matrix_alloc(totalrows, apop_count_cols("completely_temporary_table"));
+		total_cols	= apop_count_cols("completely_temporary_table");
+		output		= gsl_matrix_alloc(total_rows, total_cols);
 		sqlite3_exec(db,"SELECT * FROM completely_temporary_table",db_to_table,output, &err); ERRCHECK
 		if (last_names !=NULL) 
 			apop_name_free(last_names); 
@@ -292,7 +349,7 @@ float		out;
 	va_end(argp);
 	m	= apop_query_to_matrix(query);
 	if (m==NULL){
-		printf("apop, %s, %i: query turned up a blank table. Returning zero.", __FILE__, __LINE__);
+		printf("apop, %s, %i: query turned up a blank table. Returning zero.\n", __FILE__, __LINE__);
 		return 0;
 	} //else
 	out	= gsl_matrix_get(m, 0, 0);
@@ -301,9 +358,9 @@ float		out;
 
 }
 
-apop_name * apop_db_get_names(void){
-	return last_names;
-}
+apop_name * apop_db_get_names(void){ return last_names; }
+int apop_db_get_cols(void){ return total_cols; }
+int apop_db_get_rows(void){ return total_rows; }
 
 int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 int		i,j; 

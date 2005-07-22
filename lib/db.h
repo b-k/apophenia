@@ -39,6 +39,8 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...);
 	//	gsl_matrix * outmatrix;
 	//	outmatrix = apop_query_to_matrix("select a, b, c from some_table");
 
+char *** apop_query_to_chars(const char * fmt, ...);
+
 float apop_query_to_float(const char * fmt, ...);
 	//like query_to_matrix, but returns a single number.
 
@@ -48,4 +50,6 @@ int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
 	//With no headers specified, you get columns C0, C1, C2...
 
 apop_name * apop_db_get_names(void);
-	//give the column names from the last query.
+int apop_db_get_cols(void);
+int apop_db_get_rows(void);
+	//give the column names and counts from the last query.
