@@ -1,4 +1,5 @@
-bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab
+bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop
+apop_SOURCES = apop.c
 apop_text_to_db_SOURCES = apop_text_to_db.c
 apop_db_to_crosstab_SOURCES = apop_db_to_crosstab.c
 LDADD = libapophenia.la
