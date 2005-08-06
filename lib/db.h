@@ -1,9 +1,12 @@
 //db.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+#ifndef apop_db_included
+#define apop_db_included
 #include <sqlite3.h>
 #include <apophenia/name.h>
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
+extern int apop_verbose;
 
 int apop_table_exists(char *q, int whattodo);
 	//whattodo==1	==>kill table so it can be recreated in the main.
@@ -15,6 +18,7 @@ int apop_count_cols(const char *name);
 	//how many columns are in the table.
 
 int apop_open_db(char *filename);
+int apop_db_open(char *filename);
 	//If filename==NULL, it'll open a database in memory
 
 int apop_close_db(int vacuum);
@@ -53,3 +57,14 @@ apop_name * apop_db_get_names(void);
 int apop_db_get_cols(void);
 int apop_db_get_rows(void);
 	//give the column names and counts from the last query.
+
+void apop_db_merge(char *infile);
+	//copy all of the tables in the database at the given file into
+	//the database apophenia has already opened. If there are
+	//duplicate names, append them.
+
+void apop_db_merge_table(char *infile, char *tabname);
+	//This is just like apop_db_merge, but will
+	//only pull the single table specified.
+
+#endif

@@ -15,6 +15,8 @@ apop_name *last_names = NULL;	//The column names from the last query to matrix
 
 int	total_rows, total_cols;		//the counts from the last query.
 
+int apop_verbose	= 0;
+
                                                                                                                                
 ////////////////////////////////////////////////
 // Part one: additional aggregate functions for calculating higher moments
@@ -145,6 +147,9 @@ int apop_open_db(char *filename){
 	apop_query_db("pragma short_column_names");
 	return 0;
 }
+
+int apop_db_open(char *filename){
+	return apop_open_db(filename); }
 
 int apop_query(const char *fmt, ...){
 char 		*err, *q;
@@ -313,6 +318,7 @@ va_list		argp;
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
+	if (apop_verbose)	printf("%s\n", query);
 	total_rows= 0;
 	q2	 = malloc(sizeof(char)*(strlen(query)+300));
 	apop_table_exists("completely_temporary_table",1);
@@ -394,4 +400,47 @@ char		*q 		= malloc(sizeof(char)*1000);
 	}
 	free(q);
 	return 0;
+}
+
+void free_tab_list(char ****tab, int row_ct, int col_ct){
+int		i,j;
+	for(i=0; i< row_ct; i++){
+		for(j=0; j< col_ct; j++)
+			free((*tab)[i][j]); 
+		free((*tab)[i]);
+	}
+	free(*tab);
+}
+
+void apop_db_merge_table(char *db_file, char *tabname){
+char		***tab_list;
+int		row_ct;
+	if (db_file !=NULL)
+		apop_query("attach database \"%s\" as merge_me;", db_file);
+	apop_query_to_chars("select name from sqlite_master where name == \"%s\";", tabname);
+	row_ct	= apop_db_get_rows();
+	if (row_ct==0){	//just import table
+		if (apop_verbose)	printf("adding in %s\n", tabname);
+		apop_query("create table main.%s as select * from merge_me.%s;", tabname, tabname);
+	}
+	else	{			//merge tables.
+		if (apop_verbose)	printf("merging in %s\n", tabname);
+		apop_query("insert into main.%s select * from merge_me.%s;", tabname, tabname);
+	}
+	if (db_file !=NULL)
+		apop_query("detach database merge_me;");
+	if (*tab_list !=NULL)
+		free_tab_list(&tab_list, row_ct, 1);
+}
+
+void apop_db_merge(char *db_file){
+char		***tab_list;
+int		row_ct, i;
+	apop_query("attach database \"%s\" as merge_me;", db_file);
+	tab_list= apop_query_to_chars("select name from merge_me.sqlite_master where type==\"table\";");
+	row_ct	=  apop_db_get_rows();
+	for(i=0; i< row_ct; i++)
+		apop_db_merge_table(NULL, tab_list[i][0]);
+	apop_query("detach database merge_me;");
+	free_tab_list(&tab_list, row_ct, 1);
 }

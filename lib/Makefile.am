@@ -1,7 +1,8 @@
-bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop
-apop_SOURCES = apop.c
+bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop apop_merge_dbs
 apop_text_to_db_SOURCES = apop_text_to_db.c
 apop_db_to_crosstab_SOURCES = apop_db_to_crosstab.c
+apop_merge_dbs_SOURCES = apop_merge_dbs.c
+apop_SOURCES = apop.c
 LDADD = libapophenia.la
 AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
 #apop_text_to_db_LDADD = libapophenia.la
