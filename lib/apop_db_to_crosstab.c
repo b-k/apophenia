@@ -1,3 +1,4 @@
+//apop_db_to_crosstab.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "apophenia/db.h"
 #include "apophenia/linear_algebra.h"
 #include "apophenia/conversions.h"

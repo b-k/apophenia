@@ -13,3 +13,8 @@
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_permutation.h>
+
+//And here are other things that apophenia uses, and you probably do
+//too.
+#include <stdio.h>
+#include <assert.h>

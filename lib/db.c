@@ -91,7 +91,8 @@ static void stdDevFinalize(sqlite3_context *context){
     double rCnt = p->cnt;
     sqlite3_result_double(context,
        sqrt((p->avg2*rCnt - p->avg*p->avg)/(rCnt-1.0)));
-  }
+  } else if (p->cnt == 1)
+    	sqlite3_result_double(context, 0);
 }
 
 static void varFinalize(sqlite3_context *context){
@@ -100,7 +101,8 @@ static void varFinalize(sqlite3_context *context){
     double rCnt = p->cnt;
     sqlite3_result_double(context,
        (p->avg2*rCnt - p->avg*p->avg)/(rCnt-1.0));
-  }
+  } else if (p->cnt == 1)
+    	sqlite3_result_double(context, 0);
 }
 
 static void skewFinalize(sqlite3_context *context){
@@ -109,7 +111,8 @@ static void skewFinalize(sqlite3_context *context){
     double rCnt = p->cnt;
     sqlite3_result_double(context,
        (p->avg3*rCnt - 3*p->avg2*p->avg*rCnt + (3*rCnt-1) * gsl_pow_3(p->avg)) / (rCnt-1.0));
-  }
+  } else if (p->cnt == 1)
+    	sqlite3_result_double(context, 0);
 }
 
 static void kurtFinalize(sqlite3_context *context){
@@ -119,7 +122,8 @@ static void kurtFinalize(sqlite3_context *context){
     sqlite3_result_double(context,
        (p->avg4*rCnt - 4*p->avg3*p->avg*rCnt + 6 * gsl_pow_2(p->avg2)*gsl_pow_2(p->avg)*rCnt
 						- (4*rCnt+1)* gsl_pow_4(p->avg))/(rCnt-1.0));
-  }
+  } else if (p->cnt == 1)
+    	sqlite3_result_double(context, 0);
 }
 
 
@@ -129,7 +133,7 @@ static void kurtFinalize(sqlite3_context *context){
 ////////////////////////////////////////////////
 
 
-int apop_open_db(char *filename){
+int apop_db_open(char *filename){
 //char	*err;
 	//if (filename==NULL) 	db	=sqlite_open(":memory:",0,&err);
 	//else			db	=sqlite_open(filename,0,&err);
@@ -148,13 +152,12 @@ int apop_open_db(char *filename){
 	return 0;
 }
 
-int apop_db_open(char *filename){
-	return apop_open_db(filename); }
+int apop_open_db(char *filename){ return apop_db_open(filename); }
 
 int apop_query(const char *fmt, ...){
 char 		*err, *q;
 va_list		argp;
-	if (db==NULL) apop_open_db(NULL);
+	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
 	va_end(argp);
@@ -168,7 +171,7 @@ va_list		argp;
 int apop_query_db(const char *fmt, ...){
 char 		*err, *q;
 va_list		argp;
-	if (db==NULL) apop_open_db(NULL);
+	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
 	va_end(argp);
@@ -192,7 +195,7 @@ int apop_table_exists(char *q, int whattodo){
 	//whattodo==0	==>return error so program can continue.
 char 		*err, q2[10000];
 	isthere=0;
-	if (db==NULL) {apop_open_db(NULL); return 0;}
+	if (db==NULL) {apop_db_open(NULL); return 0;}
 	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,q, &err); 
 	ERRCHECK
 	if (whattodo==1 && isthere)
@@ -220,13 +223,15 @@ int		colct	= 1;
 	return colct;
 }
 
-int apop_close_db(int vacuum){
+int apop_db_close(int vacuum){
 char		*err;
 	if (vacuum) sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
 //	ERRCHECK
 	sqlite3_close(db);
 	return 0;
 	}
+
+int apop_close_db(int vacuum){ apop_db_close(vacuum); }
 
 int names_callback(void *o,int argc, char **argv, char **whatever){
 	apop_name_add(last_names, argv[1], 'c'); 
@@ -264,7 +269,7 @@ va_list		argp;
 		return 0;
 	}
 
-	if (db==NULL) apop_open_db(NULL);
+	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
@@ -314,7 +319,7 @@ va_list		argp;
 		return 0;
 	}
 
-	if (db==NULL) apop_open_db(NULL);
+	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
@@ -373,7 +378,7 @@ int		i,j;
 int		ctr		= 0;
 int		batch_size	= 100;
 char		*q 		= malloc(sizeof(char)*1000);
-	if (db==NULL) apop_open_db(NULL);
+	if (db==NULL) apop_db_open(NULL);
 	sprintf(q, "create table %s (", tabname);
 	for(i=0;i< data->size2; i++){
 		q	=realloc(q,sizeof(char)*(strlen(q)+1000));

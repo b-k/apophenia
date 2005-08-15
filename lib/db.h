@@ -17,10 +17,11 @@ int apop_count_cols(const char *name);
 	//create statement that made it, and will use that to tell you
 	//how many columns are in the table.
 
-int apop_open_db(char *filename);
 int apop_db_open(char *filename);
+int apop_open_db(char *filename);
 	//If filename==NULL, it'll open a database in memory
 
+int apop_db_close(int vacuum);
 int apop_close_db(int vacuum);
 	//vacuum==1: do some cleanup to minimize hard disk space
 	//vacuum==0: just close the thing.

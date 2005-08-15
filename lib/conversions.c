@@ -86,9 +86,9 @@ gsl_vector_view	v;
 		*d1	= gsl_vector_alloc(pre_d1->size1);
 		*d2	= gsl_vector_alloc(pre_d2->size1);
 		v	= gsl_matrix_column(pre_d1, 0);
-		gsl_vector_memcpy(&(v.vector), *d1);
+		gsl_vector_memcpy(*d1, &(v.vector));
 		v	= gsl_matrix_column(pre_d2, 0);
-		gsl_vector_memcpy(&(v.vector), *d2);
+		gsl_vector_memcpy(*d2, &(v.vector));
 	}
 	gsl_matrix_free(pre_d1); gsl_matrix_free(pre_d2); gsl_matrix_free(datatab);
 	return out;
@@ -190,7 +190,7 @@ int 		i	= 0,
 			while (astring !=NULL){
 				colno++;
 				(*tab)[i-1][colno-1]	= strtod(astring, &str);
-				if (!strcmp(astring, str))
+				if (apop_verbose && !strcmp(astring, str))
 					printf("trouble converting item %i on line %i; using zero.\n", colno, i);
 				astring	= strtok(NULL,delimiters);
 			}
