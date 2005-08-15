@@ -1,23 +1,32 @@
+//apop.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <apophenia/headers.h>
 #include <stddef.h>
 #include <string.h>
-#include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>	//read,write
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/types.h> 
 #include <netinet/in.h>
 #include <netdb.h> 
 
-//#define PORT_NO 11716
-#define PORT_NO 11712
+#define PORT_NO 11716
 
-char cmd_list[][2][100]= { 	{"stop", "0"},
-				{"query", "1"},
-				{"query_to_matrix", "2"},
-				{"print_matrix", "1"},
-				{"xxxx", "0"}};
+//here are the commands implemented so far.
+//Each line gives: name, argument count, internal return type, external return
+//Internal return types:
+//x==NULL, m=matrix.
+//No types on external returns; just a zero or a one.
+//Order doesn't matter except that xxxx has to be the last entry.
+char cmd_list[][4][100]= { 	
+				{"stop", 		"0", "x", "0"},
+				{"db_merge", 		"1", "x", "0"},
+				{"db_merge_table", 	"2", "x", "0"},
+				{"print_matrix", 	"1", "x", "1"},
+				{"query", 		"1", "x", "0"},
+				{"query_to_matrix", 	"2", "m", "0"},
+				{"xxxx", 		"0", "x", "0"} };
 
 gsl_matrix **	matrix_list;
 char **		matrix_names;
@@ -54,7 +63,7 @@ void error(char *msg)
 }
 
 int open_server() {
-     int sockfd, portno, clilen;
+     int sockfd, portno;
      struct sockaddr_in serv_addr;
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
      if (sockfd < 0) 
@@ -74,7 +83,7 @@ char *print_matrix(gsl_matrix *m){
 int		i, j, len= 0;
 char		*out	= malloc(sizeof(char)*3),
 		bite[10000];
-	sprintf(out,"");
+	out[0]	='\0';
 	for(i=0; i< m->size1; i++){
 		for(j=0; j< m->size2; j++){
 			sprintf(bite, "%g", gsl_matrix_get(m,i,j));
@@ -92,8 +101,8 @@ char		*out	= malloc(sizeof(char)*3),
 
 int start_listening(int sockfd){
 struct sockaddr_in 	cli_addr;
-int 			n, clilen, newsockfd, argct, cmd_no, i, matrix_no;
-char 			cmdbuffer[256], argbuffer[100][10000], return_msg[10000], *printme;
+int 			n, clilen, newsockfd,  cmd_no, i, matrix_no;
+char 			cmdbuffer[256], argbuffer[100][10000],  *printme;
      clilen = sizeof(cli_addr);
      newsockfd = accept(sockfd, 
                  (struct sockaddr *) &cli_addr, 
@@ -115,6 +124,15 @@ char 			cmdbuffer[256], argbuffer[100][10000], return_msg[10000], *printme;
      		n 		= write(newsockfd,"confirmed.",strlen("confirmed."));
      		if (n < 0) error("Error confirming.");
 	}
+
+     ///////////////////////////////////////////
+     //The actual command handling follows here
+     //If the command returns nothing interesting, then it's just
+     //called.
+     //If the command returns a matrix, name, et cetera, then it needs
+     //to be added to the appropriate array.
+     ///////////////////////////////////////////
+
      if (!strcmp(cmdbuffer, "stop")){
 	     apop_close_db(0);
 	     return 0;
@@ -122,12 +140,16 @@ char 			cmdbuffer[256], argbuffer[100][10000], return_msg[10000], *printme;
      if (!strcmp(cmdbuffer, "print_matrix")){
 	     	matrix_no	= find_matrix(argbuffer[0]);
 	     	printme		= print_matrix(matrix_list[matrix_no]);
-printf("printing:\n", printme);
+printf("printing: %s\n", printme);
     		n 		= write(newsockfd, printme,strlen(printme));
     		if (n < 0) error("Error writing to socket");
 	}
      if (!strcmp(cmdbuffer, "query"))
 	     apop_query(argbuffer[0]);
+     if (!strcmp(cmdbuffer, "db_merge"))
+	     apop_db_merge(argbuffer[0]);
+     if (!strcmp(cmdbuffer, "db_merge_table"))
+	     apop_db_merge_table(argbuffer[0], argbuffer[1]);
      if (!strcmp(cmdbuffer, "query_to_matrix")){
 	     matrix_no			= find_matrix(argbuffer[0]);
 	     printf("about to run: %s\n", argbuffer[1]);
@@ -137,13 +159,20 @@ printf("printing:\n", printme);
 }
 
 int start_client(){
-    int sockfd, portno;
+    int sockfd, portno, optval=1;
     struct sockaddr_in serv_addr;
     struct hostent *server;
-    char buffer[256];
 
     portno = PORT_NO;
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+  /* setsockopt: Handy debugging trick that lets 
+   * us rerun the server immediately after we kill it; 
+   * otherwise we have to wait about 20 secs. 
+   * Eliminates "ERROR on binding: Address already in use" error. 
+   */
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval , sizeof(int));
+
     if (sockfd < 0) 
         error("ERROR opening socket");
     server = gethostbyname("localhost");
@@ -189,7 +218,7 @@ char		buffer[BUFLEN];
     return sockfd;
 }
 
-int dump_output(int client_sock){
+void dump_output(int client_sock){
 char		buffer[BUFLEN];
 	if (read(client_sock, buffer, BUFLEN) < 0)
 		error("couldn't dump stuff.");
@@ -197,8 +226,7 @@ char		buffer[BUFLEN];
 }
 
 int main (int argc, char ** argv){
-char		*socket_name;
-int		sock, insock, client_sock,
+int		sock, client_sock, cmd_no, arg_ct,
 		keep_going	= 1;
 //struct sockaddr	client_sock;
 //socklen_t	client_length;
@@ -213,8 +241,23 @@ int		sock, insock, client_sock,
 		while(keep_going)
 			keep_going	= start_listening(sock);
 	}
+	cmd_no	= find_cmd_list_elmt(argv[1]);
+	if (cmd_no >= 0){
+		arg_ct	=atoi(cmd_list[cmd_no][1]);
+		if (arg_ct == 0)
+			client_sock	= send_cmd(argv[1], arg_ct, NULL);
+		else
+			client_sock	= send_cmd(argv[1], arg_ct, (argv+2));
+		if (atoi(cmd_list[cmd_no][3]))
+			dump_output(client_sock);
+	}
+		/*
 	if (!strcmp(argv[1], "stop"))
 		send_cmd(argv[1], 0, NULL);
+   	if (!strcmp(argv[1], "db_merge"))
+                send_cmd(argv[1], 1, (argv+1));
+        if (!strcmp(argv[1], "db_merge_table"))
+                send_cmd(argv[1], 2, (argv+2));
 	if (!strcmp(argv[1], "query"))
 		send_cmd(argv[1], 1, (argv+2));
 	if (!strcmp(argv[1], "query_to_matrix"))
@@ -223,5 +266,6 @@ int		sock, insock, client_sock,
 		client_sock	= send_cmd(argv[1], 1, (argv+2));
 		dump_output(client_sock);
 		}
+		*/
 	return 0;
 }
