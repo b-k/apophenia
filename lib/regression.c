@@ -67,7 +67,7 @@ double		upu;
 int		i;
 	error	= gsl_vector_alloc(data->size1);
 	cov	= gsl_matrix_alloc(data->size2, data->size2);
-	apop_det_and_inv(xpx, cov, 0, 1);		//(X'X)^{-1} (not yet cov)
+	apop_det_and_inv(xpx, &cov, 0, 1);		//(X'X)^{-1} (not yet cov)
 	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters);
 	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters, 0, error);
 	if (out->uses.predicted)	
@@ -95,12 +95,12 @@ gsl_vector 	*y_data		= gsl_vector_alloc(data->size1);
 gsl_matrix 	*temp		= gsl_matrix_calloc(data->size2, data->size1);
 gsl_vector 	*xsy 		= gsl_vector_calloc(data->size2);
 gsl_matrix 	*xsx 		= gsl_matrix_calloc(data->size2, data->size2);
-gsl_matrix 	*sigma_inverse	= gsl_matrix_alloc(data->size1, data->size1);
+gsl_matrix 	*sigma_inverse;	//= gsl_matrix_alloc(data->size1, data->size1);
 gsl_vector_view	v 		= gsl_matrix_column(data, 0);
 	apop_normalize_matrix(data);		//every column should have mean zero.
 	gsl_matrix_get_col(y_data, data, 0);
 	gsl_vector_set_all(&(v.vector), 1);	//affine: first column is ones.
-	apop_det_and_inv(sigma, sigma_inverse, 0, 1);					//find sigma^{-1}
+	apop_det_and_inv(sigma, &sigma_inverse, 0, 1);					//find sigma^{-1}
 	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, sigma_inverse, 0, temp); 	//temp = X' \sigma^{-1}.
 	gsl_matrix_free(sigma_inverse);
 	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, temp, data, 0, xsx);    		//(X' \sigma^{-1} X)

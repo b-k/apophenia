@@ -1,11 +1,13 @@
 //db.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <math.h> 	//sqrt
-//#include "gnulib/vasprintf.h"
 #include <string.h>
 #include <stdarg.h>
 #include <apophenia/name.h>
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <apophenia/db.h>
+#include <apophenia/linear_algebra.h>
+#include <apophenia/stats.h>	//t_dist
+#include <apophenia/regression.h>	//two_tailify
 
 #include <apophenia/vasprintf.h>
 
@@ -38,12 +40,12 @@ double 		x, ratio;
   p = sqlite3_aggregate_context(context, sizeof(*p));
   if( p && argv[0] ){
     x = sqlite3_value_double(argv[0]);
-    ratio	= (p->cnt/(p->cnt+1));
-    p->avg	/= ratio;
-    p->avg2	/= ratio;
+    ratio	=  p->cnt/(p->cnt+1.0);
     p->cnt++;
-    p->avg += x/p->cnt;
-    p->avg2 += gsl_pow_2(x)/p->cnt;
+    p->avg	*= ratio;
+    p->avg2	*= ratio;
+    p->avg += x/(p->cnt +0.0);
+    p->avg2 += gsl_pow_2(x)/(p->cnt +0.0);
   }
 }
 
@@ -54,11 +56,11 @@ double 		x, ratio;
   p = sqlite3_aggregate_context(context, sizeof(*p));
   if( p && argv[0] ){
     x = sqlite3_value_double(argv[0]);
-    ratio	= (p->cnt/(p->cnt+1));
-    p->avg	/= ratio;
-    p->avg2	/= ratio;
-    p->avg3	/= ratio;
+    ratio	=  p->cnt/(p->cnt+1.0);
     p->cnt++;
+    p->avg	*= ratio;
+    p->avg2	*= ratio;
+    p->avg3	*= ratio;
     p->avg += x/p->cnt;
     p->avg2 += gsl_pow_2(x)/p->cnt;
     p->avg3 += gsl_pow_3(x)/p->cnt;
@@ -72,13 +74,13 @@ double 		x,ratio;
   p = sqlite3_aggregate_context(context, sizeof(*p));
   if( p && argv[0] ){
     x = sqlite3_value_double(argv[0]);
-    ratio	= (p->cnt/(p->cnt+1));
-    p->avg	/= ratio;
-    p->avg2	/= ratio;
-    p->avg3	/= ratio;
-    p->avg4	/= ratio;
-    p->avg += x/p->cnt;
+    ratio	=  p->cnt/(p->cnt+1.0);
     p->cnt++;
+    p->avg	*= ratio;
+    p->avg2	*= ratio;
+    p->avg3	*= ratio;
+    p->avg4	*= ratio;
+    p->avg += x/p->cnt;
     p->avg2 += gsl_pow_2(x)/p->cnt;
     p->avg3 += gsl_pow_3(x)/p->cnt;
     p->avg4 += gsl_pow_4(x)/p->cnt;
@@ -100,7 +102,7 @@ static void varFinalize(sqlite3_context *context){
   if( p && p->cnt>1 ){
     double rCnt = p->cnt;
     sqlite3_result_double(context,
-       (p->avg2*rCnt - p->avg*p->avg)/(rCnt-1.0));
+       (p->avg2 - gsl_pow_2(p->avg))*rCnt/(rCnt-1.0));
   } else if (p->cnt == 1)
     	sqlite3_result_double(context, 0);
 }
@@ -231,7 +233,7 @@ char		*err;
 	return 0;
 	}
 
-int apop_close_db(int vacuum){ apop_db_close(vacuum); }
+int apop_close_db(int vacuum){ return apop_db_close(vacuum); }
 
 int names_callback(void *o,int argc, char **argv, char **whatever){
 	apop_name_add(last_names, argv[1], 'c'); 
@@ -448,4 +450,33 @@ int		row_ct, i;
 		apop_db_merge_table(NULL, tab_list[i][0]);
 	apop_query("detach database merge_me;");
 	free_tab_list(&tab_list, row_ct, 1);
+}
+                                                                                                                               
+////////////////////////////////////////////////
+// Part three: some stats wrappers
+////////////////////////////////////////////////
+
+double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2){
+gsl_matrix	*result1, *result2;
+	result1	= apop_query_to_matrix("select avg(%s), var(%s), count(*) from %s", col1, col1, tab1);
+	result2	= apop_query_to_matrix("select avg(%s), var(%s), count(*) from %s", col2, col2, tab2);
+double		a_avg	= gsl_matrix_get(result1, 0, 0),
+		a_var	= gsl_matrix_get(result1, 0, 1),
+		a_count	= gsl_matrix_get(result1, 0, 2),
+		b_avg	= gsl_matrix_get(result2, 0, 0),
+		b_var	= gsl_matrix_get(result2, 0, 1),
+		b_count	= gsl_matrix_get(result2, 0, 2),
+		stat	= (a_avg - b_avg)/ sqrt(b_var/(b_count-1) + a_var/(a_count-1));
+	return two_tailify(gsl_cdf_tdist_P(stat, a_count+b_count-2));
+}
+
+double	apop_db_paired_t_test(char * tab1, char *col1, char *col2){
+gsl_matrix	*result;
+	result	= apop_query_to_matrix("select avg(%s - %s), var(%s - %s), count(*) from %s tab1", 
+						   col1,col2,   col1, col2,          tab1);
+double		avg	= gsl_matrix_get(result, 0, 0),
+		var	= gsl_matrix_get(result, 0, 1),
+		count	= gsl_matrix_get(result, 0, 2),
+		stat	= avg/ sqrt(var/(count-1));
+	return two_tailify(gsl_cdf_tdist_P(stat, count-1));
 }

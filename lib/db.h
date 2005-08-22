@@ -68,4 +68,8 @@ void apop_db_merge_table(char *infile, char *tabname);
 	//This is just like apop_db_merge, but will
 	//only pull the single table specified.
 
+double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2);
+double apop_db_paired_t_test(char * tab1, char *col1, char *col2);
+	//Runs a t-test entirely inside the database. Uses the nifty
+	//var() aggregator function defined by Apophenia.
 #endif

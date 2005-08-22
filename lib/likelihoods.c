@@ -497,7 +497,7 @@ int				betasize	= estimate->parameters->size;
 	//else:
 gsl_matrix	*pre_cov;
 	pre_cov			= gsl_matrix_alloc(betasize, betasize);
-	estimate->covariance	= gsl_matrix_alloc(betasize, betasize);
+	//estimate->covariance	= gsl_matrix_alloc(betasize, betasize);
 	diff			= gsl_vector_alloc(betasize);
 	d_likelihood(estimate->parameters, data, diff);
 	for (i=0; i< betasize; i++){
@@ -505,7 +505,7 @@ gsl_matrix	*pre_cov;
 		v	= gsl_matrix_row(pre_cov, i);
 		gsl_vector_scale(&(v.vector), gsl_vector_get(diff, i));
 	}
-	apop_det_and_inv(pre_cov, estimate->covariance, 0,1);
+	apop_det_and_inv(pre_cov, &(estimate->covariance), 0,1);
 	gsl_vector_free(diff);
 
 	if (estimate->uses.confidence == 0)

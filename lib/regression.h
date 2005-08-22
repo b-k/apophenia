@@ -12,3 +12,9 @@ double	apop_t_test(gsl_vector *a, gsl_vector *b);
 double	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
 //A nice, easy t test. With what confidence can we reject the hypothesis
 //that the mean of vector A equals the mean of vector B?
+
+
+
+double two_tailify(double in);
+//My convenience fn to turn the results from a symmetric one-tailed table lookup
+//into a two-tailed confidence interval.
