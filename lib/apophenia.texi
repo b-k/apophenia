@@ -1,0 +1,248 @@
+\input texinfo
+@setfilename apophenia.info
+@settitle the Apophenia manual.
+
+@dircategory  Scientific software
+@direntry
+* Apophenia: (apophenia).           The Apophenia data management and statistics library.
+@end direntry
+
+
+@ifnottex
+@node Top
+@top the apophenia manual
+@end ifnottex
+
+@menu
+* Introduction ::   the getting started info
+* Shunting data ::  text files, databases, arrays, vectors, and navigating among them.
+* Statistics ::     describing data and testing hypotheses
+* Index ::
+@end menu
+
+@node Introduction
+@chapter Introduction
+
+@menu
+* Motivation :: Answers to questions beginning with `why'
+* Prerequisites :: What Apohenia relies on
+@end menu
+
+@node Motivation
+@section motivation
+@cindex motivation
+
+Apophenia is a library of functions to facilitate statistical analysis.
+By way of a bullet-pointed mission, here are the key goals and distinctions from stats packages:
+@itemize @bullet
+@item Make use of both databases and arrays
+@item Don't make users learn yet another language
+@item Accept that real data is a mess
+@end itemize
+
+
+@node Prerequisites
+@section prerequisites
+@cindex prerequisites
+
+The short answer is that you will need a C compiler, the GNU Scientific Library, and SQLite.
+For details, see the @url{apophenia.sourceforge.net/cgi-bin/moin.cgi/, wiki online.}
+
+
+
+@node Shunting data
+@chapter shunting data
+@cindex shunting data
+
+@menu
+* From a text file ::
+* From db tables ::
+* From GSL matrices ::
+@end menu
+
+@node From a text file 
+@section converting from text files
+@cindex text files
+
+@node From db tables
+@section Converting from databse tables 
+@cindex database table conversions
+
+@node From GSL matrices
+@section Converting from GSL_matricex
+@cindex matrices, converting from
+
+@node Statistics
+@chapter statistics
+
+@menu
+* Describing ::	  Describing your data
+* Testing ::      Testing hypotheses
+@end menu
+
+@node Describing
+@section describing data
+@cindex descriptive statistics
+
+@deftypefn Function void apop_sv_decomposition gsl_matrix *data, int dimensions_we_want, gsl_matrix ** pc_space, gsl_vector **eigenvalues
+
+Singular value decomposition, aka principal component analysis, aka factor analysis.
+
+@subsubheading data 
+The input matrix. 
+
+@subsubheading dimensions_we_want 
+The singular value decomposition will return this many of the
+eigenvectors with the largest eigenvalues.
+
+@subsubheading pc_space
+This will be the principal component space. Each column of the returned
+matrix will be another eigenvector; the columns will be ordered by the
+eigenvalues. Input the address of an un-allocated @code{gsl_matrix}.
+
+@subsubheading eigenvalues
+This will return the largest eigenvalues, scaled by the total of all
+eigenvalues (including those that were thrown out). The sum of these
+returned values will give you the percentage of variance explained by
+the factor analysis.
+@end deftypefn
+
+
+@node Testing
+@section Testing hypotheses
+@cindex Testing hypotheses, Hypothesis testing
+
+@menu
+* OLS ::        OLS and GLS
+* MLE ::        Assorted maximum likelihood estimators
+* t-tests ::    Is the mean of the first data set different from the mean of the second?
+@end menu
+
+@node OLS
+@subsection OLS and GLS
+@cindex OLS and GLS
+
+@node MLE
+@subsection Maximum likelihood estimators
+@cindex Maximum likelihood estimators
+
+@deftypefun apop_estimate* apop_mle_probit (gsl_matrix *data, double *starting_pt, double step_size, apop_inventory * uses, int verbose)
+
+Estimate the most likey parameter(s) which fit the dependent variable to the dependent variables via a probit model.
+
+@subsubheading data 
+The first column of the data matrix is the dependent
+variable, and the remaining variables are the independent. This means
+that the beta which will be output will be of size (data->size2 - 1).
+
+@subsubheading starting_pt 
+A vector of the appropriate size which indicates your
+best initial guess for beta. if starting_pt=NULL, then (0,0,...0) will
+be assumed.
+
+@subsubheading step_size
+The scale of the initial steps the maximization algorithm
+will take. Currently, it is a scalar, so every dimension will have the
+same step_size.
+
+@subsubheading uses 
+An ["apop_inventory"] describing what you'd like returned. You always get the parameters and the log likelihood.
+
+@subsubheading verbose 
+Zero or one depending on whether you want to see the
+maximizer's iterations.
+
+@subsubheading return 
+Returns an ["apop_estimate"] with the appropriate data.
+
+@subsubheading example 
+See ["apop_make_likelihood_vector"] for an example of the use of the @code{apop_mle_xxx} functions.
+
+@end deftypefun
+
+
+@deftypefun apop_estimate* apop_mle_gamma (gsl_matrix *data, double *starting_pt, double step_size, apop_inventory *uses, int verbose);
+@deftypefunx apop_estimate* apop_mle_waring (gsl_matrix *data, double *starting_pt, double step_size, apop_inventory *uses, int verbose);
+@deftypefunx apop_estimate* apop_mle_yule (gsl_matrix *data, double *starting_pt, double step_size, apop_inventory *uses, int verbose);
+@deftypefunx apop_estimate* apop_mle_zipf (gsl_matrix *data, double *starting_pt, double step_size, apop_inventory *uses, int verbose);
+
+These functions will estimate the parameter(s) in the named distribution for the given data.
+
+[Wikipedia has notes on the @url{http://en.wikipedia.org/wiki/Zipf_distribution,Zipf} distribution. I'm pretty sure their specification of the Yule is wrong; will fix when I can check references.]
+
+@subsubheading data 
+Each row of the data matrix is one observation. The first column is the number of elements with one
+link, the second is the number of elements with two links, et cetera.
+
+@subsubheading starting_pt 
+A vector of the appropriate size which indicates your
+best initial guess for beta. if starting_pt=NULL, then (0,0,...0) will be assumed. [Gamma, Waring: two parameters; zipf, yule: one parameter.]
+
+@subsubheading step_size 
+The scale of the initial steps the maximization algorithm
+will take. Currently, it is a scalar, so every dimension will have the
+same step_size.
+
+@subsubheading uses 
+A pointer to an ["apop_inventory"] with the info you would like. You always get the parameters and the log likelihood.
+
+@subsubheading verbose 
+Zero or one depending on whether you want to see the
+maximizer's iterations.
+
+@subsubheading return 
+Returns an ["apop_estimate"] with the appropriate info.
+
+@subsubheading example 
+Here is a simple example; see also ["apop_make_likelihood_vector"] for other examples.
+
+
+@verbatim
+gsl_vector *    waring_parameters;
+double          starting_pt[2] = {3, 0};
+double          likelihood;
+waring_parameters      = mle_waring(data, &likelihood, starting_pt, .01, 0);
+printf("Your most likely waring parameters are %g and %g, with likelihood %g",
+                        gsl_vector_get(waring_parameter, 0) gsl_vector_get(waring_parameter, 1), likelihood);
+gsl_vector_free(waring_parameter);       //Don't forget to clean up when you're done.
+@end verbatim
+
+@end deftypefun
+
+
+@node t-tests
+@subsection t-tests
+@cindex t-tests
+
+@deftypefn Function double apop_t_test gsl_vector *a, gsl_vector *b
+@deftypefnx Function double apop_paired_t_test gsl_vector *a, gsl_vector *b
+@code{apop_t_test} answers the question: with what confidence can I say that the means of these two columns of data are different?
+@code{apop_paired_t_test} answers the question: with what confidence can I say that the mean difference between the two columns is zero?
+
+Returns the confidence level---if it is close to one, you can reject the null, while @code{apop_t_test(a, a)} will return zero.
+@end deftypefn
+
+@deftypefn Function double apop_db_t_test char *tab1, char *col1, char *tab2, char *col2
+@deftypefnx Function double apop_db_paired_t_test char *tab1, char *col1,  char *col2
+Just like the above, but do all the work in the database. This does not create temporary vectors in memory.
+
+@end deftypefn
+
+@deffn Command {apop t_test} tab1 col1 tab2 col2
+@deffnx Command {apop paired_t_test} tab1 col1 col2
+This calls the @code{apop_db_t_test}/@code{apop_paired_db_t_test} functions from the command line. Returns a single real number.
+@end deffn
+
+@node Index
+@unnumbered indices
+
+Topics
+@printindex cp
+
+Functions
+@printindex fn
+
+@bye
+
+
+@bye

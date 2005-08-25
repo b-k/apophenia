@@ -278,7 +278,7 @@ int		i	= 0;
 int main (int argc, char ** argv){
 int		sock, client_sock, cmd_no, arg_ct,
 		keep_going	= 1;
-	if (!strcmp(argv[1], "help")){
+	if (!strcmp(argv[1], "help") || argc==1){
 		print_help();
 		return 0;
 	}
