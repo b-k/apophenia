@@ -1,9 +1,24 @@
-//conversions.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+/** \file conversions.c	The various functions to convert from one format to another.
+
+ Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+ */
 #include <apophenia/conversions.h>
 
 #define Text_Size_Limit 1000000
 
 
+/** Um, converts a GSL vector to an array.
+
+\param in
+A GSL vector
+
+\param out
+A pointer to a <tt>double*</tt>, which will be <tt>malloc</tt>ed inside the function.
+
+\return Returns the size of the vector, i.e., <tt>in->size</tt>.
+
+\note Does not use memcpy, because we don't know the stride of the vector.
+*/
 int apop_convert_vector_to_array(gsl_vector *in, double **out){
 int		i;	
 	*out	= malloc(sizeof(double) * in->size);
@@ -229,6 +244,45 @@ char		*tmpstring,
 	return out;
 }
 
+/** Read a textfile into a database table.
+
+\param text_file
+The input file. At the moment, it needs to be comma delimited. Lines with
+a # at the head are taken to be comments and ignored. If field_names is
+<tt>NULL</tt>, then the first non-comment line of the file is taken to be strings
+giving the (comma-delimited) field names.
+
+\param tabname 
+The name to give the table in the database
+
+\param field_names 
+The list of field names, which will be the columns for the table. If <tt>NULL</tt>, read the names from the file.
+
+\return Returns the number of rows.
+
+
+Using the data set from the example on the \ref apop_OLS "apop_OLS" page, here's another way to do the regression:
+
+\verbatim
+#include <gsl/gsl_matrix.h>
+#include <apophenia/db.h>
+#include <apophenia/conversions.h>
+#include <apophenia/regression.h>
+#include <apophenia/linear_algebra.h> //Print_vector
+
+int main(void){
+gsl_vector      *beta;
+gsl_matrix      *data;
+     apop_open_db(NULL);
+     apop_convert_text_to_db("data", "d", NULL);
+     apop_query_to_matrix(&data, "select * from d");
+     apop_OLS(data, &beta);
+     printf("The OLS coefficients:\n");
+     apop_print_vector(beta);
+return 0;
+}
+\endverbatim
+*/
 int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names){
 FILE * 		infile;
 char		q[20000], instr[Text_Size_Limit], **fn, *astring;

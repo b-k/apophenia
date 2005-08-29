@@ -1,4 +1,21 @@
-//linear_algebra.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+/** \file linear_algebra.c	Assorted things to do with matrices,
+such as take determinants or do singular value decompositions.
+
+
+
+	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+*/
+
+/** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  */
+
+/** \defgroup convenience_fns 	Things to make life easier with the GSL.
+ */
+
+/** \defgroup apop_print 	Asst printing functions		
+
+Many have multiple aliases, because I could never remember which way to write them.
+*/
+
 #include <gsl/gsl_blas.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -6,9 +23,7 @@
 #include <apophenia/linear_algebra.h> 
 #include <apophenia/stats.h>
 #include "math.h" //pow!
-//#include "gnulib/vasprintf.h"
 #include <apophenia/vasprintf.h>
-//int vasprintf (char **result, const char *format, va_list args);
 
 gsl_matrix *apop_covariance_matrix(gsl_matrix *in, int normalize){
 gsl_matrix	*out;
@@ -39,6 +54,29 @@ gsl_vector_view	v;
 	return out;
 }
 
+/**
+Calculate the determinant of a matrix, its inverse, or both. The \c in matrix is not destroyed in the process.
+
+\param in
+The matrix to be inverted/determined.
+
+\param out 
+If you want an inverse, this is where to place the matrix to be filled with the inverse. If <tt>calc_inv == 0</tt>, then use <tt>NULL</tt>. 
+
+\param calc_det 
+0: Do not calculate the determinant.
+
+1: Do.
+
+\param calc_inv
+0: Do not calculate the inverse.
+
+1: Do.
+
+\return
+If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.
+\ingroup linear_algebra
+*/
 double apop_det_and_inv(gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
 int 		sign;
 double 		the_determinant = 0;
@@ -88,6 +126,21 @@ int 		i;
 	gsl_vector_free(diagonal);
 }
 
+/**
+Singular value decomposition, aka principal component analysis, aka factor analysis.
+
+\param data 
+The input matrix.
+
+\param dimensions_we_want 
+The singular value decomposition will return this many of the eigenvectors with the largest eigenvalues.
+
+\param pc_space 
+This will be the principal component space. Each column of the returned matrix will be another eigenvector; the columns will be ordered by the eigenvalues. Input the address of an un-allocated {{{gsl_matrix}}}.
+
+\param total_explained
+This will return the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
+\ingroup linear_algebra */
 void apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want, gsl_matrix ** pc_space, gsl_vector **total_explained) {
 //Get X'X
 gsl_matrix * 	eigenvectors 	= gsl_matrix_alloc(data->size2, data->size2);
@@ -114,11 +167,25 @@ double		eigentotals	= 0;
 }
 
 
+/** Just add <tt>amt</tt> to a \c gsl_vector element. Equivalent to <tt>gsl_vector_set(gsl_vector_get(v, i) + amt, i)</tt>, but more readable (and potentially faster).
 
+\param v The \c gsl_vector in question
+\param i The location in the vector to be incremented.
+\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amt.
+\ingroup convenience_fns
+ */
 inline void apop_vector_increment(gsl_vector * v, int i, double amt){
 	v->data[i * v->stride]	+= amt;
 }
 
+/** Just add <tt>amt</tt> to a \c gsl_matrix element. Equivalent to <tt>gsl_matrix_set(gsl_matrix_get(m, i, j) + amt, i, j)</tt>, but more readable (and potentially faster).
+
+\param m The \c gsl_matrix in question
+\param i The row of the element to be incremented.
+\param j The column of the element to be incremented.
+\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amt.
+\ingroup convenience_fns
+ */
 inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 	m->data[i * m->tda +j]	+= amt;
 }
@@ -166,39 +233,64 @@ void dumb_little_pf_f(FILE * f, double data){
 void dumb_little_pf_i(FILE * f, double data){
 	fprintf(f, "% 5i", (int) data); }
 
+/** Print a vector in real format.
+
+\ingroup apop_print */
 void apop_print_vector(gsl_vector *data, char *separator, char *filename){
 	print_core_v(data, separator, filename, dumb_little_pf_f); }
 
+/** Print a vector in int format.
+
+\ingroup apop_print */
 void apop_print_vector_int(gsl_vector *data, char *separator, char *filename){
 	print_core_v(data, separator, filename, dumb_little_pf_i); }
 
+/** Print a matrix in real format.
+
+\ingroup apop_print */
 void apop_print_matrix(gsl_matrix *data, char *separator, char *filename){
 	print_core_m(data, separator, filename, dumb_little_pf_f); }
 
+/** Print a matrix in int format.
+
+\ingroup apop_print */
 void apop_print_matrix_int(gsl_matrix *data, char *separator, char *filename){
 	print_core_m(data, separator, filename, dumb_little_pf_i); }
 
+/** Print a vector in float format.
+
+\ingroup apop_print */
 void apop_vector_print(gsl_vector *data, char *separator, char *filename){
 	print_core_v(data, separator, filename, dumb_little_pf_f); }
 
+/** Print a vector in int format.
+
+\ingroup apop_print */
 void apop_vector_print_int(gsl_vector *data, char *separator, char *filename){
 	print_core_v(data, separator, filename, dumb_little_pf_i); }
 
+/** Print a matrix in float format.
+
+\ingroup apop_print */
 void apop_matrix_print(gsl_matrix *data, char *separator, char *filename){
 	print_core_m(data, separator, filename, dumb_little_pf_f); }
 
+/** Print a matrix in int format.
+
+\ingroup apop_print */
 void apop_matrix_print_int(gsl_matrix *data, char *separator, char *filename){
 	print_core_m(data, separator, filename, dumb_little_pf_i); }
 
 
-void apop_plot(gsl_matrix *data, char plot_type, int delay){
-/* This is a dumb little function to call gnuplot for you,
+/** This is a dumb little function to call gnuplot for you,
    in case you're so exceptionally lazy that you can't call
-   apop_print_matrix(data, "\t", "outfile") yourself.
-   It's so silly, I don't even document it.
-   plot_type: 's'=surface plot; anything else = 2D x-y plot
-   delay: the amount of time before gnuplot closes itself.
+   <tt>apop_print_matrix(data, "\t", "outfile")</tt> yourself.
+
+\param data the data to be plotted.
+\param plot_type 's'=surface plot; anything else = 2D x-y plot
+\param delay the amount of time before gnuplot closes itself.
 */
+void apop_plot(gsl_matrix *data, char plot_type, int delay){
 FILE 		*output;
 int		i,j;
 	output = popen ("gnuplot", "w");
@@ -221,6 +313,17 @@ int		i,j;
 	pclose (output);
 }
 
+/** Print a summary of each column of a table to the screen (i.e., STDOUT). 
+
+\todo At the moment, only gives the mean and the standard deviation
+of the data in each column; should give more in the near future.
+
+\param data
+The table to be summarized.
+
+\param names
+The \c apop_names structure associated with the table. If there is no such structure, use <tt>NULL</tt>.
+*/
 void apop_matrix_summarize(gsl_matrix *data, apop_name *names){
 int		i;
 gsl_vector_view	v;

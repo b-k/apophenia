@@ -26,5 +26,14 @@ apop_merge_dbs_SOURCES = apop_merge_dbs.c
 apop_SOURCES = apop.c
 
 #The documentation
-info_TEXINFOS = apophenia.texi
-AM_MAKEINFOHTMLFLAGS = --cssinclude = typical.css
+
+#the texinfo version, which I didn't like in the end. 
+#info_TEXINFOS = apophenia.texi
+#AM_MAKEINFOHTMLFLAGS = --cssinclude = typical.css
+
+#the doxygen version. You've gotta call it yourself.
+EXTRA_DIST = $(man_MANS)
+install_man3_MANS = man/man3/*
+
+install-exec-hook: 
+	doxygen .doxygen

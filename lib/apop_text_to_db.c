@@ -1,3 +1,7 @@
+/** \file apop_text_to_db.c	A command line script to read a text file into a database.
+
+ Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+ */
 #include "apophenia/db.h"
 #include "apophenia/conversions.h"
 #include <unistd.h>

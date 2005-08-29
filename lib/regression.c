@@ -1,7 +1,11 @@
-//regression.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+/** \file regression.c	Generally, if it assumes something is  Normally distributed, it's here.\n
+ Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+ \author Ben Klemens
+ */
 
-//Generally, if it assumes a Normal distribution of something, it's
-//here.
+/** \defgroup regression  OLS/GLS: The linear projection methods */
+/** \defgroup ttest  The t-test methods */
+
 #include <apophenia/regression.h>
 #include <gsl/gsl_blas.h>
 #include <apophenia/stats.h>
@@ -13,6 +17,13 @@ double two_tailify(double in){
 	return	fabs(1 - (1 - in)*2);
 }
 
+/** Answers the question: with what confidence can I say that the means of these two columns of data are different?
+<tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
+
+\ingroup ttest
+\param {a, b} two columns of data
+\return the confidence level---if it is close to one, you can reject the null, while <tt>apop_t_test(a, a)</tt> will return zero.
+*/
 double	apop_t_test(gsl_vector *a, gsl_vector *b){
 double		a_avg	= apop_mean(a),
 		a_var	= apop_var(a),
@@ -24,6 +35,12 @@ double		a_avg	= apop_mean(a),
 	return two_tailify(gsl_cdf_tdist_P(stat, a_count+b_count-2));
 }
 
+/** Answers the question: with what confidence can I say that the mean difference between the two columns is zero?
+
+\ingroup ttest
+\param {a, b} two columns of data
+\return the confidence level---if it is close to one, you can reject the null, while <tt>apop_paired_t_test(a, a)</tt> will return zero.
+*/
 double	apop_paired_t_test(gsl_vector *a, gsl_vector *b){
 gsl_vector	*diff	= gsl_vector_alloc(a->size);
 	gsl_vector_memcpy(diff, a);
@@ -85,9 +102,31 @@ int		i;
 	else 				out->covariance	= cov;
 }
 
+/** generalized least squares.
+
+\ingroup regression
+
+The first column is the dependent variable, the remaining columns are the independent variables. NB: \c data is destroyed by this function. If you want to keep it, make a copy beforehand.
+
+\param data
+The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
+
+\param sigma 
+A known variance-covariance matrix, of size {{{(data->size1, data->size1)}}}. Survives the function intact. The first column refers to the constant unit vector, so it's always zero.
+
+\param n
+An \c apop_name structure, specifying which outputs you want.
+
+\param uses 
+If NULL, do everything; else, produce those ["apop_estimate"] elements which you specify. You always get the parameters and never get the log likelihood.
+
+\return
+A pointer to an ["apop_estimate"] structure with the appropriate elements filled. See the description in \ref apop_OLS "apop_OLS".
+
+\todo 
+Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
+ */
 apop_estimate * apop_GLS(gsl_matrix *data, gsl_matrix *sigma, apop_name * n, apop_inventory *uses){
-//Returns GLS parameter estimates in beta.
-//Destroys the data in the process.
 apop_inventory	actual_uses;
 	prep_inventory_OLS(n, uses, &actual_uses);
 apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, n, actual_uses);
@@ -111,9 +150,25 @@ gsl_vector_view	v 		= gsl_matrix_column(data, 0);
 	return out;
 }
 
+/** ordinary least squares.
+
+\ingroup regression
+
+The first column is the dependent variable, the remaining columns are the independent variables. NB: \c data is destroyed by this function. If you want to keep it, make a copy beforehand.
+
+\param data
+The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
+
+\param n
+An \c apop_name structure, specifying which outputs you want.
+
+\param uses 
+If NULL, do everything; else, produce those ["apop_estimate"] elements which you specify. You always get the parameters and never get the log likelihood.
+
+\return
+A pointer to an ["apop_estimate"] structure with the appropriate elements filled.
+ */
 apop_estimate * apop_OLS(gsl_matrix *data, apop_name * n, apop_inventory *uses){
-//Returns GLS parameter estimates in beta.
-//Destroys the data in the process.
 apop_inventory	actual_uses;
 	prep_inventory_OLS(n, uses, &actual_uses);
 apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, n, actual_uses);

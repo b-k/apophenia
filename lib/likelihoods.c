@@ -1,19 +1,25 @@
-//likelihoods.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+/** \file likelihoods.c	An easy front end to SQLite. Includes a few nice
+features like a variance, skew, and kurtosis aggregator for SQL.
+
+This file includes a number of distributions and models whose parameters
+one would estimate using maximum likelihood techniques.
+
+Each typically includes four functions: the likelihood function, the 
+derivative of the likelihood function, a function that calls both of them,
+and a user-usable function which takes in data and a blank vector, fills 
+the vector with the most likely parameters, and returns the likelihood
+of those parameters.
+
+At the bottom are the maximum likelihood procedures themselves. There
+are two: the no-derivative version and the with-derivative version.
+Use the with-derivative version wherever possible---in fact, it is at
+the moment entirely unused, but is just here for future use.
+
+Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+*/
+/** \defgroup network_likelihoods  Likelihood fns associated with network analysis*/
 #include <apophenia/likelihoods.h>
 
-//This file includes a number of distributions and models whose parameters
-//one would estimate using maximum likelihood techniques.
-//
-//Each typically includes four functions: the likelihood function, the 
-//derivative of the likelihood function, a function that calls both of them,
-//and a user-usable function which takes in data and a blank vector, fills 
-//the vector with the most likely parameters, and returns the likelihood
-//of those parameters.
-
-//At the bottom are the maximum likelihood procedures themselves. There
-//are two: the no-derivative version and the with-derivative version.
-//Use the with-derivative version wherever possible---in fact, it is at
-//the moment entirely unused, but is just here for future use.
 
 void	maximum_likelihood_w_d(void * data, apop_estimate *est,
 					double (* likelihood)(const gsl_vector *beta, void *d),
@@ -32,14 +38,17 @@ likelihood evaluated with the most likely betas.  */
 
 void prep_inventory_mle(apop_inventory *in, apop_inventory *out);
 
-////////////////////////
-//The Gamma distribution
-////////////////////////
-// G(x, a, b) 	= $1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}$
-// ln G(x, a, b)= $-ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$
-// d ln G/ da	= $ -\psi(a) - ln b + ln(x) $	//d ln \gamma = \psi
-// d ln G/ db	= $ -a/b - x $
+/** The Gamma distribution
 
+\f$G(x, a, b) 	= 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
+
+\f$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b\f$
+
+\f$d ln G/ da	=  -\psi(a) - ln b + ln(x) \f$	(also, \f$d ln \gamma = \psi\f$)
+
+\f$d ln G/ db	=  -a/b - x \f$
+\ingroup network_likelihoods
+*/
 double apop_gamma_likelihood(const gsl_vector *beta, void *d){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
@@ -60,6 +69,8 @@ float 		llikelihood 	= 0,
 	return -llikelihood;
 }
 
+/** The derivative of the Gamma distribution, for use in likelihood
+ * minimization. You'll probably never need to call this directy.*/
 void d_gamma_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
@@ -127,10 +138,12 @@ gsl_matrix_view p 	= gsl_matrix_submatrix(data,0,1,data->size1,data->size2-1);
         gsl_blas_dgemv (CblasNoTrans, 1.0, &p.matrix, beta, 0.0, beta_dot_x);	//dot product
 }
 
+/**
+find (data dot beta'), then find the integral of the \f$\cal{N}(0,1)\f$
+up to that point. Multiply likelihood either by that or by 1-that, depending 
+on the choice the data made.
+*/
 double apop_probit_likelihood(const gsl_vector *beta, void *d){
-	//find (data dot beta'), then find the integral of the Normal (0,1)
-	//up to that point. Multiply likelihood either by that or by 1-that, depending 
-	//on the choice the data made.
 int		i;
 long double	n, total_prob	= 0;
 gsl_matrix 	*data 		= (gsl_matrix *) d;		//just type casting.
@@ -144,6 +157,8 @@ gsl_matrix 	*data 		= (gsl_matrix *) d;		//just type casting.
 	return -total_prob;
 }
 
+/** The derivative of the probit distribution, for use in likelihood
+ * minimization. You'll probably never need to call this directy.*/
 void d_probit_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//derivative of the above. 
 int		i, j;
@@ -187,6 +202,8 @@ double		ll;
 }
 */
 
+/** Does a maximum likelihood estimate of the best parameters for a probit model.
+ */
 apop_estimate * apop_mle_probit(gsl_matrix *data, double *starting_pt, 
 					double step_size, apop_name *n, apop_inventory *uses, int verbose){
 apop_inventory	actual_uses;
@@ -201,12 +218,18 @@ apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2 - 1, n, actua
 /////////////////////////
 //The Waring distribution
 /////////////////////////
-//W(x, b,a) 	= (b-1) g(b+a) g(k+a) / [g(a+1) g(k+a+b)], where g(x) =gamma(x)
-//ln W(x, b, a) = ln(b-1) + lng(b+a) + lng(k+a) - lng(a+1) - lng(k+a+b)
-//dlnW/db	= 1/(b-1)  + psi(b+a) - psi(k+a+b)
-//dlnW/da	= psi(b+a) + psi(k+a) - psi(a+1) - psi(k+a+b)
+/** The Waring distribution
 
+\f$W(x, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
 
+\f$\ln W(x, b, a) = ln(b-1) + lng(b+a) + lng(k+a) - lng(a+1) - lng(k+a+b)\f$
+
+\f$dlnW/db	= 1/(b-1)  + \psi(b+a) - \psi(k+a+b)\f$
+
+\f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
+
+\ingroup network_likelihoods
+*/
 double apop_waring_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0),
 		a	= gsl_vector_get(beta, 1);
@@ -228,6 +251,8 @@ double 		ln_a_k, ln_bb_a_k,
 	return -likelihood;
 }
 
+/** The derivative of the Waring distribution, for use in likelihood
+ * minimization. You'll probably never need to call this directy.*/
 void d_waring_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
 float		bb		= gsl_vector_get(beta, 0),
@@ -336,11 +361,15 @@ apop_estimate	*out		= apop_estimate_alloc(data->size1, 1, n, actual_uses);
 //The Zipf distribution
 ///////////////////////
 
+/** A one-parameter likelihood fn.
+ 
+\f$P(link ct==k) = C^{-k}\f$. So the PDF is \f$[ln(C) * C^{-k}]\f$, which integrates to one;
+The log likelihood that a draw has degree k is \f$ln(ln(C)) - [ln(C) * k]\f$,
+I don't need the first part in the search for the best C.
+
+\ingroup network_likelihoods
+*/
 double apop_zipf_likelihood(const gsl_vector *beta, void *d){
-// P(link ct==k) = C^{-k}. So the PDF is [ln(C) * C^{-k}], which integrates to one;
-// The log likelihood that a draw has degree k is ln(ln(C)) - [ln(C) * k],
-// I don't need the first part in the search for the best C.
-// A one-parameter likelihood fn.
 float		bb	= gsl_vector_get(beta, 0);
 	if (bb <=1) return GSL_POSINF;	//a sign to the minimizer to look elsewhere.
 int 		i, k;

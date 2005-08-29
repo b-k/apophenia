@@ -1,4 +1,11 @@
-//db.c  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+/** \file db.c	An easy front end to SQLite. Includes a few nice
+features like a variance, skew, and kurtosis aggregator for SQL.
+
+ Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+*/
+
+/** \defgroup db Database utilities */
+/** \defgroup querying Database utilities */
 #include <math.h> 	//sqrt
 #include <string.h>
 #include <stdarg.h>
@@ -156,6 +163,20 @@ int apop_db_open(char *filename){
 
 int apop_open_db(char *filename){ return apop_db_open(filename); }
 
+/** Send a query to the database, return nothing 
+\param fmt
+An \ref sql "SQL" query.
+
+\param ...
+Your query may be in <tt>printf</tt> form. For example:
+\verbatim
+char tabname[] = "demographics";
+char colname[] = "heights";
+int min_height = 175;
+apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_height);
+\endverbatim
+\ingroup querying
+*/
 int apop_query(const char *fmt, ...){
 char 		*err, *q;
 va_list		argp;
@@ -169,7 +190,9 @@ va_list		argp;
 	return 1;
 }
 
-//an identical alias:
+/** Just like \ref apop_query . Use that one. 
+\ingroup querying 
+*/
 int apop_query_db(const char *fmt, ...){
 char 		*err, *q;
 va_list		argp;
@@ -192,9 +215,20 @@ char *q	= in;
 	return isthere;
 }
 
+/** Check for the existence of a table, and maybe delete it.
+
+Recreating a table which already exists can cause errors, so it is good practice to check for existence first.
+Also, this is the stylish way to delete a table, since just calling <tt>"drop table"</tt> will give you an error if the table doesn't exist.
+
+\param q 	the table name
+\param whattodo 1	==>kill table so it can be recreated in main.<br>
+		0	==>return error so program can continue.
+\return
+0 = table does not exist<br>
+1 = table was found, and if whattodo==1, has been deleted
+\ingroup db
+*/
 int apop_table_exists(char *q, int whattodo){
-	//whattodo==1	==>kill table so it can be recreated in main.
-	//whattodo==0	==>return error so program can continue.
 char 		*err, q2[10000];
 	isthere=0;
 	if (db==NULL) {apop_db_open(NULL); return 0;}
@@ -456,6 +490,9 @@ int		row_ct, i;
 // Part three: some stats wrappers
 ////////////////////////////////////////////////
 
+/** Do a t-test entirely inside the database.
+\ingroup ttest
+*/
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2){
 gsl_matrix	*result1, *result2;
 	result1	= apop_query_to_matrix("select avg(%s), var(%s), count(*) from %s", col1, col1, tab1);
@@ -470,6 +507,9 @@ double		a_avg	= gsl_matrix_get(result1, 0, 0),
 	return two_tailify(gsl_cdf_tdist_P(stat, a_count+b_count-2));
 }
 
+/** Do a paired t-test entirely inside the database.
+\ingroup ttest
+*/
 double	apop_db_paired_t_test(char * tab1, char *col1, char *col2){
 gsl_matrix	*result;
 	result	= apop_query_to_matrix("select avg(%s - %s), var(%s - %s), count(*) from %s tab1", 
