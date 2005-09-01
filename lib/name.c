@@ -1,7 +1,14 @@
 #include <apophenia/name.h>
 #include <stdio.h>
 #include <malloc.h>
+/** file name.c
 
+Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+*/
+
+/** Allocates a name structure
+\return	An allocated, empty name structure.
+*/
 apop_name * apop_name_alloc(void){
 apop_name	* init_me;
 	init_me	= malloc(sizeof(apop_name));
@@ -14,6 +21,15 @@ apop_name	* init_me;
 	return init_me;
 }
 
+/** Adds a name to the \ref apop_name structure. Puts it at the end of the given list.
+
+\param n 	An existing, allocated \ref apop_name structure.
+\param add_me 	A string.
+\param type 	If adding a dependent variable, use <tt>'d'</tt>; if adding a row name, use <tt>'r'</tt>;
+If adding a (independent) column name, use <tt>'c'</tt>.
+\return 	Returns the number of rows/cols/depvars after you have added the new one.
+\ingroup names
+*/
 int apop_name_add(apop_name * n, char *add_me, char type){
 	if (type == 'c'){
 		(n->colnamect)++;
@@ -36,6 +52,10 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 		return n->depnamect;
 }
 
+/** Prints the given list of names to STDOUT
+\param n	the \ref apop_name structure
+\ingroup names
+*/
 void  apop_name_print(apop_name * n){
 int		i;
 	if (n->depnamect > 0){
@@ -58,6 +78,8 @@ int		i;
 	}
 }
 	
+/** Erases an \ref apop_name structure.
+\ingroup names 	*/
 void  apop_name_free(apop_name * free_me){
 int		i;
 	for (i=0; i < free_me->colnamect; i++)

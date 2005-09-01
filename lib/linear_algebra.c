@@ -6,14 +6,41 @@ such as take determinants or do singular value decompositions.
 	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
 
-/** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  */
+/** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  
+
+\b common matrix tricks:
+
+\ref apop_det_and_inv: Calculate the determinant, inverse, or both.
+
+\ref apop_x_prime_sigma_x: A very common operation for statistics.
+
+\ref apop_sv_decomposition: the singular value decomposition
+
+==== printing ====
+
+\ref apop_print: Some convenience functions to quickly dump
+a matrix or vector to the screen: <tt>apop_print_matrix</tt>,
+<tt>apop_print_matrix_int</tt>, <tt>apop_print_vector</tt>, and
+<tt>apop_print_vector_int</tt>.
+
+*/
 
 /** \defgroup convenience_fns 	Things to make life easier with the GSL.
  */
 
+/** \defgroup output		Printing to the screen or a text file
+
+Most functions print only to the screen, but the \ref apop_print "matrix
+and vector printing functions" will let you print to a text file as
+well. The presumption is that statistic estimates are for your own
+consumption, while you are printing a matrix for import into another program.
+
+See \ref apop_name_print.
+*/
 /** \defgroup apop_print 	Asst printing functions		
 
 Many have multiple aliases, because I could never remember which way to write them.
+\ingroup output
 */
 
 #include <gsl/gsl_blas.h>
@@ -25,6 +52,16 @@ Many have multiple aliases, because I could never remember which way to write th
 #include "math.h" //pow!
 #include <apophenia/vasprintf.h>
 
+/** Returns the variance/covariance matrix relating each column with each other.
+
+\param in 	A data matrix: rows are observations, columns are variables.
+
+\param normalize
+1= subtract the mean from each column, thus changing the input data but speeding up the computation.<br>
+0= don't modify the input data
+
+\return Returns the variance/covariance matrix relating each column with each other. This function allcates the matrix for you.
+\ingroup matrix_moments */
 gsl_matrix *apop_covariance_matrix(gsl_matrix *in, int normalize){
 gsl_matrix	*out;
 int		i,j,k;
@@ -323,6 +360,7 @@ The table to be summarized.
 
 \param names
 The \c apop_names structure associated with the table. If there is no such structure, use <tt>NULL</tt>.
+\ingroup output
 */
 void apop_matrix_summarize(gsl_matrix *data, apop_name *names){
 int		i;

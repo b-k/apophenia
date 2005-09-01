@@ -37,3 +37,4 @@ install_man3_MANS = man/man3/*
 
 install-exec-hook: 
 	doxygen .doxygen
+	cp flake.gif html/

@@ -6,6 +6,46 @@
 
 #define Text_Size_Limit 1000000
 
+/** \defgroup conversions Conversion functions
+
+The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
+/** \defgroup convertfromarray  Functions to convert from an array (i.e., double **).
+\ingroup conversions*/
+/** \defgroup convertfromtext Functions to convert from a text file
+\ingroup conversions*/
+/** \defgroup convertfromdb  Functions to convert from a database
+\ingroup conversions*/
+/** \defgroup convertfrommatrix  Functions to convert from a gsl_matrix.
+\ingroup conversions*/
+/** \defgroup convertfromvector  Functions to convert from a gsl_vector.
+\ingroup conversions*/
+
+/** \page gsl_views 	Using GSL Views
+The GSL includes a convenient structure for pulling a vector from a matrix. Here's how to get the fifth row of <tt>a_matrix</tt> into a vector view:
+
+\code
+gsl_vector_view v;
+v = gsl_matrix_col(a_matrix, 4);
+\endcode
+
+For rows, use <tt>gsl_matrix_row(a_matrix, n)</tt>. The vector view is a
+data structure which includes an element of type <tt>gsl_vector</tt> named
+<tt>vector</tt>; this is the only element you will be interested in. The
+expression <tt>&(v.vector)</tt> is of type <tt>gsl_vector *</tt>, and therefore
+can be used as you would any other pointer to a <tt>gsl_vector</tt>. For
+example, try \ref apop_mean<tt>(&(v.vector));</tt>.
+
+The view is intended to be a common variable, not a pointer. If you want
+to retain the data after the function exits, copy it to another vector: 
+\code
+gsl_vector_view v;
+gsl_vector *a_new_vector = gsl_vector_alloc(a_matrix->size1);
+v = gsl_matrix_col(a_matrix, 4);
+gsl_vector_memcpy(a_new_vector, &(v.vector));
+\endcode
+\ingroup convertfrommatrix
+*/
+
 
 /** Um, converts a GSL vector to an array.
 
@@ -18,6 +58,7 @@ A pointer to a <tt>double*</tt>, which will be <tt>malloc</tt>ed inside the func
 \return Returns the size of the vector, i.e., <tt>in->size</tt>.
 
 \note Does not use memcpy, because we don't know the stride of the vector.
+\ingroup convertfromvector 
 */
 int apop_convert_vector_to_array(gsl_vector *in, double **out){
 int		i;	
@@ -27,6 +68,13 @@ int		i;
 	return in->size;
 }
 
+/** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
+
+\param in 	A vector.
+\param out 	A <tt>gsl_vector</tt>. Declare but do not allocate.
+\param size 	You will have to tell the function how long <tt>in</tt> is.
+\ingroup convertfromarray 
+*/ 
 void apop_convert_array_to_vector(double *in, gsl_vector **out, int size){
 int		i;
 	*out	= gsl_vector_alloc(size);
@@ -43,6 +91,13 @@ int		i, j;
 			(*out)[i * cols + j]	= in[i][j];
 }
 
+/** convert a <tt>double **</tt> array to a <tt>gsl_matrix</tt>
+
+\param in	the array to read in
+\param out	the <tt>gsl_matrix</tt> out. Declare it but don't allocate it.
+\param rows, cols	the size of the array.
+\ingroup convertfromarray 
+*/
 void apop_convert_array_to_matrix(double **in, gsl_matrix **out, int rows, int cols){
 gsl_matrix_view	m;
 double		*line;
@@ -281,7 +336,8 @@ gsl_matrix      *data;
      apop_print_vector(beta);
 return 0;
 }
-\endverbatim
+\endverbatim 
+\ingroup convertfromtext
 */
 int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names){
 FILE * 		infile;
@@ -348,8 +404,8 @@ int 		ct, one_in,
 	}
 }
 
+/** an alias for \ref apop_convert_text_to_db  */
 int apop_text_to_db(char *text_file, char *tabname, char **field_names){
-	//just an alias.
 	return apop_convert_text_to_db(text_file, tabname, field_names);
 }
 
@@ -366,3 +422,10 @@ int		i,j;
 	}
 	return 0;
 }
+
+/** \page dbtomatrix converting from database table to gsl_matrix
+
+Use <tt>fill_me = apop_query_to_matrix("select * from table_name;");</tt>. [See \ref apop_query_to_matrix.]
+\ingroup convertfromdb
+*/
+

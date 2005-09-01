@@ -57,6 +57,9 @@ void apop_estimate_free(apop_estimate * free_me){
 	free(free_me);
 }
 
+/** Print the results of an estimation
+
+\ingroup output */
 void apop_estimate_print(apop_estimate * print_me){
 int		i,j;
 	printf("\n");

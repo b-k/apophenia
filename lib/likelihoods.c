@@ -17,7 +17,10 @@ the moment entirely unused, but is just here for future use.
 
 Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
-/** \defgroup network_likelihoods  Likelihood fns associated with network analysis*/
+/** \defgroup mle  Estimations requiring the maximization of a likelihood function
+*/
+/** \defgroup network_likelihoods  Likelihood fns associated with network analysis
+\ingroup mle */
 #include <apophenia/likelihoods.h>
 
 
@@ -142,6 +145,7 @@ gsl_matrix_view p 	= gsl_matrix_submatrix(data,0,1,data->size1,data->size2-1);
 find (data dot beta'), then find the integral of the \f$\cal{N}(0,1)\f$
 up to that point. Multiply likelihood either by that or by 1-that, depending 
 on the choice the data made.
+\ingroup mle
 */
 double apop_probit_likelihood(const gsl_vector *beta, void *d){
 int		i;

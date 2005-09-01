@@ -1,11 +1,37 @@
+0.11	September 2005
+--command-line server is much improved. I actually do work with it.
+--Documentation is now via doxygen.
+--asst bug fixes.
+
+0.10	August 2005
+--This version includes a server to park itself in memory and receive data
+processing requests. The intent is that one can then do analysis from
+the command line or a Perl/Python/Whatever script. The client/server
+works in the sense of handling a handful of requests without
+segfaulting, but remains in proof-of-concept stage. 
+--Added apop_merge_db for joining databases, both via C and command line 
+--Run t tests from the cmd line or the database.
+
+0.09	July 2005
+Flattened the relatively complex vasprintf subsystem from GNU, so if
+you've been having trouble compiling on non-GNU systems, try again.
+Added two little command-line programs. Also, added more little
+functions which aren't very interesting, like t-tests; maybe you'll
+stumble upon them.
+
+0.08	May 2005
+--OLS/GLS/MLE now properly support the apop_estimate structure --Column
+names
+
+0.07	April 2005
+--uses the apop_estimate structure to return heaps of data from regressions & MLEs
+--uses the apop_model structure
+
+0.06
+--var(x), skew(x), kurtosis(x) added to SQL understood by Apophenia.
+
 0.05
 --added a little crosstab utility
 --queries now accept printf-type arguments. 
 	==>GNU vasprintf was added.
 		==>updated to work with autoconf 1.7
-
-0.06
---var(x), skew(x), kurtosis(x) added to SQL understood by Apophenia.
-
-0.07
---uses the apop_estimate structure to return heaps of data from regressions & MLEs

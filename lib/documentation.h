@@ -1,51 +1,43 @@
-/** \mainpage Intro
+/** \mainpage The Apophenia documentation
 
 This is the documentation for <a href="http://apophenia.sf.net">Apophenia</a>. 
 
 \section Prerequisites 
 
- * \ref intro "Intro": The motivation for the package.
-
- * \ref setup "Setup":  Installing GCC, the GSL, SQLite, and Apophenia itself.
+ \li \ref intro "Intro": The motivation for the package.
+ \li \ref setup "Setup":  Installing GCC, the GSL, SQLite, and Apophenia itself.
 
 \section Doing statistics 
 
- * ["Basic statistics"]: Mean, variance, &c.
-
- * ["Regression"]: OLS, GLS, t-tests
-
- * ["Maximum likelihood estimation"]: estimators requiring a search for the maximum of a likelihood function.
-
- * ["Linear algebra"]: determinants, projections, &c. Some convenience functions to display matrices and vectors.
+ \li \ref basic_stats "Basic statistics": Mean, variance, &c.
+ \li \ref regression  
+ \li \ref ttest 
+ \li \ref mle "Maximum likelihood estimation": estimators requiring a search for the maximum of a likelihood function.
+ \li \ref linear_algebra "Linear Algebra": determinants, projections, &c. Some convenience functions to display matrices and vectors.
 
 \section Shunting data 
 
- * ["Database utilities"]: an easy front end to SQLite
-
- * ["Conversion functions"]: the functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.
-
- * ["Output functions"]: Summarize data and print tables to the screen or a file.
-
- * ["Command-line utilities"]: a still easier front end to SQLite
+ \li \ref db "Database utilities": an easy front end to SQLite
+ \li \ref conversions
+ \li \ref output "Output functions": Summarize data and print tables to the screen or a file.
+ \li \ref command_line "Command-line utilities": a still easier front end to SQLite, and doing stats via Perl/Python/shell script.
 
 
 \section Speaking the languages
 
- * \ref c "C": For statisticians who don't know/are rusty with the C
+ \li \ref c "C": For statisticians who don't know/are rusty with the C
  programming language. Those who know their C may want to check the
  Apophenia-specific notes in the \ref usagenotes "usage notes" section.
-
- * \ref sql SQL: About the syntax for querying databases.
-
- * ["Apop_types"]: new structures defined by Apophenia
- 
- \todo The flake.gif image needs to be manually copied in to the html dir.
+ \li \ref sql About the syntax for querying databases.
+ \li \ref types "Types": New structures defined by Apophenia
  */
 
 /** \page intro Why?
 
 \section Data management and data analysis
-We require two things from a good statistics package: easy management of large data sets, and the ability to crunch numbers on a large scale. [The third place entry, \ref graphing Graphing, is discussed on another page.]
+We require two things from a good statistics package: easy management of
+large data sets, and the ability to crunch numbers on a large scale. [The
+third place entry, \ref graphing "graphing", is discussed on another page.]
 
 Apophenia facilitates data management by including a database interface. By reading your data into a database instead of an in-memory matrix, you effectively have no limits on the size of your data set.
 
@@ -59,7 +51,7 @@ Thus, the average analysis using Apophenia would take the following steps:
  * call a regression function such as \ref apop_OLS "apop_OLS" or a maximum likelihood estimator such as a \ref apop_mle_probit "probit" to fit parameters to the data.
  * use the results for further analysis, or just dump them to the screen with ["apop_estimate_print"].
 
-If this seems a bit vague, have a look at this ["sample program"].
+If this seems a bit vague, have a look at this \ref sample_program.
 
 \section Stats libraries vs Stats packages 
 The reason I (BK) started up this library is that I was sick of learning new languages. There are a few dozen statistics packages to choose from, all of which are best for one task or another, but none of which was portable and versatile enough to work for every project I had. Ask yourself: when you get the industrial-strength data set---several gigabytes of data from the US Census or USGS or what-have-you---will your stats package be able to handle it?
@@ -74,15 +66,19 @@ Thus, Apophenia does not impose its own language for you to learn, but instead r
 
 /** \page setup Setting up
 
-\section The supporting cast 
+\section cast The supporting cast 
 
 To use Apophenia, you will need to have a working C compiler, the GSL and SQLite installed. 
 
-\subsection C 
-The [http://gcc.gnu.org/ Gnu Compiler Collection] (GCC) is certainly available for your system. If you are using a unix-type system, it is probably already installed. Windows users, see the ["Windows"] page.
+\subsection C C
+The <a href="http://gcc.gnu.org/">Gnu Compiler Collection</a> (GCC) is certainly available for your system. If you are using a unix-type system, it is probably already installed. Windows users, see \ref windows .
 
-\subsection The GSL 
-This is often available as a package: try <tt>apt-get gsl-devel</tt>, <tt>urpmi gsl-devel</tt>, or whatever means you use to install a package. If all else fails, download the source code from the [http://sources.redhat.com/gsl GSL home page]. Compilation and installation is simple:
+\subsection gsl The GSL 
+This is often available as a package: try <tt>apt-get gsl-devel</tt>,
+<tt>urpmi gsl-devel</tt>, or whatever means you use to install a
+package. If all else fails, download the source code from the 
+<a href="http://sources.redhat.com/gsl">GSL home page</a>. Compilation and
+installation is simple:
 
 \verbatim
 tar xvzf pkg.tgz  #change pkg.tgz to the appropriate name
@@ -96,10 +92,14 @@ su -c "make install"   #see below if you don't have root priveleges.
 If you don't have root priveleges, then see the \ref notroot "not root" section.
 
 
-\subsection SQLite
-SQLite is gaining popularity, and so may or may not be an available package for your system. If not, you will need to download it from [http://www.sqlite.org the SQLite home page] and compile it. The instructions are identical to compiling the GSL above. You will need to set your <tt>LD_LIBRARY_PATH</tt>; see below.
+\subsection sqlite SQLite
+SQLite is gaining popularity, and so may or may not be an available
+package for your system. If not, you will need to download it from
+<a href="http://www.sqlite.org">the SQLite home page</a> and compile it. The
+instructions are identical to compiling the GSL above. You will need to
+set your <tt>LD_LIBRARY_PATH</tt>; see below.
 
-\section The package 
+\section apop_install The package 
 
 If you're reading this on a web browser, you can download Apophenia from <a href="https://sourceforge.net/project/showfiles.php?group_id=130901">here</a>; else, go to apophenia.info and follow the download link. The library installation is just like the above:
 
@@ -147,13 +147,124 @@ These commands add a line to your <tt>.bashrc</tt> file; having modified it, rel
 
 \subsection Testing
 
-There is a short, complete program in the \ref apop_OLS "apop_OLS" entry which runs a simple OLS regression on a data file. Follow the instructions there to compile and run. There is also a slightly longer ["sample program"] on a separate page.
+There is a short, complete program in the \ref apop_OLS "apop_OLS" entry which runs a simple OLS regression on a data file. Follow the instructions there to compile and run. There is also a slightly longer \ref sample_program on a separate page.
 
 \subsection Using 
 
-Now that it's installed, do some stats! For those who are new to C, there are some notes on the ["C"] page; if you are familiar with the process, see the \ref usagenotes "usage notes" for Apophenia itself.
+Now that it's installed, do some stats! For those who are new to C, there are some notes on the \ref C page; if you are familiar with the process, see the \ref usagenotes "usage notes" for Apophenia itself.
+
+\subsection sample_program A sample program
+The sample program below is intended to show how one would integrate
+Apophenia into an existing program. For example, say that you are running
+a simulation of two different treatments, or say that two sensors are
+posting data at regular intervals. You need to gather the data in an
+organized form, and then ask questions of the resulting data set.
+
+Below, a thousand draws are made from the two processes and put into
+a database. Then, the data is pulled out, some simple statistics are
+compiled, and the data is written to a text file for inspection outside
+of the program.
+
+This program will compile cleanly with the sample \ref makefile.
+
+
+\code
+#include <apophenia/headers.h>
+
+//Your processes are probably a bit more complex.
+double process_one(gsl_rng *r){
+        return gsl_rng_uniform(r) * gsl_rng_uniform(r) ;
+}
+
+double process_two(gsl_rng *r){
+        return gsl_rng_uniform(r);
+}
+
+int main(){
+gsl_matrix      *m;
+gsl_vector_view view1, view2;
+gsl_vector      *v1, *v2;
+double          p1, p2;
+int             i;
+gsl_rng *       r;
+
+        //set up the GSL's random number generator.
+        gsl_rng_env_setup();
+        r=gsl_rng_alloc(gsl_rng_default);
+
+        //create the database and the data table.
+        apop_open_db("runs.db");
+        apop_table_exists("samples",1); //If the table already exists, delete it.
+        apop_query_db("create table samples(iteration, process, value); begin;");
+
+        //populate the data table with runs.
+        for (i=0; i<1000; i++){
+                p1      = process_one(r);
+                p2      = process_two(r);
+                apop_query_db("insert into samples values(%i, %i, %g);", i, 1, p1);
+                apop_query_db("insert into samples values(%i, %i, %g);", i, 2, p2);
+        }
+        apop_query_db("commit;"); //the begin-commit wrapper saves writes to the drive.
+
+        //pull the data from the database. Use the GSL's vector views to minimize copying.
+        m  = apop_db_to_crosstab("samples", "iteration","process", "value", NULL, NULL);
+        view1      = gsl_matrix_column(m, 0);
+        view2      = gsl_matrix_column(m, 1);
+        v1      = &(view1.vector);
+        v2      = &(view2.vector);
+
+
+        //print info.
+        printf("\t   mean\t\t   var\n");
+        printf("process 1: %f\t%f\n", apop_mean(v1), apop_var(v1));
+        printf("process 2: %f\t%f\n\n", apop_mean(v2), apop_var(v2));
+        printf("t test p-value: %f\n", apop_t_test(v1,v2));
+        apop_matrix_print(m,"\t", "the_data.txt"); //does not overwrite; appends.
+        return 0;
+}
+\endcode
+
 */
 
+/** \page windows The Windows page
+
+=== A note for Windows users ===
+
+Get <a href="http://www.cygwin.com">Cygwin</a>. The setup program is
+very self-explanatory. As a warning, it will probably take up &gt;300MB on
+your system. You should install at least the following programs:
+
+ \li autoconf/automake
+ \li binutils
+ \li gcc
+ \li gdb
+ \li gnuplot -- for plotting data
+ \li groff -- needed for the man program, below
+ \li gsl -- the engine that powers apophenia
+ \li less -- to read text files
+ \li libtool -- needed for compiling programs
+ \li make
+ \li man -- for reading help files
+ \li more -- not as good as less but still good to have
+If you are missing anything else, the program will probably tell you.
+
+The following are not necessary but are good to have on hand as long as you are going to be using Unix and programming.
+ \li cvs -- to partake in the versioning system
+ \li emacs -- steep learning curve, but people love it
+ \li ghostscript (for reading .ps/.pdf files)
+ \li openssh -- needed for cvs
+ \li perl, python, ruby -- these are other languages that you might also be interested in
+ \li tetex -- write up your documentation using the nicest-looking formatter around
+ \li X11 -- a windowing system
+
+X-Window will give you a nicer environment in which to work.  After you
+start Cygwin, just type <tt>startx</tt> to bring up a more usable,
+nice-looking terminal (and the ability to do a few thousand other things
+which are beyond the scope of this documentation).
+
+Once you have Cygwin installed and a good terminal running, you can
+follow along with the remainder of the discussion without modification.
+*/
 
 /** \page notroot  Not root? 
 
@@ -267,13 +378,18 @@ $(objects): %.o: %.c
 /** \page sql SQL
 Until some notes show up here, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.
 
-The <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF documentation</a> for Apophenia includes a chapter which discusses SQL for statisticians.
+The <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF
+documentation</a> for Apophenia includes a chapter which discusses SQL
+for statisticians.
 
-The blog of Apophenia's author includes an <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementarities between SQL and matrix manipulation packages.
+The blog of Apophenia's author includes an <a
+href="http://fluff.info/blog/arch/00000118.htm">entry</a> about
+complementarities between SQL and matrix manipulation packages.
+
 */
 
 /** \page graphing What about graphing?
- *
+
 Portable graphing tools are supremely difficult to implement. The closest
 thing to a truly portable setup is <a href="http://www.gnuplot.info">Gnuplot</a>,
 but you may have something on your system which you prefer.

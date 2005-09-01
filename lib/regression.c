@@ -4,7 +4,7 @@
  */
 
 /** \defgroup regression  OLS/GLS: The linear projection methods */
-/** \defgroup ttest  The t-test methods */
+/** \defgroup ttest  T-tests: comparing two vectors */
 
 #include <apophenia/regression.h>
 #include <gsl/gsl_blas.h>
@@ -112,7 +112,7 @@ The first column is the dependent variable, the remaining columns are the indepe
 The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
 \param sigma 
-A known variance-covariance matrix, of size {{{(data->size1, data->size1)}}}. Survives the function intact. The first column refers to the constant unit vector, so it's always zero.
+A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>. Survives the function intact. The first column refers to the constant unit vector, so it's always zero.
 
 \param n
 An \c apop_name structure, specifying which outputs you want.
@@ -162,11 +162,57 @@ The first column is the dependent variable, and the remaining columns the indepe
 \param n
 An \c apop_name structure, specifying which outputs you want.
 
-\param uses 
-If NULL, do everything; else, produce those ["apop_estimate"] elements which you specify. You always get the parameters and never get the log likelihood.
+\param uses If <tt>NULL</tt>, then you get everything.  If a pointer to
+an \ref apop_inventory , then you get what you ask for. Log likelihood is
+not calculated; you always get the parameter estimates.
 
 \return
-A pointer to an ["apop_estimate"] structure with the appropriate elements filled.
+Will return an \ref apop_estimate <tt>*</tt>.
+<tt>The_result->parameters</tt> will hold the coefficients; the first
+coefficient will be the coefficient on the constant term, and the
+remaining will correspond to the independent variables. It will therefore
+be of size <tt>(data->size2)</tt>. Do not pre-allocate.
+
+If you asked for it, the covariance matrix, confidence levels, and residuals will also be returned. The confidence intervals give the level of certainty with which we can reject the hypothesis that the given coefficient is zero.
+
+\b sample 
+
+First, you will need a file named <tt>data</tt> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent. For example:
+\verbatim
+Y, X_1, X_2, X_3
+2,3,4,5
+1,2,9,3
+4,7,9,0
+2,4,8,16
+1,4,2,9
+9,8,7,6
+\endverbatim
+
+The program:
+\code
+#include <apophenia/headers.h>
+
+int main(void){
+gsl_matrix      *data;
+apop_estimate   *est;
+apop_name       *n;
+     apop_convert_text_to_db("data","d",NULL);
+     data       = apop_query_to_matrix("select * from d");
+     n          = apop_db_get_names();
+     est  = apop_OLS(data, n, NULL);
+     apop_estimate_print(est);
+     return 0;
+}
+\endcode
+
+If you saved this code to <tt>sample.c</tt>, then you can compile it with
+\verbatim
+gcc sample.c -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
+\endverbatim
+
+and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
+
+
  */
 apop_estimate * apop_OLS(gsl_matrix *data, apop_name * n, apop_inventory *uses){
 apop_inventory	actual_uses;

@@ -16,6 +16,78 @@
 
 #define PORT_NO 11716
 
+/** \page command_line Command line utilities
+
+<b> The command-line database utilities</b><br>
+Try \ref apop_db_to_crosstab, \ref apop_text_to_db, and
+\ref apop_merge_dbs from the command line (<tt>-h</tt> for help). They are
+simple stand-alone wrappers to the corresponding functions, in case you
+just need to quickly move data in or out of a database.
+
+<b> The server/client </b><br>
+But more importantly, there is the command-line program <tt>apop</tt>,
+which facilitates stats from outside of C, such as on the command line
+or via a scripting language. First,
+
+\code
+apop start data.db&
+\endcode
+
+will open a server, which will in this case open a database named
+<tt>data.db</tt>. The ampersand is the standard UNIX means of running a
+process in background. Run <tt>apop start</tt> with no database name to
+use an in-memory database.
+
+Once the server is listening, you may send it commands. Eventually, every
+function in the Apophenia library and the more useful ones from the GSL
+will have a corresponding command line. At the moment, the functions
+are basically those for a proof-of-concept.
+
+A large subset of Apophenia's C functions are supported; type 
+<tt>apop help</tt> for the current list. Below are a sample.
+
+To query the database:
+\code
+apop query "select something from table"
+\endcode
+[Why not just use the sqlite command line? First, since the apophenia
+server side persists, the database isn't loaded into memory for every
+call. Second, Apophenia includes new aggregate operators---notably
+<tt>var()</tt>. Finally, apophenia's server makes it possible to use an
+in-memory database.]
+
+
+To pull data to a matrix, which is then stored on the server:
+\code
+apop query_to_matrix matrix_name "select columns from db_table"
+\endcode
+
+To print the matrix to the screen:
+\code
+apop matrix_print matrix_name
+\endcode
+
+To do a t-test on two columns in the database:
+\code
+apop db_t_test tab1 col1 tab2 col2
+\endcode
+
+To stop the server:
+\code
+apop stop
+\endcode
+
+\b How to use Apophenia from Perl/Python/&c.
+The easiest way is to simply call the command-line interface. In Perl, try <tt>system("apop start")</tt>; in Python, use <tt>os.popen3("""apop query "select * from tab" """)</tt>.
+
+Alternatively, the reader is encouraged to write and contribute
+functions to add a layer of abstraction to the command line, so users
+may type \ref apop_query <tt>("select")</tt> and the \ref apop_query function
+would call the appopriate command line. Since the server does all the
+math, the scripting functions will only have to handle text processing
+and reading matrices into native scripting-language arrays.
+*/
+
 //here are the commands implemented so far.
 //Each line gives: name, argument count, internal return type, external return
 //argument count includes any internal names.

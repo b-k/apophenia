@@ -5,7 +5,6 @@ features like a variance, skew, and kurtosis aggregator for SQL.
 */
 
 /** \defgroup db Database utilities */
-/** \defgroup querying Database utilities */
 #include <math.h> 	//sqrt
 #include <string.h>
 #include <stdarg.h>
@@ -30,6 +29,25 @@ int apop_verbose	= 0;
 ////////////////////////////////////////////////
 // Part one: additional aggregate functions for calculating higher moments
 ////////////////////////////////////////////////
+
+/** \page db_moments Database moments
+\verbatim
+select count(x), stddev(x), avg(x), var(x), variance(x), skew(x), kurt(x), kurtosis(x)
+from table
+group by whatever
+\endverbatim
+
+The SQL standard includes the <tt>count(x)</tt> and <tt>avg(x)</tt> aggregators,
+but statisticians are usually interested in higher moments as well---at
+least the variance. Therefore, SQL queries using the Apophenia library
+may include any of the moments above.
+
+<tt>var</tt> and <tt>variance</tt>; <tt>kurt</tt> and <tt>kurtosis</tt> do the same
+thing. Choose the one that sounds better to you.
+
+The  var/skew/kurtosis functions calculate ''sample'' moments, so if you want the population moment, multiply the result by (n-1)/n .
+*/
+
 
 typedef struct StdDevCtx StdDevCtx;
 struct StdDevCtx {
@@ -142,6 +160,37 @@ static void kurtFinalize(sqlite3_context *context){
 ////////////////////////////////////////////////
 
 
+
+/**
+If you want to use a database on the hard drive instead of memory,
+then call this once and only once before using any other database
+utilities. 
+
+If you want a disposable database which you won't use after the program
+ends, don't bother with this function.
+
+The trade-offs between an on-disk database and an in-memory db are as
+one would expect: memory is faster, but is destroyed when the program
+exits. SQLite includes a command line utility (<tt>sqlite3</tt>) which
+let you ask queries of a database on disk, which may
+be useful for debugging. There are also some graphical
+front-ends; just ask your favorite search engine for <a
+href="http://www.google.com/search?&q=sqlite+gui">SQLite GUI</a>.
+
+The Apophenia package assumes you are only using a single
+SQLite database at a time; if not, the \ref apop_db_merge and \ref
+apop_db_merge_table functions may help.
+
+When you are done doing your database manipulations, be sure to call \ref apop_close_db .
+
+\param filename
+The name of a file on the hard drive on which to store the database. If
+<tt>NULL</tt>, then the database will be kept in memory (in which case,
+the other database functions will call this function for you and you
+don't need to bother).
+
+\ingroup db
+*/
 int apop_db_open(char *filename){
 //char	*err;
 	//if (filename==NULL) 	db	=sqlite_open(":memory:",0,&err);
@@ -157,10 +206,11 @@ int apop_db_open(char *filename){
 	sqlite3_create_function(db, "skew", 1, SQLITE_ANY, NULL, NULL, &threeStep, &skewFinalize);
 	sqlite3_create_function(db, "kurt", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
 	sqlite3_create_function(db, "kurtosis", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
-	apop_query_db("pragma short_column_names");
+	apop_query("pragma short_column_names");
 	return 0;
 }
 
+/** An alias for \ref apop_db_open . */
 int apop_open_db(char *filename){ return apop_db_open(filename); }
 
 /** Send a query to the database, return nothing 
@@ -169,13 +219,13 @@ An \ref sql "SQL" query.
 
 \param ...
 Your query may be in <tt>printf</tt> form. For example:
-\verbatim
+\code
 char tabname[] = "demographics";
 char colname[] = "heights";
 int min_height = 175;
 apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_height);
-\endverbatim
-\ingroup querying
+\endcode
+\ingroup db
 */
 int apop_query(const char *fmt, ...){
 char 		*err, *q;
@@ -191,7 +241,7 @@ va_list		argp;
 }
 
 /** Just like \ref apop_query . Use that one. 
-\ingroup querying 
+\ingroup db
 */
 int apop_query_db(const char *fmt, ...){
 char 		*err, *q;
@@ -240,6 +290,11 @@ char 		*err, q2[10000];
 }
 
 
+/** Counts the number of columns in a table. Occasionally useful, e.g., when data is read from a file.
+
+\param name 	The name of the table you are inquiring about.
+\return 	The number of columns the table has.
+*/
 int apop_count_cols(const char *name){
 char 		*err, q2[5000];
 int		colct	= 1;
@@ -259,6 +314,14 @@ int		colct	= 1;
 	return colct;
 }
 
+/**
+Closes the database on disk. If you opened the database with
+<tt>apop_open_db(NULL)</tt>, then this is basically optional.
+
+\param vacuum 
+1: Do clean-up to minimize the size of the database on disk.<br>
+0: Don't bother; just close the database.
+*/
 int apop_db_close(int vacuum){
 char		*err;
 	if (vacuum) sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
@@ -267,6 +330,7 @@ char		*err;
 	return 0;
 	}
 
+/** An alias for \ref apop_db_close . */
 int apop_close_db(int vacuum){ return apop_db_close(vacuum); }
 
 int names_callback(void *o,int argc, char **argv, char **whatever){
@@ -279,6 +343,34 @@ int length_callback(void *o,int argc, char **argv, char **whatever){
 	return 0;
 }
 
+/** Dump the results of a query into an array of strings.
+
+You will probably be curious as to the dimensions of the
+array just returned. To get this information, use \ref apop_db_get_rows
+and \ref apop_db_get_cols .
+
+\param fmt 	As with \ref apop_query , a string containing a query,
+which may include <tt>printf</tt>-style tags (<tt>%i, %s</tt>, et cetera).
+
+\return		An array of strings. Notice that this is always a 2-D
+array, even if the query returns a single column. In that case, use
+<tt>returned_tab[i][0]</tt> to refer to row <tt>i</tt>.
+
+example
+The following function will list the tables in a database (much like you could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
+
+\verbatim
+void print_table_list(char *db_file){
+char            ***tab_list;
+int             row_ct, i;
+        apop_db_open(db_file);
+        tab_list= apop_query_to_chars("select name from sqlite_master where type==\"table\";");
+        row_ct  =  apop_db_get_rows();
+        for(i=0; i< row_ct; i++)
+                printf("%s\n", tab_list[i][0]);
+}
+\endverbatim
+*/
 char *** apop_query_to_chars(const char * fmt, ...){
 char		***output;
 int		currentrow=0;
@@ -334,6 +426,17 @@ va_list		argp;
 	return output;
 }
 
+/** Queries the database, and dumps the result into a matrix.
+
+
+\param fmt 	A string holding an \ref sql "SQL" query.
+Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
+
+\return
+A <tt>gsl_matrix</tt>, which you passed in declared but not allocated.
+
+Blanks in the database are filled with <tt>GSL_NAN</tt>s in the matrix.
+*/
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 gsl_matrix	*output;
 int		currentrow=0;
@@ -384,9 +487,17 @@ va_list		argp;
 	return output;
 }
 
+/** Queries the database, and dumps the result into a single floating point number.
+\param fmt	A string holding an \ref sql "SQL" query.
+\param ...	Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
+\return		A float. This calls \ref apop_query_to_matrix and returns
+the (0,0)th element of the returned matrix. Thus, if your query returns
+multiple lines, you will get no warning, and the function will return
+the first in the list (which is not always well-defined).
+
+If the query returns no rows at all, the function warns the user and returns <tt>GSL_NAN</tt>.
+*/
 float apop_query_to_float(const char * fmt, ...){
-//just like the above, but returns a single number, which will be the
-//(0,0)th entry in the matrix.
 gsl_matrix	*m=NULL;
 va_list		argp;
 char		*query;
@@ -405,10 +516,24 @@ float		out;
 
 }
 
+/** This function returns an <tt>apop_name</tt> structure with the column
+names from the last \ref apop_query_to_matrix . Since only the names from
+the last query are saved, you will want to use this immediately
+after calling <tt>apop_query_to_matrix</tt>.  */
 apop_name * apop_db_get_names(void){ return last_names; }
+
+/** This function returns the column count from the last query run. */
 int apop_db_get_cols(void){ return total_cols; }
+
+/** This function returns the row count from the last query run. */
 int apop_db_get_rows(void){ return total_rows; }
 
+/** Dump a <tt>gsl_matrix</tt> into the database.
+
+\param data 	The name of the matrix
+\param tabname	The name of the db table to be created
+\param headers	A list of column names. If <tt>NULL</tt>, then the columns will be named <tt>c1</tt>, <tt>c2</tt>, <tt>c3</tt>, &c.
+*/
 int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 int		i,j; 
 int		ctr		= 0;
@@ -433,7 +558,7 @@ char		*q 		= malloc(sizeof(char)*1000);
 			} else	{
 				sprintf(q,"%s %g);",q,gsl_matrix_get(data,i,j));
 				sprintf(q, "%s; end;", q);
-				apop_query_db(q);
+				apop_query(q);
 				ctr = 0;
 				sprintf(q,"begin; \n insert into %s values(",tabname);
 			}
@@ -453,6 +578,19 @@ int		i,j;
 	free(*tab);
 }
 
+/** Merge a single table from a database on the hard drive with the database currently open.
+
+\param db_file	The name of a file on disk.
+\param tabname	The name of the table in that database to be merged in.
+
+If the table exists in the new database but not in the currently open one,
+then it is simply copied over. If there is a table with the same name in
+the currently open database, then the data from the new table is inserted
+into the main database's table with the same name. [The function just
+calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
+
+\ingroup db
+*/
 void apop_db_merge_table(char *db_file, char *tabname){
 char		***tab_list;
 int		row_ct;
@@ -474,6 +612,18 @@ int		row_ct;
 		free_tab_list(&tab_list, row_ct, 1);
 }
 
+/** Merge a database on the hard drive with the database currently open.
+
+\param db_file	The name of a file on disk.
+
+If a table exists in the new database but not in the currently open one,
+then it is simply copied over. If there are  tables with the same name
+in both databases, then the data from the new table is inserted into
+the main database's table with the same name. [The function just calls
+<tt>insert into main.tab select * from merge_me.tab</tt>.]
+
+\ingroup db
+*/
 void apop_db_merge(char *db_file){
 char		***tab_list;
 int		row_ct, i;
