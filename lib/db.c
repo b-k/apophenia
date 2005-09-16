@@ -273,6 +273,7 @@ va_list		argp;
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
 	va_end(argp);
+	if (apop_verbose) {printf("\n%s\n",q);}
 	sqlite3_exec(db, q, NULL,NULL, &err);
 	free(q);
 	ERRCHECK
@@ -289,6 +290,7 @@ va_list		argp;
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
 	va_end(argp);
+	if (apop_verbose) {printf("\n%s\n",q);}
 	sqlite3_exec(db, q, NULL,NULL, &err);
 	free(q);
 	ERRCHECK
@@ -439,6 +441,7 @@ va_list		argp;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
+	if (apop_verbose) {printf("\n%s\n",query);}
 	va_end(argp);
 
 	total_rows	= 0;
@@ -544,6 +547,7 @@ float		out;
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
+	if (apop_verbose) {printf("\n%s\n",query);}
 	m	= apop_query_to_matrix(query);
 	if (m==NULL){
 		printf("apop, %s, %i: query turned up a blank table. Returning zero.\n", __FILE__, __LINE__);

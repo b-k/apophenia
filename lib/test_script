@@ -1,16 +1,19 @@
 apop_text_to_db test_data intab test.db
 apop start test.db&
+echo "here are a few quick t-tests:"
 apop db_t_test intab  a intab b
 apop db_t_test intab  a intab c
 apop db_t_test intab  a intab d
+
 apop query_to_matrix m1 "select * from intab"
 echo
 echo "printing matrix 1"
 apop print_matrix m1
 echo "printed"
 echo
-apop det_and_inv m2 m1
 echo "determinant taken. It is:"
+apop det_and_inv m2 m1
+echo "the inverse is:"
 apop print_matrix m2
 
 echo
