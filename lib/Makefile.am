@@ -6,15 +6,15 @@ LIBADD = -lgsl -lgslcblas -lsqlite3
 
 #The library
 LDADD = libapophenia.la
-AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
+AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 #-lefence
 #apop_text_to_db_LDADD = libapophenia.la
 #apop_text_to_db_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = conversions.c db.c likelihoods.c linear_algebra.c \
-			  regression.c stats.c estimate.c name.c \
+			distributions.c  regression.c stats.c estimate.c name.c apop_output.c \
 asnprintf.c  printf-args.c   vasnprintf.c  asprintf.c   printf-parse.c  vasprintf.c   
 pkginclude_HEADERS = conversions.h db.h likelihoods.h linear_algebra.h \
-		     regression.h stats.h headers.h estimate.h name.h \
+		     regression.h stats.h headers.h estimate.h name.h output.h \
 alloca_.h printf-parse.h  vasprintf.h printf-args.h vasnprintf.h    xsize.h
 
 
@@ -35,6 +35,11 @@ apop_SOURCES = apop.c
 EXTRA_DIST = $(man_MANS)
 install_man3_MANS = man/man3/*
 
-install-exec-hook: 
+doc: 
 	doxygen .doxygen
 	cp flake.gif html/
+
+test:
+	gcc -o test -lapophenia -lgsl -lgslcblas -lsqlite3 test.c -g
+	./test
+	./test_script

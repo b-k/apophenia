@@ -8,16 +8,12 @@ such as take determinants or do singular value decompositions.
 
 /** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  
 
-\b common matrix tricks:
+<b>common matrix tricks</b><br>
+\li \ref apop_det_and_inv: Calculate the determinant, inverse, or both.
+\li \ref apop_x_prime_sigma_x: A very common operation for statistics.
+\li \ref apop_sv_decomposition: the singular value decomposition
 
-\ref apop_det_and_inv: Calculate the determinant, inverse, or both.
-
-\ref apop_x_prime_sigma_x: A very common operation for statistics.
-
-\ref apop_sv_decomposition: the singular value decomposition
-
-==== printing ====
-
+<b>printing</b><br>
 \ref apop_print: Some convenience functions to quickly dump
 a matrix or vector to the screen: <tt>apop_print_matrix</tt>,
 <tt>apop_print_matrix_int</tt>, <tt>apop_print_vector</tt>, and
@@ -133,8 +129,13 @@ double 		the_determinant = 0;
 	return(the_determinant);
 }
 
+/** This comes up often enough that it deserves its own convenience function.
+\param x	A vector.
+\param sigma 	A symmetric matrix.
+\return 	The scalar X'SX
+\ingroup linear_algebra
+*/
 double apop_x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
-//This comes up often enough that it deserves its own convenience function.
 gsl_vector * 	sigma_dot_x	= gsl_vector_calloc(x->size);
 double		the_result;
 	gsl_blas_dsymv(CblasUpper, 1, sigma, x, 0, sigma_dot_x); //sigma should be symmetric
@@ -227,152 +228,3 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 	m->data[i * m->tda +j]	+= amt;
 }
 
-
-////////////////////////////
-/////The printing functions.
-////////////////////////////
-
-void print_core_v(gsl_vector *data, char *separator, char *filename, 
-			void (* p_fn)(FILE * f, double number)){
-int 		i;
-FILE * 		f;
-	if (filename == NULL)
-		f	= stdout;
-	else	f	= fopen(filename, "a");
-	for (i=0; i<data->size; i++){
-		p_fn(f, gsl_vector_get(data, i));
-		if (i< data->size -1)	fprintf(f, "%s", separator);
-	}
-	fprintf(f,"\n");
-	if (filename !=NULL)	fclose(f);
-}
-
-void print_core_m(gsl_matrix *data, char *separator, char *filename, 
-			void (* p_fn)(FILE * f, double number)){
-FILE * 		f;
-int 		i,j;
-	if (filename == NULL)
-		f	= stdout;
-	else	f	= fopen(filename, "a");
-	for (i=0; i<data->size1; i++){
-		for (j=0; j<data->size2; j++){
-			p_fn(f, gsl_matrix_get(data, i,j));
-			if (j< data->size2 -1)	fprintf(f, "%s", separator);
-		}
-		fprintf(f,"\n");
-	}
-	if (filename !=NULL)	fclose(f);
-}
-
-void dumb_little_pf_f(FILE * f, double data){
-	fprintf(f, "% 5f", data); }
-
-void dumb_little_pf_i(FILE * f, double data){
-	fprintf(f, "% 5i", (int) data); }
-
-/** Print a vector in real format.
-
-\ingroup apop_print */
-void apop_print_vector(gsl_vector *data, char *separator, char *filename){
-	print_core_v(data, separator, filename, dumb_little_pf_f); }
-
-/** Print a vector in int format.
-
-\ingroup apop_print */
-void apop_print_vector_int(gsl_vector *data, char *separator, char *filename){
-	print_core_v(data, separator, filename, dumb_little_pf_i); }
-
-/** Print a matrix in real format.
-
-\ingroup apop_print */
-void apop_print_matrix(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_f); }
-
-/** Print a matrix in int format.
-
-\ingroup apop_print */
-void apop_print_matrix_int(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_i); }
-
-/** Print a vector in float format.
-
-\ingroup apop_print */
-void apop_vector_print(gsl_vector *data, char *separator, char *filename){
-	print_core_v(data, separator, filename, dumb_little_pf_f); }
-
-/** Print a vector in int format.
-
-\ingroup apop_print */
-void apop_vector_print_int(gsl_vector *data, char *separator, char *filename){
-	print_core_v(data, separator, filename, dumb_little_pf_i); }
-
-/** Print a matrix in float format.
-
-\ingroup apop_print */
-void apop_matrix_print(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_f); }
-
-/** Print a matrix in int format.
-
-\ingroup apop_print */
-void apop_matrix_print_int(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_i); }
-
-
-/** This is a dumb little function to call gnuplot for you,
-   in case you're so exceptionally lazy that you can't call
-   <tt>apop_print_matrix(data, "\t", "outfile")</tt> yourself.
-
-\param data the data to be plotted.
-\param plot_type 's'=surface plot; anything else = 2D x-y plot
-\param delay the amount of time before gnuplot closes itself.
-*/
-void apop_plot(gsl_matrix *data, char plot_type, int delay){
-FILE 		*output;
-int		i,j;
-	output = popen ("gnuplot", "w");
-	if (!output) {
-		fprintf (stderr, "Can't find gnuplot.\n");
-		return;
-	}
-  	if (plot_type == 's')
-		fprintf(output, "splot \"-\"\n");
-  	if (plot_type != 's')
-		fprintf(output, "plot \"-\" using 1:2\n");
-	for (i=0; i<data->size1; i++){
-		for (j=0; j<data->size2; j++){
-			fprintf(output, "%g", gsl_matrix_get(data, i,j));
-			if (j< data->size2 -1)	fprintf(output, "\t");
-		}
-		fprintf(output,"\n");
-	}
-	fprintf(output,"e\n pause %i\n", delay);
-	pclose (output);
-}
-
-/** Print a summary of each column of a table to the screen (i.e., STDOUT). 
-
-\todo At the moment, only gives the mean and the standard deviation
-of the data in each column; should give more in the near future.
-
-\param data
-The table to be summarized.
-
-\param names
-The \c apop_names structure associated with the table. If there is no such structure, use <tt>NULL</tt>.
-\ingroup output
-*/
-void apop_matrix_summarize(gsl_matrix *data, apop_name *names){
-int		i;
-gsl_vector_view	v;
-	if (names !=NULL)
-		printf("names");
-	printf("\tmean:\tstd dev:\n");
-	for (i=0; i< data->size2; i++){
-                v       = gsl_matrix_column(data, i);
-		if (names !=NULL)
-			printf("%s\t%5f\t%5f\n",names->colnames[i],apop_mean(&(v.vector)),sqrt(apop_var(&(v.vector))));
-		else
-			printf("col %i\t%5f\t%5f\n",i,apop_mean(&(v.vector)),sqrt(apop_var(&(v.vector))));
-	}	
-}

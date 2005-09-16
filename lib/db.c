@@ -4,7 +4,45 @@ features like a variance, skew, and kurtosis aggregator for SQL.
  Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
 
-/** \defgroup db Database utilities */
+/** \defgroup db Database utilities 
+
+These are convenience functions to handle interaction with SQLite. They
+open one and only one database, and handle most of the interaction
+therewith for you.
+
+You will probably first use \ref apop_text_to_db to pull data into
+the database, then \ref apop_query to clean the data in the database,
+and finally \ref apop_query_to_matrix to pull some subset of the data
+out for analysis.
+
+==== Querying ====
+\ref apop_query_db: Manipulate the database, return nothing (e.g., input data).
+
+\ref apop_query_to_matrix: Pull data into a gsl_matrix for analysis.
+
+\ref apop_query_to_float: Pull out a single number.
+
+\ref apop_query_to_chars: Pull out columns of not-numbers.
+
+==== Maintenance ====
+\ref apop_open_db: Optional, for when you want to use a database on disk.
+
+\ref apop_close_db: If you used \ref apop_open_db, you will need to use this too.
+
+\ref apop_table_exists: Check to make sure you aren't reinventing or destroying data. Also, the clean way to drop a table.
+
+\ref apop_count_cols: Count the columns in a table.
+
+\ref apop_db_merge: Import or merge the whole of another database into the currently open db.
+
+\ref apop_db_merge_table: Import/merge just one table.
+
+==== See also ====
+ * The \ref conversions, including \ref apop_convert_text_to_db and \ref apop_matrix_to_db.
+
+ * The \ref command_line "Command-line utilities".
+
+ */
 #include <math.h> 	//sqrt
 #include <string.h>
 #include <stdarg.h>
@@ -23,6 +61,7 @@ apop_name *last_names = NULL;	//The column names from the last query to matrix
 
 int	total_rows, total_cols;		//the counts from the last query.
 
+/** This variable turns on some notifications. */
 int apop_verbose	= 0;
 
                                                                                                                                

@@ -1,4 +1,8 @@
-//estimate.c			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+/** \file estimate.c	 sets up the estimate structure which outputs from the various regressions and MLEs.
+
+
+Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
+*/
 #include <gsl/gsl_matrix.h>
 #include <apophenia/name.h>
 #include <apophenia/estimate.h>
@@ -12,6 +16,10 @@ void apop_inventory_copy(apop_inventory in, apop_inventory *out){
 	out->log_likelihood = in.log_likelihood;
 }
 
+/** set all the values of the inventory to a certain value
+
+\param out	a pointer to the inventory to be set
+\param value	probably one or zero.  */
 void apop_inventory_set(apop_inventory *out, int value){
 	out->parameters	= 
 	out->predicted	= 

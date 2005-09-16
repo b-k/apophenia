@@ -16,6 +16,18 @@
 
 #define PORT_NO 11716
 
+int find_matrix(char *name);
+char *print_matrix(gsl_matrix *m);
+typedef struct operation{
+	char 	name[100]; //if your command is longer than this, it's too much.
+	int	argc;
+	char 	internal_return;
+	int 	external_return;
+	char* 	(*run_me)(char **argbuffer);
+	char 	help_text[1000];
+} operation;
+
+
 /** \page command_line Command line utilities
 
 <b> The command-line database utilities</b><br>
@@ -88,37 +100,160 @@ math, the scripting functions will only have to handle text processing
 and reading matrices into native scripting-language arrays.
 */
 
-//here are the commands implemented so far.
-//Each line gives: name, argument count, internal return type, external return
-//argument count includes any internal names.
-//Internal return types: x==NULL, m=matrix.
-//No types on external returns; just a zero or a one.
-//Order doesn't matter except that xxxx has to be the last entry.
-//
-//Once you've added a line here, you'll also need to add the cmd
-//handling in the start_listening function.
-char cmd_list[][5][1000]= { 	
-				{"start", 		"0", "x", "0", "db_name.db: start the server using the given db (or leave blank for in-memory db)"},
-				{"db_merge", 		"1", "x", "0", "db_name.db: merge named db into currently open db"},
-				{"db_merge_table", 	"2", "x", "0", "db_name.db table: just merge in one table."},
-				{"db_t_test",	 	"4", "x", "1", "tab1 col1 tab2 col2: returns confidence with which we reject mean(col1)==mean(col2)"},
-				{"db_paired_t_test", 	"3", "x", "1", "tab1 col1 tab2 col2: returns confidence with which we reject mean(col1)==mean(col2)"},
-				{"det_and_inv",	 	"2", "m", "1", "inverse_name tab_to_invert: take the input table, save its inverse. Immediately returns the determinant. if inverse_name==0, don't save the inverse."},
-				{"query", 		"1", "x", "0", "query_text: run query, return nothing."},
-				{"query_to_matrix", 	"2", "m", "0", "matrix_name query: query db, dump result to matrix_name" },
-				{"print_matrix", 	"1", "x", "1", "matrix_name: print a matrix you've already created"},
-				{"stop", 		"0", "x", "0", ": close the server"},
-				{"help", 		"0", "x", "1", ": prints this."},
-				{"xxxx", 		"0", "x", "0"} };
 
 gsl_matrix **	matrix_list;
 char **		matrix_names;
 int		matrix_ct	= 0;
 
+/*/////////////
+//The functions 
+
+How to add a fn: You'll need to add a handler function here, using the same prototype as all the other handler fns.
+Then, add a line in the command_list below, including the appropriate reference to your handling function. 
+That's all.
+////////////// */
+char* null_fn(char **argbuffer) {return NULL;}
+
+char* do_db_merge_table(char **argbuffer) {
+	     apop_db_merge_table(argbuffer[0], argbuffer[1]);
+	     return NULL;
+	     }
+
+char* do_db_t_test(char **argbuffer) {
+char * 		printme	= malloc(sizeof(char)*2000);
+double		out;
+	out	= apop_db_t_test(argbuffer[0],argbuffer[1],argbuffer[2],argbuffer[3]);
+	sprintf(printme, "%g\n", out);
+	return printme;
+}
+
+char* do_db_paired_t_test(char **argbuffer) {
+char * 		printme	= malloc(sizeof(char)*2000);
+double		out;
+	out	= apop_db_paired_t_test(argbuffer[0],argbuffer[1],argbuffer[2]);
+	sprintf(printme, "%g\n", out);
+	return printme;
+}
+
+char* do_det_and_inv(char **argbuffer) {
+char * 		printme	= malloc(sizeof(char)*2000);
+size_t		matrix_no, matrix_out;
+double		out;
+	matrix_no	= find_matrix(argbuffer[1]);
+	if (strcmp(argbuffer[0],"0")){
+		matrix_out	= find_matrix(argbuffer[0]);
+		//free(matrix_list[matrix_out]);//didn't need it allocated...
+		out		= apop_det_and_inv(matrix_list[matrix_no], &(matrix_list[matrix_out]),1,1);
+	}
+	else	out		= apop_det_and_inv(matrix_list[matrix_no], NULL,1,0);
+	sprintf(printme, "%g\n", out);
+	return printme;
+}
+
+char* do_matrix_multiply(char **argbuffer) {
+int	matrix_out, matrix_1, matrix_2;
+     	matrix_out	= find_matrix(argbuffer[0]);
+     	matrix_1	= find_matrix(argbuffer[1]);
+     	matrix_2	= find_matrix(argbuffer[2]);
+	matrix_list[matrix_out]	= gsl_matrix_calloc(matrix_list[matrix_1]->size1, matrix_list[matrix_2]->size2);
+	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, matrix_list[matrix_1], matrix_list[matrix_2], 0, matrix_list[matrix_out]); 
+	return NULL;
+}
+
+char* do_query(char **argbuffer) {
+	apop_query(argbuffer[0]);
+	return NULL;
+}
+
+char* do_query_to_matrix(char **argbuffer) {
+size_t		matrix_no;
+	matrix_no		= find_matrix(argbuffer[0]);
+	matrix_list[matrix_no]	= apop_query_to_matrix(argbuffer[1]);
+	return NULL;
+}
+
+char* do_db_merge(char **argbuffer) {
+	apop_db_merge(argbuffer[0]);
+	return 0;
+}
+
+char* print_help(char **argbuffer); //This is below the command_list, since it refers to it.
+
+/** print a matrix via command line. */
+char* do_print_matrix(char **argbuffer) {
+int		i, j, len= 0;
+gsl_matrix *	m;
+char		*out	= malloc(sizeof(char)*3),
+		bite[10000];
+     	m	= matrix_list[find_matrix(argbuffer[0])];
+	out[0]	='\0';
+	//printf("m is a %i by %i matrix.\n", m->size1, m->size2);
+	for(i=0; i< m->size1; i++){
+		for(j=0; j< m->size2; j++){
+			sprintf(bite, "%g", gsl_matrix_get(m,i,j));
+			len	+= strlen(bite)+1;
+			out	 = realloc(out, sizeof(char)*(len+2));
+			strcat(out, bite);
+			strcat(out, "\t");
+		}
+		len	++;
+		out	 = realloc(out, sizeof(char)*(len+1));
+		strcat(out, "\n");
+	}
+	return out ;
+}
+
+
+/*
+typedef struct operation{
+	char 	name[100]; //if your command is longer than this, it's too much.
+	int	argc;
+	char 	internal_return;
+	char* 	(*run_me)(char **argbuffer);
+	char 	help_text[];
+} operation;
+*/
+
+operation	command_list[]=
+{{"start", 		0, 'x',0,  null_fn, "db_name.db: start the server using the given db (or leave blank for in-memory db)" },
+{"db_merge", 		1, 'x',0,  do_db_merge, "db_name.db: merge named db into currently open db" },
+{"db_merge_table", 	2, 'x',0,  do_db_merge_table, "db_name.db table: just merge in one table."},
+{"db_t_test",	 	4, 'x',1,  do_db_t_test, "tab1 col1 tab2 col2: returns confidence with which we reject mean(col1)==mean(col2)"},
+{"db_paired_t_test", 	3, 'x',1,  do_db_paired_t_test, "tab1 col1 tab2 col2: returns confidence with which we reject mean(col1)==mean(col2)"},
+{"det_and_inv",	 	2, 'm',1,  do_det_and_inv, "inverse_name tab_to_invert: take the input table, save its inverse. Immediately returns the determinant. if inverse_name==0, don't save the inverse."},
+{"query", 		1, 'x',0, do_query, "query_text: run query, return nothing."},
+{"query_to_matrix", 	2, 'm',0, do_query_to_matrix, "matrix_name query: query db, dump result to matrix_name" },
+{"matrix_multiply", 	3, 'm',0, do_matrix_multiply, "matrix_out left_matrix right_matrix: out = left dot right"},
+{"print_matrix", 	1, 'x',1, do_print_matrix, "matrix_name: print a matrix you've already created"},
+{"stop", 		0, 'x',0, null_fn, 	": close the server"},
+{"help", 		0, 'x',1, print_help, 	": prints this."},
+{"xxxx", 		0, 'x',0, null_fn, 	""}
+};
+
+char* print_help(char **argbuffer) {
+int		i	= 0;
+	while (strcmp(command_list[i].name, "xxxx")){
+		printf("%s %s\n", command_list[i].name, command_list[i].help_text);
+		i	++;
+	}
+	return NULL;
+}
+
+
+
+
+
+
+///// OK, that's it for the functions themselves. The rest is the server code.
+
+
+
+//This section checks the structures declared above to find the list
+//element we want.
 int find_cmd_list_elmt(char *cmd){
 int		i = 0;
-	while (strcmp(cmd_list[i][0], "xxxx")){
-		if (!strcmp(cmd_list[i][0], cmd))
+	while (strcmp(command_list[i].name, "xxxx")){
+		if (!strcmp(command_list[i].name, cmd))
 			return i;
 		i++;
 	}
@@ -130,7 +265,7 @@ int find_matrix(char *name){
 int		i;
 	for(i=0;i<matrix_ct; i++)
 		if (!strcmp(matrix_names[i], name)){
-			printf("found matrix %s in position %i.\n", name, i);
+			//printf("found matrix %s in position %i.\n", name, i);
 			return i;
 		}
 	matrix_ct	++;
@@ -138,12 +273,17 @@ int		i;
 	matrix_names	= realloc(matrix_names, sizeof(char*)*(matrix_ct));
 	matrix_names[matrix_ct-1] = malloc(sizeof(char*)*(strlen(name)+1));
 	strcpy(matrix_names[matrix_ct-1],name);
-	printf("added matrix %s in position %i.\n", name, matrix_ct);
+	//printf("added matrix %s in position %i.\n", name, matrix_ct);
 	return matrix_ct - 1;
 }
 
-void error(char *msg)
-{
+
+
+/////////////
+//Below is the actual server/client code.
+//
+
+void error(char *msg) {
     perror(msg);
     exit(1);
 }
@@ -165,34 +305,14 @@ int open_server() {
      return sockfd;
 }
 
-char *print_matrix(gsl_matrix *m){
-int		i, j, len= 0;
-char		*out	= malloc(sizeof(char)*3),
-		bite[10000];
-	out[0]	='\0';
-	for(i=0; i< m->size1; i++){
-		for(j=0; j< m->size2; j++){
-			sprintf(bite, "%g", gsl_matrix_get(m,i,j));
-			len	+= strlen(bite)+1;
-			out	 = realloc(out, sizeof(char)*(len+2));
-			strcat(out, bite);
-			strcat(out, "\t");
-		}
-		len	++;
-		out	 = realloc(out, sizeof(char)*(len+1));
-		strcat(out, "\n");
-	}
-	return out ;
-}
 
-
+/** This function does all the real work. It listens for a command,
+and when it gets one, it executes it here. */
 int start_listening(int sockfd){
 struct sockaddr_in 	cli_addr;
-int 			n, clilen, newsockfd,  cmd_no, i, matrix_no, matrix_out;
-char 			cmdbuffer[256], argbuffer[100][10000],  
-			*printme	= malloc(sizeof(char)*1000);
-double			out;
-//gsl_matrix		**a_matrix;
+int 			n, clilen, newsockfd,  cmd_no, i, stop_pt;
+char 			cmdbuffer[256], **argbuffer,  
+			*printme;
      clilen = sizeof(cli_addr);
      newsockfd = accept(sockfd, 
                  (struct sockaddr *) &cli_addr, 
@@ -209,8 +329,18 @@ double			out;
      	n 		= write(newsockfd,"confirmed.",strlen("confirmed."));
      	if (n < 0) error("Error confirming.");
      }
+     
+     stop_pt	= find_cmd_list_elmt("stop");
+     if(stop_pt == cmd_no){
+     	apop_close_db(0);
+     	close(newsockfd);
+     	return 0;
+     	//momma socket closes when we return from this fn.
+     }
 
-     for (i=0; i < atoi(cmd_list[cmd_no][1]); i++){
+     argbuffer	= malloc(sizeof(char*) * command_list[cmd_no].argc);
+     for (i=0; i < command_list[cmd_no].argc; i++){
+	     argbuffer[i]	= malloc(sizeof(char) * 1000);
      		bzero(argbuffer[i],256);
      		n = read(newsockfd,argbuffer[i],255);
      		if (n < 0) error("Error reading from socket");
@@ -221,58 +351,19 @@ double			out;
 
      ///////////////////////////////////////////
      //The actual command handling follows here
-     //If the command returns nothing interesting, then it's just
-     //called.
-     //If the command returns a matrix, name, et cetera, then it needs
-     //to be added to the appropriate array.
-     ///////////////////////////////////////////
 
-     if (!strcmp(cmdbuffer, "db_merge"))
-	     apop_db_merge(argbuffer[0]);
-     else if (!strcmp(cmdbuffer, "db_merge_table"))
-	     apop_db_merge_table(argbuffer[0], argbuffer[1]);
-     else if (!strcmp(cmdbuffer, "db_t_test")){
-		out	= apop_db_t_test(argbuffer[0],argbuffer[1],argbuffer[2],argbuffer[3]);
-		sprintf(printme, "%g\n", out);
+     printme	= command_list[cmd_no].run_me(argbuffer);
+     if (printme){
+	n 	= write(newsockfd, printme,strlen(printme));
+    	if (n < 0) error("Error writing to socket");
      }
-     else if (!strcmp(cmdbuffer, "db_paired_t_test")){
-		out	= apop_db_paired_t_test(argbuffer[0],argbuffer[1],argbuffer[2]);
-		sprintf(printme, "%g\n", out);
-     }
-     else if (!strcmp(cmdbuffer, "det_and_inv")){
-     		matrix_no	= find_matrix(argbuffer[1]);
-		if (strcmp(argbuffer[0],"0")){
-	     		matrix_out	= find_matrix(argbuffer[0]);
-			//free(matrix_list[matrix_out]);//didn't need it allocated...
-	     		out		= apop_det_and_inv(matrix_list[matrix_no], &(matrix_list[matrix_out]),1,1);
-		}
-		else	out		= apop_det_and_inv(matrix_list[matrix_no], NULL,1,0);
-		sprintf(printme, "%g\n", out);
-	     }
-     else if (!strcmp(cmdbuffer, "print_matrix")){
-	     	matrix_no	= find_matrix(argbuffer[0]);
-	     	printme		= print_matrix(matrix_list[matrix_no]);
-	}
-     else if (!strcmp(cmdbuffer, "query"))
-	     apop_query(argbuffer[0]);
-     else if (!strcmp(cmdbuffer, "query_to_matrix")){
-	     matrix_no			= find_matrix(argbuffer[0]);
-	     matrix_list[matrix_no]	= apop_query_to_matrix(argbuffer[1]);
-	     }
-     else if (!strcmp(cmdbuffer, "stop")){
-	     apop_close_db(0);
-	     close(newsockfd);
-	     return 0;
-	     //momma socket closes when we return from this fn.
-	     }
-
-
-     //I may need to write the output:
-     if (atoi(cmd_list[cmd_no][3])){
-    		n 		= write(newsockfd, printme,strlen(printme));
-    		if (n < 0) error("Error writing to socket");
-     }
-     return 1; 
+ 
+	//clean
+	for (i=0; i < command_list[cmd_no].argc; i++)
+	     free(argbuffer[i]);
+	free(argbuffer);
+	if (printme !=NULL) free(printme);
+	return 1; 
 }
 
 int start_client(){
@@ -308,18 +399,18 @@ int start_client(){
     return sockfd;
 }
 
+
 #define BUFLEN 10000
 int send_cmd(char *cmd, char argc, char **args){
 int		n, i, sockfd;
-char		buffer[BUFLEN];
- 
+char		buffer[BUFLEN] = "  ";
 	sockfd	= start_client();
-    n = write(sockfd, cmd,strlen(cmd));
-    if (n < 0) error("ERROR writing to socket");
-    n	= read(sockfd, buffer, BUFLEN);
+	n 	= write(sockfd, cmd,strlen(cmd));
+	if (n < 0) error("ERROR writing to socket");
+	n	= read(sockfd, buffer, BUFLEN);
     	if (strcmp("confirmed.", buffer))
 		printf("Darn. The server didn't confirm the command.\n");
-    for (i=0;i<argc; i++){
+	for (i=0;i<argc; i++){
     		n = write(sockfd, args[i],strlen(args[i]));
     		if (n < 0) error("ERROR writing to socket");
     		n	= read(sockfd, buffer, BUFLEN);
@@ -335,6 +426,7 @@ char		buffer[BUFLEN];
     return sockfd;
 }
 
+
 void dump_output(int client_sock){
 char		buffer[BUFLEN];
 	if (read(client_sock, buffer, BUFLEN) < 0)
@@ -342,19 +434,11 @@ char		buffer[BUFLEN];
 	printf(buffer);
 }
 
-void print_help(){
-int		i	= 0;
-	while (strcmp(cmd_list[i][0], "xxxx")){
-		printf("%s %s\n", cmd_list[i][0], cmd_list[i][4]);
-		i	++;
-	}
-}
-
 int main (int argc, char ** argv){
 int		sock, client_sock, cmd_no, arg_ct,
 		keep_going	= 1;
 	if (!strcmp(argv[1], "help") || argc==1){
-		print_help();
+		print_help(NULL);
 		return 0;
 	}
 
@@ -370,35 +454,19 @@ int		sock, client_sock, cmd_no, arg_ct,
 		while(keep_going)
 			keep_going	= start_listening(sock);
 		close(sock);
+		return 0;	//You're done. Don't look thru command lists.
 	}
 
-	//else, it's a client (or a typo). No loop here: one command per
-	//call.
+	//else, it's a client (or a typo). No loop here: one command per call.
 	cmd_no	= find_cmd_list_elmt(argv[1]);
 	if (cmd_no >= 0){
-		arg_ct	=atoi(cmd_list[cmd_no][1]);
+		arg_ct	= command_list[cmd_no].argc;
 		if (arg_ct == 0)
 			client_sock	= send_cmd(argv[1], arg_ct, NULL);
 		else 	client_sock	= send_cmd(argv[1], arg_ct, (argv+2));
-		if (atoi(cmd_list[cmd_no][3]))
+		if (command_list[cmd_no].external_return)
 			dump_output(client_sock);
 		close(client_sock);
 	}
-		/*
-	if (!strcmp(argv[1], "stop"))
-		send_cmd(argv[1], 0, NULL);
-   	if (!strcmp(argv[1], "db_merge"))
-                send_cmd(argv[1], 1, (argv+1));
-        if (!strcmp(argv[1], "db_merge_table"))
-                send_cmd(argv[1], 2, (argv+2));
-	if (!strcmp(argv[1], "query"))
-		send_cmd(argv[1], 1, (argv+2));
-	if (!strcmp(argv[1], "query_to_matrix"))
-		send_cmd(argv[1], 2, (argv+2));
-	if (!strcmp(argv[1], "print_matrix")){
-		client_sock	= send_cmd(argv[1], 1, (argv+2));
-		dump_output(client_sock);
-		}
-		*/
 	return 0;
 }

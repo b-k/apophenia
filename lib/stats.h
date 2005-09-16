@@ -17,6 +17,7 @@ inline double apop_var(gsl_vector *in);
 inline double apop_var_m(gsl_vector *in, double mean);
 inline double apop_covar(gsl_vector *ina, gsl_vector *inb);
 inline double apop_cov(gsl_vector *ina, gsl_vector *inb);
+inline double apop_correlation(gsl_vector *ina, gsl_vector *inb);
 inline double apop_kurtosis(gsl_vector *in);
 inline double apop_kurt(gsl_vector *in);
 

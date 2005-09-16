@@ -1,0 +1,22 @@
+apop_text_to_db test_data intab test.db
+apop start test.db&
+apop db_t_test intab  a intab b
+apop db_t_test intab  a intab c
+apop db_t_test intab  a intab d
+apop query_to_matrix m1 "select * from intab"
+echo
+echo "printing matrix 1"
+apop print_matrix m1
+echo "printed"
+echo
+apop det_and_inv m2 m1
+echo "determinant taken. It is:"
+apop print_matrix m2
+
+echo
+apop matrix_multiply unit m1 m2
+echo "I've multiplied the matrix and its inverse to get:"
+apop print_matrix unit
+echo
+apop stop
+rm test.db

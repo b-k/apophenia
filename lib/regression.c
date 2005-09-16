@@ -118,10 +118,10 @@ A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>.
 An \c apop_name structure, specifying which outputs you want.
 
 \param uses 
-If NULL, do everything; else, produce those ["apop_estimate"] elements which you specify. You always get the parameters and never get the log likelihood.
+If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
 
 \return
-A pointer to an ["apop_estimate"] structure with the appropriate elements filled. See the description in \ref apop_OLS "apop_OLS".
+A pointer to an \ref apop_estimate structure with the appropriate elements filled. See the description in \ref apop_OLS .
 
 \todo 
 Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.

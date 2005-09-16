@@ -2,6 +2,8 @@
 --command-line server is much improved. I actually do work with it.
 --Documentation is now via doxygen.
 --asst bug fixes.
+--Have started to take plotting (via gnuplot) seriously
+--a limited test suite. Try: make test .
 
 0.10	August 2005
 --This version includes a server to park itself in memory and receive data

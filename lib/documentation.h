@@ -39,29 +39,75 @@ We require two things from a good statistics package: easy management of
 large data sets, and the ability to crunch numbers on a large scale. [The
 third place entry, \ref graphing "graphing", is discussed on another page.]
 
-Apophenia facilitates data management by including a database interface. By reading your data into a database instead of an in-memory matrix, you effectively have no limits on the size of your data set.
+Apophenia facilitates data management by including a database
+interface. By reading your data into a database instead of an in-memory
+matrix, you effectively have no limits on the size of your data set.
 
-Apophenia also makes heavy use of the GNU Scientific Library, which is a well-optimized system for processing large matrices of numbers. Once you have pulled out of the main data set that subset which you wish to analyze, the GSL and Apophenia's functions will have no problem estimating models to fit the data.
+Apophenia also makes heavy use of the GNU Scientific Library, which is
+a well-optimized system for processing large matrices of numbers. Once
+you have pulled out of the main data set that subset which you wish to
+analyze, the GSL and Apophenia's functions will have no problem estimating
+models to fit the data.
 
 Thus, the average analysis using Apophenia would take the following steps:
 
- * read the data into the database using \ref apop_convert_text_to_db "apop_convert_text_to_db"
- * use SQL queries handled by \ref apop_query "apop_query" to massage the data as needed
- * use ["apop_query_to_matrix"] to pull the data into an in-memory matrix
- * call a regression function such as \ref apop_OLS "apop_OLS" or a maximum likelihood estimator such as a \ref apop_mle_probit "probit" to fit parameters to the data.
- * use the results for further analysis, or just dump them to the screen with ["apop_estimate_print"].
+ \li read the data into the database using \ref apop_convert_text_to_db 
+ \li use SQL queries handled by \ref apop_query to massage the data as needed
+ \li use \ref apop_query_to_matrix to pull the data into an in-memory matrix
+ \li call a regression function such as \ref apop_OLS or a maximum likelihood estimator such as a \ref apop_mle_probit "probit" to fit parameters to the data.
+ \li use the results for further analysis, or just dump them to the screen with \ref apop_estimate_print.
 
 If this seems a bit vague, have a look at this \ref sample_program.
 
-\section Stats libraries vs Stats packages 
-The reason I (BK) started up this library is that I was sick of learning new languages. There are a few dozen statistics packages to choose from, all of which are best for one task or another, but none of which was portable and versatile enough to work for every project I had. Ask yourself: when you get the industrial-strength data set---several gigabytes of data from the US Census or USGS or what-have-you---will your stats package be able to handle it?
+\section librant Stats libraries vs Stats packages 
+The reason I (BK) started up this library is that I was sick of learning
+new languages. There are a few dozen statistics packages to choose from,
+all of which are best for one task or another, but none of which was
+portable and versatile enough to work for every project I had.
 
-Meanwhile, C has absolutely no built-in memory limitations, and using a database makes handling large data sets still more manageable. Also, C is the most supported programming language on Earth. Type "C tutorial" into your favorite search engine and you will get hundreds of choices. Even though it requires understanding one concept which is missing from more idiot-proof lanugages (pointers), I found that it is worth the marginal extra time spent learning because it means not having to waste time learning yet another language when the next project comes around.
+In most of the programming world, the evolution has been that there
+a few core libraries emerged to handle the specifics of the task at hand, and
+then front-ends developed to suit various tastes and specialties. In
+the stats world, the process has been entirely backward: a few dozen packages
+have started from scratch whith entirely new libraries of essentialy
+the same functions. Each has its own specialty, each is tied to only
+one front end, and each requires learning a brand new language.
+Most are designed around students, and so are easy to learn but virtually
+useless for one who knows stats well and wants to use the package on
+an industrial-strength data set---several gigabytes of data from the
+US Census or USGS or what-have-you.
 
-To use the database half of Apophenia of course requires learning SQL (Structured query language), but SQL is not quite a complete language; it is more a means of describing the rows and columns of a table. In half an hour, the reader can have SQL down, and the return on that investment is again huge, since so many programs support SQL.
+Meanwhile, C has absolutely no built-in memory limitations, and using a
+database makes handling large data sets still more manageable. Also, C is
+the most supported programming language on Earth. Type "C tutorial" into
+your favorite search engine and you will get hundreds of choices. Even
+though it requires understanding one concept which is missing from more
+idiot-proof lanugages (pointers), I found that it is worth the marginal
+extra time spent learning because it means not having to waste time
+learning yet another language when the next project comes around.
 
-Thus, Apophenia does not impose its own language for you to learn, but instead relies on the existing grammar and structure of C and SQL. It therefore ties in seamlessly with the thousands of existing C libraries and is documented in part by the hundreds of books and web pages which teach C and SQL.
-*/
+To use the database half of Apophenia of course requires learning SQL
+(Structured query language), but SQL is not quite a complete language;
+it is more a means of describing the rows and columns of a table. The
+reader can have the basics of SQL down in a few minutes (since <tt>select
+row from table</tt> is almost English), and the return on that investment
+ is again huge, since so many programs support SQL.
+
+Thus, Apophenia does not impose its own language for you to learn, but
+instead relies on the existing grammar and structure of C and SQL. It
+therefore ties in seamlessly with the thousands of existing C libraries,
+is documented in part by the hundreds of books and web pages which
+teach C and SQL, and can be used as the base for further extensions. 
+The command-line utility makes it easy to call Apophenia's functions from
+any other language with which you are familiar, such as Perl, Python,
+or even bash.
+
+Finally, there are also a few of the more typical reasons to write a
+new library. This libarary focuses on MLE methods over linear projection
+methods that most packages tend to rely on. Because it focuses on
+likelihoods and distributions, the package provides certain procedures,
+such as random draws from a Waring distribution, which to my knowledge
+don't yet exist in Matlab, R, STATA, &c. */
 
 
 /** \page setup Setting up
@@ -113,7 +159,7 @@ su -c "make install"
 
 Notice that, after making the object files, we again set the <tt>LD_LIBRARY_PATH</tt> environment variable to include this directory.
 
-\subsection LD_LIBRARY_PATH 
+\subsection libpath LD_LIBRARY_PATH 
 
 During one or many of the installation steps above, you probably got a warning that looks like this:
 
@@ -145,15 +191,15 @@ echo "export LIBRARY_PATH=/usr/local/lib:\$LIBRARY_PATH" >> ~/.bashrc
 
 These commands add a line to your <tt>.bashrc</tt> file; having modified it, reload it either by restarting your shell or the command <tt>source ~/.bashrc</tt> .
 
-\subsection Testing
+\subsection testing Testing
 
 There is a short, complete program in the \ref apop_OLS "apop_OLS" entry which runs a simple OLS regression on a data file. Follow the instructions there to compile and run. There is also a slightly longer \ref sample_program on a separate page.
 
-\subsection Using 
+\subsection using Using 
 
 Now that it's installed, do some stats! For those who are new to C, there are some notes on the \ref C page; if you are familiar with the process, see the \ref usagenotes "usage notes" for Apophenia itself.
 
-\subsection sample_program A sample program
+\subsection sample_program sample program
 The sample program below is intended to show how one would integrate
 Apophenia into an existing program. For example, say that you are running
 a simulation of two different treatments, or say that two sensors are
@@ -228,8 +274,6 @@ gsl_rng *       r;
 
 /** \page windows The Windows page
 
-=== A note for Windows users ===
-
 Get <a href="http://www.cygwin.com">Cygwin</a>. The setup program is
 very self-explanatory. As a warning, it will probably take up &gt;300MB on
 your system. You should install at least the following programs:
@@ -289,7 +333,7 @@ echo "export LD_LIBRARY_PATH=$HOME/$MY_LIBS:\$LD_LIBRARY_PATH" >> ~/.bashrc
 
 /** \page c C
  
-\section learning 
+\section learning  Learning C
 The Apophenia manual has a full tutorial for C; for those reading this online, it is available as a separate document <a href="http://www.fluff.info/klemens/c_crash.pdf">here</a>.
 
 Or gosh, just search Google for <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">C tutorial</a>.
@@ -297,13 +341,13 @@ Or gosh, just search Google for <a href="http://www.google.com/search?hl=es&amp;
 Some people find pointers to be especially difficult. Fortunately, there's a claymation cartoon which clarifies everything
 <a href=http://cslibrary.stanford.edu/104/>here</a>.
 
-\section reference
+\section reference References
 For your convenience, here are links to the documentation for the [http://www.gnu.org/software/libc/manual/html_node/ Standard library] and the [http://www.gnu.org/software/gsl/manual/gsl-ref_toc.html GSL].
 
 \section usagenotes  Usage notes
 Here are some notes about the technical details of using the Apophenia library.
 
-\subsection Header aggregation 
+\subsection headertrick Header aggregation 
 If you put 
 \verbatim
 #include <apophenia/headers.h>
@@ -313,7 +357,7 @@ at the top of your file, then it will call virtually every header file you could
 Bear in mind that every book on C will tell you this is bad form and you shouldn't do it.
 
 
-\subsection Libraries 
+\subsection liblinking Libraries 
 Your best bet is to write yourself a \ref makefile "Makefile".
 
 If you don't want to use the sample \ref makefile "Makefile", then here are some notes for the command line.
@@ -328,10 +372,10 @@ will produce an output file named <tt>run_me</tt> from the input source code <tt
 
 Order matters in the linking list: the files a package depends on should be listed after the package. E.g., since sample.c depends on Apophenia, <tt>gcc sample.c -lapophenia</tt> will work, while <tt>gcc -lapophenia sample.c</tt> is likely to give you errors. Similarly, list <tt>-lapophenia</tt> before <tt>-lgsl</tt>, which comes before <tt>-lgslcblas</tt>.
 
-\subsection debugging 
+\subsection debugging  Debugging
 The global variable <tt>apop_verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>%s</tt>es). Just set <tt>apop_verbose =1</tt> when you want feedback and <tt>apop_verbose=0</tt> when you don't.
 
-\subsection Syntax highlighting 
+\subsection vim Syntax highlighting 
 If your text editor supports syntax highlighting, there are seven types defined in the Apophenia and GSL headers which may be worth coloring.
 
 For <tt>vim</tt>, for example. add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
@@ -394,7 +438,12 @@ Portable graphing tools are supremely difficult to implement. The closest
 thing to a truly portable setup is <a href="http://www.gnuplot.info">Gnuplot</a>,
 but you may have something on your system which you prefer.
 
-But every system worth its silicon will take input from a text file. Therefore, it is easy to achieve harmony with Apophenia: do the data management and data crunching in C, then use \ref apop_print <tt>apop_print</tt> to dump your output to a text file, and graph away.
+The \ref apop_output.c file includes a few functions to interface with gnuplot directly.
+
+But every system worth its silicon will take input from a text
+file. Therefore, it is easy to achieve harmony with Apophenia: do
+the data management and data crunching in C, then use \ref apop_print
+<tt>apop_print</tt> to dump your output to a text file, and graph away.
 
  In the future, Apophenia may include functions which call Gnuplot
 directly. [It already includes one, which is so rudimentary it's not

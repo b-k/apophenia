@@ -1,6 +1,3 @@
---There do exist reasons to have multiple databases in play at once.
-
---Read in files with any delimiter, not just commas.
 
 --Decide what to do with zeros in the likelihood estimations of
 functions which don't admit zeros. I have a few "if (x>0)"s floating

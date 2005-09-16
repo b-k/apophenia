@@ -2,7 +2,8 @@
 #include <apophenia/stats.h>
 
 
-/** \defgroup basic_stats Some basic statistical functions
+/** \defgroup basic_stats Some basic statistical functions. Many of
+these are juse one-line convenience functions.
 
 \b moments
 
@@ -88,6 +89,14 @@ inline double apop_var_m(gsl_vector *in, double mean){
 */
 inline double apop_covar(gsl_vector *ina, gsl_vector *inb){
 	return gsl_stats_covariance(ina->data,ina->stride,inb->data,inb->stride,inb->size); }
+
+/** returns the correllation coefficient of two vectors. It's just
+\f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
+\ingroup vector_moments
+*/
+inline double apop_correlation(gsl_vector *ina, gsl_vector *inb){
+	return apop_covar(ina, inb) / sqrt(apop_var(ina) * apop_var(inb));
+}
 
 /** returns the covariance of two vectors
 \ingroup vector_moments
@@ -192,6 +201,10 @@ double 		sum=0;
 
 inline double apop_double_abs(double a) {if(a>0) return a; else return -a;}
 
+/** This function needs to be replaced with something that handles
+names.
+
+\todo Add names to this fn; otherwise apop_print_matrix supercedes it. */
 void apop_view_matrix(gsl_matrix *a){
 int 		i,j;
 	for(i=0;i< a->size1; i++){
@@ -243,7 +256,6 @@ double apop_random_beta(double m, double v, gsl_rng *r) {
 double 		k        = (m * (1- m)/ v) -1 ;
         return gsl_ran_beta(r, m* k ,  k*(1 - m) );
 }
-double apop_multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* sigma, int first_use)
 
 /**
 Evalutates \f[

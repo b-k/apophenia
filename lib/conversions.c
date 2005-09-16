@@ -215,7 +215,28 @@ char		*stripped;
 	free(stripped);
 }
 
+/** Read a delimited text file into an array. 
+\param text_file	The input file. At the moment, it needs to be
+comma delimited. Lines with a # at the head are taken to be comments
+and ignored. If field_names is NULL, then the first non-comment line
+of the file is taken to be strings giving the (comma-delimited) field
+names. 
 
+Since you're reading into an array, all text fields are taken
+as zeros. You will be warned of this unless you set \ref
+apop_verbose<tt>==0</tt> beforehand.
+
+\param delimiters A list of delimiters. "," is typical, as is ",|", for example.
+\param tab 	A table, to be allocated and filled with data.
+\param names 	An apop_name structure. If the data has column names as the first (noncomment) row, then set
+<tt>name.colname= 1;</tt>
+before running; if the first element of each row is a row name, set
+<tt>name.rowname= 1;</tt>. Else, set these to zero.
+\return 	Returns the number of rows.
+
+<b>example:</b> See \ref apop_OLS.
+\bug I suspect apop_convert_text_to_array doesn't work very well with delimiters besides the standard ones.  
+\ingroup convertfromtext	*/
 int apop_convert_text_to_array(char *text_file, char *delimiters, double ***tab, apop_name *names){
 FILE * 		infile;
 char		instr[Text_Size_Limit], *astring, *str;

@@ -11,7 +11,7 @@ cd $junkdir
 	autoconf
 	automake -a
 	mkdir $outlib
-	cp *.c *.h *.html configure.ac config.guess missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp ../.doxygen $outlib 
+	cp *.c *.h *.html configure.ac config.guess missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp test_* flake.gif ../.doxygen $outlib 
 	mv $outlib ..
 cd ..
 rm -rf $junkdir
