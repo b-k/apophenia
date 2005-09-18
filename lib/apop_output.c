@@ -50,7 +50,7 @@ char		outfile[]	= "auto",
 
 	//Prep the file with a header, then call the function.
 	f    = fopen(outfile, "w");
-	fprintf(f,"set term postscript;\n set output \"scatter.eps\"\n");
+	fprintf(f,"set term postscript;\n set output \"scatter.eps\"\n set yrange [0:*]\n");
 	fclose(f);
 	apop_plot_line_and_scatter(data_copy,est, n, outfile);
 
@@ -60,8 +60,7 @@ char		outfile[]	= "auto",
 	return 0;
 }
 \endcode
-\todo The sample code here should correspond to the sample code that apophenia ships with.
-first write a header such as <tt>set term postscript; set output "scatter.eps"</tt> first. If NULL, write to stdout.
+\todo The sample data here should correspond to that which apophenia ships with.
 \ingroup output
 */
 void apop_plot_line_and_scatter(gsl_matrix *data, apop_estimate *est, apop_name *n, char *outfile){
