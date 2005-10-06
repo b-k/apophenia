@@ -2,8 +2,9 @@
 #include <apophenia/stats.h>
 
 
-/** \defgroup basic_stats Some basic statistical functions. Many of
-these are juse one-line convenience functions.
+/** \defgroup basic_stats Some basic statistical functions. 
+
+Many of these are juse one-line convenience functions.
 
 \b moments
 

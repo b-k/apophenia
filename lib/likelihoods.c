@@ -1,5 +1,4 @@
-/** \file likelihoods.c	An easy front end to SQLite. Includes a few nice
-features like a variance, skew, and kurtosis aggregator for SQL.
+/** \file likelihoods.c	The MLE functions. Call them with an \ref apop_distribution.
 
 This file includes a number of distributions and models whose parameters
 one would estimate using maximum likelihood techniques.
@@ -58,7 +57,9 @@ void prep_inventory_mle(apop_inventory *in, apop_inventory *out){
 
 
 
-/** The maximum likelihood calculations
+/** The maximum likelihood calculations, given a derivative of the log likelihood.
+
+Don't bother calling this fn. Call \ref apop_maximum_likelihood, and if the derivative exists in the distribution, then this will be called.
 
 \param data	the data matrix
 \param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
@@ -79,7 +80,7 @@ apop_estimate *	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *u
 
 gsl_multimin_function_fdf 	minme;
 gsl_multimin_fdfminimizer 	*s;
-gsl_vector 			*x, *ss, *diff;
+gsl_vector 			*x, *diff;
 gsl_vector_view 		v;
 int				iter =0, status, i;
 int				betasize	= dist.parameter_ct;
@@ -88,7 +89,6 @@ apop_estimate			*est;
 	prep_inventory_mle(uses, &actual_uses);
 	s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
 	//s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
-	ss	= gsl_vector_alloc(betasize);
 	est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
 	if (starting_pt==NULL){
 		x	= gsl_vector_alloc(betasize);
@@ -96,15 +96,14 @@ apop_estimate			*est;
 	}
 	else
 		apop_convert_array_to_vector(starting_pt, &x, betasize);
-  	gsl_vector_set_all (ss,  step_size);
 	minme.f		= dist.log_likelihood;
 	minme.df	= dist.dlog_likelihood;
 	if (!dist.fdf)
 		minme.fdf	= fdf;
 	else	minme.fdf	= dist.fdf;
 	minme.n		= betasize;
-	minme.params	= (void *)data;
-	gsl_multimin_fdfminimizer_set (s, &minme, x, .001, 1e-5);
+	minme.params	= data;
+	gsl_multimin_fdfminimizer_set (s, &minme, x, step_size, 1e-5);
 
       	do { 	iter++;
 		status 	= gsl_multimin_fdfminimizer_iterate(s);
@@ -155,8 +154,7 @@ gsl_matrix	*pre_cov;
 }
 
 
-/** The maximum likelihood calculations, if you don't have the
- derivative of the log likelihood fn on hand.
+/** The maximum likelihood calculations
 
 \param data	the data matrix
 \param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
@@ -166,29 +164,39 @@ gsl_matrix	*pre_cov;
 \param verbose		Y'know.
 \return	an \ref apop_estimate with the parameter estimates, &c.
 
-  \todo readd names */
+  \todo readd names 
+ \ingroup mle */
 apop_estimate *	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *uses,
 			apop_distribution dist, double *starting_pt, double step_size, int verbose){
-int			iter =0, status;
+
+	//First, if the derivative is available, you're in the wrong place:
+	//
+	//Except this hasn't been tested enough for me to be happy with it.
+	/*
+	if (dist.dlog_likelihood!=NULL)
+		return apop_maximum_likelihood_w_d(data, uses, dist, starting_pt, step_size, verbose);
+	*/
+
+int			status,
+			iter 		= 0;
 gsl_multimin_function 	minme;
 gsl_multimin_fminimizer *s;
 gsl_vector 		*x, *ss;
 double			size;
-int				betasize	= dist.parameter_ct;
-apop_inventory			actual_uses;
-apop_estimate			*est;
-	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
-	ss	= gsl_vector_alloc(betasize);
+apop_inventory		actual_uses;
+apop_estimate		*est;
+	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, dist.parameter_ct);
+	ss	= gsl_vector_alloc(dist.parameter_ct);
 	prep_inventory_mle(uses, &actual_uses);
-	est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
+	est	= apop_estimate_alloc(data->size1, dist.parameter_ct, NULL, actual_uses);
 	if (starting_pt==NULL)
   		gsl_vector_set_all (x,  0);
 	else
-		apop_convert_array_to_vector(starting_pt, &x, betasize);
+		apop_convert_array_to_vector(starting_pt, &x, dist.parameter_ct);
   	gsl_vector_set_all (ss,  step_size);
 
 	minme.f		= dist.log_likelihood;
-	minme.n		= betasize;
+	minme.n		= dist.parameter_ct;
 	minme.params	= data;
 	gsl_multimin_fminimizer_set (s, &minme, x,  ss);
 
@@ -200,13 +208,13 @@ apop_estimate			*est;
 		if(verbose){
 		int i;
 			printf ("%5d ", iter);
-			for (i = 0; i < betasize; i++) {
+			for (i = 0; i < dist.parameter_ct; i++) {
 				printf ("%8.3e ", gsl_vector_get (s->x, i)); } 
 			printf ("f()=%7.3f size=%.3f\n", s->fval, size);
        			if (status == GSL_SUCCESS) {
 	   			printf ("Minimum found at:\n");
 				printf ("%5d ", iter);
-				for (i = 0; i < betasize; i++) {
+				for (i = 0; i < dist.parameter_ct; i++) {
 					printf ("%8.3e ", gsl_vector_get (s->x, i)); } 
 				printf ("f()=%7.3f size=%.3f\n", s->fval, size);
 			}
@@ -224,60 +232,28 @@ apop_estimate			*est;
 
 
 /** This function goes row by row through <tt>m</tt> and calculates the
-likelihood of the given row, putting the result in <tt>v</tt>. Under some
-setups, you will need this to find the variance of the estimator.
+likelihood of the given row, putting the result in <tt>v</tt>. 
+You can use this to find the variance of the estimator if other means fail.
 
 \param m 	A GSL matrix, exactly like those used for probit, Waring, Gamma, &c MLEs.
 
-\param v	A vector which will hold the likelihood of each row of {{{m}}}. Declare but do not allocate.
+\param v	A vector which will hold the likelihood of each row of m. Declare but do not allocate.
 
-\param likelihood_fn	The address of any of the {{{apop_xxx_likelihood}}} functions, e.g., {{{&apop_probit_likelihood}}}.
+\param likelihood_fn	The address of any of the <tt>apop_xxx.log_likelihood<tt> functions, e.g., \ref apop_probit.log_likelihood.
 
-\param fn_beta	The parameters at which you will evaluate the likelihood. Probably the output of {{{apop_mle_xxx}}}.
+\param fn_beta		The parameters at which you will evaluate the likelihood. If <tt>e</tt> is an \ref
+			apop_estimate, then one could use <tt>e->parameters</tt>.
 
-<b>Notes, examples</b><br>
-Vuong (1989) (<a
-href="http://links.jstor.org/sici?sici=0012-9682%28198903%2957%3A2%3C307%3ALRTFMS%3E2.0.CO%3B2-J">Jstor
-link</a>) shows that in most cases, the log likelihood ratio is normally
-distributed. So to compare a Waring model to a Gamma model:
+This functions is used in the sample code in the \ref mle section.
 
-\code
-void compare_gamma_and_waring(gsl_matrix *m, gsl_vector *gamma_parameters, gsl_vector *waring_parameters)
-{
-gsl_vector      *waring_ll, *gamma_ll;
-double          likelihood, mean, std_dev,
-                starting_pt_w[2]= {2.12, .40},
-                starting_pt_g[2] = {0.12, .40};
-
-        gamma_parameters   = apop_mle_gamma(m, &likelihood, starting_pt_g, .01, 0);
-        printf("your most likely gamma parameters are: %g and %g w/log_likelihood: %g\n",
-                            gsl_vector_get(gamma_parameters,0), gsl_vector_get(gamma_parameters,1), -likelihood);
-        waring_parameters   = apop_mle_waring(m, &likelihood, starting_pt_w, .01, 0);
-        printf("your most likely waring parameters are: %g and %g w/log_likelihood: %g\n",
-                            gsl_vector_get(waring_parameters,0), gsl_vector_get(waring_parameters,1), -likelihood);
-        apop_make_likelihood_vector(m, &gamma_ll, &apop_gamma_likelihood, gamma_parameters);
-        apop_make_likelihood_vector(m, &waring_ll, &apop_waring_likelihood, waring_parameters);
-        gsl_vector_scale(gamma_ll, -1);        //calculate (waring - gamma) / sqrt(n)
-        gsl_vector_add(waring_ll, gamma_ll);
-        gsl_vector_scale(waring_ll, 1/sqrt(m->size1));
-        mean = apop_mean(waring_ll);
-        std_dev  = sqrt(apop_var_m(waring_ll, mean));
-        printf("The log likelihood ratio between Waring model and Gamma model is mean %g var %g\n", mean, std_dev);
-        if (mean > 0)
-           printf("The Waring is a better fit than the Gamma with %g certainty", gsl_cdf_gaussian_P(mean,std_dev));
-        else
-           printf("The Gamma is a better fit than the Waring with %g certainty", gsl_cdf_gaussian_P(-mean,std_dev));
-}
-\endcode
-\todo This code needs to be rewritten now that everything is objectified. There are better ways to do it anyway.
 \ingroup mle */
 void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, 
-				double (*likelihood_fn)(const gsl_vector *beta, void *d), gsl_vector* fn_beta){
+				apop_distribution dist, gsl_vector* fn_beta){
 gsl_matrix_view mm;
 int             i;
 	*v	= gsl_vector_alloc(m->size1);
         for(i=0; i< m->size1; i++){
                 mm      = gsl_matrix_submatrix(m,i,0, 1,m->size2);      //get a single row
-                gsl_vector_set(*v, i, likelihood_fn(fn_beta, (void *) &(mm.matrix)));
+                gsl_vector_set(*v, i, dist.log_likelihood(fn_beta, &(mm.matrix)));
         }
 }

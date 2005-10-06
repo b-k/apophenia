@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(db.c)
-AM_INIT_AUTOMAKE(apophenia, .12)
+AM_INIT_AUTOMAKE(apophenia, 0.12)
 
 dnl Checks for library functions.
 dnl AC_CONFIG_FILES(gnulib/Makefile)

@@ -633,6 +633,7 @@ into the main database's table with the same name. [The function just
 calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
 
 \ingroup db
+\todo fix the tab_list bug.
 */
 void apop_db_merge_table(char *db_file, char *tabname){
 char		***tab_list;
@@ -651,8 +652,8 @@ int		row_ct;
 	}
 	if (db_file !=NULL)
 		apop_query("detach database merge_me;");
-	if (*tab_list !=NULL)
-		free_tab_list(&tab_list, row_ct, 1);
+	/*if (*tab_list !=NULL)
+		free_tab_list(&tab_list, row_ct, 1);*/
 }
 
 /** Merge a database on the hard drive with the database currently open.

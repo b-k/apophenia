@@ -3,6 +3,7 @@
  Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
  */
 #include <apophenia/conversions.h>
+#include "assert.h"
 
 #define Text_Size_Limit 1000000
 
@@ -196,12 +197,14 @@ int		i	= 0,
 		if (in[first_ok]==' ' || in[first_ok]=='\n' || in[first_ok]=='\t')
 			first_ok	++;
 		else	done		++;
-	for (i=first_ok  ; i< strlen(in); i++){
+	for (i=first_ok; i< strlen(in); i++){
 		out[i-first_ok]	= in[i];
 		if (in[i]!=' ' && in[i]!='\n' && in[i]!='\t')
 			last_ok	= i-first_ok;
 	}
-	out[last_ok+1]	= '\0';
+	if (last_ok <= first_ok-1) //blank string
+		sprintf(out, " ");
+	out[last_ok+1]	= '\0';	//redundant for blanks, but whatever.
 	return out;
 }
 
@@ -299,21 +302,33 @@ char		*tmpstring,
 	strtod(astring, &str);
 	if (!strcmp(astring, str)){	//then it's not a number.
 		tmpstring=strip(astring);
+		if (strlen (tmpstring)==0){
+			out	= malloc(sizeof(char) * 2);
+			sprintf(out, " ");
+			free(tmpstring);
+			return out;
+		}
 		if (tmpstring[0]!='"'){
 			out	= malloc(sizeof(char) * (strlen(tmpstring)+3));
 			sprintf(out, "\"%s\"",tmpstring);
-		}
-		free(tmpstring);
-		return out;
+			free(tmpstring);
+			return out;
+		} else return tmpstring;
 	} else {			//sqlite wants 0.1, not .1
 		tmpstring=strip(astring);
+		assert(strlen (tmpstring)!=0);
+		/*if (strlen (tmpstring)==0){
+			out	= malloc(sizeof(char) * 2);
+			free(tmpstring);
+			sprintf(out, " ");
+			return out;
+		}*/
 		if (tmpstring[0]=='.'){
 			out	= malloc(sizeof(char) * (strlen(tmpstring)+2));
 			sprintf(out, "0%s",tmpstring);
 			free(tmpstring);
 			return out;
-		}
-		free(tmpstring);
+		} else return tmpstring;
 	} //If you're here, then it's a number which needs no fixing.
 	out	= malloc(sizeof(char) * (strlen(astring)+1));
 	strcpy(out, astring);
@@ -362,7 +377,7 @@ return 0;
 */
 int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names){
 FILE * 		infile;
-char		q[20000], instr[Text_Size_Limit], **fn, *astring;
+char		q[20000], instr[Text_Size_Limit], **fn, *astring, *prepped;
 char		delimiters[]	=",";
 int 		ct, one_in,
 		i			= 0, 
@@ -381,7 +396,7 @@ int 		ct, one_in,
 		if (field_names == NULL){
 			use_names_in_file++;
 			fgets(instr, Text_Size_Limit, infile);
-			while(instr[0]=='#')	//burn off comment files
+			while(instr[0]=='#')	//burn off comment lines
 				fgets(instr, Text_Size_Limit, infile);
 			fn	= malloc(ct * sizeof(char*));
 			astring	= strtok(instr,delimiters);
@@ -410,7 +425,9 @@ int 		ct, one_in,
 				astring	= strtok(instr,delimiters);
 				while(astring !=NULL){
 					if(one_in++) 	strcat(q, ", ");
-					strcat(q, prep_string_for_sqlite(astring));
+					prepped	=prep_string_for_sqlite(astring);
+					strcat(q, prepped);
+					free(prepped);
 					astring	= strtok(NULL,delimiters);
 				}
 				apop_query_db("%s);",q);

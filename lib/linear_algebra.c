@@ -56,7 +56,7 @@ Many have multiple aliases, because I could never remember which way to write th
 1= subtract the mean from each column, thus changing the input data but speeding up the computation.<br>
 0= don't modify the input data
 
-\return Returns the variance/covariance matrix relating each column with each other. This function allcates the matrix for you.
+\return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
 \ingroup matrix_moments */
 gsl_matrix *apop_covariance_matrix(gsl_matrix *in, int normalize){
 gsl_matrix	*out;

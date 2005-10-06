@@ -12,6 +12,8 @@
 #include <apophenia/linear_algebra.h>
 #include <apophenia/estimate.h>
 
+extern int apop_verbose;
+
 double two_tailify(double in){
 //GSL gives me a one-tailed test; convert it to two.
 	return	fabs(1 - (1 - in)*2);
@@ -25,13 +27,18 @@ double two_tailify(double in){
 \return the confidence level---if it is close to one, you can reject the null, while <tt>apop_t_test(a, a)</tt> will return zero.
 */
 double	apop_t_test(gsl_vector *a, gsl_vector *b){
+int		a_count	= a->size,
+		b_count	= b->size;
 double		a_avg	= apop_mean(a),
 		a_var	= apop_var(a),
-		a_count	= a->size,
 		b_avg	= apop_mean(b),
 		b_var	= apop_var(b),
-		b_count	= b->size,
 		stat	= (a_avg - b_avg)/ sqrt(b_var/(b_count-1) + a_var/(a_count-1));
+	if (apop_verbose){
+		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
+		printf("2st avg: %g; 2st std dev: %g; 2st count: %i.\n", b_avg, sqrt(b_var), b_count);
+		printf("t-statistic: %g.\n", stat);
+	}
 	return two_tailify(gsl_cdf_tdist_P(stat, a_count+b_count-2));
 }
 
@@ -45,11 +52,14 @@ double	apop_paired_t_test(gsl_vector *a, gsl_vector *b){
 gsl_vector	*diff	= gsl_vector_alloc(a->size);
 	gsl_vector_memcpy(diff, a);
 	gsl_vector_sub(diff, b);
+int		count	= a->size;
 double		avg	= apop_mean(diff),
 		var	= apop_var(diff),
-		count	= a->size,
 		stat	= avg/ sqrt(var/(count-1));
 	gsl_vector_free(diff);
+	if (apop_verbose){
+		printf("avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
+	}
 	return two_tailify(gsl_cdf_tdist_P(stat, count-1));
 }
 
@@ -136,7 +146,6 @@ gsl_vector 	*xsy 		= gsl_vector_calloc(data->size2);
 gsl_matrix 	*xsx 		= gsl_matrix_calloc(data->size2, data->size2);
 gsl_matrix 	*sigma_inverse;	//= gsl_matrix_alloc(data->size1, data->size1);
 gsl_vector_view	v 		= gsl_matrix_column(data, 0);
-	apop_normalize_matrix(data);		//every column should have mean zero.
 	gsl_matrix_get_col(y_data, data, 0);
 	gsl_vector_set_all(&(v.vector), 1);	//affine: first column is ones.
 	apop_det_and_inv(sigma, &sigma_inverse, 0, 1);					//find sigma^{-1}
@@ -223,7 +232,6 @@ gsl_vector 	*xpy 		= gsl_vector_calloc(data->size2);
 gsl_matrix 	*xpx 		= gsl_matrix_calloc(data->size2, data->size2);
 gsl_vector_view	v 		= gsl_matrix_column(data, 0);
 	gsl_matrix_get_col(y_data, data, 0);
-	apop_normalize_matrix(data);		//every column should have mean zero.
 	gsl_vector_set_all(&(v.vector), 1);	//affine: first column is ones.
 	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, xpx);	//(X'X)
 	gsl_blas_dgemv(CblasTrans, 1, data, y_data, 0, xpy);     	//(X'y)

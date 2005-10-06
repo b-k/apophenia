@@ -210,7 +210,7 @@ of the data in each column; should give more in the near future.
 The table to be summarized.
 
 \param names
-The \ref apop_names structure associated with the table. If there is no such structure, use <tt>NULL</tt>.
+The \ref apop_name structure associated with the table. If there is no such structure, use <tt>NULL</tt>.
 \ingroup output
 void apop_matrix_summarize(gsl_matrix *data, apop_name *names){
 int		i;
@@ -234,8 +234,8 @@ gsl_vector_view	v;
 \param data
 The table to be summarized.
 
-\param names_in The \ref apop_names structure associated with the table. If there is no such structure, use <tt>NULL</tt>.
-\param names_out The \ref apop_names structure which will be associated with the output table.
+\param names_in The \ref apop_name structure associated with the table. If there is no such structure, use <tt>NULL</tt>.
+\param names_out The \ref apop_name structure which will be associated with the output table.
 \ingroup output
 \todo At the moment, only gives the mean and the standard deviation
 of the data in each column; should give more in the near future.

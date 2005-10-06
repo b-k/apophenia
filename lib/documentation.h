@@ -185,7 +185,7 @@ echo "export LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc
 
 If you are using Cygwin:
 \verbatim 
-<tt>echo "export PATH=/usr/local/lib:\$PATH" >> ~/.bashrc
+echo "export PATH=/usr/local/lib:\$PATH" >> ~/.bashrc
 echo "export LIBRARY_PATH=/usr/local/lib:\$LIBRARY_PATH" >> ~/.bashrc
 \endverbatim 
 
