@@ -54,7 +54,7 @@ Thus, the average analysis using Apophenia would take the following steps:
  \li read the data into the database using \ref apop_convert_text_to_db 
  \li use SQL queries handled by \ref apop_query to massage the data as needed
  \li use \ref apop_query_to_matrix to pull the data into an in-memory matrix
- \li call a regression function such as \ref apop_OLS or a maximum likelihood estimator such as a \ref apop_mle_probit "probit" to fit parameters to the data.
+ \li call a regression function such as \ref apop_OLS or a maximum likelihood estimator such as a \ref apop_probit "probit" to fit parameters to the data.
  \li use the results for further analysis, or just dump them to the screen with \ref apop_estimate_print.
 
 If this seems a bit vague, have a look at this \ref sample_program.

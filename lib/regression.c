@@ -5,6 +5,7 @@
 
 /** \defgroup regression  OLS/GLS: The linear projection methods */
 /** \defgroup ttest  T-tests: comparing two vectors */
+/** \defgroup asst_tests  Various means of hypothesis testing.*/
 
 #include <apophenia/regression.h>
 #include <gsl/gsl_blas.h>

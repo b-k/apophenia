@@ -11,8 +11,8 @@
 #include "estimate.h"
 #include "distributions.h"
 
-#define MAX_ITERATIONS 		1000
-#define MAX_ITERATIONS_w_d	1000
+#define MAX_ITERATIONS 		100
+#define MAX_ITERATIONS_w_d	100
 
 apop_estimate * apop_mle_probit(gsl_matrix *data, double *starting_pt, 
 					double step_size, apop_name *n, apop_inventory *uses, int verbose);
@@ -72,7 +72,7 @@ gsl_vector_free(waring_parameter); 	//Don't forget to clean up when you're done.
 
 */
 
-void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_distribution dist, gsl_vector* fn_beta);
+void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_likelihood dist, gsl_vector* fn_beta);
 /*This function goes row by row through m and calculates the likelihood
   of the given row, putting the result in v. You will need this to find
   the variance of the estimator via some means.
@@ -87,10 +87,10 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_distributio
 
 
 apop_estimate	*	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *inv,
-			apop_distribution dist, double *starting_pt, double step_size, int verbose);
+			apop_likelihood dist, double *starting_pt, double step_size, double tolerance, int verbose);
 
 //No longer exported. Call the above, and let the machine work out what you should use.
 //apop_estimate	*	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *inv,
-//			apop_distribution dist, double *starting_pt, double step_size, int verbose);
+//			apop_likelihood dist, double *starting_pt, double step_size, int verbose);
 
     int apop_find_root_1d (void * data);

@@ -1,11 +1,11 @@
-#ifndef __apop_distributions_h__
-#define __apop_distributions_h__
+#ifndef __apop_likelihoods_h__
+#define __apop_likelihoods_h__
 
-/** This is an object to describe a distribution. It would primarily be
+/** This is an object to describe a likelihood function. It would primarily be
 used for maximum likelihood estimation, but is intended to have anything
-else you would want a distribution to have too, like a random number
-generator. */
-typedef struct distribution{
+else you would want a probability distribution to have too, like a random number
+generator.  */
+typedef struct apop_likelihood{
 	char	name[100];
 	int	parameter_ct;
 	/** the likelihood fn given data*/
@@ -19,15 +19,17 @@ typedef struct distribution{
 	//to add: 
 	//the 2nd derivative of the likelihood fn
 	//the MLE
-} apop_distribution;
+} apop_likelihood;
 
 
-apop_distribution apop_exponential;
-apop_distribution apop_gamma;
-apop_distribution apop_probit;
-apop_distribution apop_waring;
-apop_distribution apop_yule;
-apop_distribution apop_zipf;
+extern apop_likelihood apop_exponential;
+extern apop_likelihood apop_gamma;
+extern apop_likelihood apop_gaussian;//synonym for apop_normal
+extern apop_likelihood apop_normal;
+extern apop_likelihood apop_probit;
+extern apop_likelihood apop_waring;
+extern apop_likelihood apop_yule;
+extern apop_likelihood apop_zipf;
 
 
 

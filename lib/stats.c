@@ -1,5 +1,6 @@
 //stats.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <apophenia/stats.h>
+#include <gsl/gsl_rng.h>
 
 
 /** \defgroup basic_stats Some basic statistical functions. 
@@ -189,6 +190,11 @@ int             j;
         }
 }
 
+/** Input: any old vector. Output: 1 - the p-value for a chi-squared test to answer the question, "with what confidence can I reject the hypothesis that the variance of my data is zero?"
+
+\param in a gsl_vector of data.
+\ingroup asst_tests
+ */
 inline double apop_test_chi_squared_var_not_zero(gsl_vector *in){
 gsl_vector	*normed;
 int		i;
@@ -197,8 +203,10 @@ double 		sum=0;
 	gsl_vector_mul(normed,normed);
 	for(i=0;i< normed->size; 
 			sum +=gsl_vector_get(normed,i++));
+	gsl_vector_free(normed);
 	return gsl_cdf_chisq_P(sum,in->size); 
 }
+
 
 inline double apop_double_abs(double a) {if(a>0) return a; else return -a;}
 
@@ -298,4 +306,14 @@ double		numerator;
 	numerator	= exp(- apop_x_prime_sigma_x(x_minus_mu, inverse) / 2);
 printf("(%g %g %g)", numerator, apop_x_prime_sigma_x(x_minus_mu, inverse), (numerator / pow(2 * M_PI, (float)dimensions/2) * sqrt(determinant)));
 	return(numerator / pow(2 * M_PI, (float)dimensions/2) * sqrt(determinant));
+}
+
+/** give me a random double between min and max [inclusive].
+
+\param min, max 	Y'know.
+\param r		The random number generator you're using.
+*/
+double apop_random_double(double min, double max, gsl_rng *r){
+double		base = gsl_rng_uniform(r);
+	return base * (max - min) - min;
 }

@@ -1,4 +1,4 @@
-/** \file likelihoods.c	The MLE functions. Call them with an \ref apop_distribution.
+/** \file likelihoods.c	The MLE functions. Call them with an \ref apop_likelihood.
 
 This file includes a number of distributions and models whose parameters
 one would estimate using maximum likelihood techniques.
@@ -16,7 +16,7 @@ the moment entirely unused, but is just here for future use.
 
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
-#include <apophenia/likelihoods.h>
+#include "likelihoods.h"
 
 /*
 Feed in data, the parameters (to be output), the # of parameters, and a
@@ -63,15 +63,16 @@ Don't bother calling this fn. Call \ref apop_maximum_likelihood, and if the deri
 
 \param data	the data matrix
 \param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
-\param	dist	the \ref apop_distribution object: waring, probit, zipf, &amp;c.
+\param	dist	the \ref apop_likelihood object: waring, probit, zipf, &amp;c.
 \param	starting_pt	an array of doubles suggesting a starting point. If NULL, use zero.
 \param step_size	the initial step size.
+\param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
 \param verbose		Y'know.
 \return	an \ref apop_estimate with the parameter estimates, &c.
 
   \todo readd names */
 apop_estimate *	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *uses,
-			apop_distribution dist, double *starting_pt, double step_size, int verbose){
+			apop_likelihood dist, double *starting_pt, double step_size, double tolerance, int verbose){
 
 	void fdf(const gsl_vector *beta, void *d, double *f, gsl_vector *df){
 		*f	= dist.log_likelihood(beta, d);
@@ -103,17 +104,15 @@ apop_estimate			*est;
 	else	minme.fdf	= dist.fdf;
 	minme.n		= betasize;
 	minme.params	= data;
-	gsl_multimin_fdfminimizer_set (s, &minme, x, step_size, 1e-5);
+	gsl_multimin_fdfminimizer_set (s, &minme, x, step_size, tolerance);
 
       	do { 	iter++;
 		status 	= gsl_multimin_fdfminimizer_iterate(s);
-//		if (status) 	break; 
+		if (status) 	break; 
+		status = gsl_multimin_test_gradient(s->gradient, tolerance);
         	if (verbose){
 	        	printf ("%5i %.5f  f()=%10.5f gradient=%.3f\n", iter, gsl_vector_get (s->x, 0),  s->f, gsl_vector_get(s->gradient,0));
 		}
-		status = gsl_multimin_test_gradient(s->gradient, 1e-1);
-	//	size	= gsl_multimin_fminimizer_size(s);
-        //	status 	= gsl_multimin_test_size (size, 1e-5); 
         	if (verbose && status == GSL_SUCCESS){
 		   		printf ("Minimum found.\n");
 		}
@@ -123,6 +122,7 @@ apop_estimate			*est;
 
 	gsl_vector_memcpy(est->parameters, s->x);
 	gsl_multimin_fdfminimizer_free(s);
+	if (starting_pt==NULL) gsl_vector_free(x);
 
 	est->log_likelihood	= -dist.log_likelihood(est->parameters, data);
 	//Epilogue:
@@ -141,6 +141,7 @@ gsl_matrix	*pre_cov;
 		gsl_vector_scale(&(v.vector), gsl_vector_get(diff, i));
 	}
 	apop_det_and_inv(pre_cov, &(est->covariance), 0,1);
+	gsl_matrix_free(pre_cov);
 	gsl_vector_free(diff);
 
 	if (est->uses.confidence == 0)
@@ -158,27 +159,27 @@ gsl_matrix	*pre_cov;
 
 \param data	the data matrix
 \param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
-\param	dist	the \ref apop_distribution object: waring, probit, zipf, &amp;c.
+\param	dist	the \ref apop_likelihood object: waring, probit, zipf, &amp;c.
 \param	starting_pt	an array of doubles suggesting a starting point. If NULL, use zero.
 \param step_size	the initial step size.
+\param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
 \param verbose		Y'know.
 \return	an \ref apop_estimate with the parameter estimates, &c.
 
-  \todo readd names 
+  \todo re-add names 
  \ingroup mle */
 apop_estimate *	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *uses,
-			apop_distribution dist, double *starting_pt, double step_size, int verbose){
+			apop_likelihood dist, double *starting_pt, double step_size, double tolerance, int verbose){
 
 	//First, if the derivative is available, you're in the wrong place:
 	//
 	//Except this hasn't been tested enough for me to be happy with it.
-	/*
 	if (dist.dlog_likelihood!=NULL)
-		return apop_maximum_likelihood_w_d(data, uses, dist, starting_pt, step_size, verbose);
-	*/
+		return apop_maximum_likelihood_w_d(data, uses, dist, starting_pt, step_size, tolerance, verbose);
 
 int			status,
 			iter 		= 0;
+size_t 			i;
 gsl_multimin_function 	minme;
 gsl_multimin_fminimizer *s;
 gsl_vector 		*x, *ss;
@@ -204,9 +205,8 @@ apop_estimate		*est;
 		status 	= gsl_multimin_fminimizer_iterate(s);
 		if (status) 	break; 
 		size	= gsl_multimin_fminimizer_size(s);
-        	status 	= gsl_multimin_test_size (size, 1e-3); 
+	       	status 	= gsl_multimin_test_size (size, tolerance); 
 		if(verbose){
-		int i;
 			printf ("%5d ", iter);
 			for (i = 0; i < dist.parameter_ct; i++) {
 				printf ("%8.3e ", gsl_vector_get (s->x, i)); } 
@@ -239,7 +239,7 @@ You can use this to find the variance of the estimator if other means fail.
 
 \param v	A vector which will hold the likelihood of each row of m. Declare but do not allocate.
 
-\param likelihood_fn	The address of any of the <tt>apop_xxx.log_likelihood<tt> functions, e.g., \ref apop_probit.log_likelihood.
+\param dist	An \ref apop_likelihood object whose log likelihood function you'd like to use.
 
 \param fn_beta		The parameters at which you will evaluate the likelihood. If <tt>e</tt> is an \ref
 			apop_estimate, then one could use <tt>e->parameters</tt>.
@@ -248,7 +248,7 @@ This functions is used in the sample code in the \ref mle section.
 
 \ingroup mle */
 void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, 
-				apop_distribution dist, gsl_vector* fn_beta){
+				apop_likelihood dist, gsl_vector* fn_beta){
 gsl_matrix_view mm;
 int             i;
 	*v	= gsl_vector_alloc(m->size1);

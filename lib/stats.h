@@ -65,3 +65,5 @@ double apop_multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* 
 //
 //The inverse and determinant are expensive, so keep them around where possible: on the first call, set 
 //first_use to 1, then feed in as many new values of X as you want.
+
+double apop_random_double(double min, double max, gsl_rng *r);

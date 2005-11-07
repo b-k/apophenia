@@ -3,11 +3,23 @@
 
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
+
 #include <gsl/gsl_matrix.h>
 #include <apophenia/name.h>
 #include <apophenia/estimate.h>
 #include <apophenia/linear_algebra.h>
 
+/** \defgroup inv_and_est  Using inventories and estimates 
+
+The \ref apop_estimate structure is the output for every regression or maximum likelihood technique here.
+It gathers together the parameter estimates, the variance-covariance matrix of the parameter
+estimates, the likelihood of the data if a max. likelihood technique,
+and whatever else comes to mind.
+
+\todo Rewrite the inventory and estimate documentation to cohere better. 
+ */
+
+/** Copy one inventory to another.	*/
 void apop_inventory_copy(apop_inventory in, apop_inventory *out){
 	out->parameters	= in.parameters;
 	out->predicted	= in.predicted;
@@ -19,7 +31,8 @@ void apop_inventory_copy(apop_inventory in, apop_inventory *out){
 /** set all the values of the inventory to a certain value
 
 \param out	a pointer to the inventory to be set
-\param value	probably one or zero.  */
+\param value	probably one or zero.  
+\ingroup inv_and_est */
 void apop_inventory_set(apop_inventory *out, int value){
 	out->parameters	= 
 	out->predicted	= 
@@ -28,6 +41,17 @@ void apop_inventory_set(apop_inventory *out, int value){
 	out->log_likelihood = value;
 }
 
+/** Allocate an \ref apop_estimate.
+
+Are you sure you need to use this? Every regression and MLE function
+provided by Apophenia creates this for you. [You will, however, have to
+free the estimate yourself.]
+
+\param data_size	If you want predicted values or residuals, we need to know how many slots to declare.
+\param	param_size	Notice that in the typical data matrix (not always), data_size is data_matrix->size1 and param_size is data_matrix->size2
+\param n		name structure, if you have one
+\param uses		Tell me what you want declared.
+\ingroup inv_and_est  */
 apop_estimate * apop_estimate_alloc(int data_size, int param_size, apop_name * n, apop_inventory uses){
 apop_estimate * prep_me;
 	prep_me	= malloc(sizeof(apop_estimate));
@@ -49,6 +73,9 @@ apop_estimate * prep_me;
 	return prep_me;
 }
 
+/** Free an \ref apop_estimate.
+
+\ingroup inv_and_est */
 void apop_estimate_free(apop_estimate * free_me){
 	if (free_me->uses.predicted)
 		gsl_vector_free(free_me->predicted);

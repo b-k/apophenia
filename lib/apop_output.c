@@ -201,7 +201,7 @@ void apop_matrix_print_int(gsl_matrix *data, char *separator, char *filename){
 
 
 
-/** Print a summary of each column of a table to the screen (i.e., STDOUT). 
+/* * Print a summary of each column of a table to the screen (i.e., STDOUT). 
 
 \todo At the moment, only gives the mean and the standard deviation
 of the data in each column; should give more in the near future.

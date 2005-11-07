@@ -12,10 +12,12 @@ AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 #-lefence
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = conversions.c db.c likelihoods.c linear_algebra.c \
 			asst.c distributions.c  regression.c stats.c estimate.c name.c apop_output.c \
-asnprintf.c  printf-args.c   vasnprintf.c  asprintf.c   printf-parse.c  vasprintf.c   
+asnprintf.c  printf-args.c   vasnprintf.c  asprintf.c   printf-parse.c  vasprintf.c   bootstrap.c\
+wnasrt.c  wnbridge.c  wncnjdn2.c  wnconjg.c  wnmatrices.c  wnmbtr.c wnmem.c  wnmemg.c  wnmemn.c  wnvect.c
+
 pkginclude_HEADERS = conversions.h db.h likelihoods.h linear_algebra.h \
 		     distributions.h regression.h stats.h headers.h estimate.h name.h output.h \
-alloca_.h printf-parse.h  vasprintf.h printf-args.h vasnprintf.h    xsize.h
+alloca_.h printf-parse.h  vasprintf.h printf-args.h vasnprintf.h    xsize.h bootstrap.h
 
 
 #The programs
