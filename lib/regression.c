@@ -7,11 +7,11 @@
 /** \defgroup ttest  T-tests: comparing two vectors */
 /** \defgroup asst_tests  Various means of hypothesis testing.*/
 
-#include <apophenia/regression.h>
+#include "regression.h"
 #include <gsl/gsl_blas.h>
-#include <apophenia/stats.h>
-#include <apophenia/linear_algebra.h>
-#include <apophenia/estimate.h>
+#include "stats.h"
+#include "linear_algebra.h"
+#include "estimate.h"
 
 extern int apop_verbose;
 
@@ -47,21 +47,24 @@ double		a_avg	= apop_mean(a),
 
 \ingroup ttest
 \param {a, b} two columns of data
-\return the confidence level---if it is close to one, you can reject the null, while <tt>apop_paired_t_test(a, a)</tt> will return zero.
+\return plus or minus the confidence level---if it is close to one, you can reject the null, while <tt>apop_paired_t_test(a, a)</tt> will return zero. If the confidence level is positive, then mean(a) > mean(b), and the confidence level tells us how firmly we can make that statement for the population. If the confidence level is negative, then mean(b) < mean(a).
 */
 double	apop_paired_t_test(gsl_vector *a, gsl_vector *b){
 gsl_vector	*diff	= gsl_vector_alloc(a->size);
 	gsl_vector_memcpy(diff, a);
 	gsl_vector_sub(diff, b);
-int		count	= a->size;
+int		count	= a->size, 
+		factor	= 1;
 double		avg	= apop_mean(diff),
 		var	= apop_var(diff),
 		stat	= avg/ sqrt(var/(count-1));
+	if (apop_mean(diff) < 0) 
+		factor = -1;
 	gsl_vector_free(diff);
 	if (apop_verbose){
 		printf("avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
 	}
-	return two_tailify(gsl_cdf_tdist_P(stat, count-1));
+	return factor * two_tailify(gsl_cdf_tdist_P(stat, count-1));
 }
 
 void prep_inventory_OLS(apop_name *n, apop_inventory *in, apop_inventory *out){

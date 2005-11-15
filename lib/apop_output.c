@@ -11,6 +11,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
 
 #include <apophenia/output.h>
+#include <gsl/gsl_histogram.h>
 /** Prep for gnuplot one of those cute scatterplots with a regression line through it.
 
 Currently, you only get two dimensions.
@@ -114,8 +115,35 @@ int		i,j;
 	pclose (output);
 }
 
+/** This function will take in data and put out a histogram.
 
-
+*/
+void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
+int             i;
+FILE *          f;
+double		min, max, pt;
+gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
+	gsl_vector_minmax(data, &min, &max);
+        gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
+	for (i=0; i < data->size; i++){
+		pt	= gsl_vector_get(data, i);
+		gsl_histogram_increment(h, pt);
+		}
+	//Now that you have a histogram, print it.
+        if (outfile == NULL) 	f       = stdout;
+        else    		f       = fopen(outfile, "a");
+	fprintf(f, "set key off					;\n\
+                        set style data histograms		;\n\
+                        set style histogram cluster gap 0	;\n\
+                        set xrange [0:%i]			;\n\
+                        set style fill solid border -1          ;\n\
+                        set boxwidth 0.9                        ;\n\
+                        plot '-' using 2:xticlabels(1);\n", bin_ct);
+	for (i=0; i < bin_ct; i++)
+	fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
+	if (outfile !=NULL)    fclose(f);
+}
+	
 
 ////////////////////////////
 /////The printing functions.

@@ -11,8 +11,8 @@
 #include "estimate.h"
 #include "distributions.h"
 
-#define MAX_ITERATIONS 		100
-#define MAX_ITERATIONS_w_d	100
+#define MAX_ITERATIONS 		1500
+#define MAX_ITERATIONS_w_d	1500
 
 apop_estimate * apop_mle_probit(gsl_matrix *data, double *starting_pt, 
 					double step_size, apop_name *n, apop_inventory *uses, int verbose);

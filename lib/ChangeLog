@@ -1,3 +1,18 @@
+0.12 	November 2005, post-hiatus
+
+You now have three maximum likelihood estimators to choose from: the
+GSL's no-gradient, the GSL's with-gradient, and Mr. WN's autocalculated
+gradient. 
+
+If you haven't seen it before, the apop_distribution structure is
+increasingly well-supported. It allows the user to specify the features
+of the Max. Likeihood model in a consistent manner which facilitates
+things like comparing two models.
+
+I'd still suggest taking the Waring and Yule distributions with care;
+everything else seems to check out.
+
+
 0.12 	September 2005
 --The distributions are now objects, which just provides a neat way
 of grouping together the half-dozen functions which are associated with

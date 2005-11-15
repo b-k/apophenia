@@ -12,7 +12,7 @@ This is the documentation for <a href="http://apophenia.sf.net">Apophenia</a>.
  \li \ref basic_stats "Basic statistics": Mean, variance, &c.
  \li \ref regression  
  \li \ref ttest 
- \li \ref mle "Maximum likelihood estimation": estimators requiring a search for the maximum of a likelihood function.
+ \li \ref likelihood_fns "Maximum likelihood estimation": estimators requiring a search for the maximum of a likelihood function.
  \li \ref linear_algebra "Linear Algebra": determinants, projections, &c. Some convenience functions to display matrices and vectors.
 
 \section Shunting data 
@@ -34,7 +34,7 @@ This is the documentation for <a href="http://apophenia.sf.net">Apophenia</a>.
 
 /** \page intro Why?
 
-\section Data management and data analysis
+\section datamanagement Data management and data analysis
 We require two things from a good statistics package: easy management of
 large data sets, and the ability to crunch numbers on a large scale. [The
 third place entry, \ref graphing "graphing", is discussed on another page.]
@@ -59,6 +59,44 @@ Thus, the average analysis using Apophenia would take the following steps:
 
 If this seems a bit vague, have a look at this \ref sample_program.
 
+\section sell Some complaints alleviated
+
+\li <b>The world is not linear</b>, so why are you using a package to fit
+linear models? Apophenia facilitates writing \ref likelihood_fns which
+can be as crazy as the world you are modeling, and then fits them with
+one function call to \ref apop_maximum_likelihood. Comparing competing
+models is easy as well.
+
+\li <b>Passing queries directly to SQL.</b> if you have a gigabyte of data,
+you do not want it in an in-memory database until the last possible
+minute---you're probably only using three variables out of six hundred
+anyway. If your data comes from multiple sources, you will need a means
+of merging the sources. In short, data management is best done via a
+database. \ref apop_query will allow you to dynamically write queries
+that are passed directly to SQLite.
+
+\li <b>Converting data is a pain</b>. It's funny and a bit wrong that
+college and even grad school statistics classes present  the student with
+perfectly-cleaned data sets and spend 90% of their time on calculating
+statistics and testing hypotheses; while in the real world, we spend
+about 90% of our time getting, cleaning, and managing our data, and
+once it's all perfect we do the statistics with a single function call. 
+Apophenia provides a good number of \ref conversions to make
+data wrangling as painless as it can be in the real world. The
+\ref convertfromtext alone may be worth the time it takes you to install
+apophenia.
+
+\li <b>The GSL is just a step shy.</b> Don't get me wrong: it's a great
+library, which drives much of Apophenia. But the authors did not have
+statistical analysis in mind, and often chose generality over ease of
+use. For example doing a singular value decomposition theoretically
+just requires a single call to \c gsl_linalg_SV_decomp, but in reality
+takes many steps of data massaging to get things in place. But you can
+feed your data directly to \ref apop_sv_decomposition and get a principal
+component space back immediately. Think of Apophenia as the lazy
+statistician's supplement to the GSL.
+
+<!--
 \section librant Stats libraries vs Stats packages 
 The reason I (BK) started up this library is that I was sick of learning
 new languages. There are a few dozen statistics packages to choose from,
@@ -107,8 +145,8 @@ new library. This libarary focuses on MLE methods over linear projection
 methods that most packages tend to rely on. Because it focuses on
 likelihoods and distributions, the package provides certain procedures,
 such as random draws from a Waring distribution, which to my knowledge
-don't yet exist in Matlab, R, STATA, &c. */
-
+don't yet exist in Matlab, R, STATA, &c. 
+-->*/
 
 /** \page setup Setting up
 
@@ -449,4 +487,6 @@ the data management and data crunching in C, then use \ref apop_print
 directly. [It already includes one, which is so rudimentary it's not
 even documented (see the <tt>linear_algebra.h</tt> file in the source code
 if you're curious).]
+
+Oh, but have a look at \ref apop_plot_line_and_scatter.
 */

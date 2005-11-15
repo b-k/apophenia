@@ -13,8 +13,7 @@ long int	runsize		= 1000,
 gsl_matrix *	data		= gsl_matrix_calloc(runsize,rowsize),
 	   	*summary; 
 double 		dummy[]		={3.2, 3.4},
-		//true_parameter[]= {3.82,2.1},
-		*true_parameter = malloc(sizeof(double)*2),
+		true_parameter[]= {3.82,2.1},
 		true_y_parameter[]= {0,2.1};
 int		score		= 0;
 size_t		i,j;
@@ -24,8 +23,6 @@ apop_name	*summary_names;
 gsl_vector_view	v;
 gsl_vector*	vv;
 	apop_inventory_set(&inv, 1);
-	true_parameter[0]	=3.82;
-	true_parameter[1]	=2.1;
 	//generate.
 	for (i=0; i< runsize; i++){
 		for (j=0; j< rowsize; j++){
@@ -92,8 +89,10 @@ gsl_vector*	vv;
 	v	= gsl_matrix_column(summary,0);
 	gsl_matrix_set_row(data2, 0, &(v.vector));
 
+	/*
 	printf("the abbreviated data matrix:\n");
 	apop_matrix_print(data2, "\t", NULL);
+	*/
 	printf("\n");
 		//for (j=0; j< rowsize; j++){printf("%g ",apop_zipf.log_likelihood(zipf_param-1, j+1));}
 
@@ -168,6 +167,12 @@ gsl_rng *       r;
 	gsl_rng_env_setup();
 	r=gsl_rng_alloc(gsl_rng_default); 
 
+	printf("Exponential distribution test: ");
+	do_test(test_distribution(r, apop_exponential));
+
+	printf("Yule test: ");
+	do_test(test_distribution(r, apop_yule));
+
 	printf("Zipf test: ");
 	do_test(test_distribution(r, apop_zipf));
 
@@ -178,9 +183,6 @@ gsl_rng *       r;
 	do_test(test_summarize());
 
 	/*
-	printf("Exponential distribution test: ");
-	do_test(test_likelihood(r, apop_exponential));
-
 	printf("Waring test: ");
 	do_test(test_distribution(r, apop_waring));
 
@@ -189,9 +191,6 @@ gsl_rng *       r;
 
 	printf("Harmonic test: ");
 	do_test(test_harmonic());
-
-	printf("Yule test: ");
-	do_test(test_distribution(r, apop_yule));
 	*/
 
 	return 0;

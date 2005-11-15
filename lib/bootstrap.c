@@ -25,16 +25,12 @@ You need to provide a function which takes a data set as an input and spits out 
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
 
-#include <apophenia/stats.h>
-#include <apophenia/output.h>
-#include <apophenia/bootstrap.h>
-#include <apophenia/likelihoods.h>
-#include <apophenia/distributions.h>
-#include <apophenia/linear_algebra.h>
-
-//Part of the intent of a convenience header like this is that you
-//don't have to remember what else you're including. So here are 
-//some other common GSL headers:
+#include "stats.h"
+#include "output.h"
+#include "bootstrap.h"
+#include "likelihoods.h"
+#include "distributions.h"
+#include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
 
 

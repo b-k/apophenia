@@ -2,7 +2,7 @@
 
  Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
  */
-#include <apophenia/conversions.h>
+#include "conversions.h"
 #include "assert.h"
 
 #define Text_Size_Limit 1000000
@@ -124,11 +124,12 @@ int	i	= start_from;	//i is probably the same or i+1.
 	return 0;
 }
 
+/**Give the name of a table in the database, and names of three of its
+columns: the x-dimension, the y-dimension, and the data.
+the output is a 2D matrix with rows indexed by r1 and cols by
+r2. if !=NULL, d1 and d2 will list the labels on the dimensions.
+*/
 gsl_matrix * apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2){
-//Give the name of a table in the database, and names of three of its
-//columns: the x-dimension, the y-dimension, and the data.
-//the output is a 2D matrix with rows indexed by r1 and cols by
-//r2. if !=NULL, d1 and d2 will list the labels on the dimensions.
 
 gsl_matrix	*pre_d1	= NULL, 
 		*pre_d2	= NULL, *datatab, *out;

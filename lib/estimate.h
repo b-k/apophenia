@@ -109,6 +109,7 @@ The \ref apop_OLS page has a sample program which uses an <tt>apop_estimate</tt>
 \param residuals 	The actual values of the dependent var minus the predicted. Has as many dimensions as your data set has columns.
 \param covariance 	The variance-covariance matrix (remember the variance is just the covariance of a variable with itself).
 \param confidence 	The two-tailed test of the hypothesis that the variable is zero. One element for each parameter.
+\param status		The return status from the estimate that had populated this apop_estimate, if any.
 \ingroup types
 */
 typedef struct apop_estimate{
@@ -117,6 +118,7 @@ typedef struct apop_estimate{
 	double		log_likelihood;
 	apop_inventory	uses;
 	apop_name	*names;
+	int		status;
 } apop_estimate;
 
 apop_estimate *	apop_estimate_alloc(int data_size, int param_size, apop_name *n, apop_inventory uses);

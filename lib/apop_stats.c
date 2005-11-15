@@ -1,6 +1,7 @@
 //stats.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <apophenia/stats.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_sort_vector.h>
 
 
 /** \defgroup basic_stats Some basic statistical functions. 
@@ -300,7 +301,7 @@ double		numerator;
 		if (inverse !=NULL) free(inverse);
 		dimensions	= x->size;
 		inverse 	= gsl_matrix_alloc(dimensions, dimensions);
-		determinant	= apop_det_and_inv(sigma, inverse, 1,1);
+		determinant	= apop_det_and_inv(sigma, &inverse, 1,1);
 	}
 	if (determinant == 0) {printf("x"); return(GSL_NEGINF);} //tell minimizer to look elsewhere.
 	numerator	= exp(- apop_x_prime_sigma_x(x_minus_mu, inverse) / 2);
@@ -316,4 +317,36 @@ printf("(%g %g %g)", numerator, apop_x_prime_sigma_x(x_minus_mu, inverse), (nume
 double apop_random_double(double min, double max, gsl_rng *r){
 double		base = gsl_rng_uniform(r);
 	return base * (max - min) - min;
+}
+
+/** Returns a vector of size 101, where returned_vector[95] gives the
+value of the 95th percentile, for example. Returned_vector[100] is always
+the maximum value, and returned_vector[0] is always the min (regardless
+of rounding rule).
+
+\param data	a gsl_vector of data.
+\param rounding This will either be 'u' or 'd'. Unless your data is
+exactly a multiple of 100, some percentiles will be ambiguous. If 'u',
+then round up (use the next highest value); if 'd' (or anything else),
+round down to the next lowest value. If 'u', then you can say "5% or
+more  of the sample is below returned_vector[5]"; if 'd', then you can
+say "5% or more of the sample is above returned_vector[5]".  
+
+\ingroup basic_stats
+*/ 
+double * apop_percentiles(gsl_vector *data, char rounding){
+gsl_vector	*sorted	= gsl_vector_alloc(data->size);
+double		*pctiles= malloc(sizeof(double) * 101);
+int		i, index;
+	gsl_vector_memcpy(sorted,data);
+	gsl_sort_vector(sorted);
+	for(i=0; i<101; i++){
+		index = i*(data->size-1)/100.0;
+		if (rounding == 'u' && index != i*(data->size-1)/100.0)
+			index ++; //index was rounded down, but should be rounded up.
+		pctiles[i]	= gsl_vector_get(sorted, index);
+	}
+	gsl_vector_free(sorted);
+	return pctiles;
+
 }

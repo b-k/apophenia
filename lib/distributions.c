@@ -10,10 +10,82 @@ At the moment, most of the headers are in likelihoods.h. Maybe some day that wil
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
 
+/** \defgroup likelihood_fns  Likelihood fns 
+
+The \ref apop_likelihood objects are to Apophenia as the 'model' object is to
+most other statistics packages: it is a summary of the author's claims
+about the real world. Hand an apop_likelihood plus a data set 
+to the \ref apop_maximum_likelihood function, and that function returns
+the most likely parameters.
+
+Because the model is often a probability distribution, the apop_likelihood
+object is also Apophenia's means of describing distributions. E.g.,
+the PDF of the Waring distribution at the data given the parameters is
+exp(-apop_waring.log_likelihood(beta, data)). Where at all possible,
+there are also random number generators for the distributions, e.g.
+apop_waring.rng(r, beta), where \c r  is an allocated and initialized gsl_rng.
+
+
+<b>example</b><br>
+Here is a simple example; see also \ref mle for other examples.
+
+
+\code
+apop_estimate   * waring_parameters;
+double          starting_pt[2] = {3, 0};
+double          likelihood;
+waring_parameters      = apop_maximum_likelihood(data, apop_waring, starting_pt, 1e-4, 0);
+printf("Your most likely waring parameters are %g and %g, with likelihood %g",
+                        gsl_vector_get(waring_parameter->parameters, 0) gsl_vector_get(waring_parameter->parameters, 1), likelihood);
+\endcode
+
+\section write_likelihoods Writing your own
+Writing apop_likelihood objects is easy:
+
+\li Write a likelihood function. Its header will look like this:
+\code
+double apop_new_log_likelihood(const gsl_vector *beta, void *d)
+\endcode 
+where \c beta will be the parameters to be maximized, and \c
+d is the fixed parameters---the data. In every case currently included
+with Apophenia, \c d is a \c gsl_matrix, but you do not have to conform
+to that. This function will return the <i>negation</i> of the log likelihood function.
+\li Write the object. In your header file, include 
+\code
+apop_likelihood apop_new_likelihood = {"The Me distribution", number_of_parameters, apop_new_log_likelihood, NULL, NULL, NULL};
+\endcode
+\c number_of_parameters is probably a positive integer like \c 2, but
+it is often (the number of columns in your data set) -1, in which case,
+set \c number_of_parameters to \c -1.
+\li Test. Debug. Retest.
+\li (optional) Write a gradient for the log likelihood function. This
+typically involves calculating a derivative by hand, which is an easy
+problem in high-school calculus. The function's header will look like: 
+\code
+void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient)
+\endcode 
+where \c beta and \c d are fixed as above, and \c gradient is a \c gsl_vector with dimension matching \c beta. 
+At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
+\code
+gsl_vector_set(gradient,0, -d_a);
+gsl_vector_set(gradient,1, -d_b);
+\endcode 
+Now add the resulting dlog likelihood function to your object:
+\code
+apop_likelihood apop_new_likelihood = {"The Me distribution", number_of_parameters, apop_new_log_likelihood, apop_new_dlog_likelihood, NULL, NULL};
+\endcode
+\li Send the code to the maintainer for inclusion in future versions of Apophenia.
+
+
+
+\ingroup mle 
+*/
+
 /** \defgroup mle  Maximum likelihood estimation
+\ingroup likelihood_fns
 
 Most of the action with regards to maximum likelihood estimation is in
-the function \ref apop_maximum_likelihood and the distribution objects.
+the function \ref apop_maximum_likelihood and the \ref likelihood_fns "distribution objects".
 
 The likelihood objects describe anything which one would want to fit
 with an MLE. Usually this involves finding the most likely parameters
@@ -59,60 +131,29 @@ apop_estimate   *est1, *est2;
         else
            printf("The %s is a better fit than the %s with %g%% certainty.\n", d2.name, d1.name, t_stat*100);
 }
+\endcode
 */
 
-/** \defgroup network_likelihoods  Likelihood fns associated with network analysis
-
-These functions will estimate the parameter(s) in the named distribution for the given data.
 
 
-Oh, and guess what: this documentation is out of date right now, and refers at points to how the MLEs were done before version 0.12.
-Will be fixed shortly.
-
-[Wikipedia has notes on the <a
-href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf
-distribution</a>. I'm pretty sure their specification of the Yule is
-wrong; will fix when I can check references.]
-
-\param data 	Each row of the data matrix is one observation. The first column is the number of elements with one
-link, the second is the number of elements with two links, et cetera.
-
-\param starting_pt 	A vector of the appropriate size which indicates your
-best initial guess for beta. if starting_pt=NULL, then (0,0,...0) will be assumed. [Gamma, Waring: two parameters; zipf, yule: one parameter.]
-
-\param step_size
-The scale of the initial steps the maximization algorithm
-will take. Currently, it is a scalar, so every dimension will have the
-same step_size.
-
-\param uses
-A pointer to an \ref apop_inventory with the info you would like. You always get the parameters and the log likelihood.
-
-\param verbose 
-Zero or one depending on whether you want to see the
-maximizer's iterations.
-
-\return
-Returns an \ref apop_estimate with the appropriate info.
-
-<b>example</b><br>
-Here is a simple example; see also \ref mle for other examples.
+//The default list. Probably don't need them all.
+#include "name.h"
+#include "output.h"
+#include "bootstrap.h"
+#include "regression.h"
+#include "conversions.h"
+#include "likelihoods.h"
+#include "distributions.h"
+#include "linear_algebra.h"
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_sort.h>
+#include <gsl/gsl_histogram.h>
+#include <gsl/gsl_sort_vector.h>
+#include <gsl/gsl_permutation.h>
+#include <stdio.h>
+#include <assert.h>
 
 
-\code
-apop_estimate   * waring_parameters;
-double          starting_pt[2] = {3, 0};
-double          likelihood;
-waring_parameters      = apop_maximum_likelihood(data, apop_waring, starting_pt, .01, 0);
-printf("Your most likely waring parameters are %g and %g, with likelihood %g",
-                        gsl_vector_get(waring_parameter->parameters, 0) gsl_vector_get(waring_parameter->parameters, 1), likelihood);
-\endcode
-\ingroup mle 
-\todo Update this documentation.*/
-
-
-
-#include <apophenia/headers.h>
 
 /** This function is used to keep the minimizer away from bounds.
 
@@ -131,14 +172,16 @@ double keep_away(double value, double limit,  double base){
 void prep_inventory_mle(apop_inventory *in, apop_inventory *out); //in likelihoods.c
 
 /** The exponential distribution. A one-parameter likelihood fn.
-\f$Z(C,k) 	= 1/C e^{-k/C} 			\f$ <br>
-\f$ln Z(C,k) 	= -\ln(C) - k/C			\f$ <br>
+\f$Z(\mu,k) 	= 1/\mu e^{-k/\mu} 			\f$ <br>
+\f$ln Z(\mu,k) 	= -\ln(\mu) - k/\mu			\f$ <br>
 
-\f$Z(C,k) 	= ln(C) C^{-k} 			\f$ <br>
-\f$ln Z(C,k) 	= \ln(\ln(C)) - \ln(C) * k	\f$ <br>
-\f$dlnZ/dC	= [{1\over \ln(C)} - k] {1\over C}	\f$ <br>
+Some folks write the function as:
+\f$Z(C,k) dx = \ln C C^{-k}. \f$
+If you prefer this form, just convert your parameter via \f$\mu = {1\over
+\ln C}\f$ (and convert back from the parameters this function gives you
+via \f$C=\exp(1/\mu)\f$.
 
-\ingroup network_likelihoods
+\ingroup likelihood_fns
 \todo Set up an exponential object which makes use of the GSL.
 \todo Check that the borderline work here is correct.
 */
@@ -205,6 +248,13 @@ double 		d_likelihood 	= 0,
 	gsl_vector_set(gradient,0, -d_likelihood);
 }
 
+/* Just a wrapper for gsl_ran_exponential.
+
+   cut & pasted from the GSL documentation:
+\f$p(x) dx = {1 \over \mu} \exp(-x/\mu) dx \f$
+
+See the notes for \ref apop_exponential_rng on a popular alternate form.
+*/
 double apop_exponential_rng(gsl_rng* r, double * a){
 	//This fn exists because the GSL requires a double, 
 	//while the apop_likelihood structure requires a double*. 
@@ -221,7 +271,7 @@ double apop_exponential_rng(gsl_rng* r, double * a){
 \f$d ln G/ da	=  -\psi(a) - ln b + ln(x) \f$	(also, \f$d ln \gamma = \psi\f$)
 
 \f$d ln G/ db	=  -a/b - x \f$
-\ingroup network_likelihoods
+\ingroup likelihood_fns
 */
 double apop_gamma_log_likelihood(const gsl_vector *beta, void *d){
 float		a	= gsl_vector_get(beta, 0),
@@ -319,6 +369,7 @@ static double	ka	= 0;
 To tell you the truth, I have no idea when anybody would need this, but it's here for completeness. 
 \f$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 \f$
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
+\todo Add constraint that \f$\sigma^2>0\f$.
  */
 void apop_normal_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 double 		mu	= gsl_vector_get(beta,0),
@@ -385,7 +436,6 @@ gsl_vector	*t;
 find (data dot beta'), then find the integral of the \f$\cal{N}(0,1)\f$
 up to that point. Multiply likelihood either by that or by 1-that, depending 
 on the choice the data made.
-\ingroup mle
 */
 double apop_probit_log_likelihood(const gsl_vector *beta, void *d){
 int		i;
@@ -449,7 +499,7 @@ void apop_probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df
 
 \f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
 
-\ingroup network_likelihoods
+\ingroup likelihood_fns
 */
 double apop_waring_log_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0),
@@ -682,7 +732,6 @@ int 		i, j;
 			like	+= gsl_matrix_get(data,i,j) * z;
 		}
 	}
-//printf("z: %g %g", bb, like);
 	return -like;
 }	
 
@@ -763,9 +812,32 @@ double		u, v, t,
 /////////////////////////////////////
 
 
+/** The exponential distribution. A one-parameter likelihood fn.
+
+Right now, it is keyed toward network analysis, meaning that the data
+structure requires that the first column be the percentage of observations
+which link to the most popular, the second column the percentage of
+observations which link to the second-most popular, et cetera.
+
+
+\f$Z(\mu,k) 	= 1/\mu e^{-k/\mu} 			\f$ <br>
+\f$ln Z(\mu,k) 	= -\ln(\mu) - k/\mu			\f$ <br>
+
+Some folks write the function as:
+\f$Z(C,k) dx = \ln C C^{-k}. \f$
+If you prefer this form, just convert your parameter via \f$\mu = {1\over
+\ln C}\f$ (and convert back from the parameters this function gives you
+via \f$C=\exp(1/\mu)\f$.
+
+\ingroup likelihood_fns
+\todo Check that the borderline work here is correct.
+\todo Write a second object for the plain old not-network data Exponential.
+*/
 apop_likelihood apop_exponential = {"Exponential", 1, apop_exponential_log_likelihood, apop_exponential_dlog_likelihood, NULL, apop_exponential_rng};
 
 /** The Gamma distribution
+
+The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
 
 \f$G(x, a, b) 	= 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
 
@@ -774,12 +846,12 @@ apop_likelihood apop_exponential = {"Exponential", 1, apop_exponential_log_likel
 \f$d ln G/ da	=  -\psi(a) - ln b + ln(x) \f$	(also, \f$d ln \gamma = \psi\f$)
 
 \f$d ln G/ db	=  -a/b - x \f$
-\ingroup network_likelihoods
+\ingroup likelihood_fns
 */
 apop_likelihood apop_gamma = {"Gamma", 2, apop_gamma_log_likelihood, apop_gamma_dlog_likelihood, NULL, NULL};
 //apop_likelihood apop_gamma = {"Gamma", 2, apop_gamma_log_likelihood, NULL, NULL, NULL};
 
-/** You know, it, it's your attractor in the limit, it's the Gaussian distribution.
+/** You know it, it's your attractor in the limit, it's the Gaussian distribution.
 
 Generally, fitting a Normal distribution via maximum likelihood is silly
 (\ref apop_mean and \ref apop_var will find the parameters with maximum
@@ -791,26 +863,35 @@ rows of data; if you have an 8 x 7 data set, it will give you the log
 likelihood of those 56 observations given the mean and variance you provide.
 
 \f$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)\f$
-\f$\ln N(\mu,\sigma^2) = (-|x-\mu|^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 \f$
-\f$d\ln N(\mu,\sigma^2)/d\mu = 2(x-\mu) / 2\sigma^2, \hbox{for} \mu<=x \f$
-\f$d\ln N(\mu,\sigma^2)/d\mu = -2(x-\mu) / 2\sigma^2, \hbox{for} \mu=>x \f$
-\f$d\ln N(\mu,\sigma^2)/d\sigma^2 = (|x-\mu|^2 / 2(\sigma^2)^2) - 1/\sigma^2 \f$
+
+\f$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 \f$
+
+\f$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 \f$
+
+\f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
+\ingroup likelihood_fns
 */
 apop_likelihood apop_normal = {"Normal", 2, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, apop_normal_rng};
 //apop_likelihood apop_normal = {"Normal", 2, apop_normal_log_likelihood, NULL, NULL, apop_normal_rng};
 
 /** This is a synonym for \ref apop_normal, q.v.
+\ingroup likelihood_fns
 */
 apop_likelihood apop_gaussian = {"Gaussian", 2, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, apop_normal_rng};
 
 /** The Probit model.
+ The first column of the data matrix this model expects is ones and zeros;
+ the remaining columns are values of the independent variables. Thus,
+ the model will return (data columns)-1 parameters.
 
+\ingroup likelihood_fns
 */
-//apop_likelihood apop_probit = {"Probit", 2, apop_probit_log_likelihood, apop_probit_dlog_likelihood, apop_probit_fdf, NULL};
-apop_likelihood apop_probit = {"Probit", 2, apop_probit_log_likelihood, NULL, apop_probit_fdf, NULL};
+//apop_likelihood apop_probit = {"Probit", -1, apop_probit_log_likelihood, apop_probit_dlog_likelihood, apop_probit_fdf, NULL};
+apop_likelihood apop_probit = {"Probit", -1, apop_probit_log_likelihood, NULL, apop_probit_fdf, NULL};
 
 
 /** The Waring distribution
+The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
 
 \f$W(x,k, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
 
@@ -819,6 +900,7 @@ apop_likelihood apop_probit = {"Probit", 2, apop_probit_log_likelihood, NULL, ap
 \f$dlnW/db	= 1/(b-1)  + \psi(b+a) - \psi(k+a+b)\f$
 
 \f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
+\ingroup likelihood_fns
 */
 apop_likelihood apop_waring = {"Waring", 2, apop_waring_log_likelihood, apop_waring_dlog_likelihood, NULL, apop_waring_rng};
 //apop_likelihood apop_waring = {"Waring", 2, apop_waring_log_likelihood, NULL, NULL, apop_waring_rng};
@@ -828,18 +910,30 @@ apop_likelihood apop_waring = {"Waring", 2, apop_waring_log_likelihood, apop_war
 
 Yule likelihood fn. The special case of Waring where \f$ \alpha = 0.	\f$<br>
 
-\f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$<br>
-\f$ \ln Y(x, b)	= \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b)	\f$<br>
-\f$ d\ln Y/db	= 1/(b-1)  + \psi(b) - \psi(k+b)				\f$<br>
+The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
+
+\f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$
+
+\f$ \ln Y(x, b)	= \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b)	\f$
+
+\f$ d\ln Y/db	= 1/(b-1)  + \psi(b) - \psi(k+b)				\f$
+\ingroup likelihood_fns
+\todo I'm pretty sure their specification of the Yule is wrong; I should check and fix when I can check references.
 */
 apop_likelihood apop_yule = {"Yule", 1, apop_yule_log_likelihood, apop_yule_dlog_likelihood, NULL, apop_yule_rng};
 //apop_likelihood apop_yule = {"Yule", 1, apop_yule_log_likelihood, NULL, NULL, apop_yule_rng};
 
 /** The Zipf distribution.
+Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. 
 
-\f$Z(a)		= {1\over \zeta(a) * i^a}		\f$<br>
-\f$lnZ(a)	= -(\log(\zeta(a)) + a \log(i))	\f$<br>
-\f$dlnZ(a)/da	= -{\zeta(a)\over a \log(\zeta(a-1))} -  \log(i)		\f$<br>
+The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
+
+\f$Z(a)		= {1\over \zeta(a) * i^a}		\f$
+
+\f$lnZ(a)	= -(\log(\zeta(a)) + a \log(i))	\f$
+
+\f$dlnZ(a)/da	= -{\zeta(a)\over a \log(\zeta(a-1))} -  \log(i)		\f$
+\ingroup likelihood_fns
 */
-apop_likelihood apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, apop_zipf_dlog_likelihood, NULL, apop_zipf_rng};
-//apop_likelihood apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, NULL, NULL, apop_zipf_rng};
+//apop_likelihood apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, apop_zipf_dlog_likelihood, NULL, apop_zipf_rng};
+apop_likelihood apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, NULL, NULL, apop_zipf_rng};

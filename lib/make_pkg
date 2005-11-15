@@ -1,7 +1,6 @@
-export outlib=apophenia_install
-export junkdir=tttt
+export junkdir=delete_me
+export version=0.12
 
-rm -rf $outlib
 rm -rf $junkdir
 mkdir $junkdir
 cp * $junkdir
@@ -10,18 +9,27 @@ cd $junkdir
 	aclocal
 	autoconf
 	automake -a
-	mkdir $outlib
-	cp *.c *.h *.html ../wn/wn*{c,h} configure.ac config.guess missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp test_* flake.gif ../.doxygen $outlib 
-	mv $outlib ..
-cd ..
-rm -rf $junkdir
-cd $outlib
+	cp *.c *.h *.html ../wn/wn*{c,h} configure.ac config.guess missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp test_* flake.gif ../.doxygen ./
+	./configure
+	make dist
+
+	#I have header issues.
 	mkdir apophenia
 	cd apophenia
 		ln -s ../*.h ./
+		cd ..
+	mkdir apophenia-$version
+	mv apophenia apophenia-$version
+	gzip -d apophenia-$version.tar.gz
+	tar rf apophenia-$version.tar apophenia-$version
+	gzip apophenia-$version.tar
+	mv apophenia-$version/* ./
+	rmdir apophenia-$version
+
+	mv apophenia-$version.tar.gz ../
 	cd ..
-	./configure
-	make dist
+tar xvz < apophenia-$version.tar.gz
 echo "***********Done with packing; now compiling***********"
-	make; sudo make install
+cd apophenia-$version
+	./configure; make; sudo make install
 cd ..

@@ -68,7 +68,7 @@ Don't bother calling this fn. Call \ref apop_maximum_likelihood, and if the deri
 \param step_size	the initial step size.
 \param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
 \param verbose		Y'know.
-\return	an \ref apop_estimate with the parameter estimates, &c.
+\return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
   \todo readd names */
 apop_estimate *	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *uses,
@@ -87,6 +87,7 @@ int				iter =0, status, i;
 int				betasize	= dist.parameter_ct;
 apop_inventory			actual_uses;
 apop_estimate			*est;
+	if (betasize == -1)	betasize = data->size2 - 1;
 	prep_inventory_mle(uses, &actual_uses);
 	s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
 	//s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
@@ -113,12 +114,18 @@ apop_estimate			*est;
         	if (verbose){
 	        	printf ("%5i %.5f  f()=%10.5f gradient=%.3f\n", iter, gsl_vector_get (s->x, 0),  s->f, gsl_vector_get(s->gradient,0));
 		}
-        	if (verbose && status == GSL_SUCCESS){
-		   		printf ("Minimum found.\n");
+        	if (status == GSL_SUCCESS){
+			est->status	= 0;
+		   	if(verbose)	printf ("Minimum found.\n");
 		}
        	 }
-	while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d);
-	if(iter==MAX_ITERATIONS_w_d) printf("No min!!\n");
+	//while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d);
+	while (status != GSL_SUCCESS && iter < MAX_ITERATIONS_w_d);
+	if(iter==MAX_ITERATIONS_w_d) {
+		est->status	= 1;
+		if (verbose) printf("No min!!\n");
+	}
+
 
 	gsl_vector_memcpy(est->parameters, s->x);
 	gsl_multimin_fdfminimizer_free(s);
@@ -164,7 +171,7 @@ gsl_matrix	*pre_cov;
 \param step_size	the initial step size.
 \param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
 \param verbose		Y'know.
-\return	an \ref apop_estimate with the parameter estimates, &c.
+\return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
   \todo re-add names 
  \ingroup mle */
@@ -178,7 +185,8 @@ apop_estimate *	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *uses,
 		return apop_maximum_likelihood_w_d(data, uses, dist, starting_pt, step_size, tolerance, verbose);
 
 int			status,
-			iter 		= 0;
+			iter 		= 0,
+			betasize	= dist.parameter_ct;
 size_t 			i;
 gsl_multimin_function 	minme;
 gsl_multimin_fminimizer *s;
@@ -186,18 +194,20 @@ gsl_vector 		*x, *ss;
 double			size;
 apop_inventory		actual_uses;
 apop_estimate		*est;
-	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, dist.parameter_ct);
-	ss	= gsl_vector_alloc(dist.parameter_ct);
+	if (betasize == -1)	betasize = data->size2 - 1;
+	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
+	ss	= gsl_vector_alloc(betasize);
 	prep_inventory_mle(uses, &actual_uses);
-	est	= apop_estimate_alloc(data->size1, dist.parameter_ct, NULL, actual_uses);
+	est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
+	est->status	= 1;	//assume failure until we score a success.
 	if (starting_pt==NULL)
   		gsl_vector_set_all (x,  0);
 	else
-		apop_convert_array_to_vector(starting_pt, &x, dist.parameter_ct);
+		apop_convert_array_to_vector(starting_pt, &x, betasize);
   	gsl_vector_set_all (ss,  step_size);
 
 	minme.f		= dist.log_likelihood;
-	minme.n		= dist.parameter_ct;
+	minme.n		= betasize;
 	minme.params	= data;
 	gsl_multimin_fminimizer_set (s, &minme, x,  ss);
 
@@ -208,19 +218,22 @@ apop_estimate		*est;
 	       	status 	= gsl_multimin_test_size (size, tolerance); 
 		if(verbose){
 			printf ("%5d ", iter);
-			for (i = 0; i < dist.parameter_ct; i++) {
+			for (i = 0; i < betasize; i++) {
 				printf ("%8.3e ", gsl_vector_get (s->x, i)); } 
 			printf ("f()=%7.3f size=%.3f\n", s->fval, size);
        			if (status == GSL_SUCCESS) {
-	   			printf ("Minimum found at:\n");
-				printf ("%5d ", iter);
-				for (i = 0; i < dist.parameter_ct; i++) {
-					printf ("%8.3e ", gsl_vector_get (s->x, i)); } 
-				printf ("f()=%7.3f size=%.3f\n", s->fval, size);
+				est->status	= 0;
+	   			if(verbose){
+					printf ("Minimum found at:\n");
+					printf ("%5d ", iter);
+					for (i = 0; i < betasize; i++) {
+						printf ("%8.3e ", gsl_vector_get (s->x, i)); } 
+					printf ("f()=%7.3f size=%.3f\n", s->fval, size);
+				}
 			}
 		}
       	} while (status == GSL_CONTINUE && iter < MAX_ITERATIONS);
-	if (iter == MAX_ITERATIONS)
+	if (iter == MAX_ITERATIONS && verbose)
 		printf("Minimization reached maximum number of iterations.");
 
 	gsl_vector_memcpy(est->parameters, s->x);
