@@ -9,11 +9,11 @@ This is the documentation for <a href="http://apophenia.sf.net">Apophenia</a>.
 
 \section Doing statistics 
 
- \li \ref basic_stats "Basic statistics": Mean, variance, &c.
+ \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.
  \li \ref regression  
  \li \ref ttest 
  \li \ref likelihood_fns "Maximum likelihood estimation": estimators requiring a search for the maximum of a likelihood function.
- \li \ref linear_algebra "Linear Algebra": determinants, projections, &c. Some convenience functions to display matrices and vectors.
+ \li \ref linear_algebra "Linear Algebra": determinants, projections, numerical gradients, &c. Some convenience functions to display matrices and vectors.
 
 \section Shunting data 
 
@@ -411,7 +411,7 @@ will produce an output file named <tt>run_me</tt> from the input source code <tt
 Order matters in the linking list: the files a package depends on should be listed after the package. E.g., since sample.c depends on Apophenia, <tt>gcc sample.c -lapophenia</tt> will work, while <tt>gcc -lapophenia sample.c</tt> is likely to give you errors. Similarly, list <tt>-lapophenia</tt> before <tt>-lgsl</tt>, which comes before <tt>-lgslcblas</tt>.
 
 \subsection debugging  Debugging
-The global variable <tt>apop_verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>%s</tt>es). Just set <tt>apop_verbose =1</tt> when you want feedback and <tt>apop_verbose=0</tt> when you don't.
+The global variable <tt>apop_verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_verbose =1</tt> when you want feedback and <tt>apop_verbose=0</tt> when you don't.
 
 \subsection vim Syntax highlighting 
 If your text editor supports syntax highlighting, there are seven types defined in the Apophenia and GSL headers which may be worth coloring.
@@ -458,9 +458,11 @@ $(objects): %.o: %.c
 
 
 /** \page sql SQL
-Until some notes show up here, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.
+Until some notes show up here, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite. 
 
-The <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF
+This is a reference, not a tutorial; there is an abundance of <a
+href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.
+Also, the  <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF
 documentation</a> for Apophenia includes a chapter which discusses SQL
 for statisticians.
 
@@ -490,3 +492,5 @@ if you're curious).]
 
 Oh, but have a look at \ref apop_plot_line_and_scatter.
 */
+
+/** \defgroup global_vars The global variables. */

@@ -49,7 +49,7 @@ double apop_new_log_likelihood(const gsl_vector *beta, void *d)
 where \c beta will be the parameters to be maximized, and \c
 d is the fixed parameters---the data. In every case currently included
 with Apophenia, \c d is a \c gsl_matrix, but you do not have to conform
-to that. This function will return the <i>negation</i> of the log likelihood function.
+to that. This function will return the value of the log likelihood function at the given parameters.
 \li Write the object. In your header file, include 
 \code
 apop_likelihood apop_new_likelihood = {"The Me distribution", number_of_parameters, apop_new_log_likelihood, NULL, NULL, NULL};
@@ -67,8 +67,8 @@ void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradi
 where \c beta and \c d are fixed as above, and \c gradient is a \c gsl_vector with dimension matching \c beta. 
 At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
 \code
-gsl_vector_set(gradient,0, -d_a);
-gsl_vector_set(gradient,1, -d_b);
+gsl_vector_set(gradient,0, d_a);
+gsl_vector_set(gradient,1, d_b);
 \endcode 
 Now add the resulting dlog likelihood function to your object:
 \code
@@ -159,12 +159,10 @@ apop_estimate   *est1, *est2;
 
 If you just return GSL_POSINF at the bounds, it's not necessarily smart
 enough to get it.  This helps the minimzer along by providing a (almost)
-continuous, steep curve which steers the minimizer back to the covered
+continuous, steep line which steers the minimizer back to the covered
 range. 
-
-Conveniently enough, it is its own derivative when it's a top limit; when it's a bottom limit, negate.
-
- */
+\todo Replace this with apop_constraints.
+*/
 double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
@@ -209,13 +207,11 @@ int 		i, k;
 		for (i=0; i< data->size1; i++)
 			llikelihood	+=  gsl_matrix_get(data, i, k) * p;
 	}
-	return -llikelihood;
+	return llikelihood;
 }
 
 
 /** The exponential distribution. A one-parameter likelihood fn.
-
-
 
 \todo Check that the borderline work here is correct too.
 */
@@ -245,7 +241,7 @@ double 		d_likelihood 	= 0,
 		for (i=0; i< data->size1; i++)			
 			d_likelihood	+= gsl_matrix_get(data, i, k) * p; 
 	}
-	gsl_vector_set(gradient,0, -d_likelihood);
+	gsl_vector_set(gradient,0, d_likelihood);
 }
 
 /* Just a wrapper for gsl_ran_exponential.
@@ -261,40 +257,53 @@ double apop_exponential_rng(gsl_rng* r, double * a){
 	return gsl_ran_exponential(r, *a);
 }
 
-
 /** The Gamma distribution
 
 \f$G(x, a, b) 	= 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
 
-\f$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b\f$
+\f$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x)  -x/b\f$
 
 \f$d ln G/ da	=  -\psi(a) - ln b + ln(x) \f$	(also, \f$d ln \gamma = \psi\f$)
 
 \f$d ln G/ db	=  -a/b - x \f$
+
+If you have frequency or ranking data, you probably mean to be using \ref apop_gamma_rank.
 \ingroup likelihood_fns
 */
 double apop_gamma_log_likelihood(const gsl_vector *beta, void *d){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
 	if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
-						//a sign to the minimizer to look elsewhere.
+static double		ka = 0;
+	if (b <0 || a < 0) {
+		if (ka==0){
+		gsl_vector *	b_ka	= gsl_vector_alloc(2);
+			gsl_vector_set(b_ka, 0, GSL_MAX(b, 0) + 1e-6);
+			gsl_vector_set(b_ka, 0, GSL_MAX(a, 0) + 1e-6);
+	 		ka	= apop_gamma_log_likelihood(b_ka, d);
+			gsl_vector_free (b_ka);
+		}
+		if (b<=0) 	return keep_away(b, 0, ka);
+		else 		return keep_away(a, 0, ka);
+	}			//else:
 int 		i, k;
 gsl_matrix	*data		= d;
 float 		llikelihood 	= 0,
 		ln_ga		= gsl_sf_lngamma(a),
 		ln_b		= log(b),
+		a_ln_b		= a * ln_b,
 		x;
 	for (i=0; i< data->size1; i++)
 		for (k=0; k< data->size2; k++){
 			x		 = gsl_matrix_get(data, i, k);
 			if (x!=0)
-				llikelihood	+= -ln_ga - a * ln_b + (a-1) * log(x) - x/b;
+				llikelihood	+= -ln_ga - a_ln_b + (a-1) * log(x) - x/b;
 		}
-	return -llikelihood;
+	return llikelihood;
 }
 
 /** The derivative of the Gamma distribution, for use in likelihood
- * minimization. You'll probably never need to call this directy.*/
+ * minimization. You'll probably never need to call this directly.*/
 void apop_gamma_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
@@ -315,10 +324,66 @@ float 		d_a 	= 0,
 				d_b	+= -a/b - x;
 			}
 		}
-	gsl_vector_set(gradient,0, -d_a);
-	gsl_vector_set(gradient,1, -d_b);
+	gsl_vector_set(gradient,0, d_a);
+	gsl_vector_set(gradient,1, d_b);
 }
 
+double apop_gamma_rank_log_likelihood(const gsl_vector *beta, void *d){
+float		a	= gsl_vector_get(beta, 0),
+		b	= gsl_vector_get(beta, 1);
+	if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
+static double		ka = 0;
+	if (b <0 || a < 0) {
+		if (ka==0){
+		gsl_vector *	b_ka	= gsl_vector_alloc(2);
+			gsl_vector_set(b_ka, 0, GSL_MAX(b, 0) + 1e-6);
+			gsl_vector_set(b_ka, 0, GSL_MAX(a, 0) + 1e-6);
+	 		ka	= apop_gamma_log_likelihood(b_ka, d);
+			gsl_vector_free (b_ka);
+		}
+		if (b<=0) 	return keep_away(b, 0, ka);
+		else 		return keep_away(a, 0, ka);
+	}			//else:
+int 		i, k;
+gsl_matrix	*data		= d;
+float 		llikelihood 	= 0,
+		ln_ga		= gsl_sf_lngamma(a),
+		ln_b		= log(b),
+		a_ln_b		= a * ln_b,
+		ln_k;
+	for (k=0; k< data->size2; k++){
+		ln_k	= log(k+1);
+		for (i=0; i< data->size1; i++)
+			llikelihood	+= gsl_matrix_get(data, i, k) * (-ln_ga - a_ln_b + (a-1) * ln_k  - (k+1)/b);
+	}
+	return llikelihood;
+}
+
+/** The derivative of the Gamma distribution, for use in likelihood
+ * minimization. You'll probably never need to call this directly.*/
+void apop_gamma_rank_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+float		a	= gsl_vector_get(beta, 0),
+		b	= gsl_vector_get(beta, 1);
+	//if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
+						//a sign to the minimizer to look elsewhere.
+int 		i, k;
+gsl_matrix	*data	= d;
+float 		d_a 	= 0,
+		d_b	= 0,
+		psi_a	= gsl_sf_psi(a),
+		ln_b	= log(b),
+		x, ln_k;
+	for (k=0; k< data->size2; k++){
+		ln_k	= log(k +1);
+		for (i=0; i< data->size1; i++){
+			x	= gsl_matrix_get(data, i, k);
+			d_a	+= x * (-psi_a - ln_b + ln_k);
+			d_b	+= x *(-a/b - (k+1));
+		}
+		}
+	gsl_vector_set(gradient,0, d_a);
+	gsl_vector_set(gradient,1, d_b);
+}
 
 //////////////////
 //The Normal (gaussian) distribution
@@ -361,7 +426,7 @@ static double	ka	= 0;
 			//Or use the stock gsl function (but then just return -ll).
 			//ll	+= log(gsl_ran_gaussian_pdf((gsl_matrix_get(data, i, j) - mu), gsl_vector_get(beta,1)));
 	ll 	-= data->size1 * data->size2 * log(ss * M_PI)/2.0; //second term is positive because it subtracts -log.
-	return -ll;
+	return ll;
 }
 
 /** Gradient of the log likelihood function
@@ -385,8 +450,8 @@ gsl_matrix	*data	= d;
 			dll	+= (x - mu);
 			sll	+= gsl_pow_2(x - mu);
 		}
-	gsl_vector_set(gradient, 0, -dll/ss);
-	gsl_vector_set(gradient, 1, -sll/(2*gsl_pow_2(ss))+ data->size1 * data->size2 * 0.5/ss);
+	gsl_vector_set(gradient, 0, dll/ss);
+	gsl_vector_set(gradient, 1, sll/(2*gsl_pow_2(ss))+ data->size1 * data->size2 * 0.5/ss);
 }
 
 /** An apophenia wrapper for the GSL's Normal RNG.
@@ -447,7 +512,7 @@ gsl_matrix 	*data 		= d;		//just type casting.
 		if (gsl_matrix_get(data, i, 0)==0) 	total_prob	+= log(n);
 		else 					total_prob	+= log((1 - n));
 	}
-	return -total_prob;
+	return total_prob;
 }
 
 /** The derivative of the probit distribution, for use in likelihood
@@ -469,7 +534,7 @@ gsl_matrix 	*data 		= d;		//just type casting.
 			else 	one_term	/= (gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1)-1);
 			beta_term_sum	+= one_term;
 		}
-	gsl_vector_set(gradient,j,-beta_term_sum);
+	gsl_vector_set(gradient,j,beta_term_sum);
 	}
 	gsl_vector_free(beta_dot_x);
 	beta_dot_x	= NULL;
@@ -507,11 +572,11 @@ float		bb	= gsl_vector_get(beta, 0),
 double		ka;		//recalculated every time.
 	if (bb <1 || a < 0) {
 		gsl_vector *	b_ka	= gsl_vector_alloc(2);
-		gsl_vector_set(b_ka, 0, GSL_MAX(bb, 1) + 1e-6);
-		gsl_vector_set(b_ka, 1, GSL_MAX(a, 0) + 1e-6);
+		gsl_vector_set(b_ka, 0, GSL_MAX(bb, 1) +  1e20*GSL_DBL_EPSILON);
+		gsl_vector_set(b_ka, 1, GSL_MAX(a, 0) + 1e20*GSL_DBL_EPSILON);
 	 	ka	= apop_waring_log_likelihood(b_ka, d);
 		gsl_vector_free (b_ka);
-		if (bb<=2) 	return keep_away(bb, 1, ka);
+		if (bb<=1) 	return keep_away(bb, 1, ka);
 		else 		return keep_away(bb, 0, ka);
 	}			//else:
 int 		i, k;
@@ -529,7 +594,7 @@ double 		ln_a_k, ln_bb_a_k, p,
 			likelihood	+= gsl_matrix_get(data, i, k) *p;
 		}
 	}
-	return -likelihood;
+	return likelihood;
 }
 
 /** The derivative of the Waring distribution, for use in likelihood
@@ -555,8 +620,8 @@ double		bb_minus_one_inv= 1/(bb-1),
 			d_a		+= gsl_matrix_get(data, i, k) *(psi_a_bb + psi_a_k - psi_a_mas_one - psi_bb_a_k);
 		}
 	}
-	gsl_vector_set(gradient, 0, -d_bb);
-	gsl_vector_set(gradient, 1, -d_a);
+	gsl_vector_set(gradient, 0, d_bb);
+	gsl_vector_set(gradient, 1, d_a);
 }
 
 
@@ -614,7 +679,7 @@ static double	ka	= 0;
 		 	ka	= apop_yule_log_likelihood(b_ka, d);
 			gsl_vector_free (b_ka);
 		}
-		return keep_away(bb, 1, fabs(ka));
+		return keep_away(bb, 1, ka);
 	}			//else:
 int 		i, k;
 gsl_matrix 	*data		= d;
@@ -630,7 +695,7 @@ float 		ln_k, ln_bb_k,
 			likelihood	+= gsl_matrix_get(data,i,k) * (ln_bb_less_1 + ln_k + ln_bb - ln_bb_k);
 		}
 	}
-	return -likelihood;
+	return likelihood;
 }
 
 void apop_yule_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
@@ -664,7 +729,7 @@ double		bb_minus_one_inv= 1/(bb-1),
 			d_bb		+= gsl_matrix_get(data, i, k) * p;
 		}
 	}
-	gsl_vector_set(gradient, 0, -d_bb);
+	gsl_vector_set(gradient, 0, d_bb);
 }
 
 
@@ -732,7 +797,7 @@ int 		i, j;
 			like	+= gsl_matrix_get(data,i,j) * z;
 		}
 	}
-	return -like;
+	return like;
 }	
 
 
@@ -769,7 +834,7 @@ double		dlike	= 0,
 		}
 		dlike	+= colsum * dz;
 	}
-	gsl_vector_set(gradient,0,-dlike);
+	gsl_vector_set(gradient,0,dlike);
 }	
 
 
@@ -807,6 +872,10 @@ double		u, v, t,
 	return x;
 }
 
+
+
+
+
 /////////////////////////////////////
 //Declaring the distribution objects.
 /////////////////////////////////////
@@ -833,7 +902,7 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Check that the borderline work here is correct.
 \todo Write a second object for the plain old not-network data Exponential.
 */
-apop_likelihood apop_exponential = {"Exponential", 1, apop_exponential_log_likelihood, apop_exponential_dlog_likelihood, NULL, apop_exponential_rng};
+apop_likelihood apop_exponential = {"Exponential", 1, apop_exponential_log_likelihood, apop_exponential_dlog_likelihood, NULL, NULL, NULL, apop_exponential_rng};
 
 /** The Gamma distribution
 
@@ -848,8 +917,22 @@ The data set needs to be in rank-form. The first column is the frequency of the 
 \f$d ln G/ db	=  -a/b - x \f$
 \ingroup likelihood_fns
 */
-apop_likelihood apop_gamma = {"Gamma", 2, apop_gamma_log_likelihood, apop_gamma_dlog_likelihood, NULL, NULL};
-//apop_likelihood apop_gamma = {"Gamma", 2, apop_gamma_log_likelihood, NULL, NULL, NULL};
+apop_likelihood apop_gamma = {"Gamma", 2, apop_gamma_log_likelihood, NULL, NULL, NULL, NULL, NULL};
+//apop_likelihood apop_gamma = {"Gamma", 2, apop_gamma_log_likelihood, apop_gamma_dlog_likelihood, NULL, NULL};
+
+
+/** The Gamma distribution for frequency ranks
+
+  The usual \ref apop_gamma distribution assumes the data is just a
+  list of numbers to which \f$\alpha\f$ and \f$\beta\f$ will be fit,
+  that hapens to be in grid format.
+
+  Here, we assume that the data is ranking frequencies: data[7][0] is the number of times the first-ranked item appears in data set number seven, data[7][1] is the number of times the second-ranked item appears, et cetera. 
+
+\ingroup likelihood_fns
+*/
+apop_likelihood apop_gamma_rank = {"Gamma", 2, apop_gamma_rank_log_likelihood, NULL, NULL, NULL, NULL, NULL};
+//apop_likelihood apop_gamma_rank = {"Gamma", 2, apop_gamma_rank_log_likelihood, apop_gamma_rank_dlog_likelihood, NULL, NULL};
 
 /** You know it, it's your attractor in the limit, it's the Gaussian distribution.
 
@@ -871,13 +954,13 @@ likelihood of those 56 observations given the mean and variance you provide.
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 \ingroup likelihood_fns
 */
-apop_likelihood apop_normal = {"Normal", 2, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, apop_normal_rng};
+apop_likelihood apop_normal = {"Normal", 2, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, NULL, NULL, apop_normal_rng};
 //apop_likelihood apop_normal = {"Normal", 2, apop_normal_log_likelihood, NULL, NULL, apop_normal_rng};
 
 /** This is a synonym for \ref apop_normal, q.v.
 \ingroup likelihood_fns
 */
-apop_likelihood apop_gaussian = {"Gaussian", 2, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, apop_normal_rng};
+apop_likelihood apop_gaussian = {"Gaussian", 2, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, NULL, NULL, apop_normal_rng};
 
 /** The Probit model.
  The first column of the data matrix this model expects is ones and zeros;
@@ -887,7 +970,7 @@ apop_likelihood apop_gaussian = {"Gaussian", 2, apop_normal_log_likelihood, apop
 \ingroup likelihood_fns
 */
 //apop_likelihood apop_probit = {"Probit", -1, apop_probit_log_likelihood, apop_probit_dlog_likelihood, apop_probit_fdf, NULL};
-apop_likelihood apop_probit = {"Probit", -1, apop_probit_log_likelihood, NULL, apop_probit_fdf, NULL};
+apop_likelihood apop_probit = {"Probit", -1, apop_probit_log_likelihood, NULL, apop_probit_fdf, NULL, NULL, NULL};
 
 
 /** The Waring distribution
@@ -902,8 +985,8 @@ The data set needs to be in rank-form. The first column is the frequency of the 
 \f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
 \ingroup likelihood_fns
 */
-apop_likelihood apop_waring = {"Waring", 2, apop_waring_log_likelihood, apop_waring_dlog_likelihood, NULL, apop_waring_rng};
-//apop_likelihood apop_waring = {"Waring", 2, apop_waring_log_likelihood, NULL, NULL, apop_waring_rng};
+apop_likelihood apop_waring = {"Waring", 2, apop_waring_log_likelihood, NULL, NULL, NULL, NULL, apop_waring_rng};
+//apop_likelihood apop_waring = {"Waring", 2, apop_waring_log_likelihood, apop_waring_dlog_likelihood, NULL, apop_waring_rng};
 
 
 /** The Yule distribution
@@ -920,7 +1003,7 @@ The data set needs to be in rank-form. The first column is the frequency of the 
 \ingroup likelihood_fns
 \todo I'm pretty sure their specification of the Yule is wrong; I should check and fix when I can check references.
 */
-apop_likelihood apop_yule = {"Yule", 1, apop_yule_log_likelihood, apop_yule_dlog_likelihood, NULL, apop_yule_rng};
+apop_likelihood apop_yule = {"Yule", 1, apop_yule_log_likelihood, apop_yule_dlog_likelihood, NULL, NULL, NULL, apop_yule_rng};
 //apop_likelihood apop_yule = {"Yule", 1, apop_yule_log_likelihood, NULL, NULL, apop_yule_rng};
 
 /** The Zipf distribution.
@@ -936,4 +1019,4 @@ The data set needs to be in rank-form. The first column is the frequency of the 
 \ingroup likelihood_fns
 */
 //apop_likelihood apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, apop_zipf_dlog_likelihood, NULL, apop_zipf_rng};
-apop_likelihood apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, NULL, NULL, apop_zipf_rng};
+apop_likelihood apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, NULL, NULL, NULL, NULL, apop_zipf_rng};

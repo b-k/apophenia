@@ -5,6 +5,7 @@
 #include "apophenia/db.h"
 #include "apophenia/linear_algebra.h"
 #include "apophenia/conversions.h"
+#include "apophenia/output.h"
 #include <unistd.h>
 
 

@@ -3,33 +3,42 @@ export version=0.12
 
 rm -rf $junkdir
 mkdir $junkdir
-cp * $junkdir
+cp *  wn/*.{c,h} .doxygen $junkdir
 cd $junkdir
+	#let the GNU prep everything and produce a distribution pkg.
 	libtoolize
 	aclocal
 	autoconf
 	automake -a
-	cp *.c *.h *.html ../wn/wn*{c,h} configure.ac config.guess missing ltmain.sh install-sh config.sub configure Makefile.in Makefile.am INSTALL NEWS README COPYING AUTHORS ChangeLog depcomp test_* flake.gif ../.doxygen ./
 	./configure
+	rm apophenia-$version.tar.gz 
 	make dist
 
-	#I have header issues.
+	#produce a directory with bonus materials:
+	mkdir apophenia-$version
+
+	#add a directory with links to all headers:
 	mkdir apophenia
 	cd apophenia
 		ln -s ../*.h ./
 		cd ..
-	mkdir apophenia-$version
 	mv apophenia apophenia-$version
+
+	#helpers for doxygen
+	cp documentation.h flake.gif .doxygen *.html apophenia-$version
+
+	#the testing program and scripts
+	cp test.c test_data test_script apophenia-$version
+
+	#add bonus materials to tarball produced by make dist
 	gzip -d apophenia-$version.tar.gz
 	tar rf apophenia-$version.tar apophenia-$version
 	gzip apophenia-$version.tar
-	mv apophenia-$version/* ./
-	rmdir apophenia-$version
-
 	mv apophenia-$version.tar.gz ../
 	cd ..
-tar xvz < apophenia-$version.tar.gz
 echo "***********Done with packing; now compiling***********"
+#Compile using the downloadable tarball.
+tar xz < apophenia-$version.tar.gz
 cd apophenia-$version
 	./configure; make; sudo make install
 cd ..

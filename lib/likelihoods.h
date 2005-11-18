@@ -87,10 +87,15 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_likelihood 
 
 
 apop_estimate	*	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *inv,
-			apop_likelihood dist, double *starting_pt, double step_size, double tolerance, int verbose);
+			apop_likelihood dist, int method, double *starting_pt, double step_size, double tolerance, int verbose);
 
 //No longer exported. Call the above, and let the machine work out what you should use.
 //apop_estimate	*	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *inv,
 //			apop_likelihood dist, double *starting_pt, double step_size, int verbose);
 
     int apop_find_root_1d (void * data);
+
+
+
+    //This is a global var for numerical differentiation.
+extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);

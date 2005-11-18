@@ -4,6 +4,7 @@ h6{ display: inline; font-size:100%; font-style:italic; }
 h5{ display: inline; font-size:100% }
 h4{ display: inline;  }
 
+body{padding:10px;  margin-left: 10% ; margin-right: 10% }
 
 .bordered {border: ridge 3px;}
 .withmargins{padding:10px;  margin-left: 10% ;

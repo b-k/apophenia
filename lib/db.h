@@ -6,6 +6,9 @@
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
+/** Set this to zero for silent mode, one for errors and warnings.
+
+  \ingroup global_vars */
 extern int apop_verbose;
 
 int apop_table_exists(char *q, int whattodo);

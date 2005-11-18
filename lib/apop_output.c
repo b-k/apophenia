@@ -256,7 +256,7 @@ gsl_vector_view	v;
 }
 */
 
-/** Put summary information about the columns of a table (mean, var) in a table.
+/** Put summary information about the columns of a table (mean, std dev) in a table.
 
 
 \param data

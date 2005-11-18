@@ -108,7 +108,7 @@ inline double apop_cov(gsl_vector *ina, gsl_vector *inb){return  apop_covar(ina,
 
 
 /** This function will normalize a vector, either such that it has mean
-zero and variance one, or such that it ranges between zero and one.
+zero and variance one, or such that it ranges between zero and one, or sums to one.
 
 \param in 	A gsl_vector which you have already allocated and filled
 
@@ -122,14 +122,12 @@ If not, the address of a <tt>gsl_vector</tt>. Do not allocate.
 0: normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br>
 1: normalized vector will have mean zero and variance one. Replace
 each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample
-standard deviation.
+standard deviation.<br>
+2: normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin.
 
 \b example 
 \code
-#include <apophenia/stats.h>
-#include <apophenia/linear_algebra.h> //Print_vector
-#include <gsl/gsl_vector.h>
-#include <stdio.h>
+#include <apophenia/headers.h>
 
 int main(void){
 gsl_vector  *in, *out;
@@ -139,24 +137,25 @@ gsl_vector_set(in, 1, 1);
 gsl_vector_set(in, 2, 2);
 
 printf("The orignal vector:\n");
-apop_print_vector(in);
+apop_vector_print(in, "\t", NULL);
 
 apop_normalize_vector(in, &out, 0, 1);
 printf("Normalized with mean zero and variance one:\n");
-apop_print_vector(out);
+apop_vector_print(out, "\t", NULL);
+
+apop_normalize_vector(in, &out, 0, 0);
+printf("Normalized with max one and min zero:\n");
+apop_vector_print(out, "\t", NULL);
 
 apop_normalize_vector(in, NULL, 1, 2);
-printf("Normalized with max one and min zero:\n");
-apop_print_vector(in);
+printf("Normalized into percentages:\n");
+apop_vector_print(in, "\t", NULL);
 
 return 0;
 }
 \endcode
 \ingroup basic_stats */
 void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type){
-	//normalization_type:
-	//1: mean = 0, std deviation = 1
-	//2: min = 0, max = 1;
 double		mu, min, max;
 	if (in_place) 	
 		out	= &in;
@@ -170,12 +169,16 @@ double		mu, min, max;
 		gsl_vector_add_constant(*out, -mu);			//subtract the mean
 		gsl_vector_scale(*out, 1/(sqrt(apop_var_m(in, mu))));	//divide by the std dev.
 	} 
-	else if (normalization_type == 2){
+	else if (normalization_type == 0){
 		min	= gsl_vector_min(in);
 		max	= gsl_vector_max(in);
 		gsl_vector_add_constant(*out, -min);
 		gsl_vector_scale(*out, 1/(max-min));	
 
+	}
+	else if (normalization_type == 2){
+		mu	= apop_mean(in);
+		gsl_vector_scale(*out, 1/(mu * in->size));	
 	}
 }
 
