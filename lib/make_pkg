@@ -6,7 +6,7 @@ mkdir $junkdir
 cp *  .doxygen $junkdir
 
 cp -rf vasprintf $junkdir
-cp -rf models $junkdir
+cp -rf model $junkdir
 cp -rf wn $junkdir
 cd $junkdir
 	#let the GNU prep everything and produce a distribution pkg.
