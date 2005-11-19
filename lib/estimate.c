@@ -5,9 +5,10 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
 
 #include <gsl/gsl_matrix.h>
-#include <apophenia/name.h>
-#include <apophenia/estimate.h>
-#include <apophenia/linear_algebra.h>
+#include "apophenia/name.h"
+#include "apophenia/estimate.h"
+#include "apophenia/output.h"
+#include "apophenia/linear_algebra.h"
 
 /** \defgroup inv_and_est  Using inventories and estimates 
 

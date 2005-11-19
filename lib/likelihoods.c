@@ -1,4 +1,4 @@
-/** \file likelihoods.c	The MLE functions. Call them with an \ref apop_likelihood.
+/** \file likelihoods.c	The MLE functions. Call them with an \ref apop_model.
 
 This file includes a number of distributions and models whose parameters
 one would estimate using maximum likelihood techniques.
@@ -111,37 +111,47 @@ less sign that you have to remember.
 */
 typedef struct negshell_params{
 	void *d;
-	apop_likelihood	l;
+	apop_model	model;
 } negshell_params;
 
 static double negshell (const gsl_vector * beta, void * params){
 negshell_params	*p			= params;
-static gsl_vector *last_good_beta	= NULL;
 gsl_vector *returned_beta		= gsl_vector_alloc(beta->size);
 int		i;
 double		penalty, 
 		total_penalty		= 0;
+/*
+static gsl_vector *last_good_beta	= NULL;
 static double	base_for_penalty	= 0;
-	for (i=0; i< p->l.constraint_ct; i++){
-		penalty	= p->l.constraint(beta, p->d, returned_beta);
+*/
+	for (i=0; i< p->model.constraint_ct; i++){
+		penalty	= p->model.constraint(beta, p->d, returned_beta);
 		if (penalty > 0)
-			total_penalty	-=  penalty * p->l.log_likelihood(returned_beta, p->d);
+			total_penalty	-=  penalty * p->model.log_likelihood(returned_beta, p->d);
 	}
-	if (total_penalty = 0)
-		return - p->l.log_likelihood(beta, p->d);
+	if (total_penalty == 0)
+		return - p->model.log_likelihood(beta, p->d);
 	//else
 	return total_penalty;
 }
 
 static void dnegshell (const gsl_vector * beta, void * params, gsl_vector * g){
 negshell_params *p	= params;
-	p->l.dlog_likelihood(beta, p->d, g);
+	p->model.dlog_likelihood(beta, p->d, g);
 	gsl_vector_scale(g, -1);
 }
 
-static void generic_fdf(const gsl_vector *beta, void *params, double *f, gsl_vector *df){
-	*f	= negshell(beta, params);
-	dnegshell(beta, params, df);
+static void fdf_shell(const gsl_vector *beta, void *params, double *f, gsl_vector *df){
+negshell_params *p	= params;
+
+	if (p->model.fdf==NULL){
+		*f	= negshell(beta, params);
+		dnegshell(beta, params, df);
+	} else	{
+		p->model.fdf(beta, p->d, f, df);
+		(*f) 	*= -1;
+		gsl_vector_scale(df, -1);
+	}
 }
 
 
@@ -150,9 +160,83 @@ static void generic_fdf(const gsl_vector *beta, void *params, double *f, gsl_vec
 			//Mostly straight out of the GSL manual.
 			//////////////////////////////////////////
 
+//The next two variables are just for the current_gradient fn.
+static size_t	current_dimension;
+static double 	(*likelihood_for_hess) (const gsl_vector *beta, void *d);
+void		(*dlikelihood_for_hess) (const gsl_vector *beta, void *d, gsl_vector *out);
 
+	//Turn the full vector of derivatives into a single number.
+	//Is this ever inefficient for large parameter spaces.
+double gradient_for_hessian(const gsl_vector *beta, void * d){
+double 		(*tmp) (const gsl_vector *beta, void *d);
+gsl_vector	*waste	= gsl_vector_alloc(beta->size);
+double		return_me;
+
+	if (dlikelihood_for_hess == apop_numerical_gradient){	//then we need a numerical derivative.
+		tmp			= apop_fn_for_derivative;
+		apop_fn_for_derivative 	= likelihood_for_hess;
+		apop_numerical_gradient(beta, d , waste);
+		apop_fn_for_derivative 	= tmp;
+	}
+	else 	dlikelihood_for_hess(beta, d , waste);
+	return_me	= gsl_vector_get(waste, current_dimension);
+	gsl_vector_free(waste);
+	return return_me;
+}
+
+/** finds the Hessian.
+
+Calculate the matrix of second derivatives of a function.
+
+If the function is a log likelihood, then the information matrix is the inverse of the negation of this.
+
+
+\todo This is inefficient, by an order of n, where n is the number of parameters.
+\ingroup linear_algebra
+ */
+gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, void * d){
+gsl_vector_view	v;
+gsl_matrix	*out	= gsl_matrix_alloc(beta->size, beta->size);
+	likelihood_for_hess	= dist.log_likelihood;
+	if (dist.dlog_likelihood)
+		dlikelihood_for_hess	= dist.dlog_likelihood;
+	else	dlikelihood_for_hess	= apop_numerical_gradient;
+	apop_fn_for_derivative	= gradient_for_hessian;
+	for (current_dimension=0; current_dimension< beta->size; current_dimension++){
+		v	= gsl_matrix_row(out, current_dimension);
+		apop_numerical_gradient(beta, d , &(v.vector));
+	}
+	return out;
+}
+
+static void calculate_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data){
+int		i;
+double 		(*tmp) (const gsl_vector *beta, void *d);
+gsl_matrix	*hessian;
+	tmp			= apop_fn_for_derivative;
+	//The information matrix is the inverse of the negation of the
+	//hessian.
+	hessian			= apop_numerical_hessian(dist, est->parameters, data);
+	gsl_matrix_scale(hessian, -1);
+	apop_det_and_inv(hessian, &(est->covariance), 0, 1);
+	gsl_matrix_free(hessian);
+
+	//Confidence intervals are just a cute convenience. We're
+	//assuming Normality, which only works asymptotically anyway.
+	if (est->uses.confidence == 0)
+		return;
+	//else:
+	for (i=0; i< est->parameters->size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
+		gsl_vector_set(est->confidence, i,
+			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
+			gsl_matrix_get(est->covariance, i, i)))*2));
+	apop_fn_for_derivative 	= tmp;
+}
+
+
+/*
 	//find the variance-covariance matrix, using $df/d\theta \cdot df/d\theta$
-static void calculate_var_covar_matrix(apop_likelihood dist, apop_estimate *est, int betasize, gsl_matrix *data){
+static void calculate_var_covar_matrix(apop_model dist, apop_estimate *est, int betasize, gsl_matrix *data){
 int		i;
 gsl_vector	*diff;
 gsl_matrix	*pre_cov;
@@ -180,6 +264,7 @@ gsl_vector_view v;
 			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
 			gsl_matrix_get(est->covariance, i, i)))*2));
 }
+*/
 
 
 /** The maximum likelihood calculations, given a derivative of the log likelihood.
@@ -188,7 +273,7 @@ If no derivative exists, will calculate a numerical gradient.
 
 \param data	the data matrix
 \param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
-\param	dist	the \ref apop_likelihood object: waring, probit, zipf, &amp;c.
+\param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
 \param	starting_pt	an array of doubles suggesting a starting point. If NULL, use zero.
 \param step_size	the initial step size.
 \param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
@@ -197,7 +282,7 @@ If no derivative exists, will calculate a numerical gradient.
 
   \todo readd names */
 apop_estimate *	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *uses,
-			apop_likelihood dist, double *starting_pt, double step_size, double tolerance, int verbose){
+			apop_model dist, double *starting_pt, double step_size, double tolerance, int verbose){
 gsl_multimin_function_fdf 	minme;
 gsl_multimin_fdfminimizer 	*s;
 gsl_vector 			*x;
@@ -222,10 +307,10 @@ negshell_params			nsp;
 	}
 	else 	apop_convert_array_to_vector(starting_pt, &x, betasize);
 	nsp.d		= data;
-	nsp.l		= dist;
+	nsp.model	= dist;
 	minme.f		= negshell;
 	minme.df	= dnegshell;
-	minme.fdf	= generic_fdf;
+	minme.fdf	= fdf_shell;
 	minme.n		= betasize;
 	minme.params	= &nsp;
 	gsl_multimin_fdfminimizer_set (s, &minme, x, step_size, tolerance);
@@ -254,12 +339,12 @@ negshell_params			nsp;
 		gsl_vector_free(x);
 	est->log_likelihood	= dist.log_likelihood(est->parameters, data);
 	if (est->uses.covariance) 
-		calculate_var_covar_matrix(dist, est, betasize, data);
+		calculate_var_covar_matrix(dist, est, data);
 	return est;
 }
 
 apop_estimate *	apop_maximum_likelihood_no_d(gsl_matrix * data, apop_inventory *uses,
-			apop_likelihood dist, double *starting_pt, double step_size, double tolerance, int verbose){
+			apop_model dist, double *starting_pt, double step_size, double tolerance, int verbose){
 int			status,
 			iter 		= 0,
 			betasize	= dist.parameter_ct;
@@ -282,7 +367,7 @@ negshell_params		nsp;
 	else
 		apop_convert_array_to_vector(starting_pt, &x, betasize);
   	gsl_vector_set_all (ss,  step_size);
-	nsp.l		= dist;
+	nsp.model	= dist;
 	nsp.d		= data;
 	minme.f		= negshell;
 	minme.n		= betasize;
@@ -325,7 +410,7 @@ negshell_params		nsp;
 
 \param data	the data matrix
 \param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
-\param	dist	the \ref apop_likelihood object: waring, probit, zipf, &amp;c.
+\param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
 \param	starting_pt	an array of doubles suggesting a starting point. If NULL, use zero.
 \param step_size	the initial step size.
 \param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
@@ -337,7 +422,7 @@ negshell_params		nsp;
   \todo re-add names 
  \ingroup mle */
 apop_estimate *	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *uses,
-			apop_likelihood dist, int method, double *starting_pt, double step_size, double tolerance, int verbose){
+			apop_model dist, int method, double *starting_pt, double step_size, double tolerance, int verbose){
 
 	if (method==0)
 		return apop_maximum_likelihood_no_d(data, uses, dist, starting_pt, step_size, tolerance, verbose);
@@ -354,7 +439,7 @@ You can use this to find the variance of the estimator if other means fail.
 
 \param v	A vector which will hold the likelihood of each row of m. Declare but do not allocate.
 
-\param dist	An \ref apop_likelihood object whose log likelihood function you'd like to use.
+\param dist	An \ref apop_model object whose log likelihood function you'd like to use.
 
 \param fn_beta		The parameters at which you will evaluate the likelihood. If <tt>e</tt> is an \ref
 			apop_estimate, then one could use <tt>e->parameters</tt>.
@@ -363,7 +448,7 @@ This functions is used in the sample code in the \ref mle section.
 
 \ingroup mle */
 void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, 
-				apop_likelihood dist, gsl_vector* fn_beta){
+				apop_model dist, gsl_vector* fn_beta){
 gsl_matrix_view mm;
 int             i;
 	*v	= gsl_vector_alloc(m->size1);

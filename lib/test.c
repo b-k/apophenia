@@ -47,7 +47,7 @@ gsl_vector*	vv;
 	return 0;
 }
 
-int test_distribution(gsl_rng *r, apop_likelihood dist){
+int test_distribution(gsl_rng *r, apop_model dist){
 long int	j,
 		runsize		= 500,
 		rowsize		= 100,

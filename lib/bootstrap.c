@@ -29,7 +29,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "output.h"
 #include "bootstrap.h"
 #include "likelihoods.h"
-#include "distributions.h"
+#include "model.h"
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
 

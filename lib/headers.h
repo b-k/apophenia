@@ -6,7 +6,7 @@
 #include <apophenia/regression.h>
 #include <apophenia/conversions.h>
 #include <apophenia/likelihoods.h>
-#include <apophenia/distributions.h>
+#include <apophenia/model.h>
 #include <apophenia/linear_algebra.h>
 
 //Part of the intent of a convenience header like this is that you

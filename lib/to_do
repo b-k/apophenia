@@ -1,7 +1,6 @@
+--constraints!!!
 
---Decide what to do with zeros in the likelihood estimations of
-functions which don't admit zeros. I have a few "if (x>0)"s floating
-around, which is just wrong.
+--are you sure the numerical hessian works with no dlog likelihood?
 
---the network-oriented likelihood estimates should have an option to
-begin with zero links instead of one.
+
+--write apop_estimate_parameters

@@ -3,7 +3,11 @@ export version=0.12
 
 rm -rf $junkdir
 mkdir $junkdir
-cp *  wn/*.{c,h} .doxygen $junkdir
+cp *  .doxygen $junkdir
+
+cp -rf vasprintf $junkdir
+cp -rf models $junkdir
+cp -rf wn $junkdir
 cd $junkdir
 	#let the GNU prep everything and produce a distribution pkg.
 	libtoolize

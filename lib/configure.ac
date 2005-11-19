@@ -5,6 +5,8 @@ AM_INIT_AUTOMAKE(apophenia, 0.12)
 dnl Checks for library functions.
 dnl AC_CONFIG_FILES(gnulib/Makefile)
 dnl AC_CONFIG_SUBDIRS(gnulib)
+dnl AC_CONFIG_SUBDIRS(models)
+dnl AC_CONFIG_SUBDIRS(wn)
 
 dnl Checks for programs.
 AC_PROG_CC
