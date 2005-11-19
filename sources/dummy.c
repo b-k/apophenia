@@ -1,5 +1,5 @@
 gsl_matrix	*districts, *data_set;
-query_to_matrix(&districts,
+districts = apop_query_to_matrix(
         "select distinct district from survey \
         where   age!=-1 and gender !=-1 and race !=-1 and \
         year !=-1 and district !=-1 and \
@@ -21,4 +21,4 @@ strcat(query, " year-1950 \
         where   age!=-1 and gender !=-1 and race !=-1 and \
         year !=-1 and district !=-1 and \
         (votedverified ==1 or votedverified ==3)");
-query_to_matrix(&data_set, query);
+data_set = apop_query_to_matrix(query);
