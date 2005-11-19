@@ -9,7 +9,7 @@
 #include "linear_algebra.h"
 #include "conversions.h"
 #include "estimate.h"
-#include "model.h"
+#include <apophenia/model.h>
 
 #define MAX_ITERATIONS 		1500
 #define MAX_ITERATIONS_w_d	1500

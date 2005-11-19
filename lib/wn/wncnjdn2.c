@@ -906,35 +906,6 @@ finish: ;
 }
 
 
-local void compute_average_ratio_df1_noise
-(
-  wn_cdn_context_type c,
-  double *paverage_ratio_df1_noise
-)
-{
-  int i;
-  int count;
-  double sum;
-
-  count = 0;
-  sum = 0.0;
-
-  for(i=0;i<c->num_search_directions;++i)
-  {
-    sum += (c->search_direction_array)[i]->ratio_df1_noise;
-    ++count;
-  }
-  for(i=0;i<c->num_vars;++i)
-  {
-    sum += (c->coord_search_direction_array)[i]->ratio_df1_noise;
-    ++count;
-  }
-
-  wn_assert(count > 0);
-  *paverage_ratio_df1_noise = sum/count;
-}
-
-
 local void compute_fract_too_small_ratio_df1_noise
 (
   wn_cdn_context_type c,

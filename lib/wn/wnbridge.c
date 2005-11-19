@@ -1,14 +1,13 @@
 #include "db.h"
 #include "name.h"
 #include "stats.h"
-#include "model.h"
 #include "output.h"
 #include "bootstrap.h"
 #include "regression.h"
-#include "model.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"
+#include <apophenia/model.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_histogram.h>
