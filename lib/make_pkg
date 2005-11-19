@@ -25,6 +25,8 @@ cd $junkdir
 	mkdir apophenia
 	cd apophenia
 		ln -s ../*.h ./
+		ln -s ../vasprintf/*.h ./
+		ln -s ../model/*.h ./
 		cd ..
 	mv apophenia apophenia-$version
 
