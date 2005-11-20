@@ -25,6 +25,10 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
+static apop_estimate * exponential_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	return apop_maximum_likelihood(data, uses, apop_exponential, *(apop_estimation_params *)parameters);
+}
+
 /** The exponential distribution. A one-parameter likelihood fn.
 \f$Z(\mu,k) 	= 1/\mu e^{-k/\mu} 			\f$ <br>
 \f$ln Z(\mu,k) 	= -\ln(\mu) - k/\mu			\f$ <br>
@@ -39,7 +43,7 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Set up an exponential object which makes use of the GSL.
 \todo Check that the borderline work here is correct.
 */
-double apop_exponential_log_likelihood(const gsl_vector *beta, void *d){
+static double apop_exponential_log_likelihood(const gsl_vector *beta, void *d){
 double		bb		= gsl_vector_get(beta, 0),
 		p,
 		llikelihood 	= 0,
@@ -71,7 +75,7 @@ int 		i, k;
 
 \todo Check that the borderline work here is correct too.
 */
-void apop_exponential_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void apop_exponential_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 double		bb		= gsl_vector_get(beta, 0);
 int 		i, k;
 static double	dka		= 0;
@@ -107,7 +111,7 @@ double 		d_likelihood 	= 0,
 
 See the notes for \ref apop_exponential_rng on a popular alternate form.
 */
-double apop_exponential_rng(gsl_rng* r, double * a){
+static double apop_exponential_rng(gsl_rng* r, double * a){
 	//This fn exists because the GSL requires a double, 
 	//while the apop_model structure requires a double*. 
 	return gsl_ran_exponential(r, *a);
@@ -131,10 +135,12 @@ If you prefer this form, just convert your parameter via \f$\mu = {1\over
 \ln C}\f$ (and convert back from the parameters this function gives you
 via \f$C=\exp(1/\mu)\f$.
 
+apop_exponential.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+
 \ingroup likelihood_fns
 \todo Check that the borderline work here is correct.
 \todo Write a second object for the plain old not-network data Exponential.
 */
-apop_model apop_exponential = {"Exponential", 1, apop_exponential_log_likelihood, apop_exponential_dlog_likelihood, NULL, 0, NULL, apop_exponential_rng};
+apop_model apop_exponential = {"Exponential", 1, exponential_estimate, apop_exponential_log_likelihood, apop_exponential_dlog_likelihood, NULL,  apop_exponential_rng};
 
 

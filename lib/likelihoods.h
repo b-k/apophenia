@@ -1,4 +1,8 @@
 //likelihoods.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+
+#ifndef apop_likelihoods_h
+#define  apop_likelihoods_h
+
 #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_matrix.h>
@@ -14,27 +18,17 @@
 #define MAX_ITERATIONS 		1500
 #define MAX_ITERATIONS_w_d	1500
 
-apop_estimate * apop_mle_probit(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_name *n, apop_inventory *uses, int verbose);
-double apop_probit_likelihood(const gsl_vector *beta, void *d);
+/**
+ \ingroup mle
+ */
+typedef struct apop_estimation_params{
+	int 	method;
+	double *starting_pt; 
+	double 	step_size; 
+	double 	tolerance; 
+	int 	verbose;
+} apop_estimation_params;
 
-apop_estimate * apop_mle_gamma(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_name *n, apop_inventory *uses, int verbose);
-apop_estimate * apop_mle_waring(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_name *n, apop_inventory *uses, int verbose);
-apop_estimate * apop_mle_yule(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_name *n, apop_inventory *uses, int verbose);
-apop_estimate * apop_mle_exponential(gsl_matrix *data, double *starting_pt, 
-					double step_size, apop_name *n, apop_inventory *uses, int verbose);
-double apop_gamma_likelihood(const gsl_vector *beta, void *d);
-double apop_waring_likelihood(const gsl_vector *beta, void *d);
-double apop_yule_likelihood(const gsl_vector *beta, void *d);
-double apop_exponential_likelihood(const gsl_vector *beta, void *d);
-double apop_zipf_likelihood(double a, int i);
-//double apop_zipf_likelihood(double beta, void *d);
-double apop_rng_zipf(gsl_rng* r, double a);
-apop_estimate * apop_zipf_min_mse(gsl_matrix *data, double *starting_pt, double step_size, apop_name *n, apop_inventory *uses, int verbose);
-//double apop_zipf_min_mse(gsl_matrix *data, double *starting_pt, double step_size, apop_name *n, apop_inventory *uses, int verbose);
 /*
 For the Probit, the first column of the data matrix is the dependent
 variable, and the remaining variables are the independent. This means
@@ -82,20 +76,12 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist,
   */
 
 
-//int apop_minimize_one_var (gsl_matrix * data);
-
-
 
 apop_estimate	*	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *inv,
-			apop_model dist, int method, double *starting_pt, double step_size, double tolerance, int verbose);
-
-//No longer exported. Call the above, and let the machine work out what you should use.
-//apop_estimate	*	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *inv,
-//			apop_model dist, double *starting_pt, double step_size, int verbose);
-
-    int apop_find_root_1d (void * data);
-
+			apop_model dist, apop_estimation_params params);
 
 
     //This is a global var for numerical differentiation.
 extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
+
+#endif

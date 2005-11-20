@@ -34,7 +34,11 @@ static double keep_away(double value, double limit,  double base){
 
 \ingroup likelihood_fns
 */
-double apop_waring_log_likelihood(const gsl_vector *beta, void *d){
+static apop_estimate * waring_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	return apop_maximum_likelihood(data, uses, apop_waring, *(apop_estimation_params *)parameters);
+}
+
+static double apop_waring_log_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0),
 		a	= gsl_vector_get(beta, 1);
 double		ka;		//recalculated every time.
@@ -67,7 +71,7 @@ double 		ln_a_k, ln_bb_a_k, p,
 
 /** The derivative of the Waring distribution, for use in likelihood
  minimization. You'll probably never need to call this directy.*/
-void apop_waring_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void apop_waring_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
 float		bb		= gsl_vector_get(beta, 0),
 		a		= gsl_vector_get(beta, 1);
@@ -120,7 +124,7 @@ L. Devroye, <a href="http://cgm.cs.mcgill.ca/~luc/digammapaper.ps">Random
 variate generation for the digamma and trigamma distributions</a>, Journal
 of Statistical Computation and Simulation, vol. 43, pp. 197-216, 1992.
 */
-double apop_waring_rng(gsl_rng *r, double *a){
+static double apop_waring_rng(gsl_rng *r, double *a){
 //The key to covnert from Devroye's GHgB3 notation to what I
 //consider to be the standard Waring notation in \ref apop_waring:
 // a = a + 1
@@ -140,6 +144,8 @@ double		x, u,
 /** The Waring distribution
 The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
 
+apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+
 \f$W(x,k, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
 
 \f$\ln W(x,k, b, a) = ln(b-1) + lng(b+a) + lng(k+a) - lng(a+1) - lng(k+a+b)\f$
@@ -150,4 +156,4 @@ The data set needs to be in rank-form. The first column is the frequency of the 
 \ingroup likelihood_fns
 */
 //apop_model apop_waring = {"Waring", 2, apop_waring_log_likelihood, NULL, NULL, 0, NULL, apop_waring_rng};
-apop_model apop_waring = {"Waring", 2, apop_waring_log_likelihood, apop_waring_dlog_likelihood, NULL, 0, NULL, apop_waring_rng};
+apop_model apop_waring = {"Waring", 2, waring_estimate, apop_waring_log_likelihood, apop_waring_dlog_likelihood, NULL,  apop_waring_rng};

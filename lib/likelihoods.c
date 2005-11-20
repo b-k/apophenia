@@ -116,23 +116,23 @@ typedef struct negshell_params{
 
 static double negshell (const gsl_vector * beta, void * params){
 negshell_params	*p			= params;
+/*
 gsl_vector *returned_beta		= gsl_vector_alloc(beta->size);
 int		i;
 double		penalty, 
 		total_penalty		= 0;
-/*
 static gsl_vector *last_good_beta	= NULL;
 static double	base_for_penalty	= 0;
-*/
 	for (i=0; i< p->model.constraint_ct; i++){
-		penalty	= p->model.constraint(beta, p->d, returned_beta);
+		penalty	= (p->model.constraint)[i](beta, p->d, returned_beta);
 		if (penalty > 0)
 			total_penalty	-=  penalty * p->model.log_likelihood(returned_beta, p->d);
 	}
 	if (total_penalty == 0)
-		return - p->model.log_likelihood(beta, p->d);
-	//else
-	return total_penalty;
+	*/
+	return - p->model.log_likelihood(beta, p->d);
+	////else
+	//return total_penalty;
 }
 
 static void dnegshell (const gsl_vector * beta, void * params, gsl_vector * g){
@@ -422,12 +422,12 @@ negshell_params		nsp;
   \todo re-add names 
  \ingroup mle */
 apop_estimate *	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *uses,
-			apop_model dist, int method, double *starting_pt, double step_size, double tolerance, int verbose){
+			apop_model dist, apop_estimation_params params){
 
-	if (method==0)
-		return apop_maximum_likelihood_no_d(data, uses, dist, starting_pt, step_size, tolerance, verbose);
+	if (params.method==0)
+		return apop_maximum_likelihood_no_d(data, uses, dist, params.starting_pt, params.step_size, params.tolerance, params.verbose);
 	//else:
-	return apop_maximum_likelihood_w_d(data, uses, dist, starting_pt, step_size, tolerance, verbose);
+	return apop_maximum_likelihood_w_d(data, uses, dist, params.starting_pt, params.step_size, params.tolerance, params.verbose);
 }
 
 

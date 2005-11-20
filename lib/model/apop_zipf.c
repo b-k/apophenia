@@ -15,11 +15,14 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include "likelihoods.h"
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_permutation.h>
 #include <stdio.h>
 #include <assert.h>
+
+
+
+static apop_estimate * apop_zipf_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	return apop_maximum_likelihood(data, uses, apop_zipf, *(apop_estimation_params *)parameters);
+}
 
 
 
@@ -41,17 +44,18 @@ static double keep_away(double value, double limit,  double base){
 ///////////////////////
 #include <gsl/gsl_sf_zeta.h>
 
-/** The Zipf distribution.
+/* The Zipf distribution.
 
 \f$Z(a)		= {1\over \zeta(a) * i^a}		\f$<br>
 
- \todo link this fn in with the object */ 
-double apop_zipf_likelihood(double a, int i){
+ \todo link this fn in with the object 
+static double apop_zipf_likelihood(double a, int i){
 double		z	= 1/(gsl_sf_zeta(a) * pow(i, a));
 	return z;
 }
+*/
 
-double apop_zipf_log_likelihood(const gsl_vector *beta, void *d){
+static double apop_zipf_log_likelihood(const gsl_vector *beta, void *d){
 static double	ka	= 0;
 gsl_matrix	*data	= d;
 double		like	= 0, 
@@ -82,7 +86,7 @@ int 		i, j;
 This fn has a bug, and I can't find it right now. Feel free to look over it.  In the mean time, it's not linked in for the apop_zipf object.
 
 \todo Fix this. */
-void apop_zipf_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void apop_zipf_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 double		a	= gsl_vector_get(beta, 0);
 static double	ka	= 0;
 gsl_matrix	*data	= d;
@@ -132,7 +136,7 @@ apop_zipf.rng(r, 1.4);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 551.  */
-double apop_zipf_rng(gsl_rng* r, double * a){
+static double apop_zipf_rng(gsl_rng* r, double * a){
 if (*a  <= 1)	
 	{printf("apop_zipf.rng: Zipf needs a parameter >=1. Returning 0.\n"); return 0;};
 int		x;
@@ -156,6 +160,8 @@ Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distributi
 
 The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
 
+apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+
 \f$Z(a)		= {1\over \zeta(a) * i^a}		\f$
 
 \f$lnZ(a)	= -(\log(\zeta(a)) + a \log(i))	\f$
@@ -163,5 +169,5 @@ The data set needs to be in rank-form. The first column is the frequency of the 
 \f$dlnZ(a)/da	= -{\zeta(a)\over a \log(\zeta(a-1))} -  \log(i)		\f$
 \ingroup likelihood_fns
 */
-//apop_model apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, apop_zipf_dlog_likelihood, NULL, apop_zipf_rng};
-apop_model apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, NULL, NULL, 0, NULL, apop_zipf_rng};
+apop_model apop_zipf = {"Zipf", 1, apop_zipf_estimate, apop_zipf_log_likelihood, apop_zipf_dlog_likelihood, NULL, apop_zipf_rng};
+//apop_model apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, NULL, NULL, 0, NULL, apop_zipf_rng};

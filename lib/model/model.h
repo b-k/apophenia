@@ -1,7 +1,9 @@
 #ifndef __apop_models_h__
 #define __apop_models_h__
 
+#include <apophenia/estimate.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
 /** This is an object to describe a model whose parameters are to be
@@ -17,6 +19,9 @@ typedef struct apop_model{
 	  */
 	int	parameter_ct;
 
+	/** the estimator fn, which is all most users will care about.*/ 
+	apop_estimate *	(*estimate)(gsl_matrix * data, apop_inventory *uses, void *parameters);
+
 	/** the likelihood fn given data*/ 
 	double 	(*log_likelihood)(const gsl_vector *beta, void *d);
 
@@ -26,11 +31,11 @@ typedef struct apop_model{
 	/** Do both of the above at once. Can be NULL if it'd just call them separately. */
 	void 	(*fdf)( const gsl_vector *beta, void *d, double *f, gsl_vector *df);
 
-	/** The constraint count */
-	int 	constraint_ct;
-
-	/** The vector of constraints */
-	double (* constraint) (const gsl_vector *beta, void *d, gsl_vector *inside_constraint);
+//	/** The constraint count */
+//	int 	constraint_ct;
+//
+//	/** The vector of constraints */
+//	double *(* constraint) (const gsl_vector *beta, void *d, gsl_vector *inside_constraint);
 	
 	/** a random number generator. */
 	double (*rng)(gsl_rng* r, double *a);

@@ -103,7 +103,9 @@ float 		d_a 	= 0,
 
 /** The Gamma distribution
 
-The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
+ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
+
+apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
 
 \f$G(x, a, b) 	= 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
 
@@ -114,4 +116,4 @@ The data set needs to be in rank-form. The first column is the frequency of the 
 \f$d ln G/ db	=  -a/b - x \f$
 \ingroup likelihood_fns
 */
-apop_model apop_gamma = {"Gamma", 2, apop_gamma_log_likelihood, apop_gamma_dlog_likelihood, NULL, NULL};
+apop_model apop_gamma = {"Gamma", 2, NULL, apop_gamma_log_likelihood, apop_gamma_dlog_likelihood, NULL, NULL};

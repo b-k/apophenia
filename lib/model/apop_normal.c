@@ -129,10 +129,10 @@ likelihood of those 56 observations given the mean and variance you provide.
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 \ingroup likelihood_fns
 */
-apop_model apop_normal = {"Normal", 2, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, 0, NULL, apop_normal_rng};
+apop_model apop_normal = {"Normal", 2, NULL, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, apop_normal_rng};
 //apop_model apop_normal = {"Normal", 2, apop_normal_log_likelihood, NULL, NULL, 0, NULL, apop_normal_rng};
 
 /** This is a synonym for \ref apop_normal, q.v.
 \ingroup likelihood_fns
 */
-apop_model apop_gaussian = {"Gaussian", 2, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, 0, NULL, apop_normal_rng};
+apop_model apop_gaussian = {"Gaussian", 2, NULL, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, apop_normal_rng};

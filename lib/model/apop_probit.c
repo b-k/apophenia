@@ -127,4 +127,4 @@ void apop_probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df
 \ingroup likelihood_fns
 */
 //apop_model apop_probit = {"Probit", -1, apop_probit_log_likelihood, apop_probit_dlog_likelihood, apop_probit_fdf, NULL};
-apop_model apop_probit = {"Probit", -1, apop_probit_log_likelihood, NULL, apop_probit_fdf, 0, NULL, NULL};
+apop_model apop_probit = {"Probit", -1, NULL, apop_probit_log_likelihood, NULL, apop_probit_fdf,  NULL};

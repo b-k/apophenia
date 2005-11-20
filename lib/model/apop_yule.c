@@ -31,19 +31,22 @@ continuous, steep line which steers the minimizer back to the covered
 range. 
 \todo Replace this with apop_constraints.
 */
-double keep_away(double value, double limit,  double base){
+static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
+static apop_estimate * yule_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	return apop_maximum_likelihood(data, uses, apop_yule, *(apop_estimation_params *)parameters);
+}
 
-double apop_yule_log_likelihood(const gsl_vector *beta, void *d){
+static double yule_log_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0);
 static double	ka	= 0;
 	if (bb < 1) {		//run away
 		if (ka ==0){
 			gsl_vector *	b_ka	= gsl_vector_alloc(1);
 			gsl_vector_set(b_ka, 0, 1.00001);
-		 	ka	= apop_yule_log_likelihood(b_ka, d);
+		 	ka	= yule_log_likelihood(b_ka, d);
 			gsl_vector_free (b_ka);
 		}
 		return keep_away(bb, 1, ka);
@@ -65,7 +68,7 @@ float 		ln_k, ln_bb_k,
 	return likelihood;
 }
 
-void apop_yule_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void yule_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
 float		bb		= gsl_vector_get(beta, 0);
 static double	dka		= 0;
@@ -81,7 +84,7 @@ double		bb_minus_one_inv= 1/(bb-1),
 			gsl_vector 	*b_ka	= gsl_vector_alloc(1);
 			gsl_vector 	*b_kg	= gsl_vector_alloc(1);
 			gsl_vector_set(b_ka,0, 1+GSL_DBL_EPSILON);
-		 	apop_yule_dlog_likelihood(b_ka , d, b_kg);
+		 	yule_dlog_likelihood(b_ka , d, b_kg);
 			dka	= gsl_vector_get(b_kg, 0);
 			gsl_vector_free (b_ka);
 			gsl_vector_free (b_kg);
@@ -116,7 +119,7 @@ apop_yule_rng(r, 1.4);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
-double apop_yule_rng(gsl_rng * r, double* a){
+static double yule_rng(gsl_rng * r, double* a){
 double 		e1, e2;
 int		x;
 	e1	= gsl_ran_exponential(r, 1);
@@ -131,7 +134,11 @@ int		x;
 
 Yule likelihood fn. The special case of Waring where \f$ \alpha = 0.	\f$<br>
 
-The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
+The data set needs to be in rank-form. The first column is the frequency
+of the most common item, the second is the frequency of the second most
+common item, &c.
+
+apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
 
 \f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$
 
@@ -141,4 +148,4 @@ The data set needs to be in rank-form. The first column is the frequency of the 
 \ingroup likelihood_fns
 \todo I'm pretty sure their specification of the Yule is wrong; I should check and fix when I can check references.
 */
-apop_model apop_yule = {"Yule", 1, apop_yule_log_likelihood, apop_yule_dlog_likelihood, NULL, 0, NULL, apop_yule_rng};
+apop_model apop_yule = {"Yule", 1, yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, yule_rng};

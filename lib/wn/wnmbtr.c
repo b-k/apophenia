@@ -701,9 +701,8 @@ local void lo_insert_handle_into_btree(wn_mbhandle handle,wn_mbtree tree,ptr key
 
 void wn_mbins(wn_mbhandle handle, wn_mbtree tree, ptr key)
 {
-  wn_memzero(handle, sizeof(struct wn_mbhandle_struct));
-
-  lo_insert_handle_into_btree(handle,tree,key);
+	memset(handle,'\0',sizeof(struct wn_mbhandle_struct));
+  	lo_insert_handle_into_btree(handle,tree,key);
 }
 
 

@@ -719,7 +719,7 @@ ptr wn_zalloc(int size)
   p = (*(current_gpstack->current_group->palloc_piece))(
                             size,current_gpstack->current_group);
 
-  wn_memzero(p,size);
+	  memset(p,'\0',size);
 
   return(p);
 }

@@ -15,11 +15,6 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include "likelihoods.h"
 #include "model.h"
 #include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_histogram.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_permutation.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -27,8 +22,11 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
+static apop_estimate * apop_gamma_rank_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	return apop_maximum_likelihood(data, uses, apop_gamma_rank, *(apop_estimation_params *)parameters);
+}
 
-double apop_gamma_rank_log_likelihood(const gsl_vector *beta, void *d){
+static double apop_gamma_rank_log_likelihood(const gsl_vector *beta, void *d){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
 	if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
@@ -38,7 +36,7 @@ static double		ka = 0;
 		gsl_vector *	b_ka	= gsl_vector_alloc(2);
 			gsl_vector_set(b_ka, 0, GSL_MAX(b, 0) + 1e-6);
 			gsl_vector_set(b_ka, 0, GSL_MAX(a, 0) + 1e-6);
-	 		ka	= apop_gamma_log_likelihood(b_ka, d);
+	 		ka	= apop_gamma_rank_log_likelihood(b_ka, d);
 			gsl_vector_free (b_ka);
 		}
 		if (b<=0) 	return keep_away(b, 0, ka);
@@ -61,7 +59,7 @@ float 		llikelihood 	= 0,
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-void apop_gamma_rank_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void apop_gamma_rank_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
 	//if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
@@ -94,8 +92,8 @@ float 		d_a 	= 0,
 
   Here, we assume that the data is ranking frequencies: data[7][0] is the number of times the first-ranked item appears in data set number seven, data[7][1] is the number of times the second-ranked item appears, et cetera. 
 
+apop_gamma_rank.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+
 \ingroup likelihood_fns
 */
-apop_model apop_gamma_rank = {"Gamma", 2, apop_gamma_rank_log_likelihood, apop_gamma_rank_dlog_likelihood, NULL, 0, NULL, NULL};
-//apop_model apop_gamma_rank = {"Gamma", 2, apop_gamma_rank_log_likelihood, NULL, NULL, 0, NULL, NULL};
-
+apop_model apop_gamma_rank = {"Gamma", 2, apop_gamma_rank_estimate, apop_gamma_rank_log_likelihood, apop_gamma_rank_dlog_likelihood, NULL,  NULL};
