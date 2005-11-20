@@ -37,6 +37,7 @@ static double keep_away(double value, double limit,  double base){
 }
 
 static apop_estimate * probit_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	apop_inventory_filter(uses, apop_probit.inventory_filter);
 	return apop_maximum_likelihood(data, uses, apop_probit, *(apop_estimation_params *)parameters);
 }
 
@@ -129,5 +130,15 @@ static void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *
 
 \ingroup likelihood_fns
 */
-apop_model apop_probit = {"Probit", -1, probit_estimate, probit_log_likelihood, probit_dlog_likelihood, probit_fdf, NULL};
+apop_model apop_probit = {"Probit", -1, 
+{
+	1,	//parameters
+	1,	//covariance
+	1,	//confidence
+	0,	//predicted
+	0,	//residuals
+	1,	//log_likelihood
+	1	//names;
+}, 
+	probit_estimate, probit_log_likelihood, probit_dlog_likelihood, probit_fdf, NULL};
 //apop_model apop_probit = {"Probit", -1, NULL, apop_probit_log_likelihood, NULL, apop_probit_fdf,  NULL};

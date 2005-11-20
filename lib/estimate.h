@@ -138,4 +138,5 @@ void 		apop_estimate_print(apop_estimate * print_me);
 
 void 		apop_inventory_copy(apop_inventory in, apop_inventory *out);
 void 		apop_inventory_set(apop_inventory *out, int value);
+void 		apop_inventory_filter(apop_inventory *out, apop_inventory filter);
 #endif

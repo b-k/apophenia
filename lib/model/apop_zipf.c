@@ -20,7 +20,9 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 
 
-static apop_estimate * apop_zipf_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+
+static apop_estimate * zipf_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	apop_inventory_filter(uses, apop_zipf.inventory_filter);
 	return apop_maximum_likelihood(data, uses, apop_zipf, *(apop_estimation_params *)parameters);
 }
 
@@ -55,7 +57,7 @@ double		z	= 1/(gsl_sf_zeta(a) * pow(i, a));
 }
 */
 
-static double apop_zipf_log_likelihood(const gsl_vector *beta, void *d){
+static double zipf_log_likelihood(const gsl_vector *beta, void *d){
 static double	ka	= 0;
 gsl_matrix	*data	= d;
 double		like	= 0, 
@@ -66,7 +68,7 @@ int 		i, j;
 		if (ka ==0){
 			gsl_vector *	b_ka	= gsl_vector_alloc(1);
 			gsl_vector_set(b_ka, 0, 1+GSL_DBL_EPSILON);
-		 	ka	= apop_zipf_log_likelihood(b_ka, d);
+		 	ka	= zipf_log_likelihood(b_ka, d);
 			gsl_vector_free (b_ka);
 		}
 		return keep_away(bb, 1, ka);
@@ -83,10 +85,9 @@ int 		i, j;
 
 /** Dlog likelihood for the zipf distribution.
 
-This fn has a bug, and I can't find it right now. Feel free to look over it.  In the mean time, it's not linked in for the apop_zipf object.
 
 \todo Fix this. */
-static void apop_zipf_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void zipf_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 double		a	= gsl_vector_get(beta, 0);
 static double	ka	= 0;
 gsl_matrix	*data	= d;
@@ -98,7 +99,7 @@ double		dlike	= 0,
 			gsl_vector 	*b_ka	= gsl_vector_alloc(1);
 			gsl_vector 	*b_kg	= gsl_vector_alloc(1);
 			gsl_vector_set(b_ka,0, 1+GSL_DBL_EPSILON);
-		 	apop_zipf_dlog_likelihood(b_ka , d, b_kg);
+		 	zipf_dlog_likelihood(b_ka , d, b_kg);
 			ka	= gsl_vector_get(b_kg, 0);
 			gsl_vector_free (b_ka);
 			gsl_vector_free (b_kg);
@@ -136,7 +137,7 @@ apop_zipf.rng(r, 1.4);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 551.  */
-static double apop_zipf_rng(gsl_rng* r, double * a){
+static double zipf_rng(gsl_rng* r, double * a){
 if (*a  <= 1)	
 	{printf("apop_zipf.rng: Zipf needs a parameter >=1. Returning 0.\n"); return 0;};
 int		x;
@@ -169,5 +170,14 @@ apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_estimation_para
 \f$dlnZ(a)/da	= -{\zeta(a)\over a \log(\zeta(a-1))} -  \log(i)		\f$
 \ingroup models
 */
-apop_model apop_zipf = {"Zipf", 1, apop_zipf_estimate, apop_zipf_log_likelihood, apop_zipf_dlog_likelihood, NULL, apop_zipf_rng};
-//apop_model apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, NULL, NULL, 0, NULL, apop_zipf_rng};
+apop_model apop_zipf = {"Zipf", 1,  {
+	1,	//parameters
+	1,	//covariance
+	1,	//confidence
+	0,	//predicted
+	0,	//residuals
+	1,	//log_likelihood
+	1	//names;
+}, 		
+	zipf_estimate, zipf_log_likelihood, NULL, NULL, zipf_rng};
+	//zipf_estimate, zipf_log_likelihood, zipf_dlog_likelihood, NULL, zipf_rng};

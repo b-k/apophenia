@@ -42,6 +42,25 @@ void apop_inventory_set(apop_inventory *out, int value){
 	out->log_likelihood = value;
 }
 
+/** Apply a filter to an input inventory.
+
+Inventories sent in to most estimation functions are just the wish list; it wouldn't make sense (and is often not implemented) that every estimator return every element of the \ref apop_estimate.
+
+\param out	a pointer to the inventory to be set
+\param value	probably one or zero.  
+\ingroup inv_and_est */
+void apop_inventory_filter(apop_inventory *out, apop_inventory filter){
+	if (out==NULL){
+		out	= malloc(sizeof(apop_inventory));
+		apop_inventory_copy(filter, out);
+	}
+	out->parameters	&= filter.parameters;
+	out->predicted	&= filter.predicted;
+	out->confidence	&= filter.confidence;
+	out->covariance	&= filter.covariance;
+	out->log_likelihood &= filter.log_likelihood;
+}
+
 /** Allocate an \ref apop_estimate.
 
 Are you sure you need to use this? Every regression and MLE function

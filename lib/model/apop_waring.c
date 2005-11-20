@@ -19,6 +19,7 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
+
 /////////////////////////
 //The Waring distribution
 /////////////////////////
@@ -35,10 +36,11 @@ static double keep_away(double value, double limit,  double base){
 \ingroup likelihood_fns
 */
 static apop_estimate * waring_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	apop_inventory_filter(uses, apop_waring.inventory_filter);
 	return apop_maximum_likelihood(data, uses, apop_waring, *(apop_estimation_params *)parameters);
 }
 
-static double apop_waring_log_likelihood(const gsl_vector *beta, void *d){
+static double waring_log_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0),
 		a	= gsl_vector_get(beta, 1);
 double		ka;		//recalculated every time.
@@ -46,7 +48,7 @@ double		ka;		//recalculated every time.
 		gsl_vector *	b_ka	= gsl_vector_alloc(2);
 		gsl_vector_set(b_ka, 0, GSL_MAX(bb, 1) +  1e20*GSL_DBL_EPSILON);
 		gsl_vector_set(b_ka, 1, GSL_MAX(a, 0) + 1e20*GSL_DBL_EPSILON);
-	 	ka	= apop_waring_log_likelihood(b_ka, d);
+	 	ka	= waring_log_likelihood(b_ka, d);
 		gsl_vector_free (b_ka);
 		if (bb<=1) 	return keep_away(bb, 1, ka);
 		else 		return keep_away(bb, 0, ka);
@@ -71,7 +73,7 @@ double 		ln_a_k, ln_bb_a_k, p,
 
 /** The derivative of the Waring distribution, for use in likelihood
  minimization. You'll probably never need to call this directy.*/
-static void apop_waring_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void waring_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
 float		bb		= gsl_vector_get(beta, 0),
 		a		= gsl_vector_get(beta, 1);
@@ -124,7 +126,7 @@ L. Devroye, <a href="http://cgm.cs.mcgill.ca/~luc/digammapaper.ps">Random
 variate generation for the digamma and trigamma distributions</a>, Journal
 of Statistical Computation and Simulation, vol. 43, pp. 197-216, 1992.
 */
-static double apop_waring_rng(gsl_rng *r, double *a){
+static double waring_rng(gsl_rng *r, double *a){
 //The key to covnert from Devroye's GHgB3 notation to what I
 //consider to be the standard Waring notation in \ref apop_waring:
 // a = a + 1
@@ -156,4 +158,14 @@ apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_estimation_pa
 \ingroup models
 */
 //apop_model apop_waring = {"Waring", 2, apop_waring_log_likelihood, NULL, NULL, 0, NULL, apop_waring_rng};
-apop_model apop_waring = {"Waring", 2, waring_estimate, apop_waring_log_likelihood, apop_waring_dlog_likelihood, NULL,  apop_waring_rng};
+apop_model apop_waring = {"Waring", 2, 
+ {
+	1,	//parameters
+	1,	//covariance
+	1,	//confidence
+	0,	//predicted
+	0,	//residuals
+	1,	//log_likelihood
+	1	//names;
+},
+	waring_estimate, waring_log_likelihood, waring_dlog_likelihood, NULL,  waring_rng};

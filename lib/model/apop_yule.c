@@ -35,7 +35,9 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
+
 static apop_estimate * yule_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	apop_inventory_filter(uses, apop_yule.inventory_filter);
 	return apop_maximum_likelihood(data, uses, apop_yule, *(apop_estimation_params *)parameters);
 }
 
@@ -148,4 +150,14 @@ apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_estimation_para
 \ingroup models
 \todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I can check references.
 */
-apop_model apop_yule = {"Yule", 1, yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, yule_rng};
+apop_model apop_yule = {"Yule", 1, 
+{
+	1,	//parameters
+	1,	//covariance
+	1,	//confidence
+	0,	//predicted
+	0,	//residuals
+	1,	//log_likelihood
+	1	//names;
+},	 
+	yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, yule_rng};

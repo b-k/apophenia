@@ -20,14 +20,41 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <gsl/gsl_permutation.h>
 #include <stdio.h>
 #include <assert.h>
+static double normal_log_likelihood(const gsl_vector *beta, void *d);
 
 static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
+
 //////////////////
 //The Normal (gaussian) distribution
 //////////////////
+
+static apop_estimate * normal_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	apop_inventory_filter(uses, apop_normal.inventory_filter);
+apop_estimate *est	= apop_estimate_alloc(0,2,NULL, *uses);
+double		avg	= 0,
+		avg2	= 0;
+int		i,j, cnt= 0;
+
+double          x, ratio;
+	for(i=0; i < data->size1; i++)
+		for(j=0; j < data->size1; j++){
+    			x 	= gsl_matrix_get(data, i,j);
+    			ratio	= cnt/(cnt+1.0);
+    			cnt	++;
+    			avg	*= ratio;
+    			avg2	*= ratio;
+    			avg	+= x/(cnt +0.0);
+    			avg2 	+= gsl_pow_2(x)/(cnt +0.0);
+  		}
+	gsl_vector_set(est->parameters,0, avg);
+	gsl_vector_set(est->parameters,1, (avg2 - gsl_pow_2(avg))); //E[x^2] - E^2[x]
+	if (est->uses.log_likelihood)
+		est->log_likelihood	= normal_log_likelihood(est->parameters, data);
+	return est;
+}
 
 
 /** The log likelihood function for the Normal.
@@ -43,7 +70,7 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 \param beta	beta[0]=the mean; beta[1]=the variance
 \param d	the set of data points; see notes.
 */
-double apop_normal_log_likelihood(const gsl_vector *beta, void *d){
+static double normal_log_likelihood(const gsl_vector *beta, void *d){
 double 		mu	= gsl_vector_get(beta,0),
 		ss	= 2 * gsl_vector_get(beta,1),
 		ll	= 0;
@@ -54,7 +81,7 @@ static double	ka	= 0;
 		gsl_vector *	b_ka	= gsl_vector_alloc(2);
 		gsl_vector_set(b_ka, 0, mu);
 		gsl_vector_set(b_ka, 1, GSL_DBL_EPSILON);
-	 	ka	= apop_normal_log_likelihood(b_ka, d);
+	 	ka	= normal_log_likelihood(b_ka, d);
 		gsl_vector_free (b_ka);
 		//return keep_away(ss/2.0, 0, ka);
 		return keep_away(gsl_vector_get(beta,1), 0, ka);
@@ -76,7 +103,7 @@ To tell you the truth, I have no idea when anybody would need this, but it's her
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 \todo Add constraint that \f$\sigma^2>0\f$.
  */
-void apop_normal_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void normal_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 double 		mu	= gsl_vector_get(beta,0),
 		ss	= gsl_vector_get(beta,1),
 		dll	= 0,
@@ -104,7 +131,7 @@ uses the standard deviation here (\f$\sigma\f$)
 \param r	a gsl_rng already allocated
 \param a	the mean and the variance
  */
-double apop_normal_rng(gsl_rng *r, double *a){
+static double normal_rng(gsl_rng *r, double *a){
 	//return gsl_ran_gaussian(r, sqrt(a[1])) + a[0];
 	return gsl_ran_gaussian(r, sqrt(a[1])) + a[0];
 }
@@ -129,10 +156,30 @@ likelihood of those 56 observations given the mean and variance you provide.
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 \ingroup models
 */
-apop_model apop_normal = {"Normal", 2, NULL, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, apop_normal_rng};
+apop_model apop_normal = {"Normal", 2, 
+{
+	1,	//parameters
+	1,	//covariance
+	1,	//confidence
+	0,	//predicted
+	0,	//residuals
+	1,	//log_likelihood
+	1	//names;
+}, normal_estimate,
+	 normal_log_likelihood, normal_dlog_likelihood, NULL, normal_rng};
 //apop_model apop_normal = {"Normal", 2, apop_normal_log_likelihood, NULL, NULL, 0, NULL, apop_normal_rng};
 
 /** This is a synonym for \ref apop_normal, q.v.
 \ingroup models
 */
-apop_model apop_gaussian = {"Gaussian", 2, NULL, apop_normal_log_likelihood, apop_normal_dlog_likelihood, NULL, apop_normal_rng};
+apop_model apop_gaussian = {"Gaussian", 2, 
+{
+	1,	//parameters
+	1,	//covariance
+	1,	//confidence
+	0,	//predicted
+	0,	//residuals
+	1,	//log_likelihood
+	1	//names;
+}, normal_estimate,
+	 normal_log_likelihood, normal_dlog_likelihood, NULL, normal_rng};

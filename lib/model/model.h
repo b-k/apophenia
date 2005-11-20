@@ -9,36 +9,33 @@
 /** This is an object to describe a model whose parameters are to be
 estimated. It would primarily be used for maximum likelihood estimation,
 but is intended to have anything else you would want a probability
-distribution to have too, like a random number generator.  */
+distribution to have too, like a random number generator.  
+
+\param name	The model name. You have 100 characters. 
+\param parameter_ct	The number of parameters. If this is -1, it will be dynamically set to the size of the given data set minus one.
+\param inventory_filter	an \ref apop_inventory indicating what the estimate fn is programmed to return.
+\param estimate		the estimator fn, which is all most users will care about.
+\param log_likelihood	the likelihood fn given data 
+\param 	dlog_likelihood	the derivative of the likelihood fn
+\param 	fdf	Do both of the above at once. Can be NULL if it'd just call them separately. 
+\param rng 	a random number generator. 
+
+ */
 typedef struct apop_model{
-	/** The model name. You have 100 characters. */
 	char	name[101]; 
-
-	/** The number of parameters. If this is -1, it will be
-	 dynamically set to the size of the given data set minus one.
-	  */
 	int	parameter_ct;
-
-	/** the estimator fn, which is all most users will care about.*/ 
+	apop_inventory inventory_filter;
 	apop_estimate *	(*estimate)(gsl_matrix * data, apop_inventory *uses, void *parameters);
-
-	/** the likelihood fn given data*/ 
 	double 	(*log_likelihood)(const gsl_vector *beta, void *d);
-
-	/** the derivative of the likelihood fn */
 	void 	(*dlog_likelihood)(const gsl_vector *beta, void *d, gsl_vector *gradient);
-
-	/** Do both of the above at once. Can be NULL if it'd just call them separately. */
 	void 	(*fdf)( const gsl_vector *beta, void *d, double *f, gsl_vector *df);
+	double (*rng)(gsl_rng* r, double *a);
 
 //	/** The constraint count */
 //	int 	constraint_ct;
 //
 //	/** The vector of constraints */
 //	double *(* constraint) (const gsl_vector *beta, void *d, gsl_vector *inside_constraint);
-	
-	/** a random number generator. */
-	double (*rng)(gsl_rng* r, double *a);
 	//to add: 
 	//the 2nd derivative of the likelihood fn
 	//the MLE

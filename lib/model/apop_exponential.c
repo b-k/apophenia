@@ -26,6 +26,7 @@ static double keep_away(double value, double limit,  double base){
 }
 
 static apop_estimate * exponential_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	apop_inventory_filter(uses, apop_exponential.inventory_filter);
 	return apop_maximum_likelihood(data, uses, apop_exponential, *(apop_estimation_params *)parameters);
 }
 
@@ -141,6 +142,16 @@ apop_exponential.estimate() is an MLE, so feed it appropriate \ref apop_estimati
 \todo Check that the borderline work here is correct.
 \todo Write a second object for the plain old not-network data Exponential.
 */
-apop_model apop_exponential = {"Exponential", 1, exponential_estimate, apop_exponential_log_likelihood, apop_exponential_dlog_likelihood, NULL,  apop_exponential_rng};
+apop_model apop_exponential = {"Exponential", 1,
+	{
+	1,	//parameters
+	1,	//covariance
+	1,	//confidence
+	0,	//predicted
+	0,	//residuals
+	1,	//log_likelihood
+	1	//names;
+},
+	 exponential_estimate, apop_exponential_log_likelihood, apop_exponential_dlog_likelihood, NULL,  apop_exponential_rng};
 
 

@@ -22,11 +22,12 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
-static apop_estimate * apop_gamma_rank_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+static apop_estimate * gamma_rank_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	apop_inventory_filter(uses, apop_gamma_rank.inventory_filter);
 	return apop_maximum_likelihood(data, uses, apop_gamma_rank, *(apop_estimation_params *)parameters);
 }
 
-static double apop_gamma_rank_log_likelihood(const gsl_vector *beta, void *d){
+static double gamma_rank_log_likelihood(const gsl_vector *beta, void *d){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
 	if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
@@ -36,7 +37,7 @@ static double		ka = 0;
 		gsl_vector *	b_ka	= gsl_vector_alloc(2);
 			gsl_vector_set(b_ka, 0, GSL_MAX(b, 0) + 1e-6);
 			gsl_vector_set(b_ka, 0, GSL_MAX(a, 0) + 1e-6);
-	 		ka	= apop_gamma_rank_log_likelihood(b_ka, d);
+	 		ka	= gamma_rank_log_likelihood(b_ka, d);
 			gsl_vector_free (b_ka);
 		}
 		if (b<=0) 	return keep_away(b, 0, ka);
@@ -59,7 +60,7 @@ float 		llikelihood 	= 0,
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void apop_gamma_rank_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void gamma_rank_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
 	//if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
@@ -96,4 +97,14 @@ apop_gamma_rank.estimate() is an MLE, so feed it appropriate \ref apop_estimatio
 
 \ingroup models
 */
-apop_model apop_gamma_rank = {"Gamma", 2, apop_gamma_rank_estimate, apop_gamma_rank_log_likelihood, apop_gamma_rank_dlog_likelihood, NULL,  NULL};
+apop_model apop_gamma_rank = {"Gamma, rank data", 2, 
+{
+	1,	//parameters
+	1,	//covariance
+	1,	//confidence
+	0,	//predicted
+	0,	//residuals
+	1,	//log_likelihood
+	1	//names;
+},
+	 gamma_rank_estimate, gamma_rank_log_likelihood, gamma_rank_dlog_likelihood, NULL,  NULL};

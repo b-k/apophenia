@@ -28,7 +28,9 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
+
 static apop_estimate * gamma_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	apop_inventory_filter(uses, apop_gamma.inventory_filter);
 	return apop_maximum_likelihood(data, uses, apop_gamma, *(apop_estimation_params *)parameters);
 }
 
@@ -108,4 +110,14 @@ If you have frequency or ranking data, you probably mean to be using \ref apop_g
 \f$d ln G/ db	=  -a/b - x \f$
 \ingroup models
 */
-apop_model apop_gamma = {"Gamma", 2, gamma_estimate, gamma_log_likelihood, gamma_dlog_likelihood, NULL, NULL};
+apop_model apop_gamma = {"Gamma", 2,
+{
+	1,	//parameters
+	1,	//covariance
+	1,	//confidence
+	0,	//predicted
+	0,	//residuals
+	1,	//log_likelihood
+	1	//names;
+},
+	 gamma_estimate, gamma_log_likelihood, gamma_dlog_likelihood, NULL, NULL};
