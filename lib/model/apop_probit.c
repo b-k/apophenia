@@ -36,6 +36,9 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
+static apop_estimate * probit_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	return apop_maximum_likelihood(data, uses, apop_probit, *(apop_estimation_params *)parameters);
+}
 
 
 //////////////////
@@ -66,12 +69,12 @@ gsl_vector	*t;
         gsl_blas_dgemv (CblasNoTrans, 1.0, &p.matrix, beta, 0.0, beta_dot_x);	//dot product
 }
 
-/**
+/*
 find (data dot beta'), then find the integral of the \f$\cal{N}(0,1)\f$
 up to that point. Multiply likelihood either by that or by 1-that, depending 
 on the choice the data made.
 */
-double apop_probit_log_likelihood(const gsl_vector *beta, void *d){
+static double probit_log_likelihood(const gsl_vector *beta, void *d){
 int		i;
 long double	n, total_prob	= 0;
 gsl_matrix 	*data 		= d;		//just type casting.
@@ -84,9 +87,9 @@ gsl_matrix 	*data 		= d;		//just type casting.
 	return total_prob;
 }
 
-/** The derivative of the probit distribution, for use in likelihood
- * minimization. You'll probably never need to call this directly.*/
-void apop_probit_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+/* The derivative of the probit distribution, for use in likelihood
+  minimization. You'll probably never need to call this directly.*/
+static void probit_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//derivative of the above. 
 int		i, j;
 long double	one_term, beta_term_sum;
@@ -112,10 +115,10 @@ gsl_matrix 	*data 		= d;		//just type casting.
 
 /** Saves some time in calculating both log likelihood and dlog
 likelihood for probit.	*/
-void apop_probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
-	*f	= apop_probit_log_likelihood(beta, d);
+static void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
+	*f	= probit_log_likelihood(beta, d);
 	beta_dot_x_is_current	=1;
-	apop_probit_dlog_likelihood(beta, d, df);
+	probit_dlog_likelihood(beta, d, df);
 	beta_dot_x_is_current	=0;
 }
 
@@ -126,5 +129,5 @@ void apop_probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df
 
 \ingroup likelihood_fns
 */
-//apop_model apop_probit = {"Probit", -1, apop_probit_log_likelihood, apop_probit_dlog_likelihood, apop_probit_fdf, NULL};
-apop_model apop_probit = {"Probit", -1, NULL, apop_probit_log_likelihood, NULL, apop_probit_fdf,  NULL};
+apop_model apop_probit = {"Probit", -1, probit_estimate, probit_log_likelihood, probit_dlog_likelihood, probit_fdf, NULL};
+//apop_model apop_probit = {"Probit", -1, NULL, apop_probit_log_likelihood, NULL, apop_probit_fdf,  NULL};

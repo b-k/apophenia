@@ -132,7 +132,7 @@ int		x;
 
 /** The Yule distribution
 
-Yule likelihood fn. The special case of Waring where \f$ \alpha = 0.	\f$<br>
+The special case of Waring where \f$ \alpha = 0.	\f$<br>
 
 The data set needs to be in rank-form. The first column is the frequency
 of the most common item, the second is the frequency of the second most
@@ -145,7 +145,7 @@ apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_estimation_para
 \f$ \ln Y(x, b)	= \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b)	\f$
 
 \f$ d\ln Y/db	= 1/(b-1)  + \psi(b) - \psi(k+b)				\f$
-\ingroup likelihood_fns
-\todo I'm pretty sure their specification of the Yule is wrong; I should check and fix when I can check references.
+\ingroup models
+\todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I can check references.
 */
 apop_model apop_yule = {"Yule", 1, yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, yule_rng};

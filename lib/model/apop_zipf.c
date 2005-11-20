@@ -167,7 +167,7 @@ apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_estimation_para
 \f$lnZ(a)	= -(\log(\zeta(a)) + a \log(i))	\f$
 
 \f$dlnZ(a)/da	= -{\zeta(a)\over a \log(\zeta(a-1))} -  \log(i)		\f$
-\ingroup likelihood_fns
+\ingroup models
 */
 apop_model apop_zipf = {"Zipf", 1, apop_zipf_estimate, apop_zipf_log_likelihood, apop_zipf_dlog_likelihood, NULL, apop_zipf_rng};
 //apop_model apop_zipf = {"Zipf", 1, apop_zipf_log_likelihood, NULL, NULL, 0, NULL, apop_zipf_rng};

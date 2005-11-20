@@ -1,29 +1,32 @@
 /** \mainpage The Apophenia documentation
-This is the documentation for <a href="http://apophenia.sf.net">Apophenia</a>. 
 
 \section Prerequisites 
  \li \ref intro "Intro": The motivation for the package.
  \li \ref setup "Setup":  Installing GCC, the GSL, SQLite, and Apophenia itself.
 
-\section Doing statistics 
+\section dostats Doing statistics 
  \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.
  \li \ref regression  
  \li \ref ttest 
  \li \ref likelihood_fns "Maximum likelihood estimation": estimators requiring a search for the maximum of a likelihood function.
  \li \ref linear_algebra "Linear Algebra": determinants, projections, numerical gradients, &c. Some convenience functions to display matrices and vectors.
+ \li \ref models : How to write down a model and estimate its parameters.
 
-\section Shunting data 
+\section shuntdata Shunting data 
  \li \ref db "Database utilities": an easy front end to SQLite
  \li \ref conversions
  \li \ref output "Output functions": Summarize data and print tables to the screen or a file.
  \li \ref command_line "Command-line utilities": a still easier front end to SQLite, and doing stats via Perl/Python/shell script.
+ \li \ref convenience_fns "Convenience functions": a few utilities to make life with the GSL a little easier.
 
-\section Speaking the languages
+\section speak Speaking the languages
  \li \ref c "C": For statisticians who don't know/are rusty with the C
  programming language. Those who know their C may want to check the
  Apophenia-specific notes in the \ref usagenotes "usage notes" section.
  \li \ref sql About the syntax for querying databases.
  \li \ref types "Types": New structures defined by Apophenia
+
+ \ref admin
  */
 
 /** \page intro Why?
@@ -46,6 +49,7 @@ Thus, the average analysis using Apophenia would take the following steps:
  \li use \ref apop_query_to_matrix to pull the data into an in-memory matrix
  \li call a regression function such as \ref apop_OLS or a maximum likelihood estimator such as a \ref apop_probit "probit" to fit parameters to the data.
  \li use the results for further analysis, or just dump them to the screen with \ref apop_estimate_print.
+
 If this seems a bit vague, have a look at this \ref sample_program.
 
 \section sell Some complaints alleviated
@@ -54,7 +58,7 @@ linear models? Apophenia facilitates writing \ref likelihood_fns which
 can be as crazy as the world you are modeling, and then fits them with
 one function call to \ref apop_maximum_likelihood. Comparing competing
 models is easy as well.
-\li <b>Passing queries directly to SQL.</b> if you have a gigabyte of data,
+\li <b>Passing queries directly to an SQL engine.</b> if you have a gigabyte of data,
 you do not want it in an in-memory database until the last possible
 minute---you're probably only using three variables out of six hundred
 anyway. If your data comes from multiple sources, you will need a means
@@ -263,6 +267,7 @@ gsl_rng *       r;
 }
 \endcode
 */
+
 /** \page windows The Windows page
 Get <a href="http://www.cygwin.com">Cygwin</a>. The setup program is
 very self-explanatory. As a warning, it will probably take up &gt;300MB on
@@ -295,6 +300,7 @@ which are beyond the scope of this documentation).
 Once you have Cygwin installed and a good terminal running, you can
 follow along with the remainder of the discussion without modification.
 */
+
 /** \page notroot  Not root? 
 If you aren't root, then you will need to create a subdirectory in
 your home directory in which to install packages. The GSL and SQLite
@@ -311,16 +317,19 @@ make install   #Now you don't have to be root.
 echo "export LD_LIBRARY_PATH=$HOME/$MY_LIBS:\$LD_LIBRARY_PATH" >> ~/.bashrc
 \endverbatim
 */
+
 /** \page c C
  
 \section learning  Learning C
-The Apophenia manual has a full tutorial for C; for those reading this online, it is available as a separate document <a href="http://www.fluff.info/klemens/c_crash.pdf">here</a>.
-Or gosh, just search Google for <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">C tutorial</a>.
+The Apophenia manual has a full tutorial for C, available as a separate document <a href="http://ben.klemens.org/pdfs/c_crash.pdf">here</a>.
+The tutorial is more conceptual and aimed at clearing up the most common failures of understanding about C. More nuts-and-bolts
+tutorials are 
+<a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.
 Some people find pointers to be especially difficult. Fortunately, there's a claymation cartoon which clarifies everything
 <a href=http://cslibrary.stanford.edu/104/>here</a>.
 
 \section reference References
-For your convenience, here are links to the documentation for the [http://www.gnu.org/software/libc/manual/html_node/ Standard library] and the [http://www.gnu.org/software/gsl/manual/gsl-ref_toc.html GSL].
+For your convenience, here are links to the documentation for the <a href="http://www.gnu.org/software/libc/manual/html_node/">Standard library</a> and the <a href="http://www.gnu.org/software/gsl/manual/gsl-ref_toc.html">GSL</a>.
 
 \section usagenotes  Usage notes
 Here are some notes about the technical details of using the Apophenia library.
@@ -347,14 +356,15 @@ Order matters in the linking list: the files a package depends on should be list
 The global variable <tt>apop_verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_verbose =1</tt> when you want feedback and <tt>apop_verbose=0</tt> when you don't.
 
 \subsection vim Syntax highlighting 
-If your text editor supports syntax highlighting, there are seven types defined in the Apophenia and GSL headers which may be worth coloring.
+If your text editor supports syntax highlighting, there are eight types defined in the Apophenia and GSL headers which may be worth coloring.
 For <tt>vim</tt>, for example. add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
 \verbatim
-syn keyword     cType           gsl_matrix gsl_vector apop_inventory apop_estimate 
-syn keyword     cType           apop_name gsl_matrix_view gsl_vector_view
+syn keyword     cType           gsl_matrix gsl_vector gsl_matrix_view gsl_vector_view
+syn keyword     cType           apop_name apop_model apop_inventory apop_estimate 
 \endverbatim
-Other text editors have similar files to which you can add the above seven types.
+Other text editors have similar files to which you can add the above types.
 */
+
 /** \page makefile Makefile
  
 Instead of giving lengthy GCC commands at the command prompt, you can use a Makefile to do most of the work. How to:
@@ -374,6 +384,7 @@ $(objects): %.o: %.c
 	gcc $(CFLAGS) -c $< -o $@
 \endverbatim
 */
+
 /** \page sql SQL
 Until some notes show up here, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite. 
 This is a reference, not a tutorial; there is an abundance of <a
@@ -385,6 +396,7 @@ The blog of Apophenia's author includes an <a
 href="http://fluff.info/blog/arch/00000118.htm">entry</a> about
 complementarities between SQL and matrix manipulation packages.
 */
+
 /** \page graphing What about graphing?
 Portable graphing tools are supremely difficult to implement. The closest
 thing to a truly portable setup is <a href="http://www.gnuplot.info">Gnuplot</a>,
@@ -398,6 +410,116 @@ the data management and data crunching in C, then use \ref apop_print
 directly. [It already includes one, which is so rudimentary it's not
 even documented (see the <tt>linear_algebra.h</tt> file in the source code
 if you're curious).]
-Oh, but have a look at \ref apop_plot_line_and_scatter.
+Oh, but have a look at \ref apop_plot_line_and_scatter and \ref apop_plot_histogram.
 */
+
 /** \defgroup global_vars The global variables. */
+
+/** \defgroup models Models
+
+A model is an equation (or system of equations) which rely on data and
+have unknown parameters to be determined. [Notice that this definition
+readily includes "non-parametric" models.] Much of statistical analysis
+consists of writing down a model, estimating its parameters, and running
+hypothesis tests to determine the confidence with which we can make
+statements about those parameters.
+
+Apophenia facilitates this via its \ref apop_model objects. Each object is
+a model as described above, and includes a method named <tt>estimate</tt>
+which takes in data and returns an \ref apop_estimate which includes
+the parameter estimates and the characteristics one would need for
+hypothesis testing.
+
+The design of the objects hopes to make it as easy as possible for you,
+dear reader, to write new models. For the most part, all you need to
+do is write a log likelihood function, and \ref apop_maximum_likelihood
+does the rest; see below.
+
+[Many statistics packages include a model structure that describes only
+linear models.  "Linear" models can include a wide range of nonlinear
+features, but they are still a subset of measure zero within the class of
+models as described above. Currently, Apophenia has no plans to include
+a summary syntax for describing linear models; the reader who has a linear
+model to be estimated via OLS or GLS is advised to instead manipulate
+the data set to the appropriate form and then call \ref apop_OLS or
+\ref apop_GLS.]
+
+Frequently, a model is a probability distribution. The data is assumed
+to have been drawn from a given distribution and the question is
+only what distributional parameters best fit; e.g., assume the data
+is Normally distributed and find the mean and variance.
+
+The main function in the systems below is the apop_model.estimate
+function. It takes in a model and data, and outputs an apop_estimate,
+that includes the parameter estimates and the various auxiliary data
+that one may need to test the estimates, such as the variance-covariance
+matrix. For most users, the apop_model.estimate function will be all
+one needs from a model. Just prep the data, select a model, and produce
+an estimate:
+
+\code
+gsl_matrix 	*data 		= read_in_data();
+apop_estimate 	*the_estimate 	= apop_probit(data, NULL, NULL);
+apop_estimate_print(the_estimate);
+\endcode
+
+Because models are often distributions, and because it is not our place
+to dictate what you will do with a model, the apop_model also includes a
+number of additional functions that may be useful for additional analyis,
+such as a likelihood function that could be used for ML estimation or
+for estimating the Hessian, and a random number generator. Some effort
+has been made to ensure that the prepackaged models include as many of
+these auxiliary functions as possible; if you are writing your own,
+there is no requirement that you provide all functions, and the \ref
+apop_maximum_likelihood and \ref apop_numerical_hessian functions do a
+good job of filling in blanks.
+
+
+\section write_likelihoods Writing your own
+Writing apop_model objects is easy:
+
+
+\li Write a likelihood function. Its header will look like this:
+\code
+double apop_new_log_likelihood(const gsl_vector *beta, void *d)
+\endcode 
+where \c beta will be the parameters to be maximized, and \c
+d is the fixed parameters---the data. In every case currently included
+with Apophenia, \c d is a \c gsl_matrix, but you do not have to conform
+to that. This function will return the value of the log likelihood function at the given parameters.
+\li Write the object. In your header file, include 
+\code
+apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, apop_new_log_likelihood, NULL, NULL, NULL};
+\endcode
+\c number_of_parameters is probably a positive integer like \c 2, but
+it is often (the number of columns in your data set) -1, in which case,
+set \c number_of_parameters to \c -1.
+\li Test. Debug. Retest.
+\li (optional) Write a gradient for the log likelihood function. This
+typically involves calculating a derivative by hand, which is an easy
+problem in high-school calculus. The function's header will look like: 
+\code
+void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient)
+\endcode 
+where \c beta and \c d are fixed as above, and \c gradient is a \c gsl_vector with dimension matching \c beta. 
+At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
+\code
+gsl_vector_set(gradient,0, d_a);
+gsl_vector_set(gradient,1, d_b);
+\endcode 
+Now add the resulting dlog likelihood function to your object:
+\code
+apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, apop_new_log_likelihood, apop_new_dlog_likelihood, NULL, NULL};
+\endcode
+\li Send the code to the maintainer for inclusion in future versions of Apophenia.
+
+\todo This page needs a sample model for the reader to cut 'n' paste.
+*/
+
+/** \page admin The admin page
+
+Just a few page links:
+\li <a href=todo.html>The to-do list</a>
+\li <a href=bug.html>The known bug list</a>
+\li <a href=modules.html>The documentation page list</a>
+*/

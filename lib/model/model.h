@@ -64,12 +64,6 @@ double apop_generalized_harmonic(int N, double s);
 
 /** \defgroup likelihood_fns  Likelihood fns 
 
-The \ref apop_model objects are to Apophenia as the 'model' object is to
-most other statistics packages: it is a summary of the author's claims
-about the real world. Hand an apop_model plus a data set 
-to the \ref apop_maximum_likelihood function, and that function returns
-the most likely parameters.
-
 Because the model is often a probability distribution, the apop_model
 object is also Apophenia's means of describing distributions. E.g.,
 the PDF of the Waring distribution at the data given the parameters is
@@ -86,48 +80,16 @@ Here is a simple example; see also \ref mle for other examples.
 apop_estimate   * waring_parameters;
 double          starting_pt[2] = {3, 0};
 double          likelihood;
-waring_parameters      = apop_maximum_likelihood(data, apop_waring, starting_pt, 1e-4, 0);
+apop_estimation_params params;
+        params.starting_pt	= starting_pt;
+        params.method          	= 1;
+        params.step_size       	= 1e-2;
+        params.tolerance       	= 1e-3;
+        params.verbose         	= 0;
+	waring_parameters      	= apop_maximum_likelihood(data, apop_waring, params);
 printf("Your most likely waring parameters are %g and %g, with likelihood %g",
                         gsl_vector_get(waring_parameter->parameters, 0) gsl_vector_get(waring_parameter->parameters, 1), likelihood);
 \endcode
-
-\section write_likelihoods Writing your own
-Writing apop_model objects is easy:
-
-\li Write a likelihood function. Its header will look like this:
-\code
-double apop_new_log_likelihood(const gsl_vector *beta, void *d)
-\endcode 
-where \c beta will be the parameters to be maximized, and \c
-d is the fixed parameters---the data. In every case currently included
-with Apophenia, \c d is a \c gsl_matrix, but you do not have to conform
-to that. This function will return the value of the log likelihood function at the given parameters.
-\li Write the object. In your header file, include 
-\code
-apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, apop_new_log_likelihood, NULL, NULL, NULL};
-\endcode
-\c number_of_parameters is probably a positive integer like \c 2, but
-it is often (the number of columns in your data set) -1, in which case,
-set \c number_of_parameters to \c -1.
-\li Test. Debug. Retest.
-\li (optional) Write a gradient for the log likelihood function. This
-typically involves calculating a derivative by hand, which is an easy
-problem in high-school calculus. The function's header will look like: 
-\code
-void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient)
-\endcode 
-where \c beta and \c d are fixed as above, and \c gradient is a \c gsl_vector with dimension matching \c beta. 
-At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
-\code
-gsl_vector_set(gradient,0, d_a);
-gsl_vector_set(gradient,1, d_b);
-\endcode 
-Now add the resulting dlog likelihood function to your object:
-\code
-apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, apop_new_log_likelihood, apop_new_dlog_likelihood, NULL, NULL};
-\endcode
-\li Send the code to the maintainer for inclusion in future versions of Apophenia.
-
 
 
 \ingroup mle 

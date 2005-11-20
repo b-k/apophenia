@@ -137,7 +137,7 @@ via \f$C=\exp(1/\mu)\f$.
 
 apop_exponential.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
 
-\ingroup likelihood_fns
+\ingroup models
 \todo Check that the borderline work here is correct.
 \todo Write a second object for the plain old not-network data Exponential.
 */

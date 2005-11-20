@@ -153,7 +153,7 @@ apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_estimation_pa
 \f$dlnW/db	= 1/(b-1)  + \psi(b+a) - \psi(k+a+b)\f$
 
 \f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
-\ingroup likelihood_fns
+\ingroup models
 */
 //apop_model apop_waring = {"Waring", 2, apop_waring_log_likelihood, NULL, NULL, 0, NULL, apop_waring_rng};
 apop_model apop_waring = {"Waring", 2, waring_estimate, apop_waring_log_likelihood, apop_waring_dlog_likelihood, NULL,  apop_waring_rng};

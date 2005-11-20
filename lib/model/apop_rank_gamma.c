@@ -94,6 +94,6 @@ float 		d_a 	= 0,
 
 apop_gamma_rank.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
 
-\ingroup likelihood_fns
+\ingroup models
 */
 apop_model apop_gamma_rank = {"Gamma", 2, apop_gamma_rank_estimate, apop_gamma_rank_log_likelihood, apop_gamma_rank_dlog_likelihood, NULL,  NULL};

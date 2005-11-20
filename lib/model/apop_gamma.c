@@ -28,21 +28,11 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
+static apop_estimate * gamma_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	return apop_maximum_likelihood(data, uses, apop_gamma, *(apop_estimation_params *)parameters);
+}
 
-/** The Gamma distribution
-
-\f$G(x, a, b) 	= 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
-
-\f$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x)  -x/b\f$
-
-\f$d ln G/ da	=  -\psi(a) - ln b + ln(x) \f$	(also, \f$d ln \gamma = \psi\f$)
-
-\f$d ln G/ db	=  -a/b - x \f$
-
-If you have frequency or ranking data, you probably mean to be using \ref apop_gamma_rank.
-\ingroup likelihood_fns
-*/
-double apop_gamma_log_likelihood(const gsl_vector *beta, void *d){
+static double gamma_log_likelihood(const gsl_vector *beta, void *d){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
 	if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
@@ -52,7 +42,7 @@ static double		ka = 0;
 		gsl_vector *	b_ka	= gsl_vector_alloc(2);
 			gsl_vector_set(b_ka, 0, GSL_MAX(b, 0) + 1e-6);
 			gsl_vector_set(b_ka, 0, GSL_MAX(a, 0) + 1e-6);
-	 		ka	= apop_gamma_log_likelihood(b_ka, d);
+	 		ka	= gamma_log_likelihood(b_ka, d);
 			gsl_vector_free (b_ka);
 		}
 		if (b<=0) 	return keep_away(b, 0, ka);
@@ -76,7 +66,7 @@ float 		llikelihood 	= 0,
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-void apop_gamma_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void gamma_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 float		a	= gsl_vector_get(beta, 0),
 		b	= gsl_vector_get(beta, 1);
 	//if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
@@ -103,9 +93,11 @@ float 		d_a 	= 0,
 
 /** The Gamma distribution
 
- Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
+Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
 
 apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+  
+If you have frequency or ranking data, you probably mean to be using \ref apop_gamma_rank.
 
 \f$G(x, a, b) 	= 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
 
@@ -114,6 +106,6 @@ apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_estimation_par
 \f$d ln G/ da	=  -\psi(a) - ln b + ln(x) \f$	(also, \f$d ln \gamma = \psi\f$)
 
 \f$d ln G/ db	=  -a/b - x \f$
-\ingroup likelihood_fns
+\ingroup models
 */
-apop_model apop_gamma = {"Gamma", 2, NULL, apop_gamma_log_likelihood, apop_gamma_dlog_likelihood, NULL, NULL};
+apop_model apop_gamma = {"Gamma", 2, gamma_estimate, gamma_log_likelihood, gamma_dlog_likelihood, NULL, NULL};

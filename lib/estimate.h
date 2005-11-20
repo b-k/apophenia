@@ -7,6 +7,12 @@
 
 /**\defgroup types Types defined by Apophenia. 
 
+\param Models 
+The \ref apop_model structure encapsulates a description of the world
+in which the data and the parameters produce observed outcomes. The
+apop_model.estimate() method takes in data and produces an \ref
+apop_estimate.
+
 \param Model_Estimates
 The \ref apop_estimate structure returns all the data one would want
 from a regression or ML estimation, including the parameters estimated,
@@ -27,6 +33,11 @@ would like the <tt>apop_estimate</tt> output to include. It is also an
 output from these functions, since the returned <tt>apop_estimate</tt>
 will include its own <tt>apop_inventory</tt>,  which can be used later on
 to test whether any given element is in use.
+
+\param Estimate parameters
+The \ref apop_estimate_parameters are the details for how an \ref
+apop_estimate should do its work; currently it is just the specifications
+for tolerances, step sizes, starting points, et cetera, for \ref apop_maximum_likelihood.
 
 */
 

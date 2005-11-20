@@ -411,11 +411,12 @@ negshell_params		nsp;
 \param data	the data matrix
 \param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
 \param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
-\param	starting_pt	an array of doubles suggesting a starting point. If NULL, use zero.
-\param step_size	the initial step size.
-\param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
-\param verbose		Y'know.
-\param method		0: Nelder-Mead simplex<br>
+\param params	an \ref apop_estimation_params structure, featuring:<br>
+starting_pt	an array of doubles suggesting a starting point. If NULL, use zero.<br>
+step_size	the initial step size.<br>
+tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
+verbose		Y'know.<br>
+method		0: Nelder-Mead simplex<br>
 			1: conjugate gradient. If no gradient is available, use numerical approximations. (default)
 \return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
