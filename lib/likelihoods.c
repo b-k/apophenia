@@ -209,7 +209,15 @@ gsl_matrix	*out	= gsl_matrix_alloc(beta->size, beta->size);
 	return out;
 }
 
-static void calculate_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data){
+/** Feeling lazy? Rather than doing actual pencil-and-paper math to find
+your variance-covariance matrix, just use the negative inverse of the Hessian.
+
+\param dist	The model
+\param est	The estimate, with the parameters already calculated. The var/covar matrix will be placed in est->covariance.
+\param data	The data
+\ingroup basic_stats
+*/
+void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data){
 int		i;
 double 		(*tmp) (const gsl_vector *beta, void *d);
 gsl_matrix	*hessian;
@@ -339,7 +347,7 @@ negshell_params			nsp;
 		gsl_vector_free(x);
 	est->log_likelihood	= dist.log_likelihood(est->parameters, data);
 	if (est->uses.covariance) 
-		calculate_var_covar_matrix(dist, est, data);
+		apop_numerical_var_covar_matrix(dist, est, data);
 	return est;
 }
 

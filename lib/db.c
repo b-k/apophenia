@@ -636,7 +636,7 @@ calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
 \todo fix the tab_list bug.
 */
 void apop_db_merge_table(char *db_file, char *tabname){
-char		***tab_list;
+//char		***tab_list;
 int		row_ct;
 	if (db_file !=NULL)
 		apop_query("attach database \"%s\" as merge_me;", db_file);

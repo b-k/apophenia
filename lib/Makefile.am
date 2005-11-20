@@ -15,8 +15,8 @@ libapophenia_la_SOURCES = conversions.c db.c likelihoods.c linear_algebra.c boot
 			vasprintf/asnprintf.c vasprintf/printf-args.c 				\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c vasprintf/printf-parse.c 	\
 			vasprintf/vasprintf.c  							\
-			model/apop_gamma.c model/apop_rank_gamma.c model/apop_normal.c 	\
-			model/apop_probit.c model/apop_exponential.c 				\
+			model/apop_gamma.c model/apop_rank_gamma.c model/apop_normal.c 		\
+			model/apop_probit.c model/apop_exponential.c model/apop_rank_exponential.c\
 			model/apop_waring.c model/apop_yule.c model/apop_zipf.c 		\
 			wn/wnasrt.c  wn/wnbridge.c  wn/wncnjdn2.c  wn/wnconjg.c  wn/wnmatrices.c\
 			wn/wnmbtr.c wn/wnmem.c  wn/wnmemg.c  wn/wnmemn.c  wn/wnvect.c

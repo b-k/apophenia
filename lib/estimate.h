@@ -125,7 +125,7 @@ The \ref apop_OLS page has a sample program which uses an <tt>apop_estimate</tt>
 */
 typedef struct apop_estimate{
 	gsl_vector 	*parameters, *params, *confidence, *predicted, *residuals;
-	gsl_matrix 	*covariance, *cov;
+	gsl_matrix 	*covariance;
 	double		log_likelihood;
 	apop_inventory	uses;
 	apop_name	*names;

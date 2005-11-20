@@ -91,9 +91,21 @@ float 		d_a 	= 0,
   list of numbers to which \f$\alpha\f$ and \f$\beta\f$ will be fit,
   that hapens to be in grid format.
 
-  Here, we assume that the data is ranking frequencies: data[7][0] is the number of times the first-ranked item appears in data set number seven, data[7][1] is the number of times the second-ranked item appears, et cetera. 
-
 apop_gamma_rank.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+
+Here, we assume that the data is ranking frequencies: data[7][0] is
+the number of times the first-ranked item appears in data set number
+seven, data[7][1] is the number of times the second-ranked item appears,
+et cetera. Below, \f$x_k\f$ is the count (or percentage) of the \f$k\f$th ranked item.
+Also, \f$d ln \gamma(k) \equiv \psi(k)\f$.
+
+\f$G(x, a, b) 	= \prod_{k=1}^n \left(1/(\Gamma(a) b^a)  k^{a-1} e^{-k/b}\right)^{x_k}\f$
+
+\f$ln G(x, a, b)= \sum_{k=1}^n x_k (-ln \Gamma(a) - a ln b + (a-1)ln(k) + -k/b)\f$
+
+\f$d ln G/ da	= \sum_{k=1}^n x_k ( -\psi(a) - ln b + ln(k)) \f$
+
+\f$d ln G/ db	= \sum_{k=1}^n x_k (-a/b - k) \f$
 
 \ingroup models
 */

@@ -353,3 +353,82 @@ int		i, index;
 	return pctiles;
 
 }
+
+/** Returns the sum of the elements of a matrix. Occasionally convenient.
+
+  \param m	the matrix to be summed. 
+\ingroup convenience_fns*/
+long double apop_matrix_sum(gsl_matrix *m){
+int 		i,j;
+long double	sum	= 0;
+	for (j=0; j< m->size1; j++)
+		for (i=0; i< m->size2; i++)
+			sum     += (gsl_matrix_get(m, j, i));
+	return sum;
+}
+
+/** Returns the mean of all elements of a matrix.
+
+  \param data	the matrix to be averaged. 
+\ingroup convenience_fns*/
+double apop_matrix_mean(gsl_matrix *data){
+double          avg     = 0;
+int             i,j, cnt= 0;
+double          x, ratio;
+        for(i=0; i < data->size1; i++)
+                for(j=0; j < data->size1; j++){
+                        x       = gsl_matrix_get(data, i,j);
+                        ratio   = cnt/(cnt+1.0);
+                        cnt     ++;
+                        avg     *= ratio;
+                        avg     += x/(cnt +0.0);
+                }
+	return avg;
+}
+
+/** Returns the variance of all elements of a matrix, given the
+mean. If you want to calculate both the mean and the variance, use \ref
+apop_matrix_mean_and_var.
+
+  \param data	the matrix to be averaged. 
+\param m	the pre-calculated mean
+\ingroup convenience_fns*/
+double apop_matrix_var_m(gsl_matrix *data, double mean){
+double          avg2    = 0;
+int             i,j, cnt= 0;
+double          x, ratio;
+        for(i=0; i < data->size1; i++)
+                for(j=0; j < data->size1; j++){
+                        x       = gsl_matrix_get(data, i,j);
+                        ratio   = cnt/(cnt+1.0);
+                        cnt     ++;
+                        avg2    *= ratio;
+                        avg2    += gsl_pow_2(x)/(cnt +0.0);
+                }
+        return mean - gsl_pow_2(mean); //E[x^2] - E^2[x]
+}
+
+/** Returns the mean and variance of all elements of a matrix.
+
+  \param data	the matrix to be averaged. 
+\param	mean	where to put the mean to be calculated
+\param	var	where to put the variance to be calculated
+\ingroup convenience_fns*/
+void apop_matrix_mean_and_var(gsl_matrix *data, double *mean, double *var){
+double          avg     = 0,
+                avg2    = 0;
+int             i,j, cnt= 0;
+double          x, ratio;
+        for(i=0; i < data->size1; i++)
+                for(j=0; j < data->size1; j++){
+                        x       = gsl_matrix_get(data, i,j);
+                        ratio   = cnt/(cnt+1.0);
+                        cnt     ++;
+                        avg     *= ratio;
+                        avg2    *= ratio;
+                        avg     += x/(cnt +0.0);
+                        avg2    += gsl_pow_2(x)/(cnt +0.0);
+                }
+	*mean	= avg;
+        *var	= avg2 - gsl_pow_2(avg); //E[x^2] - E^2[x]
+}

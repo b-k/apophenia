@@ -3,21 +3,15 @@
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
 
-#include "model.h"
-
 //The default list. Probably don't need them all.
 #include "name.h"
 #include "bootstrap.h"
 #include "regression.h"
 #include "conversions.h"
 #include "likelihoods.h"
-#include "model.h"
-#include "linear_algebra.h"
+#include <apophenia/model.h>
+#include <apophenia/linear_algebra.h>
 #include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_histogram.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_permutation.h>
 #include <stdio.h>
 #include <assert.h>
 static double normal_log_likelihood(const gsl_vector *beta, void *d);
@@ -31,6 +25,24 @@ static double keep_away(double value, double limit,  double base){
 //The Normal (gaussian) distribution
 //////////////////
 
+/** The normal estimate
+\todo Get off my ass and check the closed-form var-covar matrix, instead of using the inverse hessian. */
+static apop_estimate * normal_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+	apop_inventory_filter(uses, apop_normal.inventory_filter);
+apop_estimate 	*est	= apop_estimate_alloc(0,2,NULL, *uses);
+double		mean, var, std_dev;
+	apop_matrix_mean_and_var(data, &mean, &var);	
+	std_dev	= sqrt(var);
+	gsl_vector_set(est->parameters, 0, mean);
+	gsl_vector_set(est->parameters, 1, std_dev);
+	if (est->uses.log_likelihood)
+		est->log_likelihood	= normal_log_likelihood(est->parameters, data);
+	if (est->uses.covariance)
+		apop_numerical_var_covar_matrix(apop_normal, est, data);
+	return est;
+}
+
+/*
 static apop_estimate * normal_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
 	apop_inventory_filter(uses, apop_normal.inventory_filter);
 apop_estimate *est	= apop_estimate_alloc(0,2,NULL, *uses);
@@ -55,6 +67,7 @@ double          x, ratio;
 		est->log_likelihood	= normal_log_likelihood(est->parameters, data);
 	return est;
 }
+*/
 
 
 /** The log likelihood function for the Normal.

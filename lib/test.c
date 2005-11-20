@@ -6,7 +6,9 @@ you'd like more thorough tests, feel free to write them.
 
 #include <gsl/gsl_sf_zeta.h>
 
-int test_normal(gsl_rng *r){
+
+
+int test_distribution(gsl_rng *r, apop_model model, apop_estimation_params params){
 long int	runsize		= 1000,
 		rowsize		= 50,
 		rowsum;
@@ -26,28 +28,31 @@ gsl_vector*	vv;
 	//generate.
 	for (i=0; i< runsize; i++){
 		for (j=0; j< rowsize; j++){
-			gsl_matrix_set(data, i, j, apop_normal.rng(r, true_parameter));
+			gsl_matrix_set(data, i, j, model.rng(r, true_parameter));
 		}
 	}
-	e	= apop_maximum_likelihood(data,&inv, apop_normal, dummy, 1e-5, 1e-5, 1);
-	for (i=0; i < apop_normal.parameter_ct; i++){
+	e	= model.estimate(data,&inv, &params);
+	//e	= apop_maximum_likelihood(data,&inv, model, params);
+	for (i=0; i < model.parameter_ct; i++){
 		printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters,i));
 		score += (fabs(gsl_vector_get(e->parameters,i) - true_parameter[i]) >= 1e-1);
 		//apop_estimate_print(e);
 	}
 
+/*
 	//wn versions:
-	e	= apop_wn_maximum_likelihood(data,&inv,apop_normal, dummy, 1e-5, 1e-5, 1);
-	for (i=0; i < apop_normal.parameter_ct; i++){
+	e	= apop_wn_maximum_likelihood(data,&inv,model, dummy, 1e-5, 1e-5, 1);
+	for (i=0; i < model.parameter_ct; i++){
 		printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters,i));
 		score += (fabs(gsl_vector_get(e->parameters,i) - true_parameter[i]) >= 1e-1);
 		//apop_estimate_print(e);
 	}
+*/
 	//return score;
 	return 0;
 }
 
-int test_distribution(gsl_rng *r, apop_model dist){
+int test_rank_distribution(gsl_rng *r, apop_model dist){
 long int	j,
 		runsize		= 500,
 		rowsize		= 100,
@@ -66,6 +71,11 @@ apop_inventory	inv;
 apop_name	*summary_names;
 gsl_vector_view	v;
 gsl_vector*	vv;
+apop_estimation_params params;
+        params.method           = 1;
+        params.step_size        = 1e-2;
+        params.tolerance        = 1e-3;
+        params.verbose          = 1;
 	apop_inventory_set(&inv, 1);
 	//generate.
 	for (i=0; i< runsize; i++){
@@ -74,8 +84,8 @@ gsl_vector*	vv;
 			z	= dist.rng(r, true_parameter);
 			if (!strcmp(dist.name, "Yule"))
 				z	= apop_waring.rng(r, true_y_parameter);
-			if (!strcmp(dist.name, "Exponential"))
-				z	++;
+			if (!strcmp(dist.name, "Exponential_rank"))
+				z++;
 			assert (z >=1);
 			if (z < rowsize){	//else, just throw it out.
 				apop_matrix_increment(data, i, (int)z-1, 1);
@@ -96,13 +106,14 @@ gsl_vector*	vv;
 	printf("\n");
 		//for (j=0; j< rowsize; j++){printf("%g ",apop_zipf.log_likelihood(zipf_param-1, j+1));}
 
-	e	= apop_maximum_likelihood(data2,&inv, dist, dummy, 1e-1, 1e-2, 1);
+	e	= apop_maximum_likelihood(data2,&inv, dist, params);
 	for (i=0; i < dist.parameter_ct; i++){
 		printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters,i));
 		score += (fabs(gsl_vector_get(e->parameters,i) - true_parameter[i]) >= 1e-1);
 		//apop_estimate_print(e);
 	}
 
+/*
 	//wn versions:
 	e	= apop_wn_maximum_likelihood(data2,&inv, dist, dummy, 1e-1, 1e-2, 1);
 	for (i=0; i < dist.parameter_ct; i++){
@@ -110,6 +121,7 @@ gsl_vector*	vv;
 		score += (fabs(gsl_vector_get(e->parameters,i) - true_parameter[i]) >= 1e-1);
 		//apop_estimate_print(e);
 	}
+*/
 	//return score;
 	return 0;
 }
@@ -164,20 +176,26 @@ int test_harmonic(); //in distributions.c
 			   else  	{printf("failed.\n");exit(0);}
 int main(){
 gsl_rng *       r;
+apop_estimation_params params;
+        params.method           = 1;
+        params.step_size        = 1e-2;
+        params.tolerance        = 1e-3;
+        params.verbose          = 1;
+
 	gsl_rng_env_setup();
 	r=gsl_rng_alloc(gsl_rng_default); 
 
 	printf("Exponential distribution test: ");
-	do_test(test_distribution(r, apop_exponential));
+	do_test(test_distribution(r, apop_exponential,params));
 
 	printf("Yule test: ");
-	do_test(test_distribution(r, apop_yule));
+	do_test(test_rank_distribution(r, apop_yule));
 
 	printf("Zipf test: ");
-	do_test(test_distribution(r, apop_zipf));
+	do_test(test_rank_distribution(r, apop_zipf));
 
 	printf("Normal test: ");
-	do_test(test_normal(r));
+	do_test(test_distribution(r,apop_normal, params));
 
 	printf("apop_matrix_summarize test:");
 	do_test(test_summarize());

@@ -915,7 +915,6 @@ local void compute_fract_too_small_ratio_df1_noise
 {
   int i;
   int total_count,too_small_count;
-  double sum;
 
   too_small_count = 0;
   total_count = 0;

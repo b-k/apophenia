@@ -48,13 +48,11 @@ inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
 inline double apop_double_abs(double a);
 	//This has to exist somewhere...
 
-
 double apop_random_beta(double m, double v, gsl_rng *r) ;
 	/*Give me mean m and variance v, and I'll give you
 	 * n draws from the appropriate beta dist.
 	 * remember: 0<m<1, and v is tiny (<<1/12). You get NaNs if no
 	 * appropriate distribution exists.*/
-
 
 double apop_multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* sigma, int first_use);
 	//Evaluate a multivariate normal(mu, sigma) at the point x.
@@ -70,3 +68,8 @@ double apop_random_double(double min, double max, gsl_rng *r);
 
 //produce a 101-element vector of percentiles.
 double * apop_percentiles(gsl_vector *data, char rounding);
+
+long double apop_matrix_sum(gsl_matrix *m);
+double apop_matrix_mean(gsl_matrix *data);
+double apop_matrix_var_m(gsl_matrix *data, double mean);
+void apop_matrix_mean_and_var(gsl_matrix *data, double *mean, double *var);
