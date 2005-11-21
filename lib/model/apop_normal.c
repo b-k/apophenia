@@ -30,44 +30,16 @@ static double keep_away(double value, double limit,  double base){
 static apop_estimate * normal_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
 	apop_inventory_filter(uses, apop_normal.inventory_filter);
 apop_estimate 	*est	= apop_estimate_alloc(0,2,NULL, *uses);
-double		mean, var, std_dev;
+double		mean, var;
 	apop_matrix_mean_and_var(data, &mean, &var);	
-	std_dev	= sqrt(var);
 	gsl_vector_set(est->parameters, 0, mean);
-	gsl_vector_set(est->parameters, 1, std_dev);
+	gsl_vector_set(est->parameters, 1, var);
 	if (est->uses.log_likelihood)
 		est->log_likelihood	= normal_log_likelihood(est->parameters, data);
 	if (est->uses.covariance)
 		apop_numerical_var_covar_matrix(apop_normal, est, data);
 	return est;
 }
-
-/*
-static apop_estimate * normal_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
-	apop_inventory_filter(uses, apop_normal.inventory_filter);
-apop_estimate *est	= apop_estimate_alloc(0,2,NULL, *uses);
-double		avg	= 0,
-		avg2	= 0;
-int		i,j, cnt= 0;
-
-double          x, ratio;
-	for(i=0; i < data->size1; i++)
-		for(j=0; j < data->size1; j++){
-    			x 	= gsl_matrix_get(data, i,j);
-    			ratio	= cnt/(cnt+1.0);
-    			cnt	++;
-    			avg	*= ratio;
-    			avg2	*= ratio;
-    			avg	+= x/(cnt +0.0);
-    			avg2 	+= gsl_pow_2(x)/(cnt +0.0);
-  		}
-	gsl_vector_set(est->parameters,0, avg);
-	gsl_vector_set(est->parameters,1, (avg2 - gsl_pow_2(avg))); //E[x^2] - E^2[x]
-	if (est->uses.log_likelihood)
-		est->log_likelihood	= normal_log_likelihood(est->parameters, data);
-	return est;
-}
-*/
 
 
 /** The log likelihood function for the Normal.
@@ -151,10 +123,9 @@ static double normal_rng(gsl_rng *r, double *a){
 
 /** You know it, it's your attractor in the limit, it's the Gaussian distribution.
 
-Generally, fitting a Normal distribution via maximum likelihood is silly
-(\ref apop_mean and \ref apop_var will find the parameters with maximum
-likelihood just as quickly), but there exist reasons for wanting this
-as an \ref apop_model object, so here you are.
+Where possible, Apophenia tries to report the variance, \f$\sigma^2\f$,
+not the standard deviation, \f$\sigma\f$. So the first parameter for
+this model is the mean, and the second is the variance.
 
 The log likelihood function and dlog likelihood don't care about your
 rows of data; if you have an 8 x 7 data set, it will give you the log
