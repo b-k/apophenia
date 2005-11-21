@@ -35,7 +35,6 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
-
 static apop_estimate * yule_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
 	apop_inventory_filter(uses, apop_yule.inventory_filter);
 	return apop_maximum_likelihood(data, uses, apop_yule, *(apop_estimation_params *)parameters);
@@ -74,13 +73,7 @@ static void yule_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gr
 	//Psi is the derivative of the log gamma function.
 float		bb		= gsl_vector_get(beta, 0);
 static double	dka		= 0;
-int 		i, k;
 gsl_matrix	*data		= d;
-double		bb_minus_one_inv= 1/(bb-1),
-		psi_bb		= gsl_sf_psi(bb),
-		psi_bb_k,
-		p,
-		d_bb		= 0;
 	if (bb < 1) {		//keep away
 		if (dka ==0){
 			gsl_vector 	*b_ka	= gsl_vector_alloc(1);
@@ -94,6 +87,12 @@ double		bb_minus_one_inv= 1/(bb-1),
 		gsl_vector_set(gradient,0, keep_away(bb, 1, dka));
 		return;
 	}			//else:
+int 		i, k;
+double		bb_minus_one_inv= 1/(bb-1),
+		psi_bb		= gsl_sf_psi(bb),
+		psi_bb_k,
+		p,
+		d_bb		= 0;
 	for (k=0; k< data->size2; k++){
 		psi_bb_k= gsl_sf_psi(k +1 + bb);
 		p	= bb_minus_one_inv + psi_bb - psi_bb_k;
@@ -158,6 +157,6 @@ apop_model apop_yule = {"Yule", 1,
 	0,	//predicted
 	0,	//residuals
 	1,	//log_likelihood
-	1	//names;
+	0	//names;
 },	 
 	yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, yule_rng};

@@ -74,6 +74,7 @@ gsl_vector*	vv;
 apop_estimation_params params;
         params.method           = 1;
         params.step_size        = 1e-2;
+        params.starting_pt      = dummy;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
 	apop_inventory_set(&inv, 1);
@@ -106,7 +107,8 @@ apop_estimation_params params;
 	printf("\n");
 		//for (j=0; j< rowsize; j++){printf("%g ",apop_zipf.log_likelihood(zipf_param-1, j+1));}
 
-	e	= apop_maximum_likelihood(data2,&inv, dist, params);
+	//e	= apop_maximum_likelihood(data2,&inv, dist, params);
+	e	= dist.estimate(data2,&inv, &params);
 	for (i=0; i < dist.parameter_ct; i++){
 		printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters,i));
 		score += (fabs(gsl_vector_get(e->parameters,i) - true_parameter[i]) >= 1e-1);

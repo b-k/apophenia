@@ -376,7 +376,7 @@ double          avg     = 0;
 int             i,j, cnt= 0;
 double          x, ratio;
         for(i=0; i < data->size1; i++)
-                for(j=0; j < data->size1; j++){
+                for(j=0; j < data->size2; j++){
                         x       = gsl_matrix_get(data, i,j);
                         ratio   = cnt/(cnt+1.0);
                         cnt     ++;
@@ -398,7 +398,7 @@ double          avg2    = 0;
 int             i,j, cnt= 0;
 double          x, ratio;
         for(i=0; i < data->size1; i++)
-                for(j=0; j < data->size1; j++){
+                for(j=0; j < data->size2; j++){
                         x       = gsl_matrix_get(data, i,j);
                         ratio   = cnt/(cnt+1.0);
                         cnt     ++;
@@ -420,7 +420,7 @@ double          avg     = 0,
 int             i,j, cnt= 0;
 double          x, ratio;
         for(i=0; i < data->size1; i++)
-                for(j=0; j < data->size1; j++){
+                for(j=0; j < data->size2; j++){
                         x       = gsl_matrix_get(data, i,j);
                         ratio   = cnt/(cnt+1.0);
                         cnt     ++;

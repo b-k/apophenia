@@ -55,10 +55,12 @@ void apop_inventory_filter(apop_inventory *out, apop_inventory filter){
 		apop_inventory_copy(filter, out);
 	}
 	out->parameters	&= filter.parameters;
-	out->predicted	&= filter.predicted;
-	out->confidence	&= filter.confidence;
 	out->covariance	&= filter.covariance;
+	out->confidence	&= filter.confidence;
+	out->predicted	&= filter.predicted;
+	out->residuals	&= filter.residuals;
 	out->log_likelihood &= filter.log_likelihood;
+	out->names &= filter.names;
 }
 
 /** Allocate an \ref apop_estimate.

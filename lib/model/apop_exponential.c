@@ -21,7 +21,7 @@ static double keep_away(double value, double limit,  double base){
 
 static apop_estimate * exponential_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
 	apop_inventory_filter(uses, apop_exponential.inventory_filter);
-apop_estimate 	*est	= apop_estimate_alloc(0,1,NULL, *uses);
+apop_estimate 	*est	= apop_estimate_alloc(data->size1,1,NULL, *uses);
 	gsl_vector_set(est->parameters, 0, apop_matrix_mean(data));
 	if (est->uses.log_likelihood)
 		est->log_likelihood	= exponential_log_likelihood(est->parameters, data);
@@ -129,8 +129,7 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Write a second object for the plain old not-network data Exponential.
 */
 apop_model apop_exponential = {"Exponential", 1,
-	{
-	1,	//parameters
+{	1,	//parameters
 	1,	//covariance
 	1,	//confidence
 	0,	//predicted
