@@ -48,3 +48,4 @@ tar xz < apophenia-$version.tar.gz
 cd apophenia-$version
 	./configure; make; sudo make install
 cd ..
+rm -rf $junkdir

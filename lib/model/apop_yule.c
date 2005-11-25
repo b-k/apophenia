@@ -41,7 +41,7 @@ static apop_estimate * yule_estimate(gsl_matrix * data, apop_inventory *uses, vo
 }
 
 static double yule_log_likelihood(const gsl_vector *beta, void *d){
-float		bb	= gsl_vector_get(beta, 0);
+float           bb	= gsl_vector_get(beta, 0);
 static double	ka	= 0;
 	if (bb < 1) {		//run away
 		if (ka ==0){
@@ -55,9 +55,9 @@ static double	ka	= 0;
 int 		i, k;
 gsl_matrix 	*data		= d;
 float 		ln_k, ln_bb_k,
-		likelihood 	= 0,
-		ln_bb		= gsl_sf_lngamma(bb),
-		ln_bb_less_1	= log(bb-1);
+		likelihood 	    = 0,
+		ln_bb		    = gsl_sf_lngamma(bb),
+		ln_bb_less_1    = log(bb-1);
 	for (k=0; k< data->size2; k++)	{
 		if (k>=1) 	ln_k	= gsl_sf_lngamma(k+1);
 		else		ln_k	= 0;
@@ -71,9 +71,9 @@ float 		ln_k, ln_bb_k,
 
 static void yule_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
-float		bb		= gsl_vector_get(beta, 0);
+float           bb		= gsl_vector_get(beta, 0);
 static double	dka		= 0;
-gsl_matrix	*data		= d;
+gsl_matrix	    *data	= d;
 	if (bb < 1) {		//keep away
 		if (dka ==0){
 			gsl_vector 	*b_ka	= gsl_vector_alloc(1);
@@ -121,7 +121,7 @@ apop_yule_rng(r, 1.4);
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
 static double yule_rng(gsl_rng * r, double* a){
-double 		e1, e2;
+double 	e1, e2;
 int		x;
 	e1	= gsl_ran_exponential(r, 1);
 	e2	= gsl_ran_exponential(r, 1);
@@ -159,4 +159,4 @@ apop_model apop_yule = {"Yule", 1,
 	1,	//log_likelihood
 	0	//names;
 },	 
-	yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, yule_rng};
+	yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, {0, {}}, yule_rng};

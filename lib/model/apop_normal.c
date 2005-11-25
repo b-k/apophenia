@@ -10,6 +10,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include "conversions.h"
 #include "likelihoods.h"
 #include <apophenia/model.h>
+#include <apophenia/stats.h>
 #include <apophenia/linear_algebra.h>
 #include <gsl/gsl_rng.h>
 #include <stdio.h>
@@ -149,9 +150,7 @@ apop_model apop_normal = {"Normal", 2,
 	0,	//residuals
 	1,	//log_likelihood
 	1	//names;
-}, normal_estimate,
-	 normal_log_likelihood, normal_dlog_likelihood, NULL, normal_rng};
-//apop_model apop_normal = {"Normal", 2, apop_normal_log_likelihood, NULL, NULL, 0, NULL, apop_normal_rng};
+}, normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,{0, {}}, normal_rng};
 
 /** This is a synonym for \ref apop_normal, q.v.
 \ingroup models
@@ -165,5 +164,4 @@ apop_model apop_gaussian = {"Gaussian", 2,
 	0,	//residuals
 	1,	//log_likelihood
 	1	//names;
-}, normal_estimate,
-	 normal_log_likelihood, normal_dlog_likelihood, NULL, normal_rng};
+}, normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,{0, {}}, normal_rng};

@@ -75,6 +75,9 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist,
   apop_xxx_mle function.
   */
 
+gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, void * d);
+gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, void * d);
+
 /* Find the var/covar matrix via the hessian. */
 void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data);
 

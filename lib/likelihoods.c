@@ -107,6 +107,7 @@ sort of annoying little detail that Apophenia is intended to take care
 of for you. The next few functions do the negation, so you have one
 less sign that you have to remember. 
 
+These fns also take care of checking constraints, if any.
 
 */
 typedef struct negshell_params{
@@ -116,29 +117,47 @@ typedef struct negshell_params{
 
 static double negshell (const gsl_vector * beta, void * params){
 negshell_params	*p			= params;
-/*
-gsl_vector *returned_beta		= gsl_vector_alloc(beta->size);
+gsl_vector 	*returned_beta		= gsl_vector_alloc(beta->size);
 int		i;
-double		penalty, 
-		total_penalty		= 0;
-static gsl_vector *last_good_beta	= NULL;
+double		penalty; 
+//static gsl_vector *last_good_beta	= NULL;
 static double	base_for_penalty	= 0;
-	for (i=0; i< p->model.constraint_ct; i++){
-		penalty	= (p->model.constraint)[i](beta, p->d, returned_beta);
-		if (penalty > 0)
-			total_penalty	-=  penalty * p->model.log_likelihood(returned_beta, p->d);
+	for (i=0; i< p->model.constraint.count; i++){
+		penalty	= p->model.constraint.constraint[i](beta, p->d, returned_beta);
+		if (penalty > 0){
+			base_for_penalty	= p->model.log_likelihood(returned_beta, p->d);
+			gsl_vector_free(returned_beta);
+			return -base_for_penalty + penalty;
+		}
 	}
-	if (total_penalty == 0)
-	*/
+	//If you're here, no constraints bound.
+	gsl_vector_free(returned_beta);
 	return - p->model.log_likelihood(beta, p->d);
-	////else
-	//return total_penalty;
 }
 
 static void dnegshell (const gsl_vector * beta, void * params, gsl_vector * g){
-negshell_params *p	= params;
+negshell_params *p		= params;
+gsl_vector 	*returned_beta	= gsl_vector_alloc(beta->size);
+gsl_vector 	*penalty_gradient= gsl_vector_calloc(beta->size);
+gsl_vector 	*penalty_total	= gsl_vector_calloc(beta->size);
+int		i;
+double 		(*tmp) (const gsl_vector *beta, void *d);
+	for (i=0; i< p->model.constraint.count; i++){
+		tmp			= apop_fn_for_derivative;
+		apop_fn_for_derivative 	= negshell;
+		apop_numerical_gradient(returned_beta, params , penalty_gradient);
+		apop_fn_for_derivative 	= tmp;
+		gsl_vector_add(penalty_total, penalty_gradient);
+	}
 	p->model.dlog_likelihood(beta, p->d, g);
+	for (i=0; i< beta->size; i++){
+		if (gsl_vector_get(penalty_total,i) != 0){
+			gsl_vector_set(g, i, -gsl_vector_get(penalty_total,i));
+		}
+	}
 	gsl_vector_scale(g, -1);
+	gsl_vector_free(returned_beta);
+	gsl_vector_free(penalty_gradient);
 }
 
 static void fdf_shell(const gsl_vector *beta, void *params, double *f, gsl_vector *df){
@@ -184,17 +203,14 @@ double		return_me;
 	return return_me;
 }
 
-/** finds the Hessian.
+/** Calculates the matrix of second derivatives of the log likelihood function.
 
-Calculate the matrix of second derivatives of a function.
-
-If the function is a log likelihood, then the information matrix is the inverse of the negation of this.
-
+The information matrix is the inverse of the negation of this.
 
 \todo This is inefficient, by an order of n, where n is the number of parameters.
 \ingroup linear_algebra
  */
-gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, void * d){
+gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, void * d){
 gsl_vector_view	v;
 gsl_matrix	*out	= gsl_matrix_alloc(beta->size, beta->size);
 	likelihood_for_hess	= dist.log_likelihood;
@@ -207,6 +223,14 @@ gsl_matrix	*out	= gsl_matrix_alloc(beta->size, beta->size);
 		apop_numerical_gradient(beta, d , &(v.vector));
 	}
 	return out;
+}
+
+/** Calculate the Hessian.
+
+  This is a synonym for \ref apop_numerical_second_derivative, q.v.
+*/
+gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, void * d){
+	return apop_numerical_second_derivative(dist, beta, d);
 }
 
 /** Feeling lazy? Rather than doing actual pencil-and-paper math to find

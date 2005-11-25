@@ -30,6 +30,17 @@ apop_estimate 	*est	= apop_estimate_alloc(data->size1,1,NULL, *uses);
 	return est;
 }
 
+static double beta_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
+double  limit       = 0,
+        tolerance   = 1e-1;
+double  l_vector_get(beta, 0);
+    if (mu > limit) 
+        return 0;
+    //else:
+    gsl_vector_set(returned_beta, 0, limit + tolerance);
+    return limit - mu;    
+}
+
 /** The exponential distribution. A one-parameter likelihood fn.
 \f$Z(\mu,k) 		= \sum_k 1/\mu e^{-k/\mu} 			\f$ <br>
 \f$ln Z(\mu,k) 		= \sum_k -\ln(\mu) - k/\mu			\f$ <br>
@@ -45,6 +56,17 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Set up an exponential object which makes use of the GSL.
 \todo Check that the borderline work here is correct.
 */
+static double exponential_log_likelihood(const gsl_vector *beta, void *d){
+gsl_matrix	*data	= d;
+double		mu		= gsl_vector_get(beta, 0),
+		llikelihood;
+	llikelihood	 = -apop_matrix_sum(data);
+	llikelihood	/= mu;
+	llikelihood	-= data->size1 * data->size2 * log(mu);
+	return llikelihood;
+}
+
+/*
 static double exponential_log_likelihood(const gsl_vector *beta, void *d){
 double		mu		= gsl_vector_get(beta, 0),
 		llikelihood;
@@ -64,6 +86,7 @@ gsl_matrix	*data		= d;
 	llikelihood	-= data->size1 * data->size2 * log(mu);
 	return llikelihood;
 }
+*/
 
 
 /** The exponential distribution. A one-parameter likelihood fn.
@@ -137,6 +160,6 @@ apop_model apop_exponential = {"Exponential", 1,
 	1,	//log_likelihood
 	1	//names;
 },
-	 exponential_estimate, exponential_log_likelihood, exponential_dlog_likelihood, NULL,  exponential_rng};
+	 exponential_estimate, exponential_log_likelihood, exponential_dlog_likelihood, NULL, {1, {beta_greater_than_x_constraint}}, exponential_rng};
 
 

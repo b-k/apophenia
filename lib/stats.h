@@ -12,6 +12,7 @@
 	//The following are just convenient hooks to gsl vector functions.
 	//var_m lets you input a mean if you've already calculated it, saving
 	//some repetition.
+inline long double apop_sum(gsl_vector *in);
 inline double apop_mean(gsl_vector *in);
 inline double apop_var(gsl_vector *in);
 inline double apop_var_m(gsl_vector *in, double mean);

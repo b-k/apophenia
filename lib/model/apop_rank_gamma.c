@@ -4,8 +4,6 @@
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
 
-#include "model.h"
-
 
 //The default list. Probably don't need them all.
 #include "name.h"
@@ -18,70 +16,79 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-static double keep_away(double value, double limit,  double base){
-	return (50000+fabs(value - limit)) * base;
+static apop_estimate * gamma_rank_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+    apop_inventory_filter(uses, apop_gamma_rank.inventory_filter);
+    return apop_maximum_likelihood(data, uses, apop_gamma_rank, *(apop_estimation_params *)parameters);
 }
 
-static apop_estimate * gamma_rank_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
-	apop_inventory_filter(uses, apop_gamma_rank.inventory_filter);
-	return apop_maximum_likelihood(data, uses, apop_gamma_rank, *(apop_estimation_params *)parameters);
+static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
+double  limit0      = 0,
+        limit1      = 0,
+        tolerance   = 1e-1,
+        beta0       = gsl_vector_get(beta, 0),
+        beta1       = gsl_vector_get(beta, 1);
+    if (beta0 > limit0 && beta1 > limit1) 
+        return 0;
+    //else:
+    gsl_vector_set(returned_beta, 0, GSL_MAX(limit0 + tolerance, beta0));
+    gsl_vector_set(returned_beta, 0, GSL_MAX(limit1 + tolerance, beta1));
+    return GSL_MAX(limit0 - beta0, 0) + GSL_MAX(limit1 - beta1, 0);    
 }
 
 static double gamma_rank_log_likelihood(const gsl_vector *beta, void *d){
-float		a	= gsl_vector_get(beta, 0),
-		b	= gsl_vector_get(beta, 1);
-	if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
-static double		ka = 0;
-	if (b <0 || a < 0) {
-		if (ka==0){
-		gsl_vector *	b_ka	= gsl_vector_alloc(2);
-			gsl_vector_set(b_ka, 0, GSL_MAX(b, 0) + 1e-6);
-			gsl_vector_set(b_ka, 0, GSL_MAX(a, 0) + 1e-6);
-	 		ka	= gamma_rank_log_likelihood(b_ka, d);
-			gsl_vector_free (b_ka);
-		}
-		if (b<=0) 	return keep_away(b, 0, ka);
-		else 		return keep_away(a, 0, ka);
-	}			//else:
-int 		i, k;
-gsl_matrix	*data		= d;
-float 		llikelihood 	= 0,
-		ln_ga		= gsl_sf_lngamma(a),
-		ln_b		= log(b),
-		a_ln_b		= a * ln_b,
-		ln_k;
-	for (k=0; k< data->size2; k++){
-		ln_k	= log(k+1);
-		for (i=0; i< data->size1; i++)
-			llikelihood	+= gsl_matrix_get(data, i, k) * (-ln_ga - a_ln_b + (a-1) * ln_k  - (k+1)/b);
-	}
-	return llikelihood;
+float       a           = gsl_vector_get(beta, 0),
+            b           = gsl_vector_get(beta, 1);
+    //assert (a>0 && b>0);
+    if (a<=0 && b<=0) printf("assertion failed.\n");
+    if (gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
+int         i, k;
+gsl_matrix  *data       = d;
+float       llikelihood = 0,
+            ln_ga       = gsl_sf_lngamma(a),
+            ln_b        = log(b),
+            a_ln_b      = a * ln_b,
+            ln_k;
+    for (k=0; k< data->size2; k++){
+        ln_k    = log(k+1);
+        for (i=0; i< data->size1; i++)
+            llikelihood    += gsl_matrix_get(data, i, k) * (-ln_ga - a_ln_b + (a-1) * ln_k  - (k+1)/b);
+    }
+    return llikelihood;
 }
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
 static void gamma_rank_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
-float		a	= gsl_vector_get(beta, 0),
-		b	= gsl_vector_get(beta, 1);
-	//if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;	
-						//a sign to the minimizer to look elsewhere.
-int 		i, k;
-gsl_matrix	*data	= d;
-float 		d_a 	= 0,
-		d_b	= 0,
-		psi_a	= gsl_sf_psi(a),
-		ln_b	= log(b),
-		x, ln_k;
-	for (k=0; k< data->size2; k++){
-		ln_k	= log(k +1);
-		for (i=0; i< data->size1; i++){
-			x	= gsl_matrix_get(data, i, k);
-			d_a	+= x * (-psi_a - ln_b + ln_k);
-			d_b	+= x *(-a/b - (k+1));
-		}
-		}
-	gsl_vector_set(gradient,0, d_a);
-	gsl_vector_set(gradient,1, d_b);
+float       a       = gsl_vector_get(beta, 0),
+            b       = gsl_vector_get(beta, 1);
+int         i, k;
+gsl_matrix *data    = d;
+float       d_a     = 0,
+            d_b     = 0,
+            psi_a   = gsl_sf_psi(a),
+            ln_b    = log(b),
+            x, ln_k;
+    for (k=0; k< data->size2; k++){
+        ln_k    = log(k +1);
+        for (i=0; i< data->size1; i++){
+            x    = gsl_matrix_get(data, i, k);
+            d_a += x * (-psi_a - ln_b + ln_k);
+            d_b += x *(-a/b - (k+1));
+        }
+    }
+    gsl_vector_set(gradient,0, d_a);
+    gsl_vector_set(gradient,1, d_b);
+}
+
+/* Just a wrapper for gsl_ran_gamma.
+
+   cut & pasted from the GSL documentation:
+\f$          p(x) dx = {1 \over \Gamma(a) b^a} x^{a-1} e^{-x/b} dx \f$
+
+See the notes for \ref apop_exponential on a popular alternate form.
+*/
+static double gamma_rng(gsl_rng* r, double * a){
+    return gsl_ran_gamma(r, a[0], a[1]);
 }
 
 
@@ -99,24 +106,25 @@ seven, data[7][1] is the number of times the second-ranked item appears,
 et cetera. Below, \f$x_k\f$ is the count (or percentage) of the \f$k\f$th ranked item.
 Also, \f$d ln \gamma(k) \equiv \psi(k)\f$.
 
-\f$G(x, a, b) 	= \prod_{k=1}^n \left(1/(\Gamma(a) b^a)  k^{a-1} e^{-k/b}\right)^{x_k}\f$
+\f$G(x, a, b)       = \prod_{k=1}^n \left(1/(\Gamma(a) b^a)  k^{a-1} e^{-k/b}\right)^{x_k}\f$
 
-\f$ln G(x, a, b)= \sum_{k=1}^n x_k (-ln \Gamma(a) - a ln b + (a-1)ln(k) + -k/b)\f$
+\f$ln G(x, a, b)    = \sum_{k=1}^n x_k (-ln \Gamma(a) - a ln b + (a-1)ln(k) + -k/b)\f$
 
-\f$d ln G/ da	= \sum_{k=1}^n x_k ( -\psi(a) - ln b + ln(k)) \f$
+\f$d ln G/ da       = \sum_{k=1}^n x_k ( -\psi(a) - ln b + ln(k)) \f$
 
-\f$d ln G/ db	= \sum_{k=1}^n x_k (-a/b - k) \f$
+\f$d ln G/ db       = \sum_{k=1}^n x_k (-a/b - k) \f$
 
 \ingroup models
 */
 apop_model apop_gamma_rank = {"Gamma, rank data", 2, 
 {
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//predicted
-	0,	//residuals
-	1,	//log_likelihood
-	1	//names;
+    1,    //parameters
+    1,    //covariance
+    1,    //confidence
+    0,    //predicted
+    0,    //residuals
+    1,    //log_likelihood
+    0    //names;
 },
-	 gamma_rank_estimate, gamma_rank_log_likelihood, gamma_rank_dlog_likelihood, NULL,  NULL};
+    gamma_rank_estimate, gamma_rank_log_likelihood, gamma_rank_dlog_likelihood, NULL, 
+    {1, {beta_zero_and_one_greater_than_x_constraint}},  gamma_rng};

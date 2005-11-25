@@ -140,5 +140,5 @@ apop_model apop_probit = {"Probit", -1,
 	1,	//log_likelihood
 	1	//names;
 }, 
-	probit_estimate, probit_log_likelihood, probit_dlog_likelihood, probit_fdf, NULL};
+	probit_estimate, probit_log_likelihood, probit_dlog_likelihood, probit_fdf, {0, {}}, NULL};
 //apop_model apop_probit = {"Probit", -1, NULL, apop_probit_log_likelihood, NULL, apop_probit_fdf,  NULL};

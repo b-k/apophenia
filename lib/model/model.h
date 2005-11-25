@@ -6,6 +6,14 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
+typedef double( *CONSTRAINTFUNC )(gsl_vector *beta, void * d, gsl_vector *returned_beta);
+
+
+typedef struct apop_constraint{
+	int count;
+	CONSTRAINTFUNC constraint[100];
+} apop_constraint;
+
 /** This is an object to describe a model whose parameters are to be
 estimated. It would primarily be used for maximum likelihood estimation,
 but is intended to have anything else you would want a probability
@@ -18,6 +26,7 @@ distribution to have too, like a random number generator.
 \param log_likelihood	the likelihood fn given data 
 \param 	dlog_likelihood	the derivative of the likelihood fn
 \param 	fdf	Do both of the above at once. Can be NULL if it'd just call them separately. 
+\param 	constraint	The constraints to the parameters, if any. Really only necessary for MLEs.
 \param rng 	a random number generator. 
 
  */
@@ -29,6 +38,7 @@ typedef struct apop_model{
 	double 	(*log_likelihood)(const gsl_vector *beta, void *d);
 	void 	(*dlog_likelihood)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 	void 	(*fdf)( const gsl_vector *beta, void *d, double *f, gsl_vector *df);
+	apop_constraint	constraint;
 	double (*rng)(gsl_rng* r, double *a);
 
 //	/** The constraint count */
@@ -43,6 +53,7 @@ typedef struct apop_model{
 
 
 extern apop_model apop_exponential;
+extern apop_model apop_exponential_rank;
 extern apop_model apop_gamma;
 extern apop_model apop_gamma_rank;
 extern apop_model apop_gaussian;//synonym for apop_normal
@@ -144,5 +155,4 @@ apop_estimate   *est1, *est2;
 }
 \endcode
 */
-
 

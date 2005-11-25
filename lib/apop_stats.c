@@ -54,6 +54,21 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 
 \ingroup basic_stats */
 
+/** Returns the sum of the data in the given vector.
+\ingroup convenience_fns
+*/
+inline long double apop_sum(gsl_vector *in){
+    if (in==NULL){
+        if (apop_verbose)
+            printf("You just asked me to sum a NULL. Returning zero.\n");
+        return 0;
+    }
+int     i;
+double  out = 0;
+    for (i=0; i< in->size; i++)
+        out += gsl_vector_get(in, i);
+	return out; 
+}
 
 /** Returns the mean of the data in the given vector.
 \ingroup vector_moments
@@ -390,8 +405,8 @@ double          x, ratio;
 mean. If you want to calculate both the mean and the variance, use \ref
 apop_matrix_mean_and_var.
 
-  \param data	the matrix to be averaged. 
-\param m	the pre-calculated mean
+\param data	the matrix to be averaged. 
+\param mean	the pre-calculated mean
 \ingroup convenience_fns*/
 double apop_matrix_var_m(gsl_matrix *data, double mean){
 double          avg2    = 0;

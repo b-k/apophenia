@@ -1,3 +1,5 @@
+--add call graphs
+
 --constraints!!!
 
 --are you sure the numerical hessian works with no dlog likelihood?

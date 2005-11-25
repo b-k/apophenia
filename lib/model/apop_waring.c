@@ -168,4 +168,4 @@ apop_model apop_waring = {"Waring", 2,
 	1,	//log_likelihood
 	1	//names;
 },
-	waring_estimate, waring_log_likelihood, waring_dlog_likelihood, NULL,  waring_rng};
+	waring_estimate, waring_log_likelihood, waring_dlog_likelihood, NULL, {0, {}},  waring_rng};
