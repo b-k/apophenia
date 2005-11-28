@@ -54,9 +54,7 @@ Once the server is listening, you may send it commands. Eventually, every
 function in the Apophenia library and the more useful ones from the GSL
 will have a corresponding command line. At the moment, the functions
 are basically those for a proof-of-concept.
-
-A large subset of Apophenia's C functions are supported; type 
-<tt>apop help</tt> for the current list. Below are a sample.
+Type <tt>apop help</tt> for the current list of supported functions. Below are a sample.
 
 To query the database:
 \code
@@ -89,8 +87,8 @@ To stop the server:
 apop stop
 \endcode
 
-\b How to use Apophenia from Perl/Python/&c.
-The easiest way is to simply call the command-line interface. In Perl, try <tt>system("apop start")</tt>; in Python, use <tt>os.popen3("""apop query "select * from tab" """)</tt>.
+\section scripting_languages How to use Apophenia from Perl/Python/&c.
+The easiest way is to simply call the command-line interface. In Perl, try <tt>system("apop start")</tt>; in Python, <tt>include os</tt> and then you can issue commands like <tt>os.popen3("""apop query "select * from tab" """)</tt>.
 
 Alternatively, the reader is encouraged to write and contribute
 functions to add a layer of abstraction to the command line, so users

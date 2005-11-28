@@ -2,7 +2,7 @@
 #ifndef apop_db_included
 #define apop_db_included
 #include <sqlite3.h>
-#include <apophenia/name.h>
+#include "apophenia/name.h"
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 

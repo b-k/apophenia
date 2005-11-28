@@ -20,7 +20,24 @@ and whatever else comes to mind.
 \todo Rewrite the inventory and estimate documentation to cohere better. 
  */
 
-/** Copy one inventory to another.	*/
+/** Allocate an \ref apop_inventory and set all of its elements to some
+value. If the inventory is already allocated, use \ref apop_inventory_set.
+
+\param value	probably one or zero.  
+\return A ready-to-use inventory
+ *
+ \ingroup inv_and_est 
+ */
+apop_inventory * apop_inventory_alloc(int value){
+apop_inventory  *setme;
+    setme  = malloc(sizeof(apop_inventory));
+    apop_inventory_set(setme, value);
+    return setme;
+}
+
+/** Copy one inventory to another.
+ \ingroup inv_and_est 
+ */
 void apop_inventory_copy(apop_inventory in, apop_inventory *out){
 	out->parameters	= in.parameters;
 	out->predicted	= in.predicted;
@@ -29,7 +46,8 @@ void apop_inventory_copy(apop_inventory in, apop_inventory *out){
 	out->log_likelihood = in.log_likelihood;
 }
 
-/** set all the values of the inventory to a certain value
+/** set all the values of the inventory to a certain value. Like 
+ \ref apop_inventory_alloc but doesn't call malloc().
 
 \param out	a pointer to the inventory to be set
 \param value	probably one or zero.  
@@ -122,7 +140,9 @@ int		i,j;
 	printf("\n");
 	if (print_me->uses.names) 	printf("\t");
 	if (print_me->uses.parameters) 	printf("value\t\t");
-	if (print_me->uses.confidence) 	printf("Confidence\n");
+	if (print_me->uses.confidence) 	
+            printf("Confidence\n");
+    else    printf("\n");
 	for (i=0; i<print_me->parameters->size; i++){
 		if (print_me->uses.names)	printf("%s\t", print_me->names->colnames[i]);
 		if (print_me->uses.parameters)	printf("% 7f\t", gsl_vector_get(print_me->parameters,i));

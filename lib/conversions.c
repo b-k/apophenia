@@ -17,8 +17,10 @@ The functions to shunt data between text files, database tables, GSL matrices, a
 /** \defgroup convertfromdb  Functions to convert from a database
 \ingroup conversions*/
 /** \defgroup convertfrommatrix  Functions to convert from a gsl_matrix.
+See also \ref output for funcions to write a matrix to a text file.
 \ingroup conversions*/
 /** \defgroup convertfromvector  Functions to convert from a gsl_vector.
+See also \ref output for funcions to write a vector to a text file.
 \ingroup conversions*/
 
 /** \page gsl_views 	Using GSL Views

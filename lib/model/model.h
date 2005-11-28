@@ -6,14 +6,6 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
-typedef double( *CONSTRAINTFUNC )(gsl_vector *beta, void * d, gsl_vector *returned_beta);
-
-
-typedef struct apop_constraint{
-	int count;
-	CONSTRAINTFUNC constraint[100];
-} apop_constraint;
-
 /** This is an object to describe a model whose parameters are to be
 estimated. It would primarily be used for maximum likelihood estimation,
 but is intended to have anything else you would want a probability
@@ -38,7 +30,7 @@ typedef struct apop_model{
 	double 	(*log_likelihood)(const gsl_vector *beta, void *d);
 	void 	(*dlog_likelihood)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 	void 	(*fdf)( const gsl_vector *beta, void *d, double *f, gsl_vector *df);
-	apop_constraint	constraint;
+    double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta);
 	double (*rng)(gsl_rng* r, double *a);
 
 //	/** The constraint count */
@@ -114,6 +106,9 @@ with an MLE. Usually this involves finding the most likely parameters
 for a distribution, but this can also involve more elaborate models such
 as the \ref apop_probit. 
 
+In fact, one could even use it for \ref nonstats_modeling
+"non-statistical models" involving optimization subject to constraints.
+
 The distribution objects make it very easy to test competing models.
 Vuong (1989) (<a
 href="http://links.jstor.org/sici?sici=0012-9682%28198903%2957%3A2%3C307%3ALRTFMS%3E2.0.CO%3B2-J">Jstor
@@ -154,5 +149,8 @@ apop_estimate   *est1, *est2;
            printf("The %s is a better fit than the %s with %g%% certainty.\n", d2.name, d1.name, t_stat*100);
 }
 \endcode
+
+You may want to know how the MLE procedure went about searching for the function; if so, have a look at \ref apop_mle_trace_path.
+
 */
 

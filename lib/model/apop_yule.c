@@ -40,24 +40,26 @@ static apop_estimate * yule_estimate(gsl_matrix * data, apop_inventory *uses, vo
 	return apop_maximum_likelihood(data, uses, apop_yule, *(apop_estimation_params *)parameters);
 }
 
+static double beta_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
+double  limit       = 1,
+        tolerance   = 1e-1;
+double  mu          = gsl_vector_get(beta, 0);
+    if (mu > limit) 
+        return 0;
+    //else:
+    gsl_vector_memcpy(returned_beta, beta);
+    gsl_vector_set(returned_beta, 0, limit + tolerance);
+    return limit - mu;    
+}
+
 static double yule_log_likelihood(const gsl_vector *beta, void *d){
 float           bb	= gsl_vector_get(beta, 0);
-static double	ka	= 0;
-	if (bb < 1) {		//run away
-		if (ka ==0){
-			gsl_vector *	b_ka	= gsl_vector_alloc(1);
-			gsl_vector_set(b_ka, 0, 1.00001);
-		 	ka	= yule_log_likelihood(b_ka, d);
-			gsl_vector_free (b_ka);
-		}
-		return keep_away(bb, 1, ka);
-	}			//else:
-int 		i, k;
-gsl_matrix 	*data		= d;
-float 		ln_k, ln_bb_k,
-		likelihood 	    = 0,
-		ln_bb		    = gsl_sf_lngamma(bb),
-		ln_bb_less_1    = log(bb-1);
+int 		    i, k;
+gsl_matrix 	    *data		= d;
+float 		    ln_k, ln_bb_k,
+		        likelihood 	    = 0,
+		        ln_bb		    = gsl_sf_lngamma(bb),
+		        ln_bb_less_1    = log(bb-1);
 	for (k=0; k< data->size2; k++)	{
 		if (k>=1) 	ln_k	= gsl_sf_lngamma(k+1);
 		else		ln_k	= 0;
@@ -72,27 +74,13 @@ float 		ln_k, ln_bb_k,
 static void yule_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
 float           bb		= gsl_vector_get(beta, 0);
-static double	dka		= 0;
 gsl_matrix	    *data	= d;
-	if (bb < 1) {		//keep away
-		if (dka ==0){
-			gsl_vector 	*b_ka	= gsl_vector_alloc(1);
-			gsl_vector 	*b_kg	= gsl_vector_alloc(1);
-			gsl_vector_set(b_ka,0, 1+GSL_DBL_EPSILON);
-		 	yule_dlog_likelihood(b_ka , d, b_kg);
-			dka	= gsl_vector_get(b_kg, 0);
-			gsl_vector_free (b_ka);
-			gsl_vector_free (b_kg);
-		}
-		gsl_vector_set(gradient,0, keep_away(bb, 1, dka));
-		return;
-	}			//else:
-int 		i, k;
-double		bb_minus_one_inv= 1/(bb-1),
-		psi_bb		= gsl_sf_psi(bb),
-		psi_bb_k,
-		p,
-		d_bb		= 0;
+int 		    i, k;
+double		    bb_minus_one_inv= 1/(bb-1),
+		        psi_bb	= gsl_sf_psi(bb),
+		        psi_bb_k,
+		        p,
+		        d_bb		= 0;
 	for (k=0; k< data->size2; k++){
 		psi_bb_k= gsl_sf_psi(k +1 + bb);
 		p	= bb_minus_one_inv + psi_bb - psi_bb_k;
@@ -159,4 +147,4 @@ apop_model apop_yule = {"Yule", 1,
 	1,	//log_likelihood
 	0	//names;
 },	 
-	yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, {0, {}}, yule_rng};
+	yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, beta_greater_than_x_constraint, yule_rng};

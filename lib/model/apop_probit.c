@@ -1,4 +1,4 @@
-/** \file apop_yule.c
+/** \file apop_probit.c
 
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
@@ -128,7 +128,7 @@ static void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *
  the remaining columns are values of the independent variables. Thus,
  the model will return (data columns)-1 parameters.
 
-\ingroup likelihood_fns
+\ingroup models
 */
 apop_model apop_probit = {"Probit", -1, 
 {
@@ -140,5 +140,5 @@ apop_model apop_probit = {"Probit", -1,
 	1,	//log_likelihood
 	1	//names;
 }, 
-	probit_estimate, probit_log_likelihood, probit_dlog_likelihood, probit_fdf, {0, {}}, NULL};
+	probit_estimate, probit_log_likelihood, probit_dlog_likelihood, probit_fdf, NULL, NULL};
 //apop_model apop_probit = {"Probit", -1, NULL, apop_probit_log_likelihood, NULL, apop_probit_fdf,  NULL};

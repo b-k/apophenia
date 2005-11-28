@@ -15,8 +15,8 @@
 #include "estimate.h"
 #include <apophenia/model.h>
 
-#define MAX_ITERATIONS 		1500
-#define MAX_ITERATIONS_w_d	1500
+#define MAX_ITERATIONS 		5000
+#define MAX_ITERATIONS_w_d	5000
 
 /**
  \ingroup mle
@@ -28,6 +28,8 @@ typedef struct apop_estimation_params{
 	double 	tolerance; 
 	int 	verbose;
 } apop_estimation_params;
+
+char  apop_mle_trace_path[1000];
 
 /*
 For the Probit, the first column of the data matrix is the dependent
@@ -74,7 +76,7 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist,
   and fn_beta will probably be the beta calculated using the corresponding
   apop_xxx_mle function.
   */
-
+void apop_numerical_gradient(const gsl_vector *beta, void *d , gsl_vector *out);
 gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, void * d);
 gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, void * d);
 

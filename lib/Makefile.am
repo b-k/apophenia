@@ -10,7 +10,7 @@ AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 #-lefence
 #apop_text_to_db_LDADD = libapophenia.la
 #apop_text_to_db_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
 lib_LTLIBRARIES = libapophenia.la
-libapophenia_la_SOURCES = conversions.c db.c likelihoods.c linear_algebra.c bootstrap.c 	\
+libapophenia_la_SOURCES = conversions.c apop_db.c apop_mle.c linear_algebra.c bootstrap.c 	\
 			asst.c regression.c apop_stats.c estimate.c name.c apop_output.c 	\
 			vasprintf/asnprintf.c vasprintf/printf-args.c 				\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c vasprintf/printf-parse.c 	\

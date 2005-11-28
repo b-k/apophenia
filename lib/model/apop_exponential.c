@@ -33,10 +33,11 @@ apop_estimate 	*est	= apop_estimate_alloc(data->size1,1,NULL, *uses);
 static double beta_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
 double  limit       = 0,
         tolerance   = 1e-1;
-double  l_vector_get(beta, 0);
+double  mu          = gsl_vector_get(beta, 0);
     if (mu > limit) 
         return 0;
     //else:
+    gsl_vector_memcpy(returned_beta, beta);
     gsl_vector_set(returned_beta, 0, limit + tolerance);
     return limit - mu;    
 }
@@ -160,6 +161,6 @@ apop_model apop_exponential = {"Exponential", 1,
 	1,	//log_likelihood
 	1	//names;
 },
-	 exponential_estimate, exponential_log_likelihood, exponential_dlog_likelihood, NULL, {1, {beta_greater_than_x_constraint}}, exponential_rng};
+	 exponential_estimate, exponential_log_likelihood, exponential_dlog_likelihood, NULL, beta_greater_than_x_constraint, exponential_rng};
 
 

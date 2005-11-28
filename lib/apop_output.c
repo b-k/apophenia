@@ -115,8 +115,16 @@ int		i,j;
 	pclose (output);
 }
 
-/** This function will take in data and put out a histogram.
+/** This function will take in a gsl_vector of data and put out a histogram.
+  This requires Gnuplot 4.1, which is (as of Nov 2005) not yet standard. You can obtain it via:
+  \code
+  cvs -z3 -d:pserver:anonymous@cvs.sf.net:/cvsroot/gnuplot checkout -P gnuplot
+  \endcode
+and then the usual <tt>./prepare; ./configure; make; sudo make
+install</tt>. [Be careful if you now have two versions of Gnuplot on
+your system that you are using the right one.]
 
+  \ingroup output
 */
 void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
 int             i;
@@ -132,10 +140,10 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 	//Now that you have a histogram, print it.
         if (outfile == NULL) 	f       = stdout;
         else    		f       = fopen(outfile, "a");
-	fprintf(f, "set key off					;\n\
-                        set style data histograms		;\n\
-                        set style histogram cluster gap 0	;\n\
-                        set xrange [0:%i]			;\n\
+	fprintf(f, "set key off					                    ;\n\
+                        set style data histograms		        ;\n\
+                        set style histogram cluster gap 0	    ;\n\
+                        set xrange [0:%i]			            ;\n\
                         set style fill solid border -1          ;\n\
                         set boxwidth 0.9                        ;\n\
                         plot '-' using 2:xticlabels(1);\n", bin_ct);
@@ -156,11 +164,17 @@ FILE * 		f;
 	if (filename == NULL)
 		f	= stdout;
 	else	f	= fopen(filename, "a");
-	for (i=0; i<data->size; i++){
-		p_fn(f, gsl_vector_get(data, i));
-		if (i< data->size -1)	fprintf(f, "%s", separator);
-	}
-	fprintf(f,"\n");
+    if (data == NULL){
+        if (apop_verbose)
+            printf("Printing an empty vector, so the output will be blank.\n");
+    } 
+    else {
+	    for (i=0; i<data->size; i++){
+		    p_fn(f, gsl_vector_get(data, i));
+		    if (i< data->size -1)	fprintf(f, "%s", separator);
+	    }
+	    fprintf(f,"\n");
+    }
 	if (filename !=NULL)	fclose(f);
 }
 
@@ -171,13 +185,19 @@ int 		i,j;
 	if (filename == NULL)
 		f	= stdout;
 	else	f	= fopen(filename, "a");
-	for (i=0; i<data->size1; i++){
-		for (j=0; j<data->size2; j++){
-			p_fn(f, gsl_matrix_get(data, i,j));
-			if (j< data->size2 -1)	fprintf(f, "%s", separator);
-		}
-		fprintf(f,"\n");
-	}
+    if (data == NULL){
+        if (apop_verbose)
+            printf("Printing an empty matrix, so the output will be blank.\n");
+    } 
+    else {
+	    for (i=0; i<data->size1; i++){
+		    for (j=0; j<data->size2; j++){
+			    p_fn(f, gsl_matrix_get(data, i,j));
+			    if (j< data->size2 -1)	fprintf(f, "%s", separator);
+		    }
+		    fprintf(f,"\n");
+	    }
+    }
 	if (filename !=NULL)	fclose(f);
 }
 

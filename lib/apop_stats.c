@@ -1,5 +1,5 @@
 //stats.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
-#include <apophenia/stats.h>
+#include "apophenia/stats.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 

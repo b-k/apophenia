@@ -30,8 +30,9 @@ double  limit0      = 0,
     if (beta0 > limit0 && beta1 > limit1) 
         return 0;
     //else:
+    gsl_vector_memcpy(returned_beta, beta);
     gsl_vector_set(returned_beta, 0, GSL_MAX(limit0 + tolerance, beta0));
-    gsl_vector_set(returned_beta, 0, GSL_MAX(limit1 + tolerance, beta1));
+    gsl_vector_set(returned_beta, 1, GSL_MAX(limit1 + tolerance, beta1));
     return GSL_MAX(limit0 - beta0, 0) + GSL_MAX(limit1 - beta1, 0);    
 }
 
@@ -127,4 +128,4 @@ apop_model apop_gamma_rank = {"Gamma, rank data", 2,
     0    //names;
 },
     gamma_rank_estimate, gamma_rank_log_likelihood, gamma_rank_dlog_likelihood, NULL, 
-    {1, {beta_zero_and_one_greater_than_x_constraint}},  gamma_rng};
+    beta_zero_and_one_greater_than_x_constraint,  gamma_rng};

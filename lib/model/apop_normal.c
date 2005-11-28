@@ -17,10 +17,6 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <assert.h>
 static double normal_log_likelihood(const gsl_vector *beta, void *d);
 
-static double keep_away(double value, double limit,  double base){
-	return (50000+fabs(value - limit)) * base;
-}
-
 
 //////////////////
 //The Normal (gaussian) distribution
@@ -43,7 +39,19 @@ double		mean, var;
 }
 
 
-/** The log likelihood function for the Normal.
+static double beta_1_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
+double  limit       = 0,
+        tolerance   = 1e-1;
+double  mu          = gsl_vector_get(beta, 1);
+    if (mu > limit) 
+        return 0;
+    //else:
+    gsl_vector_memcpy(returned_beta, beta);
+    gsl_vector_set(returned_beta, 1, limit + tolerance);
+    return limit - mu;    
+}
+
+/* The log likelihood function for the Normal.
 
 The log likelihood function and dlog likelihood don't care about your
 rows of data; if you have an 8 x 7 data set, it will give you the log
@@ -58,21 +66,10 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 */
 static double normal_log_likelihood(const gsl_vector *beta, void *d){
 double 		mu	= gsl_vector_get(beta,0),
-		ss	= 2 * gsl_vector_get(beta,1),
-		ll	= 0;
+	    	ss	= 2 * gsl_vector_get(beta,1),
+	    	ll	= 0;
 size_t		i,j;
 gsl_matrix	*data	= d;
-static double	ka	= 0;
-	if (ss <0) {
-		gsl_vector *	b_ka	= gsl_vector_alloc(2);
-		gsl_vector_set(b_ka, 0, mu);
-		gsl_vector_set(b_ka, 1, GSL_DBL_EPSILON);
-	 	ka	= normal_log_likelihood(b_ka, d);
-		gsl_vector_free (b_ka);
-		//return keep_away(ss/2.0, 0, ka);
-		return keep_away(gsl_vector_get(beta,1), 0, ka);
-	}			//else:
-
 	for (i=0;i< data->size1; i++)
 		for (j=0;j< data->size2; j++)
 			ll	-= gsl_pow_2(gsl_matrix_get(data, i, j) - mu) / ss;
@@ -90,12 +87,12 @@ To tell you the truth, I have no idea when anybody would need this, but it's her
 \todo Add constraint that \f$\sigma^2>0\f$.
  */
 static void normal_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
-double 		mu	= gsl_vector_get(beta,0),
-		ss	= gsl_vector_get(beta,1),
-		dll	= 0,
-		sll	= 0,
-		x;
-int		i,j;
+double 		mu	    = gsl_vector_get(beta,0),
+	    	ss	    = gsl_vector_get(beta,1),
+	    	dll	    = 0,
+	    	sll	    = 0,
+	    	x;
+int	    	i,j;
 gsl_matrix	*data	= d;
 	for (i=0;i< data->size1; i++)
 		for (j=0;j< data->size2; j++){
@@ -150,7 +147,7 @@ apop_model apop_normal = {"Normal", 2,
 	0,	//residuals
 	1,	//log_likelihood
 	1	//names;
-}, normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,{0, {}}, normal_rng};
+}, normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,beta_1_greater_than_x_constraint, normal_rng};
 
 /** This is a synonym for \ref apop_normal, q.v.
 \ingroup models
@@ -164,4 +161,4 @@ apop_model apop_gaussian = {"Gaussian", 2,
 	0,	//residuals
 	1,	//log_likelihood
 	1	//names;
-}, normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,{0, {}}, normal_rng};
+}, normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,beta_1_greater_than_x_constraint, normal_rng};

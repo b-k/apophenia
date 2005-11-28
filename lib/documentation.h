@@ -7,17 +7,17 @@
 \section dostats Doing statistics 
  \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.
  \li \ref regression  
- \li \ref ttest 
  \li \ref likelihood_fns "Maximum likelihood estimation": estimators requiring a search for the maximum of a likelihood function.
  \li \ref linear_algebra "Linear Algebra": determinants, projections, numerical gradients, &c. Some convenience functions to display matrices and vectors.
  \li \ref models : How to write down a model and estimate its parameters.
+ \li \ref ttest "Some tests"
 
 \section shuntdata Shunting data 
  \li \ref db "Database utilities": an easy front end to SQLite
  \li \ref conversions
  \li \ref output "Output functions": Summarize data and print tables to the screen or a file.
- \li \ref command_line "Command-line utilities": a still easier front end to SQLite, and doing stats via Perl/Python/shell script.
  \li \ref convenience_fns "Convenience functions": a few utilities to make life with the GSL a little easier.
+ \li \ref command_line "Command-line utilities": a still easier front end to SQLite, and doing stats via Perl/Python/shell script.
 
 \section speak Speaking the languages
  \li \ref c "C": For statisticians who don't know/are rusty with the C
@@ -449,6 +449,9 @@ to have been drawn from a given distribution and the question is
 only what distributional parameters best fit; e.g., assume the data
 is Normally distributed and find the mean and variance.
 
+In fact, one could even use the \ref apop_model to describe \ref nonstats_modeling
+"non-statistical models" involving optimization subject to constraints.
+
 The main function in the systems below is the apop_model.estimate
 function. It takes in a model and data, and outputs an apop_estimate,
 that includes the parameter estimates and the various auxiliary data
@@ -487,10 +490,26 @@ where \c beta will be the parameters to be maximized, and \c
 d is the fixed parameters---the data. In every case currently included
 with Apophenia, \c d is a \c gsl_matrix, but you do not have to conform
 to that. This function will return the value of the log likelihood function at the given parameters.
+\li Is this a constrained optimization? See the \ref constraints "Constraints page" on how to set them.
 \li Write the object. In your header file, include 
 \code
-apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, apop_new_log_likelihood, NULL, NULL, NULL};
+apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, 
+{       //what will apop_new_likelihood.estimate return?
+        1,      //parameters 
+        1,      //covariance
+        1,      //confidence
+        0,      //predicted
+        0,      //residuals
+        1,      //log_likelihood
+        1       //names;
+},          new_estimate,
+            new_log_likelihood, 
+            NULL,   //place dlog likelihood here.
+            NULL,   //place constraint fn here.
+            NULL    //place RNG here.
+            };
 \endcode
+If there are constraints, then replace the appropriate <tt>NULL</tt> with the right constraint function: beta_zero_and_one_greater_than_x_constraint
 \c number_of_parameters is probably a positive integer like \c 2, but
 it is often (the number of columns in your data set) -1, in which case,
 set \c number_of_parameters to \c -1.
@@ -507,14 +526,50 @@ At the end of this function, you will have to assign the appropriate derivative 
 gsl_vector_set(gradient,0, d_a);
 gsl_vector_set(gradient,1, d_b);
 \endcode 
-Now add the resulting dlog likelihood function to your object:
-\code
-apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, apop_new_log_likelihood, apop_new_dlog_likelihood, NULL, NULL};
-\endcode
+Now add the resulting dlog likelihood function to your object, by replacing the \c NULL labeled "place dlog likelihood here" with the name of your dlog likelihood function.
 \li Send the code to the maintainer for inclusion in future versions of Apophenia.
 
 \todo This page needs a sample model for the reader to cut 'n' paste.
 */
+
+/** \page constraints Setting constraints
+
+The problem is that the parameters of a function must not take on certain values, either because the function is undefined for those values or because parameters with certain values would not fit the real-world problem.
+
+The solution is to rewrite the function being maximized such that the function is continuous at the constraint boundary but takes a steep downward slope. The unconstrained maximization routines will be able to search a continuous function but will never return a solution that falls beyond the parameter limits.
+
+If you give it a likelihood function with no regard to constraints plus an array of constraints, 
+\ref apop_maximum_likelihood will combine them to a function that fits the above description and search accordingly.
+
+A constraint function must do three things:
+\li It must check the constraint, and if the constraint does not bind (i.e., the parameter values are OK), then it must return zero.
+\li If the constraint does bind, it must return a penalty, that indicates how far off the parameter is from meeting the constraint.
+\li if the constraint does bind, it must set a return vector that the likelihood function can take as a valid input. The penalty at this returned value must be zero.
+
+The idea is that if the constraint returns zero, the log likelihood
+function will return the log likelihood as usual, and if not, it will
+return the log likelihood at the constraint's return vector minus the
+penalty. To give a concrete example, here is a constraint function that
+will ensure that both parameters of a two-dimensional input are both
+greater than zero:
+
+\code
+static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
+double          limit0          = 0,
+                limit1          = 0,
+                tolerance       = 1e-3; // GSL_EPSILON_DOUBLE is also a popular choice, but sometimes fails.
+double          beta0   = gsl_vector_get(beta, 0),
+                beta1   = gsl_vector_get(beta, 1);
+        if (beta0 > limit0 && beta1 > limit1)
+                return 0;
+        //else:
+        gsl_vector_set(returned_beta, 0, GSL_MAX(limit0 + tolerance, beta0));   //create a valid return vector.
+        gsl_vector_set(returned_beta, 1, GSL_MAX(limit1 + tolerance, beta1));
+        return GSL_MAX(limit0 - beta0, 0) + GSL_MAX(limit1 - beta1, 0);         //return a penalty.
+}
+\endcode
+
+  */
 
 /** \page admin The admin page
 
@@ -522,4 +577,141 @@ Just a few page links:
 \li <a href=todo.html>The to-do list</a>
 \li <a href=bug.html>The known bug list</a>
 \li <a href=modules.html>The documentation page list</a>
+*/
+
+
+/** \page nonstats_modeling Non-statistical modeling
+
+The MLE functions of Apophenia are designed to maximize a function
+subject to constraints---which sounds a lot like any of a variety of
+other problems, especially in Economics. With little abuse of the package,
+one could use it to solve non-statistical models involving maximization
+subject to constraints. For example, here is how one could numerically
+solve a utility maximization problem from Econ 101. 
+
+
+\code
+/*  Here is a complete program to maximize a Cobb-Douglas utility
+  function subject to a budget constraint.
+
+  This requires a few digressions from the MLE nomenclature:
+  --The log likelihood is actually the utility function. Don't take logs,
+  since that would mess up the marginal utilities.
+
+  --The data is the fixed input to the MLE, which means the parameters:
+  prices, budget info, utility parameters.
+
+  --The betas in the MLE framework are the free parameters to be
+  maximized, which in this case means the goods the consumer is choosing.
+
+ Utility is U = x_1^\alpha * x_2^\beta. 
+ The budget constraint dictates that P_1 x_1 + P_2 x_2 <= B.
+
+The data vector looks like this:
+0:  price0
+1:  price1
+2:  budget
+3:  alpha
+4:  beta
+
+Most of the work is in writing down all the constraints, since the
+function itself is trivial. Having written down the model, the estimation
+is one function call, and calculating the marginal values is one more.
+ */
+
+#include <apophenia/headers.h>
+
+apop_model econ_101;
+
+static apop_estimate * econ101_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+apop_estimate           *est;
+apop_estimation_params  mle_params;
+    mle_params.method       = 000;
+    mle_params.starting_pt  = NULL;
+    mle_params.step_size    = 1e-1;
+    mle_params.tolerance    = 1e-8;
+    mle_params.verbose      = 0;
+    apop_inventory_filter(uses, econ_101.inventory_filter);
+    est = apop_maximum_likelihood(parameters, uses, econ_101, mle_params);
+    est->uses.covariance    = 0;    //MLE finds them, but it's meaningless.
+    est->uses.confidence    = 0;    //MLE finds them, but it's meaningless.
+    est->uses.log_likelihood  = 0;
+    return est;
+}
+
+/* The constraint function, including three constraints: x0>0, x1>0, and the bundle is under budget.
+ First, we check wether anything binds, and if not we return zero immediately.
+ Both sets of constraints are handled in the same way: derive new
+ values that are within bounds, and report how far you had to move.
+*/
+static double budget_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
+gsl_vector  *budget = d;
+double  price0      = gsl_vector_get(budget, 0),
+        price1      = gsl_vector_get(budget, 1),
+        cash        = gsl_vector_get(budget, 2),
+        x0          = gsl_vector_get(beta, 0),
+        x1          = gsl_vector_get(beta, 1),
+        tolerance   = 1e-3,
+        new_x0, new_x1, penalty;
+    if ((x0 * price0 + x1 * price1<= cash) && (x0 > 0) && (x1 > 0))
+        return 0;
+    //else:
+    if (x0 <= 0 || x1 <= 0){
+        new_x0  = (new_x0 > 0)? x0 : tolerance;
+        new_x1  = (new_x1 > 0)? x1 : tolerance;
+        penalty = (fabs(new_x0 - x0) + fabs(new_x1 + x1));
+    } else {
+        new_x0  = GSL_MAX(0, cash - x1* price1);
+        new_x1  = GSL_MIN(x1, cash - new_x0* price0);
+        penalty = (GSL_MAX(0,x0 * price0 + x1 * price1- cash));
+    }
+    gsl_vector_set(returned_beta, 0, new_x0);
+    gsl_vector_set(returned_beta, 1, new_x1);
+    return penalty;
+}
+
+static double econ101_log_likelihood(const gsl_vector *beta, void *d){
+gsl_vector  *params = d;
+double      bb0     = gsl_vector_get(params, 3),
+            bb1     = gsl_vector_get(params, 4),
+            qty0    = gsl_vector_get(beta, 0),
+            qty1    = gsl_vector_get(beta, 1);
+    return pow(qty0, bb0) * pow(qty1, bb1);
+}    
+
+apop_model econ_101 = {"Max Cobb-Douglass subject to a budget constraint", 2,  {
+    1,    //parameters
+    0,    //covariance
+    0,    //confidence
+    0,    //predicted
+    0,    //residuals
+    0,    //log_likelihood
+    0    //names;
+},         
+    econ101_estimate, econ101_log_likelihood, NULL, NULL, budget_constraint, NULL};
+
+int main(){
+double          param_array[]   =  {1, 3, 38.4, 0.4, 0.6};//see header.
+gsl_vector      *params         = gsl_vector_alloc(5);
+gsl_vector      *marginals      = gsl_vector_alloc(2);
+apop_estimate   *e;
+double          x1, x2;
+    apop_convert_array_to_vector(param_array,&params,5);
+    e   = econ_101.estimate(NULL, NULL, params);
+    printf("The optimal quantities:\n");
+    apop_estimate_print(e);
+
+    x2  = param_array[2]/(param_array[3]/param_array[4]+1)/param_array[1];
+    x1  = (param_array[2] - param_array[1] * x2)/param_array[0];
+    printf("\nAnalytically, these should be:\n %g\n %g\n\n", x1, x2);
+
+    apop_fn_for_derivative  = econ_101.log_likelihood;
+    apop_numerical_gradient(e->parameters, params, marginals);
+    printf("The marginal values:\n");
+    apop_vector_print(marginals, "\n", NULL);
+    printf("\nAnalytically, these should be:\n %g\n %g\n", param_array[3]*pow(x1,param_array[3]-1)*pow(x2,param_array[4])
+                                                        , param_array[4]*pow(x2,param_array[4]-1)*pow(x1,param_array[3]));
+
+    return 0;
+}
 */

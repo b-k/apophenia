@@ -1,4 +1,4 @@
-/** \file db.c	An easy front end to SQLite. Includes a few nice
+/** \file apop_db.c	An easy front end to SQLite. Includes a few nice
 features like a variance, skew, and kurtosis aggregator for SQL.
 
  Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.

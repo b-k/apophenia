@@ -15,11 +15,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-static double keep_away(double value, double limit,  double base){
-	return (50000+fabs(value - limit)) * base;
-}
-
-
 /////////////////////////
 //The Waring distribution
 /////////////////////////
@@ -40,19 +35,25 @@ static apop_estimate * waring_estimate(gsl_matrix * data, apop_inventory *uses, 
 	return apop_maximum_likelihood(data, uses, apop_waring, *(apop_estimation_params *)parameters);
 }
 
+static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
+double  limit0      = 1,
+        limit1      = 0,
+        tolerance   = 1e-1;  //GSL_DBL_EPSILON;
+double  beta0       = gsl_vector_get(beta, 0),
+        beta1       = gsl_vector_get(beta, 1);
+    if (beta0 > limit0 && beta1 > limit1) 
+        return 0;
+    //else:
+    gsl_vector_memcpy(returned_beta, beta);
+    gsl_vector_set(returned_beta, 0, GSL_MAX(limit0 + tolerance, beta0));
+    gsl_vector_set(returned_beta, 1, GSL_MAX(limit1 + tolerance, beta1));
+    return GSL_MAX(limit0 - beta0, 0) + GSL_MAX(limit1 - beta1, 0);    
+}
+
+
 static double waring_log_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0),
-		a	= gsl_vector_get(beta, 1);
-double		ka;		//recalculated every time.
-	if (bb <1 || a < 0) {
-		gsl_vector *	b_ka	= gsl_vector_alloc(2);
-		gsl_vector_set(b_ka, 0, GSL_MAX(bb, 1) +  1e20*GSL_DBL_EPSILON);
-		gsl_vector_set(b_ka, 1, GSL_MAX(a, 0) + 1e20*GSL_DBL_EPSILON);
-	 	ka	= waring_log_likelihood(b_ka, d);
-		gsl_vector_free (b_ka);
-		if (bb<=1) 	return keep_away(bb, 1, ka);
-		else 		return keep_away(bb, 0, ka);
-	}			//else:
+    		a	= gsl_vector_get(beta, 1);
 int 		i, k;
 gsl_matrix*	data		= d;
 double 		ln_a_k, ln_bb_a_k, p,
@@ -75,22 +76,22 @@ double 		ln_a_k, ln_bb_a_k, p,
  minimization. You'll probably never need to call this directy.*/
 static void waring_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
-float		bb		= gsl_vector_get(beta, 0),
-		a		= gsl_vector_get(beta, 1);
+float		bb		        = gsl_vector_get(beta, 0),
+	    	a		        = gsl_vector_get(beta, 1);
 int 		i, k;
-gsl_matrix	*data		= d;
+gsl_matrix	*data		    = d;
 double		bb_minus_one_inv= 1/(bb-1),
-		psi_a_bb	= gsl_sf_psi(bb + a),
-		psi_a_mas_one	= gsl_sf_psi(a+1),
+		psi_a_bb	        = gsl_sf_psi(bb + a),
+		psi_a_mas_one	    = gsl_sf_psi(a+1),
 		psi_a_k,
 		psi_bb_a_k,
-		d_bb		= 0,
-		d_a		= 0;
+		d_bb		        = 0,
+		d_a		            = 0;
 	for (k=0; k< data->size2; k++){	//more efficient to go column-by-column
 		psi_bb_a_k	 = gsl_sf_psi(k +1 + a + bb);
 		psi_a_k		 = gsl_sf_psi(k +1 + a);
 		for (i=0; i< data->size1; i++){
-			d_bb		+= gsl_matrix_get(data, i, k) *(bb_minus_one_inv + psi_a_bb - psi_bb_a_k);
+			d_bb	+= gsl_matrix_get(data, i, k) *(bb_minus_one_inv + psi_a_bb - psi_bb_a_k);
 			d_a		+= gsl_matrix_get(data, i, k) *(psi_a_bb + psi_a_k - psi_a_mas_one - psi_bb_a_k);
 		}
 	}
@@ -166,6 +167,6 @@ apop_model apop_waring = {"Waring", 2,
 	0,	//predicted
 	0,	//residuals
 	1,	//log_likelihood
-	1	//names;
+	0	//names;
 },
-	waring_estimate, waring_log_likelihood, waring_dlog_likelihood, NULL, {0, {}},  waring_rng};
+	waring_estimate, waring_log_likelihood, waring_dlog_likelihood, NULL, beta_zero_and_one_greater_than_x_constraint,  waring_rng};

@@ -1,4 +1,4 @@
-/** \file likelihoods.c	The MLE functions. Call them with an \ref apop_model.
+/** \file apop_mle.c	The MLE functions. Call them with an \ref apop_model.
 
 This file includes a number of distributions and models whose parameters
 one would estimate using maximum likelihood techniques.
@@ -20,6 +20,52 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <assert.h>
 #include <gsl/gsl_deriv.h>
 
+/** Use this variable to produce a trace of the MLE process.
+
+If \c apop_mle_trace_path has a name of positive length, then every time
+the MLE evaluates the function, then the value will be output to a table
+in the database with the given name. You can then plot this table to
+get an idea of the path the estimation routine used to arrive at its MLE.
+
+First, set this variable and run the MLE. The begin/commit wrapper
+speeds things up a touch, but this will clearly be slower than without
+taking notes:
+
+\code
+    strcpy(apop_mle_trace_path, "path");
+    apop_query("begin;");
+    e   = apop_zipf.estimate(...);
+    apop_query("commit;");
+\endcode
+
+
+Then, plot using a function like the below. Notice that you will want
+\c splot for 3-d variables and \c plot for 2-d. The change in width
+and pointsize is to remind the eye that the lines connecting the points
+only indicate the path the maximizer went along, not actual values of
+the function.
+
+\code
+static void plotme(char *outfile){
+FILE            *f;
+gsl_matrix      *traced_path;
+    f       = fopen(outfile, "w");  //overwrites. Use "a" to append.
+    fprintf(f,"splot '-' with linespoints linewidth 0.5 pointsize 2\n");
+    traced_path = apop_query_to_matrix("select * from %s", apop_mle_trace_path);
+    fclose(f);
+    apop_matrix_print(traced_path, "\t", outfile);
+}
+\endcode
+
+Finally, call gnuplot:
+\code 
+gnuplot -persist < plotme
+\endcode
+
+\ingroup mle
+*/
+
+char  apop_mle_trace_path[1000] = "\0";
 
 		///////////////////////
 		//MLE support functions
@@ -42,7 +88,7 @@ typedef struct grad_params{
 
 static double one_d(double b, void *p){
 grad_params	*params	= p;
-	gsl_vector_set(params->beta, params->dimension, b);
+    gsl_vector_set(params->beta, params->dimension, b);
 	return apop_fn_for_derivative(params->beta, params->d);
 }
 
@@ -50,19 +96,19 @@ grad_params	*params	= p;
  the multidimensional extension.
  
  Before using this fn., you need to set \ref apop_fn_for_derivative to
- the function you are interested (i.e., rather than passing the function
+ the function in which you are interested (i.e., rather than passing the function
  as an argument, it's passed as a global variable.) E.g., 
  \code
  apop_fn_for_derivative = apop_exponential.log_likelihood;
  \endcode
 
  \ingroup linear_algebra
- \todo This fn has a hard-coded tolerance (1e-4).
+ \todo This fn has a hard-coded tolerance (1e-6).
  */
 void apop_numerical_gradient(const gsl_vector *beta, void *d , gsl_vector *out){
-int		i;
+int		        i;
 gsl_function	F;
-double		result, err;
+double		    result, err;
 grad_params 	gp;
 	gp.beta		= gsl_vector_alloc(beta->size);
 	gp.d		= d;
@@ -71,7 +117,7 @@ grad_params 	gp;
 	for (i=0; i< beta->size; i++){
 		gp.dimension	= i;
 		gsl_vector_memcpy(gp.beta, beta);
-		gsl_deriv_central(&F, gsl_vector_get(beta,i), 1e-4, &result, &err);
+		gsl_deriv_central(&F, gsl_vector_get(beta,i), 1e-3, &result, &err);
 		gsl_vector_set(out, i, result);
 	}
 }
@@ -93,7 +139,7 @@ void prep_inventory_mle(apop_inventory *in, apop_inventory *out){
 	out->log_likelihood	= 1;
 	out->parameters		= 1;
 	//OK, some things are not yet implemented.
-	out->names		= 0;
+	out->names		    = 0;
 	out->confidence		= 0;
 	out->residuals		= 0;
 	if (out->confidence==1)
@@ -111,53 +157,69 @@ These fns also take care of checking constraints, if any.
 
 */
 typedef struct negshell_params{
-	void *d;
+	void        *d;
 	apop_model	model;
 } negshell_params;
 
-static double negshell (const gsl_vector * beta, void * params){
-negshell_params	*p			= params;
-gsl_vector 	*returned_beta		= gsl_vector_alloc(beta->size);
-int		i;
-double		penalty; 
-//static gsl_vector *last_good_beta	= NULL;
-static double	base_for_penalty	= 0;
-	for (i=0; i< p->model.constraint.count; i++){
-		penalty	= p->model.constraint.constraint[i](beta, p->d, returned_beta);
-		if (penalty > 0){
-			base_for_penalty	= p->model.log_likelihood(returned_beta, p->d);
-			gsl_vector_free(returned_beta);
-			return -base_for_penalty + penalty;
-		}
-	}
-	//If you're here, no constraints bound.
-	gsl_vector_free(returned_beta);
-	return - p->model.log_likelihood(beta, p->d);
+static void insert_path_into_db(gsl_vector *beta, double out){
+    if (beta->size == 1){
+        if(!apop_table_exists(apop_mle_trace_path, 0))
+            apop_query("create table  %s (beta0, ll);", apop_mle_trace_path);
+        apop_query("insert into %s values (%g, %g);", apop_mle_trace_path, gsl_vector_get(beta,0), out);
+    } else {
+        if(!apop_table_exists(apop_mle_trace_path, 0))
+            apop_query("create table  %s (beta0, beta1, ll);", apop_mle_trace_path);
+        apop_query("insert into %s values (%g, %g, %g);", apop_mle_trace_path, gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
+    }
+
 }
 
-static void dnegshell (const gsl_vector * beta, void * params, gsl_vector * g){
-negshell_params *p		= params;
-gsl_vector 	*returned_beta	= gsl_vector_alloc(beta->size);
-gsl_vector 	*penalty_gradient= gsl_vector_calloc(beta->size);
-gsl_vector 	*penalty_total	= gsl_vector_calloc(beta->size);
-int		i;
-double 		(*tmp) (const gsl_vector *beta, void *d);
-	for (i=0; i< p->model.constraint.count; i++){
-		tmp			= apop_fn_for_derivative;
-		apop_fn_for_derivative 	= negshell;
-		apop_numerical_gradient(returned_beta, params , penalty_gradient);
-		apop_fn_for_derivative 	= tmp;
-		gsl_vector_add(penalty_total, penalty_gradient);
-	}
-	p->model.dlog_likelihood(beta, p->d, g);
-	for (i=0; i< beta->size; i++){
-		if (gsl_vector_get(penalty_total,i) != 0){
-			gsl_vector_set(g, i, -gsl_vector_get(penalty_total,i));
+static double negshell (const gsl_vector * beta, void * params){
+negshell_params	*p			    = params;
+gsl_vector 	    *returned_beta	= gsl_vector_alloc(beta->size);
+double		    penalty, out    = 0, 
+                done            = 0; 
+static double	base_for_penalty= 0;
+	if (p->model.constraint){
+		penalty	= p->model.constraint(beta, p->d, returned_beta);
+		if (penalty > 0){
+			base_for_penalty	= p->model.log_likelihood(returned_beta, p->d);
+			out = -base_for_penalty + penalty;
+            done++;
 		}
 	}
-	gsl_vector_scale(g, -1);
+    if (!done)
+	    out = - p->model.log_likelihood(beta, p->d);
+    if (strlen(apop_mle_trace_path) > 0)
+        insert_path_into_db(beta,-out);
 	gsl_vector_free(returned_beta);
-	gsl_vector_free(penalty_gradient);
+    return out;
+}
+
+/* The derivative-calculating routine.
+If the constraint binds
+    then: take the numerical derivative of negshell, which will be the
+    numerical derivative of the penalty.
+    else: just find dlog_likelihood. If the model doesn't have a
+    dlog likelihood or the user asked to ignore it, then the main
+    maximum likelihood fn replaced model.dlog_likelihood with
+    apop_numerical_gradient anyway.
+Finally, reverse the sign, since the GSL is trying to minimize instead of maximize.
+*/
+static void dnegshell (const gsl_vector * beta, void * params, gsl_vector * g){
+negshell_params *p		        = params;
+gsl_vector      *returned_beta  = gsl_vector_alloc(beta->size);
+double 		    (*tmp) (const gsl_vector *beta, void *d);
+	if (p->model.constraint && p->model.constraint(beta, p->d, returned_beta)){
+		    tmp			            = apop_fn_for_derivative;
+		    apop_fn_for_derivative 	= negshell;
+		    apop_numerical_gradient(beta, params, g);
+		    apop_fn_for_derivative 	= tmp;
+	} else {
+	    p->model.dlog_likelihood(beta, p->d, g);
+	    gsl_vector_scale(g, -1);
+    }
+	gsl_vector_free(returned_beta);
 }
 
 static void fdf_shell(const gsl_vector *beta, void *params, double *f, gsl_vector *df){
@@ -299,7 +361,7 @@ gsl_vector_view v;
 */
 
 
-/** The maximum likelihood calculations, given a derivative of the log likelihood.
+/* The maximum likelihood calculations, given a derivative of the log likelihood.
 
 If no derivative exists, will calculate a numerical gradient.
 
@@ -313,26 +375,29 @@ If no derivative exists, will calculate a numerical gradient.
 \return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
   \todo readd names */
-apop_estimate *	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *uses,
-			apop_model dist, double *starting_pt, double step_size, double tolerance, int verbose){
+static apop_estimate *	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *uses,
+			apop_model dist, double *starting_pt, double step_size, double tolerance, int method, int verbose){
 gsl_multimin_function_fdf 	minme;
 gsl_multimin_fdfminimizer 	*s;
 gsl_vector 			*x;
 int				iter 	= 0, 
-				status,
+				status  = 0,
 				betasize= dist.parameter_ct;
 apop_inventory			actual_uses;
 apop_estimate			*est;
 negshell_params			nsp;
 	if (betasize == -1)	betasize = data->size2 - 1;
 	prep_inventory_mle(uses, &actual_uses);
-	s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
-	//s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
+    if (method/100 ==2)
+	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
+    else if (method/100 == 3)
+	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_pr, betasize);
+    else
+	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
 	est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
-	if (dist.dlog_likelihood == NULL ){
+	if (dist.dlog_likelihood == NULL || (method % 100 ==1))
 		dist.dlog_likelihood 	= apop_numerical_gradient;
-		apop_fn_for_derivative	= dist.log_likelihood;
-	}
+	apop_fn_for_derivative	= dist.log_likelihood;
 	if (starting_pt==NULL){
 		x	= gsl_vector_alloc(betasize);
   		gsl_vector_set_all (x,  0);
@@ -358,8 +423,8 @@ negshell_params			nsp;
 		   	if(verbose)	printf ("Minimum found.\n");
 		}
        	 }
-	//while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d);
-	while (status != GSL_SUCCESS && iter < MAX_ITERATIONS_w_d);
+	while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d);
+	//while (status != GSL_SUCCESS && iter < MAX_ITERATIONS_w_d);
 	if(iter==MAX_ITERATIONS_w_d) {
 		est->status	= 1;
 		if (verbose) printf("No min!!\n");
@@ -375,22 +440,23 @@ negshell_params			nsp;
 	return est;
 }
 
-apop_estimate *	apop_maximum_likelihood_no_d(gsl_matrix * data, apop_inventory *uses,
+static apop_estimate *	apop_maximum_likelihood_no_d(gsl_matrix * data, apop_inventory *uses,
 			apop_model dist, double *starting_pt, double step_size, double tolerance, int verbose){
-int			status,
-			iter 		= 0,
-			betasize	= dist.parameter_ct;
-size_t 			i;
+int			            status,
+			            iter 		= 0,
+			            betasize	= dist.parameter_ct;
+size_t 			        i;
 gsl_multimin_function 	minme;
 gsl_multimin_fminimizer *s;
-gsl_vector 		*x, *ss;
-double			size;
-apop_inventory		actual_uses;
-apop_estimate		*est;
-negshell_params		nsp;
+gsl_vector 		        *x, *ss;
+double			        size;
+apop_inventory		    actual_uses;
+apop_estimate		    *est;
+negshell_params		    nsp;
 	if (betasize == -1)	betasize = data->size2 - 1;
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
+	x	= gsl_vector_alloc(betasize);
 	prep_inventory_mle(uses, &actual_uses);
 	est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
 	est->status	= 1;	//assume failure until we score a success.
@@ -399,17 +465,17 @@ negshell_params		nsp;
 	else
 		apop_convert_array_to_vector(starting_pt, &x, betasize);
   	gsl_vector_set_all (ss,  step_size);
-	nsp.model	= dist;
-	nsp.d		= data;
-	minme.f		= negshell;
-	minme.n		= betasize;
+	nsp.model	    = dist;
+	nsp.d		    = data;
+	minme.f		    = negshell;
+	minme.n		    = betasize;
 	minme.params	= &nsp;
 	gsl_multimin_fminimizer_set (s, &minme, x,  ss);
       	do { 	iter++;
 		status 	= gsl_multimin_fminimizer_iterate(s);
 		if (status) 	break; 
 		size	= gsl_multimin_fminimizer_size(s);
-	       	status 	= gsl_multimin_test_size (size, tolerance); 
+	   	status 	= gsl_multimin_test_size (size, tolerance); 
 		if(verbose){
 			printf ("%5d ", iter);
 			for (i = 0; i < betasize; i++) {
@@ -444,12 +510,18 @@ negshell_params		nsp;
 \param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
 \param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
 \param params	an \ref apop_estimation_params structure, featuring:<br>
-starting_pt	an array of doubles suggesting a starting point. If NULL, use zero.<br>
-step_size	the initial step size.<br>
-tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
-verbose		Y'know.<br>
-method		0: Nelder-Mead simplex<br>
-			1: conjugate gradient. If no gradient is available, use numerical approximations. (default)
+starting_pt:	an array of doubles suggesting a starting point. If NULL, use zero.<br>
+step_size:	the initial step size.<br>
+tolerance:	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
+verbose:	Y'know.<br>
+method:		The sum of a method and a gradient-handling rule.
+\li 000: Nelder-Mead simplex (gradient handling rule is irrelevant)
+\li 100: conjugate gradient (Fletcher-Reeves) (default)
+\li 200: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
+\li 200: conjugate gradient (Polak-Ribiere)
+\li 0: If no gradient is available, use numerical approximations. (default)
+\li 1: Use numerical approximations even if an explicit dlog likelihood is given. <br>
+Thus, the default method is 100+0 = 100. To use the Nelder-Mead simplex algorithm, use 0, or to use the Polak_Ribiere method ignoring any analytic dlog likelihood function, use 201.
 \return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
   \todo re-add names 
@@ -457,10 +529,10 @@ method		0: Nelder-Mead simplex<br>
 apop_estimate *	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *uses,
 			apop_model dist, apop_estimation_params params){
 
-	if (params.method==0)
+	if (params.method/100==0)
 		return apop_maximum_likelihood_no_d(data, uses, dist, params.starting_pt, params.step_size, params.tolerance, params.verbose);
 	//else:
-	return apop_maximum_likelihood_w_d(data, uses, dist, params.starting_pt, params.step_size, params.tolerance, params.verbose);
+	return apop_maximum_likelihood_w_d(data, uses, dist, params.starting_pt, params.step_size, params.tolerance, params.method, params.verbose);
 }
 
 

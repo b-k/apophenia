@@ -29,10 +29,11 @@ static apop_estimate * zipf_estimate(gsl_matrix * data, apop_inventory *uses, vo
 static double beta_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
 double  limit       = 1,
         tolerance   = 1e-1;
-double  l_vector_get(beta, 0);
+double  mu          = gsl_vector_get(beta, 0);
     if (mu > limit) 
         return 0;
     //else:
+    gsl_vector_memcpy(returned_beta, beta);
     gsl_vector_set(returned_beta, 0, limit + tolerance);
     return limit - mu;    
 }
@@ -149,4 +150,4 @@ apop_model apop_zipf = {"Zipf", 1,  {
     1,    //log_likelihood
     0    //names;
 },         
-    zipf_estimate, zipf_log_likelihood, NULL, NULL, {1, {beta_greater_than_x_constraint}}, zipf_rng};
+    zipf_estimate, zipf_log_likelihood, NULL, NULL, beta_greater_than_x_constraint, zipf_rng};

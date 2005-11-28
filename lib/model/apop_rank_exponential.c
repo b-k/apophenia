@@ -29,9 +29,12 @@ static apop_estimate * exponential_rank_estimate(gsl_matrix * data, apop_invento
 double          colsum,
                 numerator   = 0,
                 grand_total = 0;
-apop_estimate 	*est	    = apop_estimate_alloc(data->size1,1,NULL, *uses);
+apop_estimate 	*est;
 gsl_vector_view v;
 int             i;
+    if (uses == NULL)
+        uses    = apop_inventory_alloc(1);
+    est = apop_estimate_alloc(data->size1,1,NULL, *uses);
 	apop_inventory_filter(uses, apop_exponential_rank.inventory_filter);
     for(i=0; i< data->size2; i++){
         v            = gsl_matrix_column(data, i);
@@ -61,6 +64,7 @@ double  mu          = gsl_vector_get(beta, 0);
     if (mu > limit) 
         return 0;
     //else:
+    gsl_vector_memcpy(returned_beta, beta);
     gsl_vector_set(returned_beta, 0, limit + tolerance);
     return limit - mu;    
 }
@@ -146,4 +150,4 @@ apop_model apop_exponential_rank = {"Exponential, rank data", 1,
 	0	//names;
     },
 	 exponential_rank_estimate, rank_exponential_log_likelihood, rank_exponential_dlog_likelihood, NULL,   
-    {1, {beta_greater_than_x_constraint}}, rank_exponential_rng};
+    beta_greater_than_x_constraint, rank_exponential_rng};
