@@ -6,10 +6,10 @@
 \newif\ifbook \booktrue
 \documentclass[12pt,notitlepage, openany]{book}
 \usepackage{amsfonts}  %for mathbb
+\usepackage{lgrind}  
 
 %indexing:
-\usepackage{multicol} 
-\usepackage{makeidx}
+\usepackage{multicol, makeidx}
 \makeindex
 \def\ind#1{\index{#1}#1}
 \def\ttind#1{\index{#1@{\tt #1}}{\tt #1}}
@@ -272,8 +272,8 @@ When you're done with all this---and this is no exaggeration---you'll
 have the tools to implement any technique in classical statistics in
 existence today, on any data set, no matter how large or exceptional.
 
-\input c_crash.tex
-\input sql.tex
+\input c_crash.ground
+\input sql.ground
 \input linear_algebra.tex
 \input projection.tex
 \input gauss.tex

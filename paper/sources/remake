@@ -1,1 +1,1 @@
-for i in *c; do c++2latex -a $i; done;
+for i in *c; do lgrind -i -lc $i > $(basename $i .c).tex; done;

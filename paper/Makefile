@@ -3,9 +3,7 @@ DOCNAME = gsl_stats
 #DOCNAME = c_crash
 
 all: sources/dummy.tex
-	latex $(DOCNAME)
-
-latex: sources/dummy.tex
+	for i in *tex; do lgrind -e -t 4 $$i > $$(basename $$i .tex).ground; done;
 	latex $(DOCNAME)
 
 codefigs:

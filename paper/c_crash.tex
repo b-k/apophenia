@@ -6,19 +6,18 @@
 \else
 	\long\def\comment#1{}
 	\documentclass[12pt]{article}
-	\usepackage{amsfonts}  %for mathbb
+	\usepackage{amsfonts, lgrind}  %for mathbb
 	\setlength{\topmargin}{-0.5cm}\setlength{\textheight}{8.6in} 
-\setlength{\oddsidemargin}{0in} 
-\setlength{\textwidth}{6.1in} 
+    \setlength{\oddsidemargin}{0in} 
+    \setlength{\textwidth}{6.1in} 
 
-%indexing:
-\usepackage{multicol} 
-\usepackage{makeidx}
-\makeindex
-\def\ind#1{\index{#1}#1}
-\def\ttind#1{\index{#1@{\tt #1}}{\tt #1}}
-\def\ttindex#1{\index{#1@{\tt #1}}}
-\def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
+    %indexing:
+    \usepackage{multicol, makeidx}
+    \makeindex
+    \def\ind#1{\index{#1}#1}
+    \def\ttind#1{\index{#1@{\tt #1}}{\tt #1}}
+    \def\ttindex#1{\index{#1@{\tt #1}}}
+    \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
 
 	\begin{document}
 	\title{A crash course in C}
@@ -41,9 +40,8 @@ programming in a scripting language and would like to get to know C.
 \fi
 
 \comment{The next bit defines the code figures.
-First, write sources/code.c, then (in the sources dir) run
-c++2latex -a code.c
-to produce code.tex. The first argument to codefig will be
+I'm using lgrind now; it's pretty standard.
+The first argument to codefig will be
 both the name of the file and the label the figure will have; the 
 second argument will be caption for the figure.
 }
@@ -57,6 +55,8 @@ second argument will be caption for the figure.
 	\caption{#2}\label{#1}
 	\end{figure}
 }
+
+\long\def\codefig#1#2{\lagrind{sources/#1.tex}{#2}{#1}}
 
 This chapter will bring you up to speed on C.  
 My hope with this chapter is both to discuss where to put your semicolons
@@ -106,10 +106,12 @@ requires that you declare the type of every variable before using it.
 The delcaration consists of listing the type of the variable and then
 the variable name, e.g.:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 int a_variable, counter=0;
 double stuff;
-\end{verbatim}
+%]
+%\end{verbatim}
 
 Your basic options for variable types are {\tt int, float, double,
 long double} and {\tt char}. \ttind{int} is for integers;
@@ -160,23 +162,27 @@ You can define your own
 types. For example, these lines will declare two (badly names) triplets
 of numbers, {\tt a} and {\tt b}:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 typedef double triplet[3];
 triplet	a, b;
-\end{verbatim}
+%]
+%\end{verbatim}
 
 This is primarily useful for designing
 complex data types which are collections of many subelements. \ttindex{struct}
 For example:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 typedef struct xxx{
     double real;
     double imaginary;
 } complex;
 
 complex a, b;
-\end{verbatim}
+%]
+%\end{verbatim}
 
 You can now use {\tt a.real} or {\tt b.imaginary} to refer to the
 appropriate constituents of these complex numbers. Notice that you'll
@@ -185,7 +191,8 @@ use anywhere else in the program. This is your first hint that C is
 neither Beautiful nor Perfect; just follow the template there and nobody
 gets hurt. Here's another example:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 typedef struct ppp{
     char first_name[100], last_name[100];
     float height, weight;
@@ -193,7 +200,8 @@ typedef struct ppp{
 } person;
 
 person survey_data[200];
-\end{verbatim}
+%]
+%\end{verbatim}
 
 Structs are syntactically simple, so I have little to say about them here,
 but much of good programming goes in to designing structs that make sense
@@ -269,9 +277,11 @@ by declaring the function, just as you declare variables before using
 them. The declaration looks exactly like the first line of the function
 itself, except with a semicolon at the end:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 float do_something (float a, float b, int c);
-\end{verbatim}
+%]
+%\end{verbatim}
 
 If you have a declaration line at the top of the program file, you don't
 have to worry about where the function is actually defined---as
@@ -313,11 +323,13 @@ side-effects such as changing the values of the inputs (see Section \ref{pointer
 the screen or an external file. You can also have functions which take no inputs, so any
 of the following are valid declarations for functions:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 void do_something(float a);
 float do_something_else(void);
 float do_something_else();
-\end{verbatim}
+%]
+%\end{verbatim}
 
 The last two are equivalent, but you can't forget the parentheses entirely---then the compiler would
 think you're talking about a variable instead of a function.
@@ -328,14 +340,16 @@ the program ever sees. For example, If the variable {\tt c} turns out to
 be one in the following, then this function will return the ratio of {\tt a} and {\tt d}, and otherwise it
 will return their product:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 float do_something (float a, float b, int c) {
     if (c == 1)
         return a/b;
     else
         return a * b;
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 
 \paragraph{The \ttind{main} function}
@@ -345,10 +359,12 @@ which is where the program will begin executing. The consistency checks
 are now with the operating system that called the program, which will
 expect {\tt main} to be declared in one of two forms:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 int main(void);
 int main(int argc, char **argv);
-\end{verbatim}
+%]
+%\end{verbatim}
 
 Without further ado, I will ignore the second form, and will assume that all programs throughout this
 book will have a {\tt main} function with no arguments.
@@ -363,9 +379,11 @@ something went wrong.
 
 So, what should you actually put in those wonderful functions? Well, most of the work you'll be doing are
 simple assignments:  \index{arithmetic} \index{assignment|see{=}} \index{=}
-\begin{verbatim}
+%\begin{verbatim}
+%[
 ratio = a / b; 
-\end{verbatim}
+%]
+%\end{verbatim}
 will find the value of {\tt a} divided by {\tt b} and put the value in ratio. Notice that there's a
 semicolon at the end of the line; you'll need a semicolon at the end of everything but the few
 exceptions I mention below. All of the usual operations work: {\tt + - / *}, and so do some of the more
@@ -404,10 +422,12 @@ Logical operations have similar definitions: \ttindex{\&\&} \ttindex{"|"|} \inde
 `And' is {\tt (a \&\& b)}; `or' is {\tt (a || b)}; `not {\tt a}' is {\tt (!a)}.
 The `and' and `or' operations have a convenient feature: if {\tt a} is sufficient to determine whether
 the entire expression is true, then it won't bother with {\tt b} at all. For example:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <math.h>    //sqrt
 ((a < 0) || (sqrt(a) < 3))
-\end{verbatim}
+%]
+%\end{verbatim}
 will always work: if {\tt a} is less than zero, then the evaluation of the expression is done (it's true),
 so the square root won't have to be calculated, avoiding any
 square-root-of-a-negative error. [Notice that the {\tt sqrt()} function
@@ -459,14 +479,16 @@ it.
 \subsection{Loops} There are three types of loops, and they are slightly redundant. The simplest is a while
 loop. Here's a while loop to print `hello' on the screen five times: \index{loops} \ttindex{while}
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <stdio.h>
 int i = 0;
 while (i<5){
     printf("Hello.\n");
     i++;
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 The interpretation is rather straightforward: while the expression in parentheses is true (musn't forget
 the parentheses), execute the instructions in brackets.
@@ -474,13 +496,15 @@ the parentheses), execute the instructions in brackets.
 Cases like the example above, where we have a counter which we increment, are so common that they have
 their own special syntax. The following \index{for@{\tt for}} loop does exactly what the while loop above did:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <stdio.h>
 int i;
 for (i=0; i<5; i++){
     printf("Hello.\n");
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 Comparison with the above tells us when the three subelements in the parentheses are evaluated: the first
 part is evaluated before the loop runs; the second part is evaluated after each iteration of the loop; the
@@ -489,14 +513,16 @@ This is certainly counterintuitive, but after the section on arrays, you'll beco
 
 Finally, if you want to guarantee that the loop will run at least once, you can use a \ttind{do-while} loop (with a semicolon after the {\tt while}):
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <stdio.h>
 int i = 0;
 do {
     printf("Hello.\n");
     i++;
 } while (i<5);
-\end{verbatim} 
+%]
+%\end{verbatim} 
 
 \subsection{Comments} \index{commenting code|(}
 Put a long block of comments 
@@ -523,23 +549,27 @@ comment and ignore it.
 
 However, there is a slight problem with this approach: what if there's a comment in what you'd just
 commented out? You'll have a sequence like this in your code: 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 /* line A; 
    /* line B */ 
    line C; 
 */
-\end{verbatim}
+%]
+%\end{verbatim}
 We had hoped that all three lines would be commented out now, but the compiler will ignore everything
 from the first {\tt /*} until it sees the first {\tt */}. That means Line A and Line B will be ignored,
 but {\tt line C; */} will be read as code---and malformed code at that.
 
 You will always need to watch out for this when commenting out large blocks of code. But for small
 blocks, there's another syntax for comments:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 this_is_code;    //Everything on a line after two slashes 
                  //will be ignored.
                  //Use this form for short comments.
-\end{verbatim}
+%]
+%\end{verbatim}
 This is good for commenting individual lines of code which deserve a note.\footnote{The two-slash
 comment style is actually not C, it's C$^{++}$. But it's so useful that gcc accepts it without so much as
 a warning. If you're not using gcc, you may have to use the {\tt /*} --- {\tt */} format for comments
