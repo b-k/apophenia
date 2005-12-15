@@ -31,7 +31,7 @@ cd $junkdir
 	mv apophenia apophenia-$version
 
 	#helpers for doxygen
-	cp documentation.h flake.gif .doxygen *.html apophenia-$version
+	cp documentation.h flake.gif .doxygen *.html typical.css apophenia-$version
 
 	#the testing program and scripts
 	cp test.c test_data test_script apophenia-$version

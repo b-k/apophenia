@@ -1,4 +1,4 @@
-/** \file apop_rank_gamma.c
+/** \file apop_gamma_rank.c
 
 
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
@@ -7,11 +7,12 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 //The default list. Probably don't need them all.
 #include "name.h"
+#include "stats.h"
+#include "model.h"
 #include "bootstrap.h"
 #include "regression.h"
 #include "conversions.h"
 #include "likelihoods.h"
-#include "model.h"
 #include "linear_algebra.h"
 #include <stdio.h>
 #include <assert.h>
@@ -37,45 +38,45 @@ double  limit0      = 0,
 }
 
 static double gamma_rank_log_likelihood(const gsl_vector *beta, void *d){
-float       a           = gsl_vector_get(beta, 0),
-            b           = gsl_vector_get(beta, 1);
+float           a           = gsl_vector_get(beta, 0),
+                b           = gsl_vector_get(beta, 1);
     //assert (a>0 && b>0);
-    if (a<=0 && b<=0) printf("assertion failed.\n");
+    if (a<=0 || b<=0) printf("assertion failed.\n");
     if (gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
-int         i, k;
-gsl_matrix  *data       = d;
-float       llikelihood = 0,
-            ln_ga       = gsl_sf_lngamma(a),
-            ln_b        = log(b),
-            a_ln_b      = a * ln_b,
-            ln_k;
+int             k;
+gsl_matrix      *data       = d;
+float           llikelihood = 0,
+                ln_ga       = gsl_sf_lngamma(a),
+                a_ln_b      = a * log(b),
+                ln_k;
+gsl_vector_view v;
     for (k=0; k< data->size2; k++){
-        ln_k    = log(k+1);
-        for (i=0; i< data->size1; i++)
-            llikelihood    += gsl_matrix_get(data, i, k) * (-ln_ga - a_ln_b + (a-1) * ln_k  - (k+1)/b);
-    }
+            ln_k            = log(k+1);
+            v               = gsl_matrix_column(data, k);
+            llikelihood    += apop_sum(&(v.vector)) * (-ln_ga - a_ln_b + (a-1) * ln_k  - (k+1)/b);
+        }
     return llikelihood;
 }
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
 static void gamma_rank_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
-float       a       = gsl_vector_get(beta, 0),
-            b       = gsl_vector_get(beta, 1);
-int         i, k;
-gsl_matrix *data    = d;
-float       d_a     = 0,
-            d_b     = 0,
-            psi_a   = gsl_sf_psi(a),
-            ln_b    = log(b),
-            x, ln_k;
+double          a       = gsl_vector_get(beta, 0),
+                b       = gsl_vector_get(beta, 1);
+int             k;
+gsl_matrix     *data    = d;
+double          d_a     = 0,
+                d_b     = 0,
+                psi_a   = gsl_sf_psi(a),
+                ln_b    = log(b),
+                x, ln_k;
+gsl_vector_view v;
     for (k=0; k< data->size2; k++){
         ln_k    = log(k +1);
-        for (i=0; i< data->size1; i++){
-            x    = gsl_matrix_get(data, i, k);
-            d_a += x * (-psi_a - ln_b + ln_k);
-            d_b += x *(-a/b - (k+1));
-        }
+        v       = gsl_matrix_column(data, k);
+        x       = apop_sum(&(v.vector));
+        d_a    += x * (-psi_a - ln_b + ln_k);
+        d_b    += x * (a/b - (k+1)/gsl_pow_2(b));
     }
     gsl_vector_set(gradient,0, d_a);
     gsl_vector_set(gradient,1, d_b);

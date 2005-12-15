@@ -7,7 +7,7 @@
 \section dostats Doing statistics 
  \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.
  \li \ref regression  
- \li \ref likelihood_fns "Maximum likelihood estimation": estimators requiring a search for the maximum of a likelihood function.
+ \li \ref mle "Maximum likelihood estimation": estimators requiring a search for the maximum of a likelihood function.
  \li \ref linear_algebra "Linear Algebra": determinants, projections, numerical gradients, &c. Some convenience functions to display matrices and vectors.
  \li \ref models : How to write down a model and estimate its parameters.
  \li \ref ttest "Some tests"
@@ -54,7 +54,7 @@ If this seems a bit vague, have a look at this \ref sample_program.
 
 \section sell Some complaints alleviated
 \li <b>The world is not linear</b>, so why are you using a package to fit
-linear models? Apophenia facilitates writing \ref likelihood_fns which
+linear models? Apophenia facilitates writing \ref mle "likelihood functions" which
 can be as crazy as the world you are modeling, and then fits them with
 one function call to \ref apop_maximum_likelihood. Comparing competing
 models is easy as well.

@@ -292,13 +292,14 @@ of the data in each column; should give more in the near future.
 gsl_matrix * apop_matrix_summarize(gsl_matrix *data, apop_name *names_in, apop_name **names_out){
 int		i;
 gsl_vector_view	v;
-gsl_matrix	*out	= gsl_matrix_alloc(data->size2, 2);
-double		mean, stddev;
+gsl_matrix	*out	= gsl_matrix_alloc(data->size2, 3);
+double		mean, stddev,var;
 char		rowname[10000]; //crashes on more than 10^9995 columns.
 	if (names_out !=NULL){
 		*names_out	= apop_name_alloc();
 		apop_name_add(*names_out, "mean", 'c');
 		apop_name_add(*names_out, "std dev", 'c');
+		apop_name_add(*names_out, "variance", 'c');
 		if (names_in !=NULL)
 			for (i=0; i< data->size2; i++)
 				apop_name_add(*names_out, names_in->colnames[i], 'r');
@@ -311,9 +312,11 @@ char		rowname[10000]; //crashes on more than 10^9995 columns.
 	for (i=0; i< data->size2; i++){
                 v       = gsl_matrix_column(data, i);
 		mean	= apop_mean(&(v.vector));
-		stddev	= sqrt(apop_var_m(&(v.vector),mean));
+		var 	= apop_var_m(&(v.vector),mean);
+		stddev	= sqrt(var);
 		gsl_matrix_set(out, i, 0, mean);
 		gsl_matrix_set(out, i, 1, stddev);
+		gsl_matrix_set(out, i, 2, var);
 	}	
 	return out;
 }

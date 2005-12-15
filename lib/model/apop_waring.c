@@ -1,3 +1,9 @@
+/** \file apop_waring.c
+
+  The Waring distribution. 
+
+Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
+*/
 
 //The default list. Probably don't need them all.
 #include "name.h"
@@ -55,18 +61,18 @@ static double waring_log_likelihood(const gsl_vector *beta, void *d){
 float		bb	= gsl_vector_get(beta, 0),
     		a	= gsl_vector_get(beta, 1);
 int 		i, k;
-gsl_matrix*	data		= d;
-double 		ln_a_k, ln_bb_a_k, p,
+gsl_matrix*	data= d;
+double 		ln_a_k, ln_bb_a_k, p, val,
 		likelihood 	= 0,
 		ln_bb_a		= gsl_sf_lngamma(bb + a),
 		ln_a_mas_1	= gsl_sf_lngamma(a + 1),
-		ln_bb_less_1	= log(bb - 1);
+		ln_bb_less_1= log(bb - 1);
 	for (k=0; k< data->size2; k++){	//more efficient to go column-by-column
-		ln_bb_a_k	 = gsl_sf_lngamma(k +1 + a + bb);
-		ln_a_k		 = gsl_sf_lngamma(k +1 + a);
-		p		 = ln_bb_less_1 + ln_a_k + ln_bb_a - ln_a_mas_1 - ln_bb_a_k;
 		for (i=0; i< data->size1; i++){
-			likelihood	+= gsl_matrix_get(data, i, k) *p;
+            val          = gsl_matrix_get(data, i, k);
+		    ln_bb_a_k	 = gsl_sf_lngamma(val + a + bb);
+		    ln_a_k		 = gsl_sf_lngamma(val + a);
+			likelihood	+= ln_bb_less_1 + ln_a_k + ln_bb_a - ln_a_mas_1 - ln_bb_a_k;
 		}
 	}
 	return likelihood;
@@ -80,7 +86,7 @@ float		bb		        = gsl_vector_get(beta, 0),
 	    	a		        = gsl_vector_get(beta, 1);
 int 		i, k;
 gsl_matrix	*data		    = d;
-double		bb_minus_one_inv= 1/(bb-1),
+double		bb_minus_one_inv= 1/(bb-1), val,
 		psi_a_bb	        = gsl_sf_psi(bb + a),
 		psi_a_mas_one	    = gsl_sf_psi(a+1),
 		psi_a_k,
@@ -88,35 +94,18 @@ double		bb_minus_one_inv= 1/(bb-1),
 		d_bb		        = 0,
 		d_a		            = 0;
 	for (k=0; k< data->size2; k++){	//more efficient to go column-by-column
-		psi_bb_a_k	 = gsl_sf_psi(k +1 + a + bb);
-		psi_a_k		 = gsl_sf_psi(k +1 + a);
 		for (i=0; i< data->size1; i++){
-			d_bb	+= gsl_matrix_get(data, i, k) *(bb_minus_one_inv + psi_a_bb - psi_bb_a_k);
-			d_a		+= gsl_matrix_get(data, i, k) *(psi_a_bb + psi_a_k - psi_a_mas_one - psi_bb_a_k);
+            val          = gsl_matrix_get(data, i, k);
+		    psi_bb_a_k	 = gsl_sf_psi(val + a + bb);
+		    psi_a_k		 = gsl_sf_psi(val + a);
+			d_bb	    += val *(bb_minus_one_inv + psi_a_bb - psi_bb_a_k);
+			d_a		    += val *(psi_a_bb + psi_a_k - psi_a_mas_one - psi_bb_a_k);
 		}
 	}
 	gsl_vector_set(gradient, 0, d_bb);
 	gsl_vector_set(gradient, 1, d_a);
 }
 
-
-/** RNG from a Generalized Hypergeometric type B3.
-
- Devroye uses this as the base for many of his
- distribution-generators, e.g., \ref apop_waring_rng. 
-*/ 
-double apop_GHgB3_rng(gsl_rng * r, double* a){
-if ((a[0]<=0) || (a[1] <= 0) || (a[2] <=0)){
-	printf("apop_GHgB3_rng took a zero parameter; bad.\n");
-	return 0;
-	}
-double		aa	= gsl_ran_gamma(r, a[0], 1),
-		b	= gsl_ran_gamma(r, a[1], 1),
-		c	= gsl_ran_gamma(r, a[2], 1);
-int		p;
-	p	= gsl_ran_poisson(r, aa*b/c);
-	return p;
-}
 
 /** Give me parameters, and I'll draw a ranking from the appropriate
 Waring distribution. [I.e., if I randomly draw from a Waring-distributed
@@ -145,7 +134,7 @@ double		x, u,
 }
 
 /** The Waring distribution
-The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
+Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
 
 apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
 

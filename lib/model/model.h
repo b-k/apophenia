@@ -52,8 +52,10 @@ extern apop_model apop_gaussian;//synonym for apop_normal
 extern apop_model apop_normal;
 extern apop_model apop_probit;
 extern apop_model apop_waring;
+extern apop_model apop_waring_rank;
 extern apop_model apop_yule;
 extern apop_model apop_zipf;
+extern apop_model apop_zipf_rank;
 
 
 
@@ -62,7 +64,15 @@ double apop_generalized_harmonic(int N, double s);
 
 #endif
 
-/** \defgroup likelihood_fns  Likelihood fns 
+/** \defgroup mle  Maximum likelihood estimation
+
+Most of the action with regards to maximum likelihood estimation is in
+the function \ref apop_maximum_likelihood and the \ref models "model objects".
+
+The likelihood objects describe anything which one would want to fit
+with an MLE. Usually this involves finding the most likely parameters
+for a distribution, but this can also involve more elaborate models such
+as the \ref apop_probit. 
 
 Because the model is often a probability distribution, the apop_model
 object is also Apophenia's means of describing distributions. E.g.,
@@ -91,24 +101,7 @@ printf("Your most likely waring parameters are %g and %g, with likelihood %g",
                         gsl_vector_get(waring_parameter->parameters, 0) gsl_vector_get(waring_parameter->parameters, 1), likelihood);
 \endcode
 
-
-\ingroup mle 
-*/
-
-/** \defgroup mle  Maximum likelihood estimation
-\ingroup likelihood_fns
-
-Most of the action with regards to maximum likelihood estimation is in
-the function \ref apop_maximum_likelihood and the \ref likelihood_fns "distribution objects".
-
-The likelihood objects describe anything which one would want to fit
-with an MLE. Usually this involves finding the most likely parameters
-for a distribution, but this can also involve more elaborate models such
-as the \ref apop_probit. 
-
-In fact, one could even use it for \ref nonstats_modeling
-"non-statistical models" involving optimization subject to constraints.
-
+\section vuong Comparing models
 The distribution objects make it very easy to test competing models.
 Vuong (1989) (<a
 href="http://links.jstor.org/sici?sici=0012-9682%28198903%2957%3A2%3C307%3ALRTFMS%3E2.0.CO%3B2-J">Jstor
@@ -149,8 +142,5 @@ apop_estimate   *est1, *est2;
            printf("The %s is a better fit than the %s with %g%% certainty.\n", d2.name, d1.name, t_stat*100);
 }
 \endcode
-
-You may want to know how the MLE procedure went about searching for the function; if so, have a look at \ref apop_mle_trace_path.
-
 */
 

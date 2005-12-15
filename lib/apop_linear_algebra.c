@@ -1,4 +1,4 @@
-/** \file linear_algebra.c	Assorted things to do with matrices,
+/** \file apop_linear_algebra.c	Assorted things to do with matrices,
 such as take determinants or do singular value decompositions.
 
 
@@ -228,3 +228,53 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 	m->data[i * m->tda +j]	+= amt;
 }
 
+
+/** Put the first matrix either on top of or to the right of the second matrix.
+  The fn returns a new matrix, meaning that at the end of this function, until you gsl_matrix_free() the original matrices, you will be taking up twice as much memory. Plan accordingly.
+
+\param  m1  the upper/rightmost matrix
+\param  m2  the second matrix
+\param  posn    if 't', stack along first dimension, else, e.g. 'r' stack along second
+\return     a new matrix with the stacked data.
+\ingroup linear_algebra
+*/
+gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
+gsl_matrix *out;
+gsl_vector *tmp_vector;
+int         i;
+    if (posn == 't'){
+        if (m1->size2 != m2->size2){
+            printf("When stacking matrices on top of each other, they have to have the same number of columns (m1->size2==m2->size2). Returning NULL.\n");
+            return NULL;
+        }
+        out         = gsl_matrix_alloc(m1->size1 + m2->size1, m1->size2);
+        tmp_vector  = gsl_vector_alloc(m1->size2);
+        for (i=0; i< m1->size1; i++){
+            gsl_matrix_get_row(tmp_vector, m1, i);
+            gsl_matrix_set_row(out, i, tmp_vector);
+        }
+        for ( ; i< m1->size1+m2->size1; i++){   //i is not reinitialized.
+            gsl_matrix_get_row(tmp_vector, m2, i- m1->size1);
+            gsl_matrix_set_row(out, i, tmp_vector);
+        }
+        gsl_vector_free(tmp_vector);
+        return out;
+    } else {
+        if (m1->size1 != m2->size1){
+            printf("When stacking matrices side by side, they have to have the same number of rows (m1->size1==m2->size1). Returning NULL.\n");
+            return NULL;
+        }
+        out         = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
+        tmp_vector  = gsl_vector_alloc(m1->size1);
+        for (i=0; i< m1->size2; i++){
+            gsl_matrix_get_col(tmp_vector, m1, i);
+            gsl_matrix_set_col(out, i, tmp_vector);
+        }
+        for ( ; i< m1->size2+m2->size2; i++){   //i is not reinitialized.
+            gsl_matrix_get_col(tmp_vector, m2, i- m1->size2);
+            gsl_matrix_set_col(out, i, tmp_vector);
+        }
+        gsl_vector_free(tmp_vector);
+        return out;
+    } 
+}

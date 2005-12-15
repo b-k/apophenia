@@ -67,7 +67,7 @@ int apop_convert_vector_to_array(gsl_vector *in, double **out){
 int		i;	
 	*out	= malloc(sizeof(double) * in->size);
 	for (i=0; i < in->size; i++)
-		*out[i]	= gsl_vector_get(in, i);
+		(*out)[i]	= gsl_vector_get(in, i);
 	return in->size;
 }
 

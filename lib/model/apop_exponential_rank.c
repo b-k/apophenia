@@ -1,4 +1,4 @@
-/** \file apop_rank_exponential.c
+/** \file apop_exponential_rank.c
 
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
@@ -70,16 +70,17 @@ double  mu          = gsl_vector_get(beta, 0);
 }
 
 static double rank_exponential_log_likelihood(const gsl_vector *beta, void *d){
-double		bb		    = gsl_vector_get(beta, 0),
-		    p,
-		    llikelihood = 0,
-		    ln_c		= log(bb);
-gsl_matrix	*data		= d;
-int 		i, k;
+double		    b		    = gsl_vector_get(beta, 0),
+		        p,
+		        llikelihood = 0,
+		        ln_b		= log(b);
+gsl_matrix	    *data		= d;
+int 		    k;
+gsl_vector_view v;
 	for (k=0; k< data->size2; k++){
-		p	= -ln_c - (k)/bb;
-		for (i=0; i< data->size1; i++)
-			llikelihood	+=  gsl_matrix_get(data, i, k) * p;
+		p	            = -ln_b - k/b;
+        v               = gsl_matrix_column(data, k);
+		llikelihood    += apop_sum(&(v.vector)) * p; 
 	}
 	return llikelihood;
 }
@@ -89,17 +90,18 @@ int 		i, k;
 //
 //\todo Check that the borderline work here is correct too.
 static void rank_exponential_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
-double		bb		        = gsl_vector_get(beta, 0);
-int 		i, k;
-gsl_matrix	*data		    = d;
-double 		d_likelihood 	= 0,
-		one_over_ln_c	    = 1/log(bb),
-		p;
+double		    bb		        = gsl_vector_get(beta, 0);
+int 		    k;
+gsl_matrix	    *data		    = d;
+double 		    d_likelihood 	= 0,
+		        one_over_ln_b	    = 1/log(bb),
+		        p;
+gsl_vector_view v;
 	for (k=0; k< data->size2; k++) {
-		p	= (one_over_ln_c -(k+1)) /bb;
-		for (i=0; i< data->size1; i++)			
-			d_likelihood	+= gsl_matrix_get(data, i, k) * p; 
-	}
+		p	            = (one_over_ln_b -(k+1)) /bb;
+        v               = gsl_matrix_column(data, k);
+		d_likelihood   += apop_sum(&(v.vector)) * p; 
+    }
 	gsl_vector_set(gradient,0, d_likelihood);
 }
 

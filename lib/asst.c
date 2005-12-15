@@ -75,3 +75,21 @@ int		count = 0;
 	return count;
 }
 
+
+/** RNG from a Generalized Hypergeometric type B3.
+
+ Devroye uses this as the base for many of his
+ distribution-generators, e.g., \ref apop_waring_rng. 
+*/  //Header in stats.h
+double apop_GHgB3_rng(gsl_rng * r, double* a){
+if ((a[0]<=0) || (a[1] <= 0) || (a[2] <=0)){
+	printf("apop_GHgB3_rng took a zero parameter; bad.\n");
+	return 0;
+	}
+double		aa	= gsl_ran_gamma(r, a[0], 1),
+		b	= gsl_ran_gamma(r, a[1], 1),
+		c	= gsl_ran_gamma(r, a[2], 1);
+int		p;
+	p	= gsl_ran_poisson(r, aa*b/c);
+	return p;
+}

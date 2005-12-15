@@ -60,7 +60,13 @@ gsl_matrix      *traced_path;
 Finally, call gnuplot:
 \code 
 gnuplot -persist < plotme
+(or)
+gnuplot plotme -
 \endcode
+
+Below is a sample of the sort of output one would get:<br>
+\image latex "./search.gif" "An ML search, tracing out the surface of the function" width=\textwidth
+\image html "./search.gif" "An ML search, tracing out the surface of the function" 
 
 \ingroup mle
 */
@@ -83,7 +89,7 @@ double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
 typedef struct grad_params{
 	gsl_vector	*beta;
 	void		*d;
-	int		dimension;
+	int		    dimension;
 } grad_params;
 
 static double one_d(double b, void *p){
@@ -117,7 +123,7 @@ grad_params 	gp;
 	for (i=0; i< beta->size; i++){
 		gp.dimension	= i;
 		gsl_vector_memcpy(gp.beta, beta);
-		gsl_deriv_central(&F, gsl_vector_get(beta,i), 1e-3, &result, &err);
+		gsl_deriv_central(&F, gsl_vector_get(beta,i), 1e-4, &result, &err);
 		gsl_vector_set(out, i, result);
 	}
 }
