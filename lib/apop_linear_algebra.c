@@ -237,6 +237,23 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 \param  posn    if 't', stack along first dimension, else, e.g. 'r' stack along second
 \return     a new matrix with the stacked data.
 \ingroup linear_algebra
+
+For example, here is a little function to merge four matrices into a single two-part-by-two-part matrix:
+\code
+gsl_matrix *apop_stack_two_by_two(gsl_matrix *ul, gsl_matrix *ur, gsl_matrix *dl, gsl_matrix *dr){
+gsl_matrix  *t1, *t2, *output;
+    t1   = apop_matrix_stack(ul, ur, 'r');
+    gsl_matrix_free(ul);
+    gsl_matrix_free(ur);
+    t2   = apop_matrix_stack(dl, dr, 'r');
+    gsl_matrix_free(dl);
+    gsl_matrix_free(dr);
+    output  = apop_matrix_stack(t1, t2, 't');
+    gsl_matrix_free(t1);
+    gsl_matrix_free(t2);
+    return output;
+}
+\endcode
 */
 gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
 gsl_matrix *out;
@@ -277,4 +294,34 @@ int         i;
         gsl_vector_free(tmp_vector);
         return out;
     } 
+}
+
+/** Delete columns from a matrix. 
+
+  This is done via copying, so if you have an exceptionally large
+  data set, you're better off producing the matrix in the perfect form
+  directly.
+
+\param in   the \c gsl_matrix to be subsetted
+\param  use an array of ints. If use[7]==0, then column seven will be cut from the output. A reminder: <tt>memset(use, 1, in->size2 * sizeof(int))</tt> will quickly fill an array of ints with nonzero values; you can switch the 1 to a 0 to fill with zeros, or just use calloc(in->size2 * sizeof(int)) to fill it with zeros on allocation.
+\return     a \c gsl_matrix with the specified columns removed.
+*/
+gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *use){
+gsl_matrix      *out;
+int             i, 
+                ct  = 0, 
+                j   = 0;
+gsl_vector_view v;
+    for (i=0; i < in->size2; i++)
+        if (use[i])
+            ct++;
+    out = gsl_matrix_alloc(in->size1, ct);
+    for (i=0; i < in->size2; i++){
+        if (use[i]){
+            v   = gsl_matrix_column(in, i);
+            gsl_matrix_set_col(in, j, &(v.vector));
+            j   ++;
+        }
+    }
+    return out;
 }

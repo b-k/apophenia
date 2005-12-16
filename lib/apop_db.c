@@ -46,11 +46,11 @@ out for analysis.
 #include <math.h> 	//sqrt
 #include <string.h>
 #include <stdarg.h>
-#include <apophenia/name.h>
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <apophenia/db.h>
 #include <apophenia/linear_algebra.h>
 #include <apophenia/stats.h>	//t_dist
+#include <apophenia/types.h>
 #include <apophenia/regression.h>	//two_tailify
 
 #include <apophenia/vasprintf.h>
@@ -562,7 +562,8 @@ float		out;
 /** This function returns an <tt>apop_name</tt> structure with the column
 names from the last \ref apop_query_to_matrix . Since only the names from
 the last query are saved, you will want to use this immediately
-after calling <tt>apop_query_to_matrix</tt>.  */
+after calling <tt>apop_query_to_matrix</tt>.  
+ \ingroup names */
 apop_name * apop_db_get_names(void){ return last_names; }
 
 /** This function returns the column count from the last query run. */

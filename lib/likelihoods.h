@@ -12,8 +12,8 @@
 #include <gsl/gsl_sf_psi.h>
 #include "linear_algebra.h"
 #include "conversions.h"
-#include "estimate.h"
 #include <apophenia/model.h>
+#include <apophenia/types.h>
 
 #define MAX_ITERATIONS 		5000
 #define MAX_ITERATIONS_w_d	5000

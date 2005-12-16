@@ -1,7 +1,7 @@
 #ifndef __apop_models_h__
 #define __apop_models_h__
 
-#include <apophenia/estimate.h>
+#include <apophenia/types.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>

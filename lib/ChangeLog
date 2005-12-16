@@ -1,3 +1,15 @@
+0.14	December 2005
+
+The apop_data structure, which is just a shell for a gsl_matrix and an
+apop_name. Was just sick of sending names following around my tables. 
+Lets us keep both numerical and categorical data in one place; kind of
+like R's data frame.
+
+0.13	December 2005
+
+--The apop_model object. This was a big deal that deserves more than
+just one line; see the manuals.
+
 0.12 	mid November 2005
 
 --Bar charts (assuming you've got Gnuplot > 4.1)

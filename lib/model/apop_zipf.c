@@ -7,10 +7,9 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 
 //The default list. Probably don't need them all.
-#include "name.h"
+#include "types.h"
 #include "model.h"
 #include "output.h"
-#include "regression.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"

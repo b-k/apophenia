@@ -1,4 +1,4 @@
-/** \file regression.c	Generally, if it assumes something is  Normally distributed, it's here.\n
+/** \file apop_regression.c	Generally, if it assumes something is  Normally distributed, it's here.\n
  Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
  \author Ben Klemens
  */
@@ -11,7 +11,7 @@
 #include <gsl/gsl_blas.h>
 #include "stats.h"
 #include "linear_algebra.h"
-#include "estimate.h"
+#include <apophenia/types.h>
 
 extern int apop_verbose;
 
@@ -128,8 +128,7 @@ The first column is the dependent variable, and the remaining columns the indepe
 \param sigma 
 A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>. Survives the function intact. The first column refers to the constant unit vector, so it's always zero.
 
-\param n
-An \c apop_name structure, specifying which outputs you want.
+\param n    An \c apop_name structure, describing the columns.
 
 \param uses 
 If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
@@ -243,3 +242,160 @@ gsl_vector_view	v 		= gsl_matrix_column(data, 0);
 	gsl_vector_free(y_data); gsl_vector_free(xpy);
 	return out;
 }
+
+/** The partitioned regression.
+        Give me two data sets, and I'll take the steps needed to produce
+        OLS coefficients.  If you give me intermediate results, I'll
+        use them instead of calculating them myself; that way the
+        fixed-effects regression is really easy.
+
+        The partitioned regression reduces to a GLS regression where
+        the Sigma matrix (usually interpreted as the var-covar matrix)
+        for the first set is \f$M_2 = I - X_2'(X_2 X_2') X_2\f$
+        and the Sigma for for the second set is \f$M_1 = I - X_1'(X_1
+        X_1') X_1\f$.  So, calculate \f$M_1\f$ and \f$M_2\f$, run GLS
+        twice, and splice together the results.
+
+        I assume that the Y vector (the dependent variable) is the first
+        column of the _second_ matrix. The textbook custom seems to be
+        to put auxiliary dummy variables on the left, and I won't 
+        go against that here.
+
+\param data1    the first half of the data set
+\param data2    the second half of the data set
+\param  M1      If you have these, give them to me and I won't waste time calculating them.
+\param  M2      If you have these, give them to me and I won't waste time calculating them.
+\param n1        An \c apop_name structure, describing the columns of the first data set.
+\param n2        An \c apop_name structure, describing the columns of the first data set.
+\param uses     If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
+
+\bug The cross-variances are assumed to be zero, which is wholeheartedly false. It's not too big a deal because nobody ever uses them for anything.
+*/
+apop_estimate * apop_partitioned_OLS(gsl_matrix *data1, gsl_matrix *data2, gsl_matrix *m1, gsl_matrix *m2, 
+                                                    apop_name * n1, apop_name * n2, apop_inventory *uses){
+apop_inventory	actual_uses;
+	prep_inventory_OLS(n1, uses, &actual_uses); //FIX for more names
+apop_estimate	*out1, *out2,
+                *out	= apop_estimate_alloc(data1->size1, data1->size2 + data2->size2, n1, actual_uses);
+gsl_matrix      *t1,*t2, *augmented_first_matrix, *zero1, *zero2,
+                *dependent  =gsl_matrix_alloc(data1->size1, 1);
+gsl_vector_view d;
+int             i;
+
+
+    if(m1!=NULL){
+    gsl_matrix 	*xpx1 		= gsl_matrix_calloc(data1->size1, data1->size1),
+                *xpxinv1,
+                *xxpxinv1   = gsl_matrix_calloc(data1->size1, data1->size1), 
+                *xxpxinvx1  = gsl_matrix_calloc(data1->size1, data1->size1);
+        m1        = gsl_matrix_alloc(data1->size2, data1->size2);
+	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data1, data1, 0, xpx1);	//(X'X)
+	    apop_det_and_inv(xpx1, &xpxinv1, 0, 1);		
+        gsl_matrix_free(xpx1);
+	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, data1, xpxinv1, 0, xxpxinv1);	//X(X'X)^{-1}
+        gsl_matrix_free(xpxinv1);
+	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv1, data1, 0, xxpxinvx1);	//X(X'X)^{-1}X'
+        gsl_matrix_free(xxpxinv1);
+        gsl_matrix_set_identity(m1);
+        gsl_matrix_sub(m1, xxpxinvx1);   // M = I - X(X'X)^{-1}X'
+        gsl_matrix_free(xxpxinvx1);
+    }
+
+
+    if(m2!=NULL){
+    gsl_matrix 	*xpx2 		= gsl_matrix_calloc(data2->size2, data2->size2),
+                *xpxinv2,
+                *xxpxinv2   = gsl_matrix_calloc(data2->size2, data2->size2), 
+                *xxpxinvx2  = gsl_matrix_calloc(data2->size2, data2->size2);
+        m2        = gsl_matrix_alloc(data2->size2, data2->size2);
+	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 2, data2, data2, 0, xpx2);	//(X'X)
+	    apop_det_and_inv(xpx2, &xpxinv2, 0, 1);		
+        gsl_matrix_free(xpx2);
+	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, data2, xpxinv2, 0, xxpxinv2);	//X(X'X)^{-1}
+        gsl_matrix_free(xpxinv2);
+	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv2, data2, 0, xxpxinvx2);	//X(X'X)^{-1}X'
+        gsl_matrix_free(xxpxinv2);
+        gsl_matrix_set_identity(m2);
+        gsl_matrix_sub(m2, xxpxinvx2);   // M = I - X(X'X)^{-1}X'
+        gsl_matrix_free(xxpxinvx2);
+    }
+
+
+        //the first matrix needs a dependent variable column, then we
+        //can regress.
+    d                       = gsl_matrix_column(data2, 0);
+    gsl_matrix_set_col(dependent, 0, &(d.vector));
+    augmented_first_matrix  = apop_matrix_stack(dependent, data1, 'r');
+    out1    = apop_GLS(augmented_first_matrix, m2, n1, &actual_uses);
+    out2    = apop_GLS(data2, m1, n2, &actual_uses);
+    for (i=0; i< out1->parameters->size; i++)
+        gsl_vector_set(out->parameters, i, gsl_vector_get(out1->parameters, i));
+    for (   ; i< out2->parameters->size; i++)
+        gsl_vector_set(out->parameters, i, gsl_vector_get(out2->parameters, i - out1->parameters->size));
+
+    //The covariance matrix is a stacking-up of the above matrices. I
+    //cheat here: the cross-variances are assumed zero, which is
+    //blatantly false.
+    zero1           = gsl_matrix_calloc(out1->covariance->size1, out2->covariance->size2);
+    t1              = apop_matrix_stack(out1->covariance, zero1, 'r');
+    gsl_matrix_free(zero1);
+    zero2           = gsl_matrix_calloc(out2->covariance->size1, out1->covariance->size2);
+    t2              = apop_matrix_stack(zero2, out2->covariance, 'r');
+    gsl_matrix_free(zero1);
+    out->covariance = apop_matrix_stack(t1,t2,'t');
+    return out;
+}
+
+
+
+/** A utility to make a matrix of dummy variables. You give me a single
+vector that lists the category number for each item, and I'll return
+a gsl_matrix with a single one in each row in the column specified.
+
+\param  cats The gsl_vector of categories
+\param  keep_first  if zero, return 
+    a matrix where each row has a one in the (column specified MINUS
+    ONE). That is, the zeroth category is dropped, the first category
+    has an entry in column zero, et cetera. If you don't know why this
+    is useful, then this is what you need. If you know what you're doing
+    and need something special, set this to one and the first category won't be dropped.
+\return out
+\todo This won't work well if the categories do not include observations
+zero through max. That is, the function should produce a second vector
+that produces neat categories from sloppy input categories.
+*/
+gsl_matrix * apop_produce_dummies(gsl_vector *in, int keep_first){
+int         max_category    = gsl_vector_max(in),
+            i, col;
+gsl_matrix  *out; 
+    if (keep_first){
+        out  = gsl_matrix_calloc(in->size, max_category+1);
+        for (i=0; i< in->size; i++)
+            gsl_matrix_set(out, i, gsl_vector_get(in, i),1); 
+       }
+    else{
+        out  = gsl_matrix_calloc(in->size, max_category);
+        for (i=0; i< in->size; i++){
+            col =  gsl_vector_get(in, i);
+            if (col>0)
+                gsl_matrix_set(out, i, col, 1); 
+        }
+    }
+    return out;
+}
+
+
+/** A fixed-effects regression.
+    The input is a data matrix for a regression, plus a single vector giving the fixed effect vectors.
+
+    The solution of a fixed-effects regression is via a partitioned
+    regression. Given that the data set is divided into columns
+    \f$\beta_1\f$ and \f$\beta_2\f$, then the reader may 
+
+\todo finish this documentation. [Was in a rush today.]
+*/
+apop_estimate *apop_fixed_effects_OLS(gsl_matrix *data, gsl_vector *categories, apop_name * n, apop_inventory *uses){
+gsl_matrix *dummies = apop_produce_dummies(categories, 0);
+    return apop_partitioned_OLS(dummies, data, NULL, NULL, NULL, n, uses);
+}
+

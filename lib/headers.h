@@ -1,5 +1,5 @@
 #include <apophenia/db.h>
-#include <apophenia/name.h>
+#include <apophenia/types.h>
 #include <apophenia/stats.h>
 #include <apophenia/output.h>
 #include <apophenia/bootstrap.h>

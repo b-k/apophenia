@@ -1,4 +1,4 @@
-\chapter{Describing data with projections} \label{projections}
+\chapter[Projections]{Describing data with projections} \label{projections}
 
 A good part of statistical analysis is about projecting your
 $N$-dimensional data onto the best subspace of significantly less than
@@ -23,23 +23,27 @@ $ \beta = (X'X)^{-1}X'Y$.
 
 I will assume that we have already read a data matrix in to {\tt gsl\_matrix *data}. Typically, the $Y$
 values are the first column of data, so we would like to extract that to a separate variable:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <gsl/gsl_matrix>
 gsl_vector      *y_data         = gsl_vector_alloc(data->size1);
 gsl_matrix_get_col(y_data, data, 0);
-\end{verbatim}
+%]
+%\end{verbatim}
 
 
 We now have the $Y$-values safely stored.  When doing an OLS projection, there needs to be a column of
 ones in the data set (because OLS is an {\sl affine} linear projection), so we can overwrite the first
 column with ones. Also, remember that every other variable is actually
 $X_i - \bar{X_i}$; that is, subtract out the means for every column.
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <apophenia/stats.h>
         apop_normalize_matrix(data);            //every column should have mean zero.
 gsl_vector_view v         = gsl_matrix_column(data, 0);
         gsl_vector_set_all(&(v.vector), 1);     //affine: first column is ones.
-\end{verbatim}
+%]
+%\end{verbatim}
 
 
 
@@ -47,19 +51,23 @@ gsl_vector_view v         = gsl_matrix_column(data, 0);
 Now we have both the $Y$ and the $X$ in the equation, so we can find $(X'X)$ and $X'Y$.
 The second part, $X'Y$, is a simple application of the BLAS function from the last chapter. It is a
 matrix $\cdot$ a vector, so:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <gsl/gsl_blas.h>
 gsl_vector      *xpy            = gsl_vector_calloc(data->size2);
 gsl_matrix      *xpx            = gsl_matrix_calloc(data->size2, data->size2);
         gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, xpx); //(X'X)
         gsl_blas_dgemv(CblasTrans, 1, data, y_data, 0, xpy); //(X'y)
-\end{verbatim}
+%]
+%\end{verbatim}
 
 The GSL has a function to solve equations of the type ${\bf X} \beta =
 {\bf Y}$; which is exactly the form we have here---$(X'X)\beta = (X'Y)$.  \label{ols}
-\begin{verbatim}
+%\begin{verbatim}
+%[
         gsl_linalg_HH_solve (xpx, xpy, *beta);
-\end{verbatim}
+%]
+%\end{verbatim}
 
 The vector {\tt beta} now lives up to its name, holding the coefficients
 $\beta$. Notice that we never had to take an inverse.  
@@ -71,19 +79,29 @@ The matrix which projects data onto the space defined by $X$, often
 called the `hat matrix', is $H = X(X'X)^{-1}X'$. Two more lines of algebra will calculate the hat matrix
 for us:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 gsl_matrix * first_part = gsl_matrix_calloc(data->size1,data->size1);
 gsl_matrix * hat_matrix = gsl_matrix_calloc(data->size1,data->size1);
-gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, data, xpx_inv, first_part);	//Find X inv(X'X)
-gsl_blas_dgemm(CblasNoTrans,CblasTrans, first_part, data, hat_matrix);	//Find X inv(X'X) X'
+//Find X inv(X'X):
+gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, data, xpx_inv, first_part);	
+//Find X inv(X'X) X':
+gsl_blas_dgemm(CblasNoTrans,CblasTrans, first_part, data, hat_matrix);	
 gsl_matrix_free(first_part);
-\end{verbatim}
+%]
+%\end{verbatim}
 
 If we have a second data set {\tt data2} of the appropriate number of
 rows (meaning that {\tt (data-$>$size1 == data2-$>$size1)}, then we can use the hat matrix to do the projection:\\
+%[
+gsl_matrix * projected_data = gsl_matrix_calloc(data->size1,data2->size2);
+gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, hat_matrix, data, projected_data);
+%]
+\comment{
 {\tt
 gsl\_matrix * projected\_data = gsl\_matrix\_calloc(data-$>$size1,data2-$>$size2);\\
 gsl\_blas\_dgemm(CblasNoTrans,CblasNoTrans, hat\_matrix, data, projected\_data);
+}
 }
 
 
@@ -130,7 +148,8 @@ it asks that we pass in pre-allocated workspaces when it needs such
 things. The eigenvalue-finding function requires such a workspace, so
 here is a function which allocates the workspace, calls the function,
 then frees the workspace:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 void find_eigens(gsl_matrix *subject, gsl_vector *eigenvals, 
                             gsl_matrix *eigenvecs){
    gsl_eigen_symmv_workspace * w 
@@ -139,7 +158,8 @@ void find_eigens(gsl_matrix *subject, gsl_vector *eigenvals,
    gsl_eigen_symmv_free (w);
    gsl_matrix_free(subject);
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 Notice that I free the matrix whose eigenvalues are being calculated at the end.
 This is because, for all intents and purposes, the matrix is destroyed in the
@@ -154,7 +174,8 @@ I will assume that you've already got a data matrix ready, named {\tt
 data}, as per the last chapter, and you've subtracted the means of each
 column.
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <gsl/gsl_eigen.h>
 int ds=data->size2;
 gsl_matrix *xpx  = gsl_matrix_calloc(ds, ds);
@@ -163,13 +184,15 @@ gsl_matrix *eigenvecs   = gsl_matrix_alloc(ds, ds);
 
 gsl_blas_dgemm(CblasTrans,CblasNoTrans, x, x, xpx);
 find_eigens(xpx, eigenvals, eigenvecs);
-\end{verbatim}
+%]
+%\end{verbatim}
 
 Now we have the eigenvectors and their associated eigenvalues; we need only find
 the largest eigenvalues, and project the data onto their associated eigenvectors.
 The GSL helps us by giving us functions for
 finding the indices of the largest elements of a vector.
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <gsl/gsl_sort_vector.h>
 const int dimensions_we_want = 2;
 gsl_matrix *pc_space 
@@ -184,18 +207,21 @@ for (i=0;i<dimensions_we_want; i++){
    gsl_matrix_get_col(temp_vector, eigenvecs, indexes[i]);
    gsl_matrix_set_col(pc_space, i, temp_vector);
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 All that's left to do is the projection. Notice the convention I used:
 the {\tt pc\_space} has eigenvectors on its columns, and as many columns as the
 dimensionality we want in the end. Below, I transpose that before premultiplying
 the data set by the principal component matrix.
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 gsl_matrix *projected 
                  = gsl_matrix_alloc(data->size1, dimensions_we_want);
 gsl_blas_dgemm(CblasTrans,CblasNoTrans, pc_space, data, projected);
-\end{verbatim}
+%]
+%\end{verbatim}
 
 You'll probably want to plot the {\tt projected} matrix; I'll continue this example in the chapter on
 plotting.

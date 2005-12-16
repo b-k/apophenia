@@ -6,7 +6,7 @@
 \newif\ifbook \booktrue
 \documentclass[12pt,notitlepage, openany]{book}
 \usepackage{amsfonts}  %for mathbb
-\usepackage{lgrind}  
+\usepackage[nolineno,noprocindex]{lgrind}
 
 %indexing:
 \usepackage{multicol, makeidx}
@@ -17,11 +17,12 @@
 \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
 
 \begin{document}
-\setlength{\textwidth}{6.5in}
+%\setlength{\textwidth}{6.5in}
 \setlength{\textheight}{9in} 
 %	\setlength{\topmargin}{-0.5cm}\setlength{\textheight}{8.6in} 
 \title{Statistics with the GNU Scientific Library}
 \author{Ben Klemens\\klemens@hss.caltech.edu}
+\date{May 2005}
 \maketitle
 
 \chapter*{Preface}
@@ -29,7 +30,7 @@
 
 \tableofcontents \vfill\eject
 
-\chapter{Doing statistics in the modern day}
+\chapter[Introduction]{Doing statistics in the modern day}
 
 In case it's not obvious to you, we can't do statistical analysis without
 computers.  The mathematical explanation of a statistical procedure is
@@ -274,10 +275,10 @@ existence today, on any data set, no matter how large or exceptional.
 
 \input c_crash.ground
 \input sql.ground
-\input linear_algebra.tex
-\input projection.tex
-\input gauss.tex
-\input mle.tex
+\input linear_algebra.ground
+\input projection.ground
+\input gauss.ground
+\input mle.ground
 \input boot.tex
 \input mcmc.tex
 \input gnuplot.tex

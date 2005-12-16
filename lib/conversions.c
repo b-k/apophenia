@@ -130,6 +130,8 @@ int	i	= start_from;	//i is probably the same or i+1.
 columns: the x-dimension, the y-dimension, and the data.
 the output is a 2D matrix with rows indexed by r1 and cols by
 r2. if !=NULL, d1 and d2 will list the labels on the dimensions.
+
+\ingroup db
 */
 gsl_matrix * apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2){
 
@@ -450,6 +452,11 @@ int apop_text_to_db(char *text_file, char *tabname, char **field_names){
 	return apop_convert_text_to_db(text_file, tabname, field_names);
 }
 
+/** See \ref apop_db_to_crosstab for the storyline; this is the
+ * complement.
+
+ \ingroup db
+ */
 int apop_crosstab_to_db(gsl_matrix *in, apop_name n, char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name){
 int		i,j;

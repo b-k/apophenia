@@ -4,7 +4,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
 
 //The default list. Probably don't need them all.
-#include "name.h"
+#include "types.h"
 #include "stats.h"
 #include "model.h"
 #include "conversions.h"

@@ -1,5 +1,5 @@
 #include "db.h"
-#include "name.h"
+#include "types.h"
 #include "stats.h"
 #include "output.h"
 #include "bootstrap.h"

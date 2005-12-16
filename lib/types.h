@@ -1,9 +1,8 @@
-//estimate.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+//types.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 #ifndef __apop_estimate__
 #define __apop_estimate__
 
 #include <gsl/gsl_matrix.h>
-#include <apophenia/name.h>
 
 /**\defgroup types Types defined by Apophenia. 
 
@@ -102,6 +101,35 @@ typedef struct apop_inventory{
 	int	parameters, covariance, confidence, predicted, residuals, log_likelihood, names;
 } apop_inventory;
 
+#include <string.h>
+
+/** \defgroup names apop_names: a structure and functions to handle column names for matrices. 
+\ingroup types */
+
+
+/** A data set is assumed to be a matrix where each row is a single
+observation and each column is a variable. Usually there is only one
+dependent variable (the value to be predicted), which is the first column;
+the independent variables (the predictors) follow thereafter.
+
+This structure holds the names of these variables. You can fill it quickly
+with \ref apop_db_get_names after running a query, or add names manually
+with \ref apop_name_add .
+
+Typically, the row names are not used, but they are there for your convenience.  
+\ingroup names
+*/
+typedef struct apop_name{
+	char ** colnames;
+	char ** rownames;
+	char ** depnames;
+	int colnamect, depnamect, rownamect;
+} apop_name;
+
+apop_name * apop_name_alloc(void);
+int apop_name_add(apop_name * n, char *add_me, char type);
+void  apop_name_free(apop_name * free_me);
+void  apop_name_print(apop_name * n);
 
 
 /** Regression and MLE functions return this structure, which includes
@@ -132,6 +160,12 @@ typedef struct apop_estimate{
 	int		status;
 } apop_estimate;
 
+typedef struct apop_data{
+    gsl_matrix  *data;
+    apop_name   *names;
+    char        ***categories;
+} apop_data;
+
 apop_estimate *	apop_estimate_alloc(int data_size, int param_size, apop_name *n, apop_inventory uses);
 void 		apop_estimate_free(apop_estimate * free_me);
 void 		apop_estimate_print(apop_estimate * print_me);
@@ -141,3 +175,4 @@ void 		apop_inventory_copy(apop_inventory in, apop_inventory *out);
 void 		apop_inventory_set(apop_inventory *out, int value);
 void 		apop_inventory_filter(apop_inventory *out, apop_inventory filter);
 #endif
+

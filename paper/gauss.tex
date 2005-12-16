@@ -1,5 +1,6 @@
 \def\var{\hbox{var}} \def\cov{\hbox{cov}}
-\chapter{Hypothesis testing with Gaussian distributions} \label{gauss}
+%@-     so lgrind will play nice with makeindex
+\chapter[Gaussian tricks]{Hypothesis testing with Gaussian distributions} \label{gauss}
 
 This subsection covers most of what we traditionally learn in first-year statistics. 
 \comment{
@@ -79,20 +80,23 @@ multivalued hypothesis, then you need to do an $F$ test.
 \subsection{Calling these functions from the GSL}
 There are four things that cover most of what you will be doing. 
 The first is simply looking up the vaule of the PDF at a given point. Here are the functions:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <gsl/gsl_randist.h>
 double gsl_ran_gaussian_pdf (double X, double SIGMA);
 double gsl_ran_tdist_pdf (double X, double NU);
 gsl_ran_fdist_pdf (double X, double NU1, double NU2);
 double gsl_ran_chisq_pdf (double X, double NU);
-\end{verbatim}
+%]
+%\end{verbatim}
 The prefix {\tt gsl\_ran} indicates that these functions are from the
 random number generation module. (Random number generation itself will be delayed to page
 \pageref{randomnumbers}.) Notice that there is no mean for the Normal and neither mean nor variance
 for the T-distribution, so we may need to modify $X$ accordingly. For
 example, here is a function for a t-distribution with approaches the
 mean $M$ and variance $v$ as {\tt NU}$\to \infty$:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <gsl/gsl_randist.h>
 #include <math.h>      //sqrt
 double gsl_ran_tdist_pdf_with_mv(double X, double mean,
@@ -100,7 +104,8 @@ double gsl_ran_tdist_pdf_with_mv(double X, double mean,
     double X_scaled = (x - mean)/sqrt(var);
     return gsl_ran_tdist_pdf(X_scaled, NU);
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 Next, there's calculating the CDF above or below a point. 
 The {\tt P-}functions below calculate the CDF below a point, i.e.
@@ -119,13 +124,15 @@ the mean is zero with probability {\tt 1 - gsl\_cdf\_gaussian\_Q(2.2, 1)}.
 \index{F distribution!gsl\_cdf\_fdist\_P@{\tt gsl\_cdf\_fdist\_P}}
 \index{normal distribution!gsl\_cdf\_gaussian\_P@{\tt gsl\_cdf\_gaussian\_P}}
 \ttindex{gsl\_cdf\_...}
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <gsl/gsl_cdf.h>
 double gsl_cdf_gaussian_P (double X, double SIGMA);
 double gsl_cdf_tdist_P (double X, double NU);
 double gsl_cdf_fdist_P (double X, double NU1, double NU2);
 double gsl_cdf_chisq_P (double X, double NU);
-\end{verbatim}
+%]
+%\end{verbatim}
 \dots plus all of these with the {\tt P} replaced by a {\tt Q}.
 
 
@@ -137,12 +144,14 @@ typically have leptokurtic (fat-tailed) returns.} the bank will report a \index{
 gsl\_cdf\_gaussian\_Pinv (0.05, S)+M}. Here are the other function delcarations:
 \index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_Pinv@{\tt gsl\_cdf\_chisq\_Pinv}}
 \index{t distribution!gsl\_cdf\_tdist\_Pinv@{\tt gsl\_cdf\_tdist\_Pinv}}
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <gsl/gsl_cdf.h>
 gsl_cdf_gaussian_Pinv (double X, double SIGMA);
 double gsl_cdf_chisq_Pinv (double P, double NU);
 double gsl_cdf_tdist_Pinv (double P, double NU);
-\end{verbatim}
+%]
+%\end{verbatim}
 \dots plus all of these with the {\tt P}s replaced by {\tt Q}s.
 Notice that there is no inverse for the CDFs of the F distribution.
 
@@ -157,7 +166,8 @@ of iid draws from a homoskedatic distribution). Then we can use the
 above functions to find the probability that each element of {\tt beta}
 is different from zero:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 \\We enter with the vector beta and matrix xpx_inv
 #include <gsl/gsl_cdf.h>  //CDF functions
 #include <math.h>         //abs
@@ -169,7 +179,8 @@ for (i=0;i< beta->size; i++){
     confidence[i] -= .5;
     confidence[i] *= 2;
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 The last two steps converted from the one-tailed area below {\tt beta}
 to a two-tailed area between $\pm${\tt beta}.
 
@@ -190,7 +201,8 @@ give examples of favorites such as AR-1 processes from time series analysis (and
 
 The easiest thing to do is simply calculate the variances and covariances of the data itself:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include "gsl_convenience_fns.h"
 gsl_vector_view one_col, another_col;
 gsl_matrix *var_covar=gsl_matrix_alloc(data->size2, data->size2);
@@ -205,7 +217,8 @@ for(i=0;i< data->size2; i++){
       if (j!=i) gsl_matrix_set(var_covar, j, i, covar);
    }
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 Now that we've got this variance-covariance matrix, $\Sigma$, we can
 apply the formula $\beta_{GLS} = (X'\Sigma X)^{-1} (X'\Sigma Y)$.

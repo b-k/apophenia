@@ -8,7 +8,10 @@ techniques, except mathematicians over the ages have found ways to hide
 that fact from you. But if there isn't a nice, convenient way to get
 around doing the maximization, you'll have to do it yourself. Fortunately,
 the GSL has the {\tt gsl\_multimin} family of objects, to help you find
-the optimal parameters.
+the optimal parameters. Apophenia even has an \ttind{apop\_maximum\_likelihood}
+function that preps and calls the GSL functions for you. You give it a
+function and some parameters, and it will find the optimum.
+
 
 \section{Why likelihood functions are great} There are two reasons, with four names.
 
@@ -42,12 +45,12 @@ $\in (0,1)$ will quickly underflow your likelihood function. \\
 [I'll eventually write this out, but for now, here's an example:]
 
 
-\begin{verbatim}
-#include "gsl_convenience_fns.h"
+%\begin{verbatim}
+%[
 double probit_likelihood(const gsl_vector *beta, void *d){
-int		i;
+int		    i;
 long double	n, total_prob	= 0;
-gsl_matrix *data 		= d;		//just type casting.
+gsl_matrix  *data 		    = d;		//just type casting.
 
    dot(beta,data);    //a wrapper for gsl_blas_dgemm.
    for(i=0;i< data->size1; i++){
@@ -57,7 +60,8 @@ gsl_matrix *data 		= d;		//just type casting.
    }
    return -total_prob;
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 \section{Description: Maximum likelihood estimators} 
 If you've written

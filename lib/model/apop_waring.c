@@ -6,8 +6,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
 
 //The default list. Probably don't need them all.
-#include "name.h"
-#include "bootstrap.h"
+#include "types.h"
 #include "regression.h"
 #include "conversions.h"
 #include "likelihoods.h"

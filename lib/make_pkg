@@ -1,5 +1,5 @@
 export junkdir=delete_me
-export version=0.13
+export version=0.14
 
 rm -rf $junkdir
 mkdir $junkdir

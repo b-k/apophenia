@@ -1,15 +1,18 @@
-%\newif\ifbook \bookfalse
+\newif\ifbook \bookfalse
 
+%@- This is so lgrind will get along with makeindex.
 
 \ifbook
 	\chapter{C} \label{c_crash}
 \else
 	\long\def\comment#1{}
 	\documentclass[12pt]{article}
-	\usepackage{amsfonts, lgrind}  %for mathbb
+	\usepackage{amsfonts}  %for mathbb
 	\setlength{\topmargin}{-0.5cm}\setlength{\textheight}{8.6in} 
     \setlength{\oddsidemargin}{0in} 
     \setlength{\textwidth}{6.1in} 
+
+	\usepackage[nolineno,noprocindex]{lgrind}
 
     %indexing:
     \usepackage{multicol, makeidx}
@@ -393,16 +396,29 @@ obscure ones, like {\tt a \% b} for $a$ mod $b$. \index{mod|see{\%}} \index{\%}
 common that C has a special syntax for it: {\tt a += b;} This is slightly less readable, but involves less
 redundancy. All of the above arithmetic operators can take this form, so each of the following lines show two
 equivalent expressions: \\
+%[
+a -= b;     a = a - b;
+a *= b;     a = a * b;
+a /= b;     a = a / b;
+a %= b;     a = a % b;
+%]
+\comment{
 {\tt a -= b;  \phantom{Hello.}   a = a - b;\\
 a *= b;  \phantom{Hello.}  a = a * b;\\
 a /= b;  \phantom{Hello.}  a = a / b;\\
 a \%= b;  \phantom{Hello.}  a = a \% b;\\}
+
+{\tt a++; /*is equivalent to*/ a = a + 1;\\
+a--; /*is equivalent to*/ a = a - 1;}
+}
 Finally, the most common operation among these is incrementing or decrementing by one, and so C offers the
 following syntax for still less typing:\footnote{There is also the pre-increment form, {\tt ++a} and
 {\tt --a}. Pre- and post-incrementing differ only when they are being used in situations that are bad style and should
 be avoided. Leave these operations on a separate line and stick to whichever form looks nicer to you.} \\
-{\tt a++; /*is equivalent to*/ a = a + 1;\\
-a--; /*is equivalent to*/ a = a - 1;}
+%[
+a++; /*is equivalent to*/ a = a + 1;
+a--; /*is equivalent to*/ a = a - 1;
+%]
 
 
 
@@ -563,13 +579,11 @@ but {\tt line C; */} will be read as code---and malformed code at that.
 
 You will always need to watch out for this when commenting out large blocks of code. But for small
 blocks, there's another syntax for comments:
-%\begin{verbatim}
-%[
+\begin{verbatim}
 this_is_code;    //Everything on a line after two slashes 
                  //will be ignored.
                  //Use this form for short comments.
-%]
-%\end{verbatim}
+\end{verbatim}
 This is good for commenting individual lines of code which deserve a note.\footnote{The two-slash
 comment style is actually not C, it's C$^{++}$. But it's so useful that gcc accepts it without so much as
 a warning. If you're not using gcc, you may have to use the {\tt /*} --- {\tt */} format for comments
@@ -577,10 +591,11 @@ everywhere.}\index{commenting code|)}
 
 \subsection{Type casting}\label{casting} \index{casting|see{type casting}} \index{type!casting|(} An arithmetic operation on two integers returns an integer. This works fine for
 addition, subtraction, and multiplication, but is a horrible inconvenience for division.\\
-{\tt int num = 7;\\
-int den = 2;\\
-float ratio = num / den;\\
-}
+%[
+int num = 7;
+int den = 2;
+float ratio = num / den;
+%]
 In this example, {\tt ratio} will equal {\tt 3.0}, which is probably not what you had intended. 
 First, since {\tt num} and {\tt den} are both integers, the operation
 {\tt num / den} will also produce an integer: the actual ratio with the
@@ -616,7 +631,8 @@ if (GSL\_IS\_EVEN(an\_integer))\\
 \phantom{hello.}{\tt do\_something();}
 }
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 int is_even(int number){
 /* Return one if number is even, zero if number is odd.  */
    if ( counter/2 == (float) counter / 2.0 )
@@ -624,7 +640,8 @@ int is_even(int number){
    else 
         return 0;
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 Notice that 2 is an {\tt int}, while 2.0 is a {\tt float}. This provides
 a relatively painless way to solve the problem that {\tt 7/2=3}: just
 remember to always include a decimal point in your constants, because
@@ -635,7 +652,8 @@ Finally, note that when casting from {\tt float} to {\tt int}, numbers
 are truncated, not rounded.  The following function uses type casting
 to correctly round off numbers:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 int round(float unrounded){
 /* Input a floating-point number and output the number
    rounded to the nearest integer.  */
@@ -645,7 +663,8 @@ int round(float unrounded){
     else
          return (int) (unrounded - 0.5);
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 \index{type!casting|)}   
 
 
@@ -744,7 +763,8 @@ the word \ttind{static} before them. You can also put an initialization on
 the declaration line, which will only be taken into consideration the
 first time the variable is used. Here is a function to enter a hundred
 people into a database:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 
 //Here is an abbreviated person type
 typedef struct ppp{
@@ -760,7 +780,8 @@ void add_a_person(char *name){
     survey_data[count_so_far] = name;
     count_so_far++;
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 The first time this function is called, {\tt count\_so\_far} will be initialized
 at zero, the name passed in will be put in {\tt survey\_data[0]}, and {\tt
@@ -781,11 +802,13 @@ into {\tt b\_c}. It gives {\tt a\_c} the value of twice {\tt b\_c} and the retur
 itself didn't change at all, even though {\tt a\_c} did change. Meanwhile, {\tt int globe} is not a copy of
 itself, but the real thing, so when it is changed inside the function, it changes globally.
 Here's the output you'd get:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 doubling returns 4
 a= 1
 globe= 4
-\end{verbatim}
+%]
+%\end{verbatim}
 
 This may make global variables tempting to you, but resist. Section \ref{pointers} will give a better
 alternative.
@@ -919,9 +942,11 @@ The preprocessor has a dozen things it can do, but you will basically only care 
 [The runner-up is {\tt \#define}, which is discussed on page \pageref{macros}.]
 
 When the preprocessor is processing the file {\tt main.c} and sees the line
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include "a_file.h"
-\end{verbatim}
+%]
+%\end{verbatim}
 it finds the file {\tt a\_file.h} and dumps the entirety of the file,
 verbatim, into {\tt main.c} at that point in the file. Of course, you'll
 never see this (unless you run {\tt gcc} with the {\tt -E} flag); the
@@ -935,9 +960,11 @@ linking step below.
 
 All libraries that you will download from elsewhere will include a header file.
 To include it, you'll need to put a line like this at the top of your C file:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <gsl/gsl_matrix.h>
-\end{verbatim}
+%]
+%\end{verbatim}
 The angle-brackets tell the compiler that instead of looking in the
 current directory, as it did for {\tt "a\_file.h"} above, it should
 look in the standard library path. Generally, use {\tt "my\_file.h"} for
@@ -1178,10 +1205,12 @@ then bad things will happen. See below.
 By the way, notice that {\tt int *a = 7} will fail---the initialization on the declaration line is for
 the pointer, not the value the pointer holds. One convenient function which partly helps with this is
 \ttind{calloc}:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <malloc.h>  //calloc
     int *a = calloc(1, sizeof(int));
-\end{verbatim}
+%]
+%\end{verbatim}
 which you can read as `clear and allocate': it will run {\tt malloc}
 and return the appropriate address, and will also set everything in
 that space to zero, running {\tt *a = 0} for you. Notice the syntax,
@@ -1325,13 +1354,15 @@ front-ends available at\\ {\tt http://sources.redhat.com/gdb/links/}.
 \section{Arrays and other pointer tricks} \label{for_loops} \index{array}
 
 An array is a sequence of one type of item, such as a thousand {\tt int}s. Here is some sample code:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 int array_length=1000;
 int *squares = malloc (array_length * sizeof(int));
 int i;
 for (i=0; i < array_length; i++)
       {squares[i] = i * i;}
-\end{verbatim}
+%]
+%\end{verbatim}
 The syntax for declaring the array exactly matches that of allocating
 a single pointer, except we needed to allocate a block of size 1000
 {\tt * sizeof(int)} instead of just a single {\tt sizeof(int)}. 
@@ -1371,7 +1402,8 @@ leaves, all of the variables declared in the function are destroyed,
 but changes made elsewhere in memory over the course of the function
 are not undone. Here is a function that gets all of this wrong, whose overall hope is to subtract twenty
 from the contents of {\tt an\_array}. It would be called with {\tt things\_not\_to\_do(an\_array)}.
-\begin{verbatim}
+%\begin{verbatim}
+%[
 int things_not_to_do(int *an_array){
 int *another_array, i;
 another_array = malloc(1000 * sizeof(int));
@@ -1382,7 +1414,8 @@ an_array = malloc(1000 * sizeof(int));
 for (i=0; i<1000; i++)
     an_array[i] = another_array[i];
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 First, what happens to {\tt another\_array} when this function
 ends? The pointer is destroyed, but the changes made to memory using
@@ -1401,7 +1434,8 @@ able to recover.
 
 Here is a function which corrects these errors:
 
-\begin{verbatim}
+%\begin{verbatim}
+%[
 int still_inefficient_but_works(int **an_array){
     int *another_array, i;
     another_array = malloc(1000 * sizeof(int));
@@ -1414,7 +1448,8 @@ int still_inefficient_but_works(int **an_array){
         *an_array[i] = another_array[i];
     free(another_array);
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 The memory leak with {\tt another\_array} was alleviated by simply calling {\tt free()} at the end of the
 function. The problem with changing the value of the pointer was solved by sending the function a pointer
@@ -1426,7 +1461,8 @@ a new value, we've lost the means of referring to the area of memory pointed to 
 changing it.
 
 Here are two equivalent alternatives for calling the function:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 int *some_numbers = malloc(array_size * sizeof(int));
 //fill some_numbers with values
 still_inefficient_but_works(&some_numbers);
@@ -1435,19 +1471,22 @@ int **some_other_numbers;
 *some_other_numbers = malloc(array_size * sizeof(int));
 //fill some_other_numbers with values
 still_inefficient_but_works(some_other_numbers);
-\end{verbatim}
+%]
+%\end{verbatim}
 
 \subsection{Arrays of structs}	
 Before, when we had defined the \ttind{struct} for complex numbers, we would refer to its elements using a
 dot, such as {\tt a.real} or {\tt b.imaginary}. For a pointer to a structure, we use {\tt ->} instead of 
 a dot.  Here are some examples using the previous definition of the {\tt complex} structure.
-\begin{verbatim}
+%\begin{verbatim}
+%[
 complex *ptr_to_cplx = malloc (sizeof(complex));
 ptr_to_cplx->real = 2;
 ptr_to_cplx->imaginary = -2;
 complex *array_of_cplxes = malloc (30 * sizeof(complex));
 array_of_cplexes[15]->real = 3;
-\end{verbatim}
+%]
+%\end{verbatim}
 
 If you get an error like ``request for member `real' in something not a structure or union'' then you're
 using a dot where you should be using \ttind{->} or vice versa. Just switch to the other and try again.
@@ -1463,7 +1502,8 @@ allocated for you---a segfault.
 
 If you're not sure about the size of your array, then you'll need to
 expand the array as you go. Here's a snippet of code to show you the syntax:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <malloc.h>     //malloc and realloc
 complex *data_array = malloc (sizeof(float));
 int data_count = 0;
@@ -1473,7 +1513,8 @@ while (!end_of_file){
     data_array = realloc(data_array, data_count * sizeof(float));
     data_array[data_count - 1] = read_in_data_from_file();
 }
-\end{verbatim}
+%]
+%\end{verbatim}
 
 We first use {\tt malloc} in the initialization of {\tt data\_array}
 to ensure that the variable points to a real location in memory. Then
@@ -1490,23 +1531,27 @@ be an allocated but garbage-filled space ready for us to put data into.
 Strings such as {\tt "hello"} are implemented as arrays of individual characters, followed by an invisible
 null character, written as {\tt $\backslash$0}. This means that you have to think in terms of arrays when dealing
 with strings. For example:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 char hello[20];
 char *hello2 = "Hi.";
 hello = "Hi there."; //This will crash.
 hello = hello2;  //This will also crash.
-\end{verbatim}
+%]
+%\end{verbatim}
 
 As with arrays of integers, we can specify a list to put in to the array when we initialize the array, but
 not later.
 
 The standard library gives us a number of convenience functions that facilitate dealing with strings; the
 most useful would be {\tt strcpy}; see also {\tt sprintf}, below.
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <string.h>
 strcpy(hello, "Hi there."); //the right way.
 strcpy(hello, hello2);      //Also correct.
-\end{verbatim}
+%]
+%\end{verbatim}
 
 The note above about skimming the standard library documentation is especially apropos here, since the
 standard library has functions for the most common tedious string operations.
@@ -1535,31 +1580,37 @@ need these. [The `g' in {\tt \%g} stands for `general format', by the way.]
 
 Of course, we need to specify {\sl which} integer, real, or string to insert, and the list of names
 follows directly after the format string. For example:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <stdio.h>
 printf("person %s is number %i in line\n", 
                           name, position);
-\end{verbatim}
+%]
+%\end{verbatim}
 This chapter (and the book) is filled with examples of \ttind{printf}; you may want to find a few and
 verify that they will indeed print what they promise to.
 
 \paragraph{printing to strings} Once you have the format for {\tt printf} down, you can use exactly the
 same syntax to dump text to a string instead of to the screen. Here's an example for the {\tt sprintf}
 (string-print-formatted) function:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 #include <stdio.h>
 char write_to_me[1000];
 sprintf(write_to_me, "person %s is number %i in \
                              line\n", name, position);
-\end{verbatim}
+%]
+%\end{verbatim}
 This function behaves just like {\tt printf}, but you need to specify
 a string to print to before specifying the format string. 
 
 You could even use {\tt sprintf} to implement a version of {\tt strcat}. Continuing the above example:
-\begin{verbatim}
-sprintf(write_to_me, "%sAlso, person %s is number %i\
-                         in line\n", write_to_me, name, position);
-\end{verbatim}
+%\begin{verbatim}
+%[
+sprintf(write_to_me, "%sAlso, person %s is number %i in line\n",\
+                          write_to_me, name, position);
+%]
+%\end{verbatim}
 The first {\tt \%s} will evaluate to the original value of {\tt write\_to\_me} from above, and the next
 sentence will be added on to that.
 
@@ -1729,14 +1780,19 @@ knowing any of the following, and much of it is generally considered to
 be bad style.
 
 \paragraph{The obfuscatory if} There's another way to write an \ttind{if} statement. The following are equivalent:
-\begin{verbatim}
+%\begin{verbatim}
+%[
 if (a < b)
       a;
 else
       b;
-\end{verbatim}
+%]
+%\end{verbatim}
 and\\ 
-{\tt (a < b) ? a : b;} .\\
+\comment{ {\tt (a < b) ? a : b;} .\\}
+%@+
+@(a < b) ? a : b;@ .\\
+%@-
 Both have all three components: first the condition, then the `what to do if the
 condition is true' part, and then the `what to do if the condition is false'
 part. However, the first is more-or-less legible to anybody who knows basic English,
@@ -1763,9 +1819,13 @@ see what expands to what.
 Here, by the way, is the actual code for the {\tt GSL\_MIN} macro;
 it follows the first rule of macro writing, which is that everything
 should be in parentheses:\\
-{\tt \#include <gsl/gsl\_math.h>\\
-\#define GSL\_MIN(a,b) ((a) < (b) ? (a) : (b))} \ttindex{GSL\_MIN}\\
-\ttind{GSL\_MAX} is similarly defined.
+\comment{{\tt \#include <gsl/gsl\_math.h>\\
+\#define GSL\_MIN(a,b) ((a) < (b) ? (a) : (b))} \ttindex{GSL\_MIN}\\}
+%[
+#include <gsl/gsl_math.h>
+#define GSL_MIN(a,b) ((a) < (b) ? (a) : (b)) 
+%]
+\ttindex{GSL\_MIN} \ttind{GSL\_MAX} is similarly defined.
 
 
 The one and only one thing that a macro can do better than a function is
@@ -1774,12 +1834,19 @@ just shunts characters around and doesn't know what its arguments represent.
 For example, later you will see this form for reallocating a pointer to an array of {\tt int}s:\\
 {\tt var\_array = realloc(var\_array, new\_length * sizeof(int))}.\\
 With this macro:\\
-{\tt \#define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))}\\
+%[
+#define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))
+%]
 the above line could be rewritten as:\\
-{\tt REALLOC(var\_array, new\_length, int);}\\
+%[
+REALLOC(var_array, new_length, int);
+%]
 This macro gives you one more moving part that could break (and which
 now needs to be {\tt \#include}d with every file you use it in), but
 may make the code more readable.
+
+\comment{{\tt \#define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))}\\
+{\tt REALLOC(var\_array, new\_length, int);}\\}
 
 Finally, notice that the custom is to put macro names in caps.  You can
 rely on this in code you see from others, and are encouraged to stick

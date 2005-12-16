@@ -1,6 +1,6 @@
 .SUFFIXES: .dvi .pdf
-DOCNAME = gsl_stats
-#DOCNAME = c_crash
+#DOCNAME = gsl_stats
+DOCNAME = c_crash
 
 all: sources/dummy.tex
 	for i in *tex; do lgrind -e -t 4 $$i > $$(basename $$i .tex).ground; done;
@@ -18,7 +18,7 @@ view:
 	xdvi -expert -geometry 1041x797+-17+-17 -s 6 -paper usr $(DOCNAME)
 
 publish: $(DOCNAME).pdf
-	scp $(DOCNAME).pdf fluff@fluff.info:www/klemens/
+	scp $(DOCNAME).pdf $(SFSSH):ap/htdocs/gsl_stats.pdf
 
 viewpdf: 
 	gv -seascape  -geometry 1129x824+-95+-49 -scale 2 $(DOCNAME).pdf
