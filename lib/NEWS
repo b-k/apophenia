@@ -5,6 +5,11 @@ apop_name. Was just sick of sending names following around my tables.
 Lets us keep both numerical and categorical data in one place; kind of
 like R's data frame.
 
+--Added linear models: OLS, GLS. This means that what had been the apop_OLS
+is now the apop_estimate_OLS function, and where it used to take in a
+gsl_matrix and an apop_name, now it takes an apop_data structure and a
+NULL. So you'll have to modify your code accordingly.
+
 0.13	December 2005
 
 --The apop_model object. This was a big deal that deserves more than

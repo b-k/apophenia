@@ -15,7 +15,7 @@ the database, then \ref apop_query to clean the data in the database,
 and finally \ref apop_query_to_matrix to pull some subset of the data
 out for analysis.
 
-==== Querying ====
+\par Querying 
 \ref apop_query_db: Manipulate the database, return nothing (e.g., input data).
 
 \ref apop_query_to_matrix: Pull data into a gsl_matrix for analysis.
@@ -24,7 +24,7 @@ out for analysis.
 
 \ref apop_query_to_chars: Pull out columns of not-numbers.
 
-==== Maintenance ====
+\par Maintenance 
 \ref apop_open_db: Optional, for when you want to use a database on disk.
 
 \ref apop_close_db: If you used \ref apop_open_db, you will need to use this too.
@@ -37,7 +37,7 @@ out for analysis.
 
 \ref apop_db_merge_table: Import/merge just one table.
 
-==== See also ====
+\par See also
  * The \ref conversions, including \ref apop_convert_text_to_db and \ref apop_matrix_to_db.
 
  * The \ref command_line "Command-line utilities".
@@ -46,11 +46,11 @@ out for analysis.
 #include <math.h> 	//sqrt
 #include <string.h>
 #include <stdarg.h>
+#include <apophenia/types.h>
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <apophenia/db.h>
 #include <apophenia/linear_algebra.h>
 #include <apophenia/stats.h>	//t_dist
-#include <apophenia/types.h>
 #include <apophenia/regression.h>	//two_tailify
 
 #include <apophenia/vasprintf.h>
@@ -559,11 +559,28 @@ float		out;
 
 }
 
+apop_data * apop_query_to_data(const char * fmt, ...){
+gsl_matrix	*m=NULL;
+va_list		argp;
+char		*query;
+apop_data	*out;
+	va_start(argp, fmt);
+	vasprintf(&query, fmt, argp);
+	va_end(argp);
+	if (apop_verbose) {printf("\n%s\n",query);}
+	m	        = apop_query_to_matrix(query);
+    out         = apop_matrix_to_data(m);
+    //replace name struct allocated in apop_matrix_to_data with the
+    //actual names.
+    apop_name_free(out->names);
+    out->names  = apop_db_get_names();
+	return out;
+}
+
 /** This function returns an <tt>apop_name</tt> structure with the column
 names from the last \ref apop_query_to_matrix . Since only the names from
 the last query are saved, you will want to use this immediately
-after calling <tt>apop_query_to_matrix</tt>.  
- \ingroup names */
+after calling <tt>apop_query_to_matrix</tt>.  */
 apop_name * apop_db_get_names(void){ return last_names; }
 
 /** This function returns the column count from the last query run. */

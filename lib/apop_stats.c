@@ -1,8 +1,12 @@
-//stats.c		  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+/** \file apop_stats.c	Basic moments and some distributions.
+
+ Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+ \author Ben Klemens
+ */
+
 #include "apophenia/stats.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
-
 
 /** \defgroup basic_stats Some basic statistical functions. 
 
@@ -446,4 +450,42 @@ double          x, ratio;
                 }
 	*mean	= avg;
         *var	= avg2 - gsl_pow_2(avg); //E[x^2] - E^2[x]
+}
+
+/** Put summary information about the columns of a table (mean, std dev, variance) in a table.
+
+\param data The table to be summarized. An \ref apop_data structure.
+\return     An \ref apop_data structure with one row for each column in the original table, and a column for each summary statistic.
+\ingroup    output
+\todo At the moment, only gives the mean, standard deviation, and variance
+of the data in each column; should give more in the near future.
+\todo We should probably let this summarize rows as well.
+*/
+apop_data * apop_matrix_summarize(apop_data *indata){
+int		    i;
+gsl_vector_view	v;
+apop_data	*out	= apop_data_alloc(indata->data->size2, 3);
+double		mean, stddev,var;
+char		rowname[10000]; //crashes on more than 10^9995 columns.
+	apop_name_add(out->names, "mean", 'c');
+	apop_name_add(out->names, "std dev", 'c');
+	apop_name_add(out->names, "variance", 'c');
+	if (indata->names !=NULL)
+		for (i=0; i< indata->names->colnamect; i++)
+			apop_name_add(out->names, indata->names->colnames[i], 'r');
+	else
+		for (i=0; i< indata->data->size2; i++){
+			sprintf(rowname, "col %i", i);
+			apop_name_add(out->names, rowname, 'r');
+		}
+	for (i=0; i< indata->data->size2; i++){
+                v       = gsl_matrix_column(indata->data, i);
+		mean	= apop_mean(&(v.vector));
+		var 	= apop_var_m(&(v.vector),mean);
+		stddev	= sqrt(var);
+		gsl_matrix_set(out->data, i, 0, mean);
+		gsl_matrix_set(out->data, i, 1, stddev);
+		gsl_matrix_set(out->data, i, 2, var);
+	}	
+	return out;
 }

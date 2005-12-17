@@ -157,7 +157,7 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 /////The printing functions.
 ////////////////////////////
 
-void print_core_v(gsl_vector *data, char *separator, char *filename, 
+static void print_core_v(gsl_vector *data, char *separator, char *filename, 
 			void (* p_fn)(FILE * f, double number)){
 int 		i;
 FILE * 		f;
@@ -178,10 +178,16 @@ FILE * 		f;
 	if (filename !=NULL)	fclose(f);
 }
 
-void print_core_m(gsl_matrix *data, char *separator, char *filename, 
-			void (* p_fn)(FILE * f, double number)){
+static void print_core_m(gsl_matrix *data, char *separator, char *filename, 
+			void (* p_fn)(FILE * f, double number), apop_name *n){
 FILE * 		f;
-int 		i,j;
+size_t 		i,j, max_name_size  = 0;
+
+    if (n != NULL){
+        for (i=0; i< n->rownamect; i++)
+            max_name_size   = GSL_MAX(strlen(n->rownames[i]), max_name_size);
+    }
+
 	if (filename == NULL)
 		f	= stdout;
 	else	f	= fopen(filename, "a");
@@ -190,7 +196,15 @@ int 		i,j;
             printf("Printing an empty matrix, so the output will be blank.\n");
     } 
     else {
+        if (n != NULL && n->colnamect > 0){ //then print a row of column headers.
+		    printf("\t");
+		    for (j=0; j< n->colnamect; j++)
+			    printf("%s\t\t", n->colnames[j]);
+		    printf("\n");
+        }
 	    for (i=0; i<data->size1; i++){
+            if (n !=NULL && n->rownamect > 0)
+			    printf("%-*s", max_name_size+4, n->rownames[i]);
 		    for (j=0; j<data->size2; j++){
 			    p_fn(f, gsl_matrix_get(data, i,j));
 			    if (j< data->size2 -1)	fprintf(f, "%s", separator);
@@ -220,12 +234,12 @@ void apop_print_vector_int(gsl_vector *data, char *separator, char *filename){
 /** Print a matrix in real format.
 \ingroup apop_print */
 void apop_print_matrix(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_f); }
+	print_core_m(data, separator, filename, dumb_little_pf_f, NULL); }
 
 /** Print a matrix in int format.
 \ingroup apop_print */
 void apop_print_matrix_int(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_i); }
+	print_core_m(data, separator, filename, dumb_little_pf_i, NULL); }
 
 /** Print a vector in float format.
 \ingroup apop_print */
@@ -240,83 +254,20 @@ void apop_vector_print_int(gsl_vector *data, char *separator, char *filename){
 /** Print a matrix in float format.
 \ingroup apop_print */
 void apop_matrix_print(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_f); }
+	print_core_m(data, separator, filename, dumb_little_pf_f, NULL); }
 
 /** Print a matrix in int format.
 \ingroup apop_print */
 void apop_matrix_print_int(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_i); }
+	print_core_m(data, separator, filename, dumb_little_pf_i, NULL); }
 
+/** Print an \ref apop_data set in float format.
+\ingroup apop_print */
+void apop_data_print(apop_data *data, char *separator, char *filename){
+	print_core_m(data->data, separator, filename, dumb_little_pf_f, data->names); }
 
+/** Print an \ref apop_data set matrix in int format.
 
-/* * Print a summary of each column of a table to the screen (i.e., STDOUT). 
-
-\todo At the moment, only gives the mean and the standard deviation
-of the data in each column; should give more in the near future.
-
-\param data
-The table to be summarized.
-
-\param names
-The \ref apop_name structure associated with the table. If there is no such structure, use <tt>NULL</tt>.
-\ingroup output
-void apop_matrix_summarize(gsl_matrix *data, apop_name *names){
-int		i;
-gsl_vector_view	v;
-	if (names !=NULL)
-		printf("names");
-	printf("\tmean:\tstd dev:\n");
-	for (i=0; i< data->size2; i++){
-                v       = gsl_matrix_column(data, i);
-		if (names !=NULL)
-			printf("%s\t%5f\t%5f\n",names->colnames[i],apop_mean(&(v.vector)),sqrt(apop_var(&(v.vector))));
-		else
-			printf("col %i\t%5f\t%5f\n",i,apop_mean(&(v.vector)),sqrt(apop_var(&(v.vector))));
-	}	
-}
-*/
-
-/** Put summary information about the columns of a table (mean, std dev) in a table.
-
-
-\param data
-The table to be summarized.
-
-\param names_in The \ref apop_name structure associated with the table. If there is no such structure, use <tt>NULL</tt>.
-\param names_out The \ref apop_name structure which will be associated with the output table.
-\ingroup output
-\todo At the moment, only gives the mean and the standard deviation
-of the data in each column; should give more in the near future.
-\todo We should probably let this summarize rows as well.
-*/
-gsl_matrix * apop_matrix_summarize(gsl_matrix *data, apop_name *names_in, apop_name **names_out){
-int		i;
-gsl_vector_view	v;
-gsl_matrix	*out	= gsl_matrix_alloc(data->size2, 3);
-double		mean, stddev,var;
-char		rowname[10000]; //crashes on more than 10^9995 columns.
-	if (names_out !=NULL){
-		*names_out	= apop_name_alloc();
-		apop_name_add(*names_out, "mean", 'c');
-		apop_name_add(*names_out, "std dev", 'c');
-		apop_name_add(*names_out, "variance", 'c');
-		if (names_in !=NULL)
-			for (i=0; i< data->size2; i++)
-				apop_name_add(*names_out, names_in->colnames[i], 'r');
-		else
-			for (i=0; i< data->size2; i++){
-				sprintf(rowname, "col %i", i);
-				apop_name_add(*names_out, rowname, 'r');
-			}
-	}
-	for (i=0; i< data->size2; i++){
-                v       = gsl_matrix_column(data, i);
-		mean	= apop_mean(&(v.vector));
-		var 	= apop_var_m(&(v.vector),mean);
-		stddev	= sqrt(var);
-		gsl_matrix_set(out, i, 0, mean);
-		gsl_matrix_set(out, i, 1, stddev);
-		gsl_matrix_set(out, i, 2, var);
-	}	
-	return out;
-}
+\ingroup apop_print */
+void apop_data_print_int(apop_data *data, char *separator, char *filename){
+	print_core_m(data->data, separator, filename, dumb_little_pf_i, data->names); }

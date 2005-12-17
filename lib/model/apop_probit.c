@@ -8,7 +8,6 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 //The default list. Probably don't need them all.
 #include "types.h"
-#include "regression.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "model.h"
@@ -22,22 +21,9 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <assert.h>
 
 
-
-/** This function is used to keep the minimizer away from bounds.
-
-If you just return GSL_POSINF at the bounds, it's not necessarily smart
-enough to get it.  This helps the minimzer along by providing a (almost)
-continuous, steep line which steers the minimizer back to the covered
-range. 
-\todo Replace this with apop_constraints.
-*/
-static double keep_away(double value, double limit,  double base){
-	return (50000+fabs(value - limit)) * base;
-}
-
-static apop_estimate * probit_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+static apop_estimate * probit_estimate(apop_data * data, apop_inventory *uses, void *parameters){
 	apop_inventory_filter(uses, apop_probit.inventory_filter);
-	return apop_maximum_likelihood(data, uses, apop_probit, *(apop_estimation_params *)parameters);
+	return apop_maximum_likelihood(data->data, uses, apop_probit, *(apop_estimation_params *)parameters);
 }
 
 

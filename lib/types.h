@@ -174,5 +174,10 @@ apop_inventory * apop_inventory_alloc(int value);
 void 		apop_inventory_copy(apop_inventory in, apop_inventory *out);
 void 		apop_inventory_set(apop_inventory *out, int value);
 void 		apop_inventory_filter(apop_inventory *out, apop_inventory filter);
+
+void        apop_data_free(apop_data *freeme);
+apop_data * apop_matrix_to_data(gsl_matrix *m);
+apop_data * apop_data_alloc(int size1, int size2);
+
 #endif
 

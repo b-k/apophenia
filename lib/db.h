@@ -2,7 +2,7 @@
 #ifndef apop_db_included
 #define apop_db_included
 #include <sqlite3.h>
-#include "apophenia/types.h"
+#include <apophenia/types.h>
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
@@ -48,6 +48,8 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...);
 	//	outmatrix = apop_query_to_matrix("select a, b, c from some_table");
 
 char *** apop_query_to_chars(const char * fmt, ...);
+
+apop_data * apop_query_to_data(const char * fmt, ...);
 
 float apop_query_to_float(const char * fmt, ...);
 	//like query_to_matrix, but returns a single number.

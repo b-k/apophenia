@@ -7,10 +7,10 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 //The default list. Probably don't need them all.
 #include "types.h"
-#include "regression.h"
+#include "stats.h"
+#include "model.h"
 #include "conversions.h"
 #include "likelihoods.h"
-#include "model.h"
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort.h>
@@ -35,9 +35,9 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 \ingroup likelihood_fns
 */
-static apop_estimate * waring_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+static apop_estimate * waring_estimate(apop_data * data, apop_inventory *uses, void *parameters){
 	apop_inventory_filter(uses, apop_waring.inventory_filter);
-	return apop_maximum_likelihood(data, uses, apop_waring, *(apop_estimation_params *)parameters);
+	return apop_maximum_likelihood(data->data, uses, apop_waring, *(apop_estimation_params *)parameters);
 }
 
 static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
@@ -61,7 +61,7 @@ float		bb	= gsl_vector_get(beta, 0),
     		a	= gsl_vector_get(beta, 1);
 int 		i, k;
 gsl_matrix*	data= d;
-double 		ln_a_k, ln_bb_a_k, p, val,
+double 		ln_a_k, ln_bb_a_k, val,
 		likelihood 	= 0,
 		ln_bb_a		= gsl_sf_lngamma(bb + a),
 		ln_a_mas_1	= gsl_sf_lngamma(a + 1),

@@ -1,4 +1,4 @@
-/** \file asst.c  The odds and ends bin.  */
+/** \file apop_asst.c  The odds and ends bin.  */
 
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
 

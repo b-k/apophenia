@@ -1,4 +1,4 @@
-/** \file conversions.c	The various functions to convert from one format to another.
+/** \file apop_conversions.c	The various functions to convert from one format to another.
 
  Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
  */

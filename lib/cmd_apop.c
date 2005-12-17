@@ -1,4 +1,4 @@
-/** \file apop.c	The server/client which allows users to call c_functions from the command
+/** \file cmd_apop.c	The server/client which allows users to call c_functions from the command
   line/script 
  Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
  */

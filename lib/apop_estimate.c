@@ -1,4 +1,4 @@
-/** \file estimate.c	 sets up the estimate structure which outputs from the various regressions and MLEs.
+/** \file apop_estimate.c	 sets up the estimate structure which outputs from the various regressions and MLEs.
 
 
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
@@ -134,7 +134,7 @@ void apop_estimate_free(apop_estimate * free_me){
 
 \ingroup output */
 void apop_estimate_print(apop_estimate * print_me){
-int		i,j;
+int		i;
 	printf("\n");
 	if (print_me->uses.names) 	printf("\t");
 	if (print_me->uses.parameters) 	printf("value\t\t");
@@ -159,19 +159,13 @@ int		i,j;
 	}
 	if (print_me->uses.covariance){
 		printf("\nThe variance/covariance matrix:\n");
-		if (print_me->uses.names){
-			printf("\t");
-			for (j=0; j<print_me->covariance->size1; j++)
-				printf("%s\t\t", print_me->names->colnames[j]);
-			printf("\n");
-			for (i=0; i<print_me->covariance->size1; i++){
-				printf("%s\t", print_me->names->colnames[i]);
-				for (j=0; j<print_me->covariance->size2; j++)
-					printf("% 6.6g\t", gsl_matrix_get(print_me->covariance, i,j));
-				printf("\n");
-			}
-		} else	
-			apop_print_matrix(print_me->covariance, "\t", NULL);
+        apop_data   *covdata    = apop_matrix_to_data(print_me->covariance);
+        //We want to show the column names on both axes.
+        memcpy(covdata->names->colnames, print_me->names->colnames, sizeof(char*) * print_me->names->colnamect);
+        memcpy(covdata->names->rownames, print_me->names->colnames, sizeof(char*) * print_me->names->colnamect);
+        covdata->names->rownamect   =
+        covdata->names->colnamect   =   print_me->names->colnamect;
+        apop_data_print(covdata, "\t", NULL);
 	}
 	if (print_me->uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);

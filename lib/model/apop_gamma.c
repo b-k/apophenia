@@ -10,8 +10,6 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 //The default list. Probably don't need them all.
 #include "types.h"
-#include "bootstrap.h"
-#include "regression.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "model.h"
@@ -24,14 +22,10 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-static double keep_away(double value, double limit,  double base){
-    return (50000+fabs(value - limit)) * base;
-}
 
-
-static apop_estimate * gamma_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+static apop_estimate * gamma_estimate(apop_data * data, apop_inventory *uses, void *parameters){
     apop_inventory_filter(uses, apop_gamma.inventory_filter);
-    return apop_maximum_likelihood(data, uses, apop_gamma, *(apop_estimation_params *)parameters);
+    return apop_maximum_likelihood(data->data, uses, apop_gamma, *(apop_estimation_params *)parameters);
 }
 
 static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){

@@ -1,4 +1,4 @@
-/** \file bootstrap.c
+/** \file apop_bootstrap.c
 
 Bootstrapping!!!
 
@@ -61,13 +61,13 @@ can bootstrap every parameter at once. Remember that if \code{e} is an
  */
 gsl_vector * bootstrap(gsl_matrix * data, gsl_vector * (*boot_fn)(gsl_matrix *, void *, void* , void*), int boot_iterations,
 	void *params_1, void *params_2, void *params_3) {
-int		i, j, row;
-gsl_matrix	*subset	= gsl_matrix_alloc(data->size1/3, data->size2),
-		*array_of_boots =NULL, 
-		*summary;
+int		        i, j, row;
+gsl_matrix	    *subset	= gsl_matrix_alloc(data->size1/3, data->size2);
+apop_data       *array_of_boots = NULL,
+                *summary;
 gsl_vector_view	v;
-gsl_vector	*output, *b;
-gsl_rng		*rn	=gsl_rng_alloc(gsl_rng_default);
+gsl_vector	    *output, *b;
+gsl_rng		    *rn	=gsl_rng_alloc(gsl_rng_default);
 
 if (boot_iterations ==0) boot_iterations	= 1000;
 
@@ -82,14 +82,15 @@ if (boot_iterations ==0) boot_iterations	= 1000;
 		b	= boot_fn(data, params_1, params_2, params_3);
 		if (b!=NULL) 	{
 			if (i==0)
-				array_of_boots	= gsl_matrix_alloc(boot_iterations, b->size);
-			gsl_matrix_set_row(array_of_boots,i,b);
+				array_of_boots	= apop_data_alloc(boot_iterations, b->size);
+			gsl_matrix_set_row(array_of_boots->data,i,b);
 		} else		i--;
 
 	}
-	summary	= apop_matrix_summarize(array_of_boots, NULL, NULL);
-	output	= gsl_vector_alloc(summary->size1);
-	gsl_matrix_get_col(output, summary, 1);
+	summary	= apop_matrix_summarize(array_of_boots);
+    apop_data_free(array_of_boots);
+	output	= gsl_vector_alloc(summary->data->size1);
+	gsl_matrix_get_col(output, summary->data, 1);
 	return output;
 }
 

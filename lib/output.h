@@ -20,4 +20,5 @@ void apop_matrix_print_int(gsl_matrix *data, char *separator, char* file);
 void apop_vector_print(gsl_vector *data, char *separator, char* file);
 void apop_vector_print_int(gsl_vector *data, char *separator, char* file);
 
-gsl_matrix * apop_matrix_summarize(gsl_matrix *data, apop_name *names_in, apop_name **names_out); //void apop_matrix_summarize(gsl_matrix *data, apop_name *names);
+void apop_data_print(apop_data *data, char *separator, char *filename);
+void apop_data_print_int(apop_data *data, char *separator, char *filename);

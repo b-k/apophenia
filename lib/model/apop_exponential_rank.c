@@ -25,7 +25,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 /* Let k be the rank, and x_k be the number of elements at that rank;
  then the mean rank (and therefore the most likely estimate for the
  exponential parameter) is sum(k * x_k)/sum(x) */
-static apop_estimate * exponential_rank_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
+static apop_estimate * exponential_rank_estimate(apop_data * data, apop_inventory *uses, void *parameters){
 double          colsum,
                 numerator   = 0,
                 grand_total = 0;
@@ -34,19 +34,19 @@ gsl_vector_view v;
 int             i;
     if (uses == NULL)
         uses    = apop_inventory_alloc(1);
-    est = apop_estimate_alloc(data->size1,1,NULL, *uses);
+    est = apop_estimate_alloc(data->data->size1,1,NULL, *uses);
 	apop_inventory_filter(uses, apop_exponential_rank.inventory_filter);
-    for(i=0; i< data->size2; i++){
-        v            = gsl_matrix_column(data, i);
+    for(i=0; i< data->data->size2; i++){
+        v            = gsl_matrix_column(data->data, i);
         colsum       = apop_sum(&(v.vector));
         numerator   += colsum * i;
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters, 0, numerator/grand_total);
 	if (est->uses.log_likelihood)
-		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters, data);
+		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters, data->data);
 	if (est->uses.covariance)
-		apop_numerical_var_covar_matrix(apop_exponential_rank, est, data);
+		apop_numerical_var_covar_matrix(apop_exponential_rank, est, data->data);
 	return est;
 }
 

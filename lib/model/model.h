@@ -26,7 +26,7 @@ typedef struct apop_model{
 	char	name[101]; 
 	int	parameter_ct;
 	apop_inventory inventory_filter;
-	apop_estimate *	(*estimate)(gsl_matrix * data, apop_inventory *uses, void *parameters);
+	apop_estimate *	(*estimate)(apop_data * data, apop_inventory *uses, void *parameters);
 	double 	(*log_likelihood)(const gsl_vector *beta, void *d);
 	void 	(*dlog_likelihood)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 	void 	(*fdf)( const gsl_vector *beta, void *d, double *f, gsl_vector *df);
@@ -49,7 +49,9 @@ extern apop_model apop_exponential_rank;
 extern apop_model apop_gamma;
 extern apop_model apop_gamma_rank;
 extern apop_model apop_gaussian;//synonym for apop_normal
+extern apop_model apop_GLS;
 extern apop_model apop_normal;
+extern apop_model apop_OLS;
 extern apop_model apop_probit;
 extern apop_model apop_waring;
 extern apop_model apop_waring_rank;

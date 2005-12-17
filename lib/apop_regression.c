@@ -12,6 +12,8 @@
 #include "stats.h"
 #include "linear_algebra.h"
 #include <apophenia/types.h>
+#include <search.h> //lsearch
+#include <stdlib.h> //bsearch
 
 extern int apop_verbose;
 
@@ -139,25 +141,25 @@ A pointer to an \ref apop_estimate structure with the appropriate elements fille
 \todo 
 Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
  */
-apop_estimate * apop_GLS(gsl_matrix *data, gsl_matrix *sigma, apop_name * n, apop_inventory *uses){
+apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matrix *sigma){
 apop_inventory	actual_uses;
-	prep_inventory_OLS(n, uses, &actual_uses);
-apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, n, actual_uses);
-gsl_vector 	*y_data		= gsl_vector_alloc(data->size1);
-gsl_matrix 	*temp		= gsl_matrix_calloc(data->size2, data->size1);
-gsl_vector 	*xsy 		= gsl_vector_calloc(data->size2);
-gsl_matrix 	*xsx 		= gsl_matrix_calloc(data->size2, data->size2);
+	prep_inventory_OLS(set->names, uses, &actual_uses);
+apop_estimate	*out		= apop_estimate_alloc(set->data->size1, set->data->size2, set->names, actual_uses);
+gsl_vector 	*y_data		= gsl_vector_alloc(set->data->size1);
+gsl_matrix 	*temp		= gsl_matrix_calloc(set->data->size2, set->data->size1);
+gsl_vector 	*xsy 		= gsl_vector_calloc(set->data->size2);
+gsl_matrix 	*xsx 		= gsl_matrix_calloc(set->data->size2, set->data->size2);
 gsl_matrix 	*sigma_inverse;	//= gsl_matrix_alloc(data->size1, data->size1);
-gsl_vector_view	v 		= gsl_matrix_column(data, 0);
-	gsl_matrix_get_col(y_data, data, 0);
+gsl_vector_view	v 		= gsl_matrix_column(set->data, 0);
+	gsl_matrix_get_col(y_data, set->data, 0);
 	gsl_vector_set_all(&(v.vector), 1);	//affine: first column is ones.
 	apop_det_and_inv(sigma, &sigma_inverse, 0, 1);					//find sigma^{-1}
-	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, sigma_inverse, 0, temp); 	//temp = X' \sigma^{-1}.
+	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, sigma_inverse, 0, temp); 	//temp = X' \sigma^{-1}.
 	gsl_matrix_free(sigma_inverse);
-	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, temp, data, 0, xsx);    		//(X' \sigma^{-1} X)
+	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, temp, set->data, 0, xsx);    		//(X' \sigma^{-1} X)
 	gsl_blas_dgemv(CblasNoTrans, 1, temp, y_data, 0, xsy);     			//(X' \sigma^{-1} y)
 	gsl_matrix_free(temp);
-	xpxinvxpy(data, y_data, xsx, xsy, out);
+	xpxinvxpy(set->data, y_data, xsx, xsy, out);
 	gsl_vector_free(y_data); gsl_vector_free(xsy);
 	return out;
 }
@@ -166,17 +168,12 @@ gsl_vector_view	v 		= gsl_matrix_column(data, 0);
 
 \ingroup regression
 
-The first column is the dependent variable, the remaining columns are the independent variables. NB: \c data is destroyed by this function. If you want to keep it, make a copy beforehand.
-
-\param data
-The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
-
-\param n
-An \c apop_name structure, specifying which outputs you want.
+\param data The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
 \param uses If <tt>NULL</tt>, then you get everything.  If a pointer to
 an \ref apop_inventory , then you get what you ask for. Log likelihood is
 not calculated; you always get the parameter estimates.
+\param dummy    You've got to give it a NULL at the end so the header will be consistent with the other estimation functions. Life is hard that way.
 
 \return
 Will return an \ref apop_estimate <tt>*</tt>.
@@ -205,15 +202,16 @@ The program:
 #include <apophenia/headers.h>
 
 int main(void){
-gsl_matrix      *data;
+apop_data       *data;
 apop_estimate   *est;
-apop_name       *n;
-     apop_convert_text_to_db("data","d",NULL);
-     data       = apop_query_to_matrix("select * from d");
-     n          = apop_db_get_names();
-     est  = apop_OLS(data, n, NULL);
-     apop_estimate_print(est);
-     return 0;
+apop_inventory  invent;
+    apop_convert_text_to_db("data","d",NULL);
+    apop_inventory_set(&invent, 0);
+    invent.parameters   = 1;
+    data       = apop_query_to_data("select * from d");
+    est  = apop_OLS.estimate(data, &invent, NULL);
+    apop_estimate_print(est);
+    return 0;
 }
 \endcode
 
@@ -224,21 +222,32 @@ gcc sample.c -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
 
 and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
 
+Feeling lazy? The program above was good form and demonstrated useful
+features, but the code below will do the same thing in five lines:
+
+\code
+#include <apophenia/headers.h>
+int main(void){
+    apop_convert_text_to_db("data","d",NULL);
+    apop_estimate_print(apop_OLS.estimate(apop_query_to_data("select * from d"), NULL, NULL));
+    return 0; }
+\endcode
+
 
  */
-apop_estimate * apop_OLS(gsl_matrix *data, apop_name * n, apop_inventory *uses){
+apop_estimate * apop_estimate_OLS(apop_data *set, apop_inventory *uses, void *dummy){
 apop_inventory	actual_uses;
-	prep_inventory_OLS(n, uses, &actual_uses);
-apop_estimate	*out		= apop_estimate_alloc(data->size1, data->size2, n, actual_uses);
-gsl_vector 	*y_data		= gsl_vector_alloc(data->size1);
-gsl_vector 	*xpy 		= gsl_vector_calloc(data->size2);
-gsl_matrix 	*xpx 		= gsl_matrix_calloc(data->size2, data->size2);
-gsl_vector_view	v 		= gsl_matrix_column(data, 0);
-	gsl_matrix_get_col(y_data, data, 0);
+	prep_inventory_OLS(set->names, uses, &actual_uses);
+apop_estimate	*out		= apop_estimate_alloc(set->data->size1, set->data->size2, set->names, actual_uses);
+gsl_vector 	*y_data		= gsl_vector_alloc(set->data->size1);
+gsl_vector 	*xpy 		= gsl_vector_calloc(set->data->size2);
+gsl_matrix 	*xpx 		= gsl_matrix_calloc(set->data->size2, set->data->size2);
+gsl_vector_view	v 		= gsl_matrix_column(set->data, 0);
+	gsl_matrix_get_col(y_data, set->data, 0);
 	gsl_vector_set_all(&(v.vector), 1);	//affine: first column is ones.
-	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, xpx);	//(X'X)
-	gsl_blas_dgemv(CblasTrans, 1, data, y_data, 0, xpy);     	//(X'y)
-	xpxinvxpy(data, y_data, xpx, xpy, out);
+	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);	//(X'X)
+	gsl_blas_dgemv(CblasTrans, 1, set->data, y_data, 0, xpy);     	//(X'y)
+	xpxinvxpy(set->data, y_data, xpx, xpy, out);
 	gsl_vector_free(y_data); gsl_vector_free(xpy);
 	return out;
 }
@@ -271,49 +280,47 @@ gsl_vector_view	v 		= gsl_matrix_column(data, 0);
 
 \bug The cross-variances are assumed to be zero, which is wholeheartedly false. It's not too big a deal because nobody ever uses them for anything.
 */
-apop_estimate * apop_partitioned_OLS(gsl_matrix *data1, gsl_matrix *data2, gsl_matrix *m1, gsl_matrix *m2, 
-                                                    apop_name * n1, apop_name * n2, apop_inventory *uses){
+apop_estimate * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2, apop_inventory *uses){
 apop_inventory	actual_uses;
-	prep_inventory_OLS(n1, uses, &actual_uses); //FIX for more names
+	prep_inventory_OLS(set1->names, uses, &actual_uses); //FIX for more names
 apop_estimate	*out1, *out2,
-                *out	= apop_estimate_alloc(data1->size1, data1->size2 + data2->size2, n1, actual_uses);
+                *out	= apop_estimate_alloc(set1->data->size1, set1->data->size2 + set2->data->size2, set1->names, actual_uses);
 gsl_matrix      *t1,*t2, *augmented_first_matrix, *zero1, *zero2,
-                *dependent  =gsl_matrix_alloc(data1->size1, 1);
+                *dependent  =gsl_matrix_alloc(set1->data->size1, 1);
 gsl_vector_view d;
 int             i;
 
 
     if(m1!=NULL){
-    gsl_matrix 	*xpx1 		= gsl_matrix_calloc(data1->size1, data1->size1),
+    gsl_matrix 	*xpx1 		= gsl_matrix_calloc(set1->data->size1, set1->data->size1),
                 *xpxinv1,
-                *xxpxinv1   = gsl_matrix_calloc(data1->size1, data1->size1), 
-                *xxpxinvx1  = gsl_matrix_calloc(data1->size1, data1->size1);
-        m1        = gsl_matrix_alloc(data1->size2, data1->size2);
-	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data1, data1, 0, xpx1);	//(X'X)
+                *xxpxinv1   = gsl_matrix_calloc(set1->data->size1, set1->data->size1), 
+                *xxpxinvx1  = gsl_matrix_calloc(set1->data->size1, set1->data->size1);
+        m1        = gsl_matrix_alloc(set1->data->size2, set1->data->size2);
+	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set1->data, set1->data, 0, xpx1);	//(X'X)
 	    apop_det_and_inv(xpx1, &xpxinv1, 0, 1);		
         gsl_matrix_free(xpx1);
-	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, data1, xpxinv1, 0, xxpxinv1);	//X(X'X)^{-1}
+	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, set1->data, xpxinv1, 0, xxpxinv1);	//X(X'X)^{-1}
         gsl_matrix_free(xpxinv1);
-	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv1, data1, 0, xxpxinvx1);	//X(X'X)^{-1}X'
+	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv1, set1->data, 0, xxpxinvx1);	//X(X'X)^{-1}X'
         gsl_matrix_free(xxpxinv1);
         gsl_matrix_set_identity(m1);
         gsl_matrix_sub(m1, xxpxinvx1);   // M = I - X(X'X)^{-1}X'
         gsl_matrix_free(xxpxinvx1);
     }
 
-
     if(m2!=NULL){
-    gsl_matrix 	*xpx2 		= gsl_matrix_calloc(data2->size2, data2->size2),
+    gsl_matrix 	*xpx2 		= gsl_matrix_calloc(set2->data->size1, set2->data->size1),
                 *xpxinv2,
-                *xxpxinv2   = gsl_matrix_calloc(data2->size2, data2->size2), 
-                *xxpxinvx2  = gsl_matrix_calloc(data2->size2, data2->size2);
-        m2        = gsl_matrix_alloc(data2->size2, data2->size2);
-	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 2, data2, data2, 0, xpx2);	//(X'X)
+                *xxpxinv2   = gsl_matrix_calloc(set2->data->size1, set2->data->size1), 
+                *xxpxinvx2  = gsl_matrix_calloc(set2->data->size1, set2->data->size1);
+        m2        = gsl_matrix_alloc(set2->data->size2, set2->data->size2);
+	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set2->data, set2->data, 0, xpx2);	//(X'X)
 	    apop_det_and_inv(xpx2, &xpxinv2, 0, 1);		
         gsl_matrix_free(xpx2);
-	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, data2, xpxinv2, 0, xxpxinv2);	//X(X'X)^{-1}
+	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, set2->data, xpxinv2, 0, xxpxinv2);	//X(X'X)^{-1}
         gsl_matrix_free(xpxinv2);
-	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv2, data2, 0, xxpxinvx2);	//X(X'X)^{-1}X'
+	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv2, set2->data, 0, xxpxinvx2);	//X(X'X)^{-1}X'
         gsl_matrix_free(xxpxinv2);
         gsl_matrix_set_identity(m2);
         gsl_matrix_sub(m2, xxpxinvx2);   // M = I - X(X'X)^{-1}X'
@@ -323,11 +330,14 @@ int             i;
 
         //the first matrix needs a dependent variable column, then we
         //can regress.
-    d                       = gsl_matrix_column(data2, 0);
+    d                       = gsl_matrix_column(set2->data, 0);
     gsl_matrix_set_col(dependent, 0, &(d.vector));
-    augmented_first_matrix  = apop_matrix_stack(dependent, data1, 'r');
-    out1    = apop_GLS(augmented_first_matrix, m2, n1, &actual_uses);
-    out2    = apop_GLS(data2, m1, n2, &actual_uses);
+    augmented_first_matrix  = apop_matrix_stack(dependent, set1->data, 'r');
+apop_data *newfirst = malloc(sizeof(apop_data));
+    newfirst->data  = augmented_first_matrix;
+    newfirst->names = set1->names;
+    out1    = apop_estimate_GLS(newfirst, &actual_uses, m2);
+    out2    = apop_estimate_GLS(set2, &actual_uses, m1);
     for (i=0; i< out1->parameters->size; i++)
         gsl_vector_set(out->parameters, i, gsl_vector_get(out1->parameters, i));
     for (   ; i< out2->parameters->size; i++)
@@ -347,6 +357,12 @@ int             i;
 }
 
 
+//Cut and pasted from the GNU std library documentation:
+static int compare_doubles (const void *a, const void *b) {
+    const double *da = (const double *) a;
+    const double *db = (const double *) b;
+    return (*da > *db) - (*da < *db);
+}
 
 /** A utility to make a matrix of dummy variables. You give me a single
 vector that lists the category number for each item, and I'll return
@@ -360,26 +376,52 @@ a gsl_matrix with a single one in each row in the column specified.
     is useful, then this is what you need. If you know what you're doing
     and need something special, set this to one and the first category won't be dropped.
 \return out
-\todo This won't work well if the categories do not include observations
-zero through max. That is, the function should produce a second vector
-that produces neat categories from sloppy input categories.
 */
-gsl_matrix * apop_produce_dummies(gsl_vector *in, int keep_first){
-int         max_category    = gsl_vector_max(in),
-            i, col;
-gsl_matrix  *out; 
+apop_data * apop_produce_dummies(gsl_vector *in, int keep_first){
+size_t      max_category    = gsl_vector_max(in),
+            i, index,
+            prior_elmt_ctr  = 107,
+            elmt_ctr        = 0;
+apop_data   *out; 
+double      *elmts          = malloc(sizeof(double)),
+            val;
+char        n[1000];
+
+    //first, create an ordered list of unique elements.
+    for (i=0; i< in->size; i++){
+        if (prior_elmt_ctr != elmt_ctr)
+            elmts   = realloc(elmts, sizeof(double)*(elmt_ctr+1));
+        prior_elmt_ctr  = elmt_ctr;
+        val             =  gsl_vector_get(in, i);
+        lsearch (&val, elmts, &elmt_ctr, sizeof(double), compare_doubles);
+    }
+    qsort(elmts, elmt_ctr, sizeof(double), compare_doubles);
+
+    //Now go through the input vector, and for row i find the posn of the vector's
+    //name in the element list created above (j), then change (i,j) in
+    //the dummy matrix to one.
     if (keep_first){
-        out  = gsl_matrix_calloc(in->size, max_category+1);
+        out  = apop_data_alloc(in->size, max_category+1);
+        gsl_matrix_set_zero(out->data);
         for (i=0; i< in->size; i++)
-            gsl_matrix_set(out, i, gsl_vector_get(in, i),1); 
+            val     = gsl_vector_get(in, i);
+            index   = ((int)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (int)elmts)/sizeof(double);
+            gsl_matrix_set(out->data, i, index,1); 
        }
     else{
-        out  = gsl_matrix_calloc(in->size, max_category);
+        out  = apop_data_alloc(in->size, max_category);
+        gsl_matrix_set_zero(out->data);
         for (i=0; i< in->size; i++){
-            col =  gsl_vector_get(in, i);
-            if (col>0)
-                gsl_matrix_set(out, i, col, 1); 
+            val     = gsl_vector_get(in, i);
+            index   = ((int)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (int)elmts)/sizeof(double);
+            if (index>0)
+                gsl_matrix_set(out->data, i, index-1, 1); 
         }
+    }
+    //Add names:
+    for (i=0; i< elmt_ctr; i++){
+        sprintf(n,"dummy-%g", elmts[i]);
+        apop_name_add(out->names, n, 'c');
     }
     return out;
 }
@@ -394,8 +436,8 @@ gsl_matrix  *out;
 
 \todo finish this documentation. [Was in a rush today.]
 */
-apop_estimate *apop_fixed_effects_OLS(gsl_matrix *data, gsl_vector *categories, apop_name * n, apop_inventory *uses){
-gsl_matrix *dummies = apop_produce_dummies(categories, 0);
-    return apop_partitioned_OLS(dummies, data, NULL, NULL, NULL, n, uses);
+apop_estimate *apop_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories){
+apop_data *dummies = apop_produce_dummies(categories, 0);
+    return apop_partitioned_OLS(dummies, data, NULL, NULL, uses);
 }
 

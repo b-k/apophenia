@@ -1,7 +1,4 @@
-#include <apophenia/name.h>
-#include <stdio.h>
-#include <malloc.h>
-/** \file name.c
+/** \file apop_name.c
 
 Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
@@ -10,6 +7,11 @@ Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 \return	An allocated, empty name structure.
 \ingroup names
 */
+
+#include <apophenia/name.h>
+#include <stdio.h>
+#include <malloc.h>
+
 apop_name * apop_name_alloc(void){
 apop_name	* init_me;
 	init_me	= malloc(sizeof(apop_name));
