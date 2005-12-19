@@ -199,8 +199,8 @@ size_t 		i,j, max_name_size  = 0;
         if (n != NULL && n->colnamect > 0){ //then print a row of column headers.
 		    printf("\t");
 		    for (j=0; j< n->colnamect; j++)
-			    printf("%s\t\t", n->colnames[j]);
-		    printf("\n");
+			    fprintf(f,"%s\t\t", n->colnames[j]);
+		    fprintf(f,"\n");
         }
 	    for (i=0; i<data->size1; i++){
             if (n !=NULL && n->rownamect > 0)

@@ -12,54 +12,58 @@ therewith for you.
 
 You will probably first use \ref apop_text_to_db to pull data into
 the database, then \ref apop_query to clean the data in the database,
-and finally \ref apop_query_to_matrix to pull some subset of the data
+and finally \ref apop_query_to_data to pull some subset of the data
 out for analysis.
 
 \par Querying 
-\ref apop_query_db: Manipulate the database, return nothing (e.g., input data).
+\li \ref apop_query_db: Manipulate the database, return nothing (e.g., input data).
 
-\ref apop_query_to_matrix: Pull data into a gsl_matrix for analysis.
+\li \ref apop_query_to_data: Pull data into an apop_data set.
 
-\ref apop_query_to_float: Pull out a single number.
+\li \ref apop_query_to_matrix: Pull data into a \c gsl_matrix.
 
-\ref apop_query_to_chars: Pull out columns of not-numbers.
+\li \ref apop_query_to_float: Pull out a single number.
+
+\li \ref apop_query_to_chars: Pull out columns of not-numbers.
 
 \par Maintenance 
-\ref apop_open_db: Optional, for when you want to use a database on disk.
+\li \ref apop_open_db: Optional, for when you want to use a database on disk.
 
-\ref apop_close_db: If you used \ref apop_open_db, you will need to use this too.
+\li \ref apop_close_db: If you used \ref apop_open_db, you will need to use this too.
 
-\ref apop_table_exists: Check to make sure you aren't reinventing or destroying data. Also, the clean way to drop a table.
+\li \ref apop_table_exists: Check to make sure you aren't reinventing or destroying data. Also, the clean way to drop a table.
 
-\ref apop_count_cols: Count the columns in a table.
+\li \ref apop_count_cols: Count the columns in a table.
 
-\ref apop_db_merge: Import or merge the whole of another database into the currently open db.
+\li \ref apop_db_merge: Import or merge the whole of another database into the currently open db.
 
-\ref apop_db_merge_table: Import/merge just one table.
+\li \ref apop_db_merge_table: Import/merge just one table.
 
 \par See also
- * The \ref conversions, including \ref apop_convert_text_to_db and \ref apop_matrix_to_db.
+ \li The \ref conversions, including \ref apop_convert_text_to_db and \ref apop_matrix_to_db.
 
- * The \ref command_line "Command-line utilities".
+ \li The \ref command_line "Command-line utilities".
 
+\par P.S.
+Apophenia reserves the right to insert temp tables into the opened database. They will all have names beginning with "apop_", so the reader is advised to not use tables with such names, and is free to ignore or delete any such tables that turn up.
  */
-#include <math.h> 	//sqrt
+#include <math.h> 	                //sqrt
 #include <string.h>
 #include <stdarg.h>
 #include <apophenia/types.h>
-#include <gsl/gsl_math.h> //GSL_NAN
+#include <gsl/gsl_math.h>           //GSL_NAN
 #include <apophenia/db.h>
 #include <apophenia/linear_algebra.h>
-#include <apophenia/stats.h>	//t_dist
+#include <apophenia/stats.h>	    //t_dist
 #include <apophenia/regression.h>	//two_tailify
 
 #include <apophenia/vasprintf.h>
 
-sqlite3	*db=NULL;	//There's only one database handle. Here it is.
+sqlite3	*db=NULL;	                //There's only one database handle. Here it is.
 
-apop_name *last_names = NULL;	//The column names from the last query to matrix
+apop_name *last_names = NULL;	    //The column names from the last query to matrix
 
-int	total_rows, total_cols;		//the counts from the last query.
+int	total_rows, total_cols;		    //the counts from the last query.
 
 /** This variable turns on some notifications. */
 int apop_verbose	= 0;
@@ -249,7 +253,7 @@ int apop_db_open(char *filename){
 	return 0;
 }
 
-/** An alias for \ref apop_db_open . */
+/** An alias for \ref apop_db_open. Use that one.*/ 
 int apop_open_db(char *filename){ return apop_db_open(filename); }
 
 /** Send a query to the database, return nothing 
@@ -280,7 +284,7 @@ va_list		argp;
 	return 1;
 }
 
-/** Just like \ref apop_query . Use that one. 
+/** Just like \ref apop_query. Use that one. 
 \ingroup db
 */
 int apop_query_db(const char *fmt, ...){
@@ -391,7 +395,7 @@ array just returned. To get this information, use \ref apop_db_get_rows
 and \ref apop_db_get_cols .
 
 \param fmt 	As with \ref apop_query , a string containing a query,
-which may include <tt>printf</tt>-style tags (<tt>%i, %s</tt>, et cetera).
+which may include <tt>printf</tt>-style tags (<tt>\%i, \%s</tt>, et cetera).
 
 \return		An array of strings. Notice that this is always a 2-D
 array, even if the query returns a single column. In that case, use
@@ -446,24 +450,24 @@ va_list		argp;
 
 	total_rows	= 0;
 	q2		= malloc(sizeof(char)*(strlen(query)+300));
-	apop_table_exists("completely_temporary_table",1);
+	apop_table_exists("apop_temp_table",1);
 	sqlite3_exec(db,strcat(strcpy(q2,
-		"CREATE TABLE completely_temporary_table AS "),query),NULL,NULL, &err); ERRCHECK
-	sqlite3_exec(db,"SELECT count(*) FROM completely_temporary_table",length_callback,NULL, &err);
+		"CREATE TABLE apop_temp_table AS "),query),NULL,NULL, &err); ERRCHECK
+	sqlite3_exec(db,"SELECT count(*) FROM apop_temp_table",length_callback,NULL, &err);
 	free(query);
 	ERRCHECK
 	if (total_rows==0){
 		output	= NULL;
 	} else {
-		total_cols	= apop_count_cols("completely_temporary_table");
+		total_cols	= apop_count_cols("apop_temp_table");
 		output		= malloc(sizeof(char***) * total_rows);
-		sqlite3_exec(db,"SELECT * FROM completely_temporary_table",db_to_chars,&output, &err); ERRCHECK
+		sqlite3_exec(db,"SELECT * FROM apop_temp_table",db_to_chars,&output, &err); ERRCHECK
 		if (last_names !=NULL) 
 			apop_name_free(last_names); 
 		last_names = apop_name_alloc();
-		sqlite3_exec(db,"pragma table_info(completely_temporary_table)",names_callback, NULL, &err); ERRCHECK
+		sqlite3_exec(db,"pragma table_info(apop_temp_table)",names_callback, NULL, &err); ERRCHECK
 	}
-	sqlite3_exec(db,"DROP TABLE completely_temporary_table",NULL,NULL, &err);  ERRCHECK
+	sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
 	free(q2);
 	return output;
 }
@@ -507,24 +511,24 @@ va_list		argp;
 	if (apop_verbose)	printf("%s\n", query);
 	total_rows= 0;
 	q2	 = malloc(sizeof(char)*(strlen(query)+300));
-	apop_table_exists("completely_temporary_table",1);
+	apop_table_exists("apop_temp_table",1);
 	sqlite3_exec(db,strcat(strcpy(q2,
-		"CREATE TABLE completely_temporary_table AS "),query),NULL,NULL, &err); ERRCHECK
-	sqlite3_exec(db,"SELECT count(*) FROM completely_temporary_table",length_callback,NULL, &err);
+		"CREATE TABLE apop_temp_table AS "),query),NULL,NULL, &err); ERRCHECK
+	sqlite3_exec(db,"SELECT count(*) FROM apop_temp_table",length_callback,NULL, &err);
 	free(query);
 	ERRCHECK
 	if (total_rows==0){
 		output	= NULL;
 	} else {
-		total_cols	= apop_count_cols("completely_temporary_table");
+		total_cols	= apop_count_cols("apop_temp_table");
 		output		= gsl_matrix_alloc(total_rows, total_cols);
-		sqlite3_exec(db,"SELECT * FROM completely_temporary_table",db_to_table,output, &err); ERRCHECK
+		sqlite3_exec(db,"SELECT * FROM apop_temp_table",db_to_table,output, &err); ERRCHECK
 		if (last_names !=NULL) 
 			apop_name_free(last_names); 
 		last_names = apop_name_alloc();
-		sqlite3_exec(db,"pragma table_info(completely_temporary_table)",names_callback, NULL, &err); ERRCHECK
+		sqlite3_exec(db,"pragma table_info(apop_temp_table)",names_callback, NULL, &err); ERRCHECK
 	}
-	sqlite3_exec(db,"DROP TABLE completely_temporary_table",NULL,NULL, &err);  ERRCHECK
+	sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
 	free(q2);
 	return output;
 }
@@ -537,7 +541,7 @@ the (0,0)th element of the returned matrix. Thus, if your query returns
 multiple lines, you will get no warning, and the function will return
 the first in the list (which is not always well-defined).
 
-If the query returns no rows at all, the function warns the user and returns <tt>GSL_NAN</tt>.
+If the query returns no rows at all, the function returns <tt>GSL_NAN</tt>.
 */
 float apop_query_to_float(const char * fmt, ...){
 gsl_matrix	*m=NULL;
@@ -547,11 +551,11 @@ float		out;
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
-	if (apop_verbose) {printf("\n%s\n",query);}
 	m	= apop_query_to_matrix(query);
 	if (m==NULL){
-		printf("apop, %s, %i: query turned up a blank table. Returning zero.\n", __FILE__, __LINE__);
-		return 0;
+        if (apop_verbose)
+		    printf("apop, %s, %i: Query turned up a blank table. Returning GSL_NAN.\n", __FILE__, __LINE__);
+		return GSL_NAN;
 	} //else
 	out	= gsl_matrix_get(m, 0, 0);
 	gsl_matrix_free(m);
@@ -559,6 +563,19 @@ float		out;
 
 }
 
+/** Queries the database, and dumps the result into an \ref apop_data set.
+
+\param fmt 	A string holding an \ref sql "SQL" query.
+Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
+
+\return
+An \ref apop_data set, which you passed in declared but not allocated.
+
+Blanks in the database are filled with <tt>GSL_NAN</tt>s in the matrix.
+\bug Currently, this is but a wrapper for \ref apop_query_to_matrix,
+meaning that only numerical results are returned. If you want
+non-numeric data, try \code mydata->categories  = apop_query_to_chars("select ...");\endcode. 
+*/ 
 apop_data * apop_query_to_data(const char * fmt, ...){
 gsl_matrix	*m=NULL;
 va_list		argp;
@@ -567,7 +584,6 @@ apop_data	*out;
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
-	if (apop_verbose) {printf("\n%s\n",query);}
 	m	        = apop_query_to_matrix(query);
     out         = apop_matrix_to_data(m);
     //replace name struct allocated in apop_matrix_to_data with the
@@ -577,10 +593,10 @@ apop_data	*out;
 	return out;
 }
 
-/** This function returns an <tt>apop_name</tt> structure with the column
-names from the last \ref apop_query_to_matrix . Since only the names from
+/** This function returns an \ref apop_name structure with the column
+names from the last <tt>apop_query_...</tt> . Since only the names from
 the last query are saved, you will want to use this immediately
-after calling <tt>apop_query_to_matrix</tt>.  */
+after your query.  */
 apop_name * apop_db_get_names(void){ return last_names; }
 
 /** This function returns the column count from the last query run. */

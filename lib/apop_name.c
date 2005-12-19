@@ -8,7 +8,8 @@ Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 \ingroup names
 */
 
-#include <apophenia/name.h>
+#include "db.h" //just for apop_verbose.
+#include "types.h"
 #include <stdio.h>
 #include <malloc.h>
 
@@ -95,4 +96,63 @@ int		i;
 	free(free_me->rownames);
 	free(free_me->depnames);
 	free(free_me);
+}
+
+/** Append one list of names to another.
+
+\param  n1  The first set of names
+\param  n2  The second set of names, which will be appended after the first.
+\params type    Either 'd', 'c', or 'r', stating whether you are merging the dependent var names, columns, or rows. [Default: cols]
+\ingroup names */
+void  apop_name_stack(apop_name * n1, apop_name *n2, char type){
+size_t  n1ct, n2ct;
+char **n2names;
+
+    if (type == 'r'){
+        n1ct    = n1->rownamect;
+        n2ct    = n2->rownamect;
+        n2names = n2->rownames;
+        n1->rownames     = realloc(n1->rownames, sizeof(char *)*(n1ct+n2ct));
+        memcpy((n1->rownames)+n1ct, n2names, sizeof(char *)*n2ct);
+        n1->rownamect   += n2ct;
+        }
+    if (type == 'd'){
+        n1ct    = n1->depnamect;
+        n2ct    = n2->depnamect;
+        n2names = n2->depnames;
+        n1->depnames     = realloc(n1->depnames, sizeof(char *)*(n1ct+n2ct));
+        memcpy((n1->depnames)+n1ct, n2names, sizeof(char *)*n2ct);
+        n1->depnamect   += n2ct;
+        }
+    else {
+        if (type != 'c' && apop_verbose)
+            printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
+        n1ct    = n1->colnamect;
+        n2ct    = n2->colnamect;
+        n2names = n2->colnames;
+        n1->colnames     = realloc(n1->colnames, sizeof(char *)*(n1ct+n2ct));
+        memcpy((n1->colnames)+n1ct, n2names, sizeof(char *)*n2ct);
+        n1->colnamect   += n2ct;
+        }
+}
+
+/** Remove the columns set to one in the \c drop vector.
+\param n the \ref apop_name structure to be pared down
+\param drop  a vector with n->colnamect elements, mostly zero, with a one marking those columns to be removed.
+ */
+void apop_name_rm_columns(apop_name *n, int *drop){
+apop_name   *newname    = apop_name_alloc();
+int         i;
+    for (i=0; i< n->colnamect; i++){
+        if (drop[i]==0)
+            apop_name_add(newname, n->colnames[i],'c');
+        else
+            n->colnamect    --;
+    }
+    free(n->colnames);
+    n->colnames = newname->colnames;
+    //we need to free the newname struct, but leave the colnames intact.
+    newname->colnames   = malloc(1);
+    newname->colnamect  = 0;
+    apop_name_free(newname);
 }

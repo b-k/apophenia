@@ -498,8 +498,8 @@ one needs from a model. Just prep the data, select a model, and produce
 an estimate:
 
 \code
-gsl_matrix 	*data 		= read_in_data();
-apop_estimate 	*the_estimate 	= apop_probit(data, NULL, NULL);
+apop_data 	    *data 		    = read_in_data();
+apop_estimate 	*the_estimate 	= apop_probit.estimate(data, NULL, NULL);
 apop_estimate_print(the_estimate);
 \endcode
 

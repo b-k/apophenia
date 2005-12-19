@@ -50,23 +50,26 @@ Many have multiple aliases, because I could never remember which way to write th
 
 /** Returns the variance/covariance matrix relating each column with each other.
 
-\param in 	A data matrix: rows are observations, columns are variables.
+This is the \c gsl_matrix  version of \ref apop_data_covariance_matrix; if you have column names, use that one.
 
+\param in 	A data matrix: rows are observations, columns are variables.
 \param normalize
 1= subtract the mean from each column, thus changing the input data but speeding up the computation.<br>
 0= don't modify the input data
 
 \return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
+This is the sample version---dividing by \f$n-1\f$, not \f$n\f$.
 \ingroup matrix_moments */
 gsl_matrix *apop_covariance_matrix(gsl_matrix *in, int normalize){
 gsl_matrix	*out;
-int		i,j,k;
+int		i,j;
 double		means[in->size2];
-gsl_vector_view	v;
+gsl_vector_view	v, v1, v2;
 	if (normalize){
 		out	= gsl_matrix_alloc(in->size2, in->size2);
 		apop_normalize_matrix(in);
 		gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, in, in, 0, out);
+	    gsl_matrix_scale(out, 1.0/(in->size1-1));
 	}
 	else{
 		out	= gsl_matrix_calloc(in->size2, in->size2);
@@ -74,18 +77,88 @@ gsl_vector_view	v;
 			v		= gsl_matrix_column(in, i);
 			means[i]	= apop_mean(&(v.vector));
 		}
-		for(i=0; i< in->size2; i++)
+		for(i=0; i< in->size2; i++){
+			v1		= gsl_matrix_column(in, i);
 			for(j=i; j< in->size2; j++){
-				for(k=0; k< in->size1; k++)
+			    v2		= gsl_matrix_column(in, j);
 					apop_matrix_increment(out, i, j, 
-					   (gsl_matrix_get(in,k,i)-means[i])* (gsl_matrix_get(in,k,j)-means[j]));
+					   gsl_stats_covariance_m (v1.vector.data, v1.vector.stride, v2.vector.data,  v2.vector.stride,
+                                                    v2.vector.size, means[i], means[j]));
 				if (i != j)	//set the symmetric element.
 					gsl_matrix_set(out, j, i, gsl_matrix_get(out, i, j));
 			}
-	}
-	gsl_matrix_scale(out, 1.0/in->size2);
+	    }
+    }
 	return out;
 }
+
+/** Returns the matrix of correlation coefficients (\f$\sigma^2_{xy}/(\sigma_x\sigma_y) relating each column with each other.
+
+This is the \c gsl_matrix  version of \ref apop_data_covariance_matrix; if you have column names, use that one.
+
+\param in 	A data matrix: rows are observations, columns are variables.
+\param normalize
+1= subtract the mean from each column, thus changing the input data but speeding up the computation.<br>
+0= don't modify the input data
+
+\return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
+\ingroup matrix_moments */
+gsl_matrix *apop_correlation_matrix(gsl_matrix *in, int normalize){
+gsl_matrix      *out    = apop_covariance_matrix(in, normalize);
+int             i;
+gsl_vector_view v;
+double          std_dev;
+    for(i=0; i< in->size2; i++){
+        v           = gsl_matrix_column(in, i);
+        std_dev     = sqrt(apop_var(&(v.vector)));
+        v           = gsl_matrix_column(out, i);
+        gsl_vector_scale(&(v.vector), 1.0/std_dev);
+        v           = gsl_matrix_row(out, i);
+        gsl_vector_scale(&(v.vector), 1.0/std_dev);
+    }
+    return out;
+}
+
+/** Returns the variance/covariance matrix relating each column with each other.
+
+This is the \ref apop_data version of \ref apop_covariance_matrix; if you don't have column names, use that one.
+\param in 	An \ref apop_data set
+
+\param normalize
+1= subtract the mean from each column, thus changing the input data but speeding up the computation.<br>
+0= don't modify the input data
+
+\return Returns a \ref apop_data set the variance/covariance matrix relating each column with each other.
+
+\ingroup matrix_moments */
+apop_data *apop_data_covariance_matrix(apop_data *in, int normalize){
+apop_data   *out    = apop_matrix_to_data(apop_covariance_matrix(in->data, normalize));
+int         i;
+    for(i=0; i< in->names->colnamect; i++){
+        apop_name_add(out->names, in->names->colnames[i], 'c');
+        apop_name_add(out->names, in->names->colnames[i], 'r');
+    }
+    return out;
+}
+
+/** Returns the matrix of correlation coefficients (\f$\sigma^2_{xy}/(\sigma_x\sigma_y) relating each column with each other.
+
+This is the \ref apop_data version of \ref apop_correlation_matrix; if you don't have column names (or want the option for the faster, data-destroying version), use that one.
+
+\param in 	A data matrix: rows are observations, columns are variables.
+
+\return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
+\ingroup matrix_moments */
+apop_data *apop_data_correlation_matrix(apop_data *in){
+apop_data   *out    = apop_matrix_to_data(apop_correlation_matrix(in->data, 0));
+int         i;
+    for(i=0; i< in->names->colnamect; i++){
+        apop_name_add(out->names, in->names->colnames[i], 'c');
+        apop_name_add(out->names, in->names->colnames[i], 'r');
+    }
+    return out;
+}
+
 
 /**
 Calculate the determinant of a matrix, its inverse, or both. The \c in matrix is not destroyed in the process.
@@ -182,9 +255,9 @@ This will return the largest eigenvalues, scaled by the total of all eigenvalues
 void apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want, gsl_matrix ** pc_space, gsl_vector **total_explained) {
 //Get X'X
 gsl_matrix * 	eigenvectors 	= gsl_matrix_alloc(data->size2, data->size2);
-gsl_vector * 	dummy_v 	= gsl_vector_alloc(data->size2);
+gsl_vector * 	dummy_v 	    = gsl_vector_alloc(data->size2);
 gsl_vector * 	all_evalues 	= gsl_vector_alloc(data->size2);
-gsl_matrix * 	square  	= gsl_matrix_calloc(data->size2, data->size2);
+gsl_matrix * 	square  	    = gsl_matrix_calloc(data->size2, data->size2);
 gsl_vector_view v;
 int 		i;
 double		eigentotals	= 0;
@@ -234,21 +307,21 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 
 \param  m1  the upper/rightmost matrix
 \param  m2  the second matrix
-\param  posn    if 't', stack along first dimension, else, e.g. 'r' stack along second
+\param  posn    if 'r', stack rows on top of other rows, else, e.g. 'c' stack  columns next to columns.
 \return     a new matrix with the stacked data.
-\ingroup linear_algebra
+\ingroup convenience_fns
 
 For example, here is a little function to merge four matrices into a single two-part-by-two-part matrix:
 \code
 gsl_matrix *apop_stack_two_by_two(gsl_matrix *ul, gsl_matrix *ur, gsl_matrix *dl, gsl_matrix *dr){
 gsl_matrix  *t1, *t2, *output;
-    t1   = apop_matrix_stack(ul, ur, 'r');
+    t1   = apop_matrix_stack(ul, ur, 'c');
     gsl_matrix_free(ul);
     gsl_matrix_free(ur);
-    t2   = apop_matrix_stack(dl, dr, 'r');
+    t2   = apop_matrix_stack(dl, dr, 'c');
     gsl_matrix_free(dl);
     gsl_matrix_free(dr);
-    output  = apop_matrix_stack(t1, t2, 't');
+    output  = apop_matrix_stack(t1, t2, 'r');
     gsl_matrix_free(t1);
     gsl_matrix_free(t2);
     return output;
@@ -256,25 +329,23 @@ gsl_matrix  *t1, *t2, *output;
 \endcode
 */
 gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
-gsl_matrix *out;
-gsl_vector *tmp_vector;
-int         i;
-    if (posn == 't'){
+gsl_matrix      *out;
+gsl_vector_view tmp_vector;
+int             i;
+    if (posn == 'r'){
         if (m1->size2 != m2->size2){
             printf("When stacking matrices on top of each other, they have to have the same number of columns (m1->size2==m2->size2). Returning NULL.\n");
             return NULL;
         }
         out         = gsl_matrix_alloc(m1->size1 + m2->size1, m1->size2);
-        tmp_vector  = gsl_vector_alloc(m1->size2);
         for (i=0; i< m1->size1; i++){
-            gsl_matrix_get_row(tmp_vector, m1, i);
-            gsl_matrix_set_row(out, i, tmp_vector);
+            tmp_vector  = gsl_matrix_row(m1, i);
+            gsl_matrix_set_row(out, i, &(tmp_vector.vector));
         }
         for ( ; i< m1->size1+m2->size1; i++){   //i is not reinitialized.
-            gsl_matrix_get_row(tmp_vector, m2, i- m1->size1);
-            gsl_matrix_set_row(out, i, tmp_vector);
+            tmp_vector  = gsl_matrix_row(m2, i- m1->size1);
+            gsl_matrix_set_row(out, i, &(tmp_vector.vector));
         }
-        gsl_vector_free(tmp_vector);
         return out;
     } else {
         if (m1->size1 != m2->size1){
@@ -282,16 +353,14 @@ int         i;
             return NULL;
         }
         out         = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
-        tmp_vector  = gsl_vector_alloc(m1->size1);
         for (i=0; i< m1->size2; i++){
-            gsl_matrix_get_col(tmp_vector, m1, i);
-            gsl_matrix_set_col(out, i, tmp_vector);
+            tmp_vector  = gsl_matrix_column(m1, i);
+            gsl_matrix_set_col(out, i, &(tmp_vector.vector));
         }
         for ( ; i< m1->size2+m2->size2; i++){   //i is not reinitialized.
-            gsl_matrix_get_col(tmp_vector, m2, i- m1->size2);
-            gsl_matrix_set_col(out, i, tmp_vector);
+            tmp_vector  = gsl_matrix_column(m2, i- m1->size2);
+            gsl_matrix_set_col(out, i, &(tmp_vector.vector));
         }
-        gsl_vector_free(tmp_vector);
         return out;
     } 
 }
@@ -303,23 +372,23 @@ int         i;
   directly.
 
 \param in   the \c gsl_matrix to be subsetted
-\param  use an array of ints. If use[7]==0, then column seven will be cut from the output. A reminder: <tt>memset(use, 1, in->size2 * sizeof(int))</tt> will quickly fill an array of ints with nonzero values; you can switch the 1 to a 0 to fill with zeros, or just use calloc(in->size2 * sizeof(int)) to fill it with zeros on allocation.
 \return     a \c gsl_matrix with the specified columns removed.
+\param drop an array of ints. If use[7]==1, then column seven will be cut from the output. 
 */
-gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *use){
+gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
 gsl_matrix      *out;
 int             i, 
                 ct  = 0, 
                 j   = 0;
 gsl_vector_view v;
     for (i=0; i < in->size2; i++)
-        if (use[i])
+        if (drop[i]==0)
             ct++;
     out = gsl_matrix_alloc(in->size1, ct);
     for (i=0; i < in->size2; i++){
-        if (use[i]){
+        if (drop[i]==0){
             v   = gsl_matrix_column(in, i);
-            gsl_matrix_set_col(in, j, &(v.vector));
+            gsl_matrix_set_col(out, j, &(v.vector));
             j   ++;
         }
     }

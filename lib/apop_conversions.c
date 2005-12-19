@@ -213,16 +213,6 @@ int		i	= 0,
 	return out;
 }
 
-void add_a_name(int *ct, char*** list, char *addme){
-char		*stripped;
-	(*ct)	++;
-	*list	= realloc(*list, (*ct) * sizeof(char*));
-	(*list)[(*ct)-1]	=malloc(sizeof(char) * (strlen(addme)+1));
-	stripped	= strip(addme);
-	strcpy((*list)[(*ct)-1],stripped);
-	free(stripped);
-}
-
 /** Read a delimited text file into an array. 
 \param text_file	The input file. At the moment, it needs to be
 comma delimited. Lines with a # at the head are taken to be comments
@@ -247,7 +237,7 @@ before running; if the first element of each row is a row name, set
 \ingroup convertfromtext	*/
 int apop_convert_text_to_array(char *text_file, char *delimiters, double ***tab, apop_name *names){
 FILE * 		infile;
-char		instr[Text_Size_Limit], *astring, *str;
+char		instr[Text_Size_Limit], *astring, *str, *stripped;
 int 		i	= 0,
 		ct, colno;
 	ct	= apop_count_cols_in_text(text_file)+1;
@@ -262,7 +252,9 @@ int 		i	= 0,
 			names->colnamect= 0;
 			names->colnames	= malloc(sizeof(char*));
 			while (astring !=NULL){
-				add_a_name(&(names->colnamect), &(names->colnames), astring);
+	            stripped	= strip(astring);
+                apop_name_add(names, stripped, 'c');
+				free(stripped);
 				astring	= strtok(NULL,delimiters);
 			}
 		}
@@ -279,7 +271,9 @@ int 		i	= 0,
 			(*tab)[i-1]= malloc(sizeof(double)*ct);
 			astring	= strtok(instr,delimiters);
 				if (names !=NULL && names->rownames !=NULL){
-					add_a_name(&(names->rownamect), &(names->rownames), astring);
+	                stripped	= strip(astring);
+                    apop_name_add(names, stripped, 'r');
+				    free(stripped);
 					astring	= strtok(NULL,delimiters);
 					if (astring==NULL){
 						printf("row name with no data on line %i.\n", i);
@@ -340,7 +334,7 @@ char		*tmpstring,
 	return out;
 }
 
-/** Read a textfile into a database table.
+/** Read a text file into a database table.
 
 \param text_file
 The input file. At the moment, it needs to be comma delimited. Lines with
@@ -452,9 +446,7 @@ int apop_text_to_db(char *text_file, char *tabname, char **field_names){
 	return apop_convert_text_to_db(text_file, tabname, field_names);
 }
 
-/** See \ref apop_db_to_crosstab for the storyline; this is the
- * complement.
-
+/** See \ref apop_db_to_crosstab for the storyline; this is the complement.
  \ingroup db
  */
 int apop_crosstab_to_db(gsl_matrix *in, apop_name n, char *tabname, char *row_col_name, 

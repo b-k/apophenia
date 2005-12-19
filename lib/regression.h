@@ -20,4 +20,4 @@ double two_tailify(double in);
 //My convenience fn to turn the results from a symmetric one-tailed table lookup
 //into a two-tailed confidence interval.
 
-
+apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories);

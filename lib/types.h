@@ -6,26 +6,36 @@
 
 /**\defgroup types Types defined by Apophenia. 
 
-\param Models 
+<!--The basic story for a statistical analysis is that the researcher
+assembles a data set and then uses it to estimate the parameters of
+a model. This basic story is embodied in the \ref apop_data, \ref
+apop_model, and \ref apop_estimate types. -->
+
+\li Data 
+The \ref apop_data structure adds a touch of metadata on
+top of the basic \c gsl_matrix. It includes an \ref apop_name structure
+(see below), and a table for non-numeric variables.
+
+\li Models 
 The \ref apop_model structure encapsulates a description of the world
 in which the data and the parameters produce observed outcomes. The
 apop_model.estimate() method takes in data and produces an \ref
 apop_estimate.
 
-\param Model_Estimates
+\li Estimates
 The \ref apop_estimate structure returns all the data one would want
 from a regression or ML estimation, including the parameters estimated,
 the variance/covariance matrix, the residuals, et cetera. The structure
 includes instances of both of the strucutres below.
 
-\param Names 
+\li Names 
 The \ref apop_name structure has three components: a list of column
 names, a list of row names, and a list of dependent variable names. It
 is intended to accompany the <tt>gsl_matrix</tt> structure, which holds
 all the other information about a data aaray such as the number of rows
 and columns.
 
-\param Inventory
+\li Inventory
 The \ref apop_inventory structure serves two purposes. It is an input
 to a regression or ML estimation, tells the function what output you
 would like the <tt>apop_estimate</tt> output to include. It is also an
@@ -33,7 +43,7 @@ output from these functions, since the returned <tt>apop_estimate</tt>
 will include its own <tt>apop_inventory</tt>,  which can be used later on
 to test whether any given element is in use.
 
-\param Estimate parameters
+\li Estimate parameters
 The \ref apop_estimate_parameters are the details for how an \ref
 apop_estimate should do its work; currently it is just the specifications
 for tolerances, step sizes, starting points, et cetera, for \ref apop_maximum_likelihood.
@@ -130,7 +140,8 @@ apop_name * apop_name_alloc(void);
 int apop_name_add(apop_name * n, char *add_me, char type);
 void  apop_name_free(apop_name * free_me);
 void  apop_name_print(apop_name * n);
-
+void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
+void apop_name_rm_columns(apop_name *n, int *drop);
 
 /** Regression and MLE functions return this structure, which includes
 the various elements that one would want from a model estimate.
@@ -160,6 +171,10 @@ typedef struct apop_estimate{
 	int		status;
 } apop_estimate;
 
+/**
+Gathers together a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space for a table of non-numeric data.
+\ingroup data_struct
+*/
 typedef struct apop_data{
     gsl_matrix  *data;
     apop_name   *names;
@@ -178,6 +193,8 @@ void 		apop_inventory_filter(apop_inventory *out, apop_inventory filter);
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_data_alloc(int size1, int size2);
+apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
+void        apop_data_rm_columns(apop_data *d, int *drop);
 
 #endif
 

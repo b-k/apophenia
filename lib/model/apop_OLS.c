@@ -13,6 +13,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 /** The OLS model
 
   This is basically a wrapper for the OLS regression function, \ref apop_estimate_OLS.
+\ingroup models
 */
 apop_model apop_OLS = {"OLS", -1, 
 {
@@ -29,6 +30,7 @@ apop_model apop_OLS = {"OLS", -1,
 /** The GLS model
 
   This is basically a wrapper for the GLS regression function, \ref apop_estimate_GLS.
+\ingroup models
 */
 apop_model apop_GLS = {"GLS", -1, 
 {

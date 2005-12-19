@@ -145,4 +145,3 @@ apop_estimate   *est1, *est2;
 }
 \endcode
 */
-

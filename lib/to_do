@@ -1,8 +1,4 @@
---add call graphs
-
---constraints!!!
-
---are you sure the numerical hessian works with no dlog likelihood?
-
-
---write apop_estimate_parameters
+--names for text columns in apop_name structure.
+--text to dummies.
+--apop_name_rm
+--apop_data_rm_columns

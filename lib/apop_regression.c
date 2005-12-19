@@ -7,13 +7,15 @@
 /** \defgroup ttest  T-tests: comparing two vectors */
 /** \defgroup asst_tests  Various means of hypothesis testing.*/
 
-#include "regression.h"
-#include <gsl/gsl_blas.h>
+#include "types.h"
 #include "stats.h"
+#include "model/model.h"
+#include "output.h"
+#include "regression.h"
 #include "linear_algebra.h"
-#include <apophenia/types.h>
 #include <search.h> //lsearch
 #include <stdlib.h> //bsearch
+#include <gsl/gsl_blas.h>
 
 extern int apop_verbose;
 
@@ -291,17 +293,17 @@ gsl_vector_view d;
 int             i;
 
 
-    if(m1!=NULL){
+    if(m1==NULL){
     gsl_matrix 	*xpx1 		= gsl_matrix_calloc(set1->data->size1, set1->data->size1),
-                *xpxinv1,
-                *xxpxinv1   = gsl_matrix_calloc(set1->data->size1, set1->data->size1), 
-                *xxpxinvx1  = gsl_matrix_calloc(set1->data->size1, set1->data->size1);
+                *xpxinv1, *xxpxinv1, *xxpxinvx1;
         m1        = gsl_matrix_alloc(set1->data->size2, set1->data->size2);
 	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set1->data, set1->data, 0, xpx1);	//(X'X)
 	    apop_det_and_inv(xpx1, &xpxinv1, 0, 1);		
         gsl_matrix_free(xpx1);
+        xxpxinv1   = gsl_matrix_calloc(set1->data->size1, set1->data->size1);
 	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, set1->data, xpxinv1, 0, xxpxinv1);	//X(X'X)^{-1}
         gsl_matrix_free(xpxinv1);
+        xxpxinvx1  = gsl_matrix_calloc(set1->data->size1, set1->data->size1);
 	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv1, set1->data, 0, xxpxinvx1);	//X(X'X)^{-1}X'
         gsl_matrix_free(xxpxinv1);
         gsl_matrix_set_identity(m1);
@@ -309,17 +311,17 @@ int             i;
         gsl_matrix_free(xxpxinvx1);
     }
 
-    if(m2!=NULL){
+    if(m2==NULL){
     gsl_matrix 	*xpx2 		= gsl_matrix_calloc(set2->data->size1, set2->data->size1),
-                *xpxinv2,
-                *xxpxinv2   = gsl_matrix_calloc(set2->data->size1, set2->data->size1), 
-                *xxpxinvx2  = gsl_matrix_calloc(set2->data->size1, set2->data->size1);
+                *xpxinv2, *xxpxinv2, *xxpxinvx2;
         m2        = gsl_matrix_alloc(set2->data->size2, set2->data->size2);
 	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set2->data, set2->data, 0, xpx2);	//(X'X)
 	    apop_det_and_inv(xpx2, &xpxinv2, 0, 1);		
         gsl_matrix_free(xpx2);
+        xxpxinv2   = gsl_matrix_calloc(set2->data->size1, set2->data->size1), 
 	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, set2->data, xpxinv2, 0, xxpxinv2);	//X(X'X)^{-1}
         gsl_matrix_free(xpxinv2);
+        xxpxinvx2  = gsl_matrix_calloc(set2->data->size1, set2->data->size1);
 	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv2, set2->data, 0, xxpxinvx2);	//X(X'X)^{-1}X'
         gsl_matrix_free(xxpxinv2);
         gsl_matrix_set_identity(m2);
@@ -332,7 +334,7 @@ int             i;
         //can regress.
     d                       = gsl_matrix_column(set2->data, 0);
     gsl_matrix_set_col(dependent, 0, &(d.vector));
-    augmented_first_matrix  = apop_matrix_stack(dependent, set1->data, 'r');
+    augmented_first_matrix  = apop_matrix_stack(dependent, set1->data, 'c');
 apop_data *newfirst = malloc(sizeof(apop_data));
     newfirst->data  = augmented_first_matrix;
     newfirst->names = set1->names;
@@ -347,12 +349,12 @@ apop_data *newfirst = malloc(sizeof(apop_data));
     //cheat here: the cross-variances are assumed zero, which is
     //blatantly false.
     zero1           = gsl_matrix_calloc(out1->covariance->size1, out2->covariance->size2);
-    t1              = apop_matrix_stack(out1->covariance, zero1, 'r');
+    t1              = apop_matrix_stack(out1->covariance, zero1, 'c');
     gsl_matrix_free(zero1);
     zero2           = gsl_matrix_calloc(out2->covariance->size1, out1->covariance->size2);
-    t2              = apop_matrix_stack(zero2, out2->covariance, 'r');
+    t2              = apop_matrix_stack(zero2, out2->covariance, 'c');
     gsl_matrix_free(zero1);
-    out->covariance = apop_matrix_stack(t1,t2,'t');
+    out->covariance = apop_matrix_stack(t1,t2,'r');
     return out;
 }
 
@@ -378,8 +380,7 @@ a gsl_matrix with a single one in each row in the column specified.
 \return out
 */
 apop_data * apop_produce_dummies(gsl_vector *in, int keep_first){
-size_t      max_category    = gsl_vector_max(in),
-            i, index,
+size_t      i, index,
             prior_elmt_ctr  = 107,
             elmt_ctr        = 0;
 apop_data   *out; 
@@ -388,6 +389,8 @@ double      *elmts          = malloc(sizeof(double)),
 char        n[1000];
 
     //first, create an ordered list of unique elements.
+    //Note to the reader: this may or may not be more efficient on the
+    //db side.
     for (i=0; i< in->size; i++){
         if (prior_elmt_ctr != elmt_ctr)
             elmts   = realloc(elmts, sizeof(double)*(elmt_ctr+1));
@@ -400,27 +403,22 @@ char        n[1000];
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
     //the dummy matrix to one.
-    if (keep_first){
-        out  = apop_data_alloc(in->size, max_category+1);
-        gsl_matrix_set_zero(out->data);
-        for (i=0; i< in->size; i++)
-            val     = gsl_vector_get(in, i);
-            index   = ((int)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (int)elmts)/sizeof(double);
+    if (keep_first)     out  = apop_data_alloc(in->size, elmt_ctr+1);
+    else                out  = apop_data_alloc(in->size, elmt_ctr);
+    gsl_matrix_set_zero(out->data);
+    for (i=0; i< in->size; i++){
+        val     = gsl_vector_get(in, i);
+        index   = ((int)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (int)elmts)/sizeof(double);
+        if (keep_first)
             gsl_matrix_set(out->data, i, index,1); 
-       }
-    else{
-        out  = apop_data_alloc(in->size, max_category);
-        gsl_matrix_set_zero(out->data);
-        for (i=0; i< in->size; i++){
-            val     = gsl_vector_get(in, i);
-            index   = ((int)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (int)elmts)/sizeof(double);
-            if (index>0)
-                gsl_matrix_set(out->data, i, index-1, 1); 
-        }
+        else if (index>0)
+            gsl_matrix_set(out->data, i, index-1, 1); 
+        //else don't keep first, and index==0; throw it out.
     }
     //Add names:
-    for (i=0; i< elmt_ctr; i++){
-        sprintf(n,"dummy-%g", elmts[i]);
+    i   = (keep_first) ? 0 : 1;
+    for (  ; i< elmt_ctr; i++){
+        sprintf(n,"dummy %g", elmts[i]);
         apop_name_add(out->names, n, 'c');
     }
     return out;
@@ -436,8 +434,9 @@ char        n[1000];
 
 \todo finish this documentation. [Was in a rush today.]
 */
-apop_estimate *apop_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories){
+apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories){
 apop_data *dummies = apop_produce_dummies(categories, 0);
-    return apop_partitioned_OLS(dummies, data, NULL, NULL, uses);
+    apop_data_stack(data, dummies, 'c');
+    return apop_OLS.estimate(dummies,  uses, NULL);
 }
 

@@ -423,7 +423,7 @@ void wn_gpmake(const char parms[])
   char group_type[50];
   int group_size;
   int args;
-  int flags;
+  int flags = WN_NO_FREE;
   wn_memgp ret;
 
   if(!(initialized))
