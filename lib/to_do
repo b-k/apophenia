@@ -2,3 +2,15 @@
 --text to dummies.
 --apop_name_rm
 --apop_data_rm_columns
+
+apop_regression.c: In function `apop_produce_dummies':
+apop_regression.c:407: warning: cast from pointer to integer of
+different size
+apop_regression.c:407: warning: cast from pointer to integer of
+different size
+
+apop_output.c: In function `apop_plot_histogram':
+apop_output.c:143: warning: int format, different type arg (arg 3)
+apop_output.c: In function `print_core_m':
+apop_output.c:207: warning: field width is not type int (arg 2)
+

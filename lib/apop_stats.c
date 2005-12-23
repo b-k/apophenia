@@ -454,7 +454,7 @@ double          x, ratio;
 
 /** Put summary information about the columns of a table (mean, std dev, variance) in a table.
 
-\param data The table to be summarized. An \ref apop_data structure.
+\param indata The table to be summarized. An \ref apop_data structure.
 \return     An \ref apop_data structure with one row for each column in the original table, and a column for each summary statistic.
 \ingroup    output
 \todo At the moment, only gives the mean, standard deviation, and variance

@@ -44,7 +44,7 @@ will include its own <tt>apop_inventory</tt>,  which can be used later on
 to test whether any given element is in use.
 
 \li Estimate parameters
-The \ref apop_estimate_parameters are the details for how an \ref
+The \ref apop_estimation_parameters are the details for how an \ref
 apop_estimate should do its work; currently it is just the specifications
 for tolerances, step sizes, starting points, et cetera, for \ref apop_maximum_likelihood.
 
@@ -188,7 +188,7 @@ void 		apop_estimate_print(apop_estimate * print_me);
 apop_inventory * apop_inventory_alloc(int value);
 void 		apop_inventory_copy(apop_inventory in, apop_inventory *out);
 void 		apop_inventory_set(apop_inventory *out, int value);
-void 		apop_inventory_filter(apop_inventory *out, apop_inventory filter);
+apop_inventory apop_inventory_filter(apop_inventory *in, apop_inventory filter);
 
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);

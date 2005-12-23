@@ -32,10 +32,8 @@ double          colsum,
 apop_estimate 	*est;
 gsl_vector_view v;
 int             i;
-    if (uses == NULL)
-        uses    = apop_inventory_alloc(1);
-    est = apop_estimate_alloc(data->data->size1,1,NULL, *uses);
-	apop_inventory_filter(uses, apop_exponential_rank.inventory_filter);
+apop_inventory  actual_uses =	apop_inventory_filter(uses, apop_exponential_rank.inventory_filter);
+    est = apop_estimate_alloc(data->data->size1,1,NULL, actual_uses);
     for(i=0; i< data->data->size2; i++){
         v            = gsl_matrix_column(data->data, i);
         colsum       = apop_sum(&(v.vector));
@@ -52,7 +50,7 @@ int             i;
 
 /*
 static apop_estimate * exponential_rank_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
-	apop_inventory_filter(uses, apop_exponential_rank.inventory_filter);
+	apop_inventory_filter(&uses, apop_exponential_rank.inventory_filter);
 	return apop_maximum_likelihood(data, uses, apop_exponential_rank, *(apop_estimation_params *)parameters);
 }
 */

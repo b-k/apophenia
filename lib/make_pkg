@@ -1,13 +1,23 @@
 export junkdir=delete_me
 export version=0.14
 
+#This script is intended for maintainers who are modifying the 
+#package as it appears on sourceforge.net. If you are a user who 
+#just wants to compile and use the package, you don't need this; 
+#see the README.
+
+#This script copies everything into a junk directory, that GNU's 
+#prep materials will produce a thousand temp files in, concluding 
+#with a file named apophenia-N.NN.tar.gz. Some auxiliary items like
+#the doxygen support are copied into that file. Now that it is ready
+#for distribution, the tar.gz arcive is copied to the main directory
+#and this junk directory is erased. 
+#Finally, the script unzips the archive and compiles from the archive.
+
 rm -rf $junkdir
 mkdir $junkdir
-cp *  .doxygen $junkdir
-
-cp -rf vasprintf $junkdir
-cp -rf model $junkdir
-cp -rf wn $junkdir
+cp -rf * $junkdir
+#cp -rf vasprintf model doxy wn $junkdir
 cd $junkdir
 	#let the GNU prep everything and produce a distribution pkg.
 	libtoolize
@@ -31,7 +41,7 @@ cd $junkdir
 	mv apophenia apophenia-$version
 
 	#helpers for doxygen
-	cp documentation.h flake.gif .doxygen *.html typical.css apophenia-$version
+	cp -rf doxy documentation.h apophenia-$version
 
 	#the testing program and scripts
 	cp test.c test_data test_script apophenia-$version

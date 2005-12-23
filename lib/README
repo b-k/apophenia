@@ -1,0 +1,19 @@
+This is a library of statistical functions in C, plus some command-line
+utilities that make use of those functions. Detailed setup instructions can
+be found at http://apophenia.sourceforge.net/doc/setup.html . [Not
+online? You can see the source for that page in documentation.h in this
+directory.]
+
+The executive summary:
+--You need the usual C compiler and the supporting environment that a
+sane programmer requires. 
+--You need the GNU Scientific Library and SQLite. If you are using a
+system with a package manager of some sort, there is certainly a package
+for both of these.
+--One you have it in place, 
+
+tar xzf apophenia-X.XX.tar.gz 
+cd apophenia-X.XX
+./configure; make; sudo make install
+
+should compile for you (where X.XX indicates the version number.)

@@ -49,8 +49,8 @@ EXTRA_DIST = $(man_MANS)
 install_man3_MANS = man/man3/*
 
 doc: 
-	doxygen .doxygen
-	cp flake.gif html/
+	doxygen doxy/doxyconfig
+	cp doxy/flake.gif doxy/search.gif html/
 
 test:
 	gcc -o test -lapophenia -lgsl -lgslcblas -lsqlite3 test.c -g

@@ -79,7 +79,7 @@ int		count = 0;
 /** RNG from a Generalized Hypergeometric type B3.
 
  Devroye uses this as the base for many of his
- distribution-generators, e.g., \ref apop_waring_rng. 
+ distribution-generators, e.g., \ref apop_waring.rng. 
 */  //Header in stats.h
 double apop_GHgB3_rng(gsl_rng * r, double* a){
 if ((a[0]<=0) || (a[1] <= 0) || (a[2] <=0)){

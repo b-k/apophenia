@@ -19,8 +19,8 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 
 static apop_estimate * zipf_estimate(apop_data * data, apop_inventory *uses, void *parameters){
-    apop_inventory_filter(uses, apop_zipf_rank.inventory_filter);
-    return apop_maximum_likelihood(data->data, uses, apop_zipf_rank, *(apop_estimation_params *)parameters);
+apop_inventory  actual_uses    =    apop_inventory_filter(uses, apop_zipf_rank.inventory_filter);
+    return apop_maximum_likelihood(data->data, &actual_uses, apop_zipf_rank, *(apop_estimation_params *)parameters);
 }
 
 static double beta_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){

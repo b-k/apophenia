@@ -65,8 +65,8 @@ gnuplot plotme -
 \endcode
 
 Below is a sample of the sort of output one would get:<br>
-\image latex "./search.gif" "An ML search, tracing out the surface of the function" width=\textwidth
-\image html "./search.gif" "An ML search, tracing out the surface of the function" 
+\image latex "search.gif" "An ML search, tracing out the surface of the function" width=\textwidth
+\image html "search.gif" "An ML search, tracing out the surface of the function" 
 
 \ingroup mle
 */

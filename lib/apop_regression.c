@@ -71,20 +71,9 @@ double		avg	= apop_mean(diff),
 	return factor * two_tailify(gsl_cdf_tdist_P(stat, count-1));
 }
 
-void prep_inventory_OLS(apop_name *n, apop_inventory *in, apop_inventory *out){
-//These are the rules going from what you can ask for to what you'll get.
-	if (in == NULL) 	//then give the user the works.
-		apop_inventory_set(out, 1);
-	else {
-		apop_inventory_copy(*in, out);
-		out->covariance	= 1;	//always calculated.
-	}
-	out->log_likelihood	= 0;
-	out->parameters		= 1;
-	if (n == NULL)
-		out->names		= 0;
-	else {		//shift first col to depvar, rename first col "one".
-		out->names		= 1;
+//shift first col to depvar, rename first col "one".
+static void prep_inventory_names(apop_name *n){
+	if (n != NULL && n->colnamect > 0) {		
 		apop_name_add(n, n->colnames[0], 'd');
 		sprintf(n->colnames[0], "1");
 	}
@@ -126,13 +115,11 @@ int		i;
 
 The first column is the dependent variable, the remaining columns are the independent variables. NB: \c data is destroyed by this function. If you want to keep it, make a copy beforehand.
 
-\param data
+\param set
 The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
 \param sigma 
 A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>. Survives the function intact. The first column refers to the constant unit vector, so it's always zero.
-
-\param n    An \c apop_name structure, describing the columns.
 
 \param uses 
 If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
@@ -144,8 +131,8 @@ A pointer to an \ref apop_estimate structure with the appropriate elements fille
 Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
  */
 apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matrix *sigma){
-apop_inventory	actual_uses;
-	prep_inventory_OLS(set->names, uses, &actual_uses);
+apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
+    prep_inventory_names(set->names);
 apop_estimate	*out		= apop_estimate_alloc(set->data->size1, set->data->size2, set->names, actual_uses);
 gsl_vector 	*y_data		= gsl_vector_alloc(set->data->size1);
 gsl_matrix 	*temp		= gsl_matrix_calloc(set->data->size2, set->data->size1);
@@ -154,12 +141,12 @@ gsl_matrix 	*xsx 		= gsl_matrix_calloc(set->data->size2, set->data->size2);
 gsl_matrix 	*sigma_inverse;	//= gsl_matrix_alloc(data->size1, data->size1);
 gsl_vector_view	v 		= gsl_matrix_column(set->data, 0);
 	gsl_matrix_get_col(y_data, set->data, 0);
-	gsl_vector_set_all(&(v.vector), 1);	//affine: first column is ones.
-	apop_det_and_inv(sigma, &sigma_inverse, 0, 1);					//find sigma^{-1}
+	gsl_vector_set_all(&(v.vector), 1);	                                            //affine: first column is ones.
+	apop_det_and_inv(sigma, &sigma_inverse, 0, 1);					                //find sigma^{-1}
 	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, sigma_inverse, 0, temp); 	//temp = X' \sigma^{-1}.
 	gsl_matrix_free(sigma_inverse);
 	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, temp, set->data, 0, xsx);    		//(X' \sigma^{-1} X)
-	gsl_blas_dgemv(CblasNoTrans, 1, temp, y_data, 0, xsy);     			//(X' \sigma^{-1} y)
+	gsl_blas_dgemv(CblasNoTrans, 1, temp, y_data, 0, xsy);     			            //(X' \sigma^{-1} y)
 	gsl_matrix_free(temp);
 	xpxinvxpy(set->data, y_data, xsx, xsy, out);
 	gsl_vector_free(y_data); gsl_vector_free(xsy);
@@ -170,7 +157,7 @@ gsl_vector_view	v 		= gsl_matrix_column(set->data, 0);
 
 \ingroup regression
 
-\param data The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
+\param set The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
 \param uses If <tt>NULL</tt>, then you get everything.  If a pointer to
 an \ref apop_inventory , then you get what you ask for. Log likelihood is
@@ -238,20 +225,20 @@ int main(void){
 
  */
 apop_estimate * apop_estimate_OLS(apop_data *set, apop_inventory *uses, void *dummy){
-apop_inventory	actual_uses;
-	prep_inventory_OLS(set->names, uses, &actual_uses);
-apop_estimate	*out		= apop_estimate_alloc(set->data->size1, set->data->size2, set->names, actual_uses);
-gsl_vector 	*y_data		= gsl_vector_alloc(set->data->size1);
-gsl_vector 	*xpy 		= gsl_vector_calloc(set->data->size2);
-gsl_matrix 	*xpx 		= gsl_matrix_calloc(set->data->size2, set->data->size2);
-gsl_vector_view	v 		= gsl_matrix_column(set->data, 0);
-	gsl_matrix_get_col(y_data, set->data, 0);
-	gsl_vector_set_all(&(v.vector), 1);	//affine: first column is ones.
-	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);	//(X'X)
-	gsl_blas_dgemv(CblasTrans, 1, set->data, y_data, 0, xpy);     	//(X'y)
-	xpxinvxpy(set->data, y_data, xpx, xpy, out);
-	gsl_vector_free(y_data); gsl_vector_free(xpy);
-	return out;
+apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
+    prep_inventory_names(set->names);
+apop_estimate   *out        = apop_estimate_alloc(set->data->size1, set->data->size2, set->names, actual_uses);
+gsl_vector  *y_data     = gsl_vector_alloc(set->data->size1); 
+gsl_vector  *xpy        = gsl_vector_calloc(set->data->size2);
+gsl_matrix  *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
+gsl_vector_view v       = gsl_matrix_column(set->data, 0);
+    gsl_matrix_get_col(y_data, set->data, 0);
+    gsl_vector_set_all(&(v.vector), 1); //affine: first column is ones.
+    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);   //(X'X)
+    gsl_blas_dgemv(CblasTrans, 1, set->data, y_data, 0, xpy);       //(X'y)
+    xpxinvxpy(set->data, y_data, xpx, xpy, out);
+    gsl_vector_free(y_data); gsl_vector_free(xpy);
+    return out;
 }
 
 /** The partitioned regression.
@@ -272,19 +259,17 @@ gsl_vector_view	v 		= gsl_matrix_column(set->data, 0);
         to put auxiliary dummy variables on the left, and I won't 
         go against that here.
 
-\param data1    the first half of the data set
-\param data2    the second half of the data set
-\param  M1      If you have these, give them to me and I won't waste time calculating them.
-\param  M2      If you have these, give them to me and I won't waste time calculating them.
-\param n1        An \c apop_name structure, describing the columns of the first data set.
-\param n2        An \c apop_name structure, describing the columns of the first data set.
+\param set1    the first half of the data set
+\param set2    the second half of the data set
+\param  m1      If you have these, give them to me and I won't waste time calculating them.
+\param  m2      If you have these, give them to me and I won't waste time calculating them.
 \param uses     If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
 
 \bug The cross-variances are assumed to be zero, which is wholeheartedly false. It's not too big a deal because nobody ever uses them for anything.
 */
 apop_estimate * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2, apop_inventory *uses){
-apop_inventory	actual_uses;
-	prep_inventory_OLS(set1->names, uses, &actual_uses); //FIX for more names
+apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
+    prep_inventory_names(set1->names);
 apop_estimate	*out1, *out2,
                 *out	= apop_estimate_alloc(set1->data->size1, set1->data->size2 + set2->data->size2, set1->names, actual_uses);
 gsl_matrix      *t1,*t2, *augmented_first_matrix, *zero1, *zero2,
@@ -370,7 +355,7 @@ static int compare_doubles (const void *a, const void *b) {
 vector that lists the category number for each item, and I'll return
 a gsl_matrix with a single one in each row in the column specified.
 
-\param  cats The gsl_vector of categories
+\param  in The gsl_vector of categories
 \param  keep_first  if zero, return 
     a matrix where each row has a one in the (column specified MINUS
     ONE). That is, the zeroth category is dropped, the first category
@@ -408,7 +393,7 @@ char        n[1000];
     gsl_matrix_set_zero(out->data);
     for (i=0; i< in->size; i++){
         val     = gsl_vector_get(in, i);
-        index   = ((int)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (int)elmts)/sizeof(double);
+        index   = ((long int)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (long int)elmts)/sizeof(double);
         if (keep_first)
             gsl_matrix_set(out->data, i, index,1); 
         else if (index>0)

@@ -628,7 +628,7 @@ solve a utility maximization problem from Econ 101.
 
 
 \code
-/*  Here is a complete program to maximize a Cobb-Douglas utility
+  Here is a complete program to maximize a Cobb-Douglas utility
   function subject to a budget constraint.
 
   This requires a few digressions from the MLE nomenclature:
@@ -654,7 +654,6 @@ The data vector looks like this:
 Most of the work is in writing down all the constraints, since the
 function itself is trivial. Having written down the model, the estimation
 is one function call, and calculating the marginal values is one more.
- */
 
 #include <apophenia/headers.h>
 
@@ -676,11 +675,10 @@ apop_estimation_params  mle_params;
     return est;
 }
 
-/* The constraint function, including three constraints: x0>0, x1>0, and the bundle is under budget.
- First, we check wether anything binds, and if not we return zero immediately.
- Both sets of constraints are handled in the same way: derive new
- values that are within bounds, and report how far you had to move.
-*/
+// The constraint function, including three constraints: x0>0, x1>0, and the bundle is under budget.
+// First, we check wether anything binds, and if not we return zero immediately.
+// Both sets of constraints are handled in the same way: derive new
+// values that are within bounds, and report how far you had to move.
 static double budget_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
 gsl_vector  *budget = d;
 double  price0      = gsl_vector_get(budget, 0),

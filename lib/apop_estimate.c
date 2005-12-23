@@ -38,9 +38,11 @@ apop_inventory  *setme;
  */
 void apop_inventory_copy(apop_inventory in, apop_inventory *out){
 	out->parameters	= in.parameters;
-	out->predicted	= in.predicted;
-	out->confidence	= in.confidence;
 	out->covariance	= in.covariance;
+	out->confidence	= in.confidence;
+	out->predicted	= in.predicted;
+	out->residuals	= in.residuals;
+	out->names  	= in.names;
 	out->log_likelihood = in.log_likelihood;
 }
 
@@ -55,6 +57,8 @@ void apop_inventory_set(apop_inventory *out, int value){
 	out->predicted	= 
 	out->confidence	= 
 	out->covariance	= 
+	out->residuals	= 
+	out->names  	= 
 	out->log_likelihood = value;
 }
 
@@ -65,18 +69,21 @@ Inventories sent in to most estimation functions are just the wish list; it woul
 \param out	a pointer to the inventory desired. If null, the filter will be copied to this spot.
 \param filter	an \ref apop_inventory where the values are one if the value will be calculated, zero if not.
 \ingroup inv_and_est */
-void apop_inventory_filter(apop_inventory *out, apop_inventory filter){
-	if (out==NULL){
-		out	= malloc(sizeof(apop_inventory));
-		apop_inventory_copy(filter, out);
-	}
-	out->parameters	&= filter.parameters;
-	out->covariance	&= filter.covariance;
-	out->confidence	&= filter.confidence;
-	out->predicted	&= filter.predicted;
-	out->residuals	&= filter.residuals;
-	out->log_likelihood &= filter.log_likelihood;
-	out->names &= filter.names;
+apop_inventory apop_inventory_filter(apop_inventory *in, apop_inventory filter){
+apop_inventory  out;
+	if (in==NULL){
+		apop_inventory_copy(filter, &out);
+        return out;
+    }// else:
+	apop_inventory_copy(*in, &out);
+	out.parameters	    &= filter.parameters;
+	out.covariance	    &= filter.covariance;
+	out.confidence	    &= filter.confidence;
+	out.predicted	    &= filter.predicted;
+	out.residuals	    &= filter.residuals;
+	out.log_likelihood &= filter.log_likelihood;
+	out.names          &= filter.names;
+    return out;
 }
 
 /** Allocate an \ref apop_estimate.
@@ -161,10 +168,16 @@ int		i;
 		printf("\nThe variance/covariance matrix:\n");
         apop_data   *covdata    = apop_matrix_to_data(print_me->covariance);
         //We want to show the column names on both axes.
-        memcpy(covdata->names->colnames, print_me->names->colnames, sizeof(char*) * print_me->names->colnamect);
-        memcpy(covdata->names->rownames, print_me->names->colnames, sizeof(char*) * print_me->names->colnamect);
-        covdata->names->rownamect   =
-        covdata->names->colnamect   =   print_me->names->colnamect;
+        if (print_me->uses.names && print_me->names !=NULL && print_me->names->colnamect){
+            free(covdata->names->colnames);    //prevent a 2-byte memory leak here.
+            free(covdata->names->rownames);    
+            covdata->names->colnames    = malloc(sizeof(char*) * print_me->names->colnamect);
+            covdata->names->rownames    = malloc(sizeof(char*) * print_me->names->colnamect);
+            memcpy(covdata->names->colnames, print_me->names->colnames, sizeof(char*) * print_me->names->colnamect);
+            memcpy(covdata->names->rownames, print_me->names->colnames, sizeof(char*) * print_me->names->colnamect);
+            covdata->names->rownamect   =
+            covdata->names->colnamect   =   print_me->names->colnamect;
+        }
         apop_data_print(covdata, "\t", NULL);
 	}
 	if (print_me->uses.log_likelihood)
