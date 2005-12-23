@@ -261,7 +261,7 @@ gsl_matrix * 	square  	    = gsl_matrix_calloc(data->size2, data->size2);
 gsl_vector_view v;
 int 		i;
 double		eigentotals	= 0;
-	*pc_space	= gsl_matrix_alloc(data->size2, dimensions_we_want);
+	*pc_space	    = gsl_matrix_alloc(data->size2, dimensions_we_want);
 	*total_explained= gsl_vector_alloc(dimensions_we_want);
 	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, square);
 	apop_normalize_for_svd(square);	
