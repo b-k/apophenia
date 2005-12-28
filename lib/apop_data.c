@@ -15,6 +15,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
   The \c apop_data structure represents a data set.  It joins together a
   gsl_matrix, apop_name, and a table of strings. No biggie. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix.
 
+  \ingroup apop_types
   */
 
 /** Allocate a \ref apop_name structure, to be filled with data.
@@ -55,6 +56,21 @@ void apop_data_free(apop_data *freeme){
     if (freeme->categories !=NULL)
         free(freeme->categories);
     free(freeme);
+}
+
+/** Copy one \ref apop_data structure to another. That is, all data is duplicated.
+ 
+  \param out    a structure that this function will allocate and fill
+  \param in    the input data
+
+ \ingroup data_struct
+  */
+void apop_data_memcpy(apop_data **out, apop_data *in){
+    *out = apop_data_alloc(in->data->size1, in->data->size2);
+    gsl_matrix_memcpy((*out)->data, in->data);
+    apop_name_stack((*out)->names, in->names, 'r');
+    apop_name_stack((*out)->names, in->names, 'c');
+    apop_name_stack((*out)->names, in->names, 'd');
 }
 
 

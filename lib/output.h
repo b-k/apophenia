@@ -5,7 +5,7 @@
 #include <apophenia/linear_algebra.h>
 
 
-void apop_plot_line_and_scatter(gsl_matrix *data, apop_estimate *est, apop_name *n, char *outfile);
+void apop_plot_line_and_scatter(apop_data *data, apop_estimate *est, char *outfile);
 void apop_plot(gsl_matrix *data, char plot_type, int delay);
 void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile);
 

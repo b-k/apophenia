@@ -66,7 +66,7 @@ void apop_inventory_set(apop_inventory *out, int value){
 
 Inventories sent in to most estimation functions are just the wish list; it wouldn't make sense (and is often not implemented) that every estimator return every element of the \ref apop_estimate.
 
-\param out	a pointer to the inventory desired. If null, the filter will be copied to this spot.
+\param in   	a pointer to the inventory desired. If null, the filter will be copied to this spot.
 \param filter	an \ref apop_inventory where the values are one if the value will be calculated, zero if not.
 \ingroup inv_and_est */
 apop_inventory apop_inventory_filter(apop_inventory *in, apop_inventory filter){

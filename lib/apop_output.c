@@ -18,8 +18,7 @@ Currently, you only get two dimensions.
 
 \param	data	This is a copy of what you'd sent to the regression fn. That is, the first column is the dependent variable and the second is the independent. That is, what will be on Y axis is the <i>first</i> column, and what is on the X axis is the second. Custom for regressions and custom for graphs just clash on this one.
 \param	est	The \ref apop_estimate structure your regression function gave you.
-\param	n	The \ref apop_name structure, if any. If none, send NULL
-\param outfile	The file to write to. It appends instead of overwriting, so you can prep the file if you want; see sample code.
+\param outfile	The file to write to. It appends instead of overwriting, so you can prep the file if you want; see sample code. [to overwrite a file, just remove it first with the standard C function <tt>remove("filename");</tt>]
 
 The sample program below will pull data from a database (you'll need to
 modify it to produce your own two-column table), then runs OLS, produces
@@ -29,31 +28,28 @@ to make further modifications.
 
 \code
 int main(){
-gsl_matrix 	*data, *data_copy;
+apop_data 	    *data, *data_copy;
 apop_estimate   *est;
-apop_name       *n;
-FILE		*f;
-char		outfile[]	= "auto",
-		do_me[10000];
+FILE		    *f;
+char		    outfile[]	= "auto",
+		        do_me[10000];
 
 	apop_open_db("cpia.db");
-	data      =apop_query_to_matrix("select gnppercap, cpia from cpiagnp;");
-	n          = apop_db_get_names();
+	data      =apop_query_to_data("select gnppercap, cpia from cpiagnp;");
 	apop_close_db(0);
 
 	//The regression destroys your data, so copy it first.
-	data_copy	= gsl_matrix_alloc(data->size1, data->size2);
-	gsl_matrix_memcpy(data_copy, data);
+	apop_data_memcpy(&data_copy, data);
 
 	//Run OLS, display results on terminal
-	est  = apop_OLS(data, n, NULL);
+	est  = apop_OLS.estimate(data, NULL, NULL);
 	apop_estimate_print(est);
 
 	//Prep the file with a header, then call the function.
 	f    = fopen(outfile, "w");
 	fprintf(f,"set term postscript;\n set output \"scatter.eps\"\n set yrange [0:*]\n");
 	fclose(f);
-	apop_plot_line_and_scatter(data_copy,est, n, outfile);
+	apop_plot_line_and_scatter(data_copy,est, outfile);
 
 	//Have the machine run gnuplot for you. 
 	sprintf(do_me, "gnuplot -persist %s", outfile);
@@ -64,19 +60,19 @@ char		outfile[]	= "auto",
 \todo The sample data here should correspond to that which apophenia ships with.
 \ingroup output
 */
-void apop_plot_line_and_scatter(gsl_matrix *data, apop_estimate *est, apop_name *n, char *outfile){
+void apop_plot_line_and_scatter(apop_data *data, apop_estimate *est, char *outfile){
 FILE *          f;
         if (outfile == NULL) 	f       = stdout;
         else    		f       = fopen(outfile, "a");
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters,0), gsl_vector_get(est->parameters,1));
-	if (n){
-		fprintf(f, "set xlabel \"%s\"\n", n->colnames[1]);
-		fprintf(f, "set ylabel \"%s\"\n", n->depnames[0]);
+	if (data->names){
+		fprintf(f, "set xlabel \"%s\"\n", data->names->colnames[1]);
+		fprintf(f, "set ylabel \"%s\"\n", data->names->depnames[0]);
 	}
 	fprintf(f, "set key off\n");
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");
 	if (outfile !=NULL)    fclose(f);
-	apop_print_matrix(data, ", ", outfile);
+	apop_print_matrix(data->data, ", ", outfile);
 }
 
 

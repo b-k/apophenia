@@ -1,3 +1,4 @@
+
 0.14	December 2005
 
 The apop_data structure, which is just a shell for a gsl_matrix and an
@@ -13,6 +14,8 @@ structure and a NULL. So you'll have to modify your code accordingly.
 --A function to generate dummy variables, useful in conjunction with
 --Functions to stack matrices and apop_data sets. Even a
 apop_partitioned_OLS function, that will only practically work for small data sets.
+
+--pow(.,.) in the database. I can't believe I dealt with SQL this long w/o it.
 
 0.13	December 2005
 

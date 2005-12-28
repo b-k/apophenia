@@ -73,11 +73,16 @@ int apop_verbose	= 0;
 // Part one: additional aggregate functions for calculating higher moments
 ////////////////////////////////////////////////
 
-/** \page db_moments Database moments
+/** \page db_moments Database moments (plus pow()!)
 \verbatim
 select count(x), stddev(x), avg(x), var(x), variance(x), skew(x), kurt(x), kurtosis(x)
 from table
 group by whatever
+\endverbatim
+
+\verbatim
+select pow(x,0.5), exp(x), log(x)
+from table
 \endverbatim
 
 The SQL standard includes the <tt>count(x)</tt> and <tt>avg(x)</tt> aggregators,
@@ -89,6 +94,8 @@ may include any of the moments above.
 thing. Choose the one that sounds better to you.
 
 The  var/skew/kurtosis functions calculate ''sample'' moments, so if you want the population moment, multiply the result by (n-1)/n .
+
+For bonus points, there are the <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, and <tt>log(x)<tt> functions. They call the standard math library function of the same name to calculate \f$x^y\f$, \f$e^x\f$, and \f$\ln(x)\f$.
 */
 
 
@@ -196,6 +203,18 @@ static void kurtFinalize(sqlite3_context *context){
     	sqlite3_result_double(context, 0);
 }
 
+static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, pow(sqlite3_value_double(argv[0]), sqlite3_value_double(argv[1])));
+}
+
+static void expFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, exp(sqlite3_value_double(argv[0])));
+}
+
+static void logFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, log(sqlite3_value_double(argv[0])));
+}
+
 
 ////////////////////////////////////////////////
 // Part two: database querying functions, so the user doesn't have to
@@ -249,6 +268,9 @@ int apop_db_open(char *filename){
 	sqlite3_create_function(db, "skew", 1, SQLITE_ANY, NULL, NULL, &threeStep, &skewFinalize);
 	sqlite3_create_function(db, "kurt", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
 	sqlite3_create_function(db, "kurtosis", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
+	sqlite3_create_function(db, "pow", 2, SQLITE_ANY, NULL, &powFn, NULL, NULL);
+	sqlite3_create_function(db, "exp", 2, SQLITE_ANY, NULL, &expFn, NULL, NULL);
+	sqlite3_create_function(db, "log", 2, SQLITE_ANY, NULL, &logFn, NULL, NULL);
 	apop_query("pragma short_column_names");
 	return 0;
 }

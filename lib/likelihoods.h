@@ -29,7 +29,7 @@ typedef struct apop_estimation_params{
 	int 	verbose;
 } apop_estimation_params;
 
-char  apop_mle_trace_path[1000];
+extern char  apop_mle_trace_path[1000];
 
 /*
 For the Probit, the first column of the data matrix is the dependent

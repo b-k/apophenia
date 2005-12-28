@@ -100,9 +100,9 @@ int		i;
 
 /** Append one list of names to another.
 
-\param  n1  The first set of names
-\param  n2  The second set of names, which will be appended after the first.
-\param type    Either 'd', 'c', or 'r', stating whether you are merging the dependent var names, columns, or rows. [Default: cols]
+\param  n1      The first set of names
+\param  n2      The second set of names, which will be appended after the first.
+\param type     Either 'd', 'c', or 'r', stating whether you are merging the dependent var names, columns, or rows. [Default: cols]
 \ingroup names */
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type){
 size_t  n1ct, n2ct;

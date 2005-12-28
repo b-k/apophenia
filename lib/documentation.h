@@ -175,16 +175,17 @@ don't yet exist in Matlab, R, STATA, &c.
 
 /** \page setup Setting up
 \section cast The supporting cast 
-To use Apophenia, you will need to have a working C compiler, the GSL and SQLite installed. 
+To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or higher) and SQLite installed. 
 
 \subsection C C
 The <a href="http://gcc.gnu.org/">Gnu Compiler Collection</a> (GCC) is certainly available for your system. If you are using a unix-type system, it is probably already installed. Windows users, see \ref windows .
 \subsection gsl The GSL 
 This is often available as a package: try <tt>apt-get gsl-devel</tt>,
 <tt>urpmi gsl-devel</tt>, or whatever means you use to install a
-package. If all else fails, download the source code from the 
-<a href="http://sources.redhat.com/gsl">GSL home page</a>. Compilation and
-installation is simple:
+package. Notice that you will need GSL version 1.7; your system may not
+have a sufficiently up-to-date package. If all else fails, download the
+source code from the <a href="http://sources.redhat.com/gsl">GSL home
+page</a> (if you are near North Carolina, maybe try the <a href="ftp://ftp.ibiblio.org/pub/mirrors/gnu/ftp/gnu/gsl/gsl-1.7.tar.gz">ibiblio mirror</a>). Compilation and installation is simple:
 
 \verbatim
 tar xvzf pkg.tgz  #change pkg.tgz to the appropriate name
@@ -432,6 +433,9 @@ for statisticians.
 The blog of Apophenia's author includes an <a
 href="http://fluff.info/blog/arch/00000118.htm">entry</a> about
 complementarities between SQL and matrix manipulation packages.
+
+Finally, Apophenia provides a few nonstandard SQL functions to facilitate
+math via database; see \ref db_moments.
 */
 
 /** \page graphing What about graphing?
