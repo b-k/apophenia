@@ -2,47 +2,8 @@
 #define __apop_models_h__
 
 #include <apophenia/types.h>
-#include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
-
-/** This is an object to describe a model whose parameters are to be
-estimated. It would primarily be used for maximum likelihood estimation,
-but is intended to have anything else you would want a probability
-distribution to have too, like a random number generator.  
-
-\param name	The model name. You have 100 characters. 
-\param parameter_ct	The number of parameters. If this is -1, it will be dynamically set to the size of the given data set minus one.
-\param inventory_filter	an \ref apop_inventory indicating what the estimate fn is programmed to return.
-\param estimate		the estimator fn, which is all most users will care about.
-\param log_likelihood	the likelihood fn given data 
-\param 	dlog_likelihood	the derivative of the likelihood fn
-\param 	fdf	Do both of the above at once. Can be NULL if it'd just call them separately. 
-\param 	constraint	The constraints to the parameters, if any. Really only necessary for MLEs.
-\param rng 	a random number generator. 
-
- */
-typedef struct apop_model{
-	char	name[101]; 
-	int	parameter_ct;
-	apop_inventory inventory_filter;
-	apop_estimate *	(*estimate)(apop_data * data, apop_inventory *uses, void *parameters);
-	double 	(*log_likelihood)(const gsl_vector *beta, void *d);
-	void 	(*dlog_likelihood)(const gsl_vector *beta, void *d, gsl_vector *gradient);
-	void 	(*fdf)( const gsl_vector *beta, void *d, double *f, gsl_vector *df);
-    double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta);
-	double (*rng)(gsl_rng* r, double *a);
-
-//	/** The constraint count */
-//	int 	constraint_ct;
-//
-//	/** The vector of constraints */
-//	double *(* constraint) (const gsl_vector *beta, void *d, gsl_vector *inside_constraint);
-	//to add: 
-	//the 2nd derivative of the likelihood fn
-	//the MLE
-} apop_model;
-
 
 extern apop_model apop_exponential;
 extern apop_model apop_exponential_rank;
@@ -58,7 +19,6 @@ extern apop_model apop_waring_rank;
 extern apop_model apop_yule;
 extern apop_model apop_zipf;
 extern apop_model apop_zipf_rank;
-
 
 
 //This is in asst.c.
@@ -144,4 +104,5 @@ apop_estimate   *est1, *est2;
            printf("The %s is a better fit than the %s with %g%% certainty.\n", d2.name, d1.name, t_stat*100);
 }
 \endcode
+\todo revise this code. It's about six months behind.
 */

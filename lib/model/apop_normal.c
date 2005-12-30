@@ -25,8 +25,7 @@ static double normal_log_likelihood(const gsl_vector *beta, void *d);
 /** The normal estimate
 \todo Get off my ass and check the closed-form var-covar matrix, instead of using the inverse hessian. */
 static apop_estimate * normal_estimate(apop_data * data, apop_inventory *uses, void *parameters){
-apop_inventory  actual_uses = apop_inventory_filter(uses, apop_normal.inventory_filter);
-apop_estimate 	*est	    = apop_estimate_alloc(0,2,NULL, actual_uses);
+apop_estimate 	*est	    = apop_estimate_alloc(data,apop_normal,uses, parameters);
 double		mean, var;
 	apop_matrix_mean_and_var(data->data, &mean, &var);	
 	gsl_vector_set(est->parameters, 0, mean);

@@ -131,9 +131,11 @@ A pointer to an \ref apop_estimate structure with the appropriate elements fille
 Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
  */
 apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matrix *sigma){
-apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
     prep_inventory_names(set->names);
-apop_estimate	*out		= apop_estimate_alloc(set->data->size1, set->data->size2, set->names, actual_uses);
+apop_model      modded_ols;
+    apop_model_memcpy(&modded_ols,apop_GLS);
+    modded_ols.parameter_ct = set->data->size2;
+apop_estimate	*out	= apop_estimate_alloc(set, modded_ols, uses, NULL);
 gsl_vector 	*y_data		= gsl_vector_alloc(set->data->size1);
 gsl_matrix 	*temp		= gsl_matrix_calloc(set->data->size2, set->data->size1);
 gsl_vector 	*xsy 		= gsl_vector_calloc(set->data->size2);
@@ -225,13 +227,15 @@ int main(void){
 
  */
 apop_estimate * apop_estimate_OLS(apop_data *set, apop_inventory *uses, void *dummy){
-apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
     prep_inventory_names(set->names);
-apop_estimate   *out        = apop_estimate_alloc(set->data->size1, set->data->size2, set->names, actual_uses);
-gsl_vector  *y_data     = gsl_vector_alloc(set->data->size1); 
-gsl_vector  *xpy        = gsl_vector_calloc(set->data->size2);
-gsl_matrix  *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
-gsl_vector_view v       = gsl_matrix_column(set->data, 0);
+apop_model      modded_ols;
+    apop_model_memcpy(&modded_ols,apop_OLS);
+    modded_ols.parameter_ct = set->data->size2;
+apop_estimate	*out		= apop_estimate_alloc(set, modded_ols, uses, NULL);
+gsl_vector      *y_data     = gsl_vector_alloc(set->data->size1); 
+gsl_vector      *xpy        = gsl_vector_calloc(set->data->size2);
+gsl_matrix      *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
+gsl_vector_view v           = gsl_matrix_column(set->data, 0);
     gsl_matrix_get_col(y_data, set->data, 0);
     gsl_vector_set_all(&(v.vector), 1); //affine: first column is ones.
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);   //(X'X)
@@ -267,6 +271,7 @@ gsl_vector_view v       = gsl_matrix_column(set->data, 0);
 
 \bug The cross-variances are assumed to be zero, which is wholeheartedly false. It's not too big a deal because nobody ever uses them for anything.
 */
+/*
 apop_estimate * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2, apop_inventory *uses){
 apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
     prep_inventory_names(set1->names);
@@ -342,7 +347,7 @@ apop_data *newfirst = malloc(sizeof(apop_data));
     out->covariance = apop_matrix_stack(t1,t2,'r');
     return out;
 }
-
+*/
 
 //Cut and pasted from the GNU std library documentation:
 static int compare_doubles (const void *a, const void *b) {

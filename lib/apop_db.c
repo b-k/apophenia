@@ -95,7 +95,7 @@ thing. Choose the one that sounds better to you.
 
 The  var/skew/kurtosis functions calculate ''sample'' moments, so if you want the population moment, multiply the result by (n-1)/n .
 
-For bonus points, there are the <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, and <tt>log(x)<tt> functions. They call the standard math library function of the same name to calculate \f$x^y\f$, \f$e^x\f$, and \f$\ln(x)\f$.
+For bonus points, there are the <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, and <tt>log(x)</tt> functions. They call the standard math library function of the same name to calculate \f$x^y\f$, \f$e^x\f$, and \f$\ln(x)\f$.
 */
 
 

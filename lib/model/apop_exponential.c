@@ -20,8 +20,7 @@ static double keep_away(double value, double limit,  double base){
 }
 
 static apop_estimate * exponential_estimate(apop_data * data, apop_inventory *uses, void *parameters){
-apop_inventory  actual_uses =	apop_inventory_filter(uses, apop_exponential.inventory_filter);
-apop_estimate 	*est	    = apop_estimate_alloc(data->data->size1,1,NULL, actual_uses);
+apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential,uses, parameters);
 	gsl_vector_set(est->parameters, 0, apop_matrix_mean(data->data));
 	if (est->uses.log_likelihood)
 		est->log_likelihood	= exponential_log_likelihood(est->parameters, data->data);

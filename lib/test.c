@@ -27,7 +27,7 @@ apop_estimate           *e;
     apop_inventory_set(&inv, 1);
 
     //e    = apop_maximum_likelihood(data2,&inv, dist, params);
-    e    = dist.estimate(data,&inv, &params);
+    e    = dist.estimate(apop_matrix_to_data(data),&inv, &params);
     for (i=0; i < dist.parameter_ct; i++){
         printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters,i));
         score += (fabs(gsl_vector_get(e->parameters,i) - true_parameter[i]) >= 1e-1);
@@ -91,15 +91,15 @@ long int        i,j,
                 runsize             = 500,
                 rowsize             = 100;
 gsl_matrix      *data               = gsl_matrix_calloc(runsize,rowsize),
-                *summary, 
                 *data2              = gsl_matrix_calloc(1, rowsize);    
 apop_name       *summary_names;
+apop_data       *summary;
 gsl_vector_view v;
 gsl_vector      *vv;
     //generate.
     generate_for_rank_test(data, r, dist, runsize, rowsize);
-    summary     = apop_matrix_summarize (data, NULL, &summary_names);
-    v           = gsl_matrix_column(summary,0);
+    summary     = apop_matrix_summarize (data);
+    v           = gsl_matrix_column(summary->data,0);
     gsl_matrix_set_row(data2, 0, &(v.vector));
 
 /*    printf("the abbreviated data matrix:\n");
@@ -132,17 +132,18 @@ double      error   = 0,
 }
 
 int test_summarize(){
-gsl_matrix    *m, *s;
-double        t, v;
+gsl_matrix      *m;
+apop_data       *s;
+double          t, v;
     apop_convert_text_to_db("test_data", "td", NULL);
     m    = apop_query_to_matrix("select * from td");
-    s    = apop_matrix_summarize(m, NULL, NULL);
+    s    = apop_matrix_summarize(m);
     //apop_matrix_print(s,"\t", NULL);
-    t    = gsl_matrix_get(s, 1,0);
+    t    = gsl_matrix_get(s->data, 1,0);
     if (t !=3) {
         printf("apop_summarize failed to take a simple mean: %g should be three. Fail.\n", t); return 1;
         }
-    t    = gsl_matrix_get(s, 2, 1);
+    t    = gsl_matrix_get(s->data, 2, 1);
     v    = sqrt((2*2 +3*3 +3*3 +4.*4.)/3.);
     if (t != v) {
         printf("apop_summarize failed to calcuate a std deviation: %g should be %g. Fail.\n", t,v); return 1;

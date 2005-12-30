@@ -18,17 +18,6 @@
 #define MAX_ITERATIONS 		5000
 #define MAX_ITERATIONS_w_d	5000
 
-/**
- \ingroup mle
- */
-typedef struct apop_estimation_params{
-	int 	method;
-	double *starting_pt; 
-	double 	step_size; 
-	double 	tolerance; 
-	int 	verbose;
-} apop_estimation_params;
-
 extern char  apop_mle_trace_path[1000];
 
 /*
@@ -84,8 +73,8 @@ gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, void * d)
 void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data);
 
 
-apop_estimate	*	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *inv,
-			apop_model dist, apop_estimation_params params);
+apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_inventory *uses,
+			apop_model dist, apop_estimation_params *params);
 
 
     //This is a global var for numerical differentiation.

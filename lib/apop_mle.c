@@ -381,73 +381,78 @@ If no derivative exists, will calculate a numerical gradient.
 \return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
   \todo readd names */
-static apop_estimate *	apop_maximum_likelihood_w_d(gsl_matrix * data, apop_inventory *uses,
-			apop_model dist, double *starting_pt, double step_size, double tolerance, int method, int verbose){
+static apop_estimate *	apop_maximum_likelihood_w_d(apop_data * data, apop_inventory *uses,
+			apop_model dist, apop_estimation_params *est_params){
+            //double *starting_pt, double step_size, double tolerance, int method, int verbose){
 gsl_multimin_function_fdf 	minme;
 gsl_multimin_fdfminimizer 	*s;
-gsl_vector 			*x;
-int				iter 	= 0, 
-				status  = 0,
-				betasize= dist.parameter_ct;
-apop_inventory			actual_uses;
-apop_estimate			*est;
-negshell_params			nsp;
-	if (betasize == -1)	betasize = data->size2 - 1;
+gsl_vector 			        *x;
+int				            iter 	= 0, 
+				            status  = 0,
+				            betasize= dist.parameter_ct;
+apop_inventory			    actual_uses;
+apop_estimate			    *est;
+negshell_params			    nsp;
+	if (betasize == -1)	{
+        dist.parameter_ct   =
+        betasize            = data->data->size2 - 1;
+    }
 	prep_inventory_mle(uses, &actual_uses);
-    if (method/100 ==2)
+	est	= apop_estimate_alloc(data, dist, &actual_uses, est_params);
+    if (est_params->method/100 ==2)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
-    else if (method/100 == 3)
+    else if (est_params->method/100 == 3)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_pr, betasize);
     else
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
-	est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
-	if (dist.dlog_likelihood == NULL || (method % 100 ==1))
+	if (dist.dlog_likelihood == NULL || (est_params->method % 100 ==1))
 		dist.dlog_likelihood 	= apop_numerical_gradient;
 	apop_fn_for_derivative	= dist.log_likelihood;
-	if (starting_pt==NULL){
+	if (est_params->starting_pt==NULL){
 		x	= gsl_vector_alloc(betasize);
   		gsl_vector_set_all (x,  0);
 	}
-	else 	apop_convert_array_to_vector(starting_pt, &x, betasize);
-	nsp.d		= data;
+	else 	apop_convert_array_to_vector(est_params->starting_pt, &x, betasize);
+	nsp.d		= data->data;
 	nsp.model	= dist;
 	minme.f		= negshell;
 	minme.df	= dnegshell;
 	minme.fdf	= fdf_shell;
 	minme.n		= betasize;
 	minme.params	= &nsp;
-	gsl_multimin_fdfminimizer_set (s, &minme, x, step_size, tolerance);
+	gsl_multimin_fdfminimizer_set (s, &minme, x, est_params->step_size, est_params->tolerance);
       	do { 	iter++;
 		status 	= gsl_multimin_fdfminimizer_iterate(s);
 		if (status) 	break; 
-		status = gsl_multimin_test_gradient(s->gradient, tolerance);
-        	if (verbose){
+		status = gsl_multimin_test_gradient(s->gradient, est_params->tolerance);
+        	if (est_params->verbose){
 	        	printf ("%5i %.5f  f()=%10.5f gradient=%.3f\n", iter, gsl_vector_get (s->x, 0),  s->f, gsl_vector_get(s->gradient,0));
 		}
         	if (status == GSL_SUCCESS){
 			est->status	= 0;
-		   	if(verbose)	printf ("Minimum found.\n");
+		   	if(est_params->verbose)	printf ("Minimum found.\n");
 		}
        	 }
 	while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d);
 	//while (status != GSL_SUCCESS && iter < MAX_ITERATIONS_w_d);
 	if(iter==MAX_ITERATIONS_w_d) {
 		est->status	= 1;
-		if (verbose) printf("No min!!\n");
+		if (est_params->verbose) printf("No min!!\n");
 	}
 	//Clean up, copy results to output estimate.
 	gsl_vector_memcpy(est->parameters, s->x);
 	gsl_multimin_fdfminimizer_free(s);
-	if (starting_pt==NULL) 
+	if (est_params->starting_pt==NULL) 
 		gsl_vector_free(x);
-	est->log_likelihood	= dist.log_likelihood(est->parameters, data);
+	est->log_likelihood	= dist.log_likelihood(est->parameters, data->data);
 	if (est->uses.covariance) 
-		apop_numerical_var_covar_matrix(dist, est, data);
+		apop_numerical_var_covar_matrix(dist, est, data->data);
 	return est;
 }
 
-static apop_estimate *	apop_maximum_likelihood_no_d(gsl_matrix * data, apop_inventory *uses,
-			apop_model dist, double *starting_pt, double step_size, double tolerance, int verbose){
+static apop_estimate *	apop_maximum_likelihood_no_d(apop_data * data, apop_inventory *uses,
+			apop_model dist, apop_estimation_params * est_params){
+    //, double *starting_pt, double step_size, double tolerance, int verbose){
 int			            status,
 			            iter 		= 0,
 			            betasize	= dist.parameter_ct;
@@ -459,20 +464,24 @@ double			        size;
 apop_inventory		    actual_uses;
 apop_estimate		    *est;
 negshell_params		    nsp;
-	if (betasize == -1)	betasize = data->size2 - 1;
+	if (betasize == -1)	{
+        dist.parameter_ct   =
+        betasize            = data->data->size2 - 1;
+    }
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
 	x	= gsl_vector_alloc(betasize);
 	prep_inventory_mle(uses, &actual_uses);
-	est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
+	//est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
+	est	= apop_estimate_alloc(data, dist, &actual_uses, est_params);
 	est->status	= 1;	//assume failure until we score a success.
-	if (starting_pt==NULL)
+	if (est_params->starting_pt==NULL)
   		gsl_vector_set_all (x,  0);
 	else
-		apop_convert_array_to_vector(starting_pt, &x, betasize);
-  	gsl_vector_set_all (ss,  step_size);
+		apop_convert_array_to_vector(est_params->starting_pt, &x, betasize);
+  	gsl_vector_set_all (ss,  est_params->step_size);
 	nsp.model	    = dist;
-	nsp.d		    = data;
+	nsp.d		    = data->data;
 	minme.f		    = negshell;
 	minme.n		    = betasize;
 	minme.params	= &nsp;
@@ -481,15 +490,15 @@ negshell_params		    nsp;
 		status 	= gsl_multimin_fminimizer_iterate(s);
 		if (status) 	break; 
 		size	= gsl_multimin_fminimizer_size(s);
-	   	status 	= gsl_multimin_test_size (size, tolerance); 
-		if(verbose){
+	   	status 	= gsl_multimin_test_size (size, est_params->tolerance); 
+		if(est_params->verbose){
 			printf ("%5d ", iter);
 			for (i = 0; i < betasize; i++) {
 				printf ("%8.3e ", gsl_vector_get (s->x, i)); } 
 			printf ("f()=%7.3f size=%.3f\n", s->fval, size);
        			if (status == GSL_SUCCESS) {
 				est->status	= 0;
-	   			if(verbose){
+	   			if(est_params->verbose){
 					printf ("Minimum found at:\n");
 					printf ("%5d ", iter);
 					for (i = 0; i < betasize; i++) {
@@ -499,12 +508,12 @@ negshell_params		    nsp;
 			}
 		}
       	} while (status == GSL_CONTINUE && iter < MAX_ITERATIONS);
-	if (iter == MAX_ITERATIONS && verbose)
+	if (iter == MAX_ITERATIONS && est_params->verbose)
 		printf("Minimization reached maximum number of iterations.");
 
 	gsl_vector_memcpy(est->parameters, s->x);
 	gsl_multimin_fminimizer_free(s);
-	est->log_likelihood	= dist.log_likelihood(est->parameters, data);
+	est->log_likelihood	= dist.log_likelihood(est->parameters, data->data);
 	//if (est->uses.confidence == 0)
 		return est;
 }
@@ -532,13 +541,13 @@ Thus, the default method is 100+0 = 100. To use the Nelder-Mead simplex algorith
 
   \todo re-add names 
  \ingroup mle */
-apop_estimate *	apop_maximum_likelihood(gsl_matrix * data, apop_inventory *uses,
-			apop_model dist, apop_estimation_params params){
+apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_inventory *uses,
+			apop_model dist, apop_estimation_params *params){
 
-	if (params.method/100==0)
-		return apop_maximum_likelihood_no_d(data, uses, dist, params.starting_pt, params.step_size, params.tolerance, params.verbose);
+	if (params->method/100==0)
+		return apop_maximum_likelihood_no_d(data, uses, dist, params);
 	//else:
-	return apop_maximum_likelihood_w_d(data, uses, dist, params.starting_pt, params.step_size, params.tolerance, params.method, params.verbose);
+	return apop_maximum_likelihood_w_d(data, uses, dist, params);
 }
 
 

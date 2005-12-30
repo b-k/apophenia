@@ -22,8 +22,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 
 static apop_estimate * probit_estimate(apop_data * data, apop_inventory *uses, void *parameters){
-	apop_inventory_filter(&uses, apop_probit.inventory_filter);
-	return apop_maximum_likelihood(data->data, uses, apop_probit, *(apop_estimation_params *)parameters);
+	return apop_maximum_likelihood(data, uses, apop_probit, parameters);
 }
 
 

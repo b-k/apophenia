@@ -76,4 +76,5 @@ double apop_matrix_mean(gsl_matrix *data);
 double apop_matrix_var_m(gsl_matrix *data, double mean);
 void apop_matrix_mean_and_var(gsl_matrix *data, double *mean, double *var);
 double apop_GHgB3_rng(gsl_rng * r, double* a); //in asst.c
-apop_data * apop_matrix_summarize(apop_data *data);
+apop_data * apop_data_summarize(apop_data *data);
+apop_data * apop_matrix_summarize(gsl_matrix *data);

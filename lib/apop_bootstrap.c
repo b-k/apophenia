@@ -87,7 +87,7 @@ if (boot_iterations ==0) boot_iterations	= 1000;
 		} else		i--;
 
 	}
-	summary	= apop_matrix_summarize(array_of_boots);
+	summary	= apop_data_summarize(array_of_boots);
     apop_data_free(array_of_boots);
 	output	= gsl_vector_alloc(summary->data->size1);
 	gsl_matrix_get_col(output, summary->data, 1);

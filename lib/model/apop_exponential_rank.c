@@ -29,11 +29,9 @@ static apop_estimate * exponential_rank_estimate(apop_data * data, apop_inventor
 double          colsum,
                 numerator   = 0,
                 grand_total = 0;
-apop_estimate 	*est;
+apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential_rank,uses, parameters);
 gsl_vector_view v;
 int             i;
-apop_inventory  actual_uses =	apop_inventory_filter(uses, apop_exponential_rank.inventory_filter);
-    est = apop_estimate_alloc(data->data->size1,1,NULL, actual_uses);
     for(i=0; i< data->data->size2; i++){
         v            = gsl_matrix_column(data->data, i);
         colsum       = apop_sum(&(v.vector));
@@ -47,13 +45,6 @@ apop_inventory  actual_uses =	apop_inventory_filter(uses, apop_exponential_rank.
 		apop_numerical_var_covar_matrix(apop_exponential_rank, est, data->data);
 	return est;
 }
-
-/*
-static apop_estimate * exponential_rank_estimate(gsl_matrix * data, apop_inventory *uses, void *parameters){
-	apop_inventory_filter(&uses, apop_exponential_rank.inventory_filter);
-	return apop_maximum_likelihood(data, uses, apop_exponential_rank, *(apop_estimation_params *)parameters);
-}
-*/
 
 static double beta_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
 double  limit       = 0,

@@ -15,7 +15,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
   The \c apop_data structure represents a data set.  It joins together a
   gsl_matrix, apop_name, and a table of strings. No biggie. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix.
 
-  \ingroup apop_types
+  \ingroup types
   */
 
 /** Allocate a \ref apop_name structure, to be filled with data.
@@ -37,7 +37,7 @@ apop_data  *setme   = malloc(sizeof(apop_data));
 \param m    The existing matrix you'd like to turn into an \ref apop_data structure.
 return      The \ref apop_data structure in question.
   */
-apop_data * apop_matrix_to_data(gsl_matrix *m){
+apop_data * apop_data_from_matrix(gsl_matrix *m){
 apop_data  *setme   = malloc(sizeof(apop_data));
     if (m==NULL && apop_verbose) {printf("Warning: converting a NULL matrix to an apop_data structure.\n");}
     setme->data     = m;
@@ -46,15 +46,29 @@ apop_data  *setme   = malloc(sizeof(apop_data));
     return setme;
 }
 
+/** A synonym for \ref apop_data_from_matrix. Use that one.
+ */
+apop_data * apop_matrix_to_data(gsl_matrix *m){
+    return apop_data_from_matrix(m);
+}
+
 /** Free an \ref apop_name structure.
 
  \ingroup data_struct
   */
 void apop_data_free(apop_data *freeme){
-    gsl_matrix_free(freeme->data);
+int     i,j;
+    if (freeme->data)
+        gsl_matrix_free(freeme->data);
     apop_name_free(freeme->names);
-    if (freeme->categories !=NULL)
-        free(freeme->categories);
+    if (freeme->catsize[0] && freeme->catsize[1]){
+        for (i=0; i < freeme->catsize[0]; i++)
+            for (j=0; j < freeme->catsize[1]; j++)
+                if(freeme->categories[i][j])
+                    free(freeme->categories[i][j]);
+        if(freeme->categories)
+            free(freeme->categories);
+    }
     free(freeme);
 }
 
@@ -71,6 +85,10 @@ void apop_data_memcpy(apop_data **out, apop_data *in){
     apop_name_stack((*out)->names, in->names, 'r');
     apop_name_stack((*out)->names, in->names, 'c');
     apop_name_stack((*out)->names, in->names, 'd');
+    if (in->catsize[0] && in->catsize[1]){
+        (*out)->categories  = malloc(sizeof(char **) * in->catsize[0] * in->catsize[1]);
+        memcpy( (*out)->categories, in->categories, sizeof(char **) * in->catsize[0] * in->catsize[1]);
+    }
 }
 
 

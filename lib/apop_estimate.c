@@ -16,6 +16,7 @@ estimates, the likelihood of the data if a max. likelihood technique,
 and whatever else comes to mind.
 
 \todo Rewrite the inventory and estimate documentation to cohere better. 
+\ingroup types
  */
 
 /** Allocate an \ref apop_inventory and set all of its elements to some
@@ -92,29 +93,36 @@ Are you sure you need to use this? Every regression and MLE function
 provided by Apophenia creates this for you. [You will, however, have to
 free the estimate yourself.]
 
-\param data_size	If you want predicted values or residuals, we need to know how many slots to declare.
-\param	param_size	Notice that in the typical data matrix (not always), data_size is data_matrix->size1 and param_size is data_matrix->size2
-\param n		name structure, if you have one
-\param uses		Tell me what you want declared.
+It takes in all the inputs to the model: data, inventory, parameters, plus the model itself. Those elements of the inventory that are valid are copied in, and you also get pointers to the data, model, and parameters. Those pointers are never really used by Apophenia, but are there for your reference. They're just pointers, so if you destroy your data eleswhere, these pointers will faithfully point to garbage.
+
+\param data	        A pointer to an input apop_data set
+\param model	    A pointer to the model you're estimating
+\param	uses	    The inventory you want. May be NULL if you want everything you can get.
+\param  params      An \ref apop_estimation_params structure. May be NULL.
+
 \ingroup inv_and_est  */
-apop_estimate * apop_estimate_alloc(int data_size, int param_size, apop_name * n, apop_inventory uses){
+//apop_estimate * apop_estimate_alloc(int data_size, int param_size, apop_name * n, apop_inventory uses){
+apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_inventory *uses, apop_estimation_params *params){
 apop_estimate * prep_me;
 	prep_me	= malloc(sizeof(apop_estimate));
-	if (uses.parameters)
-		prep_me->parameters	= gsl_vector_alloc(param_size);
-	if (uses.confidence)
-		prep_me->confidence	= gsl_vector_alloc(param_size);
-	if (uses.predicted)
-		prep_me->predicted	= gsl_vector_alloc(data_size);
-	if (uses.residuals)
-		prep_me->residuals	= gsl_vector_alloc(data_size);
-	if (uses.covariance)
-		prep_me->covariance	= gsl_matrix_alloc(param_size,param_size);
-	if (uses.names) {
-		if (n != NULL) 	prep_me->names		= n;
+	apop_inventory_copy(apop_inventory_filter(uses, model.inventory_filter), &(prep_me->uses));
+	if (prep_me->uses.parameters)
+		prep_me->parameters	= gsl_vector_alloc(model.parameter_ct);
+	if (prep_me->uses.confidence)
+		prep_me->confidence	= gsl_vector_alloc(model.parameter_ct);
+	if (prep_me->uses.predicted)
+		prep_me->predicted	= gsl_vector_alloc(data->data->size1);
+	if (prep_me->uses.residuals)
+		prep_me->residuals	= gsl_vector_alloc(data->data->size1);
+	if (prep_me->uses.covariance)
+		prep_me->covariance	= gsl_matrix_alloc(model.parameter_ct,model.parameter_ct);
+	if (prep_me->uses.names) {
+		if (data->names != NULL) 	prep_me->names		= data->names;
 		else 		prep_me->names		= apop_name_alloc();
 	}
-	apop_inventory_copy(uses, &(prep_me->uses));
+    prep_me->data               = data;
+    apop_model_memcpy(prep_me->model, model);
+    prep_me->estimation_params    = params;
 	return prep_me;
 }
 
@@ -182,4 +190,17 @@ int		i;
 	}
 	if (print_me->uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);
+}
+
+void apop_model_memcpy(apop_model *out, apop_model in){
+    out = malloc(sizeof(apop_model));
+    strcpy(out->name, in.name);
+    out->parameter_ct   = in.parameter_ct;
+    memcpy(&(out->inventory_filter), &(in.inventory_filter), sizeof(apop_inventory));
+	out->estimate           = in.estimate;
+	out->log_likelihood     = in.log_likelihood;
+	out->dlog_likelihood    = in.dlog_likelihood;
+	out->fdf                = in.fdf;
+    out->constraint         = in.constraint;
+	out->rng                = in.rng;
 }

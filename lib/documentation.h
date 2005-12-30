@@ -45,7 +45,7 @@ you do not want it in an in-memory database, until the last possible
 minute---you're probably only using three variables out of six hundred
 anyway. If your data comes from multiple sources, you will need a means
 of merging the sources. In short, data management is best done via a
-database. \ref apop_query will allow you to dynamically write queries
+database. \ref apop_query allows you to dynamically write queries
 that are passed directly to SQLite.
 \li <b>Converting data is a pain</b>. It's funny and a bit wrong that
 college and even grad school statistics classes present the student with
@@ -60,7 +60,7 @@ the library.
 \li <b>The GSL is just a step shy.</b> Don't get me wrong: it's a great
 library, which drives much of Apophenia (see below). But the authors did not have
 statistical analysis in mind, and often chose generality over ease of
-use. For example doing a singular value decomposition theoretically
+use. For example, doing a singular value decomposition theoretically
 just requires a single call to \c gsl_linalg_SV_decomp, but in reality
 takes many steps of data massaging to get things in place. But you can
 feed your data directly to \ref apop_sv_decomposition and get a principal
@@ -93,7 +93,7 @@ Thus, the typical analysis using Apophenia would take the following steps:
  \li Read the data into the database using \ref apop_convert_text_to_db.
  \li Use SQL queries handled by \ref apop_query to massage the data as needed.
  \li Use \ref apop_query_to_data to pull the data into an in-memory apop_data set.
- \li Call a regression function such as \ref apop_OLS  \c apop_OLS.estimate(data_set) or a maximum likelihood estimator such as a \ref apop_probit apop_probit.estimate(data_set) to fit parameters to the data. This will return an \ref apop_estimate object.
+ \li Call a regression function such as \ref apop_OLS "apop_OLS.estimate(data_set)" or a maximum likelihood estimator such as a \ref apop_probit "apop_probit.estimate(data_set)" to fit parameters to the data. This will return an \ref apop_estimate object.
  \li Interrogate the returned estimate, by dumping it to the screen with \ref apop_estimate_print, sending its parameters and variance-covariance matrices to a test, et cetera.
 
 If this seems a bit vague, have a look at this \ref sample_program.
@@ -110,18 +110,21 @@ interface. By reading your data into a database instead of an in-memory
 matrix, you effectively have no limits on the size of your data set,
 and can massage the data in ways that are very difficult in the
 matrix-oriented world most statisticians are used to. This is all done
-via SQLite, but there are wrappers such that the user does not need to
-know anything about the details of SQLite's API.
+via SQLite, but there are wrappers such that the user does not need
+to know anything about the details of SQLite's API. Also, under the
+"minimize annoyances" column, queries sent to SQLite via Apophenia can
+calculate variances, powers, and logs, which are not standard SQL but are
+very common statistician needs.
 
 Apophenia makes heavy use of the GNU Scientific Library, which is
-a well-optimized system for processing large matrices of numbers. That
-is, the models are not written from first principles (as many stats
-packages do), but use well-optimized and -tested functions for low-level
-number crunching. Apophenia includes a number of convenience functions;
-FOR Example, if a function always involves the same setup and cleanup,
-there is probably a function to do all that for you. However, the
-project makes an effort to not replicate any of the functionality in the
-GSL---we're not going to write a better Normal RNG than they already have.
+a well-optimized system for processing large matrices of numbers. That is,
+the models are not written from first principles, but use well-optimized
+and -tested functions for low-level number crunching. Apophenia does
+include a number of convenience functions---if a function always involves
+the same setup and cleanup, Apophenia probably has a function to do all that
+for you. However, the project makes an effort to not replicate any of
+the functionality in the GSL, because we're not going to write a better
+Normal RNG than they already have.
 
 <!--
 \section librant Stats libraries vs Stats packages 
@@ -242,7 +245,7 @@ echo "export LIBRARY_PATH=/usr/local/lib:\$LIBRARY_PATH" >> ~/.bashrc
 These commands add a line to your <tt>.bashrc</tt> file; having modified it, reload it either by restarting your shell or the command <tt>source ~/.bashrc</tt> .
 
 \subsection testing Testing
-There is a short, complete program in the \ref apop_OLS "apop_OLS" entry which runs a simple OLS regression on a data file. Follow the instructions there to compile and run. There is also a slightly longer \ref sample_program on a separate page.
+There is a short, complete program in the \ref apop_estimate_OLS "apop_OLS" entry which runs a simple OLS regression on a data file. Follow the instructions there to compile and run. There is also a slightly longer \ref sample_program on a separate page.
 
 \subsection using Using 
 Now that it's installed, do some stats! For those who are new to C, there are some notes on the \ref C page; if you are familiar with the process, see the \ref usagenotes "usage notes" for Apophenia itself.

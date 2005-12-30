@@ -461,7 +461,7 @@ double          x, ratio;
 of the data in each column; should give more in the near future.
 \todo We should probably let this summarize rows as well.
 */
-apop_data * apop_matrix_summarize(apop_data *indata){
+apop_data * apop_data_summarize(apop_data *indata){
 int		    i;
 gsl_vector_view	v;
 apop_data	*out	= apop_data_alloc(indata->data->size2, 3);
@@ -488,4 +488,16 @@ char		rowname[10000]; //crashes on more than 10^9995 columns.
 		gsl_matrix_set(out->data, i, 2, var);
 	}	
 	return out;
+}
+
+/** Put summary information about the columns of a table (mean, std dev, variance) in a table.
+
+ This is just the version of \ref apop_data_summarize for when
+ you have a gsl_matrix instead of an \ref apop_data set. In
+ fact, here's the source code for this function: <tt>return
+ apop_data_summarize(apop_data_from_matrix(m));</tt>
+
+ */
+apop_data * apop_matrix_summarize(gsl_matrix *m){
+    return apop_data_summarize(apop_data_from_matrix(m));
 }
