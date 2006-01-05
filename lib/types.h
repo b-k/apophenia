@@ -257,6 +257,6 @@ apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
 void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data **out, apop_data *in);
 
-void apop_model_memcpy(apop_model *out, apop_model in); //this is in apop_estimate.c.
+apop_model * apop_model_copy(apop_model in); //this is in apop_estimate.c.
 #endif
 

@@ -302,6 +302,30 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 }
 
 
+/** Take the log of every element in a vector.
+\ingroup convenience_fns
+ */
+void apop_vector_log(gsl_vector *v){
+int     i;
+double  d;
+    for (i=0; i< v->size; i++){
+	    d   = v->data[i * v->stride];
+	    v->data[i * v->stride]  = gsl_sf_log(d);
+    }
+}
+
+/** Take the exponent of every element in a vector.
+\ingroup convenience_fns
+ */
+void apop_vector_exp(gsl_vector *v){
+int     i;
+double  d;
+    for (i=0; i< v->size; i++){
+	    d   = v->data[i * v->stride];
+	    v->data[i * v->stride]  = gsl_sf_exp(d);
+    }
+}
+
 /** Put the first matrix either on top of or to the right of the second matrix.
   The fn returns a new matrix, meaning that at the end of this function, until you gsl_matrix_free() the original matrices, you will be taking up twice as much memory. Plan accordingly.
 

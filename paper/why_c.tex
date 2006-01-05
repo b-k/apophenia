@@ -2,7 +2,7 @@
 
 \index{statistics packages!rants regarding|(}
 There are so many other languages out there in which you could do
-statistics. Why use C instead of SAS, Stata, SPSS, S-PLUS, SSt, GAUSS, GAMS,
+statistics. Why use C instead of SAS, Stata, SPSS, S-PLUS, SSt, GAUSS, GAMS, GRETL,
 MatLab, Minitab, Mupad, Mathematica, Limdep, Octave, R, or RATS? Since this is a
 pervasive question, I'm going to spend a few pages answering it as clearly
 as possible. Over the course of this, you should also get a better idea
@@ -39,10 +39,11 @@ they're Turing-complete,\footnote{Alan Turing wrote down an imaginary
 machine which could execute a dozen types of instruction.  All
 modern programming languages implement these instructions in one way or
 another, and are therefore equivalent to Turing's theoretical computer;
-by transitivity, they are all equivalent to each other. You could
-write a C compiler in MatLab if you were persistent enough.} you could
+by transitivity, they are all equivalent to each other. With enough
+perseverence, you could
+write a C compiler in MatLab.} you could
 write anything in them: maybe a word processor or a painting program. But
-why? It's just as easy to write them in C using the packages I discuss
+why? It's just as easy to write the functions in C using the packages I discuss
 here, and the resulting program will be more robust and orders of
 magnitude faster, as per Reason \#2.
 	\else
@@ -114,7 +115,7 @@ a different type of computer next year, but because we increasingly
 expect that the data and analysis behind a work be publically available.
 For example, it's a requirement for National Science Foundation funding. But if your analysis uses
 a stats package which isn't universally available, then you will break
-the hearts of all of your fellow researcher who want to work with your analysis
+the hearts of all of your fellow researchers who want to work with your analysis
 but for whom it's logistically impossible to do so. Are you sure your
 colleague in Madras can afford a Stata license?
 

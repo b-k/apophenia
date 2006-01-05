@@ -1,4 +1,8 @@
-\def\var{\hbox{var}} \def\cov{\hbox{cov}}
+%Some commonly boldfaced vectors.
+\def\xv{{\bf x} } \def\yv{{\bf y} } \def\pv{{\bf p} }
+\def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
+\def\betav{{\mbox{\boldmath$\beta$}}}
+\def\vector#1{\left[\matrix{#1}\right]}
 %@-     so lgrind will play nice with makeindex
 \chapter[Gaussian tricks]{Hypothesis testing with Gaussian distributions} \label{gauss}
 
@@ -157,8 +161,12 @@ Notice that there is no inverse for the CDFs of the F distribution.
 
 
 \section{Testing a hypothesis}
+
+
+
+
 We have all the ingredients we need to test a hypothesis; all that
-remains is to glue them all together.  In the last chapter, the code
+remains is to glue them all together. For example, in the last chapter, the code
 found the coefficient vector {\tt beta} and {\tt xpx\_inv}, which is the
 variance-covariance matrix of {\tt beta}.  Now assume that {\tt beta}
 is normally distributed (for example, the original data set consists
@@ -184,8 +192,238 @@ for (i=0;i< beta->size; i++){
 The last two steps converted from the one-tailed area below {\tt beta}
 to a two-tailed area between $\pm${\tt beta}.
 
-But we have the whole variance-covariance matrix to work with, not just the diagonal, so we can readily
-test any joint hypothesis that suits our fancy.
+
+
+\subsection{how to evaluate a test}
+Here are some vocabluary terms; if you are in a stats class right now,
+you will be tested on this:
+
+The likelihood of \ind{type I errors} $\equiv\alpha$: rejecting the null when it's true.
+
+The likelihood of \ind{type II errors} $\equiv\beta$: accepting the null when
+it's false.
+
+\ind{power}$\equiv 1-\beta$, or the likelihood of rejecting a false null.
+
+Unbiased$\equiv (1-\beta)\geq \alpha\ \forall$ values of the parameter.
+I.e., you're less likely to accept the null when it's false than when
+it's true.
+
+\ind{consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.
+
+\subsubsection{Keeping type I and type II straight} 
+[Somebody once told me this story: if a doctor is deciding
+whether to give a vaccination, and $H_0=$ the patient is sick,
+then rejecting $H_0$ when it's true and thus not vaccinating is much worse than accepting
+$H_0$ when it's true and thus vaccinating extraneously, so the important error is type I. I always
+thought this was totally {\it ad hoc}, especially since $H_0=$
+the patient is not sick is more null. But if the story helps you, run
+with it.]
+
+You're probably familiar with the
+standard hypothesis test, which says things like `we reject the null with 90\%
+likelihood', and is what the charts in the back of the textbook are about.
+That's the type I error. It comes first because
+it's generally all anybody talks about.
+
+
+Why do we neglect type II errors? Because in the next section Neyman and Pearson will tell us we can.
+
+\subsection{\ind{likelihood ratio}s}
+
+Say the cost to a type I error is $C_I$ and the cost to a type II error is $C_{II}$.
+Then you'll reject $H_0$ iff the likely cost is less than the likely cost of not
+rejecting. That is reject $H_0$ iff $C_I P(H_0|\xv)<C_{II} P(H_1|\xv)$.
+
+We need to note two things from here. First, the difference between a `probability',
+which is the probability of an event given data; and a `likelihood', which is the
+probability that we'd have the data we have given some event. This is nitpicking that
+you don't really have to care about, except that here and there somebody will call you
+on it. This may also clarify for you why some things are called one and some the
+other.
+
+Second, ?`remember the definition of a \ind{conditional probability}? It's based on the
+statement $P(A\cap B)=P(A|B)P(B)$, and symmetrically, $P(A\cap B)=P(B|A)P(A)$.  Equating
+the two and shunting $P(B)$ over gives us \ind{Bayes's rule}: $$P(A|B)={P(B|A) P(A)\over P(B)}$$
+Applying Bayes's rule to the rejection test is easy: set $A=H_0$, $B=\xv$,
+$P(A|B)=P(H_0|\xv)$, and $P(B|A)=L(\xv|H_0)$. Then:
+\begin{eqnarray}
+C_I P(H_0|\xv)&<&C_{II} P(H_1|\xv)\label{firstnp}\\
+\nonumber\\
+C_I {L(\xv|H_0)P(H_0)\over P(\xv)}&<& C_{II} {L(\xv|H_1)P(H_1)\over P(\xv)}\label{secondnp}\\
+\nonumber\\
+c&<& {L(\xv|H_1)\over L(\xv|H_0)}\label{thirdnp}
+\end{eqnarray}
+
+Inequality \ref{firstnp} is the rejection rule from above; Inequality
+\ref{secondnp} uses Bayes's rule to insert the likelihood functions;
+Inequality \ref{thirdnp} just does some cross-division, cancelling out the
+$P(\xv)$s, and defining $c\equiv C_IP(H_1)/C_{II}P(H_0)$, i.e., everything
+that doesn't depend on $\xv$. If you tell me the shape of the distribution
+and some number $\alpha\in(0,1)$, then I can give you a value of $c$
+such that Inequality \ref{thirdnp} is true with probability
+$\alpha$. The test will then be: fail to reject $H_0$ iff Inequality
+\ref{thirdnp} is true.
+
+Neyman and Pearson\index{Neyman-Pearson lemma} proved\footnote{See
+e.g. \cite[189--191]{amemiya:ez}, from whom I cribbed
+this section.}  that this test is the `best' in the sense that for a
+fixed type I error (fixed at $\alpha$), the probability of a type II
+error is minimized. So we can design any test we like by just fixing $\alpha$
+at a value we're comfortable with (custom says to use
+90, 95 or 99\%), calculate a few likelihood functions, and we're assured
+that we did the best we could regarding type II errors. You'll see that
+many of the tests which follow will be of the likelihood ratio form,
+and so type II errors pretty much never get mentioned, since they're
+considered taken care of.
+
+
+
+
+\subsection{the $\chi^2$ test \index{$\chi^2$!test}}
+
+By itself, this is only useful for testing whether the sample variance
+is equal to a given $\sigma^2$, because unless you assume $\sigma^2$ you
+don't have it (unless you are doing a homework question that says something like `$\sigma^2$
+is known'). Otherwise, in the case of multiple variables, you need to use
+an $F$ test; see below.
+
+$H_0$ asks, is ${\Qv'
+\betav} = \cv$?  This is a very versatile question. E.g., $\Qv =
+\vector{1\cr 0\cr 0}$ plus $\cv = [7]$ gives $H_0: \beta_1 = 7$. Or, $\Qv = \vector{1 \cr
+-1}$ and $\cv = \vector{0}$ gives $H_0: \beta_1=\beta_2$. 
+Or, say we want to test that $\beta_2 = 2\beta_3$. Then let $\Qv=\vector{0 \cr 1 \cr -2}$ and $\cv = 0$.
+To test multiple hypotheses at once, simply stack the above:
+\begin{equation}
+\matrix{\Qv' = \vector{1 & 0 & 0  \cr
+                0 &1 &-2}
+                & \cv = \vector{7 \cr 0}}.\label{qc}\end{equation}
+
+I dare
+say that every linear hypothesis having to do with a mean or a $\beta$ can be
+fit into this form.\footnote{If our concern is a mean, then set
+$\Yv=$your data, $\Xv=$ a column of ones, and $\beta$ will then be
+$\mu$.}
+Define $q$ to be the number of constraints (columns
+of $\Qv$), $N$ the sample size, and $K$ the number of parameters to be
+estimated ($\betav$).
+
+Now, if $H_0$ is true and we're using OLS, then $\Qv' \betav \sim {\cal
+N}(\cv, \sigma^2 \Qv' (\Xv'\Xv)^{-1} \Qv)$,\footnote{For any other
+method, the variance is $\Qv'$(the variance from section
+\ref{cat})$\Qv$.} and we can use all of the above. The $\chi^2$
+statistic now becomes:
+
+\begin{equation}		\label{chi1}
+{(\Qv'\hat\betav - \cv)' [\Qv' (\Xv'\Xv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
+\over \sigma^2} \sim \chi^2_q
+\end{equation}
+
+If we're testing a variance, we'd have 
+
+\begin{equation}		\label{chi2}
+{{\bf u}' {\bf u} \over \sigma^2} \sim \chi^2_{N-K}
+\end{equation}
+
+
+\subsection{the $F$ test\index{F!test}}
+
+As above, we can divide equation \ref{chi1} by equation \ref{chi2} to give us a statistic
+with an $F$ distribution
+
+\begin{equation}	
+{N-K\over q}
+{(\Qv'\hat\betav - \cv)' [\Qv' (\Xv'\Xv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
+\over \uv' \uv } \sim F_{q,N-K} \label{ftest}
+\end{equation}	
+
+If you have read this far, you know how to code all of the operations
+in Equation \ref{ftest}.  But fortunately, 
+Apophenia includes a function that will calculate Equation \ref{ftest}
+for you.
+\index{F test!apop\_F\_test@{\tt apop\_F\_test}}
+To do this, you will need to feed the function a $\betav$ vector, and a
+matrix $\Qv'$ plus a vector $\cv$ that indicate the set of hypotheses
+you wish to test. Notice that each {\em row} of the input matrix represents a
+hypothesis. Also, recall that functions ending in {\tt calloc} allocate
+a matrix or vector and simultaneously set every element to zero, giving
+you a blank slate to fill. Thus, if you already have a data set, and
+would like to run an OLS regression and then test the joint hypothesis
+of Equation \ref{qc}, here's what you'd type:
+%[
+apop_estimate *e = apop_OLS.estimate(data, NULL, NULL);
+gsl_matrix *Q   = gsl_matrix_calloc(3,2);
+gsl_vector *c   = gsl_vector_alloc(2);
+gsl_matrix_set(Q, 0, 0, 1);
+gsl_matrix_set(Q, 1, 1, 1);
+gsl_matrix_set(Q, 1, 2, -2);
+gsl_vector_set(Q, 0, 7);
+apop_F_test(e, data, Q, c);
+%]
+
+Included in the default output from a regression,
+many stats packages run an $F$-test that reports the
+joint hypothesis that all coefficients are different from zero. That is,
+the $F$-test where $\Qv = {\bf I}$ and $\cv = {\bf 0}$. It is up to you
+to decide whether this is a relevant statistic for the situation you are
+dealing with, but because it is a custom to report it, some people expect it,
+so
+Apophenia facilitates this hypothesis test by assuming it is the default to assume when you to send in {\tt
+NULL} variables: {\tt apop\_F\_test(estimate, data, NULL, NULL)}. That is, if
+$\Qv'=${\tt NULL}, Apophenia assumes ${\bf I}$ and if $\cv=${\tt NULL},
+Apophenia assumes ${\bf 0}$.
+
+
+
+
+\comment{
+\subsection{The F-test}
+But we have the whole variance-covariance matrix to work with, not just
+the diagonal, so we can readily test any joint hypothesis that suits
+our fancy. First, we need a means of expressing the hypothesis.
+}
+
+\subsection{The t-test} \label{ttest}
+\index{t test!apop\_t\_test@{\tt apop\_t\_test}}
+\index{t test!apop\_paired\_t\_test@{\tt apop\_paired\_t\_test}}
+Among the most common and simplest questions one asks is: are two data
+sets from the same process? Let {\tt n\_side} be the income of households
+drawn from the North side of town, North of the railroad tracks, and
+{\tt s\_side} be the income of households drawn from the South side of
+town. Are North side incomes different from South side incomes? 
+
+It so happens that the sum of two Normal distributions is also a normal
+distribution, which means the the difference between two Normals is also
+Normal, and with enough algebra, one can prove that a comparable difference of 
+two t-distributions is also t-distributed. Notably, if $\mu$,
+$\sigma^2$, and $n$ are the estimated mean, variance, and actual count
+of elements of each data set,
+$${\mu_a + \mu_b \over \sqrt{\sigma^2_a/n_a + \sigma^2_b/n_b}} \sim t_{n_a + n_b -2}.$$
+Using the ingredients above, the reader could construct a function to
+test the hypothesis that the number above, the $t$-statistic, is
+different from zero for any given confidence level. Apophenia provides a
+high-level function to do the work for you:
+
+%[
+apop_vector *a = gather_data("n_side");
+apop_vector *b = gather_data("s_side");
+apop_t_test(a, b);
+%]
+
+Now let us say that the data is paired, in the sense that for each
+element in the first set, there is an element in the second set that is
+related; put another way, this means that for each element $a_i$, there
+is a corresponding element $b_i$ such that the difference $a_i - b_i$
+makes real-world sense. For example, we could look at student scores on
+a test before a set of lessons and the same students after the lessons.
+Then, rather than looking at the $t$-distribution for the before data
+and comparing it to the $t$-distribution for the after data, we could
+look at the vector of differences $a_i - b_i$ and test where zero falls
+in the appropriate $t$-distribution. This is a more powerful test,
+meaning that we are more likely to reject the null hypothesis of no
+difference between the two vectors, therefore researchers prefer the
+paired $t$-test over the unpaired version above. Apophenia provides the
+{\tt apop\_paired\_t\_test} function to run this test where appropriate.
 
 \comment{
 \section{Good ol' OLS}

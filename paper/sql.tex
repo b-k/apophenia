@@ -1,4 +1,5 @@
 \chapter{Databases} \label{sql}
+%@-     so lgrind will play nice with makeindex
 
 Structured Query Language and matrix operations are excellent complements. Some things, like
 making a crosstab, are a bit of a pain using traditional techniques of
@@ -440,4 +441,42 @@ means is less than or equal to zero. If {\tt test\_me} turns out to be greater
 than your preferred confidence interval, (e.g., 95\%), then reject the
 null and go to grad school. Else, there isn't enough information to
 distinguish between the two with confidence.
+
+\subsection{No, easier} The above example gave you line-by-line
+control, but let's say the boss gave you ten minutes to get out a
+t-test. Here is a complete program:
+\index{t test!apop\_t\_test@{\tt apop\_t\_test}}
+
+%[
+#include <apophenia/headers.h>
+
+int main(void){
+    apop_db_open("education_data.db");
+
+    gsl_vector	*undereducated = apop_query_to_vector(
+      "select log(income) from survey \
+      where education < 16 and income>0");
+
+    gsl_vector	*overeducated = apop_query_to_vector(
+      "select log(income) from survey \
+      where education >=16 and income>0");
+
+    apop_t_test(undereducated, overeducated);
+    return 0;
+}
+%]
+
+This is stats-package level work: open the database, query out two
+columns, and call a $t$-test function that does things
+we don't have time to think about. Those who report incomes less than or
+equal to zero, we just throw out.\footnote{You may be able to do better
+by querying out incomes, and then calling
+    {\tt apop\_vector\_log(overeducated)} and {\tt
+    apop\_vector\_log(undereducated)} to get the logs. Then you'll have
+    {\tt GSL\_NEGINF}s where you had zeros, which means you will at least
+    know exactly where your problem is. Of course, the $t$-test will
+    still fail because of the infinite variances.}
+
+See page \pageref{ttest} for more on the $t$-test and this function.
+
 

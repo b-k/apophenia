@@ -121,7 +121,7 @@ apop_estimate * prep_me;
 		else 		prep_me->names		= apop_name_alloc();
 	}
     prep_me->data               = data;
-    apop_model_memcpy(prep_me->model, model);
+    prep_me->model              = apop_model_copy(model);
     prep_me->estimation_params    = params;
 	return prep_me;
 }
@@ -192,8 +192,12 @@ int		i;
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);
 }
 
-void apop_model_memcpy(apop_model *out, apop_model in){
-    out = malloc(sizeof(apop_model));
+/** Outputs a copy of the \ref apop_model input.
+\param in   the model to be copied
+\return a pointer to a copy of the original, which you can mangle as you see fit. 
+*/
+apop_model * apop_model_copy(apop_model in){
+apop_model * out = malloc(sizeof(apop_model));
     strcpy(out->name, in.name);
     out->parameter_ct   = in.parameter_ct;
     memcpy(&(out->inventory_filter), &(in.inventory_filter), sizeof(apop_inventory));
@@ -203,4 +207,5 @@ void apop_model_memcpy(apop_model *out, apop_model in){
 	out->fdf                = in.fdf;
     out->constraint         = in.constraint;
 	out->rng                = in.rng;
+    return out;
 }

@@ -2,7 +2,8 @@
 
 \section Prerequisites 
  \li \ref intro "Intro": The motivation for the package.
- \li \ref setup "Setup":  Installing GCC, the GSL, SQLite, and Apophenia itself.
+ \li \ref setup "Setup": Installing GCC, the GSL, SQLite, and Apophenia itself.
+ \li \ref types "Types": New structures defined by Apophenia.
 
 \section dostats Doing statistics 
  \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.
@@ -24,7 +25,6 @@
  programming language. Those who know their C may want to check the
  Apophenia-specific notes in the \ref usagenotes "usage notes" section.
  \li \ref sql About the syntax for querying databases.
- \li \ref types "Types": New structures defined by Apophenia
 
  \ref admin
  */

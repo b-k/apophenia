@@ -71,6 +71,59 @@ double		avg	= apop_mean(diff),
 	return factor * two_tailify(gsl_cdf_tdist_P(stat, count-1));
 }
 
+/** Runs an F-test specified by \c q and \c c. Your best bet is to see
+ the chapter on "Gaussian Tricks" in the <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF manual</a> (check the index for F-tests). It will tell you that:
+ \f$${N-K\over q}
+ {(\Qv'\hat\betav - \cv)' [\Qv' (\Xv'\Xv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
+ \over \uv' \uv } \sim F_{q,N-K},\f$$
+ and that's what this function is based on.
+ \param est     an \ref apop_estimate that you have already calculated.
+ \param data    your \ref apop_data set. If NULL, use the one included in \c est.
+ \param q       The matrix \f${\bf Q}\f$, where each row represents a hypothesis.
+ \param c       The vector \f${\bf c}\f$. The PDF manual explains all of this.
+ \return The confidence with which we can reject the joint hypothesis.
+ \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \Sigma.
+ */
+double apop_F_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c){
+gsl_matrix      *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
+gsl_matrix      *xpxinv     = gsl_matrix_calloc(set->data->size2, set->data->size2);
+gsl_vector      *qprimebeta = gsl_vector_calloc(q->size1);
+gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(q->size1, set->data->size2);
+gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(q->size1, q->size1);
+gsl_matrix      *qprimexpxinvqinv   = gsl_matrix_calloc(q->size1, q->size1);
+gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(q->size1);
+double          f_stat;
+double          variance;
+int             q_df        = q->size1,
+                data_df     = set->data->size1 - est->parameters->size;
+    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);   
+	apop_det_and_inv(xpx, &xpxinv, 0, 1);		
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, q, xpxinv, 0, qprimexpxinv);  
+    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, qprimexpxinv, q,  0,  qprimexpxinvq);  
+	apop_det_and_inv(qprimexpxinvq, &qprimexpxinvqinv, 0, 1);		
+    gsl_blas_dgemv(CblasNoTrans, 1, q, est->parameters, 0, qprimebeta);
+    gsl_vector_sub(qprimebeta, c);
+    gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
+    gsl_blas_ddot(qprimebetaminusc_qprimexpxinvqinv, qprimebeta, &f_stat);
+
+    gsl_blas_ddot(est->parameters, est->parameters, &variance);
+    f_stat  *=  data_df / (variance * q_df);
+    printf("the f statistic: %g\n", f_stat);
+    gsl_matrix_free(xpx);
+    gsl_matrix_free(xpxinv);
+    gsl_matrix_free(qprimexpxinv);
+    gsl_matrix_free(qprimexpxinvq);
+    gsl_matrix_free(qprimexpxinvqinv);
+    gsl_vector_free(qprimebeta);
+    gsl_vector_free(qprimebetaminusc_qprimexpxinvqinv);
+    return f_stat;
+}
+
+/** a synonym for \ref apop_F_test, qv. */
+double apop_f_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c){
+return apop_F_test(est, set, q, c);
+}
+
 //shift first col to depvar, rename first col "one".
 static void prep_inventory_names(apop_name *n){
 	if (n != NULL && n->colnamect > 0) {		
@@ -132,10 +185,10 @@ Since the first column and row of the var/covar matrix is always zero, users sho
  */
 apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matrix *sigma){
     prep_inventory_names(set->names);
-apop_model      modded_ols;
-    apop_model_memcpy(&modded_ols,apop_GLS);
-    modded_ols.parameter_ct = set->data->size2;
-apop_estimate	*out	= apop_estimate_alloc(set, modded_ols, uses, NULL);
+apop_model      *modded_ols;
+    modded_ols              = apop_model_copy(apop_GLS);
+    modded_ols->parameter_ct= set->data->size2;
+apop_estimate	*out	= apop_estimate_alloc(set, *modded_ols, uses, NULL);
 gsl_vector 	*y_data		= gsl_vector_alloc(set->data->size1);
 gsl_matrix 	*temp		= gsl_matrix_calloc(set->data->size2, set->data->size1);
 gsl_vector 	*xsy 		= gsl_vector_calloc(set->data->size2);
@@ -228,10 +281,10 @@ int main(void){
  */
 apop_estimate * apop_estimate_OLS(apop_data *set, apop_inventory *uses, void *dummy){
     prep_inventory_names(set->names);
-apop_model      modded_ols;
-    apop_model_memcpy(&modded_ols,apop_OLS);
-    modded_ols.parameter_ct = set->data->size2;
-apop_estimate	*out		= apop_estimate_alloc(set, modded_ols, uses, NULL);
+apop_model      *modded_ols;
+    modded_ols              = apop_model_copy(apop_OLS); 
+    modded_ols->parameter_ct= set->data->size2;
+apop_estimate	*out		= apop_estimate_alloc(set, *modded_ols, uses, NULL);
 gsl_vector      *y_data     = gsl_vector_alloc(set->data->size1); 
 gsl_vector      *xpy        = gsl_vector_calloc(set->data->size2);
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);

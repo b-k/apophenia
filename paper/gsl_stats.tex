@@ -5,11 +5,12 @@
 \def\ind#1{\index{#1}#1}
 \newif\ifbook \booktrue
 \documentclass[12pt,notitlepage, openany]{book}
+\usepackage{natbib}
 \usepackage{amsfonts}  %for mathbb
 \usepackage[nolineno,noprocindex]{lgrind}
 
 %indexing:
-\usepackage{multicol, makeidx}
+\usepackage{multicol, makeidx, url}
 \makeindex
 \def\ind#1{\index{#1}#1}
 \def\ttind#1{\index{#1@{\tt #1}}{\tt #1}}
@@ -31,6 +32,12 @@
 \tableofcontents \vfill\eject
 
 \chapter[Introduction]{Doing statistics in the modern day}
+
+[To repeat the warning from the Preface, this book is very incomplete. The
+first three chapters are finished, and it tapers off from there, to the
+point that the last chapter is just a placeholder. I feel that it should
+already have utility to many people, so it is here for your perusal.]
+\vskip .5cm
 
 In case it's not obvious to you, we can't do statistical analysis without
 computers.  The mathematical explanation of a statistical procedure is
@@ -63,8 +70,8 @@ using these packages for statistical analysis. You could do all of the
 analyses in this book without Apophenia, but you would find yourself
 rewriting many of its functions.
 
-I assume that you've had a statistics class already, but may need some reminding
-here and there, and so I'll include sidebars to remind you of your Greek. I also
+I assume that you've had a statistics class already, but may need some refreshing
+here and there, and so I'll include digressions to remind you of your Greek. I also
 assume that you're basically computer-literate, so I won't explain to you how to
 copy files or how to work a text editor.
 
@@ -210,16 +217,17 @@ SAS if you so choose.}
 The best programs for large data sets are databases. They are designed
 from the ground up to do nothing but let you efficiently retrieve what you
 need from huge amounts of data.  Of course, being so purpose-specific,
-there's no way to do statistics in a database (beyond calculating
+there's no way to do statistics in a database (beyond trivialities like calculating
 averages). Fortunately, we're working in C, so we can have the best of
-all worlds. The method I advocate in this book is to read all of your
+all worlds. The method I advocate in this book (and the method that
+Apophenia facilitates) is to read all of your
 data into a database, and then query what you need to a matrix, as you
 need it. This requires learning a new syntax, SQL, which is decidedly
 neither Beautiful nor Perfect, and adds a level of complication on top
 of what we're already dealing with. But from my experience, it is very
 much worth it.
 
-This book and the Apophenia library use the SQLite library, which will
+Apophenia  uses the SQLite library, which will
 give you all the database functionality you need. Those of you who are
 already database gurus, or who are handed data which is already handled
 by another database engine, will easily be able to adapt the techniques
@@ -276,6 +284,7 @@ existence today, on any data set, no matter how large or exceptional.
 \input c_crash.ground
 \input sql.ground
 \input linear_algebra.ground
+\input apop.ground
 \input projection.ground
 \input gauss.ground
 \input mle.ground
@@ -283,4 +292,6 @@ existence today, on any data set, no matter how large or exceptional.
 \input mcmc.tex
 \input gnuplot.tex
 \printindex
+\bibliographystyle{plainnat}
+\bibliography{guide}
 \end{document}

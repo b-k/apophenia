@@ -1,8 +1,8 @@
 .SUFFIXES: .dvi .pdf
-#DOCNAME = gsl_stats
-DOCNAME = c_crash
+DOCNAME = gsl_stats
+#DOCNAME = c_crash
 
-all: sources/dummy.tex
+all: sources/dummy.tex 
 	for i in *tex; do lgrind -e -t 4 $$i > $$(basename $$i .tex).ground; done;
 	latex $(DOCNAME)
 

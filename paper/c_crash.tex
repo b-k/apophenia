@@ -1,4 +1,4 @@
-\newif\ifbook \bookfalse
+\newif\ifbook \booktrue
 
 %@- This is so lgrind will get along with makeindex.
 
@@ -833,7 +833,7 @@ Mac and Windows users will need to download a copy; see {\tt gcc.gnu.org}
 for details. Windows users have two options: one is to get Mingw,
 which provides a compiler and not much else. You can also try Dev-C++, which is an integrated development
 environment (an IDE) which gives you a familiar set of windows in which to write, compile, and debug your
-programs. A copy is currently avaialable at {\tt http://www.bloodshed.net/dev/devcpp.html}.
+programs. A copy is currently availaable at {\tt http://www.bloodshed.net/dev/devcpp.html}.
 Many other IDEs are available, for any graphically-oriented operating system, of varying quality.
 
 The other option is to get Cygwin, from {\tt cygwin.com}. Cygwin is
@@ -847,11 +847,11 @@ Mac OS X users will be using the terminal to do most of the work below.
 Herein, I will assume that you have a working copy of {\tt gcc}, {\tt
 gdb}, et cetera, and it is on the search path for executables on your
 system. If this is not the case, then abundant help is available, either
-from your local computer guru or from {\tt www.google.com}.
+from your local computer guru or from your favorite search engine.
 
 \paragraph{The \ind{libraries}} This book makes heavy use of the GNU Scientific Library and the SQLite library.
-Both of these are avaialble online (ask Google for the location) in various formats. For Linux users,
-there are RPMs avaialble. The GSL is one of the packages available in the Cygwin installation. If no easy
+Both of these are available online (ask your search engine for the location) in various formats. For Linux users,
+there are RPMs available. The GSL is one of the packages available in the Cygwin installation. If no easy
 package is available for your system, then you will need to compile the program from source. Fortunately,
 you have a working copy of {\tt gcc} on your system, so this is easy. The steps are:\\
 $\bullet$ Download the source code, and unpack it, usually with {\tt tar xvzf package.tgz} .\\
@@ -1497,7 +1497,8 @@ in your array, then you probably won't bother with pointers, and will
 instead use the {\tt int fixed\_list[300]} declaration, so you can leave
 the memory allocation issues to the computer. But if you try to put 301
 elements in the list (which, you will recall, means putting something
-in {\tt fixed\_list[300]}), then you will be using memory which C hadn't
+in {\tt fixed\_list[300]}), then you will be using memory which the
+machine hadn't
 allocated for you---a segfault.
 
 If you're not sure about the size of your array, then you'll need to
