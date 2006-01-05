@@ -95,3 +95,118 @@ Then we bootstrap to find the distribution! I'll put an example here which puts 
 from the last chapter and this one, constructing a likelihood function like the one above using the
 bootstrap.
 
+\section{Writing your own}
+The design of the {\tt apop\_\-model} hopes to make it as easy as possible for you,
+dear reader, to write new models. For the most part, all you need to
+do is write a log likelihood function, and \ttind{apop\_\-maximum\_\-likelihood}
+does the rest.
+
+
+\begin{itemize}
+\item Write a likelihood function. Its header will look like this:
+%[
+double apop_new_log_likelihood(const gsl_vector *beta, void *d)
+%]
+where {\tt beta} will be the parameters to be maximized, and {\tt d} is the fixed parameters---the data. In every case currently included
+with Apophenia, {\tt d} is a {\tt gsl\_\-matrix,} but you do not have to conform
+to that. This function will return the value of the log likelihood function at the given parameters.
+
+\item Is this a constrained optimization? See below on how to set them.
+
+\item Write the object. In your header file, include 
+%[
+apop_model apop_new_likelihood = {"The Me distribution", 
+            number_of_parameters, 
+{       //what will apop_new_likelihood.estimate return?
+        1,      //parameters 
+        1,      //covariance
+        1,      //confidence
+        0,      //predicted
+        0,      //residuals
+        1,      //log_likelihood
+        1       //names;
+},          new_estimate,
+            new_log_likelihood, 
+            NULL,   //place dlog likelihood here.
+            NULL,   //place constraint fn here.
+            NULL    //place RNG here.
+            };
+%]
+If there are constraints, then replace the appropriate {\tt NULL} with the right constraint function; see below.
+{\tt number\_\-of\_\-parameters} is probably a positive integer like {\tt 2}, but
+it is often (the number of columns in your data set) -1, in which case,
+set {\tt number\_\-of\_\-parameters} to {\tt -1}.
+
+\item Test. Debug. Retest.
+
+\item (optional) Write a gradient for the log likelihood function. This
+typically involves calculating a derivative by hand, which is an easy
+problem in high-school calculus. The function's header will look like: 
+%[
+void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, 
+                                    gsl_vector *gradient)
+%]
+where {\tt beta} and {\tt d} are fixed as above, and {\tt gradient} is a {\tt gsl\_\-vector} with dimension matching {\tt beta}. 
+At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
+%[
+gsl_vector_set(gradient,0, d_a);
+gsl_vector_set(gradient,1, d_b);
+%]
+Now add the resulting dlog likelihood function to your object, by replacing the {\tt NULL} labeled "place dlog likelihood here" with the name of your dlog likelihood function.
+\item Send the code to the maintainer for inclusion in future versions of Apophenia.
+\end{itemize}
+
+
+\subsection{Setting constraints}\index{optimization!constrained}
+
+The problem is that the parameters of a function must not take on
+certain values, either because the function is undefined for those
+values or because parameters with certain values would not fit the
+real-world problem.
+
+The solution is to rewrite the function being maximized such that the
+function is continuous at the constraint boundary but takes a steep
+downward slope. The unconstrained maximization routines will be able
+to search a continuous function but will never return a solution that
+falls beyond the parameter limits.
+
+If you give it a likelihood function with no regard to constraints plus
+an array of constraints, \ttind{apop\_\-maximum\_\-likelihood} will combine
+them to a function that fits the above description and search accordingly.
+
+This is similar to the common penalty function methods of turning an
+constrained problem into an unconstrained one, as in \cite{nonlinear},
+with a few differences. Primarily, we don't know if the constraint is
+because the author of the system declared an arbitrary cutoff (`we can't spend more
+than \$1,000.') or if evaluating the likelihood function fails
+($\ln(-1)$). 
+
+A constraint function must do three things:
+\begin{itemize}
+\item It must check the constraint, and if the constraint does not bind (i.e., the parameter values are OK), then it must return zero.
+\item If the constraint does bind, it must return a penalty, that indicates how far off the parameter is from meeting the constraint.
+\item if the constraint does bind, it must set a return vector that the likelihood function can take as a valid input. The penalty at this returned value must be zero.
+\end{itemize}
+
+The idea is that if the constraint returns zero, the log likelihood
+function will return the log likelihood as usual, and if not, it will
+return the log likelihood at the constraint's return vector minus the
+penalty. To give a concrete example, here is a constraint function that
+will ensure that both parameters of a two-dimensional input are both
+greater than zero:
+
+%[
+static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
+double          limit0          = 0,
+                limit1          = 0,
+                tolerance       = 1e-3; // GSL_EPSILON_DOUBLE is also a popular choice, but sometimes fails.
+double          beta0   = gsl_vector_get(beta, 0),
+                beta1   = gsl_vector_get(beta, 1);
+        if (beta0 > limit0 && beta1 > limit1)
+                return 0;
+        //else:
+        gsl_vector_set(returned_beta, 0, GSL_MAX(limit0 + tolerance, beta0));   //create a valid return vector.
+        gsl_vector_set(returned_beta, 1, GSL_MAX(limit1 + tolerance, beta1));
+        return GSL_MAX(limit0 - beta0, 0) + GSL_MAX(limit1 - beta1, 0);         //return a penalty.
+}
+%]

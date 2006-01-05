@@ -115,7 +115,7 @@ the variance-covariance matrix of an <tt>apop_estimate*</tt> is present,
 for example, you would look at <tt>est->uses.covariance</tt>.
 
 
-It may sometimes be useful to manipulate The ["apop_estimate"] structure's
+It may sometimes be useful to manipulate the ["apop_estimate"] structure's
 internal <tt>apop_inventory</tt> element to your own benefit. For
 example, if you set <tt>est->uses.residuals = 0</tt> before calling
 <tt>apop_print_estimate(est, NULL)</tt>, then the residuals won't get
