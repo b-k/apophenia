@@ -27,15 +27,16 @@
 \date{January 2006}
 \maketitle
 
+\comment{ Everything in the preface is in chapter one.
 \chapter*{Preface}
 \input preface.tex
-
+}
 \tableofcontents \vfill\eject
 
 \chapter[Introduction]{Doing statistics in the modern day}
 
-[To repeat the warning from the Preface, this book is very incomplete. The
-first three chapters are finished, and it tapers off from there, to the
+[This book is very incomplete. The
+first three chapters are finished, but it tapers off from there, to the
 point that the last chapter is just a placeholder. I feel that it should
 already have utility to many people, so it is here for your perusal.]
 \vskip .5cm
@@ -48,7 +49,7 @@ it into real computer code.
 I wrote this book to help you make that translation. The first focus is purely
 mathematical: we need to select techniques bearing in mind that they'll eventually
 be code. The second focus is about practical coding: your life
-is short, and you want spend as little of it coding as possible.
+is short, and you want spend as little of it learning dumb languages as possible.
 
 Doing math with a computer is unfettering. Instead of using
 regression techniques designed before computers, we can use techniques
@@ -71,10 +72,21 @@ using these packages for statistical analysis. You could do all of the
 analyses in this book without Apophenia, but you would find yourself
 rewriting many of its functions.
 
+\paragraph{The intended audience}
 I assume that you've had a statistics class already, but may need some refreshing
 here and there, and so I'll include digressions to remind you of your Greek. I also
-assume that you're basically computer-literate, so I won't explain to you how to
-copy files or how to work a text editor.
+assume that you are basically computer-literate, so I won't explain to you how to
+turn on your computer, copy files, or work with a text editor.
+
+There is an up-front investment to the methods here, and a long-term
+payoff. If you expect that you will never do
+anything more difficult than a linear regression on well-formed IID data,
+or if you are trying to slog through your department's stats requirement
+so you can never look at another data set again, then by all means, put
+this book down and get a copy of the easiest stats package you can get
+away with. But if you expect to be doing statistical work for a larger
+part of your career, such that problems of extensibility, portability,
+and precision may be looming in your future, then this book is for you.
 
 \section{The stats we'll cover} 
 As powerful as we like to think modern statistics is, it has a 
@@ -259,11 +271,12 @@ Standard Query Language (SQL), which is a language that facilitates
 producing tables of just the right form from a dataset. C and SQL are
 excellent complements for data analysis: things which are very difficult
 in one are often trivial in the other.
-
 Chapter \ref{linear_algebra}
 will then introduce you to the package of C functions most useful for
 doing stats: the GNU Scientific Library (GSL). Notably, it will cover
-how to do linear algebra using the GSL.
+how to do linear algebra using the GSL. Chapter \ref{apop} covers
+Apophenia, a library of functions that bind together the GSL and SQLite
+to facilitate statistics.
 
 With that introduction, you'll be ready to dive in to the
 statistics. There's a chapter devoted to each of the three categories

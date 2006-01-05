@@ -6,9 +6,19 @@ already have utility to many people, so it is here for your perusal.]
 
 This book is a write-up of my experience writing statistical analyses.
 The methods I advocate go against the current orthodoxy, as described
-in full-color advertisements in leading journals and magazines, so I want to
-use this preface to be especially explicit in explaining why I eschew
-the statistics packages that others love so much.
+in full-color advertisements in leading journals and
+magazines. Part of why this book is so long is that I queried it to
+various publishers, who where all receptive and sympathetic and asked
+for more, but in the end felt they couldn't publish it. As one editor
+explained: ``\dots most of the statistics [book] market is quite heavily
+influenced by the software companies that service the field.'' The
+referrees who gave the book negative reviews were comparably insistent
+that doing statistics without a stats package can't possibly be
+done---except I've been doing it for years.
+
+So, at the risk of sounding overly negative, I want to use this preface
+to be especially explicit in explaining why this book covers methods and
+tools that fail to conform to the orthodoxy.
 
 \comment{
 There are two reasons I went through the effort of writing down my experiences in
@@ -50,20 +60,23 @@ didn't do what I'd expected, and after several hours of trying to work
 out why, I either failed to determine it or found that there was a bug
 in the code which I could do nothing about. The value of \#2 (portability) hit me
 when I started a new job, and the thousand lines of code I had written on a Unix-based version of R wouldn't run
-on the copy of R on the Windows machine at work. I do work in a field for which the
+on the copy of R on the Windows machine at work.\footnote{Code written entirely in R's internal language will
+almost certainly be portable. But last I looked, the C interface,
+which the documentation refers to every time the question of speed comes
+up, is not yet stable enough to be called portable.} I do work in a field for which the
 assumptions of OLS frequently fail, so failures in \#1 (extensibility) hit me often and hard,
 as discussed below. Other researchers have told me many a sob story
 about how they designed the perfect method around a small sample, and
 then their stats package couldn't handle the full data set, due to
 arbitrary limitations hard-coded by the designers.
 
-You should ask yourself where you will be in five years. If you expect that you will never do
+Ask yourself where you will be in five years. If you expect that you will never do
 anything more difficult than a linear regression on well-formed IID data,
 or if you are trying to slog through your department's stats requirement
 so you can never look at another data set again, then by all means,
 use the easiest stats package you can get away with. But if you expect to
 be doing statistical work for a larger part of your career, then using a
-stats package which skimps on criteria \#1-\#3 for the sake of \#4 will
+stats package which skimps on criteria \#1--\#3 for the sake of \#4 will
 prove to be hour wise but month foolish.
 
 \paragraph{Barriers to rigorous analysis}
@@ -86,9 +99,9 @@ basic GLS regressions. Implementing an off-the-shelf GLS regression
 is very easy, and implementing something a touch more complicated
 is difficult.  From my casual observation,
 when the {\tt regress} function gets most of the assumptions right and
-is basically `good enough', many will choose to just fudge things and
+is basically good enough, many will choose to just fudge things and
 go with the off-the-shelf procedure.\footnote{This is not the place for
-a literature review, but this ties in with an abundance of experimental
+a review of the behavioral economics literature, but this ties in with an abundance of experimental
 evidence that people make time-inconsistent decisions. That is, there
 are many situations where being tied to the mast can make a person
 better off and less regretful than when left to his or her own devices,
@@ -108,18 +121,16 @@ but which doesn't go through the same rigor and scrutiny that the data gathering
 process went through.
 
 I don't mean to demonize stats packages or their users. I have two
-packages on the computer I am writing this on, and use them regularly.
-If I
+packages on the computer I am writing this on. If I
 were in the business of writing a statistics package for consumption by
 thousands of people I've never met, most of whom are undergrads who have
 just seen a regression for the first time and have just had a new piece
 of software foisted upon them, then I would probably write something
 that looks very much like the average stats package on the market today.
-Things such as extensibility to other languages, pleasing graphics,
-and of course ease of initial use, would be very important.
+Pleasing graphics and ease of initial use would be priorities above all else.
 \index{statistics packages!rants regarding|)}
 
-Fortunately, that's not the sort of software this book is about.
+However, that's not the sort of software this book is about.
 This book is intended for people who know their stats reasonably well,
 have an earnest interest in doing quantitative analysis, and have
 high standards of statistical correctness for their own work. For such a
@@ -128,7 +139,7 @@ getting the details right, on this project and in the long run.
 
 So, there you have two reasons to read this book: there is the practical
 position, that this book is not about ease-of-use over all other goals,
-but for this very reason it will save you time over the next several
+but for this very reason it may save you time over the next several
 years of your career; and there is the ethical position, that in academic
 research, `good enough' is not good enough, and we need software which
 will accommodate an arbitrary quantity of academic rigor.

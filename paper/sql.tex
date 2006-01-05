@@ -33,6 +33,14 @@ Conversely, if you give a null argument: {\tt apop\_open\_db(NULL)},
 then the database is kept in memory, and will run faster but 
 disappear when the program exits.
 
+
+Unless your program is generating its own data, you will probably
+be importing data from a text file now.  The {\tt apop\_text\_to\_db}
+function will do this for you; see the online reference for details. The
+first line of the text file can be column names, and the remaining rows
+are the data.
+
+
 When you are done with all of your queries, run
 {\tt apop\_close\_db} to close the database. If you send the function a
 one---{\tt apop\_close\_db(1)}---then SQLite will take a minute to clean
@@ -41,14 +49,9 @@ sending in a zero doesn't bother with this step. Of course, if your
 database is in memory, it's all moot and you can forget to close the
 database without consequence.
 
-Once you have opened your database, you can read in a table. The {\tt
-apop\_text\_to\_db} function will do this for you. The first line of the
-text file can be column names, and the remaining rows are the data. 
-
-
 \section{Basic queries}
 This section discusses some of the methods of data slicing and joining
-which are easy using database queries, but which are difficult via
+that are easy using database queries, but difficult via
 matrix operations.
 
 For example, pulling a subset of your data is almost trivial in SQL. If
@@ -74,10 +77,10 @@ Generally, the {\tt select} statment gives a list of columns which the output
 table will have; the {\tt from} clause declares where the source data
 comes from; finally, there are modifiers or restrictions (in this case
 {\tt where}) on the rows to be output.  And that's it. Every query
-you run will have these three parts in this order: column specification, input data,
+you run will have these three parts in this order: column specification, data source,
 row specification.\footnote{You may have
 no row restrictions, in which case your query will just have the first
-two parts and a null third part.} However, the means of specifying rows, columns,
+two parts and a null third part.} However, the means of specifying rows, columns, and
 source data allows for a huge range of possibilities.
 
 \paragraph{Select}
@@ -92,17 +95,15 @@ Explicitly mention the table you are pulling from: {\tt select data.age,
 data.height, data.weight}. This is unnecessary here, but will become
 essential when dealing with multiple tables below.
 
-Rename the output columns: {\tt select data.age as age, height as
-height\_in\_cm}. Notice that if you do not rename {\tt data.age as 
+Rename the output columns: {\tt select data.age as age, height as\\
+height\_\-in\_\-cm}. Notice that if you do not rename {\tt data.age as 
 age}, then you will need to use {\tt data$\backslash$.age} in future
 queries, which is a
 bit annoying.
 
-Generate your own new columns: {\tt select height, weight, (height/weight)
-as hwr}. The {\tt as hwr} subclause is again more-or-less
-essential if you hope to easily refer to this column in the future. Of
-course, if you are dumping the query output to a {\tt gsl\_matrix}, the column
-names will be lost anyway.
+Generate your own new columns: {\tt select height, weight, (height/weight) as hwr}
+. The {\tt as hwr} subclause is again more-or-less
+essential if you hope to easily refer to this column in the future. 
 
 \paragraph{From} The \ttind{from} clause specifies the tables from which
 you will be pulling data. The simplest case is a single table: {\tt from
@@ -113,11 +114,15 @@ You can alias the tables, for easier reference. The clause {\tt from
 data\_tab1 d1, data\_tab2 d2} gives short names to both tables, which can
 be used for lines like {\tt select d1.age, d2.height}. 
 
-Aliasing is generally optional but very convenient, but one case where
+Aliasing is generally optional but convenient, but one case where
 it is necessary is when you are joining a table to itself.
 For now, simply note the syntax: {\tt from data t1, data t2} will let
 you refer to the {\tt data} table as if it were two entirely independent
 tables. 
+
+Notice, by the way, that when we aliased something in the {\tt select}
+section, the form was {\tt select long\_col\_description as lcd}, while
+in the {\tt from} section there is no {\tt as}: {\tt from long\_file\_name lfn}.
 
 \paragraph{Where}
 The \ttind{where} clause is your chance to pick out only those rows which
@@ -128,59 +133,11 @@ match those you specified in the {\tt select} clause).
 Join as many subclauses as you wish, using the Boolean operators you
 know and love: {\tt where ((age > 13) or (height >= 175)) and (weight == 70)}.
 
-\subsection{Folding queries into C code} 
 
-
-\paragraph{apop\_query\_db} Now for the queries. The simplest function
-is \ttind{apop\_query\_db}, which takes a single text argument: the
-query. For example,
-
-%\begin{verbatim}
-%#c
-%[
-#include <apophenia/db.h>
-apop_query_db(" select *        \
-                  from data     \
-                  where height >=175;");
-%]
-%\end{verbatim}
-A string is easiest for you as a human to read if it is
-broken up over several lines; to do this, end every line with a
-backslash, until you reach the end of the string. The line above runs
-the query and returns nothing. [Not very useful for a {\tt select}; but see
-{\tt create} and  {\tt insert} below.]
-
-{\tt apop\_query\_db} accepts {\tt printf}-style arguments. For example,
-say that you calculate a minimum height earlier in the program, and want
-to write a query that uses that variable:
-%\begin{verbatim}
-%[
-#include <apophenia/db.h>
-int min_height	= 175;
-apop_query(" select *     \
-               from data     \
-               where height >=%i;", min_height);
-%]
-%\end{verbatim}
-
-\paragraph{apop\_query\_to\_matrix} This function takes both a
-gsl\_matrix and a query string. It will run the query and return the
-resulting string for your analysis. E.g., if {\tt q} was defined as
-above, then 
-%\begin{verbatim}
-%[
-#include <gsl/gsl_matrix.h>
-gsl_matrix *tall_people;
-
-tall_people = apop_query_to_matrix("select * from data");
-%]
-%\end{verbatim}
-will query {\tt data} for all its information, allocate {\tt tall\_people} to be an
-appropriately-sized matrix, and fill it with the data.
 
 \subsection{Joining}
 If you specify two tables in your {\tt from} line, then, lacking any
-restrictions, the database will return a line for every pair of lines.
+restrictions, the database will return one joined line for every pair of lines.
 If {\tt data1} has 15 lines, and {\tt data2} has 8 lines, then {\tt select *
 from data1, data2} will return 15$\times$8 = 120 lines.  Such a product
 quickly gets overwhelming: joining a thousand-row table with another
@@ -210,22 +167,28 @@ essential. Also, notice that we did not have to include either ZIP code
 in the output if it is not used later. If you do want to include a ZIP
 code, then you can use either {\tt t1.zip} or {\tt t2.zip\_code}; since
 the two will be by definition identical, using both will be a waste of
-space.
+space (but may help to give you a sense of security that things are working).
 
 \paragraph{Speeding it up}
 You can ask the SQL engine to create an index for a table which you
 intend to use in a join later. The command:
 %\begin{verbatim}
 %[
-create index an_index on econ_data(zip, age, income)
+create index econ_index on econ_data(zip)
+create index econ_index2 on econ_data(age)
 %]
 %\end{verbatim}
-would index the table {\tt econ\_data} on the three columns specified.
-The name of the index, {\tt an\_index}, is basically irrelevant and can
+would index the table {\tt econ\_data} on the ZIP code and age columns.
+The name of the index, {\tt econ\_index}, is basically irrelevant and can
 be any gibberish which sounds nice to you. Once you have created this
 index, a join using any of these three columns goes {\sl much} faster.
 For the query above, you will want to create an index for both {\tt
 econ\_data(zip)} and {\tt health\_data(zip\_code)}.
+
+There is standard SQL syntax for indexing multiple columns, 
+({\tt create index econ\_index on econ\_data(zip, age)}), but as a
+practical matter, SQLite really only cares about the first item in the
+list, so you are better off creating several indices as above.
 
 \subsection{Aggregation}
 Here is how to get the number of rows in your data table:
@@ -269,14 +232,17 @@ some call a \ind{cross tab}. For example, to get average income by
 height and ZIP code: 
 %\begin{verbatim}
 %[
-select  average(income) as avg_income
+select  zip, height, average(income) as avg_income
 from data
 group by zip, height;
 %]
 %\end{verbatim}
 
+When you want to analyze the crosstab, you will be very
+interested in the \ttind{apop\_db\_to\_crosstab} function.
+
 The function {\tt sum()} works the same. That's all the aggregators you
-get, but you can specify more than just a column name, so you can get
+get in standard SQL, but you can specify more than just a column name, so you can get
 away with a few more. Here's the variance of income in each subgroup:
 %\begin{verbatim}
 %[
@@ -286,6 +252,26 @@ from data
 group by zip, height;
 %]
 %\end{verbatim}
+
+Apophenia saves you from this, however, by defining the sort of
+aggregations that statisticians use, such as moments. You can use the
+following aggregation functions in an SQL call that you make from
+Apophenia: {\tt stddev var variance skew kurt kurtosis}. There are
+redundancies so that you don't have to remember whether to abbreviate or
+not.
+
+This may also be a good time to mention three more extentions to
+standard SQL: {\tt pow exp log}. These functions do what you
+expect: {\tt select log(income), pow(income, 0.5) from data} will give
+you a table with the log of incomes and, for what it's worth, the square root of incomes.
+
+Bear in mind that these functions are Apohenia extensions, so if you
+ever hope to use your SQL queries in another context, be careful not to
+use these added functions. If you want to stay standard,
+you call your data into a table and 
+use \ttind{apop\_vector\_log}, \ttind{apop\_vector\_exp},
+\ttind{apop\_mean}, \ttind{apop\_var}, et cetera to get the desired
+statistics on the matrix side.
 
 \subsection{More trickery} Frankly, SQL is not very good for
 creating new data from the existing. But the few things that you can do
@@ -334,9 +320,67 @@ instead. Of course, the query output has no name, so you may need to
 alias the result: {\tt from (select ...) t1} will allow you to refer to
 the query's output as {\tt t1} elsewhere in the query.
 
+\subsection{Folding queries into C code} 
+
+
+\paragraph{apop\_query} Now for the queries. The simplest function
+is \ttind{apop\_query}, which takes a single text argument: the
+query. For example,
+
+%\begin{verbatim}
+%#c
+%[
+#include <apophenia/db.h>
+apop_query(" select *        \
+               from data     \
+                  where height >=175;");
+%]
+%\end{verbatim}
+A string is easiest for you as a human to read if it is
+broken up over several lines; to do this, end every line with a
+backslash, until you reach the end of the string. The line above runs
+the query and returns nothing. [Not very useful for a {\tt select}; but see
+{\tt create} and  {\tt insert} below.]
+
+{\tt apop\_query} accepts {\tt printf}-style arguments. For example,
+say that you calculate a minimum height earlier in the program, and want
+to write a query that uses that variable:
+%\begin{verbatim}
+%[
+#include <apophenia/db.h>
+int min_height	= 175;
+apop_query(" select *     \
+               from data     \
+               where height >=%i;", min_height);
+%]
+%\end{verbatim}
+
+\paragraph{apop\_query\_to\_matrix} This function takes both a
+gsl\_matrix and a query string. It will run the query and return the
+resulting string for your analysis. 
+%\begin{verbatim}
+%[
+#include <gsl/gsl_matrix.h>
+apop_data *tall_people;
+int min_height	= 175;
+
+tall_people = apop_query_to_data(" select *     \
+                                   from data     \
+                                   where height >=%i;", min_height);
+%]
+%\end{verbatim}
+will query {\tt data} for all its information, allocate {\tt tall\_people} to be an
+ap\-prop\-ri\-ate\-ly-sized matrix, and fill it with the data.
+
+There are {\tt apop\_query} functions for any type you could desire,
+including \ttind{apop\_query\_to\_matrix} to pull a query to a {\tt
+gsl\_matrix}, \ttind{apop\_query\_to\_chars} to pull a query into
+a two-by-two table of strings, \ttind{apop\_query\_to\_vector}
+and \ttind{apop\_query\_to\_float} to pull the first column or first
+number into {\tt gsl\_vector} or a {\tt float}.
 
 \subsection{Getting data in and out}
-We now have three different ways to represent a matrix of data: as a {\tt gsl\_matrix}, as a text file,
+We now have three different ways to represent a matrix of data: as an {\tt apop\_data}, as a text file,
 or as a database table. This section will show you how to best shunt your data between a database and
 the other two formats.
 
@@ -359,8 +403,8 @@ Notice that the for loop goes from i=1, not i=0; this is because when including
 dummy variables, you always have to exclude one value, which will be the baseline;
 using i=1 means district[0] will be the baseline.]
 
-
-
+Now that I've shown you that neat trick, don't do it; instead use
+\ttind{apop\_pro\-duce\_dum\-mies} on the matrix side.
 
 \section{An example: the easiest t-test you'll ever run.}
 Say we have a set of observations of our sample's years of education, and their annual income. We want to
@@ -392,17 +436,17 @@ gsl_vector	*overeducated;
 %\end{verbatim}
 
 Here's a factoid for you: incomes are usually distributed log-normally, so we should do a t-test on the
-log of income:
+log of income. We'll do one with Apohenia and one with the raw GSL:\ttindex{apop\_vector\_log}
 %\begin{verbatim}
 %[
+#include <apophenia/headers.h>
+apop_vector_log(undereducated);
+
 #include <gsl/gsl_sf_log.h>
 int i;
-for(i=0;i< overeducated->size; i++)
+for(i=0; i< overeducated->size; i++)
    gsl_vector_set(overeducated, i, 
                gsl_sf_log(gsl_vector_get(overeducated, i)));
-for(i=0;i< undereducated->size; i++)
-   gsl_vector_set(undereducated, i, 
-               gsl_sf_log(gsl_vector_get(undereducated, i)));
 %]
 %\end{verbatim}
 
@@ -426,7 +470,8 @@ will tell you that the sum of two Normals is normal: ${\cal N}(\mu_1,
 \sigma_1) + {\cal N}(\mu_2, \sigma_2) \sim {\cal N}(\mu_1 + \mu_2,
 \sigma_1 + \sigma_2)$. Now, subtracting a ${\cal N}(\mu_2, \sigma_2)$
 is exactly equivalent to adding a ${\cal N}(-\mu_2, \sigma_2)$, so we
-get the result in the text.} That is, we can write down:
+get the result in the text.} That is, assuming the counts are large
+enough that the Normal approximation is OK, we can write down:
 
 %\begin{verbatim}
 %[

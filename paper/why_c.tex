@@ -3,13 +3,18 @@
 \index{statistics packages!rants regarding|(}
 There are so many other languages out there in which you could do
 statistics. Why use C instead of SAS, Stata, SPSS, S-PLUS, SSt, GAUSS, GAMS, GRETL,
-MatLab, Minitab, Mupad, Mathematica, Limdep, Octave, R, or RATS? Since this is a
-pervasive question, I'm going to spend a few pages answering it as clearly
-as possible. Over the course of this, you should also get a better idea
-of why C is the way it is, and why things that seem annoying on
-the surface will pay off in the long run.
-
-	\ifbook
+MatLab, Minitab, Mupad, Mathematica, Limdep, Octave, R, or RATS? 
+There are more than enough books that advocate for the use of such
+languages; 
+as one editor at a well-known scientific publishing company
+explained to me: ``\dots most of the statistics [book] market is quite heavily
+influenced by the software companies that service the
+field.''  Since this is the only book to advocate statistical computing
+with a general computing language, I'm going to spend a few pages
+answering it as clearly as possible. Over the course of this, you should
+also get a better idea of why C is the way it is, and why things that
+seem annoying on the surface will pay off in the long run.
+\ifbook
 \subsection{Reason \#1: C will help you do better science.}
 As noted above, it's no longer OK to use OLS for everything.
 OLS, with all its assumptions, used to be the only technique that we had the computing
@@ -119,3 +124,12 @@ the hearts of all of your fellow researchers who want to work with your analysis
 but for whom it's logistically impossible to do so. Are you sure your
 colleague in Madras can afford a Stata license?
 
+C is also universal in the time domain. Code written in C thirty years
+ago still runs today, and every operating system in existence today has a C
+compiler available. Will people still be using STATA or R ten years from now?
+That depends on the financial solvency of the STATA Corp and the
+R Foundation and whatever turns out to be trendy five years from now.
+Since C was written in 1972, dozens (maybe hundreds) of stats packages
+have come and gone. Those who try to follow the trends for
+some period of time have learned a half-dozen languages
+and have on their hard drives dozens of scripts that won't run anymore.

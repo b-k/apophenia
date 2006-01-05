@@ -33,47 +33,15 @@ and Pearson showed that a likelihood ratio test will have the minimum
 possible Type II error of any test with the $\alpha$ that we selected. After establishing this fact, we
 just ignore Type II errors.
 
-\section{Writing your likelihood function} 
-This section is about writing down the likelihood function for those situations where a linear least
-squares function is not appropriate.
-Writing down your function
-is pretty darn straightforward, but there are details you'll need to take into account.\\
---Take logs. This is important from a practical standpoint because the product of a thousand probabilities
-$\in (0,1)$ will quickly underflow your likelihood function. \\
---Follow the {\tt gsl\_multimin} template.\\
-
-[I'll eventually write this out, but for now, here's an example:]
-
-
-%\begin{verbatim}
-%[
-double probit_likelihood(const gsl_vector *beta, void *d){
-int		    i;
-long double	n, total_prob	= 0;
-gsl_matrix  *data 		    = d;		//just type casting.
-
-   dot(beta,data);    //a wrapper for gsl_blas_dgemm.
-   for(i=0;i< data->size1; i++){
-      n	=gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1);
-      if (gsl_matrix_get(data, i, 0)==0) 	total_prob	+= log(n);
-      else 					total_prob	+= log((1 - n));
-   }
-   return -total_prob;
-}
-%]
-%\end{verbatim}
-
 \section{Description: Maximum likelihood estimators} 
-If you've written
-down the function correctly in the last section, you'll have no problem
-getting the GSL to find the optimal parameters given your data.  It helps
-if you know the derivative of your data, which I'll also discuss a little
-further.
 
+
+\comment{
 \subsection{The GSL's multimin functions} The process of finding a minimum consists of trying a
 value, picking a direction to move in, and checking whether the change is a good enough one. The GSL
 gives you a function to do all of these things, which you'll have to put together to do a complete
 minimization.
+}
 
 \section{Hypothesis testing: Likelihood ratio tests} Every test
 in the last chapter was a likelihood ratio test---I just didn't tell
@@ -87,9 +55,11 @@ the likelihood function yourself.  Fortunately, we have a computer to
 do the tedious math, unlike poor Mr. Gauss, who had no such conveniences.
 
 
-\paragraph{What if you don't know the variance or distribution?} The main convenience of the canned methods of the last
-chapter is that we have mathematical proofs telling us exactly what the distribution looks like. What if
-our data doesn't fit the assumptions of any of the proofs in the textbook?
+\paragraph{What if you don't know the variance or distribution?} 
+The main convenience of the canned methods of the last
+chapter is that we have mathematical proofs telling us exactly what the distribution looks like. 
+
+What if our data doesn't fit the assumptions of any of the proofs in the textbook?
 
 Then we bootstrap to find the distribution! I'll put an example here which puts together the techniques
 from the last chapter and this one, constructing a likelihood function like the one above using the
