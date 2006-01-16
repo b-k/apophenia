@@ -18,7 +18,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
   \ingroup types
   */
 
-/** Allocate a \ref apop_name structure, to be filled with data.
+/** Allocate a \ref apop_data structure, to be filled with data.
 
   \param size1, size2   row and column size for the matrix. Notice that this exactly mirrors the format of \c gsl_matrix_alloc.
  \return    The \ref apop_data structure in question.
@@ -39,7 +39,7 @@ return      The \ref apop_data structure in question.
   */
 apop_data * apop_data_from_matrix(gsl_matrix *m){
 apop_data  *setme   = malloc(sizeof(apop_data));
-    if (m==NULL && apop_verbose) {printf("Warning: converting a NULL matrix to an apop_data structure.\n");}
+    if (m==NULL && apop_opts.verbose) {printf("Warning: converting a NULL matrix to an apop_data structure.\n");}
     setme->data     = m;
     setme->names    = apop_name_alloc();
     setme->categories = NULL;

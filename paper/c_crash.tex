@@ -1707,7 +1707,7 @@ cumbersome command line above.
 \index{make@{\tt make}|)}
 
 \subsection{Memory debugger} \index{memory debugger|see{valgrind}} \index{valgrind|(}
-\index{segementation fault} \label{valgrind}
+\index{segmentation fault} \label{valgrind}
 
 The setup is this: you make a mistake in memory handling early in the program, but
 it's not fatal. Later on in the program, you do something innocuous and get a
@@ -1739,14 +1739,14 @@ one gets from making major changes to the code and finding that the
 results still match the results from last month to four decimal places.
 
 
-Finally, revision control packages facilitate collabroation with
+Finally, revision control packages facilitate collaboration with
 coauthors. If your changes are sufficiently far apart (e.g., you're
 working on one function and your coauthor on another in the same file),
 then the package will merge all changes to a single working copy. If
 the package can't work out how to do that, it will give you a clearly
 demarcated list of changes for you to accept or reject.
 
-This methodology also works for any other text files you have in your
+This method also works for any other text files you have in your
 life, such as papers written in Latex, XML, or any other text-based
 format. For example, this book is under revision control.
 
@@ -1835,10 +1835,10 @@ just shunts characters around and doesn't know what its arguments represent.
 For example, later you will see this form for reallocating a pointer to an array of {\tt int}s:\\
 {\tt var\_array = realloc(var\_array, new\_length * sizeof(int))}.\\
 With this macro:\\
-%[
+%(
 #define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))
-%]
-the above line could be rewritten as:\\
+%)
+\\the above line could be rewritten as:\\
 %[
 REALLOC(var_array, new_length, int);
 %]

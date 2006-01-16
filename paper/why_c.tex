@@ -9,9 +9,9 @@ languages;
 as one editor at a well-known scientific publishing company
 explained to me: ``\dots most of the statistics [book] market is quite heavily
 influenced by the software companies that service the
-field.''  Since this is the only book to advocate statistical computing
-with a general computing language, I'm going to spend a few pages
-answering it as clearly as possible. Over the course of this, you should
+field.''  Thus, this is the only book to advocate statistical computing
+with a general computing language, so I'm going to spend a few pages
+motivating the choice as clearly as possible. Over the course of this, you should
 also get a better idea of why C is the way it is, and why things that
 seem annoying on the surface will pay off in the long run.
 \ifbook
@@ -133,3 +133,38 @@ Since C was written in 1972, dozens (maybe hundreds) of stats packages
 have come and gone. Those who try to follow the trends for
 some period of time have learned a half-dozen languages
 and have on their hard drives dozens of scripts that won't run anymore.
+
+
+\ifbook
+\subsection{Reason \#4: C is on all levels at once} 
+Geeks often refer to high-level and low-level languages. The low-level
+languages are close to the machine, referring to individual memory
+addresses and register operations, giving you perfect control but a lot
+of work. The high-level languages do
+complex things with one command, like {\tt regress(data)} to produce
+pages of output, giving you no control but ease-of-use.
+
+On this hierarchy, C is typically billed as a low-level language, but this is only
+partly true. C can indeed be used as a rock-bottom low-level language,
+with its bit-shifting operators and pointers to memory addresses, and
+even though you'll never use the bit-shifting, the pointers are an
+integral feature. But on the other hand, there is a library of functions
+to do whatever high-level operations you may have in mind, such as the
+{\tt apop\_OLS.estimate(data)} function from the Apophenia library.
+
+You get to pick the balance of laziness and precision that you desire. You
+can write code to manipulate individual addresses, use the GNU Scientific
+Library to manipulate matrices, or use Apophenia to estimate models---and
+you can do it all in the same program.
+
+The how-to code in this book is often repeated at multiple levels. I will first
+show you the low-level way of doing things over the course of three
+pages, and then tell you the single function call that will do all the work
+for you. This is partly because of a didactic philosophy that you should
+know what your black boxes are doing before you use them, and partly
+to prepare you for when the black box doesn't do what you need. Because all of the
+functions described here are open source, you can copy and paste the
+functions into your own program and modify them to suit your needs
+and data better; of course, this relies on your being able to understand
+the code at lower levels than the function you are tearing apart.
+\fi

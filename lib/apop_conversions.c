@@ -222,7 +222,7 @@ names.
 
 Since you're reading into an array, all text fields are taken
 as zeros. You will be warned of this unless you set \ref
-apop_verbose<tt>==0</tt> beforehand.
+apop_opts.verbose<tt>==0</tt> beforehand.
 
 \param delimiters A list of delimiters. "," is typical, as is ",|", for example.
 \param tab 	A table, to be allocated and filled with data.
@@ -283,7 +283,7 @@ int 		i	= 0,
 			while (astring !=NULL){
 				colno++;
 				(*tab)[i-1][colno-1]	= strtod(astring, &str);
-				if (apop_verbose && !strcmp(astring, str))
+				if (apop_opts.verbose && !strcmp(astring, str))
 					printf("trouble converting item %i on line %i; using zero.\n", colno, i);
 				astring	= strtok(NULL,delimiters);
 			}

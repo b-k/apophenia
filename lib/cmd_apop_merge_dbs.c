@@ -23,7 +23,7 @@ char		c,
 	while ((c = getopt (argc, argv, "vh")) != -1){
 		switch (c){
 		  case 'v':
-			apop_verbose	++;
+			apop_opts.verbose	++;
 			break;
 		  case 'h':
 			printf(msg);

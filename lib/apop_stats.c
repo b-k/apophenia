@@ -4,6 +4,7 @@
  \author Ben Klemens
  */
 
+#include "db.h"     //just for apop_opts
 #include "apophenia/stats.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
@@ -63,7 +64,7 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 */
 inline long double apop_sum(gsl_vector *in){
     if (in==NULL){
-        if (apop_verbose)
+        if (apop_opts.verbose)
             printf("You just asked me to sum a NULL. Returning zero.\n");
         return 0;
     }

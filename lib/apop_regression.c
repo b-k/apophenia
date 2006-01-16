@@ -7,6 +7,7 @@
 /** \defgroup ttest  T-tests: comparing two vectors */
 /** \defgroup asst_tests  Various means of hypothesis testing.*/
 
+#include "db.h"     //just for apop_opts
 #include "types.h"
 #include "stats.h"
 #include "model/model.h"
@@ -17,7 +18,6 @@
 #include <stdlib.h> //bsearch
 #include <gsl/gsl_blas.h>
 
-extern int apop_verbose;
 
 double two_tailify(double in){
 //GSL gives me a one-tailed test; convert it to two.
@@ -39,7 +39,7 @@ double		a_avg	= apop_mean(a),
 		b_avg	= apop_mean(b),
 		b_var	= apop_var(b),
 		stat	= (a_avg - b_avg)/ sqrt(b_var/(b_count-1) + a_var/(a_count-1));
-	if (apop_verbose){
+	if (apop_opts.verbose){
 		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
 		printf("2st avg: %g; 2st std dev: %g; 2st count: %i.\n", b_avg, sqrt(b_var), b_count);
 		printf("t-statistic: %g.\n", stat);
@@ -65,7 +65,7 @@ double		avg	= apop_mean(diff),
 	if (apop_mean(diff) < 0) 
 		factor = -1;
 	gsl_vector_free(diff);
-	if (apop_verbose){
+	if (apop_opts.verbose){
 		printf("avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
 	}
 	return factor * two_tailify(gsl_cdf_tdist_P(stat, count-1));

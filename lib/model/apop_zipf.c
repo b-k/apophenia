@@ -7,6 +7,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 
 //The default list. Probably don't need them all.
+#include "db.h" //apop_opts
 #include "types.h"
 #include "model.h"
 #include "output.h"
@@ -95,7 +96,7 @@ apop_zipf.rng(r, 1.4);
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 551.  */
 static double zipf_rng(gsl_rng* r, double * a){
     if (*a  <= 1){
-        if (apop_verbose)
+        if (apop_opts.verbose)
             printf("apop_zipf.rng: Zipf needs a parameter >=1. Returning 0.\n"); 
         return 0;
         }

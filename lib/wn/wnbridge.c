@@ -74,7 +74,7 @@ double 		val_min;
   */
 
   wn_print_vect(vect,the_size);
-  if (apop_verbose){
+  if (apop_opts.verbose){
   	printf("final result: code = %d   ",code);
   	printf("    ob = %lf\n",val_min);
 }

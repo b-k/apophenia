@@ -394,7 +394,7 @@ will produce an output file named <tt>run_me</tt> from the input source code <tt
 Order matters in the linking list: the files a package depends on should be listed after the package. E.g., since sample.c depends on Apophenia, <tt>gcc sample.c -lapophenia</tt> will work, while <tt>gcc -lapophenia sample.c</tt> is likely to give you errors. Similarly, list <tt>-lapophenia</tt> before <tt>-lgsl</tt>, which comes before <tt>-lgslcblas</tt>.
 
 \subsection debugging  Debugging
-The global variable <tt>apop_verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_verbose =1</tt> when you want feedback and <tt>apop_verbose=0</tt> when you don't.
+The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_opts.verbose =1</tt> when you want feedback and <tt>apop_opts.verbose=0</tt> when you don't.
 
 \subsection vim Syntax highlighting 
 If your text editor supports syntax highlighting, there are eight types defined in the Apophenia and GSL headers which may be worth coloring.

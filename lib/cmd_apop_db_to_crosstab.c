@@ -12,8 +12,7 @@
 int main(int argc, char **argv){
 char		c, 
 		*delimiter,
-		msg[1000],
-		*outfile	=NULL;
+		msg[1000];
 gsl_matrix	*m;
 
 	sprintf(msg, "%s [opts] dbname table_name rows columns data\n\n\
@@ -29,10 +28,11 @@ gsl_matrix	*m;
 	while ((c = getopt (argc, argv, "d:f:h")) != -1){
 		switch (c){
 		  case 'd':
-			  delimiter	= optarg;
+			  strcpy(apop_opts.output_delimiter,optarg);
 			  break;
 		  case 'f':
-			  outfile	= optarg;
+			  strcpy(apop_opts.output_name,optarg);
+			  apop_opts.output_type	= 1;
 			  break;
 		  case 'h':
 			printf(msg);
@@ -41,6 +41,6 @@ gsl_matrix	*m;
 	}
 	apop_open_db(argv[optind]);
 	m	= apop_db_to_crosstab(argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4], NULL, NULL);
-	apop_matrix_print(m,delimiter, outfile);
+	apop_matrix_print(m);
 	return 0;
 }

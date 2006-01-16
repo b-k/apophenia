@@ -8,7 +8,6 @@
 #include <gsl/gsl_statistics_double.h>
 #include "linear_algebra.h"
 
-extern int apop_verbose;
 
 	//The following are just convenient hooks to gsl vector functions.
 	//var_m lets you input a mean if you've already calculated it, saving

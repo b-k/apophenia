@@ -65,8 +65,13 @@ apop_name *last_names = NULL;	    //The column names from the last query to matr
 
 int	total_rows, total_cols;		    //the counts from the last query.
 
-/** This variable turns on some notifications. */
-int apop_verbose	= 0;
+/** Here are where the options are initially set. */
+apop_opts_type apop_opts	= { 0,              //verbose
+                                's',            //output type
+                                "apop_output",  //output name
+                                "\t",           //output delimiter
+                                1,              //output append
+};
 
                                                                                                                                
 ////////////////////////////////////////////////
@@ -299,7 +304,7 @@ va_list		argp;
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
 	va_end(argp);
-	if (apop_verbose) {printf("\n%s\n",q);}
+	if (apop_opts.verbose) {printf("\n%s\n",q);}
 	sqlite3_exec(db, q, NULL,NULL, &err);
 	free(q);
 	ERRCHECK
@@ -316,7 +321,7 @@ va_list		argp;
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
 	va_end(argp);
-	if (apop_verbose) {printf("\n%s\n",q);}
+	if (apop_opts.verbose) {printf("\n%s\n",q);}
 	sqlite3_exec(db, q, NULL,NULL, &err);
 	free(q);
 	ERRCHECK
@@ -467,7 +472,7 @@ va_list		argp;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
-	if (apop_verbose) {printf("\n%s\n",query);}
+	if (apop_opts.verbose) {printf("\n%s\n",query);}
 	va_end(argp);
 
 	total_rows	= 0;
@@ -530,7 +535,7 @@ va_list		argp;
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
-	if (apop_verbose)	printf("%s\n", query);
+	if (apop_opts.verbose)	printf("%s\n", query);
 	total_rows= 0;
 	q2	 = malloc(sizeof(char)*(strlen(query)+300));
 	apop_table_exists("apop_temp_table",1);
@@ -575,7 +580,7 @@ float		out;
 	va_end(argp);
 	m	= apop_query_to_matrix(query);
 	if (m==NULL){
-        if (apop_verbose)
+        if (apop_opts.verbose)
 		    printf("apop, %s, %i: Query turned up a blank table. Returning GSL_NAN.\n", __FILE__, __LINE__);
 		return GSL_NAN;
 	} //else
@@ -627,11 +632,13 @@ int apop_db_get_cols(void){ return total_cols; }
 /** This function returns the row count from the last query run. */
 int apop_db_get_rows(void){ return total_rows; }
 
-/** Dump a <tt>gsl_matrix</tt> into the database.
+/** Dump a <tt>gsl_matrix</tt> into the database. This function is
+ Basically preempted by \ref apop_matrix_print. Use that one; this may soon no longer be available.
 
 \param data 	The name of the matrix
 \param tabname	The name of the db table to be created
 \param headers	A list of column names. If <tt>NULL</tt>, then the columns will be named <tt>c1</tt>, <tt>c2</tt>, <tt>c3</tt>, &c.
+ \ingroup conversions
 */
 int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 int		i,j; 
@@ -643,7 +650,7 @@ char		*q 		= malloc(sizeof(char)*1000);
 	for(i=0;i< data->size2; i++){
 		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
 		if(headers == NULL) 	sprintf(q, "%s\n c%i", q,i);
-		else			sprintf(q, "%s\n %s", q,headers[i]);
+		else			sprintf(q, "%s\n %s ", q,headers[i]);
 		if (i< data->size2-1) 	sprintf(q, "%s,",q);
 		else			sprintf(q,"%s);  begin;",q);
 	}
@@ -651,18 +658,69 @@ char		*q 		= malloc(sizeof(char)*1000);
 		q	=realloc(q,sizeof(char)*(strlen(q)+(1+data->size2)*1000));
 		sprintf(q,"%s \n insert into %s values(",q,tabname);
 		for(j=0;j< data->size2; j++)
-			if(j< data->size2 -1 && ctr<batch_size) {
-				sprintf(q,"%s %g, ",q,gsl_matrix_get(data,i,j));
-				ctr++;
-			} else	{
-				sprintf(q,"%s %g);",q,gsl_matrix_get(data,i,j));
-				sprintf(q, "%s; end;", q);
-				apop_query(q);
+            if (j < data->size2 -1)
+			    sprintf(q,"%s %g, ",q,gsl_matrix_get(data,i,j));
+            else
+			    sprintf(q,"%s %g); ",q,gsl_matrix_get(data,i,j));
+	ctr++;
+	if(ctr==batch_size) {
+			apop_query("%s commit;",q);
+			ctr = 0;
+			sprintf(q,"begin; \n insert into %s values(",tabname);
+		}
+	}
+    if (ctr>0) 
+        apop_query("%s commit;",q);
+	free(q);
+	return 0;
+}
+
+
+/** Dump an \ref apop_data set into the database.
+
+\param data 	The name of the matrix
+\param tabname	The name of the db table to be created
+\ingroup apop_data
+\todo add category names.
+*/
+int apop_data_to_db(apop_data *set, char *tabname){
+int		i,j; 
+int		ctr		    = 0;
+int		batch_size	= 100;
+char		*q 		= malloc(sizeof(char)*1000);
+	if (db==NULL) apop_db_open(NULL);
+	sprintf(q, "create table %s (", tabname);
+    if (set->names->rownamect >0){
+        sprintf(q, "%s\n row_name, \n", q);
+		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+    }
+	for(i=0;i< set->data->size2; i++){
+		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+		if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i", q,i);
+		else			sprintf(q, "%s\n %s ", q,set->names->colnames[i]);
+		if (i< set->data->size2-1) 	sprintf(q, "%s,",q);
+		else			sprintf(q,"%s);  begin;",q);
+	}
+	for(i=0;i< set->data->size1; i++){
+		q	=realloc(q,sizeof(char)*(strlen(q)+(1+set->data->size1)*batch_size*1000));
+		sprintf(q, "%s \n insert into %s values(",q, tabname);
+        if (set->names->rownamect >0){
+			sprintf(q,"%s \"%s\", ",q, set->names->rownames[i]);
+        }
+		for(j=0;j< set->data->size2; j++)
+            if (j < set->data->size2 -1)
+			    sprintf(q,"%s %g, ",q,gsl_matrix_get(set->data,i,j));
+            else
+			    sprintf(q,"%s %g); ",q,gsl_matrix_get(set->data,i,j));
+		ctr++;
+		if(ctr==batch_size) {
+				apop_query("%s commit;",q);
 				ctr = 0;
 				sprintf(q,"begin; \n insert into %s values(",tabname);
 			}
-		sprintf(q,"%s )",q);
 	}
+    if (ctr>0) 
+        apop_query("%s commit;",q);
 	free(q);
 	return 0;
 }
@@ -699,11 +757,11 @@ int		row_ct;
 	apop_query_to_chars("select name from sqlite_master where name == \"%s\";", tabname);
 	row_ct	= apop_db_get_rows();
 	if (row_ct==0){	//just import table
-		if (apop_verbose)	printf("adding in %s\n", tabname);
+		if (apop_opts.verbose)	printf("adding in %s\n", tabname);
 		apop_query("create table main.%s as select * from merge_me.%s;", tabname, tabname);
 	}
 	else	{			//merge tables.
-		if (apop_verbose)	printf("merging in %s\n", tabname);
+		if (apop_opts.verbose)	printf("merging in %s\n", tabname);
 		apop_query("insert into main.%s select * from merge_me.%s;", tabname, tabname);
 	}
 	if (db_file !=NULL)

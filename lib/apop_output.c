@@ -16,9 +16,12 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 
 Currently, you only get two dimensions.
 
+Set the global \ref apop_opts.output_name to the filename you want before running this.
+It appends instead of overwriting, so you can prep the file if you want; see sample code. [to overwrite a file, just remove it first with the standard C function <tt>remove("filename");</tt>]
+
+
 \param	data	This is a copy of what you'd sent to the regression fn. That is, the first column is the dependent variable and the second is the independent. That is, what will be on Y axis is the <i>first</i> column, and what is on the X axis is the second. Custom for regressions and custom for graphs just clash on this one.
 \param	est	The \ref apop_estimate structure your regression function gave you.
-\param outfile	The file to write to. It appends instead of overwriting, so you can prep the file if you want; see sample code. [to overwrite a file, just remove it first with the standard C function <tt>remove("filename");</tt>]
 
 The sample program below will pull data from a database (you'll need to
 modify it to produce your own two-column table), then runs OLS, produces
@@ -60,10 +63,13 @@ char		    outfile[]	= "auto",
 \todo The sample data here should correspond to that which apophenia ships with.
 \ingroup output
 */
-void apop_plot_line_and_scatter(apop_data *data, apop_estimate *est, char *outfile){
+void apop_plot_line_and_scatter(apop_data *data, apop_estimate *est){
 FILE *          f;
-        if (outfile == NULL) 	f       = stdout;
-        else    		f       = fopen(outfile, "a");
+char            exdelimiter[100];
+        if (apop_opts.output_type == 0) 	
+            f       = stdout;
+        else    		
+            f       = fopen(apop_opts.output_name, "a");
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters,0), gsl_vector_get(est->parameters,1));
 	if (data->names){
 		fprintf(f, "set xlabel \"%s\"\n", data->names->colnames[1]);
@@ -71,10 +77,44 @@ FILE *          f;
 	}
 	fprintf(f, "set key off\n");
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");
-	if (outfile !=NULL)    fclose(f);
-	apop_print_matrix(data->data, ", ", outfile);
+    if (apop_opts.output_type != 0) 	fclose(f);
+
+    //force the delimiter to be a comma space; don't tell the user.
+    strcpy(exdelimiter, apop_opts.output_delimiter);
+    strcpy(apop_opts.output_delimiter, ", ");
+	apop_print_matrix(data->data);
+    strcpy(apop_opts.output_delimiter, exdelimiter);
 }
 
+/** This function can be used to temporarily modify the global options,
+ to facilitate better encapsulation of code. Usage:
+
+  \code
+  apop_opts_type tmp_opts;
+  apop_opts_memcpy(&tmp_opts, &apop_opts);
+  strcpy(apop_opts.output_name, "ad_hoc_temp_file");
+  [do things here]
+  apop_opts_memcpy(&apop_opts, &tmp_opts);
+  \endcode
+
+If you just need a little more verbosity for a procedure, you probably
+don't need to use this function. Just try: 
+  \code
+  apop_opts.verbose ++;
+  [do things here]
+  apop_opts.verbose --;
+  \endcode
+
+The philosophy is that the global variables are generally not going
+to change over the course of a program: either you are working on the
+screen, in the database, or piping out of STDOUT, and you likely won't
+change mid-stream. Thus, it is easier to set these globally at the top of
+the program but less convenient to switch frequently throughout the code.
+\ingroup global_vars
+ */
+void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in){
+    memcpy(out, in, sizeof(apop_opts_type));
+}
 
 /** This is a dumb little function to call gnuplot for you,
    in case you're so exceptionally lazy that you can't call
@@ -157,11 +197,16 @@ static void print_core_v(gsl_vector *data, char *separator, char *filename,
 			void (* p_fn)(FILE * f, double number)){
 int 		i;
 FILE * 		f;
-	if (filename == NULL)
+	if ((apop_opts.output_type == 's') || (filename == NULL) || (!strcmp(filename, "STDOUT")))
 		f	= stdout;
-	else	f	= fopen(filename, "a");
+	else	{
+        if (apop_opts.output_append)
+            f	= fopen(filename, "a");
+        else
+            f	= fopen(filename, "w");
+    }
     if (data == NULL){
-        if (apop_verbose)
+        if (apop_opts.verbose)
             printf("Printing an empty vector, so the output will be blank.\n");
     } 
     else {
@@ -184,11 +229,16 @@ size_t 		i,j, max_name_size  = 0;
             max_name_size   = GSL_MAX(strlen(n->rownames[i]), max_name_size);
     }
 
-	if (filename == NULL)
+	if ((apop_opts.output_type == 's') || (filename == NULL) || (!strcmp(filename, "STDOUT")))
 		f	= stdout;
-	else	f	= fopen(filename, "a");
+	else	{
+        if (apop_opts.output_append)
+            f	= fopen(filename, "a");
+        else
+            f	= fopen(filename, "w");
+    }
     if (data == NULL){
-        if (apop_verbose)
+        if (apop_opts.verbose)
             printf("Printing an empty matrix, so the output will be blank.\n");
     } 
     else {
@@ -217,53 +267,76 @@ void dumb_little_pf_f(FILE * f, double data){
 void dumb_little_pf_i(FILE * f, double data){
 	fprintf(f, "% 5i", (int) data); }
 
-/** Print a vector in real format.
+/** Synonym for \ref apop_vector_print; use that one.
+    You may want to set \ref apop_opts.output_delimiter and \ref apop_opts.output_name.
 \ingroup apop_print */
-void apop_print_vector(gsl_vector *data, char *separator, char *filename){
-	print_core_v(data, separator, filename, dumb_little_pf_f); }
+void apop_print_vector(gsl_vector *data){
+	apop_vector_print(data); }
 
-/** Print a vector in int format.
+/** Synonym for \ref apop_vector_print_int; use that one.
+    You may want to set \ref apop_opts.output_delimiter and \ref apop_opts.output_name.
 \ingroup apop_print */
-void apop_print_vector_int(gsl_vector *data, char *separator, char *filename){
-	print_core_v(data, separator, filename, dumb_little_pf_i); }
+void apop_print_vector_int(gsl_vector *data){
+	apop_vector_print_int(data); }
 
-/** Print a matrix in real format.
+/** Synonym for \ref apop_matrix_print; use that one.
 \ingroup apop_print */
-void apop_print_matrix(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_f, NULL); }
+void apop_print_matrix(gsl_matrix *data){
+    apop_matrix_print(data); }
 
-/** Print a matrix in int format.
+/** Synonym for \ref apop_matrix_print_int; use that one.
 \ingroup apop_print */
-void apop_print_matrix_int(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_i, NULL); }
+void apop_print_matrix_int(gsl_matrix *data){
+    apop_matrix_print_int(data); }
 
 /** Print a vector in float format.
+    You may want to set \ref apop_opts.output_delimiter and \ref apop_opts.output_name.
 \ingroup apop_print */
-void apop_vector_print(gsl_vector *data, char *separator, char *filename){
-	print_core_v(data, separator, filename, dumb_little_pf_f); }
+void apop_vector_print(gsl_vector *data){
+	print_core_v(data, apop_opts.output_delimiter, apop_opts.output_name, dumb_little_pf_f); }
 
 /** Print a vector in int format.
+    You may want to set \ref apop_opts.output_delimiter and \ref apop_opts.output_name.
 \ingroup apop_print */
-void apop_vector_print_int(gsl_vector *data, char *separator, char *filename){
-	print_core_v(data, separator, filename, dumb_little_pf_i); }
+void apop_vector_print_int(gsl_vector *data){
+	print_core_v(data, apop_opts.output_delimiter, apop_opts.output_name, dumb_little_pf_i); }
 
 /** Print a matrix in float format.
+    You may want to set \ref apop_opts.output_delimiter and \ref apop_opts.output_name.
 \ingroup apop_print */
-void apop_matrix_print(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_f, NULL); }
+void apop_matrix_print(gsl_matrix *data){
+    if (apop_opts.output_type   == 'd'){
+        apop_matrix_to_db(data, apop_opts.output_name, NULL);
+    } else
+	print_core_m(data, apop_opts.output_delimiter, apop_opts.output_name, dumb_little_pf_f, NULL); }
 
 /** Print a matrix in int format.
+    You may want to set \ref apop_opts.output_delimiter and \ref apop_opts.output_name.
 \ingroup apop_print */
-void apop_matrix_print_int(gsl_matrix *data, char *separator, char *filename){
-	print_core_m(data, separator, filename, dumb_little_pf_i, NULL); }
+void apop_matrix_print_int(gsl_matrix *data){
+    if (apop_opts.output_type   == 'd'){
+        apop_matrix_to_db(data, apop_opts.output_name, NULL);
+    } else
+	print_core_m(data, apop_opts.output_delimiter, apop_opts.output_name, dumb_little_pf_i, NULL); }
 
 /** Print an \ref apop_data set in float format.
+    You may want to set \ref apop_opts.output_delimiter and \ref apop_opts.output_name.
+    
+    \bug If dumping to a db, the row names are lost.
 \ingroup apop_print */
-void apop_data_print(apop_data *data, char *separator, char *filename){
-	print_core_m(data->data, separator, filename, dumb_little_pf_f, data->names); }
+void apop_data_print(apop_data *data){
+    if (apop_opts.output_type   == 'd'){
+        apop_data_to_db(data, apop_opts.output_name);
+    } else
+	print_core_m(data->data, apop_opts.output_delimiter, apop_opts.output_name, dumb_little_pf_f, data->names); }
 
 /** Print an \ref apop_data set matrix in int format.
+    You may want to set \ref apop_opts.output_delimiter and \ref apop_opts.output_name.
 
+    \bug If dumping to a db, the row names are lost.
 \ingroup apop_print */
-void apop_data_print_int(apop_data *data, char *separator, char *filename){
-	print_core_m(data->data, separator, filename, dumb_little_pf_i, data->names); }
+void apop_data_print_int(apop_data *data){
+    if (apop_opts.output_type   == 'd'){
+        apop_data_to_db(data, apop_opts.output_name);
+    } else
+	print_core_m(data->data, apop_opts.output_delimiter, apop_opts.output_name, dumb_little_pf_i, data->names); }

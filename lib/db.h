@@ -6,10 +6,6 @@
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
-/** Set this to zero for silent mode, one for errors and warnings.
-
-  \ingroup global_vars */
-extern int apop_verbose;
 
 int apop_table_exists(char *q, int whattodo);
 	//whattodo==1	==>kill table so it can be recreated in the main.
@@ -55,7 +51,8 @@ float apop_query_to_float(const char * fmt, ...);
 	//like query_to_matrix, but returns a single number.
 
 int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
-	//dump a matrix to a database table named tabname.
+int apop_data_to_db(apop_data *set, char *tabname);
+	//dump a matrix/data set to a database table named tabname.
 	//At the moment, the headers are ignored. 
 	//With no headers specified, you get columns C0, C1, C2...
 

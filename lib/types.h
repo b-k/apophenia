@@ -240,6 +240,30 @@ typedef struct apop_model{
 	double (*rng)(gsl_rng* r, double *a);
 } apop_model;
 
+/** The global options.
+  \ingroup global_vars */
+typedef struct apop_opts_type{
+            /** Set this to zero for silent mode, one for errors and warnings. default = 0. */
+    int verbose;
+            /** 's'   = to screen
+                'f'   = to file
+                'd'   = to db. 
+             If 1 or 2, then you'll need to set output_name. default = 0. */
+    char output_type;
+            /** The name of file or database to which to write. If
+             STDOUT, then it will print to screen; this is useful
+             because the file-printing routines typically produce more
+             machine-friendly output than the screen-printing routines, 
+             designed for humans.   default = "apop_output". */
+    char output_name[1000];
+            /** What to put between your columns. Default = "\t" */
+    char output_delimiter[100];
+            /** What to put between your columns. Default = "\t" */
+    int output_append;
+} apop_opts_type;
+
+extern apop_opts_type apop_opts;
+
 apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_inventory *uses, apop_estimation_params *params);
 void 		apop_estimate_free(apop_estimate * free_me);
 void 		apop_estimate_print(apop_estimate * print_me);
@@ -258,5 +282,7 @@ void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data **out, apop_data *in);
 
 apop_model * apop_model_copy(apop_model in); //this is in apop_estimate.c.
+
+void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
 #endif
 

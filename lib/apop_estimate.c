@@ -186,7 +186,7 @@ int		i;
             covdata->names->rownamect   =
             covdata->names->colnamect   =   print_me->names->colnamect;
         }
-        apop_data_print(covdata, "\t", NULL);
+        apop_data_print(covdata);
 	}
 	if (print_me->uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);

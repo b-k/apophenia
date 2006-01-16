@@ -4,7 +4,7 @@ Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
 */
 
 
-#include "db.h" //just for apop_verbose.
+#include "db.h" //just for apop_opts.verbose.
 #include "types.h"
 #include <stdio.h>
 
@@ -153,7 +153,7 @@ char **n2names;
         n1->catnamect   += n2ct;
         }
     else {
-        if (type != 'c' && apop_verbose)
+        if (type != 'c' && apop_opts.verbose)
             printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
         n1ct    = n1->colnamect;
         n2ct    = n2->colnamect;
