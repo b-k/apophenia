@@ -79,7 +79,7 @@ will clean up some of your mess. But it's a good habit to get into for
 when you start getting the monolithic analyses, which you may not be
 able to run on your PC if you don't keep the memory clear of debris.
 
-\paragraph{Naming conventions}
+\paragraph{Naming conventions}  \index{naming functions}
 Notice the consistency of
 the GSL's naming scheme. Every function in the GSL library will begin with {\tt
 gsl\_}. 
@@ -93,9 +93,11 @@ type such as {\tt apop\_data}, {\tt apop\_estimate}, \&c.
 You'll see this form over and over again: the library gives us an interesting
 object, which we'll mostly treat as a black box, and it gives us functions which
 will allow us to do useful things to that black box. The consistency of the
-naming means that you'll have more to type, but less to memorize. Your text
-editor probably has some sort of name completion command, which you may want to
-look up. E.g., vim users, try $<$ctrl-n$>$.
+naming means that you'll have more to type, but less to memorize. Given
+the package-object-verb form, you can likely guess the name of the
+function you want. Your text editor probably has some sort of name
+completion command, which you may want to look up. E.g., vim users,
+try $<$ctrl-n$>$ after typing a few characters.
 
 Another alternative is to start writing your own functions. For example, you
 could write a file {\tt my\_convenience\_fns.c}, which would include:

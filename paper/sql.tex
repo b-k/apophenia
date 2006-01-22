@@ -101,8 +101,9 @@ age}, then you will need to use {\tt data$\backslash$.age} in future
 queries, which is a
 bit annoying.
 
-Generate your own new columns: {\tt select height, weight, (height/weight) as hwr}
-. The {\tt as hwr} subclause is again more-or-less
+Generate your own new columns:\\
+{\tt select height, weight, (height/weight) as hwr}.
+The {\tt as hwr} subclause is again more-or-less
 essential if you hope to easily refer to this column in the future. 
 
 \paragraph{From} The \ttind{from} clause specifies the tables from which
@@ -134,6 +135,19 @@ Join as many subclauses as you wish, using the Boolean operators you
 know and love: {\tt where ((age > 13) or (height >= 175)) and (weight == 70)}.
 
 
+\paragraph{Pruning rows with \ttind{distinct}} The \ttind{distinct}
+keyword will tell the SQL engine that if several rows would be exact
+duplicates, to return only one copy of that row. Place it after {\tt
+select}: 
+%[
+select distinct age, height, zip
+from table
+where age > 20
+%]
+The  {\tt distinct} word prunes the rows, but is placed in the {\tt
+select} portion of the program.  This reads more like English, but it
+breaks the story above that the {\tt select} statement specifies the
+columns and the {\tt where} statement specifies the rows.
 
 \subsection{Joining}
 If you specify two tables in your {\tt from} line, then, lacking any
@@ -273,6 +287,35 @@ use \ttind{apop\_vector\_log}, \ttind{apop\_vector\_exp},
 \ttind{apop\_mean}, \ttind{apop\_var}, et cetera to get the desired
 statistics on the matrix side.
 
+\subsection{Stacking tables}
+You can think of joining two tables as setting one table to the right of
+another table. But now and then, you just need to stack one on top of
+the other. There are four keywords to do this.
+
+\paragraph{\ttind{Union}} For example, 
+%[
+select id, age, zip
+from data_set_1
+UNION
+select id, age, zip
+from data_set_2
+%]
+will produce the results of the first query stacked directly on top of
+the second query. Feel free to use subqueries or what have you, but be
+careful that both tables have exactly the same number of columns.
+
+\paragraph{\ttind{Union all}} If a line is duplicated in both tables,
+then the {\tt union} operation throws out
+one copy of the duplicate lines, much like {\tt select distinct}
+includes only one of the duplicates.
+
+\paragraph{\ttind{Intersect}} As you can guess, {\tt intersect} returns
+a single copy of only those lines that appear in both tables.
+
+\paragraph{\ttind{Except}} This is the subtraction: it returns only
+elements from the first table that do not appear in the second. Notice
+the asymmetry: absolutely nothing in the second table will appear. 
+
 \subsection{More trickery} Frankly, SQL is not very good for
 creating new data from the existing. But the few things that you can do
 are very easy.
@@ -379,10 +422,6 @@ a two-by-two table of strings, \ttind{apop\_query\_to\_vector}
 and \ttind{apop\_query\_to\_float} to pull the first column or first
 number into {\tt gsl\_vector} or a {\tt float}.
 
-\subsection{Getting data in and out}
-We now have three different ways to represent a matrix of data: as an {\tt apop\_data}, as a text file,
-or as a database table. This section will show you how to best shunt your data between a database and
-the other two formats.
 
 \section{An example: dummy variables}
 Here's a neat trick: using SQL's {\tt case} a few dozen times, we can turn a

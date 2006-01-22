@@ -12,6 +12,7 @@
 int main(int argc, char **argv){
 char		c, 
 		*delimiter,
+        *outfile,
 		msg[1000];
 gsl_matrix	*m;
 
@@ -31,7 +32,7 @@ gsl_matrix	*m;
 			  strcpy(apop_opts.output_delimiter,optarg);
 			  break;
 		  case 'f':
-			  strcpy(apop_opts.output_name,optarg);
+			  outfile   = optarg;
 			  apop_opts.output_type	= 1;
 			  break;
 		  case 'h':
@@ -41,6 +42,6 @@ gsl_matrix	*m;
 	}
 	apop_open_db(argv[optind]);
 	m	= apop_db_to_crosstab(argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4], NULL, NULL);
-	apop_matrix_print(m);
+	apop_matrix_print(m, outfile);
 	return 0;
 }

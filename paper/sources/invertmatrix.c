@@ -1,6 +1,7 @@
 #include <gsl/gsl_linalg.h>
 
-double apop_det_and_inv(gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
+double apop_det_and_inv(gsl_matrix *in, gsl_matrix **out, 
+                                    int calc_det, int calc_inv) {
 int         sign;
 double      the_determinant = 0;
     gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);

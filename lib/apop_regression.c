@@ -73,16 +73,16 @@ double		avg	= apop_mean(diff),
 
 /** Runs an F-test specified by \c q and \c c. Your best bet is to see
  the chapter on "Gaussian Tricks" in the <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF manual</a> (check the index for F-tests). It will tell you that:
- \f$${N-K\over q}
- {(\Qv'\hat\betav - \cv)' [\Qv' (\Xv'\Xv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
- \over \uv' \uv } \sim F_{q,N-K},\f$$
+ \f[{N-K\over q}
+ {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c})
+ \over {\bf u}' {\bf u} } \sim F_{q,N-K},\f]
  and that's what this function is based on.
  \param est     an \ref apop_estimate that you have already calculated.
- \param data    your \ref apop_data set. If NULL, use the one included in \c est.
+ \param set    your \ref apop_data set. If NULL, use the one included in \c est.
  \param q       The matrix \f${\bf Q}\f$, where each row represents a hypothesis.
  \param c       The vector \f${\bf c}\f$. The PDF manual explains all of this.
  \return The confidence with which we can reject the joint hypothesis.
- \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \Sigma.
+ \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
  */
 double apop_F_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c){
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
@@ -116,7 +116,7 @@ int             q_df        = q->size1,
     gsl_matrix_free(qprimexpxinvqinv);
     gsl_vector_free(qprimebeta);
     gsl_vector_free(qprimebetaminusc_qprimexpxinvqinv);
-    return f_stat;
+    return 1 - gsl_cdf_fdist_P(f_stat, q_df, data_df);
 }
 
 /** a synonym for \ref apop_F_test, qv. */
@@ -249,10 +249,10 @@ int main(void){
 apop_data       *data;
 apop_estimate   *est;
 apop_inventory  invent;
-    apop_convert_text_to_db("data","d",NULL);
+    apop_text_to_db("data","d",0,1,NULL);
     apop_inventory_set(&invent, 0);
     invent.parameters   = 1;
-    data       = apop_query_to_data("select * from d");
+    data = apop_query_to_data("select * from d");
     est  = apop_OLS.estimate(data, &invent, NULL);
     apop_estimate_print(est);
     return 0;
@@ -272,7 +272,7 @@ features, but the code below will do the same thing in five lines:
 \code
 #include <apophenia/headers.h>
 int main(void){
-    apop_convert_text_to_db("data","d",NULL);
+    apop_text_to_db("data","d",NULL);
     apop_estimate_print(apop_OLS.estimate(apop_query_to_data("select * from d"), NULL, NULL));
     return 0; }
 \endcode

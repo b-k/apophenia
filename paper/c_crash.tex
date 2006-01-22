@@ -59,7 +59,18 @@ second argument will be caption for the figure.
 	\end{figure}
 }
 
+\long\def\codefigbyinclusion#1#2#3{
+	\begin{figure}
+	\hrule\vskip4pt
+	#1
+	\hrule
+
+	\caption{#3}\label{#2}
+	\end{figure}
+}
+
 \long\def\codefig#1#2{\lagrind{sources/#1.tex}{#2}{#1}}
+
 
 This chapter will bring you up to speed on C.  
 My hope with this chapter is both to discuss where to put your semicolons
@@ -192,11 +203,13 @@ appropriate constituents of these complex numbers. Notice that you'll
 need a unique name just before the curly braces which you will never
 use anywhere else in the program. This is your first hint that C is
 neither Beautiful nor Perfect; just follow the template there and nobody
-gets hurt. Here's another example:
+gets hurt. Here's another example.  Notice that it repeats the typedef
+name in the useless struct name, which is valid, and as good a custom
+as any.
 
 %\begin{verbatim}
 %[
-typedef struct ppp{
+typedef struct person{
     char first_name[100], last_name[100];
     float height, weight;
     int age;
@@ -268,7 +281,7 @@ of these checks.
 
 By the way, these consistency checks don't care about the length of
 your arrays. In function declarations, you can use {\tt int an\_array[ ]}
-with no length specified. \index{array!declaration} \index{declaration!of arrays}
+with a blank instead of a length. \index{array!declaration} \index{declaration!of arrays}
 
 \paragraph{Declaring a function; black boxes} \index{declaration!of functions}
 Since there are all these consistency
@@ -1537,7 +1550,7 @@ with strings. For example:
 char hello[20];
 char *hello2 = "Hi.";
 hello = "Hi there."; //This will crash.
-hello = hello2;  //This will also crash.
+hello = hello2;      //Won't crash, but still wrong.
 %]
 %\end{verbatim}
 
@@ -1571,7 +1584,7 @@ will specify later. Here are the odd characters you will need for almost all of 
 {\tt \%g}	& insert a real number here\\
 {\tt \%s}	& insert a string here\\
 {\tt $\backslash$n}	& begin a new line\\
-{\tt $\backslash$"}	& a quote which won't end the string\\
+{\tt $\backslash$"}	& a quote that won't end the string\\
 $\backslash$(newline)	& continue the string on the next line
 \end{tabular}
 

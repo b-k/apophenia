@@ -258,8 +258,10 @@ typedef struct apop_opts_type{
     char output_name[1000];
             /** What to put between your columns. Default = "\t" */
     char output_delimiter[100];
-            /** What to put between your columns. Default = "\t" */
+            /** Append to output files(1), or overwrite(0)? default = 0 */
     int output_append;
+            /** What other people have put between your columns. Default = "|,\t" */
+    char input_delimiters[100];
 } apop_opts_type;
 
 extern apop_opts_type apop_opts;

@@ -135,7 +135,7 @@ int test_summarize(){
 gsl_matrix      *m;
 apop_data       *s;
 double          t, v;
-    apop_convert_text_to_db("test_data", "td", NULL);
+    apop_text_to_db("test_data", "td", 0,1,NULL );
     m    = apop_query_to_matrix("select * from td");
     s    = apop_matrix_summarize(m);
     //apop_matrix_print(s,"\t", NULL);

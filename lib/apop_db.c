@@ -40,7 +40,7 @@ out for analysis.
 \li \ref apop_db_merge_table: Import/merge just one table.
 
 \par See also
- \li The \ref conversions, including \ref apop_convert_text_to_db and \ref apop_matrix_to_db.
+ \li The \ref conversions, including \ref apop_text_to_db and \ref apop_matrix_to_db.
 
  \li The \ref command_line "Command-line utilities".
 
@@ -71,6 +71,7 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 "apop_output",  //output name
                                 "\t",           //output delimiter
                                 1,              //output append
+                                "| ,\t",           //input delimiters
 };
 
                                                                                                                                
@@ -678,7 +679,7 @@ char		*q 		= malloc(sizeof(char)*1000);
 
 /** Dump an \ref apop_data set into the database.
 
-\param data 	The name of the matrix
+\param set 	    The name of the matrix
 \param tabname	The name of the db table to be created
 \ingroup apop_data
 \todo add category names.

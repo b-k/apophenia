@@ -2,7 +2,9 @@
 Added an apop_opts structure for options. Alowed the following changes:
 	--apop_verbose  is now apop_opts.verbose. Try this on your existing code:
 		perl -pi.bak -e 's/apop_verbose/apop_opts.verbose/g' *.c *.h
-	--the output functions now output into three formats: on screen, to file, to db.
+	--the output functions now output into three formats: on screen, to file, to db;
+		see chapter five of the manual.
+		
 
 0.14	December 2005
 

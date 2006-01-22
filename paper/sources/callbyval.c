@@ -1,7 +1,7 @@
 #include <stdio.h>  //printf
 int globe=1;          //a global variable.
 
-int function doubling (int a_c, int b_c){
+int doubling (int a_c, int b_c){
      a_c = b_c * 2;
      globe = b_c * 2;
      return a_c;

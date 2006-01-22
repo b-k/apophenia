@@ -1,7 +1,7 @@
 #include <stdio.h>  //printf
 #include <malloc.h> //malloc
 
-int function doubling (int * a_c, int b_c){
+int doubling (int * a_c, int b_c){
 	*a_c = b_c * 2;
 	return *a_c;
 }

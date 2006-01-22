@@ -63,7 +63,7 @@ A pointer to a <tt>double*</tt>, which will be <tt>malloc</tt>ed inside the func
 \note Does not use memcpy, because we don't know the stride of the vector.
 \ingroup convertfromvector 
 */
-int apop_convert_vector_to_array(gsl_vector *in, double **out){
+int apop_vector_to_array(gsl_vector *in, double **out){
 int		i;	
 	*out	= malloc(sizeof(double) * in->size);
 	for (i=0; i < in->size; i++)
@@ -78,7 +78,7 @@ int		i;
 \param size 	You will have to tell the function how long <tt>in</tt> is.
 \ingroup convertfromarray 
 */ 
-void apop_convert_array_to_vector(double *in, gsl_vector **out, int size){
+void apop_array_to_vector(double *in, gsl_vector **out, int size){
 int		i;
 	*out	= gsl_vector_alloc(size);
 	for(i=0; i < size; i++)
@@ -101,7 +101,7 @@ int		i, j;
 \param rows, cols	the size of the array.
 \ingroup convertfromarray 
 */
-void apop_convert_array_to_matrix(double **in, gsl_matrix **out, int rows, int cols){
+void apop_array_to_matrix(double **in, gsl_matrix **out, int rows, int cols){
 gsl_matrix_view	m;
 double		*line;
 	*out	= gsl_matrix_alloc(rows, cols);
@@ -111,7 +111,7 @@ double		*line;
 	free(line);
 }
 
-int apop_find_index(gsl_matrix *d, double r, int start_from){
+static int apop_find_index(gsl_matrix *d, double r, int start_from){
 //used for apop_db_to_crosstab.
 int	i	= start_from;	//i is probably the same or i+1.
 	do {
@@ -170,131 +170,199 @@ gsl_vector_view	v;
 	return out;
 }
 
+/*
+Much of the magic below is due to the following regular expression.
 
+Without backslashes and spaced out in perl's /x style, it would look like this:
+("[^"]*"        (starts with a ", has no "" in between, ends with a ".
+|               or
+[^%s"][^%s"]*)  anything but a "" or the user-specified delimiters. At least 1 char long.)
+([%s\n]|$)      and ends with a delimiter or the end of line.
+*/
+const char      divider[]="\\(\"[^\"]*\"\\|[^\"%s][^\"%s]*\\)[%s\n]";
 
+//in: the line being read, the allocated outstring, the result from the regexp search, the offset
+//out: the outstring is filled with a bit of match, last_match is updated.
+static void pull_string(char *line, char * outstr, regmatch_t *result, int * last_match){
+int     length_of_match = result[1].rm_eo - result[1].rm_so;
+    memcpy(outstr, line + (*last_match)+result[1].rm_so, length_of_match);
+    outstr[length_of_match]       = '\0';
+    (*last_match)                += result[1].rm_eo+1;
+}
+
+/** Open file, find the first non-comment row, count columns, close file.
+ */
 int apop_count_cols_in_text(char *text_file){
-//Open file, find the first valid row, count columns, close file.
 FILE * 		infile;
-char		instr[Text_Size_Limit], *astring;
-int		ct	= 0;
+char		instr[Text_Size_Limit], outstr[Text_Size_Limit],
+            full_divider[1000];
+int		    ct	                = 0,
+            length_of_string    = 0,
+            last_match          = 0;
+regex_t     *regex              = malloc(sizeof(regex_t));
+regmatch_t  result[3];
+    sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
+    regcomp(regex, full_divider, 0);
 	infile	= fopen(text_file,"r");
 	if (infile==NULL) {printf("Error opening %s", text_file); return 1;}
 	fgets(instr, Text_Size_Limit, infile);
 	while(instr[0]=='#')	//burn off comment lines
 		fgets(instr, Text_Size_Limit, infile);
-	astring	= strtok(instr,",");
-	while (astring !=NULL){
+    length_of_string= strlen(instr);
+    while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
+        pull_string(instr,  outstr, result,  &last_match);
 		ct++;
-		astring	= strtok(NULL,",");
 	}
 	fclose(infile);
+    regfree(regex);
 	return ct;
 }
 
-char * strip(char *in){
-//OK, OK. C sucks.
-char 		*out 	= malloc(sizeof(char) * (1+strlen(in)));
-int		i	= 0, 
-		done	= 0,
-		first_ok= 0,
-		last_ok	= 0;
-	while (!done)
-		if (in[first_ok]==' ' || in[first_ok]=='\n' || in[first_ok]=='\t')
-			first_ok	++;
-		else	done		++;
-	for (i=first_ok; i< strlen(in); i++){
-		out[i-first_ok]	= in[i];
-		if (in[i]!=' ' && in[i]!='\n' && in[i]!='\t')
-			last_ok	= i-first_ok;
-	}
-	if (last_ok <= first_ok-1) //blank string
-		sprintf(out, " ");
-	out[last_ok+1]	= '\0';	//redundant for blanks, but whatever.
+/** Open file, count lines that don't start with #, close file.
+ */
+int apop_count_rows_in_text(char *text_file){
+FILE * 		infile;
+char		instr[Text_Size_Limit];
+int		ct	= 0;
+	infile	= fopen(text_file,"r");
+	if (infile==NULL) {printf("Error opening %s", text_file); return 1;}
+	while(fgets(instr,Text_Size_Limit,infile)!=NULL)
+	    if(instr[0]!='#')	//burn off comment lines
+		    ct  ++;
+	fclose(infile);
+	return ct-1;
+}
+
+//OK, OK. C sucks. This fn just strips leading and trailing blanks.
+static char * strip(char *in){
+regex_t     *regex      = malloc(sizeof(regex_t));
+size_t      dummy       = 0;
+char 		*out 	    = malloc(sizeof(char) * (1+strlen(in)));
+char        stripregex[]= "[ \n\t]*\\([^ \n\t]*.*[^ \n\t]*\\)[ \n\t]*";
+regmatch_t  result[3];
+    regcomp(regex, stripregex, 0);
+    if(!regexec(regex, in, 2, result, 0))
+        pull_string(in, out, result,  &dummy);
+    regfree(regex);
 	return out;
 }
 
-/** Read a delimited text file into an array. 
-\param text_file	The input file. At the moment, it needs to be
-comma delimited. Lines with a # at the head are taken to be comments
-and ignored. If field_names is NULL, then the first non-comment line
-of the file is taken to be strings giving the (comma-delimited) field
-names. 
+/** \page text_format Notes on input text file formatting
 
 Since you're reading into an array, all text fields are taken
-as zeros. You will be warned of this unless you set \ref
-apop_opts.verbose<tt>==0</tt> beforehand.
+as zeros. You will be warned of this unless you set \ref apop_opts.verbose<tt>==0</tt> beforehand.
 
-\param delimiters A list of delimiters. "," is typical, as is ",|", for example.
-\param tab 	A table, to be allocated and filled with data.
-\param names 	An apop_name structure. If the data has column names as the first (noncomment) row, then set
-<tt>name.colname= 1;</tt>
-before running; if the first element of each row is a row name, set
-<tt>name.rowname= 1;</tt>. Else, set these to zero.
-\return 	Returns the number of rows.
+You will also be interested in \ref apop_opts.input_delimiters. By
+default, it is set to "| ,\t", meaning that a pipe, comma, space, or tab will
+delimit separate entries.
+
+There are often two delimiters in a row, e.g., "23, 32,, 12". When
+it's two commas like this, the user typically means that there is a
+missing value; when it is two tabs in a row, this is typically just
+formatting. Apophenia is not smart enough to work out the difference:
+a sequence of delimiters is taken to be a single delimiter. If you do
+have double-commas like this, you will have to explicitly insert a note
+that there is a missing data point. Try:
+\code
+		perl -pi.bak -e 's/,,/,NaN,/g' data_file
+\endcode
+
+Text is always delimited by quotes. Delimiters inside quotes are perfectly
+OK, e.g., "Males, 30-40", is an OK column name.
+
+Lines beginning with # are taken to be comments and ignored. 
+
+If there are row names and column names, then the input will not be
+perfectly square: there should be no first entry in the row with column
+names like 'row names'. That is, for a 100x100 data set with row and
+column names, there are 100 names in the top row, and 101 entries in
+each subsequent row (name plus 100 data points).
+
+*/
+
+/** Read a delimited text file into an array. 
+
+  See \ref text_format.
+
+\param text_file    The name of the text file to be read in.
+\param has_row_names Does the lines of data have row names?
+\param has_col_names Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
+\return 	Returns an apop_data set.
 
 <b>example:</b> See \ref apop_OLS.
-\bug I suspect apop_convert_text_to_array doesn't work very well with delimiters besides the standard ones.  
 \ingroup convertfromtext	*/
-int apop_convert_text_to_array(char *text_file, char *delimiters, double ***tab, apop_name *names){
+apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
+apop_data   *set;
 FILE * 		infile;
-char		instr[Text_Size_Limit], *astring, *str, *stripped;
-int 		i	= 0,
-		ct, colno;
-	ct	= apop_count_cols_in_text(text_file)+1;
-	*tab	= malloc(sizeof(double));
+char		instr[Text_Size_Limit], 
+            *str, *stripped, 
+            outstr[Text_Size_Limit],
+            full_divider[1000];
+int 		i	        = 0,
+            line_no     = 0,
+            last_match,
+            length_of_string,
+		    ct, colno, rowct;
+regex_t     *regex  = malloc(sizeof(regex_t));
+regmatch_t  result[2];
+	ct	    = apop_count_cols_in_text(text_file);
+	rowct	= apop_count_rows_in_text(text_file);
+    set     = apop_data_alloc(rowct+1-has_col_names,ct);
 	infile	= fopen(text_file,"r");
-	if (names != NULL){
-		fgets(instr, Text_Size_Limit, infile);
-		while(instr[0]=='#')	//burn off comment lines
-			fgets(instr, Text_Size_Limit, infile);
-		if (names->colnamect !=0){
-			astring	= strtok(instr,delimiters);
-			names->colnamect= 0;
-			names->colnames	= malloc(sizeof(char*));
-			while (astring !=NULL){
-	            stripped	= strip(astring);
-                apop_name_add(names, stripped, 'c');
-				free(stripped);
-				astring	= strtok(NULL,delimiters);
-			}
-		}
-		if (names->rownamect !=0){
-			names->rownamect= 0;
-			names->rownames	= malloc(sizeof(char*));
-		} else 	names->rownames	= NULL;
-	}
+    sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
+    regcomp(regex, full_divider, 0);
+
+    //First, handle the top line, which is assumed to be column names.
+    if (has_col_names){
+	    fgets(instr, Text_Size_Limit, infile);
+        line_no   ++;
+	    while(instr[0]=='#')	//burn off comment lines
+		    fgets(instr, Text_Size_Limit, infile);
+	    set->names->colnamect= 0;
+	    set->names->colnames	= malloc(sizeof(char*));
+        last_match      = 0;
+        length_of_string= strlen(instr);
+        while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
+            pull_string(instr,  outstr, result,  &last_match);
+	        stripped	= strip(outstr);
+            apop_name_add(set->names, stripped, 'c');
+		    free(stripped);
+	    }
+    }
+
+    //Now do the body. First elmt may be a row name.
 	while(fgets(instr,Text_Size_Limit,infile)!=NULL){
 		colno	= 0;
 		if(instr[0]!='#') {
-			i	++;
-			*tab	= realloc(*tab, sizeof(double*) * i);
-			(*tab)[i-1]= malloc(sizeof(double)*ct);
-			astring	= strtok(instr,delimiters);
-				if (names !=NULL && names->rownames !=NULL){
-	                stripped	= strip(astring);
-                    apop_name_add(names, stripped, 'r');
-				    free(stripped);
-					astring	= strtok(NULL,delimiters);
-					if (astring==NULL){
-						printf("row name with no data on line %i.\n", i);
-						return 1;
-					}
-				}
-			while (astring !=NULL){
+			i	            ++;
+            last_match      = 0;
+            length_of_string= strlen(instr);
+            regexec(regex, (instr+last_match), 2, result, 0);   //one for the headers.
+			if (has_row_names){
+                pull_string(instr,  outstr, result,  &last_match);
+	            stripped	= strip(outstr);
+                apop_name_add(set->names, stripped, 'r');
+			    free(stripped);
+			}
+            while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
+                pull_string(instr,  outstr, result,  &last_match);
 				colno++;
-				(*tab)[i-1][colno-1]	= strtod(astring, &str);
-				if (apop_opts.verbose && !strcmp(astring, str))
-					printf("trouble converting item %i on line %i; using zero.\n", colno, i);
-				astring	= strtok(NULL,delimiters);
+				gsl_matrix_set(set->data, i-1, colno-1,	 strtod(outstr, &str));
+				if (apop_opts.verbose && !strcmp(outstr, str))
+				    printf("trouble converting item %i on line %i; using zero.\n", colno, i);
 			}
 		}
 	}
 	fclose(infile);
-	return i;
+    regfree(regex);
+	return set;
 }
 
-char * prep_string_for_sqlite(char *astring){
-//If the string isn't a number, it needs quotes.
+/**If the string isn't a number, it needs quotes, and sqlite wants 0.1,
+  not just .1. 
+  \todo This could be easier with regexes.
+ */
+static char * prep_string_for_sqlite(char *astring){
 char		*tmpstring, 
 		*out	= NULL,
 		*str	= NULL;
@@ -336,57 +404,55 @@ char		*tmpstring,
 
 /** Read a text file into a database table.
 
-\param text_file
-The input file. At the moment, it needs to be comma delimited. Lines with
-a # at the head are taken to be comments and ignored. If field_names is
-<tt>NULL</tt>, then the first non-comment line of the file is taken to be strings
-giving the (comma-delimited) field names.
+  See \ref text_format.
 
-\param tabname 
-The name to give the table in the database
-
-\param field_names 
-The list of field names, which will be the columns for the table. If <tt>NULL</tt>, read the names from the file.
+\param text_file    The name of the text file to be read in.
+\param tabname      The name to give the table in the database
+\param has_row_names Does the lines of data have row names?
+\param has_col_names Is the top line a list of column names? 
+\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>).
 
 \return Returns the number of rows.
 
-
 Using the data set from the example on the \ref apop_OLS "apop_OLS" page, here's another way to do the regression:
 
-\verbatim
-#include <gsl/gsl_matrix.h>
-#include <apophenia/db.h>
-#include <apophenia/conversions.h>
-#include <apophenia/regression.h>
-#include <apophenia/linear_algebra.h> //Print_vector
+\code
+#include <apophenia/headers.h>
 
-int main(void){
-gsl_vector      *beta;
-gsl_matrix      *data;
-     apop_open_db(NULL);
-     apop_convert_text_to_db("data", "d", NULL);
-     apop_query_to_matrix(&data, "select * from d");
-     apop_OLS(data, &beta);
-     printf("The OLS coefficients:\n");
-     apop_print_vector(beta);
-return 0;
-}
-\endverbatim 
+int main(void){ 
+apop_data       *data; 
+apop_estimate   *est;
+    apop_open_db(NULL);
+    apop_text_to_db("data", "d", 0,1,NULL);
+    data       = apop_query_to_data("select * from d");
+    estimate   = apop_OLS.estimate(data, NULL, NULL);
+    printf("The OLS coefficients:\n");
+    apop_estimate_print(est);
+    return 0;
+} 
+\endcode
 \ingroup convertfromtext
 */
-int apop_convert_text_to_db(char *text_file, char *tabname, char **field_names){
+int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
 FILE * 		infile;
-char		q[20000], instr[Text_Size_Limit], **fn, *astring, *prepped;
-char		delimiters[]	=",";
+char		q[20000], instr[Text_Size_Limit], **fn, *prepped;
+char		*stripped, outstr[Text_Size_Limit],
+            full_divider[1000];
 int 		ct, one_in,
-		i			= 0, 
-		use_names_in_file	= 0,
-		rows			= 0;
+            last_match,
+            length_of_string,
+		    i			    = 0, 
+		    use_names_in_file = 0,
+		    rows			= 0;
+regex_t     *regex  = malloc(sizeof(regex_t));
+regmatch_t  result[2];
 	ct	= apop_count_cols_in_text(text_file);
 	if (apop_table_exists(tabname,0)){
 	       	printf("apop: %s table exists; not recreating it.\n", tabname);
 		return 0; //to do: return the length of the table.
 	} else{
+        sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
+        regcomp(regex, full_divider, 0);
 		infile	= fopen(text_file,"r");
 	       	if (infile==NULL) {
 			printf("apop, %s: %i. Trouble opening %s.\n", __FILE__, __LINE__, text_file);
@@ -398,36 +464,49 @@ int 		ct, one_in,
 			while(instr[0]=='#')	//burn off comment lines
 				fgets(instr, Text_Size_Limit, infile);
 			fn	= malloc(ct * sizeof(char*));
-			astring	= strtok(instr,delimiters);
-			while(astring !=NULL){
-				fn[i]	= malloc(1000 * sizeof(char));
-				strcpy(fn[i], astring);
-				astring	= strtok(NULL,delimiters);
-				i++;
-			}
+
+            last_match      = 0;
+            length_of_string= strlen(instr);
+            while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
+                pull_string(instr,  outstr, result,  &last_match);
+	            stripped	= strip(outstr);
+			    fn[i]	= malloc(1000 * sizeof(char));
+			    strcpy(fn[i], stripped);
+		        free(stripped);
+			    i++;
+	        }
 		} else	fn	= field_names;
 		strcpy(q, "begin; CREATE TABLE ");
 		strcat(q, tabname);
 		for (i=0; i<ct; i++){
-			if (i==0) 	strcat(q, " (");
-			else		strcat(q, " , ");
+			if (i==0) 	{
+                if (has_row_names)
+                    strcat(q, " (row_names, ");
+                else
+                    strcat(q, " (");
+            } else		strcat(q, " , ");
 			sprintf(q, "%s %s", q, fn[i]);
 		}
 		strcat(q, "); commit; begin;");
 		apop_query_db(q);
+
+
+
 		while(fgets(instr,Text_Size_Limit,infile)!=NULL){
 			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
 				rows	++;
-				i++;
-				one_in=0;
+				//i       ++;
+				one_in  =0;
 				sprintf(q, "INSERT INTO %s VALUES (", tabname);
-				astring	= strtok(instr,delimiters);
-				while(astring !=NULL){
+                last_match      = 0;
+                length_of_string= strlen(instr);
+                while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
 					if(one_in++) 	strcat(q, ", ");
-					prepped	=prep_string_for_sqlite(astring);
-					strcat(q, prepped);
+                    pull_string(instr,  outstr, result,  &last_match);
+					prepped	=prep_string_for_sqlite(outstr);
+                    if (strlen(prepped) > 0)
+					    strcat(q, prepped);
 					free(prepped);
-					astring	= strtok(NULL,delimiters);
 				}
 				apop_query_db("%s);",q);
 			}
@@ -439,11 +518,6 @@ int 		ct, one_in,
 		}
 		return rows;
 	}
-}
-
-/** an alias for \ref apop_convert_text_to_db  */
-int apop_text_to_db(char *text_file, char *tabname, char **field_names){
-	return apop_convert_text_to_db(text_file, tabname, field_names);
 }
 
 /** See \ref apop_db_to_crosstab for the storyline; this is the complement.
@@ -463,9 +537,10 @@ int		i,j;
 	return 0;
 }
 
-/** \page dbtomatrix converting from database table to gsl_matrix
+/** \page dbtomatrix converting from database table to <tt>gsl_matrix</tt> or \ref apop_data
 
-Use <tt>fill_me = apop_query_to_matrix("select * from table_name;");</tt>. [See \ref apop_query_to_matrix.]
+Use <tt>fill_me = apop_query_to_matrix("select * from table_name;");</tt>
+or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \ref apop_query_to_matrix; \ref apop_query_to_data.]
 \ingroup convertfromdb
 */
 
