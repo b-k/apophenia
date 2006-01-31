@@ -1,4 +1,5 @@
-export junkdir=delete_me
+export junkdir=dists
+export pkg=apophenia
 export version=0.15
 
 #This script is intended for maintainers who are modifying the 
@@ -16,16 +17,21 @@ export version=0.15
 
 rm -rf $junkdir
 mkdir $junkdir
-cp -rf * $junkdir
-#cp -rf vasprintf model doxy wn $junkdir
-cd $junkdir
+mkdir $junkdir/$pkg-$version
+cp -rf * $junkdir/$pkg-$version
+cd $junkdir/$pkg-$version
 	#let the GNU prep everything and produce a distribution pkg.
 	libtoolize
 	aclocal
 	autoconf
 	automake -a
 	./configure
-	rm apophenia-$version.tar.gz 
+	#rm apophenia-$version.tar.gz 
+    yes | dh_make -l -n -c GPL  
+    cp ../../debian_control debian/control
+    cp ../../debian_copyright debian/copyright
+    debuild -us -uc 
+    rm ../$pkg_$version.tar.gz
 	make dist
 
 	#produce a directory with bonus materials:
@@ -52,10 +58,24 @@ cd $junkdir
 	gzip apophenia-$version.tar
 	mv apophenia-$version.tar.gz ../
 	cd ..
+#rm -rf $junkdir
+echo "***********tgz done; now prepping Debian package*********************"
+#Prerequisites: You will need the debian build tools; try:
+# apt-get install dpkg-dev debhelper devscripts fakeroot linda dh-make 
+tar xz < apophenia-$version.tar.gz
+
 echo "***********Done with packing; now compiling***********"
 #Compile using the downloadable tarball.
-tar xz < apophenia-$version.tar.gz
-cd apophenia-$version
-	./configure; make; sudo make install
+#Notice that debian already ran ./configure;make for us.
+	#./configure; make; sudo make install
+
+    #Uncomment the following to install from source
+#cd $pkg-$version
+#	sudo make install
 cd ..
-rm -rf $junkdir
+    #Uncomment the following to install from debian pkg
+	#sudo apt-get install apophenia-$version.deb
+#mkdir dists
+#mv apophenia-*.deb dists
+#mv apophenia-*.gz dists
+#mv apophenia_* dists

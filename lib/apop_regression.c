@@ -212,12 +212,16 @@ gsl_vector_view	v 		= gsl_matrix_column(set->data, 0);
 
 \ingroup regression
 
-\param set The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
+\param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
 \param uses If <tt>NULL</tt>, then you get everything.  If a pointer to
 an \ref apop_inventory , then you get what you ask for. Log likelihood is
 not calculated; you always get the parameter estimates.
-\param dummy    You've got to give it a NULL at the end so the header will be consistent with the other estimation functions. Life is hard that way.
+\param ep    An \ref apop_estimation_params object. The only
+thing we look at is the \c destroy_data element. If this is NULL or
+\c destroy_data==0, then the entire data set is copied off, and then
+mangled. If \c destroy_data==1, then this doesn't copy off the data set,
+but destroys it in place.
 
 \return
 Will return an \ref apop_estimate <tt>*</tt>.
@@ -279,22 +283,34 @@ int main(void){
 
 
  */
-apop_estimate * apop_estimate_OLS(apop_data *set, apop_inventory *uses, void *dummy){
-    prep_inventory_names(set->names);
+apop_estimate * apop_estimate_OLS(apop_data *inset, apop_inventory *uses, 
+                                            apop_estimation_params *ep){
 apop_model      *modded_ols;
+apop_data       *set;
+
+    //check whether we get to destroy the data set or need to copy it.
+    if ((ep == NULL) || (ep->destroy_data==0))
+        apop_data_memcpy(&set, inset); 
+    else
+        set = inset;
+
     modded_ols              = apop_model_copy(apop_OLS); 
     modded_ols->parameter_ct= set->data->size2;
-apop_estimate	*out		= apop_estimate_alloc(set, *modded_ols, uses, NULL);
+    prep_inventory_names(set->names);
+apop_estimate	*out		= apop_estimate_alloc(set, *modded_ols, uses, ep);
 gsl_vector      *y_data     = gsl_vector_alloc(set->data->size1); 
 gsl_vector      *xpy        = gsl_vector_calloc(set->data->size2);
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
 gsl_vector_view v           = gsl_matrix_column(set->data, 0);
     gsl_matrix_get_col(y_data, set->data, 0);
-    gsl_vector_set_all(&(v.vector), 1); //affine: first column is ones.
+    gsl_vector_set_all(&(v.vector), 1);                 //affine: first column is ones.
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);   //(X'X)
     gsl_blas_dgemv(CblasTrans, 1, set->data, y_data, 0, xpy);       //(X'y)
     xpxinvxpy(set->data, y_data, xpx, xpy, out);
     gsl_vector_free(y_data); gsl_vector_free(xpy);
+
+    if ((ep == NULL) || (ep->destroy_data==0))
+        apop_data_free(set);
     return out;
 }
 
@@ -483,3 +499,62 @@ apop_data *dummies = apop_produce_dummies(categories, 0);
     return apop_OLS.estimate(dummies,  uses, NULL);
 }
 
+/** Good ol' \f$R^2\f$.  Let \f$Y\f$ be the dependent variable,
+\f$\epsilon\f$ the residual,  \f$n\f$ the number of data points, and \f$k\f$ the number of independent vars (including the constant).
+
+  \f$ SST \equiv \sum (Y_i - \bar Y) ^2 \f$
+  \f$ SSE \equiv \sum \epsilon ^2       \f$
+  \f$ R^2 \equiv 1 - {SSE\over SST}     \f$
+  \f$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k)}(1-R^2)     \f$
+
+  Internally allocates (and frees) a vector the size of your data set.
+\param  in  The estimate. I need residuals to have been calculated, and the first column of in->data needs to be the dependent variable.
+
+\return: a \f$1 \times 5\f$ apop_data table with the following fields:
+"R_squared"\\
+"R_squared_adj"\\
+"SSE"\\
+"SST"\\
+"SSR"
+
+\ingroup regression
+  */
+apop_data *apop_estimate_correlation_coefficient(apop_estimate *in){
+double          sse, sst, rsq;
+size_t          obs     = in->data->data->size1;
+size_t          indep_ct= in->data->data->size2 - 1;
+gsl_vector      *y      = gsl_vector_alloc(obs);
+gsl_vector_view v;  
+apop_data       *out    = apop_data_alloc(5,1);
+    //notice that the sum of squares is just vector dot vector.
+    gsl_blas_ddot(in->residuals, in->residuals, &sse);
+
+    //copy the dependent var to a temp vector, subtract means, square.
+    v   = gsl_matrix_column(in->data->data, 0);
+    gsl_vector_memcpy(y, &(v.vector));
+    gsl_vector_add_constant(y, - apop_mean(y));
+    gsl_blas_ddot(y, y, &sst);
+
+    rsq = 1 - (sse/sst);
+
+    apop_name_add(out->names, "R_squared", 'r');
+    gsl_matrix_set(out->data, 0, 0, rsq);
+    apop_name_add(out->names, "R_squared_adj", 'r');
+    gsl_matrix_set(out->data, 1, 0, rsq - ((indep_ct -1) /(obs - indep_ct)) * (1-rsq) );
+    apop_name_add(out->names, "SSE", 'r');
+    gsl_matrix_set(out->data, 2, 0, sse);
+    apop_name_add(out->names, "SST", 'r');
+    gsl_matrix_set(out->data, 3, 0, sst);
+    apop_name_add(out->names, "SSR", 'r');
+    gsl_matrix_set(out->data, 4, 0, sst - sse);
+
+    gsl_vector_free(y);
+    return out;
+}
+
+/** A synonym for \ref apop_estimate_correlation_coefficient, q.v. 
+ \ingroup regression
+ */
+apop_data *apop_estimate_r_squared(apop_estimate *in){
+    return apop_estimate_correlation_coefficient(in);
+}

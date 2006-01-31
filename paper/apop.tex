@@ -197,7 +197,10 @@ basic hypothesis tests are included in the estimate (and future versions
 of Apophenia have a good chance of extricating them). Instead, you can
 pass the estimate object to a function that will test a hypothesis. For
 example, the \ttind{apop\_\-estimate\_\-F\_\-test} takes in an 
-{\tt apop\_\-estimate} and puts out the result of an F test.
+{\tt apop\_\-estimate} and puts out the result of an F test, and the
+\ttind{apop\_\-estimate\_\-correlation\_\-coefficient} will produce a
+table including \ind{$R^2$}, adjusted $R^2$, \ind{SSE}, SST, and SSR. [See the
+reference for the definitions.]
 
 The output is an {\tt apop\_\-data} structure. Typically, the rows are
 names of the variables in your original data set, and the columns are

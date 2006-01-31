@@ -25,10 +25,12 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
  \ingroup data_struct
   */
 apop_data * apop_data_alloc(int size1, int size2){
-apop_data  *setme   = malloc(sizeof(apop_data));
-    setme->data     = gsl_matrix_alloc(size1,size2);
-    setme->names    = apop_name_alloc();
-    setme->categories = NULL;
+apop_data  *setme       = malloc(sizeof(apop_data));
+    setme->data         = gsl_matrix_alloc(size1,size2);
+    setme->names        = apop_name_alloc();
+    setme->categories   = NULL;
+    setme->catsize[0]   = 
+    setme->catsize[1]   = 0;
     return setme;
 }
 
@@ -43,6 +45,8 @@ apop_data  *setme   = malloc(sizeof(apop_data));
     setme->data     = m;
     setme->names    = apop_name_alloc();
     setme->categories = NULL;
+    setme->catsize[0]   = 
+    setme->catsize[1]   = 0;
     return setme;
 }
 

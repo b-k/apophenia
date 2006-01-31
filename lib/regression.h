@@ -3,7 +3,7 @@
 #include <gsl/gsl_matrix.h>
 #include <apophenia/types.h>
 
-apop_estimate * apop_estimate_OLS(apop_data *set, apop_inventory *uses, void *dummy);
+apop_estimate * apop_estimate_OLS(apop_data *set, apop_inventory *uses, apop_estimation_params *ep);
 apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matrix *sigma);
 apop_estimate *apop_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories);
 //Returns GLS/OLS parameter estimates.
@@ -24,3 +24,6 @@ double two_tailify(double in);
 //into a two-tailed confidence interval.
 
 apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories);
+
+apop_data *apop_estimate_correlation_coefficient(apop_estimate *in);
+apop_data *apop_estimate_r_squared(apop_estimate *in);

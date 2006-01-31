@@ -125,44 +125,42 @@ int		i;
 \param type     Either 'd', 'c', 'r', or 't' stating whether you are merging the dependent var names, columns, rows, or text. [Default: cols]
 \ingroup names */
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type){
-size_t  n1ct, n2ct;
-char **n2names;
-
+int     i;
     if (type == 'r'){
-        n1ct    = n1->rownamect;
-        n2ct    = n2->rownamect;
-        n2names = n2->rownames;
-        n1->rownames     = realloc(n1->rownames, sizeof(char *)*(n1ct+n2ct));
-        memcpy((n1->rownames)+n1ct, n2names, sizeof(char *)*n2ct);
-        n1->rownamect   += n2ct;
+        for (i=0; i< n2->rownamect; i++)
+            apop_name_add(n1, n2->rownames[i], 'r');
         }
-    if (type == 'd'){
-        n1ct    = n1->depnamect;
-        n2ct    = n2->depnamect;
-        n2names = n2->depnames;
-        n1->depnames     = realloc(n1->depnames, sizeof(char *)*(n1ct+n2ct));
-        memcpy((n1->depnames)+n1ct, n2names, sizeof(char *)*n2ct);
-        n1->depnamect   += n2ct;
+    else if (type == 'd'){
+        for (i=0; i< n2->depnamect; i++)
+            apop_name_add(n1, n2->depnames[i], 'd');
         }
-    if (type == 't'){
-        n1ct    = n1->catnamect;
-        n2ct    = n2->catnamect;
-        n2names = n2->catnames;
-        n1->catnames     = realloc(n1->catnames, sizeof(char *)*(n1ct+n2ct));
-        memcpy((n1->catnames)+n1ct, n2names, sizeof(char *)*n2ct);
-        n1->catnamect   += n2ct;
+    else if (type == 't'){
+        for (i=0; i< n2->catnamect; i++)
+            apop_name_add(n1, n2->catnames[i], 't');
         }
     else {
         if (type != 'c' && apop_opts.verbose)
             printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
-        n1ct    = n1->colnamect;
-        n2ct    = n2->colnamect;
-        n2names = n2->colnames;
-        n1->colnames     = realloc(n1->colnames, sizeof(char *)*(n1ct+n2ct));
-        memcpy((n1->colnames)+n1ct, n2names, sizeof(char *)*n2ct);
-        n1->colnamect   += n2ct;
+        for (i=0; i< n2->colnamect; i++)
+            apop_name_add(n1, n2->colnames[i], 'c');
         }
 }
+
+/** Copy one \ref apop_name structure to another. That is, all data is duplicated.
+ 
+  \param out    a structure that this function will allocate and fill
+  \param in    the input names
+
+ \ingroup names
+  */
+void apop_name_memcpy(apop_name **out, apop_name *in){
+    *out = apop_name_alloc();
+    apop_name_stack(*out, in, 'd');
+    apop_name_stack(*out, in, 'c');
+    apop_name_stack(*out, in, 'r');
+    apop_name_stack(*out, in, 't');
+}
+
 
 /** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down

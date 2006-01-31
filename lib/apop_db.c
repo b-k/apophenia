@@ -331,7 +331,7 @@ va_list		argp;
 
 int 		isthere;//used for the next two fns only.
 
-int tab_exists_callback(void *in, int argc, char **argv, char **whatever){
+static int tab_exists_callback(void *in, int argc, char **argv, char **whatever){
 char *q	= in;
 	if (!strcmp(argv[argc-1],q))
 		isthere=1;
@@ -362,6 +362,16 @@ char 		*err, q2[10000];
 	return isthere;
 }
 
+//colct is global for the count_cols callback.
+int		colct;
+
+static int count_cols_callback(void *whatever, int argc, char **argv, char **andever){
+int 		i=0;
+	while(argv[0][i]!='\0')
+		if (argv[0][i++]==',') 
+			colct	++;
+	return 0;
+}
 
 /** Counts the number of columns in a table. Occasionally useful, e.g., when data is read from a file.
 
@@ -370,16 +380,7 @@ char 		*err, q2[10000];
 */
 int apop_count_cols(const char *name){
 char 		*err, q2[5000];
-int		colct	= 1;
-
-	int count_cols_callback(void *whatever, int argc, char **argv, char **andever){
-	int 		i=0;
-		while(argv[0][i]!='\0')
-			if (argv[0][i++]==',') 
-				colct	++;
-		return 0;
-	}
-
+    colct   = 1;
 	if (db==NULL) {printf("No database open yet."); return 0;}
 	sprintf(q2, "select sql from sqlite_master where type='table' and name=\"%s\"",name);
 	sqlite3_exec(db, q2, count_cols_callback,NULL, &err); 
@@ -406,15 +407,40 @@ char		*err;
 /** An alias for \ref apop_db_close . */
 int apop_close_db(int vacuum){ return apop_db_close(vacuum); }
 
-int names_callback(void *o,int argc, char **argv, char **whatever){
+static int names_callback(void *o,int argc, char **argv, char **whatever){
 	apop_name_add(last_names, argv[1], 'c'); 
 	return 0;
 }
 
-int length_callback(void *o,int argc, char **argv, char **whatever){
+static int length_callback(void *o,int argc, char **argv, char **whatever){
 	total_rows=atoi(argv[0]); 
 	return 0;
 }
+
+//currentrow is global for the apop_db_to_... callbacks.
+int		currentrow;
+
+//This is the callback for apop_query_to_chars.
+static int db_to_chars(void *o,int argc, char **argv, char **whatever){
+int		jj;
+char ****	output = (char ****) o;
+	if (*argv !=NULL){
+		(*output)[currentrow]	= malloc(sizeof(char**) * argc);
+		for (jj=0;jj<argc;jj++){
+			if (argv[jj]==NULL){
+				(*output)[currentrow][jj]	= malloc(sizeof(char*));
+				strcpy((*output)[currentrow][jj], "");
+			}
+			else{
+				(*output)[currentrow][jj]	= malloc(sizeof(char*) * strlen(argv[jj]));
+				strcpy((*output)[currentrow][jj], argv[jj]);
+			}
+		}
+		currentrow++;
+	}
+	return 0;
+}
+
 
 /** Dump the results of a query into an array of strings.
 
@@ -446,30 +472,9 @@ int             row_ct, i;
 */
 char *** apop_query_to_chars(const char * fmt, ...){
 char		***output;
-int		currentrow=0;
 char		*q2, *err=NULL, *query;
 va_list		argp;
-
-	int db_to_chars(void *o,int argc, char **argv, char **whatever){
-	int		jj;
-	char ****	output = (char ****) o;
-		if (*argv !=NULL){
-			(*output)[currentrow]	= malloc(sizeof(char**) * argc);
-			for (jj=0;jj<argc;jj++){
-				if (argv[jj]==NULL){
-					(*output)[currentrow][jj]	= malloc(sizeof(char*));
-					strcpy((*output)[currentrow][jj], "");
-				}
-				else{
-					(*output)[currentrow][jj]	= malloc(sizeof(char*) * strlen(argv[jj]));
-					strcpy((*output)[currentrow][jj], argv[jj]);
-				}
-			}
-			currentrow++;
-		}
-		return 0;
-	}
-
+    currentrow  =0;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
@@ -500,6 +505,22 @@ va_list		argp;
 	return output;
 }
 
+//apop_query_to_matrix callback.
+static int db_to_table(void *o,int argc, char **argv, char **whatever){
+int		jj;
+gsl_matrix * 	output = (gsl_matrix *) o;
+	if (*argv !=NULL){
+		for (jj=0;jj<argc;jj++){
+			if (argv[jj]==NULL)
+				gsl_matrix_set(output,currentrow,jj, GSL_NAN);
+			else
+				gsl_matrix_set(output,currentrow,jj, atof(argv[jj]));
+		}
+		currentrow++;
+	}
+	return 0;
+}
+
 /** Queries the database, and dumps the result into a matrix.
 
 
@@ -513,25 +534,9 @@ Blanks in the database are filled with <tt>GSL_NAN</tt>s in the matrix.
 */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 gsl_matrix	*output;
-int		currentrow=0;
 char		*q2, *err=NULL, *query;
 va_list		argp;
-
-	int db_to_table(void *o,int argc, char **argv, char **whatever){
-	int		jj;
-	gsl_matrix * 	output = (gsl_matrix *) o;
-		if (*argv !=NULL){
-			for (jj=0;jj<argc;jj++){
-				if (argv[jj]==NULL)
-					gsl_matrix_set(output,currentrow,jj, GSL_NAN);
-				else
-					gsl_matrix_set(output,currentrow,jj, atof(argv[jj]));
-			}
-			currentrow++;
-		}
-		return 0;
-	}
-
+    currentrow  = 0;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);

@@ -149,13 +149,6 @@ typedef struct apop_name{
 	int colnamect, depnamect, rownamect, catnamect;
 } apop_name;
 
-apop_name * apop_name_alloc(void);
-int apop_name_add(apop_name * n, char *add_me, char type);
-void  apop_name_free(apop_name * free_me);
-void  apop_name_print(apop_name * n);
-void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
-void apop_name_rm_columns(apop_name *n, int *drop);
-
 /** Parameters for running estimations. No estimation uses all of them.
   E.g., the MLE functions don't look at preserve_data but OLS and GLS do, while OLS and GLS ignore all the other params.
  \ingroup inv_and_est
@@ -166,7 +159,7 @@ typedef struct apop_estimation_params{
 	double 	step_size; 
 	double 	tolerance; 
 	int 	verbose;
-	int 	preserve_data;
+	int 	destroy_data;
 } apop_estimation_params;
 
 /** Regression and MLE functions return this structure, which includes
@@ -265,6 +258,14 @@ typedef struct apop_opts_type{
 } apop_opts_type;
 
 extern apop_opts_type apop_opts;
+
+apop_name * apop_name_alloc(void);
+int apop_name_add(apop_name * n, char *add_me, char type);
+void  apop_name_free(apop_name * free_me);
+void  apop_name_print(apop_name * n);
+void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
+void apop_name_rm_columns(apop_name *n, int *drop);
+void apop_name_memcpy(apop_name **out, apop_name *in);
 
 apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_inventory *uses, apop_estimation_params *params);
 void 		apop_estimate_free(apop_estimate * free_me);

@@ -101,8 +101,8 @@ It takes in all the inputs to the model: data, inventory, parameters, plus the m
 \param  params      An \ref apop_estimation_params structure. May be NULL.
 
 \ingroup inv_and_est  */
-//apop_estimate * apop_estimate_alloc(int data_size, int param_size, apop_name * n, apop_inventory uses){
-apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_inventory *uses, apop_estimation_params *params){
+apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_inventory *uses, 
+                                        apop_estimation_params *params){
 apop_estimate * prep_me;
 	prep_me	= malloc(sizeof(apop_estimate));
 	apop_inventory_copy(apop_inventory_filter(uses, model.inventory_filter), &(prep_me->uses));
@@ -117,12 +117,12 @@ apop_estimate * prep_me;
 	if (prep_me->uses.covariance)
 		prep_me->covariance	= gsl_matrix_alloc(model.parameter_ct,model.parameter_ct);
 	if (prep_me->uses.names) {
-		if (data->names != NULL) 	prep_me->names		= data->names;
-		else 		prep_me->names		= apop_name_alloc();
+		if (data->names != NULL) 	apop_name_memcpy(&(prep_me->names), data->names);
+		else 		                prep_me->names		= apop_name_alloc();
 	}
     prep_me->data               = data;
     prep_me->model              = apop_model_copy(model);
-    prep_me->estimation_params    = params;
+    prep_me->estimation_params  = params;
 	return prep_me;
 }
 
@@ -175,18 +175,15 @@ int		i;
 	if (print_me->uses.covariance){
 		printf("\nThe variance/covariance matrix:\n");
         apop_data   *covdata    = apop_matrix_to_data(print_me->covariance);
+        int         i;
         //We want to show the column names on both axes.
         if (print_me->uses.names && print_me->names !=NULL && print_me->names->colnamect){
-            free(covdata->names->colnames);    //prevent a 2-byte memory leak here.
-            free(covdata->names->rownames);    
-            covdata->names->colnames    = malloc(sizeof(char*) * print_me->names->colnamect);
-            covdata->names->rownames    = malloc(sizeof(char*) * print_me->names->colnamect);
-            memcpy(covdata->names->colnames, print_me->names->colnames, sizeof(char*) * print_me->names->colnamect);
-            memcpy(covdata->names->rownames, print_me->names->colnames, sizeof(char*) * print_me->names->colnamect);
-            covdata->names->rownamect   =
-            covdata->names->colnamect   =   print_me->names->colnamect;
+            apop_name_stack(covdata->names, print_me->names, 'c');
+            for (i=0; i< print_me->names->colnamect; i++)
+                apop_name_add(covdata->names, print_me->names->colnames[i], 'r');
         }
-        apop_data_print(covdata, NULL);
+        apop_data_show(covdata);
+        apop_data_free(covdata);
 	}
 	if (print_me->uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);

@@ -35,7 +35,12 @@ See \ref apop_name_print.
 */
 /** \defgroup apop_print 	Asst printing functions		
 
-Many have multiple aliases, because I could never remember which way to write them.
+The <tt>apop_*_print</tt> functions will print to screen, text file,
+or database, depending on how you set \ref apop_opts.output_type.
+The <tt>apop_*_show</tt> functions print only to screen, and are basically
+just a convenience shell to the corresponding <tt>apop_*_print</tt>
+function.
+
 \ingroup output
 */
 

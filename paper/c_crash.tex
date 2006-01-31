@@ -189,7 +189,7 @@ For example:
 
 %\begin{verbatim}
 %[
-typedef struct xxx{
+typedef struct complex{
     double real;
     double imaginary;
 } complex;
@@ -199,13 +199,12 @@ complex a, b;
 %\end{verbatim}
 
 You can now use {\tt a.real} or {\tt b.imaginary} to refer to the
-appropriate constituents of these complex numbers. Notice that you'll
-need a unique name just before the curly braces which you will never
-use anywhere else in the program. This is your first hint that C is
+appropriate constituents of these complex numbers. Why is the word {\tt
+complex} repeated twice? Because you are first declaring a struct of
+named {\tt complex}, and then you are defining a type named {\tt
+complex} that expands to {\tt struct complex}. This is your first hint that C is
 neither Beautiful nor Perfect; just follow the template there and nobody
-gets hurt. Here's another example.  Notice that it repeats the typedef
-name in the useless struct name, which is valid, and as good a custom
-as any.
+gets hurt. Here's another example:  
 
 %\begin{verbatim}
 %[

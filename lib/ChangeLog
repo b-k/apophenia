@@ -5,6 +5,8 @@ Added an apop_opts structure for options. Alowed the following changes:
 	--the output functions now output into three formats: on screen, to file, to db;
 		see chapter five of the manual.
 		
+--F tests 
+--R squared.
 
 0.14	December 2005
 
