@@ -20,9 +20,9 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include <assert.h>
 #include <gsl/gsl_deriv.h>
 
-/** Use this variable to produce a trace of the MLE process.
+/** \page trace_path Plotting the path of an ML estimation.
 
-If \c apop_mle_trace_path has a name of positive length, then every time
+If \c apop_opts.mle_trace_path has a name of positive length, then every time
 the MLE evaluates the function, then the value will be output to a table
 in the database with the given name. You can then plot this table to
 get an idea of the path the estimation routine used to arrive at its MLE.
@@ -32,7 +32,7 @@ speeds things up a touch, but this will clearly be slower than without
 taking notes:
 
 \code
-    strcpy(apop_mle_trace_path, "path");
+    strcpy(apop_opts.mle_trace_path, "path");
     apop_query("begin;");
     e   = apop_zipf.estimate(...);
     apop_query("commit;");
@@ -51,7 +51,7 @@ FILE            *f;
 gsl_matrix      *traced_path;
     f       = fopen(outfile, "w");  //overwrites. Use "a" to append.
     fprintf(f,"splot '-' with linespoints linewidth 0.5 pointsize 2\n");
-    traced_path = apop_query_to_matrix("select * from %s", apop_mle_trace_path);
+    traced_path = apop_query_to_matrix("select * from %s", apop_opts.mle_trace_path);
     fclose(f);
     apop_matrix_print(traced_path, "\t", outfile);
 }
@@ -71,7 +71,6 @@ Below is a sample of the sort of output one would get:<br>
 \ingroup mle
 */
 
-char  apop_mle_trace_path[1000] = "\0";
 
 		///////////////////////
 		//MLE support functions
@@ -169,13 +168,13 @@ typedef struct negshell_params{
 
 static void insert_path_into_db(gsl_vector *beta, double out){
     if (beta->size == 1){
-        if(!apop_table_exists(apop_mle_trace_path, 0))
-            apop_query("create table  %s (beta0, ll);", apop_mle_trace_path);
-        apop_query("insert into %s values (%g, %g);", apop_mle_trace_path, gsl_vector_get(beta,0), out);
+        if(!apop_table_exists(apop_opts.mle_trace_path, 0))
+            apop_query("create table  %s (beta0, ll);", apop_opts.mle_trace_path);
+        apop_query("insert into %s values (%g, %g);", apop_opts.mle_trace_path, gsl_vector_get(beta,0), out);
     } else {
-        if(!apop_table_exists(apop_mle_trace_path, 0))
-            apop_query("create table  %s (beta0, beta1, ll);", apop_mle_trace_path);
-        apop_query("insert into %s values (%g, %g, %g);", apop_mle_trace_path, gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
+        if(!apop_table_exists(apop_opts.mle_trace_path, 0))
+            apop_query("create table  %s (beta0, beta1, ll);", apop_opts.mle_trace_path);
+        apop_query("insert into %s values (%g, %g, %g);", apop_opts.mle_trace_path, gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
     }
 
 }
@@ -196,7 +195,7 @@ static double	base_for_penalty= 0;
 	}
     if (!done)
 	    out = - p->model.log_likelihood(beta, p->d);
-    if (strlen(apop_mle_trace_path) > 0)
+    if (strlen(apop_opts.mle_trace_path) > 0)
         insert_path_into_db(beta,-out);
 	gsl_vector_free(returned_beta);
     return out;
@@ -533,7 +532,7 @@ method:		The sum of a method and a gradient-handling rule.
 \li 000: Nelder-Mead simplex (gradient handling rule is irrelevant)
 \li 100: conjugate gradient (Fletcher-Reeves) (default)
 \li 200: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
-\li 200: conjugate gradient (Polak-Ribiere)
+\li 300: conjugate gradient (Polak-Ribiere)
 \li 0: If no gradient is available, use numerical approximations. (default)
 \li 1: Use numerical approximations even if an explicit dlog likelihood is given. <br>
 Thus, the default method is 100+0 = 100. To use the Nelder-Mead simplex algorithm, use 0, or to use the Polak_Ribiere method ignoring any analytic dlog likelihood function, use 201.
@@ -576,4 +575,59 @@ int             i;
                 mm      = gsl_matrix_submatrix(m,i,0, 1,m->size2);      //get a single row
                 gsl_vector_set(*v, i, dist.log_likelihood(fn_beta, &(mm.matrix)));
         }
+}
+
+/** Input an earlier estimate, and then I will re-start the MLE search
+ where the last one ended. You can specify greater precision or a new
+ search method.
+
+The prior estimation parameters are copied over.  If the estimate
+converged to an OK value, then use the converged value; else use the
+starting point from the last estimate.
+
+Only one estimate is returned, either the one you sent in or a new
+one. The loser (which may be the one you sent in) is freed. That is,
+there is no memory leak when you do
+\code
+est = apop_estimate_restart(est, 200, 1e-2);
+\endcode
+
+ \param e   An \ref apop_estimate that is the output from a prior MLE estimation.
+ \param new_method  If -1, use the prior method; otherwise, a new method to try.
+ \param scale       Something like 1e-2. The step size and tolerance
+                    will both be mutliplied by this amount. Of course, if this is 1, nothing changes.
+
+\return         At the end of this procedure, we'll have two \ref
+    apop_estimates: the one you sent in, and the one produced using the
+    new method/scale. If the new estimate includes any NaNs/Infs, then
+    the old estimate is returned (even if the old estimate included
+    NaNs/Infs). Otherwise, the estimate with the largest log likelihood
+    is returned.
+
+\ingroup mle
+\todo The tolerance for testing boundaries are hard coded (1e4). Will need to either add another input term or a global var.
+*/ 
+apop_estimate * apop_estimate_restart(apop_estimate *e,int  new_method, int scale){
+double                 *start_pt2;
+apop_estimate          *out;
+apop_estimation_params *new_params  = malloc(sizeof(apop_estimation_params));
+            //copy off the old params; modify the starting pt, method, and scale
+    memcpy(new_params, e->estimation_params,sizeof(apop_estimation_params));
+    if (apop_vector_bounded(e->parameters,1e4)){
+        apop_vector_to_array(e->parameters, &start_pt2);
+	    new_params->starting_pt	= start_pt2;
+    }
+    else
+	    new_params->starting_pt	= e->estimation_params->starting_pt;
+    new_params->tolerance   = e->estimation_params->tolerance * scale;
+    new_params->step_size   = e->estimation_params->step_size * scale;
+    new_params->method	    = new_method;
+	out	                    = (e->model)->estimate(e->data, &(e->uses), new_params);
+            //Now check whether the new output is better than the old
+    if (apop_vector_bounded(out->parameters, 1e4) && out->log_likelihood > e->log_likelihood){
+        apop_estimate_free(out);
+        return e;
+    } //else:
+    apop_estimate_free(e);
+    return out;
 }

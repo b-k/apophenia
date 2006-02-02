@@ -255,6 +255,8 @@ typedef struct apop_opts_type{
     int output_append;
             /** What other people have put between your columns. Default = "|,\t" */
     char input_delimiters[100];
+            /** If set, plot the path of the max. likelihood search. */
+    char  mle_trace_path[1000];
 } apop_opts_type;
 
 extern apop_opts_type apop_opts;

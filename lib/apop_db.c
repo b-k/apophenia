@@ -72,6 +72,7 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 "\t",           //output delimiter
                                 1,              //output append
                                 "| ,\t",           //input delimiters
+                                "\0"            //mle_trace_path
 };
 
                                                                                                                                

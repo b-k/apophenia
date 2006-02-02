@@ -80,4 +80,6 @@ apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_inventory *uses,
     //This is a global var for numerical differentiation.
 extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
 
+apop_estimate * apop_estimate_restart(apop_estimate *e,int  new_method, int scale);
+
 #endif

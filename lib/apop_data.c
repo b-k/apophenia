@@ -76,6 +76,7 @@ int     i,j;
     free(freeme);
 }
 
+
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
  
   \param out    a structure that this function will allocate and fill

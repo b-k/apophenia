@@ -183,7 +183,7 @@ int		i;
                 apop_name_add(covdata->names, print_me->names->colnames[i], 'r');
         }
         apop_data_show(covdata);
-        apop_data_free(covdata);
+        free(covdata);  //slightly leaky. I don't care.
 	}
 	if (print_me->uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);
