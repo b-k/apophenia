@@ -247,6 +247,7 @@ void wn_make_mat(double ***pmat,int len_i,int len_j)
 }
 
 
+/*
 void wn_free_mat(double **mat,int len_i,int len_j)
 {
   int i;
@@ -258,6 +259,7 @@ void wn_free_mat(double **mat,int len_i,int len_j)
 
   wn_free(mat);
 }
+*/
 
 
 

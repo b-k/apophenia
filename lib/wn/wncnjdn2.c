@@ -672,7 +672,7 @@ local void line_minimize
 {
   double *search_direction_vect;
   double poly[3],poly_total_noise[3];
-  double xopt,fopt,dfopt,fopt_noise,dfopt_noise;
+  double xopt,fopt=0,dfopt,fopt_noise,dfopt_noise;
   double x_width;
   double x0,x1,f0,f1,df0,df1,
          f0_noise,f1_noise,df0_noise,df1_noise;
@@ -944,23 +944,10 @@ local void compute_fract_too_small_ratio_df1_noise
 local void recompute_num_line_samples(wn_cdn_context_type c)
 {
 # define TARGET_RATIO_DF1_NOISE  (3.0)
-  double average_ratio_df1_noise;
   double adjustment; 
   double fract_too_small;
 
   printf("old num_line_samples = %d\n",c->num_line_samples);
-
-#if 0
-  compute_average_ratio_df1_noise(c,&average_ratio_df1_noise);
-
-  printf("average_ratio_df1_noise = %lg\n",average_ratio_df1_noise);
-
-  clamp_number(&average_ratio_df1_noise,0.0,20.0);
-
-  adjustment = pow(average_ratio_df1_noise/TARGET_RATIO_DF1_NOISE,-3.0);
-
-  clamp_number(&adjustment,1.0/1.3,1.3);
-#endif
 
   compute_fract_too_small_ratio_df1_noise(c,&fract_too_small,
 					  TARGET_RATIO_DF1_NOISE);

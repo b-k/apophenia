@@ -533,3 +533,10 @@ EXTERN void wn_mbverify(wn_mbtree tree);
 }
 
 
+void wn_make_mat(double ***pmat,int len_i,int len_j);
+void wn_transpose_mat(double **to_mat,double **from_mat,int len_i,int len_j);
+void wn_mult_mats(double **result_mat,double **mat1,double **mat2, int len_i,int len_j,int len_k);
+void wn_mult_mat_by_vect(double *result_vect,double **mat,double *vect, int len_i,int len_j);
+void wn_copy_mat(double **out_mat,double **in_mat,int len_i,int len_j);
+void wn_invert_mat(int *pcode,double **mat,int len_i);
+double wn_eval_poly(double x,double coefs[],int len);

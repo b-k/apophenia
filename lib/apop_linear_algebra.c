@@ -1,5 +1,7 @@
 /** \file apop_linear_algebra.c	Assorted things to do with matrices,
-such as take determinants or do singular value decompositions.
+such as take determinants or do singular value decompositions.  Includes
+many convenience functions that don't actually do math but add/delete
+columns, check bounds, et cetera.
 
 
 
@@ -15,10 +17,11 @@ such as take determinants or do singular value decompositions.
 
 <b>printing</b><br>
 \ref apop_print: Some convenience functions to quickly dump
-a matrix or vector to the screen: <tt>apop_print_matrix</tt>,
-<tt>apop_print_matrix_int</tt>, <tt>apop_print_vector</tt>, and
-<tt>apop_print_vector_int</tt>.
+a matrix or vector to the screen: <tt>apop_matrix_print</tt>,
+<tt>apop_matrix_print_int</tt>, <tt>apop_vector_print</tt>, and
+<tt>apop_vector_print_int</tt>.
 
+See also the \ref convenience_fns "Convenience functions".
 */
 
 /** \defgroup convenience_fns 	Things to make life easier with the GSL.
@@ -422,4 +425,55 @@ gsl_vector_view v;
         }
     }
     return out;
+}
+
+
+
+/** test whether any of the elements of a <tt>gsl_vector</tt> are missing.
+
+ \param in  A <tt>gsl_vector</tt>
+ \return    1 if any element is NaN; zero if all elements are numbers.
+ \ingroup convenience_fns
+ */
+int apop_vector_isnan(gsl_vector *in){
+size_t  i;
+    for (i=0; i< in->size; i++)
+        if (gsl_isnan(gsl_vector_get(in, i)))
+            return 1;
+    return 0;
+}
+
+/** test whether all of the elements of a <tt>gsl_vector</tt> are
+ * finite.
+
+ \param in  A <tt>gsl_vector</tt>
+ \return    1 if everything is finite (not Inf, -Inf, or NaN); zero otherwise.
+ \ingroup convenience_fns
+ */
+int apop_vector_finite(gsl_vector *in){
+size_t  i;
+    for (i=0; i< in->size; i++)
+        if (!gsl_finite(gsl_vector_get(in, i)))
+            return 0;
+    return 1;
+}
+
+/** This is a variant of \ref apop_vector_finite, qv. This lets you
+test for a situation when a vector is diverging, but not actually Inf,
+so you can preempt a procedure that is about to break on infinite values.
+
+ \param in  A <tt>gsl_vector</tt>
+ \param max An upper and lower bound to the elements of the vector.
+ \return    1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$; zero otherwise.
+ \ingroup convenience_fns
+ */
+int apop_vector_bounded(gsl_vector *in, long double max){
+size_t      i;
+long double x;
+    for (i=0; i< in->size; i++){
+        x   = gsl_vector_get(in, i);
+        if (!gsl_finite(x) || x> max || x< -max)
+            return 0;
+    }
+    return 1;
 }

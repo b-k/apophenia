@@ -1,3 +1,10 @@
+		February 2006
+sort-of-adaptive MLE: use apop_estimate_restart to execute a new MLE
+search beginning where the last one ended, perhaps using a new method or
+rescaled parameters.
+	--This needed convenience functions to check for divergence, thus
+		added apop_vector_finite, apop_vector_bounded, apop_vector_isnan.
+
 0.15	January 2006
 Added an apop_opts structure for options. Alowed the following changes:
 	--apop_verbose  is now apop_opts.verbose. Try this on your existing code:

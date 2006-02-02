@@ -5,7 +5,7 @@
 #include "conversions.h"
 #include "assert.h"
 
-#define Text_Size_Limit 1000000
+#define Text_Line_Limit 100000
 
 /** \defgroup conversions Conversion functions
 
@@ -194,7 +194,7 @@ int     length_of_match = result[1].rm_eo - result[1].rm_so;
  */
 int apop_count_cols_in_text(char *text_file){
 FILE * 		infile;
-char		instr[Text_Size_Limit], outstr[Text_Size_Limit],
+char		instr[Text_Line_Limit], outstr[Text_Line_Limit],
             full_divider[1000];
 int		    ct	                = 0,
             length_of_string    = 0,
@@ -205,9 +205,9 @@ regmatch_t  result[3];
     regcomp(regex, full_divider, 0);
 	infile	= fopen(text_file,"r");
 	if (infile==NULL) {printf("Error opening %s", text_file); return 1;}
-	fgets(instr, Text_Size_Limit, infile);
+	fgets(instr, Text_Line_Limit, infile);
 	while(instr[0]=='#')	//burn off comment lines
-		fgets(instr, Text_Size_Limit, infile);
+		fgets(instr, Text_Line_Limit, infile);
     length_of_string= strlen(instr);
     while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
         pull_string(instr,  outstr, result,  &last_match);
@@ -222,11 +222,11 @@ regmatch_t  result[3];
  */
 int apop_count_rows_in_text(char *text_file){
 FILE * 		infile;
-char		instr[Text_Size_Limit];
+char		instr[Text_Line_Limit];
 int		ct	= 0;
 	infile	= fopen(text_file,"r");
 	if (infile==NULL) {printf("Error opening %s", text_file); return 1;}
-	while(fgets(instr,Text_Size_Limit,infile)!=NULL)
+	while(fgets(instr,Text_Line_Limit,infile)!=NULL)
 	    if(instr[0]!='#')	//burn off comment lines
 		    ct  ++;
 	fclose(infile);
@@ -249,18 +249,22 @@ regmatch_t  result[3];
 
 /** \page text_format Notes on input text file formatting
 
-Since you're reading into an array, all text fields are taken
-as zeros. You will be warned of this unless you set \ref apop_opts.verbose<tt>==0</tt> beforehand.
+If you are reading into an array or <tt>gsl_matrix</tt> or \ref
+apop_data set, all text fields are taken as zeros. You will be warned
+of such substitutions unless you set \ref apop_opts.verbose<tt>==0</tt>
+beforehand.
 
 You will also be interested in \ref apop_opts.input_delimiters. By
-default, it is set to "| ,\t", meaning that a pipe, comma, space, or tab will
-delimit separate entries.
+default, it is set to "| ,\t", meaning that a pipe,
+comma, space, or tab will delimit separate entries. Try \code
+strcpy(apop_opts.input_delimiters, ";")\endcode to set the delimiter to
+a semicolon, for example.
 
 There are often two delimiters in a row, e.g., "23, 32,, 12". When
 it's two commas like this, the user typically means that there is a
 missing value; when it is two tabs in a row, this is typically just
-formatting. Apophenia is not smart enough to work out the difference:
-a sequence of delimiters is taken to be a single delimiter. If you do
+a formatting glitch. Apophenia is not smart enough to work out the difference:
+a sequence of delimiters is always taken to be a single delimiter. If you do
 have double-commas like this, you will have to explicitly insert a note
 that there is a missing data point. Try:
 \code
@@ -278,6 +282,10 @@ names like 'row names'. That is, for a 100x100 data set with row and
 column names, there are 100 names in the top row, and 101 entries in
 each subsequent row (name plus 100 data points).
 
+The maximum line length is 100,000 characters. If you have a line
+longer than this, you will need to open up apop_conversions.c, modify
+<tt>Text_Line_Limit</tt>, and recompile.
+
 */
 
 /** Read a delimited text file into an array. 
@@ -294,9 +302,9 @@ each subsequent row (name plus 100 data points).
 apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
 apop_data   *set;
 FILE * 		infile;
-char		instr[Text_Size_Limit], 
+char		instr[Text_Line_Limit], 
             *str, *stripped, 
-            outstr[Text_Size_Limit],
+            outstr[Text_Line_Limit],
             full_divider[1000];
 int 		i	        = 0,
             line_no     = 0,
@@ -314,10 +322,10 @@ regmatch_t  result[2];
 
     //First, handle the top line, which is assumed to be column names.
     if (has_col_names){
-	    fgets(instr, Text_Size_Limit, infile);
+	    fgets(instr, Text_Line_Limit, infile);
         line_no   ++;
 	    while(instr[0]=='#')	//burn off comment lines
-		    fgets(instr, Text_Size_Limit, infile);
+		    fgets(instr, Text_Line_Limit, infile);
 	    set->names->colnamect= 0;
 	    set->names->colnames	= malloc(sizeof(char*));
         last_match      = 0;
@@ -331,7 +339,7 @@ regmatch_t  result[2];
     }
 
     //Now do the body. First elmt may be a row name.
-	while(fgets(instr,Text_Size_Limit,infile)!=NULL){
+	while(fgets(instr,Text_Line_Limit,infile)!=NULL){
 		colno	= 0;
 		if(instr[0]!='#') {
 			i	            ++;
@@ -435,15 +443,15 @@ apop_estimate   *est;
 */
 int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
 FILE * 		infile;
-char		q[20000], instr[Text_Size_Limit], **fn, *prepped;
-char		*stripped, outstr[Text_Size_Limit],
+char		q[20000], instr[Text_Line_Limit], **fn, *prepped;
+char		*stripped, outstr[Text_Line_Limit],
             full_divider[1000];
 int 		ct, one_in,
             last_match,
             length_of_string,
-		    i			    = 0, 
-		    use_names_in_file = 0,
-		    rows			= 0;
+		    i			        = 0, 
+		    use_names_in_file   = 0,
+		    rows			    = 0;
 regex_t     *regex  = malloc(sizeof(regex_t));
 regmatch_t  result[2];
 	ct	= apop_count_cols_in_text(text_file);
@@ -460,9 +468,9 @@ regmatch_t  result[2];
 		}
 		if (field_names == NULL){
 			use_names_in_file++;
-			fgets(instr, Text_Size_Limit, infile);
+			fgets(instr, Text_Line_Limit, infile);
 			while(instr[0]=='#')	//burn off comment lines
-				fgets(instr, Text_Size_Limit, infile);
+				fgets(instr, Text_Line_Limit, infile);
 			fn	= malloc(ct * sizeof(char*));
 
             last_match      = 0;
@@ -490,16 +498,14 @@ regmatch_t  result[2];
 		strcat(q, "); commit; begin;");
 		apop_query_db(q);
 
-
-
-		while(fgets(instr,Text_Size_Limit,infile)!=NULL){
+        //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
+		while(fgets(instr,Text_Line_Limit,infile)!=NULL){
 			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
-				rows	++;
-				//i       ++;
-				one_in  =0;
-				sprintf(q, "INSERT INTO %s VALUES (", tabname);
+				rows	        ++;
+				one_in          = 0;
                 last_match      = 0;
                 length_of_string= strlen(instr);
+				sprintf(q, "INSERT INTO %s VALUES (", tabname);
                 while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
 					if(one_in++) 	strcat(q, ", ");
                     pull_string(instr,  outstr, result,  &last_match);

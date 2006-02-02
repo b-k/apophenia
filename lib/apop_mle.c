@@ -314,8 +314,7 @@ int		i;
 double 		(*tmp) (const gsl_vector *beta, void *d);
 gsl_matrix	*hessian;
 	tmp			= apop_fn_for_derivative;
-	//The information matrix is the inverse of the negation of the
-	//hessian.
+	//The information matrix is the inverse of the negation of the hessian.
 	hessian			= apop_numerical_hessian(dist, est->parameters, data);
 	gsl_matrix_scale(hessian, -1);
 	apop_det_and_inv(hessian, &(est->covariance), 0, 1);
@@ -514,8 +513,9 @@ negshell_params		    nsp;
 	gsl_vector_memcpy(est->parameters, s->x);
 	gsl_multimin_fminimizer_free(s);
 	est->log_likelihood	= dist.log_likelihood(est->parameters, data->data);
-	//if (est->uses.confidence == 0)
-		return est;
+	if (est->uses.covariance) 
+		apop_numerical_var_covar_matrix(dist, est, data->data);
+	return est;
 }
 
 
