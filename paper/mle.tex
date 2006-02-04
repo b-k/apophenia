@@ -1,6 +1,7 @@
 \chapter{Maximum likelihood estimation} \label{mle}
 \index{maximum likelihood estimation|ff}
 \index{MLE|see{maximum likelihood estimation}}
+%@-     so lgrind will play nice with makeindex
 
 Maximum likelihood estimators (MLEs) are the bread and butter of
 statistics. Most of the techniques we've handled so far are MLE
@@ -43,6 +44,172 @@ gives you a function to do all of these things, which you'll have to put togethe
 minimization.
 }
 
+Estimating an existing model via maximum likelihood estimation simply requires 
+filling out a form describing your preferences and then calling the model's {\tt estimate} method.
+The form in question is a \ttind{apop\_\-estimation\_\-params} structure, that
+describes the method, the starting point, the step size, and the
+tolerance.
+For example:
+%[
+apop_estimation_params *ep  = malloc(sizeof(apop_estimation_params);
+double  starting_point[2]   = {1,1};
+ep->method      = 000;
+ep->step_size   = 1e-1;
+ep->tolerance   = 1e-5;
+ep->verbose     = 1;
+ep->starting_pt = starting_point;
+apop_gamma.estimate(my_data, an_inventory, ep)
+%]
+
+Here are the parts to the  \ttind{apop\_\-estimation\_\-params}
+structure you need to set. 
+
+\paragraph{The method} There are currently four you can choose from.
+[Also, there are two more that  just aren't hooked in yet. If you're
+comfortable exploring the internals of Apophenia, have a look at the
+{\tt wnbridge.c} file.]
+
+
+\begin{itemize}
+\item {\bf 000: The Nelder-Mead simplex algorithm} Draws a polygon and then attempts to shift the corners of the polygon.
+\item {\bf 100: conjugate gradient (Fletcher-Reeves)} This is the
+default. Basically, we take the derivative in all directions and find
+the linear combination of these directions that indicates the fastest
+climb. Clearly, this depends on knowing derivatives; see below.
+\item {\bf 200: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)}  Another conjugate gradient method, that calculates the direction of travel differently. See \cite{avriel:nonlinear} for definitions of all of these methods.
+\item {\bf 300: conjugate gradient (Polak-Ribiere)} Yet another conjugate gradient method.
+\end{itemize}
+
+As a practical matter, your best bet is to either just go with the default (Fletcher-Reeves) or try them all using a tournament as described below. 
+If you expect the derivatives to be perverse, then you may want to try the derivative-free simplex algorithm.
+
+There is also the question of how the gradients are calculated. If
+analytic gradients are available, then those are probably preferable, but
+Apophenia will automatically calculate numerical gradients as necessary.
+Since the variance of an MLE is the Cramer-Rao lower bound, we will use
+the gradients to calculate the variance, so even when using a
+derivative-free simplex algorithm, the variance will still be using
+gradients, somehow derived.
+
+Just in case the analytic gradients don't work out for you, there is a
+means of just using the numeric gradients. This is primarily useful for debugging:
+
+\begin{itemize}
+\item 0: If (and only if) no gradient is available, use numerical approximations.  (default)
+\item 1: Use numerical approximations even if an explicit dlog likelihood is given. 
+\end{itemize}
+
+The actual method you give is the sum of the method type above plus the
+gradient handling method. Thus the default is equal to 100, for example, and the
+Nelder-Mead simplex algorithm forcing numerical derivatives would be
+001.\footnote{Yes, 000 reduces to 0 and 001 reduces to 1. The internals
+don't care, so use whichever form makes the most sense to you as a human.}
+
+
+\paragraph{The step size} This is the initial distance that the
+algorithm will use to start searching for points. Basically arbitrary
+because all of these algorithms are adaptive, meaning that they will
+change the step size as they see fit.
+
+\paragraph{Tolerance} The algorithm will basically stop when it feels
+that the calculated log likelihood is changing by less than this amount,
+indicating that the search is at a local maximum and the first derivative of
+the log likelihood function is nearing zero.
+
+\paragraph{Verbose} Should the search output the points it is evaluating?
+This is useful for long evaluations to reassure you that nothing is
+broken; for example, some of the GSL's searches can get into two-step loops.
+It is probably a good idea to run your search verbosely at least once.
+Also, see {\tt apop\_opts.mle\_trace\_path} below.
+
+\paragraph{Starting point} an array of doubles indicating where you want
+your search to begin. Being an array, you can use a form like the above
+to initialize it (but then it will be destroyed when you leave the
+function that it was initialized in---remember this if you want to
+access the starting point in the estimate that the MLE outputs).
+
+
+\subsection{Restarting} One convenient trick is to solve for an MLE and
+then restart the procedure at the point where the first MLE found its solution.
+To do this, use \ttind{apop\_estimate\_restart}.
+
+The function takes three arguments: a prior estimate that you have
+already calculated, a method, and a scaling factor. 
+
+First, the function copies off the {\tt apop\_\-estimation\_\-params}
+from the {\tt apop\_\-estimate} sent in, and then makes a series of
+modifications.  If the new method sent in is -1, then the new MLE will
+use the same method as before; otherwise specify one of the methods
+listed above. The step size and the tolerance are both multiplied by the
+scaling factor sent in (so if this is 1, no change is made). If the
+estimated parameters for the original estimate is finite and bounded, then 
+the starting point in the new {\tt apop\_\-estimation\_\-params}
+structure is set to the estimated value; if some element of the
+estimated parameters are infinity or NaN, then the original starting
+point is reused.
+
+Then, the ML estimation is run again, and we now have two estimates: the
+original and the new one. If the new one has not-finite or NaN values,
+then it is thrown out and the original returned. If the new estimate 
+has a higher log likelihood, then it is returned, and the old estimate
+is deleted.  The less likely estimate (which may be the one you sent in) is freed. That is,
+there is no memory leak when you run a tournament like:
+%[
+est = apop_estimate_restart(est, 200, 1);
+est = apop_estimate_restart(est, 100, 1e-2);
+est = apop_estimate_restart(est, -1, 1e-2);
+%]
+The estimate can only get better every time you run
+\ttind{apop\_estimate\_restart}, so the only cost to running a lengthy
+tournament is your time waiting for the estimates to converge.
+
+\subsection{Graphing the path} All of the methods above consist of
+trying a series of candidate points. 
+If \index{apop\_\-opts!mle\_\-trace\_\-path@{\tt mle\_\-trace\_\-path}}{\tt apop\_\-opts.mle\_\-trace\_\-path}
+has a name of positive
+length, then every time the MLE evaluates the function, then the value
+will be output to a table in the database with the given name. You can
+then plot this table to get an idea of the path the estimation routine
+used to arrive at its MLE.
+
+First, set this variable and run the MLE. The begin/commit wrapper
+speeds things up a touch, but this will clearly be slower than without
+taking notes:
+%[
+    strcpy(apop_opts.mle_trace_path, "path");
+    apop_query("begin;");
+    e   = apop_zipf.estimate(...);
+    apop_query("commit;");
+%]
+Then, plot using a function like the below. Notice that you will want
+{\tt splot} for 3-d variables and {\tt plot} for 2-d. The change in width
+and pointsize is to remind the eye that the lines connecting the points
+only indicate the path the maximizer went along, not actual values of
+the function.
+%[
+static void plotme(char *outfile){
+FILE            *f;
+gsl_matrix      *traced_path;
+    f       = fopen(outfile, "w");  //overwrites. Use "a" to append.
+    fprintf(f,"splot '-' with linespoints linewidth 0.5 pointsize 2\n");
+    traced_path = apop_query_to_matrix("select * from %s", apop_opts.mle_trace_path);
+    fclose(f);
+    apop_matrix_print(traced_path, "\t", outfile);
+}
+%]
+
+Finally, call \ind{gnuplot} from your command line:
+%[
+$ gnuplot -persist < plotme
+ (or)
+$ gnuplot plotme -
+%]
+
+\begin{figure}
+\scalebox{0.4}{\includegraphics{search}}
+\caption{A search for an optimum using a conjugate gradient method.}
+\end{figure}
+
 \section{Hypothesis testing: Likelihood ratio tests} Every test
 in the last chapter was a likelihood ratio test---I just didn't tell
 you what the likelihood function was. Those functions are easy because
@@ -53,23 +220,17 @@ and calculating its value at various locations.
 But if your data is at all interesting, then you'll need to write down
 the likelihood function yourself.  Fortunately, we have a computer to
 do the tedious math, unlike poor Mr. Gauss, who had no such conveniences.
+Also, we have the Cramer-Rao lower bound to tell us what the variances
+are. 
 
+[...]
 
-\paragraph{What if you don't know the variance or distribution?} 
-The main convenience of the canned methods of the last
-chapter is that we have mathematical proofs telling us exactly what the distribution looks like. 
-
-What if our data doesn't fit the assumptions of any of the proofs in the textbook?
-
-Then we bootstrap to find the distribution! I'll put an example here which puts together the techniques
-from the last chapter and this one, constructing a likelihood function like the one above using the
-bootstrap.
 
 \section{Writing your own}
 The design of the {\tt apop\_\-model} hopes to make it as easy as possible for you,
 dear reader, to write new models. For the most part, all you need to
 do is write a log likelihood function, and \ttind{apop\_\-maximum\_\-likelihood}
-does the rest.
+does the rest. The steps:
 
 
 \begin{itemize}
@@ -81,7 +242,26 @@ where {\tt beta} will be the parameters to be maximized, and {\tt d} is the fixe
 with Apophenia, {\tt d} is a {\tt gsl\_\-matrix,} but you do not have to conform
 to that. This function will return the value of the log likelihood function at the given parameters.
 
-\item Is this a constrained optimization? See below on how to set them.
+\item Is this a constrained optimization? See section
+\ref{constraintwriting} on how to write a constraint function.
+
+\item Write the {\tt estimate} method, so users can call 
+{\tt apop\_\-new\_\-like\-li\-hood.est\-i\-mate(\dots)}. For an MLE, this will be one line,
+as follows:
+%[
+static apop_estimate * new_estimate(apop_data * data, 
+                        apop_inventory *uses, void *parameters){
+    return apop_maximum_likelihood(data, uses, 
+                            apop_new_log_likelihood, parameters);
+}
+%]
+By using the \ttind{static} keyword, the function name will only be
+known to this file, so you can name it what you wish.  But since you
+will be putting a pointer to the function into an object below, you
+can use the above-mentioned {\tt apop\_\-new\_\-likelihood.estimate(\dots)}
+form to call this function. You may want to type all of the functions in
+your new model as {\tt static}.
+
 
 \item Write the object. In your header file, include 
 %[
@@ -109,7 +289,7 @@ set {\tt number\_\-of\_\-parameters} to {\tt -1}.
 
 \item Test. Debug. Retest.
 
-\item (optional) Write a gradient for the log likelihood function. This
+\item Optional: write a gradient for the log likelihood function. This
 typically involves calculating a derivative by hand, which is an easy
 problem in high-school calculus. The function's header will look like: 
 %[
@@ -127,7 +307,8 @@ Now add the resulting dlog likelihood function to your object, by replacing the 
 \end{itemize}
 
 
-\subsection{Setting constraints}\index{optimization!constrained}
+\subsection{Setting
+constraints}\index{optimization!constrained}\label{constraintwriting}
 
 The problem is that the parameters of a function must not take on
 certain values, either because the function is undefined for those

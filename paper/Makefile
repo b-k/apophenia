@@ -29,10 +29,10 @@ sources/dummy.tex:
 $(DOCNAME).pdf:	*tex
 	pdflatex $(DOCNAME)
 
-pdf:	
-	pdflatex $(DOCNAME)
-#	dvips -f < $(DOCNAME).dvi > $(DOCNAME).ps
-#	ps2pdf $(DOCNAME).ps  $(DOCNAME).pdf
+pdf: *tex
+#	pdflatex $(DOCNAME)
+	dvips -f < $(DOCNAME).dvi > $(DOCNAME).ps
+	ps2pdf $(DOCNAME).ps  $(DOCNAME).pdf
 
 pdfslides:	
 	#latex $(DOCNAME)
