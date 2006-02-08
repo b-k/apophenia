@@ -125,7 +125,7 @@ double		    *line;
     return out;
 }
 
-static int apop_find_cat_index(char **d, char * r, int start_from, int size){
+static int find_cat_index(char **d, char * r, int start_from, int size){
 //used for apop_db_to_crosstab.
 int	i	= start_from;	//i is probably the same or i+1.
 	do {
@@ -138,21 +138,6 @@ int	i	= start_from;	//i is probably the same or i+1.
 	return 0;
 }
 
-static int apop_find_index(gsl_matrix *d, double r, int start_from){
-//used for apop_db_to_crosstab.
-int	i	= start_from;	//i is probably the same or i+1.
-	do {
-		if(gsl_matrix_get(d, i,0) == r) 
-			return i;
-		i	++;
-		i	%= d->size1;	//loop around as necessary.
-		//if (i == d->size1)
-			//i = 0;
-	} while(i!=start_from); 
-	printf(" apop %s, %i: something went wrong in the crosstabbing; couldn't find %g.\n", __FILE__, __LINE__, r);
-	return 0;
-}
-
 /**Give the name of a table in the database, and names of three of its
 columns: the x-dimension, the y-dimension, and the data.
 the output is a 2D matrix with rows indexed by r1 and cols by
@@ -160,43 +145,7 @@ r2. if !=NULL, d1 and d2 will list the labels on the dimensions.
 
 \ingroup db
 */
-gsl_matrix  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2){
-gsl_matrix	*pre_d1	= NULL, 
-		    *pre_d2	= NULL, *datatab, *out;
-int		    i	= 0,
-		    j	= 0,
-		    k; 
-double		datum, r, c;
-gsl_vector_view	v;
-	pre_d1	= apop_query_to_matrix("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
-	if (pre_d1 == NULL) 
-		printf (" apop %s, %i: selecting %s from %s returned an empty table.\n", __FILE__, __LINE__, r1, tabname);
-	pre_d2	= apop_query_to_matrix("select distinct %s from %s order by %s", r2, tabname, r2);
-	if (pre_d2 == NULL) 
-		printf (" apop %s, %i: selecting %s from %s returned an empty table.\n", __FILE__, __LINE__, r2, tabname);
-	datatab	= apop_query_to_matrix("select %s, %s, %s from %s", r1, r2, datacol, tabname);
-	out	= gsl_matrix_calloc(pre_d1->size1, pre_d2->size1);
-	for (k =0; k< datatab->size1; k++){
-		r	= gsl_matrix_get(datatab, k, 0);
-		c	= gsl_matrix_get(datatab, k, 1);
-		datum	= gsl_matrix_get(datatab, k, 2);
-		i	= apop_find_index(pre_d1, r, i);
-		j	= apop_find_index(pre_d2, c, j);
-		gsl_matrix_set(out, i, j, datum);
-	}
-	if(d1!=NULL && d2!= NULL){
-		*d1	= gsl_vector_alloc(pre_d1->size1);
-		*d2	= gsl_vector_alloc(pre_d2->size1);
-		v	= gsl_matrix_column(pre_d1, 0);
-		gsl_vector_memcpy(*d1, &(v.vector));
-		v	= gsl_matrix_column(pre_d2, 0);
-		gsl_vector_memcpy(*d2, &(v.vector));
-	}
-	gsl_matrix_free(pre_d1); gsl_matrix_free(pre_d2); gsl_matrix_free(datatab);
-	return out;
-}
-
-apop_data  *apop_db_to_crossdata(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2){
+apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
 gsl_matrix	*out;
 int		    i	= 0,
 		    j	= 0,
@@ -206,12 +155,15 @@ apop_data   *outdata    = apop_data_alloc(1,1);
 gsl_vector_view	v;
 	datachars	= apop_query_to_chars("select %s, %s, %s from %s", r1, r2, datacol, tabname);
     datasize    = apop_db_get_rows();   
+
+    //a bit inefficient, but well-encapsulated.
 	pre_d1	    = apop_query_to_chars("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
     ct_r        = apop_db_get_rows();
 	if (pre_d1 == NULL) 
 		printf (" apop %s, %i: selecting %s from %s returned an empty table.\n", __FILE__, __LINE__, r1, tabname);
     for (i=0; i < ct_r; i++)
         apop_name_add(outdata->names, pre_d1[i][0], 'r');
+    apop_cats_free(pre_d1, ct_r, 1);
 
 	pre_d2	= apop_query_to_chars("select distinct %s from %s order by %s", r2, tabname, r2);
     ct_c    = apop_db_get_rows();
@@ -219,13 +171,16 @@ gsl_vector_view	v;
 		printf (" apop %s, %i: selecting %s from %s returned an empty table.\n", __FILE__, __LINE__, r2, tabname);
     for (i=0; i < ct_c; i++)
         apop_name_add(outdata->names, pre_d2[i][0], 'c');
+    apop_cats_free(pre_d2, ct_c, 1);
 
 	out	= gsl_matrix_calloc(ct_r, ct_c);
 	for (k =0; k< datasize; k++){
-		i	= apop_find_cat_index(outdata->names->rownames, datachars[k][0], i, ct_r);
-		j	= apop_find_cat_index(outdata->names->colnames, datachars[k][1], j, ct_c);
+		i	= find_cat_index(outdata->names->rownames, datachars[k][0], i, ct_r);
+		j	= find_cat_index(outdata->names->colnames, datachars[k][1], j, ct_c);
 		gsl_matrix_set(out, i, j, atof(datachars[k][2]));
 	}
+    apop_cats_free(datachars, datasize, 3);
+    gsl_matrix_free(outdata->data);
     outdata->data   = out;
 	return outdata;
 }

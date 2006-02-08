@@ -198,7 +198,7 @@ static void print_core_v(gsl_vector *data, char *separator, char *filename,
 			void (* p_fn)(FILE * f, double number)){
 int 		i;
 FILE * 		f;
-	if ((apop_opts.output_type == 's') || (filename == NULL) || (!strcmp(filename, "STDOUT")))
+	if ((filename == NULL) || (!strcmp(filename, "STDOUT")))
 		f	= stdout;
 	else	{
         if (apop_opts.output_append)
@@ -230,7 +230,8 @@ size_t 		i,j, max_name_size  = 0;
             max_name_size   = GSL_MAX(strlen(n->rownames[i]), max_name_size);
     }
 
-	if ((apop_opts.output_type == 's') || (filename == NULL) || (!strcmp(filename, "STDOUT")))
+	//if ((apop_opts.output_type == 's') || (filename == NULL) || (!strcmp(filename, "STDOUT")))
+	if ((filename == NULL) || (!strcmp(filename, "STDOUT")))
 		f	= stdout;
 	else	{
         if (apop_opts.output_append)
@@ -244,14 +245,14 @@ size_t 		i,j, max_name_size  = 0;
     } 
     else {
         if (n != NULL && n->colnamect > 0){ //then print a row of column headers.
-		    printf("\t");
+		    fprintf(f,"\t");
 		    for (j=0; j< n->colnamect; j++)
 			    fprintf(f,"%s\t\t", n->colnames[j]);
 		    fprintf(f,"\n");
         }
 	    for (i=0; i<data->size1; i++){
             if (n !=NULL && n->rownamect > 0)
-			    printf("%-*s", max_name_size+4, n->rownames[i]);
+			    fprintf(f,"%-*s", max_name_size+4, n->rownames[i]);
 		    for (j=0; j<data->size2; j++){
 			    p_fn(f, gsl_matrix_get(data, i,j));
 			    if (j< data->size2 -1)	fprintf(f, "%s", separator);
@@ -285,7 +286,7 @@ void apop_vector_print_int(gsl_vector *data, char *file){
 \ingroup apop_print */
 void apop_matrix_print(gsl_matrix *data, char *file){
     if (apop_opts.output_type   == 'd'){
-        apop_matrix_to_db(data, apop_opts.output_name, NULL);
+        apop_matrix_to_db(data, file, NULL);
     } else
 	print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf_f, NULL); }
 
@@ -294,7 +295,7 @@ void apop_matrix_print(gsl_matrix *data, char *file){
 \ingroup apop_print */
 void apop_matrix_print_int(gsl_matrix *data, char *file){
     if (apop_opts.output_type   == 'd'){
-        apop_matrix_to_db(data, apop_opts.output_name, NULL);
+        apop_matrix_to_db(data, file, NULL);
     } else
 	print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf_i, NULL); }
 
@@ -305,7 +306,7 @@ void apop_matrix_print_int(gsl_matrix *data, char *file){
 \ingroup apop_print */
 void apop_data_print(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
-        apop_data_to_db(data, apop_opts.output_name);
+        apop_data_to_db(data, file);
     } else
 	print_core_m(data->data, apop_opts.output_delimiter, file, dumb_little_pf_f, data->names); }
 
@@ -316,7 +317,7 @@ void apop_data_print(apop_data *data, char *file){
 \ingroup apop_print */
 void apop_data_print_int(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
-        apop_data_to_db(data, apop_opts.output_name);
+        apop_data_to_db(data, file);
     } else
 	print_core_m(data->data, apop_opts.output_delimiter, file, dumb_little_pf_i, data->names); }
 

@@ -3,18 +3,18 @@
  Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
  */
 #include "apophenia/db.h"
-#include "apophenia/linear_algebra.h"
-#include "apophenia/conversions.h"
 #include "apophenia/output.h"
+#include "apophenia/conversions.h"
+#include "apophenia/linear_algebra.h"
 #include <unistd.h>
 
 
 int main(int argc, char **argv){
 char		c, 
-		*delimiter,
-        *outfile    = NULL,
-		msg[1000];
-gsl_matrix	*m;
+		    *delimiter,
+            *outfile    = NULL,
+		    msg[1000];
+apop_data	*m;
 
 	sprintf(msg, "%s [opts] dbname table_name rows columns data\n\n\
 -d\tdelimiter\t\tdefault= \",\"\n\
@@ -41,7 +41,7 @@ gsl_matrix	*m;
 		}
 	}
 	apop_open_db(argv[optind]);
-	m	= apop_db_to_crosstab(argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4], NULL, NULL);
-	apop_matrix_print(m, outfile);
+	m	= apop_db_to_crosstab(argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4]);
+	apop_data_print(m, outfile);
 	return 0;
 }

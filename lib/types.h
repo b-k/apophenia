@@ -243,12 +243,6 @@ typedef struct apop_opts_type{
                 'd'   = to db. 
              If 1 or 2, then you'll need to set output_name. default = 0. */
     char output_type;
-            /** The name of file or database to which to write. If
-             STDOUT, then it will print to screen; this is useful
-             because the file-printing routines typically produce more
-             machine-friendly output than the screen-printing routines, 
-             designed for humans.   default = "apop_output". */
-    char output_name[1000];
             /** What to put between your columns. Default = "\t" */
     char output_delimiter[100];
             /** Append to output files(1), or overwrite(0)? default = 0 */
@@ -286,6 +280,8 @@ apop_data * apop_data_alloc(int size1, int size2);
 apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
 void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data **out, apop_data *in);
+
+void apop_cats_free(char ***freeme, int rows, int cols); //in apop_data.c
 
 apop_model * apop_model_copy(apop_model in); //this is in apop_estimate.c.
 

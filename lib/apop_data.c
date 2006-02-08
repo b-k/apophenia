@@ -68,15 +68,35 @@ gsl_matrix  *m  = gsl_matrix_alloc(v->size,1);
     return apop_data_from_matrix(m);
 }
 
+/** free a matrix of chars* (i.e., a char***).
+
+  */
+void apop_cats_free(char ***freeme, int rows, int cols){
+int     i,j;
+    if (rows && cols){
+        for (i=0; i < rows; i++){
+            for (j=0; j < cols; j++)
+                if(freeme[i][j])
+                    free(freeme[i][j]);
+            if(freeme[i])
+                free(freeme[i]);
+        }
+    }
+        if(freeme)
+            free(freeme);
+}
+
+
 /** Free an \ref apop_name structure.
 
  \ingroup data_struct
   */
 void apop_data_free(apop_data *freeme){
-int     i,j;
     if (freeme->data)
         gsl_matrix_free(freeme->data);
     apop_name_free(freeme->names);
+    apop_cats_free(freeme->categories, freeme->catsize[0] , freeme->catsize[1]);
+    /*
     if (freeme->catsize[0] && freeme->catsize[1]){
         for (i=0; i < freeme->catsize[0]; i++)
             for (j=0; j < freeme->catsize[1]; j++)
@@ -85,6 +105,7 @@ int     i,j;
         if(freeme->categories)
             free(freeme->categories);
     }
+    */
     free(freeme);
 }
 

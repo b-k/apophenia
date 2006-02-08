@@ -68,7 +68,6 @@ int	total_rows, total_cols;		    //the counts from the last query.
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= { 0,              //verbose
                                 's',            //output type
-                                "apop_output",  //output name
                                 "\t",           //output delimiter
                                 1,              //output append
                                 "| ,\t",           //input delimiters
@@ -704,7 +703,7 @@ char		*q 		= malloc(sizeof(char)*1000);
 	for(i=0;i< set->data->size2; i++){
 		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
 		if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i", q,i);
-		else			sprintf(q, "%s\n %s ", q,set->names->colnames[i]);
+		else			sprintf(q, "%s\n \"%s\" ", q,set->names->colnames[i]);
 		if (i< set->data->size2-1) 	sprintf(q, "%s,",q);
 		else			sprintf(q,"%s);  begin;",q);
 	}
