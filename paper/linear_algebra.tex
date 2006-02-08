@@ -24,7 +24,7 @@ section \ref{asst_conversions}.
 \index{declaration!of gsl\_vector@of {\tt gsl\_vector}}
 \index{for@{\tt for}!example of}
 Here's some sample code which will do a few useless things to a few sample
-objects:
+objects:\label{gslexample}
 %\begin{verbatim}
 %[
 #include <gsl/gsl_matrix.h>
@@ -170,6 +170,21 @@ i = 1/0} and you'll get {\tt Arithmetic exception (core dumped)}.
 More to come; for now, just have a look at the {\sl conversions} section
 of the reference for a good number of conversion functions.
 
+\paragraph{Allocating and using at once}    \index{declaration}
+One slight convenience that helps with the annoyance of shunting data from
+one type to another is that you can declare a variable and assign it at the
+same time. Let us say that you have already filled a {\tt gsl\_\-matrix
+*m} with data and want it to be an {\tt apop\_\-data} structure. Then
+you can declare and allocate your new structure with one line:
+%[
+apop_data   *mdata  = apop_matrix_to_data(m);
+%]
+On the left-hand side, we are allocating an {\tt apop\_\-data *} pointer, and
+on the left-hand side, \ttind{apop\_data\_from\_matrix} returns an 
+{\tt apop\_\-data *} pointer. As in the example on page \pageref{gslexample}, the same can be
+done with any function with {\tt alloc} in the name, because they will also
+return a pointer to the appropriate type.
+
 \paragraph{Using views}\index{views}
 The GSL includes a convenient structure for pulling a vector from a
 matrix. Here's how to get the fifth row of {\tt a\_matrix} into a vector view:
@@ -179,7 +194,7 @@ gsl_vector_view v;
 v = gsl_matrix_col(a_matrix, 4);
 %]
 [Notice that this uses {\tt col}, not {\tt column}.]
-For rows, use \ttind{gsl\_matrix\_row}{\tt (a\_matrix, n)}. 
+For rows, use \ttind{gsl\_matrix\_row}{\tt (a\_\-ma\-trix, n)}. 
 
 The vector view is a data structure which includes an element of type {\tt gsl\_vector}
 named vector; this is the only element you will be interested in. The

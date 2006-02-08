@@ -4,6 +4,7 @@
  \li \ref intro "Intro": The motivation for the package.
  \li \ref setup "Setup": Installing GCC, the GSL, SQLite, and Apophenia itself.
  \li \ref types "Types": New structures defined by Apophenia.
+ \li The <a href="http://apophenia.info/gsl_stats.pdf">manual</a> (PDF). 
 
 \section dostats Doing statistics 
  \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.
@@ -29,58 +30,14 @@
  \ref admin
  */
 
-/** \page intro Why?
+/** \page intro Intro
 
+First, if you are still wondering why this is different from all the
+stats packages of the world, have a look at the introduction to the 
+<a href="http://apophenia.info/gsl_stats.pdf">manual</a> (PDF). 
 
-\section sell Some complaints alleviated
-First, by way of a problem statement, here are some of the problems with existing tools and packages that Apophenia aims to address.
-
-\li <b>The world is not linear</b>, so why use a package to fit
-linear models? Apophenia facilitates writing \ref mle "likelihood functions" which
-can be as crazy as the world you are modeling, and then fits them with
-one function call to \ref apop_maximum_likelihood. Comparing competing
-models is easy as well.
-\li <b>Passing queries directly to an SQL engine.</b> if you have a gigabyte of data,
-you do not want it in an in-memory database, until the last possible
-minute---you're probably only using three variables out of six hundred
-anyway. If your data comes from multiple sources, you will need a means
-of merging the sources. In short, data management is best done via a
-database. \ref apop_query allows you to dynamically write queries
-that are passed directly to SQLite.
-\li <b>Converting data is a pain</b>. It's funny and a bit wrong that
-college and even grad school statistics classes present the student with
-perfectly-cleaned data sets and spend 90% of their time on calculating
-statistics and testing hypotheses; while in the real world, we spend
-about 90% of our time getting, cleaning, and managing our data, and
-once it's all perfect we do the statistics with a single function call. 
-Apophenia provides a good number of \ref conversions to make
-data wrangling as painless as it can be in the real world. The
-\ref convertfromtext alone may be worth the time it takes you to install
-the library.
-\li <b>The GSL is just a step shy.</b> Don't get me wrong: it's a great
-library, which drives much of Apophenia (see below). But the authors did not have
-statistical analysis in mind, and often chose generality over ease of
-use. For example, doing a singular value decomposition theoretically
-just requires a single call to \c gsl_linalg_SV_decomp, but in reality
-takes many steps of data massaging to get things in place. But you can
-feed your data directly to \ref apop_sv_decomposition and get a principal
-component space back immediately. Think of Apophenia as the lazy
-statistician's supplement to the GSL.
-
-\section datamanagement Data management and data analysis
-
-That said, there are two simple goals of Apophenia:
-\li Minimize annoyances.
-\li Estimate model parameters and test hypotheses regarding those parameters.
-
-With regard to the first goal, the hope is that every time you are writing
-a program and think "darn it, now I have to write a tedious function to
-massage my data" that function is already in the library. 
-[If it isn't, you can write that function and contribute it.] The
-library thus includes a number of functions to reformat, convert, and
-do simple-but-tedious calculations on data.
-
-With regard to the goal of estimation, Apophenia provides three
+The key goal of Apophenia is to estimate models using data.
+As such, Apophenia provides 
 interlocking structures to smooth the process: \ref apop_data, \ref
 apop_model, and \ref apop_estimate. Beginning in the middle, every \ref
 apop_model includes an \c estimate function, that takes in a data set
@@ -302,8 +259,8 @@ gsl_rng *       r;
         printf("\t   mean\t\t   var\n");
         printf("process 1: %f\t%f\n", apop_mean(v1), apop_var(v1));
         printf("process 2: %f\t%f\n\n", apop_mean(v2), apop_var(v2));
-        printf("t test p-value: %f\n", apop_t_test(v1,v2));
-        apop_matrix_print(m,"\t", "the_data.txt"); //does not overwrite; appends.
+        printf("t test rejects the null with confidence: %f%%\n", apop_t_test(v1,v2)*100);
+        apop_matrix_print(m, "the_data.txt"); //does not overwrite; appends.
         return 0;
 }
 \endcode
@@ -620,3 +577,54 @@ Just a few page links:
 \li <a href=modules.html>The documentation page list</a>
 */
 
+
+/*      This is debris. Not parsed by doxygen.
+
+
+\li <b>The world is not linear</b>, so why use a package to fit
+linear models? Apophenia facilitates writing \ref mle "likelihood functions" which
+can be as crazy as the world you are modeling, and then fits them with
+one function call to \ref apop_maximum_likelihood. Comparing competing
+models is easy as well.
+\li <b>Passing queries directly to an SQL engine.</b> if you have a gigabyte of data,
+you do not want it in an in-memory database, until the last possible
+minute---you're probably only using three variables out of six hundred
+anyway. If your data comes from multiple sources, you will need a means
+of merging the sources. In short, data management is best done via a
+database. \ref apop_query allows you to dynamically write queries
+that are passed directly to SQLite.
+\li <b>Converting data is a pain</b>. It's funny and a bit wrong that
+college and even grad school statistics classes present the student with
+perfectly-cleaned data sets and spend 90% of their time on calculating
+statistics and testing hypotheses; while in the real world, we spend
+about 90% of our time getting, cleaning, and managing our data, and
+once it's all perfect we do the statistics with a single function call. 
+Apophenia provides a good number of \ref conversions to make
+data wrangling as painless as it can be in the real world. The
+\ref convertfromtext alone may be worth the time it takes you to install
+the library.
+\li <b>The GSL is just a step shy.</b> Don't get me wrong: it's a great
+library, which drives much of Apophenia (see below). But the authors did not have
+statistical analysis in mind, and often chose generality over ease of
+use. For example, doing a singular value decomposition theoretically
+just requires a single call to \c gsl_linalg_SV_decomp, but in reality
+takes many steps of data massaging to get things in place. But you can
+feed your data directly to \ref apop_sv_decomposition and get a principal
+component space back immediately. Think of Apophenia as the lazy
+statistician's supplement to the GSL.
+
+\section datamanagement Data management and data analysis
+
+That said, there are two simple goals of Apophenia:
+\li Minimize annoyances.
+\li Estimate model parameters and test hypotheses regarding those parameters.
+
+With regard to the first goal, the hope is that every time you are writing
+a program and think "darn it, now I have to write a tedious function to
+massage my data" that function is already in the library. 
+[If it isn't, you can write that function and contribute it.] The
+library thus includes a number of functions to reformat, convert, and
+do simple-but-tedious calculations on data.
+
+With regard to the goal of estimation, Apophenia provides three
+*/

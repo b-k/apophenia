@@ -89,7 +89,7 @@ The first is simply looking up the vaule of the PDF at a given point. Here are t
 #include <gsl/gsl_randist.h>
 double gsl_ran_gaussian_pdf (double X, double SIGMA);
 double gsl_ran_tdist_pdf (double X, double NU);
-gsl_ran_fdist_pdf (double X, double NU1, double NU2);
+double gsl_ran_fdist_pdf (double X, double NU1, double NU2);
 double gsl_ran_chisq_pdf (double X, double NU);
 %]
 %\end{verbatim}
@@ -280,7 +280,7 @@ considered taken care of.
 
 
 
-\subsection{the $\chi^2$ test \index{$\chi^2$!test}}
+\subsection{the $\chi^2$ test \index{$\chi^2$ test}}
 
 By itself, this is only useful for testing whether the sample variance
 is equal to a given $\sigma^2$, because unless you assume $\sigma^2$ you
@@ -326,7 +326,7 @@ If we're testing a variance, we'd have
 \end{equation}
 
 
-\subsection{the $F$ test\index{F!test}}
+\subsection{the $F$ test\index{F test}}
 
 As above, we can divide equation \ref{chi1} by equation \ref{chi2} to give us a statistic
 with an $F$ distribution

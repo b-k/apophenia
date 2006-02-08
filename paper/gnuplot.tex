@@ -1,4 +1,8 @@
 \chapter{Gnuplot} \label{gnuplot}
+%@-     so lgrind will play nice with makeindex
+\index{Gnuplot|(}
+\index{plotting|see{Gnuplot}}
+\index{graphing|see{Gnuplot}}
 
 This chapter will give you some tips on plotting using Gnuplot, which is a graphing package which is as
 open and freely available as gcc. [It is unrelated to the GNU, by the way. The name is a compromise
@@ -9,11 +13,72 @@ you mostly won't be concerned with those: you'll just want to plot your data.
 
 
 \section{Dumping output to an agreeable format} 
+The line {\tt plot '-';} tells Gnuplot to (2-D) plot the data to come. The
+command for a 3-D plot is {\tt splot '-'}. That means that the process
+of turning a matrix into a basic plot is trivial. Let {\tt data} be an
+{\tt apop\_\-data} set whose first and fifth columns we'd like to plot
+against each other:
+%[
+FILE    *f = fopen("plot_me", 'w');
+fprintf("plot '-' using 1:5;\n");
+fclose(f);
+apop_data_print(data, "plot_me");
+%]
+The second option to \ttind{fopen} should be either {\tt 'a'} for append or
+{\tt 'w'} for write; in this case, we want to start with a clean file.
+Notice that \ttind{apop\_\-data\_\-print} defaults to appending; you
+would need to set \ttind{apop\_\-opts.output\_\-append = 0} to overwrite.
 
-\subsection{Histograms} Gnuplot, refusing to do calculations for you, makes making histograms a pain.
-Fortunately, the GSL has you covered, with the \ttind{gsl\_histogram} object.
+The clause {\tt using 1:5} in the plot command tells Gnuplot to use
+only the first and fifth columns of the data set---so there is no need to pare
+down the data set in memory. Notice that the first column in Gnuplot is
+1, not 0. At the end of this, {\tt print\_\-me} will be executable by
+Gnuplot. There are a few ways to get Gnuplot to read the file:
+%[
+gnuplot -persist < plot_me
+(or)
+gnuplot plot_me -
+%]
+The first option will open a window and leave the command line inactive
+until you close the window;
+the second will give you a Gnuplot command line that you'll have to
+manually exit
+from (by typing {\tt exit} or $<$ctrl$>$-D, or you can send in more
+Gnuplot commands). On many systems, you can
+interact with the plot, spinning 3-D plots with the mouse or selecting
+subregions of 2-D plots to zoom into.
 
-\section{Autogenerating Gnuplot scripts} 
-Since there are so many ways to tweak Gnuplot, I like to include a subprocedure to write Gnuplot scripts
-in the main program. I'll give a few examples here.
+\subsection{Histograms} Gnuplot, refusing to do calculations for you,
+makes making histograms a pain.  Fortunately, the GSL has you covered,
+with the \ttind{gsl\_histogram} object. It creates a set of bins, and
+then you can call {\tt gsl\_\-hist\-o\-gram\_\-in\-cre\-ment} to put
+data into the right bin. The example below, allocates a histogram with
+{\tt bin\_\-ct} bins, then sets its range to just past the min and max
+of the data. Then the for loop pulls data points from the vector and
+dumps them to the histogram, without any further calculation on our part.
 
+%[
+void create_a_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
+int             i;
+FILE *          f;
+double      min, max, pt;
+gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
+    gsl_vector_minmax(data, &min, &max);
+    gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, 
+                                            max+GSL_DBL_EPSILON);
+    for (i=0; i < data->size; i++){
+        pt  = gsl_vector_get(data, i);
+        gsl_histogram_increment(h, pt);
+        }
+    for (i=0; i < bin_ct; i++)
+        printf("%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
+}
+%]
+
+One use of the histogram beyond plotting is to produce empirical
+PDFs from which you can then draw data; see the GSL manual for
+\ttind{gsl\_\-histogram\_pdf}. But this is the plotting chapter,
+so the above should output to a gnuplot-readable file. The
+\ttind{apop\_\-plot\_\-hist\-o\-gram} function does exactly this.
+
+\index{Gnuplot|)}

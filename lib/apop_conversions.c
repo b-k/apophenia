@@ -73,19 +73,29 @@ int		i;
 
 /** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
 
-\param in 	A vector.
-\param out 	A <tt>gsl_vector</tt>. Declare but do not allocate.
+\param in 	    A vector.
 \param size 	You will have to tell the function how long <tt>in</tt> is.
+\return         A <tt>gsl_vector</tt>. Declare but do not allocate.
 \ingroup convertfromarray 
 */ 
+gsl_vector * apop_array_to_vector(double *in, int size){
+int		    i;
+gsl_vector  *out;
+    out	= gsl_vector_alloc(size);
+	for(i=0; i < size; i++)
+		gsl_vector_set(out, i, in[i]);
+    return out;
+}
+/*
 void apop_array_to_vector(double *in, gsl_vector **out, int size){
 int		i;
 	*out	= gsl_vector_alloc(size);
 	for(i=0; i < size; i++)
 		gsl_vector_set(*out, i, in[i]);
 }
+*/
 
-void convert_array_to_line(double **in, double **out, int rows, int cols){
+static void convert_array_to_line(double **in, double **out, int rows, int cols){
 	//go from in[i][j] form to the GSL's preferred out[i*cols + j] form
 int		i, j;
 	*out	= malloc(sizeof(double) * rows * cols);
@@ -97,18 +107,35 @@ int		i, j;
 /** convert a <tt>double **</tt> array to a <tt>gsl_matrix</tt>
 
 \param in	the array to read in
-\param out	the <tt>gsl_matrix</tt> out. Declare it but don't allocate it.
 \param rows, cols	the size of the array.
+\return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
+
+usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
 \ingroup convertfromarray 
 */
-void apop_array_to_matrix(double **in, gsl_matrix **out, int rows, int cols){
+gsl_matrix * apop_array_to_matrix(double **in, int rows, int cols){
 gsl_matrix_view	m;
-double		*line;
-	*out	= gsl_matrix_alloc(rows, cols);
+gsl_matrix      *out;
+double		    *line;
+	out	= gsl_matrix_alloc(rows, cols);
 	convert_array_to_line(in, &line, rows, cols);
 	m	= gsl_matrix_view_array(line, rows,cols);
-	gsl_matrix_memcpy(*out,&(m.matrix));
+	gsl_matrix_memcpy(out,&(m.matrix));
 	free(line);
+    return out;
+}
+
+static int apop_find_cat_index(char **d, char * r, int start_from, int size){
+//used for apop_db_to_crosstab.
+int	i	= start_from;	//i is probably the same or i+1.
+	do {
+		if(!strcmp(d[i], r))
+			return i;
+		i	++;
+		i	%= size;	//loop around as necessary.
+	} while(i!=start_from); 
+	printf(" apop %s, %i: something went wrong in the crosstabbing; couldn't find %s.\n", __FILE__, __LINE__, r);
+	return 0;
 }
 
 static int apop_find_index(gsl_matrix *d, double r, int start_from){
@@ -133,13 +160,12 @@ r2. if !=NULL, d1 and d2 will list the labels on the dimensions.
 
 \ingroup db
 */
-gsl_matrix * apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2){
-
+gsl_matrix  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2){
 gsl_matrix	*pre_d1	= NULL, 
-		*pre_d2	= NULL, *datatab, *out;
-int		i	= 0,
-		j	= 0,
-		k; 
+		    *pre_d2	= NULL, *datatab, *out;
+int		    i	= 0,
+		    j	= 0,
+		    k; 
 double		datum, r, c;
 gsl_vector_view	v;
 	pre_d1	= apop_query_to_matrix("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
@@ -170,16 +196,50 @@ gsl_vector_view	v;
 	return out;
 }
 
+apop_data  *apop_db_to_crossdata(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2){
+gsl_matrix	*out;
+int		    i	= 0,
+		    j	= 0,
+		    k, ct_r, ct_c, datasize; 
+char        ***pre_d1, ***pre_d2, ***datachars;
+apop_data   *outdata    = apop_data_alloc(1,1);
+gsl_vector_view	v;
+	datachars	= apop_query_to_chars("select %s, %s, %s from %s", r1, r2, datacol, tabname);
+    datasize    = apop_db_get_rows();   
+	pre_d1	    = apop_query_to_chars("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
+    ct_r        = apop_db_get_rows();
+	if (pre_d1 == NULL) 
+		printf (" apop %s, %i: selecting %s from %s returned an empty table.\n", __FILE__, __LINE__, r1, tabname);
+    for (i=0; i < ct_r; i++)
+        apop_name_add(outdata->names, pre_d1[i][0], 'r');
+
+	pre_d2	= apop_query_to_chars("select distinct %s from %s order by %s", r2, tabname, r2);
+    ct_c    = apop_db_get_rows();
+	if (pre_d2 == NULL) 
+		printf (" apop %s, %i: selecting %s from %s returned an empty table.\n", __FILE__, __LINE__, r2, tabname);
+    for (i=0; i < ct_c; i++)
+        apop_name_add(outdata->names, pre_d2[i][0], 'c');
+
+	out	= gsl_matrix_calloc(ct_r, ct_c);
+	for (k =0; k< datasize; k++){
+		i	= apop_find_cat_index(outdata->names->rownames, datachars[k][0], i, ct_r);
+		j	= apop_find_cat_index(outdata->names->colnames, datachars[k][1], j, ct_c);
+		gsl_matrix_set(out, i, j, atof(datachars[k][2]));
+	}
+    outdata->data   = out;
+	return outdata;
+}
+
 /*
 Much of the magic below is due to the following regular expression.
 
 Without backslashes and spaced out in perl's /x style, it would look like this:
-("[^"]*"        (starts with a ", has no "" in between, ends with a ".
+("[^"][^"]*"        (starts with a ", has no "" in between, ends with a ".
 |               or
 [^%s"][^%s"]*)  anything but a "" or the user-specified delimiters. At least 1 char long.)
 ([%s\n]|$)      and ends with a delimiter or the end of line.
 */
-const char      divider[]="\\(\"[^\"]*\"\\|[^\"%s][^\"%s]*\\)[%s\n]";
+const char      divider[]="\\(\"[^\"][^\"]*\"\\|[^\"%s][^\"%s]*\\)[%s\n]";
 
 //in: the line being read, the allocated outstring, the result from the regexp search, the offset
 //out: the outstring is filled with a bit of match, last_match is updated.

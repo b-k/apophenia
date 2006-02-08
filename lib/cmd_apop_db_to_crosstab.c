@@ -12,7 +12,7 @@
 int main(int argc, char **argv){
 char		c, 
 		*delimiter,
-        *outfile,
+        *outfile    = NULL,
 		msg[1000];
 gsl_matrix	*m;
 

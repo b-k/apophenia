@@ -23,14 +23,15 @@ int apop_vector_to_array(gsl_vector *in, double **out);
 //From matrix
 /////////////
 gsl_matrix * apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2);
+apop_data  *apop_db_to_crossdata(char *tabname, char *r1, char *r2, char *datacol, gsl_vector **d1, gsl_vector **d2);
 //takes a three-column table (dim1, dim2, data) and creates a 2D crosstab.
 //Returns the crosstab, and the dimension names (if d1!=NULL and d2!=NULL).
 
 ////////////
 //From array
 ////////////
-void apop_array_to_vector(double *in, gsl_vector **out, int size);
-void apop_array_to_matrix(double **in, gsl_matrix **out, int rows, int cols);
+gsl_vector * apop_array_to_vector(double *in, int size);
+gsl_matrix * apop_array_to_matrix(double **in, int rows, int cols);
 
 ///////////
 //From text

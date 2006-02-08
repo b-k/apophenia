@@ -281,6 +281,7 @@ apop_inventory apop_inventory_filter(apop_inventory *in, apop_inventory filter);
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_data_from_matrix(gsl_matrix *m);
+apop_data * apop_data_from_vector(gsl_vector *v);
 apop_data * apop_data_alloc(int size1, int size2);
 apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
 void        apop_data_rm_columns(apop_data *d, int *drop);

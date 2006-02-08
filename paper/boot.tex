@@ -1,4 +1,5 @@
 \chapter{Bootstrapping} \label{boot}
+%@-     so lgrind will play nice with makeindex
 
 Bootstrapping is probably one of the most eerily descriptive names I've ever seen. 
 After you've gotten everything you can out of
@@ -43,6 +44,7 @@ bootstrapping, even if that estimate overstates the variance, then use
 that instead of bootstrapping. Otherwise, you dishonor your name, and
 bring shame to your research group.
 
+
 \subsection{Creating random samples} Assume that we have a
 data vector {\tt gsl\_vector * data} and a function {\tt double
 calc\_statistic(gsl\_vector *data)} which finds some statistics. The
@@ -65,10 +67,67 @@ adds the draw to the list of draws and the index to the list of indices.
 We can then use these draws to calculate a list of parameter values, as in Figure \ref{bootvar}.
 \codefig{bootvar}{A function to find the variance of a series of bootstrap estimates of a statistic}
 
-It is valid to use 
-the standard deviation returned by this function can be used in the normal way to construct confidence
-intervals and test hypotheses about the statistic. 
+It is valid to use the standard deviation returned by this function can
+be used in the normal way to construct confidence intervals and test
+hypotheses about the statistic.
 
+\paragraph{Random number generation}\index{random
+numbers|(}\label{randomnumbers}
+
+Random number generators are not random: given the same setup, they
+will produce the same value every time you use them. To lay-intuition,
+this is not really `random', but for the programmer, it is wonderful,
+because you can replicate your results.
+
+There are two places where you will need replication. The first is with
+debugging, since you don't want the segfault you are trying to track
+down to magically appear and disappear every other run. The second is
+in reporting your results, because when a colleague asks to see how you
+arrived at your numbers, you should be able to reproduce them to four
+decimal places.
+
+Of course, using the same stream of numbers every time creates the
+possibility of getting a lucky draw, where `lucky' can mean any of a
+number of things. The solution is a fixed process of pseudorandom
+number generation plus a varying initializing seed. Here is how one
+would initialize a \ttind{gsl\_\-rng}:
+%[
+gsl_rng * initrng(int seed){
+    gsl_rng_env_setup();
+    gsl_rng *r  = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(r, seed);  
+    return r;
+}
+%]
+The function takes in an integer, and then sets up the random number
+generation (RNG) environment to produce new numbers via the Tausworth
+routine. Every integer will produce a different stream of numbers.
+
+There is no need to make the seed look random. The GSL's default seed is
+zero, and if you need ten different seeds, I suggest using 0, 1, \dots ,9.
+
+\paragraph{Random number distributions}
+Now that you have a random number generator, you can use it to draw from all of your favorite distributions:
+\index{Gaussian distribution} \index{t distribution} \index{F distribution}
+\index{$\chi^2$ distribution} \index{Uniform distribution}\ttindex{gsl\_ran\_...}
+
+
+%[
+double gsl_ran_gaussian (gsl_rng *r, double SIGMA);
+double gsl_ran_tdist (gsl_rng *r, double NU);
+double gsl_ran_fdist (gsl_rng *r, double NU1, double NU2);
+double gsl_ran_chisq (gsl_rng *r, double NU);
+double gsl_ran_flat (gsl_rng *r, double A, double B);
+double gsl_ran_uniform (gsl_rng *r);
+%]
+
+The 'flat' distribution is a Uniform[A,B] distribution. Since the
+Uniform[0,1] distribution is so common, it gets its own no-options
+function, {\tt gsl\_ran\_uniform(r)}. Notice that the Gaussian draw
+assumes a mean of zero, so if you intend to draw from a ${\cal N}(7,2)$,
+then add it after the call: {\tt gsl\_ran\_gaussian (r, 2) + 7}.
+
+\index{random numbers|)}
 \comment{
 \section{Finding a distribution}
 

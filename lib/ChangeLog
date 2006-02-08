@@ -4,6 +4,14 @@ search beginning where the last one ended, perhaps using a new method or
 rescaled parameters.
 	--This needed convenience functions to check for divergence, thus
 		added apop_vector_finite, apop_vector_bounded, apop_vector_isnan.
+--apop_db_to_crosstab now returns an apop_data set instead of a gsl_matrix.
+Also, it finally works with column headers that aren't numeric.
+
+--Some of the fns that used to be of the form
+	apop_get_something(input, &output);
+are now of the more natural
+	out	= apop_get_something(input);
+This includes apop_array_to_vector and apop_array_to_matrix
 
 0.15	January 2006
 Added an apop_opts structure for options. Alowed the following changes:

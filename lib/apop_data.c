@@ -56,6 +56,18 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
     return apop_data_from_matrix(m);
 }
 
+/** Turns a gsl_vector into an \ref apop_data structure with one column.
+    Copies the data, so you can safely <tt>gsl_vector_free(v)</tt> after this.
+
+\param  v   The data vector
+\return     an allocated, ready-to-use \ref apop_data struture.
+*/
+apop_data * apop_data_from_vector(gsl_vector *v){
+gsl_matrix  *m  = gsl_matrix_alloc(v->size,1);
+    gsl_matrix_set_col(m, 0, v);
+    return apop_data_from_matrix(m);
+}
+
 /** Free an \ref apop_name structure.
 
  \ingroup data_struct

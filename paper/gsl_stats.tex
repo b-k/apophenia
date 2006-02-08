@@ -36,8 +36,7 @@
 \chapter[Introduction]{Doing statistics in the modern day}
 
 [This book is very incomplete. The
-first three chapters are finished, but it tapers off from there, to the
-point that the last chapter is just a placeholder. I feel that it should
+first three chapters are finished, but it tapers off from there. I feel that it should
 already have utility to many people, so it is here for your perusal.]
 \vskip .5cm
 
@@ -66,11 +65,18 @@ facilitates handling large data sets. This book will cover the basics
 of these components and the manner in which we can translate from the
 mathematical language to the language these libraries speak.
 
-The book is a complement to the \ind{Apophenia} library, a set of functions which
+The book is a complement to the Apophenia library, a set of functions which
 is based on the GSL and SQLite, intended to simplify the hard parts of
 using these packages for statistical analysis. You could do all of the
 analyses in this book without Apophenia, but you would find yourself
-rewriting many of its functions.
+rewriting many of its functions. 
+
+Most stats packages include a manual that attempts to instruct the reader,
+and an alphabetical-order reference providing detailed usage notes for
+functions and structures.  You are reading Apophenia's manual now,
+and the reference is online at \url{http://apophenia.info/doc}.
+
+
 
 \paragraph{The intended audience}
 I assume that you've had a statistics class already, but may need some refreshing
@@ -302,9 +308,9 @@ existence today, on any data set, no matter how large or exceptional.
 \input projection.ground
 \input gauss.ground
 \input mle.ground
-\input boot.tex
+\input boot.ground
 %\input mcmc.tex
-\input gnuplot.tex
+\input gnuplot.ground
 \nocite{*}
 %\cite{greene}
 %\nocite{casella:berger}

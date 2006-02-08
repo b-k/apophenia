@@ -410,7 +410,7 @@ negshell_params			    nsp;
 		x	= gsl_vector_alloc(betasize);
   		gsl_vector_set_all (x,  0);
 	}
-	else 	apop_array_to_vector(est_params->starting_pt, &x, betasize);
+	else 	x   = apop_array_to_vector(est_params->starting_pt, betasize);
 	nsp.d		= data->data;
 	nsp.model	= dist;
 	minme.f		= negshell;
@@ -476,7 +476,7 @@ negshell_params		    nsp;
 	if (est_params->starting_pt==NULL)
   		gsl_vector_set_all (x,  0);
 	else
-		apop_array_to_vector(est_params->starting_pt, &x, betasize);
+		x   = apop_array_to_vector(est_params->starting_pt, betasize);
   	gsl_vector_set_all (ss,  est_params->step_size);
 	nsp.model	    = dist;
 	nsp.d		    = data->data;

@@ -64,7 +64,7 @@ AUTHOR:
 
 #if defined(unix)  || defined(UNIX)      || defined(__unix__)   || \
     defined(linux) || defined(__linux__) || defined(__CYGWIN__) || \
-    defined(hpux)  || defined(__hpux__)
+    defined(hpux)  || defined(__hpux__)  || defined(__APPLE__)
 # define WN_UNIX
 #endif
 

@@ -40,7 +40,7 @@ has generated (no model produces everything). Model estimates accept
 an inventory, but all work fine if you send in NULL. Finally, the more
 elaborate models, such as MLEs, require some parameters to run, in
 which case you will need to fill out an {\tt apop\_estimation\_params}
-form and hand it in to the mode.
+form and hand it in to the model.
 
 
 \paragraph{Data}
@@ -104,7 +104,8 @@ that produced the estimate, and an inventory of what it contains.
 \paragraph{An example}
 Here is a program that puts the above structures to work.  It assumes a
 data set in a file, such as the {\tt test\_data} file included with
-Apophenia's source code.
+Apophenia's source code, and that file has no row names but does have
+column names.
 %[
 #include <apophenia/headers.h>
 
@@ -112,8 +113,8 @@ int main(void){
 apop_data       *data;
 apop_estimate   *est;
 apop_inventory  invent;
-    apop_convert_text_to_db("data","d",NULL);
-    data       = apop_query_to_data("select * from d");
+    apop_convert_text_to_db("data","d",0,1,NULL);
+    data       = apop_query_to_data("data");
     apop_inventory_set(&invent, 0);
     invent.parameters   = 1;
     est  = apop_OLS.estimate(data, &invent, NULL);
@@ -123,7 +124,13 @@ apop_inventory  invent;
 %]
 
 We first read the data into the database, and then pull it into an {\tt
-apop\_\-data} set. Then we write an {\tt apop\_\-inventory} that we only want the
+apop\_\-data} set. Since we didn't pare down the data, we didn't really
+need the database, and could have read the text file directly into a
+{\tt apop\_\-data} structure:
+%[
+    data       = apop_text_to_data("data",0,1);
+%]
+Then we write an {\tt apop\_\-inventory} that we only want the
 parameters, and to not bother finding the variance-covariance matrix or
 the residuals or other such things used for hypothesis testing. Then we
 send the data and the estimate to the {\tt apop\_\-OLS.est\-i\-mate}
@@ -136,9 +143,8 @@ features, but the code below will do the same thing in even fewer lines:
 %[
 #include <apophenia/headers.h>
 int main(void){
-    apop_convert_text_to_db("data","d",NULL);
     apop_estimate_print(apop_OLS.estimate(
-         apop_query_to_data("select * from d"), NULL, NULL));
+         apop_text_to_data("data",0,1), NULL, NULL));
     return 0; }
 %]
 
@@ -198,7 +204,7 @@ of Apophenia have a good chance of extricating them). Instead, you can
 pass the estimate object to a function that will test a hypothesis. For
 example, the \ttind{apop\_\-estimate\_\-F\_\-test} takes in an 
 {\tt apop\_\-estimate} and puts out the result of an F test, and the
-\ttind{apop\_\-estimate\_\-correlation\_\-coefficient} will produce a
+\ttind{apop\_\-est\-i\-mate\_\-cor\-rela\-tion\_\-co\-effi\-cient} will produce a
 table including \ind{$R^2$}, adjusted $R^2$, \ind{SSE}, SST, and SSR. [See the
 reference for the definitions.]
 

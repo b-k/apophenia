@@ -1065,38 +1065,6 @@ long unsigned wn_total_wn_memory(void) {
 } /* wn_total_wn_memory */
 
 
-#if 0
-/*     wn_heapsize() depends on sbrk(), which is no longer a valid measure
-** of heapsize since malloc now often gets large allocations from mmap(),
-** not from sbrk().  Also, sbrk()'s not part of POSIX and not supported on
-** windows, so we're killing all uses of it. */
-  #if defined(__unix) && ! defined(lint)
-  #ifdef	__cplusplus
-  extern "C" {
-  #endif
-  extern char *sbrk(int);
-  extern int _end;
-  #ifdef	__cplusplus
-  }
-  #endif
-  #endif
-
-
-  long unsigned wn_heapsize(void)
-  {
-      long unsigned mem;
-
-  #if defined(__unix) && ! defined(lint) && ! defined(__CYGWIN__)
-      mem = (char *) sbrk(0) - (char *) &_end;
-  #else
-      mem = 0;
-  #endif
-
-      return mem;
-  }
-#endif
-
-
 local bool memory_is_in_block(ptr p,wn_mem_block block)
 {
   long unsigned int start,fin,p_address;
