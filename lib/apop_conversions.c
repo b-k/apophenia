@@ -152,11 +152,11 @@ int		    i	= 0,
 		    k, ct_r, ct_c, datasize; 
 char        ***pre_d1, ***pre_d2, ***datachars;
 apop_data   *outdata    = apop_data_alloc(1,1);
-gsl_vector_view	v;
 	datachars	= apop_query_to_chars("select %s, %s, %s from %s", r1, r2, datacol, tabname);
     datasize    = apop_db_get_rows();   
 
-    //a bit inefficient, but well-encapsulated.
+    //A bit inefficient, but well-encapsulated.
+    //Pull the distinct (sorted) list of headers, copy into outdata->names.
 	pre_d1	    = apop_query_to_chars("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
     ct_r        = apop_db_get_rows();
 	if (pre_d1 == NULL) 

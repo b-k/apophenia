@@ -81,8 +81,13 @@ a comprehensive tutorial: GNU C recognizes 33 key words and this book
 will only use 18 of them. For example, we won't be using bit-shifting
 operators, so I'm not going to tell you what they are here.
 
-Instead, I will focus on the structure of a C program and the logic that
-motivates that structure.  The first part (up to Section \ref{pointers})
+Try typing {\tt C tutorial} into your favorite
+search engine; you should get a few hundred very practical tutorials
+that start simple and focus on where to put semicolons. This document
+complements those practical tutorials by focusing on the structure of
+a C program and the logic that motivates that structure. 
+
+The first part (up to Section \ref{pointers})
 is all about functions, which are mostly self-contained pieces of code,
 but which call and are called by other functions. I will discuss how
 those functions are declared and defined, where to put them, and how the
@@ -1865,9 +1870,106 @@ Finally, notice that the custom is to put macro names in caps.  You can
 rely on this in code you see from others, and are encouraged to stick
 to this standard when writing your own.
 
-\paragraph{Optimization}
+\paragraph{Labels} A line of code can be named, by simply providing a
+name with a colon after it. You can then jump to that line via \ttind{goto}. Here is a code snippet that presents the basic idea, with a line labelled {\tt outro}:
+%[
+for (i=0; i< vector_size; i++){
+    if (a_vector[i] > b){
+        out = a;
+        goto outro;
+    }
+}
+out = b;
+
+outro:
+free(a_vector);
+free(another_vector);
+return out;
+%]
+The goto is reviled by modern computer scientists as terrible style, so
+it appears infrequently. However, redundant code is also bad style. 
+In the above example, getting rid of the goto would require
+copying the various memory-freeing
+tasks at the end of the function into the center of the {\tt for} loop.
+Linus Torvalds, the author of the Linux kernel, recommends the {\tt
+goto} to eliminate redundancy as above; other authors choose to never use
+{\tt goto}.
+
+An alternative is \ttind{break}, which cuts out of the innermost loop in
+which it is located. Here is code that would work like the above:
+%[
+for (i=0; i< vector_size; i++){
+    if (a_vector[i] > b){
+        out = a;
+        break;
+    }
+}
+if (out != a)
+    out = b;
+free(a_vector);
+free(another_vector);
+return out;
+%]
+
+\paragraph{Switch} The \ttind{switch} statement is a clean way to
+branch among many options. First, you will need a variable indicating
+a single character. For example, the {\tt get\_opt} function from the
+standard library will parse command line arguments; then the {\tt switch}
+command will branch depending on the value returned:
+%[
+char c;
+c = get_opt(...);
+switch(c){
+   case 'v':
+        verbose++
+        break;
+   case 'w':    
+        weighting_function();
+        break;
+   case 'f':      
+        fun_function();
+        break;
+}
+%]
+So when 
+{\tt c == 'v'}, the verbosity level is increased,
+when {\tt c == 'w'}, the weighting function is called, 
+et cetera.
+
+Note well the abundance of {\tt break} statements.  The {\tt switch}
+function just jumps to the appropriate label (recall that the colon
+indicates a label) and then picks up from there---and continues. Thus,
+if there were no {\tt break} after {\tt verbose++}, then the program
+would merrily continue on to execute {\tt weighting\_\-function} and so
+on. This is called {\sl fall-through}.
+
+Most C tutorials include some creative example where this
+fall-through is desirable, but they are all pretty contrived, and the
+reader who uses {\tt switch} statements will want to take especial care
+to have {\tt break}s at the end of every {\tt case}.  The {\tt break}
+at the end of the list of {\tt case}s is extraneous, but there is a good
+chance that you will add to your list of {\tt case}s, at which point
+the {\tt break} will prevent a fall-through bug.
+
+An alernative to the {\tt switch} is a simple series of {\tt if}s:
+%[
+char c = get_opt(...);
+if (c == 'v'){
+        verbose++
+} else if (c == 'w'){
+        weighting_function();
+} else if (c == 'f'){
+        fun_function();
+}
+%]
+There is more redundancy here---the name {\tt c} is repeated three times
+where in the {\tt switch} setup it was used once---but there is no risk
+of fall-through mistakes.
+
+
+\paragraph{Optimization} \index{optimization}
 The \ttind{gcc} compiler can do a number of things to your code to make it
-run faster. For example, if you assign {\tt a = b +c}, it may replace
+run faster. For example, if you assign {\tt a = b + c}, it may replace
 every instance of {\tt a} with {\tt b + c}, or it may change the order
 in which lines of code are executed. To turn on \ind{optimization},
 use the {\tt -O3} flag when compiling with {\tt gcc}. [That's an `O'
@@ -1890,7 +1992,7 @@ you'll never need to debug it again.
 
 Finally, you may run into authors who give you advice about how to write
 faster code, telling you to use loops here and unroll them there, make
-frequent use of the {\tt inline} keyword, or order your commands based
+frequent use of the \ttind{inline} keyword, or order your commands based
 on memory usage instead of human logic. Ignore them. It is much more
 valuable to minimize the time you spend deciphering and debugging your
 code than run time.  Write code to maximize readability for yourself

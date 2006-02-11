@@ -262,6 +262,7 @@ void  apop_name_print(apop_name * n);
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
 void apop_name_rm_columns(apop_name *n, int *drop);
 void apop_name_memcpy(apop_name **out, apop_name *in);
+apop_name * apop_name_copy(apop_name *in);
 
 apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_inventory *uses, apop_estimation_params *params);
 void 		apop_estimate_free(apop_estimate * free_me);

@@ -630,7 +630,10 @@ apop_data	*out;
 names from the last <tt>apop_query_...</tt> . Since only the names from
 the last query are saved, you will want to use this immediately
 after your query.  */
-apop_name * apop_db_get_names(void){ return last_names; }
+apop_name * apop_db_get_names(void){
+apop_name   *out    = apop_name_copy(last_names);
+    return out; 
+}
 
 /** This function returns the column count from the last query run. */
 int apop_db_get_cols(void){ return total_cols; }

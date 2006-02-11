@@ -146,7 +146,13 @@ int     i;
         }
 }
 
-/** Copy one \ref apop_name structure to another. That is, all data is duplicated.
+/** Copy one \ref apop_name structure to another. That is, all data is duplicated. Usage: 
+
+Much like \ref apop_name_memcpy, but a slightly different calling form. Usage:
+\code
+apop_name *out;
+apop_name_memcpy(&out, in);
+\endcode
  
   \param out    a structure that this function will allocate and fill
   \param in    the input names
@@ -159,6 +165,27 @@ void apop_name_memcpy(apop_name **out, apop_name *in){
     apop_name_stack(*out, in, 'c');
     apop_name_stack(*out, in, 'r');
     apop_name_stack(*out, in, 't');
+}
+
+/** Copy one \ref apop_name structure to another. That is, all data is duplicated. 
+
+Much like \ref apop_name_memcpy, but a slightly different calling form. Usage:
+
+\code
+apop_name *out  = apop_name_copy(in);
+\endcode
+ 
+    \param in    the input names
+    \return       a structure that this function will allocate and fill
+    \ingroup names
+  */
+apop_name * apop_name_copy(apop_name *in){
+apop_name *out = apop_name_alloc();
+    apop_name_stack(out, in, 'd');
+    apop_name_stack(out, in, 'c');
+    apop_name_stack(out, in, 'r');
+    apop_name_stack(out, in, 't');
+    return out;
 }
 
 
