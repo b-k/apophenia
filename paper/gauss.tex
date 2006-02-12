@@ -1,8 +1,3 @@
-%Some commonly boldfaced vectors.
-\def\xv{{\bf x} } \def\yv{{\bf y} } \def\pv{{\bf p} }
-\def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
-\def\betav{{\mbox{\boldmath$\beta$}}}
-\def\vector#1{\left[\matrix{#1}\right]}
 %@-     so lgrind will play nice with makeindex
 \chapter[Gaussian tricks]{Hypothesis testing with Gaussian distributions} \label{gauss}
 
@@ -14,40 +9,49 @@ people who lived before computers, meaning that we don't need metaphorically hea
 the calculations here.} Most of the work will consist of taking a dot product, maybe inverting a matrix,
 and then looking up a number in a table. 
 
-Everything here depends on the Central Limit Theorem. If your data doesn't fit the CLT, then please don't use
-these techniques. Work out how your data is distributed, to the best of your abilities
-(try bootstrapping, Chapter \ref{boot}), and then write down a likelihood function. If you're looking to
-estimate model parameters, do a maximum likelihood estimation; if you're looking to test a hypothesis,
-write down a likelihood ratio based on the distribution you've just calculated.
+Everything here depends on the Central Limit Theorem. If your data doesn't
+fit the CLT, then please don't use these techniques. Work out how your
+data is distributed, to the best of your abilities (try bootstrapping,
+Chapter \ref{boot}), and then write down a likelihood function. If you're
+looking to estimate model parameters, do a maximum likelihood estimation;
+if you're looking to test a hypothesis, write down a likelihood ratio
+based on the distribution you've just calculated.
 
-\section{Meet the Gaussian family}
 
-\subsubsection{The \ind{Central Limit Theorem}} is the first piece of magic
+
+\section{Meet the Gaussian family} \label{dist2}
+With the exception of the Normal, the distributions below are distinct
+from the distributions above. The distributions above are typically used
+to describe data that we have observed in the real world. But having
+gathered data, we often model the data using techniques such as
+linear regressions, that produce means of model parameters, model
+variances, and other parameters. Those model parameters have their own
+distributions, and those are typically one of the distributions below.
+
+
+\paragraph{The \ind{Central Limit Theorem}} is the first piece of magic
 that we need. As $n\to \infty$, we know that $\sqrt{n} (\overline X -
 \mu)/\sigma \sim {\cal N}(0,1)$, regardless of where $X$ came
 from. With that regularity of nature, we can derive all of the following distributions.
 \label{CLT}
 
-\subsection{Normal\index{normal distribution}} 
+\paragraph{Normal\index{normal distribution}} 
 
-Here's what we mean by ${\cal}N(\mu,\sigma)$:
-\begin{eqnarray}					\label{normal}
-P(x|\mu,\sigma)&=&{1\over \sigma\sqrt{2\pi}} e^{-(1/2)[(x-\mu)/\sigma]^2}\\ 
-E(x)&=&\mu							\nonumber\\
-\var(x)&=&\sigma^2						\nonumber
-\end{eqnarray}
-
-Its big problem is that it depends on $\sigma$, an
+The Normal distribution, defined above on page \pageref{normal},
+will also be used to describe some of the parameters derived below.
+The big problem with tne Normal distribution is that it depends on $\sigma$, an
 unknown. It also depends on $\mu$, but if the statistic
 being tested is unbiased---like most of the estimators of $\beta$ in the
-catalog above---that gives $\mu$ to you.
+catalog below---then you have $\mu$. Thus, much of the trickery in the
+section on test design below involves combining distributions in ways
+such that the unknown $\sigma$s cancel out.
 
 \begin{itemize}
 \item $\{{\cal N} (a,b)\} + \{{\cal N} (c,d)\} \sim {\cal N}
 (a+c,b+d)$ (where $\{x\}$ is a variable with the given distribution).
 \end{itemize}
 
-\subsection{$\chi^2$}\index{chi squared distribution@$\chi^2$ distribution} $[\sum_n (x-\overline
+\paragraph{$\chi^2$}\index{chi squared distribution@$\chi^2$ distribution} $[\sum_n (x-\overline
 x)^2]/\sigma^2\sim \chi^2_{n-1}$. The numerator there is the sample
 variance times $n$, so we can test that the sample variance equals a
 given $\sigma^2$ with this. But unless we assume $\sigma$ like that,
@@ -65,7 +69,7 @@ Notice that the sample variance at the top of this section is $\sim
 last one can actually be calculated from that data; meaning that we
 effectively have the sum of $n-1$ $\{\chi^2_1\}$s plus a constant.
 
-\subsection{Student's t\index{t distribution}}  ${\overline X - \mu \over S/\sqrt{n}}\sim
+\paragraph{Student's t\index{t distribution}}  ${\overline X - \mu \over S/\sqrt{n}}\sim
 t_{n-1}$, where $s=\uv'\uv/n$. This is a work of genius by Mr. Student.
 By dividing a normal by $\sqrt{\chi^2_{n-1}/(n-1)}$, the unknown
 $\sigma$s cancel, and we have a function whose elements are all known,
@@ -73,7 +77,7 @@ and its distribution.  If $n=2$, we call it a Cauchy distribution.
 \label{tstat}
 
 
-\subsection{$F$\index{F distribution}}  This is the same cancel-the-$\sigma$s trick as with the $t$, but here the form
+\paragraph{$F$\index{F distribution}}  This is the same cancel-the-$\sigma$s trick as with the $t$, but here the form
 is $[\chi^2_m/m]/[\chi^2_n/n]\sim F(m,n)$. For example, if the numerator
 is a ${\cal N}(0,1)$, and the denominator is a $\chi^2$ based on the
 sample variance, then this is the square of the $t$ statistic.
@@ -158,6 +162,9 @@ double gsl_cdf_tdist_Pinv (double P, double NU);
 %\end{verbatim}
 \dots plus all of these with the {\tt P}s replaced by {\tt Q}s.
 Notice that there is no inverse for the CDFs of the F distribution.
+
+
+
 
 
 \section{Testing a hypothesis}

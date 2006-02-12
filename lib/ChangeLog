@@ -6,6 +6,9 @@ rescaled parameters.
 		added apop_vector_finite, apop_vector_bounded, apop_vector_isnan.
 --apop_db_to_crosstab now returns an apop_data set instead of a gsl_matrix.
 Also, it finally works with column headers that aren't numeric.
+--stats like apop_mean are now apop_vector_mean, following the proper
+pkg-noun-verb naming scheme. 
+--Textbook is much improved.
 
 --Some of the fns that used to be of the form
 	apop_get_something(input, &output);

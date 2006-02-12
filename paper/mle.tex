@@ -14,16 +14,91 @@ function that preps and calls the GSL functions for you. You give it a
 function and some parameters, and it will find the optimum.
 
 
+\paragraph{The \ind{log likelihood function}}	\label{the score}
+By itself, the PDF is the likelihood that a given value occurs (given
+the parameters of the PDF); any of the functions listed in section
+\ref{distlist} will do. Define the Log likelihood as $L=\ln f$, the
+Score\index{score} as
+
+$$S={\partial \ln f\over \partial \theta}$$ 
+
+and the Information variable\index{information variable} as
+
+\begin{eqnarray}
+I&=&-{\partial S \over \partial \theta}			\nonumber\\
+&=&-{\partial^2 L \over \partial \theta^2}.		\nonumber
+\end{eqnarray}
+
+$L$, $S$, and $I$ will appear over and over again, so we may as well get
+to know them. First, due to all that exponentiation in the distributions
+of Section \ref{distlist}, $L$ is often much easier to deal with, yet
+is equivalent to the PDF for most of our purposes. 
+
+Further, let the probability of observing $X_1$ as it is in our data
+set be $p_1$, and the probability of $X_2$ being as observed is $p_2$.
+Assuming that $X_1$ and $X_2$ are independently distributed, their
+probability is $p_1\cdot p_2$; this is basically the definition of
+statistical independence. If we have a thousand observations, then the
+probability of observing the data set we have is $\prod_{i=1}^{1000} p_i$.
+Since each $p_i\in (0,1]$, this product is probably on the order of
+$1\times 10^{-1000}$. This is a delicate number, and details of
+implementation in hardware could easily break it; this is what computer
+scientists call an {\sl underflow error}. Taking logs, each value of
+$p_i$ is now a negative number, e.g., $\ln(0.5)\approx -0.69$ and $\ln(0.1)\approx -2.3$.
+But the product above is now a sum:
+$$\ln\left[\prod_{i=1}^{1000} p_i\right] = \sum_{i=1}^{1000} \ln(p_i).$$
+Thus, the log likelihood of our typical data set is on the order of
+-1000 instead of $1\times 10^{-1000}$---much more robust and manageable.
+
+The second benefit to using the log likelihood is analytic: since $S \cdot f = {\partial f
+\over \partial \theta}$, the derivative of the expectation in terms of
+$\theta$ can be rewritten as the expectation of $S$.\footnote{%
+	Note the sleight of hand: the derivative of the expectation is
+	${d\over d\theta}\int f dy$; while we want $\int {d f\over
+	d\theta} dy=\int S \cdot f dy$ [Note how this means $E(S)=0$, by the
+	way, since the integral of the pdf is one, and $d1/d\theta=0$].
+	If we can't reverse the integral and derivative like this, none
+	of this applies. But we can in the case of any exponential
+	family. You can look that up, but here, we can rest assured that
+	the Normal, Gamma, Beta, Binomial, Poisson, \&c. are all in this
+	family.} 
+
+There are some fun tricks you can do with these functions, most of which I'll have to
+skip over.  The neat trick most worth mentioning is the \ind{information equality}, that
+$E(I)=\var(S)$, which you can prove by calculating ${\partial E(L)\over
+\partial \theta}$.
+
 \section{Why likelihood functions are great} There are two reasons, with four names.
 
-\paragraph{MLEs achieve the Cramer-Rao lower bound} The CRLB of variance
-is the inverse of the derivative of the derivative of the log of the
-likelihood function. [I'll get around to writing it nicely later.] It's
+\paragraph{MLEs achieve the Cramer-Rao lower bound} 
+        \index{Cramer-Rao Inequality}		\label{cr} 
+Say we have an unbiased estimator of $\theta$,
+$\hat\theta(y_1,\dots,y_n)$. Cramer \& Rao say:
+\begin{eqnarray}
+\var(\hat\theta)&\geq&(n \var(S))^{-1}		\nonumber\\
+		&=&\left(nE\left({\partial^2 L\over \partial
+\theta^2}\right)\right)^{-1}			\label{CRLB}
+\nonumber\end{eqnarray}
+
+\comment{
+A sketch of the proof: Take my word for it that $E(\hat\theta
+\overline S)={1\over n}$. Since $\overline S=0$, that's equivalent to
+$\cov(\hat\theta, \overline S)={1\over n}$.  Plug that into Cauchy-Schwarz:
+$\var(\hat\theta)\var(\overline S)\geq {1\over n^2}$. Plug
+$\var(S)=n\var(\overline S)$ in to that, and the first line of the above
+drops out\cite{goldberger}. The second line uses the information
+equality from above.
+	}
+Just remember: the Cramer-Rao lower bound is the inverse of the expectation of the
+derivative of the derivative of the log of the likelihood function.
+
+The Cramer-Rao lower bound is
 called a `lower bound' because Mr.s Cramer and Rao proved that any
 estimator of $\beta$ must have a variance greater than or equal to the
-CRLB. Your favorite statistics textbook will also prove that for the MLE,
-the variance is actually equal to the CRLB, meaning that we can not get
-an estimator of $\beta$ which will have any smaller a variance.
+CRLB. Your favorite statistics textbook (e.g., \cite{casella:berger})
+will also prove that for the MLE, the variance is actually equal to the
+CRLB, meaning that we can not get an estimator of $\beta$ which will
+have any smaller a variance.
 
 \paragraph{The Neyman-Pearson lemma} There are two types of error we could
 have with a hypothesis test: Type I is that we reject the null when it's

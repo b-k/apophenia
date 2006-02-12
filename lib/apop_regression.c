@@ -34,10 +34,10 @@ double two_tailify(double in){
 double	apop_t_test(gsl_vector *a, gsl_vector *b){
 int		a_count	= a->size,
 		b_count	= b->size;
-double		a_avg	= apop_mean(a),
-		a_var	= apop_var(a),
-		b_avg	= apop_mean(b),
-		b_var	= apop_var(b),
+double		a_avg	= apop_vector_mean(a),
+		a_var	= apop_vector_var(a),
+		b_avg	= apop_vector_mean(b),
+		b_var	= apop_vector_var(b),
 		stat	= (a_avg - b_avg)/ sqrt(b_var/(b_count-1) + a_var/(a_count-1));
 	if (apop_opts.verbose){
 		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
@@ -59,10 +59,10 @@ gsl_vector	*diff	= gsl_vector_alloc(a->size);
 	gsl_vector_sub(diff, b);
 int		count	= a->size, 
 		factor	= 1;
-double		avg	= apop_mean(diff),
-		var	= apop_var(diff),
+double		avg	= apop_vector_mean(diff),
+		var	= apop_vector_var(diff),
 		stat	= avg/ sqrt(var/(count-1));
-	if (apop_mean(diff) < 0) 
+	if (apop_vector_mean(diff) < 0) 
 		factor = -1;
 	gsl_vector_free(diff);
 	if (apop_opts.verbose){
@@ -532,7 +532,7 @@ apop_data       *out    = apop_data_alloc(5,1);
     //copy the dependent var to a temp vector, subtract means, square.
     v   = gsl_matrix_column(in->data->data, 0);
     gsl_vector_memcpy(y, &(v.vector));
-    gsl_vector_add_constant(y, - apop_mean(y));
+    gsl_vector_add_constant(y, - apop_vector_mean(y));
     gsl_blas_ddot(y, y, &sst);
 
     rsq = 1 - (sse/sst);

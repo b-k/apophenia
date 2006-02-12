@@ -16,6 +16,7 @@ doxygen}.\footnote{doxygen is free software and is universally packaged,
 so it's easy to get. If you have it installed, run {\tt make doc} in
 your source directory.}
 
+\section{The structures}
 Here is a one-sentence summary of statistical analysis: estimate the
 parameters of a model
 using data. Apophenia thus has three key objects defined that embody
@@ -191,12 +192,12 @@ printed. But be careful: if you then call {\tt apop\_\-estimate\_\-free(est)},
 then the residuals won't get freed, either.
 
 \paragraph{Estimate parameters}
-The {\tt apop\_estimation\_params} are the details for how an {\tt
-apop\_estimate} should do its work; currently it is just the specifications
+The \ttind{apop\_estimation\_params} are the details for how an {\tt
+apop\_\-est\-imate} should do its work; currently it is just the specifications
 for tolerances, step sizes, starting points, et cetera, for {\tt apop\_max\-i\-mum\_like\-li\-hood}.
  See {\tt inv\_and\_est}.
 
-\subsection{Interrogating an estimate}
+\section{Output and interrogating an estimate}
 Now that you have run an estimation function to produe an 
 {\tt apop\_\-estimate}, you want to ask it some questions. Only the most
 basic hypothesis tests are included in the estimate (and future versions
@@ -213,8 +214,7 @@ names of the variables in your original data set, and the columns are
 statistics. Note that this means what had been a column name in the 
 original data set is now a row name.
 
-
-\subsection{Output} 
+\paragraph{Output} 
 But you don't just want to know that an {\tt apop\_\-data} set has been
 produced, you want to {\sl see} it.  Most of the useful data types have
 a print function, and given the package-type-operation naming scheme,

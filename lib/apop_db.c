@@ -87,7 +87,7 @@ group by whatever
 \endverbatim
 
 \verbatim
-select pow(x,0.5), exp(x), log(x)
+select sqrt(x), pow(x,0.5), exp(x), log(x)
 from table
 \endverbatim
 
@@ -99,9 +99,9 @@ may include any of the moments above.
 <tt>var</tt> and <tt>variance</tt>; <tt>kurt</tt> and <tt>kurtosis</tt> do the same
 thing. Choose the one that sounds better to you.
 
-The  var/skew/kurtosis functions calculate ''sample'' moments, so if you want the population moment, multiply the result by (n-1)/n .
+The  var/skew/kurtosis functions calculate sample moments, so if you want the population moment, multiply the result by (n-1)/n .
 
-For bonus points, there are the <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, and <tt>log(x)</tt> functions. They call the standard math library function of the same name to calculate \f$x^y\f$, \f$e^x\f$, and \f$\ln(x)\f$.
+For bonus points, there are the <tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, and <tt>log(x)</tt> functions. They call the standard math library function of the same name to calculate \f$\sqrt{x}\f$, \f$x^y\f$, \f$e^x\f$, and \f$\ln(x)\f$.
 */
 
 
@@ -209,6 +209,10 @@ static void kurtFinalize(sqlite3_context *context){
     	sqlite3_result_double(context, 0);
 }
 
+static void sqrtFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, sqrt(sqlite3_value_double(argv[0])));
+}
+
 static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
     sqlite3_result_double(context, pow(sqlite3_value_double(argv[0]), sqlite3_value_double(argv[1])));
 }
@@ -274,6 +278,7 @@ int apop_db_open(char *filename){
 	sqlite3_create_function(db, "skew", 1, SQLITE_ANY, NULL, NULL, &threeStep, &skewFinalize);
 	sqlite3_create_function(db, "kurt", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
 	sqlite3_create_function(db, "kurtosis", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
+	sqlite3_create_function(db, "sqrt", 2, SQLITE_ANY, NULL, &sqrtFn, NULL, NULL);
 	sqlite3_create_function(db, "pow", 2, SQLITE_ANY, NULL, &powFn, NULL, NULL);
 	sqlite3_create_function(db, "exp", 2, SQLITE_ANY, NULL, &expFn, NULL, NULL);
 	sqlite3_create_function(db, "log", 2, SQLITE_ANY, NULL, &logFn, NULL, NULL);

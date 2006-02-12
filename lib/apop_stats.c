@@ -40,7 +40,7 @@ These functions simply take in a GSL vector and return its mean, variance, or ku
 
 
 
-For \ref apop_var_m<tt>(vector, mean)</tt>, <tt>mean</tt> is the mean of the
+For \ref apop_vector_var_m<tt>(vector, mean)</tt>, <tt>mean</tt> is the mean of the
 vector. This saves the trouble of re-calcuating the mean if you've
 already done so. E.g.,
 
@@ -49,8 +49,8 @@ gsl_vector *v;
 double mean, var;
 
 //Allocate v and fill it with data here.
-mean = apop_mean(v);
-var  = apop_var_m(v, mean);
+mean = apop_vector_mean(v);
+var  = apop_vector_var_m(v, mean);
 printf("Your vector has mean %g and variance %g\n", mean, var);
 \endcode
 \ingroup basic_stats */
@@ -62,7 +62,7 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 /** Returns the sum of the data in the given vector.
 \ingroup convenience_fns
 */
-inline long double apop_sum(gsl_vector *in){
+inline long double apop_vector_sum(gsl_vector *in){
     if (in==NULL){
         if (apop_opts.verbose)
             printf("You just asked me to sum a NULL. Returning zero.\n");
@@ -75,56 +75,84 @@ double  out = 0;
 	return out; 
 }
 
+/** Returns the sum of the data in the given vector.
+
+  An alias for \ref apop_vector_sum.
+\ingroup convenience_fns
+*/
+inline long double apop_sum(gsl_vector *in){
+    return apop_vector_sum(in);
+}
+
 /** Returns the mean of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_mean(gsl_vector *in){
+inline double apop_vector_mean(gsl_vector *in){
 	return gsl_stats_mean(in->data,in->stride, in->size); }
+
+/** Returns the mean of the data in the given vector.
+
+  An alias for \ref apop_vector_mean.
+\ingroup vector_moments
+*/
+inline double apop_mean(gsl_vector *in){
+	return apop_vector_mean(in); 
+}
 
 /** Returns the variance of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_var(gsl_vector *in){
+inline double apop_vector_var(gsl_vector *in){
 	return gsl_stats_variance(in->data,in->stride, in->size); }
+
+/** Returns the variance of the data in the given vector.
+
+  An alias for \ref apop_vector_var.
+\ingroup vector_moments
+*/
+inline double apop_var(gsl_vector *in){
+	return apop_vector_var(in); 
+}
+
 
 /** Returns the kurtosis of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_kurtosis(gsl_vector *in){
+inline double apop_vector_kurtosis(gsl_vector *in){
 	return gsl_stats_kurtosis(in->data,in->stride, in->size); }
 
 /** Returns the kurtosis of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_kurt(gsl_vector *in){
+inline double apop_vector_kurt(gsl_vector *in){
 	return gsl_stats_kurtosis(in->data,in->stride, in->size); }
 
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
 \param in	the vector in question
-\param mean	the mean, which you've already calculated using \ref apop_mean.
+\param mean	the mean, which you've already calculated using \ref apop_vector_mean.
 \ingroup vector_moments
 */
-inline double apop_var_m(gsl_vector *in, double mean){
+inline double apop_vector_var_m(gsl_vector *in, double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
 /** returns the covariance of two vectors
 \ingroup vector_moments
 */
-inline double apop_covar(gsl_vector *ina, gsl_vector *inb){
+inline double apop_vector_covar(gsl_vector *ina, gsl_vector *inb){
 	return gsl_stats_covariance(ina->data,ina->stride,inb->data,inb->stride,inb->size); }
 
 /** returns the correllation coefficient of two vectors. It's just
 \f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
 \ingroup vector_moments
 */
-inline double apop_correlation(gsl_vector *ina, gsl_vector *inb){
-	return apop_covar(ina, inb) / sqrt(apop_var(ina) * apop_var(inb));
+inline double apop_vector_correlation(gsl_vector *ina, gsl_vector *inb){
+	return apop_vector_covar(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb));
 }
 
 /** returns the covariance of two vectors
 \ingroup vector_moments
 */
-inline double apop_cov(gsl_vector *ina, gsl_vector *inb){return  apop_covar(ina,inb);}
+inline double apop_vector_cov(gsl_vector *ina, gsl_vector *inb){return  apop_vector_covar(ina,inb);}
 
 
 /** This function will normalize a vector, either such that it has mean
@@ -175,7 +203,7 @@ return 0;
 }
 \endcode
 \ingroup basic_stats */
-void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type){
+void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type){
 double		mu, min, max;
 	if (in_place) 	
 		out	= &in;
@@ -185,9 +213,9 @@ double		mu, min, max;
 	}
 
 	if (normalization_type == 1){
-		mu	= apop_mean(in);
+		mu	= apop_vector_mean(in);
 		gsl_vector_add_constant(*out, -mu);			//subtract the mean
-		gsl_vector_scale(*out, 1/(sqrt(apop_var_m(in, mu))));	//divide by the std dev.
+		gsl_vector_scale(*out, 1/(sqrt(apop_vector_var_m(in, mu))));	//divide by the std dev.
 	} 
 	else if (normalization_type == 0){
 		min	= gsl_vector_min(in);
@@ -197,7 +225,7 @@ double		mu, min, max;
 
 	}
 	else if (normalization_type == 2){
-		mu	= apop_mean(in);
+		mu	= apop_vector_mean(in);
 		gsl_vector_scale(*out, 1/(mu * in->size));	
 	}
 }
@@ -205,12 +233,12 @@ double		mu, min, max;
 /** For each column in the given matrix, normalize so that the column
 has mean zero and variance one. Replace each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample standard deviation
 \ingroup basic_stats */
-void apop_normalize_matrix(gsl_matrix *data){
+void apop_matrix_normalize(gsl_matrix *data){
 gsl_vector_view v;
 int             j;
         for (j = 0; j < data->size2; j++){
                 v	= gsl_matrix_column(data, j);
-		gsl_vector_add_constant(&(v.vector), -apop_mean(&(v.vector)));
+		gsl_vector_add_constant(&(v.vector), -apop_vector_mean(&(v.vector)));
         }
 }
 
@@ -223,7 +251,7 @@ inline double apop_test_chi_squared_var_not_zero(gsl_vector *in){
 gsl_vector	*normed;
 int		i;
 double 		sum=0;
-	apop_normalize_vector(in,&normed, 0, 1);
+	apop_vector_normalize(in,&normed, 0, 1);
 	gsl_vector_mul(normed,normed);
 	for(i=0;i< normed->size; 
 			sum +=gsl_vector_get(normed,i++));
@@ -357,7 +385,7 @@ say "5% or more of the sample is above returned_vector[5]".
 
 \ingroup basic_stats
 */ 
-double * apop_percentiles(gsl_vector *data, char rounding){
+double * apop_vector_percentiles(gsl_vector *data, char rounding){
 gsl_vector	*sorted	= gsl_vector_alloc(data->size);
 double		*pctiles= malloc(sizeof(double) * 101);
 int		i, index;
@@ -481,8 +509,8 @@ char		rowname[10000]; //crashes on more than 10^9995 columns.
 		}
 	for (i=0; i< indata->data->size2; i++){
                 v       = gsl_matrix_column(indata->data, i);
-		mean	= apop_mean(&(v.vector));
-		var 	= apop_var_m(&(v.vector),mean);
+		mean	= apop_vector_mean(&(v.vector));
+		var 	= apop_vector_var_m(&(v.vector),mean);
 		stddev	= sqrt(var);
 		gsl_matrix_set(out->data, i, 0, mean);
 		gsl_matrix_set(out->data, i, 1, stddev);

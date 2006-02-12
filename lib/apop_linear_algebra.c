@@ -75,7 +75,7 @@ double		means[in->size2];
 gsl_vector_view	v, v1, v2;
 	if (normalize){
 		out	= gsl_matrix_alloc(in->size2, in->size2);
-		apop_normalize_matrix(in);
+		apop_matrix_normalize(in);
 		gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, in, in, 0, out);
 	    gsl_matrix_scale(out, 1.0/(in->size1-1));
 	}

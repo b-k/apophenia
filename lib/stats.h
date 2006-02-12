@@ -12,18 +12,21 @@
 	//The following are just convenient hooks to gsl vector functions.
 	//var_m lets you input a mean if you've already calculated it, saving
 	//some repetition.
+inline long double apop_vector_sum(gsl_vector *in);
 inline long double apop_sum(gsl_vector *in);
+inline double apop_vector_mean(gsl_vector *in);
 inline double apop_mean(gsl_vector *in);
+inline double apop_vector_var(gsl_vector *in);
 inline double apop_var(gsl_vector *in);
-inline double apop_var_m(gsl_vector *in, double mean);
-inline double apop_covar(gsl_vector *ina, gsl_vector *inb);
-inline double apop_cov(gsl_vector *ina, gsl_vector *inb);
-inline double apop_correlation(gsl_vector *ina, gsl_vector *inb);
-inline double apop_kurtosis(gsl_vector *in);
-inline double apop_kurt(gsl_vector *in);
+inline double apop_vector_var_m(gsl_vector *in, double mean);
+inline double apop_vector_covar(gsl_vector *ina, gsl_vector *inb);
+inline double apop_vector_cov(gsl_vector *ina, gsl_vector *inb);
+inline double apop_vector_correlation(gsl_vector *ina, gsl_vector *inb);
+inline double apop_vector_kurtosis(gsl_vector *in);
+inline double apop_vector_kurt(gsl_vector *in);
 
 
-void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type);
+void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type);
 /*
 	normalization_type:
 		1: out will have mean = 0, std deviation = 1 [Uses sample variance (stuff/N-1, not stuff/N).]
@@ -39,7 +42,7 @@ void apop_normalize_vector(gsl_vector *in, gsl_vector **out, int in_place, int n
 		normalize_vector(unnormed, NULL, 0, 1);
 */
 
-void apop_normalize_matrix(gsl_matrix *data);
+void apop_matrix_normalize(gsl_matrix *data);
 	//Regression methods often require that the mean of each colum of the data matrix have mean zero.
 
 inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
