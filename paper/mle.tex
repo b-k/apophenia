@@ -95,29 +95,22 @@ derivative of the derivative of the log of the likelihood function.
 The Cramer-Rao lower bound is
 called a `lower bound' because Mr.s Cramer and Rao proved that any
 estimator of $\beta$ must have a variance greater than or equal to the
-CRLB. Your favorite statistics textbook (e.g., \cite{casella:berger})
+CRLB. Your favorite probability textbook (e.g., \cite{casella:berger})
 will also prove that for the MLE, the variance is actually equal to the
 CRLB, meaning that we can not get an estimator of $\beta$ which will
-have any smaller a variance.
+have a smaller variance.
 
 \paragraph{The Neyman-Pearson lemma} There are two types of error we could
 have with a hypothesis test: Type I is that we reject the null when it's
 true; Type II is that we accept the null when it's false. The first type
-is the one we focus on, because it's what we mean when we say that our
-test has $\alpha=95\%$ confidence. What about Type II errors? Well, Neyman
-and Pearson showed that a likelihood ratio test will have the minimum
-possible Type II error of any test with the $\alpha$ that we selected. After establishing this fact, we
-just ignore Type II errors.
+is the one we focus on; it's what we mean when we say that our
+test has $\alpha=95\%$ confidence. What about Type II errors? Well,
+Neyman and Pearson showed that a likelihood ratio test will have the
+minimum possible Type II error of any test with the $\alpha$ that we
+selected. After establishing this fact, we just ignore Type II errors.
 
 \section{Description: Maximum likelihood estimators} 
 
-
-\comment{
-\subsection{The GSL's multimin functions} The process of finding a minimum consists of trying a
-value, picking a direction to move in, and checking whether the change is a good enough one. The GSL
-gives you a function to do all of these things, which you'll have to put together to do a complete
-minimization.
-}
 
 Estimating an existing model via maximum likelihood estimation simply requires 
 filling out a form describing your preferences and then calling the model's {\tt estimate} method.

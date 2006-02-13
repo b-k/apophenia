@@ -32,12 +32,13 @@
 \chapter*{Preface}
 \input preface.tex
 }
+\setcounter{tocdepth}{1}
 \tableofcontents \vfill\eject
 
 \chapter[Introduction]{Doing statistics in the modern day}
 
 [This book is very incomplete. The
-first three chapters are finished, but it tapers off from there. I feel that it should
+first three chapters are finished, but it tapers off from there. It should
 already have utility to many people, so it is here for your perusal.]
 \vskip .5cm
 
@@ -269,7 +270,10 @@ your graphs.
 \input why_c.tex
 
 
-\section{Outline} Since I am assuming that you are computer-literate but
+\section{Outline} 
+Part I covers general scientific computing, and will be valuable to
+anyone who needs to program a computer to handle and do math with large volumes of data.
+Since I am assuming that you are computer-literate but
 not a C programmer, Chapter \ref{c_crash} will give you a crash course
 in C. It will not only get you familiar with the rules of the language,
 but how to best think about problems in C. 
@@ -283,29 +287,32 @@ will then introduce you to the package of C functions most useful for
 doing stats: the GNU Scientific Library (GSL). Notably, it will cover
 how to do linear algebra using the GSL. Chapter \ref{apop} covers
 Apophenia, a library of functions that bind together the GSL and SQLite
-to facilitate statistics.
+to facilitate data handling and statistics.
 
-Given those tools, coding statistics will be easy. There's a chapter
-devoted to each of the three categories above: Chapter \ref{projections}
-handles projections of your data into various subspaces; Chapter
+
+Given those tools, coding statistics will be easy. Part II includes a chapter
+devoted to each of the three categories of statistics above: Chapter \ref{projections}
+handles the process of describing your data, with or without a model; Chapter
 \ref{gauss} covers methods of comparing your data to various Gaussian
 distributions, such as the t test, F test, and chi-squared test; Chapter
 \ref{mle} will show you how to write down your likelihood functions and
-find their maxima, as in Probit or Normit estimations; and how to test
+find their maxima, as in Probit or Normit estimations, and how to test
 hypotheses using a likelihood ratio test. There are some other topics
-which need covering: I'll throw a chapter in there (Chapter \ref{boot})
+that need covering: I'll throw a chapter in there (Chapter \ref{boot})
 about bootstrapping and jackknifing, which are dirty tricks which will one
 day save your life.  Finally, Chapter \ref{gnuplot} will cover creative
-uses of Gnuplot.
+uses of Gnuplot to display data.
 
-When you're done with all this---and this is no exaggeration---you'll
+When you are done with all this---and this is no exaggeration---you will
 have the tools to implement any technique in classical statistics in
 existence today, on any data set, no matter how large or exceptional.
 
+\part{Computing}
 \input c_crash.ground
 \input sql.ground
 \input linear_algebra.ground
 \input apop.ground
+\part{Statistics}
 \input projection.ground
 \input gauss.ground
 \input mle.ground
@@ -313,8 +320,6 @@ existence today, on any data set, no matter how large or exceptional.
 %\input mcmc.tex
 \input gnuplot.ground
 \nocite{*}
-%\cite{greene}
-%\nocite{casella:berger}
 \bibliographystyle{plainnat}
 \bibliography{guide}
 \printindex

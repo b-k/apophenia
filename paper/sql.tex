@@ -252,7 +252,7 @@ group by zip, height;
 %\end{verbatim}
 
 When you want to analyze the crosstab, you will be very
-interested in the \ttind{apop\_db\_to\_crosstab} function, {\em qv}.
+interested in the \ttind{a\-pop\_\-db\_\-to\_\-cross\-tab} function, {\em qv}.
 
 The function {\tt sum()} works the same. That's all the aggregators you
 get in standard SQL, but you can specify more than just a column name, so you can get
@@ -453,14 +453,14 @@ will query {\tt data} for all its information, allocate {\tt tall\_people} to be
 ap\-prop\-ri\-ate\-ly-sized matrix, and fill it with the data.
 
 There are {\tt apop\_query} functions for any type you could desire,
-including \ttind{apop\_query\_to\_matrix} to pull a query to a {\tt
+including \ttind{apop\_\-que\-ry\_\-to\_\-ma\-trix} to pull a query to a {\tt
 gsl\_matrix}, \ttind{apop\_query\_to\_chars} to pull a query into
 a two-by-two table of strings, \ttind{apop\_query\_to\_vector}
 and \ttind{apop\_query\_to\_float} to pull the first column or first
 number into {\tt gsl\_vector} or a {\tt float}.
 
 \paragraph{Data to db} For the other direction, there are the plain old
-print functions: \ttind{apop\_data\_print} and
+print functions: \ttind{a\-pop\_\-da\-ta\_\-print} and
 \ttind{apop\_matrix\_print}. If the global variable
 {\tt apop\_opts.output\_type == 'd'}, then these functions will dump the
 given data to the given file:

@@ -5,6 +5,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_multimin.h>
+#include <gsl/gsl_histogram.h>
 #include <gsl/gsl_statistics_double.h>
 #include "linear_algebra.h"
 
@@ -80,3 +81,5 @@ void apop_matrix_mean_and_var(gsl_matrix *data, double *mean, double *var);
 double apop_GHgB3_rng(gsl_rng * r, double* a); //in asst.c
 apop_data * apop_data_summarize(apop_data *data);
 apop_data * apop_matrix_summarize(gsl_matrix *data);
+
+gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins);

@@ -461,7 +461,8 @@ double          x, ratio;
   \param data	the matrix to be averaged. 
 \param	mean	where to put the mean to be calculated
 \param	var	where to put the variance to be calculated
-\ingroup convenience_fns*/
+\ingroup convenience_fns
+*/
 void apop_matrix_mean_and_var(gsl_matrix *data, double *mean, double *var){
 double          avg     = 0,
                 avg2    = 0;
@@ -530,3 +531,48 @@ char		rowname[10000]; //crashes on more than 10^9995 columns.
 apop_data * apop_matrix_summarize(gsl_matrix *m){
     return apop_data_summarize(apop_data_from_matrix(m));
 }
+
+
+
+/** produce a GSL_histogram_pdf structure.
+
+The GSL provides a means of making random draws from a data set, or to
+put it another way, to produce an artificial PDF from a data set. It
+does so by taking a histogram and producing a CDF.
+
+This function takes the requisite steps for you, producing a histogram
+from the data and then converting it to a <tt>gsl_histogram_pdf</tt>
+structure from which draws can be made. Usage:
+
+\code
+    //assume data is a gsl_vector* already filled with data.
+    gsl_histogram_pdf *p = apop_vector_to_pdf(data, 1000);
+    gsl_rng_env_setup();
+    gsl_rng *r=gsl_rng_alloc(gsl_rng_taus);
+
+    //Draw from the PDF:
+    gsl_histogram_pdf_sample(p, gsl_rng_uniform(r));
+
+    //Eventually, clean up:
+    gsl_histogram_pdf_free(p);
+\endcode
+
+\param data a <tt>gsl_vector*</tt> with the sample data
+\param bins The number of bins in the artificial PDF. It is OK if most
+of the bins are empty, so feel free to set this to a thousand or even
+a million, depending on the level of resoultion your data has.
+
+\ingroup convenience_fns
+*/
+gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins){
+int                 i;
+gsl_histogram_pdf   *p  = gsl_histogram_pdf_alloc(bins);
+gsl_histogram       *h  = gsl_histogram_alloc(bins);
+    gsl_histogram_set_ranges_uniform(h, gsl_vector_min(data), gsl_vector_max(data));
+    for (i=0; i< data->size; i++)
+        gsl_histogram_increment(h,gsl_vector_get(data,i));
+    gsl_histogram_pdf_init(p, h);
+    gsl_histogram_free(h);
+    return p;
+}
+

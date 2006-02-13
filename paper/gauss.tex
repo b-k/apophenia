@@ -35,7 +35,7 @@ that we need. As $n\to \infty$, we know that $\sqrt{n} (\overline X -
 from. With that regularity of nature, we can derive all of the following distributions.
 \label{CLT}
 
-\paragraph{Normal\index{normal distribution}} 
+\paragraph{Normal\index{Normal distribution}} 
 
 The Normal distribution, defined above on page \pageref{normal},
 will also be used to describe some of the parameters derived below.
@@ -126,11 +126,11 @@ For example, if we find that our Normally-distributed mean is 2.2 standard
 deviations above zero, then we can reject the one-tailed hypothesis that
 the mean is zero with probability {\tt 1 - gsl\_cdf\_gaussian\_Q(2.2, 1)}.
 
-\index{Gaussian distribution|see{normal distribution}}
+\index{Gaussian distribution|see{Normal distribution}}
 \index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_P@{\tt gsl\_cdf\_chisq\_P}}
 \index{t distribution!gsl\_cdf\_tdist\_P@{\tt gsl\_cdf\_tdist\_P}}
 \index{F distribution!gsl\_cdf\_fdist\_P@{\tt gsl\_cdf\_fdist\_P}}
-\index{normal distribution!gsl\_cdf\_gaussian\_P@{\tt gsl\_cdf\_gaussian\_P}}
+\index{Normal distribution!gsl\_cdf\_gaussian\_P@{\tt gsl\_cdf\_gaussian\_P}}
 \ttindex{gsl\_cdf\_...}
 %\begin{verbatim}
 %[
@@ -201,7 +201,7 @@ to a two-tailed area between $\pm${\tt beta}.
 
 
 
-\subsection{how to evaluate a test}
+\subsection{How to evaluate a test}
 Here are some vocabluary terms; if you are in a stats class right now,
 you will be tested on this:
 
@@ -236,7 +236,7 @@ it's generally all anybody talks about.
 
 Why do we neglect type II errors? Because in the next section Neyman and Pearson will tell us we can.
 
-\subsection{\ind{likelihood ratio}s}
+\subsection{Likelihood ratios} \ind{likelihood ratio}
 
 Say the cost to a type I error is $C_I$ and the cost to a type II error is $C_{II}$.
 Then you'll reject $H_0$ iff the likely cost is less than the likely cost of not
@@ -287,7 +287,7 @@ considered taken care of.
 
 
 
-\subsection{the $\chi^2$ test \index{$\chi^2$ test}}
+\subsection{The $\chi^2$ test \index{$\chi^2$ test}}
 
 By itself, this is only useful for testing whether the sample variance
 is equal to a given $\sigma^2$, because unless you assume $\sigma^2$ you
@@ -333,7 +333,7 @@ If we're testing a variance, we'd have
 \end{equation}
 
 
-\subsection{the $F$ test\index{F test}}
+\subsection{The $F$ test\index{F test}}
 
 As above, we can divide equation \ref{chi1} by equation \ref{chi2} to give us a statistic
 with an $F$ distribution

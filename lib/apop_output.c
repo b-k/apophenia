@@ -67,6 +67,7 @@ char		    outfile[]	= "auto",
 void apop_plot_line_and_scatter(apop_data *data, apop_estimate *est, char * outfile){
 FILE *          f;
 char            exdelimiter[100];
+int             append_state;
         if (!outfile) 	
             f       = stdout;
         else    		
@@ -83,8 +84,11 @@ char            exdelimiter[100];
     //force the delimiter to be a comma space; don't tell the user.
     strcpy(exdelimiter, apop_opts.output_delimiter);
     strcpy(apop_opts.output_delimiter, ", ");
+    append_state            = apop_opts.output_append;
+    apop_opts.output_append = 1;
 	apop_matrix_print(data->data, outfile);
     strcpy(apop_opts.output_delimiter, exdelimiter);
+    apop_opts.output_append = append_state;
 }
 
 /** This function can be used to temporarily modify the global options,

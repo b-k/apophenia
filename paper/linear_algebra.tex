@@ -1,11 +1,22 @@
-\chapter[Linear Algebra]{Linear algebra prerequisites} \label{linear_algebra}
+\chapter[Linear Algebra]{Linear algebra} \label{linear_algebra}
 %@-     so lgrind will play nice with makeindex
 
-To tell you the truth, this will be the least fun chapter of the book,
-because it is nothing but prerequisites for the actual applications that
-will follow. But once you have this stuff down, the sky's the limit. 
+Recall the philosophy of C: the language provides only the most basic of
+basics, such as addition and division, and everything else one would
+want to do is provided by a package. Most of statisical analysis is
+described as operations on matrices and vectors, so the first key
+extension a mathematician needs is a package to do basic vector and
+matrix maintenance and linear algebra.
 
-\section{the GSL's matrices and vectors}
+\index{GSL|see{GNU Scientific Library}}
+There are many on the market; this chapter uses the \ind{GNU Scientific
+Library} (GSL). The GSL is recommended because it is actively supported
+and will work on about as many platforms as C itself. Apophenia is built
+on the GSL, and many of its structures have GSL matrices or vectors at
+their core, so low-level operations on {\tt apop\_\-data} sets become
+{\tt gsl\_\-matrix} operations.
+
+\section{The GSL's matrices and vectors}
 As you saw in the last chapter, arrays can be directly implemented in C, but for
 the rest of the book, I'll be sticking to the GSL's matrix and vector objects.
 If you like using raw arrays better, it's easy to switch back and forth; see
@@ -185,7 +196,7 @@ on the left-hand side, \ttind{apop\_data\_from\_matrix} returns an
 done with any function with {\tt alloc} in the name, because they will also
 return a pointer to the appropriate type.
 
-\paragraph{Using views}\index{views}
+\paragraph{Using views}\index{views}\index{matrices!views}
 The GSL includes a convenient structure for pulling a vector from a
 matrix. Here's how to get the fifth row of {\tt a\_matrix} into a vector view:
 
@@ -193,8 +204,8 @@ matrix. Here's how to get the fifth row of {\tt a\_matrix} into a vector view:
 gsl_vector_view v;
 v = gsl_matrix_col(a_matrix, 4);
 %]
-[Notice that this uses {\tt col}, not {\tt column}.]
-For rows, use \ttind{gsl\_matrix\_row}{\tt (a\_\-ma\-trix, n)}. 
+[Notice that this function is named {\tt col}, not {\tt column}.]
+For the fifth row, use \ttind{gsl\_matrix\_row}{\tt (a\_\-ma\-trix, 4)}. 
 
 The vector view is a data structure which includes an element of type {\tt gsl\_vector}
 named vector; this is the only element you will be interested in. The
@@ -202,8 +213,9 @@ expression {\tt \&(v.vector)} is of type {\tt gsl\_vector *}, and therefore can
 be used as you would any other pointer to a {\tt gsl\_vector}. For example,
 try \ttind{apop\_mean}{\tt (\&(v.vector))};.
 
-The view is intended to be a common variable, not a pointer. If you want
-to retain the data after the function exits, copy it to another vector:
+The view is intended to be a common (automatically allocated) variable,
+not a pointer. If you want to retain the data after the function exits,
+copy it to another vector:
 
 %[
 gsl_vector_view v;
@@ -212,14 +224,15 @@ v = gsl_matrix_col(a_matrix, 4);
 gsl_vector_memcpy(a_new_vector, &(v.vector));
 %]
 
+\section{The \ind{BLAS}} 
+Before there was the GSL, there was the BLAS---the basic linear algebra
+system. The GSL has a few functions to interact with the BLAS. In fact,
+it has 86. Here are the three that you'll actually use.\footnote{
+The names of the functions below fit in with the system for the other 83
+functions you won't ever use. They're a combination of D=double precision,
+GE=general, M=matrix, V=vector.}
 
-
-\section{The BLAS} 
-Before there was the GSL, there was the BLAS---the basic linear algebra system. The GSL has a few
-functions to interact with the BLAS. In fact, it has 86. Here are the three that you'll
-actually use.
-
-\paragraph{matrix $\cdot$ vector} Here's the function you'll use to calculate the dot product of a
+\paragraph{Matrix $\cdot$ vector} Here's the function you'll use to calculate the dot product of a
 matrix and a vector:
 %\begin{verbatim}
 %[
@@ -257,7 +270,7 @@ Notice that we used {\tt calloc}, instead of just {\tt alloc}, because
 the system will add $x\beta$ to {\tt beta\_dot\_x}, not just write it in,
 so {\tt beta\_dot\_x} needs to start as all zeros.
 
-\paragraph{vector $\cdot$ vector}
+\paragraph{Vector $\cdot$ vector}
 To find the dot product of two vectors, use this function:
 %[
 int gsl_blas_ddot (const gsl_vector * x, const gsl_vector * y, 
@@ -278,7 +291,7 @@ gsl_blas_ddot (beta, gamma, beta_dot_gamma);
 %]
 %\end{verbatim}
 
-\paragraph{matrix $\cdot$ matrix}
+\paragraph{Matrix $\cdot$ matrix}
 Finally, to take the dot product of two matrices, you'll need:
 %[
 int gsl_blas_dgemm (CBLAS_TRANSPOSE_t TransX, 
@@ -304,11 +317,6 @@ gsl_blas_dgemm (CblasTrans,CblasNoTrans, 1, x, y, 0, x_dot_y);
 %]
 %\end{verbatim}
 
-\comment{
-[The names, by the way, fit in with the system for the other 83 functions
-you won't ever use. They're a combination of D=double precision,
-GE=general, M=matrix, V=vector.]
-}
 \index{matrices!dot product|)}
 \index{dot product|)}
 

@@ -1,4 +1,4 @@
-\chapter[Projections]{Describing data} \label{projections}
+\chapter{Describing data} \label{projections}
 %Some commonly boldfaced vectors.
 \def\xv{{\bf x} } \def\yv{{\bf y} } \def\pv{{\bf p} }
 \def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
@@ -55,7 +55,8 @@ $$\sqrt{n} (\overline X - \mu)/\sigma \sim {\cal N}(0,1)$$
 
 or
 
-$$\overline X \matrix{a \cr \to} \left[\mu,{\sigma^2\over n}\right]$$
+%$$\overline X \matrix{a \cr \to} \left[\mu,{\sigma^2\over n}\right]$$
+$$\overline X {a \atop \longrightarrow} \left[\mu,{\sigma^2\over n}\right]$$
 
 \paragraph{Covariance:} The population \ind{covariance} is $\sigma_{xy} =
 E[(x-\overline x)(y-\overline y)]$, which is equivalent to
@@ -196,9 +197,11 @@ $n$ eigenvectors of the data's covariance matrix with the $n$ largest
 associated eigenvalues.
 
 \subsection{Coding it}
-This section will first take you through all of the steps described above, to give you another example
-of the math-to-code translation that this book is built around. After that, I will show you the quick-and-easy
-way, using the GSL's built-in singular value decomposition function.
+This section will show you the computation of a singular value
+decomposition on three levels. The first goes through the steps of
+calculating eigenvectors yourself; the second uses the 
+GSL's built-in singular value decomposition function; the third is a
+single call in Apophenia.
 
 The only hard part is finding the eigenvalues of
 $(X'X)$; the GSL saw us coming, and gives us the {\tt gsl\_eigen\_symm} functions

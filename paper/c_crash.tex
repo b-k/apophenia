@@ -988,12 +988,25 @@ look in the standard library path. Generally, use {\tt "my\_file.h"} for
 header files you've written and {\tt <their\_file.h>} for header files installed elsewhere
 in your system.
 
-Every snippet of code in this book has an include line if it would be
-necessary to run the program.  However, this didactic convenience is
-terrible style: you should have all of your headers at the top of the
-file, and although it doesn't hurt to include a header file many times,
-there's certainly no benefit to doing so.
+\ifbook 
+\index{header file!aggregation} The Apophenia library provides a convenience header that aggregates
+almost every header you will likely be using. By placing
+%[
+#include <apophenia/headers.h>
+%]
+at the top of your file, you shouldn't need to include any of the other standard headers 
+that one would normally include in a program for numerical analysis
+({\tt stdio.h}, {\tt stdlib.h}, {\tt math.h}, {\tt malloc.h}, {\tt gsl\_anything.h}).
+This means that you could ignore the headers at the top of all of the
+code snippets in this chapter.
 
+Of course, you will still need to include any headers you have written,
+and if the compiler complains about an undeclared function, then its
+header is not included in {\tt apophenia/\-head\-ers.h}.
+Based upon all the notes about carefully-defined scope in this chapter,
+such an undiscriminating header is bad style, but it is awfully
+convenient, and will save you time hunting for standard headers.
+\fi
 
 \paragraph{The compilation step} 
 The \ind{compilation}
@@ -1724,15 +1737,34 @@ cumbersome command line above.
 \index{make@{\tt make}|)}
 
 \subsection{Memory debugger} \index{memory debugger|see{valgrind}} \index{valgrind|(}
-\index{segmentation fault} \label{valgrind}
+\index{segmentation fault}
 
-The setup is this: you make a mistake in memory handling early in the program, but
-it's not fatal. Later on in the program, you do something innocuous and get a
-segfault. This is a pain to trace using {\tt gdb}, but fortunately there's a
-better way. {\tt valgrind} will run your program in anal-retentive mode, and check
-every memory operation. If anything breaks the rules, you'll get the location, in
-the form of a backtrace with line numbers, very much like the backtraces familiar
-from {\tt gdb}.
+The setup is this: you make a mistake in memory handling early in the
+program, but it's not fatal, so the program continues along using bad
+data. Later on in the program, you do something innocuous with your bad
+data and get a segfault. This is a pain to trace using {\tt gdb}, so
+there are packages explicitly designed to handle this problem.
+
+The first alternative is \ind{electric fence}, a
+library by Bruce Perens that allocates memory so that all memory
+mis-allocations and mis-reads will immediately crash.  That means that
+the debugger will stop on the line with the error, instead of continuing
+along with its bad data, so your debugger will give you much more useful
+information.  Electric fence works by redefining \ttind{malloc} in 
+its library. To use it, you would recompile the function
+using the efence library (adding {\tt -lefence} to the compilation
+command).
+
+
+Another option is \ind{Valgrind}, a program that will
+run your program in anal-retentive mode, and check every memory operation. 
+It is not available on all systems (it is generally Linux-centric), but
+if it is available, it is easier to use (no recompilation) and provides much more information than efence or
+{\tt gdb} alone. If anything breaks the rules, Valgrind will give you
+the location, in the form of a backtrace very much like the backtraces
+familiar from {\tt gdb}. It can even be set to start the debugger as soon
+as it catches something wrong.\footnote{Use the {\tt db-attach} switch.
+E.g., {\tt valgrind -v --db-attach=yes ./my\_program}.}
 
 The usage is simple: {\tt valgrind my\_program}. If you have a prodigious amount
 of errors, you may want to tack on the {\tt --logfile=problems} option. It doesn't
@@ -1741,13 +1773,15 @@ valgrind} to see where it goes.  Your final option is to pipe the standard
 error to a file: in the bash shell, which you're probably using: {\tt
 valgrind my\_program 2> problems}.
 
-\subsection{Revision control} \index{revision control|see{CVS}} \index{CVS|(}
-The idea behind revision control is that your project lives in a
-repository. When you want to work on the thing, you check out a copy
-of the project, and when you're done making changes, you check them back
-in to the repository and can delete the copy.  The repository makes a note
-of every change you made, so you can check out a copy of your program as
-it looked three weeks ago as easily as you could check out a current copy.
+
+\subsection{Revision control} \index{revision control|see{subversion}} \index{CVS|see{subversion}}\index{subversion|(}\label{valgrind}
+The idea behind the revision control system (RCS) is that your project
+lives in a repository. When you want to work on the thing, you check out
+a copy of the project, and when you're done making changes, you check
+them back in to the repository and can delete the copy.  The repository
+makes a note of every change you made, so you can check out a copy of
+your program as it looked three weeks ago as easily as you could check
+out a current copy.
 
 This has pleasant psychological benefits. Don't worry about experimenting
 with your code: it's just a copy, and if you break it you can always check
@@ -1755,24 +1789,27 @@ out a fresh copy from the repository. Also, nothing matches the confidence
 one gets from making major changes to the code and finding that the
 results still match the results from last month to four decimal places.
 
-
 Finally, revision control packages facilitate collaboration with
 coauthors. If your changes are sufficiently far apart (e.g., you're
 working on one function and your coauthor on another in the same file),
-then the package will merge all changes to a single working copy. If
-the package can't work out how to do that, it will give you a clearly
-demarcated list of changes for you to accept or reject.
+then the RCS will merge all changes to a single working copy. If
+it is unable to work out how to do so, then it will give you a
+clearly demarcated list of changes for you to accept or reject.
 
 This method also works for any other text files you have in your
-life, such as papers written in Latex, XML, or any other text-based
+life, such as papers written in \LaTeX, HTML, or any other text-based
 format. For example, this book is under revision control.
 
-The standard revision control software (at the moment) is CVS, available at {\tt
-http://cvshome.org}. It includes a detailed manual describing set-up and
-operation from the command line. There are also graphical shells, such as tkCVS.
-CVS is gradually being replaced by Subversion; you may or may not have a copy of
-it on your system now.
-\index{CVS|)}
+The standard revision control software (at the moment) is named
+subversion; if it is not already installed, it is probably available as
+a package for the system you are using. For usage, the reader is referred
+to subversion's own detailed manual describing set-up and operation from
+the command line.
+
+If subversion is not readily available, the next best is its predecessor,
+CVS, which is well-supported and even has a number of graphical
+front-ends, such as tkCVS.  
+\index{subversion|)}
 
 \subsection{Help} \index{help, getting}
 You probably have have all the manuals for the programs listed in this
@@ -1798,19 +1835,16 @@ knowing any of the following, and much of it is generally considered to
 be bad style.
 
 \paragraph{The obfuscatory if} There's another way to write an \ttind{if} statement. The following are equivalent:
-%\begin{verbatim}
 %[
 if (a < b)
       a;
 else
       b;
 %]
-%\end{verbatim}
-and\\ 
-\comment{ {\tt (a < b) ? a : b;} .\\}
-%@+
-@(a < b) ? a : b;@ .\\
-%@-
+and
+%[
+(a < b) ? a : b;
+%]
 Both have all three components: first the condition, then the `what to do if the
 condition is true' part, and then the `what to do if the condition is false'
 part. However, the first is more-or-less legible to anybody who knows basic English,
@@ -1896,7 +1930,7 @@ goto} to eliminate redundancy as above; other authors choose to never use
 {\tt goto}.
 
 An alternative is \ttind{break}, which cuts out of the innermost loop in
-which it is located. Here is code that would work like the above:
+which it is located. Here is code that would work about like the above:
 %[
 for (i=0; i< vector_size; i++){
     if (a_vector[i] > b){
@@ -1949,7 +1983,7 @@ reader who uses {\tt switch} statements will want to take especial care
 to have {\tt break}s at the end of every {\tt case}.  The {\tt break}
 at the end of the list of {\tt case}s is extraneous, but there is a good
 chance that you will add to your list of {\tt case}s, at which point
-the {\tt break} will prevent a fall-through bug.
+the {\tt break} will no longer be extraneous and will prevent a fall-through bug.
 
 An alernative to the {\tt switch} is a simple series of {\tt if}s:
 %[

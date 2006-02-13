@@ -5,74 +5,10 @@ Bootstrapping is probably one of the most eerily descriptive names I've ever see
 After you've gotten everything you can out of
 the data, then on top of that you can bootstrap to find the variance of all of that.
 
-At some point, I'll say more about it here.
-
-\section{Finding the variance of a parameter}
-The bootstrapping process consists of taking artificial samples of your
-data, and then calculating a statistic for each of these samples. These
-draws will be both independent and identically distributed.  Typically,
-your statistic is for the form $\sum (X_i)/ N$, where  $N$ is the number
-of observations, and $X_i$ is a data point in the case of a mean,
-$(X-\mu)^2$ for a variance, et cetera. In other words, the statistic
-is often the mean of some iid process, and so the Central Limit Theorem
-applies to the series of statistics that you are producing (regardless
-of how ugly the underlying data may be).
-
-The primary use of this is for hypothesis testing: we need to know the
-variance of the parameter and its distribution if we are to successfully
-determine whether the parameter we saw is different from zero. We
-solve this problem by producing a sample of the statistics, which we
-are assured by the CLT will be Normally distributed, with the variance
-we will calculate below. The confidence intevals calculated here will
-approach the true confidence interval for the statistic
-as the sample size approaches the population size.
-
-\paragraph{An important caveat} Bootstrapping from a sample will not fix
-the errors in your sample. If your sampling technique isn't perfect---and
-it isn't---then it won't capture the full variation in the data. That
-means that the variances you calculate using bootstrap will be less
-than the true variance. In a bind, it's all you've got, and you'll
-just have to state that and go on. Bootstrapping is a generally accepted technique, and has reasonable
-persuasive power.
-
-But having smaller variances makes
-it easier to reject the null hypothesis, which is what your paper is
-probably trying to do, so bootstrapping works slightly in your favor,
-and against parsimony and skepticism. Therefore, if there is any way
-of getting information about the variance of your variable without
-bootstrapping, even if that estimate overstates the variance, then use
-that instead of bootstrapping. Otherwise, you dishonor your name, and
-bring shame to your research group.
-
-
-\subsection{Creating random samples} Assume that we have a
-data vector {\tt gsl\_vector * data} and a function {\tt double
-calc\_\-stat\-istic(gsl\_\-vec\-tor *data)} which finds some statistics. The
-function {\tt mean()} fits this description, as would a function to find
-a single OLS coefficient.
-
-Then the first step in bootstrapping is drawing some subset of the data,
-without replacement. Drawing without replacement means that we need to
-keep track of what has been drawn to date, and must check every new draw
-to make sure that the new draw is not a repeat. Figure \ref{bootdraw} lists a function which
-does all of this. It allocates and sets up a random number generator, then
-makes a series of random draws from a uniform distribution in the range
-[0, {\tt data-$>$size}]. It then checks the list of indices which have
-already been drawn. If it finds a match, then it invalidates the draw
-by rolling back the counter by one, while if it does not find a match then it
-adds the draw to the list of draws and the index to the list of indices.
-
-\codefig{bootdraw}{A function to draw samples from the data, for use in a bootstrap}
-
-We can then use these draws to calculate a list of parameter values, as in Figure \ref{bootvar}.
-\codefig{bootvar}{A function to find the variance of a series of bootstrap estimates of a statistic}
-
-It is valid to use the standard deviation returned by this function can
-be used in the normal way to construct confidence intervals and test
-hypotheses about the statistic.
-
-\paragraph{Random number generation}\index{random
+\section{Random number generation}\index{random
 numbers|(}\label{randomnumbers}
+Before moving on to the main show, a digression is in order on the
+process of generating random numbers. 
 
 Random number generators are not random: given the same setup, they
 will produce the same value every time you use them. To lay-intuition,
@@ -125,15 +61,103 @@ The 'flat' distribution is a Uniform[A,B] distribution. Since the
 Uniform[0,1] distribution is so common, it gets its own no-options
 function, {\tt gsl\_ran\_uniform(r)}. Notice that the Gaussian draw
 assumes a mean of zero, so if you intend to draw from a ${\cal N}(7,2)$,
-then add it after the call: {\tt gsl\_ran\_gaussian (r, 2) + 7}.
+then add the mean after the call: {\tt gsl\_ran\_gaussian (r, 2) + 7}.
+
+\paragraph{Drawing from your own data} Another possibility, beyond
+drawing from famous distributions that your data theoretically
+approximates, would be to draw from your actual data. 
+
+The GSL provides a means of turning a data set into a PDF from which you
+can then make draws.  It
+does so by turning the data into a histogram and then producing a CDF.
+Then, the \ttind{gsl\_\-hist\-o\-gram\_\-pdf\_\-sam\-ple} function will
+map a draw from a Uniform[0,1] distribution to the CDF, thus producing a
+random draw from your data.
+
+The {\tt apop\_\-vec\-tor\_\-to\_\-pdf} function takes the requisite steps
+for you, producing a histogram from the data and then converting it to
+a \ttind{gsl\_\-hist\-o\-gram\_\-pdf} structure from which draws can be
+made. E.g.:
+%[
+    double      draw;
+    gsl_vector  *data    = produce_data_set(...);
+    gsl_histogram_pdf *p = apop_vector_to_pdf(data, 1000);
+    gsl_rng *r = initrng(7); //see above.
+
+    //Draw from the PDF:
+    while (get_more_data){
+        draw = gsl_histogram_pdf_sample(p, gsl_rng_uniform(r));
+        ...
+    }
+
+    //Eventually, clean up:
+    gsl_histogram_pdf_free(p);
+%]
+
 
 \index{random numbers|)}
-\comment{
-\section{Finding a distribution}
+
+\section{Finding the variance of a parameter}
+The bootstrapping process consists of taking artificial samples of your
+data, and then calculating a statistic for each of these samples. These
+draws will be both independent and identically distributed.  Typically,
+your statistic is for the form $\sum (X_i)/ N$, where  $N$ is the number
+of observations, and $X_i$ is a data point in the case of a mean,
+$(X-\mu)^2$ for a variance, et cetera. In other words, the statistic
+is often the mean of some iid process, and so the Central Limit Theorem
+applies to the series of statistics that you are producing (regardless
+of how ugly the underlying data may be).
+
+The primary use of this is for hypothesis testing: we need to know the
+variance of the parameter and its distribution if we are to successfully
+determine whether the parameter we saw is different from zero. We
+solve this problem by producing a sample of the statistics, which we
+are assured by the CLT will be Normally distributed, with the variance
+we will calculate below. The confidence intevals calculated here will
+approach the true confidence interval for the statistic
+as the sample size approaches the population size.
+
+\paragraph{An important caveat} Bootstrapping from a sample will not fix
+the errors in your sample. If your sampling technique isn't perfect---and
+it isn't---then it won't capture the full variation in the data. That
+means that the variances you calculate using bootstrap will be less than
+the true variance. In a bind, it's all you've got, and you'll just have
+to state that and go on. Bootstrapping is a generally accepted technique,
+and has reasonable persuasive power.
+
+But having smaller variances makes
+it easier to reject the null hypothesis, which is what your paper is
+probably trying to do, so bootstrapping works slightly in your favor,
+and against parsimony and skepticism. Therefore, if there is any way
+of getting information about the variance of your variable without
+bootstrapping, even if that estimate overstates the variance, then use
+that instead of bootstrapping. Otherwise, you dishonor your name, and
+bring shame to your research group.
 
 
-This section is about generating data from a model you've written yourself.
+\subsection{Creating random samples} Assume that we have a
+data vector {\tt gsl\_vector * data} and a function {\tt double
+calc\_\-stat\-istic(gsl\_\-vec\-tor *data)} that finds some statistics. The
+function {\tt mean()} fits this description, as would a function to find
+a single OLS coefficient.
 
-[There's even a GSL function to do this, which I stumbled upon in the
-documentation for the GSL one day---in the section on drawing histograms.]
-}
+Then the first step in bootstrapping is drawing some subset of the data,
+without replacement. Drawing without replacement means that we need to
+keep track of what has been drawn to date, and must check every new draw
+to make sure that the new draw is not a repeat. Figure \ref{bootdraw} lists a function which
+does all of this. It allocates and sets up a random number generator, then
+makes a series of random draws from a uniform distribution in the range
+[0, {\tt data-$>$size}]. It then checks the list of indices which have
+already been drawn. If it finds a match, then it invalidates the draw
+by rolling back the counter by one, while if it does not find a match then it
+adds the draw to the list of draws and the index to the list of indices.
+
+\codefig{bootdraw}{A function to draw samples from the data, for use in a bootstrap}
+
+We can then use these draws to calculate a list of parameter values, as in Figure \ref{bootvar}.
+\codefig{bootvar}{A function to find the variance of a series of bootstrap estimates of a statistic}
+
+It is valid to use the standard deviation returned by this function can
+be used in the normal way to construct confidence intervals and test
+hypotheses about the statistic.
+

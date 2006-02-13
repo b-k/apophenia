@@ -4,6 +4,10 @@ be found at http://apophenia.sourceforge.net/doc/setup.html . [Not
 online? You can see the source for that page in documentation.h in this
 directory.]
 
+More generally, the user manual is in the form of a textbook on
+statistical computing at http://apophenia.info/gsl_stats.pdf
+and the command-by-command reference is at http://apophenia.info/doc
+
 The executive summary:
 --You need the usual C compiler and the supporting environment that a
 sane programmer requires. 
