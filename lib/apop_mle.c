@@ -598,7 +598,7 @@ est = apop_estimate_restart(est, 200, 1e-2);
                     will both be mutliplied by this amount. Of course, if this is 1, nothing changes.
 
 \return         At the end of this procedure, we'll have two \ref
-    apop_estimates: the one you sent in, and the one produced using the
+    apop_estimate structs: the one you sent in, and the one produced using the
     new method/scale. If the new estimate includes any NaNs/Infs, then
     the old estimate is returned (even if the old estimate included
     NaNs/Infs). Otherwise, the estimate with the largest log likelihood

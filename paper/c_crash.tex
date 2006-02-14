@@ -850,7 +850,7 @@ Mac and Windows users will need to download a copy; see {\tt gcc.gnu.org}
 for details. Windows users have two options: one is to get Mingw,
 which provides a compiler and not much else. You can also try Dev-C++, which is an integrated development
 environment (an IDE) which gives you a familiar set of windows in which to write, compile, and debug your
-programs. A copy is currently availaable at {\tt http://www.bloodshed.net/dev/devcpp.html}.
+programs. A copy is currently availaable at \url{http://www.bloodshed.net/dev/devcpp.html}.
 Many other IDEs are available, for any graphically-oriented operating system, of varying quality.
 
 The other option is to get Cygwin, from {\tt cygwin.com}. Cygwin is
@@ -989,23 +989,23 @@ header files you've written and {\tt <their\_file.h>} for header files installed
 in your system.
 
 \ifbook 
-\index{header file!aggregation} The Apophenia library provides a convenience header that aggregates
-almost every header you will likely be using. By placing
-%[
-#include <apophenia/headers.h>
-%]
+\index{header file!aggregation}
+\marginalia{Header aggregation}{The Apophenia library provides a convenience header that aggregates
+almost every header you will likely be using. By placing\par
+{\tt \#include $<$apophenia/headers.h$>$}\par
 at the top of your file, you shouldn't need to include any of the other standard headers 
 that one would normally include in a program for numerical analysis
 ({\tt stdio.h}, {\tt stdlib.h}, {\tt math.h}, {\tt malloc.h}, {\tt gsl\_anything.h}).
 This means that you could ignore the headers at the top of all of the
-code snippets in this chapter.
-
+code snippets in this chapter.\par
 Of course, you will still need to include any headers you have written,
 and if the compiler complains about an undeclared function, then its
 header is not included in {\tt apophenia/\-head\-ers.h}.
 Based upon all the notes about carefully-defined scope in this chapter,
 such an undiscriminating header is bad style, but it is awfully
 convenient, and will save you time hunting for standard headers.
+}
+
 \fi
 
 \paragraph{The compilation step} 
@@ -1308,6 +1308,16 @@ If you know the program will segfault, then at this point, just run the program
 by typing {\tt run}, and wait for it to break. When it does, you'll be
 returned to gdb's prompt, so you can interrogate the program.
 
+
+\marginalia{Visual shells}{There are a number of graphical shells built
+around gdb, which list local variables and let you click on parts of
+your code to set breakpoints. I won't discuss their operation here, since 
+it is just like that described above for the command-line debugger, except
+it involves using the mouse more. There is currently a list of graphical
+front-ends available at \url{http://sources.redhat.com/gdb/links/}.
+\index{debugging|)}}
+
+
 The first thing you'll want to know is where you are in the program. You
 can do this with the {\tt backtrace} command, which you can abbreviate to
 either {\tt bt} or {\tt where}. It will show you the stack of function
@@ -1372,14 +1382,6 @@ breakpoint or the end of the program. This is also a good place to
 point out that just hitting $<$enter$>$ will repeat the last command,
 so you won't have to keep hitting {\tt n} to step through many lines.
 
-
-\paragraph{Visual shells} There are a number of graphical shells built
-around gdb, which list local variables and let you click on parts of
-your code to set breakpoints. I won't discuss their operation here, since 
-it is just like that described above for the command-line debugger, except
-it involves using the mouse more. There is currently a list of graphical
-front-ends available at\\ {\tt http://sources.redhat.com/gdb/links/}.
-\index{debugging|)}
 
 \section{Arrays and other pointer tricks} \label{for_loops} \index{array}
 
@@ -1596,6 +1598,8 @@ format string, which can include plain text and a few placeholders for numbers o
 example, {\tt "person \%s is number \%i in line$\backslash$n"}. The percent signs are place-holders for values that we
 will specify later. Here are the odd characters you will need for almost all of your work:
 
+\begin{center}
+\fbox{
 \begin{tabular}{rl}
 {\tt \%i}	& insert an integer here\\
 {\tt \%g}	& insert a real number here\\
@@ -1604,6 +1608,8 @@ will specify later. Here are the odd characters you will need for almost all of 
 {\tt $\backslash$"}	& a quote that won't end the string\\
 $\backslash$(newline)	& continue the string on the next line
 \end{tabular}
+}
+\end{center}
 
 There are {\sl many} more format specifiers, which will give you a great deal of control; you may want
 them when printing tables, for example, and can refer to any of a number of detailed references when you

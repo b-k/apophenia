@@ -106,22 +106,46 @@ parameters are discussed in section \ref{dist2}.
 The number of times that an event which has likelihood $p$ happens in
 one trial. I.e., $x$ is zero or one here.
 
+\long\def\eqnbox#1{
+\begin{center}
+\fbox{
+\parbox{10cm}{
 \begin{eqnarray}
+#1
+\end{eqnarray}
+}
+}
+\end{center}
+}
+
+\long\def\wideeqnbox#1#2{
+\begin{center}
+\fbox{
+\parbox{#1}{
+\begin{eqnarray}
+#2
+\end{eqnarray}
+}
+}
+\end{center}
+}
+
+\eqnbox{
 P(x|p)&=&p^x (1-p)^{(1-x)}				\nonumber\\
 E(x)&=&p						\nonumber\\
 \var(x)&=&p(1-p)					\nonumber
-\end{eqnarray}
+}
 
 \paragraph{Binomial\index{Binomial distribution}}
 
 The number of times that an event which has likelihood $p$ happens over the
 course of $n$ trials.
 
-\begin{eqnarray}
+\eqnbox{
 P(x|p)&=&\left(\matrix{n\cr x}\right) p^x (1-p)^{(n-x)}		\nonumber\\
 E(x)&=&np							\nonumber\\
 \var(x)&=&np(1-p)						\nonumber
-\end{eqnarray}
+}
 
 \paragraph{Poisson\index{Poisson distribution}}
 
@@ -132,22 +156,22 @@ up to $\lambda$ weeks,
 or the number of people on a ship who were flogged up to
 $\lambda$ times. 
 
-\begin{eqnarray}
+\eqnbox{
 P(x|\lambda)&=&{e^{-\lambda}\lambda^x\over x!}			\nonumber\\
 E(x)&=&	\lambda							\nonumber\\
 \var(x)&=&\lambda						\nonumber
-\end{eqnarray}
+}
 
 \paragraph{Normal\index{Normal distribution}}
 
 You know and love the bell curve. See the CLT (section \ref{CLT}) for
 its application.
 
-\begin{eqnarray}					\label{normal}
+\eqnbox{ \label{normal}
 P(x|\mu,\sigma)&=&{1\over \sigma\sqrt{2\pi}} e^{-(1/2)[(x-\mu)/\sigma]^2}\\ 
 E(x)&=&\mu							\nonumber\\
 \var(x)&=&\sigma^2						\nonumber
-\end{eqnarray}
+}
 
 \paragraph{Multivariate Normal}
 All of the above distributions were for a single variable---one
@@ -158,11 +182,11 @@ $\mu$ (a vector of length seven) and that the covariance among the
 variables is $\Sigma$ (a seven by seven matrix). Then the Multivariate
 Normal distribution that one would fit to this data is:
 
-\begin{eqnarray}					
+\eqnbox{
 {\exp(-{1\over 2} (X-\mu)' \Sigma^{-1} (x-\mu)) 
 \over
    \sqrt{(2 \pi)^n det(\Sigma)}}
-\end{eqnarray}					
+}					
 
 Apophenia provides the function \ttind{apop\_\-mul\-ti\-var\-i\-ate\_\-norm\-al\_\-prob} to evaluate this likelihood for a given data point.
 
@@ -212,7 +236,6 @@ it asks that we pass in pre-allocated workspaces when it needs such
 things. The eigenvalue-finding function requires such a workspace, so
 here is a function which allocates the workspace, calls the function,
 then frees the workspace:
-%\begin{verbatim}
 %[
 void find_eigens(gsl_matrix *subject, gsl_vector *eigenvals, 
                             gsl_matrix *eigenvecs){
@@ -223,7 +246,6 @@ void find_eigens(gsl_matrix *subject, gsl_vector *eigenvals,
    gsl_matrix_free(subject);
 }
 %]
-%\end{verbatim}
 
 Notice that I free the matrix whose eigenvalues are being calculated at the end.
 This is because, for all intents and purposes, the matrix is destroyed in the
@@ -377,11 +399,11 @@ Assumptions:
 
 When all of that holds, then:
 
-\begin{eqnarray}
+\eqnbox{
 \hat\betav &=& (\Xv'\Xv)^{-1}(\Xv'\yv)			\nonumber\\
 E(\hat\betav) &=& \beta					\nonumber\\
 var(\hat\betav) &=& \sigma^2(\Xv'\Xv)^{-1}		\nonumber
-\end{eqnarray}
+}
 	\index{Ordinary Least Squares|)}
 \subsection{\ind{GLS}}					\label{GLS}
 Generalized Least Squares generalizes OLS by allowing $\uv'\uv$ to be a
@@ -389,13 +411,13 @@ known matrix $\Sigma$, with no additional restrictions. For OLS,
 $\Sigma=\sigma^2{\bf I}$. Note how neatly plugging that in to the
 estimator and variance below reduces them to the OLS variance.
 
-\begin{eqnarray}
+\eqnbox{
 \hat\betav_{GLS} &=& (\Xv'\Sigma^{-1}\Xv)^{-1}(\Xv'\Sigma^{-1}\yv)			\nonumber\\
 E(\hat\betav_{GLS}) &=& \beta					\nonumber\\
 var(\hat\betav_{GLS}) &=& (\Xv'\Sigma^{-1}\Xv)^{-1}		\nonumber
 %var(\hat\betav_{GLS}) &=& 
 % 			(\Xv'\Xv)^{-1}\Xv'\Sigma\Xv(\Xv'\Xv)^{-1}\nonumber
-\end{eqnarray}
+}
 
 \subsection{\ind{IV}}			\label{IV}
 
@@ -405,12 +427,12 @@ toward zero. Bias is a big deal, so we need an alternate method. If
 $\exists$ another instrumental variable $\Zv$ such that $\cov([Z_i-\overline
 Z][u_i-\overline u])=0$, then we can do the following:
 
-\begin{eqnarray}
+\eqnbox{
 \hat\betav_{IV} &=& (\Zv'\Xv)^{-1}(\Zv'\yv)			\nonumber\\
 E(\hat\betav_{IV}) &=& \beta					\nonumber\\
 var(\hat\betav_{IV}) &=& 
 	\sigma^2(\Zv'\Xv)^{-1}\Zv'\Zv(\Xv'\Zv)^{-1}	\nonumber
-\end{eqnarray}
+}
 
 Note how the variance shrinks as $\Zv'\Xv$ increases, and if
 $\Zv'\Xv=0$, you can't use this method.
@@ -420,7 +442,7 @@ $\Zv'\Xv=0$, you can't use this method.
 Add the constraint that $\Qv'\betav=\cv$. Then \cite{amemiya:ez}
 shows that 
 
-\begin{eqnarray}
+\wideeqnbox{6.5in}{
 \hat\betav_{CLS} &=& \hat\beta_{OLS}-
 (\Xv'\Xv)^{-1}\Qv(\Qv'(\Xv'\Xv)^{-1}\Qv)^{-1}
 		(\Qv'\hat\beta-\cv)			\nonumber\\
@@ -428,7 +450,7 @@ shows that
 var(\hat\betav_{CLS}) &=& \sigma^2[(\Xv'\Xv)^{-1} - 		
 (\Xv'\Xv)^{-1}\Qv(\Qv'(\Xv'\Xv)^{-1}\Qv)^{-1}\Qv'(\Xv'\Xv)^{-1}]
 \nonumber
-\end{eqnarray}
+}
 
 Again, if the constraint is satisfied by $\hat\beta$, then
 $(\Qv'\hat\beta-\cv)$ is zero and $\hat\betav_{CLS}=\hat\betav_{OLS}$.

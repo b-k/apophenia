@@ -5,18 +5,42 @@
 \def\ind#1{\index{#1}#1}
 \newif\ifbook \booktrue
 \documentclass[12pt,notitlepage, openany]{book}
-\usepackage{natbib,graphicx,epsfig}
+\usepackage{natbib,graphicx,epsfig,wrapfig, titlesec, apop_wrap}
 \usepackage{amsfonts}  %for mathbb
 \usepackage[nolineno,noprocindex]{lgrind}
+%@-     so lgrind will play nice with makeindex
+
+%Chapter and section headings. 
+%uses the awrap style, included in this dir.
+%\renewcommand\chaptername{} 
+\titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.1}{\includegraphics{flake}}\hfill}{}
+\titlespacing{\section}{8cm}{1 cm}{-0.5 cm}
+\titlespacing{\subsection}{8cm}{0.5 cm}{-0.5 cm}
+\titleformat{\section}[awrap]{\large\bf\scshape}{\thesection}{1 em}{}{}
+\titleformat{\subsection}[awrap]{\bf\scshape}{\thesubsection}{1 em}{}{}
 
 %indexing:
 \usepackage{multicol, makeidx, url}
-\usepackage[left=1in, right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[left=1.3in, right=1in,top=1in,bottom=1in]{geometry}
 \makeindex
 \def\ind#1{\index{#1}#1}
 \def\ttind#1{\index{#1@{\tt #1}}{\tt #1}}
 \def\ttindex#1{\index{#1@{\tt #1}}}
 \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
+
+
+%margin boxes:
+\setlength\fboxsep{5pt} %margin size in margin boxes
+\long\def\marginalia#1#2{
+\begin{wrapfigure}{lr}[1.3cm]{3in}
+\fbox{\begin{minipage}{2.8in}
+{\bf #1}\vskip .5cm\par
+\small #2
+\end{minipage}
+}
+\end{wrapfigure}
+}
+
 
 \begin{document}
 %\setlength{\textwidth}{6.5in}
@@ -26,7 +50,11 @@
 \author{Ben Klemens\\klemens@hss.caltech.edu}
 %\date{May 2005}
 \date{January 2006}
+\begin{center}
+\fbox{\begin{minipage}{4in}
 \maketitle
+\end{minipage}}
+\end{center}
 
 \comment{ Everything in the preface is in chapter one.
 \chapter*{Preface}
@@ -78,7 +106,18 @@ and an alphabetical-order reference providing detailed usage notes for
 functions and structures.  You are reading Apophenia's manual now,
 and the reference is online at \url{http://apophenia.info/doc}.
 
-
+This book falls in a mid-range between low-level numerical
+computation and high-level use of prepackaged functions. For example,
+{\sl Numerical Recipes in C} \citep{recipesinc} is a classic text
+describing the algorithms for seeking optima and efficiently calculating
+determinants. Being such a classic, there are many packages such as the
+GSL that implements the algorithms from {\sl Numerical Recipes}, so this
+book will not replicate their effort. At the other end, an abundance
+of texts will explain to readers how to do basic statistics using the
+stats package of the month; this book lists the one-line commands at
+this level, but it also breaks open the black boxes and shows how those
+computations are done, so the reader can modify them according to the
+vagaries of real-world data.
 
 \paragraph{The intended audience}
 I assume that you've had a statistics class already, but may need some refreshing

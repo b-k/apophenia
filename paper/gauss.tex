@@ -201,22 +201,35 @@ to a two-tailed area between $\pm${\tt beta}.
 
 
 
-\subsection{How to evaluate a test}
+\marginalia{Evaluation vocab}{
 Here are some vocabluary terms; if you are in a stats class right now,
 you will be tested on this:
 
-The likelihood of \ind{type I errors} $\equiv\alpha$: rejecting the null when it's true.
+Likelihood of {\bf type I errors} $\equiv\alpha$: rejecting the null when it's true.\index{type I errors}
 
-The likelihood of \ind{type II errors} $\equiv\beta$: accepting the null when
-it's false.
+Likelihood of {\bf type II errors} $\equiv\beta$: accepting the null when
+it's false.\index{type II errors}
 
-\ind{power}$\equiv 1-\beta$, or the likelihood of rejecting a false null.
+{\bf Power}$\equiv 1-\beta$, or the likelihood of rejecting a false null.\index{power}
 
-Unbiased$\equiv (1-\beta)\geq \alpha\ \forall$ values of the parameter.
-I.e., you're less likely to accept the null when it's false than when
-it's true.
+{\bf Unbiased}$\equiv (1-\beta)\geq \alpha\ \forall$ values of the parameter.
+I.e., you are less likely to accept the null when it's false than when
+it's true.\index{unbiased estimator}
 
-\ind{consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.
+{\bf Consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.\index{consistency}
+}
+
+\subsection{How to evaluate a test}
+A test will either reject or accept a hypothesis given data. It can be
+fooled two ways: the hypothesis could be true but the test rejects it;
+or the hypothesis could be false but the test accepts it anyway. There
+is a balance to be struck between the two errors: as one rises, the
+other falls. But not all estimators are born equal: the `heads, accept;
+tails, reject' testing method gives us a 50\% chance of a Type I error
+and a 50\% chance of a Type II error, but there are tests where both
+errors are significantly lower than 50\%, and so by any measure we would
+call those better tests than the coin-flipping test. 
+
 
 \subsubsection{Keeping type I and type II straight} 
 [Somebody once told me this story: if a doctor is deciding
@@ -227,16 +240,16 @@ thought this was totally {\it ad hoc}, especially since $H_0=$
 the patient is not sick is more null. But if the story helps you, run
 with it.]
 
-You're probably familiar with the
+You are probably familiar with the
 standard hypothesis test, which says things like `we reject the null with 90\%
 likelihood', and is what the charts in the back of the textbook are about.
 That's the type I error. It comes first because
 it's generally all anybody talks about.
 
+Why do we neglect type II errors? Because in the next section Neyman
+and Pearson will tell us we can.
 
-Why do we neglect type II errors? Because in the next section Neyman and Pearson will tell us we can.
-
-\subsection{Likelihood ratios} \ind{likelihood ratio}
+\subsection{Likelihood ratios} \index{likelihood ratio}
 
 Say the cost to a type I error is $C_I$ and the cost to a type II error is $C_{II}$.
 Then you'll reject $H_0$ iff the likely cost is less than the likely cost of not

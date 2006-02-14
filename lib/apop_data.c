@@ -129,6 +129,20 @@ void apop_data_memcpy(apop_data **out, apop_data *in){
     }
 }
 
+/** Copy one \ref apop_data structure to another. That is, all data is duplicated.
+
+  Just a front-end for \ref apop_data_memcpy for those who prefer this sort of syntax.
+ 
+  \param in    the input data
+  \return       a structure that this function will allocate and fill
+
+ \ingroup data_struct
+  */
+apop_data *apop_data_copy(apop_data *in){
+apop_data *out;
+    apop_data_memcpy(&out, in);
+    return out;
+}
 
 /** Put the first data set either on top of or to the right of the second matrix.
 

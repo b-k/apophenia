@@ -17,7 +17,9 @@ char		c,
 apop_data	*m;
 
 	sprintf(msg, "%s [opts] dbname table_name rows columns data\n\n\
--d\tdelimiter\t\tdefault= \",\"\n\
+-d\tdelimiter\t\tdefault= \"|,<space><tab>\"\n\
+-a\tappend\t\t\tdefault= append\n\
+-o\toverwrite\t\tdefault= append\n\
 -f\tfile to dump to\t\tdefault=STDOUT\n", argv[0]); 
 
 	if(argc<5){
@@ -26,10 +28,16 @@ apop_data	*m;
 	}
 	delimiter	= malloc(sizeof(char) * 5);
 	strcpy(delimiter, ",");
-	while ((c = getopt (argc, argv, "d:f:h")) != -1){
+	while ((c = getopt (argc, argv, "ad:f:ho")) != -1){
 		switch (c){
+		  case 'a':
+              apop_opts.output_append = 1;
+			  break;
 		  case 'd':
 			  strcpy(apop_opts.output_delimiter,optarg);
+			  break;
+		  case 'o':
+              apop_opts.output_append = 0;
 			  break;
 		  case 'f':
 			  outfile   = optarg;

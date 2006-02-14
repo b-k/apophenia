@@ -87,22 +87,30 @@ double		avg	= apop_vector_mean(diff),
 double apop_F_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c){
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
 gsl_matrix      *xpxinv     = gsl_matrix_calloc(set->data->size2, set->data->size2);
-gsl_vector      *qprimebeta = gsl_vector_calloc(q->size1);
-gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(q->size1, set->data->size2);
-gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(q->size1, q->size1);
-gsl_matrix      *qprimexpxinvqinv   = gsl_matrix_calloc(q->size1, q->size1);
-gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(q->size1);
+gsl_vector      *qprimebeta = gsl_vector_calloc(est->parameters->size);
+gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(est->parameters->size, set->data->size2);
+gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(est->parameters->size, est->parameters->size);
+gsl_matrix      *qprimexpxinvqinv   = gsl_matrix_calloc(est->parameters->size, est->parameters->size);
+gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(est->parameters->size);
 double          f_stat;
 double          variance;
-int             q_df        = q->size1,
+int             q_df,
                 data_df     = set->data->size1 - est->parameters->size;
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);   
-	apop_det_and_inv(xpx, &xpxinv, 0, 1);		
-    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, q, xpxinv, 0, qprimexpxinv);  
-    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, qprimexpxinv, q,  0,  qprimexpxinvq);  
-	apop_det_and_inv(qprimexpxinvq, &qprimexpxinvqinv, 0, 1);		
-    gsl_blas_dgemv(CblasNoTrans, 1, q, est->parameters, 0, qprimebeta);
-    gsl_vector_sub(qprimebeta, c);
+    if (q != NULL){
+        q_df    = q->size1;
+	    apop_det_and_inv(xpx, &xpxinv, 0, 1);		
+        gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, q, xpxinv, 0, qprimexpxinv);  
+        gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, qprimexpxinv, q,  0,  qprimexpxinvq);  
+	    apop_det_and_inv(qprimexpxinvq, &qprimexpxinvqinv, 0, 1);		
+        gsl_blas_dgemv(CblasNoTrans, 1, q, est->parameters, 0, qprimebeta);
+    } else {
+        q_df    = est->parameters->size;
+        gsl_matrix_memcpy(qprimexpxinvqinv, xpx);
+        gsl_vector_memcpy(qprimebeta, est->parameters);
+    }
+    if (c !=NULL)
+        gsl_vector_sub(qprimebeta, c);  //else, c=0, so this is a no-op.
     gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
     gsl_blas_ddot(qprimebetaminusc_qprimexpxinvqinv, qprimebeta, &f_stat);
 
@@ -297,7 +305,7 @@ apop_data       *set;
     modded_ols              = apop_model_copy(apop_OLS); 
     modded_ols->parameter_ct= set->data->size2;
     prep_inventory_names(set->names);
-apop_estimate	*out		= apop_estimate_alloc(set, *modded_ols, uses, ep);
+apop_estimate	*out		= apop_estimate_alloc(inset, *modded_ols, uses, ep);
 gsl_vector      *y_data     = gsl_vector_alloc(set->data->size1); 
 gsl_vector      *xpy        = gsl_vector_calloc(set->data->size2);
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
@@ -309,8 +317,9 @@ gsl_vector_view v           = gsl_matrix_column(set->data, 0);
     xpxinvxpy(set->data, y_data, xpx, xpy, out);
     gsl_vector_free(y_data); gsl_vector_free(xpy);
 
-    if ((ep == NULL) || (ep->destroy_data==0))
+    if ((ep == NULL) || (ep->destroy_data==0)){
         apop_data_free(set);
+    }
     return out;
 }
 
