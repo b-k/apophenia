@@ -11,38 +11,39 @@ from the data or merging together multiple data tables, using SQL. Then,
 as a last step, pull the perfectly formatted data into a GSL matrix and
 do the statistical analysis. 
 
-One especially nice thing about keeping your data in an SQL database
-is that it will give your data names again. Here's some valid SQL: {\tt
-select age, gender, year from survey}. Why, that's proper English. It
-goes downhill from there in terms of properness, but at its worst, it's
-still pretty easy to look at a query and know what's actually going on.
+SQL is not nearly as complex a language as C, making it easy to learn
+and one could even say outright pleasant to work with. Here's some valid SQL: {\tt
+select age, gender, year from survey}. Why, that's almost proper English. It
+goes downhill from there in terms of properness, but at its worst, it is
+still not difficult to look at an SQL query and have some idea of what
+the rows and columns of the output table will look like.
 
 \section{Getting data into the database}
 Apophenia provides a set of functions to facilitate querying databases.
 It will open a single database, into which you can add all the tables you'd like.
 
 The first command you will need is \ttind{apop\_open\_db}. If you give
-it the name of a file, like {\tt apop\_open\_db("study.db")}, then the
+it the name of a file, like \cinline{apop\_open\_db("study.db")}, then the
 database will live on your hard drive. This is slower than memory, but
 will exist after you stop and restart the program, and so other programs
 will be able to use the file, and you can re-run the program without
 re-reading in the data.
 
-Conversely, if you give a null argument: {\tt apop\_open\_db(NULL)},
+Conversely, if you give a null argument: \cinline{apop\_open\_db(NULL)},
 then the database is kept in memory, and will run faster but 
 disappear when the program exits.
 
 
 Unless your program is generating its own data, you will probably
-be importing data from a text file now.  The {\tt apop\_text\_to\_db}
+be importing data from a text file now.  The \cinline{apop\_text\_to\_db}
 function will do this for you; see the online reference for details. The
 first line of the text file can be column names, and the remaining rows
 are the data.
 
 
 When you are done with all of your queries, run
-{\tt apop\_close\_db} to close the database. If you send the function a
-one---{\tt apop\_close\_db(1)}---then SQLite will take a minute to clean
+\cinline{apop\_close\_db} to close the database. If you send the function a
+one---\cinline{apop\_close\_db(1)}---then SQLite will take a minute to clean
 up the database before exiting, leaving you with a smaller file on disk;
 sending in a zero doesn't bother with this step. Of course, if your
 database is in memory, it's all moot and you can forget to close the
@@ -53,29 +54,29 @@ This section discusses some of the methods of data slicing and joining
 that are easy using database queries, but difficult via
 matrix operations.
 
-For example, pulling a subset of your data is almost trivial in SQL. If
+For example, pulling a subset of your data is trivial in SQL. If
 you need all of the data for those subjects over 175cm, you can ask for
 it thusly:
 
 %\begin{verbatim}
 %#sql
-%[
+\begin{lstlisting}
 select * 
    from data 
    where height >=175;
-%]
+\end{lstlisting}
 %\end{verbatim}
 
-You can read this like English (once you know that {\tt *} means `all
-columns'): it will find all of the rows in a table named {\tt data}
-where the {\tt height} in that row is greater than or equal to 175, and
+You can read this like English (once you know that \sinline{*} means `all
+columns'): it will find all of the rows in a table named \sinline{data}
+where \sinline{height} in that row is greater than or equal to 175, and
 return all the columns for those rows.
 
 
-Generally, the {\tt select} statment gives a list of columns which the output
-table will have; the {\tt from} clause declares where the source data
+Generally, the \sinline{select} statment gives a list of columns which the output
+table will have; the \sinline{from} clause declares where the source data
 comes from; finally, there are modifiers or restrictions (in this case
-{\tt where}) on the rows to be output.  And that's it. Every query
+\sinline{where}) on the rows to be output.  And that's it. Every query
 you run will have these three parts in this order: column specification, data source,
 row specification.\footnote{You may have
 no row restrictions, in which case your query will just have the first
@@ -84,79 +85,74 @@ source data allows for a huge range of possibilities.
 
 \paragraph{Select}
 The \ttind{select} clause will specify the columns of the table which will
-be output. The easiest list is {\tt *}, which means `all the columns'.
+be output. The easiest list is \sinline{*}, which means `all the columns'.
 
 Other options:
 
-Explicitly list the columns: {\tt select age, height, weight}
+Explicitly list the columns: \sinline{select age, height, weight}
 
-Explicitly mention the table you are pulling from: {\tt select data.age,
-data.height, data.weight}. This is unnecessary here, but will become
+Explicitly mention the table you are pulling from: \sinline{select data.age, data.height, data.weight}. This is unnecessary here, but will become
 essential when dealing with multiple tables below.
 
-Rename the output columns: {\tt select data.age as age, height as\\
-height\_\-in\_\-cm}. Notice that if you do not rename {\tt data.age as 
-age}, then you will need to use {\tt data$\backslash$.age} in future
+Rename the output columns: \sinline{select data.age as age, height as height\_in\_cm}. Notice that if you do not rename \sinline{data.age as age}, then you will need to use \sinline{data\\.age} in future
 queries, which is a
 bit annoying.
 
 Generate your own new columns:\\
-{\tt select height, weight, (height/weight) as hwr}.
-The {\tt as hwr} subclause is again more-or-less
+\sinline{select height, weight, (height/weight) as hwr}.
+The \sinline{as hwr} subclause is again more-or-less
 essential if you hope to easily refer to this column in the future. 
 
 \paragraph{From} The \ttind{from} clause specifies the tables from which
-you will be pulling data. The simplest case is a single table: {\tt from
-data\_tab}, but you can specify as many tables as necessary: {\tt from
-data\_tab1, data\_tab2}. 
+you will be pulling data. The simplest case is a single table: \sinline{from data\_tab}, but you can specify as many tables as necessary: \sinline{from data\_tab1, data\_tab2}. 
 
-You can alias the tables, for easier reference. The clause {\tt from
-data\_tab1 d1, data\_tab2 d2} gives short names to both tables, which can
-be used for lines like {\tt select d1.age, d2.height}. 
+You can alias the tables, for easier reference. The clause 
+\sinline{from data\_tab1 d1, data\_tab2 d2} gives short names to both tables, which can
+be used for lines like \sinline{select d1.age, d2.height}. 
 
 Aliasing is generally optional but convenient, but one case where
 it is necessary is when you are joining a table to itself.
-For now, simply note the syntax: {\tt from data t1, data t2} will let
-you refer to the {\tt data} table as if it were two entirely independent
+For now, simply note the syntax: \sinline{from data t1, data t2} will let
+you refer to the \sinline{data} table as if it were two entirely independent
 tables. 
 
-Notice, by the way, that when we aliased something in the {\tt select}
-section, the form was {\tt select long\_col\_description as lcd}, while
-in the {\tt from} section there is no {\tt as}: {\tt from long\_file\_name lfn}.
+Notice, by the way, that when we aliased something in the \sinline{select}
+section, the form was \sinline{select long\_col\_description as lcd}, while
+in the \sinline{from} section there is no \sinline{as}: \sinline{from long\_file\_name lfn}.
 
 \paragraph{Where}
 The \ttind{where} clause is your chance to pick out only those rows which
-interest you. With no {\tt where} clause, the query will return one line
+interest you. With no \sinline{where} clause, the query will return one line
 for every line in your original table (and the columns returned will
-match those you specified in the {\tt select} clause).
+match those you specified in the \sinline{select} clause).
 
 Join as many subclauses as you wish, using the Boolean operators you
-know and love: {\tt where ((age > 13) or (height >= 175)) and (weight == 70)}.
+know and love: \sinline{where ((age > 13) or (height >= 175)) and (weight == 70)}.
 
 
-\paragraph{Pruning rows with \ttind{distinct}} The \ttind{distinct}
+\paragraph{Pruning rows with \sinlinetwo{distinct}} The \ttind{distinct}
 keyword will tell the SQL engine that if several rows would be exact
-duplicates, to return only one copy of that row. Place it after {\tt
-select}: 
-%[
+duplicates, to return only one copy of that row. Place it after 
+\sinline{select}: 
+\begin{lstlisting}
 select distinct age, height, zip
 from table
 where age > 20
-%]
-The  {\tt distinct} word prunes the rows, but is placed in the {\tt
-select} portion of the program.  This reads more like English, but it
-breaks the story above that the {\tt select} statement specifies the
-columns and the {\tt where} statement specifies the rows.
+\end{lstlisting}
+The  \sinline{distinct} word prunes the rows, but is placed in the 
+\sinline{select} portion of the program.  This reads more like English, but it
+breaks the story above that the \sinline{select} statement specifies the
+columns and the \sinline{where} statement specifies the rows.
 
 \subsection{Joining}
-If you specify two tables in your {\tt from} line, then, lacking any
+If you specify two tables in your \sinline{from} line, then, lacking any
 restrictions, the database will return one joined line for every pair of lines.
-If {\tt data1} has 15 lines, and {\tt data2} has 8 lines, then {\tt select *
+If \sinline{data1} has 15 lines, and \sinline{data2} has 8 lines, then \sinline{select *
 from data1, data2} will return 15$\times$8 = 120 lines.  Such a product
 quickly gets overwhelming: joining a thousand-row table with another
 thousand-row table will produce a million rows.
 
-Thus, the {\tt where} clause becomes essential. Its most typical use is
+Thus, the \sinline{where} clause becomes essential. Its most typical use is
 when one column in each table represents identical information. For
 example, say that one data source gave you mean income by ZIP code,
 while another gave you mean heights by ZIP code. Joining the two tables
@@ -168,17 +164,17 @@ sense:
 
 %\begin{verbatim}
 %#sql
-%[
+\begin{lstlisting}
 select t1.income, t2.height
    from econ_data t1, health_data t2
    where t1.zip == t2.zip_code
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 You can see that using the table-dot-column format for the columns is now
 essential. Also, notice that we did not have to include either ZIP code
 in the output if it is not used later. If you do want to include a ZIP
-code, then you can use either {\tt t1.zip} or {\tt t2.zip\_code}; since
+code, then you can use either \sinline{t1.zip} or \sinline{t2.zip\_code}; since
 the two will be by definition identical, using both will be a waste of
 space (but may help to give you a sense of security that things are working).
 
@@ -186,56 +182,56 @@ space (but may help to give you a sense of security that things are working).
 You can ask the SQL engine to create an index for a table which you
 intend to use in a join later. The command:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 create index econ_index on econ_data(zip)
 create index econ_index2 on econ_data(age)
-%]
+\end{lstlisting}
 %\end{verbatim}
-would index the table {\tt econ\_data} on the ZIP code and age columns.
-The name of the index, {\tt econ\_index}, is basically irrelevant and can
+would index the table \sinline{econ\_data} on the ZIP code and age columns.
+The name of the index, \sinline{econ\_index}, is basically irrelevant and can
 be any gibberish which sounds nice to you. Once you have created this
 index, a join using any of these three columns goes {\sl much} faster.
 For the query above, you will want to create an index for both {\tt
-econ\_data(zip)} and {\tt health\_data(zip\_code)}.
+econ\_data(zip)} and \sinline{health\_data(zip\_code)}.
 
 There is standard SQL syntax for indexing multiple columns, 
-({\tt create index econ\_index on econ\_data(zip, age)}), but as a
+(\sinline{create index econ\_index on econ\_data(zip, age)}), but as a
 practical matter, SQLite really only cares about the first item in the
 list, so you are better off creating several indices as above.
 
 \subsection{Aggregation}
 Here is how to get the number of rows in your data table:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 select count(*) as row_ct 
 from data;
-%]
+\end{lstlisting}
 %\end{verbatim}
-This produces a table with one column and one row, which lists the total number of rows in the {\tt data} table.
+This produces a table with one column and one row, which lists the total number of rows in the \sinline{data} table.
 
 You probably want more refinement than that; if you would like to
 know how much data you have in each ZIP code, then use the \ttind{group
 by} clause to say so:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 select zip, count(*) as ct_per_zip
 from data
 group by zip;
-%]
+\end{lstlisting}
 %\end{verbatim}
 This will group the rows into groups, where each group has the same ZIP
 code, and return a single line for each group.
 
 
 The two other aggregation commands which will be useful to you are {\tt
-sum()} and {\tt average()}. These take an existing row as an argument.
+sum()} and \sinline{average()}. These take an existing row as an argument.
 For example, to search for height disparities by ZIP code, try:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 select  average(height) as avg_height
 from data
 group by zip;
-%]
+\end{lstlisting}
 %\end{verbatim}
 Notice that we don't have to include ZIP code as a column in the output
 if we aren't interested in it.
@@ -244,39 +240,39 @@ Feel free to specify multiple {\sl group by} clauses; this creates what
 some call a \ind{cross tab}. For example, to get average income by
 height and ZIP code: 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 select  zip, height, average(income) as avg_income
 from data
 group by zip, height;
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 When you want to analyze the crosstab, you will be very
-interested in the \ttind{a\-pop\_\-db\_\-to\_\-cross\-tab} function, {\em qv}.
+interested in the \ttind{apop\_db\_to\_crosstab} function, {\em qv}.
 
-The function {\tt sum()} works the same. That's all the aggregators you
+The function \sinline{sum()} works the same. That's all the aggregators you
 get in standard SQL, but you can specify more than just a column name, so you can get
 away with a few more. Here's the variance of income in each subgroup:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 select  sum((income - average(income))*(income - average(income))) 
                as income_variance
 from data
 group by zip, height;
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 \paragraph{Apophenia's SQL extensions}
 Apophenia saves you from having to do calculations like the above by
 defining the sort of aggregations that statisticians use, such as
 moments. You can use the following aggregation functions in an SQL
-call that you make from Apophenia: {\tt stddev var variance skew kurt
-kurtosis}. There are redundancies so that you don't have to remember
+call that you make from Apophenia: 
+\sinline{stddev var variance skew kurt kurtosis}. There are redundancies so that you don't have to remember
 whether to abbreviate or not.
 
 This may also be a good time to mention three more extentions to
-standard SQL: {\tt sqrt, pow, exp, log}. These functions do what you
-expect: {\tt select log(income), pow(income, 3), sqrt(income) from data} will give
+standard SQL: \sinline{sqrt, pow, exp, log}. These functions do what you
+expect: \sinline{select log(income), pow(income, 3), sqrt(income) from data} will give
 you a table with the log of incomes and, for what it's worth, incomes
 cubed and the square root of incomes.
 
@@ -292,66 +288,64 @@ You can think of joining two tables as setting one table to the right of
 another table. But now and then, you need to stack one on top of
 the other. There are four keywords to do this.
 
-\paragraph{\ttind{Union}} For example, 
-%[
+\paragraph{\cinlinetwo{Union}} For example, \ttindex{Union}
+\begin{lstlisting}
 select id, age, zip
 from data_set_1
 UNION
 select id, age, zip
 from data_set_2
-%]
+\end{lstlisting}
 will produce the results of the first query stacked directly on top of
 the second query. Feel free to use subqueries or what have you, but be
 careful that both tables have exactly the same number of columns.
 
-\paragraph{\ttind{Union all}} If a line is duplicated in both tables,
-then the {\tt union} operation throws out
-one copy of the duplicate lines, much like {\tt select distinct}
+\paragraph{\cinlinetwo{Union all}}\ttindex{Union all} If a line is duplicated in both tables,
+then the \cinlinetwo{union} operation throws out
+one copy of the duplicate lines, much like \sinline{select distinct}
 includes only one of the duplicates.
 
-\paragraph{\ttind{Intersect}} As you can guess, {\tt intersect} returns
+\paragraph{\cinlinetwo{Intersect}}\ttindex{Intersect} As you can guess, \sinline{intersect} returns
 a single copy of only those lines that appear in both tables.
 
-\paragraph{\ttind{Except}} This is the subtraction: it returns only
+\paragraph{\cinlinetwo{Except}}\ttindex{Except} This is the subtraction: it returns only
 elements from the first table that do not appear in the second. Notice
 the asymmetry: absolutely nothing in the second table will appear. 
 
 \subsection{Creating tables} There are two ways to create a table. One
 is via  a \ttind{create} statement and then an \ttind{insert} statement
 for every single line. 
-%[
+\begin{lstlisting}
 begin;
 create table newtab(name, age);
 insert into newtab("Joe", 12);
 insert into newtab("Jill", 14);
 insert into newtab("Bob", 14);
 commit;
-%]
+\end{lstlisting}
 The begin-commit wrapper, by the way, means that everything will happen
 in memory until the final commit. The program may run faster, but if
 the program crashes in the middle, then you will have lost everything.
 The optimal speed/security trade-off is left as an exercise for the
 reader.
 
-If you have hundreds or thousands of {\tt insert}s, you're almost certainly better off putting the data
-in a text file and using \ttind{apop\_\-text\_\-to\_\-db}. The form
+If you have hundreds or thousands of \sinline{insert}s, you're almost certainly better off putting the data
+in a text file and using \ttind{apop\_text\_to\_db}. The form
 above is mostly useful in situations where you are creating the table in mid-program; see the example on page \pageref{createeg}.
 
 
 The other method of creating a table is by saving the results of a
-query. Simply append {\tt create table newtab as} at the head of the
+query. Simply append \sinline{create table newtab as} at the head of the
 query you'd like to save: 
 %#sql
-%[
+\begin{lstlisting}
 create table tall_people as
 select name, age, height 
 from people
 where height > 175
-%]
+\end{lstlisting}
 
 
-
-This is generally painful, 
 
 \subsection{More trickery} Frankly, SQL is not very good for
 creating new data from the existing. But the few things that you can do
@@ -359,15 +353,15 @@ are very easy.
 
 \paragraph{A time lag} Here is a simple example:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 select year, (t1.income - t2.income) as diff
    from data t1, data t2
    where t1.year=(t2.year -1);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
-The {\tt where} clause will line up the table with a copy of itself
-lagged by one year, and then the {\tt diff} variable will be the
+The \sinline{where} clause will line up the table with a copy of itself
+lagged by one year, and then the \sinline{diff} variable will be the
 one-year change in income.
 
 
@@ -377,28 +371,26 @@ One of SQL's nicest tricks is that it allows for the input tables to be
 queries themselves. For example: what is the mean number of observations per
 ZIP code?
 
-You first need to get a {\tt count(*)} grouped by ZIP, and then get an
+You first need to get a \sinline{count(*)} grouped by ZIP, and then get an
 average of that. You could run a query to produce a table of counts,
 save the table, and then run a query on that table to find the averages.
 Here is how to do all of this in one query: 
-%\begin{verbatim}
-%[
+\begin{lstlisting}
 select average(ct) 
    from (select count(*) as ct
             from data
             group by zip)
-%]
-%\end{verbatim}
-The query inside the {\tt from} clause will return a table, and even
+\end{lstlisting}
+The query inside the \sinline{from} clause will return a table, and even
 though that table has no name, it can be used as a data source like any other
 table. So the example will first produce a table with one line for each
 ZIP code, listing the number of observations it has, and then it will
-take that table and find the average of its {\tt ct} column.
+take that table and find the average of its \sinline{ct} column.
 
 Everywhere you would put a table name, you could put a query 
 instead. Of course, the query output has no name, so you may need to
-alias the result: {\tt from (select ...) t1} will allow you to refer to
-the query's output as {\tt t1} elsewhere in the query.
+alias the result: \sinline{from (select ...) t1} will allow you to refer to
+the query's output as \sinline{t1} elsewhere in the query.
 
 \subsection{Folding queries into C code} 
 
@@ -409,74 +401,71 @@ query. For example,
 
 %\begin{verbatim}
 %#c
-%[
-#include <apophenia/db.h>
+\begin{lstlisting}
 apop_query(" select *        \
                from data     \
                   where height >=175;");
-%]
+\end{lstlisting}
 %\end{verbatim}
 A string is easiest for you as a human to read if it is
 broken up over several lines; to do this, end every line with a
 backslash, until you reach the end of the string. The line above runs
-the query and returns nothing. [Not very useful for a {\tt select}; but see
-{\tt create} and  {\tt insert} below.]
+the query and returns nothing. [Not very useful for a \sinline{select}; but see
+\sinline{create} and  \sinline{insert} below.]
 
-{\tt apop\_query} accepts {\tt printf}-style arguments. For example,
+\cinline{apop\_query} accepts \cinline{printf}-style arguments. For example,
 say that you calculate a minimum height earlier in the program, and want
 to write a query that uses that variable:
 %\begin{verbatim}
-%[
-#include <apophenia/db.h>
+\begin{lstlisting}
 int min_height	= 175;
 apop_query(" select *     \
                from data     \
                where height >=%i;", min_height);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 \paragraph{apop\_query\_to\_data} \ttindex{apop\_query\_to\_data}
 This function takes both a gsl\_matrix and a query string. It will run
 the query and return the resulting string for your analysis.  
 %\begin{verbatim}
-%[
-#include <gsl/gsl_matrix.h>
+\begin{lstlisting}
 apop_data *tall_people;
 int min_height	= 175;
 
 tall_people = apop_query_to_data(" select *     \
                                    from data     \
                                    where height >=%i;", min_height);
-%]
+\end{lstlisting}
 %\end{verbatim}
-will query {\tt data} for all its information, allocate {\tt tall\_people} to be an
-ap\-prop\-ri\-ate\-ly-sized matrix, and fill it with the data.
+will query \sinline{data} for all its information, allocate \sinline{tall\_people} to be an
+appropriately-sized matrix, and fill it with the data.
 
-There are {\tt apop\_query} functions for any type you could desire,
-including \ttind{apop\_\-que\-ry\_\-to\_\-ma\-trix} to pull a query to a {\tt
+There are \cinline{apop\_query} functions for any type you could desire,
+including \ttind{apop\_query\_to\_matrix} to pull a query to a {\tt
 gsl\_matrix}, \ttind{apop\_query\_to\_chars} to pull a query into
 a two-by-two table of strings, \ttind{apop\_query\_to\_vector}
 and \ttind{apop\_query\_to\_float} to pull the first column or first
-number into {\tt gsl\_vector} or a {\tt float}.
+number into \cinline{gsl\_vector} or a \cinline{float}.
 
 \paragraph{Data to db} For the other direction, there are the plain old
-print functions: \ttind{a\-pop\_\-da\-ta\_\-print} and
+print functions: \ttind{apop\_data\_print} and
 \ttind{apop\_matrix\_print}. If the global variable
-{\tt apop\_opts.output\_type == 'd'}, then these functions will dump the
+\cinline{apop\_opts.output\_type == 'd'}, then these functions will dump the
 given data to the given file:
-\index{apop\_\-opts!output\_type@{\tt output\_type}}{\tt apop\_\-opts.output\_type}
-%[
+\index{apop\_opts!output\_type@\cinline{output\_type}}
+\begin{lstlisting}
 apop_opts.output_type == 'd';
 apop_data_print(datatab, "my_data");
-%]
+\end{lstlisting}
 Say that tomorrow you decide you would prefer to have the data dumped to
-a file; then just change the {\tt 'd'} to an {\tt 'f'} and away you go.
+a file; then just change the \cinline{'d'} to an \cinline{'f'} and away you go.
 
 There is one inconvenience to this convenience, however: dots are popular
-in file names, e.g. {\tt dump.csv}, but are not valid in table names. If
+in file names, e.g. \binline{dump.csv}, but are not valid in table names. If
 you try to use that file name as a table, SQLite will think you are
-referring to a database named {\tt dump} with a table named {\tt csv},
-and will will give you an error in the way of {\tt no database named ``dump''}.
+referring to a database named \sinline{dump} with a table named \sinline{csv},
+and will will give you an error in the way of \binline{no database named ``dump''}.
 
 \section{Some examples} 
 Here are a few examples of how C code and SQL calls can neatly interact.
@@ -491,18 +480,18 @@ your data.\footnote{Sometimes such behavior will leave the database in
 an erratic state. If so, try the SQLite command \ttind{vacuum}.}
 
 %#c
-%[
+\begin{lstlisting}
 int     i;
 double  sim_output;
 apop_db_open("sim.db");
-apop_table_exists("results", 1);
+apop_table_exists("results", 1);    //See below.
 apop_query("create table results (period, output);");
 for (i=0; i< max_periods; i++){
     sim_output = run_sim(i);
     apop_query("insert into results(%i, %g);", i, sim_output);
     }
 apop_db_close(0);
-%]
+\end{lstlisting}
 
 The \ttind{apop\_table\_exists} command checks for whether a table
 already exists. If the second argument is one, then the table is deleted
@@ -513,17 +502,17 @@ the dignified way to delete a table from a database, because it will not
 return an error if the table you are trying to delete does not exist.
 
 \subsection{Dummy variables}
-Here's a neat trick: using SQL's {\tt case} a few dozen times, we can turn a
+Here's a neat trick: using SQL's \sinline{case} a few dozen times, we can turn a
 variable which is discrete but not ordered (such as district numbers in the
 following example) into a series of dummy variables. It requires writing down a
-separate {\tt case} statement for each value the variable could take, but that's
-what {\tt for} loops are for.
+separate \sinline{case} statement for each value the variable could take, but that's
+what \cinline{for} loops are for.
 
 \codefig{dummy}{A sample of using SQL to create dummy variables}
 
 [Note to editor: I just cut and pasted figure \ref{dummy} from my hard drive. Will clean it up
 later. The gist is that we first query out the list of districts; then we write a
-select statement with a line {\tt case district when district\_no then 1 else 0} for
+select statement with a line \sinline{case district when district\_no then 1 else 0} for
 each and every district\_no. You can then run your regression on the output of the
 query without any further manipulation.
 
@@ -532,64 +521,50 @@ dummy variables, you always have to exclude one value, which will be the baselin
 using i=1 means district[0] will be the baseline.]
 
 Now that I've shown you that neat trick, don't do it; instead use
-\ttind{apop\_pro\-duce\_dum\-mies} on the matrix side.
+\cinline{apop\_produce\_dummies} on the matrix side.
+\ttindex{apop\_produce\_dummies}
 
 \subsection{Easy t-tests}
 Say we have a set of observations of our sample's years of education, and their annual income. We want to
 know if getting that grad school education is {\it really} worth it. The null hypothesis is: (Income for
-people with education less than 16 years) $\leq$ (income for people with greater than or equal to 16 years
+people with less than 16 years of education) $\leq$ (income for people with greater than or equal to 16 years
 of education).
 
 That first data set is:
-%\begin{verbatim}
-%#c
-%[
-#include <gsl/gsl.h>
-#include <gsl/gsl_matrix.h>
-#include <apophenia/db.h>
+\begin{lstlisting}
 gsl_vector	*undereducated;
    undereducated = apop_query_to_vector(
       "select income from survey \
       where education < 16");
-%]
-%\end{verbatim}
+\end{lstlisting}
 while the second group is:
-%\begin{verbatim}
-%[
+\begin{lstlisting}
 gsl_vector	*overeducated;
    overeducated = apop_query_to_vector(
       "select income from survey \
       where education >=16");
-%]
-%\end{verbatim}
+\end{lstlisting}
 
 Here's a factoid for you: incomes are usually distributed log-normally, so we should do a t-test on the
 log of income. We'll do one with Apohenia and one with the raw GSL:\ttindex{apop\_vector\_log}
-%\begin{verbatim}
-%[
-#include <apophenia/headers.h>
+\begin{lstlisting}
 apop_vector_log(undereducated);
 
-#include <gsl/gsl_sf_log.h>
 int i;
 for(i=0; i< overeducated->size; i++)
    gsl_vector_set(overeducated, i, 
                gsl_sf_log(gsl_vector_get(overeducated, i)));
-%]
-%\end{verbatim}
+\end{lstlisting}
 
 Apophenia provides functions to find the mean and variance of a vector:
 
-%\begin{verbatim}
-%[
-#include <apophenia/stats.h>
+\begin{lstlisting}
 double	mean_over, mean_under, var_over, var_under;
 mean_over  = apop_mean(overeducated);
 mean_under = apop_mean(undereducated);
 var_over   = apop_variance(overeducated);
 var_under  = apop_variance(undereducated);
-%]
-%\end{verbatim}
+\end{lstlisting}
 
 The other factoid you'll need is that the difference of two normal
 distributions is also normal, and the variance of the difference is
@@ -602,15 +577,14 @@ get the result in the text.} That is, assuming the counts are large
 enough that the Normal approximation is OK, we can write down:
 
 %\begin{verbatim}
-%[
-#include <gsl/gsl_cdf.h>
+\begin{lstlisting}
 double	test_me = gsl_cdf_gaussian_P(mean_over-mean_under, 
                                        var_over+var_under);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
-and {\tt test\_me} is the probability that the difference between the
-means is less than or equal to zero. If {\tt test\_me} turns out to be greater
+and \cinline{test\_me} is the probability that the difference between the
+means is less than or equal to zero. If \cinline{test\_me} turns out to be greater
 than your preferred confidence interval, (e.g., 95\%), then reject the
 null and go to grad school. Else, there isn't enough information to
 distinguish between the two with confidence.
@@ -618,9 +592,9 @@ distinguish between the two with confidence.
 \subsection{No, easier} The above example gave you line-by-line
 control, but let's say the boss gave you ten minutes to get out a
 t-test. Here is a complete program:
-\index{t test!apop\_t\_test@{\tt apop\_t\_test}}
+\index{t test!apop\_t\_test@\cinline{apop\_t\_test}}
 
-%[
+\begin{lstlisting}
 #include <apophenia/headers.h>
 
 int main(void){
@@ -637,16 +611,16 @@ int main(void){
     apop_t_test(undereducated, overeducated);
     return 0;
 }
-%]
+\end{lstlisting}
 
 This is stats-package level work: open the database, query out two
 columns, and call a $t$-test function that does things
 we don't have time to think about. Those who report incomes less than or
 equal to zero, we just throw out.\footnote{You may be able to do better
 by querying out incomes, and then calling
-    {\tt apop\_vector\_log(overeducated)} and {\tt
+    \cinline{apop\_vector\_log(overeducated)} and {\tt
     apop\_vector\_log(undereducated)} to get the logs. Then you'll have
-    {\tt GSL\_NEGINF}s where you had zeros, which means you will at least
+    \cinline{GSL\_NEGINF}s where you had zeros, which means you will at least
     know exactly where your problem is. Of course, the $t$-test will
     still fail because of the infinite variances.}
 

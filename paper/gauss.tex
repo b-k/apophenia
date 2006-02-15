@@ -89,22 +89,22 @@ multivalued hypothesis, then you need to do an $F$ test.
 There are four things that cover most of what you will be doing. 
 The first is simply looking up the vaule of the PDF at a given point. Here are the functions:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_randist.h>
 double gsl_ran_gaussian_pdf (double X, double SIGMA);
 double gsl_ran_tdist_pdf (double X, double NU);
 double gsl_ran_fdist_pdf (double X, double NU1, double NU2);
 double gsl_ran_chisq_pdf (double X, double NU);
-%]
+\end{lstlisting}
 %\end{verbatim}
-The prefix {\tt gsl\_ran} indicates that these functions are from the
+The prefix \cinline{gsl\_ran} indicates that these functions are from the
 random number generation module. (Random number generation itself will be delayed to page
 \pageref{randomnumbers}.) Notice that there is no mean for the Normal and neither mean nor variance
 for the T-distribution, so we may need to modify $X$ accordingly. For
 example, here is a function for a t-distribution with approaches the
-mean $M$ and variance $v$ as {\tt NU}$\to \infty$:
+mean $M$ and variance $v$ as \cinline{NU}$\to \infty$:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_randist.h>
 #include <math.h>      //sqrt
 double gsl_ran_tdist_pdf_with_mv(double X, double mean,
@@ -112,36 +112,36 @@ double gsl_ran_tdist_pdf_with_mv(double X, double mean,
     double X_scaled = (x - mean)/sqrt(var);
     return gsl_ran_tdist_pdf(X_scaled, NU);
 }
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 Next, there's calculating the CDF above or below a point. 
-The {\tt P-}functions below calculate the CDF below a point, i.e.
+The \cinline{P-}functions below calculate the CDF below a point, i.e.
 $\int_{-\infty}^X f(y) dy,$
-while the {\tt Q-}functions calculate the CDF above a point, i.e.
+while the \cinline{Q-}functions calculate the CDF above a point, i.e.
 $\int^{\infty}_X f(y) dy.$
 These will obviously add to one, so you can express any area in terms of whichever function is clearest.
 
 For example, if we find that our Normally-distributed mean is 2.2 standard
 deviations above zero, then we can reject the one-tailed hypothesis that
-the mean is zero with probability {\tt 1 - gsl\_cdf\_gaussian\_Q(2.2, 1)}.
+the mean is zero with probability \cinline{1 - gsl\_cdf\_gaussian\_Q(2.2, 1)}.
 
 \index{Gaussian distribution|see{Normal distribution}}
-\index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_P@{\tt gsl\_cdf\_chisq\_P}}
-\index{t distribution!gsl\_cdf\_tdist\_P@{\tt gsl\_cdf\_tdist\_P}}
-\index{F distribution!gsl\_cdf\_fdist\_P@{\tt gsl\_cdf\_fdist\_P}}
-\index{Normal distribution!gsl\_cdf\_gaussian\_P@{\tt gsl\_cdf\_gaussian\_P}}
+\index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_P@\cinline{gsl\_cdf\_chisq\_P}}
+\index{t distribution!gsl\_cdf\_tdist\_P@\cinline{gsl\_cdf\_tdist\_P}}
+\index{F distribution!gsl\_cdf\_fdist\_P@\cinline{gsl\_cdf\_fdist\_P}}
+\index{Normal distribution!gsl\_cdf\_gaussian\_P@\cinline{gsl\_cdf\_gaussian\_P}}
 \ttindex{gsl\_cdf\_...}
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_cdf.h>
 double gsl_cdf_gaussian_P (double X, double SIGMA);
 double gsl_cdf_tdist_P (double X, double NU);
 double gsl_cdf_fdist_P (double X, double NU1, double NU2);
 double gsl_cdf_chisq_P (double X, double NU);
-%]
+\end{lstlisting}
 %\end{verbatim}
-\dots plus all of these with the {\tt P} replaced by a {\tt Q}.
+\dots plus all of these with the \cinline{P} replaced by a \cinline{Q}.
 
 
 In the other direction, we may want to know where we will need to be to reject a hypothesis with 95\%
@@ -150,17 +150,17 @@ one day in the month. That is, what is the value of the 1-in-20, or 5\%, point o
 Assuming a Normal(M,S) distribution of profit and loss,\footnote{This is false. Securities
 typically have leptokurtic (fat-tailed) returns.} the bank will report a \index{value at risk} of {\tt
 gsl\_cdf\_gaussian\_Pinv (0.05, S)+M}. Here are the other function delcarations:
-\index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_Pinv@{\tt gsl\_cdf\_chisq\_Pinv}}
-\index{t distribution!gsl\_cdf\_tdist\_Pinv@{\tt gsl\_cdf\_tdist\_Pinv}}
+\index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_Pinv@\cinline{gsl\_cdf\_chisq\_Pinv}}
+\index{t distribution!gsl\_cdf\_tdist\_Pinv@\cinline{gsl\_cdf\_tdist\_Pinv}}
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_cdf.h>
 gsl_cdf_gaussian_Pinv (double X, double SIGMA);
 double gsl_cdf_chisq_Pinv (double P, double NU);
 double gsl_cdf_tdist_Pinv (double P, double NU);
-%]
+\end{lstlisting}
 %\end{verbatim}
-\dots plus all of these with the {\tt P}s replaced by {\tt Q}s.
+\dots plus all of these with the \cinline{P}s replaced by \cinline{Q}s.
 Notice that there is no inverse for the CDFs of the F distribution.
 
 
@@ -174,15 +174,15 @@ Notice that there is no inverse for the CDFs of the F distribution.
 
 We have all the ingredients we need to test a hypothesis; all that
 remains is to glue them all together. For example, in the last chapter, the code
-found the coefficient vector {\tt beta} and {\tt xpx\_inv}, which is the
-variance-covariance matrix of {\tt beta}.  Now assume that {\tt beta}
+found the coefficient vector \cinline{beta} and \cinline{xpx\_inv}, which is the
+variance-covariance matrix of \cinline{beta}.  Now assume that \cinline{beta}
 is normally distributed (for example, the original data set consists
 of iid draws from a homoskedatic distribution). Then we can use the
-above functions to find the probability that each element of {\tt beta}
+above functions to find the probability that each element of \cinline{beta}
 is different from zero:
 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 \\We enter with the vector beta and matrix xpx_inv
 #include <gsl/gsl_cdf.h>  //CDF functions
 #include <math.h>         //abs
@@ -194,13 +194,14 @@ for (i=0;i< beta->size; i++){
     confidence[i] -= .5;
     confidence[i] *= 2;
 }
-%]
+\end{lstlisting}
 %\end{verbatim}
-The last two steps converted from the one-tailed area below {\tt beta}
-to a two-tailed area between $\pm${\tt beta}.
+The last two steps converted from the one-tailed area below \cinline{beta}
+to a two-tailed area between $\pm$\cinline{beta}.
 
 
 
+\subsection{How to evaluate a test}
 \marginalia{Evaluation vocab}{
 Here are some vocabluary terms; if you are in a stats class right now,
 you will be tested on this:
@@ -219,7 +220,6 @@ it's true.\index{unbiased estimator}
 {\bf Consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.\index{consistency}
 }
 
-\subsection{How to evaluate a test}
 A test will either reject or accept a hypothesis given data. It can be
 fooled two ways: the hypothesis could be true but the test rejects it;
 or the hypothesis could be false but the test accepts it anyway. There
@@ -361,16 +361,16 @@ If you have read this far, you know how to code all of the operations
 in Equation \ref{ftest}.  But fortunately, 
 Apophenia includes a function that will calculate Equation \ref{ftest}
 for you.
-\index{F test!apop\_F\_test@{\tt apop\_F\_test}}
+\index{F test!apop\_F\_test@\cinline{apop\_F\_test}}
 To do this, you will need to feed the function a $\betav$ vector, and a
 matrix $\Qv'$ plus a vector $\cv$ that indicate the set of hypotheses
 you wish to test. Notice that each {\em row} of the input matrix represents a
-hypothesis. Also, recall that functions ending in {\tt calloc} allocate
+hypothesis. Also, recall that functions ending in \cinline{calloc} allocate
 a matrix or vector and simultaneously set every element to zero, giving
 you a blank slate to fill. Thus, if you already have a data set, and
 would like to run an OLS regression and then test the joint hypothesis
 of Equation \ref{qc}, here's what you'd type:
-%[
+\begin{lstlisting}
 apop_estimate *e = apop_OLS.estimate(data, NULL, NULL);
 gsl_matrix *Q   = gsl_matrix_calloc(3,2);
 gsl_vector *c   = gsl_vector_alloc(2);
@@ -379,7 +379,7 @@ gsl_matrix_set(Q, 1, 1, 1);
 gsl_matrix_set(Q, 1, 2, -2);
 gsl_vector_set(Q, 0, 7);
 apop_F_test(e, data, Q, c);
-%]
+\end{lstlisting}
 
 Included in the default output from a regression,
 many stats packages run an $F$-test that reports the
@@ -389,8 +389,8 @@ to decide whether this is a relevant statistic for the situation you are
 dealing with, but because it is a custom to report it, some people expect it,
 so
 Apophenia facilitates this hypothesis test by assuming it is the default to assume when you to send in {\tt
-NULL} variables: {\tt apop\_F\_test(estimate, data, NULL, NULL)}. That is, if
-$\Qv'=${\tt NULL}, Apophenia assumes ${\bf I}$ and if $\cv=${\tt NULL},
+NULL} variables: \cinline{apop\_F\_test(estimate, data, NULL, NULL)}. That is, if
+$\Qv'=$\cinline{NULL}, Apophenia assumes ${\bf I}$ and if $\cv=$\cinline{NULL},
 Apophenia assumes ${\bf 0}$.
 
 
@@ -404,12 +404,12 @@ our fancy. First, we need a means of expressing the hypothesis.
 }
 
 \subsection{The t-test} \label{ttest}
-\index{t test!apop\_t\_test@{\tt apop\_t\_test}}
-\index{t test!apop\_paired\_t\_test@{\tt apop\_paired\_t\_test}}
+\index{t test!apop\_t\_test@\cinline{apop\_t\_test}}
+\index{t test!apop\_paired\_t\_test@\cinline{apop\_paired\_t\_test}}
 Among the most common and simplest questions one asks is: are two data
-sets from the same process? Let {\tt n\_side} be the income of households
+sets from the same process? Let \cinline{n\_side} be the income of households
 drawn from the North side of town, North of the railroad tracks, and
-{\tt s\_side} be the income of households drawn from the South side of
+\cinline{s\_side} be the income of households drawn from the South side of
 town. Are North side incomes different from South side incomes? 
 
 It so happens that the sum of two Normal distributions is also a normal
@@ -424,11 +424,11 @@ test the hypothesis that the number above, the $t$-statistic, is
 different from zero for any given confidence level. Apophenia provides a
 high-level function to do the work for you:
 
-%[
+\begin{lstlisting}
 apop_vector *a = gather_data("n_side");
 apop_vector *b = gather_data("s_side");
 apop_t_test(a, b);
-%]
+\end{lstlisting}
 
 Now let us say that the data is paired, in the sense that for each
 element in the first set, there is an element in the second set that is
@@ -443,24 +443,24 @@ in the appropriate $t$-distribution. This is a more powerful test,
 meaning that we are more likely to reject the null hypothesis of no
 difference between the two vectors, therefore researchers prefer the
 paired $t$-test over the unpaired version above. Apophenia provides the
-{\tt apop\_paired\_t\_test} function to run this test where appropriate.
+\cinline{apop\_paired\_t\_test} function to run this test where appropriate.
 
 \comment{
 \section{Good ol' OLS}
-This section would discuss how to write your very own {\tt regress} function, which, as noted above,
+This section would discuss how to write your very own \cinline{regress} function, which, as noted above,
 just consists of solving for the $\beta$ in $(X'X)\beta = X'Y$. 
 The last chapter showed us the code to find the betas with the smallest squared error; this section will
 cover testing hypotheses about those betas.
 
 \subsection{GLS} Generalized least squares refers to any method that uses a variance-covariance matrix
-that isn't the identity matrix. Having written our {\tt regress} function, it's almost trivial to
+that isn't the identity matrix. Having written our \cinline{regress} function, it's almost trivial to
 generalize to GLS. But the fun of GSL is in working out what that matrix should be.  This section would
 give examples of favorites such as AR-1 processes from time series analysis (and hey, why not AR-$N$?).
 
 The easiest thing to do is simply calculate the variances and covariances of the data itself:
 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include "gsl_convenience_fns.h"
 gsl_vector_view one_col, another_col;
 gsl_matrix *var_covar=gsl_matrix_alloc(data->size2, data->size2);
@@ -475,7 +475,7 @@ for(i=0;i< data->size2; i++){
       if (j!=i) gsl_matrix_set(var_covar, j, i, covar);
    }
 }
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 Now that we've got this variance-covariance matrix, $\Sigma$, we can
@@ -540,9 +540,11 @@ a confidence interval around $3 \sigma^4$ and state with a certain percentage
 of certainty that the kurtosis is or is not where it should be. Hint: the CLT applies to the kurtosis,
 so you know it has a Gaussian distribution.
 
-[Oh, and by the way, the GSL gives you normalized \index{kurtosis},
-not actual kurtosis.  Will discuss that here, since I didn't notice that
-line in the documentation 
-when I first started using the GSL and it really screwed me up for a
-while.]
-
+\marginalia{Kurtosis minus three}{
+There is some debate as to whether the kurtosis of a ${\cal N}(0,1)\equiv 3$
+or $\equiv 0$. This is simply a definitional issue: some prefer to
+normalize all reported kurtoses by subtracting three from the actual
+fourth moment. For example, the GSL does the normalization; Apophenia does not.
+Bear this in mind when interpreting kurtosis output. If you see a
+negative kurtosis, then you are guaranteed that you are getting
+normalized kurtosis, since a fourth power can never be negative.\index{kurtosis}}

@@ -26,10 +26,10 @@ are we using them in cases where their assumptions aren't true?
 
 Unfortunately, the statistics packages are written around the
 specialized, assumption-heavy theorems, and because people do what the
-technology facilitates, people who use stats packages are very, very
-likely to assume OLS is valid.  If OLS doesn't quite fit, they hit a
-brick wall, and don't have a simple way to go further. In the end, they'll
-take the path of least resistance and just gloss over OLS's assumptions.
+technology facilitates, people who use stats packages are very
+likely to assume OLS is valid.  If OLS does not quite fit, they hit a
+brick wall, and lack a simple way to go further. In the end, too many
+will take the path of least resistance and just gloss over OLS's assumptions.
 
 There is nothing more embarassing than a presenter who answers a question
 about the assumptions or results of a model with `that's just Stata's
@@ -38,9 +38,9 @@ presentation by a real live researcher) `I would have corrected this
 anomaly in my data, but Stata didn't have a function to do that.' This
 is beyond unpersuasive and into the realm of confidence-eroding.
 
-Stats packages aren't designed around the general results, though
-it's technically possible to retrofit these packages to use them. Since
-they're Turing-complete,\footnote{Alan Turing wrote down an imaginary
+Stats packages are not designed around the general results, though
+it is technically possible to retrofit these packages to use them. Since
+they are Turing-complete,\footnote{Alan Turing wrote down an imaginary
 machine which could execute a dozen types of instruction.  All
 modern programming languages implement these instructions in one way or
 another, and are therefore equivalent to Turing's theoretical computer;
@@ -57,9 +57,9 @@ magnitude faster, as per Reason \#2.
 
 \subsection{Reason \#2: Stats packages will break your heart.} Stats packages
 are wonderful at first, making it easy to sit down and start working
-quickly. As you get better with the language, you'll 
+quickly. As you get better with the language, you will 
 grow to depend on the stats package for more and more
-things. And then, one day, you'll get to a problem that's too far
+things. And then, one day, you will get to a problem that is too far
 out from what the language designers had in mind, or a problem that is
 too large-scale for the language to handle. Your favorite language just
 won't be able to do it, even after you spend hours trying to get around
@@ -93,7 +93,7 @@ a function, and global. You will see that having many options for
 intermediate levels of scope is a central theme to \ifbook Chapter \ref{c_crash}\else this overview\fi,
 and this is because good control over a variable's scope is essential
 to your sanity when writing programs with more than a few pages of
-code. Again, this is something that you won't notice is missing until
+code. Again, this is something that you will not notice is missing until
 you invest heavily in a language and begin writing lengthier analyses.
 
 Finally, all stats packages are slower than C---often hundreds of times
@@ -112,17 +112,18 @@ features, but they will eventually save you heartbreak.
 
 \subsection{Reason \#3: C is universal} 
 The software I discuss in this book is available from {\tt www.gnu.org}, for the
-system you're using, and for the system you will be using five years from now, for
+system you are using, and for the system you will be using five years from now, for
 free. There is no other language I could say that about with such confidence.
 
 This is not only important because you may find yourself in front of
 a different type of computer next year, but because we increasingly
 expect that the data and analysis behind a work be publically available.
-For example, it's a requirement for National Science Foundation funding. But if your analysis uses
-a stats package which isn't universally available, then you will break
-the hearts of all of your fellow researchers who want to work with your analysis
-but for whom it's logistically impossible to do so. Are you sure your
-colleague in Madras can afford a Stata license?
+For example, it is a requirement for funding from the U.S. National
+Science Foundation. But if your analysis uses a stats package which
+isn't universally available, then you will break the hearts of all of
+your fellow researchers who want to work with your analysis but for whom
+it is logistically impossible to do so. Are you sure your colleague in
+Madras can afford a SAS license?
 
 C is also universal in the time domain. Code written in C thirty years
 ago still runs today, and every operating system in existence today has a C
@@ -137,9 +138,9 @@ and have on their hard drives dozens of scripts that won't run anymore.
 
 \ifbook
 \subsection{Reason \#4: C is on all levels at once} 
-Geeks often refer to high-level and low-level languages. The low-level
+Connoisseurs of computing languages often refer to high-level and low-level languages. The low-level
 languages are close to the machine, referring to individual memory
-addresses and register operations, giving you perfect control but a lot
+addresses and register operations, giving you perfect control but demand a lot
 of work. The high-level languages do
 complex things with one command, like {\tt regress(data)} to produce
 pages of output, giving you no control but ease-of-use.
@@ -147,7 +148,7 @@ pages of output, giving you no control but ease-of-use.
 On this hierarchy, C is typically billed as a low-level language, but this is only
 partly true. C can indeed be used as a rock-bottom low-level language,
 with its bit-shifting operators and pointers to memory addresses, and
-even though you'll never use the bit-shifting, the pointers are an
+even though you will never use the bit-shifting, the pointers are an
 integral feature. But on the other hand, there is a library of functions
 to do whatever high-level operations you may have in mind, such as the
 {\tt apop\_OLS.estimate(data)} function from the Apophenia library.

@@ -13,8 +13,8 @@ There are many on the market; this chapter uses the \ind{GNU Scientific
 Library} (GSL). The GSL is recommended because it is actively supported
 and will work on about as many platforms as C itself. Apophenia is built
 on the GSL, and many of its structures have GSL matrices or vectors at
-their core, so low-level operations on {\tt apop\_\-data} sets become
-{\tt gsl\_\-matrix} operations.
+their core, so low-level operations on \cinline{apop\_data} sets become
+\cinline{gsl\_matrix} operations.
 
 \section{The GSL's matrices and vectors}
 As you saw in the last chapter, arrays can be directly implemented in C, but for
@@ -31,16 +31,15 @@ section \ref{asst_conversions}.
 \ttindex{gsl\_vector\_alloc}
 \ttindex{gsl\_matrix\_free}
 \ttindex{gsl\_vector\_free}
-\index{declaration!of gsl\_matrix@of {\tt gsl\_matrix}}
-\index{declaration!of gsl\_vector@of {\tt gsl\_vector}}
-\index{for@{\tt for}!example of}
+\index{declaration!of gsl\_matrix@of \cinline{gsl\_matrix}}
+\index{declaration!of gsl\_vector@of \cinline{gsl\_vector}}
+\index{for@\cinline{for}!example of}
 Here's some sample code which will do a few useless things to a few sample
 objects:\label{gslexample}
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_matrix.h>
 #include <stdio.h>
-
 
 int main(void){
    gsl_matrix   *m = gsl_matrix_alloc(10,10);
@@ -55,68 +54,65 @@ int main(void){
    printf("Here's point (3,0) again: %g", gsl_matrix_get(m, 3,0));
    gsl_matrix_free(m);
    gsl_vector_free(v);
+   return 0;
 }
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 \paragraph{A walk through the code}
 Here's what just happened: we allocated a 10$\times$10 matrix and a vector of
 length 10.  For the sake of variety, we  allocated the two differently.
-{\tt gsl\_matrix\_alloc} simply set aside a block of memory for the matrix,
-and that block may have garbage in it. Meanwhile, {\tt gsl\_vector\_calloc} set
-aside some space for the vector {\tt v}, and set all the values of {\tt v} to
+\cinline{gsl\_matrix\_alloc} simply set aside a block of memory for the matrix,
+and that block may have garbage in it. Meanwhile, \cinline{gsl\_vector\_calloc} set
+aside some space for the vector \cinline{v}, and set all the values of \cinline{v} to
 zero.  We were able to do these allocations in the declaration itself.
 
-That done, the {\tt for} loop put some values in the first column of the matrix. 
+That done, the \cinline{for} loop put some values in the first column of the matrix. 
 The syntax should be familiar to you from subsection \ref{for_loops}: we start at
 zero, not one, and increment up to the size of the matrix, which in this case is
-{\tt m-$>$size1}. You'll recognize this as accessing a struct, which is exactly
-what we're doing: the declaration {\tt gsl\_matrix *m} means that {\tt m} is a
-pointer to a {\tt gsl\_matrix}, which is a structure whose definition you can
-look up if you're so inclined. If you do so, you'll see that it includes 
-elements {\tt size1} and {\tt size2}, for the row and column sizes of the
+\cinline{m-$>$size1}. You'll recognize this as accessing a struct, which is exactly
+what we're doing: the declaration \cinline{gsl\_matrix *m} means that \cinline{m} is a
+pointer to a \cinline{gsl\_matrix}, which is a structure whose definition you can
+look up if you're so inclined. If you do, you will see that it includes 
+elements \cinline{size1} and \cinline{size2}, for the row and column sizes of the
 matrix. [Row always comes first, then Column, just like the order in Roman Catholic, 
 Randy Choirboy, or RC Cola.] Since the vector has only one dimension, the analagous element
-of the vector structure is {\tt v-$>$size}.
+of the vector structure is \cinline{v-$>$size}.
 
 Next, we copied the vector to the third row of the matrix using {\tt
-gsl\-\_matrix\-\_set\-\_row(m, 3, v)}. Notice that in so doing, we
+gsl\_matrix\_set\_row(m, 3, v)}. Notice that in so doing, we
 overwrote the three at the point (3,0) of the matrix with a zero from
-the third element of {\tt v}.
+the third element of \cinline{v}.
 
-Finally, we freed the memory used for the vectors. This is not strictly
+Finally, we freed the memory used for the vectors. This is not 
 necessary for a small program, since the operating system
 will clean up some of your mess. But it's a good habit to get into for
 when you start getting the monolithic analyses, which you may not be
 able to run on your PC if you don't keep the memory clear of debris.
 
 \paragraph{Naming conventions}  \index{naming functions}
-Notice the consistency of
-the GSL's naming scheme. Every function in the GSL library will begin with {\tt
-gsl\_}. 
-Further, the first argument of all of these functions will be the object to be acted upon.
-Every function which affects a matrix will begin with {\tt gsl\_matrix\_}
-and similarly with vectors and their functions, which all begin with {\tt gsl\_vector\_}. 
+Every function in the GSL library will begin with {\tt
+gsl\_}, and
+the first argument of all of these functions will be the object to be acted upon.
+Every function which affects a matrix will begin with \cinline{gsl\_matrix\_}
+and similarly with vectors and their functions, which all begin with \cinline{gsl\_vector\_}. 
 Apophenia generally sticks to this as well, and 100\% of its functions
-begin with {\tt apop\_} and a great majority of them begin with a data
-type such as {\tt apop\_data}, {\tt apop\_estimate}, \&c.
+begin with \cinline{apop\_} and a great majority of them begin with a data
+type such as \cinline{apop\_data}, \cinline{apop\_estimate}, \&c.
 
-You'll see this form over and over again: the library gives us an interesting
-object, which we'll mostly treat as a black box, and it gives us functions which
-will allow us to do useful things to that black box. The consistency of the
-naming means that you'll have more to type, but less to memorize. Given
-the package-object-verb form, you can likely guess the name of the
-function you want. Your text editor probably has some sort of name
-completion command, which you may want to look up. E.g., vim users,
-try $<$ctrl-n$>$ after typing a few characters.
+The consistency of the naming means that you have more to type, but
+less to memorize. Given the package-object-verb form, you can likely
+guess the name of the function you want. Your text editor probably has
+some sort of name completion command, which you may want to look up. E.g.,
+vim users, try $<$ctrl-n$>$ after typing a few characters.
 
 Another alternative is to start writing your own functions. For example, you
-could write a file {\tt my\_convenience\_fns.c}, which would include:
+could write a file \cinline{my\_convenience\_fns.c}, which would include:
 
 \ttindex{gsl\_matrix\_get}
 \ttindex{gsl\_matrix\_set}
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 double mget(gsl_matrix *m, int row, int col){
    return gsl_matrix_get(m, row, col);
 }
@@ -124,31 +120,31 @@ double mget(gsl_matrix *m, int row, int col){
 double vget(gsl_vector *v, int row){
    return gsl_vector_get(v, row);
 }
-%]
+\end{lstlisting}
 %\end{verbatim}
 
-You'll also want a header file, {\tt my\_convenience\_fns.h}:
+You'll also want a header file, \cinline{my\_convenience\_fns.h}:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 double mget(gsl_matrix *m, int row, int col);
 double vget(gsl_vector *v, int row);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
-After throwing an {\tt \#include "my\_convenience\_fns.h"} up at the top of your
-program, you'll be able to use your abbreviated syntax such as {\tt mget(v,3)}.
+After throwing an \cinline{\#include "my\_convenience\_fns.h"} up at the top of your
+program, you'll be able to use your abbreviated syntax such as \cinline{mget(v,3)}.
 It's up to your \ae sthetics as to whether your code will be more or less
 legible after you make these changes, but you will need to remember to
 bring your convenience functions with you everywhere you go.
 
 
 \section{Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \ttindex{GSL\_NEGINF} \ttindex{GSL\_POSINF} \ttindex{GSL\_NAN}
-Floating-point numbers can take three special values: {\tt Inf}, {\tt -Inf}, {\tt NaN}. We will mostly be
-interested in {\tt NaN} (read: not a number), which is an appropriate way to represent missing data. Here is a
-program to show you the syntax. All four {\tt if} statements will be true, and print their associated
+Floating-point numbers can take three special values: \cinline{Inf}, \cinline{-Inf}, \cinline{NaN}. We will mostly be
+interested in \cinline{NaN} (read: not a number), which is an appropriate way to represent missing data. Here is a
+program to show you the syntax. All four \cinline{if} statements will be true, and print their associated
 statements.
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_math.h>   //NaN handlers
 #include <stdio.h>          //printf
 
@@ -167,13 +163,13 @@ if (gsl_isinf(negative_big_number)== -1)
     printf("negative_big_number is negative infinity");
 return 0;
 }
-%]
+\end{lstlisting}
 %\end{verbatim}
 Since floating-point nubers can take these values, division by zero
-won't crash your program. {\tt float f = 1.0/0.0} will result in
-{\tt f == GSL\_POSINF} and {\tt f = 0.0/0.0} will result in {\tt f ==
-GSL\_NAN}. However, integers have none of these luxuries: run {\tt int
-i = 1/0} and you'll get {\tt Arithmetic exception (core dumped)}.
+won't crash your program. \cinline{float f = 1.0/0.0} will result in
+\cinline{f == GSL\_POSINF} and \cinline{f = 0.0/0.0} will result in \cinline{f ==
+GSL\_NAN}. However, integers have none of these luxuries: run \cinline{int
+i = 1/0} and you'll get \cinline{Arithmetic exception (core dumped)}.
 
 
 \section{Shunting data} \label{asst_conversions} \index{matrices!dot product|(} \index{dot product|(}
@@ -184,45 +180,45 @@ of the reference for a good number of conversion functions.
 \paragraph{Allocating and using at once}    \index{declaration}
 One slight convenience that helps with the annoyance of shunting data from
 one type to another is that you can declare a variable and assign it at the
-same time. Let us say that you have already filled a {\tt gsl\_\-matrix
-*m} with data and want it to be an {\tt apop\_\-data} structure. Then
+same time. Let us say that you have already filled a \cinline{gsl\_matrix
+*m} with data and want it to be an \cinline{apop\_data} structure. Then
 you can declare and allocate your new structure with one line:
-%[
+\begin{lstlisting}
 apop_data   *mdata  = apop_matrix_to_data(m);
-%]
-On the left-hand side, we are allocating an {\tt apop\_\-data *} pointer, and
+\end{lstlisting}
+On the left-hand side, we are allocating an \cinline{apop\_data *} pointer, and
 on the left-hand side, \ttind{apop\_data\_from\_matrix} returns an 
-{\tt apop\_\-data *} pointer. As in the example on page \pageref{gslexample}, the same can be
-done with any function with {\tt alloc} in the name, because they will also
+\cinline{apop\_data *} pointer. As in the example on page \pageref{gslexample}, the same can be
+done with any function with \cinline{alloc} in the name, because they will also
 return a pointer to the appropriate type.
 
 \paragraph{Using views}\index{views}\index{matrices!views}
 The GSL includes a convenient structure for pulling a vector from a
-matrix. Here's how to get the fifth row of {\tt a\_matrix} into a vector view:
+matrix. Here's how to get the fifth row of \cinline{a\_matrix} into a vector view:
 
-%[
+\begin{lstlisting}
 gsl_vector_view v;
 v = gsl_matrix_col(a_matrix, 4);
-%]
-[Notice that this function is named {\tt col}, not {\tt column}.]
-For the fifth row, use \ttind{gsl\_matrix\_row}{\tt (a\_\-ma\-trix, 4)}. 
+\end{lstlisting}
+[Notice that this function is named \cinline{col}, not \cinline{column}.]
+For the fifth row, use \ttind{gsl\_matrix\_row}\cinline{(a\_matrix, 4)}. 
 
-The vector view is a data structure which includes an element of type {\tt gsl\_vector}
+The vector view is a data structure which includes an element of type \cinline{gsl\_vector}
 named vector; this is the only element you will be interested in. The
-expression {\tt \&(v.vector)} is of type {\tt gsl\_vector *}, and therefore can
-be used as you would any other pointer to a {\tt gsl\_vector}. For example,
-try \ttind{apop\_mean}{\tt (\&(v.vector))};.
+expression \cinline{\&(v.vector)} is of type \cinline{gsl\_vector *}, and therefore can
+be used as you would any other pointer to a \cinline{gsl\_vector}. For example,
+try \ttind{apop\_mean}\cinline{(\&(v.vector))};.
 
 The view is intended to be a common (automatically allocated) variable,
 not a pointer. If you want to retain the data after the function exits,
 copy it to another vector:
 
-%[
+\begin{lstlisting}
 gsl_vector_view v;
 gsl_vector *a_new_vector = gsl_vector_alloc(a_matrix->size1);
 v = gsl_matrix_col(a_matrix, 4);
 gsl_vector_memcpy(a_new_vector, &(v.vector));
-%]
+\end{lstlisting}
 
 \section{The \ind{BLAS}} 
 Before there was the GSL, there was the BLAS---the basic linear algebra
@@ -235,47 +231,47 @@ GE=general, M=matrix, V=vector.}
 \paragraph{Matrix $\cdot$ vector} Here's the function you'll use to calculate the dot product of a
 matrix and a vector:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 int gsl_blas_dgemv (CBLAS_TRANSPOSE_t TransX, float alpha, 
           const gsl_matrix * X, const gsl_vector * x, 
           float beta, gsl_vector * y)
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 This will put into the vector $y$ the value $\alpha op(X) x + \beta y$. 
-If {\tt TransX} is ``{\tt CblasNoTrans}'',  then $op(X)=X$; if it is
-``{\tt CblasTrans}'' then $op(X)=X'$, the transpose of X.
+If \cinline{TransX} is ``\cinline{CblasNoTrans}'',  then $op(X)=X$; if it is
+``\cinline{CblasTrans}'' then $op(X)=X'$, the transpose of X.
 
 
 To give a concrete example, assume you've already got some vectors and matrices which have the following
 declarations:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 gsl_vector beta, gamma;     
 gsl_matrix x, y;           
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 Then, to calculate $X\cdot \beta$, we'd need:
 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_blas.h>
 gsl_vector *beta_dot_x      = gsl_vector_calloc(x->size1);
 gsl_blas_dgemv (CblasNoTrans, 1.0, x, beta, 0.0, beta_dot_x);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
-Notice that we used {\tt calloc}, instead of just {\tt alloc}, because
-the system will add $x\beta$ to {\tt beta\_dot\_x}, not just write it in,
-so {\tt beta\_dot\_x} needs to start as all zeros.
+Notice that we used \cinline{calloc}, instead of just \cinline{alloc}, because
+the system will add $x\beta$ to \cinline{beta\_dot\_x}, not just write it in,
+so \cinline{beta\_dot\_x} needs to start as all zeros.
 
 \paragraph{Vector $\cdot$ vector}
 To find the dot product of two vectors, use this function:
-%[
+\begin{lstlisting}
 int gsl_blas_ddot (const gsl_vector * x, const gsl_vector * y, 
                                         double * result);
-%]
+\end{lstlisting}
 
 \comment{{\tt
 int gsl\_blas\_ddot (const gsl\_vector * x, const gsl\_vector * y, double * result);
@@ -284,37 +280,37 @@ int gsl\_blas\_ddot (const gsl\_vector * x, const gsl\_vector * y, double * resu
 For example,
 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_blas.h>
 double *beta_dot_gamma;
 gsl_blas_ddot (beta, gamma, beta_dot_gamma);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 \paragraph{Matrix $\cdot$ matrix}
 Finally, to take the dot product of two matrices, you'll need:
-%[
+\begin{lstlisting}
 int gsl_blas_dgemm (CBLAS_TRANSPOSE_t TransX, 
     CBLAS_TRANSPOSE_t TransY, 
     double alpha, const gsl_matrix * X, const gsl_matrix * Y, 
     double beta, gsl_matrix * dot_product)}
-%]
+\end{lstlisting}
 \comment{
 {\tt
 int gsl\_blas\_dgemm (CBLAS\_TRANSPOSE\_t TransX, CBLAS\_TRANSPOSE\_t TransY, double $\alpha$, const
 gsl\_matrix * X, const gsl\_matrix * Y, double $\beta$, gsl\_matrix * dot\_product)}
 }
 
-which will calculate {\tt dot\_product} $= \alpha op(X) op(Y) + \beta$ {\tt dot\_product}. $op(X)$ and
-$op(Y)$ will be either the matrix or its transpose, as above, depending on whether you choose {\tt CblasTrans}
-or {\tt CblasNoTrans}. For example, here's $X'Y$:
+which will calculate \cinline{dot\_product} $= \alpha op(X) op(Y) + \beta$ \cinline{dot\_product}. $op(X)$ and
+$op(Y)$ will be either the matrix or its transpose, as above, depending on whether you choose \cinline{CblasTrans}
+or \cinline{CblasNoTrans}. For example, here's $X'Y$:
 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_blas.h>
 gsl_matrix *x_dot_y      = gsl_matrix_calloc(x->size1, y->size2);
 gsl_blas_dgemm (CblasTrans,CblasNoTrans, 1, x, y, 0, x_dot_y);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 \index{matrices!dot product|)}
@@ -333,16 +329,16 @@ example, see the calculation of OLS coefficients on page \pageref{ols}.
 \codefig{invertmatrix}{A function which inverts a matrix using via an LU decomposition}
 
 Figure \ref{invertmatrix} is cut and pasted from the Apophenia source
-code; \ttind{apop\_\-det\_\-and\_\-inv} does indeed invert and calculate the
+code; \ttind{apop\_det\_and\_inv} does indeed invert and calculate the
 determinant of an input matrix. This is what \ttind{apop\_OLS} will use if
 you ask for covariances.
 
 Because inversion is so computationally intensive, you are better off
 not doing so.  For example, we often write the OLS parameters as $\beta
 =(X'X)^{-1}(X'Y)$, but you could implement this as solving
-$(X'X)\beta = X'Y$, which involves no inversion. If {\tt xpx} is the
-matrix $X'X$ and {\tt xpy} is the vector $X'Y$, then 
-\ttind{gsl\_linalg\_HH\_solve}{\tt (xpx, xpy, out->parameters)} will
-return $\beta$. This is how {\tt apop\_OLS} will find $\beta$ if $\beta$
+$(X'X)\beta = X'Y$, which involves no inversion. If \cinline{xpx} is the
+matrix $X'X$ and \cinline{xpy} is the vector $X'Y$, then 
+\ttind{gsl\_linalg\_HH\_solve}\cinline{(xpx, xpy, out->parameters)} will
+return $\beta$. This is how \cinline{apop\_OLS} will find $\beta$ if $\beta$
 is all you ask for.
 

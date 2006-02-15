@@ -1,9 +1,11 @@
 \chapter{Bootstrapping} \label{boot}
 %@-     so lgrind will play nice with makeindex
 
-Bootstrapping is probably one of the most eerily descriptive names I've ever seen. 
-After you've gotten everything you can out of
-the data, then on top of that you can bootstrap to find the variance of all of that.
+Bootstrapping is a method of getting a variance out of data that, by all
+rights, should not be able to give you a variance. Say that you have
+estimated a parameter, and also want to test whether that parameter is
+different from zero. By repeatedly re-estimating the parameter, you can
+determine its variance, and thus test a hypothesis about it.
 
 \section{Random number generation}\index{random
 numbers|(}\label{randomnumbers}
@@ -26,15 +28,15 @@ Of course, using the same stream of numbers every time creates the
 possibility of getting a lucky draw, where `lucky' can mean any of a
 number of things. The solution is a fixed process of pseudorandom
 number generation plus a varying initializing seed. Here is how one
-would initialize a \ttind{gsl\_\-rng}:
-%[
+would initialize a \ttind{gsl\_rng}:
+\begin{lstlisting}
 gsl_rng * initrng(int seed){
     gsl_rng_env_setup();
     gsl_rng *r  = gsl_rng_alloc(gsl_rng_taus);
     gsl_rng_set(r, seed);  
     return r;
 }
-%]
+\end{lstlisting}
 The function takes in an integer, and then sets up the random number
 generation (RNG) environment to produce new numbers via the Tausworth
 routine. Every integer will produce a different stream of numbers.
@@ -42,43 +44,43 @@ routine. Every integer will produce a different stream of numbers.
 There is no need to make the seed look random. The GSL's default seed is
 zero, and if you need ten different seeds, I suggest using 0, 1, \dots ,9.
 
-\paragraph{Random number distributions}
+\subsection{Random number distributions}
 Now that you have a random number generator, you can use it to draw from all of your favorite distributions:
 \index{Gaussian distribution} \index{t distribution} \index{F distribution}
 \index{$\chi^2$ distribution} \index{Uniform distribution}\ttindex{gsl\_ran\_...}
 
 
-%[
+\begin{lstlisting}
 double gsl_ran_gaussian (gsl_rng *r, double SIGMA);
 double gsl_ran_tdist (gsl_rng *r, double NU);
 double gsl_ran_fdist (gsl_rng *r, double NU1, double NU2);
 double gsl_ran_chisq (gsl_rng *r, double NU);
 double gsl_ran_flat (gsl_rng *r, double A, double B);
 double gsl_ran_uniform (gsl_rng *r);
-%]
+\end{lstlisting}
 
 The 'flat' distribution is a Uniform[A,B] distribution. Since the
 Uniform[0,1] distribution is so common, it gets its own no-options
-function, {\tt gsl\_ran\_uniform(r)}. Notice that the Gaussian draw
+function, \cinline{gsl\_ran\_uniform(r)}. Notice that the Gaussian draw
 assumes a mean of zero, so if you intend to draw from a ${\cal N}(7,2)$,
-then add the mean after the call: {\tt gsl\_ran\_gaussian (r, 2) + 7}.
+then add the mean after the call: \cinline{gsl\_ran\_gaussian (r, 2) + 7}.
 
-\paragraph{Drawing from your own data} Another possibility, beyond
+\subsection{Drawing from your own data} Another possibility, beyond
 drawing from famous distributions that your data theoretically
 approximates, would be to draw from your actual data. 
 
 The GSL provides a means of turning a data set into a PDF from which you
 can then make draws.  It
 does so by turning the data into a histogram and then producing a CDF.
-Then, the \ttind{gsl\_\-hist\-o\-gram\_\-pdf\_\-sam\-ple} function will
+Then, the \ttind{gsl\_histogram\_pdf\_sample} function will
 map a draw from a Uniform[0,1] distribution to the CDF, thus producing a
 random draw from your data.
 
-The {\tt apop\_\-vec\-tor\_\-to\_\-pdf} function takes the requisite steps
+The \cinline{apop\_vector\_to\_pdf} function takes the requisite steps
 for you, producing a histogram from the data and then converting it to
-a \ttind{gsl\_\-hist\-o\-gram\_\-pdf} structure from which draws can be
+a \ttind{gsl\_histogram\_pdf} structure from which draws can be
 made. E.g.:
-%[
+\begin{lstlisting}
     double      draw;
     gsl_vector  *data    = produce_data_set(...);
     gsl_histogram_pdf *p = apop_vector_to_pdf(data, 1000);
@@ -92,7 +94,7 @@ made. E.g.:
 
     //Eventually, clean up:
     gsl_histogram_pdf_free(p);
-%]
+\end{lstlisting}
 
 
 \index{random numbers|)}
@@ -136,9 +138,9 @@ bring shame to your research group.
 
 
 \subsection{Creating random samples} Assume that we have a
-data vector {\tt gsl\_vector * data} and a function {\tt double
-calc\_\-stat\-istic(gsl\_\-vec\-tor *data)} that finds some statistics. The
-function {\tt mean()} fits this description, as would a function to find
+data vector \cinline{gsl\_vector * data} and a function \cinline{double
+calc\_statistic(gsl\_vector *data)} that finds some statistics. The
+function \cinline{mean()} fits this description, as would a function to find
 a single OLS coefficient.
 
 Then the first step in bootstrapping is drawing some subset of the data,
@@ -147,7 +149,7 @@ keep track of what has been drawn to date, and must check every new draw
 to make sure that the new draw is not a repeat. Figure \ref{bootdraw} lists a function which
 does all of this. It allocates and sets up a random number generator, then
 makes a series of random draws from a uniform distribution in the range
-[0, {\tt data-$>$size}]. It then checks the list of indices which have
+[0, \cinline{data-$>$size}]. It then checks the list of indices which have
 already been drawn. If it finds a match, then it invalidates the draw
 by rolling back the counter by one, while if it does not find a match then it
 adds the draw to the list of draws and the index to the list of indices.

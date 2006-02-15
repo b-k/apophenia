@@ -8,7 +8,7 @@ statistics. Most of the techniques we've handled so far are MLE
 techniques, except mathematicians over the ages have found ways to hide
 that fact from you. But if there isn't a nice, convenient way to get
 around doing the maximization, you'll have to do it yourself. Fortunately,
-the GSL has the {\tt gsl\_multimin} family of objects, to help you find
+the GSL has the \cinline{gsl\_multimin} family of objects, to help you find
 the optimal parameters. Apophenia even has an \ttind{apop\_maximum\_likelihood}
 function that preps and calls the GSL functions for you. You give it a
 function and some parameters, and it will find the optimum.
@@ -113,12 +113,12 @@ selected. After establishing this fact, we just ignore Type II errors.
 
 
 Estimating an existing model via maximum likelihood estimation simply requires 
-filling out a form describing your preferences and then calling the model's {\tt estimate} method.
-The form in question is a \ttind{apop\_\-estimation\_\-params} structure, that
+filling out a form describing your preferences and then calling the model's \cinline{estimate} method.
+The form in question is a \ttind{apop\_estimation\_params} structure, that
 describes the method, the starting point, the step size, and the
 tolerance.
 For example:
-%[
+\begin{lstlisting}
 apop_estimation_params *ep  = malloc(sizeof(apop_estimation_params);
 double  starting_point[2]   = {1,1};
 ep->method      = 000;
@@ -127,15 +127,15 @@ ep->tolerance   = 1e-5;
 ep->verbose     = 1;
 ep->starting_pt = starting_point;
 apop_gamma.estimate(my_data, an_inventory, ep)
-%]
+\end{lstlisting}
 
-Here are the parts to the  \ttind{apop\_\-estimation\_\-params}
+Here are the parts to the  \ttind{apop\_estimation\_params}
 structure you need to set. 
 
 \paragraph{The method} There are currently four you can choose from.
 [Also, there are two more that  just aren't hooked in yet. If you're
 comfortable exploring the internals of Apophenia, have a look at the
-{\tt wnbridge.c} file.]
+\cinline{wnbridge.c} file.]
 
 
 \begin{itemize}
@@ -188,7 +188,7 @@ the log likelihood function is nearing zero.
 This is useful for long evaluations to reassure you that nothing is
 broken; for example, some of the GSL's searches can get into two-step loops.
 It is probably a good idea to run your search verbosely at least once.
-Also, see {\tt apop\_opts.mle\_trace\_path} below.
+Also, see \cinline{apop\_opts.mle\_trace\_path} below.
 
 \paragraph{Starting point} an array of doubles indicating where you want
 your search to begin. Being an array, you can use a form like the above
@@ -204,14 +204,14 @@ To do this, use \ttind{apop\_estimate\_restart}.
 The function takes three arguments: a prior estimate that you have
 already calculated, a method, and a scaling factor. 
 
-First, the function copies off the {\tt apop\_\-estimation\_\-params}
-from the {\tt apop\_\-estimate} sent in, and then makes a series of
+First, the function copies off the \cinline{apop\_estimation\_params}
+from the \cinline{apop\_estimate} sent in, and then makes a series of
 modifications.  If the new method sent in is -1, then the new MLE will
 use the same method as before; otherwise specify one of the methods
 listed above. The step size and the tolerance are both multiplied by the
 scaling factor sent in (so if this is 1, no change is made). If the
 estimated parameters for the original estimate is finite and bounded, then 
-the starting point in the new {\tt apop\_\-estimation\_\-params}
+the starting point in the new \cinline{apop\_estimation\_params}
 structure is set to the estimated value; if some element of the
 estimated parameters are infinity or NaN, then the original starting
 point is reused.
@@ -222,18 +222,18 @@ then it is thrown out and the original returned. If the new estimate
 has a higher log likelihood, then it is returned, and the old estimate
 is deleted.  The less likely estimate (which may be the one you sent in) is freed. That is,
 there is no memory leak when you run a tournament like:
-%[
+\begin{lstlisting}
 est = apop_estimate_restart(est, 200, 1);
 est = apop_estimate_restart(est, 100, 1e-2);
 est = apop_estimate_restart(est, -1, 1e-2);
-%]
+\end{lstlisting}
 The estimate can only get better every time you run
 \ttind{apop\_estimate\_restart}, so the only cost to running a lengthy
 tournament is your time waiting for the estimates to converge.
 
 \subsection{Graphing the path} All of the methods above consist of
 trying a series of candidate points. 
-If \index{apop\_\-opts!mle\_\-trace\_\-path@{\tt mle\_\-trace\_\-path}}{\tt apop\_\-opts.mle\_\-trace\_\-path}
+If \index{apop\_opts!mle\_trace\_path@\cinline{mle\_trace\_path}}\cinline{apop\_opts.mle\_trace\_path}
 has a name of positive
 length, then every time the MLE evaluates the function, then the value
 will be output to a table in the database with the given name. You can
@@ -243,18 +243,18 @@ used to arrive at its MLE.
 First, set this variable and run the MLE. The begin/commit wrapper
 speeds things up a touch, but this will clearly be slower than without
 taking notes:
-%[
+\begin{lstlisting}
     strcpy(apop_opts.mle_trace_path, "path");
     apop_query("begin;");
     e   = apop_zipf.estimate(...);
     apop_query("commit;");
-%]
+\end{lstlisting}
 Then, plot using a function like the below. Notice that you will want
-{\tt splot} for 3-d variables and {\tt plot} for 2-d. The change in width
+\cinline{splot} for 3-d variables and \cinline{plot} for 2-d. The change in width
 and pointsize is to remind the eye that the lines connecting the points
 only indicate the path the maximizer went along, not actual values of
 the function.
-%[
+\begin{lstlisting}
 static void plotme(char *outfile){
 FILE            *f;
 gsl_matrix      *traced_path;
@@ -265,14 +265,14 @@ gsl_matrix      *traced_path;
     fclose(f);
     apop_matrix_print(traced_path, "\t", outfile);
 }
-%]
+\end{lstlisting}
 
 Finally, call \ind{Gnuplot} from your command line:
-%[
+\begin{lstlisting}
 $ gnuplot -persist < plotme
  (or)
 $ gnuplot plotme -
-%]
+\end{lstlisting}
 
 \begin{figure}
 \scalebox{0.4}{\includegraphics{search}}
@@ -296,44 +296,45 @@ are.
 
 
 \section{Writing your own}
-The design of the {\tt apop\_\-model} hopes to make it as easy as possible for you,
+The design of the \cinline{apop\_model} hopes to make it as easy as possible for you,
 dear reader, to write new models. For the most part, all you need to
-do is write a log likelihood function, and \ttind{apop\_\-maximum\_\-likelihood}
+do is write a log likelihood function, and \ttind{apop\_maximum\_likelihood}
 does the rest. The steps:
 
 
 \begin{itemize}
 \item Write a likelihood function. Its header will look like this:
-%[
+\begin{lstlisting}
 double apop_new_log_likelihood(const gsl_vector *beta, void *d)
-%]
-where {\tt beta} will be the parameters to be maximized, and {\tt d} is the fixed parameters---the data. In every case currently included
-with Apophenia, {\tt d} is a {\tt gsl\_\-matrix,} but you do not have to conform
+\end{lstlisting}
+where \cinline{beta} will be the parameters to be maximized, and \cinline{d} is the fixed parameters---the data. In every case currently included
+with Apophenia, \cinline{d} is a \cinline{gsl\_matrix,} but you do not have to conform
 to that. This function will return the value of the log likelihood function at the given parameters.
 
 \item Is this a constrained optimization? See section
 \ref{constraintwriting} on how to write a constraint function.
 
-\item Write the {\tt estimate} method, so users can call 
-{\tt apop\_\-new\_\-like\-li\-hood.est\-i\-mate(\dots)}. For an MLE, this will be one line,
+\item Write the \cinline{estimate} method, so users can call 
+\cinline{apop\_new\_likelihood.estimate(...)}. For an MLE, this will be one line,
 as follows:
-%[
+\begin{lstlisting}
 static apop_estimate * new_estimate(apop_data * data, 
                         apop_inventory *uses, void *parameters){
     return apop_maximum_likelihood(data, uses, 
                             apop_new_log_likelihood, parameters);
 }
-%]
+\end{lstlisting}
 By using the \ttind{static} keyword, the function name will only be
 known to this file, so you can name it what you wish.  But since you
 will be putting a pointer to the function into an object below, you
-can use the above-mentioned {\tt apop\_\-new\_\-likelihood.estimate(\dots)}
+can use the above-mentioned 
+\cinline{apop\_new\_likelihood.estimate(...)}
 form to call this function. You may want to type all of the functions in
-your new model as {\tt static}.
+your new model as \cinline{static}.
 
 
 \item Write the object. In your header file, include 
-%[
+\begin{lstlisting}
 apop_model apop_new_likelihood = {"The Me distribution", 
             number_of_parameters, 
 {       //what will apop_new_likelihood.estimate return?
@@ -350,28 +351,28 @@ apop_model apop_new_likelihood = {"The Me distribution",
             NULL,   //place constraint fn here.
             NULL    //place RNG here.
             };
-%]
-If there are constraints, then replace the appropriate {\tt NULL} with the right constraint function; see below.
-{\tt number\_\-of\_\-parameters} is probably a positive integer like {\tt 2}, but
+\end{lstlisting}
+If there are constraints, then replace the appropriate \cinline{NULL} with the right constraint function; see below.
+\cinline{number\_of\_parameters} is probably a positive integer like \cinline{2}, but
 it is often (the number of columns in your data set) -1, in which case,
-set {\tt number\_\-of\_\-parameters} to {\tt -1}.
+set \cinline{number\_of\_parameters} to \cinline{-1}.
 
 \item Test. Debug. Retest.
 
 \item Optional: write a gradient for the log likelihood function. This
 typically involves calculating a derivative by hand, which is an easy
 problem in high-school calculus. The function's header will look like: 
-%[
+\begin{lstlisting}
 void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, 
                                     gsl_vector *gradient)
-%]
-where {\tt beta} and {\tt d} are fixed as above, and {\tt gradient} is a {\tt gsl\_\-vector} with dimension matching {\tt beta}. 
+\end{lstlisting}
+where \cinline{beta} and \cinline{d} are fixed as above, and \cinline{gradient} is a \cinline{gsl\_vector} with dimension matching \cinline{beta}. 
 At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
-%[
+\begin{lstlisting}
 gsl_vector_set(gradient,0, d_a);
 gsl_vector_set(gradient,1, d_b);
-%]
-Now add the resulting dlog likelihood function to your object, by replacing the {\tt NULL} labeled "place dlog likelihood here" with the name of your dlog likelihood function.
+\end{lstlisting}
+Now add the resulting dlog likelihood function to your object, by replacing the \cinline{NULL} labeled "place dlog likelihood here" with the name of your dlog likelihood function.
 \item Send the code to the maintainer for inclusion in future versions of Apophenia.
 \end{itemize}
 
@@ -391,7 +392,7 @@ to search a continuous function but will never return a solution that
 falls beyond the parameter limits.
 
 If you give it a likelihood function with no regard to constraints plus
-an array of constraints, \ttind{apop\_\-maximum\_\-likelihood} will combine
+an array of constraints, \ttind{apop\_maximum\_likelihood} will combine
 them to a function that fits the above description and search accordingly.
 
 This is similar to the common penalty function methods of turning an
@@ -415,7 +416,7 @@ penalty. To give a concrete example, here is a constraint function that
 will ensure that both parameters of a two-dimensional input are both
 greater than zero:
 
-%[
+\begin{lstlisting}
 static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, 
                                     void * d, gsl_vector *returned_beta){
 double          limit0          = 0,
@@ -431,7 +432,7 @@ double          beta0   = gsl_vector_get(beta, 0),
         return GSL_MAX(limit0 + tolerance - beta0, 0) 
                         + GSL_MAX(limit1 + tolerance - beta1, 0); 
 }
-%]
+\end{lstlisting}
 
 Observe how it manages all three of the above steps. First, it checks
 the constraints and quickly returns zero if none of them bind. Then, if
@@ -485,9 +486,8 @@ two derivatives, but the same framework can be used for problems with no
 analytic solutions (to give one example, if the consumer has a stochastic
 utility function).
 
-\paragraph{Code listing: econ 101 homework}
-\hrule 
-%[
+
+\begin{lstlisting}
 #include <apophenia/headers.h>
 
 apop_model econ_101;
@@ -589,4 +589,4 @@ double          x1, x2;
             param_array[4]*pow(x2,param_array[4]-1)*pow(x1,param_array[3]));
     return 0;
 }
-%]
+\end{lstlisting}

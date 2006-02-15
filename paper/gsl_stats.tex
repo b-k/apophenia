@@ -5,28 +5,55 @@
 \def\ind#1{\index{#1}#1}
 \newif\ifbook \booktrue
 \documentclass[12pt,notitlepage, openany]{book}
-\usepackage{natbib,graphicx,epsfig,wrapfig, titlesec, apop_wrap}
+\usepackage{natbib,graphicx,epsfig,wrapfig, titlesec, apop_wrap, listings}
 \usepackage{amsfonts}  %for mathbb
-\usepackage[nolineno,noprocindex]{lgrind}
+%\usepackage[nolineno,noprocindex]{lgrind}
 %@-     so lgrind will play nice with makeindex
 
 %Chapter and section headings. 
 %uses the awrap style, included in this dir.
 %\renewcommand\chaptername{} 
-\titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.1}{\includegraphics{flake}}\hfill}{}
+\titleformat{\part}[frame]{\Large\scshape}{\thepart}{.5em}{}{}
+\titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.2}{\includegraphics{flake}}\hfill}{}
 \titlespacing{\section}{8cm}{1 cm}{-0.5 cm}
 \titlespacing{\subsection}{8cm}{0.5 cm}{-0.5 cm}
 \titleformat{\section}[awrap]{\large\bf\scshape}{\thesection}{1 em}{}{}
-\titleformat{\subsection}[awrap]{\bf\scshape}{\thesubsection}{1 em}{}{}
+%\titleformat{\subsection}[awrap]{\bf\scshape}{\thesubsection}{1 em}{}{}
+\titleformat{\subsection}[awrap]{\bf\scshape}{}{1 em}{}{}
+
+%code listing:
+\lstset{columns=fullflexible}
+\def\setlistdefaults{\lstset{frame=single, showstringspaces=false, basicstyle=, language=C, breaklines=true}}
+\setlistdefaults
+\def\cinline#1{\lstinline[language=C, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false,escapechar=\%]{#1}\setlistdefaults}
+\def\cinlinetwo#1{\lstinline[language=C, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}}
+\def\binline#1{\lstinline[language=bash, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}\setlistdefaults}
+\def\binlinetwo#1{\lstinline[language=bash, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}}
+\def\sinline#1{\lstinline[language=sql, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}\setlistdefaults}
+\def\sinlinetwo#1{\lstinline[language=sql, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}}
+
+\long\def\codefig#1#2{
+	\begin{figure}
+	\hrule\vskip4pt
+\lstset{frame=,showstringspaces=false, basicstyle=, language=C, breaklines=true}
+\lstinputlisting{sources/#1.c}
+	\hrule
+
+	\caption{#2}\label{#1}
+	\end{figure}
+}
 
 %indexing:
 \usepackage{multicol, makeidx, url}
 \usepackage[left=1.3in, right=1in,top=1in,bottom=1in]{geometry}
 \makeindex
 \def\ind#1{\index{#1}#1}
-\def\ttind#1{\index{#1@{\tt #1}}{\tt #1}}
-\def\ttindex#1{\index{#1@{\tt #1}}}
+\def\ttind#1{\index{#1@\cinlinetwo{#1}}\cinline{#1}}
+\def\ttindex#1{\index{#1@\cinlinetwo{#1}}}
+%\def\ttind#1{\index{#1@{\tt #1}}{\tt #1}}
+%\def\ttindex#1{\index{#1@{\tt #1}}}
 \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
+
 
 
 %margin boxes:
@@ -49,7 +76,7 @@
 \title{Statistical Computing}
 \author{Ben Klemens\\klemens@hss.caltech.edu}
 %\date{May 2005}
-\date{January 2006}
+\date{February 2006}
 \begin{center}
 \fbox{\begin{minipage}{4in}
 \maketitle
@@ -95,8 +122,8 @@ facilitates handling large data sets. This book will cover the basics
 of these components and the manner in which we can translate from the
 mathematical language to the language these libraries speak.
 
-The book is a complement to the Apophenia library, a set of functions which
-is based on the GSL and SQLite, intended to simplify the hard parts of
+The book is a complement to the Apophenia library, a set of functions 
+based on the GSL and SQLite, intended to simplify the hard parts of
 using these packages for statistical analysis. You could do all of the
 analyses in this book without Apophenia, but you would find yourself
 rewriting many of its functions. 
@@ -111,17 +138,17 @@ computation and high-level use of prepackaged functions. For example,
 {\sl Numerical Recipes in C} \citep{recipesinc} is a classic text
 describing the algorithms for seeking optima and efficiently calculating
 determinants. Being such a classic, there are many packages such as the
-GSL that implements the algorithms from {\sl Numerical Recipes}, so this
-book will not replicate their effort. At the other end, an abundance
-of texts will explain to readers how to do basic statistics using the
-stats package of the month; this book lists the one-line commands at
-this level, but it also breaks open the black boxes and shows how those
-computations are done, so the reader can modify them according to the
-vagaries of real-world data.
+GSL that implement the algorithms from {\sl Numerical Recipes}, and this
+book will build upon rather than replicate their effort. At the other
+end, an abundance of texts will explain to readers how to do basic
+statistics using the stats package of the month; this book lists the
+one-line commands at this level, but it also breaks open the black boxes
+and shows how those computations are done, so the reader can modify them
+according to the vagaries of real-world data.
 
 \paragraph{The intended audience}
-I assume that you've had a statistics class already, but may need some refreshing
-here and there, and so I'll include digressions to remind you of your Greek. I also
+I assume that you have had a statistics class already, but may need some refreshing
+here and there, and so I will include digressions to remind you of your Greek. I also
 assume that you are basically computer-literate, so I won't explain to you how to
 turn on your computer, copy files, or work with a text editor.
 
@@ -135,7 +162,7 @@ away with. But if you expect to be doing statistical work for a larger
 part of your career, such that problems of extensibility, portability,
 and precision may be looming in your future, then this book is for you.
 
-\section{The stats we'll cover} 
+\section{The stats covered} 
 As powerful as we like to think modern statistics is, it has a 
 limited set of tricks at its disposal. For the purposes of this book,
 I will divide them into three broad categories, which are broad enough
@@ -166,8 +193,8 @@ hypotheses testing.
 important fact about statistical analysis: it proves nothing, only
 persuades. A large part of this is that we are looking for causal stories
 about the world, but there is no statistical technique (and never will be)
-which proves causality. Further, there's always a way to rewrite a model
-or re-draw the data so that things will be different. But, of course,
+that proves causality. Further, there is always a way to rewrite a model
+or re-draw the data so that things will be different. But
 some results are more robust to tweaking 
 than others, and some models are just plain more persuasive than others.
 
@@ -182,7 +209,7 @@ go no further in dazzling the reader with your statistical abilities.
 The second part of statistical analysis is hypothesis testing, in which
 we calculate a parameter of the data and then make a claim about that
 parameter.  Having observed in the last paragraph that the correlation
-coefficient of two variables is large, perhaps we'd like to prove
+coefficient of two variables is large, perhaps we would like to show
 that that correlation coefficient is almost certainly different from
 zero. More often, we have parameters in a model that we've written,
 and would like to make claims about those parameters.
@@ -199,15 +226,15 @@ in nature has a Chi-squared distribution.
 Often, your work will shift
 gears from describing the data (like fitting an OLS regression to the
 data) to testing a hypothesis (like the claim that the coefficients
-in your regression are significantly different from zero). The stats
-textbooks I've read tend to run these goals together at every opportunity;
-hopefully I'm doing better here, but it's up to you to know exactly
+in your regression are significantly different from zero). Many stats
+textbooks run these goals together at every opportunity;
+hopefully I'm doing better here, but it is up to you to know exactly
 which goal you're working on with each line of code or math, and to be
-certain that it's working toward your overall goal of saying something
+certain that it is working toward your overall goal of saying something
 interesting and persuasive.
 
 \subsection{General theorems and their special cases}
-Here is another way to subdivide the theorems which underly
+Here is another way to subdivide the theorems that underly
 statistics, this time into two classes. The first class, including the
 results about MLEs, applies almost universally, but requires a huge
 amount of computational power to arrive at a result. The second class
@@ -223,19 +250,19 @@ civilians had the computing power to use. This is when the stats packages
 that are so prevalent today came to the fore, automating the tedium of
 applying these special case results. The technology had an immediate
 influence on how people did research: they applied those darn special
-cases to everything, and you'd have a hard time finding an issue of an
+cases to everything, and one would have a hard time finding an issue of an
 academic journal today that doesn't have at least one OLS regression.
 Everything in the world has become a linear process.
 
-This book is about using OLS only when it's applicable. OLS was the only
+This book is about using OLS only when it is applicable. OLS was the only
 viable tool for a hundred years or so, but we're done with using it everywhere.
-The Central Limit Theorem tells us that yes, errors probably are
-Normally distributed; and it's often the case that yes, the dependent
+The Central Limit Theorem tells us that yes, errors often are
+Normally distributed; and it is often the case that yes, the dependent
 variable is more or less a linear or log-linear function of several
 variables. If such descriptions do no violence to the reality from
 which the data was culled, then OLS is the method to use, and using
 more general techniques will not be any more persuasive. But if these
-assumptions aren't true, then using OLS is at best unpersuasive, and at
+assumptions are not true, then using OLS is at best unpersuasive, and at
 worst disingenuous. Before computing power was where it is today, OLS was
 as persuasive as we could get, and we all just had to accept that. But
 now it is possible (and as this book hopes to show, even easy) to write
@@ -243,31 +270,30 @@ down exactly the right likelihood function, and to find exactly the best
 parameters, instead of settling for the unpersuasive---and often
 inapplicable---model which requires the least processor power.
 
-\section{The programming we'll cover}
+\section{The programming covered}
 
 Using C is a mix of low-level and high-level
-work. You'll be allocating memory, telling the computer exactly where
+work. You will be allocating memory, telling the computer exactly where
 to shunt its electrons. But, thanks to the efforts of tens of thousands
-of programmers before you, you'll have the benefit of functions which
+of programmers before you, you will have the benefit of functions that
 will find the minimum of a function or calculate characteristics of a
 Normal distribution, without having to remember Newton's method or
 the equation for the Gaussian distribution.
 
 The first few chapters of this book will cover the basics of C itself,
-in terms of its grammar and how to call those functions which
-you'll find so valuable. I am not shooting for completeness: just giving you enough that you'll
-understand the rest of the story.  The remainder of the book will be at the higher
+in terms of its grammar and how to call those functions that
+you will find to be so valuable. The remainder of the book will be at the higher
 level, describing how to glue together the functions in the
-GNU Scientific Library to get your research done.
+GNU Scientific Library, SQLite, and Apophenia to get your research done.
 
 \subsection{The statistics package} The GNU Scientific Library includes tools for
 all of the procedures mentioned above: linear algebra operations, looking up the
 value of F-, t-, $\chi^2$- distributions, calculating likelihood functions, and
-maximizations. These will be the building blocks for our analysis.
+maximizations. These will be the building blocks for analysis.
 
 \subsection{Dealing with large data sets} More than anything, the problem
-with stats packages is that large data sets will be hard to deal
-with. Those languages which are designed around dealing with large data
+with stats packages is that large data sets can be hard to deal
+with. Those languages designed around dealing with large data
 sets tend to be even more draconian than C---for example, SAS's data
 input command is {\tt card}, referring to the punch card it expects you
 to put in the hopper.\footnote{SAS, by the way, gets its facility with large data sets
@@ -277,33 +303,33 @@ SAS if you so choose.}
 The best programs for large data sets are databases. They are designed
 from the ground up to do nothing but let you efficiently retrieve what you
 need from huge amounts of data.  Of course, being so purpose-specific,
-there's no way to do statistics in a database (beyond trivialities like calculating
-averages). Fortunately, we're working in C, so we can have the best of
+there is no way to do statistics in a database (beyond trivialities like calculating
+averages). Fortunately, we are working in C, so we can have the best of
 all worlds. The method I advocate in this book (and the method that
 Apophenia facilitates) is to read all of your
 data into a database, and then query what you need to a matrix, as you
 need it. This requires learning a new syntax, SQL, which is decidedly
 neither Beautiful nor Perfect, and adds a level of complication on top
-of what we're already dealing with. But from my experience, it is very
-much worth it.
+of what you are already dealing with. But the ease of manipulating data
+sets offered by SQL is very much worth its short learning curve.
 
 Apophenia  uses the SQLite library, which will
 give you all the database functionality you need. Those of you who are
-already database gurus, or who are handed data which is already handled
+already database gurus, or who have data which is already handled
 by another database engine, will easily be able to adapt the techniques
 used here, but will need to brush up on the details of how to access
-your site's database. Since we are using C instead of a stats package,
-you are guaranteed that there's an interface out there that you can
+your site's database. Since you are using C instead of a stats package,
+you are guaranteed that there is an interface out there that you can
 download and incorporate into your programs.
 
 \subsection{Pretty pictures} One thing C is not really good for is drawing
 pretty pictures. This is not to be belittled, since those pictures
-can be very persuasive. Consistent with the rest of this book, I will use
-Gnuplot, a program which is freely available and which will compile on
-the system you're using right now. Gnuplot is highly automatable, so once
+can be very persuasive. Consistent with the rest of this book, plotting
+is done via Gnuplot, a program which is freely available and which will compile on
+the system you are using right now. Gnuplot is highly automatable, so once
 you have a plot you like, you can have your C programs autogenerate
 them or manipulate them in cute ways, or can send your program to your
-colleague in Madras and he'll have no problem reproducing and modifying
+colleague in Madras and he will have no problem reproducing and modifying
 your graphs.
 
 \input why_c.tex
@@ -331,14 +357,15 @@ to facilitate data handling and statistics.
 
 Given those tools, coding statistics will be easy. Part II includes a chapter
 devoted to each of the three categories of statistics above: Chapter \ref{projections}
-handles the process of describing your data, with or without a model; Chapter
+handles the process of describing your data, using simple calculations
+or projection techniques; Chapter
 \ref{gauss} covers methods of comparing your data to various Gaussian
 distributions, such as the t test, F test, and chi-squared test; Chapter
 \ref{mle} will show you how to write down your likelihood functions and
 find their maxima, as in Probit or Normit estimations, and how to test
 hypotheses using a likelihood ratio test. There are some other topics
-that need covering: I'll throw a chapter in there (Chapter \ref{boot})
-about bootstrapping and jackknifing, which are dirty tricks which will one
+that need covering: Chapter \ref{boot} will cover
+bootstrapping and jackknifing, which are dirty tricks which will one
 day save your life.  Finally, Chapter \ref{gnuplot} will cover creative
 uses of Gnuplot to display data.
 
@@ -347,17 +374,17 @@ have the tools to implement any technique in classical statistics in
 existence today, on any data set, no matter how large or exceptional.
 
 \part{Computing}
-\input c_crash.ground
-\input sql.ground
-\input linear_algebra.ground
-\input apop.ground
+\input c_crash.tex
+\input sql.tex
+\input linear_algebra.tex
+\input apop.tex
 \part{Statistics}
-\input projection.ground
-\input gauss.ground
-\input mle.ground
-\input boot.ground
+\input projection.tex
+\input gauss.tex
+\input mle.tex
+\input boot.tex
 %\input mcmc.tex
-\input gnuplot.ground
+\input gnuplot.tex
 \nocite{*}
 \bibliographystyle{plainnat}
 \bibliography{guide}

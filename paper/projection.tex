@@ -8,7 +8,7 @@
 
 This chapter covers the simple matters of describing a data set, via a
 number of strategies of increasing complexity. 
-The first approach, Section \ref{basicstats}, consists of simply looking
+The first approach, in Section \ref{basicstats}, consists of simply looking
 at summary statistics for a series of observations about a single
 variable, like its mean and variance. It imposes no structure on the
 data of any sort. The next level of structure is to
@@ -79,7 +79,7 @@ Schwarz to state the following: $0\leq \rho^2 \leq 1$.
 \paragraph{Coding it} Given a vector, Apophenia provides functions to
 calculate most of the above, e.g.:
 
-%[
+\begin{lstlisting}
 apop_data *set = gather_data();
 gsl_vector_view v1, v2;
 v1 = gsl_matrix_col(set->data, 0);
@@ -89,8 +89,8 @@ double var1 = apop_vector_var(&(v1.vector));
 double covar = apop_vector_covar(&(v1.vector), &(v2.vector));
 double corr = apop_vector_correlation(&(v1.vector), &(v2.vector));
 apop_data_show(apop_matrix_summarize(set));
-%]
-The last item in the code, \ttind{apop\_\-data\_\-show} produces a table of
+\end{lstlisting}
+The last item in the code, \ttind{apop\_data\_show} produces a table of
 some summary statistics for every column of the data set.
 
 \section{Sample distributions}\index{sample distributions}
@@ -188,7 +188,7 @@ Normal distribution that one would fit to this data is:
    \sqrt{(2 \pi)^n det(\Sigma)}}
 }					
 
-Apophenia provides the function \ttind{apop\_\-mul\-ti\-var\-i\-ate\_\-norm\-al\_\-prob} to evaluate this likelihood for a given data point.
+Apophenia provides the function \ttind{apop\_multivariate\_normal\_prob} to evaluate this likelihood for a given data point.
 
 
 
@@ -228,7 +228,7 @@ GSL's built-in singular value decomposition function; the third is a
 single call in Apophenia.
 
 The only hard part is finding the eigenvalues of
-$(X'X)$; the GSL saw us coming, and gives us the {\tt gsl\_eigen\_symm} functions
+$(X'X)$; the GSL saw us coming, and gives us the \cinline{gsl\_eigen\_symm} functions
 to calculate the eigenvectors of a symmetric matrix.
 
 The GSL is too polite to allocate large vectors behind our backs, so
@@ -236,7 +236,7 @@ it asks that we pass in pre-allocated workspaces when it needs such
 things. The eigenvalue-finding function requires such a workspace, so
 here is a function which allocates the workspace, calls the function,
 then frees the workspace:
-%[
+\begin{lstlisting}
 void find_eigens(gsl_matrix *subject, gsl_vector *eigenvals, 
                             gsl_matrix *eigenvecs){
    gsl_eigen_symmv_workspace * w 
@@ -245,7 +245,7 @@ void find_eigens(gsl_matrix *subject, gsl_vector *eigenvals,
    gsl_eigen_symmv_free (w);
    gsl_matrix_free(subject);
 }
-%]
+\end{lstlisting}
 
 Notice that I free the matrix whose eigenvalues are being calculated at the end.
 This is because, for all intents and purposes, the matrix is destroyed in the
@@ -261,7 +261,7 @@ data}, as per the last chapter, and you've subtracted the means of each
 column.
 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_eigen.h>
 int ds=data->size2;
 gsl_matrix *xpx  = gsl_matrix_calloc(ds, ds);
@@ -270,7 +270,7 @@ gsl_matrix *eigenvecs   = gsl_matrix_alloc(ds, ds);
 
 gsl_blas_dgemm(CblasTrans,CblasNoTrans, x, x, xpx);
 find_eigens(xpx, eigenvals, eigenvecs);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 Now we have the eigenvectors and their associated eigenvalues; we need only find
@@ -278,7 +278,7 @@ the largest eigenvalues, and project the data onto their associated eigenvectors
 The GSL helps us by giving us functions for
 finding the indices of the largest elements of a vector.
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_sort_vector.h>
 const int dimensions_we_want = 2;
 gsl_matrix *pc_space 
@@ -293,23 +293,23 @@ for (i=0;i<dimensions_we_want; i++){
    gsl_matrix_get_col(temp_vector, eigenvecs, indexes[i]);
    gsl_matrix_set_col(pc_space, i, temp_vector);
 }
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 All that's left to do is the projection. Notice the convention I used:
-the {\tt pc\_space} has eigenvectors on its columns, and as many columns as the
+the \cinline{pc\_space} has eigenvectors on its columns, and as many columns as the
 dimensionality we want in the end. Below, I transpose that before premultiplying
 the data set by the principal component matrix.
 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 gsl_matrix *projected 
                  = gsl_matrix_alloc(data->size1, dimensions_we_want);
 gsl_blas_dgemm(CblasTrans,CblasNoTrans, pc_space, data, projected);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
-You'll probably want to plot the {\tt projected} matrix; I'll continue this example in the chapter on
+You'll probably want to plot the \cinline{projected} matrix; I'll continue this example in the chapter on
 plotting.
 
 \paragraph{The easy way}
@@ -317,7 +317,7 @@ plotting.
 Here's a function which takes some shortcuts from the above, which we would use in practice. It simply
 makes a copy of the data and feeds that in to the GSL's built-in singular-value decomposition function
 (which eats the copy, and must also be fed an additional dummy vector for its work). The function then
-returns the first {\tt dimensions\_we\_want} eigenvectors and all of the eigenvalues. I assume that all of
+returns the first \cinline{dimensions\_we\_want} eigenvectors and all of the eigenvalues. I assume that all of
 the input arguments have had space allocated before calling the function.
 \codefig{svdecomposition}{A function to find the singluar-value decomposition of a data set}
 
@@ -502,22 +502,22 @@ To summarize,
 the coefficients of  the line of best fit are the value of $\beta$ which solves:
 $ \beta = (X'X)^{-1}X'Y$.
 
-I will assume that we have already read a data matrix in to {\tt apop\_data *set}. First, here is the easy way:
-%[
+I will assume that we have already read a data matrix in to \cinline{apop\_data *set}. First, here is the easy way:
+\begin{lstlisting}
 apop_estimate *est = apop_OLS.estimate(set, NULL, NULL);
 apop_estimate_print(est);
-%]
+\end{lstlisting}
 But if the assumptions of OLS do not fit, then you will need to know how
-the {\tt apop\_\-OLS.est\-i\-mate} function works, so the remainder of this
+the \cinline{apop\_OLS.estimate} function works, so the remainder of this
 section goes over the steps one would take to estimate $\beta$.  \ttindex{apop\_OLS}
 
  Typically, the $Y$
 values are the first column of data, so we would like to extract that to a separate variable:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 gsl_vector      *y_data         = gsl_vector_alloc(set->data->size1);
 gsl_matrix_get_col(y_data, set->data, 0);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 
@@ -526,10 +526,10 @@ there needs to be a column of ones in the data set (because OLS is an
 {\sl affine} linear projection), so we can overwrite the first column
 with ones. 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
         apop_matrix_normalize(set->data);            //every column should have mean zero.
 gsl_vector_view v         = gsl_matrix_column(set->data, 0);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 
@@ -537,36 +537,36 @@ Now we have both the $Y$ and the $X$ in the equation, so we can find $(X'X)$ and
 The second part, $X'Y$, is a simple application of the BLAS function from the last chapter. It is a
 matrix $\cdot$ a vector, so:
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 #include <gsl/gsl_blas.h>
 gsl_vector      *xpy            = gsl_vector_calloc(set->data->size2);
 gsl_matrix      *xpx            = gsl_matrix_calloc(set->data->size2, set->data->size2);
         gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx); //(X'X)
         gsl_blas_dgemv(CblasTrans, 1, set->data, y_data, 0, xpy); //(X'y)
-%]
+\end{lstlisting}
 %\end{verbatim}
 
 The GSL has a function to solve equations of the type ${\bf X} \beta =
 {\bf Y}$; which is exactly the form we have here---$(X'X)\beta = (X'Y)$.  \label{ols}
 %\begin{verbatim}
-%[
+\begin{lstlisting}
         gsl_linalg_HH_solve (xpx, xpy, *beta);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
-The vector {\tt beta} now lives up to its name, holding the coefficients
+The vector \cinline{beta} now lives up to its name, holding the coefficients
 $\beta$. Notice that we never had to take an inverse.  
 
 We may want to do some more with the data that we have here. For example,
 after the assumptions of the next chapter, the covariance matrix of the
-coefficients in $\beta$ is {\tt xpx\_inv}.
+coefficients in $\beta$ is \cinline{xpx\_inv}.
 
 The matrix which projects data onto the space defined by $X$, often
 called the `hat matrix', is $H = X(X'X)^{-1}X'$. Two more lines of algebra will calculate the hat matrix
 for us:
 
 %\begin{verbatim}
-%[
+\begin{lstlisting}
 gsl_matrix * first_part = gsl_matrix_calloc(set->data->size1,set->data->size1);
 gsl_matrix * hat_matrix = gsl_matrix_calloc(set->data->size1,set->data->size1);
 //Find X inv(X'X):
@@ -574,15 +574,15 @@ gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, set->data, xpx_inv, first_part);
 //Find X inv(X'X) X':
 gsl_blas_dgemm(CblasNoTrans,CblasTrans, first_part, set->data, hat_matrix);	
 gsl_matrix_free(first_part);
-%]
+\end{lstlisting}
 %\end{verbatim}
 
-If we have a second data set {\tt set2} of the appropriate number of
-rows (meaning that {\tt (set->data-$>$size1 == set2->data-$>$size1)}, then we can use the hat matrix to do the projection:\\
-%[
+If we have a second data set \cinline{set2} of the appropriate number of
+rows (meaning that \cinline{(set->data-$>$size1 == set2->data-$>$size1)}, then we can use the hat matrix to do the projection:\\
+\begin{lstlisting}
 gsl_matrix * projected_data = gsl_matrix_calloc(set->data->size1,set2->data->size2);
 gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, hat_matrix, set2->data, projected_data);
-%]
+\end{lstlisting}
 
 
 

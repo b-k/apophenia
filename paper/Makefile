@@ -3,7 +3,7 @@ DOCNAME = gsl_stats
 #DOCNAME = c_crash
 
 all: sources/dummy.tex 
-	for i in *tex; do lgrind -e -t 4 $$i > $$(basename $$i .tex).ground; done;
+	#for i in *tex; do lgrind -e -t 4 $$i > $$(basename $$i .tex).ground; done;
 	latex $(DOCNAME)
 
 codefigs:
@@ -18,7 +18,8 @@ view:
 	xdvi -expert -geometry 1041x797+-17+-17 -s 6 -paper usr $(DOCNAME)
 
 publish: $(DOCNAME).pdf
-	scp $(DOCNAME).pdf $(SFSSH):ap/htdocs/gsl_stats.pdf
+#	scp $(DOCNAME).pdf $(SFSSH):ap/htdocs/gsl_stats.pdf
+	scp $(DOCNAME).pdf $(FLUFF):www/ben/pdfs/gsl_stats.pdf
 
 viewpdf: 
 	gv -seascape  -geometry 1129x824+-95+-49 -scale 2 $(DOCNAME).pdf
