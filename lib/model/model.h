@@ -13,6 +13,7 @@ extern apop_model apop_gaussian;//synonym for apop_normal
 extern apop_model apop_GLS;
 extern apop_model apop_normal;
 extern apop_model apop_OLS;
+extern apop_model apop_poisson;
 extern apop_model apop_probit;
 extern apop_model apop_waring;
 extern apop_model apop_waring_rank;

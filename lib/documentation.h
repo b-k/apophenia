@@ -228,7 +228,7 @@ double process_two(gsl_rng *r){
         return gsl_rng_uniform(r);
 }
 int main(){
-gsl_matrix      *m;
+apop_data      *m;
 gsl_vector_view view1, view2;
 gsl_vector      *v1, *v2;
 double          p1, p2;
@@ -250,9 +250,9 @@ gsl_rng *       r;
         }
         apop_query_db("commit;"); //the begin-commit wrapper saves writes to the drive.
         //pull the data from the database. Use the GSL's vector views to minimize copying.
-        m  = apop_db_to_crosstab("samples", "iteration","process", "value", NULL, NULL);
-        view1      = gsl_matrix_column(m, 0);
-        view2      = gsl_matrix_column(m, 1);
+        m  = apop_db_to_crosstab("samples", "iteration","process", "value");
+        view1      = gsl_matrix_column(m->data, 0);
+        view2      = gsl_matrix_column(m->data, 1);
         v1      = &(view1.vector);
         v2      = &(view2.vector);
         //print info.
@@ -260,7 +260,7 @@ gsl_rng *       r;
         printf("process 1: %f\t%f\n", apop_mean(v1), apop_var(v1));
         printf("process 2: %f\t%f\n\n", apop_mean(v2), apop_var(v2));
         printf("t test rejects the null with confidence: %f%%\n", apop_t_test(v1,v2)*100);
-        apop_matrix_print(m, "the_data.txt"); //does not overwrite; appends.
+        apop_data_print(m, "the_data.txt"); //does not overwrite; appends.
         return 0;
 }
 \endcode

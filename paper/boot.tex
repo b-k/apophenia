@@ -1,5 +1,4 @@
 \chapter{Bootstrapping} \label{boot}
-%@-     so lgrind will play nice with makeindex
 
 Bootstrapping is a method of getting a variance out of data that, by all
 rights, should not be able to give you a variance. Say that you have
@@ -45,7 +44,7 @@ There is no need to make the seed look random. The GSL's default seed is
 zero, and if you need ten different seeds, I suggest using 0, 1, \dots ,9.
 
 \subsection{Random number distributions}
-Now that you have a random number generator, you can use it to draw from all of your favorite distributions:
+Now that you have a random number generator, here are some functions that use it to draw from all of your favorite distributions:
 \index{Gaussian distribution} \index{t distribution} \index{F distribution}
 \index{$\chi^2$ distribution} \index{Uniform distribution}\ttindex{gsl\_ran\_...}
 
@@ -79,7 +78,12 @@ random draw from your data.
 The \cinline{apop\_vector\_to\_pdf} function takes the requisite steps
 for you, producing a histogram from the data and then converting it to
 a \ttind{gsl\_histogram\_pdf} structure from which draws can be
-made. E.g.:
+made. It takes two arguments: a \cinline{gsl\_vector} with the data, and
+an \cinline{int} listing the number of bins that the histogram should
+have. This should be calibrated to the resolution of the data: if the
+data is accurate to a thousandth, then it makes sense to have a thousand
+bins. Over-accuracy takes up memory, but there is no harm to having
+zeros in the vast majority of bins. Usage:
 \begin{lstlisting}
     double      draw;
     gsl_vector  *data    = produce_data_set(...);
@@ -102,7 +106,7 @@ made. E.g.:
 \section{Finding the variance of a parameter}
 The bootstrapping process consists of taking artificial samples of your
 data, and then calculating a statistic for each of these samples. These
-draws will be both independent and identically distributed.  Typically,
+draws will be independent and identically distributed.  Typically,
 your statistic is for the form $\sum (X_i)/ N$, where  $N$ is the number
 of observations, and $X_i$ is a data point in the case of a mean,
 $(X-\mu)^2$ for a variance, et cetera. In other words, the statistic
@@ -123,7 +127,7 @@ as the sample size approaches the population size.
 the errors in your sample. If your sampling technique isn't perfect---and
 it isn't---then it won't capture the full variation in the data. That
 means that the variances you calculate using bootstrap will be less than
-the true variance. In a bind, it's all you've got, and you'll just have
+the true variance. In a bind you'll just have
 to state that and go on. Bootstrapping is a generally accepted technique,
 and has reasonable persuasive power.
 
@@ -133,8 +137,8 @@ probably trying to do, so bootstrapping works slightly in your favor,
 and against parsimony and skepticism. Therefore, if there is any way
 of getting information about the variance of your variable without
 bootstrapping, even if that estimate overstates the variance, then use
-that instead of bootstrapping. Otherwise, you dishonor your name, and
-bring shame to your research group.
+that instead of bootstrapping. \comment{Otherwise, you dishonor your name, and
+bring shame to your research group.}
 
 
 \subsection{Creating random samples} Assume that we have a
@@ -163,3 +167,4 @@ It is valid to use the standard deviation returned by this function can
 be used in the normal way to construct confidence intervals and test
 hypotheses about the statistic.
 
+Again, Apophenia has you covered with bootstrapping functions. More developments to follow.

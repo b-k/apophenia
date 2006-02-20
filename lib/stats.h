@@ -26,7 +26,6 @@ inline double apop_vector_correlation(gsl_vector *ina, gsl_vector *inb);
 inline double apop_vector_kurtosis(gsl_vector *in);
 inline double apop_vector_kurt(gsl_vector *in);
 
-
 void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type);
 /*
 	normalization_type:
@@ -81,5 +80,6 @@ void apop_matrix_mean_and_var(gsl_matrix *data, double *mean, double *var);
 double apop_GHgB3_rng(gsl_rng * r, double* a); //in asst.c
 apop_data * apop_data_summarize(apop_data *data);
 apop_data * apop_matrix_summarize(gsl_matrix *data);
+apop_data *apop_data_covar(apop_data *in);
 
 gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins);

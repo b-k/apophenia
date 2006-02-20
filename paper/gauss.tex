@@ -11,22 +11,23 @@ and then looking up a number in a table.
 
 Everything here depends on the Central Limit Theorem. If your data doesn't
 fit the CLT, then please don't use these techniques. Work out how your
-data is distributed, to the best of your abilities (try bootstrapping,
-Chapter \ref{boot}), and then write down a likelihood function. If you're
+data is distributed, to the best of your abilities 
+and then write down a likelihood function---Or try bootstrapping, where the assumptions for the Central Limit Theorem apply by construction; see  Chapter \ref{boot}. 
+If you are
 looking to estimate model parameters, do a maximum likelihood estimation;
-if you're looking to test a hypothesis, write down a likelihood ratio
+if you are looking to test a hypothesis, write down a likelihood ratio
 based on the distribution you've just calculated.
 
 
 
 \section{Meet the Gaussian family} \label{dist2}
 With the exception of the Normal, the distributions below are distinct
-from the distributions above. The distributions above are typically used
-to describe data that we have observed in the real world. But having
-gathered data, we often model the data using techniques such as
-linear regressions, that produce means of model parameters, model
-variances, and other parameters. Those model parameters have their own
-distributions, and those are typically one of the distributions below.
+from the distributions of Section \ref{distlist}. The distributions above
+are typically used to describe data that we have observed in the real
+world. But having gathered data, we often model the data using techniques
+such as linear regressions, that produce means of model parameters,
+model variances, and other parameters. Those model parameters have their
+own distributions, and those are typically one of the distributions below.
 
 
 \paragraph{The \ind{Central Limit Theorem}} is the first piece of magic
@@ -42,7 +43,7 @@ will also be used to describe some of the parameters derived below.
 The big problem with tne Normal distribution is that it depends on $\sigma$, an
 unknown. It also depends on $\mu$, but if the statistic
 being tested is unbiased---like most of the estimators of $\beta$ in the
-catalog below---then you have $\mu$. Thus, much of the trickery in the
+catalog above---then you have $\mu$. Thus, much of the trickery in the
 section on test design below involves combining distributions in ways
 such that the unknown $\sigma$s cancel out.
 
@@ -51,11 +52,11 @@ such that the unknown $\sigma$s cancel out.
 (a+c,b+d)$ (where $\{x\}$ is a variable with the given distribution).
 \end{itemize}
 
-\paragraph{$\chi^2$}\index{chi squared distribution@$\chi^2$ distribution} $[\sum_n (x-\overline
+\paragraph{$\chi^2$ test}\index{chi squared distribution@$\chi^2$ distribution} $[\sum_n (x-\overline
 x)^2]/\sigma^2\sim \chi^2_{n-1}$. The numerator there is the sample
 variance times $n$, so we can test that the sample variance equals a
 given $\sigma^2$ with this. But unless we assume $\sigma$ like that,
-we're up the same creek as with the Normal.
+we are up the same creek as with the Normal.
 
 \begin{itemize}
 \item $\{{\cal N} (0,1)\}^2 \sim \chi^2_1$
@@ -77,11 +78,11 @@ and its distribution.  If $n=2$, we call it a Cauchy distribution.
 \label{tstat}
 
 
-\paragraph{$F$\index{F distribution}}  This is the same cancel-the-$\sigma$s trick as with the $t$, but here the form
+\paragraph{$F$ test\index{F distribution}}  This is the same cancel-the-$\sigma$s trick as with the $t$, but here the form
 is $[\chi^2_m/m]/[\chi^2_n/n]\sim F(m,n)$. For example, if the numerator
 is a ${\cal N}(0,1)$, and the denominator is a $\chi^2$ based on the
 sample variance, then this is the square of the $t$ statistic.
-The nice thing about the $t$ distribution is that it's easy and it
+The nice thing about the $t$ distribution is that it is easy and it
 allows one-tailed hypothesis tests. But if you want to test a
 multivalued hypothesis, then you need to do an $F$ test.
 
@@ -124,7 +125,8 @@ These will obviously add to one, so you can express any area in terms of whichev
 
 For example, if we find that our Normally-distributed mean is 2.2 standard
 deviations above zero, then we can reject the one-tailed hypothesis that
-the mean is zero with probability \cinline{1 - gsl\_cdf\_gaussian\_Q(2.2, 1)}.
+the mean is zero with probability \cinline{1 - gsl\_cdf\_gaussian\_Q(2.2, 1)==
+gsl\_cdf\_gaussian\_P(2.2, 1)}.
 
 \index{Gaussian distribution|see{Normal distribution}}
 \index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_P@\cinline{gsl\_cdf\_chisq\_P}}
@@ -184,12 +186,10 @@ is different from zero:
 %\begin{verbatim}
 \begin{lstlisting}
 \\We enter with the vector beta and matrix xpx_inv
-#include <gsl/gsl_cdf.h>  //CDF functions
-#include <math.h>         //abs
 int i;
 double confidence[beta->size];
 for (i=0;i< beta->size; i++){
-    confidence[i] = gsl_cdf_gaussian_Q( abs(gsl_vector_get(beta,i)), 
+    confidence[i] = gsl_cdf_gaussian_Q(abs(gsl_vector_get(beta,i)), 
                          gsl_matrix_get(xpx_inv, i,i));
     confidence[i] -= .5;
     confidence[i] *= 2;
@@ -200,113 +200,13 @@ The last two steps converted from the one-tailed area below \cinline{beta}
 to a two-tailed area between $\pm$\cinline{beta}.
 
 
-
-\subsection{How to evaluate a test}
-\marginalia{Evaluation vocab}{
-Here are some vocabluary terms; if you are in a stats class right now,
-you will be tested on this:
-
-Likelihood of {\bf type I errors} $\equiv\alpha$: rejecting the null when it's true.\index{type I errors}
-
-Likelihood of {\bf type II errors} $\equiv\beta$: accepting the null when
-it's false.\index{type II errors}
-
-{\bf Power}$\equiv 1-\beta$, or the likelihood of rejecting a false null.\index{power}
-
-{\bf Unbiased}$\equiv (1-\beta)\geq \alpha\ \forall$ values of the parameter.
-I.e., you are less likely to accept the null when it's false than when
-it's true.\index{unbiased estimator}
-
-{\bf Consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.\index{consistency}
-}
-
-A test will either reject or accept a hypothesis given data. It can be
-fooled two ways: the hypothesis could be true but the test rejects it;
-or the hypothesis could be false but the test accepts it anyway. There
-is a balance to be struck between the two errors: as one rises, the
-other falls. But not all estimators are born equal: the `heads, accept;
-tails, reject' testing method gives us a 50\% chance of a Type I error
-and a 50\% chance of a Type II error, but there are tests where both
-errors are significantly lower than 50\%, and so by any measure we would
-call those better tests than the coin-flipping test. 
-
-
-\subsubsection{Keeping type I and type II straight} 
-[Somebody once told me this story: if a doctor is deciding
-whether to give a vaccination, and $H_0=$ the patient is sick,
-then rejecting $H_0$ when it's true and thus not vaccinating is much worse than accepting
-$H_0$ when it's true and thus vaccinating extraneously, so the important error is type I. I always
-thought this was totally {\it ad hoc}, especially since $H_0=$
-the patient is not sick is more null. But if the story helps you, run
-with it.]
-
-You are probably familiar with the
-standard hypothesis test, which says things like `we reject the null with 90\%
-likelihood', and is what the charts in the back of the textbook are about.
-That's the type I error. It comes first because
-it's generally all anybody talks about.
-
-Why do we neglect type II errors? Because in the next section Neyman
-and Pearson will tell us we can.
-
-\subsection{Likelihood ratios} \index{likelihood ratio}
-
-Say the cost to a type I error is $C_I$ and the cost to a type II error is $C_{II}$.
-Then you'll reject $H_0$ iff the likely cost is less than the likely cost of not
-rejecting. That is reject $H_0$ iff $C_I P(H_0|\xv)<C_{II} P(H_1|\xv)$.
-
-We need to note two things from here. First, the difference between a `probability',
-which is the probability of an event given data; and a `likelihood', which is the
-probability that we'd have the data we have given some event. This is nitpicking that
-you don't really have to care about, except that here and there somebody will call you
-on it. This may also clarify for you why some things are called one and some the
-other.
-
-Second, ?`remember the definition of a \ind{conditional probability}? It's based on the
-statement $P(A\cap B)=P(A|B)P(B)$, and symmetrically, $P(A\cap B)=P(B|A)P(A)$.  Equating
-the two and shunting $P(B)$ over gives us \ind{Bayes's rule}: $$P(A|B)={P(B|A) P(A)\over P(B)}$$
-Applying Bayes's rule to the rejection test is easy: set $A=H_0$, $B=\xv$,
-$P(A|B)=P(H_0|\xv)$, and $P(B|A)=L(\xv|H_0)$. Then:
-\begin{eqnarray}
-C_I P(H_0|\xv)&<&C_{II} P(H_1|\xv)\label{firstnp}\\
-\nonumber\\
-C_I {L(\xv|H_0)P(H_0)\over P(\xv)}&<& C_{II} {L(\xv|H_1)P(H_1)\over P(\xv)}\label{secondnp}\\
-\nonumber\\
-c&<& {L(\xv|H_1)\over L(\xv|H_0)}\label{thirdnp}
-\end{eqnarray}
-
-Inequality \ref{firstnp} is the rejection rule from above; Inequality
-\ref{secondnp} uses Bayes's rule to insert the likelihood functions;
-Inequality \ref{thirdnp} just does some cross-division, cancelling out the
-$P(\xv)$s, and defining $c\equiv C_IP(H_1)/C_{II}P(H_0)$, i.e., everything
-that doesn't depend on $\xv$. If you tell me the shape of the distribution
-and some number $\alpha\in(0,1)$, then I can give you a value of $c$
-such that Inequality \ref{thirdnp} is true with probability
-$\alpha$. The test will then be: fail to reject $H_0$ iff Inequality
-\ref{thirdnp} is true.
-
-Neyman and Pearson\index{Neyman-Pearson lemma} proved\footnote{See
-e.g. \cite[189--191]{amemiya:ez}, from whom I cribbed
-this section.}  that this test is the `best' in the sense that for a
-fixed type I error (fixed at $\alpha$), the probability of a type II
-error is minimized. So we can design any test we like by just fixing $\alpha$
-at a value we're comfortable with (custom says to use
-90, 95 or 99\%), calculate a few likelihood functions, and we're assured
-that we did the best we could regarding type II errors. You'll see that
-many of the tests which follow will be of the likelihood ratio form,
-and so type II errors pretty much never get mentioned, since they're
-considered taken care of.
-
-
-
-
 \subsection{The $\chi^2$ test \index{$\chi^2$ test}}
 
 By itself, this is only useful for testing whether the sample variance
 is equal to a given $\sigma^2$, because unless you assume $\sigma^2$ you
-don't have it (unless you are doing a homework question that says something like `$\sigma^2$
+don't have it (unless you are doing a homework question that says `$\sigma^2$
 is known'). Otherwise, in the case of multiple variables, you need to use
-an $F$ test; see below.
+an $F$ test.
 
 $H_0$ asks, is ${\Qv'
 \betav} = \cv$?  This is a very versatile question. E.g., $\Qv =
@@ -328,7 +228,7 @@ Define $q$ to be the number of constraints (columns
 of $\Qv$), $N$ the sample size, and $K$ the number of parameters to be
 estimated ($\betav$).
 
-Now, if $H_0$ is true and we're using OLS, then $\Qv' \betav \sim {\cal
+Now, if $H_0$ is true and we are using OLS, then $\Qv' \betav \sim {\cal
 N}(\cv, \sigma^2 \Qv' (\Xv'\Xv)^{-1} \Qv)$,\footnote{For any other
 method, the variance is $\Qv'$(the variance from section
 \ref{cat})$\Qv$.} and we can use all of the above. The $\chi^2$
@@ -339,22 +239,22 @@ statistic now becomes:
 \over \sigma^2} \sim \chi^2_q
 \end{equation}
 
-If we're testing a variance, we'd have 
+If we are testing a variance, we'd have 
 
 \begin{equation}		\label{chi2}
 {{\bf u}' {\bf u} \over \sigma^2} \sim \chi^2_{N-K}
 \end{equation}
 
 
-\subsection{The $F$ test\index{F test}}
+\subsection{The $F$ test\index{F test}}\label{ftestsec}
 
 As above, we can divide equation \ref{chi1} by equation \ref{chi2} to give us a statistic
-with an $F$ distribution
+with an $F$ distribution:
 
 \begin{equation}	
 {N-K\over q}
 {(\Qv'\hat\betav - \cv)' [\Qv' (\Xv'\Xv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
-\over \uv' \uv } \sim F_{q,N-K} \label{ftest}
+\over \uv' \uv } \sim F_{q,N-K}. \label{ftest}
 \end{equation}	
 
 If you have read this far, you know how to code all of the operations
@@ -384,7 +284,10 @@ apop_F_test(e, data, Q, c);
 Included in the default output from a regression,
 many stats packages run an $F$-test that reports the
 joint hypothesis that all coefficients are different from zero. That is,
-the $F$-test where $\Qv = {\bf I}$ and $\cv = {\bf 0}$. It is up to you
+the $F$-test where $\Qv = {\bf I}$ and $\cv = {\bf 0}$.\footnote{This is
+partly because this $F$-test can be calculated using only the $R^2$.
+Once again, statistical convention is dictated by 70s computing power.}
+It is up to you
 to decide whether this is a relevant statistic for the situation you are
 dealing with, but because it is a custom to report it, some people expect it,
 so
@@ -407,15 +310,14 @@ our fancy. First, we need a means of expressing the hypothesis.
 \index{t test!apop\_t\_test@\cinline{apop\_t\_test}}
 \index{t test!apop\_paired\_t\_test@\cinline{apop\_paired\_t\_test}}
 Among the most common and simplest questions one asks is: are two data
-sets from the same process? Let \cinline{n\_side} be the income of households
+sets from the same process? Chapter \ref{sql} already showed how one
+would do such a test; let us briefly revisit the process now.
+Let \cinline{n\_side} be the income of households
 drawn from the North side of town, North of the railroad tracks, and
 \cinline{s\_side} be the income of households drawn from the South side of
 town. Are North side incomes different from South side incomes? 
 
-It so happens that the sum of two Normal distributions is also a normal
-distribution, which means the the difference between two Normals is also
-Normal, and with enough algebra, one can prove that a comparable difference of 
-two t-distributions is also t-distributed. Notably, if $\mu$,
+If $\mu$,
 $\sigma^2$, and $n$ are the estimated mean, variance, and actual count
 of elements of each data set,
 $${\mu_a + \mu_b \over \sqrt{\sigma^2_a/n_a + \sigma^2_b/n_b}} \sim t_{n_a + n_b -2}.$$
@@ -441,21 +343,25 @@ and comparing it to the $t$-distribution for the after data, we could
 look at the vector of differences $a_i - b_i$ and test where zero falls
 in the appropriate $t$-distribution. This is a more powerful test,
 meaning that we are more likely to reject the null hypothesis of no
-difference between the two vectors, therefore researchers prefer the
-paired $t$-test over the unpaired version above. Apophenia provides the
-\cinline{apop\_paired\_t\_test} function to run this test where appropriate.
+difference between the two vectors, therefore the paired $t$-test is
+generally preferable over the unpaired version above---when it is
+applicable. Apophenia provides the \cinline{apop\_paired\_t\_test}
+function to run this test where appropriate.
 
 \comment{
 \section{Good ol' OLS}
-This section would discuss how to write your very own \cinline{regress} function, which, as noted above,
-just consists of solving for the $\beta$ in $(X'X)\beta = X'Y$. 
-The last chapter showed us the code to find the betas with the smallest squared error; this section will
-cover testing hypotheses about those betas.
+This section would discuss how to write your very own \cinline{regress}
+function, which, as noted above, just consists of solving for the $\beta$
+in $(X'X)\beta = X'Y$.  The last chapter showed us the code to find the
+betas with the smallest squared error; this section will cover testing
+hypotheses about those betas.
 
-\subsection{GLS} Generalized least squares refers to any method that uses a variance-covariance matrix
-that isn't the identity matrix. Having written our \cinline{regress} function, it's almost trivial to
-generalize to GLS. But the fun of GSL is in working out what that matrix should be.  This section would
-give examples of favorites such as AR-1 processes from time series analysis (and hey, why not AR-$N$?).
+\subsection{GLS} Generalized least squares refers to any method that
+uses a variance-covariance matrix that isn't the identity matrix. Having
+written our \cinline{regress} function, it's almost trivial to generalize
+to GLS. But the fun of GSL is in working out what that matrix should be.
+This section would give examples of favorites such as AR-1 processes
+from time series analysis (and hey, why not AR-$N$?).
 
 The easiest thing to do is simply calculate the variances and covariances of the data itself:
 
@@ -484,7 +390,7 @@ apply the formula $\beta_{GLS} = (X'\Sigma X)^{-1} (X'\Sigma Y)$.
 
 \comment{
 This gives us  $N\cdot (N+1)/2$ covariances that need to be calculated; your data is probably not up to
-the task of providing enough information to allow this to be estimated, in which case you'll need to
+the task of providing enough information to allow this to be estimated, in which case you will need to
 compromise and impose some number of restrictions. 
 
 For example, FGLS (Feasible GLS) assumes that the var-covar matrix is of the form 
@@ -509,7 +415,8 @@ fan of a slightly more scientific approach, which is based on the fact
 that a Normal distribution has only two parameters: the mean and the
 standard deviation. Everything else about the Normal distribution is
 defined therefrom. Notably, the third moment is zero, and the fourth
-moment is $3 \sigma^4$. We've already written everything we need to calculate all of these easily.
+moment is $3 \sigma^4$. We've already written everything we need to
+calculate all of these easily.
 
 \comment{
 \begin{verbatim}
@@ -529,16 +436,9 @@ printf("The un-normalized kurtosis is: %g, and should be %g, for a difference of
                          skew(error), three_var_squared,
                          skew(error)-three_var_squared);
 \end{verbatim}
-}
 
 [I had some code here, but I don't like it. It just prints the first four moments of a data vector.]
-
-You can either just eyeball this, and decide based on the scale of the variance
-whether the skew and the kurtosis look like they're far off from where they should
-be, or you could bootstrap the variance of the kurtosis, which would let you find
-a confidence interval around $3 \sigma^4$ and state with a certain percentage
-of certainty that the kurtosis is or is not where it should be. Hint: the CLT applies to the kurtosis,
-so you know it has a Gaussian distribution.
+}
 
 \marginalia{Kurtosis minus three}{
 There is some debate as to whether the kurtosis of a ${\cal N}(0,1)\equiv 3$
@@ -548,3 +448,11 @@ fourth moment. For example, the GSL does the normalization; Apophenia does not.
 Bear this in mind when interpreting kurtosis output. If you see a
 negative kurtosis, then you are guaranteed that you are getting
 normalized kurtosis, since a fourth power can never be negative.\index{kurtosis}}
+
+You can either just eyeball the kurtosis and $3 \sigma^4$, and decide based on the scale of the variance
+whether the skew and the kurtosis look like they're far off from where they should
+be, or you could bootstrap the variance of the kurtosis, which would let you find
+a confidence interval around $3 \sigma^4$ and state with some percentage
+of certainty that the kurtosis is or is not where it should be. [Hint: the
+CLT applies to the kurtosis, so you know it has a Gaussian
+distribution.]

@@ -8,16 +8,22 @@ This chapter will give you some tips on plotting using Gnuplot, a graphing packa
 open and freely available as gcc. [It is unrelated to the GNU, by the way. The name is a compromise
 between the names the two main authors preferred: nplot and llamaplot.]
 
-Gnuplot does nothing but plot points. It has some interface with the GSL to plot functions for you, but
-you mostly won't be concerned with those: you'll just want to plot your data.
+\paragraph{The language} Gnuplot does nothing but plot points and
+lines. As such, the language only has one verb---\cinline{plot}---with a few variants 
+(\cinline{splot}, \cinline{replot}). A Gnuplot command file generally
+consists of a long string of \cinline{set} commands to indicate what the
+axes should look like, the point and line formats, et cetera, and a
+final \cinline{plot} command to do the actual work.
 
 
-\section{Dumping output to an agreeable format} 
+\section{From arrays to plots} 
 The line \cinline{plot '-';} tells Gnuplot to (2-D) plot the data to come. The
 command for a 3-D plot is \cinline{splot '-'}. That means that the process
 of turning a matrix into a basic plot is trivial. Let \cinline{data} be an
 \cinline{apop\_data} set whose first and fifth columns we'd like to plot
-against each other:
+against each other. Then we need to create a file, put a \cinline{plot
+'-';} command in the first line, and then fill the remainder with the
+data to be plotted.  
 \begin{lstlisting}
 FILE    *f = fopen("plot_me", 'w');
 fprintf("plot '-' using 1:5;\n");
@@ -25,8 +31,8 @@ fclose(f);
 apop_data_print(data, "plot_me");
 \end{lstlisting}
 The second option to \ttind{fopen} should be either \cinline{'a'} for append or
-\cinline{'w'} for write; in this case, we want to start with a clean file.
-Notice that \ttind{apop\_data\_print} defaults to appending; you
+\cinline{'w'} for write anew; in this case, we want to start with a clean file so we use \cinline{'w'}.
+Notice that \ttind{a\-pop\_\-data\_\-print} defaults to appending; you
 would need to set \ttind{apop\_opts.output\_append = 0} to overwrite.
 
 The clause \cinline{using 1:5} in the plot command tells Gnuplot to use
@@ -50,35 +56,42 @@ subregions of 2-D plots to zoom into.
 
 \subsection{Histograms} Gnuplot, refusing to do calculations for you,
 makes making histograms a pain.  Fortunately, the GSL has you covered,
-with the \ttind{gsl\_histogram} object. It creates a set of bins, and
+with the \ttind{gsl\_histogram} object, which first made its appearance
+in Section \ref{randomnumbers}, when we needed to generate PDFs from data.
+
+It creates a set of bins, and
 then you can call \cinline{gsl\_histogram\_increment} to put
-data into the right bin. The example below, allocates a histogram with
+data into the right bin. Below is the code for \ttind{apop\_plot\_-hist\-o\-gram}. 
+It allocates a histogram with
 \cinline{bin\_ct} bins, then sets its range to just past the min and max
 of the data. Then the for loop pulls data points from the vector and
 dumps them to the histogram, without any further calculation on our part.
-
+Once everything is neatly aggregated, the function opens a file and dumps the data to a Gnuplottable file.
 \begin{lstlisting}
-void create_a_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
+void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
 int             i;
 FILE *          f;
-double      min, max, pt;
+double          min, max, pt;
 gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
     gsl_vector_minmax(data, &min, &max);
-    gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, 
-                                            max+GSL_DBL_EPSILON);
+        gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
     for (i=0; i < data->size; i++){
         pt  = gsl_vector_get(data, i);
         gsl_histogram_increment(h, pt);
         }
+    //Now that you have a histogram, print it.
+        if (outfile == NULL)    f       = stdout;
+        else            f       = fopen(outfile, "a");
+    fprintf(f, "set key off                                     ;\n\
+                        set style data histograms               ;\n\
+                        set style histogram cluster gap 0       ;\n\
+                        set xrange [0:%i]                       ;\n\
+                        set style fill solid border -1          ;\n\
+                        set boxwidth 0.9                        ;\n\
+                        plot '-' using 2:xticlabels(1);\n", bin_ct);
     for (i=0; i < bin_ct; i++)
-        printf("%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
+    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
+    if (outfile !=NULL)    fclose(f);
 }
 \end{lstlisting}
-
-This is the same histogram structure that was turned into a PDF for
-random number generation in Section \ref{randomnumbers}.
-But this is the plotting chapter, so the above should output to
-a gnuplot-readable file. The \ttind{apop\_plot\_histogram}
-function does exactly this.
-
 \index{Gnuplot|)}

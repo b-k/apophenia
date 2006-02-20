@@ -6,19 +6,32 @@
 Maximum likelihood estimators (MLEs) are the bread and butter of
 statistics. Most of the techniques we've handled so far are MLE
 techniques, except mathematicians over the ages have found ways to hide
-that fact from you. But if there isn't a nice, convenient way to get
-around doing the maximization, you'll have to do it yourself. Fortunately,
-the GSL has the \cinline{gsl\_multimin} family of objects, to help you find
-the optimal parameters. Apophenia even has an \ttind{apop\_maximum\_likelihood}
-function that preps and calls the GSL functions for you. You give it a
-function and some parameters, and it will find the optimum.
-
+that fact from you, by proving that under certain conditions, the
+maximum must have an easy-to-calculate form. But if there isn't a nice,
+convenient way to get around doing the maximization, you'll have to do
+it yourself. Fortunately, the GSL has the \cinline{gsl\_multimin} family
+of objects, to help you find the optimal parameters. Apophenia even
+has an \ttind{apop\_maximum\_likelihood} function that preps and calls
+the GSL functions for you. You give it a function and some parameters,
+and it will find the optimum.
 
 \paragraph{The \ind{log likelihood function}}	\label{the score}
 By itself, the PDF is the likelihood that a given value occurs (given
 the parameters of the PDF); any of the functions listed in section
-\ref{distlist} will do. Define the Log likelihood as $L=\ln f$, the
-Score\index{score} as
+\ref{distlist} will do. That distribution, say $P(x|p)\sim$ Bernoulli,
+plus a given value for the parameter $p$, will tell us the likelihood
+that we would get the data point that we saw. Or, we could reverse this:
+given the data $x$, we can use the Bernoulli distribution to calculate the
+likelihood that $p$ has any given value.
+
+Say that we have two data points, $x_1$ and $x_2$. Assume further that
+they are independently drawn; then $P(\{x_1,x_2\}|p)=P(x_1|p)\cdot P(x_1|p)$. 
+The independence assumption allows us to say the the joint probability
+is the product of the individual probabilities. The assumption of
+identical distributions allows us to write this more neatly, as 
+$P(\{x_1,x_2\}|p)=\Pi_{i=\{1,2\}}P(x_i|p)$.
+
+Define the Log likelihood as $L=\ln f$, the Score\index{score} as
 
 $$S={\partial \ln f\over \partial \theta}$$ 
 
@@ -34,26 +47,9 @@ to know them. First, due to all that exponentiation in the distributions
 of Section \ref{distlist}, $L$ is often much easier to deal with, yet
 is equivalent to the PDF for most of our purposes. 
 
-Further, let the probability of observing $X_1$ as it is in our data
-set be $p_1$, and the probability of $X_2$ being as observed is $p_2$.
-Assuming that $X_1$ and $X_2$ are independently distributed, their
-probability is $p_1\cdot p_2$; this is basically the definition of
-statistical independence. If we have a thousand observations, then the
-probability of observing the data set we have is $\prod_{i=1}^{1000} p_i$.
-Since each $p_i\in (0,1]$, this product is probably on the order of
-$1\times 10^{-1000}$. This is a delicate number, and details of
-implementation in hardware could easily break it; this is what computer
-scientists call an {\sl underflow error}. Taking logs, each value of
-$p_i$ is now a negative number, e.g., $\ln(0.5)\approx -0.69$ and $\ln(0.1)\approx -2.3$.
-But the product above is now a sum:
-$$\ln\left[\prod_{i=1}^{1000} p_i\right] = \sum_{i=1}^{1000} \ln(p_i).$$
-Thus, the log likelihood of our typical data set is on the order of
--1000 instead of $1\times 10^{-1000}$---much more robust and manageable.
-
-The second benefit to using the log likelihood is analytic: since $S \cdot f = {\partial f
-\over \partial \theta}$, the derivative of the expectation in terms of
-$\theta$ can be rewritten as the expectation of $S$.\footnote{%
-	Note the sleight of hand: the derivative of the expectation is
+\marginalia{\ind{Exponential families}}{%
+	There is a bit of a sleight of hand in asserting that $S \cdot f = {\partial f
+\over \partial \theta}$: the derivative of the expectation is
 	${d\over d\theta}\int f dy$; while we want $\int {d f\over
 	d\theta} dy=\int S \cdot f dy$ [Note how this means $E(S)=0$, by the
 	way, since the integral of the pdf is one, and $d1/d\theta=0$].
@@ -62,11 +58,36 @@ $\theta$ can be rewritten as the expectation of $S$.\footnote{%
 	family. You can look that up, but here, we can rest assured that
 	the Normal, Gamma, Beta, Binomial, Poisson, \&c. are all in this
 	family.} 
+Further, consider calculating the likelihood function above given
+a thousand data points.  Then the probability of observing the data set
+we have (fixing $p$ for now) is $\prod_{i=1}^{1000} P(x_i)$.  Since each
+$P(x_i)\in (0,1]$, this product is probably on the order of $1\times
+10^{-1000}$. This is a delicate number, and details of implementation in
+hardware could easily break it; this risks what computer scientists call an
+{\sl underflow error}. Taking logs, each value of $p_i$ is now a negative
+number, e.g., $\ln(0.5)\approx -0.69$ and $\ln(0.1)\approx -2.3$.  But the
+product above is now a sum: $$\ln\left[\prod_{i=1}^{1000} P(x_i)\right]
+= \sum_{i=1}^{1000} \ln(P(x_i).$$ Thus, the log likelihood of our typical
+data set is on the order of -1000 instead of $1\times 10^{-1000}$---much
+more robust and manageable.\footnote{Zero probability events are still
+a problem: they make the original likelihood product zero, and the log
+likelihood $-\infty$. The problem of course is that a statistical model
+specifies a zero-probability event, and that event happens, then the
+model is proven false, and the likelihood function shows it. Near-zero
+probability events can have a disproportionately large effect on the
+parameter estimation, so care must be taken to evaluate whether events with very
+small probability should be taken as signs that the model is false,
+should be handled as outliers, or should simply be taken as an unlucky
+draw.}
 
-There are some fun tricks you can do with these functions, most of which I'll have to
-skip over.  The neat trick most worth mentioning is the \ind{information equality}, that
-$E(I)=\var(S)$, which you can prove by calculating ${\partial E(L)\over
-\partial \theta}$.
+The second benefit to using the log likelihood is analytic: since $S \cdot
+f = {\partial f \over \partial \theta}$, the derivative of the expectation
+in terms of $\theta$ can be rewritten as the expectation of $S$.
+
+There are some fun tricks you can do with these functions, most of which
+I'll have to skip over.  The neat trick most worth mentioning is the
+\ind{information equality}, that $E(I)=\var(S)$, which you can prove by
+calculating ${\partial E(L)\over \partial \theta}$.
 
 \section{Why likelihood functions are great} There are two reasons, with four names.
 
@@ -100,6 +121,104 @@ will also prove that for the MLE, the variance is actually equal to the
 CRLB, meaning that we can not get an estimator of $\beta$ which will
 have a smaller variance.
 
+\subsection{How to evaluate a test}
+\marginalia{Evaluation vocab}{
+Here are some vocabluary terms; if you are in a stats class right now,
+you will be tested on this:
+
+Likelihood of {\bf type I errors} $\equiv\alpha$: rejecting the null when it is true.\index{type I errors}
+
+Likelihood of {\bf type II errors} $\equiv\beta$: accepting the null when
+it is false.\index{type II errors}
+
+{\bf Power}$\equiv 1-\beta$, or the likelihood of rejecting a false null.\index{power}
+
+{\bf Unbiased}$\equiv (1-\beta)\geq \alpha\ \forall$ values of the parameter.
+I.e., you are less likely to accept the null when it is false than when
+it is true.\index{unbiased estimator}
+
+{\bf Consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.\index{consistency}
+}
+
+A test will either reject or accept a hypothesis given data. It can be
+fooled two ways: the hypothesis could be true but the test rejects it;
+or the hypothesis could be false but the test accepts it anyway. There
+is a balance to be struck between the two errors: as one rises, the
+other falls. But not all estimators are born equal: the coin-flip test, `heads, accept;
+tails, reject' gives us a 50\% chance of a Type I error
+and a 50\% chance of a Type II error, but there are tests where both
+errors are significantly lower than 50\%, and so by any measure we would
+call those better tests than the coin-flipping test. 
+
+
+\subsubsection{Keeping type I and type II straight} 
+[Somebody once told me this story: if a doctor is deciding
+whether to give a vaccination, and $H_0=$ the patient is sick,
+then rejecting $H_0$ when it is true and thus not vaccinating is much worse than accepting
+$H_0$ when it's true and thus vaccinating extraneously, so the important error is type I. I always
+thought this was totally {\it ad hoc}, especially since $H_0=$
+the patient is not sick is more null. But if the story helps you, run
+with it.]
+
+You are probably familiar with the
+standard hypothesis test, which says things like `we reject the null with 90\%
+likelihood', and is what the charts in the back of the textbook are about.
+That's the type I error. It comes first because
+it's generally all anybody talks about.
+
+Why do we neglect type II errors? Because in the next section Neyman
+and Pearson will tell us we can.
+
+\subsection{Likelihood ratios} \index{likelihood ratio}
+
+Say the cost to a type I error is $C_I$ and the cost to a type II error is $C_{II}$.
+Then you will reject $H_0$ iff the likely cost is less than the likely cost of not
+rejecting. That is reject $H_0$ iff $C_I P(H_0|\xv)<C_{II} P(H_1|\xv)$.
+
+We need to note two things from here. First, the difference between a `probability',
+which is the probability of an event given data; and a `likelihood', which is the
+probability that we'd have the data we have given some event. This is nitpicking that
+you don't really have to care about, except that here and there somebody will call you
+on it. This may also clarify for you why some things are called one and some the
+other.
+
+Second, ?`remember the definition of a \ind{conditional probability}? It's based on the
+statement $P(A\cap B)=P(A|B)P(B)$, and symmetrically, $P(A\cap B)=P(B|A)P(A)$.  Equating
+the two and shunting $P(B)$ over gives us \ind{Bayes's rule}: $$P(A|B)={P(B|A) P(A)\over P(B)}$$
+Applying Bayes's rule to the rejection test is easy: set $A=H_0$, $B=\xv$,
+$P(A|B)=P(H_0|\xv)$, and $P(B|A)=L(\xv|H_0)$. Then:
+\begin{eqnarray}
+C_I P(H_0|\xv)&<&C_{II} P(H_1|\xv)\label{firstnp}\\
+\nonumber\\
+C_I {L(\xv|H_0)P(H_0)\over P(\xv)}&<& C_{II} {L(\xv|H_1)P(H_1)\over P(\xv)}\label{secondnp}\\
+\nonumber\\
+c&<& {L(\xv|H_1)\over L(\xv|H_0)}\label{thirdnp}
+\end{eqnarray}
+
+Inequality \ref{firstnp} is the rejection rule from above; Inequality
+\ref{secondnp} uses Bayes's rule to insert the likelihood functions;
+Inequality \ref{thirdnp} just does some cross-division, cancelling out the
+$P(\xv)$s, and defining $c\equiv C_IP(H_1)/C_{II}P(H_0)$, i.e., everything
+that doesn't depend on $\xv$. If you tell me the shape of the distribution
+and some number $\alpha\in(0,1)$, then I can give you a value of $c$
+such that Inequality \ref{thirdnp} is true with probability
+$\alpha$. The test will then be: fail to reject $H_0$ iff Inequality
+\ref{thirdnp} is true.
+
+Neyman and Pearson\index{Neyman-Pearson lemma} proved\footnote{See
+e.g. \cite[189--191]{amemiya:ez}, from whom I cribbed
+this section.}  that this test is the `best' in the sense that for a
+fixed type I error (fixed at $\alpha$), the probability of a type II
+error is minimized. So we can design any test we like by just fixing $\alpha$
+at a value with which we are comfortable (custom says to use
+90, 95 or 99\%), calculate a few likelihood functions, and we are assured
+that we did the best we could regarding type II errors. You will see that
+many of the tests which follow will be of the likelihood ratio form,
+and so type II errors pretty much never get mentioned, since they're
+considered taken care of.
+
+
+
 \paragraph{The Neyman-Pearson lemma} There are two types of error we could
 have with a hypothesis test: Type I is that we reject the null when it's
 true; Type II is that we accept the null when it's false. The first type
@@ -109,17 +228,49 @@ Neyman and Pearson showed that a likelihood ratio test will have the
 minimum possible Type II error of any test with the $\alpha$ that we
 selected. After establishing this fact, we just ignore Type II errors.
 
+\subsection{An example: probit} \index{probit|(}
+The probit is a popular model of aleatory behavior. 
+Let the utility from vector $\xv$ be 
+$U(\xv|\betav) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_3 + \beta_4 x_a + \epsilon$,
+where the $\beta$s are all parameters to be estimated from
+the data and $\epsilon \sim {\cal N}(0,1)$.
+The a person consumes $\xv$ iff $U(\xv|\betav)>0$. 
+
+An equivalent way to put the model is to say that $U(\xv)$ is
+deterministic---drop $\epsilon$ from the above, and the probability that
+the agent consumes is given by
+$$P(\xv|\betav) = \int_{-\infty}^{U(\xv|\betav)} {\cal N}(0,1)(y) dy,$$
+where ${\cal N}(0,1)(y)$ indicates the Normal PDF at $y$ (and so the
+integral is the CDF up to $U(\xv|\betav)$).
+
+Reversing this, the probability of $\betav$ given that the agent
+consumed is $P(\xv)$, and its probability given that the agent did not
+consume is $1-P(\xv)$. Let $\xv^C$ be the set of $\xv$s that led to
+consumption and $\xv^N$ be the set that led to nonconsumption. Then the
+likelihood of $\betav$ given the data set is 
+$$L(\betav|\xv) = \prod_{i} P(\xv^C_i|\betav) \cdot \prod_{i} 1-P(\xv^N_i|\betav).$$ 
+
+One row of our data set will consist of a one or zero indicating
+consumption or non-consumption, and then (the transpose of) the vector
+$\xv$. Then the probit parameters can be estimated using
+\cinline{apop\_\-pro\-bit.est\-i\-mate(data, NULL, NULL)}.
+\index{probit|)}
+
 \section{Description: Maximum likelihood estimators} 
+As in the Probit example, Apophenia's model estimation routines can run
+with default values by sending in \cinline{NULL} as the third
+argument. However, if you know that the model estimates its parameters
+via MLE, then you may be able to improve the estimation routine by
+specifying the method and scale of the ML search.
 
-
-Estimating an existing model via maximum likelihood estimation simply requires 
+Specifying these parameters simply requires 
 filling out a form describing your preferences and then calling the model's \cinline{estimate} method.
 The form in question is a \ttind{apop\_estimation\_params} structure, that
 describes the method, the starting point, the step size, and the
 tolerance.
 For example:
 \begin{lstlisting}
-apop_estimation_params *ep  = malloc(sizeof(apop_estimation_params);
+apop_estimation_params *ep  = malloc(sizeof(apop_estimation_params));
 double  starting_point[2]   = {1,1};
 ep->method      = 000;
 ep->step_size   = 1e-1;
@@ -135,17 +286,17 @@ structure you need to set.
 \paragraph{The method} There are currently four you can choose from.
 [Also, there are two more that  just aren't hooked in yet. If you're
 comfortable exploring the internals of Apophenia, have a look at the
-\cinline{wnbridge.c} file.]
+\cinline{wn/wnbridge.c} file.]
 
 
 \begin{itemize}
 \item {\bf 000: The Nelder-Mead simplex algorithm} Draws a polygon and then attempts to shift the corners of the polygon.
-\item {\bf 100: conjugate gradient (Fletcher-Reeves)} This is the
+\item {\bf 100: Conjugate gradient (Fletcher-Reeves)} This is the
 default. Basically, we take the derivative in all directions and find
 the linear combination of these directions that indicates the fastest
 climb. Clearly, this depends on knowing derivatives; see below.
-\item {\bf 200: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)}  Another conjugate gradient method, that calculates the direction of travel differently. See \cite{avriel:nonlinear} for definitions of all of these methods.
-\item {\bf 300: conjugate gradient (Polak-Ribiere)} Yet another conjugate gradient method.
+\item {\bf 200: Conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)}  Another conjugate gradient method, that calculates the direction of travel differently. See \cite{avriel:nonlinear} for definitions of all of these methods.
+\item {\bf 300: Conjugate gradient (Polak-Ribiere)} Yet another conjugate gradient method.
 \end{itemize}
 
 As a practical matter, your best bet is to either just go with the default (Fletcher-Reeves) or try them all using a tournament as described below. 
@@ -179,7 +330,7 @@ algorithm will use to start searching for points. Basically arbitrary
 because all of these algorithms are adaptive, meaning that they will
 change the step size as they see fit.
 
-\paragraph{Tolerance} The algorithm will basically stop when it feels
+\paragraph{Tolerance} The algorithm will stop when it feels
 that the calculated log likelihood is changing by less than this amount,
 indicating that the search is at a local maximum and the first derivative of
 the log likelihood function is nearing zero.
@@ -190,9 +341,9 @@ broken; for example, some of the GSL's searches can get into two-step loops.
 It is probably a good idea to run your search verbosely at least once.
 Also, see \cinline{apop\_opts.mle\_trace\_path} below.
 
-\paragraph{Starting point} an array of doubles indicating where you want
+\paragraph{Starting point} An array of doubles indicating where you want
 your search to begin. Being an array, you can use a form like the above
-to initialize it (but then it will be destroyed when you leave the
+to initialize it (but if you are using automatic allocation like this, then it will be destroyed when you leave the
 function that it was initialized in---remember this if you want to
 access the starting point in the estimate that the MLE outputs).
 
@@ -244,12 +395,13 @@ First, set this variable and run the MLE. The begin/commit wrapper
 speeds things up a touch, but this will clearly be slower than without
 taking notes:
 \begin{lstlisting}
-    strcpy(apop_opts.mle_trace_path, "path");
+    strcpy(apop_opts.mle_trace_path, "pathtable");
     apop_query("begin;");
     e   = apop_zipf.estimate(...);
     apop_query("commit;");
 \end{lstlisting}
-Then, plot using a function like the below. Notice that you will want
+Plotting data is covered fully in Chapter \ref{gnuplot}, but for now,
+the function below shows how one would plot the trace.  Notice that you will want
 \cinline{splot} for 3-d variables and \cinline{plot} for 2-d. The change in width
 and pointsize is to remind the eye that the lines connecting the points
 only indicate the path the maximizer went along, not actual values of
@@ -257,21 +409,21 @@ the function.
 \begin{lstlisting}
 static void plotme(char *outfile){
 FILE            *f;
-gsl_matrix      *traced_path;
+apop_data       *traced_path;
     f       = fopen(outfile, "w");  //overwrites. Use "a" to append.
     fprintf(f,"splot '-' with linespoints linewidth 0.5 pointsize 2\n");
-    traced_path = apop_query_to_matrix("select * from %s"
+    traced_path = apop_query_to_data("select * from %s"
                                         , apop_opts.mle_trace_path);
     fclose(f);
-    apop_matrix_print(traced_path, "\t", outfile);
+    apop_data_print(traced_path, "\t", outfile);
 }
 \end{lstlisting}
 
 Finally, call \ind{Gnuplot} from your command line:
 \begin{lstlisting}
-$ gnuplot -persist < plotme
+gnuplot -persist < plotme
  (or)
-$ gnuplot plotme -
+gnuplot plotme -
 \end{lstlisting}
 
 \begin{figure}
@@ -280,7 +432,7 @@ $ gnuplot plotme -
 \end{figure}
 
 \section{Hypothesis testing: Likelihood ratio tests} Every test
-in the last chapter was a likelihood ratio test---I just didn't tell
+in the Chapter \ref{gauss} was a likelihood ratio test---I just didn't tell
 you what the likelihood function was. Those functions are easy because
 they've been carefully studied and methods have been found to let you
 calculate them without explicitly writing down a likelihood function
@@ -292,13 +444,12 @@ do the tedious math, unlike poor Mr. Gauss, who had no such conveniences.
 Also, we have the Cramer-Rao lower bound to tell us what the variances
 are. 
 
-[...]
 
 
 \section{Writing your own}
 The design of the \cinline{apop\_model} hopes to make it as easy as possible for you,
 dear reader, to write new models. For the most part, all you need to
-do is write a log likelihood function, and \ttind{apop\_maximum\_likelihood}
+do is write a log likelihood function, and \ttind{a\-pop\_\-max\-i\-mum\_\-like\-li\-hood}
 does the rest. The steps:
 
 
@@ -311,11 +462,11 @@ where \cinline{beta} will be the parameters to be maximized, and \cinline{d} is 
 with Apophenia, \cinline{d} is a \cinline{gsl\_matrix,} but you do not have to conform
 to that. This function will return the value of the log likelihood function at the given parameters.
 
-\item Is this a constrained optimization? See section
+\item Is this a constrained optimization? See Section
 \ref{constraintwriting} on how to write a constraint function.
 
 \item Write the \cinline{estimate} method, so users can call 
-\cinline{apop\_new\_likelihood.estimate(...)}. For an MLE, this will be one line,
+\cinline{a\-pop\_\-new\_\-like\-li\-hood.\-est\-i\-mate(...)}. For an MLE, this will be one line,
 as follows:
 \begin{lstlisting}
 static apop_estimate * new_estimate(apop_data * data, 
@@ -328,9 +479,8 @@ By using the \ttind{static} keyword, the function name will only be
 known to this file, so you can name it what you wish.  But since you
 will be putting a pointer to the function into an object below, you
 can use the above-mentioned 
-\cinline{apop\_new\_likelihood.estimate(...)}
-form to call this function. You may want to type all of the functions in
-your new model as \cinline{static}.
+\cinline{a\-pop\_\-new\_\-like\-li\-hood.\-est\-i\-mate(...)}
+form to call this function. 
 
 
 \item Write the object. In your header file, include 
@@ -385,14 +535,14 @@ certain values, either because the function is undefined for those
 values or because parameters with certain values would not fit the
 real-world problem.
 
-The solution is to rewrite the function being maximized such that the
+The solution taken by Apophenia is to rewrite the function being maximized such that the
 function is continuous at the constraint boundary but takes a steep
 downward slope. The unconstrained maximization routines will be able
-to search a continuous function but will never return a solution that
-falls beyond the parameter limits.
+to search a continuous function but will never find an optimum 
+beyond the parameter limits.
 
 If you give it a likelihood function with no regard to constraints plus
-an array of constraints, \ttind{apop\_maximum\_likelihood} will combine
+a constraint function, \ttind{apop\_maximum\_likelihood} will combine
 them to a function that fits the above description and search accordingly.
 
 This is similar to the common penalty function methods of turning an
@@ -486,6 +636,10 @@ two derivatives, but the same framework can be used for problems with no
 analytic solutions (to give one example, if the consumer has a stochastic
 utility function).
 
+Because the estimation finds the slopes at the optimum, it gives us
+comparative statics. Thus, even though the optimization itself may be
+difficult to explain, the effects that changes in inputs will have on
+the output optimum is clear.
 
 \begin{lstlisting}
 #include <apophenia/headers.h>

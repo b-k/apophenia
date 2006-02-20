@@ -1,36 +1,42 @@
 \long\def\comment#1{}
-\def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
-\def\betav{{\mbox{\boldmath$\beta$}}}
-\def\var{\hbox{var}} \def\cov{\hbox{cov}}
-\def\ind#1{\index{#1}#1}
 \newif\ifbook \booktrue
 \documentclass[12pt,notitlepage, openany]{book}
 \usepackage{natbib,graphicx,epsfig,wrapfig, titlesec, apop_wrap, listings}
+
+%math conveniences, primarily commonly boldfaced vectors.
 \usepackage{amsfonts}  %for mathbb
-%\usepackage[nolineno,noprocindex]{lgrind}
-%@-     so lgrind will play nice with makeindex
+\def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
+\def\betav{{\mbox{\boldmath$\beta$}}}
+\def\var{\hbox{var}} \def\cov{\hbox{cov}}
 
 %Chapter and section headings. 
 %uses the awrap style, included in this dir.
 %\renewcommand\chaptername{} 
-\titleformat{\part}[frame]{\Large\scshape}{\thepart}{.5em}{}{}
+\titleformat{\part}[frame]{\Large\scshape}{\thepart}{.5em}{\thispagestyle{empty}}{}
 \titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.2}{\includegraphics{flake}}\hfill}{}
 \titlespacing{\section}{8cm}{1 cm}{-0.5 cm}
 \titlespacing{\subsection}{8cm}{0.5 cm}{-0.5 cm}
 \titleformat{\section}[awrap]{\large\bf\scshape}{\thesection}{1 em}{}{}
-%\titleformat{\subsection}[awrap]{\bf\scshape}{\thesubsection}{1 em}{}{}
 \titleformat{\subsection}[awrap]{\bf\scshape}{}{1 em}{}{}
 
 %code listing:
-\lstset{columns=fullflexible}
-\def\setlistdefaults{\lstset{frame=single, showstringspaces=false, basicstyle=, language=C, breaklines=true}}
+\lstset{columns=fullflexible,
+emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,gsl_vector,gsl_matrix},emphstyle=\bf}
+\def\setlistdefaults{\lstset{frame=single, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
 \setlistdefaults
-\def\cinline#1{\lstinline[language=C, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false,escapechar=\%]{#1}\setlistdefaults}
-\def\cinlinetwo#1{\lstinline[language=C, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}}
-\def\binline#1{\lstinline[language=bash, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}\setlistdefaults}
-\def\binlinetwo#1{\lstinline[language=bash, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}}
-\def\sinline#1{\lstinline[language=sql, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}\setlistdefaults}
-\def\sinlinetwo#1{\lstinline[language=sql, showstringspaces=false, basicstyle=\scshape,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}}
+%\def\cinline#1{\lstinline[language=C, showstringspaces=false, basicstyle=\small\bf,breaklines=true,breakatwhitespace=false,escapechar=\%]{#1}\setlistdefaults}
+%\def\cinlinetwo#1{\lstinline[language=C, showstringspaces=false, basicstyle=\small\bf,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}}
+
+\def\setc{\lstset{language=c}}
+\def\setsql{\lstset{language=sql}}
+
+%\def\cinline#1{{\tiny${}_\lfloor$}{#1}\nobreak\hskip 1pt\nobreak\raisebox{4pt}[0pt][0pt]{\tiny${}^\rceil$}}
+\def\cinline#1{{\bf\tt #1}}
+\def\binline#1{{\bf\tt #1}}
+\def\sinline#1{{\bf\tt #1}}
+\def\cinlinetwo#1{{\tt #1}}
+\def\sinlinetwo#1{{\tt #1}}
+\def\airq#1{{\sl #1}}
 
 \long\def\codefig#1#2{
 	\begin{figure}
@@ -49,17 +55,22 @@
 \makeindex
 \def\ind#1{\index{#1}#1}
 \def\ttind#1{\index{#1@\cinlinetwo{#1}}\cinline{#1}}
+\def\cind#1{\index{#1@\cinlinetwo{#1}}\cinline{#1}}
+\def\sqlind#1{\index{#1@\sinlinetwo{#1}}\sinline{#1}}
 \def\ttindex#1{\index{#1@\cinlinetwo{#1}}}
+\def\cindex#1{\index{#1@\cinlinetwo{#1}}}
+\def\sindex#1{\index{#1@\sinlinetwo{#1}}}
 %\def\ttind#1{\index{#1@{\tt #1}}{\tt #1}}
 %\def\ttindex#1{\index{#1@{\tt #1}}}
 \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
+\def\vocab#1{{\sl #1}\index{#1}}
 
 
 
 %margin boxes:
 \setlength\fboxsep{5pt} %margin size in margin boxes
 \long\def\marginalia#1#2{
-\begin{wrapfigure}{lr}[1.3cm]{3in}
+\begin{wrapfigure}{l}[1.3cm]{3in}
 \fbox{\begin{minipage}{2.8in}
 {\bf #1}\vskip .5cm\par
 \small #2
@@ -68,11 +79,9 @@
 \end{wrapfigure}
 }
 
-
+%title page:
 \begin{document}
-%\setlength{\textwidth}{6.5in}
-%\setlength{\textheight}{9in} 
-%	\setlength{\topmargin}{-0.5cm}\setlength{\textheight}{8.6in} 
+\frontmatter
 \title{Statistical Computing}
 \author{Ben Klemens\\klemens@hss.caltech.edu}
 %\date{May 2005}
@@ -82,28 +91,29 @@
 \maketitle
 \end{minipage}}
 \end{center}
-
-\comment{ Everything in the preface is in chapter one.
+\thispagestyle{empty}
+\vfill
+[A caveat: This book is very incomplete. The
+first three chapters are finished, but it tapers off from there. It should
+already have utility to many people, so it is here for your perusal.
+This book plain old \copyright 2006, Ben Klemens.]
+\comment{All the content in the preface is in chapter one.
 \chapter*{Preface}
 \input preface.tex
 }
 \setcounter{tocdepth}{1}
-\tableofcontents \vfill\eject
+\tableofcontents
+\mainmatter\chapter[Introduction]{Doing statistics in the modern day}
+%\pagenumbering{arabic}\setcounter{page}{1}
 
-\chapter[Introduction]{Doing statistics in the modern day}
 
-[This book is very incomplete. The
-first three chapters are finished, but it tapers off from there. It should
-already have utility to many people, so it is here for your perusal.]
-\vskip .5cm
-
-In case it's not obvious to you, we can't do statistical analysis without
-computers.  The mathematical explanation of a statistical procedure is
+In case it is not obvious to you, we can not do statistical analysis without
+computers. The mathematical explanation of a statistical procedure is
 really just pseudo-code, which we can make operational by translating
 it into real computer code.
 
 I wrote this book to help you make that translation. The first focus is purely
-mathematical: we need to select techniques bearing in mind that they'll eventually
+mathematical: we need to select techniques bearing in mind that they will eventually
 be code. The second focus is about practical coding: your life
 is short, and you want spend as little of it learning dumb languages as possible.
 
@@ -127,11 +137,11 @@ based on the GSL and SQLite, intended to simplify the hard parts of
 using these packages for statistical analysis. You could do all of the
 analyses in this book without Apophenia, but you would find yourself
 rewriting many of its functions. 
-
+\comment{
 Most stats packages include a manual that attempts to instruct the reader,
 and an alphabetical-order reference providing detailed usage notes for
 functions and structures.  You are reading Apophenia's manual now,
-and the reference is online at \url{http://apophenia.info/doc}.
+and the reference is online at \url{http://apophenia.info/doc}.}
 
 This book falls in a mid-range between low-level numerical
 computation and high-level use of prepackaged functions. For example,
@@ -154,7 +164,7 @@ turn on your computer, copy files, or work with a text editor.
 
 There is an up-front investment to the methods here, and a long-term
 payoff. If you expect that you will never do
-anything more difficult than a linear regression on well-formed IID data,
+anything more difficult than a linear regression on well-formed \ind{iid} data,
 or if you are trying to slog through your department's stats requirement
 so you can never look at another data set again, then by all means, put
 this book down and get a copy of the easiest stats package you can get
@@ -166,7 +176,7 @@ and precision may be looming in your future, then this book is for you.
 As powerful as we like to think modern statistics is, it has a 
 limited set of tricks at its disposal. For the purposes of this book,
 I will divide them into three broad categories, which are broad enough
-to cover just about 100\% of classical statistics (in fact, they overlap).
+to cover the great majority of classical statistics (in fact, they overlap).
 
 {\it Projections.} This includes the overused OLS linear regression (which is
 a projection of your data onto a line), and the underused factor analysis
@@ -194,8 +204,8 @@ important fact about statistical analysis: it proves nothing, only
 persuades. A large part of this is that we are looking for causal stories
 about the world, but there is no statistical technique (and never will be)
 that proves causality. Further, there is always a way to rewrite a model
-or re-draw the data so that things will be different. But
-some results are more robust to tweaking 
+or re-draw the data so that a rejected hypothesis is not, or vice versa.
+But some results are more robust to tweaking 
 than others, and some models are just plain more persuasive than others.
 
 Within the overall goal of persuasion, we can subdivide the goals of
@@ -211,7 +221,7 @@ we calculate a parameter of the data and then make a claim about that
 parameter.  Having observed in the last paragraph that the correlation
 coefficient of two variables is large, perhaps we would like to show
 that that correlation coefficient is almost certainly different from
-zero. More often, we have parameters in a model that we've written,
+zero. More often, we have parameters in a model that we have written,
 and would like to make claims about those parameters.
 
 The techniques used for the two goals above are entirely different. For
@@ -219,7 +229,7 @@ example, there are any of a number of distributions listed in the
 average stats textbook.  Poisson or Binomial distributions are used
 only for describing data culled from the real world, while the Chi-squared
 distribution or the F distribution are used only for testing hypotheses
-about parameters we've written down ourselves (such as the correlation
+about parameters we have written down ourselves (such as the correlation
 coefficient, which has an F distribution). \cite{kmenta} points out that nothing
 in nature has a Chi-squared distribution. 
 
@@ -228,8 +238,8 @@ gears from describing the data (like fitting an OLS regression to the
 data) to testing a hypothesis (like the claim that the coefficients
 in your regression are significantly different from zero). Many stats
 textbooks run these goals together at every opportunity;
-hopefully I'm doing better here, but it is up to you to know exactly
-which goal you're working on with each line of code or math, and to be
+hopefully I am doing better here, but it is up to you to know exactly
+which goal you are working on with each line of code or math, and to be
 certain that it is working toward your overall goal of saying something
 interesting and persuasive.
 
@@ -255,7 +265,7 @@ academic journal today that doesn't have at least one OLS regression.
 Everything in the world has become a linear process.
 
 This book is about using OLS only when it is applicable. OLS was the only
-viable tool for a hundred years or so, but we're done with using it everywhere.
+viable tool for a hundred years or so, but we are done with using it everywhere.
 The Central Limit Theorem tells us that yes, errors often are
 Normally distributed; and it is often the case that yes, the dependent
 variable is more or less a linear or log-linear function of several
@@ -286,7 +296,7 @@ you will find to be so valuable. The remainder of the book will be at the higher
 level, describing how to glue together the functions in the
 GNU Scientific Library, SQLite, and Apophenia to get your research done.
 
-\subsection{The statistics package} The GNU Scientific Library includes tools for
+\subsection{The computation engine} The GNU Scientific Library includes tools for
 all of the procedures mentioned above: linear algebra operations, looking up the
 value of F-, t-, $\chi^2$- distributions, calculating likelihood functions, and
 maximizations. These will be the building blocks for analysis.
@@ -325,10 +335,10 @@ download and incorporate into your programs.
 \subsection{Pretty pictures} One thing C is not really good for is drawing
 pretty pictures. This is not to be belittled, since those pictures
 can be very persuasive. Consistent with the rest of this book, plotting
-is done via Gnuplot, a program which is freely available and which will compile on
+is done via Gnuplot, a program which is freely available for
 the system you are using right now. Gnuplot is highly automatable, so once
 you have a plot you like, you can have your C programs autogenerate
-them or manipulate them in cute ways, or can send your program to your
+it or manipulate it in cute ways, or can send your program to your
 colleague in Madras and he will have no problem reproducing and modifying
 your graphs.
 
@@ -363,8 +373,7 @@ or projection techniques; Chapter
 distributions, such as the t test, F test, and chi-squared test; Chapter
 \ref{mle} will show you how to write down your likelihood functions and
 find their maxima, as in Probit or Normit estimations, and how to test
-hypotheses using a likelihood ratio test. There are some other topics
-that need covering: Chapter \ref{boot} will cover
+hypotheses using a likelihood ratio test. Chapter \ref{boot} will cover
 bootstrapping and jackknifing, which are dirty tricks which will one
 day save your life.  Finally, Chapter \ref{gnuplot} will cover creative
 uses of Gnuplot to display data.
@@ -372,7 +381,6 @@ uses of Gnuplot to display data.
 When you are done with all this---and this is no exaggeration---you will
 have the tools to implement any technique in classical statistics in
 existence today, on any data set, no matter how large or exceptional.
-
 \part{Computing}
 \input c_crash.tex
 \input sql.tex
@@ -386,6 +394,7 @@ existence today, on any data set, no matter how large or exceptional.
 %\input mcmc.tex
 \input gnuplot.tex
 \nocite{*}
+\backmatter
 \bibliographystyle{plainnat}
 \bibliography{guide}
 \printindex

@@ -262,19 +262,6 @@ double 		sum=0;
 
 inline double apop_double_abs(double a) {if(a>0) return a; else return -a;}
 
-/** This function needs to be replaced with something that handles
-names.
-
-\todo Add names to this fn; otherwise apop_print_matrix supercedes it. */
-void apop_view_matrix(gsl_matrix *a){
-int 		i,j;
-	for(i=0;i< a->size1; i++){
-		for(j=0;j< a->size2; j++)
-			printf("%g ", gsl_matrix_get(a,i,j));
-		printf("\n");
-	}
-}
-
 /** The Beta distribution is useful for modeling because it is bounded
 between zero and one, and can be either unimodal (if the variance is low)
 or bimodal (if the variance is high), and can have either a slant toward
@@ -417,6 +404,8 @@ long double	sum	= 0;
 
 /** Returns the mean of all elements of a matrix.
 
+  Calculated to avoid overflow errors.
+
   \param data	the matrix to be averaged. 
 \ingroup convenience_fns*/
 double apop_matrix_mean(gsl_matrix *data){
@@ -530,6 +519,29 @@ char		rowname[10000]; //crashes on more than 10^9995 columns.
  */
 apop_data * apop_matrix_summarize(gsl_matrix *m){
     return apop_data_summarize(apop_data_from_matrix(m));
+}
+
+/** returns the covariance matrix for the columns of a data set.
+\ingroup vector_moments
+*/
+apop_data *apop_data_covar(apop_data *in){
+apop_data   *out = apop_data_alloc(in->data->size2, in->data->size2);
+int         i, j;
+gsl_vector  v1, v2;
+double      var;
+    for (i=0; i < in->data->size2; i++){
+        for (j=i; j < in->data->size2; j++){
+            v1  = gsl_matrix_column(in->data, i).vector;
+            v2  = gsl_matrix_column(in->data, j).vector;
+            var = apop_vector_cov(&v1, &v2);
+            gsl_matrix_set(out->data, i,j, var);
+            if (i!=j)
+                gsl_matrix_set(out->data, j,i, var);
+        }
+    apop_name_add(out->names, in->names->colnames[i],'c');
+    apop_name_add(out->names, in->names->colnames[i],'r');
+    }
+    return out;
 }
 
 

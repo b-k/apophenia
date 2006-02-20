@@ -17,6 +17,9 @@ are now of the more natural
 	out	= apop_get_something(input);
 This includes apop_array_to_vector and apop_array_to_matrix
 
+--bootstrapping works, and works with with apop_models.
+--apop_poisson model
+
 0.15	January 2006
 Added an apop_opts structure for options. Alowed the following changes:
 	--apop_verbose  is now apop_opts.verbose. Try this on your existing code:

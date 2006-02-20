@@ -10,13 +10,13 @@ as one editor at a well-known scientific publishing company
 explained to me: ``\dots most of the statistics [book] market is quite heavily
 influenced by the software companies that service the
 field.''  Thus, this is the only book to advocate statistical computing
-with a general computing language, so I'm going to spend a few pages
+with a general computing language, so I will spend a few pages
 motivating the choice as clearly as possible. Over the course of this, you should
 also get a better idea of why C is the way it is, and why things that
 seem annoying on the surface will pay off in the long run.
 \ifbook
 \subsection{Reason \#1: C will help you do better science.}
-As noted above, it's no longer OK to use OLS for everything.
+As noted above, it is no longer OK to use OLS for everything.
 OLS, with all its assumptions, used to be the only technique that we had the computing
 power to actually implement. But my four-year old laptop regularly executes
 feats of computation that were entirely impossible fifty years ago, and your
@@ -41,14 +41,14 @@ is beyond unpersuasive and into the realm of confidence-eroding.
 Stats packages are not designed around the general results, though
 it is technically possible to retrofit these packages to use them. Since
 they are Turing-complete,\footnote{Alan Turing wrote down an imaginary
-machine which could execute a dozen types of instruction.  All
+machine which could execute a handful of instructions.  All
 modern programming languages implement these instructions in one way or
 another, and are therefore equivalent to Turing's theoretical computer;
 by transitivity, they are all equivalent to each other. With enough
 perseverence, you could
 write a C compiler in MatLab.} you could
 write anything in them: maybe a word processor or a painting program. But
-why? It's just as easy to write the functions in C using the packages I discuss
+why? It is just as easy to write the functions in C using the packages I discuss
 here, and the resulting program will be more robust and orders of
 magnitude faster, as per Reason \#2.
 	\else
@@ -64,8 +64,8 @@ out from what the language designers had in mind, or a problem that is
 too large-scale for the language to handle. Your favorite language just
 won't be able to do it, even after you spend hours trying to get around
 the language's assumptions about what you mean and endless attempts to
-optimize the code so it'll run a little bit faster. And after all that,
-you'll have nothing but a broken heart.
+optimize the code so it will run a little bit faster. And after all that,
+you will have nothing but a broken heart.
 
 A full discussion of programming languages is beyond the scope of this book, but
 here are a few hints as to how statistics packages can become cumbersome with
@@ -86,7 +86,8 @@ The second is that most languages do not have a call-by-reference
 mechanism, which will be defined and discussed extensively in Section
 \ref{pointers}. As you read \ifbook Chapter \ref{c_crash}\else this overview\fi, imagine that it ends
 at Section \ref{prepointers} and you will have an idea of what most
-stats packages are like.
+stats packages are like. Up to that point, each function call involves a
+great deal of copying, which can slow down a program immensely.
 
 Third, some stats packages have only two types of scope: local to
 a function, and global. You will see that having many options for
@@ -111,7 +112,7 @@ features, but they will eventually save you heartbreak.
 \index{statistics packages!rants regarding|)}
 
 \subsection{Reason \#3: C is universal} 
-The software I discuss in this book is available from {\tt www.gnu.org}, for the
+The software I discuss in this book is available from \url{www.gnu.org}, for the
 system you are using, and for the system you will be using five years from now, for
 free. There is no other language I could say that about with such confidence.
 
@@ -134,13 +135,15 @@ Since C was written in 1972, dozens (maybe hundreds) of stats packages
 have come and gone. Those who try to follow the trends for
 some period of time have learned a half-dozen languages
 and have on their hard drives dozens of scripts that won't run anymore.
+Meanwhile, correctly written C programs written in the 1970s will
+compile cleanly on new PCs.
 
 
 \ifbook
 \subsection{Reason \#4: C is on all levels at once} 
 Connoisseurs of computing languages often refer to high-level and low-level languages. The low-level
 languages are close to the machine, referring to individual memory
-addresses and register operations, giving you perfect control but demand a lot
+addresses and register operations, giving you perfect control but demanding a lot
 of work. The high-level languages do
 complex things with one command, like {\tt regress(data)} to produce
 pages of output, giving you no control but ease-of-use.
