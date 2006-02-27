@@ -691,11 +691,13 @@ while (i<5){
 }
 \end{lstlisting}
 
-The interpretation is rather straightforward: while the expression in parentheses is true (musn't forget
-the parentheses), execute the instructions in brackets.
+The interpretation is rather straightforward: while the expression
+in parentheses is true (musn't forget the parentheses), execute the
+instructions in brackets.
 
-Cases like the example above, where we have a counter which we increment, are so common that they have
-their own special syntax. The following \ttind{for} loop does exactly what the while loop above did:
+Cases like the example above, where we have a counter which we increment,
+are so common that they have their own special syntax. The following
+\ttind{for} loop is exactly equivalent to the while loop above:
 
 \begin{lstlisting}
 #include <stdio.h>
@@ -705,10 +707,13 @@ for (i=0; i<5; i++){
 }
 \end{lstlisting}
 
-Comparison with the above tells us when the three subelements in the parentheses are evaluated: the first
-part is evaluated before the loop runs; the second part is evaluated after each iteration of the loop; the
-third part is evaluated at the end of each loop---effectively just before the second part is evaluated.
-This is certainly counterintuitive, but after the section on arrays, you will bevery used to the form.
+Comparison with the above tells us when the three subelements in the
+parentheses are evaluated: the first part is evaluated before the
+loop runs; the second part is tested at the beginning of each
+iteration of the loop; the third part is evaluated at the end of each
+loop. After the section on arrays, you will be very used to the 
+\cinline{for (i=0; i<limit; i++)} form, and will recognize it to mean `step
+through the array'.
 
 Finally, if you want to guarantee that the loop will run at least once, you can use a \ttind{do-while} loop (with a semicolon after the \cinline{while}):
 
@@ -772,7 +777,7 @@ C$^{++}$. But it is so useful that gcc accepts it without so much as a
 warning. If you are not using gcc, you may have to use the \cinline{/*}
 --- \cinline{*/} format for comments everywhere.}\index{commenting code|)}
 
-\subsection{Type casting}\label{casting} \index{casting|see{type casting}} \index{type!casting|(} 
+\subsection{Type casting}\label{casting} \index{casting|see{type casting}} \index{type casting|(} 
 This section covers a few details of the type system, and what happens
 a value of one type is assigned to a variable of a different type.
 
@@ -849,7 +854,7 @@ int round(float unrounded){
          return (int) (unrounded - 0.5);
 }
 \end{lstlisting}
-\index{type!casting|)}   
+\index{type casting|)}   
 
 
 
@@ -1084,9 +1089,9 @@ and see your program work. [Unless you are a star programmer, it will
 still somehow fail. To continue fixing it, you will need to run the
 program under the debugger; see section \ref{debug}.]
 
-\paragraph{The preprocessing step} \label{headers}
+\paragraph{The preprocessing step} \label{headers}\index{preprocessor|(}
 As noted above, \binline{gcc} takes your code through three steps.
-The first step is \ind{preprocessing},
+The first step is preprocessing,
 which does nothing but take text you wrote and convert it into more text.
 
 \ifbook 
@@ -1132,7 +1137,7 @@ The angle-brackets tell the compiler that instead of looking in the
 current directory, as it did for \binline{"a\_file.h"} above, it should
 look in the standard library path. Generally, use \binline{"my\_file.h"} for
 header files you have written and \cinline{<their\_file.h>} for header files installed elsewhere
-in your system.
+in your system.  \index{preprocessor|)}
 
 \paragraph{The compilation step} 
 The \ind{compilation}
@@ -1819,7 +1824,8 @@ gcc $(CFLAGS) $(OBJECTS) $(LINKFLAGS) -o $(PROGNAME)
 \end{verbatim}
 will translate into
 \begin{verbatim}
-gcc  -g -Wall file1.o file2.o -L/usr/local/lib -lgsl -lgslcblas -lsqlite -o run_me
+gcc  -g -Wall file1.o file2.o -L/usr/local/lib -lgsl 
+                    -lgslcblas -lsqlite -o run_me
 \end{verbatim}
 which looks an awful lot like what we had typed before (but not quite---this does the linking step only).
 

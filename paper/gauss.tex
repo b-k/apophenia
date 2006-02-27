@@ -12,17 +12,19 @@ and then looking up a number in a table.
 Everything here depends on the Central Limit Theorem. If your data doesn't
 fit the CLT, then please don't use these techniques. Work out how your
 data is distributed, to the best of your abilities 
-and then write down a likelihood function---Or try bootstrapping, where the assumptions for the Central Limit Theorem apply by construction; see  Chapter \ref{boot}. 
-If you are
+and then write down a likelihood function. If you are
 looking to estimate model parameters, do a maximum likelihood estimation;
 if you are looking to test a hypothesis, write down a likelihood ratio
 based on the distribution you've just calculated.
+Or, try bootstrapping, where the assumptions for the Central Limit
+Theorem apply by construction; see  Chapter \ref{boot}.  
 
 
 
 \section{Meet the Gaussian family} \label{dist2}
 With the exception of the Normal, the distributions below are distinct
-from the distributions of Section \ref{distlist}. The distributions above
+from the distributions of Section \ref{distlist}. The distributions
+there
 are typically used to describe data that we have observed in the real
 world. But having gathered data, we often model the data using techniques
 such as linear regressions, that produce means of model parameters,
@@ -30,17 +32,20 @@ model variances, and other parameters. Those model parameters have their
 own distributions, and those are typically one of the distributions below.
 
 
-\paragraph{The \ind{Central Limit Theorem}} is the first piece of magic
-that we need. As $n\to \infty$, we know that $\sqrt{n} (\overline X -
-\mu)/\sigma \sim {\cal N}(0,1)$, regardless of where $X$ came
-from. With that regularity of nature, we can derive all of the following distributions.
-\label{CLT}
+\paragraph{The \ind{Central Limit Theorem}} The CLT is the first piece of magic
+that we need. 
+$$\overline X {a \atop \longrightarrow} \left[\mu,{\sigma^2\over n}\right].$$
+In fact, we not only have the $\overline X$, but its distribution:
+As $n\to \infty$, $$\sqrt{n} (\overline X - \mu)/\sigma \sim {\cal N}(0,1),$$ 
+%$$\overline X \matrix{a \cr \to} \left[\mu,{\sigma^2\over n}\right]$$
+regardless of where $X$ came from. With that regularity of nature,
+we can derive all of the following distributions.  \label{CLT}
 
-\paragraph{Normal\index{Normal distribution}} 
+\subsection{Normal\index{Normal distribution}} 
 
-The Normal distribution, defined above on page \pageref{normal},
+The Normal distribution, defined on page \pageref{normal},
 will also be used to describe some of the parameters derived below.
-The big problem with tne Normal distribution is that it depends on $\sigma$, an
+The big problem with the Normal distribution is that it depends on $\sigma$, an
 unknown. It also depends on $\mu$, but if the statistic
 being tested is unbiased---like most of the estimators of $\beta$ in the
 catalog above---then you have $\mu$. Thus, much of the trickery in the
@@ -52,7 +57,7 @@ such that the unknown $\sigma$s cancel out.
 (a+c,b+d)$ (where $\{x\}$ is a variable with the given distribution).
 \end{itemize}
 
-\paragraph{$\chi^2$ test}\index{chi squared distribution@$\chi^2$ distribution} $[\sum_n (x-\overline
+\subsection{$\chi^2$ distribution}\index{chi squared distribution@$\chi^2$ distribution} $[\sum_n (x-\overline
 x)^2]/\sigma^2\sim \chi^2_{n-1}$. The numerator there is the sample
 variance times $n$, so we can test that the sample variance equals a
 given $\sigma^2$ with this. But unless we assume $\sigma$ like that,
@@ -68,9 +73,10 @@ we are up the same creek as with the Normal.
 Notice that the sample variance at the top of this section is $\sim
 \chi^2_{n-1}$, not $n$, because given the first $n-1$ data points, the
 last one can actually be calculated from that data; meaning that we
-effectively have the sum of $n-1$ $\{\chi^2_1\}$s plus a constant.
+effectively have the sum of $n-1$ $\{\chi^2_1\}$s plus a no longer
+stochastic constant.
 
-\paragraph{Student's t\index{t distribution}}  ${\overline X - \mu \over S/\sqrt{n}}\sim
+\subsection{Student's t\index{t distribution}}  ${\overline X - \mu \over S/\sqrt{n}}\sim
 t_{n-1}$, where $s=\uv'\uv/n$. This is a work of genius by Mr. Student.
 By dividing a normal by $\sqrt{\chi^2_{n-1}/(n-1)}$, the unknown
 $\sigma$s cancel, and we have a function whose elements are all known,
@@ -78,7 +84,7 @@ and its distribution.  If $n=2$, we call it a Cauchy distribution.
 \label{tstat}
 
 
-\paragraph{$F$ test\index{F distribution}}  This is the same cancel-the-$\sigma$s trick as with the $t$, but here the form
+\subsection{$F$ distribution\index{F distribution}}  This is the same cancel-the-$\sigma$s trick as with the $t$, but here the form
 is $[\chi^2_m/m]/[\chi^2_n/n]\sim F(m,n)$. For example, if the numerator
 is a ${\cal N}(0,1)$, and the denominator is a $\chi^2$ based on the
 sample variance, then this is the square of the $t$ statistic.
@@ -87,8 +93,10 @@ allows one-tailed hypothesis tests. But if you want to test a
 multivalued hypothesis, then you need to do an $F$ test.
 
 \subsection{Calling these functions from the GSL}
-There are four things that cover most of what you will be doing. 
-The first is simply looking up the vaule of the PDF at a given point. Here are the functions:
+There are three things that cover most of what you will be doing with a
+distribution: finding values of its PDF, values of its CDF, and inverse
+values of its CDF.
+Here are the functions to look up the vaule of the PDF at a given point:
 %\begin{verbatim}
 \begin{lstlisting}
 #include <gsl/gsl_randist.h>
@@ -116,7 +124,8 @@ double gsl_ran_tdist_pdf_with_mv(double X, double mean,
 \end{lstlisting}
 %\end{verbatim}
 
-Next, there's calculating the CDF above or below a point. 
+The next distribution calculation found in tables in the back of
+statistics texts is calculating the CDF above or below a point. 
 The \cinline{P-}functions below calculate the CDF below a point, i.e.
 $\int_{-\infty}^X f(y) dy,$
 while the \cinline{Q-}functions calculate the CDF above a point, i.e.
@@ -125,7 +134,7 @@ These will obviously add to one, so you can express any area in terms of whichev
 
 For example, if we find that our Normally-distributed mean is 2.2 standard
 deviations above zero, then we can reject the one-tailed hypothesis that
-the mean is zero with probability \cinline{1 - gsl\_cdf\_gaussian\_Q(2.2, 1)==
+the mean is zero with probability \cinline{1 - gsl\_cdf\_gaussian\_Q(2.2, 1) ==
 gsl\_cdf\_gaussian\_P(2.2, 1)}.
 
 \index{Gaussian distribution|see{Normal distribution}}
@@ -157,7 +166,7 @@ gsl\_cdf\_gaussian\_Pinv (0.05, S)+M}. Here are the other function delcarations:
 %\begin{verbatim}
 \begin{lstlisting}
 #include <gsl/gsl_cdf.h>
-gsl_cdf_gaussian_Pinv (double X, double SIGMA);
+double gsl_cdf_gaussian_Pinv (double X, double SIGMA);
 double gsl_cdf_chisq_Pinv (double P, double NU);
 double gsl_cdf_tdist_Pinv (double P, double NU);
 \end{lstlisting}
@@ -183,9 +192,9 @@ of iid draws from a homoskedatic distribution). Then we can use the
 above functions to find the probability that each element of \cinline{beta}
 is different from zero:
 
-%\begin{verbatim}
+\lstset{texcl=true}
 \begin{lstlisting}
-\\We enter with the vector beta and matrix xpx_inv
+\\We enter with the vector $\betav$ and matrix \cinline{xpx\_inv}
 int i;
 double confidence[beta->size];
 for (i=0;i< beta->size; i++){
@@ -195,7 +204,7 @@ for (i=0;i< beta->size; i++){
     confidence[i] *= 2;
 }
 \end{lstlisting}
-%\end{verbatim}
+\lstset{texcl=false} %for now.
 The last two steps converted from the one-tailed area below \cinline{beta}
 to a two-tailed area between $\pm$\cinline{beta}.
 
@@ -223,7 +232,8 @@ I dare
 say that every linear hypothesis having to do with a mean or a $\beta$ can be
 fit into this form.\footnote{If our concern is a mean, then set
 $\Yv=$your data, $\Xv=$ a column of ones, and $\beta$ will then be
-$\mu$.}
+$\mu$. Recall that we typically expect that the first column of $\Xv$ to
+be a column of ones anyway.}
 Define $q$ to be the number of constraints (columns
 of $\Qv$), $N$ the sample size, and $K$ the number of parameters to be
 estimated ($\betav$).
@@ -273,7 +283,7 @@ of Equation \ref{qc}, here's what you'd type:
 \begin{lstlisting}
 apop_estimate *e = apop_OLS.estimate(data, NULL, NULL);
 gsl_matrix *Q   = gsl_matrix_calloc(3,2);
-gsl_vector *c   = gsl_vector_alloc(2);
+gsl_vector *c   = gsl_vector_calloc(2);
 gsl_matrix_set(Q, 0, 0, 1);
 gsl_matrix_set(Q, 1, 1, 1);
 gsl_matrix_set(Q, 1, 2, -2);
@@ -289,12 +299,12 @@ partly because this $F$-test can be calculated using only the $R^2$.
 Once again, statistical convention is dictated by 70s computing power.}
 It is up to you
 to decide whether this is a relevant statistic for the situation you are
-dealing with, but because it is a custom to report it, some people expect it,
-so
-Apophenia facilitates this hypothesis test by assuming it is the default to assume when you to send in {\tt
-NULL} variables: \cinline{apop\_F\_test(estimate, data, NULL, NULL)}. That is, if
-$\Qv'=$\cinline{NULL}, Apophenia assumes ${\bf I}$ and if $\cv=$\cinline{NULL},
-Apophenia assumes ${\bf 0}$.
+dealing with, but because it is a custom to report it, some
+people expect it, so Apophenia facilitates this hypothesis test by
+assuming it as the default when you send in {\tt NULL} variables:
+\cinline{apop\_F\_test(estimate, data, NULL, NULL)}. That is,
+if $\Qv'=$\cinline{NULL}, Apophenia assumes ${\bf Q}=={\bf I}$ and if
+$\cv=$\cinline{NULL}, Apophenia assumes ${\bf c} == {\bf 0}$.
 
 
 
@@ -313,7 +323,7 @@ Among the most common and simplest questions one asks is: are two data
 sets from the same process? Chapter \ref{sql} already showed how one
 would do such a test; let us briefly revisit the process now.
 Let \cinline{n\_side} be the income of households
-drawn from the North side of town, North of the railroad tracks, and
+drawn from the side of town North of the railroad tracks, and
 \cinline{s\_side} be the income of households drawn from the South side of
 town. Are North side incomes different from South side incomes? 
 
@@ -327,8 +337,8 @@ different from zero for any given confidence level. Apophenia provides a
 high-level function to do the work for you:
 
 \begin{lstlisting}
-apop_vector *a = gather_data("n_side");
-apop_vector *b = gather_data("s_side");
+gsl_vector *a = gather_data("n_side");
+gsl_vector *b = gather_data("s_side");
 apop_t_test(a, b);
 \end{lstlisting}
 
@@ -341,11 +351,11 @@ a test before a set of lessons and the same students after the lessons.
 Then, rather than looking at the $t$-distribution for the before data
 and comparing it to the $t$-distribution for the after data, we could
 look at the vector of differences $a_i - b_i$ and test where zero falls
-in the appropriate $t$-distribution. This is a more powerful test,
+in the appropriate $t$-distribution. This is generally a more powerful test,
 meaning that we are more likely to reject the null hypothesis of no
 difference between the two vectors, therefore the paired $t$-test is
-generally preferable over the unpaired version above---when it is
-applicable. Apophenia provides the \cinline{apop\_paired\_t\_test}
+generally preferable over the unpaired version above (when it is
+applicable). Apophenia provides the \cinline{apop\_paired\_t\_test}
 function to run this test where appropriate.
 
 \comment{
@@ -410,7 +420,7 @@ and then compare that to the Chi-squared table.
 
 \section{Testing the assumptions} Errors have to be normally distributed, or else
 the whole OLS system here doesn't apply. Many stats package user's manuals
-suggest plotting the errors and then squinting at the picture. Me, I'm a
+suggest plotting the errors and then squinting at the picture. I am a
 fan of a slightly more scientific approach, which is based on the fact
 that a Normal distribution has only two parameters: the mean and the
 standard deviation. Everything else about the Normal distribution is
@@ -449,10 +459,10 @@ Bear this in mind when interpreting kurtosis output. If you see a
 negative kurtosis, then you are guaranteed that you are getting
 normalized kurtosis, since a fourth power can never be negative.\index{kurtosis}}
 
-You can either just eyeball the kurtosis and $3 \sigma^4$, and decide based on the scale of the variance
-whether the skew and the kurtosis look like they're far off from where they should
-be, or you could bootstrap the variance of the kurtosis, which would let you find
-a confidence interval around $3 \sigma^4$ and state with some percentage
-of certainty that the kurtosis is or is not where it should be. [Hint: the
-CLT applies to the kurtosis, so you know it has a Gaussian
-distribution.]
+You can either just eyeball the kurtosis and $3 \sigma^4$, and decide
+based on the relative scale whether the skew and the kurtosis look
+like they're far off from where they should be, or you could bootstrap the
+variance of the kurtosis, which would let you find a confidence interval
+around $3 \sigma^4$ and state with some percentage of certainty that the
+kurtosis is or is not where it should be. [Hint: the CLT applies to the
+kurtosis, so you know it has a Gaussian distribution.]

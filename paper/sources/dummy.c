@@ -1,14 +1,9 @@
-gsl_matrix	*districts, *data_set;
-districts = apop_query_to_matrix(
-        "select distinct district from survey \
-        where   age!=-1 and gender !=-1 and race !=-1 and \
-        year !=-1 and district !=-1 and \
-        (votedverified ==1 or votedverified ==3)");
+apop_data	*districts, *data_set;
+districts = apop_query_to_data(
+        "select distinct age, gender, race, district from survey");
 
-query=malloc(sizeof(char)*10000);
-strcpy(query,"select \ 
-        case votedverified when 3 then 1 else 0 end,  \
-        round(age/10) as age_group, gender, ");
+query   = malloc(sizeof(char)*10000);
+strcpy(query,"select round(age/10) as age_group, gender, race, ");
 for(i=1;i< districts->size1; i++){
         query=realloc(query, sizeof(char)*(strlen(query)+500));
         sprintf(query, 
@@ -16,9 +11,5 @@ for(i=1;i< districts->size1; i++){
                  query, (int) gsl_matrix_get(districts,i,0));
         }
 query=realloc(query, sizeof(char)*(strlen(query)+5000));
-strcat(query, " year-1950 \
-        from survey \
-        where   age!=-1 and gender !=-1 and race !=-1 and \
-        year !=-1 and district !=-1 and \
-        (votedverified ==1 or votedverified ==3)");
-data_set = apop_query_to_matrix(query);
+strcat(query, "from survey;");
+data_set = apop_query_to_data(query);

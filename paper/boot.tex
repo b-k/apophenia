@@ -24,7 +24,7 @@ arrived at your numbers, you should be able to reproduce them to four
 decimal places.
 
 Of course, using the same stream of numbers every time creates the
-possibility of getting a lucky draw, where `lucky' can mean any of a
+possibility of getting a lucky draw, where \airq{lucky} can mean any of a
 number of things. The solution is a fixed process of pseudorandom
 number generation plus a varying initializing seed. Here is how one
 would initialize a \ttind{gsl\_rng}:
@@ -47,15 +47,18 @@ zero, and if you need ten different seeds, I suggest using 0, 1, \dots ,9.
 Now that you have a random number generator, here are some functions that use it to draw from all of your favorite distributions:
 \index{Gaussian distribution} \index{t distribution} \index{F distribution}
 \index{$\chi^2$ distribution} \index{Uniform distribution}\ttindex{gsl\_ran\_...}
-
+\index{Bernoulli distribution} \index{Beta distribution} \index{Binomial distribution}
 
 \begin{lstlisting}
+double gsl_ran_bernoulli (gsl_rng *r, double p);
+double gsl_ran_beta (gsl_rng *r, double a, double b);
+double gsl_ran_binomial (gsl_rng *r, double p, int n);
+double gsl_ran_chisq (gsl_rng *r, double NU);
+double gsl_ran_fdist (gsl_rng *r, double NU1, double NU2);
 double gsl_ran_gaussian (gsl_rng *r, double SIGMA);
 double gsl_ran_tdist (gsl_rng *r, double NU);
-double gsl_ran_fdist (gsl_rng *r, double NU1, double NU2);
-double gsl_ran_chisq (gsl_rng *r, double NU);
-double gsl_ran_flat (gsl_rng *r, double A, double B);
 double gsl_ran_uniform (gsl_rng *r);
+double gsl_ran_flat (gsl_rng *r, double A, double B);
 \end{lstlisting}
 
 The 'flat' distribution is a Uniform[A,B] distribution. Since the
@@ -64,13 +67,32 @@ function, \cinline{gsl\_ran\_uniform(r)}. Notice that the Gaussian draw
 assumes a mean of zero, so if you intend to draw from a ${\cal N}(7,2)$,
 then add the mean after the call: \cinline{gsl\_ran\_gaussian (r, 2) + 7}.
 
+\paragraph{The Beta distribution}\index{Beta distribution}
+The Beta distribution is wonderful for all sorts of modeling, because
+it can describe such a wide range of probability functions for a
+variable $\in [0,1]$.  But its $\alpha$ and $\beta$ parameters may be
+difficult to interpret; we are more used to the mean and variance. Thus,
+Apophenia provides one convenience function for the Beta distribution,
+\cind{apop\_\-ran\-dom\_\-beta}. You can give it a mean, a variance, and
+a random number, and it will calculate the appropriate values of $\alpha$
+and $\beta$ and return a random draw from the appropriate distribution.
+
+Quick---what is the variance of a Uniform$[0,1]$? Answer: ${1\over 12}$,
+which means that the Beta distribution will never have a variance greater
+than ${1\over 12}$ (and close to ${1\over 12}$, perverse things may
+happen computationally for $\mu \not\approx {1\over 2}$). The mean of a
+function whose $x-$values are bounded $\in[0,1]$ is clearly also in
+$\in[0,1]$. If you send \cind{apop\_\-ran\-dom\_\-beta} values of $\mu$
+and $\sigma^2$ that are outside of these bounds, the function will
+return a \cinline{GSL\_NAN}.
+
 \subsection{Drawing from your own data} Another possibility, beyond
 drawing from famous distributions that your data theoretically
 approximates, would be to draw from your actual data. 
 
 The GSL provides a means of turning a data set into a PDF from which you
 can then make draws.  It
-does so by turning the data into a histogram and then producing a CDF.
+does so by aggregating the data into a histogram and then producing a CDF.
 Then, the \ttind{gsl\_histogram\_pdf\_sample} function will
 map a draw from a Uniform[0,1] distribution to the CDF, thus producing a
 random draw from your data.
@@ -81,16 +103,18 @@ a \ttind{gsl\_histogram\_pdf} structure from which draws can be
 made. It takes two arguments: a \cinline{gsl\_vector} with the data, and
 an \cinline{int} listing the number of bins that the histogram should
 have. This should be calibrated to the resolution of the data: if the
-data is accurate to a thousandth, then it makes sense to have a thousand
+data is accurate to a thousandth, then it makes sense to have on the
+order  of a thousand
 bins. Over-accuracy takes up memory, but there is no harm to having
 zeros in the vast majority of bins. Usage:
 \begin{lstlisting}
-    double      draw;
+    //Setup:
     gsl_vector  *data    = produce_data_set(...);
     gsl_histogram_pdf *p = apop_vector_to_pdf(data, 1000);
-    gsl_rng *r = initrng(7); //see above.
+    gsl_rng *r = initrng(7); //see initrng() definition above.
 
     //Draw from the PDF:
+    double      draw;
     while (get_more_data){
         draw = gsl_histogram_pdf_sample(p, gsl_rng_uniform(r));
         ...
@@ -143,7 +167,7 @@ bring shame to your research group.}
 
 \subsection{Creating random samples} Assume that we have a
 data vector \cinline{gsl\_vector * data} and a function \cinline{double
-calc\_statistic(gsl\_vector *data)} that finds some statistics. The
+calc\_statistic(gsl\_vector *da\-ta)} that finds some statistics. The
 function \cinline{mean()} fits this description, as would a function to find
 a single OLS coefficient.
 
@@ -163,8 +187,17 @@ adds the draw to the list of draws and the index to the list of indices.
 We can then use these draws to calculate a list of parameter values, as in Figure \ref{bootvar}.
 \codefig{bootvar}{A function to find the variance of a series of bootstrap estimates of a statistic}
 
-It is valid to use the standard deviation returned by this function can
-be used in the normal way to construct confidence intervals and test
+It is valid to use the standard deviation returned by this function 
+in the normal way to construct confidence intervals and test
 hypotheses about the statistic.
 
-Again, Apophenia has you covered with bootstrapping functions. More developments to follow.
+Again, Apophenia has you covered with a bootstrapping function, whose
+use could not be simpler. To produce the covariance matrix for the
+parameters of a Poisson distribution for a given data set:
+\begin{lstlisting}
+apop_data *covar    = apop_bootstrap(data, apop_poisson, NULL);
+\end{lstlisting}
+In fact, this is redundant, because the \cinline{apop\_\-pois\-son}
+model already uses the \cind{apop\_\-boot\-strap} function internally,
+so the usual \cinline{apop\_\-pois\-son.est\-i\-mate(data, NULL, NULL)}
+will return an estimate with bootstrapped variances.

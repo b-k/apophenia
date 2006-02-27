@@ -6,7 +6,7 @@
 Maximum likelihood estimators (MLEs) are the bread and butter of
 statistics. Most of the techniques we've handled so far are MLE
 techniques, except mathematicians over the ages have found ways to hide
-that fact from you, by proving that under certain conditions, the
+that fact from you, by proving that under certain conditions the
 maximum must have an easy-to-calculate form. But if there isn't a nice,
 convenient way to get around doing the maximization, you'll have to do
 it yourself. Fortunately, the GSL has the \cinline{gsl\_multimin} family
@@ -17,7 +17,7 @@ and it will find the optimum.
 
 \paragraph{The \ind{log likelihood function}}	\label{the score}
 By itself, the PDF is the likelihood that a given value occurs (given
-the parameters of the PDF); any of the functions listed in section
+the parameters of the PDF); any of the functions listed in Section
 \ref{distlist} will do. That distribution, say $P(x|p)\sim$ Bernoulli,
 plus a given value for the parameter $p$, will tell us the likelihood
 that we would get the data point that we saw. Or, we could reverse this:
@@ -25,11 +25,11 @@ given the data $x$, we can use the Bernoulli distribution to calculate the
 likelihood that $p$ has any given value.
 
 Say that we have two data points, $x_1$ and $x_2$. Assume further that
-they are independently drawn; then $P(\{x_1,x_2\}|p)=P(x_1|p)\cdot P(x_1|p)$. 
+they are independently drawn; then $P(\{x_1,x_2\}|p)=P(x_1|p)\cdot P(x_2|p)$. 
 The independence assumption allows us to say the the joint probability
 is the product of the individual probabilities. The assumption of
 identical distributions allows us to write this more neatly, as 
-$P(\{x_1,x_2\}|p)=\Pi_{i=\{1,2\}}P(x_i|p)$.
+$$P(\{x_1,x_2\}|p)=\Pi_{i=\{1,2\}}P(x_i|p).$$
 
 Define the Log likelihood as $L=\ln f$, the Score\index{score} as
 
@@ -45,7 +45,8 @@ I&=&-{\partial S \over \partial \theta}			\nonumber\\
 $L$, $S$, and $I$ will appear over and over again, so we may as well get
 to know them. First, due to all that exponentiation in the distributions
 of Section \ref{distlist}, $L$ is often much easier to deal with, yet
-is equivalent to the PDF for most of our purposes. 
+is equivalent to the PDF for most of our purposes---notably, if we have
+found a maximum for one, the we have found a maximum for the other.
 
 \marginalia{\ind{Exponential families}}{%
 	There is a bit of a sleight of hand in asserting that $S \cdot f = {\partial f
@@ -61,13 +62,13 @@ is equivalent to the PDF for most of our purposes.
 Further, consider calculating the likelihood function above given
 a thousand data points.  Then the probability of observing the data set
 we have (fixing $p$ for now) is $\prod_{i=1}^{1000} P(x_i)$.  Since each
-$P(x_i)\in (0,1]$, this product is probably on the order of $1\times
+$P(x_i)\in (0,1]$, this product is typically on the order of $1\times
 10^{-1000}$. This is a delicate number, and details of implementation in
 hardware could easily break it; this risks what computer scientists call an
 {\sl underflow error}. Taking logs, each value of $p_i$ is now a negative
 number, e.g., $\ln(0.5)\approx -0.69$ and $\ln(0.1)\approx -2.3$.  But the
 product above is now a sum: $$\ln\left[\prod_{i=1}^{1000} P(x_i)\right]
-= \sum_{i=1}^{1000} \ln(P(x_i).$$ Thus, the log likelihood of our typical
+= \sum_{i=1}^{1000} \ln(P(x_i)).$$ Thus, the log likelihood of our typical
 data set is on the order of -1000 instead of $1\times 10^{-1000}$---much
 more robust and manageable.\footnote{Zero probability events are still
 a problem: they make the original likelihood product zero, and the log
@@ -82,14 +83,17 @@ draw.}
 
 The second benefit to using the log likelihood is analytic: since $S \cdot
 f = {\partial f \over \partial \theta}$, the derivative of the expectation
-in terms of $\theta$ can be rewritten as the expectation of $S$.
+in terms of $\theta$ can be rewritten as the expectation of $S$; see box
+at left.
 
 There are some fun tricks you can do with these functions, most of which
 I'll have to skip over.  The neat trick most worth mentioning is the
 \ind{information equality}, that $E(I)=\var(S)$, which you can prove by
 calculating ${\partial E(L)\over \partial \theta}$.
 
-\section{Why likelihood functions are great} There are two reasons, with four names.
+\section{Why likelihood functions are great} The process of finding a
+maximum of the log likelihood function is 
+so useful for two reasons, with four names.
 
 \paragraph{MLEs achieve the Cramer-Rao lower bound} 
         \index{Cramer-Rao Inequality}		\label{cr} 
@@ -99,7 +103,7 @@ $\hat\theta(y_1,\dots,y_n)$. Cramer \& Rao say:
 \var(\hat\theta)&\geq&(n \var(S))^{-1}		\nonumber\\
 		&=&\left(nE\left({\partial^2 L\over \partial
 \theta^2}\right)\right)^{-1}			\label{CRLB}
-\nonumber\end{eqnarray}
+\end{eqnarray}
 
 \comment{
 A sketch of the proof: Take my word for it that $E(\hat\theta
@@ -166,21 +170,29 @@ likelihood', and is what the charts in the back of the textbook are about.
 That's the type I error. It comes first because
 it's generally all anybody talks about.
 
-Why do we neglect type II errors? Because in the next section Neyman
-and Pearson will tell us we can.
+\paragraph{The Neyman-Pearson lemma} 
+We focus on Type I errors; it is what we mean when we say that our
+test has $\alpha=95\%$ confidence. Byt what about Type II errors? 
+Neyman and Pearson showed that a likelihood ratio test will have the
+minimum possible Type II error of any test with the $\alpha$ that we
+selected. After establishing this fact, we just ignore Type II errors.
 
 \subsection{Likelihood ratios} \index{likelihood ratio}
 
-Say the cost to a type I error is $C_I$ and the cost to a type II error is $C_{II}$.
-Then you will reject $H_0$ iff the likely cost is less than the likely cost of not
-rejecting. That is reject $H_0$ iff $C_I P(H_0|\xv)<C_{II} P(H_1|\xv)$.
+Say the cost to a type I error is $C_I$ and the cost to a type II error
+is $C_{II}$.  Then you will reject $H_0$ iff the expected cost is less
+than the likely cost of not rejecting. That is, reject $H_0$ iff $C_I
+P(H_0|\xv)<C_{II} P(H_1|\xv)$.
 
-We need to note two things from here. First, the difference between a `probability',
-which is the probability of an event given data; and a `likelihood', which is the
-probability that we'd have the data we have given some event. This is nitpicking that
-you don't really have to care about, except that here and there somebody will call you
-on it. This may also clarify for you why some things are called one and some the
-other.
+We need to note two things from here. First, the difference between a
+`probability', which is the probability of an event given data; and a
+`likelihood', which is the probability that we'd have the data we have
+given some event. This is nitpicking that you don't really have to care
+about, except that here and there somebody will call you on
+it.\footnote{One could write $P(A|B)$ as a simple two-variable function:
+$P(A,B)$, with the understanding that $\int_{\forall A} P(a,B)da = 1,
+\forall B$.} This may
+also clarify for you why some things are called one and some the other.
 
 Second, ?`remember the definition of a \ind{conditional probability}? It's based on the
 statement $P(A\cap B)=P(A|B)P(B)$, and symmetrically, $P(A\cap B)=P(B|A)P(A)$.  Equating
@@ -219,14 +231,6 @@ considered taken care of.
 
 
 
-\paragraph{The Neyman-Pearson lemma} There are two types of error we could
-have with a hypothesis test: Type I is that we reject the null when it's
-true; Type II is that we accept the null when it's false. The first type
-is the one we focus on; it's what we mean when we say that our
-test has $\alpha=95\%$ confidence. What about Type II errors? Well,
-Neyman and Pearson showed that a likelihood ratio test will have the
-minimum possible Type II error of any test with the $\alpha$ that we
-selected. After establishing this fact, we just ignore Type II errors.
 
 \subsection{An example: probit} \index{probit|(}
 The probit is a popular model of aleatory behavior. 
@@ -284,7 +288,7 @@ Here are the parts to the  \ttind{apop\_estimation\_params}
 structure you need to set. 
 
 \paragraph{The method} There are currently four you can choose from.
-[Also, there are two more that  just aren't hooked in yet. If you're
+[Also, there are two more that  just aren't hooked in yet. If you are
 comfortable exploring the internals of Apophenia, have a look at the
 \cinline{wn/wnbridge.c} file.]
 
@@ -305,7 +309,8 @@ If you expect the derivatives to be perverse, then you may want to try the deriv
 There is also the question of how the gradients are calculated. If
 analytic gradients are available, then those are probably preferable, but
 Apophenia will automatically calculate numerical gradients as necessary.
-Since the variance of an MLE is the Cramer-Rao lower bound, we will use
+Since the variance of an MLE is the Cramer-Rao lower bound (Equation
+\ref{CRLB}), we will use
 the gradients to calculate the variance, so even when using a
 derivative-free simplex algorithm, the variance will still be using
 gradients, somehow derived.
@@ -318,7 +323,7 @@ means of just using the numeric gradients. This is primarily useful for debuggin
 \item 1: Use numerical approximations even if an explicit dlog likelihood is given. 
 \end{itemize}
 
-The actual method you give is the sum of the method type above plus the
+The actual number to input is the sum of the method type above plus the
 gradient handling method. Thus the default is equal to 100, for example, and the
 Nelder-Mead simplex algorithm forcing numerical derivatives would be
 001.\footnote{Yes, 000 reduces to 0 and 001 reduces to 1. The internals
@@ -337,7 +342,7 @@ the log likelihood function is nearing zero.
 
 \paragraph{Verbose} Should the search output the points it is evaluating?
 This is useful for long evaluations to reassure you that nothing is
-broken; for example, some of the GSL's searches can get into two-step loops.
+broken; for example, some of the GSL's searches can get trapped in two-step loops.
 It is probably a good idea to run your search verbosely at least once.
 Also, see \cinline{apop\_opts.mle\_trace\_path} below.
 
@@ -431,18 +436,13 @@ gnuplot plotme -
 \caption{A search for an optimum using a conjugate gradient method.}
 \end{figure}
 
-\section{Hypothesis testing: Likelihood ratio tests} Every test
-in the Chapter \ref{gauss} was a likelihood ratio test---I just didn't tell
-you what the likelihood function was. Those functions are easy because
-they've been carefully studied and methods have been found to let you
-calculate them without explicitly writing down a likelihood function
-and calculating its value at various locations.
-
-But if your data is at all interesting, then you'll need to write down
-the likelihood function yourself.  Fortunately, we have a computer to
-do the tedious math, unlike poor Mr. Gauss, who had no such conveniences.
-Also, we have the Cramer-Rao lower bound to tell us what the variances
-are. 
+\section{Hypothesis testing: Likelihood ratio tests} 
+If the equations derived from maximum likelihood models listed in
+Chapter \ref{gauss} do not apply to your data,
+then you will need to write down the likelihood
+function yourself.  Fortunately, we have a computer to do the tedious
+math, unlike poor Mr. Gauss, who had no such conveniences.  Also, we
+have the Cramer-Rao lower bound to tell us what the variances are.
 
 
 
@@ -469,10 +469,8 @@ to that. This function will return the value of the log likelihood function at t
 \cinline{a\-pop\_\-new\_\-like\-li\-hood.\-est\-i\-mate(...)}. For an MLE, this will be one line,
 as follows:
 \begin{lstlisting}
-static apop_estimate * new_estimate(apop_data * data, 
-                        apop_inventory *uses, void *parameters){
-    return apop_maximum_likelihood(data, uses, 
-                            apop_new_log_likelihood, parameters);
+static apop_estimate * new_estimate(apop_data * data, apop_inventory *uses, void *parameters){
+return apop_maximum_likelihood(data, uses, apop_new_log_likelihood, parameters);
 }
 \end{lstlisting}
 By using the \ttind{static} keyword, the function name will only be
@@ -483,7 +481,8 @@ can use the above-mentioned
 form to call this function. 
 
 
-\item Write the object. In your header file, include 
+\item Write the object, a process which will consist of filling out
+another form. In your header file, include 
 \begin{lstlisting}
 apop_model apop_new_likelihood = {"The Me distribution", 
             number_of_parameters, 
@@ -504,7 +503,7 @@ apop_model apop_new_likelihood = {"The Me distribution",
 \end{lstlisting}
 If there are constraints, then replace the appropriate \cinline{NULL} with the right constraint function; see below.
 \cinline{number\_of\_parameters} is probably a positive integer like \cinline{2}, but
-it is often (the number of columns in your data set) -1, in which case,
+it is often (the number of columns in your data set -1), in which case,
 set \cinline{number\_of\_parameters} to \cinline{-1}.
 
 \item Test. Debug. Retest.
@@ -513,32 +512,33 @@ set \cinline{number\_of\_parameters} to \cinline{-1}.
 typically involves calculating a derivative by hand, which is an easy
 problem in high-school calculus. The function's header will look like: 
 \begin{lstlisting}
-void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, 
-                                    gsl_vector *gradient)
+void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient)
 \end{lstlisting}
 where \cinline{beta} and \cinline{d} are fixed as above, and \cinline{gradient} is a \cinline{gsl\_vector} with dimension matching \cinline{beta}. 
 At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
 \begin{lstlisting}
-gsl_vector_set(gradient,0, d_a);
-gsl_vector_set(gradient,1, d_b);
+gsl_vector_set(gradient, 0, d_a);
+gsl_vector_set(gradient, 1, d_b);
 \end{lstlisting}
-Now add the resulting dlog likelihood function to your object, by replacing the \cinline{NULL} labeled "place dlog likelihood here" with the name of your dlog likelihood function.
-\item Send the code to the maintainer for inclusion in future versions of Apophenia.
-\end{itemize}
+Now add the resulting dlog likelihood function to your object, by
+replacing the \cinline{NULL} labeled ``place dlog likelihood here'' with
+the name of your dlog likelihood function.  
+\item Send the code to Apophenia's maintainer for inclusion in future
+versions.  \end{itemize}
 
 
 \subsection{Setting
 constraints}\index{optimization!constrained}\label{constraintwriting}
 
-The problem is that the parameters of a function must not take on
+The problem to be surmounted is that the parameters of a function must not take on
 certain values, either because the function is undefined for those
 values or because parameters with certain values would not fit the
 real-world problem.
 
 The solution taken by Apophenia is to rewrite the function being maximized such that the
 function is continuous at the constraint boundary but takes a steep
-downward slope. The unconstrained maximization routines will be able
-to search a continuous function but will never find an optimum 
+downward slope. The unconstrained maximization routines will then have a 
+continuous function to search but will never find an optimum 
 beyond the parameter limits.
 
 If you give it a likelihood function with no regard to constraints plus
@@ -567,8 +567,7 @@ will ensure that both parameters of a two-dimensional input are both
 greater than zero:
 
 \begin{lstlisting}
-static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, 
-                                    void * d, gsl_vector *returned_beta){
+static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
 double          limit0          = 0,
                 limit1          = 0,
                 tolerance       = 1e-3; // or try GSL_EPSILON_DOUBLE
@@ -618,15 +617,15 @@ prices, budget info, utility parameters.
 maximized, which in this case means the goods the consumer is choosing.
 \end{itemize}
 
-Utility is $U = x_1^\alpha * x_2^\beta$. 
+Utility is $U = x_1^\alpha x_2^\beta$. 
 The budget constraint dictates that $P_1 x_1 + P_2 x_2 <= B$.
                                                              
 The data vector looks like this:\\
-0:  price0\\
-1:  price1\\
+0:  price$_0$\\
+1:  price$_1$\\
 2:  budget \\
-3:  alpha  \\
-4:  beta   
+3:  $\alpha$  \\
+4:  $\beta$   
                                                              
 Most of the work is in writing down all the constraints, since the
 function itself is trivial. Having written down the model, the estimation
@@ -663,7 +662,7 @@ apop_data               *p  = apop_data_from_vector(parameters);
     est->uses.log_likelihood  = 0;
     return est;
 }
-%*
+
 // The constraint function, including three constraints: x0>0, x1>0, and
 // the bundle is under budget.  First, we check wether anything binds,
 // and if not we return zero immediately.  Both sets of constraints are
@@ -705,7 +704,7 @@ double      bb0     = gsl_matrix_get(params, 3,0),
             qty1    = gsl_vector_get(beta, 1);
     return pow(qty0, bb0) * pow(qty1, bb1);
 }    
-%*
+
 apop_model econ_101 = {"Max Cobb-Douglass subject to a budget constraint", 2,  {
     1,    //parameters
     0,    //covariance
@@ -716,7 +715,7 @@ apop_model econ_101 = {"Max Cobb-Douglass subject to a budget constraint", 2,  {
     0    //names;
 },         
     econ101_estimate, econ101_log_likelihood, NULL, NULL, budget_constraint, NULL};
-%*
+
 int main(){
 double          param_array[]   =  {1, 3, 38.4, 0.4, 0.6};//see header.
 gsl_vector      *params         = apop_array_to_vector(param_array,5);

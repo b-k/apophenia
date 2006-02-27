@@ -73,15 +73,15 @@ where \sinline{height} in that row is greater than or equal to 175, and
 return all the columns for those rows.
 
 
-Generally, the \sinline{select} statment gives a list of columns that the output
-table will have; the \sinline{from} clause declares where the source data
-comes from; finally, there are modifiers or restrictions (in this case
-\sinline{where}) on the rows to be output.  And that's it. Every query
-you run will have these three parts in this order: column specification, data source,
-row specification.\footnote{You may have
-no row restrictions, in which case your query will just have the first
-two parts and a null third part.} However, the means of specifying rows, columns, and
-source data allows for a huge range of possibilities.
+Generally, the \sinline{select} statment gives a list of columns that
+the output table will have; the \sinline{from} clause declares where the
+source data comes from; finally, there are modifiers or restrictions
+(in this case \sinline{where}) on the rows to be output.  And that's
+it. Every query you run will have these three parts in this order: column
+specification, data source, row specification.\footnote{You may have no
+row restrictions, in which case your query will just have the first two
+parts and a null third part.} However, the means of specifying rows,
+columns, and source data allows for a huge range of possibilities.
 
 \paragraph{Select}
 The \sqlind{select} clause will specify the columns of the table which will
@@ -220,6 +220,24 @@ from data;
 \end{lstlisting}
 %\end{verbatim}
 This produces a table with one column and one row, listing the total number of rows in the \sinline{data} table.
+
+\marginalia{Crosstabs}{In the spreadsheet world, we often get tables
+where the X-dimension is the year, the Y-dimension is the location,
+and the $(x,y)$ point is a measurement taken that year at that location.
+
+Conversely, the most convenient form for this data in a database is
+three columns: year, location, statistic. [How would you write a query
+such as \sinline{select statistic from tab where year < 1990} if there
+were a separate column for each year?] 
+
+Converting between the two is an annoyance, and so Apophenia provides
+functions to do conversions back and forth:
+
+\cindex{apop\_db\_to\_cross\-tab} \cindex{apop\_cross\-tab\_to\_db}
+\cinline{apop\_data *crosstab = apop\_db\_to\_cross\-tab("table\_name", "year", "location", "statistic");}\\
+and
+\cinline{apop\_crosstab\_to\_db(crosstab, "new\_table\_name");}
+}
 
 You probably want more refinement than that; if you would like to
 know how much data you have in each ZIP code, then use the \sqlind{group
@@ -373,23 +391,7 @@ select year, (t1.income - t2.income) as diff
    where t1.year=(t2.year -1);
 \end{lstlisting}
 
-\marginalia{Crosstabs}{In the spreadsheet world, we often get tables
-where the X-dimension is the year, the Y-dimension is the location,
-and the $(x,y)$ point is a measurement taken that year at that location.
 
-Conversely, the most convenient form for this data in a database is
-three columns: year, location, statistic. [How would you write a query
-such as \sinline{select statistic from tab where year < 1990} if there
-were a separate column for each year?] 
-
-Converting between the two is an annoyance, and so Apophenia provides
-functions to do conversions back and forth:
-
-\cindex{apop\_db\_to\_cross\-tab} \cindex{apop\_cross\-tab\_to\_db}
-\cinline{apop\_data *crosstab = apop\_db\_to\_cross\-tab("table\_name", "year", "location", "statistic");}\\
-and
-\cinline{apop\_crosstab\_to\_db(crosstab, "new\_table\_name");}
-}
 The \sinline{where} clause will line up the table with a copy of itself
 lagged by one year, and then the \sinline{diff} variable will be the
 one-year change in income.

@@ -13,7 +13,7 @@ at summary statistics for a series of observations about a single
 variable, like its mean and variance. It imposes no structure on the
 data of any sort. The next level of structure is to
 assume that the data is drawn from a distribution; instead of finding
-the mean of variance, we would instead estimate the parameters that
+the mean or variance, we would instead estimate the parameters that
 describe the distribution, using the data. These are primarily
 one-dimensional methods.
 
@@ -30,8 +30,8 @@ that it is a linear combination of the other, independent, variables.
 This is the ordinary least squares model, which has dozens of variants.
 
 One way to characterize these two approaches is that both aim to project
-$N$-dimensional data onto the best subspace of significantly less than
-$N$ dimensions---but they have different definitions of `best'.
+$N$-di\-men\-sion\-al data onto the best subspace of significantly less than
+$N$ di\-men\-sions---but they have different definitions of `best'.
 The standard OLS regression consists of
 finding the one-dimensional line which minimizes the sum of squared
 distances between the data and that line. Factor analysis consists
@@ -42,27 +42,21 @@ projected onto the subspace.
 
 \section{Characteristics of data and distributions}\label{basicstats}
 
-\paragraph{Expected value:} This is the sample version of the mean:
-$E(X)=(\sum x)/n$, and is \comment{(I should check this) }the BLUE of the true mean
-$\mu$.
+\paragraph{Expected value:} 
+First, let us say that a value of $x$ has probability $P(x)$. Then
+if $f(x)$ is an arbitrary function, 
+$$E(f(x))=\int_{\forall x} f(x)p(x) dx.$$
 
-The \ind{expected value} has an amusing property known as the Central Limit
-Theorem, q.v. (section \ref{CLT}). Right now, all we need from it is
-notation: Since the distribution as $n\to\infty$ of $\overline X$ is a
-point with zero variance (boring), we write, as $n\to\infty$,
+If we have a sample of data points, then we take each single observation
+to be equally likely: $p(x_i)={1\over n} \forall i$.
+The expected value for a sample then becomes a familar calculation
+$E(X)=(\sum x)/n$, and is \comment{(I should check this) }the BLUE of
+the true mean $\mu$. Section \ref{CLT} will discuss the magical properties of the
+sample expected value that make statistical analysis possible.
 
-$$\sqrt{n} {(\overline X - \mu)\over\sigma} \sim {\cal N}(0,1)$$
-
-or
-
-%$$\overline X \matrix{a \cr \to} \left[\mu,{\sigma^2\over n}\right]$$
-$$\overline X {a \atop \longrightarrow} \left[\mu,{\sigma^2\over n}\right]$$
-
-\paragraph{Covariance:} The population \ind{covariance} is $\sigma_{xy} =
-E[(x-\overline x)(y-\overline y)]$, which is equivalent to
-$E[xy]-E[x]E[y]$. One of these forms will apply to any problem you will
-ever have about the variance or covariance; it's just a question of
-figuring out which one. The \ind{variance} is a special case where $\xv=\yv$.
+\paragraph{Covariance:} The population \ind{covariance}, given a data set,
+is $\sigma_{xy} = E[(x-\overline x)(y-\overline y)]$, which is equivalent
+to $E[xy]-E[x]E[y]$. The \ind{variance} is a special case where $\xv=\yv$.
 
 The sample covariance is $s_{xy}=\sigma_{xy}\cdot {n\over n-1}$. This
 is
@@ -70,7 +64,43 @@ the expectation if you  divided the sum of $(x-\overline
 x)(y-\overline y)$ by $n-1$ instead of $n$. This
 can be proven to be unbiased.
 
-\paragraph{Correlation/\ind{Cauchy-Schwarz}:} $\rho_{xy}={s_{xy}\over s_x
+\paragraph{More moments:}\index{skew} \index{kurtosis} \index{moments} 
+If so inclined, one could also write out the
+expectation in the variance equation as an integral:
+$$\var(f(x))=\int_{\forall x} (f(x) - \overline{f(x}))^2 p(x) dx.$$
+But we can calculate a similar integral for higher powers as well:
+$${\rm skew}(f(x))=\int_{\forall x} (f(x) - \overline{f(x}))^3 p(x) dx\\
+{\rm kurtosis}(f(x))=\int_{\forall x} (f(x) - \overline{f(x}))^4 p(x) dx.$$
+These three integrals are the \vocab{central moments} of $f(x)$. They
+are central because we subtracted the mean from the function before
+taking the second, third, or fourth power.\footnote{The
+central first moment is always zero; the non-central second, third,
+\dots, moments are difficult to interpret and basically ignored. Thus,
+some authors refer to all of these as \airq{the $n$th moment} and leave
+it as understood whether the moment is central or non-central.}
+
+The skew indicates that a distribution is upward leaning, a negative
+skew indicates a downward lean. Kurtosis is typically put in plain
+English as \airq{fat tails}: how much density is in the tails of the
+distribution? For example, the kurtosis of a ${\cal N}(0,1)$ is three,
+while the kurtosis of a \ind{student's $t$ distribution} with $n$ degrees of
+freedom is greater than three, and decreases as $n$ grows, converging to
+three.
+
+The same caveat about unbiased estimates of the sample and population
+variance holds for skew and kurtosis: $\sum (x-\overline x)^m/(n-1)$
+is an unbiased estimate of the sample central moment for $m \in\{2, 3,
+4, \dots\}$, and $\sum (x-\overline x)^m/n$ is an unbiased estimate of
+the population central moment. The functions
+\cind{gsl\_\-vec\-tor\_\-var},
+\cind{apop\_\-vec\-tor\_\-var},
+\cind{apop\_\-vec\-tor\_\-skew}, and
+\cind{apop\_\-vec\-tor\_\-kurt\-o\-sis} all return the sample central
+moment, presuming that your data is much more likely to be a sample than
+a population. Multiply the output by $(n-1)/n$ to get the population
+central moment.
+
+\paragraph{Correlation/Cauchy-Schwarz:} $\rho_{xy}={s_{xy}\over s_x
 s_y}$. This is just another fact for your memorization, but it makes a
 surprise appearance in section \ref{ts}. This also allowed Cauchy \&
 Schwarz to state the \ind{Cauchy-Schwarz inequality}: $0\leq \rho^2 \leq 1$.
@@ -168,7 +198,7 @@ E(x)&=&	\lambda							\nonumber\\
 
 \paragraph{Normal\index{Normal distribution}}
 
-You know and love the bell curve. See the CLT (section \ref{CLT}) for
+You know and love the bell curve, aka the Gaussian distribution.\footnote{Typography note: this book will use \airq{Normal}, in an attempt to avoid arbitrary names, and with a capital to indicate that this is a proper name and not an adjective.} See the CLT (section \ref{CLT}) for
 its application.
 
 \eqnbox{ \label{normal}
@@ -177,7 +207,7 @@ E(x)&=&\mu							\nonumber\\
 \var(x)&=&\sigma^2						\nonumber
 }
 
-\paragraph{Multivariate Normal}
+\paragraph{Multivariate Normal}\index{multivariate normal distribution}
 All of the above distributions were for a single variable---one
 dimension. Let us say that we have a data set $\Xv$, which includes a
 thousand observations and seven variables (so $\Xv$ is a 1000$\times$7
@@ -195,6 +225,15 @@ p(\Xv|\mu, \Sigma) &=& {\exp(-{1\over 2} (\Xv-\mu)' \Sigma^{-1} (\Xv-\mu))
 }					
 
 Apophenia provides the function \ttind{apop\_multivariate\_normal\_prob} to evaluate this likelihood for a given data point.
+
+\paragraph{Beta distribution} The \ind{Beta distribution} is a flexible way to
+describe data inside the range $[0, 1]$.  
+
+\eqnbox{
+p(x) = {\Gamma(a+b) \over \Gamma(a) \Gamma(b)} x^{a-1}
+(1-x)^{b-1}\nonumber
+}
+
 
 
 
@@ -363,16 +402,25 @@ for $\Sigma$, making it wholly unusable for data sets larger than maybe a
 thousand observations. The sparse-matrix implementation of GLS is
 left as an exercise to the reader.]
 
+Let $\betav$ be the true parameters of the process that produced the
+data. There is no way to truly know $\beta$, but we can estimate it
+using techniques derived elsewhere and described below; let 
+$\hat\betav$ be the estimate of $\betav$.  There are many ways to
+describve when $\hat\betav$ does a better or worse job at estimating 
+$\betav$; the key feature we will be demanding is that the estimator be
+unbiased, meaning that in the limit, $E(\hat\betav) = \betav$.
+
 The catalog describes the mean and variance of the $\hat\betav$s that
 each model derives, because the Normal distribution---the basis for all
 hypothesis tests---requires those two inputs,
-and without them we can do no post-estimation testing. Unbiasedness is especially
-important because in section \ref{tstat} we get rid of $\sigma$, but we
-need to know $\mu$. Unbiasedness tells us that the mean of $\hat\beta$
-is $\beta$, and then we have all we need.
+and without them we can do no post-estimation testing.  
+In section \ref{tstat} we get rid of $\sigma$, but we
+need to know $\mu$, and unbiasedness guarantees us that if all is going
+well, $\mu =\hat\betav$.
 
 \subsection{OLS}
-The model: \index{Ordinary Least Squares|(}
+\index{Ordinary Least Squares|(}\index{OLS|see{Ordinary Least Squares}}
+The model: 
 \begin{itemize}
 \item $\Yv=\Xv\betav + \uv$
 \item $N$=the number of observations. $\Yv$ and $\uv$ are $N \times 1$
@@ -382,7 +430,9 @@ $\betav$ is $K$ by 1
 \item It is customary that the first column of $\betav$ is a column of
 ones. If you don't do that, then you need to replace every column $\Xv_i$ below
 with $\Xv_i-\overline X_i$, the equivalence of which is left as an exercise
-for the reader.
+for the reader.\footnote{If you would like to take the route of
+normalizing each column to have mean zero, see
+\cind{apop\_\-ma\-trix\_\-norm\-al\-ize}.}
 \end{itemize}
 
 Assumptions:
@@ -401,47 +451,46 @@ Assumptions:
 When all of that holds, then:
 
 \eqnbox{
-\hat\betav &=& (\Xv'\Xv)^{-1}(\Xv'\Yv)			\nonumber\\
-E(\hat\betav) &=& \beta					\nonumber\\
-var(\hat\betav) &=& \sigma^2(\Xv'\Xv)^{-1}		\nonumber
+\hat\betav_{\rm OLS}  &=& (\Xv'\Xv)^{-1}(\Xv'\Yv)			\nonumber\\
+E(\hat\betav_{\rm OLS} ) &=& \beta					\nonumber\\
+\var(\hat\betav_{\rm OLS} ) &=& \sigma^2(\Xv'\Xv)^{-1}		\nonumber
 }
 	\index{Ordinary Least Squares|)}
-\subsection{\ind{GLS}}					\label{GLS}
+\subsection{GLS} \label{GLS}\index{GLS|see{Generalized Least Squares}}
 Generalized Least Squares generalizes OLS by allowing $\uv'\uv$ to be a
 known matrix $\Sigma$, with no additional restrictions. For OLS,
 $\Sigma=\sigma^2{\bf I}$. Note how neatly plugging $\sigma^2{\bf I}$ in to the
 estimator and variance below reduces them to the OLS variance.
 
 \eqnbox{
-\hat\betav_{GLS} &=& (\Xv'\Sigma^{-1}\Xv)^{-1}(\Xv'\Sigma^{-1}\yv)			\nonumber\\
-E(\hat\betav_{GLS}) &=& \beta					\nonumber\\
-var(\hat\betav_{GLS}) &=& (\Xv'\Sigma^{-1}\Xv)^{-1}		\nonumber
+\hat\betav_{\rm GLS} &=& (\Xv'\Sigma^{-1}\Xv)^{-1}(\Xv'\Sigma^{-1}\Yv)			\nonumber\\
+E(\hat\betav_{\rm GLS}) &=& \beta					\nonumber\\
+\var(\hat\betav_{\rm GLS}) &=& (\Xv'\Sigma^{-1}\Xv)^{-1}		\nonumber
 %var(\hat\betav_{GLS}) &=& 
 % 			(\Xv'\Xv)^{-1}\Xv'\Sigma\Xv(\Xv'\Xv)^{-1}\nonumber
 }
 
 \subsection{\ind{IV}}			\label{IV}
 
-If $X$ is measured with error, then $\hat\betav_{OLS}$ is inconsistent and
+If $\Xv$ is measured with error, then $\hat\betav_{OLS}$ is inconsistent and
 asymptotically biased toward zero (in most cases, see e.g. \cite{kmenta},
-p 349). Bias is a big deal, so we need an alternate method. If $\exists$
+p 349). Bias is a big deal, so we need an alternate method. If there exists
 another instrumental variable $\Zv$ such that $\cov([Z_i-\overline
 Z][u_i-\overline u])=0$, then we can do the following:
 
 \eqnbox{
-\hat\betav_{IV} &=& (\Zv'\Xv)^{-1}(\Zv'\yv)			\nonumber\\
-E(\hat\betav_{IV}) &=& \beta					\nonumber\\
-var(\hat\betav_{IV}) &=& 
+\hat\betav_{\rm IV} &=& (\Zv'\Xv)^{-1}(\Zv'\Yv)			\nonumber\\
+E(\hat\betav_{\rm IV}) &=& \beta					\nonumber\\
+\var(\hat\betav_{\rm IV}) &=& 
 	\sigma^2(\Zv'\Xv)^{-1}\Zv'\Zv(\Xv'\Zv)^{-1}	\nonumber
 }
 
 Note how the variance shrinks as $\Zv'\Xv$ increases, and if
-$\Zv'\Xv=0$, you can't use this method. 
+$\Zv'\Xv=0$, you can not use this method. 
 
-\subsection{constrained LS \index{least squares!constrained}}
+\subsection{Constrained LS \index{least squares!constrained}}
 
-Add the constraint that $\Qv'\betav=\cv$. Then \cite{amemiya:ez}
-shows that 
+Add the constraint that $\Qv'\betav=\cv$. Then:
 
 %\wideeqnbox{6.2in}{
 \wideeqnbox{\textwidth}{
@@ -449,27 +498,24 @@ shows that
 (\Xv'\Xv)^{-1}\Qv(\Qv'(\Xv'\Xv)^{-1}\Qv)^{-1}
 		(\Qv'\hat\beta-\cv)			\nonumber\\
 %E(\hat\betav) &=& \beta					\nonumber\\
-var(\hat\betav_{CLS}) &=& \sigma^2[(\Xv'\Xv)^{-1} - 		
+\var(\hat\betav_{CLS}) &=& \sigma^2[(\Xv'\Xv)^{-1} - 		
 (\Xv'\Xv)^{-1}\Qv(\Qv'(\Xv'\Xv)^{-1}\Qv)^{-1}\Qv'(\Xv'\Xv)^{-1}]
 \nonumber
 }
-
-Again, if the constraint is satisfied by $\hat\beta$, then
+(See, e.g., \cite{amemiya:ez}.)
+If the constraint is satisfied by $\hat\beta$, then
 $(\Qv'\hat\beta-\cv)$ is zero and $\hat\betav_{CLS}=\hat\betav_{OLS}$.
 Though you have to ask yourself why you're imposing a constraint that
-you haven't tested; perhaps this is a good chance to skip to the F-test
+you haven't tested; perhaps you should first have a look at the F-test
 based on this form, in Section \ref{ftestsec}.
 
 \subsection{\ind{FGLS}}
 
-If we don't know $\Sigma$, which is universally the case except on
-test questions, we need some way to make the estimation Feasible. So we
-assume that $\Sigma$ is a function of one parameter, $\Sigma(\rho)$ 
+If we do not know $\Sigma$, which is universally the case except on
+test questions, we need some way to make the GLS estimation Feasible. So we
+assume that $\Sigma$ is a function of one parameter, $\Sigma(\rho)$.
 
 \label{ts}\index{time series|(}
-
-It's all about estimating $\Sigma(\rho)$ for the GLS model. 
-
 \paragraph{\ind{AR(1)} time series model}
 
 This is where errors are autoregressed by one period\footnote{AR(4) is
@@ -534,12 +580,12 @@ simple application of the BLAS function from the last chapter---a matrix $\cdot$
 \begin{lstlisting}
 gsl_vector      *xpy            = gsl_vector_calloc(set->data->size2);
 gsl_matrix      *xpx            = gsl_matrix_calloc(set->data->size2, set->data->size2);
-gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx); //(X'X)
-gsl_blas_dgemv(CblasTrans, 1, set->data, y_data, 0, xpy); //(X'y)
+gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);
+gsl_blas_dgemv(CblasTrans, 1, set->data, y_data, 0, xpy);
 \end{lstlisting}
 
-The GSL has a function to solve equations of the type ${\bf X} \beta =
-{\bf Y}$; which is exactly the form we have here---$(X'X)\beta = (X'Y)$.  \label{ols}
+The GSL has a function to solve equations of the type ${\bf A} \beta =
+{\bf C}$; which is exactly the form we have here---$(X'X)\beta = (X'Y)$.  \label{ols}
 %\begin{verbatim}
 \begin{lstlisting}
         gsl_linalg_HH_solve (xpx, xpy, *beta);
@@ -549,10 +595,10 @@ The GSL has a function to solve equations of the type ${\bf X} \beta =
 The vector \cinline{beta} now lives up to its name, holding the coefficients
 $\beta$. Notice that we never had to take an inverse.  
 
-An alternative approach actually takes the inverse. In practice, this is
+An alternative approach actually takes the inverse of $(X'X)$. In practice, this is
 almost necesary, because the variance is $\sigma^2 (\Xv'\Xv)^{-1}$.
 Also, the matrix which projects data onto the space defined by $X$,
-often called the `hat matrix', is $H = X(X'X)^{-1}X'$. Although this may
+often called the `hat matrix', is $H = X(X'X)^{-1}X'$. Although it may
 make the computer sweat for large matrices, the inverse function
 from the last chapter is already paying off, allowing us to find
 $(\Xv'\Xv)^{-1}$ with one function call:
@@ -571,7 +617,7 @@ gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, set->data, xpx_inv, first_part);
 gsl_blas_dgemm(CblasNoTrans,CblasTrans, first_part, set->data, hat_matrix);	
 gsl_matrix_free(first_part);
 \end{lstlisting}
-\lstset{texcl=false}//for now.
+\lstset{texcl=false} %for now.
 
 If we have a second data set \cinline{set2} of the appropriate number of
 rows (meaning that \cinline{(set->data-$>$size1 == set2->data-$>$size1)}, then we can use the hat matrix to do the projection:\\
