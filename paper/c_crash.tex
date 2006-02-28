@@ -80,8 +80,8 @@ My hope with this chapter is both to discuss where to put your semicolons
 and how things are generally done in C. Don't feel compelled to memorize
 everything here (using \cinline{malloc} three times in a sentence, for
 example), since the manual is always there for you to read.  It is not
-a comprehensive tutorial: GNU C recognizes 33 key words and this book
-will only use 18 of them. For example, we won't be using bit-shifting
+a comprehensive tutorial: GNU C recognizes 32 key words and this book
+will only use 17 of them. For example, we won't be using bit-shifting
 operators, so I'm not going to tell you what they are here.
 If you want more details about any of the points I mention here, just 
 type \binline{C tutorial} into your favorite search engine; since this
@@ -117,14 +117,15 @@ computer. Try typing \binline{cc} on your command line; if you get an
 error like ``command not found'', then you will need to get a compiler,
 but an error like ``no input files'' means that a compiler was found
 and awaits input. Windows and Mac OS do not ship with a compiler; if you
-are using a computer customized by a university or company IT
+are using a computer customized by your university or company computing
 department, check the usual application folders.
 
 On top of the compiler, you will need a debugger like gdb, the standard
 libraries, the GNU Scientific Library (GSL) and SQLite.  The easiest
 way to get all of these disparate tools is via a package manager. If
 you are using a UNIX-like system, you are probably already familiar with
-your package manager.
+your package manager (Red Hat Package Manager and Debian's Apt are the
+most popular).
 
 If you are using Windows, you have two options. One is to get
 Mingw, which provides a compiler and not much else. It has its
@@ -165,6 +166,8 @@ you are basically using your operating system as an IDE.
 In this paradigm, you will probably have one window that is dedicated to
 a text editor with your code, and another window for compliation,
 debugging, and output.
+
+
 
 \paragraph{Text files} C programs are files of text, and all of your work
 will be manipulations of text, so it is in your long-run best interst to
@@ -1295,14 +1298,26 @@ and thinking of pointers as just a very precise finger.
 
 This fixes the problem of changing variables within a function. The
 trick is that instead of sending the function a copy of the variable,
-we send in a copy of a finger pointing to the variable. There are now
-two fingers, original and copy, pointing to the same spot. The
-function can then find the data to which its copy of a finger is pointing,
-and make modifications there; when the copy of a finger is removed on the
-function's exit, the changes made to the data aren't undone.
-The original finger (which hasn't changed and is pointing to the same
-place it was always pointing to) will now be pointing to a modified value.
-Figure \ref{callbyref} gives a sample program which does this.
+we send in a copy of a finger pointing to the variable. 
+In Figure \ref{fingerfig}, the Before picture shows the situation
+before the function call, in the main program: there is a pointer to an
+address in memory, holding the number six. Then, in the During picture,
+a function is called using a form like \cinline{fn\_call(pointer)}.
+There are now
+two fingers, original and copy, pointing to the same spot, but the
+function only knows about the copy.  But given its copy of a finger, it
+is easy for the function to change the value pointed to to seven. When
+the function returns, in the After picture, the copy of a finger is
+destroyed but the changes are not undone.  The original finger (which
+hasn't changed and is pointing to the same place it was always pointing
+to) will now be pointing to a modified value.  Figure \ref{callbyref}
+gives a sample program which does this.
+
+\begin{figure}
+\scalebox{0.7}{\includegraphics{finger.ps}}
+\caption{Before, during, and after a function call that modifies a pointed-to value}
+\label{fingerfig}
+\end{figure}
 
 \codefig{callbyref}{Call-by-reference}
 
