@@ -21,8 +21,8 @@ Many of these are juse one-line convenience functions.
 
 \b normalizations
 
-\li \ref apop_normalize_vector: scale and shift a vector.
-\li \ref apop_normalize_matrix: remove the mean from each column of the data set.
+\li \ref apop_vector_normalize: scale and shift a vector.
+\li \ref apop_matrix_normalize: remove the mean from each column of the data set.
 
 \b distributions
 
@@ -35,8 +35,8 @@ Many of these are juse one-line convenience functions.
 
 These functions simply take in a GSL vector and return its mean, variance, or kurtosis; the covariance functions take two GSL vectors as inputs.
 
-\ref apop_cov and \ref apop_covar are identical; \ref apop_kurtosis and
-\ref apop_kurt are identical; pick the one which sounds better to you.
+\ref apop_vector_cov and \ref apop_vector_covar are identical; \ref apop_vector_kurtosis and
+\ref apop_vector_kurt are identical; pick the one which sounds better to you.
 
 
 

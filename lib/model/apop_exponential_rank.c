@@ -25,11 +25,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 /* Let k be the rank, and x_k be the number of elements at that rank;
  then the mean rank (and therefore the most likely estimate for the
  exponential parameter) is sum(k * x_k)/sum(x) */
-static apop_estimate * exponential_rank_estimate(apop_data * data, apop_inventory *uses, void *parameters){
+static apop_estimate * exponential_rank_estimate(apop_data * data, void *parameters){
 double          colsum,
                 numerator   = 0,
                 grand_total = 0;
-apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential_rank,uses, parameters);
+apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential_rank, parameters);
 gsl_vector_view v;
 int             i;
     for(i=0; i< data->data->size2; i++){
@@ -39,9 +39,9 @@ int             i;
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters, 0, numerator/grand_total);
-	if (est->uses.log_likelihood)
+	if (est->estimation_params.uses.log_likelihood)
 		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters, data->data);
-	if (est->uses.covariance)
+	if (est->estimation_params.uses.covariance)
 		apop_numerical_var_covar_matrix(apop_exponential_rank, est, data->data);
 	return est;
 }

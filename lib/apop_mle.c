@@ -132,23 +132,19 @@ grad_params 	gp;
 down the input inventory to a modified output mle.
 
 \todo This should really just modify the input inventory. */
-void prep_inventory_mle(apop_inventory *in, apop_inventory *out){
+static void prep_inventory_mle(apop_inventory in){
 //These are the rules going from what you can ask for to what you'll get.
-	if (in == NULL){ 	//then give the user the works.
-		apop_inventory_set(out, 1);
+	in.log_likelihood	= 1;
+	in.parameters		= 1;
 	//OK, some things are not yet implemented.
-	out->residuals		= 0;
-		return;
-	}//else:
-	apop_inventory_copy(*in, out);
-	out->log_likelihood	= 1;
-	out->parameters		= 1;
+	in.names		    = 0;
+	in.confidence		= 0;
 	//OK, some things are not yet implemented.
-	out->names		    = 0;
-	out->confidence		= 0;
-	out->residuals		= 0;
-	if (out->confidence==1)
-		out->covariance = 1;
+	in.residuals		= 0;
+	if (in.confidence==1)
+		in.covariance = 1;
+	if (in.covariance==1)
+		in.confidence = 1;
 }
 
 
@@ -321,7 +317,7 @@ gsl_matrix	*hessian;
 
 	//Confidence intervals are just a cute convenience. We're
 	//assuming Normality, which only works asymptotically anyway.
-	if (est->uses.confidence == 0)
+	if (est->estimation_params.uses.confidence == 0)
 		return;
 	//else:
 	for (i=0; i< est->parameters->size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
@@ -354,7 +350,7 @@ gsl_vector_view v;
 	gsl_matrix_free(pre_cov);
 	gsl_vector_free(diff);
 
-	if (est->uses.confidence == 0)
+	if (est->estimation_params.uses.confidence == 0)
 		return;
 	//else:
 	for (i=0; i<betasize; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
@@ -370,7 +366,6 @@ gsl_vector_view v;
 If no derivative exists, will calculate a numerical gradient.
 
 \param data	the data matrix
-\param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
 \param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
 \param	starting_pt	an array of doubles suggesting a starting point. If NULL, use zero.
 \param step_size	the initial step size.
@@ -379,7 +374,7 @@ If no derivative exists, will calculate a numerical gradient.
 \return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
   \todo readd names */
-static apop_estimate *	apop_maximum_likelihood_w_d(apop_data * data, apop_inventory *uses,
+static apop_estimate *	apop_maximum_likelihood_w_d(apop_data * data,
 			apop_model dist, apop_estimation_params *est_params){
             //double *starting_pt, double step_size, double tolerance, int method, int verbose){
 gsl_multimin_function_fdf 	minme;
@@ -388,15 +383,14 @@ gsl_vector 			        *x;
 int				            iter 	= 0, 
 				            status  = 0,
 				            betasize= dist.parameter_ct;
-apop_inventory			    actual_uses;
 apop_estimate			    *est;
 negshell_params			    nsp;
 	if (betasize == -1)	{
         dist.parameter_ct   =
         betasize            = data->data->size2 - 1;
     }
-	prep_inventory_mle(uses, &actual_uses);
-	est	= apop_estimate_alloc(data, dist, &actual_uses, est_params);
+	prep_inventory_mle(est_params->uses);
+	est	= apop_estimate_alloc(data, dist, est_params);
     if (est_params->method/100 ==2)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
     else if (est_params->method/100 == 3)
@@ -443,12 +437,12 @@ negshell_params			    nsp;
 	if (est_params->starting_pt==NULL) 
 		gsl_vector_free(x);
 	est->log_likelihood	= dist.log_likelihood(est->parameters, data->data);
-	if (est->uses.covariance) 
+	if (est->estimation_params.uses.covariance) 
 		apop_numerical_var_covar_matrix(dist, est, data->data);
 	return est;
 }
 
-static apop_estimate *	apop_maximum_likelihood_no_d(apop_data * data, apop_inventory *uses,
+static apop_estimate *	apop_maximum_likelihood_no_d(apop_data * data, 
 			apop_model dist, apop_estimation_params * est_params){
     //, double *starting_pt, double step_size, double tolerance, int verbose){
 int			            status,
@@ -459,7 +453,6 @@ gsl_multimin_function 	minme;
 gsl_multimin_fminimizer *s;
 gsl_vector 		        *x, *ss;
 double			        size;
-apop_inventory		    actual_uses;
 apop_estimate		    *est;
 negshell_params		    nsp;
 	if (betasize == -1)	{
@@ -469,9 +462,9 @@ negshell_params		    nsp;
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
 	x	= gsl_vector_alloc(betasize);
-	prep_inventory_mle(uses, &actual_uses);
+	prep_inventory_mle(est_params->uses);
 	//est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
-	est	= apop_estimate_alloc(data, dist, &actual_uses, est_params);
+	est	= apop_estimate_alloc(data, dist, est_params);
 	est->status	= 1;	//assume failure until we score a success.
 	if (est_params->starting_pt==NULL)
   		gsl_vector_set_all (x,  0);
@@ -512,7 +505,7 @@ negshell_params		    nsp;
 	gsl_vector_memcpy(est->parameters, s->x);
 	gsl_multimin_fminimizer_free(s);
 	est->log_likelihood	= dist.log_likelihood(est->parameters, data->data);
-	if (est->uses.covariance) 
+	if (est->estimation_params.uses.covariance) 
 		apop_numerical_var_covar_matrix(dist, est, data->data);
 	return est;
 }
@@ -521,10 +514,10 @@ negshell_params		    nsp;
 /** The maximum likelihood calculations
 
 \param data	the data matrix
-\param uses	an inventory, which will be pared down and folded into the output \ref apop_estimate
 \param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
 \param params	an \ref apop_estimation_params structure, featuring:<br>
 starting_pt:	an array of doubles suggesting a starting point. If NULL, use zero.<br>
+an \ref apop_inventory: which will be pared down and folded into the output \ref apop_estimate<br>
 step_size:	the initial step size.<br>
 tolerance:	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
 verbose:	Y'know.<br>
@@ -540,13 +533,12 @@ Thus, the default method is 100+0 = 100. To use the Nelder-Mead simplex algorith
 
   \todo re-add names 
  \ingroup mle */
-apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_inventory *uses,
-			apop_model dist, apop_estimation_params *params){
+apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_estimation_params *params){
 
 	if (params->method/100==0)
-		return apop_maximum_likelihood_no_d(data, uses, dist, params);
+		return apop_maximum_likelihood_no_d(data, dist, params);
 	//else:
-	return apop_maximum_likelihood_w_d(data, uses, dist, params);
+	return apop_maximum_likelihood_w_d(data, dist, params);
 }
 
 
@@ -610,19 +602,19 @@ est = apop_estimate_restart(est, 200, 1e-2);
 apop_estimate * apop_estimate_restart(apop_estimate *e,int  new_method, int scale){
 double                 *start_pt2;
 apop_estimate          *out;
-apop_estimation_params *new_params  = malloc(sizeof(apop_estimation_params));
+apop_estimation_params new_params;
             //copy off the old params; modify the starting pt, method, and scale
-    memcpy(new_params, e->estimation_params,sizeof(apop_estimation_params));
+    memcpy(&new_params, &(e->estimation_params),sizeof(apop_estimation_params));
     if (apop_vector_bounded(e->parameters,1e4)){
         apop_vector_to_array(e->parameters, &start_pt2);
-	    new_params->starting_pt	= start_pt2;
+	    new_params.starting_pt	= start_pt2;
     }
     else
-	    new_params->starting_pt	= e->estimation_params->starting_pt;
-    new_params->tolerance   = e->estimation_params->tolerance * scale;
-    new_params->step_size   = e->estimation_params->step_size * scale;
-    new_params->method	    = new_method;
-	out	                    = (e->model)->estimate(e->data, &(e->uses), new_params);
+	    new_params.starting_pt	= e->estimation_params.starting_pt;
+    new_params.tolerance   = e->estimation_params.tolerance * scale;
+    new_params.step_size   = e->estimation_params.step_size * scale;
+    new_params.method	    = new_method;
+	out	                    = (e->model)->estimate(e->data, &new_params);
             //Now check whether the new output is better than the old
     if (apop_vector_bounded(out->parameters, 1e4) && out->log_likelihood > e->log_likelihood){
         apop_estimate_free(out);

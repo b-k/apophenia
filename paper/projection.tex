@@ -550,7 +550,7 @@ $ \beta = (X'X)^{-1}X'Y$.
 
 I will assume that we have already read a data matrix in to \cinline{apop\_data *set}. First, here is the easy way:
 \begin{lstlisting}
-apop_estimate *est = apop_OLS.estimate(set, NULL, NULL);
+apop_estimate *est = apop_OLS.estimate(set, NULL);
 apop_estimate_print(est);
 \end{lstlisting}
 But if the assumptions of OLS do not fit, then you will need to know how

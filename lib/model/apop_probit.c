@@ -21,8 +21,8 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <assert.h>
 
 
-static apop_estimate * probit_estimate(apop_data * data, apop_inventory *uses, void *parameters){
-	return apop_maximum_likelihood(data, uses, apop_probit, parameters);
+static apop_estimate * probit_estimate(apop_data * data,  void *parameters){
+	return apop_maximum_likelihood(data,  apop_probit, parameters);
 }
 
 

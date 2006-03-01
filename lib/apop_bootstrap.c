@@ -57,10 +57,9 @@ can bootstrap every parameter at once. Remember that if \code{e} is an
 \param params_2	a parameter to send to your boot_fn.
 \param params_3	a parameter to send to your boot_fn.
 
-\todo I couldn't find a reference on how big the bootstrap subsample should be relative to the data set. So I hard-coded the subsample size to 1/3 the original data set. If you can find better, code it in.
+\todo I couldn't find a reference on how big the bootstrap subsample should be relative to the data set. So I hard-coded the subsample size to 1/3 the original data set. If you have better, code it in.
  */
-gsl_matrix * apop_bootstrap(apop_data *data, apop_model model,
-                                 apop_estimation_params *e){
+gsl_matrix * apop_bootstrap(apop_data *data, apop_model model, apop_estimation_params e){
 int		        i, j, row;
 int             boot_iterations	= 1000;
 apop_data	    *subset	= apop_data_alloc(data->data->size1, data->data->size2);
@@ -68,8 +67,8 @@ apop_data       *array_of_boots = NULL;
 gsl_vector_view	v;
 apop_estimate   *boot_est;
 gsl_rng		    *rn	=gsl_rng_alloc(gsl_rng_default);
-apop_inventory  *inv = apop_inventory_alloc(0);
-    inv->parameters  = 1;
+    apop_inventory_set(&(e.uses), 0);      //our re-run will only ask parameters.
+    e.uses.parameters  = 1;
 	for (i=0; i<boot_iterations; i++){
 		//create the data set
 		for (j=0; j< data->data->size1; j++){
@@ -78,7 +77,7 @@ apop_inventory  *inv = apop_inventory_alloc(0);
 			gsl_matrix_set_row(subset->data, j, &(v.vector));
 		}
 		//get the parameter estimates.
-		boot_est    = model.estimate(subset, inv, e);
+		boot_est    = model.estimate(subset, &e);
 		if (i==0)
 			array_of_boots	= apop_data_alloc(boot_iterations, boot_est->parameters->size);
         gsl_matrix_set_row(array_of_boots->data,i,boot_est->parameters);

@@ -19,12 +19,12 @@ static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
 }
 
-static apop_estimate * exponential_estimate(apop_data * data, apop_inventory *uses, void *parameters){
-apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential,uses, parameters);
+static apop_estimate * exponential_estimate(apop_data * data,  void *parameters){
+apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential, parameters);
 	gsl_vector_set(est->parameters, 0, apop_matrix_mean(data->data));
-	if (est->uses.log_likelihood)
+	if (est->estimation_params.uses.log_likelihood)
 		est->log_likelihood	= exponential_log_likelihood(est->parameters, data->data);
-	if (est->uses.covariance)
+	if (est->estimation_params.uses.covariance)
 		apop_numerical_var_covar_matrix(apop_exponential, est, data->data);
 	return est;
 }

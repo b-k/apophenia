@@ -160,6 +160,7 @@ typedef struct apop_estimation_params{
 	double 	tolerance; 
 	int 	verbose;
 	int 	destroy_data;
+	apop_inventory	uses;
 } apop_estimation_params;
 
 /** Regression and MLE functions return this structure, which includes
@@ -185,12 +186,11 @@ typedef struct apop_estimate{
 	gsl_vector 	*parameters, *confidence, *predicted, *residuals;
 	gsl_matrix 	*covariance;
 	double		log_likelihood;
-	apop_inventory	uses;
 	apop_name	*names;
 	int		    status;
     struct apop_data   *data;
     struct apop_model  *model;
-    struct apop_estimation_params  *estimation_params;
+    struct apop_estimation_params  estimation_params;
 } apop_estimate;
 
 /**
@@ -225,7 +225,7 @@ typedef struct apop_model{
 	char	name[101]; 
 	int	parameter_ct;
 	apop_inventory inventory_filter;
-	apop_estimate *	(*estimate)(apop_data * data, apop_inventory *uses, void *parameters);
+	apop_estimate *	(*estimate)(apop_data * data, void *parameters);
 	double 	(*log_likelihood)(const gsl_vector *beta, void *d);
 	void 	(*dlog_likelihood)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 	void 	(*fdf)( const gsl_vector *beta, void *d, double *f, gsl_vector *df);
@@ -264,9 +264,11 @@ void apop_name_rm_columns(apop_name *n, int *drop);
 void apop_name_memcpy(apop_name **out, apop_name *in);
 apop_name * apop_name_copy(apop_name *in);
 
-apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_inventory *uses, apop_estimation_params *params);
+apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_estimation_params *params);
 void 		apop_estimate_free(apop_estimate * free_me);
 void 		apop_estimate_print(apop_estimate * print_me);
+
+apop_estimation_params *apop_estimation_params_alloc();
 
 apop_inventory * apop_inventory_alloc(int value);
 void 		apop_inventory_copy(apop_inventory in, apop_inventory *out);

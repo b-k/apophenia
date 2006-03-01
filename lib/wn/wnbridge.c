@@ -46,7 +46,7 @@ int		i;
 
 \todo input starting point for vector.
 */
-apop_estimate * apop_wn_maximum_likelihood(apop_data * data, apop_inventory *uses,
+apop_estimate * apop_wn_maximum_likelihood(apop_data * data, 
 		                        apop_model dist, apop_estimation_params *est_params){
 
 	//some globals:
@@ -84,14 +84,14 @@ double 		val_min;
 apop_inventory	inv;
 	apop_inventory_set(&inv, 1);
 //apop_estimate	*est = apop_estimate_alloc(data->size1, data->size2, NULL, inv);
-apop_estimate 	*est	    = apop_estimate_alloc(data, dist, uses, est_params);
+apop_estimate 	*est	    = apop_estimate_alloc(data, dist,  est_params);
   	for (i=0;i<the_size; i++)
 		gsl_vector_set(est->parameters, i, vect[i]);
 	est->log_likelihood	= -dist.log_likelihood(est->parameters, data->data);
 	est->status		= code;
 	//Epilogue:
 	//find the variance-covariance matrix, using $df/d\theta \cdot df/d\theta$
-	if (est->uses.covariance == 0 || dist.dlog_likelihood == NULL) 
+	if (est->estimation_params.uses.covariance == 0 || dist.dlog_likelihood == NULL) 
 		return est;
 	//else:
 gsl_matrix	*pre_cov;
@@ -110,7 +110,7 @@ gsl_vector_view	v;
 	gsl_matrix_free(pre_cov);
 	gsl_vector_free(diff);
 
-	if (est->uses.confidence == 0)
+	if (est->estimation_params.uses.confidence == 0)
 		return est;
 	//else:
 	for (i=0; i<the_size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|

@@ -35,8 +35,8 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 \ingroup likelihood_fns
 */
-static apop_estimate * waring_estimate(apop_data * data, apop_inventory *uses, void *parameters){
-	return apop_maximum_likelihood(data, uses, apop_waring, parameters);
+static apop_estimate * waring_estimate(apop_data * data, void *parameters){
+	return apop_maximum_likelihood(data, apop_waring, parameters);
 }
 
 static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){

@@ -1972,7 +1972,15 @@ formatted for the web.
 This optional section includes some things that are very commonly used among
 C programmers but are entirely optional. You can get very far without
 knowing any of the following, and much of it is generally considered to
-be bad style.
+be bad style.\footnote{Much of what was omitted from this chapter
+regards combining expressions onto one line. For example, 
+one could write \cinline{b = (i > j); a += b; i++;} as 
+\cinline{a += b = i++ > j;}. Some people find one-liners like
+this to have \ae{}sthetic appeal, and there are even cases where they
+may be clearer than the multi-line version. But they are an
+easy way to write impossible-to-debug code, and require mastery of
+a great number of details of C internals that are wholly unnecessary
+otherwise.}
 
 \paragraph{The obfuscatory if} There is another way to write an \ttind{if} statement. The following are equivalent:
 \begin{lstlisting}
@@ -1989,8 +1997,8 @@ Both have all three components: first the condition, then the `what to do if the
 condition is true' part, and then the `what to do if the condition is false'
 part. However, the first is more-or-less legible to anybody who knows basic English,
 and the second takes the reader a second to parse every time he or she
-sees it. I include the second form here only because you may see it in
-other people's code; use it at your own risk.
+sees it. Again, there are situations where the condensed form is useful,
+but you could live a successful career of C use without ever needing it.
 
 
 \paragraph{Macros} \label{macros} 

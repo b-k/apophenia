@@ -1,3 +1,22 @@
+		March 2006
+--apop_inventory is now a subset of apop_estimation_params. Implications:
+	--added apop_estimation_params_alloc() to ensure that inventory is set right.
+	--the model.estimate(data, inv, params) method is now model.estimate(data, params)
+	  model.estimate(data, NULL) still does what the user expects it to.
+  This makes structural sense, but will lightly break any existing code.
+  fix: change 
+   apop_inventory *inv = apop_inventory_set(1);
+   model.estimate(data, inv, NULL);
+
+   to
+   apop_estimation_params *ep = apop_estimation_params_alloc();
+   model.estimate(data, ep);
+
+   and in any apop_estimates, change any use of est->uses to
+   est.estimation_params.uses.
+
+Next to be cleaned: names in apop_estimates.
+
 		February 2006
 sort-of-adaptive MLE: use apop_estimate_restart to execute a new MLE
 search beginning where the last one ended, perhaps using a new method or

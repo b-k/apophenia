@@ -139,12 +139,10 @@ column names.
 int main(void){
 apop_data       *data;
 apop_estimate   *est;
-apop_inventory  invent;
     apop_convert_text_to_db("data","d",0,1,NULL);
     data       = apop_query_to_data("select * from d");
-    apop_inventory_set(&invent, 0);
     invent.parameters   = 1;
-    est  = apop_OLS.estimate(data, &invent, NULL);
+    est  = apop_OLS.estimate(data, NULL);
     apop_estimate_print(est);
     return 0;
 }
@@ -170,7 +168,7 @@ features, but the code below will do the same thing in even fewer lines:
 #include <apophenia/headers.h>
 int main(void){
     apop_estimate_print(apop_OLS.estimate(
-         apop_text_to_data("data",0,1), NULL, NULL));
+         apop_text_to_data("data",0,1), NULL));
     return 0; }
 \end{lstlisting}
 
@@ -236,7 +234,7 @@ Some of these are full models, some are distributions, some are
 estimated via closed-form calculations and some via MLEs. However, all
 of them can be estimated via a form such as
 \begin{lstlisting}
-apop_normal.estimate(data, NULL, NULL);
+apop_normal.estimate(data,  NULL);
 \end{lstlisting}
 
 The two optional parameters, the ones that were \cinline{NULL} above,

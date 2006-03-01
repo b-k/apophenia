@@ -97,32 +97,37 @@ It takes in all the inputs to the model: data, inventory, parameters, plus the m
 
 \param data	        A pointer to an input apop_data set
 \param model	    A pointer to the model you're estimating
-\param	uses	    The inventory you want. May be NULL if you want everything you can get.
-\param  params      An \ref apop_estimation_params structure. May be NULL.
+\param  params      An \ref apop_estimation_params structure. May be NULL. Don't forget that this may include an apop_inventory (or that field may be NULL)
 
 \ingroup inv_and_est  */
-apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_inventory *uses, 
-                                        apop_estimation_params *params){
+apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_estimation_params *params){
 apop_estimate * prep_me;
 	prep_me	= malloc(sizeof(apop_estimate));
-	apop_inventory_copy(apop_inventory_filter(uses, model.inventory_filter), &(prep_me->uses));
-	if (prep_me->uses.parameters)
+    if (params){
+        memcpy(&(prep_me->estimation_params), params, sizeof(apop_estimation_params));
+	    apop_inventory_copy(apop_inventory_filter(&(params->uses), model.inventory_filter), &(prep_me->estimation_params.uses));
+    } else {
+        apop_estimation_params *delme =  apop_estimation_params_alloc();
+        memcpy(&(prep_me->estimation_params), delme, sizeof(apop_estimation_params));
+	    apop_inventory_filter(&(prep_me->estimation_params.uses), model.inventory_filter);
+        free(delme);
+    }
+	if (prep_me->estimation_params.uses.parameters)
 		prep_me->parameters	= gsl_vector_alloc(model.parameter_ct);
-	if (prep_me->uses.confidence)
+	if (prep_me->estimation_params.uses.confidence)
 		prep_me->confidence	= gsl_vector_alloc(model.parameter_ct);
-	if (prep_me->uses.predicted)
+	if (prep_me->estimation_params.uses.predicted)
 		prep_me->predicted	= gsl_vector_alloc(data->data->size1);
-	if (prep_me->uses.residuals)
+	if (prep_me->estimation_params.uses.residuals)
 		prep_me->residuals	= gsl_vector_alloc(data->data->size1);
-	if (prep_me->uses.covariance)
+	if (prep_me->estimation_params.uses.covariance)
 		prep_me->covariance	= gsl_matrix_alloc(model.parameter_ct,model.parameter_ct);
-	if (prep_me->uses.names) {
+	if (prep_me->estimation_params.uses.names) {
 		if (data->names != NULL) 	apop_name_memcpy(&(prep_me->names), data->names);
 		else 		                prep_me->names		= apop_name_alloc();
 	}
     prep_me->data               = data;
     prep_me->model              = apop_model_copy(model);
-    prep_me->estimation_params  = params;
 	return prep_me;
 }
 
@@ -130,17 +135,17 @@ apop_estimate * prep_me;
 
 \ingroup inv_and_est */
 void apop_estimate_free(apop_estimate * free_me){
-	if (free_me->uses.predicted)
+	if (free_me->estimation_params.uses.predicted)
 		gsl_vector_free(free_me->predicted);
-	if (free_me->uses.predicted)
+	if (free_me->estimation_params.uses.predicted)
 		gsl_vector_free(free_me->predicted);
-	if (free_me->uses.residuals)
+	if (free_me->estimation_params.uses.residuals)
 		gsl_vector_free(free_me->residuals);
-	if (free_me->uses.confidence)
+	if (free_me->estimation_params.uses.confidence)
 		gsl_vector_free(free_me->confidence);
-	if (free_me->uses.covariance)
+	if (free_me->estimation_params.uses.covariance)
 		gsl_matrix_free(free_me->covariance);
-	if (free_me->uses.names)
+	if (free_me->estimation_params.uses.names)
 		apop_name_free(free_me->names);
 	free(free_me);
 }
@@ -151,15 +156,15 @@ void apop_estimate_free(apop_estimate * free_me){
 void apop_estimate_print(apop_estimate * print_me){
 int		i;
 	printf("\n");
-	if (print_me->uses.names) 	printf("\t");
-	if (print_me->uses.parameters) 	printf("value\t\t");
-	if (print_me->uses.confidence) 	
+	if (print_me->estimation_params.uses.names) 	printf("\t");
+	if (print_me->estimation_params.uses.parameters) 	printf("value\t\t");
+	if (print_me->estimation_params.uses.confidence) 	
             printf("Confidence\n");
     else    printf("\n");
 	for (i=0; i<print_me->parameters->size; i++){
-		if (print_me->uses.names)	printf("%s\t", print_me->names->colnames[i]);
-		if (print_me->uses.parameters)	printf("% 7f\t", gsl_vector_get(print_me->parameters,i));
-		if (print_me->uses.confidence)	printf("% 7f\t", gsl_vector_get(print_me->confidence,i));
+		if (print_me->estimation_params.uses.names)	printf("%s\t", print_me->names->colnames[i]);
+		if (print_me->estimation_params.uses.parameters)	printf("% 7f\t", gsl_vector_get(print_me->parameters,i));
+		if (print_me->estimation_params.uses.confidence)	printf("% 7f\t", gsl_vector_get(print_me->confidence,i));
 		printf("\n");
 		/*
 		if (print_me->uses.parameters){
@@ -172,12 +177,12 @@ int		i;
 		}
 		*/
 	}
-	if (print_me->uses.covariance){
+	if (print_me->estimation_params.uses.covariance){
 		printf("\nThe variance/covariance matrix:\n");
         apop_data   *covdata    = apop_matrix_to_data(print_me->covariance);
         int         i;
         //We want to show the column names on both axes.
-        if (print_me->uses.names && print_me->names !=NULL && print_me->names->colnamect){
+        if (print_me->estimation_params.uses.names && print_me->names !=NULL && print_me->names->colnamect){
             apop_name_stack(covdata->names, print_me->names, 'c');
             for (i=0; i< print_me->names->colnamect; i++)
                 apop_name_add(covdata->names, print_me->names->colnames[i], 'r');
@@ -185,7 +190,7 @@ int		i;
         apop_data_show(covdata);
         free(covdata);  //slightly leaky. I don't care.
 	}
-	if (print_me->uses.log_likelihood)
+	if (print_me->estimation_params.uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);
 }
 
@@ -205,4 +210,11 @@ apop_model * out = malloc(sizeof(apop_model));
     out->constraint         = in.constraint;
 	out->rng                = in.rng;
     return out;
+}
+
+
+apop_estimation_params *apop_estimation_params_alloc(){
+apop_estimation_params *setme = calloc(sizeof(apop_estimation_params),1);
+    apop_inventory_set(&(setme->uses),1);
+    return setme;
 }

@@ -73,7 +73,7 @@ gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, void * d)
 void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data);
 
 
-apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_inventory *uses,
+apop_estimate *	apop_maximum_likelihood(apop_data * data, 
 			apop_model dist, apop_estimation_params *params);
 
 

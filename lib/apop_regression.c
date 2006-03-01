@@ -141,7 +141,7 @@ static void prep_inventory_names(apop_name *n){
 }
 
 void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_estimate *out){
-	if (out->uses.covariance + out->uses.confidence + out->uses.residuals == 0 ){	
+	if (out->estimation_params.uses.covariance + out->estimation_params.uses.confidence + out->estimation_params.uses.residuals == 0 ){	
 		//then don't calculate (X'X)^{-1}
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters);
 		return;
@@ -155,18 +155,18 @@ int		i;
 	apop_det_and_inv(xpx, &cov, 0, 1);		//(X'X)^{-1} (not yet cov)
 	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters);
 	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters, 0, error);
-	if (out->uses.predicted)	
+	if (out->estimation_params.uses.predicted)	
 		gsl_vector_memcpy(out->predicted, error);
 	gsl_vector_sub(y_data, error);	//until this line, 'error' is the predicted values
 	gsl_blas_ddot(error, error, &upu);
 	gsl_matrix_scale(cov, upu/data->size2);	//Having multiplied by the variance, it's now it's the covariance.
-	if (out->uses.confidence)
+	if (out->estimation_params.uses.confidence)
 		for (i=0; i < data->size2; i++)  // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 			gsl_vector_set(out->confidence, i,
 			   two_tailify(gsl_cdf_gaussian_P(gsl_vector_get(out->parameters, i), gsl_matrix_get(cov, i, i))));
-	if (out->uses.residuals == 0) 	gsl_vector_free(error);
+	if (out->estimation_params.uses.residuals == 0) 	gsl_vector_free(error);
 	else 				out->residuals	= error;
-	if (out->uses.covariance == 0) 	gsl_matrix_free(cov);
+	if (out->estimation_params.uses.covariance == 0) 	gsl_matrix_free(cov);
 	else 				out->covariance	= cov;
 }
 
@@ -182,7 +182,8 @@ The first column is the dependent variable, and the remaining columns the indepe
 \param sigma 
 A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>. Survives the function intact. The first column refers to the constant unit vector, so it's always zero.
 
-\param uses 
+\param estimation_params
+Most notable for its \ref apop_inventory element, <tt>uses</tt>.
 If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
 
 \return
@@ -196,7 +197,7 @@ apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matr
 apop_model      *modded_ols;
     modded_ols              = apop_model_copy(apop_GLS);
     modded_ols->parameter_ct= set->data->size2;
-apop_estimate	*out	= apop_estimate_alloc(set, *modded_ols, uses, NULL);
+apop_estimate	*out	= apop_estimate_alloc(set, *modded_ols, NULL);
 gsl_vector 	*y_data		= gsl_vector_alloc(set->data->size1);
 gsl_matrix 	*temp		= gsl_matrix_calloc(set->data->size2, set->data->size1);
 gsl_vector 	*xsy 		= gsl_vector_calloc(set->data->size2);
@@ -222,9 +223,6 @@ gsl_vector_view	v 		= gsl_matrix_column(set->data, 0);
 
 \param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
-\param uses If <tt>NULL</tt>, then you get everything.  If a pointer to
-an \ref apop_inventory , then you get what you ask for. Log likelihood is
-not calculated; you always get the parameter estimates.
 \param ep    An \ref apop_estimation_params object. The only
 thing we look at is the \c destroy_data element. If this is NULL or
 \c destroy_data==0, then the entire data set is copied off, and then
@@ -291,8 +289,7 @@ int main(void){
 
 
  */
-apop_estimate * apop_estimate_OLS(apop_data *inset, apop_inventory *uses, 
-                                            apop_estimation_params *ep){
+apop_estimate * apop_estimate_OLS(apop_data *inset, apop_estimation_params *ep){
 apop_model      *modded_ols;
 apop_data       *set;
 
@@ -305,7 +302,7 @@ apop_data       *set;
     modded_ols              = apop_model_copy(apop_OLS); 
     modded_ols->parameter_ct= set->data->size2;
     prep_inventory_names(set->names);
-apop_estimate	*out		= apop_estimate_alloc(inset, *modded_ols, uses, ep);
+apop_estimate	*out		= apop_estimate_alloc(inset, *modded_ols, ep);
 gsl_vector      *y_data     = gsl_vector_alloc(set->data->size1); 
 gsl_vector      *xpy        = gsl_vector_calloc(set->data->size2);
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
@@ -505,7 +502,7 @@ char        n[1000];
 apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories){
 apop_data *dummies = apop_produce_dummies(categories, 0);
     apop_data_stack(data, dummies, 'c');
-    return apop_OLS.estimate(dummies,  uses, NULL);
+    return apop_OLS.estimate(dummies, NULL);
 }
 
 /** Good ol' \f$R^2\f$.  Let \f$Y\f$ be the dependent variable,

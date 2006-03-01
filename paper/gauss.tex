@@ -281,7 +281,7 @@ you a blank slate to fill. Thus, if you already have a data set, and
 would like to run an OLS regression and then test the joint hypothesis
 of Equation \ref{qc}, here's what you'd type:
 \begin{lstlisting}
-apop_estimate *e = apop_OLS.estimate(data, NULL, NULL);
+apop_estimate *e = apop_OLS.estimate(data, NULL);
 gsl_matrix *Q   = gsl_matrix_calloc(3,2);
 gsl_vector *c   = gsl_vector_calloc(2);
 gsl_matrix_set(Q, 0, 0, 1);

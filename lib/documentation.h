@@ -126,7 +126,7 @@ any other language with which you are familiar, such as Perl, Python,
 or even bash.
 
 Finally, there are also a few of the more typical reasons to write a
-new library. This libarary focuses on MLE methods over linear projection
+new library. This library focuses on MLE methods over linear projection
 methods that most packages tend to rely on. Because it focuses on
 likelihoods and distributions, the package provides certain procedures,
 such as random draws from a Waring distribution, which to my knowledge
@@ -354,11 +354,11 @@ Order matters in the linking list: the files a package depends on should be list
 The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_opts.verbose =1</tt> when you want feedback and <tt>apop_opts.verbose=0</tt> when you don't.
 
 \subsection vim Syntax highlighting 
-If your text editor supports syntax highlighting, there are eight types defined in the Apophenia and GSL headers which may be worth coloring.
+If your text editor supports syntax highlighting, there are a few types defined in the Apophenia and GSL headers which may be worth coloring.
 For <tt>vim</tt>, for example. add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
 \verbatim
-syn keyword     cType           gsl_matrix gsl_vector gsl_matrix_view gsl_vector_view
-syn keyword     cType           apop_name apop_model apop_inventory apop_estimate 
+syn keyword     cType           gsl_matrix gsl_vector apop_data
+syn keyword     cType           apop_name apop_model apop_inventory apop_estimate  apop_estimation_params
 \endverbatim
 Other text editors have similar files to which you can add the above types.
 */

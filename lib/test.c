@@ -16,18 +16,17 @@ int estimate_model(gsl_matrix *data, apop_model dist){
 int                     i,
                         score         = 0;
 double                  starting_pt[] = {3.2, 1.4};
-apop_estimation_params  params;
+apop_estimation_params  *params = apop_estimation_params_alloc();
 apop_inventory          inv;
 apop_estimate           *e;
-    params.method           = 1;
-    params.step_size        = 1e-1;
-    params.starting_pt      = starting_pt;
-    params.tolerance        = 1e-5;
-    params.verbose          = 1;
-    apop_inventory_set(&inv, 1);
+    params->method           = 1;
+    params->step_size        = 1e-1;
+    params->starting_pt      = starting_pt;
+    params->tolerance        = 1e-5;
+    params->verbose          = 1;
 
     //e    = apop_maximum_likelihood(data2,&inv, dist, params);
-    e    = dist.estimate(apop_matrix_to_data(data),&inv, &params);
+    e    = dist.estimate(apop_matrix_to_data(data),params);
     for (i=0; i < dist.parameter_ct; i++){
         printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters,i));
         score += (fabs(gsl_vector_get(e->parameters,i) - true_parameter[i]) >= 1e-1);

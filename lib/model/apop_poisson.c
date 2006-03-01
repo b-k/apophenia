@@ -17,14 +17,14 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <assert.h>
 static double poisson_log_likelihood(const gsl_vector *beta, void *d);
 
-static apop_estimate * poisson_estimate(apop_data * data, apop_inventory *uses, void *parameters){
-apop_estimate 	*est= apop_estimate_alloc(data,apop_poisson,uses, parameters);
+static apop_estimate * poisson_estimate(apop_data * data,  void *parameters){
+apop_estimate 	*est= apop_estimate_alloc(data,apop_poisson, parameters);
 double		mean    = apop_matrix_mean(data->data);
 	gsl_vector_set(est->parameters, 0, mean);
-	if (est->uses.log_likelihood)
+	if (est->estimation_params.uses.log_likelihood)
 		est->log_likelihood	= poisson_log_likelihood(est->parameters, data->data);
-	if (est->uses.covariance)
-		est->covariance = apop_bootstrap(data, apop_poisson, parameters);
+	if (est->estimation_params.uses.covariance)
+		    est->covariance = apop_bootstrap(data, apop_poisson, est->estimation_params);
 	return est;
 }
 
@@ -94,15 +94,8 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
 
 apop_poisson.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
   
-If you have frequency or ranking data, you probably mean to be using \ref apop_poisson_rank.
+\f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
 
-\f$G(x, a, b)     = 1/(\poisson(a) b^a)  x^{a-1} e^{-x/b}\f$
-
-\f$ln G(x, a, b)= -ln \poisson(a) - a ln b + (a-1)ln(x) + -x/b\f$
-
-\f$d ln G/ da    =  -\psi(a) - ln b + ln(x) \f$    (also, \f$d ln \poisson = \psi\f$)
-
-\f$d ln G/ db    =  -a/b - x \f$
 \ingroup models
 */
 apop_model apop_poisson = {"poisson", 1,

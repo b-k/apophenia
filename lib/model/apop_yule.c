@@ -21,8 +21,8 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-static apop_estimate * yule_estimate(apop_data * data, apop_inventory *uses, void *parameters){
-	return apop_maximum_likelihood(data, uses, apop_yule, parameters);
+static apop_estimate * yule_estimate(apop_data * data, void *parameters){
+	return apop_maximum_likelihood(data, apop_yule, parameters);
 }
 
 static double beta_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
