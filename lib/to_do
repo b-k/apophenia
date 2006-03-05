@@ -15,3 +15,9 @@ apop_output.c:207: warning: field width is not type int (arg 2)
 
 	#The next line will only work if you happen to be BK.
 	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
+
+--apop_yule_rank model
+
+
+text:
+--2SLS

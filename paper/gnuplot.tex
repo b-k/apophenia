@@ -20,7 +20,7 @@ indicate what the axes should look like, the point and line formats,
 et cetera, and a final \cinline{plot} command to do the actual work.
 
 
-\section{From arrays to plots} 
+\section{From arrays to plots} \label{gnuprint}
 The line \cinline{plot '-';} tells Gnuplot to plot the (2-D) data to come. The
 command for a 3-D plot is \cinline{splot '-'}. That means that the process
 of turning a matrix into a basic plot is trivial. Let \cinline{data} be an
@@ -34,9 +34,9 @@ fprintf("plot '-' using 1:5;\n");
 fclose(f);
 apop_data_print(data, "plot_me");
 \end{lstlisting}
-The second option to \ttind{fopen} should be either \cinline{'a'} for append or
+The second option to \cind{fopen} should be either \cinline{'a'} for append or
 \cinline{'w'} for write anew; in this case, we want to start with a clean file so we use \cinline{'w'}.
-Notice that \ttind{a\-pop\_\-data\_\-print} defaults to appending; you
+Notice that \cind{apop\_data\_print} defaults to appending; you
 would need to set \cinline{apop\_opts.output\_append = 0} to overwrite.
 \cindex{apop\_opts.output\_append}
 
@@ -62,12 +62,12 @@ subregions of 2-D plots to zoom into.
 
 \subsection{Histograms} Gnuplot, refusing to do calculations for you,
 makes making histograms a pain.  Fortunately, the GSL has you covered,
-with the \ttind{gsl\_histogram} object, which first made its appearance
+with the \cind{gsl\_histogram} object, which first made its appearance
 in Section \ref{randomnumbers}, when we needed to generate PDFs from data.
 
 It creates a set of bins, and
 then you can call \cinline{gsl\_histogram\_increment} to put
-data into the right bin. Below is the code for \ttind{apop\_plot\_\-hist\-o\-gram}. 
+data into the right bin. Below is the code for \cind{apop\_plot\_hist\-o\-gram}. 
 It allocates a histogram with
 \cinline{bin\_ct} bins, then sets its range to just past the min and max
 of the data. Then the for loop pulls data points from the vector and

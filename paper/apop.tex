@@ -34,14 +34,16 @@ and that is returned in an \cinline{apop\_estimate} structure.
 Supporting these main structures are a few more structures you would only
 have to worry about for fine tuning.  The \cinline{apop\_name} structure is
 an organized list of row and column names; functions that take an 
-\cinline{apop\_data} set try to automatically handle the names for you.  The 
-\cinline{apop\_inventory} structure lists the elements that an \cinline{apop\_estimate}
-has generated (no model produces everything). Model estimates accept
-an inventory, but all work fine if you send in NULL. Finally, the more
-elaborate models, such as MLEs, require some parameters to run, in
-which case you will need to fill out an \cinline{apop\_estimation\_params}
-form and hand it in to the model.
-
+\cinline{apop\_data} set try to automatically handle the names for you. 
+Some models, such as MLEs, require some parameters to run, in
+which case you will need to fill out an \cinline{apop\_est\-i\-ma\-tion\_params}
+form and hand it in to the model. Included in the
+\cinline{apop\_est\-i\-ma\-tion\_params} is an
+\cinline{apop\_inventory} structure that lists the elements
+that an \cinline{apop\_estimate} will generate (no model produces
+everything, and if you don't need covariances, why produce them). If you
+don't care about the estimation parameters, sending \cinline{NULL} will
+work fine for most models. 
 
 \paragraph{Data}
 The \cinline{apop\_data} structure adds a touch of metadata on top of the
@@ -59,7 +61,7 @@ typedef struct apop_data{
 \end{lstlisting}
 You can easily operate on the individual elements of the structure:
 if the \cinline{matrix\_man\-ip\-u\-late} function requires a
-\cinline{gsl\_ma\-trix}, but you are using an \cinline{a\-pop\_\-da\-ta}
+\cinline{gsl\_ma\-trix}, but you are using an \cinline{apop\_da\-ta}
 structure, then you can call
 \cinline{matrix\_man\-ip\-u\-late(my\_data-$>$data)}. Similarly to
 manipulate the names and the table of text data. The size of the text
@@ -80,7 +82,7 @@ for (r=0; r< set->catsize[0]; r++){
 \paragraph{Models}
 The \cinline{apop\_model} structure encapsulates a description of the world
 in which the data and the parameters produce observed outcomes. The
-\cinline{apop\_\-mo\-del.\-est\-i\-mate()} method takes in data and produces an \cinline{apop\_\-est\-i\-mate}. 
+\cinline{apop\_mo\-del.\-est\-i\-mate()} method takes in data and produces an \cinline{apop\_est\-i\-mate}. 
 
 \marginalia{Patterns in static}{{\sl Apophenia} is a term from the
 psychology literature referring to a tendency to see patterns in
@@ -108,7 +110,7 @@ is Normally distributed and find the mean and variance.
 
 In fact, one could even use the \cinline{apop\_model} to describe 
 non-statistical models involving optimization subject to constraints;
-see the example of section \ref{econ101}.
+see the example of Section \ref{econ101}.
 
 Because models are often distributions, and because it is not our place
 to dictate what you will do with a model, the \cinline{apop\_model} also includes a
@@ -120,13 +122,33 @@ these auxiliary functions as possible; if you are writing your own,
 there is no requirement that you provide all functions, and the \cinline{apop\_maximum\_likelihood} and \cinline{apop\_numerical\_hessian}
 functions do a good job of filling in blanks.
 
-\paragraph{Estimates}
+\paragraph{Estimates} 
+%\index{apop\_estimate@\cinlinetwo{apop\_estimate}|(textbf}
+\cindx{apop\_estimate}{(textbf}
 The \cinline{apop\_estimate} structure returns all the data one would want
 from a regression or ML estimation, including the parameters estimated,
 the variance/covariance matrix, the residuals, et cetera. The structure
 includes instances of almost all of the other structures listed here, so
-that you will have a link to the data, model, and estimation parameters
-that produced the estimate, and an inventory of what it contains.
+that you will have a link to the data, model, a copy of the
+estimation parameters that produced the estimate. Within the
+estimation parameters one will find an inventory of
+what the \cinline{apop\_est\-i\-mate} contains.
+
+The \cinline{apop\_est\-i\-mate} tries to be self-contained, including
+everything one would need to re-run an estimation. In fact, on page
+\pageref{restart}, the \cind{apop\_estimate\_restart} function will be
+able to derive a new \cinline{apop\_est\-i\-mate} using only an old
+\cinline{apop\_est\-i\-mate} as an input. 
+
+However, since we assume that the data set is a million entries, it
+would be impractical to save a copy in the \cinline{apop\_est\-i\-mate}
+just in case. Therefore, the other elements should be copied in, but
+the pointer to the data, \cinline{your\_estimate.data} is merely a spare
+pointer, pointing to the block of memory where your data is located. If
+you destroy your data using this pointer, then you have just destroyed
+your original data set, and vice versa.
+%\index{apop\_estimate@\cinlinetwo{apop\_estimate}|)textbf}
+\cindx{apop\_estimate}{)textbf}
 
 \paragraph{An example}
 Here is a program that puts the above structures to work.  It assumes a
@@ -167,8 +189,7 @@ features, but the code below will do the same thing in even fewer lines:
 \begin{lstlisting}
 #include <apophenia/headers.h>
 int main(void){
-    apop_estimate_print(apop_OLS.estimate(
-         apop_text_to_data("data",0,1), NULL));
+    apop_estimate_print(apop_OLS.estimate(apop_text_to_data("data",0,1), NULL));
     return 0; }
 \end{lstlisting}
 
@@ -214,12 +235,12 @@ printed. But be careful: if you then call \cinline{apop\_estimate\_free(est)},
 then the residuals won't get freed, either.
 
 \paragraph{Estimate parameters}
-The \ttind{apop\_estimation\_params} are the details for how an \cinline{a\-pop\_\-est\-i\-mate} should do its work; currently it is just the specifications
-for tolerances, step sizes, starting points, et cetera, for \cinline{apop\_\-max\-i\-mum\_\-like\-li\-hood}.
+The \ttind{apop\_estimation\_params} are the details for how an \cinline{apop\_est\-i\-mate} should do its work; currently it is just the specifications
+for tolerances, step sizes, starting points, et cetera, for \cinline{apop\_max\-i\-mum\_like\-li\-hood}.
 
 \section{Estimating a model}
 Here are the models that currently ship with Apophenia:\\
-\cinline{apop\_exponential} and \cinline{apop\_\-exp\-o\-nen\-tial\_\-rank}, \\
+\cinline{apop\_exponential} and \cinline{apop\_exp\-o\-nen\-tial\_rank}, \\
 \cinline{apop\_gamma} and \cinline{apop\_gamma\_rank}, \\
 \cinline{apop\_GLS}, \\
 \cinline{apop\_normal} (or \cinline{apop\_gaussian}, as you prefer), \\
@@ -237,9 +258,55 @@ of them can be estimated via a form such as
 apop_normal.estimate(data,  NULL);
 \end{lstlisting}
 
-The two optional parameters, the ones that were \cinline{NULL} above,
-are an \cinline{apop\_inv\-ent\-ory} and an
-\cinline{apop\_\-est\-i\-ma\-tion\_\-par\-a\-met\-ers}.
+The optional parameter, that was \cinline{NULL} above,
+is an \cinline{apop\_\-est\-i\-ma\-tion\_\-par\-a\-met\-ers} object; see
+the online reference for the individual models for details of the
+parameters one could set.
+
+\paragraph{Data formats} 
+For the models that are merely a distribution, the data matrix can have
+any form: 1 $\times$ 10,000, or 10,000 $\times$ 1, or 100 $\times$ 100.
+This provides maximum flexibility in how you produce the data.
+
+For the more elaborate models such as \cinline{apop\_OLS} or
+\cinline{apop\_probit}, each row of the data is assumed to be one
+observation, the first column of the data is the independent
+variable, and the remaining columns are the independent variable.
+
+\paragraph{Data formats: networks} \index{network analysis}
+Those models with variants ending in \cinline{\_rank} are typically used
+in network analysis. For example, let us say that we have a classroom
+where every student wrote down the ID number his or her best friend,
+and we tallied this list of student numbers:\\
+1 1 2 2 2 2 3 4 4 4 6 7 7 7.\\ 
+First, we would need to count how often each student appeared:\\
+2 : 4\\
+4 : 3\\
+7 : 3\\
+1 : 2\\
+3 : 1\\
+6 : 1.\\
+In SQL: \sinline{select id\_no, count(*) as ct from surveys group by id\_no
+order by ct}.
+
+The first option would be to pass this data to
+the \cinline{\_rank} version of the model, so the row above would be:\\
+4 3 3 2 1 1.\\
+Each row of the data set would be one classroom like the above, and the
+column number represents the ranking being tallied.
+
+Alternatively, one could 
+write down one entry listing the rank for each observation. There would
+be four 1s, three 2s, three 3s, et cetera:\\
+1 1 1 1 2 2 2 3 3 3 4 4 5 5.\\
+Here, order does not matter.  This data set can be passed to the
+non-\cinline{\_rank} versions, such as \cinline{apop\_zipf} to fit a
+Zipf distribution.
+
+Both data formats will produce the same output; the one you use will
+depend on the format in which the data was given to you.
+
+
 
 
 \section{Output and interrogating an estimate}
@@ -263,15 +330,15 @@ original data set is now a row name.
 But you don't just want to know that an \cinline{apop\_data} set has been
 produced, you want to {\sl see} it.  Most of the useful data types have
 a print function, and given the package-type-operation naming scheme,
-you can basically guess their names: \ttind{apop\_\-da\-ta\_\-print},
-\ttind{apop\_\-ma\-trix\_\-print}, \ttind{apop\_\-vec\-tor\_\-print}. If your
+you can basically guess their names: \cind{apop\_data\_print},
+\cind{apop\_matrix\_print}, \cind{apop\_vector\_print}. If your
 data is primarily integers, you may want to save screen real estate
-with the integer-printing versions: \ttind{apop\_data\_print\_int},
-\ttind{apop\_matrix\_print\_int}, \ttind{apop\_vector\_print\_int}.
+with the integer-printing versions: \cind{apop\_data\_print\_int},
+\cind{apop\_matrix\_print\_int}, \cind{apop\_vector\_print\_int}.
 
 These printing functions are actually three-in-one functions: you can
 dump your data to either the screen, a file, or the database. You select
-the output via the \ttind{apop\_opts} structure, which is where all of
+the output via the \cind{apop\_opts} structure, which is where all of
 Apophenia's global options are stored. 
 
 The three choices for the \index{apop\_opts!output\_type@\cinline{output\_type}}\cinline{apop\_opts.output\_type} 
@@ -314,13 +381,13 @@ apop_data_show_int(data);
 Incidentally, Apophinia includes a handful of \ind{command-line utilities} for
 situations where there is no need to write a full-blown C program. For
 all of the utilities below, you can use the \binline{-h} parameter to
-get detailed instructions (e.g., \binline {apop\_\-db\_\-to\_\-cross\-tab -h}
+get detailed instructions (e.g., \binline {apop\_db\_to\_cross\-tab -h}
 Three are simply for handling SQLite databases.
 
-\ttind{apop\_\-text\_\-to\_\-db} reads a text file into a database table,
-\ttind{apop\_\-merge\_\-dbs} will send tables from one database to
+\cind{apop\_text\_to\_db} reads a text file into a database table,
+\cind{apop\_merge\_dbs} will send tables from one database to
 another, and
-\ttind{apop\_\-db\_\-to\_\-cross\-tab} will take a table from the SQLite
+\cind{apop\_db\_to\_cross\-tab} will take a table from the SQLite
 database and produce a crosstab. All of these are simply wrappers for
 the corresponding Apophenia functions, as seen in Chapter \ref{sql}.
 

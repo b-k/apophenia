@@ -82,11 +82,12 @@ everything here (using \cinline{malloc} three times in a sentence, for
 example), since the manual is always there for you to read.  It is not
 a comprehensive tutorial: GNU C recognizes 32 key words and this book
 will only use 17 of them. For example, we won't be using bit-shifting
-operators, so I'm not going to tell you what they are here.
-If you want more details about any of the points I mention here, just 
-type \binline{C tutorial} into your favorite search engine; since this
-is C and not a proprietary, specialized language, you will have a few
-hundred hits to choose from.
+operators, so I'm not going to tell you what they are here.  If you want
+more details about any of the points I mention here, just type \binline{C
+tutorial} into your favorite search engine; since this is C and not a
+proprietary, specialized language, you will have a few hundred hits to
+choose from. The authoritative and surprisingly readable reference
+is \cite{kandr:c}; many consider it to be the definition of the language.
 
 The first part (up to Section \ref{pointers})
 is all about functions, which are mostly self-contained pieces of code,
@@ -108,8 +109,8 @@ First, C works almost entirely in the paradigm of putting commands in a
 text file and then running the text file all at once. Second, since
 C is an open standard rather than a product from a single company, there
 are hundreds of programs available to help you write the text file and
-produce the output. Your problem is not in finding them, but in choosing
-which you will use.
+produce the output. Your problem is not in finding such tools, but in
+choosing which you will use.
 
 The first element you will need is a compiler. If you are using
 a UNIX-like system, you probably already have \ttind{gcc} on your
@@ -185,7 +186,7 @@ included with IDEs. Some implementation of both is available for all
 computer types, and you are encouraged to start learning one or the other
 now. If neither suits your fancy, there are literally hundreds of others
 to choose from. That said, I will assume you have a good text editor
-(by your personal definition of `good'), and will turn to the text you
+(by your personal definition of \airq{good}), and will turn to the text you
 will be writing with it.
 \ifbook \else 
 	\input why_c.tex
@@ -287,7 +288,6 @@ requires that you declare the type of every variable before using it.
 The delcaration consists of listing the type of the variable and then
 the variable name, e.g.:
 
-
 \begin{lstlisting}
 int a_variable, counter=0;
 double stuff;
@@ -348,8 +348,8 @@ reader is encouraged to use that ordering.
 Just as you can initialize a scalar with a value at declaration, you can
 do the same with an array, e.g.:
 \begin{lstlisting}
-    float data[] = {2,4,8,16,32,64};
-    float datagrid[][] = {{2,4},{8,16},{32,64}};
+    float data[ ] = {2,4,8,16,32,64};
+    float datagrid[ ][ ] = {{2,4},{8,16},{32,64}};
 \end{lstlisting}
 Notice that you do not have to bother counting how many elements the
 array has; C is smart enough to do this for you.
@@ -422,29 +422,34 @@ topic we will return to later.  You will need to declare the type of all of
 the inputs, and since some sort of output is returned, you will need to
 declare the type of the function's output. Figure \ref{dosomething} shows a complete program.
 
+\lstset{numbers=left, numberstyle=\scshape}
 \codefig{dosomething}{A complete program}
+\lstset{numbers=none}
 
 All of the details of this program will become clear in due time, but
-right now I will focus on the for mof the functions.
+right now I will focus on the form of the functions.
 
 Every complete program will have a function named \ttind{main}, which
 is where the program will begin.  When this program runs, the computer will
-ignore the function \cinline{do\_something}, instead starting its work halfway
-down this program, where it finds the \cinline{main} function head: \cinline{int main(void)}. 
+ignore the function \cinline{do\_something}, instead starting its work
+on line eight, where it finds the \cinline{main} function head: \cinline{int main(void)}. 
 It will then start working, first reading the
 delarations of \cinline{output}, \cinline{first}, \cinline{second}, and \cinline{third}.
 
-Then it will get to the part where it is told to assign something to
-\cinline{output}, and to do that it will need to evaluate  the meaning of
-\cinline{do\_something(first, second, third)}. This is a {\em function call}, which commands the program to
-halt whatever it is doing and start working on evaluating the function \cinline{do\_something}.
-The value of \cinline{first = 7.3} will
-be plugged in to \cinline{a}, and similarly for \cinline{b} and \cinline{c}. Then
-the computer will calculate the value of \cinline{d = 3.3 + 2 = 5.3}, and
-will then return the value of \cinline{a/d} = 7.3/5.3 $\approx 1.337$ to the
-main program. The main program can now pick up where it had left off,
-by assigning 1.337 to \cinline{output}, and then printing this output to the
-screen (using the rather ornery line beginning with \cinline{printf}).
+Then, on line 13, it will get to the part where it is told to
+assign something to \cinline{output}, and to do that it will need
+to evaluate  the meaning of \cinline{do\_something(first, second,
+third)}. This is a {\em function call}, which commands the program
+to halt whatever it is doing and start working on evaluating the
+function \cinline{do\_something}. Execution jumps to the head of that
+function, on line 2.  The value of \cinline{first = 7.3}
+will be plugged in to \cinline{a}, and similarly for \cinline{b} and
+\cinline{c}. Then the computer will calculate the value of \cinline{d
+= 3.3 + 2 = 5.3}, and will then return the value of \cinline{a/d} =
+7.3/5.3 $\approx 1.337$ to the main program on line 13. The main
+program can now pick up where it had left off, by assigning 1.337 to
+\cinline{output}, and then printing this output to the screen (using
+the rather ornery line beginning with \cinline{printf}).
 
 The most important points to note here are the formats of the function
 and its call. The first line of the function itself consists of a type
@@ -575,13 +580,16 @@ something went wrong.
 
 \section{Function contents} \label{fncontents}
 
-So, what should you actually put in those wonderful functions? Well, most of the work you will be doing are
+So, what should you actually put in those wonderful functions? Most of the work you will be doing are
 simple assignments:  \index{arithmetic} \index{assignment|see{=}} \index{=}\\
 \cinline{ratio = a / b;}\\
-will find the value of \cinline{a} divided by \cinline{b} and put the value in ratio. Notice that there is a
-semicolon at the end of the line; you will need a semicolon at the end of everything but the few
-exceptions I mention below. All of the usual operations work: \cinline{+ - / *}, and so do some of the more
-obscure ones, like \cinline{a \% b} for $a$ mod $b$. \index{mod|see{\%}} \index{\%}
+will find the value of \cinline{a} divided by \cinline{b} and put the
+value in \cinline{ratio}. Notice that there is a semicolon at the end of
+the line; you will need a semicolon at the end of everything but the few
+exceptions I mention below.\footnote{The number one cause of compiler
+complaints like ``line 41: \ind{syntax error}'' is a missing semicolon on line 40.} All of the usual operations work: \cinline{+
+- / *}, and so do some of the more obscure ones, like \cinline{a \% b}
+for $a$ mod $b$. \index{mod|see{\%}} \index{\%}
 
 \subsection{Incrementing}\index{incrementing} It is incredibly common to have an operation of the form \cinline{a = a + b;}---so
 common that C has a special syntax for it: \cinline{a += b;} This is slightly less readable, but involves less
@@ -613,31 +621,32 @@ Another set of operators are comparison and logical operators, such as \cinline{
 comparison is true or false. Notice that last one, comparison for equality, involves {\sl two} equals
 signs in a row. One equals sign \cinline{(a = b)} will assign the value of \cinline{b} to the variable \cinline{a}, which is not what
 you had intended. gcc will warn you in most of the cases where you are
-probably using the wrong one, and you should heed its warnings. `Greater than or equal to' is \cinline{(a $>=$ b)}, and `less than or equal to' is \cinline{(a $<=$ b)}.
+probably using the wrong one, and you should heed its warnings. \airq{Greater than or equal to} is \cinline{(a $>=$ b)}, and \airq{less than or equal to} is \cinline{(a $<=$ b)}.
 
-Logical operations have similar definitions: \ttindex{\&\&} \ttindex{"|"|} \index{and|see{\&\&}}
+Logical operations have similar definitions: \cindex{\&\&} \cindex{"|"|} \index{and|see{\&\&}}
 \index{or|see{$"|"|$}} \index{not|see{"!}} \index{"!}
-`And' is \cinline{(a \&\& b)}; `or' is \cinline{(a $||$ b)}; `not \cinline{a}' is \cinline{(!a)}.
-The `and' and `or' operations have a convenient feature: if \cinline{a} is sufficient to determine whether
+\airq{And} is \cinline{(a \&\& b)}; \airq{or} is \cinline{(a $||$ b)}; \airq{not \cinline{a}} is \cinline{(!a)}.
+The \cinline{\&\&} and \cinline{$"|"|$} operations have a convenient feature: if \cinline{a} is sufficient to determine whether
 the entire expression is true, then it won't bother with \cinline{b} at all. For example:
 \begin{lstlisting}
 #include <math.h>    //sqrt
 ((a < 0) || (sqrt(a) < 3))
 \end{lstlisting}
-will always work: if \cinline{a} is less than zero, then the evaluation of the expression is done (it is true),
-so the square root won't have to be calculated, avoiding any
-square-root-of-a-negative error. [Notice that the \cinline{sqrt()} function
-isn't a fundamental part of C---you need to include an external header to get the declaration; see below.]
+will always work: if \cinline{a} is less than zero, then the evaluation
+of the expression is done (it is true), so the square root won't have
+to be calculated, avoiding any square-root-of-a-negative error. [Notice
+that the \cinline{sqrt()} function isn't a fundamental part of C---you
+need to include an external header to get the declaration; see below.]
 
 Why all the parentheses? First, parentheses indicate the order of
 operations, as they do in pencil-and-paper math. Since all comparisons
-evaluate to a zero or a one, both \cinline{(\~(a $>$ b) $||$ (c $>$ d) )}
+evaluate to a zero or a one, both \cinline{(~(a $>$ b) $||$ (c $>$ d) )}
 and \cinline{(a $>$ (b $||$ c) $>$ d)} make sense to C. You probably meant
 the first, but unless you have the order-of-operations table memorized,
-you won't be sure which of the two C thinks you mean by\\ \cinline{(a $>$
+you won't be sure which of the two C thinks you mean by \cinline{(a $>$
 b $||$ c $>$ d)}.\footnote{The order-of-operations table is available
 online, but the reader is encouraged to not look it up. Most
-people remember only that multiplication/division comes before
+people remember only the basics like how multiplication/division comes before
 addition/subtraction; if you rely on the order-of-operations table
 for any other ordering, then you will merely be sending future readers
 (perhaps yourself) to check the table.}
@@ -673,7 +682,7 @@ evaluated is always in parentheses following the if statement, and there should 
 the part that will be evaluated if the condition is true, and around the part that will be evaluated if
 the condition is false. You can exclude the curly braces if they surround exactly one line, but this
 will at some point confuse you and cause you to regret leaving them out.
-You can exclude the `else' part if you don't need it (which is common, and much less likely to confuse you).
+You can exclude the \airq{else} part if you don't need it (which is common, and much less likely to confuse you).
 
 Also, notice the semicolons, which come after every line in the program that is not flow control. The \cinline{if (a $>$ 0)} statement doesn't do anything by itself, just direct flow, so there must be no semicolon following
 it.\footnote{If you do put a semicolon after an \cinline{if} statement
@@ -683,7 +692,7 @@ compiler will warn you of this.}
 
 
 \subsection{Loops} There are three types of loops, and they are slightly redundant. The simplest is a while
-loop. Here is a while loop to print `hello' on the screen five times: \index{loops} \ttindex{while}
+loop. Here is a while loop to print \airq{hello} on the screen five times: \index{loops} \ttindex{while}
 
 \begin{lstlisting}
 #include <stdio.h>
@@ -747,7 +756,7 @@ to you, a note to self at the head of each function will pay immense
 dividends.
 
 
-The stars and slashes are also useful for `commenting out' code. If
+The stars and slashes are also useful for \vocab{commenting out} code. If
 you would
 like to temporarily remove a few lines from your program to see what
 would
@@ -775,10 +784,11 @@ this_is_code;    //Everything on a line after two slashes
                  //Use this form for short comments.
 \end{verbatim}
 This is good for commenting individual lines of code that deserve a
-note.\footnote{The two-slash comment style is actually not C, it is
-C$^{++}$. But it is so useful that gcc accepts it without so much as a
-warning. If you are not using gcc, you may have to use the \cinline{/*}
---- \cinline{*/} format for comments everywhere.}\index{commenting code|)}
+note.\footnote{The two-slash comment style has only officially been
+a part of C since 1999, when it was borrowed from C$^{++}$. Some
+behind-the-times compilers may still not recognize it, in which case
+you may have to use the \cinline{/*} --- \cinline{*/} format for comments
+everywhere.}\index{commenting code|)}
 
 \subsection{Type casting}\label{casting} \index{casting|see{type casting}} \index{type casting|(} 
 This section covers a few details of the type system, and what happens
@@ -796,37 +806,41 @@ First, since \cinline{num} and \cinline{den} are both integers, the operation
 \cinline{num / den} will also produce an integer: the actual ratio with the
 fractional part dropped.
 
-Then, the compiler will assign this to \cinline{ratio}. This is a switch in type: we just got an integer (3)
-and are assigning it to a floating-point variable. Clearly, this assignment is trivial and not a problem.
-But going the other way will produce problems, since everything after the decimal point will be
-dropped.
-Also, the range of \cinline{float}s, \cinline{double}s, and \cinline{int}s don't match, so you may get unpredictable
-results with large numbers even when there is nothing after the decimal point.
+Then, the compiler will assign this to \cinline{ratio}. This is a
+switch in type: we just got an integer (3) and are assigning it to
+a floating-point variable. Clearly, this assignment is trivial and
+not a problem (\cinline{3} $\Rightarrow$ \cinline{3.0}).  But going from
+float to int could produce problems, since everything after the decimal point
+would be dropped.  Also, the range of \cinline{float}s, \cinline{double}s,
+and \cinline{int}s do not necessarily match, so you may get unpredictable
+results with large numbers even when there is nothing after the decimal
+point.
 
-
-If, despite all these warnings, you are confident that you want to assign a variable of one type
-to a variable of another, then you can do so by putting the type to
-re-cast the variable into in parentheses before the variable name. For
-example, \cinline{(int) ratio} will cast a floating-point number to an integer. 
-If you want to assign a floating-point real to an integer for some reason, then you should explicitly tell
-the compiler that you meant to do this by making the cast yourself: using the declarations above, 
-you could assign \cinline{num = (int) ratio;}, for example. 
+If, despite all these warnings, you are confident that you want to
+assign a variable of one type to a variable of another, then you can
+do so by putting the type to re-cast the variable into in parentheses
+before the variable name. For example, \cinline{(int) ratio} will
+cast a floating-point number to an integer.  If you want to assign
+a floating-point real to an integer for some reason, then you should
+explicitly tell the compiler that you meant to do this by making the cast
+yourself: using the declarations above, you could assign \cinline{num =
+(int) ratio;}, for example.
 
 This solves the division-by-integers problem: \\
-\cinline{ratio = (float) num / (float) den;}\\
-does the division of two real numbers, which will produce a real output: \cinline{ratio} will equal 3.5, as we
-had expected.
+\cinline{ratio = (float) num / den;}\\
+does the division of a real by an integer, which will produce a real
+number as output: \cinline{ratio} will equal 3.5, as we had expected.
 
 C parses \cinline{2} as an \cinline{int}, while it reads \cinline{2.0}
 as a \cinline{float}. This provides a relatively painless way to solve
-the problem that \cinline{7/2=3}: just remember to always include
-a decimal point in your constants, because \cinline{7/2.0 = 3.5},
-as intended (i.e., \cinline{(int)/(float) == (float)}). Get into this
+the problem that \cinline{7/2 == 3}: just remember to always include
+a decimal point in your constants, because \cinline{7./2. == 3.5},
+as intended (i.e., \cinline{(float)/(float) == (float)}). Get into this
 habit now, because unintended roundoff is a hard-to-debug error.
 
 One use for the two types of division is to check whether a variable is evenly divisible by a number. Here
 is a function that does so:\footnote{In practice, you can check evenness
-with \cinline{GSL\_IS\_EVEN} or \cinline{GSL\_IS\_ODD}:\\ 
+with \cind{GSL\_IS\_EVEN} or \cind{GSL\_IS\_ODD}:\\ 
 \cinline{\#include $<$gsl/gsl\_math.h$>$}\\
 if (GSL\_IS\_EVEN(an\_integer))\\
 \phantom{hello.}\cinline{do\_something();}
@@ -835,10 +849,17 @@ if (GSL\_IS\_EVEN(an\_integer))\\
 \begin{lstlisting}
 int is_even(int number){
 /* Return one if number is even, zero if number is odd.  */
-   if ( counter/2 == (float) counter / 2.0 )
+   if ( number/2 == number / 2.0 )
         return 1;
    else 
         return 0;
+}
+\end{lstlisting}
+Or equivalently (since a boolean expression evaluates to one or zero):
+\begin{lstlisting}
+int is_even(int number){
+/* Return one if number is even, zero if number is odd.  */
+   return ( number/2 == number / 2.0 );
 }
 \end{lstlisting}
 
@@ -896,10 +917,11 @@ the computer.  \index{frames|)}
 \paragraph{Scope}	\label{scope}
 
 When one function is running, only the variables in that frame are
-`visible', and all of the variables in the rest of the program are 
-dormant.  This is a good thing, since you certainly don't want to have
-to always bear in mind the current state of  all the variables in your program,
-the GSL, the standard library, and who knows what else.
+visible: all of the variables in the rest of the program are 
+dormant and inaccessible.  This is a good thing, since you 
+don't want to have to always bear in mind the current state of all the
+variables in your program, the GSL, the standard library, and who knows
+what else.
 
 A variable's {\sl scope} is the set of functions that can see the
 variable. A variable declared inside a function is only visible inside
@@ -907,11 +929,7 @@ that function.  If a variable is declared at the top of a file, then
 that variable is \airq{global} to the file, and any function in that
 file can see that variable. If declared in a header file (see below),
 then any function in a file which \cinline{\#include}s that header  can see
-the variable.\footnote{The curly braces, \cinline{\{} and \cinline{\}}, can be
-used to define a smaller level of scope: variables defined just after a
-\cinline{\{} have scope until the ending \cinline{\}} and no further. This is
-generally bad form: your code will be more readable if you just move
-that subsection to a separate file.}
+the variable.
 
 The strategy behind deciding on the scope of a variable is
 to keep it as small as possible. If only one function uses a variable,
@@ -928,7 +946,7 @@ you are familiar with object-oriented languages, note that C can effect
 much of the encapsulation of those languages using separate files. Think
 of one file as an object: all variables declared inside the file are
 private, and all those declared in the header file are public. Similarly,
-only those functions which have a declaration in the header file can be
+only those functions that have a declaration in the header file can be
 called outside of the file.}
 
 There is often the temptation to declare every variable as global, and
@@ -994,25 +1012,23 @@ globe= 4
 This may make global variables tempting to you, but resist. Section \ref{pointers} will give a better
 alternative.
 
-\section{Compiling and running}\label{compilation}
+\section{Compiling and running}\label{compilation} \index{compilation} 
 
 Once you have written a complete program, it would be nice to run the
 thing. You do so by processing the text you have just written with a
 preprocessor, a compiler, and a linker. These subprograms are all rolled
 into one program, typically just called \airq{the compiler}, and the entire
-process is colloquially referred to as \airq{compilation}. The compiler I use
+process is colloquially referred to as \vocab{compilation}. The compiler I use
 throughout this book is the GCC, the GNU Compiler Collection, which will
 compile C as well as a few other languages. I will use \binline{gcc} (herein
 lower case to refer to the command you will be typing) because it is probably
 the most universally available program in the world today---and it is free.
 You can get it using any of the package managers described at the head
-of this chapter. If you are using an IDE front-end to \binline{gcc},
+of this chapter. If you are using an IDE front end to \binline{gcc},
 then you have buttons to click instead of commands to type, but you will
-still need to have a firm grasp of what \binline{gcc} is doing under the
-hood.
+still need to have a firm grasp of what \binline{gcc} is doing when you
+click the \airq{compile} button.
 
-
-\subsection{Compiling}	\index{compilation} 
 
 \paragraph{A brief conceptual overview} The best thing about C is that most
 of the functions you may need to write have already been written. The
@@ -1024,36 +1040,33 @@ includes a set of black-box functions to handle matrices.
 As discussed above,
 that file will include declarations (of types, variables, and functions)
 and the definition of the functions themselves. The custom is to separate
-the two: all of the declarations will be put in a {\sl \ind{header file}}
+the two: all of the declarations will be put in a \vocab{header file}
 named \binline{gsl\_matrix.h}, and all of the functions will be translated
-into a machine-readable {\sl \ind{object file}}, \binline{gsl\_matrix.o}.
+into a machine-readable \vocab{object file}, \binline{gsl\_matrix.o}.
 
 Then, you the user will include the header file in your program. You can then
 use the functions, types, and variables defined therein with abandon.
-You will then be able to compile your program into its own object file,
-and all of the consistency-checking will come out OK, because all of your
-terms will have been properly defined either in your program or in the
+When you compile your program into its own object file,
+all of the consistency-checking will come out OK, because all of your
+terms will have been properly declared either in your program or in the
 header file. Finally, the program will link together your object file,
 which gives machine-code for your own functions, to \binline{gsl\_matrix.o},
 which gives machine code for the matrix functions. After everything is
-tied together, you will have an executable program which the machine can
+tied together, you will have an executable program that the machine can
 understand and run.
 
 Notice that you did not need \binline{gsl\_matrix.c} to make this work;
-on many systems, the source code for the libraries you call
-won't be anywhere on the system. All you need are the 
-header files to write and compile your code, and the
-object files to link to.
+on many systems, the source code for the libraries you call won't be
+anywhere on the system. All you need are the header files to write and
+compile your code and the object files to link to.
 
 
 
 \paragraph{What to type}
 The typical method of compiling is:
-
 \begin{verbatim}
 gcc  -g -Wall file1.c file2.c -lgsl -o run_me
 \end{verbatim}
-
 The program is \binline{gcc}; it includes code that you wrote in
 \binline{file1.c} and \binline{file2.c}; it includes the library
 (\binline{-l}) \binline{gsl} (which we will use throughout this book);
@@ -1068,7 +1081,7 @@ recognizes errors with uncanny precision.
 
 This is a lot to type, so there is a separate program, \binline{make},
 which is designed to facilitate compiling. After setting up a Makefile
-to describe your project, you will be able to type in \binline{make} instead
+to describe your project, you will be able to simply type \binline{make} instead
 of the mess above. See Section \ref{make} for details.
 
 \paragraph{The output} One of two things will happen. The most likely is
@@ -1085,20 +1098,19 @@ through the errors returned.
 The other possibility is that there were no errors at all. The compiler
 will not give you positive feedback in this case, instead simply returning
 you to the command prompt. But if you then look in your directory
-(with \binline{ls}), then you will see that you now have your original
-\binline{.c} files, but also new files with a \binline{.o} ending and the
-\binline{run\_me} executable program. You can type \binline{./run\_me}
-and see your program work. [Unless you are a star programmer, it will
-still somehow fail. To continue fixing it, you will need to run the
-program under the debugger; see section \ref{debug}.]
+(with the command \binline{ls} or your favorite GUI file browser),
+then you will see that you now have your original \binline{.c} files,
+but also new files with a \binline{.o} ending and the \binline{run\_me}
+executable program. You can type \binline{./run\_me} and see your program
+work. [Unless you are a star programmer, it will still somehow fail. To
+continue fixing it, you will need to run the program under the debugger;
+see section \ref{debug}.]
 
 \paragraph{The preprocessing step} \label{headers}\index{preprocessor|(}
 As noted above, \binline{gcc} takes your code through three steps.
 The first step is preprocessing,
 which does nothing but take text you wrote and convert it into more text.
-
-\ifbook 
-\index{header file!aggregation}
+\ifbook \index{header file!aggregation} 
 \marginalia{Header aggregation}{The Apophenia library provides a convenience header that aggregates
 almost every header you will likely be using. By placing\par
 \cinline{\#include $<$apophenia/headers.h$>$}\par
@@ -1112,7 +1124,7 @@ about an undeclared function, then its header is evidently not included in
 \cinline{apophenia/\-head\-ers.h}.  Based upon all the notes about
 carefully-defined scope in this chapter, such an undiscriminating
 header is bad style, but it is awfully convenient, and will save you
-time hunting for standard headers.  }
+time hunting for standard headers.}
 
 \fi
 
@@ -1126,21 +1138,23 @@ verbatim, into \binline{main.c} at that point in the file. You will
 never see the expansion (unless you run \binline{gcc} with the \binline{-E} flag); the
 preprocessor just passes the expanded code to the compiler.
 
-The most common use for this feature (and I encourage the reader to
-only use it for this purpose) is to include declarations of variables
-and functions. The custom is to put all of the delcarations for
-\binline{some\_functions.c} in a {\sl \ind{header file}}, to be named
-\binline{some\_functions.h}.  The motivation for this will be discussed
-further in the context of the linking step below.
+The most common use for this feature is to include declarations of variables
+and functions.\footnote{If you allocate storage (with an innocuous-looking
+line like \cinline{int x = 7;} instead of \cinline{int x;}), or define
+functions rather than just declare them, then you will be setting
+yourself up for odd errors in the linking step.} The custom is to put all
+of the delcarations for \binline{some\_functions.c} in a {\sl \ind{header
+file}}, to be named \binline{some\_functions.h}.  The motivation for
+this will be discussed further in the context of the linking step below.
 
 All libraries that you will download from elsewhere will include a header file.
 To include it, you will need to put a line like this at the top of your C file:
 \cinline{\#include <gsl/gsl\_matrix.h>}\\
 The angle-brackets tell the compiler that instead of looking in the
 current directory, as it did for \binline{"a\_file.h"} above, it should
-look in the standard library path. Generally, use \binline{"my\_file.h"} for
-header files you have written and \cinline{<their\_file.h>} for header files installed elsewhere
-in your system.  \index{preprocessor|)}
+look in the standard library path. Use \binline{"my\_file.h"} for header
+files you have written and \cinline{<their\_file.h>} for header files
+installed elsewhere in your system.  \index{preprocessor|)}
 
 \paragraph{The compilation step} 
 The \ind{compilation}
@@ -1190,9 +1204,9 @@ code, then the linker should check the GSL library for the definition.
 \index{include@\cinline{include}|see{\cinline{{\#include}}}}
 \paragraph{Finding files to include}
 There are a wealth of pre-compiled object files in existence already,
-some available online and some on your hard drive right now.  The first
-part of the art of C programming is knowing what files are out there that have
-functions that will facilitate your work. There
+some available online and some on your hard drive right now.  An
+important part of the art of C programming is knowing what files are
+out there that have functions that will facilitate your work. There
 are a few sources of information that will be of primary utility to you
 (besides this book, of course).
 
@@ -1200,12 +1214,14 @@ The first is the standard library. Being standard, this was
 installed on your computer along with the compiler. You may have the
 documentation on your hard drive: try \cinline{info glibc}. If this doesn't
 work, a search for GNU C library documentation should find you a copy
-online. It is worth giving the documentation a skim so you know which wheels not to reinvent.
+online. It is worth giving the documentation a skim so you know which
+wheels to not reinvent.
 
-The second is the GNU/UNESCO website, which holds a huge array
-of libraries, all of which are free for download. Go to \url{http://www.gnu.org}, click the `download' link, and then the `software
-libraries' link. You will find a library for almost anything you would
-ever need.
+The second is the GNU/UNESCO website, which holds a huge
+array of libraries, all of which are free for download. Go to
+\url{http://www.gnu.org}, click the \airq{download} link, and then
+the \airq{software libraries} link. You will find a library for almost
+anything you would ever need.
 
 The second part of the art of C programming is taking into account that
 the functions you write will be useful for later on. Your work will often
@@ -1302,7 +1318,8 @@ we send in a copy of a finger pointing to the variable.
 In Figure \ref{fingerfig}, the Before picture shows the situation
 before the function call, in the main program: there is a pointer to an
 address in memory, holding the number six. Then, in the During picture,
-a function is called using a form like \cinline{fn\_call(pointer)}.
+a function is called with the pointer as an argument, via a form like
+\cinline{fn\_call(pointer)}.
 There are now
 two fingers, original and copy, pointing to the same spot, but the
 function only knows about the copy.  But given its copy of a finger, it
@@ -1314,12 +1331,15 @@ to) will now be pointing to a modified value.  Figure \ref{callbyref}
 gives a sample program which does this.
 
 \begin{figure}
+\hskip -1cm
 \scalebox{0.7}{\includegraphics{finger.ps}}
 \caption{Before, during, and after a function call that modifies a pointed-to value}
 \label{fingerfig}
 \end{figure}
 
+\lstset{numbers=left, numberstyle=\scshape}
 \codefig{callbyref}{Call-by-reference}
+\lstset{numbers=none}
 
 You can see that the code has stars everywhere. These
 indicate that there are pointers involved, but their use is a bit inconsistent.
@@ -1339,24 +1359,28 @@ will write \cinline{int * a, b} (allocate a pointer named \cinline{a}
 and an \cinline{int} named \cinline{b}) when you meant \cinline{int *a, *b} (allocate two pointers). The star also
 still means multiply; if you think there is ambiguity, use parentheses.
 
-Returning to the code in Figure \ref{callbyref}, in the \cinline{main} function, \cinline{a} is a pointer,
-the address of an integer, as indicated by the star in its
-declaration. To print the integer being pointed to, we use \cinline{*a}. 
+Returning to the code in Figure \ref{callbyref}, in the \cinline{main}
+function, \cinline{a} is a pointer, the address of an integer, as
+indicated by the star in its declaration on line 10. To print the integer
+being pointed to, as on line 13, we use \cinline{*a}.
 
-When we declare \cinline{int * a\_c} in the definition of the doubling
-function, then this means that the variable \cinline{*a\_c} will be an
+When we declare \cinline{int * a\_c} in the header of the doubling
+function (line 4), then this means that the variable \cinline{*a\_c} will be an
 integer, so by inference, \cinline{a\_c} by itself is a pointer to an
 integer.\footnote{Referring to the number the pointer points to is
 known as {\sl dereferencing}.\index{dereferencing} I will avoid using the term, but you will see it frequently in error messages.}
 
-Now for the call-by-reference trick.
-When the call to \cinline{doubling} is made, we pass \cinline{a}, which is a
-pointer, not an integer. The computer builds itself a frame, using a copy
-of \cinline{a}---that is, a copy of the address of an integer. Both \cinline{a} (in the \cinline{main} frame) 
-and \cinline{a\_c} (in the \cinline{doubling} frame) now point to the same piece of data.
-The line \cinline{*a\_c = b\_c * 2} tells the computer to go to the address \cinline{a\_c}, and put into that slot of
-memory the value \cinline{b\_c * 2}. When the frame is destroyed (and \cinline{a\_c} goes with it), this won't be undone: that slot of memory will still
-hold the value \cinline{b\_c * 2}.  So the output to this program would be:
+Now for the call-by-reference trick.  When the call to \cinline{doubling}
+is made on line 12, we pass \cinline{a}, which is a pointer, not
+an integer. The computer builds itself a frame, using a copy of
+\cinline{a}---that is, a copy of the address of an integer. Both
+\cinline{a} (in the \cinline{main} frame) and \cinline{a\_c} (in the
+\cinline{doubling} frame) now point to the same piece of data.  Line 5,
+\cinline{*a\_c = b\_c * 2}, tells the computer to go to the address
+\cinline{a\_c}, and put into that slot of memory the value \cinline{b\_c
+* 2}. When the frame is destroyed (and \cinline{a\_c} goes with it),
+this won't be undone: that slot of memory will still hold the value
+\cinline{b\_c * 2}.  So the output to this program would be: 
 \begin{verbatim} 
 doubling() returns: 4
 a now holds: 4
@@ -1364,7 +1388,7 @@ a now holds: 4
 because \cinline{*a}---the integer \cinline{a} points to---has changed as a
 side-effect to calling the \cinline{doubling} function.
 
-\paragraph{Dealing with memory} Now for the initialization of the pointer:\\ \index{declaration!of pointers}
+\paragraph{Dealing with memory} Now for the initialization of the pointer on line 10:\\ \index{declaration!of pointers}
 \index{pointers!declaration}
 \cinline{int *a = malloc(sizeof(int));}.\\
 Malloc is short for `memory allocate'. Just as we have no idea what
@@ -1394,7 +1418,7 @@ the pointer, not the value the pointer holds. One convenient function which part
 #include <malloc.h>  //calloc
     int *a = calloc(1, sizeof(int));
 \end{lstlisting}
-which you can read as `clear and allocate': it will run \cinline{malloc}
+which you can read as \airq{clear and allocate}: it will run \cinline{malloc}
 and return the appropriate address, and will also set everything in
 that space to zero, running \cinline{*a = 0} for you. Notice the syntax,
 which requires that we explicitly state that we want one space, the
@@ -1438,104 +1462,19 @@ valuable. This is a {\sl segmentation fault}, since you attempted to refer
 to memory outside of the segment that had been allocated for your program.
 
 A segfault means that you mis-coded something, and 
-is by far the clearest way for the computer to tell you so. Some higher level
-programs brag about how they never segfault: when you refer to something
+is by far the clearest way for the computer to tell you so. Some
+programming languages
+brag about how they never segfault: when you refer to something
 outside of what you had expected, they will catch it and usually just
 allocate that space for you, basically running \cinline{calloc} behind your
 back. Then the program will give you an answer which may or may not look
 correct, and which you may or may not notice before you present to the
 grantmaking board. 
 
-\section{The debugger} \index{debugging|(} \index{gdb@\cinline{gdb}|see{debugging}} \label{debug}
-Which brings us to the debugger. The debugger will run the program for
-you, taking notes on the variables therein. When your program segfaults,
-the debugger will let you look at where you
-are in the program and see the value of every variable declared at that
-spot. This beats inserting little \cinline{print} statements all over your
-code by a mile [1.6 km].
-
-To debug the program \cinline{run\_me} under the debugger, type \cinline{gdb
-run\_me} at the command line.  You will be given the gdb prompt.
-
-If you know the program will segfault, then at this point, just run the program
-by typing \cinline{run}, and wait for it to break. When it does, you will be
-returned to gdb's prompt, so you can interrogate the program.
-
-
-\marginalia{Visual shells}{There are a number of graphical shells built
-around gdb, which list local variables and let you click on parts of
-your code to set breakpoints. Some are stand-alone progams like \binline{ddd} and others are integrated into IDEs. I won't discuss their operation here, since 
-it is just like that described above for the command-line debugger, except
-it involves using the mouse more. There is currently a list of graphical
-front-ends available at \url{http://sources.redhat.com/gdb/links/}.
-\index{debugging|)}}
-
-
-The first thing you will want to know is where you are in the program. You
-can do this with the \cinline{backtrace} command, which you can abbreviate to
-either \cinline{bt} or \cinline{where}. It will show you the stack of function
-calls that were pending when the program stopped.  The first, frame
-\#0, is always \cinline{main}, where the program started. If {\tt
-main} called another function, then that will be frame \#1, et cetera.
-Often, your program will break somewhere in the internals of a piece of
-code you did not write, such as in a call to \cinline{mallopt}. Ignore those:
-you did not find a bug in \cinline{mallopt}. Find the last line that is in
-the code that you wrote.
-
-At this point, the best thing to do is look at a listing of your code
-in another window and look at the line the debugger pointed out. Often,
-knowing which line is wrong is enough to make the error painfully obvious.
-
-If the error is still not evident, then go back to the debugger and look
-at the variables. You need to be aware of which frame you are working in,
-so you know which set of variables you have at your disposal.  You
-will default to the last frame in the stack; to change to frame number
-three, give the command \cinline{frame 3} (\cinline{f 3} for short).
-
-Once you are in the frame you want, get information about the variables. You can
-get a list of the local variables using \cinline{info locals}. You can get
-information about the arguments to the function using \cinline{info args}
-(though this information is already in the frame description). Or, you
-can print any variable that you think may be in the frame using {\tt
-print var\_name}, or more briefly, \cinline{p var\_name}. 
-
-GDB has its own syntax for viewing the contents of an array. If you
-would
-like to see the first five elements of the array \cinline{items}, then use:
-\cinline{p *items@5}.
-
-Sometimes, you will swear up and down that the line the program segfaulted on is
-entirely correct; in that case, the memory had probably been corrupted earlier and
-you will need to use \cinline{valgrind} (see page \pageref{valgrind}) to find the error.
-
-\paragraph{Breaking the program} If your program is doing things wrong but is not kind
-enough to segfault, then you will need to find places to halt the program
-yourself. Do this with the \cinline{break} command. For a program with only
-one file of code, simply give a line number: \cinline{break 35}. With many
-files, you may need to specify a file name: \cinline{break file2.c:35}. You
-may also want the program to only break under certain conditons, such
-as when an iterator reaches 10,000. GDB lets you do this by specifying
-conditions: \cinline{break 35 if counter$>$10000}.
-
-All breakpoints are given a number, which can be listed by giving the
-plain command \cinline{break}. You can delete breakpoint number three with
-the command \cinline{del 3}.
-
-Once you have set the breakpoints, \cinline{run} will run the program until it
-reaches a breakpoint, and then you can apply the interrogation techniques
-above. You may want to carefully step through from there; \cinline{s}
-will step to the next line, which could mean backing up in the current
-function or going to a subfunction. Alternatively, \cinline{next} or {\tt
-n} will step through the function (which may involve backtracking) but
-will run without stopping in any subframes which may be created
-(i.e., if subfunctions are called).  \cinline{until} or \cinline{u} will keep
-going until you get to the next line in the function, so the debugger
-will run through subfunctions and loops until forward progress is made
-in the function.  Finally, \cinline{c} will continue along until the next
-breakpoint or the end of the program. This is also a good place to
-point out that just hitting $<$enter$>$ will repeat the last command,
-so you won't have to keep hitting \cinline{n} to step through many lines.
-
+If you are hacking along to this chapter on your PC, you may already
+have experienced a few segfaults. If so, skip to 
+Section \ref{debug} on the debugger, for techniques for spotting your
+errors.
 
 \section{Arrays and other pointer tricks} \label{for_loops} \index{array}
 
@@ -1585,9 +1524,30 @@ an ampersand will never appear in a declaration or a function header.
 \paragraph{Scope issues}\index{scope} As you will recall, a copy of a variable is sent to a function, not the variable
 itself, and this created problems for changing the variable in the main program. Also, when the function
 leaves, all of the variables declared in the function are destroyed,
-but changes made elsewhere in memory over the course of the function
-are not undone. Here is a function that gets all of this wrong, whose overall hope is to subtract twenty
-from the contents of \cinline{an\_array}. It would be called with \cinline{things\_not\_to\_do(an\_array)}.
+but changes made elsewhere in memory over the course of the function are
+not undone. 
+
+\begin{figure}
+\hskip -1cm
+\scalebox{0.7}{\includegraphics{pointer_faux_pas.ps}}
+\caption{How to mess up your pointers}
+\label{fauxpas}
+\end{figure}
+
+Figure \ref{fauxpas} shows two errors in pointer handling. In the first
+step, a function is called with a pointer, as in Figure
+\ref{fingerfig}. Then, the function frees what the copy of a pointer
+is pointing to---and thus frees what the original finger was pointing
+to. Then, it allocates new space, moving the copy of a finger to point to
+a new location. But when the function finishes, depicted in the final
+step, the copy of a pointer is destroyed, so there is no way to refer to
+the \cinline{malloc}ed space in the main program. We now have a pointer
+with no space and a space with no pointer.
+
+Here is a function that commits such faux pas,
+whose overall hope is to (awkwardly) subtract twenty from
+the contents of \cinline{an\_array}. It would be called with
+\cinline{things\_not\_to\_do(an\_array)}.  
 \begin{lstlisting}
 void things_not_to_do(int *an_array){
 int *another_array, i;
@@ -1624,8 +1584,8 @@ void still_inefficient_but_works(int **an_array){
     another_array = malloc(1000 * sizeof(int));
     for (i=0; i<1000; i++)
         another_array[i] = *an_array[i] - 20;
-
     free(*an_array);
+
     *an_array = malloc(1000 * sizeof(int));
     for (i=0; i<1000; i++)
         *an_array[i] = another_array[i];
@@ -1633,14 +1593,19 @@ void still_inefficient_but_works(int **an_array){
 }
 \end{lstlisting}
 
-The memory leak with \cinline{another\_array} was alleviated by simply calling \cinline{free()} at the end of the
-function. The problem with changing the value of the pointer was solved by sending the function a pointer
-to the pointer. This is exactly analagous to the previous problem: we wanted to change the value of an
-integer, so we sent the function a copy of a pointer to the integer; here we want to change the value of a
-pointer, so we send in a copy of a pointer to the pointer. Notice also that once we give \cinline{*an\_array}
-a new value, we have lost the means of referring to the area of memory pointed to by the original value of
-\cinline{*an\_array}. This is another memory leak, which we prevent by \cinline{free}ing \cinline{*an\_array} before
-changing it.
+The memory leak with \cinline{another\_array} was alleviated by simply
+calling \cinline{free()} at the end of the function. The problem with
+changing the value of the pointer was solved by sending the function a
+pointer to the pointer. This is exactly analagous to the previous problem:
+we wanted to change the value of an integer, so we sent the function a
+copy of a pointer to the integer; here we want to change the value of a
+pointer, so we send in a copy of a pointer to the pointer. One could
+redraw Figure \ref{fingerfig} with a pointer in the boxes instead of
+numbers. Notice also
+that once we give \cinline{*an\_array} a new value, we have lost the
+means of referring to the area of memory pointed to by the original
+value of \cinline{*an\_array}. This is another memory leak, which we
+prevent by \cinline{free}ing \cinline{*an\_array} before changing it.
 
 Here are two equivalent alternatives for calling the function:
 \begin{lstlisting}
@@ -1719,7 +1684,7 @@ As with arrays of integers, we can specify a list to put in to the array when we
 not later.
 
 The standard library gives us a number of convenience functions that facilitate dealing with strings; the
-most useful would be \ttind{strcpy}; see also \cinline{sprintf}, below.
+most useful would be \ttind{strcpy}, but see also \cinline{sprintf} below.
 \begin{lstlisting}
 #include <string.h>
 strcpy(hello, "Hi there."); //The right way to copy ``Hi there.'' into hello.
@@ -1733,12 +1698,15 @@ standard library has functions for the most common tedious string operations.
 \index{printing|see{\cinline{printf}}}\label{printf}
 C's standard printing functions are much like the rest of the language:
 not very attractive, initially unintuitive, but in the end not a bad
-way of doing things.
+way of doing things. \ind{Python}, the latest and greatest in scripting
+languages, uses C's string printing syntax.
 
-Each of the functions below are based on a
-format string, which can include plain text and a few placeholders for numbers or other strings. For
-example, \cinline{"person \%s is number \%i in line$\backslash$n"}. The percent signs are place-holders for values that we
-will specify later. Here are the odd characters you will need for almost all of your work:
+Each of the functions below are based on a format string, which
+can include plain text and a few placeholders for numbers or
+other strings. For example, \cinline{"person \%s is number \%i in
+line$\backslash$n"}. The percent signs are place-holders for values
+that we will specify later. Here are the odd characters you will need
+for almost all of your work:
 
 \begin{center}
 \fbox{
@@ -1763,8 +1731,7 @@ Of course, we need to specify {\sl which} integer, real, or string to insert, an
 follows directly after the format string. For example:
 \begin{lstlisting}
 #include <stdio.h>
-printf("person %s is number %i in line\n", 
-                          name, position);
+printf("person %s is number %i in line\n", name, position);
 \end{lstlisting}
 This chapter (and the book) is filled with examples of \ttind{printf}; you may want to find a few and
 verify that they will indeed print what they promise to.
@@ -1775,34 +1742,127 @@ same syntax to dump text to a string instead of to the screen. Here is an exampl
 \begin{lstlisting}
 #include <stdio.h>
 char write_to_me[1000];
-sprintf(write_to_me, "person %s is number %i in \
-                             line\n", name, position);
+sprintf(write_to_me, "person %s is number %i in line\n", name, position);
 \end{lstlisting}
 This function behaves just like \cinline{printf}, but you need to specify
 a string to print to before specifying the format string. 
 
 You could even use \cinline{sprintf} to implement a version of \cinline{strcat}. Continuing the above example:
 \begin{lstlisting}
-sprintf(write_to_me, "%sAlso, person %s is number %i in line\n",\
-                          write_to_me, name, position);
+sprintf(write_to_me, "%sAlso, person %s is number %i in line\n", write_to_me, name, position);
 \end{lstlisting}
 The first \cinline{\%s} will evaluate to the original value of \cinline{write\_to\_me} from above, and the next
 sentence will be added on to that.
 
 Writing to files also uses the same syntax, as you will see in Section \ref{asst_conversions}, using \ttind{fprintf}.
 
-\section{Other auxiliary programs} I've already talked about the debugger; here
+\section{The debugger} \index{debugging|(} \index{gdb@\cinline{gdb}|see{debugging}} \label{debug}
+Which brings us to the debugger. The debugger will run the program for
+you, taking notes on the variables therein. When your program segfaults,
+the debugger will let you look at where you
+are in the program and see the value of every variable declared at that
+spot. This beats inserting little \cinline{print} statements all over your
+code by a mile [1.6 km].
+
+To debug the program \cinline{run\_me} under the debugger, type \cinline{gdb
+run\_me} at the command line.  You will be given the gdb
+prompt.\footnote{Don't forget the \binline{-g} switch for the
+compiler, asking it to include a symbol table for debugging. If you
+do forget it, then \binline{gdb} will complain that it can't find any
+debugging symbols and will be of limited use.}
+
+If you know the program will segfault, then at this point, just run the program
+by typing \cinline{run}, and wait for it to break. When it does, you will be
+returned to gdb's prompt, so you can interrogate the program.
+
+
+\marginalia{Visual shells}{There are a number of graphical shells built
+around gdb, which list local variables and let you click on parts of
+your code to set breakpoints. Some are stand-alone progams like \binline{ddd} and others are integrated into IDEs. I won't discuss their operation here, since 
+it is just like that described here for the command-line debugger, except
+it involves using the mouse more. There is currently a list of graphical
+front-ends available at \url{http://sources.redhat.com/gdb/links/}.
+\index{debugging|)}}
+
+
+The first thing you will want to know is where you are in the program. You
+can do this with the \cinline{backtrace} command, which you can abbreviate to
+either \cinline{bt} or \cinline{where}. It will show you the stack of function
+calls that were pending when the program stopped.  The first, frame
+\#0, is always \cinline{main}, where the program started. If {\tt
+main} called another function, then that will be frame \#1, et cetera.
+Often, your program will break somewhere in the internals of a piece of
+code you did not write, such as in a call to \cinline{mallopt}. Ignore those:
+you did not find a bug in \cinline{mallopt}. Find the last line that is in
+the code that you wrote.
+
+At this point, the best thing to do is look at a listing of your code
+in another window and look at the line the debugger pointed out. Often,
+knowing which line is wrong is enough to make the error painfully obvious.
+
+If the error is still not evident, then go back to the debugger and look
+at the variables. You need to be aware of which frame you are working in,
+so you know which set of variables you have at your disposal.  You
+will default to the last frame in the stack; to change to frame number
+three, give the command \cinline{frame 3} (\cinline{f 3} for short).
+
+Once you are in the frame you want, get information about the variables. You can
+get a list of the local variables using \cinline{info locals}. You can get
+information about the arguments to the function using \cinline{info args}
+(though this information is already in the frame description). Or, you
+can print any variable that you think may be in the frame using {\tt
+print var\_name}, or more briefly, \cinline{p var\_name}. 
+
+GDB has its own syntax for viewing the contents of an array. If you
+would
+like to see the first five elements of the array \cinline{items}, then use:
+\cinline{p *items@5}.
+
+Sometimes, you will swear up and down that the line the program segfaulted on is
+entirely correct; in that case, the memory had probably been corrupted earlier and
+you will need to use Valgrind (see page \pageref{valgrind}) to find the error.
+
+\paragraph{Breaking the program} If your program is doing things wrong but is not kind
+enough to segfault, then you will need to find places to halt the program
+yourself. Do this with the \cinline{break} command. For a program with only
+one file of code, simply give a line number: \cinline{break 35}. With many
+files, you may need to specify a file name: \cinline{break file2.c:35}. You
+may also want the program to only break under certain conditions, such
+as when an iterator reaches 10,000. GDB lets you do this by specifying
+conditions: \cinline{break 35 if counter$>$10000}.
+
+All breakpoints are given a number, which can be listed with
+\cinline{info break}. You can delete breakpoint number three with
+the command \cinline{del 3}.
+
+Once you have set the breakpoints, \cinline{run} will run the program until it
+reaches a breakpoint, and then you can apply the interrogation techniques
+above. You may want to carefully step through from there; \cinline{s}
+will step to the next line, which could mean backing up in the current
+function or going to a subfunction. Alternatively, \cinline{next} or {\tt
+n} will step through the function (which may involve backtracking) but
+will run without stopping in any subframes which may be created
+(i.e., if subfunctions are called).  \cinline{until} or \cinline{u} will keep
+going until you get to the next line in the function, so the debugger
+will run through subfunctions and loops until forward progress is made
+in the function.  Finally, \cinline{c} will continue along until the next
+breakpoint or the end of the program. This is also a good place to
+point out that just hitting $<$enter$>$ will repeat the last command,
+so you won't have to keep hitting \cinline{n} to step through many lines.
+
+
+\section{Other auxiliary programs} Beyond there debugger, there
 are a few more programs that will make your life as a programmer easier.
 
 \subsection{Make} \label{make} \index{make@\binline{make}|(}
 Once your program has many sections (or sooner), you will want to use
 \binline{make} to automate the process of turning your mess of files into
-a C program. Typically, you have ten \cinline{.c} files, which will compile
-to ten \cinline{.o} files, which will then be linked into one executable.
- \binline{make} is a program entirely separate from C, but which
+a C program.  It is a program entirely separate from C, but which
 is always found wherever compilers are.
 
-The idea is that you describe your project using a
+Typically, you have ten \cinline{.c} files, which will compile
+to ten \cinline{.o} files, which will then be linked into one executable.
+You can describe the situation using a
 text file named \cinline{Makefile} (capital M). The file will specify a
 series of dependencies: \cinline{file1.o} depends on \cinline{file1.c}, but does
 not depend on \cinline{file2.c}, while \cinline{run\_me} depends on both {\tt
@@ -1830,6 +1890,27 @@ file2.o: file2.c my_headers.h       #User-defined
 The white space at the beginning of the indented lines is a single tab,
 not a bunch of spaces.  C never cares about this, but \binline{make}
 does.
+
+\paragraph{The executive summary} This file is reprinted from the \airq{Setup}
+section of the Apophenia documentation, at
+\url{http://apophenia.info/doc}. Cut and paste it into a file named
+\binline{Makefile}, taking care to retain the tabs, and put that file in
+the same directory as your source code. Then, change the first two lines
+to include one object file for each of your source files, and
+to the program name you prefer.  You may also need to change the
+\binline{LINKFLAGS} line if you get errors from the linker about symbols
+not found.
+
+Having saved those changes, just run
+\binline{make} from the command prompt to compile.
+Also, many programs will let you run
+make from within the program. \binline{gdb} lets you do this (although on
+the more primitive operating systems [Windows], you will get errors),
+as will most implementations of \ind{vi} and \ind{EMACS}.
+
+
+\paragraph{The details} For the curious and those who need to modify
+the standard Makefile, here are some details about its format.
 
 At the top are a list of variables, such as the list of object file names, the final program, et cetera.
 When \binline{make} encounters \cinline{\$(PROGNAME)}, it will insert the value of the variable \cinline{PROGNAME} in that
@@ -1863,19 +1944,7 @@ Notice that \binline{file2.o} did not get recompiled, since it is still
 up-to-date. Thus, not only will \binline{make} save you typing, it will also
 save you time, since you will usually be hacking at one file at a time,
 so there is no point waiting for the other object files to recompile
-to exactly what they were before. Also, many programs will let you run
-make from within the program. \binline{gdb} lets you do this (although on
-the more primitive operating systems [Windows], you will get errors),
-as will most implementations of \binline{vi} and \binline{emacs}.
-
-The above will serve as a Makefile for your own projects; just change
-the lines marked as user-defined to fit your own file names, adding or
-subtracting files in the second dependency set based on how many \binline{.c} files you have. Don't forget to indent with a tab, not spaces. You
-may also need to change the \binline{LINKFLAGS} line if you get errors from
-the linker about symbols not found. But once you have a \binline{Makefile}
-in the directory which correctly describes the dependencies, you will
-be able to compile quickly with a simple \binline{make} instead of 
-cumbersome command lines.
+to exactly what they were before. 
 \index{make@\binline{make}|)}
 
 \subsection{Memory debugger} \index{memory debugger|see{valgrind}} \index{Valgrind|(}
@@ -1887,12 +1956,12 @@ data. Later on in the program, you do something innocuous with your bad
 data and get a segfault. This is a pain to trace using \binline{gdb}, so
 there are packages explicitly designed to handle this problem.
 
-The first alternative is \ind{electric fence}, a
+The first alternative is \ind{Electric Fence}, a
 library by Bruce Perens that allocates memory so that all memory
 mis-allocations and mis-reads will immediately crash.  That means that
 the debugger will stop on the line with the error, instead of continuing
 along with its bad data, so your debugger will give you much more useful
-information.  Electric fence works by redefining \ttind{malloc} in 
+information.  Electric Fence works by redefining \ttind{malloc} in 
 its library. To use it, you would recompile the function
 using the efence library (adding \binline{-lefence} to the compilation
 command).
@@ -1998,7 +2067,7 @@ condition is true' part, and then the `what to do if the condition is false'
 part. However, the first is more-or-less legible to anybody who knows basic English,
 and the second takes the reader a second to parse every time he or she
 sees it. Again, there are situations where the condensed form is useful,
-but you could live a successful career of C use without ever needing it.
+but you could live a successful career of C use without ever using it.
 
 
 \paragraph{Macros} \label{macros} 
@@ -2031,12 +2100,12 @@ should be in parentheses:\\
 The one and only one thing that a macro can do better than a function is
 take a type as an argument. This takes advantage of the fact that the preprocessor 
 just shunts characters around and doesn't know what its arguments represent.
-For example, later you will see this form for reallocating a pointer to an array of \cinline{int}s:\\
+For example, recall the form for reallocating a pointer to an array of \cinline{int}s:\\
 \cinline{var\_array = realloc(var\_array, new\_length * sizeof(int))}.\\
 With this macro:\\
 \cinline{\#define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))}\\
 \\the above line could be rewritten as:\\
-\cinline{REALLOC(var\_array, new\_length, int);}
+\cinline{REALLOC(var\_array, new\_length, int);}\\
 This macro gives you one more moving part that could break (and which
 now needs to be \cinline{\#include}d with every file you use it in), but
 may make the code more readable.
@@ -2066,7 +2135,7 @@ return out;
 \end{lstlisting}
 The goto is reviled by modern computer scientists as terrible style, so
 it appears infrequently. However, redundant code is also bad style. 
-In the above example, getting rid of the goto would require
+In the above example, getting rid of the \cinline{goto} would require
 copying the various memory-freeing
 tasks at the end of the function into the center of the \cinline{for} loop.
 Linus Torvalds, the author of the Linux kernel, recommends the \cinline{goto} to eliminate redundancy as above; other authors choose to never use

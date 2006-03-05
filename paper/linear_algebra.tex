@@ -312,15 +312,25 @@ which will calculate \cinline{dot\_product} $= \alpha op(X) op(Y) + \beta$ \cinl
 $op(Y)$ will be either the matrix or its transpose, as above, depending on whether you choose \cinline{CblasTrans}
 or \cinline{CblasNoTrans}. For example, here is $X'Y$:
 
-%\begin{verbatim}
 \begin{lstlisting}
 gsl_matrix *x_dot_y      = gsl_matrix_calloc(x->size2, y->size2);
 gsl_blas_dgemm (CblasTrans,CblasNoTrans, 1, x, y, 0, x_dot_y);
 \end{lstlisting}
-%\end{verbatim}
 
 \index{matrices!dot product|)}
 \index{dot product|)}
+\paragraph{scalars} The GSL provides predictable functions for
+interacting vectors or matrices with scalars. Here is code to add one
+and then double a matrix and a vector:
+\begin{lstlisting}
+gsl_matrix_add_constant(a_matrix, 1);
+gsl_matrix_scale(a_matrix, 2);
+
+gsl_vector_add_constant(a_vector, 1);
+gsl_vector_scale(a_vector, 2);
+\end{lstlisting}
+\cindex{gsl\_matrix\_add\_constant} \cindex{gsl\_matrix\_scale}
+\cindex{gsl\_vector\_add\_constant} \cindex{gsl\_vector\_scale}
 
 \section{Matrix inversion and equation solving}  \index{matrices!inversion}\index{matrices!determinants}
 Matrix inversion is one of the most computationally intensive problems
@@ -332,7 +342,7 @@ instead, we have to go through a triangular decomposition. Figure
 Examples for using this function are located throughout the book; for
 example, see the calculation of OLS coefficients on page \pageref{ols}.
 
-\codefig{invertmatrix}{A function which inverts a matrix using via an LU decomposition}
+\codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition}
 
 Figure \ref{invertmatrix} is cut and pasted from the Apophenia source
 code; \ttind{apop\_\-det\_\-and\_\-inv} does indeed invert and calculate the

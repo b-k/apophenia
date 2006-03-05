@@ -231,14 +231,29 @@ double		mu, min, max;
 }
 
 /** For each column in the given matrix, normalize so that the column
-has mean zero and variance one. Replace each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample standard deviation
+has mean zero, and maybe variance one. 
+
+
+\param data     The data set to normalize.
+\param normalization     0==just the mean:\\
+                        Replace each X with \f$(X-\mu)\f$\\
+                        \\
+                         1==mean and variance:
+                        Replace each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample standard deviation
+
 \ingroup basic_stats */
-void apop_matrix_normalize(gsl_matrix *data){
-gsl_vector_view v;
-int             j;
+void apop_matrix_normalize(gsl_matrix *data, int normalization){
+gsl_vector  v;
+double      mu;
+int         j;
         for (j = 0; j < data->size2; j++){
-                v	= gsl_matrix_column(data, j);
-		gsl_vector_add_constant(&(v.vector), -apop_vector_mean(&(v.vector)));
+            v	= gsl_matrix_column(data, j).vector;
+            if ((normalization == 0) || (normalization == 1)){
+                mu      = apop_vector_mean(&v);
+		        gsl_vector_add_constant(&v, -mu);
+            }
+            if (normalization == 1)
+		        gsl_vector_scale(&v, 1./sqrt(apop_vector_var_m(&v,mu)));
         }
 }
 

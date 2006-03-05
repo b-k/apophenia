@@ -27,7 +27,7 @@ Of course, using the same stream of numbers every time creates the
 possibility of getting a lucky draw, where \airq{lucky} can mean any of a
 number of things. The solution is a fixed process of pseudorandom
 number generation plus a varying initializing seed. Here is how one
-would initialize a \ttind{gsl\_rng}:
+would initialize a \cind{gsl\_rng}:
 \begin{lstlisting}
 gsl_rng * initrng(int seed){
     gsl_rng_env_setup();
@@ -46,8 +46,8 @@ zero, and if you need ten different seeds, I suggest using 0, 1, \dots ,9.
 \subsection{Random number distributions}
 Now that you have a random number generator, here are some functions that use it to draw from all of your favorite distributions:
 \index{Gaussian distribution} \index{t distribution} \index{F distribution}
-\index{$\chi^2$ distribution} \index{Uniform distribution}\ttindex{gsl\_ran\_...}
-\index{Bernoulli distribution} \index{Beta distribution} \index{Binomial distribution}
+\index{$\chi^2$ distribution} \index{Uniform distribution}\cindex{gsl\_ran\_...}
+\index{Bernoulli distribution} \index{Beta distribution} \index{Binomial distribution} 
 
 \begin{lstlisting}
 double gsl_ran_bernoulli (gsl_rng *r, double p);
@@ -67,13 +67,13 @@ function, \cinline{gsl\_ran\_uniform(r)}. Notice that the Gaussian draw
 assumes a mean of zero, so if you intend to draw from a ${\cal N}(7,2)$,
 then add the mean after the call: \cinline{gsl\_ran\_gaussian (r, 2) + 7}.
 
-\paragraph{The Beta distribution}\index{Beta distribution}
+\paragraph{The Beta distribution}\index{Beta distribution}\label{beta}
 The Beta distribution is wonderful for all sorts of modeling, because
 it can describe such a wide range of probability functions for a
 variable $\in [0,1]$.  But its $\alpha$ and $\beta$ parameters may be
 difficult to interpret; we are more used to the mean and variance. Thus,
 Apophenia provides one convenience function for the Beta distribution,
-\cind{apop\_\-ran\-dom\_\-beta}. You can give it a mean, a variance, and
+\cind{apop\_ran\-dom\_beta}. You can give it a mean, a variance, and
 a random number, and it will calculate the appropriate values of $\alpha$
 and $\beta$ and return a random draw from the appropriate distribution.
 
@@ -82,7 +82,7 @@ which means that the Beta distribution will never have a variance greater
 than ${1\over 12}$ (and close to ${1\over 12}$, perverse things may
 happen computationally for $\mu \not\approx {1\over 2}$). The mean of a
 function whose $x-$values are bounded $\in[0,1]$ is clearly also in
-$\in[0,1]$. If you send \cind{apop\_\-ran\-dom\_\-beta} values of $\mu$
+$\in[0,1]$. If you send \cind{apop\_ran\-dom\_beta} values of $\mu$
 and $\sigma^2$ that are outside of these bounds, the function will
 return a \cinline{GSL\_NAN}.
 
@@ -93,13 +93,13 @@ approximates, would be to draw from your actual data.
 The GSL provides a means of turning a data set into a PDF from which you
 can then make draws.  It
 does so by aggregating the data into a histogram and then producing a CDF.
-Then, the \ttind{gsl\_histogram\_pdf\_sample} function will
+Then, the \cind{gsl\_histogram\_pdf\_sample} function will
 map a draw from a Uniform[0,1] distribution to the CDF, thus producing a
 random draw from your data.
 
 The \cinline{apop\_vector\_to\_pdf} function takes the requisite steps
 for you, producing a histogram from the data and then converting it to
-a \ttind{gsl\_histogram\_pdf} structure from which draws can be
+a \cind{gsl\_histogram\_pdf} structure from which draws can be
 made. It takes two arguments: a \cinline{gsl\_vector} with the data, and
 an \cinline{int} listing the number of bins that the histogram should
 have. This should be calibrated to the resolution of the data: if the
@@ -167,7 +167,7 @@ bring shame to your research group.}
 
 \subsection{Creating random samples} Assume that we have a
 data vector \cinline{gsl\_vector * data} and a function \cinline{double
-calc\_statistic(gsl\_vector *da\-ta)} that finds some statistics. The
+calc\_statistic(gsl\_vec\-tor *da\-ta)} that finds some statistics. The
 function \cinline{mean()} fits this description, as would a function to find
 a single OLS coefficient.
 
@@ -197,7 +197,7 @@ parameters of a Poisson distribution for a given data set:
 \begin{lstlisting}
 apop_data *covar    = apop_bootstrap(data, apop_poisson, NULL);
 \end{lstlisting}
-In fact, this is redundant, because the \cinline{apop\_\-pois\-son}
-model already uses the \cind{apop\_\-boot\-strap} function internally,
-so the usual \cinline{apop\_\-pois\-son.est\-i\-mate(data, NULL, NULL)}
+In fact, this is redundant, because the \cinline{apop\_pois\-son}
+model already uses the \cind{apop\_boot\-strap} function internally,
+so the usual \cinline{apop\_pois\-son.est\-i\-mate(data, NULL, NULL)}
 will return an estimate with bootstrapped variances.
