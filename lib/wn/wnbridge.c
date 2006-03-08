@@ -106,7 +106,7 @@ gsl_vector_view	v;
 		v	= gsl_matrix_row(pre_cov, i);
 		gsl_vector_scale(&(v.vector), gsl_vector_get(diff, i));
 	}
-	apop_det_and_inv(pre_cov, &(est->covariance), 0,1);
+	apop_det_and_inv(pre_cov, &(est->covariance->data), 0,1);
 	gsl_matrix_free(pre_cov);
 	gsl_vector_free(diff);
 
@@ -116,7 +116,7 @@ gsl_vector_view	v;
 	for (i=0; i<the_size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 		gsl_vector_set(est->confidence, i,
 			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
-			gsl_matrix_get(est->covariance, i, i)))*2));
+			gsl_matrix_get(est->covariance->data, i, i)))*2));
 	return est;
 }
 

@@ -124,8 +124,11 @@ apop_estimate * prep_me;
         apop_name_add(prep_me->dependent->names, "residual", 'c');
         apop_name_stack(prep_me->dependent->names, data->names, 'r');
     }
-	if (prep_me->estimation_params.uses.covariance)
-		prep_me->covariance	= gsl_matrix_alloc(model.parameter_ct,model.parameter_ct);
+	if (prep_me->estimation_params.uses.covariance){
+		prep_me->covariance	= apop_data_alloc(model.parameter_ct,model.parameter_ct);
+        apop_name_stack(prep_me->covariance->names, data->names, 'c');
+        apop_name_cross_stack(prep_me->covariance->names, data->names, 'c', 'r');
+        }
 	if (prep_me->estimation_params.uses.names) {
 		if (data->names != NULL) 	apop_name_memcpy(&(prep_me->names), data->names);
 		else 		                prep_me->names		= apop_name_alloc();
@@ -145,7 +148,7 @@ void apop_estimate_free(apop_estimate * free_me){
 	if (free_me->estimation_params.uses.confidence)
 		gsl_vector_free(free_me->confidence);
 	if (free_me->estimation_params.uses.covariance)
-		gsl_matrix_free(free_me->covariance);
+		apop_data_free(free_me->covariance);
 	if (free_me->estimation_params.uses.names)
 		apop_name_free(free_me->names);
 	free(free_me);
@@ -180,6 +183,8 @@ int		i;
 	}
 	if (print_me->estimation_params.uses.covariance){
 		printf("\nThe variance/covariance matrix:\n");
+        apop_data_show(print_me->covariance);
+        /*
         apop_data   *covdata    = apop_matrix_to_data(print_me->covariance);
         int         i;
         //We want to show the column names on both axes.
@@ -190,6 +195,7 @@ int		i;
         }
         apop_data_show(covdata);
         free(covdata);  //slightly leaky. I don't care.
+        */
 	}
 	if (print_me->estimation_params.uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);

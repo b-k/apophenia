@@ -137,9 +137,15 @@ static void prep_names(apop_estimate *e){
 	if (e->names != NULL && e->names->colnamect > 0) {		
 		//apop_name_add(n, n->colnames[0], 'd');
 		e->dependent->names->colnames[0] =
-            realloc(e->dependent->names->colnames[0],sizeof(n->colnames[0]));
-		sprintf(e->dependent->names->colnames[0], n->colnames[0]);
-		sprintf(n->colnames[0], "1");
+            realloc(e->dependent->names->colnames[0],
+                    sizeof(e->data->names->colnames[0]));
+		sprintf(e->dependent->names->colnames[0], 
+                e->data->names->colnames[0]);
+		sprintf(e->data->names->colnames[0], "1");
+        if (e->estimation_params.uses.covariance){
+		    sprintf(e->covariance->names->colnames[0], "1");
+		    sprintf(e->covariance->names->rownames[0], "1");
+            }
 	}
 }
 
@@ -179,7 +185,7 @@ int		i;
 	if (out->estimation_params.uses.covariance == 0) 	
         gsl_matrix_free(cov);
 	else 				
-        out->covariance	= cov;
+        out->covariance->data	= cov;
 }
 
 /** generalized least squares.

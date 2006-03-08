@@ -186,7 +186,7 @@ Here is the current definition of the \cinline{apop\_estimate} structure. You ca
 typedef struct apop_estimate{
     gsl_vector  *parameters, *confidence;
     apop_data   *dependent;
-    gsl_matrix  *covariance;
+    apop_data   *covariance;
     double      log_likelihood;
     apop_name   *names;
     int         status;

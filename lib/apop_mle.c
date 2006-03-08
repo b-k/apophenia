@@ -313,7 +313,7 @@ gsl_matrix	*hessian;
 	//The information matrix is the inverse of the negation of the hessian.
 	hessian			= apop_numerical_hessian(dist, est->parameters, data);
 	gsl_matrix_scale(hessian, -1);
-	apop_det_and_inv(hessian, &(est->covariance), 0, 1);
+	apop_det_and_inv(hessian, &(est->covariance->data), 0, 1);
 	gsl_matrix_free(hessian);
 
 	//Confidence intervals are just a cute convenience. We're
@@ -324,7 +324,7 @@ gsl_matrix	*hessian;
 	for (i=0; i< est->parameters->size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 		gsl_vector_set(est->confidence, i,
 			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
-			gsl_matrix_get(est->covariance, i, i)))*2));
+			gsl_matrix_get(est->covariance->data, i, i)))*2));
 	apop_fn_for_derivative 	= tmp;
 }
 

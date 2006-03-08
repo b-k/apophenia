@@ -108,6 +108,8 @@ int		i;
 
 Notice that if the first list in NULL, then this is a copy function.
 
+If you are copying row names to columns or vice versa, use \ref apop_name_cross_stack.
+
 \param  n1      The first set of names
 \param  n2      The second set of names, which will be appended after the first.
 \param type     Either 'c', 'r', or 't' stating whether you are merging the columns, rows, or text. [Default: cols]
@@ -127,6 +129,36 @@ int     i;
             printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
         for (i=0; i< n2->colnamect; i++)
             apop_name_add(n1, n2->colnames[i], 'c');
+        }
+}
+
+/** Append one list of names to another; the source and dest list need
+not be the same type. If they are, just use \ref apop_name_stack.
+
+
+
+Notice that if the first list in NULL, then this is a copy function.
+
+\param  n1      The first set of names
+\param  n2      The second set of names, which will be appended after the first.
+\param type1     Either 'c', 'r', or 't' stating whether you are merging from the columns, rows, or text. [Default: cols]
+\param type2     Either 'c', 'r', or 't' stating whether you are merging to the columns, rows, or text. [Default: cols]
+\ingroup names */
+void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type2){
+int     i;
+    if (type1 == 'r'){
+        for (i=0; i< n2->rownamect; i++)
+            apop_name_add(n1, n2->rownames[i], type2);
+        }
+    else if (type1 == 't'){
+        for (i=0; i< n2->catnamect; i++)
+            apop_name_add(n1, n2->catnames[i], type2);
+        }
+    else {
+        if (type1 != 'c' && apop_opts.verbose)
+            printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n",type1);
+        for (i=0; i< n2->colnamect; i++)
+            apop_name_add(n1, n2->colnames[i], type2);
         }
 }
 

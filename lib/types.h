@@ -200,7 +200,7 @@ independent vars, then the first column is the actual data. Let our model be \f$
 typedef struct apop_estimate{
 	gsl_vector 	*parameters, *confidence;
     apop_data   *dependent;
-	gsl_matrix 	*covariance;
+	apop_data 	*covariance;
 	double		log_likelihood;
 	apop_name	*names;
 	int		    status;
@@ -265,6 +265,7 @@ int apop_name_add(apop_name * n, char *add_me, char type);
 void  apop_name_free(apop_name * free_me);
 void  apop_name_print(apop_name * n);
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
+void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type2);
 void apop_name_rm_columns(apop_name *n, int *drop);
 void apop_name_memcpy(apop_name **out, apop_name *in);
 apop_name * apop_name_copy(apop_name *in);
