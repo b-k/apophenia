@@ -119,8 +119,8 @@ apop_model apop_probit = {"Probit", -1,
 	1,	//parameters
 	1,	//covariance
 	1,	//confidence
+	0,	//dependent
 	0,	//predicted
-	0,	//residuals
 	1,	//log_likelihood
 	1	//names;
 }, 

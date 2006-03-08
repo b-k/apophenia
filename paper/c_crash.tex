@@ -86,8 +86,7 @@ operators, so I'm not going to tell you what they are here.  If you want
 more details about any of the points I mention here, just type \binline{C
 tutorial} into your favorite search engine; since this is C and not a
 proprietary, specialized language, you will have a few hundred hits to
-choose from. The authoritative and surprisingly readable reference
-is \cite{kandr:c}; many consider it to be the definition of the language.
+choose from. 
 
 The first part (up to Section \ref{pointers})
 is all about functions, which are mostly self-contained pieces of code,
@@ -1486,9 +1485,9 @@ int i;
 for (i=0; i < array_length; i++)
       {squares[i] = i * i;}
 \end{lstlisting}
-The syntax for declaring the array exactly matches that of allocating
-a single pointer, except we needed to allocate a block of size 1000
-\cinline{* sizeof(int)} instead of just a single \cinline{sizeof(int)}. 
+The syntax for declaring the array exactly match\-es that of allocating
+a single pointer, except we need\-ed to allocate a block of size 
+\cinline{1000 * size\-of(int)} instead of just a single \cinline{size\-of(int)}. 
 
 Notice that referring to an element of \cinline{squares} looks a lot
 like referring to an array element, and this is because they are
@@ -1674,7 +1673,7 @@ Strings such as \cinline{"hello"} are implemented as arrays of individual charac
 null character, written as \cinline{$\backslash$0}. This means that you have to think in terms of arrays when dealing
 with strings. For example:
 \begin{lstlisting}
-char hello[20];
+char hello[30];
 char hello2[] = "Hi.";
 hello = "Hi there."; //This will crash.
 hello = hello2;      //Won't crash, but still wrong.
@@ -1690,6 +1689,44 @@ most useful would be \ttind{strcpy}, but see also \cinline{sprintf} below.
 strcpy(hello, "Hi there."); //The right way to copy ``Hi there.'' into hello.
 strcpy(hello, hello2);      //Also correct.
 \end{lstlisting}
+
+Another favorite is the \cind{strcat} function, which will concatenate one
+string to another. The code
+\begin{lstlisting}
+#include <string.h>
+strcpy(hello, "Hi there. "); 
+strcat(hello, "Hi there again."); 
+\end{lstlisting}
+will leave \cinline{Hi there. Hi there again.} in \cinline{hello}. But
+you must take care that the space you are adding to is sufficient to
+hold the added text. One way to do this would be to simply allocate an
+absurd amount of space for each string, like just under a megabyte of
+memory.
+\begin{lstlisting}
+char hello[1000000];
+\end{lstlisting}
+This is clearly wasteful, though you may not notice it on a modern
+computer, but it is also error-prone: what if you have a brilliant idea
+about a \cinline{for} loop that will add a little text for each of a
+million variables into the string? You can easily exceed your own
+expectations. The other option is \cind{realloc}, combined with the
+function to measure the length of a string, \cind{strlen}.
+\begin{lstlisting}
+#include <string.h>
+char *hello    = malloc (sizeof(char) * (1+strlen("Hi there. ")));
+strcpy(hello, "Hi there. "); 
+hello   = realloc (hello, sizeof(char) * (1+ strlen(hello) + strlen("Hi there again. ")));
+strcat(hello, "Hi there again."); 
+\end{lstlisting}
+One detail to note here: the end of a string is indicated internally by
+a \cinline{\textbackslash{}0} character. Thus, a string variable needs
+to have as many characters as it will hold plus one.
+
+It is up to you and your situation whether you prefer the easy but
+ungraceful overallocation or the precise but lengthy \cinline{realloc}
+route. Generally, strings for haphazard messages or labels are fine with 
+an allocation like \cinline{char hello[1000]}, while anything in a
+\cinline{for} loop probably merits the \cinline{realloc} treatment.
 
 The note above about skimming the standard library documentation is especially apropos here, since the
 standard library has functions for the most common tedious string operations.
@@ -1725,7 +1762,7 @@ $\backslash$(newline)	& continue the string on the next line
 
 There are {\sl many} more format specifiers, which will give you a great deal of control; you may want
 them when printing tables, for example, and can refer to any of a number of detailed references when you
-need these. [The `g' in \cinline{\%g} stands for `general format', by the way.]
+need these. [The \airq{g} in \cinline{\%g} stands for \airq{general format}, by the way.]
 
 Of course, we need to specify {\sl which} integer, real, or string to insert, and the list of names
 follows directly after the format string. For example:
@@ -2038,18 +2075,26 @@ turn up exactly the documentation that is missing from your system,
 formatted for the web.
 
 \section{Advanced topics}
-This optional section includes some things that are very commonly used among
-C programmers but are entirely optional. You can get very far without
-knowing any of the following, and much of it is generally considered to
-be bad style.\footnote{Much of what was omitted from this chapter
-regards combining expressions onto one line. For example, 
-one could write \cinline{b = (i > j); a += b; i++;} as 
-\cinline{a += b = i++ > j;}. Some people find one-liners like
-this to have \ae{}sthetic appeal, and there are even cases where they
-may be clearer than the multi-line version. But they are an
-easy way to write impossible-to-debug code, and require mastery of
-a great number of details of C internals that are wholly unnecessary
-otherwise.}
+
+There are several ways to do almost everything I have presented here.  For
+example, one could write the three lines \cinline{b = (i > j); a += b;
+i++;} as the single expression \cinline{a += b = i++ > j;}. The seventh
+element of the array \cinline{a} can either be called \cinline{a[6]} or
+\cinline{*(a + 6)}.  Some people find one-liners and pointer arithmetic
+to have \ae{}sthetic appeal, and there are even cases where they may
+be clearer than the more common methods. But they are an easy way to
+write impossible-to-debug code, and require mastery of a great number
+of details of C internals that are wholly unnecessary otherwise.
+
+The reader whose interest is piqued and would like to learn more about
+how C works and about the many alternatives that I did not mention here
+is referred to the authoritative and surprisingly readable reference
+for the language: \cite{kandr:c}.
+
+This optional section includes some of the more common alterntaives that
+are very commonly used among C programmers. You can get very far without
+knowing any of the following, and some of it is generally considered to
+be bad style.
 
 \paragraph{The obfuscatory if} There is another way to write an \ttind{if} statement. The following are equivalent:
 \begin{lstlisting}
@@ -2067,7 +2112,7 @@ condition is true' part, and then the `what to do if the condition is false'
 part. However, the first is more-or-less legible to anybody who knows basic English,
 and the second takes the reader a second to parse every time he or she
 sees it. Again, there are situations where the condensed form is useful,
-but you could live a successful career of C use without ever using it.
+but you could live a successful career writing in C without ever using it.
 
 
 \paragraph{Macros} \label{macros} 

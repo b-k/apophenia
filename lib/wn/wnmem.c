@@ -73,7 +73,7 @@ AUTHOR:
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <malloc.h>
+//#include <malloc.h>
 #include <string.h>
 
 #include "wnlib.h"

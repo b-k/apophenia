@@ -59,6 +59,8 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 /** Turns a gsl_vector into an \ref apop_data structure with one column.
     Copies the data, so you can safely <tt>gsl_vector_free(v)</tt> after this.
 
+    A synonym for \ref apop_vector_to_data.
+
 \param  v   The data vector
 \return     an allocated, ready-to-use \ref apop_data struture.
 */
@@ -66,6 +68,17 @@ apop_data * apop_data_from_vector(gsl_vector *v){
 gsl_matrix  *m  = gsl_matrix_alloc(v->size,1);
     gsl_matrix_set_col(m, 0, v);
     return apop_data_from_matrix(m);
+}
+
+
+/** Turns a gsl_vector into an \ref apop_data structure with one column.
+    Copies the data, so you can safely <tt>gsl_vector_free(v)</tt> after this.
+
+\param  v   The data vector
+\return     an allocated, ready-to-use \ref apop_data struture.
+*/
+apop_data * apop_vector_to_data(gsl_vector *v){
+    return apop_data_from_vector(v);
 }
 
 /** free a matrix of chars* (i.e., a char***).
@@ -185,4 +198,58 @@ gsl_matrix  *freeme = d->data;
     d->data = apop_matrix_rm_columns(d->data, drop);
     gsl_matrix_free(freeme); 
     apop_name_rm_columns(d->names, drop);
+}
+
+/** Returns the data element at the given point.
+
+Q: How does <tt> apop_data_get(in, r,c)</tt> differ from
+ <tt>gsl_matrix_get(in->data, row, col)</tt>?\\
+A: It's seven characters shorter.
+*/
+double apop_data_get(apop_data *in, size_t row, size_t col){
+    return gsl_matrix_get(in->data, row, col);
+}
+
+/** Get an element from an \ref apop_data set, using the row name but
+ the column number
+ */
+double apop_data_get_tn(apop_data *in, char* row, size_t col){
+int rownum =  apop_name_find(in->names, row, 'r');
+    if (rownum == -1){
+        if(apop_opts.verbose)
+            printf("couldn't find %s amongst the column names.\n",row);
+        return GSL_NAN;
+    }
+    return gsl_matrix_get(in->data, rownum, col);
+}
+
+/** Get an element from an \ref apop_data set, using the column name but
+ the row number
+ */
+double apop_data_get_nt(apop_data *in, size_t row, char* col){
+int colnum =  apop_name_find(in->names, col, 'c');
+    if (colnum == -1){
+        if(apop_opts.verbose)
+            printf("couldn't find %s amongst the column names.\n",col);
+        return GSL_NAN;
+    }
+    return gsl_matrix_get(in->data, row, colnum);
+}
+
+/** Get an element from an \ref apop_data set, using the row and column name.
+ */
+double apop_data_get_tt(apop_data *in, char *row, char* col){
+int colnum =  apop_name_find(in->names, col, 'c');
+int rownum =  apop_name_find(in->names, row, 'r');
+    if (colnum == -1){
+        if(apop_opts.verbose)
+            printf("couldn't find %s amongst the column names.\n",col);
+        return GSL_NAN;
+    }
+    if (rownum == -1){
+        if(apop_opts.verbose)
+            printf("couldn't find %s amongst the column names.\n",row);
+        return GSL_NAN;
+    }
+    return gsl_matrix_get(in->data, rownum, colnum);
 }

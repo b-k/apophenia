@@ -45,7 +45,7 @@ everything, and if you don't need covariances, why produce them). If you
 don't care about the estimation parameters, sending \cinline{NULL} will
 work fine for most models. 
 
-\paragraph{Data}
+\paragraph{Data} \cindx{apop\_data}{(textbf}
 The \cinline{apop\_data} structure adds a touch of metadata on top of the
 basic \cinline{gsl\_matrix}. It includes an \cinline{apop\_name} structure (see
 below), and a table for non-numeric variables. In case you need to access
@@ -78,6 +78,53 @@ for (r=0; r< set->catsize[0]; r++){
 }
 \end{lstlisting}
 
+\paragraph{Useful functions} As well as using them for models, there are
+various functions for manipulating \cinline{apop\_data} sets. You will
+first
+create the data set, probably with \cind{apop\_query\_to\_data}, but perhaps
+with \cind{apop\_matrix\_to\_data}, \cind{apop\_vector\_to\_data}, or
+creating a blank slate with \cind{apop\_data\_alloc}.
+
+\cindex{apop\_data\_copy}
+You can copy the entire data set, 
+stack two data sets one on top of the other (stack rows), or 
+stack two data sets one to the right of the other (stack columns):
+\begin{lstlisting}
+apop_data *newcopy = apop_data_copy(oldset);
+apop_data *newset_tall = apop_data_stack(oldset_one, oldset_two, 'r');}
+apop_data *newset_wide = apop_data_stack(oldset_one, oldset_two, 'c');}
+\end{lstlisting}
+
+All of these operations make a full copy of the data, without
+erasing the original data sets, so in each case
+you will be taking up twice as much memory
+at the end of the function until you call
+\cinline{apop\_data\_free(oldset)}.\cindex{apop\_data\_free} As
+noted earlier, you are generally better off doing data manipulation
+in the database. If the tables are in the database instead of
+\cinline{apop\_data} sets the two stacking commands above are equivalent
+to \sinline{select * from oldset\_one UNION select * from oldset\_two}
+and \sinline{select t1.*, t2.* from oldset\_one t1,oldset\_two t2},
+respectively.
+
+Since the \cinline{data} element of the \cinline{apop\_data} structure
+is a \cinline{gsl\_matrix}, you can use any of the tools from Chapter
+\ref{linear_algebra} to dissect it.
+There are four additional functions for pulling an element from an
+\cinline{apop\_data} set using the names. Let \airq{t} be a title and
+\airq{n} be a number; then you may refer to the row-column coordinate
+using the $(n,n)$, $(t,n)$, $(n,t)$, or $(t,t)$ form:
+\begin{lstlisting}
+apop_data_get(your_data, i, j);
+apop_data_get_tn(your_data, "rowname", j);
+apop_data_get_nt(your_data, i, "colname");
+apop_data_get_tt(your_data, "rowname", "colname");
+\end{lstlisting}
+Notice that the first form, \cinline{apop\_data\_get}, has an abbreviated
+name, and is identical to \cinline{gsl\_matrix\_get(your\_data->data, i, j)}.
+\cindex{apop\_data\_get...}
+
+ \cindx{apop\_data}{)textbf}
 
 \paragraph{Models}
 The \cinline{apop\_model} structure encapsulates a description of the world
@@ -85,7 +132,7 @@ in which the data and the parameters produce observed outcomes. The
 \cinline{apop\_mo\-del.\-est\-i\-mate()} method takes in data and produces an \cinline{apop\_est\-i\-mate}. 
 
 \marginalia{Patterns in static}{{\sl Apophenia} is a term from the
-psychology literature referring to a tendency to see patterns in
+psychology literature referring to the human tendency to see patterns in
 static. Good data description seeks out patterns in existing data; good
 hypothesis testing does not seek out patterns but aims to reject or fail
 to reject observed patterns. Hypothesis testing is thus an attempt to
@@ -127,12 +174,42 @@ functions do a good job of filling in blanks.
 \cindx{apop\_estimate}{(textbf}
 The \cinline{apop\_estimate} structure returns all the data one would want
 from a regression or ML estimation, including the parameters estimated,
-the variance/covariance matrix, the residuals, et cetera. The structure
+the variance/covariance matrix, the predicted values, et cetera. The structure
 includes instances of almost all of the other structures listed here, so
 that you will have a link to the data, model, a copy of the
 estimation parameters that produced the estimate. Within the
 estimation parameters one will find an inventory of
 what the \cinline{apop\_est\-i\-mate} contains.
+
+Here is the current definition of the \cinline{apop\_estimate} structure. You can se that it errs on the inclusive side.
+\begin{lstlisting}
+typedef struct apop_estimate{
+    gsl_vector  *parameters, *confidence;
+    apop_data   *dependent;
+    gsl_matrix  *covariance;
+    double      log_likelihood;
+    apop_name   *names;
+    int         status;
+    struct apop_data   *data;
+    struct apop_model  *model;
+    struct apop_estimation_params  estimation_params;
+} apop_estimate;
+\end{lstlisting}
+
+The \cinline{dependent} matrix is worth notice. It is three columns, named 
+\cinline{actual}, \cinline{predicted}, and \cinline{residual}. 
+ If this is a model with a single dependent and lots of
+independent vars, then the first column is the actual data. Let our
+model be $\Yv = \betav \Xv + \epsilon$. Then the second column is the
+predicted values: $\betav \Xv$, and the third column is the residuals:
+$\epsilon$. The third column is therefore always the first minus
+the second, and this is probably how that column was calculated
+internally. There is thus currently no way to get just the predicted
+but not the residuals or vice versa.
+
+The \cinline{status} element is primarily for maximum likelihood
+estimations, which can fail to converge. If \cinline{status != 0},
+then the MLE failed and the estimate should not be relied on.
 
 The \cinline{apop\_est\-i\-mate} tries to be self-contained, including
 everything one would need to re-run an estimation. In fact, on page
@@ -149,6 +226,7 @@ you destroy your data using this pointer, then you have just destroyed
 your original data set, and vice versa.
 %\index{apop\_estimate@\cinlinetwo{apop\_estimate}|)textbf}
 \cindx{apop\_estimate}{)textbf}
+
 
 \paragraph{An example}
 Here is a program that puts the above structures to work.  It assumes a
@@ -229,10 +307,10 @@ precede any pointer use with an \cinline{if(est->uses.element)} clause).
 
 It may sometimes be useful to manipulate the \cinline{apop\_estimate} structure's
 internal \cinline{apop\_inventory} element to your own benefit. For
-example, if you set \cinline{est-$>$uses.residuals = 0} before calling
-\cinline{apop\_print\_estimate(est, NULL)}, then the residuals won't get
+example, if you set \cinline{est-$>$uses.covariance = 0} before calling
+\cinline{apop\_print\_estimate(est, NULL)}, then the covariance matrix won't get
 printed. But be careful: if you then call \cinline{apop\_estimate\_free(est)},
-then the residuals won't get freed, either.
+then the covariance matrix won't get freed, either.
 
 \paragraph{Estimate parameters}
 The \ttind{apop\_estimation\_params} are the details for how an \cinline{apop\_est\-i\-mate} should do its work; currently it is just the specifications
@@ -378,12 +456,13 @@ apop_data_show_int(data);
 \end{lstlisting}
 
 \section{Command-line utilities}
-Incidentally, Apophinia includes a handful of \ind{command-line utilities} for
+Incidentally, Apophinia includes a handful of \ind{com\-mand-line utilities} for
 situations where there is no need to write a full-blown C program. For
 all of the utilities below, you can use the \binline{-h} parameter to
-get detailed instructions (e.g., \binline {apop\_db\_to\_cross\-tab -h}
-Three are simply for handling SQLite databases.
+get detailed instructions (e.g., \binline {apop\_db\_to\_cross\-tab
+-h}).
 
+Three are simply for handling SQLite databases.  
 \cind{apop\_text\_to\_db} reads a text file into a database table,
 \cind{apop\_merge\_dbs} will send tables from one database to
 another, and

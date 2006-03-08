@@ -4,7 +4,7 @@
  \li \ref intro "Intro": The motivation for the package.
  \li \ref setup "Setup": Installing GCC, the GSL, SQLite, and Apophenia itself.
  \li \ref types "Types": New structures defined by Apophenia.
- \li The <a href="http://apophenia.info/gsl_stats.pdf">manual</a> (PDF). 
+ \li The <a href="http://ben.klemens.org/pdfs/gsl_stats.pdf">manual</a> (PDF). 
 
 \section dostats Doing statistics 
  \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.
@@ -34,7 +34,7 @@
 
 First, if you are still wondering why this is different from all the
 stats packages of the world, have a look at the introduction to the 
-<a href="http://apophenia.info/gsl_stats.pdf">manual</a> (PDF). 
+<a href="http://ben.klemens.org/pdfs/gsl_stats.pdf">manual</a> (PDF). 
 
 The key goal of Apophenia is to estimate models using data.
 As such, Apophenia provides 
@@ -387,7 +387,7 @@ $(objects): %.o: %.c
 Until some notes show up here, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite. 
 This is a reference, not a tutorial; there is an abundance of <a
 href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.
-Also, the  <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF
+Also, the  <a href="http://ben.klemens.org/pdfs/gsl_stats.pdf">PDF
 documentation</a> for Apophenia includes a chapter which discusses SQL
 for statisticians.
 The blog of Apophenia's author includes an <a
@@ -496,8 +496,8 @@ apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters,
         1,      //parameters 
         1,      //covariance
         1,      //confidence
+        0,      //dependent
         0,      //predicted
-        0,      //residuals
         1,      //log_likelihood
         1       //names;
 },          new_estimate,

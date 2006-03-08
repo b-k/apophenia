@@ -3,7 +3,8 @@
 #include <gsl/gsl_matrix.h>
 #include <apophenia/types.h>
 
-apop_estimate * apop_estimate_OLS(apop_data *set, apop_estimation_params *ep);
+//apop_estimate * apop_estimate_OLS(apop_data *set, apop_estimation_params *ep);
+apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin);
 apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matrix *sigma);
 apop_estimate *apop_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories);
 //Returns GLS/OLS parameter estimates.

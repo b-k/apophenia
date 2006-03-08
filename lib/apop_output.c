@@ -75,7 +75,8 @@ int             append_state;
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters,0), gsl_vector_get(est->parameters,1));
 	if (data->names){
 		fprintf(f, "set xlabel \"%s\"\n", data->names->colnames[1]);
-		fprintf(f, "set ylabel \"%s\"\n", data->names->depnames[0]);
+        if (est->dependent !=NULL)
+		    fprintf(f, "set ylabel \"%s\"\n", est->dependent->names->colnames[0]);
 	}
 	fprintf(f, "set key off\n");
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");

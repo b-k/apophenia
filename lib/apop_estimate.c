@@ -42,7 +42,7 @@ void apop_inventory_copy(apop_inventory in, apop_inventory *out){
 	out->covariance	= in.covariance;
 	out->confidence	= in.confidence;
 	out->predicted	= in.predicted;
-	out->residuals	= in.residuals;
+	out->dependent	= in.dependent;
 	out->names  	= in.names;
 	out->log_likelihood = in.log_likelihood;
 }
@@ -58,7 +58,7 @@ void apop_inventory_set(apop_inventory *out, int value){
 	out->predicted	= 
 	out->confidence	= 
 	out->covariance	= 
-	out->residuals	= 
+	out->dependent	= 
 	out->names  	= 
 	out->log_likelihood = value;
 }
@@ -81,7 +81,7 @@ apop_inventory  out;
 	out.covariance	    &= filter.covariance;
 	out.confidence	    &= filter.confidence;
 	out.predicted	    &= filter.predicted;
-	out.residuals	    &= filter.residuals;
+	out.dependent	    &= filter.dependent;
 	out.log_likelihood &= filter.log_likelihood;
 	out.names          &= filter.names;
     return out;
@@ -116,10 +116,14 @@ apop_estimate * prep_me;
 		prep_me->parameters	= gsl_vector_alloc(model.parameter_ct);
 	if (prep_me->estimation_params.uses.confidence)
 		prep_me->confidence	= gsl_vector_alloc(model.parameter_ct);
-	if (prep_me->estimation_params.uses.predicted)
-		prep_me->predicted	= gsl_vector_alloc(data->data->size1);
-	if (prep_me->estimation_params.uses.residuals)
-		prep_me->residuals	= gsl_vector_alloc(data->data->size1);
+	if (prep_me->estimation_params.uses.dependent ||
+	                prep_me->estimation_params.uses.predicted){
+		prep_me->dependent	= apop_data_alloc(data->data->size1,3);
+        apop_name_add(prep_me->dependent->names, "actual", 'c');
+        apop_name_add(prep_me->dependent->names, "predicted", 'c');
+        apop_name_add(prep_me->dependent->names, "residual", 'c');
+        apop_name_stack(prep_me->dependent->names, data->names, 'r');
+    }
 	if (prep_me->estimation_params.uses.covariance)
 		prep_me->covariance	= gsl_matrix_alloc(model.parameter_ct,model.parameter_ct);
 	if (prep_me->estimation_params.uses.names) {
@@ -135,12 +139,9 @@ apop_estimate * prep_me;
 
 \ingroup inv_and_est */
 void apop_estimate_free(apop_estimate * free_me){
-	if (free_me->estimation_params.uses.predicted)
-		gsl_vector_free(free_me->predicted);
-	if (free_me->estimation_params.uses.predicted)
-		gsl_vector_free(free_me->predicted);
-	if (free_me->estimation_params.uses.residuals)
-		gsl_vector_free(free_me->residuals);
+	if (free_me->estimation_params.uses.predicted
+	    || free_me->estimation_params.uses.dependent)
+		apop_data_free(free_me->dependent);
 	if (free_me->estimation_params.uses.confidence)
 		gsl_vector_free(free_me->confidence);
 	if (free_me->estimation_params.uses.covariance)

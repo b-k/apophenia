@@ -103,8 +103,8 @@ apop_model apop_poisson = {"poisson", 1,
     1,    //parameters
     1,    //covariance
     0,    //confidence
-    0,    //predicted
-    0,    //residuals
+	0,	//dependent
+	0,	//predicted
     0,    //log_likelihood
     1    //names;
 },

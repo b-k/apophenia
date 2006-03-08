@@ -20,8 +20,8 @@ apop_model apop_OLS = {"OLS", -1,
 	1,	//parameters
 	1,	//covariance
 	1,	//confidence
-	0,	//predicted
-	1,	//residuals
+	1,	//dependent
+	1,	//predicted
 	0,	//log_likelihood
 	1	//names;
 },	 
@@ -37,8 +37,8 @@ apop_model apop_GLS = {"GLS", -1,
 	1,	//parameters
 	1,	//covariance
 	1,	//confidence
-	0,	//predicted
-	1,	//residuals
+	1,	//dependent
+	1,	//predicted
 	0,	//log_likelihood
 	1	//names;
 },	 

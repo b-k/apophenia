@@ -140,7 +140,8 @@ static void prep_inventory_mle(apop_inventory in){
 	in.names		    = 0;
 	in.confidence		= 0;
 	//OK, some things are not yet implemented.
-	in.residuals		= 0;
+	in.dependent		= 
+	in.predicted		= 0;
 	if (in.confidence==1)
 		in.covariance = 1;
 	if (in.covariance==1)

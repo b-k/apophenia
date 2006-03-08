@@ -261,6 +261,9 @@ The name of a file on the hard drive on which to store the database. If
 the other database functions will call this function for you and you
 don't need to bother).
 
+\return 0: everything OK<br>
+        1: database did not open.
+
 \ingroup db
 */
 int apop_db_open(char *filename){
@@ -270,7 +273,8 @@ int apop_db_open(char *filename){
 	if (filename==NULL) 	sqlite3_open(":memory:",&db);
 	else			sqlite3_open(filename,&db);
 	if (db == NULL)	
-		{printf("Not sure why, but the database didn't open.\n");
+		{if (apop_opts.verbose)
+            printf("Not sure why, but the database didn't open.\n");
 		return 1; }
 	sqlite3_create_function(db, "stddev", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalize);
 	sqlite3_create_function(db, "var", 1, SQLITE_ANY, NULL, NULL, &twoStep, &varFinalize);

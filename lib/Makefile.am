@@ -52,6 +52,7 @@ install_man3_MANS = man/man3/*
 doc: 
 	doxygen doxy/doxyconfig
 	cp doxy/flake.gif doxy/search.gif html/
+	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
 
 test:
 	gcc -o test -lapophenia -lgsl -lgslcblas -lsqlite3 test.c -g

@@ -21,11 +21,9 @@ apop_name	* init_me;
 	init_me->colnames	= malloc(1);
 	init_me->catnames	= malloc(1);
 	init_me->rownames	= malloc(1);
-	init_me->depnames	= malloc(1);
 	init_me->colnamect	= 
 	init_me->catnamect	= 
-	init_me->rownamect	=
-	init_me->depnamect	= 0;
+	init_me->rownamect	= 0;
 	return init_me;
 }
 
@@ -33,19 +31,12 @@ apop_name	* init_me;
 
 \param n 	An existing, allocated \ref apop_name structure.
 \param add_me 	A string.
-\param type 	If adding a dependent variable, use <tt>'d'</tt>; if adding a row name, use <tt>'r'</tt>;
-If adding a (independent) column name, use <tt>'c'</tt>; if adding a category (i.e. text) name, use <tt>'t'</tt>.
+\param type 	If adding a row name, use <tt>'r'</tt>;
+If adding a column name, use <tt>'c'</tt>; if adding a category (i.e. text) name, use <tt>'t'</tt>. Default is 'c', meaning that if you use anything but 'r' or 't', you'll be adding to the columns.
 \return 	Returns the number of rows/cols/depvars after you have added the new one.
 \ingroup names
 */
 int apop_name_add(apop_name * n, char *add_me, char type){
-	if (type == 'c'){
-		(n->colnamect)++;
-		n->colnames	= realloc(n->colnames, sizeof(char*) * n->colnamect);
-		n->colnames[n->colnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
-		strcpy(n->colnames[n->colnamect -1], add_me);
-		return n->colnamect;
-	} 
 	if (type == 'r'){
 		(n->rownamect)++;
 		n->rownames	= realloc(n->rownames, sizeof(char*) * n->rownamect);
@@ -59,12 +50,16 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 		n->catnames[n->catnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
 		strcpy(n->rownames[n->catnamect -1], add_me);
 		return n->catnamect;
-	} //else:  type == 'd'
-		(n->depnamect)++;
-		n->depnames	= realloc(n->depnames, sizeof(char*) * n->depnamect);
-		n->depnames[n->depnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
-		strcpy(n->depnames[n->depnamect -1], add_me);
-		return n->depnamect;
+	}
+	//else assume (type == 'c'){
+        if (type != 'c' && apop_opts.verbose)
+            printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
+		(n->colnamect)++;
+		n->colnames	= realloc(n->colnames, sizeof(char*) * n->colnamect);
+		n->colnames[n->colnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
+		strcpy(n->colnames[n->colnamect -1], add_me);
+		return n->colnamect;
+	//} 
 }
 
 /** Prints the given list of names to STDOUT
@@ -73,12 +68,6 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 */
 void  apop_name_print(apop_name * n){
 int		i;
-	if (n->depnamect > 0){
-		printf("\t\t\t");
-		for (i=0; i < n->depnamect; i++)
-			printf("\t%s", n->depnames[i]);
-		printf("\n");
-	}
 	if (n->colnamect > 0){
 		printf("\t\t\t");
 		for (i=0; i < n->colnamect; i++)
@@ -109,30 +98,25 @@ int		i;
 		free(free_me->catnames[i]);
 	for (i=0; i < free_me->rownamect; i++)
 		free(free_me->rownames[i]);
-	for (i=0; i < free_me->depnamect; i++)
-		free(free_me->depnames[i]);
 	free(free_me->colnames);
 	free(free_me->catnames);
 	free(free_me->rownames);
-	free(free_me->depnames);
 	free(free_me);
 }
 
 /** Append one list of names to another.
 
+Notice that if the first list in NULL, then this is a copy function.
+
 \param  n1      The first set of names
 \param  n2      The second set of names, which will be appended after the first.
-\param type     Either 'd', 'c', 'r', or 't' stating whether you are merging the dependent var names, columns, rows, or text. [Default: cols]
+\param type     Either 'c', 'r', or 't' stating whether you are merging the columns, rows, or text. [Default: cols]
 \ingroup names */
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type){
 int     i;
     if (type == 'r'){
         for (i=0; i< n2->rownamect; i++)
             apop_name_add(n1, n2->rownames[i], 'r');
-        }
-    else if (type == 'd'){
-        for (i=0; i< n2->depnamect; i++)
-            apop_name_add(n1, n2->depnames[i], 'd');
         }
     else if (type == 't'){
         for (i=0; i< n2->catnamect; i++)
@@ -161,7 +145,6 @@ apop_name_memcpy(&out, in);
   */
 void apop_name_memcpy(apop_name **out, apop_name *in){
     *out = apop_name_alloc();
-    apop_name_stack(*out, in, 'd');
     apop_name_stack(*out, in, 'c');
     apop_name_stack(*out, in, 'r');
     apop_name_stack(*out, in, 't');
@@ -181,7 +164,6 @@ apop_name *out  = apop_name_copy(in);
   */
 apop_name * apop_name_copy(apop_name *in){
 apop_name *out = apop_name_alloc();
-    apop_name_stack(out, in, 'd');
     apop_name_stack(out, in, 'c');
     apop_name_stack(out, in, 'r');
     apop_name_stack(out, in, 't');
@@ -209,4 +191,33 @@ int         i;
     newname->colnames   = malloc(1);
     newname->colnamect  = 0;
     apop_name_free(newname);
+}
+
+/** Finds the position of an element in a list of names.
+
+\param n    the \ref apop_name object to search.
+\param findme the name you seek
+\param type 'c', 'r', or 't'.
+\return The position of \c findme. If not found, returns -1.
+  */
+size_t  apop_name_find(apop_name *n, char *findme, char type){
+char    **list;
+int     i, listct;
+    if (type == 'r'){
+        list    = n->rownames;
+        listct  = n->rownamect;
+    }
+    else if (type == 't'){
+        list    = n->catnames;
+        listct  = n->catnamect;
+    }
+    else { // default: (type == 'c')
+        list    = n->colnames;
+        listct  = n->colnamect;
+    }
+    for (i = 0; i < listct; i++){
+        if (!strcmp(list[i], findme))
+            return i;
+    }
+    return -1;
 }

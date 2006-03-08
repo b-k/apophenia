@@ -244,7 +244,7 @@ has mean zero, and maybe variance one.
 \ingroup basic_stats */
 void apop_matrix_normalize(gsl_matrix *data, int normalization){
 gsl_vector  v;
-double      mu;
+double      mu = 0;
 int         j;
         for (j = 0; j < data->size2; j++){
             v	= gsl_matrix_column(data, j).vector;

@@ -78,7 +78,7 @@ likelihood, and the ML estimates won't return an  R^2.
 
 \b the elements 
 \verbatim
-int     parameters, covariance, confidence, predicted, residuals, log_likelihood;
+int     parameters, covariance, confidence, dependent, predicted, log_likelihood;
 \endverbatim
 
 There is one element for each element of the \ref apop_estimate structure.
@@ -87,10 +87,11 @@ If the <tt>apop_inventory</tt> will be sent in to a regression/MLE
 function, set the appropriate element to either zero or one if you would
 like the function to return the designated \ref apop_estimate element.
 
-The \ref apop_estimate structure itself has an <tt>apop_inventory</tt>
-element named <tt>uses</tt> embedded within it. Those elements for
-which <tt>uses.elmt</tt> are zero are unallocated pointers (so be careful:
-precede all dereferences with an <tt>if(est->uses.element)</tt> clause).
+The \ref apop_estimation_params of the \ref apop_estimate structure
+has an <tt>apop_inventory</tt> element named <tt>uses</tt> embedded
+within it. Those elements for which <tt>uses.elmt</tt> are zero are
+unallocated pointers (so be careful: precede all dereferences with an
+<tt>if(est->uses.element)</tt> clause).
 
 <b>functions</b><br>
 \code
@@ -110,20 +111,22 @@ should either be zero or one.
 Unlike almost everything else in the GSL and Apophenia, it is
 generally assumed that <tt>apop_inventory</tt>s are not pointers, but
 are automatically allocated. Notably, this is true of the <tt>uses</tt>
-element of the \ref apop_estimate structure; therefore, to check whether
-the variance-covariance matrix of an <tt>apop_estimate*</tt> is present,
-for example, you would look at <tt>est->uses.covariance</tt>.
+element of the \ref apop_estimation_params structure; therefore, to check
+whether the variance-covariance matrix of an <tt>apop_estimate*</tt>
+is present, for example, you would look at 
+<tt>est->estimation_params.uses.covariance</tt>.
 
 
 It may sometimes be useful to manipulate the ["apop_estimate"] structure's
 internal <tt>apop_inventory</tt> element to your own benefit. For
-example, if you set <tt>est->uses.residuals = 0</tt> before calling
-<tt>apop_print_estimate(est, NULL)</tt>, then the residuals won't get
-printed. But be careful: if you then call <tt>apop_estimate_free(est)</tt>,
-then the residuals won't get freed, either.
+example, if you set <tt>est->estimation_params.uses.predicted =
+0</tt> before calling <tt>apop_print_estimate(est, NULL)</tt>, then
+the predicted values won't get printed. But be careful: if you then call
+<tt>apop_estimate_free(est)</tt>, then the predicted values won't get freed,
+either.  
 */
 typedef struct apop_inventory{
-	int	parameters, covariance, confidence, predicted, residuals, log_likelihood, names;
+	int	parameters, covariance, confidence, dependent, predicted, log_likelihood, names;
 } apop_inventory;
 
 #include <string.h>
@@ -144,9 +147,8 @@ Typically, the row names are not used, but they are there for your convenience.
 typedef struct apop_name{
 	char ** colnames;
 	char ** rownames;
-	char ** depnames;
 	char ** catnames;
-	int colnamect, depnamect, rownamect, catnamect;
+	int colnamect, rownamect, catnamect;
 } apop_name;
 
 /** Parameters for running estimations. No estimation uses all of them.
@@ -163,6 +165,17 @@ typedef struct apop_estimation_params{
 	apop_inventory	uses;
 } apop_estimation_params;
 
+/**
+Gathers together a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space for a table of non-numeric data.
+\ingroup data_struct
+*/
+typedef struct apop_data{
+    gsl_matrix  *data;
+    apop_name   *names;
+    char        ***categories;
+    int         catsize[2];
+} apop_data;
+
 /** Regression and MLE functions return this structure, which includes
 the various elements that one would want from a model estimate.
 
@@ -175,15 +188,18 @@ every time a function asks for an <tt>apop_inventory*</tt> structure.]
 The \ref apop_OLS page has a sample program which uses an <tt>apop_estimate</tt> structure.
 
 \param parameters 	The vector of coefficients or parameters estimated by the regression/MLE. Usually has as many dimensions as your data set has columns.
-\param predicted 	The most likely values of the dependent variable. Has as many dimensions as your data set has columns.
-\param residuals 	The actual values of the dependent var minus the predicted. Has as many dimensions as your data set has columns.
+\param dependent	An three-column \ref apop_data structure with
+three parts. If this is a model with a single dependent and lots of
+independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally. There is thus currently no way to get just the predicted but not the residuals or vice versa.
+\param covariance 	The variance-covariance matrix (remember the variance is just the covariance of a variable with itself).
 \param covariance 	The variance-covariance matrix (remember the variance is just the covariance of a variable with itself).
 \param confidence 	The two-tailed test of the hypothesis that the variable is zero. One element for each parameter.
 \param status		The return status from the estimate that had populated this apop_estimate, if any.
 \ingroup inv_and_est
 */
 typedef struct apop_estimate{
-	gsl_vector 	*parameters, *confidence, *predicted, *residuals;
+	gsl_vector 	*parameters, *confidence;
+    apop_data   *dependent;
 	gsl_matrix 	*covariance;
 	double		log_likelihood;
 	apop_name	*names;
@@ -192,17 +208,6 @@ typedef struct apop_estimate{
     struct apop_model  *model;
     struct apop_estimation_params  estimation_params;
 } apop_estimate;
-
-/**
-Gathers together a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space for a table of non-numeric data.
-\ingroup data_struct
-*/
-typedef struct apop_data{
-    gsl_matrix  *data;
-    apop_name   *names;
-    char        ***categories;
-    int         catsize[2];
-} apop_data;
 
 /** This is an object to describe a model whose parameters are to be
 estimated. It would primarily be used for maximum likelihood estimation,
@@ -263,6 +268,7 @@ void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
 void apop_name_rm_columns(apop_name *n, int *drop);
 void apop_name_memcpy(apop_name **out, apop_name *in);
 apop_name * apop_name_copy(apop_name *in);
+size_t  apop_name_find(apop_name *n, char *findme, char type);
 
 apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_estimation_params *params);
 void 		apop_estimate_free(apop_estimate * free_me);
@@ -278,12 +284,17 @@ apop_inventory apop_inventory_filter(apop_inventory *in, apop_inventory filter);
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_data_from_matrix(gsl_matrix *m);
+apop_data * apop_vector_to_data(gsl_vector *v);
 apop_data * apop_data_from_vector(gsl_vector *v);
 apop_data * apop_data_alloc(int size1, int size2);
 apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
 apop_data * apop_data_copy(apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data **out, apop_data *in);
+double apop_data_get(apop_data *in, size_t row, size_t  col);
+double apop_data_get_nt(apop_data *in, size_t row, char* col);
+double apop_data_get_tn(apop_data *in, char* row, size_t col);
+double apop_data_get_tt(apop_data *in, char *row, char* col);
 
 void apop_cats_free(char ***freeme, int rows, int cols); //in apop_data.c
 

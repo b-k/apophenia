@@ -133,20 +133,24 @@ return apop_F_test(est, set, q, c);
 }
 
 //shift first col to depvar, rename first col "one".
-static void prep_inventory_names(apop_name *n){
-	if (n != NULL && n->colnamect > 0) {		
-		apop_name_add(n, n->colnames[0], 'd');
+static void prep_names(apop_estimate *e){
+	if (e->names != NULL && e->names->colnamect > 0) {		
+		//apop_name_add(n, n->colnames[0], 'd');
+		e->dependent->names->colnames[0] =
+            realloc(e->dependent->names->colnames[0],sizeof(n->colnames[0]));
+		sprintf(e->dependent->names->colnames[0], n->colnames[0]);
 		sprintf(n->colnames[0], "1");
 	}
 }
 
 void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_estimate *out){
-	if (out->estimation_params.uses.covariance + out->estimation_params.uses.confidence + out->estimation_params.uses.residuals == 0 ){	
+	if (out->estimation_params.uses.covariance + out->estimation_params.uses.confidence + out->estimation_params.uses.predicted == 0 ){	
 		//then don't calculate (X'X)^{-1}
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters);
 		return;
 	} //else:
 gsl_vector 	*error;
+gsl_vector 	predicted;
 gsl_matrix	*cov;
 double		upu;
 int		i;
@@ -155,8 +159,6 @@ int		i;
 	apop_det_and_inv(xpx, &cov, 0, 1);		//(X'X)^{-1} (not yet cov)
 	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters);
 	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters, 0, error);
-	if (out->estimation_params.uses.predicted)	
-		gsl_vector_memcpy(out->predicted, error);
 	gsl_vector_sub(y_data, error);	//until this line, 'error' is the predicted values
 	gsl_blas_ddot(error, error, &upu);
 	gsl_matrix_scale(cov, upu/data->size2);	//Having multiplied by the variance, it's now it's the covariance.
@@ -164,10 +166,20 @@ int		i;
 		for (i=0; i < data->size2; i++)  // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 			gsl_vector_set(out->confidence, i,
 			   two_tailify(gsl_cdf_gaussian_P(gsl_vector_get(out->parameters, i), gsl_matrix_get(cov, i, i))));
-	if (out->estimation_params.uses.residuals == 0) 	gsl_vector_free(error);
-	else 				out->residuals	= error;
-	if (out->estimation_params.uses.covariance == 0) 	gsl_matrix_free(cov);
-	else 				out->covariance	= cov;
+	if (out->estimation_params.uses.dependent)
+        gsl_matrix_set_col(out->dependent->data, 0, y_data);
+	if (out->estimation_params.uses.predicted){
+        gsl_matrix_set_col(out->dependent->data, 2, error);
+        predicted   = gsl_matrix_column(out->dependent->data, 2).vector;
+        gsl_vector_set_zero(&predicted);
+        gsl_vector_add(&predicted, y_data);
+        gsl_vector_sub(&predicted, error);
+    }
+    gsl_vector_free(error);
+	if (out->estimation_params.uses.covariance == 0) 	
+        gsl_matrix_free(cov);
+	else 				
+        out->covariance	= cov;
 }
 
 /** generalized least squares.
@@ -193,7 +205,6 @@ A pointer to an \ref apop_estimate structure with the appropriate elements fille
 Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
  */
 apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matrix *sigma){
-    prep_inventory_names(set->names);
 apop_model      *modded_ols;
     modded_ols              = apop_model_copy(apop_GLS);
     modded_ols->parameter_ct= set->data->size2;
@@ -204,6 +215,7 @@ gsl_vector 	*xsy 		= gsl_vector_calloc(set->data->size2);
 gsl_matrix 	*xsx 		= gsl_matrix_calloc(set->data->size2, set->data->size2);
 gsl_matrix 	*sigma_inverse;	//= gsl_matrix_alloc(data->size1, data->size1);
 gsl_vector_view	v 		= gsl_matrix_column(set->data, 0);
+    prep_names(out);
 	gsl_matrix_get_col(y_data, set->data, 0);
 	gsl_vector_set_all(&(v.vector), 1);	                                            //affine: first column is ones.
 	apop_det_and_inv(sigma, &sigma_inverse, 0, 1);					                //find sigma^{-1}
@@ -289,7 +301,8 @@ int main(void){
 
 
  */
-apop_estimate * apop_estimate_OLS(apop_data *inset, apop_estimation_params *ep){
+apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
+apop_estimation_params *ep = epin;
 apop_model      *modded_ols;
 apop_data       *set;
 
@@ -301,12 +314,12 @@ apop_data       *set;
 
     modded_ols              = apop_model_copy(apop_OLS); 
     modded_ols->parameter_ct= set->data->size2;
-    prep_inventory_names(set->names);
 apop_estimate	*out		= apop_estimate_alloc(inset, *modded_ols, ep);
 gsl_vector      *y_data     = gsl_vector_alloc(set->data->size1); 
 gsl_vector      *xpy        = gsl_vector_calloc(set->data->size2);
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->data->size2, set->data->size2);
 gsl_vector_view v           = gsl_matrix_column(set->data, 0);
+    prep_names(out);
     gsl_matrix_get_col(y_data, set->data, 0);
     gsl_vector_set_all(&(v.vector), 1);                 //affine: first column is ones.
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);   //(X'X)
@@ -529,18 +542,18 @@ apop_data *apop_estimate_correlation_coefficient(apop_estimate *in){
 double          sse, sst, rsq;
 size_t          obs     = in->data->data->size1;
 size_t          indep_ct= in->data->data->size2 - 1;
-gsl_vector      *y      = gsl_vector_alloc(obs);
-gsl_vector_view v;  
+gsl_vector      v;  
 apop_data       *out    = apop_data_alloc(5,1);
-    //notice that the sum of squares is just vector dot vector.
-    gsl_blas_ddot(in->residuals, in->residuals, &sse);
-
-    //copy the dependent var to a temp vector, subtract means, square.
-    v   = gsl_matrix_column(in->data->data, 0);
-    gsl_vector_memcpy(y, &(v.vector));
-    gsl_vector_add_constant(y, - apop_vector_mean(y));
-    gsl_blas_ddot(y, y, &sst);
-
+    if (!in->estimation_params.uses.predicted
+        || !in->estimation_params.uses.dependent){
+        if (apop_opts.verbose)
+            printf("I need predicted and dependent to be set in the apop_estimate->estimation_params.uses before I can calculate the correlation coefficient. returning NULL.\n");
+        return NULL;
+    }
+    v   = gsl_matrix_column(in->dependent->data, 2).vector;//residuals
+    sse = apop_vector_var(&v) * v.size;
+    v   = gsl_matrix_column(in->dependent->data, 0).vector;//actual
+    sst = apop_vector_var(&v) * v.size;
     rsq = 1 - (sse/sst);
 
     apop_name_add(out->names, "R_squared", 'r');
@@ -552,9 +565,8 @@ apop_data       *out    = apop_data_alloc(5,1);
     apop_name_add(out->names, "SST", 'r');
     gsl_matrix_set(out->data, 3, 0, sst);
     apop_name_add(out->names, "SSR", 'r');
-    gsl_matrix_set(out->data, 4, 0, sst - sse);
+    gsl_matrix_set(out->data, 4, 0, sse - sst);
 
-    gsl_vector_free(y);
     return out;
 }
 
