@@ -41,6 +41,13 @@
 \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
 \def\vocab#1{{\sl #1}\index{#1}}
 
+%fold bib citations into the index
+\citeindextrue
+\makeatletter
+\renewcommand\NAT@idxtxt{\NAT@name}
+\makeatother
+
+
 %code listing:
 \lstset{columns=fullflexible,
 emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,gsl_vector,gsl_matrix},emphstyle=\bf}
@@ -85,6 +92,17 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 }
 \end{wrapfigure}
 }
+
+\long\def\marginaliafixed#1#2#3{
+\begin{wrapfigure}[#1]{l}[1.3cm]{3in}
+\fbox{\begin{minipage}{2.8in}
+{\bf #2}\vskip .5cm\par
+\small #3
+\end{minipage}
+}
+\end{wrapfigure}
+}
+
 
 %title page:
 \begin{document}
@@ -175,15 +193,23 @@ missing or underused in stats-specific languages. Those who are entirely
 new to the idea of writing a sequence of instructions for a computer
 may want to warm up with a few online tutorials.
 
-There is an up-front investment to the methods here, and a long-term
-payoff. If you expect that you will never do anything more difficult than
-a linear regression on well-formed \ind{iid} data, or if you are trying
-to slog through your department's stats requirement so you can never look
-at another data set again, then by all means, put this book down and get
-a copy of the easiest stats package you can get away with. But if you
-expect to be doing statistical work for a larger part of your career,
-such that problems of extensibility, portability, and precision may be
-looming in your future, then this book is for you.
+If you are well-versed in C and SQL, then the later parts of Part I and
+all of Part II will be immediately useful. 
+
+If you are not well-versed in C and SQL, then expect to take some quality
+time getting comfortable with these languages before doing statistics
+with the techniques here becomes easy.
+
+That is, there is an up-front investment to the methods here, and a
+long-term payoff. If you expect that you will never do anything more
+difficult than a linear regression on well-formed \ind{iid} data, or
+if you are trying to slog through your department's stats requirement
+so you can never look at another data set again, then by all means, put
+this book down and get a copy of the easiest stats package you can get
+away with. But if you expect to be doing statistical work for a larger
+part of your career, such that problems of extensibility, portability,
+and precision may be looming in your future, then this book is for you.
+
 
 \section{The stats covered} 
 As powerful as we like to think modern statistics is, it has a 
@@ -216,7 +242,7 @@ hypotheses testing.
 important fact about statistical analysis: it proves nothing, only
 persuades. A large part of this is that we are looking for causal stories
 about the world, but there is no statistical technique (and never will be)
-that proves causality. Further, there is always a way to rewrite a model
+that proves \ind{causality}. Further, there is always a way to rewrite a model
 or re-draw the data so that a rejected hypothesis is not, or vice versa.
 But some results are more robust to tweaking 
 than others, and some models are just plain more persuasive than others.
@@ -245,6 +271,7 @@ distribution or the F distribution are used only for testing hypotheses
 about parameters we have written down ourselves (such as the correlation
 coefficient, which has an F distribution). \cite{kmenta} points out that nothing
 in nature has a Chi-squared distribution. 
+\index{chi squared distribution@$\chi^2$ distribution}
 
 Often, your work will shift
 gears from describing the data (like fitting an OLS regression to the
@@ -256,7 +283,8 @@ which goal you are working on with each line of code or math, and to be
 certain that it is working toward your overall goal of saying something
 interesting and persuasive.
 
-\subsection{General theorems and their special cases}
+\subsection{General theorems and their special cases}\ind{Ordinary least
+squares|(}
 Here is another way to subdivide the theorems that underly
 statistics, this time into two classes. The first class, including the
 results about MLEs, applies almost universally, but requires a huge
@@ -292,6 +320,7 @@ now it is possible (and as this book hopes to show, even easy) to write
 down exactly the right likelihood function, and to find exactly the best
 parameters, instead of settling for the unpersuasive---and often
 inapplicable---model which requires the least processor power.
+\ind{Ordinary least squares|)}
 
 \section{The programming covered}
 
@@ -309,7 +338,7 @@ you will find to be so valuable. The remainder of the book will be at the higher
 level, describing how to glue together the functions in the
 GNU Scientific Library, SQLite, and Apophenia to get your research done.
 
-\subsection{The computation engine} The GNU Scientific Library includes tools for
+\subsection{The computation engine} The \ind{GNU Scientific Library} includes tools for
 all of the procedures mentioned above: linear algebra operations, looking up the
 value of F-, t-, $\chi^2$- distributions, calculating likelihood functions, and
 maximizations. These will be the building blocks for analysis.
@@ -323,20 +352,20 @@ to put in the hopper.\footnote{SAS, by the way, gets its facility with large dat
 by providing a front-end to SQL queries. You can enter SQL directly into
 SAS if you so choose.}
 
-The best programs for large data sets are databases. They are designed
-from the ground up to do nothing but let you efficiently retrieve what you
-need from huge amounts of data.  Of course, being so purpose-specific,
-there is no way to do statistics in a database (beyond trivialities like calculating
-averages). Fortunately, we are working in C, so we can have the best of
-all worlds. The method I advocate in this book (and the method that
-Apophenia facilitates) is to read all of your
+The best programs for large data sets are \ind{databases}. They are
+designed from the ground up to do nothing but let you efficiently
+retrieve what you need from huge amounts of data.  Of course, being so
+purpose-specific, there is no way to do statistics in a database (beyond
+trivialities like calculating averages). Fortunately, we are working in
+C, so we can have the best of all worlds. The method I advocate in this
+book (and the method that Apophenia facilitates) is to read all of your
 data into a database, and then query what you need to a matrix, as you
-need it. This requires learning a new syntax, SQL, which is decidedly
+need it. This requires learning a new syntax, \ind{SQL}, which is decidedly
 neither Beautiful nor Perfect, and adds a level of complication on top
 of what you are already dealing with. But the ease of manipulating data
 sets offered by SQL is very much worth its short learning curve.
 
-Apophenia  uses the SQLite library, which will
+Apophenia  uses the \ind{SQLite} library, which will
 give you all the database functionality you need. Those of you who are
 already database gurus, or who have data which is already handled
 by another database engine, will easily be able to adapt the techniques
@@ -348,7 +377,7 @@ download and incorporate into your programs.
 \subsection{Pretty pictures} One thing C is not really good for is drawing
 pretty pictures. This is not to be belittled, since those pictures
 can be very persuasive. Consistent with the rest of this book, plotting
-is done via Gnuplot, a program which is freely available for
+is done via \ind{Gnuplot}, a program which is freely available for
 the system you are using right now. Gnuplot is highly automatable, so once
 you have a plot you like, you can have your C programs autogenerate
 it or manipulate it in cute ways, or can send your program to your
@@ -410,6 +439,7 @@ graphic design suggestions.}
 \input mle.tex
 \input boot.tex
 %\input mcmc.tex
+\citeindexfalse
 \nocite{*}
 \backmatter
 \bibliographystyle{plainnat}

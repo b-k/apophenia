@@ -195,7 +195,7 @@ The last two steps converted from the one-tailed area below \cinline{beta}
 to a two-tailed area between $\pm$\cinline{beta}.
 
 
-\subsection{The t-test} \label{ttest}
+\subsection{The t-test} \label{ttest} \index{t test|(textbf}
 \index{t test!apop\_t\_test@\cinline{apop\_t\_test}}
 \index{t test!apop\_paired\_t\_test@\cinline{apop\_paired\_t\_test}}
 Among the most common and simplest questions one asks is: are two 
@@ -215,6 +215,7 @@ test the hypothesis that the number above, the $t$-statistic, is
 different from zero for any given confidence level. Apophenia provides a
 high-level function to do the work for you:
 
+\cindex{apop\_t\_test}
 \begin{lstlisting}
 gsl_vector *a = gather_data("n_side");
 gsl_vector *b = gather_data("s_side");
@@ -234,10 +235,12 @@ in the appropriate $t$-distribution. This is generally a more powerful test,
 meaning that we are more likely to reject the null hypothesis of no
 difference between the two vectors, therefore the paired $t$-test is
 generally preferable over the unpaired version above (when it is
-applicable). Apophenia provides the \cinline{apop\_paired\_t\_test}
+applicable). Apophenia provides the \cind{apop\_paired\_t\_test}
 function to run this test where appropriate.
+ \index{t test|)textbf}
 
-\subsection{The $\chi^2$ test \index{$\chi^2$ test}}
+\subsection{The $\chi^2$ test}
+\index{chi squared test@$\chi^2$ test}
 
 By itself, this is only useful for testing whether the sample variance
 is equal to a given $\sigma^2$, because unless you assume $\sigma^2$ 
@@ -325,7 +328,8 @@ many stats packages run an $F$-test that reports the
 joint hypothesis that all coefficients are different from zero. That is,
 it runs the $F$-test where $\Qv = {\bf I}$ and $\cv = {\bf 0}$.\footnote{This is
 partly because this $F$-test can be calculated using only the $R^2$.
-Once again, statistical convention is dictated by 70s computing power.}
+Once again, statistical convention is dictated by 70s computing power.
+\index{R squared@$R^2$}}
 It is up to you
 to decide whether this is a relevant statistic for the situation you are
 dealing with, but because it is a custom to report it, some

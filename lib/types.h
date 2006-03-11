@@ -188,23 +188,21 @@ every time a function asks for an <tt>apop_inventory*</tt> structure.]
 The \ref apop_OLS page has a sample program which uses an <tt>apop_estimate</tt> structure.
 
 \param parameters 	The vector of coefficients or parameters estimated by the regression/MLE. Usually has as many dimensions as your data set has columns.
-\param dependent	An three-column \ref apop_data structure with
-three parts. If this is a model with a single dependent and lots of
+\param dependent	An \ref apop_data structure with
+three columns. If this is a model with a single dependent and lots of
 independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally. There is thus currently no way to get just the predicted but not the residuals or vice versa.
-\param covariance 	The variance-covariance matrix (remember the variance is just the covariance of a variable with itself).
-\param covariance 	The variance-covariance matrix (remember the variance is just the covariance of a variable with itself).
+\param covariance 	The variance-covariance matrix.
 \param confidence 	The two-tailed test of the hypothesis that the variable is zero. One element for each parameter.
 \param status		The return status from the estimate that had populated this apop_estimate, if any.
 \ingroup inv_and_est
 */
 typedef struct apop_estimate{
 	gsl_vector 	*parameters, *confidence;
-    apop_data   *dependent;
-	apop_data 	*covariance;
+    apop_data   *dependent, *covariance;
 	double		log_likelihood;
 	apop_name	*names;
 	int		    status;
-    struct apop_data   *data;
+    apop_data   *data;
     struct apop_model  *model;
     struct apop_estimation_params  estimation_params;
 } apop_estimate;

@@ -15,7 +15,13 @@
    and in any apop_estimates, change any use of est->uses to
    est.estimation_params.uses.
 
-Next to be cleaned: names in apop_estimates.
+--Next apop_estimate reform: y_values and residuals combined into one
+apop_data table with actual, predicted, residual columns.
+	--obviated the need for a 'dependent' element in apop_names; removed that.
+	If you need the name, it's now your_est->dependent->names->colnames[0].
+
+--your_estimate->covariance is now an apop_data instead of a gsl_matrix.
+
 
 		February 2006
 sort-of-adaptive MLE: use apop_estimate_restart to execute a new MLE

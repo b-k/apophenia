@@ -93,7 +93,13 @@ Are you sure you need to use this? Every regression and MLE function
 provided by Apophenia creates this for you. [You will, however, have to
 free the estimate yourself.]
 
-It takes in all the inputs to the model: data, inventory, parameters, plus the model itself. Those elements of the inventory that are valid are copied in, and you also get pointers to the data, model, and parameters. Those pointers are never really used by Apophenia, but are there for your reference. They're just pointers, so if you destroy your data eleswhere, these pointers will faithfully point to garbage.
+It takes in all the inputs to the model: data, 
+parameters, plus the model itself. Those elements of the inventory
+that are valid are copied in, the parameters are copied, and you also get
+pointers to the data and model. Those pointers are  primarily
+there for your reference. They are just pointers to the original data,
+so if you destroy your data eleswhere, these pointers will faithfully
+point to garbage.
 
 \param data	        A pointer to an input apop_data set
 \param model	    A pointer to the model you're estimating

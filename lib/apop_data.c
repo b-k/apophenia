@@ -192,6 +192,7 @@ not work.
 output. A reminder: <tt>calloc(in->size2 * sizeof(int))</tt> will fill your array with zeros on allocation, and 
 <tt>memset(use, 1, in->size2 * sizeof(int))</tt> will
 quickly fill an array of ints with nonzero values.
+ \ingroup data_struct
  */
 void apop_data_rm_columns(apop_data *d, int *drop){
 gsl_matrix  *freeme = d->data;
@@ -205,6 +206,7 @@ gsl_matrix  *freeme = d->data;
 Q: How does <tt> apop_data_get(in, r,c)</tt> differ from
  <tt>gsl_matrix_get(in->data, row, col)</tt>?\\
 A: It's seven characters shorter.
+ \ingroup data_struct
 */
 double apop_data_get(apop_data *in, size_t row, size_t col){
     return gsl_matrix_get(in->data, row, col);
@@ -212,6 +214,8 @@ double apop_data_get(apop_data *in, size_t row, size_t col){
 
 /** Get an element from an \ref apop_data set, using the row name but
  the column number
+
+ \ingroup data_struct
  */
 double apop_data_get_tn(apop_data *in, char* row, size_t col){
 int rownum =  apop_name_find(in->names, row, 'r');
@@ -225,6 +229,7 @@ int rownum =  apop_name_find(in->names, row, 'r');
 
 /** Get an element from an \ref apop_data set, using the column name but
  the row number
+ \ingroup data_struct
  */
 double apop_data_get_nt(apop_data *in, size_t row, char* col){
 int colnum =  apop_name_find(in->names, col, 'c');
@@ -237,6 +242,7 @@ int colnum =  apop_name_find(in->names, col, 'c');
 }
 
 /** Get an element from an \ref apop_data set, using the row and column name.
+ \ingroup data_struct
  */
 double apop_data_get_tt(apop_data *in, char *row, char* col){
 int colnum =  apop_name_find(in->names, col, 'c');

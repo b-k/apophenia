@@ -277,10 +277,42 @@ people who don't have time to interrogate intermediate forms anyway.
 \subsection{The supporting cast}
 \paragraph{Names}
 The \cinline{apop\_name} structure has three components: a list of column
-names, a list of row names, and a list of dependent variable names. It
-is intended to accompany the \cinline{gsl\_matrix} structure, which holds
-all the other information about a data aaray such as the number of rows
-and columns. 
+names, a list of row names, and a list of categeory (text) variable
+names. It is intended to accompany the \cinline{gsl\_matrix} structure,
+which holds all the other information about a data aaray such as the
+number of rows and columns.
+
+You won't see an \cinline{apop\_name} structure by itself very often;
+usually it is embedded in an \cinline{apop\_data} structure. But its
+dimension is entirely independent of the \cinline{apop\_data} structure's
+data matrices, and you can operate on the \cinline{apop\_name} structure
+directly to add or retrieve names.
+
+For example, to get the
+column number of a variable in which you are insterested, usd \cind{apop\_name\_find}, e.g.:
+\begin{lstlisting}
+int column_number   = apop_name_find(my_data->names, "ages", 'c');
+gsl_vector age_vector = gsl_marix_column(my_data->data, column_number).vector;
+printf("mean age: %g\n", apop_vector_mean(&age_vector));
+\end{lstlisting}
+As above, you can also use \cind{apop\_data\_get\_nt} to pull a single
+element given a row number and a column name.
+
+The easy way to add names to a data set is to use the 
+\cind{apop\_query\_to\_data} function. It takes an SQL query and returns
+the data set with column names neatly stored in
+\cinline{returned\_data->names}.
+
+If you have a data set with a blank set of names, such as one
+produced via \cind{apop\_matrix\_to\_data},
+you may use \cind{apop\_name\_add} to add one name at a
+time, e.g.:
+\begin{lstlisting}
+apop_data newset    = apop_matrix_to_data(a_gsl_matrix);
+apop_name_add(newset->names, "col0",'c');
+apop_name_add(newset->names, "col1",'c');
+apop_name_add(newset->names, "row0",'r');
+\end{lstlisting}
 
 \paragraph{Inventory}
 The \cinline{apop\_inventory} structure serves two purposes. It is an input
@@ -307,7 +339,7 @@ precede any pointer use with an \cinline{if(est->uses.element)} clause).
 
 It may sometimes be useful to manipulate the \cinline{apop\_estimate} structure's
 internal \cinline{apop\_inventory} element to your own benefit. For
-example, if you set \cinline{est-$>$uses.covariance = 0} before calling
+example, if you set \cinline{est-$>$uses.co\-var\-iance = 0} before calling
 \cinline{apop\_print\_estimate(est, NULL)}, then the covariance matrix won't get
 printed. But be careful: if you then call \cinline{apop\_estimate\_free(est)},
 then the covariance matrix won't get freed, either.
@@ -395,9 +427,9 @@ of Apophenia have a good chance of extricating them). Instead, you can
 pass the estimate object to a function that will test a hypothesis. For
 example, the \ttind{apop\_estimate\_F\_test} takes in an 
 \cinline{apop\_estimate} and puts out the result of an F test, and the
-\ttind{apop\_estimate\_correlation\_coefficient} will produce a
-table including \ind{$R^2$}, adjusted $R^2$, \ind{SSE}, SST, and SSR. [See the
-reference for the definitions.]
+\ttind{apop\_estimate\_correlation\_co\-ef\-ficient} will produce a
+table including $R^2$, adjusted $R^2$, \ind{SSE}, SST, and SSR. [See the
+reference for the definitions.] \index{R squared@$R^2$}
 
 The output is an \cinline{apop\_data} structure. Typically, the rows are
 names of the variables in your original data set, and the columns are
@@ -449,6 +481,8 @@ dump to the screen, by basically just setting the output type to \cinline{'s'}, 
 \ttindex{apop\_vector\_print} \ttindex{apop\_vector\_print\_int}
 \ttindex{apop\_matrix\_print} \ttindex{apop\_matrix\_print\_int}
 \ttindex{apop\_data\_print} \ttindex{apop\_data\_print\_int}
+\ttindex{apop\_vector\_show} \ttindex{apop\_matrix\_show}
+\ttindex{apop\_data\_show}
 \begin{lstlisting}
 apop_vector_show(a_vector);
 apop_matrix_show_int(a_matrix);

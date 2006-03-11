@@ -11,48 +11,45 @@ from the data or merging together multiple data tables, using SQL. Then,
 as a last step, pull the perfectly formatted data into a GSL matrix and
 do the statistical analysis. 
 
-SQL is not nearly as complex a language as C, making it easy to learn
-and one might even say outright pleasant to work with. Here is some valid SQL: {\tt
-select age, gender, year from survey}. Why, that's almost proper English. It
-goes downhill from there in terms of properness, but at its worst, it is
-still not difficult to look at an SQL query and have some idea of what
-the rows and columns of the output table will look like.
+SQL is not nearly as complex a language as C, making it easy to learn and
+one might even say outright pleasant to work with. Here is some valid SQL:
+{\tt select age, gender, year from survey}. Why, that's almost proper
+English. It goes downhill from there in terms of properness, but at its
+worst, it is still not difficult to look at an SQL query and have some
+idea of what the rows and columns of the output table will look like.
 
-\section{Getting data into the database}
-Apophenia provides a set of functions to facilitate querying databases.
-It will open a single database, into which you can add all the tables you would like.
+In terms of implementation, Apophenia uses \ind{SQLite}, by D Richard
+Hipp. At its core, one could think of a database as a file format---a
+means by which data is stored in memory or on a hard drive such that
+programs can quickly get to them---plus a set of programs that know how
+to read and write that file format. SQLite provides a library of functions
+that parse SQL queries and uses those instructions to read and write
+a specific format of file. Since any program that uses the SQLite
+function library is reading and writing the same file format, SQLite
+files can be traded among dozens of programs. As with C utilities,
+the problem is selecting which SQLite database viewer to use among the
+many options. The SQLite library comes with a command-line program,
+\binline{sqlite3}, but there are many other alternatives that are more
+reminiscent of the table view in the standard stats package; ask your
+search engine for \airq{sqlite browser} or \airq{sqlite GUI}. These
+programs will give you immediate feedback about any queries you input,
+and will let you verify that the tables you are creating via C code are
+as you had expected.
 
-The first command you will need is \cind{apop\_open\_db}. If you give
-it the name of a file, like \cinline{apop\_open\_db("study.db")}, then the
-database will live on your hard drive. This is slower than memory, but
-will exist after you stop and restart the program, and so other programs
-will be able to use the file, you have more information for debugging,
-and you can re-run the program without re-reading in the data.
+As a supplement to the Apophenia library, there are a few standalone
+programs that will read and write SQLite databases. If you want to
+experiment with your own data while reading through this chapter, you can
+try \cind{apop\_text\_to\_db} on the command line to produce an SQLite
+database from a text file. Try \cind{apop\_text\_to\_db -h} for help.
 
-Conversely, if you give a null argument: \cinline{apop\_open\_db(NULL)},
-then the database is kept in memory, and will run faster but 
-disappear when the program exits.
-
-
-Unless your program is generating its own data, you will probably
-first be importing data from a text file.  The \cinline{apop\_text\_to\_db}
-function will do this for you; see the online reference for details. The
-first line of the text file can be column names, and the remaining rows
-are the data.
-
-
-When you are done with all of your queries, run
-\cinline{apop\_close\_db} to close the database. If you send the function a
-one---\cinline{apop\_close\_db(1)}---then SQLite will take a minute to clean
-up the database before exiting, leaving you with a smaller file on disk;
-sending in a zero doesn't bother with this step. Of course, if your
-database is in memory, it's all moot and you can forget to close the
-database without consequence.
+This chapter will primarily consist of an overview of SQL, which you can
+follow along with any of the above tools. Section \ref{foldingsql}
+will describe the Apophenia library functions that facilitate using an
+SQL database from within a C program.
 
 \section{Basic queries}
-This section discusses some of the methods of data slicing and joining
-that are easy using database queries, but difficult via
-matrix operations.
+Many methods of data slicing and joining are easy using database queries,
+but difficult via matrix operations.
 
 For example, pulling a subset of your data is trivial in SQL. If
 you need all of the data for those subjects over 175cm, you can ask for
@@ -221,7 +218,18 @@ from data;
 %\end{verbatim}
 This produces a table with one column and one row, listing the total number of rows in the \sinline{data} table.
 
-\marginalia{Crosstabs}{In the spreadsheet world, we often get tables
+You probably want more refinement than that; if you would like to
+know how much data you have in each ZIP code, then use the \sqlind{group
+by} clause to say so:
+\begin{lstlisting}
+select zip, count(*) as ct_per_zip
+from data
+group by zip;
+\end{lstlisting}
+This will group the rows into groups, where each group has the same ZIP
+code, and return a single line for each group.
+
+\marginaliafixed{15}{Crosstabs}{In the spreadsheet world, we often get tables
 where the X-dimension is the year, the Y-dimension is the location,
 and the $(x,y)$ point is a measurement taken that year at that location.
 
@@ -238,19 +246,6 @@ functions to do conversions back and forth:
 and
 \cinline{apop\_crosstab\_to\_db(crosstab, "new\_table\_name");}
 }
-
-You probably want more refinement than that; if you would like to
-know how much data you have in each ZIP code, then use the \sqlind{group
-by} clause to say so:
-%\begin{verbatim}
-\begin{lstlisting}
-select zip, count(*) as ct_per_zip
-from data
-group by zip;
-\end{lstlisting}
-%\end{verbatim}
-This will group the rows into groups, where each group has the same ZIP
-code, and return a single line for each group.
 
 
 The two other aggregation commands which will be useful to you are {\tt
@@ -309,8 +304,8 @@ cubed and the square root of incomes.
 Remember: these functions are Apohenia extensions, so be careful not to
 use these added functions if you ever hope to use your SQL queries in
 another context. If you want to stay standard, you call your data into
-a table and use \ttind{apop\_vector\_log}, \ttind{apop\_vector\_exp},
-\ttind{apop\_mean}, \ttind{apop\_var}, et cetera to get the desired
+a table and use \cind{apop\_vector\_log}, \cind{apop\_vector\_exp},
+\cind{apop\_mean}, \cind{apop\_var}, et cetera to get the desired
 statistics on the matrix side.
 
 \subsection{Stacking tables}
@@ -318,7 +313,7 @@ You can think of joining two tables as setting one table to the right of
 another table. But now and then, you need to stack one on top of
 the other. There are four keywords to do this.
 
-\paragraph{\cinlinetwo{Union}} For example, \ttindex{Union}
+\paragraph{\cinlinetwo{Union}} For example, \sindex{Union}
 \begin{lstlisting}
 select id, age, zip
 from data_set_1
@@ -330,21 +325,21 @@ will produce the results of the first query stacked directly on top of
 the second query. Feel free to use subqueries or what have you, but be
 careful that both tables have exactly the same number of columns.
 
-\paragraph{\cinlinetwo{Union all}}\ttindex{Union all} If a line is duplicated in both tables,
+\paragraph{\cinlinetwo{Union all}}\sindex{Union all} If a line is duplicated in both tables,
 then the \cinlinetwo{union} operation throws out
 one copy of the duplicate lines, much like \sinline{select distinct}
 includes only one of the duplicates. Replacing \sinline{UNION} with \sinline{Union all} will retain the duplicates.
 
-\paragraph{\cinlinetwo{Intersect}}\ttindex{Intersect} As you can guess,
+\paragraph{\cinlinetwo{Intersect}}\sindex{Intersect} As you can guess,
 putting \sinline{intersect} between two \sinline{select} statements
 returns a single copy of only those lines that appear in both tables.
 
-\paragraph{\cinlinetwo{Except}}\ttindex{Except} This is the subtraction: it returns only
+\paragraph{\cinlinetwo{Except}}\sindex{Except} This is the subtraction: it returns only
 elements from the first table that do not appear in the second. Notice
 the asymmetry: absolutely nothing in the second table will appear. 
 
 \subsection{Creating tables} There are two ways to create a table. One
-is via  a \ttind{create} statement and then an \ttind{insert} statement
+is via  a \sind{create} statement and then an \sind{insert} statement
 for every single line. 
 
 \begin{lstlisting}
@@ -363,7 +358,7 @@ The optimal speed/security trade-off is left as an exercise for the
 reader.
 
 If you have hundreds or thousands of \sinline{insert}s, you are almost certainly better off putting the data
-in a text file and using \ttind{apop\_text\_to\_db}. The form
+in a text file and using \sind{apop\_text\_to\_db}. The form
 above is mostly useful in situations where you are creating the table in mid-program; see the example on page \pageref{createeg}.
 
 
@@ -424,7 +419,41 @@ instead. Of course, the query output has no name, so you may need to
 alias the result: \sinline{from (select ...) t1} will allow you to refer to
 the query's output as \sinline{t1} elsewhere in the query.
 
-\subsection{Folding queries into C code} 
+\section{Folding queries into C code}\label{foldingsql}  This section covers the functions
+in the Apophenia library that will create and query a database. All of
+these functions are wrappers of SQLite functions that do the dirty work,
+but they are sufficiently complete that you should never need to use an
+SQLite function directly.
+
+\subsection{Importing}
+The first command you will need is \cind{apop\_open\_db}. If you give
+it the name of a file, like \cinline{apop\_open\_db("study.db")}, then the
+database will live on your hard drive. This is slower than memory, but
+will exist after you stop and restart the program, and so other programs
+will be able to use the file, you have more information for debugging,
+and you can re-run the program without re-reading in the data.
+
+Conversely, if you give a null argument: \cinline{apop\_open\_db(NULL)},
+then the database is kept in memory, and will run faster but 
+disappear when the program exits.
+
+Notice that Apophenia uses only one database at a time. If you need to
+use multiple databases, see the \cind{apop\_merge\_dbs} function (which
+also has a command-line equivalent).
+
+Unless your program is generating its own data, you will probably
+first be importing data from a text file.  The \cinline{apop\_text\_to\_db}
+function will do this for you; see the online reference for details. The
+first line of the text file can be column names, and the remaining rows
+are the data. 
+
+When you are done with all of your queries, run
+\cinline{apop\_close\_db} to close the database. If you send the function a
+one---\cinline{apop\_close\_db(1)}---then SQLite will take a minute to clean
+up the database before exiting, leaving you with a smaller file on disk;
+sending in a zero doesn't bother with this step. Of course, if your
+database is in memory, it's all moot and you can forget to close the
+database without consequence.
 
 
 \paragraph{apop\_query} Now for the queries. The simplest function
@@ -466,6 +495,16 @@ tall_people = apop_query_to_data(" select *     \
 \end{lstlisting}
 will query \sinline{data} for its information, allocate \sinline{tall\_people} to be an
 appropriately-sized matrix, and fill it with the data.
+
+For immediate feedback, you  can use \cind{apop\_data\_show} to dump
+your data to screen or \cind{apop\_data\_print} to print to a file (or
+even back to the database). If you want a quick-and-dirty picture of a
+table, try:\footnote{Notice that since \cinline{apop\_query\_to\_data}
+allocates a pointer to an \cinline{apop\_data} set but does not name
+that pointer, there is no way to free the memory afterward.} 
+\begin{lstlisting}
+apop_data_show(apop_query_to_data("select * from table"));
+\end{lstlisting}
 
 There are \cinline{apop\_query} functions for any type you could desire,
 including \cind{apop\_query\_to\_ma\-trix} to pull a query to a {\tt
@@ -558,7 +597,7 @@ trying to delete does not exist.
 
 %\DeclareFontFamily{LHE}{clas}{}
 %\DeclareFontShape{LHE}{clas}{m}{n}{ <-> }{}
-\subsection{Dummy variables}
+\subsection{Dummy variables} \index{dummy variables|(}
 The \sind{case} command is the if-then-else of SQL. Let us say that you
 have data that is true/false or yes/no. One way to do turn this into a
 one-zero variable would be via
@@ -602,17 +641,17 @@ out the list of districts, then we write a select statement with a line
 every district\_no. You can then run your regression on the output of
 the query without any further manipulation.
 
-Notice that the for loop goes from i=1, not i=0; this is because when
+Notice that the \cinline{for} loop goes from i=1, not i=0; this is because when
 including dummy variables, you always have to exclude one value, which
 will be the baseline; using i=1 means district[0] will be the baseline.
+\index{dummy variables|)}
 
-%\cindex{apop\_produce\_dummies}
-
-\subsection{Easy t-tests}
-Say we have a set of observations of our sample's years of education, and their annual income. We want to
-know if getting that grad school education is {\it really} worth it. The null hypothesis is: (Income for
-people with less than 16 years of education) $\leq$ (income for people with greater than or equal to 16 years
-of education).
+\subsection{Easy t-tests}\index{t test|(}
+Say we have a set of observations of our sample's years of education,
+and their annual income. We want to know if getting that grad school
+education is {\it really} worth it. The null hypothesis is: (Income for
+people with less than 16 years of education) $\leq$ (income for people
+with greater than or equal to 16 years of education).
 
 That first data set is:
 \begin{lstlisting}
@@ -711,5 +750,5 @@ by querying out incomes, and then calling
     still fail because of the infinite variances.}
 
 See page \pageref{ttest} for more on the $t$-test and this function.
-
+\index{t test|)}
 \setc %for code listings.

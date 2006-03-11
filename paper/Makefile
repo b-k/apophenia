@@ -5,6 +5,9 @@ DOCNAME = gsl_stats
 all: sources/dummy.tex 
 	#for i in *tex; do lgrind -e -t 4 $$i > $$(basename $$i .tex).ground; done;
 	latex $(DOCNAME)
+	#make up for a failing of \citeindexentry:
+	perl -pi.bak -e 's/{{/{/'  .texputs/$(DOCNAME).idx;
+	perl -pi.bak -e 's/}}/}/'  .texputs/$(DOCNAME).idx;
 
 codefigs:
 	cd sources;
@@ -12,7 +15,7 @@ codefigs:
 	cd ..;
 
 index:
-	makeindex .texputs/$(DOCNAME).idx;
+	makeindex -c .texputs/$(DOCNAME).idx;
 
 view:
 	xdvi -expert -geometry 1041x797+-17+-17 -s 6 -paper usr $(DOCNAME)

@@ -10,25 +10,30 @@ AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 #-lefence
 #apop_text_to_db_LDADD = libapophenia.la
 #apop_text_to_db_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
 lib_LTLIBRARIES = libapophenia.la
-libapophenia_la_SOURCES = apop_conversions.c apop_db.c apop_mle.c apop_linear_algebra.c 		\
-			apop_asst.c apop_data.c apop_regression.c apop_stats.c apop_bootstrap.c 			\
-			apop_name.c apop_output.c apop_estimate.c 											\
-			vasprintf/asnprintf.c vasprintf/printf-args.c 										\
-			vasprintf/vasnprintf.c vasprintf/asprintf.c vasprintf/printf-parse.c 				\
-			vasprintf/vasprintf.c  																\
-			model/apop_gamma.c model/apop_gamma_rank.c model/apop_normal.c\
-			model/apop_probit.c model/apop_exponential.c \
-			model/apop_poisson.c	model/apop_exponential_rank.c	\
-			model/apop_waring.c model/apop_waring_rank.c model/apop_yule.c model/apop_zipf_rank.c \
-			model/apop_zipf.c model/apop_OLS.c 													\
-			wn/wnasrt.c  wn/wnbridge.c  wn/wncnjdn2.c  wn/wnconjg.c  wn/wnmatrices.c			\
+libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
+			apop_linear_algebra.c apop_mle.c 				\
+			apop_asst.c apop_data.c apop_regression.c 		\
+			apop_stats.c apop_bootstrap.c 					\
+			apop_name.c apop_output.c apop_estimate.c 		\
+			vasprintf/asnprintf.c vasprintf/printf-args.c 	\
+			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
+			vasprintf/printf-parse.c 						\
+			vasprintf/vasprintf.c  							\
+			model/apop_gamma.c model/apop_gamma_rank.c model/apop_normal.c 	\
+			model/apop_logit.c model/apop_probit.c model/apop_exponential.c \
+			model/apop_poisson.c	model/apop_exponential_rank.c			\
+			model/apop_waring.c model/apop_waring_rank.c model/apop_yule.c 	\
+			model/apop_zipf_rank.c model/apop_zipf.c model/apop_OLS.c 		\
+			wn/wnasrt.c  wn/wnbridge.c  wn/wncnjdn2.c  	\
+			wn/wnconjg.c  wn/wnmatrices.c				\
 			wn/wnmbtr.c wn/wnmem.c  wn/wnmemg.c  wn/wnmemn.c  wn/wnvect.c
 
-pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h bootstrap.h 	\
-		     	regression.h stats.h headers.h types.h output.h 						\
-		     	model/model.h 															\
-			vasprintf/alloca_.h vasprintf/printf-parse.h  vasprintf/vasprintf.h 		\
-			vasprintf/printf-args.h vasprintf/vasnprintf.h vasprintf/xsize.h 			\
+pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
+				bootstrap.h regression.h stats.h headers.h types.h output.h \
+		     	model/model.h 								\
+			vasprintf/alloca_.h vasprintf/printf-parse.h  	\
+			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
+			vasprintf/printf-args.h vasprintf/vasnprintf.h 	\
 			wn/wnaux.h wn/wnlib.h
 
 

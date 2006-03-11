@@ -22,15 +22,15 @@ If you like using raw arrays better, it's easy to switch back and forth; see
 section \ref{asst_conversions}.
 
 
-\ttindex{gsl\_matrix}
-\ttindex{gsl\_matrix\_set}
-\ttindex{gsl\_matrix\_set\_row}
-\ttindex{gsl\_matrix\_set\_col}
-\ttindex{gsl\_matrix\_alloc}
-\ttindex{gsl\_matrix\_get}
-\ttindex{gsl\_vector\_alloc}
-\ttindex{gsl\_matrix\_free}
-\ttindex{gsl\_vector\_free}
+\cindex{gsl\_matrix}
+\cindex{gsl\_matrix\_set}
+\cindex{gsl\_matrix\_set\_row}
+\cindex{gsl\_matrix\_set\_col}
+\cindex{gsl\_matrix\_alloc}
+\cindex{gsl\_matrix\_get}
+\cindex{gsl\_vector\_alloc}
+\cindex{gsl\_matrix\_free}
+\cindex{gsl\_vector\_free}
 \index{declaration!of gsl\_matrix@of \cinline{gsl\_matrix}}
 \index{declaration!of gsl\_vector@of \cinline{gsl\_vector}}
 \index{for@\cinline{for}!example of}
@@ -104,8 +104,8 @@ vim users, try $<$ctrl-n$>$ after typing a few characters.
 Another alternative is to start writing your own functions. For example, you
 could write a file \cinline{my\_convenience\_fns.c}, which could include:
 
-\ttindex{gsl\_matrix\_get}
-\ttindex{gsl\_matrix\_set}
+\cindex{gsl\_matrix\_get}
+\cindex{gsl\_matrix\_set}
 %\begin{verbatim}
 \begin{lstlisting}
 double mget(gsl_matrix *m, int row, int col){
@@ -133,12 +133,14 @@ legible after you make these changes, but you will need to remember to
 bring your convenience functions with you everywhere you go.
 
 
-\section{Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \ttindex{GSL\_NEGINF} \ttindex{GSL\_POSINF} \ttindex{GSL\_NAN}
+\section{Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \cindex{GSL\_NEGINF} \cindex{GSL\_POSINF} \cindex{GSL\_NAN}
 Floating-point numbers can take three special values: \cinline{Inf}, \cinline{-Inf}, \cinline{NaN}. We will mostly be
 interested in \cinline{NaN} (read: not a number), which is an appropriate way to represent missing data. Here is a
 program to show you the syntax. All four \cinline{if} statements will be true, and print their associated
 statements.
-%\begin{verbatim}
+\cindex{gsl\_finite}
+\cindex{gsl\_isnan}
+\cindex{gsl\_isinf}
 \begin{lstlisting}
 #include <gsl/gsl_math.h>   //NaN handlers
 #include <stdio.h>          //printf
@@ -159,7 +161,6 @@ if (gsl_isinf(negative_big_number)== -1)
 return 0;
 }
 \end{lstlisting}
-%\end{verbatim}
 Since floating-point nubers can take these values, division by zero
 won't crash your program. \cinline{float f = 1.0/0.0} will result in
 \cinline{f == GSL\_POSINF} and \cinline{f = 0.0/0.0} will result in \cinline{f ==
@@ -182,7 +183,7 @@ you can declare and allocate your new structure with one line:
 apop_data   *mdata  = apop_matrix_to_data(m);
 \end{lstlisting}
 On the left-hand side, we are allocating an \cinline{apop\_data *} pointer, and
-on the left-hand side, \ttind{apop\_data\_from\_matrix} returns an 
+on the left-hand side, \cind{apop\_data\_from\_matrix} returns an 
 \cinline{apop\_data *} pointer. As in the example on page \pageref{gslexample}, the same can be
 done with any function with \cinline{alloc} in the name, because they will also
 return a pointer to the appropriate type.
@@ -197,13 +198,14 @@ v = gsl_matrix_col(a_matrix, 4).vector;
 apop_vector_show(&v);
 \end{lstlisting}
 [Notice that this function is named \cinline{col}, not \cinline{column}.]
-For the fifth row, use \ttind{gsl\_\-ma\-trix\_\-row(a\_\-ma\-trix, 4)}. 
+For the fifth row, use \cinline{gsl\_matrix\_row(a\_\-ma\-trix, 4)}. 
+\cindex{gsl\_matrix\_row} 
 
 The vector view is a nice test of your comprehension of the details of
 pointers and memory allocation from Section \ref{pointers}.
-\cinline{gsl\_\-ma\-trix\_\-} returns a
-\ttind{gsl\_\-vec\-tor\_\-view}---not a vector, but the actual
-structure.  Inside the \cinline{gsl\_\-vec\-tor\_\-view}, you will find 
+\cinline{gsl\_ma\-trix\_} returns a
+\cind{gsl\_vector\_view}---not a vector, but the actual
+structure.  Inside the \cinline{gsl\_vec\-tor\_view}, you will find 
 an element named \cinline{vector}, which is again not a pointer but an
 automatically allocated structure. Inside that \cinline{.vector}
 element, one would find a pointer to the data.
@@ -218,10 +220,14 @@ Notice further that every function that handles a
 \cinline{gsl\_\-vec\-tor} on your hands means that you will have to pass
 its address to the various functions, as in the call to
 \cinline{apop\_\-vec\-tor\_\-show} above.
+\cindex{apop\_vector\_show}
 
 If you want to retain the vector after the function exits, your best bet
-is to juct copy it to another vector:
+is to just copy it to another vector:
 
+\cindex{gsl\_vector\_alloc}
+\cindex{gsl\_vector\_memcpy}
+\cindex{gsl\_matrix\_col}
 \begin{lstlisting}
 gsl_vector *a_new_vector = gsl_vector_alloc(a_matrix->size1);
 gsl_vector v = gsl_matrix_col(a_matrix, 4).vector;
@@ -238,13 +244,12 @@ GE=general, M=matrix, V=vector.}
 
 \paragraph{Matrix $\cdot$ vector} Here is the function you will use to calculate the dot product of a
 matrix and a vector:
-%\begin{verbatim}
+\cindex{gsl\_blas\_dgemv|(}
 \begin{lstlisting}
 int gsl_blas_dgemv (CBLAS_TRANSPOSE_t TransX, float alpha, 
           const gsl_matrix * X, const gsl_vector * x, 
           float beta, gsl_vector * y)
 \end{lstlisting}
-%\end{verbatim}
 
 This will put into the vector $y$ the value $\alpha op(X) x + \beta y$. 
 If \cinline{TransX} is \cinline{CblasNoTrans},  then $op(X)=X$; if it is
@@ -253,48 +258,41 @@ If \cinline{TransX} is \cinline{CblasNoTrans},  then $op(X)=X$; if it is
 
 To give a concrete example, assume you have already got some vectors and matrices which have the following
 declarations:
-%\begin{verbatim}
 \begin{lstlisting}
 gsl_vector *beta, *gamma;     
 gsl_matrix *x, *y;           
 \end{lstlisting}
-%\end{verbatim}
 
 Then, to calculate $X\cdot \beta$, we'd need:
 
-%\begin{verbatim}
 \begin{lstlisting}
 gsl_vector *beta_dot_x      = gsl_vector_calloc(x->size1);
 gsl_blas_dgemv (CblasNoTrans, 1.0, x, beta, 0.0, beta_dot_x);
 \end{lstlisting}
-%\end{verbatim}
 
 Notice that we used \cinline{calloc}, instead of just \cinline{alloc}, because
 the system will add $x\beta$ to \cinline{beta\_dot\_x}, not just write it in,
 so \cinline{beta\_dot\_x} needs to start as all zeros.
+\cindex{gsl\_blas\_dgemv|)}
 
 \paragraph{Vector $\cdot$ vector}
 To find the dot product of two vectors, use this function:
+\cindex{gsl\_blas\_ddot}
 \begin{lstlisting}
 int gsl_blas_ddot (const gsl_vector * x, const gsl_vector * y, 
                                         double * result);
 \end{lstlisting}
 
-\comment{{\tt
-int gsl\_blas\_ddot (const gsl\_vector * x, const gsl\_vector * y, double * result);
-}}
-
 For example,
 
-%\begin{verbatim}
 \begin{lstlisting}
 double *beta_dot_gamma;
 gsl_blas_ddot (beta, gamma, beta_dot_gamma);
 \end{lstlisting}
-%\end{verbatim}
 
 \paragraph{Matrix $\cdot$ matrix}
 Finally, to take the dot product of two matrices, use:
+\cindex{gsl\_blas\_dgemm|(}
 \begin{lstlisting}
 int gsl_blas_dgemm (CBLAS_TRANSPOSE_t TransX, 
     CBLAS_TRANSPOSE_t TransY, 
@@ -315,6 +313,7 @@ or \cinline{CblasNoTrans}. For example, here is $X'Y$:
 gsl_matrix *x_dot_y      = gsl_matrix_calloc(x->size2, y->size2);
 gsl_blas_dgemm (CblasTrans,CblasNoTrans, 1, x, y, 0, x_dot_y);
 \end{lstlisting}
+\cindex{gsl\_blas\_dgemm|)}
 
 \index{matrices!dot product|)}
 \index{dot product|)}
@@ -344,16 +343,17 @@ example, see the calculation of OLS coefficients on page \pageref{ols}.
 \codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition}
 
 Figure \ref{invertmatrix} is cut and pasted from the Apophenia source
-code; \ttind{apop\_\-det\_\-and\_\-inv} does indeed invert and calculate the
+code; \cind{apop\_det\_and\_inv} does indeed invert and calculate the
 determinant of an input matrix. This is what \ttind{apop\_OLS} will use if
 you ask for covariances.
 
+\index{Householder solver}
 Because inversion is so computationally intensive, you are better off
 not doing so.  For example, we often write the OLS parameters as $\beta
 =(X'X)^{-1}(X'Y)$, but you could implement this as solving
 $(X'X)\beta = X'Y$, which involves no inversion. If \cinline{xpx} is the
 matrix $X'X$ and \cinline{xpy} is the vector $X'Y$, then 
-\ttind{gsl\_linalg\_HH\_solve}\cinline{(xpx, xpy, out-$>$parameters)} will
+\cind{gsl\_linalg\_HH\_solve}\cinline{(xpx, xpy, out-$>$parameters)} will
 return $\beta$. This is how \cinline{apop\_OLS} will find $\beta$ if it
 is all you ask for.
 

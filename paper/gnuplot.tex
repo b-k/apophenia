@@ -60,7 +60,8 @@ Gnuplot commands). On many systems, you can
 interact with the plot, spinning 3-D plots with the mouse or selecting
 subregions of 2-D plots to zoom into.
 
-\subsection{Histograms} Gnuplot, refusing to do calculations for you,
+\subsection{Histograms} \index{histograms!plotting|(}
+Gnuplot, refusing to do calculations for you,
 makes making histograms a pain.  Fortunately, the GSL has you covered,
 with the \cind{gsl\_histogram} object, which first made its appearance
 in Section \ref{randomnumbers}, when we needed to generate PDFs from data.
@@ -101,4 +102,5 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
     if (outfile !=NULL)    fclose(f);
 }
 \end{lstlisting}
+\index{histograms!plotting|)}
 \index{Gnuplot|)}

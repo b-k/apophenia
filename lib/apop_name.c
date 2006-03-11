@@ -231,6 +231,7 @@ int         i;
 \param findme the name you seek
 \param type 'c', 'r', or 't'.
 \return The position of \c findme. If not found, returns -1.
+\ingroup names
   */
 size_t  apop_name_find(apop_name *n, char *findme, char type){
 char    **list;

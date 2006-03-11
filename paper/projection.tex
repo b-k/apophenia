@@ -251,8 +251,13 @@ this reduces to the univariate Normal distribution.
 Apophenia provides the function \cind{apop\_multivariate\_normal\_prob}
 to evaluate this likelihood for a given data point.
 
-\paragraph{Beta distribution} The \ind{Beta distribution} is a flexible way to
-describe data inside the range $[0, 1]$.  
+\paragraph{Beta distribution} The \ind{Beta distribution} is a flexible
+way to describe data inside the range $[0, 1]$.\footnote{The \ind{Gamma
+function} is defined as $\Gamma(x) = \int_0^\infty  t^{x-1} \exp(-t)
+dt$. One may think of it as a continuous version of the \ind{factorial}
+function, because $\Gamma(x) = (x-1)!$. It is not to be confused with
+the Gamma distribution, which is so named because it is defined using
+the Gamma function.}
 
 \eqnbox{
 p(x) &=& {\Gamma(a+b) \over \Gamma(a) \Gamma(b)} x^{a-1}
@@ -404,7 +409,7 @@ $\Yv=\Xv\betav + \uv$, where we will estimate the values of $\betav$.
 Unlike the models to this point, this model implicitly makes a
 causal claim: the variables listed in $\Xv$ cause $\Yv$ to take the values they
 do. However, as
-noted earlier, there is no true concept of causality in statistics.
+noted earlier, there is no true concept of \ind{causality} in statistics.
 The question of when statistical evidence of causality is valid is a tricky
 one which will be left to the volumes that cover this question in
 detail; for the purposes here, the reader should merely note the shift in
@@ -456,7 +461,7 @@ need to know $\mu$, and unbiasedness guarantees us that if all is going
 well, $\mu =\hat\betav$.
 
 \subsection{OLS}
-\index{Ordinary Least Squares|(}\index{OLS|see{Ordinary Least Squares}}
+\index{Ordinary Least Squares|(textbf}\index{OLS|see{Ordinary Least Squares}}
 The model: 
 \begin{itemize}
 \item $\Yv=\Xv\betav + \uv$
@@ -493,7 +498,7 @@ When all of that holds, then:
 E(\hat\betav_{\rm OLS} ) &=& \beta					\nonumber\\
 \var(\hat\betav_{\rm OLS} ) &=& \sigma^2(\Xv'\Xv)^{-1}		\nonumber
 }
-	\index{Ordinary Least Squares|)}
+	\index{Ordinary Least Squares|)textbf}
 \subsection{GLS} \label{GLS}\index{GLS|see{Generalized Least Squares}}
 Generalized Least Squares generalizes OLS by allowing $\uv'\uv$ to be a
 known matrix $\Sigma$, with no additional restrictions.

@@ -11,6 +11,7 @@ extern apop_model apop_gamma;
 extern apop_model apop_gamma_rank;
 extern apop_model apop_gaussian;//synonym for apop_normal
 extern apop_model apop_GLS;
+extern apop_model apop_logit;
 extern apop_model apop_normal;
 extern apop_model apop_OLS;
 extern apop_model apop_poisson;

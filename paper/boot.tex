@@ -46,8 +46,9 @@ zero, and if you need ten different seeds, I suggest using 0, 1, \dots ,9.
 \subsection{Random number distributions}
 Now that you have a random number generator, here are some functions that use it to draw from all of your favorite distributions:
 \index{Gaussian distribution} \index{t distribution} \index{F distribution}
-\index{$\chi^2$ distribution} \index{Uniform distribution}\cindex{gsl\_ran\_...}
+\index{Uniform distribution}\cindex{gsl\_ran\_...}
 \index{Bernoulli distribution} \index{Beta distribution} \index{Binomial distribution} 
+\index{chi squared distribution@$\chi^2$ distribution}
 
 \begin{lstlisting}
 double gsl_ran_bernoulli (gsl_rng *r, double p);
@@ -81,12 +82,13 @@ Quick---what is the variance of a Uniform$[0,1]$? Answer: ${1\over 12}$,
 which means that the Beta distribution will never have a variance greater
 than ${1\over 12}$ (and close to ${1\over 12}$, perverse things may
 happen computationally for $\mu \not\approx {1\over 2}$). The mean of a
-function whose $x-$values are bounded $\in[0,1]$ is clearly also in
-$\in[0,1]$. If you send \cind{apop\_ran\-dom\_beta} values of $\mu$
+function that has positive density iff $x \in [0,1]$ must be
+$\in (0,1)$. If you send \cind{apop\_ran\-dom\_beta} values of $\mu$
 and $\sigma^2$ that are outside of these bounds, the function will
 return a \cinline{GSL\_NAN}.
 
-\subsection{Drawing from your own data} Another possibility, beyond
+\subsection{Drawing from your own data} \index{histograms!drawing from|(}
+Another possibility, beyond
 drawing from famous distributions that your data theoretically
 approximates, would be to draw from your actual data. 
 
@@ -123,7 +125,7 @@ zeros in the vast majority of bins. Usage:
     //Eventually, clean up:
     gsl_histogram_pdf_free(p);
 \end{lstlisting}
-
+\index{histograms!drawing from|)}
 
 \index{random numbers|)}
 

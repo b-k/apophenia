@@ -18,8 +18,8 @@
     \usepackage{multicol, makeidx}
     \makeindex
     \def\ind#1{\index{#1}#1}
-    \def\ttind#1{\index{#1@\cinline{#1}}\cinline{#1}}
-    \def\ttindex#1{\index{#1@\cinline{#1}}}
+    \def\cind#1{\index{#1@\cinline{#1}}\cinline{#1}}
+    \def\cindex#1{\index{#1@\cinline{#1}}}
     \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
 
 	\begin{document}
@@ -112,7 +112,7 @@ produce the output. Your problem is not in finding such tools, but in
 choosing which you will use.
 
 The first element you will need is a compiler. If you are using
-a UNIX-like system, you probably already have \ttind{gcc} on your
+a UNIX-like system, you probably already have \cind{gcc} on your
 computer. Try typing \binline{cc} on your command line; if you get an
 error like ``command not found'', then you will need to get a compiler,
 but an error like ``no input files'' means that a compiler was found
@@ -294,16 +294,16 @@ double stuff;
 
 
 Your basic options for variable types are \cinline{int, float, double, long double} 
-and \cinline{char}. \cinline{int}\ttindex{int} is for integers;
-\cinline{float}\ttindex{float} is a floating-point number, aka a real number.\footnote{Why \airq{floating point}? The
+and \cinline{char}. \cinline{int}\cindex{int} is for integers;
+\cinline{float}\cindex{float} is a floating-point number, aka a real number.\footnote{Why \airq{floating point}? The
 computer represents a real using the form $n \times 10^k$, where $n$
 represents the number with the decimal point in a fixed location,
 and $k$ represents the location of the decimal point.  Multiplying by
 ten doesn't change the number $n$, it just causes the decimal point to
 float to a different position.} Sometimes you will need more precision,
-and so you have \ttind{double}, which are double-precision real numbers,
+and so you have \cind{double}, which are double-precision real numbers,
 and \cinline{long double}, which you can think of as quadruple-precision
-reals. \ttind{char} are characters.	\ttindex{long}
+reals. \cind{char} are characters.	\cindex{long}
 
 C has other basic types, which are not worth caring about.
 
@@ -358,7 +358,7 @@ How do you know how large an array is? By looking at the declaration. There is n
 function to tell you how you had declared the array.
 }
 
-\subsection{Declaring types}\ttindex{typedef} \index{declaration!of types} 
+\subsection{Declaring types}\cindex{typedef} \index{declaration!of types} 
 You can define your own
 types. For example, these lines will declare two (badly names) triplets
 of numbers, \cinline{a} and \cinline{b}:
@@ -369,7 +369,7 @@ triplet	a, b;
 \end{lstlisting}
 
 This is primarily useful for designing
-complex data types which are collections of many subelements. \ttindex{struct}
+complex data types which are collections of many subelements. \cindex{struct}
 For example:
 
 \begin{lstlisting}
@@ -428,7 +428,7 @@ declare the type of the function's output. Figure \ref{dosomething} shows a comp
 All of the details of this program will become clear in due time, but
 right now I will focus on the form of the functions.
 
-Every complete program will have a function named \ttind{main}, which
+Every complete program will have a function named \cind{main}, which
 is where the program will begin.  When this program runs, the computer will
 ignore the function \cinline{do\_something}, instead starting its work
 on line eight, where it finds the \cinline{main} function head: \cinline{int main(void)}. 
@@ -522,10 +522,10 @@ screen-full of text can always be broken down into a few subfunctions,
 thus improving the robustness of the code and giving you more black boxes which could be reused in the
 future.
 
-\paragraph{The \cinlinetwo{return} statement} \ttindex{return} There
+\paragraph{The \cinlinetwo{return} statement} \cindex{return} There
 is no need to restrict ourselves to just one \cinline{return} per
 function, which allows for very useful trickery. First, you may have a
-function whose type is \ttind{void}, meaning that nothing at all will be
+function whose type is \cind{void}, meaning that nothing at all will be
 returned. Such functions will be useful for side-effects such as changing
 the values of the inputs (see Section \ref{pointers}) or printing data
 to the screen or an external file. You can also have functions which take
@@ -556,7 +556,7 @@ float do_something (float a, float b, int c) {
 \end{lstlisting}
 
 
-\paragraph{The \cinlinetwo{main} function}\ttindex{main}
+\paragraph{The \cinlinetwo{main} function}\cindex{main}
 
 All programs must have one and only one function named \cinline{main},
 which is where the program will begin executing. The consistency checks
@@ -614,7 +614,7 @@ a--; /*is equivalent to*/ a = a - 1;
 
 \subsection{Conditions} 	
 \label{forloops} \index{conditionals} \index{boolean expressions} \index{logical expressions} 
-\ttindex{<} \ttindex{>} \ttindex{==}
+\cindex{<} \cindex{>} \cindex{==}
 Another set of operators are comparison and logical operators, such as \cinline{(a $>$ b)},
 \cinline{(a $<$ b)}, or \cinline{(a == b)}. All of these evaluate to either a one or a zero, depending on whether the
 comparison is true or false. Notice that last one, comparison for equality, involves {\sl two} equals
@@ -666,7 +666,7 @@ the program to repeat some lines until a condition is true, or execute some line
 false.  In all of the cases below, you will need parentheses around the conditions, and if you forget,
 you will get a confusing compiler error.
 
-\subsection{If-then-else statements} Here is the syntax for conditional evaluations: \ttindex{if}
+\subsection{If-then-else statements} Here is the syntax for conditional evaluations: \cindex{if}
 
 \begin{lstlisting}
 #include <math.h>
@@ -691,7 +691,7 @@ compiler will warn you of this.}
 
 
 \subsection{Loops} There are three types of loops, and they are slightly redundant. The simplest is a while
-loop. Here is a while loop to print \airq{hello} on the screen five times: \index{loops} \ttindex{while}
+loop. Here is a while loop to print \airq{hello} on the screen five times: \index{loops} \cindex{while}
 
 \begin{lstlisting}
 #include <stdio.h>
@@ -708,7 +708,7 @@ instructions in brackets.
 
 Cases like the example above, where we have a counter which we increment,
 are so common that they have their own special syntax. The following
-\ttind{for} loop is exactly equivalent to the while loop above:
+\cind{for} loop is exactly equivalent to the while loop above:
 
 \begin{lstlisting}
 #include <stdio.h>
@@ -726,7 +726,7 @@ loop. After the section on arrays, you will be very used to the
 \cinline{for (i=0; i<limit; i++)} form, and will recognize it to mean `step
 through the array'.
 
-Finally, if you want to guarantee that the loop will run at least once, you can use a \ttind{do-while} loop (with a semicolon after the \cinline{while}):
+Finally, if you want to guarantee that the loop will run at least once, you can use a \cind{do-while} loop (with a semicolon after the \cinline{while}):
 
 \begin{lstlisting}
 #include <stdio.h>
@@ -897,7 +897,7 @@ passed as an arugment but which were put in the frame anyway ({\sl global
 variables}; see below) come out unscathed, as does the return value, which
 is sent back to the function which had called the frame into existence.
 
-One way to think about this is in terms of a stack of frames. At the
+One way to think about this is in terms of a \ind{stack} of frames. At the
 base of the stack is the \cinline{main} function, which is always the first
 called. When it calls the \cinline{do\_something} function, then a new frame
 is created and is put on top of the stack, and if \cinline{do\_something}
@@ -967,7 +967,7 @@ as before. This provides continuity within a function, but the scope
 of the variable remains restricted to the function alone.
 
 Static variable declarations look just like other declarations but with
-the word \ttind{static} before them. You can also put an initialization on
+the word \cind{static} before them. You can also put an initialization on
 the declaration line, which will only be taken into consideration the
 first time the variable is used. Here is a function to enter a hundred
 data points into an array:
@@ -1109,6 +1109,7 @@ see section \ref{debug}.]
 As noted above, \binline{gcc} takes your code through three steps.
 The first step is preprocessing,
 which does nothing but take text you wrote and convert it into more text.
+
 \ifbook \index{header file!aggregation} 
 \marginalia{Header aggregation}{The Apophenia library provides a convenience header that aggregates
 almost every header you will likely be using. By placing\par
@@ -1126,8 +1127,7 @@ header is bad style, but it is awfully convenient, and will save you
 time hunting for standard headers.}
 
 \fi
-
-The preprocessor has a dozen things it can do, but you will basically only care about one of them: \ttind{\#include}. 
+The preprocessor has a dozen things it can do, but you will basically only care about one of them: \cind{\#include}. 
 [The runner-up is \cinline{\#define}, which is discussed on page \pageref{macros}.]
 
 When the preprocessor is processing the file \binline{main.c} and sees the line\\
@@ -1395,11 +1395,19 @@ is in an \cinline{int} variable before we declare it, we have no
 idea what address \cinline{a} points to until we initialize it. The
 function \cinline{malloc()} will do the low-level work of finding
 a free slot of memory, claiming it so nothing else on the computer
-uses it, and returning that address. We send to \ttind{malloc} the
+uses it, and returning that address. We send to \cindx{malloc}{ff} the
 quantity of memory we need, which in this case is the size of one
 integer: \cinline{sizeof(int)}. Every use of the \cinline{alloc}-family
 functions discussed here will have a \cinline{sizeof} somewhere in the
-argument.\ttindex{sizeof}
+argument.\cindex{sizeof}
+
+\index{\&}\marginalia{The ampersand}{Every variable has an address, whether you
+declared it as a pointer or not. The ampersand finds that address: if
+\cinline{count} is an integer, then \cinline{\&count} is a pointer to an integer.
+The ampersand and star are inverses: \cinline{\&(*count) == count}, which
+may imply that they are symmetric, but the star will appear much more
+often in your code than the ampersand, and 
+an ampersand will never appear in a declaration or a function header.}
 
 This is where the finger metaphor breaks down a little, since there are actually three characteristics
 to a given pointer: the location (where the finger is pointing), the type (here, \cinline{int}), and the
@@ -1412,7 +1420,7 @@ then bad things will happen. See below.
 
 By the way, notice that \cinline{int *a = 7} will fail---the initialization on the declaration line is for
 the pointer, not the value the pointer holds. One convenient function which partly helps with this is
-\ttind{calloc}:
+\cind{calloc}:
 \begin{lstlisting}
 #include <malloc.h>  //calloc
     int *a = calloc(1, sizeof(int));
@@ -1428,7 +1436,7 @@ calloc} requires two arguments: {\tt
 calloc(number\_of\_elements\_i\_want, sizeof(type\_of\_elements))}.
 
 Finally, both allocation and de-allocation are now your
-responsibility. The de-allocation comes simply by calling \cinline{free(a)} \ttindex{free}
+responsibility. The de-allocation comes simply by calling \cinline{free(a)} \cindex{free}
 when you are done with the pointer \cinline{a}. You don't actually need to free variables at the end of {\tt
 main}, because when you leave your program the operating system will clean up for you, but being explicit
 about when you de-allocate is good form.
@@ -1444,6 +1452,18 @@ When you initalize a pointer, you bear full responsibility for the area
 of memory you are about to point to. You have to allocate and de-allocate
 it, but since C won't deallocate the memory when leaving a frame, you
 can use this to your advantage, as above.
+
+\marginalia{\cind{size\_t}}{In practice, you can 
+specify array indices using an integer: \cinline{int i; data[i] +=7;}
+will work fine. But in theory, memory locations and integers may not
+match. For example, the range of the \cinline{int} type could be zero
+to 32,768, but there could be 65,536 locations in memory. There is a
+standard type, \cinline{size\_t}, that is defined to correctly match your
+machine's memory, so the pedantic will always use that type for array
+indices: \cinline{size\_t i; data[i] +=7}. Also, the \cind{sizeof}
+operator returns a number of type \cinline{size\_t}. But in practice,
+you can get away with using \cinline{int} to refer to memory locations
+and never using \cinline{size\_t}.}
 
 But what happens when you fail in your duties and forget to allocate
 memory? One possibility is that \cinline{a} happens to point to a space
@@ -1476,8 +1496,7 @@ Section \ref{debug} on the debugger, for techniques for spotting your
 errors.
 
 \section{Arrays and other pointer tricks} \label{for_loops} \index{array}
-
-An array is a sequence of one type of item, such as a thousand \cinline{int}s. Here is some sample code:
+An array is a sequence of one type of item, such as a thousand \cinline{int}s. Here is some sample code to declare an array and fill it with square numbers:
 \begin{lstlisting}
 int array_length=1000;
 int *squares = malloc (array_length * sizeof(int));
@@ -1511,14 +1530,6 @@ are equivalent.
 But be careful with this: if you \cinline{free()} an automatically allocated
 array, or assign it a new value with \cinline{malloc()} then you are stepping
 on C's turf, and will get a segfault.
-
-\paragraph{The ampersand}\index{\&} Every variable has an address, whether you
-declared it as a pointer or not. The ampersand finds that address: if
-\cinline{count} is an integer, then \cinline{\&count} is a pointer to an integer.
-The ampersand and star are inverses: \cinline{\&(*count) == count}, which
-may imply that they are symmetric, but the star will appear much more
-often in your code than the ampersand, and 
-an ampersand will never appear in a declaration or a function header.
 
 \paragraph{Scope issues}\index{scope} As you will recall, a copy of a variable is sent to a function, not the variable
 itself, and this created problems for changing the variable in the main program. Also, when the function
@@ -1619,8 +1630,8 @@ still_inefficient_but_works(some_other_numbers);
 \end{lstlisting}
 
 \subsection{Arrays of structs}	
-Before, when we had defined the \ttind{struct} for complex numbers, we would refer to its elements using a
-dot, such as \cinline{a.real} or \cinline{b.imaginary}. For a pointer to a structure, we use \cinline{$->$} instead of 
+Before, when we had defined the \cind{struct} for complex numbers, we would refer to its elements using a
+dot, such as \cinline{a.real} or \cinline{b.imaginary}. For a pointer to a structure, we use \cind{$->$} instead of 
 a dot.  Here are some examples using the previous definition of the \cinline{complex} structure.
 \begin{lstlisting}
 complex *ptr_to_cplx = malloc (sizeof(complex));
@@ -1631,7 +1642,7 @@ array_of_cplexes[15]->real = 3;
 \end{lstlisting}
 
 If you get an error like ``request for member `real' in something not a structure or union'' then you are
-using a dot where you should be using \ttind{$->$} or vice versa. Just switch to the other and try again.
+using a dot where you should be using \cind{$->$} or vice versa. Just switch to the other and try again.
 
 
 \subsection{Reallocating} If you know how many items you will have
@@ -1660,7 +1671,7 @@ while (!end_of_file){
 We first use \cinline{malloc} in the initialization of \cinline{data\_array}
 to ensure that the variable points to a real location in memory. Then
 we start reading data from the file. Every time we are about to draw
-more data into the array from the data file, we use \ttind{realloc} to
+more data into the array from the data file, we use \cind{realloc} to
 allocate a new block of memory that would be of sufficient size. The first
 argument to \cinline{realloc} is the pointer whose space you need resized,
 and the second argument is the new size.  The first part of this new
@@ -1683,7 +1694,7 @@ As with arrays of integers, we can specify a list to put in to the array when we
 not later.
 
 The standard library gives us a number of convenience functions that facilitate dealing with strings; the
-most useful would be \ttind{strcpy}, but see also \cinline{sprintf} below.
+most useful would be \cind{strcpy}, but see also \cinline{sprintf} below.
 \begin{lstlisting}
 #include <string.h>
 strcpy(hello, "Hi there."); //The right way to copy ``Hi there.'' into hello.
@@ -1770,7 +1781,7 @@ follows directly after the format string. For example:
 #include <stdio.h>
 printf("person %s is number %i in line\n", name, position);
 \end{lstlisting}
-This chapter (and the book) is filled with examples of \ttind{printf}; you may want to find a few and
+This chapter (and the book) is filled with examples of \cind{printf}; you may want to find a few and
 verify that they will indeed print what they promise to.
 
 \paragraph{Printing to strings} Once you have the format for \cinline{printf} down, you can use exactly the
@@ -1791,7 +1802,7 @@ sprintf(write_to_me, "%sAlso, person %s is number %i in line\n", write_to_me, na
 The first \cinline{\%s} will evaluate to the original value of \cinline{write\_to\_me} from above, and the next
 sentence will be added on to that.
 
-Writing to files also uses the same syntax, as you will see in Section \ref{asst_conversions}, using \ttind{fprintf}.
+Writing to files also uses the same syntax, as you will see in Section \ref{asst_conversions}, using \cind{fprintf}.
 
 \section{The debugger} \index{debugging|(} \index{gdb@\cinline{gdb}|see{debugging}} \label{debug}
 Which brings us to the debugger. The debugger will run the program for
@@ -1813,18 +1824,9 @@ by typing \cinline{run}, and wait for it to break. When it does, you will be
 returned to gdb's prompt, so you can interrogate the program.
 
 
-\marginalia{Visual shells}{There are a number of graphical shells built
-around gdb, which list local variables and let you click on parts of
-your code to set breakpoints. Some are stand-alone progams like \binline{ddd} and others are integrated into IDEs. I won't discuss their operation here, since 
-it is just like that described here for the command-line debugger, except
-it involves using the mouse more. There is currently a list of graphical
-front-ends available at \url{http://sources.redhat.com/gdb/links/}.
-\index{debugging|)}}
-
-
 The first thing you will want to know is where you are in the program. You
 can do this with the \cinline{backtrace} command, which you can abbreviate to
-either \cinline{bt} or \cinline{where}. It will show you the stack of function
+either \cinline{bt} or \cinline{where}. It will show you the \ind{stack} of function
 calls that were pending when the program stopped.  The first, frame
 \#0, is always \cinline{main}, where the program started. If {\tt
 main} called another function, then that will be frame \#1, et cetera.
@@ -1836,6 +1838,15 @@ the code that you wrote.
 At this point, the best thing to do is look at a listing of your code
 in another window and look at the line the debugger pointed out. Often,
 knowing which line is wrong is enough to make the error painfully obvious.
+
+\marginalia{Visual shells}{There are a number of graphical shells built
+around gdb, which list local variables and let you click on parts of
+your code to set breakpoints. Some are stand-alone progams like \binline{ddd} and others are integrated into IDEs. I won't discuss their operation here, since 
+it is just like that described here for the command-line debugger, except
+it involves using the mouse more. There is currently a list of graphical
+front-ends available at \url{http://sources.redhat.com/gdb/links/}.
+\index{debugging|)}}
+
 
 If the error is still not evident, then go back to the debugger and look
 at the variables. You need to be aware of which frame you are working in,
@@ -1998,7 +2009,7 @@ library by Bruce Perens that allocates memory so that all memory
 mis-allocations and mis-reads will immediately crash.  That means that
 the debugger will stop on the line with the error, instead of continuing
 along with its bad data, so your debugger will give you much more useful
-information.  Electric Fence works by redefining \ttind{malloc} in 
+information.  Electric Fence works by redefining \cind{malloc} in 
 its library. To use it, you would recompile the function
 using the efence library (adding \binline{-lefence} to the compilation
 command).
@@ -2096,7 +2107,7 @@ are very commonly used among C programmers. You can get very far without
 knowing any of the following, and some of it is generally considered to
 be bad style.
 
-\paragraph{The obfuscatory if} There is another way to write an \ttind{if} statement. The following are equivalent:
+\paragraph{The obfuscatory if} There is another way to write an \cind{if} statement. The following are equivalent:
 \begin{lstlisting}
 if (a < b)
       a;
@@ -2134,12 +2145,12 @@ Here, by the way, is the actual code for the \cinline{GSL\_MIN} macro;
 it follows the first rule of macro writing, which is that everything
 should be in parentheses:\\
 \comment{\cinline{\#include <gsl/gsl\_math.h>\\
-\#define GSL\_MIN(a,b) ((a) < (b) ? (a) : (b))} \ttindex{GSL\_MIN}\\}
+\#define GSL\_MIN(a,b) ((a) < (b) ? (a) : (b))} \cindex{GSL\_MIN}\\}
 \begin{lstlisting}
 #include <gsl/gsl_math.h>
 #define GSL_MIN(a,b) ((a) < (b) ? (a) : (b)) 
 \end{lstlisting}
-\ttindex{GSL\_MIN} \ttind{GSL\_MAX} is similarly defined.
+\cindex{GSL\_MIN} \cind{GSL\_MAX} is similarly defined.
 
 
 The one and only one thing that a macro can do better than a function is
@@ -2163,7 +2174,7 @@ rely on this in code you see from others, and are encouraged to stick
 to this standard when writing your own.
 
 \paragraph{Labels} A line of code can be named, by simply providing a
-name with a colon after it. You can then jump to that line via \ttind{goto}. Here is a code snippet that presents the basic idea, with a line labelled \cinline{outro}:
+name with a colon after it. You can then jump to that line via \cind{goto}. Here is a code snippet that presents the basic idea, with a line labelled \cinline{outro}:
 \begin{lstlisting}
 for (i=0; i< vector_size; i++){
     if (a_vector[i] > b){
@@ -2186,7 +2197,7 @@ tasks at the end of the function into the center of the \cinline{for} loop.
 Linus Torvalds, the author of the Linux kernel, recommends the \cinline{goto} to eliminate redundancy as above; other authors choose to never use
 \cinline{goto}.
 
-An alternative is \ttind{break}, which cuts out of the innermost loop in
+An alternative is \cind{break}, which cuts out of the innermost loop in
 which it is located. Here is code that would work about like the above:
 \begin{lstlisting}
 for (i=0; i< vector_size; i++){
@@ -2202,7 +2213,7 @@ free(another_vector);
 return out;
 \end{lstlisting}
 
-\paragraph{Switch} The \ttind{switch} statement is a clean way to
+\paragraph{Switch} The \cind{switch} statement is a clean way to
 branch among many options. First, you will need a variable indicating
 a single character. For example, the \cinline{get\_opt} function from the
 standard library will parse command line arguments; then the \cinline{switch}
@@ -2259,7 +2270,7 @@ of fall-through mistakes.
 
 
 \paragraph{Optimization} \index{optimization}
-The \ttind{gcc} compiler can do a number of things to your code to make it
+The \cind{gcc} compiler can do a number of things to your code to make it
 run faster. For example, if you assign \cinline{a = b + c}, it may replace
 every instance of \cinline{a} with \cinline{b + c}, or it may change the order
 in which lines of code are executed. To turn on \ind{optimization},
@@ -2281,7 +2292,7 @@ you will never need to debug it again.
 
 Finally, you may run into authors who give you advice about how to write
 faster code, telling you to use loops here and unroll them there, make
-frequent use of the \ttind{inline} keyword, or order your commands based
+frequent use of the \cind{inline} keyword, or order your commands based
 on memory usage instead of human logic. Ignore them. It is much more
 valuable to minimize the time you spend deciphering and debugging your
 code than run time.  Write code to maximize readability for yourself
