@@ -21,18 +21,20 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <assert.h>
 
 
-/* Every model should have an estimate function. If you are doing an
- MLE, then it should be the one line function here, and then you will need
- to fill in the logit_log_likelihood function below. If you are not
- doing an MLE, then you won't need the logit_log_likelihood function,
- but will probably instead do some substantial math here in this function.
-
- a
+/* 
+This is an MLE, so this is a one-liner.
 */
 static apop_estimate * logit_estimate(apop_data * data,  void *parameters){
 	return apop_maximum_likelihood(data,  apop_logit, parameters);
 }
 
+
+/*For the sake of the fdf function, we keep xdotbeta global.
+  */
+
+gsl_vector  *xdotbeta;
+int         calculate_xdotbeta  = 1;
+int         keep_xdotbeta       = 0;
 
 /*
 
@@ -46,8 +48,10 @@ double	    loglike 	= 0,
 gsl_matrix 	*data 		= d;		//type cast void to gsl_matrix.
 gsl_matrix  independent = gsl_matrix_submatrix(data, 0,1, 
                                     data->size1, data->size2 -1).matrix;
-gsl_vector  *xdotbeta    = gsl_vector_calloc(data->size1);
-    gsl_blas_dgemv(CblasNoTrans, 1.0, &independent, beta, 0, xdotbeta);
+    if (calculate_xdotbeta){
+        xdotbeta    = gsl_vector_calloc(data->size1);
+        gsl_blas_dgemv(CblasNoTrans, 1.0, &independent, beta, 0, xdotbeta);
+        }
 	for(i=0;i< data->size1; i++){
         xb    = gsl_vector_get(xdotbeta, i);
 		if (gsl_matrix_get(data, i, 0))
@@ -55,6 +59,8 @@ gsl_vector  *xdotbeta    = gsl_vector_calloc(data->size1);
         else
             loglike   += 1./(1.+xb);
 	}
+    if (!keep_xdotbeta)
+        gsl_vector_free(xdotbeta);
 	return loglike;
 }
 
@@ -81,35 +87,18 @@ gsl_matrix 	*data 	= d;		//type cast
 }
 
 
-/* For constrained optimizations, you will need a constraint function.
-This one will check whether beta[0] > 7. 
+/** 
+  Simple, but some trickery to keep xdotbeta. Notice that the two switches
+  leave the function with the same values with which they came in.
 
-You can delete this function entirely if so inclined. If so, remember
-to replace this function with NULL in the model definition below.
- */
-static double logit_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
-double  limit       = 7,
-        tolerance   = 1e-1;
-double  mu          = gsl_vector_get(beta, 0);
-    if (mu > limit) 
-        return 0;
-    //else:
-    gsl_vector_memcpy(returned_beta, beta);
-    gsl_vector_set(returned_beta, 0, limit + tolerance);
-    return limit - mu;    
-}
-
-
-
-/** You may be able to save some time by calculating both log likelihood
-and dlog likelihood at the same time. If so, fill in here. 
-
-You can delete this function entirely if so inclined. If so, remember
-to replace this function with NULL in the model definition below.
 	*/
 static void logit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
+    keep_xdotbeta       = 1;
 	*f	= logit_log_likelihood(beta, d);
+    calculate_xdotbeta  = 0;
+    keep_xdotbeta       = 0;
 	logit_dlog_likelihood(beta, d, df);
+    calculate_xdotbeta  = 1;
 }
 
 
@@ -122,7 +111,7 @@ static double logit_rng(gsl_rng* r, gsl_vector * a){
     return 0;
 }
 
-/** The logit model.
+/** The binary logit model.
  The first column of the data matrix this model expects is ones and zeros;
  the remaining columns are values of the independent variables. Thus,
  the model will return (data columns)-1 parameters.

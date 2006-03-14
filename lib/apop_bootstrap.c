@@ -62,7 +62,7 @@ can bootstrap every parameter at once. Remember that if \code{e} is an
 gsl_matrix * apop_bootstrap(apop_data *data, apop_model model, apop_estimation_params e){
 int		        i, j, row;
 int             boot_iterations	= 1000;
-apop_data	    *subset	= apop_data_alloc(data->data->size1, data->data->size2);
+apop_data	    *subset	= apop_data_alloc(data->matrix->size1, data->matrix->size2);
 apop_data       *array_of_boots = NULL;
 gsl_vector_view	v;
 apop_estimate   *boot_est;
@@ -71,19 +71,19 @@ gsl_rng		    *rn	=gsl_rng_alloc(gsl_rng_default);
     e.uses.parameters  = 1;
 	for (i=0; i<boot_iterations; i++){
 		//create the data set
-		for (j=0; j< data->data->size1; j++){
-			row	= (int) gsl_rng_uniform_int(rn, data->data->size1);
-			v	= gsl_matrix_row(data->data, row);
-			gsl_matrix_set_row(subset->data, j, &(v.vector));
+		for (j=0; j< data->matrix->size1; j++){
+			row	= (int) gsl_rng_uniform_int(rn, data->matrix->size1);
+			v	= gsl_matrix_row(data->matrix, row);
+			gsl_matrix_set_row(subset->matrix, j, &(v.vector));
 		}
 		//get the parameter estimates.
 		boot_est    = model.estimate(subset, &e);
 		if (i==0)
 			array_of_boots	= apop_data_alloc(boot_iterations, boot_est->parameters->size);
-        gsl_matrix_set_row(array_of_boots->data,i,boot_est->parameters);
+        gsl_matrix_set_row(array_of_boots->matrix,i,boot_est->parameters);
         apop_estimate_free(boot_est);
 	}
-	return apop_data_covar(array_of_boots)->data;
+	return apop_data_covar(array_of_boots)->matrix;
 }
 
 /*
@@ -111,14 +111,14 @@ if (boot_iterations ==0) boot_iterations	= 1000;
 		if (b!=NULL) 	{
 			if (i==0)
 				array_of_boots	= apop_data_alloc(boot_iterations, b->size);
-			gsl_matrix_set_row(array_of_boots->data,i,b);
+			gsl_matrix_set_row(array_of_boots->matrix,i,b);
 		} else		i--;
 
 	}
 	summary	= apop_data_summarize(array_of_boots);
     apop_data_free(array_of_boots);
-	output	= gsl_vector_alloc(summary->data->size1);
-	gsl_matrix_get_col(output, summary->data, 1);
+	output	= gsl_vector_alloc(summary->matrix->size1);
+	gsl_matrix_get_col(output, summary->matrix, 1);
 	return output;
 }
 */

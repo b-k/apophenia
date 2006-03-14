@@ -27,13 +27,13 @@ static double normal_log_likelihood(const gsl_vector *beta, void *d);
 static apop_estimate * normal_estimate(apop_data * data, void *parameters){
 apop_estimate 	*est	    = apop_estimate_alloc(data,apop_normal, parameters);
 double		mean, var;
-	apop_matrix_mean_and_var(data->data, &mean, &var);	
+	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
 	gsl_vector_set(est->parameters, 0, mean);
 	gsl_vector_set(est->parameters, 1, var);
 	if (est->estimation_params.uses.log_likelihood)
-		est->log_likelihood	= normal_log_likelihood(est->parameters, data->data);
+		est->log_likelihood	= normal_log_likelihood(est->parameters, data->matrix);
 	if (est->estimation_params.uses.covariance)
-		apop_numerical_var_covar_matrix(apop_normal, est, data->data);
+		apop_numerical_var_covar_matrix(apop_normal, est, data->matrix);
 	return est;
 }
 

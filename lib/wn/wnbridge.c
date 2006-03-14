@@ -50,7 +50,7 @@ apop_estimate * apop_wn_maximum_likelihood(apop_data * data,
 		                        apop_model dist, apop_estimation_params *est_params){
 
 	//some globals:
-	the_data	= data->data;
+	the_data	= data->matrix;
 	the_dist	= dist;
 	the_size	= dist.parameter_ct;
 double 		*vect;
@@ -87,7 +87,7 @@ apop_inventory	inv;
 apop_estimate 	*est	    = apop_estimate_alloc(data, dist,  est_params);
   	for (i=0;i<the_size; i++)
 		gsl_vector_set(est->parameters, i, vect[i]);
-	est->log_likelihood	= -dist.log_likelihood(est->parameters, data->data);
+	est->log_likelihood	= -dist.log_likelihood(est->parameters, data->matrix);
 	est->status		= code;
 	//Epilogue:
 	//find the variance-covariance matrix, using $df/d\theta \cdot df/d\theta$
@@ -100,13 +100,13 @@ gsl_vector_view	v;
 	pre_cov			= gsl_matrix_alloc(the_size, the_size);
 	//estimate->covariance	= gsl_matrix_alloc(betasize, betasize);
 	diff			= gsl_vector_alloc(the_size);
-	dist.dlog_likelihood(est->parameters, data->data, diff);
+	dist.dlog_likelihood(est->parameters, data->matrix, diff);
 	for (i=0; i< the_size; i++){
 		gsl_matrix_set_row(pre_cov, i, diff);
 		v	= gsl_matrix_row(pre_cov, i);
 		gsl_vector_scale(&(v.vector), gsl_vector_get(diff, i));
 	}
-	apop_det_and_inv(pre_cov, &(est->covariance->data), 0,1);
+	apop_det_and_inv(pre_cov, &(est->covariance->matrix), 0,1);
 	gsl_matrix_free(pre_cov);
 	gsl_vector_free(diff);
 
@@ -116,7 +116,7 @@ gsl_vector_view	v;
 	for (i=0; i<the_size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 		gsl_vector_set(est->confidence, i,
 			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
-			gsl_matrix_get(est->covariance->data, i, i)))*2));
+			gsl_matrix_get(est->covariance->matrix, i, i)))*2));
 	return est;
 }
 

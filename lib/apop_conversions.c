@@ -180,8 +180,8 @@ apop_data   *outdata    = apop_data_alloc(1,1);
 		gsl_matrix_set(out, i, j, atof(datachars[k][2]));
 	}
     apop_cats_free(datachars, datasize, 3);
-    gsl_matrix_free(outdata->data);
-    outdata->data   = out;
+    gsl_matrix_free(outdata->matrix);
+    outdata->matrix   = out;
 	return outdata;
 }
 
@@ -370,7 +370,7 @@ regmatch_t  result[2];
             while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
                 pull_string(instr,  outstr, result,  &last_match);
 				colno++;
-				gsl_matrix_set(set->data, i-1, colno-1,	 strtod(outstr, &str));
+				gsl_matrix_set(set->matrix, i-1, colno-1,	 strtod(outstr, &str));
 				if (apop_opts.verbose && !strcmp(outstr, str))
 				    printf("trouble converting item %i on line %i; using zero.\n", colno, i);
 			}

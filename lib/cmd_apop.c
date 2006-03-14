@@ -17,11 +17,13 @@
 #define PORT_NO 11716
 
 int find_matrix(char *name);
+int find_data(char *name);
+int find_estimate(char *name);
 char *print_matrix(gsl_matrix *m);
+
 typedef struct operation{
 	char 	name[100]; //if your command is longer than this, it's too much.
 	int	argc;
-	char 	internal_return;
 	int 	external_return;
 	char* 	(*run_me)(char **argbuffer);
 	char 	help_text[1000];
@@ -67,14 +69,14 @@ call. Second, Apophenia includes new aggregate operators---notably
 in-memory database.]
 
 
-To pull data to a matrix, which is then stored on the server:
+To pull data to an \ref apop_data set, which is then stored on the server:
 \code
-apop query_to_matrix matrix_name "select columns from db_table"
+apop query_to_data data_name "select columns from db_table"
 \endcode
 
-To print the matrix to the screen:
+To print the data to the screen:
 \code
-apop matrix_print matrix_name
+apop data_print data_name
 \endcode
 
 To do a t-test on two columns in the database:
@@ -99,9 +101,18 @@ and reading matrices into native scripting-language arrays.
 */
 
 
-gsl_matrix **	matrix_list;
-char **		matrix_names;
+/*Data is kept in a set of arrays, one for each type. We need the actual
+ * array of structures, the list of names, and a counter.
+ */
+gsl_matrix      **matrix_list;
+apop_data       **data_list;
+apop_estimate   **estimate_list;
+char            **matrix_names;
+char            **data_names;
+char            **estimate_names;
 int		matrix_ct	= 0;
+int		data_ct	    = 0;
+int		estimate_ct	= 0;
 
 /*/////////////
 //The functions 
@@ -110,7 +121,11 @@ How to add a fn: You'll need to add a handler function here, using the same prot
 Then, add a line in the command_list below, including the appropriate reference to your handling function. 
 That's all.
 ////////////// */
-char* null_fn(char **argbuffer) {return NULL;}
+
+char* do_db_merge(char **argbuffer) {
+	apop_db_merge(argbuffer[0]);
+	return 0;
+}
 
 char* do_db_merge_table(char **argbuffer) {
 	     apop_db_merge_table(argbuffer[0], argbuffer[1]);
@@ -148,6 +163,72 @@ double		out;
 	return printme;
 }
 
+char* do_estimate_ols(char **argbuffer) {
+size_t  est_no      = find_estimate(argbuffer[0]);
+size_t  data_no     = find_data(argbuffer[1]);
+    estimate_list[est_no] = apop_OLS.estimate(data_list[data_no], NULL);
+    return NULL;
+}
+
+char* do_data_print(char **argbuffer) {
+apop_data   *print_me   = data_list[find_data(argbuffer[0])];
+char        *f          = malloc(sizeof(char) *2000);
+int         i,j;
+    f[0]    = '\0';//init to null string.
+    if (print_me->names != NULL && print_me->names->colnamect > 0){ //then print a row of column headers.
+	    strcat(f,"\t");
+	    for (j=0; j< print_me->names->colnamect; j++)
+		    sprintf(f,"%s%s\t\t", f, print_me->names->colnames[j]);
+	    strcat(f,"\n");
+    }
+    for (i=0; i<print_me->matrix->size1; i++){
+        if (print_me->names !=NULL && print_me->names->rownamect > 0)
+		    strcat(f, print_me->names->rownames[i]);
+	    for (j=0; j<print_me->matrix->size2; j++){
+            sprintf(f, "%s\t%g", f, gsl_matrix_get(print_me->matrix, i,j));
+	    }
+	    strcat(f,"\n");
+    }
+    return f;
+}
+
+char* do_estimate_print(char **argbuffer) {
+apop_estimate   *print_me   = estimate_list[find_estimate(argbuffer[0])];
+char            *outstring  = malloc(sizeof(char) *2000);
+char            *datastring;
+char            *a_string   = malloc(sizeof(char) *1000);
+int		        i;
+size_t          tmp_data;
+	sprintf(outstring, "\n");
+    strcpy(a_string, "APOP_TMP_DAATA");
+	if (print_me->estimation_params.uses.names) 	sprintf(outstring, "\t");
+	if (print_me->estimation_params.uses.parameters) 	sprintf(outstring, "value\t\t");
+	if (print_me->estimation_params.uses.confidence) 	
+            strcat(outstring, "Confidence\n");
+    else    strcat(outstring, "\n");
+	for (i=0; i<print_me->parameters->size; i++){
+		if (print_me->estimation_params.uses.names)	
+            sprintf(outstring, "%s%s\t", outstring, print_me->names->colnames[i]);
+		if (print_me->estimation_params.uses.parameters)	
+            sprintf(outstring, "%s% 7f\t", outstring, gsl_vector_get(print_me->parameters,i));
+		if (print_me->estimation_params.uses.confidence)	
+            sprintf(outstring, "%s% 7f\t", outstring, gsl_vector_get(print_me->confidence,i));
+		strcat(outstring, "\n");
+	}
+	if (print_me->estimation_params.uses.covariance){
+		strcat(outstring, "\nThe variance/covariance matrix:\n");
+     	tmp_data	= find_data(a_string);
+        data_list[tmp_data] = (print_me->covariance);
+        datastring  = do_data_print(&a_string);
+        data_ct     --;
+        outstring   = realloc(outstring, sizeof(char)*(strlen(datastring)+ strlen(outstring)+100));
+        strcat(outstring, datastring);
+	}
+	if (print_me->estimation_params.uses.log_likelihood)
+		sprintf(outstring, "%s\nlog likelihood: \t%g\n",outstring, print_me->log_likelihood);
+    return outstring;
+}
+
 char* do_matrix_multiply(char **argbuffer) {
 int	matrix_out, matrix_1, matrix_2;
      	matrix_out	= find_matrix(argbuffer[0]);
@@ -170,9 +251,11 @@ size_t		matrix_no;
 	return NULL;
 }
 
-char* do_db_merge(char **argbuffer) {
-	apop_db_merge(argbuffer[0]);
-	return 0;
+char* do_query_to_data(char **argbuffer) {
+size_t		data_no;
+	data_no		= find_data(argbuffer[0]);
+	data_list[data_no]	= apop_query_to_data(argbuffer[1]);
+	return NULL;
 }
 
 char* print_help(char **argbuffer); //This is below the command_list, since it refers to it.
@@ -201,31 +284,36 @@ char		*out	= malloc(sizeof(char)*3),
 	return out ;
 }
 
+char* null_fn(char **argbuffer) {return NULL;}
 
 /*
 typedef struct operation{
 	char 	name[100]; //if your command is longer than this, it's too much.
 	int	argc;
-	char 	internal_return;
+	int 	external_return;
 	char* 	(*run_me)(char **argbuffer);
 	char 	help_text[];
 } operation;
 */
 
 operation	command_list[]=
-{{"start", 		0, 'x',0,  null_fn, "db_name.db: start the server using the given db (or leave blank for in-memory db)" },
-{"db_merge", 		1, 'x',0,  do_db_merge, "db_name.db: merge named db into currently open db" },
-{"db_merge_table", 	2, 'x',0,  do_db_merge_table, "db_name.db table: just merge in one table."},
-{"db_t_test",	 	4, 'x',1,  do_db_t_test, "tab1 col1 tab2 col2: returns confidence with which we reject mean(col1)==mean(col2)"},
-{"db_paired_t_test", 	3, 'x',1,  do_db_paired_t_test, "tab1 col1 tab2 col2: returns confidence with which we reject mean(col1)==mean(col2)"},
-{"det_and_inv",	 	2, 'm',1,  do_det_and_inv, "inverse_name tab_to_invert: take the input table, save its inverse. Immediately returns the determinant. if inverse_name==0, don't save the inverse."},
-{"query", 		1, 'x',0, do_query, "query_text: run query, return nothing."},
-{"query_to_matrix", 	2, 'm',0, do_query_to_matrix, "matrix_name query: query db, dump result to matrix_name" },
-{"matrix_multiply", 	3, 'm',0, do_matrix_multiply, "matrix_out left_matrix right_matrix: out = left dot right"},
-{"print_matrix", 	1, 'x',1, do_print_matrix, "matrix_name: print a matrix you've already created"},
-{"stop", 		0, 'x',0, null_fn, 	": close the server"},
-{"help", 		0, 'x',1, print_help, 	": prints this."},
-{"xxxx", 		0, 'x',0, null_fn, 	""}
+{{"start", 		0, 0,  null_fn, "db_name.db: start the server using the given db (or leave blank for in-memory db)" },
+{"db_merge", 		1, 0,  do_db_merge, "db_name.db: merge named db into currently open db" },
+{"db_merge_table", 	2, 0,  do_db_merge_table, "db_name.db table: just merge in one table."},
+{"db_t_test",	 	4, 1,  do_db_t_test, "tab1 col1 tab2 col2: returns confidence with which we reject mean(col1)==mean(col2)"},
+{"db_paired_t_test", 	3, 1,  do_db_paired_t_test, "tab1 col1 tab2 col2: returns confidence with which we reject mean(col1)==mean(col2)"},
+{"det_and_inv",	 	2, 1,  do_det_and_inv, "inverse_name tab_to_invert: take the input table, save its inverse. Immediately returns the determinant. if inverse_name==0, don't save the inverse."},
+{"estimate_ols", 	2, 0,  do_estimate_ols, "estimate_out data_in: Run OLS regression on data_in; dump to estimate_out."},
+{"query", 		1, 0, do_query, "query_text: run query, return nothing."},
+{"query_to_matrix", 2, 0, do_query_to_matrix, "matrix_name query: query db, dump result to matrix_name" },
+{"query_to_data", 	2, 0, do_query_to_data, "data_set_name query: query db, dump result to data_set_name" },
+{"matrix_multiply", 	3, 0, do_matrix_multiply, "matrix_out left_matrix right_matrix: out = left dot right"},
+{"print_data", 	1, 1, do_data_print, "data_name: print a data set you've already created"},
+{"print_estimate", 	1, 1, do_estimate_print, "estimate_name: print an apop_estimate set you've already created"},
+{"print_matrix", 	1, 1, do_print_matrix, "matrix_name: print a matrix you've already created"},
+{"stop", 		0, 0, null_fn, 	": close the server"},
+{"help", 		0, 1, print_help, 	": prints this."},
+{"xxxx", 		0, 0, null_fn, 	""}
 };
 
 char* print_help(char **argbuffer) {
@@ -273,6 +361,39 @@ int		i;
 	strcpy(matrix_names[matrix_ct-1],name);
 	//printf("added matrix %s in position %i.\n", name, matrix_ct);
 	return matrix_ct - 1;
+}
+
+
+int find_data(char *name){
+int		i;
+	for(i=0;i<data_ct; i++)
+		if (!strcmp(data_names[i], name)){
+			//printf("found data %s in position %i.\n", name, i);
+			return i;
+		}
+	data_ct	++;
+	data_list	= realloc(data_list, sizeof(apop_data*)*(data_ct));
+	data_names	= realloc(data_names, sizeof(char*)*(data_ct));
+	data_names[data_ct-1] = malloc(sizeof(char*)*(strlen(name)+1));
+	strcpy(data_names[data_ct-1],name);
+	//printf("added data %s in position %i.\n", name, data_ct);
+	return data_ct - 1;
+}
+
+int find_estimate(char *name){
+int		i;
+	for(i=0;i<estimate_ct; i++)
+		if (!strcmp(estimate_names[i], name)){
+			//printf("found estimate %s in position %i.\n", name, i);
+			return i;
+		}
+	estimate_ct	++;
+	estimate_list	= realloc(estimate_list, sizeof(apop_estimate*)*(estimate_ct));
+	estimate_names	= realloc(estimate_names, sizeof(char*)*(estimate_ct));
+	estimate_names[estimate_ct-1] = malloc(sizeof(char*)*(strlen(name)+1));
+	strcpy(estimate_names[estimate_ct-1],name);
+	//printf("added estimate %s in position %i.\n", name, estimate_ct);
+	return estimate_ct - 1;
 }
 
 

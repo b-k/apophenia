@@ -313,7 +313,7 @@ gsl_matrix	*hessian;
 	//The information matrix is the inverse of the negation of the hessian.
 	hessian			= apop_numerical_hessian(dist, est->parameters, data);
 	gsl_matrix_scale(hessian, -1);
-	apop_det_and_inv(hessian, &(est->covariance->data), 0, 1);
+	apop_det_and_inv(hessian, &(est->covariance->matrix), 0, 1);
 	gsl_matrix_free(hessian);
 
 	//Confidence intervals are just a cute convenience. We're
@@ -324,7 +324,7 @@ gsl_matrix	*hessian;
 	for (i=0; i< est->parameters->size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 		gsl_vector_set(est->confidence, i,
 			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
-			gsl_matrix_get(est->covariance->data, i, i)))*2));
+			gsl_matrix_get(est->covariance->matrix, i, i)))*2));
 	apop_fn_for_derivative 	= tmp;
 }
 
@@ -388,7 +388,7 @@ apop_estimate			    *est;
 negshell_params			    nsp;
 	if (betasize == -1)	{
         dist.parameter_ct   =
-        betasize            = data->data->size2 - 1;
+        betasize            = data->matrix->size2 - 1;
     }
 	prep_inventory_mle(est_params->uses);
 	est	= apop_estimate_alloc(data, dist, est_params);
@@ -406,7 +406,7 @@ negshell_params			    nsp;
   		gsl_vector_set_all (x,  0);
 	}
 	else 	x   = apop_array_to_vector(est_params->starting_pt, betasize);
-	nsp.d		= data->data;
+	nsp.d		= data->matrix;
 	nsp.model	= dist;
 	minme.f		= negshell;
 	minme.df	= dnegshell;
@@ -437,9 +437,9 @@ negshell_params			    nsp;
 	gsl_multimin_fdfminimizer_free(s);
 	if (est_params->starting_pt==NULL) 
 		gsl_vector_free(x);
-	est->log_likelihood	= dist.log_likelihood(est->parameters, data->data);
+	est->log_likelihood	= dist.log_likelihood(est->parameters, data->matrix);
 	if (est->estimation_params.uses.covariance) 
-		apop_numerical_var_covar_matrix(dist, est, data->data);
+		apop_numerical_var_covar_matrix(dist, est, data->matrix);
 	return est;
 }
 
@@ -458,7 +458,7 @@ apop_estimate		    *est;
 negshell_params		    nsp;
 	if (betasize == -1)	{
         dist.parameter_ct   =
-        betasize            = data->data->size2 - 1;
+        betasize            = data->matrix->size2 - 1;
     }
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
@@ -473,7 +473,7 @@ negshell_params		    nsp;
 		x   = apop_array_to_vector(est_params->starting_pt, betasize);
   	gsl_vector_set_all (ss,  est_params->step_size);
 	nsp.model	    = dist;
-	nsp.d		    = data->data;
+	nsp.d		    = data->matrix;
 	minme.f		    = negshell;
 	minme.n		    = betasize;
 	minme.params	= &nsp;
@@ -505,9 +505,9 @@ negshell_params		    nsp;
 
 	gsl_vector_memcpy(est->parameters, s->x);
 	gsl_multimin_fminimizer_free(s);
-	est->log_likelihood	= dist.log_likelihood(est->parameters, data->data);
+	est->log_likelihood	= dist.log_likelihood(est->parameters, data->matrix);
 	if (est->estimation_params.uses.covariance) 
-		apop_numerical_var_covar_matrix(dist, est, data->data);
+		apop_numerical_var_covar_matrix(dist, est, data->matrix);
 	return est;
 }
 

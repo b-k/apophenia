@@ -3,7 +3,8 @@
 \def\xv{{\bf x} } \def\yv{{\bf y} } \def\pv{{\bf p} }
 \def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
 \def\betav{{\mbox{\boldmath$\beta$}}}
-\def\vector#1{\left[\matrix{#1}\right]}
+%\def\vector#1{\left[\matrix{#1}\right]}
+\def\vector#1{\left[\begin{matrix}#1\end{matrix}\right]}
 
 This chapter covers some methods of describing a data set, via a
 number of strategies of increasing complexity. 
@@ -117,8 +118,8 @@ calculate most of the above, e.g.:
 \begin{lstlisting}
 apop_data *set = gather_data();
 gsl_vector v1, v2;
-v1 = gsl_matrix_col(set->data, 0).vector;
-v2 = gsl_matrix_col(set->data, 1).vector;
+v1 = gsl_matrix_col(set->matrix, 0).vector;
+v2 = gsl_matrix_col(set->matrix, 1).vector;
 double mean1 = apop_vector_mean(&v1);
 double var1 = apop_vector_var(&v1);
 double covar = apop_vector_covar(&v1, &v2);
@@ -182,7 +183,8 @@ pulled from $n$ objects. The equation is $$\left({n\atop x}\right) =
 \index{choose!gsl\_sf\_choose@\cinlinetwo{gsl\_sf\_choose}} \cindex{gsl\_sf\_choose}
 
 \eqnbox{
-P(x|p)&=&\left(\matrix{n\cr x}\right) p^x (1-p)^{(n-x)}		\nonumber\\
+%P(x|p)&=&\left(\matrix{n\cr x}\right) p^x (1-p)^{(n-x)}		\nonumber\\
+P(x|p)&=&\left(\begin{matrix}n\cr x\end{matrix}\right) p^x (1-p)^{(n-x)}		\nonumber\\
 E(x)&=&np							\nonumber\\
 \var(x)&=&np(1-p)						\nonumber
 }
@@ -604,8 +606,8 @@ section goes over the steps one would take to estimate $\betav$.  \cindex{apop\_
 Typically, the $\Yv$
 values are the first column of the data set, so we would like to extract that to a separate variable:
 \begin{lstlisting}
-gsl_vector      *y_data         = gsl_vector_alloc(set->data->size1);
-gsl_matrix_get_col(y_data, set->data, 0);
+gsl_vector      *y_data         = gsl_vector_alloc(set->matrix->size1);
+gsl_matrix_get_col(y_data, set->matrix, 0);
 \end{lstlisting}
 
 We now have the $\Yv$-values safely stored.  When doing an OLS projection,
@@ -613,7 +615,7 @@ there needs to be a column of ones in the data set (because OLS is an
 {\sl affine} linear projection), so we can overwrite the first column
 with ones. 
 \begin{lstlisting}
-gsl_vector v         = gsl_matrix_column(set->data, 0).vector;
+gsl_vector v         = gsl_matrix_column(set->matrix, 0).vector;
 gsl_vector_set_all(&v, 1);  
 \end{lstlisting}
 
@@ -622,10 +624,10 @@ Now we have both the $\Yv$ and the $\Xv$ in the equation, so we can find $(\Xv'\
 Both parts are a
 simple application of the BLAS function from the last chapter---a matrix $\cdot$ a matrix, and a matrix $\cdot$ a vector:
 \begin{lstlisting}
-gsl_vector      *xpy            = gsl_vector_calloc(set->data->size2);
-gsl_matrix      *xpx            = gsl_matrix_calloc(set->data->size2, set->data->size2);
-gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->data, set->data, 0, xpx);
-gsl_blas_dgemv(CblasTrans, 1, set->data, y_data, 0, xpy);
+gsl_vector      *xpy            = gsl_vector_calloc(set->matrix->size2);
+gsl_matrix      *xpx            = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
+gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);
+gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);
 \end{lstlisting}
 
 The GSL has a function to solve equations of the type ${\bf A} \betav =
@@ -653,21 +655,21 @@ apop_det_and_inv(xpx, &xpxinv, 0, 1);
 Two more lines of algebra will calculate the hat matrix for us: 
 \lstset{texcl=true}
 \begin{lstlisting}
-gsl_matrix * first_part = gsl_matrix_calloc(set->data->size1, set->data->size1);
-gsl_matrix * hat_matrix = gsl_matrix_calloc(set->data->size1, set->data->size1);
+gsl_matrix * first_part = gsl_matrix_calloc(set->matrix->size1, set->matrix->size1);
+gsl_matrix * hat_matrix = gsl_matrix_calloc(set->matrix->size1, set->matrix->size1);
 //Find $\Xv(\Xv'\Xv)^{-1}$:
-gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, set->data, xpx_inv, first_part);	
+gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, set->matrix, xpx_inv, first_part);	
 //Find $\Xv(\Xv'\Xv)^{-1}\Xv$:
-gsl_blas_dgemm(CblasNoTrans,CblasTrans, first_part, set->data, hat_matrix);	
+gsl_blas_dgemm(CblasNoTrans,CblasTrans, first_part, set->matrix, hat_matrix);	
 gsl_matrix_free(first_part);
 \end{lstlisting}
 \lstset{texcl=false} %for now.
 
 If we have a second data set \cinline{set2} of the appropriate number of
-rows (meaning that \cinline{(set->data-$>$size1 == set2->data-$>$size1)}, then we can use the hat matrix to do the projection:\\
+rows (meaning that \cinline{(set->matrix-$>$size1 == set2->matrix-$>$size1)}, then we can use the hat matrix to do the projection:\\
 \begin{lstlisting}
-gsl_matrix * projected_data = gsl_matrix_calloc(set->data->size1,set2->data->size2);
-gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, hat_matrix, set2->data, projected_data);
+gsl_matrix * projected_data = gsl_matrix_calloc(set->matrix->size1,set2->matrix->size2);
+gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, hat_matrix, set2->matrix, projected_data);
 \end{lstlisting}
 If the hat matrix is of few enough dimensions, we can plot the
 projection using \cind{apop\_data\_print}; see page \pageref{gnuprint}.

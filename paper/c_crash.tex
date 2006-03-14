@@ -164,13 +164,13 @@ dialing in to a server's single-window terminal, you can either dial in
 twice, or use \binline{screen} to multiplex the window.} 
 you are basically using your operating system as an IDE.
 In this paradigm, you will probably have one window that is dedicated to
-a text editor with your code, and another window for compliation,
+a text editor with your code, and another window for compilation,
 debugging, and output.
 
 
 
 \paragraph{Text files} C programs are files of text, and all of your work
-will be manipulations of text, so it is in your long-run best interst to
+will be manipulations of text, so it is in your long-run best interest to
 get a good \ind{text editor}. At the very least, you will get error messages
 listing line numbers, so if your text editor can't tell you which is
 line 105, you will need to get a new one.
@@ -205,7 +205,7 @@ from disparate locations. Section \ref{pointers} covers \airq{pointers},
 a C-specific means of handling computer memory that complements C's
 means of handling functions and large data structures. The remainder of
 the chapter covers additional topics such as the debugger and assorted
-idiosyncracies and conveniences of C syntax.
+idiosyncrasies and conveniences of C syntax.
 
 
 \comment{
@@ -274,7 +274,7 @@ easy enough.
 \section{Variables and their declarations} \label{declaring}
 
 \index{declaration!of variables|(}
-First, we will cover the nouns of the C lanugage, and subsequent
+First, we will cover the nouns of the C language, and subsequent
 sections will focus on functions, the verbs that make use of these
 nouns.
 
@@ -284,7 +284,7 @@ leave the reader to guess at what you mean by $x$ by its first use,
 but some readers would misunderstand, and your referee would wonder why
 you did not just come out and declare $x$. C is a strict referee, and
 requires that you declare the type of every variable before using it.
-The delcaration consists of listing the type of the variable and then
+The declaration consists of listing the type of the variable and then
 the variable name, e.g.:
 
 \begin{lstlisting}
@@ -433,7 +433,7 @@ is where the program will begin.  When this program runs, the computer will
 ignore the function \cinline{do\_something}, instead starting its work
 on line eight, where it finds the \cinline{main} function head: \cinline{int main(void)}. 
 It will then start working, first reading the
-delarations of \cinline{output}, \cinline{first}, \cinline{second}, and \cinline{third}.
+declarations of \cinline{output}, \cinline{first}, \cinline{second}, and \cinline{third}.
 
 Then, on line 13, it will get to the part where it is told to
 assign something to \cinline{output}, and to do that it will need
@@ -624,8 +624,8 @@ probably using the wrong one, and you should heed its warnings. \airq{Greater th
 
 Logical operations have similar definitions: \cindex{\&\&} \cindex{"|"|} \index{and|see{\&\&}}
 \index{or|see{$"|"|$}} \index{not|see{"!}} \index{"!}
-\airq{And} is \cinline{(a \&\& b)}; \airq{or} is \cinline{(a $||$ b)}; \airq{not \cinline{a}} is \cinline{(!a)}.
-The \cinline{\&\&} and \cinline{$"|"|$} operations have a convenient feature: if \cinline{a} is sufficient to determine whether
+\airq{And} is \cinline{(a \&\& b)}; \airq{or} is \cinline{(a || b)}; \airq{not \cinline{a}} is \cinline{(!a)}.
+The \cinline{\&\&} and \cinline{||} operations have a convenient feature: if \cinline{a} is sufficient to determine whether
 the entire expression is true, then it won't bother with \cinline{b} at all. For example:
 \begin{lstlisting}
 #include <math.h>    //sqrt
@@ -703,7 +703,7 @@ while (i<5){
 \end{lstlisting}
 
 The interpretation is rather straightforward: while the expression
-in parentheses is true (musn't forget the parentheses), execute the
+in parentheses is true (mustn't forget the parentheses), execute the
 instructions in brackets.
 
 Cases like the example above, where we have a counter which we increment,
@@ -893,7 +893,7 @@ blithely ignorant of the rest of the program. It does its math, making a
 note of the return value it calculates (if any), and then destroys itself
 entirely, erasing all of the variables created in the frame and copies
 of variables which had been put in to the frame. Variables that were not
-passed as an arugment but which were put in the frame anyway ({\sl global
+passed as an argument but which were put in the frame anyway ({\sl global
 variables}; see below) come out unscathed, as does the return value, which
 is sent back to the function which had called the frame into existence.
 
@@ -1142,7 +1142,7 @@ and functions.\footnote{If you allocate storage (with an innocuous-looking
 line like \cinline{int x = 7;} instead of \cinline{int x;}), or define
 functions rather than just declare them, then you will be setting
 yourself up for odd errors in the linking step.} The custom is to put all
-of the delcarations for \binline{some\_functions.c} in a {\sl \ind{header
+of the declarations for \binline{some\_functions.c} in a {\sl \ind{header
 file}}, to be named \binline{some\_functions.h}.  The motivation for
 this will be discussed further in the context of the linking step below.
 
@@ -1245,7 +1245,7 @@ that file can use the variable, but to other \cinline{.c} files, the
 variable is a private, hidden part of \cinline{normit.c}. Of course, the
 functions and variables of \cinline{normit.c} have to interact with the
 rest of the world somehow, so those variables and functions that should
-be publically avaliable should be put in a file \cinline{normit.h}. You
+be publicly available should be put in a file \cinline{normit.h}. You
 will \cinline{\#include "normit.h"} at the head of \cinline{normit.c},
 and also at the head of all other files that may want to use the tools
 included in the \cinline{normit.c} file.
@@ -1256,11 +1256,11 @@ whose only visible parts are those listed in \cinline{normit.h}. For the functio
 header line listing the type of the variable and its inputs; for the C file module, the public part is
 the header file. 
 
-As noted above, modules and functions are most effective and  reuseable when as few
+As noted above, modules and functions are most effective and  reusable when as few
 subparts are visible as possible; bear this in mind when deciding whether to put a variable or
 function's declaration in the header file, where it will be public, or at the top of the code file,
 where it will be private, internal workings.\comment{C$^{++}$ programmers will recognize this setup as
-very analagous to that of an object: in a simple sense, both C modules and C$^{++}$ objects are a level
+very analogous to that of an object: in a simple sense, both C modules and C$^{++}$ objects are a level
 of intermediate scope between the global level and the functional level. Here is an approximate translation from
 object-oriented language to C implementation in more detail:\\
 object	= code file\\
@@ -1448,7 +1448,7 @@ it has to allocate memory for \cinline{a}, check whether the variable is
 in scope, and it has to free the memory when the frame that \cinline{a}
 was declared in is destroyed.
 
-When you initalize a pointer, you bear full responsibility for the area
+When you initialize a pointer, you bear full responsibility for the area
 of memory you are about to point to. You have to allocate and de-allocate
 it, but since C won't deallocate the memory when leaving a frame, you
 can use this to your advantage, as above.
@@ -1606,7 +1606,7 @@ void still_inefficient_but_works(int **an_array){
 The memory leak with \cinline{another\_array} was alleviated by simply
 calling \cinline{free()} at the end of the function. The problem with
 changing the value of the pointer was solved by sending the function a
-pointer to the pointer. This is exactly analagous to the previous problem:
+pointer to the pointer. This is exactly analogous to the previous problem:
 we wanted to change the value of an integer, so we sent the function a
 copy of a pointer to the integer; here we want to change the value of a
 pointer, so we send in a copy of a pointer to the pointer. One could
@@ -1737,7 +1737,8 @@ It is up to you and your situation whether you prefer the easy but
 ungraceful overallocation or the precise but lengthy \cinline{realloc}
 route. Generally, strings for haphazard messages or labels are fine with 
 an allocation like \cinline{char hello[1000]}, while anything in a
-\cinline{for} loop probably merits the \cinline{realloc} treatment.
+\cinline{for} loop probably merits the \cinline{realloc} treatment;
+see Figure \ref{dummy} for an example.
 
 The note above about skimming the standard library documentation is especially apropos here, since the
 standard library has functions for the most common tedious string operations.
@@ -1841,7 +1842,7 @@ knowing which line is wrong is enough to make the error painfully obvious.
 
 \marginalia{Visual shells}{There are a number of graphical shells built
 around gdb, which list local variables and let you click on parts of
-your code to set breakpoints. Some are stand-alone progams like \binline{ddd} and others are integrated into IDEs. I won't discuss their operation here, since 
+your code to set breakpoints. Some are stand-alone programs like \binline{ddd} and others are integrated into IDEs. I won't discuss their operation here, since 
 it is just like that described here for the command-line debugger, except
 it involves using the mouse more. There is currently a list of graphical
 front-ends available at \url{http://sources.redhat.com/gdb/links/}.
@@ -2102,7 +2103,7 @@ how C works and about the many alternatives that I did not mention here
 is referred to the authoritative and surprisingly readable reference
 for the language: \cite{kandr:c}.
 
-This optional section includes some of the more common alterntaives that
+This optional section includes some of the more common alternatives that
 are very commonly used among C programmers. You can get very far without
 knowing any of the following, and some of it is generally considered to
 be bad style.
@@ -2174,7 +2175,7 @@ rely on this in code you see from others, and are encouraged to stick
 to this standard when writing your own.
 
 \paragraph{Labels} A line of code can be named, by simply providing a
-name with a colon after it. You can then jump to that line via \cind{goto}. Here is a code snippet that presents the basic idea, with a line labelled \cinline{outro}:
+name with a colon after it. You can then jump to that line via \cind{goto}. Here is a code snippet that presents the basic idea, with a line labeled \cinline{outro}:
 \begin{lstlisting}
 for (i=0; i< vector_size; i++){
     if (a_vector[i] > b){
@@ -2253,7 +2254,7 @@ at the end of the list of \cinline{case}s is extraneous, but there is a good
 chance that you will add to your list of \cinline{case}s, at which point
 the \cinline{break} will no longer be extraneous and will prevent a fall-through bug.
 
-An alernative to the \cinline{switch} is a simple series of \cinline{if}s:
+An alternative to the \cinline{switch} is a simple series of \cinline{if}s:
 \begin{lstlisting}
 char c = get_opt(...);
 if (c == 'v'){

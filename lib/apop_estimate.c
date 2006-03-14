@@ -124,7 +124,7 @@ apop_estimate * prep_me;
 		prep_me->confidence	= gsl_vector_alloc(model.parameter_ct);
 	if (prep_me->estimation_params.uses.dependent ||
 	                prep_me->estimation_params.uses.predicted){
-		prep_me->dependent	= apop_data_alloc(data->data->size1,3);
+		prep_me->dependent	= apop_data_alloc(data->matrix->size1,3);
         apop_name_add(prep_me->dependent->names, "actual", 'c');
         apop_name_add(prep_me->dependent->names, "predicted", 'c');
         apop_name_add(prep_me->dependent->names, "residual", 'c');

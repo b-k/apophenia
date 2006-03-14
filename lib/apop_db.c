@@ -712,24 +712,24 @@ char		*q 		= malloc(sizeof(char)*1000);
         sprintf(q, "%s\n row_name, \n", q);
 		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
     }
-	for(i=0;i< set->data->size2; i++){
+	for(i=0;i< set->matrix->size2; i++){
 		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
 		if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i", q,i);
 		else			sprintf(q, "%s\n \"%s\" ", q,set->names->colnames[i]);
-		if (i< set->data->size2-1) 	sprintf(q, "%s,",q);
+		if (i< set->matrix->size2-1) 	sprintf(q, "%s,",q);
 		else			sprintf(q,"%s);  begin;",q);
 	}
-	for(i=0;i< set->data->size1; i++){
-		q	=realloc(q,sizeof(char)*(strlen(q)+(1+set->data->size1)*batch_size*1000));
+	for(i=0;i< set->matrix->size1; i++){
+		q	=realloc(q,sizeof(char)*(strlen(q)+(1+set->matrix->size1)*batch_size*1000));
 		sprintf(q, "%s \n insert into %s values(",q, tabname);
         if (set->names->rownamect >0){
 			sprintf(q,"%s \"%s\", ",q, set->names->rownames[i]);
         }
-		for(j=0;j< set->data->size2; j++)
-            if (j < set->data->size2 -1)
-			    sprintf(q,"%s %g, ",q,gsl_matrix_get(set->data,i,j));
+		for(j=0;j< set->matrix->size2; j++)
+            if (j < set->matrix->size2 -1)
+			    sprintf(q,"%s %g, ",q,gsl_matrix_get(set->matrix,i,j));
             else
-			    sprintf(q,"%s %g); ",q,gsl_matrix_get(set->data,i,j));
+			    sprintf(q,"%s %g); ",q,gsl_matrix_get(set->matrix,i,j));
 		ctr++;
 		if(ctr==batch_size) {
 				apop_query("%s commit;",q);

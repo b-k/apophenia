@@ -173,6 +173,8 @@ calc\_statistic(gsl\_vec\-tor *da\-ta)} that finds some statistics. The
 function \cinline{mean()} fits this description, as would a function to find
 a single OLS coefficient.
 
+\codefig{bootdraw}{A function to draw samples from the data, for use in a bootstrap}
+
 Then the first step in bootstrapping is drawing some subset of the data,
 without replacement. Drawing without replacement means that we need to
 keep track of what has been drawn to date, and must check every new draw
@@ -183,8 +185,6 @@ makes a series of random draws from a uniform distribution in the range
 already been drawn. If it finds a match, then it invalidates the draw
 by rolling back the counter by one, while if it does not find a match then it
 adds the draw to the list of draws and the index to the list of indices.
-
-\codefig{bootdraw}{A function to draw samples from the data, for use in a bootstrap}
 
 We can then use these draws to calculate a list of parameter values, as in Figure \ref{bootvar}.
 \codefig{bootvar}{A function to find the variance of a series of bootstrap estimates of a statistic}

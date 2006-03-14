@@ -498,7 +498,7 @@ of the data in each column; should give more in the near future.
 apop_data * apop_data_summarize(apop_data *indata){
 int		    i;
 gsl_vector_view	v;
-apop_data	*out	= apop_data_alloc(indata->data->size2, 3);
+apop_data	*out	= apop_data_alloc(indata->matrix->size2, 3);
 double		mean, stddev,var;
 char		rowname[10000]; //crashes on more than 10^9995 columns.
 	apop_name_add(out->names, "mean", 'c');
@@ -508,18 +508,18 @@ char		rowname[10000]; //crashes on more than 10^9995 columns.
 		for (i=0; i< indata->names->colnamect; i++)
 			apop_name_add(out->names, indata->names->colnames[i], 'r');
 	else
-		for (i=0; i< indata->data->size2; i++){
+		for (i=0; i< indata->matrix->size2; i++){
 			sprintf(rowname, "col %i", i);
 			apop_name_add(out->names, rowname, 'r');
 		}
-	for (i=0; i< indata->data->size2; i++){
-                v       = gsl_matrix_column(indata->data, i);
+	for (i=0; i< indata->matrix->size2; i++){
+                v       = gsl_matrix_column(indata->matrix, i);
 		mean	= apop_vector_mean(&(v.vector));
 		var 	= apop_vector_var_m(&(v.vector),mean);
 		stddev	= sqrt(var);
-		gsl_matrix_set(out->data, i, 0, mean);
-		gsl_matrix_set(out->data, i, 1, stddev);
-		gsl_matrix_set(out->data, i, 2, var);
+		gsl_matrix_set(out->matrix, i, 0, mean);
+		gsl_matrix_set(out->matrix, i, 1, stddev);
+		gsl_matrix_set(out->matrix, i, 2, var);
 	}	
 	return out;
 }
@@ -540,18 +540,18 @@ apop_data * apop_matrix_summarize(gsl_matrix *m){
 \ingroup vector_moments
 */
 apop_data *apop_data_covar(apop_data *in){
-apop_data   *out = apop_data_alloc(in->data->size2, in->data->size2);
+apop_data   *out = apop_data_alloc(in->matrix->size2, in->matrix->size2);
 int         i, j;
 gsl_vector  v1, v2;
 double      var;
-    for (i=0; i < in->data->size2; i++){
-        for (j=i; j < in->data->size2; j++){
-            v1  = gsl_matrix_column(in->data, i).vector;
-            v2  = gsl_matrix_column(in->data, j).vector;
+    for (i=0; i < in->matrix->size2; i++){
+        for (j=i; j < in->matrix->size2; j++){
+            v1  = gsl_matrix_column(in->matrix, i).vector;
+            v2  = gsl_matrix_column(in->matrix, j).vector;
             var = apop_vector_cov(&v1, &v2);
-            gsl_matrix_set(out->data, i,j, var);
+            gsl_matrix_set(out->matrix, i,j, var);
             if (i!=j)
-                gsl_matrix_set(out->data, j,i, var);
+                gsl_matrix_set(out->matrix, j,i, var);
         }
     apop_name_add(out->names, in->names->colnames[i],'c');
     apop_name_add(out->names, in->names->colnames[i],'r');

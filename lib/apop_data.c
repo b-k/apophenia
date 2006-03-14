@@ -26,7 +26,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
   */
 apop_data * apop_data_alloc(int size1, int size2){
 apop_data  *setme       = malloc(sizeof(apop_data));
-    setme->data         = gsl_matrix_alloc(size1,size2);
+    setme->matrix       = gsl_matrix_alloc(size1,size2);
     setme->names        = apop_name_alloc();
     setme->categories   = NULL;
     setme->catsize[0]   = 
@@ -42,9 +42,9 @@ return      The \ref apop_data structure in question.
 apop_data * apop_data_from_matrix(gsl_matrix *m){
 apop_data  *setme   = malloc(sizeof(apop_data));
     if (m==NULL && apop_opts.verbose) {printf("Warning: converting a NULL matrix to an apop_data structure.\n");}
-    setme->data     = m;
-    setme->names    = apop_name_alloc();
-    setme->categories = NULL;
+    setme->matrix       = m;
+    setme->names        = apop_name_alloc();
+    setme->categories   = NULL;
     setme->catsize[0]   = 
     setme->catsize[1]   = 0;
     return setme;
@@ -105,8 +105,8 @@ int     i,j;
  \ingroup data_struct
   */
 void apop_data_free(apop_data *freeme){
-    if (freeme->data)
-        gsl_matrix_free(freeme->data);
+    if (freeme->matrix)
+        gsl_matrix_free(freeme->matrix);
     apop_name_free(freeme->names);
     apop_cats_free(freeme->categories, freeme->catsize[0] , freeme->catsize[1]);
     /*
@@ -131,8 +131,8 @@ void apop_data_free(apop_data *freeme){
  \ingroup data_struct
   */
 void apop_data_memcpy(apop_data **out, apop_data *in){
-    *out = apop_data_alloc(in->data->size1, in->data->size2);
-    gsl_matrix_memcpy((*out)->data, in->data);
+    *out = apop_data_alloc(in->matrix->size1, in->matrix->size2);
+    gsl_matrix_memcpy((*out)->matrix, in->matrix);
     apop_name_stack((*out)->names, in->names, 'r');
     apop_name_stack((*out)->names, in->names, 'c');
     apop_name_stack((*out)->names, in->names, 'd');
@@ -174,7 +174,7 @@ will have to make the modifications yourself, perhaps by using either \ref apop_
 \ingroup data_struct
 */
 apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
-gsl_matrix  *stacked    = apop_matrix_stack(m1->data, m2->data, posn);
+gsl_matrix  *stacked    = apop_matrix_stack(m1->matrix, m2->matrix, posn);
 apop_data   *out        = apop_matrix_to_data(stacked);
     memcpy(out->names, m1->names, sizeof(apop_name));
     apop_name_stack(out->names, m2->names, posn);
@@ -195,8 +195,8 @@ quickly fill an array of ints with nonzero values.
  \ingroup data_struct
  */
 void apop_data_rm_columns(apop_data *d, int *drop){
-gsl_matrix  *freeme = d->data;
-    d->data = apop_matrix_rm_columns(d->data, drop);
+gsl_matrix  *freeme = d->matrix;
+    d->matrix = apop_matrix_rm_columns(d->matrix, drop);
     gsl_matrix_free(freeme); 
     apop_name_rm_columns(d->names, drop);
 }
@@ -204,12 +204,12 @@ gsl_matrix  *freeme = d->data;
 /** Returns the data element at the given point.
 
 Q: How does <tt> apop_data_get(in, r,c)</tt> differ from
- <tt>gsl_matrix_get(in->data, row, col)</tt>?\\
+ <tt>gsl_matrix_get(in->matrix, row, col)</tt>?\\
 A: It's seven characters shorter.
  \ingroup data_struct
 */
 double apop_data_get(apop_data *in, size_t row, size_t col){
-    return gsl_matrix_get(in->data, row, col);
+    return gsl_matrix_get(in->matrix, row, col);
 }
 
 /** Get an element from an \ref apop_data set, using the row name but
@@ -224,7 +224,7 @@ int rownum =  apop_name_find(in->names, row, 'r');
             printf("couldn't find %s amongst the column names.\n",row);
         return GSL_NAN;
     }
-    return gsl_matrix_get(in->data, rownum, col);
+    return gsl_matrix_get(in->matrix, rownum, col);
 }
 
 /** Get an element from an \ref apop_data set, using the column name but
@@ -238,7 +238,7 @@ int colnum =  apop_name_find(in->names, col, 'c');
             printf("couldn't find %s amongst the column names.\n",col);
         return GSL_NAN;
     }
-    return gsl_matrix_get(in->data, row, colnum);
+    return gsl_matrix_get(in->matrix, row, colnum);
 }
 
 /** Get an element from an \ref apop_data set, using the row and column name.
@@ -257,5 +257,5 @@ int rownum =  apop_name_find(in->names, row, 'r');
             printf("couldn't find %s amongst the column names.\n",row);
         return GSL_NAN;
     }
-    return gsl_matrix_get(in->data, rownum, colnum);
+    return gsl_matrix_get(in->matrix, rownum, colnum);
 }

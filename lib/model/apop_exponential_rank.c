@@ -32,17 +32,17 @@ double          colsum,
 apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential_rank, parameters);
 gsl_vector_view v;
 int             i;
-    for(i=0; i< data->data->size2; i++){
-        v            = gsl_matrix_column(data->data, i);
+    for(i=0; i< data->matrix->size2; i++){
+        v            = gsl_matrix_column(data->matrix, i);
         colsum       = apop_sum(&(v.vector));
         numerator   += colsum * i;
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters, 0, numerator/grand_total);
 	if (est->estimation_params.uses.log_likelihood)
-		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters, data->data);
+		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters, data->matrix);
 	if (est->estimation_params.uses.covariance)
-		apop_numerical_var_covar_matrix(apop_exponential_rank, est, data->data);
+		apop_numerical_var_covar_matrix(apop_exponential_rank, est, data->matrix);
 	return est;
 }
 

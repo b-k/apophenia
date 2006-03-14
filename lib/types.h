@@ -170,7 +170,7 @@ Gathers together a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space
 \ingroup data_struct
 */
 typedef struct apop_data{
-    gsl_matrix  *data;
+    gsl_matrix  *matrix;
     apop_name   *names;
     char        ***categories;
     int         catsize[2];

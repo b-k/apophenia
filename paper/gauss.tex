@@ -33,7 +33,8 @@ own distributions, and those are typically one of the distributions below.
 
 \paragraph{The \ind{Central Limit Theorem}} The CLT is the first piece of magic
 that we need. It tells us that:
-$$\overline X {a \atop \longrightarrow} \left[\mu,{\sigma^2\over n}\right].$$
+%$$\overline X {a \atop \longrightarrow} \left[\mu,{\sigma^2\over n}\right].$$
+$$\overline X \xrightarrow{a} \left[\mu,{\sigma^2\over n}\right].$$
 In fact, we not only have the $\overline X$, but its distribution:
 As $n\to \infty$, $$\sqrt{n} (\overline X - \mu)/\sigma \sim {\cal N}(0,1),$$ 
 %$$\overline X \matrix{a \cr \to} \left[\mu,{\sigma^2\over n}\right]$$
@@ -255,9 +256,9 @@ $H_0$ asks, is ${\Qv'
 Or, say we want to test that $\beta_2 = 2\beta_3$. Then let $\Qv=\vector{0 \cr 1 \cr -2}$ and $\cv = 0$.
 To test multiple hypotheses at once, simply stack the above:
 \begin{equation}
-\matrix{\Qv' = \vector{1 & 0 & 0  \cr
-                0 &1 &-2}
-                & \cv = \vector{7 \cr 0}}.\label{qc}\end{equation}
+\begin{matrix}\Qv' = \vector{1 & 0 & 0  \cr
+                0 &1 &-2} 
+                & \cv = \vector{7 \cr 0}\end{matrix}.\label{qc}\end{equation}
 
 I dare
 say that every linear hypothesis having to do with a mean or a $\beta$ can be

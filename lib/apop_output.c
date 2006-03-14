@@ -87,7 +87,7 @@ int             append_state;
     strcpy(apop_opts.output_delimiter, ", ");
     append_state            = apop_opts.output_append;
     apop_opts.output_append = 1;
-	apop_matrix_print(data->data, outfile);
+	apop_matrix_print(data->matrix, outfile);
     strcpy(apop_opts.output_delimiter, exdelimiter);
     apop_opts.output_append = append_state;
 }
@@ -313,7 +313,7 @@ void apop_data_print(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
         apop_data_to_db(data, file);
     } else
-	print_core_m(data->data, apop_opts.output_delimiter, file, dumb_little_pf_f, data->names); }
+	print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf_f, data->names); }
 
 /** Print an \ref apop_data set in int format.
     You may want to set \ref apop_opts.output_delimiter.
@@ -324,7 +324,7 @@ void apop_data_print_int(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
         apop_data_to_db(data, file);
     } else
-	print_core_m(data->data, apop_opts.output_delimiter, file, dumb_little_pf_i, data->names); }
+	print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf_i, data->names); }
 
 
 
@@ -377,7 +377,7 @@ char tmptype    = apop_opts.output_type;
 void apop_data_show(apop_data *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
-	print_core_m(data->data, apop_opts.output_delimiter, NULL, dumb_little_pf_f, data->names); 
+	print_core_m(data->matrix, apop_opts.output_delimiter, NULL, dumb_little_pf_f, data->names); 
     apop_opts.output_type = tmptype;
 }
 
@@ -387,7 +387,7 @@ char tmptype    = apop_opts.output_type;
 void apop_data_show_int(apop_data *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
-	print_core_m(data->data, apop_opts.output_delimiter, NULL, dumb_little_pf_i, data->names); 
+	print_core_m(data->matrix, apop_opts.output_delimiter, NULL, dumb_little_pf_i, data->names); 
     apop_opts.output_type = tmptype;
 }
 

@@ -5,14 +5,10 @@ DOCNAME = gsl_stats
 all: sources/dummy.tex 
 	#for i in *tex; do lgrind -e -t 4 $$i > $$(basename $$i .tex).ground; done;
 	latex $(DOCNAME)
-	#make up for a failing of \citeindexentry:
-	perl -pi.bak -e 's/{{/{/'  .texputs/$(DOCNAME).idx;
-	perl -pi.bak -e 's/}}/}/'  .texputs/$(DOCNAME).idx;
-
-codefigs:
-	cd sources;
-	"for i in *c; do c++2latex -a $i; done;"
-	cd ..;
+	@#\citeindexentry will print \inexentry{{Kmenta}}, which means
+	@#that Kmenta gets alphabetized under open-bracket. So
+	@#turn {{...}} into {...}.
+	@perl -pi.bak -e 's/indexentry{{([^}]*)}}/indexentry{$$1}/'  .texputs/$(DOCNAME).idx;
 
 index:
 	makeindex -c .texputs/$(DOCNAME).idx;
@@ -46,6 +42,7 @@ pdfslides:
 
 bib:	
 	latex $(DOCNAME); bibtex $(DOCNAME); latex $(DOCNAME); latex $(DOCNAME)
+	perl -pi.bak -e 's/In , /In /'  .texputs/$(DOCNAME).bbl;
 
 viewps: 
 	gv -seascape  -geometry 1129x824+-95+-49 -scale 2 $(DOCNAME).ps

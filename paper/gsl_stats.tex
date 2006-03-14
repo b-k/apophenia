@@ -5,10 +5,14 @@
 %\usepackage[LHE,T1]{fontenc}
 
 %math conveniences, primarily commonly boldfaced vectors.
-\usepackage{amsfonts}  %for mathbb
+\usepackage{amsfonts,amsmath}  %for mathbb
 \def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
 \def\betav{{\mbox{\boldmath$\beta$}}}
-\def\var{\hbox{var}} \def\cov{\hbox{cov}}
+
+%\def\var{\hbox{var}} \def\cov{\hbox{cov}}
+%AMS version:
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\cov}{cov}
 
 %Chapter and section headings. 
 %uses the awrap style, included in this dir.
@@ -110,7 +114,6 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 \title{Statistical Computing}
 \author{Ben Klemens\\klemens@hss.caltech.edu}
 %\date{May 2005}
-\date{February 2006}
 \begin{center}
 \fbox{\begin{minipage}{4in}
 \maketitle
@@ -122,6 +125,8 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 first three chapters are finished, but it tapers off from there. It should
 already have utility to many people, so it is here for your perusal.
 Plain old \copyright 2006, Ben Klemens.]
+
+
 \comment{All the content in the preface is in chapter one.
 \chapter*{Preface}
 \input preface.tex
@@ -137,25 +142,27 @@ computers. The mathematical explanation of a statistical procedure is
 really just pseudo-code, which we can make operational by translating
 it into real computer code.
 
-I wrote this book to help you make that translation. The first focus is purely
-mathematical: we need to select techniques bearing in mind that they will eventually
-be code. The second focus is about practical coding: your life
-is short, and you want spend as little of it learning dumb languages as possible.
+I wrote this book to help you make that translation. The first focus
+is purely mathematical: we need to select techniques bearing in mind
+that they will eventually be code. The second focus is about practical
+coding: your life is short, and you want spend as little of it learning
+dumb languages as possible.
 
-Doing math with a computer is unfettering. Instead of using
-regression techniques designed before computers, we can use techniques
-built around computing thousand-term likelihood functions, or taking
-millions of random samples. These techniques originally appeared in the textbooks as
-just theory, then eventually with a caveat that these techniques are possible but
-computationally intensive. Now computations are cheap, and we can 
-use these techniques as we would their simplified brethren.
+Doing math with a computer is unfettering. Instead of using regression
+techniques designed before computers, we can use techniques built around
+computing thousand-term likelihood functions, or taking millions of
+random samples. These techniques originally appeared in the textbooks
+as just theory, then eventually with a caveat that these techniques
+are possible but computationally intensive. Now computations are cheap,
+and we can use these techniques as we would their simplified brethren.
 
-In my own pain-filled experience, the best way to operationalize statistical concepts
-is using C; the GNU Scientific Library,  which facilitates the linear
-algebra and the Gaussian distribution work; and SQLite, a package which
-facilitates handling large data sets. This book will cover the basics
-of these components and the manner in which we can translate from the
-mathematical language to the language these libraries speak.
+In my own pain-filled experience, the best way to operationalize
+statistical concepts is using C; the GNU Scientific Library,  which
+facilitates the linear algebra and the Gaussian distribution work;
+and SQLite, a package which facilitates handling large data sets. This
+book will cover the basics of these components and the manner in which
+we can translate from the mathematical language to the language these
+libraries speak.
 
 The book is a complement to the Apophenia library, a set of functions 
 based on the GSL and SQLite, intended to simplify the hard parts of
@@ -193,7 +200,7 @@ missing or underused in stats-specific languages. Those who are entirely
 new to the idea of writing a sequence of instructions for a computer
 may want to warm up with a few online tutorials.
 
-If you are well-versed in C and SQL, then the later parts of Part I and
+If you are well-versed in C and SQL (Structured Query Language), then the later parts of Part I and
 all of Part II will be immediately useful. 
 
 If you are not well-versed in C and SQL, then expect to take some quality
@@ -395,7 +402,7 @@ not a C programmer, Chapter \ref{c_crash} will give you a crash course
 in C. It will not only get you familiar with the rules of the language,
 but how to best think about problems in C. 
 Chapter \ref{sql} will give you a quick overview of the second language,
-Standard Query Language (SQL), which is a language that facilitates
+SQL, which is a language that facilitates
 producing tables of just the right form from a dataset. C and SQL are
 excellent complements for data analysis: things which are very difficult
 in one are often trivial in the other.
@@ -425,7 +432,7 @@ have the tools to implement any technique in classical statistics in
 existence today, on any data set, no matter how large or exceptional.
 
 \comment{
-\paragraph{Acknowledgements} Thanks to Ms. Annjeanette Agro for
+\paragraph{Acknowledgments} Thanks to Ms. Annjeanette Agro for
 graphic design suggestions.}
 \part{Computing}
 \input c_crash.tex

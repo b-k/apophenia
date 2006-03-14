@@ -2,7 +2,7 @@
 
 Recall the philosophy of C: the language provides only the most basic of
 basics, such as addition and division, and everything else one would
-want to do is provided by a package. Most of statisical analysis is
+want to do is provided by a function library. Most of statisical analysis is
 described as operations on matrices and vectors, so the first key
 extension a mathematician needs is a package to do basic vector and
 matrix maintenance and linear algebra.
@@ -16,7 +16,7 @@ their core, so low-level operations on \cinline{apop\_data} sets become
 \cinline{gsl\_matrix} operations.
 
 \section{The GSL's matrices and vectors}
-As you saw in the last chapter, arrays can be directly implemented in C, but for
+As you saw in Chapter \ref{ccrash}, arrays and matrices can be directly implemented in C, but for
 the rest of the book, I'll be sticking to the GSL's matrix and vector objects.
 If you like using raw arrays better, it's easy to switch back and forth; see
 section \ref{asst_conversions}.
@@ -173,20 +173,21 @@ i = 1/0} and you will get \cinline{Arithmetic exception (core dumped)}.
 More to come; for now, just have a look at the {\sl conversions} section
 of the reference for a good number of conversion functions.
 
-\paragraph{Allocating and using at once}    \index{declaration}
+\marginaliafixed{17}{Allocating and using at once}{    \index{declaration}
 One slight convenience that helps with the annoyance of shunting data from
 one type to another is that you can declare a variable and assign it at the
 same time. Let us say that you have already filled a \cinline{gsl\_matrix
 *m} with data and want it to be an \cinline{apop\_data} structure. Then
-you can declare and allocate your new structure with one line:
-\begin{lstlisting}
-apop_data   *mdata  = apop_matrix_to_data(m);
-\end{lstlisting}
+you can declare and allocate your new structure with one line:\\
+%\begin{lstlisting}
+\cinline{apop\_data   *mdata  = apop\_matrix\_to\_data(m);}\\
+%\end{lstlisting}
 On the left-hand side, we are allocating an \cinline{apop\_data *} pointer, and
 on the left-hand side, \cind{apop\_data\_from\_matrix} returns an 
 \cinline{apop\_data *} pointer. As in the example on page \pageref{gslexample}, the same can be
 done with any function with \cinline{alloc} in the name, because they will also
 return a pointer to the appropriate type.
+}
 
 \paragraph{Using views}\index{views}\index{matrices!views}
 The GSL includes a convenient structure for pulling a vector from a
@@ -334,13 +335,13 @@ gsl_vector_scale(a_vector, 2);
 Matrix inversion is one of the most computationally intensive problems
 around. In fact, some will tell you it is the problem for which computers were invented.
 
+\codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition}
+
 The GSL does not include a function to directly invert a general matrix:
 instead, we have to go through a triangular decomposition. Figure
 \ref{invertmatrix} shows a function to do all of the steps for us.
 Examples for using this function are located throughout the book; for
 example, see the calculation of OLS coefficients on page \pageref{ols}.
-
-\codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition}
 
 Figure \ref{invertmatrix} is cut and pasted from the Apophenia source
 code; \cind{apop\_det\_and\_inv} does indeed invert and calculate the

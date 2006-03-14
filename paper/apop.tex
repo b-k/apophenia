@@ -53,7 +53,7 @@ its individual elements, here is the declaration:
 
 \begin{lstlisting}
 typedef struct apop_data{
-    gsl_matrix  *data;
+    gsl_matrix  *matrix;
     apop_name   *names;
     char        ***categories;
     int         catsize[2];
@@ -63,7 +63,7 @@ You can easily operate on the individual elements of the structure:
 if the \cinline{matrix\_man\-ip\-u\-late} function requires a
 \cinline{gsl\_ma\-trix}, but you are using an \cinline{apop\_da\-ta}
 structure, then you can call
-\cinline{matrix\_man\-ip\-u\-late(my\_data-$>$data)}. Similarly to
+\cinline{matrix\_man\-ip\-u\-late(my\_data-$>$matrix)}. Similarly to
 manipulate the names and the table of text data. The size of the text
 data is stored in the \cinline{catsize} element. Usage:
 
@@ -77,6 +77,12 @@ for (r=0; r< set->catsize[0]; r++){
     printf("\n");
 }
 \end{lstlisting}
+\comment{
+Categories are not particularly well-supported, because there is not
+much analysis that one could do with them---they are primarily useful
+for dissecting data on the SQL side. But one common use is to 
+take a column with, say, five categories,
+and produce four columns of dummy variables.}
 
 \paragraph{Useful functions} As well as using them for models, there are
 various functions for manipulating \cinline{apop\_data} sets. You will
@@ -121,7 +127,7 @@ apop_data_get_nt(your_data, i, "colname");
 apop_data_get_tt(your_data, "rowname", "colname");
 \end{lstlisting}
 Notice that the first form, \cinline{apop\_data\_get}, has an abbreviated
-name, and is identical to \cinline{gsl\_matrix\_get(your\_data->data, i, j)}.
+name, and is identical to \cinline{gsl\_matrix\_get(your\_data->matrix, i, j)}.
 \cindex{apop\_data\_get...}
 
  \cindx{apop\_data}{)textbf}
@@ -264,6 +270,7 @@ structure. Then we print it.
 Feeling lazy? The program above was good form and demonstrated useful
 features, but the code below will do the same thing in even fewer lines:
 
+\label{oneliner}
 \begin{lstlisting}
 #include <apophenia/headers.h>
 int main(void){
@@ -292,7 +299,7 @@ For example, to get the
 column number of a variable in which you are insterested, usd \cind{apop\_name\_find}, e.g.:
 \begin{lstlisting}
 int column_number   = apop_name_find(my_data->names, "ages", 'c');
-gsl_vector age_vector = gsl_marix_column(my_data->data, column_number).vector;
+gsl_vector age_vector = gsl_marix_column(my_data->matrix, column_number).vector;
 printf("mean age: %g\n", apop_vector_mean(&age_vector));
 \end{lstlisting}
 As above, you can also use \cind{apop\_data\_get\_nt} to pull a single
@@ -373,7 +380,7 @@ is an \cinline{apop\_\-est\-i\-ma\-tion\_\-par\-a\-met\-ers} object; see
 the online reference for the individual models for details of the
 parameters one could set.
 
-\paragraph{Data formats} 
+\paragraph{Data formats} \label{dataformats} \index{data!format}
 For the models that are merely a distribution, the data matrix can have
 any form: 1 $\times$ 10,000, or 10,000 $\times$ 1, or 100 $\times$ 100.
 This provides maximum flexibility in how you produce the data.
@@ -504,8 +511,71 @@ another, and
 database and produce a crosstab. All of these are simply wrappers for
 the corresponding Apophenia functions, as seen in Chapter \ref{sql}.
 
-One final command: \binline{apop} is a program that provides a
-server/client for doing data analysis. In theory, it will allow users to
-do analyses from the command line or from other languages such as Perl
-or Python. At the moment, it remains in the proof-of-concept stage;
-watch this space for updates.
+Finally, for numerical analysis, there is a client/server program,
+\binline{apop}.  With the command \binline{apop
+start dataset.db}, the program installs itself in memory.
+Subsequent commands are clients to this server. For
+example, the user may call \binline{apop query\_to\_data agedata
+"select * from ages"}, and the server would run the query and create an
+\cinline{apop\_data} set named \cinline{agedata}. The data set resides in
+memory, waiting for further commands to operate on it.
+
+For example, the following could be run from the command line:
+\begin{lstlisting}
+apop start dataset.db
+apop query_to_data agedata "select * from ages"
+apop estimate_OLS est agedata 
+apop estimate_print est
+apop stop
+\end{lstlisting}
+
+Since all of the handling of \cinline{gsl\_matrix}es,
+\cinline{apop\_data} sets, and \cinline{apop\_estimate}s is handled by
+the server, and all output is plain text, one only needs
+basic text-parsing to fold the input and output of these functions into
+scripts in languages such as Perl or Python. \index{Perl} \index{Python}
+
+\comment{
+\section{Notes on design} Here are a few notes on the ideas behind
+Apophenia's design, which may be of interest to end-users. The executive
+summary: the library takes a relatively modern approach to C coding, 
+oriented toward facilitating quick statistical queries without hampering
+those who need to be more careful in management of data and memory.
+
+\paragraph{Facilitate laziness} First,
+as many functions as possible have default values. Notably, any
+\cinline{model.estimate} function should be able to accept
+\cinline{NULL} for the \cinline{estimation\_params} argument. This makes
+it easy for those who want quick results to get their results, and those
+who want control to specify what they need.
+
+\paragraph{Memory usage} The GSL is careful to never allocate large
+spans of memory internally, and does not return large blocks of memory
+outside of routines with \cinline{alloc} in the name. This imposes work
+on the user, however, because so many functions must be preceeded with
+several lines of memory allocation. Under the \airq{facilitate laziness}
+rule, Apophenia takes the opposite approach: it freely allocates memory behind
+your back, although this is documented for every function that does so,
+and many functions, such as the estimation routines, return potentially
+very large blocks of memory. That means that the declaration and the
+estimation can be on one line, or the returned value can be nested in
+other functions:
+\lstset{numbers=left, numberstyle=\scshape}
+\begin{lstlisting}
+apop_estimate_print(apop_OLS.estimate(data, NULL));
+(or)
+apop_estimate *e = apop_OLS.estimate(data, NULL);
+\end{lstlisting}
+\lstset{numbers=none}
+
+\paragraph{Stats scripts are often short}
+The reader will note that line 1 produces a memory leak, since the
+\cinline{apop\_estimate} can't be deallocated. But if the whole program
+is one line, as in the example on page \pageref{oneliner}, then it
+doesn't matter. The typical computer today has around a gigabyte of
+memory, while many data sets are only a few hundred observations. That
+means that if every last allocation in the analysis results in a memory
+leak, the memory lost will still be marginal.
+}
+
+

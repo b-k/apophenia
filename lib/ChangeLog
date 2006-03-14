@@ -20,7 +20,14 @@ apop_data table with actual, predicted, residual columns.
 	--obviated the need for a 'dependent' element in apop_names; removed that.
 	If you need the name, it's now your_est->dependent->names->colnames[0].
 
---your_estimate->covariance is now an apop_data instead of a gsl_matrix.
+--your_estimate->covariance is now an apop_data set instead of a gsl_matrix.
+
+--the data element of the apop_matrix structure is now named matrix. So
+instead of data_set->data, use data_set->matrix, and instead of
+estimate->data->data->data, you can use estimate->data->matrix->data.
+
+--The command-line utility has been revisited, and can do a few more
+things, like OLS.
 
 
 		February 2006

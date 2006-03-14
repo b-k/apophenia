@@ -3,12 +3,13 @@
 
 Structured Query Language and matrix operations are excellent complements. Some things, like
 making a crosstab, are a bit of a pain using traditional techniques of
-matrix manipulation. Meanwhile, some things just can not be done via SQL
-queries. With both, your data analysis technique will be unstoppable.
+matrix manipulation. Meanwhile, some things, like matrix multiplication,
+just can not be done via SQL queries. With both, your data analysis
+technique will be unstoppable.
 
 As a very broad rule, try to do data manipulation, like pulling subsets
 from the data or merging together multiple data tables, using SQL. Then,
-as a last step, pull the perfectly formatted data into a GSL matrix and
+as a last step, pull the perfectly formatted data into an in-memory matrix and
 do the statistical analysis. 
 
 SQL is not nearly as complex a language as C, making it easy to learn and
@@ -47,6 +48,41 @@ follow along with any of the above tools. Section \ref{foldingsql}
 will describe the Apophenia library functions that facilitate using an
 SQL database from within a C program.
 
+\index{data!format}
+\paragraph{Data format} Each column in a database represents a distinct
+variable, such as a subject's age, weight, or height. One can expect the
+units to be different for each column. 
+
+Each row in a database can be taken to represent one observation; for
+example, each row can be data about a single person. There is no
+mechanism in SQL for naming a row, although it is common enough to
+have a plain old column named \sinline{row\_name}; usually there is
+another identifier such as \sinline{social\_security\_no} that serves
+this purpose.  
+
+Your in-memory matrices will generally be expected to have a similar
+format; see page \pageref{dataformats} for further notes.
+
+Most of the world's data sets are already in this format. If your data 
+is not currently in this format, your best bet is to convert it rather
+than fighting SQL's design; see
+the notes on crosstabs, page \pageref{crosstabs}, for tips on
+converting from the most common alternative data format.
+
+The asymmetry between columns and rows will be very
+evident in the syntax for SQL below. 
+One selects columns using the
+column name, and there is no real mechanism for selecting an arbitrary
+subset of columns; one selects rows by their characteristics, and there
+is no real mechanism to select rows by name.\footnote{If there is a
+\sinline{row\_name} variable, then one could select rows \sinline{where
+row\_name == "Joe"}, but that is simply selecting rows with the
+characteristic of having a \sinline{row\_name} variable whose value is
+\sinline{"Joe"}. That is, column names are {\it bona fide} names; row
+names are just data.}
+
+
+
 \section{Basic queries}
 Many methods of data slicing and joining are easy using database queries,
 but difficult via matrix operations.
@@ -54,15 +90,11 @@ but difficult via matrix operations.
 For example, pulling a subset of your data is trivial in SQL. If
 you need all of the data for those subjects over 175cm, you can ask for
 it thusly:
-
-%\begin{verbatim}
-%#sql
 \begin{lstlisting}
 select * 
    from data 
    where height >=175;
 \end{lstlisting}
-%\end{verbatim}
 
 You can read this like English (once you know that \sinline{*} means `all
 columns'): it will find all of the rows in a table named \sinline{data}
@@ -70,7 +102,7 @@ where \sinline{height} in that row is greater than or equal to 175, and
 return all the columns for those rows.
 
 
-Generally, the \sinline{select} statment gives a list of columns that
+Generally, the \sinline{select} statement gives a list of columns that
 the output table will have; the \sinline{from} clause declares where the
 source data comes from; finally, there are modifiers or restrictions
 (in this case \sinline{where}) on the rows to be output.  And that's
@@ -125,7 +157,7 @@ for every line in your original table (and the columns returned will
 match those you specified in the \sinline{select} clause).
 
 Join as many subclauses as you wish, using the Boolean operators you
-know and love: \sinline{where ((age > 13) or (height >= 175)) and (weight == 70)}.
+know and love: \sinline{where ((d1.age > 13) or (d2.height >= 175)) and (d1.weight == 70)}.
 
 
 \paragraph{Pruning rows with \sinlinetwo{distinct}} The \sqlind{distinct}
@@ -206,7 +238,7 @@ econ\_data(zip)} and \sinline{health\_data(zip\_code)}.
 There is standard SQL syntax for indexing multiple columns, 
 (\sinline{create index e\-con\_\-in\-dex on econ\_data(zip, age)}), but as a
 practical matter, SQLite really only cares about the first item in the
-list, so you are better off creating several indices as above.
+list, so you are better off creating one index per variable as above.
 
 \subsection{Aggregation}
 Here is how to get the number of rows in your data table:
@@ -229,14 +261,15 @@ group by zip;
 This will group the rows into groups, where each group has the same ZIP
 code, and return a single line for each group.
 
-\marginaliafixed{15}{Crosstabs}{In the spreadsheet world, we often get tables
+\index{crosstabs}\label{crosstabs}
+\marginaliafixed{14}{Crosstabs}{In the spreadsheet world, we often get tables
 where the X-dimension is the year, the Y-dimension is the location,
 and the $(x,y)$ point is a measurement taken that year at that location.
 
 Conversely, the most convenient form for this data in a database is
-three columns: year, location, statistic. [How would you write a query
+three columns: year, location, statistic. After all, how would you write a query
 such as \sinline{select statistic from tab where year < 1990} if there
-were a separate column for each year?] 
+were a separate column for each year?
 
 Converting between the two is an annoyance, and so Apophenia provides
 functions to do conversions back and forth:
@@ -249,11 +282,11 @@ and
 
 
 The two other aggregation commands which will be useful to you are {\tt
-sum()} and \sinline{average()}. These take an existing row as an argument.
+sum()} and \sinline{avg()}. These take an existing row as an argument.
 For example, to search for height disparities by ZIP code, try:
 %\begin{verbatim}
 \begin{lstlisting}
-select  average(height) as avg_height
+select  avg(height) as avg_height
 from data
 group by zip;
 \end{lstlisting}
@@ -261,12 +294,12 @@ group by zip;
 Notice that we don't have to include ZIP code as a column in the output
 if we are not interested in it.
 
-Feel free to specify multiple {\sl group by} clauses; this creates what
+Feel free to specify multiple \sinline{group by} clauses; this creates what
 some call a \ind{cross tab}. For example, to get average income by
 height and ZIP code: 
 %\begin{verbatim}
 \begin{lstlisting}
-select  zip, height, average(income) as avg_income
+select  zip, height, avg(income) as avg_income
 from data
 group by zip, height;
 \end{lstlisting}
@@ -275,35 +308,25 @@ group by zip, height;
 When you want to analyze the crosstab, you will be very
 interested in the \cind{apop\_db\_to\_cross\-tab} function, {\em qv}.
 
-The function \sinline{sum()} works the same. That's all the aggregators you
-get in standard SQL, but you can specify more than just a column name, so you can get
-away with a few more. Here is the variance of income in each subgroup:
-%\begin{verbatim}
-\begin{lstlisting}
-select  sum((income - average(income))*(income - average(income))) 
-               as income_variance
-from data
-group by zip, height;
-\end{lstlisting}
-%\end{verbatim}
+The function \sinline{sum()} works the same. 
 
 \paragraph{Apophenia's SQL extensions}
-Apophenia saves you from having to do calculations like the above by
-defining the sort of aggregations that statisticians use, such as
-moments. You can use the following aggregation functions in an SQL
-call that you make from Apophenia: 
-\sinline{stddev var variance skew kurt kurtosis}. There are redundancies so that you don't have to remember
-whether to abbreviate or not.
+That's all the aggregators you get in standard SQL.
+Apophenia defines a few more of the aggregations that statisticians
+commonly use, such as moments. You can use the following aggregation
+functions in an SQL call that you make from Apophenia: \sinline{stddev
+var variance skew kurt kurtosis}. There are redundancies so that you
+don't have to remember whether to abbreviate or not.
 
-This may also be a good time to mention three more extentions to
-standard SQL: \sinline{sqrt, pow, exp, log}. These functions do what you
-expect: \sinline{select log(income), pow(in\-come, 3), sqrt(income) from data} will give
-you a table with the log of incomes and, for what it's worth, incomes
-cubed and the square root of incomes.
+This may also be a good time to mention three more extensions to standard
+SQL: \sinline{sqrt, pow, exp, log}. These functions do what you expect:
+\sinline{select log(income), pow(in\-come, 3), sqrt(income) from data}
+will give you a table with the log of incomes and, for what it's worth,
+incomes cubed and the square root of incomes.
 
-Remember: these functions are Apohenia extensions, so be careful not to
+Remember: these functions are Apophenia extensions, so be careful not to
 use these added functions if you ever hope to use your SQL queries in
-another context. If you want to stay standard, you call your data into
+another context. If you want to stay standard, call your data into
 a table and use \cind{apop\_vector\_log}, \cind{apop\_vector\_exp},
 \cind{apop\_mean}, \cind{apop\_var}, et cetera to get the desired
 statistics on the matrix side.
@@ -322,13 +345,13 @@ select id, age, zip
 from data_set_2
 \end{lstlisting}
 will produce the results of the first query stacked directly on top of
-the second query. Feel free to use subqueries or what have you, but be
+the second query. Feel free to use subqueries (see below), but be
 careful that both tables have exactly the same number of columns.
 
 \paragraph{\cinlinetwo{Union all}}\sindex{Union all} If a line is duplicated in both tables,
 then the \cinlinetwo{union} operation throws out
 one copy of the duplicate lines, much like \sinline{select distinct}
-includes only one of the duplicates. Replacing \sinline{UNION} with \sinline{Union all} will retain the duplicates.
+includes only one of the duplicates. Replacing \sinline{UNION} with \sinline{UNION ALL} will retain the duplicates.
 
 \paragraph{\cinlinetwo{Intersect}}\sindex{Intersect} As you can guess,
 putting \sinline{intersect} between two \sinline{select} statements
@@ -340,8 +363,9 @@ the asymmetry: absolutely nothing in the second table will appear.
 
 \subsection{Creating tables} There are two ways to create a table. One
 is via  a \sind{create} statement and then an \sind{insert} statement
-for every single line. 
-
+for every single line. The \sinline{create} statement simply requires a
+list of column names; the \sinline{insert} statements simply requires a
+list of one data element for each column.
 \begin{lstlisting}
 begin;
 create table newtab(name, age);
@@ -350,8 +374,7 @@ insert into newtab("Jill", 14);
 insert into newtab("Bob", 14);
 commit;
 \end{lstlisting}
-
-The begin-commit wrapper, by the way, means that everything will happen
+The \sind{begin}-\sind{commit} wrapper, by the way, means that everything will happen
 in memory until the final commit. The program may run faster, but if
 the program crashes in the middle, then you will have lost everything.
 The optimal speed/security trade-off is left as an exercise for the
@@ -392,12 +415,12 @@ lagged by one year, and then the \sinline{diff} variable will be the
 one-year change in income.
 
 
-\paragraph{Subqueries}
-
+\paragraph{Subqueries}\index{subqueries} 
 One of SQL's nicest tricks is that it allows for the input tables to be
 queries themselves. For example: what is the mean number of observations per
 ZIP code?
 
+\sindex{group by}
 You first need to get a \sinline{count(*)} grouped by ZIP, and then get an
 average of that. You could run a query to produce a table of counts,
 save the table, and then run a query on that table to find the averages.
@@ -411,7 +434,7 @@ from (select count(*) as ct
 The query inside the \sinline{from} clause will return a table, and even
 though that table has no name, it can be used as a data source like any other
 table. So the example will first produce a table with one line for each
-ZIP code, listing the number of observations it has, and then it will
+ZIP code, listing the number of observations there, and then it will
 take that table and find the average of its \sinline{ct} column.
 
 Everywhere you would put a table name, you could put a query 
@@ -461,7 +484,7 @@ is \cind{apop\_query}, which takes a single text argument: the
 query. For example,
 \setc
 \begin{lstlisting}
-apop_query(" select *        \
+apop_query("select *        \
                from data     \
                   where height >=175;");
 \end{lstlisting}
@@ -472,8 +495,8 @@ backslash, until you reach the end of the string. The line above runs
 the query and returns nothing. [Not very useful for a \sinline{select}, but perfect for
 \sinline{create} or \sinline{insert}.]
 
-\cinline{apop\_query} accepts \cinline{printf}-style arguments. For example,
-say that you calculate a minimum height earlier in the program, and want
+\cinline{apop\_query} accepts all of the \cinline{printf}-style arguments from page \pageref{printf}. For example,
+say that you calculated a minimum height earlier in the program, and want
 to write a query that uses that variable:
 \begin{lstlisting}
 int min_height	= 175;
@@ -483,13 +506,13 @@ apop_query(" select *     \
 \end{lstlisting}
 
 \paragraph{apop\_query\_to\_data} \cindex{apop\_query\_to\_data}
-This function takes both a gsl\_matrix and a query string. It will run
-the query and return the resulting table for your analysis.  
+This function will run
+the given query and return the resulting table for your analysis:
 \begin{lstlisting}
 apop_data *tall_people;
 int min_height	= 175;
 
-tall_people = apop_query_to_data(" select *     \
+tall_people = apop_query_to_data("select *     \
                                    from data     \
                                    where height >=%i;", min_height);
 \end{lstlisting}
@@ -553,7 +576,7 @@ line of the program, merge the database with an on-disk database:
 int main(void){
     apop_db_open(NULL); //open a db in memory.
     do_hard_math(...);
-    remove("on_disk.db"); //standard C command to delete a file.
+    remove("on_disk.db"); //standard C library function to delete a file.
     apop_db_merge("on_disk.db");
 }
 \end{lstlisting}
@@ -570,7 +593,7 @@ file on the hard drive, create a table, and add an entry each period.
 Notice that there is no begin-commit wrapper, so if you get tired of
 waiting, you can halt the program and walk away with
 your data.\footnote{Sometimes such behavior will leave the database in
-an erratic state. If so, try the SQLite command \sqlind{vacuum}.}
+an unclean state. If so, try the SQLite command \sqlind{vacuum}.}
 
 
 \begin{lstlisting}
@@ -591,7 +614,7 @@ already exists. If the second argument is one, as in the example above,
 then the table is deleted so that it can be created anew subsequently;
 if the second argument is zero, then the function simply returns the
 answer to the question ``does the table exist?'' but leaves the table
-intact if it is there. This is the dignified way to delete a table from
+intact if it is there. This is the graceful way to delete a table from
 a database, because it will not return an error if the table you are
 trying to delete does not exist.
 
@@ -625,14 +648,14 @@ French ($o > n$, $v > f$), but does not work in Hebrew
 %({\fontencoding{LHE}\fontfamily{clas}\selectfont heklop.c} $<$ l).
 }
 
-To take this to the extreme, we can turn a variable which is discrete
+To take this to the extreme, we can turn a variable that is discrete
 but not ordered (such as district numbers in the following example)
 into a series of dummy variables. It requires writing down a separate
 \sinline{case} statement for each value the variable could take, but
 that's what \cinline{for} loops are for.  [Again, this is demonstration
 code. Use \cind{apop\_pro\-duce\_dum\-mies} to do this in practice.]
 
-\codefig{dummy}{A sample of using SQL to create dummy variables}
+\codefig{dummy}{A sample of a \cinline{for} loop that creates  SQL that creates dummy variables}
 
 Figure \ref{dummy} uses the \sinline{case} keyword to create a series of
 columns that are either one or zero---dummy variables.  We first query
@@ -669,14 +692,13 @@ gsl_vector	*overeducated;
 \end{lstlisting}
 
 Here is a factoid for you: incomes are usually distributed log-normally, so we should do a t-test on the
-log of income. We'll do one with Apohenia and one with the raw GSL:\cindex{apop\_vector\_log}
+log of income. Here is one  vector transformed with Apophenia's convenience function and one with the underlying GSL functions: \cindex{apop\_vector\_log}
 \begin{lstlisting}
 apop_vector_log(undereducated);
 
 int i;
 for(i=0; i< overeducated->size; i++)
-   gsl_vector_set(overeducated, i, 
-               gsl_sf_log(gsl_vector_get(overeducated, i)));
+   gsl_vector_set(overeducated, i, gsl_sf_log(gsl_vector_get(overeducated, i)));
 \end{lstlisting}
 
 The GSL 
@@ -691,6 +713,13 @@ mean_under = apop_vector_mean(undereducated);
 var_under  = apop_vector_variance(undereducated);
 \end{lstlisting}
 
+Finally, it would be nice to have a name for the number of data points.
+\begin{lstlisting}
+int count_over = overeducated->size;
+int count_under = undereducated->size;
+\end{lstlisting}
+
+\comment{
 The other factoid you'll need is that the difference of two normal
 distributions is also normal, and the variance of the difference is
 the sum of the two original variances.\footnote{Your stats textbook
@@ -701,18 +730,33 @@ is exactly equivalent to adding a ${\cal N}(-\mu_2, \sigma_2)$, so we
 get the result in the text.} That is, assuming the counts are large
 enough that the Normal approximation is OK, we can write down:
 
-%\begin{verbatim}
 \begin{lstlisting}
-double	test_me = gsl_cdf_gaussian_P(mean_over-mean_under, 
-                                       var_over+var_under);
+double	test_me = gsl_cdf_gaussian_P(mean_over-mean_under, var_over+var_under);
 \end{lstlisting}
-%\end{verbatim}
+}
+Now we have the inputs needed to produce a test statistic. It so happens
+that 
+$$
+\frac{({\tt mean\_over - mean\_under})}
+{\sqrt{\frac{{\tt var\_over}}{({\tt count\_over}-1)}+ \frac{{\tt var\_under}}{({\tt count\_under}-1)}}} \sim t_{\tt count\_over + count\_under - 2},
+$$
+and this is trivial to translate into C: 
+\begin{lstlisting}
+double	stat    = (mean_over - mean_under)/ sqrt(var_over/ (count_over-1) + var_under/(count_under-1));
+\end{lstlisting}
 
-and \cinline{test\_me} is the probability that the difference between the
-means is less than or equal to zero. If \cinline{test\_me} turns out to be greater
-than your preferred confidence interval, (e.g., 95\%), then reject the
-null and go to grad school. Else, there isn't enough information to
-distinguish between the two with confidence.
+The final step is to look up this statistic in the standard $t$ tables
+as found in the back of any standard statistics textbook. Of course,
+looking up data is the job of a computer, so we instead ask the GSL:
+\begin{lstlisting}
+double pvalue   = gsl_cdf_tdist_P(stat, count_under + count_over -2);
+\end{lstlisting}
+Now \cinline{pvalue} is the percentage of the t-distribution under
+\cinline{stat}, and therefore gives us the confidence with which we can
+reject the hypothesis that \cinline{mean\_over <= mean\_under}. If
+\cinline{pvalue} is large, say $> 95\%$, then we can reject the null
+hypothesis and go to grad school. Else, there isn't enough information
+to distinguish between the two with confidence.
 
 \subsection{No, easier} The above example gave you line-by-line
 control, but say the boss gave you ten minutes to get out a
@@ -749,6 +793,6 @@ by querying out incomes, and then calling
     know exactly where your problem is. Of course, the $t$-test will
     still fail because of the infinite variances.}
 
-See page \pageref{ttest} for more on the $t$-test and this function.
+See page \pageref{ttest} for more on the $t$-test.
 \index{t test|)}
 \setc %for code listings.
