@@ -250,19 +250,8 @@ from data;
 %\end{verbatim}
 This produces a table with one column and one row, listing the total number of rows in the \sinline{data} table.
 
-You probably want more refinement than that; if you would like to
-know how much data you have in each ZIP code, then use the \sqlind{group
-by} clause to say so:
-\begin{lstlisting}
-select zip, count(*) as ct_per_zip
-from data
-group by zip;
-\end{lstlisting}
-This will group the rows into groups, where each group has the same ZIP
-code, and return a single line for each group.
-
 \index{crosstabs}\label{crosstabs}
-\marginaliafixed{14}{Crosstabs}{In the spreadsheet world, we often get tables
+\marginaliafixed{15}{Crosstabs}{In the spreadsheet world, we often get tables
 where the X-dimension is the year, the Y-dimension is the location,
 and the $(x,y)$ point is a measurement taken that year at that location.
 
@@ -279,6 +268,17 @@ functions to do conversions back and forth:
 and
 \cinline{apop\_crosstab\_to\_db(crosstab, "new\_table\_name");}
 }
+
+You probably want more refinement than that; if you would like to
+know how much data you have in each ZIP code, then use the \sqlind{group
+by} clause to say so:
+\begin{lstlisting}
+select zip, count(*) as ct_per_zip
+from data
+group by zip;
+\end{lstlisting}
+This will group the rows into groups, where each group has the same ZIP
+code, and return a single line for each group.
 
 
 The two other aggregation commands which will be useful to you are {\tt
@@ -374,11 +374,12 @@ insert into newtab("Jill", 14);
 insert into newtab("Bob", 14);
 commit;
 \end{lstlisting}
-The \sind{begin}-\sind{commit} wrapper, by the way, means that everything will happen
-in memory until the final commit. The program may run faster, but if
-the program crashes in the middle, then you will have lost everything.
-The optimal speed/security trade-off is left as an exercise for the
-reader.
+
+The \sind{begin}-\sind{commit} wrapper, by the way, means that everything
+will happen in memory until the final commit. The program may run
+faster, but if the program crashes in the middle, then you will have
+lost everything.  The optimal speed/security trade-off is left as an
+exercise for the reader.
 
 If you have hundreds or thousands of \sinline{insert}s, you are almost certainly better off putting the data
 in a text file and using \sind{apop\_text\_to\_db}. The form

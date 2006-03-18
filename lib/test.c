@@ -98,7 +98,7 @@ gsl_vector      *vv;
     //generate.
     generate_for_rank_test(data, r, dist, runsize, rowsize);
     summary     = apop_matrix_summarize (data);
-    v           = gsl_matrix_column(summary->data,0);
+    v           = gsl_matrix_column(summary->matrix,0);
     gsl_matrix_set_row(data2, 0, &(v.vector));
 
 /*    printf("the abbreviated data matrix:\n");
@@ -138,15 +138,31 @@ double          t, v;
     m    = apop_query_to_matrix("select * from td");
     s    = apop_matrix_summarize(m);
     //apop_matrix_print(s,"\t", NULL);
-    t    = gsl_matrix_get(s->data, 1,0);
+    t    = gsl_matrix_get(s->matrix, 1,0);
     if (t !=3) {
         printf("apop_summarize failed to take a simple mean: %g should be three. Fail.\n", t); return 1;
         }
-    t    = gsl_matrix_get(s->data, 2, 1);
+    t    = gsl_matrix_get(s->matrix, 2, 1);
     v    = sqrt((2*2 +3*3 +3*3 +4.*4.)/3.);
     if (t != v) {
         printf("apop_summarize failed to calcuate a std deviation: %g should be %g. Fail.\n", t,v); return 1;
         }
+    return 0;
+}
+
+/** Just a 3-4-5 triangle */
+int test_distances(){
+    gsl_vector *v1 = gsl_vector_alloc(2);
+    gsl_vector *v2 = gsl_vector_alloc(2);
+    gsl_vector *v3 = gsl_vector_calloc(3);
+    gsl_vector_set(v1, 0,2);
+    gsl_vector_set(v1, 1,2);
+    gsl_vector_set(v2, 0,5);
+    gsl_vector_set(v2, 1,6);
+    assert(apop_vector_distance(v1,v3) == 0);
+    assert(apop_vector_distance(v1,v2) == 5.);
+    assert(apop_vector_grid_distance(v2,v3) == 0);
+    assert(apop_vector_grid_distance(v1,v2) == 7.);
     return 0;
 }
 
@@ -169,6 +185,9 @@ apop_estimation_params  params;
         params.step_size        = 1e-2;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
+
+    printf("apop_distance test:");
+    do_test(test_distances());
 
     gsl_rng_env_setup();
     r=gsl_rng_alloc(gsl_rng_default); 

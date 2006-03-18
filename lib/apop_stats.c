@@ -114,7 +114,6 @@ inline double apop_var(gsl_vector *in){
 	return apop_vector_var(in); 
 }
 
-
 /** Returns the kurtosis of the data in the given vector.
 \ingroup vector_moments
 */
@@ -154,6 +153,46 @@ inline double apop_vector_correlation(gsl_vector *ina, gsl_vector *inb){
 */
 inline double apop_vector_cov(gsl_vector *ina, gsl_vector *inb){return  apop_vector_covar(ina,inb);}
 
+
+/** returns the scalar distance (standard Euclidian metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
+where \f$i\f$ iterates over dimensions.
+
+\ingroup convenience_fns
+*/
+double apop_vector_distance(gsl_vector *ina, gsl_vector *inb){
+double  dist    = 0;
+size_t  i;
+    if (ina->size != inb->size){
+        if (apop_opts.verbose)
+            printf("You sent to apop_vector_distance a vector of size %i and a vector of size %i. Returning zero.\n", ina->size, inb->size);
+        return 0;
+    }
+    //else:
+    for (i=0; i< ina->size; i++){
+        dist    += gsl_pow_2(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
+    }
+	return sqrt(dist); 
+}
+
+/** returns the scalar Manhattan metric distance  between two vectors. Simply \f$\sum_i{|a_i - b_i|},\f$
+where \f$i\f$ iterates over dimensions.
+
+\ingroup convenience_fns
+*/
+double apop_vector_grid_distance(gsl_vector *ina, gsl_vector *inb){
+double  dist    = 0;
+size_t  i;
+    if (ina->size != inb->size){
+        if (apop_opts.verbose)
+            printf("You sent to apop_vector_grid_distance a vector of size %i and a vector of size %i. Returning zero.\n", ina->size, inb->size);
+        return 0;
+    }
+    //else:
+    for (i=0; i< ina->size; i++){
+        dist    += apop_double_abs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
+    }
+	return dist; 
+}
 
 /** This function will normalize a vector, either such that it has mean
 zero and variance one, or such that it ranges between zero and one, or sums to one.
@@ -370,6 +409,16 @@ printf("(%g %g %g)", numerator, apop_x_prime_sigma_x(x_minus_mu, inverse), (nume
 double apop_random_double(double min, double max, gsl_rng *r){
 double		base = gsl_rng_uniform(r);
 	return base * (max - min) - min;
+}
+
+/** give me a random integer between min and max [inclusive].
+
+\param min, max 	Y'know.
+\param r		The random number generator you're using.
+*/
+int apop_random_int(double min, double max, gsl_rng *r){
+double		base = gsl_rng_uniform(r);
+	return (int) (base * (max - min + 1) - min);
 }
 
 /** Returns a vector of size 101, where returned_vector[95] gives the
@@ -602,4 +651,3 @@ gsl_histogram       *h  = gsl_histogram_alloc(bins);
     gsl_histogram_free(h);
     return p;
 }
-

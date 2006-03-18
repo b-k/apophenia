@@ -241,7 +241,7 @@ gsl_vector_view	v 		= gsl_matrix_column(set->matrix, 0);
 
 \param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
-\param ep    An \ref apop_estimation_params object. The only
+\param epin    An \ref apop_estimation_params object. The only
 thing we look at is the \c destroy_data element. If this is NULL or
 \c destroy_data==0, then the entire data set is copied off, and then
 mangled. If \c destroy_data==1, then this doesn't copy off the data set,
@@ -314,7 +314,7 @@ apop_data       *set;
 
     //check whether we get to destroy the data set or need to copy it.
     if ((ep == NULL) || (ep->destroy_data==0))
-        apop_data_memcpy(&set, inset); 
+        set = apop_data_copy(inset); 
     else
         set = inset;
 

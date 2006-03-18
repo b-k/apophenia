@@ -19,6 +19,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 #include "likelihoods.h"
 #include <assert.h>
 #include <gsl/gsl_deriv.h>
+static apop_estimate * apop_annealing(apop_model m, apop_data *data, apop_estimation_params *ep);  //below.
 
 /** \page trace_path Plotting the path of an ML estimation.
 
@@ -527,16 +528,17 @@ method:		The sum of a method and a gradient-handling rule.
 \li 100: conjugate gradient (Fletcher-Reeves) (default)
 \li 200: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
 \li 300: conjugate gradient (Polak-Ribiere)
+\li 500: simulated annealing
 \li 0: If no gradient is available, use numerical approximations. (default)
 \li 1: Use numerical approximations even if an explicit dlog likelihood is given. <br>
 Thus, the default method is 100+0 = 100. To use the Nelder-Mead simplex algorithm, use 0, or to use the Polak_Ribiere method ignoring any analytic dlog likelihood function, use 201.
 \return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
-  \todo re-add names 
  \ingroup mle */
 apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_estimation_params *params){
-
-	if (params->method/100==0)
+	if (params && params->method/100==5)
+        return apop_annealing(dist, data, params);  //below.
+    if (params && params->method/100==0)
 		return apop_maximum_likelihood_no_d(data, dist, params);
 	//else:
 	return apop_maximum_likelihood_w_d(data, dist, params);
@@ -623,4 +625,160 @@ apop_estimation_params new_params;
     } //else:
     apop_estimate_free(e);
     return out;
+}
+
+
+
+
+//////////////////////////
+// Simulated Annealing.
+
+/* \page Notes on simulated annealing
+
+The GSL's simulated annealing system doesn't actually do very much. It
+basically provides a for loop that calls a half-dozen functions that we
+the users get to write. So, the file \ref apop_mle.c handles all of this
+for you. The likelihood function is taken from the model, the metric
+is the Manhattan metric, the copy/destroy functions are just the usual
+vector-handling fns., et cetera. The reader who wants further control
+is welcome to override these functions.
+
+ \ingroup mle
+ */
+
+
+/* set up parameters for this simulated annealing run. Cut 'n' pasted
+ * from GSL traveling salesman sample code */
+
+#define N_TRIES 200             /* how many points do we try before stepping */
+#define ITERS_FIXED_T 200      /* how many iterations for each T? */
+#define K 1.0                   /* Boltzmann constant */
+#define MU_T 1.002              /* damping factor for temperature */
+#define T_MIN 5.0e-1
+
+//static apop_model   annealing_model;
+//static apop_data    *annealing_data;
+static negshell_params    anneal_nsp;
+
+static double annealing_energy(void *beta)
+{
+  //return -annealing_model.log_likelihood(beta, annealing_data->matrix);
+  return negshell(beta, &anneal_nsp);
+}
+
+/** We use the Manhattan metric to correspond to the annealing_step fn below.
+ */
+static double annealing_distance(void *xp, void *yp)
+{
+  return apop_vector_grid_distance(xp, yp);
+}
+
+/** The algorithm: 
+    --randomly pick dimension
+    --shift by some amount of remaining step size
+    --repeat for all dims
+This will give a move \f$\leq\f$ step_size on the Manhattan metric.
+*/
+static void annealing_step(const gsl_rng * r, void *xp, double step_size){
+
+gsl_vector  *beta       = xp,
+            *original   = gsl_vector_alloc(beta->size),
+            *dummy      = gsl_vector_alloc(beta->size);
+int         dims_used[beta->size];
+int         dims_left, dim, sign, first_run = 0;
+double      step_left, amt;
+    gsl_vector_memcpy(original, beta);
+    do{
+        memset(dims_used, 0, beta->size * sizeof(int));
+        dims_left   = beta->size;
+        step_left   = step_size;
+        if (!first_run)
+            gsl_vector_memcpy(beta, original);
+        else
+            first_run   ++; 
+        while (dims_left){
+            do {
+                dim = apop_random_int(0, beta->size, r);
+            } while (dims_used[dim]);
+            dims_used[dim]  ++;
+            dims_left       --;
+            sign    = (gsl_rng_uniform(r) > 0.5) ? 1 : -1;
+            amt     = gsl_rng_uniform(r);
+//printf("ss: %g, amt: %g, vector: ", step_left, amt * step_left * sign);
+            apop_vector_increment(beta, dim, amt * step_left * sign); 
+            step_left   *= amt;
+//apop_vector_show(beta);
+//printf("x");
+        }
+    } while (anneal_nsp.model.constraint(beta, anneal_nsp.d, dummy));
+    gsl_vector_free(dummy);
+    gsl_vector_free(original);
+}
+
+static void annealing_print(void *xp)
+{
+    apop_vector_show(xp);
+}
+
+static void annealing_memcpy(void *xp, void *yp){
+    gsl_vector_memcpy(yp, xp);
+}
+
+static void *annealing_copy(void *xp){
+    return apop_vector_copy(xp);
+}
+
+static void annealing_free(void *xp){
+    gsl_vector_free(xp);
+}
+
+apop_estimate * apop_annealing(apop_model m, apop_data *data, apop_estimation_params *ep){
+    //annealing_model = m;
+    //annealing_data  = data;
+    if (m.parameter_ct == -1) {
+        m.parameter_ct   = data->matrix->size2 - 1;
+    }
+apop_estimate   *est  = apop_estimate_alloc(data, m, ep);
+const gsl_rng   * r ;
+gsl_vector      *beta;
+    r   = gsl_rng_alloc(gsl_rng_env_setup()) ; 
+    if (ep && ep->starting_pt)
+        beta = apop_array_to_vector(ep->starting_pt, m.parameter_ct);
+    else{
+        beta  = gsl_vector_alloc(m.parameter_ct);
+        gsl_vector_set_all(beta, 1);
+    }
+	anneal_nsp.d		= data->matrix;
+	anneal_nsp.model	= m;
+
+gsl_siman_print_t printing_fn   = NULL;
+    if (ep && ep->verbose)
+        printing_fn = annealing_print;
+
+gsl_siman_params_t params = {N_TRIES, 
+                    ITERS_FIXED_T, 
+                    (ep) ? ep->step_size : 1,
+                    K, 
+                    -m.log_likelihood(beta, data->matrix), 
+                    MU_T, 
+                    T_MIN};
+
+    gsl_siman_solve(r,        //   const gsl_rng * r
+          beta,          //   void * x0_p
+          annealing_energy, //   gsl_siman_Efunc_t Ef
+          annealing_step,   //   gsl_siman_step_t take_step
+          annealing_distance, // gsl_siman_metric_t distance
+          printing_fn,      //gsl_siman_print_t print_position
+          annealing_memcpy, //   gsl_siman_copy_t copyfunc
+          annealing_copy,   //   gsl_siman_copy_construct_t copy_constructor
+          annealing_free,   //   gsl_siman_destroy_t destructor
+         m.parameter_ct,    //   size_t element_size
+         params);           //   gsl_siman_params_t params
+
+    //Clean up, copy results to output estimate.
+    gsl_vector_memcpy(est->parameters, beta);
+    est->log_likelihood = m.log_likelihood(est->parameters, data->matrix);
+    if (est->estimation_params.uses.covariance)
+        apop_numerical_var_covar_matrix(m, est, data->matrix);
+    return est;
 }

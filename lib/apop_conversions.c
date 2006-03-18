@@ -565,3 +565,37 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
 \ingroup convertfromdb
 */
 
+
+/** Copy one  <tt>gsl_vector</tt> to another. That is, all data is duplicated.
+ Unlike <tt>gsl_vector_memcpy</tt>, this function allocates and returns the destination, so you can use it like this:
+
+ \code
+ gsl_vector *a_copy = apop_vector_copy(original);
+ \endcode
+
+  \param in    the input data
+  \return       a structure that this function will allocate and fill
+\ingroup convenience_fns
+  */
+gsl_vector *apop_vector_copy(gsl_vector *in){
+gsl_vector *out = gsl_vector_alloc(in->size);
+    gsl_vector_memcpy(out, in);
+    return out;
+}
+
+/** Copy one  <tt>gsl_matrix</tt> to another. That is, all data is duplicated.
+ Unlike <tt>gsl_matrix_memcpy</tt>, this function allocates and returns the destination, so you can use it like this:
+
+ \code
+ gsl_matrix *a_copy = apop_matrix_copy(original);
+ \endcode
+
+  \param in    the input data
+  \return       a structure that this function will allocate and fill
+\ingroup convenience_fns
+  */
+gsl_matrix *apop_matrix_copy(gsl_matrix *in){
+gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
+    gsl_matrix_memcpy(out, in);
+    return out;
+}

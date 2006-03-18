@@ -16,7 +16,7 @@ their core, so low-level operations on \cinline{apop\_data} sets become
 \cinline{gsl\_matrix} operations.
 
 \section{The GSL's matrices and vectors}
-As you saw in Chapter \ref{ccrash}, arrays and matrices can be directly implemented in C, but for
+As you saw in Chapter \ref{c_crash}, arrays and matrices can be directly implemented in C, but for
 the rest of the book, I'll be sticking to the GSL's matrix and vector objects.
 If you like using raw arrays better, it's easy to switch back and forth; see
 section \ref{asst_conversions}.
@@ -168,10 +168,318 @@ GSL\_NAN}. However, integers have none of these luxuries: run \cinline{int
 i = 1/0} and you will get \cinline{Arithmetic exception (core dumped)}.
 
 
-\section{Shunting data} \label{asst_conversions} \index{matrices!dot product|(} \index{dot product|(}
+\section{The \ind{BLAS}} 
+\index{matrices!dot product|(} \index{dot product|(}
+Before there was the GSL, there was the BLAS---the basic linear algebra
+system. The GSL has a few functions to interact with the BLAS. In fact,
+it has 86. Here are the three that you will actually use.\footnote{
+The names of the functions below fit in with the system for the other 83
+functions you won't ever use. They're a combination of D=double precision,
+GE=general, M=matrix, V=vector.}
 
-More to come; for now, just have a look at the {\sl conversions} section
-of the reference for a good number of conversion functions.
+\paragraph{Matrix $\cdot$ vector} Here is the function you will use to calculate the dot product of a
+matrix and a vector:
+\cindex{gsl\_blas\_dgemv|(}
+\begin{lstlisting}
+int gsl_blas_dgemv (CBLAS_TRANSPOSE_t TransX, float alpha, 
+          const gsl_matrix * X, const gsl_vector * v, 
+          float beta, gsl_vector * y)
+\end{lstlisting}
+
+This will put into the vector $y$ either the value 
+$\alpha X v + \beta y$ or $\alpha X' v + \beta y$, as determined by the
+first argument.
+\cinline{CBLAS_TRANSPOSE_t} is a type defined by the GSL that can take
+one of two values: \cinline{CblasNoTrans} and \cinline{CblasTrans}. If
+it takes the former value, then $X$ is left alone;
+if it takes the latter, it is transposed to $X'$.
+
+To give a concrete example, assume you have already got some vectors and matrices which have the following
+declarations:
+\begin{lstlisting}
+gsl_vector *beta, *gamma;     
+gsl_matrix *x, *y;           
+\end{lstlisting}
+
+Then, to calculate $X\cdot \beta$, we'd need:
+
+\begin{lstlisting}
+gsl_vector *beta_dot_x      = gsl_vector_calloc(x->size1);
+gsl_blas_dgemv (CblasNoTrans, 1.0, x, beta, 0.0, beta_dot_x);
+\end{lstlisting}
+
+Notice that we used \cinline{calloc}, instead of just \cinline{alloc}, because
+the system will add $x\beta$ to \cinline{beta\_dot\_x}, not just write it in,
+so \cinline{beta\_dot\_x} needs to start as all zeros.
+\cindex{gsl\_blas\_dgemv|)}
+
+\paragraph{Vector $\cdot$ vector}
+To find the dot product of two vectors, use this function:
+\cindex{gsl\_blas\_ddot}
+\begin{lstlisting}
+int gsl_blas_ddot (const gsl_vector * x, const gsl_vector * y, double * result);
+\end{lstlisting}
+
+For example,
+
+\begin{lstlisting}
+double *beta_dot_gamma;
+gsl_blas_ddot (beta, gamma, beta_dot_gamma);
+\end{lstlisting}
+
+\paragraph{Matrix $\cdot$ matrix}
+Finally, to take the dot product of two matrices, use:
+\cindex{gsl\_blas\_dgemm|(}
+\begin{lstlisting}
+int gsl_blas_dgemm (CBLAS_TRANSPOSE_t TransX, 
+    CBLAS_TRANSPOSE_t TransY, 
+    double alpha, const gsl_matrix * X, const gsl_matrix * Y, 
+    double beta, gsl_matrix * dot_product)}
+\end{lstlisting}
+which will calculate \cinline{dot\_product} $= \alpha op(X) op(Y) + \beta$ \cinline{dot\_product}. $op(X)$ and
+$op(Y)$ will be either the matrix or its transpose, as above, depending on whether you choose \cinline{CblasTrans}
+or \cinline{CblasNoTrans}. For example, here is $X'Y$:
+
+\begin{lstlisting}
+gsl_matrix *x_dot_y      = gsl_matrix_calloc(x->size2, y->size2);
+gsl_blas_dgemm (CblasTrans,CblasNoTrans, 1, x, y, 0, x_dot_y);
+\end{lstlisting}
+
+To give a more extended example, let us say that we have a \ind{transition matrix}, showing whether one can go from a row state to a
+column state. Omitting the labels for now, here is a sample:
+\label{twostep}\lstinputlisting{sources/markov_data} 
+[This is not really a \ind{Markov matrix}, because its
+columns are not normalized to one; the reader will see below that it
+still is a valid description of a set of transitions.]
+
+Here is a complete program to read in this matrix and
+then output this count of two-step transitions. The steps should be clear: read the data, allocate a space for the output, calculate the dot product, and print the result.
+\lstinputlisting{sources/markov.c}
+Here is the output:
+\begin{lstlisting}
+    2       3       0       1       2       3
+    3       4       1       3       3       4
+    2       2       2       3       2       2
+    3       4       2       3       3       4
+    4       5       1       3       3       5
+    3       4       0       2       3       4
+\end{lstlisting}
+This tells us, for example, that there are three ways to transition from state one to
+state two in two steps (1 $\Rightarrow$ 1 $\Rightarrow$ 2, 
+1 $\Rightarrow$ 2 $\Rightarrow$ 2,  and 1 $\Rightarrow$ 6 $\Rightarrow$
+2), but no ways to transition from state one to state three in two steps.
+
+
+\cindex{gsl\_blas\_dgemm|)}
+
+\index{matrices!dot product|)}
+\index{dot product|)}
+\paragraph{Scalars} The GSL provides predictable functions for
+interacting vectors or matrices with scalars. Here is code to add one
+and then double a matrix and a vector:
+\begin{lstlisting}
+gsl_matrix_add_constant(a_matrix, 1);
+gsl_matrix_scale(a_matrix, 2);
+
+gsl_vector_add_constant(a_vector, 1);
+gsl_vector_scale(a_vector, 2);
+\end{lstlisting}
+\cindex{gsl\_matrix\_add\_constant} \cindex{gsl\_matrix\_scale}
+\cindex{gsl\_vector\_add\_constant} \cindex{gsl\_vector\_scale}
+
+\section{Matrix inversion and equation solving}  \index{matrices!inversion}\index{matrices!determinants}
+Matrix inversion is one of the most computationally intensive problems
+around. In fact, some will tell you it is the problem for which computers were invented.
+
+\codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition}
+
+The GSL does not include a function to directly invert a general matrix:
+instead, we have to go through a triangular decomposition. Figure
+\ref{invertmatrix} shows a function to do all of the steps for us.
+Examples for using this function are located throughout the book; for
+example, see the calculation of OLS coefficients on page \pageref{ols}.
+
+Figure \ref{invertmatrix} is cut and pasted from the Apophenia source
+code; \cind{apop\_det\_and\_inv} does indeed invert and calculate the
+determinant of an input matrix. This is what \ttind{apop\_OLS} will use if
+you ask for covariances.
+
+\index{Householder solver}
+Because inversion is so computationally intensive, you are better off
+not doing so.  For example, we often write the OLS parameters as $\beta
+=(X'X)^{-1}(X'Y)$, but you could implement this as solving
+$(X'X)\beta = X'Y$, which involves no inversion. If \cinline{xpx} is the
+matrix $X'X$ and \cinline{xpy} is the vector $X'Y$, then 
+\cind{gsl\_linalg\_HH\_solve}\cinline{(xpx, xpy, out-$>$parameters)} will
+return $\beta$. This is how \cinline{apop\_OLS} will find $\beta$ if it
+is all you ask for.
+
+
+\section{Shunting data} \label{asst_conversions} 
+There are many facets to dealing with a computer that one would call
+tedious, but for me, the most tedious of all is converting data formats.
+You can describe the process easily, say `pull the data and find
+$\Xv'\Xv$', but the data is in a text file and your function to take dot
+products accepts \cinline{gsl\_vectors}, and going from one
+to the other will take you much more time than calling the function in
+the end.
+
+To that end, here are the data types discussed in this book, and
+suggestions for converting from one to the other. It is not an exciting
+read, and outside of Method V, there is little new material; you may
+prefer to take this section as a reference to refer to as necessary. Table
+\ref{conversiontab} provides the key to the method most appropriate for
+each given conversion. 
+
+From/to pairs marked with a $\cdot$ are
+left as an exercise for the reader; none are particularly difficult, but
+may require going through another format; for example, one can go from a
+\cinline{double[ ]} to an \cinline{apop\_data} set via \cinline{double[
+]} $\Rightarrow$ \cinline{gsl\_matrix} $\Rightarrow$ \cinline{apop\_data}.
+
+By replacing the letters in the table with ones and the dots with
+zeros, we get the data set on page \pageref{twostep}. As we saw there, the
+only transitions we can not do in two steps are \cinline{apop\_data}
+$\Rightarrow$ \cinline{double[ ]} and plain text $\Rightarrow$
+\cinline{double[ ]}.
+
+\def\rcap#1{\rotatebox{45}{#1}\hskip -15pt }
+\def\rcapc#1{\rotatebox{45}{\cinline{#1}}\hskip -15pt }
+\def\cd{$\cdot$}
+\begin{figure} \begin{center}
+\begin{tabular}{ll}
+\rotatebox[x=15mm]{90}{From}&
+\begin{tabular}{lp{0.4cm}p{0.4cm}p{0.4cm}p{0.4cm}p{0.4cm}p{0.4cm}}
+   &   &&&To\\
+    & \rcap{Text file} & \rcap{Db table} & \rcapc{double[]} 
+        & \rcapc{gsl\_vector} & \rcapc{gsl\_matrix}& \rcapc{apop\_data}\\
+Text file               & C & F & \cd & \cd & \cd &  F                   \\
+Db table                & \cd & Q & \cd & Q & Q & Q                  \\
+\cinline{double[ ]}      & \cd & \cd & C & F & F & \cd                  \\
+\cinline{gsl\_vector}   & P  & P & F & C & \cd & F                    \\
+\cinline{gsl\_matrix}   &  P & P & \cd & V &C &  F               \\
+\cinline{apop\_data}    & P & P & \cd & \cd & S &C
+\end{tabular}
+\end{tabular}
+\caption{Methods of conversion} \label{conversiontab}
+\end{center}\end{figure} 
+
+
+\paragraph{Method C: Copying} I read the process of converting from a
+given type to itself as the process of copying. Most of the types above
+have a method of copying; some even have a few options allowing for
+different tastes.
+
+\cindex{gsl\_vector\_memcpy} \cindex{gsl\_matrix\_memcpy}
+\cindex{apop\_data\_memcpy} \cindex{apop\_data\_memcpy} \cindex{system}
+\lstset{texcl=true} %For this whole section.
+\begin{lstlisting}
+//Text file $\Rightarrow$ Text file
+//Just use the system's file copy command.
+    system("cp %s %s", from_file_name, to_file_name);
+//\cinline{gsl\_vector} $\Rightarrow$ \cinline{gsl\_vector}
+    gsl_vector *copy   = gsl_vector_alloc(original->size);
+    gsl_vector_memcpy(copy, original);
+//\cinline{double[ ]} $\Rightarrow$ \cinline{double[ ]}
+//You need to know the size of the original.
+    double *copy1 = malloc(sizeof(double) * original_size);
+    mecpy(copy1, original, sizeof(double) * original_size);
+    double *copy2[original_size];
+    mecpy(copy2, original, sizeof(double) * original_size);
+//\cinline{gsl\_matrix} $\Rightarrow$ \cinline{gsl\_matrix}
+    gsl_matrix *copy   = gsl_matrix_alloc(original->size1, original->size2);
+    gsl_matrix_memcpy(copy, original);
+//\cinline{apop\_data} $\Rightarrow$ \cinline{apop\_data}
+    apop_data *copy1;
+    apop_data_memcpy(copy1, original);
+    apop_data *copy2 = apop_data_copy(original);
+\end{lstlisting}
+
+\paragraph{Method F: Function call}
+\cindex{apop\_vector\_to\_data}\cindex{apop\_matrix\_to\_data}
+\cindex{apop\_text\_to\_data} \cindex{apop\_text\_to\_db}
+\cindex{apop\_array\_to\_matrix} \cindex{apop\_array\_to\_vector}
+These are functions designed to convert one format to another.
+Notice, by the way, that the \cinline{data} subelement of a
+\cinline{gsl\_vector} can not necessarily be copied to a
+\cinline{double[ ]}---the \airq{stride} may be wrong; see the GSL manual
+for details.
+\begin{lstlisting}
+//text $\Rightarrow$ db table
+//The first number states whether the file has row names; the second
+//whether it has column names. Finally, if no colnames are present,
+//you can provide them in the last argument as a \cinline{char **}
+    apop_text_to_db("original.txt", "tablename", 0 , 1, NULL);
+//text $\Rightarrow$ \cinline{apop\_data}
+    apop_data *copy = apop_text_to_data("original.txt", 0 , 1);
+//\cinline{double[ ]} $\Rightarrow$ \cinline{gsl\_vector}
+    gsl_vector  *copy = apop_array_to_vector(original, original_size);
+//\cinline{double[ ]} $\Rightarrow$ \cinline{gsl\_matrix}
+    gsl_matrix *copy = apop_array_to_matrix(original, original_size1, original_size2);
+//\cinline{gsl\_vector} $\Rightarrow$ \cinline{double[ ]}
+    double *copy;
+    apop_vector_to_array(original_vec, &copy);
+//\cinline{gsl\_vector} $\Rightarrow$ \cinline{apop\_data}
+    apop_data   *copy = apop_vector_to_data(original_vec);
+//\cinline{gsl\_matrix} $\Rightarrow$ \cinline{apop\_data}
+    apop_data   *copy = apop_matrix_to_data(original_matrix);
+\end{lstlisting}
+
+\paragraph{Method P: Printing}
+\cindex{apop\_vector\_print} \cindex{apop\_matrix\_print} \cindex{apop\_data\_print}
+Apophenia's printing functions will print to screen, text file, or
+database, depending on the value of \cind{apop\_opts.output\_type}.
+\begin{lstlisting}
+//\cinline{gsl\_vector} $\Rightarrow$ text file
+    apop_opts.output_type = 't'
+    apop_vector_print(original, "text_file_copy");
+//\cinline{gsl\_matrix} $\Rightarrow$ text file
+    apop_opts.output_type = 't'
+    apop_matrix_print(original, "text_file_copy");
+//\cinline{apop\_data} $\Rightarrow$ text file
+    apop_opts.output_type = 't'
+    apop_data_print(original, "text_file_copy");
+//\cinline{gsl\_vector} $\Rightarrow$ db table
+    apop_opts.output_type = 'd'
+    apop_vector_print(original, "db_copy");
+//\cinline{gsl\_matrix} $\Rightarrow$ db table
+    apop_opts.output_type = 'd'
+    apop_matrix_print(original, "db_copy");
+//\cinline{apop\_data} $\Rightarrow$ db table
+    apop_opts.output_type = 'd'
+    apop_data_print(original, "db_copy");
+\end{lstlisting}
+
+
+\paragraph{Method Q: Querying}
+\cindex{apop\_query} \cindex{apop\_query\_to\_vector}
+\cindex{apop\_query\_to\_matrix} \cindex{apop\_query\_to\_data}
+The only way to get data out of a database is to query it out. Apophenia
+provides a function that will produce the appropriate output.
+
+\begin{lstlisting}
+//db table $\Rightarrow$ db table
+    apop_query("create table copy as \
+    select * from original");
+//db table $\Rightarrow$ \cinline{gsl\_vector}
+    apop_query_to_vector("select * from original");
+//db table $\Rightarrow$ \cinline{gsl\_matrix}
+    apop_query_to_matrix("select * from original");
+//db table $\Rightarrow$ \cinline{apop\_data}
+    apop_query_to_data("select * from original");
+\end{lstlisting}
+
+
+\paragraph{Method S: Subelements} Sometimes, even a function is just
+overkill; you can just pull a subelement from the main data item.
+
+\begin{lstlisting}
+//\cinline{apop\_data} $\Rightarrow$ \cinline{gsl\_matrix}:
+    my_data_set -> matrix
+\end{lstlisting}
+\lstset{texcl=false}
+
+\eject
 
 \marginaliafixed{17}{Allocating and using at once}{    \index{declaration}
 One slight convenience that helps with the annoyance of shunting data from
@@ -189,7 +497,7 @@ done with any function with \cinline{alloc} in the name, because they will also
 return a pointer to the appropriate type.
 }
 
-\paragraph{Using views}\index{views}\index{matrices!views}
+\paragraph{Method V: Views}\index{views}\index{matrices!views}
 The GSL includes a convenient structure for pulling a vector from a
 matrix. Here is how to get the fifth row of \cinline{a\_matrix} into a vector view:
 
@@ -234,127 +542,3 @@ gsl_vector *a_new_vector = gsl_vector_alloc(a_matrix->size1);
 gsl_vector v = gsl_matrix_col(a_matrix, 4).vector;
 gsl_vector_memcpy(a_new_vector, &v);
 \end{lstlisting}
-
-\section{The \ind{BLAS}} 
-Before there was the GSL, there was the BLAS---the basic linear algebra
-system. The GSL has a few functions to interact with the BLAS. In fact,
-it has 86. Here are the three that you will actually use.\footnote{
-The names of the functions below fit in with the system for the other 83
-functions you won't ever use. They're a combination of D=double precision,
-GE=general, M=matrix, V=vector.}
-
-\paragraph{Matrix $\cdot$ vector} Here is the function you will use to calculate the dot product of a
-matrix and a vector:
-\cindex{gsl\_blas\_dgemv|(}
-\begin{lstlisting}
-int gsl_blas_dgemv (CBLAS_TRANSPOSE_t TransX, float alpha, 
-          const gsl_matrix * X, const gsl_vector * x, 
-          float beta, gsl_vector * y)
-\end{lstlisting}
-
-This will put into the vector $y$ the value $\alpha op(X) x + \beta y$. 
-If \cinline{TransX} is \cinline{CblasNoTrans},  then $op(X)=X$; if it is
-\cinline{CblasTrans} then $op(X)=X'$, the transpose of X.
-
-
-To give a concrete example, assume you have already got some vectors and matrices which have the following
-declarations:
-\begin{lstlisting}
-gsl_vector *beta, *gamma;     
-gsl_matrix *x, *y;           
-\end{lstlisting}
-
-Then, to calculate $X\cdot \beta$, we'd need:
-
-\begin{lstlisting}
-gsl_vector *beta_dot_x      = gsl_vector_calloc(x->size1);
-gsl_blas_dgemv (CblasNoTrans, 1.0, x, beta, 0.0, beta_dot_x);
-\end{lstlisting}
-
-Notice that we used \cinline{calloc}, instead of just \cinline{alloc}, because
-the system will add $x\beta$ to \cinline{beta\_dot\_x}, not just write it in,
-so \cinline{beta\_dot\_x} needs to start as all zeros.
-\cindex{gsl\_blas\_dgemv|)}
-
-\paragraph{Vector $\cdot$ vector}
-To find the dot product of two vectors, use this function:
-\cindex{gsl\_blas\_ddot}
-\begin{lstlisting}
-int gsl_blas_ddot (const gsl_vector * x, const gsl_vector * y, 
-                                        double * result);
-\end{lstlisting}
-
-For example,
-
-\begin{lstlisting}
-double *beta_dot_gamma;
-gsl_blas_ddot (beta, gamma, beta_dot_gamma);
-\end{lstlisting}
-
-\paragraph{Matrix $\cdot$ matrix}
-Finally, to take the dot product of two matrices, use:
-\cindex{gsl\_blas\_dgemm|(}
-\begin{lstlisting}
-int gsl_blas_dgemm (CBLAS_TRANSPOSE_t TransX, 
-    CBLAS_TRANSPOSE_t TransY, 
-    double alpha, const gsl_matrix * X, const gsl_matrix * Y, 
-    double beta, gsl_matrix * dot_product)}
-\end{lstlisting}
-\comment{
-{\tt
-int gsl\_blas\_dgemm (CBLAS\_TRANSPOSE\_t TransX, CBLAS\_TRANSPOSE\_t TransY, double $\alpha$, const
-gsl\_matrix * X, const gsl\_matrix * Y, double $\beta$, gsl\_matrix * dot\_product)}
-}
-
-which will calculate \cinline{dot\_product} $= \alpha op(X) op(Y) + \beta$ \cinline{dot\_product}. $op(X)$ and
-$op(Y)$ will be either the matrix or its transpose, as above, depending on whether you choose \cinline{CblasTrans}
-or \cinline{CblasNoTrans}. For example, here is $X'Y$:
-
-\begin{lstlisting}
-gsl_matrix *x_dot_y      = gsl_matrix_calloc(x->size2, y->size2);
-gsl_blas_dgemm (CblasTrans,CblasNoTrans, 1, x, y, 0, x_dot_y);
-\end{lstlisting}
-\cindex{gsl\_blas\_dgemm|)}
-
-\index{matrices!dot product|)}
-\index{dot product|)}
-\paragraph{scalars} The GSL provides predictable functions for
-interacting vectors or matrices with scalars. Here is code to add one
-and then double a matrix and a vector:
-\begin{lstlisting}
-gsl_matrix_add_constant(a_matrix, 1);
-gsl_matrix_scale(a_matrix, 2);
-
-gsl_vector_add_constant(a_vector, 1);
-gsl_vector_scale(a_vector, 2);
-\end{lstlisting}
-\cindex{gsl\_matrix\_add\_constant} \cindex{gsl\_matrix\_scale}
-\cindex{gsl\_vector\_add\_constant} \cindex{gsl\_vector\_scale}
-
-\section{Matrix inversion and equation solving}  \index{matrices!inversion}\index{matrices!determinants}
-Matrix inversion is one of the most computationally intensive problems
-around. In fact, some will tell you it is the problem for which computers were invented.
-
-\codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition}
-
-The GSL does not include a function to directly invert a general matrix:
-instead, we have to go through a triangular decomposition. Figure
-\ref{invertmatrix} shows a function to do all of the steps for us.
-Examples for using this function are located throughout the book; for
-example, see the calculation of OLS coefficients on page \pageref{ols}.
-
-Figure \ref{invertmatrix} is cut and pasted from the Apophenia source
-code; \cind{apop\_det\_and\_inv} does indeed invert and calculate the
-determinant of an input matrix. This is what \ttind{apop\_OLS} will use if
-you ask for covariances.
-
-\index{Householder solver}
-Because inversion is so computationally intensive, you are better off
-not doing so.  For example, we often write the OLS parameters as $\beta
-=(X'X)^{-1}(X'Y)$, but you could implement this as solving
-$(X'X)\beta = X'Y$, which involves no inversion. If \cinline{xpx} is the
-matrix $X'X$ and \cinline{xpy} is the vector $X'Y$, then 
-\cind{gsl\_linalg\_HH\_solve}\cinline{(xpx, xpy, out-$>$parameters)} will
-return $\beta$. This is how \cinline{apop\_OLS} will find $\beta$ if it
-is all you ask for.
-

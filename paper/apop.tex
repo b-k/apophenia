@@ -543,13 +543,24 @@ oriented toward facilitating quick statistical queries without hampering
 those who need to be more careful in management of data and memory.
 
 \paragraph{Facilitate laziness} First,
-as many functions as possible have default values. Notably, any
+default values are oriented toward the lazy. Notably, any
 \cinline{model.estimate} function should be able to accept
 \cinline{NULL} for the \cinline{estimation\_params} argument. This makes
 it easy for those who want quick results to get their results, and those
 who want control to specify what they need.
 
-\paragraph{Memory usage} The GSL is careful to never allocate large
+\paragraph{Memory usage} Pointers are good for you, but their management
+can be an annoyance. Simply by being in C, Apophenia requires that the
+user understand pointers. Many coders who know pointers insist that
+most people are too dumb to understand them. But if a person can
+understand the concept of projecting a data matrix onto an arbitrary
+basis space, he or she probably has enough grey matter to work out that
+data and the address of data can be manipulated separately.
+
+However, there are ways to facilitate the process of dealing with memory
+allocation and deallocation for the lazy.
+
+The GSL is careful to never allocate large
 spans of memory internally, and does not return large blocks of memory
 outside of routines with \cinline{alloc} in the name. This imposes work
 on the user, however, because so many functions must be preceeded with
@@ -567,6 +578,8 @@ apop_estimate_print(apop_OLS.estimate(data, NULL));
 apop_estimate *e = apop_OLS.estimate(data, NULL);
 \end{lstlisting}
 \lstset{numbers=none}
+Copy commands and tests also return a pointer to newly-allocated data,
+again allowing the user to declare and assign on the same line.
 
 \paragraph{Stats scripts are often short}
 The reader will note that line 1 produces a memory leak, since the
@@ -574,8 +587,22 @@ The reader will note that line 1 produces a memory leak, since the
 is one line, as in the example on page \pageref{oneliner}, then it
 doesn't matter. The typical computer today has around a gigabyte of
 memory, while many data sets are only a few hundred observations. That
-means that if every last allocation in the analysis results in a memory
+means that if every single allocation in the analysis results in a memory
 leak, the memory lost will still be marginal.
+
+\paragraph{New languages} Computer scientists love writing new
+languages.  One author has compiled a list of about
+2,500,\footnote{\url{http://people.ku.edu/~nkinners/LangList/Extras/langlist.htm}}
+and the length of that list indicates what is wrong with the idea of a
+specialized language: no matter how nifty it is, it will eventually be
+superceded by a niftier alternative. 
+
+
+
+The
+generally discredited \vocab{Sapir-Whorf hypothesis} claims that how we
+think is influenced by the language we speak. 
+
 }
 
 

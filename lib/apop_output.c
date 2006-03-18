@@ -43,7 +43,7 @@ char		    outfile[]	= "auto",
 	apop_close_db(0);
 
 	//The regression destroys your data, so copy it first.
-	apop_data_memcpy(&data_copy, data);
+	data_copy   = apop_data_copy(data);
 
 	//Run OLS, display results on terminal
 	est  = apop_OLS.estimate(data, NULL, NULL);

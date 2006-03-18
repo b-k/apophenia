@@ -29,6 +29,12 @@ estimate->data->data->data, you can use estimate->data->matrix->data.
 --The command-line utility has been revisited, and can do a few more
 things, like OLS.
 
+--Simulated annealing
+	--added convenience fns apop_vector_distance(pt1,pt2) and
+		apop_vector_grid_distance(pt1,pt2)
+
+--Apop_data_memcpy no longer malloc()s for you, for comparability with
+the world's other memcpy fns. If you want mallocing, use apop_data_copy.
 
 		February 2006
 sort-of-adaptive MLE: use apop_estimate_restart to execute a new MLE

@@ -226,8 +226,15 @@ apop_model * out = malloc(sizeof(apop_model));
 }
 
 
+/** Neatly allocate an \ref apop_estimation_params structure. Sets a
+few defaults, so you can change just one or two values and everything
+else will be predictable.
+
+ */
 apop_estimation_params *apop_estimation_params_alloc(){
 apop_estimation_params *setme = calloc(sizeof(apop_estimation_params),1);
-    apop_inventory_set(&(setme->uses),1);
+    setme->starting_pt  = NULL;
+    setme->step_size    = 1;
+    apop_inventory_set(&(setme->uses),1); 
     return setme;
 }

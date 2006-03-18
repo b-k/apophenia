@@ -46,7 +46,7 @@ zero, and if you need ten different seeds, I suggest using 0, 1, \dots ,9.
 \subsection{Random number distributions}
 Now that you have a random number generator, here are some functions that use it to draw from all of your favorite distributions:
 \index{Gaussian distribution} \index{t distribution} \index{F distribution}
-\index{Uniform distribution}\cindex{gsl\_ran\_...}
+\index{Uniform distribution}\cindex{gsl\_ran\_...}\cindex{gsl\_rng\_uniform}
 \index{Bernoulli distribution} \index{Beta distribution} \index{Binomial distribution} 
 \index{chi squared distribution@$\chi^2$ distribution}
 
@@ -58,13 +58,13 @@ double gsl_ran_chisq (gsl_rng *r, double NU);
 double gsl_ran_fdist (gsl_rng *r, double NU1, double NU2);
 double gsl_ran_gaussian (gsl_rng *r, double SIGMA);
 double gsl_ran_tdist (gsl_rng *r, double NU);
-double gsl_ran_uniform (gsl_rng *r);
 double gsl_ran_flat (gsl_rng *r, double A, double B);
+double gsl_rng_uniform (gsl_rng *r);
 \end{lstlisting}
 
 The 'flat' distribution is a Uniform[A,B] distribution. Since the
 Uniform[0,1] distribution is so common, it gets its own no-options
-function, \cinline{gsl\_ran\_uniform(r)}. Notice that the Gaussian draw
+function, \cinline{gsl\_rng\_uniform(r)}. Notice that the Gaussian draw
 assumes a mean of zero, so if you intend to draw from a ${\cal N}(7,2)$,
 then add the mean after the call: \cinline{gsl\_ran\_gaussian (r, 2) + 7}.
 
@@ -201,5 +201,5 @@ apop_data *covar    = apop_bootstrap(data, apop_poisson, NULL);
 \end{lstlisting}
 In fact, this is redundant, because the \cinline{apop\_pois\-son}
 model already uses the \cind{apop\_boot\-strap} function internally,
-so the usual \cinline{apop\_pois\-son.est\-i\-mate(data, NULL, NULL)}
+so the usual \cinline{apop\_pois\-son.est\-i\-mate(data, NULL)}
 will return an estimate with bootstrapped variances.

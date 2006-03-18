@@ -90,6 +90,34 @@ The trick most worth mentioning is the
 \ind{information equality}, that $E(I)=\var(S)$, which you can prove by
 calculating ${\partial E(L)\over \partial \theta}$.
 
+\subsection{An example: probit} \index{probit|(}
+The probit is a popular model of aleatory behavior. 
+Let the utility from vector $\xv$ be 
+$U(\xv|\betav) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_3 + \beta_4 x_a + \epsilon$,
+where the $\beta$s are all parameters to be estimated from
+the data and $\epsilon \sim {\cal N}(0,1)$.
+The a person consumes $\xv$ iff $U(\xv|\betav)>0$. 
+
+An equivalent way to put the model is to say that $U(\xv)$ is
+deterministic---drop $\epsilon$ from the above, and the probability that
+the agent consumes is given by
+$$P(\xv|\betav) = \int_{-\infty}^{U\left(\xv|\betav\right)} {\cal N}(0,1)(y) dy,$$
+where ${\cal N}(0,1)(y)$ indicates the Normal PDF at $y$ (and so the
+integral is the CDF up to $U(\xv|\betav)$).
+
+Reversing this, the probability of $\betav$ given that the agent
+consumed is $P(\xv)$, and its probability given that the agent did not
+consume is $1-P(\xv)$. Let $\xv^C$ be the set of $\xv$s that led to
+consumption and $\xv^N$ be the set that led to nonconsumption. Then the
+likelihood of $\betav$ given the data set is 
+$$L(\betav|\xv) = \prod_{i} P(\xv^C_i|\betav) \cdot \prod_{i} 1-P(\xv^N_i|\betav).$$ 
+
+One row of our data set will consist of a one or zero indicating
+consumption or non-consumption, and then (the transpose of) the vector
+$\xv$. Then the probit parameters can be estimated using
+\cinline{apop\_probit.est\-i\-mate(data, NULL, NULL)}.
+\index{probit|)}
+
 \section{Why likelihood functions are great} The process of finding a
 maximum of the log likelihood function is 
 so useful for two reasons, with four names.
@@ -233,37 +261,17 @@ and so Type II errors pretty much never get mentioned, since they're
 considered taken care of.
 
 
-
-
-\subsection{An example: probit} \index{probit|(}
-The probit is a popular model of aleatory behavior. 
-Let the utility from vector $\xv$ be 
-$U(\xv|\betav) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_3 + \beta_4 x_a + \epsilon$,
-where the $\beta$s are all parameters to be estimated from
-the data and $\epsilon \sim {\cal N}(0,1)$.
-The a person consumes $\xv$ iff $U(\xv|\betav)>0$. 
-
-An equivalent way to put the model is to say that $U(\xv)$ is
-deterministic---drop $\epsilon$ from the above, and the probability that
-the agent consumes is given by
-$$P(\xv|\betav) = \int_{-\infty}^{U\left(\xv|\betav\right)} {\cal N}(0,1)(y) dy,$$
-where ${\cal N}(0,1)(y)$ indicates the Normal PDF at $y$ (and so the
-integral is the CDF up to $U(\xv|\betav)$).
-
-Reversing this, the probability of $\betav$ given that the agent
-consumed is $P(\xv)$, and its probability given that the agent did not
-consume is $1-P(\xv)$. Let $\xv^C$ be the set of $\xv$s that led to
-consumption and $\xv^N$ be the set that led to nonconsumption. Then the
-likelihood of $\betav$ given the data set is 
-$$L(\betav|\xv) = \prod_{i} P(\xv^C_i|\betav) \cdot \prod_{i} 1-P(\xv^N_i|\betav).$$ 
-
-One row of our data set will consist of a one or zero indicating
-consumption or non-consumption, and then (the transpose of) the vector
-$\xv$. Then the probit parameters can be estimated using
-\cinline{apop\_probit.est\-i\-mate(data, NULL, NULL)}.
-\index{probit|)}
-
 \section{Description: Maximum likelihood estimators} 
+Apophenia provides a single function to find the optimum of a likelihood
+function, \cind{apop_maximum_likelihood}---but what a function it is. It
+provides a standardized interface to several types of optimization
+routines that take very different approaches toward finding optima. You
+will have to provide a log likelihood function, but if you are unable to
+provide the derivatives, the maximization routines will find them for
+you. Since the Cramer-Rao lower bound tells us the variance of a
+most-likely parameter, \cinline{apop_maximum_likelihood} will return an
+\cind{apop_estimate} with the variances and other useful information.
+
 As in the Probit example, Apophenia's model estimation routines can run
 with default values by sending in \cinline{NULL} as the second
 argument. However, if you know that the model estimates its parameters
@@ -304,13 +312,26 @@ the linear combination of these directions that indicates the fastest
 climb. Clearly, this depends on knowing derivatives; see below.
 \item {\bf 200: \ind{Broyden-Fletcher-Goldfarb-Shanno Conjugate gradient algorithm}}  Another conjugate gradient method, that calculates the direction of travel differently. See \cite{avriel:nonlinear} for definitions of all of these methods.
 \item {\bf 300: \ind{Polak-Ribiere Conjugate gradient algorithm}} Yet another conjugate gradient method.
+\item {\bf 500: \ind{Simulated annealing}} A controlled random walk.
+As with the other methods, the system tries a new point, and if it
+is better, switches. Initially, the system is allowed to make large
+jumps, and then with each iteration, the jumps get smaller, eventually
+converging. Also, there is some decreasing probability that if the new
+point is {\em less} likely, it will still be chosen. Simulated annealing
+is best for situations where there may be multiple local optima. Early
+in the random walk, the system can readily jump from one to another;
+later it will fine-tune its way toward the optimum. The number of points
+tested is basically not dependent on the function: if you give it a
+4,000 step program, that is basically how many steps it will take.
+If you know your function is globally convex (as are most standard
+probability functions), then this method is overkill.
 \end{itemize}
-\ind{BFGS algorithm|see{Broyden-Fletcher-Goldfarb-Shanno Conjugate gradient algorithm}}
+\index{BFGS algorithm|see{Broyden-Fletcher-Goldfarb-Shanno Conjugate gradient algorithm}}
 
 As a practical matter, your best bet is to either just go with the default (Fletcher-Reeves) or try them all using a tournament as described below. 
 If you expect the derivatives to be perverse, then you may want to try the derivative-free simplex algorithm.
 
-\ind{gradients}
+\index{gradients}
 There is also the question of how the gradients are calculated. If
 analytic gradients are available, then those are probably preferable, but
 Apophenia will automatically calculate numerical gradients as necessary.

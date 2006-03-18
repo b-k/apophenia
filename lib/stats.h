@@ -26,22 +26,12 @@ inline double apop_vector_correlation(gsl_vector *ina, gsl_vector *inb);
 inline double apop_vector_kurtosis(gsl_vector *in);
 inline double apop_vector_kurt(gsl_vector *in);
 
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type);
-/*
-	normalization_type:
-		1: out will have mean = 0, std deviation = 1 [Uses sample variance (stuff/N-1, not stuff/N).]
-		2: out will have min = 0, max = 1;
-	in_place:
-		0: out will be allocated and filled, in will be	unchanged.
-		1: in will be normalized in place. 
-	call: 
-		gsl_vector  *unnormed, *normed;
-		[allocate and fill unnormed with data; do not allocate normed.]
-		normalize_vector(unnormed, &normed, 1, 1);
-		[or:]
-		normalize_vector(unnormed, NULL, 0, 1);
-*/
+//Distances, Euclidian and Manhattan:
+double apop_vector_distance(gsl_vector *ina, gsl_vector *inb);
+double apop_vector_grid_distance(gsl_vector *ina, gsl_vector *inb);
 
+
+void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type);
 void apop_matrix_normalize(gsl_matrix *data, int normalization);
 
 inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
@@ -68,9 +58,10 @@ double apop_multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* 
 //first_use to 1, then feed in as many new values of X as you want.
 
 double apop_random_double(double min, double max, gsl_rng *r);
+int apop_random_int(double min, double max, gsl_rng *r);
 
 //produce a 101-element vector of percentiles.
-double * apop_percentiles(gsl_vector *data, char rounding);
+double * apop_vector_percentiles(gsl_vector *data, char rounding);
 
 long double apop_matrix_sum(gsl_matrix *m);
 double apop_matrix_mean(gsl_matrix *data);

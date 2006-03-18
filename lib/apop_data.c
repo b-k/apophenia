@@ -124,21 +124,30 @@ void apop_data_free(apop_data *freeme){
 
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
+
+  This function does <i>not</i> allocate the output for you. If you want such behavior, usr \ref apop_data_copy.
  
-  \param out    a structure that this function will allocate and fill
+  \param out    a structure that this function will fill. Must be preallocated
   \param in    the input data
 
  \ingroup data_struct
   */
-void apop_data_memcpy(apop_data **out, apop_data *in){
-    *out = apop_data_alloc(in->matrix->size1, in->matrix->size2);
-    gsl_matrix_memcpy((*out)->matrix, in->matrix);
-    apop_name_stack((*out)->names, in->names, 'r');
-    apop_name_stack((*out)->names, in->names, 'c');
-    apop_name_stack((*out)->names, in->names, 'd');
+void apop_data_memcpy(apop_data *out, apop_data *in){
+    if (in->matrix->size1 != out->matrix->size1 ||
+            in->matrix->size2 != out->matrix->size2){
+        if (apop_opts.verbose)
+            printf("You're trying to copy a (%i X %i) into a (%i X %i) matrix. Returning w/o any copying.\n", 
+            in->matrix->size1, in->matrix->size2, 
+            out->matrix->size1, out->matrix->size2);
+        return;
+    }
+    gsl_matrix_memcpy(out->matrix, in->matrix);
+    apop_name_stack(out->names, in->names, 'r');
+    apop_name_stack(out->names, in->names, 'c');
+    apop_name_stack(out->names, in->names, 'd');
     if (in->catsize[0] && in->catsize[1]){
-        (*out)->categories  = malloc(sizeof(char **) * in->catsize[0] * in->catsize[1]);
-        memcpy( (*out)->categories, in->categories, sizeof(char **) * in->catsize[0] * in->catsize[1]);
+        out->categories  = malloc(sizeof(char **) * in->catsize[0] * in->catsize[1]);
+        memcpy( out->categories, in->categories, sizeof(char **) * in->catsize[0] * in->catsize[1]);
     }
 }
 
@@ -152,8 +161,8 @@ void apop_data_memcpy(apop_data **out, apop_data *in){
  \ingroup data_struct
   */
 apop_data *apop_data_copy(apop_data *in){
-apop_data *out;
-    apop_data_memcpy(&out, in);
+apop_data *out  = apop_data_alloc(in->matrix->size1, in->matrix->size2);
+    apop_data_memcpy(out, in);
     return out;
 }
 

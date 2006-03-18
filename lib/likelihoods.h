@@ -5,13 +5,16 @@
 
 #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_siman.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_psi.h>
-#include "linear_algebra.h"
+#include "stats.h"
+#include "output.h"
 #include "conversions.h"
+#include "linear_algebra.h"
 #include <apophenia/model.h>
 #include <apophenia/types.h>
 
