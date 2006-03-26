@@ -55,7 +55,8 @@
 %code listing:
 \lstset{columns=fullflexible,
 emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,gsl_vector,gsl_matrix},emphstyle=\bf}
-\def\setlistdefaults{\lstset{frame=single, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
+%\def\setlistdefaults{\lstset{frame=single, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
+\def\setlistdefaults{\lstset{frame=single,frameround=tttt, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
 \setlistdefaults
 %\def\cinline#1{\lstinline[language=C, showstringspaces=false, basicstyle=\small\bf,breaklines=true,breakatwhitespace=false,escapechar=\%]{#1}\setlistdefaults}
 %\def\cinlinetwo#1{\lstinline[language=C, showstringspaces=false, basicstyle=\small\bf,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}}
@@ -189,9 +190,11 @@ and shows how those computations are done, so the reader can modify them
 according to the vagaries of real-world data.
 
 \paragraph{The intended audience}
-I assume that you have had a statistics class already, but may need some
-refreshing here and there, and so I will include digressions to remind you
-of your Greek.
+I assume that you have had a statistics or two class already, and that
+you have an encyclop\ae{}dic stats textbooks handy. This
+text provides some utility as an overview, a review, and a reference,
+but there are few proofs and no pretentions to comprehensive coverage of
+classical probability and statistics.
 
 I also assume that you are computer-literate, and have experience writing
 scripts in a stats package. The chapter on C (Chapter \ref{c_crash})
@@ -200,8 +203,8 @@ missing or underused in stats-specific languages. Those who are entirely
 new to the idea of writing a sequence of instructions for a computer
 may want to warm up with a few online tutorials.
 
-If you are well-versed in C and SQL (Structured Query Language), then the later parts of Part I and
-all of Part II will be immediately useful. 
+If you are well-versed in C and SQL (Structured Query Language), then
+the later parts of Part I and all of Part II will be immediately useful.
 
 If you are not well-versed in C and SQL, then expect to take some quality
 time getting comfortable with these languages before doing statistics
@@ -290,7 +293,7 @@ which goal you are working on with each line of code or math, and to be
 certain that it is working toward your overall goal of saying something
 interesting and persuasive.
 
-\subsection{General theorems and their special cases}\ind{Ordinary least
+\subsection{General theorems and their special cases}\index{Ordinary least
 squares|(}
 Here is another way to subdivide the theorems that underly
 statistics, this time into two classes. The first class, including the
@@ -327,7 +330,7 @@ now it is possible (and as this book hopes to show, even easy) to write
 down exactly the right likelihood function, and to find exactly the best
 parameters, instead of settling for the unpersuasive---and often
 inapplicable---model which requires the least processor power.
-\ind{Ordinary least squares|)}
+\index{Ordinary least squares|)}
 
 \section{The programming covered}
 
@@ -364,7 +367,7 @@ designed from the ground up to do nothing but let you efficiently
 retrieve what you need from huge amounts of data.  Of course, being so
 purpose-specific, there is no way to do statistics in a database (beyond
 trivialities like calculating averages). Fortunately, we are working in
-C, so we can have the best of all worlds. The method I advocate in this
+C, so we can have the best of all worlds. The techniques covered in this
 book (and the method that Apophenia facilitates) is to read all of your
 data into a database, and then query what you need to a matrix, as you
 need it. This requires learning a new syntax, \ind{SQL}, which is decidedly
@@ -424,6 +427,7 @@ distributions, such as the t test, F test, and chi-squared test; Chapter
 \ref{mle} will show you how to write down your likelihood functions and
 find their maxima, as in Probit or Normit estimations, and how to test
 hypotheses using a likelihood ratio test. Chapter \ref{boot} will cover
+Monte Carlo methods such as 
 bootstrapping and jackknifing, which are dirty tricks which will one
 day save your life.  
 

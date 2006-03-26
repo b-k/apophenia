@@ -528,7 +528,7 @@ method:		The sum of a method and a gradient-handling rule.
 \li 100: conjugate gradient (Fletcher-Reeves) (default)
 \li 200: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
 \li 300: conjugate gradient (Polak-Ribiere)
-\li 500: simulated annealing
+\li 500: \ref simanneal "simulated annealing"
 \li 0: If no gradient is available, use numerical approximations. (default)
 \li 1: Use numerical approximations even if an explicit dlog likelihood is given. <br>
 Thus, the default method is 100+0 = 100. To use the Nelder-Mead simplex algorithm, use 0, or to use the Polak_Ribiere method ignoring any analytic dlog likelihood function, use 201.
@@ -633,7 +633,21 @@ apop_estimation_params new_params;
 //////////////////////////
 // Simulated Annealing.
 
-/* \page Notes on simulated annealing
+/** \page simanneal Notes on simulated annealing
+
+Simulated annealing is a controlled random walk.
+As with the other methods, the system tries a new point, and if it
+is better, switches. Initially, the system is allowed to make large
+jumps, and then with each iteration, the jumps get smaller, eventually
+converging. Also, there is some decreasing probability that if the new
+point is {\em less} likely, it will still be chosen. Simulated annealing
+is best for situations where there may be multiple local optima. Early
+in the random walk, the system can readily jump from one to another;
+later it will fine-tune its way toward the optimum. The number of points
+tested is basically not dependent on the function: if you give it a
+4,000 step program, that is basically how many steps it will take.
+If you know your function is globally convex (as are most standard
+probability functions), then this method is overkill.
 
 The GSL's simulated annealing system doesn't actually do very much. It
 basically provides a for loop that calls a half-dozen functions that we

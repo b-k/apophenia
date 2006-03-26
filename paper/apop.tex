@@ -34,7 +34,7 @@ and that is returned in an \cinline{apop\_estimate} structure.
 Supporting these main structures are a few more structures you would only
 have to worry about for fine tuning.  The \cinline{apop\_name} structure is
 an organized list of row and column names; functions that take an 
-\cinline{apop\_data} set try to automatically handle the names for you. 
+\cinline{apop\_data} set automatically handle the names for you. 
 Some models, such as MLEs, require some parameters to run, in
 which case you will need to fill out an \cinline{apop\_est\-i\-ma\-tion\_params}
 form and hand it in to the model. Included in the
@@ -590,12 +590,15 @@ memory, while many data sets are only a few hundred observations. That
 means that if every single allocation in the analysis results in a memory
 leak, the memory lost will still be marginal.
 
+
 \paragraph{New languages} Computer scientists love writing new
 languages.  One author has compiled a list of about
-2,500,\footnote{\url{http://people.ku.edu/~nkinners/LangList/Extras/langlist.htm}}
-and the length of that list indicates what is wrong with the idea of a
-specialized language: no matter how nifty it is, it will eventually be
-superceded by a niftier alternative. 
+2,500.\footnote{\url{http://people.ku.edu/~nkinners/LangList/Extras/langlist.htm}}
+The wisdom of the ages has shown that every language with pretentions
+to being the One True Language is eventually superceded by another
+language with the same pretentions. There are certainly aspects of
+statistics that would benefit from a specialized syntax, but 
+
 
 
 

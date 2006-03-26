@@ -8,15 +8,21 @@ people who lived before computers, meaning that we don't need metaphorically hea
 the calculations here.} Most of the work will consist of taking a dot product, maybe inverting a matrix,
 and then looking up a number in a table. 
 
-Everything here depends on the Central Limit Theorem. If your data doesn't
-fit the CLT, then please do not use these techniques. Work out how your
+Everything here depends on the Central Limit Theorem, and more
+generally, assumes that your real-world data has a textbook
+distribution. Typically, the textbooks state that as the number of draws
+$n \to \infty$, the distribution is correct, but whether it is correct
+for your data set is a question of \vocab{asymptotic theory}.
+
+If your data doesn't fit the CLT, one option is to work out how your
 data is distributed, 
 and then write down a likelihood function. If you are
 looking to estimate model parameters, do a maximum likelihood estimation;
 if you are looking to test a hypothesis, write down a likelihood ratio
 based on the distribution you have just calculated.
-Or, try bootstrapping, where the assumptions for the Central Limit
-Theorem apply by construction; see  Chapter \ref{boot}.  
+Another alternative is to use the Monte Carlo methods of 
+Chapter \ref{boot} to determine the properties of your model for $n$ 
+significantly smaller than infinity.
 
 
 
@@ -97,14 +103,13 @@ There are three things that cover most of what you will be doing with a
 distribution: finding values of its PDF, values of its CDF, and inverse
 values of its CDF.
 Here are the functions to look up the vaule of the PDF at a given point:
-%\begin{verbatim}
 \begin{lstlisting}
 double gsl_ran_gaussian_pdf (double X, double SIGMA);
 double gsl_ran_tdist_pdf (double X, double NU);
 double gsl_ran_fdist_pdf (double X, double NU1, double NU2);
 double gsl_ran_chisq_pdf (double X, double NU);
 \end{lstlisting}
-%\end{verbatim}
+
 The prefix \cinline{gsl\_ran} indicates that these functions are from the
 random number generation module (\cinline{gsl/gsl\_randist.h}. Random number generation itself will be delayed to page
 \pageref{randomnumbers}. Notice that there is no mean for the Normal and neither mean nor variance
@@ -419,30 +424,6 @@ standard deviation, and everything else about the Normal distribution is
 defined therefrom. Notably, the third moment is zero, and the fourth
 moment is $3 \sigma^4$. We have already written everything we need to
 calculate all of these easily.
-
-\comment{
-\begin{verbatim}
-#include "gsl_wrappers.h"
-
-gsl_vector *errors = gsl_vector_alloc(beta_dot_x->size);
-int i;
-for (i=0;i< beta_dot_x->size; i++)
-   gsl_vector_set(errors, i, gsl_vector_get(beta_dot_x, i) 
-                                 - gsl_matrix_get(data,0,i))
-
-double three_var_squared = 3* var(error)*var(error);
-printf("The mean is: %g\n", mean(error));
-printf("The var  is: %g\n", var(error));
-printf("The skew is: %g\n", skew(error));
-printf("The un-normalized kurtosis is: %g, and should be %g, for a difference of %g.\n", 
-                         skew(error), three_var_squared,
-                         skew(error)-three_var_squared);
-\end{verbatim}
-
-[I had some code here, but I don't like it. It just prints the first four moments of a data vector.]
-}
-
-\eject
 
 \marginalia{Kurtosis minus three}{
 There is some debate as to whether the kurtosis of a ${\cal N}(0,1)\equiv 3$

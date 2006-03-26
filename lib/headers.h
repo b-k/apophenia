@@ -17,6 +17,7 @@
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_permutation.h>
+#include <gsl/gsl_integration.h>
 
 //And here are other things that apophenia uses, and you probably do
 //too.

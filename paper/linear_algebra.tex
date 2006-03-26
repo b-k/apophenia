@@ -133,48 +133,14 @@ legible after you make these changes, but you will need to remember to
 bring your convenience functions with you everywhere you go.
 
 
-\section{Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \cindex{GSL\_NEGINF} \cindex{GSL\_POSINF} \cindex{GSL\_NAN}
-Floating-point numbers can take three special values: \cinline{Inf}, \cinline{-Inf}, \cinline{NaN}. We will mostly be
-interested in \cinline{NaN} (read: not a number), which is an appropriate way to represent missing data. Here is a
-program to show you the syntax. All four \cinline{if} statements will be true, and print their associated
-statements.
-\cindex{gsl\_finite}
-\cindex{gsl\_isnan}
-\cindex{gsl\_isinf}
-\begin{lstlisting}
-#include <gsl/gsl_math.h>   //NaN handlers
-#include <stdio.h>          //printf
-
-int main(){
-float data_point, big_number, negative_big_number;
-missing_data = GSL_NAN;
-big_nuber = GSL_POSINF;
-negative_big_number = GSL_NEGINF;
-if (gsl_isnan(missing_data))
-    printf("I'm missing a data point.");
-if (gsl_finite(big_number)== 0)
-    printf("big_number is not finite.");
-if (gsl_finite(missing_data)== 0)
-    printf("missing_data isn't finite either.");
-if (gsl_isinf(negative_big_number)== -1)
-    printf("negative_big_number is negative infinity");
-return 0;
-}
-\end{lstlisting}
-Since floating-point nubers can take these values, division by zero
-won't crash your program. \cinline{float f = 1.0/0.0} will result in
-\cinline{f == GSL\_POSINF} and \cinline{f = 0.0/0.0} will result in \cinline{f ==
-GSL\_NAN}. However, integers have none of these luxuries: run \cinline{int
-i = 1/0} and you will get \cinline{Arithmetic exception (core dumped)}.
-
 
 \section{The \ind{BLAS}} 
 \index{matrices!dot product|(} \index{dot product|(}
 Before there was the GSL, there was the BLAS---the basic linear algebra
 system. The GSL has a few functions to interact with the BLAS. In fact,
 it has 86. Here are the three that you will actually use.\footnote{
-The names of the functions below fit in with the system for the other 83
-functions you won't ever use. They're a combination of D=double precision,
+The names of the functions here fit in with the system for the other 83
+functions you won't ever use. They are a combination of D=double precision,
 GE=general, M=matrix, V=vector.}
 
 \paragraph{Matrix $\cdot$ vector} Here is the function you will use to calculate the dot product of a
@@ -189,7 +155,7 @@ int gsl_blas_dgemv (CBLAS_TRANSPOSE_t TransX, float alpha,
 This will put into the vector $y$ either the value 
 $\alpha X v + \beta y$ or $\alpha X' v + \beta y$, as determined by the
 first argument.
-\cinline{CBLAS_TRANSPOSE_t} is a type defined by the GSL that can take
+\cinline{CBLAS\_TRANSPOSE\_t} is a type defined by the GSL that can take
 one of two values: \cinline{CblasNoTrans} and \cinline{CblasTrans}. If
 it takes the former value, then $X$ is left alone;
 if it takes the latter, it is transposed to $X'$.
@@ -234,7 +200,7 @@ Finally, to take the dot product of two matrices, use:
 int gsl_blas_dgemm (CBLAS_TRANSPOSE_t TransX, 
     CBLAS_TRANSPOSE_t TransY, 
     double alpha, const gsl_matrix * X, const gsl_matrix * Y, 
-    double beta, gsl_matrix * dot_product)}
+    double beta, gsl_matrix * dot_product);
 \end{lstlisting}
 which will calculate \cinline{dot\_product} $= \alpha op(X) op(Y) + \beta$ \cinline{dot\_product}. $op(X)$ and
 $op(Y)$ will be either the matrix or its transpose, as above, depending on whether you choose \cinline{CblasTrans}
@@ -252,8 +218,12 @@ column state. Omitting the labels for now, here is a sample:
 columns are not normalized to one; the reader will see below that it
 still is a valid description of a set of transitions.]
 
-Here is a complete program to read in this matrix and
-then output this count of two-step transitions. The steps should be clear: read the data, allocate a space for the output, calculate the dot product, and print the result.
+Here is a complete program to read in this matrix and then output this
+count of two-step transitions. The steps should be clear: read the data,
+allocate a space for the output, calculate the dot product, and print
+the result. It introduces a new data type, \cind{apop\_data} to be
+discussed fully in Chapter \ref{apop}. For now, just take it to be a
+\cinline{gsl\_matrix} with labels.
 \lstinputlisting{sources/markov.c}
 Here is the output:
 \begin{lstlisting}
@@ -275,8 +245,8 @@ state two in two steps (1 $\Rightarrow$ 1 $\Rightarrow$ 2,
 \index{matrices!dot product|)}
 \index{dot product|)}
 \paragraph{Scalars} The GSL provides predictable functions for
-interacting vectors or matrices with scalars. Here is code to add one
-and then double a matrix and a vector:
+interacting vectors or matrices with scalars. Here is code to add one to
+and then double all the elements of a matrix and a vector:
 \begin{lstlisting}
 gsl_matrix_add_constant(a_matrix, 1);
 gsl_matrix_scale(a_matrix, 2);
@@ -294,7 +264,7 @@ around. In fact, some will tell you it is the problem for which computers were i
 \codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition}
 
 The GSL does not include a function to directly invert a general matrix:
-instead, we have to go through a triangular decomposition. Figure
+instead, the user has to go through a triangular decomposition. Figure
 \ref{invertmatrix} shows a function to do all of the steps for us.
 Examples for using this function are located throughout the book; for
 example, see the calculation of OLS coefficients on page \pageref{ols}.
@@ -314,6 +284,40 @@ matrix $X'X$ and \cinline{xpy} is the vector $X'Y$, then
 return $\beta$. This is how \cinline{apop\_OLS} will find $\beta$ if it
 is all you ask for.
 
+\section{Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \cindex{GSL\_NEGINF} \cindex{GSL\_POSINF} \cindex{GSL\_NAN}
+Floating-point numbers (both \cinline{float} and \cinline{double}) can take three special values: \cinline{Inf}, \cinline{-Inf}, and \cinline{NaN}. Data handlers will mostly be
+interested in \cinline{NaN} (read: not a number), which is an appropriate way to represent missing data. Here is a
+program to show you the syntax. All four \cinline{if} statements will be true, and print their associated
+statements.
+\cindex{gsl\_finite}
+\cindex{gsl\_isnan}
+\cindex{gsl\_isinf}
+\begin{lstlisting}
+#include <gsl/gsl_math.h>   //NaN handlers
+#include <stdio.h>          //printf
+
+int main(){
+double missing_data = GSL_NAN;
+float big_nuber = GSL_POSINF;
+float negative_big_number = GSL_NEGINF;
+if (gsl_isnan(missing_data))
+    printf("I'm missing a data point.");
+if (gsl_finite(big_number)== 0)
+    printf("big_number is not finite.");
+if (gsl_finite(missing_data)== 0)
+    printf("missing_data isn't finite either.");
+if (gsl_isinf(negative_big_number)== -1)
+    printf("negative_big_number is negative infinity");
+return 0;
+}
+\end{lstlisting}
+
+Since floating-point nubers can take these values, division by zero
+won't crash your program. \cinline{float f = 1.0/0.0} will result in
+\cinline{f == GSL\_POSINF} and \cinline{f = 0.0/0.0} will result in \cinline{f ==
+GSL\_NAN}. However, integers have none of these luxuries: run \cinline{int
+i = 1/0} and you will get \cinline{Arithmetic exception (core dumped)}.
+
 
 \section{Shunting data} \label{asst_conversions} 
 There are many facets to dealing with a computer that one would call
@@ -324,14 +328,15 @@ products accepts \cinline{gsl\_vectors}, and going from one
 to the other will take you much more time than calling the function in
 the end.
 
-To that end, here are the data types discussed in this book, and
-suggestions for converting from one to the other. It is not an exciting
+To that end, this section presents
+suggestions for converting among the various data formats used in this
+book. It is not an exciting
 read, and outside of Method V, there is little new material; you may
 prefer to take this section as a reference to refer to as necessary. Table
 \ref{conversiontab} provides the key to the method most appropriate for
 each given conversion. 
 
-From/to pairs marked with a $\cdot$ are
+From/to pairs marked with a dot are
 left as an exercise for the reader; none are particularly difficult, but
 may require going through another format; for example, one can go from a
 \cinline{double[ ]} to an \cinline{apop\_data} set via \cinline{double[
@@ -340,7 +345,7 @@ may require going through another format; for example, one can go from a
 By replacing the letters in the table with ones and the dots with
 zeros, we get the data set on page \pageref{twostep}. As we saw there, the
 only transitions we can not do in two steps are \cinline{apop\_data}
-$\Rightarrow$ \cinline{double[ ]} and plain text $\Rightarrow$
+$\Rightarrow$ \cinline{double[ ]} and text file $\Rightarrow$
 \cinline{double[ ]}.
 
 \def\rcap#1{\rotatebox{45}{#1}\hskip -15pt }
@@ -365,10 +370,12 @@ Db table                & \cd & Q & \cd & Q & Q & Q                  \\
 \end{center}\end{figure} 
 
 
-\paragraph{Method C: Copying} I read the process of converting from a
-given type to itself as the process of copying. Most of the types above
-have a method of copying; some even have a few options allowing for
-different tastes.
+\paragraph{Method C: Copying} There are two styles of copying.
+One is the family of functions with \cind{memcpy} in the name, that are
+of the form \cinline{memcpy(dest, src)}. The assume that \cinline{dest}
+is already allocated.  
+Apophenia provides functions to allocate and copy in one step, with
+names of the form \cinline{apop\_...\_copy}.
 
 \cindex{gsl\_vector\_memcpy} \cindex{gsl\_matrix\_memcpy}
 \cindex{apop\_data\_memcpy} \cindex{apop\_data\_memcpy} \cindex{system}
@@ -380,6 +387,7 @@ different tastes.
 //\cinline{gsl\_vector} $\Rightarrow$ \cinline{gsl\_vector}
     gsl_vector *copy   = gsl_vector_alloc(original->size);
     gsl_vector_memcpy(copy, original);
+    gsl_vector *copy2 = apop_vector_copy(original);
 //\cinline{double[ ]} $\Rightarrow$ \cinline{double[ ]}
 //You need to know the size of the original.
     double *copy1 = malloc(sizeof(double) * original_size);
@@ -389,8 +397,9 @@ different tastes.
 //\cinline{gsl\_matrix} $\Rightarrow$ \cinline{gsl\_matrix}
     gsl_matrix *copy   = gsl_matrix_alloc(original->size1, original->size2);
     gsl_matrix_memcpy(copy, original);
+    gsl_matrix *copy2 = apop_matrix_copy(original);
 //\cinline{apop\_data} $\Rightarrow$ \cinline{apop\_data}
-    apop_data *copy1;
+    apop_data *copy1 = apop_data_alloc(original->matrix->size1, original->matrix->size2);
     apop_data_memcpy(copy1, original);
     apop_data *copy2 = apop_data_copy(original);
 \end{lstlisting}
@@ -418,6 +427,7 @@ for details.
     gsl_matrix *copy = apop_array_to_matrix(original, original_size1, original_size2);
 //\cinline{gsl\_vector} $\Rightarrow$ \cinline{double[ ]}
     double *copy;
+    int copy_size   = original_vec->size;
     apop_vector_to_array(original_vec, &copy);
 //\cinline{gsl\_vector} $\Rightarrow$ \cinline{apop\_data}
     apop_data   *copy = apop_vector_to_data(original_vec);
@@ -431,23 +441,19 @@ Apophenia's printing functions will print to screen, text file, or
 database, depending on the value of \cind{apop\_opts.output\_type}.
 \begin{lstlisting}
 //\cinline{gsl\_vector} $\Rightarrow$ text file
-    apop_opts.output_type = 't'
-    apop_vector_print(original, "text_file_copy");
 //\cinline{gsl\_matrix} $\Rightarrow$ text file
-    apop_opts.output_type = 't'
-    apop_matrix_print(original, "text_file_copy");
 //\cinline{apop\_data} $\Rightarrow$ text file
     apop_opts.output_type = 't'
-    apop_data_print(original, "text_file_copy");
+    apop_vector_print(original_vector, "text_file_copy");
+    apop_matrix_print(original_matrix, "text_file_copy");
+    apop_data_print(original_data, "text_file_copy");
 //\cinline{gsl\_vector} $\Rightarrow$ db table
-    apop_opts.output_type = 'd'
-    apop_vector_print(original, "db_copy");
 //\cinline{gsl\_matrix} $\Rightarrow$ db table
-    apop_opts.output_type = 'd'
-    apop_matrix_print(original, "db_copy");
 //\cinline{apop\_data} $\Rightarrow$ db table
     apop_opts.output_type = 'd'
-    apop_data_print(original, "db_copy");
+    apop_vector_print(original_vector, "db_copy");
+    apop_matrix_print(original_matrix, "db_copy");
+    apop_data_print(original_data, "db_copy");
 \end{lstlisting}
 
 
@@ -479,9 +485,9 @@ overkill; you can just pull a subelement from the main data item.
 \end{lstlisting}
 \lstset{texcl=false}
 
-\eject
+\addpenalty{-3000}
 
-\marginaliafixed{17}{Allocating and using at once}{    \index{declaration}
+\marginaliafixed{18}{Allocating and using at once}{    \index{declaration}
 One slight convenience that helps with the annoyance of shunting data from
 one type to another is that you can declare a variable and assign it at the
 same time. Let us say that you have already filled a \cinline{gsl\_matrix
@@ -512,7 +518,7 @@ For the fifth row, use \cinline{gsl\_matrix\_row(a\_\-ma\-trix, 4)}.
 
 The vector view is a nice test of your comprehension of the details of
 pointers and memory allocation from Section \ref{pointers}.
-\cinline{gsl\_ma\-trix\_} returns a
+\cinline{gsl\_ma\-trix\_col} returns a
 \cind{gsl\_vector\_view}---not a vector, but the actual
 structure.  Inside the \cinline{gsl\_vec\-tor\_view}, you will find 
 an element named \cinline{vector}, which is again not a pointer but an

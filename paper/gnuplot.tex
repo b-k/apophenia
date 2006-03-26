@@ -34,6 +34,7 @@ fprintf("plot '-' using 1:5;\n");
 fclose(f);
 apop_data_print(data, "plot_me");
 \end{lstlisting}
+
 The second option to \cind{fopen} should be either \cinline{'a'} for append or
 \cinline{'w'} for write anew; in this case, we want to start with a clean file so we use \cinline{'w'}.
 Notice that \cind{apop\_data\_print} defaults to appending; you

@@ -191,21 +191,23 @@ will be writing with it.
 	\input why_c.tex
 \fi
 \paragraph{An outline} The remainder of this chapter dives in to the
-syntax and form of C. Section \ref{declaring} covers the nouns of the
-language: the variables. Section \ref{functional} introduces the verbs:
-the functions. The execution of a C program consists of evaluating
-functions, which means that most of the work you will be doing will be
-in writing good functions, so this section will discuss some of the
-ideas behind functional form. Section \ref{fncontents} covers 
-the details of what your functions will actually be doing; this section
-will probably be the most familiar to one well-versed with the typical
-stats package. Section \ref{compilation} will discuss how to use your
-compiler to produce executable programs, assembling together functions
-from disparate locations. Section \ref{pointers} covers \airq{pointers},
-a C-specific means of handling computer memory that complements C's
-means of handling functions and large data structures. The remainder of
-the chapter covers additional topics such as the debugger and assorted
-idiosyncrasies and conveniences of C syntax.
+syntax and form of C. The first half starts small, on individual
+lines, and then covers means of organizing blocks of code in
+functions, and then organizing blocks of functions in file modules.
+Section \ref{fncontents} covers what individual lines of code can do;
+this section will probably be the most familiar to one well-versed with
+the typical stats package.  Section \ref{declaring} covers the nouns
+of the language: the variables. Section \ref{functional} introduces the
+verbs: the functions. The execution of a C program consists of evaluating
+functions, which means that most of the work you will be doing will be in
+writing good functions, so this section will discuss some of the ideas
+behind functional form.  Section \ref{compilation} will discuss how to
+use your compiler to produce executable programs, assembling together
+functions from disparate locations. Section \ref{pointers} covers
+\airq{pointers}, a C-specific means of handling computer memory that
+complements C's means of handling functions and large data structures. The
+remainder of the chapter covers additional topics such as the debugger
+and assorted idiosyncrasies and conveniences of C syntax.
 
 
 \comment{
@@ -271,316 +273,20 @@ benefit. The variable declarations may be a bit tedious, but they are
 easy enough.
 }
 
-\section{Variables and their declarations} \label{declaring}
+\section{Lines} \label{fncontents}
 
-\index{declaration!of variables|(}
-First, we will cover the nouns of the C language, and subsequent
-sections will focus on functions, the verbs that make use of these
-nouns.
+The story begins at the smallest level: a single line of code. Most of
+the work on a single line of code will be familiar to anyone who has
+written programs in any lanugage, including instructions like assignments,
+basic arithmetic, if-then conditions, and loops. For such common
+programming elements, learning C is simply a question of the details
+of syntax. Also, C is a \airq{typed} language, meaning that you will
+need to specify whether every variable and function is an integer,
+a real, a vector, et cetera. Thus, many of the lines will be simple
+type declarations.
 
-You would never use $x$ or $z$ in a paper without first declaring,
-say, `let $x \in {\mathbb R}^2$ and $z \in {\mathbb C}$'. You could
-leave the reader to guess at what you mean by $x$ by its first use,
-but some readers would misunderstand, and your referee would wonder why
-you did not just come out and declare $x$. C is a strict referee, and
-requires that you declare the type of every variable before using it.
-The declaration consists of listing the type of the variable and then
-the variable name, e.g.:
-
-\begin{lstlisting}
-int a_variable, counter=0;
-double stuff;
-\end{lstlisting}
-
-
-Your basic options for variable types are \cinline{int, float, double, long double} 
-and \cinline{char}. \cinline{int}\cindex{int} is for integers;
-\cinline{float}\cindex{float} is a floating-point number, aka a real number.\footnote{Why \airq{floating point}? The
-computer represents a real using the form $n \times 10^k$, where $n$
-represents the number with the decimal point in a fixed location,
-and $k$ represents the location of the decimal point.  Multiplying by
-ten doesn't change the number $n$, it just causes the decimal point to
-float to a different position.} Sometimes you will need more precision,
-and so you have \cind{double}, which are double-precision real numbers,
-and \cinline{long double}, which you can think of as quadruple-precision
-reals. \cind{char} are characters.	\cindex{long}
-
-C has other basic types, which are not worth caring about.
-
-Notice that we can initialize a few variables of the same type on one
-line, and could initialize \cinline{counter} to zero right when we
-declare it. The other variables (such as \cinline{a\_variable}) have
-unknown value right now. Assume nothing about what is contained in a
-declared but uninitialized value.
-
-By the way, notice that the variable names are words, not letters. Using
-English variable names is the number one best thing you could do to make your code
-readable---imagine how much of your life you have spent flipping back
-through journal articles trying to remember what $\mu$, $M$, and $m$
-stood for. Why impose that on yourself?
-
-\paragraph{Arrays} An \ind{array} is a numbered list of items of the same type. To declare a list of a hundred
-integers, you would use:
-\begin{lstlisting}
-int a_list[100];
-\end{lstlisting}
-Then, to refer to the items of the list, you would use the same square
-brackets. For example, to assign the value seven to the last element
-of the array, you would use: \cinline{a\_list[99]= 7;}. Why is 99 the last
-element of the list? Because the index is an {\sl offset} from the first
-element. The first element is zero items away from itself, so it is
-\cinline{a\_list[0]}, not \cinline{a\_list[1]} (which is the second element).
-The reasoning behind this system will become evident in the section
-on pointers.
-
-Arrays of arrays simply require more indices:\\
-\begin{lstlisting}
-int a_2d_list[100][100];
-\end{lstlisting}
-and the elements of this array are referred to using the same system: what we generally think of as the
-upper-left corner of the array is \cinline{a\_2d\_list[0][0]}, down to the
-lower-right, \cinline{a\_2d\_list[99][99]}. There is nothing in C that
-dictates that the first index should count as the row index and the
-second index should be the column, but that is the custom, and the
-reader is encouraged to use that ordering.
-
-Just as you can initialize a scalar with a value at declaration, you can
-do the same with an array, e.g.:
-\begin{lstlisting}
-    float data[ ] = {2,4,8,16,32,64};
-    float datagrid[ ][ ] = {{2,4},{8,16},{32,64}};
-\end{lstlisting}
-Notice that you do not have to bother counting how many elements the
-array has; C is smart enough to do this for you.
-\comment{
-How do you know how large an array is? By looking at the declaration. There is no 
-\cinline{sizeof(array)}
-function to tell you how you had declared the array.
-}
-
-\subsection{Declaring types}\cindex{typedef} \index{declaration!of types} 
-You can define your own
-types. For example, these lines will declare two (badly names) triplets
-of numbers, \cinline{a} and \cinline{b}:
-
-\begin{lstlisting}
-typedef double triplet[3];
-triplet	a, b;
-\end{lstlisting}
-
-This is primarily useful for designing
-complex data types which are collections of many subelements. \cindex{struct}
-For example:
-
-\begin{lstlisting}
-typedef struct complex{
-    double real;
-    double imaginary;
-} complex;
-
-complex a, b;
-\end{lstlisting}
-
-You now have two variables of type \cinline{complex} and can now use \cinline{a.real} or \cinline{b.imaginary} to refer to the appropriate constituents
-of these complex numbers. Why is the word \cinline{complex} repeated
-twice? Because you are first declaring a struct of named \cinline{complex},
-and then you are defining a type named \cinline{complex} that expands to
-\cinline{struct complex}. This is your first hint that C is neither Beautiful
-nor Perfect; just follow the template there and nobody gets hurt. Here is
-another example:
-\begin{lstlisting}
-typedef struct person{
-    char first_name[100], last_name[100];
-    float height, weight;
-    int age;
-} person;
-
-person survey_data[200];
-\end{lstlisting}
-
-Structs are syntactically simple, so I have little to say about them here,
-but much of good programming goes in to designing structs that make sense
-and are a good reflection of reality.  For example, the GSL has defined
-a large number of structures for us, such as the \cinline{gsl\_matrix}
-structure, which provides a few conveniences over using raw arrays as
-described above.
-\index{declaration!of variables|)}
-
-\section{C is functional} \label{functional}
-
-That is, every line of your programs will be either a declaration or a
-function. The declarations, as you saw, have some arbitrary rules but
-are basically easy.  Writing functions that are preeminently useful will
-be the focus of the rest of the book.
-
-\paragraph{The form of a function}
-
-A function takes some inputs, does something to them, and returns an
-output. In the process, the inputs may also be changed, but that is a
-topic we will return to later.  You will need to declare the type of all of
-the inputs, and since some sort of output is returned, you will need to
-declare the type of the function's output. Figure \ref{dosomething} shows a complete program.
-
-\lstset{numbers=left, numberstyle=\scshape}
-\codefig{dosomething}{A complete program}
-\lstset{numbers=none}
-
-All of the details of this program will become clear in due time, but
-right now I will focus on the form of the functions.
-
-Every complete program will have a function named \cind{main}, which
-is where the program will begin.  When this program runs, the computer will
-ignore the function \cinline{do\_something}, instead starting its work
-on line eight, where it finds the \cinline{main} function head: \cinline{int main(void)}. 
-It will then start working, first reading the
-declarations of \cinline{output}, \cinline{first}, \cinline{second}, and \cinline{third}.
-
-Then, on line 13, it will get to the part where it is told to
-assign something to \cinline{output}, and to do that it will need
-to evaluate  the meaning of \cinline{do\_something(first, second,
-third)}. This is a {\em function call}, which commands the program
-to halt whatever it is doing and start working on evaluating the
-function \cinline{do\_something}. Execution jumps to the head of that
-function, on line 2.  The value of \cinline{first = 7.3}
-will be plugged in to \cinline{a}, and similarly for \cinline{b} and
-\cinline{c}. Then the computer will calculate the value of \cinline{d
-= 3.3 + 2 = 5.3}, and will then return the value of \cinline{a/d} =
-7.3/5.3 $\approx 1.337$ to the main program on line 13. The main
-program can now pick up where it had left off, by assigning 1.337 to
-\cinline{output}, and then printing this output to the screen (using
-the rather ornery line beginning with \cinline{printf}).
-
-The most important points to note here are the formats of the function
-and its call. The first line of the function itself consists of a type
-and then a name and then a list of parameters in parentheses. 
-The list of parameters will be a type, an arbitrary name, and a comma
-to separate these type-name pairs.  The call simply consists of the
-function name followed by the matching number of parameters in parentheses.
-
-There is a lot of consistency-checking going on between the function as written
-and the call for the function: there have to be three variables in the parentheses following the name,
-and they have to be of the right type. The return value here is going to be assigned to a floating-point
-variable, so it too has to be floating-point (barring the exceptions of Section \ref{casting}). Such
-consistency-checking is a good thing, and the compiler will either warn you or halt if you fail any
-of these checks.
-
-By the way, these consistency checks don't care about the length of
-your arrays. In function declarations, you can use \cinline{int an\_array[ ]}
-with a blank instead of a length. \index{array!declaration} \index{declaration!of arrays}
-
-\paragraph{Declaring a function; black boxes} \index{declaration!of functions}
-Since there are all these consistency
-checks to be done, the compiler will want to know about the function
-before it is called. One way to ensure this is to make sure that
-the function always comes before its calls in whatever file you are
-working on. This is error-prone and gauche; the better way to do it is
-by declaring the function, just as you declare variables before using
-them. The declaration looks exactly like the first line of the function
-itself, except with a semicolon at the end:
-
-\begin{lstlisting}
-float do_something (float a, float b, int c);
-\end{lstlisting}
-
-If you have a declaration line at the top of the program file, you don't
-have to worry about where the function is actually defined---as
-you will see below, there are some cases where you may not even have the
-function's code at all. 
-
-The fundamental concept behind writing good code is
-that each function should be as close to a stand-alone mini-program as
-possible. Think of functions as black boxes, which take some sort of
-input and produce some sort of output. The program as a whole is
-simply an assemblage of boxes.
-
-The \cinline{main} part of the program above did not care what
-\cinline{do\_something} actually did, and had no involvement with the
-function except to dump in inputs and receive an output. As you can see,
-the declaration line thus gives 100\% of what the program needs to call
-and use the function (i.e., the name, the number and type of inputs,
-and the type of output). This allows for a separation of function code
-and function use we will make endless use of below.
-
-The function-as-black-box idea also offers some general principles for
-writing your code and deciding what gets put into each function. Think
-about the individual steps your program will be doing, and put each
-of those steps into a function. When writing a function, you
-can put the rest of the program out of your mind and focus on making
-sure that the black box you are working on does exactly what it should
-to produce the right output. When all of the black boxes have been written to
-your satisfaction, then writing the main program, no matter how complex,
-will simply be a series of function calls.
-
-Next month, when you have to do a similar analysis with slightly different
-data, you will have a set of black boxes to reuse. Since the boxes did not
-depend on the calling program, they can be recycled in your new program
-by just including the appropriate headers (plus some details below).
-
-You want your black boxes to be entirely predictable and error-free, and the best
-way to do this is to keep them small and autonomous. A function which is more than a
-screen-full of text can always be broken down into a few subfunctions,
-thus improving the robustness of the code and giving you more black boxes which could be reused in the
-future.
-
-\paragraph{The \cinlinetwo{return} statement} \cindex{return} There
-is no need to restrict ourselves to just one \cinline{return} per
-function, which allows for very useful trickery. First, you may have a
-function whose type is \cind{void}, meaning that nothing at all will be
-returned. Such functions will be useful for side-effects such as changing
-the values of the inputs (see Section \ref{pointers}) or printing data
-to the screen or an external file. You can also have functions which take
-no inputs, so any of the following are valid declarations for functions:
-
-\begin{lstlisting}
-void do_something(float a);
-float do_something_else(void);
-float do_something_else();
-\end{lstlisting}
-
-The last two are equivalent, but you can't forget the parentheses entirely---then the compiler would
-think you are talking about a variable instead of a function.
-
-Alternatively, you may want to have multiple \cinline{return}s in the
-function. The first one the program hits upon will be the only one that
-the program ever sees. For example, If the variable \cinline{c} turns out to
-be one in the following, then this function will return the ratio of \cinline{a} and \cinline{d}, and otherwise it
-will return their product:
-
-\begin{lstlisting}
-float do_something (float a, float b, int c) {
-    if (c == 1)
-        return a/b;
-    else
-        return a * b;
-}
-\end{lstlisting}
-
-
-\paragraph{The \cinlinetwo{main} function}\cindex{main}
-
-All programs must have one and only one function named \cinline{main},
-which is where the program will begin executing. The consistency checks
-are now with the operating system that called the program, which will
-expect \cinline{main} to be declared in one of two forms:
-
-\begin{lstlisting}
-int main(void);
-int main(int argc, char **argv);
-\end{lstlisting}
-
-Without further ado, I will ignore the second form, and will assume that all programs throughout this
-book will have a \cinline{main} function with no arguments.
-
-The return value of \cinline{main} is read by the operating system, and is usually ignored. However, some
-use it as a signal:  returning 0 means that all went well, and returning a positive number means that
-something went wrong.
-
-
-
-\section{Function contents} \label{fncontents}
-
-So, what should you actually put in those wonderful functions? Most of the work you will be doing are
-simple assignments:  \index{arithmetic} \index{assignment|see{=}} \index{=}\\
+\subsection{Assignment} \index{arithmetic} \index{assignment|see{=}} \index{=}
+Most of the work you will be doing will be simple assignments:\\
 \cinline{ratio = a / b;}\\
 will find the value of \cinline{a} divided by \cinline{b} and put the
 value in \cinline{ratio}. Notice that there is a semicolon at the end of
@@ -588,7 +294,7 @@ the line; you will need a semicolon at the end of everything but the few
 exceptions I mention below.\footnote{The number one cause of compiler
 complaints like ``line 41: \ind{syntax error}'' is a missing semicolon on line 40.} All of the usual operations work: \cinline{+
 - / *}, and so do some of the more obscure ones, like \cinline{a \% b}
-for $a$ mod $b$. \index{mod|see{\%}} \index{\%}
+for $a$ mod $b$. \index{modulo|see{\%}} \index{\%}
 
 \subsection{Incrementing}\index{incrementing} It is incredibly common to have an operation of the form \cinline{a = a + b;}---so
 common that C has a special syntax for it: \cinline{a += b;} This is slightly less readable, but involves less
@@ -626,15 +332,15 @@ Logical operations have similar definitions: \cindex{\&\&} \cindex{"|"|} \index{
 \index{or|see{$"|"|$}} \index{not|see{"!}} \index{"!}
 \airq{And} is \cinline{(a \&\& b)}; \airq{or} is \cinline{(a || b)}; \airq{not \cinline{a}} is \cinline{(!a)}.
 The \cinline{\&\&} and \cinline{||} operations have a convenient feature: if \cinline{a} is sufficient to determine whether
-the entire expression is true, then it won't bother with \cinline{b} at all. For example:
+the entire expression is true, then it won't bother with \cinline{b} at all. For example [just ignore the \cinline{\#include} lines for now]:
 \begin{lstlisting}
 #include <math.h>    //sqrt
 ((a < 0) || (sqrt(a) < 3))
 \end{lstlisting}
 will always work: if \cinline{a} is less than zero, then the evaluation
 of the expression is done (it is true), so the square root won't have
-to be calculated, avoiding any square-root-of-a-negative error. [Notice
-that the \cinline{sqrt()} function isn't a fundamental part of C---you
+to be calculated, avoiding any square-root-of-a-negative error. 
+[The \cinline{sqrt()} function isn't a fundamental part of C---you
 need to include an external header to get the declaration; see below.]
 
 Why all the parentheses? First, parentheses indicate the order of
@@ -736,6 +442,17 @@ do {
     i++;
 } while (i<5);
 \end{lstlisting}
+In this case, the \cinline{do-while} loop here is equivalent to the
+\cinline{while} and \cinline{for} loops above. But say that you want to
+iteratively evaluate a function until it converges to within $1\times
+10^{-3}$.  The form would be something like:
+\begin{lstlisting}
+#include <stdio.h>
+do {
+    error = eval_fn();
+} while (value>1e-3);
+\end{lstlisting}
+Naturally, you would want to run \cinline{eval\_fn()} at least once.
 
 \subsection{Comments} \index{commenting code|(}
 Put a long block of comments 
@@ -748,6 +465,7 @@ function expects to come in, and what the function will put out.
    at the first star-slash:   
    */
 \end{verbatim}
+
 The primary audience of your comment should be you, six months from
 now. When you are shopping for black boxes to plug in to your next project,
 or reauditing your data after the referee finally got the paper back
@@ -773,7 +491,11 @@ commented out? You would have a sequence like this in your code:
 \end{lstlisting}
 We had hoped that all three lines would be commented out now, but the compiler will ignore everything
 from the first \cinline{/*} until it sees the first \cinline{*/}. That means Line A and Line B will be ignored,
-but \cinline{line C; */} will be read as code---and malformed code at that.
+but 
+\begin{lstlisting}
+line C; */
+\end{lstlisting}
+will be read as code---and malformed code at that.
 
 You will always need to watch out for this when commenting out large blocks of code. But for small
 blocks, there is another syntax for comments:
@@ -788,6 +510,141 @@ a part of C since 1999, when it was borrowed from C$^{++}$. Some
 behind-the-times compilers may still not recognize it, in which case
 you may have to use the \cinline{/*} --- \cinline{*/} format for comments
 everywhere.}\index{commenting code|)}
+
+\section{Variables and their declarations} \label{declaring}
+
+\index{declaration!of variables|(}
+Having covered the verbs that a line of code will execute, we move on
+to the nouns---variables. 
+
+You would never use $x$ or $z$ in a paper without first declaring,
+say, `let $x \in {\mathbb R}^2$ and $z \in {\mathbb C}$'. You could
+leave the reader to guess at what you mean by $x$ by its first use,
+but some readers would misunderstand, and your referee would wonder why
+you did not just come out and declare $x$. C is a strict referee, and
+requires that you declare the type of every variable before using it.
+The declaration consists of listing the type of the variable and then
+the variable name, e.g.:
+
+\begin{lstlisting}
+int a_variable, counter=0;
+double stuff;
+\end{lstlisting}
+
+
+Your basic options for variable types are \cinline{int, float, double, long double} 
+and \cinline{char}. \cinline{int}\cindex{int} is for integers;
+\cinline{float}\cindex{float} is a floating-point number, aka a real number.\footnote{Why \airq{floating point}? The
+computer represents a real using the form $n \times 10^k$, where $n$
+represents the number with the decimal point in a fixed location,
+and $k$ represents the location of the decimal point.  Multiplying by
+ten doesn't change the number $n$, it just causes the decimal point to
+float to a different position.} Sometimes you will need more precision,
+and so you have \cind{double}, which are double-precision real numbers,
+and \cinline{long double}, which you can think of as quadruple-precision
+reals. \cind{char} are characters.	\cindex{long}
+
+C has other basic types, which are not worth caring about.
+
+Notice that we can initialize a few variables of the same type on one
+line, and could initialize \cinline{counter} to zero right when we
+declare it. The other variables (such as \cinline{a\_variable}) have
+unknown value right now. Assume nothing about what is contained in a
+declared but uninitialized value.
+
+By the way, notice that the variable names are words, not letters. Using
+English variable names is the number one best thing you could do to make your code
+readable---imagine how much of your life you have spent flipping back
+through journal articles trying to remember what $\mu$, $M$, and $m$
+stood for. Why impose that on yourself?
+
+\paragraph{Arrays} An \ind{array} is a numbered list of items of the same type. To declare a list of a hundred
+integers, you would use:
+\begin{lstlisting}
+int a_list[100];
+\end{lstlisting}
+Then, to refer to the items of the list, you would use the same square
+brackets. For example, to assign the value seven to the last element
+of the array, you would use: \cinline{a\_list[99]= 7;}. Why is 99 the last
+element of the list? Because the index is an {\sl offset} from the first
+element. The first element is zero items away from itself, so it is
+\cinline{a\_list[0]}, not \cinline{a\_list[1]} (which is the second element).
+The reasoning behind this system will become evident in the section
+on pointers.
+
+Arrays of arrays simply require more indices:\\
+\begin{lstlisting}
+int a_2d_list[100][100];
+\end{lstlisting}
+and the elements of this array are referred to using the same system: what we generally think of as the
+upper-left corner of the array is \cinline{a\_2d\_list[0][0]}, down to the
+lower-right, \cinline{a\_2d\_list[99][99]}. There is nothing in C that
+dictates that the first index should count as the row index and the
+second index should be the column, but that is the custom, and the
+reader is encouraged to use that ordering.
+
+Just as you can initialize a scalar with a value at declaration, you can
+do the same with an array, e.g.:
+\begin{lstlisting}
+    float data[ ] = {2,4,8,16,32,64};
+    float datagrid[ ][ ] = {{2,4},{8,16},{32,64}};
+\end{lstlisting}
+Notice that you do not have to bother counting how many elements the
+array has; C is smart enough to do this for you.
+\comment{
+How do you know how large an array is? By looking at the declaration. There is no 
+\cinline{sizeof(array)}
+function to tell you how you had declared the array.
+}
+
+\subsection{Declaring types}\cindex{typedef} \index{declaration!of types} 
+You can define your own
+types. For example, these lines will declare two (badly names) triplets
+of numbers, \cinline{a} and \cinline{b}:
+
+\begin{lstlisting}
+typedef double triplet[3];
+triplet	a, b;
+\end{lstlisting}
+
+This is primarily useful for designing
+complex data types that are collections of many subelements. \cindex{struct}
+For example:
+
+\begin{lstlisting}
+typedef struct complex{
+    double real;
+    double imaginary;
+} complex;
+
+complex a, b;
+\end{lstlisting}
+
+You now have two variables of type \cinline{complex} and can now use \cinline{a.real} or \cinline{b.imaginary} to refer to the appropriate constituents
+of these complex numbers. Why is the word \cinline{complex} repeated
+twice? Because you are first declaring a structure named \cinline{complex},
+and then you are defining a type named \cinline{complex} that expands to
+\cinline{struct complex}. This is your first hint that C is neither Beautiful
+nor Perfect; just follow the template there and nobody gets hurt. Here is
+another example:
+\begin{lstlisting}
+typedef struct person{
+    char first_name[100], last_name[100];
+    float height, weight;
+    int age;
+} person;
+
+person survey_data[200];
+\end{lstlisting}
+
+Structs are syntactically simple, so I have little to say about them here,
+but much of good programming goes in to designing structs that make sense
+and are a good reflection of reality.  For example, the GSL has defined
+a large number of structures for us, such as the \cinline{gsl\_matrix}
+structure, which provides a few conveniences over using raw arrays as
+described above.
+\index{declaration!of variables|)}
+
 
 \subsection{Type casting}\label{casting} \index{casting|see{type casting}} \index{type casting|(} 
 This section covers a few details of the type system, and what happens
@@ -809,7 +666,7 @@ Then, the compiler will assign this to \cinline{ratio}. This is a
 switch in type: we just got an integer (3) and are assigning it to
 a floating-point variable. Clearly, this assignment is trivial and
 not a problem (\cinline{3} $\Rightarrow$ \cinline{3.0}).  But going from
-float to int could produce problems, since everything after the decimal point
+\cinline{float} to \cinline{int} could produce problems, since everything after the decimal point
 would be dropped.  Also, the range of \cinline{float}s, \cinline{double}s,
 and \cinline{int}s do not necessarily match, so you may get unpredictable
 results with large numbers even when there is nothing after the decimal
@@ -825,7 +682,7 @@ explicitly tell the compiler that you meant to do this by making the cast
 yourself: using the declarations above, you could assign \cinline{num =
 (int) ratio;}, for example.
 
-This solves the division-by-integers problem: \\
+Type casting solves the division-by-integers problem: \\
 \cinline{ratio = (float) num / den;}\\
 does the division of a real by an integer, which will produce a real
 number as output: \cinline{ratio} will equal 3.5, as we had expected.
@@ -845,6 +702,7 @@ if (GSL\_IS\_EVEN(an\_integer))\\
 \phantom{hello.}\cinline{do\_something();}
 }
 
+\lstset{numbers=left, numberstyle=\scshape}\label{isevenfn}
 \begin{lstlisting}
 int is_even(int number){
 /* Return one if number is even, zero if number is odd.  */
@@ -854,7 +712,11 @@ int is_even(int number){
         return 0;
 }
 \end{lstlisting}
-Or equivalently (since a boolean expression evaluates to one or zero):
+The header in line 1 is discussed below. The comparison on line three
+compares the truncated version of a number over two with the untruncated
+version of same.
+Since a boolean expression evaluates to one or zero,
+One could more efficiently write this as:
 \begin{lstlisting}
 int is_even(int number){
 /* Return one if number is even, zero if number is odd.  */
@@ -877,12 +739,101 @@ int round(float unrounded){
          return (int) (unrounded - 0.5);
 }
 \end{lstlisting}
+\lstset{numbers=none}
 \index{type casting|)}   
 
 
 
+\section{Functions} \label{functional}
+
+There are two questions one may ask given a problem and a blank screen:
+\airq{how am I going to solve this problem?} and \airq{what tools do I
+need to solve the problem?}
+
+You can answer the first question by writing an outline. For most
+statistical problems, the outline is something like "gather some data,
+then fit a model, then test some hypotheses," and with enough details
+filled in, the outline will become a program. One could execute this
+sort of method using only the tools discussed to this point.
+
+The second question breaks down into two subquestions: \airq{how can I
+find useful tools?} and \airq{how can I write new tools as necessary?}
+Tackling these questions requires means of structuring and organizing
+bundles of procedural code, and C provides a number of mechanisms to
+do so.\footnote{The idea of focusing on writing functions instead of
+writing procedures is in no way C specific. With few serious exceptions,
+every programming language implements a stack of frames as described in
+this section. The syntax changes, and there is great variety in 
+scoping rules, but the overall theme about writing functions that
+serve as good tools is language-independent.}
+
+From this perspective, the basic element of the system is the function.
+A function is a block of code that takes some inputs, does things,
+and produces some outputs. For the function to be useful as a tool, it
+should operate regardless of its context: the internals of the function
+should not care about the state of the world outside the function, and
+the outside world should not have to care about the internals of the
+function.
+
+The section on type casting had a number of complete functions. The
+second form of \cinline{is\_even} was the simplest, with only one 
+non-comment line, but each had the same format: there is a header (line
+one in each of the functions above) that lists the name of the function
+and the arguments, and then a function body that does some work and then
+returns a value.
+
+The inputs (aka the \vocab{arguments}) to the function
+are in parentheses. Each element of the input
+list consists of a variable name prepended by the type that that
+variable should be. You can see that both versions of \cinline{is\_even}
+take one integer as an input, and
+\cinline{round} takes one floating-point number.
+As shown in the examples below, e.g. Figure \ref{dosomething}, a
+function can take multiple inputs, in which case there will be a
+comma-separated list in the parentheses in the header.
+
+The function's name in the header follows the same form as the arguments:
+it is named \cinline{is\_even}, and the name is prepended by a type,
+\cinline{int}.  On line 3 of the short version, the function returns
+an \cinline{int}, so this is entirely consistent: when calling the
+function from elsewhere, we can pretend that the function is simply the
+integer that the function returns.  For example,
+\begin{lstlisting}
+int is_eight_even = is_even(8);
+\end{lstlisting}
+
+
+\comment{
+Here is a concrete example that takes in an array of numbers and puts
+out its mean.
+\lstset{numbers=left, numberstyle=\scshape}
+\begin{lstlisting}
+float mean(float input_array[], int array_length){
+    float total = 0;
+    int   i     = 0;
+    while (i < array_length){
+        total   = total + input_array[i];
+        i       = i+1;
+    }
+    return total/array_length;
+}
+\end{lstlisting}
+\lstset{numbers=none}
+
+Many of the little details are probably opaque to you right now (we'll
+get to the meaning of \cinline{float} below; it has nothing to do with
+buoyancy). But the gist of the function should be familiar to anyone
+who has used a scripting language: it initializes the \cinline{total}
+and a counter (\cinline{i}) to zero, then adds each element of the input
+array to the total, and then returns that total divided by the number
+of elements.
+}
+
+
 \subsection{Frames and scope} \index{frames|(} \index{scope|(}
-When a function is called, the computer creates a
+The manner in which the computer evaluates functions also abides by the
+principle of encapsulating functions, focusing on the context of one
+function at a time. When a function is called, the computer creates a
 {\sl frame} for that function. Into that frame are placed any variables
 that are declared at the top of the file in which the function is defined,
 including those in files which were \cinline{\#include}d (see below); and copies of
@@ -897,21 +848,156 @@ passed as an argument but which were put in the frame anyway ({\sl global
 variables}; see below) come out unscathed, as does the return value, which
 is sent back to the function which had called the frame into existence.
 
-One way to think about this is in terms of a \ind{stack} of frames. At the
-base of the stack is the \cinline{main} function, which is always the first
-called. When it calls the \cinline{do\_something} function, then a new frame
-is created and is put on top of the stack, and if \cinline{do\_something}
-were to call the \cinline{is\_even} function, then that function's frame would be laid on top
-of the frame for \cinline{do\_something}. All processing happens exclusively in
-the topmost function on the stack---the rest of the program might as
-well not exist. When the topmost frame is done, and the frame and its
-internal variables are destroyed, then the calling function is back at
-the top of the stack, and can continue to work. Eventually, the \cinline{main} function will finish its work, and will be destroyed, leaving an
-empty stack and a finished program.
+\lstset{numbers=left, numberstyle=\scshape}
+\codefig{dosomething}{A complete program}
+\lstset{numbers=none}
+
+One way to think about this is in terms of a \ind{stack} of frames. 
+The base the stack is always a function named \cinline{main}. 
+For example, in the program in Figure \ref{dosomething} 
+the computer will ignore the function
+\cinline{do\_something}, instead starting its work on line eight, where it
+finds the \cinline{main} function head: \cinline{int main(void)}.  It will
+create a \cinline{main} frame and
+then start working, first reading the declarations of \cinline{output},
+\cinline{first}, \cinline{second}, and \cinline{third} and putting them
+into the frame.
+
+Then, on line 13, it will get to the part where it is told to
+assign something to \cinline{output}, and to do that it will need
+to evaluate the meaning of \cinline{do\_something(first, second,
+third)}. This is a {\em function call}, which commands the program
+to halt whatever it is doing and start working on evaluating the
+function \cinline{do\_something}. 
+
+So, the system generates a new frame, all evaluation in the
+\cinline{main} frame halts, and execution jumps to 
+line 2. The value of \cinline{first = 7.3}
+will be plugged in to \cinline{a}, and similarly for \cinline{b} and
+\cinline{c}. Then the computer will calculate the value of \cinline{d
+= 3.3 + 2 = 5.3}, and will then return the value of \cinline{a/d} =
+7.3/5.3 $\approx 1.337$ to the main program on line 13. Having returned
+a value, the \cinline{do\_something} frame and its contents are
+discarded.
+
+The main program can now pick up where it had left off, by assigning
+1.337 to \cinline{output}, and then printing this output to the screen
+(using the rather ornery line beginning with \cinline{printf}).
+Eventually, the \cinline{main} function will
+finish its work, and will be destroyed, leaving an empty stack and a
+finished program.
 
 The creation and destruction of frames, and all of the associated
 memory allocation and deallocation, are entirely the responsibility of
 the computer.  \index{frames|)} 
+
+\paragraph{Declaring a function; black boxes} \index{declaration!of functions}
+There is a lot of consistency-checking going on between the function as
+written and the call for the function: there have to be three variables
+in the parentheses following the name, and they have to be of the right
+type. The return value here is going to be assigned to a floating-point
+variable, so it too has to be floating-point (barring the exceptions of
+Section \ref{casting}). Such consistency-checking is a good thing, and
+the compiler will either warn you or halt if you fail any of these checks.
+
+By the way, these consistency checks don't care about the length of
+your arrays. In function declarations, you can use \cinline{int an\_array[ ]}
+with a blank instead of a length. \index{array!declaration} \index{declaration!of arrays}
+
+Since there are all these consistency
+checks to be done, the compiler will want to know about the function
+before it is called. One way to ensure this is to make sure that
+the function always comes before its calls in whatever file you are
+working on. This is error-prone and gauche; the better way to do it is
+by declaring the function, just as you declare variables before using
+them. The declaration looks exactly like the first line of the function
+itself, except with a semicolon at the end:
+
+\begin{lstlisting}
+float do_something (float a, float b, int c);
+\end{lstlisting}
+
+If you have a declaration line at the top of the program file, you don't
+have to worry about where the function is actually defined---as
+you will see below, there are some cases where you may not even have the
+function's code at all. 
+
+You can see that the the form of the function neatly accommodates
+encapsulation as discussed above.  
+The \cinline{main} part of the program above did not care what
+\cinline{do\_something} actually did, and had no involvement with the
+function except to dump in inputs and receive an output. As you can see,
+the declaration line thus gives 100\% of what the program needs to call
+and use the function (i.e., the name, the number and type of inputs,
+and the type of output). This allows for a separation of function code
+and function use we will make endless use of below.
+
+The function-as-black-box idea also offers some general principles for
+writing your code and deciding what gets put into each function. Think
+about the individual steps your program will be doing, and put each
+of those steps into a function. When writing a function, you
+can put the rest of the program out of your mind and focus on making
+sure that the black box you are working on does exactly what it should
+to produce the right output. When all of the black boxes have been written to
+your satisfaction, then writing the main program, no matter how complex,
+will simply be a series of function calls.
+
+Next month, when you have to do a similar analysis with slightly different
+data, you will have a set of black boxes to reuse. Since the boxes did not
+depend on the calling program, they can be recycled in your new program
+by just including the appropriate headers (plus some details below).
+
+You want your black boxes to be entirely predictable and error-free,
+and the best way to do this is to keep them small and autonomous. A
+function that is more than a screen-full of text can always be broken
+down into a few subfunctions, thus improving the robustness of the code
+and giving you more black boxes which could be reused in the future.
+
+\paragraph{The \cinlinetwo{return} statement} All functions will return
+either one value or zero values, but notice that a function may have
+multiple return statements. For example, the long form of the
+\cinline{is\_even} function (page \pageref{isevenfn}) had two \cinline{return} statements inside
+an \cinline{if-then} block, on lines 4 and 6. The function was guaranteed
+to hit one or the other, but never both.
+
+On the other hand,  you may specify a function whose type is \cind{void},
+meaning that nothing at all will be returned, and the function will
+have no \cinline{return} statements. Such functions will be useful for
+side-effects such as changing the values of the inputs (see Section
+\ref{pointers}) or printing data to the screen or an external file. You
+can also have functions which take no inputs, so any of the following
+are valid declarations for functions:
+
+\begin{lstlisting}
+void do_something(float a);
+float do_something_else(void);
+float do_something_else();
+\end{lstlisting}
+
+The last two are equivalent, but you can't forget the parentheses
+entirely---then the compiler would think you are talking about a variable
+instead of a function.
+
+\paragraph{The \cinlinetwo{main} function}\cindex{main}
+
+All programs must have one and only one function named \cinline{main},
+which is where the program will begin executing. The consistency checks
+are now with the operating system that called the program, which will
+expect \cinline{main} to be declared in one of two forms:
+
+\begin{lstlisting}
+int main(void);
+int main(int argc, char **argv);
+\end{lstlisting}
+
+Without further ado, I will ignore the second form, and will assume that
+all programs throughout this book will have a \cinline{main} function
+with no arguments.
+
+The return value of \cinline{main} is read by the operating system,
+and is usually ignored. However, some use it as a signal:  returning
+0 means that all went well, and returning a positive number means that
+something went wrong.
 
 \paragraph{Scope}	\label{scope}
 
@@ -969,14 +1055,10 @@ of the variable remains restricted to the function alone.
 Static variable declarations look just like other declarations but with
 the word \cind{static} before them. You can also put an initialization on
 the declaration line, which will only be taken into consideration the
-first time the variable is used. Here is a function to enter a hundred
+first time the function is called. Here is a sample function to enter 
 data points into an array:
 \begin{lstlisting}
-//Here is the global variable that will be storing values:
-double survey_data[100];
-
-//Here is the function that will add names to the survey_data array:
-void add_a_point(double number){
+void add_a_point(double number, double survey_data[]){
     static int count_so_far = 0;
     survey_data[count_so_far] = number;
     count_so_far++;
@@ -989,6 +1071,8 @@ will be initialized at zero, the name passed in will be put in
 incremented to one. The second time the function is called, the program
 will remember that \cinline{count\_so\_far} is one, and will thus put the
 second name in \cinline{survey\_data[1]}, where we would want it to be.
+[I assume that the calling function knows the length of
+\cinline{survey\_data} and does bounds-checking accordingly.]
 
 \paragraph{Call-by-value} \index{call-by-value}
 A common error is to forget that global variables are put in all function
@@ -1028,15 +1112,23 @@ then you have buttons to click instead of commands to type, but you will
 still need to have a firm grasp of what \binline{gcc} is doing when you
 click the \airq{compile} button.
 
-
-\paragraph{A brief conceptual overview} The best thing about C is that most
+The process of compiling relies heavily on the system of frames. If
+function A calls function B, the compiler can write down the
+instructions for creating and executing function A without knowing
+anything about function B beyond its declaration. It will simply create
+a frame that includes a call to function B, and the declaration will
+gurantee that the call's inputs and output are correctly handled. Since
+the frame for function A and the frame for function B are always
+separate, the compiler can focus on creating one at a time, and then
+linking the two later on.
+\comment{
+\subsection{A brief conceptual overview} The best thing about C is that most
 of the functions you may need to write have already been written. The
 process of compilation is designed to make it as easy as possible for
 you to include these existing functions in your own code.
 
 Say that somebody has written a file named \binline{gsl\_matrix.c} which
-includes a set of black-box functions to handle matrices.
-As discussed above,
+includes a set of black-box functions to handle matrices. As discussed above,
 that file will include declarations (of types, variables, and functions)
 and the definition of the functions themselves. The custom is to separate
 the two: all of the declarations will be put in a \vocab{header file}
@@ -1058,25 +1150,30 @@ Notice that you did not need \binline{gsl\_matrix.c} to make this work;
 on many systems, the source code for the libraries you call won't be
 anywhere on the system. All you need are the header files to write and
 compile your code and the object files to link to.
-
+}
 
 
 \paragraph{What to type}
 The typical method of compiling is:
-\begin{verbatim}
+\begin{lstlisting}
 gcc  -g -Wall file1.c file2.c -lgsl -o run_me
-\end{verbatim}
+\end{lstlisting}
 The program is \binline{gcc}; it includes code that you wrote in
 \binline{file1.c} and \binline{file2.c}; it includes the library
-(\binline{-l}) \binline{gsl} (which we will use throughout this book);
+(\binline{-l}) \binline{gsl};
 and it will output (\binline{-o}) an executable program named \binline{run\_me}. You
 can then type \binline{./run\_me} to execute the program you just wrote.
 
 The \binline{-g} switch adds \ind{debugging} symbols; see below.  The
 \binline{-Wall} line indicates that the compiler should give you warnings
-about code that may not be what you had meant. You should always run
+about all code that may not be what you had meant. You should always run
 gcc with this option, and you should always heed its warnings, since it
 recognizes errors with uncanny precision.
+
+By the way, on some systems, the command line is order-dependent: if \binline{file1.c}
+depends on Apophenia, and Apophenia depends on the GSL, then the order
+on the command line must be \binline{gcc file1.c -lapophenia -lgsl},
+and any other order will give you linker errors. \index{linker!errors}
 
 This is a lot to type, so there is a separate program, \binline{make},
 which is designed to facilitate compiling. After setting up a Makefile
@@ -1105,12 +1202,13 @@ work. [Unless you are a star programmer, it will still somehow fail. To
 continue fixing it, you will need to run the program under the debugger;
 see section \ref{debug}.]
 
-\paragraph{The preprocessing step} \label{headers}\index{preprocessor|(}
+\subsection{The preprocessing step} \label{headers}\index{preprocessor|(}
 As noted above, \binline{gcc} takes your code through three steps.
 The first step is preprocessing,
-which does nothing but take text you wrote and convert it into more text.
+which does nothing but take text 
+you wrote and convert it into more text.
 
-\ifbook \index{header file!aggregation} 
+\index{header file!aggregation} 
 \marginalia{Header aggregation}{The Apophenia library provides a convenience header that aggregates
 almost every header you will likely be using. By placing\par
 \cinline{\#include $<$apophenia/headers.h$>$}\par
@@ -1121,15 +1219,9 @@ This means that you could ignore the headers at the top of all of the
 code snippets in this chapter.\par Of course, you will still need to
 include any headers you have written, and if the compiler complains
 about an undeclared function, then its header is evidently not included in
-\cinline{apophenia/\-head\-ers.h}.  Based upon all the notes about
-carefully-defined scope in this chapter, such an undiscriminating
-header is bad style, but it is awfully convenient, and will save you
-time hunting for standard headers.}
-
-\fi
-The preprocessor has a dozen things it can do, but you will basically only care about one of them: \cind{\#include}. 
-[The runner-up is \cinline{\#define}, which is discussed on page \pageref{macros}.]
-
+\cinline{apophenia/\-head\-ers.h}.}
+There are a dozen things the preprocessor can do, but you will basically only care about one of them: \cind{\#include}. 
+[The runner-up is \cinline{\#define}, which is discussed on page \pageref{macros}.] 
 When the preprocessor is processing the file \binline{main.c} and sees the line\\
 \cinline{\#include "a\_file.h"}\\
 it finds the file \binline{a\_file.h} and dumps the entirety of the file,
@@ -1137,67 +1229,67 @@ verbatim, into \binline{main.c} at that point in the file. You will
 never see the expansion (unless you run \binline{gcc} with the \binline{-E} flag); the
 preprocessor just passes the expanded code to the compiler.
 
-The most common use for this feature is to include declarations of variables
+As above, the header will consist only of declarations of variables
 and functions.\footnote{If you allocate storage (with an innocuous-looking
 line like \cinline{int x = 7;} instead of \cinline{int x;}), or define
 functions rather than just declare them, then you will be setting
-yourself up for odd errors in the linking step.} The custom is to put all
-of the declarations for \binline{some\_functions.c} in a {\sl \ind{header
-file}}, to be named \binline{some\_functions.h}.  The motivation for
-this will be discussed further in the context of the linking step below.
+yourself up for odd errors in the linking step.} Given the declarations,
+you can use the functions and variables in your code and the compiler
+will know what you are talking about.
 
 All libraries that you will download from elsewhere will include a header file.
 To include it, you will need to put a line like this at the top of your C file:
 \cinline{\#include <gsl/gsl\_matrix.h>}\\
 The angle-brackets tell the compiler that instead of looking in the
 current directory, as it did for \binline{"a\_file.h"} above, it should
-look in the standard library path. Use \binline{"my\_file.h"} for header
+look in the standard include path. Use \binline{"my\_file.h"} for header
 files you have written and \cinline{<their\_file.h>} for header files
 installed elsewhere in your system.  \index{preprocessor|)}
 
-\paragraph{The compilation step} 
+\subsection{The compilation step} 
 The \ind{compilation}
 stage consists of taking each \cinline{.c} file in turn and
 writing a machine-readable object file: \cinline{file1.c} will
 result in \cinline{file1.o}, and \cinline{file2.c} will compile to
 \cinline{file2.o}. These \index{object files} are self-encapsulated
-files which include a table of all of the symbols declared in that file
-(functions, variables, and types), and what (most of) those symbols
-mean---the actual code which embodies these functions, variables, and
-types, translated into a form the computer can interpret. That is, your
-list of functions are converted into a set of machine-readable black
-boxes.
+files that include a table of all of the symbols declared in that file
+(functions, variables, and types), and 
+the actual machine code that tells the computer how to allocate memory
+when it sees a variable and how to set up and run a frame when it sees a
+function call.
 
-At this point, the compiler has run consistency checks on each file separately,
-and will complain if any of them fail. That is, if you call a function,
-there has to be a declaration (or the function itself) somewhere in the
-file that tells the compiler what that function should look like. But 
-given that information, it doesn't need the function itself in order to
-do the consistency checks and compilation. This allows you to declare
-and call functions which are not in your code. You will simply have a
-dutiful machine-readable notice in the middle of the function you wrote:
-`At this point, you will need to run the \cinline{do\_something} function,
-sending it the values \cinline{first}, \cinline{second}, and \cinline{third}, and
-you will get a \cinline{float} back from the function in return'. This is
-all the information \cinline{gcc} needs to compile a consistent object file---but
-clearly, if the program is to run, it will need to include the actual
-instructions embodied in the symbol \cinline{do\_something}.
+The instructions for a function may include an instruction like ``at this
+point, create a frame for \cinline{gsl\_matrix\_add} with these input
+variables,'' but executing that instruction does not require any knowledge
+of what \cinline{gsl\_matrix\_add} looks like---that is a separate frame
+in which the current frame has no business meddling.
 
-\paragraph{The \ind{linking} step}
-The next step in the process is linking, in which the program takes all
-of those declarations and finds the actual objects to which they
-refer, gathering together black boxes from disparate locations. It
-is the process of reconciling all of the symbol tables to ensure
-that when \cinline{file1.c} promises that there is a function named
-\cinline{do\_something} that will return a floating-point real
-number, that \cinline{do\_something} is actually defined,  probably
-in \cinline{file2.c}.
+That is, the compiler runs consistency checks on each file, and
+verifies that every function call matches its declaration.  But given
+that declaration and call match, the compiler doesn't yet need the
+function itself.
 
-Alternatively, the function you call could be in a library written by
-somebody else.  For example, the \cinline{-lgsl} flag tells the compiler that
-you may be calling functions in the GSL library, so if it sees a function
-declared in your code but can't find the function's definition in your
-code, then the linker should check the GSL library for the definition.
+\subsection{The \ind{linking} step}
+The next step in the process is linking. At the moment, we have one
+function that calls \cinline{gsl\_matrix\_add} in one file, and in the
+GSL library, we have machine instructions that dictate how to construct
+a frame to execute the \cinline{gsl\_matrix\_add} function; the linker links
+the call and the execution, gathering together all the necessary black
+boxes from disparate locations.
+
+The function you call could be in a file you have written, or it could be
+in a library written by somebody else.  For example, the \cinline{-lgsl}
+flag tells the compiler that you may be calling functions in the GSL
+library, so if it sees a function declared in your code but can't find
+the function's object code in your object files, then the linker should check
+the GSL library for the definition.
+
+Note well that the library's header and its object file are separate
+entities. If the header is found but the object file is not, then you
+will be able to successfully compile your own code into object files,
+but the linker will be unable to link your function calls to the
+functions called. Thus, compiler errors mean that you need to debug the
+include path, and linker errors mean that you need to debug the library path.
 
 
 \index{include@\cinline{include}|see{\cinline{{\#include}}}}
@@ -1222,6 +1314,7 @@ array of libraries, all of which are free for download. Go to
 the \airq{software libraries} link. You will find a library for almost
 anything you would ever need.
 
+\paragraph{C files as modules}
 The second part of the art of C programming is taking into account that
 the functions you write will be useful for later on. Your work will often
 go along the same lines in all of your projects: getting data from the
@@ -1234,10 +1327,9 @@ take very little time to get up, running, and doing exactly what you want.
 
 Thus, you may want to start writing your own libraries. It is a simple
 process: simply put all of your functions relating to a certain topic
-into a file named \cinline{topic.c}, and put the useful declarations into a separate header file named \cinline{topic.h}. 
+into a file named \cinline{topic.c}, and put the useful declarations
+into a separate header file named \cinline{topic.h}.
 
-
-\paragraph{C files as modules}
 Recall that a variable that is not declared inside a function has scope
 for the rest of the file in which it was declared. That means that if a
 variable is declared in \cinline{normit.c}, then all the variables inside
@@ -1252,13 +1344,14 @@ included in the \cinline{normit.c} file.
 
 Just as we could take a function as a black box, whose internal workings
 we don't care about, we can now take \cinline{normit.c} as a black box,
-whose only visible parts are those listed in \cinline{normit.h}. For the functions, the public part is the
-header line listing the type of the variable and its inputs; for the C file module, the public part is
-the header file. 
+whose only visible parts are those listed in \cinline{normit.h}. For
+the functions, the public part is the header line listing the type of
+the variable and its inputs; for the C file module, the public part is
+the header file.
 
-As noted above, modules and functions are most effective and  reusable when as few
-subparts are visible as possible; bear this in mind when deciding whether to put a variable or
-function's declaration in the header file, where it will be public, or at the top of the code file,
+As noted above, good module design has as few
+visible subparts as possible; bear this in mind when deciding whether to put a
+declaration in the header file, where it will be public, or at the top of the code file,
 where it will be private, internal workings.\comment{C$^{++}$ programmers will recognize this setup as
 very analogous to that of an object: in a simple sense, both C modules and C$^{++}$ objects are a level
 of intermediate scope between the global level and the functional level. Here is an approximate translation from
@@ -1380,10 +1473,10 @@ an integer. The computer builds itself a frame, using a copy of
 * 2}. When the frame is destroyed (and \cinline{a\_c} goes with it),
 this won't be undone: that slot of memory will still hold the value
 \cinline{b\_c * 2}.  So the output to this program would be: 
-\begin{verbatim} 
+\begin{lstlisting}
 doubling() returns: 4
 a now holds: 4
-\end{verbatim} 
+\end{lstlisting}
 because \cinline{*a}---the integer \cinline{a} points to---has changed as a
 side-effect to calling the \cinline{doubling} function.
 
@@ -1658,7 +1751,7 @@ If you are not sure about the size of your array, then you will need to
 expand the array as you go. Here is a snippet of code to show you the syntax:
 \begin{lstlisting}
 #include <malloc.h>     //malloc and realloc
-complex *data_array = malloc (sizeof(float));
+complex *data_array = NULL;
 int data_count = 0;
 
 while (!end_of_file){
@@ -1668,12 +1761,12 @@ while (!end_of_file){
 }
 \end{lstlisting}
 
-We first use \cinline{malloc} in the initialization of \cinline{data\_array}
-to ensure that the variable points to a real location in memory. Then
+We first initialize \cinline{data\_array} to \cinline{NULL}.
+Then
 we start reading data from the file. Every time we are about to draw
 more data into the array from the data file, we use \cind{realloc} to
 allocate a new block of memory that would be of sufficient size. The first
-argument to \cinline{realloc} is the pointer whose space you need resized,
+argument to \cinline{realloc} is the pointer whose space needs resizing,
 and the second argument is the new size.  The first part of this new
 block of memory will be the \cinline{data\_array} so far, and the end will
 be an allocated but garbage-filled space ready for us to put data into.
@@ -1717,21 +1810,23 @@ memory.
 char hello[1000000];
 \end{lstlisting}
 This is clearly wasteful, though you may not notice it on a modern
-computer, but it is also error-prone: what if you have a brilliant idea
+computer. But it is also error-prone: what if you have a brilliant idea
 about a \cinline{for} loop that will add a little text for each of a
 million variables into the string? You can easily exceed your own
 expectations. The other option is \cind{realloc}, combined with the
 function to measure the length of a string, \cind{strlen}.
 \begin{lstlisting}
 #include <string.h>
-char *hello    = malloc (sizeof(char) * (1+strlen("Hi there. ")));
-strcpy(hello, "Hi there. "); 
-hello   = realloc (hello, sizeof(char) * (1+ strlen(hello) + strlen("Hi there again. ")));
+char *hello    = malloc (sizeof(char) * (1+strlen("Hi there.")));
+strcpy(hello, "Hi there."); 
+hello   = realloc (hello, sizeof(char) * (1+ strlen(hello) + strlen("Hi there again.")));
 strcat(hello, "Hi there again."); 
 \end{lstlisting}
 One detail to note here: the end of a string is indicated internally by
-a \cinline{\textbackslash{}0} character. Thus, a string variable needs
-to have as many characters as it will hold plus one.
+a null character.\footnote{The null character is written as
+`\cinline{\textbackslash{}0}'. You probably will never need to use this
+fact in your own code.} Thus, a string variable needs to have as many
+characters as it will hold plus one.
 
 It is up to you and your situation whether you prefer the easy but
 ungraceful overallocation or the precise but lengthy \cinline{realloc}
@@ -1772,7 +1867,7 @@ $\backslash$(newline)	& continue the string on the next line
 }
 \end{center}
 
-There are {\sl many} more format specifiers, which will give you a great deal of control; you may want
+There are many more format specifiers, which will give you a great deal of control; you may want
 them when printing tables, for example, and can refer to any of a number of detailed references when you
 need these. [The \airq{g} in \cinline{\%g} stands for \airq{general format}, by the way.]
 
@@ -1940,7 +2035,7 @@ The white space at the beginning of the indented lines is a single tab,
 not a bunch of spaces.  C never cares about this, but \binline{make}
 does.
 
-\paragraph{The executive summary} This file is reprinted from the \airq{Setup}
+\paragraph{The executive summary} This Makefile is reprinted from the \airq{Setup}
 section of the Apophenia documentation, at
 \url{http://apophenia.info/doc}. Cut and paste it into a file named
 \binline{Makefile}, taking care to retain the tabs, and put that file in
@@ -2104,7 +2199,7 @@ is referred to the authoritative and surprisingly readable reference
 for the language: \cite{kandr:c}.
 
 This optional section includes some of the more common alternatives that
-are very commonly used among C programmers. You can get very far without
+are commonly used among C programmers. You can get very far without
 knowing any of the following, and some of it is generally considered to
 be bad style.
 
@@ -2134,7 +2229,7 @@ a bit of text and expand it to more text. The most common example is
 expanding\\
 \cinline{MIN(a,b)}\\
 to:\\
-\cinline{if (a $<$ b) a; else b;} .\\
+\cinline{if (a $<$ b) a; else b;} .
 
 But there are endless pitfalls to using macros, and since it is often
 difficult to visualize how a complex macro will expand, debugging
@@ -2159,14 +2254,15 @@ take a type as an argument. This takes advantage of the fact that the preprocess
 just shunts characters around and doesn't know what its arguments represent.
 For example, recall the form for reallocating a pointer to an array of \cinline{int}s:\\
 \cinline{var\_array = realloc(var\_array, new\_length * sizeof(int))}.\\
-With this macro:\\
-\cinline{\#define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))}\\
-\\the above line could be rewritten as:\\
+With this macro:
+\begin{lstlisting}
+#define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))
+\end{lstlisting}
+the above line could be rewritten as:\\
 \cinline{REALLOC(var\_array, new\_length, int);}\\
 This macro gives you one more moving part that could break (and which
-now needs to be \cinline{\#include}d with every file you use it in), but
+now needs to be \cinline{\#include}d with every file), but
 may make the code more readable.
-
 \comment{\cinline{\#define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))}\\
 \cinline{REALLOC(var\_array, new\_length, int);}\\}
 
@@ -2244,11 +2340,8 @@ function just jumps to the appropriate label (recall that the colon
 indicates a label) and then picks up from there---and continues. Thus,
 if there were no \cinline{break} after \cinline{verbose++}, then the program
 would merrily continue on to execute \cinline{weighting\_function}, and so
-on. This is called {\sl fall-through}.
-
-Most C tutorials include some creative example where this
-fall-through is desirable, but they are all pretty contrived, and the
-reader who uses \cinline{switch} statements will want to take especial care
+on. This is called {\sl fall-through}. The
+reader who uses \cinline{switch} statements will want to take care
 to have \cinline{break}s at the end of every \cinline{case}.  The \cinline{break}
 at the end of the list of \cinline{case}s is extraneous, but there is a good
 chance that you will add to your list of \cinline{case}s, at which point
@@ -2279,17 +2372,15 @@ use the \cinline{-O3} flag when compiling with \cinline{gcc}. [That's an `O'
 as in optimization, not a zero. There is also an \cinline{-O1} and an \cinline{-O2}, but as long as you are optimizing, why not go all out?]
 
 The problem with optimization, however, is that it makes debugging
-difficult. The program jumps around, so you are constantly surprised when
-you step through the code, and when you ask to print the value of \cinline{a}, you will get an error that there is no such variable defined.
-
+difficult. The program jumps around, making stepping through an odd
+trip, and when you ask to print the value of \cinline{a}, you will get
+an error that there is no such variable defined.
 It also sometimes happens that you did not do your memory allocation duties
 quite right, and things went OK without optimization, but suddenly the
 program crashes when you have optimization on; the debugger will be some
 help, but you may just have to re-scour your code to find the problem.
-
-So if you feel that optimization will help (and it sometimes does not),
-then turn it on only when you are certain that your program works and
-you will never need to debug it again.
+Thus, the \cinline{-O3} flag is a final step, to be used only after you
+are reasonably confident that your code is debugged.
 
 Finally, you may run into authors who give you advice about how to write
 faster code, telling you to use loops here and unroll them there, make

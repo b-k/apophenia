@@ -8,31 +8,31 @@ techniques, except mathematicians over the ages have found ways to hide
 that fact from you, by proving that under certain conditions the
 maximum must have an easy-to-calculate form. But if there is not a nice,
 convenient shortcut, you will have to 
-search for the optimal parameters yourself. Fortunately, the GSL has the \cinline{gsl\_multimin} family
-of objects, to help you find the optimal parameters. On top of those,
-Apophenia has an \cind{apop\_maximum\_likelihood} function that
-preps and calls the GSL functions for you. You give it a function and
+search for the optimal parameters yourself. There are optimization
+routines from a variety of sources, and Apophenia provides
+a consistent front-end to many of them via its
+\cind{apop\_maximum\_likelihood} function. You give it a function and
 some parameters, and it will find the optimum.
 
 \paragraph{The \ind{log likelihood function}}	\label{the score}
 By itself, the PDF is the likelihood that a given value occurs (given
 the parameters of the PDF); any of the functions listed in Section
 \ref{distlist} will do. That distribution, say $P(x|p)\sim$ Bernoulli,
-plus a given value for the parameter $p$, will tell us the likelihood
+plus a given value for the parameter(s) $p$, will tell us the likelihood
 that we would get the data point that we saw. Or, we could reverse this:
 given the data $x$, we can use the Bernoulli distribution to calculate the
 likelihood that $p$ has any given value.
 
 Say that we have two data points, $x_1$ and $x_2$. Assume further that
-they are independently drawn; that is, $P(\{x_1,x_2\}|p)=P(x_1|p)\cdot P(x_2|p)$. 
-The independence assumption allows us to say the the joint probability
-is the product of the individual probabilities. The assumption of
-identical distributions allows us to write this more neatly, as 
-$$P(\{x_1,x_2\}|p)=\Pi_{i=\{1,2\}}P(x_i|p).$$
+they are independently drawn.  The independence assumption allows us
+to say the the joint probability is the product of the individual
+probabilities; that is, $P(\{x_1,x_2\}|p)=P(x_1|p)\cdot P(x_2|p)$.
+The assumption of identical distributions allows us to write this more
+neatly, as $$P(\{x_1,x_2\}|p)=\Pi_{i=\{1,2\}}P(x_i|p).$$
 
-Define the Log likelihood as $L=\ln f$, the Score\index{score} as
+Define the Log likelihood as $L=\ln P$, the Score\index{score} as
 
-$$S={\partial \ln f\over \partial \theta}$$ 
+$$S={\partial \ln P\over \partial \theta}$$ 
 
 and the Information variable\index{information variable} as
 
@@ -41,29 +41,17 @@ I&=&-{\partial S \over \partial \theta}			\nonumber\\
 &=&-{\partial^2 L \over \partial \theta^2}.		\nonumber
 \end{eqnarray}
 
-$L$, $S$, and $I$ will appear over and over again, so we may as well get
-to know them. First, due to all that exponentiation in the distributions
+First, due to all that exponentiation in the distributions
 of Section \ref{distlist}, $L$ is often much easier to deal with, yet
 is equivalent to the PDF for most of our purposes---notably, if we have
 found a maximum for one, the we have found a maximum for the other.
 
-\marginalia{\ind{Exponential families}}{%
-	There is a bit of a sleight of hand in asserting that $S \cdot f = {\partial f
-\over \partial \theta}$: the derivative of the expectation is
-	${d\over d\theta}\int f dy$; while we want $\int {d f\over
-	d\theta} dy=\int S \cdot f dy$ [Note how this means $E(S)=0$, by the
-	way, since the integral of the pdf is one, and $d1/d\theta=0$].
-	If we can't reverse the integral and derivative like this, none
-	of this applies. But we can in the case of any exponential
-	family. You can look that up, but here, we can rest assured that
-	the \ind{Normal}, \ind{Gamma}, \ind{Beta}, \ind{Binomial}, \ind{Poisson}, \&c. are all in this
-	family.} 
 Further, consider calculating the likelihood function above given
 a thousand data points.  Then the probability of observing the data set
 we have (fixing $p$ for now) is $\prod_{i=1}^{1000} P(x_i)$.  Since each
 $P(x_i)\in (0,1]$, this product is typically on the order of $1\times
 10^{-1000}$. This is a delicate number, and details of implementation in
-hardware could easily break it; this risks what computer scientists call an
+memory could easily break it; this risks what computer scientists call an
 {\sl underflow error}. Taking logs, each value of $p_i$ is now a negative
 number, e.g., $\ln(0.5)\approx -0.69$ and $\ln(0.1)\approx -2.3$.  But the
 product above is now a sum: $$\ln\left[\prod_{i=1}^{1000} P(x_i)\right]
@@ -77,9 +65,20 @@ model is proven false, and the likelihood function shows it. Near-zero
 probability events can have a disproportionately large effect on the
 parameter estimation, so care must be taken to evaluate whether events with very
 small probability should be taken as signs that the model is false,
-should be handled as outliers, or should simply be taken as an unlucky
-draw or measurement error.}
+should be handled as outliers, or should simply be taken as 
+measurement error.}
 
+\marginalia{\ind{Exponential families}}{%
+	There is a bit of a sleight of hand in asserting that $S \cdot P = {\partial P
+\over \partial \theta}$: the derivative of the expectation is
+	${d\over d\theta}\int P dy$; while we want $\int {d P\over
+	d\theta} dy=\int S \cdot P dy$ [Note how this means $E(S)=0$, by the
+	way, since the integral of the PDF is one, and $d1/d\theta=0$].
+	If we can't reverse the integral and derivative like this, none
+	of this applies. But we can in the case of any exponential
+	family. You can look that up, but here, we can rest assured that
+	the \ind{Normal}, \ind{Gamma}, \ind{Beta}, \ind{Binomial}, \ind{Poisson}, \&c. are all in this
+	family.} 
 The second benefit to using the log likelihood is analytic: since $S \cdot
 f = {\partial f \over \partial \theta}$, the derivative of the expectation
 in terms of $\theta$ can be rewritten as the expectation of $S$; see box
@@ -89,6 +88,14 @@ There are some fun tricks you can do with these functions.
 The trick most worth mentioning is the
 \ind{information equality}, that $E(I)=\var(S)$, which you can prove by
 calculating ${\partial E(L)\over \partial \theta}$.
+
+The reader can also verify that 
+\begin{align}
+\frac{\partial \ln P}{\partial \theta}\cdot \frac{\partial \ln P}{\partial \theta} &= -\frac{\partial^2 \ln P}{\partial \theta^2}.\nonumber\\
+\intertext{That is,}
+S\cdot S &= -I.\nonumber
+\end{align}
+
 
 \subsection{An example: probit} \index{probit|(}
 The probit is a popular model of aleatory behavior. 
@@ -147,16 +154,26 @@ likelihood function.
 
 The Cramer-Rao lower bound is
 called a `lower bound' because Mr.s Cramer and Rao proved that any
-estimator of $\beta$ must have a variance greater than or equal to the
+estimator of $\theta$ must have a variance greater than or equal to the
 CRLB. Your favorite probability textbook (e.g., \cite{casella:berger})
 will also prove that for the MLE, the variance is actually equal to the
-CRLB, meaning that we can not get an estimator of $\beta$ that will
+CRLB, meaning that we can not get an estimator of $\theta$ that will
 have a smaller variance.
         \index{Cramer-Rao Inequality|)}
 
 \subsection{How to evaluate a test}
+A test will either reject or accept a hypothesis given data. It can be
+fooled two ways: the hypothesis could be true but the test rejects it;
+or the hypothesis could be false but the test accepts it anyway. There
+is a balance to be struck between the two errors: as one rises, the
+other falls. But not all estimators are born equal: the coin-flip test, `heads, accept;
+tails, reject' gives us a 50\% chance of a Type I error
+and a 50\% chance of a Type II error, but there are tests where both
+errors are significantly lower than 50\%, and so by any measure we would
+call those better tests than the coin-flipping test. 
 
-\marginaliafixed{15}{Evaluation vocab}{
+\subsubsection{Keeping Type I and Type II straight} 
+\marginaliafixed{16}{Evaluation vocab}{
 Here are some vocabluary terms; if you are in a stats class right now,
 you will be tested on this:
 
@@ -174,18 +191,6 @@ it is true.\index{unbiased estimator}
 {\bf Consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.\index{consistency}
 }
 
-
-A test will either reject or accept a hypothesis given data. It can be
-fooled two ways: the hypothesis could be true but the test rejects it;
-or the hypothesis could be false but the test accepts it anyway. There
-is a balance to be struck between the two errors: as one rises, the
-other falls. But not all estimators are born equal: the coin-flip test, `heads, accept;
-tails, reject' gives us a 50\% chance of a Type I error
-and a 50\% chance of a Type II error, but there are tests where both
-errors are significantly lower than 50\%, and so by any measure we would
-call those better tests than the coin-flipping test. 
-
-\subsubsection{Keeping Type I and Type II straight} 
 \index{Type I error|textbf} \index{Type II error|textbf}
 Here is an oft-told story: if a doctor is deciding
 whether to give a vaccination, and $H_0=$ the patient is sick, then
@@ -202,8 +207,7 @@ That's the Type I error. It comes first because
 it's generally all anybody talks about.
 
 \paragraph{The Neyman-Pearson lemma} \index{Neyman-Pearson lemma} 
-We focus on Type I errors; it is what we mean when we say that our
-test has $\alpha=95\%$ confidence. Byt what about Type II errors? 
+But what about Type II errors? 
 Neyman and Pearson showed that a likelihood ratio test will have the
 minimum possible Type II error of any test with the $\alpha$ that we
 selected. After establishing this fact, we just ignore Type II errors.
@@ -220,7 +224,7 @@ We need to note two things from here. First, the difference between a
 `likelihood', which is the probability that we'd have the data we have
 given some event. This is nitpicking that you don't really have to care
 about, except that here and there somebody will call you on
-it.\footnote{One could write $P(A|B)$ as a simple two-variable function:
+it.\footnote{One could write $P(A|B)$ as a symmetric two-variable function:
 $P(A,B)$, with the understanding that $\int_{\forall A} P(a,B)da = 1,
 \forall B$.} This may
 also clarify for you why some things are called one and some the other.
@@ -263,14 +267,14 @@ considered taken care of.
 
 \section{Description: Maximum likelihood estimators} 
 Apophenia provides a single function to find the optimum of a likelihood
-function, \cind{apop_maximum_likelihood}---but what a function it is. It
+function, \cind{apop\_maximum\_likelihood}---but what a function it is. It
 provides a standardized interface to several types of optimization
 routines that take very different approaches toward finding optima. You
 will have to provide a log likelihood function, but if you are unable to
 provide the derivatives, the maximization routines will find them for
 you. Since the Cramer-Rao lower bound tells us the variance of a
-most-likely parameter, \cinline{apop_maximum_likelihood} will return an
-\cind{apop_estimate} with the variances and other useful information.
+most-likely parameter, \cinline{apop\_maximum\_likelihood} will return an
+\cind{apop\_estimate} with the variances and other useful information.
 
 As in the Probit example, Apophenia's model estimation routines can run
 with default values by sending in \cinline{NULL} as the second
@@ -310,8 +314,8 @@ comfortable exploring the internals of Apophenia, have a look at the
 default. Basically, we take the derivative in all directions and find
 the linear combination of these directions that indicates the fastest
 climb. Clearly, this depends on knowing derivatives; see below.
-\item {\bf 200: \ind{Broyden-Fletcher-Goldfarb-Shanno Conjugate gradient algorithm}}  Another conjugate gradient method, that calculates the direction of travel differently. See \cite{avriel:nonlinear} for definitions of all of these methods.
-\item {\bf 300: \ind{Polak-Ribiere Conjugate gradient algorithm}} Yet another conjugate gradient method.
+\item {\bf 200: \ind{Broyden-Fletcher-Goldfarb-Shanno Conjugate gradient algorithm}}  Another conjugate gradient method, that calculates the direction of travel differently. 
+\item {\bf 300: \ind{Polak-Ribiere Conjugate gradient algorithm}} Yet another conjugate gradient method. See \cite{avriel:nonlinear} for definitions of all of these methods.
 \item {\bf 500: \ind{Simulated annealing}} A controlled random walk.
 As with the other methods, the system tries a new point, and if it
 is better, switches. Initially, the system is allowed to make large
@@ -425,7 +429,7 @@ then plot this table to get an idea of the path the estimation routine
 used to arrive at its MLE.
 
 First, set this variable and run the MLE. The begin/commit wrapper
-speeds things up a touch, but this will clearly be slower than without
+speeds things up a touch, but this will still be slower than without
 taking notes:
 \begin{lstlisting}
     strcpy(apop_opts.mle_trace_path, "pathtable");
@@ -445,10 +449,10 @@ static void plotme(char *outfile){
 FILE            *f;
 apop_data       *traced_path;
     f       = fopen(outfile, "w");  //overwrites. Use "a" to append.
-    fprintf(f,"splot '-' with linespoints linewidth 0.5 pointsize 2\n");
+    fprintf(f, "splot '-' with linespoints linewidth 0.5 pointsize 2\n");
+    fclose(f);
     traced_path = apop_query_to_data("select * from %s"
                                         , apop_opts.mle_trace_path);
-    fclose(f);
     apop_data_print(traced_path, "\t", outfile);
 }
 \end{lstlisting}
@@ -467,13 +471,14 @@ gnuplot plotme -
 
 \section{Hypothesis testing: Likelihood ratio tests} \index{likelihood
 ratio test}
-If the equations derived from maximum likelihood models listed in
-Chapter \ref{gauss} do not apply to your data,
-then you will need to write down the likelihood
-function yourself.  Fortunately, we have a computer to do the tedious
-math, unlike poor Mr. Gauss, who had no such conveniences.  Also, we
-have the Cramer-Rao lower bound to tell us what the variances are.
+As intimated by the \ind{Neyman-Pearson lemma}, the ratio of two
+likelihoods is a good way to test a hypothesis. 
 
+Typically, the likelihood ratio test involves the ratio of an
+unrestricted and a restricted model. Let $L$ be the (not-log, plain)
+likelihood of the overall model, and $L_0$ be the likelihood of a
+model with $K$ restrictions, such as $K$ parameters fixed as zero. Then
+$$-2\ln\frac{L_0}{L} = -2[\ln L_0 - \ln L] \sim \chi^2_K.$$
 
 
 \section{Writing your own}

@@ -1,49 +1,61 @@
-.SUFFIXES: .dvi .pdf
 DOCNAME = gsl_stats
 #DOCNAME = c_crash
 
-all: sources/dummy.tex 
-	#for i in *tex; do lgrind -e -t 4 $$i > $$(basename $$i .tex).ground; done;
+all: $(DOCNAME).dvi
+
+index: $(DOCNAME).idx
+
+publish: $(DOCNAME).pdf
+#	scp $(DOCNAME).pdf $(SFSSH):ap/htdocs/gsl_stats.pdf
+	scp $(DOCNAME).pdf $(FLUFF):www/ben/pdfs/gsl_stats.pdf
+
+onerun:
 	latex $(DOCNAME)
 	@#\citeindexentry will print \inexentry{{Kmenta}}, which means
 	@#that Kmenta gets alphabetized under open-bracket. So
 	@#turn {{...}} into {...}.
 	@perl -pi.bak -e 's/indexentry{{([^}]*)}}/indexentry{$$1}/'  .texputs/$(DOCNAME).idx;
 
-index:
+pdf:	$(DOCNAME).pdf
+
+bib:	$(DOCNAME).dvi $(DOCNAME).bbl
+
+viewps: 
+	gv -seascape  -geometry 1129x824+-95+-49 -scale 2 $(DOCNAME).ps
+
+$(DOCNAME).ps: $(DOCNAME).dvi
+	dvips  -f < $(DOCNAME).dvi > $(DOCNAME).ps
+
+$(DOCNAME).pdf: $(DOCNAME).ps
+	ps2pdf $(DOCNAME).ps  $(DOCNAME).pdf
+
+$(DOCNAME).bbl:	$(DOCNAME).dvi
+	latex $(DOCNAME); bibtex $(DOCNAME); latex $(DOCNAME); latex $(DOCNAME)
+	perl -pi.bak -e 's/In , /In /'  .texputs/$(DOCNAME).bbl;
+
+$(DOCNAME).idx:
 	makeindex -c .texputs/$(DOCNAME).idx;
 
+$(DOCNAME).dvi: *.tex
+	make onerun
+	make index
+	@echo "---------------------------------------------------------------------------------"
+	@echo "---------------------------------------------------------------------------------"
+	@echo "---------------------------------------------------------------------------------"
+	make onerun
+
+
+
+
+#I should delete these:
 view:
 	xdvi -expert -geometry 1041x797+-17+-17 -s 6 -paper usr $(DOCNAME)
 
-publish: $(DOCNAME).pdf
-#	scp $(DOCNAME).pdf $(SFSSH):ap/htdocs/gsl_stats.pdf
-	scp $(DOCNAME).pdf $(FLUFF):www/ben/pdfs/gsl_stats.pdf
-
 viewpdf: 
 	gv -seascape  -geometry 1129x824+-95+-49 -scale 2 $(DOCNAME).pdf
-
-sources/dummy.tex:
-	cd sources && ./remake && cd ..;
-
-$(DOCNAME).pdf:	*tex
-	pdflatex $(DOCNAME)
-
-pdf: *tex
-#	pdflatex $(DOCNAME)
-	dvips -f < $(DOCNAME).dvi > $(DOCNAME).ps
-	ps2pdf $(DOCNAME).ps  $(DOCNAME).pdf
 
 pdfslides:	
 	#latex $(DOCNAME)
 	#dvips -t landscape -t letter -f < $(DOCNAME).dvi > $(DOCNAME).ps\
 	dvips -t landscape -f < $(DOCNAME).dvi > $(DOCNAME).ps
 	ps2pdf $(DOCNAME).ps  $(DOCNAME).pdf
-
-bib:	
-	latex $(DOCNAME); bibtex $(DOCNAME); latex $(DOCNAME); latex $(DOCNAME)
-	perl -pi.bak -e 's/In , /In /'  .texputs/$(DOCNAME).bbl;
-
-viewps: 
-	gv -seascape  -geometry 1129x824+-95+-49 -scale 2 $(DOCNAME).ps
-

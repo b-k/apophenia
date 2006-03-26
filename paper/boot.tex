@@ -1,10 +1,23 @@
-\chapter{Bootstrapping} \label{boot}
+\chapter{Monte Carlo} \label{boot}
 
-Bootstrapping is a method of getting a variance out of data that, by all
-rights, should not be able to give you a variance. Say that you have
-estimated a parameter, and also want to test whether that parameter is
-different from zero. By repeatedly re-estimating the parameter, you can
-determine its variance, and thus test a hypothesis about it.
+Monte Carlo (Spanish and French for Mount Carl) is a city in Monaco
+famous for its casinos, and more glamorous associations with its name
+than Las Vegas or Atlantic City.
+
+Monte Carlo methods are thus about randomization: taking existing data
+and making random transformations to learn more about it. At the
+roulette table, a single player may come out ahead, but the house is
+confident that with enough players testing the odds, it will come out
+ahead. Similarly, a single random transformation will no doubt produce a
+somehow distorted picture of the data, but reapplying it thousands or
+millions of times will present an increasingly accurate picture.
+
+Bootstrapping and jackknifing are methods of getting a variance out of
+data that, by all rights, should not be able to give you a variance. Say
+that you have estimated a parameter, and also want to test whether
+that parameter is different from zero. By repeatedly re-estimating the
+parameter, you can determine its variance, and thus test a hypothesis
+about it.
 
 \section{Random number generation}\index{random
 numbers|(}\label{randomnumbers}
@@ -130,15 +143,15 @@ zeros in the vast majority of bins. Usage:
 \index{random numbers|)}
 
 \section{Finding the variance of a parameter}
-The bootstrapping process consists of taking artificial samples of your
-data, and then calculating a statistic for each of these samples. These
-draws will be independent and identically distributed.  Typically,
-your statistic is for the form $\sum (X_i)/ N$, where  $N$ is the number
-of observations, and $X_i$ is a data point in the case of a mean,
-$(X-\mu)^2$ for a variance, et cetera. In other words, the statistic
-is often the mean of some iid process, and so the Central Limit Theorem
-applies to the series of statistics that you are producing (regardless
-of how ugly the underlying data may be).
+The bootstrapping and jackknifing processes consist of taking artificial
+samples of your data, and then calculating a statistic for each of these
+samples. These draws will be independent and identically distributed.
+Typically, your statistic is for the form $\sum (X_i)/ N$, where  $N$
+is the number of observations, and $X_i$ is a data point in the case
+of a mean, $(X-\mu)^2$ for a variance, et cetera. In other words, the
+statistic is often the mean of some iid process, and so the Central
+Limit Theorem applies to the series of statistics that you are producing
+(regardless of how ugly the underlying data may be).
 
 The primary use of this is for hypothesis testing: we need to know the
 variance of the parameter and its distribution if we are to successfully
@@ -167,15 +180,22 @@ that instead of bootstrapping. \comment{Otherwise, you dishonor your name, and
 bring shame to your research group.}
 
 
-\subsection{Creating random samples} Assume that we have a
+\subsection{Creating random samples} \index{bootstrap}
+\index{jackknife|\textbf(}
+The primary difference between bootstrapping and jackknifing is that
+the bootstrap takes a series of draws with replacement from a data set,
+while the jackknife takes a series of samles without replacement. Here,
+I will discuss the jackknife.
+
+Assume that we have a
 data vector \cinline{gsl\_vector * data} and a function \cinline{double
 calc\_statistic(gsl\_vec\-tor *da\-ta)} that finds some statistics. The
 function \cinline{mean()} fits this description, as would a function to find
 a single OLS coefficient.
 
-\codefig{bootdraw}{A function to draw samples from the data, for use in a bootstrap}
+\codefig{bootdraw}{A function to draw samples from the data, for use in a jackknife}
 
-Then the first step in bootstrapping is drawing some subset of the data,
+Then the first step in jackknifing is drawing some subset of the data,
 without replacement. Drawing without replacement means that we need to
 keep track of what has been drawn to date, and must check every new draw
 to make sure that the new draw is not a repeat. Figure \ref{bootdraw} lists a function which
@@ -187,19 +207,21 @@ by rolling back the counter by one, while if it does not find a match then it
 adds the draw to the list of draws and the index to the list of indices.
 
 We can then use these draws to calculate a list of parameter values, as in Figure \ref{bootvar}.
-\codefig{bootvar}{A function to find the variance of a series of bootstrap estimates of a statistic}
+\codefig{bootvar}{A function to find the variance of a series of jackknife estimates of a statistic}
 
 It is valid to use the standard deviation returned by this function 
 in the normal way to construct confidence intervals and test
 hypotheses about the statistic.
 
-Again, Apophenia has you covered with a bootstrapping function, whose
+Again, Apophenia has you covered with a jackknifing function, whose
 use could not be simpler. To produce the covariance matrix for the
 parameters of a Poisson distribution for a given data set:
 \begin{lstlisting}
-apop_data *covar    = apop_bootstrap(data, apop_poisson, NULL);
+apop_data *covar    = apop_jackknife(data, apop_poisson, NULL);
 \end{lstlisting}
 In fact, this is redundant, because the \cinline{apop\_pois\-son}
-model already uses the \cind{apop\_boot\-strap} function internally,
+model already uses the \cind{apop\_jackknife} function internally,
 so the usual \cinline{apop\_pois\-son.est\-i\-mate(data, NULL)}
-will return an estimate with bootstrapped variances.
+will return an estimate with jackknifed variances.
+\index{jackknife|\textbf)}
+

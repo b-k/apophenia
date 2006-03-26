@@ -2,7 +2,7 @@
 
 Bootstrapping!!!
 
-The bootstrap procedure takes the following steps:
+The jackknife procedure takes the following steps:
 
 for (1000 iterations){
 	generate subset of data
@@ -13,7 +13,7 @@ calculate variance.
 
 [If you have a consistent estimator, the mean should be darn close to the mean of the full data set, by the way.]
 
-So that's what the bootstrap procedure does. Most of this is trivial: the
+So that's what the jackknife procedure does. Most of this is trivial: the
 real work is in the process of generating the subsets of the data. The
 assumption is that your data set is in a gsl_matrix where each row is
 a data element, and no rows are special.
@@ -35,7 +35,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
 
 
 /** Give me a data set and a function that goes from data set to
-	parameter, and I'll give you the bootstrapped standard deviation (sqrt(var)) of the parameter 
+	parameter, and I'll give you the jackknifed standard deviation (sqrt(var)) of the parameter 
  
 
 The function you write will have the following header:
@@ -47,7 +47,7 @@ form pushes the problem back to when you have four or more parameters,
 at which point they're probably already in a struct.
 
 The function returns a gsl_vector instead of just a double so that you
-can bootstrap every parameter at once. Remember that if \code{e} is an
+can jackknife every parameter at once. Remember that if \code{e} is an
 \ref apop_estimate, then \code{e->parameters} is a gsl_vector.
 
 \param	data	The data set. A gsl_matrix where each row is a single data point
@@ -57,9 +57,9 @@ can bootstrap every parameter at once. Remember that if \code{e} is an
 \param params_2	a parameter to send to your boot_fn.
 \param params_3	a parameter to send to your boot_fn.
 
-\todo I couldn't find a reference on how big the bootstrap subsample should be relative to the data set. So I hard-coded the subsample size to 1/3 the original data set. If you have better, code it in.
+\todo I couldn't find a reference on how big the jackknife subsample should be relative to the data set. So I hard-coded the subsample size to 1/3 the original data set. If you have better, code it in.
  */
-gsl_matrix * apop_bootstrap(apop_data *data, apop_model model, apop_estimation_params e){
+gsl_matrix * apop_jackknife(apop_data *data, apop_model model, apop_estimation_params e){
 int		        i, j, row;
 int             boot_iterations	= 1000;
 apop_data	    *subset	= apop_data_alloc(data->matrix->size1, data->matrix->size2);

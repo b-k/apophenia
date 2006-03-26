@@ -24,7 +24,7 @@ double		mean    = apop_matrix_mean(data->matrix);
 	if (est->estimation_params.uses.log_likelihood)
 		est->log_likelihood	= poisson_log_likelihood(est->parameters, data->matrix);
 	if (est->estimation_params.uses.covariance)
-		    est->covariance->matrix = apop_bootstrap(data, apop_poisson, est->estimation_params);
+		    est->covariance->matrix = apop_jackknife(data, apop_poisson, est->estimation_params);
 	return est;
 }
 
