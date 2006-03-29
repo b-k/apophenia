@@ -47,7 +47,7 @@ float         a    = gsl_vector_get(beta, 0),
               b    = gsl_vector_get(beta, 1);
 int           i, k;
 gsl_matrix    *data        = d;
-float         llikelihood  = 0,
+double        llikelihood  = 0,
         ln_ga 	= gsl_sf_lngamma(a),
         ln_b	= log(b),
         a_ln_b	= a * ln_b,
@@ -70,7 +70,7 @@ float       	a    	= gsl_vector_get(beta, 0),
                         //a sign to the minimizer to look elsewhere.
 int             i, k;
 gsl_matrix      *data	= d;
-float           d_a     = 0,
+double          d_a     = 0,
         d_b		= 0,
         psi_a	= gsl_sf_psi(a),
         ln_b    = log(b),

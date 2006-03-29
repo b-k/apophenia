@@ -44,15 +44,15 @@ float           a           = gsl_vector_get(beta, 0),
     if (gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
 int             k;
 gsl_matrix      *data       = d;
-float           llikelihood = 0,
+double          llikelihood = 0,
                 ln_ga       = gsl_sf_lngamma(a),
                 a_ln_b      = a * log(b),
                 ln_k;
-gsl_vector_view v;
+gsl_vector      v;
     for (k=0; k< data->size2; k++){
             ln_k            = log(k+1);
-            v               = gsl_matrix_column(data, k);
-            llikelihood    += apop_sum(&(v.vector)) * (-ln_ga - a_ln_b + (a-1) * ln_k  - (k+1)/b);
+            v               = gsl_matrix_column(data, k).vector;
+            llikelihood    += apop_sum(&v) * (-ln_ga - a_ln_b + (a-1) * ln_k  - (k+1)/b);
         }
     return llikelihood;
 }

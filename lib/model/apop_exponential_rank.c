@@ -65,11 +65,11 @@ double		    b		    = gsl_vector_get(beta, 0),
 		        ln_b		= log(b);
 gsl_matrix	    *data		= d;
 int 		    k;
-gsl_vector_view v;
+gsl_vector      v;
 	for (k=0; k< data->size2; k++){
-		p	            = -ln_b - k/b;
-        v               = gsl_matrix_column(data, k);
-		llikelihood    += apop_sum(&(v.vector)) * p; 
+		p	            = -ln_b - (k+1)/b;
+        v               = gsl_matrix_column(data, k).vector;
+		llikelihood    += apop_sum(&v) * p; 
 	}
 	return llikelihood;
 }
@@ -85,11 +85,11 @@ gsl_matrix	    *data		    = d;
 double 		    d_likelihood 	= 0,
 		        one_over_ln_b	    = 1/log(bb),
 		        p;
-gsl_vector_view v;
+gsl_vector      v;
 	for (k=0; k< data->size2; k++) {
 		p	            = (one_over_ln_b -(k+1)) /bb;
-        v               = gsl_matrix_column(data, k);
-		d_likelihood   += apop_sum(&(v.vector)) * p; 
+        v               = gsl_matrix_column(data, k).vector;
+		d_likelihood   += apop_sum(&v) * p; 
     }
 	gsl_vector_set(gradient,0, d_likelihood);
 }

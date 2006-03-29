@@ -73,3 +73,7 @@ apop_data * apop_matrix_summarize(gsl_matrix *data);
 apop_data *apop_data_covar(apop_data *in);
 
 gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins);
+
+
+//from apop_fisher.c:
+apop_data *apop_test_fisher_exact(apop_data *intab);

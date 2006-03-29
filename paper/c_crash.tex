@@ -1,7 +1,5 @@
 \newif\ifbook \booktrue
 
-%@- This is so lgrind will get along with makeindex.
-
 \ifbook
 	\chapter{C} \label{c_crash}
 \else
@@ -88,15 +86,18 @@ tutorial} into your favorite search engine; since this is C and not a
 proprietary, specialized language, you will have a few hundred hits to
 choose from. 
 
-The first part (up to Section \ref{pointers})
-is all about functions, which are mostly self-contained pieces of code,
-but which call and are called by other functions. I will discuss how
-those functions are declared and defined, where to put them, and how the
-computer goes about keeping track of functions that call functions that
-call other functions. The second part, pointers, discusses C's method
-of circumventing this neat functional structure by directly handling
-parts of the computer's memory without C's automatic memory handling
-getting in the way.
+\paragraph{An outline} 
+
+This chapter divides into four parts.
+Sections \ref{fncontents} and  \ref{declaring} start small, covering the syntax of individual lines of code to assign, do arithmetic, and declare variables.
+Sections \ref{functional} and \ref{compilation} introduce functions,
+describing how C is built on the idea of modular functions that are
+each independently built and evaluated.  Sections \ref{pointers}
+through \ref{stringsec} cover
+\airq{pointers}, a C-specific means of handling computer memory that
+complements C's means of handling functions and large data structures. The
+remainder of the chapter covers additional topics such as the debugger
+and assorted idiosyncrasies and conveniences of C syntax.
 
 \subsection{The tools} 
 Most stats packages are built around a single window that includes a
@@ -190,24 +191,6 @@ will be writing with it.
 \ifbook \else 
 	\input why_c.tex
 \fi
-\paragraph{An outline} The remainder of this chapter dives in to the
-syntax and form of C. The first half starts small, on individual
-lines, and then covers means of organizing blocks of code in
-functions, and then organizing blocks of functions in file modules.
-Section \ref{fncontents} covers what individual lines of code can do;
-this section will probably be the most familiar to one well-versed with
-the typical stats package.  Section \ref{declaring} covers the nouns
-of the language: the variables. Section \ref{functional} introduces the
-verbs: the functions. The execution of a C program consists of evaluating
-functions, which means that most of the work you will be doing will be in
-writing good functions, so this section will discuss some of the ideas
-behind functional form.  Section \ref{compilation} will discuss how to
-use your compiler to produce executable programs, assembling together
-functions from disparate locations. Section \ref{pointers} covers
-\airq{pointers}, a C-specific means of handling computer memory that
-complements C's means of handling functions and large data structures. The
-remainder of the chapter covers additional topics such as the debugger
-and assorted idiosyncrasies and conveniences of C syntax.
 
 
 \comment{
@@ -953,7 +936,8 @@ function that is more than a screen-full of text can always be broken
 down into a few subfunctions, thus improving the robustness of the code
 and giving you more black boxes which could be reused in the future.
 
-\paragraph{The \cinlinetwo{return} statement} All functions will return
+\paragraph{\treesymbol{} The \cinlinetwo{return} statement} 
+All functions will return
 either one value or zero values, but notice that a function may have
 multiple return statements. For example, the long form of the
 \cinline{is\_even} function (page \pageref{isevenfn}) had two \cinline{return} statements inside
@@ -978,8 +962,7 @@ The last two are equivalent, but you can't forget the parentheses
 entirely---then the compiler would think you are talking about a variable
 instead of a function.
 
-\paragraph{The \cinlinetwo{main} function}\cindex{main}
-
+\paragraph{\treesymbol{} The \cinlinetwo{main} function}\cindex{main}
 All programs must have one and only one function named \cinline{main},
 which is where the program will begin executing. The consistency checks
 are now with the operating system that called the program, which will
@@ -1293,7 +1276,7 @@ include path, and linker errors mean that you need to debug the library path.
 
 
 \index{include@\cinline{include}|see{\cinline{{\#include}}}}
-\paragraph{Finding files to include}
+\paragraph{\treesymbol{} Finding files to include}    
 There are a wealth of pre-compiled object files in existence already,
 some available online and some on your hard drive right now.  An
 important part of the art of C programming is knowing what files are
@@ -1394,8 +1377,8 @@ you will often want your function to change the variables that get
 sent to it.
 
 This is where pointers come in. A pointer is the address of a piece of
-data. After all, when you declare \cinline{int a}, then the computer is
-going to put \cinline{a} somewhere in memory. Perhaps with a microscope,
+data. After all, when you declare \cinline{int k}, then the computer is
+going to put \cinline{k} somewhere in memory. Perhaps with a microscope,
 you could even find it: there on the third chip, two hundred transistors
 from the bottom. You could point to it.
 
@@ -1407,16 +1390,16 @@ and thinking of pointers as just a very precise finger.
 This fixes the problem of changing variables within a function. The
 trick is that instead of sending the function a copy of the variable,
 we send in a copy of a finger pointing to the variable. 
-In Figure \ref{fingerfig}, the Before picture shows the situation
+In Figure \ref{fingerfig}, the \airq{before} picture shows the situation
 before the function call, in the main program: there is a pointer to an
-address in memory, holding the number six. Then, in the During picture,
+address in memory, holding the number six. Then, in the \airq{during} picture,
 a function is called with the pointer as an argument, via a form like
 \cinline{fn\_call(pointer)}.
 There are now
 two fingers, original and copy, pointing to the same spot, but the
 function only knows about the copy.  But given its copy of a finger, it
 is easy for the function to change the value pointed to to seven. When
-the function returns, in the After picture, the copy of a finger is
+the function returns, in the \airq{after} picture, the copy of a finger is
 destroyed but the changes are not undone.  The original finger (which
 hasn't changed and is pointing to the same place it was always pointing
 to) will now be pointing to a modified value.  Figure \ref{callbyref}
@@ -1434,65 +1417,69 @@ gives a sample program which does this.
 \lstset{numbers=none}
 
 You can see that the code has stars everywhere. These
-indicate that there are pointers involved, but their use is a bit inconsistent.
+indicate that there are pointers involved, but their use depends on the
+context.
 For full clarity, here are the rules:
 \begin{itemize}
-\item To declare a pointer to an integer, use \cinline{int * a}.
-\item Outside the declarations, to refer to the integer being pointed to, use \cinline{* a}.
+\item To declare a pointer to an integer, use \cinline{int * k}.
+\item Outside the declarations, to refer to the integer being pointed to, use \cinline{* k}.
 \item Outside the declarations, to refer to the pointer itself, use
-\cinline{a}.
+\cinline{k}.
 \end{itemize}
 If this seems sensible to you, great. If it doesn't, memorize it. 
 
 Notice also that spaces do not matter, so use whichever of \cinline{int
-*a}, \cinline{int* a}, or \cinline{int * a} you like best. General
+*k}, \cinline{int* k}, or \cinline{int * k} you like best. General
 custom prefers the first form, because it minimizes the chance that you
-will write \cinline{int * a, b} (allocate a pointer named \cinline{a}
-and an \cinline{int} named \cinline{b}) when you meant \cinline{int *a, *b} (allocate two pointers). The star also
+will write \cinline{int * k, b} (allocate a pointer named \cinline{k}
+and an \cinline{int} named \cinline{b}) when you meant \cinline{int *k, *b} (allocate two pointers). The star also
 still means multiply; if you think there is ambiguity, use parentheses.
 
 Returning to the code in Figure \ref{callbyref}, in the \cinline{main}
-function, \cinline{a} is a pointer, the address of an integer, as
+function, \cinline{k} is a pointer, the address of an integer, as
 indicated by the star in its declaration on line 10. To print the integer
-being pointed to, as on line 13, we use \cinline{*a}.
-
-When we declare \cinline{int * a\_c} in the header of the doubling
-function (line 4), then this means that the variable \cinline{*a\_c} will be an
-integer, so by inference, \cinline{a\_c} by itself is a pointer to an
-integer.\footnote{Referring to the number the pointer points to is
-known as {\sl dereferencing}.\index{dereferencing} I will avoid using the term, but you will see it frequently in error messages.}
+being pointed to, as on line 13, we use \cinline{*k}.
+Similarly on line 4: \cinline{doubling} takes a pointer to an integer,
+which will be named \cinline{k\_c} (so \cinline{*k\_c} is an integer),
+and a plain integer, which will be named
+\cinline{b\_c}.\footnote{Referring to the number the pointer points to
+is known as \vocab{dereferencing}. I will avoid using
+the term, but you will see it frequently in error messages.}
 
 Now for the call-by-reference trick.  When the call to \cinline{doubling}
-is made on line 12, we pass \cinline{a}, which is a pointer, not
+is made on line 12, we pass \cinline{k}, which is a pointer, not
 an integer. The computer builds itself a frame, using a copy of
-\cinline{a}---that is, a copy of the address of an integer. Both
-\cinline{a} (in the \cinline{main} frame) and \cinline{a\_c} (in the
+\cinline{k}---that is, a copy of the address of an integer. Both
+\cinline{k} (in the \cinline{main} frame) and \cinline{k\_c} (in the
 \cinline{doubling} frame) now point to the same piece of data.  Line 5,
-\cinline{*a\_c = b\_c * 2}, tells the computer to go to the address
-\cinline{a\_c}, and put into that slot of memory the value \cinline{b\_c
-* 2}. When the frame is destroyed (and \cinline{a\_c} goes with it),
-this won't be undone: that slot of memory will still hold the value
+\cinline{*k\_c = b\_c * 2}, tells the computer to go to the address
+\cinline{k\_c}, and put into that slot of memory the value \cinline{b\_c
+* 2}. When the frame is destroyed (and \cinline{k\_c} goes with it),
+this will not be undone: that slot of memory will still hold the value
 \cinline{b\_c * 2}.  So the output to this program would be: 
 \begin{lstlisting}
 doubling() returns: 4
-a now holds: 4
+k now holds: 4
 \end{lstlisting}
-because \cinline{*a}---the integer \cinline{a} points to---has changed as a
+because \cinline{*k}---the integer \cinline{k} points to---has changed as a
 side-effect to calling the \cinline{doubling} function.
 
-\paragraph{Dealing with memory} Now for the initialization of the pointer on line 10:\\ \index{declaration!of pointers}
-\index{pointers!declaration}
-\cinline{int *a = malloc(sizeof(int));}.\\
+\paragraph{Dealing with memory} \cindx{malloc}{ff} 
+\index{pointers!declaration} \index{declaration!of pointers}
+Now for the initialization of the pointer on line 10:
+\begin{lstlisting}
+\cinline{int *k = malloc(sizeof(int));}
+\end{lstlisting}
 Malloc is short for `memory allocate'. Just as we have no idea what
 is in an \cinline{int} variable before we declare it, we have no
-idea what address \cinline{a} points to until we initialize it. The
+idea what address \cinline{k} points to until we initialize it. The
 function \cinline{malloc()} will do the low-level work of finding
 a free slot of memory, claiming it so nothing else on the computer
-uses it, and returning that address. We send to \cindx{malloc}{ff} the
+uses it, and returning that address. The input to malloc the
 quantity of memory we need, which in this case is the size of one
 integer: \cinline{sizeof(int)}. Every use of the \cinline{alloc}-family
-functions discussed here will have a \cinline{sizeof} somewhere in the
-argument.\cindex{sizeof}
+functions discussed here will have a \cind{sizeof} somewhere in the
+argument.
 
 \index{\&}\marginalia{The ampersand}{Every variable has an address, whether you
 declared it as a pointer or not. The ampersand finds that address: if
@@ -1511,16 +1498,16 @@ and size of your pointer. If you treat the data pointed to by an \cinline{int} p
 happen; if you put twenty variables into a space allocated for fifteen,
 then bad things will happen. See below.
 
-By the way, notice that \cinline{int *a = 7} will fail---the initialization on the declaration line is for
+By the way, notice that \cinline{int *k = 7} will fail---the initialization on the declaration line is for
 the pointer, not the value the pointer holds. One convenient function which partly helps with this is
 \cind{calloc}:
 \begin{lstlisting}
 #include <malloc.h>  //calloc
-    int *a = calloc(1, sizeof(int));
+    int *k = calloc(1, sizeof(int));
 \end{lstlisting}
 which you can read as \airq{clear and allocate}: it will run \cinline{malloc}
 and return the appropriate address, and will also set everything in
-that space to zero, running \cinline{*a = 0} for you. Notice the syntax,
+that space to zero, running \cinline{*k = 0} for you. Notice the syntax,
 which requires that we explicitly state that we want one space, the
 size of an integer. You need to give more information than \cinline{malloc}
 because the process of putting a zero in a \cinline{float} pointer may be
@@ -1529,16 +1516,18 @@ calloc} requires two arguments: {\tt
 calloc(number\_of\_elements\_i\_want, sizeof(type\_of\_elements))}.
 
 Finally, both allocation and de-allocation are now your
-responsibility. The de-allocation comes simply by calling \cinline{free(a)} \cindex{free}
-when you are done with the pointer \cinline{a}. You don't actually need to free variables at the end of {\tt
-main}, because when you leave your program the operating system will clean up for you, but being explicit
-about when you de-allocate is good form.
+responsibility. The de-allocation comes simply by calling
+\cinline{free(k)} \cindex{free} when you are done with the pointer
+\cinline{k}. You don't actually need to free variables at the end of
+\cinline{main}, because when you leave your program the operating system
+will clean up for you, but being explicit about when you de-allocate is
+good form.
 
 \paragraph{The joy of segfaults} \index{segmentation fault} \index{segfault|see{segmentation fault}}
-When you initialize a non-pointer variable, say \cinline{int a}, then all of
+When you initialize a non-pointer variable, say \cinline{int k}, then all of
 the care and feeding of that variable is the compiler's responsibility:
-it has to allocate memory for \cinline{a}, check whether the variable is
-in scope, and it has to free the memory when the frame that \cinline{a}
+it has to allocate memory for \cinline{k}, check whether the variable is
+in scope, and it has to free the memory when the frame that \cinline{k}
 was declared in is destroyed.
 
 When you initialize a pointer, you bear full responsibility for the area
@@ -1546,29 +1535,31 @@ of memory you are about to point to. You have to allocate and de-allocate
 it, but since C won't deallocate the memory when leaving a frame, you
 can use this to your advantage, as above.
 
+\eject
+
 \marginalia{\cind{size\_t}}{In practice, you can 
-specify array indices using an integer: \cinline{int i; data[i] +=7;}
+specify array indices using an integer: \cinline{int i=1; data[i] +=7;}
 will work fine. But in theory, memory locations and integers may not
 match. For example, the range of the \cinline{int} type could be zero
 to 32,768, but there could be 65,536 locations in memory. There is a
 standard type, \cinline{size\_t}, that is defined to correctly match your
 machine's memory, so the pedantic will always use that type for array
-indices: \cinline{size\_t i; data[i] +=7}. Also, the \cind{sizeof}
-operator returns a number of type \cinline{size\_t}. But in practice,
-you can get away with using \cinline{int} to refer to memory locations
+indices: \cinline{size\_t i=1; data[i] +=7}. Also, the \cind{sizeof}
+operator returns a number of type \cinline{size\_t}. In practice,
+you are fine with using \cinline{int} to refer to memory locations
 and never using \cinline{size\_t}.}
 
 But what happens when you fail in your duties and forget to allocate
-memory? One possibility is that \cinline{a} happens to point to a space
+memory? One possibility is that \cinline{k} happens to point to a space
 that has something that can be interpreted as an integer. When you refer
-to \cinline{*a}, the computer will search the location \cinline{a}
+to \cinline{*k}, the computer will search the location \cinline{k}
 points to, return whatever junk is found there, and will process that
-junk like nothing is wrong. Alternatively, \cinline{a} could be the
+junk like nothing is wrong. Alternatively, \cinline{k} could be the
 {\sl null pointer}, \index{pointers!null} which by definition points to nothing, in which
 case the program will immediately halt with the complaint `attempting to
-dereference a null pointer'. Finally, \cinline{a} could point to an area of
+dereference a null pointer'. Finally, \cinline{k} could point to an area of
 protected memory, such as the memory that is being used for the operating
-system or your dissertation. In this case, referring to \cinline{*a} will
+system or your dissertation. In this case, referring to \cinline{*k} will
 halt the program with the greatest of haste, before it destroys something
 valuable. This is a {\sl segmentation fault}, since you attempted to refer
 to memory outside of the segment that had been allocated for your program.
@@ -1577,7 +1568,7 @@ A segfault means that you mis-coded something, and
 is by far the clearest way for the computer to tell you so. Some
 programming languages
 brag about how they never segfault: when you refer to something
-outside of what you had expected, they will catch it and usually just
+outside of what you had expected, they will just
 allocate that space for you, basically running \cinline{calloc} behind your
 back. Then the program will give you an answer which may or may not look
 correct, and which you may or may not notice before you present to the
@@ -1624,19 +1615,7 @@ But be careful with this: if you \cinline{free()} an automatically allocated
 array, or assign it a new value with \cinline{malloc()} then you are stepping
 on C's turf, and will get a segfault.
 
-\paragraph{Scope issues}\index{scope} As you will recall, a copy of a variable is sent to a function, not the variable
-itself, and this created problems for changing the variable in the main program. Also, when the function
-leaves, all of the variables declared in the function are destroyed,
-but changes made elsewhere in memory over the course of the function are
-not undone. 
-
-\begin{figure}
-\hskip -1cm
-\scalebox{0.7}{\includegraphics{pointer_faux_pas.ps}}
-\caption{How to mess up your pointers}
-\label{fauxpas}
-\end{figure}
-
+\subsection{Some common faux pas} 
 Figure \ref{fauxpas} shows two errors in pointer handling. In the first
 step, a function is called with a pointer, as in Figure
 \ref{fingerfig}. Then, the function frees what the copy of a pointer
@@ -1646,6 +1625,14 @@ a new location. But when the function finishes, depicted in the final
 step, the copy of a pointer is destroyed, so there is no way to refer to
 the \cinline{malloc}ed space in the main program. We now have a pointer
 with no space and a space with no pointer.
+
+\begin{figure}
+\hskip -1cm
+\scalebox{0.7}{\includegraphics{pointer_faux_pas.ps}}
+\caption{How to mess up your pointers}
+\label{fauxpas}
+\end{figure}
+
 
 Here is a function that commits such faux pas,
 whose overall hope is to (awkwardly) subtract twenty from
@@ -1673,11 +1660,11 @@ you have no way to refer to this block of memory anymore.  This is a
 
 Second, \cinline{an\_array} is not a pointer sent in from outside the
 function---it is a copy of a pointer sent in from outside. This is not
-a problem at all if we never change the pointer, but the command {\tt
-an\_array = malloc (...)} changed the value of our copy \cinline{an\_array}
-to a new location in memory.  Again, the copy is destroyed at the end
-of the function, having allocated a block of memory we will never be
-able to recover.
+a problem at all if we never change the pointer, but the command
+\cinline{an\_array = malloc (...)} changed the value of the copy
+\cinline{an\_array} to a new location in memory.  Again, the copy is
+destroyed at the end of the function, having allocated a block of memory
+we will never be able to recover.
 
 Here is a function which corrects these errors:
 
@@ -1771,7 +1758,7 @@ and the second argument is the new size.  The first part of this new
 block of memory will be the \cinline{data\_array} so far, and the end will
 be an allocated but garbage-filled space ready for us to put data into.
 
-\section{Strings} \index{strings|ff}
+\section{Strings} \index{strings|ff} \label{stringsec}
 
 Strings such as \cinline{"hello"} are implemented as arrays of individual characters, followed by an invisible
 null character, written as \cinline{$\backslash$0}. This means that you have to think in terms of arrays when dealing
@@ -1901,24 +1888,28 @@ sentence will be added on to that.
 Writing to files also uses the same syntax, as you will see in Section \ref{asst_conversions}, using \cind{fprintf}.
 
 \section{The debugger} \index{debugging|(} \index{gdb@\cinline{gdb}|see{debugging}} \label{debug}
-Which brings us to the debugger. The debugger will run the program for
-you, taking notes on the variables therein. When your program segfaults,
-the debugger will let you look at where you
-are in the program and see the value of every variable declared at that
-spot. This beats inserting little \cinline{print} statements all over your
-code by a mile [1.6 km].
+Scripting languages typically show every line as it is being executed,
+so when something breaks, the user can see the exact line in the code
+where things went wrong. In the world of C, the same line-by-line
+execution is achieved using a debugger.
 
 To debug the program \cinline{run\_me} under the debugger, type \cinline{gdb
 run\_me} at the command line.  You will be given the gdb
-prompt.\footnote{Don't forget the \binline{-g} switch for the
-compiler, asking it to include a symbol table for debugging. If you
-do forget it, then \binline{gdb} will complain that it can't find any
-debugging symbols and will be of limited use.}
+prompt.\footnote{There are a number of graphical shells built
+around gdb, which list local variables and let you click on parts of
+your code to set breakpoints. Some are stand-alone programs like \binline{ddd} and others are integrated into IDEs. Their operation is much like 
+that described here for the command-line debugger, except
+it involves using the mouse more. There is currently a list of graphical
+front-ends available at \url{http://sources.redhat.com/gdb/links/}.}
 
 If you know the program will segfault, then at this point, just run the program
-by typing \cinline{run}, and wait for it to break. When it does, you will be
-returned to gdb's prompt, so you can interrogate the program.
-
+by typing \cinline{run}, and wait for it to break. When it does, you will
+be returned to gdb's prompt, so you can interrogate the 
+program.\footnote{By the way, if the debugger complains that it can't find
+any debugging symbols, then that means that you forget the \binline{-g}
+switch when you compiled the program. Without that switch, the compiler
+discared the names of variables and other information necessary for
+debugging.}
 
 The first thing you will want to know is where you are in the program. You
 can do this with the \cinline{backtrace} command, which you can abbreviate to
@@ -1934,14 +1925,6 @@ the code that you wrote.
 At this point, the best thing to do is look at a listing of your code
 in another window and look at the line the debugger pointed out. Often,
 knowing which line is wrong is enough to make the error painfully obvious.
-
-\marginalia{Visual shells}{There are a number of graphical shells built
-around gdb, which list local variables and let you click on parts of
-your code to set breakpoints. Some are stand-alone programs like \binline{ddd} and others are integrated into IDEs. I won't discuss their operation here, since 
-it is just like that described here for the command-line debugger, except
-it involves using the mouse more. There is currently a list of graphical
-front-ends available at \url{http://sources.redhat.com/gdb/links/}.
-\index{debugging|)}}
 
 
 If the error is still not evident, then go back to the debugger and look
@@ -1993,9 +1976,10 @@ in the function.  Finally, \cinline{c} will continue along until the next
 breakpoint or the end of the program. This is also a good place to
 point out that just hitting $<$enter$>$ will repeat the last command,
 so you won't have to keep hitting \cinline{n} to step through many lines.
+\index{debugging|)}
 
-
-\section{Other auxiliary programs} Beyond there debugger, there
+\section{\treesymbol{} Other auxiliary programs} 
+Beyond there debugger, there
 are a few more programs that will make your life as a programmer easier.
 
 \subsection{Make} \label{make} \index{make@\binline{make}|(}
@@ -2181,7 +2165,7 @@ search engine. A search for \binline{info gsl} or \binline{info printf} will
 turn up exactly the documentation that is missing from your system,
 formatted for the web.
 
-\section{Advanced topics}
+\section{\treesymbol{} Advanced topics}   
 
 There are several ways to do almost everything I have presented here.  For
 example, one could write the three lines \cinline{b = (i > j); a += b;

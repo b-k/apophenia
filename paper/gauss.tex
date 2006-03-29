@@ -1,6 +1,6 @@
 \chapter[Gaussian tricks]{Hypothesis testing with the CLT} \label{gauss}
 
-This subsection covers most of what we traditionally learn in first-year statistics. 
+This chapter covers most of what we traditionally learn in first-year statistics. 
 \comment{
 Much of it is obsolete. It covers parameters which we know to have a Normal (aka Gaussian) distribution,
 or those things which are derived therefrom. These are nice because the math has already been done, by
@@ -12,7 +12,7 @@ Everything here depends on the Central Limit Theorem, and more
 generally, assumes that your real-world data has a textbook
 distribution. Typically, the textbooks state that as the number of draws
 $n \to \infty$, the distribution is correct, but whether it is correct
-for your data set is a question of \vocab{asymptotic theory}.
+for your data set is a question of \ind{asymptotic theory}.
 
 If your data doesn't fit the CLT, one option is to work out how your
 data is distributed, 
@@ -25,6 +25,169 @@ Chapter \ref{boot} to determine the properties of your model for $n$
 significantly smaller than infinity.
 
 
+\section{Models and constraints} A \vocab{hypothesis} is a constraint
+on otherwise unconstrained parameters. 
+
+For example, given four variables named $Y$, $X_1$, $X_2$, and $X_3$,
+one could estimate the $\beta$s in the equation
+\begin{equation*}
+Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon
+\end{equation*}
+using a standard OLS regression as per the last chapter.
+
+Frequently, the parameters and the model happen to match very closely.
+For example, if we believe that $Y$ is an affine linear sum of $X_1$,
+$X_2$, $X_3$, then we are making a claim that 
+\begin{equation*}
+Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \alpha_3 X_3.
+\end{equation*}
+Given the parameters estimated using OLS, translating those parameters
+to the model is rather trivial:
+\begin{align*}
+\alpha_0 &= \beta_0\\
+\alpha_1 &= \beta_1\\
+\alpha_2 &= \beta_2\\
+\alpha_3 &= \beta_3.
+\end{align*}
+However, one may have a model where the translation between parameter estimates and model
+parameters is a little more complex.
+For example, let us say that we are measuring bicycle usage in a city
+($B$).
+It would be a function of the number of motorists $M$, the city's
+population $P$, the physical size of the city $S$,  and measures of
+the availability of public transportation $T$. But we know that the
+availability of public transportation is also a function of the city's
+population and physical size. Thus, our model is
+\begin{align*}
+B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
+T &= \alpha_4 P + \alpha_5 \sqrt{S}.
+\end{align*}
+
+One option for estimating this model is to run two analogous regressions,
+\begin{align*}
+B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \beta_3 T + \epsilon\\
+T &= \beta_4 P + \beta_5 \sqrt{S} + \epsilon.
+\end{align*}
+Now the correspondence between the two parameters is as trivial as
+before ($\alpha_0=\beta_0$, $\alpha_1=\beta_1$, et cetera). This is the
+simplest example of \vocab{exactly solved parameters}.
+But we get a
+distorted view of the effect of city size and population on bicycling
+prevalence, because some of those variables' effect is subsumed in the fact that
+those factors help to determine whether a city has public
+transportation. If the population of a city rises ten percent, ridership
+will not rise by $.1 \beta_1$, because $T$ will change as well.
+
+Another option is to substitute $T$ as specified in the second equation into
+the first. Then, the model is
+\begin{align*}
+B &= \alpha_0 M + (\alpha_1 +\alpha_3 \alpha_4) P + (\alpha_2 + \alpha_3 \alpha_5) \sqrt{S}.\\
+\end{align*}
+The OLS analogue of a linear equation still looks like it did before:
+\begin{align*}
+B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \epsilon.
+\end{align*}
+Now, the conversion is nontrivial:
+\begin{align}
+\alpha_0 &= \beta_0     \label{consteq1}\\
+\alpha_1 +\alpha_3 \alpha_4 &= \beta_1        \label{consteq2}\\
+\alpha_2 + \alpha_3 \alpha_5 &= \beta_2.       \label{consteq3}
+\end{align}
+Equation \ref{consteq1} still gives us an estimate of $\alpha_0$,
+but all our information about  $\alpha_1$ through $\alpha_5$ is
+embodied in Equations \ref{consteq2} and \ref{consteq3}. With four
+unknowns and two equations, the parameters are \airq{oversolved}. 
+\index{undersolved parameter}
+
+We have a better view of the effect of the variable $P$ on $B$, but we
+do not have enough information to disaggregate that effect into the
+direct effect ($\alpha_1$) and the indirect effect ($\alpha_3 \alpha_4$)
+caused by the effect population has on public transport availability
+($\alpha_4$). 
+
+Depending on your situation and goals, one setup or the other may be
+more appropriate. However, we must acknowledge the limitations of an
+undersolved system: $n$ parameter estimates can inform at most $n$ model
+parameters.
+
+Now, let us say that a prior study has shown that $\alpha_2= 2.204$.
+Discarding the equation for $T$ for now, our model is now:
+\begin{align*}
+B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
+\alpha_2 &= 2.204.
+\end{align*}
+and after estimating the parameters using a simple OLS estimation, the 
+translation from estimated $\beta$s to model $\alpha$s is:
+\begin{align*}
+\alpha_0 &= \beta_0\\
+\alpha_1 &= \beta_1\\
+\alpha_2 &= \beta_2\\
+\alpha_2 &= 2.204\\
+\alpha_3 &= \beta_3.
+\end{align*}
+Unless we have the incredible luck that $\beta_2=2.20400$, $\alpha_2$ is an
+\vocab{oversolved parameter} that has no solution.
+
+There are two things that one can do with an oversolved system. One is
+to use the extra constraints to inform the parameter estimation routine;
+in the example above, we would estimate the parameters under the
+assumption that $\beta_2$ is fixed at 2.204.
+You can do this using constrained least squares (Section
+\ref{constrainedls}) or via maximum likelihood estimation as in Chapter
+\ref{mle}. The other option is to compare the unconstrained version of
+the model with the constrained version to see how much distortion occurs
+when the constraint binds. This is \airq{testing the constraints}, aka,
+a \airq{hypothesis test}.
+\index{least squares!constrained}
+
+Recall that the two primary activities of the statistician are
+estimating models and testing models. 
+For an undersolved system, we can neither estimate 
+nor test the model. For an exactly solved system, we can always
+estimate the parameters of the model, but can not verify or refute the
+model: you give me a data set, and I will always be able to give you some set of model
+parameters. For an oversolved system, we can both estimate the parameters
+and test whether the model is correct, because there will not always
+be a way to consistently transform the estimated parameters into model
+parameters.
+
+Because there is so little persuasive power in an estimated but not
+tested model, we often make up
+ways to convert an exactly solved system into an oversolved one.
+For example, one could add to any equation the additional equation
+$\alpha_i = 0$ for all $i$.
+By specifying
+$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ and $\alpha_1=0$,
+we have an oversolved system whose validity we can test. Indeed, this
+is the system of equations behind the $t$-tests that are universally
+reported with every regression.
+
+This may seem like belaboring the language with such a simple system,
+but it is easy to extend this framework to systems of equations, 
+exotic constraints, and other variants of the mapping from parameter
+estimates to model parameters and testing oversolved equations.
+
+By the way, a statement like `We reject
+the claim $\alpha_1=0$' is only half right. We are actually rejecting
+the claim that both
+$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ {\em and}
+$\alpha_1=0$. 
+The first and second equations are mathematically of equal
+status, but the custom is to presume that only the second equation is a
+subordinate equation which is under scrutiny. Thus, one would correctly
+say `we reject this system of equations'. Having given this caveat, the
+remainder of this chapter will use the traditional terminology that
+takes the base model as given, reducing
+the above pair of equations to the hypothesis $H_0: \alpha_1=0$.
+
+The remainder of this chapter goes over the process of testing 
+an oversolved system. The key to constructing a test is in knowing 
+how the distribution of the data informs the likely distribution of
+our estimates of the $\alpha$s, and the key to that process is the
+Central Limit Theorem. The first part of this chapter will thus return
+to probability theory, describing how the CLT affects various parameter
+distributions, and then the remainder of the chapter considers how 
+those parameter distributions can be used to test hypothesized models.
 
 \section{Meet the Gaussian family} \label{dist2}
 With the exception of the Normal, the distributions below are distinct
@@ -39,11 +202,9 @@ own distributions, and those are typically one of the distributions below.
 
 \paragraph{The \ind{Central Limit Theorem}} The CLT is the first piece of magic
 that we need. It tells us that:
-%$$\overline X {a \atop \longrightarrow} \left[\mu,{\sigma^2\over n}\right].$$
 $$\overline X \xrightarrow{a} \left[\mu,{\sigma^2\over n}\right].$$
 In fact, we not only have the $\overline X$, but its distribution:
-As $n\to \infty$, $$\sqrt{n} (\overline X - \mu)/\sigma \sim {\cal N}(0,1),$$ 
-%$$\overline X \matrix{a \cr \to} \left[\mu,{\sigma^2\over n}\right]$$
+As $n\to \infty$, $$\sqrt{n} \frac{\left(\overline X - \mu\right)}{\sigma} \sim {\cal N}(0,1),$$ 
 regardless of where $X$ came from. With that regularity of nature,
 we can derive all of the following distributions.  \label{CLT}
 
@@ -54,7 +215,7 @@ will also be used to describe some of the parameters derived below.
 The big problem with the Normal distribution is that it depends on $\sigma$, an
 unknown. It also depends on $\mu$, but if the statistic
 being tested is unbiased---like most of the estimators of $\beta$ in the
-catalog above---then you have $\mu$. Thus, much of the trickery in the
+catalog from Chapter \ref{projections}---then you have $\mu$. Thus, much of the trickery in the
 section on test design below involves combining distributions in ways
 such that the unknown $\sigma$s cancel out.
 
@@ -102,7 +263,7 @@ multivalued hypothesis, then you need to do an $F$ test.
 There are three things that cover most of what you will be doing with a
 distribution: finding values of its PDF, values of its CDF, and inverse
 values of its CDF.
-Here are the functions to look up the vaule of the PDF at a given point:
+Here are the functions to look up the value of the PDF at a given point:
 \begin{lstlisting}
 double gsl_ran_gaussian_pdf (double X, double SIGMA);
 double gsl_ran_tdist_pdf (double X, double NU);
@@ -156,7 +317,7 @@ certainty. For example, a value-at-risk oriented regulator will want to know wha
 one day in the month. That is, what is the value of the 1-in-20, or 5\%, point on the CDF?
 Assuming a Normal(M,S) distribution of profit and loss,\footnote{This assumption is false. Securities
 typically have leptokurtic (fat-tailed) returns.} the bank will report a \ind{value at risk} of {\tt
-gsl\_cdf\_gaussian\_Pinv (0.05, S)+M}. Here are the requisite function delcarations:
+gsl\_cdf\_gaussian\_Pinv (0.05, S)+M}. Here are the requisite function declarations:
 \index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_Pinv@\cinline{gsl\_cdf\_chisq\_Pinv}}
 \index{t distribution!gsl\_cdf\_tdist\_Pinv@\cinline{gsl\_cdf\_tdist\_Pinv}}
 \begin{lstlisting}
@@ -295,7 +456,7 @@ If we are testing a variance, we'd have
 
 \subsection{The $F$ test\index{F test}}\label{ftestsec}
 
-As above, we can divide equation \ref{chi1} by equation \ref{chi2}
+As above, we can divide Equation \ref{chi1} by Equation \ref{chi2}
 to give us a statistic with an $F$ distribution and no unknown
 $\sigma^2$ element:
 
@@ -409,11 +570,6 @@ $$\left[\matrix{
 }\right].$$
 This makes life easy because we now only have one variable to estimate.
 }
-
-\section{Hypotheses about the variance}
-Chi-squared tests and their utility. We need to calculate the sum of errors squared 
-and then compare that to the Chi-squared table. 
-
 
 \section{Testing the assumptions} Errors have to be normally distributed, or else
 the whole OLS system here does not apply. Many stats package user's manuals

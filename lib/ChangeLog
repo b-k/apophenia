@@ -36,6 +36,9 @@ things, like OLS.
 --Apop_data_memcpy no longer malloc()s for you, for comparability with
 the world's other memcpy fns. If you want mallocing, use apop_data_copy.
 
+--apop_test_fisher_exact(). Cut 'n' pasted from R, who cut 'n' pasted it
+from somebody else.
+
 		February 2006
 sort-of-adaptive MLE: use apop_estimate_restart to execute a new MLE
 search beginning where the last one ended, perhaps using a new method or

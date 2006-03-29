@@ -1,15 +1,15 @@
 #include <stdio.h>  //printf
 #include <malloc.h> //malloc
 
-int doubling (int * a_c, int b_c){
-	*a_c = b_c * 2;
-	return *a_c;
+int doubling (int * k_c, int b_c){
+	*k_c = b_c * 2;
+	return *k_c;
 }
 
 int main(void){
-	int *a = malloc(sizeof(int));
+	int *k = malloc(sizeof(int));
 	int b = 2;
-	printf("doubling() returns: %i\n", doubling(a,b));
-	printf("a now holds: %i\n", *a);
-	free(a);
+	printf("doubling() returns: %i\n", doubling(k,b));
+	printf("a now holds: %i\n", *k);
+	free(k);
 }

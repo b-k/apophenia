@@ -9,6 +9,19 @@
 \def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
 \def\betav{{\mbox{\boldmath$\beta$}}}
 
+\def\treesymbol{\maltese}
+%\usepackage{stmaryd}\def\treesymbol{\curlyveeuparrow} %stmaryd
+%\usepackage{textcomp}\def\treesymbol{\textreferencemark} %textcomp
+%\usepackage{amssymb} \def\treesymbol{\mbox{\boldmath$\between$}} 
+%\usepackage{bbding} \def\treesymbol{\PlusThinCenterOpen} 
+\usepackage{marvosym} \def\treesymbol{\Aries} 
+
+\long\def\treemark{
+\begin{wrapfigure}{r}[0cm]{0cm}
+\Aries
+\end{wrapfigure}
+}
+
 %\def\var{\hbox{var}} \def\cov{\hbox{cov}}
 %AMS version:
 \DeclareMathOperator{\var}{var}
@@ -293,6 +306,7 @@ which goal you are working on with each line of code or math, and to be
 certain that it is working toward your overall goal of saying something
 interesting and persuasive.
 
+
 \subsection{General theorems and their special cases}\index{Ordinary least
 squares|(}
 Here is another way to subdivide the theorems that underly
@@ -393,6 +407,17 @@ you have a plot you like, you can have your C programs autogenerate
 it or manipulate it in cute ways, or can send your program to your
 colleague in Madras and he will have no problem reproducing and modifying
 your graphs.
+
+\paragraph{Seeing the forest from the trees} Statistics textbooks must tread a fine
+line. On the one hand, they must be didactic texts, explaining concepts
+to the reader, while on the other they must be a catalog of methods to
+apply should your data look just so.
+
+Sections marked with a \ind{\treesymbol} cover details that may be
+skipped on a first reading. They are not necessarily advanced
+in the sense of being somehow more difficult than unmarked text, but a
+reader who is trying to get the overall picture would want to skip them
+until later. 
 
 \input why_c.tex
 

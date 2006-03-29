@@ -281,7 +281,13 @@ int main(void){
 The drawback is that the intermediate forms aren't saved, but we're busy
 people who don't have time to interrogate intermediate forms anyway.
 
-\subsection{The supporting cast}
+\subsection{\treesymbol{} The supporting cast}
+Generally, the structures in this section are used as elements of the main
+structures above, and are handled automatically as necessary. However,
+they are readily accessible, and if you would like finer control of how
+estimates are made or results printed, you will need to manipulate these
+directly.
+
 \paragraph{Names}
 The \cinline{apop\_name} structure has three components: a list of column
 names, a list of row names, and a list of categeory (text) variable
@@ -390,7 +396,7 @@ For the more elaborate models such as \cinline{apop\_OLS} or
 observation, the first column of the data is the independent
 variable, and the remaining columns are the independent variable.
 
-\paragraph{Data formats: networks} \index{network analysis}
+\paragraph{\treesymbol{} Data formats: networks} \index{network analysis}
 Those models with variants ending in \cinline{\_rank} are typically used
 in network analysis. For example, let us say that we have a classroom
 where every student wrote down the ID number his or her best friend,
