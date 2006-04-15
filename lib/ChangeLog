@@ -1,3 +1,24 @@
+		April 2006
+--apop_matrix_normalize and apop_vector_normalize had different
+numbers for the same normalizations. Was that ever dumb. Also, I've
+switched to chars instead of ints to signify this stuff, for better
+mnemonics without resorting to the
+APOP_ENUM_YOU_HAVE_TO_LOOK_UP_EVERY_TIME_BECAUSE_ITS_SO_LONG sort of
+thing. If you were using apop_matrix_normalize(data, 0) before, you
+need to change that to using apop_matrix_normalize(data, 'm'). Thus,
+apop_vector_normalize now has one more normalization, for a total of
+four for both.
+
+--Added apop_rng_alloc convenience fn.
+
+--Added apop_strip_dots to keep inputs to the database healthy.
+
+--apop_name_find uses LIKE instead of strcmp.
+
+--a fn to calculate the generalized harmonic.
+
+--A whole section on histograms and goodness-of-fit tests.
+
 		March 2006
 --apop_inventory is now a subset of apop_estimation_params. Implications:
 	--added apop_estimation_params_alloc() to ensure that inventory is set right.
@@ -37,7 +58,8 @@ things, like OLS.
 the world's other memcpy fns. If you want mallocing, use apop_data_copy.
 
 --apop_test_fisher_exact(). Cut 'n' pasted from R, who cut 'n' pasted it
-from somebody else.
+from somebody else. Despite being the same code, it runs fifty (50)
+times faster from Apophenia.
 
 		February 2006
 sort-of-adaptive MLE: use apop_estimate_restart to execute a new MLE

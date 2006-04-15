@@ -32,6 +32,8 @@ $(DOCNAME).pdf: $(DOCNAME).ps
 $(DOCNAME).bbl:	$(DOCNAME).dvi
 	latex $(DOCNAME); bibtex $(DOCNAME); latex $(DOCNAME); latex $(DOCNAME)
 	perl -pi.bak -e 's/In , /In /'  .texputs/$(DOCNAME).bbl;
+	perl -pi.bak -e 's/{zarembka}, 1973./{zarembka}./'  .texputs/$(DOCNAME).bbl;
+	
 
 $(DOCNAME).idx:
 	makeindex -c .texputs/$(DOCNAME).idx;

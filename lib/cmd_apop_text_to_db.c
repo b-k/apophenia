@@ -30,7 +30,7 @@ I ignore delimiters right now; sorry.\n", argv[0], argv[0]);
 			return 0;
 		}
 	}
-	apop_open_db(argv[optind + 2]);
+	apop_db_open(argv[optind + 2]);
 	apop_text_to_db(argv[optind], argv[optind+1], 0,0, NULL);
 	return 0;
 }

@@ -1,4 +1,4 @@
-\chapter[Gaussian tricks]{Hypothesis testing with the CLT} \label{gauss}
+\startonecol \chapter[Gaussian tricks]{Hypothesis testing with the CLT} \label{gauss} \endonecol
 
 This chapter covers most of what we traditionally learn in first-year statistics. 
 \comment{
@@ -203,7 +203,7 @@ own distributions, and those are typically one of the distributions below.
 \paragraph{The \ind{Central Limit Theorem}} The CLT is the first piece of magic
 that we need. It tells us that:
 $$\overline X \xrightarrow{a} \left[\mu,{\sigma^2\over n}\right].$$
-In fact, we not only have the $\overline X$, but its distribution:
+In fact, we not only have $\overline X$ in the limit, but its distribution:
 As $n\to \infty$, $$\sqrt{n} \frac{\left(\overline X - \mu\right)}{\sigma} \sim {\cal N}(0,1),$$ 
 regardless of where $X$ came from. With that regularity of nature,
 we can derive all of the following distributions.  \label{CLT}
@@ -221,7 +221,7 @@ such that the unknown $\sigma$s cancel out.
 
 \begin{itemize}
 \item $\{{\cal N} (a,b)\} + \{{\cal N} (c,d)\} \sim {\cal N}
-(a+c,b+d)$ (where $\{x\}$ is a variable with the given distribution).
+(a+c,b+d)$ (where $\{x\}$ indicates a variable with the given distribution).
 \end{itemize}
 
 \subsection{$\chi^2$ distribution}\index{chi squared distribution@$\chi^2$ distribution} $[\sum_n (x-\overline
@@ -237,17 +237,22 @@ we are up the same creek as with the Normal.
 
 \end{itemize}			\label{chisq}
 
-Notice that the sample variance at the top of this section is $\sim
+Notice that the sample variance is $\sim
 \chi^2_{n-1}$, not $n$, because given the first $n-1$ data points, the
 last one can actually be calculated from that data; meaning that we
 effectively have the sum of $n-1$ $\{\chi^2_1\}$s plus a no longer
 stochastic constant.
 
-\subsection{Student's t distribution\index{t distribution}}  ${\overline X - \mu \over S/\sqrt{n}}\sim
+\subsection{Student's t distribution\index{t distribution}} Let $\uv$ be
+a vector of data (such as the error terms in a regression). Then
+${\overline X - \mu \over S/\sqrt{n}}\sim
 t_{n-1}$, where $S=\uv'\uv/n$ (a scalar). This is a work of genius by
-Mr. Student.  By dividing a normal by $\sqrt{\chi^2_{n-1}\over (n-1)}$, the
-unknown $\sigma$s cancel, and we have a function whose elements are all
-known, and its distribution.  If $n=2$, we call it a Cauchy distribution.
+Mr. Student.\footnote{\airq{Mr. Student} is actually Mr. William Sealy
+Gosset, who published the t test in 1908 based on his work as an employee
+of the Guiness Brewery. \index{Student} \index{William S Gosset}}
+By dividing a normal by $\sqrt{\chi^2_{n-1}\over (n-1)}$, the unknown
+$\sigma$s cancel, and we have a function whose elements are all known,
+and its distribution.  If $n=2$, we call it a Cauchy distribution.
 \label{tstat}
 
 
@@ -259,11 +264,12 @@ The nice thing about the $t$ distribution is that it is easy and it
 allows one-tailed hypothesis tests. But if you want to test a
 multivalued hypothesis, then you need to do an $F$ test.
 
-\subsection{Calling these functions from the GSL}
+\subsection{Lookup tables}
 There are three things that cover most of what you will be doing with a
 distribution: finding values of its PDF, values of its CDF, and inverse
 values of its CDF.
 Here are the functions to look up the value of the PDF at a given point:
+
 \begin{lstlisting}
 double gsl_ran_gaussian_pdf (double X, double SIGMA);
 double gsl_ran_tdist_pdf (double X, double NU);
@@ -271,18 +277,14 @@ double gsl_ran_fdist_pdf (double X, double NU1, double NU2);
 double gsl_ran_chisq_pdf (double X, double NU);
 \end{lstlisting}
 
-The prefix \cinline{gsl\_ran} indicates that these functions are from the
-random number generation module (\cinline{gsl/gsl\_randist.h}. Random number generation itself will be delayed to page
-\pageref{randomnumbers}. Notice that there is no mean for the Normal and neither mean nor variance
-for the T-distribution, so we may need to modify $X$ accordingly. For
-example, here is a function for a t-distribution with approaches the
-mean $M$ and variance $v$ as \cinline{NU}$\to \infty$:
-\begin{lstlisting}
-double gsl_ran_tdist_pdf_with_mv(double X, double mean, double var, double NU){
-    double X_scaled = (x - mean)/sqrt(var);
-    return gsl_ran_tdist_pdf(X_scaled, NU);
-}
-\end{lstlisting}
+The prefix \cinline{gsl\_ran} indicates that these
+functions are from the random number generation module
+(\cinline{gsl/gsl\_randist.h}. Random number generation itself will be
+delayed to page \pageref{randomnumbers}. Notice that there is no mean
+for the Normal, so we may need to modify $X$ accordingly, e.g., if $X$
+is drawn from a ${\cal N}(7,1)$, then you will need to ask the GSL for 
+\cinline{gsl\_ran\_gaussian\_pdf(X-7, 1)}.
+
 
 The next distribution calculation found in tables in the back of
 statistics texts is calculating the CDF above or below a point. 
@@ -297,6 +299,7 @@ deviations above zero, then we can reject the one-tailed hypothesis that
 the mean is zero with probability \cinline{1 - gsl\_cdf\_gaussian\_Q(2.2, 1) ==
 gsl\_cdf\_gaussian\_P(2.2, 1)}.
 
+Here is the list of functions:
 \index{Gaussian distribution|see{Normal distribution}}
 \index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_P@\cinline{gsl\_cdf\_chisq\_P}}
 \index{t distribution!gsl\_cdf\_tdist\_P@\cinline{gsl\_cdf\_tdist\_P}}
@@ -316,7 +319,7 @@ In the other direction, we may want to know where we will need to be to reject a
 certainty. For example, a value-at-risk oriented regulator will want to know what a bank is likely to lose 
 one day in the month. That is, what is the value of the 1-in-20, or 5\%, point on the CDF?
 Assuming a Normal(M,S) distribution of profit and loss,\footnote{This assumption is false. Securities
-typically have leptokurtic (fat-tailed) returns.} the bank will report a \ind{value at risk} of {\tt
+typically have \ind{leptokurtic} (fat-tailed) returns.} the bank will report a \ind{value at risk} of {\tt
 gsl\_cdf\_gaussian\_Pinv (0.05, S)+M}. Here are the requisite function declarations:
 \index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_Pinv@\cinline{gsl\_cdf\_chisq\_Pinv}}
 \index{t distribution!gsl\_cdf\_tdist\_Pinv@\cinline{gsl\_cdf\_tdist\_Pinv}}
@@ -386,7 +389,16 @@ high-level function to do the work for you:
 \begin{lstlisting}
 gsl_vector *a = gather_data("n_side");
 gsl_vector *b = gather_data("s_side");
-apop_t_test(a, b);
+apop_data  *t = apop_t_test(a, b);
+apop_data_show(t);
+\end{lstlisting}
+As per the discussion on page \pageref{testoutput}, Apophenia's testing
+functions return a data table listing test statistics, degrees of
+freedom, confidence, et cetera. You can print the entire set as above or
+just pull a single element, e.g.,
+\cindex{apop\_data\_get\_tn}
+\begin{lstlisting}
+double pval = apop_data_get_tn(t, "p_val%", 0);
 \end{lstlisting}
 
 Now let us say that the data is paired, in the sense that for each
@@ -411,9 +423,9 @@ function to run this test where appropriate.
 
 By itself, this is only useful for testing whether the sample variance
 is equal to a given $\sigma^2$, because unless you assume $\sigma^2$ 
-or are doing a homework question that says `$\sigma^2$
-is known,' you don't have it. Otherwise, in the case of multiple variables, you need to use
-an $F$ test.
+or are doing a homework question that says \airq{$\sigma^2$
+is known}, you don't have it. Otherwise, in the case of multiple variables, you need to use
+an $F$ test; see below.
 
 $H_0$ asks, is ${\Qv'
 \betav} = \cv$?  This is a very versatile question. E.g., $\Qv =
@@ -460,11 +472,16 @@ As above, we can divide Equation \ref{chi1} by Equation \ref{chi2}
 to give us a statistic with an $F$ distribution and no unknown
 $\sigma^2$ element:
 
-\begin{equation}	
+
+\startonecol
+\wideeqnbox{12cm}{
+%\begin{equation}	
 {N-K\over q}
 {(\Qv'\hat\betav - \cv)' [\Qv' (\Xv'\Xv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
 \over \uv' \uv } \sim F_{q,N-K}. \label{ftest}
-\end{equation}	
+%\end{equation}	
+}
+\endonecol
 
 If you have read this far, you know how to code all of the operations
 in Equation \ref{ftest}.  But fortunately, 
@@ -573,13 +590,15 @@ This makes life easy because we now only have one variable to estimate.
 
 \section{Testing the assumptions} Errors have to be normally distributed, or else
 the whole OLS system here does not apply. Many stats package user's manuals
-suggest plotting the errors and then squinting at the picture. One
+suggest plotting the errors and then squinting at the picture; you can
+do this using \cinline{apop\_plot\_histogram}. An
 alternative is to use the higher moments of the distribution.
 A Normal distribution has only two parameters,  the mean and the
 standard deviation, and everything else about the Normal distribution is
 defined therefrom. Notably, the third moment is zero, and the fourth
-moment is $3 \sigma^4$. We have already written everything we need to
-calculate all of these easily.
+moment is $3 \sigma^4$. 
+Un-normalized kurtosis $>3$ is known as \vocab{leptokurtic} and $<3$ is
+known as \vocab{platykurtic}; see Figure \ref{tailfig} for a mnemonic.
 
 \marginalia{Kurtosis minus three}{
 There is some debate as to whether the kurtosis of a ${\cal N}(0,1)\equiv 3$
@@ -588,8 +607,16 @@ normalize all reported kurtoses by subtracting three from the actual
 fourth moment. For example, the GSL does the normalization; Apophenia does not.
 Bear this in mind when interpreting kurtosis output. If you see a
 negative kurtosis, then you are guaranteed that you are getting
-normalized kurtosis, since a fourth power can never be negative.\index{kurtosis}}
+normalized kurtosis, since a fourth power can never be negative.
+\index{kurtosis}}
 
+\begin{figure*}[tb]
+\hspace{-.3in}\scalebox{0.7}{\includegraphics{kurtosis.eps}}
+\caption{Leptokurtic, \ind{mesokurtic} and \ind{platykurtic}, illustration by Gosset in {\em Biometrika} \citep[p 160]{student:errors}.\index{Student} \index{William S Gosset}\index{leptokurtic}}
+\label{tailfig}
+\end{figure*}
+
+We have already written everything we need to calculate all of these easily.
 Since the skew and kurtosis are both the mean of an iid process (recall
 their definitions on page \pageref{kurtskew}: a sum over $n$), their
 square is $\sim \chi^2$. Thus,

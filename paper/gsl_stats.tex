@@ -1,26 +1,71 @@
 \long\def\comment#1{}
+\newif\iftwocol \twocolfalse
 \newif\ifbook \booktrue
 \documentclass[12pt,notitlepage, openany]{book}
-\usepackage{array,natbib,graphicx,epsfig,wrapfig, titlesec, apop_wrap, listings,hyphenat}
+\usepackage{multicol, array,natbib,graphicx,epsfig,wrapfig, titlesec, apop_wrap, listings,hyphenat,fixltx2e}
 %\usepackage[LHE,T1]{fontenc}
 
-%math conveniences, primarily commonly boldfaced vectors.
-\usepackage{amsfonts,amsmath}  %for mathbb
-\def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
-\def\betav{{\mbox{\boldmath$\beta$}}}
 
-\def\treesymbol{\maltese}
+%\def\treesymbol{\maltese}
 %\usepackage{stmaryd}\def\treesymbol{\curlyveeuparrow} %stmaryd
-%\usepackage{textcomp}\def\treesymbol{\textreferencemark} %textcomp
+\usepackage{textcomp}\def\treesymbol{\textreferencemark} %textcomp
 %\usepackage{amssymb} \def\treesymbol{\mbox{\boldmath$\between$}} 
 %\usepackage{bbding} \def\treesymbol{\PlusThinCenterOpen} 
-\usepackage{marvosym} \def\treesymbol{\Aries} 
+%\usepackage{marvosym} \def\treesymbol{\Aries} 
 
 \long\def\treemark{
 \begin{wrapfigure}{r}[0cm]{0cm}
 \Aries
 \end{wrapfigure}
 }
+
+\iftwocol
+    \def\startonecol{\end{multicols}}
+    \def\endonecol{\begin{multicols}{2}}
+\else
+    \def\startonecol{}
+    \def\endonecol{}
+\fi
+
+
+%equation boxes
+\long\def\eqnbox#1{
+%\startonecol
+\begin{center}
+\fbox{
+\parbox{10cm}{
+\begin{eqnarray}
+#1
+\end{eqnarray}
+}
+}
+\end{center}
+%\endonecol
+}
+
+\long\def\wideeqnbox#1#2{
+%\startonecol
+\begin{center}
+\fbox{
+\parbox{#1}{
+\begin{eqnarray}
+#2
+\end{eqnarray}
+}
+}
+\end{center}
+%\endonecol
+}
+
+
+
+%math conveniences, primarily commonly boldfaced vectors.
+\usepackage{amsfonts,amsmath}  %for mathbb
+\def\xv{{\bf x} } \def\yv{{\bf y} } \def\pv{{\bf p} }
+\def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
+\def\betav{{\mbox{\boldmath$\beta$}}}
+%\def\vector#1{\left[\matrix{#1}\right]}
+\def\vector#1{\left[\begin{matrix}#1\end{matrix}\right]}
 
 %\def\var{\hbox{var}} \def\cov{\hbox{cov}}
 %AMS version:
@@ -36,6 +81,7 @@
 \titlespacing{\subsection}{8cm}{0.5 cm}{-0.5 cm}
 \titleformat{\section}[awrap]{\large\bf\scshape}{\thesection}{1 em}{}{}
 \titleformat{\subsection}[awrap]{\bf\scshape}{}{1 em}{}{}
+
 
 
 %indexing:
@@ -97,9 +143,13 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 }
 
 
-
+\def\samplecodelocation{\url{http://apophenia.info/msc_book_samples.zip}}
+\def\onlinereflocation{\url{http://apophenia.info/doc}}
 
 %margin boxes:
+    \comment{
+        %here, commented out, are the one-column versions.
+        %They were a pain.
 \setlength\fboxsep{5pt} %margin size in margin boxes
 \long\def\marginalia#1#2{
 \begin{wrapfigure}{l}[1.3cm]{3in}
@@ -120,12 +170,27 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 }
 \end{wrapfigure}
 }
+        }
+
+\long\def\marginalia#1#2{
+\vskip 0.3cm
+\hrule
+\vskip 0.3cm
+{\bf #1}\vskip .5cm\par
+\small #2
+\vskip 0.3cm
+\hrule
+\vskip 0.3cm
+}
+
+\long\def\marginaliafixed#1#2#3{\marginalia{#2}{#3}}
 
 
 %title page:
 \begin{document}
+\setlength{\columnsep}{1.2cm}
 \frontmatter
-\title{Statistical Computing}
+\title{Modern Statistical Computing}
 \author{Ben Klemens\\klemens@hss.caltech.edu}
 %\date{May 2005}
 \begin{center}
@@ -149,6 +214,7 @@ Plain old \copyright 2006, Ben Klemens.]
 \tableofcontents
 \mainmatter\chapter[Introduction]{Doing statistics in the modern day}
 %\pagenumbering{arabic}\setcounter{page}{1}
+\iftwocol\begin{multicols}{2}\fi
 
 
 In case it is not obvious to you, we can not do statistical analysis without
@@ -159,7 +225,7 @@ it into real computer code.
 I wrote this book to help you make that translation. The first focus
 is purely mathematical: we need to select techniques bearing in mind
 that they will eventually be code. The second focus is about practical
-coding: your life is short, and you want spend as little of it learning
+coding: your life is short, and you want to spend as little of it learning
 dumb languages as possible.
 
 Doing math with a computer is unfettering. Instead of using regression
@@ -203,23 +269,24 @@ and shows how those computations are done, so the reader can modify them
 according to the vagaries of real-world data.
 
 \paragraph{The intended audience}
-I assume that you have had a statistics or two class already, and that
-you have an encyclop\ae{}dic stats textbooks handy. This
-text provides some utility as an overview, a review, and a reference,
+I assume that you have had a statistics class or two already, and that
+you have an encyclop\ae{}dic stats textbooks handy, so this
+book will provide some utility as a review, a reference, and perhaps a
+different perspective,
 but there are few proofs and no pretentions to comprehensive coverage of
 classical probability and statistics.
 
 I also assume that you are computer-literate, and have experience writing
 scripts in a stats package. The chapter on C (Chapter \ref{c_crash})
 focuses on the techniques and features that are central to C but are
-missing or underused in stats-specific languages. Those who are entirely
+missing or underused in script-oriented languages. Those who are entirely
 new to the idea of writing a sequence of instructions for a computer
 may want to warm up with a few online tutorials.
 
 If you are well-versed in C and SQL (Structured Query Language), then
 the later parts of Part I and all of Part II will be immediately useful.
 
-If you are not well-versed in C and SQL, then expect to take some quality
+If you are not well-versed in C and SQL, then expect to take some 
 time getting comfortable with these languages before doing statistics
 with the techniques here becomes easy.
 
@@ -231,10 +298,11 @@ so you can never look at another data set again, then by all means, put
 this book down and get a copy of the easiest stats package you can get
 away with. But if you expect to be doing statistical work for a larger
 part of your career, such that problems of extensibility, portability,
-and precision may be looming in your future, then this book is for you.
+and scaling may be looming in your future, then this book is for you.
 
 
 \section{The stats covered} 
+\comment{
 As powerful as we like to think modern statistics is, it has a 
 limited set of tricks at its disposal. For the purposes of this book,
 I will divide them into three broad categories, which are broad enough
@@ -261,12 +329,14 @@ lower bound, and the ratio of likelihood functions has the pleasant
 property embodied in the Neyman-Pearson lemma, making them the basis of
 hypotheses testing.
 
-\subsection{The goals of statistics} Let's settle an
+\subsection{The goals of statistics}
+}
+Let's settle an
 important fact about statistical analysis: it proves nothing, only
 persuades. A large part of this is that we are looking for causal stories
 about the world, but there is no statistical technique (and never will be)
 that proves \ind{causality}. Further, there is always a way to rewrite a model
-or re-draw the data so that a rejected hypothesis is not, or vice versa.
+or re-draw the data so that a rejected hypothesis is not rejected, or vice versa.
 But some results are more robust to tweaking 
 than others, and some models are just plain more persuasive than others.
 
@@ -275,8 +345,7 @@ statistical analysis into two parts. The first is to just say something
 interesting about a data set. This is often model-free; for example,
 you may just want to show that two variables are highly correlated, or
 that the data can mostly be described by three dimensions. This is often
-sufficient to support an argument, and if that's the case, then you should
-go no further in dazzling the reader with your statistical abilities.
+sufficient to support an argument.
 
 The second part of statistical analysis is hypothesis testing, in which
 we calculate a parameter of the data and then make a claim about that
@@ -296,6 +365,10 @@ coefficient, which has an F distribution). \cite{kmenta} points out that nothing
 in nature has a Chi-squared distribution. 
 \index{chi squared distribution@$\chi^2$ distribution}
 
+This book will attempt to keep the two goals separate, with one chapter
+(Chapter \ref{projections}) on description and one 
+(Chapter \ref{gauss}) on hypothesis testing.
+\comment{
 Often, your work will shift
 gears from describing the data (like fitting an OLS regression to the
 data) to testing a hypothesis (like the claim that the coefficients
@@ -304,14 +377,15 @@ textbooks run these goals together at every opportunity;
 hopefully I am doing better here, but it is up to you to know exactly
 which goal you are working on with each line of code or math, and to be
 certain that it is working toward your overall goal of saying something
-interesting and persuasive.
+interestiprojectionng and persuasive.
+}
 
-
-\subsection{General theorems and their special cases}\index{Ordinary least
-squares|(}
-Here is another way to subdivide the theorems that underly
-statistics, this time into two classes. The first class, including the
-results about MLEs, applies almost universally, but requires a huge
+\subsection{General theorems and their special cases}\index{Ordinary Least
+Squares|(}
+Here is one way to divide the theorems that underly
+statistics into two classes. The first class are general
+results about likelihood functions, that 
+apply almost universally, but require a huge
 amount of computational power to arrive at a result. The second class
 consists of special cases of these general results, such as the theorems
 underlying OLS regressions (which are an application of the general
@@ -329,8 +403,7 @@ cases to everything, and one would have a hard time finding an issue of an
 academic journal today that doesn't have at least one OLS regression.
 Everything in the world has become a linear process.
 
-This book is about using OLS only when it is applicable. OLS was the only
-viable tool for a hundred years or so, but we are done with using it everywhere.
+This book is about using OLS only when it is applicable. 
 The Central Limit Theorem tells us that yes, errors often are
 Normally distributed; and it is often the case that yes, the dependent
 variable is more or less a linear or log-linear function of several
@@ -338,41 +411,40 @@ variables. If such descriptions do no violence to the reality from
 which the data was culled, then OLS is the method to use, and using
 more general techniques will not be any more persuasive. But if these
 assumptions are not true, then using OLS is at best unpersuasive, and at
-worst disingenuous. Before computing power was where it is today, OLS was
-as persuasive as we could get, and we all just had to accept that. But
-now it is possible (and as this book hopes to show, even easy) to write
-down exactly the right likelihood function, and to find exactly the best
-parameters, instead of settling for the unpersuasive---and often
-inapplicable---model which requires the least processor power.
-\index{Ordinary least squares|)}
+worst disingenuous. We have the computing power to write down a model of
+the real world in arbitrary detail, and describe and test that model in
+reasonable time.
+\index{Ordinary Least Squares|)}
 
 \section{The programming covered}
-
+\comment{
 Using C is a mix of low-level and high-level
 work. You will be allocating memory, telling the computer exactly where
 to shunt its electrons. But, thanks to the efforts of tens of thousands
 of programmers before you, you will have the benefit of functions that
 will find the minimum of a function or calculate characteristics of a
 Normal distribution, without having to remember Newton's method or
-the equation for the Gaussian distribution.
+the equation for the Gaussian distribution.}
 
 The first few chapters of this book will cover the basics of C itself,
-in terms of its grammar and how to call those functions that
-you will find to be so valuable. The remainder of the book will be at the higher
-level, describing how to glue together the functions in the
-GNU Scientific Library, SQLite, and Apophenia to get your research done.
+in terms of its grammar and how to call those functions that you will
+find to be so valuable. The remainder of the book will be at the higher
+level, describing how to glue together the functions in the GNU Scientific
+Library, SQLite, and Apophenia to get your research done.
 
-\subsection{The computation engine} The \ind{GNU Scientific Library} includes tools for
-all of the procedures mentioned above: linear algebra operations, looking up the
-value of F-, t-, $\chi^2$- distributions, calculating likelihood functions, and
-maximizations. These will be the building blocks for analysis.
+\subsection{The computation engine} The \ind{GNU Scientific Library}
+includes tools for all of the procedures mentioned above: linear algebra
+operations, looking up the value of F-, t-, $\chi^2$- distributions,
+calculating likelihood functions, and maximizations. These will be the
+building blocks for analysis.
 
-\subsection{Dealing with large data sets} More than anything, the problem
-with stats packages is that large data sets can be hard to deal
-with. Those languages designed around dealing with large data
-sets tend to be even more draconian than C---for example, SAS's data
-input command is {\tt card}, referring to the punch card it expects you
-to put in the hopper.\footnote{SAS, by the way, gets its facility with large data sets
+\subsection{Dealing with large data sets} Matrix manipulation packages
+(including the GSL) are not well-suited for data sets from agencies like
+the US Census, that can be literally a gigabyte of data.
+Those languages designed around dealing with large data sets tend
+to be even more draconian than C---for example, SAS's data input command
+is {\tt card}, referring to the punch card it expects you to put in the
+hopper.\footnote{SAS, by the way, gets its facility with large data sets
 by providing a front-end to SQL queries. You can enter SQL directly into
 SAS if you so choose.}
 
@@ -389,7 +461,7 @@ neither Beautiful nor Perfect, and adds a level of complication on top
 of what you are already dealing with. But the ease of manipulating data
 sets offered by SQL is very much worth its short learning curve.
 
-Apophenia  uses the \ind{SQLite} library, which will
+Apophenia uses the \ind{SQLite} library, which will
 give you all the database functionality you need. Those of you who are
 already database gurus, or who have data which is already handled
 by another database engine, will easily be able to adapt the techniques
@@ -404,20 +476,21 @@ can be very persuasive. Consistent with the rest of this book, plotting
 is done via \ind{Gnuplot}, a program which is freely available for
 the system you are using right now. Gnuplot is highly automatable, so once
 you have a plot you like, you can have your C programs autogenerate
-it or manipulate it in cute ways, or can send your program to your
+it or manipulate it in amusing ways, or can send your program to your
 colleague in Madras and he will have no problem reproducing and modifying
 your graphs.
 
-\paragraph{Seeing the forest from the trees} Statistics textbooks must tread a fine
-line. On the one hand, they must be didactic texts, explaining concepts
-to the reader, while on the other they must be a catalog of methods to
-apply should your data look just so.
+\paragraph{Seeing the forest from the trees} Statistics textbooks
+must tread a fine line. On the one hand, they must be didactic texts,
+explaining concepts to the reader, while on the other they must be a
+catalog of methods to apply should your data look just so.
 
 Sections marked with a \ind{\treesymbol} cover details that may be
 skipped on a first reading. They are not necessarily advanced
 in the sense of being somehow more difficult than unmarked text, but a
-reader who is trying to get the overall picture would want to skip them
+reader who is trying to get the overall picture will want to skip them
 until later. 
+
 
 \input why_c.tex
 
@@ -463,13 +536,14 @@ existence today, on any data set, no matter how large or exceptional.
 \comment{
 \paragraph{Acknowledgments} Thanks to Ms. Annjeanette Agro for
 graphic design suggestions.}
-\part{Computing}
+
+\startonecol \part{Computing} \endonecol
 \input c_crash.tex
 \input sql.tex
 \input linear_algebra.tex
 \input apop.tex
 \input gnuplot.tex
-\part{Statistics}
+\startonecol \part{Statistics} \endonecol
 \input projection.tex
 \input gauss.tex
 \input mle.tex
@@ -479,6 +553,7 @@ graphic design suggestions.}
 \nocite{*}
 \backmatter
 \bibliographystyle{plainnat}
-\bibliography{guide}
+\iftwocol \end{multicols} \fi
+\bibliography{guide} 
 \printindex
 \end{document}

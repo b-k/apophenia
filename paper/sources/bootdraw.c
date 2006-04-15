@@ -1,6 +1,7 @@
 #include <gsl/gsl_rng.h>
 
 void boot_draw(gsl_vector *data, int draws, gsl_vector *out_list){
+const int   draws = 2000;
 int    i,j,draw, ok, drawn_indices[draws];
 
 //Allocate and set up a random number generator:

@@ -31,8 +31,8 @@ double apop_vector_distance(gsl_vector *ina, gsl_vector *inb);
 double apop_vector_grid_distance(gsl_vector *ina, gsl_vector *inb);
 
 
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type);
-void apop_matrix_normalize(gsl_matrix *data, int normalization);
+void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, char normalization_type);
+void apop_matrix_normalize(gsl_matrix *data, char row_or_col, char normalization);
 
 inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
 	//As described: give it a vector, and it'll tell you the confidence 
@@ -41,7 +41,7 @@ inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
 inline double apop_double_abs(double a);
 	//This has to exist somewhere...
 
-double apop_random_beta(double m, double v, gsl_rng *r) ;
+double apop_random_beta(gsl_rng *r, double m, double v) ;
 	/*Give me mean m and variance v, and I'll give you
 	 * n draws from the appropriate beta dist.
 	 * remember: 0<m<1, and v is tiny (<<1/12). You get NaNs if no
@@ -74,6 +74,9 @@ apop_data *apop_data_covar(apop_data *in);
 
 gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins);
 
+int apop_double_is_zero(double in);
+void apop_vector_replace(gsl_vector *v, int (* test)(double), double replace_with);
+void apop_matrix_replace(gsl_matrix *m, int (* test)(double), double replace_with);
 
 //from apop_fisher.c:
 apop_data *apop_test_fisher_exact(apop_data *intab);

@@ -1,4 +1,4 @@
-\chapter{Databases} \label{sql}
+\startonecol \chapter{Databases} \label{sql}\endonecol
 \setsql %for code listings.
 
 Structured Query Language and matrix operations are excellent complements. Some things, like
@@ -7,7 +7,7 @@ matrix manipulation. Meanwhile, some things, like matrix multiplication,
 just can not be done via SQL queries. With both, your data analysis
 technique will be unstoppable.
 
-As a very broad rule, try to do data manipulation, like pulling subsets
+As a broad rule, try to do data manipulation, like pulling subsets
 from the data or merging together multiple data tables, using SQL. Then,
 as a last step, pull the perfectly formatted data into an in-memory matrix and
 do the statistical analysis. 
@@ -37,24 +37,25 @@ programs will give you immediate feedback about any queries you input,
 and will let you verify that the tables you are creating via C code are
 as you had expected.
 
-As a supplement to the Apophenia library, there are a few standalone
+Apophenia is distributed with a few standalone
 programs that will read and write SQLite databases. If you want to
 experiment with your own data while reading through this chapter, you can
 try \cind{apop\_text\_to\_db} on the command line to produce an SQLite
 database from a text file. Try \cind{apop\_text\_to\_db -h} for help.
 
-This chapter will primarily consist of an overview of SQL, which you can
-follow along with any of the above tools. Section \ref{foldingsql}
+This chapter will primarily consist of an overview of SQL, with which you can
+follow along uising any of the above tools. Section \ref{foldingsql}
 will describe the Apophenia library functions that facilitate using an
 SQL database from within a C program.
 
 \index{data!format}
 \paragraph{Data format} Each column in a database represents a distinct
-variable, such as a subject's age, weight, or height. One can expect the
-units to be different for each column. 
+variable. For example, a health survey would include columns such
+as subject's age, weight, or height. One can expect the units to be
+different for each column.
 
-Each row in a database can be taken to represent one observation; for
-example, each row can be data about a single person. There is no
+Each row in a database can be taken to represent one observation; in a
+survey, each row would be data about a single person. There is no
 mechanism in SQL for naming a row, although it is common enough to
 have a plain old column named \sinline{row\_name}; usually there is
 another identifier such as \sinline{social\_security\_no} that serves
@@ -104,7 +105,7 @@ return all the columns for those rows.
 
 Generally, the \sinline{select} statement gives a list of columns that
 the output table will have; the \sinline{from} clause declares where the
-source data comes from; finally, there are modifiers or restrictions
+source data comes from; and, there are modifiers or restrictions
 (in this case \sinline{where}) on the rows to be output.  And that's
 it. Every query you run will have these three parts in this order: column
 specification, data source, row specification.\footnote{You may have no
@@ -113,7 +114,7 @@ parts and a null third part.} However, the means of specifying rows,
 columns, and source data allows for a huge range of possibilities.
 
 \paragraph{Select}
-The \sqlind{select} clause will specify the columns of the table which will
+The \sqlind{select} clause will specify the columns of the table that will
 be output. The easiest list is \sinline{*}, which means `all the columns'.
 
 Other options:\begin{itemize}
@@ -140,6 +141,8 @@ You can alias the tables, for easier reference. The clause
 \sinline{from data\_tab1 d1, data\_tab2 d2} gives short names to both tables, which can
 be used for lines like \sinline{select d1.age, d2.height}. 
 
+Another option is to take data from subqueries; see below.
+
 Aliasing is generally optional but convenient, but one case where
 it is necessary is when you are joining a table to itself.
 For now, simply note the syntax: \sinline{from data t1, data t2} will let
@@ -148,7 +151,7 @@ tables.
 
 Notice, by the way, that when we aliased something in the \sinline{select}
 section, the form was \sinline{select long\_col\_description as lcd}, while
-in the \sinline{from} section there is no \sinline{as}: \sinline{from long\_file\_name lfn}.
+in the \sinline{from} section there is no \airq{as}: \sinline{from long\_file\_name lfn}.
 
 \paragraph{Where}
 The \sqlind{where} clause is your chance to pick out only those rows which
@@ -156,7 +159,7 @@ interest you. With no \sinline{where} clause, the query will return one line
 for every line in your original table (and the columns returned will
 match those you specified in the \sinline{select} clause).
 
-Join as many subclauses as you wish, using the Boolean operators you
+Use as many subclauses as you wish, using the Boolean operators you
 know and love: \sinline{where ((d1.age > 13) or (d2.height >= 175)) and (d1.weight == 70)}.
 
 
@@ -177,8 +180,8 @@ columns and the \sinline{where} statement specifies the rows.
 \subsection{Joining}
 If you specify two tables in your \sinline{from} line, then, lacking any
 restrictions, the database will return one joined line for every pair of lines.
-Let table 1 have one row with data \{1, 2, 3\} and table 2 have one row
-with data \{a, b, c\}; then \sinline{select * from table1, table2} will
+Let table 1 have one column with data $\left[\begin{matrix}1\cr 2\cr 3\end{matrix}\right]$ and table 2 have one column
+with data $\left[\begin{matrix}a\cr b\cr c\end{matrix}\right]$; then \sinline{select * from table1, table2} will
 produce an output table with every combination:
 \sinline{\\
 1 a\\
@@ -217,7 +220,7 @@ essential. Also, notice that we did not have to include either ZIP code
 in the output if it is not used later. If you do want to include a ZIP
 code, then you can use either \sinline{t1.zip} or \sinline{t2.zip\_code}; since
 the two will be by definition identical, using both will be a waste of
-space (but may help to give you a sense of security that things are working).
+space (but may help to verify that things are working).
 
 \paragraph{Speeding it up}
 You can ask the SQL engine to create an index for a table that you
@@ -236,7 +239,7 @@ For the query above, you will want to create an index for both {\tt
 econ\_data(zip)} and \sinline{health\_data(zip\_code)}.
 
 There is standard SQL syntax for indexing multiple columns, 
-(\sinline{create index e\-con\_\-in\-dex on econ\_data(zip, age)}), but as a
+\sinline{create index e\-con\_\-in\-dex on econ\_data(zip, age)}, but as a
 practical matter, SQLite really only cares about the first item in the
 list, so you are better off creating one index per variable as above.
 
@@ -340,18 +343,18 @@ the other. There are four keywords to do this.
 \begin{lstlisting}
 select id, age, zip
 from data_set_1
-UNION
+union
 select id, age, zip
 from data_set_2
 \end{lstlisting}
-will produce the results of the first query stacked directly on top of
-the second query. Feel free to use subqueries (see below), but be
-careful that both tables have exactly the same number of columns.
+will produce the results of the first query stacked directly on top
+of the second query. Be careful that both tables have exactly the same
+number of columns.
 
 \paragraph{\cinlinetwo{Union all}}\sindex{Union all} If a line is duplicated in both tables,
 then the \cinlinetwo{union} operation throws out
 one copy of the duplicate lines, much like \sinline{select distinct}
-includes only one of the duplicates. Replacing \sinline{UNION} with \sinline{UNION ALL} will retain the duplicates.
+includes only one of the duplicates. Replacing \sinline{union} with \sinline{union all} will retain the duplicates.
 
 \paragraph{\cinlinetwo{Intersect}}\sindex{Intersect} As you can guess,
 putting \sinline{intersect} between two \sinline{select} statements
@@ -461,9 +464,8 @@ Conversely, if you give a null argument: \cinline{apop\_open\_db(NULL)},
 then the database is kept in memory, and will run faster but 
 disappear when the program exits.
 
-Notice that Apophenia uses only one database at a time. If you need to
-use multiple databases, see the \cind{apop\_merge\_dbs} function (which
-also has a command-line equivalent).
+Notice that Apophenia uses only one database at a time, but
+see the \cind{apop\_merge\_dbs} function below.
 
 Unless your program is generating its own data, you will probably
 first be importing data from a text file.  The \cinline{apop\_text\_to\_db}
@@ -493,8 +495,8 @@ apop_query("select *        \
 A string is easiest for you as a human to read if it is
 broken up over several lines; to do this, end every line with a
 backslash, until you reach the end of the string. The line above runs
-the query and returns nothing. [Not very useful for a \sinline{select}, but perfect for
-\sinline{create} or \sinline{insert}.]
+the query and returns nothing, which is Not very useful for a \sinline{select}, but perfect for
+\sinline{create} or \sinline{insert}.
 
 \cinline{apop\_query} accepts all of the \cinline{printf}-style arguments from page \pageref{printf}. For example,
 say that you calculated a minimum height earlier in the program, and want
@@ -502,53 +504,53 @@ to write a query that uses that variable:
 \begin{lstlisting}
 int min_height	= 175;
 apop_query(" select *     \
-               from data     \
-               where height >=%i;", min_height);
+    from data     \
+    where height >=%i;", min_height);
 \end{lstlisting}
 
 \paragraph{apop\_query\_to\_data} \cindex{apop\_query\_to\_data}
 This function will run
 the given query and return the resulting table for your analysis:
 \begin{lstlisting}
-apop_data *tall_people;
 int min_height	= 175;
 
-tall_people = apop_query_to_data("select *     \
-                                   from data     \
-                                   where height >=%i;", min_height);
+apop_data *tall_people = apop_query_to_data("select *     \
+    from data     \
+    where height >=%i;", min_height);
 \end{lstlisting}
 will query \sinline{data} for its information, allocate \sinline{tall\_people} to be an
 appropriately-sized matrix, and fill it with the data.
 
 For immediate feedback, you  can use \cind{apop\_data\_show} to dump
 your data to screen or \cind{apop\_data\_print} to print to a file (or
-even back to the database). If you want a quick-and-dirty picture of a
+even back to the database). If you want a quick on-screen picture of a
 table, try:\footnote{Notice that since \cinline{apop\_query\_to\_data}
 allocates a pointer to an \cinline{apop\_data} set but does not name
-that pointer, there is no way to free the memory afterward.} 
+that pointer, there is no way to free the memory afterward. This is
+rarely not a problem in practice.} 
 \begin{lstlisting}
 apop_data_show(apop_query_to_data("select * from table"));
 \end{lstlisting}
 
-There are \cinline{apop\_query} functions for any type you could desire,
+There are \cinline{apop\_query\_...} functions for any type you could desire,
 including \cind{apop\_query\_to\_ma\-trix} to pull a query to a {\tt
 gsl\_matrix}, \cind{apop\_query\_to\_chars} to pull a query into
 a two-by-two table of strings, \cind{apop\_query\_to\_vector}
 and \cind{apop\_query\_to\_float} to pull the first column or first
-number of the returned table into \cinline{gsl\_vector} or a \cinline{float}.
+number of the returned table into a \cinline{gsl\_vector} or a \cinline{float}.
 
 \paragraph{Data to db} For the other direction, there are the plain old
 print functions: \cind{apop\_data\_print} and
 \cind{apop\_matrix\_print}. If the global variable
 \cinline{apop\_opts.output\_type == 'd'}, then these functions will dump the
-given data to the given file:
+given data to the given table in the database:
 \index{apop\_opts!output\_type@\cinline{output\_type}}
 \begin{lstlisting}
 apop_opts.output_type == 'd';
 apop_data_print(datatab, "my_data");
 \end{lstlisting}
 Say that tomorrow you decide you would prefer to have the data dumped to
-a file; then just change the \cinline{'d'} to an \cinline{'f'} and away you go.
+a file; then just change the \cinline{'d'} to an \cinline{'f'} and away you go.\footnote{By the way, dots are common in file names but an annoyance in tables. So if the second argument to \cinline{apop\_data\_print} is \cinline{out.data.csv}, you will get that file name, but a table named \cinline{out\_data}, with no dots and everything after the last dot stripped away.}
 
 There is one inconvenience to this convenience, however: dots are popular
 in file names, e.g. \binline{dump.csv}, but are not valid in table names. If
@@ -584,6 +586,9 @@ int main(void){
 By removing the file before merging, we prevented the duplication of
 data (because duplicate tables are appended to, not overwritten).
 
+\cinline{apop\_db\_merge} also has a command-line program of the
+same name.
+
 \section{Some examples} 
 Here are a few examples of how C code and SQL calls can neatly interact.
 
@@ -593,7 +598,7 @@ its state each period in a neat format. The following code will open a
 file on the hard drive, create a table, and add an entry each period.
 Notice that there is no begin-commit wrapper, so if you get tired of
 waiting, you can halt the program and walk away with
-your data.\footnote{Sometimes such behavior will leave the database in
+your data to that point.\footnote{Sometimes such behavior will leave the database in
 an unclean state. If so, try the SQLite command \sqlind{vacuum}.}
 
 
@@ -631,7 +636,7 @@ This works partly because of our
 luck that $y > n$ and $T > F$ in English, so $y$ and $T$ will map to one
 and $n$ and $F$ will map to zero. But let us say that our survey used
 \airq{affirmative} and \airq{negative}, so the mapping would be
-backward.  Then we can put a \sinline{case} statement in with the other
+backward from our intuition.  Then we can put a \sinline{case} statement in with the other
 column definitions to produce a column that is one when
 \sinline{binaryq} is affirmative and zero otherwise:
 \begin{lstlisting}
@@ -666,8 +671,8 @@ every district\_no. You can then run your regression on the output of
 the query without any further manipulation.
 
 Notice that the \cinline{for} loop goes from i=1, not i=0; this is because when
-including dummy variables, you always have to exclude one value, which
-will be the baseline; using i=1 means district[0] will be the baseline.
+including dummy variables, you always have to exclude one baseline
+value; using i=1 means district[0] will be the baseline.
 \index{dummy variables|)}
 
 \subsection{Easy t-tests}\index{t test|(}
@@ -692,13 +697,19 @@ gsl_vector	*overeducated;
       where education >=16");
 \end{lstlisting}
 
+First, it would be nice to have a name for the number of data points.
+\begin{lstlisting}
+int count_over = overeducated->size;
+int count_under = undereducated->size;
+\end{lstlisting}
+
 Here is a factoid for you: incomes are usually distributed log-normally, so we should do a t-test on the
 log of income. Here is one  vector transformed with Apophenia's convenience function and one with the underlying GSL functions: \cindex{apop\_vector\_log}
 \begin{lstlisting}
 apop_vector_log(undereducated);
 
 int i;
-for(i=0; i< overeducated->size; i++)
+for(i=0; i< count_over; i++)
    gsl_vector_set(overeducated, i, gsl_sf_log(gsl_vector_get(overeducated, i)));
 \end{lstlisting}
 
@@ -708,16 +719,11 @@ Apophenia provides some convenience wrappers for those functions:
 
 \begin{lstlisting}
 double	mean_over, mean_under, var_over, var_under;
-mean_over  = gsl_stats_mean(overeducated->data, overeducated->stride, overeducated->size);
-var_over  = gsl_stats_variance(overeducated->data, overeducated->stride, overeducated->size);
+mean_over  = gsl_stats_mean(overeducated->data, overeducated->stride,
+count_over);
+var_over  = gsl_stats_variance(overeducated->data, overeducated->stride, count_over);
 mean_under = apop_vector_mean(undereducated);
 var_under  = apop_vector_variance(undereducated);
-\end{lstlisting}
-
-Finally, it would be nice to have a name for the number of data points.
-\begin{lstlisting}
-int count_over = overeducated->size;
-int count_under = undereducated->size;
 \end{lstlisting}
 
 \comment{
@@ -737,11 +743,13 @@ double	test_me = gsl_cdf_gaussian_P(mean_over-mean_under, var_over+var_under);
 }
 Now we have the inputs needed to produce a test statistic. It so happens
 that 
+\startonecol
 $$
 \frac{({\tt mean\_over - mean\_under})}
 {\sqrt{\frac{{\tt var\_over}}{({\tt count\_over}-1)}+ \frac{{\tt var\_under}}{({\tt count\_under}-1)}}} \sim t_{\tt count\_over + count\_under - 2},
 $$
-and this is trivial to translate into C: 
+\endonecol
+and it is trivial to translate this statistic into C: 
 \begin{lstlisting}
 double	stat    = (mean_over - mean_under)/ sqrt(var_over/ (count_over-1) + var_under/(count_under-1));
 \end{lstlisting}
@@ -750,12 +758,12 @@ The final step is to look up this statistic in the standard $t$ tables
 as found in the back of any standard statistics textbook. Of course,
 looking up data is the job of a computer, so we instead ask the GSL:
 \begin{lstlisting}
-double pvalue   = gsl_cdf_tdist_P(stat, count_under + count_over -2);
+double confidence   = gsl_cdf_tdist_P(stat, count_under + count_over -2);
 \end{lstlisting}
 Now \cinline{pvalue} is the percentage of the t-distribution under
 \cinline{stat}, and therefore gives us the confidence with which we can
 reject the hypothesis that \cinline{mean\_over <= mean\_under}. If
-\cinline{pvalue} is large, say $> 95\%$, then we can reject the null
+\cinline{confidence} is large, say $> 95\%$, then we can reject the null
 hypothesis and go to grad school. Else, there isn't enough information
 to distinguish between the two with confidence.
 
@@ -778,7 +786,7 @@ int main(void){
       "select log(income) from survey \
       where education >=16 and income>0");
 
-    apop_t_test(undereducated, overeducated);
+    apop_data_show(apop_t_test(undereducated, overeducated));
     return 0;
 }
 \end{lstlisting}

@@ -7,9 +7,7 @@
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
 
-int apop_table_exists(char *q, int whattodo);
-	//whattodo==1	==>kill table so it can be recreated in the main.
-	//whattodo==0	==>just return the status: 1=exists 0=doesn't. 
+int apop_table_exists(char *q, char whattodo);
 
 int apop_count_cols(const char *name);
 	//give me the name of a table, I'll check sqlite_master for the 
@@ -17,13 +15,9 @@ int apop_count_cols(const char *name);
 	//how many columns are in the table.
 
 int apop_db_open(char *filename);
-int apop_open_db(char *filename);
 	//If filename==NULL, it'll open a database in memory
 
-int apop_db_close(int vacuum);
-int apop_close_db(int vacuum);
-	//vacuum==1: do some cleanup to minimize hard disk space
-	//vacuum==0: just close the thing.
+int apop_db_close(char vacuum);
 
 int apop_query(const char *q, ...);
 int apop_query_db(const char *q, ...);
@@ -47,7 +41,7 @@ char *** apop_query_to_chars(const char * fmt, ...);
 
 apop_data * apop_query_to_data(const char * fmt, ...);
 
-float apop_query_to_float(const char * fmt, ...);
+double apop_query_to_float(const char * fmt, ...);
 	//like query_to_matrix, but returns a single number.
 
 int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);

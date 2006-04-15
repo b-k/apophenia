@@ -10,6 +10,7 @@ int main(void){
 	int *k = malloc(sizeof(int));
 	int b = 2;
 	printf("doubling() returns: %i\n", doubling(k,b));
-	printf("a now holds: %i\n", *k);
+	printf("k now holds: %i\n", *k);
 	free(k);
+    return 0;
 }

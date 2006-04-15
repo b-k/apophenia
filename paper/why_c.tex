@@ -1,5 +1,108 @@
 \section{Why C?}
+\index{statistics packages!rants regarding|(}
+You may be surprised to see a book entitled \airq{Modern Statistical
+Computing} that is based on a language written in 1972. 
+Why use C instead of a specialized language like SAS, Stata, SPSS,
+S-Plus, SIENA, SST, SHAZAM, GAUSS, GAMS, GLIM, GENSTAT, GRETL, EViews,
+PcGive, MatLab, Minitab, Mupad, Maple, Mathematica, WinBUGS, TSP, R,
+RATS, LIMDEP, LISP-STAT, Octave, OxMetrics, or Yorick?  There are more
+than enough books that advocate for the use of such languages; as one
+editor at a well-known scientific publishing company explained to me:
+``\dots most of the statistics [book] market is quite heavily influenced
+by the software companies that service the field.''  Thus, this may be
+the only book to advocate statistical computing with a general computing
+language, so I will take some time motivating the choice as clearly as
+possible. Over the course of this, you should also get a better idea of
+why C is the way it is.
 
+\paragraph{Computational speed---really} Using a stats package sure
+beats inverting matrices by hand, but as computation goes, many stats
+packages are still relatively slow, and that slowness can make otherwise
+useful statistical methods infeasible.
+
+R and Apophenia use identical code (in C) for doing the \ind{Fisher
+exact test}, so it makes a good basis for comparison.  On my laptop,
+a C program using Apophenia does 10,000 of these tests in 10.1 seconds;
+a minimal R script does the same work in nine minutes---over fifty
+times as long. I can't count how many times people have told me stories
+about an analysis that took days or weeks in a stats package, but ran
+in minutes after they rewrote it in C.
+
+OLS used to be the only technique that we had the computing power to
+actually implement. But when you can do a maximum likelihood search
+or Monte Carlo simulation in reasonable time, you can write models
+that rely on fewer false assumptions. The Monte Carlo examples in Section
+\ref{billiondraws} were produced using over a billion draws from $t$
+distributions. If your stats package can't produce a few million random
+draws per second (many can't), such work will be infeasibly slow.
+
+The features of C that stats package users will find most annoying are
+the ones that make it orders of magnitude faster than the cuter
+alternatives.  Type declarations mean that the computer does not need
+to guess the data type you mean at every use, saving a touch of time for
+every calculation.  Pointers and the call-by-reference mechanism reduce
+internal copying during function calls.
+
+Further, C's syntactic unpleasantness pays off immensely when extending
+quick-and-dirty scripts to involved, complex analyses.
+Not declaring types seems convenient at first, but playing guess-the-type
+with a package is often very frustrating for complex data types, such
+as a list of one-element lists. The different levels of scope and the
+modular form of files and functions may be counterintuitive at first,
+but those features are essential to your sanity when
+writing programs with more than a few pages of code.
+
+\paragraph{Extensibility}
+There is nothing more embarrassing than a presenter who answers a question
+about the assumptions or results of a model with `that's just Stata's
+default'---or still worse, (and yes, I have heard this in a real live
+presentation by a real live researcher) `I would have corrected this
+anomaly in my data, but Stata didn't have a function to do that.' This
+is beyond unpersuasive and into the realm of confidence-eroding.
+
+Connoisseurs of computing languages often refer to high-level and
+low-level languages. The low-level languages are close to the machine,
+referring to individual memory addresses and register operations,
+giving you perfect control but demanding a lot of work. The high-level
+languages do complex things with one command, like {\tt regress(data)}
+to produce pages of output, giving you no control but ease-of-use.
+
+C is typically billed as a low-level language, with its pointers and
+bit-shifting operators, but there is also a library of functions to
+do whatever high-level operations you may have in mind, such as the
+\cinline{apop\_OLS.estimate(data)} function from the Apophenia library.
+
+You get to pick the balance of laziness and precision that you desire. You
+can write code to manipulate individual addresses, use the GNU Scientific
+Library to manipulate matrices, or use Apophenia to estimate models---and
+you can do it all in the same program.
+
+The how-to code in this book is often repeated at multiple levels. I
+will first show you the low-level way of doing things over the course
+of three pages, and then tell you the single function call that will do
+all the work for you. You can use the prepackaged function calls for
+most work, but when the assumptions don't match your data you will be
+ready to crack open the black box and modify it to suit.
+
+\paragraph{The lingua franca}
+Here in the modern day, everybody is computer-literate and connected.
+Academia progresses through the open dissemination of information, data,
+and analyses. But with dozens of mutually incompatible stats packages
+on the market, the open marketplace of ideas turns into a tower of Babel.
+
+Meanwhile, C is the lingua franca of computing. The software I discuss
+in this book is available for the system you are using, and for the
+system your colleagues are using, right now, for free.
+
+Further, it is important to be compatible with yourself. Will you be
+able to verify and modify your work five years from now?
+Since C was written in 1972, dozens (maybe hundreds) of stats packages
+have come and gone. Those who try to follow the trends 
+have learned a half-dozen languages and have on their hard drives
+dozens of scripts that they can't run anymore.  Meanwhile, correctly
+written C programs written in the 1970s will compile cleanly on new PCs.
+\index{statistics packages!rants regarding|)}
+\comment{
 \index{statistics packages!rants regarding|(}
 There are so many other languages in which you could do
 statistics. Why use C instead of SAS, Stata, SPSS, S-Plus, SST, SHAZAM, GAUSS, GAMS, GRETL,
@@ -41,13 +144,12 @@ is beyond unpersuasive and into the realm of confidence-eroding.
 
 Stats packages are not designed around the general results, though
 it is technically possible to retrofit these packages to use them. Since
-they are Turing-complete,\footnote{Alan Turing wrote down an imaginary
+they are Turing complete,\footnote{Alan Turing wrote down an imaginary
 machine which could execute a handful of instructions.  All
 modern programming languages implement these instructions in one way or
 another, and are therefore equivalent to Turing's theoretical computer;
 by transitivity, they are all equivalent to each other. With enough
-perseverance, you could
-write a C compiler in MatLab.} you could
+perseverance, you could write a C compiler in MatLab.} you could
 write anything in them: maybe a word processor or a painting program. But
 why? It is just as easy to write the functions in C using the packages I discuss
 here, and the resulting program will be more robust and orders of
@@ -64,46 +166,36 @@ things. And then, one day, you will get to a problem that is too far
 out from what the language designers had in mind, or a problem that is
 too large-scale for the language to handle. Your favorite language just
 won't be able to do it, even after you spend hours rewriting and
-optimizing.  And after all that,
-you will have nothing but a broken heart.
+optimizing.  And after all that, you will have nothing but a broken heart.
 
-A full discussion of programming languages is beyond the scope of this book, but
-here are a few hints as to how statistics packages can become cumbersome with
-time. 
-
-The first is that some languages do not allow you to declare types. This
-looks like a convenience at first---you will see that there are a
-lot of declarations involved in a typical program, and it can be a
-distraction. But the declarations allow the program to run significantly
-faster. Some languages get around the type declaration question by simply
-declaring everything to be the largest possible type (basically making
-everything a {\tt long double} array).  For very complex data types,
+The features of C that stats package users will find most annoying are
+the ones that make it most well-suited for large-scale work. 
+\begin{itemize}
+\item Type declarations mean that the computer does not need to guess
+the data type you mean at every use, saving a touch of time for every
+calculation. For very complex data types,
 such as lists of lists, it is often difficult (and for exceptionally
 perverse cases, impossible) to get the computer to correctly guess what the
 type of a variable should be.
-
-The second is that most languages do not have a call-by-reference
-mechanism, which will be defined and discussed extensively in Section
-\ref{pointers}. As you read \ifbook Chapter \ref{c_crash}\else this overview\fi, imagine that it ends
-at Section \ref{prepointers} and you will have an idea of what most
-stats packages are like. Up to that point, each function call involves a
-great deal of copying, which can slow down a program immensely.
-
-Third, some stats packages have only two types of scope: local to
-a function, and global. You will see that having many options for
-intermediate levels of scope is a central theme to \ifbook Chapter \ref{c_crash}\else this overview\fi,
-and this is because good control over a variable's scope is essential
+\item Pointers and the call-by-reference mechanism reduce internal copying
+during function calls.  As you read \ifbook Chapter \ref{c_crash}\else
+this overview\fi, imagine that it ends at Section \ref{prepointers}
+and you will have an idea of what most stats packages are like.
+\item Different levels of scope (function, file, global) allow modular
+coding techniques that are essential
 to your sanity when writing programs with more than a few pages of
 code. Again, this is something that you will not notice is missing until
 you invest heavily in a language and begin writing lengthier analyses.
+\end{itemize}
 
-The above points add up to mean that all stats packages are slower
-than C---often hundreds of times slower. The difference won't be
-noticeable for a linear regression on a few thousand observations. But
-I can't count how many times people have told me a story where they did
-an analysis on a very large data set that took several days in a stats
-package, and then after rewriting the analysis in C it took only a
-few minutes.
+All of this may seem trivial, but it adds up. R and Apophenia use
+identical code (in C) for doing the \ind{Fisher exact test}, so it makes
+a good basis for comparison. On
+my laptop, a C program using Apophenia does 10,000 of these tests in
+10.1 seconds; a minimal R script does the same work in nine
+minutes---over fifty times as long. I can't count how many times people
+have told me similar stories about an analysis that took days or weeks
+in a stats package, but ran in minutes after they rewrote it in C.
 
 As you read \ifbook Chapter \ref{c_crash}\else this overview\fi, these
 problems are worth bearing in mind. C may seem to have some ugly
@@ -116,8 +208,13 @@ are using, and for the system you will be using five years from now,
 for free. There is no other language I could say that about with such
 confidence.
 
-This is not only important because you may find yourself in front of
-a different type of computer next year, but because we increasingly
+Since C was written in 1972, dozens (maybe hundreds) of stats packages
+have come and gone. Those who try to follow the trends for some period of
+time have learned a half-dozen languages and have on their hard drives
+dozens of scripts that won't run anymore.  Meanwhile, correctly written
+C programs written in the 1970s will compile cleanly on new PCs.
+
+Further, we increasingly
 expect that the data and analysis behind a work be publicly available.
 For example, it is a requirement for funding from the U.S. National
 Science Foundation. But if your analysis uses a stats package which
@@ -126,28 +223,20 @@ your fellow researchers who want to work with your analysis but for whom
 it is logistically impossible to do so. Are you sure your colleague in
 Madras has an SAS license?
 
-C is also universal in the time domain. 
-Since C was written in 1972, dozens (maybe hundreds)
-of stats packages have come and gone. Those who try to follow the trends
-for some period of time have learned a half-dozen languages and have on
-their hard drives dozens of scripts that won't run anymore.  Meanwhile,
-correctly written C programs written in the 1970s will compile cleanly
-on new PCs.
-
 
 \ifbook
 \subsection{Reason \#4: C is on all levels at once} 
-Connoisseurs of computing languages often refer to high-level and low-level languages. The low-level
-languages are close to the machine, referring to individual memory
-addresses and register operations, giving you perfect control but demanding a lot
-of work. The high-level languages do
-complex things with one command, like {\tt regress(data)} to produce
-pages of output, giving you no control but ease-of-use.
+Connoisseurs of computing languages often refer to high-level and
+low-level languages. The low-level languages are close to the machine,
+referring to individual memory addresses and register operations,
+giving you perfect control but demanding a lot of work. The high-level
+languages do complex things with one command, like {\tt regress(data)}
+to produce pages of output, giving you no control but ease-of-use.
 
-On this hierarchy, C is typically billed as a low-level language, but this is only
-partly true. C can indeed be used as a rock-bottom low-level language,
-with its bit-shifting operators and pointers to memory addresses.
-But on the other hand, there is a library of functions
+On this hierarchy, C is typically billed as a low-level language,
+but this is only partly true. C can indeed be used as a rock-bottom
+low-level language, with its bit-shifting operators and pointers to
+memory addresses.  But on the other hand, there is a library of functions
 to do whatever high-level operations you may have in mind, such as the
 \cinline{apop\_OLS.estimate(data)} function from the Apophenia library.
 
@@ -167,3 +256,4 @@ functions into your own program and modify them to suit your needs
 and data better. Of course, this relies on your being able to understand
 the code at lower levels than the function you are tearing apart.
 \fi
+}

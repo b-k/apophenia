@@ -99,7 +99,7 @@ static double zipf_rng(gsl_rng* r, double * a){
         if (apop_opts.verbose)
             printf("apop_zipf.rng: Zipf needs a parameter >=1. Returning 0.\n"); 
         return 0;
-        }
+    }
 int     x;
 double  u, v, t, 
         b       = pow(2, *a-1), 

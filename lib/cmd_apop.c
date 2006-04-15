@@ -261,7 +261,7 @@ size_t		data_no;
 char* print_help(char **argbuffer); //This is below the command_list, since it refers to it.
 
 /** print a matrix via command line. */
-char* do_print_matrix(char **argbuffer) {
+static char* do_print_matrix(char **argbuffer) {
 int		i, j, len= 0;
 gsl_matrix *	m;
 char		*out	= malloc(sizeof(char)*3),
@@ -427,7 +427,7 @@ int open_server() {
 
 /** This function does all the real work. It listens for a command,
 and when it gets one, it executes it here. */
-int start_listening(int sockfd){
+static int start_listening(int sockfd){
 struct sockaddr_in 	cli_addr;
 int 			n, clilen, newsockfd,  cmd_no, i, stop_pt;
 char 			cmdbuffer[256], **argbuffer,  
@@ -451,7 +451,7 @@ char 			cmdbuffer[256], **argbuffer,
      
      stop_pt	= find_cmd_list_elmt("stop");
      if(stop_pt == cmd_no){
-     	apop_close_db(0);
+     	apop_db_close(0);
      	close(newsockfd);
      	return 0;
      	//momma socket closes when we return from this fn.
@@ -566,9 +566,9 @@ int		sock, client_sock, cmd_no, arg_ct,
 		sock	= open_server();
 		if (sock < 0) printf("fuck.");
 		if (argc==3)
-			apop_open_db(argv[2]);
+			apop_db_open(argv[2]);
 		else
-			apop_open_db(NULL);
+			apop_db_open(NULL);
      		listen(sock,2);
 		while(keep_going)
 			keep_going	= start_listening(sock);

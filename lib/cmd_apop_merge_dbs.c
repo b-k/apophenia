@@ -30,8 +30,8 @@ char		c,
 			return 0;
 		}
 	}
-	apop_open_db(argv[optind]);
+	apop_db_open(argv[optind]);
 	apop_db_merge(argv[optind +1]);
-	apop_close_db(0);
+	apop_db_close('n');
 	return 0;
 }

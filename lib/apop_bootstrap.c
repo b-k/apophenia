@@ -22,7 +22,7 @@ You need to provide a function which takes a data set as an input and spits out 
 
 \todo It would be nice if one had a means of producing random views of the input data, rather than requiring the copying of half the data set for every run. Todo: write such a function.
 
-Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
 #include "stats.h"
@@ -122,3 +122,23 @@ if (boot_iterations ==0) boot_iterations	= 1000;
 	return output;
 }
 */
+
+
+/** Initialize an RNG.
+ 
+  Uses the Tausworth routine.
+
+\param  seed    The seed. No need to get funny with it: 0, 1, and 2 will produce wholly different streams.
+\return The RNG ready for your use.
+\ingroup convenience_fns
+*/
+gsl_rng *apop_rng_alloc(int seed){
+static int first_use    = 1;
+   if (first_use){
+       first_use --;
+       gsl_rng_env_setup();
+   }
+gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(setme, seed);
+    return setme;
+}

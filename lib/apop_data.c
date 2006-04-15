@@ -2,7 +2,7 @@
   gsl_matrix, apop_name, and a table of strings. No biggie.
 
 
-Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
 #include <gsl/gsl_matrix.h>
@@ -224,6 +224,9 @@ double apop_data_get(apop_data *in, size_t row, size_t col){
 /** Get an element from an \ref apop_data set, using the row name but
  the column number
 
+Uses \ref apop_name_find for the search; see notes there on the name
+matching rules.
+
  \ingroup data_struct
  */
 double apop_data_get_tn(apop_data *in, char* row, size_t col){
@@ -238,6 +241,10 @@ int rownum =  apop_name_find(in->names, row, 'r');
 
 /** Get an element from an \ref apop_data set, using the column name but
  the row number
+
+Uses \ref apop_name_find for the search; see notes there on the name
+matching rules.
+
  \ingroup data_struct
  */
 double apop_data_get_nt(apop_data *in, size_t row, char* col){
@@ -251,6 +258,10 @@ int colnum =  apop_name_find(in->names, col, 'c');
 }
 
 /** Get an element from an \ref apop_data set, using the row and column name.
+
+Uses \ref apop_name_find for the search; see notes there on the name
+matching rules.
+
  \ingroup data_struct
  */
 double apop_data_get_tt(apop_data *in, char *row, char* col){

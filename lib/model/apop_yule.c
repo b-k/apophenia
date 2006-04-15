@@ -38,41 +38,42 @@ double  mu          = gsl_vector_get(beta, 0);
 }
 
 static double yule_log_likelihood(const gsl_vector *beta, void *d){
-float           bb	= gsl_vector_get(beta, 0);
+double          bb	= gsl_vector_get(beta, 0),
+                pt;
 int 		    i, k;
 gsl_matrix 	    *data		= d;
 float 		    ln_k, ln_bb_k,
 		        likelihood 	    = 0,
 		        ln_bb		    = gsl_sf_lngamma(bb),
 		        ln_bb_less_1    = log(bb-1);
-	for (k=0; k< data->size2; k++)	{
-		if (k>=1) 	ln_k	= gsl_sf_lngamma(k+1);
-		else		ln_k	= 0;
-		ln_bb_k		= gsl_sf_lngamma(k+1+bb);
-		for (i=0; i< data->size1; i++){
-			likelihood	+= gsl_matrix_get(data,i,k) * (ln_bb_less_1 + ln_k + ln_bb - ln_bb_k);
-		}
+	for (i=0; i< data->size1; i++)	{
+	    for (k=0; k< data->size2; k++)	{
+            pt          = gsl_matrix_get(data, i, k);
+		    if (k>=1) 	ln_k	= gsl_sf_lngamma(pt+1);
+		    else		ln_k	= 0;
+		    ln_bb_k		= gsl_sf_lngamma(pt+1+bb);
+		    likelihood   +=  ln_k - ln_bb_k;
+	    }
 	}
-	return likelihood;
+	return likelihood + (ln_bb_less_1 + ln_bb) * data->size1 * data->size2;
 }
 
 static void yule_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
-float           bb		= gsl_vector_get(beta, 0);
+double          bb		= gsl_vector_get(beta, 0),
+                pt;
 gsl_matrix	    *data	= d;
 int 		    i, k;
 double		    bb_minus_one_inv= 1/(bb-1),
 		        psi_bb	= gsl_sf_psi(bb),
-		        psi_bb_k,
-		        p,
 		        d_bb		= 0;
-	for (k=0; k< data->size2; k++){
-		psi_bb_k= gsl_sf_psi(k +1 + bb);
-		p	= bb_minus_one_inv + psi_bb - psi_bb_k;
-		for (i=0; i< data->size1; i++){
-			d_bb		+= gsl_matrix_get(data, i, k) * p;
+	for (i=0; i< data->size1; i++)	{
+	    for (k=0; k< data->size2; k++)	{
+            pt           = gsl_matrix_get(data, i, k);
+			d_bb		-= gsl_sf_psi(pt +1 + bb);
 		}
 	}
+    d_bb    += (bb_minus_one_inv + psi_bb) * data->size1 * data->size2;
 	gsl_vector_set(gradient, 0, d_bb);
 }
 

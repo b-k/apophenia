@@ -33,6 +33,13 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 ////////////
 gsl_vector * apop_array_to_vector(double *in, int size);
 gsl_matrix * apop_array_to_matrix(double **in, int rows, int cols);
+apop_data * apop_array_to_data(double **in, int rows, int cols);
+
+/////////////
+//From line
+/////////////
+gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
+apop_data * apop_line_to_data(double *in, int rows, int cols);
 
 ///////////
 //From text
@@ -43,5 +50,7 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 ///////////
 //From crosstabs
 ///////////
-int apop_crosstab_to_db(gsl_matrix *in, apop_name n, char *tabname, char *row_col_name, 
+int apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name);
+
+char * apop_strip_dots(char *in, char strip_type);

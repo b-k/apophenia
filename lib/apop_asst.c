@@ -1,44 +1,40 @@
-/** \file apop_asst.c  The odds and ends bin.  */
+/** \file apop_asst.c  The odds and ends bin. 
+Copyright (c) 2005, 2006 by Ben Klemens. Licensed under the GNU GPL v2. */
+
+#include <apophenia/headers.h>
 
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
 
 There are no doubt efficient shortcuts do doing this, but I use brute
 force. To speed things along, I save the results so that they can later
-just be looked up.
+just be looked up. Each row in the saved structure is an \f$s\f$, and each
+column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
 
 When reading the code, remember that the zeroth element holds the value
 for N=1, and so on.
 
 \todo Look up the tricks for calculating this.
 */
-
-#include <apophenia/headers.h>
 double apop_generalized_harmonic(int N, double s){
 static double * 	eses	= NULL;
 static int * 		lengths	= NULL;
-static	int		count	= 0;
-static	double **	precalced=NULL;
-int			j, old_len,
-			i	= 0;
-	if (count == 0){
-		precalced 	= malloc(sizeof (double*));
-		eses 		= malloc(sizeof (double));
-		lengths		= malloc(sizeof (int));
-	}
-	while (i< count)
-		if (eses[i] == s) 	break;
-		else 			i++;
+static int		    count	= 0;
+static double **	precalced=NULL;
+int			        j, old_len, i;
+	for (i=0; i< count; i++)
+		if (eses == NULL || eses[i] == s) 	
+            break;
 	if (i == count){	//you need to build the vector from scratch.
 		count			++;
+        i               = count - 1;
 		precalced 		= realloc(precalced, sizeof (double*) * count);
 		lengths 		= realloc(lengths, sizeof (int*) * count);
 		eses 			= realloc(eses, sizeof (double) * count);
-		precalced[count-1]	= malloc(sizeof(double) * N);
-		lengths[count-1]	= N;
-		eses[count-1]		= s;
-		precalced[count-1][0]	= 1;
+		precalced[i]	= malloc(sizeof(double) * N);
+		lengths[i]	    = N;
+		eses[i]		    = s;
+		precalced[i][0]	= 1;
 		old_len			= 1;
-		i			= count -1;
 	}
 	else {	//then you found it.
 		old_len		= lengths[i];
@@ -50,31 +46,6 @@ int			j, old_len,
 	}
 	return 	precalced[i][N-1];
 }
-
-/** test the generalized harmonic summing thing.
-
-\bug If this is called from outside the library (e.g., the test program), it sends back wrong answers. Potentially a gcc bug!  */
-int test_harmonic(){
-double		out;
-int		count = 0;
-	out	= apop_generalized_harmonic(270, 0.0);
-	if(out !=270){
-		printf("Generalized harmonic(270,0) should be 270, but it's %g. Fail.\n", out);
-		count++;
-	}
-	out	= apop_generalized_harmonic(370, -1.0);
-	if(out !=370*371/2){
-		printf("Generalized harmonic(370,-1) should be 370*371/2, but it's %g. Fail.\n", out);
-		count++;
-	}
-	out	= apop_generalized_harmonic(12, -1.0);
-	if(out !=12*13/2){
-		printf("Generalized harmonic(12,-1) should be 12*13/2, but it's %g. Fail.\n", out);
-		count++;
-	}
-	return count;
-}
-
 
 /** RNG from a Generalized Hypergeometric type B3.
 
@@ -92,4 +63,44 @@ double		aa	= gsl_ran_gamma(r, a[0], 1),
 int		p;
 	p	= gsl_ran_poisson(r, aa*b/c);
 	return p;
+}
+
+
+/** Strip dots from a name.
+
+\param  in          A string
+\int    strip_type  'd': replace all '.' with '_'.<br>
+                    'b': return only the string before the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the first dot.
+                    'a': return only the string after the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the last dot.
+\ingroup convenience_fns
+ */
+char * apop_strip_dots(char *in, char strip_type){
+int     i;
+char    *out;
+    if ((strip_type ==0) || (strip_type == 'd')){
+        out    = malloc(sizeof(char)* (strlen(in)+1));
+        for (i=0; i< strlen(in)+1; i++){//will copy over the '/0' too.
+            if (in[i] == '.')
+                out[i] = '_';
+            else
+                out[i] = in[i];
+        }
+    }
+    else if ((strip_type ==1) || (strip_type == 'b')){
+        out    = malloc(sizeof(char)* (strlen(in)+1));
+        strcpy(out, in);
+        for (i=strlen(in)+1; i--; )
+            if (in[i] == '.'){
+                out[i] = '\0';
+                break;
+            }
+    }
+    else if ((strip_type ==2) || (strip_type == 'a')){
+        for (i=0; i< strlen(in)+1; i++)
+            if (in[i] == '.')
+                break;
+        out    = malloc(sizeof(char)* (strlen(in)-i));
+        strcpy(out, (in+i+1));
+    }
+    return out;
 }

@@ -1,6 +1,6 @@
 /** \file apop_conversions.c	The various functions to convert from one format to another.
 
- Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
  */
 #include "conversions.h"
 #include "assert.h"
@@ -111,6 +111,8 @@ int		i, j;
 \return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
 
 usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
+
+If you want to intialize on the allocation line, this isn't what you want. See \ref apop_line_to_matrix.
 \ingroup convertfromarray 
 */
 gsl_matrix * apop_array_to_matrix(double **in, int rows, int cols){
@@ -123,6 +125,54 @@ double		    *line;
 	gsl_matrix_memcpy(out,&(m.matrix));
 	free(line);
     return out;
+}
+
+/** convert a <tt>double **</tt> array to an \ref apop_data set. It will
+have no names.
+
+\param in	the array to read in
+\param rows, cols	the size of the array.
+\return the \ref apop_data set, allocated for you and ready to use.
+
+usage: \code apop_data *d = apop_array_to_data(indata, 34, 4); \endcode
+\ingroup convertfromarray 
+
+If you want to intialize on the allocation line, this isn't what you want. See \ref apop_line_to_data.
+*/
+apop_data * apop_array_to_data(double **in, int rows, int cols){
+    return apop_matrix_to_data(apop_array_to_matrix(in, rows, cols));
+}
+
+/** convert a <tt>double **</tt> array to a <tt>gsl_matrix</tt>
+
+\param in	the array to read in
+\param rows, cols	the size of the array.
+\return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
+
+usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
+\ingroup convertfromarray 
+*/
+gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
+gsl_matrix_view	m;
+gsl_matrix      *out;
+	out	= gsl_matrix_alloc(rows, cols);
+	m	= gsl_matrix_view_array(line, rows,cols);
+	gsl_matrix_memcpy(out,&(m.matrix));
+    return out;
+}
+
+/** convert a <tt>double **</tt> array to an \ref apop_data set. It will
+have no names.
+
+\param in	the array to read in
+\param rows, cols	the size of the array.
+\return the \ref apop_data set, allocated for you and ready to use.
+
+usage: \code apop_data *d = apop_array_to_data(indata, 34, 4); \endcode
+\ingroup convertfromarray 
+*/
+apop_data * apop_line_to_data(double *in, int rows, int cols){
+    return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
 }
 
 static int find_cat_index(char **d, char * r, int start_from, int size){
@@ -219,6 +269,10 @@ regmatch_t  result[3];
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 0);
 	infile	= fopen(text_file,"r");
+    if (infile == NULL){
+        printf("Error opening file %s. apop_count_cols_in_text returning 0.", text_file);
+        return 0;
+    }
 	if (infile==NULL) {printf("Error opening %s", text_file); return 1;}
 	fgets(instr, Text_Line_Limit, infile);
 	while(instr[0]=='#')	//burn off comment lines
@@ -332,6 +386,10 @@ regmatch_t  result[2];
 	rowct	= apop_count_rows_in_text(text_file);
     set     = apop_data_alloc(rowct+1-has_col_names,ct);
 	infile	= fopen(text_file,"r");
+    if (infile == NULL){
+        printf("Error opening file %s. apop_text_to_data returning NULL.", text_file);
+        return NULL;
+    }
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 0);
 
@@ -432,8 +490,8 @@ char		*tmpstring,
 \param text_file    The name of the text file to be read in.
 \param tabname      The name to give the table in the database
 \param has_row_names Does the lines of data have row names?
-\param has_col_names Is the top line a list of column names? 
-\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>).
+\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way.
+\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names. 
 
 \return Returns the number of rows.
 
@@ -445,7 +503,7 @@ Using the data set from the example on the \ref apop_OLS "apop_OLS" page, here's
 int main(void){ 
 apop_data       *data; 
 apop_estimate   *est;
-    apop_open_db(NULL);
+    apop_db_open(NULL);
     apop_text_to_db("data", "d", 0,1,NULL);
     data       = apop_query_to_data("select * from d");
     estimate   = apop_OLS.estimate(data, NULL, NULL);
@@ -459,7 +517,7 @@ apop_estimate   *est;
 int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
 FILE * 		infile;
 char		q[20000], instr[Text_Line_Limit], **fn, *prepped;
-char		*stripped, outstr[Text_Line_Limit],
+char		*stripped, *stripme, outstr[Text_Line_Limit],
             full_divider[1000];
 int 		ct, one_in,
             last_match,
@@ -478,10 +536,10 @@ regmatch_t  result[2];
         regcomp(regex, full_divider, 0);
 		infile	= fopen(text_file,"r");
 	       	if (infile==NULL) {
-			printf("apop, %s: %i. Trouble opening %s.\n", __FILE__, __LINE__, text_file);
+			printf("Trouble opening %s. apop_text_to_db bailing.\n", text_file);
 			return 0;
 		}
-		if (field_names == NULL){
+		if (has_col_names && field_names == NULL){
 			use_names_in_file++;
 			fgets(instr, Text_Line_Limit, infile);
 			while(instr[0]=='#')	//burn off comment lines
@@ -492,13 +550,25 @@ regmatch_t  result[2];
             length_of_string= strlen(instr);
             while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
                 pull_string(instr,  outstr, result,  &last_match);
-	            stripped	= strip(outstr);
+	            stripme	    = strip(outstr);
+                stripped    = apop_strip_dots(stripme,'d');
 			    fn[i]	= malloc(1000 * sizeof(char));
 			    strcpy(fn[i], stripped);
+                free(stripme);
 		        free(stripped);
 			    i++;
 	        }
-		} else	fn	= field_names;
+		} else	{
+            if (field_names)
+                fn	= field_names;
+            else{
+			    fn	= malloc(ct * sizeof(char*));
+                for (i =0; i < ct; i++){
+			        fn[i]	= malloc(1000 * sizeof(char));
+                    sprintf(fn[i], "col_%i", i);
+                }
+            }
+        }
 		strcpy(q, "begin; CREATE TABLE ");
 		strcat(q, tabname);
 		for (i=0; i<ct; i++){
@@ -544,15 +614,20 @@ regmatch_t  result[2];
 /** See \ref apop_db_to_crosstab for the storyline; this is the complement.
  \ingroup db
  */
-int apop_crosstab_to_db(gsl_matrix *in, apop_name n, char *tabname, char *row_col_name, 
+int apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name){
-int		i,j;
-	apop_query_db("CREATE TABLE %s (%s , %s , %s);", tabname, row_col_name, col_col_name, data_col_name);
-	for (i=0; i< n.colnamect; i++){
+int		    i,j;
+apop_name   *n = in->names;
+	apop_query_db("CREATE TABLE %s (%s , %s , %s);", tabname, 
+            apop_strip_dots(row_col_name, 'd'), 
+            apop_strip_dots(col_col_name, 'd'), 
+            apop_strip_dots(data_col_name, 'd'));
+	for (i=0; i< n->colnamect; i++){
 		apop_query_db("begin;");
-		for (j=0; j< n.rownamect; j++)
+		for (j=0; j< n->rownamect; j++)
 			apop_query_db("INSERT INTO %s VALUES (%s, %s,%g);", tabname, 
-					n.rownames[j], n.colnames[i], gsl_matrix_get(in, j, i));
+					n->rownames[j], n->colnames[i], 
+                                    gsl_matrix_get(in->matrix, j, i));
 		apop_query_db("commit;");
 	}
 	return 0;

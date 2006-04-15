@@ -1,6 +1,6 @@
 /** \file apop_name.c
 
-Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
 
@@ -225,17 +225,50 @@ int         i;
     apop_name_free(newname);
 }
 
+
+//For printf compatibility, you will need to use <tt>%%</tt> instead
+//of a single percent sign. A single percent sign will segfault. Thus,
+//this fn doubles all percent signs input, rather than making the user
+//remember.
+static char *precheck(char *in){
+int     i       = 0,
+        j       = 0;
+char    *out    = malloc(sizeof(char) * (2*strlen(in)+1));
+    while (i< strlen(in) + 1){
+        while (in[i] != '%' &&  (i<= strlen(in) + 1))
+            out[j++]  = in[i++];
+        if (i <= strlen(in)+1){
+            out[j++]    = '%';
+            out[j++]    = '%';
+            while (in[++i] == '%') /*eat.*/;
+        }
+    }
+    return out;
+}
+
+
 /** Finds the position of an element in a list of names.
 
-\param n    the \ref apop_name object to search.
-\param findme the name you seek
-\param type 'c', 'r', or 't'.
-\return The position of \c findme. If not found, returns -1.
+The function uses the SQL LIKE operator to search. From the SQLite manual:
+" A percent symbol % in the pattern matches any sequence of zero or
+more characters in the string. An underscore _ in the pattern matches
+any single character in the string. Any other character matches itself
+or its lower/upper case equivalent (i.e. case-insensitive matching)."
+
+
+For example, "p_val%" will match "P value", "p.value", and "p values".
+
+\param n        the \ref apop_name object to search.
+\param findme   the name you seek; see above.
+\param type     'c', 'r', or 't'.
+\return         The position of \c findme. If not found, returns -1.
 \ingroup names
   */
-size_t  apop_name_find(apop_name *n, char *findme, char type){
+size_t  apop_name_find(apop_name *n, char *in, char type){
 char    **list;
 int     i, listct;
+char    *findme = precheck(in);
+    printf("\n!%s!\n",findme);
     if (type == 'r'){
         list    = n->rownames;
         listct  = n->rownamect;
@@ -249,8 +282,11 @@ int     i, listct;
         listct  = n->colnamect;
     }
     for (i = 0; i < listct; i++){
-        if (!strcmp(list[i], findme))
+        if (apop_query_to_float("select \"%s\" like \"%s\";", list[i], findme)){
+            free(findme);
             return i;
+        }
     }
+    free(findme);
     return -1;
 }

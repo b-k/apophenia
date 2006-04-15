@@ -11,6 +11,50 @@ double  true_parameter[]    = {3.82,2.1},
         true_y_parameter[]  = {0,2.1};
 
 
+int test_strip_dots(void){
+    /* 0: replace all dots with _
+      1: everything before the last dot.
+      2: everything after the first dot.
+      */
+char teapot[]   = "tea.pot";
+char many_dots[]   = "tea.pot.csv";
+char *out;
+    out = apop_strip_dots(teapot, 0);
+    assert(!strcmp(out, "tea_pot"));
+    out = apop_strip_dots(teapot, 1);
+    assert(!strcmp(out, "tea"));
+    out = apop_strip_dots(teapot, 2);
+    assert(!strcmp(out, "pot"));
+    out = apop_strip_dots(many_dots, 0);
+    assert(!strcmp(out, "tea_pot_csv"));
+    out = apop_strip_dots(many_dots, 1);
+    assert(!strcmp(out, "tea.pot"));
+    out = apop_strip_dots(many_dots, 2);
+    assert(!strcmp(out, "pot.csv"));
+}
+
+/** test the generalized harmonic summing thing, \ref apop_generalized_harmonic.
+*/
+int test_harmonic(){
+double		out;
+int		count = 0;
+	out	= apop_generalized_harmonic(270, 0.0);
+	if(out !=270){
+		printf("Generalized harmonic(270,0) should be 270, but it's %g. Fail.\n", out);
+		count++;
+	}
+	out	= apop_generalized_harmonic(370, -1.0);
+	if(out !=370*371/2){
+		printf("Generalized harmonic(370,-1) should be 370*371/2, but it's %g. Fail.\n", out);
+		count++;
+	}
+	out	= apop_generalized_harmonic(12, -1.0);
+	if(out !=12*13/2){
+		printf("Generalized harmonic(12,-1) should be 12*13/2, but it's %g. Fail.\n", out);
+		count++;
+	}
+	return count;
+}
 
 int estimate_model(gsl_matrix *data, apop_model dist){
 int                     i,
@@ -19,7 +63,7 @@ double                  starting_pt[] = {3.2, 1.4};
 apop_estimation_params  *params = apop_estimation_params_alloc();
 apop_inventory          inv;
 apop_estimate           *e;
-    params->method           = 1;
+    params->method           = 500;
     params->step_size        = 1e-1;
     params->starting_pt      = starting_pt;
     params->tolerance        = 1e-5;
@@ -185,6 +229,12 @@ apop_estimation_params  params;
         params.step_size        = 1e-2;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
+
+    printf("apop_generalized_harmonic test:");
+    do_test(test_harmonic());
+
+    printf("apop_strip_dots test:");
+    do_test(test_strip_dots());
 
     printf("apop_distance test:");
     do_test(test_distances());

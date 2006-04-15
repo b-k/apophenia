@@ -13,14 +13,12 @@ apop_estimate *apop_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl
 double apop_F_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c);
 double apop_f_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c);
 
-double	apop_t_test(gsl_vector *a, gsl_vector *b);
-double	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
-//A nice, easy t test. With what confidence can we reject the hypothesis
-//that the mean of vector A equals the mean of vector B?
+apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
+apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
 
 apop_data * apop_produce_dummies(gsl_vector *in, int keep_first);
 
-double two_tailify(double in);
+double apop_two_tailify(double in);
 //My convenience fn to turn the results from a symmetric one-tailed table lookup
 //into a two-tailed confidence interval.
 

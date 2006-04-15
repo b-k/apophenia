@@ -1,4 +1,4 @@
-\chapter{Gnuplot} \label{gnuplot}
+\startonecol \chapter{Gnuplot} \label{gnuplot} \endonecol
 %@-     so lgrind will play nice with makeindex
 \index{Gnuplot|(}
 \index{plotting|see{Gnuplot}}
@@ -64,7 +64,7 @@ subregions of 2-D plots to zoom into.
 \subsection{Histograms} \index{histograms!plotting|(}
 Gnuplot, refusing to do calculations for you,
 makes making histograms a pain.  Fortunately, the GSL has you covered,
-with the \cind{gsl\_histogram} object, which first made its appearance
+with the \cind{gsl\_histogram} object, which will also appear
 in Section \ref{randomnumbers}, when we needed to generate PDFs from data.
 
 It creates a set of bins, and
@@ -72,9 +72,10 @@ then you can call \cinline{gsl\_histogram\_increment} to put
 data into the right bin. Below is the code for \cind{apop\_plot\_hist\-o\-gram}. 
 It allocates a histogram with
 \cinline{bin\_ct} bins, then sets its range to just past the min and max
-of the data. Then the for loop pulls data points from the vector and
+of the data. Then the \cinline{for} loop pulls data points from the vector and
 dumps them to the histogram, without any further calculation on our part.
-Once everything is neatly aggregated, the function opens a file and dumps the data to a Gnuplottable file.
+Once everything is neatly aggregated, the function opens a file and dumps the data to a Gnuplottable file. There is an example of this function in use in Figure \ref{draw_beta_curve}, page \pageref{draw_beta_curve}.
+\startonecol
 \begin{lstlisting}
 void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
 int             i;
@@ -103,6 +104,7 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
     if (outfile !=NULL)    fclose(f);
 }
 \end{lstlisting}
+\endonecol
 \index{histograms!plotting|)}
 
 \section{Printing} \index{Postscript} 
@@ -115,7 +117,7 @@ set out 'outfile.eps';
 at the head of a file will put the plot in \binline{outfile.eps} rather
 than posting it to the screen. Since all of the plotting commands append
 by default, one could start the file off with this command, and then
-call a plotting command to produce a paper-printing Gnuplot command file. 
+call a plotting command to produce a paper-printing Gnuplot command file.\footnote{If you use the \binline{replot} command to print multiple plots, set the terminal to postscript just before the last replot. otherwise, your paper will show a confusing blur of multiple plots.}
 
 The following snippet will erase a file, and
 if \cinline{print\_to\_paper} is true, place a header setting Gnuplot to
@@ -167,7 +169,7 @@ ps2pdf a_report.ps
 
 This is a lot of typing, but there is a way to automate the process:
 \ind{make}. Below is a sample Makefile for producing a \LaTeX{} document
-should \binline{pdflatex} be quarelsome on your system. As with your C
+should \binline{pdflatex} be quarrelsome on your system. As with your C
 programs, once the Makefile is in place, you can generate final PDF
 documents by just typing \binline{make} at the command line. The
 creative reader could readily combine this Makefile with the sample C

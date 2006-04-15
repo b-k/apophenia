@@ -1,10 +1,4 @@
-\chapter{Describing data} \label{projections}
-%Some commonly boldfaced vectors.
-\def\xv{{\bf x} } \def\yv{{\bf y} } \def\pv{{\bf p} }
-\def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
-\def\betav{{\mbox{\boldmath$\beta$}}}
-%\def\vector#1{\left[\matrix{#1}\right]}
-\def\vector#1{\left[\begin{matrix}#1\end{matrix}\right]}
+\startonecol \chapter{Describing data} \label{projections} \endonecol
 
 This chapter covers some methods of describing a data set, via a
 number of strategies of increasing complexity. 
@@ -27,16 +21,16 @@ describes the fifty-dimensional data.
 The second approach, in Section \ref{cat}, provides still more
 structure. The model labels one variable as the dependent variable, and claims
 that it is a linear combination of the other, independent, variables.
-This is the ordinary least squares model, which has dozens of variants.
+This is the ordinary least squares (OLS) model, which has dozens of variants.
 
-One way to characterize the two projection approaches is that both
+         One way to characterize the two projection approaches is that both
 aim to project $N$-di\-men\-sion\-al data onto the best subspace of
 significantly less than $N$ di\-men\-sions---but they have different
-definitions of \airq{best}.  The standard OLS regression consists of
-finding the one-dimensional line that minimizes the sum of squared
-distances between the data and that line. Factor analysis consists
-of finding the few dimensions where the data's variance is maximized,
-after being projected onto the subspace.
+definitions of \airq{best}.  The standard OLS \index{Ordinary Least
+Squares} regression consists of finding the one-dimensional line
+that minimizes the sum of squared distances between the data and that
+line. Factor analysis consists of finding the few dimensions where the
+data's variance is maximized, after being projected onto the subspace.
 
 
 
@@ -108,7 +102,7 @@ central moment.
 \paragraph{Correlation/Cauchy-Schwarz:} The correlation coefficient is
 defined as $$\rho_{xy}\equiv{s_{xy}\over s_x s_y}.$$ This is mostly just another
 statistic useful for describing two columns of data,
-but it makes a surprise appearance in section \ref{ts}. This
+but it makes a surprise appearance in Section \ref{ts}. This
 also allowed Cauchy \& Schwarz to state the \ind{Cauchy-Schwarz
 inequality}: $0\leq \rho^2 \leq 1$.  \label{correlation}
 
@@ -129,6 +123,7 @@ apop_data_show(apop_matrix_summarize(set));
 The last item in the code, \cind{apop\_data\_show} produces a table of
 some summary statistics for every column of the data set.
 
+\startonecol
 \section{Sample distributions}\index{sample distributions}
 \label{distlist}
 
@@ -141,30 +136,6 @@ parameters are discussed in Section \ref{dist2}.
 
 The number of times that an event which has likelihood $p$ happens in
 one trial. I.e., $x$ is zero or one here.
-
-\long\def\eqnbox#1{
-\begin{center}
-\fbox{
-\parbox{10cm}{
-\begin{eqnarray}
-#1
-\end{eqnarray}
-}
-}
-\end{center}
-}
-
-\long\def\wideeqnbox#1#2{
-\begin{center}
-\fbox{
-\parbox{#1}{
-\begin{eqnarray}
-#2
-\end{eqnarray}
-}
-}
-\end{center}
-}
 
 \eqnbox{
 P(x|p)&=&p^x (1-p)^{(1-x)}				\nonumber\\
@@ -214,7 +185,7 @@ Poisson}(\lambda_2)$ (and $X$ and $Y$ are independent), then $(X + Y) \sim {\rm 
 \lambda_2)$.  \item As $\lambda\to\infty$,  ${\rm Poisson}(\lambda)
 \to {\cal N}(\lambda, \lambda)$.  \end{itemize}
 
-\paragraph{Normal\index{Normal distribution}}
+\paragraph{Normal\index{Normal distribution|\textbf}}
 
 You know and love the bell curve, aka the Gaussian
 distribution.\footnote{Typography note: this book will use \airq{Normal},
@@ -267,18 +238,20 @@ p(x) &=& {\Gamma(a+b) \over \Gamma(a) \Gamma(b)} x^{a-1}
 E(x)&=&{\alpha\over\alpha+\beta}							\nonumber\\
 \var(x)&=&{\alpha\beta\over(\alpha+\beta)^2(\alpha + \beta + 1)}             \nonumber
 }
+
 \begin{itemize}
-\item If $\alpha = \beta = 1$, then this is the ${\rm Uniform}[0,1]$ distribution.
+\item If $\alpha = \beta = 1$, then this is the ${\rm Uniform}[0,1]$ distribution.\index{Uniform distribution}
 \end{itemize}
 
 See page \pageref{beta} for more on the uses of the Beta distribution.
+\endonecol
 
 
 
-\section{Factor analysis} \label{pca} 
-This is also known as principal component
-analysis, or spectral decomposition, depending upon your field. 
-The first phase (calculating the eigenvalues) is known as the singular value decomposition.
+\section{Factor analysis} \label{pca} \ind{factor analysis}
+This is also known as \ind{principal component
+analysis}, or \ind{spectral decomposition}, depending upon your field. 
+The first phase (calculating the eigenvalues) is known as the \ind{singular value decomposition}.
 
 It is a purely descriptive method.  The idea is that we want a few
 dimensions that will capture the most variance possible---usually two,
@@ -305,15 +278,15 @@ $n$ eigenvectors of the data's covariance matrix with the $n$ largest
 associated eigenvalues.
 
 \subsection{Coding it}
-This section will show you the computation of a singular value
-decomposition on three levels. The first goes through the steps of
+This section will show you the computation of a principal component
+analysis on three levels. The first goes through the steps of
 calculating eigenvectors yourself; the second uses the 
 GSL's built-in singular value decomposition function; the third is a
 single call in Apophenia.
 
 The only hard part is finding the eigenvalues of
 $(X'X)$; the GSL saw us coming, and gives us the \cinline{gsl\_eigen\_symm} functions
-to calculate the eigenvectors of a symmetric matrix.
+to calculate the \ind{eigenvectors} of a symmetric matrix.
 
 The GSL is too polite to allocate large vectors behind our backs, so
 it asks that we pass in pre-allocated workspaces when it needs such
@@ -347,7 +320,7 @@ gsl_matrix *xpx  = gsl_matrix_calloc(ds, ds);
 gsl_vector *eigenvals   = gsl_vector_alloc(ds);
 gsl_matrix *eigenvecs   = gsl_matrix_alloc(ds, ds);
 
-apop_matrix_normalize(data, 0);
+apop_matrix_normalize(data, 3);
 gsl_blas_dgemm(CblasTrans,CblasNoTrans, x, x, xpx);
 find_eigens(xpx, eigenvals, eigenvecs);
 \end{lstlisting}
@@ -387,8 +360,8 @@ of doing so are discussed in Chapter \ref{gnuplot}
 \paragraph{The easy way}
 
 Figure \ref{svdecomposition} presents a function which takes some
-shortcuts from the above, which one would use in practice. It is a
-simplification of \cind{apop\_sv\_de\-comp\-osi\-tion}. The function simply makes
+shortcuts from the above. It is a
+simplification of \cind{apop\_sv\_de\-comp\-osi\-tion}, which is what you would use in practice. The function simply makes
 a copy of the data and feeds that in to the GSL's built-in singular-value
 decomposition function (which eats the copy, and must also be fed an
 additional dummy vector for its work). The function then returns the first
@@ -462,6 +435,7 @@ In Section \ref{tstat} we get rid of $\sigma$, but we
 need to know $\mu$, and unbiasedness guarantees us that if all is going
 well, $\mu =\hat\betav$.
 
+\startonecol
 \subsection{OLS}
 \index{Ordinary Least Squares|(textbf}\index{OLS|see{Ordinary Least Squares}}
 The model: 
@@ -489,7 +463,7 @@ Assumptions:
 mean that $\Sigma =
 \sigma^2{\bf I}$.
 \item $\var(\Xv_k)>0$, and as $n\to\infty$, it remains finite.
-\item The columns of $\Xv$ are not colinear.
+\item The columns of $\Xv$ are not colinear (so $\det(\Xv'\Xv)\neq 0$).
 \item $N>K$.
 \end{itemize}
 
@@ -500,8 +474,10 @@ When all of that holds, then:
 E(\hat\betav_{\rm OLS} ) &=& \beta					\nonumber\\
 \var(\hat\betav_{\rm OLS} ) &=& \sigma^2(\Xv'\Xv)^{-1}		\nonumber
 }
+
 	\index{Ordinary Least Squares|)textbf}
 \subsection{GLS} \label{GLS}\index{GLS|see{Generalized Least Squares}}
+\index{Generalized Least Squares} 
 Generalized Least Squares generalizes OLS by allowing $\uv'\uv$ to be a
 known matrix $\Sigma$, with no additional restrictions.
 Note how neatly plugging $\sigma^2{\bf I}$ in to the
@@ -516,8 +492,8 @@ E(\hat\betav_{\rm GLS}) &=& \beta					\nonumber\\
 % 			(\Xv'\Xv)^{-1}\Xv'\Sigma\Xv(\Xv'\Xv)^{-1}\nonumber
 }
 
-\subsection{\ind{IV}}			\label{IV}
-
+\subsection{IV} \index{instrumental variables} 
+\index{IV|see{instrumental variables}}	\label{IV} 
 If $\Xv$ is measured with error, then $\hat\betav_{OLS}$ is inconsistent and
 asymptotically biased toward zero (in most cases, see e.g. \cite{kmenta},
 p 349). Bias is a big deal, so we need an alternate method. If there exists
@@ -554,10 +530,10 @@ Add the constraint that $\Qv'\betav=\cv$. Then:
 If the constraint is satisfied by $\hat\beta$, then
 $(\Qv'\hat\beta-\cv)$ is zero and $\hat\betav_{CLS}=\hat\betav_{OLS}$.
 Though, you have to ask yourself why you are imposing a constraint that
-you have not tested; perhaps you should first have a look at the F-test
+you have not tested; perhaps you should first have a look at the \ind{F test}
 based on this form, in Section \ref{ftestsec}.
 
-\subsection{\ind{FGLS}}
+\subsection{\ind{FGLS}} \index{Generalized Least Squares!Feasible}
 
 If we do not know $\Sigma$, which is universally the case except on
 test questions, we need some way to make the GLS estimation Feasible. So we
@@ -581,7 +557,7 @@ appears in the regression for period $t$. The covariance matrix should
 be clear in your head now: it's $\sigma^2$ times one on the diagonals,
 $\rho$ on the off-diagonal, $\rho^2$ on the off-off-diagonals, \&c. In
 this form, the $\rho$ really is the correlation coefficient---$\rho$
-from section \ref{correlation}.
+from Section \ref{correlation}.
 
 So all we need to apply GLS is $\hat\rho$. It so happens that OLS is
 consistent for the AR(1) case, so we can find $\hat\epsilon$, and then
@@ -590,6 +566,7 @@ just find $r=(\sum \hat\epsilon_t \hat\epsilon_{t-1})/(\sum
 \comment{[Two-stage least squares here]}
 
 \index{time series|)}
+\endonecol
 
 \subsection{Fitting it} 
 To summarize,
@@ -621,7 +598,7 @@ gsl_vector_set_all(&v, 1);
 \end{lstlisting}
 
 
-Now we have both the $\Yv$ and the $\Xv$ in the equation, so we can find $(\Xv'\Xv)$ and $\Xv'\Yv$.
+Now we have both the $\Yv$ and the $\Xv$ in the equation, so we can find $(\Xv'\Xv)$ and $(\Xv'\Yv)$.
 Both parts are a
 simple application of the BLAS function from the last chapter---a matrix $\cdot$ a matrix, and a matrix $\cdot$ a vector:
 \begin{lstlisting}

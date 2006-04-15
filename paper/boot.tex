@@ -1,4 +1,4 @@
-\chapter{Monte Carlo} \label{boot}
+\startonecol \chapter{Monte Carlo} \label{boot} \endonecol
 
 Monte Carlo (Spanish and French for Mount Carl) is a city in Monaco
 famous for its casinos, and has more glamorous associations with its name
@@ -21,12 +21,9 @@ about it.
 
 \section{Random number generation}\index{random
 numbers|(}\label{randomnumbers}
-Before moving on to the main show, a digression is in order on the
-process of generating random numbers. 
-
 Random number generators are not random: given the same setup, they
 will produce the same value every time you use them. To lay-intuition,
-this is not really `random', but for the programmer, it is wonderful,
+this is not really \airq{random}, but for the programmer, it is wonderful,
 because you can replicate your results.
 
 There are two places where you will need replication. The first is with
@@ -39,29 +36,39 @@ decimal places.
 Of course, using the same stream of numbers every time creates the
 possibility of getting a lucky draw, where \airq{lucky} can mean any of a
 number of things. The solution is a fixed process of pseudorandom
-number generation plus a varying initializing seed. Here is how one
-would initialize a \cind{gsl\_rng}:
+number generation plus a varying initializing seed. Here is a function
+to initialize a \cind{gsl\_rng}:
+\cindex{static}
+\cindex{apop\_rng\_alloc}
 \begin{lstlisting}
-gsl_rng * initrng(int seed){
-    gsl_rng_env_setup();
-    gsl_rng *r  = gsl_rng_alloc(gsl_rng_taus);
-    gsl_rng_set(r, seed);  
-    return r;
+gsl_rng *apop_rng_alloc(int seed){
+static int first_use    = 1;
+   if (first_use){
+       first_use --;
+       gsl_rng_env_setup();
+   }
+gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(setme, seed);
+    return setme;
 }
 \end{lstlisting}
-The function takes in an integer, and then sets up the random number
-generation (RNG) environment to produce new numbers via the Tausworth
-routine. Every integer will produce a different stream of numbers.
+In all cases, the function takes in an integer, and then sets up the
+random number generation (RNG) environment to produce new numbers
+via the Tausworth routine.  On the first call, the function calls the
+\cind{gsl\_rng\_env\_setup} function to work some internal magic in
+the GSL. Figure \ref{draw_beta_curve} below shows an example using this
+function.
 
-There is no need to make the seed look random. The GSL's default seed is
-zero, and if you need ten different seeds, I suggest using 0, 1, \dots ,9.
+Adjacent integer seed will produce a wholly different stream of numbers,
+so there is no need to make the seed look random. The GSL's default seed is
+zero, and if you need ten different seeds, I suggest using 0, 1, \dots, 9.
 
 \subsection{Random number distributions}
 Now that you have a random number generator, here are some functions that use it to draw from all of your favorite distributions:
-\index{Gaussian distribution} \index{t distribution} \index{F distribution}
+\index{Gaussian distribution} \index{t distribution} \index{F distribution} \index{flat distribution} 
 \index{Uniform distribution}\cindex{gsl\_ran\_...}\cindex{gsl\_rng\_uniform}
-\index{Bernoulli distribution} \index{Beta distribution} \index{Binomial distribution} 
-\index{chi squared distribution@$\chi^2$ distribution}
+\index{Bernoulli distribution} \index{Beta distribution} 
+\index{Binomial distribution} \index{chi squared distribution@$\chi^2$ distribution}
 
 \begin{lstlisting}
 double gsl_ran_bernoulli (gsl_rng *r, double p);
@@ -75,13 +82,15 @@ double gsl_ran_flat (gsl_rng *r, double A, double B);
 double gsl_rng_uniform (gsl_rng *r);
 \end{lstlisting}
 
-The 'flat' distribution is a Uniform[A,B] distribution. Since the
+The \airq{flat} distribution is a Uniform[A,B] distribution. Since the
 Uniform[0,1] distribution is so common, it gets its own no-options
 function, \cinline{gsl\_rng\_uniform(r)}. Notice that the Gaussian draw
 assumes a mean of zero, so if you intend to draw from a ${\cal N}(7,2)$,
 then add the mean after the call: \cinline{gsl\_ran\_gaussian (r, 2) + 7}.
 
-\paragraph{The Beta distribution}\index{Beta distribution}\label{beta}
+
+
+\paragraph{\treesymbol The Beta distribution}\index{Beta distribution}\label{beta}
 The Beta distribution is wonderful for all sorts of modeling, because
 it can describe such a wide range of probability functions for a
 variable $\in [0,1]$.  But its $\alpha$ and $\beta$ parameters may be
@@ -100,10 +109,33 @@ $\in (0,1)$. If you send \cind{apop\_ran\-dom\_beta} values of $\mu$
 and $\sigma^2$ that are outside of these bounds, the function will
 return a \cinline{GSL\_NAN}.
 
+What does a Beta distribution with, say, $\mu = \frac{3}{8}, \sigma^2 =
+\frac{1}{24}$ look like? Figure \ref{draw_beta_curve} sets up an RNG,
+makes a million draws from a Beta distribution, and plots the result.
+The output of this example is at left in Figure \ref{histofig}; by
+contrast, the case where $\mu=0.492$, $\sigma^2 = 0.093$ is pictured at
+right.
+
+\cindex{apop\_plot\_hist\-o\-gram}
+\codefig{draw_beta_curve}{Building a picture of a distribution via random draws}
+
+\def\bebox#1{\vbox{\hbox{\rotatebox{-90}{\scalebox{.30}{\includegraphics{#1}}}}
+}}
+
+\begin{figure}[htb]
+\hskip 0.4cm
+\begin{tabular}{cc}
+\bebox{betauni.eps}& \bebox{betabi.eps}
+\end{tabular}
+
+\caption{The flexible Beta distribution.}
+\label{histofig}
+\end{figure}
+
+
 \subsection{Drawing from your own data} \index{histograms!drawing from|(}
-Another possibility, beyond
-drawing from famous distributions that your data theoretically
-approximates, would be to draw from your actual data. 
+Another possibility, beyond drawing from famous distributions that your
+data theoretically approximates, would be to draw from your actual data.
 
 The GSL provides a means of turning a data set into a PDF from which you
 can then make draws.  It
@@ -112,7 +144,7 @@ Then, the \cind{gsl\_histogram\_pdf\_sample} function will
 map a draw from a Uniform[0,1] distribution to the CDF, thus producing a
 random draw from your data.
 
-The \cinline{apop\_vector\_to\_pdf} function takes the requisite steps
+The \cind{apop\_vector\_to\_pdf} function takes the requisite steps
 for you, producing a histogram from the data and then converting it to
 a \cind{gsl\_histogram\_pdf} structure from which draws can be
 made. It takes two arguments: a \cinline{gsl\_vector} with the data, and
@@ -138,11 +170,144 @@ zeros in the vast majority of bins. Usage:
     //Eventually, clean up:
     gsl_histogram_pdf_free(p);
 \end{lstlisting}
+\cindex{gsl\_histogram\_pdf\_free}
 \index{histograms!drawing from|)}
 
 \index{random numbers|)}
 
-\section{Finding the variance of a parameter}
+\section{Finding statistics for a distribution} \label{billiondraws}
+For many pairs of statistics and distributions, there exists a closed-form
+solution for the statistic: the kurtosis of a ${\cal N}(\mu,\sigma)$
+is $3\sigma^4$; the variance of a binomial distribution is $np(1-p)$,
+et cetera. One can also take recourse in the \ind{Slutsky theorem}, that
+says that given an estimate $r$ for some statistic $\rho$ and a continuous
+function $f(\cdot)$, then $f(r)$ is a valid estimate of $f(\rho)$. Thus,
+sums or products of means are easy to calculate as well.
+
+However, there is a limit to how far closed-form solutions will take us.
+This is especially true for small data sets: virtually every theorem
+about a statistic begins by saying \airq{in the limit as $n\to \infty$,
+it holds that\dots}.
+
+Lacking a closed-form calculation for a statistic, the next best thing
+is to estimate the statistic from the data. 
+
+One way to calculate the \ind{kurtosis} would be to a numeric integral
+over the entire domain of the distribution. Write a loop to 
+calculate $f(-500.00)\cdot p(-500.00)$, then
+$f(-500.01)\cdot p(-500.01)$, et cetera. 
+
+Another approach is to evaluate $f(\cdot)$ at values randoly drawn from
+the distribution. Values will, by definition, appear in proportion to
+their likelihood, so the $p(\cdot)$ part takes care of itself. Just as
+we produced a nice picture of the Beta distribution by just taking
+enough random draws, we can calculate statistics of the overall
+distribution via random draws.
+
+\paragraph{An example: the kurtosis of a t distribution} Perhaps the
+story is best told via an example.  You probably
+know that a \ind{t distribution} is much like a Normal distribution but
+with fatter tails, but probably not how much fatter those tails are.
+The kurtosis of a vector is easy to calculate---just call
+\cind{apop\_kurtosis}. By taking a million or so draws from the
+distribution, we can produe a vector whose values cover the $t$
+distribution rather well, and then find the kurtosis of that vector.
+Figure \ref{kurtosis_of_a_t_dist} shows a program to execute this procedure. 
+\codefig{kurtosis_of_a_t_dist}{Monte Carlo calculation of kurtoses for
+the $t$ distribution family.}
+
+I tried this on a few computers, from my laptop to a research
+server, and the process took from under two minutes up to eight
+minutes---not bad for .15 billion draws from $t$ distributions followed
+by finding the fourth moment of vectors 5 million elements long.
+
+Here is an excerpt from the output, along with the true
+kurtosis of a $t$ distribution with $df$ degrees of freedom, $(3 df - 6)/(df - 4)$.
+
+
+\begin{center}
+\fbox{
+\begin{tabular}{lll}
+df       &k (est)    &     k (analytic)\\
+\hline
+1        &1.05296e+06   \\
+2        &21165.3   \\
+3        &219.779   \\
+4        &18.1571           \\
+5        &8.87748        &9 \\
+6        &5.94114        &6 \\
+7        &4.8948 &5 \\
+8        &4.48172        &4.5   \\
+9        &4.19337        &4.2   \\
+10       &4.00679        &4 \\
+15       &3.54983        &3.54545   \\
+20       &3.37601        &3.375 \\
+25       &3.28091        &3.28571   \\
+30       &3.23369        &3.23077   
+\end{tabular}
+}
+\end{center}
+
+For $df\leq 4$, the kurtosis is undefined, just as the
+variance of a Cauchy distribution is undefined. As  $df$ gets larger,
+the variance of the kurtosis shrinks; at $df = 5$, it is finite, and it
+gets smaller as $df$ continues upwards.
+
+Appropriately enough, the estimates for $df\leq 4$ are terrible.  
+The fact that there is no consistent estimator for these small 
+$df$ cases makes itself evident in re-estimations. The reader could readily
+modify Figure \ref{kurtosis_of_a_t_dist} to repeat the kurtosis estimation
+procedure many times; here are eight runs and their means:
+
+\startonecol
+\vspace{\baselineskip}
+\hspace{-8.0cm}
+\fbox{
+\begin{tabular}{l|llllllll|l}
+df  &Run 1 &Run 2 &Run 3 &Run 4 &Run 5 &Run 6 &Run 7 &Run 8 &Mean\\
+\hline
+1  &1.05e6 &3.25e6 &4.91e6 &2.55e6 &1.70e6 &2.22e6 &1.58e6 &4.92e6&2.77e6\\
+2  &2.12e4 &9.70e4 &1.00e6 &5.37e5 &4.69e4 &2.59e4 &2.86e4 &4.45e4&2.26e5\\
+3  &219.779&416.333&201.000&713.504&182.242&146.174&134.896&139.599&269.191\\
+4  &18.157 &22.924 &16.448 &18.511 &17.296 &18.523 &24.658 &17.996&19.314\\
+5  &8.877  &7.972  &8.446  &9.347  &8.490  &8.983  &9.101  &8.546&8.72\\
+10  &4.009   &4.001   &4.015   &3.998   &3.990   &3.995   &3.986   &4.022 &4.002\\
+20  &3.380   &3.376   &3.380   &3.380   &3.378   &3.381   &3.375   &3.373 &3.378\\
+30  &3.229   &3.228   &3.230   &3.233   &3.230   &3.231   &3.235   &3.230 &3.231\\
+40  &3.170   &3.167   &3.167   &3.166   &3.166   &3.165   &3.169   &3.171 &3.168\\
+50  &3.125   &3.131   &3.132   &3.129   &3.130   &3.127   &3.130   &3.135 &3.130\\
+60  &3.109   &3.107   &3.111   &3.108   &3.106   &3.108   &3.103   &3.104 &3.107\\
+
+\end{tabular}
+}
+\vspace{\baselineskip}
+\endonecol
+
+The runs for fewer than five degrees of freedom are indeed inconsistent:
+for $df = 1$, they range from 1.58 million to 4.92 million. Even with
+$df = 5$, run \#2 digresses over 10\% from the correct value of nine.
+
+But perhaps this focus on the problem situations is too pessimistic.
+After all, if you are fitting a $t$ distribution with five degrees
+of freedom, that means you only have six data points, and no amount of
+statistical finesse will save you. But as the variance of the statistic being
+estimated shrinks, a Monte Carlo estimate of the statistic gets closer to
+the correct value, and does so consistently. For degrees of freedom in the
+tens, the estimates are all within a few hundredths of the correct value.
+Monte Carlo estimation will not save a hopeless cause, but in
+appropriate situations, it quickly produces clean and useful estimates.
+
+\section{Finding the statistics of a parameter}
+After running a regression or other such estiamtion of model parameters,
+we frequently want to test the hypothesis that the parameters are not
+zero. To do so, we need the parameters' variance.
+We can apply the same procedure as above: produce a million parameter
+estimates, and then find the variance of those million numbers. However,
+the same parameter estimation technique on the same data will always
+produce the same number. The way to get different draws from the
+distribution of the parameter is to take different draws from the
+underlying data set.
+
 The bootstrapping and jackknifing processes consist of taking artificial
 samples of your data, and then calculating a statistic for each of these
 samples. These draws will be independent and identically distributed.
@@ -150,17 +315,13 @@ Typically, your statistic is for the form $\sum (X_i)/ N$, where  $N$
 is the number of observations, and $X_i$ is a data point in the case
 of a mean, $(X-\mu)^2$ for a variance, et cetera. In other words, the
 statistic is often the mean of some iid process, and so the Central
-Limit Theorem applies to the series of statistics that you are producing
-(regardless of how ugly the underlying data may be).
+Limit Theorem applies to the series of statistics that you are
+producing, regardless of how ugly the underlying data may be.
 
-The primary use of this is for hypothesis testing: we need to know the
-variance of the parameter and its distribution if we are to successfully
-determine whether the parameter we saw is different from zero. We
-solve this problem by producing a sample of the statistics, which we
-are assured by the CLT will be Normally distributed, with the variance
-we will calculate below. The confidence intevals calculated here will
-approach the true confidence interval for the statistic
-as the sample size approaches the population size.
+Since the CLT guarantees that the  statistic is Normally distributed
+and we can now calculate the variance of the distribution, we can resume
+hypothesis testing as normal. The confidence intevals calculated via these
+methods will approach the true confidence interval for the statistic.
 
 \paragraph{An important caveat} Bootstrapping from a sample will not fix
 the errors in your sample. If your sampling technique isn't perfect---and
@@ -181,7 +342,7 @@ bring shame to your research group.}
 
 
 \subsection{Creating random samples} \index{bootstrap}
-\index{jackknife|\textbf(}
+\index{jackknife|(textbf}
 The primary difference between bootstrapping and jackknifing is that
 the bootstrap takes a series of draws with replacement from a data set,
 while the jackknife takes a series of samles without replacement. Here,
@@ -206,8 +367,12 @@ already been drawn. If it finds a match, then it invalidates the draw
 by rolling back the counter by one, while if it does not find a match then it
 adds the draw to the list of draws and the index to the list of indices.
 
-We can then use these draws to calculate a list of parameter values, as in Figure \ref{bootvar}.
-\codefig{bootvar}{A function to find the variance of a series of jackknife estimates of a statistic}
+\codefig{bootvar}{A function to find the variance of a series of jackknife
+estimates of a statistic} We can then use these draws to calculate a
+list of parameter values, as in Figure \ref{bootvar}. The procedure
+looks much like the procedure for finding the kurtosis for the $t$
+distributions above: take a million draws, write down the statistic for
+each, and then take the variance of that vector.
 
 It is valid to use the standard deviation returned by this function 
 in the normal way to construct confidence intervals and test
@@ -223,5 +388,5 @@ In fact, this is redundant, because the \cinline{apop\_pois\-son}
 model already uses the \cind{apop\_jackknife} function internally,
 so the usual \cinline{apop\_pois\-son.est\-i\-mate(data, NULL)}
 will return an estimate with jackknifed variances.
-\index{jackknife|\textbf)}
+\index{jackknife|)textbf}
 

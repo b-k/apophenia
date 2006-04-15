@@ -1,7 +1,7 @@
 /** \file apop_estimate.c	 sets up the estimate structure which outputs from the various regressions and MLEs.
 
 
-Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
 #include <gsl/gsl_matrix.h>
@@ -115,8 +115,8 @@ apop_estimate * prep_me;
     } else {
         apop_estimation_params *delme =  apop_estimation_params_alloc();
         memcpy(&(prep_me->estimation_params), delme, sizeof(apop_estimation_params));
+        apop_estimation_params_free(delme);
 	    apop_inventory_filter(&(prep_me->estimation_params.uses), model.inventory_filter);
-        free(delme);
     }
 	if (prep_me->estimation_params.uses.parameters)
 		prep_me->parameters	= gsl_vector_alloc(model.parameter_ct);
@@ -237,4 +237,13 @@ apop_estimation_params *setme = calloc(sizeof(apop_estimation_params),1);
     setme->step_size    = 1;
     apop_inventory_set(&(setme->uses),1); 
     return setme;
+}
+
+/** Neatly allocate an \ref apop_estimation_params structure. Sets a
+few defaults, so you can change just one or two values and everything
+else will be predictable.
+
+ */
+void apop_estimation_params_free(apop_estimation_params *freeme){
+    free(freeme);
 }

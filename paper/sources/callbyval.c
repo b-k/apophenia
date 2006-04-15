@@ -13,4 +13,5 @@ int main(void){
     printf("doubling returns %i\n", doubling(a,b));
     printf("a= %i\n", a);
     printf("globe= %i\n", globe);
+    return 0;
 }

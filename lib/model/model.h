@@ -19,6 +19,7 @@ extern apop_model apop_probit;
 extern apop_model apop_waring;
 extern apop_model apop_waring_rank;
 extern apop_model apop_yule;
+extern apop_model apop_yule_rank;
 extern apop_model apop_zipf;
 extern apop_model apop_zipf_rank;
 

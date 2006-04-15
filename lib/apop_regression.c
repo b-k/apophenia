@@ -1,5 +1,5 @@
 /** \file apop_regression.c	Generally, if it assumes something is  Normally distributed, it's here.\n
- Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
  \author Ben Klemens
  */
 
@@ -19,19 +19,51 @@
 #include <gsl/gsl_blas.h>
 
 
-double two_tailify(double in){
-//GSL gives me a one-tailed test; convert it to two.
+/** GSL gives p-values for a one-tailed test; convert it to two, assuming a
+ symmetric distribution.
+  */
+double apop_two_tailify(double in){
 	return	fabs(1 - (1 - in)*2);
 }
+
+
+static apop_data * produce_t_test_output(int df, double stat, double diff){
+apop_data   *out    = apop_data_alloc(7,1);
+double      pval    = gsl_cdf_tdist_P(stat, df),
+            two_tail= apop_two_tailify(pval);
+    apop_name_add(out->names, "mean left - right", 'r');
+    gsl_matrix_set(out->matrix, 0, 0, diff);
+    apop_name_add(out->names, "t statistic", 'r');
+    gsl_matrix_set(out->matrix, 1, 0, stat);
+    apop_name_add(out->names, "df", 'r');
+    gsl_matrix_set(out->matrix, 2, 0, df);
+    apop_name_add(out->names, "p value, 1 tail", 'r');
+    gsl_matrix_set(out->matrix, 3, 0, pval);
+    apop_name_add(out->names, "confidence, 1 tail", 'r');
+    gsl_matrix_set(out->matrix, 4, 0, 1 - pval);
+    apop_name_add(out->names, "p value, 2 tail", 'r');
+    gsl_matrix_set(out->matrix, 5, 0, two_tail);
+    apop_name_add(out->names, "confidence, 2 tail", 'r');
+    gsl_matrix_set(out->matrix, 6, 0, 1 - two_tail);
+    return out;
+}
+
 
 /** Answers the question: with what confidence can I say that the means of these two columns of data are different?
 <tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
 \ingroup ttest
 \param {a, b} two columns of data
-\return the confidence level---if it is close to one, you can reject the null, while <tt>apop_t_test(a, a)</tt> will return zero.
+\return an \ref apop_data set with the following elements:
+    mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
+    t statistic:    used for the test<br>
+    df:             degrees of freedom<br>
+    p value, 1 tail: the p-value for a one-tailed test that one vector mean is greater than the other.
+    confidence, 1 tail: 1- p value.
+    p value, 2 tail: the p-value for the two-tailed test that left mean = right mean.
+    confidence, 2 tail: 1-p value
 */
-double	apop_t_test(gsl_vector *a, gsl_vector *b){
+apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
 int		a_count	= a->size,
 		b_count	= b->size;
 double		a_avg	= apop_vector_mean(a),
@@ -44,31 +76,38 @@ double		a_avg	= apop_vector_mean(a),
 		printf("2st avg: %g; 2st std dev: %g; 2st count: %i.\n", b_avg, sqrt(b_var), b_count);
 		printf("t-statistic: %g.\n", stat);
 	}
-	return two_tailify(gsl_cdf_tdist_P(stat, a_count+b_count-2));
+
+int         df      = a_count+b_count-2;
+    return produce_t_test_output(df, stat, a_avg - b_avg);
 }
 
 /** Answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
 \ingroup ttest
 \param {a, b} two columns of data
-\return plus or minus the confidence level---if it is close to one, you can reject the null, while <tt>apop_paired_t_test(a, a)</tt> will return zero. If the confidence level is positive, then mean(a) > mean(b), and the confidence level tells us how firmly we can make that statement for the population. If the confidence level is negative, then mean(b) < mean(a).
+\return an \ref apop_data set with the following elements:
+    mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
+    t statistic:    used for the test<br>
+    df:             degrees of freedom<br>
+    p value, 1 tail: the p-value for a one-tailed test that one vector mean is greater than the other.
+    confidence, 1 tail: 1- p value.
+    p value, 2 tail: the p-value for the two-tailed test that left mean = right mean.
+    confidence, 2 tail: 1-p value
 */
-double	apop_paired_t_test(gsl_vector *a, gsl_vector *b){
+apop_data * apop_paired_t_test(gsl_vector *a, gsl_vector *b){
 gsl_vector	*diff	= gsl_vector_alloc(a->size);
 	gsl_vector_memcpy(diff, a);
 	gsl_vector_sub(diff, b);
-int		count	= a->size, 
-		factor	= 1;
+int		count	= a->size; 
 double		avg	= apop_vector_mean(diff),
 		var	= apop_vector_var(diff),
 		stat	= avg/ sqrt(var/(count-1));
-	if (apop_vector_mean(diff) < 0) 
-		factor = -1;
 	gsl_vector_free(diff);
 	if (apop_opts.verbose){
 		printf("avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
 	}
-	return factor * two_tailify(gsl_cdf_tdist_P(stat, count-1));
+int     df      = count-1;
+    return produce_t_test_output(df, stat, avg);
 }
 
 /** Runs an F-test specified by \c q and \c c. Your best bet is to see
@@ -171,7 +210,7 @@ int		i;
 	if (out->estimation_params.uses.confidence)
 		for (i=0; i < data->size2; i++)  // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 			gsl_vector_set(out->confidence, i,
-			   two_tailify(gsl_cdf_gaussian_P(gsl_vector_get(out->parameters, i), gsl_matrix_get(cov, i, i))));
+			   apop_two_tailify(gsl_cdf_gaussian_P(gsl_vector_get(out->parameters, i), gsl_matrix_get(cov, i, i))));
 	if (out->estimation_params.uses.dependent)
         gsl_matrix_set_col(out->dependent->matrix, 0, y_data);
 	if (out->estimation_params.uses.predicted){

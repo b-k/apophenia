@@ -59,7 +59,7 @@ float		    bb	    = gsl_vector_get(beta, 0),
     		    a	    = gsl_vector_get(beta, 1);
 int 		    k;
 gsl_matrix      *data	= d;
-gsl_vector_view v;
+gsl_vector      v;
 double 		    ln_a_k, ln_bb_a_k, p,
 		        likelihood 	= 0,
 		        ln_bb_a		= gsl_sf_lngamma(bb + a),
@@ -69,8 +69,8 @@ double 		    ln_a_k, ln_bb_a_k, p,
 		ln_bb_a_k	 = gsl_sf_lngamma(k +1 + a + bb);
 		ln_a_k		 = gsl_sf_lngamma(k +1 + a);
 		p		     = ln_bb_less_1 + ln_a_k + ln_bb_a - ln_a_mas_1 - ln_bb_a_k;
-        v            = gsl_matrix_column(data, k);
-		likelihood   += apop_sum(&(v.vector)) * p; 
+        v            = gsl_matrix_column(data, k).vector;
+		likelihood   += apop_sum(&v) * p; 
 	}
 	return likelihood;
 }

@@ -1,4 +1,5 @@
-\chapter{Maximum likelihood estimation} \label{mle}
+\startonecol \chapter{Maximum likelihood estimation} \label{mle}
+\endonecol
 \index{maximum likelihood estimation|ff}
 \index{MLE|see{maximum likelihood estimation}}
 
@@ -164,16 +165,10 @@ have a smaller variance.
 \subsection{How to evaluate a test}
 A test will either reject or accept a hypothesis given data. It can be
 fooled two ways: the hypothesis could be true but the test rejects it;
-or the hypothesis could be false but the test accepts it anyway. There
-is a balance to be struck between the two errors: as one rises, the
-other falls. But not all estimators are born equal: the coin-flip test, `heads, accept;
-tails, reject' gives us a 50\% chance of a Type I error
-and a 50\% chance of a Type II error, but there are tests where both
-errors are significantly lower than 50\%, and so by any measure we would
-call those better tests than the coin-flipping test. 
+or the hypothesis could be false but the test accepts it anyway. 
 
-\subsubsection{Keeping Type I and Type II straight} 
 \marginaliafixed{16}{Evaluation vocab}{
+%\marginalia{Evaluation vocab}{
 Here are some vocabluary terms; if you are in a stats class right now,
 you will be tested on this:
 
@@ -191,28 +186,34 @@ it is true.\index{unbiased estimator}
 {\bf Consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.\index{consistency}
 }
 
+There
+is a balance to be struck between the two errors: as one rises, the
+other falls. But not all estimators are born equal: the coin-flip test, `heads, accept;
+tails, reject' gives us a 50\% chance of a Type I error
+and a 50\% chance of a Type II error, but there are tests where both
+errors are significantly lower than 50\%, and so by any measure we would
+call those better tests than the coin-flipping test. 
+
+\paragraph{Keeping Type I and Type II straight} 
 \index{Type I error|textbf} \index{Type II error|textbf}
-Here is an oft-told story: if a doctor is deciding
-whether to give a vaccination, and $H_0=$ the patient is sick, then
-rejecting $H_0$ when it is true and thus not vaccinating is much worse
-than accepting $H_0$ when it is true and thus vaccinating extraneously,
-so the important error is Type I. I always thought this was totally
-{\it ad hoc}, especially since $H_0=$ the patient is not sick is more
-null. But if the story helps you, run with it.
 
-You are probably familiar with the
-standard hypothesis test, which says things like `we reject the null with 90\%
-likelihood', and is what the charts in the back of the textbook are about.
-That's the Type I error. It comes first because
-it's generally all anybody talks about.
+Think of the null hypothesis as on
+trial \citep[pp 112--113]{kmenta}.  The rulings a jury may return are
+not \airq{guilty} and \airq{innocent}, but \airq{guilty} and \airq{not
+guilty}. Most citizens fell that to convict a not-guilty person is a worse
+error than freeing a guilty person. So, we list the conviction of the
+not-guilty---rejecting $H_0$ when it should not have been rejected---as
+Type I, and the secondary error of acquitting the guilty---failing to
+reject a false $H_0$---as Type II.
 
-\paragraph{The Neyman-Pearson lemma} \index{Neyman-Pearson lemma} 
-But what about Type II errors? 
-Neyman and Pearson showed that a likelihood ratio test will have the
-minimum possible Type II error of any test with the $\alpha$ that we
-selected. After establishing this fact, we just ignore Type II errors.
 
-\subsection{Likelihood ratios} \index{likelihood ratio|ff}
+\subsection{The Neyman-Pearson lemma} \index{Neyman-Pearson lemma} 
+The other reason that we ignore Type II errors is that Neyman and Pearson
+told us we could.  They showed that a likelihood ratio test will have
+the minimum possible Type II error of any test with the $\alpha$ that
+we selected. After establishing this fact, we just ignore Type II errors.
+
+\paragraph{Likelihood ratios} \index{likelihood ratio|ff}
 
 Say the cost to a Type I error is $C_I$ and the cost to a Type II error
 is $C_{II}$.  Then you will reject $H_0$ iff the expected cost is less
@@ -234,13 +235,13 @@ statement $P(A\cap B)=P(A|B)P(B)$, and symmetrically, $P(A\cap B)=P(B|A)P(A)$.  
 the two and shunting over $P(B)$ gives us \ind{Bayes's rule}: $$P(A|B)={P(B|A) P(A)\over P(B)}$$
 Applying Bayes's rule to the rejection test is easy: set $A=H_0$, $B=\xv$,
 $P(A|B)=P(H_0|\xv)$, and $P(B|A)=L(\xv|H_0)$. Then:
-\begin{eqnarray}
+\begin{align}
 C_I P(H_0|\xv)&<&C_{II} P(H_1|\xv)\label{firstnp}\\
 \nonumber\\
 C_I {L(\xv|H_0)P(H_0)\over P(\xv)}&<& C_{II} {L(\xv|H_1)P(H_1)\over P(\xv)}\label{secondnp}\\
 \nonumber\\
 c&<& {L(\xv|H_1)\over L(\xv|H_0)}\label{thirdnp}
-\end{eqnarray}
+\end{align}
 
 Inequality \ref{firstnp} is the rejection rule from above; Inequality
 \ref{secondnp} uses Bayes's rule to insert the likelihood functions;
@@ -253,8 +254,8 @@ $\alpha$. The test will then be: fail to reject $H_0$ iff Inequality
 \ref{thirdnp} is true.
 
 Neyman and Pearson\index{Neyman-Pearson lemma} proved\footnote{See
-e.g. \cite[189--191]{amemiya:ez}, from whom I cribbed
-this section.}  that this test is the `best' in the sense that for a
+e.g. \citet[189--191]{amemiya:ez}.}
+that this test is the `best' in the sense that for a
 fixed Type I error (fixed at $\alpha$), the probability of a Type II
 error is minimized. So we can design any test we like by just fixing $\alpha$
 at a value with which we are comfortable (custom says to use
@@ -263,7 +264,6 @@ that we did the best we could regarding Type II errors. You will see that
 many of the tests which follow will be of the likelihood ratio form,
 and so Type II errors pretty much never get mentioned, since they're
 considered taken care of.
-
 
 \section{Description: Maximum likelihood estimators} 
 Apophenia provides a single function to find the optimum of a likelihood
@@ -452,7 +452,7 @@ apop_data       *traced_path;
     fprintf(f, "splot '-' with linespoints linewidth 0.5 pointsize 2\n");
     fclose(f);
     traced_path = apop_query_to_data("select * from %s"
-                                        , apop_opts.mle_trace_path);
+            , apop_opts.mle_trace_path);
     apop_data_print(traced_path, "\t", outfile);
 }
 \end{lstlisting}
@@ -464,10 +464,10 @@ gnuplot -persist < plotme
 gnuplot plotme -
 \end{lstlisting}
 
-\begin{figure}
+\begin{figure*}
 \scalebox{0.4}{\includegraphics{search}}
 \caption{A search for an optimum using a conjugate gradient method.}
-\end{figure}
+\end{figure*}
 
 \section{Hypothesis testing: Likelihood ratio tests} \index{likelihood
 ratio test}
@@ -481,7 +481,7 @@ model with $K$ restrictions, such as $K$ parameters fixed as zero. Then
 $$-2\ln\frac{L_0}{L} = -2[\ln L_0 - \ln L] \sim \chi^2_K.$$
 
 
-\section{Writing your own}
+\section{Writing your own} \label{writeyourown}
 The design of the \cinline{apop\_model} hopes to make it as easy as
 possible for you, dear reader, to write new models. For the most
 part, all you need to do is write a log likelihood function, and
@@ -489,8 +489,7 @@ part, all you need to do is write a log likelihood function, and
 
 To save you typing in all this, by the way, buried in the Apophenia
 source code, in the \binline{model/} directory, is a file named
-\binline{apop\_model\_template.c}. 
-
+\binline{apop\_model\_template.c}.  
 You can do a global search-and-replace of MODELNAME to insert the name
 of the model you are writing (e.g., in vi, \binline{:\%s/MODELNAME/probit/g})
 and then rewrite the functions as per the guidelines here. The template
@@ -502,7 +501,7 @@ The steps:
 \begin{itemize}
 \item Write a likelihood function. Its header will look like this:
 \begin{lstlisting}
-double apop_new_log_likelihood(const gsl_vector *beta, void *d)
+static double apop_new_log_likelihood(const gsl_vector *beta, void *d)
 \end{lstlisting}
 where \cinline{beta} will be the parameters to be maximized, and \cinline{d} is the fixed parameters---the data. In every case currently included
 with Apophenia, \cinline{d} is a \cinline{gsl\_matrix,} but you do not have to conform
@@ -516,7 +515,7 @@ to that. This function will return the value of the log likelihood function at t
 as follows:
 \begin{lstlisting}
 static apop_estimate * new_estimate(apop_data * data, void *parameters){
-return apop_maximum_likelihood(data, apop_new_log_likelihood, parameters);
+    return apop_maximum_likelihood(data, apop_new_log_likelihood, parameters);
 }
 \end{lstlisting}
 By using the \cind{static} keyword, the function name will only be
@@ -528,7 +527,7 @@ form to call this function.
 
 
 \item Write the object, a process which will consist of filling out
-another form. In your header file, include 
+another form. 
 \begin{lstlisting}
 apop_model apop_new_likelihood = {"The Me distribution", 
             number_of_parameters, 
@@ -552,10 +551,21 @@ If there are constraints, then replace the appropriate \cinline{NULL} with the r
 it is often (the number of columns in your data set -1), in which case,
 set \cinline{number\_of\_parameters} to \cinline{-1}.
 
+\item Write your header file so you can include the model in other
+modules. Here is the complete header you will need:
+\begin{lstlisting}
+apop_model apop_new_likelihood;
+\end{lstlisting}
+Since the \cinline{apop\_model} is defined when you \cinline{\#include
+$<$apophenia/headers.h$>$}, the compiler already knows all the necessary
+details of your model; all you need to do from there is declare that
+your model exists.
+
+
 \item Test. Debug. Retest.
 
 \item Optional: write a gradient for the log likelihood function. This
-typically involves calculating a derivative by hand, which is an easy
+involves calculating a derivative by hand, which is typically an easy
 problem in high-school calculus. The function's header will look like: 
 \begin{lstlisting}
 void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient)
@@ -567,7 +577,7 @@ gsl_vector_set(gradient, 0, d_a);
 gsl_vector_set(gradient, 1, d_b);
 \end{lstlisting}
 Now add the resulting dlog likelihood function to your object, by
-replacing the \cinline{NULL} labeled ``place dlog likelihood here'' with
+replacing the \cinline{NULL} labeled \airq{place dlog likelihood here} with
 the name of your dlog likelihood function.  
 \item Send the code to Apophenia's maintainer for inclusion in future
 versions.  \end{itemize}
@@ -592,7 +602,7 @@ a constraint function, \cind{apop\_maximum\_likelihood} will combine
 them to a function that fits the above description and search accordingly.
 
 \index{penalty function}
-This is similar to the common penalty function methods of turning an
+This is similar to the common penalty function methods of turning a
 constrained problem into an unconstrained one, as in \cite{avriel:nonlinear},
 with a few differences. Primarily, we don't know if the constraint is
 because the author of the system declared an arbitrary cutoff (`we can't spend more
@@ -603,7 +613,7 @@ A constraint function must do three things:
 \begin{itemize}
 \item It must check the constraint, and if the constraint does not bind (i.e., the parameter values are OK), then it must return zero.
 \item If the constraint does bind, it must return a penalty, that indicates how far off the parameter is from meeting the constraint.
-\item if the constraint does bind, it must set a return vector that the likelihood function can take as a valid input. The penalty at this returned value must be zero.
+\item If the constraint does bind, it must set a return vector that the likelihood function can take as a valid input. The penalty at this returned value must be zero.
 \end{itemize}
 
 The idea is that if the constraint returns zero, the log likelihood
@@ -613,13 +623,14 @@ penalty. To give a concrete example, here is a constraint function that
 will ensure that both parameters of a two-dimensional input are both
 greater than zero:
 
+\startonecol
 \begin{lstlisting}
 static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
 double          limit0          = 0,
-                limit1          = 0,
-                tolerance       = 1e-3; // or try GSL_EPSILON_DOUBLE
+          limit1          = 0,
+          tolerance       = 1e-3; // or try GSL_EPSILON_DOUBLE
 double          beta0   = gsl_vector_get(beta, 0),
-                beta1   = gsl_vector_get(beta, 1);
+          beta1   = gsl_vector_get(beta, 1);
         if (beta0 > limit0 && beta1 > limit1)
                 return 0;
         //else create a valid return vector and return a penalty.
@@ -629,6 +640,7 @@ double          beta0   = gsl_vector_get(beta, 0),
                         + GSL_MAX(limit1 + tolerance - beta1, 0); 
 }
 \end{lstlisting}
+\endonecol
 
 Observe how it manages all three of the above steps. First, it checks
 the constraints and quickly returns zero if none of them bind. Then, if
@@ -687,4 +699,6 @@ comparative statics. Thus, even though the optimization itself may be
 difficult to explain, the effects that changes in inputs will have on
 the output optimum is clear.
 
+\startonecol
 \lstinputlisting{sources/econ101.c}
+\endonecol

@@ -274,6 +274,7 @@ void 		apop_estimate_free(apop_estimate * free_me);
 void 		apop_estimate_print(apop_estimate * print_me);
 
 apop_estimation_params *apop_estimation_params_alloc();
+void apop_estimation_params_free(apop_estimation_params *freeme);
 
 apop_inventory * apop_inventory_alloc(int value);
 void 		apop_inventory_copy(apop_inventory in, apop_inventory *out);

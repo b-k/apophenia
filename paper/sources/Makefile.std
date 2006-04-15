@@ -1,0 +1,16 @@
+#Set PROGNAME to your main file (without the .c ending):
+PROGNAME = main_file_name
+
+#The rest runs itself.
+OBJECTS =$(PROGNAME).o
+CFLAGS = -g -Wall 
+LINKFLAGS = -lapophenia -lgsl -lgslcblas -lsqlite3
+
+c: $(OBJECTS)
+	gcc $(CFLAGS) $(OBJECTS) $(LINKFLAGS) -o $(PROGNAME)
+
+$(objects): %.o: %.c 
+	gcc $(CFLAGS) -c $< -o $@
+
+clean: 
+	rm *.o

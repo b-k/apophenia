@@ -7,7 +7,7 @@ ornery, so autogeneration of these files is very desirable, and that's
 where this file comes in. It includes a few simple functions to produce
 files which gnuplot can plot directly.
 
-Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
 #include <apophenia/output.h>
@@ -38,7 +38,7 @@ FILE		    *f;
 char		    outfile[]	= "auto",
 		        do_me[10000];
 
-	apop_open_db("cpia.db");
+	apop_db_open("cpia.db");
 	data      =apop_query_to_data("select gnppercap, cpia from cpiagnp;");
 	apop_close_db(0);
 
@@ -291,7 +291,7 @@ void apop_vector_print_int(gsl_vector *data, char *file){
 \ingroup apop_print */
 void apop_matrix_print(gsl_matrix *data, char *file){
     if (apop_opts.output_type   == 'd'){
-        apop_matrix_to_db(data, file, NULL);
+        apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(file,1),0), NULL);
     } else
 	print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf_f, NULL); }
 
@@ -300,7 +300,7 @@ void apop_matrix_print(gsl_matrix *data, char *file){
 \ingroup apop_print */
 void apop_matrix_print_int(gsl_matrix *data, char *file){
     if (apop_opts.output_type   == 'd'){
-        apop_matrix_to_db(data, file, NULL);
+        apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(file,1),0), NULL);
     } else
 	print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf_i, NULL); }
 
@@ -311,7 +311,7 @@ void apop_matrix_print_int(gsl_matrix *data, char *file){
 \ingroup apop_print */
 void apop_data_print(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
-        apop_data_to_db(data, file);
+        apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
     } else
 	print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf_f, data->names); }
 
@@ -322,7 +322,7 @@ void apop_data_print(apop_data *data, char *file){
 \ingroup apop_print */
 void apop_data_print_int(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
-        apop_data_to_db(data, file);
+        apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
     } else
 	print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf_i, data->names); }
 

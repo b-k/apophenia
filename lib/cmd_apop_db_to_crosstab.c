@@ -48,7 +48,7 @@ apop_data	*m;
 			return 0;
 		}
 	}
-	apop_open_db(argv[optind]);
+	apop_db_open(argv[optind]);
 	m	= apop_db_to_crosstab(argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4]);
 	apop_data_print(m, outfile);
 	return 0;

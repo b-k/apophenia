@@ -1,7 +1,7 @@
 /** \file apop_db.c	An easy front end to SQLite. Includes a few nice
 features like a variance, skew, and kurtosis aggregator for SQL.
 
- Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
 /** \defgroup db Database utilities 
@@ -27,9 +27,9 @@ out for analysis.
 \li \ref apop_query_to_chars: Pull out columns of not-numbers.
 
 \par Maintenance 
-\li \ref apop_open_db: Optional, for when you want to use a database on disk.
+\li \ref apop_db_open: Optional, for when you want to use a database on disk.
 
-\li \ref apop_close_db: If you used \ref apop_open_db, you will need to use this too.
+\li \ref apop_db_close: If you used \ref apop_db_open, you will need to use this too.
 
 \li \ref apop_table_exists: Check to make sure you aren't reinventing or destroying data. Also, the clean way to drop a table.
 
@@ -55,6 +55,7 @@ Apophenia reserves the right to insert temp tables into the opened database. The
 #include <apophenia/db.h>
 #include <apophenia/linear_algebra.h>
 #include <apophenia/stats.h>	    //t_dist
+#include <apophenia/conversions.h>	//apop_strip_dots
 #include <apophenia/regression.h>	//two_tailify
 
 #include <apophenia/vasprintf.h>
@@ -290,8 +291,6 @@ int apop_db_open(char *filename){
 	return 0;
 }
 
-/** An alias for \ref apop_db_open. Use that one.*/ 
-int apop_open_db(char *filename){ return apop_db_open(filename); }
 
 /** Send a query to the database, return nothing 
 \param fmt
@@ -353,21 +352,23 @@ Recreating a table which already exists can cause errors, so it is good practice
 Also, this is the stylish way to delete a table, since just calling <tt>"drop table"</tt> will give you an error if the table doesn't exist.
 
 \param q 	the table name
-\param whattodo 1	==>kill table so it can be recreated in main.<br>
-		0	==>return error so program can continue.
+\param whattodo 'd'	==>delete table so it can be recreated in main.<br>
+		'n'	==>no action. return error so program can continue.
 \return
 0 = table does not exist<br>
 1 = table was found, and if whattodo==1, has been deleted
 \ingroup db
 */
-int apop_table_exists(char *q, int whattodo){
+int apop_table_exists(char *q, char whattodo){
 char 		*err, q2[10000];
 	isthere=0;
 	if (db==NULL) {apop_db_open(NULL); return 0;}
 	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,q, &err); 
 	ERRCHECK
-	if (whattodo==1 && isthere)
-		sqlite3_exec(db,strcat(strcpy(q2, "DROP TABLE "),q),NULL,NULL, &err); ERRCHECK
+	if ((whattodo==1|| whattodo=='d') && isthere){
+		sqlite3_exec(db,strcat(strcpy(q2, "DROP TABLE "),q),NULL,NULL, &err); 
+        ERRCHECK
+    }
 	return isthere;
 }
 
@@ -399,22 +400,21 @@ char 		*err, q2[5000];
 
 /**
 Closes the database on disk. If you opened the database with
-<tt>apop_open_db(NULL)</tt>, then this is basically optional.
+\ref apop_db_open(NULL), then this is basically optional.
 
 \param vacuum 
-1: Do clean-up to minimize the size of the database on disk.<br>
-0: Don't bother; just close the database.
+'v': vacuum---do clean-up to minimize the size of the database on disk.<br>
+'q': Don't bother; just close the database.
 */
-int apop_db_close(int vacuum){
+int apop_db_close(char vacuum){
 char		*err;
-	if (vacuum) sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
+	if (vacuum==1 || vacuum=='v') 
+        sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
 //	ERRCHECK
 	sqlite3_close(db);
+    db  = NULL;
 	return 0;
 	}
-
-/** An alias for \ref apop_db_close . */
-int apop_close_db(int vacuum){ return apop_db_close(vacuum); }
 
 static int names_callback(void *o,int argc, char **argv, char **whatever){
 	apop_name_add(last_names, argv[1], 'c'); 
@@ -575,21 +575,22 @@ va_list		argp;
 	return output;
 }
 
-/** Queries the database, and dumps the result into a single floating point number.
+/** Queries the database, and dumps the result into a single double-precision floating point number.
 \param fmt	A string holding an \ref sql "SQL" query.
 \param ...	Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
-\return		A float. This calls \ref apop_query_to_matrix and returns
+\return		A double, actually. This calls \ref apop_query_to_matrix and returns
 the (0,0)th element of the returned matrix. Thus, if your query returns
 multiple lines, you will get no warning, and the function will return
 the first in the list (which is not always well-defined).
 
 If the query returns no rows at all, the function returns <tt>GSL_NAN</tt>.
 */
-float apop_query_to_float(const char * fmt, ...){
+double apop_query_to_float(const char * fmt, ...){
 gsl_matrix	*m=NULL;
 va_list		argp;
 char		*query;
-float		out;
+double		out;
+	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
@@ -696,6 +697,12 @@ char		*q 		= malloc(sizeof(char)*1000);
 
 /** Dump an \ref apop_data set into the database.
 
+Column names are inserted if there are none. If there are, all dots
+are converted to underscores.
+
+If there are row names, then a column named "row_name" is created,
+and the info is placed there.
+
 \param set 	    The name of the matrix
 \param tabname	The name of the db table to be created
 \ingroup apop_data
@@ -708,21 +715,21 @@ int		batch_size	= 100;
 char		*q 		= malloc(sizeof(char)*1000);
 	if (db==NULL) apop_db_open(NULL);
 	sprintf(q, "create table %s (", tabname);
-    if (set->names->rownamect >0){
+    if (set->names->rownamect == set->matrix->size1){
         sprintf(q, "%s\n row_name, \n", q);
 		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
     }
 	for(i=0;i< set->matrix->size2; i++){
 		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
 		if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i", q,i);
-		else			sprintf(q, "%s\n \"%s\" ", q,set->names->colnames[i]);
+		else			sprintf(q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->colnames[i],'d'));
 		if (i< set->matrix->size2-1) 	sprintf(q, "%s,",q);
 		else			sprintf(q,"%s);  begin;",q);
 	}
 	for(i=0;i< set->matrix->size1; i++){
 		q	=realloc(q,sizeof(char)*(strlen(q)+(1+set->matrix->size1)*batch_size*1000));
 		sprintf(q, "%s \n insert into %s values(",q, tabname);
-        if (set->names->rownamect >0){
+        if (set->names->rownamect == set->matrix->size1){
 			sprintf(q,"%s \"%s\", ",q, set->names->rownames[i]);
         }
 		for(j=0;j< set->matrix->size2; j++)
@@ -817,6 +824,7 @@ int		row_ct, i;
 ////////////////////////////////////////////////
 
 /** Do a t-test entirely inside the database.
+  Returns only the two-tailed p-value.
 \ingroup ttest
 */
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2){
@@ -830,10 +838,11 @@ double		a_avg	= gsl_matrix_get(result1, 0, 0),
 		b_var	= gsl_matrix_get(result2, 0, 1),
 		b_count	= gsl_matrix_get(result2, 0, 2),
 		stat	= (a_avg - b_avg)/ sqrt(b_var/(b_count-1) + a_var/(a_count-1));
-	return two_tailify(gsl_cdf_tdist_P(stat, a_count+b_count-2));
+	return apop_two_tailify(gsl_cdf_tdist_P(stat, a_count+b_count-2));
 }
 
 /** Do a paired t-test entirely inside the database.
+  Returns only the two-tailed p-value.
 \ingroup ttest
 */
 double	apop_db_paired_t_test(char * tab1, char *col1, char *col2){
@@ -844,5 +853,5 @@ double		avg	= gsl_matrix_get(result, 0, 0),
 		var	= gsl_matrix_get(result, 0, 1),
 		count	= gsl_matrix_get(result, 0, 2),
 		stat	= avg/ sqrt(var/(count-1));
-	return two_tailify(gsl_cdf_tdist_P(stat, count-1));
+	return apop_two_tailify(gsl_cdf_tdist_P(stat, count-1));
 }

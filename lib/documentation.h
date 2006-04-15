@@ -219,28 +219,35 @@ compiled, and the data is written to a text file for inspection outside
 of the program.
 This program will compile cleanly with the sample \ref makefile.
 \code
+
+
 #include <apophenia/headers.h>
+
 //Your processes are probably a bit more complex.
 double process_one(gsl_rng *r){
         return gsl_rng_uniform(r) * gsl_rng_uniform(r) ;
 }
+
 double process_two(gsl_rng *r){
         return gsl_rng_uniform(r);
 }
+
 int main(){
 apop_data      *m;
-gsl_vector_view view1, view2;
-gsl_vector      *v1, *v2;
+gsl_vector      v1, v2;
 double          p1, p2;
 int             i;
 gsl_rng *       r;
+
         //set up the GSL's random number generator.
         gsl_rng_env_setup();
         r=gsl_rng_alloc(gsl_rng_default);
+
         //create the database and the data table.
-        apop_open_db("runs.db");
+        apop_db_open("runs.db");
         apop_table_exists("samples",1); //If the table already exists, delete it.
         apop_query_db("create table samples(iteration, process, value); begin;");
+
         //populate the data table with runs.
         for (i=0; i<1000; i++){
                 p1      = process_one(r);
@@ -249,17 +256,18 @@ gsl_rng *       r;
                 apop_query_db("insert into samples values(%i, %i, %g);", i, 2, p2);
         }
         apop_query_db("commit;"); //the begin-commit wrapper saves writes to the drive.
+
         //pull the data from the database. Use the GSL's vector views to minimize copying.
         m  = apop_db_to_crosstab("samples", "iteration","process", "value");
-        view1      = gsl_matrix_column(m->data, 0);
-        view2      = gsl_matrix_column(m->data, 1);
-        v1      = &(view1.vector);
-        v2      = &(view2.vector);
+        v1      = gsl_matrix_column(m->matrix, 0).vector;
+        v2      = gsl_matrix_column(m->matrix, 1).vector;
+
         //print info.
         printf("\t   mean\t\t   var\n");
-        printf("process 1: %f\t%f\n", apop_mean(v1), apop_var(v1));
-        printf("process 2: %f\t%f\n\n", apop_mean(v2), apop_var(v2));
-        printf("t test rejects the null with confidence: %f%%\n", apop_t_test(v1,v2)*100);
+        printf("process 1: %f\t%f\n", apop_mean(&v1), apop_var(&v1));
+        printf("process 2: %f\t%f\n\n", apop_mean(&v2), apop_var(&v2));
+        printf("t test\n");
+        apop_data_print(apop_t_test(&v1,&v2), NULL);
         apop_data_print(m, "the_data.txt"); //does not overwrite; appends.
         return 0;
 }

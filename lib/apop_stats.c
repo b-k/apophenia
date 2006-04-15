@@ -1,6 +1,6 @@
 /** \file apop_stats.c	Basic moments and some distributions.
 
- Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+ Copyright 2006 by Ben Klemens. Licensed under the GNU GPL v2.
  \author Ben Klemens
  */
 
@@ -21,13 +21,18 @@ Many of these are juse one-line convenience functions.
 
 \b normalizations
 
-\li \ref apop_vector_normalize: scale and shift a vector.
-\li \ref apop_matrix_normalize: remove the mean from each column of the data set.
+\li \ref apop_vector_normalize: scale or shift a vector in various ways.
+\li \ref apop_matrix_normalize: scale or shift columns or rows.
 
 \b distributions
 
 \li \ref apop_random_beta: Give the mean and variance, and this will draw from the appropriate Beta distribution.
 \li \ref apop_multivariate_normal_prob: Evalute a multivariate normal at a given point.
+
+\b asst
+
+\li \ref apop_generalized_harmonic: Calculate \f$\sum_{n=1}^N {1\over n^s}\f$.
+\li \ref apop_GHgB3_rng: RNG from a Generalized Hypergeometric type B3.
 */
 
 /** \defgroup vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
@@ -38,6 +43,7 @@ These functions simply take in a GSL vector and return its mean, variance, or ku
 \ref apop_vector_cov and \ref apop_vector_covar are identical; \ref apop_vector_kurtosis and
 \ref apop_vector_kurt are identical; pick the one which sounds better to you.
 
+See also \ref db_moments.
 
 
 For \ref apop_vector_var_m<tt>(vector, mean)</tt>, <tt>mean</tt> is the mean of the
@@ -115,16 +121,18 @@ inline double apop_var(gsl_vector *in){
 }
 
 /** Returns the kurtosis of the data in the given vector.
+  This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
 \ingroup vector_moments
 */
 inline double apop_vector_kurtosis(gsl_vector *in){
-	return gsl_stats_kurtosis(in->data,in->stride, in->size); }
+	return gsl_stats_kurtosis(in->data,in->stride, in->size)+3; }
 
 /** Returns the kurtosis of the data in the given vector.
+  This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
 \ingroup vector_moments
 */
 inline double apop_vector_kurt(gsl_vector *in){
-	return gsl_stats_kurtosis(in->data,in->stride, in->size); }
+	return gsl_stats_kurtosis(in->data,in->stride, in->size)+3; }
 
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
 \param in	the vector in question
@@ -206,11 +214,12 @@ If not, the address of a <tt>gsl_vector</tt>. Do not allocate.
 1: <tt>in</tt> will be modified to the appropriate normalization.
 
 \param normalization_type 
-0: normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br>
-1: normalized vector will have mean zero and variance one. Replace
+'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br>
+'s': normalized vector will have mean zero and variance one. Replace
 each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample
 standard deviation.<br>
-2: normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin.
+'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin.
+'m': normalize to mean zero: Replace each X with \f$(X-\mu)\f$<br>
 
 \b example 
 \code
@@ -226,15 +235,15 @@ gsl_vector_set(in, 2, 2);
 printf("The orignal vector:\n");
 apop_vector_print(in, "\t", NULL);
 
-apop_normalize_vector(in, &out, 0, 1);
-printf("Normalized with mean zero and variance one:\n");
+apop_normalize_vector(in, &out, 0, 's');
+printf("Standardized with mean zero and variance one:\n");
 apop_vector_print(out, "\t", NULL);
 
-apop_normalize_vector(in, &out, 0, 0);
-printf("Normalized with max one and min zero:\n");
+apop_normalize_vector(in, &out, 0, 'r');
+printf("Normalized range with max one and min zero:\n");
 apop_vector_print(out, "\t", NULL);
 
-apop_normalize_vector(in, NULL, 1, 2);
+apop_normalize_vector(in, NULL, 1, 'p');
 printf("Normalized into percentages:\n");
 apop_vector_print(in, "\t", NULL);
 
@@ -242,7 +251,7 @@ return 0;
 }
 \endcode
 \ingroup basic_stats */
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, int normalization_type){
+void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, char normalization_type){
 double		mu, min, max;
 	if (in_place) 	
 		out	= &in;
@@ -250,50 +259,50 @@ double		mu, min, max;
 		*out 	= gsl_vector_alloc (in->size);
 		gsl_vector_memcpy(*out,in);
 	}
-
-	if (normalization_type == 1){
+        //the numbers are deprecated and will go away.
+	if ((normalization_type == 's')|| (normalization_type == 1)){
 		mu	= apop_vector_mean(in);
-		gsl_vector_add_constant(*out, -mu);			//subtract the mean
-		gsl_vector_scale(*out, 1/(sqrt(apop_vector_var_m(in, mu))));	//divide by the std dev.
+		gsl_vector_add_constant(*out, -mu);
+		gsl_vector_scale(*out, 1/(sqrt(apop_vector_var_m(in, mu))));
 	} 
-	else if (normalization_type == 0){
-		min	= gsl_vector_min(in);
-		max	= gsl_vector_max(in);
+	else if ((normalization_type == 'r')||(normalization_type == 0)){
+        gsl_vector_minmax(in, &min, &max);
 		gsl_vector_add_constant(*out, -min);
 		gsl_vector_scale(*out, 1/(max-min));	
 
 	}
-	else if (normalization_type == 2){
+	else if ((normalization_type == 'p') ||(normalization_type == 2)){
 		mu	= apop_vector_mean(in);
 		gsl_vector_scale(*out, 1/(mu * in->size));	
 	}
+	else if ((normalization_type == 'm')){
+		mu	= apop_vector_mean(in);
+		gsl_vector_add_constant(*out, -mu);
+	}
 }
 
-/** For each column in the given matrix, normalize so that the column
-has mean zero, and maybe variance one. 
+/** Normalize  each column in the given matrix, one by one.
 
+  Basically just a convenience fn to iterate through the columns and run \ref apop_vector_normalize for you.
 
 \param data     The data set to normalize.
-\param normalization     0==just the mean:\\
-                        Replace each X with \f$(X-\mu)\f$\\
-                        \\
-                         1==mean and variance:
-                        Replace each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample standard deviation
+\param row_or_col   Either 'r' or 'c'.
+\param normalization     see \ref apop_vector_normalize.
 
 \ingroup basic_stats */
-void apop_matrix_normalize(gsl_matrix *data, int normalization){
+void apop_matrix_normalize(gsl_matrix *data, char row_or_col, char normalization){
 gsl_vector  v;
-double      mu = 0;
 int         j;
-        for (j = 0; j < data->size2; j++){
-            v	= gsl_matrix_column(data, j).vector;
-            if ((normalization == 0) || (normalization == 1)){
-                mu      = apop_vector_mean(&v);
-		        gsl_vector_add_constant(&v, -mu);
+        if (row_or_col == 'r')
+            for (j = 0; j < data->size1; j++){
+                v	= gsl_matrix_row(data, j).vector;
+                apop_vector_normalize(&v, NULL, 1, normalization);
             }
-            if (normalization == 1)
-		        gsl_vector_scale(&v, 1./sqrt(apop_vector_var_m(&v,mu)));
-        }
+        else
+            for (j = 0; j < data->size2; j++){
+                v	= gsl_matrix_column(data, j).vector;
+                apop_vector_normalize(&v, NULL, 1, normalization);
+            }
 }
 
 /** Input: any old vector. Output: 1 - the p-value for a chi-squared test to answer the question, "with what confidence can I reject the hypothesis that the variance of my data is zero?"
@@ -350,11 +359,11 @@ Example:
 	double  a_draw;
 	gsl_rng_env_setup();
 	r = gsl_rng_alloc(gsl_rng_default);
-	a_draw = apop_random_beta(.25, 1.0/24.0, r);
+	a_draw = apop_random_beta(r, .25, 1.0/24.0);
 \endverbatim
 \ingroup convenience_fns
 */
-double apop_random_beta(double m, double v, gsl_rng *r) {
+double apop_random_beta(gsl_rng *r, double m, double v) {
 double 		k        = (m * (1- m)/ v) -1 ;
         return gsl_ran_beta(r, m* k ,  k*(1 - m) );
 }
@@ -608,46 +617,51 @@ double      var;
     return out;
 }
 
-
-
-/** produce a GSL_histogram_pdf structure.
-
-The GSL provides a means of making random draws from a data set, or to
-put it another way, to produce an artificial PDF from a data set. It
-does so by taking a histogram and producing a CDF.
-
-This function takes the requisite steps for you, producing a histogram
-from the data and then converting it to a <tt>gsl_histogram_pdf</tt>
-structure from which draws can be made. Usage:
-
-\code
-    //assume data is a gsl_vector* already filled with data.
-    gsl_histogram_pdf *p = apop_vector_to_pdf(data, 1000);
-    gsl_rng_env_setup();
-    gsl_rng *r=gsl_rng_alloc(gsl_rng_taus);
-
-    //Draw from the PDF:
-    gsl_histogram_pdf_sample(p, gsl_rng_uniform(r));
-
-    //Eventually, clean up:
-    gsl_histogram_pdf_free(p);
-\endcode
-
-\param data a <tt>gsl_vector*</tt> with the sample data
-\param bins The number of bins in the artificial PDF. It is OK if most
-of the bins are empty, so feel free to set this to a thousand or even
-a million, depending on the level of resoultion your data has.
-
+/** Here is the code:
+   \code
+    return !in;
+   \endcode
+This is just here for use in  \ref apop_vector_replace and \ref apop_matrix_replace .
 \ingroup convenience_fns
 */
-gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins){
-int                 i;
-gsl_histogram_pdf   *p  = gsl_histogram_pdf_alloc(bins);
-gsl_histogram       *h  = gsl_histogram_alloc(bins);
-    gsl_histogram_set_ranges_uniform(h, gsl_vector_min(data), gsl_vector_max(data));
-    for (i=0; i< data->size; i++)
-        gsl_histogram_increment(h,gsl_vector_get(data,i));
-    gsl_histogram_pdf_init(p, h);
-    gsl_histogram_free(h);
-    return p;
+int apop_double_is_zero(double in){
+    return !in;
+}
+
+/** Apply a test to every element of a vector; if the test returns true,
+then replace the element with the given value.
+
+There is a sample of usage in \ref apop_vectors_test_goodness_of_fit.
+
+\param v    the vector to be modified
+\param test A test that takes a single <tt>double</tt> as input. Candidates include <tt>gsl_isnan</tt> or \ref apop_double_is_zero.
+\param  replace_with    a value to be plugged in when the test is true
+
+\return nothing. But the vector is modified accordingly.
+\ingroup convenience_fns
+ */
+void apop_vector_replace(gsl_vector *v, int (* test)(double in), double replace_with){
+int     i;
+    for (i=0; i < v->size; i++)
+        if (test(gsl_vector_get(v, i)))
+                gsl_vector_set(v, i, replace_with);
+}
+
+/** Apply a test to every element of a matrix; if the test returns true,
+then replace the element with the given value.
+
+
+\param m    the matrix to be modified
+\param test A test that takes a single <tt>double</tt> as input. Candidates include <tt>gsl_isnan</tt> or \ref apop_double_is_zero.
+\param  replace_with    a value to be plugged in when the test is true
+
+\return nothing. But the matrix is modified accordingly.
+\ingroup convenience_fns
+ */
+void apop_matrix_replace(gsl_matrix *m, int (* test)(double in), double replace_with){
+int     i, j;
+    for (i=0; ++i < m->size1;)
+        for (j=0; ++j < m->size2;)
+        if (test(gsl_matrix_get(m, i, j)))
+                gsl_matrix_set(m, i, j, replace_with);
 }

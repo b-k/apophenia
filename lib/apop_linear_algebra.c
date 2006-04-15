@@ -3,9 +3,7 @@ such as take determinants or do singular value decompositions.  Includes
 many convenience functions that don't actually do math but add/delete
 columns, check bounds, et cetera.
 
-
-
-	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
 /** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  
@@ -75,7 +73,7 @@ double		means[in->size2];
 gsl_vector_view	v, v1, v2;
 	if (normalize){
 		out	= gsl_matrix_alloc(in->size2, in->size2);
-		apop_matrix_normalize(in,0);
+		apop_matrix_normalize(in,'c', 0);
 		gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, in, in, 0, out);
 	    gsl_matrix_scale(out, 1.0/(in->size1-1));
 	}

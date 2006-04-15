@@ -14,7 +14,7 @@ are two: the no-derivative version and the with-derivative version.
 Use the with-derivative version wherever possible---in fact, it is at
 the moment entirely unused, but is just here for future use.
 
-Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL.
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 #include "likelihoods.h"
 #include <assert.h>
@@ -330,14 +330,23 @@ gsl_matrix	*hessian;
 }
 
 
+/**  Here's the [dx/df]'[dx/df] version of the Hessian calculation.
+
+Feeling lazy? Rather than doing actual pencil-and-paper math to find
+your variance-covariance matrix, just use the negative inverse of the Hessian.
+
+\param dist	The model
+\param est	The estimate, with the parameters already calculated. The var/covar matrix will be placed in est->covariance.
+\param data	The data
+\ingroup basic_stats
+*/
 /*
-	//find the variance-covariance matrix, using $df/d\theta \cdot df/d\theta$
-static void calculate_var_covar_matrix(apop_model dist, apop_estimate *est, int betasize, gsl_matrix *data){
+void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data){
 int		i;
+int         betasize    = est->parameters->size;
 gsl_vector	*diff;
-gsl_matrix	*pre_cov;
-gsl_vector_view v;
-	pre_cov			= gsl_matrix_alloc(betasize, betasize);
+gsl_matrix	*pre_cov	= gsl_matrix_alloc(betasize, betasize);
+gsl_vector  v;
 	//estimate->covariance	= gsl_matrix_alloc(betasize, betasize);
 	diff			= gsl_vector_alloc(betasize);
 	dist.dlog_likelihood(est->parameters, data, diff);
@@ -345,10 +354,10 @@ gsl_vector_view v;
 		gsl_matrix_set_row(pre_cov, i, diff);
 	}
 	for (i=0; i< betasize; i++){
-		v	= gsl_matrix_column(pre_cov, i);
-		gsl_vector_scale(&(v.vector), -gsl_vector_get(diff, i));
+		v	= gsl_matrix_column(pre_cov, i).vector;
+		gsl_vector_scale(&v, -gsl_vector_get(diff, i));
 	}
-	apop_det_and_inv(pre_cov, &(est->covariance), 0, 1);
+	apop_det_and_inv(pre_cov, &(est->covariance->matrix), 0, 1);
 	gsl_matrix_free(pre_cov);
 	gsl_vector_free(diff);
 
@@ -358,7 +367,7 @@ gsl_vector_view v;
 	for (i=0; i<betasize; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 		gsl_vector_set(est->confidence, i,
 			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
-			gsl_matrix_get(est->covariance, i, i)))*2));
+			gsl_matrix_get(est->covariance->matrix, i, i)))*2));
 }
 */
 
