@@ -254,7 +254,7 @@ The Apophenia package assumes you are only using a single
 SQLite database at a time; if not, the \ref apop_db_merge and \ref
 apop_db_merge_table functions may help.
 
-When you are done doing your database manipulations, be sure to call \ref apop_close_db .
+When you are done doing your database manipulations, be sure to call \ref apop_db_close .
 
 \param filename
 The name of a file on the hard drive on which to store the database. If

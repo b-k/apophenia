@@ -54,3 +54,5 @@ int apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name,
 						char *col_col_name, char *data_col_name);
 
 char * apop_strip_dots(char *in, char strip_type);
+char *apop_strcat(char **base, char *addme);
+char *apop_strcpy(char **base, char *addme);

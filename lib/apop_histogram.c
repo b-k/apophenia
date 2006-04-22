@@ -51,8 +51,7 @@ Things to do:
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 
-/** \group PMF and CMFs
-
+/** \defgroup histograms Histograms, PMFs, and CMFs
 
 The GSL provides a few structures that basically accumulate data into
 bins. The first is the <tt>gsl_histogram</tt> structure, that produces a PMF.
@@ -61,14 +60,14 @@ To produce a PMF from a vector, use \ref apop_vector_to_histogram; to produce
 a PMF via random draws from a model, use \ref apop_model_to_pmf.
 
 
+The second structure from the GSL incrementally sums up the PMF's bins to
+produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1]
+to a draw from the PMF.  Because it can be used to draw from the PMF,
+the GSL calls this the <tt>gsl_histogram_PMF</tt> structure. That's right:
+the the data in the <tt>gsl_histogram_PMF</tt> structure is a cumulative
+sum---a CMF.
 
-The second structure from the GSL incrementally sums up the PDF's bins to
-produce a CDF. The CDF can be used to map from a draw from a Uniform[0,1]
-to a draw from the PDF.  Because it can be used to draw from the PDF,
-the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right:
-the the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative
-sum---a CDF.
-
+Anyway, here are some functions to deal with these various histograms and such.
 
  */
 
@@ -76,6 +75,7 @@ sum---a CDF.
 
   \param data   The data vector
   \param bins   The number of (evenly-spaced) bins
+  \ingroup histograms
   */
 gsl_histogram * apop_vector_to_histogram(gsl_vector *data, int bins){
 int                 i;
@@ -129,9 +129,9 @@ gsl_histogram       *h  = apop_vector_to_histogram(data,bins);
 /** Make two histograms that share bin structures: same max/min, same
  bin partitions. You can then plot the two together or run goodness-of-fit tests.
 
-\param d1       a gsl_vector
-\param d2       another gsl_vector
-\param bin_ct   How many bins?
+\param v1       a gsl_vector
+\param v2       another gsl_vector
+\param bins     How many bins?
 \return an array of two histograms. 
 
 \code
@@ -165,6 +165,7 @@ double              max0, max1, max2, min0, min1,min2;
 The method is to produce a histogram for the PDF using the RNG.
 
 \todo The double* that gets sent in to the model RNGs is ungraceful.
+\ingroup histograms
 */
 gsl_histogram * apop_model_to_histogram(apop_model *m, gsl_histogram *h, int draws, double *params, gsl_rng *r){
 int     i;
@@ -200,11 +201,11 @@ apop_data           *out    = apop_pdf_test_goodness_of_fit(h, m, params, bins);
 
 static apop_data *gof_output(double diff, int bins){
 apop_data   *out    = apop_data_alloc(4,1);
-double      pval    = gsl_cdf_chisq_P(diff, bins);
+double      pval    = gsl_cdf_chisq_P(diff, bins-1);
     apop_name_add(out->names, "Chi squared statistic", 'r');
     gsl_matrix_set(out->matrix, 0, 0, diff);
     apop_name_add(out->names, "df", 'r');
-    gsl_matrix_set(out->matrix, 1, 0, bins);
+    gsl_matrix_set(out->matrix, 1, 0, bins-1);
     apop_name_add(out->names, "p value", 'r');
     gsl_matrix_set(out->matrix, 2, 0, pval);
     apop_name_add(out->names, "confidence", 'r');
@@ -214,16 +215,22 @@ double      pval    = gsl_cdf_chisq_P(diff, bins);
 
 /** Test the goodness-of-fit between two histograms
 
+  \todo Right now, I'm assuming the histograms are aligned---h0->bins == h1->bins. This needs to go away.
+  \ingroup histograms
 */
-apop_data *apop_histograms_test_goodness_of_fit(gsl_histogram *h0, gsl_histogram *h1, int bins){
+apop_data *apop_histograms_test_goodness_of_fit(gsl_histogram *h0, gsl_histogram *h1){
 int     i;
-double  diff    = 0;
-    for (i=0; i< bins; i++)
-        if (h0->bin[i]==0){
-            if(apop_opts.verbose)
-                printf ("element %i of the first vector is zero. Skipping it.\n", i);
-        } else
-            diff    += gsl_pow_2(h0->bin[i] - h1->bin[i])/h0->bin[i];
+double  diff    = 0,
+        bins    = h0->n;
+    if (h0->n == h1->n){
+        for (i=0; i< bins; i++)
+            if (h0->bin[i]==0){
+                if(apop_opts.verbose)
+                    printf ("element %i of the first vector is zero. Skipping it.\n", i);
+            } else
+                diff    += gsl_pow_2(h0->bin[i] - h1->bin[i])/h0->bin[i];
+    } else
+        printf("Sorry, I haven't implemented the case where the bin counts of the two histograms are unequal.");
     return gof_output(diff, bins);
 }
 
@@ -260,27 +267,31 @@ the test (unless the second is longer; see notes).
 
 \return     An \ref apop_data table with the chi-squared statistic, df, p value, confidence, et cetera.
 
+\ingroup histograms
 */
 apop_data *apop_vectors_test_goodness_of_fit(gsl_vector *v0, gsl_vector *v1){
 double      diff    = 0,
             d0, d1;
 gsl_vector  *denom  = (v1->size > v0->size) ? v1 : v0,
             *num    = (v1->size > v0->size) ? v0 : v1;
-int         i;
+int         i, 
+            nanct   = 0;
     for (i=0; i< denom->size; i++){
         d0  = gsl_vector_get(denom, i);
         d1  = (i < num->size) ? gsl_vector_get(num, i): 0;
-        if (!gsl_isnan(d0) && !gsl_isnan(d1)){
+        if (gsl_isnan(d0) || gsl_isnan(d1))
+            nanct   ++;
+        else {
             if (d0 == 0){
                 if(apop_opts.verbose)
-                    printf ("element %i of the denominator vector is zero. ReturningGSL_POSINF\n", i);
-                diff    += GSL_POSINF;
+                    printf ("element %i of the denominator vector is zero. Returning GSL_POSINF\n", i);
+                diff     = GSL_POSINF;
                 break;
             } else
                 diff    += gsl_pow_2(d0 - d1)/d0;
         }
     }
-    return gof_output(diff, v0->size);
+    return gof_output(diff, v0->size - nanct);
 }
 
 /** Test the goodness-of-fit between a histogram and a model.
@@ -288,6 +299,7 @@ int         i;
   The method is to produce a histogram for the PDF using the RNG, then do a chi-squared test on the two PDFs.
 
 \todo The double* that gets sent in to the model RNGs is ungraceful.
+\ingroup histograms
 */
 apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model *m,
 int bins, long int draws, double *params, gsl_rng *r){

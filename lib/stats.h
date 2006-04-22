@@ -80,3 +80,4 @@ void apop_matrix_replace(gsl_matrix *m, int (* test)(double), double replace_wit
 
 //from apop_fisher.c:
 apop_data *apop_test_fisher_exact(apop_data *intab);
+

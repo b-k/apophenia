@@ -144,7 +144,7 @@ void apop_data_memcpy(apop_data *out, apop_data *in){
     gsl_matrix_memcpy(out->matrix, in->matrix);
     apop_name_stack(out->names, in->names, 'r');
     apop_name_stack(out->names, in->names, 'c');
-    apop_name_stack(out->names, in->names, 'd');
+    apop_name_stack(out->names, in->names, 't');
     if (in->catsize[0] && in->catsize[1]){
         out->categories  = malloc(sizeof(char **) * in->catsize[0] * in->catsize[1]);
         memcpy( out->categories, in->categories, sizeof(char **) * in->catsize[0] * in->catsize[1]);

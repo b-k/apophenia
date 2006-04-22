@@ -2,22 +2,24 @@
 
 Monte Carlo (Spanish and French for Mount Carl) is a city in Monaco
 famous for its casinos, and has more glamorous associations with its name
-than Las Vegas or Atlantic City.
+than Reno or Atlantic City.
 
 Monte Carlo methods are thus about randomization: taking existing data
-and making random transformations to learn more about it. At the
-roulette table, a single player may come out ahead, but the house is
-confident that with enough players testing the odds, it will make its
-money.  Similarly, a single random transformation will no doubt produce a
-somehow distorted picture of the data, but reapplying it thousands or
-millions of times will present an increasingly accurate picture.
+and making random transformations to learn more about it. But
+\airq{random} does not necessarily mean \airq{haphazard}.
+At the
+roulette table, a single player may come out ahead, but with millions of
+suckers testing their luck, casinos find they have a reliable method of
+making money.  Similarly, a single random transformation of the data will
+no doubt produce a somehow distorted picture, but reapplying it thousands
+or millions of times will present an increasingly accurate picture of
+the underlying data.
 
-Bootstrapping and jackknifing are methods of getting a variance out of
-data that, by all rights, should not be able to give you a variance. Say
-that you have estimated a parameter, and also want to test whether
-that parameter is different from zero. By repeatedly re-estimating the
-parameter, you can determine its variance, and thus test a hypothesis
-about it.
+This chapter will first look at the basics of random number generation.
+It will then discuss the general process of describing a data set with
+Monte Carlo techniques.  As a special case,
+bootstrapping and jackknifing are methods of getting a variance out of
+data that, by all rights, should not be able to give you a variance. 
 
 \section{Random number generation}\index{random
 numbers|(}\label{randomnumbers}
@@ -36,11 +38,15 @@ decimal places.
 Of course, using the same stream of numbers every time creates the
 possibility of getting a lucky draw, where \airq{lucky} can mean any of a
 number of things. The solution is a fixed process of pseudorandom
-number generation plus a varying initializing seed. Here is a function
-to initialize a \cind{gsl\_rng}:
+number generation plus a varying initializing seed. The GSL implements
+such a process; Figure \ref{rng_alloc} shows a function
+to initialize a \cind{gsl\_rng}.
+
+\begin{figure}
 \cindex{static}
 \cindex{apop\_rng\_alloc}
-\begin{lstlisting}
+	\hrule\vskip4pt
+\begin{lstlisting}[frame=none]
 gsl_rng *apop_rng_alloc(int seed){
 static int first_use    = 1;
    if (first_use){
@@ -52,6 +58,11 @@ gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
     return setme;
 }
 \end{lstlisting}
+	\hrule
+\caption{Allocating and initializing a random number generator.}
+\label{rng_alloc}
+\end{figure}
+
 In all cases, the function takes in an integer, and then sets up the
 random number generation (RNG) environment to produce new numbers
 via the Tausworth routine.  On the first call, the function calls the
@@ -59,12 +70,12 @@ via the Tausworth routine.  On the first call, the function calls the
 the GSL. Figure \ref{draw_beta_curve} below shows an example using this
 function.
 
-Adjacent integer seed will produce a wholly different stream of numbers,
+Adjacent integer seeds will produce a wholly different stream of numbers,
 so there is no need to make the seed look random. The GSL's default seed is
 zero, and if you need ten different seeds, I suggest using 0, 1, \dots, 9.
 
 \subsection{Random number distributions}
-Now that you have a random number generator, here are some functions that use it to draw from all of your favorite distributions:
+Now that you have a random number generator, here are some functions that use it to draw from all of your favorite distributions. Input an RNG as allocated above plus the appropriate parameters, and the GSL will transform the uniform RNG as necessary.
 \index{Gaussian distribution} \index{t distribution} \index{F distribution} \index{flat distribution} 
 \index{Uniform distribution}\cindex{gsl\_ran\_...}\cindex{gsl\_rng\_uniform}
 \index{Bernoulli distribution} \index{Beta distribution} 
@@ -103,7 +114,9 @@ and $\beta$ and return a random draw from the appropriate distribution.
 Quick---what is the variance of a Uniform$[0,1]$? Answer: ${1\over 12}$,
 which means that the Beta distribution will never have a variance greater
 than ${1\over 12}$ (and close to ${1\over 12}$, perverse things may
-happen computationally for $\mu \not\approx {1\over 2}$). The mean of a
+happen computationally for $\mu \not\approx {1\over 2}$).\footnote{More
+trivia: the Uniform$[0,1]$ is symmetric, so its skew is zero. Its
+kurtosis is $\frac{1}{80}$.} The mean of a
 function that has positive density iff $x \in [0,1]$ must be
 $\in (0,1)$. If you send \cind{apop\_ran\-dom\_beta} values of $\mu$
 and $\sigma^2$ that are outside of these bounds, the function will
@@ -119,11 +132,12 @@ right.
 \cindex{apop\_plot\_hist\-o\-gram}
 \codefig{draw_beta_curve}{Building a picture of a distribution via random draws}
 
-\def\bebox#1{\vbox{\hbox{\rotatebox{-90}{\scalebox{.30}{\includegraphics{#1}}}}
-}}
+%\def\bebox#1{\vbox{\hbox{\rotatebox{-90}{\scalebox{.30}{\includegraphics{#1}}}} }}
+
+\def\bebox#1{\vbox{\hbox{\rotatebox{-90}{\includegraphics[width=\textwidth*\real{0.38}]{#1}}} }}
 
 \begin{figure}[htb]
-\hskip 0.4cm
+\hskip -1.4cm
 \begin{tabular}{cc}
 \bebox{betauni.eps}& \bebox{betabi.eps}
 \end{tabular}
@@ -137,12 +151,18 @@ right.
 Another possibility, beyond drawing from famous distributions that your
 data theoretically approximates, would be to draw from your actual data.
 
-The GSL provides a means of turning a data set into a PDF from which you
-can then make draws.  It
-does so by aggregating the data into a histogram and then producing a CDF.
-Then, the \cind{gsl\_histogram\_pdf\_sample} function will
-map a draw from a Uniform[0,1] distribution to the CDF, thus producing a
-random draw from your data.
+We have already created histograms---rough probability mass
+functions---for plotting data in Chapter \ref{gnuplot} and for goodness
+of fit tests in Chapter \ref{testing}. Now we only need a mechanism to
+make draws from such a PMF.
+
+The GSL provides a means of turning a data set into a PMF from which you
+can then make draws.  It does so by aggregating the data into a histogram
+and then producing a CMF.\footnote{That's right: the \cind{gsl\_histogram}
+struct internally holds a PMF, and the \cind{gsl\_histogram\_pdf} struct
+internally holds a CMF.} Then, the \cind{gsl\_histogram\_pdf\_sample}
+function will map a draw from a Uniform[0,1] distribution to the CMF,
+thus producing a random draw from your data.
 
 The \cind{apop\_vector\_to\_pdf} function takes the requisite steps
 for you, producing a histogram from the data and then converting it to
@@ -152,13 +172,13 @@ an \cinline{int} listing the number of bins that the histogram should
 have. This should be calibrated to the resolution of the data: if the
 data is accurate to a thousandth, then it makes sense to have on the
 order  of a thousand
-bins. Over-accuracy takes up memory, but there is no harm to having
+bins. Over-accuracy takes up memory, but there is no numerical harm to having
 zeros in the vast majority of bins. Usage:
 \begin{lstlisting}
     //Setup:
     gsl_vector  *data    = produce_data_set(...);
     gsl_histogram_pdf *p = apop_vector_to_pdf(data, 1000);
-    gsl_rng *r = initrng(7); //see initrng() definition above.
+    gsl_rng *r = apop_rng_alloc(7);
 
     //Draw from the PDF:
     double      draw;
@@ -176,13 +196,13 @@ zeros in the vast majority of bins. Usage:
 \index{random numbers|)}
 
 \section{Finding statistics for a distribution} \label{billiondraws}
-For many pairs of statistics and distributions, there exists a closed-form
+For many statistic-distribution pairs, there exists a closed-form
 solution for the statistic: the kurtosis of a ${\cal N}(\mu,\sigma)$
 is $3\sigma^4$; the variance of a binomial distribution is $np(1-p)$,
 et cetera. One can also take recourse in the \ind{Slutsky theorem}, that
 says that given an estimate $r$ for some statistic $\rho$ and a continuous
 function $f(\cdot)$, then $f(r)$ is a valid estimate of $f(\rho)$. Thus,
-sums or products of means are easy to calculate as well.
+sums or products of means, variances, and so on are easy to calculate as well.
 
 However, there is a limit to how far closed-form solutions will take us.
 This is especially true for small data sets: virtually every theorem
@@ -192,17 +212,26 @@ it holds that\dots}.
 Lacking a closed-form calculation for a statistic, the next best thing
 is to estimate the statistic from the data. 
 
-One way to calculate the \ind{kurtosis} would be to a numeric integral
-over the entire domain of the distribution. Write a loop to 
-calculate $f(-500.00)\cdot p(-500.00)$, then
-$f(-500.01)\cdot p(-500.01)$, et cetera. 
+One way to calculate the expected value of $f(\cdot)$ would be to a numeric
+integral over the entire domain of the distribution. Write a loop to
+calculate $f(-500.00)\cdot p(-500.00)/100000$, then $f(-500.01)\cdot
+p(-500.01)/100000$, et cetera. This can be effective, but there are
+some details to be hammered out: should you integrate from $[-3,3]$
+or $[-30,30]$? You must decide up-front how much finer resolution will
+affect the integral, because (barring some exceptional tricks) each
+resolution is a new calculation rather than a modification of prior 
+calculations.
 
-Another approach is to evaluate $f(\cdot)$ at values randoly drawn from
-the distribution. Values will, by definition, appear in proportion to
-their likelihood, so the $p(\cdot)$ part takes care of itself. Just as
-we produced a nice picture of the Beta distribution by just taking
-enough random draws, we can calculate statistics of the overall
-distribution via random draws.
+Another approach is to evaluate $f(\cdot)$ at values randomly drawn
+from the distribution.  Just as we produced a nice picture of the
+Beta distribution by taking enough random draws, we can calculate
+statistics of the overall distribution via random draws.  Values will,
+by definition, appear in proportion to their likelihood, so the $p(\cdot)$
+part takes care of itself. Draws in the distant tails of the distribution
+will appear as often as necessary.  You can incrementally monitor
+$E[f(\cdot)]$ at 1,000 random draws, at 10,000, and so on, to see how
+much more you are getting with the extra computation.
+
 
 \paragraph{An example: the kurtosis of a t distribution} Perhaps the
 story is best told via an example.  You probably
@@ -219,11 +248,25 @@ the $t$ distribution family.}
 I tried this on a few computers, from my laptop to a research
 server, and the process took from under two minutes up to eight
 minutes---not bad for .15 billion draws from $t$ distributions followed
-by finding the fourth moment of vectors 5 million elements long.
+by finding the fourth moment of vectors 5 million elements
+long.\comment{\label{rcomplaint}I attempted to replicate this test in
+R. On the laptop that needed six minutes for the C program, the R code
+\cinline{for (i in 1:30) o<-rt(5000000,i)} needed 18 minutes. I did
+not calculate the kurtosis because R has no native kurtosis calculation,
+and I wasn't inclined to write one for this test. R's \binline{e1071}
+package has a kurtosis function, but it uses the na\"ive method---sum
+everything, then divide at the end---that would overflow for five million
+data points. Writing a kurtosis calculator that does not overflow
+is an exercise for the reader, whose answer can be found in the GSL
+source or Apophenia's \binline{apop\_db.c} file.}
 
-Here is an excerpt from the output, along with the true
-kurtosis of a $t$ distribution with $df$ degrees of freedom, $(3 df - 6)/(df - 4)$.
+The true kurtosis of a $t$ distribution with $df$ degrees of freedom
+is $(3 df - 6)/(df - 4)$.  For $df\leq 4$, the kurtosis is undefined,
+just as the variance of a Cauchy distribution is undefined. At $df = 5$,
+it is finite, and it monotonically decreases as $df$ continues upwards.
 
+Here is an excerpt from the simulation output, along with the true
+kurtosis: 
 
 \begin{center}
 \fbox{
@@ -248,10 +291,6 @@ df       &k (est)    &     k (analytic)\\
 }
 \end{center}
 
-For $df\leq 4$, the kurtosis is undefined, just as the
-variance of a Cauchy distribution is undefined. As  $df$ gets larger,
-the variance of the kurtosis shrinks; at $df = 5$, it is finite, and it
-gets smaller as $df$ continues upwards.
 
 Appropriately enough, the estimates for $df\leq 4$ are terrible.  
 The fact that there is no consistent estimator for these small 
@@ -261,7 +300,8 @@ procedure many times; here are eight runs and their means:
 
 \startonecol
 \vspace{\baselineskip}
-\hspace{-8.0cm}
+\iftwocol\hspace{-8.0cm} 
+\else\hspace{-1.4cm} \fi
 \fbox{
 \begin{tabular}{l|llllllll|l}
 df  &Run 1 &Run 2 &Run 3 &Run 4 &Run 5 &Run 6 &Run 7 &Run 8 &Mean\\
@@ -334,10 +374,11 @@ and has reasonable persuasive power.
 But having smaller variances makes
 it easier to reject the null hypothesis, which is what your paper is
 probably trying to do, so bootstrapping works slightly in your favor,
-and against parsimony and skepticism. Therefore, if there is any way
-of getting information about the variance of your variable without
+and against parsimony and skepticism. Therefore, the method should be
+reserved as a last resort.
+\comment{of getting information about the variance of your variable without
 bootstrapping, even if that estimate overstates the variance, then use
-that instead of bootstrapping. \comment{Otherwise, you dishonor your name, and
+that instead of bootstrapping. Otherwise, you dishonor your name, and
 bring shame to your research group.}
 
 

@@ -5,7 +5,10 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 
 /** \defgroup regression  OLS/GLS: The linear projection methods */
 /** \defgroup ttest  T-tests: comparing two vectors */
-/** \defgroup asst_tests  Various means of hypothesis testing.*/
+/** \defgroup asst_tests  Various means of hypothesis testing.
+
+ See also the goodness of fit tests in \ref histograms.
+ */
 
 #include "db.h"     //just for apop_opts
 #include "types.h"

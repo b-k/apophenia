@@ -10,6 +10,31 @@ you'd like more thorough tests, feel free to write them.
 double  true_parameter[]    = {3.82,2.1},
         true_y_parameter[]  = {0,2.1};
 
+static int is_neg(double in){
+    return in < 0;
+}
+
+int test_replaces(void){
+gsl_vector *v   = gsl_vector_calloc(3);
+gsl_vector_set(v, 2, 2.);
+assert(apop_vector_sum(v) == 2.);
+apop_vector_replace(v, apop_double_is_zero, -2);
+assert(apop_vector_sum(v) == -2.);
+apop_vector_replace(v, is_neg, GSL_POSINF);
+assert(apop_vector_sum(v) == GSL_POSINF);
+apop_vector_replace(v, gsl_isinf, 0);
+assert(apop_vector_sum(v) == 2);
+gsl_matrix *m   = gsl_matrix_calloc(3,2);
+gsl_matrix_set(m, 2, 1, 2.);
+assert(apop_matrix_sum(m) == 2.);
+apop_matrix_replace(m, apop_double_is_zero, -2);
+assert(apop_matrix_sum(m) == -2.*5 +2);
+apop_matrix_replace(m, is_neg, GSL_POSINF);
+assert(apop_matrix_sum(m) == GSL_POSINF);
+apop_matrix_replace(m, gsl_isinf, 0);
+assert(apop_matrix_sum(m) == 2);
+return 0;
+}
 
 int test_strip_dots(void){
     /* 0: replace all dots with _
@@ -229,6 +254,9 @@ apop_estimation_params  params;
         params.step_size        = 1e-2;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
+
+    printf("apop_vector_replace test:");
+    do_test(test_replaces());
 
     printf("apop_generalized_harmonic test:");
     do_test(test_harmonic());

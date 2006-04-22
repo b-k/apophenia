@@ -248,7 +248,7 @@ const char      divider[]="\\(\"[^\"][^\"]*\"\\|[^\"%s][^\"%s]*\\)[%s\n]";
 
 //in: the line being read, the allocated outstring, the result from the regexp search, the offset
 //out: the outstring is filled with a bit of match, last_match is updated.
-static void pull_string(char *line, char * outstr, regmatch_t *result, int * last_match){
+static void pull_string(char *line, char * outstr, regmatch_t *result, size_t * last_match){
 int     length_of_match = result[1].rm_eo - result[1].rm_so;
     memcpy(outstr, line + (*last_match)+result[1].rm_so, length_of_match);
     outstr[length_of_match]       = '\0';
@@ -262,8 +262,8 @@ FILE * 		infile;
 char		instr[Text_Line_Limit], outstr[Text_Line_Limit],
             full_divider[1000];
 int		    ct	                = 0,
-            length_of_string    = 0,
-            last_match          = 0;
+            length_of_string    = 0;
+size_t      last_match          = 0;
 regex_t     *regex              = malloc(sizeof(regex_t));
 regmatch_t  result[3];
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
@@ -377,9 +377,9 @@ char		instr[Text_Line_Limit],
             full_divider[1000];
 int 		i	        = 0,
             line_no     = 0,
-            last_match,
             length_of_string,
 		    ct, colno, rowct;
+size_t      last_match;
 regex_t     *regex  = malloc(sizeof(regex_t));
 regmatch_t  result[2];
 	ct	    = apop_count_cols_in_text(text_file);
@@ -483,6 +483,56 @@ char		*tmpstring,
 	return out;
 }
 
+/** This function will print a string to another string, allocating the
+appropriate amount of space along the way.
+ 
+That is, it will (1) reallocate base to exactly the needed length,
+and then (2) write addme. 
+
+\param base     The pointer to be written to. May be NULL. If base is
+automatically allocated (i.e., you declared it with char base[]), then
+this will crash.
+\param addme    A string.
+\return a pointer to base. 
+
+\ingroup convenience_fns
+*/
+char *apop_strcpy(char **base, char *addme){
+int     addlen  = (addme) ? strlen(addme): 0;
+    *base    = realloc(*base, sizeof(char)*(addlen+1));
+    if (!*base)
+        printf("Ran out of memory in apop_strcpy. Returning NULL.\n");
+    strcpy(*base, addme);
+    return *base;
+}
+
+/** In the proud tradition of every library providing its own haphazard string handling functions, this function will safely append one string on to another.
+ 
+That is, it will (1) reallocate base to exactly the needed length,
+and then (2) append addme. 
+
+\param base     The pointer to be extended. May be NULL. If base is
+automatically allocated (i.e., you declared it with char base[]), then
+this will crash.
+\param addme    A string.
+\return a pointer to base. 
+
+\ingroup convenience_fns
+*/
+char *apop_strcat(char **base, char *addme){
+    if (!*base){
+        *base    = malloc(sizeof(char));
+        (*base)[0] = '\0';
+    }
+int     baselen = strlen(*base),
+        addlen  = (addme) ? strlen(addme): 0;
+    *base    = realloc(*base, sizeof(char)*(baselen+addlen+1));
+    if (!*base)
+        printf("Ran out of memory in apop_strcat. Returning NULL.\n");
+    strcat(*base, addme);
+    return *base;
+}
+
 /** Read a text file into a database table.
 
   See \ref text_format.
@@ -516,15 +566,15 @@ apop_estimate   *est;
 */
 int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
 FILE * 		infile;
-char		q[20000], instr[Text_Line_Limit], **fn, *prepped;
+char		*q  = NULL, instr[Text_Line_Limit], **fn, *prepped;
 char		*stripped, *stripme, outstr[Text_Line_Limit],
             full_divider[1000];
 int 		ct, one_in,
-            last_match,
             length_of_string,
 		    i			        = 0, 
 		    use_names_in_file   = 0,
 		    rows			    = 0;
+size_t      last_match;
 regex_t     *regex  = malloc(sizeof(regex_t));
 regmatch_t  result[2];
 	ct	= apop_count_cols_in_text(text_file);
@@ -552,8 +602,12 @@ regmatch_t  result[2];
                 pull_string(instr,  outstr, result,  &last_match);
 	            stripme	    = strip(outstr);
                 stripped    = apop_strip_dots(stripme,'d');
+			    fn[i]	= NULL;
+                /*
 			    fn[i]	= malloc(1000 * sizeof(char));
 			    strcpy(fn[i], stripped);
+                */
+                apop_strcpy(&fn[i], stripped);
                 free(stripme);
 		        free(stripped);
 			    i++;
@@ -569,34 +623,39 @@ regmatch_t  result[2];
                 }
             }
         }
-		strcpy(q, "begin; CREATE TABLE ");
-		strcat(q, tabname);
+		apop_strcpy(&q, "begin; CREATE TABLE ");
+		apop_strcat(&q, tabname);
 		for (i=0; i<ct; i++){
 			if (i==0) 	{
                 if (has_row_names)
-                    strcat(q, " (row_names, ");
+                    apop_strcat(&q, " (row_names, ");
                 else
-                    strcat(q, " (");
-            } else		strcat(q, " , ");
-			sprintf(q, "%s %s", q, fn[i]);
+                    apop_strcat(&q, " (");
+            } else		apop_strcat(&q, " , ");
+            apop_strcat(&q, " ");
+            apop_strcat(&q, fn[i]);
 		}
-		strcat(q, "); commit; begin;");
-		apop_query_db(q);
+		apop_query_db("%s ); commit; begin;", q);
+		if (use_names_in_file){
+		    for (i=0; i<ct; i++)
+			    free(fn[i]);
+			free(fn);
+		}
 
         //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
 		while(fgets(instr,Text_Line_Limit,infile)!=NULL){
 			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
 				rows	        ++;
-				one_in          = 0;
+				one_in          = 
                 last_match      = 0;
                 length_of_string= strlen(instr);
 				sprintf(q, "INSERT INTO %s VALUES (", tabname);
                 while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
-					if(one_in++) 	strcat(q, ", ");
+					if(one_in++) 	apop_strcat(&q, ", ");
                     pull_string(instr,  outstr, result,  &last_match);
 					prepped	=prep_string_for_sqlite(outstr);
                     if (strlen(prepped) > 0)
-					    strcat(q, prepped);
+					    apop_strcat(&q, prepped);
 					free(prepped);
 				}
 				apop_query_db("%s);",q);
@@ -604,9 +663,7 @@ regmatch_t  result[2];
 		}
 		apop_query_db("commit;");
 		fclose(infile);
-		if (use_names_in_file){
-			free(fn);
-		}
+        free(q);
 		return rows;
 	}
 }

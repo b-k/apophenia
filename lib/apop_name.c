@@ -112,24 +112,27 @@ If you are copying row names to columns or vice versa, use \ref apop_name_cross_
 
 \param  n1      The first set of names
 \param  n2      The second set of names, which will be appended after the first.
-\param type     Either 'c', 'r', or 't' stating whether you are merging the columns, rows, or text. [Default: cols]
+\param type     Either 'c', 'r', or 't' stating whether you are merging the columns, rows, or text.
 \ingroup names */
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type){
 int     i;
     if (type == 'r'){
         for (i=0; i< n2->rownamect; i++)
             apop_name_add(n1, n2->rownames[i], 'r');
-        }
-    else if (type == 't'){
+        return;
+    }
+    if (type == 't'){
         for (i=0; i< n2->catnamect; i++)
             apop_name_add(n1, n2->catnames[i], 't');
-        }
-    else {
-        if (type != 'c' && apop_opts.verbose)
-            printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
+        return;
+    }
+    if (type == 'c'){
         for (i=0; i< n2->colnamect; i++)
             apop_name_add(n1, n2->colnames[i], 'c');
-        }
+        return;
+    }
+    if (apop_opts.verbose)
+         printf (">%c< sent to apop_name_stack, but the only valid options are r t c. Doing nothing.\n",type);
 }
 
 /** Append one list of names to another; the source and dest list need
@@ -210,8 +213,8 @@ apop_name *out = apop_name_alloc();
  */
 void apop_name_rm_columns(apop_name *n, int *drop){
 apop_name   *newname    = apop_name_alloc();
-int         i;
-    for (i=0; i< n->colnamect; i++){
+int         i, max      = n->colnamect;
+    for (i=0; i< max; i++){
         if (drop[i]==0)
             apop_name_add(newname, n->colnames[i],'c');
         else
@@ -220,6 +223,7 @@ int         i;
     free(n->colnames);
     n->colnames = newname->colnames;
     //we need to free the newname struct, but leave the colnames intact.
+    //A one-byte memory leak.
     newname->colnames   = malloc(1);
     newname->colnamect  = 0;
     apop_name_free(newname);
@@ -259,7 +263,7 @@ or its lower/upper case equivalent (i.e. case-insensitive matching)."
 For example, "p_val%" will match "P value", "p.value", and "p values".
 
 \param n        the \ref apop_name object to search.
-\param findme   the name you seek; see above.
+\param in       the name you seek; see above.
 \param type     'c', 'r', or 't'.
 \return         The position of \c findme. If not found, returns -1.
 \ingroup names
@@ -268,7 +272,6 @@ size_t  apop_name_find(apop_name *n, char *in, char type){
 char    **list;
 int     i, listct;
 char    *findme = precheck(in);
-    printf("\n!%s!\n",findme);
     if (type == 'r'){
         list    = n->rownames;
         listct  = n->rownamect;

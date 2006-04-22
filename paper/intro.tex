@@ -1,0 +1,357 @@
+\chapter[Introduction]{Statistics in the modern day}
+\iftwocol\begin{multicols}{2}\fi
+
+
+In case it is not obvious to you, we can not do statistical analysis without
+computers. The mathematical explanation of a statistical procedure is
+really just pseudo-code, which we can make operational by translating
+it into real computer code.
+
+I wrote this book to help you make that translation. The first focus
+is purely mathematical: we need to select techniques bearing in mind
+that they will eventually be code. The second focus is about practical
+coding: your life is short, and you want to spend as little of it learning
+dumb languages as possible.
+
+Doing math with a computer is unfettering. Instead of using regression
+techniques designed before computers, we can use techniques built around
+computing thousand-term likelihood functions, or taking millions of
+random samples. These techniques originally appeared in the textbooks
+as just theory, then eventually with a caveat that these techniques
+are possible but computationally intensive. Now computations are cheap,
+and we can use these techniques as we would their simplified brethren.
+
+In my own pain-filled experience, the best way to operationalize
+statistical concepts is using C; the GNU Scientific Library,  which
+facilitates the linear algebra and the Gaussian distribution work;
+and SQLite, a package which facilitates handling large data sets. This
+book will cover the basics of these components and the manner in which
+we can translate from the mathematical language to the language these
+libraries speak.
+
+The book is a complement to the Apophenia library, a set of functions 
+based on the GSL and SQLite, intended to simplify the hard parts of
+using these packages for statistical analysis. You could do all of the
+analyses in this book without Apophenia, but you would find yourself
+rewriting many of its functions. 
+\comment{
+Most stats packages include a manual that attempts to instruct the reader,
+and an alphabetical-order reference providing detailed usage notes for
+functions and structures.  You are reading Apophenia's manual now,
+and the reference is online at \url{http://apophenia.info/doc}.}
+
+This book falls in a mid-range between low-level numerical
+computation and high-level use of prepackaged functions. For example,
+{\sl Numerical Recipes in C} \citep{recipesinc} is a classic text
+describing the algorithms for seeking optima and efficiently calculating
+determinants. Being such a classic, there are many packages such as the
+GSL that implement the algorithms from {\sl Numerical Recipes}, and this
+book will build upon rather than replicate their effort. At the other
+end, an abundance of texts will explain to readers how to do basic
+statistics using the stats package of the month; this book lists the
+one-line commands at this level, but it also breaks open the black boxes
+and shows how those computations are done, so the reader can modify them
+according to the vagaries of real-world data.
+
+\paragraph{The intended audience}
+I assume that you have had a statistics class or two already, and that
+you have an encyclop\ae{}dic stats textbooks handy, so this
+book will provide some utility as a review, a reference, and perhaps a
+different perspective,
+but there are few proofs and no pretentions to comprehensive coverage of
+classical probability and statistics.
+
+I also assume that you are computer-literate, and have experience writing
+scripts in a stats package. The chapter on C (Chapter \ref{c_crash})
+focuses on the techniques and features that are central to C but are
+missing or underused in script-oriented languages. Those who are entirely
+new to the idea of writing a sequence of instructions for a computer
+may want to warm up with a few online tutorials.
+
+If you are well-versed in C and SQL (Structured Query Language), then
+the later parts of Part I and all of Part II will be immediately useful.
+
+If you are not well-versed in C and SQL, then expect to take some 
+time getting comfortable with these languages before doing statistics
+with the techniques here becomes easy.
+
+That is, there is an up-front investment to the methods here, and a
+long-term payoff. If you expect that you will never do anything more
+difficult than a linear regression on well-formed \ind{iid} data, or
+if you are trying to slog through your department's stats requirement
+so you can never look at another data set again, then by all means, put
+this book down and get a copy of the easiest stats package you can get
+away with. But if you expect to be doing statistical work for a larger
+part of your career, such that problems of extensibility, portability,
+and scaling may be looming in your future, then this book is for you.
+
+It is not a short ride, but when you are done with all this---and this
+is no exaggeration---you will have the tools to implement any technique
+in classical statistics in existence today, on any data set, no matter
+how large or exceptional.
+
+\section{The programming covered}
+\comment{
+Using C is a mix of low-level and high-level
+work. You will be allocating memory, telling the computer exactly where
+to shunt its electrons. But, thanks to the efforts of tens of thousands
+of programmers before you, you will have the benefit of functions that
+will find the minimum of a function or calculate characteristics of a
+Normal distribution, without having to remember Newton's method or
+the equation for the Gaussian distribution.}
+
+Part I is an overview of techniques for scientific computing: how to get
+your computer to efficiently shunt large data sets and invert matrices.
+
+It starts in Chapter \ref{c_crash} with a tutorial on the C programming
+language.  The chapter covers nothing more difficult than than adding
+columns of numbers, but it provides the basic grammar and structure that
+the remainder of the book will use to do statistical analysis. Notably,
+it introduces the idea of functions, and how one can build functions or
+use existing functions to execute increasingly advanced routines.
+
+\subsection{Dealing with large data sets} Matrix-oriented packages,
+(including the GSL) are not well-suited for data sets from agencies like
+the US Census, that can be literally gigabytes of data.
+C may seem unfriendly, but
+those languages designed around dealing with large data sets tend
+to be even more draconian---for example, SAS's data input command
+is {\tt card}, referring to the punch card it expects you to put in the
+hopper.\footnote{SAS, by the way, gets its facility with large data sets
+by providing a front-end to SQL queries. You can enter SQL directly into
+SAS if you so choose.}
+
+Meanwhile, database systems are designed from the ground up to do nothing
+but let you efficiently retrieve what you need from huge amounts of data.
+But being so purpose-specific, there is no way to do statistics in
+a database. Fortunately,
+we are working in C, so we can have the best of all worlds. The techniques
+covered in this book (and the method that Apophenia facilitates) is to
+read all of your data into a database, and then query what you need to a
+matrix, as you need it. This requires learning a new syntax, \ind{SQL},
+which is decidedly neither Beautiful nor Perfect, and adds a level of
+complication on top of what you are already dealing with. But the ease
+of manipulating data sets offered by SQL is very much worth its short
+learning curve. Chapter \ref{sql} presents a tutorial of SQL syntax to
+get you up to speed. 
+
+Apophenia uses the \ind{SQLite} library, which will
+give you all the database functionality you need. Those of you who 
+have data which is already handled
+by another database engine will easily be able to adapt the techniques
+used here, but will need to brush up on the details of how to access
+your site's database. Since you are using C instead of a stats package,
+you are guaranteed that there is an interface out there that you can
+download and incorporate into your programs.
+
+\subsection{The computation engine} The \ind{GNU Scientific Library}
+includes tools for all of the procedures commonly used in statistics,
+such as linear algebra operations, looking up the value of F-, t-, $\chi^2$-
+distributions, and finding maximia of likelihood functions. These
+will be the building blocks for analysis. Chapter \ref{linear_algebra}
+presents some basics for using the GSL, such as matrix manipulation and
+linear algebra.
+
+\subsection{Apophenia}
+Statistics textbooks could be much more brief. They could open
+with notes on linear algebra and probability, and then conclude ``The
+derivation of statistics from these basics is left as an exercise for
+the reader.'' Similarly, the GSL includes all that we need to do
+statistics, but in a raw form that is still a long way from the
+sort of data analysis and hypothesis testing we want to do. Apophenia,
+presented in Chapter \ref{apop}, is a library of structures and functions
+that binds together the GSL and SQLite to facilitate data handling
+and statistics.
+
+\subsection{Pretty pictures} One thing C is not really good for is drawing
+pretty pictures. This is not to be belittled, since those pictures
+can be very persuasive. Consistent with the rest of this book, plotting
+is done via \ind{Gnuplot}, a program which is freely available for
+the system you are using right now. Gnuplot is highly automatable, so once
+you have a plot you like, you can have your C programs autogenerate
+it or manipulate it in amusing ways, or can send your program to your
+colleague in Madras and he will have no problem reproducing and modifying
+your graphs. Chapter \ref{gnuplot} will cover creative uses of
+Gnuplot to display data.
+
+
+\input why_c.tex
+
+
+
+\section{The stats covered} 
+\comment{
+As powerful as we like to think modern statistics is, it has a 
+limited set of tricks at its disposal. For the purposes of this book,
+I will divide them into three broad categories, which are broad enough
+to cover the great majority of classical statistics (in fact, they overlap).
+
+{\it Projections.} This includes the overused OLS linear regression (which is
+a projection of your data onto a line), and the underused factor analysis
+techniques. These are the techniques we humans use to reduce too many
+dimensions down to something we can comprehend and even draw a picture of.
+
+{\it Gaussian distribution tricks.} The Central Limit Theorem says that
+a very wide range of statistics will have a Normal distribution. Square
+the Normal, and we have a Chi-squared distribution. Take the ratio of two
+Chi-squared distributions, and we have an F distribution.  The sum of
+a random number of Normally distributed variables will have a Laplace
+distribution.
+
+{\it Likelihood function tricks.} Once we know the probability of an
+event, probably thanks to a Gaussian distribution trick, we can then
+write down the likelihood that a given set of parameters would bring
+about the data we see, and then find the parameters that maximize this
+likelihood. MLEs have the pleasing property of meeting the Cramer-Rao
+lower bound, and the ratio of likelihood functions has the pleasant
+property embodied in the Neyman-Pearson lemma, making them the basis of
+hypotheses testing.
+
+\subsection{The goals of statistics}
+Let's settle an
+important fact about statistical analysis: it proves nothing, only
+persuades. A large part of this is that we are looking for causal stories
+about the world, but there is no statistical technique (and never will be)
+that proves \ind{causality}. Further, there is always a way to rewrite a model
+or re-draw the data so that a rejected hypothesis is not rejected, or vice versa.
+But some results are more robust to tweaking 
+than others, and some models are just plain more persuasive than others.
+
+Within the overall goal of persuasion, we}
+We can subdivide the goals of statistical analysis into two parts. The
+first is to just say something interesting about a data set. This is often
+model-free; for example, you may just want to show that two variables
+are highly correlated, or that the data can mostly be summarized by three
+dimensions.
+
+The second part of statistical analysis is hypothesis testing, in which
+we calculate a parameter of the data and then make a claim about that
+parameter.  Having observed in the last paragraph that the correlation
+coefficient of two variables is large, perhaps we would like to show
+that that correlation coefficient is almost certainly different from
+zero. More often, we have parameters in a model that we have written,
+and would like to make claims about those parameters.
+
+The techniques used for the two goals above are entirely different. For
+example, there are any of a number of distributions listed in the
+average stats textbook.  Poisson or Binomial distributions are used
+only for describing data culled from the real world, while the Chi-squared
+distribution or the F distribution are used only for testing hypotheses
+about parameters we have written down ourselves (such as the correlation
+coefficient, which has an F distribution). \cite[p 141]{kmenta} points out
+that no notable natural populations with a Chi-squared distribution.
+\index{chi squared distribution@$\chi^2$ distribution}
+
+Part II of this book will open with a chapter on describing data,
+Chapter \ref{projections}, using simple calculations or projection techniques. Then, Chapter
+\ref{gauss} covers the hypothesis-testing half of the story, including 
+methods of comparing your data to various Gaussian
+distributions, such as the $t$ test, F test, and $\chi^2$ test, 
+linear regressions, and goodness-of-fit tests.
+
+
+\subsection{General theorems and their special cases}\index{Ordinary Least
+Squares|(}
+Here is another way to divide the theorems that underly
+statistics into two classes. The first class are general
+results about likelihood functions, that 
+apply almost universally, but require a huge
+amount of computational power to arrive at a result. The second class
+consists of special cases of these general results, such as the theorems
+underlying OLS regressions; these results impose more
+assumptions, but are much easier to calculate, so that the results could
+be used a century before computers were invented.\footnote{Historically,
+the special cases came first and then were shown to be special cases of
+more general results. Nonetheless, the rate of adoption of the general
+cases has been in step with the speed of computing equipment.}
+
+We spend most of our time in school learning the special cases,
+because a few decades ago, this was the only class of results which
+civilians had the computing power to use. This is when the stats packages
+that are so prevalent today came to the fore, automating the tedium of
+applying these special case results. The technology had an immediate
+influence on how people did research: they applied those darn special
+cases to everything, and one would have a hard time finding an issue of an
+academic journal today that doesn't have at least one OLS regression.
+Everything in the world has become a linear process.
+
+This book is about using OLS only when it is applicable. 
+The Central Limit Theorem tells us that yes, errors often are
+Normally distributed; and it is often the case that yes, the dependent
+variable is more or less a linear or log-linear function of several
+variables. If such descriptions do no violence to the reality from
+which the data was culled, then OLS is the method to use, and using
+more general techniques will not be any more persuasive. But if these
+assumptions are not true, then using OLS is at best unpersuasive, and at
+worst disingenuous. We have the computing power to write down a model of
+the real world in arbitrary detail, and describe and test that model in
+reasonable time.
+
+Thus, having covered the special cases in Chapters \ref{projections}
+and \ref{gauss}, Chapter \ref{mle} will show you how to write down the
+likelihood functions to describe your model, as in Probit or Normit
+estimations, how to find their maxima, and how to test hypotheses using
+a likelihood ratio test.
+
+Sometimes, even a likelihood function does not do justice to the model
+you are attempting to describe, in which case the best thing to do is
+simply write down the process and do a few million random draws from
+that process and see what properties those draws have.
+Chapter \ref{boot} will cover Monte Carlo methods for such general
+model description, including bootstrapping and jackknifing, which are
+techniques to find variances from data when the classic Central Limit
+Theorems fail.  
+\index{Ordinary Least Squares|)}
+
+\paragraph{\treesymbol Seeing the forest from the trees} Statistics textbooks
+must tread a fine line. On the one hand, they must be didactic texts,
+explaining concepts to the reader, while on the other they must be a
+catalog of methods to apply should your data look just so.
+
+Sections marked with a \ind{\treesymbol} cover details that may be
+skipped on a first reading. They are not necessarily advanced
+in the sense of being somehow more difficult than unmarked text, but a
+reader who is trying to get the overall picture may want to cover them 
+later. 
+
+\comment{
+\section{Outline} 
+Part I covers general scientific computing, and will be valuable to
+anyone who needs to program a computer to handle and do math with large volumes of data.
+Since I am assuming that you are computer-literate but
+not a C programmer, Chapter \ref{c_crash} will give you a crash course
+in C. It will not only get you familiar with the rules of the language,
+but how to best think about problems in C. 
+Chapter \ref{sql} will give you a quick overview of the second language,
+SQL, which is a language that facilitates
+producing tables of just the right form from a dataset. C and SQL are
+excellent complements for data analysis: things which are very difficult
+in one are often trivial in the other.
+Chapter \ref{linear_algebra}
+will then introduce you to the package of C functions most useful for
+doing stats: the GNU Scientific Library (GSL). Notably, it will cover
+how to do linear algebra using the GSL. Chapter \ref{apop} covers
+Apophenia, a library of functions that bind together the GSL and SQLite
+to facilitate data handling and statistics. Finally, Chapter
+\ref{gnuplot} will cover creative uses of Gnuplot to display data.
+
+
+Given those tools, coding statistics will be easy. Part II includes a chapter
+devoted to each of the three categories of statistics above: Chapter \ref{projections}
+handles the process of describing your data, using simple calculations
+or projection techniques; Chapter
+\ref{gauss} covers methods of comparing your data to various Gaussian
+distributions, such as the t test, F test, and chi-squared test; Chapter
+\ref{mle} will show you how to write down your likelihood functions and
+find their maxima, as in Probit or Normit estimations, and how to test
+hypotheses using a likelihood ratio test. Chapter \ref{boot} will cover
+Monte Carlo methods such as 
+bootstrapping and jackknifing, which are dirty tricks which will one
+day save your life.  
+}
+
+
+\comment{
+\paragraph{Acknowledgments} Thanks to Ms. Annjeanette Agro for
+graphic design suggestions.}
+

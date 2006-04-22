@@ -1,4 +1,4 @@
-\startonecol \chapter[Gaussian tricks]{Hypothesis testing with the CLT} \label{gauss} \endonecol
+\startonecol \chapter[Gaussian tricks]{Hypothesis testing with the CLT} \label{testing} \label{gauss} \endonecol
 
 This chapter covers most of what we traditionally learn in first-year statistics. 
 \comment{
@@ -588,19 +588,26 @@ $$\left[\matrix{
 This makes life easy because we now only have one variable to estimate.
 }
 
-\section{Testing the assumptions} Errors have to be normally distributed, or else
+\section{Goodness of fit}
+\index{goodness of fit}
+
+Errors have to be normally distributed, or else
 the whole OLS system here does not apply. Many stats package user's manuals
 suggest plotting the errors and then squinting at the picture; you can
-do this using \cinline{apop\_plot\_histogram}. An
-alternative is to use the higher moments of the distribution.
-A Normal distribution has only two parameters,  the mean and the
+do this using \cinline{apop\_plot\_histogram}. 
+A slightly more rigorous alternative means of testing for Normality
+is to check the higher moments of the Normal distribution.  This is the
+traditional test, because it is computationally simple; below, a more
+general chi-squared goodness-of-fit test is presented.
+
+A Normal distribution has only two parameters, the mean and the
 standard deviation, and everything else about the Normal distribution is
 defined therefrom. Notably, the third moment is zero, and the fourth
 moment is $3 \sigma^4$. 
 Un-normalized kurtosis $>3$ is known as \vocab{leptokurtic} and $<3$ is
 known as \vocab{platykurtic}; see Figure \ref{tailfig} for a mnemonic.
 
-\marginalia{Kurtosis minus three}{
+\marginalia{20}{Kurtosis minus three}{
 There is some debate as to whether the kurtosis of a ${\cal N}(0,1)\equiv 3$
 or $\equiv 0$. This is simply a definitional issue: some prefer to
 normalize all reported kurtoses by subtracting three from the actual
@@ -611,7 +618,8 @@ normalized kurtosis, since a fourth power can never be negative.
 \index{kurtosis}}
 
 \begin{figure*}[tb]
-\hspace{-.3in}\scalebox{0.7}{\includegraphics{kurtosis.eps}}
+%\hspace{-.3in}\scalebox{0.7}{\includegraphics{kurtosis.eps}}
+\hspace{-.3in}\includegraphics[width=\textwidth*\real{1.1}]{kurtosis.eps}
 \caption{Leptokurtic, \ind{mesokurtic} and \ind{platykurtic}, illustration by Gosset in {\em Biometrika} \citep[p 160]{student:errors}.\index{Student} \index{William S Gosset}\index{leptokurtic}}
 \label{tailfig}
 \end{figure*}
@@ -631,10 +639,116 @@ which has a $\chi^2$ distribution with two degrees of freedom. In code:
 double  skew    = apop_vector_skew(datavector);
 double  kurt    = apop_vector_kurtosis(datavector);
 double  statistic = n * (gsl_pow_int(skew,2)/6. + gsl_pow_int(kurt -3,2)/24.)
-printf("We reject the null that your data is Normal with probability %g.\n", gsl_cdf_chisq_P(statistic, 2));
+printf("We reject the null that your data is Normal with probability %g.\n", 1 - gsl_cdf_chisq_P(statistic, 2));
 \end{lstlisting}
 
 Another alternative, keeping with the theme of this book, would be
 to bootstrap the variance of the kurtosis, which would let you find a
 confidence interval around $3 \sigma^4$ and state with some percentage
 of certainty that the kurtosis is or is not where it should be.
+
+
+\subsection{Chi-squared goodness-of-fit test} 
+\index{chi-squared goodness-of-fit test} 
+Say that we have a histogram that approximates a PDF, and a vector of
+points that we claim was drawn from that PDF. It would be nice to test
+the confidence with which our claim holds; this is a goodness
+of fit test.\footnote{
+From the Oxford English Dictionary's definition of \airq{goodness}:
+    1b. Of things material or immaterial: Absolute or comparative
+    excellence in respect of some specified or implied quality. Now
+    somewhat rare.}
+
+Mathematically, it is simple. We have $n$ bins, and two histograms:
+\cinline{h0}
+holds the approximation of the PDF and \cinline{h1} holds the data. Then 
+
+\begin{equation}    \label{gofstat}
+\sum_{i=0}^n {\frac{({\tt h0->bins[i]} - {\tt h1->bins[i]})^2}{{\tt h0->bins[i]}}} \sim \chi^2_{n-1}.
+\end{equation}
+
+[Notice: the functions below are subject to change.]
+
+\comment{
+Notice how much this chi-squared test looks like the above. Each term is
+the actual minus expected squared and scaled, and then the sum of these
+elements is still distributed $\chi^2$.
+} 
+If you have two vectors that are bin-type data, where the first element
+is a count of type one observations, the second is a count of type two
+observations, et cetera, then you can send them to
+\cind{apop\_vectors\_test\_goodness\_of\_fit}, which will return a table
+of the $\chi^2$ statistic, $p$-value, and so on.
+
+Or, more commonly, you have a \cinline{gsl\_vector} holding
+draws from a distribution, and you have an \cinline{apop\_model}
+representing the distribution itself. The common ground is the
+\cind{gsl\_histogram} object, which will recieve a fuller treatment in
+Section \ref{randomnumbers}. For now, it suffices to note that one may
+take data from a \cind{gsl\_vector} and put it into bins, and one may make
+random draws from an \cind{apop\_model} and put them into bins as well: 
+ \cindex{apop\_rng\_init}
+\begin{lstlisting}
+double normal_params[2]    = {0,1};
+gsl_rng         *r  = apop_rng_init(18);
+gsl_histogram   *hv = apop_vector_to_histogram(datavector, 1000);
+gsl_histogram   *hm = apop_model_to_histogram(hv, apop_normal, 1e7, normal_params, r);
+\end{lstlisting}
+
+After \cind{apop\_vector\_to\_histogram} produces a histogram from the
+data vector, \cind{apop\_model\_to\_histogram} produces a second histogram
+whose bins line up with the bins of the data histogram. It gets the data
+from the \cinline{apop\_normal.rng} function, which is why we need to
+send the function parameters for the RNG and a \cinline{gsl\_rng}
+object. The code above will make ten million draws from the RNG and bin
+them into the \cinline{hm} histogram.
+
+With two histograms properly lined up, calculating the $\chi^2$
+statistic is easy. You can write a \cinline{for} loop to calculate each
+term of Equation \ref{gofstat}, or you can have Apophenia do it for you:
+\begin{lstlisting}
+apop_data *out = apop_histograms_test_goodness_of_fit(hm, hv);
+\end{lstlisting}
+
+If you have two vectors that need to be binned, you can produce 
+synced histograms and then test:
+\cindex{apop\_vectors\_to\_histogram}
+\begin{lstlisting}
+gsl_histogram   **h = apop_vectors_to_histogram(datavector, 1000);
+apop_data *out = apop_histograms_test_goodness_of_fit(h[0], h[1]);
+\end{lstlisting}
+In the case of a vector and a model, you can just have
+Apophenia produce the histograms and run the test by itself:
+\cindex{apop\_model\_test\_goodness\_of\_fit}
+\begin{lstlisting}
+apop_data *vmtest   = apop_model_test_goodness_of_fit(datavector, apop_normal, 1000, 1e7, normal_params, r);
+\end{lstlisting}
+
+\paragraph{\treesymbol Bad data} What happens when the denominator of
+one of the terms in the $\chi^2$ statistic is zero?\footnote{I assume
+the other histogram has some positive value in the bin; if not, then
+we shouldn't use the bin. After all, you could inflate your $\chi^2$
+statistic by producing a thousand bins outside of the data's range.} The
+statistic becomes $\infty$, so we reject the null (that the data comes
+from the statistic) with probability one. This is appropriate: if there is
+data in a bin that has probability zero, then the model is clearly false.
+
+One approach is to eliminate the bin. You can do this by putting a
+\cinline{GSL\_NAN} in the data bin; the goodness of fit functions will
+then throw out that bin. To help with this, you can use the
+\cind{apop\_vector\_replace} function:
+\begin{lstlisting}
+apop_vector_replace(datavector, apop_double_is_zero, GSL_NAN);
+\end{lstlisting}
+The function takes a vector, a test, and a \cinline{double} value. It
+applies the test to every element of the vector, and if the test is
+true, that element of the vector is replaced with the given value. Other
+popular tests include \cind{gsl\_is\_inf} and its friends from Section
+\ref{numbers}.
+
+But the functions won't make the hard decision for you: why is the test
+rejecting the hypothesis? It could be a compuational reason, that can be solved by  making more random draws to produce the histogram, or using fewer bins.
+It could be that there were errors in the  data collection.
+But it could be that the data really is doing things that the model
+predicts would happen with probability zero, in which case the data's
+protests are valid and to be heeded.

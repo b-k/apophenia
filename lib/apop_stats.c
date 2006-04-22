@@ -660,8 +660,8 @@ then replace the element with the given value.
  */
 void apop_matrix_replace(gsl_matrix *m, int (* test)(double in), double replace_with){
 int     i, j;
-    for (i=0; ++i < m->size1;)
-        for (j=0; ++j < m->size2;)
+    for (i=0; i < m->size1; i++)
+        for (j=0; j < m->size2; j++)
         if (test(gsl_matrix_get(m, i, j)))
                 gsl_matrix_set(m, i, j, replace_with);
 }

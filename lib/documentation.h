@@ -13,6 +13,7 @@
  \li \ref linear_algebra "Linear Algebra": determinants, projections, numerical gradients, &c. Some convenience functions to display matrices and vectors.
  \li \ref models : How to write down a model and estimate its parameters.
  \li \ref ttest "Some tests"
+ \li \ref histograms 
 
 \section shuntdata Shunting data 
  \li \ref db "Database utilities": an easy front end to SQLite

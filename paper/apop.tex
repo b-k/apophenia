@@ -152,7 +152,7 @@ to be estimated via OLS or GLS is advised to instead manipulate the
 data set to the appropriate form and then call \cinline{apop\_OLS}
 or \cinline{apop\_GLS}.}
 
-\marginalia{Patterns in static}{{\sl Apophenia} is a term from the
+\marginalia{15}{Patterns in static}{{\sl Apophenia} is a term from the
 psychology literature referring to the human tendency to see patterns in
 static. Good data description seeks out patterns in existing data; good
 hypothesis testing does not seek out patterns but aims to reject or fail
@@ -366,7 +366,7 @@ like the function to return the designated \cinline{apop\_estimate} element.
 The \cinline{apop\_estimate} structure itself has an \cinline{apop\_inventory}
 element named \cinline{uses} embedded within it. Those elements for
 which \cinline{uses.elmt} are zero are unallocated pointers (so be careful:
-precede any pointer use with an \cinline{if(est->uses.element)} clause).
+precede any pointer use with an \cinline{if(est->uses.el\-e\-ment)} clause).
 
 It may sometimes be useful to manipulate the \cinline{apop\_estimate} structure's
 internal \cinline{apop\_inventory} element to your own benefit. For

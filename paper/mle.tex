@@ -69,7 +69,7 @@ small probability should be taken as signs that the model is false,
 should be handled as outliers, or should simply be taken as 
 measurement error.}
 
-\marginalia{\ind{Exponential families}}{%
+\marginalia{15}{\ind{Exponential families}}{%
 	There is a bit of a sleight of hand in asserting that $S \cdot P = {\partial P
 \over \partial \theta}$: the derivative of the expectation is
 	${d\over d\theta}\int P dy$; while we want $\int {d P\over
@@ -267,7 +267,7 @@ considered taken care of.
 
 \section{Description: Maximum likelihood estimators} 
 Apophenia provides a single function to find the optimum of a likelihood
-function, \cind{apop\_maximum\_likelihood}---but what a function it is. It
+function, \cind{apop\_maximum\_like\-li\-hood}---but what a function it is. It
 provides a standardized interface to several types of optimization
 routines that take very different approaches toward finding optima. You
 will have to provide a log likelihood function, but if you are unable to
@@ -465,13 +465,14 @@ gnuplot plotme -
 \end{lstlisting}
 
 \begin{figure*}
-\scalebox{0.4}{\includegraphics{search}}
+%\scalebox{0.4}{\includegraphics{search}}
+\includegraphics[width=\textwidth*\real{1.1}]{search}
 \caption{A search for an optimum using a conjugate gradient method.}
 \end{figure*}
 
 \section{Hypothesis testing: Likelihood ratio tests} \index{likelihood
-ratio test}
-As intimated by the \ind{Neyman-Pearson lemma}, the ratio of two
+ratio test}\index{Neyman-Pearson lemma}
+As intimated by the Neyman-Pear\-son lemma, the ratio of two
 likelihoods is a good way to test a hypothesis. 
 
 Typically, the likelihood ratio test involves the ratio of an
@@ -557,7 +558,7 @@ modules. Here is the complete header you will need:
 apop_model apop_new_likelihood;
 \end{lstlisting}
 Since the \cinline{apop\_model} is defined when you \cinline{\#include
-$<$apophenia/headers.h$>$}, the compiler already knows all the necessary
+$<$apophenia/head\-ers.h$>$}, the compiler already knows all the necessary
 details of your model; all you need to do from there is declare that
 your model exists.
 

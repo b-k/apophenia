@@ -13,7 +13,8 @@ by the software companies that service the field.''  Thus, this may be
 the only book to advocate statistical computing with a general computing
 language, so I will take some time motivating the choice as clearly as
 possible. Over the course of this, you should also get a better idea of
-why C is the way it is.
+why C is the way it is, and why modern statistics is best done in an old
+language.
 
 \paragraph{Computational speed---really} Using a stats package sure
 beats inverting matrices by hand, but as computation goes, many stats
@@ -34,7 +35,10 @@ or Monte Carlo simulation in reasonable time, you can write models
 that rely on fewer false assumptions. The Monte Carlo examples in Section
 \ref{billiondraws} were produced using over a billion draws from $t$
 distributions. If your stats package can't produce a few million random
-draws per second (many can't), such work will be infeasibly slow.
+draws per second (some can't), such work will be infeasibly
+slow.\footnote{By the way, I found that it takes a mere three
+times as long for R to produce random draws from $t$ distributions
+than comparable C code.}
 
 The features of C that stats package users will find most annoying are
 the ones that make it orders of magnitude faster than the cuter
@@ -47,18 +51,17 @@ Further, C's syntactic unpleasantness pays off immensely when extending
 quick-and-dirty scripts to involved, complex analyses.
 Not declaring types seems convenient at first, but playing guess-the-type
 with a package is often very frustrating for complex data types, such
-as a list of one-element lists. The different levels of scope and the
-modular form of files and functions may be counterintuitive at first,
+as a list of potentially empty lists. C's multiple levels of scope and 
+modular files and functions may be counterintuitive at first,
 but those features are essential to your sanity when
 writing programs with more than a few pages of code.
 
 \paragraph{Extensibility}
 There is nothing more embarrassing than a presenter who answers a question
-about the assumptions or results of a model with `that's just Stata's
-default'---or still worse, (and yes, I have heard this in a real live
-presentation by a real live researcher) `I would have corrected this
-anomaly in my data, but Stata didn't have a function to do that.' This
-is beyond unpersuasive and into the realm of confidence-eroding.
+about an anomaly in the data or analysis with `Stata didn't have a function to
+correct that.'\footnote{Yes, I have heard this in a real live presentation
+by a real live researcher.} Users need a means of breaking open canned
+statistical routines to make sure they fit the situation at hand.
 
 Connoisseurs of computing languages often refer to high-level and
 low-level languages. The low-level languages are close to the machine,
@@ -67,11 +70,10 @@ giving you perfect control but demanding a lot of work. The high-level
 languages do complex things with one command, like {\tt regress(data)}
 to produce pages of output, giving you no control but ease-of-use.
 
-C is typically billed as a low-level language, with its pointers and
-bit-shifting operators, but there is also a library of functions to
-do whatever high-level operations you may have in mind, such as the
-\cinline{apop\_OLS.estimate(data)} function from the Apophenia library.
-
+C can be used as a rock-bottom low-level language, but there is also a
+library of C functions to execute any high-level operations you may
+desire, such as the \cinline{apop\_OLS.estimate(data)} function from
+the Apophenia library.  
 You get to pick the balance of laziness and precision that you desire. You
 can write code to manipulate individual addresses, use the GNU Scientific
 Library to manipulate matrices, or use Apophenia to estimate models---and
@@ -89,7 +91,6 @@ Here in the modern day, everybody is computer-literate and connected.
 Academia progresses through the open dissemination of information, data,
 and analyses. But with dozens of mutually incompatible stats packages
 on the market, the open marketplace of ideas turns into a tower of Babel.
-
 Meanwhile, C is the lingua franca of computing. The software I discuss
 in this book is available for the system you are using, and for the
 system your colleagues are using, right now, for free.
@@ -99,9 +100,16 @@ able to verify and modify your work five years from now?
 Since C was written in 1972, dozens (maybe hundreds) of stats packages
 have come and gone. Those who try to follow the trends 
 have learned a half-dozen languages and have on their hard drives
-dozens of scripts that they can't run anymore.  Meanwhile, correctly
-written C programs written in the 1970s will compile cleanly on new PCs.
+dozens of scripts that they can't run anymore. Chapter \ref{c_crash}
+shows you how to build a library of functions so you can put together next
+month's analysis in half the time, but to profit from such efficiencies,
+you need a stable language that will be around for the long haul. For
+example, correctly written C programs written in the 1970s will compile
+and run on new PCs.  
 \index{statistics packages!rants regarding|)}
+
+
+
 \comment{
 \index{statistics packages!rants regarding|(}
 There are so many other languages in which you could do

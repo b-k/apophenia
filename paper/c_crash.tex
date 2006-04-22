@@ -40,36 +40,6 @@ programming in a scripting language and would like to get to know C.
 \section{C}
 \fi
 
-\comment{The next bit defines the code figures.
-I'm using lgrind now; it's pretty standard.
-The first argument to codefig will be
-both the name of the file and the label the figure will have; the 
-second argument will be caption for the figure.
-
-
-%The deprecated lgrind version.
-%\long\def\codefig#1#2{
-%	\begin{figure}
-%	\hrule\vskip4pt
-%	\input sources/#1.tex
-%\lstinputlisting[language=C, showstringspaces=false, basicstyle=\scshape,breaklines=true,prebreak=-]{sources/#1.c}
-%	\hrule
-%
-%	\caption{#2}\label{#1}
-%	\end{figure}
-%}
-}
-
-\long\def\codefigbyinclusion#1#2#3{
-	\begin{figure*}
-	\hrule\vskip4pt
-	#1
-	\hrule
-
-	\caption{#3}\label{#2}
-	\end{figure*}
-}
-
 %\long\def\codefig#1#2{\lagrind{sources/#1.tex}{#2}{#1}}
 
 
@@ -1417,9 +1387,10 @@ hasn't changed and is pointing to the same place it was always pointing
 to) will now be pointing to a modified value.  Figure \ref{callbyref}
 gives a sample program which does this.
 
+
 \begin{figure*}
 \hskip -1cm
-\scalebox{0.7}{\includegraphics{finger.ps}}
+\includegraphics[width=\textwidth*\real{1.1}]{finger.ps}
 \caption{Before, during, and after a function call that modifies a pointed-to value}
 \label{fingerfig}
 \end{figure*}
@@ -1432,15 +1403,34 @@ You can see that the code has stars everywhere. These
 indicate that there are pointers involved, but their use depends on the
 context.
 For full clarity, here are the rules:
+\vspace \baselineskip
+\hrule
+\vspace \baselineskip
 \begin{itemize}
 \item To declare a pointer to an integer, use \cinline{int * k}.
 \item Outside the declarations, to refer to the integer being pointed to, use \cinline{*k}.
 \item Outside the declarations, to refer to the pointer itself, use
 \cinline{k}.
 \end{itemize}
-If this seems sensible to you, great. If it doesn't, memorize it. 
+\vspace \baselineskip
+\hrule
+\vspace \baselineskip
 
-Notice also that spaces do not matter, so use whichever of \cinline{int
+Yes, the rules are a little arbitrary.\footnote{There is actually a
+logical justification for the syntax, but many find it to be a bit
+convoluted. The basic concept is that declaration should look like
+the usage. Since \cinline{*k} is an integer, we declare \cinline{int *k},
+just as we'd declare \cinline{int j} when \cinline{j} is an integer.} The
+odd use of stars is the source of endless discussion; on the one hand,
+there are the authors of all those languages that improve upon C by
+just eliminating pointers entirely, and on the other are those that find
+that after consistent usage, the syntax---like any syntax---eventually
+fades away into the irrelevant background.  Exhortations to ignore
+C's syntactic warts date as far back as 1623, when one author wrote:
+``The fault \dots lies not in our stars, but in our
+selves.''\index{Shakespeare, William}
+
+The spaces around our stars do not matter, so use whichever of \cinline{int
 *k}, \cinline{int* k}, or \cinline{int * k} you like best. General
 custom prefers the first form, because it minimizes the chance that you
 will write \cinline{int * k, b} (allocate a pointer named \cinline{k}
@@ -1492,7 +1482,7 @@ functions discussed here will have a \cind{sizeof} somewhere in the
 argument.
 
 %\eject
-\index{\&}\marginalia{The ampersand}{Every variable has an address, whether you
+\index{\&}\marginaliafixed{13}{The ampersand}{Every variable has an address, whether you
 declared it as a pointer or not. The ampersand finds that address: if
 \cinline{count} is an integer, then \cinline{\&count} is a pointer to an integer.
 The ampersand and star are inverses: \cinline{\&(*count) == count}, which
@@ -1548,7 +1538,7 @@ can use this to your advantage, as above.
 
 %\eject
 
-\marginalia{\treesymbol \cind{size\_t}}{In practice, you can 
+\marginalia{16}{\treesymbol \cind{size\_t}}{In practice, you can 
 specify array indices using an integer: \cinline{int i=1; data[i] +=7;}
 will work fine. But in theory, memory locations and integers may not
 match. For example, the range of the \cinline{int} type could be zero
@@ -1639,7 +1629,8 @@ with no space and a space with no pointer.
 
 \begin{figure*}
 \hskip -1cm
-\scalebox{0.7}{\includegraphics{pointer_faux_pas.ps}}
+%\scalebox{0.7}{\includegraphics{pointer_faux_pas.ps}}
+\includegraphics[width=\textwidth*\real{1.1}]{pointer_faux_pas.ps}
 \caption{How to mess up your pointers}
 \label{fauxpas}
 \end{figure*}
