@@ -51,13 +51,16 @@ don't care about the estimation parameters, sending \cinline{NULL} will
 work fine for most models. 
 
 \paragraph{Data} \cindx{apop\_data}{(textbf}
-The \cinline{apop\_data} structure adds a touch of metadata on top of the
-basic \cinline{gsl\_matrix}. It includes an \cinline{apop\_name} structure (see
-below), and a table for non-numeric variables. In case you need to access
-its individual elements, here is the declaration:
+The \cinline{apop\_data} structure is the union of three data types:
+the \cind{gsl\_vector}, \cind{gsl\_matrix}, and a table of strings. It
+includes an \cinline{apop\_name} structure (see below), so you know what
+your data is referring to.
+In case you need to access its individual elements,
+here is the declaration:
 
 \begin{lstlisting}
 typedef struct apop_data{
+    gsl_vector  *vector;
     gsl_matrix  *matrix;
     apop_name   *names;
     char        ***categories;
@@ -83,6 +86,15 @@ for (r=0; r< set->catsize[0]; r++){
     printf("\n");
 }
 \end{lstlisting}
+
+In most cases, only one of the vector, matrix, and category grid will
+not be \cinline{NULL}. However, you can readily include all of these
+elements at once. For example, a regression typically includes a single
+dependent variable, which you can store in the vector, and multiple
+independent variables, which you can store in the matrix. 
+Think of this setup as a partitioned matrix, where the vector is column
+-1, and the matrix columns begin at column zero.
+
 \comment{
 Categories are not particularly well-supported, because there is not
 much analysis that one could do with them---they are primarily useful
@@ -99,29 +111,39 @@ creating a blank slate with \cind{apop\_data\_alloc}.
 
 \cindex{apop\_data\_copy}
 You can copy the entire data set, 
-stack two data sets one on top of the other (stack rows), or 
-stack two data sets one to the right of the other (stack columns):
+stack two data matrices one on top of the other (stack rows), 
+stack two data matrices one to the right of the other (stack columns),
+or stack two data vectors:
 \begin{lstlisting}
 apop_data *newcopy = apop_data_copy(oldset);
 apop_data *newset_tall = apop_data_stack(oldset_one, oldset_two, 'r');}
 apop_data *newset_wide = apop_data_stack(oldset_one, oldset_two, 'c');}
+apop_data *newset_vector = apop_data_stack(oldset_one, oldset_two, 'v');}
 \end{lstlisting}
 
-All of these operations make a full copy of the data, without
+All of these operations make a full copy of the data being stacked, without
 erasing the original data sets, so in each case
 you will be taking up twice as much memory
 at the end of the function until you call
-\cinline{apop\_data\_free(oldset)}.\cindex{apop\_data\_free} As
+\cinline{apop\_data\_free(oldset)}.\footnote{That is, 
+if you are stacking matrices, you will get an \cinline{apop\_data} set with a
+\cinline{NULL} vector and category grid, but a copy of the matrix data; 
+if you are stacking vectors, you will get an \cinline{apop\_data} set with a
+\cinline{NULL} matrix and category grid, but a copy of the vector 
+data.}\cindex{apop\_data\_free} 
+
+As
 noted earlier, you are generally better off doing data manipulation
 in the database. If the tables are in the database instead of
 \cinline{apop\_data} sets the two stacking commands above are equivalent
 to \sinline{select * from oldset\_one union select * from oldset\_two}
-and \sinline{select t1.*, t2.* from oldset\_one t1,oldset\_two t2},
+and \sinline{select t1.*, t2.* from old\-set\_one t1, old\-set\_two t2},
 respectively.
 
-Since the \cinline{data} element of the \cinline{apop\_data} structure
+Since the \cinline{matrix} element of the \cinline{apop\_data} structure
 is a \cinline{gsl\_matrix}, you can use any of the tools from Chapter
-\ref{linear_algebra} to dissect it.
+\ref{linear_algebra} to dissect it, and similarly for the
+\cinline{vector} element.
 There are eight additional functions for setting and getting an element from an
 \cinline{apop\_data} set using the names. Let \airq{t} be a title and
 \airq{n} be a number; then you may refer to the row-column coordinate
@@ -136,8 +158,17 @@ apop_data_set_tn(your_data, "rowname", j, new_value);
 apop_data_set_nt(your_data, i, "colname", new_value);
 apop_data_set_tt(your_data, "rowname", "colname", new_value);
 \end{lstlisting}
-Notice that the first form, \cinline{apop\_data\_get}, has an abbreviated
-name, and is identical to \cinline{gsl\_matrix\_get(your\_data->matrix, i, j)}.
+Notice that the first form, \cinline{apop\_data\_get},
+has an abbreviated name, and for matrix data is identical to
+\cinline{gsl\_matrix\_get(your\_data->matrix, i, j)}. 
+
+If $j<0$, then these functions are taken to be referring to the
+\cinline{apop\_data} structure's vector rather than the matrix. As
+above, you can think about the vector as the -1$^{\rm{st}}$ element of the
+matrix, so 
+\cinline{apop\_data\_get\_tn(your\_data, "rowname", -1)} refers to the
+element of the vector whose rowname is as given.
+
 \cindex{apop\_data\_get...}
 
  \cindx{apop\_data}{)textbf}
@@ -306,7 +337,12 @@ The \cinline{apop\_name} structure has three components: a list of column
 names, a list of row names, and a list of categeory (text) variable
 names. It is intended to accompany the \cinline{gsl\_matrix} structure,
 which holds all the other information about a data array such as the
-number of rows and columns.
+number of rows and columns. 
+
+Notice that it does not have a separate list of names: the presumption
+is that all of the elements of an \cind{apop\_data} structure are part
+of a partitioned matrix, so the first element of the vector, the first
+row of the \cinline{gsl\_matrix}, and the first row of the category matrix all represent a single observation, whose name is \cinline{your\_data->rownames[0]}.
 
 You won't see an \cinline{apop\_name} structure by itself very often;
 usually it is embedded in an \cinline{apop\_data} structure. But its
@@ -370,7 +406,7 @@ like the function to return the designated \cinline{apop\_estimate} element.
 The \cinline{apop\_estimate} structure itself has an \cinline{apop\_inventory}
 element named \cinline{uses} embedded within it. Those elements for
 which \cinline{uses.elmt} are zero are unallocated pointers (so be careful:
-precede any pointer use with an \cinline{if(est->uses.el\-e\-ment)} clause).
+precede any pointer use with an \cinline{if(est\-i\-mate->uses.el\-e\-ment)} clause).
 
 It may sometimes be useful to manipulate the \cinline{apop\_estimate} structure's
 internal \cinline{apop\_inventory} element to your own benefit. For

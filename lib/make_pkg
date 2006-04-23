@@ -1,6 +1,6 @@
 export junkdir=dists
 export pkg=apophenia
-export version=0.15
+export version=0.16
 
 #This script is intended for maintainers who are modifying the 
 #package as it appears on sourceforge.net. If you are a user who 

@@ -27,8 +27,9 @@ form and hand it in to the mode.
 
 \li Data 
 The \ref apop_data structure adds a touch of metadata on
-top of the basic \c gsl_matrix. It includes an \ref apop_name structure
-(see below), and a table for non-numeric variables. See \ref data_struct.
+top of the basic \c gsl_matrix and \c gsl_vector. It includes an
+\ref apop_name structure (see below), and a table for non-numeric
+variables. See \ref data_struct.
 
 \li Models 
 The \ref apop_model structure encapsulates a description of the world
@@ -166,10 +167,11 @@ typedef struct apop_estimation_params{
 } apop_estimation_params;
 
 /**
-Gathers together a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space for a table of non-numeric data.
+Gathers together a <tt>gsl_vector</tt>, a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space for a table of non-numeric data.
 \ingroup data_struct
 */
 typedef struct apop_data{
+    gsl_vector  *vector;
     gsl_matrix  *matrix;
     apop_name   *names;
     char        ***categories;

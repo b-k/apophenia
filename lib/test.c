@@ -36,6 +36,7 @@ for(i=0; i< len; i++){
     apop_estimate_print(out);
     assert(fabs(gsl_vector_get(out->parameters, 0) - -1.4) < tolerance);
     assert(fabs(gsl_vector_get(out->parameters, 1) - 2.3) < tolerance);
+    return 0;
 }
 
 

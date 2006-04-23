@@ -19,6 +19,12 @@ four for both.
 
 --A whole section on histograms and goodness-of-fit tests.
 
+--apop_data_set fns to go with the apop_data_get fns.
+
+--apop_data now includes a vector type
+	--apop_estimate.parameters is now an apop_data type.
+	--apop_estimate.names is thus obsolete.
+
 		March 2006
 --apop_inventory is now a subset of apop_estimation_params. Implications:
 	--added apop_estimation_params_alloc() to ensure that inventory is set right.

@@ -332,6 +332,26 @@ double  d;
     }
 }
 
+/** Put the first vector on top of the second vector.
+  The fn returns a new vector, meaning that at the end of this function, until you gsl_vector_free() the original vectors, you will be taking up twice as much memory. Plan accordingly.
+
+\param  v1  the upper vector
+\param  v2  the second vector
+\return     a new vector with the stacked data.
+
+\ingroup convenience_fns
+*/
+gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2){
+gsl_vector      *out;
+gsl_vector      t;
+    out = gsl_vector_alloc(v1->size + v2->size);
+    t   = gsl_vector_subvector(out, 0, v1->size).vector;
+    gsl_vector_memcpy(&t, v1);
+    t   = gsl_vector_subvector(out, v1->size, v2->size).vector;
+    gsl_vector_memcpy(&t, v2);
+    return out;
+}
+
 /** Put the first matrix either on top of or to the right of the second matrix.
   The fn returns a new matrix, meaning that at the end of this function, until you gsl_matrix_free() the original matrices, you will be taking up twice as much memory. Plan accordingly.
 

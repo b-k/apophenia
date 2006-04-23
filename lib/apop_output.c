@@ -12,6 +12,7 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 
 #include <apophenia/output.h>
 #include <gsl/gsl_histogram.h>
+#include <apophenia/conversions.h>
 /** Prep for gnuplot one of those cute scatterplots with a regression line through it.
 
 Currently, you only get two dimensions.
