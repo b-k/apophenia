@@ -75,7 +75,8 @@
   \if@nobreak\advance\count@\@ne\fi
   \xdef\@svsechd##1##2{%
   %This is the only line that changed:
-    \hskip -1cm\noexpand\llap{\box\ttl@box##2}\hskip 1cm%
+    %\hskip -1cm\noexpand\llap{\box\ttl@box##2}\hskip 1cm%
+    \hskip -\mwidth\noexpand\llap{\box\ttl@box##2}\hskip \mwidth%
     \setbox\z@\hbox{\hskip\ttl@maxdimen\relax##2}%
     \global\hangindent\wd\z@
     \global\hangafter-\the\count@\relax}}

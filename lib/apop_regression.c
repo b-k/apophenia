@@ -369,7 +369,7 @@ gsl_matrix      *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix-
 gsl_vector_view v           = gsl_matrix_column(set->matrix, 0);
     prep_names(out);
     gsl_matrix_get_col(y_data, set->matrix, 0);
-    gsl_vector_set_all(&(v.vector), 1);                 //affine: first column is ones.
+    gsl_vector_set_all(&(v.vector), 1);     //affine: first column is ones.
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   //(X'X)
     gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)
     xpxinvxpy(set->matrix, y_data, xpx, xpy, out);

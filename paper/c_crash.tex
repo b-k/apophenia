@@ -56,6 +56,16 @@ tutorial} into your favorite search engine; since this is C and not a
 proprietary, specialized language, you will have a few hundred hits to
 choose from. 
 
+Although much of the syntax is C-specific, many of the concepts are not.
+The discussion of the functional approach, stacks of frames, debugging,
+test functions, and overall good style are immediately applicable to
+virtually every programming language in use today.\footnote{What does
+change from language to language?  Besides the details of syntax, the
+rules for scope and the call-by-value/call-by-reference mechanism tend
+to be different for every language. When faced with a new language, I
+always check the scoping rules first.} Thus, this chapter on C may help
+you to become a better programmer with the tools you are already using.
+
 \paragraph{An outline} 
 
 This chapter divides into four parts.
@@ -1180,7 +1190,7 @@ which does nothing but take text
 you wrote and convert it into more text.
 
 \index{header file!aggregation} 
-\marginaliafixed{18}{Header aggregation}{The Apophenia library provides a convenience header that aggregates
+\marginaliafixed{16}{Header aggregation}{The Apophenia library provides a convenience header that aggregates
 almost every header you will likely be using. By placing\par
 \cinline{\#include $<$apophenia/headers.h$>$}\par
 at the top of your file, you should not need to include any of the other standard headers 
@@ -1407,7 +1417,7 @@ For full clarity, here are the rules:
 \hrule
 \vspace \baselineskip
 \begin{itemize}
-\item To declare a pointer to an integer, use \cinline{int * k}.
+\item To declare a pointer to an integer, use \cinline{int *k}.
 \item Outside the declarations, to refer to the integer being pointed to, use \cinline{*k}.
 \item Outside the declarations, to refer to the pointer itself, use
 \cinline{k}.
@@ -1416,19 +1426,21 @@ For full clarity, here are the rules:
 \hrule
 \vspace \baselineskip
 
-Yes, the rules are a little arbitrary.\footnote{There is actually a
-logical justification for the syntax, but many find it to be a bit
-convoluted. The basic concept is that declaration should look like
+There is actually a
+logical justification for the syntax, based on the
+idea that the declaration should look like
 the usage. Since \cinline{*k} is an integer, we declare \cinline{int *k},
-just as we'd declare \cinline{int j} when \cinline{j} is an integer.} The
-odd use of stars is the source of endless discussion; on the one hand,
+just as we'd declare \cinline{int j} when \cinline{j} is an integer.
+If this makes sense to you, great; if not, just memorize the rules 
+above.\footnote{The
+odd use of stars is the source of endless discussion. On the one hand,
 there are the authors of all those languages that improve upon C by
 just eliminating pointers entirely, and on the other are those that find
 that after consistent usage, the syntax---like any syntax---eventually
 fades away into the irrelevant background.  Exhortations to ignore
 C's syntactic warts date as far back as 1623, when one author wrote:
 ``The fault \dots lies not in our stars, but in our
-selves.''\index{Shakespeare, William}
+selves.''\index{Shakespeare, William}}
 
 The spaces around our stars do not matter, so use whichever of \cinline{int
 *k}, \cinline{int* k}, or \cinline{int * k} you like best. General
@@ -1832,7 +1844,10 @@ ungraceful overallocation or the precise but lengthy \cinline{realloc}
 route. Generally, strings for haphazard messages or labels are fine with 
 an allocation like \cinline{char hello[1000]}, while anything in a
 \cinline{for} loop probably merits the \cinline{realloc} treatment;
-see Figure \ref{dummy}, page \pageref{dummy}, for an example.
+see Figure \ref{dummy}, page \pageref{dummy}, for an example. Apophenia
+provides two convenience functions, \cind{apop\_strcat} and
+\cind{apop\_strcpy}, that do the \cinline{realloc} for you; see the
+online reference for details.
 
 \paragraph{Printing}
 \index{printing|see{\cinline{printf}}}\label{printf}
@@ -1989,7 +2004,184 @@ point out that just hitting $<$enter$>$ will repeat the last command,
 so you won't have to keep hitting \cinline{n} to step through many lines.
 \index{debugging|)}
 
-\section{\treesymbol{} Other auxiliary programs} 
+\section{\treesymbol Errors} The compiler will warn you of syntax
+errors, and you have seen how the debugger will help you find runtime
+errors, but the best approach to errors is to make sure they never
+happen. This section presents a few methods to make your code more
+robust and reliable. Most of the suggestions build on the notes above
+about writing one function at a time, and making sure that function does
+its task well, but
+none of this is C-specific. Testing a function and its inputs makes
+sense in any programming language, and most languages include an 
+\cinline{assert}-style function.
+
+Of course, adding tests and checks takes time and effort, but the
+wisdom of the ages shows that that time and effort pays off quickly.
+If you are new to C or otherwise in unfamiliar territory, it is well
+worth writing a test function for every operating function.
+
+
+\subsection{Testing the inputs} Here is a simple function to take the
+mean of an input array.\footnote{Normally, we'd just assign
+\cinline{float mean=0} at first and loop beginning with \cinline{i=0}; I used this slightly odd initialization
+for the sake of the example. How would the two approaches differ for a
+zero-length array?}
+\begin{lstlisting}
+float find_means(float *in, int length){
+int     i;
+float   mean    = in[0];
+    for (i=1; i < length, i++)
+        mean    += in[i];
+    return mean/length;
+}
+\end{lstlisting}
+
+What happens if the user calls the function with a \cinline{NULL}
+pointer? It crashes. What happens if \cinline{length==0}? It crashes.
+You would have an easy enough time pulling out the debugger and drilling
+down to the point where you sent in bad values, but it would be easier
+if you just tested to begin with.
+\begin{lstlisting}
+float find_means(float *in, int length){
+if (in==NULL){
+    printf("You sent a NULL pointer to find_means.\n");
+    return GSL_NAN;
+    }
+if (length<=0){
+    printf("You sent an invalid length to find_means.\n");
+    return GSL_NAN;
+    }
+int     i;
+float   mean    = in[0];
+    for (i=1; i < length, i++)
+        mean    += in[i];
+    return mean/length;
+}
+\end{lstlisting}
+This took more typing, and does not display the brevity that we
+mathematicians admire, but it gains in clarity and usability. Listing
+conditions on the inputs provides a touch of additional documentation on
+what the function expects and thus what it will do. If you misuse the
+function, you will know the error in a heartbeat.
+
+There is really no reason not to pepper your code with tests. Notice how
+the \cinline{\&\&} and \cinline{||} are perfect for this sort of thing,
+because they will never go past the first step. 
+
+Let us say that the user gives us a list of element indexes, and we will
+add them to a counter only if the chosen array elements are even. The
+quick-and-dirty way to do this is to use the \cinline{is\_even} function
+from earlier:
+\begin{lstlisting}
+if (is_even(array[i]))
+    evens   += array[i];
+\end{lstlisting}
+But if the array index is invalid, this will break. So, we can add tests
+before testing for evenness:
+\begin{lstlisting}
+if (i > 0 && i < array_len && is_even(array[i]))
+    evens   += array[i];
+\end{lstlisting}
+
+\subsection{\cinline{assert}} \cindex{assert}
+The \cinline{assert} macro makes a claim, and if the claim is false, the
+program halts at that point. This can be used for both mathematical
+assertions, and for housekeeping like checking for \cinline{NULL}
+pointers. Here is the above input-checking function rewritten using
+\cinline{assert}:
+\begin{lstlisting}
+#include <assert.h>
+
+float find_means(float *in, int length){
+assert (in!=NULL);
+assert (length>0);
+int     i;
+float   mean    = in[0];
+    for (i=1; i < length, i++)
+        mean    += in[i];
+    return mean/length;
+}
+\end{lstlisting}
+
+If your assertion fails, then the program will halt, and you will be
+a notice of the failure will be printed on the screen. On a gcc system,
+the error message lists the file, line number, function, and failed assertion:
+\begin{lstlisting}
+assert: your_program.c:4: find_means: Assertion `length > 0' failed.
+Aborted
+\end{lstlisting}
+
+Some people comment out the assertions when they feel the program is
+adequately debugged, but this typically saves no time, and defeats the
+purpose of having the assertions to begin with---are you {\em sure}
+you'll never find another bug? If you'd like to compare timing with and
+without assertions, the -\binline{DNDEBUG} flag to the compiler (just
+add it to the command line) will compile the program with all the
+\cinline{assert} statements skipped over.
+
+\exercise{The method above for taking a mean runs risks of overflow
+errors. Rewrite it so that it calculates an incremental mean as a
+function of the mean to date and the next element. Given the sequence
+$x_1, x_2, x_3, \dots$, the first mean would be $\mu_1=x_1$, the second
+would be $\mu_2=\frac{\mu_1}{2}+ \frac{x_2}{2}$, the third would be
+$\mu_3 = \frac{2\mu_2}{3} + \frac{x_3}{3}$, et cetera.
+Be sure to fill the function
+with the appropriate assertions about the inputs.
+For a solution, see the GSL \cinline{gsl\_vector\_mean} function, or the
+code in \cinline{apop\_db.c}.}
+
+\subsection{Test functions}\index{test functions} The best way to know whether a
+function is working correctly is of course to test it.
+\begin{lstlisting}
+void test_find_means(){
+float  array1[]  = {1,2,3,4};
+int     length      = 4;
+    assert(find_means(array1, length) == 2.5);
+float array2[]  = {GSL_POSINF,2,3,4};
+    assert(find_means(array2, length) == GSL_POSINF);
+float array3[]  = {-9,2,3,4};
+    assert(find_means(array3, length) == 0);
+float array4[]  = {2.26};
+    assert(find_means(array4, 1) == 2.26);
+}
+\end{lstlisting}
+
+A good test function tries to cover all the strange possibilities: what
+if the vector is only one element, or has unexpected values? It may also
+be worth checking that the absolutely wrong inputs, like
+\cinline{find\_means(array4, -3)} will fail appropriately.
+
+Some programmers actually write the test functions first.  This is a
+method very much akin to what your high school writing teacher told you
+about writing an outline before writing down the details. Write a comment
+block explaining what the function will do, then write a test program that
+gives examples of what the comment block described in prose. Finally,
+write the actual function. When the function passes the tests, you
+are done.
+
+Once you have a few test functions, you can run them all at once, via a
+supplementary test program. Right now, it would be a short program:
+\begin{lstlisting}
+#include <my_functions.h>
+int main(){
+    test_find_means();
+    return 0;
+}
+\end{lstlisting}
+but as you write more functions and their test, they can be added to
+\cinline{main} as appropriate. Then, when you add another test, you will
+re-run all your old tests at the same time. Peace of mind will ensue.
+
+\exercise{Write the test function for the incremental mean program you'd
+written above. Did your function pass on the first try? 
+
+Some programmers
+(\ind{Donald Knuth} is the most famous example) keep a bug log listing
+errors they have encountered. If your function didn't pass its test the
+first time, you now have your first entry for your bug log.}
+
+
+\section{\treesymbol Other auxiliary programs} 
 Beyond there debugger, there
 are a few more programs that will make your life as a programmer easier.
 
@@ -2209,7 +2401,7 @@ run a modestly complex program through the profiler, because, like the
 debugger's backtrace, its output provides another useful view of how
 functions call each other.
 
-\section{\treesymbol{} Advanced topics}   
+\section{\treesymbol Advanced topics}   
 There are several ways to do almost everything I have presented here.  For
 example, one could write the three lines \cinline{b = (i > j); a += b;
 i++;} as the single expression \cinline{a += b = i++ > j;}. The seventh
@@ -2417,6 +2609,7 @@ valuable to minimize the time you spend deciphering and debugging your
 code than run time.  Write code to maximize readability for yourself
 and your fellow humans. If you want optimization, \cinline{gcc -O3} will
 do almost all of these rearrangements for you.
+
 
 \label{end_c_crash}
 \ifbook \else

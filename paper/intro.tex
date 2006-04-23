@@ -2,24 +2,32 @@
 \iftwocol\begin{multicols}{2}\fi
 
 
-In case it is not obvious to you, we can not do statistical analysis without
-computers. The mathematical explanation of a statistical procedure is
+\comment{In case it is not obvious to you, we can not do statistical analysis without
+computers.}
+I'll start with the bad news:
+being a statistician in the modern day means being a programmer. 
+Many find this disheartening---we'd all rather be under a tree with a
+book than staring at a computer screen all day.
+But the mathematical explanation of a statistical procedure is
 really just pseudo-code, which we can make operational by translating
-it into real computer code.
+it into real computer code. 
 
 I wrote this book to help you make that translation. The first focus
 is purely mathematical: we need to select techniques bearing in mind
 that they will eventually be code. The second focus is about practical
-coding: your life is short, and you want to spend as little of it learning
-dumb languages as possible.
+coding: your life is short, and you want to spend as little of it as
+possible trying to coax systems into complying with your wishes and 
+learning yet more computer languages.
 
-Doing math with a computer is unfettering. Instead of using regression
-techniques designed before computers, we can use techniques built around
-computing thousand-term likelihood functions, or taking millions of
-random samples. These techniques originally appeared in the textbooks
-as just theory, then eventually with a caveat that these techniques
-are possible but computationally intensive. Now computations are cheap,
-and we can use these techniques as we would their simplified brethren.
+The good news is that
+doing math with a computer is unfettering. Instead of using restrictive
+regression techniques designed before computers, we can use techniques
+built around computing thousand-term likelihood functions, or taking
+millions of random samples. These techniques originally appeared in
+the textbooks as just theory, then eventually with a caveat that these
+techniques are possible but computationally intensive. Now computations
+are cheap, and we can use these techniques as we would their simplified
+brethren.
 
 In my own pain-filled experience, the best way to operationalize
 statistical concepts is using C; the GNU Scientific Library,  which
@@ -110,7 +118,7 @@ the remainder of the book will use to do statistical analysis. Notably,
 it introduces the idea of functions, and how one can build functions or
 use existing functions to execute increasingly advanced routines.
 
-\subsection{Dealing with large data sets} Matrix-oriented packages,
+\paragraph{Dealing with large data sets} Matrix-oriented packages,
 (including the GSL) are not well-suited for data sets from agencies like
 the US Census, that can be literally gigabytes of data.
 C may seem unfriendly, but
@@ -144,7 +152,7 @@ your site's database. Since you are using C instead of a stats package,
 you are guaranteed that there is an interface out there that you can
 download and incorporate into your programs.
 
-\subsection{The computation engine} The \ind{GNU Scientific Library}
+\paragraph{The computation engine} The \ind{GNU Scientific Library}
 includes tools for all of the procedures commonly used in statistics,
 such as linear algebra operations, looking up the value of F-, t-, $\chi^2$-
 distributions, and finding maximia of likelihood functions. These
@@ -152,7 +160,7 @@ will be the building blocks for analysis. Chapter \ref{linear_algebra}
 presents some basics for using the GSL, such as matrix manipulation and
 linear algebra.
 
-\subsection{Apophenia}
+\paragraph{Apophenia}
 Statistics textbooks could be much more brief. They could open
 with notes on linear algebra and probability, and then conclude ``The
 derivation of statistics from these basics is left as an exercise for
@@ -163,11 +171,11 @@ presented in Chapter \ref{apop}, is a library of structures and functions
 that binds together the GSL and SQLite to facilitate data handling
 and statistics.
 
-\subsection{Pretty pictures} One thing C is not really good for is drawing
+\paragraph{Pretty pictures} One thing C is not really good for is drawing
 pretty pictures. This is not to be belittled, since those pictures
 can be very persuasive. Consistent with the rest of this book, plotting
 is done via \ind{Gnuplot}, a program which is freely available for
-the system you are using right now. Gnuplot is highly automatable, so once
+the computer you are using right now. Gnuplot is highly automatable, so once
 you have a plot you like, you can have your C programs autogenerate
 it or manipulate it in amusing ways, or can send your program to your
 colleague in Madras and he will have no problem reproducing and modifying
@@ -238,8 +246,8 @@ average stats textbook.  Poisson or Binomial distributions are used
 only for describing data culled from the real world, while the Chi-squared
 distribution or the F distribution are used only for testing hypotheses
 about parameters we have written down ourselves (such as the correlation
-coefficient, which has an F distribution). \cite[p 141]{kmenta} points out
-that no notable natural populations with a Chi-squared distribution.
+coefficient, which has an F distribution). \citet[p 141]{kmenta} points out
+that no notable natural populations have a Chi-squared distribution.
 \index{chi squared distribution@$\chi^2$ distribution}
 
 Part II of this book will open with a chapter on describing data,
@@ -250,10 +258,10 @@ distributions, such as the $t$ test, F test, and $\chi^2$ test,
 linear regressions, and goodness-of-fit tests.
 
 
-\subsection{General theorems and their special cases}\index{Ordinary Least
+\paragraph{General theorems and their special cases}\index{Ordinary Least
 Squares|(}
 Here is another way to divide the theorems that underly
-statistics into two classes. The first class are general
+statistics into two classes. The first class includes general
 results about likelihood functions, that 
 apply almost universally, but require a huge
 amount of computational power to arrive at a result. The second class

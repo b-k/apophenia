@@ -10,6 +10,36 @@ you'd like more thorough tests, feel free to write them.
 double  true_parameter[]    = {3.82,2.1},
         true_y_parameter[]  = {0,2.1};
 
+double  tolerance           = 1e-5;
+
+
+//I'm using the test script an experiment to see if 
+//these macros add any value.
+//#define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc(r,c);
+//#define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed);
+
+int test_OLS(){
+int             i,
+                len = 8000;
+apop_estimate   *out;
+gsl_rng         *r  =  apop_rng_alloc(12);
+apop_data       *set= apop_data_alloc(len,2);
+//APOP_DATA_ALLOC(set, len, 2)
+//APOP_RNG_ALLOC(r, 23)
+
+for(i=0; i< len; i++){
+    apop_data_set(set, i, 1, 100*(gsl_rng_uniform(r)-0.5));
+    apop_data_set(set, i, 0, -1.4 + apop_data_get(set,i,1)*2.3);
+}
+
+    out    = apop_OLS.estimate(set, NULL);
+    apop_estimate_print(out);
+    assert(fabs(gsl_vector_get(out->parameters, 0) - -1.4) < tolerance);
+    assert(fabs(gsl_vector_get(out->parameters, 1) - 2.3) < tolerance);
+}
+
+
+
 static int is_neg(double in){
     return in < 0;
 }
@@ -254,6 +284,9 @@ apop_estimation_params  params;
         params.step_size        = 1e-2;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
+
+    printf("OLS test:");
+    do_test(test_OLS());
 
     printf("apop_vector_replace test:");
     do_test(test_replaces());

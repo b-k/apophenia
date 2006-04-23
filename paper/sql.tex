@@ -276,7 +276,8 @@ You probably want more refinement than that; if you would like to
 know how much data you have in each ZIP code, then use the \sqlind{group
 by} clause to say so:
 \begin{lstlisting}
-select zip, count(*) as ct_per_zip
+select zip, 
+    count(*) as ct_per_zip
 from data
 group by zip;
 \end{lstlisting}

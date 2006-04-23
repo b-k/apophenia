@@ -122,7 +122,7 @@ respectively.
 Since the \cinline{data} element of the \cinline{apop\_data} structure
 is a \cinline{gsl\_matrix}, you can use any of the tools from Chapter
 \ref{linear_algebra} to dissect it.
-There are four additional functions for pulling an element from an
+There are eight additional functions for setting and getting an element from an
 \cinline{apop\_data} set using the names. Let \airq{t} be a title and
 \airq{n} be a number; then you may refer to the row-column coordinate
 using the $(n,n)$, $(t,n)$, $(n,t)$, or $(t,t)$ form:
@@ -131,6 +131,10 @@ apop_data_get(your_data, i, j);
 apop_data_get_tn(your_data, "rowname", j);
 apop_data_get_nt(your_data, i, "colname");
 apop_data_get_tt(your_data, "rowname", "colname");
+apop_data_set(your_data, i, j, new_value);
+apop_data_set_tn(your_data, "rowname", j, new_value);
+apop_data_set_nt(your_data, i, "colname", new_value);
+apop_data_set_tt(your_data, "rowname", "colname", new_value);
 \end{lstlisting}
 Notice that the first form, \cinline{apop\_data\_get}, has an abbreviated
 name, and is identical to \cinline{gsl\_matrix\_get(your\_data->matrix, i, j)}.

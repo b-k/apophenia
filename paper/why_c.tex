@@ -36,7 +36,7 @@ that rely on fewer false assumptions. The Monte Carlo examples in Section
 \ref{billiondraws} were produced using over a billion draws from $t$
 distributions. If your stats package can't produce a few million random
 draws per second (some can't), such work will be infeasibly
-slow.\footnote{By the way, I found that it takes a mere three
+slow.\footnote{I found that it takes a mere three
 times as long for R to produce random draws from $t$ distributions
 than comparable C code.}
 
@@ -87,7 +87,7 @@ most work, but when the assumptions don't match your data you will be
 ready to crack open the black box and modify it to suit.
 
 \paragraph{The lingua franca}
-Here in the modern day, everybody is computer-literate and connected.
+%Here in the modern day, everybody is computer-literate and connected.
 Academia progresses through the open dissemination of information, data,
 and analyses. But with dozens of mutually incompatible stats packages
 on the market, the open marketplace of ideas turns into a tower of Babel.
@@ -96,17 +96,15 @@ in this book is available for the system you are using, and for the
 system your colleagues are using, right now, for free.
 
 Further, it is important to be compatible with yourself. Will you be
-able to verify and modify your work five years from now?
-Since C was written in 1972, dozens (maybe hundreds) of stats packages
-have come and gone. Those who try to follow the trends 
-have learned a half-dozen languages and have on their hard drives
-dozens of scripts that they can't run anymore. Chapter \ref{c_crash}
-shows you how to build a library of functions so you can put together next
-month's analysis in half the time, but to profit from such efficiencies,
-you need a stable language that will be around for the long haul. For
-example, correctly written C programs written in the 1970s will compile
-and run on new PCs.  
-\index{statistics packages!rants regarding|)}
+able to verify and modify your work five years from now?  Chapter
+\ref{c_crash} shows you how to build a library of functions so you can
+put together next month's analysis in half the time, but the library is
+only as useful as the underlying langugae.  Since C was written in 1972,
+dozens (maybe hundreds) of stats packages have come and gone, and those
+who try to follow the trends have on their hard drives dozens of scripts
+that they can't run anymore.  Meanwhile, correctly written C programs
+written in the 1970s will compile and run on new PCs.  \index{statistics
+packages!rants regarding|)}
 
 
 

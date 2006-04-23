@@ -8,7 +8,7 @@
 
 %\def\treesymbol{\maltese}
 %\usepackage{stmaryd}\def\treesymbol{\curlyveeuparrow} %stmaryd
-\usepackage{textcomp}\def\treesymbol{\textreferencemark} %textcomp
+\usepackage{textcomp}\def\treesymbol{\textreferencemark\xspace} %textcomp
 %\usepackage{amssymb} \def\treesymbol{\mbox{\boldmath$\between$}} 
 %\usepackage{bbding} \def\treesymbol{\PlusThinCenterOpen} 
 %\usepackage{marvosym} \def\treesymbol{\Aries} 
@@ -76,7 +76,7 @@
 %uses the awrap style, included in this dir.
 %\renewcommand\chaptername{} 
 \titleformat{\part}[frame]{\Large\scshape}{\thepart}{.5em}{\thispagestyle{empty}}{}
-\titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.2}{\includegraphics{flake}}\hfill}{}
+\titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.2}{\includegraphics{flake}}\hfill\flushright}{}
 \titlespacing{\section}{8cm}{1 cm}{-0.5 cm}
 \titlespacing{\subsection}{8cm}{0.5 cm}{-0.5 cm}
 \titleformat{\section}[awrap]{\large\bf\scshape}{\thesection}{1 em}{}{}
@@ -157,12 +157,14 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 \def\onlinereflocation{\url{http://apophenia.info/doc}\xspace}
 
 %margin boxes:
+\newlength\mwidth
+\setlength\mwidth{1.3cm}
         %here, commented out, are the one-column versions.
         %They were a pain.
 \setlength\fboxsep{5pt} %margin size in margin boxes
 \long\def\marginalia#1#2#3{
 \Needspace{#1\baselineskip}
-\begin{wrapfigure}{l}[1.3cm]{3in}
+\begin{wrapfigure}{l}[\mwidth]{3in}
 \fbox{\begin{minipage}{2.8in}
 {\bf #2}\vskip .5cm\par
 \small #3
@@ -173,7 +175,7 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 
 \long\def\marginaliafixed#1#2#3{
 \Needspace{#1\baselineskip}
-\begin{wrapfigure}[#1]{l}[1.3cm]{3in}
+\begin{wrapfigure}[#1]{l}[\mwidth]{3in}
 \fbox{\begin{minipage}{2.8in}
 {\bf #2}\vskip .5cm\par
 \small #3
@@ -198,7 +200,20 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
         }
 
 
-%title page:
+%Exercises
+%\long\def\exercise#1{\subsection{{\huge$\mathbb Q$}}{#1}
+%\begin{center}\parbox{4cm}{\hrule}\end{center}}
+\long\def\exercise#1{\vspace \baselineskip
+\begin{tabular}{>{\huge}m{1 cm}|m{(\textwidth - 3cm)}}
+%\begin{tabular}{m{1 cm}|p{10cm}}
+{$\mathbb Q$}&{#1}\\
+\end{tabular}}
+
+
+
+
+
+%The actual book:
 \begin{document}
 \setlength{\columnsep}{1.2cm}
 \frontmatter

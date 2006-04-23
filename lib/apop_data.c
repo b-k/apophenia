@@ -279,3 +279,72 @@ int rownum =  apop_name_find(in->names, row, 'r');
     }
     return gsl_matrix_get(in->matrix, rownum, colnum);
 }
+
+/** Sets the data element at the given point.
+
+Q: How does <tt> apop_data_set(in, row, col, data)</tt> differ from
+ <tt>gsl_matrix_set(in->matrix, row, col, data)</tt>?\\
+A: It's seven characters shorter.
+ \ingroup data_struct
+*/
+void apop_data_set(apop_data *in, size_t row, size_t col, double data){
+    gsl_matrix_set(in->matrix, row, col, data);
+}
+/** Set an element from an \ref apop_data set, using the row name but
+ the column number
+
+Uses \ref apop_name_find for the search; see notes there on the name
+matching rules.
+
+ \ingroup data_struct
+ */
+void apop_data_set_tn(apop_data *in, char* row, size_t col, double data){
+int rownum =  apop_name_find(in->names, row, 'r');
+    if (rownum == -1){
+        if(apop_opts.verbose)
+            printf("couldn't find %s amongst the column names.\n",row);
+        return GSL_NAN;
+    }
+    gsl_matrix_set(in->matrix, rownum, col, data);
+}
+
+/** Set an element from an \ref apop_data set, using the column name but
+ the row number
+
+Uses \ref apop_name_find for the search; see notes there on the name
+matching rules.
+
+ \ingroup data_struct
+ */
+void apop_data_set_nt(apop_data *in, size_t row, char* col, double data){
+int colnum =  apop_name_find(in->names, col, 'c');
+    if (colnum == -1){
+        if(apop_opts.verbose)
+            printf("couldn't find %s amongst the column names.\n",col);
+        return GSL_NAN;
+    }
+    gsl_matrix_set(in->matrix, row, colnum, data);
+}
+
+/** Set an element from an \ref apop_data set, using the row and column name.
+
+Uses \ref apop_name_find for the search; see notes there on the name
+matching rules.
+
+ \ingroup data_struct
+ */
+void apop_data_set_tt(apop_data *in, char *row, char* col, double data){
+int colnum =  apop_name_find(in->names, col, 'c');
+int rownum =  apop_name_find(in->names, row, 'r');
+    if (colnum == -1){
+        if(apop_opts.verbose)
+            printf("couldn't find %s amongst the column names.\n",col);
+        return GSL_NAN;
+    }
+    if (rownum == -1){
+        if(apop_opts.verbose)
+            printf("couldn't find %s amongst the column names.\n",row);
+        return GSL_NAN;
+    }
+    gsl_matrix_set(in->matrix, rownum, colnum, data);
+}
