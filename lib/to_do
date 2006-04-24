@@ -1,3 +1,4 @@
+--The print_data function is so wrong.
 --spacing in screen output
 --apop_db_to_text should output an apop_names structure, and I need a category printer.
 --And how about something to write apop_estimates to the db?

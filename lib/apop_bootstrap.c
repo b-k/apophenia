@@ -79,8 +79,8 @@ gsl_rng		    *rn	=gsl_rng_alloc(gsl_rng_default);
 		//get the parameter estimates.
 		boot_est    = model.estimate(subset, &e);
 		if (i==0)
-			array_of_boots	= apop_data_alloc(boot_iterations, boot_est->parameters->size);
-        gsl_matrix_set_row(array_of_boots->matrix,i,boot_est->parameters);
+			array_of_boots	= apop_data_alloc(boot_iterations, boot_est->parameters->vector->size);
+        gsl_matrix_set_row(array_of_boots->matrix,i,boot_est->parameters->vector);
         apop_estimate_free(boot_est);
 	}
 	return apop_data_covar(array_of_boots)->matrix;

@@ -73,7 +73,7 @@ int             append_state;
             f       = stdout;
         else    		
             f       = fopen(outfile, "a");
-	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters,0), gsl_vector_get(est->parameters,1));
+	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters->vector,0), gsl_vector_get(est->parameters->vector,1));
 	if (data->names){
 		fprintf(f, "set xlabel \"%s\"\n", data->names->colnames[1]);
         if (est->dependent !=NULL)
@@ -378,7 +378,10 @@ char tmptype    = apop_opts.output_type;
 void apop_data_show(apop_data *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
-	print_core_m(data->matrix, apop_opts.output_delimiter, NULL, dumb_little_pf_f, data->names); 
+    if (data->vector)
+	    print_core_v(data->vector, apop_opts.output_delimiter, NULL, dumb_little_pf_f); 
+    if (data->matrix)
+	    print_core_m(data->matrix, apop_opts.output_delimiter, NULL, dumb_little_pf_f, data->names); 
     apop_opts.output_type = tmptype;
 }
 

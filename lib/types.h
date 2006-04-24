@@ -199,12 +199,10 @@ independent vars, then the first column is the actual data. Let our model be \f$
 \ingroup inv_and_est
 */
 typedef struct apop_estimate{
-	gsl_vector 	*parameters, *confidence;
-    apop_data   *dependent, *covariance;
-	double		log_likelihood;
-	apop_name	*names;
-	int		    status;
-    apop_data   *data;
+	apop_data 	       *parameters, *dependent, *covariance;
+	double		       log_likelihood;
+	int		           status;
+    apop_data          *data;
     struct apop_model  *model;
     struct apop_estimation_params  estimation_params;
 } apop_estimate;
@@ -293,12 +291,12 @@ apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
 apop_data * apop_data_copy(apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data *out, apop_data *in);
-double apop_data_get(apop_data *in, size_t row, size_t  col);
+double apop_data_get(apop_data *in, size_t row, int  col);
 double apop_data_get_nt(apop_data *in, size_t row, char* col);
-double apop_data_get_tn(apop_data *in, char* row, size_t col);
+double apop_data_get_tn(apop_data *in, char* row, int col);
 double apop_data_get_tt(apop_data *in, char *row, char* col);
-void apop_data_set(apop_data *in, size_t row, size_t col, double data);
-void apop_data_set_tn(apop_data *in, char* row, size_t col, double data);
+void apop_data_set(apop_data *in, size_t row, int col, double data);
+void apop_data_set_tn(apop_data *in, char* row, int col, double data);
 void apop_data_set_nt(apop_data *in, size_t row, char* col, double data);
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data);
 

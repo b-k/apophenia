@@ -53,14 +53,12 @@ apop_data structure with a zero-sized vector to your matrix of strings.
   */
 apop_data * apop_data_alloc(int size1, int size2){
 apop_data  *setme       = malloc(sizeof(apop_data));
-    if (size2 > 0){
+    setme->vector   = NULL;
+    setme->matrix   = NULL;
+    if (size2 > 0)
         setme->matrix   = gsl_matrix_alloc(size1,size2);
-        setme->vector   = NULL;
-    }
-    else if (size1>0){
+    else if (size1>0)
         setme->vector   = gsl_vector_alloc(size1);
-        setme->matrix   = NULL;
-    }
 
     setme->names        = apop_name_alloc();
     setme->categories   = NULL;
@@ -75,14 +73,10 @@ apop_data  *setme       = malloc(sizeof(apop_data));
 return      The \ref apop_data structure in question.
   */
 apop_data * apop_data_from_matrix(gsl_matrix *m){
-apop_data  *setme   = malloc(sizeof(apop_data));
+apop_data  *setme   = apop_data_alloc(0,0);
     if (m==NULL && apop_opts.verbose) 
         {printf("Warning: converting a NULL matrix to an apop_data structure.\n");}
     setme->matrix       = m;
-    setme->names        = apop_name_alloc();
-    setme->categories   = NULL;
-    setme->catsize[0]   = 
-    setme->catsize[1]   = 0;
     return setme;
 }
 
@@ -292,7 +286,7 @@ return the \c apop_data's vector element.
 
  \ingroup data_struct
 */
-double apop_data_get(apop_data *in, size_t row, size_t col){
+double apop_data_get(apop_data *in, size_t row, int col){
     if (col>=0)
         return gsl_matrix_get(in->matrix, row, col);
     else
@@ -311,7 +305,7 @@ matching rules.
 
  \ingroup data_struct
  */
-double apop_data_get_tn(apop_data *in, char* row, size_t col){
+double apop_data_get_tn(apop_data *in, char* row, int col){
 int rownum =  apop_name_find(in->names, row, 'r');
     if (rownum == -1){
         if(apop_opts.verbose)
@@ -374,7 +368,7 @@ A: It's seven characters shorter.
 Oh, and if \c col<0, then this will set the element of \c in->vector.
  \ingroup data_struct
 */
-void apop_data_set(apop_data *in, size_t row, size_t col, double data){
+void apop_data_set(apop_data *in, size_t row, int col, double data){
     if (col>=0)
         gsl_matrix_set(in->matrix, row, col, data);
     else
@@ -389,10 +383,11 @@ matching rules.
 \param  in  the \ref apop_data set.
 \param  row the name of the row you seek.
 \param  col the number of the column. If -1, set the vector element.
+\param  data the value to insert
 
  \ingroup data_struct
  */
-void apop_data_set_tn(apop_data *in, char* row, size_t col, double data){
+void apop_data_set_tn(apop_data *in, char* row, int col, double data){
 int rownum =  apop_name_find(in->names, row, 'r');
     if (rownum == -1){
         if(apop_opts.verbose)

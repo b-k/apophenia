@@ -119,9 +119,7 @@ apop_estimate * prep_me;
 	    apop_inventory_filter(&(prep_me->estimation_params.uses), model.inventory_filter);
     }
 	if (prep_me->estimation_params.uses.parameters)
-		prep_me->parameters	= gsl_vector_alloc(model.parameter_ct);
-	if (prep_me->estimation_params.uses.confidence)
-		prep_me->confidence	= gsl_vector_alloc(model.parameter_ct);
+		prep_me->parameters	= apop_data_alloc(model.parameter_ct,-1);
 	if (prep_me->estimation_params.uses.dependent ||
 	                prep_me->estimation_params.uses.predicted){
 		prep_me->dependent	= apop_data_alloc(data->matrix->size1,3);
@@ -135,10 +133,6 @@ apop_estimate * prep_me;
         apop_name_stack(prep_me->covariance->names, data->names, 'c');
         apop_name_cross_stack(prep_me->covariance->names, data->names, 'c', 'r');
         }
-	if (prep_me->estimation_params.uses.names) {
-		if (data->names != NULL) 	apop_name_memcpy(&(prep_me->names), data->names);
-		else 		                prep_me->names		= apop_name_alloc();
-	}
     prep_me->data               = data;
     prep_me->model              = apop_model_copy(model);
 	return prep_me;
@@ -151,12 +145,10 @@ void apop_estimate_free(apop_estimate * free_me){
 	if (free_me->estimation_params.uses.predicted
 	    || free_me->estimation_params.uses.dependent)
 		apop_data_free(free_me->dependent);
-	if (free_me->estimation_params.uses.confidence)
-		gsl_vector_free(free_me->confidence);
 	if (free_me->estimation_params.uses.covariance)
 		apop_data_free(free_me->covariance);
-	if (free_me->estimation_params.uses.names)
-		apop_name_free(free_me->names);
+	if (free_me->estimation_params.uses.parameters)
+        apop_data_free(free_me->parameters);
 	free(free_me);
 }
 
@@ -165,43 +157,22 @@ void apop_estimate_free(apop_estimate * free_me){
 \ingroup output */
 void apop_estimate_print(apop_estimate * print_me){
 int		i;
+printf("Sorry, this output is a mess at the moment. Come back tomorrow.\n");
 	printf("\n");
 	if (print_me->estimation_params.uses.names) 	printf("\t");
-	if (print_me->estimation_params.uses.parameters) 	printf("value\t\t");
 	if (print_me->estimation_params.uses.confidence) 	
             printf("Confidence\n");
     else    printf("\n");
-	for (i=0; i<print_me->parameters->size; i++){
-		if (print_me->estimation_params.uses.names)	printf("%s\t", print_me->names->colnames[i]);
-		if (print_me->estimation_params.uses.parameters)	printf("% 7f\t", gsl_vector_get(print_me->parameters,i));
-		if (print_me->estimation_params.uses.confidence)	printf("% 7f\t", gsl_vector_get(print_me->confidence,i));
+	for (i=0; i<print_me->parameters->vector->size; i++){
+		if (print_me->parameters->names)	printf("%s\t", print_me->parameters->names->rownames[i]);
+           // printf("% 7f\t", gsl_vector_get(print_me->parameters->vector,i));
 		printf("\n");
-		/*
-		if (print_me->uses.parameters){
-			printf("Parameter estimates:\t");
-			apop_print_vector(print_me->parameters, "\t", NULL);
-		}
-		if (print_me->uses.confidence){
-			printf("Confidence intervals (H_0: beta == 0):\t");
-			apop_print_vector(print_me->confidence, "\t", NULL);
-		}
-		*/
 	}
+	if (print_me->estimation_params.uses.parameters)	
+        apop_data_show(print_me->parameters);
 	if (print_me->estimation_params.uses.covariance){
 		printf("\nThe variance/covariance matrix:\n");
         apop_data_show(print_me->covariance);
-        /*
-        apop_data   *covdata    = apop_matrix_to_data(print_me->covariance);
-        int         i;
-        //We want to show the column names on both axes.
-        if (print_me->estimation_params.uses.names && print_me->names !=NULL && print_me->names->colnamect){
-            apop_name_stack(covdata->names, print_me->names, 'c');
-            for (i=0; i< print_me->names->colnamect; i++)
-                apop_name_add(covdata->names, print_me->names->colnames[i], 'r');
-        }
-        apop_data_show(covdata);
-        free(covdata);  //slightly leaky. I don't care.
-        */
 	}
 	if (print_me->estimation_params.uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);

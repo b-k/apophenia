@@ -86,8 +86,8 @@ apop_inventory	inv;
 //apop_estimate	*est = apop_estimate_alloc(data->size1, data->size2, NULL, inv);
 apop_estimate 	*est	    = apop_estimate_alloc(data, dist,  est_params);
   	for (i=0;i<the_size; i++)
-		gsl_vector_set(est->parameters, i, vect[i]);
-	est->log_likelihood	= -dist.log_likelihood(est->parameters, data->matrix);
+		gsl_vector_set(est->parameters->vector, i, vect[i]);
+	est->log_likelihood	= -dist.log_likelihood(est->parameters->vector, data->matrix);
 	est->status		= code;
 	//Epilogue:
 	//find the variance-covariance matrix, using $df/d\theta \cdot df/d\theta$
@@ -100,7 +100,7 @@ gsl_vector_view	v;
 	pre_cov			= gsl_matrix_alloc(the_size, the_size);
 	//estimate->covariance	= gsl_matrix_alloc(betasize, betasize);
 	diff			= gsl_vector_alloc(the_size);
-	dist.dlog_likelihood(est->parameters, data->matrix, diff);
+	dist.dlog_likelihood(est->parameters->vector, data->matrix, diff);
 	for (i=0; i< the_size; i++){
 		gsl_matrix_set_row(pre_cov, i, diff);
 		v	= gsl_matrix_row(pre_cov, i);
@@ -114,9 +114,10 @@ gsl_vector_view	v;
 		return est;
 	//else:
 	for (i=0; i<the_size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
-		gsl_vector_set(est->confidence, i,
-			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
-			gsl_matrix_get(est->covariance->matrix, i, i)))*2));
+        printf("I need to fix up the confidence estimations.\n");
+		//gsl_vector_set(est->confidence, i,
+			//fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters->vector, i), 
+			//gsl_matrix_get(est->covariance->matrix, i, i)))*2));
 	return est;
 }
 

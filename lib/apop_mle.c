@@ -312,7 +312,7 @@ double 		(*tmp) (const gsl_vector *beta, void *d);
 gsl_matrix	*hessian;
 	tmp			= apop_fn_for_derivative;
 	//The information matrix is the inverse of the negation of the hessian.
-	hessian			= apop_numerical_hessian(dist, est->parameters, data);
+	hessian			= apop_numerical_hessian(dist, est->parameters->vector, data);
 	gsl_matrix_scale(hessian, -1);
 	apop_det_and_inv(hessian, &(est->covariance->matrix), 0, 1);
 	gsl_matrix_free(hessian);
@@ -322,10 +322,11 @@ gsl_matrix	*hessian;
 	if (est->estimation_params.uses.confidence == 0)
 		return;
 	//else:
-	for (i=0; i< est->parameters->size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
-		gsl_vector_set(est->confidence, i,
-			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
-			gsl_matrix_get(est->covariance->matrix, i, i)))*2));
+	for (i=0; i< est->parameters->vector->size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
+        printf("darn it, confidence calculations need to be rewritten.\n");
+		/*gsl_vector_set(est->confidence, i,
+			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters->vector, i), 
+			gsl_matrix_get(est->covariance->matrix, i, i)))*2));*/
 	apop_fn_for_derivative 	= tmp;
 }
 
@@ -343,13 +344,13 @@ your variance-covariance matrix, just use the negative inverse of the Hessian.
 /*
 void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data){
 int		i;
-int         betasize    = est->parameters->size;
+int         betasize    = est->parameters->vector->size;
 gsl_vector	*diff;
 gsl_matrix	*pre_cov	= gsl_matrix_alloc(betasize, betasize);
 gsl_vector  v;
 	//estimate->covariance	= gsl_matrix_alloc(betasize, betasize);
 	diff			= gsl_vector_alloc(betasize);
-	dist.dlog_likelihood(est->parameters, data, diff);
+	dist.dlog_likelihood(est->parameters->vector, data, diff);
 	for (i=0; i< betasize; i++){
 		gsl_matrix_set_row(pre_cov, i, diff);
 	}
@@ -366,7 +367,7 @@ gsl_vector  v;
 	//else:
 	for (i=0; i<betasize; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
 		gsl_vector_set(est->confidence, i,
-			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters, i), 
+			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters->vector, i), 
 			gsl_matrix_get(est->covariance->matrix, i, i)))*2));
 }
 */
@@ -443,11 +444,11 @@ negshell_params			    nsp;
 		if (est_params->verbose) printf("No min!!\n");
 	}
 	//Clean up, copy results to output estimate.
-	gsl_vector_memcpy(est->parameters, s->x);
+	gsl_vector_memcpy(est->parameters->vector, s->x);
 	gsl_multimin_fdfminimizer_free(s);
 	if (est_params->starting_pt==NULL) 
 		gsl_vector_free(x);
-	est->log_likelihood	= dist.log_likelihood(est->parameters, data->matrix);
+	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data->matrix);
 	if (est->estimation_params.uses.covariance) 
 		apop_numerical_var_covar_matrix(dist, est, data->matrix);
 	return est;
@@ -513,9 +514,9 @@ negshell_params		    nsp;
 	if (iter == MAX_ITERATIONS && est_params->verbose)
 		printf("Minimization reached maximum number of iterations.");
 
-	gsl_vector_memcpy(est->parameters, s->x);
+	gsl_vector_memcpy(est->parameters->vector, s->x);
 	gsl_multimin_fminimizer_free(s);
-	est->log_likelihood	= dist.log_likelihood(est->parameters, data->matrix);
+	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data->matrix);
 	if (est->estimation_params.uses.covariance) 
 		apop_numerical_var_covar_matrix(dist, est, data->matrix);
 	return est;
@@ -565,7 +566,7 @@ You can use this to find the variance of the estimator if other means fail.
 \param dist	An \ref apop_model object whose log likelihood function you'd like to use.
 
 \param fn_beta		The parameters at which you will evaluate the likelihood. If <tt>e</tt> is an \ref
-			apop_estimate, then one could use <tt>e->parameters</tt>.
+			apop_estimate, then one could use <tt>e->parameters->vector</tt>.
 
 This functions is used in the sample code in the \ref mle section.
 
@@ -617,8 +618,8 @@ apop_estimate          *out;
 apop_estimation_params new_params;
             //copy off the old params; modify the starting pt, method, and scale
     memcpy(&new_params, &(e->estimation_params),sizeof(apop_estimation_params));
-    if (apop_vector_bounded(e->parameters,1e4)){
-        apop_vector_to_array(e->parameters, &start_pt2);
+    if (apop_vector_bounded(e->parameters->vector,1e4)){
+        apop_vector_to_array(e->parameters->vector, &start_pt2);
 	    new_params.starting_pt	= start_pt2;
     }
     else
@@ -628,7 +629,7 @@ apop_estimation_params new_params;
     new_params.method	    = new_method;
 	out	                    = (e->model)->estimate(e->data, &new_params);
             //Now check whether the new output is better than the old
-    if (apop_vector_bounded(out->parameters, 1e4) && out->log_likelihood > e->log_likelihood){
+    if (apop_vector_bounded(out->parameters->vector, 1e4) && out->log_likelihood > e->log_likelihood){
         apop_estimate_free(out);
         return e;
     } //else:
@@ -799,8 +800,8 @@ gsl_siman_params_t params = {N_TRIES,
          params);           //   gsl_siman_params_t params
 
     //Clean up, copy results to output estimate.
-    gsl_vector_memcpy(est->parameters, beta);
-    est->log_likelihood = m.log_likelihood(est->parameters, data->matrix);
+    gsl_vector_memcpy(est->parameters->vector, beta);
+    est->log_likelihood = m.log_likelihood(est->parameters->vector, data->matrix);
     if (est->estimation_params.uses.covariance)
         apop_numerical_var_covar_matrix(m, est, data->matrix);
     return est;

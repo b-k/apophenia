@@ -69,14 +69,14 @@ int		p;
 /** Strip dots from a name.
 
 \param  in          A string
-\int    strip_type  'd': replace all '.' with '_'.<br>
+\param  strip_type  'd': replace all '.' with '_'.<br>
                     'b': return only the string before the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the first dot.
                     'a': return only the string after the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the last dot.
 \ingroup convenience_fns
  */
 char * apop_strip_dots(char *in, char strip_type){
 int     i;
-char    *out;
+char    *out    = NULL;
     if ((strip_type ==0) || (strip_type == 'd')){
         out    = malloc(sizeof(char)* (strlen(in)+1));
         for (i=0; i< strlen(in)+1; i++){//will copy over the '/0' too.

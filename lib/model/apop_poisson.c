@@ -20,9 +20,9 @@ static double poisson_log_likelihood(const gsl_vector *beta, void *d);
 static apop_estimate * poisson_estimate(apop_data * data,  void *parameters){
 apop_estimate 	*est= apop_estimate_alloc(data,apop_poisson, parameters);
 double		mean    = apop_matrix_mean(data->matrix);
-	gsl_vector_set(est->parameters, 0, mean);
+	gsl_vector_set(est->parameters->vector, 0, mean);
 	if (est->estimation_params.uses.log_likelihood)
-		est->log_likelihood	= poisson_log_likelihood(est->parameters, data->matrix);
+		est->log_likelihood	= poisson_log_likelihood(est->parameters->vector, data->matrix);
 	if (est->estimation_params.uses.covariance)
 		    est->covariance->matrix = apop_jackknife(data, apop_poisson, est->estimation_params);
 	return est;

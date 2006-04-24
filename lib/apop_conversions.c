@@ -145,7 +145,7 @@ apop_data * apop_array_to_data(double **in, int rows, int cols){
 
 /** convert a <tt>double **</tt> array to a <tt>gsl_matrix</tt>
 
-\param in	the array to read in
+\param line	the array to read in
 \param rows, cols	the size of the array.
 \return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
 

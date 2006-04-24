@@ -34,8 +34,8 @@ for(i=0; i< len; i++){
 
     out    = apop_OLS.estimate(set, NULL);
     apop_estimate_print(out);
-    assert(fabs(gsl_vector_get(out->parameters, 0) - -1.4) < tolerance);
-    assert(fabs(gsl_vector_get(out->parameters, 1) - 2.3) < tolerance);
+    assert(fabs(apop_data_get(out->parameters, 0,-1) - -1.4) < tolerance);
+    assert(fabs(apop_data_get(out->parameters, 1,-1) - 2.3) < tolerance);
     return 0;
 }
 
@@ -128,8 +128,8 @@ apop_estimate           *e;
     //e    = apop_maximum_likelihood(data2,&inv, dist, params);
     e    = dist.estimate(apop_matrix_to_data(data),params);
     for (i=0; i < dist.parameter_ct; i++){
-        printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters,i));
-        score += (fabs(gsl_vector_get(e->parameters,i) - true_parameter[i]) >= 1e-1);
+        printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters->vector,i));
+        score += (fabs(gsl_vector_get(e->parameters->vector,i) - true_parameter[i]) >= 1e-1);
         //apop_estimate_print(e);
     }
 

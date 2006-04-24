@@ -38,9 +38,9 @@ int             i;
         numerator   += colsum * i;
         grand_total += colsum;
     }
-	gsl_vector_set(est->parameters, 0, numerator/grand_total);
+	gsl_vector_set(est->parameters->vector, 0, numerator/grand_total);
 	if (est->estimation_params.uses.log_likelihood)
-		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters, data->matrix);
+		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters->vector, data->matrix);
 	if (est->estimation_params.uses.covariance)
 		apop_numerical_var_covar_matrix(apop_exponential_rank, est, data->matrix);
 	return est;

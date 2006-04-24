@@ -5,7 +5,7 @@
 
 //apop_estimate * apop_estimate_OLS(apop_data *set, apop_estimation_params *ep);
 apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin);
-apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matrix *sigma);
+apop_estimate * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma);
 apop_estimate *apop_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories);
 //Returns GLS/OLS parameter estimates.
 //Destroys the data in the process.
@@ -26,3 +26,4 @@ apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data, apop_inventory *
 
 apop_data *apop_estimate_correlation_coefficient(apop_estimate *in);
 apop_data *apop_estimate_r_squared(apop_estimate *in);
+void apop_estimate_parameter_t_tests(apop_estimate *est);

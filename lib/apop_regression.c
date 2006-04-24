@@ -19,6 +19,7 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include "linear_algebra.h"
 #include <search.h> //lsearch
 #include <stdlib.h> //bsearch
+#include <assert.h> 
 #include <gsl/gsl_blas.h>
 
 
@@ -113,6 +114,51 @@ int     df      = count-1;
     return produce_t_test_output(df, stat, avg);
 }
 
+/** For many, it is a knee-jerk reaction to a parameter estimation to
+test whether each individual parameter differs from zero. This function
+does that.
+
+\param est  The \ref apop_estimate, which includes pre-calculated
+parameter estimates, var-covar matrix, and the original data set.
+
+Returns nothing. At the end of the routine, the est->parameters->matrix
+includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
+
+*/
+void apop_estimate_parameter_t_tests(apop_estimate *est){
+int     i, df;
+double  val, var, pval, tstat, rootn, stddev, two_tail;
+    est->estimation_params.uses.confidence  = 1;
+    assert(est->data);
+    assert(est->covariance);
+    assert(est->parameters);
+    est->parameters->matrix = gsl_matrix_alloc(est->parameters->vector->size, 7);
+    apop_name_add(est->parameters->names, "p value", 'c');
+    apop_name_add(est->parameters->names, "confidence", 'c');
+    apop_name_add(est->parameters->names, "t statistic", 'c');
+    apop_name_add(est->parameters->names, "standard deviation", 'c');
+    apop_name_add(est->parameters->names, "p value, one tail", 'c');
+    apop_name_add(est->parameters->names, "confidence, one tail", 'c');
+    apop_name_add(est->parameters->names, "df", 'c');
+    df      = est->data->matrix->size1 - est->parameters->vector->size;
+    rootn   = sqrt(df);
+    for (i=0; i< est->parameters->vector->size; i++){
+        val     = apop_data_get(est->parameters, i, -1);
+        var     = apop_data_get(est->covariance, i, i);
+        stddev  = sqrt(var);
+        tstat   = val*rootn/stddev;
+        pval    = gsl_cdf_tdist_P(tstat, df),
+        two_tail= apop_two_tailify(pval);
+        apop_data_set_nt(est->parameters, i, "df", df);
+        apop_data_set_nt(est->parameters, i, "t statistic", tstat);
+        apop_data_set_nt(est->parameters, i, "standard deviation", stddev);
+        apop_data_set_nt(est->parameters, i, "p value", two_tail);
+        apop_data_set_nt(est->parameters, i, "confidence", 1-two_tail);
+        apop_data_set_nt(est->parameters, i, "p value, one tail", pval);
+        apop_data_set_nt(est->parameters, i, "confidence, one tail", 1-pval);
+    }
+}
+
 /** Runs an F-test specified by \c q and \c c. Your best bet is to see
  the chapter on "Gaussian Tricks" in the <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF manual</a> (check the index for F-tests). It will tell you that:
  \f[{N-K\over q}
@@ -129,15 +175,15 @@ int     df      = count-1;
 double apop_F_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c){
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
 gsl_matrix      *xpxinv     = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
-gsl_vector      *qprimebeta = gsl_vector_calloc(est->parameters->size);
-gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(est->parameters->size, set->matrix->size2);
-gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(est->parameters->size, est->parameters->size);
-gsl_matrix      *qprimexpxinvqinv   = gsl_matrix_calloc(est->parameters->size, est->parameters->size);
-gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(est->parameters->size);
+gsl_vector      *qprimebeta = gsl_vector_calloc(est->parameters->vector->size);
+gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(est->parameters->vector->size, set->matrix->size2);
+gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(est->parameters->vector->size, est->parameters->vector->size);
+gsl_matrix      *qprimexpxinvqinv   = gsl_matrix_calloc(est->parameters->vector->size, est->parameters->vector->size);
+gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(est->parameters->vector->size);
 double          f_stat;
 double          variance;
 int             q_df,
-                data_df     = set->matrix->size1 - est->parameters->size;
+                data_df     = set->matrix->size1 - est->parameters->vector->size;
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   
     if (q != NULL){
         q_df    = q->size1;
@@ -145,18 +191,18 @@ int             q_df,
         gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, q, xpxinv, 0, qprimexpxinv);  
         gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, qprimexpxinv, q,  0,  qprimexpxinvq);  
 	    apop_det_and_inv(qprimexpxinvq, &qprimexpxinvqinv, 0, 1);		
-        gsl_blas_dgemv(CblasNoTrans, 1, q, est->parameters, 0, qprimebeta);
+        gsl_blas_dgemv(CblasNoTrans, 1, q, est->parameters->vector, 0, qprimebeta);
     } else {
-        q_df    = est->parameters->size;
+        q_df    = est->parameters->vector->size;
         gsl_matrix_memcpy(qprimexpxinvqinv, xpx);
-        gsl_vector_memcpy(qprimebeta, est->parameters);
+        gsl_vector_memcpy(qprimebeta, est->parameters->vector);
     }
     if (c !=NULL)
         gsl_vector_sub(qprimebeta, c);  //else, c=0, so this is a no-op.
     gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
     gsl_blas_ddot(qprimebetaminusc_qprimexpxinvqinv, qprimebeta, &f_stat);
 
-    gsl_blas_ddot(est->parameters, est->parameters, &variance);
+    gsl_blas_ddot(est->parameters->vector, est->parameters->vector, &variance);
     f_stat  *=  data_df / (variance * q_df);
     printf("the f statistic: %g\n", f_stat);
     gsl_matrix_free(xpx);
@@ -176,7 +222,8 @@ return apop_F_test(est, set, q, c);
 
 //shift first col to depvar, rename first col "one".
 static void prep_names(apop_estimate *e){
-	if (e->names != NULL && e->names->colnamect > 0) {		
+int i;
+	if (e->data->names->colnamect > 0) {		
 		//apop_name_add(n, n->colnames[0], 'd');
 		e->dependent->names->colnames[0] =
             realloc(e->dependent->names->colnames[0],
@@ -184,6 +231,11 @@ static void prep_names(apop_estimate *e){
 		sprintf(e->dependent->names->colnames[0], 
                 e->data->names->colnames[0]);
 		sprintf(e->data->names->colnames[0], "1");
+        if (e->estimation_params.uses.parameters){
+            apop_name_add(e->parameters->names, "1", 'r');
+            for(i=1; i< e->data->names->colnamect; i++)
+                apop_name_add(e->parameters->names, e->data->names->colnames[i], 'r');
+        }
         if (e->estimation_params.uses.covariance){
 		    sprintf(e->covariance->names->colnames[0], "1");
 		    sprintf(e->covariance->names->rownames[0], "1");
@@ -194,26 +246,21 @@ static void prep_names(apop_estimate *e){
 void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_estimate *out){
 	if (out->estimation_params.uses.covariance + out->estimation_params.uses.confidence + out->estimation_params.uses.predicted == 0 ){	
 		//then don't calculate (X'X)^{-1}
-		gsl_linalg_HH_solve (xpx, xpy, out->parameters);
+		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
 		return;
 	} //else:
 gsl_vector 	*error;
 gsl_vector 	predicted;
 gsl_matrix	*cov;
 double		upu;
-int		i;
 	error	= gsl_vector_alloc(data->size1);
 	cov	= gsl_matrix_alloc(data->size2, data->size2);
 	apop_det_and_inv(xpx, &cov, 0, 1);		//(X'X)^{-1} (not yet cov)
-	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters);
-	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters, 0, error);
+	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters->vector);
+	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters->vector, 0, error);
 	gsl_vector_sub(y_data, error);	//until this line, 'error' is the predicted values
 	gsl_blas_ddot(error, error, &upu);
 	gsl_matrix_scale(cov, upu/data->size2);	//Having multiplied by the variance, it's now it's the covariance.
-	if (out->estimation_params.uses.confidence)
-		for (i=0; i < data->size2; i++)  // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
-			gsl_vector_set(out->confidence, i,
-			   apop_two_tailify(gsl_cdf_gaussian_P(gsl_vector_get(out->parameters, i), gsl_matrix_get(cov, i, i))));
 	if (out->estimation_params.uses.dependent)
         gsl_matrix_set_col(out->dependent->matrix, 0, y_data);
 	if (out->estimation_params.uses.predicted){
@@ -252,7 +299,7 @@ A pointer to an \ref apop_estimate structure with the appropriate elements fille
 \todo 
 Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
  */
-apop_estimate * apop_estimate_GLS(apop_data *set, apop_inventory *uses, gsl_matrix *sigma){
+apop_estimate * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma){
 apop_model      *modded_ols;
     modded_ols              = apop_model_copy(apop_GLS);
     modded_ols->parameter_ct= set->matrix->size2;
@@ -378,6 +425,8 @@ gsl_vector_view v           = gsl_matrix_column(set->matrix, 0);
     if ((ep == NULL) || (ep->destroy_data==0)){
         apop_data_free(set);
     }
+	if (out->estimation_params.uses.confidence)
+        apop_estimate_parameter_t_tests(out);
     return out;
 }
 
@@ -466,10 +515,10 @@ apop_data *newfirst = malloc(sizeof(apop_data));
     newfirst->names = set1->names;
     out1    = apop_estimate_GLS(newfirst, &actual_uses, m2);
     out2    = apop_estimate_GLS(set2, &actual_uses, m1);
-    for (i=0; i< out1->parameters->size; i++)
-        gsl_vector_set(out->parameters, i, gsl_vector_get(out1->parameters, i));
-    for (   ; i< out2->parameters->size; i++)
-        gsl_vector_set(out->parameters, i, gsl_vector_get(out2->parameters, i - out1->parameters->size));
+    for (i=0; i< out1->parameters->vector->size; i++)
+        gsl_vector_set(out->parameters->vector, i, gsl_vector_get(out1->parameters->vector, i));
+    for (   ; i< out2->parameters->vector->size; i++)
+        gsl_vector_set(out->parameters->vector, i, gsl_vector_get(out2->parameters->vector, i - out1->parameters->vector->size));
 
     //The covariance matrix is a stacking-up of the above matrices. I
     //cheat here: the cross-variances are assumed zero, which is

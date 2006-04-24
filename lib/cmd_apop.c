@@ -206,13 +206,11 @@ size_t          tmp_data;
 	if (print_me->estimation_params.uses.confidence) 	
             strcat(outstring, "Confidence\n");
     else    strcat(outstring, "\n");
-	for (i=0; i<print_me->parameters->size; i++){
+	for (i=0; i<print_me->parameters->vector->size; i++){
 		if (print_me->estimation_params.uses.names)	
-            sprintf(outstring, "%s%s\t", outstring, print_me->names->colnames[i]);
+            sprintf(outstring, "%s%s\t", outstring, print_me->parameters->names->colnames[i]);
 		if (print_me->estimation_params.uses.parameters)	
-            sprintf(outstring, "%s% 7f\t", outstring, gsl_vector_get(print_me->parameters,i));
-		if (print_me->estimation_params.uses.confidence)	
-            sprintf(outstring, "%s% 7f\t", outstring, gsl_vector_get(print_me->confidence,i));
+            sprintf(outstring, "%s% 7f\t", outstring, gsl_vector_get(print_me->parameters->vector,i));
 		strcat(outstring, "\n");
 	}
 	if (print_me->estimation_params.uses.covariance){
