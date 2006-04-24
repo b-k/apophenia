@@ -1,0 +1,77 @@
+% needspace.sty
+%
+% Provides commands to reserve space at the bottom of a page. If there
+% is not enough space on the current page (column) a new page (column)
+% is started.
+%
+% author: Peter Wilson (CUA)
+%         (now at peter.r.wilson@boeing.com)
+% Copyright 1996
+% Released under the LaTeX Project Public License
+%
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{needspace}[2003/02/18 v1.3a reserve vertical space]
+
+\newcommand{\needspace}[1]{\begingroup\setlength{\dimen@}{#1}%
+  \vskip\z@\@plus\dimen@ \penalty -100\vskip\z@\@plus -\dimen@
+  \vskip\dimen@ \penalty 9999\vskip -\dimen@\endgroup}
+
+\newcommand{\Needspace}{\@ifstar{\@sneedsp@}{\@needsp@}}
+
+\newcommand{\@sneedsp@}[1]{\par \penalty-100\begingroup
+  \setlength{\dimen@}{#1}%
+  \dimen@ii\pagegoal \advance\dimen@ii-\pagetotal
+  \ifdim \dimen@>\dimen@ii
+    \break
+  \fi\endgroup}
+
+\newcommand{\@needsp@}[1]{\par \penalty-100\begingroup
+  \setlength{\dimen@}{#1}%
+  \dimen@ii\pagegoal \advance\dimen@ii-\pagetotal
+  \ifdim \dimen@>\dimen@ii
+    \ifdim \dimen@ii>\z@
+      \vfil
+    \fi
+    \break
+  \fi\endgroup}
+
+\endinput
+
+%     Example uses:
+%
+% ... previous text.\par
+% \needspace{5\baselineskip} % need next 5 lines on a single page/column
+% The next five lines ...
+%
+% \Needspace*{4\baselineskip} % need 4 lines kept on same page
+%    The major principles are:
+% \begin{itemize}
+% \item ...
+% 
+%
+%     The \needspace macro reserves an APPROXIMATE amount of space (depending
+% on what penalties are in effect) but is efficient and normally adequate.
+% A short page will be ragged bottom even if \flushbottom is in
+% effect.
+%
+%     \Needspace is less efficient but reserves the requested space. It
+% should only be used between paragraphs. Short pages produced by 
+% \Needspace{<length>} will be ragged bottom but short pages produced by 
+% \Needspace*{<length>} will be flush bottom if \flushbottom is in effect.
+%
+% Changes v1.3a (2003/02/18)
+% o At the suggestion of Donald Arseneau (private emails) changed guts of
+%   \needspace from 
+%   ... \vskip\z@\@plus\dimen@\pagebreak[3]\vskip\z@\@plus-\dimen@\endgroup}
+%
+% Changes v1.3 (2003/02/07)
+% o Added \Needspace (an extended version of postings by Donald Arseneau 
+%   to comp.text.tex e.g., in November 1993, August 1995, September 1997, ...)
+%
+% Changes v1.2 (2002/09/11)
+% o At the suggestion of Robin Fairbairns, added use of \dimen@ to capture 
+%   the argument so that calc package commands can be used in the argument.
+%
+% 
+%

@@ -652,3 +652,30 @@ gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, hat_matrix, set2->matrix, projected_da
 If the hat matrix is of few enough dimensions, we can plot the
 projection using \cind{apop\_data\_print}; see page \pageref{gnuprint}.
 
+
+\section{Multilevel modeling} A key assumption to the models to this
+point is that each observation is independently and identically distributed
+relative to the others. However, observations often fall into clusters,
+such as families, classrooms, or geographical region. 
+A regression that simply inlcudes a family/classroom/region dummy variable
+asserts that each observation is iid relative to the others, but its
+outcome rises or falls by a fixed amount depending on its group
+membership.
+
+But this is often false: family members heavily influence each other.
+A better alternative may be to do a model estimation for each group
+separately. At the level of the subgroup, the iid assumption is more
+likely to hold. Then, once each group has been estimated, the parameters
+can be used to fit a model where the observational unit is the group.
+
+Writing a model to execute such a multilevel model is not
+difficult---just write a model whose \cinline{estimate} function calls
+another model's \cinline{estimate} function. 
+
+An example will be forthcoming.
+
+
+
+
+
+

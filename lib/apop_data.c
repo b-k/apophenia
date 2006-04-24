@@ -176,7 +176,7 @@ void apop_data_memcpy(apop_data *out, apop_data *in){
         if (in->matrix->size1 != out->matrix->size1 ||
                 in->matrix->size2 != out->matrix->size2){
             if (apop_opts.verbose)
-                printf("You're trying to copy a (%i X %i) into a (%i X %i) matrix. Returning w/o any copying.\n", 
+                printf("You're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix. Returning w/o any copying.\n", 
                 in->matrix->size1, in->matrix->size2, 
                 out->matrix->size1, out->matrix->size2);
             return;
@@ -186,7 +186,7 @@ void apop_data_memcpy(apop_data *out, apop_data *in){
     if (in->vector){
         if (in->vector->size != out->vector->size){
             if (apop_opts.verbose)
-                printf("You're trying to copy a %i-elmt vector into a %i-elmt vector. Returning w/o any copying.\n", 
+                printf("You're trying to copy a %zu-elmt vector into a %zu-elmt vector. Returning w/o any copying.\n", 
                 in->vector->size, out->vector->size);
             return;
         }
