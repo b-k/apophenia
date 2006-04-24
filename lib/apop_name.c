@@ -41,9 +41,11 @@ apop_name	* init_me;
 */
 int apop_name_add(apop_name * n, char *add_me, char type){
 	if (type == 'v'){
+        if (add_me){
 		n->vecname	= realloc(n->vecname, sizeof(char) * (strlen(add_me) + 1));
 		strcpy(n->vecname, add_me);
 		return 1;
+        } else return 0;
 	} 
 	if (type == 'r'){
 		(n->rownamect)++;
