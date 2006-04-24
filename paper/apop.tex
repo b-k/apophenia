@@ -34,7 +34,9 @@ set and return a set of parameter estimates.}
 The basic story for a statistical analysis is that the researcher
 assembles a data set into an \cinline{apop\_data} structure, then sends it to
 an \cinline{apop\_model} so that the model's parameters can be estimated,
-and that is returned in an \cinline{apop\_estimate} structure.
+and that is returned in an \cinline{apop\_estimate} structure. Finally, the
+researcher may then send the \cinline{apop\_estimate} through various
+hypothesis tests.
 
 Supporting these main structures are a few more structures you would only
 have to worry about for fine tuning.  The \cinline{apop\_name} structure is
@@ -55,8 +57,40 @@ The \cinline{apop\_data} structure is the union of three data types:
 the \cind{gsl\_vector}, \cind{gsl\_matrix}, and a table of strings. It
 includes an \cinline{apop\_name} structure (see below), so you know what
 your data is referring to.
-In case you need to access its individual elements,
-here is the declaration:
+
+The conceptual layout is given in Figure \ref{datalayout}. The vector,
+columns of the matrix, and columns of text are all named. Also, all rows
+are named, but there is only one set of rows, because the presumption is
+that each row of the structure holds information about a single
+observation.
+
+Think of the vector as the $-1^{\rm st}$ element of the matrix, and the 
+text elements as having their own addresses. For example, the vector may
+represent the dependent variable, and the matrix may be the independent
+variables. If there are categories, they could be held in the text area,
+and then converted into dummies in the matrix using
+\cind{apop\_produce\_dummies}. 
+
+
+\def\atouch{\phantom {.}}
+\renewcommand\arraystretch{1.1}
+\begin{figure}
+\hspace {-0.5cm}
+\begin{tabular}{lc|ccc|ccccc|cccc}
+\hhline{~~~-~~---~~---}
+        &&& \multicolumn{1}{|c|}{``v''}   &&& \multicolumn{1}{|c}{``c0''} & ``c1'' & \multicolumn{1}{c|}{``c2''}  &&& \multicolumn{1}{|c}{``t0''} & ``t1'' & \multicolumn{1}{c|}{``t2''}    \\\hhline{~~~-~~---~~---}
+\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch\\\hhline{-}
+\multicolumn{1}{|c|}{``r0''}&&&(0, -1)   &&& (0, 0) & (0, 1) & (0, 2) &&& (0, 0) & (0, 1) & (0, 2)\\ 
+\multicolumn{1}{|c|}{``r1''}&&&(1, -1)   &&& (1, 0) & (1, 1) & (1, 2) &&& (1, 0) & (1, 2) & (1, 2)\\
+\multicolumn{1}{|c|}{``r2''}&\atouch&\atouch&(2, -1)   &\atouch&& (2, 0) & (2, 1) & (2, 2) &\atouch&\atouch& (2, 0) & (2, 2) & (2, 2)\\\hhline{-}
+\end{tabular}
+\caption{The vector is column -1 of the matrix, while the text gets its
+own numbering system. Row names are shared by all three
+elements.}
+\label{datalayout}
+\end{figure}
+
+Should you wish to access the individual elements of the \cinline{apop\_data} structure, here is the declaration:
 
 \begin{lstlisting}
 typedef struct apop_data{
@@ -67,6 +101,61 @@ typedef struct apop_data{
     int         catsize[2];
 } apop_data;
 \end{lstlisting}
+
+\comment{
+\marginalia{30}{Mixing \cinline{int}s and \cinline{char*}s}{
+Rather than
+having a section for \cinline{double}s and one for text, it would be
+nice to have each column or each element in the data set have its own type.
+But this would have an immense cost for speed. To get/set the next element
+in an array of \cinline{double}s takes two steps:
+\begin{itemize}
+\item Step \cinline{sizeof(double)} bytes in memory.
+\item Read/write the data.
+\end{itemize}
+In fact, modern processors are optimized so that jumping a fixed distance
+from the current location is among the fastest operations they can do.
+The GSL's matrices are also designed so that jumps by column and by row
+are both a single fast operation.
+
+Without consistent types, this simple process becomes laborious. We'll
+throw in a safe-memory checking step as well: 
+\begin{itemize}
+\item Go to the table of element types.
+\item Search the element-type table for the current element's type.
+\item Step forward \cinline{sizeof(this\_type)}.
+\item Go to the table of safe memory addresses.
+\item Search for the new address in the table of safe memory. 
+\item If the address is in bounds, return to the address
+\item Read/write the data.
+\end{itemize}
+There are many ways to make type- and bounds-checking faster, but
+they can never be as quick as a single fixed-size jump.
+}
+}
+
+There is no consistency-checking to make sure the number of row names,
+the \cinline{vector->size}, or  \cinline{matrix->size1} are equal.
+If you want to put a vector of fiteen elements and a $10 \times 10$
+matrix in the same structure, and only name the first two columns, you
+are free to do so.
+
+Further, the typical case is that not all elements are assigned 
+values at all; \cind{apop\_data\_alloc} initializes most elements as
+\cinline{NULL}. If you just want a \cind{gsl\_vector} with
+names, then you can use the \cinline{apop\_data} structure as such,
+by leaving 
+\cinline{your\_data->matrix == your\_da\-ta->categories ==
+NULL}.\footnote{The seasoned C programmers will recognize such usage as 
+similar to a \cind{union} between a \cinline{gsl\_vector}, a
+\cinline{gsl\_matrix}, and a \cinline{char} array. C$^{++}$ programmers
+will observe that the structure allows a form of polymorphism, because
+you can write one function that takes an \cinline{apop\_data}
+as input, but operates on one or both of a \cinline{gsl\_vector} or a
+\cinline{gsl\_matrix}, depending on which is not \cinline{NULL} in
+the input.}
+
+
 You can easily operate on the individual elements of the structure:
 if the \cinline{matrix\_man\-ip\-u\-late} function requires a
 \cinline{gsl\_ma\-trix}, but you are using an \cinline{apop\_da\-ta}
@@ -87,13 +176,6 @@ for (r=0; r< set->catsize[0]; r++){
 }
 \end{lstlisting}
 
-In most cases, only one of the vector, matrix, and category grid will
-not be \cinline{NULL}. However, you can readily include all of these
-elements at once. For example, a regression typically includes a single
-dependent variable, which you can store in the vector, and multiple
-independent variables, which you can store in the matrix. 
-Think of this setup as a partitioned matrix, where the vector is column
--1, and the matrix columns begin at column zero.
 
 \comment{
 Categories are not particularly well-supported, because there is not
@@ -235,17 +317,29 @@ what the \cinline{apop\_est\-i\-mate} contains.
 Here is the current definition of the \cinline{apop\_estimate} structure. You can se that it errs on the inclusive side.
 \begin{lstlisting}
 typedef struct apop_estimate{
-    gsl_vector  *parameters, *confidence;
-    apop_data   *dependent;
-    apop_data   *covariance;
+    apop_data   *parameters, *dependent, *covariance;
     double      log_likelihood;
-    apop_name   *names;
     int         status;
     struct apop_data   *data;
     struct apop_model  *model;
     struct apop_estimation_params  estimation_params;
 } apop_estimate;
 \end{lstlisting}
+
+The \cinline{parameters} structure primarily holds the estimated
+parameters of the model in the \cinline{parameters->vector}
+element. As noted earlier, the parameter estimation process and the
+hypothesis testing process are entirely separate. Apophenia generally
+keeps to this, because functions with \airq{estimate} in the name do not
+test hypotheses, and functions with \airq{test} in the name estimate
+only those parameters needed for testing. But there is one exception
+to this. It is such a common custom to test whether every estimated
+parameter is by itself significantly different from zero that many
+consider a hypothesis test incomplete without this test. Therefore, if
+\cinline{estimation\_params->uses.confidence==1} (which it is by default), then 
+each row of \cinline{parameters->matrix} will hold the $t$ statistic,
+$p$ value, and other useful test parameters regarding the corresponding
+element of the \cinline{parameters->vector}.
 
 The \cinline{dependent} matrix is worth notice. It is three columns, named 
 \cinline{actual}, \cinline{predicted}, and \cinline{residual}. 
@@ -598,21 +692,26 @@ An estimation function will produce a table of figures in an
 \cinline{apop\_data} set, such as this table from the \cind{apop\_t\_test}
 function:
 
-\begin{tabular}{ll}
+\begin{center}
+\begin{tabular}{|ll|}
+\hline
 mean left - right     &-0.268533\\
 t statistic           &-23.673530\\
 df                    & 1998.000000\\
 p value, 1 tail       & 0.000000\\
 confidence, 1 tail    & 1.000000\\
 p value, 2 tail       & 1.000000\\
-confidence, 2 tail    & 0.000000
+confidence, 2 tail    & 0.000000\\
+\hline
 \end{tabular}
+\end{center}
+\hspace\baselineskip
 
 You can either print the table to the screen or a text file using the
 usual \cinline{apop\_data\_print} function, or search for a single
 parameter. For example, if you need only the one-tail p-value, that is
-\cinline{apop\_data\_get\_tn(est, "p\_val\%1\%", 0)}, i.e., the first
-column of the row whose name matches \cinline{p\_val\%1\%}.
+\cinline{apop\_data\_get\_tn(est, "p\_val\%1\%", -1)}, i.e., the vector
+element whose row name matches \cinline{p\_val\%1\%}.
 
 
 \comment{

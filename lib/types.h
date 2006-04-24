@@ -146,6 +146,7 @@ Typically, the row names are not used, but they are there for your convenience.
 \ingroup names
 */
 typedef struct apop_name{
+	char * vecname;
 	char ** colnames;
 	char ** rownames;
 	char ** catnames;
@@ -299,6 +300,7 @@ void apop_data_set(apop_data *in, size_t row, int col, double data);
 void apop_data_set_tn(apop_data *in, char* row, int col, double data);
 void apop_data_set_nt(apop_data *in, size_t row, char* col, double data);
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data);
+void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 
 void apop_cats_free(char ***freeme, int rows, int cols); //in apop_data.c
 

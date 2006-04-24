@@ -32,23 +32,16 @@ double apop_two_tailify(double in){
 
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
-apop_data   *out    = apop_data_alloc(7,1);
+apop_data   *out    = apop_data_alloc(7,-1);
 double      pval    = gsl_cdf_tdist_P(stat, df),
             two_tail= apop_two_tailify(pval);
-    apop_name_add(out->names, "mean left - right", 'r');
-    gsl_matrix_set(out->matrix, 0, 0, diff);
-    apop_name_add(out->names, "t statistic", 'r');
-    gsl_matrix_set(out->matrix, 1, 0, stat);
-    apop_name_add(out->names, "df", 'r');
-    gsl_matrix_set(out->matrix, 2, 0, df);
-    apop_name_add(out->names, "p value, 1 tail", 'r');
-    gsl_matrix_set(out->matrix, 3, 0, pval);
-    apop_name_add(out->names, "confidence, 1 tail", 'r');
-    gsl_matrix_set(out->matrix, 4, 0, 1 - pval);
-    apop_name_add(out->names, "p value, 2 tail", 'r');
-    gsl_matrix_set(out->matrix, 5, 0, two_tail);
-    apop_name_add(out->names, "confidence, 2 tail", 'r');
-    gsl_matrix_set(out->matrix, 6, 0, 1 - two_tail);
+    apop_data_add_named_elmt(out, "mean left - right", diff);
+    apop_data_add_named_elmt(out, "t statistic", stat);
+    apop_data_add_named_elmt(out, "df", df);
+    apop_data_add_named_elmt(out, "p value, 1 tail", pval);
+    apop_data_add_named_elmt(out, "confidence, 1 tail", 1 - pval);
+    apop_data_add_named_elmt(out, "p value, 2 tail", two_tail);
+    apop_data_add_named_elmt(out, "confidence, 2 tail", 1 - two_tail);
     return out;
 }
 
@@ -137,8 +130,8 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
     apop_name_add(est->parameters->names, "confidence", 'c');
     apop_name_add(est->parameters->names, "t statistic", 'c');
     apop_name_add(est->parameters->names, "standard deviation", 'c');
-    apop_name_add(est->parameters->names, "p value, one tail", 'c');
-    apop_name_add(est->parameters->names, "confidence, one tail", 'c');
+    apop_name_add(est->parameters->names, "p value, 1 tail", 'c');
+    apop_name_add(est->parameters->names, "confidence, 1 tail", 'c');
     apop_name_add(est->parameters->names, "df", 'c');
     df      = est->data->matrix->size1 - est->parameters->vector->size;
     rootn   = sqrt(df);
@@ -154,13 +147,13 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
         apop_data_set_nt(est->parameters, i, "standard deviation", stddev);
         apop_data_set_nt(est->parameters, i, "p value", two_tail);
         apop_data_set_nt(est->parameters, i, "confidence", 1-two_tail);
-        apop_data_set_nt(est->parameters, i, "p value, one tail", pval);
-        apop_data_set_nt(est->parameters, i, "confidence, one tail", 1-pval);
+        apop_data_set_nt(est->parameters, i, "p value, 1 tail", pval);
+        apop_data_set_nt(est->parameters, i, "confidence, 1 tail", 1-pval);
     }
 }
 
 /** Runs an F-test specified by \c q and \c c. Your best bet is to see
- the chapter on "Gaussian Tricks" in the <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF manual</a> (check the index for F-tests). It will tell you that:
+ the chapter on hypothesis testing in the <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF manual</a> (check the index for F-tests). It will tell you that:
  \f[{N-K\over q}
  {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c})
  \over {\bf u}' {\bf u} } \sim F_{q,N-K},\f]

@@ -436,3 +436,22 @@ int rownum =  apop_name_find(in->names, row, 'r');
     }
     gsl_matrix_set(in->matrix, rownum, colnum, data);
 }
+
+/** Add a named element to a data vector. For example, this is primarily
+used by the testing procedures, that produce a column of named parameters.
+
+\param d    The \ref apop_data structure.
+\param name The name to add
+\param val  the vector value to add.
+
+I use the position of the name to know where to put the value. If there
+are two names in the data set, then I will put the data in the third
+slot in the vector. If you use this function from start to finish in
+building your vector, then you'll be fine.
+
+*/
+void apop_data_add_named_elmt(apop_data *d, char *name, double val){
+    gsl_vector_set(d->vector, d->names->colnamect, val);
+    apop_name_add(d->names, name, 'v');
+}
+

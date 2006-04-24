@@ -1,4 +1,7 @@
---The print_data function is so wrong.
+--regression should return partitioned data matrix?
+--f test doesn't return proper output.
+--tests that produce a single column should use the data->vector.
+--The print_data function is so wrong---`cause print_matrix needs revision.
 --spacing in screen output
 --apop_db_to_text should output an apop_names structure, and I need a category printer.
 --And how about something to write apop_estimates to the db?

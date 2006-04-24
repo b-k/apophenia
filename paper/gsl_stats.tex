@@ -3,6 +3,7 @@
 \newif\ifbook \booktrue
 \documentclass[10pt,notitlepage, openany]{book}
 \usepackage{xspace, calc, needspace, array,natbib,graphicx,epsfig,wrapfig, titlesec, apop_wrap, listings,hyphenat,fixltx2e}
+\usepackage{hhline} %load last
 %\usepackage[LHE,T1]{fontenc}
 
 
@@ -76,7 +77,7 @@
 %uses the awrap style, included in this dir.
 %\renewcommand\chaptername{} 
 \titleformat{\part}[frame]{\Large\scshape}{\thepart}{.5em}{\thispagestyle{empty}}{}
-\titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.2}{\includegraphics{flake}}\hfill\flushright}{}
+\titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.2}{\includegraphics{flake}}\hfill}{} %\flushright almost works.
 \titlespacing{\section}{8cm}{1 cm}{-0.5 cm}
 \titlespacing{\subsection}{8cm}{0.5 cm}{-0.5 cm}
 \titleformat{\section}[awrap]{\large\bf\scshape}{\thesection}{1 em}{}{}
@@ -215,6 +216,9 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 
 %The actual book:
 \begin{document}
+
+
+
 \setlength{\columnsep}{1.2cm}
 \frontmatter
 \title{Modern Statistical Computing}
@@ -227,6 +231,7 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 \end{center}
 \thispagestyle{empty}
 \vfill
+
 
 
 [A caveat: This book is incomplete. The

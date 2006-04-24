@@ -200,16 +200,12 @@ apop_data           *out    = apop_pdf_test_goodness_of_fit(h, m, params, bins);
 */
 
 static apop_data *gof_output(double diff, int bins){
-apop_data   *out    = apop_data_alloc(4,1);
+apop_data   *out    = apop_data_alloc(4,-1);
 double      pval    = gsl_cdf_chisq_P(diff, bins-1);
-    apop_name_add(out->names, "Chi squared statistic", 'r');
-    gsl_matrix_set(out->matrix, 0, 0, diff);
-    apop_name_add(out->names, "df", 'r');
-    gsl_matrix_set(out->matrix, 1, 0, bins-1);
-    apop_name_add(out->names, "p value", 'r');
-    gsl_matrix_set(out->matrix, 2, 0, pval);
-    apop_name_add(out->names, "confidence", 'r');
-    gsl_matrix_set(out->matrix, 3, 0, 1 - pval);
+    apop_data_add_named_elmt(out, "Chi squared statistic", diff);
+    apop_data_add_named_elmt(out, "df", bins-1);
+    apop_data_add_named_elmt(out, "p value", pval);
+    apop_data_add_named_elmt(out, "confidence", 1 - pval);
     return out;
 }
 

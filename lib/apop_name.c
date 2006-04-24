@@ -18,6 +18,7 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 apop_name * apop_name_alloc(void){
 apop_name	* init_me;
 	init_me	= malloc(sizeof(apop_name));
+	init_me->vecname	= NULL;
 	init_me->colnames	= malloc(1);
 	init_me->catnames	= malloc(1);
 	init_me->rownames	= malloc(1);
@@ -31,12 +32,19 @@ apop_name	* init_me;
 
 \param n 	An existing, allocated \ref apop_name structure.
 \param add_me 	A string.
-\param type 	If adding a row name, use <tt>'r'</tt>;
-If adding a column name, use <tt>'c'</tt>; if adding a category (i.e. text) name, use <tt>'t'</tt>. Default is 'c', meaning that if you use anything but 'r' or 't', you'll be adding to the columns.
+\param type 	'r': add a row name<br>
+'c': add a column name<br>
+'t': add a text category name<br>
+'v': add (or overwrite) the vector name<br>
 \return 	Returns the number of rows/cols/depvars after you have added the new one.
 \ingroup names
 */
 int apop_name_add(apop_name * n, char *add_me, char type){
+	if (type == 'v'){
+		n->vecname	= realloc(n->vecname, sizeof(char) * (strlen(add_me) + 1));
+		strcpy(n->vecname, add_me);
+		return 1;
+	} 
 	if (type == 'r'){
 		(n->rownamect)++;
 		n->rownames	= realloc(n->rownames, sizeof(char*) * n->rownamect);
@@ -68,6 +76,11 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 */
 void  apop_name_print(apop_name * n){
 int		i;
+	if (n->vecname){
+		printf("\t\t\t");
+			printf("\t%s", n->vecname);
+		printf("\n");
+	}
 	if (n->colnamect > 0){
 		printf("\t\t\t");
 		for (i=0; i < n->colnamect; i++)
@@ -98,6 +111,8 @@ int		i;
 		free(free_me->catnames[i]);
 	for (i=0; i < free_me->rownamect; i++)
 		free(free_me->rownames[i]);
+    if (free_me->vecname);
+        free(free_me->vecname);
 	free(free_me->colnames);
 	free(free_me->catnames);
 	free(free_me->rownames);
@@ -112,10 +127,14 @@ If you are copying row names to columns or vice versa, use \ref apop_name_cross_
 
 \param  n1      The first set of names
 \param  n2      The second set of names, which will be appended after the first.
-\param type     Either 'c', 'r', or 't' stating whether you are merging the columns, rows, or text.
+\param type     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then overwrite the target with the source vector name.
 \ingroup names */
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type){
 int     i;
+    if (type == 'v'){
+        apop_name_add(n1, n2->vecname, 'v');
+        return;
+    }
     if (type == 'r'){
         for (i=0; i< n2->rownamect; i++)
             apop_name_add(n1, n2->rownames[i], 'r');
@@ -180,6 +199,7 @@ apop_name_memcpy(&out, in);
   */
 void apop_name_memcpy(apop_name **out, apop_name *in){
     *out = apop_name_alloc();
+    apop_name_stack(*out, in, 'v');
     apop_name_stack(*out, in, 'c');
     apop_name_stack(*out, in, 'r');
     apop_name_stack(*out, in, 't');
@@ -199,6 +219,7 @@ apop_name *out  = apop_name_copy(in);
   */
 apop_name * apop_name_copy(apop_name *in){
 apop_name *out = apop_name_alloc();
+    apop_name_stack(out, in, 'v');
     apop_name_stack(out, in, 'c');
     apop_name_stack(out, in, 'r');
     apop_name_stack(out, in, 't');
