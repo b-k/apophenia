@@ -307,7 +307,7 @@ static char * strip(char *in){
 regex_t     *regex      = malloc(sizeof(regex_t));
 size_t      dummy       = 0;
 char 		*out 	    = malloc(sizeof(char) * (1+strlen(in)));
-char        stripregex[]= "[ \n\t]*\\([^ \n\t]*.*[^ \n\t]*\\)[ \n\t]*";
+char        stripregex[]= "[ \n\t\"]*\\([^ \n\t\"]*.*[^ \n\t\"]*\\)[ \n\t\"]*";
 regmatch_t  result[3];
     regcomp(regex, stripregex, 0);
     if(!regexec(regex, in, 2, result, 0))

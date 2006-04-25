@@ -451,7 +451,7 @@ building your vector, then you'll be fine.
 
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
-    gsl_vector_set(d->vector, d->names->colnamect, val);
-    apop_name_add(d->names, name, 'v');
+    gsl_vector_set(d->vector, d->names->rownamect, val);
+    apop_name_add(d->names, name, 'r');
 }
 

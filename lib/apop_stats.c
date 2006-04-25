@@ -218,7 +218,7 @@ If not, the address of a <tt>gsl_vector</tt>. Do not allocate.
 's': normalized vector will have mean zero and variance one. Replace
 each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample
 standard deviation.<br>
-'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin.
+'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin.<br>
 'm': normalize to mean zero: Replace each X with \f$(X-\mu)\f$<br>
 
 \b example 
@@ -281,7 +281,7 @@ double		mu, min, max;
 	}
 }
 
-/** Normalize  each column in the given matrix, one by one.
+/** Normalize  each row or column in the given matrix, one by one.
 
   Basically just a convenience fn to iterate through the columns and run \ref apop_vector_normalize for you.
 

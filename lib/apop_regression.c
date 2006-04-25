@@ -34,12 +34,13 @@ double apop_two_tailify(double in){
 static apop_data * produce_t_test_output(int df, double stat, double diff){
 apop_data   *out    = apop_data_alloc(7,-1);
 double      pval    = gsl_cdf_tdist_P(stat, df),
+            qval    = gsl_cdf_tdist_Q(stat, df),
             two_tail= apop_two_tailify(pval);
     apop_data_add_named_elmt(out, "mean left - right", diff);
     apop_data_add_named_elmt(out, "t statistic", stat);
     apop_data_add_named_elmt(out, "df", df);
-    apop_data_add_named_elmt(out, "p value, 1 tail", pval);
-    apop_data_add_named_elmt(out, "confidence, 1 tail", 1 - pval);
+    apop_data_add_named_elmt(out, "p value, 1 tail", GSL_MIN(pval,qval));
+    apop_data_add_named_elmt(out, "confidence, 1 tail", 1 - GSL_MIN(pval,qval));
     apop_data_add_named_elmt(out, "p value, 2 tail", two_tail);
     apop_data_add_named_elmt(out, "confidence, 2 tail", 1 - two_tail);
     return out;
@@ -140,7 +141,7 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
         var     = apop_data_get(est->covariance, i, i);
         stddev  = sqrt(var);
         tstat   = val*rootn/stddev;
-        pval    = gsl_cdf_tdist_P(tstat, df),
+        pval    = (df > 0)? gsl_cdf_tdist_P(tstat, df): GSL_NAN;
         two_tail= apop_two_tailify(pval);
         apop_data_set_nt(est->parameters, i, "df", df);
         apop_data_set_nt(est->parameters, i, "t statistic", tstat);
@@ -158,26 +159,37 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
  {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c})
  \over {\bf u}' {\bf u} } \sim F_{q,N-K},\f]
  and that's what this function is based on.
+
+ At the moment, this copies the data set. Plan accordingly.
+
  \param est     an \ref apop_estimate that you have already calculated.
- \param set    your \ref apop_data set. If NULL, use the one included in \c est.
  \param q       The matrix \f${\bf Q}\f$, where each row represents a hypothesis.
  \param c       The vector \f${\bf c}\f$. The PDF manual explains all of this.
  \return The confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
  */
-double apop_F_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c){
-gsl_matrix      *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
-gsl_matrix      *xpxinv     = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
+apop_data *apop_F_test(apop_estimate *est, gsl_matrix *q, gsl_vector *c){
+gsl_matrix      *set        = est->data->matrix;
+gsl_matrix      *data       = gsl_matrix_alloc(set->size1, set->size2);    //potentially huge.
+gsl_matrix      *xpx        = gsl_matrix_calloc(set->size2, set->size2);
+gsl_matrix      *xpxinv     = gsl_matrix_calloc(set->size2, set->size2);
 gsl_vector      *qprimebeta = gsl_vector_calloc(est->parameters->vector->size);
-gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(est->parameters->vector->size, set->matrix->size2);
+gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(est->parameters->vector->size, set->size2);
 gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(est->parameters->vector->size, est->parameters->vector->size);
 gsl_matrix      *qprimexpxinvqinv   = gsl_matrix_calloc(est->parameters->vector->size, est->parameters->vector->size);
 gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(est->parameters->vector->size);
-double          f_stat;
-double          variance;
+gsl_vector      error       = gsl_matrix_column(est->dependent->matrix, apop_name_find(est->dependent->names, "residual", 'c')).vector;
+gsl_vector      v;
+double          f_stat, variance, pval;
 int             q_df,
-                data_df     = set->matrix->size1 - est->parameters->vector->size;
-    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   
+                data_df     = set->size1 - est->parameters->vector->size;
+apop_data       *out        = apop_data_alloc(3,-1);
+    gsl_matrix_memcpy(data, set);
+    v   = gsl_matrix_column(data, 0).vector;
+    gsl_vector_set_all(&v, 1);
+    apop_matrix_normalize(data, 'c', 'm');
+    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, xpx);   
+    gsl_matrix_free(data);
     if (q != NULL){
         q_df    = q->size1;
 	    apop_det_and_inv(xpx, &xpxinv, 0, 1);		
@@ -193,11 +205,11 @@ int             q_df,
     if (c !=NULL)
         gsl_vector_sub(qprimebeta, c);  //else, c=0, so this is a no-op.
     gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
-    gsl_blas_ddot(qprimebetaminusc_qprimexpxinvqinv, qprimebeta, &f_stat);
+    gsl_blas_ddot(qprimebeta, qprimebetaminusc_qprimexpxinvqinv, &f_stat);
 
-    gsl_blas_ddot(est->parameters->vector, est->parameters->vector, &variance);
+    gsl_blas_ddot(&error, &error, &variance);
     f_stat  *=  data_df / (variance * q_df);
-    printf("the f statistic: %g\n", f_stat);
+    pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_P(f_stat, q_df, data_df): GSL_NAN; 
     gsl_matrix_free(xpx);
     gsl_matrix_free(xpxinv);
     gsl_matrix_free(qprimexpxinv);
@@ -205,12 +217,15 @@ int             q_df,
     gsl_matrix_free(qprimexpxinvqinv);
     gsl_vector_free(qprimebeta);
     gsl_vector_free(qprimebetaminusc_qprimexpxinvqinv);
-    return 1 - gsl_cdf_fdist_P(f_stat, q_df, data_df);
+    apop_data_add_named_elmt(out, "F statistic", f_stat);
+    apop_data_add_named_elmt(out, "p value", pval);
+    apop_data_add_named_elmt(out, "confidence", 1- pval);
+    return out;
 }
 
 /** a synonym for \ref apop_F_test, qv. */
-double apop_f_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c){
-return apop_F_test(est, set, q, c);
+apop_data * apop_f_test(apop_estimate *est, gsl_matrix *q, gsl_vector *c){
+return apop_F_test(est, q, c);
 }
 
 //shift first col to depvar, rename first col "one".
@@ -218,14 +233,18 @@ static void prep_names(apop_estimate *e){
 int i;
 	if (e->data->names->colnamect > 0) {		
 		//apop_name_add(n, n->colnames[0], 'd');
-		e->dependent->names->colnames[0] =
+        apop_name_add(e->dependent->names, e->data->names->colnames[0], 'c');
+        apop_name_add(e->dependent->names, "predicted", 'c');
+        apop_name_add(e->dependent->names, "residual", 'c');
+		/*e->dependent->names->colnames[0] =
             realloc(e->dependent->names->colnames[0],
                     sizeof(e->data->names->colnames[0]));
 		sprintf(e->dependent->names->colnames[0], 
-                e->data->names->colnames[0]);
+                e->data->names->colnames[0]);*/
 		sprintf(e->data->names->colnames[0], "1");
         if (e->estimation_params.uses.parameters){
             apop_name_add(e->parameters->names, "1", 'r');
+            apop_name_add(e->parameters->names, "parameters", 'v');
             for(i=1; i< e->data->names->colnamect; i++)
                 apop_name_add(e->parameters->names, e->data->names->colnames[i], 'r');
         }
@@ -251,14 +270,15 @@ double		upu;
 	apop_det_and_inv(xpx, &cov, 0, 1);		//(X'X)^{-1} (not yet cov)
 	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters->vector);
 	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters->vector, 0, error);
-	gsl_vector_sub(y_data, error);	//until this line, 'error' is the predicted values
+	gsl_vector_sub(error,y_data);//until this line, 'error' is the predicted values
+	gsl_vector_scale(error,-1);	
 	gsl_blas_ddot(error, error, &upu);
 	gsl_matrix_scale(cov, upu/data->size2);	//Having multiplied by the variance, it's now it's the covariance.
 	if (out->estimation_params.uses.dependent)
         gsl_matrix_set_col(out->dependent->matrix, 0, y_data);
 	if (out->estimation_params.uses.predicted){
         gsl_matrix_set_col(out->dependent->matrix, 2, error);
-        predicted   = gsl_matrix_column(out->dependent->matrix, 2).vector;
+        predicted   = gsl_matrix_column(out->dependent->matrix, 1).vector;
         gsl_vector_set_zero(&predicted);
         gsl_vector_add(&predicted, y_data);
         gsl_vector_sub(&predicted, error);
@@ -629,34 +649,30 @@ apop_data *dummies = apop_produce_dummies(categories, 0);
 \ingroup regression
   */
 apop_data *apop_estimate_correlation_coefficient(apop_estimate *in){
-double          sse, sst, rsq;
+double          sse, sst, rsq, adjustment;
 size_t          obs     = in->data->matrix->size1;
 size_t          indep_ct= in->data->matrix->size2 - 1;
 gsl_vector      v;  
-apop_data       *out    = apop_data_alloc(5,1);
+apop_data       *out    = apop_data_alloc(5,-1);
     if (!in->estimation_params.uses.predicted
         || !in->estimation_params.uses.dependent){
         if (apop_opts.verbose)
             printf("I need predicted and dependent to be set in the apop_estimate->estimation_params.uses before I can calculate the correlation coefficient. returning NULL.\n");
         return NULL;
     }
-    v   = gsl_matrix_column(in->dependent->matrix, 2).vector;//residuals
-    sse = apop_vector_var(&v) * v.size;
-    v   = gsl_matrix_column(in->dependent->matrix, 0).vector;//actual
-    sst = apop_vector_var(&v) * v.size;
-    rsq = 1 - (sse/sst);
-
-    apop_name_add(out->names, "R_squared", 'r');
-    gsl_matrix_set(out->matrix, 0, 0, rsq);
-    apop_name_add(out->names, "R_squared_adj", 'r');
-    gsl_matrix_set(out->matrix, 1, 0, rsq - ((indep_ct -1) /(obs - indep_ct)) * (1-rsq) );
-    apop_name_add(out->names, "SSE", 'r');
-    gsl_matrix_set(out->matrix, 2, 0, sse);
-    apop_name_add(out->names, "SST", 'r');
-    gsl_matrix_set(out->matrix, 3, 0, sst);
-    apop_name_add(out->names, "SSR", 'r');
-    gsl_matrix_set(out->matrix, 4, 0, sse - sst);
-
+    v   = gsl_matrix_column(in->dependent->matrix, 
+                apop_name_find(in->dependent->names, "residual", 'c')).vector;
+    gsl_blas_ddot(&v, &v, &sse);
+    v   = gsl_matrix_column(in->dependent->matrix, 0).vector; //actual.
+    sst = apop_vector_var(&v) * (v.size - 1);
+//    gsl_blas_ddot(&v, &v, &sst);
+    rsq = 1. - (sse/sst);
+    adjustment  = ((indep_ct -1.) /(obs - indep_ct)) * (1.-rsq) ;
+    apop_data_add_named_elmt(out, "R_squared", rsq);
+    apop_data_add_named_elmt(out, "R_squared_adj", rsq - adjustment);
+    apop_data_add_named_elmt(out, "SSE", sse);
+    apop_data_add_named_elmt(out, "SST", sst);
+    apop_data_add_named_elmt(out, "SSR", sst - sse);
     return out;
 }
 

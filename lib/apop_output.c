@@ -376,12 +376,32 @@ char tmptype    = apop_opts.output_type;
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_show */
 void apop_data_show(apop_data *data){
-char tmptype    = apop_opts.output_type;
+char    tmptype = apop_opts.output_type;
+int     i, j,
+        start   = (data->vector)? -1 : 0,
+        end     = (data->matrix)? data->matrix->size2 : 0,
+        rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : -1;
     apop_opts.output_type = 's';
-    if (data->vector)
-	    print_core_v(data->vector, apop_opts.output_delimiter, NULL, dumb_little_pf_f); 
-    if (data->matrix)
-	    print_core_m(data->matrix, apop_opts.output_delimiter, NULL, dumb_little_pf_f, data->names); 
+    if (data->names->rownames)
+        printf("\t\t");
+    if (data->vector){
+        if (data->names->vecname)
+            printf("%s\t", data->names->vecname);
+        else
+            printf("\t\t");
+    }
+    if (data->matrix){
+        for(i=0; i< data->names->colnamect; i++)
+            printf("%s\t", data->names->colnames[i]);
+    }
+    printf("\n");
+    for(j=0; j< rowend; j++){
+        if (data->names->rownamect > j)
+            printf("%s\t", data->names->rownames[j]);
+        for(i=start; i< end; i++)
+            printf("%g\t", apop_data_get(data, j, i));
+        printf("\n");
+    }
     apop_opts.output_type = tmptype;
 }
 

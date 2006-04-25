@@ -157,17 +157,6 @@ void apop_estimate_free(apop_estimate * free_me){
 \ingroup output */
 void apop_estimate_print(apop_estimate * print_me){
 int		i;
-printf("Sorry, this output is a mess at the moment. Come back tomorrow.\n");
-	printf("\n");
-	if (print_me->estimation_params.uses.names) 	printf("\t");
-	if (print_me->estimation_params.uses.confidence) 	
-            printf("Confidence\n");
-    else    printf("\n");
-	for (i=0; i<print_me->parameters->vector->size; i++){
-		if (print_me->parameters->names)	printf("%s\t", print_me->parameters->names->rownames[i]);
-           // printf("% 7f\t", gsl_vector_get(print_me->parameters->vector,i));
-		printf("\n");
-	}
 	if (print_me->estimation_params.uses.parameters)	
         apop_data_show(print_me->parameters);
 	if (print_me->estimation_params.uses.covariance){

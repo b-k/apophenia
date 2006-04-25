@@ -13,6 +13,44 @@ double  true_parameter[]    = {3.82,2.1},
 double  tolerance           = 1e-5;
 
 
+/** I claim that the mean residual is near zero, and that the predicted
+  value is \f$X'\beta\f$.
+
+  */
+int test_predicted_and_residual(apop_estimate *est){
+gsl_vector  v,
+            *prediction = gsl_vector_alloc(est->data->matrix->size1);
+gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->matrix->size2);
+    //prep an affine data matrix.
+    gsl_matrix_memcpy(m, est->data->matrix);
+    v   = gsl_matrix_column(m, 0).vector;
+    gsl_vector_set_all(&v, 1);
+
+    v   = gsl_matrix_column(est->dependent->matrix, apop_name_find(est->dependent->names, "residual", 'c')).vector;
+    assert(fabs(apop_mean(&v)) < tolerance);
+
+    v   = gsl_matrix_column(est->dependent->matrix, apop_name_find(est->dependent->names, "pred%", 'c')).vector;
+    gsl_blas_dgemv(CblasNoTrans, 1, m, est->parameters->vector, 0, prediction);
+    gsl_vector_sub(prediction, &v);
+    assert(fabs(apop_vector_sum(prediction)) < tolerance);
+    return 0;
+}
+
+/** I claim that the F test calculated via apop_F_test(est, NULL, NULL)
+ equals a transformation of R^2.
+
+*/
+int test_f(apop_estimate *est){
+apop_data   *rsq    = apop_estimate_correlation_coefficient(est);
+apop_data   *ftab   = apop_F_test(est, NULL, NULL);
+double      n       = est->data->matrix->size1;
+double      K       = est->parameters->vector->size;
+double      r       = apop_data_get_tn(rsq,"R_squared",-1);
+double      f       = apop_data_get_tn(ftab,"F_stat%",-1);
+    assert(fabs(f - r*(n-K)/ ((1-r)*K)) < tolerance);
+    return 0;
+}
+
 //I'm using the test script an experiment to see if 
 //these macros add any value.
 //#define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc(r,c);
@@ -40,8 +78,7 @@ for(i=0; i< len; i++){
 }
 
 
-
-static int is_neg(double in){
+ is_neg(double in){
     return in < 0;
 }
 
@@ -288,6 +325,15 @@ apop_estimation_params  params;
 
     printf("OLS test:");
     do_test(test_OLS());
+
+
+apop_data       *d  = apop_text_to_data("test_data2",0,1);
+apop_estimate   *e  = apop_OLS.estimate(d,NULL);
+    printf("apop_estimate->dependent test:");
+    do_test(test_predicted_and_residual(e));
+
+    printf("apop_f_test and apop_coefficient_of_determination test:");
+    do_test(test_f(e));
 
     printf("apop_vector_replace test:");
     do_test(test_replaces());

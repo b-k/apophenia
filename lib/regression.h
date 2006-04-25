@@ -10,8 +10,8 @@ apop_estimate *apop_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl
 //Returns GLS/OLS parameter estimates.
 //Destroys the data in the process.
 
-double apop_F_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c);
-double apop_f_test(apop_estimate *est, apop_data *set, gsl_matrix *q, gsl_vector *c);
+apop_data * apop_F_test(apop_estimate *est, gsl_matrix *q, gsl_vector *c);
+apop_data * apop_f_test(apop_estimate *est, gsl_matrix *q, gsl_vector *c);
 
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
