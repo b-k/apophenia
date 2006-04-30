@@ -4,8 +4,8 @@ You may be surprised to see a book entitled \airq{Modern Statistical
 Computing} that is based on a language written in 1972. 
 Why use C instead of a specialized language like SAS, Stata, SPSS,
 S-Plus, SIENA, SST, SHAZAM, GAUSS, GAMS, GLIM, GENSTAT, GRETL, EViews,
-PcGive, MatLab, Minitab, Mupad, Maple, Mathematica, WinBUGS, TSP, R,
-RATS, LIMDEP, LISP-STAT, Octave, OxMetrics, or Yorick?  There are more
+PcGive, MatLab, Minitab, Mupad, Maple, Mathematica, WinBUGS, TSP, HLM, R,
+RATS, LISREL, LIMDEP, LISP-STAT, Octave, OxMetrics, or Yorick?  There are more
 than enough books that advocate for the use of such languages; as one
 editor at a well-known scientific publishing company explained to me:
 ``\dots most of the statistics [book] market is quite heavily influenced
@@ -25,9 +25,9 @@ R and Apophenia use identical code (in C) for doing the \ind{Fisher
 exact test}, so it makes a good basis for comparison.  On my laptop,
 a C program using Apophenia does 10,000 of these tests in 10.1 seconds;
 a minimal R script does the same work in nine minutes---over fifty
-times as long. I can't count how many times people have told me stories
-about an analysis that took days or weeks in a stats package, but ran
-in minutes after they rewrote it in C.
+times as long. Nor is this just an isolated test case: I can't count how
+many times people have told me stories about an analysis that took days or
+weeks in a stats package, but ran in minutes after they rewrote it in C.
 
 OLS used to be the only technique that we had the computing power to
 actually implement. But when you can do a maximum likelihood search
@@ -43,7 +43,7 @@ than comparable C code.}
 The features of C that stats package users will find most annoying are
 the ones that make it orders of magnitude faster than the cuter
 alternatives.  Type declarations mean that the computer does not need
-to guess the data type you mean at every use, saving a touch of time for
+to guess the data type you mean at every use, saving an iota of time for
 every calculation.  Pointers and the call-by-reference mechanism reduce
 internal copying during function calls.
 
@@ -88,7 +88,7 @@ ready to crack open the black box and modify it to suit.
 
 \paragraph{The lingua franca}
 %Here in the modern day, everybody is computer-literate and connected.
-Academia progresses through the open dissemination of information, data,
+Science progresses through the open dissemination of information, data,
 and analyses. But with dozens of mutually incompatible stats packages
 on the market, the open marketplace of ideas turns into a tower of Babel.
 Meanwhile, C is the lingua franca of computing. The software I discuss

@@ -82,8 +82,8 @@ measurement error.}
 	family.} 
 The second benefit to using the log likelihood is analytic: since $S \cdot
 f = {\partial f \over \partial \theta}$, the derivative of the expectation
-in terms of $\theta$ can be rewritten as the expectation of $S$; see box
-at left.
+in terms of $\theta$ can be rewritten as the expectation of $S$. See box
+at left for a few details.
 
 There are some fun tricks you can do with these functions.
 The trick most worth mentioning is the
@@ -148,10 +148,11 @@ $\var(\hat\theta)\var(\overline S)\geq {1\over n^2}$. Plug
 $\var(S)=n\var(\overline S)$ in to that, and the first line of the above
 drops out\cite{goldberger}. The second line uses the information
 equality from above.
-	}
+
 Just remember: the Cramer-Rao lower bound is the inverse of $n$ times
 the expectation of the derivative of the derivative of the log of the
 likelihood function.
+	}
 
 The Cramer-Rao lower bound is
 called a `lower bound' because Mr.s Cramer and Rao proved that any
@@ -200,7 +201,7 @@ call those better tests than the coin-flipping test.
 Think of the null hypothesis as on
 trial \citep[pp 112--113]{kmenta}.  The rulings a jury may return are
 not \airq{guilty} and \airq{innocent}, but \airq{guilty} and \airq{not
-guilty}. Most citizens fell that to convict a not-guilty person is a worse
+guilty}. Most citizens feel that to convict a not-guilty person is a worse
 error than freeing a guilty person. So, we list the conviction of the
 not-guilty---rejecting $H_0$ when it should not have been rejected---as
 Type I, and the secondary error of acquitting the guilty---failing to
@@ -223,12 +224,10 @@ P(H_0|\xv)<C_{II} P(H_1|\xv)$.
 We need to note two things from here. First, the difference between a
 `probability', which is the probability of an event given data; and a
 `likelihood', which is the probability that we'd have the data we have
-given some event. This is nitpicking that you don't really have to care
-about, except that here and there somebody will call you on
-it.\footnote{One could write $P(A|B)$ as a symmetric two-variable function:
+given some event. This is primarily just vocabulary, because in many
+senses, the two are identical.\footnote{One could write $P(A|B)$ as a symmetric two-variable function:
 $P(A,B)$, with the understanding that $\int_{\forall A} P(a,B)da = 1,
-\forall B$.} This may
-also clarify for you why some things are called one and some the other.
+\forall B$.} 
 
 Second, ?`remember the definition of a \ind{conditional probability}? It's based on the
 statement $P(A\cap B)=P(A|B)P(B)$, and symmetrically, $P(A\cap B)=P(B|A)P(A)$.  Equating
@@ -276,6 +275,99 @@ you. Since the Cramer-Rao lower bound tells us the variance of a
 most-likely parameter, \cinline{apop\_maximum\_likelihood} will return an
 \cind{apop\_estimate} with the variances and other useful information.
 
+
+\subsection{Finding optima} Here is the problem: you want to find the
+maximum of $f(\xv)$, but you are only allowed to evaluate the function
+and its derivative at a limited number of points. At the extreme,
+$f(\xv)$ could be a complex simulation that takes in a few parameters
+and runs for an hour before spitting out a value, so you only have time
+to evaluate a dozen or two points.
+
+This is a classic problem in mathematics and computer science that
+continues to be the subject of active research. There is a wide range of
+methods available, and which works best for your model depends on its
+characteristics. Here are the methods
+that are currently supported by Apophenia. The numbers (000, 100, \&c.)
+will be used below.
+
+\paragraph{000: The \ind{Nelder-Mead simplex algorithm}} Draws a polygon and
+then shifts the corner of the polygon with the smallest function value.
+This doesn't require derivatives at all.
+
+\paragraph{100: \ind{Fletcher-Reeves Conjugate gradient algorithm}} This is the
+default. Basically, we take the derivative in all directions and find
+the linear combination of these directions that indicates the fastest
+climb. Clearly, this depends on knowing derivatives; see below.
+
+\paragraph{200: \ind{Broyden-Fletcher-Goldfarb-Shanno Conjugate gradient
+al\-go\-ri\-thm}}  Another conjugate gradient method, that calculates the
+direction using a \vocab{quasi-Newton algorithm}. Newton algorithms
+in many dimensions require first and second derivatives (the Jacobian
+and the Hessian), but with a likelihood function of a million terms,
+calculating a set of derivatives can be expensive, so the BFGS method
+incrementally updates the Hessian using the differential of the function
+values calculated.
+\index{BFGS algorithm|see{Broyden-Fletcher-Goldfarb-Shanno Conjugate gradient algorithm}} 
+
+\paragraph{300: \ind{Polak-Ribiere Conjugate gradient algorithm}} Yet another
+conjugate gradient method, that generally works better for functions
+that digress significantly from quadratic.  See \citet[thorough, mathematician audience]{avriel:nonlinear}
+or \citet[practical, modeling audience]{practical:optimization}  for definitions of all of these methods.
+
+\paragraph{500: \ind{Simulated annealing}} A controlled random walk.
+As with the other methods, the system tries a new point, and if it
+is better, switches. Initially, the system is allowed to make large
+jumps, and then with each iteration, the jumps get smaller, eventually
+converging. Also, there is some decreasing probability that if the new
+point is {\em less} likely, it will still be chosen. Simulated annealing
+is best for situations where there may be multiple local optima. Early
+in the random walk, the system can readily jump from one to another;
+later it will fine-tune its way toward the optimum. 
+
+The number of points tested is basically not dependent on the function:
+if you give it a 4,000 step program, that is basically how many steps
+it will take.  If you know your model is globally convex (as are
+most standard probability functions), then this method is overkill; if
+your model is a complex interaction, simulated annealing may be your
+only bet. It
+does not use derivatives, so if the derivatives do not exist or are
+ill-behaved, this is appropriate, but if they are available either
+analytically or via computation, then the methods that use derivative
+information will converge faster.
+
+\paragraph{Which to choose?}
+As a practical matter, your best bet is to either just go with the default
+(Fletcher-Reeves) or try them all using a tournament as described below.
+
+The conjugate gradient algorithms are based on a Taylor expansion cut
+off at the second term. If your function is quadratic, then they will
+converge in one step.  
+If approximating your function with a quadratic is not terrible, then
+use the default (FR). If the derivatives are smooth but sometimes take sharp
+turns, the other conjugate gradient methods (BFGS or PR) may work
+better. If you expect the derivatives to be perverse but the functional
+values to generally move in one direction, then 
+try the derivative-free simplex algorithm. Finally, if the functional
+values jump around, so there is a good risk of multiple
+optima in odd places, then try simulated annealing.
+
+\paragraph{Global v local optima}
+None of the methods guarantee that the optimum found is the global
+optimum, since there is no way for a computer to have global knowledge
+of a function $f(x)$ for all $x \in (-\infty, \infty)$. One option is
+to restart the search from a variety of starting points, in the hope
+that if there are multiple peaks, then different starting points will
+rise to different peaks.
+
+The simulated annealing algorithm is designed to deal well with multiple
+peaks: as the number of steps in the simulated annealing algoritm $\to
+\infty$, the algorithm can be shown to converge to the global optimum
+with probability one. However, calculating an infinite number of steps
+tends to take an unreasonable amount of time, so you will need to select
+a time-to-confidence tradeoff appropriate to your situation.
+
+
+\subsection{\ci{apop\_estimation\_params} for ML estimation}
 As in the Probit example, Apophenia's model estimation routines can run
 with default values by sending in \cinline{NULL} as the second
 argument. However, if you know that the model estimates its parameters
@@ -302,48 +394,18 @@ apop_gamma.estimate(my_data, ep)
 Here are the parts to the  \cind{apop\_estimation\_params}
 structure you need to set. 
 
-\paragraph{The method} There are currently four you can choose from.
-[Also, there are two more that  just aren't hooked in yet. If you are
-comfortable exploring the internals of Apophenia, have a look at the
-\cinline{wn/wnbridge.c} file.]
-
-
-\begin{itemize}
-\item {\bf 000: The \ind{Nelder-Mead simplex algorithm}} Draws a polygon and then attempts to shift the corners of the polygon.
-\item {\bf 100: \ind{Fletcher-Reeves Conjugate gradient algorithm}} This is the
-default. Basically, we take the derivative in all directions and find
-the linear combination of these directions that indicates the fastest
-climb. Clearly, this depends on knowing derivatives; see below.
-\item {\bf 200: \ind{Broyden-Fletcher-Goldfarb-Shanno Conjugate gradient algorithm}}  Another conjugate gradient method, that calculates the direction of travel differently. 
-\item {\bf 300: \ind{Polak-Ribiere Conjugate gradient algorithm}} Yet another conjugate gradient method. See \cite{avriel:nonlinear} for definitions of all of these methods.
-\item {\bf 500: \ind{Simulated annealing}} A controlled random walk.
-As with the other methods, the system tries a new point, and if it
-is better, switches. Initially, the system is allowed to make large
-jumps, and then with each iteration, the jumps get smaller, eventually
-converging. Also, there is some decreasing probability that if the new
-point is {\em less} likely, it will still be chosen. Simulated annealing
-is best for situations where there may be multiple local optima. Early
-in the random walk, the system can readily jump from one to another;
-later it will fine-tune its way toward the optimum. The number of points
-tested is basically not dependent on the function: if you give it a
-4,000 step program, that is basically how many steps it will take.
-If you know your function is globally convex (as are most standard
-probability functions), then this method is overkill.
-\end{itemize}
-\index{BFGS algorithm|see{Broyden-Fletcher-Goldfarb-Shanno Conjugate gradient algorithm}}
-
-As a practical matter, your best bet is to either just go with the default (Fletcher-Reeves) or try them all using a tournament as described below. 
-If you expect the derivatives to be perverse, then you may want to try the derivative-free simplex algorithm.
+\paragraph{The method} The method to use is the sum of the method number
+listed above plus the gradient-calculation method.\footnote{There are also two more methods that just aren't hooked in yet. If you
+are comfortable exploring the internals of Apophenia, have a look at
+the \cinline{wn/wnbridge.c} file. More methods will be forthcoming.}
 
 \index{gradients}
-There is also the question of how the gradients are calculated. If
-analytic gradients are available, then those are probably preferable, but
-Apophenia will automatically calculate numerical gradients as necessary.
-Since the variance of an MLE is the Cramer-Rao lower bound (Equation
-\ref{CRLB}), we will use
-the gradients to calculate the variance, so even when using a
-derivative-free simplex algorithm, the variance will still be using
-gradients, somehow derived.
+If analytic gradients are available, then those are probably preferable,
+but Apophenia will automatically calculate numerical gradients
+as necessary.  Since the variance of an MLE is the Cramer-Rao lower
+bound (Equation \ref{CRLB}), we will use the gradients to calculate
+the variance, so even when using a derivative-free simplex algorithm,
+the variance will still be using gradients, somehow derived.
 
 Just in case the analytic gradients don't work out for you, there is a
 means of just using the numeric gradients. This is primarily useful for debugging:
@@ -604,7 +666,7 @@ them to a function that fits the above description and search accordingly.
 
 \index{penalty function}
 This is similar to the common penalty function methods of turning a
-constrained problem into an unconstrained one, as in \cite{avriel:nonlinear},
+constrained problem into an unconstrained one, as in \citet{avriel:nonlinear},
 with a few differences. Primarily, we don't know if the constraint is
 because the author of the system declared an arbitrary cutoff (`we can't spend more
 than \$1,000.') or if evaluating the likelihood function fails
@@ -655,13 +717,18 @@ approach that point.
 For another example, have a look at the budget constraint in the code
 listing at the end of this chapter.
 
-\section{\treesymbol{} Non-stats modeling}    \label{econ101}
+\section{More models}    \label{econ101}
 
 The MLE functions of Apophenia are designed to maximize a function
 subject to constraints---which sounds a lot like any of a variety of
 other problems, especially in Economics. With little abuse of the package,
-one could use it to solve non-statistical models involving maximization
-subject to constraints. For example, the code listing at the end of this
+one could use it to solve any model involving maximization
+subject to constraints.  This is not a book about writing simulations
+or otherwise covering the array of models in all fields.
+
+Instead, I will simply show an example of how the structure of the
+\ci{apop\_model} can be used to diverse purposes.
+The code listing at the end of this
 chapter shows how one could numerically solve a utility maximization
 problem from Econ 101. \index{utility maximization}
 
@@ -670,12 +737,13 @@ It requires a few digressions from the MLE nomenclature:
 \item The log likelihood is actually the utility function. Don't take logs,
 since that would mess up the marginal utilities.
 
-\item The data is the fixed input to the MLE, which means the parameters:
+\item The data is the fixed input to the MLE, which means the
+coefficients for the budget and utility:
 prices, budget info, utility parameters.
 
-\item The betas in the MLE framework are the free parameters to be
-maximized, which in this case means the goods the consumer is choosing.
-\end{itemize}
+\item The parameters, $\betav$ in the MLE framework, are the free
+parameters to be maximized, which in this case means the goods the
+consumer is choosing.  \end{itemize}
 
 Utility is $U = x_1^\alpha x_2^\beta$. 
 The budget constraint dictates that $P_1 x_1 + P_2 x_2 <= B$.

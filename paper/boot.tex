@@ -239,7 +239,7 @@ know that a \ind{t distribution} is much like a Normal distribution but
 with fatter tails, but probably not how much fatter those tails are.
 The kurtosis of a vector is easy to calculate---just call
 \cind{apop\_kurtosis}. By taking a million or so draws from the
-distribution, we can produe a vector whose values cover the $t$
+distribution, we can produce a vector whose values cover the $t$
 distribution rather well, and then find the kurtosis of that vector.
 Figure \ref{kurtosis_of_a_t_dist} shows a program to execute this procedure. 
 \codefig{kurtosis_of_a_t_dist}{Monte Carlo calculation of kurtoses for
@@ -338,7 +338,7 @@ Monte Carlo estimation will not save a hopeless cause, but in
 appropriate situations, it quickly produces clean and useful estimates.
 
 \section{Finding the statistics of a parameter}
-After running a regression or other such estiamtion of model parameters,
+After running a regression or other such estimation of model parameters,
 we frequently want to test the hypothesis that the parameters are not
 zero. To do so, we need the parameters' variance.
 We can apply the same procedure as above: produce a million parameter
@@ -360,7 +360,7 @@ producing, regardless of how ugly the underlying data may be.
 
 Since the CLT guarantees that the  statistic is Normally distributed
 and we can now calculate the variance of the distribution, we can resume
-hypothesis testing as normal. The confidence intevals calculated via these
+hypothesis testing as normal. The confidence intervals calculated via these
 methods will approach the true confidence interval for the statistic.
 
 \paragraph{An important caveat} Bootstrapping from a sample will not fix
@@ -386,7 +386,7 @@ bring shame to your research group.}
 \index{jackknife|(textbf}
 The primary difference between bootstrapping and jackknifing is that
 the bootstrap takes a series of draws with replacement from a data set,
-while the jackknife takes a series of samles without replacement. Here,
+while the jackknife takes a series of samples without replacement. Here,
 I will discuss the jackknife.
 
 Assume that we have a
@@ -431,3 +431,85 @@ so the usual \cinline{apop\_pois\-son.est\-i\-mate(data, NULL)}
 will return an estimate with jackknifed variances.
 \index{jackknife|)textbf}
 
+\exercise{On page \pageref{bootkurt}, I mentioned that one could
+bootstrap the variance of the kurtosis and then test that it equals
+$3\sigma^4$ using the standard $t$ test. 
+
+Write an \ci{apop\_model} with an \ci{estimate} function that takes in a
+data set and returns one parameter: the kurtosis. Feel free to use
+\cind{apop\_vector\_kurtosis} and the \ci{apop\_model} template from
+Section \ref{writeyourown}, leaving everything but the \ci{estimate}
+function at its default values.
+
+Once your model is written, send it with your favorite data to the
+\ci{apop\_jackknife} function to produce a variance. Given the variance
+of the kurtosis and the mean kurtosis, run a $t$ test using
+\cind{gsl\_ran\_tdist\_pdf}.
+}
+
+\section{\ind{Markov Chain Monte Carlo}} If your data is described by
+many parameters, then getting a good view of the distribution can require
+a huge number of draws. If $1,000$ points describes one dimension well,
+you may need $1,000^2$ points in two dimensions, and $1,000^{20}$ in
+twenty dimensions. 
+
+Markov Chains come to the rescue: under certain conditions, you can
+iteratively search one dimension at a time. Begin with a guess as to
+the parameter value, $(x_1, x_2, \dots, x_{20})$, and search for the
+best value of $x_1$, keeping
+$(x_2, \dots, x_{20})$ fixed. Then, search for $x_2$, keeping
+$(x_1, x_3,  \dots, x_{20})$ fixed. Repeat until the $\xv$ converges.
+
+The method is popular for Bayesian techniques, but is also applicable in
+other contexts.
+
+Details will be forthcoming.
+
+
+
+\section{Non-parametric modeling} It would be nice if we did not
+have to specify a distribution, but could find the best fit from the
+data itself; this is the goal of \vocab{non-parametric modeling}. 
+
+Alas, this unconstrained goal is far beyond our means.
+A distribution can be any function $d:\Re \to [0,\infty)$ such that
+$\int_{\forall \Re} d(x) dx = 1$. This is an infinite-dimensional set:
+one can map this set of functions to $\Re^\infty$.
+
+Thus, to find the best-fitting $d$ from a data set of a thousand points
+is equivalent to finding a deterministic mapping from $\Re^{1,000}
+\to \Re^\infty$.  Clearly, we need to impose some sort of constraints
+on how this mapping will occur. We would write down a model describing
+some subset of distributions; the most popular is to say that the
+true distribution is the sum of $n$ ${\cal N}(\mu_i, \sigma_i)$
+distributions. Then, we would estimate the best values of $n$ and
+$(\mu_i, \sigma_i)$ from the data.  
+
+In other words, non-parametric
+modeling involves writing down a parametrized model and estimating the
+parameters from data.
+This is especially clear when we sit down to implement such
+a model at the computer, because 
+the model will be a black box that take in a data
+set and return a set of parameter estimates, just like every other model
+in this book.
+
+This section forthcoming. It will focus on \ind{kernel density estimation}
+and testing, such as the method of \citet{silverman:boot} for testing a
+multimodality hypothesis.
+
+\exercise{Figure  \ref{smoothing} shows some sample output from the search
+for the number of modes in a data set. Write the code that would produce
+these graphs. The solution will be given when this section is fleshed
+out.}
+
+
+\begin{figure}[htb]
+\hskip -.4cm
+\begin{tabular}{cc}
+\bebox{smoothing1.ps}& \bebox{smoothing1.5.ps}\\
+\bebox{smoothing3.ps}& \bebox{smoothing4.ps}
+\end{tabular}
+\caption{As $h$ rises, the kernel density smooths out and has fewer modes.}
+\label{smoothing}
+\end{figure}

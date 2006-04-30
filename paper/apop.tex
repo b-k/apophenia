@@ -27,9 +27,7 @@ parameters of a model using data. Apophenia thus has three key objects
 defined that embody this description, named \cinline{apop\_data},
 \cinline{apop\_model}, and \cinline{apop\_estimate}.\footnote{Notice
 that the \airq{estimate the parameters of a model} line readily includes
-``non-parametric'' models. This becomes especially evident when coding
-such models, which still wind up being black boxes that take in a data
-set and return a set of parameter estimates.}
+``non-parametric'' models; see page \pageref{nonparam}.}
 
 The basic story for a statistical analysis is that the researcher
 assembles a data set into an \cinline{apop\_data} structure, then sends it to
@@ -102,37 +100,6 @@ typedef struct apop_data{
 } apop_data;
 \end{lstlisting}
 
-\comment{
-\marginalia{30}{Mixing \cinline{int}s and \cinline{char*}s}{
-Rather than
-having a section for \cinline{double}s and one for text, it would be
-nice to have each column or each element in the data set have its own type.
-But this would have an immense cost for speed. To get/set the next element
-in an array of \cinline{double}s takes two steps:
-\begin{itemize}
-\item Step \cinline{sizeof(double)} bytes in memory.
-\item Read/write the data.
-\end{itemize}
-In fact, modern processors are optimized so that jumping a fixed distance
-from the current location is among the fastest operations they can do.
-The GSL's matrices are also designed so that jumps by column and by row
-are both a single fast operation.
-
-Without consistent types, this simple process becomes laborious. We'll
-throw in a safe-memory checking step as well: 
-\begin{itemize}
-\item Go to the table of element types.
-\item Search the element-type table for the current element's type.
-\item Step forward \cinline{sizeof(this\_type)}.
-\item Go to the table of safe memory addresses.
-\item Search for the new address in the table of safe memory. 
-\item If the address is in bounds, return to the address
-\item Read/write the data.
-\end{itemize}
-There are many ways to make type- and bounds-checking faster, but
-they can never be as quick as a single fixed-size jump.
-}
-}
 
 There is no consistency-checking to make sure the number of row names,
 the \cinline{vector->size}, or  \cinline{matrix->size1} are equal.
@@ -155,6 +122,26 @@ as input, but operates on one or both of a \cinline{gsl\_vector} or a
 \cinline{gsl\_matrix}, depending on which is not \cinline{NULL} in
 the input.}
 
+\exercise{On page \pageref{quadq}, you wrote a function to find the quadratic
+form $\Xv'\Yv\Xv$, where $\Xv$ and $\Yv$ are both matrices.
+But often,  we need the quadratic form for a vector, $\xv\Yv\xv$. The
+math is the same, but we need two functions: one that takes a
+\ci{gsl\_matrix} and one that takes a \ci{gsl\_vector}. 
+
+You already have a \ci{quadratic\_form} function for matrices.
+Make a copy and modify the copy to take a vector as the first argument:
+\ci{double *vector\_quadratic\_form(gsl\_vector *x, gsl\_matrix *y)}. 
+
+Now that you have both functions, you will easily be able to write a
+function with header \ci{double data\_quadratic\_form(apop\_data *x, apop\_data
+*y, apop\_data *xyx)} to call either subfunction as appropriate.  
+If \ci{x->matrix == NULL}, then find the quadratic form using
+\ci{x->vector}, set \ci{xyx} to a 1-D matrix with the value of
+$\xv'\Yv\xv$ and return the \ci{double} value.
+
+If \ci{x->matrix != NULL}, then find the quadratic form using
+\ci{x->matrix}, set \ci{xyx} to the quadratic form, and return \ci{GSL\_NAN}.
+}
 
 You can easily operate on the individual elements of the structure:
 if the \cinline{matrix\_man\-ip\-u\-late} function requires a
@@ -269,12 +256,12 @@ to be estimated via OLS or GLS is advised to instead manipulate the
 data set to the appropriate form and then call \cinline{apop\_OLS}
 or \cinline{apop\_GLS}.}
 
-\marginalia{15}{Patterns in static}{{\sl Apophenia} is a term from the
+\marginalia{15}{Patterns in static}{\index{Apophenia!definition}{\sl Apophenia} is a term from the
 psychology literature referring to the human tendency to see patterns in
 static. Good data description seeks out patterns in existing data; good
 hypothesis testing does not seek out patterns but aims to reject or fail
 to reject observed patterns. Hypothesis testing is thus an attempt to
-fight against apophenia.
+fight against apophenia (where it is known as the Type I error).
 
 The Apophenia library is so named because the word has a pleasant ring, is a
 statistics-related term, and is not an acronym.}
@@ -300,7 +287,13 @@ there is no requirement that you provide all functions, and the \cinline{apop\_m
 functions do a good job of filling in blanks.
 
 Writing your own model is simply a matter of filling out a lengthy form;
-the form's details are covered in Section \ref{writeyourown}.
+the form's details are covered in Section \ref{writeyourown}. Once you
+have gone through the trouble of adopting your model to this format, you
+can send your model to a variety of functions. In Chapter \ref{mle},
+you will see how to apply a half-dozen different optimum-searching methods
+to find the likelihood-maximizing values of your parameters, and the Monte
+Carlo functions of Chapter \ref{boot} will estimate characteristics of
+those parameters with one function call.
 
 \paragraph{Estimates} 
 %\index{apop\_estimate@\cinlinetwo{apop\_estimate}|(textbf}

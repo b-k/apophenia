@@ -13,19 +13,19 @@ GNU, and the name is simply a compromise between the names that the two
 main authors preferred: nplot and llamaplot.}
 
 \paragraph{The language} Gnuplot does nothing but plot points and
-lines. As such, the language only has one verb---\cinline{plot}---with
-a few variants (\cinline{splot}, \cinline{replot}). A Gnuplot command
-file generally consists of a long string of \cinline{set} commands to
+lines. As such, the language only has one verb---\ci{plot}---with
+a few variants (\ci{splot}, \ci{replot}). A Gnuplot command
+file generally consists of a long string of \ci{set} commands to
 indicate what the axes should look like, the point and line formats,
-et cetera, and a final \cinline{plot} command to do the actual work.
+et cetera, and a final \ci{plot} command to do the actual work.
 
 
 \section{From arrays to plots} \label{gnuprint}
-The line \cinline{plot '-';} tells Gnuplot to plot the (2-D) data to come. The
-command for a 3-D plot is \cinline{splot '-'}. That means that the process
-of turning a matrix into a basic plot is trivial. Let \cinline{data} be an
-\cinline{apop\_data} set whose first and fifth columns we would like to plot
-against each other. Then we need to create a file, put a \cinline{plot
+The line \ci{plot '-';} tells Gnuplot to plot the (2-D) data to come. The
+command for a 3-D plot is \ci{splot '-'}. That means that the process
+of turning a matrix into a basic plot is trivial. Let \ci{data} be an
+\ci{apop\_data} set whose first and fifth columns we would like to plot
+against each other. Then we need to create a file, put a \ci{plot
 '-';} command in the first line, and then fill the remainder with the
 data to be plotted.  
 \begin{lstlisting}
@@ -35,16 +35,16 @@ fclose(f);
 apop_data_print(data, "plot_me");
 \end{lstlisting}
 
-The second option to \cind{fopen} should be either \cinline{'a'} for append or
-\cinline{'w'} for write anew; in this case, we want to start with a clean file so we use \cinline{'w'}.
+The second option to \cind{fopen} should be either \ci{'a'} for append or
+\ci{'w'} for write anew; in this case, we want to start with a clean file so we use \ci{'w'}.
 Notice that \cind{apop\_data\_print} defaults to appending; you
-would need to set \cinline{apop\_opts.output\_append = 0} to overwrite.
+would need to set \ci{apop\_opts.output\_append = 0} to overwrite.
 \cindex{apop\_opts.output\_append}
 
-The clause \cinline{using 1:5} in the plot command tells Gnuplot to use
+The clause \ci{using 1:5} in the plot command tells Gnuplot to use
 only the first and fifth columns of the data set---so there is no need to pare
 down the data set in memory. Notice that the first column in Gnuplot is
-1, not 0. At the end of this, \cinline{print\_me} will be executable by
+1, not 0. At the end of this, \ci{print\_me} will be executable by
 Gnuplot. There are a few ways to get Gnuplot to read the file from the
 typical UNIX-style command prompt:
 \begin{lstlisting}
@@ -56,7 +56,7 @@ The first option will open a window and leave the command line inactive
 until you close the window;
 the second will give you a Gnuplot command line that you will have to
 manually exit
-from (by typing \cinline{exit} or $<$ctrl$>$-D, or you can send in more
+from (by typing \ci{exit} or $<$ctrl$>$-D, or you can send in more
 Gnuplot commands). On many systems, you can
 interact with the plot, spinning 3-D plots with the mouse or selecting
 subregions of 2-D plots to zoom into.
@@ -68,11 +68,11 @@ with the \cind{gsl\_histogram} object, which will also appear
 in Section \ref{randomnumbers}, when we needed to generate PDFs from data.
 
 It creates a set of bins, and
-then you can call \cinline{gsl\_histogram\_increment} to put
+then you can call \ci{gsl\_histogram\_increment} to put
 data into the right bin. Below is the code for \cind{apop\_plot\_hist\-o\-gram}. 
 It allocates a histogram with
-\cinline{bin\_ct} bins, then sets its range to just past the min and max
-of the data. Then the \cinline{for} loop pulls data points from the vector and
+\ci{bin\_ct} bins, then sets its range to just past the min and max
+of the data. Then the \ci{for} loop pulls data points from the vector and
 dumps them to the histogram, without any further calculation on our part.
 Once everything is neatly aggregated, the function opens a file and dumps the data to a Gnuplottable file. There is an example of this function in use in Figure \ref{draw_beta_curve}, page \pageref{draw_beta_curve}.
 \startonecol
@@ -114,14 +114,14 @@ report by simply setting the right variables. Notably, the commands
 set terminal postscript;
 set out 'outfile.eps';
 \end{lstlisting}
-at the head of a file will put the plot in \binline{outfile.eps} rather
+at the head of a file will put the plot in \bi{outfile.eps} rather
 than posting it to the screen. Since all of the plotting commands append
 by default, one could start the file off with this command, and then
-call a plotting command to produce a paper-printing Gnuplot command file.\footnote{If you use the \binline{replot} command to print multiple plots, set the terminal to postscript just before the last replot. otherwise, your paper will show a confusing blur of multiple plots.}
+call a plotting command to produce a paper-printing Gnuplot command file.\footnote{If you use the \bi{replot} command to print multiple plots, set the terminal to postscript just before the last replot. otherwise, your paper will show a confusing blur of multiple plots.}
 
 The following snippet will erase a file, and
-if \cinline{print\_to\_paper} is true, place a header setting Gnuplot to
-print to \binline{outfile.eps}; if it is false, Gnuplot will default
+if \ci{print\_to\_paper} is true, place a header setting Gnuplot to
+print to \bi{outfile.eps}; if it is false, Gnuplot will default
 to printing to screen.
 
 \begin{lstlisting}
@@ -134,13 +134,13 @@ FILE    f = fopen(gnuplot_file, "w");//overwrite the file
     apop_plot_histogram(data, 1000, gnuplot_file);
 \end{lstlisting}
 
-What to do with an \binline{eps} file? For those who just want a quick
-printout, your best best is probably to run the command \binline{ps2pdf}
+What to do with an \bi{eps} file? For those who just want a quick
+printout, your best best is probably to run the command \bi{ps2pdf}
 to produce a PDF file, which can be viewed with familiar PDF viewers
-such as Acrobat Reader. On a system with GhostScript, the \binline{eps} file
+such as Acrobat Reader. On a system with GhostScript, the \bi{eps} file
 can be viewed and printed directly.
 
-\index{Latex@\LaTeX} \index{Tex@\TeX}
+\paragraph{\treesymbol \LaTeX}\index{Latex@\LaTeX} \index{Tex@\TeX}
 If you are including the  figure in a \LaTeX{} report, you can use the
 \airq{graphicx} package to incorporate the plot. E.g.:
 \begin{lstlisting}[language=sql]
@@ -159,7 +159,7 @@ Notice that you will frequently need to rotate the plot $90^\circ$
 and scale the figure down to a reasonable size.
 
 Depending on the system, the reader may be able to generate PDFs with
-embedded Postscript images directly using \binline{pdflatex}, or may
+embedded Postscript images directly using \bi{pdflatex}, or may
 need to do it indirectly via Postscript: 
 \begin{lstlisting}[language=sql]
 latex a_report
@@ -169,9 +169,9 @@ ps2pdf a_report.ps
 
 This is a lot of typing, but there is a way to automate the process:
 \ind{make}. Below is a sample Makefile for producing a \LaTeX{} document
-should \binline{pdflatex} be quarrelsome on your system. As with your C
+should \bi{pdflatex} be quarrelsome on your system. As with your C
 programs, once the Makefile is in place, you can generate final PDF
-documents by just typing \binline{make} at the command line. The
+documents by just typing \bi{make} at the command line. The
 creative reader could readily combine this Makefile with the sample C
 Makefile from page \pageref{make} to regenerate the final report every
 time the analysis is updated.
@@ -193,6 +193,21 @@ $(DOCNAME).pdf: $(DOCNAME).ps
 clean:
 	rm -f $(DOCNAME).blg $(DOCNAME).log $(DOCNAME).ps
 \end{lstlisting}
+
+
+\section{Animation}\index{animation} Perhaps three dimensions is not
+quite enough, and you need one more. Gnuplot easily supports animation:
+just stack plots on after the next and call \ci{replot} in between. However,
+many media (such as paper) do not yet support animation, meaning that your
+output will generally be dependent on your display method. The \ind{GIF} format
+provides animation and is supported by all major web browsers, so you
+can also put your movies online.\footnote{Also, the U.S. patents on the
+compression algorithm upon which the GIF format is based \citep{welch:lzw}
+have expired, so the mathematical transformations required to write a
+GIF may be executed without seeking a license.}
+
+More detail forthcoming.
+
 
 
 

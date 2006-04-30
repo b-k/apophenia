@@ -14,180 +14,22 @@ distribution. Typically, the textbooks state that as the number of draws
 $n \to \infty$, the distribution is correct, but whether it is correct
 for your data set is a question of \ind{asymptotic theory}.
 
-If your data doesn't fit the CLT, one option is to work out how your
-data is distributed, 
-and then write down a likelihood function. If you are
+If your data doesn't fit the CLT, one option is to work out how your data
+is distributed, and then write down a likelihood function. If you are
 looking to estimate model parameters, do a maximum likelihood estimation;
 if you are looking to test a hypothesis, write down a likelihood ratio
-based on the distribution you have just calculated.
-Another alternative is to use the Monte Carlo methods of 
-Chapter \ref{boot} to determine the properties of your model for $n$ 
-significantly smaller than infinity.
+based on the distribution you have just calculated.  Another alternative
+is to use the Monte Carlo methods of Chapter \ref{boot} to determine
+the properties of your model for $n$ significantly smaller than infinity.
 
-
-\section{Models and constraints} A \vocab{hypothesis} is a constraint
-on otherwise unconstrained parameters. 
-
-For example, given four variables named $Y$, $X_1$, $X_2$, and $X_3$,
-one could estimate the $\beta$s in the equation
-\begin{equation*}
-Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon
-\end{equation*}
-using a standard OLS regression as per the last chapter.
-
-Frequently, the parameters and the model happen to match very closely.
-For example, if we believe that $Y$ is an affine linear sum of $X_1$,
-$X_2$, $X_3$, then we are making a claim that 
-\begin{equation*}
-Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \alpha_3 X_3.
-\end{equation*}
-Given the parameters estimated using OLS, translating those parameters
-to the model is rather trivial:
-\begin{align*}
-\alpha_0 &= \beta_0\\
-\alpha_1 &= \beta_1\\
-\alpha_2 &= \beta_2\\
-\alpha_3 &= \beta_3.
-\end{align*}
-However, one may have a model where the translation between parameter estimates and model
-parameters is a little more complex.
-For example, let us say that we are measuring bicycle usage in a city
-($B$).
-It would be a function of the number of motorists $M$, the city's
-population $P$, the physical size of the city $S$,  and measures of
-the availability of public transportation $T$. But we know that the
-availability of public transportation is also a function of the city's
-population and physical size. Thus, our model is
-\begin{align*}
-B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
-T &= \alpha_4 P + \alpha_5 \sqrt{S}.
-\end{align*}
-
-One option for estimating this model is to run two analogous regressions,
-\begin{align*}
-B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \beta_3 T + \epsilon\\
-T &= \beta_4 P + \beta_5 \sqrt{S} + \epsilon.
-\end{align*}
-Now the correspondence between the two parameters is as trivial as
-before ($\alpha_0=\beta_0$, $\alpha_1=\beta_1$, et cetera). This is the
-simplest example of \vocab{exactly solved parameters}.
-But we get a
-distorted view of the effect of city size and population on bicycling
-prevalence, because some of those variables' effect is subsumed in the fact that
-those factors help to determine whether a city has public
-transportation. If the population of a city rises ten percent, ridership
-will not rise by $.1 \beta_1$, because $T$ will change as well.
-
-Another option is to substitute $T$ as specified in the second equation into
-the first. Then, the model is
-\begin{align*}
-B &= \alpha_0 M + (\alpha_1 +\alpha_3 \alpha_4) P + (\alpha_2 + \alpha_3 \alpha_5) \sqrt{S}.\\
-\end{align*}
-The OLS analogue of a linear equation still looks like it did before:
-\begin{align*}
-B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \epsilon.
-\end{align*}
-Now, the conversion is nontrivial:
-\begin{align}
-\alpha_0 &= \beta_0     \label{consteq1}\\
-\alpha_1 +\alpha_3 \alpha_4 &= \beta_1        \label{consteq2}\\
-\alpha_2 + \alpha_3 \alpha_5 &= \beta_2.       \label{consteq3}
-\end{align}
-Equation \ref{consteq1} still gives us an estimate of $\alpha_0$,
-but all our information about  $\alpha_1$ through $\alpha_5$ is
-embodied in Equations \ref{consteq2} and \ref{consteq3}. With four
-unknowns and two equations, the parameters are \airq{oversolved}. 
-\index{undersolved parameter}
-
-We have a better view of the effect of the variable $P$ on $B$, but we
-do not have enough information to disaggregate that effect into the
-direct effect ($\alpha_1$) and the indirect effect ($\alpha_3 \alpha_4$)
-caused by the effect population has on public transport availability
-($\alpha_4$). 
-
-Depending on your situation and goals, one setup or the other may be
-more appropriate. However, we must acknowledge the limitations of an
-undersolved system: $n$ parameter estimates can inform at most $n$ model
-parameters.
-
-Now, let us say that a prior study has shown that $\alpha_2= 2.204$.
-Discarding the equation for $T$ for now, our model is now:
-\begin{align*}
-B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
-\alpha_2 &= 2.204.
-\end{align*}
-and after estimating the parameters using a simple OLS estimation, the 
-translation from estimated $\beta$s to model $\alpha$s is:
-\begin{align*}
-\alpha_0 &= \beta_0\\
-\alpha_1 &= \beta_1\\
-\alpha_2 &= \beta_2\\
-\alpha_2 &= 2.204\\
-\alpha_3 &= \beta_3.
-\end{align*}
-Unless we have the incredible luck that $\beta_2=2.20400$, $\alpha_2$ is an
-\vocab{oversolved parameter} that has no solution.
-
-There are two things that one can do with an oversolved system. One is
-to use the extra constraints to inform the parameter estimation routine;
-in the example above, we would estimate the parameters under the
-assumption that $\beta_2$ is fixed at 2.204.
-You can do this using constrained least squares (Section
-\ref{constrainedls}) or via maximum likelihood estimation as in Chapter
-\ref{mle}. The other option is to compare the unconstrained version of
-the model with the constrained version to see how much distortion occurs
-when the constraint binds. This is \airq{testing the constraints}, aka,
-a \airq{hypothesis test}.
-\index{least squares!constrained}
-
-Recall that the two primary activities of the statistician are
-estimating models and testing models. 
-For an undersolved system, we can neither estimate 
-nor test the model. For an exactly solved system, we can always
-estimate the parameters of the model, but can not verify or refute the
-model: you give me a data set, and I will always be able to give you some set of model
-parameters. For an oversolved system, we can both estimate the parameters
-and test whether the model is correct, because there will not always
-be a way to consistently transform the estimated parameters into model
-parameters.
-
-Because there is so little persuasive power in an estimated but not
-tested model, we often make up
-ways to convert an exactly solved system into an oversolved one.
-For example, one could add to any equation the additional equation
-$\alpha_i = 0$ for all $i$.
-By specifying
-$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ and $\alpha_1=0$,
-we have an oversolved system whose validity we can test. Indeed, this
-is the system of equations behind the $t$-tests that are universally
-reported with every regression.
-
-This may seem like belaboring the language with such a simple system,
-but it is easy to extend this framework to systems of equations, 
-exotic constraints, and other variants of the mapping from parameter
-estimates to model parameters and testing oversolved equations.
-
-By the way, a statement like `We reject
-the claim $\alpha_1=0$' is only half right. We are actually rejecting
-the claim that both
-$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ {\em and}
-$\alpha_1=0$. 
-The first and second equations are mathematically of equal
-status, but the custom is to presume that only the second equation is a
-subordinate equation which is under scrutiny. Thus, one would correctly
-say `we reject this system of equations'. Having given this caveat, the
-remainder of this chapter will use the traditional terminology that
-takes the base model as given, reducing
-the above pair of equations to the hypothesis $H_0: \alpha_1=0$.
-
-The remainder of this chapter goes over the process of testing 
-an oversolved system. The key to constructing a test is in knowing 
-how the distribution of the data informs the likely distribution of
-our estimates of the $\alpha$s, and the key to that process is the
-Central Limit Theorem. The first part of this chapter will thus return
-to probability theory, describing how the CLT affects various parameter
-distributions, and then the remainder of the chapter considers how 
-those parameter distributions can be used to test hypothesized models.
+This chapter goes over the process of testing an oversolved system. The
+key to constructing a test is in knowing how the distribution of the
+data informs the likely distribution of our estimates of the $\alpha$s,
+and the key to that process is the Central Limit Theorem. The first part
+of this chapter will thus return to probability theory, describing how
+the CLT affects various parameter distributions, and then the remainder
+of the chapter considers how those parameter distributions can be used
+to test hypothesized models.
 
 \section{Meet the Gaussian family} \label{dist2}
 With the exception of the Normal, the distributions below are distinct
@@ -249,7 +91,7 @@ ${\overline X - \mu \over S/\sqrt{n}}\sim
 t_{n-1}$, where $S=\uv'\uv/n$ (a scalar). This is a work of genius by
 Mr. Student.\footnote{\airq{Mr. Student} is actually Mr. William Sealy
 Gosset, who published the t test in 1908 based on his work as an employee
-of the Guiness Brewery. \index{Student} \index{William S Gosset}}
+of the Guinness Brewery. \index{Student} \index{William S Gosset}}
 By dividing a normal by $\sqrt{\chi^2_{n-1}\over (n-1)}$, the unknown
 $\sigma$s cancel, and we have a function whose elements are all known,
 and its distribution.  If $n=2$, we call it a Cauchy distribution.
@@ -260,8 +102,8 @@ and its distribution.  If $n=2$, we call it a Cauchy distribution.
 is $[\chi^2_m/m]/[\chi^2_n/n]\sim F(m,n)$. For example, if the numerator
 is a ${\cal N}(0,1)$, and the denominator is a $\chi^2$ based on the
 sample variance, then this is the square of the $t$ statistic.
-The nice thing about the $t$ distribution is that it is easy and it
-allows one-tailed hypothesis tests. But if you want to test a
+The $\chi^2$ distribution 
+allows simple one-tailed hypothesis tests, but if you want to test a
 multivalued hypothesis, then you need to do an $F$ test.
 
 \subsection{Lookup tables}
@@ -319,17 +161,20 @@ In the other direction, we may want to know where we will need to be to reject a
 certainty. For example, a value-at-risk oriented regulator will want to know what a bank is likely to lose 
 one day in the month. That is, what is the value of the 1-in-20, or 5\%, point on the CDF?
 Assuming a Normal(M,S) distribution of profit and loss,\footnote{This assumption is false. Securities
-typically have \ind{leptokurtic} (fat-tailed) returns.} the bank will report a \ind{value at risk} of {\tt
+typically have \ind{leptokurtic} (fat-tailed) returns; see page \ref{kurt1}.} the bank will report a \ind{value at risk} of {\tt
 gsl\_cdf\_gaussian\_Pinv (0.05, S)+M}. Here are the requisite function declarations:
 \index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_Pinv@\cinline{gsl\_cdf\_chisq\_Pinv}}
 \index{t distribution!gsl\_cdf\_tdist\_Pinv@\cinline{gsl\_cdf\_tdist\_Pinv}}
 \begin{lstlisting}
 double gsl_cdf_gaussian_Pinv (double X, double SIGMA);
 double gsl_cdf_chisq_Pinv (double P, double NU);
+double gsl_cdf_fdist_Pinv (double P, double NU1, double NU2);
 double gsl_cdf_tdist_Pinv (double P, double NU);
 \end{lstlisting}
 \dots plus all of these with the \cinline{P}s replaced by \cinline{Q}s.
-Notice that there is no inverse for the CDFs of the F distribution.
+The inverse for the CDFs of the F distribution is a new addition as of
+April 2006 (version 1.8), and so may not yet be available on prepackaged
+distributions of the GSL.
 
 
 
@@ -344,7 +189,7 @@ We have all the ingredients we need to test a hypothesis; all that
 remains is to glue them all together. For example, in the last chapter, the code
 found the coefficient vector \cinline{beta} and \cinline{xpx\_inv}, which is the
 variance-covariance matrix of \cinline{beta}.  Now assume that \cinline{beta}
-is normally distributed (for example, the original data set consists
+is Normally distributed (for example, the original data set consists
 of iid draws from a homoskedatic distribution). Then we can use the
 above functions to find the probability that each element of \cinline{beta}
 is different from zero:
@@ -355,14 +200,23 @@ is different from zero:
 int i;
 double confidence[beta->size];
 for (i=0;i< beta->size; i++){
-    confidence[i] = gsl_cdf_gaussian_Q(abs(gsl_vector_get(beta,i)), gsl_matrix_get(xpx_inv, i,i));
+    confidence[i] = gsl_cdf_gaussian_Q(fabs(gsl_vector_get(beta,i)), gsl_matrix_get(xpx_inv, i,i));
     confidence[i] -= .5;
     confidence[i] *= 2;
 }
 \end{lstlisting}
 \lstset{texcl=false}
-The last two steps converted from the one-tailed area below \cinline{beta}
+\exercise{
+The last two steps to the code above are the poor man's way to convert from the one-tailed area below \cinline{beta}
 to a two-tailed area between $\pm$\cinline{beta}.
+
+Write a function with header \ci{double two\_tailify(double
+*one\_tail)}, that takes in a one-tailed confidence level and returns a
+two-tailed confidence level, assuming a symmetric distribution. 
+
+This is infrequently done, but what would be the correct means of
+calculating a two-tailed interval for an asymmetric distribution?
+}
 
 
 \subsection{The t-test} \label{ttest} \index{t test|(textbf}
@@ -448,14 +302,18 @@ Define $q$ to be the number of constraints (columns
 of $\Qv$), $N$ the sample size, and $K$ the number of parameters to be
 estimated ($\betav$).
 
+Let $\Xuv$ represent $\Xv$ normalized so that each column has mean
+zero.\footnote{That is, \cinline{X\_underbar =
+apop\_matrix\_normalize(X, 'c', 'm')}.\cindex{apop\_matrix\_normalize}}
 Now, if $H_0$ is true and we are using OLS, then $\Qv' \betav \sim {\cal
-N}(\cv, \sigma^2 \Qv' (\Xv'\Xv)^{-1} \Qv)$,\footnote{For any other
+N}(\cv, \sigma^2 \Qv' (\Xuv'\Xuv)^{-1} \Qv)$,\footnote{For any other
 method, the variance is $\Qv'$(the variance from section
-\ref{cat})$\Qv$.} and we can use all of the above. The $\chi^2$
+\ref{cat})$\Qv$.} 
+and we can use all of the above. The $\chi^2$
 statistic now becomes:
 
 \begin{equation}		\label{chi1}
-{(\Qv'\hat\betav - \cv)' [\Qv' (\Xv'\Xv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
+{(\Qv'\hat\betav - \cv)' [\Qv' (\Xuv'\Xuv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
 \over \sigma^2} \sim \chi^2_q
 \end{equation}
 
@@ -477,7 +335,7 @@ $\sigma^2$ element:
 \wideeqnbox{(\textwidth - \mwidth)}{
 %\begin{equation}	
 {N-K\over q}
-{(\Qv'\hat\betav - \cv)' [\Qv' (\Xv'\Xv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
+{(\Qv'\hat\betav - \cv)' [\Qv' (\Xuv'\Xuv)^{-1} \Qv]^{-1} (\Qv' \hat\betav - \cv)
 \over \uv' \uv } \sim F_{q,N-K}. \label{ftest}
 %\end{equation}	
 }
@@ -504,25 +362,48 @@ gsl_matrix_set(Q, 0, 0, 1);
 gsl_matrix_set(Q, 1, 1, 1);
 gsl_matrix_set(Q, 1, 2, -2);
 gsl_vector_set(Q, 0, 7);
-apop_F_test(e, data, Q, c);
+apop_F_test(e, Q, c);
 \end{lstlisting}
 
-Included in the default output from a regression,
-many stats packages run an $F$-test that reports the
-joint hypothesis that all coefficients are different from zero. That is,
-it runs the $F$-test where $\Qv = {\bf I}$ and $\cv = {\bf 0}$.\footnote{This is
-partly because this $F$-test can be calculated using only the $R^2$.
-Once again, statistical convention is dictated by 70s computing power.
-\index{R squared@$R^2$}}
+Here is a useful simplification.
+Let $R^2$ be the coefficient of determination (defined further below),
+$n$ be the number of data points, $K$ be the number of parameters
+(including the parameter for the constant term), and $\phi$ be the
+$F$-statistic
+based on $\Qv = {\bf I}$ and $\cv = {\bf 0}$. Then it can be shown that 
+\begin{equation}
+\frac{(n-K) R^2}{K (1-R^2)} = \phi.    \label{rsqandf}
+\end{equation}
+Since statistical custom is based on the availability of computational
+shortcuts, this specific $F$-test often appears in the default output
+of many regression packages.  \index{R squared@$R^2$}
+
+\exercise{Verify the identity of Equation \ref{rsqandf} using Equation
+\ref{ftest} and these definitions:
+\begin{align*}
+R^2 &\equiv \frac{SSR}{SSE},  
+\intertext{where}
+    SSR &\equiv \sum{(Y_{\rm est}-\overline Y)^2},
+\intertext{$\Yv_{\rm est}\equiv \Xv\betav$ (the estimated value of $\Yv$), and}
+    SSE &\equiv {\uv'\uv}.
+    %&= \frac{\sum{(Y-\overline Y)^2}}{\uv'\uv}.
+\end{align*}
+}
+
 It is up to you
-to decide whether this is a relevant statistic for the situation you are
-dealing with, but because it is a custom to report it, some
-people expect it, so Apophenia facilitates this hypothesis test by
-assuming it as the default when you send in {\tt NULL} variables:
-\cinline{apop\_F\_test(estimate, data, NULL, NULL)}. That is,
+to decide whether the test statistic in Equation \ref{rsqandf} is
+relevant for the situation you are dealing with, but because it
+is a custom to report it, Apophenia facilitates this hypothesis
+test by assuming it as the default when you send in {\tt NULL}
+variables, as in \cinline{apop\_F\_test(estimate, NULL, NULL)}. That is,
 if $\Qv'=$\cinline{NULL}, Apophenia assumes ${\bf Q}=={\bf I}$ and if
 $\cv=$\cinline{NULL}, Apophenia assumes ${\bf c} == {\bf 0}$.
 
+\exercise{Verify the identity of Equation \ref{rsqandf} by running a
+linear regression on your favorite data set, and then passing the
+\cinline{apop\_estimate} thus produced to \cind{apop\_F\_test} to find
+the $F$ statistic and \cind{apop\_coefficient\_of\_determination} to
+find the SSE and SSR.}
 
 
 
@@ -607,7 +488,7 @@ moment is $3 \sigma^4$.
 Un-normalized kurtosis $>3$ is known as \vocab{leptokurtic} and $<3$ is
 known as \vocab{platykurtic}; see Figure \ref{tailfig} for a mnemonic.
 
-\marginalia{20}{Kurtosis minus three}{
+\marginalia{13}{Kurtosis minus three}{
 There is some debate as to whether the kurtosis of a ${\cal N}(0,1)\equiv 3$
 or $\equiv 0$. This is simply a definitional issue: some prefer to
 normalize all reported kurtoses by subtracting three from the actual
@@ -638,14 +519,21 @@ which has a $\chi^2$ distribution with two degrees of freedom. In code:
 \begin{lstlisting}
 double  skew    = apop_vector_skew(datavector);
 double  kurt    = apop_vector_kurtosis(datavector);
-double  statistic = n * (gsl_pow_int(skew,2)/6. + gsl_pow_int(kurt -3,2)/24.)
+double  statistic = n * (gsl_pow_2(skew)/6. + gsl_pow_2(kurt -3)/24.)
 printf("We reject the null that your data is Normal with probability %g.\n", 1 - gsl_cdf_chisq_P(statistic, 2));
 \end{lstlisting}
+
+Notice the use of \cind{gsl\_pow\_2}. The GSL provides efficient
+power calculators up to \ci{gsl\_pow\_9}, and the catch-all function
+\ci{gsl\_pow\_int(value, exponent)}, that will raise
+\ci{value} to any integer exponent in a more efficient manner than the
+general-purpose \cind{pow}.\cindex{gsl\_pow\_int}
 
 Another alternative, keeping with the theme of this book, would be
 to bootstrap the variance of the kurtosis, which would let you find a
 confidence interval around $3 \sigma^4$ and state with some percentage
-of certainty that the kurtosis is or is not where it should be.
+of certainty that the kurtosis is or is not where it should
+be.\label{bootkurt}
 
 
 \subsection{Chi-squared goodness-of-fit test} 
@@ -683,7 +571,7 @@ of the $\chi^2$ statistic, $p$-value, and so on.
 Or, more commonly, you have a \cinline{gsl\_vector} holding
 draws from a distribution, and you have an \cinline{apop\_model}
 representing the distribution itself. The common ground is the
-\cind{gsl\_histogram} object, which will recieve a fuller treatment in
+\cind{gsl\_histogram} object, which will receive a fuller treatment in
 Section \ref{randomnumbers}. For now, it suffices to note that one may
 take data from a \cind{gsl\_vector} and put it into bins, and one may make
 random draws from an \cind{apop\_model} and put them into bins as well: 
@@ -747,7 +635,7 @@ popular tests include \cind{gsl\_is\_inf} and its friends from Section
 \ref{numbers}.
 
 But the functions won't make the hard decision for you: why is the test
-rejecting the hypothesis? It could be a compuational reason, that can be solved by  making more random draws to produce the histogram, or using fewer bins.
+rejecting the hypothesis? It could be a computational reason, that can be solved by  making more random draws to produce the histogram, or using fewer bins.
 It could be that there were errors in the  data collection.
 But it could be that the data really is doing things that the model
 predicts would happen with probability zero, in which case the data's

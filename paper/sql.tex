@@ -1,11 +1,18 @@
 \startonecol \chapter{Databases} \label{sql}\endonecol
 \setsql %for code listings.
 
-Structured Query Language and matrix operations are excellent complements. Some things, like
-making a crosstab, are a bit of a pain using traditional techniques of
-matrix manipulation. Meanwhile, some things, like matrix multiplication,
-just can not be done via SQL queries. With both, your data analysis
-technique will be unstoppable.
+\comment{
+Structured Query Language is the implementation of an algebra of tables.
+That is, it is a system that describes tables and operations on tables
+such as joining and subtracting that will produce other tables.
+\cite{cobb:sql}
+}
+
+Database and matrix operations are excellent
+complements. Some things, like making a crosstab, are a bit of a
+pain using traditional techniques of matrix manipulation. Meanwhile,
+some things, like matrix multiplication, just can not be done via SQL
+queries. With both, your data analysis technique will be unstoppable.
 
 As a broad rule, try to do data manipulation, like pulling subsets
 from the data or merging together multiple data tables, using SQL. Then,
@@ -805,4 +812,13 @@ by querying out incomes, and then calling
 
 See page \pageref{ttest} for more on the $t$-test.
 \index{t test|)}
+
+\section{Producing a database} To this point, I assumed that you had
+data handed to you by an external agency, but you may be producing your
+own data. For example, you may have users filling in forms, sensors
+reading data, or a simulation outputting a state every period.
+
+Notes on designing a database, both conceptually and via C code, will be
+forthcoming. 
+
 \setc %for code listings.

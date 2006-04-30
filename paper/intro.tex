@@ -2,23 +2,75 @@
 \iftwocol\begin{multicols}{2}\fi
 
 
-\comment{In case it is not obvious to you, we can not do statistical analysis without
-computers.}
-I'll start with the bad news:
-being a statistician in the modern day means being a programmer. 
-Many find this disheartening---we'd all rather be under a tree with a
-book than staring at a computer screen all day.
-But the mathematical explanation of a statistical procedure is
-really just pseudo-code, which we can make operational by translating
-it into real computer code. 
+The goal of statistical analysis is to use data to estimate and test
+the parameters of a model.
+
+Figure \ref{modelflow} shows a model in flowchart form.  Data and
+parameters are fed into a function, and the function spits out some
+output. We then evaluate the output based on some criterion, typically
+regarding how well it matches some portion of the data. Our
+goal is to find those parameters that produce output that best meets
+our criteria.
+
+\begin{figure}[htb]
+%\hskip -1.4cm
+\begin{center}
+\includegraphics[width=\textwidth*\real{1.05}]{models.eps}
+\end{center}
+
+\caption{A flowchart for distribution fitting, linear regression,
+likelihood functions, multilevel modeling,
+simulation (including agent-based modeling), non-parametric modeling,
+and various other methods.}
+\label{modelflow}
+\end{figure}
+
+One example is the \ind{Ordinary Least Squares} model. Let $\Xv$
+indicate the indpendent data, $\betav$ the parameters, and $\Yv$ the
+dependent data. Then the function box consists of the simple equation
+$\Yv_{\rm out} = \Xv\betav$, and the evaluation step seeks to minimize
+$(\Yv_{\rm out} - \Yv)^2$. 
+
+For a simulation, the function box may be a complex flowchart in which
+variables are combined nonlinearly with parameters, then feed back upon
+each other in unpredictable ways. The final step
+would evaluate how well the simulation output corresponds to the
+real-world phenomenon to be explained.
+
+The problem of statistical modeling is to find the parameters at the
+beginning of the flowchart that will output the best evaluation at the
+end.
+In the OLS model above, there is a closed-form solution to the problem:
+$\betav_{\rm best}=(\Xv'\Xv)^{-1}\Xv'\Yv$.  But for more complex models,
+such as simulations or maximum likelihood methods, we must strategically
+try different sets of parameters to hunt for the best ones.
+
+
+\comment{
+As with many things in life, describing the process is much easier than
+doing it.} The function box in Figure \ref{modelflow} is probably a
+function in the mathematical sense, $f:\Xv, \betav \to \Yv$, and may
+be as simple as $\Yv = \Xv\cdot \betav$ or an elaborate flowchart where
+ingredients are mixed and re-mixed.  But as a practical matter, such
+functions are really just pseudo-code, which we can make operational by
+translating them into functions in the computational sense of a series
+of instructions for a computer to follow.
 
 I wrote this book to help you make that translation. The first focus
-is purely mathematical: we need to select techniques bearing in mind
-that they will eventually be code. The second focus is about practical
-coding: your life is short, and you want to spend as little of it as
-possible trying to coax systems into complying with your wishes and 
-learning yet more computer languages.
+is purely mathematical: we need to select models and techniques bearing
+in mind that they will eventually be code. The second focus is about
+practical coding: your life is short, and you want to spend as little
+of it as possible trying to coax systems into complying with your wishes
+and learning yet more computer languages.
 
+Fortunately, we have the technology. Before computers, we could only
+use simple functions like linear combinations, because hunting for
+parameters without a closed-form solution was impossible. 
+But now that we can easily compute thousand-term likelihood functions
+or take millions of random samples, we can use functions that mirror
+reality better than a simple sum.
+
+\comment{
 The good news is that
 doing math with a computer is unfettering. Instead of using restrictive
 regression techniques designed before computers, we can use techniques
@@ -28,6 +80,7 @@ the textbooks as just theory, then eventually with a caveat that these
 techniques are possible but computationally intensive. Now computations
 are cheap, and we can use these techniques as we would their simplified
 brethren.
+}
 
 In my own pain-filled experience, the best way to operationalize
 statistical concepts is using C; the GNU Scientific Library,  which
@@ -37,16 +90,52 @@ book will cover the basics of these components and the manner in which
 we can translate from the mathematical language to the language these
 libraries speak.
 
-The book is a complement to the Apophenia library, a set of functions 
+The book also makes use of the Apophenia library, a set of functions 
 based on the GSL and SQLite, intended to simplify the hard parts of
 using these packages for statistical analysis. You could do all of the
 analyses in this book without Apophenia, but you would find yourself
-rewriting many of its functions. 
+rewriting many of its functions.  All of the standards and libraries
+used in this book are open, in the sense that they may be freely
+downloaded and used on the computer where you do your work right now.
+
 \comment{
 Most stats packages include a manual that attempts to instruct the reader,
 and an alphabetical-order reference providing detailed usage notes for
 functions and structures.  You are reading Apophenia's manual now,
 and the reference is online at \url{http://apophenia.info/doc}.}
+
+\paragraph{The goals and the intended audience}
+
+In this book, I hope to introduce you to the following methods and
+ideas:
+\begin{itemize}
+\itemsep 0pt
+\item Structuring programs using modular functions
+\item Methods for reliability testing functions and making them more robust
+\item Programming tools like the debugger and profiler
+\item Databases: their utility, and how to get them to produce data in
+the format you need
+\item Methods for estimating the parameters of a model with data
+\item Methods for testing hypotheses about the parameters of a model
+\item Probability: how famous distributions can be used to model data
+\item Projections: summarizing many-dimensional data in two or three
+dimensions
+\item Estimating linear models
+\item A brief review of classical hypothesis testing 
+\item Writing models of the real world with an eye toward estimation and
+hypothesis testing
+\item Maximum likelihood estimation
+\item Hypothesis testing using likelihood ratio tests
+\item Optimization routines: how they work and how to use them
+\item Monte Carlo methods for describing parameters
+\item Bootstrapping and jackknifing for testing hypotheses
+\end{itemize}
+
+All of these things are independent of computing environment. However,
+this book is about taking the computing part of computational modeling
+and statistics seriously, so the concepts will be demonstrated both in
+equation and flowchart form and in the form of executable code. As
+noted above, the code will primarily be in C and SQL (Structured Query Language).
 
 This book falls in a mid-range between low-level numerical
 computation and high-level use of prepackaged functions. For example,
@@ -56,32 +145,28 @@ determinants. Being such a classic, there are many packages such as the
 GSL that implement the algorithms from {\sl Numerical Recipes}, and this
 book will build upon rather than replicate their effort. At the other
 end, an abundance of texts will explain to readers how to do basic
-statistics using the stats package of the month; this book lists the
+statistics using the stats package of the month. This book lists the
 one-line commands at this level, but it also breaks open the black boxes
 and shows how those computations are done, so the reader can modify them
 according to the vagaries of real-world data.
 
-\paragraph{The intended audience}
 I assume that you have had a statistics class or two already, and that
-you have an encyclop\ae{}dic stats textbooks handy, so this
-book will provide some utility as a review, a reference, and perhaps a
-different perspective,
-but there are few proofs and no pretentions to comprehensive coverage of
-classical probability and statistics.
+you have an encyclop\ae{}dic stats textbooks handy, so this book will
+provide some utility as a statistics review, reference, or perhaps a
+different perspective, but there are few proofs and no pretentions to
+comprehensive coverage of classical probability and statistics.
 
 I also assume that you are computer-literate, and have experience writing
-scripts in a stats package. The chapter on C (Chapter \ref{c_crash})
-focuses on the techniques and features that are central to C but are
-missing or underused in script-oriented languages. Those who are entirely
-new to the idea of writing a sequence of instructions for a computer
-may want to warm up with a few online tutorials.
+scripts in a stats package. Those who are entirely new to the idea of
+writing a sequence of instructions for a computer may want to warm up
+with a few online tutorials.
 
-If you are well-versed in C and SQL (Structured Query Language), then
-the later parts of Part I and all of Part II will be immediately useful.
+If you are well-versed in C and SQL, then the later parts of Part I and
+all of Part II will be immediately useful.
 
-If you are not well-versed in C and SQL, then expect to take some 
-time getting comfortable with these languages before doing statistics
-with the techniques here becomes easy.
+If you are not well-versed in C and SQL, then expect to take some time
+getting comfortable with these languages before tackling the computational
+implementation of the techniques discussed in Part II.
 
 That is, there is an up-front investment to the methods here, and a
 long-term payoff. If you expect that you will never do anything more
@@ -109,10 +194,10 @@ Normal distribution, without having to remember Newton's method or
 the equation for the Gaussian distribution.}
 
 Part I is an overview of techniques for scientific computing: how to get
-your computer to efficiently shunt large data sets and invert matrices.
+your computer to efficiently invert matrices and shunt large data sets.
 
 It starts in Chapter \ref{c_crash} with a tutorial on the C programming
-language.  The chapter covers nothing more difficult than than adding
+language.  The chapter covers nothing more difficult than adding
 columns of numbers, but it provides the basic grammar and structure that
 the remainder of the book will use to do statistical analysis. Notably,
 it introduces the idea of functions, and how one can build functions or
@@ -120,7 +205,7 @@ use existing functions to execute increasingly advanced routines.
 
 \paragraph{Dealing with large data sets} Matrix-oriented packages,
 (including the GSL) are not well-suited for data sets from agencies like
-the US Census, that can be literally gigabytes of data.
+the US Census Bureau, that can be literally gigabytes of data.
 C may seem unfriendly, but
 those languages designed around dealing with large data sets tend
 to be even more draconian---for example, SAS's data input command
@@ -133,8 +218,9 @@ Meanwhile, database systems are designed from the ground up to do nothing
 but let you efficiently retrieve what you need from huge amounts of data.
 But being so purpose-specific, there is no way to do statistics in
 a database. Fortunately,
-we are working in C, so we can have the best of all worlds. The techniques
-covered in this book (and the method that Apophenia facilitates) is to
+we are working in C, so we can have the best of all worlds. The technique
+covered in this book (and the technique that Apophenia facilitates)
+is to
 read all of your data into a database, and then query what you need to a
 matrix, as you need it. This requires learning a new syntax, \ind{SQL},
 which is decidedly neither Beautiful nor Perfect, and adds a level of
@@ -188,6 +274,149 @@ Gnuplot to display data.
 
 
 \section{The stats covered} 
+We can subdivide the goals of statistical analysis into two parts. The
+first is to just say something interesting about a data set. This is often
+model-free; for example, you may just want to show that two variables
+are highly correlated, or that the data can mostly be summarized by three
+dimensions.
+
+The second part of statistical analysis is hypothesis testing, in which
+we calculate a parameter of the data and then make a claim about that
+parameter.  Having observed in the last paragraph that the correlation
+coefficient of two variables is large, perhaps we would like to show
+that that correlation coefficient is almost certainly different from
+zero. More often, we have parameters in a model that we have written,
+and would like to make claims about those parameters.
+
+The techniques used for the two goals above are entirely different. For
+example, there are any of a number of distributions listed in the
+average stats textbook.  Poisson or Binomial distributions are used
+only for describing data culled from the real world, while the Chi-squared
+distribution or the F distribution are used only for testing hypotheses
+about parameters we have written down ourselves (such as the correlation
+coefficient, which has an F distribution). \citet[p 141]{kmenta} points out
+that no notable natural populations have a Chi-squared distribution.
+\index{chi squared distribution@$\chi^2$ distribution}
+
+Part II of this book will open with a chapter on describing data,
+Chapter \ref{projections}, using simple calculations or projection
+techniques. Then, Chapter \ref{gauss} covers the hypothesis-testing
+half of the story, including methods of comparing your data to various
+Gaussian distributions, such as the $t$ test, F test, and $\chi^2$ test,
+linear regressions, and goodness-of-fit tests.
+
+
+
+\paragraph{General theorems and their special cases}\index{Ordinary Least
+Squares|(}
+Here is another way to divide the theorems that underly
+statistics into two classes. The first class includes general
+results about likelihood functions, that 
+apply almost universally, but require a huge
+amount of computational power to arrive at a result. The second class
+consists of special cases of these general results, such as the theorems
+underlying OLS regressions; these results impose more
+assumptions, but are much easier to calculate, so that the results could
+be used a century before computers were invented.\footnote{Historically,
+the special cases came first and then were shown to be special cases of
+more general results. Nonetheless, the rate of adoption of the general
+cases has been in step with the speed of computing equipment.}
+
+We spend most of our time in school learning the special cases,
+because a few decades ago, this was the only class of results which
+civilians had the computing power to use. This is when the stats packages
+that are so prevalent today came to the fore, automating the tedium of
+applying these special case results. The technology had an immediate
+influence on how people did research: they applied those darn special
+cases to everything, and one would have a hard time finding an issue of an
+academic journal today that doesn't have at least one OLS regression.
+Everything in the world has become a linear process.
+
+
+The models in Part II are listed more-or-less in order of complexity.
+The infinitely quotable Albert Einstein advised, ``make everything as
+simple as possible, but not simpler.''  \index{Einstein, Albert}
+The Central Limit Theorem tells us that errors often are
+Normally distributed, and it is often the case that the dependent
+variable is more-or-less a linear or log-linear function of several
+variables. If such descriptions do no violence to the reality from
+which the data was culled, then OLS is the method to use, and using more
+general techniques will not be any more persuasive. 
+
+But it is no problem if the traditional statistical models are not appropriate.
+Having covered the special cases in Chapters \ref{projections}
+and \ref{gauss}, Chapter \ref{mle} will show you how to write down the
+likelihood functions to describe your model, as in Probit or Normit
+estimations, how to find their maxima, and how to test hypotheses using
+a likelihood ratio test.
+
+Sometimes, even a likelihood function does not do justice to the model
+you are attempting to describe, in which case the best thing to do is
+simply write down the process and do a few million random draws from
+that process and see what properties those draws have.
+Chapter \ref{boot} will cover Monte Carlo methods for such general
+model description, including bootstrapping and jackknifing, which are
+techniques to find variances from data when the classic Central Limit
+Theorems fail.  
+
+\comment{But it is no problem
+if these assumptions are not true, because we have the computing power
+to write down a model of the real world in arbitrary detail, and describe
+and test that model in reasonable time.}  \index{Ordinary Least Squares|)}
+
+\subsection{Typography}
+Here are some notes on the conventions used throughout the book.
+
+\exercise{Questions and exercises are marked like this paragraph.
+Exercises are not designed to be particularly challenging, because you
+have your own real-world problems challenging you. Instead, they are an
+opportunity to get in the habit of working through problems with the
+tools and methods presented.}
+
+\paragraph{\treesymbol Seeing the forest for the trees} Statistics textbooks
+must tread a fine line. On the one hand, they must be didactic texts,
+explaining concepts to the reader, while on the other they must be a
+catalog of methods to apply should your data look just so.
+
+Sections marked with a \ind{\treesymbol} cover details that may be
+skipped on a first reading. They are not necessarily advanced
+in the sense of being somehow more difficult than unmarked text, but a
+reader who is trying to get the overall picture may want to cover them 
+later. 
+
+\paragraph{Some notation}  \hfill
+
+$\Xv$: boldface, capital letters are matrices. All data matrices in this
+book are organized so that the rows are each a single observation, and
+each column is a variable.
+
+$\xv$: lowercase boldface indicates a vector. Vectors are generally a
+column of numbers, and their transpose, $\xv'$, is a row.
+
+$\betav$: Greek letters generally indicate parameters to be estimated;
+if boldface, they are a vector of parameters.
+
+
+\comment{
+\paragraph{Acknowledgments} Thanks to Ms. Annjeanette Agro for
+graphic design suggestions.}
+
+
+
+
+
+
+
+
+\comment{In case it is not obvious to you, we can not do statistical analysis without
+computers.
+In case it is not obvious to you, we can not do statistical analysis
+without computers. 
+But the mathematical explanation of a statistical procedure is
+really just pseudo-code, which we can make operational by translating
+it into real computer code. 
+}
+
 \comment{
 As powerful as we like to think modern statistics is, it has a 
 limited set of tricks at its disposal. For the purposes of this book,
@@ -226,102 +455,6 @@ But some results are more robust to tweaking
 than others, and some models are just plain more persuasive than others.
 
 Within the overall goal of persuasion, we}
-We can subdivide the goals of statistical analysis into two parts. The
-first is to just say something interesting about a data set. This is often
-model-free; for example, you may just want to show that two variables
-are highly correlated, or that the data can mostly be summarized by three
-dimensions.
-
-The second part of statistical analysis is hypothesis testing, in which
-we calculate a parameter of the data and then make a claim about that
-parameter.  Having observed in the last paragraph that the correlation
-coefficient of two variables is large, perhaps we would like to show
-that that correlation coefficient is almost certainly different from
-zero. More often, we have parameters in a model that we have written,
-and would like to make claims about those parameters.
-
-The techniques used for the two goals above are entirely different. For
-example, there are any of a number of distributions listed in the
-average stats textbook.  Poisson or Binomial distributions are used
-only for describing data culled from the real world, while the Chi-squared
-distribution or the F distribution are used only for testing hypotheses
-about parameters we have written down ourselves (such as the correlation
-coefficient, which has an F distribution). \citet[p 141]{kmenta} points out
-that no notable natural populations have a Chi-squared distribution.
-\index{chi squared distribution@$\chi^2$ distribution}
-
-Part II of this book will open with a chapter on describing data,
-Chapter \ref{projections}, using simple calculations or projection techniques. Then, Chapter
-\ref{gauss} covers the hypothesis-testing half of the story, including 
-methods of comparing your data to various Gaussian
-distributions, such as the $t$ test, F test, and $\chi^2$ test, 
-linear regressions, and goodness-of-fit tests.
-
-
-\paragraph{General theorems and their special cases}\index{Ordinary Least
-Squares|(}
-Here is another way to divide the theorems that underly
-statistics into two classes. The first class includes general
-results about likelihood functions, that 
-apply almost universally, but require a huge
-amount of computational power to arrive at a result. The second class
-consists of special cases of these general results, such as the theorems
-underlying OLS regressions; these results impose more
-assumptions, but are much easier to calculate, so that the results could
-be used a century before computers were invented.\footnote{Historically,
-the special cases came first and then were shown to be special cases of
-more general results. Nonetheless, the rate of adoption of the general
-cases has been in step with the speed of computing equipment.}
-
-We spend most of our time in school learning the special cases,
-because a few decades ago, this was the only class of results which
-civilians had the computing power to use. This is when the stats packages
-that are so prevalent today came to the fore, automating the tedium of
-applying these special case results. The technology had an immediate
-influence on how people did research: they applied those darn special
-cases to everything, and one would have a hard time finding an issue of an
-academic journal today that doesn't have at least one OLS regression.
-Everything in the world has become a linear process.
-
-This book is about using OLS only when it is applicable. 
-The Central Limit Theorem tells us that yes, errors often are
-Normally distributed; and it is often the case that yes, the dependent
-variable is more or less a linear or log-linear function of several
-variables. If such descriptions do no violence to the reality from
-which the data was culled, then OLS is the method to use, and using
-more general techniques will not be any more persuasive. But if these
-assumptions are not true, then using OLS is at best unpersuasive, and at
-worst disingenuous. We have the computing power to write down a model of
-the real world in arbitrary detail, and describe and test that model in
-reasonable time.
-
-Thus, having covered the special cases in Chapters \ref{projections}
-and \ref{gauss}, Chapter \ref{mle} will show you how to write down the
-likelihood functions to describe your model, as in Probit or Normit
-estimations, how to find their maxima, and how to test hypotheses using
-a likelihood ratio test.
-
-Sometimes, even a likelihood function does not do justice to the model
-you are attempting to describe, in which case the best thing to do is
-simply write down the process and do a few million random draws from
-that process and see what properties those draws have.
-Chapter \ref{boot} will cover Monte Carlo methods for such general
-model description, including bootstrapping and jackknifing, which are
-techniques to find variances from data when the classic Central Limit
-Theorems fail.  
-\index{Ordinary Least Squares|)}
-
-\paragraph{\treesymbol Seeing the forest from the trees} Statistics textbooks
-must tread a fine line. On the one hand, they must be didactic texts,
-explaining concepts to the reader, while on the other they must be a
-catalog of methods to apply should your data look just so.
-
-Sections marked with a \ind{\treesymbol} cover details that may be
-skipped on a first reading. They are not necessarily advanced
-in the sense of being somehow more difficult than unmarked text, but a
-reader who is trying to get the overall picture may want to cover them 
-later. 
-
 \comment{
 \section{Outline} 
 Part I covers general scientific computing, and will be valuable to
@@ -357,9 +490,3 @@ Monte Carlo methods such as
 bootstrapping and jackknifing, which are dirty tricks which will one
 day save your life.  
 }
-
-
-\comment{
-\paragraph{Acknowledgments} Thanks to Ms. Annjeanette Agro for
-graphic design suggestions.}
-

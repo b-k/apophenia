@@ -14,6 +14,8 @@
 %\usepackage{bbding} \def\treesymbol{\PlusThinCenterOpen} 
 %\usepackage{marvosym} \def\treesymbol{\Aries} 
 
+\hyphenation{Apo-phe-nia al-go-rithm}
+
 \long\def\treemark{
 \begin{wrapfigure}{r}[0cm]{0cm}
 \Aries
@@ -65,8 +67,10 @@
 \def\xv{{\bf x} } \def\yv{{\bf y} } \def\pv{{\bf p} }
 \def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
 \def\betav{{\mbox{\boldmath$\beta$}}}
+\def\Xuv{\underbar{\bf X}}
 %\def\vector#1{\left[\matrix{#1}\right]}
 \def\vector#1{\left[\begin{matrix}#1\end{matrix}\right]}
+\def\Re{{\mathbb{R}}}
 
 %\def\var{\hbox{var}} \def\cov{\hbox{cov}}
 %AMS version:
@@ -77,7 +81,7 @@
 %uses the awrap style, included in this dir.
 %\renewcommand\chaptername{} 
 \titleformat{\part}[frame]{\Large\scshape}{\thepart}{.5em}{\thispagestyle{empty}}{}
-\titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.2}{\includegraphics{flake}}\hfill}{} %\flushright almost works.
+\titleformat{\chapter}[frame]{\Large\scshape}{\thechapter}{.5em}{\scalebox{0.2}{\includegraphics{flake}}\\\hfill}{} %\flushright almost works.
 \titlespacing{\section}{8cm}{1 cm}{-0.5 cm}
 \titlespacing{\subsection}{8cm}{0.5 cm}{-0.5 cm}
 \titleformat{\section}[awrap]{\large\bf\scshape}{\thesection}{1 em}{}{}
@@ -126,7 +130,9 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 
 %\def\cinline#1{{\tiny${}_\lfloor$}{#1}\nobreak\hskip 1pt\nobreak\raisebox{4pt}[0pt][0pt]{\tiny${}^\rceil$}}
 \def\cinline#1{{\bf\tt #1}}
+\def\ci#1{\cinline{#1}}
 \def\binline#1{{\bf\tt #1}}
+\def\bi#1{\binline{#1}}
 \def\sinline#1{{\bf\tt #1}}
 \def\cinlinetwo#1{{\tt #1}}
 \def\sinlinetwo#1{{\tt #1}}
@@ -221,7 +227,7 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 
 \setlength{\columnsep}{1.2cm}
 \frontmatter
-\title{Modern Statistical Computing}
+\title{Modern Statistical Computing: Modeling with Data}
 \author{Ben Klemens\\klemens@hss.caltech.edu}
 %\date{May 2005}
 \begin{center}

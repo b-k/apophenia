@@ -32,9 +32,184 @@ that minimizes the sum of squared distances between the data and that
 line. Factor analysis consists of finding the few dimensions where the
 data's variance is maximized, after being projected onto the subspace.
 
+\section{Models and constraints}
+Before embarking on the process of estimating models, it is worth taking
+some time to discuss the modeling process and how our models of the
+real world translate to estimable parameters.
+
+%A \vocab{hypothesis} is a constraint on otherwise unconstrained parameters. 
+
+Frequently, the statistical and real-world model happen to match very closely.
+For example, if we believe that $Y$ is an affine linear sum of $X_1$,
+$X_2$, $X_3$, then we are making a claim that 
+\begin{equation*}
+Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \alpha_3 X_3.
+\end{equation*}
+
+In a parallel manner, a statistician could estimate the $\beta$s in the equation
+\begin{equation*}
+Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon
+\end{equation*}
+using a standard OLS regression as shown later in this chapter.
+
+Given the parameters estimated using OLS, translating those parameters
+to the model is rather trivial:
+\begin{align*}
+\alpha_0 &= \beta_0\\
+\alpha_1 &= \beta_1\\
+\alpha_2 &= \beta_2\\
+\alpha_3 &= \beta_3.
+\end{align*}
+However, the translation between parameter estimates and model
+parameters easily becomes more complex.  For example, let us say that
+we are measuring bicycle usage, $B$, in different  cities.  It would be
+a function of the number of motorists $M$, the city's population $P$,
+the physical size of the city $S$,  and measures of the availability of
+public transportation $T$. But we know that the availability of public
+transportation is also a function of the city's population and physical
+size. Thus, our model is
+\begin{align*}
+B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
+T &= \alpha_4 P + \alpha_5 \sqrt{S}.
+\end{align*}
+
+One option for estimating this model is to run two analogous regressions,
+\begin{align*}
+B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \beta_3 T + \epsilon\\
+T &= \beta_4 P + \beta_5 \sqrt{S} + \epsilon.
+\end{align*}
+Now the correspondence between the two parameters is as trivial as
+before ($\alpha_0=\beta_0$, $\alpha_1=\beta_1$, et cetera). This is the
+simplest example of \vocab{exactly solved parameters}.
+But we get a
+distorted view of the effect of city size and population on bicycling
+prevalence, because some of those variables' effect is subsumed in the fact that
+those factors help to determine whether a city has public
+transportation. If the population of a city rises ten percent, ridership
+will not rise by $.1 \beta_1$, because $T$ will change as well.
+
+Another option is to substitute $T$ as specified in the second equation into
+the first. Then, the model is
+\begin{align*}
+B &= \alpha_0 M + (\alpha_1 +\alpha_3 \alpha_4) P + (\alpha_2 + \alpha_3 \alpha_5) \sqrt{S}.\\
+\end{align*}
+The OLS analogue of a linear equation still looks like it did before:
+\begin{align*}
+B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \epsilon.
+\end{align*}
+Now, the conversion is nontrivial:
+\begin{align}
+\alpha_0 &= \beta_0     \label{consteq1}\\
+\alpha_1 +\alpha_3 \alpha_4 &= \beta_1        \label{consteq2}\\
+\alpha_2 + \alpha_3 \alpha_5 &= \beta_2.       \label{consteq3}
+\end{align}
+Equation \ref{consteq1} still gives us an estimate of $\alpha_0$,
+but all our information about  $\alpha_1$ through $\alpha_5$ is
+embodied in Equations \ref{consteq2} and \ref{consteq3}. With four
+unknowns and two equations, the parameters are \airq{oversolved}. 
+\index{undersolved parameter}
+
+We have a better view of the effect of the variable $P$ on $B$, but we
+do not have enough information to disaggregate that effect into the
+direct effect ($\alpha_1$) and the indirect effect ($\alpha_3 \alpha_4$)
+caused by the effect population has on public transport availability
+($\alpha_4$). 
+
+Depending on your situation and goals, one setup or the other may be
+more appropriate. However, we must acknowledge the limitations of an
+undersolved system: $n$ parameter estimates can inform at most $n$ model
+parameters.
+
+Now, let us say that a prior study has shown that $\alpha_2= 2.204$.
+Discarding the equation for $T$ for now, our model is now:
+\begin{align*}
+B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
+\alpha_2 &= 2.204.
+\end{align*}
+and after estimating the parameters using a simple OLS estimation, the 
+translation from estimated $\beta$s to model $\alpha$s is:
+\begin{align*}
+\alpha_0 &= \beta_0\\
+\alpha_1 &= \beta_1\\
+\alpha_2 &= \beta_2\\
+\alpha_2 &= 2.204\\
+\alpha_3 &= \beta_3.
+\end{align*}
+Unless we have the incredible luck that $\beta_2=2.20400$, $\alpha_2$ is an
+\vocab{oversolved parameter} that has no solution.
+
+There are two things that one can do with an oversolved system. One is
+to use the extra constraints to inform the parameter estimation routine;
+in the example above, we would estimate the parameters under the
+assumption that $\beta_2$ is fixed at 2.204.
+You can do this using constrained least squares (Section
+\ref{constrainedls}) or via maximum likelihood estimation as in Chapter
+\ref{mle}. The other option is to compare the unconstrained version of
+the model with the constrained version to see how much distortion occurs
+when the constraint binds. This is \airq{testing the constraints}, aka,
+a \airq{hypothesis test}.
+\index{least squares!constrained}
+
+Recall that the two primary activities of the statistician are estimating
+models and testing models.  For an undersolved system, we can neither
+estimate nor test the model. For an exactly solved system, we can always
+estimate the parameters of the model, but can not verify or refute the
+model: you give me a data set, and I will always be able to give you
+some set of model parameters. For an oversolved system, we can both
+estimate the parameters and test whether the model is correct, because
+there will not always be a way to consistently transform the estimated
+parameters into model parameters.
+
+Because there is so little persuasive power in an estimated but not
+tested model, we often make up
+ways to convert an exactly solved system into an oversolved one.
+For example, one could add to any equation the additional equation
+$\alpha_i = 0$ for all $i$.
+By specifying
+$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ and $\alpha_1=0$,
+we have an oversolved system whose validity we can test. Indeed, this
+is the system of equations behind the $t$-tests that are universally
+reported with every regression.
+
+This may seem like belaboring the language with such a simple system,
+but it is easy to extend this framework to systems of equations, 
+exotic constraints, and other variants of the mapping from parameter
+estimates to model parameters and testing oversolved equations.
+
+Notably, it could be that the model can't be expressed as an affine
+linear sum at all. Perhaps your model is a function in the programming
+sense, that takes in a vector of inputs \ci{x1, x2, \dots, xn} and a
+vector of parameters \ci{p1, p2, \dots, pm}, runs
+through a thousand lines of code, and produces a value \ci{y}. The
+problem is still the same---estimate the parameters of the model using
+data---but the linear methods are no longer useful. In some cases, there
+is a linear system that does not do too much violence to reality; in
+other cases, you will need to use the maximum likelihood methods of
+Chapter \ref{mle}. However, one could overconstrain the parameters of
+this type of model as easily as those above, such as claiming that
+\cinline{p1 + p2 == 1}. Chapter \ref{mle} will also discuss likelihood
+ratio tests to evaluate the hypotheses embodied in constraints.
+
+By the way, a statement like `We reject
+the claim $\alpha_1=0$' is only half right. We are actually rejecting
+the claim that both
+$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ {\em and}
+$\alpha_1=0$. 
+The first and second equations are mathematically of equal
+status, but the custom is to presume that only the second equation is a
+subordinate equation which is under scrutiny. Thus, one would correctly
+say `we reject this system of equations'. Having given this caveat, the
+remainder of this chapter will use the traditional terminology that
+takes the base model as given, reducing
+the above pair of equations to the hypothesis $H_0: \alpha_1=0$.
+
+
 
 
 \section{Characteristics of data and distributions}\label{basicstats}
+The first step in analyzing a data set is always to get a quick lay of
+the land: where do the variables generally lie? How far do they wander?
+As variable $A$ goes up, does variable $B$ generally go up as well?
 
 \paragraph{Expected value:} 
 First, let us say that a value of $x$ has probability $P(x)$. Then
@@ -43,7 +218,7 @@ $$E\left(f(x)\right)=\int_{\forall x} f(x)p(x) dx.$$
 
 If we have a sample of data points, then we take each single observation
 to be equally likely: $p(x_i)={1\over n}\ \forall i$.
-The expected value for a sample then becomes a familar calculation
+The expected value for a sample then becomes a familiar calculation
 $E(X)=(\sum x)/n$, and is \comment{(I should check this) }the BLUE of
 the true mean $\mu$. Section \ref{CLT} will discuss the magical properties of the
 sample expected value that make statistical analysis possible.
@@ -81,7 +256,7 @@ English as \airq{fat tails}: how much density is in the tails of the
 distribution? For example, the kurtosis of a ${\cal N}(0,1)$ is three,
 while the kurtosis of a \ind{student's $t$ distribution} with $n$ degrees of
 freedom is greater than three, and decreases as $n$ grows, converging to
-three.
+three. 
 
 \cindex{gsl\_stats\_variance} \cindex{apop\_vector\_var}
 \cindex{apop\_vector\_skew} \cindex{apop\_vector\_kurtosis}
@@ -98,6 +273,17 @@ the population central moment. The functions
 moment, presuming that your data is much more likely to be a sample than
 a population. Multiply the output by $(n-1)/n$ to get the population
 central moment.
+
+What information can we get from the higher moments?  Below, we will
+see the powerful Central Limit Theorem, which says that if a variable
+represents the mean of a set of independent and identical draws, then it
+will have a ${\cal N}(\mu,\sigma)$ distribution, where $\mu$ and $\sigma$
+are unknowns that can be estimated from the data. But given the standard
+deviation, the kurtosis must be $3\sigma^4$. If the kurtosis is larger,
+then this typically means that the assumption of independent draws is
+false---the observations are interconnected.\label{kurt1} One often sees
+this among social networks or other systems where independent entities
+observe and imitate each other.
 
 \paragraph{Correlation/Cauchy-Schwarz:} The correlation coefficient is
 defined as $$\rho_{xy}\equiv{s_{xy}\over s_x s_y}.$$ This is mostly just another
@@ -127,10 +313,17 @@ some summary statistics for every column of the data set.
 \section{Sample distributions}\index{sample distributions}
 \label{distlist}
 
-These are some distributions that our sample may take on. They
-and are worth memorizing
-before any major statistics test. Common distributions of statistical
-parameters are discussed in Section \ref{dist2}.
+
+Here are some distributions that a variable may take on. They and are
+worth memorizing before any major statistics test. Common distributions
+of statistical parameters are discussed in Section \ref{dist2}.
+
+Notice that each has a story attached, which is directly useful for
+modeling. If you really think that a variable is the outcome of $n$
+independent, binary events, then the variable should be modeled as a
+Binomial distribution, and once you estimate the parameter to the
+distribution, you will have a full model of that variable, that you can
+even test if so inclined.
 
 \paragraph{Bernoulli\index{Bernoulli distribution}}
 
@@ -156,8 +349,8 @@ pulled from $n$ objects. The equation is $$\left({n\atop x}\right) =
 \eqnbox{
 %P(x|p)&=&\left(\matrix{n\cr x}\right) p^x (1-p)^{(n-x)}		\nonumber\\
 P(x|p)&=&\left(\begin{matrix}n\cr x\end{matrix}\right) p^x (1-p)^{(n-x)}		\nonumber\\
-E(x)&=&np							\nonumber\\
-\var(x)&=&np(1-p)						\nonumber
+E(x)&=&np							\label{binome}\\
+\var(x)&=&np(1-p)						\label{binomv}
 }
 
 \begin{itemize}
@@ -167,6 +360,11 @@ $\sum_{i=1}^n X_i \sim {\rm Binomial}(n,p)$.
 N}(np, np(1-p))$.
 \end{itemize}
 
+Since $n$ is known and $E(x)$ and $\var(x)$ are values calculated from
+the data, Equations \ref{binome} and \ref{binomv} are an oversolved
+system of two variables for one unknown, $p$. Thus, you can test for
+\vocab{excess variance}, which indiates that there are interactions that
+falsify that the observations were iid Binomial events.
 
 \paragraph{Poisson\index{Poisson distribution}}
 
@@ -246,9 +444,7 @@ E(x)&=&{\alpha\over\alpha+\beta}							\nonumber\\
 See page \pageref{beta} for more on the uses of the Beta distribution.
 \endonecol
 
-
-
-\section{Factor analysis} \label{pca} \ind{factor analysis}
+\section{Factor analysis} \label{pca} \index{factor analysis}
 This is also known as \ind{principal component
 analysis}, or \ind{spectral decomposition}, depending upon your field. 
 The first phase (calculating the eigenvalues) is known as the \ind{singular value decomposition}.
@@ -261,7 +457,7 @@ variance in the data as possible.
 
 After plotting the data, perhaps with markers for certain observations,
 we may find intuitive descriptions for the dimensions on which we had just plotted the
-data. My favorite example of this is the work of Poole \& Rosenthal,
+data. My favorite example of this is \citet{poole:rosenthal},
 who did a principal component analysis\footnote{They actually did
 the analysis using an intriguing maximum likelihood method, rather
 than the eigenvector method here. Nonetheless, the end result and its
@@ -359,7 +555,7 @@ of doing so are discussed in Chapter \ref{gnuplot}
 
 \paragraph{The easy way}
 
-Figure \ref{svdecomposition} presents a function which takes some
+Figure \ref{svdecomposition} presents a function that takes some
 shortcuts from the above. It is a
 simplification of \cind{apop\_sv\_de\-comp\-osi\-tion}, which is what you would use in practice. The function simply makes
 a copy of the data and feeds that in to the GSL's built-in singular-value
@@ -463,7 +659,7 @@ Assumptions:
 mean that $\Sigma =
 \sigma^2{\bf I}$.
 \item $\var(\Xv_k)>0$, and as $n\to\infty$, it remains finite.
-\item The columns of $\Xv$ are not colinear (so $\det(\Xv'\Xv)\neq 0$).
+\item The columns of $\Xv$ are not collinear (so $\det(\Xv'\Xv)\neq 0$).
 \item $N>K$.
 \end{itemize}
 
@@ -620,7 +816,7 @@ The vector \cinline{beta} now lives up to its name, holding the coefficients
 $\betav$. Notice that we never had to take an inverse.  
 
 An alternative approach actually takes the inverse of $(\Xv'\Xv)$. In practice, this is
-almost necesary, because the variance is $\sigma^2 (\Xv'\Xv)^{-1}$.
+almost necessary, because the variance is $\sigma^2 (\Xv'\Xv)^{-1}$.
 The matrix that projects data onto the space defined by $\Xv$,
 often called the `hat matrix', is also derived from the inverse: ${\bf H} = \Xv(\Xv'\Xv)^{-1}\Xv'$. Although it may
 make the computer sweat for large matrices, the inverse function
@@ -653,11 +849,20 @@ If the hat matrix is of few enough dimensions, we can plot the
 projection using \cind{apop\_data\_print}; see page \pageref{gnuprint}.
 
 
+\section{\ind{ANOVA}} ANOVA is a contraction for \vocab{analysis
+of variance}, and is a catch-all term for a variety of methods that
+aim to decompose a data set's variance into subcategories. Given a few
+variables and a few groups, is there more variation between groups or
+within groups? Can the variation in a dependent variable be attributed
+primarily to some independent variables more than others?
+
+This section forthcoming.
+
 \section{Multilevel modeling} A key assumption to the models to this
 point is that each observation is independently and identically distributed
 relative to the others. However, observations often fall into clusters,
 such as families, classrooms, or geographical region. 
-A regression that simply inlcudes a family/classroom/region dummy variable
+A regression that simply includes a family/classroom/region dummy variable
 asserts that each observation is iid relative to the others, but its
 outcome rises or falls by a fixed amount depending on its group
 membership.
