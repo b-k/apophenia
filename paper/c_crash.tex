@@ -354,7 +354,7 @@ b = (c == d);
 makes this ornery statement a touch more readable.
 
 The primary use of these conditionals is in flow control: causing
-the program to repeat some lines until a condition is true, or execute some lines only if a condition is
+the program to repeat some lines while a condition is true, or execute some lines only if a condition is
 false.  In all of the cases below, you will need parentheses around the conditions, and if you forget,
 you will get a confusing compiler error.
 
@@ -1767,6 +1767,48 @@ int **some_other_numbers;
 still_inefficient_but_works(some_other_numbers);
 \end{lstlisting}
 
+One final detail about \cind{free}. When we declare but do not allocate a
+pointer, we have no idea what it is pointing to---it could be \ci{NULL}
+or it could be something of vital import. After \ci{free}ing a vector,
+we again have no idea what the pointer points to.
+
+Let us say that we want to allocate a pointer only if it is free. Some
+intuitively expect that they can just check whether the pointer is
+\ci{NULL}---
+\begin{lstlisting}[numbers=left, numberstyle=\scshape]
+int *k;
+...
+k = malloc(sizeof(int) * 132); 
+...
+free (k);
+...
+if (k == NULL)
+    k   = malloc(...);
+\end{lstlisting}
+---but this will work unreliably (i.e., it won't work). Dilligent compilers
+may set \ci{k} to \ci{NULL} when freeing, but if the compiler is feeling
+lazy, it may not. The only way
+to test whether a pointer is allocated or not is to make sure that every
+time it is not, you yourself set it to \ci{NULL}. The compiler will not
+force you to do this, but it is good style that will help you to catch
+errors later. For example,
+\begin{lstlisting}[numbers=left, numberstyle=\scshape]
+int *k  = NULL;
+...
+k = malloc(sizeof(int) * 132); 
+...
+free (k);
+...
+if (!k)
+    k   = malloc(...);
+\end{lstlisting}
+Notice that a \ci{NULL} pointer is false, so line 7 of this snippet is
+identical to line 7 in the snippet above.
+Similarly, any not-\ci{NULL} pointer is true,
+so \ci{(k)} is equivalent to \ci{(k!=NULL)}, even if \ci{k} is pointing
+to garbage.
+
+
 \subsection{Arrays of structs}	
 Before, when we had defined the \cind{struct} for complex numbers, we would refer to its elements using a
 dot, such as \ci{a.real} or \ci{b.imaginary}. For a pointer to a structure, we use \cind{$->$} instead of 
@@ -1974,11 +2016,15 @@ front-ends available at \url{http://sources.redhat.com/gdb/links/}.}
 If you know the program will segfault, then at this point, just run the program
 by typing \ci{run}, and wait for it to break. When it does, you will
 be returned to gdb's prompt, so you can interrogate the 
-program.\footnote{By the way, if the debugger complains that it can't find
+program. 
+
+If the debugger complains that it can't find
 any debugging symbols, then that means that you forget the \bi{-g}
 switch when you compiled the program. Without that switch, the compiler
-discared the names of variables and other information necessary for
-debugging.}
+discards the names of variables and other information necessary for
+debugging. Unless you are worried about competitors reverse-engineering
+your code, there is no reason not to always include \bi{-g} in the
+compilation.
 
 The first thing you will want to know is where you are in the program. You
 can do this with the \ci{backtrace} command, which you can abbreviate to

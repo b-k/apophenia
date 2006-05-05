@@ -100,7 +100,18 @@ The consistency of the naming means that you have more to type, but
 less to memorize. Given the package-object-verb form, you can likely
 guess the name of the function you want. Your text editor probably has
 some sort of name completion command, which you may want to look up. E.g.,
-vim users, try $<$ctrl-n$>$ after typing a few characters.
+vim users, try $<$ctrl-n$>$ after typing a few characters. Also, they
+make the index very helpful: the index of the GSL's online reference
+gives a complete list of functions that operate on vectors alphabetized
+under \ci{gsl\_vector\_...}, and the index of this book gives a partial
+list of the most useful functions.
+
+\exercise{Don't delay---have a look at the \ci{gsl\_vector\_...}
+and \ci{gsl\_matrix\_...} sections of this index or the GSL's online
+reference and skim over the sort of operations you can do. The Apophenia
+package has a number of higher-level operations that are also worth
+getting to know, so have a look at the \ci{apop\_vector\_...}
+and \ci{apop\_matrix\_...} sections as well.}
 
 Another alternative is to start writing your own functions. For example, you
 could write a file \cinline{my\_convenience\_fns.c}, which could include:
@@ -133,6 +144,40 @@ It's up to your \ae sthetics as to whether your code will be more or less
 legible after you make these changes, but you will need to remember to
 bring your convenience functions with you everywhere you go.
 
+
+\subsection{The easy stuff} The simplest operations on matrices and
+vectors are element-by-element, such as adding the elements of one
+matrix to those of another. The GSL provides the functions you would
+expect to do such things. Each modifies its first argument.
+\cindex{gsl\_matrix\_add} \cindex{gsl\_matrix\_sub}
+\cindex{gsl\_matrix\_mul\_elements} \cindex{gsl\_matrix\_div\_elements}
+\cindex{gsl\_vector\_add} \cindex{gsl\_vector\_sub}
+\cindex{gsl\_vector\_mul} \cindex{gsl\_vector\_div}
+\cindex{gsl\_matrix\_scale} \cindex{gsl\_matrix\_add\_constant}
+\cindex{gsl\_vector\_scale} \cindex{gsl\_vector\_add\_constant}
+\lstset{texcl=true} %For this whole section.
+\begin{lstlisting}
+gsl_matrix_add (a,b);   // $a_{ij} = a_{ij} + b_{ij}, \forall\ i, j$
+gsl_matrix_sub (a,b);   // $a_{ij} = a_{ij} - b_{ij}, \forall\ i, j$
+gsl_matrix_mul_elements (a,b);  // $a_{ij} = a_{ij} \cdot b_{ij}, \forall\ i, j$
+gsl_matrix_div_elements (a,b);// $a_{ij} = a_{ij} / b_{ij}, \forall\ i, j$
+gsl_vector_add (a,b);   // $a_{i} = a_{i} + b_{i}, \forall\ i$
+gsl_vector_sub (a,b);   // $a_{i} = a_{i} - b_{ij}, \forall\ i$
+gsl_vector_mul (a,b);  // $a_{i} = a_{i} \cdot b_{i}, \forall\ i$
+gsl_vector_div (a,b);   // $a_{i} = a_{i} / b_{i}, \forall\ i$
+
+gsl_matrix_scale (a,x); // $a_{ij} = a_{ij} \cdot x, \forall\ i, j$
+gsl_matrix_add_constant (a,x);  // $a_{ij} = a_{ij} + x, \forall\ i, j$
+gsl_vector_scale (a,x); // $a_{i} = a_{i} \cdot x, \forall\ i$
+gsl_vector_add_constant (a,x);  // $a_{i} = a_{i} + x, \forall\ i$
+\end{lstlisting}
+
+Notice that the functions to multiply and divide two matrices are given
+slightly lengthier names to minimize the potential that they will be
+confused with the process of multiplying a matrix with another matrix,
+${\bf A}{\bf B}$, or its inverse, 
+${\bf A}{\bf B}^{-1}$. Those operations require more computational firepower, which
+is provided by the BLAS.
 
 
 \section{The \ind{BLAS}} 
@@ -346,7 +391,6 @@ names of the form \cinline{apop\_...\_copy}.
 
 \cindex{gsl\_vector\_memcpy} \cindex{gsl\_matrix\_memcpy}
 \cindex{apop\_data\_memcpy} \cindex{apop\_data\_memcpy} \cindex{system}
-\lstset{texcl=true} %For this whole section.
 \begin{lstlisting}
 //Text file $\Rightarrow$ Text file
 //Just use the system's file copy command.

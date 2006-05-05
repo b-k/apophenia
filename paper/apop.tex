@@ -21,13 +21,49 @@ to be found. Take this not as a warning, but as an invitation: the code
 base is entirely open, so you are invited to add new models, point out
 bugs, and implement features so the package improves more rapidly.
 
+\paragraph{Layers of abstraction} 
+In grade school, we learned how to deal with numbers: adding,
+subtracting, dividing. We were given pages of exercises where we had to
+divide two numbers by hand.
+
+In high school, we learned how to invert matrices. We were shown a
+lengthy algorithm that took the process of adding and dividing real
+numbers as given. We were free to use a calculator to divide numbers,
+but executed the algorithm of manipulating submatrices by hand.
+
+In statistics class, we learned how to run regressions.  Inverting a
+matrix was indicated with a few strokes of the pen---$\Xv^{-1}$---and
+the process of executing the algorithm (and its underlying additions and
+divisions) left to a computer.
+
+\index{abstraction, layers of}
+These are three \vocab{layers of abstraction}: numbers, matrices, and
+statistical models. The stacks-of-frames
+system from Chapter \ref{c_crash} is a perfect way to implement
+different layers of abstraction, as the \ci{gsl\_matrix\_add} function
+calls C's built-in addition function, and the
+\ci{gsl\_matrix\_HH\_solve} routine repeatedly calls functions on the
+level of \ci{gsl\_matrix\_add}. 
+
+\index{object-oriented programming}
+The \ci{gsl\_matrix} and \ci{gsl\_vector} data structures were focal to
+the addition of a layer of abstraction. This is an \airq{object-oriented}
+means of implementing higher levels of abstraction: design an object that
+holds a collection of items at a lower level of abstraction, and then
+write companion functions named \ci{object\_add}, \ci{object\_alloc},
+\ci{object\_copy}, et cetera, that allow the data structure to be
+manipuated on its own level of abstraction.
+
 \section{The structures}
-Here is a one-sentence summary of statistical analysis: estimate the
-parameters of a model using data. Apophenia thus has three key objects
-defined that embody this description, named \cinline{apop\_data},
-\cinline{apop\_model}, and \cinline{apop\_estimate}.\footnote{Notice
-that the \airq{estimate the parameters of a model} line readily includes
-``non-parametric'' models; see page \pageref{nonparam}.}
+Recall the one-sentence summary of statistical analysis from
+the first page of Chapter \ref{intro}: estimate the parameters
+of a model using data. The Apophenia library provides functions
+and data structures at exactly this level of abstraction. The
+three key objects defined that embody this description are the
+\cinline{apop\_data}, \cinline{apop\_model}, and \cinline{apop\_estimate}
+structures.\footnote{Notice that the \airq{estimate the parameters
+of a model} line readily includes ``non-parametric'' models; see page
+\pageref{nonparam}.}
 
 The basic story for a statistical analysis is that the researcher
 assembles a data set into an \cinline{apop\_data} structure, then sends it to
@@ -38,15 +74,15 @@ hypothesis tests.
 
 Supporting these main structures are a few more structures you would only
 have to worry about for fine tuning.  The \cinline{apop\_name} structure is
-an organized list of row and column names; functions that take an 
+an organized list of row and column names. Functions that take an 
 \cinline{apop\_data} set automatically handle the names for you. 
 Some models, such as MLEs, require some parameters to run, in
 which case you will need to fill out an \cinline{apop\_est\-i\-ma\-tion\_params}
 form and hand it in to the model. Included in the
 \cinline{apop\_est\-i\-ma\-tion\_params} is an
 \cinline{apop\_inventory} structure that lists the elements
-that an \cinline{apop\_estimate} will generate (no model produces
-everything, and if you don't need covariances, why calculate them). If you
+that an \cinline{apop\_estimate} will generate. No model produces
+everything, and if you don't need covariances, why calculate them. If you
 don't care about the estimation parameters, sending \cinline{NULL} will
 work fine for most models. 
 
@@ -101,47 +137,6 @@ typedef struct apop_data{
 \end{lstlisting}
 
 
-There is no consistency-checking to make sure the number of row names,
-the \cinline{vector->size}, or  \cinline{matrix->size1} are equal.
-If you want to put a vector of fiteen elements and a $10 \times 10$
-matrix in the same structure, and only name the first two columns, you
-are free to do so.
-
-Further, the typical case is that not all elements are assigned 
-values at all; \cind{apop\_data\_alloc} initializes most elements as
-\cinline{NULL}. If you just want a \cind{gsl\_vector} with
-names, then you can use the \cinline{apop\_data} structure as such,
-by leaving 
-\cinline{your\_data->matrix == your\_da\-ta->categories ==
-NULL}.\footnote{The seasoned C programmers will recognize such usage as 
-similar to a \cind{union} between a \cinline{gsl\_vector}, a
-\cinline{gsl\_matrix}, and a \cinline{char} array. C$^{++}$ programmers
-will observe that the structure allows a form of polymorphism, because
-you can write one function that takes an \cinline{apop\_data}
-as input, but operates on one or both of a \cinline{gsl\_vector} or a
-\cinline{gsl\_matrix}, depending on which is not \cinline{NULL} in
-the input.}
-
-\exercise{On page \pageref{quadq}, you wrote a function to find the quadratic
-form $\Xv'\Yv\Xv$, where $\Xv$ and $\Yv$ are both matrices.
-But often,  we need the quadratic form for a vector, $\xv\Yv\xv$. The
-math is the same, but we need two functions: one that takes a
-\ci{gsl\_matrix} and one that takes a \ci{gsl\_vector}. 
-
-You already have a \ci{quadratic\_form} function for matrices.
-Make a copy and modify the copy to take a vector as the first argument:
-\ci{double *vector\_quadratic\_form(gsl\_vector *x, gsl\_matrix *y)}. 
-
-Now that you have both functions, you will easily be able to write a
-function with header \ci{double data\_quadratic\_form(apop\_data *x, apop\_data
-*y, apop\_data *xyx)} to call either subfunction as appropriate.  
-If \ci{x->matrix == NULL}, then find the quadratic form using
-\ci{x->vector}, set \ci{xyx} to a 1-D matrix with the value of
-$\xv'\Yv\xv$ and return the \ci{double} value.
-
-If \ci{x->matrix != NULL}, then find the quadratic form using
-\ci{x->matrix}, set \ci{xyx} to the quadratic form, and return \ci{GSL\_NAN}.
-}
 
 You can easily operate on the individual elements of the structure:
 if the \cinline{matrix\_man\-ip\-u\-late} function requires a
@@ -162,6 +157,51 @@ for (r=0; r< set->catsize[0]; r++){
     printf("\n");
 }
 \end{lstlisting}
+
+There is no consistency-checking to make sure the number of row names,
+the \cinline{vector->size}, or  \cinline{matrix->size1} are equal.
+If you want to put a vector of fiteen elements and a $10 \times 10$
+matrix in the same structure, and only name the first two columns, you
+are free to do so.
+
+Further, the typical case is that not all elements are assigned 
+values at all; \cind{apop\_data\_alloc} initializes most elements as
+\cinline{NULL}. If you just want a \cind{gsl\_vector} with
+names, then you can use the \cinline{apop\_data} structure as such,
+by leaving 
+\cinline{your\_data->matrix == your\_da\-ta->categories ==
+NULL}.\footnote{The seasoned C programmers will recognize such usage as 
+similar to a \cind{union} between a \cinline{gsl\_vector}, a
+\cinline{gsl\_matrix}, and a \cinline{char} array. 
+\index{object-oriented programming}
+C$^{++}$ programmers
+will observe that the structure allows a form of polymorphism, because
+you can write one function that takes an \cinline{apop\_data}
+as input, but operates on one or both of a \cinline{gsl\_vector} or a
+\cinline{gsl\_matrix}, depending on which is not \cinline{NULL} in
+the input.}
+
+\exercise{On page \pageref{quadq}, you wrote a function to find the quadratic
+form $\Xv'\Yv\Xv$, where $\Xv$ and $\Yv$ are both matrices.
+But often,  we need the quadratic form for a vector and matrix, $\xv'\Yv\xv$. The
+math is the same, but we need two functions: one that takes a
+\ci{gsl\_matrix} and one that takes a \ci{gsl\_vector}. 
+
+You already have a \ci{quadratic\_form} function for matrices.
+Make a copy and modify the copy to take a vector as the first argument:
+\ci{double *vector\_quadratic\_form(gsl\_vector *x, gsl\_matrix
+*y)}.
+
+Now that you have both functions, you will easily be able to write a
+function with header \ci{double data\_quadratic\_form(apop\_data *x, apop\_data
+*y, apop\_data *xyx)} to call either subfunction as appropriate.  
+If \ci{x->matrix == NULL}, then find the quadratic form using
+\ci{x->vector}, set \ci{xyx} to a 1-D matrix with the value of
+$\xv'\Yv\xv$ and return the \ci{double} value.
+
+If \ci{x->matrix != NULL}, then find the quadratic form using
+\ci{x->matrix}, set \ci{xyx} to the quadratic form, and return \ci{GSL\_NAN}.
+}
 
 
 \comment{
@@ -194,7 +234,7 @@ All of these operations make a full copy of the data being stacked, without
 erasing the original data sets, so in each case
 you will be taking up twice as much memory
 at the end of the function until you call
-\cinline{apop\_data\_free(oldset)}.\footnote{That is, 
+\cinline{apop\_data\_free(oldset\_one); apop\_data\_free(oldset\_two)}.\footnote{That is, 
 if you are stacking matrices, you will get an \cinline{apop\_data} set with a
 \cinline{NULL} vector and category grid, but a copy of the matrix data; 
 if you are stacking vectors, you will get an \cinline{apop\_data} set with a
@@ -231,14 +271,14 @@ Notice that the first form, \cinline{apop\_data\_get},
 has an abbreviated name, and for matrix data is identical to
 \cinline{gsl\_matrix\_get(your\_data->matrix, i, j)}. 
 
-If $j<0$, then these functions are taken to be referring to the
-\cinline{apop\_data} structure's vector rather than the matrix. As
-above, you can think about the vector as the -1$^{\rm{st}}$ element of the
-matrix, so 
-\cinline{apop\_data\_get\_tn(your\_data, "rowname", -1)} refers to the
-element of the vector whose rowname is as given.
+As above, you can think about the vector as the -1$^{\rm{st}}$ element
+of the matrix, so if $j < 0$ in any of the above functions, e.g.
+\cinline{apop\_data\_get\_tn(your\_data, "rowname", -1)}, then the
+function operates on the \cinline{apop\_data} structure's vector rather
+than the matrix.
 
 \cindex{apop\_data\_get...}
+\cindex{apop\_data\_set...}
 
  \cindx{apop\_data}{)textbf}
 
@@ -253,8 +293,8 @@ they are still a subset of measure zero within the class of models as
 described here. Currently, Apophenia has no plans to include a summary
 syntax for describing linear models; the reader who has a linear model
 to be estimated via OLS or GLS is advised to instead manipulate the
-data set to the appropriate form and then call \cinline{apop\_OLS}
-or \cinline{apop\_GLS}.}
+data set to the appropriate form and then apply the \cinline{apop\_OLS}
+or \cinline{apop\_GLS} models.}
 
 \marginalia{15}{Patterns in static}{\index{Apophenia!definition}{\sl Apophenia} is a term from the
 psychology literature referring to the human tendency to see patterns in
@@ -272,12 +312,11 @@ to have been drawn from a given distribution and the question is
 only what distributional parameters best fit; e.g., assume the data
 is Normally distributed and find the mean and variance.
 
-In fact, one could even use the \cinline{apop\_model} to describe 
+One could also use the \cinline{apop\_model} to describe 
 non-statistical models involving optimization subject to constraints;
 see the example of Section \ref{econ101}.
 
-Because models are often distributions, and because it is not our place
-to dictate what you will do with a model, the \cinline{apop\_model} also includes a
+The \cinline{apop\_model} also includes a
 number of additional functions that may be useful for additional analyis,
 such as a likelihood function that could be used for ML estimation or
 for estimating the Hessian, and a random draw generator. Some effort
@@ -286,14 +325,17 @@ these auxiliary functions as possible; if you are writing your own,
 there is no requirement that you provide all functions, and the \cinline{apop\_maximum\_likelihood} and \cinline{apop\_numerical\_hessian}
 functions do a good job of filling in blanks.
 
-Writing your own model is simply a matter of filling out a lengthy form;
-the form's details are covered in Section \ref{writeyourown}. Once you
-have gone through the trouble of adopting your model to this format, you
-can send your model to a variety of functions. In Chapter \ref{mle},
-you will see how to apply a half-dozen different optimum-searching methods
-to find the likelihood-maximizing values of your parameters, and the Monte
-Carlo functions of Chapter \ref{boot} will estimate characteristics of
-those parameters with one function call.
+Writing your own model is simply a matter of filling out a lengthy form,
+whose details are covered in Section \ref{writeyourown}. Just as putting
+your data into the 
+\ci{gsl\_vector} form allowed you to use operations on the vector level
+of abstraction such as \ci{gsl\_vector\_add}, once your model is in the
+\ci{apop\_model} form, you can operate on the model level of
+abstraction. In Chapter \ref{mle},
+you will see how to apply a half-dozen different optimum-searching
+methods to find the likelihood-maximizing parameter values for your
+model, and the Monte Carlo functions of Chapter \ref{boot} will estimate
+characteristics of the model parameters with one function call.
 
 \paragraph{Estimates} 
 %\index{apop\_estimate@\cinlinetwo{apop\_estimate}|(textbf}
@@ -332,16 +374,17 @@ consider a hypothesis test incomplete without this test. Therefore, if
 \cinline{estimation\_params->uses.confidence==1} (which it is by default), then 
 each row of \cinline{parameters->matrix} will hold the $t$ statistic,
 $p$ value, and other useful test parameters regarding the corresponding
-element of the \cinline{parameters->vector}.
+element of \cinline{parameters->vector}.
 
-The \cinline{dependent} matrix is worth notice. It is three columns, named 
-\cinline{actual}, \cinline{predicted}, and \cinline{residual}. 
- If this is a model with a single dependent and many
-independent vars, then the first column is the actual data. Let our
+The \cinline{dependent} matrix is three columns, the first named for
+your dependent variable, the second named
+\cinline{predicted}, and the third \cinline{residual}. 
+If this is a model with a single dependent and many
+independent variables, then the first column is the actual data. Let our
 model be $\Yv = \betav \Xv + \epsilon$. Then the second column is the
 predicted values: $\betav \Xv$, and the third column is the residuals:
 $\epsilon$. The third column is therefore always the first minus
-the second, and this is probably how that column was calculated
+the second, and this is typically how that column was calculated
 internally. There is thus currently no way to get just the predicted
 but not the residuals or vice versa.
 
@@ -350,7 +393,8 @@ estimations, which can fail to converge. If \cinline{status != 0},
 then the MLE failed and the estimate should not be relied on.
 
 The \cinline{apop\_est\-i\-mate} tries to be self-contained, including
-everything one would need to re-run an estimation. In fact, on page
+everything one would need to re-run an estimation, such as copies of the
+original model and parameters. In fact, on page
 \pageref{restart}, the \cind{apop\_estimate\_restart} function will be
 able to derive a new \cinline{apop\_est\-i\-mate} using only an old
 \cinline{apop\_est\-i\-mate} as an input. 
@@ -361,7 +405,11 @@ Therefore, the other elements should be copied in, but
 \cinline{your\_estimate.data} is merely a spare
 pointer, pointing to the block of memory where your data is located. If
 you destroy your data using this pointer, then you have just destroyed
-your original data set, and vice versa.
+your original data set, and vice versa.\footnote{Notice also that the
+parameters and model are copied in, but may be copies of pointers, so
+you must take care when modifying the version of the objects in the main
+program or in the estimate that the other version does not suffer
+undesirable side-effects.} 
 %\index{apop\_estimate@\cinlinetwo{apop\_estimate}|)textbf}
 \cindx{apop\_estimate}{)textbf}
 
@@ -391,15 +439,14 @@ need the database, and could have read the text file directly into a
 \begin{lstlisting}
     data       = apop_text_to_data("data",0,1);
 \end{lstlisting}
-Then we write an \cinline{apop\_inventory} that we only want the
-parameters, and to not bother finding the variance-covariance matrix or
-the residuals or other such things used for hypothesis testing. Then we
+Then we
 send the data and the estimate to the \cinline{apop\_OLS.estimate}
 function, which returns, naturally, an \cinline{apop\_estimate}
 structure. Then we print it.
 
 Feeling lazy? The program above was good form and demonstrated useful
-features, but the code below will do the same thing in even fewer lines:
+features, but if we don't need the intermediate forms, the code below
+will do the same thing in even fewer lines:
 
 \label{oneliner}
 \begin{lstlisting}
@@ -409,18 +456,17 @@ int main(void){
     return 0; }
 \end{lstlisting}
 
-The drawback is that the intermediate forms aren't saved, but we're busy
-people who don't have time to interrogate intermediate forms anyway.
 
 \subsection{\treesymbol{} The supporting cast}
 Generally, the structures in this section are used as elements of the main
 structures above, and are handled automatically as necessary. However,
 they are readily accessible, and if you would like finer control of how
-estimates are made or results printed, you will need to manipulate these
+estimates are made or results printed, you can manipulate these
 directly.
 
 \paragraph{Names}
-The \cinline{apop\_name} structure has three components: a list of column
+The \cinline{apop\_name} structure has four components: a single vector
+name, a list of column
 names, a list of row names, and a list of categeory (text) variable
 names. It is intended to accompany the \cinline{gsl\_matrix} structure,
 which holds all the other information about a data array such as the
@@ -451,7 +497,21 @@ element given a row number and a column name.
 searching for an element. The underscore will match any single
 character, and the \% will match any number of characters. Also, the
 search is case-insensitive. Thus, \cinline{"p\_val\%"} will match
-\cinline{P value}, \cinline{p-val} and \cinline{p.values}
+\cinline{P value}, \cinline{p-val} and \cinline{p.values}. The function
+achieves this magic by using SQLite's implementation of the \sind{like}
+operator; see the SQLite online reference for fine-grained details.
+
+\exercise{If you have one column named \ci{t1} followed by one named
+\ci{T1}, you're in trouble, since \ci{apop\_name\_find} only returns
+the first case-insensitive match, so there is no way to retrieve
+the location of \ci{T1}.
+
+Write a function \ci{int name\_find(apop\_name *n, char *findme, char type)} that
+does an exact, no-wildcard, case-sensitive search, returning the 
+first element of the name structure that matches \ci{findme}. If
+\ci{type=='c'} search column names, if 
+\ci{type=='r'} search row names, and if
+\ci{type=='t'} search category (text) names.}
 
 The easy way to add names to a data set is to use the 
 \cind{apop\_query\_to\_data} function. It takes an SQL query and returns
@@ -470,16 +530,17 @@ apop_data newset    = apop_matrix_to_data(a_gsl_matrix);
 apop_name_add(newset->names, "col0",'c');
 apop_name_add(newset->names, "col1",'c');
 apop_name_add(newset->names, "row0",'r');
+apop_name_add(newset->names, "Victor the vector",'v');
 \end{lstlisting}
 
 \paragraph{Inventory}
 The \cinline{apop\_inventory} structure serves two purposes. It is an input
 to an \cinline{apop\_model}, that tells the function what output you
 would like the \cinline{apop\_estimate} output to include.  Alternatively, you
-can just send in a \cinline{NULL} pointer, and the functions will return
+can just set it to a \cinline{NULL} pointer, and the functions will return
 everything apropos.
 
-It is also an output from these functions, since the returned \cinline{apop\_estimate} will include its own \cinline{apop\_inventory},
+The output from these functions also includes an inventory, 
 giving a list of the elements of the structure which are
 actually in use. For example, the regressions won't return a log
 likelihood.
@@ -499,7 +560,7 @@ It may sometimes be useful to manipulate the \cinline{apop\_estimate} structure'
 internal \cinline{apop\_inventory} element to your own benefit. For
 example, if you set \cinline{est-$>$uses.co\-var\-iance = 0} before calling
 \cinline{apop\_print\_estimate(est, NULL)}, then the covariance matrix won't get
-printed. But be careful: if you then call \cinline{apop\_estimate\_free(est)},
+printed. But if you then call \cinline{apop\_estimate\_free(est)},
 then the covariance matrix won't get freed, either.
 
 \paragraph{Estimate parameters}
@@ -524,6 +585,7 @@ allocated.
 \index{Normal distribution} \index{Gamma distribution}
 \index{Poisson distribution} \index{Probit}
 \index{Ordinary Least Squares} \index{Generalized Least Squares}
+\label{modellist}
 Here are the models that currently ship with Apophenia:\\
 \cinline{apop\_exponential} and \cinline{apop\_exp\-o\-nen\-tial\_rank}, \\
 \cinline{apop\_gamma} and \cinline{apop\_gamma\_rank}, \\
@@ -545,18 +607,18 @@ apop_normal.estimate(data,  NULL);
 
 The optional parameter, set to \cinline{NULL} here,
 is an \cinline{apop\_\-est\-i\-ma\-tion\_\-par\-a\-met\-ers} object; see
-the online reference for the individual models for details of the
+the online reference of the individual models for details of the
 parameters one could set.
 
 \paragraph{Data formats} \label{dataformats} \index{data!format}
-For the models that are merely a distribution, the data matrix can have
-any form: 1 $\times$ 10,000, or 10,000 $\times$ 1, or 100 $\times$ 100.
-This provides maximum flexibility in how you produce the data.
-
-For the more elaborate models such as \cinline{apop\_OLS} or
-\cinline{apop\_probit}, each row of the data is assumed to be one
+The default, for models such as \cinline{apop\_OLS} or
+\cinline{apop\_probit}, is that each row of the data is assumed to be one
 observation, the first column of the data is the independent
 variable, and the remaining columns are the independent variable.
+
+For the models that are merely a distribution, the rule that one row equals one observation is not necessary, so the data matrix can have
+any form: 1 $\times$ 10,000, or 10,000 $\times$ 1, or 100 $\times$ 100.
+This provides maximum flexibility in how you produce the data.
 
 \paragraph{\treesymbol{} Data formats: networks} \index{network analysis}
 Those models with variants ending in \cinline{\_rank} are typically used
@@ -600,23 +662,25 @@ depend on the format in which the data was given to you.
 
 \section{Output and interrogating an estimate}  \label{testoutput}
 Now that you have run an estimation function to produe an 
-\cinline{apop\_\-est\-i\-mate}, you want to ask it some questions. Only the most
-basic hypothesis tests are included in the estimate (and future versions
-of Apophenia have a good chance of extricating them). Instead, you can
-pass the estimate object to a function that will test a hypothesis. For
-example, the \ttind{apop\_estimate\_F\_test} takes in an 
-\cinline{apop\_estimate} and puts out the result of an F test, and the
-\ttind{apop\_estimate\_correlation\_co\-ef\-ficient} will produce a
-table including $R^2$, adjusted $R^2$, \ind{SSE}, SST, and SSR. [See the
-reference for the definitions.] \index{R squared@$R^2$}
+\cinline{apop\_\-est\-i\-mate}, you want to ask it some questions. As
+above, only the most basic hypothesis tests are included in the
+estimate. Instead, you can pass the estimate object to a function that
+will test a hypothesis. For example, the \ttind{apop\_estimate\_F\_test}
+takes in an \cinline{apop\_estimate} and puts out the result of an
+F test, and the \ttind{apop\_estimate\_correlation\_co\-ef\-ficient}
+will produce a table including $R^2$, adjusted $R^2$, \ind{SSE}, SST,
+and SSR. See page \pageref{randfexercise} for details. \index{R squared@$R^2$}
+\index{SSE} \index{SSR}
 
 The output is an \cinline{apop\_data} structure. Ofen, the rows are
 names of the variables in your original data set, and the columns are
 statistics. Note that this means what had been a column name in the 
-original data set is now a row name. As above, you can use 
-\cind{apop\_data\_get\_tn} to pull a single named element, e.g.:
+original data set is now a row name. Below, you will see various means
+of printing the entire \cinline{apop\_data} structure, or you can use
+the 
+\cind{apop\_data\_get\_tn} from above to pull a single named element, e.g.:
 \begin{lstlisting}
-double pval = apop_data_get_tn(test_output, "p_val%", 0);
+double pval = apop_data_get_tn(test_output, "p_val%", -1);
 \end{lstlisting}
 
 \paragraph{Output} 
@@ -658,7 +722,7 @@ if writing to the database, then this will be the table name.
 If outputting to file, the name can be \cinline{NULL}, in which case, the
 output will be printed to STDOUT (if you aren't familiar with STDOUT,
 then it is the screen), but in the machine-friendly format instead of
-the human-friendly form. This is what you will use if you are piping
+the human-friendly form. This is what you will use if you are \ind{piping}
 output from an Apophenia-based program to another program.
 
 File names tend to have periods in them, but periods in table names

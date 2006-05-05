@@ -34,11 +34,16 @@ actually implement. But when you can do a maximum likelihood search
 or Monte Carlo simulation in reasonable time, you can write models
 that rely on fewer false assumptions. The Monte Carlo examples in Section
 \ref{billiondraws} were produced using over a billion draws from $t$
-distributions. If your stats package can't produce a few million random
+distributions. If your stats package can't produce a few hundred thousand 
 draws per second (some can't), such work will be infeasibly
-slow.\footnote{I found that it takes a mere three
-times as long for R to produce random draws from $t$ distributions
-than comparable C code.}
+slow.\footnote{If you can produce random draws from $t$ distributions
+as a batch (\ci{draws <- rt(5000000, df)}), then R takes a mere three
+times as long as comparable C code. But if you need to produce them
+individually (\ci{for (i in 1:5000000) draw <- rt(1, df)}), then R 
+takes about ten times as long as comparable C code. On my laptop, R in
+batch mode produced draws at the rate of $\approx 122,000/{\rm sec}$,
+while C produced draws at $\approx 425,000/{\rm sec}$.}
+
 
 The features of C that stats package users will find most annoying are
 the ones that make it orders of magnitude faster than the cuter

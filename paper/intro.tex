@@ -1,5 +1,4 @@
-\chapter[Introduction]{Statistics in the modern day}
-\iftwocol\begin{multicols}{2}\fi
+\chapter[Introduction]{Statistics in the modern day}\label{intro}
 
 
 The goal of statistical analysis is to use data to estimate and test
@@ -107,16 +106,16 @@ and the reference is online at \url{http://apophenia.info/doc}.}
 \paragraph{The goals and the intended audience}
 
 In this book, I hope to introduce you to the following methods and
-ideas:
+ideas. The topics broadly fall into three categories: methods for more
+efficient computing, methods for estimating the parameters of a model with
+data, and methods for testing hypotheses about the parameters of a model.  
 \begin{itemize}
 \itemsep 0pt
-\item Structuring programs using modular functions
+\item Structuring programs using modular functions and the stack of frames
 \item Methods for reliability testing functions and making them more robust
 \item Programming tools like the debugger and profiler
 \item Databases: their utility, and how to get them to produce data in
 the format you need
-\item Methods for estimating the parameters of a model with data
-\item Methods for testing hypotheses about the parameters of a model
 \item Probability: how famous distributions can be used to model data
 \item Projections: summarizing many-dimensional data in two or three
 dimensions
@@ -133,9 +132,10 @@ hypothesis testing
 
 All of these things are independent of computing environment. However,
 this book is about taking the computing part of computational modeling
-and statistics seriously, so the concepts will be demonstrated both in
-equation and flowchart form and in the form of executable code. As
-noted above, the code will primarily be in C and SQL (Structured Query Language).
+and statistics seriously, so the concepts will be demonstrated both
+in equation and flowchart form and in the form of executable code. As
+noted above, the code will primarily be in C and SQL (Structured Query
+Language).
 
 This book falls in a mid-range between low-level numerical
 computation and high-level use of prepackaged functions. For example,
@@ -295,7 +295,7 @@ only for describing data culled from the real world, while the Chi-squared
 distribution or the F distribution are used only for testing hypotheses
 about parameters we have written down ourselves (such as the correlation
 coefficient, which has an F distribution). \citet[p 141]{kmenta} points out
-that no notable natural populations have a Chi-squared distribution.
+that no notable natural population has a Chi-squared distribution.
 \index{chi squared distribution@$\chi^2$ distribution}
 
 Part II of this book will open with a chapter on describing data,
@@ -393,7 +393,7 @@ each column is a variable.
 $\xv$: lowercase boldface indicates a vector. Vectors are generally a
 column of numbers, and their transpose, $\xv'$, is a row.
 
-$\betav$: Greek letters generally indicate parameters to be estimated;
+$\betav$: Greek letters indicate parameters to be estimated;
 if boldface, they are a vector of parameters.
 
 

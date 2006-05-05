@@ -1,8 +1,7 @@
 --regression should return partitioned data matrix?
---f test doesn't return proper output.
 --tests that produce a single column should use the data->vector.
---The print_data function is so wrong---`cause print_matrix needs revision.
 --spacing in screen output
+--Start respecting text segment of apop_data
 --apop_db_to_text should output an apop_names structure, and I need a category printer.
 --And how about something to write apop_estimates to the db?
 --take residuals out of apop_estimate; generate them later.
@@ -26,3 +25,4 @@ apop_output.c:207: warning: field width is not type int (arg 2)
 
 text:
 --2SLS
+--multilevel examples

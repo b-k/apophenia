@@ -252,7 +252,7 @@ freedom, confidence, et cetera. You can print the entire set as above or
 just pull a single element, e.g.,
 \cindex{apop\_data\_get\_tn}
 \begin{lstlisting}
-double pval = apop_data_get_tn(t, "p_val%", 0);
+double pval = apop_data_get_tn(t, "p_val%", -1);
 \end{lstlisting}
 
 Now let us say that the data is paired, in the sense that for each
@@ -378,7 +378,8 @@ Since statistical custom is based on the availability of computational
 shortcuts, this specific $F$-test often appears in the default output
 of many regression packages.  \index{R squared@$R^2$}
 
-\exercise{Verify the identity of Equation \ref{rsqandf} using Equation
+\exercise{\label{randfexercise} \index{SSE} \index{SSR}
+Verify the identity of Equation \ref{rsqandf} using Equation
 \ref{ftest} and these definitions:
 \begin{align*}
 R^2 &\equiv \frac{SSR}{SSE},  
@@ -469,6 +470,21 @@ $$\left[\matrix{
 This makes life easy because we now only have one variable to estimate.
 }
 
+\section{\ind{ANOVA}} ANOVA is a contraction for \vocab{analysis
+of variance}, and is a catch-all term for a variety of methods that
+aim to decompose a data set's variance into subcategories. Given a few
+variables and a few groups, is there more variation between groups or
+within groups? Can the variation in a dependent variable be attributed
+primarily to some independent variables more than others?
+
+\paragraph{Producing the data set} The typical ANOVA data set is a grid
+where each row is a subject or group, and each column is a treatment or
+experiment; not all cells need to be filled. In the context of the
+database discussion, it is a \vocab{crosstab}, which is in many ways
+from the usual data sets.
+
+This section forthcoming.
+
 \section{Goodness of fit}
 \index{goodness of fit}
 
@@ -488,6 +504,13 @@ moment is $3 \sigma^4$.
 Un-normalized kurtosis $>3$ is known as \vocab{leptokurtic} and $<3$ is
 known as \vocab{platykurtic}; see Figure \ref{tailfig} for a mnemonic.
 
+\begin{figure*}[tb]
+%\hspace{-.3in}\scalebox{0.7}{\includegraphics{kurtosis.eps}}
+\hspace{-.3in}\includegraphics[width=\textwidth*\real{1.1}]{kurtosis.eps}
+\caption{Leptokurtic, \ind{mesokurtic} and \ind{platykurtic}, illustration by Gosset in {\em Biometrika} \citep[p 160]{student:errors}.\index{Student} \index{William S Gosset}\index{leptokurtic}}
+\label{tailfig}
+\end{figure*}
+
 \marginalia{13}{Kurtosis minus three}{
 There is some debate as to whether the kurtosis of a ${\cal N}(0,1)\equiv 3$
 or $\equiv 0$. This is simply a definitional issue: some prefer to
@@ -497,13 +520,6 @@ Bear this in mind when interpreting kurtosis output. If you see a
 negative kurtosis, then you are guaranteed that you are getting
 normalized kurtosis, since a fourth power can never be negative.
 \index{kurtosis}}
-
-\begin{figure*}[tb]
-%\hspace{-.3in}\scalebox{0.7}{\includegraphics{kurtosis.eps}}
-\hspace{-.3in}\includegraphics[width=\textwidth*\real{1.1}]{kurtosis.eps}
-\caption{Leptokurtic, \ind{mesokurtic} and \ind{platykurtic}, illustration by Gosset in {\em Biometrika} \citep[p 160]{student:errors}.\index{Student} \index{William S Gosset}\index{leptokurtic}}
-\label{tailfig}
-\end{figure*}
 
 We have already written everything we need to calculate all of these easily.
 Since the skew and kurtosis are both the mean of an iid process (recall

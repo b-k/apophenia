@@ -2,6 +2,8 @@
 
   The Zipf distribution.
 
+\f$Z(a)        = {1\over \zeta(a) * i^a}        \f$<br>
+
 Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
 
@@ -14,9 +16,10 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include "conversions.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
 #include <stdio.h>
 #include <assert.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_sf_zeta.h>
 
 
 static apop_estimate * zipf_estimate(apop_data * data, void *parameters){
@@ -35,21 +38,7 @@ double  mu          = gsl_vector_get(beta, 0);
     return limit - mu;    
 }
 
-///////////////////////
-//The Zipf distribution
-///////////////////////
-#include <gsl/gsl_sf_zeta.h>
 
-/* The Zipf distribution.
-
-\f$Z(a)        = {1\over \zeta(a) * i^a}        \f$<br>
-
- \todo link this fn in with the object 
-static double apop_zipf_likelihood(double a, int i){
-double        z    = 1/(gsl_sf_zeta(a) * pow(i, a));
-    return z;
-}
-*/
 
 static double zipf_log_likelihood(const gsl_vector *beta, void *d){
 gsl_matrix  *data   = d;
@@ -84,6 +73,7 @@ Returns a ranking: If the population were Zipf distributed, you're most
 likely to get the 1st most common item, so this produces a lot of ones,
 a great deal of twos, and so on.
 
+In the interest of avoiding overflows, the RNG is capped at 1e8.
 
 For example:
 \code
@@ -93,10 +83,10 @@ r=gsl_rng_alloc(gsl_rng_taus);    //for example.
 apop_zipf.rng(r, 1.4);
 \endcode
 
-Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 551.  */
+Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
 static double zipf_rng(gsl_rng* r, double * a){
     if (*a  <= 1){
-        if (apop_opts.verbose)
+//        if (apop_opts.verbose)
             printf("apop_zipf.rng: Zipf needs a parameter >=1. Returning 0.\n"); 
         return 0;
     }
@@ -107,7 +97,7 @@ double  u, v, t,
     do {
         u    = gsl_rng_uniform(r);
         v    = gsl_rng_uniform(r);
-        x    = pow(u, ainv);
+        x    = GSL_MIN(pow(u, ainv), 1e8); //prevent overflows.
         t    = pow((1.0 + 1.0/x), (*a-1));
     } while (v * x * (t-1.0)/(b-1) > t/b);
     return x;

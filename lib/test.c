@@ -7,7 +7,7 @@ you'd like more thorough tests, feel free to write them.
 #include <gsl/gsl_sf_zeta.h>
 
 
-double  true_parameter[]    = {3.82,2.1},
+double  true_parameter[]    = {1.82,2.1},
         true_y_parameter[]  = {0,2.1};
 
 double  tolerance           = 1e-5;
@@ -156,7 +156,7 @@ double                  starting_pt[] = {3.2, 1.4};
 apop_estimation_params  *params = apop_estimation_params_alloc();
 apop_inventory          inv;
 apop_estimate           *e;
-    params->method           = 500;
+    params->method           = 200;
     params->step_size        = 1e-1;
     params->starting_pt      = starting_pt;
     params->tolerance        = 1e-5;
@@ -313,9 +313,9 @@ int test_harmonic(); //in distributions.c
 int main(){
 gsl_rng                 *r;
 apop_model              rank_dist[]     = {apop_zipf,apop_exponential_rank,apop_yule, apop_waring},
-                        dist[]          = {apop_normal, apop_exponential};
+                        dist[]          = {apop_zipf,apop_exponential_rank,apop_yule, apop_waring, apop_normal, apop_exponential};
 int                     rank_dist_ct    = 4,
-                        dist_ct         = 2,
+                        dist_ct         = 6,
                         i;
 apop_estimation_params  params;
         params.method           = 1;
@@ -350,10 +350,12 @@ apop_estimate   *e  = apop_OLS.estimate(d,NULL);
     gsl_rng_env_setup();
     r=gsl_rng_alloc(gsl_rng_default); 
 
+    /*
     for (i=0; i< rank_dist_ct; i++){
         printf("%s: ",rank_dist[i].name);
         do_test(test_rank_distribution(r, rank_dist[i]));
     }
+    */
 
     for (i=0; i< dist_ct; i++){
         printf("%s: ",dist[i].name);

@@ -23,7 +23,7 @@ structure. The model labels one variable as the dependent variable, and claims
 that it is a linear combination of the other, independent, variables.
 This is the ordinary least squares (OLS) model, which has dozens of variants.
 
-         One way to characterize the two projection approaches is that both
+One way to characterize the two projection approaches is that both
 aim to project $N$-di\-men\-sion\-al data onto the best subspace of
 significantly less than $N$ di\-men\-sions---but they have different
 definitions of \airq{best}.  The standard OLS \index{Ordinary Least
@@ -295,6 +295,8 @@ inequality}: $0\leq \rho^2 \leq 1$.  \label{correlation}
 \paragraph{Coding it} Given a vector, Apophenia provides functions to
 calculate most of the above, e.g.:
 
+\cindex{apop\_vector\_mean} \cindex{apop\_vector\_var}
+\cindex{apop\_data\_show} \cindex{apop\_vector\_skew}
 \begin{lstlisting}
 apop_data *set = gather_data();
 gsl_vector v1, v2;
@@ -302,11 +304,13 @@ v1 = gsl_matrix_col(set->matrix, 0).vector;
 v2 = gsl_matrix_col(set->matrix, 1).vector;
 double mean1 = apop_vector_mean(&v1);
 double var1 = apop_vector_var(&v1);
+double skew1 = apop_vector_skew(&v1);
+double kurt1 = apop_vector_kurtosis(&v1);
 double covar = apop_vector_covar(&v1, &v2);
 double corr = apop_vector_correlation(&v1, &v2);
 apop_data_show(apop_matrix_summarize(set));
 \end{lstlisting}
-The last item in the code, \cind{apop\_data\_show} produces a table of
+The last item in the code, \cind{apop\_matrix\_summarize} produces a table of
 some summary statistics for every column of the data set.
 
 \startonecol
@@ -319,7 +323,7 @@ worth memorizing before any major statistics test. Common distributions
 of statistical parameters are discussed in Section \ref{dist2}.
 
 Notice that each has a story attached, which is directly useful for
-modeling. If you really think that a variable is the outcome of $n$
+modeling. For example, if you think that a variable is the outcome of $n$
 independent, binary events, then the variable should be modeled as a
 Binomial distribution, and once you estimate the parameter to the
 distribution, you will have a full model of that variable, that you can
@@ -364,24 +368,7 @@ Since $n$ is known and $E(x)$ and $\var(x)$ are values calculated from
 the data, Equations \ref{binome} and \ref{binomv} are an oversolved
 system of two variables for one unknown, $p$. Thus, you can test for
 \vocab{excess variance}, which indiates that there are interactions that
-falsify that the observations were iid Binomial events.
-
-\paragraph{Poisson\index{Poisson distribution}}
-
-This is for things that happen over and over again. Given $x\geq0$,
-the number of people who have been unemployed for up to $x$ weeks,
-or the number of people on a ship who were flogged up to $x$ times.
-
-\eqnbox{
-P(x|\lambda)&=&{e^{-\lambda}\lambda^x\over x!}			\nonumber\\
-E(x)&=&	\lambda							\nonumber\\
-\var(x)&=&\lambda						\nonumber
-}
-\begin{itemize}
-\item If $X \sim {\rm Poisson}(\lambda_1)$ and $Y \sim {\rm
-Poisson}(\lambda_2)$ (and $X$ and $Y$ are independent), then $(X + Y) \sim {\rm Poisson}(\lambda_1 +
-\lambda_2)$.  \item As $\lambda\to\infty$,  ${\rm Poisson}(\lambda)
-\to {\cal N}(\lambda, \lambda)$.  \end{itemize}
+falsify that the observations were iid Bernoulli events.
 
 \paragraph{Normal\index{Normal distribution|\textbf}}
 
@@ -398,7 +385,7 @@ E(x)&=&\mu							\nonumber\\
 }
 
 \paragraph{Multivariate Normal}\index{multivariate normal distribution}
-All of the above distributions were for a single variable---one
+All of the other distributions are for a single variable---one
 dimension. Let us say that we have a data set $\Xv$, which includes a
 thousand observations and seven variables (so $\Xv$ is a 1000$\times$7
 matrix). We know its mean is
@@ -422,6 +409,43 @@ this reduces to the univariate Normal distribution.
 Apophenia provides the function \cind{apop\_multivariate\_normal\_prob}
 to evaluate this likelihood for a given data point.
 
+\paragraph{Poisson\index{Poisson distribution}}
+
+This is for things that happen over and over again. Given $x\geq0$,
+the number of people who have been unemployed for up to $x$ weeks,
+for example. 
+
+
+\eqnbox{
+P(x|\lambda)&=&{e^{-\lambda}\lambda^x\over x!}			\nonumber\\
+E(x)&=&	\lambda							\nonumber\\
+\var(x)&=&\lambda						\nonumber
+}
+\begin{itemize}
+\item If $X \sim {\rm Poisson}(\lambda_1)$ and $Y \sim {\rm
+Poisson}(\lambda_2)$ (and $X$ and $Y$ are independent), then $(X + Y) \sim {\rm Poisson}(\lambda_1 +
+\lambda_2)$.  \item As $\lambda\to\infty$,  ${\rm Poisson}(\lambda)
+\to {\cal N}(\lambda, \lambda)$.  \end{itemize}
+
+\paragraph{Exponential\index{Exponential distribution}}
+
+The story of exponential decay is that in each period, $\beta$ percent
+of the current population drops out of the population.
+
+To give an example from my own research, say that we believe that in
+each period, $\beta$ crew members of a ship are flogged. If the flogging
+is purely random, then $\beta$ members are flogged once, $\beta^2$
+members are flogged twice, et cetera.
+
+This is sometimes called the \vocab{Negative exponential distribution}.
+
+\eqnbox{
+p(x|\beta) &=& \frac{1}{\beta}e^{\frac{-x}{\beta}}		\nonumber\\
+E(x)&=&	\beta							\nonumber\\
+\var(x)&=&\beta^2						\nonumber
+}
+
+
 \paragraph{Beta distribution} The \ind{Beta distribution} is a flexible
 way to describe data inside the range $[0, 1]$.\footnote{The \ind{Gamma
 function} is defined as $\Gamma(x) = \int_0^\infty  t^{x-1} \exp(-t)
@@ -429,10 +453,11 @@ dt$. One may think of it as a continuous version of the \ind{factorial}
 function, because $\Gamma(x) = (x-1)!$. It is not to be confused with
 the Gamma distribution, which is so named because it is defined using
 the Gamma function.}
+See page \pageref{beta} for more on the uses of the Beta distribution.
 
 \eqnbox{
-p(x) &=& {\Gamma(a+b) \over \Gamma(a) \Gamma(b)} x^{a-1}
-(1-x)^{b-1}\nonumber\\
+P(x|\alpha,\beta) &=& {\Gamma(\alpha + \beta) \over \Gamma(\alpha) \Gamma(\beta)} x^{\alpha - 1}
+(1-x)^{\beta - 1}\nonumber\\
 E(x)&=&{\alpha\over\alpha+\beta}							\nonumber\\
 \var(x)&=&{\alpha\beta\over(\alpha+\beta)^2(\alpha + \beta + 1)}             \nonumber
 }
@@ -441,8 +466,36 @@ E(x)&=&{\alpha\over\alpha+\beta}							\nonumber\\
 \item If $\alpha = \beta = 1$, then this is the ${\rm Uniform}[0,1]$ distribution.\index{Uniform distribution}
 \end{itemize}
 
-See page \pageref{beta} for more on the uses of the Beta distribution.
-\endonecol
+
+\paragraph{\ind{Uniform distribution}} What discussion of distributions
+would be complete without mention of the Uniform? It represents a neutral
+prior belief that any value within $[\alpha, \beta]$ is equally possible.
+
+\eqnbox{
+P(x) &=& \frac{1}{\beta - \alpha}       \nonumber\\
+E(x) &=& \frac{\beta - \alpha}{2}       \nonumber\\
+\var(x) &=& \frac{(\beta - \alpha)^2}{12}   \nonumber
+}
+
+\paragraph{Using the distributions} How you code the distributions
+depends on what you hope to do with them. The common goal throughout the
+book is to estimate the parameters of the model with data, and you can
+see above that almost every parameter can be solved---sometimes
+oversolved---using the mean and variance. Most of the above distributions
+have an \ci{apop\_model} associated (see page \pageref{modellist} for a
+list), and the \ci{estimate} function therein will use the mean or the
+mean and variance to estimate the parameters.
+
+This is known as the \vocab{method of moments} estimation, and it
+matches the maximum likelihood estimate of the parameters in almost all
+cases. For the Uniform, the method of moments doesn't work: the
+expression $(\beta - \alpha)$ is oversolved but there is no way to solve
+for $\alpha$ or $\beta$ alone. However, the reader may verify that the
+most likely value for $(\alpha, \beta)$ is simply $(\min(x), \max(x))$.
+
+These distributions are also useful for simulation, since they each
+neatly summarize an oft-modeled story. Modelers will want to make random
+draws from these distributions, a topic covered in Chapter \ref{boot}.
 
 \section{Factor analysis} \label{pca} \index{factor analysis}
 This is also known as \ind{principal component
@@ -490,17 +543,22 @@ things. The eigenvalue-finding function requires such a workspace, so
 here is a function that allocates the workspace, calls the eigenfunction,
 then frees the workspace:
 \begin{lstlisting}
-void find_eigens(gsl_matrix *subject, gsl_vector *eigenvals, gsl_matrix *eigenvecs){
-   gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc(subject->size1);
-   gsl_eigen_symmv(subject, eigenvals, eigenvecs, w);
+void find_eigens(gsl_matrix **subject, gsl_vector *eigenvals, gsl_matrix *eigenvecs){
+   gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc(*subject->size1);
+   gsl_eigen_symmv(*subject, eigenvals, eigenvecs, w);
    gsl_eigen_symmv_free (w);
-   gsl_matrix_free(subject);
+   gsl_matrix_free(*subject);
+   *subject  = NULL;
 }
 \end{lstlisting}
 
-Notice that I free the matrix whose eigenvalues are being calculated at the end.
-This is because the matrix is destroyed in the
-calculations, and should not be referred to again. 
+Notice that I free the matrix whose eigenvalues are being calculated at
+the end.  This is because the matrix is destroyed in the calculations,
+and should not be referred to again. When a pointer is freed, its value
+can take on any value. It could be set to \ci{NULL}, but if the compiler
+is feeling lazy, it may just leave the pointer pointing to garbage.
+Explicilty setting it to \ci{NULL} makes it clear that this pointer has
+been freed.
 
 Here is how this function is used. In the tradition of C, the code is
 mostly declarations, and in the last two lines, it will calculate the
@@ -518,7 +576,7 @@ gsl_matrix *eigenvecs   = gsl_matrix_alloc(ds, ds);
 
 apop_matrix_normalize(data, 3);
 gsl_blas_dgemm(CblasTrans,CblasNoTrans, x, x, xpx);
-find_eigens(xpx, eigenvals, eigenvecs);
+find_eigens(&xpx, eigenvals, eigenvecs);
 \end{lstlisting}
 
 Now we have the eigenvectors and their associated eigenvalues; we need only find
@@ -631,7 +689,6 @@ In Section \ref{tstat} we get rid of $\sigma$, but we
 need to know $\mu$, and unbiasedness guarantees us that if all is going
 well, $\mu =\hat\betav$.
 
-\startonecol
 \subsection{OLS}
 \index{Ordinary Least Squares|(textbf}\index{OLS|see{Ordinary Least Squares}}
 The model: 
@@ -848,15 +905,6 @@ gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, hat_matrix, set2->matrix, projected_da
 If the hat matrix is of few enough dimensions, we can plot the
 projection using \cind{apop\_data\_print}; see page \pageref{gnuprint}.
 
-
-\section{\ind{ANOVA}} ANOVA is a contraction for \vocab{analysis
-of variance}, and is a catch-all term for a variety of methods that
-aim to decompose a data set's variance into subcategories. Given a few
-variables and a few groups, is there more variation between groups or
-within groups? Can the variation in a dependent variable be attributed
-primarily to some independent variables more than others?
-
-This section forthcoming.
 
 \section{Multilevel modeling} A key assumption to the models to this
 point is that each observation is independently and identically distributed

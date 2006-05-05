@@ -98,13 +98,13 @@ r=gsl_rng_alloc(gsl_rng_taus);    //for example.
 apop_zipf.rng(r, 1.4);
 \endcode
 
-Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 551.  */
+Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
 static double zipf_rng(gsl_rng* r, double * a){
     if (*a  <= 1){
-        if (apop_opts.verbose)
+//        if (apop_opts.verbose)
             printf("apop_zipf.rng: Zipf needs a parameter >=1. Returning 0.\n"); 
         return 0;
-        }
+    }
 int     x;
 double  u, v, t, 
         b       = pow(2, *a-1), 
@@ -112,7 +112,7 @@ double  u, v, t,
     do {
         u    = gsl_rng_uniform(r);
         v    = gsl_rng_uniform(r);
-        x    = pow(u, ainv);
+        x    = GSL_MIN(pow(u, ainv), 1e8); //prevent overflows.
         t    = pow((1.0 + 1.0/x), (*a-1));
     } while (v * x * (t-1.0)/(b-1) > t/b);
     return x;

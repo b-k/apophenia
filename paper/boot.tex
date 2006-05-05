@@ -381,6 +381,40 @@ bootstrapping, even if that estimate overstates the variance, then use
 that instead of bootstrapping. Otherwise, you dishonor your name, and
 bring shame to your research group.}
 
+\section{\ind{Markov Chain Monte Carlo}} 
+The convergence to the kurtosis of the $t$ distributions was not
+spectacular. We could have found more precise values via a plain old
+integral with significantly fewer than five million slices. 
+
+The trick to improving the efficiency of the method is to oversample
+values that will have the largest effect on the outcome, and the trick
+to that trick is to model the distribution as a set of states and
+transition probabilities---a \ind{Markov chain}.
+
+More forthcoming, but notice that the \ind{simulated annealing}
+algorithm from Chapter \ref{mle} was such an algorithm.
+
+
+\subsection{The curse of dimensionality}\index{Gibbs sampling}
+
+If your data is described by
+many parameters, then getting a good view of the distribution can require
+a huge number of draws. If $1,000$ points describes one dimension well,
+you may need $1,000^2$ points in two dimensions, and $1,000^{20}$ in
+twenty dimensions. 
+
+Markov chains come to the rescue: under certain conditions, you can
+iteratively search one dimension at a time. Begin with a guess as to
+the parameter value, $(x_1, x_2, \dots, x_{20})$, and search for the
+best value of $x_1$, keeping
+$(x_2, \dots, x_{20})$ fixed. Then, search for $x_2$, keeping
+$(x_1, x_3,  \dots, x_{20})$ fixed. Repeat until the $\xv$ converges.
+
+This is known as Gibbs sampling.
+The method is popular for Bayesian techniques, but is also applicable in
+other contexts.
+
+Details will be forthcoming.
 
 \subsection{Creating random samples} \index{bootstrap}
 \index{jackknife|(textbf}
@@ -447,24 +481,6 @@ of the kurtosis and the mean kurtosis, run a $t$ test using
 \cind{gsl\_ran\_tdist\_pdf}.
 }
 
-\section{\ind{Markov Chain Monte Carlo}} If your data is described by
-many parameters, then getting a good view of the distribution can require
-a huge number of draws. If $1,000$ points describes one dimension well,
-you may need $1,000^2$ points in two dimensions, and $1,000^{20}$ in
-twenty dimensions. 
-
-Markov Chains come to the rescue: under certain conditions, you can
-iteratively search one dimension at a time. Begin with a guess as to
-the parameter value, $(x_1, x_2, \dots, x_{20})$, and search for the
-best value of $x_1$, keeping
-$(x_2, \dots, x_{20})$ fixed. Then, search for $x_2$, keeping
-$(x_1, x_3,  \dots, x_{20})$ fixed. Repeat until the $\xv$ converges.
-
-The method is popular for Bayesian techniques, but is also applicable in
-other contexts.
-
-Details will be forthcoming.
-
 
 
 \section{Non-parametric modeling} It would be nice if we did not
@@ -485,14 +501,12 @@ true distribution is the sum of $n$ ${\cal N}(\mu_i, \sigma_i)$
 distributions. Then, we would estimate the best values of $n$ and
 $(\mu_i, \sigma_i)$ from the data.  
 
-In other words, non-parametric
-modeling involves writing down a parametrized model and estimating the
-parameters from data.
-This is especially clear when we sit down to implement such
-a model at the computer, because 
-the model will be a black box that take in a data
-set and return a set of parameter estimates, just like every other model
-in this book.
+In other words, non-parametric modeling involves writing down a
+parametrized model and estimating the parameters from data.  This is
+especially clear when we sit down to implement such a model at the
+computer, because the model will be a black box that take in a data set
+and return a set of parameter estimates, just like every other model in
+this book.
 
 This section forthcoming. It will focus on \ind{kernel density estimation}
 and testing, such as the method of \citet{silverman:boot} for testing a
