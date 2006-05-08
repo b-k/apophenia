@@ -98,7 +98,7 @@ double 	e1, e2;
 int		x;
 	e1	= gsl_ran_exponential(r, 1);
 	e2	= gsl_ran_exponential(r, 1);
-	x	= - e1  / log(1 - exp(-e2 / (*a -1)));
+	x	= GSL_MAX((int) (- e1  / log(1 - exp(-e2 / (*a -1)))), 0);
 	return  x + 1;	//we rounded down to floor, but want ceil.
 }
 
@@ -123,13 +123,4 @@ apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_estimation_para
 \todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I can check references.
 */
 apop_model apop_yule_rank = {"Yule, rank data", 1, 
-{
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//dependent
-	0,	//predicted
-	1,	//log_likelihood
-	0	//names;
-},	 
 	yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, beta_greater_than_x_constraint, yule_rng};

@@ -287,10 +287,10 @@ common that C has a special syntax for it: \ci{a += b;} This is slightly less re
 redundancy. All of the above arithmetic operators can take this form, so each of the following lines show two
 equivalent expressions: \\
 \begin{lstlisting}
-a -= b;     a = a - b;
-a *= b;     a = a * b;
-a /= b;     a = a / b;
-a %= b;     a = a % b;
+a -= b;  /*is equivalent to*/   a = a - b;
+a *= b;  /*is equivalent to*/   a = a * b;
+a /= b;  /*is equivalent to*/   a = a / b;
+a %= b;  /*is equivalent to*/   a = a % b;
 \end{lstlisting}
 
 Finally, the most common operation among these is incrementing or decrementing by one, and so C offers the
@@ -537,19 +537,29 @@ and so you have \cind{double}, which are double-precision real numbers,
 and \ci{long double}, which you can think of as quadruple-precision
 reals. \cind{char} are characters.	\cindex{long}
 
-C has other basic types, which are not worth caring about.
+C has other basic types, which are not worth caring about, though there
+are some detailed notes about how numbers are represented in Section
+\ref{numbers}.
 
-Notice that we can initialize a few variables of the same type on one
-line, and could initialize \ci{counter} to zero right when we
-declare it. The other variables (such as \ci{a\_variable}) have
-unknown value right now. Assume nothing about what is contained in a
-declared but uninitialized value.
+Some languages have a \ci{boolean type} to represent the values one or zero.
+C does not bother with this because you can
+evaluate all of \ci{if(float\_var)}, \ci{if(int\_var)}, or \ci{if(char\_var)}
+with equal ease. If you are very concerned about 
+your true-false data taking up too much space, use an array of \ci{char}s,
+because you are almost guaranteed that that will be the type with the
+smallest internal representation.
 
-By the way, notice that the variable names are words, not letters. Using
-English variable names is the number one best thing you could do to make your code
-readable---imagine how much of your life you have spent flipping back
-through journal articles trying to remember what $\mu$, $M$, and $m$
-stood for. Why impose that on yourself?
+Notice that the example above initialized a few variables of the same
+type on one line, and could initialize \ci{counter} to zero right when we
+declare it. The other variables (such as \ci{a\_variable}) have unknown
+value right now. Assume nothing about what is contained in a declared
+but uninitialized value.
+
+Finally, notice that the variable names are words, not letters. Using
+English variable names is the number one best thing you could do to
+make your code readable. Imagine how much of your life you have spent
+flipping back through journal articles trying to remember what $\mu$,
+$M$, and $m$ stood for. Why impose that on yourself?
 
 \paragraph{Arrays} An \ind{array} is a numbered list of items of the same type. To declare a list of a hundred
 integers, you would use:
@@ -1965,9 +1975,11 @@ $\backslash$(newline)	& continue the string on the next line
 \end{center}
 \endonecol
 
-There are many more format specifiers, which will give you a great deal of control; you may want
-them when printing tables, for example, and can refer to any of a number of detailed references when you
-need these. [The \airq{g} in \ci{\%g} stands for \airq{general format}, by the way.]
+There are many more format specifiers, which will give you a great deal
+of control; you may want them when printing tables, for example, and can
+refer to any of a number of detailed references when you need these. [The
+\airq{g} in \ci{\%g} stands for \airq{general format}, by the way.]
+There are also a few more examples on page \pageref{printftwo}.
 
 Of course, we need to specify {\sl which} integer, real, or string to insert, and the list of names
 follows directly after the format string. For example:

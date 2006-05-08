@@ -145,13 +145,4 @@ apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_estimation_pa
 */
 //apop_model apop_waring = {"Waring", 2, apop_waring_log_likelihood, NULL, NULL, 0, NULL, apop_waring_rng};
 apop_model apop_waring_rank = {"Waring, rank data", 2, 
- {
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//dependent
-	0,	//predicted
-	1,	//log_likelihood
-	0	//names;
-},
 	waring_estimate, waring_log_likelihood, waring_dlog_likelihood, NULL, beta_zero_and_one_greater_than_x_constraint,  waring_rng};

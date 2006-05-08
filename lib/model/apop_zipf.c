@@ -42,25 +42,26 @@ double  mu          = gsl_vector_get(beta, 0);
 
 static double zipf_log_likelihood(const gsl_vector *beta, void *d){
 gsl_matrix  *data   = d;
-double      like    = 0, 
+long double like    = 0, 
             bb      = gsl_vector_get(beta, 0);
 int         i, j;
     for(j=0; j< data->size2; j++)
         for(i=0; i< data->size1; i++)
             like    -= log(gsl_matrix_get(data,i,j));
     like    *= bb;
-    like    += -log(gsl_sf_zeta(bb)) * data->size1 * data->size2;
+    like    -= log(gsl_sf_zeta(bb)) * data->size1 * data->size2;
     return like;
 }    
 
 static void zipf_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
-double      a       = gsl_vector_get(beta, 0);
+double      bb      = gsl_vector_get(beta, 0);
 gsl_matrix  *data   = d;
 int         i, j;
 double      dlike   = 0;
     for(j=0; j< data->size2; j++)
         for(i=0; i< data->size1; i++)
-            dlike   += a*gsl_sf_zeta(a+1)/gsl_sf_zeta(a) - log(gsl_matrix_get(data,i,j));
+            dlike   -= log(gsl_matrix_get(data,i,j));
+    dlike   -= bb*gsl_sf_zeta(bb-1)/gsl_sf_zeta(bb)  * data->size1 * data->size2;
     gsl_vector_set(gradient,0,dlike);
 }    
 
@@ -117,16 +118,8 @@ apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_estimation_para
 
 \f$lnZ(a)    = -(\log(\zeta(a)) + a \log(i))    \f$
 
-\f$dlnZ(a)/da    = -{\zeta(a)\over a \log(\zeta(a-1))} -  \log(i)        \f$
+\f$dlnZ(a)/da    = -{a \zeta(a)\over\log(\zeta(a-1))} -  \log(i)        \f$
 \ingroup models
 */
-apop_model apop_zipf = {"Zipf", 1,  {
-    1,    //parameters
-    1,    //covariance
-    1,    //confidence
-	0,	//dependent
-	0,	//predicted
-    1,    //log_likelihood
-    0    //names;
-},         
+apop_model apop_zipf = {"Zipf", 1,  
     zipf_estimate, zipf_log_likelihood, zipf_dlog_likelihood,  NULL, beta_greater_than_x_constraint, zipf_rng};

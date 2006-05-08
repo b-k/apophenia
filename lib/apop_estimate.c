@@ -101,6 +101,8 @@ there for your reference. They are just pointers to the original data,
 so if you destroy your data eleswhere, these pointers will faithfully
 point to garbage.
 
+Also, the parameters, and anything else specified in the inventory, is allocated and ready for you to use.
+
 \param data	        A pointer to an input apop_data set
 \param model	    A pointer to the model you're estimating
 \param  params      An \ref apop_estimation_params structure. May be NULL. Don't forget that this may include an apop_inventory (or that field may be NULL)
@@ -111,28 +113,40 @@ apop_estimate * prep_me;
 	prep_me	= malloc(sizeof(apop_estimate));
     if (params){
         memcpy(&(prep_me->estimation_params), params, sizeof(apop_estimation_params));
-	    apop_inventory_copy(apop_inventory_filter(&(params->uses), model.inventory_filter), &(prep_me->estimation_params.uses));
+	   // apop_inventory_copy(apop_inventory_filter(&(params->uses), model.inventory_filter), &(prep_me->estimation_params.uses));
     } else {
         apop_estimation_params *delme =  apop_estimation_params_alloc();
         memcpy(&(prep_me->estimation_params), delme, sizeof(apop_estimation_params));
         apop_estimation_params_free(delme);
-	    apop_inventory_filter(&(prep_me->estimation_params.uses), model.inventory_filter);
+	  //  apop_inventory_filter(&(prep_me->estimation_params.uses), model.inventory_filter);
     }
 	if (prep_me->estimation_params.uses.parameters)
 		prep_me->parameters	= apop_data_alloc(model.parameter_ct,-1);
 	if (prep_me->estimation_params.uses.dependent ||
 	                prep_me->estimation_params.uses.predicted){
-		prep_me->dependent	= apop_data_alloc(data->matrix->size1,3);
-        apop_name_add(prep_me->dependent->names, "actual", 'c');
-        apop_name_add(prep_me->dependent->names, "predicted", 'c');
-        apop_name_add(prep_me->dependent->names, "residual", 'c');
-        apop_name_stack(prep_me->dependent->names, data->names, 'r');
+        if (data && data->matrix)
+		    prep_me->dependent	= apop_data_alloc(data->matrix->size1,3);
+        else if (data && data->vector)
+		    prep_me->dependent	= apop_data_alloc(data->vector->size,3);
+        else if (data && data->categories)
+		    prep_me->dependent	= apop_data_alloc(data->catsize[0],3);
+        else
+		    prep_me->dependent	= NULL;
+        if (prep_me->dependent){
+            apop_name_add(prep_me->dependent->names, "actual", 'c');
+            apop_name_add(prep_me->dependent->names, "predicted", 'c');
+            apop_name_add(prep_me->dependent->names, "residual", 'c');
+        }
+        if (data && data->names && data->names->rownamect > 0)
+            apop_name_stack(prep_me->dependent->names, data->names, 'r');
     }
 	if (prep_me->estimation_params.uses.covariance){
 		prep_me->covariance	= apop_data_alloc(model.parameter_ct,model.parameter_ct);
-        apop_name_stack(prep_me->covariance->names, data->names, 'c');
-        apop_name_cross_stack(prep_me->covariance->names, data->names, 'c', 'r');
+        if (data && data->names){
+            apop_name_stack(prep_me->covariance->names, data->names, 'c');
+            apop_name_cross_stack(prep_me->covariance->names, data->names, 'c', 'r');
         }
+    }
     prep_me->data               = data;
     prep_me->model              = apop_model_copy(model);
 	return prep_me;
@@ -156,7 +170,6 @@ void apop_estimate_free(apop_estimate * free_me){
 
 \ingroup output */
 void apop_estimate_print(apop_estimate * print_me){
-int		i;
 	if (print_me->estimation_params.uses.parameters)	
         apop_data_show(print_me->parameters);
 	if (print_me->estimation_params.uses.covariance){
@@ -175,7 +188,6 @@ apop_model * apop_model_copy(apop_model in){
 apop_model * out = malloc(sizeof(apop_model));
     strcpy(out->name, in.name);
     out->parameter_ct   = in.parameter_ct;
-    memcpy(&(out->inventory_filter), &(in.inventory_filter), sizeof(apop_inventory));
 	out->estimate           = in.estimate;
 	out->log_likelihood     = in.log_likelihood;
 	out->dlog_likelihood    = in.dlog_likelihood;

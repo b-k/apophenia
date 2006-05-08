@@ -119,15 +119,6 @@ static double logit_rng(gsl_rng* r, gsl_vector * a){
 \ingroup models
 */
 apop_model apop_logit = {"logit", -1, 
-{
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//dependent
-	0,	//predicted
-	1,	//log_likelihood
-	1	//names;
-}, 
 	logit_estimate, 
     logit_log_likelihood, 
    NULL,// logit_dlog_likelihood, 

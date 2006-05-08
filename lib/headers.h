@@ -21,7 +21,3 @@
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_integration.h>
 
-//And here are other things that apophenia uses, and you probably do
-//too.
-#include <stdio.h>
-#include <assert.h>

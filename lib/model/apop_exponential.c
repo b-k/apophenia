@@ -152,14 +152,6 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Write a second object for the plain old not-network data Exponential.
 */
 apop_model apop_exponential = {"Exponential", 1,
-{	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//dependent
-	0,	//predicted
-	1,	//log_likelihood
-	1	//names;
-},
 	 exponential_estimate, exponential_log_likelihood, exponential_dlog_likelihood, NULL, beta_greater_than_x_constraint, exponential_rng};
 
 

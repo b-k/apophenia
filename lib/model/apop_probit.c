@@ -115,14 +115,5 @@ static void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *
 \ingroup models
 */
 apop_model apop_probit = {"Probit", -1, 
-{
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//dependent
-	0,	//predicted
-	1,	//log_likelihood
-	1	//names;
-}, 
 	probit_estimate, probit_log_likelihood, probit_dlog_likelihood, probit_fdf, NULL, NULL};
 //apop_model apop_probit = {"Probit", -1, NULL, apop_probit_log_likelihood, NULL, apop_probit_fdf,  NULL};

@@ -138,26 +138,10 @@ likelihood of those 56 observations given the mean and variance you provide.
 \ingroup models
 */
 apop_model apop_normal = {"Normal", 2, 
-{
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//predicted
-	0,	//residuals
-	1,	//log_likelihood
-	1	//names;
-}, normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,beta_1_greater_than_x_constraint, normal_rng};
+ normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,beta_1_greater_than_x_constraint, normal_rng};
 
 /** This is a synonym for \ref apop_normal, q.v.
 \ingroup models
 */
 apop_model apop_gaussian = {"Gaussian", 2, 
-{
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//dependent
-	0,	//predicted
-	1,	//log_likelihood
-	1	//names;
-}, normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,beta_1_greater_than_x_constraint, normal_rng};
+ normal_estimate, normal_log_likelihood, normal_dlog_likelihood, NULL,beta_1_greater_than_x_constraint, normal_rng};

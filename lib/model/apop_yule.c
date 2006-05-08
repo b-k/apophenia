@@ -38,11 +38,11 @@ double  mu          = gsl_vector_get(beta, 0);
 }
 
 static double yule_log_likelihood(const gsl_vector *beta, void *d){
-double          bb	= gsl_vector_get(beta, 0),
+double          bb	            = gsl_vector_get(beta, 0),
                 pt;
 int 		    i, k;
-gsl_matrix 	    *data		= d;
-float 		    ln_k, ln_bb_k,
+gsl_matrix 	    *data		    = d;
+long double     ln_k, ln_bb_k,
 		        likelihood 	    = 0,
 		        ln_bb		    = gsl_sf_lngamma(bb),
 		        ln_bb_less_1    = log(bb-1);
@@ -99,7 +99,7 @@ double 	e1, e2;
 int		x;
 	e1	= gsl_ran_exponential(r, 1);
 	e2	= gsl_ran_exponential(r, 1);
-	x	= - e1  / log(1 - exp(-e2 / (*a -1)));
+	x	= GSL_MAX((int) (- e1  / log(1 - exp(-e2 / (*a -1)))), 0);
 	return  x + 1;	//we rounded down to floor, but want ceil.
 }
 
@@ -124,13 +124,4 @@ apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_estimation_para
 \todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I can check references.
 */
 apop_model apop_yule = {"Yule", 1, 
-{
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//dependent
-	0,	//predicted
-	1,	//log_likelihood
-	0	//names;
-},	 
 	yule_estimate, yule_log_likelihood, yule_dlog_likelihood, NULL, beta_greater_than_x_constraint, yule_rng};

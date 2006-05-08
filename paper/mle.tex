@@ -319,19 +319,21 @@ As with the other methods, the system tries a new point, and if it
 is better, switches. Initially, the system is allowed to make large
 jumps, and then with each iteration, the jumps get smaller, eventually
 converging. Also, there is some decreasing probability that if the new
-point is {\em less} likely, it will still be chosen. Simulated annealing
-is best for situations where there may be multiple local optima. Early
+point is {\em less} likely, it will still be chosen. One reason for
+allowing jumps to less likely parameters is for
+situations where there may be multiple local optima. Early
 in the random walk, the system can readily jump from one to another;
-later it will fine-tune its way toward the optimum. 
+later it will fine-tune its way toward the optimum. Other motivations
+for the transition rules will be elucidated in the chapter on Monte
+Carlo methods.
 
 The number of points tested is basically not dependent on the function:
 if you give it a 4,000 step program, that is basically how many steps
-it will take.  If you know your model is globally convex (as are
-most standard probability functions), then this method is overkill; if
-your model is a complex interaction, simulated annealing may be your
-only bet. It
-does not use derivatives, so if the derivatives do not exist or are
-ill-behaved, this is appropriate, but if they are available either
+it will take.  If you know your model is globally convex (as are most
+standard probability functions), then this method is overkill; if your
+model is a complex interaction, simulated annealing may be your only
+bet. It does not use derivatives, so if the derivatives do not exist or
+are ill-behaved, this is appropriate, but if they are available either
 analytically or via computation, then the methods that use derivative
 information will converge faster.
 
@@ -594,15 +596,7 @@ another form.
 \begin{lstlisting}
 apop_model apop_new_likelihood = {"The Me distribution", 
             number_of_parameters, 
-{       //what will apop_new_likelihood.estimate return?
-        1,      //parameters 
-        1,      //covariance
-        1,      //confidence
-        0,      //dependent var
-        0,      //predicted and residual
-        1,      //log_likelihood
-        1       //names;
-},          new_estimate,
+            new_estimate,
             new_log_likelihood, 
             NULL,   //place dlog likelihood here.
             NULL,   //place constraint fn here.
@@ -735,7 +729,7 @@ problem from Econ 101. \index{utility maximization}
 It requires a few digressions from the MLE nomenclature:
 \begin{itemize}
 \item The log likelihood is actually the utility function. Don't take logs,
-since that would mess up the marginal utilities.
+since that would confuse the marginal utilities.
 
 \item The data is the fixed input to the MLE, which means the
 coefficients for the budget and utility:
@@ -768,6 +762,30 @@ comparative statics. Thus, even though the optimization itself may be
 difficult to explain, the effects that changes in inputs will have on
 the output optimum is clear.
 
-\startonecol
+First, here is the model via numerical optimization.
 \lstinputlisting{sources/econ101.c}
-\endonecol
+
+Because the model here is so simple, we can also solve it analytically.
+Here is an \ci{apop\_model} that does so:
+\lstinputlisting{sources/econ101_analytic.c}
+
+Finally, we can call the above models from a program. This program
+simply compares the two models and verifies that they agree, but we can
+readily use the models for more extensive inquiry.
+
+\exercise{Use these models to produce a plot of marginal change in $x_0$
+and $x_1$ as $\alpha$ expands}
+
+Since the models were declared in their own files above, we need only
+tell the compiler that there are two \ci{apop\_models} named
+\ci{econ101} and 
+\ci{econ101\_analytic}. The organized way to do this is via one one-line
+header file for each \bi{.c} file; the quick-and-dirty way, used below,
+is simply to declare the models. The model files will be compiled
+separately, and all linked together, either via a command line like
+\begin{lstlisting}
+gcc -g -Wall econ101.c econ101_analytic.c econ101_main.c -o run_me
+\end{lstlisting}
+or using a Makefile as per Chapter \ref{c_crash}.
+
+\lstinputlisting{sources/econ101_main.c}

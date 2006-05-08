@@ -16,15 +16,6 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 \ingroup models
 */
 apop_model apop_OLS = {"OLS", -1, 
-{
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	1,	//dependent
-	1,	//predicted
-	0,	//log_likelihood
-	1	//names;
-},	 
 	apop_estimate_OLS, NULL, NULL, NULL, NULL, NULL};
 
 /** The GLS model
@@ -33,13 +24,4 @@ apop_model apop_OLS = {"OLS", -1,
 \ingroup models
 */
 apop_model apop_GLS = {"GLS", -1, 
-{
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	1,	//dependent
-	1,	//predicted
-	0,	//log_likelihood
-	1	//names;
-},	 
 	apop_estimate_GLS, NULL, NULL, NULL, NULL, NULL};

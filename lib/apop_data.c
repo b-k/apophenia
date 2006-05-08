@@ -5,6 +5,7 @@
 Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
+#include <assert.h>
 #include <gsl/gsl_matrix.h>
 #include "apophenia/types.h"
 #include "apophenia/output.h"
@@ -287,10 +288,13 @@ return the \c apop_data's vector element.
  \ingroup data_struct
 */
 double apop_data_get(apop_data *in, size_t row, int col){
-    if (col>=0)
+    if (col>=0){
+        assert(in->matrix);
         return gsl_matrix_get(in->matrix, row, col);
-    else
+    } else {
+        assert(in->vector);
         return gsl_vector_get(in->vector, row);
+    }
 }
 
 /** Get an element from an \ref apop_data set, using the row name but

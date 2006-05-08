@@ -18,7 +18,7 @@
 /////////////
 gsl_vector *apop_vector_copy(gsl_vector *in);
 int apop_vector_to_array(gsl_vector *in, double **out);
-//Returns the length of the array (i.e., in->size);
+gsl_matrix * apop_vector_to_matrix(gsl_vector *in);
 
 /////////////
 //From matrix

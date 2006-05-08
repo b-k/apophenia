@@ -388,7 +388,6 @@ If no derivative exists, will calculate a numerical gradient.
   \todo readd names */
 static apop_estimate *	apop_maximum_likelihood_w_d(apop_data * data,
 			apop_model dist, apop_estimation_params *est_params){
-            //double *starting_pt, double step_size, double tolerance, int method, int verbose){
 gsl_multimin_function_fdf 	minme;
 gsl_multimin_fdfminimizer 	*s;
 gsl_vector 			        *x;

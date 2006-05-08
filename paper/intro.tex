@@ -25,10 +25,10 @@ and various other methods.}
 \end{figure}
 
 One example is the \ind{Ordinary Least Squares} model. Let $\Xv$
-indicate the indpendent data, $\betav$ the parameters, and $\Yv$ the
+indicate the indpendent data, $\betav$ the parameters, and $\yv$ the
 dependent data. Then the function box consists of the simple equation
-$\Yv_{\rm out} = \Xv\betav$, and the evaluation step seeks to minimize
-$(\Yv_{\rm out} - \Yv)^2$. 
+$\yv_{\rm out} = \Xv\betav$, and the evaluation step seeks to minimize
+$(\yv_{\rm out} - \yv)^2$. 
 
 For a simulation, the function box may be a complex flowchart in which
 variables are combined nonlinearly with parameters, then feed back upon
@@ -40,7 +40,7 @@ The problem of statistical modeling is to find the parameters at the
 beginning of the flowchart that will output the best evaluation at the
 end.
 In the OLS model above, there is a closed-form solution to the problem:
-$\betav_{\rm best}=(\Xv'\Xv)^{-1}\Xv'\Yv$.  But for more complex models,
+$\betav_{\rm best}=(\Xv'\Xv)^{-1}\Xv'\yv$.  But for more complex models,
 such as simulations or maximum likelihood methods, we must strategically
 try different sets of parameters to hunt for the best ones.
 
@@ -48,8 +48,8 @@ try different sets of parameters to hunt for the best ones.
 \comment{
 As with many things in life, describing the process is much easier than
 doing it.} The function box in Figure \ref{modelflow} is probably a
-function in the mathematical sense, $f:\Xv, \betav \to \Yv$, and may
-be as simple as $\Yv = \Xv\cdot \betav$ or an elaborate flowchart where
+function in the mathematical sense, $f:\Xv, \betav \to \yv$. It may
+be as simple as $\yv = \Xv\cdot \betav$ or an elaborate flowchart where
 ingredients are mixed and re-mixed.  But as a practical matter, such
 functions are really just pseudo-code, which we can make operational by
 translating them into functions in the computational sense of a series
@@ -87,15 +87,15 @@ facilitates the linear algebra and the Gaussian distribution work;
 and SQLite, a package which facilitates handling large data sets. This
 book will cover the basics of these components and the manner in which
 we can translate from the mathematical language to the language these
-libraries speak.
+libraries speak.  All of the standards and libraries
+used in this book are open, in the sense that they may be freely
+downloaded and used on the computer where you do your work right now.
 
 The book also makes use of the Apophenia library, a set of functions 
 based on the GSL and SQLite, intended to simplify the hard parts of
-using these packages for statistical analysis. You could do all of the
+using these packages for fitting models to data. You could do all of the
 analyses in this book without Apophenia, but you would find yourself
-rewriting many of its functions.  All of the standards and libraries
-used in this book are open, in the sense that they may be freely
-downloaded and used on the computer where you do your work right now.
+rewriting many of its functions.  
 
 \comment{
 Most stats packages include a manual that attempts to instruct the reader,
@@ -211,7 +211,7 @@ those languages designed around dealing with large data sets tend
 to be even more draconian---for example, SAS's data input command
 is {\tt card}, referring to the punch card it expects you to put in the
 hopper.\footnote{SAS, by the way, gets its facility with large data sets
-by providing a front-end to SQL queries. You can enter SQL directly into
+by providing a front-end to SQL-like queries. You can enter SQL directly into
 SAS if you so choose.}
 
 Meanwhile, database systems are designed from the ground up to do nothing
@@ -344,7 +344,7 @@ which the data was culled, then OLS is the method to use, and using more
 general techniques will not be any more persuasive. 
 
 But it is no problem if the traditional statistical models are not appropriate.
-Having covered the special cases in Chapters \ref{projections}
+After the special cases are covered in Chapters \ref{projections}
 and \ref{gauss}, Chapter \ref{mle} will show you how to write down the
 likelihood functions to describe your model, as in Probit or Normit
 estimations, how to find their maxima, and how to test hypotheses using
@@ -352,8 +352,8 @@ a likelihood ratio test.
 
 Sometimes, even a likelihood function does not do justice to the model
 you are attempting to describe, in which case the best thing to do is
-simply write down the process and do a few million random draws from
-that process and see what properties those draws have.
+simply write down the process, do a few million random draws from
+that process, and see what properties those draws demonstrate.
 Chapter \ref{boot} will cover Monte Carlo methods for such general
 model description, including bootstrapping and jackknifing, which are
 techniques to find variances from data when the classic Central Limit

@@ -627,3 +627,114 @@ won't crash your program. \cinline{float f = 1.0/0.0} will result in
 GSL\_NAN}. However, integers have none of these luxuries: run \cinline{int
 i = 1/0} and you will get \cind{Arithmetic exception (core dumped)}.
 
+\paragraph{Precision}\index{prcecision, numerical} 
+As with any finite means of writing real numbers,
+there is a roundoff error to the computer's internal representation of
+numbers. The computer basically stores non-integer numbers using
+\ind{scientific notation}. For those who have forgotten this notation, one
+would write  $\pi$ as $3.14159 \times 10^0$, or \ci{3.14159e0}, 
+and $100\pi = 3.14159 \times 10^2$, or \ci{3.14159e2}. 
+Numbers always have exactly one digit before the decimal point, and the
+exponent is chosen to ensure that this is the case.
+
+Your computer works in binary, so numbers are of the form $d \times
+2^n$, where $d$ is a string of ones and zeros and $n$ is an exponent. 
+Multiplying a number by $1024=2^{10}$ will leave $d$ entirely unchanged but
+add ten to $n$, meaning that doubling or halving a number will not
+change the precision of the number (until $n$ exceeds the space given to
+it, typically around $\pm 256$).
+
+To give you a more concrete idea of the relative precision options
+you have before you, here is a program to print $\pi$ in various
+formats. Notice that the constant has an \ci{L} appended to indicate
+to the compiler that it needs to reserve extra space for the constant
+right from the start. \label{printftwo} A few more \cind{printf} format
+specifiers are also given: \ci{f} means \ci{float}, \ci{lf} means
+\ci{double} (which used to be known as a long float), the \ci{-} means
+that the number should be left-justified, and the number \ci{\%65.63}
+indicates that the space will be fifty-five characters wide, of which
+63 will be after the decimal point.
+
+\begin{lstlisting}
+#include <stdio.h>
+
+int main(){
+long double pi = 3.1415926535897932384626433832795028841971693993751058209749445923L;
+printf("Pi, integer:\t\t %65i\n",  (int) pi);
+printf("Pi, float:\t\t %65.63f\n",  (float) pi);
+printf("Pi, double:\t\t %65.63lf\n",  (double) pi);
+printf("Pi, long double:\t %65.63Lf\n",  pi);
+return 0;
+}
+\end{lstlisting}
+
+Here is the output:
+\begin{lstlisting}[language={}]
+Pi, integer: 3
+Pi, float:  3.14159274101257324218750000000000000000000000000000000000000000000000
+Pi, double:      3.14159265358979311599796346854418516159057617187500000000000000000000
+Pi, long double: 3.14159265358979323851280895940618620443274267017841339111328125000000
+\end{lstlisting}
+The floating-point version is accurate up to six digits after the
+decimal, and then goes astray. The double-precision version is right up to 15
+digits, and the long double precision scores another four digits before
+losing its way.
+
+Errors compound, so adding ten numbers
+with four significant digits can leave you with only three significant
+digits. As a general rule of thumb, if you are writing an internal
+function to act on a \ci{float}, use \ci{double} variables internally,
+and if you are taking in \ci{double}s, use \ci{long double} internally.
+
+If you need to calculate $\pi$ to a million decimal points, you
+will need to find a library that can work with numbers to arbitrary
+precision. Such libraries typically work by representing all numbers
+as a data structure listing each decimal point, and then extending the
+list in either direction as necessary. Rather than using C's built-in
+add/subtract/multiply/divide, the library provides its own to act on
+its data structure. Unfortunately, the added layer of complexity means
+that what had been fast procedures (often implemented via
+special-purpose registers on the processor hardware itself) are now a
+long series of library calls.
+
+So to do math efficiently on large matrices, we are stuck with finite
+precision, and therefore must not
+rely too heavily on numbers after about four significant digits. 
+Fortunately, for the purposes of estimating and testing
+the parameters of a model using real-world data, this is OK. If two
+numbers differ only after eight significant digits (say, 3.14159265
+versus 3.14159268), there is rarely any reason to take these numbers are
+significantly different. Even if the hypothesis test indicates that they
+are different, it will be difficult to convince a referee of this.
+
+
+\paragraph{Conditioning}\index{data!conditioning} Most numerical routines do badly when the
+determinant is near zero, or when eigenvalues are different orders of magnitude.
+One way to cause such problems with your own data is
+to have one column that is of the order of $1 \times 10^{100}$ and
+another that is on the order of $1 \times 10^{-100}$. In
+finite-precision arithmetic on two numbers of such wide range, the
+smaller number is often simply swallowed: $3.14 \times 10^{100} + 5.92
+\times 10^{-100} = 3.14 \times 10^{100}$. 
+
+Thus, try to ensure that each column of the data is
+approximately of the same order of magnitude before doing calculations.
+Say that you have a theory that mean fingernail thickness is influenced by
+a location's population.
+You could modify the scale when pulling data from the database,
+\begin{lstlisting}[language=sql]
+select population/1000., nail_thickness*1000.
+from health_data;
+\end{lstlisting}
+or you could modify it in the \ci{gsl\_matrix}:
+\begin{lstlisting}
+gsl_vector v = gsl_matrix_col(data, 0).vector;
+gsl_vector_scale(&v, 1/1000.);
+gsl_vector v = gsl_matrix_col(data, 1).vector;
+gsl_vector_scale(&v, 1000.);
+\end{lstlisting}
+
+These notes about conditioning are not C-specific. Any mathematics
+package that hopes to efficiently work with large matrices must use
+finite-precision arithmetic, and will therefore have the same problems
+with ill-conditioned data matrices.

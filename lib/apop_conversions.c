@@ -3,7 +3,7 @@
 Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
  */
 #include "conversions.h"
-#include "assert.h"
+#include <assert.h>
 
 #define Text_Line_Limit 100000
 
@@ -94,6 +94,25 @@ int		i;
 		gsl_vector_set(*out, i, in[i]);
 }
 */
+
+/* Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N
+ \times 1 \f$ are equivalent, but they're two different types in C.
+
+ \param in a <tt>gsl_vector</tt>
+ \return a <tt>gsl_matrix</tt> with one column.
+
+ \ingroup convenience_fns
+ */
+gsl_matrix * apop_vector_to_matrix(gsl_vector *in){
+    if (!in){
+        if (apop_opts.verbose)
+            printf("apop_vector_to_matrix: converting NULL vector to NULL matrix.\n");
+        return NULL;
+    }
+    gsl_matrix *out = gsl_matrix_alloc(in->size, 1);
+    gsl_matrix_set_col(out, 0, in);
+    return out;
+}
 
 static void convert_array_to_line(double **in, double **out, int rows, int cols){
 	//go from in[i][j] form to the GSL's preferred out[i*cols + j] form

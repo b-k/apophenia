@@ -2,6 +2,7 @@
 #ifndef __apop_estimate__
 #define __apop_estimate__
 
+#include <assert.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
 
@@ -228,7 +229,6 @@ distribution to have too, like a random number generator.
 typedef struct apop_model{
 	char	name[101]; 
 	int	parameter_ct;
-	apop_inventory inventory_filter;
 	apop_estimate *	(*estimate)(apop_data * data, void *parameters);
 	double 	(*log_likelihood)(const gsl_vector *beta, void *d);
 	void 	(*dlog_likelihood)(const gsl_vector *beta, void *d, gsl_vector *gradient);

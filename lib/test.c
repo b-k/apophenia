@@ -1,10 +1,19 @@
-#include <apophenia/headers.h>
 
 /* Here are some ad hoc tests to verify that things are basically OK. If
 you'd like more thorough tests, feel free to write them.  
+
+Part of the incompleteness of the tests, by the way, is that most of
+Apophenia was written for immediate use in certain projects, so there's
+a great deal of real-world testing that didn't make it into this file.
+
 */
 
-#include <gsl/gsl_sf_zeta.h>
+#include <apophenia/headers.h>
+
+//I'm using the test script an experiment to see if 
+//these macros add any value.
+#define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc(r,c);
+#define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed);
 
 
 double  true_parameter[]    = {1.82,2.1},
@@ -51,19 +60,15 @@ double      f       = apop_data_get_tn(ftab,"F_stat%",-1);
     return 0;
 }
 
-//I'm using the test script an experiment to see if 
-//these macros add any value.
-//#define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc(r,c);
-//#define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed);
 
 int test_OLS(){
 int             i,
                 len = 8000;
 apop_estimate   *out;
-gsl_rng         *r  =  apop_rng_alloc(12);
-apop_data       *set= apop_data_alloc(len,2);
-//APOP_DATA_ALLOC(set, len, 2)
-//APOP_RNG_ALLOC(r, 23)
+////gsl_rng         *r  =  apop_rng_alloc(12);
+//apop_data       *set= apop_data_alloc(len,2);
+APOP_DATA_ALLOC(set, len, 2)
+APOP_RNG_ALLOC(r, 23)
 
 for(i=0; i< len; i++){
     apop_data_set(set, i, 1, 100*(gsl_rng_uniform(r)-0.5));
@@ -71,36 +76,43 @@ for(i=0; i< len; i++){
 }
 
     out    = apop_OLS.estimate(set, NULL);
-    apop_estimate_print(out);
+//    apop_estimate_print(out);
     assert(fabs(apop_data_get(out->parameters, 0,-1) - -1.4) < tolerance);
     assert(fabs(apop_data_get(out->parameters, 1,-1) - 2.3) < tolerance);
     return 0;
 }
 
 
- is_neg(double in){
+int is_neg(double in){
     return in < 0;
 }
 
 int test_replaces(void){
 gsl_vector *v   = gsl_vector_calloc(3);
-gsl_vector_set(v, 2, 2.);
-assert(apop_vector_sum(v) == 2.);
-apop_vector_replace(v, apop_double_is_zero, -2);
-assert(apop_vector_sum(v) == -2.);
-apop_vector_replace(v, is_neg, GSL_POSINF);
-assert(apop_vector_sum(v) == GSL_POSINF);
-apop_vector_replace(v, gsl_isinf, 0);
-assert(apop_vector_sum(v) == 2);
-gsl_matrix *m   = gsl_matrix_calloc(3,2);
-gsl_matrix_set(m, 2, 1, 2.);
-assert(apop_matrix_sum(m) == 2.);
-apop_matrix_replace(m, apop_double_is_zero, -2);
-assert(apop_matrix_sum(m) == -2.*5 +2);
-apop_matrix_replace(m, is_neg, GSL_POSINF);
-assert(apop_matrix_sum(m) == GSL_POSINF);
-apop_matrix_replace(m, gsl_isinf, 0);
-assert(apop_matrix_sum(m) == 2);
+    gsl_vector_set(v, 2, 2.);
+    assert(apop_vector_sum(v) == 2.);
+
+    apop_vector_replace(v, apop_double_is_zero, -2);
+    assert(apop_vector_sum(v) == -2.);
+
+    apop_vector_replace(v, is_neg, GSL_POSINF);
+    assert(apop_vector_sum(v) == GSL_POSINF);
+
+    apop_vector_replace(v, gsl_isinf, 0);
+    assert(apop_vector_sum(v) == 2);
+
+    gsl_matrix *m   = gsl_matrix_calloc(3,2);
+    gsl_matrix_set(m, 2, 1, 2.);
+    assert(apop_matrix_sum(m) == 2.);
+
+    apop_matrix_replace(m, apop_double_is_zero, -2);
+    assert(apop_matrix_sum(m) == -2.*5 +2);
+
+    apop_matrix_replace(m, is_neg, GSL_POSINF);
+    assert(apop_matrix_sum(m) == GSL_POSINF);
+
+    apop_matrix_replace(m, gsl_isinf, 0);
+    assert(apop_matrix_sum(m) == 2);
 return 0;
 }
 
@@ -124,6 +136,7 @@ char *out;
     assert(!strcmp(out, "tea.pot"));
     out = apop_strip_dots(many_dots, 2);
     assert(!strcmp(out, "pot.csv"));
+    return 0;
 }
 
 /** test the generalized harmonic summing thing, \ref apop_generalized_harmonic.
@@ -154,15 +167,13 @@ int                     i,
                         score         = 0;
 double                  starting_pt[] = {3.2, 1.4};
 apop_estimation_params  *params = apop_estimation_params_alloc();
-apop_inventory          inv;
 apop_estimate           *e;
-    params->method           = 200;
-    params->step_size        = 1e-1;
+    params->method           = 100;
+    params->step_size        = 1e-2;
     params->starting_pt      = starting_pt;
     params->tolerance        = 1e-5;
     params->verbose          = 1;
 
-    //e    = apop_maximum_likelihood(data2,&inv, dist, params);
     e    = dist.estimate(apop_matrix_to_data(data),params);
     for (i=0; i < dist.parameter_ct; i++){
         printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters->vector,i));
@@ -184,14 +195,11 @@ apop_estimate           *e;
 }
 
 
-int test_distribution(gsl_rng *r, apop_model model, apop_estimation_params params){
+int test_distribution(gsl_rng *r, apop_model model){
 long int        runsize             = 1000,
-                rowsize             = 50,
-                rowsum;
+                rowsize             = 50;
 gsl_matrix      *data               = gsl_matrix_calloc(runsize,rowsize);
 size_t          i,j;
-gsl_vector      *vv;
-gsl_vector_view v;
     //generate.
     for (i=0; i< runsize; i++){
         for (j=0; j< rowsize; j++){
@@ -223,20 +231,18 @@ gsl_vector_view v;
     }
 }
 int test_rank_distribution(gsl_rng *r, apop_model dist){
-long int        i,j,
+long int        //i,j,
                 runsize             = 500,
                 rowsize             = 100;
 gsl_matrix      *data               = gsl_matrix_calloc(runsize,rowsize),
                 *data2              = gsl_matrix_calloc(1, rowsize);    
-apop_name       *summary_names;
 apop_data       *summary;
-gsl_vector_view v;
-gsl_vector      *vv;
+gsl_vector      v;
     //generate.
     generate_for_rank_test(data, r, dist, runsize, rowsize);
     summary     = apop_matrix_summarize (data);
-    v           = gsl_matrix_column(summary->matrix,0);
-    gsl_matrix_set_row(data2, 0, &(v.vector));
+    v           = gsl_matrix_column(summary->matrix,0).vector;
+    gsl_matrix_set_row(data2, 0, &v);
 
 /*    printf("the abbreviated data matrix:\n");
     apop_matrix_print(data2, "\t", NULL);
@@ -303,75 +309,56 @@ int test_distances(){
     return 0;
 }
 
-/*
-Due to what is either a bug in gcc or a deep failing of understanding on my part, this fn is in distributions.c.
-*/
-int test_harmonic(); //in distributions.c
 
-#define do_test(fn)     if (fn==0)     printf("passed.\n"); \
-               else      {printf("failed.\n");exit(0);}
+#define do_test(text, fn)   if (verbose)    \
+                                printf(text);  \
+                            if (fn==0)    \
+                                {if (verbose) printf("passed.\n");} \
+                           else             \
+                                {printf("%s  failed.\n", text);exit(0);}
 int main(){
-gsl_rng                 *r;
-apop_model              rank_dist[]     = {apop_zipf,apop_exponential_rank,apop_yule, apop_waring},
-                        dist[]          = {apop_zipf,apop_exponential_rank,apop_yule, apop_waring, apop_normal, apop_exponential};
+gsl_rng                 *r              = apop_rng_alloc(8); 
+apop_model              rank_dist[]     = {apop_zipf_rank,apop_exponential_rank,apop_yule_rank, apop_waring_rank},
+                        dist[]          = {apop_zipf,apop_exponential ,apop_yule, apop_waring, apop_normal, apop_poisson};
 int                     rank_dist_ct    = 4,
                         dist_ct         = 6,
-                        i;
+                        i, verbose      = 0;
+/*  //now specified above.
 apop_estimation_params  params;
         params.method           = 1;
         params.step_size        = 1e-2;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
+        */
 
-    printf("OLS test:");
-    do_test(test_OLS());
+    do_test("OLS test:", test_OLS());
 
 
 apop_data       *d  = apop_text_to_data("test_data2",0,1);
 apop_estimate   *e  = apop_OLS.estimate(d,NULL);
-    printf("apop_estimate->dependent test:");
-    do_test(test_predicted_and_residual(e));
+    do_test("apop_estimate->dependent test:", test_predicted_and_residual(e));
+    do_test("apop_f_test and apop_coefficient_of_determination test:", test_f(e));
+    do_test("apop_vector_replace test:", test_replaces());
+    do_test("apop_generalized_harmonic test:", test_harmonic());
+    do_test("apop_strip_dots test:", test_strip_dots());
+    do_test("apop_distance test:", test_distances());
+    do_test("Inversion test: ", test_inversion(r));
+    do_test("apop_matrix_summarize test:", test_summarize());
+    verbose ++;
 
-    printf("apop_f_test and apop_coefficient_of_determination test:");
-    do_test(test_f(e));
-
-    printf("apop_vector_replace test:");
-    do_test(test_replaces());
-
-    printf("apop_generalized_harmonic test:");
-    do_test(test_harmonic());
-
-    printf("apop_strip_dots test:");
-    do_test(test_strip_dots());
-
-    printf("apop_distance test:");
-    do_test(test_distances());
-
-    gsl_rng_env_setup();
-    r=gsl_rng_alloc(gsl_rng_default); 
 
     /*
     for (i=0; i< rank_dist_ct; i++){
-        printf("%s: ",rank_dist[i].name);
-        do_test(test_rank_distribution(r, rank_dist[i]));
+        do_test(rank_dist[i].name, test_rank_distribution(r, rank_dist[i]));
     }
     */
 
     for (i=0; i< dist_ct; i++){
-        printf("%s: ",dist[i].name);
-        do_test(test_distribution(r, dist[i],params));
+        do_test(dist[i].name, test_distribution(r, dist[i]));
     }
 
-    printf("apop_matrix_summarize test:");
-    do_test(test_summarize());
 
-    /*
-    printf("Inversion test: ");
-    do_test(test_inversion(r));
 
-    printf("Harmonic test: ");
-    do_test(test_harmonic());
-    */
 
     return 0;
 }

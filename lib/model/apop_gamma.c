@@ -119,13 +119,4 @@ If you have frequency or ranking data, you probably mean to be using \ref apop_g
 \ingroup models
 */
 apop_model apop_gamma = {"Gamma", 2,
-{
-    1,    //parameters
-    1,    //covariance
-    1,    //confidence
-	0,	//dependent
-	0,	//predicted
-    1,    //log_likelihood
-    1    //names;
-},
      gamma_estimate, gamma_log_likelihood, gamma_dlog_likelihood, NULL,  beta_zero_and_one_greater_than_x_constraint, gamma_rng};

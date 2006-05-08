@@ -62,6 +62,6 @@ doc:
 	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
 
 test:
-	gcc -o test -lapophenia -lgsl -lgslcblas -lsqlite3 test.c -g
+	gcc -o test -lapophenia -lgsl -lgslcblas -lsqlite3 test.c -g -Wall
 	./test
 	./test_script

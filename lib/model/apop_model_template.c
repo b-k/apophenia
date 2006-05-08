@@ -121,13 +121,4 @@ You should describe the format of the input data here.
 \ingroup models
 */
 apop_model apop_MODELNAME = {"MODELNAME", -1, 
-{
-	1,	//parameters
-	1,	//covariance
-	1,	//confidence
-	0,	//dependent
-	0,	//predicted
-	1,	//log_likelihood
-	1	//names;
-}, 
 	MODELNAME_estimate, MODELNAME_log_likelihood, MODELNAME_dlog_likelihood, MODELNAME_fdf, MODELNAME_constraint, MODELNAME_rng};

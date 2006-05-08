@@ -134,13 +134,5 @@ apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_estimation_para
 \f$dlnZ(a)/da    = -{\zeta(a)\over a \log(\zeta(a-1))} -  \log(i)        \f$
 \ingroup models
 */
-apop_model apop_zipf_rank = {"Zipf, rank data", 1,  {
-    1,    //parameters
-    1,    //covariance
-    1,    //confidence
-	0,	//dependent
-	0,	//predicted
-    1,    //log_likelihood
-    0    //names;
-},         
+apop_model apop_zipf_rank = {"Zipf, rank data", 1,  
     zipf_estimate, zipf_log_likelihood, zipf_dlog_likelihood, NULL, beta_greater_than_x_constraint, zipf_rng};
