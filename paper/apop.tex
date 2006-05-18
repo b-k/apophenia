@@ -1,4 +1,4 @@
-\startonecol \chapter{Apophenia} \label{apop} \endonecol
+\chapter{Apophenia} \label{apop} 
 
 One could divide Apophenia's functions into two categories: haphazard
 convenience functions, and a unified worldview of about how data is
@@ -52,7 +52,7 @@ means of implementing higher levels of abstraction: design an object that
 holds a collection of items at a lower level of abstraction, and then
 write companion functions named \ci{object\_add}, \ci{object\_alloc},
 \ci{object\_copy}, et cetera, that allow the data structure to be
-manipuated on its own level of abstraction.
+manipulated on its own level of abstraction.
 
 \section{The structures}
 Recall the one-sentence summary of statistical analysis from
@@ -160,7 +160,7 @@ for (r=0; r< set->catsize[0]; r++){
 
 There is no consistency-checking to make sure the number of row names,
 the \cinline{vector->size}, or  \cinline{matrix->size1} are equal.
-If you want to put a vector of fiteen elements and a $10 \times 10$
+If you want to put a vector of fifteen elements and a $10 \times 10$
 matrix in the same structure, and only name the first two columns, you
 are free to do so.
 
@@ -317,7 +317,7 @@ non-statistical models involving optimization subject to constraints;
 see the example of Section \ref{econ101}.
 
 The \cinline{apop\_model} also includes a
-number of additional functions that may be useful for additional analyis,
+number of additional functions that may be useful for additional analysis,
 such as a likelihood function that could be used for ML estimation or
 for estimating the Hessian, and a random draw generator. Some effort
 has been made to ensure that the prepackaged models include as many of
@@ -349,7 +349,7 @@ estimation parameters that produced the estimate. Within the
 estimation parameters one will find an inventory of
 what the \cinline{apop\_est\-i\-mate} contains.
 
-Here is the current definition of the \cinline{apop\_estimate} structure. You can se that it errs on the inclusive side.
+Here is the current definition of the \cinline{apop\_estimate} structure. You can see that it errs on the inclusive side.
 \begin{lstlisting}
 typedef struct apop_estimate{
     apop_data   *parameters, *dependent, *covariance;
@@ -457,6 +457,22 @@ int main(void){
 \end{lstlisting}
 
 
+\summary{
+\item Code-writing often breaks down into layers of abstraction. In
+this case, C provides structures to represent numbers (\ci{float},
+\ci{int}) and functions to operate on those structures (\ci{ + - * pow()}); the GSL
+provided structures to represent vectors and matrices, and functions to operate on those structures
+(\ci{gsl\_matrix\_sum}); Apophenia provides structures to represent
+models and estimates, and functions to operate on them.
+\item The \ci{apop\_data} structure combines a vector, matrix, text
+array, and names for all of these elements.
+\item The \ci{apop\_model} aggregates methods of producing 
+estimates of parameters from data.
+\item The \ci{apop\_estimate} structure embodies parameter estimates,
+and all that one would need to describe those parameter estimates, such
+as the variance-covariance matrix.
+}
+
 \subsection{\treesymbol{} The supporting cast}
 Generally, the structures in this section are used as elements of the main
 structures above, and are handled automatically as necessary. However,
@@ -467,7 +483,7 @@ directly.
 \paragraph{Names}
 The \cinline{apop\_name} structure has four components: a single vector
 name, a list of column
-names, a list of row names, and a list of categeory (text) variable
+names, a list of row names, and a list of category (text) variable
 names. It is intended to accompany the \cinline{gsl\_matrix} structure,
 which holds all the other information about a data array such as the
 number of rows and columns. 
@@ -484,10 +500,10 @@ data matrices, and you can operate on the \cinline{apop\_name} structure
 directly to add or retrieve names.
 
 For example, to get the
-column number of a variable in which you are insterested, usd \cind{apop\_name\_find}, e.g.:
+column number of a variable in which you are interested, use \cind{apop\_name\_find}, e.g.:
 \begin{lstlisting}
 int column_number   = apop_name_find(my_data->names, "ages", 'c');
-gsl_vector age_vector = gsl_marix_column(my_data->matrix, column_number).vector;
+gsl_vector age_vector = gsl_matrix_column(my_data->matrix, column_number).vector;
 printf("mean age: %g\n", apop_vector_mean(&age_vector));
 \end{lstlisting}
 As above, you can also use \cind{apop\_data\_get\_nt} to pull a single
@@ -658,10 +674,20 @@ Both data formats will produce the same output; the one you use will
 depend on the format in which the data was given to you.
 
 
+\summary{
+\item In many cases, a data structure consists of an observation on each
+row and a variable on each column. If the model includes a dependent
+variable, it should be the first row.
+\item Given a prepackaged model, you can estimate the parameters of the
+model by putting your data into an appropriate \ci{apop\_data}
+structure, and then using the \ci{apop\_your\_model.estimate(data,
+NULL)} function. This will produce an \ci{apop\_estimate} that you can
+interrogate using the methods that follow.
+}
 
 
 \section{Output and interrogating an estimate}  \label{testoutput}
-Now that you have run an estimation function to produe an 
+Now that you have run an estimation function to produce an 
 \cinline{apop\_\-est\-i\-mate}, you want to ask it some questions. As
 above, only the most basic hypothesis tests are included in the
 estimate. Instead, you can pass the estimate object to a function that
@@ -672,7 +698,7 @@ will produce a table including $R^2$, adjusted $R^2$, \ind{SSE}, SST,
 and SSR. See page \pageref{randfexercise} for details. \index{R squared@$R^2$}
 \index{SSE} \index{SSR}
 
-The output is an \cinline{apop\_data} structure. Ofen, the rows are
+The output is an \cinline{apop\_data} structure. Often, the rows are
 names of the variables in your original data set, and the columns are
 statistics. Note that this means what had been a column name in the 
 original data set is now a row name. Below, you will see various means
@@ -699,7 +725,7 @@ the output via the \cind{apop\_opts} structure, which is where all of
 Apophenia's global options are stored. Early in putting together an
 analysis, you will want to print all of your results to screen, and then
 later, you will want to save temporary results to the database, and then
-next month, a colleage will ask for a text file of the output; you can
+next month, a colleague will ask for a text file of the output; you can
 make all of these major changes in output by changing 
 one character in your code.
 
@@ -770,6 +796,14 @@ parameter. For example, if you need only the one-tail p-value, that is
 \cinline{apop\_data\_get\_tn(est, "p\_val\%1\%", -1)}, i.e., the vector
 element whose row name matches \cinline{p\_val\%1\%}.
 
+\summary{
+\item Most testing routines will put output into an \ci{apop\_data} set.
+\item You can pull named items from a data set (such as an estimation
+output) using
+\ci{apop\_data\_get\_tn}.
+\item You can print an object to the screen, the database, or a file using \ci{apop\_...\_print}.
+\item For the lazy, you can show an object on the screen using \ci{apop\_...\_show}.
+}
 
 \comment{
 \section{Histograms} In the chapters that follow, histograms will often
@@ -846,7 +880,7 @@ allocation and deallocation for the lazy.
 The GSL is careful to never allocate large
 spans of memory internally, and does not return large blocks of memory
 outside of routines with \cinline{alloc} in the name. This imposes work
-on the user, however, because so many functions must be preceeded with
+on the user, however, because so many functions must be preceded with
 several lines of memory allocation. Under the \airq{facilitate laziness}
 rule, Apophenia takes the opposite approach: it freely allocates memory behind
 your back, although this is documented for every function that does so,
@@ -887,9 +921,9 @@ memory than the function needs is probably true.
 \paragraph{New languages} Computer scientists love writing new
 languages.  One author has compiled a list of about
 2,500.\footnote{\url{http://people.ku.edu/~nkinners/LangList/Extras/langlist.htm}}
-The wisdom of the ages has shown that every language with pretentions
-to being the One True Language is eventually superceded by another
-language with the same pretentions. There are certainly aspects of
+The wisdom of the ages has shown that every language with pretensions
+to being the One True Language is eventually superseded by another
+language with the same pretensions. There are certainly aspects of
 statistics that would benefit from a specialized syntax, but 
 
 

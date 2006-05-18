@@ -1,4 +1,4 @@
-\startonecol \chapter{Monte Carlo} \label{boot} \endonecol
+\chapter{Monte Carlo} \label{boot} 
 
 Monte Carlo (Spanish and French for Mount Carl) is a city in Monaco
 famous for its casinos, and has more glamorous associations with its name
@@ -9,7 +9,8 @@ and making random transformations to learn more about it. But
 \airq{random} does not necessarily mean \airq{haphazard}.
 At the
 roulette table, a single player may come out ahead, but with millions of
-suckers testing their luck, casinos find they have a reliable method of
+suckers testing their luck, casinos find that even a 49-51 bet in their
+favor is a reliable method of
 making money.  Similarly, a single random transformation of the data will
 no doubt produce a somehow distorted picture, but reapplying it thousands
 or millions of times will present an increasingly accurate picture of
@@ -39,8 +40,7 @@ Of course, using the same stream of numbers every time creates the
 possibility of getting a lucky draw, where \airq{lucky} can mean any of a
 number of things. The solution is a fixed process of pseudorandom
 number generation plus a varying initializing seed. The GSL implements
-such a process; Figure \ref{rng_alloc} shows a function
-to initialize a \cind{gsl\_rng}.
+such a process. 
 
 \begin{figure}
 \cindex{static}
@@ -63,6 +63,7 @@ gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
 \label{rng_alloc}
 \end{figure}
 
+Figure \ref{rng_alloc} shows a function to initialize a \cind{gsl\_rng}.
 In all cases, the function takes in an integer, and then sets up the
 random number generation (RNG) environment to produce new numbers
 via the Tausworth routine.  On the first call, the function calls the
@@ -73,6 +74,7 @@ function.
 Adjacent integer seeds will produce a wholly different stream of numbers,
 so there is no need to make the seed look random. The GSL's default seed is
 zero, and if you need ten different seeds, I suggest using 0, 1, \dots, 9.
+See below for one more useful seeding method.
 
 \subsection{Random number distributions}
 Now that you have a random number generator, here are some functions that use it to draw from all of your favorite distributions. Input an RNG as allocated above plus the appropriate parameters, and the GSL will transform the uniform RNG as necessary.
@@ -99,9 +101,7 @@ function, \cinline{gsl\_rng\_un\-i\-form(r)}. Notice that the Gaussian draw
 assumes a mean of zero, so if you intend to draw from a ${\cal N}(7,2)$,
 then add the mean after the call: \cinline{gsl\_ran\_gaussian (r, 2) + 7}.
 
-
-
-\paragraph{\treesymbol The Beta distribution}\index{Beta distribution}\label{beta}
+\paragraph{The Beta distribution}\index{Beta distribution}\label{beta}
 The Beta distribution is wonderful for all sorts of modeling, because
 it can describe such a wide range of probability functions for a
 variable $\in [0,1]$.  But its $\alpha$ and $\beta$ parameters may be
@@ -122,6 +122,9 @@ $\in (0,1)$. If you send \cind{apop\_ran\-dom\_beta} values of $\mu$
 and $\sigma^2$ that are outside of these bounds, the function will
 return a \cinline{GSL\_NAN}.
 
+\cindex{apop\_plot\_hist\-o\-gram}
+\codefig{draw_beta_curve}{Building a picture of a distribution via random draws}
+
 What does a Beta distribution with, say, $\mu = \frac{3}{8}, \sigma^2 =
 \frac{1}{24}$ look like? Figure \ref{draw_beta_curve} sets up an RNG,
 makes a million draws from a Beta distribution, and plots the result.
@@ -129,8 +132,6 @@ The output of this example is at left in Figure \ref{histofig}; by
 contrast, the case where $\mu=0.492$, $\sigma^2 = 0.093$ is pictured at
 right.
 
-\cindex{apop\_plot\_hist\-o\-gram}
-\codefig{draw_beta_curve}{Building a picture of a distribution via random draws}
 
 %\def\bebox#1{\vbox{\hbox{\rotatebox{-90}{\scalebox{.30}{\includegraphics{#1}}}} }}
 
@@ -145,6 +146,53 @@ right.
 \caption{The flexible Beta distribution.}
 \label{histofig}
 \end{figure}
+
+\paragraph{\treesymbol Seeding with the time} There are situations where
+a fixed seed is really not what you want---you want different numbers
+every time you run your program. The easiest solution is to seed using
+the \cind{time} function. The standard library function \ci{time(NULL)}
+will return the number of seconds that have elapsed since the beginning
+of 1970, which is roughly when UNIX and C were first written. As I write
+this, \ci{time} returns 1,147,182,523---not a very good way to tell the
+time. There are a number of functions that will turn this into a time
+that we humans would find useful; see any reference on C's standard
+library (such as the GNU C Library documentation) for details. But this
+illegible form provides the perfect seed for an RNG, and you get a new
+one every second.
+
+\codefig{time}{Seeding an RNG using the time.}
+
+Figure \ref{time} shows a sample program that
+does this, producing ten random numbers that will be different every
+time.  This is not industrial-strength random number generation, because
+patterns could conceivably slip in. If you are running the program repeatedly  
+via a batch file, then the program could run in fixed
+intervals that induce somehow-correlated numbers. For an example of the extreme case, try
+compiling the above program (it is included in the bundle of sample
+code online), and run it continuously from the shell. In \bi{bash}
+(what you are probably using on a UNIX-type system such as Linux, Cygwin, or MacOS), try
+\begin{lstlisting}[language=bash]
+while true; do ./time; done
+\end{lstlisting}
+You should see the same numbers a few dozen times until the clock ticks
+over, and then another stream repeated several times.  [You can get your
+command prompt back using $<$ctrl$>$-C.] If you have multiple processors
+and run one simulation on each, then runs that start in the same second
+will be replicating each other. Finally, if you ever hope to debug this
+program, then you will need to write down the time started so that you
+can replicate the runs that break: 
+\begin{lstlisting}[texcl=true]
+//I assume the database is already open and has a one-column
+//table named \sinline{runs}. The time is a long integer
+//in the GNU standard library, so its printf tag is \ci{\%li}.
+long int right_now = time(NULL);
+apop_query("insert into runs (%li);", right_now);
+gsl_rng *r = apop_rng_alloc(right_now);
+\end{lstlisting}
+Caveats aside, if you just want
+to see some variety every time the program runs, then this trick
+works fine.
+
 
 
 \subsection{Drawing from your own data} \index{histograms!drawing from|(}
@@ -195,6 +243,16 @@ zeros in the vast majority of bins. Usage:
 
 \index{random numbers|)}
 
+\summary{
+\item Random number generators produce a deterministic sequence of
+values. This is a good thing, because we could never debug a program
+without it. Change the stream by setting a different seed.
+\item Given a random number generator, you can use it to draw from any
+common distribution or from a histogram.
+\item Once you produce a histogram of a data set, you can also use the
+RNG to produce draws from the data set.
+}
+
 \section{Finding statistics for a distribution} \label{billiondraws}
 For many statistic-distribution pairs, there exists a closed-form
 solution for the statistic: the kurtosis of a ${\cal N}(\mu,\sigma)$
@@ -214,13 +272,14 @@ is to estimate the statistic from the data.
 
 One way to calculate the expected value of $f(\cdot)$ would be to a numeric
 integral over the entire domain of the distribution. Write a loop to
-calculate $f(-500.00)\cdot p(-500.00)/100000$, then $f(-500.01)\cdot
-p(-500.01)/100000$, et cetera. This can be effective, but there are
+sum $$\frac{f(-500.00)\cdot p(-500.00)}{100000} + \frac{f(-500.01)\cdot
+p(-500.01)}{100000} + \cdots + \frac{f(500.00)\cdot p(500.00)}{100000}.$$ This can be effective, but there are
 some details to be hammered out: should you integrate from $[-3,3]$
 or $[-30,30]$? You must decide up-front how much finer resolution will
 affect the integral, because (barring some exceptional tricks) each
 resolution is a new calculation rather than a modification of prior 
-calculations.
+calculations. If you would like to take this approach, the GSL includes
+a set of numerical integration functions.
 
 Another approach is to evaluate $f(\cdot)$ at values randomly drawn
 from the distribution.  Just as we produced a nice picture of the
@@ -241,7 +300,17 @@ The kurtosis of a vector is easy to calculate---just call
 \cind{apop\_kurtosis}. By taking a million or so draws from the
 distribution, we can produce a vector whose values cover the $t$
 distribution rather well, and then find the kurtosis of that vector.
+
 Figure \ref{kurtosis_of_a_t_dist} shows a program to execute this procedure. 
+It opens with the usual introductory material, where variables are
+declared and constants set. The draws are done by the line
+\ci{gsl\_vector\_set(v, i, gsl\_ran\_tdist(r, df))}, which sets an
+element of the vector \ci{v} to a random value. Once the vector is
+filled, we can print the kurtosis. Notice that the kurtosis is
+multiplied by $(n-1)/n$ to convert from sample kurtosis to population 
+kurtosis. This has no effect for $n >$ 1 million, but since it takes
+0.00 seconds to compute, it doesn't hurt.
+
 \codefig{kurtosis_of_a_t_dist}{Monte Carlo calculation of kurtoses for
 the $t$ distribution family.}
 
@@ -262,8 +331,9 @@ source or Apophenia's \binline{apop\_db.c} file.}
 
 The true kurtosis of a $t$ distribution with $df$ degrees of freedom
 is $(3 df - 6)/(df - 4)$.  For $df\leq 4$, the kurtosis is undefined,
-just as the variance of a Cauchy distribution is undefined. At $df = 5$,
-it is finite, and it monotonically decreases as $df$ continues upwards.
+just as the variance is undefined for a Cauchy distribution (i.e., a $t$
+distribution with $df=1$). At $df = 5$, it is finite, and it monotonically
+decreases as $df$ continues upwards.
 
 Here is an excerpt from the simulation output, along with the true
 kurtosis: 
@@ -298,7 +368,6 @@ $df$ cases makes itself evident in re-estimations. The reader could readily
 modify Figure \ref{kurtosis_of_a_t_dist} to repeat the kurtosis estimation
 procedure many times; here are eight runs and their means:
 
-\startonecol
 \vspace{\baselineskip}
 \iftwocol\hspace{-8.0cm} 
 \else\hspace{-1.4cm} \fi
@@ -321,7 +390,6 @@ df  &Run 1 &Run 2 &Run 3 &Run 4 &Run 5 &Run 6 &Run 7 &Run 8 &Mean\\
 \end{tabular}
 }
 \vspace{\baselineskip}
-\endonecol
 
 The runs for fewer than five degrees of freedom are indeed inconsistent:
 for $df = 1$, they range from 1.58 million to 4.92 million. Even with
@@ -336,6 +404,18 @@ the correct value, and does so consistently. For degrees of freedom in the
 tens, the estimates are all within a few hundredths of the correct value.
 Monte Carlo estimation will not save a hopeless cause, but in
 appropriate situations, it quickly produces clean and useful estimates.
+
+\summary{
+\item By making random draws from a model, we can make statements about 
+global properties of the model that improve in accuracy as the number of
+draws $\to \infty$.
+\item The variance of the Monte Carlo estimation of a parameter tends to
+mirror the variance of the underlying parameter. The maximum likelihood
+estimator for a parameter achieves the Cramer-Rao lower bound, so the
+variance of the Monte Carlo estimate will only be worse. For reasonable
+parameters, this is not a problem, but in extreme cases, the Monte Carlo
+estimate may not converge to a consistent value.
+}
 
 \section{Finding the statistics of a parameter}
 After running a regression or other such estimation of model parameters,
@@ -371,6 +451,8 @@ the true variance. In a bind you'll just have
 to state that and go on. Bootstrapping is a generally accepted technique,
 and has reasonable persuasive power.
 
+\codefig{bootdraw}{A function to draw samples from the data, for use in a jackknife}%This should really be lower.
+
 But having smaller variances makes
 it easier to reject the null hypothesis, which is what your paper is
 probably trying to do, so bootstrapping works slightly in your favor,
@@ -380,6 +462,83 @@ reserved as a last resort.
 bootstrapping, even if that estimate overstates the variance, then use
 that instead of bootstrapping. Otherwise, you dishonor your name, and
 bring shame to your research group.}
+
+\subsection{Creating random samples} \index{bootstrap}
+\index{jackknife|(textbf}
+The primary difference between bootstrapping and jackknifing is that
+the bootstrap takes a series of draws with replacement from a data set,
+while the jackknife takes a series of samples without replacement. Here,
+I will discuss the jackknife.
+
+Assume that we have a
+data vector \cinline{gsl\_vector * data} and a function \cinline{double
+calc\_statistic(gsl\_vec\-tor *da\-ta)} that finds some statistics. The
+function \cinline{mean()} fits this description, as would a function to find
+a single OLS coefficient.
+
+%bootdraw should be here.
+
+Then the first step in jackknifing is drawing some subset of the data,
+without replacement. Drawing without replacement means that we need to
+keep track of what has been drawn to date, and must check every new draw
+to make sure that the new draw is not a repeat. Figure \ref{bootdraw} lists a function which
+does all of this. It allocates and sets up a random number generator, then
+makes a series of random draws from a uniform distribution in the range
+[0, \cinline{data-$>$size}]. It then checks the list of indices which have
+already been drawn. If it finds a match, then it invalidates the draw
+by rolling back the counter by one, while if it does not find a match then it
+adds the draw to the list of draws and the index to the list of indices.
+
+\codefig{bootvar}{A function to find the variance of a series of jackknife estimates of a statistic} 
+
+We can then use these draws to calculate a
+list of parameter values, as in Figure \ref{bootvar}. The procedure
+looks much like the procedure for finding the kurtosis for the $t$
+distributions above: take a million draws, write down the statistic for
+each, and then take the variance of that vector.
+
+
+It is valid to use the standard deviation returned by this function 
+in the normal way to construct confidence intervals and test
+hypotheses about the statistic.
+
+Again, Apophenia has you covered with a jackknifing function, whose
+use could not be simpler. To produce the covariance matrix for the
+parameters of a Poisson distribution for a given data set:
+\begin{lstlisting}
+apop_data *covar    = apop_jackknife(data, apop_poisson, NULL);
+\end{lstlisting}
+In fact, this is redundant, because the \cinline{apop\_pois\-son}
+model already uses the \cind{apop\_jackknife} function internally,
+so the usual \cinline{apop\_pois\-son.est\-i\-mate(data, NULL)}
+will return an estimate with jackknifed variances.
+\index{jackknife|)textbf}
+
+\exercise{On page \pageref{bootkurt}, I mentioned that one could
+bootstrap the variance of the kurtosis and then test that it equals
+$3\sigma^4$ using the standard $t$ test. 
+
+Write an \ci{apop\_model} with an \ci{estimate} function that takes in a
+data set and returns one parameter: the kurtosis. Feel free to use
+\cind{apop\_vector\_kurtosis} and the \ci{apop\_model} template from
+Section \ref{writeyourown}, leaving everything but the \ci{estimate}
+function at its default values.
+
+Once your model is written, send it with your favorite data to the
+\ci{apop\_jackknife} function to produce a variance. Given the variance
+of the kurtosis and the mean kurtosis, run a $t$ test using
+\cind{gsl\_ran\_tdist\_pdf}.
+}
+
+\summary{
+\item To test a hypothesis about a model parameter, we need to have an
+estimate of the parameter's variance. 
+\item If there is no analytic way to find this variance, we can make
+multiple draws from the data itself, calculate the parameter, and then
+find the variance of that artificial set of parameters. The Central
+Limit Theorem tells us that the artificial parameter set will approach a
+well-behaved Normal distribution.
+}
 
 \section{\ind{Markov Chain Monte Carlo}} 
 The convergence to the kurtosis of the $t$ distributions was not
@@ -415,72 +574,6 @@ The method is popular for Bayesian techniques, but is also applicable in
 other contexts.
 
 Details will be forthcoming.
-
-\subsection{Creating random samples} \index{bootstrap}
-\index{jackknife|(textbf}
-The primary difference between bootstrapping and jackknifing is that
-the bootstrap takes a series of draws with replacement from a data set,
-while the jackknife takes a series of samples without replacement. Here,
-I will discuss the jackknife.
-
-Assume that we have a
-data vector \cinline{gsl\_vector * data} and a function \cinline{double
-calc\_statistic(gsl\_vec\-tor *da\-ta)} that finds some statistics. The
-function \cinline{mean()} fits this description, as would a function to find
-a single OLS coefficient.
-
-\codefig{bootdraw}{A function to draw samples from the data, for use in a jackknife}
-
-Then the first step in jackknifing is drawing some subset of the data,
-without replacement. Drawing without replacement means that we need to
-keep track of what has been drawn to date, and must check every new draw
-to make sure that the new draw is not a repeat. Figure \ref{bootdraw} lists a function which
-does all of this. It allocates and sets up a random number generator, then
-makes a series of random draws from a uniform distribution in the range
-[0, \cinline{data-$>$size}]. It then checks the list of indices which have
-already been drawn. If it finds a match, then it invalidates the draw
-by rolling back the counter by one, while if it does not find a match then it
-adds the draw to the list of draws and the index to the list of indices.
-
-\codefig{bootvar}{A function to find the variance of a series of jackknife
-estimates of a statistic} We can then use these draws to calculate a
-list of parameter values, as in Figure \ref{bootvar}. The procedure
-looks much like the procedure for finding the kurtosis for the $t$
-distributions above: take a million draws, write down the statistic for
-each, and then take the variance of that vector.
-
-It is valid to use the standard deviation returned by this function 
-in the normal way to construct confidence intervals and test
-hypotheses about the statistic.
-
-Again, Apophenia has you covered with a jackknifing function, whose
-use could not be simpler. To produce the covariance matrix for the
-parameters of a Poisson distribution for a given data set:
-\begin{lstlisting}
-apop_data *covar    = apop_jackknife(data, apop_poisson, NULL);
-\end{lstlisting}
-In fact, this is redundant, because the \cinline{apop\_pois\-son}
-model already uses the \cind{apop\_jackknife} function internally,
-so the usual \cinline{apop\_pois\-son.est\-i\-mate(data, NULL)}
-will return an estimate with jackknifed variances.
-\index{jackknife|)textbf}
-
-\exercise{On page \pageref{bootkurt}, I mentioned that one could
-bootstrap the variance of the kurtosis and then test that it equals
-$3\sigma^4$ using the standard $t$ test. 
-
-Write an \ci{apop\_model} with an \ci{estimate} function that takes in a
-data set and returns one parameter: the kurtosis. Feel free to use
-\cind{apop\_vector\_kurtosis} and the \ci{apop\_model} template from
-Section \ref{writeyourown}, leaving everything but the \ci{estimate}
-function at its default values.
-
-Once your model is written, send it with your favorite data to the
-\ci{apop\_jackknife} function to produce a variance. Given the variance
-of the kurtosis and the mean kurtosis, run a $t$ test using
-\cind{gsl\_ran\_tdist\_pdf}.
-}
-
 
 
 \section{Non-parametric modeling} It would be nice if we did not

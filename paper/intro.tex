@@ -9,7 +9,7 @@ parameters are fed into a function, and the function spits out some
 output. We then evaluate the output based on some criterion, typically
 regarding how well it matches some portion of the data. Our
 goal is to find those parameters that produce output that best meets
-our criteria.
+our evaluation criterion.
 
 \begin{figure}[htb]
 %\hskip -1.4cm
@@ -19,13 +19,13 @@ our criteria.
 
 \caption{A flowchart for distribution fitting, linear regression,
 likelihood functions, multilevel modeling,
-simulation (including agent-based modeling), non-parametric modeling,
+simulation (including agent-based modeling), data mining, non-parametric modeling,
 and various other methods.}
 \label{modelflow}
 \end{figure}
 
 One example is the \ind{Ordinary Least Squares} model. Let $\Xv$
-indicate the indpendent data, $\betav$ the parameters, and $\yv$ the
+indicate the independent data, $\betav$ the parameters, and $\yv$ the
 dependent data. Then the function box consists of the simple equation
 $\yv_{\rm out} = \Xv\betav$, and the evaluation step seeks to minimize
 $(\yv_{\rm out} - \yv)^2$. 
@@ -49,7 +49,7 @@ try different sets of parameters to hunt for the best ones.
 As with many things in life, describing the process is much easier than
 doing it.} The function box in Figure \ref{modelflow} is probably a
 function in the mathematical sense, $f:\Xv, \betav \to \yv$. It may
-be as simple as $\yv = \Xv\cdot \betav$ or an elaborate flowchart where
+be as simple as $\yv = \Xv\betav$ or an elaborate flowchart where
 ingredients are mixed and re-mixed.  But as a practical matter, such
 functions are really just pseudo-code, which we can make operational by
 translating them into functions in the computational sense of a series
@@ -87,15 +87,15 @@ facilitates the linear algebra and the Gaussian distribution work;
 and SQLite, a package which facilitates handling large data sets. This
 book will cover the basics of these components and the manner in which
 we can translate from the mathematical language to the language these
-libraries speak.  All of the standards and libraries
+libraries speak.  All of the tools and libraries
 used in this book are open, in the sense that they may be freely
 downloaded and used on the computer where you do your work right now.
 
-The book also makes use of the Apophenia library, a set of functions 
-based on the GSL and SQLite, intended to simplify the hard parts of
-using these packages for fitting models to data. You could do all of the
-analyses in this book without Apophenia, but you would find yourself
-rewriting many of its functions.  
+The book also makes use of the Apophenia library, an open set of
+functions based on the GSL and SQLite intended to simplify the hard
+parts of using these packages for fitting models to data. You could do
+all of the analyses in this book without Apophenia, but you would find
+yourself rewriting many of its functions.
 
 \comment{
 Most stats packages include a manual that attempts to instruct the reader,
@@ -103,12 +103,17 @@ and an alphabetical-order reference providing detailed usage notes for
 functions and structures.  You are reading Apophenia's manual now,
 and the reference is online at \url{http://apophenia.info/doc}.}
 
-\paragraph{The goals and the intended audience}
+\paragraph{The goals}
+Part I of this book will cover methods for efficient computing. Part II
+is a catalog of models. Each model takes the
+function box of Figure \ref{modelflow} to have a different form, and
+then shows how the parameters can be estimated. When listed by name,
+they are quite a long list; when described via implementation in C, you
+will see that their estimation involves the same set of simple techniques.
+Part II also discusses means of testing the parameters estimated using
+these methods.
 
-In this book, I hope to introduce you to the following methods and
-ideas. The topics broadly fall into three categories: methods for more
-efficient computing, methods for estimating the parameters of a model with
-data, and methods for testing hypotheses about the parameters of a model.  
+Here is a more detailed list of the main topics covered:
 \begin{itemize}
 \itemsep 0pt
 \item Structuring programs using modular functions and the stack of frames
@@ -120,12 +125,13 @@ the format you need
 \item Projections: summarizing many-dimensional data in two or three
 dimensions
 \item Estimating linear models
+\item Methods of categorizing data and associating variables (aka data mining)
 \item A brief review of classical hypothesis testing 
 \item Writing models of the real world with an eye toward estimation and
 hypothesis testing
 \item Maximum likelihood estimation
-\item Hypothesis testing using likelihood ratio tests
 \item Optimization routines: how they work and how to use them
+\item Hypothesis testing using likelihood ratio tests
 \item Monte Carlo methods for describing parameters
 \item Bootstrapping and jackknifing for testing hypotheses
 \end{itemize}
@@ -150,20 +156,30 @@ one-line commands at this level, but it also breaks open the black boxes
 and shows how those computations are done, so the reader can modify them
 according to the vagaries of real-world data.
 
+\paragraph{The intended audience}
 I assume that you have had a statistics class or two already, and that
 you have an encyclop\ae{}dic stats textbooks handy, so this book will
 provide some utility as a statistics review, reference, or perhaps a
-different perspective, but there are few proofs and no pretentions to
+different perspective, but there are few proofs and no pretensions to
 comprehensive coverage of classical probability and statistics.
 
-I also assume that you are computer-literate, and have experience writing
+If you are writing simulations, you will have interest in the chapters
+on traditional statistics for a few reasons. First, 
+the simpler the model, the better, and the classical statistical models
+are as simple as they get. If one of those standard models fit your data well, you may not need to
+draw out a more extensive simulation. Second, it is probably worthwhile to check
+your data against a simple linear model as a baseline before going into
+more complex waters. Finally, when you do run your simulation, you will
+be marking down the variables in each period, thus producing a data set
+that will need analysis, probably via classical statistical methods.
+
+I assume that you are computer-literate, and have experience writing
 scripts in a stats package. Those who are entirely new to the idea of
 writing a sequence of instructions for a computer may want to warm up
 with a few online tutorials.
 
 If you are well-versed in C and SQL, then the later parts of Part I and
 all of Part II will be immediately useful.
-
 If you are not well-versed in C and SQL, then expect to take some time
 getting comfortable with these languages before tackling the computational
 implementation of the techniques discussed in Part II.
@@ -173,10 +189,11 @@ long-term payoff. If you expect that you will never do anything more
 difficult than a linear regression on well-formed \ind{iid} data, or
 if you are trying to slog through your department's stats requirement
 so you can never look at another data set again, then by all means, put
-this book down and get a copy of the easiest stats package you can get
-away with. But if you expect to be doing statistical work for a larger
-part of your career, such that problems of extensibility, portability,
-and scaling may be looming in your future, then this book is for you.
+this book down and get a copy of the easiest stats package you can
+get away with. But if you expect to be doing computational modeling
+and statistics for a larger part of your career, such that problems of
+extensibility, portability, and scaling may be looming in your future,
+then this book is for you.
 
 It is not a short ride, but when you are done with all this---and this
 is no exaggeration---you will have the tools to implement any technique
@@ -199,7 +216,7 @@ your computer to efficiently invert matrices and shunt large data sets.
 It starts in Chapter \ref{c_crash} with a tutorial on the C programming
 language.  The chapter covers nothing more difficult than adding
 columns of numbers, but it provides the basic grammar and structure that
-the remainder of the book will use to do statistical analysis. Notably,
+the remainder of the book will use to estimate models. Notably,
 it introduces the idea of functions, and how one can build functions or
 use existing functions to execute increasingly advanced routines.
 
@@ -229,19 +246,19 @@ of manipulating data sets offered by SQL is very much worth its short
 learning curve. Chapter \ref{sql} presents a tutorial of SQL syntax to
 get you up to speed. 
 
-Apophenia uses the \ind{SQLite} library, which will
-give you all the database functionality you need. Those of you who 
+Apophenia implemenst SQL via the \ind{SQLite} library.
+Those of you who 
 have data which is already handled
 by another database engine will easily be able to adapt the techniques
 used here, but will need to brush up on the details of how to access
-your site's database. Since you are using C instead of a stats package,
+your site's database. Since you are using C,
 you are guaranteed that there is an interface out there that you can
 download and incorporate into your programs.
 
 \paragraph{The computation engine} The \ind{GNU Scientific Library}
 includes tools for all of the procedures commonly used in statistics,
 such as linear algebra operations, looking up the value of F-, t-, $\chi^2$-
-distributions, and finding maximia of likelihood functions. These
+distributions, and finding maxima of likelihood functions. These
 will be the building blocks for analysis. Chapter \ref{linear_algebra}
 presents some basics for using the GSL, such as matrix manipulation and
 linear algebra.
@@ -254,8 +271,8 @@ the reader.'' Similarly, the GSL includes all that we need to do
 statistics, but in a raw form that is still a long way from the
 sort of data analysis and hypothesis testing we want to do. Apophenia,
 presented in Chapter \ref{apop}, is a library of structures and functions
-that binds together the GSL and SQLite to facilitate data handling
-and statistics.
+that binds together the GSL and SQLite to facilitate the management of
+data and models.
 
 \paragraph{Pretty pictures} One thing C is not really good for is drawing
 pretty pictures. This is not to be belittled, since those pictures
@@ -309,7 +326,7 @@ linear regressions, and goodness-of-fit tests.
 
 \paragraph{General theorems and their special cases}\index{Ordinary Least
 Squares|(}
-Here is another way to divide the theorems that underly
+Here is another way to divide the theorems that underlie
 statistics into two classes. The first class includes general
 results about likelihood functions, that 
 apply almost universally, but require a huge
@@ -395,6 +412,27 @@ column of numbers, and their transpose, $\xv'$, is a row.
 
 $\betav$: Greek letters indicate parameters to be estimated;
 if boldface, they are a vector of parameters.
+
+\ci{a} versus $a$: The teletype typeface indicates text
+that can be typed directly into a text file and understood by C, SQL, or
+the command prompt. Thus, when translating from a mathematical model
+with variables $a$ and $b$, the typeface will shift to indicate the
+analogous function inputs \ci{a} and \ci{b}.
+
+\summarynoitems{Most sections end with a summary of the main points, set
+like this paragraph.
+Some readers will prefer to read the section summary at the end of
+the section before reading the section itself.
+
+The summary for the introduction:
+\begin{itemize}
+\item This book will discuss methods of estimating and testing the
+parameters of a model with data.
+\item It will also cover the means of writing those models using C, the
+fastest, most stable, and most widely-available computing language in use today; and SQL, a 
+language designed to help manage large data sets.
+\end{itemize}
+}
 
 
 \comment{

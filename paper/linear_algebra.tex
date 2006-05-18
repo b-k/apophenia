@@ -1,8 +1,8 @@
-\startonecol \chapter[Linear Algebra]{Linear algebra} \label{linear_algebra} \endonecol
+\chapter[Linear Algebra]{Linear algebra} \label{linear_algebra} 
 
 Recall the philosophy of C: the language provides only the most basic of
 basics, such as addition and division, and everything else one would
-want to do is provided by a function library. Most of statisical analysis is
+want to do is provided by a function library. Most of statistical analysis is
 described as operations on matrices and vectors, so the first key
 extension a mathematician needs is a package to do basic vector and
 matrix maintenance and linear algebra.
@@ -74,7 +74,7 @@ whose definition you can look up if you are so inclined. If you do, you
 will see that it includes elements \cinline{size1} and \cinline{size2},
 for the row and column sizes of the matrix. [Row always comes first,
 then Column, just like the order in Roman Catholic, Randy Choirboy,
-or RC Cola.] Since the vector has only one dimension, the analagous
+or RC Cola.] Since the vector has only one dimension, the analogous
 element of the vector structure is \cinline{v-$>$size}.
 
 Next, we copied the vector to the third row of the matrix using \cinline{gsl\_\-ma\-trix\_\-set\_\-row(m, 3, v)}. Notice that in so doing, we
@@ -179,6 +179,18 @@ ${\bf A}{\bf B}$, or its inverse,
 ${\bf A}{\bf B}^{-1}$. Those operations require more computational firepower, which
 is provided by the BLAS.
 
+\summary{
+\item You can express matrices and vectors via \ci{gsl\_matrix} and
+\ci{gsl\_vector} structures.
+\item Allocate these structures using \ci{gsl\_matrix\_alloc(size1,
+size2)} and \ci{gsl\_vector\_alloc(size)}; free them using
+\ci{gsl\_matrix\_free(m)} and \ci{gsl\_vector\_free(v)}.
+\item Refer to elements using \ci{gsl\_matrix\_set} and
+\ci{gsl\_matrix\_get} (and similarly for vectors).
+\item Once your data is in these forms, you can operate on the matrix or
+vector as a whole using functions like
+\ci{gsl\_matrix\_add (a,b)} or \ci{gsl\_vector\_scale (a,x)}.
+}
 
 \section{The \ind{BLAS}} 
 \index{matrices!dot product|(} \index{dot product|(}
@@ -274,10 +286,10 @@ discussed fully in Chapter \ref{apop}. For now, just take it to be a
 Here is the output:
 \begin{lstlisting}
     2       3       1       1       2       3
-    3       4       3       3       3       4
-    2       2       3       3       2       2
-    3       4       3       3       3       4
-    4       5       4       4       4       5
+    3       4       3       3       4       4
+    2       2       3       3       3       2
+    4       5       4       4       5       5
+    4       5       4       4       5       5
     3       4       3       3       4       4
 \end{lstlisting}
 This tells us, for example, that there are three ways to transition from state one to
@@ -294,6 +306,7 @@ that takes two \cinline{gsl\_matrix}es and returns the quadratic form as above. 
 
 \index{matrices!dot product|)}
 \index{dot product|)}
+\comment{
 \paragraph{Scalars} The GSL provides predictable functions for
 interacting vectors or matrices with scalars. Here is code to add one to
 and then double all the elements of a matrix and a vector:
@@ -306,6 +319,13 @@ gsl_vector_scale(a_vector, 2);
 \end{lstlisting}
 \cindex{gsl\_matrix\_add\_constant} \cindex{gsl\_matrix\_scale}
 \cindex{gsl\_vector\_add\_constant} \cindex{gsl\_vector\_scale}
+}
+
+\summary{
+\item Matrix $\cdot$ vector: \ci{gsl\_blas\_dgemv}.
+\item Matrix $\cdot$ matrix: \ci{gsl\_blas\_dgemm}.
+\item Vector $\cdot$ vector: \ci{gsl\_blas\_ddot}.
+}
 
 \section{Matrix inversion and equation solving}  \index{matrices!inversion}\index{matrices!determinants}
 Matrix inversion is one of the most computationally intensive problems
@@ -334,6 +354,10 @@ matrix $X'X$ and \cinline{xpy} is the vector $X'Y$, then
 return $\beta$. This is how \cinline{apop\_OLS} will find $\beta$ if it
 is all you ask for.
 
+\summary{
+\item You can often avoid inverting matrices, but when you must, you can use
+\ci{apop\_det\_and\_inv}.
+}
 
 \section{Shunting data} \label{asst_conversions} 
 There are many facets to dealing with a computer that one would call
@@ -373,7 +397,7 @@ using the transition matrix on page \pageref{twostep}.
 Text file               & C & F & \cd & \cd & \cd &  F                   \\
 Db table                & \cd & Q & \cd & Q & Q & Q                  \\
 \cinline{double[ ]}      & \cd & \cd & C & F & F & \cd                  \\
-\cinline{gsl\_vector}   & P  & P & F & C & \cd & F                    \\
+\cinline{gsl\_vector}   & P  & P & F & C & F & F                    \\
 \cinline{gsl\_matrix}   &  P & P & F & V &C &  F               \\
 \cinline{apop\_data}    & P & P & F & \cd & S &C
 \end{tabular}
@@ -402,9 +426,9 @@ names of the form \cinline{apop\_...\_copy}.
 //\cinline{double[ ]} $\Rightarrow$ \cinline{double[ ]}
 //You need to know the size of the original.
     double *copy1 = malloc(sizeof(double) * original_size);
-    mecpy(copy1, original, sizeof(double) * original_size);
+    memcpy(copy1, original, sizeof(double) * original_size);
     double *copy2[original_size];
-    mecpy(copy2, original, sizeof(double) * original_size);
+    memcpy(copy2, original, sizeof(double) * original_size);
 //\cinline{gsl\_matrix} $\Rightarrow$ \cinline{gsl\_matrix}
     gsl_matrix *copy   = gsl_matrix_alloc(original->size1, original->size2);
     gsl_matrix_memcpy(copy, original);
@@ -416,7 +440,7 @@ names of the form \cinline{apop\_...\_copy}.
 \end{lstlisting}
 
 \paragraph{Method F: Function call}
-\cindex{apop\_vector\_to\_data}\cindex{apop\_matrix\_to\_data}
+\cindex{apop\_vector\_to\_matrix}\cindex{apop\_vector\_to\_data}\cindex{apop\_matrix\_to\_data}
 \cindex{apop\_text\_to\_data} \cindex{apop\_text\_to\_db}
 \cindex{apop\_array\_to\_matrix} \cindex{apop\_array\_to\_vector}
 \cindex{apop\_line\_to\_matrix} \cindex{apop\_line\_to\_data}
@@ -426,7 +450,7 @@ These are functions designed to convert one format to another.
 
 There are two ways to express an array of \cinline{double}s. One is to
 declare a pointer to pointers to \cinline{double}s, and the other is to
-delcare double-subscripts:
+declare double-subscripts:
 \begin{lstlisting}
 double **method_one = malloc(sizeof(double*)*size_1);
 double method_two[size_one][size_two] = {{2,3,4},{5,6,7}};
@@ -439,7 +463,7 @@ be worth anything.
 Instead, declare your data as a single line, listing the entire first
 row, then the second, et cetera, with no intervening brackets. Then, use
 the \cinline{apop\_line...} functions to convert to a matrix. Below, the
-first set of examples convert from an array decared as in method one
+first set of examples convert from an array declared as in method one
 above, and the second set shows an array declared as a single line and
 then converted to a $2 \times 3$ matrix.
 \begin{lstlisting}
@@ -465,6 +489,8 @@ then converted to a $2 \times 3$ matrix.
     double *copy;
     int copy_size   = original_vec->size;
     apop_vector_to_array(original_vec, &copy);
+//\cinline{gsl\_vector} $\Rightarrow$ \cinline{gsl\_matrix}
+    gsl_matrix   *copy = apop_vector_to_matrix(original_vec);
 //\cinline{gsl\_vector} $\Rightarrow$ \cinline{apop\_data}
     apop_data   *copy = apop_vector_to_data(original_vec);
 //\cinline{gsl\_matrix} $\Rightarrow$ \cinline{apop\_data}
@@ -594,7 +620,7 @@ gsl_vector_memcpy(a_new_vector, &v);
 
 
 \section{\treesymbol Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \cindex{GSL\_NEGINF} \cindex{GSL\_POSINF} \cindex{GSL\_NAN} \label{numbers}
-Floating-point numbers (both \cind{float} and \cind{double}) can take three special values: \cinline{Inf}, \cinline{-Inf}, and \cinline{NaN}. Data handlers will mostly be
+Floating-point numbers (both \cind{float} and \cind{double}) can take three special values: \cinline{Inf}, \cinline{-Inf}, and \cinline{NaN}. Data-oriented readers will mostly be
 interested in \cinline{NaN} (read: not a number), which is an appropriate way to represent missing data. Here is a
 program to show you the syntax. All four \cinline{if} statements will be true, and print their associated
 statements.
@@ -607,7 +633,7 @@ statements.
 
 int main(){
 double missing_data = GSL_NAN;
-float big_nuber = GSL_POSINF;
+float big_number = GSL_POSINF;
 float negative_big_number = GSL_NEGINF;
 if (gsl_isnan(missing_data))
     printf("I'm missing a data point.");
@@ -621,15 +647,15 @@ return 0;
 }
 \end{lstlisting}
 
-Since floating-point nubers can take these values, division by zero
+Since floating-point numbers can take these values, division by zero
 won't crash your program. \cinline{float f = 1.0/0.0} will result in
 \cinline{f == GSL\_POSINF} and \cinline{f = 0.0/0.0} will result in \cinline{f ==
 GSL\_NAN}. However, integers have none of these luxuries: run \cinline{int
 i = 1/0} and you will get \cind{Arithmetic exception (core dumped)}.
 
-\paragraph{Precision}\index{prcecision, numerical} 
+\paragraph{Precision}\index{precision, numerical} 
 As with any finite means of writing real numbers,
-there is a roundoff error to the computer's internal representation of
+there is a round off error to the computer's internal representation of
 numbers. The computer basically stores non-integer numbers using
 \ind{scientific notation}. For those who have forgotten this notation, one
 would write  $\pi$ as $3.14159 \times 10^0$, or \ci{3.14159e0}, 
@@ -640,7 +666,7 @@ exponent is chosen to ensure that this is the case.
 Your computer works in binary, so numbers are of the form $d \times
 2^n$, where $d$ is a string of ones and zeros and $n$ is an exponent. 
 Multiplying a number by $1024=2^{10}$ will leave $d$ entirely unchanged but
-add ten to $n$, meaning that doubling or halving a number will not
+add ten to $n$, so operations like doubling or halving a number will not
 change the precision of the number (until $n$ exceeds the space given to
 it, typically around $\pm 256$).
 
@@ -660,10 +686,10 @@ indicates that the space will be fifty-five characters wide, of which
 
 int main(){
 long double pi = 3.1415926535897932384626433832795028841971693993751058209749445923L;
-printf("Pi, integer:\t\t %65i\n",  (int) pi);
-printf("Pi, float:\t\t %65.63f\n",  (float) pi);
-printf("Pi, double:\t\t %65.63lf\n",  (double) pi);
-printf("Pi, long double:\t %65.63Lf\n",  pi);
+printf("Pi, integer:\t\t %-65i\n",  (int) pi);
+printf("Pi, float:\t\t %-65.63f\n",  (float) pi);
+printf("Pi, double:\t\t %-65.63lf\n",  (double) pi);
+printf("Pi, long double:\t %-65.63Lf\n",  pi);
 return 0;
 }
 \end{lstlisting}
@@ -685,6 +711,53 @@ with four significant digits can leave you with only three significant
 digits. As a general rule of thumb, if you are writing an internal
 function to act on a \ci{float}, use \ci{double} variables internally,
 and if you are taking in \ci{double}s, use \ci{long double} internally.
+
+\label{precisionproblem}
+Multiplying large columns of numbers is also to be avoided. This is
+discussed in the chapter on maximum likelihood estimation, because the
+likelihood function involves exactly such multiplication. Say that we
+have a column of a thousand values each around $\frac{1}{2}$. Then the
+product of a thousand of these is about $2^{-1000}$, which strains what
+a \ci{double} can represent. Here is a table of powers of two, as
+represented by a \ci{double}. Notice that for $i>1,000$, a
+modest number of data points, the system throws in the towel and just
+calls $2^i = \infty$ and $2^{-i} = 0$. For those who would like
+to try this at home, the code to produce the body of this table is:
+\cindex{ldexp}
+\begin{lstlisting}
+int i;
+for(i=0; i< 1400; i+=100)
+    printf("%i\t %lg \t %lg\n", i, ldexp(1,i), ldexp(1,-i));
+\end{lstlisting}
+
+
+\begin{center}
+\vspace{\baselineskip}
+\hspace{-1.4cm} 
+\fbox{
+\begin{tabular}{lll}
+$i$ & $2^i$ & $2^{-i}$\\
+\hline
+100&      1.26765e+30     &7.88861e-31\\
+200&      1.60694e+60&     6.22302e-61\\
+300&      2.03704e+90&     4.90909e-91\\
+400&      2.58225e+120&    3.87259e-121\\
+500&      3.27339e+150&    3.05494e-151\\
+600&      4.14952e+180&    2.40992e-181\\
+700&      5.26014e+210&    1.90109e-211\\
+800&      6.66801e+240&    1.4997e-241\\
+900&      8.45271e+270&    1.18305e-271\\
+1000&     1.07151e+301&    9.33264e-302\\
+1100&     inf&     0\\
+1200&     inf&     0
+\end{tabular}
+}
+\vspace{\baselineskip}
+\end{center}
+
+The solution to the problem of finding the product of a large number of
+elements, as shown on page \pageref{precisionfix}, is to calculate
+the log of the product rather than the product itself.
 
 If you need to calculate $\pi$ to a million decimal points, you
 will need to find a library that can work with numbers to arbitrary
@@ -711,11 +784,11 @@ are different, it will be difficult to convince a referee of this.
 \paragraph{Conditioning}\index{data!conditioning} Most numerical routines do badly when the
 determinant is near zero, or when eigenvalues are different orders of magnitude.
 One way to cause such problems with your own data is
-to have one column that is of the order of $1 \times 10^{100}$ and
-another that is on the order of $1 \times 10^{-100}$. In
+to have one column that is of the order of $1 \times 10^{10}$ and
+another that is on the order of $1 \times 10^{-10}$. In
 finite-precision arithmetic on two numbers of such wide range, the
-smaller number is often simply swallowed: $3.14 \times 10^{100} + 5.92
-\times 10^{-100} = 3.14 \times 10^{100}$. 
+smaller number is often simply swallowed: $3.14 \times 10^{10} + 5.92
+\times 10^{-10} = 3.14 \times 10^{10}$. 
 
 Thus, try to ensure that each column of the data is
 approximately of the same order of magnitude before doing calculations.
@@ -738,3 +811,12 @@ These notes about conditioning are not C-specific. Any mathematics
 package that hopes to efficiently work with large matrices must use
 finite-precision arithmetic, and will therefore have the same problems
 with ill-conditioned data matrices.
+
+\summary{
+\item Floating-point numbers can take on values of \ci{-Inf}, \ci{Inf},
+and \ci{NaN}.
+\item Try to keep the scale of your variables within about a thousand of
+each other.
+\item Multiplying together a column of a thousand numbers will break.
+\item Reporting results based on the fifth significant digit is spurious.
+}

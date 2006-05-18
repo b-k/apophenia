@@ -1,3 +1,7 @@
+		May 2006
+--The apop_model no longer includes an inventory. I leave it to the
+estimate function to do its own allocation.
+
 		April 2006
 --apop_matrix_normalize and apop_vector_normalize had different
 numbers for the same normalizations. Was that ever dumb. Also, I've

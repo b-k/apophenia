@@ -216,7 +216,6 @@ distribution to have too, like a random number generator.
 
 \param name	The model name. You have 100 characters. 
 \param parameter_ct	The number of parameters. If this is -1, it will be dynamically set to the size of the given data set minus one.
-\param inventory_filter	an \ref apop_inventory indicating what the estimate fn is programmed to return.
 \param estimate		the estimator fn, which is all most users will care about.
 \param log_likelihood	the likelihood fn given data 
 \param 	dlog_likelihood	the derivative of the likelihood fn

@@ -6,6 +6,11 @@
 \usepackage{hhline} %load last
 %\usepackage[LHE,T1]{fontenc}
 
+%\usepackage{mathbbol} %Sigma, blackboard  This never worked. See kludge below.
+%\usepackage{bbold} %Sigma, blackboard
+%\let\boldsig\Sigma
+\usepackage{amsmath, amsfonts}  %for mathbb
+%\let\boldsig\savedSigma
 
 %\def\treesymbol{\maltese}
 %\usepackage{stmaryd}\def\treesymbol{\curlyveeuparrow} %stmaryd
@@ -22,18 +27,8 @@
 \end{wrapfigure}
 }
 
-\iftwocol
-    \def\startonecol{\end{multicols}}
-    \def\endonecol{\begin{multicols}{2}}
-\else
-    \def\startonecol{}
-    \def\endonecol{}
-\fi
-
-
 %equation boxes
 \long\def\eqnbox#1{
-%\startonecol
 \begin{center}
 \fbox{
 \parbox{10cm}{
@@ -47,7 +42,6 @@
 }
 
 \long\def\wideeqnbox#1#2{
-%\startonecol
 \begin{center}
 \fbox{
 \parbox{#1}{
@@ -63,7 +57,6 @@
 
 
 %math conveniences, primarily commonly boldfaced vectors.
-\usepackage{amsfonts,amsmath}  %for mathbb
 \def\xv{{\bf x} } \def\yv{{\bf y} } \def\pv{{\bf p} }
 \def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
 \def\betav{{\mbox{\boldmath$\beta$}}}
@@ -122,6 +115,7 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 %\def\setlistdefaults{\lstset{frame=single, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
 \def\setlistdefaults{\lstset{frame=single,frameround=tttt, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
 \setlistdefaults
+%C inline just uses \tt, rather than any fancy encoding.
 %\def\cinline#1{\lstinline[language=C, showstringspaces=false, basicstyle=\small\bf,breaklines=true,breakatwhitespace=false,escapechar=\%]{#1}\setlistdefaults}
 %\def\cinlinetwo#1{\lstinline[language=C, showstringspaces=false, basicstyle=\small\bf,breaklines=true,breakatwhitespace=false, escapechar=\%]{#1}}
 
@@ -166,8 +160,6 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 %margin boxes:
 \newlength\mwidth
 \setlength\mwidth{1.3cm}
-        %here, commented out, are the one-column versions.
-        %They were a pain.
 \setlength\fboxsep{5pt} %margin size in margin boxes
 \long\def\marginalia#1#2#3{
 \Needspace{#1\baselineskip}
@@ -192,6 +184,7 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 }
 
     \comment{
+%A simpler, inline version:
 \long\def\marginalia#1#2{
 \vskip 0.3cm
 \hrule
@@ -207,22 +200,27 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
         }
 
 
-%Exercises
-%\long\def\exercise#1{\subsection{{\huge$\mathbb Q$}}{#1}
-%\begin{center}\parbox{4cm}{\hrule}\end{center}}
-\long\def\exercise#1{\vspace \baselineskip
+
+
+%Exercises and summaries
+\long\def\textblock#1#2{\vspace \baselineskip
 \begin{tabular}{>{\huge}m{1 cm}|m{(\textwidth - 3cm)}}
 %\begin{tabular}{m{1 cm}|p{10cm}}
-{$\mathbb Q$}&{#1}\\
-\end{tabular}}
+{#1}&{#2}\\
+\end{tabular}\vskip \baselineskip}
 
+%Yes, I agree: this is a terrible, terrible kludge.
+\def\sigmaoutline{\scalebox{0.1}{\includegraphics{sigma}}}
+
+\long\def\exercise#1{\textblock{$\mathbb Q$}{#1}}
+\long\def\summarynoitems#1{\textblock{\sigmaoutline}{#1}}
+\long\def\summary#1{\textblock{\sigmaoutline}{\begin{itemize}#1\end{itemize}}}
 
 
 
 
 %The actual book:
 \begin{document}
-
 
 
 \setlength{\columnsep}{1.2cm}
@@ -251,13 +249,13 @@ Plain old \copyright 2006, Ben Klemens.]
 \tableofcontents
 \mainmatter
 \input intro.tex
-\startonecol \part{Computing} \endonecol
+\part{Computing}
 \input c_crash.tex
 \input sql.tex
 \input linear_algebra.tex
 \input apop.tex
 \input gnuplot.tex
-\startonecol \part{Statistics} \endonecol
+\part{Statistics}
 \input projection.tex
 \input testing.tex
 \input mle.tex

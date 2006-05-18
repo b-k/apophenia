@@ -4,30 +4,36 @@ You may be surprised to see a book entitled \airq{Modern Statistical
 Computing} that is based on a language written in 1972. 
 Why use C instead of a specialized language like SAS, Stata, SPSS,
 S-Plus, SIENA, SST, SHAZAM, GAUSS, GAMS, GLIM, GENSTAT, GRETL, EViews,
-PcGive, MatLab, Minitab, Mupad, Maple, Mathematica, WinBUGS, TSP, HLM, R,
-RATS, LISREL, LIMDEP, LISP-STAT, Octave, OxMetrics, or Yorick?  There are more
-than enough books that advocate for the use of such languages; as one
-editor at a well-known scientific publishing company explained to me:
-``\dots most of the statistics [book] market is quite heavily influenced
-by the software companies that service the field.''  Thus, this may be
-the only book to advocate statistical computing with a general computing
-language, so I will take some time motivating the choice as clearly as
-possible. Over the course of this, you should also get a better idea of
-why C is the way it is, and why modern statistics is best done in an old
-language.
+PcGive, MatLab, Minitab, Mupad, Maple, Maxima, Mathematica, WinBUGS, TSP,
+HLM, R, RATS, LISREL, LIMDEP, LISP-STAT, Octave, OxMetrics, Weka, or Yorick?
+There are more than enough books that advocate for the use of such
+languages; as one editor at a well-known scientific publishing company
+explained to me, ``\dots most of the statistics [book] market is quite
+heavily influenced by the software companies that service the field.''
+Thus, this may be the only book to advocate statistical computing with
+a general computing language, so I will take some time motivating the
+choice as clearly as possible. Over the course of this, you should also
+get a better idea of why C is the way it is, and why modern statistics
+is best done in an old language.
 
 \paragraph{Computational speed---really} Using a stats package sure
 beats inverting matrices by hand, but as computation goes, many stats
 packages are still relatively slow, and that slowness can make otherwise
 useful statistical methods infeasible.
 
-R and Apophenia use identical code (in C) for doing the \ind{Fisher
-exact test}, so it makes a good basis for comparison.  On my laptop,
+R and Apophenia use identical C code for doing the \ind{Fisher
+exact test}, so it makes a good basis for comparison.\comment{The
+Apophenia code was literally cut and pasted from R's source code. The
+only key change was that instances of \ci{R\_malloc} were replaced by
+\ci{malloc}. This is not the place for a full exposition on memory
+management in packages like R, but as the example shows, its basic design
+emphasizes minimal maintenance at the cost of speed.} On my laptop,
 a C program using Apophenia does 10,000 of these tests in 10.1 seconds;
-a minimal R script does the same work in nine minutes---over fifty
-times as long. Nor is this just an isolated test case: I can't count how
-many times people have told me stories about an analysis that took days or
-weeks in a stats package, but ran in minutes after they rewrote it in C.
+a minimal R script does the same work in nine minutes---over fifty times
+as long. Nor is this just an isolated test case: I can't count how many
+times people have told me stories about an analysis or simulation that
+took days or weeks in a stats package but ran in minutes after they
+rewrote it in C.
 
 OLS used to be the only technique that we had the computing power to
 actually implement. But when you can do a maximum likelihood search
@@ -44,18 +50,17 @@ takes about ten times as long as comparable C code. On my laptop, R in
 batch mode produced draws at the rate of $\approx 122,000/{\rm sec}$,
 while C produced draws at $\approx 425,000/{\rm sec}$.}
 
-
 The features of C that stats package users will find most annoying are
-the ones that make it orders of magnitude faster than the cuter
+exactly the features that make it orders of magnitude faster than the cuter
 alternatives.  Type declarations mean that the computer does not need
-to guess the data type you mean at every use, saving an iota of time for
+to guess the data type you mean at every use, saving time on
 every calculation.  Pointers and the call-by-reference mechanism reduce
 internal copying during function calls.
 
 Further, C's syntactic unpleasantness pays off immensely when extending
 quick-and-dirty scripts to involved, complex analyses.
 Not declaring types seems convenient at first, but playing guess-the-type
-with a package is often very frustrating for complex data types, such
+with a package is often frustrating for complex data types, such
 as a list of potentially empty lists. C's multiple levels of scope and 
 modular files and functions may be counterintuitive at first,
 but those features are essential to your sanity when
@@ -80,7 +85,7 @@ library of C functions to execute any high-level operations you may
 desire, such as the \cinline{apop\_OLS.estimate(data)} function from
 the Apophenia library.  
 You get to pick the balance of laziness and precision that you desire. You
-can write code to manipulate individual addresses, use the GNU Scientific
+can write code to manipulate individual memory locations, use the GNU Scientific
 Library to manipulate matrices, or use Apophenia to estimate models---and
 you can do it all in the same program.
 
@@ -104,7 +109,7 @@ Further, it is important to be compatible with yourself. Will you be
 able to verify and modify your work five years from now?  Chapter
 \ref{c_crash} shows you how to build a library of functions so you can
 put together next month's analysis in half the time, but the library is
-only as useful as the underlying langugae.  Since C was written in 1972,
+only as useful as the underlying language.  Since C was written in 1972,
 dozens (maybe hundreds) of stats packages have come and gone, and those
 who try to follow the trends have on their hard drives dozens of scripts
 that they can't run anymore.  Meanwhile, correctly written C programs

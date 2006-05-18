@@ -1,6 +1,6 @@
 OBJECTS = $(PROGNAME).o 			#If there are more files, add nextfile.o here.
 CFLAGS = -g -Wall
-LINKFLAGS = -L/usr/local/lib -lgsl -lgslcblas -lsqlite
+LINKFLAGS = -L/usr/local/lib -lapophenia -lgsl -lgslcblas -lsqlite3
 COMPILE   = gcc $(CFLAGS) -c $< -o $@
 
 $(PROGNAME): $(OBJECTS)
@@ -8,3 +8,6 @@ $(PROGNAME): $(OBJECTS)
 
 $(objects): %.o: %.c 
 		gcc $(CFLAGS) -c $< -o $@
+
+clean:
+	rm $(PROGNAME).o $(PROGNAME)

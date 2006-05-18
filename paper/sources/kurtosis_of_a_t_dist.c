@@ -1,6 +1,6 @@
 #include <apophenia/headers.h>
 int main(){
-int         i, runct    = 2000000;
+int         i, runct    = 5000000;
 int         df, df_max  = 31;
 gsl_vector 	*v  = gsl_vector_alloc(runct);
 gsl_rng     *r  = apop_rng_alloc(0);

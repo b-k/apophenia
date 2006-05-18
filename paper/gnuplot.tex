@@ -1,5 +1,4 @@
-\startonecol \chapter{Gnuplot} \label{gnuplot} \endonecol
-%@-     so lgrind will play nice with makeindex
+\chapter{Gnuplot} \label{gnuplot} 
 \index{Gnuplot|(}
 \index{plotting|see{Gnuplot}}
 \index{graphing|see{Gnuplot}}
@@ -27,7 +26,7 @@ of turning a matrix into a basic plot is trivial. Let \ci{data} be an
 \ci{apop\_data} set whose first and fifth columns we would like to plot
 against each other. Then we need to create a file, put a \ci{plot
 '-';} command in the first line, and then fill the remainder with the
-data to be plotted.  
+data to be plotted.  \label{fprintf}
 \begin{lstlisting}
 FILE    *f = fopen("plot_me", 'w');
 fprintf("plot '-' using 1:5;\n");
@@ -75,7 +74,6 @@ It allocates a histogram with
 of the data. Then the \ci{for} loop pulls data points from the vector and
 dumps them to the histogram, without any further calculation on our part.
 Once everything is neatly aggregated, the function opens a file and dumps the data to a Gnuplottable file. There is an example of this function in use in Figure \ref{draw_beta_curve}, page \pageref{draw_beta_curve}.
-\startonecol
 \begin{lstlisting}
 void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
 int             i;
@@ -104,8 +102,16 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
     if (outfile !=NULL)    fclose(f);
 }
 \end{lstlisting}
-\endonecol
 \index{histograms!plotting|)}
+
+\summary{
+\item A Gnuplot command file basically consists of a group of \ci{set}
+commands to specify how the graph will look, and then a single \ci{plot}
+(2-D version) or \ci{splot} (3-D version) command. 
+\item Using the \ci{plot '-'} form, you can put the data to be plotted
+in the command file immediately after the command. You can use this and
+\ci{apop\_data\_print} to produce plot files of your data.
+}
 
 \section{Printing} \index{Postscript} 
 Once your plot looks nice on the screen, you can put it on paper or a
@@ -196,7 +202,7 @@ is in the \bi{graphicx} package, so it needs to be called in the preamble:
 \begin{lstlisting}
 \usepackage{latexsym, graphicx}
 \end{lstlisting}
-Second, \binline{xdvi} does not currently support roation, so if you are
+Second, \binline{xdvi} does not currently support rotation, so if you are
 viewing via \TeX's native dvi format, the rotation won't happen. Use
 either \binline{pdflatex} or \binline{dvips} to view the output as it
 will print.
@@ -260,7 +266,7 @@ clean:
 
 \section{Animation}\index{animation} Perhaps three dimensions is not
 quite enough, and you need one more. Gnuplot easily supports animation:
-just stack plots on after the next and call \ci{replot} in between. However,
+just stack plots one after the next and call \ci{replot} in between. However,
 many media (such as paper) do not yet support animation, meaning that your
 output will generally be dependent on your display method. The \ind{GIF} format
 provides animation and is supported by all major web browsers, so you

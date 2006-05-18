@@ -1,17 +1,15 @@
-\startonecol \chapter{Maximum likelihood estimation} \label{mle}
-\endonecol
+\chapter{Maximum likelihood estimation} \label{mle}
 \index{maximum likelihood estimation|ff}
 \index{MLE|see{maximum likelihood estimation}}
 
 Maximum likelihood estimators (MLEs) are the bread and butter of
-statistics. Most of the techniques discussed so far are MLE
+statistics.  Most of the techniques discussed so far are MLE
 techniques, except mathematicians over the ages have found ways to hide
 that fact from you, by proving that under certain conditions the
 maximum must have an easy-to-calculate form. But if there is not a nice,
-convenient shortcut, you will have to 
-search for the optimal parameters yourself. There are optimization
-routines from a variety of sources, and Apophenia provides
-a consistent front-end to many of them via its
+convenient shortcut, you will have to search for the optimal parameters
+yourself. There are optimization routines from a variety of sources,
+and Apophenia provides a consistent front-end to many of them via its
 \cind{apop\_maximum\_likelihood} function. You give it a function and
 some parameters, and it will find the optimum.
 
@@ -47,13 +45,14 @@ of Section \ref{distlist}, $L$ is often much easier to deal with, yet
 is equivalent to the PDF for most of our purposes---notably, if we have
 found a maximum for one, the we have found a maximum for the other.
 
+\label{precisionfix}
 Further, consider calculating the likelihood function above given
 a thousand data points.  Then the probability of observing the data set
 we have (fixing $p$ for now) is $\prod_{i=1}^{1000} P(x_i)$.  Since each
 $P(x_i)\in (0,1]$, this product is typically on the order of $1\times
 10^{-1000}$. This is a delicate number, and details of implementation in
 memory could easily break it; this risks what computer scientists call an
-{\sl underflow error}. Taking logs, each value of $p_i$ is now a negative
+{\sl underflow error} (see page \pageref{precisionproblem}). Taking logs, each value of $p_i$ is now a negative
 number, e.g., $\ln(0.5)\approx -0.69$ and $\ln(0.1)\approx -2.3$.  But the
 product above is now a sum: $$\ln\left[\prod_{i=1}^{1000} P(x_i)\right]
 = \sum_{i=1}^{1000} \ln\left(P(x_i)\right).$$ Thus, the log likelihood of our typical
@@ -72,14 +71,14 @@ measurement error.}
 \marginalia{15}{\ind{Exponential families}}{%
 	There is a bit of a sleight of hand in asserting that $S \cdot P = {\partial P
 \over \partial \theta}$: the derivative of the expectation is
-	${d\over d\theta}\int P dy$; while we want $\int {d P\over
+	${d\over d\theta}\int P dy$, while we want $\int {d P\over
 	d\theta} dy=\int S \cdot P dy$ [Note how this means $E(S)=0$, by the
 	way, since the integral of the PDF is one, and $d1/d\theta=0$].
 	If we can't reverse the integral and derivative like this, none
 	of this applies. But we can in the case of any exponential
 	family. You can look that up, but here, we can rest assured that
-	the \ind{Normal}, \ind{Gamma}, \ind{Beta}, \ind{Binomial}, \ind{Poisson}, \&c. are all in this
-	family.} 
+	the \ind{Normal}, \ind{Gamma}, \ind{Beta}, \ind{Binomial}, \ind{Poisson}, \&c. are all exponential
+	families.} 
 The second benefit to using the log likelihood is analytic: since $S \cdot
 f = {\partial f \over \partial \theta}$, the derivative of the expectation
 in terms of $\theta$ can be rewritten as the expectation of $S$. See box
@@ -104,7 +103,7 @@ Let the utility from vector $\xv$ be
 $U(\xv|\betav) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_3 + \beta_4 x_a + \epsilon$,
 where the $\beta$s are all parameters to be estimated from
 the data and $\epsilon \sim {\cal N}(0,1)$.
-The a person consumes $\xv$ iff $U(\xv|\betav)>0$. 
+Then a person consumes $\xv$ iff $U(\xv|\betav)>0$. 
 
 An equivalent way to put the model is to say that $U(\xv)$ is
 deterministic---drop $\epsilon$ from the above, and the probability that
@@ -123,7 +122,7 @@ $$L(\betav|\xv) = \prod_{i} P(\xv^C_i|\betav) \cdot \prod_{i} 1-P(\xv^N_i|\betav
 One row of our data set will consist of a one or zero indicating
 consumption or non-consumption, and then (the transpose of) the vector
 $\xv$. Then the probit parameters can be estimated using
-\cinline{apop\_probit.est\-i\-mate(data, NULL, NULL)}.
+\cinline{apop\_probit.est\-i\-mate(data, NULL)}.
 \index{probit|)}
 
 \section{Why likelihood functions are great} The process of finding a
@@ -170,7 +169,7 @@ or the hypothesis could be false but the test accepts it anyway.
 
 \marginaliafixed{16}{Evaluation vocab}{
 %\marginalia{Evaluation vocab}{
-Here are some vocabluary terms; if you are in a stats class right now,
+Here are some vocabulary terms; if you are in a stats class right now,
 you will be tested on this:
 
 Likelihood of {\bf Type I errors} $\equiv\alpha$: rejecting the null when it is true.
@@ -244,7 +243,7 @@ c&<& {L(\xv|H_1)\over L(\xv|H_0)}\label{thirdnp}
 
 Inequality \ref{firstnp} is the rejection rule from above; Inequality
 \ref{secondnp} uses Bayes's rule to insert the likelihood functions;
-Inequality \ref{thirdnp} just does some cross-division, cancelling out the
+Inequality \ref{thirdnp} just does some cross-division, canceling out the
 $P(\xv)$s, and defining $c\equiv C_IP(H_1)/C_{II}P(H_0)$, i.e., everything
 that doesn't depend on $\xv$. If you tell me the shape of the distribution
 and some number $\alpha\in(0,1)$, then I can give you a value of $c$
@@ -263,6 +262,25 @@ that we did the best we could regarding Type II errors. You will see that
 many of the tests which follow will be of the likelihood ratio form,
 and so Type II errors pretty much never get mentioned, since they're
 considered taken care of.
+
+\summary{
+\item For any sufficiently well-specified model, you can find the
+probability that a given data set was produced via the model.
+\item If the data set consists of independent and identically distributed elements,
+then the likelihood is a product with one term for each data point. 
+For both computational and analytic reasons, the log likelihood is
+easier to work with; the product then becomes a sum.
+\item The parameters that maximize the likelihood function (or 
+identically, maximize the log likelihood) will have the minimum variance
+among all unbiased estimators. The variance is a known quantity, given
+by the Cramer-Rao lower bound, Equation \ref{CRLB}.
+\item Type I and Type II errors are complementary: as one goes up,
+the other generally goes down. However, given a Type I error level,
+different tests will have different Type II error levels.
+The Neyman-Pearson lemma guarantees that a likelihood ratio test has the
+minimum probability of Type II error for a fixed Type I error level.
+
+}
 
 \section{Description: Maximum likelihood estimators} 
 Apophenia provides a single function to find the optimum of a likelihood
@@ -362,11 +380,11 @@ that if there are multiple peaks, then different starting points will
 rise to different peaks.
 
 The simulated annealing algorithm is designed to deal well with multiple
-peaks: as the number of steps in the simulated annealing algoritm $\to
+peaks: as the number of steps in the simulated annealing algorithm $\to
 \infty$, the algorithm can be shown to converge to the global optimum
 with probability one. However, calculating an infinite number of steps
 tends to take an unreasonable amount of time, so you will need to select
-a time-to-confidence tradeoff appropriate to your situation.
+a time-to-confidence traded appropriate to your situation.
 
 
 \subsection{\ci{apop\_estimation\_params} for ML estimation}
@@ -534,6 +552,20 @@ gnuplot plotme -
 \caption{A search for an optimum using a conjugate gradient method.}
 \end{figure*}
 
+\summary{
+\item Given an appropriate \ci{apop\_data} set and \ci{apop\_model}, the 
+\ci{apop\_maximum\_likelihood} function will apply any of a number of
+maximum-searching techniques to find the optimal parameters.
+\item You can try various methods in sequence using
+\ci{apop\_estimate\_restart}. You can also use the restarting technique
+to do a coarse search for the neighborhood of an optimum, and then a
+fine search for a better estimate.
+\item No computational method can guarantee a global optimum, since the
+computer can only gather local information about the function.
+Restarting the search in different locations may help to establish a
+unique optimum or find multiple optima.
+}
+
 \section{Hypothesis testing: Likelihood ratio tests} \index{likelihood
 ratio test}\index{Neyman-Pearson lemma}
 As intimated by the Neyman-Pear\-son lemma, the ratio of two
@@ -545,6 +577,13 @@ likelihood of the overall model, and $L_0$ be the likelihood of a
 model with $K$ restrictions, such as $K$ parameters fixed as zero. Then
 $$-2\ln\frac{L_0}{L} = -2[\ln L_0 - \ln L] \sim \chi^2_K.$$
 
+If you have run a maximum likelihood estimate of two models, then you
+already have all you need to do a likelihood ratio test. 
+If you are using a linear model such as OLS, you can still do a
+likelihood ratio test, because OLS is an MLE based on a set of specific
+assumptions.
+
+This section forthcoming, along with a bit on nested/non-nested models.
 
 \section{Writing your own} \label{writeyourown}
 The design of the \cinline{apop\_model} hopes to make it as easy as
@@ -613,8 +652,8 @@ modules. Here is the complete header you will need:
 \begin{lstlisting}
 apop_model apop_new_likelihood;
 \end{lstlisting}
-Since the \cinline{apop\_model} is defined when you \cinline{\#include
-$<$apophenia/head\-ers.h$>$}, the compiler already knows all the necessary
+Since the \cinline{apop\_model} structure is defined when you \cinline{\#include
+$<$apo\-phe\-nia/head\-ers.h$>$}, the compiler already knows all the necessary
 details of your model; all you need to do from there is declare that
 your model exists.
 
@@ -636,6 +675,11 @@ gsl_vector_set(gradient, 1, d_b);
 Now add the resulting dlog likelihood function to your object, by
 replacing the \cinline{NULL} labeled \airq{place dlog likelihood here} with
 the name of your dlog likelihood function.  
+
+\item There are often efficiency-improving tricks to calculating both the log and
+dlog at the same time. If so, then it may be worth writing the \ci{fdf}
+function to do both at once. See the online reference for details.
+
 \item Send the code to Apophenia's maintainer for inclusion in future
 versions.  \end{itemize}
 
@@ -680,7 +724,6 @@ penalty. To give a concrete example, here is a constraint function that
 will ensure that both parameters of a two-dimensional input are both
 greater than zero:
 
-\startonecol
 \begin{lstlisting}
 static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
 double          limit0          = 0,
@@ -697,7 +740,6 @@ double          beta0   = gsl_vector_get(beta, 0),
                         + GSL_MAX(limit1 + tolerance - beta1, 0); 
 }
 \end{lstlisting}
-\endonecol
 
 Observe how it manages all three of the above steps. First, it checks
 the constraints and quickly returns zero if none of them bind. Then, if
@@ -710,6 +752,18 @@ approach that point.
 
 For another example, have a look at the budget constraint in the code
 listing at the end of this chapter.
+
+\summary{
+\item Writing an \ci{apop\_model} object to represent your mathematical
+model involves providing five functions: an estimate, a log likelihood, a
+dlog likelihood, a constraint function, and a joint log-dlog function.
+The model isn't worth much without an estimation routine, but none of
+the other elements are required.
+\item If a dlog likelihood function is not provided, the maximum
+likelihood routines will use a numerical approximation. If there are no
+constraints on the parameters, the constraint function can clearly be
+omitted.
+}
 
 \section{More models}    \label{econ101}
 

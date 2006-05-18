@@ -1,4 +1,4 @@
-\startonecol \chapter{Describing data} \label{projections} \endonecol
+\chapter{Describing data} \label{projections}
 
 This chapter covers some methods of describing a data set, via a
 number of strategies of increasing complexity. 
@@ -203,7 +203,22 @@ remainder of this chapter will use the traditional terminology that
 takes the base model as given, reducing
 the above pair of equations to the hypothesis $H_0: \alpha_1=0$.
 
-
+\summary{
+\item If the parameters of the model of the real world can not be solved using the 
+parameters of the statistical model (e.g., two unknowns and one
+equation), then the model is
+\vocab{undersolved}. Undersolved variables can neither be estimated nor
+tested.
+\item If the parameters of the model of the real world can be solved uniquely using the 
+parameters of the statistical model, then the model is
+\vocab{exactly solved}. Exactly solved variables can be estimated but not
+tested.
+\item If the parameters of the model of the real world have multiple,
+contradictory solutions using the parameters of the statistical model
+(e.g., $\alpha_1 = \beta_1$ and $\alpha_1 = 2.2$), then the model is
+\vocab{oversolved}. Oversolved systems can be both estimated and
+tested.
+}
 
 
 \section{Characteristics of data and distributions}\label{basicstats}
@@ -223,16 +238,6 @@ $E(X)=(\sum x)/n$, and is \comment{(I should check this) }the BLUE of
 the true mean $\mu$. Section \ref{CLT} will discuss the magical properties of the
 sample expected value that make statistical analysis possible.
 
-\paragraph{Covariance:} The population \ind{covariance}, given a data set,
-is $\sigma_{xy} = E[(x-\overline x)(y-\overline y)]$, which is equivalent
-to $E[xy]-E[x]E[y]$. The \ind{variance} is a special case where $\xv=\yv$.
-
-The sample covariance is $s_{xy}=\sigma_{xy}\cdot {n\over n-1}$. This
-is
-the expectation if you  divided the sum of $(x-\overline
-x)(y-\overline y)$ by $n-1$ instead of $n$. This
-can be proven to be unbiased.
-
 \paragraph{More moments:}\index{skew} \index{kurtosis} \index{moments} 
 If so inclined, one could also write out the
 expectation in the variance equation as an integral:
@@ -247,7 +252,8 @@ are central because we subtracted the mean from the function before
 taking the second, third, or fourth power.\footnote{The
 central first moment is always zero; the non-central second, third,
 \dots, moments are difficult to interpret and basically ignored. Thus,
-some authors refer to all of these as \airq{the $n$th moment} and leave
+some authors refer to all of these as \airq{the $n$th moment}, $n \in
+\{1, 2, 3, 4\}$, and leave
 it as understood when the moment is central or non-central.}
 
 Positive skew indicates that a distribution is upward leaning, a negative
@@ -265,11 +271,11 @@ The same caveat about unbiased estimates of the sample versus population
 variance holds for skew and kurtosis: $\sum (x-\overline x)^m/(n-1)$
 is an unbiased estimate of the sample central moment for $m \in\{2, 3,
 4, \dots\}$, and $\sum (x-\overline x)^m/n$ is an unbiased estimate of
-the population central moment. The functions
+the population central moment. All of the moment-finding functions in
+the GSL and Apophenia (e.g.,
 \cinline{gsl\_stats\_var\-i\-ance},
-\cinline{apop\_vec\-tor\_var},
-\cinline{apop\_vec\-tor\_skew}, and
-\cinline{apop\_vec\-tor\_kurt\-o\-sis} all return the sample central
+\cinline{apop\_vec\-tor\_var}, and
+\cinline{apop\_vec\-tor\_skew}) all return the sample central
 moment, presuming that your data is much more likely to be a sample than
 a population. Multiply the output by $(n-1)/n$ to get the population
 central moment.
@@ -284,6 +290,16 @@ then this typically means that the assumption of independent draws is
 false---the observations are interconnected.\label{kurt1} One often sees
 this among social networks or other systems where independent entities
 observe and imitate each other.
+
+\paragraph{Covariance:} The population \ind{covariance}, given a data set,
+is $\sigma_{xy} = E[(x-\overline x)(y-\overline y)]$, which is equivalent
+to $E[xy]-E[x]E[y]$. The \ind{variance} is a special case where $\xv=\yv$.
+
+The sample covariance is $s_{xy}=\sigma_{xy}\cdot {n\over n-1}$. This
+is
+the expectation if you  divided the sum of $(x-\overline
+x)(y-\overline y)$ by $n-1$ instead of $n$. This
+can be proven to be unbiased.
 
 \paragraph{Correlation/Cauchy-Schwarz:} The correlation coefficient is
 defined as $$\rho_{xy}\equiv{s_{xy}\over s_x s_y}.$$ This is mostly just another
@@ -313,7 +329,19 @@ apop_data_show(apop_matrix_summarize(set));
 The last item in the code, \cind{apop\_matrix\_summarize} produces a table of
 some summary statistics for every column of the data set.
 
-\startonecol
+\summary{
+\item The most basic means of describing data is via its moments. The
+basic moments should be produced and skimmed for any data set; in simple cases, there is
+no need to go further.
+\item The mean and variance are well known, but there is also
+information in higher moments---the skew and kurtosis.
+\item It is also important to know how variables interrelate, which can
+be summarized using the variance-covariance matrix.
+\item There is a one-line function to produce each of these pieces information.
+Notably, \ci{apop\_matrix\_summarize} produces a summary of each column
+of a data matrix.
+}
+
 \section{Sample distributions}\index{sample distributions}
 \label{distlist}
 
@@ -343,11 +371,13 @@ E(x)&=&p						\nonumber\\
 \paragraph{Binomial\index{Binomial distribution}}
 
 The number of times that an event which has likelihood $p$ happens over the
-course of $n$ trials.\footnote{The notation $\left({n\atop x}\right)$ indicates
+course of $n$ trials.
+
+The notation $\left({n\atop x}\right)$ indicates
 \airq{$n$ choose $x$}, the number of sets of $x$ elements that can be
 pulled from $n$ objects. The equation is $$\left({n\atop x}\right) =
 {n!\over x!(n-x)!},$$ and the function is \cinline{gsl\_sf\_choose(n,x)} 
-(in the GSL's Special Functions section).}
+(in the GSL's Special Functions section).
 \index{choose!gsl\_sf\_choose@\cinlinetwo{gsl\_sf\_choose}} \cindex{gsl\_sf\_choose}
 
 \eqnbox{
@@ -367,7 +397,7 @@ N}(np, np(1-p))$.
 Since $n$ is known and $E(x)$ and $\var(x)$ are values calculated from
 the data, Equations \ref{binome} and \ref{binomv} are an oversolved
 system of two variables for one unknown, $p$. Thus, you can test for
-\vocab{excess variance}, which indiates that there are interactions that
+\vocab{excess variance}, which indicates that there are interactions that
 falsify that the observations were iid Bernoulli events.
 
 \paragraph{Normal\index{Normal distribution|\textbf}}
@@ -375,7 +405,7 @@ falsify that the observations were iid Bernoulli events.
 You know and love the bell curve, aka the Gaussian
 distribution.\footnote{Typography note: this book will use \airq{Normal},
 in an attempt to avoid un-mnemonic proper names, and with a capital to indicate
-that this is a proper name and not an adjective.} See the CLT (section
+that this is a proper name and not an adjective.} See the CLT (Section
 \ref{CLT}) for its application.
 
 \eqnbox{ \label{normal}
@@ -383,6 +413,11 @@ P(x|\mu,\sigma)&=&{1\over \sigma\sqrt{2\pi}} e^{-{1\over 2}[{(x-\mu)\over\sigma}
 E(x)&=&\mu							\nonumber\\
 \var(x)&=&\sigma^2						\nonumber
 }
+
+\begin{itemize}
+\item $\{{\cal N} (a,b)\} + \{{\cal N} (c,d)\} \sim {\cal N}
+(a+c,b+d)$ (where $\{x\}$ indicates a variable with the given distribution).
+\end{itemize}
 
 \paragraph{Multivariate Normal}\index{multivariate normal distribution}
 All of the other distributions are for a single variable---one
@@ -411,10 +446,11 @@ to evaluate this likelihood for a given data point.
 
 \paragraph{Poisson\index{Poisson distribution}}
 
-This is for things that happen over and over again. Given $x\geq0$,
-the number of people who have been unemployed for up to $x$ weeks,
-for example. 
-
+Say that independent events occur at the mean rate of $\lambda$ events per 
+period. What is the probaility that there will be $x$ events in a single 
+period? Say that  objects are independently scattered
+with mean density $\lambda$ per square km. What is the probability that
+there are $x$ objects in a randomly-selected square km?
 
 \eqnbox{
 P(x|\lambda)&=&{e^{-\lambda}\lambda^x\over x!}			\nonumber\\
@@ -477,6 +513,8 @@ E(x) &=& \frac{\beta - \alpha}{2}       \nonumber\\
 \var(x) &=& \frac{(\beta - \alpha)^2}{12}   \nonumber
 }
 
+More distribution models, and a few more coded-out examples, will be added to this catalog.
+
 \paragraph{Using the distributions} How you code the distributions
 depends on what you hope to do with them. The common goal throughout the
 book is to estimate the parameters of the model with data, and you can
@@ -496,6 +534,27 @@ most likely value for $(\alpha, \beta)$ is simply $(\min(x), \max(x))$.
 These distributions are also useful for simulation, since they each
 neatly summarize an oft-modeled story. Modelers will want to make random
 draws from these distributions, a topic covered in Chapter \ref{boot}.
+
+\summary{
+\item Probability theorists through the ages have developed models that 
+indicate that if a process follows certain guidelines, the data will
+have a predictable form.
+\item A single draw from a binary event with fixed probability has a
+Bernoulli distribution.
+\item The sum of a series of $n$ draws from a Bernoulli distribution will have a 
+Binomial distribution.
+\item If $\overline x$ is the mean of a set of independent, identically
+distributed draws from {\em any} nondegenerate distribution, then
+the distribution of $\overline x$ approaches a Normal distribution. This
+is the Central Limit Theorem.
+\item If events occur at the rate of $\lambda$ per period, the
+rate of event occuence as a function of time will have a Poisson
+distribution.
+\item Given the same setup, the population present in each period has an
+Exponential distribution.
+\item The Beta distribution is useful for modeling a variety of
+variables that are restricted to $[0, 1]$.
+}
 
 \section{Factor analysis} \label{pca} \index{factor analysis}
 This is also known as \ind{principal component
@@ -554,10 +613,10 @@ void find_eigens(gsl_matrix **subject, gsl_vector *eigenvals, gsl_matrix *eigenv
 
 Notice that I free the matrix whose eigenvalues are being calculated at
 the end.  This is because the matrix is destroyed in the calculations,
-and should not be referred to again. When a pointer is freed, its value
+and should not be referred to again. Now, when a pointer is freed, its value
 can take on any value. It could be set to \ci{NULL}, but if the compiler
 is feeling lazy, it may just leave the pointer pointing to garbage.
-Explicilty setting it to \ci{NULL} makes it clear that this pointer has
+Explicitly setting it to \ci{NULL} makes it clear that this pointer has
 been freed.
 
 Here is how this function is used. In the tradition of C, the code is
@@ -566,7 +625,7 @@ covariance matrix $X'X$ for the data set, and then find its eigenvalues
 and eigenvectors.  
 I will assume that you have already got a data matrix ready, named
 \cinline{data}, as per the last chapter. Now we need to remove the means
-from the data, and find $X'X$:
+from the data (using \cind{apop\_matrix\_normalize}), and find $X'X$:
 
 \begin{lstlisting}
 int ds=data->size2;
@@ -574,7 +633,7 @@ gsl_matrix *xpx  = gsl_matrix_calloc(ds, ds);
 gsl_vector *eigenvals   = gsl_vector_alloc(ds);
 gsl_matrix *eigenvecs   = gsl_matrix_alloc(ds, ds);
 
-apop_matrix_normalize(data, 3);
+apop_matrix_normalize(data, 'm');
 gsl_blas_dgemm(CblasTrans,CblasNoTrans, x, x, xpx);
 find_eigens(&xpx, eigenvals, eigenvecs);
 \end{lstlisting}
@@ -617,28 +676,39 @@ Figure \ref{svdecomposition} presents a function that takes some
 shortcuts from the above. It is a
 simplification of \cind{apop\_sv\_de\-comp\-osi\-tion}, which is what you would use in practice. The function simply makes
 a copy of the data and feeds that in to the GSL's built-in singular-value
-decomposition function (which eats the copy, and must also be fed an
-additional dummy vector for its work). The function then returns the first
+decomposition function, \cind{gsl\_linalg\_SV\_decomposition}, which eats the copy, and must also be fed an
+additional dummy vector for its work. The function then returns the first
 \cinline{dimensions\_we\_want} eigenvectors and all of the eigenvalues. I
 assume that all of the input arguments have had space allocated before
-calling the function.  \codefig{svdecomposition}{A function to find the
-singular-value decomposition of a data set}
+calling the function.  
+
+\codefig{svdecomposition}{A function to find the singular-value decomposition of a data set}
 
 
+\summary{
+\item Factor analysis projects data of several dimensions onto the
+dimensions that display the most variance.
+\item Given the data matrix $\Xv$, the process involves finding the
+eigenvalues of the matrix $\Xv'\Xv$ associated with the largest
+eigenvalues, and then projecting the data onto the space defined by
+those eigenvectors.
+\item \ci{apop\_sv\_decomposition} runs the entire process for the
+efficiently lazy user.
+}
 
 
 \section{Linear models}
 \label{cat}
 
-Assume that our variable of interest, $\Yv$, is
+Assume that our variable of interest, $\yv$, is
 described by a linear combination of the explanatory variables, $\Xv$,
 plus maybe a Normally-distributed error term, $\uv$. In short,
-$\Yv=\Xv\betav + \uv$, where we will estimate the values of $\betav$. 
+$\yv=\Xv\betav + \uv$, where we will estimate the values of $\betav$. 
 
 Unlike the models to this point, this model implicitly makes a
-causal claim: the variables listed in $\Xv$ cause $\Yv$ to take the values they
-do. However, as
-noted earlier, there is no true concept of \ind{causality} in statistics.
+causal claim: the variables listed in $\Xv$ cause $\yv$ to take the values they
+do. However, 
+there is no true concept of \ind{causality} in statistics.
 The question of when statistical evidence of causality is valid is a tricky
 one which will be left to the volumes that cover this question in
 detail; for the purposes here, the reader should merely note the shift in
@@ -654,7 +724,7 @@ time series data, then we need to write down a matrix
 $\Sigma$ to describe the covariances.
 
 Thus, we can write down a catalog of models. The baseline is OLS, but by
-providing different values of $\Sigma$ or other minor modifications, we
+providing different forms for $\Sigma$ or other minor modifications, we
 can write down other models. The computational process is similar
 for all.
 
@@ -671,7 +741,8 @@ Apophenia intends to use the sparse matrix method where possible, but this is no
 implemented. \cind{apop\_GLS.estimate}() currently takes a full matrix
 for $\Sigma$, making it wholly unusable for data sets larger than maybe a
 thousand observations. The sparse-matrix implementation of GLS is
-left as an exercise to the reader.]
+left as an exercise to the reader. In the mean time, the reader has the
+setup-specific models.]
 
 Let $\betav$ be the true parameters of the process that produced the
 data. There is no way to truly know $\betav$, but we can estimate it
@@ -693,17 +764,17 @@ well, $\mu =\hat\betav$.
 \index{Ordinary Least Squares|(textbf}\index{OLS|see{Ordinary Least Squares}}
 The model: 
 \begin{itemize}
-\item $\Yv=\Xv\betav + \uv$
-\item $N$=the number of observations. $\Yv$ and $\uv$ are $N \times 1$
+\item $\yv=\Xv\betav + \uv$
+\item $N$=the number of observations. $\yv$ and $\uv$ are $N \times 1$
 matrices.
 \item $K$=the number of parameters to be estimated. $\Xv$ is $N \times K$;
 $\betav$ is $K$ by 1
 \item It is customary that the first column of $\betav$ is a column of
-ones. If you do not do that, then you need to replace every column $\Xv_i$ below
-with $\Xv_i-\overline X_i$, the equivalence of which is left as an exercise
+ones. If you do not do that, then you need to replace every column $\xv_i$ below
+with $\xv_i-\overline x_i$, the equivalence of which is left as an exercise
 for the reader.\footnote{If you would like to take the route of
-normalizing each column to have mean zero, see
-\cind{apop\_matrix\_norm\-al\-ize}.}
+normalizing each column to have mean zero, try
+\cind{apop\_matrix\_norm\-al\-ize}\ci{(dataset, 'm')}.}
 \end{itemize}
 
 Assumptions:
@@ -723,7 +794,7 @@ mean that $\Sigma =
 When all of that holds, then:
 
 \eqnbox{
-\hat\betav_{\rm OLS}  &=& (\Xv'\Xv)^{-1}(\Xv'\Yv)			\nonumber\\
+\hat\betav_{\rm OLS}  &=& (\Xv'\Xv)^{-1}(\Xv'\yv)			\nonumber\\
 E(\hat\betav_{\rm OLS} ) &=& \beta					\nonumber\\
 \var(\hat\betav_{\rm OLS} ) &=& \sigma^2(\Xv'\Xv)^{-1}		\nonumber
 }
@@ -738,7 +809,7 @@ estimator and variance below reduces the equations here to the OLS
 versions.
 
 \eqnbox{
-\hat\betav_{\rm GLS} &=& (\Xv'\Sigma^{-1}\Xv)^{-1}(\Xv'\Sigma^{-1}\Yv)			\nonumber\\
+\hat\betav_{\rm GLS} &=& (\Xv'\Sigma^{-1}\Xv)^{-1}(\Xv'\Sigma^{-1}\yv)			\nonumber\\
 E(\hat\betav_{\rm GLS}) &=& \beta					\nonumber\\
 \var(\hat\betav_{\rm GLS}) &=& (\Xv'\Sigma^{-1}\Xv)^{-1}		\nonumber
 %var(\hat\betav_{GLS}) &=& 
@@ -754,7 +825,7 @@ another instrumental variable $\Zv$ such that $\cov([Z_i-\overline
 Z][u_i-\overline u])=0$, then the following holds:
 
 \eqnbox{
-\hat\betav_{\rm IV} &=& (\Zv'\Xv)^{-1}(\Zv'\Yv)			\nonumber\\
+\hat\betav_{\rm IV} &=& (\Zv'\Xv)^{-1}(\Zv'\yv)			\nonumber\\
 E(\hat\betav_{\rm IV}) &=& \beta					\nonumber\\
 \var(\hat\betav_{\rm IV}) &=& 
 	\sigma^2(\Zv'\Xv)^{-1}\Zv'\Zv(\Xv'\Zv)^{-1}	\nonumber
@@ -819,12 +890,11 @@ just find $r=(\sum \hat\epsilon_t \hat\epsilon_{t-1})/(\sum
 \comment{[Two-stage least squares here]}
 
 \index{time series|)}
-\endonecol
 
 \subsection{Fitting it} 
 To summarize,
-the coefficients of  the line of best fit for the OLS model is the value of $\betav$ that solves:
-$ \betav = (\Xv'\Xv)^{-1}\Xv'\Yv$.
+the coefficients of  the line of best fit for the OLS model is the value of $\betav_{\rm OLS}$ that solves:
+$ \betav_{\rm OLS} = (\Xv'\Xv)^{-1}\Xv'\yv$.
 
 I will assume that we have already read a data matrix in to \cinline{apop\_data *set}. First, here is the easy way:
 \begin{lstlisting}
@@ -834,24 +904,25 @@ But if the assumptions of OLS do not fit, then you will need to know how
 the \cinline{a\-pop\_OLS.\-est\-i\-mate} function works, so the remainder of this
 section goes over the steps one would take to estimate $\betav$.  \cindex{apop\_OLS}
 
-Typically, the $\Yv$
+Typically, the $\yv$
 values are the first column of the data set, so we would like to extract that to a separate variable:
 \begin{lstlisting}
 gsl_vector      *y_data         = gsl_vector_alloc(set->matrix->size1);
 gsl_matrix_get_col(y_data, set->matrix, 0);
 \end{lstlisting}
 
-We now have the $\Yv$-values safely stored.  When doing an OLS projection,
+We now have the $\yv$-values safely stored.  When doing an OLS projection,
 there needs to be a column of ones in the data set (because OLS is an
 {\sl affine} linear projection), so we can overwrite the first column
 with ones. 
+\cindex{gsl\_vector\_set\_all} 
 \begin{lstlisting}
 gsl_vector v         = gsl_matrix_column(set->matrix, 0).vector;
 gsl_vector_set_all(&v, 1);  
 \end{lstlisting}
 
 
-Now we have both the $\Yv$ and the $\Xv$ in the equation, so we can find $(\Xv'\Xv)$ and $(\Xv'\Yv)$.
+Now we have both the $\yv$ and the $\Xv$ in the equation, so we can find $(\Xv'\Xv)$ and $(\Xv'\yv)$.
 Both parts are a
 simple application of the BLAS function from the last chapter---a matrix $\cdot$ a matrix, and a matrix $\cdot$ a vector:
 \begin{lstlisting}
@@ -862,7 +933,7 @@ gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);
 \end{lstlisting}
 
 The GSL has a function to solve equations of the type ${\bf A} \betav =
-{\bf C}$; which is exactly the form we have here---$(\Xv'\Xv)\betav = (\Xv'\Yv)$.  \label{ols}
+{\bf C}$ using \ind{Householder transformations}, and this happens to be is exactly the form we have here---$(\Xv'\Xv)\betav = (\Xv'\yv)$.  \label{ols}
 %\begin{verbatim}
 \begin{lstlisting}
         gsl_linalg_HH_solve (xpx, xpy, *beta);
@@ -877,7 +948,7 @@ almost necessary, because the variance is $\sigma^2 (\Xv'\Xv)^{-1}$.
 The matrix that projects data onto the space defined by $\Xv$,
 often called the `hat matrix', is also derived from the inverse: ${\bf H} = \Xv(\Xv'\Xv)^{-1}\Xv'$. Although it may
 make the computer sweat for large matrices, the inverse function
-from the last chapter is already paying off, allowing us humans to find
+from Figure \ref{invertmatrix} is already paying off, allowing us humans to find
 $(\Xv'\Xv)^{-1}$ with one function call:
 \begin{lstlisting}
 gsl_matrix *xpxinv;
@@ -905,6 +976,13 @@ gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, hat_matrix, set2->matrix, projected_da
 If the hat matrix is of few enough dimensions, we can plot the
 projection using \cind{apop\_data\_print}; see page \pageref{gnuprint}.
 
+\summary{
+\item The Ordinary Least Squares model assumes that the dependent variable is an affine linear function of the others. 
+Given this and other assumptions, the likelihood-maximizing parameter vector is $\betav_{\rm OLS} = (\Xv'\Xv)^{-1}(\Xv\Yv)$.
+\item If $\Sigma \neq \Iv$, then  $\betav_{\rm GLS} = (\Xv'\Sigma\Xv)^{-1}(\Xv\Sigma\Yv)$. Depending on the value of $\Sigma$, one can design a number of models.
+\item Coding these processes is a simple question of stringing together
+lines of linear algebra operations from Chapter \ref{linear_algebra}.
+}
 
 \section{Multilevel modeling} A key assumption to the models to this
 point is that each observation is independently and identically distributed
@@ -928,7 +1006,44 @@ another model's \cinline{estimate} function.
 An example will be forthcoming.
 
 
+\section{Data mining} \vocab{Data mining} is an automated search through
+data searching for relationships. 
 
+The term used to be a pejorative term
+referring to the process of trying every possible regression until one
+turns out to prove the researcher's pet hypothesis and have a high $R^2$.
+\citet{freedman:screening} showed the dangers of such behavior by randomly
+generating a set of 51 columns of 100 random numbers each. He set one
+column to be the dependent variable to be explained, and the other to be
+potential regressors. Using a simple exploratory technique, he culled
+the fifty potential explanatory variables down to 15 variables. For that
+regression, 14 variables were significant with a $p$-value of $> 25\%$,
+and six were significant with $p > 5\%$. Other tests of the regression
+also indicated a good fit. But, by construction, the data was pure noise.
 
+Modern data mining is a little more subtle than a \ci{for} loop running
+through every possible linear regression.  However, it is still the
+case that the hypothesis testing techniques of Chapter \ref{testing}
+will be based on the assumption of ignorance: if you know that your
+correlation coefficient is the best among fifty correlation statistics,
+then you are selecting a specific nonrandom section out of the
+distribution of correlation coefficients.
 
+\exercise{(Relatively advanced) Write a function that takes in the name
+of a database table, an integer \ci{n}, and a positive real \ci{r}$\in
+(0,1]$. The function body will run a \ci{for} loop to
+run every possible regression with $n$ explanatory variables. Hint: use
+the \cind{gsl\_permutation} structure. Return an array of
+\ci{apop\_estimate}s holding only those regressions with an $R^2> r$.}
 
+To oversimplify the goals of data mining, they are to find sensible
+categories of data, and to find associations between categories.
+Does this fit into the generic description of a model from Figure
+\ref{modelflow}? Absolutely: our function uses columns of input data and
+a set of parameters that specify a clustering rule to ouput a set of
+clusterings, and we seek parameters that produce optimally descriptive
+output clusters.
+
+This section forthcoming. Since the methods are so different from the
+classical statistical techniques, it may even become its own chapter.
+The methods will rely heavily on autogeneration of SQL queries.

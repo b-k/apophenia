@@ -7,17 +7,17 @@ snippets    = ("bootdraw", "bootvar", "dummy", "invertmatrix", "svdecomposition"
 
 for i in programs:
 	print i
-#	(a,b,wresult)	= os.popen3("export PROGNAME=%s; make; ./%s; make clean; rm ./%s"%(i,i,i))
-#	print b.read()
-#	print wresult.read()
+	(a,b,wresult)	= os.popen3("export PROGNAME=%s; make; ./%s; make clean; rm ./%s"%(i,i,i))
+	print b.read()
+	print wresult.read()
 
 os.popen3("""
-    rm  msc_book_samples.zip
-    mkdir msc_book_samples
-    cp *c msc_book_samples
-    cp markov_data msc_book_samples 
-    cp Makefile.std msc_book_samples/Makefile
-    zip -r msc_book_samples.zip msc_book_samples
-    rm -rf msc_book_samples
-    scp msc_book_samples.zip $SFSSH:ap/htdocs/
+    #rm  msc_book_samples.zip
+    #mkdir msc_book_samples
+    #cp *c msc_book_samples
+    #cp markov_data msc_book_samples 
+    %cp Makefile.std msc_book_samples/Makefile
+    #zip -r msc_book_samples.zip msc_book_samples
+    #rm -rf msc_book_samples
+    #scp msc_book_samples.zip $SFSSH:ap/htdocs/
     """)

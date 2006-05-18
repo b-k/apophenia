@@ -1,83 +1,57 @@
-\newif\ifbook \booktrue
+	\chapter{C} \label{c_crash} 
 
-\ifbook
-	\startonecol \chapter{C} \label{c_crash} \endonecol
-\else
-	\long\def\comment#1{}
-	\documentclass[12pt]{article}
-	\usepackage{amsfonts}  %for mathbb
-	\setlength{\topmargin}{-0.5cm}\setlength{\textheight}{8.6in} 
-    \setlength{\oddsidemargin}{0in} 
-    \setlength{\textwidth}{6.1in} 
+Many people who use a computer to do statistics and simulations never
+took a computer science course. They jumped in and started writing
+using the scripting language associated with their favorite statistics or
+symbolic math package. This is truly the ideal way to start out with writing
+code, but as the code becomes a bigger part of their lives---when the
+dissertation relies on computer code---it is worth pausing to consider
+code-writing in more detail. 
 
-	\usepackage[nolineno,noprocindex]{lgrind}
-
-    %indexing:
-    \usepackage{multicol, makeidx}
-    \makeindex
-    \def\ind#1{\index{#1}#1}
-    \def\cind#1{\index{#1@\ci{#1}}\ci{#1}}
-    \def\cindex#1{\index{#1@\ci{#1}}}
-    \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
-
-	\begin{document}
-	\title{A crash course in C}
-	\author{B Klemens}
-	\maketitle
-
-
-Dear Reader:\\
-This is a crash course in C intended for a book on statistics using the
-GNU Scientific Library (the GSL).  Since it basically stands alone as a
-C tutorial, I offer it to you as such. I haven't edited this from
-its chapter form, so it refers to sections outside of this tutorial,
-for which I apologize. Although written for researchers programming
-statistical tests, it will be useful to any of you who have done some
-programming in a scripting language and would like to get to know C.
-
-\vskip 1cm
-
-\section{C}
-\fi
-
-%\long\def\codefig#1#2{\lagrind{sources/#1.tex}{#2}{#1}}
-
-
-This chapter will bring you up to speed on C.  
-My hope with this chapter is both to discuss where to put your semicolons
-and how things are generally done in C. Don't feel compelled to memorize
-everything here (using \ci{malloc} three times in a sentence, for
-example), since the manual is always there for you to read.  It is not
-a comprehensive tutorial: GNU C recognizes 32 key words and this book
-will only use 17 of them. For example, we won't be using bit-shifting
-operators, so I'm not going to tell you what they are here.  If you want
-more details about any of the points I mention here, just type \bi{C
-tutorial} into your favorite search engine; since this is C and not a
-proprietary, specialized language, you will have a few hundred hits to
-choose from. 
-
-Although much of the syntax is C-specific, many of the concepts are not.
-The discussion of the functional approach, stacks of frames, debugging,
+This chapter takes the next step, introducing C and some of the
+concepts behind good programming that script-writers often overlook.
+I will cover both the syntax of C and many concepts that are in no way
+C-specific. The functional approach, stacks of frames, debugging,
 test functions, and overall good style are immediately applicable to
 virtually every programming language in use today.\footnote{What does
 change from language to language?  Besides the details of syntax, the
 rules for scope and the call-by-value/call-by-reference mechanism tend
 to be different for every language. When faced with a new language, I
 always check the scoping rules first.} Thus, this chapter on C may help
-you to become a better programmer with the tools you are already using.
+the reader to become a better programmer with any programming language.
+
+As for the syntax of C, this chapter will cover only a subset. C has
+32 key words and this book will only use 17 of them. Some are basically
+archaic, designed for the days when compilers needed help from the user to
+optimize code. Others, like bit-shifting operators, will only be useful
+if you are writing an operating system or a hardware device driver. With
+all the parts of C that directly manipulate hexadecimal memory addresses
+omitted, you will find that at its core, C is a rather simple language
+that is perfectly designed for simulations and handling large data sets.
+If you really do want to know about bit-shifting operators, just type
+\bi{C tutorial} into your favorite search engine; since this is C and
+not a proprietary, specialized language, you will have a few hundred
+hits to choose from.
+\comment{
+Finally, don't feel compelled to memorize everything here (using
+\ci{malloc} three times in a sentence, for example), since this book and
+the online references are always there for you to read. The best way to
+learn the details is to sit down at a computer and write. 
+}
 
 \paragraph{An outline} 
 
-This chapter divides into four parts.
-Sections \ref{fncontents} and  \ref{declaring} start small, covering the syntax of individual lines of code to make assignments, do arithmetic, and declare variables.
+This chapter divides into four parts.  Sections \ref{fncontents} and
+\ref{declaring} start small, covering the syntax of individual lines
+of code to make assignments, do arithmetic, and declare variables.
 Sections \ref{functional} and \ref{compilation} introduce functions,
-describing how C is built on the idea of modular functions that are
-each independently built and evaluated.  Sections \ref{pointers}
-through \ref{stringsec} cover
-\airq{pointers}, a C-specific means of handling computer memory that
-complements C's means of handling functions and large data structures. The
-remainder of the chapter covers additional topics such as the debugger
-and assorted idiosyncrasies and conveniences of C syntax.
+describing how C is built on the idea of modular functions that are each
+independently built and evaluated.  Sections \ref{pointers} through
+\ref{stringsec} cover \airq{pointers}, a C-specific means of handling
+computer memory that complements C's means of handling functions and
+large data structures. The remainder of the chapter covers additional
+topics such as the debugger and assorted idiosyncrasies and conveniences
+of C syntax.
 
 \subsection{The tools} 
 Most stats packages are built around a single window that includes a
@@ -87,7 +61,8 @@ text file, and then the package reads the text file and displays output.
 
 First, C works almost entirely in the paradigm of putting commands in a
 text file and then running the text file all at once. Second, since
-C is an open standard rather than a product from a single company, there
+C is an open standard rather than a product from a single company or
+foundation, there
 are hundreds of programs available to help you write the text file and
 produce the output. Your problem is not in finding such tools, but in
 choosing which you will use.
@@ -97,16 +72,19 @@ a UNIX-like system, you probably already have \cind{gcc} on your
 computer. Try typing \bi{cc} on your command line; if you get an
 error like ``command not found'', then you will need to get a compiler,
 but an error like ``no input files'' means that a compiler was found
-and awaits input. Windows and Mac OS do not ship with a compiler; if you
+and awaits input. Windows and MacOS do not ship with a compiler, but if you
 are using a computer customized by your university or company computing
 department, check the usual application folders.
 
 On top of the compiler, you will need a debugger like gdb, the standard
-libraries, the GNU Scientific Library (GSL) and SQLite.  The easiest
-way to get all of these disparate tools is via a package manager. If
-you are using a UNIX-like system, you are probably already familiar with
-your package manager (Red Hat Package Manager and Debian's Apt are the
-most popular).
+libraries, the GNU Scientific Library (GSL) and SQLite.  The easiest way
+to get all of these disparate tools is via a package manager.  Without a
+package manager, the installation process is often supremely frustrating;
+with one, the process is trivial.
+
+If you are using a UNIX-like system, you are probably already familiar
+with your package manager (Red Hat Package Manager and Debian's Apt are
+the most popular).
 
 If you are using Windows, you have two options. One is to get
 Mingw, which provides a compiler and some basic auxiliary tools. It has its
@@ -117,9 +95,9 @@ compilers, editors, and so on. Be sure to select gcc, gdb, the GSL,
 and SQLite under the development subsection in the installation.
 
 Mac OS X users will be using the terminal (typically found in the
-\airq{accessories} subfolder of the \airq{applications} folder) to do most of the
-work below. The package manager of choice is Fink, which can easily be
-found and installed online.
+accessories subfolder of the applications folder) to do
+most of the work below. The package manager of choice is Fink, which
+can easily be found and installed online.
 
 Herein, I will assume that you have a working copy of \ci{gcc},
 \ci{gdb}, et cetera, and it is on the search path for executables
@@ -191,10 +169,6 @@ now. If neither suits your fancy, there are literally hundreds of others
 to choose from. That said, I will assume you have a good text editor
 (by your personal definition of \airq{good}), and will turn to the text you
 will be writing with it.
-\ifbook \else 
-	\input why_c.tex
-\fi
-
 
 \comment{
 \subsection{An opening sample}
@@ -263,7 +237,7 @@ easy enough.
 
 The story begins at the smallest level: a single line of code. Most of
 the work on a single line of code will be familiar to anyone who has
-written programs in any lanugage, including instructions like assignments,
+written programs in any language, including instructions like assignments,
 basic arithmetic, if-then conditions, and loops. For such common
 programming elements, learning C is simply a question of the details
 of syntax. Also, C is a \airq{typed} language, meaning that you will
@@ -272,7 +246,7 @@ a real, a vector, et cetera. Thus, many of the lines will be simple
 type declarations.
 
 \subsection{Assignment} \index{arithmetic} \index{assignment|see{=}} \index{=}
-Most of the work you will be doing will be simple assignments:\\
+Most of the work you will be doing will be simple assignments. For example,\\
 \ci{ratio = a / b;}\\
 will find the value of \ci{a} divided by \ci{b} and put the
 value in \ci{ratio}. Notice that there is a semicolon at the end of
@@ -311,7 +285,7 @@ Another set of operators are comparison and logical operators, such as \ci{(a $>
 \ci{(a $<$ b)}, or \ci{(a == b)}. All of these evaluate to either a one or a zero, depending on whether the
 comparison is true or false. Notice that last one, comparison for equality, involves {\sl two} equals
 signs in a row. One equals sign \ci{(a = b)} will assign the value of \ci{b} to the variable \ci{a}, which is not what
-you had intended. gcc will warn you in most of the cases where you are
+you had intended. Your compiler will warn you in most of the cases where you are
 probably using the wrong one, and you should heed its warnings. \airq{Greater than or equal to} is \ci{(a $>=$ b)}, and \airq{less than or equal to} is \ci{(a $<=$ b)}.
 
 Logical operations have similar definitions: \cindex{\&\&} \cindex{"|"|} \index{and|see{\&\&}}
@@ -358,7 +332,7 @@ the program to repeat some lines while a condition is true, or execute some line
 false.  In all of the cases below, you will need parentheses around the conditions, and if you forget,
 you will get a confusing compiler error.
 
-\subsection{If-then-else statements} Here is the syntax for conditional evaluations: \cindex{if}
+\subsection{If-then-else statements} Here is a sample of the syntax for conditional evaluations: \cindex{if}
 
 \begin{lstlisting}
 #include <math.h>
@@ -373,7 +347,7 @@ evaluated is always in parentheses following the if statement, and there should 
 the part that will be evaluated if the condition is true, and around the part that will be evaluated if
 the condition is false. You can exclude the curly braces if they surround exactly one line, but this
 will at some point confuse you and cause you to regret leaving them out.
-You can exclude the \airq{else} part if you don't need it (which is
+You can exclude the \ci{else} part if you don't need it (which is
 common, and much less likely to cause trouble).
 
 Also, notice the semicolons, which come after every line in the program that is not flow control. The \ci{if (a $>$ 0)} statement doesn't do anything by itself, just direct flow, so there must be no semicolon following
@@ -382,10 +356,17 @@ it.\footnote{If you do put a semicolon after an \ci{if} statement
 execute the null statement \ci{/*do nothing*/;} if true. Your
 compiler will warn you of this.}
 
+\exercise{Modify \bi{hello\_world.c} to print its greeting if the expression
+\ci{(1 $||$ 0 \&\& 0)} is true, and print a different message of your choosing if
+it is false.  Did C think
+you meant \ci{((1 $||$ 0) \&\& 0) == 0} or \ci{(1 $||$ (0 \&\& 0)) == 1}?
+}
 
-\subsection{Loops} There are three types of loops, and they are slightly redundant. The simplest is a while
-loop. Here is a while loop to print \airq{hello} on the screen five times: \index{loops} \cindex{while}
+\subsection{Loops} There are three types of loops, and they are slightly
+redundant. The simplest is a \ci{while} loop. Here is one to print \airq{hello}
+on the screen five times: 
 
+\index{loops} \cindex{while}
 \begin{lstlisting}
 #include <stdio.h>
 int i = 0;
@@ -440,22 +421,21 @@ do {
 \end{lstlisting}
 Naturally, you would want to run \ci{eval\_fn()} at least once.
 
+\comment{
 \exercise{Modify \bi{hello\_world.c} to print its greeting five times,
 then re-compile and re-run it.}
-
+}
 \subsection{Comments} \index{commenting code|(}
 Put a long block of comments 
 at the head of a file and at the head of each function to describe what
 the file or function does, using complete sentences. Describe what the
 function expects to come in, and what the function will put out.
-\startonecol
 \begin{verbatim}
 /* Long comments begin with a slash-star,
    continue as long as you want, and end 
    at the first star-slash:   
    */
 \end{verbatim}
-\endonecol
 
 The primary audience of your comment should be you, six months from
 now. When you are shopping for black boxes to plug in to your next project,
@@ -504,6 +484,88 @@ behind-the-times compilers may still not recognize it, in which case
 you may have to use the \ci{/*} --- \ci{*/} format for comments
 everywhere.}\index{commenting code|)}
 
+
+\paragraph{Printing}
+\index{printing|see{\ci{printf}}}\label{printf}
+C's standard printing function, \ci{printf}, is much like the rest of
+the language: not very attractive, initially unintuitive, but in the end
+not a bad way of doing things. \ind{Python}, the latest and greatest in
+scripting languages, uses C's printing syntax.
+
+The printing function is based on a format string, which
+can include plain text and a few placeholders for numbers or other
+strings that we will specify later. For example, \ci{"person \%s
+is number \%i in line$\backslash$n"}.  Here are the odd characters you
+will need for almost all of your work:
+
+\begin{center}
+\fbox{
+\begin{tabular}{rl}
+\ci{\%i}	& insert an integer here\\
+\ci{\%g}	& insert a real number here\\
+\ci{\%s}	& insert a string here\\
+\ci{\%\%}	& a plain old percent sign\\
+\ci{$\backslash$n}	& begin a new line\\
+\ci{$\backslash$t}	& tab\\
+\ci{$\backslash$"}	& a quote that won't end the string\\
+$\backslash$(newline)	& continue the string on the next line
+\end{tabular}
+}
+\end{center}
+
+There are many more format specifiers, which will give you a great deal
+of control; you may want them when printing tables, for example, and can
+refer to any of a number of detailed references when you need these. [The
+\airq{g} in \ci{\%g} stands for \airq{general format}, by the way.]
+There are also a few more examples on page \pageref{printftwo}.
+
+Of course, we need to specify {\sl which} integer, real, or string to insert, and the list of names
+follows directly after the format string. For example:
+\begin{lstlisting}[numbers=left, numberstyle=\scshape]
+#include <stdio.h>
+int position = 3;
+char name[] = "Steven";
+printf("%s is number %i in line\n", name, position);
+\end{lstlisting}
+will print \bi{Steven is number 3 in line} and then move to the next
+line.
+
+This example demonstrates a number of central points about C. First, anything
+beyond the simplest operations calls a function. The form of a function
+call is simply the function name followed by the function's inputs in
+parentheses.  In this case, the
+function call is on line four: the function is named \ci{printf}, its first
+input is a format string as above, and the second and third arguments
+are the name and position. Line one, about \ci{stdio.h}, provides a
+definition of the \ci{printf} function, and will be discussed in detail
+below.
+
+If you flip through this book, you will see that
+many procedures are nothing but a sequence of function calls. As you
+flip through, you may
+also want to find a few examples of \cind{printf} and
+verify that they will indeed print what they promise to.
+
+Second, the example shows that every variable has a type. Lines two and
+three declared \ci{position} to be an \ci{int}eger, and \ci{name} to be an
+array of \ci{char}acters. The next section will take on the issue of
+types and declarations in detail.
+
+
+\summary{\item Assignment uses a single equals sign: \ci{assignee = value;}.
+\item The usual arithmetic works: \ci{ten = 2*3+8/2;}.
+\item Conditions such as \ci{(a > b)}, \ci{(a <= b)}, and \ci{(a == b)}
+(two equals signs) can be used to control flow.
+\item Conditional flow uses the form:
+\ci{if (condition) \{do\_if\_true;\} else \{do\_if\_false\};}.
+\item The basic loop is a \ci{while} loop: \ci{while (this\_is\_true) \{do\_this;\}}.
+\item When iterating through an array, a \ci{for} loop makes the
+iteration clearer: \ci{for (i=0; i< limit; i++) \{do\_this(i);\}}.
+\item Write comments for your future self.
+\item As with most operations, printing involves executing a function.
+}
+
+
 \section{Variables and their declarations} \label{declaring}
 
 \index{declaration!of variables|(}
@@ -525,7 +587,7 @@ double stuff;
 \end{lstlisting}
 
 
-Your basic options for variable types are \ci{int, float, double, long double} 
+Your basic options for variable types are \ci{int, float, double, long dou\-ble} 
 and \ci{char}. \ci{int}\cindex{int} is for integers;
 \ci{float}\cindex{float} is a floating-point number, aka a real number.\footnote{Why \airq{floating point}? The
 computer represents a real using the form $n \times 10^k$, where $n$
@@ -537,11 +599,11 @@ and so you have \cind{double}, which are double-precision real numbers,
 and \ci{long double}, which you can think of as quadruple-precision
 reals. \cind{char} are characters.	\cindex{long}
 
-C has other basic types, which are not worth caring about, though there
+C has other basic types, which are not worth caring about. There
 are some detailed notes about how numbers are represented in Section
 \ref{numbers}.
 
-Some languages have a \ci{boolean type} to represent the values one or zero.
+Some languages have a boolean type to represent the values one or zero.
 C does not bother with this because you can
 evaluate all of \ci{if(float\_var)}, \ci{if(int\_var)}, or \ci{if(char\_var)}
 with equal ease. If you are very concerned about 
@@ -594,6 +656,12 @@ do the same with an array, e.g.:
 \end{lstlisting}
 Notice that you do not have to bother counting how many elements the
 array has; C is smart enough to do this for you.
+
+\exercise{Write a program to create an array of 100 integers, and then
+fill the array with the squares (so \ci{the\_array[7]} will hold 49).
+Then, print a message like ``Position 7 holds 49.'' for each element of
+the array. Use the Hello World program as a template from which to start.}
+
 \comment{
 How do you know how large an array is? By looking at the declaration. There is no 
 \ci{sizeof(array)}
@@ -646,6 +714,7 @@ and are a good reflection of reality.  For example, the GSL has defined
 a large number of structures for us, such as the \ci{gsl\_matrix}
 mentioned above.
 \index{declaration!of variables|)}
+
 
 
 \subsection{\treesymbol Type casting}\label{casting} \index{casting|see{type casting}} \index{type casting|(} 
@@ -717,6 +786,7 @@ int is_even(int number){
 The header in line 1 is discussed below. The comparison on line three
 compares the truncated version of a number over two with the untruncated
 version of same.
+
 Since a boolean expression evaluates to one or zero,
 one could more efficiently write this as:
 \begin{lstlisting}
@@ -744,6 +814,22 @@ int round(float unrounded){
 \lstset{numbers=none}
 \index{type casting|)}   
 
+\summary{\item All variables must be declared before the first use.
+\item Until the variable is given a value, you know nothing about its value.
+\item You can assign an initial value to the variable on the declaration line, such as \ci{int i = 3;}.
+\item Arrays are simply declared by including a size after the variable
+name: \ci{int array[100];}. Refer to the elements using an {\em offset},
+so the first element is \ci{array[0]} and the last is \ci{array[99]}.
+}
+\summarynoitems{(continued)
+\begin{itemize}
+\item You can declare new types, including structures that amalgamate simpler types: \ci{typedef struct pants \{float length, waist; int leg\_ct;\} pants;}.
+\item After declaring a variable as a structure, say \ci{pants cutoffs;}, refer to structure elements using a dot: \ci{cutoffs.leg\_ct = 1;}.
+\item An integer divided by an integer is an integer: \ci{ 9/4 == 2}. By
+putting a decimal after a whole number, it becomes a \ci{float}, and
+division works again: \ci{9./4 == 2.25}.
+\end{itemize}
+}
 
 
 \section{Functions} \label{functional}
@@ -790,13 +876,13 @@ list consists of a variable name prepended by the type that that
 variable should be. You can see that both versions of \ci{is\_even}
 take one integer as an input, and
 \ci{round} takes one floating-point number.
-As shown in the examples below, e.g. Figure \ref{dosomething}, a
+As shown in the examples below, e.g. line 2 of Figure \ref{dosomething}, a
 function can take multiple inputs, in which case there will be a
 comma-separated list in the parentheses in the header.
 
 The function's name in the header follows the same form as the arguments:
-it is named \ci{is\_even}, and the name is prepended by a type,
-\ci{int}.  On line 3 of the short version, the function returns
+the functions above are named \ci{is\_even}, and the name is prepended by a type,
+\ci{int}.  On line 3 of the short version of \ci{is\_even}, the function returns
 an \ci{int}, so this is entirely consistent: when calling the
 function from elsewhere, we can use the function anywhere we need an
 integer. For example,
@@ -883,9 +969,8 @@ a value, the \ci{do\_something} frame and its contents are
 discarded.
 
 The main program can now pick up where it had left off, by assigning
-1.337 to \ci{output}, and then printing this output to the screen
-(using the rather ornery line beginning with \ci{printf}).
-Finally, the \ci{main} function 
+1.337 to \ci{output}, and then printing this output to the screen, using
+the call to the \ci{printf} function.  Finally, the \ci{main} function 
 finishes its work, and will be destroyed, leaving an empty stack and a
 finished program.
 
@@ -898,9 +983,10 @@ There is a lot of consistency-checking going on between the function as
 written and the call for the function: there have to be three variables
 in the parentheses following the name, and they have to be of the right
 type. The return value here is going to be assigned to a floating-point
-variable, so it too has to be floating-point (barring the exceptions of
-Section \ref{casting}). Such consistency-checking is a good thing, and
-the compiler will either warn you or halt if you fail any of these checks.
+variable, so it too has to be floating-point (barring the exceptions in
+the discussion above on type casting).
+Such consistency-checking is a good thing, and
+the compiler will either warn you or halt if your code fails any of these checks.
 
 By the way, these consistency checks don't care about the length of
 your arrays. In function declarations, you can use \ci{int an\_array[ ]}
@@ -934,20 +1020,27 @@ and use the function (i.e., the name, the number and type of inputs,
 and the type of output). This allows for a separation of function code
 and function use we will make endless use of below.
 
-The function-as-black-box idea also offers some general principles for
-writing your code and deciding what gets put into each function. Think
-about the individual steps your program will be doing, and put each
-of those steps into a function. When writing a function, you
-can put the rest of the program out of your mind and focus on making
-sure that the black box you are working on does exactly what it should
-to produce the right output. When all of the black boxes have been written to
-your satisfaction, then writing the main program, no matter how complex,
-will simply be a series of function calls.
+\paragraph{How to write a program}
+Given a blank screen and a program to write, how should you begin?
+Write function headers.
 
-Next month, when you have to do a similar analysis with slightly different
-data, you will have a set of black boxes to reuse. Since the boxes did not
-depend on the calling program, they can be recycled in your new program
-by just including the appropriate headers (plus some details below).
+This is the Computer Science equivalent of the outline you write before
+fleshing out an essay. In essay-writing, your outline lists a quick
+description of each paragraph's purpose; in code-writing, the function
+headers and function-level comments provide the description of each
+function's purpose.
+
+Having written the outline, you can begin filling in each function.
+When writing a function's body, you can put the rest of the program out of
+your mind and focus on making sure that the black box you are working on
+does exactly what it should to produce the right output. When all of the
+black boxes have been written to your satisfaction, then writing the main
+program, no matter how complex, will simply be a series of function calls.
+
+The big advantage you as a code-writer have over the essay-writers is
+that you can reuse your functions in next month's program.  Since each
+function did not depend on the calling program, it can be recycled in
+your new program by just including the appropriate headers.
 
 You want your black boxes to be entirely predictable and error-free,
 and the best way to do this is to keep them small and autonomous. A
@@ -955,10 +1048,17 @@ function that is more than a screen-full of text can always be broken
 down into a few subfunctions, thus improving the robustness of the code
 and giving you more black boxes which could be reused in the future.
 
+There are other philosophies of how one should structure code.  When
+writing a simulation, you will want to first write the \ci{struct}s that
+describe the nouns of the simulation, and then start writing functions
+to manipulate them.  But for most programs oriented toward statistical
+analysis, the data structures provided by the GSL and Apophenia are
+sufficient, and you will not need to write your own.
+
 \paragraph{\treesymbol{} The \cinlinetwo{return} statement} 
 All functions will return
-either one value or zero values, but notice that a function may have
-multiple return statements. For example, the long form of the
+either one value or zero values, but a function may have
+multiple \ci{return} statements. For example, the long form of the
 \ci{is\_even} function (page \pageref{isevenfn}) had two \ci{return} statements inside
 an \ci{if-then} block, on lines 4 and 6. The function was guaranteed
 to hit one or the other, but never both.
@@ -980,6 +1080,12 @@ float do_something_else();
 The last two are equivalent, but you can't forget the parentheses
 entirely---then the compiler would think you are talking about a variable
 instead of a function.
+
+\exercise{Write a function with header \ci{void print\_array(int
+in\_array[ ], int array\_size)} that takes in an integer array and the
+size of the array, and prints the array to the screen. Modify your
+square-printing program from the last exercise to use this function for
+output.}
 
 \paragraph{\treesymbol{} The \cinlinetwo{main} function}\cindex{main}
 All programs must have one and only one function named \ci{main},
@@ -1100,13 +1206,35 @@ globe= 4
 This may make global variables tempting to you, but resist. Section \ref{pointers} will give a better
 alternative.
 
+\summary{
+\item Good coding form involves breaking problems down into functions
+and writing each function as an independent entity.
+\item The computer evaluates each function as an independent entity. It
+maintains a stack of frames, and all activity is only in the top frame.
+\item When a program starts, it will first build a frame for the
+function named \ci{main}; therefore a complete program must have one and
+only one such function.
+%}\summarynoitems{(continued)
+%\begin{itemize}
+\item The header of a function is of the form \ci{function\_type
+function\_name(param1\_type param1\_name, param2\_type param2\_name,
+...)}.
+\item Global variables are passed into a new frame, but only copies of
+parameters are passed in. If a variable is not in the frame, it is out
+of scope and can not be accessed.
+\item If your function returns a value, it will do so using the
+\ci{return} keyword; if not, it can be declared as type \ci{void}.
+%\end{itemize}
+}
+
 \section{Compiling and running}\label{compilation} \index{compilation} 
 
-Once you have written a complete program, it would be nice to run the
-thing. You do so by processing the text you have just written with a
-preprocessor, a compiler, and a linker. These subprograms are all rolled
-into one program, typically just called \airq{the compiler}, and the entire
-process is colloquially referred to as \vocab{compilation}. The compiler I use
+If you have been following along with the examples, you have been
+compiling with the simple command \bi{gcc my\_program}. 
+Even though we call this program \airq{the compiler} and refer to the
+process as \airq{compilation}, it actually
+embodies three separate programs: a
+preprocessor, a compiler, and a linker. The compiler I use
 throughout this book is the GCC, the GNU Compiler Collection, which will
 compile C as well as a few other languages. I will use \bi{gcc} (herein
 lower case to refer to the command you will be typing) because it is probably
@@ -1115,14 +1243,14 @@ You can get it using any of the package managers described at the head
 of this chapter. If you are using an IDE front end to \bi{gcc},
 then you have buttons to click instead of commands to type, but you will
 still need to have a firm grasp of what \bi{gcc} is doing when you
-click the \airq{compile} button.
+click the compile button.
 
 The process of compiling relies heavily on the system of frames. If
 function A calls function B, the compiler can write down the
 instructions for creating and executing function A without knowing
 anything about function B beyond its declaration. It will simply create
-a frame that includes a call to function B, and the declaration will
-gurantee that the call's inputs and output are correctly handled. Since
+a frame whose instructions include a call to function B, and the declaration will
+guarantee that the call's inputs and output are correctly handled. Since
 the frame for function A and the frame for function B are always
 separate, the compiler can focus on creating one at a time, and then
 linking the two later on.
@@ -1185,16 +1313,16 @@ which is designed to facilitate compiling. After setting up a Makefile
 to describe your project, you will be able to simply type \bi{make} instead
 of the mess above. See Section \ref{make} for details.
 
-\paragraph{The output} One of two things will happen. The most likely is
-that you have an error somewhere in your code, and the compiler will tell
-you so. Sometimes, a short program will produce more errors than there
-are lines of code, which can be disheartening. But just begin with the
-first error in the list, and go from there---often subsequent errors are
-bogus side-effects of the first error. Multiple windows come in handy
-here: put your code in one window and compile in another, so you can
-see the errors and source code at the same time. Some text editors and
-IDEs have features to compile from within the program and then step you
-through the errors returned.
+\paragraph{The output} After you issue this command, one of two things
+will happen. The most likely is that you have an error somewhere in your
+code, and the compiler will tell you so. Sometimes, a short program
+will produce more errors than there are lines of code, which can be
+disheartening. But just begin with the first error in the list, and go
+from there---often subsequent errors are bogus side-effects of the first
+error. Multiple windows come in handy here: put your code in one window
+and compile in another, so you can see the errors and source code at
+the same time. Some text editors and IDEs have features to compile from
+within the program and then step you through the errors returned.
 
 The other possibility is that there were no errors at all. The compiler
 will not give you positive feedback in this case, instead simply returning
@@ -1212,6 +1340,18 @@ As noted above, \bi{gcc} takes your code through three steps.
 The first step is preprocessing,
 which does nothing but take text 
 you wrote and convert it into more text.
+
+\exercise{In prior exercises, you wrote a program with one function to
+create an array of numbers and their squares, and another function,
+\ci{print\_array}, to print those values. 
+\begin{itemize}
+\item Move \ci{print\_array} to a new text file, \bi{utility\_fns.c}. 
+\item Write the corresponding one-line file \bi{utility\_fns.h} with \ci{print\_array}'s header.
+\item \ci{\#include utility\_fns.h} in the main square-printing program.
+\item Compile both programs at once, e.g., \bi{gcc your\_main.c utility\_fns.c}.
+\item Run \ci{a.out} and verify that it does what it should.
+\end{itemize}
+}
 
 \index{header file!aggregation} 
 \marginaliafixed{16}{Header aggregation}{The Apophenia library provides a convenience header that aggregates
@@ -1257,7 +1397,7 @@ installed elsewhere in your system.  \index{preprocessor|)}
 \subsection{The compilation step} 
 The \ind{compilation}
 stage consists of taking each \ci{.c} file in turn and
-writing a machine-readable object file: \ci{file1.c} will
+writing a machine-readable object file, so \ci{file1.c} will
 result in \ci{file1.o}, and \ci{file2.c} will compile to
 \ci{file2.o}. These \index{object files} are self-encapsulated
 files that include a table of all of the symbols declared in that file
@@ -1275,7 +1415,8 @@ in which the current frame has no business meddling.
 That is, the compiler runs consistency checks on each file, and
 verifies that every function call matches its declaration.  But given
 that declaration and call match, the compiler doesn't yet need the
-function itself.
+called functions to create executable calling functions.
+
 
 \subsection{The \ind{linking} step}
 The next step in the process is linking. At the moment, we have one
@@ -1293,12 +1434,17 @@ the function's object code in your object files, then the linker should check
 the GSL library for the definition.
 
 Note well that the library's header and its object file are separate
-entities. If the header is found but the object file is not, then you
+entities. To include a function from the standard math library like
+\cind{sqrt}, you will need to (1) tell the preprocessor to include the
+header file, \ci{\#include $<$math.h$>$}, and (2) tell the linker to link
+to the math library via a \ci{-l} flag on the command line, in this case
+\ci{-lm}.
+
+If the header is found but the object file is not, then you
 will be able to successfully compile your own code into object files,
 but the linker will be unable to link your function calls to the
 functions called. Thus, compiler errors mean that you need to debug the
 include path, and linker errors mean that you need to debug the library path.
-
 
 \paragraph{C files as modules}
 Your work will often go along the same lines in all of your projects:
@@ -1310,7 +1456,7 @@ the ages shows that if you are careful writing your first few programs,
 then your later programs will take very little time to get up, running,
 and doing exactly what you want.
 
-Thus, you may want to start writing your own libraries. It is a simple
+In this way, you may want to start writing your own libraries. It is a simple
 process: simply put all of your functions relating to a certain topic
 into a file named \ci{topic.c}, and put the useful declarations
 into a separate header file named \ci{topic.h}.
@@ -1344,11 +1490,9 @@ friend			=module which includes \ci{module.c} instead of \ci{module.h}\\
 There are a wealth of pre-compiled object files in existence already,
 some available online and some on your hard drive right now.  An
 important part of the art of C programming is knowing what files are
-out there that have functions that will facilitate your work. There
-are a few sources of information that will be of primary utility to you
-(besides this book, of course).
+out there that have functions that will facilitate your work. 
 
-The first is the standard library. Being standard, this was
+The first library to know is the standard library. Being standard, this was
 installed on your computer along with the compiler. You may have the
 documentation on your hard drive: try \ci{info glibc}. If this doesn't
 work, a search for GNU C library documentation should find you a copy
@@ -1361,6 +1505,20 @@ array of libraries, all of which are free for download. Go to
 the \airq{software libraries} link. You will find a library for almost
 anything you would ever need.
 
+
+\summary{\item Compilation is a three-step process. The first step
+consists of inserting header files.
+\item Therefore, put function declarations in header files.
+\item The next step consists of compilation, in which each source
+(\ci{.c}) file is converted to an object (\ci{.o}) file.  
+\item Therefore, each source file should consist of a set of standalone
+functions, that depend only on the file's contents and any declarations included
+via the headers.
+\item The final step is linking, in which the functions referred in
+other libraries or object files are reconciled.
+\item Therefore, you can find libraries of function for any set of tasks
+you can imagine.  
+}
 
  \label{prepointers}\section{Pointers} \label{pointers} \index{pointers|ff}
 
@@ -1483,8 +1641,8 @@ and a plain integer, which will be named
 \ci{b\_c}.
 
 Now for the call-by-reference trick.  When the call to \ci{doubling}
-is made on line 12, we pass \ci{k}, which is a pointer, not
-an integer. The computer builds itself a frame, using a copy of
+is made on line 12, we pass the pointer \ci{k}.
+The computer builds itself a frame, using a copy of
 \ci{k}---that is, a copy of the address of an integer. Both
 \ci{k} (in the \ci{main} frame) and \ci{k\_c} (in the
 \ci{doubling} frame) now point to the same piece of data.  Line 5,
@@ -1626,7 +1784,7 @@ brag about how they never segfault: when you refer to something
 outside of what you had expected, they will just
 run \ci{calloc} behind your
 back. Then the program will give you an answer which may or may not look
-correct, and which you may or may not notice before you present to the
+correct, and you may or may not notice your error before you present to the
 grantmaking board. 
 
 If you are hacking along to this chapter on your PC, you may already
@@ -1634,8 +1792,21 @@ have experienced a few segfaults. If so, skip to
 Section \ref{debug}, on the debugger, for techniques for spotting your
 errors.
 
+\summary{
+\item A variable can hold the address of a location in memory.
+\item By passing that address to a function, the function can modify
+that location in memory, even though only copies of variables are passed
+into functions.
+\item The space to which a pointer is pointing needs to be prepared
+using \ci{malloc}, e.g., \ci{int *integer\_address = malloc(sizeof(int));}.
+\item When you are certain a variable will not be used again, free it,
+e.g., \ci{free(integer\_address)}.
+}
+
 \section{Arrays and other pointer tricks} \label{for_loops} \index{array}
-An array is a sequence of one type of item, such as a thousand \ci{int}s. Here is some sample code to declare an array and fill it with square numbers:
+You can use a pointer as an array: instead of pointing to a single
+integer, for example, you can point to the first of a sequence of
+integers. Here is some sample code to declare an array and fill it with square numbers:
 \begin{lstlisting}
 int array_length=1000;
 int *squares = malloc (array_length * sizeof(int));
@@ -1647,10 +1818,9 @@ for (i=0; i < array_length; i++)
 The syntax for declaring the array exactly match\-es that of allocating
 a single pointer, except we need\-ed to allocate a block of size 
 \ci{1000 * size\-of(int)} instead of just a single \ci{size\-of(int)}. 
-
-Notice that referring to an element of \ci{squares} looks a lot
-like referring to an array element, and this is because they are
-internally identical: a sequence of blocks of memory holding a certain
+Notice that referring to an element of \ci{squares} uses identical syntax to the 
+automatically-declared arrays at the beginning of this chapter.
+Internally, both types of array are just a sequence of blocks of memory holding a certain
 data type. 
 
 However, arrays and pointers are {\em not} identical: one is
@@ -1795,7 +1965,7 @@ free (k);
 if (k == NULL)
     k   = malloc(...);
 \end{lstlisting}
----but this will work unreliably (i.e., it won't work). Dilligent compilers
+---but this will work unreliably (i.e., it won't work). Diligent compilers
 may set \ci{k} to \ci{NULL} when freeing, but if the compiler is feeling
 lazy, it may not. The only way
 to test whether a pointer is allocated or not is to make sure that every
@@ -1867,6 +2037,22 @@ argument to \ci{realloc} is the pointer whose space needs resizing,
 and the second argument is the new size.  The first part of this new
 block of memory will be the \ci{data\_array} so far, and the end will
 be an allocated but garbage-filled space ready for us to put data into.
+
+\summary{
+\item Just as copies of normal variables are passed to functions,
+copies of pointers are sent in. Therefore, be careful when modifying a
+pointer in a subfunction.
+\item Arrays are internally represented as pointers. The \ci{int
+sarray[100]} form creates an automatically-allocated array, where the
+computer creates and destroys the array; the \ci{int *harray =
+malloc(sizeof(int) * 100);} form creates a manually-allocated array
+which is yours to allocate and deallocate.
+\item Refer to array elements in both cases using the same
+square-brackets notation, such as \ci{harray[14]}.
+\item Arrays of structs can be declared just as with arrays of basic
+variables. Refer to a pointer-to-struct using \ci{->}.
+\item You can expand a manually-allocated array using \ci{realloc}.
+}
 
 \section{Strings} \index{strings|ff} \label{stringsec}
 
@@ -1945,51 +2131,6 @@ provides two convenience functions, \cind{apop\_strcat} and
 \cind{apop\_strcpy}, that do the \ci{realloc} for you; see the
 online reference for details.
 
-\paragraph{Printing}
-\index{printing|see{\ci{printf}}}\label{printf}
-C's standard printing functions are much like the rest of the language:
-not very attractive, initially unintuitive, but in the end not a bad
-way of doing things. \ind{Python}, the latest and greatest in scripting
-languages, uses C's string printing syntax.
-
-Each of the functions below are based on a format string, which
-can include plain text and a few placeholders for numbers or other
-strings that we will specify later. For example, \ci{"person \%s
-is number \%i in line$\backslash$n"}.  Here are the odd characters you
-will need for almost all of your work:
-
-\startonecol
-\begin{center}
-\fbox{
-\begin{tabular}{rl}
-\ci{\%i}	& insert an integer here\\
-\ci{\%g}	& insert a real number here\\
-\ci{\%s}	& insert a string here\\
-\ci{\%\%}	& a plain old percent sign\\
-\ci{$\backslash$n}	& begin a new line\\
-\ci{$\backslash$t}	& tab\\
-\ci{$\backslash$"}	& a quote that won't end the string\\
-$\backslash$(newline)	& continue the string on the next line
-\end{tabular}
-}
-\end{center}
-\endonecol
-
-There are many more format specifiers, which will give you a great deal
-of control; you may want them when printing tables, for example, and can
-refer to any of a number of detailed references when you need these. [The
-\airq{g} in \ci{\%g} stands for \airq{general format}, by the way.]
-There are also a few more examples on page \pageref{printftwo}.
-
-Of course, we need to specify {\sl which} integer, real, or string to insert, and the list of names
-follows directly after the format string. For example:
-\begin{lstlisting}
-#include <stdio.h>
-printf("person %s is number %i in line\n", name, position);
-\end{lstlisting}
-This book is filled with examples of \cind{printf}; you may want to find a few and
-verify that they will indeed print what they promise to.
-
 \paragraph{Printing to strings} Once you have the format for \ci{printf} down, you can use exactly the
 same syntax to dump text to a string instead of to the screen. Here is an example for the \ci{sprintf}
 (string-print-formatted) function:
@@ -2009,6 +2150,18 @@ The first \ci{\%s} will evaluate to the original value of \ci{write\_to\_me} fro
 sentence will be added on to that.
 
 Writing to files also uses the same syntax, as you will see in Section \ref{asst_conversions}, using \cind{fprintf}.
+
+\summary{
+\item Strings are actually arrays of \ci{char}s, so you must think in
+pointer terms when dealing with them.
+\item The standard library includes a variety of functions to help you
+out, such as \ci{strcmp} to compare two strings, \ci{strcpy} to copy,
+and \ci{strcat} to concatenate two strings.
+\item The \ci{printf} family of functions produces a single string from plain
+text, variable strings, and numbers. \ci{printf} will dump that string
+to the screen; \ci{sprintf} will store it in a (pre-allocated) string;
+\ci{fprintf} will write it to a file (see page \pageref{fprintf}).
+}
 
 \section{The debugger} \index{debugging|(} \index{gdb@\ci{gdb}|see{debugging}} \label{debug}
 Scripting languages typically show every line as it is being executed,
@@ -2056,7 +2209,7 @@ as in a call to \ci{mallopt}. Ignore those: you did not find a bug in
 
 At this point, the best thing to do is look at a listing of your code
 in another window and look at the line the debugger pointed out. Often,
-knowing which line is wrong is enough to make the error painfully obvious.
+knowing which line failed is enough to make the error painfully obvious.
 
 
 If the error is still not evident, then go back to the debugger and look
@@ -2095,11 +2248,11 @@ as when an iterator reaches 10,000. GDB lets you do this by specifying
 conditions: \ci{break 35 if counter$>$10000}.
 
 All breakpoints are given a number, which can be listed with
-\ci{info break}. You can delete breakpoint number three with
+\ci{info break}. You can delete break point number three with
 the command \ci{del 3}.
 
 Once you have set the breakpoints, \ci{run} will run the program until it
-reaches a breakpoint, and then you can apply the interrogation techniques
+reaches a break point, and then you can apply the interrogation techniques
 above. You may want to carefully step through from there; \ci{s}
 will step to the next line, which could mean backing up in the current
 function or going to a subfunction. Alternatively, \ci{next} or {\tt
@@ -2109,10 +2262,19 @@ will run without stopping in any subframes which may be created
 going until you get to the next line in the function, so the debugger
 will run through subfunctions and loops until forward progress is made
 in the current function.  Finally, \ci{c} will continue along until the next
-breakpoint or the end of the program. This is also a good place to
+break point or the end of the program. This is also a good place to
 point out that just hitting $<$enter$>$ will repeat the last command,
 so you won't have to keep hitting \ci{n} to step through many lines.
 \index{debugging|)}
+
+\summary{\item The debugger will allow you to view intermediate results
+at any point along a program's execution.
+\item You can either wait for the program to segfault by itself, or use
+\bi{break} to insert breakpoints.
+\item You can print any expression or variable using \ci{p variable}.
+\item Once the program has stopped, use \ci{s}, \ci{n}, and \ci{u} to
+step through the program at various speeds.
+}
 
 \section{\treesymbol Errors} The compiler will warn you of syntax
 errors, and you have seen how the debugger will help you find runtime
@@ -2309,7 +2471,7 @@ There are manual pages for most of the C functions in the standard
 libraries. Try \bi{man printf} or \bi{man atoi}, for example.
 
 This help may not be available on every system---it's a bit of
-a crapshoot. But all of these documents are online. Just enter the
+a crap shoot. But all of these documents are online. Just enter the
 command you would have typed at the command line into your favorite
 search engine. A search for \bi{info gsl} or \bi{man printf} will
 turn up exactly the documentation that is missing from your system,
@@ -2348,7 +2510,7 @@ file1.o: file1.c my_headers.h       #User-defined
 file2.o: file2.c my_headers.h       #User-defined
         $(COMPILE)
 \end{verbatim}
-\caption{A sample makefile for a program with two source files.}
+\caption{A sample Makefile for a program with two source files.}
 \label{makefig}
 \end{figure*}
 
@@ -2501,7 +2663,7 @@ outputs to \ind{STDOUT}; use the usual shell tricks to manipulate
 the output, such as piping output through a pager, \bi{gprof
 ./my\_executable | less}, or dumping it to a text file, \bi{gprof
 ./my\_executable > outfile}, that you can view in your text editor.}
-See the manual (\bi{man gprof}) for futher details about reading
+See the manual (\bi{man gprof}) for further details about reading
 the output.
 
 As with the debugger, once the profiler points out where the most time
@@ -2627,7 +2789,10 @@ Linus Torvalds,\index{Torvalds, Linus} the author of the Linux kernel, recommend
 \ci{goto}.
 
 An alternative is \cind{break}, which cuts out of the innermost loop in
-which it is located. Here is code that would work about like the above:
+which it is located. It is primarily useful when searching through an
+array for an item. Once you have found what you are looking for, there
+is no need to continue looping to the end of the array.
+Here is code that would work about like the above:
 \begin{lstlisting}
 for (i=0; i< vector_size; i++){
     if (a_vector[i] > b){
@@ -2719,17 +2884,12 @@ faster code, telling you to use loops here and unroll them there, make
 frequent use of the \cind{inline} keyword, or order your commands based
 on memory usage instead of human logic. Ignore them. It is much more
 valuable to minimize the time you spend deciphering and debugging your
-code than run time.  Write code to maximize readability for yourself
-and your fellow humans. If you want optimization, \ci{gcc -O3} will
-do almost all of these rearrangements for you.
+code than shaving seconds off of your run time.  Write code to maximize
+readability for yourself and your fellow humans. If you want optimization,
+\ci{gcc -O3} will do almost all of these rearrangements for you.
 
 
 \label{end_c_crash}
-\ifbook \else
-\printindex
-
-\end{document}
-\fi
 
 
 

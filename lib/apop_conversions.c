@@ -270,6 +270,8 @@ const char      divider[]="\\(\"[^\"][^\"]*\"\\|[^\"%s][^\"%s]*\\)[%s\n]";
 static void pull_string(char *line, char * outstr, regmatch_t *result, size_t * last_match){
 int     length_of_match = result[1].rm_eo - result[1].rm_so;
     memcpy(outstr, line + (*last_match)+result[1].rm_so, length_of_match);
+    if (outstr[length_of_match -1] == '"')
+        length_of_match     --;
     outstr[length_of_match]       = '\0';
     (*last_match)                += result[1].rm_eo+1;
 }
@@ -647,14 +649,14 @@ regmatch_t  result[2];
 		for (i=0; i<ct; i++){
 			if (i==0) 	{
                 if (has_row_names)
-                    apop_strcat(&q, " (row_names, ");
+                    apop_strcat(&q, " (row_names, \"");
                 else
                     apop_strcat(&q, " (");
-            } else		apop_strcat(&q, " , ");
-            apop_strcat(&q, " ");
+            } else		apop_strcat(&q, "\" , ");
+            apop_strcat(&q, " \"");
             apop_strcat(&q, fn[i]);
 		}
-		apop_query_db("%s ); commit; begin;", q);
+		apop_query_db("%s\" ); commit; begin;", q);
 		if (use_names_in_file){
 		    for (i=0; i<ct; i++)
 			    free(fn[i]);

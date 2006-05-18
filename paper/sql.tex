@@ -1,4 +1,4 @@
-\startonecol \chapter{Databases} \label{sql}\endonecol
+\chapter{Databases} \label{sql}
 \setsql %for code listings.
 
 \comment{
@@ -51,7 +51,7 @@ try \cind{apop\_text\_to\_db} on the command line to produce an SQLite
 database from a text file. Try \cind{apop\_text\_to\_db -h} for help.
 
 This chapter will primarily consist of an overview of SQL, with which you can
-follow along uising any of the above tools. Section \ref{foldingsql}
+follow along using any of the above tools. Section \ref{foldingsql}
 will describe the Apophenia library functions that facilitate using an
 SQL database from within a C program.
 
@@ -89,6 +89,12 @@ characteristic of having a \sinline{row\_name} variable whose value is
 \sinline{"Joe"}. That is, column names are {\it bona fide} names; row
 names are just data.}
 
+\comment{
+\summary{
+\item Each column of a database represents a different named variable;
+each row represents the values of those variables for a single unnamed observation.
+}
+}
 
 
 \section{Basic queries}
@@ -169,6 +175,9 @@ match those you specified in the \sinline{select} clause).
 Use as many subclauses as you wish, using the Boolean operators you
 know and love: \sinline{where ((d1.age > 13) or (d2.height >= 175)) and (d1.weight == 70)}.
 
+The \sinline{where} clause refers to the root data, not the output,
+meaning that you can readily refer to columns that you do not mention
+in the \sinline{select} clause.
 
 \paragraph{Pruning rows with \sinlinetwo{distinct}} The \sqlind{distinct}
 keyword will tell the SQL engine that if several rows would be exact
@@ -183,6 +192,21 @@ The  \sinline{distinct} word prunes the rows, but is placed in the
 \sinline{select} portion of the program.  This reads more like English, but it
 breaks the story above that the \sinline{select} statement specifies the
 columns and the \sinline{where} statement specifies the rows.
+
+\summary{
+\item A query consists of three parts: the columns to be output, the
+data source, and the rows to be output.
+\item The columns are generally specified in the \sinline{select}
+statement. You can pull all the columns from the data using \sinline{select *}, 
+or you can specify individual columns like \sinline{select a, b, a*b as
+product}.
+\item The data source is in the \sinline{from} clause, which is
+typically a list of tables.
+\item The row specification, generally in the \sinline{where} clause,
+is a list of conditions that all rows must meet. It can be missing
+(and so all possible rows are returned) or it can include a series of
+conditions, like \sinline {where (a == b) and (b <= c)}.
+}
 
 \subsection{Joining}
 If you specify two tables in your \sinline{from} line, then, lacking any
@@ -261,7 +285,7 @@ from data;
 This produces a table with one column and one row, listing the total number of rows in the \sinline{data} table.
 
 \index{crosstabs}\label{crosstabs}
-\marginaliafixed{15}{Crosstabs}{In the spreadsheet world, we often get tables
+\marginaliafixed{16}{Crosstabs}{In the spreadsheet world, we often get tables
 where the X-dimension is the year, the Y-dimension is the location,
 and the $(x,y)$ point is a measurement taken that year at that location.
 
@@ -454,6 +478,25 @@ instead. Of course, the query output has no name, so you may need to
 alias the result: \sinline{from (select ...) t1} will allow you to refer to
 the query's output as \sinline{t1} elsewhere in the query.
 
+\summary{
+\item You can join tables by listing multiple tables in the
+\sinline{from} clause. When you do, you will need to specify a
+\sinline{where} clause, and probably the \sinline{distinct} keyword, to
+prevent having an unreasonably long output table.
+\item If you intend to join elements, you can speed up the join
+immensely by creating an index first.
+\item SQL includes a few simple aggregation commands: \sinline{avg()},
+\sinline{sum()}, and \sinline{count()}. Apophenia provides a few more
+nonstandard aggregators for queries called using its functions. 
+\item When aggregating, you can add a \sinline{group by} clause to
+indicate how the aggregation should be grouped.
+\item Tables can be stacked using 
+\sinline{union}, \sinline{union all}, \sinline{intersect}, and \sinline{except}
+\item You can create tables using the \sinline{create} and
+\sinline{insert} commands, but you are probably better off just reading
+the table from a text file.
+}
+
 \section{Folding queries into C code}\label{foldingsql}  This section covers the functions
 in the Apophenia library that will create and query a database. All of
 these functions are wrappers of SQLite functions that do the dirty work,
@@ -596,6 +639,28 @@ data (because duplicate tables are appended to, not overwritten).
 
 \cinline{apop\_db\_merge} also has a command-line program of the
 same name.
+
+\summary{
+\item Open a database in memory using \ci{apop\_open(NULL)}, and
+on the hard drive using \ci{apop\_open("filename")}.
+\item Import data using \ci{apop\_text\_to\_db}.
+\item If you don't need output, use \ci{apop\_query} to send
+queries to SQLite.
+\item You can ask SQLite to return data using
+\ci{apop\_query\_to\_data},
+\ci{apop\_query\_to\_matrix},
+\ci{apop\_query\_to\_vector},
+\ci{apop\_query\_to\_char}, or
+\ci{apop\_query\_to\_float}.
+}
+
+\paragraph{Metadata} What tables are in the database? What are their
+column names? SQL provides no easy way to do this, so every database
+engine has its own specific means of finding this information. SQLite
+has a table named \sinline{SQLITE\_MASTER} that we can query to get
+such information.
+
+This section forthcoming.
 
 \section{Some examples} 
 Here are a few examples of how C code and SQL calls can neatly interact.
@@ -751,12 +816,10 @@ double	test_me = gsl_cdf_gaussian_P(mean_over-mean_under, var_over+var_under);
 }
 Now we have the inputs needed to produce a test statistic. It so happens
 that 
-\startonecol
 $$
 \frac{({\tt mean\_over - mean\_under})}
 {\sqrt{\frac{{\tt var\_over}}{({\tt count\_over}-1)}+ \frac{{\tt var\_under}}{({\tt count\_under}-1)}}} \sim t_{\tt count\_over + count\_under - 2},
 $$
-\endonecol
 and it is trivial to translate this statistic into C: 
 \begin{lstlisting}
 double	stat    = (mean_over - mean_under)/ sqrt(var_over/ (count_over-1) + var_under/(count_under-1));

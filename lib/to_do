@@ -4,7 +4,6 @@
 --Start respecting text segment of apop_data
 --apop_db_to_text should output an apop_names structure, and I need a category printer.
 --And how about something to write apop_estimates to the db?
---take residuals out of apop_estimate; generate them later.
 
 apop_regression.c: In function `apop_produce_dummies':
 apop_regression.c:407: warning: cast from pointer to integer of
@@ -21,6 +20,7 @@ apop_output.c:207: warning: field width is not type int (arg 2)
 	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
 
 --apop_yule_rank model
+--take residuals out of apop_estimate; generate them later.
 
 
 text:
