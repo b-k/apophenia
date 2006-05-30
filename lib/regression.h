@@ -3,6 +3,18 @@
 #include <gsl/gsl_matrix.h>
 #include <apophenia/types.h>
 
+#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
+#undef __END_DECLS
+#ifdef __cplusplus
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
+#else
+# define __BEGIN_DECLS /* empty */
+# define __END_DECLS /* empty */
+#endif
+
+__BEGIN_DECLS
+
 //apop_estimate * apop_estimate_OLS(apop_data *set, apop_estimation_params *ep);
 apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin);
 apop_estimate * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma);
@@ -27,3 +39,5 @@ apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data, apop_inventory *
 apop_data *apop_estimate_correlation_coefficient(apop_estimate *in);
 apop_data *apop_estimate_r_squared(apop_estimate *in);
 void apop_estimate_parameter_t_tests(apop_estimate *est);
+
+__END_DECLS

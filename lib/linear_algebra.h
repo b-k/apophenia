@@ -4,6 +4,18 @@
 #include <gsl/gsl_linalg.h>
 #include <apophenia/types.h>
 
+#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
+#undef __END_DECLS
+#ifdef __cplusplus
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
+#else
+# define __BEGIN_DECLS /* empty */
+# define __END_DECLS /* empty */
+#endif
+
+__BEGIN_DECLS
+
 gsl_matrix *apop_covariance_matrix(gsl_matrix *in, int normalize);
 apop_data * apop_data_covariance_matrix(apop_data *in, int normalize);
 apop_data * apop_data_correlation_matrix(apop_data *in);
@@ -18,3 +30,5 @@ gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop);
 int         apop_vector_isnan(gsl_vector *in);
 int         apop_vector_finite(gsl_vector *in);
 int         apop_vector_bounded(gsl_vector *in, long double max);
+
+__END_DECLS

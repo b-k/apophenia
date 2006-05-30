@@ -21,6 +21,18 @@
 #define MAX_ITERATIONS 		5000
 #define MAX_ITERATIONS_w_d	5000
 
+#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
+#undef __END_DECLS
+#ifdef __cplusplus
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
+#else
+# define __BEGIN_DECLS /* empty */
+# define __END_DECLS /* empty */
+#endif
+
+__BEGIN_DECLS
+
 extern char  apop_mle_trace_path[1000];
 
 /*
@@ -85,4 +97,5 @@ extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
 
 apop_estimate * apop_estimate_restart(apop_estimate *e,int  new_method, int scale);
 
+__END_DECLS
 #endif

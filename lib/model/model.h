@@ -5,6 +5,18 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
+#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
+#undef __END_DECLS
+#ifdef __cplusplus
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
+#else
+# define __BEGIN_DECLS /* empty */
+# define __END_DECLS /* empty */
+#endif
+
+__BEGIN_DECLS
+
 extern apop_model apop_exponential;
 extern apop_model apop_exponential_rank;
 extern apop_model apop_gamma;
@@ -27,6 +39,7 @@ extern apop_model apop_zipf_rank;
 //This is in asst.c.
 double apop_generalized_harmonic(int N, double s);
 
+__END_DECLS
 #endif
 
 /** \defgroup mle  Maximum likelihood estimation

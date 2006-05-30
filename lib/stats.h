@@ -9,6 +9,17 @@
 #include <gsl/gsl_statistics_double.h>
 #include "linear_algebra.h"
 
+#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
+#undef __END_DECLS
+#ifdef __cplusplus
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
+#else
+# define __BEGIN_DECLS /* empty */
+# define __END_DECLS /* empty */
+#endif
+
+__BEGIN_DECLS
 
 	//The following are just convenient hooks to gsl vector functions.
 	//var_m lets you input a mean if you've already calculated it, saving
@@ -81,3 +92,4 @@ void apop_matrix_replace(gsl_matrix *m, int (* test)(double), double replace_wit
 //from apop_fisher.c:
 apop_data *apop_test_fisher_exact(apop_data *intab);
 
+__END_DECLS

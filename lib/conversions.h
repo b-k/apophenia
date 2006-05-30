@@ -13,6 +13,18 @@
 #include <string.h>
 #include <gsl/gsl_matrix.h>
 
+#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
+#undef __END_DECLS
+#ifdef __cplusplus
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
+#else
+# define __BEGIN_DECLS /* empty */
+# define __END_DECLS /* empty */
+#endif
+
+__BEGIN_DECLS
+
 /////////////
 //From vector
 /////////////
@@ -56,3 +68,5 @@ int apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name,
 char * apop_strip_dots(char *in, char strip_type);
 char *apop_strcat(char **base, char *addme);
 char *apop_strcpy(char **base, char *addme);
+
+__END_DECLS

@@ -6,6 +6,17 @@
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
+#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
+#undef __END_DECLS
+#ifdef __cplusplus
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
+#else
+# define __BEGIN_DECLS /* empty */
+# define __END_DECLS /* empty */
+#endif
+
+__BEGIN_DECLS
 
 int apop_table_exists(char *q, char whattodo);
 
@@ -68,4 +79,6 @@ double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2);
 double apop_db_paired_t_test(char * tab1, char *col1, char *col2);
 	//Runs a t-test entirely inside the database. Uses the nifty
 	//var() aggregator function defined by Apophenia.
+
+__END_DECLS
 #endif
