@@ -400,7 +400,7 @@ char 		*err, q2[5000];
 
 /**
 Closes the database on disk. If you opened the database with
-\ref apop_db_open(NULL), then this is basically optional.
+\c apop_db_open(NULL), then this is basically optional.
 
 \param vacuum 
 'v': vacuum---do clean-up to minimize the size of the database on disk.<br>

@@ -16,7 +16,6 @@ our evaluation criterion.
 \begin{center}
 \includegraphics[width=\textwidth*\real{1.05}]{models.eps}
 \end{center}
-
 \caption{A flowchart for distribution fitting, linear regression,
 likelihood functions, multilevel modeling,
 simulation (including agent-based modeling), data mining, non-parametric modeling,
@@ -38,11 +37,22 @@ real-world phenomenon to be explained.
 
 The problem of statistical modeling is to find the parameters at the
 beginning of the flowchart that will output the best evaluation at the
-end.
+end. That is, for a given function and evaluation in Figure
+\ref{modelflow}, we seek a routine to take in data and produces the optimal parameters, as in Figure \ref{modelflowback}.
 In the OLS model above, there is a closed-form solution to the problem:
 $\betav_{\rm best}=(\Xv'\Xv)^{-1}\Xv'\yv$.  But for more complex models,
 such as simulations or maximum likelihood methods, we must strategically
 try different sets of parameters to hunt for the best ones.
+
+\begin{figure}[htb]
+%\hskip -1.4cm
+\begin{center}
+\includegraphics[width=\textwidth*\real{0.85}]{models2.eps}
+\end{center}
+
+\caption{The input for the model in Figure \ref{modelflow} is the output for the estimation routine.}
+\label{modelflowback}
+\end{figure}
 
 
 \comment{
@@ -107,11 +117,11 @@ and the reference is online at \url{http://apophenia.info/doc}.}
 Part I of this book will cover methods for efficient computing. Part II
 is a catalog of models. Each model takes the
 function box of Figure \ref{modelflow} to have a different form, and
-then shows how the parameters can be estimated. When listed by name,
-they are quite a long list; when described via implementation in C, you
-will see that their estimation involves the same set of simple techniques.
-Part II also discusses means of testing the parameters estimated using
-these methods.
+then shows how to write the corresponding estimation function in Figure
+\ref{modelflowback}. When listed by name, they are quite a long list; when
+described via implementation in C, you will see that their estimation
+involves the same set of simple techniques.  Part II also discusses
+means of testing the parameters estimated using these methods.
 
 Here is a more detailed list of the main topics covered:
 \begin{itemize}
@@ -282,7 +292,8 @@ the computer you are using right now. Gnuplot is highly automatable, so once
 you have a plot you like, you can have your C programs autogenerate
 it or manipulate it in amusing ways, or can send your program to your
 colleague in Madras and he will have no problem reproducing and modifying
-your graphs. Chapter \ref{gnuplot} will cover creative uses of
+your graphs. Once you have the basics down, animation and real-time
+plots for simulations are easy. Chapter \ref{gnuplot} will cover creative uses of
 Gnuplot to display data.
 
 

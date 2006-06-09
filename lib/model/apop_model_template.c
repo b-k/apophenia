@@ -1,10 +1,11 @@
-/** \file apop_MODELNAME.c
+/** apop_MODELNAME.c 
+ 
+ (This file is not handled by Doxygen)
 
-Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
+Base file copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
+Feel free to replace this with your own copyright.
 */
 #include "model.h"
-
-
 
 //The default list. You probably don't need them all.
 #include "types.h"

@@ -21,9 +21,10 @@ always check the scoping rules first.} Thus, this chapter on C may help
 the reader to become a better programmer with any programming language.
 
 As for the syntax of C, this chapter will cover only a subset. C has
-32 key words and this book will only use 17 of them. Some are basically
+32 key words and this book will only use 18 of them.\footnote{For
+comparison, C$^{++}$ has 49 key words, and  Java has an even 50.} Some of the other keywords are basically
 archaic, designed for the days when compilers needed help from the user to
-optimize code. Others, like bit-shifting operators, will only be useful
+optimize code. Others, like bit-shifting operators, are only useful
 if you are writing an operating system or a hardware device driver. With
 all the parts of C that directly manipulate hexadecimal memory addresses
 omitted, you will find that at its core, C is a rather simple language
@@ -496,7 +497,7 @@ The printing function is based on a format string, which
 can include plain text and a few placeholders for numbers or other
 strings that we will specify later. For example, \ci{"person \%s
 is number \%i in line$\backslash$n"}.  Here are the odd characters you
-will need for almost all of your work:
+will need for almost all of your work. 
 
 \begin{center}
 \fbox{
@@ -517,7 +518,8 @@ There are many more format specifiers, which will give you a great deal
 of control; you may want them when printing tables, for example, and can
 refer to any of a number of detailed references when you need these. [The
 \airq{g} in \ci{\%g} stands for \airq{general format}, by the way.]
-There are also a few more examples on page \pageref{printftwo}.
+There are a few more type specifiers that you will rarely use on page
+\pageref{printftwo}.
 
 Of course, we need to specify {\sl which} integer, real, or string to insert, and the list of names
 follows directly after the format string. For example:
@@ -796,9 +798,11 @@ int is_even(int number){
 }
 \end{lstlisting}
 
+\index{rounding}
 Finally, note that when casting from \ci{float} to \ci{int}, numbers
 are truncated, not rounded.  The following function uses type casting
-to correctly round off numbers:
+to correctly round off numbers:\footnote{In the real world, use
+\cind{rint} to round to integer: \ci{rounded\_val = rint(unrounded\_number)}.}
 
 \begin{lstlisting}
 int round(float unrounded){
@@ -1110,7 +1114,7 @@ Unices), the return value from the last program run is stored in
 \bi{\$?}, so \bi{echo \$?} will print its value, should you
 be curious about it.
 
-\paragraph{Scope}	\label{scope}
+\subsection{Scope}	\label{scope}
 
 When one function is running, only the variables in that frame are
 visible: all of the variables in the rest of the program are 
@@ -1123,7 +1127,8 @@ A variable's {\sl scope} is the set of functions that can see the
 variable. A variable declared inside a function is only visible inside
 that function.  If a variable is declared at the top of a file, then
 that variable is \airq{global} to the file, and any function in that
-file can see that variable. If declared in a header file (see below),
+file can see that variable. If declared in a header file (see below,
+including an important caveat on page \pageref{extern}),
 then any function in a file which \ci{\#include}s that header  can see
 the variable.
 
@@ -1155,6 +1160,29 @@ in the rest of the program affects it, so what could have been a question
 of just cutting and pasting a black box from one file to another has
 now become an involved analysis of the original program.  \index{scope|)}
 
+\codefig{callbyval}{A function using call-by-value}
+
+\paragraph{Call-by-value} \index{call-by-value}
+A common error is to forget that global variables are put in all function
+frames, but only {\sl copies} of the variables in the function's argument
+list are put in the frame.  
+
+Figure \ref{callbyval} shows a sample program demonstrating the
+call-by-value paradigm.  
+When the \ci{doubling} function is called, it puts a copy of \ci{a} into \ci{a\_c} and a copy of \ci{b}
+into \ci{b\_c}. It gives \ci{a\_c} the value of twice \ci{b\_c} and returns that value. But \ci{a}
+itself did not change at all, even though \ci{a\_c} did change. Meanwhile, \ci{int globe} is not a copy of
+itself, but the real thing, so when it is changed inside the function, it changes globally.
+Here is the output:
+\begin{lstlisting}
+doubling returns 4
+a= 1
+globe= 4
+\end{lstlisting}
+
+This may make global variables tempting to you, but resist. Section \ref{pointers} will give a better
+alternative.
+
 \paragraph{\treesymbol Static variables} There is one exception to the rule that
 all local variables are destroyed: you can define a \ci{static}
 variable. When the function's frame is destroyed, the program makes a
@@ -1184,27 +1212,6 @@ will remember that \ci{count\_so\_far} is one, and will thus put the
 second name in \ci{survey\_data[1]}, where we would want it to be.
 [I assume that the calling function knows the length of
 \ci{survey\_data} and does bounds-checking accordingly.]
-
-\paragraph{Call-by-value} \index{call-by-value}
-A common error is to forget that global variables are put in all function
-frames, but only {\sl copies} of the variables in the function's argument
-list are put in the frame.  Figure \ref{callbyval} shows a sample program.
-
-\codefig{callbyval}{A function using call-by-value}
-
-When the \ci{doubling} function is called, it puts a copy of \ci{a} into \ci{a\_c} and a copy of \ci{b}
-into \ci{b\_c}. It gives \ci{a\_c} the value of twice \ci{b\_c} and the returns that value. But \ci{a}
-itself did not change at all, even though \ci{a\_c} did change. Meanwhile, \ci{int globe} is not a copy of
-itself, but the real thing, so when it is changed inside the function, it changes globally.
-Here is the output:
-\begin{lstlisting}
-doubling returns 4
-a= 1
-globe= 4
-\end{lstlisting}
-
-This may make global variables tempting to you, but resist. Section \ref{pointers} will give a better
-alternative.
 
 \summary{
 \item Good coding form involves breaking problems down into functions
@@ -1313,6 +1320,21 @@ which is designed to facilitate compiling. After setting up a Makefile
 to describe your project, you will be able to simply type \bi{make} instead
 of the mess above. See Section \ref{make} for details.
 
+\marginalia{16}{compile \&\& run}{
+As above, the \ci{b} in \ci{(a \&\& b)} is evaluated only if \ci{a} is
+true. Similarly on the command line: the command \bi{make \&\&
+./run\_me} will first run \bi{make}, and halt if there are errors, and
+continue on to \bi{./run\_me} if \bi{make} was successful. Between this
+trick and most shells' ability to repeat the last command line (try
+the up-arrow or \bi{!!}), you have a very fast means of recompiling and
+executing.
+
+One problem is that you should heed all warnings, but a compilation
+with warnings but no errors is considered successful. The solution is
+to add \bi{-Werror} to your \bi{gcc} command line, to tell the compiler
+to treat warnings as errors.  
+}
+
 \paragraph{The output} After you issue this command, one of two things
 will happen. The most likely is that you have an error somewhere in your
 code, and the compiler will tell you so. Sometimes, a short program
@@ -1393,6 +1415,36 @@ current directory, as it did for \bi{"a\_file.h"} above, it should
 look in the standard include path. Use \bi{"my\_file.h"} for header
 files you have written and \ci{<their\_file.h>} for header files
 installed elsewhere in your system.  \index{preprocessor|)}
+
+\index{header file!variables in}
+\paragraph{\treesymbol Variables in headers} \label{extern} The system of
+putting file-scope variables in the base \ci{.c} file and global-scope
+variables in the \ci{.h} file has one ugly detail. A
+function delcaration is merely advice to the compiler that your function
+has certain inputs and outputs, so when multiple files reread the
+declaration, ther program only suffers harmless redundancy. But a
+variable declaration is a command to the compiler to allocate space as
+listed. If \ci{head.h} includes a declaration \ci{int x;}, and
+\ci{file1.c} includes \ci{head.h}, it will set aside an
+\ci{int}'s worth of memory and name it \ci{x}; if \ci{file2.c}
+includes the same header, it will also set aside some memory
+named \ci{x}. So which bit of memory are you referring to when you use
+\ci{x} later in your code? 
+
+C's solution is the \cind{extern} keyword, which tells the compiler that
+the declaration that follows is not for memory allocation, but is purely
+informative. Simply prepend it to the normal declaration: \ci{extern int
+x; extern long double y;} will both work. Then, in one and only one
+\ci{.c} file, declare the variables themselves: \ci{int x; long double
+y;}. Thus, all files that \ci{\#include} the header know what to make of
+the variable \ci{x}, so \ci{x}'s scope is all files with the given
+header, but the variable is only allocated once.
+
+To summarize: function declarations and \ci{typedef}s are just information
+for the compiler, so they can go into a header file that will be included
+in multiple \ci{.c} files. Variables need to be declared as usual in
+one and only one \ci{.c} file, and if you want other \ci{.c} files to
+see them, redeclare them in a header file with the \ci{extern} keyword.
 
 \subsection{The compilation step} 
 The \ind{compilation}
@@ -1505,6 +1557,10 @@ array of libraries, all of which are free for download. Go to
 the \airq{software libraries} link. You will find a library for almost
 anything you would ever need.
 
+The third is \url{sourceforge.net}, a web site with on the order of a
+million projects (of varying quality). To be hosted on Sourceforge,
+a project must agree to make its code public, so you may fold anything
+you find there into your own work.
 
 \summary{\item Compilation is a three-step process. The first step
 consists of inserting header files.
@@ -1514,10 +1570,13 @@ consists of inserting header files.
 \item Therefore, each source file should consist of a set of standalone
 functions, that depend only on the file's contents and any declarations included
 via the headers.
+}\summarynoitems{(continued)
+\begin{itemize}
 \item The final step is linking, in which the functions referred in
 other libraries or object files are reconciled.
 \item Therefore, you can find libraries of function for any set of tasks
 you can imagine.  
+\end{itemize}
 }
 
  \label{prepointers}\section{Pointers} \label{pointers} \index{pointers|ff}
@@ -1676,7 +1735,7 @@ functions discussed here will have a \cind{sizeof} somewhere in the
 argument.
 
 %\eject
-\index{\&}\marginaliafixed{13}{The ampersand}{Every variable has an address, whether you
+\index{\&}\marginaliafixed{13}{The ampersand}{\label{ampersand}Every variable has an address, whether you
 declared it as a pointer or not. The ampersand finds that address: if
 \ci{count} is an integer, then \ci{\&count} is a pointer to an integer.
 The ampersand and star are inverses: \ci{\&(*count) == count}, which
@@ -1693,16 +1752,28 @@ and size of your pointer. If you treat the data pointed to by an \ci{int} pointe
 happen; if you put twenty variables into a space allocated for fifteen,
 then bad things will happen. See below.
 
-By the way, notice that \ci{int *k = 7} will fail---the initialization on the declaration line is for
-the pointer, not the value the pointer holds. One convenient function which partly helps with this is
-\cind{calloc}:
+By the way, notice that \ci{int *k = 7} will fail---the initialization
+on the declaration line is for the pointer, not the value the pointer
+holds. When you use \ci{*k} in a declaration line, you are referring to
+a pointer; when you use \ci{*k} in non-declaration code, you are
+referring to the value the pointer holds.
+Thus, given that k is a pointer to an integer, all of
+these lines are correct:
+\begin{lstlisting}
+int *k = malloc(sizeof(int));
+*k = 7;
+k = malloc(sizeof(int)); 
+\end{lstlisting}
+
+\cind{calloc} is a convenient function that allocate values when declaring a pointer.
+You can read the name as \airq{clear and allocate}: it will run \ci{malloc}
+and return the appropriate address, and will also set everything in
+that space to zero, running \ci{*k = 0} for you.
 \begin{lstlisting}
 #include <malloc.h>  //calloc
     int *k = calloc(1, sizeof(int));
 \end{lstlisting}
-which you can read as \airq{clear and allocate}: it will run \ci{malloc}
-and return the appropriate address, and will also set everything in
-that space to zero, running \ci{*k = 0} for you. Notice the syntax,
+Notice the syntax,
 which requires that we explicitly state that we want one space, the
 size of an integer. You need to give more information than \ci{malloc}
 because the process of putting a zero in a \ci{float} pointer may be
@@ -1718,11 +1789,43 @@ responsibility. The de-allocation comes simply by calling
 will clean up for you, but being explicit about when you de-allocate is
 good form.
 
+\exercise{
+Write a function named \ci{swap} that takes two pointers to \ci{float}
+variables and exchanges their values.
+
+\begin{itemize}
+\item First, write a \ci{main} function that simply declares two floats
+(not pointers) \ci{first} and \ci{second}, gives them values, prints
+the values and returns. Check that it compiles.
+\item Then, write a the \ci{swap} function that accepts two pointers,
+but does nothing. That is, write out the header but let the body be
+\ci{\{ \}}. 
+\item Call your empty function from \ci{main}. Do you need to use
+\ci{\&first} (as per the box on page \pageref{ampersand}), \ci{*first}, or just \ci{first}?  Check that the program still compiles.  
+\item Finally, write the swap function itself. (Hint: include a local
+variable \ci{float temp}). Add a \ci{printf} to the end of \ci{main} to
+make sure that your function worked.
+\end{itemize}
+}
+
+\exercise{
+Modify your swap program so that the two variables in \ci{main} are now
+pointers to \ci{float}s. 
+\begin{itemize}
+\item Add allocations via \ci{malloc}, either in the declaration itself or on
+another line.
+\item Which of \ci{\&first}, \ci{*first}, or \ci{first} will you need to
+send to \ci{swap} now?
+\item Do you need to modify the \ci{swap} function itself?
+\end{itemize}
+}
+
+
 \paragraph{The joy of segfaults} \index{segmentation fault} \index{segfault|see{segmentation fault}}
 When you initialize a non-pointer variable, say \ci{int k}, then all of
 the care and feeding of that variable is the compiler's responsibility:
 it has to allocate memory for \ci{k}, check whether the variable is
-in scope, and it has to free the memory when the frame that \ci{k}
+in scope, and free the memory when the frame that \ci{k}
 was declared in is destroyed.
 
 \comment{
@@ -2056,9 +2159,10 @@ variables. Refer to a pointer-to-struct using \ci{->}.
 
 \section{Strings} \index{strings|ff} \label{stringsec}
 
-Strings such as \ci{"hello"} are implemented as arrays of individual characters, followed by an invisible
-null character, written as \ci{$\backslash$0}. This means that you have to think in terms of arrays when dealing
-with strings. Here are some examples:
+Lines of text such as \ci{"hello"} are implemented as arrays of
+individual characters, followed by an invisible null character, written
+as \ci{$\backslash$0}. This means that you have to think in terms of
+arrays when dealing with strings of characters. Here are some examples: 
 \lstset{numbers=left, numberstyle=\scshape}
 \begin{lstlisting}
 char hello[30];
@@ -2167,7 +2271,9 @@ to the screen; \ci{sprintf} will store it in a (pre-allocated) string;
 Scripting languages typically show every line as it is being executed,
 so when something breaks, the user can see the exact line in the code
 where things went wrong. In the world of C, the same line-by-line
-execution is achieved using a debugger.
+execution is achieved using a debugger. You may want to get into the
+habit of always running your programs using the debugger, whether you
+are actively debugging or not.
 
 To debug the program \ci{run\_me} under the debugger, type \ci{gdb
 run\_me} at the command line.  You will be given the gdb
@@ -2336,11 +2442,10 @@ conditions on the inputs provides a touch of additional documentation on
 what the function expects and thus what it will do. If you misuse the
 function, you will know the error in a heartbeat.
 
-There is really no reason not to pepper your code with tests. Notice how
-the \ci{\&\&} and \ci{||} are perfect for this sort of thing,
-because they will never go past the first step. 
-
-Let us say that the user gives us a list of element indexes, and we will
+The \ci{\&\&} and \ci{||} are perfect for inserting quick tests,
+because the right-hand side can test for validity and the left-hand
+side will only execute if the validity test passes. For example, 
+let us say that the user gives us a list of element indexes, and we will
 add them to a counter only if the chosen array elements are even. The
 quick-and-dirty way to do this is to use the \ci{is\_even} function
 from earlier:
@@ -2354,6 +2459,10 @@ before testing for evenness:
 if (i > 0 && i < array_len && is_even(array[i]))
     evens   += array[i];
 \end{lstlisting}
+If \ci{i} is out of bounds, then the program just throws \ci{i} out and 
+moves on. This is sometimes what we want, but failing a test often means
+that something went wrong, and so we want the system to complain loudly.
+For this, we can use \ci{assert}.
 
 \subsection{\ci{assert}} \cindex{assert}
 The \ci{assert} macro makes a claim, and if the claim is false, the
@@ -2426,9 +2535,9 @@ if the vector is only one element, or has unexpected values? It may also
 be worth checking that the absolutely wrong inputs, like
 \ci{find\_means(array4, -3)} will fail appropriately.
 
-Some programmers actually write the test functions first.  This is a
-method very much akin to what your high school writing teacher told you
-about writing an outline before writing down the details. Write a comment
+Some programmers actually write the test functions first.  This is one
+more manner of 
+writing an outline before writing down the details. Write a comment
 block explaining what the function will do, then write a test program that
 gives examples of what the comment block described in prose. Finally,
 write the actual function. When the function passes the tests, you
@@ -2446,6 +2555,10 @@ int main(){
 but as you write more functions and their test, they can be added to
 \ci{main} as appropriate. Then, when you add another test, you will
 re-run all your old tests at the same time. Peace of mind will ensue.
+For ultimate peace of mind, you can call your test functions at the
+beginning of your main program. They should take only a microsecond to
+run, and if one ever fails, it will be much easier to debug than if the
+function failed over the course of the main routine.
 
 \exercise{Write a test function for the incremental mean program you'd
 written above. Did your function pass on the first try? 
@@ -2524,7 +2637,8 @@ section of the Apophenia documentation, at
 \samplecodelocation. Cut and paste it into a file named
 \bi{Makefile}, taking care to retain the tabs, and put that file in
 the same directory as your source code. Then, change the first two lines
-to include one object file for each of your source files, and
+to include one object file for each of your source files (you may only
+have one), and
 to the program name you prefer.  You may also need to change the
 \bi{LINKFLAGS} line if you get errors from the linker about symbols
 not found.
@@ -2547,8 +2661,7 @@ gcc $(CFLAGS) $(OBJECTS) $(LINKFLAGS) -o $(PROGNAME)
 \end{lstlisting}
 will translate into
 \begin{lstlisting}
-gcc  -g -Wall file1.o file2.o -L/usr/local/lib -lgsl 
-                    -lgslcblas -lsqlite -o run_me
+gcc  -g -Wall file1.o file2.o -L/usr/local/lib -lgsl -lgslcblas -lsqlite -o run_me
 \end{lstlisting}
 which looks an awful lot like what we had typed before (but not quite---this does the linking step only).
 
@@ -2676,12 +2789,19 @@ run a modestly complex program through the profiler, because, like the
 debugger's backtrace, its output provides another useful view of how
 functions call each other.
 
+\exercise{At this point you have a few programs with two or more
+functions. [The profiler gets confused if your program only has a
+\ci{main} and no subfunctions.] Run the profiler as above and have a
+look at the output. Are the calls as you had expected? If you have
+several assertions (you should), try recompiling with -DNDEBUG and see
+how the profiler timings change.}
+
 \section{\treesymbol Advanced topics}   
 There are several ways to do almost everything I have presented here.  For
 example, one could write the three lines \ci{b = (i > j); a += b;
 i++;} as the single expression \ci{a += b = i++ > j;}. The seventh
-element of the array \ci{a} can either be called \ci{a[6]} or
-\ci{*(a + 6)}.  Some people find one-liners and pointer arithmetic
+element of the array \ci{a} can be called \ci{a[6]},
+\ci{*(a + 6)}, or even (for the truly perverse) \ci{6[a]}.  Some people find one-liners and pointer arithmetic
 to have \ae{}sthetic appeal, and there are even cases where they may
 be clearer than the more common methods. But they are an easy way to
 write impossible-to-debug code, and require mastery of a great number
@@ -2782,11 +2902,11 @@ return out;
 \end{lstlisting}
 The goto is reviled by modern computer scientists as terrible style, so
 it appears infrequently. However, redundant code is also bad style. 
-In the above example, getting rid of the \ci{goto} would require
-copying the various memory-freeing
-tasks at the end of the function into the center of the \ci{for} loop.
-Linus Torvalds,\index{Torvalds, Linus} the author of the Linux kernel, recommends the \ci{goto} to eliminate redundancy as above; other authors choose to never use
-\ci{goto}.
+In the above example, getting rid of the \ci{goto} would require copying
+the various memory-freeing tasks at the end of the function into the
+center of the \ci{for} loop.  Linus Torvalds,\index{Torvalds, Linus}
+the author of the Linux kernel, recommends the \ci{goto} to eliminate
+redundancy as above; many other authors choose to never use \ci{goto}.
 
 An alternative is \cind{break}, which cuts out of the innermost loop in
 which it is located. It is primarily useful when searching through an

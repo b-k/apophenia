@@ -354,7 +354,7 @@ char tmptype    = apop_opts.output_type;
 
 /** Dump a <tt>gsl_matrix</tt> to the screen.
     You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_show */
+\ingroup apop_print */
 void apop_matrix_show(gsl_matrix *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
@@ -364,7 +364,7 @@ char tmptype    = apop_opts.output_type;
 
 /** Dump a <tt>gsl_matrix</tt> to the screen in int format.
     You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_show */
+\ingroup apop_print */
 void apop_matrix_show_int(gsl_matrix *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
@@ -374,7 +374,7 @@ char tmptype    = apop_opts.output_type;
 
 /** Print an \ref apop_data to the screen.
     You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_show */
+\ingroup apop_print */
 void apop_data_show(apop_data *data){
 char    tmptype = apop_opts.output_type;
 int     i, j,
@@ -407,7 +407,7 @@ int     i, j,
 
 /** Print an \ref apop_data set to the screen in int format.
     You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_show */
+\ingroup apop_print */
 void apop_data_show_int(apop_data *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';

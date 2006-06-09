@@ -86,7 +86,7 @@ everything, and if you don't need covariances, why calculate them. If you
 don't care about the estimation parameters, sending \cinline{NULL} will
 work fine for most models. 
 
-\paragraph{Data} \cindx{apop\_data}{(textbf}
+\subsection{Data} \cindx{apop\_data}{(textbf}
 The \cinline{apop\_data} structure is the union of three data types:
 the \cind{gsl\_vector}, \cind{gsl\_matrix}, and a table of strings. It
 includes an \cinline{apop\_name} structure (see below), so you know what
@@ -280,9 +280,60 @@ than the matrix.
 \cindex{apop\_data\_get...}
 \cindex{apop\_data\_set...}
 
+\paragraph{Dot products} \label{apopdot} In Chapter \ref{linear_algebra}, you saw the
+GSL's rather messy functions to take dot products of matrices and
+vectors. The \cind{apop\_dot} function handles most of the mess for you.
+It takes up to four arguments: two \ci{apop\_data} structures, and one
+flag for each matrix 
+indicating whether it should be transposed or not. For example, if \ci{X} is a matrix,
+then 
+\begin{lstlisting}
+apop_dot(X, X, 1, 0);
+\end{lstlisting}
+will find $X'X$: we are taking the dot product of \ci{X} with itself,
+and the first version is transposed and the second is not.
+
+Since an \ci{apop\_data} set may be either a vector or a matrix, this
+function handles all four of matrix $\cdot$ matrix,
+matrix $\cdot$ vector, vector $\cdot$ matrix, and vector $\cdot$ vector.
+If a data set has a matrix then the matrix is used, and if it does not
+then the vector component is used.
+
+There should be exactly as many transposition flags as
+matrices.\footnote{Yes, you can have a variable number of function
+arguments. See \vocab{variadic functions} in your favorite comprehensive
+C reference.}
+If the first element is a vector, it is always taken to be a row;
+if the second element is a vector, it is always a column. In both cases,
+if the other element is a matrix, you will need one transposition flag
+to indicate whether the matrix should be transposed.
+
+If both elements are vectors, then you are probably better off just
+using  \cind{gsl\_cblas\_ddot}, as per page \pageref{ddot}, but if you use
+\ci{apop\_dot}, the output will be an \ci{apop\_data} set that has
+a vector element of length one.
+
+Why do you have to tell a computer whether to transpose or not? Some
+point out that if you
+send a \ci{1} to indicate transposition when you meant \ci{0}, the system should be able to
+determine this. Let us say that you have a $1\times 10$ vector that you
+will multiply against three data sets, where the first is $8 \times 10$,
+the second is $15 \times 10$, and the third is $10 \times 10$. You write
+a simple \ci{for} loop:
+\begin{lstlisting}
+for(i=0; i<3; i++)
+    out[i] = apop_dot(data[i], v, 1);
+\end{lstlisting}
+At \ci{i=0}, a `smart' system realizes that you committed a faux pas:
+an $8 \times 10$ matrix dot a $10 \times 1$ column vector works without
+transposition. So it corrects you without telling you, and does the same
+with \ci{data[1]}. With \ci{data[2]}, the transposition works, since
+there are both ten rows and columns. So \ci{out[0]} and \ci{out[1]} are
+correct and \ci{out[2]} is not. Good luck catching and debugging that.
+
  \cindx{apop\_data}{)textbf}
 
-\paragraph{Models}
+\subsection{Models}
 The \cinline{apop\_model} structure encapsulates a description of the world
 in which the data and the parameters produce observed outcomes. The
 \cinline{apop\_mo\-del.\-est\-i\-mate()} method takes in data and
@@ -337,7 +388,7 @@ methods to find the likelihood-maximizing parameter values for your
 model, and the Monte Carlo functions of Chapter \ref{boot} will estimate
 characteristics of the model parameters with one function call.
 
-\paragraph{Estimates} 
+\subsection{Estimates} 
 %\index{apop\_estimate@\cinlinetwo{apop\_estimate}|(textbf}
 \cindx{apop\_estimate}{(textbf}
 The \cinline{apop\_estimate} structure returns all the data one would want

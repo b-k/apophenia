@@ -427,7 +427,8 @@ int open_server() {
 and when it gets one, it executes it here. */
 static int start_listening(int sockfd){
 struct sockaddr_in 	cli_addr;
-int 			n, clilen, newsockfd,  cmd_no, i, stop_pt;
+int 			n,  newsockfd,  cmd_no, i, stop_pt;
+unsigned int    clilen;
 char 			cmdbuffer[256], **argbuffer,  
 			*printme;
      clilen = sizeof(cli_addr);

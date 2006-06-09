@@ -1,15 +1,18 @@
 /** \file apop_bootstrap.c
 
-Bootstrapping!!!
+Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
+ */
+
+/** \defgroup boot Bootstrapping
 
 The jackknife procedure takes the following steps:
 
-for (1000 iterations){
-	generate subset of data
-	run estimation
-	write down parameter estimate
-	}
-calculate variance. 
+for (1000 iterations){      <br>
+	generate subset of data     <br>
+	run estimation      <br>
+	write down parameter estimate       <br>
+	}       <br>
+calculate variance.       
 
 [If you have a consistent estimator, the mean should be darn close to the mean of the full data set, by the way.]
 
@@ -18,11 +21,7 @@ real work is in the process of generating the subsets of the data. The
 assumption is that your data set is in a gsl_matrix where each row is
 a data element, and no rows are special.
 
-You need to provide a function which takes a data set as an input and spits out a single number as output.
-
 \todo It would be nice if one had a means of producing random views of the input data, rather than requiring the copying of half the data set for every run. Todo: write such a function.
-
-Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
 #include "stats.h"
@@ -38,37 +37,79 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 	parameter, and I'll give you the jackknifed standard deviation (sqrt(var)) of the parameter 
  
 
-The function you write will have the following header:
-\code{	gsl_vector * boot_fn(gsl_matrix * data, void * param_1, void*  param_2, void* param_3);}
-You have _three_ parameters that you can input. Of course, you technically
-only need one, since that one can be a struct with many elements, but
-having to write a struct to pass in two variables is annoying. This
-form pushes the problem back to when you have four or more parameters,
-at which point they're probably already in a struct.
+The function returns a \c gsl_matrix instead of just a double so that you
+can jackknife every parameter at once. Remember that if \c e is an
+\ref apop_estimate, then \c e->parameters is a \c gsl_vector.
 
-The function returns a gsl_vector instead of just a double so that you
-can jackknife every parameter at once. Remember that if \code{e} is an
-\ref apop_estimate, then \code{e->parameters} is a gsl_vector.
-
-\param	data	The data set. A gsl_matrix where each row is a single data point
-\param boot_fn	The function by which parameter estimates are found; see the notes.
-\param boot_iterations	How many subsamples to draw. If you forget and set this to zero, then I assume 1000
-\param params_1	a parameter to send to your boot_fn.
-\param params_2	a parameter to send to your boot_fn.
-\param params_3	a parameter to send to your boot_fn.
+\param in	    The data set. A gsl_matrix where each row is a single data point
+\param model    An \ref apop_model, whose \c estimate method will be used here.
+\param ep        The \ref apop_estimation_params for your model, to be passed in directly.
 
 \todo I couldn't find a reference on how big the jackknife subsample should be relative to the data set. So I hard-coded the subsample size to 1/3 the original data set. If you have better, code it in.
+\ingroup boot
  */
-gsl_matrix * apop_jackknife(apop_data *data, apop_model model, apop_estimation_params e){
+gsl_matrix * apop_jackknife(apop_data *in, apop_model model, apop_estimation_params *ep){
+gsl_vector              v;
+int                     i;
+apop_data               *subset  = apop_data_alloc(in->matrix->size1 - 1, in->matrix->size2);
+apop_data               *array_of_boots = NULL;
+apop_estimation_params  *e;
+apop_estimate           *boot_est;
+
+//Allocate a matrix, get a reduced view of the original, and copy.
+gsl_matrix  *reduced= subset->matrix;
+gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1, in->matrix->size2).matrix;
+    gsl_matrix_memcpy(reduced, &mv);
+
+    //prep the parameters.
+    if (ep){
+        e   = malloc(sizeof(*e));
+        memcpy(e, ep, sizeof(*e));
+    } else
+        e   = apop_estimation_params_alloc();
+    apop_inventory_set(&(e->uses), 0);      //our re-run will only ask parameters.
+    e->uses.parameters  = 1;
+	boot_est        = model.estimate(subset, e);
+	array_of_boots  = apop_data_alloc(in->matrix->size1, boot_est->parameters->vector->size);
+    i = -1;
+    //printf("Fuck. %i, %i, %i\n", reduced->size1, i, (i< (int) reduced->size1));
+    
+    for(i = -1; i< (int) reduced->size1; i++){
+        //Get a view of row i, and copy it to position i-1 in the
+        //short matrix.
+        if (i >= 0){
+            v   = gsl_matrix_row(in->matrix, i).vector;
+            gsl_matrix_set_row(reduced, i, &v);
+	        boot_est        = model.estimate(subset, e);
+        }
+        gsl_matrix_set_row(array_of_boots->matrix, i+1, boot_est->parameters->vector);
+        apop_estimate_free(boot_est);
+    }
+    apop_data   *out    = apop_data_covar(array_of_boots);
+    gsl_matrix_scale(out->matrix, gsl_pow_2(in->matrix->size1-1));
+    return out->matrix;
+}
+
+/*
+                Take everything herein as debris.
+
+
+gsl_matrix * apop_jackknife_multirow(apop_data *data, apop_model model, apop_estimation_params *ep){
 int		        i, j, row;
 int             boot_iterations	= 1000;
-apop_data	    *subset	= apop_data_alloc(data->matrix->size1, data->matrix->size2);
+apop_data	    *subset	        = apop_data_alloc(data->matrix->size1, data->matrix->size2);
+apop_estimation_params  *e;
 apop_data       *array_of_boots = NULL;
 gsl_vector_view	v;
 apop_estimate   *boot_est;
-gsl_rng		    *rn	=gsl_rng_alloc(gsl_rng_default);
-    apop_inventory_set(&(e.uses), 0);      //our re-run will only ask parameters.
-    e.uses.parameters  = 1;
+gsl_rng		    *rn	            = gsl_rng_alloc(gsl_rng_default);
+    if (ep){
+        e   = malloc(sizeof(*e));
+        memcpy(e, ep, sizeof(*e));
+    } else
+        e   = apop_estimation_params_alloc();
+    apop_inventory_set(&(e->uses), 0);      //our re-run will only ask parameters.
+    e->uses.parameters  = 1;
 	for (i=0; i<boot_iterations; i++){
 		//create the data set
 		for (j=0; j< data->matrix->size1; j++){
@@ -77,14 +118,19 @@ gsl_rng		    *rn	=gsl_rng_alloc(gsl_rng_default);
 			gsl_matrix_set_row(subset->matrix, j, &(v.vector));
 		}
 		//get the parameter estimates.
-		boot_est    = model.estimate(subset, &e);
+		boot_est    = model.estimate(subset, e);
 		if (i==0)
 			array_of_boots	= apop_data_alloc(boot_iterations, boot_est->parameters->vector->size);
         gsl_matrix_set_row(array_of_boots->matrix,i,boot_est->parameters->vector);
         apop_estimate_free(boot_est);
 	}
-	return apop_data_covar(array_of_boots)->matrix;
+    apop_data   *out    = apop_data_covar(array_of_boots); 
+    gsl_matrix_scale(out->matrix, gsl_pow_2(in->matrix->size1-1)); 
+    return out->matrix;
 }
+
+*/
+
 
 /*
 gsl_vector * old_bootstrap(gsl_matrix * data, gsl_vector * (*boot_fn)(gsl_matrix *, void *, void* , void*), int boot_iterations,

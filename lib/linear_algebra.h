@@ -30,5 +30,7 @@ gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop);
 int         apop_vector_isnan(gsl_vector *in);
 int         apop_vector_finite(gsl_vector *in);
 int         apop_vector_bounded(gsl_vector *in, long double max);
+apop_data * apop_dot(apop_data *d1, apop_data *d2, ...);
+//apop_data * apop_dot(apop_data *d1, apop_data *d2, char t1, char t2);
 
 __END_DECLS

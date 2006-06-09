@@ -8,18 +8,10 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 
 /** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  
 
-<b>common matrix tricks</b><br>
-\li \ref apop_det_and_inv: Calculate the determinant, inverse, or both.
-\li \ref apop_x_prime_sigma_x: A very common operation for statistics.
-\li \ref apop_sv_decomposition: the singular value decomposition
+This page describes some standard bits of linear algebra that Apophenia facilitates.
 
-<b>printing</b><br>
-\ref apop_print: Some convenience functions to quickly dump
-a matrix or vector to the screen: <tt>apop_matrix_print</tt>,
-<tt>apop_matrix_print_int</tt>, <tt>apop_vector_print</tt>, and
-<tt>apop_vector_print_int</tt>.
-
-See also the \ref convenience_fns "Convenience functions".
+See also the printing functions, \ref apop_print, and the
+\ref convenience_fns "Convenience functions".
 */
 
 /** \defgroup convenience_fns 	Things to make life easier with the GSL.
@@ -494,4 +486,94 @@ long double x;
             return 0;
     }
     return 1;
+}
+
+
+static apop_data *dot_for_apop_dot(gsl_matrix *m, gsl_vector *v, CBLAS_TRANSPOSE_t flip){
+gsl_vector *outv;
+    if (flip ==CblasNoTrans)
+        outv = gsl_vector_calloc(m->size1);
+    else
+        outv = gsl_vector_calloc(m->size2);
+    gsl_blas_dgemv (flip, 1.0, m, v, 0.0, outv);
+    return apop_vector_to_data(outv);
+}
+
+/** A convenience function for dot products.
+
+  First, this requires less typing than the <tt>gsl_cblas_dgexx</tt> functions.
+
+  Second, it makes some use of the semi-overloading of the \ref apop_data
+  structure. \c d1 may be a vector or a matrix, and the same for \c d2, so
+  this function can do vector dot matrix, matrix dot matrix, and so on. If
+  \c d1 includes both a vector and a matrix, then the matrix only is used.
+
+\param d1 the left part of \f$ d1 \cdot d2\f$
+\param d2 the right part of \f$ d1 \cdot d2\f$
+\param t1 't' or 'p': transpose or prime d1.<br>
+                    'n' or 0: no transpose.
+\param t2 't' or 'p': transpose or prime d2.
+                    'n' or 0: no transpose.
+\return     an \ref apop_data set. If two matrices come in, the vector element is \c NULL and the 
+            matrix has the dot product; if either or both are vectors,
+            the vector has the output and the matrix is \c NULL
+\ingroup linear_algebra
+  */
+//apop_data * apop_dot(apop_data *d1, apop_data *d2, char t1, char t2){
+apop_data * apop_dot(apop_data *d1, apop_data *d2, ...){
+int         uselm, userm;
+gsl_matrix  *lm = d1->matrix, 
+            *rm = d2->matrix;
+gsl_vector  *lv = d1->vector, 
+            *rv = d2->vector;
+CBLAS_TRANSPOSE_t   lt  ,//= (t1=='t' || t1=='T' || t1=='p' || t1=='P') ? CblasTrans : CblasNoTrans,
+                    rt  ;//= (t2=='t' || t2=='T' || t2=='p' || t2=='P') ? CblasTrans : CblasNoTrans;
+apop_data   *out    = apop_data_alloc(0,0);
+va_list		argp;
+	va_start(argp, d2);
+    if (d1->matrix)
+        uselm   = 1;
+    else if (d1->vector)
+        uselm   = 0;
+    else{
+        printf("apop_dot: the left data set has neither non-NULL matrix nor vector. Returning NULL.\n");
+        return NULL;
+    }
+    if (d2->matrix)
+        userm   = 1;
+    else if (d2->vector)
+        userm   = 0;
+    else{
+        printf("apop_dot: the right data set has neither non-NULL matrix nor vector. Returning NULL.\n");
+        return NULL;
+    }
+    if (uselm && userm){
+        lt  = va_arg(argp, int) ? CblasTrans: CblasNoTrans;
+        rt  = va_arg(argp, int) ? CblasTrans: CblasNoTrans;
+        gsl_matrix *outm    = gsl_matrix_calloc((lt== CblasTrans)? lm->size2: lm->size1, 
+                                                (rt== CblasTrans)? rm->size1: rm->size2);
+        gsl_blas_dgemm (lt,rt, 1, lm, rm, 0, outm);
+        out->matrix         = outm;
+    } else if (!uselm && userm){
+        //If output vector has dimension matrix->size2, send CblasTrans
+        //If output vector has dimension matrix->size1, send CblasNoTrans
+        rt  = va_arg(argp, int) ? CblasTrans: CblasNoTrans;
+        if (rt == CblasNoTrans)
+            out = dot_for_apop_dot(rm, lv, CblasTrans);
+        else
+            out = dot_for_apop_dot(rm, lv, CblasNoTrans);
+    } else if (uselm && !userm){
+        lt  = va_arg(argp, int) ? CblasTrans: CblasNoTrans;
+        if (lt == CblasNoTrans)
+            out = dot_for_apop_dot(lm, rv, CblasNoTrans);
+        else
+            out = dot_for_apop_dot(lm, rv, CblasTrans);
+    } else if (!uselm && !userm){ 
+        double outd;
+        gsl_blas_ddot (lv, rv, &outd);
+        out->vector = gsl_vector_alloc(1);
+        gsl_vector_set(out->vector, 0, outd);
+    }
+	va_end(argp);
+    return out;
 }

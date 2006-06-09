@@ -341,10 +341,10 @@ regmatch_t  result[3];
 
 If you are reading into an array or <tt>gsl_matrix</tt> or \ref
 apop_data set, all text fields are taken as zeros. You will be warned
-of such substitutions unless you set \ref apop_opts.verbose<tt>==0</tt>
+of such substitutions unless you set \code apop_opts.verbose==0\endcode
 beforehand.
 
-You will also be interested in \ref apop_opts.input_delimiters. By
+You will also be interested in \c apop_opts.input_delimiters. By
 default, it is set to "| ,\t", meaning that a pipe,
 comma, space, or tab will delimit separate entries. Try \code
 strcpy(apop_opts.input_delimiters, ";")\endcode to set the delimiter to

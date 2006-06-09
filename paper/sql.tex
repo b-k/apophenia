@@ -404,9 +404,9 @@ list of one data element for each column.
 \begin{lstlisting}
 begin;
 create table newtab(name, age);
-insert into newtab("Joe", 12);
-insert into newtab("Jill", 14);
-insert into newtab("Bob", 14);
+insert into newtab values("Joe", 12);
+insert into newtab values("Jill", 14);
+insert into newtab values("Bob", 14);
 commit;
 \end{lstlisting}
 
@@ -683,7 +683,7 @@ apop_table_exists("results", 1);    //See below.
 apop_query("create table results (period, output);");
 for (i=0; i< max_periods; i++){
     sim_output = run_sim(i);
-    apop_query("insert into results(%i, %g);", i, sim_output);
+    apop_query("insert into results values(%i, %g);", i, sim_output);
     }
 apop_db_close(0);
 \end{lstlisting}

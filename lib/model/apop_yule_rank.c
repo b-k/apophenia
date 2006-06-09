@@ -1,4 +1,4 @@
-/** \file apop_yule.c
+/** \file apop_yule_rank.c
 
   The Yule distribution. A special case of the Waring.
 

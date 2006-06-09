@@ -1,9 +1,10 @@
-/** \file apop_fisher.c
+/** \file apop_fexact.c
 
    Fisher's exact test for contingency tables 
 
-   This file primarily consists of an algorithm from the ACM, the exact
-   C code below was cut and pasted from the R project. Thanks, guys.
+   This file primarily consists of an algorithm from the ACM, fully
+   documented below. The C code below was cut and pasted from the
+   R project. Thanks, guys.
 
         R version credits:
    fexact.f -- translated by f2c (version 19971204).
@@ -21,6 +22,7 @@ int imax2(int a, int b){return (a>b) ? a : b;}
 int imin2(int a, int b){return (a<b) ? a : b;}
 float fmax2(float a, float b){return (a>b) ? a : b;}
 float fmin2(float a, float b){return (a<b) ? a : b;}
+/* end R-to-apophenia additions */
 
 static void f2xact(int nrow, int ncol, int *table, int ldtabl,
 		   double *expect, double *percnt, double *emin,

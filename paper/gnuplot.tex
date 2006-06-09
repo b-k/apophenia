@@ -278,6 +278,82 @@ GIF may be executed without seeking a license.}
 More detail forthcoming.
 
 
+\section{\treesymbol Instant gratification}
+All of the above methods involved writing your commands data to a file and then 
+running Gnuplot, but you may want to produce plots as your program runs.
+This is often useful for simulations, to give you a hint that all is OK
+while the program runs, and to impress your friends and funders. This is
+easy to do using a \vocab{pipe}.\footnote{There is a readily available
+package named \cind{gnuplot\_i} that provides some functions to simplify
+piping commands to Gnuplot. It basically works via the same method as
+the one discussed in this section, but has much more code to handle
+settings and problem cases.}
 
+The command \cind{popen} does two things: it runs the specified program,
+and it produces a data pipe connecting your program to the now-running
+child program. Any commands you write to the pipe is read by the child
+as if someone had typed those commands into the program directly.
+
+You can write to a pipe just like you would write to a file, using
+\cind{fprintf}, meaning that once you have opened the pipe to
+Gnuplot, the methods above really do apply directly.
+
+
+\begin{lstlisting}
+void plot_vector_now(gsl_vector *data){
+static FILE *gp = NULL;
+int  i;
+    if (!gp)
+        gp = popen("/usr/local/bin/gnuplot -persist", "w");
+    if (!gp){
+        printf("Couldn't open Gnuplot.\n");
+        return 0;
+    }
+    fprintf(gp,"reset; plot '-' \n");
+    for (i=0; i< data->size; i++)
+        fprintf("%g\n", gsl_vector_get(data, i));
+    fflush(gp);
+}
+\end{lstlisting} 
+
+The \ci{popen} function takes in the full path to Gnuplot, and a \ci{w}
+to indicate that you will be writing to Gnuplot rather than reading from
+it. You can find where Gnuplot lives on your machine using the command
+\bi{which gnuplot}. The \ci{popen} function then returns a file, here
+assigned to \ci{gp}. Since \ci{gp} was declared to be a static function,
+and \ci{popen} is only called when \ci{gp==NULL},
+it will persist through multiple calls of this function, and you can
+repeatedly call the function to produce new plots in the same window.
+
+If \ci{gp} is \ci{NULL} after the call to \ci{popen}, then something
+went wrong.  This is worth checking for every time a pipe is created.
+
+But if the pipe was created
+properly, then the function continues with the now-familiar process of
+writing the command \bi{plot '-'} and a vector to a file. The \bi{reset}
+command to Gnuplot ensures that next time you call the function, the new
+plot will not have any strange interactions with the last plot.
+
+One final detail: data is often kept in a \vocab{buffer}, a space in
+memory that the system promises to eventually write to the file. This
+improves efficiency, but you want your plot now, not when the system
+deems the buffer worth writing.  The final
+function, \cind{fflush}, tells the system to send all elements of the
+\ci{gp} buffer down the pipeline. The function also works when you are
+expecting standard
+output to the screen, by the way, via \ci{fflush(NULL)}.
+
+The main drawback to producing realtime graphs is that they can take over
+your computer, as another graph pops up and grabs focus every half-second, and can significantly slow down the program.
+Thus, you may want to settle for occasional redisplays, such as every
+fifty periods of your simulation. You could call the above
+function using something like:
+
+\begin{lstlisting}
+for (period =0; period< 1000; period++){
+    run_simulation();
+    if (!(period % 50))
+        plot_vector_now(output);
+\end{lstlisting}
 
 \index{Gnuplot|)}

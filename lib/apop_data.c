@@ -100,6 +100,7 @@ apop_data  *setme   = malloc(sizeof(apop_data));
         {printf("Warning: converting a NULL matrix to an apop_data structure.\n");}
     setme->vector       = v;
     setme->names        = apop_name_alloc();
+    setme->matrix       = NULL;
     setme->categories   = NULL;
     setme->catsize[0]   = 
     setme->catsize[1]   = 0;
@@ -372,7 +373,7 @@ A: It's seven characters shorter.
 Oh, and if \c col<0, then this will set the element of \c in->vector.
  \ingroup data_struct
 */
-void apop_data_set(apop_data *in, size_t row, int col, double data){
+void apop_data_set(apop_data *in, size_t row, size_t col, double data){
     if (col>=0)
         gsl_matrix_set(in->matrix, row, col, data);
     else
@@ -391,7 +392,7 @@ matching rules.
 
  \ingroup data_struct
  */
-void apop_data_set_tn(apop_data *in, char* row, int col, double data){
+void apop_data_set_tn(apop_data *in, char* row, size_t col, double data){
 int rownum =  apop_name_find(in->names, row, 'r');
     if (rownum == -1){
         if(apop_opts.verbose)

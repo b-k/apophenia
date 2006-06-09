@@ -14,6 +14,7 @@
  \li \ref models : How to write down a model and estimate its parameters.
  \li \ref ttest "Some tests"
  \li \ref histograms 
+ \li \ref boot
 
 \section shuntdata Shunting data 
  \li \ref db "Database utilities": an easy front end to SQLite
@@ -501,15 +502,7 @@ to that. This function will return the value of the log likelihood function at t
 \li Write the object. In your header file, include 
 \code
 apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, 
-{       //what will apop_new_likelihood.estimate return?
-        1,      //parameters 
-        1,      //covariance
-        1,      //confidence
-        0,      //dependent
-        0,      //predicted
-        1,      //log_likelihood
-        1       //names;
-},          new_estimate,
+            new_estimate,
             new_log_likelihood, 
             NULL,   //place dlog likelihood here.
             NULL,   //place constraint fn here.

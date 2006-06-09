@@ -107,7 +107,7 @@ under \ci{gsl\_vector\_...}, and the index of this book gives a partial
 list of the most useful functions.
 
 \exercise{Don't delay---have a look at the \ci{gsl\_vector\_...}
-and \ci{gsl\_matrix\_...} sections of this index or the GSL's online
+and \ci{gsl\_matrix\_...} sections of the index to this book or the GSL's online
 reference and skim over the sort of operations you can do. The Apophenia
 package has a number of higher-level operations that are also worth
 getting to know, so have a look at the \ci{apop\_vector\_...}
@@ -196,10 +196,15 @@ vector as a whole using functions like
 \index{matrices!dot product|(} \index{dot product|(}
 Before there was the GSL, there was the BLAS---the basic linear algebra
 system. The GSL has a few functions to interact with the BLAS. In fact,
-it has 86. Here are the three that you will actually 
+it has 86. This section covers the three that you will actually 
 use.\footnote{The names of the functions here fit in with the system
 for the other 83 functions you won't ever use. They are a combination
 of D=double precision, GE=general, M=matrix, V=vector.}
+
+Apophenia provides a convenience function, \cind{apop\_dot}, that can
+save you from a great deal of the below (see page \pageref{apopdot}).
+Therefore, you may prefer to skim this section, and are again
+discouraged from memorizing any of it.
 
 \paragraph{Matrix $\cdot$ vector} Here is the function you will use to calculate the dot product of a
 matrix and a vector:
@@ -244,7 +249,7 @@ To find the dot product of two vectors, use this function:
 int gsl_blas_ddot (const gsl_vector * x, const gsl_vector * y, double * result);
 \end{lstlisting}
 
-For example,
+For example, \label{ddot}
 
 \begin{lstlisting}
 double *beta_dot_gamma;
@@ -618,6 +623,23 @@ gsl_vector v = gsl_matrix_col(a_matrix, 4).vector;
 gsl_vector_memcpy(a_new_vector, &v);
 \end{lstlisting}
 
+\paragraph{The jackknife}
+The typical means of doing a jackknife estimation (as discussed in
+Chapter \ref{boot}) involves re-estimating a parameter for the data set
+excluding the first row, re-estimating it for the data set excluding the
+second row, et cetera.  Figure \ref{jack_iteration}
+shows how this can be done using views.  First, it uses
+\cind{gsl\_matrix\_submatrix} to produce a view of the main matrix
+starting at the position (1,0), and with size (\ci{in-$>$size1 -1,
+in-$>$size2})---that is, the original matrix with the first row missing,
+and then copies that to a new matrix. The \ci{for} loop then repeats
+the view-and-copy procedure row by row.  It begins with row zero, which
+was omitted before, and overwrites row zero in the copy, aka row one of
+the original. It then copies over original row one, overwriting original
+row two, and so on to the end of the matrix.
+
+\codefig{jack_iteration}{Iteratively produce \ci{in->size1} submatrices,
+each with one omitted row of data.\index{jackknife}}
 
 \section{\treesymbol Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \cindex{GSL\_NEGINF} \cindex{GSL\_POSINF} \cindex{GSL\_NAN} \label{numbers}
 Floating-point numbers (both \cind{float} and \cind{double}) can take three special values: \cinline{Inf}, \cinline{-Inf}, and \cinline{NaN}. Data-oriented readers will mostly be
@@ -653,7 +675,7 @@ won't crash your program. \cinline{float f = 1.0/0.0} will result in
 GSL\_NAN}. However, integers have none of these luxuries: run \cinline{int
 i = 1/0} and you will get \cind{Arithmetic exception (core dumped)}.
 
-\paragraph{Precision}\index{precision, numerical} 
+\subsection{Precision}\index{precision, numerical} 
 As with any finite means of writing real numbers,
 there is a round off error to the computer's internal representation of
 numbers. The computer basically stores non-integer numbers using
@@ -664,24 +686,47 @@ Numbers always have exactly one digit before the decimal point, and the
 exponent is chosen to ensure that this is the case.
 
 Your computer works in binary, so numbers are of the form $d \times
-2^n$, where $d$ is a string of ones and zeros and $n$ is an exponent. 
-Multiplying a number by $1024=2^{10}$ will leave $d$ entirely unchanged but
-add ten to $n$, so operations like doubling or halving a number will not
-change the precision of the number (until $n$ exceeds the space given to
-it, typically around $\pm 256$).
+2^n$, where $d$ is a string of ones and zeros and $n$ is an
+exponent.\footnote{This oversimplifies some details that are
+basically irrelevant for users. For example, the first digit of $d$
+is always one, and therefore the computer doesn't bother storing it.}
+Multiplying a number by $1024=2^{10}$ will leave $d$ entirely unchanged
+but add ten to $n$, so operations like doubling or halving a number
+will not change the precision of the number (until $n$ exceeds the space
+given to it, typically around $\pm 512$).
 
 To give you a more concrete idea of the relative precision options
-you have before you, here is a program to print $\pi$ in various
+you have before you, Figure \ref{precision} shows a program to print $\pi$ in various
 formats. Notice that the constant has an \ci{L} appended to indicate
 to the compiler that it needs to reserve extra space for the constant
-right from the start. \label{printftwo} A few more \cind{printf} format
-specifiers are also given: \ci{f} means \ci{float}, \ci{lf} means
-\ci{double} (which used to be known as a long float), the \ci{-} means
-that the number should be left-justified, and the number \ci{\%65.63}
-indicates that the space will be fifty-five characters wide, of which
-63 will be after the decimal point.
+right from the start. 
 
+\index{printf}
+The program uses more advanced format specifiers than the basic specifiers
+on page \pageref{printf}. Here are the atoms used in the code.  Every
+format specifier will end with a type specifier (\ci{i}, \ci{g}, \ci{f},
+\ci{lf}, and so on), but between the percent sign and the type specifier,
+you may insert some other symbols to further describe how the variable
+should print.
+
+\begin{center}
+\label{printftwo}
+\fbox{
+\begin{tabular}{rl}
+\ci{\%f}	& insert a \ci{float} here\\
+\ci{\%lf}	& insert a \ci{double} (formerly long float) here\\
+\ci{\%Lf}	& insert a \ci{long double} here\\
+\ci{\%-}	& left-justify\\
+\ci{\%}$n$		& allow $n$ spaces for the number\\
+\ci{\%.}$n$	&  allow $n$ spaces after the decimal
+\end{tabular}
+}
+\end{center}
+
+\codefig{precision}{Print $\pi$ as four types of increasing precision.}
+\comment{
 \begin{lstlisting}
+#include <math.h>
 #include <stdio.h>
 
 int main(){
@@ -693,6 +738,7 @@ printf("Pi, long double:\t %-65.63Lf\n",  pi);
 return 0;
 }
 \end{lstlisting}
+}
 
 Here is the output:
 \begin{lstlisting}[language={}]
@@ -719,9 +765,10 @@ likelihood function involves exactly such multiplication. Say that we
 have a column of a thousand values each around $\frac{1}{2}$. Then the
 product of a thousand of these is about $2^{-1000}$, which strains what
 a \ci{double} can represent. Here is a table of powers of two, as
-represented by a \ci{double}. Notice that for $i>1,000$, a
+represented by a \ci{double}. For $i>1,000$, a
 modest number of data points, the system throws in the towel and just
-calls $2^i = \infty$ and $2^{-i} = 0$. For those who would like
+calls $2^i = \infty$ and $2^{-i} = 0$; these are referred to as
+\vocab{overflow errors} and \vocab{undeflow errors}, respectively. For those who would like
 to try this at home, the code to produce the body of this table is:
 \cindex{ldexp}
 \begin{lstlisting}
@@ -760,8 +807,8 @@ elements, as shown on page \pageref{precisionfix}, is to calculate
 the log of the product rather than the product itself.
 
 If you need to calculate $\pi$ to a million decimal points, you
-will need to find a library that can work with numbers to arbitrary
-precision. Such libraries typically work by representing all numbers
+will need to find a library that can work with numbers to \ind{arbitrary
+precision}. Such libraries typically work by representing all numbers
 as a data structure listing each decimal point, and then extending the
 list in either direction as necessary. Rather than using C's built-in
 add/subtract/multiply/divide, the library provides its own to act on
@@ -772,7 +819,7 @@ long series of library calls.
 
 So to do math efficiently on large matrices, we are stuck with finite
 precision, and therefore must not
-rely too heavily on numbers after about four significant digits. 
+rely too heavily on numbers after around four significant digits. 
 Fortunately, for the purposes of estimating and testing
 the parameters of a model using real-world data, this is OK. If two
 numbers differ only after eight significant digits (say, 3.14159265
@@ -810,7 +857,8 @@ gsl_vector_scale(&v, 1000.);
 These notes about conditioning are not C-specific. Any mathematics
 package that hopes to efficiently work with large matrices must use
 finite-precision arithmetic, and will therefore have the same problems
-with ill-conditioned data matrices.
+with ill-conditioned data matrices. For much more information about
+precision issues and the IEEE standard, see \citet{goldberg:floating}.
 
 \summary{
 \item Floating-point numbers can take on values of \ci{-Inf}, \ci{Inf},
@@ -818,5 +866,5 @@ and \ci{NaN}.
 \item Try to keep the scale of your variables within about a thousand of
 each other.
 \item Multiplying together a column of a thousand numbers will break.
-\item Reporting results based on the fifth significant digit is spurious.
+\item Reporting results based on the fifth significant digit (or so) is spurious.
 }

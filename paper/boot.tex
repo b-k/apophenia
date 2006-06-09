@@ -40,7 +40,8 @@ Of course, using the same stream of numbers every time creates the
 possibility of getting a lucky draw, where \airq{lucky} can mean any of a
 number of things. The solution is a fixed process of pseudorandom
 number generation plus a varying initializing seed. The GSL implements
-such a process. 
+such a process.
+
 
 \begin{figure}
 \cindex{static}
@@ -154,8 +155,8 @@ the \cind{time} function. The standard library function \ci{time(NULL)}
 will return the number of seconds that have elapsed since the beginning
 of 1970, which is roughly when UNIX and C were first written. As I write
 this, \ci{time} returns 1,147,182,523---not a very good way to tell the
-time. There are a number of functions that will turn this into a time
-that we humans would find useful; see any reference on C's standard
+time. There are a number of functions that will turn this into hours,
+minutes, or months; see any reference on C's standard
 library (such as the GNU C Library documentation) for details. But this
 illegible form provides the perfect seed for an RNG, and you get a new
 one every second.
@@ -240,6 +241,47 @@ zeros in the vast majority of bins. Usage:
 \end{lstlisting}
 \cindex{gsl\_histogram\_pdf\_free}
 \index{histograms!drawing from|)}
+
+\paragraph{\treesymbol The standard C RNG}
+If the GSL is not available, the standard C library includes a \cind{rand}
+function to make random draws and an \cind{srand} function to set random
+seeds. E.g.:
+\begin{lstlisting}
+#include <stdlib.h>
+srand(27);
+printf("draw from a U[0,1]: %i", rand()/(RAND_MAX +1));
+\end{lstlisting}
+
+The GSL's RNGs are preferable for a few reasons. First,
+\cind{gsl\_ran\_max}\ci{(r)} is typically greater than \ci{RAND\_MAX},
+giving you greater variation. 
+Second, the standard specifies that there must be a \ci{rand} function,
+but not how it works: two machines may give you two streams of random
+numbers for the same seed.
+
+\index{Agents!assigning RNGs}
+Finally, \ci{rand} gives your entire
+program exactly one stream of numbers, while you can initialize many
+\ci{gsl\_rng}s that will each be independent of each other. 
+For example,
+if you give every agent in a simulation its own RNG, you can re-run the
+simulation with one agent eliminated and are guaranteed that the
+variation is due to the agent, not RNG shifts. Here is some sample code
+to clarify how such a setup would be initialized.
+\begin{lstlisting}
+typedef struct agent{
+    long int agent_number;
+    gsl_rng *r;
+    ...
+} agent;
+
+void init_agent(agent initme, int agent_no){
+    initme.agent_number = agent_no;
+    initme.r            = apop_rng_init(agent_no);
+    ...
+}
+\end{lstlisting}
+
 
 \index{random numbers|)}
 
@@ -467,8 +509,8 @@ bring shame to your research group.}
 \index{jackknife|(textbf}
 The primary difference between bootstrapping and jackknifing is that
 the bootstrap takes a series of draws with replacement from a data set,
-while the jackknife takes a series of samples without replacement. Here,
-I will discuss the jackknife.
+while the jackknife uses a subset of the data---a series of samples
+without replacement. Here, I will discuss the jackknife.
 
 Assume that we have a
 data vector \cinline{gsl\_vector * data} and a function \cinline{double
@@ -478,24 +520,40 @@ a single OLS coefficient.
 
 %bootdraw should be here.
 
-Then the first step in jackknifing is drawing some subset of the data,
+The easiest means of drawing without replacement is to
+systematically remove one line of data at a time, as we saw in Figure
+\ref{jack_iteration}. For each subset of data, we find the parameter;
+once we have a list of $n$ different values for the parameter, $p_1,
+p_2, \dots, p_n$, then the standard deviation can be estimated as
+$\hat\sigma = \sqrt{\sum{(p_i - \overline p_{\forall})}}$, where $p_{\forall}$ is
+the parameter using the entire data set.
+
+\exercise{
+Modify Figure \ref{jack_iteration} to calculate the jackknife estimate
+for a model, replacing the ``Do math here'' comments with the
+appropriate parameter estimations.
+}
+
+Alternatively, we can try different-sized subsets,
+drawing some subset of the data
 without replacement. Drawing without replacement means that we need to
 keep track of what has been drawn to date, and must check every new draw
 to make sure that the new draw is not a repeat. Figure \ref{bootdraw} lists a function which
-does all of this. It allocates and sets up a random number generator, then
-makes a series of random draws from a uniform distribution in the range
+does all of this. It makes a series of random draws from a uniform distribution in the range
 [0, \cinline{data-$>$size}]. It then checks the list of indices which have
 already been drawn. If it finds a match, then it invalidates the draw
 by rolling back the counter by one, while if it does not find a match then it
 adds the draw to the list of draws and the index to the list of indices.
 
-\codefig{bootvar}{A function to find the variance of a series of jackknife estimates of a statistic} 
+\codefig{bootvar}{A function to find the variance of a series of jackknife
+estimates of a statistic}
 
-We can then use these draws to calculate a
-list of parameter values, as in Figure \ref{bootvar}. The procedure
-looks much like the procedure for finding the kurtosis for the $t$
-distributions above: take a million draws, write down the statistic for
-each, and then take the variance of that vector.
+
+We can then use these draws to calculate a list of parameter values,
+as in Figure \ref{bootvar}. The procedure looks much like the procedure
+for finding the kurtosis for the $t$ distributions above: take a million
+draws, write down the statistic for each, and then take the variance of
+that vector.
 
 
 It is valid to use the standard deviation returned by this function 
@@ -576,7 +634,7 @@ other contexts.
 Details will be forthcoming.
 
 
-\section{Non-parametric modeling} It would be nice if we did not
+\section{Non-parametric modeling}\label{nonparam} It would be nice if we did not
 have to specify a distribution, but could find the best fit from the
 data itself; this is the goal of \vocab{non-parametric modeling}. 
 
@@ -605,12 +663,6 @@ This section forthcoming. It will focus on \ind{kernel density estimation}
 and testing, such as the method of \citet{silverman:boot} for testing a
 multimodality hypothesis.
 
-\exercise{Figure  \ref{smoothing} shows some sample output from the search
-for the number of modes in a data set. Write the code that would produce
-these graphs. The solution will be given when this section is fleshed
-out.}
-
-
 \begin{figure}[htb]
 \hskip -.4cm
 \begin{tabular}{cc}
@@ -620,3 +672,8 @@ out.}
 \caption{As $h$ rises, the kernel density smooths out and has fewer modes.}
 \label{smoothing}
 \end{figure}
+
+\exercise{Figure  \ref{smoothing} shows some sample output from the search
+for the number of modes in a data set. Write the code that would produce
+these graphs. The solution will be given when this section is fleshed
+out.}

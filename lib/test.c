@@ -12,14 +12,17 @@ a great deal of real-world testing that didn't make it into this file.
 
 //I'm using the test script an experiment to see if 
 //these macros add any value.
-#define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc(r,c);
-#define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed);
+#define APOP_MATRIX_ALLOC(name, r, c) gsl_matrix *name = gsl_matrix_alloc((r),(c))
+#define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc((r),(c))
+#define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed)
 
 
 double  true_parameter[]    = {1.82,2.1},
         true_y_parameter[]  = {0,2.1};
 
 double  tolerance           = 1e-5;
+double  lite_tolerance      = 1e-2;
+int     len                 = 8000;
 
 
 /** I claim that the mean residual is near zero, and that the predicted
@@ -62,13 +65,12 @@ double      f       = apop_data_get_tn(ftab,"F_stat%",-1);
 
 
 int test_OLS(){
-int             i,
-                len = 8000;
+int             i;
 apop_estimate   *out;
 ////gsl_rng         *r  =  apop_rng_alloc(12);
 //apop_data       *set= apop_data_alloc(len,2);
-APOP_DATA_ALLOC(set, len, 2)
-APOP_RNG_ALLOC(r, 23)
+APOP_DATA_ALLOC(set, len, 2);
+APOP_RNG_ALLOC(r, 23);
 
 for(i=0; i< len; i++){
     apop_data_set(set, i, 1, 100*(gsl_rng_uniform(r)-0.5));
@@ -310,6 +312,40 @@ int test_distances(){
 }
 
 
+int test_jackknife(){
+APOP_DATA_ALLOC(d, len, 1);
+APOP_RNG_ALLOC(r, 8);
+size_t      i;
+apop_model  *m   = &apop_normal;
+double      p[] = {1.09,2.8762};
+//double      no;
+    for (i =0; i< len; i++){
+        apop_data_set(d, i, 0, m->rng(r,p)); 
+    }
+    gsl_matrix *out = apop_jackknife(d, *m , NULL);
+    //apop_matrix_show(out);
+    return (fabs(gsl_matrix_get(out, 0,0) - p[1]) > lite_tolerance);
+}
+
+
+int test_dot(){
+apop_data *d1   = apop_text_to_data("test_data2",0,1); // 100 x 2
+apop_data *d2   = apop_text_to_data("test_data2",0,1); // 100 x 2
+apop_data *d3   = apop_dot(d1, d2, 0, 1);
+//apop_data *d4   = apop_dot(d1, d2, 'p', 0);
+gsl_vector  v1 = gsl_matrix_row(d1->matrix, 0).vector;
+apop_data *d5   = apop_vector_to_data(&v1); // 2 x 1
+apop_data *d7   = apop_dot(d5, d5, 0, 0);
+    assert(apop_data_get(d7, 0, -1) == apop_data_get(d3, 0,0));
+apop_data *d8   = apop_dot(d1, d5, 0, 0);
+apop_data *d9   = apop_dot(d5, d1, 1);
+    gsl_vector_sub(d8->vector, d9->vector);
+    assert(!apop_vector_sum(d8->vector));
+    return 0;
+}
+
+
+
 #define do_test(text, fn)   if (verbose)    \
                                 printf(text);  \
                             if (fn==0)    \
@@ -317,12 +353,14 @@ int test_distances(){
                            else             \
                                 {printf("%s  failed.\n", text);exit(0);}
 int main(){
-gsl_rng                 *r              = apop_rng_alloc(8); 
-apop_model              rank_dist[]     = {apop_zipf_rank,apop_exponential_rank,apop_yule_rank, apop_waring_rank},
-                        dist[]          = {apop_zipf,apop_exponential ,apop_yule, apop_waring, apop_normal, apop_poisson};
-int                     rank_dist_ct    = 4,
-                        dist_ct         = 6,
-                        i, verbose      = 0;
+gsl_rng       *r              = apop_rng_alloc(8); 
+apop_model    //rank_dist[]     = {apop_zipf_rank,apop_exponential_rank,apop_yule_rank, apop_waring_rank},
+              dist[]          = {apop_zipf,apop_exponential ,apop_yule, apop_waring, apop_normal, apop_poisson};
+int           //rank_dist_ct    = 4,
+              dist_ct         = 6,
+              i, verbose      = 0;
+apop_data     *d  = apop_text_to_data("test_data2",0,1);
+apop_estimate *e  = apop_OLS.estimate(d,NULL);
 /*  //now specified above.
 apop_estimation_params  params;
         params.method           = 1;
@@ -331,11 +369,9 @@ apop_estimation_params  params;
         params.verbose          = 1;
         */
 
+    do_test("apop_dot test:", test_dot());
+    do_test("apop_jackknife test:", test_jackknife());
     do_test("OLS test:", test_OLS());
-
-
-apop_data       *d  = apop_text_to_data("test_data2",0,1);
-apop_estimate   *e  = apop_OLS.estimate(d,NULL);
     do_test("apop_estimate->dependent test:", test_predicted_and_residual(e));
     do_test("apop_f_test and apop_coefficient_of_determination test:", test_f(e));
     do_test("apop_vector_replace test:", test_replaces());
@@ -346,7 +382,6 @@ apop_estimate   *e  = apop_OLS.estimate(d,NULL);
     do_test("apop_matrix_summarize test:", test_summarize());
     verbose ++;
 
-
     /*
     for (i=0; i< rank_dist_ct; i++){
         do_test(rank_dist[i].name, test_rank_distribution(r, rank_dist[i]));
@@ -356,9 +391,5 @@ apop_estimate   *e  = apop_OLS.estimate(d,NULL);
     for (i=0; i< dist_ct; i++){
         do_test(dist[i].name, test_distribution(r, dist[i]));
     }
-
-
-
-
     return 0;
 }

@@ -11,28 +11,7 @@
 
 /** \defgroup basic_stats Some basic statistical functions. 
 
-Many of these are juse one-line convenience functions.
-
-\b moments
-
-\li \ref vector_moments: including mean, variance, kurtosis, and (for pairs of vectors) covariance.
-\li \ref matrix_moments: get the covariance matrix from a data matrix.
-\li \ref db_moments: var, skew, kurtosis via SQL queries.
-
-\b normalizations
-
-\li \ref apop_vector_normalize: scale or shift a vector in various ways.
-\li \ref apop_matrix_normalize: scale or shift columns or rows.
-
-\b distributions
-
-\li \ref apop_random_beta: Give the mean and variance, and this will draw from the appropriate Beta distribution.
-\li \ref apop_multivariate_normal_prob: Evalute a multivariate normal at a given point.
-
-\b asst
-
-\li \ref apop_generalized_harmonic: Calculate \f$\sum_{n=1}^N {1\over n^s}\f$.
-\li \ref apop_GHgB3_rng: RNG from a Generalized Hypergeometric type B3.
+Many of these are juse one-line convenience functions for finding moments and normalizing matrices.
 */
 
 /** \defgroup vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
