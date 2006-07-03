@@ -142,7 +142,7 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
         stddev  = sqrt(var);
         tstat   = val*rootn/stddev;
         pval    = (df > 0)? gsl_cdf_tdist_P(tstat, df): GSL_NAN;
-        two_tail= apop_two_tailify(pval);
+        two_tail= (df > 0)? (gsl_cdf_tdist_P(fabs(tstat), df) - gsl_cdf_tdist_Q(-fabs(tstat), df)): GSL_NAN;
         apop_data_set_nt(est->parameters, i, "df", df);
         apop_data_set_nt(est->parameters, i, "t statistic", tstat);
         apop_data_set_nt(est->parameters, i, "standard deviation", stddev);

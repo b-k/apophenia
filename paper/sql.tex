@@ -104,6 +104,7 @@ but difficult via matrix operations.
 For example, pulling a subset of your data is trivial in SQL. If
 you need all of the data for those subjects over 175cm, you can ask for
 it thusly:
+\ns{4}
 \begin{lstlisting}
 select * 
    from data 
@@ -282,7 +283,19 @@ select count(*) as row_ct
 from data;
 \end{lstlisting}
 %\end{verbatim}
-This produces a table with one column and one row, listing the total number of rows in the \sinline{data} table.
+This produces a table with one column and one row, listing the total
+number of rows in the \sinline{data} table.
+
+You can use \sinline{count} with the \sind{distinct} keyword to find out how
+many of each row you have in your data set. That is, you can produce
+weights for each observation type:
+
+\begin{lstlisting}
+select distinct age, height, zip, count(*) as weight
+from table
+where age > 20
+group by age, height, zip
+\end{lstlisting}
 
 \index{crosstabs}\label{crosstabs}
 \marginaliafixed{16}{Crosstabs}{In the spreadsheet world, we often get tables
@@ -319,13 +332,12 @@ code, and return a single line for each group.
 The two other aggregation commands which will be useful to you are {\tt
 sum()} and \sinline{avg()}. These take an existing row as an argument.
 For example, to search for height disparities by ZIP code, try:
-%\begin{verbatim}
+\ns{4}
 \begin{lstlisting}
 select  avg(height) as avg_height
 from data
 group by zip;
 \end{lstlisting}
-%\end{verbatim}
 Notice that we don't have to include ZIP code as a column in the output
 if we are not interested in it.
 
@@ -488,6 +500,9 @@ immensely by creating an index first.
 \item SQL includes a few simple aggregation commands: \sinline{avg()},
 \sinline{sum()}, and \sinline{count()}. Apophenia provides a few more
 nonstandard aggregators for queries called using its functions. 
+}
+\summarynoitems{(continued)
+\begin{itemize}
 \item When aggregating, you can add a \sinline{group by} clause to
 indicate how the aggregation should be grouped.
 \item Tables can be stacked using 
@@ -495,6 +510,7 @@ indicate how the aggregation should be grouped.
 \item You can create tables using the \sinline{create} and
 \sinline{insert} commands, but you are probably better off just reading
 the table from a text file.
+\end{itemize}
 }
 
 \section{Folding queries into C code}\label{foldingsql}  This section covers the functions
@@ -536,7 +552,7 @@ database without consequence.
 \paragraph{apop\_query} Now for the queries. The simplest function
 is \cind{apop\_query}, which takes a single text argument: the
 query. For example,
-\setc
+\setc \ns{4}
 \begin{lstlisting}
 apop_query("select *        \
                from data     \
@@ -790,6 +806,7 @@ The GSL
 provides functions to find the mean and variance of a vector, and 
 Apophenia provides some convenience wrappers for those functions:
 
+\ns{6}
 \begin{lstlisting}
 double	mean_over, mean_under, var_over, var_under;
 mean_over  = gsl_stats_mean(overeducated->data, overeducated->stride,

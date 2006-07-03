@@ -592,7 +592,7 @@ If you have a data set with a blank set of names, such as one
 produced via \cind{apop\_matrix\_to\_data},
 you may use \cind{apop\_name\_add} to add one name at a
 time, e.g.:
-\begin{lstlisting}
+\ns{5} \begin{lstlisting}
 apop_data newset    = apop_matrix_to_data(a_gsl_matrix);
 apop_name_add(newset->names, "col0",'c');
 apop_name_add(newset->names, "col1",'c');
@@ -756,7 +756,7 @@ original data set is now a row name. Below, you will see various means
 of printing the entire \cinline{apop\_data} structure, or you can use
 the 
 \cind{apop\_data\_get\_tn} from above to pull a single named element, e.g.:
-\begin{lstlisting}
+\ns{2}\begin{lstlisting}
 double pval = apop_data_get_tn(test_output, "p_val%", -1);
 \end{lstlisting}
 

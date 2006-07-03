@@ -2,7 +2,9 @@
 \newif\iftwocol \twocolfalse
 \newif\ifbook \booktrue
 \documentclass[10pt,notitlepage, openany]{book}
-\usepackage{xspace, calc, needspace, array,natbib,graphicx,epsfig,wrapfig, titlesec, apop_wrap, listings,hyphenat,fixltx2e}
+%\usepackage[pdftex]{epsfig}
+\usepackage{epsfig}
+\usepackage{xspace, calc, needspace, array,natbib,graphicx,wrapfig, apop_wrap, oldtitlesec, listings,hyphenat,fixltx2e}
 \usepackage{hhline} %load last
 %\usepackage[LHE,T1]{fontenc}
 
@@ -110,10 +112,9 @@
 
 
 %code listing:
-\lstset{columns=fullflexible,
-emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,gsl_vector,gsl_matrix},emphstyle=\bf}
+\lstset{columns=fullflexible, basicstyle=\small, emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,gsl_vector,gsl_matrix},emphstyle=\bf\small}
 %\def\setlistdefaults{\lstset{frame=single, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
-\def\setlistdefaults{\lstset{frame=single,frameround=tttt, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
+\def\setlistdefaults{\lstset{frame=single, frameround=tttt, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
 \setlistdefaults
 %C inline just uses \tt, rather than any fancy encoding.
 %\def\cinline#1{\lstinline[language=C, showstringspaces=false, basicstyle=\small\bf,breaklines=true,breakatwhitespace=false,escapechar=\%]{#1}\setlistdefaults}
@@ -135,7 +136,7 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 \long\def\codefig#1#2{
 	\begin{figure}[tbh]
 	\hrule\vskip4pt
-\lstset{frame=,showstringspaces=false, basicstyle=, language=C, breaklines=true}
+\lstset{frame=,showstringspaces=false, basicstyle=\small, emphstyle=\bf\small, language=C, breaklines=true}
 \lstinputlisting{sources/#1.c}
 	\hrule
 
@@ -156,6 +157,9 @@ emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,g
 
 \def\samplecodelocation{\url{http://apophenia.info/msc_book_samples.zip}\xspace}
 \def\onlinereflocation{\url{http://apophenia.info/doc}\xspace}
+
+
+\def\ns#1{\Needspace{#1\baselineskip}}
 
 %margin boxes:
 \newlength\mwidth
@@ -257,6 +261,7 @@ Plain old \copyright 2006, Ben Klemens.]
 \input gnuplot.tex
 \part{Statistics}
 \input projection.tex
+\input categories.tex
 \input testing.tex
 \input mle.tex
 \input boot.tex

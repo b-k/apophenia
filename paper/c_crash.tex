@@ -261,6 +261,9 @@ for $a$ mod $b$. \index{modulo|see{\%}} \index{\%}
 common that C has a special syntax for it: \ci{a += b;} This is slightly less readable, but involves less
 redundancy. All of the above arithmetic operators can take this form, so each of the following lines show two
 equivalent expressions: \\
+
+
+\ns{5}
 \begin{lstlisting}
 a -= b;  /*is equivalent to*/   a = a - b;
 a *= b;  /*is equivalent to*/   a = a * b;
@@ -382,8 +385,13 @@ in parentheses is true (mustn't forget the parentheses), execute the
 instructions in brackets.
 
 Cases like the example above, where we have a counter which we increment,
-are so common that they have their own special syntax. The following
-\cind{for} loop is exactly equivalent to the while loop above:
+are so common that they have their own special syntax.
+
+Every language has its means of applying a function to every element of
+an array; in C, the best means of doing this is via a \cind{for} loop.
+The following \ci{for} loop is exactly equivalent to the \ci{while}
+loop above, but puts all the instructions about iterating through the
+array on a single line:
 
 \begin{lstlisting}
 #include <stdio.h>
@@ -431,6 +439,9 @@ Put a long block of comments
 at the head of a file and at the head of each function to describe what
 the file or function does, using complete sentences. Describe what the
 function expects to come in, and what the function will put out.
+As for describing the code inside the black box, the common wisdom
+indicates that these comments should focus on why a function is doing what it is doing,
+rather than how (which will be self-explanatory in clearly-written code).
 \begin{verbatim}
 /* Long comments begin with a slash-star,
    continue as long as you want, and end 
@@ -442,16 +453,14 @@ The primary audience of your comment should be you, six months from
 now. When you are shopping for black boxes to plug in to your next project,
 or reauditing your data after the referee finally got the paper back
 to you, a note to self at the head of each function will pay immense
-dividends.
+dividends. 
 
 
 The stars and slashes are also useful for \vocab{commenting out} code. If
-you would
-like to temporarily remove a few lines from your program to see what
-would
-happen, but don't want to delete them entirely, simply put a \ci{/*}
-and a \ci{*/} around the code, and the compiler will think it is a
-comment and ignore it.
+you would like to temporarily remove a few lines from your program to
+see what would happen, but don't want to delete them entirely, simply
+put a \ci{/*} and a \ci{*/} around the code, and the compiler will think
+it is a comment and ignore it.
 
 However, there is a slight problem with this approach: what if there is a comment in what you had just
 commented out? You would have a sequence like this in your code: 
@@ -802,7 +811,7 @@ int is_even(int number){
 Finally, note that when casting from \ci{float} to \ci{int}, numbers
 are truncated, not rounded.  The following function uses type casting
 to correctly round off numbers:\footnote{In the real world, use
-\cind{rint} to round to integer: \ci{rounded\_val = rint(unrounded\_number)}.}
+\cind{rint} (in \ci{math.h}) to round to integer: \ci{rounded\_val = rint(unrounded\_number)}.}
 
 \begin{lstlisting}
 int round(float unrounded){
@@ -1323,7 +1332,7 @@ of the mess above. See Section \ref{make} for details.
 \marginalia{16}{compile \&\& run}{
 As above, the \ci{b} in \ci{(a \&\& b)} is evaluated only if \ci{a} is
 true. Similarly on the command line: the command \bi{make \&\&
-./run\_me} will first run \bi{make}, and halt if there are errors, and
+./run\_me} will first run \bi{make}, then either halt if there are errors or
 continue on to \bi{./run\_me} if \bi{make} was successful. Between this
 trick and most shells' ability to repeat the last command line (try
 the up-arrow or \bi{!!}), you have a very fast means of recompiling and
@@ -1363,17 +1372,6 @@ The first step is preprocessing,
 which does nothing but take text 
 you wrote and convert it into more text.
 
-\exercise{In prior exercises, you wrote a program with one function to
-create an array of numbers and their squares, and another function,
-\ci{print\_array}, to print those values. 
-\begin{itemize}
-\item Move \ci{print\_array} to a new text file, \bi{utility\_fns.c}. 
-\item Write the corresponding one-line file \bi{utility\_fns.h} with \ci{print\_array}'s header.
-\item \ci{\#include utility\_fns.h} in the main square-printing program.
-\item Compile both programs at once, e.g., \bi{gcc your\_main.c utility\_fns.c}.
-\item Run \ci{a.out} and verify that it does what it should.
-\end{itemize}
-}
 
 \index{header file!aggregation} 
 \marginaliafixed{16}{Header aggregation}{The Apophenia library provides a convenience header that aggregates
@@ -1400,10 +1398,7 @@ see the expansion (unless you run \bi{gcc} with the \bi{-E}
 flag); the preprocessor just passes the expanded code to the compiler.
 
 As above, the header will consist only of declarations of variables
-and functions.\footnote{If you allocate storage (with an innocuous-looking
-line like \ci{int x = 7;} instead of \ci{int x;}), or define
-functions rather than just declare them, then you will be setting
-yourself up for odd errors in the linking step.} Given the declarations,
+and functions. Given the declarations,
 you can use the functions and variables in your code and the compiler
 will know what you are talking about.
 
@@ -1415,6 +1410,18 @@ current directory, as it did for \bi{"a\_file.h"} above, it should
 look in the standard include path. Use \bi{"my\_file.h"} for header
 files you have written and \ci{<their\_file.h>} for header files
 installed elsewhere in your system.  \index{preprocessor|)}
+
+\exercise{In prior exercises, you wrote a program with one function to
+create an array of numbers and their squares, and another function,
+\ci{print\_array}, to print those values. 
+\begin{itemize}
+\item Move \ci{print\_array} to a new text file, \bi{utility\_fns.c}. 
+\item Write the corresponding one-line file \bi{utility\_fns.h} with \ci{print\_array}'s header.
+\item \ci{\#include utility\_fns.h} in the main square-printing program.
+\item Compile both programs at once, e.g., \bi{gcc your\_main.c utility\_fns.c}.
+\item Run \ci{a.out} and verify that it does what it should.
+\end{itemize}
+}
 
 \index{header file!variables in}
 \paragraph{\treesymbol Variables in headers} \label{extern} The system of
@@ -1436,7 +1443,7 @@ the declaration that follows is not for memory allocation, but is purely
 informative. Simply prepend it to the normal declaration: \ci{extern int
 x; extern long double y;} will both work. Then, in one and only one
 \ci{.c} file, declare the variables themselves: \ci{int x; long double
-y;}. Thus, all files that \ci{\#include} the header know what to make of
+y = 7.0;}. Thus, all files that \ci{\#include} the header know what to make of
 the variable \ci{x}, so \ci{x}'s scope is all files with the given
 header, but the variable is only allocated once.
 
@@ -1501,12 +1508,12 @@ include path, and linker errors mean that you need to debug the library path.
 \paragraph{C files as modules}
 Your work will often go along the same lines in all of your projects:
 getting data from the same sources, or consistently searching for the
-same effect in a variety of places. Bear this in mind as you write
-functions, so that they are as general and self-contained as possible,
-so you will be able to call them from your next project. The wisdom of
-the ages shows that if you are careful writing your first few programs,
-then your later programs will take very little time to get up, running,
-and doing exactly what you want.
+same effect in a variety of places.  If you bear this in mind as you
+write functions, designing them to be as general and self-contained
+as possible, you will be able to easily reuse them for your next
+project. The wisdom of the ages shows that if you are careful writing
+your first few programs, then your later programs will take very little
+time to get up, running, and doing exactly what you want.
 
 In this way, you may want to start writing your own libraries. It is a simple
 process: simply put all of your functions relating to a certain topic
@@ -1564,14 +1571,14 @@ you find there into your own work.
 
 \summary{\item Compilation is a three-step process. The first step
 consists of inserting header files.
-\item Therefore, put function declarations in header files.
+\item Therefore, put public function declarations in header files.
 \item The next step consists of compilation, in which each source
 (\ci{.c}) file is converted to an object (\ci{.o}) file.  
+}\summarynoitems{(continued)
+\begin{itemize}
 \item Therefore, each source file should consist of a set of standalone
 functions, that depend only on the file's contents and any declarations included
 via the headers.
-}\summarynoitems{(continued)
-\begin{itemize}
 \item The final step is linking, in which the functions referred in
 other libraries or object files are reconciled.
 \item Therefore, you can find libraries of function for any set of tasks
@@ -1759,7 +1766,7 @@ a pointer; when you use \ci{*k} in non-declaration code, you are
 referring to the value the pointer holds.
 Thus, given that k is a pointer to an integer, all of
 these lines are correct:
-\begin{lstlisting}
+\ns{4}\begin{lstlisting}
 int *k = malloc(sizeof(int));
 *k = 7;
 k = malloc(sizeof(int)); 
@@ -1769,7 +1776,7 @@ k = malloc(sizeof(int));
 You can read the name as \airq{clear and allocate}: it will run \ci{malloc}
 and return the appropriate address, and will also set everything in
 that space to zero, running \ci{*k = 0} for you.
-\begin{lstlisting}
+\ns{3}\begin{lstlisting}
 #include <malloc.h>  //calloc
     int *k = calloc(1, sizeof(int));
 \end{lstlisting}
@@ -2150,11 +2157,15 @@ sarray[100]} form creates an automatically-allocated array, where the
 computer creates and destroys the array; the \ci{int *harray =
 malloc(sizeof(int) * 100);} form creates a manually-allocated array
 which is yours to allocate and deallocate.
+%}
+%\summarynoitems{(continued)
+%\begin{itemize}
 \item Refer to array elements in both cases using the same
 square-brackets notation, such as \ci{harray[14]}.
 \item Arrays of structs can be declared just as with arrays of basic
 variables. Refer to a pointer-to-struct using \ci{->}.
 \item You can expand a manually-allocated array using \ci{realloc}.
+%\end{itemize}
 }
 
 \section{Strings} \index{strings|ff} \label{stringsec}
@@ -2164,7 +2175,7 @@ individual characters, followed by an invisible null character, written
 as \ci{$\backslash$0}. This means that you have to think in terms of
 arrays when dealing with strings of characters. Here are some examples: 
 \lstset{numbers=left, numberstyle=\scshape}
-\begin{lstlisting}
+\ns{5}\begin{lstlisting}
 char hello[30];
 char hello2[] = "Hi.";
 hello = "Hi there."; //This will crash.
@@ -2545,7 +2556,7 @@ are done.
 
 Once you have a few test functions, you can run them all at once, via a
 supplementary test program. Right now, it would be a short program:
-\begin{lstlisting}
+\ns{5}\begin{lstlisting}
 #include <my_functions.h>
 int main(){
     test_find_means();
@@ -2564,7 +2575,7 @@ function failed over the course of the main routine.
 written above. Did your function pass on the first try? 
 
 Some programmers
-(\ind{Donald Knuth} is the most famous example) keep a bug log listing
+(Donald Knuth \index{Knuth, Donald} is the most famous example) keep a bug log listing
 errors they have committed. If your function didn't pass its test the
 first time, you now have your first entry for your bug log.}
 

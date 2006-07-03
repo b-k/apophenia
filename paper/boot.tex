@@ -177,7 +177,7 @@ while true; do ./time; done
 \end{lstlisting}
 You should see the same numbers a few dozen times until the clock ticks
 over, and then another stream repeated several times.  [You can get your
-command prompt back using $<$ctrl$>$-C.] If you have multiple processors
+command prompt back using $<$ctrl$>$-C.\index{halting via $<$ctrl$>$-C}\index{breaking via $<$ctrl$>$-C}] If you have multiple processors
 and run one simulation on each, then runs that start in the same second
 will be replicating each other. Finally, if you ever hope to debug this
 program, then you will need to write down the time started so that you
@@ -334,7 +334,7 @@ $E[f(\cdot)]$ at 1,000 random draws, at 10,000, and so on, to see how
 much more you are getting with the extra computation.
 
 
-\paragraph{An example: the kurtosis of a t distribution} Perhaps the
+\paragraph{An example: the \ind{kurtosis} of a \ind{t distribution}} Perhaps the
 story is best told via an example.  You probably
 know that a \ind{t distribution} is much like a Normal distribution but
 with fatter tails, but probably not how much fatter those tails are.
@@ -356,7 +356,7 @@ kurtosis. This has no effect for $n >$ 1 million, but since it takes
 \codefig{kurtosis_of_a_t_dist}{Monte Carlo calculation of kurtoses for
 the $t$ distribution family.}
 
-I tried this on a few computers, from my laptop to a research
+I tried this on a few computers, from my laptop to a small research
 server, and the process took from under two minutes up to eight
 minutes---not bad for .15 billion draws from $t$ distributions followed
 by finding the fourth moment of vectors 5 million elements
@@ -385,7 +385,7 @@ kurtosis:
 \begin{tabular}{lll}
 df       &k (est)    &     k (analytic)\\
 \hline
-1        &1.05296e+06   \\
+1        &1.053e+06   \\
 2        &21165.3   \\
 3        &219.779   \\
 4        &18.1571           \\
@@ -407,7 +407,7 @@ df       &k (est)    &     k (analytic)\\
 Appropriately enough, the estimates for $df\leq 4$ are terrible.  
 The fact that there is no consistent estimator for these small 
 $df$ cases makes itself evident in re-estimations. The reader could readily
-modify Figure \ref{kurtosis_of_a_t_dist} to repeat the kurtosis estimation
+modify Figure \ref{kurtosis_of_a_t_dist} (page \pageref{kurtosis_of_a_t_dist}) to repeat the kurtosis estimation
 procedure many times; here are eight runs and their means:
 
 \vspace{\baselineskip}

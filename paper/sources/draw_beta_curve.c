@@ -11,7 +11,7 @@ gsl_rng			*r		= apop_rng_alloc(0);
 gsl_vector	*v		= gsl_vector_alloc(draws);
     for (i =0; i < draws; i++)
         gsl_vector_set(v, i, apop_random_beta(r, mu, sigma));
-    remove(outfile);
+    remove(outfile);    //remove file to prevent overwriting.
     apop_plot_histogram(v, bins, outfile);
     return 0;
 }
