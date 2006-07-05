@@ -336,6 +336,17 @@ double  d;
 gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2){
 gsl_vector      *out;
 gsl_vector      t;
+    if (!v1  && v2){
+        out = gsl_vector_alloc(v2->size);
+        gsl_vector_memcpy(out, v2);
+        return out;
+    } else if (!v2  && v1){
+        out = gsl_vector_alloc(v1->size);
+        gsl_vector_memcpy(out, v1);
+        return out;
+    } else if (!v2 && !v2)
+        return NULL;
+    //else:
     out = gsl_vector_alloc(v1->size + v2->size);
     t   = gsl_vector_subvector(out, 0, v1->size).vector;
     gsl_vector_memcpy(&t, v1);
@@ -374,6 +385,18 @@ gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
 gsl_matrix      *out;
 gsl_vector_view tmp_vector;
 int             i;
+
+    if (!m1 && m2){
+        out = gsl_matrix_alloc(m2->size1, m2->size2);
+        gsl_matrix_memcpy(out, m2);
+        return out;
+    } else if (!m2 && m1) {
+        out = gsl_matrix_alloc(m1->size1, m1->size2);
+        gsl_matrix_memcpy(out, m1);
+        return out;
+    } else if (!m2  && !m1) 
+        return NULL;
+
     if (posn == 'r'){
         if (m1->size2 != m2->size2){
             printf("When stacking matrices on top of each other, they have to have the same number of columns (m1->size2==m2->size2). Returning NULL.\n");

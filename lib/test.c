@@ -13,6 +13,7 @@ a great deal of real-world testing that didn't make it into this file.
 //I'm using the test script an experiment to see if 
 //these macros add any value.
 #define APOP_MATRIX_ALLOC(name, r, c) gsl_matrix *name = gsl_matrix_alloc((r),(c))
+#define APOP_VECTOR_ALLOC(name, r) gsl_vector *name = gsl_vector_alloc(r)
 #define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc((r),(c))
 #define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed)
 
@@ -23,6 +24,59 @@ double  true_parameter[]    = {1.82,2.1},
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
 int     len                 = 8000;
+
+int test_split_and_stack(){
+APOP_RNG_ALLOC(r, 19);
+APOP_VECTOR_ALLOC(dv, 10);
+APOP_DATA_ALLOC(d1, 10,10);
+int     i,j, tr, tc;
+apop_data   **splits, *dv2;
+    d1->vector  = dv;
+    for(i=-1; i< 10; i++)
+        for(j=0; j< 10; j++)
+            apop_data_set(d1, j, i, gsl_rng_uniform(r));
+    for(i=-1; i< 13; i++){
+        splits  = apop_data_split(d1, i, 'r');
+        if (i>0 && i< 10)
+            assert(splits[0]->matrix->size1 == i);
+        else if (i < 0)
+            assert(!splits[0]);
+        else if (i >= 10)
+            assert(splits[0]->matrix->size1 == 10);
+        dv2 = apop_data_stack(splits[0], splits[1], 'r');
+        for(j=0; j< 50; j++){
+            tr  = (int) gsl_rng_uniform(r)*10;
+            tc  = (int) gsl_rng_uniform(r)*11-1;
+            assert(apop_data_get(dv2, tr, tc) == apop_data_get(d1,tr,tc));
+        }
+    }
+    for(i=-1; i< 13; i++){
+        splits  = apop_data_split(d1, i, 'c');
+        if (i>0 && i< 10){
+            assert(splits[0]->matrix->size2 == i);
+            assert(splits[0]->vector->size == 10);
+            assert(!splits[1]->vector);
+        }
+        else if (i < 0){
+            assert(!splits[0]);
+            assert(!splits[0]);
+            assert(splits[1]->vector->size == 10);
+        }
+        else if (i >= 10){
+            assert(splits[0]->matrix->size1 == 10);
+            assert(splits[0]->vector->size == 10);
+            assert(!splits[1]);
+        }
+        dv2 = apop_data_stack(splits[0], splits[1], 'c');
+        for(j=0; j< 50; j++){
+            tr  = (int) gsl_rng_uniform(r)*10;
+            tc  = (int) gsl_rng_uniform(r)*11-1;
+            assert(apop_data_get(dv2, tr, tc) == apop_data_get(d1,tr,tc));
+        }
+    }
+    return 0;
+}
+
 
 
 /** I claim that the mean residual is near zero, and that the predicted
@@ -348,6 +402,8 @@ apop_data *d9   = apop_dot(d5, d1, 1);
 
 #define do_test(text, fn)   if (verbose)    \
                                 printf(text);  \
+                            else printf(".");   \
+                            fflush(NULL);   \
                             if (fn==0)    \
                                 {if (verbose) printf("passed.\n");} \
                            else             \
@@ -368,7 +424,7 @@ apop_estimation_params  params;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
         */
-
+    do_test("split and stack test:", test_split_and_stack());
     do_test("apop_dot test:", test_dot());
     do_test("apop_jackknife test:", test_jackknife());
     do_test("OLS test:", test_OLS());

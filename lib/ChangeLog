@@ -1,3 +1,10 @@
+		July 2006
+--Many more checks for NULL ==> more robust code and easier debugging.
+--Bug fixes.
+--apop_data_split, and apop_data_stack has been revised to handle the
+idea that a vector is the -1st element of the matrix. I.e., check your
+code if you're trying to merge matrices without merging the vectors.
+
 		June 2006
 --added preprocessor cruft to let the library work for C++
 --Jackknife actually works.

@@ -208,12 +208,16 @@ void apop_data_memcpy(apop_data *out, apop_data *in){
   Just a front-end for \ref apop_data_memcpy for those who prefer this sort of syntax.
  
   \param in    the input data
-  \return       a structure that this function will allocate and fill
+  \return       a structure that this function will allocate and fill. If input is NULL, then this will be NULL.
 
  \ingroup data_struct
   */
 apop_data *apop_data_copy(apop_data *in){
 apop_data *out  = apop_data_alloc(0, 0);
+    if (!in){
+        apop_data_free(out);
+        return NULL;
+        }
     if (in->vector)
         out->vector = gsl_vector_alloc(in->vector->size);
     if (in->matrix)
@@ -226,35 +230,179 @@ apop_data *out  = apop_data_alloc(0, 0);
 
 The fn returns a new data set, meaning that at the end of this function,
 until you apop_data_free() the original data sets, you will be taking up
-twice as much memory. Plan accordingly. If you are stacking matrices, the output vector and categories are NULL; if you are stacking vectors, the output matrix and categories are NULL. 
+twice as much memory. Plan accordingly. 
 
-The dependent variable names are not copied or modified in any way by
-this function, so if you mean for them to change or get stacked, you
-will have to make the modifications yourself, perhaps by using either \ref apop_name_add or \ref apop_name_stack.
+
+
+
+
+ For the opposite operation, see \ref apop_data_split.
 
 \param  m1      the upper/rightmost data set
 \param  m2      the second data set
 \param  posn    if 'r', stack rows of m1's matrix above rows of m2's<br>
 if 'c', stack columns of m1's matrix to right of m2's<br>
-if 'v', stack m1's vector to over of m2's<br>
+
+If m1 or m2 are NULL, this returns a copy of the other element, and if
+both are NULL, you get NULL back.
 
 \return         a new \ref apop_data set with the stacked data.
+Categories get dropped. If stacking rows on rows, the output vector is the input
+vectors stacked accordingly. If stacking columns by columns, the output
+vector is just the vector of m1 and m2->vector doesn't appear in the
+output at all.  [If you don't like this behavior, send me code showing
+what you'd prefer.]
+
 \ingroup data_struct
 */
 apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
+gsl_matrix  *stacked= NULL;
 apop_data   *out    = NULL;
-    if (posn == 'r' || posn == 'c'){
-        gsl_matrix  *stacked= apop_matrix_stack(m1->matrix, m2->matrix, posn);
-        out         = apop_matrix_to_data(stacked);
+    if (m1 == NULL)
+        out = apop_data_copy(m2);
+    else if (m2 == NULL)
+        out = apop_data_copy(m1);
+    else if (posn == 'r' || posn == 'c'){
+        stacked = apop_matrix_stack(m1->matrix, m2->matrix, posn);
+        out     = apop_matrix_to_data(stacked);
+        if (posn == 'c')
+            out->vector = apop_vector_stack(m1->vector, m2->vector);
+        else 
+            out->vector = m1->vector;
         out->names  = apop_name_copy(m1->names);
         apop_name_stack(out->names, m2->names, posn);
-    } else if (posn == 'v'){
+    } /*else if (posn == 'v'){
         gsl_vector  *stacked= apop_vector_stack(m1->vector, m2->vector);
         out         = apop_vector_to_data(stacked);
         out->names  = apop_name_copy(m1->names);
         apop_name_stack(out->names, m2->names, posn);
-    } else{
-        printf("apop_data_stack: valid positions are 'r', 'c', or 'v'; you gave me >%c<. Returning NULL.", posn);
+    } */else{
+        printf("apop_data_stack: valid positions are 'r' or 'c' ('v' is deprecated); you gave me >%c<. Returning NULL.", posn);
+    }
+    return out;
+}
+
+/** Split one input \ref apop_data structure into two.
+
+ For the opposite operation, see \ref apop_data_stack.
+
+ For this function, the \ref apop_data->vector is taken to be the -1st
+ element of the matrix.
+ \param in  The \ref apop_data structure to split
+ \param splitpoint The index of what will be the first row/column of the
+ second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole
+ data set will be in the second data set; if this is the length of the
+ matrix then the whole data set will be in the first data set. Another
+ way to put it is that \c splitpoint will equal the number of rows/columns
+ in the first matrix (unless it is -1, in which case the first matrix
+ will have zero rows, or it is greater than the matrix's size, in which
+ case it will have as many rows as the original).
+
+ \return An array of two \ref apop_data sets. If one is empty then a
+ NULL pointer will be returned.
+
+ */
+apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
+    //A long, dull series of contingencies. Bonus: a valid use of goto.
+apop_data   **out   = malloc(2*sizeof(apop_data *));
+gsl_vector  v1, v2;
+gsl_matrix  m1, m2;
+int         set_v1  = 1,
+            set_v2  = 1,
+            set_m1  = 1,
+            set_m2  = 1;
+     if (r_or_c == 'r') {
+        if (splitpoint <=0){
+            out[0]  = NULL;
+            out[1]  = apop_data_copy(in);
+        } else if (splitpoint >= in->matrix->size1) {
+            out[0]  = apop_data_copy(in);
+            out[1]  = NULL;
+        } else {
+            if (in->vector){
+                v1      = gsl_vector_subvector(in->vector, 0, splitpoint).vector;
+                v2      = gsl_vector_subvector(in->vector, splitpoint, in->vector->size - splitpoint).vector;
+            } else
+                set_v1  = 
+                set_v2  = 0;
+            if (in->matrix){
+                m1      = gsl_matrix_submatrix (in->matrix, 0, 0, splitpoint, in->matrix->size2).matrix;
+                m2      = gsl_matrix_submatrix (in->matrix, splitpoint, 0,
+                                    in->matrix->size1 - splitpoint,  in->matrix->size2).matrix;
+            } else
+                set_m1  = 
+                set_m2  = 0;
+            goto allocation;
+        }
+    } else if (r_or_c == 'c') {
+        if (splitpoint <= -1){
+            out[0]  = NULL;
+            out[1]  = apop_data_copy(in);
+        } else if (splitpoint >= in->matrix->size2){
+            out[1]  = NULL;
+            out[0]  = apop_data_copy(in);
+        } else if (splitpoint == 0){
+            if (in->vector)
+                v1      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
+            else set_v1 = 0;
+            set_v2  = 0;
+            set_m1  = 0;
+            if (in->matrix)
+                m2      = gsl_matrix_submatrix (in->matrix, 0, 0, 
+                                    in->matrix->size1,  in->matrix->size2).matrix;
+            else set_m2 = 0;
+            goto allocation;
+        } else if (splitpoint > 0 && splitpoint < in->matrix->size2){
+            if (in->vector)
+                v1      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
+            else set_v1 = 0;
+            set_v2  = 0;
+            if (in->matrix){
+                m1      = gsl_matrix_submatrix (in->matrix, 0, 0, in->matrix->size1, splitpoint).matrix;
+                m2      = gsl_matrix_submatrix (in->matrix, 0, splitpoint, 
+                                    in->matrix->size1,  in->matrix->size2-splitpoint).matrix;
+            } else
+                set_m1  = 
+                set_m2  = 0;
+            goto allocation;
+        } else { //splitpoint >= in->matrix->size2
+            if (in->vector)
+                v1      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
+            else set_v1 = 0;
+            set_v2  = 0;
+            if (in->matrix)
+                m1      = gsl_matrix_submatrix (in->matrix, 0, 0, 
+                            in->matrix->size1, in->matrix->size2).matrix;
+            else set_m1 = 0;
+            set_m2  = 0;
+            goto allocation;
+        }
+    } else {
+        if (apop_opts.verbose)
+            printf("apop_data_split: Please set r_or_c == 'r' or == 'c'. Returning two NULLs.\n");
+        out[0]  = NULL;
+        out[1]  = NULL;
+    }
+    return out;
+
+allocation:
+    out[0]  = apop_data_alloc(0,0);
+    out[1]  = apop_data_alloc(0,0);
+    if (set_v1){
+        out[0]->vector  = gsl_vector_alloc(v1.size);
+        gsl_vector_memcpy(out[0]->vector, &v1);
+    }
+    if (set_v2){
+        out[1]->vector  = gsl_vector_alloc(v2.size);
+        gsl_vector_memcpy(out[1]->vector, &v2);
+    }
+    if (set_m1){
+        out[0]->matrix  = gsl_matrix_alloc(m1.size1, m1.size2);
+        gsl_matrix_memcpy(out[0]->matrix, &m1);
+    }
+    if (set_m2){
+        out[1]->matrix  = gsl_matrix_alloc(m2.size1, m2.size2);
+        gsl_matrix_memcpy(out[1]->matrix, &m2);
     }
     return out;
 }
@@ -281,9 +429,9 @@ gsl_matrix  *freeme = d->matrix;
 
 /** Returns the data element at the given point.
 
-Q: How does <tt> apop_data_get(in, r,c)</tt> differ from
- <tt>gsl_matrix_get(in->matrix, row, col)</tt>?\\
-A: It's seven characters shorter. Oh, and if \c c==-1, then this will
+Q: How does <tt> apop_data_get(in, r, c)</tt> differ from
+ <tt>gsl_matrix_get(in->matrix, r, c)</tt>?\\
+A: It's nine characters shorter. Also, if \c c==-1, then this will
 return the \c apop_data's vector element.
 
  \ingroup data_struct
@@ -373,11 +521,14 @@ A: It's seven characters shorter.
 Oh, and if \c col<0, then this will set the element of \c in->vector.
  \ingroup data_struct
 */
-void apop_data_set(apop_data *in, size_t row, size_t col, double data){
-    if (col>=0)
+void apop_data_set(apop_data *in, size_t row, int col, double data){
+    if (col>=0){
+        assert(in->matrix);
         gsl_matrix_set(in->matrix, row, col, data);
-    else
+    } else {
+        assert(in->vector);
         gsl_vector_set(in->vector, row, data);
+    }
 }
 /** Set an element from an \ref apop_data set, using the row name but
  the column number
@@ -392,7 +543,7 @@ matching rules.
 
  \ingroup data_struct
  */
-void apop_data_set_tn(apop_data *in, char* row, size_t col, double data){
+void apop_data_set_tn(apop_data *in, char* row, int col, double data){
 int rownum =  apop_name_find(in->names, row, 'r');
     if (rownum == -1){
         if(apop_opts.verbose)

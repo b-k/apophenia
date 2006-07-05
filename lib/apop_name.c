@@ -123,7 +123,7 @@ int		i;
 
 /** Append one list of names to another.
 
-Notice that if the first list in NULL, then this is a copy function.
+Notice that if the first list is NULL, then this is a copy function. If the second is NULL, it is a no-op.
 
 If you are copying row names to columns or vice versa, use \ref apop_name_cross_stack.
 
@@ -133,6 +133,8 @@ If you are copying row names to columns or vice versa, use \ref apop_name_cross_
 \ingroup names */
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type){
 int     i;
+    if (!n2)
+        return;
     if (type == 'v'){
         apop_name_add(n1, n2->vecname, 'v');
         return;
