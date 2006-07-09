@@ -398,6 +398,30 @@ apop_data *d9   = apop_dot(d5, d1, 1);
     return 0;
 }
 
+static void one_matrix_for_split_to_vector(int rows, int cols, gsl_rng *r){
+gsl_matrix      *m   = gsl_matrix_alloc(rows,cols),
+                *m2;
+int             i,j;
+    for (i=0; i< rows; i++)
+        for (j=0; j< cols; j++)
+            gsl_matrix_set(m, i,j, gsl_rng_uniform(r));
+    m2   = apop_vector_split_to_matrix(apop_matrix_stack_to_vector(m),cols);
+    for (i=0; i< rows; i++)
+        for (j=0; j< cols; j++)
+            assert(gsl_matrix_get(m,i,j) ==gsl_matrix_get(m2,i,j));
+}
+
+int test_matrix_split_to_vector(){
+gsl_rng         *r  = apop_rng_alloc(107);
+    one_matrix_for_split_to_vector(10,17, r);
+    one_matrix_for_split_to_vector(17,10, r);
+    one_matrix_for_split_to_vector(1,17, r);
+    one_matrix_for_split_to_vector(17,1, r);
+    one_matrix_for_split_to_vector(10,10, r);
+    return 0;
+}
+
+
 
 
 #define do_test(text, fn)   if (verbose)    \
@@ -424,6 +448,7 @@ apop_estimation_params  params;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
         */
+    do_test("split and stack to vector test:", test_matrix_split_to_vector());
     do_test("split and stack test:", test_split_and_stack());
     do_test("apop_dot test:", test_dot());
     do_test("apop_jackknife test:", test_jackknife());

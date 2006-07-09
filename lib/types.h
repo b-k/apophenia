@@ -35,7 +35,7 @@ apop_estimate has generated (no model produces everything). Model
 estimates accept an inventory, but all work fine if you send in
 NULL. Finally, the more elaborate models, such as MLEs, require some parameters to run,
 in which case you will need to fill out an \ref apop_estimation_params
-form and hand it in to the mode.
+form and hand it in to the model.
 
 
 \li Data 
@@ -177,7 +177,9 @@ typedef struct apop_estimation_params{
 	double 	tolerance; 
 	int 	verbose;
 	int 	destroy_data;
+    int     params_per_column;
 	apop_inventory	uses;
+    void    *parameters;
 } apop_estimation_params;
 
 /**
@@ -284,6 +286,7 @@ size_t  apop_name_find(apop_name *n, char *findme, char type);
 apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_estimation_params *params);
 void 		apop_estimate_free(apop_estimate * free_me);
 void 		apop_estimate_print(apop_estimate * print_me);
+void 		apop_estimate_show(apop_estimate * print_me);
 
 apop_estimation_params *apop_estimation_params_alloc();
 void apop_estimation_params_free(apop_estimation_params *freeme);

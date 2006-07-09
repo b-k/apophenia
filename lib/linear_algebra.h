@@ -31,6 +31,7 @@ int         apop_vector_isnan(gsl_vector *in);
 int         apop_vector_finite(gsl_vector *in);
 int         apop_vector_bounded(gsl_vector *in, long double max);
 apop_data * apop_dot(apop_data *d1, apop_data *d2, ...);
-//apop_data * apop_dot(apop_data *d1, apop_data *d2, char t1, char t2);
+gsl_matrix *apop_vector_split_to_matrix(gsl_vector *v, int columns);
+gsl_vector *apop_matrix_stack_to_vector(gsl_matrix *m);
 
 __END_DECLS

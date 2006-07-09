@@ -121,7 +121,8 @@ apop_estimate * prep_me;
 	  //  apop_inventory_filter(&(prep_me->estimation_params.uses), model.inventory_filter);
     }
 	if (prep_me->estimation_params.uses.parameters)
-		prep_me->parameters	= apop_data_alloc(model.parameter_ct,-1);
+		prep_me->parameters	= apop_data_alloc(model.parameter_ct
+                                                * (params? params->params_per_column: 1),-1);
 	if (prep_me->estimation_params.uses.dependent ||
 	                prep_me->estimation_params.uses.predicted){
         if (data && data->matrix)
@@ -169,7 +170,7 @@ void apop_estimate_free(apop_estimate * free_me){
 /** Print the results of an estimation
 
 \ingroup output */
-void apop_estimate_print(apop_estimate * print_me){
+void apop_estimate_show(apop_estimate * print_me){
 	if (print_me->estimation_params.uses.parameters)	
         apop_data_show(print_me->parameters);
 	if (print_me->estimation_params.uses.covariance){
@@ -178,6 +179,13 @@ void apop_estimate_print(apop_estimate * print_me){
 	}
 	if (print_me->estimation_params.uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);
+}
+
+/** Currently an alias for \ref apop_estimate_show, but when I get
+  around to it, it will conform better with the other apop_..._print
+  fns.*/
+void apop_estimate_print(apop_estimate * print_me){
+    apop_estimate_show(print_me);
 }
 
 /** Outputs a copy of the \ref apop_model input.
@@ -205,8 +213,9 @@ else will be predictable.
  */
 apop_estimation_params *apop_estimation_params_alloc(){
 apop_estimation_params *setme = calloc(sizeof(apop_estimation_params),1);
-    setme->starting_pt  = NULL;
-    setme->step_size    = 1;
+    setme->starting_pt          = NULL;
+    setme->step_size            = 
+    setme->params_per_column    = 1;
     apop_inventory_set(&(setme->uses),1); 
     return setme;
 }

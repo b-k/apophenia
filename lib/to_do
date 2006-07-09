@@ -1,3 +1,6 @@
+--apop_data_split needs to be split.
+--rewrite global discussion in c_crash.
+--probit didn't return names, which is wrong.
 --regression should return partitioned data matrix?
 --tests that produce a single column should use the data->vector.
 --spacing in screen output

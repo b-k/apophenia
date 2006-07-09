@@ -399,7 +399,7 @@ int     i, j,
         if (data->names->rownamect > j)
             printf("%s\t", data->names->rownames[j]);
         for(i=start; i< end; i++)
-            printf("%g\t", apop_data_get(data, j, i));
+            printf("%3.3f\t", apop_data_get(data, j, i));
         printf("\n");
     }
     apop_opts.output_type = tmptype;

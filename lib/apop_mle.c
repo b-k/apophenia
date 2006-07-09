@@ -379,7 +379,7 @@ If no derivative exists, will calculate a numerical gradient.
 
 \param data	the data matrix
 \param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
-\param	starting_pt	an array of doubles suggesting a starting point. If NULL, use zero.
+\param	starting_pt	an array of doubles suggesting a starting point. If NULL, use a vector whose elements are all 0.1 (zero has too many pathological cases).
 \param step_size	the initial step size.
 \param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
 \param verbose		Y'know.
@@ -400,20 +400,21 @@ negshell_params			    nsp;
         dist.parameter_ct   =
         betasize            = data->matrix->size2 - 1;
     }
+    betasize    *=  (est_params ? est_params->params_per_column : 1);
 	prep_inventory_mle(est_params->uses);
 	est	= apop_estimate_alloc(data, dist, est_params);
-    if (est_params->method/100 ==2)
+    if (!est_params || est_params->method/100 ==2)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
     else if (est_params->method/100 == 3)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_pr, betasize);
     else
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
-	if (dist.dlog_likelihood == NULL || (est_params->method % 100 ==1))
+	if (dist.dlog_likelihood == NULL || (est_params && est_params->method % 100 ==1))
 		dist.dlog_likelihood 	= apop_numerical_gradient;
 	apop_fn_for_derivative	= dist.log_likelihood;
-	if (est_params->starting_pt==NULL){
+	if (!est_params || est_params->starting_pt==NULL){
 		x	= gsl_vector_alloc(betasize);
-  		gsl_vector_set_all (x,  0);
+  		gsl_vector_set_all (x,  0.1);
 	}
 	else 	x   = apop_array_to_vector(est_params->starting_pt, betasize);
 	nsp.d		= data->matrix;
@@ -423,32 +424,35 @@ negshell_params			    nsp;
 	minme.fdf	= fdf_shell;
 	minme.n		= betasize;
 	minme.params	= &nsp;
-	gsl_multimin_fdfminimizer_set (s, &minme, x, est_params->step_size, est_params->tolerance);
+	gsl_multimin_fdfminimizer_set (s, &minme, x, 
+            est_params ? est_params->step_size : 0.05, 
+            est_params ? est_params->tolerance : 1e-3);
       	do { 	iter++;
 		status 	= gsl_multimin_fdfminimizer_iterate(s);
 		if (status) 	break; 
-		status = gsl_multimin_test_gradient(s->gradient, est_params->tolerance);
-        	if (est_params->verbose){
+		status = gsl_multimin_test_gradient(s->gradient, 
+                                            est_params ? est_params->tolerance : 1e-3);
+        	if (!est_params || est_params->verbose){
 	        	printf ("%5i %.5f  f()=%10.5f gradient=%.3f\n", iter, gsl_vector_get (s->x, 0),  s->f, gsl_vector_get(s->gradient,0));
 		}
         	if (status == GSL_SUCCESS){
 			est->status	= 0;
-		   	if(est_params->verbose)	printf ("Minimum found.\n");
+		   	if(!est_params || est_params->verbose)	printf ("Minimum found.\n");
 		}
        	 }
 	while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d);
 	//while (status != GSL_SUCCESS && iter < MAX_ITERATIONS_w_d);
 	if(iter==MAX_ITERATIONS_w_d) {
 		est->status	= 1;
-		if (est_params->verbose) printf("No min!!\n");
+		if (!est_params || est_params->verbose) printf("No min!!\n");
 	}
 	//Clean up, copy results to output estimate.
 	gsl_vector_memcpy(est->parameters->vector, s->x);
 	gsl_multimin_fdfminimizer_free(s);
-	if (est_params->starting_pt==NULL) 
+	if (est_params && est_params->starting_pt==NULL) 
 		gsl_vector_free(x);
 	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data->matrix);
-	if (est->estimation_params.uses.covariance) 
+	if (!est_params || est->estimation_params.uses.covariance) 
 		apop_numerical_var_covar_matrix(dist, est, data->matrix);
 	return est;
 }
@@ -470,6 +474,7 @@ negshell_params		    nsp;
         dist.parameter_ct   =
         betasize            = data->matrix->size2 - 1;
     }
+    betasize    *=  (est_params ? est_params->params_per_column : 1);
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
 	x	= gsl_vector_alloc(betasize);
@@ -766,9 +771,9 @@ const gsl_rng   * r ;
 gsl_vector      *beta;
     r   = gsl_rng_alloc(gsl_rng_env_setup()) ; 
     if (ep && ep->starting_pt)
-        beta = apop_array_to_vector(ep->starting_pt, m.parameter_ct);
+        beta = apop_array_to_vector(ep->starting_pt, m.parameter_ct* (ep ? ep->params_per_column : 1));
     else{
-        beta  = gsl_vector_alloc(m.parameter_ct);
+        beta  = gsl_vector_alloc(m.parameter_ct * (ep ? ep->params_per_column : 1));
         gsl_vector_set_all(beta, 1);
     }
 	anneal_nsp.d		= data->matrix;
