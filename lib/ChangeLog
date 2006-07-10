@@ -4,6 +4,7 @@
 --apop_data_split, and apop_data_stack has been revised to handle the
 idea that a vector is the -1st element of the matrix. I.e., check your
 code if you're trying to merge matrices without merging the vectors.
+--Lattice plots.
 
 		June 2006
 --added preprocessor cruft to let the library work for C++

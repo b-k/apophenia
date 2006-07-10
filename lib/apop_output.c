@@ -415,3 +415,86 @@ char tmptype    = apop_opts.output_type;
     apop_opts.output_type = tmptype;
 }
 
+
+/* the next function plots a single graph for the \ref apop_plot_lattice  fn */
+static void printone(char filename[], double width, double height, double margin, int xposn, int yposn, apop_data *d){
+    //pull two columns
+gsl_vector  v1  = gsl_matrix_column(d->matrix, xposn).vector;
+gsl_vector  v2  = gsl_matrix_column(d->matrix, yposn).vector;
+gsl_matrix  *m  = gsl_matrix_alloc(d->matrix->size1, 2);
+    gsl_matrix_set_col(m, 0, &v1);
+    gsl_matrix_set_col(m, 1, &v2);
+FILE    *f          = fopen(filename, "a");
+double sizex        = (double)(width - margin * (d->matrix->size2 -1))/d->matrix->size2;
+double sizey        = (double)(height - margin * (d->matrix->size2 -1))/d->matrix->size2;
+double offx        = width - (sizex +margin)* (1+xposn);
+double offy        = height - (sizey +margin)* (1+yposn);
+    if (xposn)
+        fprintf(f, "unset y2tics; unset y2label; unset ytics; unset ylabel\n");
+    else
+        fprintf(f, "set y2tics   \n\
+                    set y2label \"%s\" \n\
+                    ", (d->names->colnamect >yposn)? d->names->colnames[yposn]: "");
+    if (yposn)
+        fprintf(f, "unset x2tics; unset x2label; unset xtics; unset xlabel\n");
+    else 
+        fprintf(f, "set x2tics\n \
+                    set x2label \"%s\" \n\
+                    ", (d->names->colnamect >xposn)? d->names->colnames[xposn]: "");
+    fprintf(f, "set size   %g, %g\n\
+            set origin %g, %g\n\
+            plot '-'        \n\
+            ",  sizex, sizey, offx, offy);
+    /*
+    fprintf(f, "plot '-'        \n ");
+            */
+    fclose(f);
+    apop_matrix_print(m, filename);
+    f   = fopen(filename, "a");
+    fprintf(f,"e\n");
+    fclose(f);
+    gsl_matrix_free(m);
+}
+
+static void printlabel(char filename[], char *name){
+    //maybe some day this will have content.
+}
+
+/** This produces a Gnuplot file that will produce an array of 2-D
+ plots, one for each pair of columns in the data set. Along the diagonal
+ is a plot of the variable against itself---a density plot of the variable.
+
+ \param filename The output file, to which a Gnuplot command file will be written.
+ \param d       The data set whose (matrix) columns will be compared.
+
+\image latex "lattice.png" "A lattice showing three variables graphed against each other."
+\image html "lattice.png" "A lattice showing three variables graphed against each other."
+ */
+void apop_plot_lattice(char filename[], apop_data *d){ 
+double  width   = 1,//these used to be options, but who's ever gonna set them to something else.
+        height  = 1;
+double  margin  = 0;
+FILE    *f      = fopen(filename, "a");
+int     i,j;
+    fprintf(f, "set size %g, %g\n\
+        set origin %g, %g       \n\
+        set multiplot   #layout %i, %i downwards        \n\
+        unset xtics; unset xlabel; unset ytics; unset ylabel\n\
+        set nokey           \n\
+        ", width, height, margin,margin, d->matrix->size2, d->matrix->size2);
+    apop_opts.output_type = 'f'; fclose(f); for (i = 0; i<
+    d->matrix->size2; i++)
+        for (j = 0; j< d->matrix->size2; j++)
+/*            if (i==j && i!=0)
+                printlabel(filename, d->names->colnames[i]);
+            else */
+                printone(filename, width, height, margin, i, j, d);
+    f   = fopen(filename, "a"); 
+    for (i=0; i< d->names->colnamect; i++){
+        double sizex        = (double)(width - margin * (d->matrix->size2 -1))/d->matrix->size2; 
+        double sizey        = (double)(height - margin * (d->matrix->size2 -1))/d->matrix->size2;
+        double offx        = (sizex +margin)* (i+0.5);
+        double offy        = (sizey +margin)* (i+0.5);
+        fprintf(f, "set label \"%s\" at %g, %g\n", d->names->colnames[i], offx, offy);
+    } fprintf(f, "unset multiplot\n"); fclose(f);
+}

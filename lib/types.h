@@ -258,9 +258,9 @@ typedef struct apop_opts_type{
             /** 's'   = to screen
                 'f'   = to file
                 'd'   = to db. 
-             If 1 or 2, then you'll need to set output_name. default = 0. */
+             If 1 or 2, then you'll need to set output_name in the apop_..._print fn. default = 0. */
     char output_type;
-            /** What to put between your columns. Default = "\t" */
+            /** If writing to a file, its name. Limit: 1000 chars. */
     char output_delimiter[100];
             /** Append to output files(1), or overwrite(0)? default = 0 */
     int output_append;
