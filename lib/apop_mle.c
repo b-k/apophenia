@@ -307,7 +307,7 @@ your variance-covariance matrix, just use the negative inverse of the Hessian.
 \ingroup basic_stats
 */
 void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data){
-int		i;
+//int		i;
 double 		(*tmp) (const gsl_vector *beta, void *d);
 gsl_matrix	*hessian;
 	tmp			= apop_fn_for_derivative;
@@ -317,16 +317,13 @@ gsl_matrix	*hessian;
 	apop_det_and_inv(hessian, &(est->covariance->matrix), 0, 1);
 	gsl_matrix_free(hessian);
 
-	//Confidence intervals are just a cute convenience. We're
-	//assuming Normality, which only works asymptotically anyway.
 	if (est->estimation_params.uses.confidence == 0)
 		return;
 	//else:
-	for (i=0; i< est->parameters->vector->size; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
-        printf("darn it, confidence calculations need to be rewritten.\n");
-		/*gsl_vector_set(est->confidence, i,
-			fabs(1 - (1 - gsl_cdf_gaussian_P(gsl_vector_get(est->parameters->vector, i), 
-			gsl_matrix_get(est->covariance->matrix, i, i)))*2));*/
+        apop_estimate_parameter_t_tests(est);
+	/*for (i=0; i< est->parameters->vector->size; i++) 
+        est->confidence[i] = two_tailed_t_test(gsl_vector_get(est->parameters->vector, i), 
+			                gsl_matrix_get(est->covariance->matrix, i, i), data->size1);*/
 	apop_fn_for_derivative 	= tmp;
 }
 

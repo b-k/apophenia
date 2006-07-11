@@ -108,6 +108,14 @@ int     df      = count-1;
     return produce_t_test_output(df, stat, avg);
 }
 
+static double two_tailed_t_test(double mean, double variance, long int ct){
+double  t_stat  = fabs(mean)/sqrt(variance * ct),
+        p       = 1 - gsl_cdf_tdist_P(t_stat, ct),
+        q       = 1 - gsl_cdf_tdist_Q(-t_stat, ct);
+    assert (p+q >=0);
+    return  p + q;
+}
+
 /** For many, it is a knee-jerk reaction to a parameter estimation to
 test whether each individual parameter differs from zero. This function
 does that.
@@ -142,7 +150,7 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
         stddev  = sqrt(var);
         tstat   = val*rootn/stddev;
         pval    = (df > 0)? gsl_cdf_tdist_P(tstat, df): GSL_NAN;
-        two_tail= (df > 0)? (gsl_cdf_tdist_P(fabs(tstat), df) - gsl_cdf_tdist_Q(-fabs(tstat), df)): GSL_NAN;
+        two_tail= (df > 0)? two_tailed_t_test(val, var, df): GSL_NAN;
         apop_data_set_nt(est->parameters, i, "df", df);
         apop_data_set_nt(est->parameters, i, "t statistic", tstat);
         apop_data_set_nt(est->parameters, i, "standard deviation", stddev);

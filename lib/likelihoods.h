@@ -17,6 +17,7 @@
 #include "linear_algebra.h"
 #include <apophenia/model.h>
 #include <apophenia/types.h>
+#include <apophenia/regression.h>
 
 #define MAX_ITERATIONS 		5000
 #define MAX_ITERATIONS_w_d	5000

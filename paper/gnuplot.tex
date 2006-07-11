@@ -60,6 +60,67 @@ Gnuplot commands). On many systems, you can
 interact with the plot, spinning 3-D plots with the mouse or selecting
 subregions of 2-D plots to zoom into.
 
+\subsection{Lattices}  \index{lattices}
+Perhaps plotting two pairs of columns at a time is not sufficient---you
+want bulk, displaying every variable graphed against every other. For
+this, use the \ci{apop\_plot\_lattice} function.
+
+\begin{lstlisting}
+apop_data *d = apop_text_to_data("indata", 0, 1);
+apop_plot_lattice("outfile", d);
+\end{lstlisting}
+This produces a file that (after \bi{gnuplot -persist outfile}) produces
+a plot like the one in Figure \ref{trellis}. Each variable is plotted
+against each other, so the upper-left graph shows the SES variable
+versus the Hirfindahl index for a set of data points. The lower-right
+graph shows a mirror image of the same two variables. Along the diagonal
+are plots of a variable against itself, and therefore these plots will
+always be along the $45^\circ$ line. They give a quick picture of the
+how a variable's density is distributed.
+
+\begin{figure}
+\rotatebox{-90}{\scalebox{.45}{\includegraphics{trellis.eps}}}
+\caption{Three variables from my hard drive. Each is plotted against the
+other.}\label{trellis}
+\end{figure}
+
+What is a lattice plot good for? Some call it \airq{getting a lay of the
+land}, while others call it \vocab{data snooping}. Given ten perfectly
+random variables, there is a good chance that at least one pair of
+lattice plots will look to you like it demonstrates a nice correlation.
+A formal regression on the chosen pair of variables will likely
+verify your initial visual impression. 
+
+One interviewer directly asked the people who first developed
+this type of display, Rick Becker and Bill Cleveland,
+whether this display method treads too close to data
+snooping:\footnote{\url{http://stat.bell-labs.com/project/trellis/interview.html}}
+
+\begin{quote}
+{\em Inteviewer:} OK, but there is another way to approach the study of a large database:
+develop a statistical model and see if it fits the data. If it does fit,
+use the model to learn about the structure of the data.
+
+{\em Becker \& Cleveland:} Yes, and Trellis
+display\footnote{\vocab{Trellis display} is a trademarked term; therefore
+this book and many common stats packages use the term \airq{lattice}
+to refer to similar displays.} is a big help in doing this because it
+allows you to make a good guess about an initial model to fit and then
+to diagnose how well it fits the data. [\dots]
+
+{\em Inteviewer:} But instead of agonizing over all those panels I could do a bunch of
+chi-squared tests for goodness of fit.
+
+{\em Becker \& Cleveland:} You're joking, right? If not, we're leaving.
+
+{\em Inteviewer:} OK, I guess I'm joking.
+\end{quote}
+
+Since Becker and Cleveland do not elucidate the difference between their
+visualization method and numerical data snooping, it is up to you to
+decide whether such wide-reaching plots are a good first hack at the
+data or merely facilitators of apophenia.
+
 \subsection{Histograms} \index{histograms!plotting|(}
 Gnuplot, refusing to do calculations for you,
 makes making histograms a pain.  Fortunately, the GSL has you covered,
@@ -103,6 +164,35 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 }
 \end{lstlisting}
 \index{histograms!plotting|)}
+
+\subsection {Pruning data for display}
+Plotting the entire data set may be detrimental for two reasons. The
+first is the range problem: that one data point at $Y=$a million throws off the
+whole darn plot. If you are using an interactive on-screen graph, you
+can select a smaller region, but it would be better to just not plot
+that point to begin with. 
+
+The second reason for pruning is when the data set is too large. The black
+blob you get from plotting ten million data points on a single piece of
+paper is not very informative. In this case, you want to use only a
+random subset of the data.
+
+This section forthcoming. Summary: you can do this in SQL using the
+typical \sinline{select * from plotme where value < 1e7} form to eliminate
+those values greater than a million. 
+
+One could do the same for random
+numbers, although SQLite does not provide the friendliest of random
+number generators. The \sind{random} function provides a single random
+number between -2,147,483,647 and 2,147,483,647, which the reader will
+recognize as $\pm 2^{31}-1$. So we need to pull a random number,
+divide by $2^{31}-1$, thus producing a number in $[-1,1]$, then shift it
+to the familiar $[0,1]$ range, and then compare it to a limit. The
+query below does this to remove approximately half of the data set.
+It uses the bit-shifting operator which I had promised you would never
+need; read \ci{1<<x} as $2^x$.
+
+\sinline{select * from plotme where (random()/(-(1<<31)-1.0)+1)/2  < 0.5}
 
 \summary{
 \item A Gnuplot command file basically consists of a group of \ci{set}

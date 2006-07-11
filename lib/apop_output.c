@@ -325,7 +325,8 @@ void apop_data_print_int(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
         apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
     } else
-	print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf_i, data->names); }
+	print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf_i, data->names); 
+}
 
 
 
@@ -387,8 +388,6 @@ int     i, j,
     if (data->vector){
         if (data->names->vecname)
             printf("%s\t", data->names->vecname);
-        else
-            printf("\t\t");
     }
     if (data->matrix){
         for(i=0; i< data->names->colnamect; i++)
@@ -469,6 +468,7 @@ static void printlabel(char filename[], char *name){
 
 \image latex "lattice.png" "A lattice showing three variables graphed against each other."
 \image html "lattice.png" "A lattice showing three variables graphed against each other."
+\ingroup output
  */
 void apop_plot_lattice(char filename[], apop_data *d){ 
 double  width   = 1,//these used to be options, but who's ever gonna set them to something else.
