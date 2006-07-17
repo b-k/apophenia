@@ -27,10 +27,10 @@ cd $junkdir/$pkg-$version
 	automake -a
 	./configure
 	#rm apophenia-$version.tar.gz 
-    yes | dh_make -l -n -c GPL  
-    cp ../../debian_control debian/control
-    cp ../../debian_copyright debian/copyright
-    debuild -us -uc 
+#    yes | dh_make -l -n -c GPL  
+#    cp ../../debian_control debian/control
+#    cp ../../debian_copyright debian/copyright
+#    debuild -us -uc 
     rm ../$pkg_$version.tar.gz
 	make dist
 

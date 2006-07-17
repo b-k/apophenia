@@ -52,8 +52,9 @@ char *** apop_query_to_chars(const char * fmt, ...);
 
 apop_data * apop_query_to_data(const char * fmt, ...);
 
+gsl_vector * apop_query_to_vector(const char * fmt, ...);
 double apop_query_to_float(const char * fmt, ...);
-	//like query_to_matrix, but returns a single number.
+	//like query_to_matrix, but returns a single number or vector.
 
 int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
 int apop_data_to_db(apop_data *set, char *tabname);

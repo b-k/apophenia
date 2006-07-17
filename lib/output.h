@@ -19,7 +19,7 @@ __BEGIN_DECLS
 void apop_plot_line_and_scatter(apop_data *data, apop_estimate *est, char *);
 void apop_plot(gsl_matrix *data, char plot_type, int delay);
 void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile);
-void apop_plot_lattice(char filename[], apop_data *d);
+void apop_plot_lattice(apop_data *d, char filename[]);
 
 void apop_matrix_print(gsl_matrix *data, char *file);
 void apop_matrix_print_int(gsl_matrix *data, char *file);

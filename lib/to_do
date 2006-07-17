@@ -1,9 +1,11 @@
 --apop_data_split needs to be split.
+--save the variable name, not `actual' in your regression.
+--Regressing on a singular matrix segfaults instead of exiting more gracefully.
 --rewrite global discussion in c_crash.
 --probit didn't return names, which is wrong.
 --regression should return partitioned data matrix?
 --tests that produce a single column should use the data->vector.
---spacing in screen output
+--spacing in matrix screen output
 --Start respecting text segment of apop_data
 --apop_db_to_text should output an apop_names structure, and I need a category printer.
 --And how about something to write apop_estimates to the db?

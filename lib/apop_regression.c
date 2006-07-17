@@ -109,10 +109,9 @@ int     df      = count-1;
 }
 
 static double two_tailed_t_test(double mean, double variance, long int ct){
-double  t_stat  = fabs(mean)/sqrt(variance * ct),
+double  t_stat  = fabs(mean)/sqrt(variance / ct),
         p       = 1 - gsl_cdf_tdist_P(t_stat, ct),
         q       = 1 - gsl_cdf_tdist_Q(-t_stat, ct);
-    assert (p+q >=0);
     return  p + q;
 }
 
@@ -149,7 +148,7 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
         var     = apop_data_get(est->covariance, i, i);
         stddev  = sqrt(var);
         tstat   = val*rootn/stddev;
-        pval    = (df > 0)? gsl_cdf_tdist_P(tstat, df): GSL_NAN;
+        pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
         two_tail= (df > 0)? two_tailed_t_test(val, var, df): GSL_NAN;
         apop_data_set_nt(est->parameters, i, "df", df);
         apop_data_set_nt(est->parameters, i, "t statistic", tstat);
@@ -405,13 +404,12 @@ gcc sample.c -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
 and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
 
 Feeling lazy? The program above was good form and demonstrated useful
-features, but the code below will do the same thing in five lines:
+features, but the code below will do the same thing in four lines:
 
 \code
 #include <apophenia/headers.h>
-int main(void){
-    apop_text_to_db("data","d",NULL);
-    apop_estimate_print(apop_OLS.estimate(apop_query_to_data("select * from d"), NULL, NULL));
+int main(){
+    apop_estimate_show(apop_OLS.estimate(apop_text_to_data("data", 0, 0), NULL));
     return 0; }
 \endcode
 

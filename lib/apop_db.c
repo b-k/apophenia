@@ -575,6 +575,37 @@ va_list		argp;
 	return output;
 }
 
+/** Queries the database, and dumps the first column of the result into a gsl_vector.
+\param fmt	A string holding an \ref sql "SQL" query.
+\param ...	Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
+\return		A <tt>gsl_vector</tt> holding the first column of the returned matrix. Thus, if your query returns
+multiple lines, you will get no warning, and the function will return
+the first in the list.
+
+If the query returns no columns at all, the function returns <tt>NULL</tt>.
+*/
+gsl_vector * apop_query_to_vector(const char * fmt, ...){
+gsl_matrix	*m=NULL;
+gsl_vector  *out;
+va_list		argp;
+char		*query;
+	if (db==NULL) apop_db_open(NULL);
+	va_start(argp, fmt);
+	vasprintf(&query, fmt, argp);
+	va_end(argp);
+	m	= apop_query_to_matrix(query);
+	if (m==NULL){
+        if (apop_opts.verbose)
+		    printf("apop, %s, %i: Query turned up a blank table. Returning GSL_NAN.\n", __FILE__, __LINE__);
+		return NULL;
+	} //else
+    out = gsl_vector_alloc(m->size1);
+	gsl_matrix_get_col(out, m, 0);
+	gsl_matrix_free(m);
+	return out;
+
+}
+
 /** Queries the database, and dumps the result into a single double-precision floating point number.
 \param fmt	A string holding an \ref sql "SQL" query.
 \param ...	Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.

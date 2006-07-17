@@ -373,32 +373,56 @@ char tmptype    = apop_opts.output_type;
     apop_opts.output_type = tmptype;
 }
 
+static size_t get_max_strlen(char **names, size_t len){
+int     i, 
+        max  = 0;
+    for (i=0; i< len; i++)
+        max = GSL_MAX(max, strlen(names[i]));
+    return max;
+}
+
 /** Print an \ref apop_data to the screen.
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
 void apop_data_show(apop_data *data){
 char    tmptype = apop_opts.output_type;
-int     i, j,
+int     i, j, L = 0, Lc = 6,
         start   = (data->vector)? -1 : 0,
         end     = (data->matrix)? data->matrix->size2 : 0,
         rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : -1;
+double  datapt;
+    if (data->names->rownames)
+        L   = get_max_strlen(data->names->rownames, data->names->rownamect);
     apop_opts.output_type = 's';
     if (data->names->rownames)
-        printf("\t\t");
+        printf("%*s  ", L+2, " ");
     if (data->vector){
         if (data->names->vecname)
-            printf("%s\t", data->names->vecname);
+            printf("%*s  |  ", L+2, data->names->vecname);
     }
     if (data->matrix){
         for(i=0; i< data->names->colnamect; i++)
-            printf("%s\t", data->names->colnames[i]);
+            printf("%s  ", data->names->colnames[i]);
     }
     printf("\n");
     for(j=0; j< rowend; j++){
         if (data->names->rownamect > j)
-            printf("%s\t", data->names->rownames[j]);
-        for(i=start; i< end; i++)
-            printf("%3.3f\t", apop_data_get(data, j, i));
+            printf("%*s  ", L+2, data->names->rownames[j]);
+        for(i=start; i< end; i++){
+            if (i==-1 && data->names->vecname) 
+                Lc  =  strlen(data->names->vecname);
+            else if (i>=0 && data->names->colnamect > i) 
+                Lc  =  strlen(data->names->colnames[i]);
+            else
+                Lc  =  6;
+            datapt  = apop_data_get(data, j, i);
+            if (datapt == (int) datapt)
+                printf("%*i  ", Lc, (int) datapt);
+            else
+                printf("%*f  ", Lc, datapt);
+            if (i==-1) 
+                printf ("| ");
+        }
         printf("\n");
     }
     apop_opts.output_type = tmptype;
@@ -470,7 +494,7 @@ static void printlabel(char filename[], char *name){
 \image html "lattice.png" "A lattice showing three variables graphed against each other."
 \ingroup output
  */
-void apop_plot_lattice(char filename[], apop_data *d){ 
+void apop_plot_lattice(apop_data *d, char filename[]){ 
 double  width   = 1,//these used to be options, but who's ever gonna set them to something else.
         height  = 1;
 double  margin  = 0;

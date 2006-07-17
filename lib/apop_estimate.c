@@ -171,7 +171,7 @@ void apop_estimate_free(apop_estimate * free_me){
 
 \ingroup output */
 void apop_estimate_show(apop_estimate * print_me){
-	if (print_me->estimation_params.uses.parameters)	
+	if (print_me->estimation_params.uses.parameters)
         apop_data_show(print_me->parameters);
 	if (print_me->estimation_params.uses.covariance){
 		printf("\nThe variance/covariance matrix:\n");
