@@ -216,7 +216,9 @@ static void sqrtFn(sqlite3_context *context, int argc, sqlite3_value **argv){
 }
 
 static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, pow(sqlite3_value_double(argv[0]), sqlite3_value_double(argv[1])));
+double  base    = sqlite3_value_double(argv[0]);
+double  exp     = sqlite3_value_double(argv[1]);
+    sqlite3_result_double(context, pow(base, exp));
 }
 
 static void expFn(sqlite3_context *context, int argc, sqlite3_value **argv){
@@ -284,10 +286,10 @@ int apop_db_open(char *filename){
 	sqlite3_create_function(db, "skew", 1, SQLITE_ANY, NULL, NULL, &threeStep, &skewFinalize);
 	sqlite3_create_function(db, "kurt", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
 	sqlite3_create_function(db, "kurtosis", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
-	sqlite3_create_function(db, "sqrt", 2, SQLITE_ANY, NULL, &sqrtFn, NULL, NULL);
+	sqlite3_create_function(db, "sqrt", 1, SQLITE_ANY, NULL, &sqrtFn, NULL, NULL);
 	sqlite3_create_function(db, "pow", 2, SQLITE_ANY, NULL, &powFn, NULL, NULL);
-	sqlite3_create_function(db, "exp", 2, SQLITE_ANY, NULL, &expFn, NULL, NULL);
-	sqlite3_create_function(db, "log", 2, SQLITE_ANY, NULL, &logFn, NULL, NULL);
+	sqlite3_create_function(db, "exp", 1, SQLITE_ANY, NULL, &expFn, NULL, NULL);
+	sqlite3_create_function(db, "log", 1, SQLITE_ANY, NULL, &logFn, NULL, NULL);
 	apop_query("pragma short_column_names");
 	return 0;
 }
@@ -571,7 +573,7 @@ va_list		argp;
 		last_names = apop_name_alloc();
 		sqlite3_exec(db,"pragma table_info(apop_temp_table)",names_callback, NULL, &err); ERRCHECK
 	}
-	sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
+	//sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
 	free(q2);
 	return output;
 }
