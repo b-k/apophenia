@@ -9,6 +9,7 @@ a great deal of real-world testing that didn't make it into this file.
 */
 
 #include <apophenia/headers.h>
+#include "nist_tests.c"
 
 //I'm using the test script an experiment to see if 
 //these macros add any value.
@@ -459,6 +460,7 @@ apop_estimation_params  params;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
         */
+    do_test("nist_tests:", nist_tests());
     do_test("split and stack to vector test:", test_matrix_split_to_vector());
     do_test("split and stack test:", test_split_and_stack());
     do_test("apop_dot test:", test_dot());
