@@ -171,15 +171,16 @@ typedef struct apop_name{
  \ingroup inv_and_est
  */
 typedef struct apop_estimation_params{
-	int 	method;
-	double *starting_pt; 
-	double 	step_size; 
-	double 	tolerance; 
-	int 	verbose;
-	int 	destroy_data;
-    int     params_per_column;
+	int 	    method;
+	double      *starting_pt; 
+	double 	    step_size; 
+	double 	    tolerance; 
+	int 	    verbose;
+	int 	    destroy_data;
+    int         params_per_column;
 	apop_inventory	uses;
-    void    *parameters;
+    void        *parameters;
+    gsl_vector  *weights;
 } apop_estimation_params;
 
 /**
@@ -258,8 +259,11 @@ typedef struct apop_opts_type{
             /** 's'   = to screen
                 'f'   = to file
                 'd'   = to db. 
+                'p'   = to pipe (specifically, apop_opts.output_pipe). 
              If 1 or 2, then you'll need to set output_name in the apop_..._print fn. default = 0. */
     char output_type;
+            /** If printing to a pipe or FILE, set it here. */
+    FILE *output_pipe;
             /** If writing to a file, its name. Limit: 1000 chars. */
     char output_delimiter[100];
             /** Append to output files(1), or overwrite(0)? default = 0 */

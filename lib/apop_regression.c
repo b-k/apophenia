@@ -13,9 +13,10 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include "db.h"     //just for apop_opts
 #include "types.h"
 #include "stats.h"
-#include "model/model.h"
 #include "output.h"
 #include "regression.h"
+#include "conversions.h"
+#include "model/model.h"
 #include "linear_algebra.h"
 #include <search.h> //lsearch
 #include <stdlib.h> //bsearch
@@ -416,15 +417,26 @@ int main(){
 
  */
 apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
-apop_estimation_params *ep = epin;
+apop_estimation_params *ep  = epin;
 apop_model      *modded_ols;
 apop_data       *set;
+gsl_vector      *weights    = NULL;
+int             i;
 
     //check whether we get to destroy the data set or need to copy it.
-    if ((ep == NULL) || (ep->destroy_data==0))
+    if (ep == NULL || ep->destroy_data==0)
         set = apop_data_copy(inset); 
     else
         set = inset;
+
+    //prep weights.
+    if (ep && ep->destroy_data)
+        weights = ep->weights;  //may be NULL.
+    if (ep && !ep->destroy_data)
+        weights = apop_vector_copy(ep->weights); //may be NULL.
+    if (weights)
+        for (i =0; i< weights->size; i++)
+            gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
     modded_ols              = apop_model_copy(apop_OLS); 
     modded_ols->parameter_ct= set->matrix->size2;
@@ -432,10 +444,19 @@ apop_estimate	*out		= apop_estimate_alloc(inset, *modded_ols, ep);
 gsl_vector      *y_data     = gsl_vector_alloc(set->matrix->size1); 
 gsl_vector      *xpy        = gsl_vector_calloc(set->matrix->size2);
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
-gsl_vector_view v           = gsl_matrix_column(set->matrix, 0);
+gsl_vector      v           = gsl_matrix_column(set->matrix, 0).vector;
     prep_names(out);
     gsl_matrix_get_col(y_data, set->matrix, 0);
-    gsl_vector_set_all(&(v.vector), 1);     //affine: first column is ones.
+    gsl_vector_set_all(&v, 1);     //affine: first column is ones.
+    if (weights){
+        gsl_vector_mul(y_data, weights);
+        for (i = 0; i < set->matrix->size2; i++){
+            v   = gsl_matrix_column(set->matrix, i).vector;
+            gsl_vector_mul(&v, weights);
+        }
+    }
+
+
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   //(X'X)
     gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)
     xpxinvxpy(set->matrix, y_data, xpx, xpy, out);

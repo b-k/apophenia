@@ -388,8 +388,15 @@ You can write to a pipe just like you would write to a file, using
 \cind{fprintf}, meaning that once you have opened the pipe to
 Gnuplot, the methods above really do apply directly.
 
+You will want to use \cind{apop\_vector\_print} or
+\cind{apop\_matrix\_print} to dump out the actual data. To do so, you
+will need to set the output type to \ci{'p'} and specify the output
+pipe. Lines 11 through 13 in the sample code below do this.
+The command on line 14, \cind{fflush}, ensures that all of the data has
+been flushed through the pipe and delivered to Gnuplot.
 
-\begin{lstlisting}
+\label{pipeexample}
+\begin{lstlisting}[numbers=left, numberstyle=\scshape]
 void plot_vector_now(gsl_vector *data){
 static FILE *gp = NULL;
 int  i;
@@ -400,8 +407,9 @@ int  i;
         return 0;
     }
     fprintf(gp,"reset; plot '-' \n");
-    for (i=0; i< data->size; i++)
-        fprintf("%g\n", gsl_vector_get(data, i));
+    apop_opts.output_type = 'p';
+    apop_opts.output_pipe = gp;
+    apop_vector_print(data, NULL);
     fflush(gp);
 }
 \end{lstlisting} 

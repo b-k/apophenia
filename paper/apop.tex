@@ -765,10 +765,7 @@ Alternatively, you can print the entire  \cinline{apop\_data} structure.
 Most of the useful data types have
 a print function, and given the package-type-operation naming scheme,
 you can basically guess their names: \cind{apop\_data\_print},
-\cind{apop\_matrix\_print}, \cind{apop\_vector\_print}. If your
-data is primarily integers, you may want to save screen real estate
-with the integer-printing versions: \cind{apop\_data\_print\_int},
-\cind{apop\_matrix\_print\_int}, \cind{apop\_vector\_print\_int}.
+\cind{apop\_matrix\_print}, \cind{apop\_vector\_print}. 
 
 These printing functions are actually three-in-one functions: you can
 dump your data to either the screen, a file, or the database. You select
@@ -786,6 +783,7 @@ variable are:
 apop_opts.output_type   = 's';  //default: print to screen.
 apop_opts.output_type   = 'f';  //print to file.
 apop_opts.output_type   = 'd';  //store in database.
+apop_opts.output_type   = 'p';  //write to the pipe in apop_opts.output_pipe.
 \end{lstlisting}
 
 The screen output will generally be human-readable, meaning different
@@ -796,11 +794,18 @@ toward allowing a machine to read the output, meaning stricter formatting.
 The second argument to the output functions is a string.  Output to
 screen ignores this; if outputting to file, this is the file name;
 if writing to the database, then this will be the table name.
-If outputting to file, the name can be \cinline{NULL}, in which case, the
-output will be printed to STDOUT (if you aren't familiar with STDOUT,
+
+If outputting to file, the name can be \cinline{NULL}, in which case,
+the output will be printed to STDOUT (if you aren't familiar with STDOUT,
 then it is the screen), but in the machine-friendly format instead of
-the human-friendly form. This is what you will use if you are \ind{piping}
-output from an Apophenia-based program to another program.
+the human-friendly form.  This is what you will use if you are using a
+command-line \ind{pipe} to send output from an Apophenia-based program
+to another program. If your program itself uses a pipe opened via
+\cind{fopen}, then the name argument is ignored and output is sent to
+the \ci{FILE} pointer in \ci{apop\_opts.output\_pipe}; see page
+\pageref{pipeexample} for an example.
+
+
 
 File names tend to have periods in them, but periods in table names
 produce difficulties.  When printing to a database, the file name thus
@@ -811,15 +816,15 @@ Since the name argument is irrelevant to printing to screen, and
 Apophenia endeavors to facilitate laziness, there are functions
 corresponding to the above \cinline{apop\_type\_print} functions that will
 dump to the screen, by basically just setting the output type to \cinline{'s'}, e.g.:
-\ttindex{apop\_vector\_print} \ttindex{apop\_vector\_print\_int}
-\ttindex{apop\_matrix\_print} \ttindex{apop\_matrix\_print\_int}
-\ttindex{apop\_data\_print} \ttindex{apop\_data\_print\_int}
+\ttindex{apop\_vector\_print} 
+\ttindex{apop\_matrix\_print}
+\ttindex{apop\_data\_print} 
 \ttindex{apop\_vector\_show} \ttindex{apop\_matrix\_show}
 \ttindex{apop\_data\_show}
 \begin{lstlisting}
 apop_vector_show(a_vector);
-apop_matrix_show_int(a_matrix);
-apop_data_show_int(data);
+apop_matrix_show(a_matrix);
+apop_data_show(data);
 \end{lstlisting}
 
 An estimation function will produce a table of figures in an

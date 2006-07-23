@@ -1,23 +1,34 @@
+[Key: 
+--Addition or improvement
+**Change that could require recoding existing code.
+]
+
 		July 2006
 --Many more checks for NULL ==> more robust code and easier debugging.
 --Bug fixes.
---apop_data_split, and apop_data_stack has been revised to handle the
+**apop_data_split, and apop_data_stack has been revised to handle the
 idea that a vector is the -1st element of the matrix. I.e., check your
 code if you're trying to merge matrices without merging the vectors.
 --Lattice plots.
 --Convenience t-tests from inside model estimations are fixed.
 --apop_query_to_vector. 
+--apop_opts.output_type == 'p' to print to apop_opts.output_pipe
+**apop_..._print and apop_..._show now work out whether elements are
+integers (if (val == (int) val)...), and print accordingly. This means
+that apop_..._print_int and apop_..._show_int are basically obsolete,
+and have been removed.
+--Apop_OLS now allows weights.
 
 		June 2006
 --added preprocessor cruft to let the library work for C++
 --Jackknife actually works.
 
 		May 2006
---The apop_model no longer includes an inventory. I leave it to the
+**The apop_model no longer includes an inventory. I leave it to the
 estimate function to do its own allocation.
 
 		April 2006
---apop_matrix_normalize and apop_vector_normalize had different
+**apop_matrix_normalize and apop_vector_normalize had different
 numbers for the same normalizations. Was that ever dumb. Also, I've
 switched to chars instead of ints to signify this stuff, for better
 mnemonics without resorting to the
@@ -44,7 +55,7 @@ four for both.
 	--apop_estimate.names is thus obsolete.
 
 		March 2006
---apop_inventory is now a subset of apop_estimation_params. Implications:
+**apop_inventory is now a subset of apop_estimation_params. Implications:
 	--added apop_estimation_params_alloc() to ensure that inventory is set right.
 	--the model.estimate(data, inv, params) method is now model.estimate(data, params)
 	  model.estimate(data, NULL) still does what the user expects it to.
@@ -60,14 +71,14 @@ four for both.
    and in any apop_estimates, change any use of est->uses to
    est.estimation_params.uses.
 
---Next apop_estimate reform: y_values and residuals combined into one
+**Next apop_estimate reform: y_values and residuals combined into one
 apop_data table with actual, predicted, residual columns.
 	--obviated the need for a 'dependent' element in apop_names; removed that.
 	If you need the name, it's now your_est->dependent->names->colnames[0].
 
---your_estimate->covariance is now an apop_data set instead of a gsl_matrix.
+**your_estimate->covariance is now an apop_data set instead of a gsl_matrix.
 
---the data element of the apop_matrix structure is now named matrix. So
+**the data element of the apop_matrix structure is now named matrix. So
 instead of data_set->data, use data_set->matrix, and instead of
 estimate->data->data->data, you can use estimate->data->matrix->data.
 
@@ -78,7 +89,7 @@ things, like OLS.
 	--added convenience fns apop_vector_distance(pt1,pt2) and
 		apop_vector_grid_distance(pt1,pt2)
 
---Apop_data_memcpy no longer malloc()s for you, for comparability with
+**Apop_data_memcpy no longer malloc()s for you, for comparability with
 the world's other memcpy fns. If you want mallocing, use apop_data_copy.
 
 --apop_test_fisher_exact(). Cut 'n' pasted from R, who cut 'n' pasted it
@@ -86,14 +97,14 @@ from somebody else. Despite being the same code, it runs fifty (50)
 times faster from Apophenia.
 
 		February 2006
-sort-of-adaptive MLE: use apop_estimate_restart to execute a new MLE
+--sort-of-adaptive MLE: use apop_estimate_restart to execute a new MLE
 search beginning where the last one ended, perhaps using a new method or
 rescaled parameters.
 	--This needed convenience functions to check for divergence, thus
 		added apop_vector_finite, apop_vector_bounded, apop_vector_isnan.
---apop_db_to_crosstab now returns an apop_data set instead of a gsl_matrix.
+**apop_db_to_crosstab now returns an apop_data set instead of a gsl_matrix.
 Also, it finally works with column headers that aren't numeric.
---stats like apop_mean are now apop_vector_mean, following the proper
+**stats like apop_mean are now apop_vector_mean, following the proper
 	pkg-noun-verb naming scheme. 
 --Textbook is much improved.
 --apop_vector_to_pdf convenience fn.
@@ -144,28 +155,28 @@ just one line; see the manuals.
 
 --Bar charts (assuming you've got Gnuplot > 4.1)
 --percentiles (in case you haven't got it)
---redid MLE system so you can pick among the many options now available.  As a part of this:
+**redid MLE system so you can pick among the many options now available.  As a part of this:
 	--better handling of constraints.
 	--numerical gradients.
 	--numerical Hessians.
 
 0.12 	early November 2005, post-hiatus
 
-You now have three maximum likelihood estimators to choose from: the
+--You now have three maximum likelihood estimators to choose from: the
 GSL's no-gradient, the GSL's with-gradient, and Mr. WN's autocalculated
 gradient. 
 
-If you haven't seen it before, the apop_distribution structure is
+--If you haven't seen it before, the apop_distribution structure is
 increasingly well-supported. It allows the user to specify the features
 of the Max. Likeihood model in a consistent manner which facilitates
 things like comparing two models.
 
-I'd still suggest taking the Waring and Yule distributions with care;
+--I'd still suggest taking the Waring and Yule distributions with care;
 everything else seems to check out.
 
 
 0.12 	September 2005
---The distributions are now objects, which just provides a neat way
+**The distributions are now objects, which just provides a neat way
 of grouping together the half-dozen functions which are associated with
 any one distribution.
 
@@ -186,7 +197,7 @@ segfaulting, but remains in proof-of-concept stage.
 --Run t tests from the cmd line or the database.
 
 0.09	July 2005
-Flattened the relatively complex vasprintf subsystem from GNU, so if
+--Flattened the relatively complex vasprintf subsystem from GNU, so if
 you've been having trouble compiling on non-GNU systems, try again.
 Added two little command-line programs. Also, added more little
 functions which aren't very interesting, like t-tests; maybe you'll

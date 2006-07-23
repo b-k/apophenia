@@ -69,6 +69,7 @@ int	total_rows, total_cols;		    //the counts from the last query.
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= { 0,              //verbose
                                 's',            //output type
+                                NULL,            //output pipe
                                 "\t",           //output delimiter
                                 1,              //output append
                                 "| ,\t",           //input delimiters

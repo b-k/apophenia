@@ -196,7 +196,7 @@ apop_data * apop_line_to_data(double *in, int rows, int cols){
 
 static int find_cat_index(char **d, char * r, int start_from, int size){
 //used for apop_db_to_crosstab.
-int	i	= start_from;	//i is probably the same or i+1.
+int	i	= start_from % size;	//i is probably the same or i+1.
 	do {
 		if(!strcmp(d[i], r))
 			return i;

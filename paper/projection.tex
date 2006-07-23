@@ -260,7 +260,7 @@ Positive skew indicates that a distribution is upward leaning, a negative
 skew indicates a downward lean. Kurtosis is typically put in plain
 English as \airq{fat tails}: how much density is in the tails of the
 distribution? For example, the kurtosis of a ${\cal N}(0,1)$ is three,
-while the kurtosis of a \ind{student's $t$ distribution} with $n$ degrees of
+while the kurtosis of a \ind{Student's $t$ distribution} with $n$ degrees of
 freedom is greater than three, and decreases as $n$ grows, converging to
 three. 
 
@@ -337,7 +337,7 @@ no need to go further.
 information in higher moments---the skew and kurtosis.
 \item It is also important to know how variables interrelate, which can
 be summarized using the variance-covariance matrix.
-\item There is a one-line function to produce each of these pieces information.
+\item There is a one-line function to produce each of these pieces of information.
 Notably, \ci{apop\_matrix\_summarize} produces a summary of each column
 of a data matrix.
 }
@@ -350,7 +350,7 @@ Here are some distributions that a variable may take on. They and are
 worth memorizing before any major statistics test. Common distributions
 of statistical parameters are discussed in Section \ref{dist2}.
 
-Notice that each has a story attached, which is directly useful for
+Each has a story attached, which is directly useful for
 modeling. For example, if you think that a variable is the outcome of $n$
 independent, binary events, then the variable should be modeled as a
 Binomial distribution, and once you estimate the parameter to the
@@ -415,8 +415,8 @@ E(x)&=&\mu							\nonumber\\
 }
 
 \begin{itemize}
-\item $\{{\cal N} (a,b)\} + \{{\cal N} (c,d)\} \sim {\cal N}
-(a+c,b+d)$ (where $\{x\}$ indicates a variable with the given distribution).
+\item If $X \sim {\cal N} (a,b)$ and $Y \sim {\cal N} (c,d)$ then $X+Y \sim {\cal N}
+(a+c,b+d)$.
 \end{itemize}
 
 \paragraph{Multivariate Normal}\index{multivariate normal distribution}
@@ -429,7 +429,7 @@ variables is $\Sigma$ (a seven by seven matrix). Then the Multivariate
 Normal distribution that one would fit to this data is:
 
 \eqnbox{
-p(\Xv|\mu, \Sigma) &=& {\exp(-{1\over 2} (\Xv-\mu)' \Sigma^{-1} (\Xv-\mu)) 
+p(\Xv|\mu, \Sigma) &=& {\exp\left(-{1\over 2} (\Xv-\mu)' \Sigma^{-1} (\Xv-\mu)\right) 
 \over
    \sqrt{(2 \pi)^n \det(\Sigma)}}            \nonumber\\
    E(\Xv) &=& \mu                           \nonumber\\
@@ -448,7 +448,7 @@ to evaluate this likelihood for a given data point.
 
 Say that independent events occur at the mean rate of $\lambda$ events per 
 period. What is the probaility that there will be $x$ events in a single 
-period? Say that  objects are independently scattered
+period? Or, say that  objects are independently scattered
 with mean density $\lambda$ per square km. What is the probability that
 there are $x$ objects in a randomly-selected square km?
 
@@ -489,7 +489,7 @@ dt$. One may think of it as a continuous version of the \ind{factorial}
 function, because $\Gamma(x) = (x-1)!$. It is not to be confused with
 the Gamma distribution, which is so named because it is defined using
 the Gamma function.}
-See page \pageref{beta} for more on the uses of the Beta distribution.
+See page \pageref{beta} for more on its uses.
 
 \eqnbox{
 P(x|\alpha,\beta) &=& {\Gamma(\alpha + \beta) \over \Gamma(\alpha) \Gamma(\beta)} x^{\alpha - 1}
@@ -627,14 +627,16 @@ I will assume that you have already got a data matrix ready, named
 \cinline{data}, as per the last chapter. Now we need to remove the means
 from the data (using \cind{apop\_matrix\_normalize}), and find $X'X$:
 
+\cindex{apop\_dot}
 \begin{lstlisting}
 int ds=data->size2;
-gsl_matrix *xpx  = gsl_matrix_calloc(ds, ds);
+gsl_matrix *xpx;
 gsl_vector *eigenvals   = gsl_vector_alloc(ds);
 gsl_matrix *eigenvecs   = gsl_matrix_alloc(ds, ds);
 
 apop_matrix_normalize(data, 'm');
 gsl_blas_dgemm(CblasTrans,CblasNoTrans, x, x, xpx);
+xpx = apop_dot(x, x, 1, 0);
 find_eigens(&xpx, eigenvals, eigenvecs);
 \end{lstlisting}
 
@@ -645,15 +647,15 @@ finding the indices of the largest elements of a vector.
 \begin{lstlisting}
 const int dimensions_we_want = 2;
 gsl_matrix *pc_space = gsl_matrix_alloc(ds,dimensions_we_want);
-gsl_vector *temp_vector = gsl_vector_alloc(ds);
+gsl_vector temp_vector;
 int indexes[dimensions_we_want];
 int i;
 
 gsl_sort_vector_largest_index(indexes, dimensions_we_want, eigenvals);
 
 for (i=0;i<dimensions_we_want; i++){
-   gsl_matrix_get_col(temp_vector, eigenvecs, indexes[i]);
-   gsl_matrix_set_col(pc_space, i, temp_vector);
+   temp_vector  = gsl_matrix_column(eigenvecs, indexes[i]).vector;
+   gsl_matrix_set_col(pc_space, i, &temp_vector);
 }
 \end{lstlisting}
 

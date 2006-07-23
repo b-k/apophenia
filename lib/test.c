@@ -12,6 +12,7 @@ a great deal of real-world testing that didn't make it into this file.
 
 //I'm using the test script an experiment to see if 
 //these macros add any value.
+#define APOP_ESTIMATION_PARAMS_ALLOC(name) apop_estimation_params *name = apop_estimation_params_alloc()
 #define APOP_MATRIX_ALLOC(name, r, c) gsl_matrix *name = gsl_matrix_alloc((r),(c))
 #define APOP_VECTOR_ALLOC(name, r) gsl_vector *name = gsl_vector_alloc(r)
 #define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc((r),(c))
@@ -122,17 +123,27 @@ int test_OLS(){
 int             i;
 apop_estimate   *out;
 ////gsl_rng         *r  =  apop_rng_alloc(12);
-//apop_data       *set= apop_data_alloc(len,2);
+apop_data       *bkup;
 APOP_DATA_ALLOC(set, len, 2);
 APOP_RNG_ALLOC(r, 23);
+APOP_ESTIMATION_PARAMS_ALLOC(ep);
+
 
 for(i=0; i< len; i++){
     apop_data_set(set, i, 1, 100*(gsl_rng_uniform(r)-0.5));
     apop_data_set(set, i, 0, -1.4 + apop_data_get(set,i,1)*2.3);
 }
+    bkup    = apop_data_copy(set);
 
-    out    = apop_OLS.estimate(set, NULL);
+    out = apop_OLS.estimate(set, NULL);
 //    apop_estimate_print(out);
+    assert(fabs(apop_data_get(out->parameters, 0,-1) - -1.4) < tolerance);
+    assert(fabs(apop_data_get(out->parameters, 1,-1) - 2.3) < tolerance);
+
+APOP_VECTOR_ALLOC(w, set->matrix->size1);
+    gsl_vector_set_all(w, 14);
+    ep->weights  = w;
+    out = apop_OLS.estimate(bkup, ep);
     assert(fabs(apop_data_get(out->parameters, 0,-1) - -1.4) < tolerance);
     assert(fabs(apop_data_get(out->parameters, 1,-1) - 2.3) < tolerance);
     return 0;

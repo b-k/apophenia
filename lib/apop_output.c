@@ -212,6 +212,8 @@ FILE * 		f;
         else
             f	= fopen(filename, "w");
     }
+    if (apop_opts.output_type == 'p')
+        f   = apop_opts.output_pipe;
     if (data == NULL){
         if (apop_opts.verbose)
             printf("Printing an empty vector, so the output will be blank.\n");
@@ -223,7 +225,7 @@ FILE * 		f;
 	    }
 	    fprintf(f,"\n");
     }
-	if (filename !=NULL)	fclose(f);
+	if (filename !=NULL && apop_opts.output_type != 'p')	fclose(f);
 }
 
 static void print_core_m(gsl_matrix *data, char *separator, char *filename, 
@@ -245,6 +247,8 @@ size_t 		i,j, max_name_size  = 0;
         else
             f	= fopen(filename, "w");
     }
+    if (apop_opts.output_type == 'p')
+        f   = apop_opts.output_pipe;
     if (data == NULL){
         if (apop_opts.verbose)
             printf("Printing an empty matrix, so the output will be blank.\n");
@@ -266,26 +270,21 @@ size_t 		i,j, max_name_size  = 0;
 		    fprintf(f,"\n");
 	    }
     }
-	if (filename !=NULL)	fclose(f);
+	if (filename !=NULL && apop_opts.output_type != 'p')	fclose(f);
 }
 
-void dumb_little_pf_f(FILE * f, double data){
-	fprintf(f, "% 5f", data); }
-
-void dumb_little_pf_i(FILE * f, double data){
-	fprintf(f, "% 5i", (int) data); }
+void dumb_little_pf(FILE * f, double data){
+    if (data == (int) data)
+	    fprintf(f, "% 5i", (int) data); 
+    else
+        fprintf(f, "% 5f", data);
+}
 
 /** Print a vector in float format.
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
 void apop_vector_print(gsl_vector *data, char *file){
-	print_core_v(data, apop_opts.output_delimiter, file, dumb_little_pf_f); }
-
-/** Print a vector in int format.
-    You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_print */
-void apop_vector_print_int(gsl_vector *data, char *file){
-	print_core_v(data, apop_opts.output_delimiter, file, dumb_little_pf_i); }
+	print_core_v(data, apop_opts.output_delimiter, file, dumb_little_pf); }
 
 /** Print a matrix in float format.
     You may want to set \ref apop_opts.output_delimiter.
@@ -294,16 +293,8 @@ void apop_matrix_print(gsl_matrix *data, char *file){
     if (apop_opts.output_type   == 'd'){
         apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(file,1),0), NULL);
     } else
-	print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf_f, NULL); }
-
-/** Print a matrix in int format.
-    You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_print */
-void apop_matrix_print_int(gsl_matrix *data, char *file){
-    if (apop_opts.output_type   == 'd'){
-        apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(file,1),0), NULL);
-    } else
-	print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf_i, NULL); }
+	print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf, NULL); 
+}
 
 /** Print an \ref apop_data set in float format.
     You may want to set \ref apop_opts.output_delimiter.
@@ -314,23 +305,8 @@ void apop_data_print(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
         apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
     } else
-	print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf_f, data->names); }
-
-/** Print an \ref apop_data set in int format.
-    You may want to set \ref apop_opts.output_delimiter.
-
-    \bug If dumping to a db, the row names are lost.
-\ingroup apop_print */
-void apop_data_print_int(apop_data *data, char *file){
-    if (apop_opts.output_type   == 'd'){
-        apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
-    } else
-	print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf_i, data->names); 
+        print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf, data->names); 
 }
-
-
-
-
 
 
 /** Dump a <tt>gsl_vector</tt> to the screen. 
@@ -339,17 +315,7 @@ void apop_data_print_int(apop_data *data, char *file){
 void apop_vector_show(gsl_vector *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
-	print_core_v(data, apop_opts.output_delimiter, NULL, dumb_little_pf_f); 
-    apop_opts.output_type = tmptype;
-}
-
-/** Dump a <tt>gsl_vector</tt> to the screen in int format.
-    You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_print */
-void apop_vector_show_int(gsl_vector *data){
-char tmptype    = apop_opts.output_type;
-    apop_opts.output_type = 's';
-	print_core_v(data, apop_opts.output_delimiter, NULL, dumb_little_pf_i); 
+	print_core_v(data, apop_opts.output_delimiter, NULL, dumb_little_pf); 
     apop_opts.output_type = tmptype;
 }
 
@@ -359,17 +325,7 @@ char tmptype    = apop_opts.output_type;
 void apop_matrix_show(gsl_matrix *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
-	print_core_m(data, apop_opts.output_delimiter, NULL, dumb_little_pf_f, NULL); 
-    apop_opts.output_type = tmptype;
-}
-
-/** Dump a <tt>gsl_matrix</tt> to the screen in int format.
-    You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_print */
-void apop_matrix_show_int(gsl_matrix *data){
-char tmptype    = apop_opts.output_type;
-    apop_opts.output_type = 's';
-	print_core_m(data, apop_opts.output_delimiter, NULL, dumb_little_pf_i, NULL); 
+	print_core_m(data, apop_opts.output_delimiter, NULL, dumb_little_pf, NULL); 
     apop_opts.output_type = tmptype;
 }
 
@@ -427,17 +383,6 @@ double  datapt;
     }
     apop_opts.output_type = tmptype;
 }
-
-/** Print an \ref apop_data set to the screen in int format.
-    You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_print */
-void apop_data_show_int(apop_data *data){
-char tmptype    = apop_opts.output_type;
-    apop_opts.output_type = 's';
-	print_core_m(data->matrix, apop_opts.output_delimiter, NULL, dumb_little_pf_i, data->names); 
-    apop_opts.output_type = tmptype;
-}
-
 
 /* the next function plots a single graph for the \ref apop_plot_lattice  fn */
 static void printone(char filename[], double width, double height, double margin, int xposn, int yposn, apop_data *d){

@@ -214,6 +214,7 @@ else will be predictable.
 apop_estimation_params *apop_estimation_params_alloc(){
 apop_estimation_params *setme = calloc(sizeof(apop_estimation_params),1);
     setme->starting_pt          = NULL;
+    setme->weights              = NULL;
     setme->step_size            = 
     setme->params_per_column    = 1;
     apop_inventory_set(&(setme->uses),1); 
