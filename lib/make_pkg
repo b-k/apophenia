@@ -50,7 +50,8 @@ cd $junkdir/$pkg-$version
 	cp -rf doxy documentation.h apophenia-$version
 
 	#the testing program and scripts
-	cp test.c test_data test_script apophenia-$version
+	cp -rf tests apophenia-$version
+	#cp test.c test_data test_script apophenia-$version
 
 	#add bonus materials to tarball produced by make dist
 	gzip -d apophenia-$version.tar.gz

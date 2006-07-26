@@ -18,6 +18,7 @@ integers (if (val == (int) val)...), and print accordingly. This means
 that apop_..._print_int and apop_..._show_int are basically obsolete,
 and have been removed.
 --Apop_OLS now allows weights.
+--Test library now includes a few NIST certified tests.
 
 		June 2006
 --added preprocessor cruft to let the library work for C++
