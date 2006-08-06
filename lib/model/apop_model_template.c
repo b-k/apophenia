@@ -3,7 +3,7 @@
  (This file is not handled by Doxygen)
 
 Base file copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
-Feel free to replace this with your own copyright.
+Feel free to augment this with your own copyright: modifications (c) you, today.
 */
 #include "model.h"
 

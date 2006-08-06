@@ -414,7 +414,8 @@ negshell_params			    nsp;
   		gsl_vector_set_all (x,  0.1);
 	}
 	else 	x   = apop_array_to_vector(est_params->starting_pt, betasize);
-	nsp.d		= data->matrix;
+    if (data) //else it's global or some other trick
+	    nsp.d		= data->matrix;
 	nsp.model	= dist;
 	minme.f		= negshell;
 	minme.df	= dnegshell;

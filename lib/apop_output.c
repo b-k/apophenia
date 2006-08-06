@@ -300,12 +300,16 @@ void apop_matrix_print(gsl_matrix *data, char *file){
     You may want to set \ref apop_opts.output_delimiter.
     
     \bug If dumping to a db, the row names are lost.
+    \bug If there's a matrix, only that is printed. If matrix==NULL, the vector is printed. This fails to implement the vector==-1st column paradigm.
 \ingroup apop_print */
 void apop_data_print(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
         apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
     } else
-        print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf, data->names); 
+        if (data->matrix)
+            print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf, data->names); 
+        else if (data->vector)
+            print_core_v(data->vector, apop_opts.output_delimiter, file, dumb_little_pf); 
 }
 
 
