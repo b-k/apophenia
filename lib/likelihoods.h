@@ -81,12 +81,12 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist,
   and fn_beta will probably be the beta calculated using the corresponding
   apop_xxx_mle function.
   */
-void apop_numerical_gradient(const gsl_vector *beta, void *d , gsl_vector *out);
-gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, void * d);
-gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, void * d);
+void apop_numerical_gradient(const gsl_vector *beta, apop_data *d , gsl_vector *out);
+gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
+gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
 
 /* Find the var/covar matrix via the hessian. */
-void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, gsl_matrix *data);
+void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, apop_data *data);
 
 
 apop_estimate *	apop_maximum_likelihood(apop_data * data, 

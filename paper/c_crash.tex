@@ -110,27 +110,10 @@ installation, see the Setup section of the online reference, at
 \onlinereflocation.
 
 
-Finally, much of the sample code is available online at
+Finally, much of the code in this book's figures is available online at
 \samplecodelocation. The impatient may want to skip ahead to the notes on
 compilation and Makefiles to learn how to compile the code provided 
 there.
-
-\exercise{Check your C environment by compiling and running 
-``Hello, world,'' a classic first program from \citet{kandr:c}. 
-\begin{itemize}
-\itemsep 0pt
-\item Download the sample code for this book from \samplecodelocation.
-\item Decompress the \bi{.zip} file, go into the directory thus created, and compile the
-program with the command \bi{gcc hello\_world.c}. If you are using an
-IDE, see your manual for compilation instructions.
-\item If all went well, you will now have a program in the directory
-named \bi{a.out}. From the command line, you can execute it using
-\bi{./a.out}.
-\end{itemize}
-
-If you have trouble, see the setup notes at \onlinereflocation{} for
-troubleshooting notes, or copy and paste the error message into your
-favorite search engine.}
 
 \paragraph{IDEs} \index{IDE} \index{integrated development environment}
 Broadly, you have the choice of two paradigms in which to work. The
@@ -150,6 +133,23 @@ In this paradigm, you will probably have one window that is dedicated to
 a text editor with your code, and another window for compilation,
 debugging, and output.
 
+
+\exercise{Check your C environment by compiling and running 
+``Hello, world,'' a classic first program from \citet{kandr:c}. 
+\begin{itemize}
+\itemsep 0pt
+\item Download the sample code for this book from \samplecodelocation.
+\item Decompress the \bi{.zip} file, go into the directory thus created, and compile the
+program with the command \bi{gcc hello\_world.c}. If you are using an
+IDE, see your manual for compilation instructions.
+\item If all went well, you will now have a program in the directory
+named \bi{a.out}. From the command line, you can execute it using
+\bi{./a.out}.
+\end{itemize}
+
+If you have trouble, see the setup notes at \onlinereflocation{} for
+troubleshooting notes, or copy and paste the error message into your
+favorite search engine.}
 
 
 \paragraph{Text files} C programs are files of text, and all of your work
@@ -304,8 +304,6 @@ the entire expression is true, then it won't bother with \ci{b} at all. For exam
 will always work: if \ci{a} is less than zero, then the evaluation
 of the expression is done (it is true), so the square root won't have
 to be calculated, avoiding any square-root-of-a-negative error. 
-[The \ci{sqrt()} function isn't a fundamental part of C---you
-need to include an external header to get the declaration; see below.]
 
 Why all the parentheses? First, parentheses indicate the order of
 operations, as they do in pencil-and-paper math. Since all comparisons
@@ -383,9 +381,6 @@ while (i<5){
 The interpretation is rather straightforward: while the expression
 in parentheses is true (mustn't forget the parentheses), execute the
 instructions in brackets.
-
-Cases like the example above, where we have a counter which we increment,
-are so common that they have their own special syntax.
 
 Every language has its means of applying a function to every element of
 an array; in C, the best means of doing this is via a \cind{for} loop.
@@ -870,7 +865,7 @@ serve as good tools is language-independent.}
 
 From this perspective, the basic element of the system is the function.
 A function is a block of code that takes some inputs, does things,
-and produces some outputs. For the function to be useful as a tool, it
+and produces an output. For the function to be useful as a tool, it
 should operate regardless of its context: the internals of the function
 should not care about the state of the world outside the function, and
 the outside world should not have to care about the internals of the
@@ -1003,7 +998,7 @@ the compiler will either warn you or halt if your code fails any of these checks
 
 By the way, these consistency checks don't care about the length of
 your arrays. In function declarations, you can use \ci{int an\_array[ ]}
-with a blank instead of a length. \index{array!declaration} \index{declaration!of arrays}
+with a blank instead of a number. \index{array!declaration} \index{declaration!of arrays}
 
 Since there are all these consistency
 checks to be done, the compiler will want to know about the function
@@ -1064,7 +1059,7 @@ and giving you more black boxes which could be reused in the future.
 There are other philosophies of how one should structure code.  When
 writing a simulation, you will want to first write the \ci{struct}s that
 describe the nouns of the simulation, and then start writing functions
-to manipulate them.  But for most programs oriented toward statistical
+to manipulate them.  For most programs oriented toward statistical
 analysis, the data structures provided by the GSL and Apophenia are
 sufficient, and you will not need to write your own.
 
@@ -1151,7 +1146,7 @@ a single file, then let it be globally available throughout the file, by
 putting it at the top of the file, outside all the function bodies. Finally,
 if a variable is used throughout all parts of the program, then declare it in
 the header file, so that it will be globally available in every
-file which \ci{\#include}s that header file (see below).\footnote{If
+file which \ci{\#include}s that header file (see page \pageref{fileglobal}).\footnote{If
 you are familiar with object-oriented languages, note that C can effect
 much of the encapsulation of those languages using separate files. Think
 of one file as an object: all variables declared inside the file are
@@ -1180,7 +1175,7 @@ Figure \ref{callbyval} shows a sample program demonstrating the
 call-by-value paradigm.  
 When the \ci{doubling} function is called, it puts a copy of \ci{a} into \ci{a\_c} and a copy of \ci{b}
 into \ci{b\_c}. It gives \ci{a\_c} the value of twice \ci{b\_c} and returns that value. But \ci{a}
-itself did not change at all, even though \ci{a\_c} did change. Meanwhile, \ci{int globe} is not a copy of
+itself did not change at all, even though \ci{a\_c} did change. Meanwhile, \ci{globe} is not a copy of
 itself, but the real thing, so when it is changed inside the function, it changes globally.
 Here is the output:
 \begin{lstlisting}
@@ -1397,11 +1392,28 @@ verbatim, into \bi{main.c} at that point in the file. You will never
 see the expansion (unless you run \bi{gcc} with the \bi{-E}
 flag); the preprocessor just passes the expanded code to the compiler.
 
+\index{scope!global} \label{fileglobal}
+Many programming languages have a way to declare variables as having
+\airq{global scope}, meaning that every function everywhere can make use
+of the variable. Technically, C has no such mechanism. Instead, the best
+you can do is \airq{file-global scope}, meaning that every function in a
+single file can see any variable delcared at the top of that file.
+
+Header files allow you to simulate truly global scope, but with finer
+control if you want it. If some variables should be global to your
+entire program, then create a file named \ci{globals.h}, and put all
+declarations in that file. By putting \ci{\#include "globals.h"} at
+the top of every file in your project, all variables declared therein
+are now project-global.  If a variable is only used in two code files,
+then project-global scope is overkill: declare the variable in a header
+file and include that file in only the code files that need it.
+
+\comment{
 As above, the header will consist only of declarations of variables
 and functions. Given the declarations,
 you can use the functions and variables in your code and the compiler
 will know what you are talking about.
-
+}
 All libraries that you will download from elsewhere will include a header file.
 To include it, you will need to put a line like this at the top of your C file:
 \ci{\#include <gsl/gsl\_matrix.h>}\\
@@ -1574,8 +1586,8 @@ consists of inserting header files.
 \item Therefore, put public function declarations in header files.
 \item The next step consists of compilation, in which each source
 (\ci{.c}) file is converted to an object (\ci{.o}) file.  
-}\summarynoitems{(continued)
-\begin{itemize}
+%}\summarynoitems{(continued)
+%\begin{itemize}
 \item Therefore, each source file should consist of a set of standalone
 functions, that depend only on the file's contents and any declarations included
 via the headers.
@@ -1583,7 +1595,7 @@ via the headers.
 other libraries or object files are reconciled.
 \item Therefore, you can find libraries of function for any set of tasks
 you can imagine.  
-\end{itemize}
+%\end{itemize}
 }
 
  \label{prepointers}\section{Pointers} \label{pointers} \index{pointers|ff}
@@ -2157,15 +2169,14 @@ sarray[100]} form creates an automatically-allocated array, where the
 computer creates and destroys the array; the \ci{int *harray =
 malloc(sizeof(int) * 100);} form creates a manually-allocated array
 which is yours to allocate and deallocate.
-%}
-%\summarynoitems{(continued)
-%\begin{itemize}
+} \summarynoitems{(continued)
+\begin{itemize}
 \item Refer to array elements in both cases using the same
 square-brackets notation, such as \ci{harray[14]}.
 \item Arrays of structs can be declared just as with arrays of basic
 variables. Refer to a pointer-to-struct using \ci{->}.
 \item You can expand a manually-allocated array using \ci{realloc}.
-%\end{itemize}
+\end{itemize}
 }
 
 \section{Strings} \index{strings|ff} \label{stringsec}

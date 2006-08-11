@@ -243,18 +243,17 @@ SAS if you so choose.}
 
 Meanwhile, database systems are designed from the ground up to do nothing
 but let you efficiently retrieve what you need from huge amounts of data.
-But being so purpose-specific, there is no way to do statistics in
-a database. Fortunately,
-we are working in C, so we can have the best of all worlds. The technique
+But being so purpose-specific, databases do not provide a way to do
+numerical analysis beyond taking averages.  Fortunately, we
+are working in C, so we can have the best of all worlds. The technique
 covered in this book (and the technique that Apophenia facilitates)
-is to
-read all of your data into a database, and then query what you need to a
-matrix, as you need it. This requires learning a new syntax, \ind{SQL},
-which is decidedly neither Beautiful nor Perfect, and adds a level of
-complication on top of what you are already dealing with. But the ease
-of manipulating data sets offered by SQL is very much worth its short
-learning curve. Chapter \ref{sql} presents a tutorial of SQL syntax to
-get you up to speed. 
+is to read all of your data into a database, and then query what you
+need to a matrix, as you need it. This requires learning a new syntax,
+\ind{SQL}, which is decidedly neither Beautiful nor Perfect, and adds a
+level of complication on top of what you are already dealing with. But
+the ease of manipulating data sets offered by SQL is very much worth
+its short learning curve. Chapter \ref{sql} presents a tutorial of SQL
+syntax to get you up to speed.
 
 Apophenia implemenst SQL via the \ind{SQLite} library.
 Those of you who 
@@ -328,10 +327,12 @@ that no notable natural population has a Chi-squared distribution.
 
 Part II of this book will open with a chapter on describing data,
 Chapter \ref{projections}, using simple calculations or projection
-techniques. Then, Chapter \ref{gauss} covers the hypothesis-testing
-half of the story, including methods of comparing your data to various
-Gaussian distributions, such as the $t$ test, F test, and $\chi^2$ test,
-linear regressions, and goodness-of-fit tests.
+techniques. Chapter \ref{catchapter} will continue with other non-linear
+means of describing and categorizing data. Then, Chapter \ref{gauss}
+covers the hypothesis-testing half of the story, including methods of
+comparing your data to various Gaussian distributions, such as the $t$
+test, F test, and $\chi^2$ test, linear regressions, and goodness-of-fit
+tests.
 
 
 
@@ -404,7 +405,7 @@ But if the traditional statistical models are not appropriate, we now have
 more at our disposal than a straightedge.
 After the special cases are covered in Chapters \ref{projections}
 and \ref{gauss}, Chapter \ref{mle} will show you how to write down the
-likelihood functions to describe your model, as in Probit or Normit
+likelihood functions to describe your model, as in Probit or Logit
 estimations, how to find their maxima, and how to test hypotheses using
 a likelihood ratio test.
 

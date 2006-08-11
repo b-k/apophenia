@@ -106,8 +106,8 @@ the data and $\epsilon \sim {\cal N}(0,1)$.
 Then a person consumes $\xv$ iff $U(\xv|\betav)>0$. 
 
 An equivalent way to put the model is to say that $U(\xv)$ is
-deterministic---drop $\epsilon$ from the above, and the probability that
-the agent consumes is given by
+deterministic---drop $\epsilon$ from the above, and let the probability that
+the agent consumes be
 $$P(\xv|\betav) = \int_{-\infty}^{U\left(\xv|\betav\right)} {\cal N}(0,1)(y) dy,$$
 where ${\cal N}(0,1)(y)$ indicates the Normal PDF at $y$ (and so the
 integral is the CDF up to $U(\xv|\betav)$).
@@ -117,7 +117,7 @@ consumed is $P(\xv)$, and its probability given that the agent did not
 consume is $1-P(\xv)$. Let $\xv^C$ be the set of $\xv$s that led to
 consumption and $\xv^N$ be the set that led to nonconsumption. Then the
 likelihood of $\betav$ given the data set is 
-$$L(\betav|\xv) = \prod_{i} P(\xv^C_i|\betav) \cdot \prod_{i} 1-P(\xv^N_i|\betav).$$ 
+$$L(\betav|\xv) = \prod_{i} P(\xv^C_i|\betav) \cdot \prod_{i} \left(1-P(\xv^N_i|\betav)\right).$$ 
 
 One row of our data set will consist of a one or zero indicating
 consumption or non-consumption, and then (the transpose of) the vector
@@ -127,7 +127,8 @@ $\xv$. Then the probit parameters can be estimated using
 
 \section{Why likelihood functions are great} The process of finding a
 maximum of the log likelihood function is 
-so useful for two reasons, with four names.
+useful for two reasons, with four names: the Cramer-Rao lower bound and
+the Neyman-Pearson lemma.
 
 \paragraph{MLEs achieve the Cramer-Rao lower bound} 
         \index{Cramer-Rao Inequality|(}		\label{cr} 
@@ -188,7 +189,7 @@ it is true.\index{unbiased estimator}
 
 There
 is a balance to be struck between the two errors: as one rises, the
-other falls. But not all estimators are born equal: the coin-flip test, `heads, accept;
+other falls. But not all estimators are born equal: if a hypothesis has a 50-50 chance of being true, then the coin-flip test, `heads, accept;
 tails, reject' gives us a 50\% chance of a Type I error
 and a 50\% chance of a Type II error, but there are tests where both
 errors are significantly lower than 50\%, and so by any measure we would
@@ -216,7 +217,7 @@ we selected. After establishing this fact, we just ignore Type II errors.
 \paragraph{Likelihood ratios} \index{likelihood ratio|ff}
 
 Say the cost to a Type I error is $C_I$ and the cost to a Type II error
-is $C_{II}$.  Then you will reject $H_0$ iff the expected cost is less
+is $C_{II}$.  Then it is sensible to reject $H_0$ iff the expected cost is less
 than the likely cost of not rejecting. That is, reject $H_0$ iff $C_I
 P(H_0|\xv)<C_{II} P(H_1|\xv)$.
 
@@ -299,7 +300,7 @@ maximum of $f(\xv)$, but you are only allowed to evaluate the function
 and its derivative at a limited number of points. At the extreme,
 $f(\xv)$ could be a complex simulation that takes in a few parameters
 and runs for an hour before spitting out a value, so you only have time
-to evaluate a dozen or two points.
+to evaluate a few dozen points.
 
 This is a classic problem in mathematics and computer science that
 continues to be the subject of active research. There is a wide range of
@@ -365,7 +366,8 @@ converge in one step.
 If approximating your function with a quadratic is not terrible, then
 use the default (FR). If the derivatives are smooth but sometimes take sharp
 turns, the other conjugate gradient methods (BFGS or PR) may work
-better. If you expect the derivatives to be perverse but the functional
+better. If you expect the derivatives to be discontinuous or otherwise
+perverse  but the functional
 values to generally move in one direction, then 
 try the derivative-free simplex algorithm. Finally, if the functional
 values jump around, so there is a good risk of multiple
@@ -384,7 +386,7 @@ peaks: as the number of steps in the simulated annealing algorithm $\to
 \infty$, the algorithm can be shown to converge to the global optimum
 with probability one. However, calculating an infinite number of steps
 tends to take an unreasonable amount of time, so you will need to select
-a time-to-confidence traded appropriate to your situation.
+a time-to-confidence trade-off appropriate to your situation.
 
 
 \subsection{\ci{apop\_estimation\_params} for ML estimation}
@@ -400,8 +402,9 @@ The form in question is a \cind{apop\_estimation\_params} structure, that
 describes the method, the starting point, the step size, and the
 tolerance.
 For example:
+\index{apop\_estimation\_params\_alloc}
 \begin{lstlisting}
-apop_estimation_params *ep  = malloc(sizeof(apop_estimation_params));
+apop_estimation_params *ep  = apop_estimation_params_alloc());
 double  starting_point[2]   = {1,1};
 ep->method      = 000;
 ep->step_size   = 1e-1;
@@ -501,6 +504,15 @@ The estimate can only get better every time you run
 \cind{apop\_estimate\_restart}, so the only cost to running a lengthy
 tournament is your time waiting for the estimates to converge.
 
+As above, a search produces only a local maximum. You can increase the
+confidence that you have found a global maximum by restarting the search
+at a different starting point. 
+\begin{lstlisting}
+double new_starting_pt[]    = {-1,-1};
+est->starting_pt = new_starting_pt;
+est = apop_estimate_restart(est, -1, 1);
+\end{lstlisting}
+
 \subsection{Graphing the path} All of the methods above consist of
 trying a series of candidate points. 
 If \index{apop\_opts!mle\_trace\_path@\cinline{mle\_trace\_path}}\cinline{apop\_opts.mle\_trace\_path}
@@ -524,7 +536,8 @@ the function below shows how one would plot the trace.  Notice that
 you will want \cinline{splot} for 3-d variables and \cinline{plot} for
 2-d. The change in width and pointsize is to remind the eye that the
 lines connecting the points only indicate the path the maximizer went
-along, not actual values of the function.\index{plotting}
+along, not actual values of the function. Figure \ref{searchfig} shows a
+sample search path.\index{plotting}
 
 \begin{lstlisting}
 static void plotme(char *outfile){
@@ -550,6 +563,7 @@ gnuplot plotme -
 %\scalebox{0.4}{\includegraphics{search}}
 \includegraphics[width=\textwidth*\real{1.1}]{search}
 \caption{A search for an optimum using a conjugate gradient method.}
+\label{searchfig}
 \end{figure*}
 
 \summary{
@@ -587,7 +601,7 @@ This section forthcoming, along with a bit on nested/non-nested models.
 
 \section{Writing your own} \label{writeyourown}
 The design of the \cinline{apop\_model} hopes to make it as easy as
-possible for you, dear reader, to write new models. For the most
+possible for you to write new models. For the most
 part, all you need to do is write a log likelihood function, and
 \cind{apop\_maximum\_likelihood} does the rest.  
 
@@ -605,11 +619,10 @@ The steps:
 \begin{itemize}
 \item Write a likelihood function. Its header will look like this:
 \begin{lstlisting}
-static double apop_new_log_likelihood(const gsl_vector *beta, void *d)
+static double apop_new_log_likelihood(const gsl_vector *beta, apop_data *d)
 \end{lstlisting}
-where \cinline{beta} will be the parameters to be maximized, and \cinline{d} is the fixed parameters---the data. In every case currently included
-with Apophenia, \cinline{d} is a \cinline{gsl\_matrix,} but you do not have to conform
-to that. This function will return the value of the log likelihood function at the given parameters.
+where \cinline{beta} will be the parameters to be maximized, and \cinline{d} is the fixed parameters---the data. 
+This function will return the value of the log likelihood function at the given parameters.
 
 \item Is this a constrained optimization? See Section
 \ref{constraintwriting} on how to write a constraint function.
@@ -633,7 +646,7 @@ form to call this function.
 \item Write the object, a process which will consist of filling out
 another form. 
 \begin{lstlisting}
-apop_model apop_new_likelihood = {"The Me distribution", 
+apop_model apop_new_model = {"The Me distribution", 
             number_of_parameters, 
             new_estimate,
             new_log_likelihood, 
@@ -650,7 +663,7 @@ set \cinline{number\_of\_parameters} to \cinline{-1}.
 \item Write your header file so you can include the model in other
 modules. Here is the complete header you will need:
 \begin{lstlisting}
-apop_model apop_new_likelihood;
+apop_model apop_new_model;
 \end{lstlisting}
 Since the \cinline{apop\_model} structure is defined when you \cinline{\#include
 $<$apo\-phe\-nia/head\-ers.h$>$}, the compiler already knows all the necessary
@@ -664,7 +677,7 @@ your model exists.
 involves calculating a derivative by hand, which is typically an easy
 problem in high-school calculus. The function's header will look like: 
 \begin{lstlisting}
-void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient)
+void apop_new_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient)
 \end{lstlisting}
 where \cinline{beta} and \cinline{d} are fixed as above, and \cinline{gradient} is a \cinline{gsl\_vector} with dimension matching \cinline{beta}. 
 At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
@@ -771,10 +784,9 @@ The MLE functions of Apophenia are designed to maximize a function
 subject to constraints---which sounds a lot like any of a variety of
 other problems, especially in Economics. With little abuse of the package,
 one could use it to solve any model involving maximization
-subject to constraints.  This is not a book about writing simulations
-or otherwise covering the array of models in all fields.
+subject to constraints.  
 
-Instead, I will simply show an example of how the structure of the
+Here, I will show an example of how the structure of the
 \ci{apop\_model} can be used to diverse purposes.
 The code listing at the end of this
 chapter shows how one could numerically solve a utility maximization
@@ -827,8 +839,8 @@ Finally, we can call the above models from a program. This program
 simply compares the two models and verifies that they agree, but we can
 readily use the models for more extensive inquiry.
 
-\exercise{Use these models to produce a plot of marginal change in $x_0$
-and $x_1$ as $\alpha$ expands}
+\exercise{Use these models (included in the online bundle of code) to
+produce a plot of marginal change in $x_0$ and $x_1$ as $\alpha$ expands.}
 
 Since the models were declared in their own files above, we need only
 tell the compiler that there are two \ci{apop\_models} named

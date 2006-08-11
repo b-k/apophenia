@@ -53,8 +53,8 @@ apop_SOURCES = cmd_apop.c
 #AM_MAKEINFOHTMLFLAGS = --cssinclude = typical.css
 
 #the doxygen version. You've gotta call it yourself.
-EXTRA_DIST = $(man_MANS)
-install_man3_MANS = man/man3/*
+##EXTRA_DIST = $(man_MANS)
+##install_man3_MANS = man/man3/*
 
 doc: 
 	doxygen doxy/doxyconfig

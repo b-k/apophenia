@@ -1,4 +1,6 @@
+--Apop_data needs an other field.
 --Now that there's no ..._print_int, clean up printing fns.
+--estimate_restart should allow a new starting point.
 --if there's a comma in a column name, apop_query_to... miscounts columns.
 --apop_data_split needs to be split.
 --save the variable name, not `actual' in your regression.

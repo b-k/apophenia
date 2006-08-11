@@ -3,6 +3,12 @@
 **Change that could require recoding existing code.
 ]
 
+		August 2006
+**apop_log_likelihood and friends now demand that data be apop_data*,
+rather than void*. Too many things broke when users gave non-apop_data
+data.
+--bug fixes
+
 		July 2006
 --Many more checks for NULL ==> more robust code and easier debugging.
 --Bug fixes.

@@ -19,11 +19,11 @@ This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.
 
  */
-static double ols_log_likelihood (const gsl_vector *beta, void *d){ 
+static double ols_log_likelihood (const gsl_vector *beta, apop_data *d){ 
 int         i; 
 long double	total_prob  = 0; 
 double      sigma, expected, actual;
-gsl_matrix	*data		    = d;	      //just type casting.
+gsl_matrix	*data		    = d->matrix;
 gsl_vector  v;
 gsl_vector  *errors         = gsl_vector_alloc(data->size1);
 	for(i=0;i< data->size1; i++){

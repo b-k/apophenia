@@ -159,7 +159,8 @@ apop_estimate * prep_me;
 void apop_estimate_free(apop_estimate * free_me){
 	if (free_me->estimation_params.uses.predicted
 	    || free_me->estimation_params.uses.dependent)
-		apop_data_free(free_me->dependent);
+        if (free_me->dependent)
+		    apop_data_free(free_me->dependent);
 	if (free_me->estimation_params.uses.covariance)
 		apop_data_free(free_me->covariance);
 	if (free_me->estimation_params.uses.parameters)

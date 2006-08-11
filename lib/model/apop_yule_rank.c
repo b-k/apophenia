@@ -37,10 +37,10 @@ double  mu          = gsl_vector_get(beta, 0);
     return limit - mu;    
 }
 
-static double yule_log_likelihood(const gsl_vector *beta, void *d){
+static double yule_log_likelihood(const gsl_vector *beta, apop_data *d){
 float           bb	= gsl_vector_get(beta, 0);
 int 		    k;
-gsl_matrix 	    *data		= d;
+gsl_matrix 	    *data		= d->matrix;
 gsl_vector      v;
 float 		    ln_k, ln_bb_k,
 		        likelihood 	    = 0,
@@ -56,10 +56,10 @@ float 		    ln_k, ln_bb_k,
 	return likelihood;
 }
 
-static void yule_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void yule_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
 float           bb		= gsl_vector_get(beta, 0);
-gsl_matrix	    *data	= d;
+gsl_matrix	    *data	= d->matrix;
 int 		    i, k;
 double		    bb_minus_one_inv= 1/(bb-1),
 		        psi_bb	= gsl_sf_psi(bb),

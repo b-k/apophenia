@@ -63,7 +63,7 @@ gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
 \label{rng_alloc}
 \end{figure}
 
-Figure \ref{rng_alloc} shows a function to initialize a \cind{gsl\_rng}.
+Figure \ref{rng_alloc} shows a function from the Apophenia library to initialize a \cind{gsl\_rng}.
 In all cases, the function takes in an integer, and then sets up the
 random number generation (RNG) environment to produce new numbers
 via the Tausworth routine.  On the first call, the function calls the
@@ -169,7 +169,8 @@ patterns could conceivably slip in. If you are running the program repeatedly
 via a batch file, then the program could run in fixed
 intervals that induce somehow-correlated numbers. For an example of the extreme case, try
 compiling the above program (it is included in the bundle of sample
-code online), and run it continuously from the shell. In \bi{bash}
+code online), and run it continuously from the shell. In the \bi{bash}
+shell
 (what you are probably using on a UNIX-type system such as Linux, Cygwin, or MacOS), try
 \begin{lstlisting}[language=bash]
 while true; do ./time; done
@@ -253,7 +254,7 @@ printf("draw from a U[0,1]: %i", rand()/(RAND_MAX +1));
 
 The GSL's RNGs are preferable for a few reasons. First,
 \cind{gsl\_ran\_max}\ci{(r)} is typically greater than \ci{RAND\_MAX},
-giving you greater variation. 
+giving you greater variation and precision. 
 Second, the standard specifies that there must be a \ci{rand} function,
 but not how it works: two machines may give you two streams of random
 numbers for the same seed.
@@ -313,8 +314,8 @@ is to estimate the statistic from the data.
 
 One way to calculate the expected value of $f(\cdot)$ would be to a numeric
 integral over the entire domain of the distribution. Write a loop to
-sum $$\frac{f(-500.00)\cdot p(-500.00)}{100000} + \frac{f(-500.01)\cdot
-p(-500.01)}{100000} + \cdots + \frac{f(500.00)\cdot p(500.00)}{100000}.$$ This can be effective, but there are
+sum $$\frac{f(-500.00)\cdot p(-500.00)}{100000} + \frac{f(-499.99)\cdot
+p(-499.99)}{100000} + \cdots + \frac{f(500.00)\cdot p(500.00)}{100000}.$$ This can be effective, but there are
 some details to be hammered out: should you integrate from $[-3,3]$
 or $[-30,30]$? You must decide up-front how much finer resolution will
 affect the integral, because (barring some exceptional tricks) each
@@ -349,7 +350,7 @@ declared and constants set. The draws are done by the line
 element of the vector \ci{v} to a random value. Once the vector is
 filled, we can print the kurtosis. Notice that the kurtosis is
 multiplied by $(n-1)/n$ to convert from sample kurtosis to population 
-kurtosis. This has no effect for $n >$ 1 million, but since it takes
+kurtosis. This has no appreciable effect for $n >$ 1 million, but since it takes
 0.00 seconds to compute, it doesn't hurt.
 
 \codefig{kurtosis_of_a_t_dist}{Monte Carlo calculation of kurtoses for
@@ -372,7 +373,7 @@ source or Apophenia's \binline{apop\_db.c} file.}
 
 The true kurtosis of a $t$ distribution with $df$ degrees of freedom
 is $(3 df - 6)/(df - 4)$.  For $df\leq 4$, the kurtosis is undefined,
-just as the variance is undefined for a Cauchy distribution (i.e., a $t$
+just as the variance is undefined for a \ind{Cauchy distribution} (i.e., a $t$
 distribution with $df=1$). At $df = 5$, it is finite, and it monotonically
 decreases as $df$ continues upwards.
 
@@ -521,7 +522,7 @@ a single OLS coefficient.
 
 The easiest means of drawing without replacement is to
 systematically remove one line of data at a time, as we saw in Figure
-\ref{jack_iteration}. For each subset of data, we find the parameter;
+\ref{jack_iteration} (page \pageref{jack_iteration}). For each subset of data, we find the parameter;
 once we have a list of $n$ different values for the parameter, $p_1,
 p_2, \dots, p_n$, then the standard deviation can be estimated as
 $\hat\sigma = \sqrt{\sum{(p_i - \overline p_{\forall})}}$, where $p_{\forall}$ is

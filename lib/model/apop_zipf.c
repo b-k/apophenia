@@ -40,8 +40,8 @@ double  mu          = gsl_vector_get(beta, 0);
 
 
 
-static double zipf_log_likelihood(const gsl_vector *beta, void *d){
-gsl_matrix  *data   = d;
+static double zipf_log_likelihood(const gsl_vector *beta, apop_data *d){
+gsl_matrix  *data   = d->matrix;
 long double like    = 0, 
             bb      = gsl_vector_get(beta, 0);
 int         i, j;
@@ -53,9 +53,9 @@ int         i, j;
     return like;
 }    
 
-static void zipf_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void zipf_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 double      bb      = gsl_vector_get(beta, 0);
-gsl_matrix  *data   = d;
+gsl_matrix  *data   = d->matrix;
 int         i, j;
 double      dlike   = 0;
     for(j=0; j< data->size2; j++)

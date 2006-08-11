@@ -4,9 +4,9 @@ AM_INIT_AUTOMAKE(apophenia, 0.16)
 
 dnl Checks for library functions.
 dnl AC_CONFIG_FILES(gnulib/Makefile)
-dnl AC_CONFIG_SUBDIRS(gnulib)
-dnl AC_CONFIG_SUBDIRS(models)
-dnl AC_CONFIG_SUBDIRS(wn)
+AC_CONFIG_SUBDIRS(vasprintf)
+AC_CONFIG_SUBDIRS(models)
+AC_CONFIG_SUBDIRS(wn)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -25,6 +25,5 @@ AC_HEADER_STDC
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-
 
 AC_OUTPUT(Makefile)

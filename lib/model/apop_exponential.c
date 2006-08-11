@@ -13,7 +13,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-static double exponential_log_likelihood(const gsl_vector *beta, void *d);
+static double exponential_log_likelihood(const gsl_vector *beta, apop_data *d);
 
 static double keep_away(double value, double limit,  double base){
 	return (50000+fabs(value - limit)) * base;
@@ -56,8 +56,8 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Set up an exponential object which makes use of the GSL.
 \todo Check that the borderline work here is correct.
 */
-static double exponential_log_likelihood(const gsl_vector *beta, void *d){
-gsl_matrix	*data	= d;
+static double exponential_log_likelihood(const gsl_vector *beta, apop_data *d){
+gsl_matrix	*data	= d->matrix;
 double		mu		= gsl_vector_get(beta, 0),
 		llikelihood;
 	llikelihood	 = -apop_matrix_sum(data);
@@ -65,28 +65,6 @@ double		mu		= gsl_vector_get(beta, 0),
 	llikelihood	-= data->size1 * data->size2 * log(mu);
 	return llikelihood;
 }
-
-/*
-static double exponential_log_likelihood(const gsl_vector *beta, void *d){
-double		mu		= gsl_vector_get(beta, 0),
-		llikelihood;
-static double	ka		= 0;
-gsl_matrix	*data		= d;
-	if (mu <= 0) {		//run away
-		if (ka ==0){
-			gsl_vector *	b_ka	= gsl_vector_alloc(1);
-			gsl_vector_set(b_ka, 0, GSL_DBL_EPSILON);
-		 	ka	= exponential_log_likelihood(b_ka, d);
-			gsl_vector_free (b_ka);
-		}
-		return keep_away(mu, 0, ka);
-	}//else:
-	llikelihood	 = -apop_matrix_sum(data);
-	llikelihood	/= mu;
-	llikelihood	-= data->size1 * data->size2 * log(mu);
-	return llikelihood;
-}
-*/
 
 
 /** The exponential distribution. A one-parameter likelihood fn.
@@ -94,10 +72,10 @@ gsl_matrix	*data		= d;
 \f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
 \todo Check that the borderline work here is correct too.
 */
-static void exponential_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void exponential_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 double		mu		= gsl_vector_get(beta, 0);
 static double	dka		= 0;
-gsl_matrix	*data		= d;
+gsl_matrix	*data		= d->matrix;
 double 		d_likelihood;
 	if (mu <= 0) {		//keep away
 		if (dka ==0){

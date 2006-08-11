@@ -40,10 +40,10 @@ Often, the input data is a gsl_matrix, and you need to go line by line
 through the matrix, calculating the log likelihood. That's the sample
 code here.  
 */
-static double MODELNAME_log_likelihood(const gsl_vector *beta, void *d){
+static double MODELNAME_log_likelihood(const gsl_vector *beta, apop_data *d){
 int		    i;
 double	    loglike    	= 0;
-gsl_matrix 	*data 		= d;		//type cast void to gsl_matrix.
+gsl_matrix 	*data 		= d->matrix;
 	for(i=0;i< data->size1; i++){
 		loglike      += 1;//PLACE MATH HERE;
 	}
@@ -58,10 +58,10 @@ gsl_matrix 	*data 		= d;		//type cast void to gsl_matrix.
 You can delete this function entirely if so inclined. If so, remember
 to replace this function with NULL in the model definition below.
  */
-static void MODELNAME_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void MODELNAME_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 int		    i,j;
 double	    dtotal[3];
-gsl_matrix 	*data 	= d;		//type cast
+gsl_matrix 	*data 	= d->matrix;
     dtotal[0]  = 0,
     dtotal[1]  = 0,
     dtotal[2]  = 0;
@@ -102,7 +102,7 @@ and dlog likelihood at the same time. If so, fill in here.
 You can delete this function entirely if so inclined. If so, remember
 to replace this function with NULL in the model definition below.
 	*/
-static void MODELNAME_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
+static void MODELNAME_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df){
 	*f	= MODELNAME_log_likelihood(beta, d);
 	MODELNAME_dlog_likelihood(beta, d, df);
 }
@@ -116,7 +116,6 @@ static double MODELNAME_rng(gsl_rng* r, gsl_vector * a){
 You should describe the format of the input data here.
 
 --The second parameter is either the number of parameters your model has, or a negative number indicating a special case; see the manual.
---The inventory template's elements should be one if you will return the given item; zero if you do not. It is currently correct for an MLE.
 --If you deleted any of the functions above, replace their names with NULL here.
 
 \ingroup models

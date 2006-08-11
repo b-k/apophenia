@@ -244,9 +244,9 @@ typedef struct apop_model{
 	char	name[101]; 
 	int	parameter_ct;
 	apop_estimate *	(*estimate)(apop_data * data, void *parameters);
-	double 	(*log_likelihood)(const gsl_vector *beta, void *d);
-	void 	(*dlog_likelihood)(const gsl_vector *beta, void *d, gsl_vector *gradient);
-	void 	(*fdf)( const gsl_vector *beta, void *d, double *f, gsl_vector *df);
+	double 	(*log_likelihood)(const gsl_vector *beta, apop_data *d);
+	void 	(*dlog_likelihood)(const gsl_vector *beta, apop_data *d, gsl_vector *gradient);
+	void 	(*fdf)( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df);
     double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta);
 	double (*rng)(gsl_rng* r, double *a);
 } apop_model;

@@ -115,7 +115,7 @@ and then converted into dummies in the matrix using
         &&& \multicolumn{1}{|c|}{``v''}   &&& \multicolumn{1}{|c}{``c0''} & ``c1'' & \multicolumn{1}{c|}{``c2''}  &&& \multicolumn{1}{|c}{``t0''} & ``t1'' & \multicolumn{1}{c|}{``t2''}    \\\hhline{~~~-~~---~~---}
 \atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch\\\hhline{-}
 \multicolumn{1}{|c|}{``r0''}&&&(0, -1)   &&& (0, 0) & (0, 1) & (0, 2) &&& (0, 0) & (0, 1) & (0, 2)\\ 
-\multicolumn{1}{|c|}{``r1''}&&&(1, -1)   &&& (1, 0) & (1, 1) & (1, 2) &&& (1, 0) & (1, 2) & (1, 2)\\
+\multicolumn{1}{|c|}{``r1''}&&&(1, -1)   &&& (1, 0) & (1, 1) & (1, 2) &&& (1, 0) & (1, 1) & (1, 2)\\
 \multicolumn{1}{|c|}{``r2''}&\atouch&\atouch&(2, -1)   &\atouch&& (2, 0) & (2, 1) & (2, 2) &\atouch&\atouch& (2, 0) & (2, 2) & (2, 2)\\\hhline{-}
 \end{tabular}
 \caption{The vector is column -1 of the matrix, while the text gets its
@@ -331,6 +331,11 @@ with \ci{data[1]}. With \ci{data[2]}, the transposition works, since
 there are both ten rows and columns. So \ci{out[0]} and \ci{out[1]} are
 correct and \ci{out[2]} is not. Good luck catching and debugging that.
 
+To give an example, recall the Markov chain example on page
+\pageref{markovone}. Here is the program redone using \ci{apop\_dot}. As
+you can see, it is much shorter and easier to read:
+\label{markovtwo}\lstinputlisting{sources/markov2.c}
+
  \cindx{apop\_data}{)textbf}
 
 \subsection{Models}
@@ -367,6 +372,28 @@ One could also use the \cinline{apop\_model} to describe
 non-statistical models involving optimization subject to constraints;
 see the example of Section \ref{econ101}.
 
+There are three possibilities:
+
+1. You need to use a standard model included in Apophenia; see page
+\pageref{modellist} for a list. In this case, you can simply call the
+model, as described below.
+
+2. You need to use a standard model not included in Apophenia. In this
+case, you will need to write the model, then submit it to Apophenia's
+maintainers for inclusion in the library. Return to possibility \#1.
+
+3. You have a data-specific model, in which case you will again need to
+write your own. This is simply a matter of filling out a lengthy form,
+whose details are covered in Section \ref{writeyourown}. Filling out the form takes more effort than writing free-form code, but standardization has its benefits: just as putting
+your data into the \ci{gsl\_vector} form allowed you to use operations
+on the vector level of abstraction such as \ci{gsl\_vector\_add},
+once your model is in the \ci{apop\_model} form, you can operate on
+the model level of abstraction. In Chapter \ref{mle}, you will see how
+to apply a half-dozen different optimum-searching methods to find the
+likelihood-maximizing parameter values for your model, and the Monte
+Carlo functions of Chapter \ref{boot} will estimate characteristics of
+the model parameters with one function call.
+
 The \cinline{apop\_model} also includes a
 number of additional functions that may be useful for additional analysis,
 such as a likelihood function that could be used for ML estimation or
@@ -375,18 +402,6 @@ has been made to ensure that the prepackaged models include as many of
 these auxiliary functions as possible; if you are writing your own,
 there is no requirement that you provide all functions, and the \cinline{apop\_maximum\_likelihood} and \cinline{apop\_numerical\_hessian}
 functions do a good job of filling in blanks.
-
-Writing your own model is simply a matter of filling out a lengthy form,
-whose details are covered in Section \ref{writeyourown}. Just as putting
-your data into the 
-\ci{gsl\_vector} form allowed you to use operations on the vector level
-of abstraction such as \ci{gsl\_vector\_add}, once your model is in the
-\ci{apop\_model} form, you can operate on the model level of
-abstraction. In Chapter \ref{mle},
-you will see how to apply a half-dozen different optimum-searching
-methods to find the likelihood-maximizing parameter values for your
-model, and the Monte Carlo functions of Chapter \ref{boot} will estimate
-characteristics of the model parameters with one function call.
 
 \subsection{Estimates} 
 %\index{apop\_estimate@\cinlinetwo{apop\_estimate}|(textbf}
@@ -650,16 +665,16 @@ allocated.
 \index{Yule distribution} \index{Waring distribution}
 \index{Zipf distribution} \index{Exponential distribution}
 \index{Normal distribution} \index{Gamma distribution}
-\index{Poisson distribution} \index{Probit}
+\index{Poisson distribution} \index{Probit} \index{Logit}
 \index{Ordinary Least Squares} \index{Generalized Least Squares}
 \label{modellist}
 Here are the models that currently ship with Apophenia:\\
 \cinline{apop\_exponential} and \cinline{apop\_exp\-o\-nen\-tial\_rank}, \\
 \cinline{apop\_gamma} and \cinline{apop\_gamma\_rank}, \\
-\cinline{apop\_GLS}, \\
 \cinline{apop\_normal} (or \cinline{apop\_gaussian}, as you prefer), \\
 \cinline{apop\_OLS}, \\
 \cinline{apop\_poisson}, \\
+\cinline{apop\_logit}, \\
 \cinline{apop\_probit}, \\
 \cinline{apop\_waring} and \cinline{apop\_waring\_rank}, \\
 \cinline{apop\_yule} and \cinline{apop\_yule\_rank}, \\

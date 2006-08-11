@@ -5,9 +5,7 @@ apop_model econ_101;
 static apop_estimate * econ101_estimate(apop_data * dummy, void *parameters){
 apop_estimate           *est;
 apop_estimation_params  *mle_params = apop_estimation_params_alloc();
-gsl_vector              *pv = (gsl_vector *) parameters;
-gsl_matrix              *m  = apop_vector_to_matrix(pv);
-apop_data               *p  = apop_data_from_matrix(m);
+apop_data               *p  = apop_vector_to_data((gsl_vector*)parameters);
 double              start[] = {1,1};
     mle_params->method       = 000;
     mle_params->starting_pt  = start;
@@ -32,10 +30,10 @@ double              start[] = {1,1};
 
 static double budget_constraint(gsl_vector *beta, void * d, 
                                         gsl_vector *returned_beta){
-gsl_matrix   *budget = d;
-double  price0      = gsl_matrix_get(budget, 0, 0),
-        price1      = gsl_matrix_get(budget, 1, 0),
-        cash        = gsl_matrix_get(budget, 2, 0),
+apop_data   *budget = d;
+double  price0      = apop_data_get(budget, 0, -1),
+        price1      = apop_data_get(budget, 1, -1),
+        cash        = apop_data_get(budget, 2, -1),
         x0          = gsl_vector_get(beta, 0),
         x1          = gsl_vector_get(beta, 1),
         tolerance   = 1e-3,
@@ -57,10 +55,9 @@ double  price0      = gsl_matrix_get(budget, 0, 0),
     return penalty;
 }
 
-static double econ101_log_likelihood(const gsl_vector *beta, void *d){
-gsl_matrix  *params = d;
-double      bb0     = gsl_matrix_get(params, 3,0),
-            bb1     = gsl_matrix_get(params, 4,0),
+static double econ101_log_likelihood(const gsl_vector *beta, apop_data *d){
+double      bb0     = apop_data_get(d, 3,-1),
+            bb1     = apop_data_get(d, 4,-1),
             qty0    = gsl_vector_get(beta, 0),
             qty1    = gsl_vector_get(beta, 1);
     return pow(qty0, bb0) * pow(qty1, bb1);

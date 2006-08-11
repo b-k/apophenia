@@ -131,7 +131,8 @@ void apop_estimate_parameter_t_tests(apop_estimate *est){
 int     i, df;
 double  val, var, pval, tstat, rootn, stddev, two_tail;
     est->estimation_params.uses.confidence  = 1;
-    assert(est->data);
+    if (!est->data)
+        return;
     assert(est->covariance);
     assert(est->parameters);
     est->parameters->matrix = gsl_matrix_alloc(est->parameters->vector->size, 7);
@@ -142,8 +143,11 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
     apop_name_add(est->parameters->names, "p value, 1 tail", 'c');
     apop_name_add(est->parameters->names, "confidence, 1 tail", 'c');
     apop_name_add(est->parameters->names, "df", 'c');
-    df      = est->data->matrix->size1 - est->parameters->vector->size;
-    rootn   = sqrt(df);
+    df       = est->data->matrix   ?
+                    est->data->matrix->size1:
+                    est->data->vector->size;
+    df      -= est->parameters->vector->size;
+    rootn    = sqrt(df);
     for (i=0; i< est->parameters->vector->size; i++){
         val     = apop_data_get(est->parameters, i, -1);
         var     = apop_data_get(est->covariance, i, i);

@@ -42,11 +42,11 @@ double  beta0       = gsl_vector_get(beta, 0),
     return GSL_MAX(limit0 - beta0, 0) + GSL_MAX(limit1 - beta1, 0);    
 }
 
-static double gamma_log_likelihood(const gsl_vector *beta, void *d){
+static double gamma_log_likelihood(const gsl_vector *beta, apop_data *d){
 float         a    = gsl_vector_get(beta, 0),
               b    = gsl_vector_get(beta, 1);
 int           i, k;
-gsl_matrix    *data        = d;
+gsl_matrix    *data        = d->matrix;
 double        llikelihood  = 0,
         ln_ga 	= gsl_sf_lngamma(a),
         ln_b	= log(b),
@@ -63,13 +63,13 @@ double        llikelihood  = 0,
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void gamma_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void gamma_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 float       	a    	= gsl_vector_get(beta, 0),
         		b    	= gsl_vector_get(beta, 1);
     //if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
                         //a sign to the minimizer to look elsewhere.
 int             i, k;
-gsl_matrix      *data	= d;
+gsl_matrix      *data	= d->matrix;
 double          d_a     = 0,
         d_b		= 0,
         psi_a	= gsl_sf_psi(a),

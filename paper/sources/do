@@ -12,12 +12,12 @@ for i in programs:
 	print wresult.read()
 
 os.popen3("""
-    #rm  msc_book_samples.zip
-    #mkdir msc_book_samples
-    #cp *c msc_book_samples
-    #cp markov_data msc_book_samples 
-    %cp Makefile.std msc_book_samples/Makefile
-    #zip -r msc_book_samples.zip msc_book_samples
-    #rm -rf msc_book_samples
-    #scp msc_book_samples.zip $SFSSH:ap/htdocs/
+    rm  msc_book_samples.zip
+    mkdir msc_book_samples
+    cp *c msc_book_samples
+    cp markov_data msc_book_samples 
+    cp Makefile.std msc_book_samples/Makefile
+    zip -r msc_book_samples.zip msc_book_samples
+    rm -rf msc_book_samples
+    scp msc_book_samples.zip $SFSSH:ap/htdocs/
     """)

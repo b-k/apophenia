@@ -15,7 +15,7 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
 #include <assert.h>
-static double poisson_log_likelihood(const gsl_vector *beta, void *d);
+static double poisson_log_likelihood(const gsl_vector *beta, apop_data *d);
 
 static apop_estimate * poisson_estimate(apop_data * data,  void *parameters){
 apop_estimate 	*est= apop_estimate_alloc(data,apop_poisson, parameters);
@@ -40,10 +40,10 @@ double  mu          = gsl_vector_get(beta, 0);
 }
 
 
-static double poisson_log_likelihood(const gsl_vector *beta, void *d){
+static double poisson_log_likelihood(const gsl_vector *beta, apop_data *d){
 double        lambda    = gsl_vector_get(beta, 0);
 int           i, k=0;
-gsl_matrix    *data        = d;
+gsl_matrix    *data        = d->matrix;
 double         llikelihood  = 0,
         ln_l 	= log(lambda),
         x;
@@ -58,10 +58,10 @@ double         llikelihood  = 0,
 
 /** The derivative of the poisson distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void poisson_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void poisson_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 double       	lambda    	= gsl_vector_get(beta, 0);
 int             i, k;
-gsl_matrix      *data	= d;
+gsl_matrix      *data	= d->matrix;
 float           d_a     = 0,
                 x;
     for (i=0; i< data->size1; i++)

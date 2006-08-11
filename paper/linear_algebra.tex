@@ -286,16 +286,17 @@ count of two-step transitions. The steps should be clear: read the data,
 allocate a space for the output, calculate the dot product, and print
 the result. It introduces a new data type, \cind{apop\_data} to be
 discussed fully in Chapter \ref{apop}. For now, just take it to be a
-\cinline{gsl\_matrix} with labels.
-\lstinputlisting{sources/markov.c}
+\cinline{gsl\_matrix} with labels. On page \pageref{markovtwo}, the
+progran is simplified using \cind{apop\_data}-specific functions.
+\label{markovone}\lstinputlisting{sources/markov.c}
 Here is the output:
 \begin{lstlisting}
-    2       3       1       1       2       3
-    3       4       3       3       4       4
+    2       3       1       2       2       3
+    3       4       3       4       4       4
     2       2       3       3       3       2
-    4       5       4       4       5       5
-    4       5       4       4       5       5
-    3       4       3       3       4       4
+    4       5       4       5       5       5
+    4       5       4       5       5       5
+    4       5       4       5       5       5
 \end{lstlisting}
 This tells us, for example, that there are three ways to transition from state one to
 state two in two steps (1 $\Rightarrow$ 1 $\Rightarrow$ 2, 
@@ -335,7 +336,7 @@ gsl_vector_scale(a_vector, 2);
 \section{Matrix inversion and equation solving}  \index{matrices!inversion}\index{matrices!determinants}
 Matrix inversion is one of the most computationally intensive problems
 around. In fact, some will tell you it is the problem for which computers were invented.
-
+\comment{
 \codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition}
 
 The GSL does not include a function to directly invert a general matrix:
@@ -348,6 +349,15 @@ Figure \ref{invertmatrix} is cut and pasted from the Apophenia source
 code; \cind{apop\_det\_and\_inv} does indeed invert and calculate the
 determinant of an input matrix. This is what \ttind{apop\_OLS} will use if
 you ask for covariances.
+}
+
+The GSL does not include a function to directly invert a general matrix:
+instead, the user has to go through a triangular decomposition.
+Apophenia provides a function to go through the process to find
+determinants and inverses, named \cind{apop\_det\_and\_inv}.
+Examples for using this function are located throughout the book; for
+example, see the calculation of OLS coefficients on page \pageref{ols}.
+This is the function \ttind{apop\_OLS} will use if you ask for covariances.
 
 \index{Householder solver}
 Because inversion is so computationally intensive, you are better off
@@ -367,7 +377,7 @@ is all you ask for.
 \section{Shunting data} \label{asst_conversions} 
 There are many facets to dealing with a computer that one would call
 tedious, but for me, the most tedious of all is converting data formats.
-You can describe the process easily, say `pull the data and find
+You can describe a process easily, say `pull the data and find
 $\Xv'\Xv$', but the data is in a text file and your function to take dot
 products accepts \cinline{gsl\_vectors}, and going from one
 to the other will take you much more time than calling the function in
@@ -377,7 +387,7 @@ To that end, this section presents
 suggestions for converting among the various data formats used in this
 book. It is not an exciting
 read, and outside of Method V, there is little new material; you may
-prefer to take this section as a reference to refer to as necessary. Table
+prefer to take this section as a reference for use as necessary. Table
 \ref{conversiontab} provides the key to the method most appropriate for
 each given conversion. 
 
@@ -404,7 +414,7 @@ Db table                & \cd & Q & \cd & Q & Q & Q                  \\
 \cinline{double[ ]}      & \cd & \cd & C & F & F & \cd                  \\
 \cinline{gsl\_vector}   & P  & P & F & C & F & F                    \\
 \cinline{gsl\_matrix}   &  P & P & F & V &C &  F               \\
-\cinline{apop\_data}    & P & P & F & \cd & S &C
+\cinline{apop\_data}    & P & P & F & S & S &C
 \end{tabular}
 \end{tabular}
 \caption{Methods of conversion} \label{conversiontab}

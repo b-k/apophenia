@@ -59,10 +59,10 @@ find (data dot beta'), then find the integral of the \f$\cal{N}(0,1)\f$
 up to that point. Multiply likelihood either by that or by 1-that, depending 
 on the choice the data made.
 */
-static double probit_log_likelihood(const gsl_vector *beta, void *d){
+static double probit_log_likelihood(const gsl_vector *beta, apop_data *d){
 int		i;
 long double	n, total_prob	= 0;
-gsl_matrix 	*data 		= d;		//just type casting.
+gsl_matrix 	*data 		= d->matrix;
 	dot(beta,data);
 	for(i=0;i< data->size1; i++){
 		n	=gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1);
@@ -74,11 +74,11 @@ gsl_matrix 	*data 		= d;		//just type casting.
 
 /* The derivative of the probit distribution, for use in likelihood
   minimization. You'll probably never need to call this directly.*/
-static void probit_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void probit_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 	//derivative of the above. 
 int		i, j;
 long double	one_term, beta_term_sum;
-gsl_matrix 	*data 		= d;		//just type casting.
+gsl_matrix 	*data 		= d->matrix;
 	if (!beta_dot_x_is_current) 	
 		dot(beta,data); 
 	for(j=0; j< beta->size; j++){
@@ -100,7 +100,7 @@ gsl_matrix 	*data 		= d;		//just type casting.
 
 /** Saves some time in calculating both log likelihood and dlog
 likelihood for probit.	*/
-static void probit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
+static void probit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df){
 	*f	= probit_log_likelihood(beta, d);
 	beta_dot_x_is_current	=1;
 	probit_dlog_likelihood(beta, d, df);

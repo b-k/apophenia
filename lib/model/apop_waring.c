@@ -55,11 +55,11 @@ double  beta0       = gsl_vector_get(beta, 0),
 }
 
 
-static double waring_log_likelihood(const gsl_vector *beta, void *d){
+static double waring_log_likelihood(const gsl_vector *beta, apop_data *d){
 float		bb	= gsl_vector_get(beta, 0),
     		a	= gsl_vector_get(beta, 1);
 int 		i, k;
-gsl_matrix*	data= d;
+gsl_matrix*	data= d->matrix;
 double 		ln_a_k, ln_bb_a_k, val,
 		likelihood 	= 0,
 		ln_bb_a		= gsl_sf_lngamma(bb + a),
@@ -78,12 +78,12 @@ double 		ln_a_k, ln_bb_a_k, val,
 
 /** The derivative of the Waring distribution, for use in likelihood
  minimization. You'll probably never need to call this directy.*/
-static void waring_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void waring_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
 float		bb		        = gsl_vector_get(beta, 0),
 	    	a		        = gsl_vector_get(beta, 1);
 int 		i, k;
-gsl_matrix	*data		    = d;
+gsl_matrix	*data		    = d->matrix;
 double		bb_minus_one_inv= 1/(bb-1), val,
 		psi_a_bb	        = gsl_sf_psi(bb + a),
 		psi_a_mas_one	    = gsl_sf_psi(a+1),

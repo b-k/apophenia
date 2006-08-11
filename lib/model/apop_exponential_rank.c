@@ -58,12 +58,12 @@ double  mu          = gsl_vector_get(beta, 0);
     return limit - mu;    
 }
 
-static double rank_exponential_log_likelihood(const gsl_vector *beta, void *d){
+static double rank_exponential_log_likelihood(const gsl_vector *beta, apop_data *d){
 double		    b		    = gsl_vector_get(beta, 0),
 		        p,
 		        llikelihood = 0,
 		        ln_b		= log(b);
-gsl_matrix	    *data		= d;
+gsl_matrix	    *data		= d->matrix;
 int 		    k;
 gsl_vector      v;
 	for (k=0; k< data->size2; k++){
@@ -78,10 +78,10 @@ gsl_vector      v;
 // The exponential distribution. A one-parameter likelihood fn.
 //
 //\todo Check that the borderline work here is correct too.
-static void rank_exponential_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void rank_exponential_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 double		    bb		        = gsl_vector_get(beta, 0);
 int 		    k;
-gsl_matrix	    *data		    = d;
+gsl_matrix	    *data		    = d->matrix;
 double 		    d_likelihood 	= 0,
 		        one_over_ln_b	    = 1/log(bb),
 		        p;

@@ -15,7 +15,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <gsl/gsl_rng.h>
 #include <stdio.h>
 #include <assert.h>
-static double normal_log_likelihood(const gsl_vector *beta, void *d);
+static double normal_log_likelihood(const gsl_vector *beta, apop_data *d);
 
 
 //////////////////
@@ -63,12 +63,12 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 \param beta	beta[0]=the mean; beta[1]=the variance
 \param d	the set of data points; see notes.
 */
-static double normal_log_likelihood(const gsl_vector *beta, void *d){
+static double normal_log_likelihood(const gsl_vector *beta, apop_data *d){
 double 		mu	= gsl_vector_get(beta,0),
 	    	ss	= 2 * gsl_vector_get(beta,1),
 	    	ll	= 0;
 size_t		i,j;
-gsl_matrix	*data	= d;
+gsl_matrix	*data	= d->matrix;
 	for (i=0;i< data->size1; i++)
 		for (j=0;j< data->size2; j++)
 			ll	-= gsl_pow_2(gsl_matrix_get(data, i, j) - mu) / ss;
@@ -85,14 +85,14 @@ To tell you the truth, I have no idea when anybody would need this, but it's her
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 \todo Add constraint that \f$\sigma^2>0\f$.
  */
-static void normal_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void normal_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 double 		mu	    = gsl_vector_get(beta,0),
 	    	ss	    = gsl_vector_get(beta,1),
 	    	dll	    = 0,
 	    	sll	    = 0,
 	    	x;
 int	    	i,j;
-gsl_matrix	*data	= d;
+gsl_matrix	*data	= d->matrix;
 	for (i=0;i< data->size1; i++)
 		for (j=0;j< data->size2; j++){
 			x	 = gsl_matrix_get(data, i, j);

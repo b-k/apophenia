@@ -41,11 +41,11 @@ int         keep_xdotbeta       = 0;
 
 
 */
-static double logit_log_likelihood(const gsl_vector *beta, void *d){
+static double logit_log_likelihood(const gsl_vector *beta, apop_data *d){
 size_t	    i;
 double	    loglike 	= 0,
             xb;
-gsl_matrix 	*data 		= d;		//type cast void to gsl_matrix.
+gsl_matrix 	*data 		= d->matrix;
 gsl_matrix  independent = gsl_matrix_submatrix(data, 0,1, 
                                     data->size1, data->size2 -1).matrix;
     if (calculate_xdotbeta){
@@ -69,10 +69,10 @@ gsl_matrix  independent = gsl_matrix_submatrix(data, 0,1,
   The format is often the same as above: go line by line through a gsl_matrix.
   The sample is a three-dimensional parameter vector.
  */
-static void logit_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient){
+static void logit_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 int		    i,j;
 double	    dtotal[3];
-gsl_matrix 	*data 	= d;		//type cast
+gsl_matrix 	*data 	= d->matrix;
     dtotal[0]  = 0,
     dtotal[1]  = 0,
     dtotal[2]  = 0;
@@ -92,7 +92,7 @@ gsl_matrix 	*data 	= d;		//type cast
   leave the function with the same values with which they came in.
 
 	*/
-static void logit_fdf( const gsl_vector *beta, void *d, double *f, gsl_vector *df){
+static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df){
     keep_xdotbeta       = 1;
 	*f	= logit_log_likelihood(beta, d);
     calculate_xdotbeta  = 0;
