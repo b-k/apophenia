@@ -490,6 +490,14 @@ instead. Of course, the query output has no name, so you may need to
 alias the result: \sinline{from (select ...) t1} will allow you to refer to
 the query's output as \sinline{t1} elsewhere in the query.
 
+\paragraph{Rowid} Sometimes, you need a unique identifier for each
+output row. This would be difficult to create from scratch, but your
+tables already have such a row, named \sinline{rowid}, that is normally
+hidden from view. It is a simple integer, counting from one up to the
+number of rows, and does not appear when you query \sinline{select *
+from table}. But if you query \sinline{select rowid, * from table}
+the hidden row numbers will appear in the output.
+
 \summary{
 \item You can join tables by listing multiple tables in the
 \sinline{from} clause. When you do, you will need to specify a
@@ -497,12 +505,12 @@ the query's output as \sinline{t1} elsewhere in the query.
 prevent having an unreasonably long output table.
 \item If you intend to join elements, you can speed up the join
 immensely by creating an index first.
-\item SQL includes a few simple aggregation commands: \sinline{avg()},
-\sinline{sum()}, and \sinline{count()}. Apophenia provides a few more
-nonstandard aggregators for queries called using its functions. 
 }
 \summarynoitems{(continued)
 \begin{itemize}
+\item SQL includes a few simple aggregation commands: \sinline{avg()},
+\sinline{sum()}, and \sinline{count()}. Apophenia provides a few more
+nonstandard aggregators for queries called using its functions. 
 \item When aggregating, you can add a \sinline{group by} clause to
 indicate how the aggregation should be grouped.
 \item Tables can be stacked using 

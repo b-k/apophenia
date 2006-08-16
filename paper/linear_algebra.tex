@@ -544,6 +544,8 @@ provides a function that will produce the appropriate output.
 //db table $\Rightarrow$ db table
     apop_query("create table copy as \
     select * from original");
+//db table $\Rightarrow$ \cinline{double}
+    apop_query_to_float("select value from original");
 //db table $\Rightarrow$ \cinline{gsl\_vector}
     apop_query_to_vector("select * from original");
 //db table $\Rightarrow$ \cinline{gsl\_matrix}
@@ -879,3 +881,173 @@ each other.
 \item Multiplying together a column of a thousand numbers will break.
 \item Reporting results based on the fifth significant digit (or so) is spurious.
 }
+
+\section{\treesymbol{} \cind{gsl\_matrix} and \cind{gsl\_vector}
+internals}
+First, a warning: there is no reason why you will ever need the
+information in this section. 
+There is no reason to specifically manipulate the internals of the GSL's
+structures rather than using the functions designed for such
+purposes---and doing so is even bad form, because it introduces the
+possibility of errors and is harder to read.
+
+That said, here are some notes on the GSL's structures for holding data,
+which will be useful to you for understanding why the data structures
+are the way they are, and giving you a handle on what operations are
+easy and what operations are difficult.
+
+\comment{
+\paragraph{Hardware architecture}
+Modern computers hold data in multiple locations.  The processor 
+has a limited number of spaces (typically a few dozen) for data it is
+processing this microsecond. It typically has one or two levels of
+cache, named L1 and L2, that typically take about ten clock cycles to
+read. These caches are up to a few megabytes, and get larger with each
+generation of computer. Then there is the memory external to the
+processor, usually purchased by the gigabyte, which is where most data
+will be stored during computation, and which takes about 100 clock
+cycles to access. Finally, there is the hard disk, which provides
+permanent storage, but takes thousands of clock cycles to access.
+
+The lack of safe-memory checking makes C the 1972 Ferrari GTO of
+computing languages. Let us say that we are reading through an array of
+numbers; to get/set the next element
+in an array of \ci{double}s takes two (very fast) machine instructions:
+\begin{itemize}
+\itemsep 0pt
+\item Step \ci{sizeof(double)} bytes in memory.
+\item Read/write the data.
+\end{itemize}
+
+Modern processors try to be smart about what gets put where. If an
+element is to be read from a slower type of memory, its neighbors are
+often read at the same time, and placed in a faster-to-access location.
+So the next step of \ci{sizeof(double)} will be even faster than the
+first.
+
+Modern languages are more of a family car. 
+They have built-in
+limiters and checks to ensure you don't hurt yourself, but the safety
+features mean that what was a two-step procedure 
+could now be a few hundred machine instructions:
+\begin{itemize}
+\itemsep 0pt
+\item Jump to the table of element types.
+\item Search the table of element types for the current element's type.
+\item Jump to the table of safe memory addresses.
+\item Search for \ci{current\_ad\-dress + size\-of(this\_type)} in the table of safe memory. 
+\item If the address is in bounds, jump to the address.
+\item Read/write the data.
+\end{itemize}
+Since the system is jumping all over memory, it will have trouble
+knowing what to keep in a fast cache. It can't do predictive reads,
+since the data may not be in a contiguous chunk.
+
+
+\paragraph{\ci{gsl\_matrix} structure}} Here is the declaration of the
+\cind{gsl\_matrix} structure:
+
+\begin{lstlisting}
+typedef struct
+{
+  size_t size1;
+  size_t size2;
+  size_t tda;
+  double * data;
+  [...]
+  int owner;
+} gsl_matrix;
+\end{lstlisting}
+
+The first two sizes are simply the number of rows and columns. The
+\ci{data} pointer points to the data itself. It is a single pointer, to
+a stream of numbers. That is, the first row of data is written down, and
+the second row is written down immediately afterward, then the third
+row, and so on, forming one long row of data.
+
+To reach the third element of the first row, the processor would jump
+\ci{sizeof(double)*2} steps from the base element.  Stepping along the row
+means simply stepping along by \ci{sizeof(double)} units, and stepping by
+column means stepping by \ci{sizeof(double)* size2} steps from the current
+element. 
+
+Modern computers are proactive about data gathering. When they read data
+from slower types of memory, they also preemptively check the neighbors
+as well. If the code is relatively predictable, the compiler may be
+able to produce instructions telling the system to gather the next bit
+of data at the same time as it is crunching the current data element.
+The \ci{gsl\_matrix} structure works wonderfully with such a system,
+because steps are predictable and of fixed size, so the processor
+has a good chance of correctly guessing what data to put into its
+caches.
+
+Now say that we have a $100 \times 10$ matrix, which would have the following information:
+\begin{lstlisting}
+  size1 = 100;
+  size2 = 10;
+  tda   = 10;
+  data = [location of (0,0)];
+  owner =1;
+\end{lstlisting}
+Notice that the \ci{tda}  (also known as the \vocab{stride}) is equal to
+\ci{size2}. Jumping down a column thus requires a jump of
+\ci{sizeof(double)*tda}.
+
+
+If we wanted to pull out the $4 \times 6$ submatrix that begins at $(3, 7)$, then
+the resulting submatrix data would look like this:
+\begin{lstlisting}
+  size1 = 4;
+  size2 = 6;
+  tda   = 10;
+  data = [location of (3,7) in the original matrix];
+  owner =0;
+\end{lstlisting}
+If we want the third elements in the first row, we would do exactly
+what we did before: step \ci{sizeof(double) * 2} forward from the base
+element pointed to by \ci{data}. Accessing the next column is also the
+same process as before: jump \ci{sizeof(double)*tda} after the current
+position. Thus, the process of pulling a subset of the data merely
+required finding the first point and writing down arbitrary limits for
+\ci{size1} and \ci{size2}. No actual data was copied. 
+
+The \ci{owner}
+variable now becomes important, because there could be multiple
+submatrices all pointing to the same data. Since the submatrix is not
+the owner of its data, the GSL will not allow it to free the data set
+pointed to.
+
+The \ci{gsl\_vector} has a similar structure, including a starting point
+and a stride to indicate how far to jump to the next element. Thus,
+taking a row or column subset of a matrix also merely requires writing
+down the correct coordinates and lengths.
+
+The GSL's structures are good for fast access, because the next element
+is always a fixed jump relative to the current element, wehther you are
+traversing by rows or columns. They are exceptionally good for
+describing submatrices and subvectors, becaue doing so merely requires
+writing down new coordinates. They handle a $1 \times 10,000$ matrix
+just as easily as a $10,000 \times 1$ matrix or a $100 \times 100$ matrix.
+
+They are not good for non-contiguous subsets like the first, second,
+and fifth columns of a data set, since the relative jumps from one column
+to the next are not identical. Similarly, they are not good for holding
+various types of data, where some jumps could be \ci{sizeof(int)}
+and others could be \ci{sizeof(double)}. Since space is always allocated
+for every element, there is no way to efficiently represent sparse matrices.
+
+There are abundant problems with implementing any system that could
+deal with these types of jump, which are left for the reader's
+contemplation. One solution is to let each column be its own vector of
+data, and then let the overall table be a list of column vectors. Then
+traversing along rows could involve jumping all over memory, and common
+operations like finding the log likelihood of an observation or even
+the sum for each row becomes a significantly slower operation. If we
+held a list of jump sizes between every element, the processor would
+need to look up every jump and would again be significantly slowed.
+
+Other designers with different goals have used different means of
+representing a data matrix, and the \ci{gsl\_matrix} is by no means the
+best for all needs. But it does very well for its goals, allowing the
+hardware to process rows and columns of homogeneous data with maximal
+efficiency.

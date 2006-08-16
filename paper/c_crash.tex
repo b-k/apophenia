@@ -828,15 +828,15 @@ int round(float unrounded){
 \item Arrays are simply declared by including a size after the variable
 name: \ci{int array[100];}. Refer to the elements using an {\em offset},
 so the first element is \ci{array[0]} and the last is \ci{array[99]}.
-}
-\summarynoitems{(continued)
-\begin{itemize}
+%}
+%\summarynoitems{(continued)
+%\begin{itemize}
 \item You can declare new types, including structures that amalgamate simpler types: \ci{typedef struct pants \{float length, waist; int leg\_ct;\} pants;}.
 \item After declaring a variable as a structure, say \ci{pants cutoffs;}, refer to structure elements using a dot: \ci{cutoffs.leg\_ct = 1;}.
 \item An integer divided by an integer is an integer: \ci{ 9/4 == 2}. By
 putting a decimal after a whole number, it becomes a \ci{float}, and
 division works again: \ci{9./4 == 2.25}.
-\end{itemize}
+%\end{itemize}
 }
 
 
@@ -1178,7 +1178,7 @@ into \ci{b\_c}. It gives \ci{a\_c} the value of twice \ci{b\_c} and returns that
 itself did not change at all, even though \ci{a\_c} did change. Meanwhile, \ci{globe} is not a copy of
 itself, but the real thing, so when it is changed inside the function, it changes globally.
 Here is the output:
-\begin{lstlisting}
+\ns{4}\begin{lstlisting}
 doubling returns 4
 a= 1
 globe= 4
@@ -1423,7 +1423,7 @@ look in the standard include path. Use \bi{"my\_file.h"} for header
 files you have written and \ci{<their\_file.h>} for header files
 installed elsewhere in your system.  \index{preprocessor|)}
 
-\exercise{In prior exercises, you wrote a program with one function to
+\exercise{\label{headerize}In prior exercises, you wrote a program with one function to
 create an array of numbers and their squares, and another function,
 \ci{print\_array}, to print those values. 
 \begin{itemize}
@@ -1530,8 +1530,10 @@ time to get up, running, and doing exactly what you want.
 In this way, you may want to start writing your own libraries. It is a simple
 process: simply put all of your functions relating to a certain topic
 into a file named \ci{topic.c}, and put the useful declarations
-into a separate header file named \ci{topic.h}.
+into a separate header file named \ci{topic.h}. You already have a start
+on creating a utility library from the exercise on page \ref{headerize}.
 
+\comment{
 Recall that a variable that is not declared inside a function has scope
 for the rest of the file in which it was declared. That means that if a
 variable is declared in \ci{normit.c}, then all the variables inside
@@ -1543,6 +1545,7 @@ be publicly available should be put in a file \ci{normit.h}. You
 will \ci{\#include "normit.h"} at the head of \ci{normit.c},
 and also at the head of all other files that may want to use the tools
 included in the \ci{normit.c} file.
+}
 
 As noted above, good module design, whether for a function or a file, has as few
 visible subparts as possible; bear this in mind when deciding whether to put a
@@ -1586,8 +1589,8 @@ consists of inserting header files.
 \item Therefore, put public function declarations in header files.
 \item The next step consists of compilation, in which each source
 (\ci{.c}) file is converted to an object (\ci{.o}) file.  
-%}\summarynoitems{(continued)
-%\begin{itemize}
+}\summarynoitems{(continued)
+\begin{itemize}
 \item Therefore, each source file should consist of a set of standalone
 functions, that depend only on the file's contents and any declarations included
 via the headers.
@@ -1595,7 +1598,7 @@ via the headers.
 other libraries or object files are reconciled.
 \item Therefore, you can find libraries of function for any set of tasks
 you can imagine.  
-%\end{itemize}
+\end{itemize}
 }
 
  \label{prepointers}\section{Pointers} \label{pointers} \index{pointers|ff}
@@ -1846,38 +1849,6 @@ the care and feeding of that variable is the compiler's responsibility:
 it has to allocate memory for \ci{k}, check whether the variable is
 in scope, and free the memory when the frame that \ci{k}
 was declared in is destroyed.
-
-\comment{
-\marginalia{30}{Driving fast}{
-The lack of safe-memory checking makes C the 1972 Ferrari GTO of
-computing languages. Let us say that we are reading through an array of
-numbers; to get/set the next element
-in an array of \ci{double}s takes two (very fast) machine instructions:
-\begin{itemize}
-\itemsep 0pt
-\item Step \ci{sizeof(double)} bytes in memory.
-\item Read/write the data.
-\end{itemize}
-
-Modern languages are more of a family car. They have built-in
-limiters and checks to ensure you don't hurt yourself, but the safety
-features mean that what was a two-step procedure 
-could now be a few hundred machine instructions:
-\begin{itemize}
-\itemsep 0pt
-\item Jump to the table of element types.
-\item Search the element-type table for the current element's type.
-\item Jump to the table of safe memory addresses.
-\item Search for \ci{current\_ad\-dress + size\-of(this\_type)} in the table of safe memory. 
-\item If the address is in bounds, jump to the address.
-\item Read/write the data.
-\end{itemize}
-There are many ways to make type- and bounds-checking faster, but
-they will never compare to a single fixed-length jump. Since crashing a
-program won't kill anybody, there is little reason not to
-drive the computer as fast as it will go.  
-}
-}
 
 When you initialize a point\-er, you bear full responsibility for the area
 of memory you are about to point to. You have to allocate and de-allocate
@@ -2169,14 +2140,14 @@ sarray[100]} form creates an automatically-allocated array, where the
 computer creates and destroys the array; the \ci{int *harray =
 malloc(sizeof(int) * 100);} form creates a manually-allocated array
 which is yours to allocate and deallocate.
-} \summarynoitems{(continued)
-\begin{itemize}
+%} \summarynoitems{(continued)
+%\begin{itemize}
 \item Refer to array elements in both cases using the same
 square-brackets notation, such as \ci{harray[14]}.
 \item Arrays of structs can be declared just as with arrays of basic
 variables. Refer to a pointer-to-struct using \ci{->}.
 \item You can expand a manually-allocated array using \ci{realloc}.
-\end{itemize}
+%\end{itemize}
 }
 
 \section{Strings} \index{strings|ff} \label{stringsec}

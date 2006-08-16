@@ -11,54 +11,293 @@ modified package independently (i.e., to \airq{fork} the code base). The project
 GNU, and the name is simply a compromise between the names that the two
 main authors preferred: nplot and llamaplot.}
 
-\paragraph{The language} Gnuplot does nothing but plot points and
-lines. As such, the language only has one verb---\ci{plot}---with
-a few variants (\ci{splot}, \ci{replot}). A Gnuplot command
-file generally consists of a long string of \ci{set} commands to
-indicate what the axes should look like, the point and line formats,
-et cetera, and a final \ci{plot} command to do the actual work.
+Gnuplot does nothing but plot points and lines. As such, the language
+basically has only two verbs---\ci{set} and \ci{plot}---plus a few
+variants (\ci{splot}, \ci{replot}). A Gnuplot command file generally
+consists of a long string of \ci{set} commands to indicate what the axes
+should look like, the point and line formats, et cetera, and a final
+\ci{plot} command to do the actual work.
 
+As with SQLite, there is a command-line interpreter for Gnuplot's
+commands (\bi{gnuplot}), so after your data is basically in place, you can
+interactively try different \ci{set} commands to see what options look
+best. After you have finished shopping for the best settings, you can
+put them into a script that will always produce the perfect graph, or
+better still, write a C program to autogenerate a script that will
+always produce the perfect graph.
 
 \section{From arrays to plots} \label{gnuprint}
-The line \ci{plot '-';} tells Gnuplot to plot the (2-D) data to come. The
-command for a 3-D plot is \ci{splot '-'}. That means that the process
-of turning a matrix into a basic plot is trivial. Let \ci{data} be an
-\ci{apop\_data} set whose first and fifth columns we would like to plot
-against each other. Then we need to create a file, put a \ci{plot
-'-';} command in the first line, and then fill the remainder with the
-data to be plotted.  \label{fprintf}
-\begin{lstlisting}
-FILE    *f = fopen("plot_me", 'w');
-fprintf("plot '-' using 1:5;\n");
+The line \ci{plot '-'} tells Gnuplot to plot the (2-D) data to come. The
+command for a 3-D surface plot of data to follow is \ci{splot '-'}. With
+these commands, the process of turning a matrix into a basic plot is
+trivial. Let \ci{data} be an \ci{apop\_data} set whose first and fifth
+columns we would like to plot against each other. Then we need to create
+a file, put a \ci{plot '-';} command in the first line, and then fill the
+remainder with the data to be plotted. Below is the basic code to create
+a Gnuplot file. Since virtually anything you do with Gnuplot will be a
+variant of this code, it will be dissected in detail.  
+  \label{fprintf}
+\begin{lstlisting}[numbers=left, numberstyle=\scshape]
+FILE    *f = fopen("plot_me", "w");
+fprintf(f, "set plot '-' using 1:5 title 'columns (1,5)'\n");
 fclose(f);
-apop_data_print(data, "plot_me");
+apop_matrix_print(data, "plot_me");
 \end{lstlisting}
 
-The second option to \cind{fopen} should be either \ci{'a'} for append or
-\ci{'w'} for write anew; in this case, we want to start with a clean file so we use \ci{'w'}.
-Notice that \cind{apop\_data\_print} defaults to appending; you
-would need to set \ci{apop\_opts.output\_append = 0} to overwrite.
+The first option to \cind{fopen} is the file to be written to, and
+the second option should be either \ci{"a"} for append or \ci{"w"} for
+write anew; in this case, we want to start with a clean file so we use
+\ci{"w"}.\footnote{If the argument is \ci{"r"}, you could read from the
+file. However, none of the methods in this book involve reading raw text
+from a file. See any standard reference on C on the details of opening a
+file for reading.} 
+
+
+As you can see from line two, the syntax for \ci{fprintf} is just like
+the syntax for \ci{sprintf}: the first argument indicates to what you
+are writing, and the rest is a standard \ci{printf} line, which may
+include the usual insertions via \ci{\%f}, \ci{\%i}, and so on.
+
+The clause \ci{using 1:5} in the plot command written in line two tells
+Gnuplot to use only the first and fifth columns of the data set---so
+there is no need to pare down the data set in memory.  Notice that the
+first column in Gnuplot is 1, not 0.
+
+You can give the \ci{using} clause a single number, like \ci{plot '-'
+using 1}, in which case Gnuplot will assume that the $X$-axis is the
+element number $1, 2, \dots$, and your data is the $Y$-value. With two
+columns as above, the columns are taken to be $(X, Y)$ pairs. To plot
+two columns of data together, see \ci{replot}, below.
+
+The \ci{title} clause is self-explanatory: Gnuplot adds a legend to your
+graph by default, and this will be the text associated with this data.
+Notice that Gnuplot accepts both ``double quotes'' and `single quotes'
+around text such as file names or labels; since single quotes are
+nothing special to C, this makes it much easier to enter such text.
+
+Line three closes the file, so there is no confusion when, in line four,
+we use the standard \ci{apop\_matrix\_print} command to write the data
+to the file. We print the matrix instead of the
+full \ci{apop\_data} structure so that no names or labels are written.
+Since \cind{apop\_data\_print} defaults to appending, the matrix appears
+after the \ci{plot} header that we just wrote to the file.
+You would need to set \ci{apop\_opts.output\_append = 0} to overwrite.
 \cindex{apop\_opts.output\_append}
 
-The clause \ci{using 1:5} in the plot command tells Gnuplot to use
-only the first and fifth columns of the data set---so there is no need to pare
-down the data set in memory. Notice that the first column in Gnuplot is
-1, not 0. At the end of this, \ci{print\_me} will be executable by
+At the end of this, \ci{print\_me} will be executable by
 Gnuplot. There are a few ways to get Gnuplot to read the file from the
 typical UNIX-style command prompt:
 \begin{lstlisting}
 gnuplot -persist < plot_me
-(or)
+#(or)
 gnuplot plot_me -
 \end{lstlisting}
 The first option will open a window and leave the command line inactive
-until you close the window;
-the second will give you a Gnuplot command line that you will have to
-manually exit
-from (by typing \ci{exit} or $<$ctrl$>$-D, or you can send in more
-Gnuplot commands). On many systems, you can
-interact with the plot, spinning 3-D plots with the mouse or selecting
-subregions of 2-D plots to zoom into.
+until you close the window; the second will give you a Gnuplot command
+line that you will have to manually exit from (by typing \ci{exit}
+or $<$ctrl$>$-D, or you can send in more Gnuplot commands). On many
+systems, you can interact with the plot, spinning 3-D plots with the
+mouse or selecting subregions of 2-D plots to zoom into.
+
+\treesymbol{} Those experienced with POSIX systems know that a script
+can be made executable by itself. The first line of the script must begin
+with the special marker \#!, and then give the interpreter that will read
+the file, and the script must be given execute permissions. The following
+program will produce a self-executing Gnuplot script to plot $\sin(x)$:
+\begin{lstlisting}
+#include <apophenia/headers.h>
+#include <sys/stat.h>
+int main(){
+    char    filename[]  = "plot_me";
+    FILE    *f = fopen(filename, "w");
+    fprintf(f, "#!/usr/bin/gnuplot -persist\n\
+                plot sin(x)");
+    fclose(f);
+    chmod(filename, 0755);
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{\cind{replot}} You will often want multiple data sets on the
+same plot, and Gnuplot does this easily using the \ci{replot} command.
+Just change every use of \ci{plot} after the first to \ci{replot}. This
+seems simple enough, but the system is a bit fragile. The remainder of
+this section presents some details regarding the use of \ci{replot} (\treesymbol).
+
+First, it can be very frustrating using the above \ci{plot '-'} format
+to put data inline when replotting elements. It is easier to write the
+data to a separate file and then refer to that in the file to be read
+by Gnuplot. Here is a C snippet to produce a data file and a Gnuplot
+command file:
+\begin{lstlisting}
+FILE    *f = fopen("plot_me", "w");
+fprintf(f, "plot 'datafile' using 1 title 'data column 1';\n \
+            replot 'datafile' using 5 title 'data column 5';\n");
+fclose(f);
+apop_data_print(data, "datafile");
+\end{lstlisting}
+Running \bi{plotme} through Gnuplot will produce a plot with two lines,
+representing column one and column five of the datafile.
+
+Also, when outputting to a paper device, replotting tends to make a
+mess. Set the output terminal (see below) just before the final replot:
+\begin{lstlisting}
+plot 'datafile' using 1
+set term postscript color
+set out 'two_lines.eps'
+replot 'datafile' using 5
+\end{lstlisting}
+
+
+\subsection{Plotting functions} To this point, the discussion has been
+entirely about plotting data points, but Gnuplot also knows all of the
+functions in the standard C math library. For example, the following
+sequence will produce a set of pleasing curves. Notice that \ci{x**2}
+is common stats-package notation for $x^2$.  
+\begin{lstlisting}
+set xrange [-4:6]
+plot sin(x)
+replot cos(x)
+replot log(x) + 2*x - 0.5*x**2
+\end{lstlisting}
+
+\section{Some common settings}
+At this point, you can produce a basic graph of data or a function (or
+both at once). But
+barring supreme luck, Gnuplot's default plot is not exactly what you
+have in mind, and you will need to modify it in some way. 
+
+As above, a typical Gnuplot file consists of a long series of \ci{set}
+commands followed by a single \ci{plot} command. This section catalogs
+the most common features to set. The next section will list some special
+types of graph.
+
+For more information on the settings here and many more, see the
+very comprehensive Gnuplot documentation, which can be accessed from
+inside the gnuplot command-line program via
+\ci{help}, optionally followed by any of the headers below (e.g.,
+\ci{help set style}, \ci{help set pointtype}).
+
+\subsection{\ci{set style}} The basic style of the plot may be a simple
+line or points, a bar graph, boxes with error bars, or many other
+possibilities. Gnuplot keeps track of two types of style: that for
+function plotting (\ci{set style function}) and for data plotting (\ci{set style data}). 
+Thus, a typical style setting would consist of something like \ci{set
+style data impulses}.
+
+As with many of Gnuplot's settings, you can either set the style via a
+command on its own line, or after the plot command using the \cind{with}
+command. There are a few examples below.
+
+\subsection{\ci{set pointtype}, \ci{set linetype}} You can go with the default
+point and line type, or explicitly set it using these commands.
+
+Like many Gnuplot commands, they may be given on the same line as the
+plot command or on their own line, and may be abbreviated to an
+easy-to-type but impossible-to-read two-letter sequence.
+\begin{lstlisting}
+plot 'data' with points pointtype 3
+# is equivalent to
+plot 'data' with points pt 3
+# is equivalent to
+set style data points
+set pointtype 3
+plot 'data'
+\end{lstlisting}
+
+The \ci{pointtype} and \ci{linetype} commands, among a handful of other
+commands, may differ from on-screen to postscript
+to PNG formats, depending upon what is easy in the different formats.  You can see what each terminal can do via the \ci{test} command. E.g.:
+\begin{lstlisting}
+set terminal postscript
+set out 'testpage.ps'
+test
+\end{lstlisting}
+Among other things, the test page displays the types of points and lines
+available for the given terminal, and their number.
+
+\subsection{\ci{set xrange}, \ci{set yrange}} Gnuplot generally does a good job of
+selecting a default range for the plot, but you can manually override
+this using these commands. A range is of the form \ci{[min:max]}.
+Sometimes, you will want to leave one end of the range to be set by
+Gnuplot, but fix the other end, in which case you can use a \ci{*} to
+indicate an automatically set bound. For example, \ci{set yrange [*:10]}
+fixes the top of the graph at ten, but lets the lower end of the graph
+fall where it may. 
+
+You will sometimes want the axes to go backward.  Say that your data
+represents rankings, so 1 is best; then \ci{set yrange [*:10] reverse}
+will put tenth place at the top of the graph, and autoset the bottom of
+the graph to just past the largest ranking in the data set.
+
+\subsection{\ci{set title}, \ci{set xlabel}, \ci{set ylabel}} These are
+very simple commands, that label the $X$
+and $Y$ axes and the graph itself. If the graph is going to be a figure
+in a paper with an adequate caption, then the title may be optional, but
+there is rarely an excuse for omitting axis labels. Sample usage:
+\begin{lstlisting}
+set xlabel 'Time, days'
+set ylabel 'Observed density, picograms/liter'
+set title 'Density over time'
+\end{lstlisting}
+
+\subsection{\ci{set key}} \index{legend, graph} As noted above, Gnuplot
+puts a legend on your graph by default. Most of the time, it is
+reasonably intelligent about it, but sometimes the legend gets in the
+way. Your first option in this case is to just turn off the key
+entirely, via \ci{set key off}.
+
+The more moderate option is to move the key, using some combination of 
+\ci{left, right, outside, top, bottom, below}. The first three are
+horizontal positions, where \ci{outside} indicates the far right,
+outside the graph, while \ci{left} and \ci{right} put the
+legend inside the bounds of the graph. The last three indicate vertical
+position, where \ci{top} and \ci{bottom} again put the legend inside the
+graph, and \ci{below} puts the legend just under the graph.
+
+The key also sometimes benefits from a border, via \ci{set key graph}.
+
+More settings (five or six) forthcoming.
+
+\section{Some special plots} For a system that basically only has a 
+\ci{set} and a \ci{plot} command, Gnuplot is surprisingly versatile. Here
+are some specialized visualizations that go well beyond the basic 2-D
+plot.
+
+\subsection{Surfaces} \index{surface plots}
+Let us say tht your data matrix is not a collection of variables in
+columns, but a matrix giving the level of a variable over a grid of
+coordinates. The \ci{splot '-' matrix} command takes such data and
+produces a surface.
+
+Surface plotting goes hand-in-hand with the \cind{pm3d} option, that 
+produces a pleasing color-gradient surface. For example,
+\begin{lstlisting}
+set term postscript 
+set out 'surfaceplot1.eps'
+set pm3d
+set palette gray negative
+splot 'datafile' matrix with pm3d
+\end{lstlisting}
+will produce the first plot in figure \ref{splotone}.  There are many
+palettes to be had; the default, omitting the \ci{set palette} line
+entirely, works for most purposes.
+
+Another alternative is to \ci{set pm3d map}. This produces an overhead
+view of the same surface, sometimes known as a \vocab{contour plot}, as
+in the second plot of Figure \ref{splotone}.
+
+\begin{figure}
+\begin{tabular}{cc}
+\rotatebox{-90}{\scalebox{.25}{\includegraphics{surfaceplot1.eps}}}
+&
+\rotatebox{-90}{\scalebox{.25}{\includegraphics{surfaceplot2.eps}}}
+\end{tabular}
+\caption{Two views of the same surface}\label{splotone}
+\end{figure}
+
+
+
 
 \subsection{Lattices}  \index{lattices}
 Perhaps plotting two pairs of columns at a time is not sufficient---you
@@ -214,7 +453,7 @@ set out 'outfile.eps';
 at the head of a file will put the plot in \bi{outfile.eps} rather
 than posting it to the screen. Since all of the plotting commands append
 by default, one could start the file off with this command, and then
-call a plotting command to produce a paper-printing Gnuplot command file.\footnote{If you use the \bi{replot} command to print multiple plots, set the terminal to Postscript just before the last replot. otherwise, your paper will show a confusing blur of multiple plots.}
+call a plotting command to produce a paper-printing Gnuplot command file.
 
 The following snippet will erase a file, and
 if \ci{print\_to\_paper} is true, place a header setting Gnuplot to
@@ -273,7 +512,7 @@ you can insert arbitrary \LaTeX{} code into your Gnuplot code.
 First, in the Gnuplot file, you set the label to any set of instructions
 that \LaTeX{} can understand. Let $\lambda$ be an arbitrary label:
 \begin{lstlisting}
-set ylabel "\\rotatebox{90}{Your $\lambda$ here.}"
+set ylabel '\\rotatebox{90}{Your $\lambda$ here.}'
 \end{lstlisting}
 Notice the double-backslash. Just as with \ci{printf} (see page
 \pageref{printf}), expressions like \ci{$\backslash$n} have special
@@ -284,7 +523,7 @@ If you are autogenerating this line from C, then you will again need to
 double the backslash for each single backslash you will print to the
 Gnuplot file. To print the line above to a file, use:
 \begin{lstlisting}
-fprintf(out, "set ylabel \"\\\\rotatebox{90}{Your $\\lambda$ here}\"\n ");
+fprintf(out, "set ylabel '\\\\rotatebox{90}{Your $\\lambda$ here}'\n ");
 \end{lstlisting}
 
 Two final notes to complete the example: \sinline{$\backslash$rotatebox}
@@ -317,9 +556,28 @@ Use the \airq{graphicx} package to incorporate the plot. E.g.:
 Notice that you will frequently need to rotate the plot $90^\circ$
 and scale the figure down to a reasonable size.
 
-Depending on the system, the reader may be able to generate PDFs with
-embedded Postscript images directly using \bi{pdflatex}, or may
-need to do it indirectly via Postscript: 
+The first option for generating PDFs is to use \bi{epstopdf}. First,
+convert all of your \bi{eps} files to \bi{pdf} files on the command
+line:
+\begin{lstlisting}[language=bash]
+for i in *.eps; do 
+    epstopdf $i;
+done
+\end{lstlisting}
+
+Then, in your \LaTeX{} header, add 
+\begin{lstlisting}[language=sql]
+\usepackage[pdftex]{epsfig}
+\end{lstlisting}
+
+The benefit to this method is that you can now run \bi{pdflatex
+my\_document} without incident; the drawback is that you now have two
+versions of every figure cluttering up your directory, and must
+regenerate the PDF version of the graphic every time you regenerate the Postscript
+version.
+
+The alternative is to go through Postscript in generating the entire
+document:
 \begin{lstlisting}[language=sql]
 latex a_report
 dvips < a_report.dvi > a_report.ps

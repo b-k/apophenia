@@ -330,8 +330,8 @@ echo "export LD_LIBRARY_PATH=$HOME/$MY_LIBS:\$LD_LIBRARY_PATH" >> ~/.bashrc
 /** \page c C
  
 \section learning  Learning C
-The Apophenia manual has a full tutorial for C, available as a separate document <a href="http://ben.klemens.org/pdfs/c_crash.pdf">here</a>.
-The tutorial is more conceptual and aimed at clearing up the most common failures of understanding about C. More nuts-and-bolts
+The Apophenia manual has a full tutorial for C, which
+The tutorial is more conceptual than most and is aimed at clearing up the most common failures of understanding about C. More nuts-and-bolts
 tutorials are 
 <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.
 Some people find pointers to be especially difficult. Fortunately, there's a claymation cartoon which clarifies everything

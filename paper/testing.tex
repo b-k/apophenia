@@ -68,9 +68,10 @@ $\chi^2$-distributed variables is also $\sim \chi^2$, with $n$ degrees
 of freedom.
 
 \begin{itemize}
-\item $\{{\cal N} (0,1)\}^2 \sim \chi^2_1$
+\item If $X \sim {\cal N} (0,1)$, then $X^2 \sim \chi^2_1$.
 
-\item $\{\chi^2_1\}$ + \dots + ($n$ of these) + \dots + $\{\chi^2_1\} \sim \chi^2_n$
+\item If $X_i \sim {\cal N} (0,1)$ for $i=1, \dots, n$, then
+$ X_1 + \dots + X_n \sim \chi^2_n$.
 \end{itemize}			\label{chisq}
 
 The summation property is immensely useful, because we often have sums
@@ -78,9 +79,9 @@ of variables to contend with. The easiest case is the sample variance,
 which is a sum of squares. Being a sum of squares of Normally-distributed
 elements, it is easy to show that 
 \begin{equation}\label{chisqvar}
-[\sum_n (x-\overline x)^2]/\sigma^2\sim \chi^2_{n-1} 
+{\left[\sum_n (x-\overline x)^2\right]\over \sigma^2}\sim \chi^2_{n-1}.
 \end{equation}
-. The numerator there is the sample variance times $n$, so
+The numerator there is the sample variance times $n$, so
 we can test that the sample variance equals a given $\sigma^2$ with this.
 
 Notice that the sample variance is $\sim
@@ -118,9 +119,9 @@ Here are the functions to look up the value of the PDF at a given point:
 
 \begin{lstlisting}
 double gsl_ran_gaussian_pdf (double X, double SIGMA);
-double gsl_ran_tdist_pdf (double X, double NU);
-double gsl_ran_fdist_pdf (double X, double NU1, double NU2);
-double gsl_ran_chisq_pdf (double X, double NU);
+double gsl_ran_tdist_pdf (double X, double df);
+double gsl_ran_fdist_pdf (double X, double df1, double df2);
+double gsl_ran_chisq_pdf (double X, double df);
 \end{lstlisting}
 
 The prefix \ci{gsl\_ran} indicates that these
@@ -142,7 +143,7 @@ These will obviously add to one, so you can express any area in terms of whichev
 
 For example, if we find that our Normally distributed mean is 2.2 standard
 deviations above zero, then we can reject the one-tailed hypothesis that
-the mean is zero with probability \cinline{1 - gsl\_cdf\_gaussian\_Q(2.2, 1) ==
+the mean is less than or equal to zero with probability \cinline{1 - gsl\_cdf\_gaussian\_Q(2.2, 1) ==
 gsl\_cdf\_gaussian\_P(2.2, 1)}.
 
 Here is the list of functions:
@@ -170,7 +171,7 @@ gsl\_cdf\_gaussian\_Pinv (0.05, S)+M}. Here are the requisite function declarati
 \index{chi squared distribution@$\chi^2$ distribution!gsl\_cdf\_chisq\_Pinv@\cinline{gsl\_cdf\_chisq\_Pinv}}
 \index{t distribution!gsl\_cdf\_tdist\_Pinv@\cinline{gsl\_cdf\_tdist\_Pinv}}
 \begin{lstlisting}
-double gsl_cdf_gaussian_Pinv (double X, double SIGMA);
+double gsl_cdf_gaussian_Pinv (double P, double SIGMA);
 double gsl_cdf_chisq_Pinv (double P, double NU);
 double gsl_cdf_fdist_Pinv (double P, double NU1, double NU2);
 double gsl_cdf_tdist_Pinv (double P, double NU);
@@ -398,7 +399,8 @@ gsl_matrix_set(Q, 0, 0, 1);
 gsl_matrix_set(Q, 1, 1, 1);
 gsl_matrix_set(Q, 1, 2, -2);
 gsl_vector_set(Q, 0, 7);
-apop_F_test(e, Q, c);
+apop_data *f = apop_F_test(e, Q, c);
+apop_data_show(f);
 \end{lstlisting}
 
 Here is a useful simplification.
