@@ -11,143 +11,188 @@ modified package independently (i.e., to \airq{fork} the code base). The project
 GNU, and the name is simply a compromise between the names that the two
 main authors preferred: nplot and llamaplot.}
 
-Gnuplot does nothing but plot points and lines. As such, the language
+Gnuplot's language
 basically has only two verbs---\ci{set} and \ci{plot}---plus a few
-variants (\ci{splot}, \ci{replot}). A Gnuplot command file generally
-consists of a long string of \ci{set} commands to indicate what the axes
+variants (\ci{splot}, \ci{replot}). Here is a typical Gnuplot script;
+you can see that it
+consists of a string of \ci{set} commands to indicate what the axes
 should look like, the point and line formats, et cetera, and a final
 \ci{plot} command to do the actual work.
+\begin{lstlisting}
+set key off
+set xrange [-10:10]
+set linewidth 3
+set term postscript color
+set out 'two_lines.eps'
+plot 'datafile' with lines
+\end{lstlisting}
 
+\paragraph{Running it}
 As with SQLite, there is a command-line interpreter for Gnuplot's
-commands (\bi{gnuplot}), so after your data is basically in place, you can
+commands (\bi{gnuplot}), so you can
 interactively try different \ci{set} commands to see what options look
 best. After you have finished shopping for the best settings, you can
 put them into a script that will always produce the perfect graph, or
 better still, write a C program to autogenerate a script that will
 always produce the perfect graph.
 
-\section{From arrays to plots} \label{gnuprint}
-The line \ci{plot '-'} tells Gnuplot to plot the (2-D) data to come. The
-command for a 3-D surface plot of data to follow is \ci{splot '-'}. With
-these commands, the process of turning a matrix into a basic plot is
-trivial. Let \ci{data} be an \ci{apop\_data} set whose first and fifth
-columns we would like to plot against each other. Then we need to create
-a file, put a \ci{plot '-';} command in the first line, and then fill the
-remainder with the data to be plotted. Below is the basic code to create
-a Gnuplot file. Since virtually anything you do with Gnuplot will be a
-variant of this code, it will be dissected in detail.  
-  \label{fprintf}
-\begin{lstlisting}[numbers=left, numberstyle=\scshape]
-FILE    *f = fopen("plot_me", "w");
-fprintf(f, "set plot '-' using 1:5 title 'columns (1,5)'\n");
-fclose(f);
-apop_matrix_print(data, "plot_me");
-\end{lstlisting}
+The easiest way to put together a script is to put it in a separate file
+(e.g., a file named \bi{plotme}) and have Gnuplot read the script. There
+are three ways to do this:
+\begin{itemize}
+\item From the command line, run \bi{gnuplot -persist <plotme}. This runs
+the script and exits, but the plot persists on the screen. Without the
+\bi{-persist} option, the plot will flash on the screen for a split
+second. If you are writing to a Postscript file rather than looking at
+the plot on screen, then the \bi{-persist} option is unnecessary.
+\item Run \bi{gnuplot} with no options, and from its prompt, type \ci{load
+'plotme'}. This leaves you at the Gnuplot prompt to expermient with settings.
+\item The hybrid: run \bi{gnuplot plotme -} from the command line. This
+executes the instructions in \bi{plotme}, but  leaves you at the Gnuplot
+prompt to add settings.
+\end{itemize}
 
-The first option to \cind{fopen} is the file to be written to, and
-the second option should be either \ci{"a"} for append or \ci{"w"} for
-write anew; in this case, we want to start with a clean file so we use
-\ci{"w"}.\footnote{If the argument is \ci{"r"}, you could read from the
-file. However, none of the methods in this book involve reading raw text
-from a file. See any standard reference on C on the details of opening a
-file for reading.} 
+If you are at a Gnuplot prompt, you can exit via either the \ci{exit}
+command or $<$ctrl$>$-D. On many systems, you can also interact with the plot,
+spinning 3-D plots with the mouse or selecting subregions of 2-D plots
+to zoom into.
 
+\exercise{Check your Gnuplot installation. Write a one-line text file
+named \bi{plotme} whose text reads: \ci{plot sin(x)}. Execute the script
+using one of the above methods.}
 
-As you can see from line two, the syntax for \ci{fprintf} is just like
-the syntax for \ci{sprintf}: the first argument indicates to what you
-are writing, and the rest is a standard \ci{printf} line, which may
-include the usual insertions via \ci{\%f}, \ci{\%i}, and so on.
+Now that you know how to run a Gnuplot script, we can move on to what
+to put in the script.
 
-The clause \ci{using 1:5} in the plot command written in line two tells
-Gnuplot to use only the first and fifth columns of the data set---so
-there is no need to pare down the data set in memory.  Notice that the
-first column in Gnuplot is 1, not 0.
-
-You can give the \ci{using} clause a single number, like \ci{plot '-'
-using 1}, in which case Gnuplot will assume that the $X$-axis is the
-element number $1, 2, \dots$, and your data is the $Y$-value. With two
-columns as above, the columns are taken to be $(X, Y)$ pairs. To plot
-two columns of data together, see \ci{replot}, below.
-
-The \ci{title} clause is self-explanatory: Gnuplot adds a legend to your
-graph by default, and this will be the text associated with this data.
-Notice that Gnuplot accepts both ``double quotes'' and `single quotes'
-around text such as file names or labels; since single quotes are
-nothing special to C, this makes it much easier to enter such text.
-
-Line three closes the file, so there is no confusion when, in line four,
-we use the standard \ci{apop\_matrix\_print} command to write the data
-to the file. We print the matrix instead of the
-full \ci{apop\_data} structure so that no names or labels are written.
-Since \cind{apop\_data\_print} defaults to appending, the matrix appears
-after the \ci{plot} header that we just wrote to the file.
-You would need to set \ci{apop\_opts.output\_append = 0} to overwrite.
-\cindex{apop\_opts.output\_append}
-
-At the end of this, \ci{print\_me} will be executable by
-Gnuplot. There are a few ways to get Gnuplot to read the file from the
-typical UNIX-style command prompt:
+\paragraph{Comments} \index{comments!Gnuplot}\index{Gnuplot!comments}
+Gnuplot follows the commenting standards of many scripting languages:
+everyting on a line after a \# is ignored. For example, if a script
+begins with
 \begin{lstlisting}
-gnuplot -persist < plot_me
-#(or)
-gnuplot plot_me -
+#set terminal postscript color
+#set out 'printme.eps'
 \end{lstlisting}
-The first option will open a window and leave the command line inactive
-until you close the window; the second will give you a Gnuplot command
-line that you will have to manually exit from (by typing \ci{exit}
-or $<$ctrl$>$-D, or you can send in more Gnuplot commands). On many
-systems, you can interact with the plot, spinning 3-D plots with the
-mouse or selecting subregions of 2-D plots to zoom into.
+then these lines are ignored, and Gnuplot will display plots on the
+screen as usual. If you later decide to print the plot, you can delete
+the \#s and the script will write to \bi{printme.eps}.
 
-\treesymbol{} Those experienced with POSIX systems know that a script
-can be made executable by itself. The first line of the script must begin
-with the special marker \#!, and then give the interpreter that will read
-the file, and the script must be given execute permissions. The following
-program will produce a self-executing Gnuplot script to plot $\sin(x)$:
+
+\section{\cind{plot}} The \ci{plot} command will set the basic shape of
+the plot. 
+
+If you have two columns of data in \bi{datafile}, then to plot a basic
+scatterplot of the data, simply specify \ci{plot 'datafile'}. 
+
+You will often dump more columns of data to your datafile than are
+necessary. Say that you want to use only the first and fifth columns of
+data; then \ci{plot 'datafile' using 1:5}. This produces a scatterplot
+with $X$ values from column one and $Y$ values from column $Y$.
+Notice that Gnuplot uses index numbering instead of offset numbering:
+the first column is one, not zero.
+
+Say that you just want to see a single data series, say column five; then 
+\ci{plot 'datafile' using 5}. With only one column given, the plot will
+assume that the $X$ values are the ordinal series $1, 2, 3, \dots$ and
+your data is the $Y$ values.
+
+\subsection{\cind{splot}} The \ci{plot} command prints flat, 2-D graphs.
+To plot 3-D surfaces, use \ci{splot}. All of the above now applies
+directly, but with three dimensions. If your data set has three columns, then
+you can plot it with \ci{splot 'datafile'}. If your data set has more
+than three columns, then specify three with a form like \ci{splot
+'datafile' using 1:5:4}. 
+
+\index{surface plots}
+Finally, there is the case where the data's  position in the file
+represents its position in space, like the ordered series in the 2-D
+case. Here, the $(1,1)^{\rm st}$ element in the data file is the
+height at the Southwest corner of the plot, and the $(n,n)^{\rm th}$
+element is the height at the Northeast corner. To plot such data, use
+\ci{splot 'datafile' matrix}.
+
+If all is arranged correctly and you are plotting on-screen instead of
+to a file, then you will be able to click on the plot and drag the plot
+around its center. The movement vastly improves the 3-D impresion of the graph.
+
+Surface plotting goes hand-in-hand with the \cind{pm3d} (palette-mapped
+3-D) option, that 
+produces a pleasing color-gradient surface. For example, here is the
+script used to produce Figure \ref{splotone}. 
+\begin{lstlisting}[numbers=left, numberstyle=\scshape, language={}]
+set term postscript color;
+set out 'plot.eps';
+set pm3d;  #for the contour map, use set pm3d map;
+unset colorbox
+set xlabel 'percent acting'; set ylabel 'value of emulation (n)';
+set palette gray;
+set xtics ('0' 0,'0.25'  250,'0.5'  500,'0.75'  750, '1' 999);
+set ytics ('0' 0, '0.2' 1, '0.4' 2, '0.6' 3, '0.8' 4, '1' 5, '1.2' 6)
+splot 'datafile' matrix with pm3d
+\end{lstlisting}
+Lines one and two send the output to a postscript file instead of the
+screen. Line three tells Gnuplot to prepare for a palette-mapped
+surface, and is necessary before the \ci{splot} command on line nine.
+Line four deletes the legend. 
+Line five sets the
+labels. Notice that there are two options for ending a Gnuplot command:
+you may either put each on a separate line, or put a semicolon between
+them. As you can see from this script, ending a line with a semicolon
+is optional and harmless.
+Line six sets the color scheme to
+something appropriate for a book printed in black and white.
+There are many palettes to be had; the default, omitting the \ci{set
+palette} line entirely, works for most purposes. 
+Lines seven and eight fix the axis labels, because Gnuplot defaults to
+using the index of the column or row as the label. The format requires a
+text label, followed by the index at which the label will be placed.
+Producing this by hand is annoying, but it is trivial to write a quick
+routine to write such a line:
+
 \begin{lstlisting}
-#include <apophenia/headers.h>
-#include <sys/stat.h>
-int main(){
-    char    filename[]  = "plot_me";
-    FILE    *f = fopen(filename, "w");
-    fprintf(f, "#!/usr/bin/gnuplot -persist\n\
-                plot sin(x)");
-    fclose(f);
-    chmod(filename, 0755);
-    return 0;
+double  n_min           = 0.0;
+double  n_max           = 1.4;
+double  n_step          = 0.2;
+
+static void deal_with_y_tics(FILE *f){
+int  j = 0;
+double i;
+        fprintf(f, "set ytics (");
+        for (i=n_min; i< n_max; i+=n_step){
+            fprintf(f, "'%g' %i", i, j++);
+            if (i+n_step >=n_max)
+                fprintf(f, ")\n");
+            else
+                fprintf(f, ", ");
+        }
 }
 \end{lstlisting}
 
+
+Another alternative is to \ci{set pm3d map}. This produces an overhead
+view of the same surface, sometimes known as a \vocab{contour plot}, as
+in the second plot of Figure \ref{splotone}.
+
+\begin{figure}
+\hskip -3.1cm
+\begin{tabular}{cc}
+\rotatebox{-90}{\scalebox{.36}{\includegraphics{surfaceplot1.eps}}}
+&
+\rotatebox{-90}{\scalebox{.36}{\includegraphics{surfaceplot2.eps}}}
+\end{tabular}
+\caption{Two views of the same surface
+from a few thousand simulations of a group of agents who decide whether to
+act based upon the actions of others. When the coefficient of emulation
+is low, the outcomes are unimodally distributed, but outcomes become bimodally
+distributed as emulation becomes more desirable.
+}\label{splotone}
+\end{figure}
+
+
 \subsection{\cind{replot}} You will often want multiple data sets on the
 same plot, and Gnuplot does this easily using the \ci{replot} command.
-Just change every use of \ci{plot} after the first to \ci{replot}. This
-seems simple enough, but the system is a bit fragile. The remainder of
-this section presents some details regarding the use of \ci{replot} (\treesymbol).
-
-First, it can be very frustrating using the above \ci{plot '-'} format
-to put data inline when replotting elements. It is easier to write the
-data to a separate file and then refer to that in the file to be read
-by Gnuplot. Here is a C snippet to produce a data file and a Gnuplot
-command file:
-\begin{lstlisting}
-FILE    *f = fopen("plot_me", "w");
-fprintf(f, "plot 'datafile' using 1 title 'data column 1';\n \
-            replot 'datafile' using 5 title 'data column 5';\n");
-fclose(f);
-apop_data_print(data, "datafile");
-\end{lstlisting}
-Running \bi{plotme} through Gnuplot will produce a plot with two lines,
-representing column one and column five of the datafile.
-
-Also, when outputting to a paper device, replotting tends to make a
-mess. Set the output terminal (see below) just before the final replot:
-\begin{lstlisting}
-plot 'datafile' using 1
-set term postscript color
-set out 'two_lines.eps'
-replot 'datafile' using 5
-\end{lstlisting}
-
+Just change every use of \ci{plot} after the first to \ci{replot}. 
+Page \pageref{replottwo} presents a few more notes on using this
+function.
 
 \subsection{Plotting functions} To this point, the discussion has been
 entirely about plotting data points, but Gnuplot also knows all of the
@@ -161,22 +206,28 @@ replot cos(x)
 replot log(x) + 2*x - 0.5*x**2
 \end{lstlisting}
 
+3-D functions are as effective, e.g.:
+\begin{lstlisting}
+set pm3d
+unset colorbox
+splot sin(x) * cos(y) with pm3d
+\end{lstlisting}
+
 \section{Some common settings}
 At this point, you can produce a basic graph of data or a function (or
-both at once). But
-barring supreme luck, Gnuplot's default plot is not exactly what you
-have in mind, and you will need to modify it in some way. 
+both at once). But barring supreme luck, Gnuplot's default plot is not
+exactly what you have in mind, and you will need to modify it in some way.
 
-As above, a typical Gnuplot file consists of a long series of \ci{set}
-commands followed by a single \ci{plot} command. This section catalogs
-the most common features to set. The next section will list some special
-types of graph.
-
+This section catalogs the most common features to set.  
 For more information on the settings here and many more, see the
 very comprehensive Gnuplot documentation, which can be accessed from
 inside the gnuplot command-line program via
 \ci{help}, optionally followed by any of the headers below (e.g.,
 \ci{help set style}, \ci{help set pointtype}).
+
+Finally, if you are interactively experimenting with settings, bear in
+mind that you may have to give a \ci{replot} command (one word with no
+options) before the settings take effect.
 
 \subsection{\ci{set style}} The basic style of the plot may be a simple
 line or points, a bar graph, boxes with error bars, or many other
@@ -230,6 +281,15 @@ represents rankings, so 1 is best; then \ci{set yrange [*:10] reverse}
 will put tenth place at the top of the graph, and autoset the bottom of
 the graph to just past the largest ranking in the data set.
 
+Ranges may also be put on the plot line. For example:
+\begin{lstlisting}
+set xrange [-10:10]
+set yrange [0:2]
+plot 'data'
+#is equivalent to
+plot 'data' [-10:10][0:2]
+\end{lstlisting}
+
 \subsection{\ci{set title}, \ci{set xlabel}, \ci{set ylabel}} These are
 very simple commands, that label the $X$
 and $Y$ axes and the graph itself. If the graph is going to be a figure
@@ -257,190 +317,40 @@ graph, and \ci{below} puts the legend just under the graph.
 
 The key also sometimes benefits from a border, via \ci{set key graph}.
 
-More settings (five or six) forthcoming.
+For surface plots with \cind{pm3d}, the key is a thermometer displaying
+the range of colors and their values. To turn this off, use \ci{unset
+colorbox}. See \ci{help set colorbox} on moving or changing the
+colorbox's orientation.
 
-\section{Some special plots} For a system that basically only has a 
-\ci{set} and a \ci{plot} command, Gnuplot is surprisingly versatile. Here
-are some specialized visualizations that go well beyond the basic 2-D
-plot.
+\subsection{\ci{set term} and \ci{set out}} \index{Postscript} By 
+default, Gnuplot puts a plot on the screen, which is useful for looking
+at data, but not necessarily useful for communicating with peers. To
+write the plot to a file, you need only select the output file format and name.
 
-\subsection{Surfaces} \index{surface plots}
-Let us say tht your data matrix is not a collection of variables in
-columns, but a matrix giving the level of a variable over a grid of
-coordinates. The \ci{splot '-' matrix} command takes such data and
-produces a surface.
-
-Surface plotting goes hand-in-hand with the \cind{pm3d} option, that 
-produces a pleasing color-gradient surface. For example,
+Gnuplot's \ci{set terminal} command dictates the language with which to
+write the output. \ci{X11} indicates that Gnuplot will be communicating
+in the X Window system's terms, \ci{postscript} indicates the Postscript
+page display language, \ci{png} indicates the Portable Network Graphics
+standard, et cetera. The \ci{set out} command provides a file name to
+write to. For example, if a Gnuplot file has 
 \begin{lstlisting}
-set term postscript 
-set out 'surfaceplot1.eps'
-set pm3d
-set palette gray negative
-splot 'datafile' matrix with pm3d
+set term postscript color
+set out 'a_plot.eps'
 \end{lstlisting}
-will produce the first plot in figure \ref{splotone}.  There are many
-palettes to be had; the default, omitting the \ci{set palette} line
-entirely, works for most purposes.
+at its head, then the script will not display to the screen and will
+instead write the designated Postscript file. See below on further
+details on printing.
 
-Another alternative is to \ci{set pm3d map}. This produces an overhead
-view of the same surface, sometimes known as a \vocab{contour plot}, as
-in the second plot of Figure \ref{splotone}.
-
-\begin{figure}
-\begin{tabular}{cc}
-\rotatebox{-90}{\scalebox{.25}{\includegraphics{surfaceplot1.eps}}}
-&
-\rotatebox{-90}{\scalebox{.25}{\includegraphics{surfaceplot2.eps}}}
-\end{tabular}
-\caption{Two views of the same surface}\label{splotone}
-\end{figure}
-
-
-
-
-\subsection{Lattices}  \index{lattices}
-Perhaps plotting two pairs of columns at a time is not sufficient---you
-want bulk, displaying every variable graphed against every other. For
-this, use the \ci{apop\_plot\_lattice} function.
-
+\subsection{Assorted} Here are a few more settings that you may find
+handy.
 \begin{lstlisting}
-apop_data *d = apop_text_to_data("indata", 0, 1);
-apop_plot_lattice("outfile", d);
+unset border    #Delete the border of the graph.
+unset grid      #Make the graph even more minimalist.
+set size square  #Set axes to have equal length on screen or paper.
+set format y "%.3g" #You can use printf strings to format axis labels.
+set format y ""     #Or just turn off printing on the Y axis entirely.
 \end{lstlisting}
-This produces a file that (after \bi{gnuplot -persist outfile}) produces
-a plot like the one in Figure \ref{trellis}. Each variable is plotted
-against each other, so the upper-left graph shows the SES variable
-versus the Hirfindahl index for a set of data points. The lower-right
-graph shows a mirror image of the same two variables. Along the diagonal
-are plots of a variable against itself, and therefore these plots will
-always be along the $45^\circ$ line. They give a quick picture of the
-how a variable's density is distributed.
 
-\begin{figure}
-\rotatebox{-90}{\scalebox{.45}{\includegraphics{trellis.eps}}}
-\caption{Three variables from my hard drive. Each is plotted against the
-other.}\label{trellis}
-\end{figure}
-
-What is a lattice plot good for? Some call it \airq{getting a lay of the
-land}, while others call it \vocab{data snooping}. Given ten perfectly
-random variables, there is a good chance that at least one pair of
-lattice plots will look to you like it demonstrates a nice correlation.
-A formal regression on the chosen pair of variables will likely
-verify your initial visual impression. 
-
-One interviewer directly asked the people who first developed
-this type of display, Rick Becker and Bill Cleveland,
-whether this display method treads too close to data
-snooping:\footnote{\url{http://stat.bell-labs.com/project/trellis/interview.html}}
-
-\begin{quote}
-{\em Inteviewer:} OK, but there is another way to approach the study of a large database:
-develop a statistical model and see if it fits the data. If it does fit,
-use the model to learn about the structure of the data.
-
-{\em Becker \& Cleveland:} Yes, and Trellis
-display\footnote{\vocab{Trellis display} is a trademarked term; therefore
-this book and many common stats packages use the term \airq{lattice}
-to refer to similar displays.} is a big help in doing this because it
-allows you to make a good guess about an initial model to fit and then
-to diagnose how well it fits the data. [\dots]
-
-{\em Inteviewer:} But instead of agonizing over all those panels I could do a bunch of
-chi-squared tests for goodness of fit.
-
-{\em Becker \& Cleveland:} You're joking, right? If not, we're leaving.
-
-{\em Inteviewer:} OK, I guess I'm joking.
-\end{quote}
-
-Since Becker and Cleveland do not elucidate the difference between their
-visualization method and numerical data snooping, it is up to you to
-decide whether such wide-reaching plots are a good first hack at the
-data or merely facilitators of apophenia.
-
-\subsection{Histograms} \index{histograms!plotting|(}
-Gnuplot, refusing to do calculations for you,
-makes making histograms a pain.  Fortunately, the GSL has you covered,
-with the \cind{gsl\_histogram} object, which will also appear
-in Section \ref{randomnumbers}, when we needed to generate PDFs from data.
-
-It creates a set of bins, and
-then you can call \ci{gsl\_histogram\_increment} to put
-data into the right bin. Below is the code for \cind{apop\_plot\_hist\-o\-gram}. 
-It allocates a histogram with
-\ci{bin\_ct} bins, then sets its range to just past the min and max
-of the data. Then the \ci{for} loop pulls data points from the vector and
-dumps them to the histogram, without any further calculation on our part.
-Once everything is neatly aggregated, the function opens a file and dumps the data to a Gnuplottable file. There is an example of this function in use in Figure \ref{draw_beta_curve}, page \pageref{draw_beta_curve}.
-\begin{lstlisting}
-void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
-int             i;
-FILE *          f;
-double          min, max, pt;
-gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
-    gsl_vector_minmax(data, &min, &max);
-        gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
-    for (i=0; i < data->size; i++){
-        pt  = gsl_vector_get(data, i);
-        gsl_histogram_increment(h, pt);
-        }
-
-    //Now that you have a histogram, print it.
-        if (outfile == NULL)    f       = stdout;
-        else            f       = fopen(outfile, "a");
-    fprintf(f, "set key off                                     ;\n\
-                        set style data histograms               ;\n\
-                        set style histogram cluster gap 0       ;\n\
-                        set xrange [0:%i]                       ;\n\
-                        set style fill solid border -1          ;\n\
-                        set boxwidth 0.9                        ;\n\
-                        plot '-' using 2:xticlabels(1);\n", bin_ct);
-    for (i=0; i < bin_ct; i++)
-    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
-    if (outfile !=NULL)    fclose(f);
-}
-\end{lstlisting}
-\index{histograms!plotting|)}
-
-\subsection {Pruning data for display}
-Plotting the entire data set may be detrimental for two reasons. The
-first is the range problem: that one data point at $Y=$a million throws off the
-whole darn plot. If you are using an interactive on-screen graph, you
-can select a smaller region, but it would be better to just not plot
-that point to begin with. 
-
-The second reason for pruning is when the data set is too large. The black
-blob you get from plotting ten million data points on a single piece of
-paper is not very informative. In this case, you want to use only a
-random subset of the data.
-
-This section forthcoming. Summary: you can do this in SQL using the
-typical \sinline{select * from plotme where value < 1e7} form to eliminate
-those values greater than a million. 
-
-One could do the same for random
-numbers, although SQLite does not provide the friendliest of random
-number generators. The \sind{random} function provides a single random
-number between -2,147,483,647 and 2,147,483,647, which the reader will
-recognize as $\pm 2^{31}-1$. So we need to pull a random number,
-divide by $2^{31}-1$, thus producing a number in $[-1,1]$, then shift it
-to the familiar $[0,1]$ range, and then compare it to a limit. The
-query below does this to remove approximately half of the data set.
-It uses the bit-shifting operator which I had promised you would never
-need; read \ci{1<<x} as $2^x$.
-
-\sinline{select * from plotme where (random()/(-(1<<31)-1.0)+1)/2  < 0.5}
-
-\summary{
-\item A Gnuplot command file basically consists of a group of \ci{set}
-commands to specify how the graph will look, and then a single \ci{plot}
-(2-D version) or \ci{splot} (3-D version) command. 
-\item Using the \ci{plot '-'} form, you can put the data to be plotted
-in the command file immediately after the command. You can use this and
-\ci{apop\_data\_print} to produce plot files of your data.
-}
 
 \section{Printing} \index{Postscript} 
 Once your plot looks nice on the screen, you can put it on paper or a
@@ -625,8 +535,84 @@ GIF may be executed without seeking a license.}
 
 More detail forthcoming.
 
+\section{From arrays to plots} \label{gnuprint}
+The scripts above gave a file name from which to read the data (\ci{plot
+'datafile'}).  Alternatively, \ci{plot '-'} tells Gnuplot to
+plot data to be placed immediately below the \ci{plot} command.
 
-\section{\treesymbol Instant gratification}
+With
+the \ci{'-'} trick, the process of turning a matrix into a basic plot is
+trivial. Let \ci{data} be an \ci{apop\_data} set whose first and fifth
+columns we would like to plot against each other. Then we need to create
+a file, put a \ci{plot '-'} command in the first line (perhaps preceded by a series of 
+static \ci{set} commands), and then fill the
+remainder with the data to be plotted. Below is the basic code to create
+a Gnuplot file. Since virtually anything you do with Gnuplot will be a
+variant of this code, it will be dissected in detail.  
+  \label{fprintf}
+\begin{lstlisting}[numbers=left, numberstyle=\scshape]
+FILE    *f = fopen("plot_me", "w");
+fprintf(f, "plot '-' using 1:5 title 'columns (1,5)'\n");
+fclose(f);
+apop_matrix_print(data, "plot_me");
+\end{lstlisting}
+
+The first option to \cind{fopen} is the file to be written to, and
+the second option should be either \ci{"a"} for append or \ci{"w"} for
+write anew; in this case, we want to start with a clean file so we use
+\ci{"w"}.\footnote{If the argument is \ci{"r"}, you could read from the
+file. However, none of the methods in this book involve reading raw text
+from a file. See any standard reference on C on the details of opening a
+file for reading.} 
+
+
+As you can see from line two, the syntax for \ci{fprintf} is just like
+the syntax for \ci{sprintf}: the first argument indicates to what you
+are writing, and the rest is a standard \ci{printf} line, which may
+include the usual insertions via \ci{\%f}, \ci{\%i}, and so on.
+
+Since Gnuplot lets us select colums via the \ci{using 1:5} clause, there
+is no need to pare down the data set in memory.  Notice again that the
+first column in Gnuplot is 1, not 0.
+
+The \ci{title} clause shows that Gnuplot accepts both ``double quotes''
+and `single quotes' around text such as file names or labels; since
+single quotes are nothing special to C, this makes it much easier to
+enter such text.
+
+Line three closes the file, so there is no confusion when, in line four,
+we use the standard \ci{apop\_matrix\_print} command to write the data
+to the file. We print the matrix instead of the
+full \ci{apop\_data} structure so that no names or labels are written.
+Since \cind{apop\_data\_print} defaults to appending, the matrix appears
+after the \ci{plot} header that we just wrote to the file.
+You would need to set \ci{apop\_opts.output\_append = 0} to overwrite.
+\cindex{apop\_opts.output\_append}
+
+At the end of this, \ci{plot\_me} will be executable by
+Gnuplot, using the forms like 
+\ci{gnuplot -persist < plot\_me}, as above.
+
+\treesymbol{} Those experienced with POSIX systems know that a script
+can be made executable by itself. The first line of the script must begin
+with the special marker \#!, and then give the interpreter that will read
+the file, and the script must be given execute permissions. The following
+program will produce a self-executing Gnuplot script to plot $\sin(x)$:
+\begin{lstlisting}
+#include <apophenia/headers.h>
+#include <sys/stat.h>
+int main(){
+    char    filename[]  = "plot_me";
+    FILE    *f = fopen(filename, "w");
+    fprintf(f, "#!/usr/bin/gnuplot -persist\n\
+                plot sin(x)");
+    fclose(f);
+    chmod(filename, 0755);
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{\treesymbol Instant gratification} 
 All of the above methods involved writing your commands data to a file and then 
 running Gnuplot, but you may want to produce plots as your program runs.
 This is often useful for simulations, to give you a hint that all is OK
@@ -711,5 +697,181 @@ for (period =0; period< 1000; period++){
     if (!(period % 50))
         plot_vector_now(output);
 \end{lstlisting}
+
+\subsection{\treesymbol{} \cind{replot} revisited}\label{replottwo}
+The \ci{replot} function is a bit fragile to the techniques described
+here.
+
+First, it can be very frustrating using the above \ci{plot '-'} format
+to put data inline when replotting elements. It is easier to write the
+data to a separate file and then refer to that in the file to be read
+by Gnuplot. Here is a C snippet to produce a data file and a Gnuplot
+command file:
+\ns{6}\begin{lstlisting}
+FILE    *f = fopen("plot_me", "w");
+fprintf(f, "plot 'datafile' using 1 title 'data column 1';\n \
+            replot 'datafile' using 5 title 'data column 5';\n");
+fclose(f);
+apop_data_print(data, "datafile");
+\end{lstlisting}
+Running \bi{plotme} through Gnuplot will produce a plot with two lines,
+representing column one and column five of the datafile.
+
+Also, when outputting to a paper device, replotting tends to make a
+mess. Set the output terminal (see below) just before the final replot:
+\begin{lstlisting}
+plot 'datafile' using 1
+set term postscript color
+set out 'two_lines.eps'
+replot 'datafile' using 5
+\end{lstlisting}
+
+\section{Some special plots} For a system that basically only has a 
+\ci{set} and a \ci{plot} command, Gnuplot is surprisingly versatile. Here
+are some specialized visualizations that go well beyond the basic 2-D
+plot.
+
+\subsection{Lattices}  \index{lattices}
+Perhaps plotting two pairs of columns at a time is not sufficient---you
+want bulk, displaying every variable graphed against every other. For
+this, use the \ci{apop\_plot\_lattice} function.
+
+\begin{lstlisting}
+apop_data *d = apop_text_to_data("indata", 0, 1);
+apop_plot_lattice("outfile", d);
+\end{lstlisting}
+This produces a file that (after \bi{gnuplot -persist outfile}) produces
+a plot like the one in Figure \ref{trellis}. Each variable is plotted
+against each other, so the upper-left graph shows the SES variable
+versus the Hirfindahl index for a set of data points. The lower-right
+graph shows a mirror image of the same two variables. Along the diagonal
+are plots of a variable against itself, and therefore these plots will
+always be along the $45^\circ$ line. They give a quick picture of the
+how a variable's density is distributed.
+
+\begin{figure}
+\rotatebox{-90}{\scalebox{.45}{\includegraphics{trellis.eps}}}
+\caption{Three variables from my hard drive. Each is plotted against the
+other.}\label{trellis}
+\end{figure}
+
+What is a lattice plot good for? Some call it \airq{getting a lay of the
+land}, while others call it \vocab{data snooping}. Given ten perfectly
+random variables, there is a good chance that at least one pair of
+lattice plots will look to you like it demonstrates a nice correlation.
+A formal regression on the chosen pair of variables will likely
+verify your initial visual impression. 
+
+One interviewer directly asked the people who first developed
+this type of display, Rick Becker and Bill Cleveland,
+whether this display method treads too close to data
+snooping:\footnote{\url{http://stat.bell-labs.com/project/trellis/interview.html}}
+
+\begin{quote}
+{\em Inteviewer:} OK, but there is another way to approach the study of a large database:
+develop a statistical model and see if it fits the data. If it does fit,
+use the model to learn about the structure of the data.
+
+{\em Becker \& Cleveland:} Yes, and Trellis
+display\footnote{\vocab{Trellis display} is a trademarked term; therefore
+this book and many common stats packages use the term \airq{lattice}
+to refer to similar displays.} is a big help in doing this because it
+allows you to make a good guess about an initial model to fit and then
+to diagnose how well it fits the data. [\dots]
+
+{\em Inteviewer:} But instead of agonizing over all those panels I could do a bunch of
+chi-squared tests for goodness of fit.
+
+{\em Becker \& Cleveland:} You're joking, right? If not, we're leaving.
+
+{\em Inteviewer:} OK, I guess I'm joking.
+\end{quote}
+
+Since Becker and Cleveland do not elucidate the difference between their
+visualization method and numerical data snooping, it is up to you to
+decide whether such wide-reaching plots are a good first hack at the
+data or merely facilitators of apophenia.
+
+\subsection{Histograms} \index{histograms!plotting|(}
+Gnuplot, refusing to do calculations for you,
+makes making histograms a pain.  Fortunately, the GSL has you covered,
+with the \cind{gsl\_histogram} object, which will also appear
+in Section \ref{randomnumbers}, when we needed to generate PDFs from data.
+
+It creates a set of bins, and
+then you can call \ci{gsl\_histogram\_increment} to put
+data into the right bin. Below is the code for \cind{apop\_plot\_hist\-o\-gram}. 
+It allocates a histogram with
+\ci{bin\_ct} bins, then sets its range to just past the min and max
+of the data. Then the \ci{for} loop pulls data points from the vector and
+dumps them to the histogram, without any further calculation on our part.
+Once everything is neatly aggregated, the function opens a file and dumps the data to a Gnuplottable file. There is an example of this function in use in Figure \ref{draw_beta_curve}, page \pageref{draw_beta_curve}.
+\begin{lstlisting}
+void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
+int             i;
+FILE *          f;
+double          min, max, pt;
+gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
+    gsl_vector_minmax(data, &min, &max);
+        gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
+    for (i=0; i < data->size; i++){
+        pt  = gsl_vector_get(data, i);
+        gsl_histogram_increment(h, pt);
+        }
+
+    //Now that you have a histogram, print it.
+        if (outfile == NULL)    f       = stdout;
+        else            f       = fopen(outfile, "a");
+    fprintf(f, "set key off                                     ;\n\
+                        set style data histograms               ;\n\
+                        set style histogram cluster gap 0       ;\n\
+                        set xrange [0:%i]                       ;\n\
+                        set style fill solid border -1          ;\n\
+                        set boxwidth 0.9                        ;\n\
+                        plot '-' using 2:xticlabels(1);\n", bin_ct);
+    for (i=0; i < bin_ct; i++)
+    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
+    if (outfile !=NULL)    fclose(f);
+}
+\end{lstlisting}
+\index{histograms!plotting|)}
+
+\subsection {Pruning data for display}
+Plotting the entire data set may be detrimental for two reasons. The
+first is the range problem: that one data point at $Y=$a million throws off the
+whole darn plot. If you are using an interactive on-screen graph, you
+can select a smaller region, but it would be better to just not plot
+that point to begin with. 
+
+The second reason for pruning is when the data set is too large. The black
+blob you get from plotting ten million data points on a single piece of
+paper is not very informative. In this case, you want to use only a
+random subset of the data.
+
+This section forthcoming. Summary: you can do this in SQL using the
+typical \sinline{select * from plotme where value < 1e7} form to eliminate
+those values greater than a million. 
+
+One could do the same for random
+numbers, although SQLite does not provide the friendliest of random
+number generators. The \sind{random} function provides a single random
+number between -2,147,483,647 and 2,147,483,647, which the reader will
+recognize as $\pm 2^{31}-1$. So we need to pull a random number,
+divide by $2^{31}-1$, thus producing a number in $[-1,1]$, then shift it
+to the familiar $[0,1]$ range, and then compare it to a limit. The
+query below does this to remove approximately half of the data set.
+It uses the bit-shifting operator which I had promised you would never
+need; read \ci{1<<x} as $2^x$.
+
+\sinline{select * from plotme where (random()/(-(1<<31)-1.0)+1)/2  < 0.5}
+
+\summary{
+\item A Gnuplot command file basically consists of a group of \ci{set}
+commands to specify how the graph will look, and then a single \ci{plot}
+(2-D version) or \ci{splot} (3-D version) command. 
+\item Using the \ci{plot '-'} form, you can put the data to be plotted
+in the command file immediately after the command. You can use this and
+\ci{apop\_data\_print} to produce plot files of your data.
+}
 
 \index{Gnuplot|)}
