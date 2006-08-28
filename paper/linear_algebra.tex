@@ -635,6 +635,23 @@ gsl_vector v = gsl_matrix_col(a_matrix, 4).vector;
 gsl_vector_memcpy(a_new_vector, &v);
 \end{lstlisting}
 
+\index{submatrices}
+\paragraph{Submatrices} Just as one can extract a column or row
+vector from a matrix, one can extract a 2-D submatrix, using
+\cind{gsl\_matrix\_submatrix}. As you will see below, no copying takes
+place when taking a submatrix or subvector. Rather, the system writes
+down new coordinates and a pointer to the original data. 
+\begin{lstlisting}
+//Create a submatrix with upper-left corner at (20,30), with size (1000,1000)
+//The operation will take zero time.
+gsl_matrix m = gsl_matrix_submatrix(a_matrix, 20,30, 1000,1000).matrix;
+apop_matrix_show(&m);
+
+//Copy the data. This may take time.
+gsl_matrix *a_new_matrix = gsl_matrix_alloc((&m)->size1, (&m)->size2);
+gsl_matrix_memcpy(a_new_matrix, &m);
+\end{lstlisting}
+
 \paragraph{The jackknife}
 The typical means of doing a jackknife estimation (as discussed in
 Chapter \ref{boot}) involves re-estimating a parameter for the data set
