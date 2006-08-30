@@ -193,6 +193,7 @@ typedef struct apop_data{
     apop_name   *names;
     char        ***categories;
     int         catsize[2];
+    gsl_vector  *weights;
 } apop_data;
 
 /** Regression and MLE functions return this structure, which includes

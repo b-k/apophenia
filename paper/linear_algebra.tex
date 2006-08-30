@@ -639,8 +639,11 @@ gsl_vector_memcpy(a_new_vector, &v);
 \paragraph{Submatrices} Just as one can extract a column or row
 vector from a matrix, one can extract a 2-D submatrix, using
 \cind{gsl\_matrix\_submatrix}. As you will see below, no copying takes
-place when taking a submatrix or subvector. Rather, the system writes
-down new coordinates and a pointer to the original data. 
+place when taking a submatrix or subvector. The system simply writes
+down new coordinates and a pointer to the original data, and delays
+copying data until you make a call to a {\ci memcpy}-family function. 
+
+\cindex{gsl\_matrix\_memcpy}
 \begin{lstlisting}
 //Create a submatrix with upper-left corner at (20,30), with size (1000,1000)
 //The operation will take zero time.
@@ -996,7 +999,7 @@ of data at the same time as it is crunching the current data element.
 The \ci{gsl\_matrix} structure works wonderfully with such a system,
 because steps are predictable and of fixed size, so the processor
 has a good chance of correctly guessing what data to put into its
-caches.
+faster caches.
 
 Now say that we have a $100 \times 10$ matrix, which would have the following information:
 \begin{lstlisting}
@@ -1006,8 +1009,8 @@ Now say that we have a $100 \times 10$ matrix, which would have the following in
   data = [location of (0,0)];
   owner =1;
 \end{lstlisting}
-Notice that the \ci{tda}  (also known as the \vocab{stride}) is equal to
-\ci{size2}. Jumping down a column thus requires a jump of
+Notice that the \ci{tda}   is equal to
+\ci{size2}.\footnote{The abbreviation \ci{tda} somehow stands for {\em trailing dimension}. It is also known as the \vocab{stride}.} Jumping down a column thus requires a jump of
 \ci{sizeof(double)*tda}.
 
 
@@ -1068,3 +1071,15 @@ representing a data matrix, and the \ci{gsl\_matrix} is by no means the
 best for all needs. But it does very well for its goals, allowing the
 hardware to process rows and columns of homogeneous data with maximal
 efficiency.
+
+\summary{
+\item The GSL's matrix and vector structures are very good for efficient
+computation, becuase each element has a fixed size and is a fixed
+distance from the neighboring elements.
+\item It is very easy to take continguous subvectors or submatrices of
+these structures. Doing so requires no copying of data.
+\item There is no simple way to take non-contiguous subsets of matrices
+or vectors. You will either need to copy the data manually (i.e., using
+a \ci{for} loop), or do the manipulations in the database before your
+data is in \ci{gsl\_matrix} form.
+}

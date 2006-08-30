@@ -27,6 +27,44 @@ double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
 int     len                 = 8000;
 
+
+
+static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
+    assert(apop_vector_mean(v) == apop_vector_weighted_mean(v,NULL));
+    assert(apop_vector_mean(av) == apop_vector_weighted_mean(v,w));
+    assert(apop_vector_weighted_mean(v,w) == mean);
+    assert(fabs(apop_vector_var(v) - apop_vector_weighted_var(v,NULL))<1e-5);
+    assert(fabs(apop_vector_covar(v,v2) - apop_vector_weighted_covar(v,v2,NULL))<1e-5);
+    assert(fabs(apop_vector_var(av) - apop_vector_weighted_var(v,w))<1e-5);
+    assert(fabs(apop_vector_covar(av,av2) - apop_vector_weighted_covar(v,v2,w))<1e-5);
+}
+
+int test_weigted_moments(){
+  double        data[]      = {1,2,3};
+  double        alldata[]   = {1,2,3};
+  double        data3[]     = {3,2,1};
+  double        alldata3[]  = {3,2,1};
+  double        weights[]   = {1,1,1};
+  gsl_vector    *v          = apop_array_to_vector(data, 3);
+  gsl_vector    *v2         = apop_array_to_vector(data3, 3);
+  gsl_vector    *w          = apop_array_to_vector(weights, 3);
+  gsl_vector    *av         = apop_array_to_vector(alldata, 3);
+  gsl_vector    *av2        = apop_array_to_vector(alldata3, 3);
+    wmt(v,v2,w,av,av2,2);
+  double data2[]       = {0,1,2,3,4};
+  double alldata2[]    = {0,0,0,0,1,1,1,2,2,3};
+  double data4[]       = {0,1,3,2,4};
+  double alldata4[]    = {0,0,0,0,1,1,1,3,3,2};
+  double weights2[]    = {4,3,2,1,0};
+    v             = apop_array_to_vector(data2, 5);
+    v2            = apop_array_to_vector(data4, 5);
+    w             = apop_array_to_vector(weights2, 5);
+    av            = apop_array_to_vector(alldata2, 10);
+    av2           = apop_array_to_vector(alldata4, 10);
+    wmt(v,v2,w,av,av2,1);
+    return 0;
+}
+
 int test_split_and_stack(){
 APOP_RNG_ALLOC(r, 19);
 APOP_VECTOR_ALLOC(dv, 10);
@@ -460,6 +498,7 @@ apop_estimation_params  params;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
         */
+    do_test("weighted moments:", test_weigted_moments());
     do_test("nist_tests:", nist_tests());
     do_test("split and stack to vector test:", test_matrix_split_to_vector());
     do_test("split and stack test:", test_split_and_stack());

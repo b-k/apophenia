@@ -36,6 +36,9 @@ inline double apop_vector_cov(gsl_vector *ina, gsl_vector *inb);
 inline double apop_vector_correlation(gsl_vector *ina, gsl_vector *inb);
 inline double apop_vector_kurtosis(gsl_vector *in);
 inline double apop_vector_kurt(gsl_vector *in);
+double apop_vector_weighted_mean(gsl_vector *, gsl_vector *);
+double apop_vector_weighted_var(gsl_vector *v, gsl_vector *w);
+double apop_vector_weighted_covar(gsl_vector *, gsl_vector *, gsl_vector *);
 
 //Distances, Euclidian and Manhattan:
 double apop_vector_distance(gsl_vector *ina, gsl_vector *inb);
