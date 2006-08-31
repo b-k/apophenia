@@ -99,19 +99,27 @@ inline double apop_var(gsl_vector *in){
 	return apop_vector_var(in); 
 }
 
-/** Returns the kurtosis of the data in the given vector.
+/** Returns the sample skew (divide by \f$n-1\f$) of the data in the given vector.
+\ingroup vector_moments
+*/
+inline double apop_vector_skew(gsl_vector *in){
+	return gsl_stats_skew(in->data,in->stride, in->size)
+                *pow(apop_vector_var(in),3./2)*in->size/(in->size -1.); }
+
+/** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
 \ingroup vector_moments
 */
 inline double apop_vector_kurtosis(gsl_vector *in){
-	return gsl_stats_kurtosis(in->data,in->stride, in->size)+3; }
+	return ((gsl_stats_kurtosis(in->data,in->stride, in->size)+3)
+                *pow(apop_vector_var(in),4./2))*in->size/(in->size -1.); }
 
-/** Returns the kurtosis of the data in the given vector.
+/** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
 \ingroup vector_moments
 */
 inline double apop_vector_kurt(gsl_vector *in){
-	return gsl_stats_kurtosis(in->data,in->stride, in->size)+3; }
+	return apop_vector_kurtosis(in);}
 
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
 \param in	the vector in question
@@ -585,7 +593,7 @@ apop_data *apop_data_covar(apop_data *in){
         for (j=i; j < in->matrix->size2; j++){
             v1  = gsl_matrix_column(in->matrix, i).vector;
             v2  = gsl_matrix_column(in->matrix, j).vector;
-            var = apop_vector_cov(&v1, &v2);
+            var = apop_vector_weighted_cov(&v1, &v2, in->weights);
             gsl_matrix_set(out->matrix, i,j, var);
             if (i!=j)
                 gsl_matrix_set(out->matrix, j,i, var);
@@ -703,6 +711,55 @@ double apop_vector_weighted_var(gsl_vector *v, gsl_vector *w){
     return (sumsq/wsum  - gsl_pow_2(sum/wsum)) *(wsum/(wsum-1));
 }
 
+static double skewkurt(gsl_vector *v, gsl_vector *w, int exponent, char *fn_name){
+  int           i;
+  long double   wsum = 0, sumcu = 0, vv, ww, mu;
+    if (!w)
+        return apop_vector_var(v);
+    if (!v->size){
+        if (apop_opts.verbose)
+            printf("%s: data vector has size 0. Returning zero.\n", fn_name);
+        return 0;
+    }
+    if (w->size != v->size){
+        printf("%s: data vector has size %i; weighting vector has size %i. Returning zero.\n", fn_name, v->size, w->size);
+        return 0;
+    }
+    //Using the E(x - \bar x)^3 form, which is lazy.
+    mu  = apop_vector_weighted_mean(v, w);
+    for (i=0; i< w->size; i++){
+        vv    = gsl_vector_get(v,i);
+        ww    = gsl_vector_get(w,i);
+        sumcu+= ww * gsl_pow_int(vv - mu, exponent); 
+        wsum += ww; 
+    }
+    return sumcu/(wsum-1);
+
+
+}
+
+/** Find the sample skew of a weighted vector.
+
+\param  v   The data vector
+\param  w   the weight vector. If NULL, assume equal weights.
+\return     The weighted sample variance
+\todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
+*/
+double apop_vector_weighted_skew(gsl_vector *v, gsl_vector *w){
+    return skewkurt(v,w,3, "apop_vector_weighted_skew");
+}
+
+/** Find the sample kurtosis of a weighted vector.
+
+\param  v   The data vector
+\param  w   the weight vector. If NULL, assume equal weights.
+\return     The weighted sample variance
+\todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
+*/
+double apop_vector_weighted_kurt(gsl_vector *v, gsl_vector *w){
+    return skewkurt(v,w,4, "apop_vector_weighted_kurt");
+}
+
 /** Find the sample covariance of a pair of weighted vectors. This only
 makes sense if the weightings are identical, so the function takes only one weighting vector for both.
 
@@ -710,7 +767,7 @@ makes sense if the weightings are identical, so the function takes only one weig
 \param  w   the weight vector. If NULL, assume equal weights.
 \return     The weighted sample covariance
 */
-double apop_vector_weighted_covar(gsl_vector *v1, gsl_vector *v2, gsl_vector *w){
+double apop_vector_weighted_cov(gsl_vector *v1, gsl_vector *v2, gsl_vector *w){
   int           i;
   long double   sum1 = 0, sum2 = 0, wsum = 0, sumsq = 0, vv1, vv2, ww;
     if (!w)

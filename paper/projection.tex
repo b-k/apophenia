@@ -278,7 +278,17 @@ the GSL and Apophenia (e.g.,
 \cinline{apop\_vec\-tor\_skew}) all return the sample central
 moment, presuming that your data is much more likely to be a sample than
 a population. Multiply the output by $(n-1)/n$ to get the population
-central moment.
+central moment.\footnote{The underlying GSL functions 
+\cind{gsl\_stats\_skew} and \cind{gsl\_stats\_kurtosis} are a bit
+eccentric.   
+First, they are 
+normalized by dividing by the square root of the sample variance, which
+is a digression from the standard equations in this text. Second, although
+\cind{gsl\_stats\_variance} is a sum divided by $n-1$, the higher moments
+are a sum divided by $n$. That is, after they are normalized by a standard
+deviation assuming a sample, the calculation proceeds as if the data are a
+population. Of course, this detail is only relevant for for small $n$.}
+
 
 What information can we get from the higher moments?  Below, we will
 see the powerful Central Limit Theorem, which says that if a variable
@@ -313,6 +323,8 @@ calculate most of the above, e.g.:
 
 \cindex{apop\_vector\_mean} \cindex{apop\_vector\_var}
 \cindex{apop\_data\_show} \cindex{apop\_vector\_skew}
+\cindex{apop\_vector\_correlation}
+\cindex{apop\_matrix\_summarize}
 \begin{lstlisting}
 apop_data *set = gather_data();
 gsl_vector v1, v2;
@@ -328,6 +340,34 @@ apop_data_show(apop_matrix_summarize(set));
 \end{lstlisting}
 The last item in the code, \cind{apop\_matrix\_summarize} produces a table of
 some summary statistics for every column of the data set.
+
+\paragraph{\treesymbol{} Weighted data} Your data may be aggregated so
+that one line of data represents multiple observations. For example, the
+2000 U.S. Census found that 75.1\% of the U.S. population is White,
+12.3\% is Black or African-American, and 3.6\% is Asian. If your survey
+includes exactly 1000 people in each category, your sample will be more
+representative if you take each White respondent to represent 751
+people, each Black or African-American respondent to represent 123
+people, and each Asian to represent 36 people. 
+
+This is not the place to go into details about statistically sound means
+of weighting data. But if your data includes weightings, then you will
+want means to find the weighted moments of the data. Assuming you have
+data in vectors \ci{v}, \ci{v1}, and \ci{v2} and corresponding weights in a vector
+\ci{w}, then you can use the following functions. Notice that the
+covaiance function takes only one weighting, because it does not make
+sense to try to find the covariance of differently-weighted data, so the
+\ci{w} vector is assumed to apply to both vectors.
+\cindex{apop\_vector\_weighted\_mean} \cindex{apop\_vector\_weighted\_var}
+\cindex{apop\_data\_weighted\_show} \cindex{apop\_vector\_weighted\_skew}
+\cindex{apop\_vector\_weighted\_cov}
+\begin{lstlisting}
+double mean_w = apop_vector_weighted_mean(v, w);
+double var_w = apop_vector_weighted_var(v, w);
+double skew_w = apop_vector_weighted_skew(v, w);
+double kurt_w = apop_vector_weighted_kurtosis(v, w);
+double corr = apop_vector_cov(v1, v2, w);
+\end{lstlisting}
 
 \summary{
 \item The most basic means of describing data is via its moments. The

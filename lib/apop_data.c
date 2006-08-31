@@ -45,6 +45,9 @@ be allocated. Your best bet for allocating the categories is to produce
 them elsewhere, such as \ref apop_query_to_chars and then point an
 apop_data structure with a zero-sized vector to your matrix of strings.
 
+The \c weights vector is set to \c NULL. If you need it, allocate it via
+\code d->weights   = gsl_vector_alloc(row_ct); \endcode.
+
   \param size1, size2   row and column size for the matrix. If \c size2>0
   this exactly mirrors the format of \c gsl_matrix_alloc. If \c size2==-1,
   then allocate a vector. \c apop_data_alloc(0,0) will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
@@ -53,9 +56,10 @@ apop_data structure with a zero-sized vector to your matrix of strings.
  \ingroup data_struct
   */
 apop_data * apop_data_alloc(int size1, int size2){
-apop_data  *setme       = malloc(sizeof(apop_data));
+  apop_data  *setme       = malloc(sizeof(apop_data));
     setme->vector   = NULL;
     setme->matrix   = NULL;
+    setme->weights   = NULL;
     if (size2 > 0)
         setme->matrix   = gsl_matrix_alloc(size1,size2);
     else if (size1>0)
@@ -74,7 +78,7 @@ apop_data  *setme       = malloc(sizeof(apop_data));
 return      The \ref apop_data structure in question.
   */
 apop_data * apop_data_from_matrix(gsl_matrix *m){
-apop_data  *setme   = apop_data_alloc(0,0);
+  apop_data  *setme   = apop_data_alloc(0,0);
     if (m==NULL && apop_opts.verbose) 
         {printf("Warning: converting a NULL matrix to an apop_data structure.\n");}
     setme->matrix       = m;
@@ -95,7 +99,7 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 \return     an allocated, ready-to-use \ref apop_data struture.
 */
 apop_data * apop_data_from_vector(gsl_vector *v){
-apop_data  *setme   = malloc(sizeof(apop_data));
+  apop_data  *setme   = malloc(sizeof(apop_data));
     if (v==NULL && apop_opts.verbose) 
         {printf("Warning: converting a NULL matrix to an apop_data structure.\n");}
     setme->vector       = v;
@@ -145,18 +149,10 @@ void apop_data_free(apop_data *freeme){
         gsl_vector_free(freeme->vector);
     if (freeme->matrix)
         gsl_matrix_free(freeme->matrix);
+    if (freeme->weights)
+        gsl_vector_free(freeme->weights);
     apop_name_free(freeme->names);
     apop_cats_free(freeme->categories, freeme->catsize[0] , freeme->catsize[1]);
-    /*
-    if (freeme->catsize[0] && freeme->catsize[1]){
-        for (i=0; i < freeme->catsize[0]; i++)
-            for (j=0; j < freeme->catsize[1]; j++)
-                if(freeme->categories[i][j])
-                    free(freeme->categories[i][j]);
-        if(freeme->categories)
-            free(freeme->categories);
-    }
-    */
     free(freeme);
 }
 
@@ -213,7 +209,7 @@ void apop_data_memcpy(apop_data *out, apop_data *in){
  \ingroup data_struct
   */
 apop_data *apop_data_copy(apop_data *in){
-apop_data *out  = apop_data_alloc(0, 0);
+  apop_data *out  = apop_data_alloc(0, 0);
     if (!in){
         apop_data_free(out);
         return NULL;
@@ -256,8 +252,8 @@ what you'd prefer.]
 \ingroup data_struct
 */
 apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
-gsl_matrix  *stacked= NULL;
-apop_data   *out    = NULL;
+  gsl_matrix  *stacked= NULL;
+  apop_data   *out    = NULL;
     if (m1 == NULL)
         out = apop_data_copy(m2);
     else if (m2 == NULL)
@@ -304,10 +300,10 @@ apop_data   *out    = NULL;
  */
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
     //A long, dull series of contingencies. Bonus: a valid use of goto.
-apop_data   **out   = malloc(2*sizeof(apop_data *));
-gsl_vector  v1, v2;
-gsl_matrix  m1, m2;
-int         set_v1  = 1,
+  apop_data   **out   = malloc(2*sizeof(apop_data *));
+  gsl_vector  v1, v2;
+  gsl_matrix  m1, m2;
+  int       set_v1  = 1,
             set_v2  = 1,
             set_m1  = 1,
             set_m2  = 1;
@@ -421,7 +417,7 @@ quickly fill an array of ints with nonzero values.
  \ingroup data_struct
  */
 void apop_data_rm_columns(apop_data *d, int *drop){
-gsl_matrix  *freeme = d->matrix;
+  gsl_matrix  *freeme = d->matrix;
     d->matrix = apop_matrix_rm_columns(d->matrix, drop);
     gsl_matrix_free(freeme); 
     apop_name_rm_columns(d->names, drop);
@@ -459,7 +455,7 @@ matching rules.
  \ingroup data_struct
  */
 double apop_data_get_tn(apop_data *in, char* row, int col){
-int rownum =  apop_name_find(in->names, row, 'r');
+  int rownum =  apop_name_find(in->names, row, 'r');
     if (rownum == -1){
         if(apop_opts.verbose)
             printf("couldn't find %s amongst the column names.\n",row);
@@ -480,7 +476,7 @@ matching rules.
  \ingroup data_struct
  */
 double apop_data_get_nt(apop_data *in, size_t row, char* col){
-int colnum =  apop_name_find(in->names, col, 'c');
+  int colnum =  apop_name_find(in->names, col, 'c');
     if (colnum == -1){
         if(apop_opts.verbose)
             printf("couldn't find %s amongst the column names.\n",col);
@@ -497,8 +493,8 @@ matching rules.
  \ingroup data_struct
  */
 double apop_data_get_tt(apop_data *in, char *row, char* col){
-int colnum =  apop_name_find(in->names, col, 'c');
-int rownum =  apop_name_find(in->names, row, 'r');
+  int colnum =  apop_name_find(in->names, col, 'c');
+  int rownum =  apop_name_find(in->names, row, 'r');
     if (colnum == -1){
         if(apop_opts.verbose)
             printf("couldn't find %s amongst the column names.\n",col);
@@ -544,7 +540,7 @@ matching rules.
  \ingroup data_struct
  */
 void apop_data_set_tn(apop_data *in, char* row, int col, double data){
-int rownum =  apop_name_find(in->names, row, 'r');
+  int rownum =  apop_name_find(in->names, row, 'r');
     if (rownum == -1){
         if(apop_opts.verbose)
             printf("couldn't find %s amongst the column names.\n",row);
@@ -564,7 +560,7 @@ matching rules.
  \ingroup data_struct
  */
 void apop_data_set_nt(apop_data *in, size_t row, char* col, double data){
-int colnum =  apop_name_find(in->names, col, 'c');
+  int colnum =  apop_name_find(in->names, col, 'c');
     if (colnum == -1){
         if(apop_opts.verbose)
             printf("couldn't find %s amongst the column names.\n",col);
@@ -580,8 +576,8 @@ matching rules.
  \ingroup data_struct
  */
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data){
-int colnum =  apop_name_find(in->names, col, 'c');
-int rownum =  apop_name_find(in->names, row, 'r');
+  int colnum =  apop_name_find(in->names, col, 'c');
+  int rownum =  apop_name_find(in->names, row, 'r');
     if (colnum == -1){
         if(apop_opts.verbose)
             printf("couldn't find %s amongst the column names.\n",col);
