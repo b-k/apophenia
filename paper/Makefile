@@ -24,6 +24,11 @@ book:	$(DOCNAME).pdf
 	psbook gsl_stats.ps | mpage -2 -o -M-63 | ps2pdf - > gsl_eff.pdf
 	scp gsl_eff.pdf $(THEBES):www/
 
+figures:
+	dot -Tps < testing.dot >testfig.eps
+	dot -Tps < models.dot >modeldotfig.eps
+
+
 viewps: 
 	gv -seascape  -geometry 1129x824+-95+-49 -scale 2 $(DOCNAME).ps
 

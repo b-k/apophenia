@@ -1,17 +1,26 @@
-\chapter{Gnuplot} \label{gnuplot} 
+\chapter{Graphics} \label{gnuplot} 
 \index{Gnuplot|(}
 \index{plotting|see{Gnuplot}}
 \index{graphing|see{Gnuplot}}
 
-This chapter will give you some tips on plotting using Gnuplot, a graphing
-package that is as open and freely available as gcc.\footnote{There is
-some politics about how this is not strictly true: the maintainers of
-Gnuplot will not allow you to modify their code and then distribute the
-modified package independently (i.e., to \airq{fork} the code base). The project is entirely unrelated to the
-GNU, and the name is simply a compromise between the names that the two
-main authors preferred: nplot and llamaplot.}
+Producing graphics from a C program is supremely difficult. You may have
+deciphered the correct means of producing JPEGs, but tomorrow you may
+need your graph in another format like PDF or PNG or what-have-you.
 
-Gnuplot's language
+The solution is to use a handful of external
+programs that take in plain text, which is easy to produce by hand or
+via C code, and output an image in any of the panolpy of graphics
+formats.  All of the programs here are as open and freely available as
+gcc, so you can be confident that your code will be portable to new
+computers.\footnote{There is some politics about how this is not strictly
+true: the maintainers of Gnuplot will not allow you to modify their
+code and then distribute the modified package independently (i.e., to
+\airq{fork} the code base). The project is entirely unrelated to the GNU,
+and the name is simply a compromise between the names that the two main
+authors preferred: nplot and llamaplot.}
+
+The plot-producing program with which this chapter will primarily be
+concerned is Gnuplot. Its language
 basically has only two verbs---\ci{set} and \ci{plot}---plus a few
 variants (\ci{splot}, \ci{replot}). Here is a typical Gnuplot script;
 you can see that it
@@ -32,9 +41,9 @@ As with SQLite, there is a command-line interpreter for Gnuplot's
 commands (\bi{gnuplot}), so you can
 interactively try different \ci{set} commands to see what options look
 best. After you have finished shopping for the best settings, you can
-put them into a script that will always produce the perfect graph, or
+put them into a script that will always produce the perfect plot, or
 better still, write a C program to autogenerate a script that will
-always produce the perfect graph.
+always produce the perfect plot.
 
 The easiest way to put together a script is to put it in a separate file
 (e.g., a file named \bi{plotme}) and have Gnuplot read the script. There
@@ -112,7 +121,7 @@ element is the height at the Northeast corner. To plot such data, use
 
 If all is arranged correctly and you are plotting on-screen instead of
 to a file, then you will be able to click on the plot and drag the plot
-around its center. The movement vastly improves the 3-D impresion of the graph.
+around its center. The movement vastly improves the 3-D impresion of the plot.
 
 Surface plotting goes hand-in-hand with the \cind{pm3d} (palette-mapped
 3-D) option, that 
@@ -214,7 +223,7 @@ splot sin(x) * cos(y) with pm3d
 \end{lstlisting}
 
 \section{Some common settings}
-At this point, you can produce a basic graph of data or a function (or
+At this point, you can produce a basic plot of data or a function (or
 both at once). But barring supreme luck, Gnuplot's default plot is not
 exactly what you have in mind, and you will need to modify it in some way.
 
@@ -230,7 +239,7 @@ mind that you may have to give a \ci{replot} command (one word with no
 options) before the settings take effect.
 
 \subsection{\ci{set style}} The basic style of the plot may be a simple
-line or points, a bar graph, boxes with error bars, or many other
+line or points, a bar plot, boxes with error bars, or many other
 possibilities. Gnuplot keeps track of two types of style: that for
 function plotting (\ci{set style function}) and for data plotting (\ci{set style data}). 
 Thus, a typical style setting would consist of something like \ci{set
@@ -273,13 +282,13 @@ this using these commands. A range is of the form \ci{[min:max]}.
 Sometimes, you will want to leave one end of the range to be set by
 Gnuplot, but fix the other end, in which case you can use a \ci{*} to
 indicate an automatically set bound. For example, \ci{set yrange [*:10]}
-fixes the top of the graph at ten, but lets the lower end of the graph
+fixes the top of the plot at ten, but lets the lower end of the plot
 fall where it may. 
 
 You will sometimes want the axes to go backward.  Say that your data
 represents rankings, so 1 is best; then \ci{set yrange [*:10] reverse}
-will put tenth place at the top of the graph, and autoset the bottom of
-the graph to just past the largest ranking in the data set.
+will put tenth place at the top of the plot, and autoset the bottom of
+the plot to just past the largest ranking in the data set.
 
 Ranges may also be put on the plot line. For example:
 \begin{lstlisting}
@@ -292,7 +301,7 @@ plot 'data' [-10:10][0:2]
 
 \subsection{\ci{set title}, \ci{set xlabel}, \ci{set ylabel}} These are
 very simple commands, that label the $X$
-and $Y$ axes and the graph itself. If the graph is going to be a figure
+and $Y$ axes and the plot itself. If the plot is going to be a figure
 in a paper with an adequate caption, then the title may be optional, but
 there is rarely an excuse for omitting axis labels. Sample usage:
 \begin{lstlisting}
@@ -301,8 +310,8 @@ set ylabel 'Observed density, picograms/liter'
 set title 'Density over time'
 \end{lstlisting}
 
-\subsection{\ci{set key}} \index{legend, graph} As noted above, Gnuplot
-puts a legend on your graph by default. Most of the time, it is
+\subsection{\ci{set key}} \index{legend, plot} As noted above, Gnuplot
+puts a legend on your plot by default. Most of the time, it is
 reasonably intelligent about it, but sometimes the legend gets in the
 way. Your first option in this case is to just turn off the key
 entirely, via \ci{set key off}.
@@ -310,12 +319,12 @@ entirely, via \ci{set key off}.
 The more moderate option is to move the key, using some combination of 
 \ci{left, right, outside, top, bottom, below}. The first three are
 horizontal positions, where \ci{outside} indicates the far right,
-outside the graph, while \ci{left} and \ci{right} put the
-legend inside the bounds of the graph. The last three indicate vertical
+outside the plot, while \ci{left} and \ci{right} put the
+legend inside the bounds of the plot. The last three indicate vertical
 position, where \ci{top} and \ci{bottom} again put the legend inside the
-graph, and \ci{below} puts the legend just under the graph.
+plot, and \ci{below} puts the legend just under the plot.
 
-The key also sometimes benefits from a border, via \ci{set key graph}.
+The key also sometimes benefits from a border, via \ci{set key box}.
 
 For surface plots with \cind{pm3d}, the key is a thermometer displaying
 the range of colors and their values. To turn this off, use \ci{unset
@@ -344,8 +353,8 @@ details on printing.
 \subsection{Assorted} Here are a few more settings that you may find
 handy.
 \begin{lstlisting}
-unset border    #Delete the border of the graph.
-unset grid      #Make the graph even more minimalist.
+unset border    #Delete the border of the plot.
+unset grid      #Make the plot even more minimalist.
 set size square  #Set axes to have equal length on screen or paper.
 set format y "%.3g" #You can use printf strings to format axis labels.
 set format y ""     #Or just turn off printing on the Y axis entirely.
@@ -372,10 +381,10 @@ to printing to screen.
 
 \begin{lstlisting}
 char *gnuplot_file = "plot_me";
-char *graph_file = "outplot.eps";
+char *plot_file = "outplot.eps";
 FILE    f = fopen(gnuplot_file, "w");//overwrite the file
     if (print_to_paper)
-        fprintf(f, "set terminal postscript;\nset out '%s';\n", graph_file);
+        fprintf(f, "set terminal postscript;\nset out '%s';\n", plot_file);
     fclose(f);
     apop_plot_histogram(data, 1000, gnuplot_file);
 \end{lstlisting}
@@ -685,8 +694,8 @@ function, \cind{fflush}, tells the system to send all elements of the
 expecting standard
 output to the screen, by the way, via \ci{fflush(NULL)}.
 
-The main drawback to producing realtime graphs is that they can take over
-your computer, as another graph pops up and grabs focus every half-second, and can significantly slow down the program.
+The main drawback to producing realtime plots is that they can take over
+your computer, as another plot pops up and grabs focus every half-second, and can significantly slow down the program.
 Thus, you may want to settle for occasional redisplays, such as every
 fifty periods of your simulation. You could call the above
 function using something like:
@@ -697,6 +706,19 @@ for (period =0; period< 1000; period++){
     if (!(period % 50))
         plot_vector_now(output);
 \end{lstlisting}
+
+\exercise{Now would be a good time to plot some data series. At this
+point, you should have some data in an \ci{apop\_data} set of some sort.
+\begin{itemize}
+\item Dump the data to a Gnuplottable file using the above \ci{fprintf}
+techniques. 
+\item Plot the file, then add \ci{set} commands that you \ci{fprintf} to
+file to produce a nicer-looking plot.
+\item Modify your program to display the plot immediately using pipes.
+How could you have written the program initially to minimize the effort
+required to switch between writing to a file and a pipe?
+\end{itemize}
+}
 
 \subsection{\treesymbol{} \cind{replot} revisited}\label{replottwo}
 The \ci{replot} function is a bit fragile to the techniques described
@@ -733,7 +755,7 @@ plot.
 
 \subsection{Lattices}  \index{lattices}
 Perhaps plotting two pairs of columns at a time is not sufficient---you
-want bulk, displaying every variable graphed against every other. For
+want bulk, displaying every variable plotted against every other. For
 this, use the \ci{apop\_plot\_lattice} function.
 
 \begin{lstlisting}
@@ -742,9 +764,9 @@ apop_plot_lattice("outfile", d);
 \end{lstlisting}
 This produces a file that (after \bi{gnuplot -persist outfile}) produces
 a plot like the one in Figure \ref{trellis}. Each variable is plotted
-against each other, so the upper-left graph shows the SES variable
+against each other, so the upper-left plot shows the SES variable
 versus the Hirfindahl index for a set of data points. The lower-right
-graph shows a mirror image of the same two variables. Along the diagonal
+plot shows a mirror image of the same two variables. Along the diagonal
 are plots of a variable against itself, and therefore these plots will
 always be along the $45^\circ$ line. They give a quick picture of the
 how a variable's density is distributed.
@@ -839,7 +861,7 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 \subsection {Pruning data for display}
 Plotting the entire data set may be detrimental for two reasons. The
 first is the range problem: that one data point at $Y=$a million throws off the
-whole darn plot. If you are using an interactive on-screen graph, you
+whole darn plot. If you are using an interactive on-screen plot, you
 can select a smaller region, but it would be better to just not plot
 that point to begin with. 
 
@@ -867,7 +889,7 @@ need; read \ci{1<<x} as $2^x$.
 
 \summary{
 \item A Gnuplot command file basically consists of a group of \ci{set}
-commands to specify how the graph will look, and then a single \ci{plot}
+commands to specify how the plot will look, and then a single \ci{plot}
 (2-D version) or \ci{splot} (3-D version) command. 
 \item Using the \ci{plot '-'} form, you can put the data to be plotted
 in the command file immediately after the command. You can use this and
@@ -875,3 +897,163 @@ in the command file immediately after the command. You can use this and
 }
 
 \index{Gnuplot|)}
+
+\index{graphing!nodes}
+\index{graphing!flowcharts}
+\index{Graphviz|(}
+\index{dot, graphing program}
+\section{\treesymbol Graphs---nodes and flowcharts} In common converstaion, we
+typically mean the word \airq{graph} to be a plot of data like every
+diagram to this point in the chapter. The mathematician's definition
+of \airq{graph}, however, is a set of nodes connected by edges. The
+authors of Gnuplot have no interest in such graphs, so the reader is
+referred to another package for graphing, named Graphviz. Like
+all of the tools in this book, Graphviz installs itself
+gracefully via your package manager. If you have network data that you
+would like to visualize, this is the package to use.
+
+The package includes various executables, the most notable of which are
+\ci{dot} and \ci{neato}. Both take the same input files, but \ci{dot}
+produces a flowchart where there is a definite beginning and end, while
+\ci{neato} produces more amorphous plots that aim only to group nodes
+via the links connecting them. 
+
+The programs are similar to Gnuplot in that they take in a plain text
+description of the nodes and edges, and produce an output file in any of
+a plethora of graphics formats.  The syntax for the input files is 
+entirely different from Gnuplot's, but the concept should be familiar to
+you at this point: there are elements to describe what the nodes and
+edges should look like, interspersed with data listing which nodes link
+to which. 
+
+For example, flip back to page \pageref{modelflowback} and have a look at
+Figure \ref{modelflowback}. One would produce this graph using the following
+input to \ci{dot}:
+
+\begin{lstlisting}
+digraph {
+    rankdir = LR;
+    node [shape=box];
+    "Data" -> "Estimation" -> "Parameters";
+}
+\end{lstlisting}
+The lines with \ci{=} in them set parameters, stating that the
+graph should read left-to-right instead of the top-to-bottom
+default, and that the nodes should be boxes instead of the default
+ellipses. The line with the \ci{->}s defines how the nodes should link,
+and already looks like a text version of Figure \ref{modelflowback}.  By running
+\begin{lstlisting}
+dot -Tpng <graphdata.dot > output.png
+\end{lstlisting}
+one could produce a graph much like that in Figure \ref{modelflowback},
+in the PNG format. There is a more advanced example below.
+
+At this point, you have all the tools you need to autogenerate a graph.
+\index{networks!graphing}
+For example, say that you have an $n \times n$ grid where a
+one in position $(i,j)$ indicates a link between agents $i$ and $j$ and
+a zero indicates no link.
+Then a simple \ci{for} loop would convert this data into a
+\ci{neato}-plottable file:
+\begin{lstlisting}
+void produce_network_graph(apop_data *link_data, char *outfile){
+  FILE *g = fopen(outfile, "w");
+  int i,j;
+    fprintf(g, "digraph{\n");
+    for (i=0; i< link_data->matrix->size1; i++)
+        for (j=i+1; j< link_data->matrix->size1; j++)//assume a square matrix.
+            if (apop_data_get(link_data, i,j))
+                fprintf(g, "node%i -> node%i;\n", i,j);
+    fprintf(g, "}\n");
+    fclose(g);
+}
+\end{lstlisting}
+ 
+\paragraph{Internal use}
+If you have been sticking to the philosophy of coding via small,
+simple functions that call each other, your code will look like a set
+of elements linked via function calls---exactly the sort of network for
+which Graphviz was written. If you feel that your code files are getting
+a bit too complex, you can use Graphviz to get the big picture.
+
+For example, the SQL tables that produced Figure
+\ref{trellis} got a little out of hand. There were many input tables,
+intermediate tables, and output tables, some of which were weighted
+via one method and some via another. To keep track of them all, I made
+a quick scan through the source code to list the source data for each
+table (listed below), and then \ci{dot} quickly made sense of it all,
+in Figure \ref{sqlplot}.  The syntax of the input file is somewhat
+self-descriptive, consisting of the usual setting of characteristics
+and then the data describing the connections. Notice that dot's syntax
+allows C-style comments.
+
+\begin{lstlisting}
+digraph tables {
+    edge [arrowhead=open];
+//Inputs
+    node [color=grey, shape=diamond, style=filled];
+    {rank=same; "inhome1" "friend3" "weights";}
+//Outputs
+    node [color=cyan, shape=box];
+    {rank=same; "univariate output" "bivariate output";}
+//Nodes with standard weights
+    node [style=solid, color=magenta, shape=ellipse];
+    "pairs_x" "schoolpcts_x" "ratio_r";
+//Intermediates & links
+    node [style=solid, color=black, shape=ellipse];
+    "weights"   -> "schoolpcts_x" 
+    "inhome1" -> "schoolpcts_x" -> "oo_x" 
+    "pairs_x" -> "oo_x" -> "univariate output"
+    "pairs_x" -> "ratio_l" -> "ratio_paired (c)" -> "bivariate output"
+    "schoolpcts_x" -> "ratio_r" -> "ratio_paired (unc)" -> "bivariate output"
+    "ratio_r" -> "ratio_paired (c)"
+    "ratio_l" -> "ratio_paired (unc)"
+    "inhome1" -> "pairs_x" 
+    "friend3" -> "pairs_x" 
+}
+\end{lstlisting}
+
+\begin{figure}
+\begin{center}
+\scalebox{.65}{\includegraphics{sqlplot.eps}}
+\caption{The relations among tables in a messy database, as interpreted by
+\ci{dot}. Input tables are at the top, and outputs at the bottom.}\label{sqlplot}
+\end{center}
+\end{figure}
+
+You could also graph the calling relationships among the functions in
+your C code---but before you start manually scanning your code, you
+should know that there is a program to do this for you. Ask your package
+manager for \ci{doxygen}, which
+generates documentation via specially-formattec comments in the source
+file. If configured correctly, it will use Graphviz to include call
+graphs in the documentation.
+
+
+\comment{
+Figure \ref{modelflow} on page \pageref{modelflow} was drawn by
+hand, but Figure \ref{models.dot} shows a dot file to produce a similar
+graph. 
+
+
+\lstset{numbers=left, numberstyle=\scshape}
+\codefig{models.dot}{The \ci{dot} rendition of Figure \ref{modelflow}.}
+\lstset{numbers=none}
+
+; lines three and four set the default shapes for
+edges and nodes. Lines five through ten introduce the cast of
+characters. Most nodes (the ones in the \ci{main} group) are simply
+known by their labels, but notice that the diagram has two nodes named
+\ci{data}, so they are named \ci{node0} and \ci{node1} and assigned a
+label. Grouping the 
+}
+
+\summary{
+\item The Graphviz package produces graphs from a list of edges. Such
+lists are easy to autogenerate from C.
+\item You can also use Graphviz to keep track of relationships among
+functions in your code or tables in your database.
+}
+
+\index{Graphviz|)}
+
