@@ -533,7 +533,7 @@ clean:
 
 \section{Animation}\index{animation} Perhaps three dimensions is not
 quite enough, and you need one more. Gnuplot easily supports animation:
-just stack plots one after the next and call \ci{replot} in between. However,
+just stack plots one after the next and call \ci{plot} in between. However,
 many media (such as paper) do not yet support animation, meaning that your
 output will generally be dependent on your display method. The \ind{GIF} format
 provides animation and is supported by all major web browsers, so you
@@ -542,7 +542,62 @@ compression algorithm upon which the GIF format is based \citep{welch:lzw}
 have expired, so the mathematical transformations required to write a
 GIF may be executed without seeking a license.}
 
-More detail forthcoming.
+There are two details that will help you with plotting multiple data
+sets. First, Gnuplot reads an \ci{e} alone on a line to indicate the end
+of a data set. Second, Gnuplot allows you to define constants via a
+simple equals sign. The command \ci{p = 1} creates the variable \ci{p}
+and sets it to one. Third, Gnuplot has a \ci{pause n} command that will
+wait $n$ seconds before drawing the next plot. 
+
+Tying it all together, say that you have an array of \ci{ct} \ci{apop\_data}
+sets. The following function will write a Gnuplottable file to display
+them in sequence.
+\begin{lstlisting}
+void animate_data_sets(apop_data *d, int ct, char *outfile){
+  int   i;
+  FILE  *f = fopen(outfile, "w");
+    fprintf(f, "set pm3d; \n\
+                p = 1;");
+    fclose(f);
+    apop_opts.output_type = 'f';
+    for(i=0; i< ct; i++){
+        fopen(outfile, "a");//append, don't overwrite!
+        if (i && i< ct-1)
+            fprintf("e\n\
+                pause p;\n");
+        fprintf("splot '-' with pm3d\n");
+        fclose(f);
+        apop_matrix_print(d[i]->matrix, outfile);
+    }
+}
+\end{lstlisting}
+This will produce an \bi{outfile} that looks something like this:
+\begin{lstlisting}
+set pm3d;
+  p = 1;
+splot '-' with pm3d
+{data[0] here}
+e
+ pause p;
+splot '-' with pm3d
+{data[1] here}
+e
+ pause p;
+splot '-' with pm3d
+{data[2] here}
+e
+\end{lstlisting}
+
+You can run the resulting output file through the Gnuplot command line
+as usual. If a one-second pause is too long or too short, you need only
+change the single value of \ci{p} at the head of the file to change the
+delay throughout.
+
+You can write the above plots to a paper-oriented output format, in which
+case each plot will be on a separate page. You could then page through
+them with a screen viewer, or perhaps print them into a flipbook. When writing a
+file, set \ci{p=0} in the above, since there is no use delaying between
+outputs.
 
 \section{From arrays to plots} \label{gnuprint}
 The scripts above gave a file name from which to read the data (\ci{plot
