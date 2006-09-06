@@ -421,12 +421,11 @@ int main(){
 
  */
 apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
-apop_estimation_params *ep  = epin;
-apop_model      *modded_ols;
-apop_data       *set;
-gsl_vector      *weights    = NULL;
-int             i;
-
+  apop_estimation_params *ep  = epin;
+  apop_model      *modded_ols;
+  apop_data       *set;
+  gsl_vector      *weights    = NULL;
+  int             i;
     //check whether we get to destroy the data set or need to copy it.
     if (ep == NULL || ep->destroy_data==0)
         set = apop_data_copy(inset); 
@@ -444,11 +443,11 @@ int             i;
 
     modded_ols              = apop_model_copy(apop_OLS); 
     modded_ols->parameter_ct= set->matrix->size2;
-apop_estimate	*out		= apop_estimate_alloc(inset, *modded_ols, ep);
-gsl_vector      *y_data     = gsl_vector_alloc(set->matrix->size1); 
-gsl_vector      *xpy        = gsl_vector_calloc(set->matrix->size2);
-gsl_matrix      *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
-gsl_vector      v           = gsl_matrix_column(set->matrix, 0).vector;
+  apop_estimate	*out		= apop_estimate_alloc(inset, *modded_ols, ep);
+  gsl_vector      *y_data     = gsl_vector_alloc(set->matrix->size1); 
+  gsl_vector      *xpy        = gsl_vector_calloc(set->matrix->size2);
+  gsl_matrix      *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
+  gsl_vector      v           = gsl_matrix_column(set->matrix, 0).vector;
     prep_names(out);
     gsl_matrix_get_col(y_data, set->matrix, 0);
     gsl_vector_set_all(&v, 1);     //affine: first column is ones.

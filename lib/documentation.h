@@ -123,9 +123,6 @@ instead relies on the existing grammar and structure of C and SQL. It
 therefore ties in seamlessly with the thousands of existing C libraries,
 is documented in part by the hundreds of books and web pages which
 teach C and SQL, and can be used as the base for further extensions. 
-The command-line utility makes it easy to call Apophenia's functions from
-any other language with which you are familiar, such as Perl, Python,
-or even bash.
 
 Finally, there are also a few of the more typical reasons to write a
 new library. This library focuses on MLE methods over linear projection

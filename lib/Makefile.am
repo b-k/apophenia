@@ -21,7 +21,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			vasprintf/vasprintf.c  							\
 			model/apop_gamma.c model/apop_gamma_rank.c model/apop_normal.c 	\
 			model/apop_logit.c model/apop_probit.c model/apop_exponential.c \
-			model/apop_poisson.c	model/apop_exponential_rank.c			\
+			model/apop_poisson.c	model/apop_WLS.c	model/apop_exponential_rank.c			\
 			model/apop_waring.c model/apop_waring_rank.c model/apop_yule.c 	\
 			model/apop_zipf_rank.c model/apop_zipf.c model/apop_OLS.c 		\
 			model/apop_yule_rank.c \
@@ -40,11 +40,10 @@ pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 
 
 #The programs
-bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop apop_merge_dbs
+bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_merge_dbs
 apop_text_to_db_SOURCES = cmd_apop_text_to_db.c
 apop_db_to_crosstab_SOURCES = cmd_apop_db_to_crosstab.c
 apop_merge_dbs_SOURCES = cmd_apop_merge_dbs.c
-apop_SOURCES = cmd_apop.c
 
 #The documentation
 

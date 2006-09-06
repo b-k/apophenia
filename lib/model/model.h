@@ -26,6 +26,7 @@ extern apop_model apop_GLS;
 extern apop_model apop_logit;
 extern apop_model apop_normal;
 extern apop_model apop_OLS;
+extern apop_model apop_WLS;
 extern apop_model apop_poisson;
 extern apop_model apop_probit;
 extern apop_model apop_waring;
