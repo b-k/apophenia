@@ -903,13 +903,12 @@ based on this form, in Section \ref{ftestsec}.
 \subsection{\ind{FGLS}} \index{Generalized Least Squares!Feasible}
 
 If we do not know $\Sigma$, which is universally the case except on
-test questions, we need some way to make the GLS estimation Feasible. So we
-assume that $\Sigma$ is a function of one parameter, $\Sigma(\rho)$.
+test questions, we need some way to make the GLS estimation Feasible. 
 
 \label{ts}\index{time series|(}
 \paragraph{\ind{AR(1)} time series model}
-
-This is where errors are autoregressed by one period.\footnote{AR(4) is
+For example, assume that $\Sigma$ is a function of one parameter, $\Sigma(\rho)$.  
+In an AR(1) model, errors are AutoRegressed by one period.\footnote{AR(4) is
 also well studied, because of seasonal data.} I.e.,
 $$y_t=\Xv_t\betav + \rho\epsilon_{t-1} + u_t$$
 where $u_t$ is truly distributed ${\cal N}(0,1)$, and $\epsilon_t=
@@ -933,6 +932,58 @@ just find $r=(\sum \hat\epsilon_t \hat\epsilon_{t-1})/(\sum
 \comment{[Two-stage least squares here]}
 
 \index{time series|)}
+
+\paragraph{\ind{Weighted Least Squares}}
+Let $\Sigma$ be a diagonal matrix. That is, errors among different
+observations are uncorrelated, but the error for each observation itself
+is different. This is \vocab{heteroskedastic} data. The classic example
+in Econometrics is due to differences in income: we expect that our
+errors in measurement regarding somebody earning \$10,000/year will be
+about a thousandth as large as our measurement errors regarding somebody
+earning \$10 million/year.
+
+It can be shown (e.g., \citet{kmenta}) that the optimum for this
+situation, where $\sigma_i$ is known for each observation $i$, is to use
+the GLS equations above, with $\Sigma$ set to zero everywhere but the
+diagonal, where the $i$th element is $1\over {\sigma_i^2}$.
+
+The GLS equations about $\betav$ now apply directly to produce Weighted 
+Least Squares estimates. For a data set of a million elements,
+$\Sigma$ is $10^6 \times 10^6=10^{12}$ (a trillion) elements, all but a
+million of which will be zero. Thus, it would be nice to do computation
+using just a vector of diagonal elements, and there is a simple trick to
+do so. Let $\sqrt\Sigma$ be a vector where each element is the square
+root of $\Sigma$'s corresponding diagonal element. For WLS, the $i$th
+element of $\sqrt\Sigma$ is thus $1\over {\sigma_i}$. Now let
+$\yv_\Sigma$ be a vector whose $i$th element 
+is the $i$th element of $\yv$ times the $i$th element of
+$\sqrt\Sigma$, and 
+$\Xv_\Sigma$ be the column-wise product of $\Xv$ and
+$\sqrt\Sigma$. That is:
+\begin{lstlisting}
+void columnwise_product(gsl_matrix *data, gsl_vector *sqrt_sigma){
+  int i;
+    for (i=0; i< data->size2; i++){
+        v   = gsl_matrix_column(data, i).vector;
+        gsl_vector_mul(&v, sqrt_sigma);
+    }
+}
+\end{lstlisting}
+Then the reader can verify that 
+$\Xv_\Sigma'\Xv_\Sigma = \Xv' \Sigma \Xv$, 
+$\Xv_\Sigma'\yv_\Sigma = \Xv' \Sigma \yv$, and so:
+
+\eqnbox{
+\hat\betav_{\rm WLS} &=& \left(\Xv_\Sigma'\Xv_\Sigma\right)^{-1}(\Xv_\Sigma'\yv_\Sigma)			\nonumber\\
+E(\hat\betav_{\rm WLS}) &=& \beta					\nonumber\\
+\var(\hat\betav_{\rm WLS}) &=& 
+	\sigma^2\left(\Xv_\Sigma'\Xv_\Sigma\right)^{-1}\nonumber
+}
+
+Thus, we can solve for the Weighted Least Squares elements without ever
+writing down the full $\Sigma$ matrix in all its excess. This is the
+method used by \cind{apop\_WLS} (which is what you would use in
+practice, rather than calculating $\Xv_\Sigma$ yourself).
 
 \subsection{Fitting it} 
 To summarize,

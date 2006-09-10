@@ -13,6 +13,9 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <gsl/gsl_blas.h>
 
 
+/** The procedure here is to simply modify the input data, run OLS on
+the modified data, and then claim that the output was from WLS.
+*/
 apop_estimate * wls_estimate(apop_data *inset, void *epin){
   apop_estimation_params    *epcopy = malloc(sizeof(*epcopy)),
                             *ep     = epin;
@@ -34,9 +37,10 @@ apop_estimate * wls_estimate(apop_data *inset, void *epin){
     }
     memcpy(epcopy, ep, sizeof(*epcopy));
     epcopy->destroy_data    = 1;
-    out = apop_OLS.estimate(set, epcopy);
-    //Fix output.
-    //Redo log likelihood.
+    out                     = apop_OLS.estimate(set, epcopy);
+    free(out->model);
+    out->model              = apop_model_copy(apop_WLS);
+    out->model->parameter_ct= set->matrix->size2;
     return out;
 }
 
@@ -48,17 +52,22 @@ which you may have already done in the OLS estimation.
 
  */
 static double wls_log_likelihood (const gsl_vector *beta, apop_data *d){ 
-int         i; 
-long double	total_prob  = 0; 
-double      sigma, expected, actual;
-gsl_matrix	*data		    = d->matrix;
-gsl_vector  v;
-gsl_vector  *errors         = gsl_vector_alloc(data->size1);
+  int           i; 
+  long double   total_prob  = 0; 
+  double        sigma, expected, actual, weight;
+  gsl_matrix	*data		= d->matrix;
+  gsl_vector    v;
+  gsl_vector    *errors     = gsl_vector_alloc(data->size1);
+    if (!d->weights){
+        printf("You need to specify weights to use apop_WLS.\n");
+        return 0;
+    }
 	for(i=0;i< data->size1; i++){
         v            = gsl_matrix_row(data, i).vector;
         gsl_blas_ddot(beta, &v, &expected);
         actual       = gsl_matrix_get(data,i, 0);
         expected    += gsl_vector_get(beta,0) * (1 - actual); //data isn't affine.
+        weight       = gsl_vector_get(d->weights, i); //This is the only change from ols_ll.
         gsl_vector_set(errors, i, expected-actual);
     }
     sigma   = sqrt(apop_vector_var(errors));
@@ -70,10 +79,9 @@ gsl_vector  *errors         = gsl_vector_alloc(data->size1);
 }
 
 
-/** The OLS model
+/** The WLS model
 
   You will need to provide the weights in data->weights. Otherwise, this model is just like \ref apop_OLS.
 \ingroup models
 */
-apop_model apop_WLS = {"WLS", -1, 
-	wls_estimate, wls_log_likelihood, NULL, NULL, NULL, NULL};
+apop_model apop_WLS = {"WLS", -1, wls_estimate, wls_log_likelihood, NULL, NULL, NULL, NULL};

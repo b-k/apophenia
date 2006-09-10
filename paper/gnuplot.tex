@@ -3,21 +3,22 @@
 \index{plotting|see{Gnuplot}}
 \index{graphing|see{Gnuplot}}
 
-Producing graphics from a C program is supremely difficult. You may have
+Because graphics formats all have their complexities,
+producing graphics from a C program is supremely difficult. You may have
 deciphered the correct means of producing JPEGs, but tomorrow you may
 need your graph in another format like PDF or PNG or what-have-you.
 
 The solution is to use a handful of external
 programs that take in plain text, which is easy to produce by hand or
-via C code, and output an image in any of the panolpy of graphics
-formats.  All of the programs here are as open and freely available as
-gcc, so you can be confident that your code will be portable to new
-computers.\footnote{There is some politics about how this is not strictly
-true: the maintainers of Gnuplot will not allow you to modify their
-code and then distribute the modified package independently (i.e., to
-\airq{fork} the code base). The project is entirely unrelated to the GNU,
-and the name is simply a compromise between the names that the two main
-authors preferred: nplot and llamaplot.}
+via C code, and output an image in any of the panoply of graphics
+formats.  All of the text-to-graphics programs here are as open and freely
+available as gcc, so you can be confident that your code will be portable
+to new computers.\footnote{There is some politics about how this is not
+strictly true: the maintainers of Gnuplot will not allow you to modify
+their code and then distribute the modified package independently (i.e.,
+to \airq{fork} the code base). The project is entirely unrelated to the
+GNU, and the name is simply a compromise between the names that the two
+main authors preferred: nplot and llamaplot.}
 
 The plot-producing program with which this chapter will primarily be
 concerned is Gnuplot. Its language
@@ -531,73 +532,6 @@ clean:
 \end{lstlisting}
 \index{Postscript|)}
 
-\section{Animation}\index{animation} Perhaps three dimensions is not
-quite enough, and you need one more. Gnuplot easily supports animation:
-just stack plots one after the next and call \ci{plot} in between. However,
-many media (such as paper) do not yet support animation, meaning that your
-output will generally be dependent on your display method. The \ind{GIF} format
-provides animation and is supported by all major web browsers, so you
-can also put your movies online.\footnote{Also, the U.S. patents on the
-compression algorithm upon which the GIF format is based \citep{welch:lzw}
-have expired, so the mathematical transformations required to write a
-GIF may be executed without seeking a license.}
-
-There are two details that will help you with plotting multiple data
-sets. First, Gnuplot reads an \ci{e} alone on a line to indicate the end
-of a data set. Second, Gnuplot allows you to define constants via a
-simple equals sign. The command \ci{p = 1} creates the variable \ci{p}
-and sets it to one. Third, Gnuplot has a \ci{pause n} command that will
-wait $n$ seconds before drawing the next plot. 
-
-Tying it all together, say that you have an array of \ci{ct} \ci{apop\_data}
-sets. The following function will write a Gnuplottable file to display
-them in sequence.
-\begin{lstlisting}
-void animate_data_sets(apop_data *d, int ct, char *outfile){
-  int   i;
-  FILE  *f = fopen(outfile, "w");
-    fprintf(f, "set pm3d; \n\
-                p = 1;");
-    fclose(f);
-    apop_opts.output_type = 'f';
-    for(i=0; i< ct; i++){
-        fopen(outfile, "a");//append, don't overwrite!
-        if (i && i< ct-1)
-            fprintf("e\n\
-                pause p;\n");
-        fprintf("splot '-' with pm3d\n");
-        fclose(f);
-        apop_matrix_print(d[i]->matrix, outfile);
-    }
-}
-\end{lstlisting}
-This will produce an \bi{outfile} that looks something like this:
-\begin{lstlisting}
-set pm3d;
-  p = 1;
-splot '-' with pm3d
-{data[0] here}
-e
- pause p;
-splot '-' with pm3d
-{data[1] here}
-e
- pause p;
-splot '-' with pm3d
-{data[2] here}
-e
-\end{lstlisting}
-
-You can run the resulting output file through the Gnuplot command line
-as usual. If a one-second pause is too long or too short, you need only
-change the single value of \ci{p} at the head of the file to change the
-delay throughout.
-
-You can write the above plots to a paper-oriented output format, in which
-case each plot will be on a separate page. You could then page through
-them with a screen viewer, or perhaps print them into a flipbook. When writing a
-file, set \ci{p=0} in the above, since there is no use delaying between
-outputs.
 
 \section{From arrays to plots} \label{gnuprint}
 The scripts above gave a file name from which to read the data (\ci{plot
@@ -681,16 +615,18 @@ All of the above methods involved writing your commands data to a file and then
 running Gnuplot, but you may want to produce plots as your program runs.
 This is often useful for simulations, to give you a hint that all is OK
 while the program runs, and to impress your friends and funders. This is
-easy to do using a \vocab{pipe}.\footnote{There is a readily available
+easy to do using a \vocab{pipe}, so named because of UNIX's running
+data-as-water metaphor.\footnote{There is a readily available
 package named \cind{gnuplot\_i} that provides some functions to simplify
 piping commands to Gnuplot. It basically works via the same method as
 the one discussed in this section, but has much more code to handle
 settings and problem cases.}
 
 The command \cind{popen} does two things: it runs the specified program,
-and it produces a data pipe connecting your program to the now-running
-child program. Any commands you write to the pipe is read by the child
-as if someone had typed those commands into the program directly.
+and it produces a data pipe that sends a stream of data produced by your
+program to the now-running child program. Any commands you write to the
+pipe is read by the child as if someone had typed those commands into
+the program directly.
 
 You can write to a pipe just like you would write to a file, using
 \cind{fprintf}, meaning that once you have opened the pipe to
@@ -950,6 +886,75 @@ commands to specify how the plot will look, and then a single \ci{plot}
 in the command file immediately after the command. You can use this and
 \ci{apop\_data\_print} to produce plot files of your data.
 }
+
+\section{Animation}\index{animation} Perhaps three dimensions is not
+quite enough, and you need one more. Gnuplot easily supports animation:
+just stack plots one after the next and call \ci{plot} in between. However,
+many media (such as paper) do not yet support animation, meaning that your
+output will generally be dependent on your display method. The \ind{GIF} format
+provides animation and is supported by all major web browsers, so you
+can also put your movies online.\footnote{Also, the U.S. patents on the
+compression algorithm upon which the GIF format is based \citep{welch:lzw}
+have expired, so the mathematical transformations required to write a
+GIF may be executed without seeking a license.}
+
+There are two details that will help you with plotting multiple data
+sets. First, Gnuplot reads an \ci{e} alone on a line to indicate the end
+of a data set. Second, Gnuplot allows you to define constants via a
+simple equals sign. The command \ci{p = 1} creates the variable \ci{p}
+and sets it to one. Third, Gnuplot has a \ci{pause n} command that will
+wait $n$ seconds before drawing the next plot. 
+
+Tying it all together, say that you have an array of \ci{ct} \ci{apop\_data}
+sets. The following function will write a Gnuplottable file to display
+them in sequence. Notice that by setting output type to \ci{p}, we don't
+need to open and close the output file when switching between
+writing with \cind{fprintf} and writing with
+\cind{apop\_matrix\_print}.
+\begin{lstlisting}
+void animate_data_sets(apop_data *d, int ct, char *outfile){
+  int   i;
+  FILE  *f = fopen(outfile, "w");
+    fprintf(f, "set pm3d; \n\
+                p = 1;");
+    apop_opts.output_type = 'p';
+    apop_opts.output_pipe = f;
+    for(i=0; i< ct; i++){
+        if (i && i< ct-1)
+            fprintf(f, "e\n\
+                pause p;\n");
+        fprintf(f, "splot '-' with pm3d\n");
+        apop_matrix_print(d[i]->matrix, outfile);
+    }
+}
+\end{lstlisting}
+This will produce an \bi{outfile} that looks something like this:
+\begin{lstlisting}
+set pm3d;
+  p = 1;
+splot '-' with pm3d
+{data[0] here}
+e
+ pause p;
+splot '-' with pm3d
+{data[1] here}
+e
+ pause p;
+splot '-' with pm3d
+{data[2] here}
+e
+\end{lstlisting}
+
+You can run the resulting output file through the Gnuplot command line
+as usual. If a one-second pause is too long or too short, you need only
+change the single value of \ci{p} at the head of the file to change the
+delay throughout.
+
+You can write the above plots to a paper-oriented output format, in which
+case each plot will be on a separate page. You could then page through
+them with a screen viewer, or perhaps print them into a flipbook. When writing a
+file, set \ci{p=0} in the above, since there is no use delaying between
+outputs.
 
 \index{Gnuplot|)}
 

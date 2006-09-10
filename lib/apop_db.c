@@ -118,97 +118,97 @@ struct StdDevCtx {
 
 static void twoStep(sqlite3_context *context, int argc, sqlite3_value **argv){
   StdDevCtx *p;
-double 		x, ratio;
-  if( argc<1 ) return;
-  p = sqlite3_aggregate_context(context, sizeof(*p));
-  if( p && argv[0] ){
-    x = sqlite3_value_double(argv[0]);
-    ratio	=  p->cnt/(p->cnt+1.0);
-    p->cnt++;
-    p->avg	*= ratio;
-    p->avg2	*= ratio;
-    p->avg += x/(p->cnt +0.0);
-    p->avg2 += gsl_pow_2(x)/(p->cnt +0.0);
-  }
+  double 		x, ratio;
+    if( argc<1 ) return;
+    p = sqlite3_aggregate_context(context, sizeof(*p));
+    if( p && argv[0] ){
+        x = sqlite3_value_double(argv[0]);
+        ratio	=  p->cnt/(p->cnt+1.0);
+        p->cnt++;
+        p->avg	*= ratio;
+        p->avg2	*= ratio;
+        p->avg += x/(p->cnt +0.0);
+        p->avg2 += gsl_pow_2(x)/(p->cnt +0.0);
+    }
 }
 
 static void threeStep(sqlite3_context *context, int argc, sqlite3_value **argv){
-StdDevCtx 	*p;
-double 		x, ratio;
-  if( argc<1 ) return;
-  p = sqlite3_aggregate_context(context, sizeof(*p));
-  if( p && argv[0] ){
-    x = sqlite3_value_double(argv[0]);
-    ratio	=  p->cnt/(p->cnt+1.0);
-    p->cnt++;
-    p->avg	*= ratio;
-    p->avg2	*= ratio;
-    p->avg3	*= ratio;
-    p->avg += x/p->cnt;
-    p->avg2 += gsl_pow_2(x)/p->cnt;
-    p->avg3 += gsl_pow_3(x)/p->cnt;
-  }
+  StdDevCtx 	*p;
+  double 		x, ratio;
+    if( argc<1 ) return;
+    p = sqlite3_aggregate_context(context, sizeof(*p));
+    if( p && argv[0] ){
+        x = sqlite3_value_double(argv[0]);
+        ratio	=  p->cnt/(p->cnt+1.0);
+        p->cnt++;
+        p->avg	*= ratio;
+        p->avg2	*= ratio;
+        p->avg3	*= ratio;
+        p->avg += x/p->cnt;
+        p->avg2 += gsl_pow_2(x)/p->cnt;
+        p->avg3 += gsl_pow_3(x)/p->cnt;
+    }
 }
 
 static void fourStep(sqlite3_context *context, int argc, sqlite3_value **argv){
-StdDevCtx 	*p;
-double 		x,ratio;
-  if( argc<1 ) return;
-  p = sqlite3_aggregate_context(context, sizeof(*p));
-  if( p && argv[0] ){
-    x = sqlite3_value_double(argv[0]);
-    ratio	=  p->cnt/(p->cnt+1.0);
-    p->cnt++;
-    p->avg	*= ratio;
-    p->avg2	*= ratio;
-    p->avg3	*= ratio;
-    p->avg4	*= ratio;
-    p->avg += x/p->cnt;
-    p->avg2 += gsl_pow_2(x)/p->cnt;
-    p->avg3 += gsl_pow_3(x)/p->cnt;
-    p->avg4 += gsl_pow_4(x)/p->cnt;
-  }
+  StdDevCtx 	*p;
+  double 		x,ratio;
+    if( argc<1 ) return;
+    p = sqlite3_aggregate_context(context, sizeof(*p));
+    if( p && argv[0] ){
+        x = sqlite3_value_double(argv[0]);
+        ratio	=  p->cnt/(p->cnt+1.0);
+        p->cnt++;
+        p->avg	*= ratio;
+        p->avg2	*= ratio;
+        p->avg3	*= ratio;
+        p->avg4	*= ratio;
+        p->avg += x/p->cnt;
+        p->avg2 += gsl_pow_2(x)/p->cnt;
+        p->avg3 += gsl_pow_3(x)/p->cnt;
+        p->avg4 += gsl_pow_4(x)/p->cnt;
+    }
 }
 
 static void stdDevFinalize(sqlite3_context *context){
-  StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
-  if( p && p->cnt>1 ){
-    double rCnt = p->cnt;
-    sqlite3_result_double(context,
-       sqrt((p->avg2*rCnt - p->avg*p->avg)/(rCnt-1.0)));
-  } else if (p->cnt == 1)
-    	sqlite3_result_double(context, 0);
+    StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+    if( p && p->cnt>1 ){
+      double rCnt = p->cnt;
+      sqlite3_result_double(context,
+         sqrt((p->avg2*rCnt - p->avg*p->avg)/(rCnt-1.0)));
+    } else if (p->cnt == 1)
+      	sqlite3_result_double(context, 0);
 }
 
 static void varFinalize(sqlite3_context *context){
   StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
-  if( p && p->cnt>1 ){
-    double rCnt = p->cnt;
-    sqlite3_result_double(context,
-       (p->avg2 - gsl_pow_2(p->avg))*rCnt/(rCnt-1.0));
-  } else if (p->cnt == 1)
-    	sqlite3_result_double(context, 0);
+    if( p && p->cnt>1 ){
+      double rCnt = p->cnt;
+      sqlite3_result_double(context,
+         (p->avg2 - gsl_pow_2(p->avg))*rCnt/(rCnt-1.0));
+    } else if (p->cnt == 1)
+      	sqlite3_result_double(context, 0);
 }
 
 static void skewFinalize(sqlite3_context *context){
   StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
-  if( p && p->cnt>1 ){
-    double rCnt = p->cnt;
-    sqlite3_result_double(context,
-       (p->avg3*rCnt - 3*p->avg2*p->avg*rCnt + (3*rCnt-1) * gsl_pow_3(p->avg)) / (rCnt-1.0));
-  } else if (p->cnt == 1)
-    	sqlite3_result_double(context, 0);
+    if( p && p->cnt>1 ){
+      double rCnt = p->cnt;
+      sqlite3_result_double(context,
+         (p->avg3*rCnt - 3*p->avg2*p->avg*rCnt + (3*rCnt-1) * gsl_pow_3(p->avg)) / (rCnt-1.0));
+    } else if (p->cnt == 1)
+      	sqlite3_result_double(context, 0);
 }
 
 static void kurtFinalize(sqlite3_context *context){
   StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
-  if( p && p->cnt>1 ){
-    double rCnt = p->cnt;
-    sqlite3_result_double(context,
-       (p->avg4*rCnt - 4*p->avg3*p->avg*rCnt + 6 * gsl_pow_2(p->avg2)*gsl_pow_2(p->avg)*rCnt
-						- (4*rCnt+1)* gsl_pow_4(p->avg))/(rCnt-1.0));
-  } else if (p->cnt == 1)
-    	sqlite3_result_double(context, 0);
+    if( p && p->cnt>1 ){
+      double rCnt = p->cnt;
+      sqlite3_result_double(context,
+         (p->avg4*rCnt - 4*p->avg3*p->avg*rCnt + 6 * gsl_pow_2(p->avg2)*gsl_pow_2(p->avg)*rCnt
+      					- (4*rCnt+1)* gsl_pow_4(p->avg))/(rCnt-1.0));
+    } else if (p->cnt == 1)
+      	sqlite3_result_double(context, 0);
 }
 
 static void sqrtFn(sqlite3_context *context, int argc, sqlite3_value **argv){
@@ -216,8 +216,8 @@ static void sqrtFn(sqlite3_context *context, int argc, sqlite3_value **argv){
 }
 
 static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-double  base    = sqlite3_value_double(argv[0]);
-double  exp     = sqlite3_value_double(argv[1]);
+  double  base    = sqlite3_value_double(argv[0]);
+  double  exp     = sqlite3_value_double(argv[1]);
     sqlite3_result_double(context, pow(base, exp));
 }
 
@@ -310,8 +310,8 @@ apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_hei
 \ingroup db
 */
 int apop_query(const char *fmt, ...){
-char 		*err, *q;
-va_list		argp;
+  char 		*err, *q;
+  va_list   argp;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
@@ -327,8 +327,8 @@ va_list		argp;
 \ingroup db
 */
 int apop_query_db(const char *fmt, ...){
-char 		*err, *q;
-va_list		argp;
+  char 		*err, *q;
+  va_list	argp;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
@@ -343,7 +343,7 @@ va_list		argp;
 int 		isthere;//used for the next two fns only.
 
 static int tab_exists_callback(void *in, int argc, char **argv, char **whatever){
-char *q	= in;
+  char *q	= in;
 	if (!strcmp(argv[argc-1],q))
 		isthere=1;
 	return isthere;
@@ -363,7 +363,7 @@ Also, this is the stylish way to delete a table, since just calling <tt>"drop ta
 \ingroup db
 */
 int apop_table_exists(char *q, char whattodo){
-char 		*err, q2[10000];
+  char 		*err, q2[10000];
 	isthere=0;
 	if (db==NULL) {apop_db_open(NULL); return 0;}
 	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,q, &err); 
@@ -379,7 +379,7 @@ char 		*err, q2[10000];
 int		colct;
 
 static int count_cols_callback(void *whatever, int argc, char **argv, char **andever){
-int 		i=0;
+  int 		i=0;
 	while(argv[0][i]!='\0')
 		if (argv[0][i++]==',') 
 			colct	++;
@@ -392,7 +392,7 @@ int 		i=0;
 \return 	The number of columns the table has.
 */
 int apop_count_cols(const char *name){
-char 		*err, q2[5000];
+  char 		*err, q2[5000];
     colct   = 1;
 	if (db==NULL) {printf("No database open yet."); return 0;}
 	sprintf(q2, "select sql from sqlite_master where type='table' and name=\"%s\"",name);
@@ -410,7 +410,7 @@ Closes the database on disk. If you opened the database with
 'q': Don't bother; just close the database.
 */
 int apop_db_close(char vacuum){
-char		*err;
+  char		*err;
 	if (vacuum==1 || vacuum=='v') 
         sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
 //	ERRCHECK
@@ -434,8 +434,8 @@ int		currentrow;
 
 //This is the callback for apop_query_to_chars.
 static int db_to_chars(void *o,int argc, char **argv, char **whatever){
-int		jj;
-char ****	output = (char ****) o;
+  int		jj;
+  char ****	output = (char ****) o;
 	if (*argv !=NULL){
 		(*output)[currentrow]	= malloc(sizeof(char**) * argc);
 		for (jj=0;jj<argc;jj++){
@@ -483,9 +483,9 @@ int             row_ct, i;
 \endverbatim
 */
 char *** apop_query_to_chars(const char * fmt, ...){
-char		***output;
-char		*q2, *err=NULL, *query;
-va_list		argp;
+  char		***output;
+  char		*q2, *err=NULL, *query;
+  va_list	argp;
     currentrow  =0;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
@@ -519,8 +519,8 @@ va_list		argp;
 
 //apop_query_to_matrix callback.
 static int db_to_table(void *o,int argc, char **argv, char **whatever){
-int		jj;
-gsl_matrix * 	output = (gsl_matrix *) o;
+  int		jj;
+  gsl_matrix * 	output = (gsl_matrix *) o;
 	if (*argv !=NULL){
 		for (jj=0;jj<argc;jj++){
 			if (argv[jj]==NULL)
@@ -545,9 +545,9 @@ A <tt>gsl_matrix</tt>, which you passed in declared but not allocated.
 Blanks in the database are filled with <tt>GSL_NAN</tt>s in the matrix.
 */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
-gsl_matrix	*output;
-char		*q2, *err=NULL, *query;
-va_list		argp;
+  gsl_matrix	*output;
+  char		*q2, *err=NULL, *query;
+  va_list		argp;
     currentrow  = 0;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
@@ -588,10 +588,10 @@ the first in the list.
 If the query returns no columns at all, the function returns <tt>NULL</tt>.
 */
 gsl_vector * apop_query_to_vector(const char * fmt, ...){
-gsl_matrix	*m=NULL;
-gsl_vector  *out;
-va_list		argp;
-char		*query;
+  gsl_matrix	*m=NULL;
+  gsl_vector  *out;
+  va_list		argp;
+  char		*query;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
@@ -620,10 +620,10 @@ the first in the list (which is not always well-defined).
 If the query returns no rows at all, the function returns <tt>GSL_NAN</tt>.
 */
 double apop_query_to_float(const char * fmt, ...){
-gsl_matrix	*m=NULL;
-va_list		argp;
-char		*query;
-double		out;
+  gsl_matrix	*m=NULL;
+  va_list		argp;
+  char		*query;
+  double		out;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
@@ -654,10 +654,10 @@ meaning that only numerical results are returned. If you want
 non-numeric data, try \code mydata->categories  = apop_query_to_chars("select ...");\endcode. 
 */ 
 apop_data * apop_query_to_data(const char * fmt, ...){
-gsl_matrix	*m=NULL;
-va_list		argp;
-char		*query;
-apop_data	*out;
+  gsl_matrix	*m=NULL;
+  va_list		argp;
+  char		    *query;
+  apop_data	    *out;
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
@@ -675,7 +675,7 @@ names from the last <tt>apop_query_...</tt> . Since only the names from
 the last query are saved, you will want to use this immediately
 after your query.  */
 apop_name * apop_db_get_names(void){
-apop_name   *out    = apop_name_copy(last_names);
+  apop_name   *out    = apop_name_copy(last_names);
     return out; 
 }
 
@@ -694,10 +694,10 @@ int apop_db_get_rows(void){ return total_rows; }
  \ingroup conversions
 */
 int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
-int		i,j; 
-int		ctr		= 0;
-int		batch_size	= 100;
-char		*q 		= malloc(sizeof(char)*1000);
+  int		i,j; 
+  int		ctr		= 0;
+  int		batch_size	= 100;
+  char		*q 		= malloc(sizeof(char)*1000);
 	if (db==NULL) apop_db_open(NULL);
 	sprintf(q, "create table %s (", tabname);
 	for(i=0;i< data->size2; i++){
@@ -743,10 +743,10 @@ and the info is placed there.
 \todo add category names.
 */
 int apop_data_to_db(apop_data *set, char *tabname){
-int		i,j; 
-int		ctr		    = 0;
-int		batch_size	= 100;
-char		*q 		= malloc(sizeof(char)*1000);
+  int		i,j; 
+  int		ctr		    = 0;
+  int		batch_size	= 100;
+  char		*q 		    = malloc(sizeof(char)*1000);
 	if (db==NULL) apop_db_open(NULL);
 	sprintf(q, "create table %s (", tabname);
     if (set->names->rownamect == set->matrix->size1){
@@ -785,7 +785,7 @@ char		*q 		= malloc(sizeof(char)*1000);
 }
 
 void free_tab_list(char ****tab, int row_ct, int col_ct){
-int		i,j;
+  int		i,j;
 	for(i=0; i< row_ct; i++){
 		for(j=0; j< col_ct; j++)
 			free((*tab)[i][j]); 
@@ -810,7 +810,7 @@ calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
 */
 void apop_db_merge_table(char *db_file, char *tabname){
 //char		***tab_list;
-int		row_ct;
+  int		row_ct;
 	if (db_file !=NULL)
 		apop_query("attach database \"%s\" as merge_me;", db_file);
 	apop_query_to_chars("select name from sqlite_master where name == \"%s\";", tabname);
@@ -842,8 +842,8 @@ the main database's table with the same name. [The function just calls
 \ingroup db
 */
 void apop_db_merge(char *db_file){
-char		***tab_list;
-int		row_ct, i;
+  char		***tab_list;
+  int		row_ct, i;
 	apop_query("attach database \"%s\" as merge_me;", db_file);
 	tab_list= apop_query_to_chars("select name from merge_me.sqlite_master where type==\"table\";");
 	row_ct	=  apop_db_get_rows();
@@ -862,10 +862,10 @@ int		row_ct, i;
 \ingroup ttest
 */
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2){
-gsl_matrix	*result1, *result2;
+  gsl_matrix	*result1, *result2;
 	result1	= apop_query_to_matrix("select avg(%s), var(%s), count(*) from %s", col1, col1, tab1);
 	result2	= apop_query_to_matrix("select avg(%s), var(%s), count(*) from %s", col2, col2, tab2);
-double		a_avg	= gsl_matrix_get(result1, 0, 0),
+  double		a_avg	= gsl_matrix_get(result1, 0, 0),
 		a_var	= gsl_matrix_get(result1, 0, 1),
 		a_count	= gsl_matrix_get(result1, 0, 2),
 		b_avg	= gsl_matrix_get(result2, 0, 0),
@@ -880,12 +880,12 @@ double		a_avg	= gsl_matrix_get(result1, 0, 0),
 \ingroup ttest
 */
 double	apop_db_paired_t_test(char * tab1, char *col1, char *col2){
-gsl_matrix	*result;
+  gsl_matrix	*result;
 	result	= apop_query_to_matrix("select avg(%s - %s), var(%s - %s), count(*) from %s tab1", 
 						   col1,col2,   col1, col2,          tab1);
-double		avg	= gsl_matrix_get(result, 0, 0),
-		var	= gsl_matrix_get(result, 0, 1),
-		count	= gsl_matrix_get(result, 0, 2),
-		stat	= avg/ sqrt(var/(count-1));
+  double		avg	    = gsl_matrix_get(result, 0, 0),
+		        var	    = gsl_matrix_get(result, 0, 1),
+		        count	= gsl_matrix_get(result, 0, 2),
+		        stat	= avg/ sqrt(var/(count-1));
 	return apop_two_tailify(gsl_cdf_tdist_P(stat, count-1));
 }

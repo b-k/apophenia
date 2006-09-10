@@ -3,6 +3,12 @@
 **Change that could require recoding existing code.
 ]
 
+		September 2006
+
+**Removed apop command-line server thing. It was interesting, but that's
+the best that could be said of it.
+--Added functions for weighted data: weighted least squares, weighted moments.
+
 		August 2006
 **apop_log_likelihood and friends now demand that data be apop_data*,
 rather than void*. Too many things broke when users gave non-apop_data

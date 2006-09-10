@@ -28,7 +28,7 @@ value. If the inventory is already allocated, use \ref apop_inventory_set.
  \ingroup inv_and_est 
  */
 apop_inventory * apop_inventory_alloc(int value){
-apop_inventory  *setme;
+  apop_inventory  *setme;
     setme  = malloc(sizeof(apop_inventory));
     apop_inventory_set(setme, value);
     return setme;
@@ -71,7 +71,7 @@ Inventories sent in to most estimation functions are just the wish list; it woul
 \param filter	an \ref apop_inventory where the values are one if the value will be calculated, zero if not.
 \ingroup inv_and_est */
 apop_inventory apop_inventory_filter(apop_inventory *in, apop_inventory filter){
-apop_inventory  out;
+  apop_inventory  out;
 	if (in==NULL){
 		apop_inventory_copy(filter, &out);
         return out;
@@ -194,9 +194,9 @@ void apop_estimate_print(apop_estimate * print_me){
 \return a pointer to a copy of the original, which you can mangle as you see fit. 
 */
 apop_model * apop_model_copy(apop_model in){
-apop_model * out = malloc(sizeof(apop_model));
+  apop_model * out = malloc(sizeof(apop_model));
     strcpy(out->name, in.name);
-    out->parameter_ct   = in.parameter_ct;
+    out->parameter_ct       = in.parameter_ct;
 	out->estimate           = in.estimate;
 	out->log_likelihood     = in.log_likelihood;
 	out->dlog_likelihood    = in.dlog_likelihood;
@@ -213,7 +213,7 @@ else will be predictable.
 
  */
 apop_estimation_params *apop_estimation_params_alloc(){
-apop_estimation_params *setme = calloc(sizeof(apop_estimation_params),1);
+  apop_estimation_params *setme = calloc(sizeof(apop_estimation_params),1);
     setme->starting_pt          = NULL;
     setme->weights              = NULL;
     setme->step_size            = 

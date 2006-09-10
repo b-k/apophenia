@@ -680,7 +680,7 @@ allocated.
 \index{Zipf distribution} \index{Exponential distribution}
 \index{Normal distribution} \index{Gamma distribution}
 \index{Poisson distribution} \index{Probit} \index{Logit}
-\index{Ordinary Least Squares} \index{Generalized Least Squares}
+\index{Weighted Least Squares}\index{Ordinary Least Squares} \index{Generalized Least Squares}
 \label{modellist}
 Here are the models that currently ship with Apophenia:\\
 \cinline{apop\_exponential} and \cinline{apop\_exp\-o\-nen\-tial\_rank}, \\
@@ -691,6 +691,7 @@ Here are the models that currently ship with Apophenia:\\
 \cinline{apop\_logit}, \\
 \cinline{apop\_probit}, \\
 \cinline{apop\_waring} and \cinline{apop\_waring\_rank}, \\
+\cinline{apop\_WLS}, \\
 \cinline{apop\_yule} and \cinline{apop\_yule\_rank}, \\
 \cinline{apop\_zipf} and \cinline{apop\_zipf\_rank}.
 
@@ -909,6 +910,7 @@ another, and
 database and produce a crosstab. All of these are simply wrappers for
 the corresponding Apophenia functions, as seen in Chapter \ref{sql}.
 
+\comment{
 Finally, for numerical analysis, there is a client/server program,
 \binline{apop}.  With the command \binline{apop
 start dataset.db}, the program installs itself in memory.
@@ -932,6 +934,7 @@ Since all of the handling of \cinline{gsl\_matrix}es,
 the server, and all output is plain text, one only needs
 basic text-parsing to fold the input and output of these functions into
 scripts in languages such as Perl or Python. \index{Perl} \index{Python}
+}
 
 \comment{
 \section{\treemarker Modern C} Here are a few notes on the ideas behind
