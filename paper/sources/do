@@ -16,6 +16,7 @@ os.popen3("""
     mkdir msc_book_samples
     cp *c msc_book_samples
     cp markov_data msc_book_samples 
+    cp data-classroom msc_book_samples 
     cp Makefile.std msc_book_samples/Makefile
     zip -r msc_book_samples.zip msc_book_samples
     rm -rf msc_book_samples

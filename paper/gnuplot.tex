@@ -1014,7 +1014,7 @@ For example, say that you have an $n \times n$ grid where a
 one in position $(i,j)$ indicates a link between agents $i$ and $j$ and
 a zero indicates no link.
 Then a simple \ci{for} loop would convert this data into a
-\ci{neato}-plottable file:
+\ci{neato}-plottable file:\label{netlisting}
 \begin{lstlisting}
 void produce_network_graph(apop_data *link_data, char *outfile){
   FILE *g = fopen(outfile, "w");
@@ -1028,6 +1028,66 @@ void produce_network_graph(apop_data *link_data, char *outfile){
     fclose(g);
 }
 \end{lstlisting}
+
+In the code supplement,\footnote{\samplecodelocation} you will find 
+a file named \bi{data-classroom}, which lists the survey results from a
+Junior High classroom in LA, in which students listed their five best friends.
+The \airq{ego} column is the student writing down the name of his or her
+best friend, and the \airq{nominee} column gives the number of the best
+friend. Figure \ref{classnet} graphs the classroom, using \ci{neato} and
+the following options for the graph:
+\label{graphhead}\begin{lstlisting}
+digraph{
+    node [label="",shape=circle,height=0.12,width=0.12];
+    edge [arrowhead=open,arrowsize=.4];
+...
+    }
+\end{lstlisting}
+
+A few patterns are immediately evident: at the right is a group of four students
+who form a complete clique, but do not seem very interested in the rest
+of the class. The student above the clique was absent the
+day of the survey and thus is nominated as a friend but has no
+nominations him or herself; similarly for one student at the lower right. There
+are two sets of students who are closely linked, at the left and in
+the center, probably representing the boys and the girls. There are two
+students who nominated themselves as best friends (one at top right and
+one at the bottom), and those two students are not very popular.
+
+\begin{figure}
+\begin{center}
+\scalebox{.9}{\includegraphics{figs/classnet.eps}}
+\caption{The social network of a Junior High classroom.} \label{classnet}
+\end{center}
+\end{figure}
+
+
+\exercise{Write a program to replicate Figure \ref{classnet}. 
+\begin{itemize}
+\item Read the \bi{data-classroom} file into an \ci{apop\_data} set,
+using either \ci{apop\_text\_to\_db} and a query, or
+\ci{apop\_text\_to\_data}. 
+\item Open your output file, and write a header as per page
+\pageref{graphhead}.
+\item Write a single \ci{for} loop to write one line to the output file for
+each line in the data set. Base your \ci{fprintf} statement on the one 
+from page \pageref{netlisting}.
+\item Close the file.
+\end{itemize}
+(continued)
+} \exercise{(continued)
+
+Running the program will produce a \bi{neato}-formatted file.
+\begin{itemize}
+\item From the command line, run \bi{neato -Tps <my\_output > out.eps}.
+The output graph should look just like Figure \ref{classnet}.
+\item In the \bi{dot} manual (\bi{man dot} from the command line), you
+will see that there are many variant programs to produce different
+types of graph. What does the classroom look like via \bi{dot},
+\bi{circo}, and \bi{twopi}?
+\end{itemize}
+}
+
  
 \paragraph{Internal use}
 If you have been sticking to the philosophy of coding via small,
