@@ -1,0 +1,119 @@
+\chapter{Text processing} \label{textappendix}
+
+If you are lucky, then your data is in exactly the format it needs to be
+to be read by your stats package, Apophenia, Graphviz, \&c. 
+
+You are probably not lucky. This appendix will explain how one modifies
+a text file to conform to an input standard. It is based on \vocab{regular
+expression} parsing, wherein you specify a certain regularity, such as
+`numbers followed by letters', and a program searches for that regular
+expression in text and modifies it as per your instructions. 
+
+Regular expressions are their own language that provides a compact means
+of summarizing a text pattern. Unfortunately, there are many variants on the
+regex syntax, since so many programs process them, and the author of
+each program felt the need to make some sort of tweak to the standard.
+Broadly, the basic regular expression syntax derives from \ttind{ed}, a
+text editor from back when the only output available to computers was
+the line printer. Most POSIX utilities, such as \ttind{sed}, 
+\ttind{grep} or \ttind{awk}, use this basic regex syntax. The scripting language
+\ttind{perl} introduced a somewhat different syntax for regular
+expressions with a number of extensions and modifications, and most
+post-Perl programs adopted the Perl-compatible regular expressions. 
+
+This chapter will use Perl because it is trivial to do Perl regular
+expression parsing and substitution from the command line. Other
+systems, such as C or \ind{Python} require a regex compilation step
+before usage, which is nothing but an extra step in a script or program,
+but make one-line commands difficult.
+
+\subsection{The basic search}
+The simplest search is for a literal string of text. Let us say that we
+have a C program, and we are searching for every use of a variable,
+\ci{var}. You can use the command-line program \ci{grep} (general
+regular expression parser) to search for \ci{var} among your files. The
+syntax is simple: \bi{grep var *.c} will search all files in the current
+directory ending in \bi{.c} for the string \ci{var}, and print the result
+on the command line.
+
+\exercise{Let us say you would like some examples of how to use
+\ci{printf}. Use \bi{grep} to search all of your .c files for uses
+of \ci{printf}. 
+
+The \ci{-C n} option would output $n$ context lines before and after the 
+match; repeat your search with two context lines before and after each
+\ci{printf}.
+}
+
+\paragraph{Bracket expressions} Now we start to add special characters
+from the regex language. The expression \ci{[fs]} will match either
+\ci{f} or \ci{s}. Thus, the expression \ci{[fs]printf} will match both
+\ci{fprintf} or \ci{sprintf} (but not \ci{printf}). Thus, \ci{grep
+[fs]printf *.c} will find all such uses in your C files. More bits of
+bracket expression syntax:
+
+\begin{itemize}
+\item You can use ranges: \ci{[A-Z]} searches for all capital letters,
+\ci{[A-Za-z]} searches for all lowercase letters, and \ci{[0-9]} matches
+any number. 
+\item Everything after a \verb|^| is excluded. Thus, \ci{[}\verb|^|\ci{fs]} matches
+any single character except \ci{f} or \ci{s}. Notice that everything
+after the carat is excluded. \ci{[a-z}\verb|^|\ci{fs]} matches any lowercase letter
+but \ci{f} or \ci{s}.
+\end{itemize}
+Brackets can be a bit disorienting because there is nothing in the syntax
+to indicate when a group ends or begins, and no matter how many groups are
+included, the result still represents exactly one character in the text.
+
+\paragraph{Alternatives} 
+Recall that Apophenia includes various printing functions, such as
+\ci{apop\_data\_print} and \ci{apop\_matrix\_print}. Let us say that you
+would like to see all such examples. Alternatives of the form \airq{A or
+B} are written in regex notation as \ci{(A|B)}. Notice how the \ci{|}
+character also indicates \airq{or} in C as well. In a regex, you will
+need parens as well to indicate that the bounds of the alternatives.
+
+At this point, there are also several complications. First, in the
+\ci{grep} regex syntax (but not in Perl's), the actual form is not
+not \ci{(A|B)} but \ci{$\backslash$(A$\backslash$|$\backslash$B)}---the
+parens and pipe all need a backslash before them.
+
+If you type \ci{$\backslash$|} on the command line, then it will send a
+simple \ci{|} to grep. To send a literal backslash to grep, you will
+need to double it. Further, all of this will confuse your shell unless
+you put it in quotes. Having taken all these considerations into
+account, you can now search for alternatives. This command will search
+for both \ci{apop\_data\_print} and \ci{apop\_matrix\_print}:
+\begin{lstlisting}
+grep "apop_\\(data\\|matrix\\)_print" *.c
+\end{lstlisting}
+
+\subsection{Substitution} 
+
+\paragraph{Perl commands} Perl is almost certainly installed on your
+system, since many basic system utilities use it. If it is not
+installed, you can install it via your package manager.
+
+You can run Perl commands from the command line via the \bi{-e} command.
+For example,
+\begin{lstlisting}
+perl -e "print \"Hello, world.\n\""
+\end{lstlisting}
+This runs the Perl command \bi{print "Hello, world.$\backslash$n"}. Notice
+that we had to use \bi{$\backslash$"} instead of a plain \bi{"} on the
+command line to prevent the string from ending prematurely.
+
+\exercise{\label{classextwo} Refer to the exercise on page \pageref{classex}, which read in
+a text file and produced a Graphviz-readable output file. That exercise
+read the text to an \ci{apop\_data} set and then wrote the output, which
+is sensible when pulling many classes from a database. But if you have
+the text file \bi{data-classroom}, you can modify it directly into 
+Graphviz's format. Write a script to:
+\begin{itemize}
+\item Delete the header line.
+\item Replace each pipe with a \ci{->}.
+\item Replace each number $n$ with \ci{node}$n$.
+\item Add a header (as on page \pageref{graphhead}).
+\item Add the end-brace on the last line.
+\end{itemize}
+}
