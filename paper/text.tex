@@ -1,14 +1,30 @@
-\chapter{Text processing} \label{textappendix}
+\renewcommand\thechapter{\Alph{chapter}}
+\setcounter{chapter}{1}
+\setcounter{section}{0}
+\setcounter{subsection}{0}
+\chapter{Appendix \thechapter: Text processing} \label{textappendix}
 
 If you are lucky, then your data is in exactly the format it needs to be
-to be read by your stats package, Apophenia, Graphviz, \&c. 
+to be read by your stats package, Apophenia, Graphviz, \&c.
 
-You are probably not lucky. This appendix will explain how one modifies
-a text file to conform to an input standard. It is based on \vocab{regular
-expression} parsing, wherein you specify a certain regularity, such as
-`numbers followed by letters', and a program searches for that regular
-expression in text and modifies it as per your instructions. 
+By definition, you are probably not going to be lucky. This appendix will
+explain how one modifies a text file to conform to an input standard. It
+is based on \vocab{regular expression} parsing, wherein you specify a
+certain regularity, such as `numbers followed by letters', and a program
+searches for that regular expression in text and modifies it as per
+your instructions.
 
+Along the way, you will see how to effectively search your files. As
+your projects get large, you will desire tools that find every use of
+\ci{buggy\_variable} in your program or every reference to an author in
+your documents. Regular expression tools will help you with this.
+
+This chapter will begin with simple searching, as a chance to introduce
+regular expressions, and then move on to the main program: writing
+scripts to reformat text files into a format appropriate for your
+data-handling systems.
+
+\paragraph{Standard syntax, lack thereof}
 Regular expressions are their own language that provides a compact means
 of summarizing a text pattern. Unfortunately, there are many variants on the
 regex syntax, since so many programs process them, and the author of
@@ -21,13 +37,28 @@ the line printer. Most POSIX utilities, such as \ttind{sed},
 expressions with a number of extensions and modifications, and most
 post-Perl programs adopted the Perl-compatible regular expressions. 
 
-This chapter will use Perl because it is trivial to do Perl regular
+Different programs, and even different brands of the same
+program, like GNU grep versus Solaris grep, have frustrating
+differences: one may support the \ci{?} symbol and one may not; 
+one takes \ci{+} as a plus sign and  \ci{\textbs+} as a special
+character, while the other reads \ci{+} as special and \ci{\textbs+}
+as a plain plus sign. This chapter covers GNU grep and Perl as they exist as
+of this writing, and you are encouraged to check the manual pages or
+online references for the subtle shifts in backslashes among other
+regular expression systems.
+
+On the other hand, since so many programs support regexes---including
+standard viewers like \ttind{less}, a fair number of online search tools,
+and probably including your text editor---knowledge of regexes comes in
+handy in a wide variety of situations.
+
+This chapter will use grep and Perl because it is trivial to do regular
 expression parsing and substitution from the command line. Other
 systems, such as C or \ind{Python} require a regex compilation step
 before usage, which is nothing but an extra step in a script or program,
-but make one-line commands difficult.
+but makes one-line commands difficult.
 
-\subsection{The basic search}
+\section{The basic search}
 The simplest search is for a literal string of text. Let us say that we
 have a C program, and we are searching for every use of a variable,
 \ci{var}. You can use the command-line program \ci{grep} (general
@@ -56,9 +87,9 @@ bracket expression syntax:
 \item You can use ranges: \ci{[A-Z]} searches for all capital letters,
 \ci{[A-Za-z]} searches for all lowercase letters, and \ci{[0-9]} matches
 any number. 
-\item Everything after a \verb|^| is excluded. Thus, \ci{[}\verb|^|\ci{fs]} matches
+\item Everything after a \ci{\that} is excluded. Thus, \ci{[\that{}fs]} matches
 any single character except \ci{f} or \ci{s}. Notice that everything
-after the carat is excluded. \ci{[a-z}\verb|^|\ci{fs]} matches any lowercase letter
+after the caret is excluded. \ci{[a-z\that{}fs]} matches any lowercase letter
 but \ci{f} or \ci{s}.
 \end{itemize}
 Brackets can be a bit disorienting because there is nothing in the syntax
@@ -69,13 +100,14 @@ included, the result still represents exactly one character in the text.
 Recall that Apophenia includes various printing functions, such as
 \ci{apop\_data\_print} and \ci{apop\_matrix\_print}. Let us say that you
 would like to see all such examples. Alternatives of the form \airq{A or
-B} are written in regex notation as \ci{(A|B)}. Notice how the \ci{|}
-character also indicates \airq{or} in C as well. In a regex, you will
-need parens as well to indicate that the bounds of the alternatives.
+B} are written in basic regex notation as \ci{(A|B)}. Notice how the
+\ci{|} character analogizes nicely with the use of \ci{||} 
+to indicate \airq{or} in C. In a regex, you will need parens as well to indicate
+the bounds of the alternatives.
 
 At this point, there are also several complications. First, in the
 \ci{grep} regex syntax (but not in Perl's), the actual form is not
-not \ci{(A|B)} but \ci{$\backslash$(A$\backslash$|$\backslash$B)}---the
+not \ci{(A|B)} but \ci{\textbs(A\textbs|B\textbs)}---the
 parens and pipe all need a backslash before them.
 
 If you type \ci{$\backslash$|} on the command line, then it will send a
@@ -88,7 +120,30 @@ for both \ci{apop\_data\_print} and \ci{apop\_matrix\_print}:
 grep "apop_\\(data\\|matrix\\)_print" *.c
 \end{lstlisting}
 
-\subsection{Substitution} 
+\paragraph{A few special symbols}
+You sometimes won't care at all about a certain segment. A 
+dot matches any character, and you will see below that a star 
+repeats the prior atom. Therefore
+\begin{lstlisting}
+grep "apop_.*_print" *.c
+\end{lstlisting}
+will find any line that has \ci{apop\_}, followed by anything,
+eventually followed by \ci{\_print}.
+
+Finally, the caret and dollar sign indicate the beginning and end of the
+line, respectively.  \ci{grep "\that{}int" *.c} will only match
+lines where \ci{int} is right at the beginning of the line, and 
+\ci{grep "\{\$" *.c} will only match open-braces at the very end of the
+line. Note well that a caret meant something different in a bracket
+expression. This is a special case of the general rule that the syntax
+inside bracket expressions and the syntax outside brackets have nothing
+to do with each other.
+
+\section{Replacing}
+
+Grep is wonderful for searching, but is a purely read-only program. If
+you want to change what you find, you will need to use a more complex
+program, such as Perl.
 
 \paragraph{Perl commands} Perl is almost certainly installed on your
 system, since many basic system utilities use it. If it is not
@@ -99,9 +154,134 @@ For example,
 \begin{lstlisting}
 perl -e "print \"Hello, world.\n\""
 \end{lstlisting}
-This runs the Perl command \bi{print "Hello, world.$\backslash$n"}. Notice
-that we had to use \bi{$\backslash$"} instead of a plain \bi{"} on the
+This runs the Perl command \bi{print "Hello, world.\textbs{}n"}. Notice
+that we had to use \bi{\textbs"} instead of a plain \bi{"} on the
 command line to prevent the string from ending prematurely.
+
+The basic syntax for a search and replace is \ci{s/replace me/with me/g}.
+The slash distinguishes the command (\ci{s}), the text to search
+(\ci{replace me}), the text for replacement (\ci{with me}), and the
+modifiers (the \ci{g}, to be explained below).
+
+On the command line, you will also need to specify the files to search
+and replace. Here is the standard form that you will use throughout:
+\begin{lstlisting}
+perl -pi.bak -e "s/replace me/with me/g" files_to_modify
+\end{lstlisting}
+
+
+The \ci{-pi} option tells Perl to run through the file list at the end
+and run the substitution on every line. The \ci{.bak} extension tells
+Perl to make a backup before modification with the \ci{.bak} extension.
+You may use any extension that seems nicer: \ci{-pi\~{}} will produce
+a backup of a file named \ci{test} that would be named \ci{test\~{}}.
+If you specify no suffix at all (\ci{-pi}), then no backup copy will be
+made before the edits are done. It is up to you to decide when (if ever) you are 
+sufficiently confident to not make backups.
+
+\exercise{Create a file named \ci{test} with one line, reading \ci{I am a
+teapot.} Use the command-line format above to become something else,
+such as a kettle or a toaster.
+}
+
+You are welcome to include multiple commands on the line, by the way.
+Separate them with a semicolon, as in C.
+\begin{lstlisting}
+perl -pi.bak -e "s/replace me/with me/g; s/then replace this/with this/g" files_to_modify
+\end{lstlisting}
+
+\paragraph{Replacing with modifications} Parentheses, used above to
+delimit conditional segments, can also be used to store sections for
+later use. For example, say that your file reads \ci{There are 4 monkeys
+at play}, but your editor feels that the sentence as written is
+imprecise. You forgot the number of monkeys, so you are tempted to use
+the substitution \ci{s/[0-9] monkeys/Callimico goeldii/g}---but this will
+lose the number of monkeys.
+
+However, you can put a segment of the search term in parentheses, and
+then use \ci{$\backslash$\$1} to refer to it in the replacement. Thus, the
+correct command line for replacing an unknown number of monkeys is:
+\begin{lstlisting}
+perl -pi~ "s/([0-9]) monkeys/\$1 Callimico goeldii/g" monkey_file
+\end{lstlisting}
+The \ci{\textbs\$1} will be replaced by whatever was found in the
+\ci{([0-9])} portion of the search.
+
+If there are multiple substitutions to be made, you will need higher
+numbers. For example say that \ci{the 7 monkeys are fighting the 4 lab
+owners}. This would be formalized by: 
+\begin{lstlisting}
+perl -pi~ "s/([0-9]) monkeys are fighting the ([0-9]) lab owners/\$1 Callimico goeldii are fighting the \$2 Homo sapiens/g" monkey_file
+\end{lstlisting}
+
+\subsection{Selecting in detail}
+Let us say that values under ten in the data are suspect, and should be
+replaced with \ci{"NaN"}. The search \ci{s/[0-9]/"NaN"/g} won't work,
+because \ci{45} will be replaced by \ci{"NaN""NaN"}, since both \ci{4}
+and \ci{5} count as separate matches. 
+
+Let us say that values over ten are suspect. The search
+\ci{s/[1-9][0-9]/"NaN"/g} won't work, because \ci{100} would be replaced by
+\ci{"NaN"0}.
+
+In short, to successfully search and replace, we need to be able to
+specify a segment of text in great detail. This section will provide a
+few more tools and a lot of notes about how one specifies exactly the
+right text.
+
+\paragraph{Repetition} 
+Here are some symbols to match repetitions.
+\begin{center}
+\fbox{
+\begin{tabular}{rl}
+\ci{*}	& the last atom appears zero or more times\\
+\ci{+}	& the last atom appears one or more times (GNU grep: \ci{$\backslash$+})\\
+\ci{?}	& the last atom appears zero or one times (GNU grep: \ci{$\backslash$?})
+\end{tabular}
+}
+\end{center}
+
+Some examples and notes:
+
+Although the dot character seems convenient, it is almost never what you
+want. Let us say that we are looking for expressions in quotes,
+such as \ci{"anything"}. It may seem that this translates to the regular
+expression \ci{".*"}, meaning any character, repeated zero or more
+times, enclosed by quotes. Now consider this line: \ci{"first bit",
+"second bit"}. You meant to have two matches, but instead will get only
+one: \ci{first bit", "second bit}, since this is everything between the
+two most extreme quotes. What you meant to say was that you want anything
+that is not a \ci{"} between two quotes. That is, \ci{"[\that"]"}. 
+
+Say that the program that produced your data put it all in
+quotes, but you are reading it in to a  program that does not like
+having quotes. Then this will fix the problem:
+\begin{lstlisting}
+perl -pi~ "s/\"([^\"])\"/\\$1/g" data_file
+\end{lstlisting}
+Notice that we need to indicate to the command line that the quotes are
+not ending the Perl command, so they are all prepended with backslashes.
+
+To replace all of the numbers less than 100 in a file:
+\begin{lstlisting}
+perl -pi~  "s/([^0-9]|^)([0-9][0-9]\\?)([^0-9]|\$)/\\$1NaN\\$3/g" search_me
+\end{lstlisting}
+This is a mess, but a very precise mess. The first part,
+\ci{([\that 0-9]|\that)} will match either a non-numeric character
+or the beginning of the line. The second part,
+\ci{([0-9][0-9]\textbs{}?)},
+matches either one or two digits (but never three). The third part, 
+\ci{([\that0-9]|\$)} will match either a non-numeric character
+or the end of the line. Thus, we have precisely communicated that we
+want something, then a number under 100, then something else.
+Since the search string used three sets of parens, the output string
+can refer to all three. It repeats the first and last verbatim, and
+replaces the second with \ci{NaN}, as we had desired.
+
+\exercise{Modify the search to include an optional decimal of arbitrary
+length. Write up a test file and test that your modification works
+correctly.}
+
 
 \exercise{\label{classextwo} Refer to the exercise on page \pageref{classex}, which read in
 a text file and produced a Graphviz-readable output file. That exercise
@@ -116,4 +296,7 @@ Graphviz's format. Write a script to:
 \item Add a header (as on page \pageref{graphhead}).
 \item Add the end-brace on the last line.
 \end{itemize}
+[Hint: as this chapter is written right now, you can only do steps three
+and four. More forthcoming.]
 }
+

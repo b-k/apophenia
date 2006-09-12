@@ -12,6 +12,7 @@
 %\usepackage{bbold} %Sigma, blackboard
 %\let\boldsig\Sigma
 \usepackage{amsmath, amsfonts}  %for mathbb
+\usepackage{bm}  %boldmath
 %\let\boldsig\savedSigma
 
 %\def\treesymbol{\maltese}
@@ -59,6 +60,10 @@
 
 
 %math conveniences, primarily commonly boldfaced vectors.
+\bmdefine\bhat{\hat}
+\def\that{$\bhat{\phantom{x}}$}
+\bmdefine\bbackslash{\backslash}
+\def\textbs{$\bbackslash$}
 \def\xv{{\bf x} } \def\yv{{\bf y} } \def\pv{{\bf p} }
 \def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\yv{{\bf y}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
 \def\betav{{\mbox{\boldmath$\beta$}}}

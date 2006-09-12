@@ -546,7 +546,9 @@ Unless your program is generating its own data, you will probably
 first be importing data from a text file.  The \cinline{apop\_text\_to\_db}
 function will do this for you; see the online reference for details. The
 first line of the text file can be column names, and the remaining rows
-are the data. 
+are the data. If your data is not quite in the right format (and it
+rarely is), you may want to look at Appendix \ref{textappendix} on text
+massaging techniques.
 
 When you are done with all of your queries, run
 \cinline{apop\_close\_db} to close the database. If you send the function a
