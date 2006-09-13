@@ -11,7 +11,7 @@ publish: $(DOCNAME).pdf
 
 onerun:
 	latex $(DOCNAME)
-	@#\citeindexentry will print \inexentry{{Kmenta}}, which means
+	@#\citeindexentry will print \indexentry{{Kmenta}}, which means
 	@#that Kmenta gets alphabetized under open-bracket. So
 	@#turn {{...}} into {...}.
 	@perl -pi.bak -e 's/indexentry{{([^}]*)}}/indexentry{$$1}/'  .texputs/$(DOCNAME).idx;

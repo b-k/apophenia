@@ -1,6 +1,7 @@
 \chapter[Introduction]{Statistics in the modern day}\label{intro}
 
 
+
 The goal of statistical analysis is to use data to estimate and test
 the parameters of a model.
 
@@ -231,7 +232,15 @@ the remainder of the book will use to estimate models. Notably,
 it introduces the idea of functions, and how one can build functions or
 use existing functions to execute increasingly advanced routines.
 
-\paragraph{Dealing with large data sets} Matrix-oriented packages,
+\paragraph{Dealing with large data sets} 
+\citet[p 619]{huber:languages} explains: ``Large real-life problems always require
+a combination of database management and data analysis. The larger the
+datasets, the more complicated their structure tends to be. Neither
+database management systems nor traditional statistical packages are up
+to the task.''
+
+\comment{
+Matrix-oriented packages,
 (including the GSL) are not well-suited for data sets from agencies like
 the US Census Bureau, that can be literally gigabytes of data.
 C may seem unfriendly, but
@@ -246,24 +255,34 @@ Meanwhile, database systems are designed from the ground up to do nothing
 but let you efficiently retrieve what you need from huge amounts of data.
 But being so purpose-specific, databases do not provide a way to do
 numerical analysis beyond taking averages.  Fortunately, we
-are working in C, so we can have the best of all worlds. The technique
-covered in this book (and the technique that Apophenia facilitates)
-is to read all of your data into a database, and then query what you
-need to a matrix, as you need it. This requires learning a new syntax,
-\ind{SQL}, which is decidedly neither Beautiful nor Perfect, and adds a
-level of complication on top of what you are already dealing with. But
-the ease of manipulating data sets offered by SQL is very much worth
-its short learning curve. Chapter \ref{sql} presents a tutorial of SQL
-syntax to get you up to speed.
+are working in C, so we can have the best of all worlds.} Because there
+are a wealth of database-oriented C libraries and analysis-oriented C
+libraries, we can have the best of all worlds. The technique covered
+in this book (and the technique that Apophenia facilitates) is to read
+all of your data into a database, and then query what you need to a
+matrix, as you need it. This requires learning a new syntax, \ind{SQL},
+which is decidedly neither Beautiful nor Perfect, and adds a level of
+complication on top of what you are already dealing with. But the ease
+of manipulating data sets offered by SQL is very much worth its short
+learning curve. Chapter \ref{sql} presents a tutorial of SQL syntax to
+get you up to speed, and shows you how to move data between databases
+and matrices.
 
-Apophenia implemenst SQL via the \ind{SQLite} library.
-Those of you who 
-have data which is already handled
-by another database engine will easily be able to adapt the techniques
-used here, but will need to brush up on the details of how to access
-your site's database. Since you are using C,
-you are guaranteed that there is an interface out there that you can
-download and incorporate into your programs.
+Apophenia implemenst SQL via the \ind{SQLite} library.  Those of you
+who have data which is already handled by another database engine will
+easily be able to adapt the techniques used here, but will need to brush
+up on the details of how to access your site's database. Since you are
+using C, you are guaranteed that there is an interface out there that
+you can download and incorporate into your programs.
+
+%WARNING: Hard-coding below!!!
+Here in the real world, it happens far too often that the hardest
+part of data analysis is just reading in the darn data set---cleaning
+it to conform with the format that the database expects to read in.
+Appendix A discusses text manipulation techniques,
+so when the database expects your data set to use commas but your data
+is separated by erratic tabs, you will be able to quickly surmount the
+problem and move on to analysis.
 
 \paragraph{The computation engine} The \ind{GNU Scientific Library}
 includes tools for all of the procedures commonly used in statistics,

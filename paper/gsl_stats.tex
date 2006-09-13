@@ -4,7 +4,7 @@
 \documentclass[10pt,notitlepage, openany]{book}
 %\usepackage[pdftex]{epsfig}
 \usepackage{epsfig}
-\usepackage{xspace, calc, needspace, array,natbib,graphicx,wrapfig, apop_wrap, oldtitlesec, listings,hyphenat,fixltx2e}
+\usepackage{xspace, calc, needspace, array,natbib,graphicx,wrapfig, apop_wrap, oldtitlesec, listings,hyphenat,fixltx2e,amssymb,pifont}
 \usepackage{hhline} %load last
 %\usepackage[LHE,T1]{fontenc}
 
@@ -14,7 +14,6 @@
 \usepackage{amsmath, amsfonts}  %for mathbb
 \usepackage{bm}  %boldmath
 %\let\boldsig\savedSigma
-
 %\def\treesymbol{\maltese}
 %\usepackage{stmaryd}\def\treesymbol{\curlyveeuparrow} %stmaryd
 \usepackage{textcomp}\def\treesymbol{\textreferencemark\xspace} %textcomp
@@ -221,9 +220,18 @@
 %Yes, I agree: this is a terrible, terrible kludge.
 \def\sigmaoutline{\scalebox{0.1}{\includegraphics{sigma}}}
 
+%\renewcommand\labelitemi{$\blacktriangleright$}
 \long\def\exercise#1{\textblock{$\mathbb Q$}{#1}}
-\long\def\summarynoitems#1{\textblock{\sigmaoutline}{#1}}
-\long\def\summary#1{\textblock{\sigmaoutline}{\begin{itemize}#1\end{itemize}}}
+\long\def\summarynoitems#1{
+\renewcommand\labelitemi{\ding{"E4}}
+\textblock{\sigmaoutline}{#1}
+\renewcommand\labelitemi{$\bullet$}
+}
+\long\def\summary#1{\textblock{\sigmaoutline}{
+\renewcommand\labelitemi{\ding{"E4}}
+\begin{itemize}#1\end{itemize}
+\renewcommand\labelitemi{$\bullet$}
+}}
 
 
 
