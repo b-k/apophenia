@@ -1,0 +1,466 @@
+\chapter{\treesymbol More C tools}
+
+If you have a good handle on the Chapter \ref{c_crash}, then you already
+have what you need to write some very advanced programs. But C is a
+world unto itself, with hundreds of utilities to facilitate better
+coding and many features for the seasoned programmer.
+
+This chapter covers some of the additional details of C and its
+environment. You can read the rest of the book without reading this
+chapter, but it discusses some features and tools that you may
+eventually find to be useful.
+
+
+\section{Syntactic sugar}   
+There are several ways to do almost everything in Chapter \ref{c_crash}.  For
+example, one could write the three lines \ci{b = (i > j); a += b;
+i++;} as the single expression \ci{a += b = i++ > j;}. The seventh
+element of the array \ci{a} can be called \ci{a[6]},
+\ci{*(a + 6)}, or even (for the truly perverse) \ci{6[a]}.  Some people find one-liners and pointer arithmetic
+to have \ae{}sthetic appeal, and there are even cases where they may
+be clearer than the more common methods. But they are an easy way to
+write impossible-to-debug code, and require mastery of a great number
+of details of C internals that are wholly unnecessary otherwise.
+
+The reader whose interest is piqued and would like to learn more about
+how C works and about the many alternatives that I did not mention here
+is referred to the authoritative and surprisingly readable reference
+for the language: \cite{kandr:c}.
+
+This optional section includes some of the more common alternatives that
+are commonly used among C programmers. You can get very far without
+knowing any of the following, and some of it is generally considered to
+be bad style.
+
+\paragraph{The obfuscatory if} There is another way to write an \cind{if} statement. The following are equivalent:
+\begin{lstlisting}
+if (a < b)
+      a;
+else
+      b;
+\end{lstlisting}
+and
+\begin{lstlisting}
+(a < b) ? a : b;
+\end{lstlisting}
+Both have all three components: first the condition, then the `what to do if the
+condition is true' part, and then the `what to do if the condition is false'
+part. However, the first is more-or-less legible to anybody who knows basic English,
+and the second takes the reader a second to parse every time he or she
+sees it. Again, there are situations where the condensed form is useful,
+but you could live a successful career writing in C without ever using it.
+
+
+\paragraph{Macros} \label{macros} 
+
+The other main use of the preprocessor is to define macros, which take
+a bit of text and expand it to more text. The most common example is
+expanding\\
+\ci{MIN(a,b)}\\
+to:\\
+\ci{if (a $<$ b) a; else b;} .
+
+But there are endless pitfalls to using macros, and since it is often
+difficult to visualize how a complex macro will expand, debugging
+a macro---or working out that it is the macro that is broken---is
+difficult.  If you do write macros and need to debug them, the \ci{-E} flag to \ci{gcc} will run only the \ind{preprocessor}, so you can
+see what expands to what.
+
+Here, by the way, is the actual code for the \ci{GSL\_MIN} macro;
+it follows the first rule of macro writing, which is that everything
+should be in parentheses:\\
+\comment{\ci{\#include <gsl/gsl\_math.h>\\
+\#define GSL\_MIN(a,b) ((a) < (b) ? (a) : (b))} \cindex{GSL\_MIN}\\}
+\begin{lstlisting}
+#include <gsl/gsl_math.h>
+#define GSL_MIN(a,b) ((a) < (b) ? (a) : (b)) 
+\end{lstlisting}
+\cindex{GSL\_MIN} \cind{GSL\_MAX} is similarly defined.
+
+
+The one and only one thing that a macro can do better than a function is
+take a type as an argument. This takes advantage of the fact that the preprocessor 
+just shunts characters around and doesn't know what its arguments represent.
+For example, recall the form for reallocating a pointer to an array of \ci{int}s:\\
+\ci{var\_array = realloc(var\_array, new\_length * sizeof(int))}.\\
+With this macro:
+\begin{lstlisting}
+#define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))
+\end{lstlisting}
+the above line could be rewritten as:\\
+\ci{REALLOC(var\_array, new\_length, int);}\\
+This macro gives you one more moving part that could break (and which
+now needs to be \ci{\#include}d with every file), but
+may make the code more readable.
+\comment{\ci{\#define REALLOC(ptr, length, type) ptr = realloc(ptr, length * sizeof(type))}\\
+\ci{REALLOC(var\_array, new\_length, int);}\\}
+
+Finally, notice that the custom is to put macro names in caps.  You can
+rely on this in code you see from others, and are encouraged to stick
+to this standard when writing your own.
+
+\paragraph{Labels and \ci{break}} A line of code can be named, by simply providing a
+name with a colon after it. You can then jump to that line via \cind{goto}. Here is a code snippet that presents the basic idea, with a line labeled \ci{outro}:
+\begin{lstlisting}
+for (i=0; i< vector_size; i++){
+    if (a_vector[i] > b){
+        out = a;
+        goto outro;
+    }
+}
+out = b;
+
+outro:
+free(a_vector);
+free(another_vector);
+return out;
+\end{lstlisting}
+The goto is reviled by modern computer scientists as terrible style, so
+it appears infrequently. However, redundant code is also bad style. 
+In the above example, getting rid of the \ci{goto} would require copying
+the various memory-freeing tasks at the end of the function into the
+center of the \ci{for} loop.  Linus Torvalds,\index{Torvalds, Linus}
+the author of the Linux kernel, recommends the \ci{goto} to eliminate
+redundancy as above; many other authors choose to never use \ci{goto}.
+
+An alternative is \cind{break}, which cuts out of the innermost loop in
+which it is located. It is primarily useful when searching through an
+array for an item. Once you have found what you are looking for, there
+is no need to continue looping to the end of the array.
+Here is code that would work about like the above:
+\begin{lstlisting}
+for (i=0; i< vector_size; i++){
+    if (a_vector[i] > b){
+        out = a;
+        break;
+    }
+}
+if (out != a)
+    out = b;
+free(a_vector);
+free(another_vector);
+return out;
+\end{lstlisting}
+
+\paragraph{Switch} The \cind{switch} statement is a clean way to
+branch among many options. First, you will need a variable indicating
+a single character. For example, the \ci{get\_opt} function from the
+standard library will parse command line arguments; then the \ci{switch}
+command will branch depending on the value returned:
+\begin{lstlisting}
+char c;
+c = get_opt(...);
+switch(c){
+   case 'v':
+        verbose++
+        break;
+   case 'w':    
+        weighting_function();
+        break;
+   case 'f':      
+        fun_function();
+        break;
+}
+\end{lstlisting}
+So when 
+\ci{c == 'v'}, the verbosity level is increased,
+when \ci{c == 'w'}, the weighting function is called, 
+et cetera.
+
+Note well the abundance of \ci{break} statements.  The \ci{switch}
+function just jumps to the appropriate label (recall that the colon
+indicates a label) and then picks up from there---and continues. Thus,
+if there were no \ci{break} after \ci{verbose++}, then the program
+would merrily continue on to execute \ci{weighting\_function}, and so
+on. This is called {\sl fall-through}. The
+reader who uses \ci{switch} statements will want to take care
+to have \ci{break}s at the end of every \ci{case}.  The \ci{break}
+at the end of the list of \ci{case}s is extraneous, but there is a good
+chance that you will add to your list of \ci{case}s, at which point
+the \ci{break} will no longer be extraneous and will prevent a fall-through bug.
+
+An alternative to the \ci{switch} is a simple series of \ci{if}s:
+\begin{lstlisting}
+char c = get_opt(...);
+if (c == 'v'){
+        verbose++
+} else if (c == 'w'){
+        weighting_function();
+} else if (c == 'f'){
+        fun_function();
+}
+\end{lstlisting}
+There is more redundancy here---the name \ci{c} is repeated three times
+where in the \ci{switch} setup it was used once---but there is no risk
+of fall-through mistakes.
+
+
+\paragraph{Optimization} \index{optimization}
+The \cind{gcc} compiler can do a number of things to your code to make it
+run faster. For example, if you assign \ci{a = b + c}, it may replace
+every instance of \ci{a} with \ci{b + c}, or it may change the order
+in which lines of code are executed. To turn on \ind{optimization},
+use the \ci{-O3} flag when compiling with \ci{gcc}. [That's an `O'
+as in optimization, not a zero. There is also an \ci{-O1} and an \ci{-O2}, but as long as you are optimizing, why not go all out?]
+
+The problem with optimization, however, is that it makes debugging
+difficult. The program jumps around, making stepping through an odd
+trip, and when you ask to print the value of \ci{a}, you will get
+an error that there is no such variable defined.
+It also sometimes happens that you did not do your memory allocation duties
+quite right, and things went OK without optimization, but suddenly the
+program crashes when you have optimization on; the debugger will be some
+help, but you may just have to re-scour your code to find the problem.
+Thus, the \ci{-O3} flag is a final step, to be used only after you
+are reasonably confident that your code is debugged.
+
+Finally, you may run into authors who give you advice about how to write
+faster code, telling you to use loops here and unroll them there, make
+frequent use of the \cind{inline} keyword, or order your commands based
+on memory usage instead of human logic. Ignore them. It is much more
+valuable to minimize the time you spend deciphering and debugging your
+code than shaving seconds off of your run time.  Write code to maximize
+readability for yourself and your fellow humans. If you want optimization,
+\ci{gcc -O3} will do almost all of these rearrangements for you.
+
+
+\section{Function pointers} Forthcoming.
+
+\exercise{Write a function with header \ci{void apply(double( *fn)(double),
+double *array, int array\_len)}, that takes as argumetns a function, an
+array, and the length of the array, and changes each element
+\ci{array[i]} to \ci{fn(array[i])}.
+
+Test your function by creating an array of the natural number $1, 2,
+3,\dots 20$ and transforming it to a list of squares.}
+
+\section{Data structures} Forthcoming, covering linked lists versus trees versus arrays. Primarily of use to modelers.
+
+\section{More tools} 
+Beyond there debugger, there are a few more programs that will make your life as a programmer easier.
+
+\subsection{Help} \index{help, getting}
+You probably have have all the manuals for the programs listed in this
+chapter on your hard drive now. Most of them are in \TeX info format,
+which you can read by commands such as \bi{info gcc} or \bi{info make}. If
+you have trouble navigating in the \bi{info} program, then you can
+get help with \bi{info info}.
+
+There are manual pages for most of the C functions in the standard
+libraries. Try \bi{man printf} or \bi{man atoi}, for example.
+
+This help may not be available on every system---it's a bit of
+a crap shoot. But all of these documents are online. Just enter the
+command you would have typed at the command line into your favorite
+search engine. A search for \bi{info gsl} or \bi{man printf} will
+turn up exactly the documentation that is missing from your system,
+formatted for the web.
+
+\subsection{Make} \label{make} \index{make@\bi{make}|(}
+Once your program has many sections (or sooner), you will want to use
+\bi{make} to automate the process of turning your mess of files into
+a C program.  It is a program entirely separate from C, but which
+is always found wherever compilers are.
+
+Typically, you have ten \ci{.c} files, which will compile
+to ten \ci{.o} files, which will then be linked into one executable.
+You can describe the situation using a
+text file named \ci{Makefile} (capital M). The file will specify a
+series of dependencies: \ci{file1.o} depends on \ci{file1.c}, but does
+not depend on \ci{file2.c}, while \ci{run\_me} depends on both {\tt
+file1.o} and \ci{file2.o}.  Then, it specifies what actions need to be taken
+when a file is dependent on something which has changed.  For example,
+Figure \ref{makefig} is a Makefile for a program named \ci{run\_me}, which has two {\tt
+.c} files and one header file.
+
+\begin{figure*}
+\begin{verbatim}
+OBJECTS = file1.o file2.o           #User-defined
+PROGNAME = run_me                   #User-defined
+CFLAGS = -g -Wall
+LINKFLAGS = -L/usr/local/lib -lgsl -lgslcblas -lsqlite
+COMPILE   = gcc $(CFLAGS) -c $< -o $@
+
+$(PROGNAME): $(OBJECTS)
+        gcc $(CFLAGS) $(OBJECTS) $(LINKFLAGS) -o $(PROGNAME)
+
+file1.o: file1.c my_headers.h       #User-defined
+        $(COMPILE)
+file2.o: file2.c my_headers.h       #User-defined
+        $(COMPILE)
+\end{verbatim}
+\caption{A sample Makefile for a program with two source files.}
+\label{makefig}
+\end{figure*}
+
+The white space at the beginning of the indented lines is a single tab,
+not a bunch of spaces.  C never cares about this, but \bi{make}
+does.
+
+\paragraph{The executive summary} This Makefile is reprinted from the \airq{Setup}
+section of the Apophenia documentation, at
+\url{http://apophenia.info/doc}, and in the sample code at 
+\samplecodelocation. Cut and paste it into a file named
+\bi{Makefile}, taking care to retain the tabs, and put that file in
+the same directory as your source code. Then, change the first two lines
+to include one object file for each of your source files (you may only
+have one), and
+to the program name you prefer.  You may also need to change the
+\bi{LINKFLAGS} line if you get errors from the linker about symbols
+not found.
+
+Having saved those changes, just run
+\bi{make} from the command prompt to compile.
+Also, many programs will let you run
+make from within the program. \bi{gdb} lets you do this,
+as will most implementations of \ind{vi} and \ind{EMACS}.
+
+
+\paragraph{The details} For the curious and those who need to modify
+the standard Makefile, here are some details about its format.
+
+At the top are a list of variables, such as the list of object file names, the final program, et cetera.
+When \bi{make} encounters \ci{\$(PROGNAME)}, it will insert the value of the variable \ci{PROGNAME} in that
+slot, so the line 
+\begin{lstlisting}
+gcc $(CFLAGS) $(OBJECTS) $(LINKFLAGS) -o $(PROGNAME)
+\end{lstlisting}
+will translate into
+\begin{lstlisting}
+gcc  -g -Wall file1.o file2.o -L/usr/local/lib -lgsl -lgslcblas -lsqlite -o run_me
+\end{lstlisting}
+which looks an awful lot like what we had typed before (but not quite---this does the linking step only).
+
+The remainder of the file are dependency lists and commands. Begin
+with the second set: \bi{file1.o} depends on \bi{file1.c} and \bi{my\_headers.h}, meaning that if either file is newer than \bi{file1.o}
+(as indicated by the time stamp), then you will need to recompile \bi{file1.o}. \bi{make} will do this by using the command which begins with
+\bi{gcc} in the subsequent line. No need to go in to the details, but
+this line will expand to \bi{gcc -g -Wall -c file1.c -o file1.o}. This
+is the compilation step, without the linking. \bi{file2.o} has similar
+dependencies.
+
+The first dependency set says that \bi{\$(PROGNAME)}---that is, \bi{run\_me}---depends on all of the object files. Meanwhile, the object files
+depend on the \bi{.c} files and \bi{my\_header.h}, as above. So when
+you edit \bi{file1.c} and then type \bi{make} at the command prompt,
+\bi{make} will see that \bi{file1.o} is now out of date and needs
+recompilation. This change cascades: \bi{run\_me} is now out of date,
+and needs to be re-linked.
+
+Notice that \bi{file2.o} did not get recompiled, since it is still
+up-to-date. Thus, not only will \bi{make} save you typing, it will also
+save you time, since you will usually be hacking at one file at a time,
+so there is no point waiting for the other object files to recompile
+to exactly what they were before. 
+\index{make@\bi{make}|)}
+
+\subsection{Memory debugger} \index{memory debugger|see{valgrind}} \index{Valgrind|(}
+\index{segmentation fault}
+
+The setup is this: you make a mistake in memory handling early in the
+program, but it is not fatal, so the program continues along using bad
+data. Later on in the program, you do something innocuous with your bad
+data and get a segfault. This is a pain to trace using \bi{gdb}, so
+there are packages designed to handle just this problem.
+
+The first alternative is \ind{Electric Fence}, a
+library by Bruce Perens that allocates memory so that all memory
+mis-allocations and mis-reads will immediately crash.  That means that
+the debugger will stop on the line with the error, instead of continuing
+along with its bad data, so your debugger will give you much more useful
+information.  Electric Fence works by redefining \cind{malloc} in 
+its library. To use it, you would recompile the function
+using the efence library (adding \bi{-lefence} to the compilation
+command).
+
+
+Another option is \ind{Valgrind}, a program that will
+run your program in anal-retentive mode, and check every memory operation. 
+It is not available on all systems (it is generally Linux-centric), but
+if it is available, it is easier to use (no recompilation) and provides much more information than efence or
+\bi{gdb} alone. If anything breaks the rules, Valgrind will give you
+the location, in the form of a backtrace very much like the backtraces
+familiar from \bi{gdb}. It can even be set to start the debugger as soon
+as it catches something wrong.\footnote{Use the \bi{db-attach} switch.
+E.g., \bi{valgrind -v --db-attach=yes ./my\_program}.}
+
+The usage is simple: \bi{valgrind my\_program}. If you have a prodigious amount
+of errors, you may want to tack on the \bi{--logfile=problems} option. It doesn't
+quite print to the file name you give; do a directory listing after you run \bi{valgrind} to see where it goes.  Your final option is to pipe the standard
+error to a file: in the bash shell, which you are probably using: \bi{valgrind my\_program 2$>$ problems}.
+\index{Valgrind|)}
+
+\subsection{Revision control} \index{revision control|see{subversion}} \index{CVS|see{subversion}}\index{subversion|(}\label{valgrind}
+The idea behind the revision control system (RCS) is that your project
+lives in a repository. When you want to work, you check out
+a copy of the project, and when you are done making changes, you check
+them back in to the repository and can delete the copy.  The repository
+makes a note of every change you made, so you can check out a copy of
+your program as it looked three weeks ago as easily as you could check
+out a current copy.
+
+This has pleasant psychological benefits. Don't worry about experimenting
+with your code: it is just a copy, and if you break it you can always check
+out a fresh copy from the repository. Also, nothing matches the confidence
+one gets from making major changes to the code and finding that the
+results still match the results from last month to four decimal places.
+
+Finally, revision control packages facilitate collaboration with
+coauthors. If your changes are sufficiently far apart (e.g., you are
+working on one function and your coauthor on another in the same file),
+then the RCS will merge all changes to a single working copy. If
+it is unable to work out how to do so, then it will give you a
+clearly demarcated list of changes for you to accept or reject.
+
+This method also works for any other text files you have in your
+life, such as papers written in \LaTeX, HTML, or any other text-based
+format. For example, this book is under revision control.
+
+The standard revision control software (at the moment) is named
+subversion; if it is not already installed, it is probably available as
+a package for the system you are using. For usage, the reader is referred
+to subversion's own detailed manual describing set-up and operation from
+the command line.
+
+If subversion is not readily available, the next best is its predecessor,
+CVS, which is well-supported and even has a number of graphical
+front-ends, such as tkCVS.  
+\index{subversion|)}
+
+\subsection{The \ind{profiler}} The profiler times how long every function
+takes to execute. Its usage is much like the debugger. First, you need
+to add a flag to the compilation to include profiler symbols,
+\ci{-pg}. Then, execute your program, which will produce a file named
+\bi{gmon.out} in the directory, with the timings that the profiler
+will use. Unlike the debugger's \ci{-g} option, the \ci{-pg}
+option may slow down the program significantly as it writes to
+\bi{gmon.out}, so use \ci{-g} always and \ci{-pg} only
+when necessary.
+
+Finally, call \bi{gprof ./my\_executable} to produce a
+human-readable table from \ci{gmon.\-out}.\footnote{\bi{gprof}
+outputs to \ind{STDOUT}; use the usual shell tricks to manipulate
+the output, such as piping output through a pager, \bi{gprof
+./my\_executable | less}, or dumping it to a text file, \bi{gprof
+./my\_executable > outfile}, that you can view in your text editor.}
+See the manual (\bi{man gprof}) for further details about reading
+the output.
+
+As with the debugger, once the profiler points out where the most time
+is being taken by your program, what you need to do to alleviate the
+bottleneck becomes very obvious.
+
+If you are just trying to get your programs to run, optimizing for speed 
+may seem far from your mind. But it may be an interesting exercise to
+run a modestly complex program through the profiler, because, like the
+debugger's backtrace, its output provides another useful view of how
+functions call each other.
+
+\exercise{At this point you have a few programs with two or more
+functions. [The profiler gets confused if your program only has a
+\ci{main} and no subfunctions.] Run the profiler as above and have a
+look at the output. Are the calls as you had expected? If you have
+several assertions (you should), try recompiling with -DNDEBUG and see
+how the profiler timings change.}
+
+
+
