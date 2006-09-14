@@ -686,7 +686,113 @@ engine has its own specific means of finding this information. SQLite
 has a table named \sinline{SQLITE\_MASTER} that we can query to get
 such information.
 
-This section forthcoming.
+This subsection forthcoming.
+
+\section{On database design}
+Let us say that you are not reading in existing data, but are
+aggregating your own data, either from a simulation or data
+collected from the real world. Here are some considerations for how you
+should select the layout of your database, summarizing the common wisdom
+about the best way to think about data in a databse.
+
+\paragraph{Minimize redundancy} This is rule number one in database
+design, and books have been written about how one goes about reducing
+data to the \airq{normal form}. For most data collection, there is a
+logical hierarchy that makes redundancy-reduction easy. Let us say that
+we have three treatments, which were applied to a thousand each of four
+types of specimen.
+
+The full-redundancy approach would be to have a single table where each
+line is a single data point.  That line includes the measured outcome,
+all the characteristics of the treatment, and all the characteristics
+of the specimen.  This is very simple, and familiar to anyone who has
+spent much time with spreadsheets.
+
+But you can imagine the redundancy: the specimen description appears a
+thousand times, and depending upon the treatment regime, the treatment
+specification is likely appearing over a thousand times.
+
+The solution is to use three tables: treatment descriptions, specimen
+descriptions, and the observed data. Each treatment has a number, as
+does each specimen, and the data table has two corresponding columns
+giving the treatment number and specimen number of the observation.
+
+The redundant table is a simpler setup, and taking up too much hard drive
+space is not really an issue anymore. But there are reasons to ask
+treatment- or specimen-centric questions, and the data-centric table
+does not facilitate this. If we have a question about treatment
+two, then the one-table method probably requires that we have a
+\si{treatment\_number} column from which we can select. And what if
+something went wrong with the data collection, and there are zero data
+points for treatment three? How would we record and retrieve information
+about the treatment, and convey the potentially important fact that
+treatment three had zero observations?
+
+From the multiple tables, it is easy to ask questions that focus on
+data, treatments, or specimens, via join operations that would look
+something like \si{select data.*, treatment.duration from data, treatments
+where data.treat\-ment\_number==2}. If so inclined, we could even create
+a temp table in the spreadsheet style via a query like 
+\begin{lstlisting}
+create table spreadsheet as 
+        select * 
+            from data, treatment, specimen 
+            where data.treatment_number == treatment.number 
+                and data.specimen_number == specimen.number
+\end{lstlisting}
+
+\paragraph{Put all similar data in one table} The opposite extreme from
+the spread\-sheet-oriented one-table approach is to have one table for
+each subset. Your data often breaks
+down into logical subsets such as two distinct treatments, and 
+some are tempted to create a table named \si{treatment\_one} and 
+\si{treatment\_two}. This is especially the case if treatment one
+includes additional measurements or information that does not appear in
+treatment two, so the columns of the \si{treatment\_one} table are not
+quite identical to the columns of \si{treatment\_two}. But generally,
+\si{NaN}s are better than a multitude of tables.
+
+Say that a political scientist wants to do
+a study of county-level data throughout the U.S.A., including variables
+such as correlations between tax rates, votes by Senators, and educational
+outcomes. Since DC has no county subdivisions, and its residents have no
+Congressional representation despite paying high tax rates to support
+Federal lands, the DC data does not fit the form of the data in other
+counties. But the correct approach is nonetheless to put DC data in
+the same table as the counties of the other fifty states, rather than
+creating a table for DC and a table for all other states---or still worse,
+a separate table for every state. 
+
+If we need the counties from only one state, say Missouri, it is
+rather easy to \si{select * from alldata where state="MO"}, and to
+include \si{where not isnan(senate\_vote)} clauses when DC's lack of
+representation will affect the analysis.
+
+\paragraph{One row = one data point} Say that we are observing a
+thousand subjects for five days. The first option, which again emulates
+what one would see in a spreadsheet, is to have a table with 1,000
+rows, each representing one subject, and then have five columns for each
+of the five days. 
+
+But remember, there is no way to arbitrarily select a subset of columns.
+What if there were fifty days, and we wanted to find the mean measurement for the first
+twenty-five? We would need a query like \si{select avg(day1 + day2 +
+\dots + day25) from data \dots}. If \si{data} were simply a three column table---\si{subject}, \si{day}, \si{measurement}---then the query would simply be
+\si{select avg(mesurement) from data where day <=25 group by subject}. If there is any
+chance that two observations will somehow be compared or aggregated,
+then they should probably be recorded in different rows of the same
+column. For fifty days, the table would be $3 \times 50,000$, which
+is not nearly as pleasing or human-digestible as a $1,000 \times 50$
+spreadsheet. But we can easily construct the crosstab if we need it
+via \cind{apop\_db\_to\_crosstab}.
+
+\summary{
+\item Databases are not spreadsheets. They are typically designed for
+many tables, which may have as many rows as necessary.
+\item Bear in mind the tools you have when designing your table layouts.
+It is easy to join tables, find subsets of tables, and create
+spreadsheet-like crosstabs from data tables.
+}
 
 \section{Some examples} 
 Here are a few examples of how C code and SQL calls can neatly interact.

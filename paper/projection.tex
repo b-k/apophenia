@@ -415,7 +415,7 @@ course of $n$ trials.
 
 The notation $\left({n\atop x}\right)$ indicates
 \airq{$n$ choose $x$}, the number of sets of $x$ elements that can be
-pulled from $n$ objects. The equation is $$\left({n\atop x}\right) =
+pulled from $n$ objects. The equation is $$\left(\begin{matrix}n\cr x\end{matrix}\right) =
 {n!\over x!(n-x)!},$$ and the function is \cinline{gsl\_sf\_choose(n,x)} 
 (in the GSL's Special Functions section).
 \index{choose!gsl\_sf\_choose@\cinlinetwo{gsl\_sf\_choose}} \cindex{gsl\_sf\_choose}
@@ -555,26 +555,6 @@ E(x) &=& \frac{\beta - \alpha}{2}       \nonumber\\
 
 More distribution models, and a few more coded-out examples, will be added to this catalog.
 
-\paragraph{Using the distributions} How you code the distributions
-depends on what you hope to do with them. The common goal throughout the
-book is to estimate the parameters of the model with data, and you can
-see above that almost every parameter can be solved---sometimes
-oversolved---using the mean and variance. Most of the above distributions
-have an \ci{apop\_model} associated (see page \pageref{modellist} for a
-list), and the \ci{estimate} function therein will use the mean or the
-mean and variance to estimate the parameters.
-
-This is known as the \vocab{method of moments} estimation, and it
-matches the maximum likelihood estimate of the parameters in almost all
-cases. For the Uniform, the method of moments doesn't work: the
-expression $(\beta - \alpha)$ is oversolved but there is no way to solve
-for $\alpha$ or $\beta$ alone. However, the reader may verify that the
-most likely value for $(\alpha, \beta)$ is simply $(\min(x), \max(x))$.
-
-These distributions are also useful for simulation, since they each
-neatly summarize an oft-modeled story. Modelers will want to make random
-draws from these distributions, a topic covered in Chapter \ref{boot}.
-
 \summary{
 \item Probability theorists through the ages have developed models that 
 indicate that if a process follows certain guidelines, the data will
@@ -595,6 +575,36 @@ Exponential distribution.
 \item The Beta distribution is useful for modeling a variety of
 variables that are restricted to $[0, 1]$.
 }
+
+\section{Using the sample distributions}
+
+This section forthcoming.
+
+\subsection{Looking up figures} If I have fifty draws from a Bernoulli
+event with probabilty .25, what is the likelihood that I will have more
+than twenty successes?
+
+\subsection{Generating data from a distribution}
+Since each distribution neatly summarize an oft-modeled story, they can
+be used to simulate or summarize real-world processes. Modelers will want
+to make random draws from these distributions. This topic is currently
+covered in some detail in Chapter \ref{boot}.
+
+\subsection{Fitting existing data}
+The common goal throughout the book is to estimate the parameters of the
+model with data, and you can see above that almost every parameter can
+be solved---sometimes oversolved---using the mean and variance. Most of
+the above distributions have an \ci{apop\_model} associated (see page
+\pageref{modellist} for a list), and the \ci{estimate} function therein
+will use the mean or the mean and variance to estimate the parameters.
+
+This is known as the \vocab{method of moments} estimation, and it
+matches the maximum likelihood estimate of the parameters in almost all
+cases. For the Uniform, the method of moments doesn't work: the
+expression $(\beta - \alpha)$ is oversolved but there is no way to solve
+for $\alpha$ or $\beta$ alone. However, the reader may verify that the
+most likely value for $(\alpha, \beta)$ is simply $(\min(x), \max(x))$.
+
 
 \section{Factor analysis} \label{pca} \index{factor analysis}
 This is also known as \ind{principal component
@@ -1067,8 +1077,9 @@ projection using \cind{apop\_data\_print}; see page \pageref{gnuprint}.
 
 \summary{
 \item The Ordinary Least Squares model assumes that the dependent variable is an affine linear function of the others. 
-Given this and other assumptions, the likelihood-maximizing parameter vector is $\betav_{\rm OLS} = (\Xv'\Xv)^{-1}(\Xv\Yv)$.
-\item If $\Sigma \neq \Iv$, then  $\betav_{\rm GLS} = (\Xv'\Sigma\Xv)^{-1}(\Xv\Sigma\Yv)$. Depending on the value of $\Sigma$, one can design a number of models.
+Given this and other assumptions, the likelihood-maximizing parameter
+vector is $\betav_{\rm OLS} = (\Xv'\Xv)^{-1}(\Xv'\Yv)$.  
+\item If $\Sigma \neq \Iv$, then  $\betav_{\rm GLS} = (\Xv'\Sigma\Xv)^{-1}(\Xv'\Sigma\Yv)$. Depending on the value of $\Sigma$, one can design a number of models.
 \item Coding these processes is a simple question of stringing together
 lines of linear algebra operations from Chapters \ref{linear_algebra}
 and \ref{apop}.

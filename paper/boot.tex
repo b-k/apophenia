@@ -275,9 +275,9 @@ typedef struct agent{
     ...
 } agent;
 
-void init_agent(agent initme, int agent_no){
-    initme.agent_number = agent_no;
-    initme.r            = apop_rng_init(agent_no);
+void init_agent(agent *initme, int agent_no){
+    initme->agent_number = agent_no;
+    initme->r            = apop_rng_init(agent_no);
     ...
 }
 \end{lstlisting}
@@ -653,11 +653,14 @@ distributions. Then, we would estimate the best values of $n$ and
 $(\mu_i, \sigma_i)$ from the data.  
 
 In other words, non-parametric modeling involves writing down a
-parametrized model and estimating the parameters from data.  This is
+para\-metrized model and estimating the parameters from data.  This is
 especially clear when we sit down to implement such a model at the
 computer, because the model will be a black box that take in a data set
 and return a set of parameter estimates, just like every other model in
-this book.
+this book. 
+Such terms as {\em distribution-fitting methods} or {\em optimal
+distribution estimation} would probably better describe the methods
+discussed in this section.
 
 This section forthcoming. It will focus on \ind{kernel density estimation}
 and testing, such as the method of \citet{silverman:boot} for testing a
