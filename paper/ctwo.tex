@@ -224,15 +224,128 @@ readability for yourself and your fellow humans. If you want optimization,
 \ci{gcc -O3} will do almost all of these rearrangements for you.
 
 
-\section{Function pointers} Forthcoming.
+\section{Function pointers} \index{function pointers}
+A data point \ci{d} is stored somewhere in memory, so we can refer to
+its address, \ci{\&d}. Similarly, a function \ci{f} is stored somewhere
+in memory, so we can refer to its address as well.
 
-\exercise{Write a function with header \ci{void apply(double( *fn)(double),
-double *array, int array\_len)}, that takes as argumetns a function, an
+What is a pointer to a function good for?  It lets us write
+functions that will accept any function pointer and then use the
+pointed-to function, such as a bootstrap function that takes in a
+statistic-calculating function and a data set and then returns the
+variance of the statistic, or a function to search an input function
+for its largest value.
+
+\subsection{Types} Before we can start writing functions to act on
+functions, we need to take the type of input function into
+consideration, because not every function makes sense in every context. Say
+that we want to write a function that will take in an array of
+\ci{double}s and a function, and will apply the function to every
+element of the array. Then the input function has to have a form like:
+\begin{lstlisting}
+double function_name (double x);
+\end{lstlisting}
+
+If the function took in \ci{char*}s or \ci{gsl\_vector}s, it just
+wouldn't work; nor would it work if it returned anything but a
+\ci{double}.
+
+Thus, function pointers have types just like any other variable, and a
+function that takes a function pointer as input will make the usual
+type-checks.
+
+A pointer declaration is just like any other declaration but with
+another star, like \ci{int *x}; the same goes for declaring function
+pointers, but there are extra parens. Here is a declaration for a
+function pointer that takes in a \ci{double} and returns a \ci{double}:
+\begin{lstlisting}
+double (*function_name) (double x);
+\end{lstlisting}
+You can see that it is just like the usual \ci{int *x} sort of pointer declaration, but the function is in parens.  The parentheses are not
+optional.
+
+\paragraph{\ci{typedef} revisited}
+Now you can put the function into your header line. A function that
+applies a function to a \ci{gsl\_vector} would have a header like
+this:
+\begin{lstlisting}
+void apply (gsl_vector *v, double (*function_name) (double x));
+\end{lstlisting}
+
+Are you confused yet? Each component basically makes sense, but together
+it is cluttered and confusing. There is a way out: \cind{typedef}. By prepending
+that word before the above type declaration,
+\begin{lstlisting}
+typedef double (*double_to_double) (double x);
+\end{lstlisting}
+we have created an new type named \ci{double\_to\_double} that we can
+use like any other type. Now, the declaration of the \ci{apply} function
+simplifies to:
+\begin{lstlisting}[emph={double_to_double,gsl_vector}]
+void apply (gsl_vector *v, double_to_double function_name);
+\end{lstlisting}
+
+\subsection{Putting \ci{typedef} to work}
+Figure \ref{plotafunction} shows a program to plot any function of the
+form $\Re\to\Re$. The
+details of Gnuplot and its use probably won't make sense to you until
+you read Chapter \ref{gnuplot}, and you may need to modify the
+\ci{gnuplot} variable on line 5 to indicate the location of Gnuplot on
+your system.\footnote{try the command \bi{which gnuplot} to find it,
+and if it isn't found, use your package manager to install it.}
+
+That aside, the elements needed to pass function pointers are all there,
+and should be clear to you. A quick tour of the code:\\
+Line 3: To make life easier, the \ci{dfn} type is
+declared at the top of the file. \\
+Line 7: The \ci{sample\_function} appears, and you can see that its type matches that of \ci{dfn}. \\
+Line 11: The \ci{plot\_a\_fn} function specifies that it takes in a function of type
+\ci{dfn}.\\
+Line 19: Using the passed-in function is as simple
+as using any other function: this line  gives no
+indication that \ci{plotme} is in any way special.  \\
+Line 26: Finally, in \ci{main},
+you can see how \ci{plot\_a\_fn} is called. The \ci{sample\_function}
+is passed in with just its name.
+
+Once the \ci{typedef} is in place, you can see that the syntax is pretty
+easy. You don't need extra stars in either the declaration of the
+function-of-a-function or in the call to that function, and you can call
+the pointed-to function like any other. 
+
+\lstset{numbers=left, numberstyle=\scshape}
+\codefig{plotafunction}{A demonstration of a function that takes in
+any function $\Re\to\Re$ and plots it.}
+\lstset{numbers=none}
+
+\exercise{Define a type \ci{dfn} as in line three of Figure \ref{plotafunction}. Then
+write a function with header \ci{void apply(dfn fn,
+double *array, int array\_len)}, that takes as arguments a function, an
 array, and the length of the array, and changes each element
 \ci{array[i]} to \ci{fn(array[i])}.
 
 Test your function by creating an array of the natural number $1, 2,
 3,\dots 20$ and transforming it to a list of squares.}
+
+\subsection{\ci{void}ing types} Forthcoming.
+
+\summary{\item You can pass functions as function arguments, just as you
+would pass arrays or numbers.
+\item The
+syntax for declaring a function pointer is just like the syntax for
+declaring a function, but the name is in parens and is prepended by a 
+star.
+\item Defining a new type to describe the function helps immensely.
+This requires prepending \ci{typedef} to the function pointer
+declaration in the last summary point.
+\item Once you have a \ci{typedef} in place, you can declare functions
+that take functions, use the passed-in functions, and call the parent
+function as you would expect. Given the \ci{typedef} You need neither
+stars nor ampersands for these operations.  
+\item If the input function can take multiple types of input, use a
+\ci{void *} to tell the compiler not to check types. Use this with
+caution.
+}
 
 \section{Data structures} Forthcoming, covering linked lists versus trees versus arrays. Primarily of use to modelers.
 

@@ -2,7 +2,7 @@
 import re, os
 
 programs    = ("callbyref", "callbyval", "dosomething", "draw_beta_curve", "econ101", 
-"markov", "kurtosis_of_a_t_dist")
+"markov", "kurtosis_of_a_t_dist", "plotafunction")
 snippets    = ("bootdraw", "bootvar", "dummy", "invertmatrix", "svdecomposition")
 
 for i in programs:
