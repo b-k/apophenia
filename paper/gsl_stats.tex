@@ -213,7 +213,8 @@
 
 %Exercises and summaries
 \long\def\textblock#1#2{\vspace \baselineskip
-\begin{tabular}{>{\huge}m{1 cm}|m{(\textwidth - 3cm)}}
+%\begin{tabular}{>{\huge}m{1 cm}|m{(\textwidth - 3cm)}}
+\begin{tabular}{m{1 cm}|m{(\textwidth - 3cm)}}
 %\begin{tabular}{m{1 cm}|p{10cm}}
 {#1}&{#2}\\
 \end{tabular}\vskip \baselineskip}
@@ -221,8 +222,10 @@
 %Yes, I agree: this is a terrible, terrible kludge.
 \def\sigmaoutline{\scalebox{0.1}{\includegraphics{sigma}}}
 
+\newcounter{ex}[chapter]
 %\renewcommand\labelitemi{$\blacktriangleright$}
-\long\def\exercise#1{\textblock{${\mathbb Q}$}{#1}}
+\long\def\exercise#1{\stepcounter{ex}
+\textblock{{\huge ${\mathbb Q}$}$_{\thechapter.\theex}$}{#1}}
 \long\def\summarynoitems#1{
 \renewcommand\labelitemi{\ding{"E4}}
 \textblock{\sigmaoutline}{#1}

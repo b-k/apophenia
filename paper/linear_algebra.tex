@@ -1035,7 +1035,7 @@ The \ci{owner}
 variable now becomes important, because there could be multiple
 submatrices all pointing to the same data. Since the submatrix is not
 the owner of its data, the GSL will not allow it to free the data set
-pointed to.
+to which it points.
 
 The \ci{gsl\_vector} has a similar structure, including a starting point
 and a stride to indicate how far to jump to the next element. Thus,

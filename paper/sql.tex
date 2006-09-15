@@ -9,9 +9,10 @@ such as joining and subtracting that will produce other tables.
 }
 
 Database and matrix operations are excellent
-complements. Some things, like making a crosstab, are a bit of a
+complements. Some things, like making a \vocab{crosstab} or \vocab{pivot
+table}, are a bit of a
 pain using traditional techniques of matrix manipulation. Meanwhile,
-some things, like matrix multiplication, just can not be done via SQL
+some things, like matrix multiplication or inversion, just can not be done via SQL
 queries. With both, your data analysis technique will be unstoppable.
 
 As a broad rule, try to do data manipulation, like pulling subsets
@@ -247,7 +248,7 @@ select t1.income, t2.height
    where t1.zip == t2.zip_code
 \end{lstlisting}
 
-You can see that using the table-dot-column format for the columns is now
+You can see that using the table-dot-column format for the column names is now
 essential. Also, notice that we did not have to include either ZIP code
 in the output if it is not used later. If you do want to include a ZIP
 code, then you can use either \sinline{t1.zip} or \sinline{t2.zip\_code}; since
@@ -257,12 +258,10 @@ space (but may help to verify that things are working).
 \paragraph{Speeding it up}
 You can ask the SQL engine to create an index for a table that you
 intend to use in a join later. The command:\sindex{indexes}
-%\begin{verbatim}
 \begin{lstlisting}
 create index econ_index on econ_data(zip)
 create index econ_index2 on econ_data(age)
 \end{lstlisting}
-%\end{verbatim}
 would index the table \sinline{econ\_data} on the ZIP code and age columns.
 The name of the index, \sinline{econ\_index}, is basically irrelevant and can
 be any gibberish which sounds nice to you. Once you have created this
@@ -277,12 +276,11 @@ list, so you are better off creating one index per variable as above.
 
 \subsection{Aggregation}
 Here is how to get the number of rows in your data table:
-%\begin{verbatim}
 \begin{lstlisting}
 select count(*) as row_ct 
 from data;
 \end{lstlisting}
-%\end{verbatim}
+
 This produces a table with one column and one row, listing the total
 number of rows in the \sinline{data} table.
 
@@ -297,7 +295,7 @@ where age > 20
 group by age, height, zip
 \end{lstlisting}
 
-\index{crosstabs}\label{crosstabs}
+\index{pivot tables}\index{crosstabs}\label{crosstabs}
 \marginaliafixed{16}{Crosstabs}{In the spreadsheet world, we often get tables
 where the X-dimension is the year, the Y-dimension is the location,
 and the $(x,y)$ point is a measurement taken that year at that location.
@@ -888,7 +886,7 @@ people with less than 16 years of education) $\leq$ (income for people
 with greater than or equal to 16 years of education).
 
 That first data set is:
-\begin{lstlisting}
+\ns{5}\begin{lstlisting}
 gsl_vector	*undereducated;
    undereducated = apop_query_to_vector(
       "select income from survey \

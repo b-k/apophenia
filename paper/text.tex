@@ -2,6 +2,7 @@
 \setcounter{chapter}{1}
 \setcounter{section}{0}
 \setcounter{subsection}{0}
+\setcounter{ex}{0}
 \chapter{Appendix \thechapter: Text processing} \label{textappendix}
 
 If you are lucky, then your data is in exactly the format it needs to be
@@ -153,7 +154,14 @@ alternatives.
 At this point, there are also several complications. First, in the
 \ci{grep} regex syntax (but not in Perl's), the actual form is not
 not \ci{(A|B)} but \ci{\textbs(A\textbs|B\textbs)}---the
-parens and pipe all need a backslash before them.
+parens and pipe all need a backslash before them. For any given
+implementation of regular expressions, some subset of \ci{+ ? | ( ) \{}
+and \ci{\}} will be special characters; in others, the special characters are
+\ci{\textbs+ \textbs? \textbs| \textbs( \textbs) \textbs\{} and \ci{\textbs\}}.
+That is, if you were hoping a character would do something special and it
+doesn't,  or if you type a character hoping
+it would just be a literal \ci{+} or \ci{|} and you get an odd error,
+the solution to both problems is probably to prepend the character with a backslash.
 
 If you type \ci{$\backslash$|} on the command line, then it will send a
 simple \ci{|} to grep. To send a literal backslash to grep, you will
