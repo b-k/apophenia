@@ -9,18 +9,40 @@ If you are lucky, then your data is in exactly the format it needs to be
 in to be read by your stats package, Apophenia, Graphviz, \&c.
 
 By definition, you are probably not going to be lucky. This appendix will
-explain how one modifies a text file to conform to an input standard. It
-is based on parsing of \vocab{regular expressions}, wherein you specify a
-certain regularity, such as `numbers followed by letters', and a program
-searches for that regular expression in text and modifies it as per
-your instructions.
+explain how one modifies a text file to conform to an input standard. 
+
+You will notice that the book so far has included a great deal on writing
+text files via \ci{printf} and family, but not much on the process of
+modifying existing files. That is because modifying files in place in
+C is, simply put, frustrating. Something as simple as replacing \ci{10}
+with \ci{100} requires rewriting the entire file from that point on.
+
+Thus, this appendix will look at some means of modifying text via the
+command line. Its goal, narrowly defined by the rest of the text, is to
+show you how to convert a data file either into the input format required
+by a stats package or into a command file in the language of Gnuplot,
+a Graphviz-family tool, or SQL.
+
+As with the rest of the analysis, you should be able to do this in a
+fully automated manner. This is because you will no doubt receive a
+revised data set next week with either corrections or more data, because
+you may decide to split your data into a hundred subsets so manual
+tweaking is no longer feasible, and because writing down a script
+produces an audit trail that you or your colleagues can use to check
+your work.
+
+The primary technique covered in this chapter is the parsing of
+\vocab{regular expressions}, wherein you specify a certain regularity,
+such as `numbers followed by letters', and a program searches for that
+regular expression in text and modifies it as per your instructions.
 
 Along the way, you will see how to effectively search your files. As
 your projects get large, you will desire tools that find every use of
 \ci{buggy\_variable} in your program or every reference to an author in
 your documents. Regular expression tools will help you with this.
 
-This chapter will begin with simple searching, as a chance to introduce
+After some discussion of how one assembles a shell script from small
+parts, this appendix will cover simple searching, as an introduction to
 regular expressions, and then move on to the main program: writing
 scripts to reformat text files into a format appropriate for your
 data-handling systems.
@@ -35,14 +57,7 @@ record.
 Typically, your script will not just stop with reformatting text files:
 your script will begin with some of the Perl or sed commands below to
 reformat the data file, then call your C program to process the file, and
-finally call Gnuplot to display a graph. This is the key reason why you
-would use the regex tools here instead of just opening your text editor
-and clicking through the menus to do the appropriate search-and-replaces:
-by writing a script, you can repeat the entire process from raw data to
-final output any time you or a colleague needs to repeat the process.
-Other people (and you, six months from now) can verify your work because
-you have a written record of the exact changes you made to correct the
-data file's format.
+finally call Gnuplot to display a graph. 
 
 In POSIX systems, you need to make a script executable before it can be
 run on the command line.\footnote{This is not 100\% true: you can use
@@ -55,6 +70,87 @@ can call a script in the current directory (aka \bi{./}) from the shell
 using \bi{./myscript}.
 
 \subsection{Redirection} 
+POSIX systems run like water. Each program has a standard input stream
+and a standard output stream, named \cind{STDIN} and
+\cind{STDOUT}.\footnote{There is also a third, \cind{STDERR}, to which
+errors are written. To redirect \ci{STDERR}, use the form \ci{\&>}. For
+example, try \ci{sed -p \&> err}, then open \ci{err} in your text editor
+(or try the command \ci{cat err}).}
+
+By default \ci{STDIN} and \ci{STDOUT} are the keyboard and screen. 
+For example, the command
+\begin{lstlisting}
+prompt> sed -n p
+\end{lstlisting}
+\ci{p}rints to the screen whatever is typed in. If you
+try it, you will see that this means simply that \ci{sed} repeats
+whatever you type.
+\begin{lstlisting}
+prompt> sed -n p
+Hello.
+Hello.
+How are you?
+How are you?
+Stop imitating me.
+Stop imitating me.
+<ctrl>-C
+\end{lstlisting}
+Now for the redirection. An \cind{>} tells the system to write whatever
+it would have put on the screen to a file. Thus, if you put the
+command \bi{sed -n p > outfile} on the command line, then nothing will
+print to the screen, but whatever you type (until you hit \ci{<ctrl>-C}
+or \ci{<ctrl>-D} will be written to \ci{outfile}. That is, instead of
+writing to STDOUT, the system writes to \ci{outfile}.
+
+As a variant, \cind{>> outfile} will append to a file, rather than
+overwriting it, as \ci{> outfile} would.
+
+A \cind{<} tells the system that it should take input not from \ci{STDIN}
+but from an input file. Thus, \bi{sed -n p < input\_file} will dump the
+contents of \ci{input\_file} to the screen. 
+
+\exercise{Use \ci{sed -n p} and input/output redirection to copy a file.}
+
+Your final redirection option is the pipe. The pipe connects \ci{STDOUT}
+for one program to \ci{STDIN} for another. 
+
+Question: what exponents of four end in a six?  On page \pageref{getopt}
+(and in the code supplement), you will find a program that prints
+exponents to \ci{STDOUT}. Below, you will see that \ci{grep} will search
+a file for a certain pattern; for example, \ci{grep "6\$" <infile} will
+search \ci{infile} for lines ending in a six. Thus, we could send the
+output for \ci{getopt} to a file, then input it to \ci{grep}.
+\begin{lstlisting}
+./getopt 4 > powers_of_four
+grep "6$" < powers_of_four
+\end{lstlisting}
+The pipe, \ci{|}, streamlines this by directly linking \ci{STDOUT} from
+the first program and \ci{STDIN} to the second.
+\begin{lstlisting}
+./getopt 4 | grep "6$" 
+\end{lstlisting}
+At this point, the pattern in the exponents is eminently clear.
+
+The next section will cover a few tools that one can join together to
+filter streams of text.
+
+\paragraph{Streams flowing through C}
+As you saw on pages \pageref{fprintf}{\it ff}, you can use \ci{fprintf}
+to send data to a file or another program. You may have noticed the
+close similarity between opening/writing to a file and opening/writing
+to a pipe:
+\begin{lstlisting}
+FILE *f = fopen("write_to_me", "w");
+FILE *g = popen("/usr/local/bin/gnuplot", "w");
+fprintf(f, "The waves roll in,\n");
+fprintf(g, "The waves roll out.\n");
+\end{lstlisting}
+By the data-as-water metaphor, the two are identical. One redirects
+output to a file, and one to another program. There are fine details of
+how the two are implemented in actual memory and hardware (one is a
+block device and one a character device) but that is a matter for the
+operating system to worry about. At the level of a C program, output is
+output.
 
 \section{Regular expressions}
 The remainder of this appendix will cover programs to parse regular
@@ -94,7 +190,7 @@ systems, such as C or \ind{Python}, require a regex compilation step
 before usage, which is nothing but an extra step in a script or program,
 but makes one-line commands difficult. 
 
-\section{The basic search}
+\subsection{The basic search}
 The simplest search is for a literal string of text. Let us say that we
 have a C program, and we are searching for every use of a variable,
 \ci{var}. You can use the command-line program \ci{grep} (general
@@ -107,10 +203,9 @@ on the command line.
 \ci{printf}. Use \bi{grep} to search all of your .c files for uses
 of \ci{printf}. 
 
-The \ci{-C n} option would output $n$ context lines before and after the 
-match; repeat your search with two context lines before and after each
-\ci{printf}.
-}
+The \ci{-C n} option (as in \ci{grep -C n} outputs $n$ context lines
+before and after the match; repeat your search with two context lines
+before and after each \ci{printf}.  }
 
 
 \paragraph{Bracket expressions} Now we start to add special characters
@@ -149,13 +244,10 @@ for for more control, is to use a bracket: \bi{grep [Pp]erl search\_me}.
 Recall that Apophenia includes various printing functions, such as
 \ci{apop\_data\_print} and \ci{apop\_matrix\_print}. Let us say that you
 would like to see all such examples. Alternatives of the form \airq{A or
-B} are written in basic regex notation as \ci{(A|B)}. Notice how the
-\ci{|} character analogizes nicely with the use of \ci{||} 
-to indicate \airq{or} in C. Also, as with C's \ci{if} or \ci{while}
-conditions, you will need parens to indicate the bounds of the
-alternatives.
+B} are written in basic regex notation as \ci{(A|B)}. Notice how this
+form analogizes nicely with C's \ci{(A||B)} form.
 
-At this point, there are also several complications. First, in the
+However, there are several complications. First, in the
 \ci{grep} regex syntax (but not in Perl's), the actual form is not
 not \ci{(A|B)} but \ci{\textbs(A\textbs|B\textbs)}---the
 parens and pipe all need a backslash before them. For any given
@@ -185,7 +277,12 @@ repeats the prior atom. Therefore
 grep "apop_.*_print" *.c
 \end{lstlisting}
 will find any line that has \ci{apop\_}, followed by anything,
-eventually followed by \ci{\_print}.
+eventually followed by \ci{\_print}. Notice that, once again, the
+symbols \ci{.} and \ci{*} mean different things in different contexts.
+In a regex, the dot represents any character, and the star represents
+repetition; on the command line (where wildcard matching is referred to
+as \vocab{globbing}), the dot is just a dot, and the star represents any
+charater.
 
 \index{\that!out of regex brackets (head of line)}
 Finally, the caret and dollar sign indicate the beginning and end of the
@@ -221,6 +318,9 @@ standard English letter.
         \item The set can exclude elements: \bi{[A-Z\that{}P-S]} will
 find any capital letter except P, Q, R, and S.
     \end{itemize}
+}
+\summarynoitems{(continued)
+\begin{itemize}
 \item Alternatives are expressed in the form \bi{(A|B)}.
 \item Different systems have different rules about what is a special
 character. The Perl form for alternation is \bi{(A|B)}, as above; the
@@ -228,9 +328,10 @@ grep form is \bi{\textbs(A\textbs|B\textbs)}.
 \item A single dot (\bi{.}) represents any character including a single
 space or tab, and grep understands \bi{\textbs{}W} to mean any whitespace
 character and \bi{\textbs{}w} to mean any non-whitespace character.
+\end{itemize}
 }
 
-\section{Replacing}
+\subsection{Replacing}
 
 Grep is wonderful for searching, but is a purely read-only program. If
 you want to change what you find, you will need to use a more complex
@@ -260,13 +361,14 @@ that we had to use \bi{\textbs"} instead of a plain \bi{"} on the
 command line to prevent the string from ending prematurely.
 
 \bi{sed} always operates on an input file, so we might as well start by 
-emulating grep:\label{sedintro}
+emulating grep:\footnote{As you saw in the \bi{sed} examples in the
+section on redirection, the \ci{-e} flag is optional using this form,
+but it never hurts.}
+\label{sedintro}
 \begin{lstlisting}
 sed -n -e "/regex/p" < file_to_search
 \end{lstlisting}
-There are many things to note here. First, sed is acting as a filter,
-wherein data is being input via the command-line redirection operator,
-\ci{<}.\cindex{<!on the command line} Sed likes its regexes between
+There are many things to note here. Sed likes its regexes between
 slashes, and the \ci{p} is short for \airq{print}, so the command
 \ci{/regex/p} means `print every line that matches \ci{regex}.'
 Sed's default is to print every single input line, and then the print
@@ -277,7 +379,14 @@ matches print.
 The basic syntax for a search and replace is \ci{s/replace me/with me/g}.
 The slashes distinguish the command (\ci{s}), the text to search
 (\ci{replace me}), the text for replacement (\ci{with me}), and the
-modifiers (the \ci{g}, which you will always want; see below).
+modifiers (the \ci{g}, which you will always want).\footnote{Back when
+regexes were used for real-time editing of files, it made sense to
+fix only one instance of an expression on a line. Thus, the default was
+to modify only the first instance, and one could specify replacing only
+the second instance of a match with \ci{s/.../.../2}, the third instance
+with \ci{s/.../.../3}, and all instances with \ci{s/.../.../g}. This is
+still valid syntax that is occasionally useful, but when filtering a
+data file, you will almost always want the \ci{/g} option.}
 
 If you have only one file to scan, you can use these programs as
 filters:
@@ -285,8 +394,6 @@ filters:
 perl -p -e "s/replace me/with me/g" <file_to_modify >modified\_file
 sed -e "s/replace me/with me/g" <file_to_modify >modified\_file
 \end{lstlisting}
-This form takes in data from the \ci{<} file and writes to the \ci{>} file
-a file with all instances of \ci{replace me} replaced with \ci{with me}.
 
 The \ci{-p} switch is the opposite of sed's \ci{-n} switch.
 As opposed to sed, Perl's default is to never print
@@ -307,33 +414,41 @@ are concerned about a script's portability.}
 perl -p -i.bak -e "s/replace me/with me/g" files_to_modify
 sed -i.bak -e "s/replace me/with me/g" files_to_modify
 \end{lstlisting}
-With the \ci{-i} option, Perl and sed do not write
-the substitutions to the screen or the \ci{>} file, but
-make them directly on the original file. The \ci{.bak} extension tells Perl
-and sed to make a backup before modification that will have a \ci{.bak} extension.
+With the \bi{-i} option, Perl and sed do not write
+the substitutions to the screen or the \bi{>} file, but
+make them directly on the original file.
+The \ci{.bak} extension tells Perl
+and \bi{sed} to make a backup before modification that will have a \ci{.bak} extension.
 You may use any extension that seems nice: \ci{-i\~{}} will produce
 a backup of a file named \ci{test} that would be named \ci{test\~{}}.
 If you specify no suffix at all (\ci{-i}), then no backup copy will be
 made before the edits are done. It is up to you to decide when (if ever)
-you are sufficiently confident to not make backups.
+you are sufficiently confident to not make backups.\footnote{If editing a file in
+place with C is so difficult, how does \bi{sed}, a C program, do it? By
+writing a new file and then switching them when it is finished. So if you
+are filtering a 1GB file `in place' with no backup and you do not have
+1GB of free space on your hard drive, you will get a disk full error.}
 
 Whether you use the in-place form or the filter form depends on whether
 you want to keep the original file intact and write a new file (as this
 form does) or you want to modify the original file while perhaps making
 an unchanged backup (as the \ci{-i} form does).
 
-\exercise{Create a file named \ci{test} with one line, reading \ci{I am a
+\exercise{Create a file named \ci{about\_me} with one line, reading \ci{I am a
 teapot.} Use either perl or sed to transform
 from a teapot to something else, such as a kettle or a toaster.}
 
 You are welcome to include multiple commands on the line, by the way.
 In Perl, separate them with a semicolon, as in C. In sed or Perl, you
 may simply specify additional \ci{-e} commands, that will be executed in
-order.
+order---or you can just use a pipe.
 \begin{lstlisting}
 perl -pi.bak -e "s/replace me/with me/g; s/then replace this/with this/g" files_to_modify
 perl -pi.bak -e "s/replace me/with me/g" -e"s/then replace this/with this/g" files_to_modify
 sed -i.bak -e "s/replace me/with me/g" -e"s/then replace this/with this/g" files_to_modify
+
+perl -p -e "s/replace me/with me/g" < modify_me | perl -p -e"s/then replace this/with this/g" >modified_version
+sed "s/replace me/with me/g" <modify_me | sed "s/then replace this/with this/g"  >modified_version
 \end{lstlisting}
 
 \paragraph{Replacing with modifications} Parentheses, used above to
@@ -417,9 +532,9 @@ command. With the slashes, the location is: those lines that match
 \ci{find\_me}. You can also explicitly specify a line number or a range
 of lines. To print line seven, use \ci{7p}. Just as the \ci{\$} indicates the
 end of the line, as a line number it indicates the last line in the
-file, so use \ci{sed -n -e "\$p" < infile} to print the last line of
+file, so use \ci{sed -n "\$p" < infile} to print the last line of
 \ci{infile}.  To specify a range, use a comma. Thus, 
-\ci{sed -n -e "1,\$p" < infile} prints the entire file.
+\ci{sed -n "1,\$p" < infile} prints the entire file.
 
 There are more commands than just \ci{p} for print. You could use \ci{d}
 to delete, \ci{i} to insert above the given line, and \ci{a} to append
@@ -446,8 +561,16 @@ sed -n -e "1iHello, world." < any_random_file
 \end{lstlisting}
 
 Perl can do all of these things easily from inside a Perl script,
-but there are no easy command line one-liners like the one-line sed
-scripts above.
+but inserting and deleting lines from the command line is not as
+pleasant as using \bi{sed}.\footnote{\label{dchperl}
+A reader recommends the following for deleting a line:\\
+        \bi{perl -n -e 'print unless /NaN/'}\\
+For inserting a line:\\
+        \bi{perl -n -e 'print; print "pause pauselength." if /\that{}e\$/'}\\
+For adding a line at the top of a file:\\
+        \bi{perl -p -e 'print "plot \'-\'\textbs{}n" unless \$a; \$a=1'}\\
+}
+
 
 \exercise{\label{classextwo} 
 Refer to the exercise on page \pageref{classex}, which read in
@@ -463,6 +586,22 @@ Graphviz's format. Write a sed script to:
 \item Add a header (as on page \pageref{graphhead}).
 \item Add the end-brace on the last line.
 \end{itemize}
+Pipe your output through \bi{neato} to check that your processing produced
+a correctly \bi{neato}-readable file.
+}
+
+\exercise{Turn the \bi{data-classroom} file into an SQL script to create
+a table.
+\begin{itemize}
+\item Delete the header line.
+\item Add a header \si{create table class(ego, nominee)}. [Bonus points:
+write the search-and-replace that converts the existing header into this
+form.]
+\item Replace each pair of numbers \ci{n|m} with the SQL \si{insert into
+class(n, m);}.
+\item For added speed, put a \si{begin;}/\si{commit;} wrapper around the entire file.
+\end{itemize}
+Pipe the output to \bi{sqlite3} to verify that your edits correctly created and populated the table. 
 }
 
 \summary{
