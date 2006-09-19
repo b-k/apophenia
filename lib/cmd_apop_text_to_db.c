@@ -9,7 +9,6 @@
 
 int main(int argc, char **argv){
 char		c, 
-		*delimiters	= NULL, 
 		msg[1000];
 int     colnames    = 0,
         rownames    = 0;
@@ -32,7 +31,7 @@ e.g.: %s -d\",|\" infile.txt a_table info.db\n\
 			colnames    ++;
 			break;
 		  case 'd':
-			delimiters	= optarg;
+			strcpy(apop_opts.input_delimiters, optarg);
 			break;
 		  case 'h':
 			printf(msg);

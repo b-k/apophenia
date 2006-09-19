@@ -1,0 +1,385 @@
+country|class
+American Samoa|East Asia and Pacific
+Malaysia|East Asia and Pacific
+Philippines|East Asia and Pacific
+Cambodia|East Asia and Pacific
+Marshall Islands|East Asia and Pacific
+Samoa|East Asia and Pacific
+China|East Asia and Pacific
+Micronesia, Fed. Sts|East Asia and Pacific
+Solomon Islands|East Asia and Pacific
+Fiji|East Asia and Pacific
+Mongolia|East Asia and Pacific
+Thailand|East Asia and Pacific
+Indonesia|East Asia and Pacific
+Myanmar|East Asia and Pacific
+Timor-Leste|East Asia and Pacific
+Kiribati|East Asia and Pacific
+Northern Mariana Islands|East Asia and Pacific
+Tonga|East Asia and Pacific
+Korea, Dem. Rep.|East Asia and Pacific
+Palau|East Asia and Pacific
+Vanuatu|East Asia and Pacific
+Lao PDR|East Asia and Pacific
+Papua New Guinea|East Asia and Pacific
+Vietnam|East Asia and Pacific
+Albania|Europe and Central Asia
+Hungary|Europe and Central Asia
+Serbia and Montenegro|Europe and Central Asia
+Armenia|Europe and Central Asia
+Kazakhstan|Europe and Central Asia
+Slovak Republic|Europe and Central Asia
+Azerbaijan|Europe and Central Asia
+Kyrgyz Republic|Europe and Central Asia
+Tajikistan|Europe and Central Asia
+Belarus|Europe and Central Asia
+Latvia|Europe and Central Asia
+Turkey|Europe and Central Asia
+Bosnia and Herzegovina|Europe and Central Asia
+Lithuania|Europe and Central Asia
+Turkmenistan|Europe and Central Asia
+Bulgaria|Europe and Central Asia
+Macedonia, FYR|Europe and Central Asia
+Ukraine|Europe and Central Asia
+Croatia|Europe and Central Asia
+Moldova|Europe and Central Asia
+Uzbekistan|Europe and Central Asia
+Czech Republic|Europe and Central Asia
+Poland|Europe and Central Asia
+Estonia|Europe and Central Asia
+Romania|Europe and Central Asia
+Georgia|Europe and Central Asia
+Russian Federation|Europe and Central Asia
+Argentina|Latin America and the Caribbean
+Ecuador|Latin America and the Caribbean
+Paraguay|Latin America and the Caribbean
+Barbados|Latin America and the Caribbean
+El Salvador|Latin America and the Caribbean
+Peru|Latin America and the Caribbean
+Belize|Latin America and the Caribbean
+Grenada|Latin America and the Caribbean
+St. Kitts and Nevis|Latin America and the Caribbean
+Bolivia|Latin America and the Caribbean
+Guatemala|Latin America and the Caribbean
+St. Lucia|Latin America and the Caribbean
+Brazil|Latin America and the Caribbean
+Guyana|Latin America and the Caribbean
+St. Vincent and the Grenadines|Latin America and the Caribbean
+Chile|Latin America and the Caribbean
+Haiti|Latin America and the Caribbean
+Suriname|Latin America and the Caribbean
+Colombia|Latin America and the Caribbean
+Honduras|Latin America and the Caribbean
+Trinidad and Tobago|Latin America and the Caribbean
+Costa Rica|Latin America and the Caribbean
+Jamaica|Latin America and the Caribbean
+Uruguay|Latin America and the Caribbean
+Cuba|Latin America and the Caribbean
+Mexico|Latin America and the Caribbean
+Venezuela, RB|Latin America and the Caribbean
+Dominica|Latin America and the Caribbean
+Nicaragua|Latin America and the Caribbean
+Dominican Republic|Latin America and the Caribbean
+Panama|Latin America and the Caribbean
+Algeria|Middle East and North Africa
+Jordan|Middle East and North Africa
+Syrian Arab Republic|Middle East and North Africa
+Djibouti|Middle East and North Africa
+Lebanon|Middle East and North Africa
+Tunisia|Middle East and North Africa
+Egypt, Arab Rep.|Middle East and North Africa
+Libya|Middle East and North Africa
+West Bank and Gaza|Middle East and North Africa
+Iran, Islamic Rep.|Middle East and North Africa
+Morocco|Middle East and North Africa
+Yemen, Rep.|Middle East and North Africa
+Iraq|Middle East and North Africa
+Oman|Middle East and North Africa
+Afghanistan|South Asia
+India|South Asia
+Pakistan|South Asia
+Bangladesh|South Asia
+Maldives|South Asia
+Sri Lanka|South Asia
+Bhutan|South Asia
+Nepal|South Asia
+Angola|Sub-Saharan Africa
+Gabon|Sub-Saharan Africa
+Niger|Sub-Saharan Africa
+Benin|Sub-Saharan Africa
+Gambia, The|Sub-Saharan Africa
+Nigeria|Sub-Saharan Africa
+Botswana|Sub-Saharan Africa
+Ghana|Sub-Saharan Africa
+Rwanda|Sub-Saharan Africa
+Burkina Faso|Sub-Saharan Africa
+Guinea|Sub-Saharan Africa
+Sao Tome and Principe|Sub-Saharan Africa
+Burundi|Sub-Saharan Africa
+Guinea-Bissau|Sub-Saharan Africa
+Senegal|Sub-Saharan Africa
+Cameroon|Sub-Saharan Africa
+Kenya|Sub-Saharan Africa
+Seychelles|Sub-Saharan Africa
+Cape Verde|Sub-Saharan Africa
+Lesotho|Sub-Saharan Africa
+Sierra Leone|Sub-Saharan Africa
+Central African Republic|Sub-Saharan Africa
+Liberia|Sub-Saharan Africa
+Somalia|Sub-Saharan Africa
+Chad|Sub-Saharan Africa
+Madagascar|Sub-Saharan Africa
+South Africa|Sub-Saharan Africa
+Comoros|Sub-Saharan Africa
+Malawi|Sub-Saharan Africa
+Sudan|Sub-Saharan Africa
+Congo, Dem. Rep.|Sub-Saharan Africa
+Mali|Sub-Saharan Africa
+Swaziland|Sub-Saharan Africa
+Congo, Rep|Sub-Saharan Africa
+Mauritania|Sub-Saharan Africa
+Tanzania|Sub-Saharan Africa
+Cote d'Ivoire|Sub-Saharan Africa
+Mauritius|Sub-Saharan Africa
+Togo|Sub-Saharan Africa
+Equatorial Guinea|Sub-Saharan Africa
+Mayotte|Sub-Saharan Africa
+Uganda|Sub-Saharan Africa
+Eritrea|Sub-Saharan Africa
+Mozambique|Sub-Saharan Africa
+Zambia|Sub-Saharan Africa
+Ethiopia|Sub-Saharan Africa
+Namibia|Sub-Saharan Africa
+Zimbabwe|Sub-Saharan Africa
+Afghanistan|Low-income economies
+Haiti|Low-income economies
+Papua New Guinea|Low-income economies
+Bangladesh|Low-income economies
+India|Low-income economies
+Rwanda|Low-income economies
+Benin|Low-income economies
+Kenya|Low-income economies
+Sao Tome and Principe|Low-income economies
+Bhutan|Low-income economies
+Korea, Dem Rep.|Low-income economies
+Senegal|Low-income economies
+Burkina Faso|Low-income economies
+Kyrgyz Republic|Low-income economies
+Sierra Leone|Low-income economies
+Burundi|Low-income economies
+Lao PDR|Low-income economies
+Solomon Islands|Low-income economies
+Cambodia|Low-income economies
+Liberia|Low-income economies
+Somalia|Low-income economies
+Central African Republic|Low-income economies
+Madagascar|Low-income economies
+Sudan|Low-income economies
+Chad|Low-income economies
+Malawi|Low-income economies
+Tajikistan|Low-income economies
+Comoros|Low-income economies
+Mali|Low-income economies
+Tanzania|Low-income economies
+Congo, Dem. Rep|Low-income economies
+Mauritania|Low-income economies
+Timor-Leste|Low-income economies
+Cote d'Ivoire|Low-income economies
+Mongolia|Low-income economies
+Togo|Low-income economies
+Eritrea|Low-income economies
+Mozambique|Low-income economies
+Uganda|Low-income economies
+Ethiopia|Low-income economies
+Myanmar|Low-income economies
+Uzbekistan|Low-income economies
+Gambia, The|Low-income economies
+Nepal|Low-income economies
+Vietnam|Low-income economies
+Ghana|Low-income economies
+Niger|Low-income economies
+Yemen, Rep.|Low-income economies
+Guinea|Low-income economies
+Nigeria|Low-income economies
+Zambia|Low-income economies
+Guinea-Bissau|Low-income economies
+Pakistan|Low-income economies
+Zimbabwe|Low-income economies
+Albania|Lower-middle-income economies
+El Salvador|Lower-middle-income economies
+Namibia|Lower-middle-income economies
+Algeria|Lower-middle-income economies
+Fiji|Lower-middle-income economies
+Nicaragua|Lower-middle-income economies
+Angola|Lower-middle-income economies
+Georgia|Lower-middle-income economies
+Paraguay|Lower-middle-income economies
+Armenia|Lower-middle-income economies
+Guatemala|Lower-middle-income economies
+Peru|Lower-middle-income economies
+Azerbaijan|Lower-middle-income economies
+Guyana|Lower-middle-income economies
+Philippines|Lower-middle-income economies
+Belarus|Lower-middle-income economies
+Honduras|Lower-middle-income economies
+Samoa|Lower-middle-income economies
+Bolivia|Lower-middle-income economies
+Indonesia|Lower-middle-income economies
+Serbia and Montenegro|Lower-middle-income economies
+Bosnia and Herzegovina|Lower-middle-income economies
+Iran, Islamic Rep.|Lower-middle-income economies
+Sri Lanka|Lower-middle-income economies
+Brazil|Lower-middle-income economies
+Iraq|Lower-middle-income economies
+Suriname|Lower-middle-income economies
+Bulgaria|Lower-middle-income economies
+Jamaica|Lower-middle-income economies
+Swaziland|Lower-middle-income economies
+Cameroon|Lower-middle-income economies
+Jordan|Lower-middle-income economies
+Syrian Arab Republic|Lower-middle-income economies
+Cape Verde|Lower-middle-income economies
+Kazakhstan|Lower-middle-income economies
+Thailand|Lower-middle-income economies
+China|Lower-middle-income economies
+Kiribati|Lower-middle-income economies
+Tonga|Lower-middle-income economies
+Colombia|Lower-middle-income economies
+Lesotho|Lower-middle-income economies
+Tunisia|Lower-middle-income economies
+Congo, Rep.|Lower-middle-income economies
+Macedonia, FYR|Lower-middle-income economies
+Turkmenistan|Lower-middle-income economies
+Cuba|Lower-middle-income economies
+Maldives|Lower-middle-income economies
+Ukraine|Lower-middle-income economies
+Djibouti|Lower-middle-income economies
+Marshall Islands|Lower-middle-income economies
+Vanuatu|Lower-middle-income economies
+Dominican Republic|Lower-middle-income economies
+Micronesia, Fed. Sts.|Lower-middle-income economies
+West Bank and Gaza|Lower-middle-income economies
+Ecuador|Lower-middle-income economies
+Moldova|Lower-middle-income economies
+Egypt, Arab Rep.|Lower-middle-income economies
+Morocco|Lower-middle-income economies
+American Samoa|Upper-middle-income economies
+Hungary|Upper-middle-income economies
+Romania|Upper-middle-income economies
+Argentina|Upper-middle-income economies
+Latvia|Upper-middle-income economies
+Russian Federation|Upper-middle-income economies
+Barbados|Upper-middle-income economies 
+Lebanon|Upper-middle-income economies 
+Seychelles|Upper-middle-income economies
+Belize|Upper-middle-income economies 
+Libya|Upper-middle-income economies 
+Slovak Republic|Upper-middle-income economies
+Botswana|Upper-middle-income economies 
+Lithuania|Upper-middle-income economies 
+South Africa|Upper-middle-income economies
+Chile|Upper-middle-income economies
+Malaysia|Upper-middle-income economies
+St. Kitts and Nevis|Upper-middle-income economies
+Costa Rica|Upper-middle-income economies
+Mauritius|Upper-middle-income economies
+St. Lucia|Upper-middle-income economies
+Croatia|Upper-middle-income economies
+Mayotte|Upper-middle-income economies
+St. Vincent and the Grenadines|Upper-middle-income economies
+Czech Republic|Upper-middle-income economies
+Mexico|Upper-middle-income economies
+Trinidad and Tobago|Upper-middle-income economies
+Dominica|Upper-middle-income economies
+Northern Mariana Islands|Upper-middle-income economies
+Turkey|Upper-middle-income economies
+Equatorial Guinea|Upper-middle-income economies
+Oman|Upper-middle-income economies
+Uruguay|Upper-middle-income economies
+Estonia|Upper-middle-income economies
+Palau|Upper-middle-income economies
+Venezuela, RB|Upper-middle-income economies
+Gabon|Upper-middle-income economies
+Panama|Upper-middle-income economies
+Grenada|Upper-middle-income economies
+Poland|Upper-middle-income economies
+Andorra|High-income economies
+Germany|High-income economies
+Netherlands Antille|High-income economiess
+Antigua and Barbuda|High-income economies
+Greece|High-income economies
+New Caledonia|High-income economies
+Aruba|High-income economies
+Greenland|High-income economies
+New Zealand|High-income economies
+Australia|High-income economies
+Guam|High-income economies
+Norway|High-income economies
+Austria|High-income economies
+Hong Kong, China|High-income economies
+Portugal|High-income economies
+Bahamas, The|High-income economies
+Iceland|High-income economies
+Puerto Rico|High-income economies
+Bahrain|High-income economies
+Ireland|High-income economies
+Qatar|High-income economies
+Belgium|High-income economies
+Isle of Man|High-income economies
+San Marino|High-income economies
+Bermuda|High-income economies
+Israel|High-income economies
+Saudi Arabia|High-income economies
+Brunei Darussalam|High-income economies
+Italy|High-income economies
+Singapore|High-income economies
+Canada|High-income economies
+Japan|High-income economies
+Slovenia|High-income economies
+Cayman Islands|High-income economies
+Korea, Rep.|High-income economies
+Spain|High-income economies
+Channel Islands|High-income economies
+Kuwait|High-income economies
+Sweden|High-income economies
+Cyprus|High-income economies
+Liechtenstein|High-income economies
+Switzerland|High-income economies
+Denmark|High-income economies
+Luxembourg|High-income economies
+United Arab Emirates|High-income economies
+Faeroe Islands|High-income economies
+Macao, China|High-income economies
+United Kingdom|High-income economies
+Finland|High-income economies
+Malta|High-income economies
+United States|High-income economies
+France|High-income economies
+Monaco|High-income economies
+Virgin Islands (U.S.)|High-income economies
+French Polynesia|High-income economies
+Netherlands|High-income economies
+Australia|High-income OECD members
+Greece|High-income OECD members
+New Zealand|High-income OECD members
+Austria|High-income OECD members
+Iceland|High-income OECD members
+Norway|High-income OECD members
+Belgium|High-income OECD members
+Ireland|High-income OECD members
+Portugal|High-income OECD members
+Canada|High-income OECD members
+Italy|High-income OECD members
+Spain|High-income OECD members
+Denmark|High-income OECD members
+Japan|High-income OECD members
+Sweden|High-income OECD members
+Finland|High-income OECD members
+Korea, Rep.|High-income OECD members
+Switzerland|High-income OECD members
+France|High-income OECD members
+Luxembourg|High-income OECD members
+United Kingdom|High-income OECD members
+Germany|High-income OECD members
+Netherlands|High-income OECD members
+United States|High-income OECD members

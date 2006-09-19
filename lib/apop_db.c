@@ -686,7 +686,7 @@ int apop_db_get_cols(void){ return total_cols; }
 int apop_db_get_rows(void){ return total_rows; }
 
 /** Dump a <tt>gsl_matrix</tt> into the database. This function is
- Basically preempted by \ref apop_matrix_print. Use that one; this may soon no longer be available.
+basically preempted by \ref apop_matrix_print. Use that one; this may soon no longer be available.
 
 \param data 	The name of the matrix
 \param tabname	The name of the db table to be created

@@ -233,7 +233,7 @@ $$E\left(f(x)\right)=\int_{\forall x} f(x)p(x) dx.$$
 
 If we have a sample of data points, then we take each single observation
 to be equally likely: $p(x_i)={1\over n}\ \forall i$.
-The expected value for a sample then becomes a familiar calculation
+The expected value for a sample then becomes the familiar calculation
 $E(X)=(\sum x)/n$, and is \comment{(I should check this) }the BLUE of
 the true mean $\mu$. Section \ref{CLT} will discuss the magical properties of the
 sample expected value that make statistical analysis possible.
@@ -341,6 +341,78 @@ apop_data_show(apop_matrix_summarize(set));
 The last item in the code, \cind{apop\_matrix\_summarize} produces a table of
 some summary statistics for every column of the data set.
 
+\paragraph{Percentiles} \index{percentiles} The mean and variance can be misleading for
+skewed data. The first option for describing a data set whose
+distribution is likely ab-Normal is to plot a histogram of the data, as
+per page \pageref{histosec}.
+
+A numeric option is to print the \ind{quartiles} or \ind{quintiles} of the
+data. For quartiles, one would sort the data, and then display the 
+values of the data points 0\%, 25\%, 50\%, 75\%, and 100\% of the
+way through the set. Notice that the 0\% value is the minimum of the data
+set, the 100\% value is the maximum, and the 50\% value is probably the
+\ind{median|(} (see exercise below). For quintiles, one would print the
+values of data points  0\%, 20\%, 40\%, 60\%, 80\% and 100\% of the way
+through the set.
+
+Sorting \index{sorting!of \cinlinetwo{gsl\_vector}s} a \ci{gsl\_vector} is 
+simple: if you have a vector \ci{my\_data}, then call
+\begin{lstlisting}
+gsl_vector_sort(my_data);
+\end{lstlisting}
+and the vector will be sorted in place, so
+\ci{gsl\_vector\_get(my\_data, 0)} is the minimum of the data,
+\ci{gsl\_vector\_get(my\_data, my\_data->size)} is the maximum, and 
+\ci{gsl\_vector\_get(my\_data, my\_data->size/2)} is about the median.
+
+The function \cind{apop\_vector\_percentiles} takes in a
+\ci{gsl\_vector} and returns the percentiles---the value of the
+data point 0\%, 1\%, \dots, 99\%, 100\% of the way through the data.
+It takes in two arguments: the data vector, and a character describing
+the rounding method---\ci{'u'} for rounding up, \ci{'d'} for rounding
+down, and \ci{'a'} for averaging. Since the number of elements in a
+data set are rarely divisible by a hundred and one, the position of most
+percentile points likely falls between two data points. For example, if
+the data set has 107 points, then the tenth data point is 9.47\% through
+the data set, and the eleventh data point is 10.38\% through the set, so
+which is the tenth percentile? If you specify \ci{'u'}, then it is the
+eleventh data point; if you specify \ci{'d'} then it is the tenth data
+point, and if you specify \ci{'a'}, then it is the simple mean of the two.
+
+The standard definition of the median is that it is the middle
+value of the data point if the data set has an odd number of elements,
+and it is the average of the two data points closest to the middle if
+the data set has an even number of elements. 
+Thus, here is a function to find the median of a data set. It find the
+percentiles using the averaging rule for interpolation, marks down the
+$50^{\rm th}$ percentile, then cleans up and returns that value.
+\begin{lstlisting}
+double find_median(gsl_vector *v){
+    double *pctiles = apop_vector_percentiles(v, 'a');
+    double out = pctiles[50];
+    free(pctiles);
+    return out;
+}
+\end{lstlisting}
+
+\exercise{On page \pageref{gdppercap} you tabulated GDP per capita for
+the countries of the world.  What is the median country's GDP
+per capita? How much is it affected by the rounding method?}
+
+\exercise{
+Write a function with
+header \ci{double show\_quartiles(gsl\_vector *v, char rounding\_method,
+int divisions)} that passes \ci{v} and \ci{rounding\_method} to
+\ci{apop\_vector\_percentiles}, and then prints a table of selected
+percentiles to the screen. If \ci{divisions==4}, print quartiles, if
+\ci{divisions==5}, print quintiles, if \ci{divisions==10}, print
+deciles, et cetera.
+
+Use your function to print the deciles for country incomes from
+\ci{data-wb}.
+}
+\index{median|)}
+
 \paragraph{\treesymbol{} Weighted data} Your data may be aggregated so
 that one line of data represents multiple observations. For example, the
 2000 U.S. Census found that 75.1\% of the U.S. population is White,
@@ -380,6 +452,9 @@ be summarized using the variance-covariance matrix.
 \item There is a one-line function to produce each of these pieces of information.
 Notably, \ci{apop\_matrix\_summarize} produces a summary of each column
 of a data matrix.
+\item You can get a quick-and-rough numerical description of a data set's
+distribution using quartiles or quintiles; to do so, use
+\ci{apop\_vector\_percentiles}.
 }
 
 \section{Sample distributions}\index{sample distributions}

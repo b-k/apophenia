@@ -230,17 +230,21 @@ its address, \ci{\&d}. Similarly, a function \ci{f} is stored somewhere
 in memory, so we can refer to its address as well.
 
 What is a pointer to a function good for?  It lets us write
-functions that will accept any function pointer and then use the
-pointed-to function, such as a bootstrap function that takes in a
+Functions that will accept any function pointer and then use the
+pointed-to function, such as a bootstrap Function that takes in a
 statistic-calculating function and a data set and then returns the
-variance of the statistic, or a function to search an input function
-for its largest value.
+variance of the statistic, or a Function to search an input function
+for its largest value.\footnote{Functions calling functions is already
+confusing enough, so for this section I will capitalize \airq{Function}
+to indicate a parent function that takes a function (lower case) as an
+input. This is merely typography, and you will see that there is no real
+difference between a parent Function and any other.}
 
-\subsection{Types} Before we can start writing functions to act on
+\subsection{Types} Before we can start writing Functions to act on
 functions, we need to take the type of input function into
 consideration, because not every function makes sense in every context. Say
-that we want to write a function that will take in an array of
-\ci{double}s and a function, and will apply the function to every
+that we want to write a Function that will take in an array of
+\ci{double}s plus a function, and will apply the function to every
 element of the array. Then the input function has to have a form like:
 \begin{lstlisting}
 double function_name (double x);
@@ -251,7 +255,7 @@ wouldn't work; nor would it work if it returned anything but a
 \ci{double}.
 
 Thus, function pointers have types just like any other variable, and a
-function that takes a function pointer as input will make the usual
+Function that takes a function pointer as input will make the usual
 type-checks.
 
 A pointer declaration is just like any other declaration but with
@@ -261,11 +265,12 @@ function pointer that takes in a \ci{double} and returns a \ci{double}:
 \begin{lstlisting}
 double (*function_name) (double x);
 \end{lstlisting}
-You can see that it is just like the usual \ci{int *x} sort of pointer declaration, but the function is in parens.  The parentheses are not
+You can see that it is just like the usual \ci{int *x} sort of pointer
+declaration, but the function name is in parens.  The parentheses are not
 optional.
 
 \paragraph{\ci{typedef} revisited}
-Now you can put the function into your header line. A function that
+Now you can put the function into your header line. A Function that
 applies a function to a \ci{gsl\_vector} would have a header like
 this:
 \begin{lstlisting}
@@ -279,7 +284,7 @@ that word before the above type declaration,
 typedef double (*double_to_double) (double x);
 \end{lstlisting}
 we have created an new type named \ci{double\_to\_double} that we can
-use like any other type. Now, the declaration of the \ci{apply} function
+use like any other type. Now, the declaration of the \ci{apply} Function
 simplifies to:
 \begin{lstlisting}[emph={double_to_double,gsl_vector}]
 void apply (gsl_vector *v, double_to_double function_name);
@@ -291,7 +296,7 @@ form $\Re\to\Re$. The
 details of Gnuplot and its use probably won't make sense to you until
 you read Chapter \ref{gnuplot}, and you may need to modify the
 \ci{gnuplot} variable on line 5 to indicate the location of Gnuplot on
-your system.\footnote{try the command \bi{which gnuplot} to find it,
+your system.\footnote{Try the command \bi{which gnuplot} to find it,
 and if it isn't found, use your package manager to install it.}
 
 That aside, the elements needed to pass function pointers are all there,
@@ -299,7 +304,7 @@ and should be clear to you. A quick tour of the code:\\
 Line 3: To make life easier, the \ci{dfn} type is
 declared at the top of the file. \\
 Line 7: The \ci{sample\_function} appears, and you can see that its type matches that of \ci{dfn}. \\
-Line 11: The \ci{plot\_a\_fn} function specifies that it takes in a function of type
+Line 11: The \ci{plot\_a\_fn} Function specifies that it takes in a function of type
 \ci{dfn}.\\
 Line 19: Using the passed-in function is as simple
 as using any other function: this line  gives no
@@ -308,23 +313,23 @@ Line 26: Finally, in \ci{main},
 you can see how \ci{plot\_a\_fn} is called. The \ci{sample\_function}
 is passed in with just its name.
 
-Once the \ci{typedef} is in place, you can see that the syntax is pretty
+Once the \ci{typedef} is in place, you can see that the syntax is 
 easy. You don't need extra stars in either the declaration of the
-function-of-a-function or in the call to that function, and you can call
+Function-of-a-function or in the call to that Function, and you can call
 the pointed-to function like any other. 
 
 \lstset{numbers=left, numberstyle=\scshape}
-\codefig{plotafunction}{A demonstration of a function that takes in
+\codefig{plotafunction}{A demonstration of a Function that takes in
 any function $\Re\to\Re$ and plots it.}
 \lstset{numbers=none}
 
 \exercise{Define a type \ci{dfn} as in line three of Figure \ref{plotafunction}. Then
-write a function with header \ci{void apply(dfn fn,
+write a Function with header \ci{void apply(dfn fn,
 double *array, int array\_len)}, that takes as arguments a function, an
 array, and the length of the array, and changes each element
 \ci{array[i]} to \ci{fn(array[i])}.
 
-Test your function by creating an array of the natural number $1, 2,
+Test your Function by creating an array of the natural number $1, 2,
 3,\dots 20$ and transforming it to a list of squares.}
 
 \subsection{\ci{void}ing types} Forthcoming.
@@ -338,9 +343,9 @@ star.
 \item Defining a new type to describe the function helps immensely.
 This requires prepending \ci{typedef} to the function pointer
 declaration in the last summary point.
-\item Once you have a \ci{typedef} in place, you can declare functions
+\item Once you have a \ci{typedef} in place, you can declare Functions
 that take functions, use the passed-in functions, and call the parent
-function as you would expect. Given the \ci{typedef} You need neither
+Function as you would expect. Given the \ci{typedef} You need neither
 stars nor ampersands for these operations.  
 \item If the input function can take multiple types of input, use a
 \ci{void *} to tell the compiler not to check types. Use this with
@@ -349,13 +354,14 @@ caution.
 
 \section{Data structures} Forthcoming, covering linked lists versus trees versus arrays. Primarily of use to modelers.
 
-\section{Parameters} \index{Command line|arguments on}Your simulations and analyses will require
+\section{Parameters} \index{Command line!arguments on}
+Your simulations and analyses will require
 tweaking. You will want to try more agents, or you may want your program
-to load the data from a text file for one run and then use the data in
-the database for later runs.
+to load a data set from a text file to a database for one run and then
+use the data in the database for later runs.
 
 There are three places where you can put such parameters and
-specifications. The first option is to put them at the top of your \ci{.c}
+specifications. The first option is to set variables at the top of your \ci{.c}
 file or a header file. This is trivial to implement, but you will need
 to recompile every time you change parameters.
 
@@ -364,23 +370,124 @@ various libraries that will read parameter files in various foramts that
 you can find online, and once you have learned about how to read data
 from a text file to a database in Chapter \ref{sql}, you will have
 another easy means of reading in a text file of parameters. 
-The implementation is fairly easy given the available tools, and it is fairly easy to change 
-a text file, since you won't have to recompile after changing it.
+The implementation is fairly easy given the available tools, and it is
+moderately easy to change a text file, since you won't have to recompile
+after changing it.
 
 The third option is to read in parameters from the command line. This
 takes the most effort to implement, but allows you to change parameters
 every time you run the program. You can even write batch files in Perl,
-Python, or a shell-type language to run the program with different parameters variants.
+Python, or a shell-type language to run the program with different parameter variants.
 
-The easiest way to read in command line parameters is via the
-\ci{getopt} set of commands. They are part of the Standard C
-library, so they are fully portable.\footnote{As an alternative, the
-GNU C library provides a library named \cind{argp} that provides many
-more features and does more automatically, but is correspondingly more
-complex and less portable.}
+The \ci{main} function takes inputs and produces an output like any
+other. The output is an integer \ci{return}ed at the end of \ci{main},
+which is typically zero for success or a positive integer indicating
+a type of failure. The inputs are always an integer, giving the number
+of command-line elements, and a \ci{char**}---an array of
+strings---listing the command-line elements themeselves. 
+Like any function specification, the types are non-negotiable, but the
+internal name you choose give these arguments is arbitrary. However, the
+universal custom is to name them \cind{argc} (argument count) and
+\cind{argv} (argument values).\footnote{They are in alphabetical order
+in the parameters to \ci{main}, which provides an easy way to remember
+that the count comes first.} This is an ingrained custom, and you can
+expect to see those two names everywhere.
+
+\codefig{argv}{Command-line parsing by directly reading \ci{argv}.}
+
+Figure \ref{argv} shows the rudimentary use of \ci{argc} and \ci{argv}.
+Here is a sample usage from my command line:
+\begin{lstlisting}
+>>>  /home/klemens/argv one 2 --three fo\ ur
+command line argument 0: /home/klemens/argv
+command line argument 1: one
+command line argument 2: 2
+command line argument 3: --three
+command line argument 4: fo ur
+\end{lstlisting}
+Argument zero (\ci{argv[0]}) is always the name of the command itself.
+Some creative programs run differently if they are referred to by
+different names, but you will generally want to just skip over \ci{argv[0]}.
+After that, the elements of \ci{argv} are the command line broken at
+the spaces, and could be dashes, numbers, or any other sort of text. As
+you can see from the parsing of \ci{fo\textbs{} ur}, a space prepended
+with a backslash is taken to be a character like any other, rather than an
+argument separator.
+
+For some purposes, this is all you will need to set program options from your
+command line. For example you could have one program to run three
+different actions with a \ci{main} like the following.
+\begin{lstlisting}
+int main(int argc, int **argv){
+    if (argc == 1){
+        printf("I need a command line argument.\n")
+        return 1;
+    }
+    if (!strcmp(argv[1], "read"))
+        read_data();
+    else if (!strcmp(argv[1], "analysis_1"))
+        run_analysis_1();
+    else if (!strcmp(argv[1], "analysis_2"))
+        run_analysis_2();
+    return 0;
+}
+\end{lstlisting}
+
+\lstset{numbers=left, numberstyle=\scshape}
+\codefig{getopt}{Command-line parsing with \ci{getopt}.}
+\lstset{numbers=none}
+
+\paragraph{getopt}
+For more complex situations, you will want to use \ci{getopt}, which
+parses command lines for \vocab{switches} of the form \ci{-x...}.  It is
+part of the standard C library, so it is fully portable.\footnote{As
+an alternative, the GNU C library provides a library named \cind{argp}
+that provides many more features and does more automatically, but is
+correspondingly more complex and less portable.} 
+
+Figure
+\ref{getopt} shows a program that will display a series of exponents.
+As explained by the message on lines 9--14, you can set the minimum of
+the series via \ci{-m}, the maximum via \ci{-M}, and the increment via
+\ci{-i}. Specify the base of the exponents after the switches.
+Sample usage:
+\begin{lstlisting}
+>>>  ./getopt -m3 -M4 -i0.3 2
+2^3: 8
+2^3.3: 9.84916
+2^3.6: 12.1257
+2^3.9: 14.9285
+\end{lstlisting}
+
+There are three steps to the process:
+\begin{itemize}
+\item \ci{\#include <unistd.h>}.\footnote{Apophenia's aggregate header,
+\ci{\#include <apophenia/headers.h>} includes \cind{unistd.h}.}
+\item Specify a set of letters indicating valid single-letter switches in a crunched-together string like line 7 of Figure \ref{getopt}. If the switch
+takes in additional info (here, every switch but \ci{-h}), indicate this with a colon after the letter. 
+\item Write a \ci{while} loop to call \ci{getopt} (line 26), and then
+act based upon the value of the \ci{char} that \ci{getopt} returned.
+\end{itemize}
+
+There are two more details to the process. First, \ci{argv} is text, but
+you will often want to specify numbers. The function \cind{atoi}
+converts ASCII text to integers, and the function
+\cind{atof} converts text to \ci{float}s. 
+
+Second, \ci{optarg} also sets the variable \ci{optind} to indicate the
+position in \ci{argv} that it last looked at. Thus, line 38 was able to
+check whether there are any non-switch arguments remaining, and line 39
+could parse the remaining argument (if any) without \ci{getopt}'s help.
+
+Finally, notice that the program provides human assistance. If the user
+gives the \ci{-h} switch or leaves off all switches entirely, then the
+program prints a help message and exits. Every variable that the
+user could forget to set via the command line has a default value.
 
 \section{More tools} 
-Beyond there debugger, there are a few more programs that will make your life as a programmer easier.
+Since C is so stable and widely used, there is an ecosystem of tools built around
+helping you easily write good code.  Beyond there debugger, here are a
+few more programs that will make your life as a programmer easier.
 
 \subsection{Help} \index{help, getting}
 You probably have have all the manuals for the programs listed in this

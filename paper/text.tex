@@ -25,7 +25,7 @@ regular expressions, and then move on to the main program: writing
 scripts to reformat text files into a format appropriate for your
 data-handling systems.
 
-\paragraph{Shell scripts} As with Gnuplot or Sqlite's command-line
+\section{Shell scripts} As with Gnuplot or Sqlite's command-line
 utility, you can operate the shell (what many just call the command line)
 by typing in commands or by writing a script and having the shell read
 the script. Thus, you can try the commands below on the command line,
@@ -54,18 +54,28 @@ myscript} will do the trick. Having made the script executable, you
 can call a script in the current directory (aka \bi{./}) from the shell
 using \bi{./myscript}.
 
-\paragraph{Standard syntax, lack thereof}
-Regular expressions are their own language that provides a compact means
-of summarizing a text pattern. Unfortunately, there are many variants on the
-regex syntax, since so many programs process them, and the author of
-each program felt the need to make some sort of tweak to the standard.
-Broadly, the basic regular expression syntax derives from \ttind{ed}, a
-text editor from back when the only output available to computers was
-the line printer. Most POSIX utilities, such as \ttind{sed}, 
-\ttind{grep} or \ttind{awk}, use this basic regex syntax. The scripting language
-\ttind{perl} introduced a somewhat different syntax for regular
-expressions with a number of extensions and modifications, and most
-post-Perl programs adopted Perl-compatible regular expressions. 
+\subsection{Redirection} 
+
+\section{Regular expressions}
+The remainder of this appendix will cover programs to parse regular
+expressions.  Many programs support regexes, including standard viewers
+like \ttind{less}, a fair number of online search tools, and text editors
+like \ttind{vi} and \ttind{emacs}, so knowledge of regexes comes in handy
+in a wide variety of situations. Entire books have been written on this
+one simple subject, the most comprehensive being \citet{friedl:regex}.
+
+\paragraph{Standard syntax, lack thereof} Regular expressions are
+their own language that provides a compact means of summarizing a text
+pattern. Unfortunately, there are many variants on the regex syntax,
+since so many programs process them, and the author of each program felt
+the need to make some sort of tweak to the standard.  Broadly, the basic
+regular expression syntax derives from \ttind{ed}, a text editor from back
+when the only output available to computers was the line printer. Most
+POSIX utilities, such as \ttind{sed}, \ttind{grep} or \ttind{awk},
+use this basic regex syntax. The scripting language \ttind{perl}
+introduced a somewhat different syntax for regular expressions with
+a number of extensions and modifications, and most post-Perl programs
+adopted Perl-compatible regular expressions.
 
 Different programs, and even different brands of the same
 program, like GNU grep versus Solaris grep, have frustrating
@@ -77,12 +87,6 @@ of this writing, and you are encouraged to check the manual pages or
 online references for the subtle shifts in backslashes among other
 regular expression systems.
 
-On the other hand, since so many programs support regexes---including
-standard viewers like \ttind{less}, a fair number of online search tools,
-and text editors like \ttind{vi} and \ttind{emacs}---knowledge of regexes comes in
-handy in a wide variety of situations. Entire books have been written on
-this one simple subject, the most comprehensive being
-\citet{friedl:regex}.
 
 This chapter will use grep and sed because it is trivial to do regular
 expression parsing and substitution from the command line. Other
@@ -494,7 +498,22 @@ perl -pi~ "s/\"([^\"])\"/\\$1/g" data_file
 Notice that we need to indicate to the command line that the quotes are
 not ending the Perl command, so they are all prepended with backslashes.
 
+\paragraph{Getting rid of commas}
+Some data sources improve human readability by separating data by
+commas; for example, we see from \ci{data-wb-gdp} that the USA's GDP for
+2005 was \$12,455,068 million. Unfortunately, if your program reads
+commas as field delimiters, this human-readability convenience ruins
+computer readability. But commas in text are entirely valid, so we want
+to remove only commas between two numbers. We can do this by searching
+for a number-comma-number pattern, and replacing it with only the
+numbers. Here is the \ci{sed} command-line version of the process:
+\begin{lstlisting}
+sed -i~ -e "s/\([0-9]\),\([0-9]\)/\\1\\2/g" fixme
+\end{lstlisting}
+
+
 More forthcoming.
+
 
 \comment{
 Let us say that we have comma-delimited text, and we need any element that

@@ -27,6 +27,24 @@ double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
 int     len                 = 8000;
 
+int test_percentiles(){
+  gsl_vector    *v      = gsl_vector_alloc(307);
+  int           i;
+    for (i=0; i< 307; i++)
+        gsl_vector_set(v, i, i);
+  double        *pcts_up    = apop_vector_percentiles(v, 'u');
+  double        *pcts_down  = apop_vector_percentiles(v, 'd');
+  double        *pcts_avg   = apop_vector_percentiles(v, 'a');
+    for (i=0; i< 101; i++){
+        assert(pcts_up[i] >= pcts_down[i]);
+        assert(pcts_up[i] >= pcts_avg[i]);
+        assert(pcts_avg[i] >= pcts_down[i]);
+    }
+    assert(pcts_up[100] == pcts_down[100] && pcts_avg[100] == pcts_down[100]);
+    assert(pcts_up[0] == pcts_down[0] && pcts_avg[0] == pcts_down[0]);
+    assert(pcts_avg[50] == (pcts_down[50] + pcts_up[50])/2);
+    return 0;
+}
 
 
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
@@ -500,6 +518,7 @@ apop_estimation_params  params;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
         */
+    do_test("test_percentiles:", test_percentiles());
     do_test("weighted moments:", test_weigted_moments());
     do_test("nist_tests:", nist_tests());
     do_test("split and stack to vector test:", test_matrix_split_to_vector());

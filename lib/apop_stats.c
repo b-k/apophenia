@@ -423,11 +423,11 @@ the maximum value, and returned_vector[0] is always the min (regardless
 of rounding rule).
 
 \param data	a gsl_vector of data.
-\param rounding This will either be 'u' or 'd'. Unless your data is
+\param rounding This will either be 'u', 'd', or 'a'. Unless your data is
 exactly a multiple of 100, some percentiles will be ambiguous. If 'u',
 then round up (use the next highest value); if 'd' (or anything else),
-round down to the next lowest value. If 'u', then you can say "5% or
-more  of the sample is below returned_vector[5]"; if 'd', then you can
+round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or
+more  of the sample is below returned_vector[5]"; if 'd' or 'a', then you can
 say "5% or more of the sample is above returned_vector[5]".  
 
 \ingroup basic_stats
@@ -442,7 +442,9 @@ double * apop_vector_percentiles(gsl_vector *data, char rounding){
 		index = i*(data->size-1)/100.0;
 		if (rounding == 'u' && index != i*(data->size-1)/100.0)
 			index ++; //index was rounded down, but should be rounded up.
-		pctiles[i]	= gsl_vector_get(sorted, index);
+		if (rounding == 'a' && index != i*(data->size-1)/100.0)
+            pctiles[i]	= (gsl_vector_get(sorted, index)+gsl_vector_get(sorted, index+1))/2.;
+        else pctiles[i]	= gsl_vector_get(sorted, index);
 	}
 	gsl_vector_free(sorted);
 	return pctiles;

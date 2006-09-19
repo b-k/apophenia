@@ -12,7 +12,7 @@ Database and matrix operations are excellent
 complements. Some things, like making a \vocab{crosstab} or \vocab{pivot
 table}, are a bit of a
 pain using traditional techniques of matrix manipulation. Meanwhile,
-some things, like matrix multiplication or inversion, just can not be done via SQL
+some things, like matrix multiplication or inversion, just can not be done via SQL (Structured Query Language)
 queries. With both, your data analysis technique will be unstoppable.
 
 As a broad rule, try to do data manipulation, like pulling subsets
@@ -27,28 +27,36 @@ English. It goes downhill from there in terms of properness, but at its
 worst, it is still not difficult to look at an SQL query and have some
 idea of what the rows and columns of the output table will look like.
 
-In terms of implementation, Apophenia uses \ind{SQLite}, by D Richard
-Hipp. At its core, one could think of a database as a file format---a
-means by which data is stored in memory or on a hard drive such that
-programs can quickly get to them---plus a set of programs that know how
-to read and write that file format. SQLite provides a library of functions
-that parse SQL queries and uses those instructions to read and write
-a specific format of file. Since any program that uses the SQLite
-function library is reading and writing the same file format, SQLite
-files can be traded among dozens of programs. As with C utilities,
-the problem is selecting which SQLite database viewer to use among the
-many options. The SQLite library comes with a command-line program,
-\binline{sqlite3}, but there are many other alternatives that are more
-reminiscent of the table view in the standard stats package; ask your
-search engine for \airq{sqlite browser} or \airq{sqlite GUI}. These
-programs will give you immediate feedback about any queries you input,
-and will let you verify that the tables you are creating via C code are
-as you had expected.
+Like C, SQL is merely a language, and it is left to the programmers of
+the world to write code that can parse SQL and return data from SQL
+queries. Just as this book leans toward \bi{gcc} to interpret C code,
+this book uses the \ind{SQLite} library, by D Richard Hipp, to interpret
+code written in SQL. SQLite provides a library of functions that parse
+SQL queries and uses those instructions to read and write a specific
+format of file. Since any program that uses the SQLite function library
+is reading and writing the same file format, SQLite files can be traded
+among dozens of programs. As with C utilities, the problem is selecting
+which SQLite database viewer to use among the many options. The SQLite
+library comes with a command-line program, \binline{sqlite3}, but there
+are many other alternatives that are more reminiscent of the table view
+in the standard stats package; ask your search engine for \airq{sqlite
+browser} or \airq{sqlite GUI}. These programs will give you immediate
+feedback about any queries you input, and will let you verify that the
+tables you are creating via C code are as you had expected.
 
-Apophenia is distributed with a few standalone
-programs that will read and write SQLite databases. If you want to
-experiment with your own data while reading through this chapter, you can
-try \cind{apop\_text\_to\_db} on the command line to produce an SQLite
+Why is SQLite \airq{lite}? Because most SQL-oriented databases are
+designed to be used by multiple users, such as a firm's customers
+and employees. With multiple users come issues of simultaneous access
+and security, that add complications on top of the basic process of
+querying data. SQLite is a single-user system, which is exactly right
+for a data anlysis project. If you hope to use another database system,
+you will need to learn the (typically vendor-specific) commands for
+locking and permissions.
+
+Apophenia meshes well with SQLite, and is distributed with a few
+standalone programs that will read and write SQLite databases. If you want
+to experiment with your own data while reading through this chapter, you
+can try \cind{apop\_text\_to\_db} on the command line to produce an SQLite
 database from a text file. Try \cind{apop\_text\_to\_db -h} for help.
 
 This chapter will primarily consist of an overview of SQL, with which you can
@@ -56,16 +64,24 @@ follow along using any of the above tools. Section \ref{foldingsql}
 will describe the Apophenia library functions that facilitate using an
 SQL database from within a C program.
 
+\exercise{Check that SQLite is correctly installed. In the online code
+supplement,\footnote{\samplecodelocation} the reader will find an
+SQLite-formatted database named \bi{data-wb.db} listing the 2005 GDP and
+population for the countries of the world. Verify that you can open the
+database using one of the above tools, and that you can execute the
+and view the results of the query \si{select * from pop;}.
+}
+
 \index{data!format}
 \paragraph{Data format} Each column in a database represents a distinct
 variable. For example, a health survey would include columns such
 as subject's age, weight, or height. One can expect the units to be
-different for each column.
+different from column to column.
 
 Each row in a database can be taken to represent one observation; in a
 survey, each row would be data about a single person. There is no
 mechanism in SQL for naming a row, although it is common enough to
-have a plain old column named \sinline{row\_name}; usually there is
+have a plain old column named \sinline{row\_name}, or
 another identifier such as \sinline{social\_security\_no} that serves
 this purpose.  
 
@@ -90,33 +106,24 @@ characteristic of having a \sinline{row\_name} variable whose value is
 \sinline{"Joe"}. That is, column names are {\it bona fide} names; row
 names are just data.}
 
-\comment{
-\summary{
-\item Each column of a database represents a different named variable;
-each row represents the values of those variables for a single unnamed observation.
-}
-}
-
-
 \section{Basic queries}
 Many methods of data slicing and joining are easy using database queries,
 but difficult via matrix operations.
 
 For example, pulling a subset of your data is trivial in SQL. If
-you need all of the data for those subjects over 175cm, you can ask for
-it thusly:
+you need all of the data for those countries with populations under 50
+million, you can ask for it thusly:
 \ns{4}
 \begin{lstlisting}
 select * 
-   from data 
-   where height >=175;
+    from pop
+    where population <= 50;
 \end{lstlisting}
 
 You can read this like English (once you know that \sinline{*} means `all
-columns'): it will find all of the rows in a table named \sinline{data}
-where \sinline{height} in that row is greater than or equal to 175, and
+columns'): it will find all of the rows in a table named \sinline{pop}
+where \sinline{population} in that row is less than or equal to 50, and
 return all the columns for those rows.
-
 
 Generally, the \sinline{select} statement gives a list of columns that
 the output table will have; the \sinline{from} clause declares where the
@@ -133,28 +140,30 @@ The \sqlind{select} clause will specify the columns of the table that will
 be output. The easiest list is \sinline{*}, which means `all the columns'.
 
 Other options:\begin{itemize}
-\item Explicitly list the columns:\\ \sinline{select age, height, weight}
+\item Explicitly list the columns:\\ \sinline{select country, pop}
 \item Explicitly mention the table you are pulling from:\\
-\sinline{select data.age, data.height, data.weight}\\
+\sinline{select pop.population, gdp.country}\\
 This is unnecessary here, but will become
 essential when dealing with multiple tables below.
 \item Rename the output columns:\\
-\sinline{select data.age as age, height as height\_in\_cm}\\ 
-Notice that if you do not rename \sinline{data.age as age}, then you will need to use \sinline{data\textbackslash.age} in future
-queries, which is a
-bit annoying.
-\item Generate your own new columns:\\
-\sinline{select height, weight, (height/weight) as hwr}\\
-The \sinline{as hwr} subclause is again more-or-less
+\sinline{select pop.country as country, gdp as gdp\_in\_millions\_usd}\\ 
+Notice that if you do not rename \sinline{pop.country as country}, then
+you will need to use \sinline{pop\textbackslash.country} in future
+queries, which is a bit annoying.  
+\item Generate your own new columns. For example, to convert GDP in
+dollars to GDP in British Pounds (using the conversion rate as of this
+writing):\\
+\sinline{select country, gdp*0.53 as gdp\_in\_GBP}\\
+The \sinline{as gdp\_in\_GDP} subclause is again more-or-less
 essential if you hope to easily refer to this column in the future. 
 \end{itemize}
 
 \paragraph{From} The \sqlind{from} clause specifies the tables from which
 you will be pulling data. The simplest case is a single table: \sinline{from data\_tab}, but you can specify as many tables as necessary: \sinline{from data\_tab1, data\_tab2}. 
 
-You can alias the tables, for easier reference. The clause 
-\sinline{from data\_tab1 d1, data\_tab2 d2} gives short names to both tables, which can
-be used for lines like \sinline{select d1.age, d2.height}. 
+You can alias the tables, for easier reference. The clause \sinline{from
+data\_tab1 d1, data\_tab2 d2} gives short names to both tables, which
+can be used for lines like \sinline{select d1.age, d2.height}.
 
 Another option is to take data from subqueries; see below.
 
@@ -175,11 +184,17 @@ for every line in your original table (and the columns returned will
 match those you specified in the \sinline{select} clause).
 
 Use as many subclauses as you wish, using the Boolean operators you
-know and love: \sinline{where ((d1.age > 13) or (d2.height >= 175)) and (d1.weight == 70)}.
+know and love: \sinline{where ((d1.age > 13) or (d2.height >= 175)) and
+(d1.weight == 70)}.
 
 The \sinline{where} clause refers to the root data, not the output,
 meaning that you can readily refer to columns that you do not mention
 in the \sinline{select} clause.
+
+\exercise{\label{morepop} Use a \si{where} clause and the \si{population} table to find
+the current population of your home country.  Once you know this amount,
+select all of the countries that are more populous than your country.  
+}
 
 \paragraph{Pruning rows with \sinlinetwo{distinct}} The \sqlind{distinct}
 keyword will tell the SQL engine that if several rows would be exact
@@ -229,8 +244,11 @@ produce an output table with every combination:
 
 If \sinline{data1} has 15 lines, and \sinline{data2} has 8 lines, then
 \sinline{select * from data1, data2} will return 15$\times$8 = 120 lines.
-Such a product quickly gets overwhelming: joining a thousand-row table
-with another thousand-row table will produce a million rows.
+Such a product quickly gets overwhelming: the World Bank data has 208
+countries, so \ci{select * from pop, gdp} produces 43,264 rows. 
+
+\exercise{Try this query now to see what those 43,264 rows look like.}
+
 
 Thus, the \sinline{where} clause becomes essential. Its most typical use is
 when one column in each table represents identical information. For
@@ -243,17 +261,20 @@ sets. Here is a query that would keep only those lines which make
 sense:
 
 \begin{lstlisting}
-select t1.income, t2.height
-   from econ_data t1, health_data t2
-   where t1.zip == t2.zip_code
+select t1.population, t2.gdp
+   from pop t1, gdp t2
+   where t1.country == t2.country
 \end{lstlisting}
 
 You can see that using the table-dot-column format for the column names is now
-essential. Also, notice that we did not have to include either ZIP code
-in the output if it is not used later. If you do want to include a ZIP
-code, then you can use either \sinline{t1.zip} or \sinline{t2.zip\_code}; since
-the two will be by definition identical, using both will be a waste of
-space (but may help to verify that things are working).
+essential. Also, notice that we did not have to include either \si{country} name
+in the output if it is not used later. If you do want to include a
+country name,
+then you can use either \sinline{t1.country} or \sinline{t2.country}; since
+the two will be by definition identical, using both will be redundant
+(but may help to verify that things are working).
+
+\exercise{\label{gdppercap} Find the GDP per capita of each country.}
 
 \paragraph{Speeding it up}
 You can ask the SQL engine to create an index for a table that you
@@ -275,25 +296,17 @@ practical matter, SQLite really only cares about the first item in the
 list, so you are better off creating one index per variable as above.
 
 \subsection{Aggregation}
-Here is how to get the number of rows in your data table:
+Here is how to get the number of rows in the \si{gdp} table:
 \begin{lstlisting}
 select count(*) as row_ct 
-from data;
+from gdp;
 \end{lstlisting}
 
 This produces a table with one column and one row, listing the total
 number of rows in the \sinline{data} table.
 
-You can use \sinline{count} with the \sind{distinct} keyword to find out how
-many of each row you have in your data set. That is, you can produce
-weights for each observation type:
-
-\begin{lstlisting}
-select distinct age, height, zip, count(*) as weight
-from table
-where age > 20
-group by age, height, zip
-\end{lstlisting}
+\exercise{Verify that \si{select * from population, gdp} produces 43,264
+rows.}
 
 \index{pivot tables}\index{crosstabs}\label{crosstabs}
 \marginaliafixed{16}{Crosstabs}{In the spreadsheet world, we often get tables
@@ -315,16 +328,15 @@ and
 }
 
 You probably want more refinement than that; if you would like to
-know how much data you have in each ZIP code, then use the \sqlind{group
+know how much data you have in each region, then use the \sqlind{group
 by} clause to say so:
 \begin{lstlisting}
-select zip, 
-    count(*) as ct_per_zip
-from data
-group by zip;
+select class, count(*) as countries_per_class
+from classes
+group by class;
 \end{lstlisting}
-This will group the rows into groups, where each group has the same ZIP
-code, and return a single line for each group.
+This will group the rows into groups, where each group has the same
+class name, and return a single line for each group.
 
 
 The two other aggregation commands which will be useful to you are {\tt
@@ -339,12 +351,14 @@ group by zip;
 Notice that we don't have to include ZIP code as a column in the output
 if we are not interested in it.
 
+\exercise{What is the average GDP per capita?}
+
 Feel free to specify multiple \sinline{group by} clauses; this creates what
 some call a \ind{cross tab}. For example, to get average income by
 height and ZIP code: 
 %\begin{verbatim}
 \begin{lstlisting}
-select  zip, height, avg(income) as avg_income
+select zip, height, avg(income) as avg_income
 from data
 group by zip, height;
 \end{lstlisting}
@@ -354,6 +368,23 @@ When you want to analyze the crosstab, you will be very
 interested in the \cind{apop\_db\_to\_cross\-tab} function, {\em qv}.
 
 The function \sinline{sum()} works the same. 
+
+You can use \sinline{count} with the \sind{distinct} keyword to find out how
+many of each row you have in your data set. That is, you can produce
+weights for each observation type:
+
+\begin{lstlisting}
+select distinct age, height, zip, count(*) as weight
+from table
+where age > 20
+group by age, height, zip
+\end{lstlisting}
+
+\exercise{Find the total GNP per capita for each World Bank grouping.
+Here, you will join using the country columns in the \si{gdp} and
+\si{classes} table, and by the country columns in the \si{pop} and
+\si{classes} table. Add up total GNP in the region, and divide by total
+population in the region. Do the results match your expectations?}
 
 \paragraph{Apophenia's SQL extensions}
 That's all the aggregators you get in standard SQL.
@@ -426,9 +457,11 @@ faster, but if the program crashes in the middle, then you will have
 lost everything.  The optimal speed/security trade-off is left as an
 exercise for the reader.
 
-If you have hundreds or thousands of \sinline{insert}s, you are almost certainly better off putting the data
-in a text file and using \sind{apop\_text\_to\_db}. The form
-above is mostly useful in situations where you are creating the table in mid-program; see the example on page \pageref{createeg}.
+If you have hundreds or thousands of \sinline{insert}s, you are
+almost certainly better off putting the data in a text file and using
+\sind{apop\_text\_to\_db}. The form above is mostly useful in situations
+where you are creating the table in mid-program; see the example on
+page \pageref{createeg}.
 
 
 The other method of creating a table is by saving the results of a
@@ -442,7 +475,8 @@ from people
 where height > 175
 \end{lstlisting}
 
-
+\exercise{Create a \si{gdp\_per\_capita} table, based on your query from
+page \pageref{gdppercap}.}
 
 \subsection{More trickery} Frankly, SQL is not very good for
 creating new data from the existing. But the few things that you can do
@@ -467,26 +501,31 @@ queries themselves. For example: what is the mean number of observations per
 ZIP code?
 
 \sindex{group by}
-You first need to get a \sinline{count(*)} grouped by ZIP, and then get an
+How large is the average World Bank grouping?
+You first need to get a \sinline{count(*)} grouped by category, and then get an
 average of that. You could run a query to produce a table of counts,
 save the table, and then run a query on that table to find the averages.
 Here is how to do all of this in one query: 
 \begin{lstlisting}
 select average(ct) 
 from (select count(*) as ct
-      from data
-      group by zip)
+      from classes
+      group by class)
 \end{lstlisting}
 The query inside the \sinline{from} clause will return a table, and even
 though that table has no name, it can be used as a data source like any other
 table. So the example will first produce a table with one line for each
-ZIP code, listing the number of observations there, and then it will
+class, listing the number of observations there, and then it will
 take that table and find the average of its \sinline{ct} column.
 
 Everywhere you would put a table name, you could put a query 
 instead. Of course, the query output has no name, so you may need to
 alias the result: \sinline{from (select ...) t1} will allow you to refer to
 the query's output as \sinline{t1} elsewhere in the query.
+
+\exercise{On page \pageref{morepop}, you first found your home country's
+population, then the countries with populations greater than this. Use
+a subquery to do this in one query.}
 
 \paragraph{Rowid} Sometimes, you need a unique identifier for each
 output row. This would be difficult to create from scratch, but your
@@ -496,6 +535,9 @@ number of rows, and does not appear when you query \sinline{select *
 from table}. But if you query \sinline{select rowid, * from table}
 the hidden row numbers will appear in the output.
 
+\exercise{Using \si{order by}, find the rank of your home country in GDP
+per capita.}
+
 \summary{
 \item You can join tables by listing multiple tables in the
 \sinline{from} clause. When you do, you will need to specify a
@@ -503,9 +545,9 @@ the hidden row numbers will appear in the output.
 prevent having an unreasonably long output table.
 \item If you intend to join elements, you can speed up the join
 immensely by creating an index first.
-}
-\summarynoitems{(continued)
-\begin{itemize}
+%}
+%\summarynoitems{(continued)
+%\begin{itemize}
 \item SQL includes a few simple aggregation commands: \sinline{avg()},
 \sinline{sum()}, and \sinline{count()}. Apophenia provides a few more
 nonstandard aggregators for queries called using its functions. 
@@ -516,7 +558,7 @@ indicate how the aggregation should be grouped.
 \item You can create tables using the \sinline{create} and
 \sinline{insert} commands, but you are probably better off just reading
 the table from a text file.
-\end{itemize}
+%\end{itemize}
 }
 
 \section{Folding queries into C code}\label{foldingsql}  This section covers the functions

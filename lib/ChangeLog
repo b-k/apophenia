@@ -8,6 +8,7 @@
 **Removed apop command-line server thing. It was interesting, but that's
 the best that could be said of it.
 --Added functions for weighted data: weighted least squares, weighted moments.
+--apop_vector_percentiles now allows for averaging instead of rounding.
 
 		August 2006
 **apop_log_likelihood and friends now demand that data be apop_data*,

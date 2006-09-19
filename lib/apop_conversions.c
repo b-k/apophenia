@@ -263,7 +263,7 @@ Without backslashes and spaced out in perl's /x style, it would look like this:
 [^%s"][^%s"]*)  anything but a "" or the user-specified delimiters. At least 1 char long.)
 ([%s\n]|$)      and ends with a delimiter or the end of line.
 */
-const char      divider[]="\\(\"[^\"][^\"]*\"\\|[^\"%s][^\"%s]*\\)[%s\n]";
+static const char      divider[]="\\(\"[^\"][^\"]*\"\\|[^\"%s][^\"%s]*\\)[%s\n]";
 
 //in: the line being read, the allocated outstring, the result from the regexp search, the offset
 //out: the outstring is filled with a bit of match, last_match is updated.
@@ -623,11 +623,7 @@ regmatch_t  result[2];
                 pull_string(instr,  outstr, result,  &last_match);
 	            stripme	    = strip(outstr);
                 stripped    = apop_strip_dots(stripme,'d');
-			    fn[i]	= NULL;
-                /*
-			    fn[i]	= malloc(1000 * sizeof(char));
-			    strcpy(fn[i], stripped);
-                */
+			    fn[i]	    = NULL;
                 apop_strcpy(&fn[i], stripped);
                 free(stripme);
 		        free(stripped);
