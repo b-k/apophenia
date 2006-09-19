@@ -349,6 +349,36 @@ caution.
 
 \section{Data structures} Forthcoming, covering linked lists versus trees versus arrays. Primarily of use to modelers.
 
+\section{Parameters} \index{Command line|arguments on}Your simulations and analyses will require
+tweaking. You will want to try more agents, or you may want your program
+to load the data from a text file for one run and then use the data in
+the database for later runs.
+
+There are three places where you can put such parameters and
+specifications. The first option is to put them at the top of your \ci{.c}
+file or a header file. This is trivial to implement, but you will need
+to recompile every time you change parameters.
+
+The second option is to put the data in a parameter file. There are
+various libraries that will read parameter files in various foramts that
+you can find online, and once you have learned about how to read data
+from a text file to a database in Chapter \ref{sql}, you will have
+another easy means of reading in a text file of parameters. 
+The implementation is fairly easy given the available tools, and it is fairly easy to change 
+a text file, since you won't have to recompile after changing it.
+
+The third option is to read in parameters from the command line. This
+takes the most effort to implement, but allows you to change parameters
+every time you run the program. You can even write batch files in Perl,
+Python, or a shell-type language to run the program with different parameters variants.
+
+The easiest way to read in command line parameters is via the
+\ci{getopt} set of commands. They are part of the Standard C
+library, so they are fully portable.\footnote{As an alternative, the
+GNU C library provides a library named \cind{argp} that provides many
+more features and does more automatically, but is correspondingly more
+complex and less portable.}
+
 \section{More tools} 
 Beyond there debugger, there are a few more programs that will make your life as a programmer easier.
 

@@ -19,7 +19,7 @@ our evaluation criterion.
 \includegraphics[width=\textwidth*\real{1.05}]{models}
 \end{center}
 \caption{A flowchart for distribution fitting, linear regression,
-likelihood functions, multilevel modeling,
+maximum likelihood methods, multilevel modeling,
 simulation (including agent-based modeling), data mining, non-parametric modeling,
 and various other methods.}
 \label{modelflow}
@@ -40,7 +40,7 @@ real-world phenomenon to be explained.
 The problem of statistical modeling is to find the parameters at the
 beginning of the flowchart that will output the best evaluation at the
 end. That is, for a given function and evaluation in Figure
-\ref{modelflow}, we seek a routine to take in data and produces the optimal parameters, as in Figure \ref{modelflowback}.
+\ref{modelflow}, we seek a routine to take in data and produce the optimal parameters, as in Figure \ref{modelflowback}.
 In the OLS model above, there is a closed-form solution to the problem:
 $\betav_{\rm best}=(\Xv'\Xv)^{-1}\Xv'\yv$.  But for more complex models,
 such as simulations or maximum likelihood methods, we must strategically
@@ -342,8 +342,8 @@ example, there are any of a number of distributions listed in the
 average stats textbook.  Poisson or Binomial distributions are used
 only for describing data culled from the real world, while the Chi-squared
 distribution or the F distribution are used only for testing hypotheses
-about parameters we have written down ourselves (such as the correlation
-coefficient, which has an F distribution). \citet[p 141]{kmenta} points out
+about parameters we have written down ourselves (such as the ratio of
+two variances, which has an F distribution). \citet[p 141]{kmenta} points out
 that no notable natural population has a Chi-squared distribution.
 \index{chi squared distribution@$\chi^2$ distribution}
 

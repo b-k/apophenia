@@ -295,7 +295,10 @@ the \ci{-n} switch, you will likely erase
 most of your file. 
 
 
-Another alternative is to replace-in-place, using the \ci{-i} switch:
+Another alternative is to replace-in-place, using the \ci{-i}
+switch:\footnote{The \ci{-i} switch is not standard in \ci{sed}, but
+works on GNU \ci{sed}, which you probably have. Bear this in mind if you
+are concerned about a script's portability.}
 \begin{lstlisting}
 perl -p -i.bak -e "s/replace me/with me/g" files_to_modify
 sed -i.bak -e "s/replace me/with me/g" files_to_modify
