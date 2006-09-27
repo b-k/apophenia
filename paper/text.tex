@@ -99,7 +99,7 @@ Now for the redirection. An \cind{>} tells the system to write whatever
 it would have put on the screen to a file. Thus, if you put the
 command \bi{sed -n p > outfile} on the command line, then nothing will
 print to the screen, but whatever you type (until you hit \ci{<ctrl>-C}
-or \ci{<ctrl>-D} will be written to \ci{outfile}. That is, instead of
+or \ci{<ctrl>-D}) will be written to \ci{outfile}. That is, instead of
 writing to STDOUT, the system writes to \ci{outfile}.
 
 As a variant, \cind{>> outfile} will append to a file, rather than
@@ -379,14 +379,7 @@ matches print.
 The basic syntax for a search and replace is \ci{s/replace me/with me/g}.
 The slashes distinguish the command (\ci{s}), the text to search
 (\ci{replace me}), the text for replacement (\ci{with me}), and the
-modifiers (the \ci{g}, which you will always want).\footnote{Back when
-regexes were used for real-time editing of files, it made sense to
-fix only one instance of an expression on a line. Thus, the default was
-to modify only the first instance, and one could specify replacing only
-the second instance of a match with \ci{s/.../.../2}, the third instance
-with \ci{s/.../.../3}, and all instances with \ci{s/.../.../g}. This is
-still valid syntax that is occasionally useful, but when filtering a
-data file, you will almost always want the \ci{/g} option.}
+modifiers (the \ci{g}; see box).
 
 If you have only one file to scan, you can use these programs as
 filters:
@@ -394,6 +387,15 @@ filters:
 perl -p -e "s/replace me/with me/g" <file_to_modify >modified\_file
 sed -e "s/replace me/with me/g" <file_to_modify >modified\_file
 \end{lstlisting}
+
+\marginalia{6}{Why the \ci{/g}?}{Back when
+regexes were used for real-time editing of files, it made sense to
+fix only one instance of an expression on a line. Thus, the default was
+to modify only the first instance, and one could specify replacing only
+the second instance of a match with \ci{s/.../.../2}, the third instance
+with \ci{s/.../.../3}, and all instances with \ci{s/.../.../g}. This is
+still valid syntax that is occasionally useful, but when filtering a
+data file, you will almost always want the \ci{/g} option.}
 
 The \ci{-p} switch is the opposite of sed's \ci{-n} switch.
 As opposed to sed, Perl's default is to never print

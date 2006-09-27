@@ -5,12 +5,12 @@ Computing} that is based on a language written in 1972.
 Why use C instead of a specialized language like SAS, Stata, SPSS,
 S-Plus, SIENA, SUDAAN, SST, SHAZAM, GAUSS, GAMS, GLIM, GENSTAT, GRETL, EViews,
 PcGive, MatLab, Minitab, Mupad, Maple, Mplus, Maxima, Mathematica, WinBUGS, TSP,
-HLM, R, RATS, LISREL, LIMDEP, LISP-STAT, Octave, OxMetrics, Weka, or Yorick?
+HLM, R, RATS, LISREL, LIMDEP, Lisp-Stat, Octave, OxMetrics, Weka, or Yorick?
 There are more than enough books that advocate for the use of such
 languages; as one editor at a well-known scientific publishing company
 explained to me, ``\dots most of the statistics [book] market is quite
 heavily influenced by the software companies that service the field.''
-Thus, this may be the only book to advocate statistical computing with
+This may be the only book to advocate statistical computing with
 a general computing language, so I will take some time motivating the
 choice as clearly as possible. Over the course of this, you should also
 get a better idea of why C is the way it is, and why modern numerical
@@ -42,7 +42,7 @@ or Monte Carlo simulation in reasonable time, you can write models
 that rely on fewer false assumptions. The Monte Carlo examples in Section
 \ref{billiondraws} were produced using over a billion draws from $t$
 distributions. If your stats package can't produce a few hundred thousand 
-draws per second (some can't), such work will be infeasibly
+draws per second (some can't), such work will be unfeasibly
 slow.\footnote{If you can produce random draws from $t$ distributions
 as a batch (\ci{draws <- rt(5000000, df)}), then R takes a mere three
 times as long as comparable C code. But if you need to produce them
@@ -83,7 +83,7 @@ to produce pages of output, giving you no control but ease-of-use.
 
 C can be used as a rock-bottom low-level language, but there is also a
 library of C functions to execute any high-level operations you may
-desire, such as the \cinline{apop\_OLS.estimate(data)} function from
+desire, such as the \cinline{apop\_OLS.estimate(data, ...)} function from
 the Apophenia library.  
 You get to pick the balance of laziness and precision that you desire. You
 can write code to manipulate individual memory locations, use the GNU Scientific

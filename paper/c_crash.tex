@@ -283,7 +283,7 @@ a--; /*is equivalent to*/ a = a - 1;
 
 
 \subsection{Conditions} 	
-\label{forloops} \index{conditionals} \index{boolean expressions} \index{logical expressions} 
+\label{forloops} \index{conditionals} \index{Boolean expressions} \index{logical expressions} 
 \cindex{<!in C, less than} \cindex{>} \cindex{==}
 Another set of operators are comparison and logical operators, such as \ci{(a $>$ b)},
 \ci{(a $<$ b)}, or \ci{(a == b)}. All of these evaluate to either a one or a zero, depending on whether the
@@ -449,7 +449,7 @@ rather than how (which will be self-explanatory in clearly-written code).
 
 The primary audience of your comment should be you, six months from
 now. When you are shopping for black boxes to plug in to your next project,
-or reauditing your data after the referee finally got the paper back
+or re-auditing your data after the referee finally got the paper back
 to you, a note to self at the head of each function will pay immense
 dividends. 
 
@@ -613,7 +613,7 @@ C has other basic types, which are not worth caring about. There
 are some detailed notes about how numbers are represented in Section
 \ref{numbers}.
 
-Some languages have a boolean type to represent the values one or zero.
+Some languages have a Boolean type to represent the values one or zero.
 C does not bother with this because you can
 evaluate all of \ci{if(float\_var)}, \ci{if(int\_var)}, or \ci{if(char\_var)}
 with equal ease. If you are very concerned about 
@@ -797,7 +797,7 @@ The header in line 1 is discussed below. The comparison on line three
 compares the truncated version of a number over two with the untruncated
 version of same.
 
-Since a boolean expression evaluates to one or zero,
+Since a Boolean expression evaluates to one or zero,
 one could more efficiently write this as:
 \begin{lstlisting}
 int is_even(int number){
@@ -1401,7 +1401,7 @@ Many programming languages have a way to declare variables as having
 \airq{global scope}, meaning that every function everywhere can make use
 of the variable. Technically, C has no such mechanism. Instead, the best
 you can do is \airq{file-global scope}, meaning that every function in a
-single file can see any variable delcared at the top of that file.
+single file can see any variable declared at the top of that file.
 
 Header files allow you to simulate truly global scope, but with finer
 control if you want it. If some variables should be global to your
@@ -1443,9 +1443,9 @@ create an array of numbers and their squares, and another function,
 \paragraph{\treesymbol Variables in headers} \label{extern} The system of
 putting file-scope variables in the base \ci{.c} file and global-scope
 variables in the \ci{.h} file has one ugly detail. A
-function delcaration is merely advice to the compiler that your function
+function declaration is merely advice to the compiler that your function
 has certain inputs and outputs, so when multiple files reread the
-declaration, ther program only suffers harmless redundancy. But a
+declaration, their program only suffers harmless redundancy. But a
 variable declaration is a command to the compiler to allocate space as
 listed. If \ci{head.h} includes a declaration \ci{int x;}, and
 \ci{file1.c} includes \ci{head.h}, it will set aside an
@@ -1467,7 +1467,7 @@ To summarize: function declarations and \ci{typedef}s are just information
 for the compiler, so they can go into a header file that will be included
 in multiple \ci{.c} files. Variables need to be declared as usual in
 one and only one \ci{.c} file, and if you want other \ci{.c} files to
-see them, redeclare them in a header file with the \ci{extern} keyword.
+see them, re-declare them in a header file with the \ci{extern} keyword.
 
 \subsection{The compilation step} 
 The \ind{compilation}

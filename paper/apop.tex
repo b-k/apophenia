@@ -847,9 +847,20 @@ The second argument to the output functions is a string.  Output to
 screen ignores this; if outputting to file, this is the file name;
 if writing to the database, then this will be the table name.
 
+\marginaliafixed{14}{Command-line utilities}{Apophenia includes a handful of
+\ind{com\-mand-line utilities} for handling SQLite databases where there
+is no need to write a full-blown C program.  \cind{apop\_text\_to\_db}
+reads a text file into a database table, \cind{apop\_merge\_dbs} will send
+tables from one database to another, and \cind{apop\_db\_to\_cross\-tab}
+will take a table from the SQLite database and produce a crosstab. All
+of these are simply wrappers for the corresponding Apophenia functions,
+as seen in Chapter \ref{sql}.  For all of the utilities, you can use
+the \binline{-h} parameter to get detailed instructions (e.g., \binline
+{apop\_db\_to\_cross\-tab -h}).}
+
 If outputting to file, the name can be \cinline{NULL}, in which case,
-the output will be printed to STDOUT (if you aren't familiar with STDOUT,
-then it is the screen), but in the machine-friendly format instead of
+the output will be printed to \ci{STDOUT} (if you aren't familiar with STDOUT,
+see the discussion in Appendix A), but in the machine-friendly format instead of
 the human-friendly form.  This is what you will use if you are using a
 command-line \ind{pipe} to send output from an Apophenia-based program
 to another program. If your program itself uses a pipe opened via
@@ -895,20 +906,7 @@ function}: what percentage of the :
 
 
 }
-\section{Command-line utilities}
-Apophenia includes a handful of \ind{com\-mand-line utilities} for
-situations where there is no need to write a full-blown C program. For
-all of the utilities below, you can use the \binline{-h} parameter to
-get detailed instructions (e.g., \binline {apop\_db\_to\_cross\-tab
--h}).
 
-Three are simply for handling SQLite databases.  
-\cind{apop\_text\_to\_db} reads a text file into a database table,
-\cind{apop\_merge\_dbs} will send tables from one database to
-another, and
-\cind{apop\_db\_to\_cross\-tab} will take a table from the SQLite
-database and produce a crosstab. All of these are simply wrappers for
-the corresponding Apophenia functions, as seen in Chapter \ref{sql}.
 
 \comment{
 Finally, for numerical analysis, there is a client/server program,

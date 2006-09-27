@@ -31,6 +31,28 @@ dependent data. Then the function box consists of the simple equation
 $\yv_{\rm out} = \Xv\betav$, and the evaluation step seeks to minimize
 $(\yv_{\rm out} - \yv)^2$. 
 
+\comment{
+\def\olsfrm{(\Xv'\Xv)^{-1}\Xv'\yv}
+\def\yysq{(\yv_{\rm out} - \yv)^2}
+\def\yout{\yv_{\rm out}}
+\begin{figure}[htb]
+%\hskip -1.4cm
+\begin{center}
+\psfrag{Prm}[cc][cc]{$\betav$}
+\psfrag{Dta1}[cc][cc]{$\Xv$}
+\psfrag{Dta2}[cc][cc]{$\yv$}
+\psfrag{xpxi}[cc][cc]{$(\Xv'\Xv)^{-1}\Xv'\yv$}
+\psfrag{out}[cc][cc]{$\yv_{\rm out}$}
+\psfrag{diffsq}[cc][cc]{$(\yv - \yv_{\rm out})^2$}
+\includegraphics[width=\textwidth*\real{1.05}]{/home/klemens/ols}
+%\input{ols.tex}
+%\scalebox{0.95}{\includegraphics{ols.ps}}
+\end{center}
+\caption{OLS.}
+\label{olsflow}
+\end{figure}
+}
+
 For a simulation, the function box may be a complex flowchart in which
 variables are combined nonlinearly with parameters, then feed back upon
 each other in unpredictable ways. The final step
@@ -43,7 +65,7 @@ end. That is, for a given function and evaluation in Figure
 \ref{modelflow}, we seek a routine to take in data and produce the optimal parameters, as in Figure \ref{modelflowback}.
 In the OLS model above, there is a closed-form solution to the problem:
 $\betav_{\rm best}=(\Xv'\Xv)^{-1}\Xv'\yv$.  But for more complex models,
-such as simulations or maximum likelihood methods, we must strategically
+such as simulations or many maximum likelihood methods, we must strategically
 try different sets of parameters to hunt for the best ones.
 
 \begin{figure}[htb]
@@ -185,10 +207,13 @@ more complex waters. Finally, when you do run your simulation, you will
 be marking down the variables in each period, thus producing a data set
 that will need analysis, probably via classical statistical methods.
 
-I assume that you are computer-literate, and have experience writing
-scripts in a stats package. Those who are entirely new to the idea of
-writing a sequence of instructions for a computer may want to warm up
-with a few online tutorials.
+I assume that you are computer-literate. On top of the basics of logging
+in and basic file- and directory-handling (either via a GUI or \bi{ls},
+\bi{cd}, \bi{mkdir}, \bi{rm}, \&c),  you have some experience
+writing scripts in a stats package or scripting language like Perl or
+Python. Those who are entirely new to the idea of writing a sequence
+of instructions for a computer may want to warm up with a few online
+tutorials.
 
 If you are well-versed in C and SQL, then the later parts of Part I and
 all of Part II will be immediately useful.
@@ -231,11 +256,15 @@ columns of numbers, but it provides the basic grammar and structure that
 the remainder of the book will use to estimate models. Notably,
 it introduces the idea of functions, and how one can build functions or
 use existing functions to execute increasingly advanced routines.
+Chapter \ref{ctwo} builds upon the basics of C, covering more creative
+uses of pointers and the many details and tricks to facilitate writing
+in C.
+
 
 \paragraph{Dealing with large data sets} 
 \citet[p 619]{huber:languages} explains: ``Large real-life problems always require
 a combination of database management and data analysis. The larger the
-datasets, the more complicated their structure tends to be. Neither
+data sets, the more complicated their structure tends to be. Neither
 database management systems nor traditional statistical packages are up
 to the task.''
 
@@ -256,9 +285,9 @@ but let you efficiently retrieve what you need from huge amounts of data.
 But being so purpose-specific, databases do not provide a way to do
 numerical analysis beyond taking averages.  Fortunately, we
 are working in C, so we can have the best of all worlds.} Because there
-are a wealth of database-oriented C libraries and analysis-oriented C
+are a wealth of both database-oriented C libraries and analysis-oriented C
 libraries, we can have the best of all worlds. The technique covered
-in this book (and the technique that Apophenia facilitates) is to read
+in this book is to read
 all of your data into a database, and then query what you need to a
 matrix, as you need it. This requires learning a new syntax, \ind{SQL},
 which is decidedly neither Beautiful nor Perfect, and adds a level of
@@ -268,7 +297,8 @@ learning curve. Chapter \ref{sql} presents a tutorial of SQL syntax to
 get you up to speed, and shows you how to move data between databases
 and matrices.
 
-Apophenia implemenst SQL via the \ind{SQLite} library.  Those of you
+Apophenia implements SQL via the \ind{SQLite} library, so that it the
+dialect of SQL upon which this book focuses.  Those of you
 who have data which is already handled by another database engine will
 easily be able to adapt the techniques used here, but will need to brush
 up on the details of how to access your site's database. Since you are
@@ -313,7 +343,7 @@ it or manipulate it in amusing ways, or can send your program to your
 colleague in Madras and he will have no problem reproducing and modifying
 your graphs. Once you have the basics down, animation and real-time
 plots for simulations are easy. Chapter \ref{gnuplot} will cover creative uses of
-Gnuplot to display data. It will also give a quick introduction to
+Gnuplot to display data, and will also give a quick introduction to
 Graphviz, a program to automatically produce graphs in the sense of a network of nodes
 connected by edges.
 
@@ -337,11 +367,11 @@ that that correlation coefficient is almost certainly different from
 zero. More often, we have parameters in a model that we have written,
 and would like to make claims about those parameters.
 
-The techniques used for the two goals above are entirely different. For
+The techniques used for the two goals above have little overlap. For
 example, there are any of a number of distributions listed in the
-average stats textbook.  Poisson or Binomial distributions are used
-only for describing data culled from the real world, while the Chi-squared
-distribution or the F distribution are used only for testing hypotheses
+average stats textbook.  Poisson or Binomial distributions are typically used
+for describing data culled from the real world, while the Chi-squared
+distribution and the F distribution are used primarily for testing hypotheses
 about parameters we have written down ourselves (such as the ratio of
 two variances, which has an F distribution). \citet[p 141]{kmenta} points out
 that no notable natural population has a Chi-squared distribution.
@@ -383,7 +413,7 @@ To fit a trend by the freehand method draw a line through a graph of
 the data in such a way as to describe what
 appears to the eye to be the long period movement. \dots The drawing of
 this line need not be strictly freehand but
-may be accomplised with the aid of transparent straight edge or a
+may be accomplished with the aid of transparent straight edge or a
 ``French'' curve.
 \end{quote}
 
@@ -496,12 +526,12 @@ The summary for the introduction:
 parameters of a model with data.
 \item It will also cover the means of writing those models using C, the
 fastest, most stable, and most widely-available computing language in use today; and SQL, a 
-language designed to help manage large data sets.
+language designed to help manage large or complex data sets.
 \end{itemize}
 }
 
 
-\paragraph{Acknowledgements} Thanks to Derrick Higgins for comments, critique, and
+\paragraph{Acknowledgments} Thanks to Derrick Higgins for comments, critique, and
 the Perl commands on page \pageref{dchperl}; and Ms Annjeanette Agro for
 graphic design suggestions.
 
@@ -570,7 +600,7 @@ in C. It will not only get you familiar with the rules of the language,
 but how to best think about problems in C. 
 Chapter \ref{sql} will give you a quick overview of the second language,
 SQL, which is a language that facilitates
-producing tables of just the right form from a dataset. C and SQL are
+producing tables of just the right form from a data set. C and SQL are
 excellent complements for data analysis: things which are very difficult
 in one are often trivial in the other.
 Chapter \ref{linear_algebra}
