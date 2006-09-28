@@ -315,10 +315,66 @@ denominator of Equation \ref{chisqvar} is a fixed number, and then check
 the $\chi^2$ tables for the given degrees of freedom.
 
 The summation property makes it easy for us to sum together individual
-tests to form more elaborate tests. However, we can only test two-tailed
+tests to form more elaborate tests. 
+
+To give one common example, say that we have a two-by-two array of
+events:
+
+\renewcommand\arraystretch{1.1}
+\begin{center}
+\begin{tabular}{lccc}
+    & Left  & Right & $\Sigma$\\
+\hhline{~--~}
+\multicolumn{1}{c|}{Up}& 30    & 86    & \multicolumn{1}{|c}{116}     \\
+\multicolumn{1}{c|}{Down}& 24    & 38  & \multicolumn{1}{|c}{62}     \\
+\hhline{~--~}
+$\Sigma$& 54    & 124    & 178
+\end{tabular}
+\end{center}
+
+Is the incidence of Up/Down correlated to the incidence of Left/Right,
+or are the two independent? \citet{pearson:chisq} notes that
+if Up/Down were a Bernoulli draw with probabilities $p_U$ and $p_D$, and Down/Left
+were a separate, independent Bernoulli draw with probabilities $p_R$ and
+$p_L$, then the expected value of 
+Up/Left would be $E_{UL}=np_Up_L$, the observed variance
+would be equal to $E_{UL}$, and notating the actual incidence of Up/Left
+as $O_{UL}=30$, the observed variance over the actual variance 
+$(O_{UL} - E_{UL})^2/E_{UL} \sim \chi^2$. Similarly for the other three cells,
+so the sum 
+\begin{equation}
+{(O_{UL} - E_{UL})^2\over E_{UL}} +
+{(O_{UR} - E_{UR})^2\over E_{UR}} +
+{(O_{DL} - E_{DL})^2\over E_{DL}} +
+{(O_{DR} - E_{DR})^2\over E_{DR}} 
+\sim \chi^2.\label{chisqeqn}
+\end{equation}
+
+Figure \ref{fisher} shows how one would calculate this. The first
+function, \ci{find\_marginals}, calculates $p_U$, $p_L$, and their
+complements. The \ci{calc\_chi\_squared} function calculates Equation
+\ref{chisqeqn}. Notice how the \ci{one\_chi\_sq} function, combined with
+a text editor's cut and paste facility, makes writing \ci{calc\_chi\_squared} very easy.
+Finally, \ci{main} gathers the data and calls the above functions.
+
+The distribution of means of a series of Binomial draws will approach a Normal 
+as $n\to \infty$, but for many situations, $n$ is closer to around ten.
+For such a case, \citet{fisher:exact} calculated the probability of a
+given table using direct combinatorial computation. The equations for
+the \ind{Fisher exact test} are a mess, but the story is the same
+as above---its null hypothesis is that Up/Down and Left/Right
+are independent---and its calculation is trivial: just call
+\cind{apop\_test\_fisher\_exact}, as in Figure \ref{fisher}.
+
+\codefig{fisher}{The Fisher exact test.}
+
+
+
+\subsection{The $F$ test\index{F test}}\label{ftestsec}
+We can use the $\chi^2$ distribution to test two-tailed
 tests ($a \neq b$) because of all the squaring involved. To test a
 one-tailed test ($a > b$), we could use the $t$ test for one variable,
-or an $F$ test (below) for a combination of multiple variables.
+or an $F$ test for a combination of multiple variables.
 
 Say that $H_0$ asks, is ${\Qv'
 \betav} = \cv$?  This is a very versatile question. E.g., $\Qv =
@@ -363,7 +419,6 @@ If we are testing a variance, we'd have
 \end{equation}
 
 
-\subsection{The $F$ test\index{F test}}\label{ftestsec}
 
 As above, we can divide Equation \ref{chi1} by Equation \ref{chi2}
 to give us a statistic with an $F$ distribution and no unknown
@@ -403,6 +458,7 @@ apop_data *f = apop_F_test(e, Q, c);
 apop_data_show(f);
 \end{lstlisting}
 
+        \eject
 Here is a useful simplification.
 Let $R^2$ be the coefficient of determination (defined further below),
 $n$ be the number of data points, $K$ be the number of parameters

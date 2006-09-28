@@ -1,7 +1,26 @@
-#Set PROGNAME to your main file (without the .c ending):
+#This Makefile will work for most simple C projects.
+#
+#To make it work, you may have to make a few changes:
+#
+#Set PROGNAME to your main file (without the .c ending). 
+#E.g., if you are compiling dosomething.c, change the first non-comment
+#line to 
+#PROGNAME = dosomething
+#
+#Second, the LINKFLAGS line refers to all of Apophenia, the GSL,
+#and SQLITE. If any of these elements are not on your system,
+#you will need to delete the corresponding link flag from
+#this line. Notice that the GSL has two -l flags and the other
+#libraries have only one.
+#In some cases, you will need to add the -lm flag (for the math
+#library).
+
+#After you make these two changes, you should be able to type
+# make
+#from the command prompt to compile your program.
+
 PROGNAME = main_file_name
 
-#The rest runs itself.
 OBJECTS =$(PROGNAME).o
 CFLAGS = -g -Wall 
 LINKFLAGS = -lapophenia -lgsl -lgslcblas -lsqlite3

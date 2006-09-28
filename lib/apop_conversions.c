@@ -660,6 +660,7 @@ regmatch_t  result[2];
 		}
 
         //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
+        ct  = 0;
 		while(fgets(instr,Text_Line_Limit,infile)!=NULL){
 			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
 				rows	        ++;
@@ -676,6 +677,7 @@ regmatch_t  result[2];
 					free(prepped);
 				}
 				apop_query_db("%s);",q);
+                if (!(ct++ % 2000)) apop_query_db("commit; begin;");
 			}
 		}
 		apop_query_db("commit;");

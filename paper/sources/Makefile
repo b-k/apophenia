@@ -1,3 +1,4 @@
+
 OBJECTS = $(PROGNAME).o 			#If there are more files, add nextfile.o here.
 CFLAGS = -g -Wall
 LINKFLAGS = -L/usr/local/lib -lapophenia -lgsl -lgslcblas -lsqlite3

@@ -66,7 +66,7 @@ the script and exits, but the plot persists on the screen. Without the
 second. If you are writing to a Postscript file rather than looking at
 the plot on screen, then the \bi{-persist} option is unnecessary.
 \item Run \bi{gnuplot} with no options, and from its prompt, type \ci{load
-'plotme'}. This leaves you at the Gnuplot prompt to expermient with settings.
+'plotme'}. This leaves you at the Gnuplot prompt to experiment with settings.
 \item The hybrid: run \bi{gnuplot plotme -} from the command line. This
 executes the instructions in \bi{plotme}, but  leaves you at the Gnuplot
 prompt to add settings.
@@ -86,7 +86,7 @@ to put in the script.
 
 \paragraph{Comments} \index{comments!Gnuplot}\index{Gnuplot!comments}
 Gnuplot follows the commenting standards of many scripting languages:
-everyting on a line after a \# is ignored. For example, if a script
+everything on a line after a \# is ignored. For example, if a script
 begins with
 \begin{lstlisting}
 #set terminal postscript color
@@ -132,7 +132,7 @@ element is the height at the Northeast corner. To plot such data, use
 
 If all is arranged correctly and you are plotting on-screen instead of
 to a file, then you will be able to click on the plot and drag the plot
-around its center. The movement vastly improves the 3-D impresion of the plot.
+around its center. The movement vastly improves the 3-D impression of the plot.
 
 Surface plotting goes hand-in-hand with the \cind{pm3d} (palette-mapped
 3-D) option, that 
@@ -579,7 +579,7 @@ the syntax for \ci{sprintf}: the first argument indicates to what you
 are writing, and the rest is a standard \ci{printf} line, which may
 include the usual insertions via \ci{\%f}, \ci{\%i}, and so on.
 
-Since Gnuplot lets us select colums via the \ci{using 1:5} clause, there
+Since Gnuplot lets us select columns via the \ci{using 1:5} clause, there
 is no need to pare down the data set in memory.  Notice again that the
 first column in Gnuplot is 1, not 0.
 
@@ -695,7 +695,7 @@ function, \cind{fflush}, tells the system to send all elements of the
 expecting standard
 output to the screen, by the way, via \ci{fflush(NULL)}.
 
-The main drawback to producing realtime plots is that they can take over
+The main drawback to producing real-time plots is that they can take over
 your computer, as another plot pops up and grabs focus every half-second, and can significantly slow down the program.
 Thus, you may want to settle for occasional redisplays, such as every
 fifty periods of your simulation. You could call the above
@@ -761,7 +761,7 @@ this, use the \ci{apop\_plot\_lattice} function.
 
 \begin{lstlisting}
 apop_data *d = apop_text_to_data("indata", 0, 1);
-apop_plot_lattice("outfile", d);
+apop_plot_lattice(d,"outfile");
 \end{lstlisting}
 This produces a file that (after \bi{gnuplot -persist outfile}) produces
 a plot like the one in Figure \ref{trellis}. Each variable is plotted
@@ -791,7 +791,7 @@ whether this display method treads too close to data
 snooping:\footnote{\url{http://stat.bell-labs.com/project/trellis/interview.html}}
 
 \begin{quote}
-{\em Inteviewer:} OK, but there is another way to approach the study of a large database:
+{\em Interviewer:} OK, but there is another way to approach the study of a large database:
 develop a statistical model and see if it fits the data. If it does fit,
 use the model to learn about the structure of the data.
 
@@ -802,12 +802,12 @@ to refer to similar displays.} is a big help in doing this because it
 allows you to make a good guess about an initial model to fit and then
 to diagnose how well it fits the data. [\dots]
 
-{\em Inteviewer:} But instead of agonizing over all those panels I could do a bunch of
+{\em Interviewer:} But instead of agonizing over all those panels I could do a bunch of
 chi-squared tests for goodness of fit.
 
 {\em Becker \& Cleveland:} You're joking, right? If not, we're leaving.
 
-{\em Inteviewer:} OK, I guess I'm joking.
+{\em Interviewer:} OK, I guess I'm joking.
 \end{quote}
 
 Since Becker and Cleveland do not elucidate the difference between their
@@ -875,18 +875,6 @@ This section forthcoming. Summary: you can do this in SQL using the
 typical \sinline{select * from plotme where value < 1e7} form to eliminate
 those values greater than a million. 
 
-One could do the same for random
-numbers, although SQLite does not provide the friendliest of random
-number generators. The \sind{random} function provides a single random
-number between -2,147,483,647 and 2,147,483,647, which the reader will
-recognize as $\pm 2^{31}-1$. So we need to pull a random number,
-divide by $2^{31}-1$, thus producing a number in $[-1,1]$, then shift it
-to the familiar $[0,1]$ range, and then compare it to a limit. The
-query below does this to remove approximately half of the data set.
-It uses the bit-shifting operator which I had promised you would never
-need; read \ci{1<<x} as $2^x$.
-
-\sinline{select * from plotme where (random()/(-(1<<31)-1.0)+1)/2  < 0.5}
 
 \summary{
 \item A Gnuplot command file basically consists of a group of \ci{set}
@@ -972,7 +960,7 @@ outputs.
 \index{graphing!flowcharts}
 \index{Graphviz|(}
 \index{dot, graphing program}
-\section{\treesymbol Graphs---nodes and flowcharts} In common converstaion, we
+\section{\treesymbol Graphs---nodes and flowcharts} In common conversation, we
 typically mean the word \airq{graph} to be a plot of data like every
 diagram to this point in the chapter. The mathematician's definition
 of \airq{graph}, however, is a set of nodes connected by edges. The
@@ -1157,7 +1145,7 @@ You could also graph the calling relationships among the functions in
 your C code---but before you start manually scanning your code, you
 should know that there is a program to do this for you. Ask your package
 manager for \ci{doxygen}, which
-generates documentation via specially-formattec comments in the source
+generates documentation via specially-formatted comments in the source
 file. If configured correctly, it will use Graphviz to include call
 graphs in the documentation.
 

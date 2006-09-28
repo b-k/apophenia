@@ -10,10 +10,9 @@ matrix maintenance and linear algebra.
 \index{GSL|see{GNU Scientific Library}}
 There are many on the market; this chapter uses the \ind{GNU Scientific
 Library} (GSL). The GSL is recommended because it is actively supported
-and will work on about as many platforms as C itself. Apophenia is built
-on the GSL, and many of its structures have GSL matrices or vectors at
-their core, so low-level operations on \cinline{apop\_data} sets become
-\cinline{gsl\_matrix} operations.
+and will work on about as many platforms as C itself. The full reference
+documentation is readily available online or in paper form
+\citep{gough:gsl}.
 
 \section{The GSL's matrices and vectors}
 As you saw in Chapter \ref{c_crash}, arrays and matrices can be directly implemented in C, but for
@@ -337,7 +336,7 @@ gsl_vector_scale(a_vector, 2);
 Matrix inversion is one of the most computationally intensive problems
 around. In fact, some will tell you it is the problem for which computers were invented.
 \comment{
-\codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition}
+\codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition.}
 
 The GSL does not include a function to directly invert a general matrix:
 instead, the user has to go through a triangular decomposition. Figure
@@ -670,8 +669,7 @@ was omitted before, and overwrites row zero in the copy, aka row one of
 the original. It then copies over original row one, overwriting original
 row two, and so on to the end of the matrix.
 
-\codefig{jack_iteration}{Iteratively produce \ci{in->size1} submatrices,
-each with one omitted row of data.\index{jackknife}}
+\codefig{jackiteration}{Iteratively produce \ci{in->size1} submatrices, each with one omitted row of data.}
 
 \section{\treesymbol Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \cindex{GSL\_NEGINF} \cindex{GSL\_POSINF} \cindex{GSL\_NAN} \label{numbers}
 Floating-point numbers (both \cind{float} and \cind{double}) can take three special values: \cinline{Inf}, \cinline{-Inf}, and \cinline{NaN}. Data-oriented readers will mostly be

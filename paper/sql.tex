@@ -68,9 +68,11 @@ SQL database from within a C program.
 supplement,\footnote{\samplecodelocation} the reader will find an
 SQLite-formatted database named \bi{data-wb.db} listing the 2005 GDP and
 population for the countries of the world. Verify that you can open the
-database using one of the above tools, and that you can execute the
+database using one of the above tools (e.g., \bi{sqlite3 data-wb.db}
+from the command prompt), and that you can execute 
 and view the results of the query \si{select * from pop;}.
 }
+%919 445 9178
 
 \index{data!format}
 \paragraph{Data format} Each column in a database represents a distinct
@@ -225,7 +227,7 @@ is a list of conditions that all rows must meet. It can be missing
 conditions, like \sinline {where (a == b) and (b <= c)}.
 }
 
-\subsection{Joining}
+\subsection{Joining}\index{join!database|(}
 If you specify two tables in your \sinline{from} line, then, lacking any
 restrictions, the database will return one joined line for every pair of lines.
 Let table 1 have one column with data $\left[\begin{matrix}1\cr 2\cr 3\end{matrix}\right]$ and table 2 have one column
@@ -294,6 +296,7 @@ There is standard SQL syntax for indexing multiple columns,
 \sinline{create index e\-con\_\-in\-dex on econ\_data(zip, age)}, but as a
 practical matter, SQLite really only cares about the first item in the
 list, so you are better off creating one index per variable as above.
+\index{join!database|)}
 
 \subsection{Aggregation}
 Here is how to get the number of rows in the \si{gdp} table:
@@ -331,7 +334,8 @@ You probably want more refinement than that; if you would like to
 know how much data you have in each region, then use the \sqlind{group
 by} clause to say so:
 \begin{lstlisting}
-select class, count(*) as countries_per_class
+select class, 
+count(*) as countries_per_class
 from classes
 group by class;
 \end{lstlisting}
@@ -407,6 +411,24 @@ a table and use \cind{apop\_vector\_log}, \cind{apop\_vector\_exp},
 \cind{apop\_mean}, \cind{apop\_var}, et cetera to get the desired
 statistics on the matrix side.
 
+\subsection{Sorting}\index{sorting!database output} Ordering the data
+is simple: use an \sind{order by} clause. To view the list of country
+populations in alphabetical order, use:
+
+\begin{lstlisting}
+select *
+from pop
+order by country
+\end{lstlisting}
+You may have multiple elements in the clause, such as \ci{order by
+country, pop}. If there are ties in the first variable, they are broken
+with the second. The keyword \si{desc}, short for \vocab{descending},
+will reverse the order of the variable's sorting. Usage: \ci{order by
+country desc, pop}.
+
+The \ci{order by} clause must follow the \ci{group by} clause (that is,
+they must be in alphabetical order).
+
 \subsection{Stacking tables}
 You can think of joining two tables as setting one table to the right of
 another table. But now and then, you need to stack one on top of
@@ -478,7 +500,31 @@ where height > 175
 \exercise{Create a \si{gdp\_per\_capita} table, based on your query from
 page \pageref{gdppercap}.}
 
-\subsection{More trickery} Frankly, SQL is not very good for
+\summary{
+\item You can join tables by listing multiple tables in the
+\sinline{from} clause. When you do, you will need to specify a
+\sinline{where} clause, and probably the \sinline{distinct} keyword, to
+prevent having an unreasonably long output table.
+\item If you intend to join elements, you can speed up the join
+immensely by creating an index first.
+%}
+%\summarynoitems{(continued)
+%\begin{itemize}
+\item SQL includes a few simple aggregation commands: \sinline{avg()},
+\sinline{sum()}, and \sinline{count()}. Apophenia provides a few more
+nonstandard aggregators for queries called using its functions. 
+\item When aggregating, you can add a \sinline{group by} clause to
+indicate how the aggregation should be grouped.
+\item Sort your output using an \si{order by} clause.
+\item Tables can be stacked using 
+\sinline{union}, \sinline{union all}, \sinline{intersect}, and \sinline{except}
+\item You can create tables using the \sinline{create} and
+\sinline{insert} commands, but you are probably better off just reading
+the table from a text file.
+%\end{itemize}
+}
+
+\section{More SQL trickery} Frankly, SQL is not very good for
 creating new data from the existing. But the few things that you can do
 are very easy.
 
@@ -500,12 +546,12 @@ One of SQL's nicest tricks is that it allows for the input tables to be
 queries themselves. For example: what is the mean number of observations per
 ZIP code?
 
-\sindex{group by}
 How large is the average World Bank grouping?
 You first need to get a \sinline{count(*)} grouped by category, and then get an
 average of that. You could run a query to produce a table of counts,
 save the table, and then run a query on that table to find the averages.
 Here is how to do all of this in one query: 
+\sindex{group by}
 \begin{lstlisting}
 select average(ct) 
 from (select count(*) as ct
@@ -527,6 +573,8 @@ the query's output as \sinline{t1} elsewhere in the query.
 population, then the countries with populations greater than this. Use
 a subquery to do this in one query.}
 
+Some notes on the \sind{having} keyword should go here.
+
 \paragraph{Rowid} Sometimes, you need a unique identifier for each
 output row. This would be difficult to create from scratch, but your
 tables already have such a row, named \sinline{rowid}, that is normally
@@ -538,34 +586,125 @@ the hidden row numbers will appear in the output.
 \exercise{Using \si{order by}, find the rank of your home country in GDP
 per capita.}
 
+\paragraph{Getting less} 
+Especially when interactively interrogating a database, you may not want
+to see the whole of the table you have constructed with a \si{select}
+clause. The output may be a million lines long, but twenty should be
+enough to give you the gist of it. SQL has a \sind{limit} clause that
+limits how many rows it will return. The query
+\begin{lstlisting}
+select * 
+from pop
+limit 5
+\end{lstlisting}
+will return only the first first five rows of the \si{pop} table.
+
+You may want later rows, and so you can add the \sind{offset} keyword.
+\begin{lstlisting}
+select * 
+from pop
+limit 5 offset 3
+\end{lstlisting}
+will return the first five rows, after discarding the first three rows.
+Thus, you will see rows 4-8. You get one \si{limit}/\si{offset} per
+query, which must be the last thing in the query. If you are using \si{union}
+and family to combine \ci{select} statements, your \si{limit} clause
+should be at the end of all of them, and only applies to the aggregate
+table.
+
+\index{random numbers!from SQL}
+The \si{limit} clause gives you a sequential subset of your data, which
+may not be representative. For most cases, you are better off making a
+random draw of some subset of your data. Ideally, you could provide a
+query like \si{select * from data where ran() < 0.14} to draw 14\% of
+your data.
+
+Along with the aggregation functions above, Apophenia also provides a
+\sind{ran} function that works exactly as above. For every call to the
+function, it draws  a uniform random number between zero and one.
+
+After you read Section \ref{rngs}, you will wonder about the stream of
+random numbers produced in the database. There is one stream for the
+database, which Apophenia maintains internally. To initialize it with
+a seed of seven, use \cind{apop\_db\_rng\_init}\ci{(7)}. If you do not
+call this function, the database RNG auto-allocates at first use with
+seed zero.
+
+If you are not using Apophenia, you are stuck with standard SQL, which
+does not provide the friendliest of random number generators. The
+\sind{random} function provides a single random number between
+-2,147,483,647 and 2,147,483,647, which the reader will recognize as
+$\pm 2^{31}-1$. So we need to pull a random number, divide by $2^{31}-1$,
+thus producing a number in $[-1,1]$, then shift it to the familiar $[0,1]$
+range, and then compare it to a limit. The query below does this to remove
+approximately 14\% of the data set. Because standard SQL does not even
+provide exponentiation, the query uses the bit-shifting operator
+which I had promised you would never need; read \si{1<<x} as $2^x$.
+
+\sinline{select * from data where (random()/(-(1<<31)-1.0)+1)/2  < 0.14}
+
 \summary{
-\item You can join tables by listing multiple tables in the
-\sinline{from} clause. When you do, you will need to specify a
-\sinline{where} clause, and probably the \sinline{distinct} keyword, to
-prevent having an unreasonably long output table.
-\item If you intend to join elements, you can speed up the join
-immensely by creating an index first.
-%}
-%\summarynoitems{(continued)
-%\begin{itemize}
-\item SQL includes a few simple aggregation commands: \sinline{avg()},
-\sinline{sum()}, and \sinline{count()}. Apophenia provides a few more
-nonstandard aggregators for queries called using its functions. 
-\item When aggregating, you can add a \sinline{group by} clause to
-indicate how the aggregation should be grouped.
-\item Tables can be stacked using 
-\sinline{union}, \sinline{union all}, \sinline{intersect}, and \sinline{except}
-\item You can create tables using the \sinline{create} and
-\sinline{insert} commands, but you are probably better off just reading
-the table from a text file.
-%\end{itemize}
+\item You can put the output of a query into the \si{from} clause of a
+parent query.
+\item SQLite gies every row a \si{rowid}, though it is hidden unless you
+ask for it explicitly.
+\item You can limit your queries to fewer rows using a \si{limit}
+clause, which gives you a sequential snippet; or via random draws.
 }
 
-\section{Folding queries into C code}\label{foldingsql}  This section covers the functions
-in the Apophenia library that will create and query a database. All of
-these functions are wrappers of SQLite functions that do the dirty work,
-but they are sufficiently complete that you should never need to use an
-SQLite function directly.
+\paragraph{Metadata} What tables are in the database? What are their
+column names? SQL provides no easy way to do this, so every database
+engine has its own specific means of finding this information. SQLite
+has a table named \sind{sqlite\_master} that one can query to get such
+information. It consists of the following columns: \si{type}, \si{name},
+\si{tbl\_name}, \si{rootpage}, \si{sql}.  The \si{type} indicates whether
+the element is a table, an index, a view, \&c.  The \si{name} is what you
+would expect, and the \si{tbl\_name} refers to the table involved---either
+a repeat of the table name for a table, or the table being indexed for
+an index. The \si{rootpage} is for SQLite's internal use only, and the
+\si{sql} gives the query used to create the table.
+
+In practical terms, this table is primarily good for getting the lay of
+an unfamiliar database---a quick \si{select * from sqlite\_master;} 
+when you first open the database never hurts.
+But as a lead-in to the section on querying from C, Figure \ref{tablist}
+shows how one could use the \si{sqlite\_master} table from within a C
+program.\footnote{If you are using the SQLite command line, there is a
+\si{.table} command that does exactly what this program does. Thus, the
+command  \si{sqlite3 mydb.db .table} works just like Figure \ref{tablist}
+would.}
+
+Those who are reading this chapter just for the SQL tutorial should
+focus on the query in line 7: \si{select name from sqlite\_master where
+type == "table"}, which pulls the names of the tables from
+\si{sqlite\_master}. You can try this query from your SQLite GUI or
+command line to verify that it works as expected.
+
+
+\lstset{numbers=left, numberstyle=\scshape}
+\cindex{apop\_query\_to\_chars} \cindex{apop\_db\_get\_rows}
+\codefig{tablist}{A program to list the tables in a database.}
+\lstset{numbers=none}
+
+Moving on to the C code, the \ci{main} function, as in any program that
+handles command-line arguments, just provides user help and traffic
+control.  The \ci{print\_table\_list} consists of the usual preliminary
+declarations, then a series of calls to open the database (line 6), pull
+the results of a query out of the database and into a matrix of \ci{char}s
+(line 7), and a check for the size of the query that had just been run
+(line 8). Lines 9 and 10 are a now-familiar loop to print an array.
+
+Some of the finer details are discussed below, but the example
+demonstrates how one can easily pull data out of the database side of
+a project and put it in to a variable on the C side: just open the
+database and query for data, just as you would using a command line
+program or a GUI.
+
+\section{Folding queries into C code}\label{foldingsql}  This section
+covers the functions in the Apophenia library that will create and query
+a database. All of these functions are wrappers of SQLite functions that
+do the dirty work, but they are sufficiently complete that you should
+never need to use an SQLite function directly.
 
 \subsection{Importing}
 The first command you will need is \cind{apop\_open\_db}. If you give
@@ -720,13 +859,6 @@ queries to SQLite.
 \ci{apop\_query\_to\_float}.
 }
 
-\paragraph{Metadata} What tables are in the database? What are their
-column names? SQL provides no easy way to do this, so every database
-engine has its own specific means of finding this information. SQLite
-has a table named \sinline{SQLITE\_MASTER} that we can query to get
-such information.
-
-This subsection forthcoming.
 
 \section{On database design}
 Let us say that you are not reading in existing data, but are
@@ -906,7 +1038,7 @@ into a series of dummy variables. It requires writing down a separate
 that's what \cinline{for} loops are for.  [Again, this is demonstration
 code. Use \cind{apop\_pro\-duce\_dum\-mies} to do this in practice.]
 
-\codefig{dummy}{A sample of a \cinline{for} loop that creates  SQL that creates dummy variables}
+\codefig{dummy}{A sample of a \cinline{for} loop that creates  SQL that creates dummy variables.}
 
 Figure \ref{dummy} uses the \sinline{case} keyword to create a series of
 columns that are either one or zero---dummy variables.  We first query

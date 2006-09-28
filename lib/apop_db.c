@@ -57,6 +57,7 @@ Apophenia reserves the right to insert temp tables into the opened database. The
 #include <apophenia/stats.h>	    //t_dist
 #include <apophenia/conversions.h>	//apop_strip_dots
 #include <apophenia/regression.h>	//two_tailify
+#include <apophenia/bootstrap.h>	//apop_rng_alloc
 
 #include <apophenia/vasprintf.h>
 
@@ -65,6 +66,8 @@ sqlite3	*db=NULL;	                //There's only one database handle. Here it is
 apop_name *last_names = NULL;	    //The column names from the last query to matrix
 
 int	total_rows, total_cols;		    //the counts from the last query.
+
+static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= { 0,              //verbose
@@ -229,6 +232,24 @@ static void logFn(sqlite3_context *context, int argc, sqlite3_value **argv){
     sqlite3_result_double(context, log(sqlite3_value_double(argv[0])));
 }
 
+static void rngFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    if (!db_rng)
+        apop_db_rng_init(0);
+    sqlite3_result_double(context, gsl_rng_uniform(db_rng));
+}
+
+/** Random numbers are generated inside the database using a separate
+ RNG. This will initialize it for you, just like \ref apop_rng_alloc,
+ except the RNG it produces is kept for internal use. If you don't call
+ it, then it will be called at first use, with seed zero.
+
+\param  seed    The seed. No need to get funny with it: 0, 1, and 2 will produce wholly different streams.
+\return The RNG ready for your use.
+\ingroup db
+*/
+void apop_db_rng_init(int seed){
+    db_rng  = apop_rng_alloc(seed);
+}
 
 ////////////////////////////////////////////////
 // Part two: database querying functions, so the user doesn't have to
@@ -290,6 +311,7 @@ int apop_db_open(char *filename){
 	sqlite3_create_function(db, "pow", 2, SQLITE_ANY, NULL, &powFn, NULL, NULL);
 	sqlite3_create_function(db, "exp", 1, SQLITE_ANY, NULL, &expFn, NULL, NULL);
 	sqlite3_create_function(db, "log", 1, SQLITE_ANY, NULL, &logFn, NULL, NULL);
+	sqlite3_create_function(db, "ran", 0, SQLITE_ANY, NULL, &rngFn, NULL, NULL);
 	apop_query("pragma short_column_names");
 	return 0;
 }

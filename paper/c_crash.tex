@@ -142,9 +142,17 @@ debugging, and output.
 \item Decompress the \bi{.zip} file, go into the directory thus created, and compile the
 program with the command \bi{gcc hello\_world.c}. If you are using an
 IDE, see your manual for compilation instructions.
+\end{itemize}
+(continued)
+}
+\exercise{(continued)
+\begin{itemize}
 \item If all went well, you will now have a program in the directory
 named \bi{a.out}. From the command line, you can execute it using
 \bi{./a.out}.
+\item If that basic compilation went well, you may also want to try the
+\bi{Makefile} included the \bi{.zip} file. See the instructions in the
+file.
 \end{itemize}
 
 If you have trouble, see the setup notes at \onlinereflocation{} for
@@ -247,8 +255,10 @@ a real, a vector, et cetera. Thus, many of the lines will be simple
 type declarations.
 
 \subsection{Assignment} \index{arithmetic} \index{assignment|see{=}} \index{=}
-Most of the work you will be doing will be simple assignments. For example,\\
-\ci{ratio = a / b;}\\
+Most of the work you will be doing will be simple assignments. For example,
+\begin{lstlisting}
+ratio = a / b;
+\end{lstlisting}
 will find the value of \ci{a} divided by \ci{b} and put the
 value in \ci{ratio}. Notice that there is a semicolon at the end of
 the line; you will need a semicolon at the end of everything but the few
@@ -284,7 +294,7 @@ a--; /*is equivalent to*/ a = a - 1;
 
 \subsection{Conditions} 	
 \label{forloops} \index{conditionals} \index{Boolean expressions} \index{logical expressions} 
-\cindex{<!in C, less than} \cindex{>} \cindex{==}
+\cindex{<} \cindex{>} \cindex{==}
 Another set of operators are comparison and logical operators, such as \ci{(a $>$ b)},
 \ci{(a $<$ b)}, or \ci{(a == b)}. All of these evaluate to either a one or a zero, depending on whether the
 comparison is true or false. Notice that last one, comparison for equality, involves {\sl two} equals
@@ -829,12 +839,12 @@ int round(float unrounded){
 \summary{\item All variables must be declared before the first use.
 \item Until the variable is given a value, you know nothing about its value.
 \item You can assign an initial value to the variable on the declaration line, such as \ci{int i = 3;}.
-\item Arrays are simply declared by including a size after the variable
-name: \ci{int array[100];}. Refer to the elements using an {\em offset},
-so the first element is \ci{array[0]} and the last is \ci{array[99]}.
 }
 \summarynoitems{(continued)
 \begin{itemize}
+\item Arrays are simply declared by including a size after the variable
+name: \ci{int array[100];}. Refer to the elements using an {\em offset},
+so the first element is \ci{array[0]} and the last is \ci{array[99]}.
 \item You can declare new types, including structures that amalgamate simpler types: \ci{typedef struct pants \{float length, waist; int leg\_ct;\} pants;}.
 \item After declaring a variable as a structure, say \ci{pants cutoffs;}, refer to structure elements using a dot: \ci{cutoffs.leg\_ct = 1;}.
 \item An integer divided by an integer is an integer: \ci{ 9/4 == 2}. By
@@ -949,7 +959,7 @@ variables}; see below) come out unscathed, as does the return value, which
 is sent back to the function which had called the frame into existence.
 
 \lstset{numbers=left, numberstyle=\scshape}
-\codefig{dosomething}{A complete program}
+\codefig{dosomething}{A complete program.}
 \lstset{numbers=none}
 
 One way to think about this is in terms of a \ind{stack} of frames. 
@@ -957,7 +967,8 @@ The base the stack is always a function named \ci{main}.
 For example, in the program in Figure \ref{dosomething} 
 the computer will ignore the function
 \ci{do\_something}, instead starting its work on line eight, where it
-finds the \ci{main} function head: \ci{int main(void)}.  It will
+finds the \ci{main} function head: \ci{int
+main(void)}. It will
 create a \ci{main} frame and
 then start working, first reading the declarations of \ci{output},
 \ci{first}, \ci{second}, and \ci{third} and putting them
@@ -1168,7 +1179,7 @@ in the rest of the program affects it, so what could have been a question
 of just cutting and pasting a black box from one file to another has
 now become an involved analysis of the original program.  \index{scope|)}
 
-\codefig{callbyval}{A function using call-by-value}
+\codefig{callbyval}{A function using call-by-value.}
 
 \paragraph{Call-by-value} \index{call-by-value}
 A common error is to forget that global variables are put in all function
@@ -1673,7 +1684,7 @@ gives a sample program which does this.
 \end{figure*}
 
 \lstset{numbers=left, numberstyle=\scshape}
-\codefig{callbyref}{Call-by-reference}
+\codefig{callbyref}{Call-by-reference.}
 \lstset{numbers=none}
 
 You can see that the code has stars everywhere. These

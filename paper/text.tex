@@ -47,7 +47,7 @@ regular expressions, and then move on to the main program: writing
 scripts to reformat text files into a format appropriate for your
 data-handling systems.
 
-\section{Shell scripts} As with Gnuplot or Sqlite's command-line
+\section{Shell scripts} As with Gnuplot or SQLite's command-line
 utility, you can operate the shell (what many just call the command line)
 by typing in commands or by writing a script and having the shell read
 the script. Thus, you can try the commands below on the command line,
@@ -282,7 +282,7 @@ symbols \ci{.} and \ci{*} mean different things in different contexts.
 In a regex, the dot represents any character, and the star represents
 repetition; on the command line (where wildcard matching is referred to
 as \vocab{globbing}), the dot is just a dot, and the star represents any
-charater.
+character.
 
 \index{\that!out of regex brackets (head of line)}
 Finally, the caret and dollar sign indicate the beginning and end of the
@@ -294,7 +294,7 @@ line.
 \index{regular expressions!white space}
 A single space or tab are both characters, meaning that a dot will
 match them. The atom \bi{\textbs{}W} will match any single space or tab,
-and the atom \bi{\textbs{}w} will match anything that is not whitespace.
+and the atom \bi{\textbs{}w} will match anything that is not white space.
 Since there are frequently an unknown bunch of tabs and spaces at the
 head of code files, the correct way to search for all \ci{int}
 declarations is therefore
@@ -326,8 +326,8 @@ find any capital letter except P, Q, R, and S.
 character. The Perl form for alternation is \bi{(A|B)}, as above; the
 grep form is \bi{\textbs(A\textbs|B\textbs)}.
 \item A single dot (\bi{.}) represents any character including a single
-space or tab, and grep understands \bi{\textbs{}W} to mean any whitespace
-character and \bi{\textbs{}w} to mean any non-whitespace character.
+space or tab, and grep understands \bi{\textbs{}W} to mean any white space
+character and \bi{\textbs{}w} to mean any non-white space character.
 \end{itemize}
 }
 
@@ -653,7 +653,138 @@ sed -i~ -e "s/\([0-9]\),\([0-9]\)/\\1\\2/g" fixme
 \end{lstlisting}
 
 
+\comment{
+\paragraph{Dealing with white space} \index{tabs!expanding}
+Spaces versus tabs: a debate that will rage on forever. The problem is
+that data may include small or large 
+
+%sed -e"s/\W\\+/        /g" 
+%sed -e"s/	\\+/ /g" 
+}
+ 
 More forthcoming.
+
+
+
+\section{More tools for scripting}
+Depending on your system, you can type somewhere between a few hundred
+and a few thousand commands at the command prompt. This section points
+out a handful that are especially useful for the purposes of dealing
+with data in text format.  All of them have a multitude of switches,
+which you can see via \bi{man head},  \bi{man sort}, et cetera. They are
+all POSIX-standard, so you can expect that scripts based on them will be portable.
+
+Most of these commands are in some ways redundant with methods
+elsewhere in the book: you could use \bi{cut} below to pull one column
+of data, or you could read the data into a database and \si{select}
+the column; you could use \bi{wc} below to count data points, or use
+\si{select count(*)} to do the same.\footnote{\index{join!command-line program}
+There is even a \bi{join}
+command, which will do database-style joins of two files. However, it is
+hard to use for any but clean numeric codes. Try using \bi{join} to
+merge \bi{data-wb-pop} and \bi{data-wb-gdp}.} Generally, 
+command-line work is good for pure data manipulation and quick questions (Do I have the thousands 
+of data points I was expecting?), while you will need a full program 
+for any sort of numeric analysis or to answer more detailed questions
+about the data (How many rows are
+duplicates?).\footnote{\ci{apop\_query\_to\_double("select count(*) from data") - 
+apop\_query\_to\_double("select count(*) from (select distinct * from data)")}}
+
+\subsection{\cind{head}/\cind{tail}} \bi{head myfile} will print the
+first ten lines of
+\bi{myfile}, and \bi{tail myfile} will print the last ten. These are
+good for getting a quick idea of what is in a large file.  Also,
+\bi{tail -f myfile} will follow \bi{myfile}, first showing the
+last ten lines, and updating as new lines are added. This can provide
+reassurance that a slow-running program is still working.
+
+\exercise{How would you get \bi{sed} to emulate the default behavior of
+\bi{head} and \bi{tail}? [Warning: this is just an exercise,
+because \bi{sed} is very inefficient relative to \bi{head} and
+\bi{tail}. Try your script on the largest file you have on hand, and
+notice how \bi{head} exits as soon as it has read the first ten lines,
+while \bi{sed} will read the entire data file.]}
+
+\comment{
+\exercise{Write a \bi{sed} script to emulate the default behavior of
+\bi{head} and \bi{tail}. Use your favorite scripting language (Perl,
+Python, \bi{bash}), or use C's \ci{popen} command.}
+}
+
+\subsection{\cind{sort}} This is as self-descriptive as a command can
+get. For example, the \bi{data-wb-pop} file (in the code supplement)
+is sorted by population; \bi{sort data-wb-pop} would output the file in
+alphabetical order.
+
+\exercise{Sorting \bi{data-wb-pop} like this sorts the two header lines
+in with all the countries. Write a command that first calls \bi{sed} to
+delete the headers, then pipes the output to \bi{sort}.}
+
+\subsection{\cind{cut}/\cind{paste}} Almost all of the commands here
+operate on rows; \bi{cut} and \bi{paste} operate on columns. Specify the
+delimiter with the \bi {-d} flag, and then the field(s) with the \bi{-f}
+flag (where the first column is column one, not zero). To get a list of
+just countries from the World Bank data, try \bi{cut -d"|" -f 1
+data-wb-pop}; to see just the population numbers, use \bi{cut -d"|" -f
+2 data-wb-pop}.
+
+\bi{paste} puts its second input to the right of its first input. 
+
+\exercise{Use the command string from the last exercise to sort the
+population and GDP data into two new files. \bi{cut} the second file
+down to include only the column of numbers. Then use \bi{paste
+sorted\_pop sorted\_gdp> combined\_data} to produce one file with both
+types of data. }
+
+\subsection{\cind{wc}} \index{counting words}\index{word count}
+This program (short for word count) will count lines, words, and
+characters. The default is to print all three, but \bi{wc -w}, \bi{wc -l},
+and \bi{wc -c} will give just one of the three counts.
+
+When writing a text document, you could use it for a word count as
+usual: \bi{wc -w report.tex}. If you have a data file, the number of
+data points is probably \bi{wc -l data} (if there is header data, you
+will need to subtract those lines).
+
+This program is especially useful in tandem with \bi{grep}. How many lines
+of the \bi{data-wb-pop} file have missing data (which the WB indicates by
+\bi{..})? \bi{"\textbs{}.\textbs{}." data-wb-pop} will output those lines
+where the string \bi{..} appears; \bi{wc -l} will count the lines of the
+input; piping them together, \bi{ grep "\textbs{}.\textbs{}." data-wb-pop
+| wc -l} will count lines with \bi{..}s.
+
+\subsection{\cind{nl}} This command puts \ind{line numbers} at the
+beginning of every line, which is sometimes useful. Remember that SQLite
+puts a \sind{rowid} on every row of a table, that is invisible but
+appears if \si{select}ed. But if you want to quickly put a counter
+column in your data set, this is the way to do it.
+
+%\subsection{\cind{uniq}}
+
+\subsection{\cind{column}} Text data 
+will either be easy to read for a computer or a human, but rarely both.
+Say that a data file is tab-delimited, so each field has exactly one tab
+between columns:
+\begin{lstlisting}
+Name<tab>Age
+Rumplestiltskin<tab>78
+Dopey<tab>35
+\end{lstlisting}
+
+This will read into a spreadsheet perfectly, but when displayed on the
+screen, the output will be messy, since Rumplestiltskin's tab will not
+be aligned with Dopey's. The \bi{column} addresses exactly this problem,
+by splitting columns and inserting spaces for on-screen human
+consumption. For example, \bi{column -s"|" -t data-wb-pop} will format
+the \ci{data-wb-pop} file into columns, splitting at the \bi{|}
+delimiters. The first column will include the header lines, but you
+already know how to get \bi{sed} to pipe headerless data into
+\bi{column}.
+
+
+%http://www.watsys.unh.edu/Darlene/TechToolsFiles/LammersUNIXDemo/UNIX_Intro.html
+%http://www.die.net/doc/linux/abs-guide/textproc.html
+
 
 
 \comment{

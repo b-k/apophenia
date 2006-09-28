@@ -20,6 +20,8 @@ __BEGIN_DECLS
 
 int apop_table_exists(char *q, char whattodo);
 
+void apop_db_rng_init(int seed);
+
 int apop_count_cols(const char *name);
 	//give me the name of a table, I'll check sqlite_master for the 
 	//create statement that made it, and will use that to tell you

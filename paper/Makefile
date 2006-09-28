@@ -21,7 +21,8 @@ pdf:	$(DOCNAME).pdf
 bib:	$(DOCNAME).dvi $(DOCNAME).bbl
 
 book:	$(DOCNAME).pdf
-	psbook gsl_stats.ps | mpage -2 -o -M-63 | ps2pdf - > gsl_eff.pdf
+#	psbook gsl_stats.ps | mpage -2 -o -M-63 | ps2pdf - > gsl_eff.pdf
+	mpage -2 -o -M-63 gsl_stats.ps | ps2pdf - > gsl_eff.pdf
 	scp gsl_eff.pdf $(THEBES):www/
 
 figures:

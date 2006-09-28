@@ -8,6 +8,11 @@
 \usepackage{hhline} %load last
 %\usepackage[LHE,T1]{fontenc}
 
+
+%\usepackage{geometry}
+%\geometry{paperwidth=6.8in, paperheight=9.0in, textheight=7.5in,tmargin=2cm}
+%\usepackage[cam,width=8.5in, height=11.0in,center]{crop}
+
 %\usepackage{mathbbol} %Sigma, blackboard  This never worked. See kludge below.
 %\usepackage{bbold} %Sigma, blackboard
 %\let\boldsig\Sigma
@@ -145,7 +150,7 @@
 \lstinputlisting{sources/#1.c}
 	\hrule
 
-	\caption{#2}\label{#1}
+	\caption{#2 [Online source: \bi{#1.c}]}\label{#1}
 	\end{figure}
 }
 

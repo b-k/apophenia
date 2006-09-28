@@ -22,7 +22,7 @@ Monte Carlo techniques.  As a special case,
 bootstrapping and jackknifing are methods of getting a variance out of
 data that, by all rights, should not be able to give you a variance. 
 
-\section{Random number generation}\index{random numbers|(}\label{randomnumbers}
+\section{Random number generation}\index{random numbers|(}\label{randomnumbers}\label{rngs}
 Random number generators are not random: given the same setup, they
 will produce the same value every time you use them. To lay-intuition,
 this is not really \airq{random}, but for the programmer, it is wonderful,
@@ -68,7 +68,7 @@ In all cases, the function takes in an integer, and then sets up the
 random number generation (RNG) environment to produce new numbers
 via the Tausworth routine.  On the first call, the function calls the
 \cind{gsl\_rng\_env\_setup} function to work some internal magic in
-the GSL. Figure \ref{draw_beta_curve} below shows an example using this
+the GSL. Figure \ref{drawbeta} below shows an example using this
 function.
 
 Adjacent integer seeds will produce a wholly different stream of numbers,
@@ -123,10 +123,10 @@ and $\sigma^2$ that are outside of these bounds, the function will
 return a \cinline{GSL\_NAN}.
 
 \cindex{apop\_plot\_hist\-o\-gram}
-\codefig{draw_beta_curve}{Building a picture of a distribution via random draws}
+\codefig{drawbeta}{Building a picture of a distribution via random draws.}
 
 What does a Beta distribution with, say, $\mu = \frac{3}{8}, \sigma^2 =
-\frac{1}{24}$ look like? Figure \ref{draw_beta_curve} sets up an RNG,
+\frac{1}{24}$ look like? Figure \ref{drawbeta} sets up an RNG,
 makes a million draws from a Beta distribution, and plots the result.
 The output of this example is at left in Figure \ref{histofig}; by
 contrast, the case where $\mu=0.492$, $\sigma^2 = 0.093$ is pictured at
@@ -353,7 +353,7 @@ multiplied by $(n-1)/n$ to convert from sample kurtosis to population
 kurtosis. This has no appreciable effect for $n >$ 1 million, but since it takes
 0.00 seconds to compute, it doesn't hurt.
 
-\codefig{kurtosis_of_a_t_dist}{Monte Carlo calculation of kurtoses for
+\codefig{tdistkurtosis}{Monte Carlo calculation of kurtoses for
 the $t$ distribution family.}
 
 I tried this on a few computers, from my laptop to a small research
@@ -493,7 +493,7 @@ the true variance. In a bind you'll just have
 to state that and go on. Bootstrapping is a generally accepted technique,
 and has reasonable persuasive power.
 
-\codefig{bootdraw}{A function to draw samples from the data, for use in a jackknife}%This should really be lower.
+\codefig{bootdraw}{A function to draw samples from the data, for use in a jackknife.}%This should really be lower.
 
 But having smaller variances makes
 it easier to reject the null hypothesis, which is what your paper is
@@ -529,7 +529,7 @@ $\hat\sigma = \sqrt{\sum{(p_i - \overline p_{\forall})}}$, where $p_{\forall}$ i
 the parameter using the entire data set.
 
 \exercise{
-Modify Figure \ref{jack_iteration} to calculate the jackknife estimate
+Modify Figure \ref{jackiteration} to calculate the jackknife estimate
 for a model, replacing the ``Do math here'' comments with the
 appropriate parameter estimations.
 }
@@ -546,7 +546,7 @@ by rolling back the counter by one, while if it does not find a match then it
 adds the draw to the list of draws and the index to the list of indices.
 
 \codefig{bootvar}{A function to find the variance of a series of jackknife
-estimates of a statistic}
+estimates of a statistic.}
 
 
 We can then use these draws to calculate a list of parameter values,
