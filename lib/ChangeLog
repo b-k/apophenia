@@ -3,6 +3,9 @@
 **Change that could require recoding existing code.
 ]
 
+		October 2006
+--apop_text_to_db now reads from STDIN.
+
 		September 2006
 
 **Removed apop command-line server thing. It was interesting, but that's

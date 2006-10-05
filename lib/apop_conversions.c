@@ -565,142 +565,6 @@ char *apop_strcat(char **base, char *addme){
     return *base;
 }
 
-/** Read a text file into a database table.
-
-  See \ref text_format.
-
-\param text_file    The name of the text file to be read in.
-\param tabname      The name to give the table in the database
-\param has_row_names Does the lines of data have row names?
-\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way.
-\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names. 
-
-\return Returns the number of rows.
-
-Using the data set from the example on the \ref apop_OLS "apop_OLS" page, here's another way to do the regression:
-
-\code
-#include <apophenia/headers.h>
-
-int main(void){ 
-apop_data       *data; 
-apop_estimate   *est;
-    apop_db_open(NULL);
-    apop_text_to_db("data", "d", 0,1,NULL);
-    data       = apop_query_to_data("select * from d");
-    estimate   = apop_OLS.estimate(data, NULL, NULL);
-    printf("The OLS coefficients:\n");
-    apop_estimate_print(est);
-    return 0;
-} 
-\endcode
-
-By the way, there is a begin/commit wrapper that bundles the process into bundles of 2000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.
-\ingroup convertfromtext
-*/
-int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
-  int       batch_size  = 2000;
-  FILE * 	infile;
-  char		*q  = NULL, instr[Text_Line_Limit], **fn, *prepped;
-  char		*stripped, *stripme, outstr[Text_Line_Limit],
-            full_divider[1000];
-  int 		ct, one_in,
-            length_of_string,
-		    i			        = 0, 
-		    use_names_in_file   = 0,
-		    rows			    = 0;
-  size_t    last_match;
-  regex_t   *regex  = malloc(sizeof(regex_t));
-  regmatch_t  result[2];
-    strip_regex_alloc();
-	ct	= apop_count_cols_in_text(text_file);
-	if (apop_table_exists(tabname,0)){
-	       	printf("apop: %s table exists; not recreating it.\n", tabname);
-		return 0; //to do: return the length of the table.
-	} else{
-        sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
-        regcomp(regex, full_divider, 0);
-		infile	= fopen(text_file,"r");
-	       	if (infile==NULL) {
-			printf("Trouble opening %s. apop_text_to_db bailing.\n", text_file);
-			return 0;
-		}
-		if (has_col_names && field_names == NULL){
-			use_names_in_file++;
-			fgets(instr, Text_Line_Limit, infile);
-			while(instr[0]=='#')	//burn off comment lines
-				fgets(instr, Text_Line_Limit, infile);
-			fn	= malloc(ct * sizeof(char*));
-
-            last_match      = 0;
-            length_of_string= strlen(instr);
-            while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
-                pull_string(instr,  outstr, result,  &last_match);
-	            stripme	    = strip(outstr);
-                stripped    = apop_strip_dots(stripme,'d');
-			    fn[i]	    = NULL;
-                apop_strcpy(&fn[i], stripped);
-                free(stripme);
-		        free(stripped);
-			    i++;
-	        }
-		} else	{
-            if (field_names)
-                fn	= field_names;
-            else{
-			    fn	= malloc(ct * sizeof(char*));
-                for (i =0; i < ct; i++){
-			        fn[i]	= malloc(1000 * sizeof(char));
-                    sprintf(fn[i], "col_%i", i);
-                }
-            }
-        }
-		apop_strcpy(&q, "begin; CREATE TABLE ");
-		apop_strcat(&q, tabname);
-		for (i=0; i<ct; i++){
-			if (i==0) 	{
-                if (has_row_names)
-                    apop_strcat(&q, " (row_names, \"");
-                else
-                    apop_strcat(&q, " (");
-            } else		apop_strcat(&q, "\" , ");
-            apop_strcat(&q, " \"");
-            apop_strcat(&q, fn[i]);
-		}
-		apop_query("%s\" ); commit; begin;", q);
-		if (use_names_in_file){
-		    for (i=0; i<ct; i++)
-			    free(fn[i]);
-			free(fn);
-		}
-
-        //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
-        ct  = 0;
-		while(fgets(instr,Text_Line_Limit,infile)!=NULL){
-			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
-				rows	        ++;
-				one_in          = 
-                last_match      = 0;
-                length_of_string= strlen(instr);
-				sprintf(q, "INSERT INTO %s VALUES (", tabname);
-                while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
-					if(one_in++) 	apop_strcat(&q, ", ");
-                    pull_string(instr,  outstr, result,  &last_match);
-					prepped	=prep_string_for_sqlite(outstr);
-                    if (strlen(prepped) > 0)
-					    apop_strcat(&q, prepped);
-					free(prepped);
-				}
-				apop_query("%s);",q); q=realloc(q,sizeof(char)*50);
-                if (!(ct++ % batch_size)) apop_query("commit; begin;");
-			}
-		}
-		apop_query("commit;");
-		fclose(infile);
-        free(q);
-		return rows;
-	}
-}
 
 /** See \ref apop_db_to_crosstab for the storyline; this is the complement.
  \ingroup db
@@ -764,4 +628,200 @@ gsl_matrix *apop_matrix_copy(gsl_matrix *in){
   gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
     gsl_matrix_memcpy(out, in);
     return out;
+}
+
+
+
+
+
+/////////////////////////////
+//The text processing section:
+/////////////////////////////
+
+static regex_t   *regex;
+static regmatch_t  result[2];
+static int  use_names_in_file;
+static char *add_this_line  = NULL;
+static char **fn            = NULL;
+
+
+/** Open file, find the first non-comment row, count columns, close file.
+ */
+static int count_cols_in_row(char *instr){
+  int       length_of_string    = strlen(instr);
+  int       ct                  = 0;
+  size_t    last_match          = 0;
+  char	    outstr[Text_Line_Limit];
+  regmatch_t result[3];
+    while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
+        pull_string(instr,  outstr, result,  &last_match);
+		ct++;
+	}
+	return ct;
+}
+
+static int get_field_names(int has_col_names, char **field_names, FILE *infile){
+  char		instr[Text_Line_Limit], *stripped, *stripme, outstr[Text_Line_Limit];
+  int       i = 0, ct, length_of_string;
+  size_t    last_match;
+
+    fgets(instr, Text_Line_Limit, infile);
+    while(instr[0]=='#' || instr[0]=='\n')	//burn off comment lines
+        fgets(instr, Text_Line_Limit, infile);
+    ct              = count_cols_in_row(instr);
+
+    if (has_col_names && field_names == NULL){
+        use_names_in_file++;
+        if (!has_col_names) //then you have a data line, which you should save
+            apop_strcpy(&add_this_line, instr);
+        fn	            = malloc(ct * sizeof(char*));
+        last_match      = 0;
+        length_of_string= strlen(instr);
+        while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
+            pull_string(instr,  outstr, result,  &last_match);
+            stripme	    = strip(outstr);
+            stripped    = apop_strip_dots(stripme,'d');
+            fn[i]	    = NULL;
+            apop_strcpy(&fn[i], stripped);
+            free(stripme);
+            free(stripped);
+            i++;
+        }
+    } else	{
+        if (field_names)
+            fn	= field_names;
+        else{
+            apop_strcpy(&add_this_line, instr); //save this line for later.
+            fn	= malloc(ct * sizeof(char*));
+            for (i =0; i < ct; i++){
+                fn[i]	= malloc(1000 * sizeof(char));
+                sprintf(fn[i], "col_%i", i);
+            }
+        }
+    }
+    return ct;
+}
+
+static void tab_create(char *tabname, int ct, int has_row_names){
+  char  *q = NULL;
+  int   i;
+    apop_strcpy(&q, "CREATE TABLE ");
+    apop_strcat(&q, tabname);
+    for (i=0; i<ct; i++){
+        if (i==0) 	{
+            if (has_row_names)
+                apop_strcat(&q, " (row_names, \"");
+            else
+                apop_strcat(&q, " (");
+        } else		apop_strcat(&q, "\" , ");
+        apop_strcat(&q, " \"");
+        apop_strcat(&q, fn[i]);
+    }
+    apop_query("%s\" ); begin;", q);
+    if (use_names_in_file){
+        for (i=0; i<ct; i++)
+            free(fn[i]);
+        free(fn);
+        fn  = NULL;
+    }
+}
+
+static void line_to_insert(char instr[], char *tabname){
+  int       one_in          = 0,
+            length_of_string= strlen(instr);
+  size_t    last_match      = 0;
+  char	    outstr[Text_Line_Limit], *prepped;
+  char      *q  = malloc(sizeof(char)*(100+ strlen(tabname)));
+    sprintf(q, "INSERT INTO %s VALUES (", tabname);
+    while (last_match < length_of_string 
+            && !regexec(regex, (instr+last_match), 2, result, 0)){
+        if(one_in++) 	apop_strcat(&q, ", ");
+        pull_string(instr,  outstr, result,  &last_match);
+        prepped	=prep_string_for_sqlite(outstr);
+        if (strlen(prepped) > 0)
+            apop_strcat(&q, prepped);
+        free(prepped);
+    }
+    apop_query("%s);",q); 
+    free (q);
+}
+
+/** Read a text file into a database table.
+
+  See \ref text_format.
+
+\param text_file    The name of the text file to be read in. If \code "-", then read from STDIN.
+\param tabname      The name to give the table in the database
+\param has_row_names Does the lines of data have row names?
+\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way.
+\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names. 
+
+\return Returns the number of rows.
+
+Using the data set from the example on the \ref apop_OLS "apop_OLS" page, here's another way to do the regression:
+
+\code
+#include <apophenia/headers.h>
+
+int main(void){ 
+apop_data       *data; 
+apop_estimate   *est;
+    apop_db_open(NULL);
+    apop_text_to_db("data", "d", 0,1,NULL);
+    data       = apop_query_to_data("select * from d");
+    estimate   = apop_OLS.estimate(data, NULL, NULL);
+    printf("The OLS coefficients:\n");
+    apop_estimate_print(est);
+    return 0;
+} 
+\endcode
+
+By the way, there is a begin/commit wrapper that bundles the process into bundles of 2000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.
+\ingroup convertfromtext
+*/
+int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
+  int       batch_size  = 2000,
+      		ct,
+		    rows    = 0;
+  FILE * 	infile;
+  char		*q  = NULL, instr[Text_Line_Limit];
+  char		full_divider[1000];
+    strip_regex_alloc();
+	use_names_in_file   = 0;    //file-global.
+    regex               = malloc(sizeof(regex_t));//file-global, above.
+	if (apop_table_exists(tabname,0)){
+	       	printf("apop: %s table exists; not recreating it.\n", tabname);
+		return 0; //to do: return the length of the table.
+	} else{
+        sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
+        regcomp(regex, full_divider, 0);
+        if (strcmp(text_file,"-"))
+		    infile	= fopen(text_file,"r");
+        else
+            infile  = stdin;
+	       	if (infile==NULL) {
+			printf("Trouble opening %s. apop_text_to_db bailing.\n", text_file);
+			return 0;
+		}
+        ct  = get_field_names(has_col_names, field_names, infile);
+        tab_create(tabname, ct, has_row_names);
+        //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
+        ct  = 0;
+        if (add_this_line){
+            rows    ++;
+            line_to_insert(add_this_line, tabname);
+        }
+		while(fgets(instr,Text_Line_Limit,infile)!=NULL){
+			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
+				rows	        ++;
+                line_to_insert(instr, tabname);
+                if (!(ct++ % batch_size)) apop_query("commit; begin;");
+			}
+		}
+		apop_query("commit;");
+        if (strcmp(text_file,"-"))
+		    fclose(infile);
+        free(q);
+		return rows;
+	}
 }

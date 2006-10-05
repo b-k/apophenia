@@ -36,6 +36,12 @@ The primary technique covered in this chapter is the parsing of
 such as `numbers followed by letters', and a program searches for that
 regular expression in text and modifies it as per your instructions.
 
+A secondary theme is the POSIX water metaphor. Data flows in a stream from
+one location to another, burbling out of data files and piping through
+filters like \bi{sed} (the stream editor).  Eventually, the stream of
+data reaches its final destination: a graphic, a database, or another
+file holding clean, filtered data.
+
 Along the way, you will see how to effectively search your files. As
 your projects get large, you will desire tools that find every use of
 \ci{buggy\_variable} in your program or every reference to an author in
@@ -51,7 +57,7 @@ data-handling systems.
 utility, you can operate the shell (what many just call the command line)
 by typing in commands or by writing a script and having the shell read
 the script. Thus, you can try the commands below on the command line,
-and if they work well, cut and paste them into a script as a permanent
+and when they work as desired, cut and paste them into a script as a permanent
 record. 
 
 Typically, your script will not just stop with reformatting text files:
@@ -70,14 +76,14 @@ can call a script in the current directory (aka \bi{./}) from the shell
 using \bi{./myscript}.
 
 \subsection{Redirection} 
-POSIX systems run like water. Each program has a standard input stream
-and a standard output stream, named \cind{STDIN} and
-\cind{STDOUT}.\footnote{There is also a third, \cind{STDERR}, to which
-errors are written. To redirect \ci{STDERR}, use the form \ci{\&>}. For
-example, try \ci{sed -p \&> err}, then open \ci{err} in your text editor
-(or try the command \ci{cat err}).}
+Each program has a standard input stream
+and a standard output stream, named \bind{STDIN} and
+\bind{STDOUT}.\footnote{There is also a third, \bind{STDERR}, to which
+errors are written. To redirect \bi{STDERR}, use the form \bi{\&>}. For
+example, try \bi{sed -p \&> err}, then open \bi{err} in your text editor
+(or try the command \bi{cat err}).}
 
-By default \ci{STDIN} and \ci{STDOUT} are the keyboard and screen. 
+By default \bi{STDIN} and \bi{STDOUT} are the keyboard and screen. 
 For example, the command
 \begin{lstlisting}
 prompt> sed -n p
@@ -95,31 +101,31 @@ Stop imitating me.
 Stop imitating me.
 <ctrl>-C
 \end{lstlisting}
-Now for the redirection. An \cind{>} tells the system to write whatever
-it would have put on the screen to a file. Thus, if you put the
-command \bi{sed -n p > outfile} on the command line, then nothing will
-print to the screen, but whatever you type (until you hit \ci{<ctrl>-C}
-or \ci{<ctrl>-D}) will be written to \ci{outfile}. That is, instead of
-writing to STDOUT, the system writes to \ci{outfile}.
+Now for the redirection. A clause of the form \cind{> filename} tells the
+system to write whatever it would have put on the screen to a file. Thus,
+if you put the command \bi{sed -n p > outfile} on the command line, then
+nothing will print to the screen, but whatever you type (until you hit
+\bi{<ctrl>-C} or \bi{<ctrl>-D}) will be written to \bi{outfile}. That is,
+instead of writing to \bi{STDOUT}, the system writes to \bi{outfile}.
 
-As a variant, \cind{>> outfile} will append to a file, rather than
-overwriting it, as \ci{> outfile} would.
+As a variant, \bind{>>} \bi{outfile} will append to a file, rather than
+overwriting it, as \bi{> outfile} would.
 
-A \cind{<} tells the system that it should take input not from \ci{STDIN}
+A \bind{<} tells the system that it should take input not from \bi{STDIN}
 but from an input file. Thus, \bi{sed -n p < input\_file} will dump the
-contents of \ci{input\_file} to the screen. 
+contents of \bi{input\_file} to the screen. 
 
-\exercise{Use \ci{sed -n p} and input/output redirection to copy a file.}
+\exercise{Use \bi{sed -n p} and input/output redirection to copy a file.}
 
-Your final redirection option is the pipe. The pipe connects \ci{STDOUT}
-for one program to \ci{STDIN} for another. 
+Your final redirection option is the pipe. The pipe connects \bi{STDOUT}
+for one program to \bi{STDIN} for another. 
 
 Question: what exponents of four end in a six?  On page \pageref{getopt}
-(and in the code supplement), you will find a program that prints
+(and in the code supplement), you will find a program, \bi{getopt}, that prints
 exponents to \ci{STDOUT}. Below, you will see that \ci{grep} will search
-a file for a certain pattern; for example, \ci{grep "6\$" <infile} will
-search \ci{infile} for lines ending in a six. Thus, we could send the
-output for \ci{getopt} to a file, then input it to \ci{grep}.
+its input for a certain pattern; for example, \ci{grep "6\$" <infile} will
+search \ci{infile} for lines ending in a six. Thus, we could redirect the
+output for \ci{getopt} to a file, then input that file to \ci{grep}.
 \begin{lstlisting}
 ./getopt 4 > powers_of_four
 grep "6$" < powers_of_four
@@ -129,28 +135,81 @@ the first program and \ci{STDIN} to the second.
 \begin{lstlisting}
 ./getopt 4 | grep "6$" 
 \end{lstlisting}
-At this point, the pattern in the exponents is eminently clear.
+This line prints the filtered output of \bi{getopt} to the screen, at
+which point the pattern in the exponents is eminently clear.
 
 The next section will cover a few tools that one can join together to
 filter streams of text.
 
 \paragraph{Streams flowing through C}
+
 As you saw on pages \pageref{fprintf}{\it ff}, you can use \ci{fprintf}
 to send data to a file or another program. You may have noticed the
 close similarity between opening/writing to a file and opening/writing
-to a pipe:
+to a pipe:  \cindex{pclose}\cindex{popen}\cindex{fprintf}
 \begin{lstlisting}
 FILE *f = fopen("write_to_me", "w");
 FILE *g = popen("/usr/local/bin/gnuplot", "w");
 fprintf(f, "The waves roll in,\n");
 fprintf(g, "The waves roll out.\n");
+fclose(f);
+pclose(g);
 \end{lstlisting}
-By the data-as-water metaphor, the two are identical. One redirects
-output to a file, and one to another program. There are fine details of
-how the two are implemented in actual memory and hardware (one is a
-block device and one a character device) but that is a matter for the
-operating system to worry about. At the level of a C program, output is
-output.
+If this code were in a program named \bi{water}, then the \ci{fopen}
+and \ci{fprintf} instructions are analogous to 
+\bi{water > write\_to\_me}. The \ci{popen} and \ci{fprintf} pair are
+analogous to \bi{water | /usr/local/bin/gnuplot}.
+
+This book has spent little time on the subject of reading data from
+\bi{STDIN} (look up \ci{fscanf} in your favorite C reference), but by
+changing the \ci{"w"}s to \ci{"r"}s in the above code, the code becomes
+analagous to
+\bi{water < write\_to\_me} and \bi{/usr/local/bin/gnuplot | water}.
+[Assume that \bi{text\_script} is a Gnuplot script that instructs
+Gnuplot to produce text.]
+\begin{lstlisting}
+FILE *f = fopen("read_from_me", "r");
+FILE *g = popen("/usr/local/bin/gnuplot text_script", "r");
+char input1[10000], input2[10000];
+fscanf(f, input1);
+fscanf(g, input2);
+fclose(f);
+pclose(g);
+\end{lstlisting}
+
+\exercise{Modify \bi{getopt.c} to filter its output through \bi{grep}.
+\begin{itemize}
+\item Popen \bi{grep} for writing.
+\item Modify the \ci{printf} statement to an \ci{fprintf} statement.
+\end{itemize}}
+
+Finally, there is the \cind{system} function, which just runs its
+argument as if it were printed on the command line.
+
+[A clever example will appear here. Also, I need to check whether it's
+normal for C compilers to accept printf-type inputs to \ci{system}. GCC
+does, but it may not be standard.]
+
+There are two difference between a \ci{system} command and a \ci{popen} command.
+First, there is the fact that \ci{system}'s input and output are always
+the keyboard and screen, while \ci{popen} allows I/O from within the program.
+But also, \ci{system} will stop your program and wait for it to finish,
+while \ci{popen} will open the pipe and then move on to the next step in
+your program. So if the command has to finish before you can continue,
+use \ci{system}, and if the command is something that should run in the
+background, use \ci{popen}.
+
+\summary{\item All programs have standard inputs and outputs, which are
+by default the keyboard and screen.
+\item Both \bi{STDIN} and \bi{STDOUT} can be redirected. \bi{STDIN} can
+read from a file using the \bi{< infile} form; \bi{STDOUT} can write to
+a file using the \bi{> outfile} form.
+\item Programs can send their output to other programs using the pipe,
+\bi{|}.
+\item You can do redirection from inside C, using \ci{fopen} to effect
+the command-line's \bi{< infile} and \bi{> outfile}, and \ci{popen} to
+open a pipe.
+}
 
 \section{Regular expressions}
 The remainder of this appendix will cover programs to parse regular
@@ -169,7 +228,7 @@ regular expression syntax derives from \ttind{ed}, a text editor from back
 when the only output available to computers was the line printer. Most
 POSIX utilities, such as \ttind{sed}, \ttind{grep} or \ttind{awk},
 use this basic regex syntax. The scripting language \ttind{perl}
-introduced a somewhat different syntax for regular expressions with
+introduced a somewhat expanded syntax for regular expressions with
 a number of extensions and modifications, and most post-Perl programs
 adopted Perl-compatible regular expressions.
 
@@ -184,11 +243,11 @@ online references for the subtle shifts in backslashes among other
 regular expression systems.
 
 
-This chapter will use grep and sed because it is trivial to do regular
-expression parsing and substitution from the command line. Other
-systems, such as C or \ind{Python}, require a regex compilation step
-before usage, which is nothing but an extra step in a script or program,
-but makes one-line commands difficult. 
+This chapter will use grep, sed, and Perl because it is trivial to
+use them for regular expression parsing and substitution from the
+command line. Other systems, such as C or \ind{Python}, require a regex
+compilation step before usage, which is nothing but an extra step in a
+script or program, but makes one-line commands difficult.
 
 \subsection{The basic search}
 The simplest search is for a literal string of text. Let us say that we
@@ -203,11 +262,13 @@ on the command line.
 \ci{printf}. Use \bi{grep} to search all of your .c files for uses
 of \ci{printf}. 
 
-The \ci{-C n} option (as in \ci{grep -C n} outputs $n$ context lines
+The \ci{-C n} option (as in \ci{grep -C n}) outputs $n$ context lines
 before and after the match; repeat your search with two context lines
 before and after each \ci{printf}.  }
 
 
+\index{regular expressions!bracket expressions}
+\index{bracket expressions!in regexes}
 \paragraph{Bracket expressions} Now we start to add special characters
 from the regex language. The expression \ci{[fs]} will match either
 \ci{f} or \ci{s}. Thus, the expression \ci{[fs]printf} will match both
@@ -223,7 +284,34 @@ any number.
 any single character except \ci{f} or \ci{s}, and
 \ci{[a-z\that{}fs]} matches any lowercase letter
 but \ci{f} or \ci{s}.
+\item There are a few common sets of characters that are named. For
+example, \bi{[[:digit:]]} will search for all numbers, \bi{[0-9]}. See
+Figure \ref{regexchar} for a partial list. 
 \end{itemize}
+
+All of these can be combined into one expression. For example,
+\bi{[eE[:digit:]\that{}13579]} will match any even digit or the letter \bi{e}.
+
+\begin{figure}
+\begin{center}
+\fbox{
+\begin{tabular}{rl}
+\bi{[:digit:]}&   Numeric characters.\\
+\bi{[:alpha:]}&   Alphabetic characters.\\
+\bi{[:upper:]}&   Uppercase alphabetic characters.\\
+\bi{[:lower:]}&   Lowercase alphabetic characters.\\
+\bi{[:alnum:]}&    Alphanumeric characters.\\
+\bi{[:blank:]}&   Space and tab characters.\\
+\bi{[:space:]}&   Any whitespace, including space, tab (\bi{\textbs{}t}), newline (\bi{\textbs{}n}).\\
+\bi{[:punct:]}&   Punctuation characters\\
+\bi{[:print:]}&   Printable characters, including whitespace.\\
+\bi{[:graph:]}&   Printable characters, excluding whitespace.\\
+\end{tabular}
+}
+\end{center}
+\caption{Some useful regular expression character sets.}\label{regexchar}
+\end{figure}
+
 Brackets can be a bit disorienting because there is nothing in the syntax
 to indicate when a group ends or begins, and no matter how many groups are
 included, the result still represents exactly one character in the text.
@@ -318,29 +406,29 @@ standard English letter.
         \item The set can exclude elements: \bi{[A-Z\that{}P-S]} will
 find any capital letter except P, Q, R, and S.
     \end{itemize}
-}
-\summarynoitems{(continued)
-\begin{itemize}
 \item Alternatives are expressed in the form \bi{(A|B)}.
 \item Different systems have different rules about what is a special
 character. The Perl form for alternation is \bi{(A|B)}, as above; the
 grep form is \bi{\textbs(A\textbs|B\textbs)}.
+%}
+%\summarynoitems{(continued)
+%\begin{itemize}
 \item A single dot (\bi{.}) represents any character including a single
 space or tab, and grep understands \bi{\textbs{}W} to mean any white space
 character and \bi{\textbs{}w} to mean any non-white space character.
-\end{itemize}
+%\end{itemize}
 }
 
 \subsection{Replacing}
 
 Grep is wonderful for searching, but is a purely read-only program. If
 you want to change what you find, you will need to use a more complex
-program, such as Perl or \ttind{sed} (the stream editor). This section
-will use sed, because it is somewhat more versatile when used on the
-command line, as below. Perl adds many very useful features to regular
-expression parsing, so if you find yourself using regexes frequently,
-you may want to get to know how they are handled in a full
-Perl-compatible regex scripting system like Python or Perl.
+program, such as Perl or \ttind{sed} (the stream editor). Sed it is
+somewhat more versatile when used on the command line, but Perl
+adds many very useful features to the traditional regular expression
+parsing syntax. If you find yourself using regexes frequently, you may
+want to get to know how they are handled in a full Perl-compatible regex
+scripting system like Python or Perl.
 
 \paragraph{Perl and sed syntax} 
 Sed is certainly installed on your system, since it is part of the
@@ -649,7 +737,32 @@ to remove only commas between two numbers. We can do this by searching
 for a number-comma-number pattern, and replacing it with only the
 numbers. Here is the \ci{sed} command-line version of the process:
 \begin{lstlisting}
-sed -i~ -e "s/\([0-9]\),\([0-9]\)/\\1\\2/g" fixme
+sed -i~ -e "s/\([0-9]\),\([0-9]\)/\\1\\2/g" fixme.txt
+\end{lstlisting}
+
+\paragraph{Suspicious non-printing characters} Some sources like to
+put odd non-printing characters in their data. Since they don't print,
+they are hard to spot, but they produce odd side-effects, like columns
+in tables named \bi{pop$\square$\"O\'E$\square$tion}. It is a hard
+problem to diagnose, but an easy problem to fix. Since \bi{[:print:]}
+matches all printing characters, \bi{[\that{}[:print:]]} matches all
+non-printing characters, and the following command replaces all
+such characters with nothing: 
+\begin{lstlisting}
+sed -i~ -e "s/[^[:print:]]//g" fixme.txt
+\end{lstlisting}
+
+\paragraph{Text to database}\cindex{apop\_text\_to\_db}
+The \bi{apop\_text\_to\_db} command line program (and its corresponding
+C function) can take input from \bi{STDIN}. Thus, you can put it at the end of
+any of the above stream to directly dump data to an SQLite database.
+
+For many POSIX programs that typically take file input, the traditional
+way to indicate that you are sending data from \bi{STDIN} instead of a text
+file is to use \bi{-} as the file name. Thus, to pipe data from sed to a
+database:
+\begin{lstlisting}
+sed "s/\([0-9]\),\([0-9]\)/\\1\\2/g" <fixme.txt | apop_text_to_db - datatab new.db
 \end{lstlisting}
 
 \comment{
@@ -698,11 +811,7 @@ last ten lines, and updating as new lines are added. This can provide
 reassurance that a slow-running program is still working.
 
 \exercise{How would you get \bi{sed} to emulate the default behavior of
-\bi{head} and \bi{tail}? [Warning: this is just an exercise,
-because \bi{sed} is very inefficient relative to \bi{head} and
-\bi{tail}. Try your script on the largest file you have on hand, and
-notice how \bi{head} exits as soon as it has read the first ten lines,
-while \bi{sed} will read the entire data file.]}
+\bi{head}? }
 
 \comment{
 \exercise{Write a \bi{sed} script to emulate the default behavior of
@@ -733,7 +842,8 @@ data-wb-pop}; to see just the population numbers, use \bi{cut -d"|" -f
 population and GDP data into two new files. \bi{cut} the second file
 down to include only the column of numbers. Then use \bi{paste
 sorted\_pop sorted\_gdp> combined\_data} to produce one file with both
-types of data. }
+types of data. Verify that the data is aligned correctly (i.e.,
+that the Albania column does not list the GDP of Algeria.)}
 
 \subsection{\cind{wc}} \index{counting words}\index{word count}
 This program (short for word count) will count lines, words, and
@@ -772,7 +882,7 @@ Dopey<tab>35
 
 This will read into a spreadsheet perfectly, but when displayed on the
 screen, the output will be messy, since Rumplestiltskin's tab will not
-be aligned with Dopey's. The \bi{column} addresses exactly this problem,
+be aligned with Dopey's. The \bi{column} command addresses exactly this problem,
 by splitting columns and inserting spaces for on-screen human
 consumption. For example, \bi{column -s"|" -t data-wb-pop} will format
 the \ci{data-wb-pop} file into columns, splitting at the \bi{|}

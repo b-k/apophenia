@@ -15,6 +15,7 @@ int     colnames    = 0,
 
 	sprintf(msg, "%s [-d delimiters] text_file table_name dbname\n\
 e.g.: %s -d\",|\" infile.txt a_table info.db\n\
+If the input text file name is a single dash, -, then read from STDIN.\n\
 -c\t\tData includes column names\n\
 -r\t\tData includes row names\n\
 -v\t\tVerbose\n\
