@@ -11,7 +11,7 @@ matrix maintenance and linear algebra.
 There are many on the market; this chapter uses the \ind{GNU Scientific
 Library} (GSL). The GSL is recommended because it is actively supported
 and will work on about as many platforms as C itself. The full reference
-documentation is readily available online or in paper form
+documentation is readily available online or in book form
 \citep{gough:gsl}.
 
 \section{The GSL's matrices and vectors}
@@ -165,10 +165,10 @@ gsl_vector_sub (a,b);   // $a_{i} = a_{i} - b_{ij}, \forall\ i$
 gsl_vector_mul (a,b);  // $a_{i} = a_{i} \cdot b_{i}, \forall\ i$
 gsl_vector_div (a,b);   // $a_{i} = a_{i} / b_{i}, \forall\ i$
 
-gsl_matrix_scale (a,x); // $a_{ij} = a_{ij} \cdot x, \forall\ i, j$
-gsl_matrix_add_constant (a,x);  // $a_{ij} = a_{ij} + x, \forall\ i, j$
-gsl_vector_scale (a,x); // $a_{i} = a_{i} \cdot x, \forall\ i$
-gsl_vector_add_constant (a,x);  // $a_{i} = a_{i} + x, \forall\ i$
+gsl_matrix_scale (a,x); // $a_{ij} = a_{ij} \cdot x, \forall\ i, j$, $x\in \Re$
+gsl_matrix_add_constant (a,x);  // $a_{ij} = a_{ij} + x, \forall\ i, j$, $x\in \Re$
+gsl_vector_scale (a,x); // $a_{i} = a_{i} \cdot x, \forall\ i$, $x\in \Re$
+gsl_vector_add_constant (a,x);  // $a_{i} = a_{i} + x, \forall\ i$, $x\in \Re$
 \end{lstlisting}
 
 Notice that the functions to multiply and divide two matrices are given
@@ -205,17 +205,17 @@ save you from a great deal of the below (see page \pageref{apopdot}).
 Therefore, you may prefer to skim this section, and are again
 discouraged from memorizing any of it.
 
-\paragraph{Matrix $\cdot$ vector} Here is the function you will use to calculate the dot product of a
+\paragraph{Matrix $\cdot$ vector} Here is the header for the function you will use to calculate the dot product of a
 matrix and a vector:
 \cindex{gsl\_blas\_dgemv|(}
 \begin{lstlisting}
 int gsl_blas_dgemv (CBLAS_TRANSPOSE_t TransX, float alpha, 
           const gsl_matrix * X, const gsl_vector * v, 
-          float beta, gsl_vector * y)
+          float beta, gsl_vector * y);
 \end{lstlisting}
 
 This will put into the vector $y$ either the value 
-$\alpha X v + \beta y$ or $\alpha X' v + \beta y$, as determined by the
+$y \leftarrow \alpha X v + \beta y$ or $y \leftarrow \alpha X' v + \beta y$, as determined by the
 first argument.
 \cinline{CBLAS\_TRANSPOSE\_t} is a type defined by the GSL that can take
 one of two values: \cinline{CblasNoTrans} and \cinline{CblasTrans}. If

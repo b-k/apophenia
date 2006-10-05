@@ -42,7 +42,7 @@ learn the details is to sit down at a computer and write.
 
 \paragraph{An outline} 
 
-This chapter divides into four parts.  Sections \ref{fncontents} and
+This chapter divides into three parts.  Sections \ref{fncontents} and
 \ref{declaring} start small, covering the syntax of individual lines
 of code to make assignments, do arithmetic, and declare variables.
 Sections \ref{functional} and \ref{compilation} introduce functions,
@@ -50,9 +50,8 @@ describing how C is built on the idea of modular functions that are each
 independently built and evaluated.  Sections \ref{pointers} through
 \ref{stringsec} cover \airq{pointers}, a C-specific means of handling
 computer memory that complements C's means of handling functions and
-large data structures. The remainder of the chapter covers additional
-topics such as the debugger and assorted idiosyncrasies and conveniences
-of C syntax.
+large data structures. The remainder of the chapter covers the art of
+debugging code, and some tips on writing bug-free code to begin with. 
 
 \subsection{The tools} 
 Most stats packages are built around a single window that includes a
@@ -109,12 +108,6 @@ If you will be using Apophenia or would like further notes on
 installation, see the Setup section of the online reference, at
 \onlinereflocation.
 
-
-Finally, much of the code in this book's figures is available online at
-\samplecodelocation. The impatient may want to skip ahead to the notes on
-compilation and Makefiles to learn how to compile the code provided 
-there.
-
 \paragraph{IDEs} \index{IDE} \index{integrated development environment}
 Broadly, you have the choice of two paradigms in which to work. The
 first is the integrated development environment (IDE). This is an
@@ -130,12 +123,12 @@ dialing in to a server's single-window terminal, you can either dial in
 twice, or use \bi{screen} to multiplex the window.} 
 you are basically using your operating system as an IDE.
 In this paradigm, you will probably have one window that is dedicated to
-a text editor with your code, and another window for compilation,
+a text editor with your code, and another window or two for compilation,
 debugging, and output.
 
 
 \exercise{Check your C environment by compiling and running 
-``Hello, world,'' a classic first program from \citet{kandr:c}. 
+``Hello, world,'' a classic first program adapted from \citet{kandr:c}. 
 \begin{itemize}
 \itemsep 0pt
 \item Download the sample code for this book from \samplecodelocation.
@@ -294,7 +287,8 @@ a--; /*is equivalent to*/ a = a - 1;
 
 \subsection{Conditions} 	
 \label{forloops} \index{conditionals} \index{Boolean expressions} \index{logical expressions} 
-\cindex{<} \cindex{>} \cindex{==}
+%\cindex{<} \cindex{>} \cindex{==}
+\ckeyind{<} \ckeyind{>} \ckeyind{==}
 Another set of operators are comparison and logical operators, such as \ci{(a $>$ b)},
 \ci{(a $<$ b)}, or \ci{(a == b)}. All of these evaluate to either a one or a zero, depending on whether the
 comparison is true or false. Notice that last one, comparison for equality, involves {\sl two} equals
@@ -302,8 +296,9 @@ signs in a row. One equals sign \ci{(a = b)} will assign the value of \ci{b} to 
 you had intended. Your compiler will warn you in most of the cases where you are
 probably using the wrong one, and you should heed its warnings. \airq{Greater than or equal to} is \ci{(a $>=$ b)}, and \airq{less than or equal to} is \ci{(a $<=$ b)}.
 
-Logical operations have similar definitions: \cindex{\&\&} \cindex{"|"|} \index{and|see{\&\&}}
-\index{or|see{$"|"|$}} \index{not|see{"!}} \index{"!}
+\ckeyind{\&\&} \ckeyind{"|"|} \ckeyind{"!}
+Logical operations have similar definitions: \ci{\&\&} \ci{"|"|} \index{and|see{\&\&}}
+\index{or|see{$"|"|$}} \index{not|see{"!}} 
 \airq{And} is \ci{(a \&\& b)}; \airq{or} is \ci{(a || b)}; \airq{not \ci{a}} is \ci{(!a)}.
 The \ci{\&\&} and \ci{||} operations have a convenient feature: if \ci{a} is sufficient to determine whether
 the entire expression is true, then it won't bother with \ci{b} at all. For example [just ignore the \ci{\#include} lines for now]:
@@ -344,7 +339,7 @@ the program to repeat some lines while a condition is true, or execute some line
 false.  In all of the cases below, you will need parentheses around the conditions, and if you forget,
 you will get a confusing compiler error.
 
-\subsection{If-then-else statements} Here is a sample of the syntax for conditional evaluations: \cindex{if}
+\subsection{If-then-else statements}\ckeyind{if}\ckeyind{else} Here is a sample of the syntax for conditional evaluations: \ci{if}
 
 \begin{lstlisting}[numbers=left, numberstyle=\scshape]
 #include <math.h>
@@ -381,7 +376,7 @@ you meant \ci{((1 $||$ 0) \&\& 0) == 0} or \ci{(1 $||$ (0 \&\& 0)) == 1}?
 redundant. The simplest is a \ci{while} loop. Here is one to print \airq{hello}
 on the screen five times: 
 
-\index{loops} \cindex{while}
+\index{loops} \ckeyind{while}
 \begin{lstlisting}[numbers=left, numberstyle=\scshape]
 #include <stdio.h>
 int i = 0;
@@ -397,7 +392,7 @@ instructions in brackets, lines four and five.
 
 Every language has its means of applying a function to every element of
 an array, often named something like \ci{map} or \ci{apply}; in C, the
-best means of doing this is via a \cind{for} loop.  The following \ci{for}
+best means of doing this is via a \ckeyind{for}\ci{for} loop.  The following \ci{for}
 loop is exactly equivalent to the \ci{while} loop above, but puts all
 the instructions about iterating through the array on a single line:
 
@@ -417,7 +412,8 @@ loop. After the section on arrays, you will be very used to the
 \ci{for (i=0; i<limit; i++)} form, and will recognize it to mean \airq{step
 through the array}.
 
-Finally, if you want to guarantee that the loop will run at least once, you can use a \cind{do-while} loop (with a semicolon after the \ci{while}):
+\ckeyind{do}\ckeyind{while}
+Finally, if you want to guarantee that the loop will run at least once, you can use a \ci{do-while} loop (with a semicolon after the \ci{while}):
 
 \begin{lstlisting}
 #include <stdio.h>
@@ -562,7 +558,7 @@ below.
 If you flip through this book, you will see that
 many procedures are nothing but a sequence of function calls. As you
 flip through, you may
-also want to find a few examples of \cind{printf} and
+also want to find a few examples of \ci{printf}\ckeyind{printf} and
 verify that they will indeed print what they promise to.
 
 Second, the example shows that every variable has a type. Lines two and
@@ -607,17 +603,17 @@ double stuff;
 
 
 Your basic options for variable types are \ci{int, float, double, long dou\-ble} 
-and \ci{char}. \ci{int}\cindex{int} is for integers;
-\ci{float}\cindex{float} is a floating-point number, aka a real number.\footnote{Why \airq{floating point}? The
+and \ci{char}. \ci{int}\ckeyind{int} is for integers;
+\ci{float}\ckeyind{float} is a floating-point number, aka a real number.\footnote{Why \airq{floating point}? The
 computer represents a real using the form $n \times 10^k$, where $n$
 represents the number with the decimal point in a fixed location,
 and $k$ represents the location of the decimal point.  Multiplying by
 ten doesn't change the number $n$, it just causes the decimal point to
 float to a different position.} Sometimes you will need more precision,
-and so you have \cind{double}, which are real numbers written to twice
+and so you have \ckeyind{double}\ci{double}, which are real numbers written to twice
 as many decimal places as a \ci{float},
 and \ci{long double}, which you can think of as quadruple-precision
-reals. \cind{char} are characters.	\cindex{long}
+reals. \ckeyind{char}\ci{char} are characters.	\ckeyind{long}
 
 C has other basic types, which are not worth caring about. There
 are some detailed notes about how numbers are represented in Section
@@ -688,7 +684,7 @@ How do you know how large an array is? By looking at the declaration. There is n
 function to tell you how you had declared the array.
 }
 
-\subsection{Declaring types}\cindex{typedef} \index{declaration!of types} 
+\subsection{Declaring types}\ckeyind{typedef} \index{declaration!of types} 
 You can define your own
 types. For example, these lines will declare two (badly names) triplets
 of numbers, \ci{a} and \ci{b}:
@@ -699,7 +695,7 @@ triplet	a, b;
 \end{lstlisting}
 
 This is primarily useful for designing
-complex data types that are collections of many subelements. \cindex{struct}
+complex data types that are collections of many subelements. \ckeyind{struct}
 For example:
 
 \begin{lstlisting}
@@ -1086,7 +1082,8 @@ multiple \ci{return} statements. For example, the long form of the
 an \ci{if-then} block, on lines 4 and 6. The function was guaranteed
 to hit one or the other, but never both.
 
-On the other hand,  you may specify a function whose type is \cind{void},
+\ckeyind{void}
+On the other hand,  you may specify a function whose type is \ci{void},
 meaning that nothing at all will be returned, and the function will
 have no \ci{return} statements. Such functions will be useful for
 side-effects such as changing the values of the inputs (see Section
@@ -1110,7 +1107,7 @@ size of the array, and prints the array to the screen. Modify your
 square-printing program from the last exercise to use this function for
 output.}
 
-\paragraph{\treesymbol{} The \cinlinetwo{main} function}\cindex{main}
+\paragraph{\treesymbol{} The \cinlinetwo{main} function}\ckeyind{main}
 All programs must have one and only one function named \ci{main},
 which is where the program will begin executing. The consistency checks
 are now with the operating system that called the program, which will
@@ -1210,8 +1207,9 @@ again, the static variable will start off with the same value
 as before. This provides continuity within a function, but the scope
 of the variable remains restricted to the function alone.
 
+\ckeyind{static}
 Static variable declarations look just like other declarations but with
-the word \cind{static} before them. You can also put an initialization on
+the word \ci{static} before them. You can also put an initialization on
 the declaration line, which will only be taken into consideration the
 first time the function is called. Here is a sample function to enter 
 data points into an array:
@@ -1465,7 +1463,8 @@ includes the same header, it will also set aside some memory
 named \ci{x}. So which bit of memory are you referring to when you use
 \ci{x} later in your code? 
 
-C's solution is the \cind{extern} keyword, which tells the compiler that
+\ckeyind{extern}
+C's solution is the \ci{extern} keyword, which tells the compiler that
 the declaration that follows is not for memory allocation, but is purely
 informative. Simply prepend it to the normal declaration: \ci{extern int
 x; extern long double y;} will both work. Then, in one and only one
@@ -1820,7 +1819,7 @@ calloc(number\_of\_elements\_i\_want, sizeof(type\_of\_elements))}.
 
 Finally, both allocation and de-allocation are now your
 responsibility. The de-allocation comes simply by calling
-\ci{free(k)} \cindex{free} when you are done with the pointer
+\ci{free(k)} \ckeyind{free} when you are done with the pointer
 \ci{k}. You don't actually need to free variables at the end of
 \ci{main}, because when you leave your program the operating system
 will clean up for you, but being explicit about when you de-allocate is
@@ -2024,7 +2023,7 @@ match. For example, the range of the \ci{int} type could be zero
 to 32,768, but there could be 65,536 locations in memory. There is a
 standard type, \ci{size\_t}, that is defined to correctly match your
 machine's memory, so the pedantic will always use that type for array
-indices: \ci{size\_t i=1; data[i] +=7}. Also, the \cind{sizeof}
+indices: \ci{size\_t i=1; data[i] +=7}. Also, the \ci{sizeof}\ckeyind{sizeof}
 operator returns a number of type \ci{size\_t}. In practice,
 you are fine with using \ci{int} to refer to memory locations
 and never using \ci{size\_t}.}
@@ -2097,9 +2096,9 @@ so \ci{(k)} is equivalent to \ci{(k!=NULL)}, even if \ci{k} is pointing
 to garbage.
 
 
-\subsection{Arrays of structs}	
-Before, when we had defined the \cind{struct} for complex numbers, we would refer to its elements using a
-dot, such as \ci{a.real} or \ci{b.imaginary}. For a pointer to a structure, we use \cind{$->$} instead of 
+\subsection{Arrays of structs}	\ckeyind{struct}\ckeyind{$->$}
+Before, when we had defined the \ci{struct} for complex numbers, we would refer to its elements using a
+dot, such as \ci{a.real} or \ci{b.imaginary}. For a pointer to a structure, we use \ci{$->$} instead of 
 a dot.  Here are some examples using the previous definition of the \ci{complex} structure.
 \begin{lstlisting}
 complex *ptr_to_cplx = malloc (sizeof(complex));
@@ -2110,7 +2109,7 @@ array_of_cplexes[15]->real = 3;
 \end{lstlisting}
 
 If you get an error like \airq{request for member `real' in something not a structure or union} then you are
-using a dot where you should be using \cind{$->$} or vice versa. Just switch to the other and try again.
+using a dot where you should be using \ci{$->$} or vice versa. Just switch to the other and try again.
 
 
 \subsection{Reallocating} If you know how many items you will have

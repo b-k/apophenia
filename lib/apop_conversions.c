@@ -64,7 +64,7 @@ A pointer to a <tt>double*</tt>, which will be <tt>malloc</tt>ed inside the func
 \ingroup convertfromvector 
 */
 int apop_vector_to_array(gsl_vector *in, double **out){
-int		i;	
+  int		i;	
 	*out	= malloc(sizeof(double) * in->size);
 	for (i=0; i < in->size; i++)
 		(*out)[i]	= gsl_vector_get(in, i);
@@ -79,8 +79,8 @@ int		i;
 \ingroup convertfromarray 
 */ 
 gsl_vector * apop_array_to_vector(double *in, int size){
-int		    i;
-gsl_vector  *out;
+  int		    i;
+  gsl_vector  *out;
     out	= gsl_vector_alloc(size);
 	for(i=0; i < size; i++)
 		gsl_vector_set(out, i, in[i]);
@@ -116,7 +116,7 @@ gsl_matrix * apop_vector_to_matrix(gsl_vector *in){
 
 static void convert_array_to_line(double **in, double **out, int rows, int cols){
 	//go from in[i][j] form to the GSL's preferred out[i*cols + j] form
-int		i, j;
+  int		i, j;
 	*out	= malloc(sizeof(double) * rows * cols);
 	for (i=0; i<rows; i++)
 		for (j=0; j<cols; j++)
@@ -135,9 +135,9 @@ If you want to intialize on the allocation line, this isn't what you want. See \
 \ingroup convertfromarray 
 */
 gsl_matrix * apop_array_to_matrix(double **in, int rows, int cols){
-gsl_matrix_view	m;
-gsl_matrix      *out;
-double		    *line;
+  gsl_matrix_view   m;
+  gsl_matrix        *out;
+  double		    *line;
 	out	= gsl_matrix_alloc(rows, cols);
 	convert_array_to_line(in, &line, rows, cols);
 	m	= gsl_matrix_view_array(line, rows,cols);
@@ -172,8 +172,8 @@ usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
 \ingroup convertfromarray 
 */
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
-gsl_matrix_view	m;
-gsl_matrix      *out;
+  gsl_matrix_view	m;
+  gsl_matrix        *out;
 	out	= gsl_matrix_alloc(rows, cols);
 	m	= gsl_matrix_view_array(line, rows,cols);
 	gsl_matrix_memcpy(out,&(m.matrix));
@@ -196,7 +196,7 @@ apop_data * apop_line_to_data(double *in, int rows, int cols){
 
 static int find_cat_index(char **d, char * r, int start_from, int size){
 //used for apop_db_to_crosstab.
-int	i	= start_from % size;	//i is probably the same or i+1.
+  int	i	= start_from % size;	//i is probably the same or i+1.
 	do {
 		if(!strcmp(d[i], r))
 			return i;
@@ -215,12 +215,12 @@ r2. if !=NULL, d1 and d2 will list the labels on the dimensions.
 \ingroup db
 */
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
-gsl_matrix	*out;
-int		    i	= 0,
-		    j	= 0,
-		    k, ct_r, ct_c, datasize; 
-char        ***pre_d1, ***pre_d2, ***datachars;
-apop_data   *outdata    = apop_data_alloc(1,1);
+  gsl_matrix	*out;
+  int		    i	= 0,
+		        j	= 0,
+		        k, ct_r, ct_c, datasize; 
+  char          ***pre_d1, ***pre_d2, ***datachars;
+  apop_data     *outdata    = apop_data_alloc(1,1);
 	datachars	= apop_query_to_chars("select %s, %s, %s from %s", r1, r2, datacol, tabname);
     datasize    = apop_db_get_rows();   
 
@@ -268,7 +268,7 @@ static const char      divider[]="\\(\"[^\"][^\"]*\"\\|[^\"%s][^\"%s]*\\)[%s\n]"
 //in: the line being read, the allocated outstring, the result from the regexp search, the offset
 //out: the outstring is filled with a bit of match, last_match is updated.
 static void pull_string(char *line, char * outstr, regmatch_t *result, size_t * last_match){
-int     length_of_match = result[1].rm_eo - result[1].rm_so;
+  int     length_of_match = result[1].rm_eo - result[1].rm_so;
     memcpy(outstr, line + (*last_match)+result[1].rm_so, length_of_match);
     if (outstr[length_of_match -1] == '"')
         length_of_match     --;
@@ -279,14 +279,14 @@ int     length_of_match = result[1].rm_eo - result[1].rm_so;
 /** Open file, find the first non-comment row, count columns, close file.
  */
 int apop_count_cols_in_text(char *text_file){
-FILE * 		infile;
-char		instr[Text_Line_Limit], outstr[Text_Line_Limit],
-            full_divider[1000];
-int		    ct	                = 0,
-            length_of_string    = 0;
-size_t      last_match          = 0;
-regex_t     *regex              = malloc(sizeof(regex_t));
-regmatch_t  result[3];
+  FILE * 		infile;
+  char		    instr[Text_Line_Limit], outstr[Text_Line_Limit],
+                full_divider[1000];
+  int		    ct	                = 0,
+                length_of_string    = 0;
+  size_t        last_match          = 0;
+  regex_t       *regex              = malloc(sizeof(regex_t));
+  regmatch_t    result[3];
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 0);
 	infile	= fopen(text_file,"r");
@@ -311,9 +311,9 @@ regmatch_t  result[3];
 /** Open file, count lines that don't start with #, close file.
  */
 int apop_count_rows_in_text(char *text_file){
-FILE * 		infile;
-char		instr[Text_Line_Limit];
-int		ct	= 0;
+  FILE * 	infile;
+  char		instr[Text_Line_Limit];
+  int		ct	= 0;
 	infile	= fopen(text_file,"r");
 	if (infile==NULL) {printf("Error opening %s", text_file); return 1;}
 	while(fgets(instr,Text_Line_Limit,infile)!=NULL)
@@ -323,17 +323,28 @@ int		ct	= 0;
 	return ct-1;
 }
 
+regex_t     *strip_regex      = NULL;
+
+static void strip_regex_alloc(){
+  char      w[]           = "[:space:]\"";
+  char      stripregex[1000];
+  //char      stripregex[]= "[ \f\r\n\t\"]*\\([^ \f\r\n\t\"]*.*[^ \f\r\n\t\"]*\\)[ \f\r\n\t\"]*";
+  static int first_use    = 0;
+    if(!first_use){
+        sprintf(stripregex, "[%s]*\\([^%s]*.*[^%s][^%s]*\\)[%s]*", w,w,w,w,w);
+        first_use       ++;
+        strip_regex     = malloc(sizeof(regex_t));
+        regcomp(strip_regex, stripregex, 0);
+    }
+}
+
 //OK, OK. C sucks. This fn just strips leading and trailing blanks.
 static char * strip(char *in){
-regex_t     *regex      = malloc(sizeof(regex_t));
-size_t      dummy       = 0;
-char 		*out 	    = malloc(sizeof(char) * (1+strlen(in)));
-char        stripregex[]= "[ \n\t\"]*\\([^ \n\t\"]*.*[^ \n\t\"]*\\)[ \n\t\"]*";
-regmatch_t  result[3];
-    regcomp(regex, stripregex, 0);
-    if(!regexec(regex, in, 2, result, 0))
+  size_t      dummy       = 0;
+  char 		*out 	    = malloc(sizeof(char) * (1+strlen(in)));
+  regmatch_t  result[3];
+    if(!regexec(strip_regex, in, 2, result, 0))
         pull_string(in, out, result,  &dummy);
-    regfree(regex);
 	return out;
 }
 
@@ -390,19 +401,19 @@ longer than this, you will need to open up apop_conversions.c, modify
 <b>example:</b> See \ref apop_OLS.
 \ingroup convertfromtext	*/
 apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
-apop_data   *set;
-FILE * 		infile;
-char		instr[Text_Line_Limit], 
-            *str, *stripped, 
-            outstr[Text_Line_Limit],
-            full_divider[1000];
-int 		i	        = 0,
-            line_no     = 0,
-            length_of_string,
-		    ct, colno, rowct;
-size_t      last_match;
-regex_t     *regex  = malloc(sizeof(regex_t));
-regmatch_t  result[2];
+  apop_data     *set;
+  FILE * 		infile;
+  char		    instr[Text_Line_Limit], 
+                *str, *stripped, 
+                outstr[Text_Line_Limit],
+                full_divider[1000];
+  int 		    i	        = 0,
+                line_no     = 0,
+                length_of_string,
+		        ct, colno, rowct;
+  size_t        last_match;
+  regex_t       *regex  = malloc(sizeof(regex_t));
+  regmatch_t    result[2];
 	ct	    = apop_count_cols_in_text(text_file);
 	rowct	= apop_count_rows_in_text(text_file);
     set     = apop_data_alloc(rowct+1-has_col_names,ct);
@@ -413,6 +424,7 @@ regmatch_t  result[2];
     }
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 0);
+    strip_regex_alloc();
 
     //First, handle the top line, which is assumed to be column names.
     if (has_col_names){
@@ -465,43 +477,42 @@ regmatch_t  result[2];
   \todo This could be easier with regexes.
  */
 static char * prep_string_for_sqlite(char *astring){
-char		*tmpstring, 
+  char		*tmpstring, 
 		*out	= NULL,
 		*str	= NULL;
+    strip_regex_alloc();
 	strtod(astring, &str);
+    tmpstring=strip(astring); 
 	if (!strcmp(astring, str)){	//then it's not a number.
-		tmpstring=strip(astring);
 		if (strlen (tmpstring)==0){
 			out	= malloc(sizeof(char) * 2);
 			sprintf(out, " ");
-			free(tmpstring);
-			return out;
+            goto leave;
 		}
 		if (tmpstring[0]!='"'){
 			out	= malloc(sizeof(char) * (strlen(tmpstring)+3));
 			sprintf(out, "\"%s\"",tmpstring);
-			free(tmpstring);
-			return out;
-		} else return tmpstring;
+            goto leave;
+		} else {
+            out	= malloc(sizeof(char) * (strlen(tmpstring)+1));
+            strcpy(out, tmpstring);
+            goto leave;
+        }
 	} else {			//sqlite wants 0.1, not .1
-		tmpstring=strip(astring);
 		assert(strlen (tmpstring)!=0);
-		/*if (strlen (tmpstring)==0){
-			out	= malloc(sizeof(char) * 2);
-			free(tmpstring);
-			sprintf(out, " ");
-			return out;
-		}*/
 		if (tmpstring[0]=='.'){
 			out	= malloc(sizeof(char) * (strlen(tmpstring)+2));
 			sprintf(out, "0%s",tmpstring);
-			free(tmpstring);
-			return out;
-		} else return tmpstring;
-	} //If you're here, then it's a number which needs no fixing.
-	out	= malloc(sizeof(char) * (strlen(astring)+1));
-	strcpy(out, astring);
-	return out;
+            goto leave;
+		} else {
+            out	= malloc(sizeof(char) * (strlen(tmpstring)+1));
+            strcpy(out, tmpstring);
+            goto leave;
+        }
+	}
+    leave:
+        free(tmpstring);
+        return out;
 }
 
 /** This function will print a string to another string, allocating the
@@ -519,7 +530,7 @@ this will crash.
 \ingroup convenience_fns
 */
 char *apop_strcpy(char **base, char *addme){
-int     addlen  = (addme) ? strlen(addme): 0;
+  int     addlen  = (addme) ? strlen(addme): 0;
     *base    = realloc(*base, sizeof(char)*(addlen+1));
     if (!*base)
         printf("Ran out of memory in apop_strcpy. Returning NULL.\n");
@@ -545,7 +556,7 @@ char *apop_strcat(char **base, char *addme){
         *base    = malloc(sizeof(char));
         (*base)[0] = '\0';
     }
-int     baselen = strlen(*base),
+  int   baselen = strlen(*base),
         addlen  = (addme) ? strlen(addme): 0;
     *base    = realloc(*base, sizeof(char)*(baselen+addlen+1));
     if (!*base)
@@ -583,21 +594,25 @@ apop_estimate   *est;
     return 0;
 } 
 \endcode
+
+By the way, there is a begin/commit wrapper that bundles the process into bundles of 2000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.
 \ingroup convertfromtext
 */
 int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
-FILE * 		infile;
-char		*q  = NULL, instr[Text_Line_Limit], **fn, *prepped;
-char		*stripped, *stripme, outstr[Text_Line_Limit],
+  int       batch_size  = 2000;
+  FILE * 	infile;
+  char		*q  = NULL, instr[Text_Line_Limit], **fn, *prepped;
+  char		*stripped, *stripme, outstr[Text_Line_Limit],
             full_divider[1000];
-int 		ct, one_in,
+  int 		ct, one_in,
             length_of_string,
 		    i			        = 0, 
 		    use_names_in_file   = 0,
 		    rows			    = 0;
-size_t      last_match;
-regex_t     *regex  = malloc(sizeof(regex_t));
-regmatch_t  result[2];
+  size_t    last_match;
+  regex_t   *regex  = malloc(sizeof(regex_t));
+  regmatch_t  result[2];
+    strip_regex_alloc();
 	ct	= apop_count_cols_in_text(text_file);
 	if (apop_table_exists(tabname,0)){
 	       	printf("apop: %s table exists; not recreating it.\n", tabname);
@@ -652,7 +667,7 @@ regmatch_t  result[2];
             apop_strcat(&q, " \"");
             apop_strcat(&q, fn[i]);
 		}
-		apop_query_db("%s\" ); commit; begin;", q);
+		apop_query("%s\" ); commit; begin;", q);
 		if (use_names_in_file){
 		    for (i=0; i<ct; i++)
 			    free(fn[i]);
@@ -676,11 +691,11 @@ regmatch_t  result[2];
 					    apop_strcat(&q, prepped);
 					free(prepped);
 				}
-				apop_query_db("%s);",q);
-                if (!(ct++ % 2000)) apop_query_db("commit; begin;");
+				apop_query("%s);",q); q=realloc(q,sizeof(char)*50);
+                if (!(ct++ % batch_size)) apop_query("commit; begin;");
 			}
 		}
-		apop_query_db("commit;");
+		apop_query("commit;");
 		fclose(infile);
         free(q);
 		return rows;
@@ -692,8 +707,8 @@ regmatch_t  result[2];
  */
 int apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name){
-int		    i,j;
-apop_name   *n = in->names;
+  int		    i,j;
+  apop_name   *n = in->names;
 	apop_query_db("CREATE TABLE %s (%s , %s , %s);", tabname, 
             apop_strip_dots(row_col_name, 'd'), 
             apop_strip_dots(col_col_name, 'd'), 
@@ -729,7 +744,7 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
 \ingroup convenience_fns
   */
 gsl_vector *apop_vector_copy(gsl_vector *in){
-gsl_vector *out = gsl_vector_alloc(in->size);
+  gsl_vector *out = gsl_vector_alloc(in->size);
     gsl_vector_memcpy(out, in);
     return out;
 }
@@ -746,7 +761,7 @@ gsl_vector *out = gsl_vector_alloc(in->size);
 \ingroup convenience_fns
   */
 gsl_matrix *apop_matrix_copy(gsl_matrix *in){
-gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
+  gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
     gsl_matrix_memcpy(out, in);
     return out;
 }

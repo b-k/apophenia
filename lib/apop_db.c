@@ -16,7 +16,7 @@ and finally \ref apop_query_to_data to pull some subset of the data
 out for analysis.
 
 \par Querying 
-\li \ref apop_query_db: Manipulate the database, return nothing (e.g., input data).
+\li \ref apop_query: Manipulate the database, return nothing (e.g., input data).
 
 \li \ref apop_query_to_data: Pull data into an apop_data set.
 
@@ -92,7 +92,8 @@ group by whatever
 \endverbatim
 
 \verbatim
-select sqrt(x), pow(x,0.5), exp(x), log(x)
+select sqrt(x), pow(x,0.5), exp(x), log(x), 
+    sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
 from table
 \endverbatim
 
@@ -106,7 +107,11 @@ thing. Choose the one that sounds better to you.
 
 The  var/skew/kurtosis functions calculate sample moments, so if you want the population moment, multiply the result by (n-1)/n .
 
-For bonus points, there are the <tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, and <tt>log(x)</tt> functions. They call the standard math library function of the same name to calculate \f$\sqrt{x}\f$, \f$x^y\f$, \f$e^x\f$, and \f$\ln(x)\f$.
+For bonus points, there are the <tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>,
+<tt>exp(x)</tt>, <tt>log(x)</tt>, and trig functions. They call the standard
+math library function of the same name to calculate \f$\sqrt{x}\f$,
+\f$x^y\f$, \f$e^x\f$, \f$\ln(x)\f$, \f$\sin(x)\f$, \f$\arcsin(x)\f$, et cetera.
+
 */
 
 
@@ -215,8 +220,7 @@ static void kurtFinalize(sqlite3_context *context){
 }
 
 static void sqrtFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, sqrt(sqlite3_value_double(argv[0])));
-}
+    sqlite3_result_double(context, sqrt(sqlite3_value_double(argv[0]))); }
 
 static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
   double  base    = sqlite3_value_double(argv[0]);
@@ -225,12 +229,29 @@ static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
 }
 
 static void expFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, exp(sqlite3_value_double(argv[0])));
-}
+    sqlite3_result_double(context, exp(sqlite3_value_double(argv[0]))); }
 
 static void logFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, log(sqlite3_value_double(argv[0])));
-}
+    sqlite3_result_double(context, log(sqlite3_value_double(argv[0]))); }
+
+static void sinFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, sin(sqlite3_value_double(argv[0]))); }
+
+static void cosFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, cos(sqlite3_value_double(argv[0]))); }
+
+static void tanFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, tan(sqlite3_value_double(argv[0]))); }
+
+static void asinFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, asin(sqlite3_value_double(argv[0]))); }
+
+static void acosFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, acos(sqlite3_value_double(argv[0]))); }
+
+static void atanFn(sqlite3_context *context, int argc, sqlite3_value **argv){
+    sqlite3_result_double(context, atan(sqlite3_value_double(argv[0]))); }
+
 
 static void rngFn(sqlite3_context *context, int argc, sqlite3_value **argv){
     if (!db_rng)
@@ -310,6 +331,12 @@ int apop_db_open(char *filename){
 	sqlite3_create_function(db, "sqrt", 1, SQLITE_ANY, NULL, &sqrtFn, NULL, NULL);
 	sqlite3_create_function(db, "pow", 2, SQLITE_ANY, NULL, &powFn, NULL, NULL);
 	sqlite3_create_function(db, "exp", 1, SQLITE_ANY, NULL, &expFn, NULL, NULL);
+	sqlite3_create_function(db, "sin", 1, SQLITE_ANY, NULL, &sinFn, NULL, NULL);
+	sqlite3_create_function(db, "cos", 1, SQLITE_ANY, NULL, &cosFn, NULL, NULL);
+	sqlite3_create_function(db, "tan", 1, SQLITE_ANY, NULL, &tanFn, NULL, NULL);
+	sqlite3_create_function(db, "asin", 1, SQLITE_ANY, NULL, &asinFn, NULL, NULL);
+	sqlite3_create_function(db, "acos", 1, SQLITE_ANY, NULL, &acosFn, NULL, NULL);
+	sqlite3_create_function(db, "atan", 1, SQLITE_ANY, NULL, &atanFn, NULL, NULL);
 	sqlite3_create_function(db, "log", 1, SQLITE_ANY, NULL, &logFn, NULL, NULL);
 	sqlite3_create_function(db, "ran", 0, SQLITE_ANY, NULL, &rngFn, NULL, NULL);
 	apop_query("pragma short_column_names");

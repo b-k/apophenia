@@ -15,6 +15,7 @@ onerun:
 	@#that Kmenta gets alphabetized under open-bracket. So
 	@#turn {{...}} into {...}.
 	@perl -pi.bak -e 's/indexentry{{([^}]*)}}/indexentry{$$1}/'  .texputs/$(DOCNAME).idx;
+	cp $(DOCNAME).dvi viewme.dvi
 
 pdf:	$(DOCNAME).pdf
 

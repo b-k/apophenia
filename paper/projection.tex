@@ -32,194 +32,6 @@ that minimizes the sum of squared distances between the data and that
 line. Factor analysis consists of finding the few dimensions where the
 data's variance is maximized, after being projected onto the subspace.
 
-\section{Models and constraints}
-Before embarking on the process of estimating models, it is worth taking
-some time to discuss the modeling process and how our models of the
-real world translate to estimable parameters.
-
-%A \vocab{hypothesis} is a constraint on otherwise unconstrained parameters. 
-
-Frequently, the statistical and real-world model happen to match very closely.
-For example, if we believe that $Y$ is an affine linear sum of $X_1$,
-$X_2$, $X_3$, then we are making a claim that 
-\begin{equation*}
-Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \alpha_3 X_3.
-\end{equation*}
-
-In a parallel manner, a statistician could estimate the $\beta$s in the equation
-\begin{equation*}
-Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon
-\end{equation*}
-using a standard OLS regression as shown later in this chapter.
-
-Given the parameters estimated using OLS, translating those parameters
-to the model is rather trivial:
-\begin{align*}
-\alpha_0 &= \beta_0\\
-\alpha_1 &= \beta_1\\
-\alpha_2 &= \beta_2\\
-\alpha_3 &= \beta_3.
-\end{align*}
-However, the translation between parameter estimates and model
-parameters easily becomes more complex.  For example, let us say that
-we are measuring bicycle usage, $B$, in different  cities.  It would be
-a function of the number of motorists $M$, the city's population $P$,
-the physical size of the city $S$,  and measures of the availability of
-public transportation $T$. But we know that the availability of public
-transportation is also a function of the city's population and physical
-size. Thus, our model is
-\begin{align*}
-B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
-T &= \alpha_4 P + \alpha_5 \sqrt{S}.
-\end{align*}
-
-One option for estimating this model is to run two analogous regressions,
-\begin{align*}
-B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \beta_3 T + \epsilon\\
-T &= \beta_4 P + \beta_5 \sqrt{S} + \epsilon.
-\end{align*}
-Now the correspondence between the two parameters is as trivial as
-before ($\alpha_0=\beta_0$, $\alpha_1=\beta_1$, et cetera). This is the
-simplest example of \vocab{exactly solved parameters}.
-But we get a
-distorted view of the effect of city size and population on bicycling
-prevalence, because some of those variables' effect is subsumed in the fact that
-those factors help to determine whether a city has public
-transportation. If the population of a city rises ten percent, ridership
-will not rise by $.1 \beta_1$, because $T$ will change as well.
-
-Another option is to substitute $T$ as specified in the second equation into
-the first. Then, the model is
-\begin{align*}
-B &= \alpha_0 M + (\alpha_1 +\alpha_3 \alpha_4) P + (\alpha_2 + \alpha_3 \alpha_5) \sqrt{S}.\\
-\end{align*}
-The OLS analogue of a linear equation still looks like it did before:
-\begin{align*}
-B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \epsilon.
-\end{align*}
-Now, the conversion is nontrivial:
-\begin{align}
-\alpha_0 &= \beta_0     \label{consteq1}\\
-\alpha_1 +\alpha_3 \alpha_4 &= \beta_1        \label{consteq2}\\
-\alpha_2 + \alpha_3 \alpha_5 &= \beta_2.       \label{consteq3}
-\end{align}
-Equation \ref{consteq1} still gives us an estimate of $\alpha_0$,
-but all our information about  $\alpha_1$ through $\alpha_5$ is
-embodied in Equations \ref{consteq2} and \ref{consteq3}. With four
-unknowns and two equations, the parameters are \airq{oversolved}. 
-\index{undersolved parameter}
-
-We have a better view of the effect of the variable $P$ on $B$, but we
-do not have enough information to disaggregate that effect into the
-direct effect ($\alpha_1$) and the indirect effect ($\alpha_3 \alpha_4$)
-caused by the effect population has on public transport availability
-($\alpha_4$). 
-
-Depending on your situation and goals, one setup or the other may be
-more appropriate. However, we must acknowledge the limitations of an
-undersolved system: $n$ parameter estimates can inform at most $n$ model
-parameters.
-
-Now, let us say that a prior study has shown that $\alpha_2= 2.204$.
-Discarding the equation for $T$ for now, our model is now:
-\begin{align*}
-B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
-\alpha_2 &= 2.204.
-\end{align*}
-and after estimating the parameters using a simple OLS estimation, the 
-translation from estimated $\beta$s to model $\alpha$s is:
-\begin{align*}
-\alpha_0 &= \beta_0\\
-\alpha_1 &= \beta_1\\
-\alpha_2 &= \beta_2\\
-\alpha_2 &= 2.204\\
-\alpha_3 &= \beta_3.
-\end{align*}
-Unless we have the incredible luck that $\beta_2=2.20400$, $\alpha_2$ is an
-\vocab{oversolved parameter} that has no solution.
-
-There are two things that one can do with an oversolved system. One is
-to use the extra constraints to inform the parameter estimation routine;
-in the example above, we would estimate the parameters under the
-assumption that $\beta_2$ is fixed at 2.204.
-You can do this using constrained least squares (Section
-\ref{constrainedls}) or via maximum likelihood estimation as in Chapter
-\ref{mle}. The other option is to compare the unconstrained version of
-the model with the constrained version to see how much distortion occurs
-when the constraint binds. This is \airq{testing the constraints}, aka,
-a \airq{hypothesis test}.
-\index{least squares!constrained}
-
-Recall that the two primary activities of the statistician are estimating
-models and testing models.  For an undersolved system, we can neither
-estimate nor test the model. For an exactly solved system, we can always
-estimate the parameters of the model, but can not verify or refute the
-model: you give me a data set, and I will always be able to give you
-some set of model parameters. For an oversolved system, we can both
-estimate the parameters and test whether the model is correct, because
-there will not always be a way to consistently transform the estimated
-parameters into model parameters.
-
-Because there is so little persuasive power in an estimated but not
-tested model, we often make up
-ways to convert an exactly solved system into an oversolved one.
-For example, one could add to any equation the additional equation
-$\alpha_i = 0$ for all $i$.
-By specifying
-$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ and $\alpha_1=0$,
-we have an oversolved system whose validity we can test. Indeed, this
-is the system of equations behind the $t$-tests that are universally
-reported with every regression.
-
-This may seem like belaboring the language with such a simple system,
-but it is easy to extend this framework to systems of equations, 
-exotic constraints, and other variants of the mapping from parameter
-estimates to model parameters and testing oversolved equations.
-
-Notably, it could be that the model can't be expressed as an affine
-linear sum at all. Perhaps your model is a function in the programming
-sense, that takes in a vector of inputs \ci{x1, x2, \dots, xn} and a
-vector of parameters \ci{p1, p2, \dots, pm}, runs
-through a thousand lines of code, and produces a value \ci{y}. The
-problem is still the same---estimate the parameters of the model using
-data---but the linear methods are no longer useful. In some cases, there
-is a linear system that does not do too much violence to reality; in
-other cases, you will need to use the maximum likelihood methods of
-Chapter \ref{mle}. However, one could overconstrain the parameters of
-this type of model as easily as those above, such as claiming that
-\cinline{p1 + p2 == 1}. Chapter \ref{mle} will also discuss likelihood
-ratio tests to evaluate the hypotheses embodied in constraints.
-
-By the way, a statement like `We reject
-the claim $\alpha_1=0$' is only half right. We are actually rejecting
-the claim that both
-$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ {\em and}
-$\alpha_1=0$. 
-The first and second equations are mathematically of equal
-status, but the custom is to presume that only the second equation is a
-subordinate equation which is under scrutiny. Thus, one would correctly
-say `we reject this system of equations'. Having given this caveat, the
-remainder of this chapter will use the traditional terminology that
-takes the base model as given, reducing
-the above pair of equations to the hypothesis $H_0: \alpha_1=0$.
-
-\summary{
-\item If the parameters of the model of the real world can not be solved using the 
-parameters of the statistical model (e.g., two unknowns and one
-equation), then the model is
-\vocab{undersolved}. Undersolved variables can neither be estimated nor
-tested.
-\item If the parameters of the model of the real world can be solved uniquely using the 
-parameters of the statistical model, then the model is
-\vocab{exactly solved}. Exactly solved variables can be estimated but not
-tested.
-\item If the parameters of the model of the real world have multiple,
-contradictory solutions using the parameters of the statistical model
-(e.g., $\alpha_1 = \beta_1$ and $\alpha_1 = 2.2$), then the model is
-\vocab{oversolved}. Oversolved systems can be both estimated and
-tested.
-}
-
 
 \section{Characteristics of data and distributions}\label{basicstats}
 The first step in analyzing a data set is always to get a quick lay of
@@ -423,7 +235,7 @@ people, each Black or African-American respondent to represent 123
 people, and each Asian to represent 36 people. 
 
 This is not the place to go into details about statistically sound means
-of weighting data. But if your data includes weightings, then you will
+of weighting data; see, e.g., \citet{sarndal:mass}. But if your data includes weightings, then you will
 want means to find the weighted moments of the data. Assuming you have
 data in vectors \ci{v}, \ci{v1}, and \ci{v2} and corresponding weights in a vector
 \ci{w}, then you can use the following functions. Notice that the
@@ -522,6 +334,7 @@ distribution.\footnote{Typography note: this book will use \airq{Normal},
 in an attempt to avoid un-mnemonic proper names, and with a capital to indicate
 that this is a proper name and not an adjective.} See the CLT (Section
 \ref{CLT}) for its application.
+
 
 \eqnbox{ \label{normal}
 P(x|\mu,\sigma)&=&{1\over \sigma\sqrt{2\pi}} e^{-{1\over 2}[{(x-\mu)\over\sigma}]^2}\\ 
@@ -746,11 +559,11 @@ been freed.
 
 Here is how this function is used. In the tradition of C, the code is
 mostly declarations, and in the last two lines, it will calculate the
-covariance matrix $X'X$ for the data set, and then find its eigenvalues
+matrix $\Xv'\Xv$ for the data set, and then find its eigenvalues
 and eigenvectors.  
 I will assume that you have already got a data matrix ready, named
 \cinline{data}, as per the last chapter. Now we need to remove the means
-from the data (using \cind{apop\_matrix\_normalize}), and find $X'X$:
+from the data (using \cind{apop\_matrix\_normalize}), and find $\Xv'\Xv$:
 
 \cindex{apop\_dot}
 \begin{lstlisting}
@@ -770,7 +583,7 @@ the largest eigenvalues, and project the data onto their associated eigenvectors
 The GSL helps us by giving us functions for
 finding the indices of the largest elements of a vector.
 \begin{lstlisting}
-const int dimensions_we_want = 2;
+int dimensions_we_want = 2;
 gsl_matrix *pc_space = gsl_matrix_alloc(ds,dimensions_we_want);
 gsl_vector temp_vector;
 int indexes[dimensions_we_want];
@@ -850,6 +663,7 @@ $t+1$ of
 time series data, then we need to write down a matrix
 $\Sigma$ to describe the covariances.
 
+\comment{
 Thus, we can write down a catalog of models. The baseline is OLS, but by
 providing different forms for $\Sigma$ or other minor modifications, we
 can write down other models. The computational process is similar
@@ -870,6 +684,7 @@ for $\Sigma$, making it wholly unusable for data sets larger than maybe a
 thousand observations. The sparse-matrix implementation of GLS is
 left as an exercise to the reader. In the mean time, the reader has the
 setup-specific models.]
+}
 
 Let $\betav$ be the true parameters of the process that produced the
 data. There is no way to truly know $\betav$, but we can estimate it
@@ -880,12 +695,12 @@ $\betav$; the key feature we will be demanding is that the estimator be
 unbiased, meaning that in the limit, $E(\hat\betav) = \betav$.
 
 The catalog describes the mean and variance of the $\hat\betav$s that
-each model derives, because the Normal distribution---the basis for all
-hypothesis tests---requires those two inputs,
-and without them we can do no post-estimation testing.  
-In Section \ref{tstat} we get rid of $\sigma$, but we
-need to know $\mu$, and unbiasedness guarantees us that if all is going
-well, $\mu =\hat\betav$.
+each model derives, because the Normal distribution---the basis for
+almost all the hypothesis tests associated with linear models---requires
+those two inputs, and without them we can do no post-estimation testing.
+In Section \ref{tstat} we get rid of $\sigma$, but we need to know
+$\mu$, and unbiasedness means that if all is going well, $\mu
+=\hat\betav$.
 
 \subsection{OLS}
 \index{Ordinary Least Squares|(textbf}\index{OLS|see{Ordinary Least Squares}}
@@ -910,8 +725,9 @@ Assumptions:
 \item $\uv$ is normally distributed.
 \item $E(\uv) = 0$.
 \item $\var(u_i) = \sigma^2$, a constant, $\forall\ i$.
-\item $\cov(u_i, u_j) = 0$, $\forall\ i\neq j$. This plus the above rule
-mean that the variance-covariance matrix for the observations' errors is
+\item $\cov(u_i, u_j) = 0$, $\forall\ i\neq j$. Along with the above
+assumption, this
+means that the variance-covariance matrix for the observations' errors is
 $\Sigma =
 \sigma^2{\bf I}$.
 \item $\var(\Xv_k)>0$, and as $n\to\infty$, it remains finite.
@@ -946,11 +762,14 @@ E(\hat\betav_{\rm GLS}) &=& \beta					\nonumber\\
 
 \subsection{IV} \index{instrumental variables} 
 \index{IV|see{instrumental variables}}	\label{IV} 
-If $\Xv$ is measured with error, then $\hat\betav_{OLS}$ is inconsistent and
-asymptotically biased toward zero (in most cases, see e.g. \cite{kmenta},
-p 349). Bias is a big deal, so we need an alternate method. If there exists
-another instrumental variable $\Zv$ such that $\cov([Z_i-\overline
-Z][u_i-\overline u])=0$, then the following holds:
+If a column of $\Xv$ is measured with error, then $\hat\betav_{OLS}$ is
+inconsistent and asymptotically biased toward zero (in most cases, see
+e.g. \cite{kmenta}, p 349). Bias is a big deal, so we need an alternate
+method. Let $\xv_i$ be the column that is measured with error, let
+$\zv$ be a column of alternate data (the instrument), and let $\Zv$ be
+the original data set $\Xv$ with the column $\xv_i$ replaced by $\zv$.
+
+If $\cov(\zv,\uv)=0$, then the following holds:
 
 \eqnbox{
 \hat\betav_{\rm IV} &=& (\Zv'\Xv)^{-1}(\Zv'\yv)			\nonumber\\
@@ -960,13 +779,15 @@ E(\hat\betav_{\rm IV}) &=& \beta					\nonumber\\
 }
 
 Note how the variance shrinks as $\Zv'\Xv$ increases, and if
-$\Zv'\Xv\approx{\bf 0}$, you can not use this method (since
-$\det(\Zv'\Xv) \to \infty$). 
+$\Zv'\Xv \to {\bf 0}$ (which happens when $\cov(\zv, \xv_i)\to 0$),
+you can not use this method, since $\det(\Zv'\Xv) \to \infty$.
 
 \subsection{Constrained LS \index{least squares!constrained}}
 \label{constrainedls}
 
-Add the constraint that $\Qv'\betav=\cv$. Then:
+Add the constraint that $\Qv'\betav=\cv$, for some fixed $\Qv$ and $\cv$. 
+Page \pageref{ftestsec} provides a number of examples of constraints in
+this form. Then:
 
 %\wideeqnbox{6.2in}{
 \wideeqnbox{\textwidth-0.5cm}{
@@ -1070,8 +891,8 @@ writing down the full $\Sigma$ matrix in all its excess. This is the
 method used by \cind{apop\_WLS} (which is what you would use in
 practice, rather than calculating $\Xv_\Sigma$ yourself).
 
-\subsection{Fitting it} 
-To summarize,
+\section{Fitting it} 
+As above,
 the coefficients of  the line of best fit for the OLS model is the value of $\betav_{\rm OLS}$ that solves:
 $ \betav_{\rm OLS} = (\Xv'\Xv)^{-1}\Xv'\yv$.
 
@@ -1123,9 +944,7 @@ $\betav$. Notice that we never had to take an inverse.
 An alternative approach actually takes the inverse of $(\Xv'\Xv)$. In practice, this is
 almost necessary, because the variance is $\sigma^2 (\Xv'\Xv)^{-1}$.
 The matrix that projects data onto the space defined by $\Xv$,
-often called the `hat matrix', is also derived from the inverse: ${\bf H} = \Xv(\Xv'\Xv)^{-1}\Xv'$. Although it may
-make the computer sweat for large matrices, we humans need only make one
-function call to find $(\Xv'\Xv)^{-1}$:
+often called the `hat matrix', is also derived from the inverse: ${\bf H} = \Xv(\Xv'\Xv)^{-1}\Xv'$. You will recall that taking the inverse is one function call:
 \begin{lstlisting}
 gsl_matrix *xpxinv;
 apop_det_and_inv(xpx->matrix, &xpxinv, 0, 1);
@@ -1144,8 +963,7 @@ apop_data_free(first_part);
 If we have a second data set \cinline{set2} of the appropriate number of
 rows (meaning that \cinline{(set->matrix-$>$size1 == set2->matrix-$>$size1)}, then we can use the hat matrix to do the projection:\\
 \begin{lstlisting}
-gsl_matrix * projected_data = gsl_matrix_calloc(set->matrix->size1,set2->matrix->size2);
-gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, hat_matrix, set2->matrix, projected_data);
+apop_data * projected_data = apop_dot(hat_matrix, set2, 0,0);
 \end{lstlisting}
 If the hat matrix is of few enough dimensions, we can plot the
 projection using \cind{apop\_data\_print}; see page \pageref{gnuprint}.
@@ -1178,6 +996,5 @@ can be used to fit a model where the observational unit is the group.
 Writing a model to execute such a multilevel model is not
 difficult---just write a model whose \cinline{estimate} function calls
 another model's \cinline{estimate} function. 
-
 An example will be forthcoming.
 

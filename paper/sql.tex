@@ -48,16 +48,17 @@ Why is SQLite \airq{lite}? Because most SQL-oriented databases are
 designed to be used by multiple users, such as a firm's customers
 and employees. With multiple users come issues of simultaneous access
 and security, that add complications on top of the basic process of
-querying data. SQLite is a single-user system, which is exactly right
-for a data anlysis project. If you hope to use another database system,
-you will need to learn the (typically vendor-specific) commands for
-locking and permissions.
+querying data. SQLite is designed to be used by one user at a time, which
+is exactly right for the typical data anlysis project. If you hope to use another
+database system, you will need to learn the (typically vendor-specific)
+commands for locking and permissions.
 
+\comment{
 Apophenia meshes well with SQLite, and is distributed with a few
 standalone programs that will read and write SQLite databases. If you want
 to experiment with your own data while reading through this chapter, you
 can try \cind{apop\_text\_to\_db} on the command line to produce an SQLite
-database from a text file. Try \cind{apop\_text\_to\_db -h} for help.
+database from a text file. Try \cind{apop\_text\_to\_db -h} for help.}
 
 This chapter will primarily consist of an overview of SQL, with which you can
 follow along using any of the above tools. Section \ref{foldingsql}
@@ -83,8 +84,8 @@ different from column to column.
 Each row in a database can be taken to represent one observation; in a
 survey, each row would be data about a single person. There is no
 mechanism in SQL for naming a row, although it is common enough to
-have a plain old column named \sinline{row\_name}, or
-another identifier such as \sinline{social\_security\_no} that serves
+have a plain old column named \si{row\_name}, or
+another identifier such as \si{social\_security\_no} that serves
 this purpose.  
 
 Your in-memory matrices will generally be expected to have a similar
@@ -102,15 +103,26 @@ One selects columns using the
 column name, and there is no real mechanism for selecting an arbitrary
 subset of columns; one selects rows by their characteristics, and there
 is no real mechanism to select rows by name.\footnote{If there is a
-\sinline{row\_name} variable, then one could select rows \sinline{where
+\si{row\_name} variable, then one could select rows \si{where
 row\_name == "Joe"}, but that is simply selecting rows with the
-characteristic of having a \sinline{row\_name} variable whose value is
-\sinline{"Joe"}. That is, column names are {\it bona fide} names; row
+characteristic of having a \si{row\_name} variable whose value is
+\si{"Joe"}. That is, column names are {\it bona fide} names; row
 names are just data.}
 
 \section{Basic queries}
 Many methods of data slicing and joining are easy using database queries,
 but difficult via matrix operations.
+
+\marginaliafixed{14}{Commas and semicolons}{In SQL, semicolons are \airq{terminators} for a given command. You can
+send two SQL commands at once, each ending with a semicolon. Many SQLite
+systems will forgive you for omitting the final semicolon.
+
+Commas are \airq{separators}, meaning that the last element in the list
+must not have a semicolon after it. This is an incredibly common error
+that you will have to watch out for. If you write a query like
+\si{select country, pop, from population} then you will get an error
+like ``syntax error near \si{from}'' which is referring to the comma
+just before \si{from} that is not separating two columns.}
 
 For example, pulling a subset of your data is trivial in SQL. If
 you need all of the data for those countries with populations under 50
@@ -122,118 +134,168 @@ select *
     where population <= 50;
 \end{lstlisting}
 
-You can read this like English (once you know that \sinline{*} means `all
-columns'): it will find all of the rows in a table named \sinline{pop}
-where \sinline{population} in that row is less than or equal to 50, and
+You can read this like English (once you know that \si{*} means `all
+columns'): it will find all of the rows in a table named \si{pop}
+where \si{population} in that row is less than or equal to 50, and
 return all the columns for those rows.
 
-Generally, the \sinline{select} statement gives a list of columns that
-the output table will have; the \sinline{from} clause declares where the
+Generally, the \si{select} statement gives a list of columns that
+the output table will have; the \si{from} clause declares where the
 source data comes from; and, there are modifiers or restrictions
-(in this case \sinline{where}) on the rows to be output.  And that's
+(in this case \si{where}) on the rows to be output.  And that's
 it. Every query you run will have these three parts in this order: column
 specification, data source, row specification.\footnote{You may have no
 row restrictions, in which case your query will just have the first two
 parts and a null third part.} However, the means of specifying rows,
 columns, and source data allows for a huge range of possibilities.
 
-\paragraph{Select}
-The \sqlind{select} clause will specify the columns of the table that will
-be output. The easiest list is \sinline{*}, which means `all the columns'.
+\paragraph{Select} \skeyind{select}
+The \si{select} clause will specify the columns of the table that will
+be output. The easiest list is \si{*}, which means `all the columns'.
 
 Other options:\begin{itemize}
-\item Explicitly list the columns:\\ \sinline{select country, pop}
+\item Explicitly list the columns:\\ \si{select country, pop}
 \item Explicitly mention the table you are pulling from:\\
-\sinline{select pop.population, gdp.country}\\
+\si{select pop.population, gdp.country}\\
 This is unnecessary here, but will become
 essential when dealing with multiple tables below.
 \item Rename the output columns:\\
-\sinline{select pop.country as country, gdp as gdp\_in\_millions\_usd}\\ 
-Notice that if you do not rename \sinline{pop.country as country}, then
-you will need to use \sinline{pop\textbackslash.country} in future
+\si{select pop.country as country, gdp as gdp\_in\_millions\_usd}\\ 
+Notice that if you do not alias \si{pop.country as country}, then
+you will need to use \si{pop\textbackslash.country} in future
 queries, which is a bit annoying.  
 \item Generate your own new columns. For example, to convert GDP in
 dollars to GDP in British Pounds (using the conversion rate as of this
 writing):\\
-\sinline{select country, gdp*0.53 as gdp\_in\_GBP}\\
-The \sinline{as gdp\_in\_GDP} subclause is again more-or-less
+\si{select country, gdp*0.53 as gdp\_in\_GBP}\\
+The \si{as gdp\_in\_GDP} subclause is again more-or-less
 essential if you hope to easily refer to this column in the future. 
 \end{itemize}
 
-\paragraph{From} The \sqlind{from} clause specifies the tables from which
-you will be pulling data. The simplest case is a single table: \sinline{from data\_tab}, but you can specify as many tables as necessary: \sinline{from data\_tab1, data\_tab2}. 
+\paragraph{From}\skeyind{from} The \si{from} clause specifies the tables from which
+you will be pulling data. The simplest case is a single table: \si{from data\_tab}, but you can specify as many tables as necessary: \si{from data\_tab1, data\_tab2}. 
 
-You can alias the tables, for easier reference. The clause \sinline{from
+You can alias the tables, for easier reference. The clause \si{from
 data\_tab1 d1, data\_tab2 d2} gives short names to both tables, which
-can be used for lines like \sinline{select d1.age, d2.height}.
+can be used for lines like \si{select d1.age, d2.height}.
 
 Another option is to take data from subqueries; see below.
 
+\marginalia{5}{Borrowing C's annoyances}{\index{SQL!Comments}\index{Comments!SQL}
+SQL accepts C-style block comments of the
+form \si{/* --- */}, but not the \si{//} form. It has the same trouble
+with nested comments as C.
+
+Also following C's lead, dividing two integers produces an integer, not
+the real number you almost certainly expect. Thus, rather than
+calculating, say, \si{count1/count2}, cast one of the columns to a real
+number by adding \si{0.0}: \si{(count1+0.0)/count2} will return the real
+number it should. [SQL has a \si{cast}\skeyind{cast} keyword, but it is
+much easier to just use the trick of adding \si{0.0}.]
+}
 Aliasing is generally optional but convenient, but one case where
 it is necessary is when you are joining a table to itself.
-For now, simply note the syntax: \sinline{from data t1, data t2} will let
-you refer to the \sinline{data} table as if it were two entirely independent
+For now, simply note the syntax: \si{from data t1, data t2} will let
+you refer to the \si{data} table as if it were two entirely independent
 tables. 
 
-Notice, by the way, that when we aliased something in the \sinline{select}
-section, the form was \sinline{select long\_col\_description as lcd}, while
-in the \sinline{from} section there is no \airq{as}: \sinline{from long\_file\_name lfn}.
+Notice, by the way, that when we aliased something in the \si{select}
+section, the form was \si{select long\_col\_description as lcd}, while
+in the \si{from} section there is no \airq{as}: \si{from long\_file\_name lfn}.
 
-\paragraph{Where}
-The \sqlind{where} clause is your chance to pick out only those rows which
-interest you. With no \sinline{where} clause, the query will return one line
+\paragraph{Where}\skeyind{where}
+The \si{where} clause is your chance to pick out only those rows which
+interest you. With no \si{where} clause, the query will return one line
 for every line in your original table (and the columns returned will
-match those you specified in the \sinline{select} clause).
+match those you specified in the \si{select} clause).
 
 Use as many subclauses as you wish, using the Boolean operators you
-know and love: \sinline{where ((d1.age > 13) or (d2.height >= 175)) and
+know and love: \si{where ((d1.age > 13) or (d2.height >= 175)) and
 (d1.weight == 70)}.
 
-The \sinline{where} clause refers to the root data, not the output,
+You can select based on text like any other number, such as \si{where
+country == "United States"}. Notice that any string that is not an SQL
+keyword or a table/column name must be in quotation marks. Case matters:
+\si{"United States" != "United states"}. However, there is an out should
+you need to be case-insensitive: the \sind{like} keyword. The clause \si{where 
+country like "united states"} will match the fully-capitalized country
+name as well as the lower case version. The
+\sind{like} keword will even accept two wildcards: 
+\si{\_} will match any single character, and \si{\%} will match any
+set of characters. For example, \si{where country like "unit\%ates"}
+will match \si{"United States"}, as will \si{where country like "united\_states"}.
+
+The \si{where} clause refers to the root data, not the output,
 meaning that you can readily refer to columns that you do not mention
-in the \sinline{select} clause.
+in the \si{select} clause.
 
 \exercise{\label{morepop} Use a \si{where} clause and the \si{population} table to find
 the current population of your home country.  Once you know this amount,
 select all of the countries that are more populous than your country.  
 }
 
+\skeyind{in} \skeyind{between}
+Generalizing from equality and inequalities, you may want a group of
+elements or a range. For this, there are the \si{in} and \si{between}
+keywords. Let us say that we want only the U.S.A. and China in our
+output. Then we would ask only for columns where the country name is in
+that short list: 
+\begin{lstlisting}
+select * 
+from gdp
+where country in ("United States", "China")
+\end{lstlisting}
+
+The \si{in} keyword typically makes sense for text data; for numeric
+data you probably want a range. Here are the countries with GDP between
+\$10 and \$20 billion:
+
+\begin{lstlisting}
+select * 
+from gdp
+where gdp between 10000 and 20000
+\end{lstlisting}
+
+\exercise{Write a query using \si{<=} and \si{>=} to replicate the above
+query that used \si{between}.}
+
+
 \paragraph{Pruning rows with \sinlinetwo{distinct}} The \sqlind{distinct}
 keyword will tell the SQL engine that if several rows would be exact
 duplicates, to return only one copy of that row. Place it after 
-\sinline{select}: 
+\si{select}: 
 \begin{lstlisting}
 select distinct age, height, zip
 from table
 where age > 20
 \end{lstlisting}
-The  \sinline{distinct} word prunes the rows, but is placed in the 
-\sinline{select} portion of the program.  This reads more like English, but it
-breaks the story above that the \sinline{select} statement specifies the
-columns and the \sinline{where} statement specifies the rows.
+The  \si{distinct} word prunes the rows, but is placed in the 
+\si{select} portion of the program.  This reads more like English, but it
+breaks the story above that the \si{select} statement specifies the
+columns and the \si{where} statement specifies the rows.
 
 \summary{
 \item A query consists of three parts: the columns to be output, the
 data source, and the rows to be output.
-\item The columns are generally specified in the \sinline{select}
-statement. You can pull all the columns from the data using \sinline{select *}, 
-or you can specify individual columns like \sinline{select a, b, a*b as
+\item The columns are generally specified in the \si{select}
+statement. You can pull all the columns from the data using \si{select *}, 
+or you can specify individual columns like \si{select a, b, a*b as
 product}.
-\item The data source is in the \sinline{from} clause, which is
+\item The data source is in the \si{from} clause, which is
 typically a list of tables.
-\item The row specification, generally in the \sinline{where} clause,
+\item The row specification, generally in the \si{where} clause,
 is a list of conditions that all rows must meet. It can be missing
 (and so all possible rows are returned) or it can include a series of
-conditions, like \sinline {where (a == b) and (b <= c)}.
+conditions, like \si {where (a == b) and (b <= c)}.
 }
 
 \subsection{Joining}\index{join!database|(}
-If you specify two tables in your \sinline{from} line, then, lacking any
+If you specify two tables in your \si{from} line, then, lacking any
 restrictions, the database will return one joined line for every pair of lines.
 Let table 1 have one column with data $\left[\begin{matrix}1\cr 2\cr 3\end{matrix}\right]$ and table 2 have one column
-with data $\left[\begin{matrix}a\cr b\cr c\end{matrix}\right]$; then \sinline{select * from table1, table2} will
+with data $\left[\begin{matrix}a\cr b\cr c\end{matrix}\right]$; then \si{select * from table1, table2} will
 produce an output table with every combination:
-\sinline{\\
+\si{\\
 1 a\\
 1 b\\
 1 c\\
@@ -244,15 +306,15 @@ produce an output table with every combination:
 3 b\\
 3 c}. 
 
-If \sinline{data1} has 15 lines, and \sinline{data2} has 8 lines, then
-\sinline{select * from data1, data2} will return 15$\times$8 = 120 lines.
+If \si{data1} has 15 lines, and \si{data2} has 8 lines, then
+\si{select * from data1, data2} will return 15$\times$8 = 120 lines.
 Such a product quickly gets overwhelming: the World Bank data has 208
 countries, so \ci{select * from pop, gdp} produces 43,264 rows. 
 
 \exercise{Try this query now to see what those 43,264 rows look like.}
 
 
-Thus, the \sinline{where} clause becomes essential. Its most typical use is
+Thus, the \si{where} clause becomes essential. Its most typical use is
 when one column in each table represents identical information. For
 example, say that one data source gave you mean income by ZIP code,
 while another gave you mean heights by ZIP code. Joining the two tables
@@ -272,7 +334,7 @@ You can see that using the table-dot-column format for the column names is now
 essential. Also, notice that we did not have to include either \si{country} name
 in the output if it is not used later. If you do want to include a
 country name,
-then you can use either \sinline{t1.country} or \sinline{t2.country}; since
+then you can use either \si{t1.country} or \si{t2.country}; since
 the two will be by definition identical, using both will be redundant
 (but may help to verify that things are working).
 
@@ -285,15 +347,15 @@ intend to use in a join later. The command:\sindex{indexes}
 create index econ_index on econ_data(zip)
 create index econ_index2 on econ_data(age)
 \end{lstlisting}
-would index the table \sinline{econ\_data} on the ZIP code and age columns.
-The name of the index, \sinline{econ\_index}, is basically irrelevant and can
+would index the table \si{econ\_data} on the ZIP code and age columns.
+The name of the index, \si{econ\_index}, is basically irrelevant and can
 be any gibberish which sounds nice to you. Once you have created this
 index, a join using any of these three columns goes {\sl much} faster.
 For the query above, you will want to create an index for both {\tt
-econ\_data(zip)} and \sinline{health\_data(zip\_code)}.
+econ\_data(zip)} and \si{health\_data(zip\_code)}.
 
 There is standard SQL syntax for indexing multiple columns, 
-\sinline{create index e\-con\_\-in\-dex on econ\_data(zip, age)}, but as a
+\si{create index e\-con\_\-in\-dex on econ\_data(zip, age)}, but as a
 practical matter, SQLite really only cares about the first item in the
 list, so you are better off creating one index per variable as above.
 \index{join!database|)}
@@ -306,7 +368,7 @@ from gdp;
 \end{lstlisting}
 
 This produces a table with one column and one row, listing the total
-number of rows in the \sinline{data} table.
+number of rows in the \si{data} table.
 
 \exercise{Verify that \si{select * from population, gdp} produces 43,264
 rows.}
@@ -318,7 +380,7 @@ and the $(x,y)$ point is a measurement taken that year at that location.
 
 Conversely, the most convenient form for this data in a database is
 three columns: year, location, statistic. After all, how would you write a query
-such as \sinline{select statistic from tab where year < 1990} if there
+such as \si{select statistic from tab where year < 1990} if there
 were a separate column for each year?
 
 Converting between the two is an annoyance, and so Apophenia provides
@@ -344,7 +406,7 @@ class name, and return a single line for each group.
 
 
 The two other aggregation commands which will be useful to you are {\tt
-sum()} and \sinline{avg()}. These take an existing row as an argument.
+sum()} and \si{avg()}. These take an existing row as an argument.
 For example, to search for height disparities by ZIP code, try:
 \ns{4}
 \begin{lstlisting}
@@ -357,7 +419,7 @@ if we are not interested in it.
 
 \exercise{What is the average GDP per capita?}
 
-Feel free to specify multiple \sinline{group by} clauses; this creates what
+Feel free to specify multiple \si{group by} clauses; this creates what
 some call a \ind{cross tab}. For example, to get average income by
 height and ZIP code: 
 %\begin{verbatim}
@@ -371,9 +433,9 @@ group by zip, height;
 When you want to analyze the crosstab, you will be very
 interested in the \cind{apop\_db\_to\_cross\-tab} function, {\em qv}.
 
-The function \sinline{sum()} works the same. 
+The function \si{sum()} works the same. 
 
-You can use \sinline{count} with the \sind{distinct} keyword to find out how
+You can use \si{count} with the \sind{distinct} keyword to find out how
 many of each row you have in your data set. That is, you can produce
 weights for each observation type:
 
@@ -384,23 +446,47 @@ where age > 20
 group by age, height, zip
 \end{lstlisting}
 
-\exercise{Find the total GNP per capita for each World Bank grouping.
+\exercise{Find the total GDP per capita for each World Bank grouping.
 Here, you will join using the country columns in the \si{gdp} and
 \si{classes} table, and by the country columns in the \si{pop} and
-\si{classes} table. Add up total GNP in the region, and divide by total
+\si{classes} table. Add up total GDP in the region, and divide by total
 population in the region. Do the results match your expectations?}
+
+With a \si{group by} command, you have two levels of elements, items and
+groups, and you may want subsets of each. As above, you can get a subset
+of the items with a \si{where} clause. Similarly, you can exclude some
+groups from your query using the
+\sind{having} keyword.
+
+[The next bit involves a forward reference to joins which needs to be
+cleaned up. I'll probably include a fully-joined table in the sample
+db.]
+
+Are African/Middle Eastern countries larger (by population) North of
+the Sahara or South of the Sahara? We know how to find the average
+population of every country in a region, but we only need the African
+regions. Just as a \si{where} clause picks only certain rows, the
+\si{having} clause can pluck out a few groups:
+
+\begin{lstlisting}
+select class, avg(population) 
+from pop, classes
+where pop.country==classes.country
+group by class
+having class like "%Africa"
+\end{lstlisting}
 
 \paragraph{Apophenia's SQL extensions}
 That's all the aggregators you get in standard SQL.
 Apophenia defines a few more of the aggregations that statisticians
 commonly use, such as moments. You can use the following aggregation
-functions in an SQL call that you make from Apophenia: \sinline{stddev
+functions in an SQL call that you make from Apophenia: \si{stddev
 var variance skew kurt kurtosis}. There are redundancies so that you
 don't have to remember whether to abbreviate or not.
 
 This may also be a good time to mention three more extensions to standard
-SQL: \sinline{sqrt, pow, exp, log}. These functions do what you expect:
-\sinline{select log(income), pow(in\-come, 3), sqrt(income) from data}
+SQL: \si{sqrt, pow, exp, log}. These functions do what you expect:
+\si{select log(income), pow(in\-come, 3), sqrt(income) from data}
 will give you a table with the log of incomes and, for what it's worth,
 incomes cubed and the square root of incomes.
 
@@ -434,7 +520,7 @@ You can think of joining two tables as setting one table to the right of
 another table. But now and then, you need to stack one on top of
 the other. There are four keywords to do this.
 
-\paragraph{\cinlinetwo{Union}} For example, \sindex{Union}
+\paragraph{\cinlinetwo{Union}}\skeyind{union} For example, \si{union}, such as
 \begin{lstlisting}
 select id, age, zip
 from data_set_1
@@ -446,23 +532,24 @@ will produce the results of the first query stacked directly on top
 of the second query. Be careful that both tables have exactly the same
 number of columns.
 
-\paragraph{\cinlinetwo{Union all}}\sindex{Union all} If a line is duplicated in both tables,
+\paragraph{\cinlinetwo{Union all}}\skeyind{union all} If a line is duplicated in both tables,
 then the \cinlinetwo{union} operation throws out
-one copy of the duplicate lines, much like \sinline{select distinct}
-includes only one of the duplicates. Replacing \sinline{union} with \sinline{union all} will retain the duplicates.
+one copy of the duplicate lines, much like \si{select distinct}
+includes only one of the duplicates. Replacing \si{union} with \si{union all} will retain the duplicates.
 
-\paragraph{\cinlinetwo{Intersect}}\sindex{Intersect} As you can guess,
-putting \sinline{intersect} between two \sinline{select} statements
+\paragraph{\cinlinetwo{Intersect}}\skeyind{intersect} As you can guess,
+putting \si{intersect} between two \si{select} statements
 returns a single copy of only those lines that appear in both tables.
 
-\paragraph{\cinlinetwo{Except}}\sindex{Except} This is the subtraction: it returns only
+\paragraph{\cinlinetwo{Except}}\skeyind{except} This is the subtraction: it returns only
 elements from the first table that do not appear in the second. Notice
 the asymmetry: absolutely nothing in the second table will appear. 
 
-\subsection{Creating tables} There are two ways to create a table. One
-is via  a \sind{create} statement and then an \sind{insert} statement
-for every single line. The \sinline{create} statement simply requires a
-list of column names; the \sinline{insert} statements simply requires a
+\subsection{Creating tables}\skeyind{create}\skeyind{insert} 
+There are two ways to create a table. One
+is via  a \si{create} statement and then an \si{insert} statement
+for every single line. The \si{create} statement simply requires a
+list of column names; the \si{insert} statements simply requires a
 list of one data element for each column.
 \begin{lstlisting}
 begin;
@@ -473,13 +560,14 @@ insert into newtab values("Bob", 14);
 commit;
 \end{lstlisting}
 
-The \sind{begin}-\sind{commit} wrapper, by the way, means that everything
+\skeyind{begin}\skeyind{commit}
+The \si{begin}-\si{commit} wrapper, by the way, means that everything
 will happen in memory until the final commit. The program may run
 faster, but if the program crashes in the middle, then you will have
 lost everything.  The optimal speed/security trade-off is left as an
 exercise for the reader.
 
-If you have hundreds or thousands of \sinline{insert}s, you are
+If you have hundreds or thousands of \si{insert}s, you are
 almost certainly better off putting the data in a text file and using
 \sind{apop\_text\_to\_db}. The form above is mostly useful in situations
 where you are creating the table in mid-program; see the example on
@@ -487,7 +575,7 @@ page \pageref{createeg}.
 
 
 The other method of creating a table is by saving the results of a
-query. Simply append \sinline{create table newtab as} at the head of the
+query. Simply append \si{create table newtab as} at the head of the
 query you would like to save: 
 %#sql
 \begin{lstlisting}
@@ -500,29 +588,106 @@ where height > 175
 \exercise{Create a \si{gdp\_per\_capita} table, based on your query from
 page \pageref{gdppercap}.}
 
+
 \summary{
 \item You can join tables by listing multiple tables in the
-\sinline{from} clause. When you do, you will need to specify a
-\sinline{where} clause, and probably the \sinline{distinct} keyword, to
+\si{from} clause. When you do, you will need to specify a
+\si{where} clause, and probably the \si{distinct} keyword, to
 prevent having an unreasonably long output table.
 \item If you intend to join elements, you can speed up the join
 immensely by creating an index first.
-%}
-%\summarynoitems{(continued)
-%\begin{itemize}
-\item SQL includes a few simple aggregation commands: \sinline{avg()},
-\sinline{sum()}, and \sinline{count()}. Apophenia provides a few more
+\item SQL includes a few simple aggregation commands: \si{avg()},
+\si{sum()}, and \si{count()}. Apophenia provides a few more
 nonstandard aggregators for queries called using its functions. 
-\item When aggregating, you can add a \sinline{group by} clause to
+}
+\summarynoitems{(continued)
+\begin{itemize}
+\item When aggregating, you can add a \si{group by} clause to
 indicate how the aggregation should be grouped.
 \item Sort your output using an \si{order by} clause.
 \item Tables can be stacked using 
-\sinline{union}, \sinline{union all}, \sinline{intersect}, and \sinline{except}
-\item You can create tables using the \sinline{create} and
-\sinline{insert} commands, but you are probably better off just reading
+\si{union}, \si{union all}, \si{intersect}, and \si{except}
+\item You can create tables using the \si{create} and
+\si{insert} commands, but you are probably better off just reading
 the table from a text file.
-%\end{itemize}
+\end{itemize}
 }
+
+\subsection{Subqueries}\index{subqueries} 
+One of SQL's nicest tricks is that it allows for the input tables to be
+queries themselves. For example: 
+how large is the average World Bank grouping?
+Answering this question is a two-step process: 
+get a \si{count(*)} for each category, and then get an
+average of that. You could run a query to produce a table of counts,
+save the table, and then run a query on that table to find the averages.
+\begin{lstlisting}
+create table temptab as
+    select count(*) as ct
+      from classes
+      group by class;
+select avg(ct) 
+from temptabl
+\end{lstlisting}
+But rather than generating a temporary table, SQL allows you to simply
+insert the \si{select} statement directly into the query where it is
+used:
+\sindex{group by}
+\begin{lstlisting}
+select avg(ct) 
+from (select count(*) as ct
+      from classes
+      group by class)
+\end{lstlisting}
+The query inside the \si{from} clause will return a table, and even
+though that table has no name, it can be used as a data source like any other
+table. So the example will first produce a table with one line for each
+class, listing the number of observations there, and then it will
+take that table and find the average of its \si{ct} column.
+
+Everywhere you would put a table name, you could put a query 
+instead. Of course, the query output has no name, so you may need to
+alias the result: \si{from (select ...) t1} will allow you to refer to
+the query's output as \si{t1} elsewhere in the query.
+
+\exercise{On page \pageref{morepop}, you first found your home country's
+population, then the countries with populations greater than this. Use
+a subquery to do this in one query.}
+
+\paragraph{Subsetting via a foreign table} The section on joining
+put two tables in the \si{from} clause, thus implementing the full
+process of joining two tables and culling out rows via the \si{where}
+clause. But you can also put a second table directly in the \si{where}
+clause.
+
+If you look at the World Bank data, you will see a large number of
+countries that are small islands of a few million people. Let us say
+that we are unconcerned with these countries, and want only the GDP of
+countries where \si{population > 270}.
+
+\exercise{Write a query to pull only the GDP of countries where the
+population is greater than 270 million using the join syntax above.}
+
+But in this case, we are not particularly concerned with the population
+{\it per se}, but are just using it to eliminate rows. It would thus be
+logical to fit the query into the \si{where} clause, since that is the
+clause that is typically used to select a subset of the rows. 
+
+Indeed, we can put a query directly into a \si{where ... in} clause:
+\begin{lstlisting}
+select * 
+from gdp
+where country in (select country from pop where population > 270)
+\end{lstlisting}
+The  subquery will return a list of country names, and the main query
+can then use those as if you had directly typed them in.
+
+This is typically much faster than a full join-and-prune operation.
+Notice also that the \si{from} clause does not list the table used in
+the subquery, which means that we do not have the relative inefficiency
+of a join-and-prune, but can not refer to any of the subquery's columns
+in the output.
+
 
 \section{More SQL trickery} Frankly, SQL is not very good for
 creating new data from the existing. But the few things that you can do
@@ -536,51 +701,17 @@ select year, (t1.income - t2.income) as diff
 \end{lstlisting}
 
 
-The \sinline{where} clause will line up the table with a copy of itself
-lagged by one year, and then the \sinline{diff} variable will be the
+The \si{where} clause will line up the table with a copy of itself
+lagged by one year, and then the \si{diff} variable will be the
 one-year change in income.
 
 
-\paragraph{Subqueries}\index{subqueries} 
-One of SQL's nicest tricks is that it allows for the input tables to be
-queries themselves. For example: what is the mean number of observations per
-ZIP code?
-
-How large is the average World Bank grouping?
-You first need to get a \sinline{count(*)} grouped by category, and then get an
-average of that. You could run a query to produce a table of counts,
-save the table, and then run a query on that table to find the averages.
-Here is how to do all of this in one query: 
-\sindex{group by}
-\begin{lstlisting}
-select average(ct) 
-from (select count(*) as ct
-      from classes
-      group by class)
-\end{lstlisting}
-The query inside the \sinline{from} clause will return a table, and even
-though that table has no name, it can be used as a data source like any other
-table. So the example will first produce a table with one line for each
-class, listing the number of observations there, and then it will
-take that table and find the average of its \sinline{ct} column.
-
-Everywhere you would put a table name, you could put a query 
-instead. Of course, the query output has no name, so you may need to
-alias the result: \sinline{from (select ...) t1} will allow you to refer to
-the query's output as \sinline{t1} elsewhere in the query.
-
-\exercise{On page \pageref{morepop}, you first found your home country's
-population, then the countries with populations greater than this. Use
-a subquery to do this in one query.}
-
-Some notes on the \sind{having} keyword should go here.
-
 \paragraph{Rowid} Sometimes, you need a unique identifier for each
 output row. This would be difficult to create from scratch, but your
-tables already have such a row, named \sinline{rowid}, that is normally
+tables already have such a row, named \si{rowid}, that is normally
 hidden from view. It is a simple integer, counting from one up to the
-number of rows, and does not appear when you query \sinline{select *
-from table}. But if you query \sinline{select rowid, * from table}
+number of rows, and does not appear when you query \si{select *
+from table}. But if you query \si{select rowid, * from table}
 the hidden row numbers will appear in the output.
 
 \exercise{Using \si{order by}, find the rank of your home country in GDP
@@ -634,14 +765,14 @@ If you are not using Apophenia, you are stuck with standard SQL, which
 does not provide the friendliest of random number generators. The
 \sind{random} function provides a single random number between
 -2,147,483,647 and 2,147,483,647, which the reader will recognize as
-$\pm 2^{31}-1$. So we need to pull a random number, divide by $2^{31}-1$,
+$\pm (2^{31}-1)$. So we need to pull a random number, divide by $2^{31}-1$,
 thus producing a number in $[-1,1]$, then shift it to the familiar $[0,1]$
 range, and then compare it to a limit. The query below does this to remove
 approximately 14\% of the data set. Because standard SQL does not even
 provide exponentiation, the query uses the bit-shifting operator
 which I had promised you would never need; read \si{1<<x} as $2^x$.
 
-\sinline{select * from data where (random()/(-(1<<31)-1.0)+1)/2  < 0.14}
+\si{select * from data where (random()/(-(1<<31)-1.0)+1)/2  < 0.14}
 
 \summary{
 \item You can put the output of a query into the \si{from} clause of a
@@ -653,10 +784,11 @@ clause, which gives you a sequential snippet; or via random draws.
 }
 
 \paragraph{Metadata} What tables are in the database? What are their
-column names? SQL provides no easy way to do this, so every database
+column names? Standard SQL provides no easy way to answer these questions, so every database
 engine has its own specific means of finding this information. SQLite
 has a table named \sind{sqlite\_master} that one can query to get such
-information. It consists of the following columns: \si{type}, \si{name},
+information. There is one row for each table, index, \&c., and the
+columns are: \si{type}, \si{name},
 \si{tbl\_name}, \si{rootpage}, \si{sql}.  The \si{type} indicates whether
 the element is a table, an index, a view, \&c.  The \si{name} is what you
 would expect, and the \si{tbl\_name} refers to the table involved---either
@@ -691,7 +823,7 @@ handles command-line arguments, just provides user help and traffic
 control.  The \ci{print\_table\_list} consists of the usual preliminary
 declarations, then a series of calls to open the database (line 6), pull
 the results of a query out of the database and into a matrix of \ci{char}s
-(line 7), and a check for the size of the query that had just been run
+(line 7), and a check for the size of the query output that had just been produced
 (line 8). Lines 9 and 10 are a now-familiar loop to print an array.
 
 Some of the finer details are discussed below, but the example
@@ -699,165 +831,6 @@ demonstrates how one can easily pull data out of the database side of
 a project and put it in to a variable on the C side: just open the
 database and query for data, just as you would using a command line
 program or a GUI.
-
-\section{Folding queries into C code}\label{foldingsql}  This section
-covers the functions in the Apophenia library that will create and query
-a database. All of these functions are wrappers of SQLite functions that
-do the dirty work, but they are sufficiently complete that you should
-never need to use an SQLite function directly.
-
-\subsection{Importing}
-The first command you will need is \cind{apop\_open\_db}. If you give
-it the name of a file, like \cinline{apop\_open\_db("study.db")}, then the
-database will live on your hard drive. This is slower than memory, but
-will exist after you stop and restart the program, and so other programs
-will be able to use the file, you have more information for debugging,
-and you can re-run the program without re-reading in the data.
-
-Conversely, if you give a null argument: \cinline{apop\_open\_db(NULL)},
-then the database is kept in memory, and will run faster but 
-disappear when the program exits.
-
-Notice that Apophenia uses only one database at a time, but
-see the \cind{apop\_merge\_dbs} function below.
-
-Unless your program is generating its own data, you will probably
-first be importing data from a text file.  The \cinline{apop\_text\_to\_db}
-function will do this for you; see the online reference for details. The
-first line of the text file can be column names, and the remaining rows
-are the data. If your data is not quite in the right format (and it
-rarely is), you may want to look at Appendix \ref{textappendix} on text
-massaging techniques.
-
-When you are done with all of your queries, run
-\cinline{apop\_close\_db} to close the database. If you send the function a
-one---\cinline{apop\_close\_db(1)}---then SQLite will take a minute to clean
-up the database before exiting, leaving you with a smaller file on disk;
-sending in a zero doesn't bother with this step. Of course, if your
-database is in memory, it's all moot and you can forget to close the
-database without consequence.
-
-
-\paragraph{apop\_query} Now for the queries. The simplest function
-is \cind{apop\_query}, which takes a single text argument: the
-query. For example,
-\setc \ns{4}
-\begin{lstlisting}
-apop_query("select *        \
-               from data     \
-                  where height >=175;");
-\end{lstlisting}
-
-A string is easiest for you as a human to read if it is
-broken up over several lines; to do this, end every line with a
-backslash, until you reach the end of the string. The line above runs
-the query and returns nothing, which is Not very useful for a \sinline{select}, but perfect for
-\sinline{create} or \sinline{insert}.
-
-\cinline{apop\_query} accepts all of the \cinline{printf}-style arguments from page \pageref{printf}. For example,
-say that you calculated a minimum height earlier in the program, and want
-to write a query that uses that variable:
-\begin{lstlisting}
-int min_height	= 175;
-apop_query(" select *     \
-    from data     \
-    where height >=%i;", min_height);
-\end{lstlisting}
-
-\paragraph{apop\_query\_to\_data} \cindex{apop\_query\_to\_data}
-This function will run
-the given query and return the resulting table for your analysis:
-\begin{lstlisting}
-int min_height	= 175;
-
-apop_data *tall_people = apop_query_to_data("select *     \
-    from data     \
-    where height >=%i;", min_height);
-\end{lstlisting}
-will query \sinline{data} for its information, allocate \sinline{tall\_people} to be an
-appropriately-sized matrix, and fill it with the data.
-
-For immediate feedback, you  can use \cind{apop\_data\_show} to dump
-your data to screen or \cind{apop\_data\_print} to print to a file (or
-even back to the database). If you want a quick on-screen picture of a
-table, try:\footnote{Notice that since \cinline{apop\_query\_to\_data}
-allocates a pointer to an \cinline{apop\_data} set but does not name
-that pointer, there is no way to free the memory afterward. This is
-rarely not a problem in practice.} 
-\begin{lstlisting}
-apop_data_show(apop_query_to_data("select * from table"));
-\end{lstlisting}
-
-There are \cinline{apop\_query\_...} functions for any type you could desire,
-including \cind{apop\_query\_to\_ma\-trix} to pull a query to a {\tt
-gsl\_matrix}, \cind{apop\_query\_to\_chars} to pull a query into
-a two-by-two table of strings, \cind{apop\_query\_to\_vector}
-and \cind{apop\_query\_to\_float} to pull the first column or first
-number of the returned table into a \cinline{gsl\_vector} or a \cinline{float}.
-
-\paragraph{Data to db} For the other direction, there are the plain old
-print functions: \cind{apop\_data\_print} and
-\cind{apop\_matrix\_print}. If the global variable
-\cinline{apop\_opts.output\_type == 'd'}, then these functions will dump the
-given data to the given table in the database:
-\index{apop\_opts!output\_type@\cinline{output\_type}}
-\begin{lstlisting}
-apop_opts.output_type == 'd';
-apop_data_print(datatab, "my_data");
-\end{lstlisting}
-Say that tomorrow you decide you would prefer to have the data dumped to
-a file; then just change the \cinline{'d'} to an \cinline{'f'} and away you go.\footnote{By the way, dots are common in file names but an annoyance in tables. So if the second argument to \cinline{apop\_data\_print} is \cinline{out.data.csv}, you will get that file name, but a table named \cinline{out\_data}, with no dots and everything after the last dot stripped away.}
-
-There is one inconvenience to this convenience, however: dots are popular
-in file names, e.g. \binline{dump.csv}, but are not valid in table names. If
-you try to use that file name as a table, SQLite will think you are
-referring to a database named \sinline{dump} with a table named \sinline{csv},
-and will will give you an error in the way of \binline{no database named ``dump''}.
-
-\paragraph{Merging databases} Apophenia handles exactly one database at
-a time. However, there are times when you will want to use data
-from separate databases, in which case \cind{apop\_db\_merge} and
-\cind{apop\_db\_merge\_table} will help.  The first command
-operates on every table in the database, while the second operates only
-on one table that you specify; see the online reference for details.
-
-If the table exists in the new database but not in the currently open
-one, then it is simply copied over. If there is a table with the same
-name in the currently open database, then the data from the new table is
-inserted into the main database's table with the same name. [The function
-just calls \sinline{insert into main.tab select * from merge\_me.tab}.]
-
-In-memory databases are faster, but at the close of the program, you
-may want the database on the hard drive. To get the best of both
-worlds, use an in-memory database for the program, and then as the last
-line of the program, merge the database with an on-disk database:
-\begin{lstlisting}
-int main(void){
-    apop_db_open(NULL); //open a db in memory.
-    do_hard_math(...);
-    remove("on_disk.db"); //standard C library function to delete a file.
-    apop_db_merge("on_disk.db");
-}
-\end{lstlisting}
-By removing the file before merging, we prevented the duplication of
-data (because duplicate tables are appended to, not overwritten).
-
-\cinline{apop\_db\_merge} also has a command-line program of the
-same name.
-
-\summary{
-\item Open a database in memory using \ci{apop\_open(NULL)}, and
-on the hard drive using \ci{apop\_open("filename")}.
-\item Import data using \ci{apop\_text\_to\_db}.
-\item If you don't need output, use \ci{apop\_query} to send
-queries to SQLite.
-\item You can ask SQLite to return data using
-\ci{apop\_query\_to\_data},
-\ci{apop\_query\_to\_matrix},
-\ci{apop\_query\_to\_vector},
-\ci{apop\_query\_to\_char}, or
-\ci{apop\_query\_to\_float}.
-}
 
 
 \section{On database design}
@@ -869,7 +842,7 @@ about the best way to think about data in a databse.
 
 \paragraph{Minimize redundancy} This is rule number one in database
 design, and books have been written about how one goes about reducing
-data to the \airq{normal form}. For most data collection, there is a
+data to the redundancy-minimized \airq{normal form}. For most data collection, there is a
 logical hierarchy that makes redundancy-reduction easy. Let us say that
 we have three treatments, which were applied to a thousand each of four
 types of specimen.
@@ -880,13 +853,13 @@ all the characteristics of the treatment, and all the characteristics
 of the specimen.  This is very simple, and familiar to anyone who has
 spent much time with spreadsheets.
 
-But you can imagine the redundancy: the specimen description appears a
-thousand times, and depending upon the treatment regime, the treatment
-specification is likely appearing over a thousand times.
+But you can imagine the redundancy: each specimen description appears a
+thousand times, and depending upon the treatment regime, each treatment
+specification is likely appearing over a thousand times as well.
 
 The solution is to use three tables: treatment descriptions, specimen
-descriptions, and the observed data. Each treatment has a number, as
-does each specimen, and the data table has two corresponding columns
+descriptions, and the observed data. Give each treatment a number, and a
+number to each specimen, and label the data table with two corresponding columns
 giving the treatment number and specimen number of the observation.
 
 The redundant table is a simpler setup, and taking up too much hard drive
@@ -928,7 +901,7 @@ Say that a political scientist wants to do
 a study of county-level data throughout the U.S.A., including variables
 such as correlations between tax rates, votes by Senators, and educational
 outcomes. Since DC has no county subdivisions, and its residents have no
-Congressional representation despite paying high tax rates to support
+Congressional representation despite high tax rates to support
 Federal lands, the DC data does not fit the form of the data in other
 counties. But the correct approach is nonetheless to put DC data in
 the same table as the counties of the other fifty states, rather than
@@ -936,9 +909,14 @@ creating a table for DC and a table for all other states---or still worse,
 a separate table for every state. 
 
 If we need the counties from only one state, say Missouri, it is
-rather easy to \si{select * from alldata where state="MO"}, and to
+rather easy to \si{select * from alldata where state=="MO"}, and to
 include \si{where not isnan(senate\_vote)} clauses when DC's lack of
-representation will affect the analysis.
+representation will affect the analysis.\footnote{By the way, \si{select
+* from alldata where population > (select population from alldata where
+state == "DC")} will almost work, except that DC's
+population is 572,000, and Wyoming (with two Senators and one
+Representative) has a population of 494,000. The query would thus return
+only 49 out of 50 states.}
 
 \paragraph{One row = one data point} Say that we are observing a
 thousand subjects for five days. The first option, which again emulates
@@ -965,6 +943,171 @@ many tables, which may have as many rows as necessary.
 It is easy to join tables, find subsets of tables, and create
 spreadsheet-like crosstabs from data tables.
 }
+
+\section{Folding queries into C code}\label{foldingsql}  This section
+covers the functions in the Apophenia library that will create and query
+a database. All of these functions are wrappers of SQLite functions that
+do the dirty work, but they are sufficiently complete that you should
+never need to use an SQLite function directly.
+
+\subsection{Importing}
+The first command you will need is \cind{apop\_open\_db}. If you give
+it the name of a file, like \cinline{apop\_open\_db("study.db")}, then the
+database will live on your hard drive. This is slower than memory, but
+will exist after you stop and restart the program, and so other programs
+will be able to use the file, you have more information for debugging,
+and you can re-run the program without re-reading in the data.
+
+Conversely, if you give a null argument: \cinline{apop\_open\_db(NULL)},
+then the database is kept in memory, and will run faster but 
+disappear when the program exits.
+
+Notice that Apophenia uses only one database at a time, but
+see the \cind{apop\_merge\_dbs} function below.
+
+Unless your program is generating its own data, you will probably
+first be importing data from a text file.  The \cinline{apop\_text\_to\_db}
+function will do this for you; see the online reference for details. The
+first line of the text file can be column names, and the remaining rows
+are the data. If your data is not quite in the right format (and it
+rarely is), you may want to look at Appendix A on text
+massaging techniques.
+
+When you are done with all of your queries, run
+\cinline{apop\_close\_db} to close the database. If you send the function a
+one---\cinline{apop\_close\_db(1)}---then SQLite will take a minute to clean
+up the database before exiting, leaving you with a smaller file on disk;
+sending in a zero doesn't bother with this step. Of course, if your
+database is in memory, it's all moot and you can forget to close the
+database without consequence.
+
+
+\paragraph{apop\_query} Now for the queries. The simplest function
+is \cind{apop\_query}, which takes a single text argument: the
+query. For example,
+\setc \ns{4}
+\begin{lstlisting}
+apop_query("select *        \
+               from data     \
+                  where height >=175;");
+\end{lstlisting}
+
+A string is easiest for you as a human to read if it is
+broken up over several lines; to do this, end every line with a
+backslash, until you reach the end of the string. The line above runs
+the query and returns nothing, which is not very useful for a \si{select}, but perfect for
+\si{create} or \si{insert}.
+
+\cinline{apop\_query} accepts all of the \cinline{printf}-style arguments from page \pageref{printf}. For example,
+say that you calculated a minimum height earlier in the program, and want
+to write a query that uses that variable:
+\begin{lstlisting}
+int min_height	= 175;
+apop_query(" create table tall_people as \
+    select *     \
+    from data     \
+    where height >=%i;", min_height);
+\end{lstlisting}
+
+\paragraph{apop\_query\_to\_data} \cindex{apop\_query\_to\_data}
+This function will run
+the given query and return the resulting table for your analysis:
+\begin{lstlisting}
+int min_height	= 175;
+
+apop_data *tall_people = apop_query_to_data("select *     \
+    from data     \
+    where height >=%i;", min_height);
+\end{lstlisting}
+will query \si{data} for its information, allocate \si{tall\_people} to be an
+appropriately-sized matrix, and fill it with the data.
+
+For immediate feedback, you  can use \cind{apop\_data\_show} to dump
+your data to screen or \cind{apop\_data\_print} to print to a file (or
+even back to the database). If you want a quick on-screen picture of a
+table, try:\footnote{Notice that since \cinline{apop\_query\_to\_data}
+allocates a pointer to an \cinline{apop\_data} set but does not name
+that pointer, there is no way to free the memory afterward. This is
+rarely not a problem in practice.} 
+\begin{lstlisting}
+apop_data_show(apop_query_to_data("select * from table"));
+\end{lstlisting}
+
+There are \cinline{apop\_query\_...} functions for any type you could desire,
+including \cind{apop\_query\_to\_ma\-trix} to pull a query to a {\tt
+gsl\_matrix}, \cind{apop\_query\_to\_chars} to pull a query into
+a two-by-two table of strings (see Figure \ref{tablist}), \cind{apop\_query\_to\_vector}
+and \cind{apop\_query\_to\_float} to pull the first column or first
+number of the returned table into a \cinline{gsl\_vector} or a \cinline{double}.
+
+\paragraph{Data to db} For the other direction, there are the plain old
+print functions: \cind{apop\_data\_print} and
+\cind{apop\_matrix\_print}. If the global variable
+\cinline{apop\_opts.output\_type == 'd'}, then these functions will dump the
+given data to the given table in the database:
+\index{apop\_opts!output\_type@\cinline{output\_type}}
+\begin{lstlisting}
+apop_opts.output_type == 'd';
+apop_data_print(datatab, "my_data");
+\end{lstlisting}
+Say that tomorrow you decide you would prefer to have the data dumped to
+a file; then just change the \cinline{'d'} to an \cinline{'f'} and away you go.\footnote{By the way, dots are common in file names but an annoyance in tables. So if the second argument to \cinline{apop\_data\_print} is \cinline{out.data.csv}, you will get that file name, but a table named \cinline{out\_data}, with no dots and everything after the last dot stripped away.}
+
+There is one inconvenience to this convenience, however: dots are popular
+in file names, e.g. \binline{dump.csv}, but are not valid in table names. If
+you try to use that file name as a table, SQLite will think you are
+referring to a database named \si{dump} with a table named \si{csv},
+and will will give you an error in the way of \binline{no database named ``dump''}.
+Therefore, when producing a table, Apophenia will cut everything after
+the last dot in a name, and change all other dots to underscores. If you
+ask for a table named \bi{tall.data.csv}, then you will find a table in
+your database named \si{tall\_data}.
+
+\paragraph{Merging databases} Apophenia handles exactly one database at
+a time. However, there are times when you will want to use data
+from separate databases, in which case \cind{apop\_db\_merge} and
+\cind{apop\_db\_merge\_table} will help.  The first command
+operates on every table in the database, while the second operates only
+on one table that you specify; see the online reference for details.
+
+If the table exists in the new database but not in the currently open
+one, then it is simply copied over. If there is a table with the same
+name in the currently open database, then the data from the new table is
+inserted into the main database's table with the same name. [The function
+just calls \si{insert into main.tab select * from merge\_me.tab}.]
+
+In-memory databases are faster, but at the close of the program, you
+may want the database on the hard drive. To get the best of both
+worlds, use an in-memory database for the program, and then as the last
+line of the program, merge the database with an on-disk database:
+\begin{lstlisting}
+int main(void){
+    apop_db_open(NULL); //open a db in memory.
+    do_hard_math(...);
+    remove("on_disk.db"); //standard C library function to delete a file.
+    apop_db_merge("on_disk.db");
+}
+\end{lstlisting}
+By removing the file before merging, we prevented the duplication of
+data (because duplicate tables are appended to, not overwritten).
+
+\cinline{apop\_db\_merge} also has a command-line program of the
+same name; see \bi{apop\_db\_merge -h} for details.
+
+\summary{
+\item Open a database in memory using \ci{apop\_open(NULL)}, and
+on the hard drive using \ci{apop\_open("filename")}.
+\item Import data using \ci{apop\_text\_to\_db}.
+\item If you don't need output, use \ci{apop\_query} to send
+queries to SQLite.
+\item You can ask SQLite to return data using
+\ci{apop\_query\_to\_data},
+\ci{apop\_query\_to\_matrix},
+\ci{apop\_query\_to\_vector},
+\ci{apop\_query\_to\_char}, or
+\ci{apop\_query\_to\_float}.
+}
+
 
 \section{Some examples} 
 Here are a few examples of how C code and SQL calls can neatly interact.
@@ -1013,9 +1156,9 @@ This works partly because of our
 luck that $y > n$ and $T > F$ in English, so $y$ and $T$ will map to one
 and $n$ and $F$ will map to zero. But let us say that our survey used
 \airq{affirmative} and \airq{negative}, so the mapping would be
-backward from our intuition.  Then we can put a \sinline{case} statement in with the other
+backward from our intuition.  Then we can put a \si{case} statement in with the other
 column definitions to produce a column that is one when
-\sinline{binaryq} is affirmative and zero otherwise:
+\si{binaryq} is affirmative and zero otherwise:
 \begin{lstlisting}
     select id, 
             case binaryq when "affirmative" then 1 else 0 end, 
@@ -1034,16 +1177,16 @@ French ($o > n$, $v > f$), but does not work in Hebrew
 To take this to the extreme, we can turn a variable that is discrete
 but not ordered (such as district numbers in the following example)
 into a series of dummy variables. It requires writing down a separate
-\sinline{case} statement for each value the variable could take, but
+\si{case} statement for each value the variable could take, but
 that's what \cinline{for} loops are for.  [Again, this is demonstration
 code. Use \cind{apop\_pro\-duce\_dum\-mies} to do this in practice.]
 
 \codefig{dummy}{A sample of a \cinline{for} loop that creates  SQL that creates dummy variables.}
 
-Figure \ref{dummy} uses the \sinline{case} keyword to create a series of
+Figure \ref{dummy} uses the \si{case} keyword to create a series of
 columns that are either one or zero---dummy variables.  We first query
 out the list of districts, then we write a select statement with a line
-\sinline{case district when district\_no then 1 else 0} for each and
+\si{case district when district\_no then 1 else 0} for each and
 every district\_no. You can then run your regression on the output of
 the query without any further manipulation.
 
@@ -1180,13 +1323,5 @@ by querying out incomes, and then calling
 
 See page \pageref{ttest} for more on the $t$-test.
 \index{t test|)}
-
-\section{Producing a database} To this point, I assumed that you had
-data handed to you by an external agency, but you may be producing your
-own data. For example, you may have users filling in forms, sensors
-reading data, or a simulation outputting a state every period.
-
-Notes on designing a database, both conceptually and via C code, will be
-forthcoming. 
 
 \setc %for code listings.

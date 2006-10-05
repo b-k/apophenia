@@ -32,7 +32,7 @@ are commonly used among C programmers. You can get very far without
 knowing any of the following, and some of it is generally considered to
 be bad style.
 
-\paragraph{The obfuscatory if} There is another way to write an \cind{if} statement. The following are equivalent:
+\paragraph{The obfuscatory if}\ckeyind{if} There is another way to write an \ci{if} statement. The following are equivalent:
 \begin{lstlisting}
 if (a < b)
       a;
@@ -99,8 +99,9 @@ Finally, notice that the custom is to put macro names in caps.  You can
 rely on this in code you see from others, and are encouraged to stick
 to this standard when writing your own.
 
-\paragraph{Labels and \ci{break}} A line of code can be named, by simply providing a
-name with a colon after it. You can then jump to that line via \cind{goto}. Here is a code snippet that presents the basic idea, with a line labeled \ci{outro}:
+\paragraph{Labels and \ci{break}}\ckeyind{goto} 
+A line of code can be named, by simply providing a
+name with a colon after it. You can then jump to that line via \ci{goto}. Here is a code snippet that presents the basic idea, with a line labeled \ci{outro}:
 \begin{lstlisting}
 for (i=0; i< vector_size; i++){
     if (a_vector[i] > b){
@@ -123,7 +124,8 @@ center of the \ci{for} loop.  Linus Torvalds,\index{Torvalds, Linus}
 the author of the Linux kernel, recommends the \ci{goto} to eliminate
 redundancy as above; many other authors choose to never use \ci{goto}.
 
-An alternative is \cind{break}, which cuts out of the innermost loop in
+\ckeyind{break}
+An alternative is \ci{break}, which cuts out of the innermost loop in
 which it is located. It is primarily useful when searching through an
 array for an item. Once you have found what you are looking for, there
 is no need to continue looping to the end of the array.
@@ -142,7 +144,7 @@ free(another_vector);
 return out;
 \end{lstlisting}
 
-\paragraph{Switch} The \cind{switch} statement is a clean way to
+\paragraph{Switch}\ckeyind{switch} The \ci{switch} statement is a clean way to
 branch among many options. First, you will need a variable indicating
 a single character. For example, the \ci{get\_opt} function from the
 standard library will parse command line arguments; then the \ci{switch}
@@ -214,9 +216,10 @@ help, but you may just have to re-scour your code to find the problem.
 Thus, the \ci{-O3} flag is a final step, to be used only after you
 are reasonably confident that your code is debugged.
 
+\ckeyind{inline} 
 Finally, you may run into authors who give you advice about how to write
 faster code, telling you to use loops here and unroll them there, make
-frequent use of the \cind{inline} keyword, or order your commands based
+frequent use of the \ci{inline} keyword, or order your commands based
 on memory usage instead of human logic. Ignore them. It is much more
 valuable to minimize the time you spend deciphering and debugging your
 code than shaving seconds off of your run time.  Write code to maximize
@@ -277,8 +280,9 @@ this:
 void apply (gsl_vector *v, double (*function_name) (double x));
 \end{lstlisting}
 
+\ckeyind{typedef}
 Are you confused yet? Each component basically makes sense, but together
-it is cluttered and confusing. There is a way out: \cind{typedef}. By prepending
+it is cluttered and confusing. There is a way out: \ci{typedef}. By prepending
 that word before the above type declaration,
 \begin{lstlisting}
 typedef double (*double_to_double) (double x);

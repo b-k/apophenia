@@ -22,14 +22,203 @@ based on the distribution you have just calculated.  Another alternative
 is to use the Monte Carlo methods of Chapter \ref{boot} to determine
 the properties of your model for $n$ significantly smaller than infinity.
 
-This chapter goes over the process of testing an oversolved system. The
-key to constructing a test is in knowing how the distribution of the
-data informs the likely distribution of our estimates of the $\alpha$s,
-and the key to that process is the Central Limit Theorem. The first part
-of this chapter will thus return to probability theory, describing how
-the CLT affects various parameter distributions, and then the remainder
-of the chapter considers how those parameter distributions can be used
-to test hypothesized models.
+This chapter goes over the process of testing an \airq{oversolved system},
+a term defined in detail in Section \ref{mcsec}. The key to constructing
+a test is in knowing how the distribution of the data informs the likely
+distribution of our estimates of the $\alpha$s, and the key to that
+process is the Central Limit Theorem. Section \ref{dist2} will
+thus return to probability theory, describing how the CLT affects various
+parameter distributions, and then the remainder of the chapter considers
+how those parameter distributions can be used to test hypothesized models.
+
+\section{Models and constraints}\label{mcsec}
+Before embarking on the process of testing models, it is worth taking
+some time to discuss the modeling process and how our models of the
+real world translate to estimable parameters.
+
+%A \vocab{hypothesis} is a constraint on otherwise unconstrained parameters. 
+
+Frequently, the statistical and real-world model happen to match very closely.
+For example, if we believe that $Y$ is an affine linear sum of $X_1$,
+$X_2$, $X_3$, then we are making a claim that 
+\begin{equation*}
+Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \alpha_3 X_3.
+\end{equation*}
+
+In a parallel manner, a statistician could estimate the $\beta$s in the equation
+\begin{equation*}
+Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon
+\end{equation*}
+using a standard OLS regression as shown later in this chapter.
+
+Given the parameters estimated using OLS, translating those parameters
+to the model is rather trivial:
+\begin{align*}
+\alpha_0 &= \beta_0\\
+\alpha_1 &= \beta_1\\
+\alpha_2 &= \beta_2\\
+\alpha_3 &= \beta_3.
+\end{align*}
+However, the translation between parameter estimates and model
+parameters easily becomes more complex.  For example, let us say that
+we are measuring bicycle usage, $B$, in different  cities.  It would be
+a function of the number of motorists $M$, the city's population $P$,
+the physical size of the city $S$,  and measures of the availability of
+public transportation $T$. But we know that the availability of public
+transportation is also a function of the city's population and physical
+size. Thus, our model is
+\begin{align*}
+B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
+T &= \alpha_4 P + \alpha_5 \sqrt{S}.
+\end{align*}
+
+One option for estimating this model is to run two analogous regressions,
+\begin{align*}
+B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \beta_3 T + \epsilon\\
+T &= \beta_4 P + \beta_5 \sqrt{S} + \epsilon.
+\end{align*}
+Now the correspondence between the two parameters is as trivial as
+before ($\alpha_0=\beta_0$, $\alpha_1=\beta_1$, et cetera). This is the
+simplest example of \vocab{exactly solved parameters}.
+But we get a
+distorted view of the effect of city size and population on bicycling
+prevalence, because some of those variables' effect is subsumed in the fact that
+those factors help to determine whether a city has public
+transportation. If the population of a city rises ten percent, ridership
+will not rise by $.1 \beta_1$, because $T$ will change as well.
+
+Another option is to substitute $T$ as specified in the second equation into
+the first. Then, the model is
+\begin{align*}
+B &= \alpha_0 M + (\alpha_1 +\alpha_3 \alpha_4) P + (\alpha_2 + \alpha_3 \alpha_5) \sqrt{S}.\\
+\end{align*}
+The OLS analogue of a linear equation still looks like it did before:
+\begin{align*}
+B &= \beta_0 M + \beta_1 P + \beta_2 \sqrt{S} + \epsilon.
+\end{align*}
+Now, the conversion is nontrivial:
+\begin{align}
+\alpha_0 &= \beta_0     \label{consteq1}\\
+\alpha_1 +\alpha_3 \alpha_4 &= \beta_1        \label{consteq2}\\
+\alpha_2 + \alpha_3 \alpha_5 &= \beta_2.       \label{consteq3}
+\end{align}
+Equation \ref{consteq1} still gives us an estimate of $\alpha_0$,
+but all our information about  $\alpha_1$ through $\alpha_5$ is
+embodied in Equations \ref{consteq2} and \ref{consteq3}. With four
+unknowns and two equations, the parameters are \airq{oversolved}. 
+\index{undersolved parameter}
+
+We have a better view of the effect of the variable $P$ on $B$, but we
+do not have enough information to disaggregate that effect into the
+direct effect ($\alpha_1$) and the indirect effect ($\alpha_3 \alpha_4$)
+caused by the effect population has on public transport availability
+($\alpha_4$). 
+
+Depending on your situation and goals, one setup or the other may be
+more appropriate. However, we must acknowledge the limitations of an
+undersolved system: $n$ parameter estimates can inform at most $n$ model
+parameters.
+
+Now, let us say that a prior study has shown that $\alpha_2= 2.204$.
+Discarding the equation for $T$ for now, our model is now:
+\begin{align*}
+B &= \alpha_0 M + \alpha_1 P + \alpha_2 \sqrt{S} + \alpha_3 T\\
+\alpha_2 &= 2.204.
+\end{align*}
+and after estimating the parameters using a simple OLS estimation, the 
+translation from estimated $\beta$s to model $\alpha$s is:
+\begin{align*}
+\alpha_0 &= \beta_0\\
+\alpha_1 &= \beta_1\\
+\alpha_2 &= \beta_2\\
+\alpha_2 &= 2.204\\
+\alpha_3 &= \beta_3.
+\end{align*}
+Unless we have the incredible luck that $\beta_2=2.20400$, $\alpha_2$ is an
+\vocab{oversolved parameter} that has no solution.
+
+There are two things that one can do with an oversolved system. One is
+to use the extra constraints to inform the parameter estimation routine;
+in the example above, we would estimate the parameters under the
+assumption that $\beta_2$ is fixed at 2.204.
+You can do this using constrained least squares (Section
+\ref{constrainedls}) or via maximum likelihood estimation as in Chapter
+\ref{mle}. The other option is to compare the unconstrained version of
+the model with the constrained version to see how much distortion occurs
+when the constraint binds. This is \airq{testing the constraints}, aka,
+a \airq{hypothesis test}.
+\index{least squares!constrained}
+
+Recall that the two primary activities of the statistician are estimating
+models and testing models.  For an undersolved system, we can neither
+estimate nor test the model. For an exactly solved system, we can always
+estimate the parameters of the model, but can not verify or refute the
+model: you give me a data set, and I will always be able to give you
+some set of model parameters. For an oversolved system, we can both
+estimate the parameters and test whether the model is correct, because
+there will not always be a way to consistently transform the estimated
+parameters into model parameters.
+
+Because there is so little persuasive power in an estimated but not
+tested model, we often make up
+ways to convert an exactly solved system into an oversolved one.
+For example, one could add to any equation the additional equation
+$\alpha_i = 0$ for all $i$.
+By specifying
+$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ and $\alpha_1=0$,
+we have an oversolved system whose validity we can test. Indeed, this
+is the system of equations behind the $t$-tests that are universally
+reported with every regression.
+
+This may seem like belaboring the language with such a simple system,
+but it is easy to extend this framework to systems of equations, 
+exotic constraints, and other variants of the mapping from parameter
+estimates to model parameters and testing oversolved equations.
+
+Notably, it could be that the model can't be expressed as an affine
+linear sum at all. Perhaps your model is a function in the programming
+sense, that takes in a vector of inputs \ci{x1, x2, \dots, xn} and a
+vector of parameters \ci{p1, p2, \dots, pm}, runs
+through a thousand lines of code, and produces a value \ci{y}. The
+problem is still the same---estimate the parameters of the model using
+data---but the linear methods are no longer useful. In some cases, there
+is a linear system that does not do too much violence to reality; in
+other cases, you will need to use the maximum likelihood methods of
+Chapter \ref{mle}. However, one could overconstrain the parameters of
+this type of model as easily as those above, such as claiming that
+\cinline{p1 + p2 == 1}. Chapter \ref{mle} will also discuss likelihood
+ratio tests to evaluate the hypotheses embodied in constraints.
+
+By the way, a statement like `We reject
+the claim $\alpha_1=0$' is only half right. We are actually rejecting
+the claim that both
+$Y = \alpha_0 + \alpha_1 X_1 + \alpha_2 X_2 + \cdots$ {\em and}
+$\alpha_1=0$. 
+The first and second equations are mathematically of equal
+status, but the custom is to presume that only the second equation is a
+subordinate equation which is under scrutiny. Thus, one would correctly
+say `we reject this system of equations'. Having given this caveat, the
+remainder of this chapter will use the traditional terminology that
+takes the base model as given, reducing
+the above pair of equations to the hypothesis $H_0: \alpha_1=0$.
+
+\summary{
+\item If the parameters of the model of the real world can not be solved using the 
+parameters of the statistical model (e.g., two unknowns and one
+equation), then the model is
+\vocab{undersolved}. Undersolved variables can neither be estimated nor
+tested.
+\item If the parameters of the model of the real world can be solved uniquely using the 
+parameters of the statistical model, then the model is
+\vocab{exactly solved}. Exactly solved variables can be estimated but not
+tested.
+\item If the parameters of the model of the real world have multiple,
+contradictory solutions using the parameters of the statistical model
+(e.g., $\alpha_1 = \beta_1$ and $\alpha_1 = 2.2$), then the model is
+\vocab{oversolved}. Oversolved systems can be both estimated and
+tested.
+}
+
 
 \section{Meet the Gaussian family} \label{dist2}
 With the exception of the Normal, the distributions below are distinct
@@ -41,14 +230,21 @@ such as linear regressions, that produce means of model parameters,
 model variances, and other parameters. Those model parameters have their
 own distributions, and those are typically one of the distributions below.
 
-
 \paragraph{The \ind{Central Limit Theorem}} The CLT is the first piece of magic
-that we need. It tells us that:
+that we need.  Assume that we make a series of independent, identically
+distributed draws from a fixed underlying population, $x_1, x_2, \dots
+x_n$. The underlying population may have {\em any} distribution. Let the
+mean of this sequence of draws be $\overline x$. Then as $n\to\infty$,
+\comment{
 $$\overline X \xrightarrow{a} \left[\mu,{\sigma^2\over n}\right].$$
 In fact, we not only have $\overline X$ in the limit, but its distribution:
-As $n\to \infty$, $$\sqrt{n} \frac{\left(\overline X - \mu\right)}{\sigma} \sim {\cal N}(0,1),$$ 
-regardless of where $X$ came from. With that regularity of nature,
-we can derive all of the following distributions.  \label{CLT}
+As $n\to \infty$, }
+$$\sqrt{n} \frac{\left(\overline X - \mu\right)}{\sigma} \sim {\cal N}(0,1).$$ 
+That is, no matter the underlying population, the mean of a series of
+draws will approach a Normal distribution.
+
+With that regularity of nature, we can derive all of the following
+distributions.  \label{CLT}
 
 \subsection{Normal\index{Normal distribution}} 
 
