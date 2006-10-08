@@ -31,7 +31,7 @@ tweaking is no longer feasible, and because writing down a script
 produces an audit trail that you or your colleagues can use to check
 your work.
 
-The primary technique covered in this chapter is the parsing of
+The primary technique covered in this appendix is the parsing of
 \vocab{regular expressions}, wherein you specify a certain regularity,
 such as `numbers followed by letters', and a program searches for that
 regular expression in text and modifies it as per your instructions.
@@ -75,6 +75,143 @@ myscript} will do the trick. Having made the script executable, you
 can call a script in the current directory (aka \bi{./}) from the shell
 using \bi{./myscript}.
 
+\section{Some tools for scripting}
+Depending on your system, you can type somewhere between a few hundred
+and a few thousand commands at the command prompt. This section points
+out a handful that are especially useful for the purposes of dealing
+with data in text format.\footnote{I continue to assume that you know
+how to manipulate files and directories themselves, via \bi{cp},
+\bi{rm}, \bi{cd}, \bi{mkdir}, \bi{rmdir}, and family. If not, there are
+an abundance of basic UNIX and POSIX tutorials online for reference.}
+All of them have a multitude of switches, which you can see via \bi{man
+head},  \bi{man sort}, et cetera. They are all POSIX-standard, so you
+can expect that scripts based on them will be portable.
+
+Most of these commands are in some ways redundant with methods
+elsewhere in the book: you could use \bi{cut} below to pull one column
+of data, or you could read the data into a database and \si{select}
+the column; you could use \bi{wc} below to count data points, or use
+\si{select count(*)} to do the same.\footnote{\index{join!command-line program}
+There is even a \bi{join}
+command, which will do database-style joins of two files. However, it is
+hard to use for any but clean numeric codes. Try using \bi{join} to
+merge \bi{data-wb-pop} and \bi{data-wb-gdp}.} Generally, 
+command-line work is good for pure data manipulation and quick questions (Do I have the thousands 
+of data points I was expecting?), while you will need a full program 
+for any sort of numeric analysis or to answer more detailed questions
+about the data (How many rows are
+duplicates?).\footnote{\ci{apop\_query\_to\_double("select count(*) from data") - 
+apop\_query\_to\_double("select count(*) from (select distinct * from data)")}}
+
+\subsection{\bind{cat}} The simplest thing one could do with a text file is 
+to print it, and this is what \bi{cat} does. Thus, instead of opening a
+file in your text editor, you can simply type \bi{cat file\_to\_read} on
+the command prompt for a quick look.
+
+The other use of \bi{cat}, for which it was named, is concatenation.
+Given two files \bi{a} and \bi{b}, \bi{cat a b} lists \bi{a} and,
+immediately thereafter, \bi{b}. This becomes especially useful with
+riirection, as below.
+
+\subsection{\bind{head}/\bind{tail}} \bi{head myfile} will print the
+first ten lines of
+\bi{myfile}, and \bi{tail myfile} will print the last ten. These are
+good for getting a quick idea of what is in a large file.  Also,
+\bi{tail -f myfile} will follow \bi{myfile}, first showing the
+last ten lines, and updating as new lines are added. This can provide
+reassurance that a slow-running program is still working.
+
+\exercise{How would you get \bi{sed} to emulate the default behavior of
+\bi{head}? }
+
+\comment{
+\exercise{Write a \bi{sed} script to emulate the default behavior of
+\bi{head} and \bi{tail}. Use your favorite scripting language (Perl,
+Python, \bi{bash}), or use C's \ci{popen} command.}
+}
+
+\subsection{\bind{sort}} This is as self-descriptive as a command can
+get. For example, the \bi{data-wb-pop} file (in the code supplement)
+is sorted by population; \bi{sort data-wb-pop} would output the file in
+alphabetical order.
+
+\exercise{Sorting \bi{data-wb-pop} like this sorts the two header lines
+in with all the countries. Write a command that first calls \bi{sed} to
+delete the headers, then pipes the output to \bi{sort}.}
+
+\subsection{\cind{cut}/\cind{paste}} Almost all of the commands here
+operate on rows; \bi{cut} and \bi{paste} operate on columns. Specify the
+delimiter with the \bi {-d} flag, and then the field(s) with the \bi{-f}
+flag (where the first column is column one, not zero). To get a list of
+just countries from the World Bank data, try \bi{cut -d"|" -f 1
+data-wb-pop}; to see just the population numbers, use \bi{cut -d"|" -f
+2 data-wb-pop}.
+
+\bi{paste} puts its second input to the right of its first input. 
+
+\exercise{Use the command string from the last exercise to sort the
+population and GDP data into two new files. \bi{cut} the second file
+down to include only the column of numbers. Then use \bi{paste
+sorted\_pop sorted\_gdp> combined\_data} to produce one file with both
+types of data. Verify that the data is aligned correctly (i.e.,
+that the Albania column does not list the GDP of Algeria.)}
+
+\subsection{\cind{wc}} \index{counting words}\index{word count}
+This program (short for word count) will count lines, words, and
+characters. The default is to print all three, but \bi{wc -w}, \bi{wc -l},
+and \bi{wc -c} will give just one of the three counts.
+
+When writing a text document, you could use it for a word count as
+usual: \bi{wc -w report.tex}. If you have a data file, the number of
+data points is probably \bi{wc -l data} (if there is header data, you
+will need to subtract those lines).
+
+This program is especially useful in tandem with \bi{grep}. How many lines
+of the \bi{data-wb-pop} file have missing data (which the WB indicates by
+\bi{..})? \bi{"\textbs{}.\textbs{}." data-wb-pop} will output those lines
+where the string \bi{..} appears; \bi{wc -l} will count the lines of the
+input; piping them together, \bi{ grep "\textbs{}.\textbs{}." data-wb-pop
+| wc -l} will count lines with \bi{..}s.
+
+\subsection{\cind{nl}} This command puts \ind{line numbers} at the
+beginning of every line, which is sometimes useful. Remember that SQLite
+puts a \sind{rowid} on every row of a table, that is invisible but
+appears if \si{select}ed. But if you want to quickly put a counter
+column in your data set, this is the way to do it.
+
+%\subsection{\cind{uniq}}
+
+\subsection{\bind{column}} Text data 
+will either be easy to read for a computer or a human, but rarely both.
+Say that a data file is tab-delimited, so each field has exactly one tab
+between columns:
+\begin{lstlisting}
+Name<tab>Age
+Rumplestiltskin<tab>78
+Dopey<tab>35
+\end{lstlisting}
+
+This will read into a spreadsheet perfectly, but when displayed on the
+screen, the output will be messy, since Rumplestiltskin's tab will not
+be aligned with Dopey's. The \bi{column} command addresses exactly this problem,
+by splitting columns and inserting spaces for on-screen human
+consumption. For example, \bi{column -s"|" -t data-wb-pop} will format
+the \ci{data-wb-pop} file into columns, splitting at the \bi{|}
+delimiters. The first column will include the header lines, but you
+already know how to get \bi{sed} to pipe headerless data into
+\bi{column}.
+
+\subsection{\bind{diff}} The \bi{diff} program prints the difference
+between two files. This can quickly be overwhelming for files that are
+significantly different, but after a long day of modifying files, you
+may have a few versions of a file that are only marginally different. 
+By the end of this chapter, that will be the case, so various
+opportunities to use \bi{diff} will appear below.
+
+%http://www.watsys.unh.edu/Darlene/TechToolsFiles/LammersUNIXDemo/UNIX_Intro.html
+%http://www.die.net/doc/linux/abs-guide/textproc.html
+
+
 \subsection{Redirection} 
 Each program has a standard input stream
 and a standard output stream, named \bind{STDIN} and
@@ -84,11 +221,12 @@ example, try \bi{sed -p \&> err}, then open \bi{err} in your text editor
 (or try the command \bi{cat err}).}
 
 By default \bi{STDIN} and \bi{STDOUT} are the keyboard and screen. 
-For example, the command
+For example, \bind{sed} reads from \bi{STDIN} and writes to \bi{STDOUT},
+so the command
 \begin{lstlisting}
-prompt> sed -n p
+sed -n p
 \end{lstlisting}
-\ci{p}rints to the screen whatever is typed in. If you
+simply \ci{p}rints to the screen whatever is typed in. If you
 try it, you will see that this means simply that \ci{sed} repeats
 whatever you type.
 \begin{lstlisting}
@@ -99,14 +237,15 @@ How are you?
 How are you?
 Stop imitating me.
 Stop imitating me.
-<ctrl>-C
+<ctrl>-D
 \end{lstlisting}
 Now for the redirection. A clause of the form \cind{> filename} tells the
 system to write whatever it would have put on the screen to a file. Thus,
 if you put the command \bi{sed -n p > outfile} on the command line, then
 nothing will print to the screen, but whatever you type (until you hit
-\bi{<ctrl>-C} or \bi{<ctrl>-D}) will be written to \bi{outfile}. That is,
-instead of writing to \bi{STDOUT}, the system writes to \bi{outfile}.
+\bi{<ctrl>-D}) will be written to \bi{outfile}. That is, instead of
+writing to \bi{STDOUT}, the system writes to \bi{outfile} (and you can
+check this via \bi{cat outfile}).
 
 As a variant, \bind{>>} \bi{outfile} will append to a file, rather than
 overwriting it, as \bi{> outfile} would.
@@ -215,7 +354,7 @@ open a pipe.
 The remainder of this appendix will cover programs to parse regular
 expressions.  Many programs support regexes, including standard viewers
 like \ttind{less}, a fair number of online search tools, and text editors
-like \ttind{vi} and \ttind{emacs}, so knowledge of regexes comes in handy
+like \ind{vi} and \ind{EMACS}, so knowledge of regexes comes in handy
 in a wide variety of situations. Entire books have been written on this
 one simple subject, the most comprehensive being \citet{friedl:regex}.
 
@@ -401,22 +540,22 @@ file: \bi{grep "fixme" filename}.
         \item The set can include single characters: \bi{[Pp]erl} matches
 both \bi{Perl} and \bi{perl} (though you maybe want a case-insensitive
 search with \bi{grep -i}).
+    \end{itemize}
+}
+\summarynoitems{(continued)
+\begin{itemize}
         \item The set can include ranges: \bi{[A-Za-z]} will match any
 standard English letter.
         \item The set can exclude elements: \bi{[A-Z\that{}P-S]} will
 find any capital letter except P, Q, R, and S.
-    \end{itemize}
 \item Alternatives are expressed in the form \bi{(A|B)}.
 \item Different systems have different rules about what is a special
 character. The Perl form for alternation is \bi{(A|B)}, as above; the
 grep form is \bi{\textbs(A\textbs|B\textbs)}.
-%}
-%\summarynoitems{(continued)
-%\begin{itemize}
 \item A single dot (\bi{.}) represents any character including a single
 space or tab, and grep understands \bi{\textbs{}W} to mean any white space
 character and \bi{\textbs{}w} to mean any non-white space character.
-%\end{itemize}
+\end{itemize}
 }
 
 \subsection{Replacing}
@@ -472,8 +611,8 @@ modifiers (the \ci{g}; see box).
 If you have only one file to scan, you can use these programs as
 filters:
 \begin{lstlisting}
-perl -p -e "s/replace me/with me/g" <file_to_modify >modified\_file
-sed -e "s/replace me/with me/g" <file_to_modify >modified\_file
+perl -p -e "s/replace me/with me/g" <file_to_modify >modified_file
+sed -e "s/replace me/with me/g" <file_to_modify >modified_file
 \end{lstlisting}
 
 \marginalia{6}{Why the \ci{/g}?}{Back when
@@ -524,9 +663,10 @@ you want to keep the original file intact and write a new file (as this
 form does) or you want to modify the original file while perhaps making
 an unchanged backup (as the \ci{-i} form does).
 
-\exercise{Create a file named \ci{about\_me} with one line, reading \ci{I am a
+\exercise{Create a file named \bi{about\_me} with one line, reading \ci{I am a
 teapot.} Use either perl or sed to transform
-from a teapot to something else, such as a kettle or a toaster.}
+from a teapot to something else, such as a kettle or a toaster. 
+Verify your change using \bi{diff}.}
 
 You are welcome to include multiple commands on the line, by the way.
 In Perl, separate them with a semicolon, as in C. In sed or Perl, you
@@ -776,123 +916,6 @@ that data may include small or large
  
 More forthcoming.
 
-
-
-\section{More tools for scripting}
-Depending on your system, you can type somewhere between a few hundred
-and a few thousand commands at the command prompt. This section points
-out a handful that are especially useful for the purposes of dealing
-with data in text format.  All of them have a multitude of switches,
-which you can see via \bi{man head},  \bi{man sort}, et cetera. They are
-all POSIX-standard, so you can expect that scripts based on them will be portable.
-
-Most of these commands are in some ways redundant with methods
-elsewhere in the book: you could use \bi{cut} below to pull one column
-of data, or you could read the data into a database and \si{select}
-the column; you could use \bi{wc} below to count data points, or use
-\si{select count(*)} to do the same.\footnote{\index{join!command-line program}
-There is even a \bi{join}
-command, which will do database-style joins of two files. However, it is
-hard to use for any but clean numeric codes. Try using \bi{join} to
-merge \bi{data-wb-pop} and \bi{data-wb-gdp}.} Generally, 
-command-line work is good for pure data manipulation and quick questions (Do I have the thousands 
-of data points I was expecting?), while you will need a full program 
-for any sort of numeric analysis or to answer more detailed questions
-about the data (How many rows are
-duplicates?).\footnote{\ci{apop\_query\_to\_double("select count(*) from data") - 
-apop\_query\_to\_double("select count(*) from (select distinct * from data)")}}
-
-\subsection{\cind{head}/\cind{tail}} \bi{head myfile} will print the
-first ten lines of
-\bi{myfile}, and \bi{tail myfile} will print the last ten. These are
-good for getting a quick idea of what is in a large file.  Also,
-\bi{tail -f myfile} will follow \bi{myfile}, first showing the
-last ten lines, and updating as new lines are added. This can provide
-reassurance that a slow-running program is still working.
-
-\exercise{How would you get \bi{sed} to emulate the default behavior of
-\bi{head}? }
-
-\comment{
-\exercise{Write a \bi{sed} script to emulate the default behavior of
-\bi{head} and \bi{tail}. Use your favorite scripting language (Perl,
-Python, \bi{bash}), or use C's \ci{popen} command.}
-}
-
-\subsection{\cind{sort}} This is as self-descriptive as a command can
-get. For example, the \bi{data-wb-pop} file (in the code supplement)
-is sorted by population; \bi{sort data-wb-pop} would output the file in
-alphabetical order.
-
-\exercise{Sorting \bi{data-wb-pop} like this sorts the two header lines
-in with all the countries. Write a command that first calls \bi{sed} to
-delete the headers, then pipes the output to \bi{sort}.}
-
-\subsection{\cind{cut}/\cind{paste}} Almost all of the commands here
-operate on rows; \bi{cut} and \bi{paste} operate on columns. Specify the
-delimiter with the \bi {-d} flag, and then the field(s) with the \bi{-f}
-flag (where the first column is column one, not zero). To get a list of
-just countries from the World Bank data, try \bi{cut -d"|" -f 1
-data-wb-pop}; to see just the population numbers, use \bi{cut -d"|" -f
-2 data-wb-pop}.
-
-\bi{paste} puts its second input to the right of its first input. 
-
-\exercise{Use the command string from the last exercise to sort the
-population and GDP data into two new files. \bi{cut} the second file
-down to include only the column of numbers. Then use \bi{paste
-sorted\_pop sorted\_gdp> combined\_data} to produce one file with both
-types of data. Verify that the data is aligned correctly (i.e.,
-that the Albania column does not list the GDP of Algeria.)}
-
-\subsection{\cind{wc}} \index{counting words}\index{word count}
-This program (short for word count) will count lines, words, and
-characters. The default is to print all three, but \bi{wc -w}, \bi{wc -l},
-and \bi{wc -c} will give just one of the three counts.
-
-When writing a text document, you could use it for a word count as
-usual: \bi{wc -w report.tex}. If you have a data file, the number of
-data points is probably \bi{wc -l data} (if there is header data, you
-will need to subtract those lines).
-
-This program is especially useful in tandem with \bi{grep}. How many lines
-of the \bi{data-wb-pop} file have missing data (which the WB indicates by
-\bi{..})? \bi{"\textbs{}.\textbs{}." data-wb-pop} will output those lines
-where the string \bi{..} appears; \bi{wc -l} will count the lines of the
-input; piping them together, \bi{ grep "\textbs{}.\textbs{}." data-wb-pop
-| wc -l} will count lines with \bi{..}s.
-
-\subsection{\cind{nl}} This command puts \ind{line numbers} at the
-beginning of every line, which is sometimes useful. Remember that SQLite
-puts a \sind{rowid} on every row of a table, that is invisible but
-appears if \si{select}ed. But if you want to quickly put a counter
-column in your data set, this is the way to do it.
-
-%\subsection{\cind{uniq}}
-
-\subsection{\cind{column}} Text data 
-will either be easy to read for a computer or a human, but rarely both.
-Say that a data file is tab-delimited, so each field has exactly one tab
-between columns:
-\begin{lstlisting}
-Name<tab>Age
-Rumplestiltskin<tab>78
-Dopey<tab>35
-\end{lstlisting}
-
-This will read into a spreadsheet perfectly, but when displayed on the
-screen, the output will be messy, since Rumplestiltskin's tab will not
-be aligned with Dopey's. The \bi{column} command addresses exactly this problem,
-by splitting columns and inserting spaces for on-screen human
-consumption. For example, \bi{column -s"|" -t data-wb-pop} will format
-the \ci{data-wb-pop} file into columns, splitting at the \bi{|}
-delimiters. The first column will include the header lines, but you
-already know how to get \bi{sed} to pipe headerless data into
-\bi{column}.
-
-
-%http://www.watsys.unh.edu/Darlene/TechToolsFiles/LammersUNIXDemo/UNIX_Intro.html
-%http://www.die.net/doc/linux/abs-guide/textproc.html
 
 
 

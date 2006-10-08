@@ -38,7 +38,7 @@ real world translate to estimable parameters.
 
 %A \vocab{hypothesis} is a constraint on otherwise unconstrained parameters. 
 
-Frequently, the statistical and real-world model happen to match very closely.
+Frequently, the statistical and real-world model match very closely.
 For example, if we believe that $Y$ is an affine linear sum of $X_1$,
 $X_2$, $X_3$, then we are making a claim that 
 \begin{equation*}
@@ -84,7 +84,7 @@ But we get a
 distorted view of the effect of city size and population on bicycling
 prevalence, because some of those variables' effect is subsumed in the fact that
 those factors help to determine whether a city has public
-transportation. If the population of a city rises ten percent, ridership
+transportation. If the population of a city rises ten percent, expected ridership
 will not rise by $.1 \beta_1$, because $T$ will change as well.
 
 Another option is to substitute $T$ as specified in the second equation into
@@ -955,7 +955,7 @@ apop_vector_replace(datavector, apop_double_is_zero, GSL_NAN);
 The function takes a vector, a test, and a \cinline{double} value. It
 applies the test to every element of the vector, and if the test is
 true, that element of the vector is replaced with the given value. Other
-popular tests include \cind{gsl\_is\_inf} and its friends from page
+popular tests include \cind{gsl\_isinf} and its friends from page
 \pageref{numbers}.
 
 But the functions won't make the hard decision for you: why is the test

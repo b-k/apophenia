@@ -98,7 +98,7 @@ screen as usual. If you later decide to print the plot, you can delete
 the \#s and the script will write to \bi{printme.eps}.
 
 
-\section{\cind{plot}} The \ci{plot} command will set the basic shape of
+\section{\gi{plot}}\gkeyind{plot} The \ci{plot} command will set the basic shape of
 the plot. 
 
 If you have two columns of data in \bi{datafile}, then to plot a basic
@@ -116,7 +116,7 @@ Say that you just want to see a single data series, say column five; then
 assume that the $X$ values are the ordinal series $1, 2, 3, \dots$ and
 your data is the $Y$ values.
 
-\subsection{\cind{splot}} The \ci{plot} command prints flat, 2-D graphs.
+\subsection{\gi{splot}}\gkeyind{splot} The \ci{plot} command prints flat, 2-D graphs.
 To plot 3-D surfaces, use \ci{splot}. All of the above now applies
 directly, but with three dimensions. If your data set has three columns, then
 you can plot it with \ci{splot 'datafile'}. If your data set has more
@@ -135,7 +135,7 @@ If all is arranged correctly and you are plotting on-screen instead of
 to a file, then you will be able to click on the plot and drag the plot
 around its center. The movement vastly improves the 3-D impression of the plot.
 
-Surface plotting goes hand-in-hand with the \cind{pm3d} (palette-mapped
+Surface plotting goes hand-in-hand with the \gsetind{pm3d}\gi{pm3d} (palette-mapped
 3-D) option, that 
 produces a pleasing color-gradient surface. For example, here is the
 script used to produce Figure \ref{splotone}. 
@@ -209,7 +209,7 @@ distributed as emulation becomes more desirable.
 \end{figure}
 
 
-\subsection{\cind{replot}} You will often want multiple data sets on the
+\subsection{\gi{replot}}\gkeyind{replot} You will often want multiple data sets on the
 same plot, and Gnuplot does this easily using the \ci{replot} command.
 Just change every use of \ci{plot} after the first to \ci{replot}. 
 Page \pageref{replottwo} presents a few more notes on using this
@@ -258,7 +258,7 @@ Thus, a typical style setting would consist of something like \ci{set
 style data impulses}.
 
 As with many of Gnuplot's settings, you can either set the style via a
-command on its own line, or after the plot command using the \cind{with}
+command on its own line, or after the plot command, in this case using the \gi{with} \gkeyind{with}
 command. There are a few examples below.
 
 \subsection{\ci{set pointtype}, \ci{set linetype}} You can go with the default
@@ -311,7 +311,9 @@ plot 'data'
 plot 'data' [-10:10][0:2]
 \end{lstlisting}
 
-\subsection{\ci{set title}, \ci{set xlabel}, \ci{set ylabel}} These are
+\subsection{\ci{set title}, \ci{set xlabel}, \ci{set ylabel}}
+\gsetind{title}\gsetind{ylabel}\gsetind{xlabel} 
+These are
 very simple commands, that label the $X$
 and $Y$ axes and the plot itself. If the plot is going to be a figure
 in a paper with an adequate caption, then the title may be optional, but
@@ -322,7 +324,7 @@ set ylabel 'Observed density, picograms/liter'
 set title 'Density over time'
 \end{lstlisting}
 
-\subsection{\ci{set key}} \index{legend, plot} As noted above, Gnuplot
+\subsection{\ci{set key}} \gsetind{key} \index{legend, plot} As noted above, Gnuplot
 puts a legend on your plot by default. Most of the time, it is
 reasonably intelligent about it, but sometimes the legend gets in the
 way. Your first option in this case is to just turn off the key
@@ -338,15 +340,15 @@ plot, and \ci{below} puts the legend just under the plot.
 
 The key also sometimes benefits from a border, via \ci{set key box}.
 
-For surface plots with \cind{pm3d}, the key is a thermometer displaying
+For surface plots with \gi{pm3d}\gkeyind{pm3d}, the key is a thermometer displaying
 the range of colors and their values. To turn this off, use \ci{unset
 colorbox}. See \ci{help set colorbox} on moving or changing the
 colorbox's orientation.
 
-\subsection{\ci{set term} and \ci{set out}} \index{Postscript} By 
-default, Gnuplot puts a plot on the screen, which is useful for looking
-at data, but not necessarily useful for communicating with peers. To
-write the plot to a file, you need only select the output file format and name.
+\subsection{\ci{set term} and \ci{set out}}\gsetind{term}\gsetind{out}\index{Postscript} 
+By default, Gnuplot puts a plot on the screen, which is useful for looking
+at data, but not necessarily useful for communicating with peers. To write
+the plot to a file, you need only select the output file format and name.
 
 Gnuplot's \ci{set terminal} command dictates the language with which to
 write the output. \ci{X11} indicates that Gnuplot will be communicating
@@ -722,7 +724,7 @@ required to switch between writing to a file and a pipe?
 \end{itemize}
 }
 
-\subsection{\treesymbol{} \cind{replot} revisited}\label{replottwo}
+\subsection{\treesymbol{} \gi{replot} revisited}\label{replottwo}\gkeyind{replot}
 The \ci{replot} function is a bit fragile to the techniques described
 here.
 
@@ -954,6 +956,9 @@ case each plot will be on a separate page. You could then page through
 them with a screen viewer, or perhaps print them into a flipbook. When writing a
 file, set \ci{p=0} in the above, since there is no use delaying between
 outputs.
+
+Figure \ref{normalgrowth} shows another sample program that produces an
+interesting animation.
 
 \index{Gnuplot|)}
 

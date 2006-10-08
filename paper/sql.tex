@@ -181,7 +181,7 @@ can be used for lines like \si{select d1.age, d2.height}.
 
 Another option is to take data from subqueries; see below.
 
-\marginalia{5}{Borrowing C's annoyances}{\index{SQL!Comments}\index{Comments!SQL}
+\marginalia{5}{Borrowing C's annoyances}{\index{SQL!comments}\index{comments!SQL}
 SQL accepts C-style block comments of the
 form \si{/* --- */}, but not the \si{//} form. It has the same trouble
 with nested comments as C.
@@ -838,7 +838,7 @@ Let us say that you are not reading in existing data, but are
 aggregating your own data, either from a simulation or data
 collected from the real world. Here are some considerations for how you
 should select the layout of your database, summarizing the common wisdom
-about the best way to think about data in a databse.
+about the best way to think about data in a database.
 
 \paragraph{Minimize redundancy} This is rule number one in database
 design, and books have been written about how one goes about reducing
@@ -1146,8 +1146,8 @@ trying to delete does not exist.
 
 %\DeclareFontFamily{LHE}{clas}{}
 %\DeclareFontShape{LHE}{clas}{m}{n}{ <-> }{}
-\subsection{Dummy variables} \index{dummy variables|(}
-The \sind{case} command is the if-then-else of SQL. Let us say that you
+\subsection{Dummy variables} \index{dummy variables|(}\skeyind{case}
+The \si{case} command is the if-then-else of SQL. Let us say that you
 have data that is true/false or yes/no. One way to do turn this into a
 one-zero variable would be via
 the \cind{apop\_pro\-duce\_dum\-mies} function on the matrix side

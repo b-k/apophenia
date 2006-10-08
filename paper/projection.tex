@@ -43,18 +43,34 @@ First, let us say that a value of $x$ has probability $P(x)$. Then
 if $f(x)$ is an arbitrary function, 
 $$E\left(f(x)\right)=\int_{\forall x} f(x)p(x) dx.$$
 
-If we have a sample of data points, then we take each single observation
-to be equally likely: $p(x_i)={1\over n}\ \forall i$.
-The expected value for a sample then becomes the familiar calculation
-$E(X)=(\sum x)/n$, and is \comment{(I should check this) }the BLUE of
-the true mean $\mu$. Section \ref{CLT} will discuss the magical properties of the
-sample expected value that make statistical analysis possible.
+If we have a vector of data points, $\xv$, consisting of $n$ elements
+$x_i$, then we take each single observation to be equally likely:
+$p(x_i)={1\over n}\ \forall i$.  The expected value for a sample then
+becomes the familiar calculation $$E(\xv)={\sum_i x_i\over n},$$ and is
+\comment{(I should check this) }the BLUE of the true mean $\mu$. Section
+\ref{CLT} will discuss the magical properties of the sample expected
+value that make statistical analysis possible.
 
 \paragraph{More moments:}\index{skew} \index{kurtosis} \index{moments} 
-If so inclined, one could also write out the
-expectation in the variance equation as an integral:
+The variance for discrete data is the familiar formula of the mean
+squared distance to the average. Let $\overline x$ indicate the mean of
+$x$, then the variance of the sample is:
+\begin{equation}
+\var(\xv) = {1\over n-1} \sum_i\left(x_i - \overline x\right).
+\label{vareqn}
+\end{equation}
+The sum is divided by $n-1$ instead of $n$ because, given the mean
+$\overline x$ and $n-1$ elements, the $n^{\rm th}$ element is not a
+random draw, but can be deterministically solved. That is, given the
+mean, there are only $n-1$ \vocab{degrees of freedom}. Approximately
+every statistics textbook ever written provides a proof that Equation
+\ref{vareqn} is an unbiased estimator of the population's true variance.
+
+Given a continuous probability distribution from which the data was
+taken, one write out the
+expectation in the variance equation as an integral,
 $$\var(f(x))=\int_{\forall x} \left(f(x) - \overline{f(x})\right)^2 p(x) dx.$$
-But we can calculate a similar integral for higher powers as well:
+and similarly for higher powers as well:
 \begin{eqnarray*}
 {\rm skew}\left(f(x)\right)&=&\int_{\forall x} \left(f(x) - \overline{f(x})\right)^3 p(x) dx\\
 {\rm kurtosis}\left(f(x)\right)&=&\int_{\forall x} \left(f(x) - \overline{f(x})\right)^4 p(x) dx.
@@ -68,13 +84,13 @@ some authors refer to all of these as \airq{the $n$th moment}, $n \in
 \{1, 2, 3, 4\}$, and leave
 it as understood when the moment is central or non-central.}
 
-Positive skew indicates that a distribution is upward leaning, a negative
+Positive skew indicates that a distribution is upward leaning, and a negative
 skew indicates a downward lean. Kurtosis is typically put in plain
 English as \airq{fat tails}: how much density is in the tails of the
 distribution? For example, the kurtosis of a ${\cal N}(0,1)$ is three,
 while the kurtosis of a \ind{Student's $t$ distribution} with $n$ degrees of
 freedom is greater than three, and decreases as $n$ grows, converging to
-three. 
+three (see page \pageref{tkurt} for a full analysis).
 
 \cindex{gsl\_stats\_variance} \cindex{apop\_vector\_var}
 \cindex{apop\_vector\_skew} \cindex{apop\_vector\_kurtosis}
@@ -106,8 +122,9 @@ What information can we get from the higher moments?  Below, we will
 see the powerful Central Limit Theorem, which says that if a variable
 represents the mean of a set of independent and identical draws, then it
 will have a ${\cal N}(\mu,\sigma)$ distribution, where $\mu$ and $\sigma$
-are unknowns that can be estimated from the data. But given the standard
-deviation, the kurtosis must be $3\sigma^4$. If the kurtosis is larger,
+are unknowns that can be estimated from the data. These two parameters
+completely define the distribution; the skew of a Normal is always zero,
+and the kurtosis is always $3\sigma^4$. If the kurtosis is larger,
 then this typically means that the assumption of independent draws is
 false---the observations are interconnected.\label{kurt1} One often sees
 this among social networks or other systems where independent entities
@@ -115,18 +132,17 @@ observe and imitate each other.
 
 \paragraph{Covariance:} The population \ind{covariance}, given a data set,
 is $\sigma_{xy} = E[(x-\overline x)(y-\overline y)]$, which is equivalent
-to $E[xy]-E[x]E[y]$. The \ind{variance} is a special case where $\xv=\yv$.
+to $E[\xv\yv]-E[\xv]E[\yv]$. The \ind{variance} is a special case where $\xv=\yv$.
 
-The sample covariance is $s_{xy}=\sigma_{xy}\cdot {n\over n-1}$. This
-is
-the expectation if you  divided the sum of $(x-\overline
-x)(y-\overline y)$ by $n-1$ instead of $n$. This
-can be proven to be unbiased.
+As with the variance, the unbiased estimate of the 
+sample covariance is $s_{xy}=\sigma_{xy}\cdot {n\over n-1}$---the
+expectation if you  divided the sum of $(x-\overline x)(y-\overline y)$ by
+$n-1$ instead of $n$.
 
 \paragraph{Correlation/Cauchy-Schwarz:} The correlation coefficient is
 defined as $$\rho_{xy}\equiv{s_{xy}\over s_x s_y}.$$ This is mostly just another
 statistic useful for describing two columns of data,
-but it makes a surprise appearance in Section \ref{ts}. This
+but it makes a surprise appearance in Section \ref{ts}. It
 also allowed Cauchy \& Schwarz to state the \ind{Cauchy-Schwarz
 inequality}: $0\leq \rho^2 \leq 1$.  \label{correlation}
 
@@ -163,7 +179,7 @@ data. For quartiles, one would sort the data, and then display the
 values of the data points 0\%, 25\%, 50\%, 75\%, and 100\% of the
 way through the set. Notice that the 0\% value is the minimum of the data
 set, the 100\% value is the maximum, and the 50\% value is probably the
-\ind{median|(} (see exercise below). For quintiles, one would print the
+median \index{median|(}(see below). For quintiles, one would print the
 values of data points  0\%, 20\%, 40\%, 60\%, 80\% and 100\% of the way
 through the set.
 
@@ -226,16 +242,14 @@ Use your function to print the deciles for country incomes from
 \index{median|)}
 
 \paragraph{\treesymbol{} Weighted data} Your data may be aggregated so
-that one line of data represents multiple observations. For example, the
-2000 U.S. Census found that 75.1\% of the U.S. population is White,
-12.3\% is Black or African-American, and 3.6\% is Asian. If your survey
-includes exactly 1000 people in each category, your sample will be more
-representative if you take each White respondent to represent 751
-people, each Black or African-American respondent to represent 123
-people, and each Asian to represent 36 people. 
+that one line of data represents multiple observations. For example,
+sampling efficiencly can be improved by sampling subpopulations
+differently depending upon their expected variance \citep{sarndal:mass}.
+For this and other reasons, data from statistical agencies often
+includes weightings.
 
 This is not the place to go into details about statistically sound means
-of weighting data; see, e.g., \citet{sarndal:mass}. But if your data includes weightings, then you will
+of weighting data, but if your data includes weightings, then you will
 want means to find the weighted moments of the data. Assuming you have
 data in vectors \ci{v}, \ci{v1}, and \ci{v2} and corresponding weights in a vector
 \ci{w}, then you can use the following functions. Notice that the
@@ -273,7 +287,7 @@ distribution using quartiles or quintiles; to do so, use
 \label{distlist}
 
 
-Here are some distributions that a variable may take on. They and are
+Here are some distributions that an observed variable may take on. They are
 worth memorizing before any major statistics test. Common distributions
 of statistical parameters are discussed in Section \ref{dist2}.
 
@@ -284,18 +298,33 @@ Binomial distribution, and once you estimate the parameter to the
 distribution, you will have a full model of that variable, that you can
 even test if so inclined.
 
-\paragraph{Bernoulli\index{Bernoulli distribution}}
+The catalog below includes the three most typical items one would want
+from a distribution: a random number generator (RNG) that would produce
+data with the given distribution, a probability density function (PDF),
+and a cumulative density function (CDF). The full details of RNG use
+will be discussed below, but the functions are cataloged here for easy
+reference, and each requires a pointer to a \ci{gsl\_rng}, which will be
+named \ci{r}.
+
+
+\paragraph{Bernoulli\index{Bernoulli distribution|textbf}}
 
 The number of times that an event which has likelihood $p$ happens in
 one trial. I.e., $x$ is zero or one here.
 
+\indwcsub{Bernoulli distribution}{gsl\_ran\_bernoulli\_pdf}
+\indwcsub{Bernoulli distribution}{gsl\_ran\_bernoulli}
+%\indwcsub{Bernoulli distribution}{gsl\_ran\_bernoulli}
+\cindex{gsl\_ran\_bernoulli} \cindex{gsl\_ran\_bernoulli\_pdf}
 \eqnbox{
 P(x|p)&=&p^x (1-p)^{(1-x)}				\nonumber\\
+        &=&\ci{gsl\_ran\_bernoulli\_pdf(x, p)}\nonumber\\
 E(x)&=&p						\nonumber\\
-\var(x)&=&p(1-p)					\nonumber
+\var(x)&=&p(1-p)					\nonumber\\
+RNG&:&\ci{gsl\_ran\_bernoulli(r, p)}					\nonumber
 }
 
-\paragraph{Binomial\index{Binomial distribution}}
+\paragraph{Binomial\index{Binomial distribution|textbf}}
 
 The number of times that an event which has likelihood $p$ happens over the
 course of $n$ trials.
@@ -307,11 +336,16 @@ pulled from $n$ objects. The equation is $$\left(\begin{matrix}n\cr x\end{matrix
 (in the GSL's Special Functions section).
 \index{choose!gsl\_sf\_choose@\cinlinetwo{gsl\_sf\_choose}} \cindex{gsl\_sf\_choose}
 
+\indwcsub{Binomial distribution}{gsl\_ran\_binomial}
+\indwcsub{Binomial distribution}{gsl\_ran\_binomial\_pdf}
+\cindex{gsl\_ran\_binomial} \cindex{gsl\_ran\_binomial\_pdf}
 \eqnbox{
 %P(x|p)&=&\left(\matrix{n\cr x}\right) p^x (1-p)^{(n-x)}		\nonumber\\
-P(x|p)&=&\left(\begin{matrix}n\cr x\end{matrix}\right) p^x (1-p)^{(n-x)}		\nonumber\\
+P(x|p,n)&=&\left(\begin{matrix}n\cr x\end{matrix}\right) p^x (1-p)^{(n-x)}		\nonumber\\
+        &=&\ci{gsl\_ran\_binomial\_pdf(x, p, n)}\nonumber\\
 E(x)&=&np							\label{binome}\\
-\var(x)&=&np(1-p)						\label{binomv}
+\var(x)&=&np(1-p)						\label{binomv}\\
+RNG&:&\ci{gsl\_ran\_binomial(r, p, n)}					\nonumber
 }
 
 \begin{itemize}
@@ -327,7 +361,7 @@ system of two variables for one unknown, $p$. Thus, you can test for
 \vocab{excess variance}, which indicates that there are interactions that
 falsify that the observations were iid Bernoulli events.
 
-\paragraph{Normal\index{Normal distribution|\textbf}}
+\paragraph{Normal\index{Normal distribution|textbf}}
 
 You know and love the bell curve, aka the Gaussian
 distribution.\footnote{Typography note: this book will use \airq{Normal},
@@ -336,10 +370,21 @@ that this is a proper name and not an adjective.} See the CLT (Section
 \ref{CLT}) for its application.
 
 
+\indwcsub{Normal distribution}{gsl\_ran\_gaussian}
+\indwcsub{Normal distribution}{gsl\_ran\_gaussian\_pdf}
+\indwcsub{Normal distribution}{gsl\_cdf\_gaussian\_(P,Q)}
+\cindex{gsl\_ran\_gaussian} \cindex{gsl\_ran\_gaussian\_pdf}
+\cindex{gsl\_cdf\_gaussian\_Q}\cindex{gsl\_cdf\_gaussian\_P}
 \eqnbox{ \label{normal}
 P(x|\mu,\sigma)&=&{1\over \sigma\sqrt{2\pi}} e^{-{1\over 2}[{(x-\mu)\over\sigma}]^2}\\ 
+    &=& \ci{gsl\_ran\_gaussian\_pdf(x, sigma) + mu}\nonumber\\
 E(x)&=&\mu							\nonumber\\
-\var(x)&=&\sigma^2						\nonumber
+\var(x)&=&\sigma^2						\nonumber\\
+\int_{-\infty}^x {\cal N}(\mu,\sigma)dy &=&
+        \ci{gsl\_cdf\_gaussian\_P(x-mu, sigma)}\nonumber\\
+\int^{\infty}_x {\cal N}(\mu,\sigma)dy &=&
+        \ci{gsl\_cdf\_gaussian\_Q(x-mu, sigma)}\nonumber\\
+RNG&:&\ci{gsl\_ran\_gaussian(r, sigma)+mu}			\nonumber
 }
 
 \begin{itemize}
@@ -360,6 +405,7 @@ Normal distribution that one would fit to this data is:
 p(\Xv|\mu, \Sigma) &=& {\exp\left(-{1\over 2} (\Xv-\mu)' \Sigma^{-1} (\Xv-\mu)\right) 
 \over
    \sqrt{(2 \pi)^n \det(\Sigma)}}            \nonumber\\
+&=&\cind{apop\_multivariate\_normal\_prob(...)} \nonumber\\
    E(\Xv) &=& \mu                           \nonumber\\
    \var(\Xv) &=& \Sigma            \nonumber
 }					
@@ -369,10 +415,10 @@ p(\Xv|\mu, \Sigma) &=& {\exp\left(-{1\over 2} (\Xv-\mu)' \Sigma^{-1} (\Xv-\mu)\r
 this reduces to the univariate Normal distribution.
 \end{itemize}
 
-Apophenia provides the function \cind{apop\_multivariate\_normal\_prob}
-to evaluate this likelihood for a given data point.
-
-\paragraph{Poisson\index{Poisson distribution}}
+\indwcsub{Poisson distribution}{gsl\_ran\_poisson}
+\indwcsub{Poisson distribution}{gsl\_ran\_poisson\_pdf}
+\cindex{gsl\_ran\_poisson}\cindex{gsl\_ran\_poisson\_pdf}
+\paragraph{Poisson\index{Poisson distribution|textbf}}
 
 Say that independent events occur at the mean rate of $\lambda$ events per 
 period. What is the probaility that there will be $x$ events in a single 
@@ -382,8 +428,10 @@ there are $x$ objects in a randomly-selected square km?
 
 \eqnbox{
 P(x|\lambda)&=&{e^{-\lambda}\lambda^x\over x!}			\nonumber\\
+        &=&\ci{gsl\_ran\_poisson\_pdf(x, lambda)}\nonumber\\
 E(x)&=&	\lambda							\nonumber\\
-\var(x)&=&\lambda						\nonumber
+\var(x)&=&\lambda						\nonumber\\
+RNG&:&\ci{gsl\_ran\_poisson(r, lambda)}					\nonumber
 }
 \begin{itemize}
 \item If $X \sim {\rm Poisson}(\lambda_1)$ and $Y \sim {\rm
@@ -391,25 +439,46 @@ Poisson}(\lambda_2)$ (and $X$ and $Y$ are independent), then $(X + Y) \sim {\rm 
 \lambda_2)$.  \item As $\lambda\to\infty$,  ${\rm Poisson}(\lambda)
 \to {\cal N}(\lambda, \lambda)$.  \end{itemize}
 
-\paragraph{Exponential\index{Exponential distribution}}
 
-The story of exponential decay is that in each period, $\beta$ percent
+\indwcsub{Exponential distribution}{gsl\_ran\_exponential}
+\indwcsub{Exponential distribution}{gsl\_ran\_exponential\_pdf}
+\indwcsub{Exponential distribution}{gsl\_cdf\_exponential\_(P,Q)}
+\cindex{gsl\_ran\_exponential} \cindex{gsl\_ran\_exponential\_pdf}
+\cindex{gsl\_cdf\_exponential\_(P,Q)}
+\paragraph{Exponential distribution\index{Exponential distribution|\textbf}}
+
+The story of exponential decay is that in each period, $\lambda$ percent
 of the current population drops out of the population.
 
 To give an example from my own research, say that we believe that in
-each period, $\beta$ crew members of a ship are flogged. If the flogging
-is purely random, then $\beta$ members are flogged once, $\beta^2$
+each period, $\lambda$ crew members of a ship are flogged. If the flogging
+is purely random, then $\lambda$ members are flogged once, $\lambda^2$
 members are flogged twice, et cetera.
 
 This is sometimes called the \vocab{Negative exponential distribution}.
 
 \eqnbox{
-p(x|\beta) &=& \frac{1}{\beta}e^{\frac{-x}{\beta}}		\nonumber\\
-E(x)&=&	\beta							\nonumber\\
-\var(x)&=&\beta^2						\nonumber
+p(x|\lambda) &=& \frac{1}{\lambda}e^{\frac{-x}{\lambda}}		\nonumber\\
+    &=& \ci{gsl\_ran\_exponential\_pdf(x, lambda)}\nonumber\\
+E(x)&=&	\lambda							\nonumber\\
+\var(x)&=&\lambda^2						\nonumber\\
+\int_{-\infty}^x {\rm Exp}(\lambda) dy &=&
+        \ci{gsl\_cdf\_exponential\_P(x, lambda)}\nonumber\\
+\int^{\infty}_x {\rm Exp}(\lambda) dy &=&
+        \ci{gsl\_cdf\_exponential\_Q(x, lambda)}\nonumber\\
+RNG&:&\ci{gsl\_ran\_exponential(r, lambda)}			\nonumber
 }
 
 
+
+
+
+
+\indwcsub{Beta distribution}{gsl\_ran\_beta}
+\indwcsub{Beta distribution}{gsl\_ran\_beta\_pdf}
+\indwcsub{Beta distribution}{gsl\_cdf\_beta\_(P,Q)}
+\cindex{gsl\_ran\_beta} \cindex{gsl\_ran\_beta\_pdf}
+\cindex{gsl\_cdf\_beta\_(P,Q)}
 \paragraph{Beta distribution} The \ind{Beta distribution} is a flexible
 way to describe data inside the range $[0, 1]$.\footnote{The \ind{Gamma
 function} is defined as $\Gamma(x) = \int_0^\infty  t^{x-1} \exp(-t)
@@ -417,13 +486,21 @@ dt$. One may think of it as a continuous version of the \ind{factorial}
 function, because $\Gamma(x) = (x-1)!$. It is not to be confused with
 the Gamma distribution, which is so named because it is defined using
 the Gamma function.}
-See page \pageref{beta} for more on its uses.
+See page \pageref{beta} for more on its uses, including the use of the
+\ci{apop\_random\_beta} RNG.
 
 \eqnbox{
 P(x|\alpha,\beta) &=& {\Gamma(\alpha + \beta) \over \Gamma(\alpha) \Gamma(\beta)} x^{\alpha - 1}
 (1-x)^{\beta - 1}\nonumber\\
+    &=& \ci{gsl\_ran\_beta\_pdf(x, alpha, beta)}\nonumber\\
 E(x)&=&{\alpha\over\alpha+\beta}							\nonumber\\
-\var(x)&=&{\alpha\beta\over(\alpha+\beta)^2(\alpha + \beta + 1)}             \nonumber
+\var(x)&=&{\alpha\beta\over(\alpha+\beta)^2(\alpha + \beta + 1)}             \nonumber\\
+\int_{-\infty}^x \betav(\alpha, \beta) dy &=&
+        \ci{gsl\_cdf\_beta\_P(x, alpha, beta)}\nonumber\\
+\int^{\infty}_x \betav(\alpha, \beta) dy &=&
+        \ci{gsl\_cdf\_beta\_Q(x, alpha, beta)}\nonumber\\
+RNG_1&:&\ci{gsl\_ran\_exponential(r, alpha, beta)}			\nonumber\\
+RNG_2&:&\ci{apop\_random\_beta(r, mu, sigma)} \nonumber
 }
 
 \begin{itemize}
@@ -431,14 +508,27 @@ E(x)&=&{\alpha\over\alpha+\beta}							\nonumber\\
 \end{itemize}
 
 
-\paragraph{\ind{Uniform distribution}} What discussion of distributions
+\index{Flat distribution|see{Uniform distribution}}
+\indwcsub{Uniform distribution}{gsl\_ran\_flat}
+\indwcsub{Uniform distribution}{gsl\_ran\_flat\_pdf}
+\indwcsub{Uniform distribution}{gsl\_cdf\_flat\_(P,Q)}
+\cindex{gsl\_rng\_uniform}\cindex{gsl\_ran\_flat} \cindex{gsl\_ran\_flat\_pdf}
+\cindex{gsl\_cdf\_flat\_(P,Q)}
+\paragraph{Uniform distribution\index{Uniform distribution|textbf}} What discussion of distributions
 would be complete without mention of the Uniform? It represents a neutral
 prior belief that any value within $[\alpha, \beta]$ is equally possible.
 
 \eqnbox{
 P(x) &=& \frac{1}{\beta - \alpha}       \nonumber\\
+    &=& \ci{gsl\_ran\_flat\_pdf(x, alpha, beta)}\nonumber\\
 E(x) &=& \frac{\beta - \alpha}{2}       \nonumber\\
-\var(x) &=& \frac{(\beta - \alpha)^2}{12}   \nonumber
+\var(x) &=& \frac{(\beta - \alpha)^2}{12}   \nonumber\\
+\int_{-\infty}^x {\cal U}(\alpha, \beta) dy &=&
+        \ci{gsl\_cdf\_flat\_P(x, alpha, beta)}\nonumber\\
+\int^{\infty}_x {\cal U}(\alpha, \beta) dy &=&
+        \ci{gsl\_cdf\_flat\_Q(x, alpha, beta)}\nonumber\\
+RNG, {\rm general}&:&\ci{gsl\_ran\_flat(r, alpha, beta)}			\nonumber\\
+RNG, \alpha=0, \beta=1&:&\ci{gsl\_rng\_uniform(r)}			\nonumber
 }
 
 More distribution models, and a few more coded-out examples, will be added to this catalog.
@@ -472,11 +562,91 @@ This section forthcoming.
 event with probabilty .25, what is the likelihood that I will have more
 than twenty successes?
 
+\codefig{normaltable}{How to produce a density table. Each row $x$ is a distance  to
+the mean (i.e., assume $\mu=0$), each column is a value of $\sigma$,
+and the intersection shows the CDF of a Normal with the given $\sigma$ up to $x$.}
+\comment{
+\begin{figure}
+\begin{verbatim}
+                                                sigma
+                 0.1     0.2     0.3     0.4     0.5     0.6     0.7     0.8     0.9       1
+value           --------------------------------------------------------------------------------
+ 0.1    |       0.8413  0.6915  0.6306  0.5987  0.5793  0.5662  0.5568  0.5497  0.5442  0.5398
+ 0.2    |       0.9772  0.8413  0.7475  0.6915  0.6554  0.6306  0.6125  0.5987  0.5879  0.5793
+ 0.3    |       0.9987  0.9332  0.8413  0.7734  0.7257  0.6915  0.6659  0.6462  0.6306  0.6179
+ 0.4    |          1    0.9772  0.9088  0.8413  0.7881  0.7475  0.7161  0.6915  0.6716  0.6554
+ 0.5    |          1    0.9938  0.9522  0.8944  0.8413  0.7977  0.7625  0.734   0.7107  0.6915
+ 0.6    |          1    0.9987  0.9772  0.9332  0.8849  0.8413  0.8043  0.7734  0.7475  0.7257
+ 0.7    |          1    0.9998  0.9902  0.9599  0.9192  0.8783  0.8413  0.8092  0.7816  0.758
+ 0.8    |          1       1    0.9962  0.9772  0.9452  0.9088  0.8735  0.8413  0.813   0.7881
+ 0.9    |          1       1    0.9987  0.9878  0.9641  0.9332  0.9007  0.8697  0.8413  0.8159
+   1    |          1       1    0.9996  0.9938  0.9772  0.9522  0.9234  0.8944  0.8667  0.8413
+
+\end{verbatim}
+\caption{What stats textbooks used to look like.}
+\end{figure}
+}
+
+In the past, statistics textbooks included an appendix presenting tables of common
+distributions, but those tables are effectively obsolete, and more
+modern textbooks refer the reader to the appropriate function in a stats
+package. But for those who long for the days of grand tables, Figure
+\ref{normaltable} presents the code for producing a neatly formatted
+table of CDFs for a set of Normal distributions (the $p$-value 
+often reported with hypothesis tests is one minus the listed value). 
+Almost all of the work in this code is formatting and printing neat
+lines on the screen; the math consists of the single line that
+calculates \ci{gsl\_cdf\_gaussian\_P} toward the bottom. Notice that all
+constants are at the top of the file, so that you can more easily create
+a taller, wider, or otherwise different table without modifying the code
+itself. 
+
 \subsection{Generating data from a distribution}
 Since each distribution neatly summarize an oft-modeled story, they can
 be used to simulate or summarize real-world processes. Modelers will want
 to make random draws from these distributions. This topic is currently
 covered in some detail in Chapter \ref{boot}.
+
+\codefig{normalgrowth}{A model of Normally distributed growth.}
+
+Figure \ref{normalgrowth} gives a quick initial example. It is based on
+work by Axtell and others [CITATIONS HERE] regarding \vocab{Zipf's law},
+that cities, firms, and other such agglomerations tend to take on an
+Exponential distribution. In the model here, this comes about because
+agents' growth rates are Normally distributed.
+
+
+First, the program produces a set of agents with one characteristic: size,
+stored in a \ci{gsl\_vector}. The \ci{initialize} function draws agent
+sizes from a Uniform$[0,100]$ distribution.  To do this, it required a
+\ci{gsl\_rng}, which \ci{main} allocates using \cind{apop\_rng\_alloc}
+and passes to \ci{initialize}.
+
+Each period, the firms grow by a Normally distributed rate. That is, the
+\ci{grow} function randomly draws $g$ from a \ci{gsl\_rng\_gaussian}, and
+the agent's size is assigned to $size \leftarrow size * \exp(g)$ (though, the
+\ci{gsl\_vector} syntax forces the actual code to be much more verbose).
+The most likely growth rate is therefore $\exp(0) = 1$; 
+when $g<0$, $\exp(g)<1$; and when $g>0$, $\exp(g)>1$. Also,
+$\exp(g)*\exp(-g)=1$, and by the symmetry of the Normal distribution,
+$g$ and $-g$ have equal likelihood, so it is easy for an agent to have
+good luck in period one reversed by equally bad luck in period two,
+leaving it near where it had started.
+
+Each period, the program dumps a histogram to a Gnuplottable output
+file. With a \gi{pause} between each histogram, the output file becomes
+an animation, showing a quick transition from a Uniform distribution to
+a steep Exponential distribution, where most agents are fast approaching
+zero size, but a handful have size approaching 1,000.\footnote{Here,
+the $x$-axis is the firm size, and the $y$-axis is the number of
+firms. Typically, the Zipf distribution is displayed somewhat differently:
+the $x$-axis is the \cind{rank} of the firm, $1^{\rm st}$,  $2^{\rm nd}$,
+$3^{\rm rd}$, et cetera, and the $y$-axis is the size of the so-ranked
+firm. Converting to this form is left as an exercise to the reader. [Hint:
+use \ci{apop\_vector\_percentiles}.]}
+
+
+
 
 \subsection{Fitting existing data}
 The common goal throughout the book is to estimate the parameters of the
@@ -490,7 +660,7 @@ This is known as the \vocab{method of moments} estimation, and it
 matches the maximum likelihood estimate of the parameters in almost all
 cases. For the Uniform, the method of moments doesn't work: the
 expression $(\beta - \alpha)$ is oversolved but there is no way to solve
-for $\alpha$ or $\beta$ alone. However, the reader may verify that the
+for $\alpha$ or $\beta$ alone. However, a few moments' thought will show that the
 most likely value for $(\alpha, \beta)$ is simply $(\min(x), \max(x))$.
 
 
@@ -531,7 +701,7 @@ GSL's built-in singular value decomposition function; the third is a
 single call in Apophenia.
 
 The only hard part is finding the eigenvalues of
-$(X'X)$; the GSL saw us coming, and gives us the \cinline{gsl\_eigen\_symm} functions
+$\Xv'\Xv$; the GSL saw us coming, and gives us the \cinline{gsl\_eigen\_symm} functions
 to calculate the \ind{eigenvectors} of a symmetric matrix.
 
 The GSL is too polite to allocate large vectors behind our backs, so

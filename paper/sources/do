@@ -15,6 +15,7 @@ os.popen3("""
     rm  msc_book_samples.zip
     mkdir msc_book_samples
     cp *c msc_book_samples
+    cp README msc_book_samples 
     cp markov_data msc_book_samples 
     cp data-classroom msc_book_samples 
     cp data-wb* msc_book_samples 

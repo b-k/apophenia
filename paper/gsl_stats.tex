@@ -98,13 +98,15 @@
 %\usepackage[left=1.3in, right=1in,top=1in,bottom=1in]{geometry}
 \makeindex
 \def\cindx#1#2{\index{#1@\cinlinetwo{#1}|#2}}
+\def\cindwsubhead#1#2{\index{\cinlinetwo{#1}!#2}}
+\def\indwcsub#1#2{\index{#1!\cinlinetwo{#2}}}
 \def\bindx#1#2{\index{#1@\binlinetwo{#1}|#2}}
 \def\ind#1{\index{#1}#1}
 \def\ttind#1{\index{#1@\cinlinetwo{#1}}\cinline{#1}}
 %\def\cind#1{\index{#1@\cinlinetwo{#1}}\cinline{#1}}
 \def\cindex#1{\cindx{#1}{}}
-\def\bind#1{\bindx{#1}{}\binline{#1}}
-\def\cind#1{\cindx{#1}{}\cinline{#1}}
+\def\bind#1{\bindx{#1}{}\bi{#1}}
+\def\cind#1{\cindx{#1}{}\ci{#1}}
 \def\sind#1{\index{#1@\sinlinetwo{#1}}\sinline{#1}}
 \def\sqlind#1{\index{#1@\sinlinetwo{#1}}\sinline{#1}}
 \def\ttindex#1{\index{#1@\cinlinetwo{#1}}}
@@ -116,8 +118,10 @@
 \def\vocab#1{{\sl #1}\index{#1}}
 \def\gind#1{\gindx{#1}{}\ginline{#1}}
 
+
 \def\skeyind#1{\index{#1@\sinlinetwo{#1} (SQL keyword)}\index{SQL keywords!\sinlinetwo{#1}}}
 \def\gkeyind#1{\index{#1@\ginlinetwo{#1} (Gnuplot keyword)}\index{Gnuplot keywords!\ginlinetwo{#1}}}
+\def\gsetind#1{\index{#1@\ginlinetwo{#1} (Gnuplot setting)}\index{Gnuplot settings!\ginlinetwo{#1}}}
 \def\ckeyind#1{\index{#1@\cinlinetwo{#1} (C keyword)}\index{C keywords!\cinlinetwo{#1}}}
 
 %fold bib citations into the index
@@ -149,12 +153,14 @@
 \def\cinlinetwo#1{{\tt #1}}
 \def\sinlinetwo#1{{\tt #1}}
 \def\binlinetwo#1{{\tt #1}}
+\def\ginlinetwo#1{{\tt #1}}
 \def\airq#1{{\sl #1}}
 \def\gi#1{{\bf\tt #1}}
 \def\gitwo#1{{\tt #1}}
 
 \long\def\codefig#1#2{
 	\begin{figure}
+    \indwcsub{sample code}{#1.c}
 	\hrule\vskip4pt
 \lstset{frame=,showstringspaces=false, basicstyle=\small, emphstyle=\bf\small, language=C, breaklines=true}
 \lstinputlisting{sources/#1.c}

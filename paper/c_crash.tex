@@ -699,7 +699,7 @@ complex data types that are collections of many subelements. \ckeyind{struct}
 For example:
 
 \begin{lstlisting}
-typedef struct complex{
+typedef struct {
     double real;
     double imaginary;
 } complex;
@@ -708,14 +708,11 @@ complex a, b;
 \end{lstlisting}
 
 You now have two variables of type \ci{complex} and can now use \ci{a.real} or \ci{b.imaginary} to refer to the appropriate constituents
-of these complex numbers. Why is the word \ci{complex} repeated
-twice? Because you are first declaring a structure named \ci{complex},
-and then you are defining a type named \ci{complex} that expands to
-\ci{struct complex}. This is your first hint that C is neither Beautiful
-nor Perfect; just follow the template there and nobody gets hurt. Here is
-another example:
+of these complex numbers. 
+
+Here is another example:
 \begin{lstlisting}
-typedef struct person{
+typedef struct {
     char first_name[100], last_name[100];
     float height, weight;
     int age;
