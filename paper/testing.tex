@@ -181,12 +181,10 @@ sense, that takes in a vector of inputs \ci{x1, x2, \dots, xn} and a
 vector of parameters \ci{p1, p2, \dots, pm}, runs
 through a thousand lines of code, and produces a value \ci{y}. The
 problem is still the same---estimate the parameters of the model using
-data---but the linear methods are no longer useful. In some cases, there
-is a linear system that does not do too much violence to reality; in
-other cases, you will need to use the maximum likelihood methods of
-Chapter \ref{mle}. However, one could overconstrain the parameters of
+data---but the linear methods are no longer useful. 
+One could overconstrain the parameters of
 this type of model as easily as those above, such as claiming that
-\cinline{p1 + p2 == 1}. Chapter \ref{mle} will also discuss likelihood
+\cinline{p1 + p2 == 1}. Chapter \ref{mle} will discuss likelihood
 ratio tests to evaluate the hypotheses embodied in constraints.
 
 By the way, a statement like `We reject

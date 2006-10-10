@@ -295,7 +295,7 @@ to \sinline{select * from oldset\_one union select * from oldset\_two}
 and \sinline{select t1.*, t2.* from old\-set\_one t1, old\-set\_two t2},
 respectively.
 
-Since the \cinline{matrix} element of the \cinline{apop\_data} structure
+\paragraph{Get and set} Since the \cinline{matrix} element of the \cinline{apop\_data} structure
 is a \cinline{gsl\_matrix}, you can use any of the tools from Chapter
 \ref{linear_algebra} to dissect it, and similarly for the
 \cinline{vector} element.
@@ -336,7 +336,7 @@ then
 \begin{lstlisting}
 apop_dot(X, X, 1, 0);
 \end{lstlisting}
-will find $X'X$: we are taking the dot product of \ci{X} with itself,
+will find $\Xv'\Xv$: we are taking the dot product of \ci{X} with itself,
 and the first version is transposed and the second is not.
 
 Since an \ci{apop\_data} set may be either a vector or a matrix, this
@@ -423,7 +423,7 @@ only what distributional parameters best fit; e.g., assume the data
 is Normally distributed and find the mean and variance.
 
 One could also use the \cinline{apop\_model} to describe 
-non-statistical models involving optimization subject to constraints;
+non-statistical models such as optimization subject to constraints;
 see the example of Section \ref{econ101}.
 
 There are three possibilities:
@@ -638,7 +638,7 @@ can just set it to a \cinline{NULL} pointer, and the functions will return
 everything apropos.
 
 The output from these functions also includes an inventory, 
-giving a list of the elements of the structure which are
+giving a list of the elements of the structure that are
 actually in use. 
 
 The inventory has one binary element for each element of the \cinline{apop\_estimate} structure.
@@ -649,7 +649,7 @@ like the function to return the designated \cinline{apop\_estimate} element.
 
 The \cinline{apop\_estimate} structure itself has an \cinline{apop\_inventory}
 element named \cinline{uses} embedded within it. Those elements for
-which \cinline{uses.elmt} are zero are unallocated pointers (so be careful:
+which, for example, \cinline{uses.elmt} are zero are unallocated pointers (so be careful:
 precede any pointer use with an \cinline{if(est\-i\-mate->uses.el\-e\-ment)} clause).
 
 It may sometimes be useful to manipulate the \cinline{apop\_estimate} structure's
@@ -815,7 +815,7 @@ double pval = apop_data_get_tn(test_output, "p_val%", -1);
 \paragraph{Output} 
 Alternatively, you can print the entire  \cinline{apop\_data} structure.
 Most of the useful data types have
-a print function, and given the package-type-operation naming scheme,
+a print function, and given the package-noun-verb naming scheme,
 you can basically guess their names: \cind{apop\_data\_print},
 \cind{apop\_matrix\_print}, \cind{apop\_vector\_print}. 
 

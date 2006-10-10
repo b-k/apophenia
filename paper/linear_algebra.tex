@@ -15,8 +15,8 @@ documentation is readily available online or in book form
 \citep{gough:gsl}.
 
 \section{The GSL's matrices and vectors}
-As you saw in Chapter \ref{c_crash}, arrays and matrices can be directly implemented in C, but for
-the rest of the book, I'll be sticking to the GSL's matrix and vector objects.
+As you saw in Chapter \ref{c_crash}, arrays and matrices can be directly implemented in C, but 
+the rest of the book will be sticking to the GSL's matrix and vector objects.
 If you like using raw arrays better, it's easy to switch back and forth; see
 section \ref{asst_conversions}.
 
@@ -30,9 +30,9 @@ section \ref{asst_conversions}.
 \cindex{gsl\_vector\_alloc}
 \cindex{gsl\_matrix\_free}
 \cindex{gsl\_vector\_free}
-\index{declaration!of gsl\_matrix@of \cinline{gsl\_matrix}}
-\index{declaration!of gsl\_vector@of \cinline{gsl\_vector}}
-\index{for@\cinline{for}!example of}
+\index{declaration!of gsl\_matrix@of \ci{gsl\_matrix}}
+\index{declaration!of gsl\_vector@of \ci{gsl\_vector}}
+\index{for@\ci{for}!example of}
 Here is a complete program that will do a few useless things to a few sample
 objects:\label{gslexample}
 \begin{lstlisting}
@@ -58,42 +58,42 @@ int main(void){
 \paragraph{A walk through the code}
 Here is what just happened: we allocated a 10$\times$10 matrix and a vector of
 length 10.  For the sake of variety, we  allocated the two differently.
-\cinline{gsl\_matrix\_alloc} simply set aside a block of memory for the matrix,
-and that block may have garbage in it. Meanwhile, \cinline{gsl\_vector\_calloc} set
-aside some space for the vector \cinline{v}, and set all the values of \cinline{v} to
+\ci{gsl\_matrix\_alloc} simply set aside a block of memory for the matrix,
+and that block may have garbage in it. Meanwhile, \ci{gsl\_vector\_calloc} set
+aside some space for the vector \ci{v}, and set all the values of \ci{v} to
 zero.  We were able to do these allocations in the declaration itself.
 
-That done, the \cinline{for} loop put some values in the first column of the matrix (leaving garbage in the rest of the matrix). 
-The syntax should be familiar to you from subsection \ref{for_loops}: we start at
+That done, the \ci{for} loop put some values in the first column of the matrix (leaving garbage in the rest of the matrix). 
+The syntax should be familiar to you from section \ref{for_loops}: start at
 zero, not one, and increment up to the size of the matrix, which in this case is
-\cinline{m-$>$size1}. You will recognize this as accessing a structure, which is exactly
-what we are doing: the declaration \cinline{gsl\_matrix *m} means that
-\cinline{m} is a pointer to a \cinline{gsl\_matrix}, which is a structure
-whose definition you can look up if you are so inclined. If you do, you
-will see that it includes elements \cinline{size1} and \cinline{size2},
-for the row and column sizes of the matrix. [Row always comes first,
+\ci{m-$>$size1}. You will recognize this as accessing a structure, which is exactly
+what we are doing: the declaration \ci{gsl\_matrix *m} means that
+\ci{m} is a pointer to a \ci{gsl\_matrix}, a structure
+studied in detail in Section \ref{gslinternals}. For now, only
+the two elements \ci{size1} and \ci{size2} are relevant,
+indicating the row and column sizes of the matrix. [Row always comes first,
 then Column, just like the order in Roman Catholic, Randy Choirboy,
 or RC Cola.] Since the vector has only one dimension, the analogous
-element of the vector structure is \cinline{v-$>$size}.
+element of the vector structure is \ci{v-$>$size}.
 
-Next, we copied the vector to the third row of the matrix using \cinline{gsl\_\-ma\-trix\_\-set\_\-row(m, 3, v)}. Notice that in so doing, we
+Next, we copied the vector to the third row of the matrix using \ci{gsl\_\-ma\-trix\_\-set\_\-row(m, 3, v)}. Notice that in so doing, we
 overwrote the three at the point (3,0) of the matrix with a zero from
-the third element of \cinline{v}.
+the third element of \ci{v}.
 
 Finally, we freed the memory used for the vectors. This is not 
 necessary for a small program,
 but it's a good habit to get into for
-when you start getting the monolithic analyses, which you may not be
-able to run on your PC if you don't keep the memory clear of debris.
+when you start doing the monolithic analyses, which you may not be
+able to run if you don't keep the memory clear of debris.
 
 \paragraph{Naming conventions}  \index{naming functions}
-Every function in the GSL library will begin with \cinline{gsl\_}, and
+Every function in the GSL library will begin with \ci{gsl\_}, and
 the first argument of all of these functions will be the object to be acted upon.
-Every function which affects a matrix will begin with \cinline{gsl\_matrix\_}
-and similarly with vectors and their functions, which all begin with \cinline{gsl\_vector\_}. 
+Every function which affects a matrix will begin with \ci{gsl\_matrix\_}
+and similarly with vectors and their functions, which all begin with \ci{gsl\_vector\_}. 
 Apophenia generally sticks to this as well, and 100\% of its functions
-begin with \cinline{apop\_} and a great majority of them begin with a data
-type such as \cinline{apop\_data\_}, \cinline{apop\_est\-i\-mate\_}, \&c.
+begin with \ci{apop\_} and a great majority of them begin with a data
+type such as \ci{apop\_data\_}, \ci{apop\_est\-i\-mate\_}, \&c.
 
 The consistency of the naming means that you have more to type, but
 less to memorize. Given the package-object-verb form, you can likely
@@ -112,8 +112,9 @@ package has a number of higher-level operations that are also worth
 getting to know, so have a look at the \ci{apop\_vector\_...}
 and \ci{apop\_matrix\_...} sections as well.}
 
-Another alternative is to start writing your own functions. For example, you
-could write a file \cinline{my\_convenience\_fns.c}, which could include:
+If you find the naming scheme to be too verbose, you can 
+write your own wrapper functions that require less typing. For example, you
+could write a file \ci{my\_convenience\_fns.c}, which could include:
 
 \cindex{gsl\_matrix\_get}
 \cindex{gsl\_matrix\_set}
@@ -129,7 +130,7 @@ double vget(gsl_vector *v, int row){
 \end{lstlisting}
 %\end{verbatim}
 
-You will also need a header file, \cinline{my\_convenience\_fns.h}:
+You will also need a header file, \ci{my\_convenience\_fns.h}:
 %\begin{verbatim}
 \begin{lstlisting}
 double mget(gsl_matrix *m, int row, int col);
@@ -137,8 +138,8 @@ double vget(gsl_vector *v, int row);
 \end{lstlisting}
 %\end{verbatim}
 
-After throwing an \cinline{\#include "my\_convenience\_fns.h"} at the top of your
-program, you will be able to use your abbreviated syntax such as \cinline{mget(v,3)}.
+After throwing an \ci{\#include "my\_convenience\_fns.h"} at the top of your
+program, you will be able to use your abbreviated syntax such as \ci{vget(v,3)}.
 It's up to your \ae sthetics as to whether your code will be more or less
 legible after you make these changes, but you will need to remember to
 bring your convenience functions with you everywhere you go.
@@ -197,7 +198,8 @@ Before there was the GSL, there was the BLAS---the basic linear algebra
 system. The GSL has a few functions to interact with the BLAS. In fact,
 it has 86. This section covers the three that you will actually 
 use.\footnote{The names of the functions here fit in with the system
-for the other 83 functions you won't ever use. They are a combination
+for the other 83 functions you won't ever use. For example,
+\ci{gsl\_blas\_dgemv} is a combination
 of D=double precision, GE=general, M=matrix, V=vector.}
 
 Apophenia provides a convenience function, \cind{apop\_dot}, that can
@@ -214,13 +216,13 @@ int gsl_blas_dgemv (CBLAS_TRANSPOSE_t TransX, float alpha,
           float beta, gsl_vector * y);
 \end{lstlisting}
 
-This will put into the vector $y$ either the value 
-$y \leftarrow \alpha X v + \beta y$ or $y \leftarrow \alpha X' v + \beta y$, as determined by the
+This will put into the vector $\yv$ either the value 
+$\yv \leftarrow \alpha X \vv + \beta \yv$ or $\yv \leftarrow \alpha X' \vv + \beta \yv$, as determined by the
 first argument.
-\cinline{CBLAS\_TRANSPOSE\_t} is a type defined by the GSL that can take
-one of two values: \cinline{CblasNoTrans} and \cinline{CblasTrans}. If
-it takes the former value, then $X$ is left alone;
-if it takes the latter, it is transposed to $X'$.
+\ci{CBLAS\_TRANSPOSE\_t} is a type defined by the GSL that can take
+one of two values: \ci{CblasNoTrans} and \ci{CblasTrans}. If
+it takes the former value, then $\Xv$ is left alone;
+if it takes the latter, it is transposed to $\Xv'$.
 
 To give a concrete example, assume you have already got some vectors and matrices which have the following
 declarations:
@@ -229,16 +231,16 @@ gsl_vector *beta, *gamma;
 gsl_matrix *x, *y;           
 \end{lstlisting}
 
-Then, to calculate $X\cdot \beta$, we'd need:
+Then, to calculate $\Xv\cdot \betav$, we'd need:
 
 \begin{lstlisting}
 gsl_vector *beta_dot_x      = gsl_vector_calloc(x->size1);
 gsl_blas_dgemv (CblasNoTrans, 1.0, x, beta, 0.0, beta_dot_x);
 \end{lstlisting}
 
-Notice that we used \cinline{calloc}, instead of just \cinline{alloc}, because
-the system will add $x\beta$ to \cinline{beta\_dot\_x}, not just write it in,
-so \cinline{beta\_dot\_x} needs to start as all zeros.
+Notice that we used \ci{calloc}, instead of just \ci{alloc}, because
+the system will add $\xv\betav$ to \ci{beta\_dot\_x}, not just write it in,
+so \ci{beta\_dot\_x} needs to start as all zeros.
 \cindex{gsl\_blas\_dgemv|)}
 
 \paragraph{Vector $\cdot$ vector}
@@ -248,12 +250,32 @@ To find the dot product of two vectors, use this function:
 int gsl_blas_ddot (const gsl_vector * x, const gsl_vector * y, double * result);
 \end{lstlisting}
 
+\exercise{Write a table displaying the sum of squares $1^2 + 2^2 + 3^2 +
+\dots + n^2$ for $n= 1$ through $10$.
+
+\begin{itemize}
+\item Write a function that takes in $n$ and
+    \begin{itemize}
+    \item allocates a \ci{gsl\_vector *v} of size $n$,
+    \item fills the vector with $1, \dots, n$,
+    \item calculates and returns $\vv \cdot \vv$ using \ci{gsl\_blas\_ddot (v, v, v\_dot\_v)},
+    \item and finally frees \ci{v}.
+    \end{itemize}
+\item Write a loop for $n=1$ through $10$, that calls the above function and then prints $n$
+and the returned value.
+\item Verify your work, by printing $n(n+1)(2n+1)/6$ alongside your calculation of the sum of squares up to $n$.
+\end{itemize}
+}
+
+
+\comment{
 For example, \label{ddot}
 
 \begin{lstlisting}
 double *beta_dot_gamma;
 gsl_blas_ddot (beta, gamma, beta_dot_gamma);
 \end{lstlisting}
+}
 
 \paragraph{Matrix $\cdot$ matrix}
 Finally, to take the dot product of two matrices, use:
@@ -264,9 +286,9 @@ int gsl_blas_dgemm (CBLAS_TRANSPOSE_t TransX,
     double alpha, const gsl_matrix * X, const gsl_matrix * Y, 
     double beta, gsl_matrix * dot_product);
 \end{lstlisting}
-which will calculate \cinline{dot\_product} $= \alpha op(X) op(Y) + \beta$ \cinline{dot\_product}. $op(X)$ and
-$op(Y)$ will be either the matrix or its transpose, as above, depending on whether you choose \cinline{CblasTrans}
-or \cinline{CblasNoTrans}. For example, here is $X'Y$:
+which will calculate \ci{dot\_product} $\leftarrow \alpha op(\Xv) op(\Yv) + \beta$ \ci{dot\_product}. $op(\Xv)$ and
+$op(\Yv)$ will be either the matrix or its transpose, as above, depending on whether you choose \ci{CblasTrans}
+or \ci{CblasNoTrans}. For example, here is $\Xv'\Yv$:
 
 \begin{lstlisting}
 gsl_matrix *x_dot_y      = gsl_matrix_calloc(x->size2, y->size2);
@@ -275,21 +297,24 @@ gsl_blas_dgemm (CblasTrans,CblasNoTrans, 1, x, y, 0, x_dot_y);
 
 To give a more extended example, let us say that we have a \ind{transition matrix}, showing whether one can go from a row state to a
 column state. Omitting the labels for now, here is a sample:
-\label{twostep}\lstinputlisting{sources/markov_data} 
+\label{twostep}\lstinputlisting{sources/data-markov} 
 [This is not really a \ind{Markov matrix}, because its
 columns are not normalized to sum to one; the reader will see below that it
 still is a valid description of a set of transitions.]
 
-Here is a complete program to read in this matrix and then output this
+\codefig{markov}{A program to read in a transformation matrix and
+display the two-step transformation.}
+Figure \ref{markov} shows a complete program to read in this matrix and then output this
 count of two-step transitions. The steps should be clear: read the data,
 allocate a space for the output, calculate the dot product, and print
 the result. It introduces a new data type, \cind{apop\_data} to be
 discussed fully in Chapter \ref{apop}. For now, just take it to be a
-\cinline{gsl\_matrix} with labels. On page \pageref{markovtwo}, the
-progran is simplified using \cind{apop\_data}-specific functions.
-\label{markovone}\lstinputlisting{sources/markov.c}
+\ci{gsl\_matrix} with labels. On page \pageref{markovtwo}, the
+program is simplified using \cind{apop\_data}-specific functions.
+%\label{markovone}\lstinputlisting{sources/markov.c}
+
 Here is the output:
-\begin{lstlisting}
+\ns{7}\begin{lstlisting}
     2       3       1       2       2       3
     3       4       3       4       4       4
     2       2       3       3       3       2
@@ -304,8 +329,8 @@ state two in two steps (1 $\Rightarrow$ 1 $\Rightarrow$ 2,
 
 \exercise{\label{quadq}The quadratic form $\Xv'\Yv\Xv$ appears very frequently in
 statistical work. Write a function with the header
-\cinline{gsl\_matrix *quadratic\_form(gsl\_matrix *x, gsl\_matrix *y);} 
-that takes two \cinline{gsl\_matrix}es and returns the quadratic form as above. Be sure to check that \cinline{y} is square and has the same dimension as \cinline{x-$>$size1}.}
+\ci{gsl\_matrix *quadratic\_form(gsl\_matrix *x, gsl\_matrix *y);} 
+that takes two \ci{gsl\_matrix}es and returns the quadratic form as above. Be sure to check that \ci{y} is square and has the same dimension as \ci{x-$>$size1}.}
 
 \cindex{gsl\_blas\_dgemm|)}
 
@@ -335,6 +360,11 @@ gsl_vector_scale(a_vector, 2);
 \section{Matrix inversion and equation solving}  \index{matrices!inversion}\index{matrices!determinants}
 Matrix inversion is one of the most computationally intensive problems
 around. In fact, some will tell you it is the problem for which computers were invented.
+Here in the modern day, it is not such a big deal: my old laptop will
+invert a $1,000 \times 1,000$ matrix in about ten seconds, and does the
+inversion step for the
+typical OLS inversion, around a $10 \times 10$ matrix at the
+most, in a hundredth of a second.
 \comment{
 \codefig{invertmatrix}{A function that inverts a matrix using via an LU decomposition.}
 
@@ -360,12 +390,12 @@ This is the function \ttind{apop\_OLS} will use if you ask for covariances.
 
 \index{Householder solver}
 Because inversion is so computationally intensive, you are better off
-not doing so.  For example, we often write the OLS parameters as $\beta
-=(X'X)^{-1}(X'Y)$, but you could implement this as solving
-$(X'X)\beta = X'Y$, which involves no inversion. If \cinline{xpx} is the
-matrix $X'X$ and \cinline{xpy} is the vector $X'Y$, then 
-\cind{gsl\_linalg\_HH\_solve}\cinline{(xpx, xpy, out-$>$parameters)} will
-return $\beta$. This is how \cinline{apop\_OLS} will find $\beta$ if it
+not doing so.  For example, we often write the OLS parameters as $\betav
+=(\Xv'\Xv)^{-1}(\Xv'\Yv)$, but you could implement this as solving
+$(\Xv'\Xv)\betav = \Xv'\Yv$, which involves no inversion. If \ci{xpx} is the
+matrix $\Xv'\Xv$ and \ci{xpy} is the vector $\Xv'\Yv$, then 
+\cind{gsl\_linalg\_HH\_solve}\ci{(xpx, xpy, out-$>$parameters)} will
+return $\betav$. This is how \ci{apop\_OLS} will find $\betav$ if it
 is all you ask for.
 
 \summary{
@@ -378,28 +408,28 @@ There are many facets to dealing with a computer that one would call
 tedious, but for me, the most tedious of all is converting data formats.
 You can describe a process easily, say `pull the data and find
 $\Xv'\Xv$', but the data is in a text file and your function to take dot
-products accepts \cinline{gsl\_vectors}, and going from one
+products accepts \ci{gsl\_vectors}, and going from one
 to the other will take you much more time than calling the function in
 the end.
 
 To that end, this section presents
 suggestions for converting among the various data formats used in this
 book. It is not an exciting
-read, and outside of Method V, there is little new material; you may
-prefer to take this section as a reference for use as necessary. Table
-\ref{conversiontab} provides the key to the method most appropriate for
-each given conversion. 
+read, and the only new material is that described under Method V; you may
+prefer to take the rest of this section as a reference for use as
+necessary. Table \ref{conversiontab} provides the key to the method most
+appropriate for each given conversion.
 
 From/to pairs marked with a dot are
 left as an exercise for the reader; none are particularly difficult, but
 may require going through another format; for example, one can go from a
-\cinline{double[ ]} to an \cinline{apop\_data} set via \cinline{double[
-]} $\Rightarrow$ \cinline{gsl\_matrix} $\Rightarrow$ \cinline{apop\_data}.
+\ci{double[ ]} to an \ci{apop\_data} set via \ci{double[
+]} $\Rightarrow$ \ci{gsl\_matrix} $\Rightarrow$ \ci{apop\_data}.
 One can go from any format to any other in two steps, as proven above
-using the transition matrix on page \pageref{twostep}. 
+using the transition matrix and dot product on page \pageref{twostep}. 
 
 \def\rcap#1{\rotatebox{45}{#1}\hskip -15pt }
-\def\rcapc#1{\rotatebox{45}{\cinline{#1}}\hskip -15pt }
+\def\rcapc#1{\rotatebox{45}{\ci{#1}}\hskip -15pt }
 \def\cd{$\cdot$}
 \begin{figure} \begin{center}
 \begin{tabular}{ll}
@@ -410,10 +440,10 @@ using the transition matrix on page \pageref{twostep}.
         & \rcapc{gsl\_vector} & \rcapc{gsl\_matrix}& \rcapc{apop\_data}\\
 Text file               & C & F & \cd & \cd & \cd &  F                   \\
 Db table                & \cd & Q & \cd & Q & Q & Q                  \\
-\cinline{double[ ]}      & \cd & \cd & C & F & F & \cd                  \\
-\cinline{gsl\_vector}   & P  & P & F & C & F & F                    \\
-\cinline{gsl\_matrix}   &  P & P & F & V &C &  F               \\
-\cinline{apop\_data}    & P & P & F & S & S &C
+\ci{double[ ]}      & \cd & \cd & C & F & F & \cd                  \\
+\ci{gsl\_vector}   & P  & P & F & C & F & F                    \\
+\ci{gsl\_matrix}   &  P & P & F & V &C &  F               \\
+\ci{apop\_data}    & P & P & F & S & S &C
 \end{tabular}
 \end{tabular}
 \caption{Methods of conversion} \label{conversiontab}
@@ -422,32 +452,35 @@ Db table                & \cd & Q & \cd & Q & Q & Q                  \\
 
 \paragraph{Method C: Copying} There are two styles of copying.
 One is the family of functions with \cind{memcpy} in the name, that are
-of the form \cinline{memcpy(dest, src)}. The assume that \cinline{dest}
+of the form \ci{memcpy(dest, src)}.\footnote{Notice that for virtually
+all functions throughout the text, the order of the arguments is 
+inputs first and then outputs. For basically historical reasons, the
+\ci{memcpy} functions are the reverse.} They assume that \ci{dest}
 is already allocated.  
 Apophenia provides functions to allocate and copy in one step, with
-names of the form \cinline{apop\_...\_copy}.
+names of the form \ci{apop\_...\_copy}.
 
 \cindex{gsl\_vector\_memcpy} \cindex{gsl\_matrix\_memcpy}
 \cindex{apop\_data\_memcpy} \cindex{apop\_data\_memcpy} \cindex{system}
-\begin{lstlisting}
+\ns{22}\begin{lstlisting}
 //Text file $\Rightarrow$ Text file
 //Just use the system's file copy command.
     system("cp %s %s", from_file_name, to_file_name);
-//\cinline{gsl\_vector} $\Rightarrow$ \cinline{gsl\_vector}
+//\ci{gsl\_vector} $\Rightarrow$ \ci{gsl\_vector}
     gsl_vector *copy   = gsl_vector_alloc(original->size);
     gsl_vector_memcpy(copy, original);
     gsl_vector *copy2 = apop_vector_copy(original);
-//\cinline{double[ ]} $\Rightarrow$ \cinline{double[ ]}
+//\ci{double[ ]} $\Rightarrow$ \ci{double[ ]}
 //You need to know the size of the original.
     double *copy1 = malloc(sizeof(double) * original_size);
     memcpy(copy1, original, sizeof(double) * original_size);
-    double *copy2[original_size];
-    memcpy(copy2, original, sizeof(double) * original_size);
-//\cinline{gsl\_matrix} $\Rightarrow$ \cinline{gsl\_matrix}
+    double copy2[original_size];
+    memcpy(&copy2, original, sizeof(double) * original_size);
+//\ci{gsl\_matrix} $\Rightarrow$ \ci{gsl\_matrix}
     gsl_matrix *copy   = gsl_matrix_alloc(original->size1, original->size2);
     gsl_matrix_memcpy(copy, original);
     gsl_matrix *copy2 = apop_matrix_copy(original);
-//\cinline{apop\_data} $\Rightarrow$ \cinline{apop\_data}
+//\ci{apop\_data} $\Rightarrow$ \ci{apop\_data}
     apop_data *copy1 = apop_data_alloc(original->matrix->size1, original->matrix->size2);
     apop_data_memcpy(copy1, original);
     apop_data *copy2 = apop_data_copy(original);
@@ -462,8 +495,8 @@ names of the form \cinline{apop\_...\_copy}.
 
 These are functions designed to convert one format to another.
 
-There are two ways to express an array of \cinline{double}s. One is to
-declare a pointer to pointers to \cinline{double}s, and the other is to
+There are two ways to express an array of \ci{double}s. One is to
+declare a pointer to pointers to \ci{double}s, and the other is to
 declare double-subscripts:
 \begin{lstlisting}
 double **method_one = malloc(sizeof(double*)*size_1);
@@ -476,7 +509,7 @@ be worth anything.
 
 Instead, declare your data as a single line, listing the entire first
 row, then the second, et cetera, with no intervening brackets. Then, use
-the \cinline{apop\_line...} functions to convert to a matrix. Below, the
+the \ci{apop\_line...} functions to convert to a matrix. Below, the
 first set of examples convert from an array declared as in method one
 above, and the second set shows an array declared as a single line and
 then converted to a $2 \times 3$ matrix.
@@ -484,30 +517,31 @@ then converted to a $2 \times 3$ matrix.
 //text $\Rightarrow$ db table
 //The first number states whether the file has row names; the second
 //whether it has column names. Finally, if no colnames are present,
-//you can provide them in the last argument as a \cinline{char **}
+//you can provide them in the last argument as a \ci{char **}
     apop_text_to_db("original.txt", "tablename", 0 , 1, NULL);
-//text $\Rightarrow$ \cinline{apop\_data}
+//text $\Rightarrow$ \ci{apop\_data}
     apop_data *copy = apop_text_to_data("original.txt", 0 , 1);
-//\cinline{*double} $\Rightarrow$ \cinline{gsl\_vector}
+//\ci{double[ ]} $\Rightarrow$ \ci{gsl\_vector}
     gsl_vector  *copy = apop_array_to_vector(original, original_size);
-//\cinline{**double} $\Rightarrow$ \cinline{gsl\_matrix}
+//\ci{*double[ ]} $\Rightarrow$ \ci{gsl\_matrix}
     gsl_matrix *copy = apop_array_to_matrix(original, original_size1, original_size2);
 
-//\cinline{double[ ]} $\Rightarrow$ \cinline{gsl\_matrix}
+//\ci{double[ ]} $\Rightarrow$ \ci{gsl\_matrix}
     double original[] = {2,3,4,5,6,7};
+    int original_size1 = 2, original_size2 = 3;
     gsl_matrix *copy = apop_line_to_matrix(original, original_size1, original_size2);
-//\cinline{double[ ]} $\Rightarrow$ \cinline{apop\_data}
+//\ci{double[ ]} $\Rightarrow$ \ci{apop\_data}
     apop_data *copy = apop_line_to_data(original, original_size1, original_size2);
 
-//\cinline{gsl\_vector} $\Rightarrow$ \cinline{double[ ]}
+//\ci{gsl\_vector} $\Rightarrow$ \ci{double[ ]}
     double *copy;
     int copy_size   = original_vec->size;
     apop_vector_to_array(original_vec, &copy);
-//\cinline{gsl\_vector} $\Rightarrow$ \cinline{gsl\_matrix}
+//\ci{gsl\_vector} $\Rightarrow$ \ci{gsl\_matrix}
     gsl_matrix   *copy = apop_vector_to_matrix(original_vec);
-//\cinline{gsl\_vector} $\Rightarrow$ \cinline{apop\_data}
+//\ci{gsl\_vector} $\Rightarrow$ \ci{apop\_data}
     apop_data   *copy = apop_vector_to_data(original_vec);
-//\cinline{gsl\_matrix} $\Rightarrow$ \cinline{apop\_data}
+//\ci{gsl\_matrix} $\Rightarrow$ \ci{apop\_data}
     apop_data   *copy = apop_matrix_to_data(original_matrix);
 \end{lstlisting}
 
@@ -516,16 +550,16 @@ then converted to a $2 \times 3$ matrix.
 Apophenia's printing functions will print to screen, text file, or
 database, depending on the value of \cind{apop\_opts.output\_type}.
 \begin{lstlisting}
-//\cinline{gsl\_vector} $\Rightarrow$ text file
-//\cinline{gsl\_matrix} $\Rightarrow$ text file
-//\cinline{apop\_data} $\Rightarrow$ text file
+//\ci{gsl\_vector} $\Rightarrow$ text file
+//\ci{gsl\_matrix} $\Rightarrow$ text file
+//\ci{apop\_data} $\Rightarrow$ text file
     apop_opts.output_type = 't'
     apop_vector_print(original_vector, "text_file_copy");
     apop_matrix_print(original_matrix, "text_file_copy");
     apop_data_print(original_data, "text_file_copy");
-//\cinline{gsl\_vector} $\Rightarrow$ db table
-//\cinline{gsl\_matrix} $\Rightarrow$ db table
-//\cinline{apop\_data} $\Rightarrow$ db table
+//\ci{gsl\_vector} $\Rightarrow$ db table
+//\ci{gsl\_matrix} $\Rightarrow$ db table
+//\ci{apop\_data} $\Rightarrow$ db table
     apop_opts.output_type = 'd'
     apop_vector_print(original_vector, "db_copy");
     apop_matrix_print(original_matrix, "db_copy");
@@ -543,27 +577,28 @@ provides a function that will produce the appropriate output.
 //db table $\Rightarrow$ db table
     apop_query("create table copy as \
     select * from original");
-//db table $\Rightarrow$ \cinline{double}
-    apop_query_to_float("select value from original");
-//db table $\Rightarrow$ \cinline{gsl\_vector}
-    apop_query_to_vector("select * from original");
-//db table $\Rightarrow$ \cinline{gsl\_matrix}
-    apop_query_to_matrix("select * from original");
-//db table $\Rightarrow$ \cinline{apop\_data}
-    apop_query_to_data("select * from original");
+//db table $\Rightarrow$ \ci{double}
+    double d = apop_query_to_float("select value from original");
+//db table $\Rightarrow$ \ci{gsl\_vector}
+    gsl_vector *v = apop_query_to_vector("select * from original");
+//db table $\Rightarrow$ \ci{gsl\_matrix}
+    gsl_matrix *m = apop_query_to_matrix("select * from original");
+//db table $\Rightarrow$ \ci{apop\_data}
+    apop_data *d = apop_query_to_data("select * from original");
 \end{lstlisting}
 
 
 \paragraph{Method S: Subelements} Sometimes, even a function is just
 overkill; you can just pull a subelement from the main data item.
 
-Notice, by the way, that the \cinline{data} subelement of a
-\cinline{gsl\_vector} can not necessarily be copied to a
-\cinline{double[ ]}---the \airq{stride} may be wrong; see the GSL manual
+Notice, by the way, that the \ci{data} subelement of a
+\ci{gsl\_vector} can not necessarily be copied to a
+\ci{double[ ]}---the \airq{stride} may be wrong; see Section
+\ref{gslinternals}
 for details. Instead, use the copying functions from Method F above.
 
 \begin{lstlisting}
-//\cinline{apop\_data} $\Rightarrow$ \cinline{gsl\_matrix}:
+//\ci{apop\_data} $\Rightarrow$ \ci{gsl\_matrix}:
     my_data_set -> matrix
 \end{lstlisting}
 \lstset{texcl=false}
@@ -574,52 +609,60 @@ for details. Instead, use the copying functions from Method F above.
 \marginaliafixed{18}{Allocating and using at once}{    \index{declaration}
 One slight convenience that helps with the annoyance of shunting data from
 one type to another is that you can declare a variable and assign it at the
-same time. Let us say that you have already filled a \cinline{gsl\_matrix
-*m} with data and want it to be an \cinline{apop\_data} structure. Then
+same time. Let us say that you have already filled a \ci{gsl\_matrix
+*m} with data and want it to be an \ci{apop\_data} structure. Then
 you can declare and allocate your new structure with one line:\\
 %\begin{lstlisting}
-\cinline{apop\_data   *mdata  = apop\_matrix\_to\_data(m);}\\
+\ci{apop\_data   *mdata  = apop\_matrix\_to\_data(m);}\\
 %\end{lstlisting}
-On the left-hand side, we are allocating an \cinline{apop\_data *} pointer, and
+On the left-hand side, we are allocating an \ci{apop\_data *} pointer, and
 on the left-hand side, \cind{apop\_data\_from\_matrix} returns an 
-\cinline{apop\_data *} pointer. As in the example on page \pageref{gslexample}, the same can be
-done with any function with \cinline{alloc} in the name, because they will also
+\ci{apop\_data *} pointer. As in the example on page \pageref{gslexample}, the same can be
+done with any function with \ci{alloc} in the name, because they will also
 return a pointer to the appropriate type.
 }
 }
 
 \paragraph{Method V: Views}\index{views}\index{matrices!views}
-The GSL includes a convenient structure for pulling a vector from a
-matrix. Here is how to get the fifth row of \cinline{a\_matrix} into a vector view:
+The GSL includes a convenient structure, the \vocab{view}, for pulling a vector from a
+matrix. Here is how to get the fifth row of \ci{a\_matrix} into a vector view:
 
 \begin{lstlisting}
 gsl_vector v;
 v = gsl_matrix_col(a_matrix, 4).vector;
 apop_vector_show(&v);
 \end{lstlisting}
-[Notice that this function is named \cinline{col}, not \cinline{column}.]
-For the fifth row, use \cinline{gsl\_matrix\_row(a\_\-ma\-trix, 4)}. 
+[Notice that this function is named \ci{col}, not \ci{column}.]
+For the fifth row, use \ci{gsl\_matrix\_row(a\_\-ma\-trix, 4)}. 
 \cindex{gsl\_matrix\_row} 
 
+\begin{figure}[htb]
+\begin{center}
+\scalebox{0.7}{\includegraphics{figs/views}}
+\end{center}
+\caption{Inside a \ci{gsl\_vector\_view} structure, there is a plain
+\ci{gsl\_vector}, which points to a subset of the original data.}
+\label{viewfig}
+\end{figure}
 The vector view is a nice test of your comprehension of the details of
 pointers and memory allocation from Section \ref{pointers}.
-\cinline{gsl\_ma\-trix\_col} returns a
-\cind{gsl\_vector\_view}---not a vector, but the actual
-structure.  Inside the \cinline{gsl\_vec\-tor\_view}, you will find 
-an element named \cinline{vector}, which is again not a pointer but an
-automatically allocated structure. Inside that \cinline{.vector}
-element, one would find a pointer to the data.
+\ci{gsl\_ma\-trix\_col} returns a
+\cind{gsl\_vector\_view}---not a pointer, but the actual
+structure.  Inside the \ci{gsl\_vec\-tor\_view}, you will find 
+an element named \ci{vector}, which is again not a pointer but an
+automatically allocated structure [see Figure \ref{viewfig}]. Inside that \ci{.vector}
+element, one would find a pointer to the original data. 
 
 When the function ends, all of the automatically-allocated data is
-thrown out, including \cinline{gsl\_\-vec\-tor\_\-view} and its
-\cinline{vector} element, but the data itself is untouched.
+thrown out, including \ci{gsl\_\-vec\-tor\_\-view} and its
+\ci{vector} element, but the data itself is untouched.
 
 Notice further that every function that handles a
-\cinline{gsl\_\-vec\-tor} actually takes a {\em pointer} to a 
-\cinline{gsl\_\-vec\-tor}. Thus, the fact that you have an actual 
-\cinline{gsl\_\-vec\-tor} on your hands means that you will have to pass
+\ci{gsl\_\-vec\-tor} actually takes a {\em pointer} to a 
+\ci{gsl\_\-vec\-tor}. Thus, the fact that you have an actual 
+\ci{gsl\_\-vec\-tor} on your hands means that you will have to pass
 its address to the various functions, as in the call to
-\cinline{apop\_\-vec\-tor\_\-show} above.
+\ci{apop\_\-vec\-tor\_\-show} above.
 \cindex{apop\_vector\_show}
 
 If you want to retain the vector after the function exits, your best bet
@@ -645,7 +688,7 @@ copying data until you make a call to a {\ci memcpy}-family function.
 \cindex{gsl\_matrix\_memcpy}
 \begin{lstlisting}
 //Create a submatrix with upper-left corner at (20,30), with size (1000,1000)
-//The operation will take zero time.
+//The operation will take no time.
 gsl_matrix m = gsl_matrix_submatrix(a_matrix, 20,30, 1000,1000).matrix;
 apop_matrix_show(&m);
 
@@ -662,7 +705,7 @@ second row, et cetera.  Figure \ref{jack_iteration}
 shows how this can be done using views.  First, it uses
 \cind{gsl\_matrix\_submatrix} to produce a view of the main matrix
 starting at the position (1,0), and with size (\ci{in-$>$size1 -1,
-in-$>$size2})---that is, the original matrix with the first row missing,
+in-$>$size2})---that is, the original matrix with the first row missing
 and then copies that to a new matrix. The \ci{for} loop then repeats
 the view-and-copy procedure row by row.  It begins with row zero, which
 was omitted before, and overwrites row zero in the copy, aka row one of
@@ -672,9 +715,9 @@ row two, and so on to the end of the matrix.
 \codefig{jackiteration}{Iteratively produce \ci{in->size1} submatrices, each with one omitted row of data.}
 
 \section{\treesymbol Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \cindex{GSL\_NEGINF} \cindex{GSL\_POSINF} \cindex{GSL\_NAN} \label{numbers}
-Floating-point numbers (both \cind{float} and \cind{double}) can take three special values: \cinline{Inf}, \cinline{-Inf}, and \cinline{NaN}. Data-oriented readers will mostly be
-interested in \cinline{NaN} (read: not a number), which is an appropriate way to represent missing data.\footnote{Formally, the IEEE specification includes an \cind{NA} marker for data that is not available and an \ci{NaN} marker to mark numerical errors such as 0/0. However, the GSL only supports \ci{NaN}s, so as a practical matter it is better to use \ci{NaN}s to indicate missing data.} Here is a
-program to show you the necessary vocabulary. All four \cinline{if} statements will be true, and print their associated
+Floating-point numbers (both \cind{float} and \cind{double}) can take three special values: \ci{Inf}, \ci{-Inf}, and \ci{NaN}. Data-oriented readers will mostly be
+interested in \ci{NaN} (read: not a number), which is an appropriate way to represent missing data.\footnote{Formally, the IEEE specification includes an \cind{NA} marker for data that is not available and an \ci{NaN} marker to mark numerical errors such as 0/0. However, the GSL only supports \ci{NaN}s, so as a practical matter it is better to use \ci{NaN}s to indicate missing data.} Here is a
+program to show you the necessary vocabulary. All four \ci{if} statements will be true, and print their associated
 statements.
 \cindex{gsl\_finite}
 \cindex{gsl\_isnan}
@@ -701,9 +744,9 @@ return 0;
 \end{lstlisting}
 
 Since floating-point numbers can take these values, division by zero
-won't crash your program. \cinline{float f = 1.0/0.0} will result in
-\cinline{f == GSL\_POSINF} and \cinline{f = 0.0/0.0} will result in \cinline{f ==
-GSL\_NAN}. However, integers have none of these luxuries: run \cinline{int
+won't crash your program. \ci{float f = 1.0/0.0} will result in
+\ci{f == GSL\_POSINF} and \ci{f = 0.0/0.0} will result in \ci{f ==
+GSL\_NAN}. However, integers have none of these luxuries: run \ci{int
 i = 1/0} and you will get \cind{Arithmetic exception (core dumped)}.
 
 \subsection{Precision}\index{precision, numerical} 
@@ -712,7 +755,7 @@ there is a round off error to the computer's internal representation of
 numbers. The computer basically stores non-integer numbers using
 \ind{scientific notation}. For those who have forgotten this notation, one
 would write  $\pi$ as $3.14159 \times 10^0$, or \ci{3.14159e0}, 
-and $100\pi = 3.14159 \times 10^2$, or \ci{3.14159e2}. 
+and $100\pi$ as $3.14159 \times 10^2$, or \ci{3.14159e2}. 
 Numbers always have exactly one digit before the decimal point, and the
 exponent is chosen to ensure that this is the case.
 
@@ -733,7 +776,7 @@ to the compiler that it needs to reserve extra space for the constant
 right from the start. 
 
 \index{printf}
-The program uses more advanced format specifiers than the basic specifiers
+The program uses more advanced \ci{printf} format specifiers than the basic specifiers
 on page \pageref{printf}. Here are the atoms used in the code.  Every
 format specifier will end with a type specifier (\ci{i}, \ci{g}, \ci{f},
 \ci{lf}, and so on), but between the percent sign and the type specifier,
@@ -800,13 +843,10 @@ represented by a \ci{double}. For $i>1,000$, a
 modest number of data points, the system throws in the towel and just
 calls $2^i = \infty$ and $2^{-i} = 0$; these are referred to as
 \vocab{overflow errors} and \vocab{undeflow errors}, respectively. For those who would like
-to try this at home, the code to produce the body of this table is:
+to try this at home, figure \ref{powersoftwo} shows the code used to
+produce this table.
 \cindex{ldexp}
-\begin{lstlisting}
-int i;
-for(i=0; i< 1400; i+=100)
-    printf("%i\t %lg \t %lg\n", i, ldexp(1,i), ldexp(1,-i));
-\end{lstlisting}
+\codefig{powersoftwo}{Find the computer's representation of $2^i$ and $2^{-i}$ for large $i$.}
 
 
 \begin{center}
@@ -859,7 +899,7 @@ significantly different. Even if the hypothesis test indicates that they
 are different, it will be difficult to convince a referee of this.
 
 
-\paragraph{Conditioning}\index{data!conditioning} Most numerical routines do badly when the
+\paragraph{Conditioning}\index{data!conditioning} Most matrix routines do badly when the
 determinant is near zero, or when eigenvalues are different orders of magnitude.
 One way to cause such problems with your own data is
 to have one column that is of the order of $1 \times 10^{10}$ and
@@ -888,12 +928,13 @@ gsl_vector_scale(&v, 1000.);
 These notes about conditioning are not C-specific. Any mathematics
 package that hopes to efficiently work with large matrices must use
 finite-precision arithmetic, and will therefore have the same problems
-with ill-conditioned data matrices. For much more information about
+with ill-conditioned data matrices. For much more about
 precision issues and the IEEE standard, see \citet{goldberg:floating}.
 
 \summary{
 \item Floating-point numbers can take on values of \ci{-Inf}, \ci{Inf},
-and \ci{NaN}.
+and \ci{NaN}, which the GSL represents via \ci{GSL\_NEGINF},
+\ci{GSL\_POSINF}, and \ci{GSL\_NAN}.
 \item Try to keep the scale of your variables within about a thousand of
 each other.
 \item Multiplying together a column of a thousand numbers will break.
@@ -901,16 +942,14 @@ each other.
 }
 
 \section{\treesymbol{} \cind{gsl\_matrix} and \cind{gsl\_vector}
-internals}
+internals}\label{gslinternals}
 First, a warning: there is no reason why you will ever need the
 information in this section. 
-There is no reason to specifically manipulate the internals of the GSL's
-structures rather than using the functions designed for such
-purposes---and doing so is even bad form, because it introduces the
-possibility of errors and is harder to read.
-
-That said, here are some notes on the GSL's structures for holding data,
-which will be useful to you for understanding why the data structures
+The intent of this section is not to show you how to circumvent the
+GSL's access functions like \ci{gsl\_matrix\_get} and
+\ci{gsl\_vector\_set}. Doing so is bad form, inviting errors and making
+code more difficult to read. Instead, these notes
+will be useful to you for understanding why the data structures
 are the way they are, and giving you a handle on what operations are
 easy and what operations are difficult.
 
@@ -962,7 +1001,8 @@ knowing what to keep in a fast cache. It can't do predictive reads,
 since the data may not be in a contiguous chunk.
 
 
-\paragraph{\ci{gsl\_matrix} structure}} Here is the declaration of the
+\paragraph{\ci{gsl\_matrix} structure}} Here is the relevant section of
+the declaration of the
 \cind{gsl\_matrix} structure:
 
 \begin{lstlisting}
@@ -977,17 +1017,17 @@ typedef struct
 } gsl_matrix;
 \end{lstlisting}
 
-The first two sizes are simply the number of rows and columns. The
+As you know, \ci{size1} and \ci{size2} are simply the number of rows and columns. The
 \ci{data} pointer points to the data itself. It is a single pointer, to
 a stream of numbers. That is, the first row of data is written down, and
 the second row is written down immediately afterward, then the third
 row, and so on, forming one long row of data.
 
-To reach the third element of the first row, the processor would jump
-\ci{sizeof(double)*2} steps from the base element.  Stepping along the row
-means simply stepping along by \ci{sizeof(double)} units, and stepping by
-column means stepping by \ci{sizeof(double)* size2} steps from the current
-element. 
+Stepping along the row means simply stepping along by \ci{sizeof(double)}
+units, and stepping down a column means stepping by \ci{sizeof(double)*
+size2} steps from the current element.  To reach the third element of
+the first row, the processor would jump \ci{sizeof(double)*2} steps from
+the base element.
 
 Modern computers are proactive about data gathering. When they read data
 from slower types of memory, they also preemptively check the neighbors
@@ -1008,17 +1048,45 @@ Now say that we have a $100 \times 10$ matrix, which would have the following in
   owner =1;
 \end{lstlisting}
 Notice that the \ci{tda}   is equal to
-\ci{size2}.\footnote{The abbreviation \ci{tda} somehow stands for {\em trailing dimension}. It is also known as the \vocab{stride}.} Jumping down a column thus requires a jump of
+\ci{size2}.\footnote{The abbreviation \ci{tda} stands for {\em
+trailing dimension of array}. For vector, the analagous element is
+the \vocab{stride}.} Jumping down a column thus requires a jump of
 \ci{sizeof(double)*tda}.
 
+\begin{figure}[htb]
+\hspace {-0.5cm}
+\begin{tabular}{cccccccccc}
+(0,0) & (1,0) & (2,0) & (3,0) & (4,0) & (5,0) & (6,0) & (7,0) & (8,0) & (9,0) \\
+(0,1) & (1,1) & (2,1) & (3,1) & (4,1) & (5,1) & (6,1) & (7,1) & (8,1) & (9,1) \\
+\hhline{~~~------~}
+(0,2) & (1,2) & (2,2) &\multicolumn{1}{|c}{(3,2)} & (4,2) & (5,2) & (6,2) & (7,2) & (8,2) & \multicolumn{1}{|c}{(9,2)} \\
+(0,3) & (1,3) & (2,3) &\multicolumn{1}{|c}{(3,3)} & (4,3) & (5,3) & (6,3) & (7,3) & (8,3) & \multicolumn{1}{|c}{(9,3)} \\
+(0,4) & (1,4) & (2,4) &\multicolumn{1}{|c}{(3,4)} & (4,4) & (5,4) & (6,4) & (7,4) & (8,4) & \multicolumn{1}{|c}{(9,4)} \\
+(0,5) & (1,5) & (2,5) &\multicolumn{1}{|c}{(3,5)} & (4,5) & (5,5) & (6,5) & (7,5) & (8,5) & \multicolumn{1}{|c}{(9,5)} \\
+\hhline{~~~------~}
+(0,6) & (1,6) & (2,6) & (3,6) & (4,6) & (5,6) & (6,6) & (7,6) & (8,6) & (9,6) \\
+(0,7) & (1,7) & (2,7) & (3,7) & (4,7) & (5,7) & (6,7) & (7,7) & (8,7) & (9,7) \\
+(0,8) & (1,8) & (2,8) & (3,8) & (4,8) & (5,8) & (6,8) & (7,8) & (8,8) & (9,8) \\
+(0,9) & (1,9) & (2,9) & (3,9) & (4,9) & (5,9) & (6,9) & (7,9) & (8,9) & (9,9) 
+\comment{
+        &&& \multicolumn{1}{|c|}{``v''}   &&& \multicolumn{1}{|c}{``c0''} & ``c1'' & \multicolumn{1}{c|}{``c2''}  &&& \multicolumn{1}{|c}{``t0''} & ``t1'' & \multicolumn{1}{c|}{``t2''}    \\\hhline{~~~-~~---~~---}
+\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch&\atouch\\\hhline{-}
+\multicolumn{1}{|c|}{``r0''}&&&(0, -1)   &&& (0, 0) & (0, 1) & (0, 2) &&& (0, 0) & (0, 1) & (0, 2)\\ 
+\multicolumn{1}{|c|}{``r1''}&&&(1, -1)   &&& (1, 0) & (1, 1) & (1, 2) &&& (1, 0) & (1, 1) & (1, 2)\\
+\multicolumn{1}{|c|}{``r2''}&\atouch&\atouch&(2, -1)   &\atouch&& (2, 0) & (2, 1) & (2, 2) &\atouch&\atouch& (2, 0) & (2, 2) & (2, 2)\\\hhline{-}
+}
+\end{tabular}
+\caption{Within a submatrix, the (4,3) element is still ten steps from the (4,2) element, and one step from the (3,3) element.}
+\label{submatrixfig}
+\end{figure}
 
-If we wanted to pull out the $4 \times 6$ submatrix that begins at $(3, 7)$, then
+If we wanted to pull out the $4 \times 6$ submatrix that begins at $(3, 2)$, then
 the resulting submatrix data would look like this:
 \begin{lstlisting}
   size1 = 4;
   size2 = 6;
   tda   = 10;
-  data = [location of (3,7) in the original matrix];
+  data = [location of (3,2) in the original matrix];
   owner =0;
 \end{lstlisting}
 If we want the third elements in the first row, we would do exactly
@@ -1028,6 +1096,9 @@ same process as before: jump \ci{sizeof(double)*tda} after the current
 position. Thus, the process of pulling a subset of the data merely
 required finding the first point and writing down arbitrary limits for
 \ci{size1} and \ci{size2}. No actual data was copied. 
+
+
+
 
 The \ci{owner}
 variable now becomes important, because there could be multiple
@@ -1051,7 +1122,7 @@ They are not good for non-contiguous subsets like the first, second,
 and fifth columns of a data set, since the relative jumps from one column
 to the next are not identical. Similarly, they are not good for holding
 various types of data, where some jumps could be \ci{sizeof(int)}
-and others could be \ci{sizeof(double)}. Since space is always allocated
+and others could be \ci{sizeof(double)}. Also, since space is always allocated
 for every element, there is no way to efficiently represent sparse matrices.
 
 There are abundant problems with implementing any system that could
@@ -1062,7 +1133,7 @@ traversing along rows could involve jumping all over memory, and common
 operations like finding the log likelihood of an observation or even
 the sum for each row becomes a significantly slower operation. If we
 held a list of jump sizes between every element, the processor would
-need to look up every jump and would again be significantly slowed.
+need to look up every jump and could again be significantly slowed.
 
 Other designers with different goals have used different means of
 representing a data matrix, and the \ci{gsl\_matrix} is by no means the
@@ -1076,8 +1147,8 @@ computation, becuase each element has a fixed size and is a fixed
 distance from the neighboring elements.
 \item It is very easy to take continguous subvectors or submatrices of
 these structures. Doing so requires no copying of data.
-\item There is no simple way to take non-contiguous subsets of matrices
-or vectors. You will either need to copy the data manually (i.e., using
+\item There is no simple way to take non-contiguous subsets of \ci{gsl\_matrices}
+or \ci{gsl\_vectors}. You will either need to copy the data manually (i.e., using
 a \ci{for} loop), or do the manipulations in the database before your
 data is in \ci{gsl\_matrix} form.
 }
