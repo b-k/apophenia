@@ -635,7 +635,7 @@ static apop_estimate * new_estimate(apop_data * data, void *parameters){
     return apop_maximum_likelihood(data, apop_new_log_likelihood, parameters);
 }
 \end{lstlisting}
-By using the \cind{static} keyword, the function name will only be
+By using the \ckeyind{static}\ci{static} keyword, the function name will only be
 known to this file, so you can name it what you wish.  But since you
 will be putting a pointer to the function into an object below, you
 can use the above-mentioned 

@@ -305,6 +305,7 @@ int apop_count_cols_in_text(char *text_file){
 	}
 	fclose(infile);
     regfree(regex);
+    free(regex);
 	return ct;
 }
 
@@ -370,6 +371,21 @@ have double-commas like this, you will have to explicitly insert a note
 that there is a missing data point. Try:
 \code
 		perl -pi.bak -e 's/,,/,NaN,/g' data_file
+\endcode
+
+If you have missing data delimiters, you will need to set \ref
+apop_opts.db_nan to a regular expression that matches the given
+format. Some examples:
+
+\code
+//Apophenia's default NaN string, matching NaN, nan, or NAN:
+strcpy(apop_opts.db_nan, "\\(NaN\\|nan\\|NAN\\)");
+//Literal text:
+strcpy(apop_opts.db_nan, "Missing");
+//Literal text, capitalized or not:
+strcpy(apop_opts.db_nan, "[mM]issing");
+//Matches two periods. Periods are special in regexes, so they need backslashes.
+strcpy(apop_opts.db_nan, "\\.\\.");
 \endcode
 
 Text is always delimited by quotes. Delimiters inside quotes are perfectly
@@ -469,51 +485,10 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
 	}
 	fclose(infile);
     regfree(regex);
+    free(regex);
 	return set;
 }
 
-/**If the string isn't a number, it needs quotes, and sqlite wants 0.1,
-  not just .1. 
-  \todo This could be easier with regexes.
- */
-static char * prep_string_for_sqlite(char *astring){
-  char		*tmpstring, 
-		*out	= NULL,
-		*str	= NULL;
-    strip_regex_alloc();
-	strtod(astring, &str);
-    tmpstring=strip(astring); 
-	if (!strcmp(astring, str)){	//then it's not a number.
-		if (strlen (tmpstring)==0){
-			out	= malloc(sizeof(char) * 2);
-			sprintf(out, " ");
-            goto leave;
-		}
-		if (tmpstring[0]!='"'){
-			out	= malloc(sizeof(char) * (strlen(tmpstring)+3));
-			sprintf(out, "\"%s\"",tmpstring);
-            goto leave;
-		} else {
-            out	= malloc(sizeof(char) * (strlen(tmpstring)+1));
-            strcpy(out, tmpstring);
-            goto leave;
-        }
-	} else {			//sqlite wants 0.1, not .1
-		assert(strlen (tmpstring)!=0);
-		if (tmpstring[0]=='.'){
-			out	= malloc(sizeof(char) * (strlen(tmpstring)+2));
-			sprintf(out, "0%s",tmpstring);
-            goto leave;
-		} else {
-            out	= malloc(sizeof(char) * (strlen(tmpstring)+1));
-            strcpy(out, tmpstring);
-            goto leave;
-        }
-	}
-    leave:
-        free(tmpstring);
-        return out;
-}
 
 /** This function will print a string to another string, allocating the
 appropriate amount of space along the way.
@@ -573,17 +548,17 @@ int apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
 						char *col_col_name, char *data_col_name){
   int		    i,j;
   apop_name   *n = in->names;
-	apop_query_db("CREATE TABLE %s (%s , %s , %s);", tabname, 
+	apop_query("CREATE TABLE %s (%s , %s , %s);", tabname, 
             apop_strip_dots(row_col_name, 'd'), 
             apop_strip_dots(col_col_name, 'd'), 
             apop_strip_dots(data_col_name, 'd'));
 	for (i=0; i< n->colnamect; i++){
-		apop_query_db("begin;");
+		apop_query("begin;");
 		for (j=0; j< n->rownamect; j++)
-			apop_query_db("INSERT INTO %s VALUES (%s, %s,%g);", tabname, 
+			apop_query("INSERT INTO %s VALUES (%s, %s,%g);", tabname, 
 					n->rownames[j], n->colnames[i], 
                                     gsl_matrix_get(in->matrix, j, i));
-		apop_query_db("commit;");
+		apop_query("commit;");
 	}
 	return 0;
 }
@@ -639,11 +614,58 @@ gsl_matrix *apop_matrix_copy(gsl_matrix *in){
 /////////////////////////////
 
 static regex_t   *regex;
+static regex_t   *nan_regex = NULL;
 static regmatch_t  result[2];
 static int  use_names_in_file;
 static char *add_this_line  = NULL;
 static char **fn            = NULL;
 
+/**If the string isn't a number, it needs quotes, and sqlite wants 0.1,
+  not just .1. 
+  \todo This could be easier with regexes.
+ */
+static char * prep_string_for_sqlite(char *astring){
+  char		*tmpstring, 
+		*out	= NULL,
+		*str	= NULL;
+	strtod(astring, &str);
+    tmpstring=strip(astring); 
+    if (!regexec(nan_regex, tmpstring, 1, result, 0)){
+		out	= malloc(sizeof(char) * (strlen(tmpstring)+3));
+        sprintf(out, "NULL");
+        goto leave;
+    }
+	if (!strcmp(astring, str)){	//then it's not a number.
+		if (strlen (tmpstring)==0){
+			out	= malloc(sizeof(char) * 2);
+			sprintf(out, " ");
+            goto leave;
+		}
+		if (tmpstring[0]!='"'){
+			out	= malloc(sizeof(char) * (strlen(tmpstring)+3));
+			sprintf(out, "\"%s\"",tmpstring);
+            goto leave;
+		} else {
+            out	= malloc(sizeof(char) * (strlen(tmpstring)+1));
+            strcpy(out, tmpstring);
+            goto leave;
+        }
+	} else {			//sqlite wants 0.1, not .1
+		assert(strlen (tmpstring)!=0);
+		if (tmpstring[0]=='.'){
+			out	= malloc(sizeof(char) * (strlen(tmpstring)+2));
+			sprintf(out, "0%s",tmpstring);
+            goto leave;
+		} else {
+            out	= malloc(sizeof(char) * (strlen(tmpstring)+1));
+            strcpy(out, tmpstring);
+            goto leave;
+        }
+	}
+    leave:
+        free(tmpstring);
+        return out;
+}
 
 /** Open file, find the first non-comment row, count columns, close file.
  */
@@ -785,7 +807,7 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 		    rows    = 0;
   FILE * 	infile;
   char		*q  = NULL, instr[Text_Line_Limit];
-  char		full_divider[1000];
+  char		full_divider[1000], nan_string[500];
     strip_regex_alloc();
 	use_names_in_file   = 0;    //file-global.
     regex               = malloc(sizeof(regex_t));//file-global, above.
@@ -793,8 +815,17 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 	       	printf("apop: %s table exists; not recreating it.\n", tabname);
 		return 0; //to do: return the length of the table.
 	} else{
+        //divider regex:
         sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
         regcomp(regex, full_divider, 0);
+        //NaN regex:
+        if (strlen(apop_opts.db_nan)){
+            //sprintf(nan_string, "\\\"*%s\\\"*", apop_opts.db_nan);
+            //sprintf(nan_string, "^%s$", apop_opts.db_nan);
+            sprintf(nan_string, "^%s$", apop_opts.db_nan);
+            nan_regex   = malloc(sizeof(regex_t));
+            regcomp(nan_regex, nan_string, 0);
+        }
         if (strcmp(text_file,"-"))
 		    infile	= fopen(text_file,"r");
         else
@@ -821,6 +852,11 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 		apop_query("commit;");
         if (strcmp(text_file,"-"))
 		    fclose(infile);
+        if (nan_regex){
+            regfree(nan_regex);
+            free(nan_regex);
+            nan_regex   = NULL;
+        }
         free(q);
 		return rows;
 	}

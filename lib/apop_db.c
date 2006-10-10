@@ -75,7 +75,9 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 NULL,            //output pipe
                                 "\t",           //output delimiter
                                 1,              //output append
-                                "| ,\t",           //input delimiters
+                                "| ,\t",        //input delimiters
+                                "row_names",    //db_name_column
+                                "\\(NAN\\|NaN\\|nan\\)", //db_nan
                                 "\0"            //mle_trace_path
 };
 
@@ -372,23 +374,6 @@ int apop_query(const char *fmt, ...){
 	return 1;
 }
 
-/** Just like \ref apop_query. Use that one. 
-\ingroup db
-*/
-int apop_query_db(const char *fmt, ...){
-  char 		*err, *q;
-  va_list	argp;
-	if (db==NULL) apop_db_open(NULL);
-	va_start(argp, fmt);
-	vasprintf(&q, fmt, argp);
-	va_end(argp);
-	if (apop_opts.verbose) {printf("\n%s\n",q);}
-	sqlite3_exec(db, q, NULL,NULL, &err);
-	free(q);
-	ERRCHECK
-	return 1;
-}
-
 int 		isthere;//used for the next two fns only.
 
 static int tab_exists_callback(void *in, int argc, char **argv, char **whatever){
@@ -478,8 +463,9 @@ static int length_callback(void *o,int argc, char **argv, char **whatever){
 	return 0;
 }
 
-//currentrow is global for the apop_db_to_... callbacks.
+//these are global for the apop_db_to_... callbacks.
 int		currentrow;
+int     namecol = -1;
 
 //This is the callback for apop_query_to_chars.
 static int db_to_chars(void *o,int argc, char **argv, char **whatever){
@@ -515,6 +501,7 @@ which may include <tt>printf</tt>-style tags (<tt>\%i, \%s</tt>, et cetera).
 \return		An array of strings. Notice that this is always a 2-D
 array, even if the query returns a single column. In that case, use
 <tt>returned_tab[i][0]</tt> to refer to row <tt>i</tt>.
+
 
 example
 The following function will list the tables in a database (much like you could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
@@ -566,21 +553,53 @@ char *** apop_query_to_chars(const char * fmt, ...){
 	return output;
 }
 
+static int     firstcall;
+static char        data_or_matrix  = 'm';
+static char        full_divider[103];
+static regmatch_t  result[3];
+static regex_t     *regex;
+
 //apop_query_to_matrix callback.
-static int db_to_table(void *o,int argc, char **argv, char **whatever){
-  int		jj;
-  gsl_matrix * 	output = (gsl_matrix *) o;
+static int db_to_table(void *o,int argc, char **argv, char **colnames){
+  int		jj, i, ncfound;
+  gsl_matrix ** 	output = (gsl_matrix **) o;
+    if (firstcall){
+        firstcall   --;
+        total_cols  = argc;
+        for(i=0; i<argc; i++){
+            if (!strcmp(colnames[i], apop_opts.db_name_column)){
+                namecol     = i;
+                total_cols  --;
+                break;
+            }
+        }
+	    *output		= gsl_matrix_alloc(total_rows, total_cols);
+        if (data_or_matrix == 'd'){
+            for(i=0; i<argc; i++){
+                if (namecol != i)
+                    apop_name_add(last_names, colnames[i], 'c');
+            }
+        }
+    }
 	if (*argv !=NULL){
+        ncfound =0;
 		for (jj=0;jj<argc;jj++){
-			if (argv[jj]==NULL)
-				gsl_matrix_set(output,currentrow,jj, GSL_NAN);
-			else
-				gsl_matrix_set(output,currentrow,jj, atof(argv[jj]));
+            if (jj != namecol){
+                if (!argv[jj] || !regexec(regex, argv[jj], 1, result, 0))
+				    gsl_matrix_set(*output,currentrow,jj-ncfound, GSL_NAN);
+			    else
+				    gsl_matrix_set(*output,currentrow,jj-ncfound, atof(argv[jj]));
+            } else {
+                apop_name_add(last_names, argv[jj], 'r');
+                ncfound = 1;
+            }
 		}
 		currentrow++;
 	}
 	return 0;
 }
+
+
 
 /** Queries the database, and dumps the result into a matrix.
 
@@ -591,19 +610,21 @@ Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
 \return
 A <tt>gsl_matrix</tt>, which you passed in declared but not allocated.
 
-Blanks in the database are filled with <tt>GSL_NAN</tt>s in the matrix.
+Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts.db_nan
+are filled with <tt>GSL_NAN</tt>s in the matrix.
 */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
-  gsl_matrix	*output;
+  gsl_matrix	*output = NULL;
   char		*q2, *err=NULL, *query;
   va_list		argp;
-    currentrow  = 0;
+    firstcall   = 
+    currentrow  = 
+	total_rows  = 0;
 	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
 	if (apop_opts.verbose)	printf("%s\n", query);
-	total_rows= 0;
 	q2	 = malloc(sizeof(char)*(strlen(query)+300));
 	apop_table_exists("apop_temp_table",1);
 	sqlite3_exec(db,strcat(strcpy(q2,
@@ -611,18 +632,21 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 	sqlite3_exec(db,"SELECT count(*) FROM apop_temp_table",length_callback,NULL, &err);
 	free(query);
 	ERRCHECK
-	if (total_rows==0){
-		output	= NULL;
-	} else {
-		total_cols	= apop_count_cols("apop_temp_table");
-		output		= gsl_matrix_alloc(total_rows, total_cols);
-		sqlite3_exec(db,"SELECT * FROM apop_temp_table",db_to_table,output, &err); ERRCHECK
+    sprintf(full_divider, "^%s$", apop_opts.db_nan);
+    regex           = malloc(sizeof(regex_t));
+    regcomp(regex, full_divider, 0);
+	if (total_rows>0){
+        firstcall   = 1;
 		if (last_names !=NULL) 
 			apop_name_free(last_names); 
 		last_names = apop_name_alloc();
-		sqlite3_exec(db,"pragma table_info(apop_temp_table)",names_callback, NULL, &err); ERRCHECK
+		sqlite3_exec(db,"SELECT * FROM apop_temp_table",db_to_table,&output, &err); ERRCHECK
+        namecol     = -1;
 	}
-	//sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
+	assert(apop_table_exists("apop_temp_table",0));
+	sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
+    regfree(regex);
+    free(regex);
 	free(q2);
 	return output;
 }
@@ -697,7 +721,12 @@ Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
 \return
 An \ref apop_data set, which you passed in declared but not allocated.
 
-Blanks in the database are filled with <tt>GSL_NAN</tt>s in the matrix.
+Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts.db_nan
+are filled with <tt>GSL_NAN</tt>s in the matrix.
+
+If \ref apop_opts.db_name_column is set (it defaults to being "row_name"),
+and the name of a column matches the name, then the row names are read from that column.
+
 \bug Currently, this is but a wrapper for \ref apop_query_to_matrix,
 meaning that only numerical results are returned. If you want
 non-numeric data, try \code mydata->categories  = apop_query_to_chars("select ...");\endcode. 
@@ -710,7 +739,9 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
+    data_or_matrix  = 'd';
 	m	        = apop_query_to_matrix(query);
+    data_or_matrix  = 'm';
     out         = apop_matrix_to_data(m);
     //replace name struct allocated in apop_matrix_to_data with the
     //actual names.
@@ -744,6 +775,7 @@ basically preempted by \ref apop_matrix_print. Use that one; this may soon no lo
 */
 int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
   int		i,j; 
+  double    v;
   int		ctr		= 0;
   int		batch_size	= 100;
   char		*q 		= malloc(sizeof(char)*1000);
@@ -759,11 +791,17 @@ int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 	for(i=0;i< data->size1; i++){
 		q	=realloc(q,sizeof(char)*(strlen(q)+(1+data->size2)*1000));
 		sprintf(q,"%s \n insert into %s values(",q,tabname);
-		for(j=0;j< data->size2; j++)
-            if (j < data->size2 -1)
-			    sprintf(q,"%s %g, ",q,gsl_matrix_get(data,i,j));
+		for(j=0;j< data->size2; j++){
+            v   =gsl_matrix_get(data,i,j);
+            if (gsl_isnan(v))
+			    sprintf(q,"%s NULL%s ",
+                    q, 
+                    j < data->size2 -1 ? "," : ");");
             else
-			    sprintf(q,"%s %g); ",q,gsl_matrix_get(data,i,j));
+			    sprintf(q,"%s %g%s ",
+                    q, v,
+                    j < data->size2 -1 ? "," : ");");
+        }
 	ctr++;
 	if(ctr==batch_size) {
 			apop_query("%s commit;",q);
@@ -780,26 +818,33 @@ int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 
 /** Dump an \ref apop_data set into the database.
 
-Column names are inserted if there are none. If there are, all dots
-are converted to underscores.
+This function is basically preempted by \ref apop_data_print. Use that
+one; this may soon no longer be available.
 
-If there are row names, then a column named "row_name" is created,
-and the info is placed there.
+Column names are inserted if there are any. If there are, all dots
+are converted to underscores. 
+Otherwise, the columns will be named <tt>c1</tt>, <tt>c2</tt>, <tt>c3</tt>, &c.
+
+If \ref apop_opts.db_name_column is not blank (the default is "row_name"),
+then a so-named column is created, and the row names are placed there.
 
 \param set 	    The name of the matrix
 \param tabname	The name of the db table to be created
 \ingroup apop_data
 \todo add category names.
+ \ingroup conversions
 */
 int apop_data_to_db(apop_data *set, char *tabname){
   int		i,j; 
   int		ctr		    = 0;
   int		batch_size	= 100;
+  double    v;
   char		*q 		    = malloc(sizeof(char)*1000);
+  int       use_rownames= strlen(apop_opts.db_name_column) &&set->names->rownamect == set->matrix->size1;
 	if (db==NULL) apop_db_open(NULL);
 	sprintf(q, "create table %s (", tabname);
-    if (set->names->rownamect == set->matrix->size1){
-        sprintf(q, "%s\n row_name, \n", q);
+    if (use_rownames) {
+        sprintf(q, "%s\n %s, \n", q, apop_opts.db_name_column);
 		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
     }
 	for(i=0;i< set->matrix->size2; i++){
@@ -812,14 +857,19 @@ int apop_data_to_db(apop_data *set, char *tabname){
 	for(i=0;i< set->matrix->size1; i++){
 		q	=realloc(q,sizeof(char)*(strlen(q)+(1+set->matrix->size1)*batch_size*1000));
 		sprintf(q, "%s \n insert into %s values(",q, tabname);
-        if (set->names->rownamect == set->matrix->size1){
+        if (use_rownames)
 			sprintf(q,"%s \"%s\", ",q, set->names->rownames[i]);
-        }
-		for(j=0;j< set->matrix->size2; j++)
-            if (j < set->matrix->size2 -1)
-			    sprintf(q,"%s %g, ",q,gsl_matrix_get(set->matrix,i,j));
+		for(j=0;j< set->matrix->size2; j++){
+            v   =gsl_matrix_get(set->matrix,i,j);
+            if (gsl_isnan(v))
+			    sprintf(q,"%s NULL%s ",
+                    q, 
+                    j < set->matrix->size2 -1 ? "," : ");");
             else
-			    sprintf(q,"%s %g); ",q,gsl_matrix_get(set->matrix,i,j));
+			    sprintf(q,"%s %g%s ",
+                    q, v,
+                    j < set->matrix->size2 -1 ? "," : ");");
+        }
 		ctr++;
 		if(ctr==batch_size) {
 				apop_query("%s commit;",q);

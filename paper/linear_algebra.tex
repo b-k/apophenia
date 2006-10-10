@@ -673,8 +673,8 @@ row two, and so on to the end of the matrix.
 
 \section{\treesymbol Numbers} \index{infinity} \index{NaN|see{not a number}} \index{not a number} \cindex{GSL\_NEGINF} \cindex{GSL\_POSINF} \cindex{GSL\_NAN} \label{numbers}
 Floating-point numbers (both \cind{float} and \cind{double}) can take three special values: \cinline{Inf}, \cinline{-Inf}, and \cinline{NaN}. Data-oriented readers will mostly be
-interested in \cinline{NaN} (read: not a number), which is an appropriate way to represent missing data. Here is a
-program to show you the syntax. All four \cinline{if} statements will be true, and print their associated
+interested in \cinline{NaN} (read: not a number), which is an appropriate way to represent missing data.\footnote{Formally, the IEEE specification includes an \cind{NA} marker for data that is not available and an \ci{NaN} marker to mark numerical errors such as 0/0. However, the GSL only supports \ci{NaN}s, so as a practical matter it is better to use \ci{NaN}s to indicate missing data.} Here is a
+program to show you the necessary vocabulary. All four \cinline{if} statements will be true, and print their associated
 statements.
 \cindex{gsl\_finite}
 \cindex{gsl\_isnan}

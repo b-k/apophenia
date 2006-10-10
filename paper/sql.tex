@@ -599,11 +599,11 @@ immensely by creating an index first.
 \item SQL includes a few simple aggregation commands: \si{avg()},
 \si{sum()}, and \si{count()}. Apophenia provides a few more
 nonstandard aggregators for queries called using its functions. 
+\item When aggregating, you can add a \si{group by} clause to
+indicate how the aggregation should be grouped.
 }
 \summarynoitems{(continued)
 \begin{itemize}
-\item When aggregating, you can add a \si{group by} clause to
-indicate how the aggregation should be grouped.
 \item Sort your output using an \si{order by} clause.
 \item Tables can be stacked using 
 \si{union}, \si{union all}, \si{intersect}, and \si{except}
@@ -1022,6 +1022,25 @@ apop_data *tall_people = apop_query_to_data("select *     \
 will query \si{data} for its information, allocate \si{tall\_people} to be an
 appropriately-sized matrix, and fill it with the data.
 
+As above, SQL tables have no special means of handling row names, while
+\ci{apop\_data} sets can have both row and column labels. Thus, you can
+set \cind{apop\_opts.db\_name\_column} to a column name that will be
+specially treated as holding row names for the sake of importing to an
+\ci{apop\_data} set. 
+
+Figure \ref{wbtodata} will give you an
+idea of how quickly data can be brought from a database-side table to a
+C-side matrix. The use of these structures is handled in
+detail in Chapter \ref{apop}, so the workings in
+\ci{calc\_gdp\_per\_cap} may mystify those reading sequentially. But the
+\ci{main} function should make sense: it opens the database, sets the
+\ci{apop\_opts.db\_name\_column} to an appropriate value, and then uses
+\ci{apop\_query\_to\_data} to pull out a data set. Its last two steps
+do the math and show the results on screen.
+
+\codefig{wbtodata}{Query populations and GDP to an \ci{apop\_data}
+structure, and then calculate the GDP per capita using C routines.}
+
 For immediate feedback, you  can use \cind{apop\_data\_show} to dump
 your data to screen or \cind{apop\_data\_print} to print to a file (or
 even back to the database). If you want a quick on-screen picture of a
@@ -1062,6 +1081,45 @@ Therefore, when producing a table, Apophenia will cut everything after
 the last dot in a name, and change all other dots to underscores. If you
 ask for a table named \bi{tall.data.csv}, then you will find a table in
 your database named \si{tall\_data}.
+
+\paragraph{Missing data}\index{not a number} 
+Everybody deals with \ind{missing data} differently. SQLite uses 
+\ci{NULL} to indicate missing data; Section \ref{numbers} will show that
+real numbers in C have a \cind{NaN} value, whose use is facilitated by
+the GSL's \ci{GSL\_NAN} macro. The typical input data set indicates a
+missing value with a text marker like \bi{NaN}, \bi{..}, \bi{NA}, or some
+other arbitrary indicator.
+
+Apophenia's functions to read between databases on one side and
+\ci{gsl\_matrix}es, \ci{apop\_data}, and other C structures on the
+other will seamlessly translate between database \ci{NULL}s and
+floating-point \ci{GSL\_NAN}s. When dealing with text, you will have
+to set \ci{apop\_opts.db\_nan} to a regular expression that matches the
+missing data marker. If you are unfamiliar with regular expressions, see
+Appendix A for a quick tutorial. Here are some examples:
+\begin{lstlisting}
+//Apophenia's default NaN string, matching NaN, nan, or NAN:
+strcpy(apop_opts.db_nan, "\\(NaN\\|nan\\|NAN\\)");
+//Literal text:
+strcpy(apop_opts.db_nan, "Missing");
+//Literal text, capitalized or not:
+strcpy(apop_opts.db_nan, "[mM]issing");
+//Matches two periods. Periods are special in regexes, so they need backslashes.
+strcpy(apop_opts.db_nan, "\\.\\.");
+\end{lstlisting}
+The searched-for text must be the entire string, plus or minus
+surrounding quotation marks or white space. None of these will match
+\bi{NANCY} or \bi{missing persons}.
+
+Some systems represent missing data by nothing. For example, a row of
+data may look like\\
+\bi{1,2,,4,5},\\
+indicating that the third value is missing. Apophenia's text-reading
+functions have no tolerance for such things, so you will need to
+preprocess your file to insert a marker of your choosing, such as:\\
+\bi{1,2,"NaN",4,5}.\\
+Again, see Appendix A for notes on how one would do such preprocessing.
+
 
 \paragraph{Merging databases} Apophenia handles exactly one database at
 a time. However, there are times when you will want to use data
@@ -1320,7 +1378,6 @@ by querying out incomes, and then calling
     \cinline{GSL\_NEGINF}s where you had zeros, which means you will at least
     know exactly where your problem is. Of course, the $t$-test will
     still fail because of the infinite variances.}
-
 See page \pageref{ttest} for more on the $t$-test.
 \index{t test|)}
 

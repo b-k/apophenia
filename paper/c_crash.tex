@@ -2081,12 +2081,13 @@ int *k  = NULL;
 ...
 k = malloc(sizeof(int) * 132); 
 ...
-free (k);
+free (k); 
+k = NULL;
 ...
 if (!k)
     k   = malloc(...);
 \end{lstlisting}
-Notice that a \ci{NULL} pointer is false, so line 7 of this snippet is
+Notice that a \ci{NULL} pointer is false, so line 8 of this snippet is
 identical to line 7 in the snippet above.
 Similarly, any not-\ci{NULL} pointer is true,
 so \ci{(k)} is equivalent to \ci{(k!=NULL)}, even if \ci{k} is pointing
