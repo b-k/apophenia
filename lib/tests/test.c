@@ -59,7 +59,6 @@ int test_nan_data(){
     assert(gsl_isnan(apop_data_get_tt(d2,"second", "c")));
     assert(gsl_isnan(apop_data_get_tt(d2,"third", "b")));
     assert(!apop_data_get_tt(d2,"fourth", "b"));
-    apop_data_show(d2);
     apop_data_free(d2);
     strcpy(apop_opts.db_nan, "XX");
 

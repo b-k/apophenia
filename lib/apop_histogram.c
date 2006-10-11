@@ -1,6 +1,7 @@
 /** \file apop_histogram.c	PMF and CMF manipulations.
 
  Copyright 2006 by Ben Klemens. Licensed under the GNU GPL v2.
+ (Except psmirnov2x, Copyright R Project, but also licensed under the GPL.)
  \author Ben Klemens
  */
 
@@ -82,7 +83,7 @@ int                 i;
 gsl_histogram       *h  = gsl_histogram_alloc(bins);
 double              min, max;
     gsl_vector_minmax(data, &min, &max);
-    gsl_histogram_set_ranges_uniform(h, min, max);
+    gsl_histogram_set_ranges_uniform(h, min, max+10*GSL_DBL_EPSILON);
     for (i=0; i< data->size; i++)
         gsl_histogram_increment(h,gsl_vector_get(data,i));
     return h;
@@ -150,13 +151,13 @@ double              max0, max1, max2, min0, min1,min2;
     gsl_vector_minmax(v1, &min1, &max1);
     gsl_vector_minmax(v2, &min2, &max2);
     min0    = GSL_MIN(min1, min2);
-    max0    = GSL_MIN(max1, max2);
+    max0    = GSL_MAX(max1, max2)+1e-5;
     gsl_histogram_set_ranges_uniform(h[0], min0, max0);
     gsl_histogram_set_ranges_uniform(h[1], min0, max0);
     for (i=0; i< v1->size; i++)
-        gsl_histogram_accumulate(h[0], gsl_vector_get(v1,i),1);
+        gsl_histogram_increment(h[0], gsl_vector_get(v1,i));
     for (i=0; i< v2->size; i++)
-        gsl_histogram_accumulate(h[1], gsl_vector_get(v2,i),1);
+        gsl_histogram_increment(h[1], gsl_vector_get(v2,i));
     return h;
 }
 
@@ -167,7 +168,7 @@ The method is to produce a histogram for the PDF using the RNG.
 \todo The double* that gets sent in to the model RNGs is ungraceful.
 \ingroup histograms
 */
-gsl_histogram * apop_model_to_histogram(apop_model *m, gsl_histogram *h, int draws, double *params, gsl_rng *r){
+gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, int draws, double *params, gsl_rng *r){
 int     i;
 //int     bc      = h ? h->n + 2 : bins;
 int     bc      =  h->n + 2;
@@ -177,14 +178,14 @@ int     bc      =  h->n + 2;
     double  *newbins = malloc(sizeof(double)* (bc +1));
     newbins[0]                  = GSL_NEGINF;
     memcpy((newbins + 1), h->range, sizeof(double) * h->n);
-    newbins[bc -1]            = GSL_POSINF;
+    newbins[bc]                 = GSL_POSINF;
     gsl_histogram *modelhist    = gsl_histogram_alloc(bc);
-    gsl_histogram_set_ranges(modelhist, newbins, bc);
+    gsl_histogram_set_ranges(modelhist, newbins, bc+1);
     for (i=0; i< draws; i++)
-        gsl_histogram_accumulate(modelhist, m->rng(r,params),1);
+        gsl_histogram_increment(modelhist, m.rng(r,params));
     for (i=0; i< modelhist->n; i++)
-        (modelhist->bin)[i] /= draws;
-    return h;
+        modelhist->bin[i] /= draws;
+    return modelhist;
 }
 
 
@@ -297,7 +298,7 @@ int         i,
 \todo The double* that gets sent in to the model RNGs is ungraceful.
 \ingroup histograms
 */
-apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model *m,
+apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model m,
 int bins, long int draws, double *params, gsl_rng *r){
 int     i;
 double  diff        = 0;
@@ -351,3 +352,104 @@ double      pval    = gsl_cdf_chisq_P(diff, modelhist->n);
     return out;
 }
 */
+
+
+
+/*psmirnov2x is cut/pasted/trivially modified from the R project. Copyright them. */
+static double psmirnov2x(double x, int m, int n) {
+    double md, nd, q, *u, w, out;
+    int i, j;
+
+    if(m > n) {
+        i = n; n = m; m = i;
+    }
+    md = (double) (m);
+    nd = (double) (n);
+    q = floor(x * md * nd - 1e-7) / (md * nd);
+    u = (double *) malloc((n + 1)* sizeof(double));
+
+    for(j = 0; j <= n; j++) {
+        u[j] = ((j / nd) > q) ? 0 : 1;
+    }
+    for(i = 1; i <= m; i++) {
+        w = (double)(i) / ((double)(i + n));
+        if((i / md) > q)
+            u[0] = 0;
+        else
+            u[0] = w * u[0];
+        for(j = 1; j <= n; j++) {
+            if(fabs(i / md - j / nd) > q)
+            u[j] = 0;
+            else
+            u[j] = w * u[j] + u[j - 1];
+        }
+    }
+    out = u[n];
+    free(u);
+    return out;
+}
+
+
+
+/* Run the Kolmogorov test to determine whether two distributions are
+ identical.
+
+ \param h1, h2  Two matching histograms, probably produced via \ref apop_vectors_to_histogram or \ref apop_model_to_histogram.
+
+ \param n1, n2 How many data points are in your set? Since this is
+ not inferred from the histograms, you can set them to an arbitrarily
+ large number of bins.
+
+ \return The \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
+
+ \ingroup histograms
+ */
+apop_data *apop_test_kolmogorov(gsl_histogram *h1, gsl_histogram *h2){
+  double    cdf1    = 0,
+            cdf2    = 0,
+            sum1    = 0,
+            sum2    = 0,
+            diff    = 0;
+  int       offset, i;
+  gsl_histogram *first, *second;
+  //If empirical data, h1->n == h2->n; if one is a distribution
+  //then there are -inf and +inf bins; else, bail out.
+    if(h1->n == h2->n){
+        offset  = 0;
+        first   = h1;
+        second  = h2;
+    } else if (h1->n == h2->n+2){
+        offset  = 1;
+        first   = h1;
+        second  = h2;
+        cdf1    = first->bin[0];
+    } else if (h2->n == h1->n+2){
+        offset  = 1;
+        first   = h2;
+        second  = h1;
+        cdf1    = first->bin[0];
+    } else {
+        printf("apop_test_kolmogorov needs matching histograms.  Produce them via apop_vectors_to_histogram or apop_model_to_histogram. Returning NULL.\n");
+        return NULL;
+    }
+    //Scaling step. 
+    for (i=0; i< first->n; i++)
+        sum1    += first->bin[i];
+    for (i=0; i< second->n; i++)
+        sum2    += second->bin[i];
+printf("sum1: %g; sum2: %g\n", sum1, sum2);
+    //Find point of greatest difference
+    for (i=0; i< h2->n; i++){
+        cdf1    += first->bin[i+offset]/sum1;
+        cdf2    += second->bin[i]/sum2;
+        diff     = GSL_MAX(diff, fabs(cdf1-cdf2));
+    }
+    //return 1-psmirnov2x(diff-0.02, n1, n2);
+   // return 1-psmirnov2x(0.2204, n1, n2);
+
+apop_data   *out    = apop_data_alloc(3,-1);
+    apop_data_add_named_elmt(out, "max distance", diff);
+    apop_data_add_named_elmt(out, "p value, 2 tail", 1-psmirnov2x(diff, sum1, sum2));
+    apop_data_add_named_elmt(out, "confidence, 2 tail", psmirnov2x(diff, sum1, sum2));
+    return out;
+}

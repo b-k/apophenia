@@ -1,0 +1,5 @@
+a,b,c,d, head
+2,4,6,8, first
+3,7,.,6, second
+3,"NaN",1,7, third
+9,0,8,1, fourth

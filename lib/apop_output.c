@@ -380,7 +380,7 @@ double  datapt;
                 printf("%*i  ", Lc, (int) datapt);
             else
                 printf("%*f  ", Lc, datapt);
-            if (i==-1) 
+            if (i==-1 && data->matrix) 
                 printf ("| ");
         }
         printf("\n");

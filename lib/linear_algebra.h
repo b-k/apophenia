@@ -33,5 +33,6 @@ int         apop_vector_bounded(gsl_vector *in, long double max);
 apop_data * apop_dot(apop_data *d1, apop_data *d2, ...);
 gsl_matrix *apop_vector_split_to_matrix(gsl_vector *v, int columns);
 gsl_vector *apop_matrix_stack_to_vector(gsl_matrix *m);
-
+void        apop_vector_log(gsl_vector *v);
+void        apop_vector_exp(gsl_vector *v);
 __END_DECLS

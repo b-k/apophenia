@@ -789,6 +789,7 @@ This section forthcoming.
 \section{Goodness of fit}
 \index{goodness of fit}
 
+\index{normality!tests for}
 Errors have to be normally distributed, or else
 the whole OLS system here does not apply. Many stats package user's manuals
 suggest plotting the errors and then squinting at the picture; you can
@@ -805,13 +806,6 @@ defined therefrom. Notably, the third moment is zero, and the fourth
 moment is $3 \sigma^4$. 
 Un-normalized kurtosis $>3$ is known as \vocab{leptokurtic} and $<3$ is
 known as \vocab{platykurtic}; see Figure \ref{tailfig} for a mnemonic.
-
-\begin{figure*}[tb]
-%\hspace{-.3in}\scalebox{0.7}{\includegraphics{kurtosis.eps}}
-\hspace{-.3in}\includegraphics[width=\textwidth*\real{1.1}]{kurtosis.eps}
-\caption{Leptokurtic, \ind{mesokurtic} and \ind{platykurtic}, illustration by Gosset in {\em Biometrika} \citep[p 160]{student:errors}.\index{Student} \index{William S Gosset}\index{leptokurtic}}
-\label{tailfig}
-\end{figure*}
 
 \marginalia{13}{Kurtosis minus three}{
 There is some debate as to whether the kurtosis of a ${\cal N}(0,1)\equiv 3$
@@ -834,6 +828,14 @@ Some prefer to test both simultaneously using
 $$L_{sk} = n\left[{{\rm skew}^2\over 6} + {({\rm kurtosis}-3)^2\over 24}\right],$$
 which has a $\chi^2$ distribution with two degrees of freedom. In code:
 
+\begin{figure*}[tb]
+%\hspace{-.3in}\scalebox{0.7}{\includegraphics{kurtosis.eps}}
+\hspace{-.3in}\includegraphics[width=\textwidth*\real{1.1}]{kurtosis.eps}
+\caption{Leptokurtic, \ind{mesokurtic} and \ind{platykurtic}, illustration by Gosset in {\em Biometrika} \citep[p 160]{student:errors}.\index{Student} \index{William S Gosset}\index{leptokurtic}}
+\label{tailfig}
+\end{figure*}
+
+
 \begin{lstlisting}
 double  skew    = apop_vector_skew(datavector);
 double  kurt    = apop_vector_kurtosis(datavector);
@@ -853,8 +855,8 @@ confidence interval around $3 \sigma^4$ and state with some percentage
 of certainty that the kurtosis is or is not where it should
 be.\label{bootkurt}
 
-
 \subsection{Chi-squared goodness-of-fit test} 
+\index{histograms!testing with|(}
 \index{chi-squared goodness-of-fit test} 
 Say that we have a histogram that approximates a PDF, and a vector of
 points that we claim was drawn from that PDF. It would be nice to test
@@ -934,6 +936,28 @@ apop_data *vmtest   = apop_model_test_goodness_of_fit(datavector, apop_normal, 1
 How does it differ from the code you wrote above? Why does Apophenia's
 code assume a different number of bins for the two inputs?}
 
+\paragraph{Kolmogorov's method} \citet{kolmogorov:test} suggests
+considering the steps in a CDF to be a Poisson process, and developed a
+test based upon this parametrization. Given two histograms produced using one of
+the above-men\-tioned methods, \cind{apop\_test\_kolmogorov} find the
+maximum difference in the CDFs and find the probablity that such a CDF
+would occur if both histograms were from the same base data set.
+
+\index{normality!tests for}
+One could use Kolmogorov's test as yet another test for Normality, by
+comparing a data set's CDF to that of a Normal distribution.
+
+\exercise{Is GDP per capita log-normally distributed?
+\begin{itemize}
+\item Pull the log of GDP per capita data from the \ci{data-wb.db} data set.
+\item Create a histogram using \ci{apop\_vector\_to\_histogram}.
+\item Create a matching Normal histogram using \ci{apop\_model\_to\_histogram}.
+\item Send the two histograms and the count of data points to
+\ci{apop\_test\_kolmogorov}.
+\end{itemize}
+}
+
+
 \paragraph{\treesymbol Bad data} What happens when the denominator of
 one of the terms in the $\chi^2$ statistic is zero?\footnote{I assume
 the other histogram has some positive value in the bin; if not, then
@@ -962,6 +986,7 @@ It could be that there were errors in the  data collection.
 But it could be that the data really is doing things that the model
 predicts would happen with probability zero, in which case the data's
 protests are valid and to be heeded.
+\index{histograms!testing with|)}
 
 \summary{
 \item We can test the claim that a data set is Normally distributed using the fact

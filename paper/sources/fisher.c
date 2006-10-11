@@ -1,5 +1,4 @@
 #include <apophenia/headers.h>
-
 double  pu, pd, pl, pr;
 int     n;
 
@@ -14,7 +13,7 @@ void find_marginals(apop_data *d){
 }
 
 double one_chi_sq(double o, double e){
-    return gsl_pow_2(o - e)/e;
+    return gsl_pow_2(o - e)/e; 
 }
 
 double calc_chi_squared(apop_data *d){
