@@ -531,6 +531,7 @@ int           //rank_dist_ct    = 4,
               i, verbose      = 0;
 apop_data     *d  = apop_text_to_data("test_data2",0,1);
 apop_estimate *e  = apop_OLS.estimate(d,NULL);
+    apop_opts.thread_count  = 2;
 /*  //now specified above.
 apop_estimation_params  params;
         params.method           = 1;

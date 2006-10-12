@@ -391,7 +391,7 @@ static double psmirnov2x(double x, int m, int n) {
 
 
 
-/* Run the Kolmogorov test to determine whether two distributions are
+/** Run the Kolmogorov test to determine whether two distributions are
  identical.
 
  \param h1, h2  Two matching histograms, probably produced via \ref apop_vectors_to_histogram or \ref apop_model_to_histogram.

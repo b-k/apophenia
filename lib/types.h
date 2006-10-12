@@ -3,6 +3,7 @@
 #define __apop_estimate__
 
 #include <assert.h>
+#include <pthread.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
 
@@ -277,6 +278,8 @@ typedef struct apop_opts_type{
     char db_nan[100];
             /** If set, plot the path of the max. likelihood search. */
     char  mle_trace_path[1000];
+            /** Threads to use internally. See \ref apop_apply. */
+    int  thread_count;
 } apop_opts_type;
 
 extern apop_opts_type apop_opts;
@@ -331,6 +334,6 @@ void apop_cats_free(char ***freeme, int rows, int cols); //in apop_data.c
 apop_model * apop_model_copy(apop_model in); //this is in apop_estimate.c.
 
 void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
-
+gsl_vector *apop_matrix_apply(gsl_matrix *m, double (*fn)(gsl_vector*));
 __END_DECLS
 #endif

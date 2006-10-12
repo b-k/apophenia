@@ -78,7 +78,8 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 "| ,\t",        //input delimiters
                                 "row_names",    //db_name_column
                                 "\\(NAN\\|NaN\\|nan\\)", //db_nan
-                                "\0"            //mle_trace_path
+                                "\0",            //mle_trace_path
+                                1               //threadct
 };
 
                                                                                                                                

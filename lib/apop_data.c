@@ -607,3 +607,77 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     apop_name_add(d->names, name, 'r');
 }
 
+
+
+//Support for apop_matrix_apply:
+
+typedef struct {
+    size_t      *limlist;
+    double      (*fn)(gsl_vector*);
+    gsl_matrix  *m;
+    gsl_vector  *v;
+} threadpass;
+
+static void *forloop(void *t){
+  threadpass    *tc = t;
+  int           i;
+  gsl_vector    view;
+  double        val;
+    for (i= tc->limlist[0]; i< tc->limlist[1]; i++){
+        view    = gsl_matrix_row(tc->m, i).vector;
+        val     = tc->fn(&view);
+        gsl_vector_set(tc->v, i, val);
+    }
+  return NULL;
+}
+
+
+static size_t *threadminmax(int threadno, int totalct, int threadct){
+  int       segment_size        = totalct/threadct;
+  size_t    *out                = malloc(sizeof(int)*3);
+        out[0]  = threadno*segment_size;
+        out[1]  = (threadno==threadct-1) ? totalct : 1+(threadno+1)*segment_size;
+        out[2]  = threadno;
+        return out;
+}
+
+
+/** Apply a function to every row of a matrix.  The function that you
+ input takes in a gsl_vector and returns a \c double. \c apop_apply will
+ produce a vector view of each row, and send each row to your function. It
+ will output a \c gsl_vector holding your function's output for each row.
+
+If \c apop_opts.thread_count is greater than one, then the matrix will be
+broken into chunks and each sent to a different thread. Notice that the
+GSL is generally threadsafe, and SQLite is 100\% not threadsafe. If
+your function calls SQLite behind your back, you will find out when your
+program crashes.
+
+  \param m  The matrix
+  \param fn A function of the form <tt>double fn(gsl_vector* in)</tt>
+
+  \return A \c gsl_vector with the corresponding value for each row.
+
+  \ingroup convenience_fns
+ */
+gsl_vector *apop_matrix_apply(gsl_matrix *m, double (*fn)(gsl_vector*)){
+  gsl_vector    *out        = gsl_vector_alloc(m->size1);
+  int           threadct    = apop_opts.thread_count;
+  pthread_t     thread_id[threadct];
+  int           i;
+  threadpass    tp[threadct];
+    for (i=0 ; i<threadct; i++){
+        tp[i].limlist   = threadminmax(i, m->size1,threadct);
+        tp[i].fn        = fn;
+        tp[i].m         = m;
+        tp[i].v         = out;
+        pthread_create(&thread_id[i], NULL,forloop,(tp+i));
+    }
+    for (i=0 ; i<threadct; i++){
+        pthread_join(thread_id[i], NULL);
+            free(tp[i].limlist);
+    }
+    return out;
+}
+
+

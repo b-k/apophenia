@@ -248,7 +248,12 @@ functions, we need to take the type of input function into
 consideration, because not every function makes sense in every context. Say
 that we want to write a Function that will take in an array of
 \ci{double}s plus a function, and will apply the function to every
-element of the array. Then the input function has to have a form like:
+element of the array.\footnote{Incidentally, Apophenia has the
+\cind{apop\_matrix\_apply} function to apply a function to every row of
+a data set. If \cind{apop\_opts.thread\_count}\ci{>1}, then the
+application will be threaded over multiple processes. See the online
+reference for details.\index{threading}}
+Then the input function has to have a form like:
 \begin{lstlisting}
 double function_name (double x);
 \end{lstlisting}

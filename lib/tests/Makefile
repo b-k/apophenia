@@ -2,7 +2,7 @@ PROGNAME = test
 
 objects =$(PROGNAME).o
 #CFLAGS = -g -Wall -O3
-CFLAGS = -g -Wall #-O3 
+CFLAGS = -g -Wall -pthread #-O3 
 LINKFLAGS = -L/usr/local/lib -lapophenia -lgsl -lgslcblas -lsqlite3
 CC = gcc
 #CC = g++

@@ -21,7 +21,6 @@
  \li \ref conversions
  \li \ref output "Output functions": Summarize data and print tables to the screen or a file.
  \li \ref convenience_fns "Convenience functions": a few utilities to make life with the GSL a little easier.
- \li \ref command_line "Command-line utilities": a still easier front end to SQLite, and doing stats via Perl/Python/shell script.
 
 \section speak Speaking the languages
  \li \ref c "C": For statisticians who don't know/are rusty with the C
