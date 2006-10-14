@@ -46,6 +46,26 @@ int test_percentiles(){
     return 0;
 }
 
+//This tests the database-side functions.
+int test_skew_and_kurt(){
+  gsl_rng *r  = apop_rng_alloc(time(0));
+  int     i;
+    apop_table_exists("t",1);
+    apop_query("create table t(vals)");
+    for(i=0;i<1e4; i++){
+        apop_query("insert into t values(%g)", gsl_rng_uniform(r));
+    }
+  gsl_vector  *v    = apop_query_to_vector("select * from t");
+/*    printf ("var %g %g\n", apop_var(v) ,apop_query_to_float("select var(vals) from t"));
+    printf ("skew %g %g\n", apop_vector_skew(v) ,apop_query_to_float("select skew(vals) from t"));
+    printf ("kurt %g %g\n", apop_vector_kurt(v) ,apop_query_to_float("select kurt(vals) from t"));*/
+    assert (fabs(apop_var(v) -apop_query_to_float("select var(vals) from t"))<1e-6);
+    assert (fabs(apop_vector_skew(v) -apop_query_to_float("select skew(vals) from t"))<1e-6);
+    assert (fabs(apop_vector_kurt(v) -apop_query_to_float("select kurt(vals) from t"))<1e-6);
+    apop_table_exists("t",1);
+    return 0;
+}
+
 int test_nan_data(){
 
     apop_text_to_db("test_data_nans", "nandata", 0,1, NULL);
@@ -540,6 +560,7 @@ apop_estimation_params  params;
         params.verbose          = 1;
         */
     do_test("NaN handling", test_nan_data());
+    do_test("database skew and kurtosis", test_skew_and_kurt());
     do_test("test_percentiles:", test_percentiles());
     do_test("weighted moments:", test_weigted_moments());
     do_test("nist_tests:", nist_tests());

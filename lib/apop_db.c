@@ -206,7 +206,8 @@ static void skewFinalize(sqlite3_context *context){
     if( p && p->cnt>1 ){
       double rCnt = p->cnt;
       sqlite3_result_double(context,
-         (p->avg3*rCnt - 3*p->avg2*p->avg*rCnt + (3*rCnt-1) * gsl_pow_3(p->avg)) / (rCnt-1.0));
+         (p->avg3*rCnt - 3*p->avg2*p->avg*rCnt 
+                        + 2*rCnt * gsl_pow_3(p->avg)) / (rCnt-1.0));
     } else if (p->cnt == 1)
       	sqlite3_result_double(context, 0);
 }
@@ -216,8 +217,10 @@ static void kurtFinalize(sqlite3_context *context){
     if( p && p->cnt>1 ){
       double rCnt = p->cnt;
       sqlite3_result_double(context,
-         (p->avg4*rCnt - 4*p->avg3*p->avg*rCnt + 6 * gsl_pow_2(p->avg2)*gsl_pow_2(p->avg)*rCnt
-      					- (4*rCnt+1)* gsl_pow_4(p->avg))/(rCnt-1.0));
+         (p->avg4*rCnt - 4*p->avg3*p->avg*rCnt 
+                + 6 * p->avg2*gsl_pow_2(p->avg)*rCnt
+                - 3*rCnt* gsl_pow_4(p->avg))
+                /(rCnt-1.0));
     } else if (p->cnt == 1)
       	sqlite3_result_double(context, 0);
 }

@@ -361,7 +361,105 @@ stars nor ampersands for these operations.
 caution.
 }
 
-\section{Data structures} Forthcoming, covering linked lists versus trees versus arrays. Primarily of use to modelers.
+\section{Data structures} Let us say that you have a few million
+observations to store on your computer. How will you organize them?
+
+There are a few options, and choosing among them is not trivial. This
+section will consider three: the array, the linked list, and the binary
+tree.
+
+This section forthcoming.
+
+\subsection{Arrays} An array is as simple as data representation can
+get: just write each element right after the other. The matrices
+throughout this book are arrays of this type.
+
+However, as you have no doubt observed to this point, you basically need
+to know how large the data set is when you initialize the array. This is
+OK for data sets, but not so good for simulations.
+
+\begin{figure}[htb]
+%\hskip -1.4cm
+\begin{center}
+\includegraphics[width=\textwidth*\real{0.65}]{figs/links}
+\end{center}
+\caption{The archetypal linked list.}
+\label{listfig}
+\end{figure}
+
+\subsection{Linked lists} A linked list is a set \ci{struct}s connected
+by pointers. The first \ci{struct} includes a \ci{next} pointer, that
+points to the next element, et cetera; see Figure \ref{listfig}.
+
+\begin{figure}[htb]
+%\hskip -1.4cm
+\begin{center}
+\includegraphics[width=\textwidth*\real{0.65}]{figs/btree}
+\end{center}
+\caption{The archetypal binary tree.}
+\label{btreefig}
+\end{figure}
+
+The linked list is a favorite for agent-based simulation. Let us say
+that we have a number of agents who are born and die---meaning that they
+must be added to the list and deleted. This would be tedious with a
+fixed array, since each birth may require a \ci{realloc}, as would each
+death. One could use some sort of marker system to indicate dead agents,
+but this would require every piece of code to recognize the marker,
+which is error-prone and cumbersome.
+
+But adding an element to a linked list is simple: create a new node
+anywhere, and replace the \ci{NULL} pointer at the end with a pointer to
+the new node. Deleting a node is also simple: take the pointer pointing
+to the node, and pass it through so that it instead points to the node's
+successor. 
+
+Thus, the linked list is ideal for situations where you expect that
+elements will be added and deleted all over. However, chasing after
+pointers is a slower affair than stepping in fixed increments, so there
+is a speed penalty to the added convenience.
+
+The other failing of the linked list is the trouble of finding an
+arbitrary element.  In an array, finding the ten thousandth element is
+easy: \ci{agent\_array[10000]}. But the only way to refer to the ten
+thousandth member of the \ci{agent\_list} is via 9,999 \ci{->next}
+steps from the head of the list. 
+
+
+
+\subsection{Binary trees} The binary tree takes the linked list a step further
+by giving each node two outgoing pointers instead of one. As in Figure
+\ref{btreefig}, one may think of these pointers as the left pointer and
+the right pointer, and the branching allows for a tree structure. The
+directions to an element are now less than trivial---to get to
+\ci{data5}, start at the head (\ci{data1}), then go left, then go right.
+But with eight data points in a linked list, one would need up to seven
+steps to get to any element, and on average 3.5 steps. In a tree, the
+longest walk is three steps, and the average is 1.625 steps. Generally,
+the linked list will require on the order of $n$ steps, and a b-tree
+will require on the order of $\ln(n)$ steps.
+
+Something about keys here.
+
+Adding and subtracting elements means that the process of adding an element 
+can also be complicated, because the tree is only useful if it remains
+\airq{balanced}, meaning that there are about as many left-pointing
+elements as right-pointing elements. Fortunately, you do not have to
+worry about such com\-pli\-ca\-tions---they are the problem of the library
+designers.
+
+In the next chapter, you will see an interesting interface for a binary
+tree: a database. Since databases require fast access to every element, 
+it is natural that they would internally structure data in a binary
+tree, and this is exactly how SQLite operates internally.
+
+If your agents have a natural order such that a key makes sense, and
+you expect to retrieve them by key, then you will want to store them in
+a tree.
+
+code and notes on \ind{glib} here.
+
+
 
 \section{Parameters} \index{Command line!arguments on}
 Your simulations and analyses will require

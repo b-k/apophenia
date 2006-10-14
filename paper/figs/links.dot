@@ -1,0 +1,23 @@
+digraph {
+rankdir ="LR";
+
+"p1" [
+        label = "data |<f7>next"
+        shape = "record"
+        ];
+"p2" [
+        label = "data |<f7>next"
+        shape = "record"
+        ];
+"p3" [
+        label = "data |<f7>next"
+        shape = "record"
+        ];
+"p4" [
+        label = "data |<f7>NULL"
+        shape = "record"
+        ];
+p1:f7 -> p2;
+p2:f7 -> p3;
+p3:f7 -> p4;
+}
