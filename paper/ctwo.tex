@@ -368,7 +368,76 @@ There are a few options, and choosing among them is not trivial. This
 section will consider three: the array, the linked list, and the binary
 tree.
 
-This section forthcoming.
+This section adds yet another library to the mix: \cind{glib}, a library
+of general-use functions that every C programmer seems to reimplement.
+It includes a few features for string handling and other such
+conveniences, and modules to handle the data structures described below.
+This book makes no attempt to be a comprehensive guide to \ci{glib},
+since your package manager will install both the development tools for
+it and the comprehensive documentation. Its format is similar to that
+of the GSL or Apophenia: it provides a number of objects, such as a list
+or tree object, and the functions you need to interact with those
+objects without dealing with their innards. However, the extended
+example below provides a catalog of examples how one would initialize,
+add to, remove from, and find elements within the structure.
+
+\subsection{An example}
+This game consists of a series of meetings between pairs of birds. Each
+bird can contribute to building a nest, in which case the other bird
+reaps a benefit of two \vocab{utils}, but the bird doing the work
+loses one \vocab{util} from energy expended.\footnote{Economists
+frequently refer to the utility that an agent gains from an action. 
+The util is a joke unit of measurement for agents' utility levels.}
+Thus, if two birds cooperate, both gain one util; if one birds
+cooperates and the other does not, then the first loses a util and the
+other gains two; if both birds do not cooperate, then neither gains any
+utility at all.
+
+This game is commonly known as a \vocab{prisoner's dilemma}, due to a
+rather contrived story about two separated prisoners who must choose
+between providing evidence about the other prisoner and remaining silent.
+Its key feature is that cooperating always makes the agent worse off
+than not cooperating (defecting). The only equilibrium to the game is
+when nobody cooperates, providing zero utility all around, but the
+societal optimum is when both cooperate, producing two utils of utility
+total.
+
+On top of this we can add an evolutionary twist: let us say that a bird
+that is very successful will spawn chicks. Let \airq{hawks} be birds
+that always defect; let \airq{doves} be birds that always cooperate. In
+any one interaction, a bird gets a  better payoff as a hawk than as a dove.
+So it seems that over time, the doves would all die out. 
+
+Listing \ref{birds.c} shows half of a program to simulate the game
+among a flock of birds.  Begin reading at the \ci{main} function at the
+end. It begins by calling \ci{setup}, and then, for each period until
+the end of the simulation, calls the \ci{flock\_plays} and then the
+\ci{count} function. Every $50^{\rm th}$ period, it commits the result
+to the database.
+
+The \ci{flock\_plays} function will appear below, and will call
+\ci{bird\_plays} for each bird in turn. That function pulls a random
+opponent from the flock, and then calls \ci{play\_pd\_game} to pit the
+two birds against each other.
+
+The \ci{count} function will primarily call the \ci{birth\_or\_death}
+function, which checks for each bird whether it lives or dies.
+
+\birdfig{birds.c}{The birds.}
+
+Some of these functions are required by the files handling data structures
+below, so the function headers should all be in a header file, for
+easy reference:
+
+\birdfig{birds.h}{Header file for the birds.}
+
+You can see that the header file expects the existence of a few more
+functions, that represent the basics for any data structure: functions
+for initialization, adding elements, deleting elements, and finding
+elements. Below, you will also see functions for iterating through the
+entire flock.
+
+As you will see, each data structure handles these operations differently.
 
 \subsection{Arrays} An array is as simple as data representation can
 get: just write each element right after the other. The matrices
@@ -377,6 +446,37 @@ throughout this book are arrays of this type.
 However, as you have no doubt observed to this point, you basically need
 to know how large the data set is when you initialize the array. This is
 OK for data sets, but not so good for simulations.
+
+The real failing of arrays comes in adding and deleting elements. For
+adding elements, the simulation has to call \ci{realloc} every time the
+list expands. If you are lucky, \cind{realloc} will not move the array
+from its current location, but will simply find that there is more free
+space for the array to grow. If you are not lucky, then the array will
+have to be moved in its entirety to a new, more spacious home.
+
+An array can not have a hole in the middle, so elements can not just be
+deleted by freeing the memory. There are a few solutions, none of which
+are very pleasant. The last element of the list could be moved in to the
+space, requiring a copy, a shrinking of the array, and a loss of order
+in the elements. If order is important, every last element could be
+shifted down a notch, so if item 50 is deleted, item 51 is put in slot
+50, item 52 is put in slot 51, et cetera. This program marks dead birds
+by setting their \ci{id} to \ci{-1}. This means that as the program runs,
+more and more memory is used by dead elements, and the rest of the system
+must check for the marker at every use.
+
+As for finding an element, we got lucky here because the \ci{id} could
+be matched one-to-one with the array indices. Notice how
+\ci{add\_to\_flock} takes pains to ensure that the \ci{id} and array
+index will always match.
+
+\birdfig{arrayflock.c}{The birds, array version. The fatal flaw
+is that birds are copied in, but never eliminated. Dead birds will eventually
+pile up.}
+
+\subsection{Linked lists} A linked list is a set \ci{struct}s connected
+by pointers. The first \ci{struct} includes a \ci{next} pointer, that
+points to the next element, et cetera; see Figure \ref{listfig}.
 
 \begin{figure}[htb]
 %\hskip -1.4cm
@@ -387,43 +487,29 @@ OK for data sets, but not so good for simulations.
 \label{listfig}
 \end{figure}
 
-\subsection{Linked lists} A linked list is a set \ci{struct}s connected
-by pointers. The first \ci{struct} includes a \ci{next} pointer, that
-points to the next element, et cetera; see Figure \ref{listfig}.
+The linked list is a favorite for agent-based simulation, because birth
+and death is easy to handle.  Adding an element to a linked list is
+simple: create a new node anywhere, and replace the \ci{NULL} pointer at
+the end with a pointer to the new node. Deleting a node is also simple:
+take the pointer pointing to the node, and pass it through so that it
+instead points to the node's successor.
 
-\begin{figure}[htb]
-%\hskip -1.4cm
-\begin{center}
-\includegraphics[width=\textwidth*\real{0.65}]{figs/btree}
-\end{center}
-\caption{The archetypal binary tree.}
-\label{btreefig}
-\end{figure}
-
-The linked list is a favorite for agent-based simulation. Let us say
-that we have a number of agents who are born and die---meaning that they
-must be added to the list and deleted. This would be tedious with a
-fixed array, since each birth may require a \ci{realloc}, as would each
-death. One could use some sort of marker system to indicate dead agents,
-but this would require every piece of code to recognize the marker,
-which is error-prone and cumbersome.
-
-But adding an element to a linked list is simple: create a new node
-anywhere, and replace the \ci{NULL} pointer at the end with a pointer to
-the new node. Deleting a node is also simple: take the pointer pointing
-to the node, and pass it through so that it instead points to the node's
-successor. 
-
-Thus, the linked list is ideal for situations where you expect that
-elements will be added and deleted all over. However, chasing after
-pointers is a slower affair than stepping in fixed increments, so there
-is a speed penalty to the added convenience.
-
-The other failing of the linked list is the trouble of finding an
+But the real failing of the linked list is the trouble of finding an
 arbitrary element.  In an array, finding the ten thousandth element is
-easy: \ci{agent\_array[10000]}. But the only way to refer to the ten
-thousandth member of the \ci{agent\_list} is via 9,999 \ci{->next}
-steps from the head of the list. 
+easy: \ci{flock[10000]}.
+You can see in the code below
+that glib provides a \ci{g\_list\_nth\_data} function to return the
+$n^{\rm th}$ element of the list, which makes it look simple,
+but the only way that that function can find the ten
+thousandth member of the \ci{flock} is via 9,999 \ci{->next}
+steps from the head of the list. In fact, if you compile and run this
+program, you will see that it runs much more slowly than the tree and
+array versions.
+
+\birdfig{listflock.c}{The birds, linked list version. The fatal flaw
+is that finding a given bird requires traversing the entire list every
+time.}
+
 
 
 
@@ -439,26 +525,51 @@ longest walk is three steps, and the average is 1.625 steps. Generally,
 the linked list will require on the order of $n$ steps, and a b-tree
 will require on the order of $\ln(n)$ steps.
 
-Something about keys here.
+\begin{figure}[htb]
+%\hskip -1.4cm
+\begin{center}
+\includegraphics[width=\textwidth*\real{0.65}]{figs/btree}
+\end{center}
+\caption{The archetypal binary tree.}
+\label{btreefig}
+\end{figure}
 
-Adding and subtracting elements means that the process of adding an element 
-can also be complicated, because the tree is only useful if it remains
-\airq{balanced}, meaning that there are about as many left-pointing
-elements as right-pointing elements. Fortunately, you do not have to
-worry about such com\-pli\-ca\-tions---they are the problem of the library
-designers.
+The tree arrangement only makes sense if there is some sort of order to
+the elements. In this case, the \ci{id} each bird is born with provides
+a natural means of ordering birds. For text data, \ci{strcmp} would
+provide a similar ordering. More generally, there is a \vocab{key} value given
+to each element, and the elements are sorted by that key.
+
+This adds some complication, because you now need to associate with each
+tree a function for comparing keys. In the code below, \ci{g\_tree\_new}
+initializes a tree using the \ci{compare\_birds} function.
+
+The process of adding an element is also complicated by the fact that
+a tree is only useful if it remains \airq{balanced}, meaning that
+there are about as many left-pointing elements as right-pointing
+elements. After all, if every element were to the left of the element
+above it, you would just have a linked list.
 
 In the next chapter, you will see an interesting interface for a binary
 tree: a database. Since databases require fast access to every element, 
 it is natural that they would internally structure data in a binary
 tree, and this is exactly how SQLite operates internally.
 
-If your agents have a natural order such that a key makes sense, and
-you expect to retrieve them by key, then you will want to store them in
-a tree.
+What if two birds have the same \ci{id}? Then there is no way to order
+them uniquely, and therefore there is no way to reliably store and
+retrieve them. Thus, the key for each element must be unique.
 
-code and notes on \ind{glib} here.
+The added complication solved many of the problems above. As with the
+list, inserting and deleting elements does not require major
+\ci{realloc}ing, although maintaining balance may induce some shuffling. 
+With the key and short chains, finding an element is much faster.
+However, for this to work, we need to maintain a distinct key for every
+bird.
 
+
+\birdfig{treeflock.c}{The birds, linked list version. The fatal flaw
+is the complication in maintaining the key for every bird. You still do
+not know whether a given bird is still in the tree or not.}
 
 
 \section{Parameters} \index{Command line!arguments on}
@@ -473,7 +584,7 @@ file or a header file. This is trivial to implement, but you will need
 to recompile every time you change parameters.
 
 The second option is to put the data in a parameter file. There are
-various libraries that will read parameter files in various foramts that
+various libraries that will read parameter files in various formats that
 you can find online, and once you have learned about how to read data
 from a text file to a database in Chapter \ref{sql}, you will have
 another easy means of reading in a text file of parameters. 
@@ -491,7 +602,7 @@ other. The output is an integer \ci{return}ed at the end of \ci{main},
 which is typically zero for success or a positive integer indicating
 a type of failure. The inputs are always an integer, giving the number
 of command-line elements, and a \ci{char**}---an array of
-strings---listing the command-line elements themeselves. 
+strings---listing the command-line elements themselves. 
 Like any function specification, the types are non-negotiable, but the
 internal name you choose give these arguments is arbitrary. However, the
 universal custom is to name them \cind{argc} (argument count) and
