@@ -23,7 +23,7 @@ static apop_estimate * exponential_estimate(apop_data * data,  void *parameters)
 apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential, parameters);
 	gsl_vector_set(est->parameters->vector, 0, apop_matrix_mean(data->matrix));
 	if (est->estimation_params.uses.log_likelihood)
-		est->log_likelihood	= exponential_log_likelihood(est->parameters->vector, data->matrix);
+		est->log_likelihood	= exponential_log_likelihood(est->parameters->vector, data);
 	//if (est->estimation_params.uses.covariance)
 		//apop_numerical_var_covar_matrix(apop_exponential, est, data->matrix);
 	return est;

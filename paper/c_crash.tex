@@ -2366,14 +2366,18 @@ Once you have set the breakpoints, \ci{run} will run the program until it
 reaches a break point, and then you can apply the interrogation techniques
 above. You may want to carefully step through from there; \ci{s}
 will step to the next line, which could mean backing up in the current
-function or going to a subfunction. Alternatively, \ci{next} or {\tt
-n} will step through the function (which may involve backtracking) but
+function or going to a subfunction. Alternatively, \ci{next} or 
+\ci{n} will step through the function (which may involve backtracking) but
 will run without stopping in any subframes which may be created
 (i.e., if subfunctions are called).  \ci{until} or \ci{u} will keep
 going until you get to the next line in the function, so the debugger
 will run through subfunctions and loops until forward progress is made
 in the current function.  Finally, \ci{c} will continue along until the next
-break point or the end of the program. This is also a good place to
+break point or the end of the program.\footnote{A mnemonic device for
+remembering which is which: \ci{s} is the slowest means of stepping,
+\ci{n} slightly faster, \ci{u} still faster, and \ci{c} the fastest. In
+this order, they spell \ci{snuc}, which is almost an English word
+with implications of stepping slowly.} This is also a good place to
 point out that just hitting $<$enter$>$ will repeat the last command,
 so you won't have to keep hitting \ci{n} to step through many lines.
 \index{debugging|)}

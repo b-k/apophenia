@@ -26,6 +26,7 @@ double  true_parameter[]    = {1.82,2.1},
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
 int     len                 = 8000;
+int     verbose             = 0;
 
 int test_percentiles(){
   gsl_vector    *v      = gsl_vector_alloc(307);
@@ -366,6 +367,7 @@ long int        runsize             = 1000,
                 rowsize             = 50;
 gsl_matrix      *data               = gsl_matrix_calloc(runsize,rowsize);
 size_t          i,j;
+     printf("\n");
     //generate.
     for (i=0; i< runsize; i++){
         for (j=0; j< rowsize; j++){
@@ -531,9 +533,6 @@ gsl_rng         *r  = apop_rng_alloc(107);
     return 0;
 }
 
-
-
-
 #define do_test(text, fn)   if (verbose)    \
                                 printf(text);  \
                             else printf(".");   \
@@ -542,13 +541,14 @@ gsl_rng         *r  = apop_rng_alloc(107);
                                 {if (verbose) printf("passed.\n");} \
                            else             \
                                 {printf("%s  failed.\n", text);exit(0);}
+
 int main(){
 gsl_rng       *r              = apop_rng_alloc(8); 
-apop_model    //rank_dist[]     = {apop_zipf_rank,apop_exponential_rank,apop_yule_rank, apop_waring_rank},
-              dist[]          = {apop_zipf,apop_exponential ,apop_yule, apop_waring, apop_normal, apop_poisson};
-int           //rank_dist_ct    = 4,
+apop_model    rank_dist[]     = {apop_zipf_rank,apop_exponential_rank,apop_yule_rank, apop_waring_rank},
+              dist[]          = {apop_exponential, apop_normal, apop_poisson, apop_zipf,apop_yule, apop_waring};
+int           rank_dist_ct    = 4,
               dist_ct         = 6,
-              i, verbose      = 0;
+              i;
 apop_data     *d  = apop_text_to_data("test_data2",0,1);
 apop_estimate *e  = apop_OLS.estimate(d,NULL);
     apop_opts.thread_count  = 2;
@@ -559,6 +559,13 @@ apop_estimation_params  params;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
         */
+    for (i=0; i< rank_dist_ct; i++){
+        do_test(rank_dist[i].name, test_rank_distribution(r, rank_dist[i]));
+    }
+
+    for (i=0; i< dist_ct; i++){
+        do_test(dist[i].name, test_distribution(r, dist[i]));
+    }
     do_test("NaN handling", test_nan_data());
     do_test("database skew and kurtosis", test_skew_and_kurt());
     do_test("test_percentiles:", test_percentiles());
@@ -579,14 +586,5 @@ apop_estimation_params  params;
     do_test("apop_matrix_summarize test:", test_summarize());
     verbose ++;
 
-    /*
-    for (i=0; i< rank_dist_ct; i++){
-        do_test(rank_dist[i].name, test_rank_distribution(r, rank_dist[i]));
-    }
-    */
-
-    for (i=0; i< dist_ct; i++){
-        do_test(dist[i].name, test_distribution(r, dist[i]));
-    }
     return 0;
 }

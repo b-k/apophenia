@@ -40,9 +40,12 @@ cd $junkdir/$pkg-$version
 	#add a directory with links to all headers:
 	mkdir apophenia
 	cd apophenia
-		ln -s ../*.h ./
-		ln -s ../vasprintf/*.h ./
-		ln -s ../model/*.h ./
+		cp ../*.h ./
+		cp ../vasprintf/*.h ./
+		cp ../model/*.h ./
+		#ln -s ../*.h ./
+		#ln -s ../vasprintf/*.h ./
+		#ln -s ../model/*.h ./
 		cd ..
 	mv apophenia apophenia-$version
 

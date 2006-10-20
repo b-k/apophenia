@@ -167,6 +167,10 @@ and then the usual <tt>./prepare; ./configure; make; sudo make
 install</tt>. [Be careful if you now have two versions of Gnuplot on
 your system that you are using the right one.]
 
+\param data A \c gsl_vector holding the data. No need to sort or bin; this function does that for you.
+\param bin_ct   The number of bins in the output histogram
+\param outfile  The file to be written. If NULL then write to STDOUT.
+
   \ingroup output
 */
 void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
@@ -178,7 +182,8 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
         gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
 	for (i=0; i < data->size; i++){
 		pt	= gsl_vector_get(data, i);
-		gsl_histogram_increment(h, pt);
+        if (!gsl_isnan(pt))
+		   gsl_histogram_increment(h, pt);
 		}
 	//Now that you have a histogram, print it.
         if (outfile == NULL) 	f       = stdout;

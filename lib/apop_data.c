@@ -671,13 +671,16 @@ gsl_vector *apop_matrix_apply(gsl_matrix *m, double (*fn)(gsl_vector*)){
         tp[i].fn        = fn;
         tp[i].m         = m;
         tp[i].v         = out;
-        pthread_create(&thread_id[i], NULL,forloop,(tp+i));
     }
-    for (i=0 ; i<threadct; i++){
-        pthread_join(thread_id[i], NULL);
-            free(tp[i].limlist);
+    if (threadct==1) //don't thread.
+        forloop(tp);
+    else {
+        for (i=0 ; i<threadct; i++)
+            pthread_create(&thread_id[i], NULL,forloop,(tp+i));
+        for (i=0 ; i<threadct; i++)
+            pthread_join(thread_id[i], NULL);
     }
+    for (i=0 ; i<threadct; i++)
+        free(tp[i].limlist);
     return out;
 }
-
-

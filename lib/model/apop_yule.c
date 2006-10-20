@@ -37,43 +37,55 @@ double  mu          = gsl_vector_get(beta, 0);
     return limit - mu;    
 }
 
+
+
+static long double  bb;
+
+static double  apply_me(gsl_vector *v){
+  long double   likelihood =0, 
+                ln_k, ln_bb_k;
+  int 	        k;
+  double        pt;
+    for (k=0; k< v->size; k++)	{
+        pt          = gsl_vector_get(v, k);
+        if (k>=1) 	ln_k	= gsl_sf_lngamma(pt+1);
+        else		ln_k	= 0;
+        ln_bb_k		= gsl_sf_lngamma(pt+1+bb);
+        likelihood   +=  ln_k - ln_bb_k;
+    }
+    return likelihood;
+}
+
+static double  dapply_me(gsl_vector *v){
+  int           k;
+  double        pt; 
+  long double   d   = 0;
+    for (k=0; k< v->size; k++)	{
+        pt   = gsl_vector_get(v, k);
+        d	-= gsl_sf_psi(pt +1 + bb);
+    }
+    return d;
+}
+
 static double yule_log_likelihood(const gsl_vector *beta, apop_data *d){
-double          bb	            = gsl_vector_get(beta, 0),
-                pt;
-int 		    i, k;
-gsl_matrix 	    *data		    = d->matrix;
-long double     ln_k, ln_bb_k,
-		        likelihood 	    = 0,
-		        ln_bb		    = gsl_sf_lngamma(bb),
-		        ln_bb_less_1    = log(bb-1);
-	for (i=0; i< data->size1; i++)	{
-	    for (k=0; k< data->size2; k++)	{
-            pt          = gsl_matrix_get(data, i, k);
-		    if (k>=1) 	ln_k	= gsl_sf_lngamma(pt+1);
-		    else		ln_k	= 0;
-		    ln_bb_k		= gsl_sf_lngamma(pt+1+bb);
-		    likelihood   +=  ln_k - ln_bb_k;
-	    }
-	}
-	return likelihood + (ln_bb_less_1 + ln_bb) * data->size1 * data->size2;
+    bb	            = gsl_vector_get(beta, 0);
+  long double   ln_bb		    = gsl_sf_lngamma(bb),
+                ln_bb_less_1    = log(bb-1);
+  gsl_vector *  v               = apop_matrix_apply(d->matrix, apply_me);
+  double        likelihood      = apop_vector_sum(v);
+    gsl_vector_free(v);
+	return likelihood + (ln_bb_less_1 + ln_bb) * d->matrix->size1 * d->matrix->size2;
 }
 
 static void yule_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
-double          bb		= gsl_vector_get(beta, 0),
-                pt;
-gsl_matrix	    *data	= d->matrix;
-int 		    i, k;
+    bb		= gsl_vector_get(beta, 0);
 double		    bb_minus_one_inv= 1/(bb-1),
-		        psi_bb	= gsl_sf_psi(bb),
-		        d_bb		= 0;
-	for (i=0; i< data->size1; i++)	{
-	    for (k=0; k< data->size2; k++)	{
-            pt           = gsl_matrix_get(data, i, k);
-			d_bb		-= gsl_sf_psi(pt +1 + bb);
-		}
-	}
-    d_bb    += (bb_minus_one_inv + psi_bb) * data->size1 * data->size2;
+		        psi_bb	        = gsl_sf_psi(bb);
+  gsl_vector *  v               = apop_matrix_apply(d->matrix, dapply_me);
+  double        d_bb            = apop_vector_sum(v);
+    gsl_vector_free(v);
+    d_bb    += (bb_minus_one_inv + psi_bb) * d->matrix->size1 * d->matrix->size2;
 	gsl_vector_set(gradient, 0, d_bb);
 }
 

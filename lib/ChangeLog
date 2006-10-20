@@ -7,6 +7,9 @@
 --apop_text_to_db now reads from STDIN.
 **deleted apop_query_db; use apop_query.
 --Kolmogorov-Smirnov test.
+--apop_t_test returns GSL_NAN when given a one-element vector instead of
+hanging.
+--no more soft links in the tgz file==>may work better on Windows machines.
 
 		September 2006
 

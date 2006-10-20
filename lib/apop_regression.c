@@ -33,10 +33,17 @@ double apop_two_tailify(double in){
 
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
-apop_data   *out    = apop_data_alloc(7,-1);
-double      pval    = gsl_cdf_tdist_P(stat, df),
-            qval    = gsl_cdf_tdist_Q(stat, df),
-            two_tail= apop_two_tailify(pval);
+  apop_data *out    = apop_data_alloc(7,-1);
+  double    pval, qval, two_tail;
+  if(!gsl_isnan(stat)){
+        pval    = gsl_cdf_tdist_P(stat, df);
+        qval    = gsl_cdf_tdist_Q(stat, df);
+        two_tail= apop_two_tailify(pval);
+  } else {
+        pval    = GSL_NAN;
+        qval    = GSL_NAN;
+        two_tail= GSL_NAN;
+}
     apop_data_add_named_elmt(out, "mean left - right", diff);
     apop_data_add_named_elmt(out, "t statistic", stat);
     apop_data_add_named_elmt(out, "df", df);

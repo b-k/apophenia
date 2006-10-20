@@ -78,14 +78,21 @@ Connoisseurs of computing languages often refer to high-level and
 low-level languages. The low-level languages are close to the machine,
 referring to individual memory addresses and register operations,
 giving you perfect control but demanding a lot of work. The high-level
-languages do complex things with one command, like {\tt regress(data)}
-to produce pages of output, giving you no control but ease-of-use.
+languages do complex things with one command, like a {\tt
+regress(data)} command to produce pages of output, giving you no control
+but ease-of-use.
 
-C can be used as a rock-bottom low-level language, but there is also a
-library of C functions to execute any high-level operations you may
-desire, such as the \cinline{apop\_OLS.estimate(data, ...)} function from
-the Apophenia library.  
-You get to pick the balance of laziness and precision that you desire. You
+\codefig{regress}{C programs do not have to be filled with memory
+management commands and byte-shifting. With the right commands, they are
+as brief as programs in hipper modern languages.}
+
+C can be used anywhere along the spectrum. Figure \ref{regress} gives
+an example on the high end, showing a complete C program that works on
+the level of data sets and statistical models. It reads in a data set in
+one line, runs a regression in the next, and displays a page of
+results in the next.
+
+You pick the balance of laziness and precision that you desire. You
 can write code to manipulate individual memory locations, use the GNU Scientific
 Library to manipulate matrices, or use Apophenia to estimate models---and
 you can do it all in the same program.
@@ -106,16 +113,67 @@ Meanwhile, C is the lingua franca of computing. The software I discuss
 in this book is available for the system you are using, and for the
 system your colleagues are using, right now, for free.
 
-Further, it is important to be compatible with yourself. Will you be
-able to verify and modify your work five years from now?  Chapter
-\ref{c_crash} shows you how to build a library of functions so you can
-put together next month's analysis in half the time, but the library is
-only as useful as the underlying language.  Since C was written in 1972,
-dozens (maybe hundreds) of stats packages have come and gone, and those
-who try to follow the trends have on their hard drives dozens of scripts
-that they can't run anymore.  Meanwhile, correctly written C programs
-written in the 1970s will compile and run on new PCs.  \index{statistics
-packages!rants regarding|)}
+Further, it is important to be compatible with yourself. Will you be able
+to verify and modify your work five years from now? Since C was written
+in 1972, dozens (maybe hundreds) of stats packages have come and gone,
+and those who try to follow the trends have on their hard drives dozens
+of scripts that they can't run anymore.  Meanwhile, correctly written
+C programs written in the 1970s will compile and run on new PCs.
+
+\paragraph{But C is ugly!} C's detractors point out that C code is
+always filled with cruft about memory management and endless declarations
+instead of practical code to do things. It requires piecing together bits
+that all work at a level lower than that at which anyone would want to
+work these days.
+
+They get this impression because many C textbooks, some from the 1970s
+and some of more recent vintage---are written for people writing basic
+software for machines with comically limited memory---situations where
+memory management and reliable byte-wrangling are essential.
+
+But that is where the \airq{modern} part of this book's title comes
+in. Have another look at Figure \ref{regress}.  It does not bother with
+memory management, because it is a short program and your computer has
+literally a million times more memory. It includes the declarations
+that some find to be so onerous, but they consist simply of preceding
+the first use of \ci{dataset} and \ci{est} with type names.
+Most importantly, the commands themselves are not
+about bit-shifting, but using high-level structures like data sets and
+statistical models.  Yes, there are thousand-page code bases written in
+baroque, bit-twiddling C, like the Windows and Linux operating systems
+or most of the stats packages listed above. But Figure \ref{regress}
+shows that C code can also be short, concise, and thoroughly modern.
+
+There is the complaint that C is a compiled language, meaning that
+you must write your instructions to a text file and compile the file
+to an excecutable before seeing results. Interpreted systems,
+like Perl, Python, or most of the packages above, provide a means of
+giving immediate feedback for every command. Interpreted languages
+certainly have their convenience, and are useful for certain settings,
+such as asking a few quick questions of a data set. But an un-replicable
+analysis based on clicking an arbitrary sequence of on-screen buttons
+is as useful as no analysis at all.  Your analysis is not done until you
+have a script that takes the data as far as possible along the pipeline
+from raw format to final published output. In this context, writing \ci{program.c} for
+a compiler and writing \ci{script.do} for an interpreter become about
+equivalent---especially since compilation on a modern computer takes on
+the order of 0.0 seconds.
+
+C is by no means the best language for all possible purposes.
+Different systems have built-in syntax for communicating with other programs, 
+handling text, building Web pages, or producing certain graphics. But
+for data analysis, C is very effective. It has its syntactic warts: you
+will forget to append semicolons to every line, and will be frustrated
+that \ci{3/2==1} while \ci{3/2.==1.5}. But then,
+Perl also requires semicolons after every line, and \ci{3/2} is one in
+Python, too. Type declarations are one more detail to remember,
+but the alternatives have their own warts: Perl basically requires that
+you declare the type of your variable (\ci{@, \$, or \#}) with every use,
+and R will guess the type you meant to use, but will often guess wrong,
+such as thinking that the text string \ci{"14"} is an integer. No system is
+wart-free, but C earns its warts by being fast, extensible, and portable.
+
+\index{statistics packages!rants regarding|)}
 
 
 

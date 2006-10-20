@@ -31,9 +31,9 @@ double		mean, var;
 	gsl_vector_set(est->parameters->vector, 0, mean);
 	gsl_vector_set(est->parameters->vector, 1, var);
 	if (est->estimation_params.uses.log_likelihood)
-		est->log_likelihood	= normal_log_likelihood(est->parameters->vector, data->matrix);
+		est->log_likelihood	= normal_log_likelihood(est->parameters->vector, data);
 	if (est->estimation_params.uses.covariance)
-		apop_numerical_var_covar_matrix(apop_normal, est, data->matrix);
+		apop_numerical_covariance_matrix(apop_normal, est, data);
 	return est;
 }
 
@@ -50,6 +50,16 @@ double  mu          = gsl_vector_get(beta, 1);
     return limit - mu;    
 }
 
+static double   mu, variance;
+
+static double apply_me(gsl_vector *v){
+  int       i;
+  double    ll  = 0;
+    for(i=0; i< v->size; i++)
+	    ll	-= log(gsl_ran_gaussian_pdf((gsl_vector_get(v, i) - mu), variance));
+    return ll;
+}
+
 /* The log likelihood function for the Normal.
 
 The log likelihood function and dlog likelihood don't care about your
@@ -64,17 +74,11 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 \param d	the set of data points; see notes.
 */
 static double normal_log_likelihood(const gsl_vector *beta, apop_data *d){
-double 		mu	= gsl_vector_get(beta,0),
-	    	ss	= 2 * gsl_vector_get(beta,1),
-	    	ll	= 0;
-size_t		i,j;
-gsl_matrix	*data	= d->matrix;
-	for (i=0;i< data->size1; i++)
-		for (j=0;j< data->size2; j++)
-			ll	-= gsl_pow_2(gsl_matrix_get(data, i, j) - mu) / ss;
-			//Or use the stock gsl function (but then just return -ll).
-			//ll	+= log(gsl_ran_gaussian_pdf((gsl_matrix_get(data, i, j) - mu), gsl_vector_get(beta,1)));
-	ll 	-= data->size1 * data->size2 * log(ss * M_PI)/2.0; //second term is positive because it subtracts -log.
+    mu	        = gsl_vector_get(beta,0),
+    variance    = gsl_vector_get(beta,1);
+  gsl_vector *  v       = apop_matrix_apply(d->matrix, apply_me);
+  double        ll      = apop_vector_sum(v);
+    gsl_vector_free(v);
 	return ll;
 }
 
@@ -86,8 +90,8 @@ To tell you the truth, I have no idea when anybody would need this, but it's her
 \todo Add constraint that \f$\sigma^2>0\f$.
  */
 static void normal_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
-double 		mu	    = gsl_vector_get(beta,0),
-	    	ss	    = gsl_vector_get(beta,1),
+    mu	    = gsl_vector_get(beta,0);
+double 		ss	    = gsl_vector_get(beta,1),
 	    	dll	    = 0,
 	    	sll	    = 0,
 	    	x;

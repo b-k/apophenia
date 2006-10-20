@@ -317,7 +317,7 @@ your variance-covariance matrix, just use the negative inverse of the Hessian.
 \param data	The data
 \ingroup basic_stats
 */
-void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, apop_data *data){
+void apop_numerical_covariance_matrix(apop_model dist, apop_estimate *est, apop_data *data){
 //int		i;
 apop_fn_with_void tmp;
 gsl_matrix	    *hessian;
@@ -334,6 +334,11 @@ gsl_matrix	    *hessian;
         apop_estimate_parameter_t_tests(est);
 	apop_fn_for_derivative 	= tmp;
 }
+
+
+/** An alias for \ref apop_numerical_covariance_matrix. Use that one. */
+void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, apop_data *data){
+    apop_numerical_covariance_matrix(dist, est, data);}
 
 
 /**  Here's the [dx/df]'[dx/df] version of the Hessian calculation.
@@ -456,7 +461,7 @@ apop_estimate			    *est;
 		gsl_vector_free(x);
 	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data);
 	if (!est_params || est->estimation_params.uses.covariance) 
-		apop_numerical_var_covar_matrix(dist, est, data);
+		apop_numerical_covariance_matrix(dist, est, data);
 	return est;
 }
 
@@ -523,7 +528,7 @@ apop_estimate		    *est;
 	gsl_multimin_fminimizer_free(s);
 	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data);
 	if (est->estimation_params.uses.covariance) 
-		apop_numerical_var_covar_matrix(dist, est, data);
+		apop_numerical_covariance_matrix(dist, est, data);
 	return est;
 }
 
@@ -809,6 +814,6 @@ gsl_siman_params_t params = {N_TRIES,
     gsl_vector_memcpy(est->parameters->vector, beta);
     est->log_likelihood = m.log_likelihood(est->parameters->vector, data);
     if (est->estimation_params.uses.covariance)
-        apop_numerical_var_covar_matrix(m, est, data);
+        apop_numerical_covariance_matrix(m, est, data);
     return est;
 }

@@ -22,7 +22,7 @@ apop_estimate 	*est= apop_estimate_alloc(data,apop_poisson, parameters);
 double		mean    = apop_matrix_mean(data->matrix);
 	gsl_vector_set(est->parameters->vector, 0, mean);
 	if (est->estimation_params.uses.log_likelihood)
-		est->log_likelihood	= poisson_log_likelihood(est->parameters->vector, data->matrix);
+		est->log_likelihood	= poisson_log_likelihood(est->parameters->vector, data);
 	if (est->estimation_params.uses.covariance)
 		    est->covariance->matrix = apop_jackknife(data, apop_poisson, &(est->estimation_params));
 	return est;
@@ -39,21 +39,28 @@ double  mu          = gsl_vector_get(beta, 0);
     return limit - mu;    
 }
 
+static double ln_l;
+
+static double apply_me(gsl_vector *v){
+  int       k;
+  double    x,
+            llikelihood = 0;
+    for (k=0; k< v->size; k++){
+        x	= gsl_vector_get(v, k);
+        if (x!=0)
+            llikelihood    += ln_l *x - gsl_sf_lngamma(x+1);
+    }
+    return llikelihood;
+}
 
 static double poisson_log_likelihood(const gsl_vector *beta, apop_data *d){
-double        lambda    = gsl_vector_get(beta, 0);
-int           i, k=0;
-gsl_matrix    *data        = d->matrix;
-double         llikelihood  = 0,
-        ln_l 	= log(lambda),
-        x;
-    for (i=0; i< data->size1; i++)
-        for (k=0; k< data->size2; k++){
-            x	= gsl_matrix_get(data, i, k);
-            if (x!=0)
-                llikelihood    += ln_l *x - gsl_sf_lngamma(x+1);
-        }
-    return llikelihood - i*k*lambda;
+  double        lambda      = gsl_vector_get(beta, 0);
+  double        llikelihood = 0;
+    ln_l 	= log(lambda);
+  gsl_vector *  v           = apop_matrix_apply(d->matrix, apply_me);
+  double        ll          = apop_vector_sum(v);
+    gsl_vector_free(v);
+    return llikelihood - d->matrix->size1*d->matrix->size2*lambda;
 }
 
 /** The derivative of the poisson distribution, for use in likelihood

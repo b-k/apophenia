@@ -86,6 +86,7 @@ gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta,
 gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
 
 /* Find the var/covar matrix via the hessian. */
+void apop_numerical_covariance_matrix(apop_model dist, apop_estimate *est, apop_data *data);
 void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, apop_data *data);
 
 
