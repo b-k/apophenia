@@ -1,34 +1,34 @@
 digraph {
 
 "p1" [
-        label = "{data 1 |{<f7>left|<f8>right}}"
+        label = "{bird 1 |{<f7>left|<f8>right}}"
         shape = "record"
         ];
 p1:f7 -> p2;
 p1:f8 -> p3;
 "p2" [
-        label = "{data 2|{<f7>left|<f8>right}}"
+        label = "{bird 2|{<f7>left|<f8>right}}"
         shape = "record"
         ];
 p2:f7 -> p4;
 p2:f8 -> p5;
 "p3" [
-        label = "{data 3|{<f7>left|<f8>right}}"
+        label = "{bird 3|{<f7>left|<f8>right}}"
         shape = "record"
         ];
 p3:f7 -> p6;
 p3:f8 -> p7;
 "p4" [
-        label = "{data 4|{<f7>left|<f8>right}}"
+        label = "{bird 4|{<f7>left|<f8>right}}"
         shape = "record"
         ];
 p4:f7 -> p8;
 "p5" [
-        label = "{data 5|{<f7>left|<f8>right}}"
+        label = "{bird 5|{<f7>left|<f8>right}}"
         shape = "record"
         ];
 "p6" [
-        label = "{data 6|{<f7>left|<f8>right}}"
+        label = "{bird 6|{<f7>left|<f8>right}}"
         shape = "record"
         ];
 "p7" [
@@ -36,7 +36,7 @@ p4:f7 -> p8;
         shape = "record"
         ];
 "p8" [
-        label = "{data 8|{<f7>left|<f8>right}}"
+        label = "{bird 8|{<f7>left|<f8>right}}"
         shape = "record"
         ];
 }

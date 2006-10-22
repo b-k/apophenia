@@ -1,10 +1,10 @@
-#PROGNAME = birds_list
-#PROGNAME = birds_tree
-PROGNAME = arrayflock
+#PROGNAME = listflock
+PROGNAME = treeflock
+#PROGNAME = arrayflock
 
 objects =$(PROGNAME).o birds.o
 #CFLAGS = -g -Wall -O3
-CFLAGS = -g -Wall `pkg-config --cflags glib-2.0` #-O3 
+CFLAGS = -pg -g -Wall `pkg-config --cflags glib-2.0` #-O3 
 LINKFLAGS = -L/usr/local/lib -lapophenia -lgsl -lgslcblas -lsqlite3 `pkg-config --libs glib-2.0`
 CC = gcc
 #CC = g++

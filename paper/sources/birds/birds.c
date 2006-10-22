@@ -1,12 +1,15 @@
 #include "birds.h"
+#include <apophenia/headers.h>
 
-int     periods             = 500;
-int     initial_pop         = 10000;
-double  parent_threshhold   = GSL_POSINF;
+gsl_rng *r;
+
+int     periods             = 300;
+int     initial_pop         = 100;
 int     id_count            = 0;
 
 void play_pd_game(bird *row, bird *col){
-  double    gain    = 2, loss = -1;
+  double    gain    = 2, loss = -1, 
+            hawk_fight  = -1.95;
   if (row->type == 'd'){
         row->wealth += loss;
         col->wealth += gain;
@@ -14,6 +17,10 @@ void play_pd_game(bird *row, bird *col){
   if (col->type == 'd'){
         col->wealth += loss;
         row->wealth += gain;
+  }
+  if (col->type == 'h' && row->type == 'h'){
+        col->wealth += hawk_fight;
+        row->wealth += hawk_fight;
   }
 }
 
@@ -34,7 +41,7 @@ bird *new_chick(bird *parent){
         else
             out->type  = 'h';
     }
-    out->wealth = 5* gsl_rng_uniform(r);
+    out->wealth = 20* gsl_rng_uniform(r);
     out->id     = id_count;
     id_count    ++;
     return out;
@@ -42,9 +49,10 @@ bird *new_chick(bird *parent){
 
 void birth_or_death(void *in, void *v){
   bird  *b  = in; //cast void to bird;
-    if (!b->wealth)
+    //b->wealth   -= 0.25;
+    if (b->wealth <=0)
         free_bird(b);
-    else if (b->wealth > parent_threshhold)
+    else if (gsl_rng_uniform(r)*75 < b->wealth)
         add_to_flock(new_chick(b));
 }
 
@@ -65,7 +73,7 @@ int main(){
     for (i=0; i< periods; i++){
         flock_plays();
         count(i);
-        if (!(i % 50)) {
+        if (!(i % 10)) {
             fprintf(stderr, "%i\n", i);
             apop_query("commit; begin;");
         }

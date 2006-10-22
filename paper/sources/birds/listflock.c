@@ -1,7 +1,7 @@
 #include "birds.h"
 #include <glib.h>
 
-  GList *flock  = NULL;
+  GList *flock;
 
 void flock_plays(){
     g_list_foreach(flock, bird_plays, NULL);
@@ -45,4 +45,8 @@ void count(int period){
 
 void cull_flock(){
     flock   = g_list_remove_all(flock, NULL);
+}
+
+void flock_init(){
+  flock  = NULL;
 }

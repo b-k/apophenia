@@ -3,7 +3,7 @@
 
   GTree *flock  = NULL;
 
-gint compare_birds(const void *L, const void *R){
+static gint compare_keys(const void *L, const void *R){
   const int *Lb  = L;
   const int *Rb  = R;
     if (*Rb - *Lb < 0)
@@ -12,16 +12,11 @@ gint compare_birds(const void *L, const void *R){
 }
 
 void flock_init(){
-    flock   = g_tree_new(compare_birds);
+    flock   = g_tree_new(compare_keys);
 }
 
 static gboolean tree_bird_plays(void *k, void *in, void *v){
     bird_plays(in, NULL);
-    return 0;
-}
-
-static gboolean tree_birth_or_death(void *k, void *in, void *v){
-    birth_or_death(in, NULL);
     return 0;
 }
 
@@ -33,13 +28,16 @@ void add_to_flock(bird* b){
     g_tree_insert(flock, &(b->id), b);
 }
 
-void free_bird(bird* b){
-    g_tree_remove(flock, &(b->id));
-    free(b);
+static gint compare_keys_two(const void *R, const void *L){
+  const int *Lb  = L;
+  const int *Rb  = R;
+    if (*Rb - *Lb < 0)
+        return -1;
+    else return (*Rb > *Lb);
 }
 
 bird * find_opponent(int n){
-    return g_tree_lookup(flock, &n);
+    return g_tree_search(flock, compare_keys_two, &n);
 }
 
 int flock_size(){
@@ -63,12 +61,34 @@ static gboolean tree_bird_count(void *k, void *in, void *v){
     return 0;
 }
 
+//Bird deletion routines:
+
+
+GList *dying_birds;
+
+void free_bird(bird* b){
+    dying_birds = g_list_prepend(dying_birds, &b);
+}
+
+static gboolean tree_birth_or_death(void *k, void *in, void *v){
+    birth_or_death(in, NULL);
+    return 0;
+}
+
 void count(int period){
     hawks   = doves   = 0;
+    dying_birds = NULL;
     g_tree_foreach(flock, tree_birth_or_death, NULL);
     g_tree_foreach(flock, tree_bird_count, NULL);
     apop_query("insert into pop values(%i, %i, %i);", period, hawks, doves);
 }
 
+static void cull_foreach(void *b, void *v){
+    g_tree_remove(flock, &(((bird*)b)->id));
+    free(b);
+}
+
 void cull_flock(){
+    g_list_foreach(dying_birds, cull_foreach, NULL);
+    g_list_free(dying_birds);
     return; }

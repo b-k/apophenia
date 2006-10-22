@@ -1239,7 +1239,7 @@ into a series of dummy variables. It requires writing down a separate
 that's what \cinline{for} loops are for.  [Again, this is demonstration
 code. Use \cind{apop\_pro\-duce\_dum\-mies} to do this in practice.]
 
-\codefig{dummy}{A sample of a \cinline{for} loop that creates  SQL that creates dummy variables.}
+\codefig{dummy}{A sample of a \cinline{for} loop that creates SQL that creates dummy variables.}
 
 Figure \ref{dummy} uses the \si{case} keyword to create a series of
 columns that are either one or zero---dummy variables.  We first query
@@ -1380,5 +1380,19 @@ by querying out incomes, and then calling
     still fail because of the infinite variances.}
 See page \pageref{ttest} for more on the $t$-test.
 \index{t test|)}
+
+\exercise{\label{paramex}Section \ref{paramsec} mentioned that you could use the
+database to set frequently-changing parameters. Modify the code in Figure
+\ref{getopt} to set parameters via database, rather than via the command line.  
+\begin{itemize}
+\item Write a text file with two columns: parameters and data.
+\item Read in the file using \cind{apop\_text\_to\_db} at the beginning
+of \ci{main}.
+\item Write a function with header \ci{double get\_param(char *p)} that
+queries the database for the parameter named \ci{p} and returns its value.
+Then modify the program to set \ci{min}, \ci{max}, \ci{incr}, and \ci{base}
+using \ci{get\_param}.
+\end{itemize}
+}
 
 \setc %for code listings.

@@ -1,8 +1,8 @@
 #include "birds.h"
 #include <glib.h>
 
-  bird *flock       = NULL;
-  int   size_of_flock  = 0;
+  bird *flock;
+  int   size_of_flock;
 
 void flock_plays(){
   int   i;
@@ -51,8 +51,9 @@ void count(int period){
     apop_query("insert into pop values(%i, %i, %i);", period, hawks, doves);
 }
 
-void cull_flock(){
-    return; }
+void cull_flock(){ }
 
 void flock_init(){
-    return; }
+  flock         = NULL;
+  size_of_flock = 0;
+}

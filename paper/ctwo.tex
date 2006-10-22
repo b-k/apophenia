@@ -1,6 +1,6 @@
 \chapter{\treesymbol More C tools} \label{ctwo}
 
-If you have a good handle on the Chapter \ref{c_crash}, then you already
+If you have a good handle on Chapter \ref{c_crash}, then you already
 have what you need to write some very advanced programs. But C is a
 world unto itself, with hundreds of utilities to facilitate better
 coding and many features for the seasoned programmer.
@@ -8,13 +8,21 @@ coding and many features for the seasoned programmer.
 This chapter covers some of the additional details of C and its
 environment. You can read the rest of the book without reading this
 chapter, but it discusses some features and tools that you may
-eventually find to be useful.
-
+eventually find to be useful. The statistician reader can likely get by
+with just a skim over this chapter, but readers working on simulations
+or agent-based models will almost certainly need to use the structures
+and techniques described here.
 
 \section{Syntactic sugar}   
 There are several ways to do almost everything in Chapter \ref{c_crash}.  For
-example, one could write the three lines \ci{b = (i > j); a += b;
-i++;} as the single expression \ci{a += b = i++ > j;}. The seventh
+example, one could write the three lines
+\begin{lstlisting}
+b = (i > j); 
+a += b;
+i++;
+\end{lstlisting}
+
+as the single expression \ci{a += b = i++ > j;}. The seventh
 element of the array \ci{a} can be called \ci{a[6]},
 \ci{*(a + 6)}, or even (for the truly perverse) \ci{6[a]}.  Some people find one-liners and pointer arithmetic
 to have \ae{}sthetic appeal, and there are even cases where they may
@@ -22,15 +30,13 @@ be clearer than the more common methods. But they are an easy way to
 write impossible-to-debug code, and require mastery of a great number
 of details of C internals that are wholly unnecessary otherwise.
 
-The reader whose interest is piqued and would like to learn more about
-how C works and about the many alternatives that I did not mention here
-is referred to the authoritative and surprisingly readable reference
-for the language: \cite{kandr:c}.
-
 This optional section includes some of the more common alternatives that
 are commonly used among C programmers. You can get very far without
 knowing any of the following, and some of it is generally considered to
-be bad style.
+be bad style. The reader whose interest is piqued and would like to
+learn more about how C works and about the many alternatives that I
+did not mention here is referred to the authoritative and surprisingly
+readable reference for the language: \cite{kandr:c}.
 
 \paragraph{The obfuscatory if}\ckeyind{if} There is another way to write an \ci{if} statement. The following are equivalent:
 \begin{lstlisting}
@@ -47,15 +53,65 @@ Both have all three components: first the condition, then the `what to do if the
 condition is true' part, and then the `what to do if the condition is false'
 part. However, the first is more-or-less legible to anybody who knows basic English,
 and the second takes the reader a second to parse every time he or she
-sees it. Again, there are situations where the condensed form is useful,
-but you could live a successful career writing in C without ever using it.
+sees it. 
 
+The condensed form is primarily useful because you can put it on the
+right side of an assignment. For example, in Listing \ref{birds.c}, you will see the 
+following snippet:
+\begin{lstlisting}
+if (gsl_rng_uniform(r) > 0.5)
+    out->type  = 'd';
+else
+    out->type  = 'h';
+\end{lstlisting}
+It calls the GSL's random number generator to produce a random uniforn
+number between zero and one, and if the draw is greater than ${1\over 2}$,
+then \ci{out->type} is set to \ci{'d'}; else it is set to \ci{'h'}. With
+the obfuscatory if, these four lines can be reduced to one:
+\begin{lstlisting}
+out->type  = gsl_rng_uniform(r) > 0.5 ? 'd' : 'h';
+\end{lstlisting}
 
 \paragraph{Macros} \label{macros} 
 
-The other main use of the preprocessor is to define macros, which take
-a bit of text and expand it to more text. The most common example is
-expanding\\
+As well \ci{\#including} files, 
+the preprocessor also can define macros, which take
+a bit of text and expand it to more text. The easiest form is in
+defining constants, such as 
+\begin{lstlisting}
+#define ARRAY_SIZE 10
+\end{lstlisting}
+Notice that you do not use an equals sign with \ci{\#define}s.  You may
+have encountered the detail of C that all global varaibles must have
+constant size (due to how the compiler sets them up). Thus, if you
+attempt to compile the following program:
+\begin{lstlisting}
+int array_size  = 10;
+int a[array_size];
+
+int main(){
+    return;
+}
+\end{lstlisting}
+you will get an error like \bi{variable-size type declared outside of
+any func\-tion}.
+
+The easy alternative is to simply leave the declaration at the top of
+the file but move the initialization into \ci{main}, but you can also
+fix the problem with \ci{\#define}. The following program will compile
+properly, because the preprocessor makes sure that the compiler never
+even sees \ci{ARRAY\_SIZE}.
+\begin{lstlisting}
+#define ARRAY_SIZE 10;
+int a[ARRAY_SIZE];
+
+int main(){
+    return;
+}
+\end{lstlisting}
+
+
+You can also \ci{\#define} functions. The most common example is expanding\\
 \ci{MIN(a,b)}\\
 to:\\
 \ci{if (a $<$ b) a; else b;} .
@@ -63,16 +119,17 @@ to:\\
 But there are endless pitfalls to using macros, and since it is often
 difficult to visualize how a complex macro will expand, debugging
 a macro---or working out that it is the macro that is broken---is
-difficult.  If you do write macros and need to debug them, the \ci{-E} flag to \ci{gcc} will run only the \ind{preprocessor}, so you can
-see what expands to what.
+difficult.  If you do write macros and need to debug them, the \ci{-E}
+flag to \ci{gcc} will run only the \ind{preprocessor}, so you can see
+what expands to what.
 
-Here, by the way, is the actual code for the \ci{GSL\_MIN} macro;
+Here, by the way, is the actual code for the \ci{GSL\_MIN} macro from
+the \ci{<gsl/gsl\_math>} header file;
 it follows the first rule of macro writing, which is that everything
 should be in parentheses:\\
 \comment{\ci{\#include <gsl/gsl\_math.h>\\
 \#define GSL\_MIN(a,b) ((a) < (b) ? (a) : (b))} \cindex{GSL\_MIN}\\}
 \begin{lstlisting}
-#include <gsl/gsl_math.h>
 #define GSL_MIN(a,b) ((a) < (b) ? (a) : (b)) 
 \end{lstlisting}
 \cindex{GSL\_MIN} \cind{GSL\_MAX} is similarly defined.
@@ -144,14 +201,16 @@ free(another_vector);
 return out;
 \end{lstlisting}
 
-\paragraph{Switch}\ckeyind{switch} The \ci{switch} statement is a clean way to
-branch among many options. First, you will need a variable indicating
-a single character. For example, the \ci{get\_opt} function from the
-standard library will parse command line arguments; then the \ci{switch}
-command will branch depending on the value returned:
+\paragraph{Switch}\ckeyind{switch} The \ci{switch} statement is a
+clean way to branch among many options. First, you will need a variable
+indicating a single character. For example, Figure \ref{getopt} (page
+\pageref{getopt}) uses the \ci{getopt} function to read command line
+arguments. That function will return a single character, and then a
+\ci{switch} statment can branch depending on the value returned.
+\lstset{texcl=true} %For this whole section.
 \begin{lstlisting}
 char c;
-c = get_opt(...);
+c = get_opt(...); //See Section \ref{paramsec} for details.
 switch(c){
    case 'v':
         verbose++
@@ -164,6 +223,7 @@ switch(c){
         break;
 }
 \end{lstlisting}
+\lstset{texcl=false}
 So when 
 \ci{c == 'v'}, the verbosity level is increased,
 when \ci{c == 'w'}, the weighting function is called, 
@@ -196,35 +256,15 @@ There is more redundancy here---the name \ci{c} is repeated three times
 where in the \ci{switch} setup it was used once---but there is no risk
 of fall-through mistakes.
 
-
-\paragraph{Optimization} \index{optimization}
-The \cind{gcc} compiler can do a number of things to your code to make it
-run faster. For example, if you assign \ci{a = b + c}, it may replace
-every instance of \ci{a} with \ci{b + c}, or it may change the order
-in which lines of code are executed. To turn on \ind{optimization},
-use the \ci{-O3} flag when compiling with \ci{gcc}. [That's an `O'
-as in optimization, not a zero. There is also an \ci{-O1} and an \ci{-O2}, but as long as you are optimizing, why not go all out?]
-
-The problem with optimization, however, is that it makes debugging
-difficult. The program jumps around, making stepping through an odd
-trip, and when you ask to print the value of \ci{a}, you will get
-an error that there is no such variable defined.
-It also sometimes happens that you did not do your memory allocation duties
-quite right, and things went OK without optimization, but suddenly the
-program crashes when you have optimization on; the debugger will be some
-help, but you may just have to re-scour your code to find the problem.
-Thus, the \ci{-O3} flag is a final step, to be used only after you
-are reasonably confident that your code is debugged.
-
-\ckeyind{inline} 
-Finally, you may run into authors who give you advice about how to write
-faster code, telling you to use loops here and unroll them there, make
-frequent use of the \ci{inline} keyword, or order your commands based
-on memory usage instead of human logic. Ignore them. It is much more
-valuable to minimize the time you spend deciphering and debugging your
-code than shaving seconds off of your run time.  Write code to maximize
-readability for yourself and your fellow humans. If you want optimization,
-\ci{gcc -O3} will do almost all of these rearrangements for you.
+\summary{
+\item Short if statements can be summarized to one via the \ci{condition
+? true\_value : false\_value} form. 
+\item You can use the preprocessor to  \ci{\#define} constants an short
+functions. 
+\item A line can be a label via the \ci{label\_name:} form. This can be
+used for \ci{goto}s or for \ci{switch} statements. 
+\item You will never need any of these bits of syntax, but may find them to be convenient.
+}
 
 
 \section{Function pointers} \index{function pointers}
@@ -234,14 +274,14 @@ in memory, so we can refer to its address as well.
 
 What is a pointer to a function good for?  It lets us write
 Functions that will accept any function pointer and then use the
-pointed-to function, such as a bootstrap Function that takes in a
-statistic-calculating function and a data set and then returns the
-variance of the statistic, or a Function to search an input function
-for its largest value.\footnote{Functions calling functions is already
+pointed-to function.\footnote{Functions calling functions is already
 confusing enough, so for this section I will capitalize \airq{Function}
 to indicate a parent function that takes a function (lower case) as an
 input. This is merely typography, and you will see that there is no real
-difference between a parent Function and any other.}
+difference between a parent Function and any other.} For example, a
+bootstrap Function could take in a statistic-calculating function and
+a data set and then return the variance of the statistic, or a Function
+could search an input function for its largest value over a given range.
 
 \subsection{Types} Before we can start writing Functions to act on
 functions, we need to take the type of input function into
@@ -266,12 +306,12 @@ Thus, function pointers have types just like any other variable, and a
 Function that takes a function pointer as input will make the usual
 type-checks.
 
-A pointer declaration is just like any other declaration but with
+As you will recall, a pointer declaration is just like a declaration for the pointed-to type but with
 another star, like \ci{int *x}; the same goes for declaring function
-pointers, but there are extra parens. Here is a declaration for a
-function pointer that takes in a \ci{double} and returns a \ci{double}:
+pointers, but there are also extra parens. Here is a declaration for a
+function pointer that takes in a \ci{double} and returns an \ci{int}:
 \begin{lstlisting}
-double (*function_name) (double x);
+int (*function_name) (double x);
 \end{lstlisting}
 You can see that it is just like the usual \ci{int *x} sort of pointer
 declaration, but the function name is in parens.  The parentheses are not
@@ -282,7 +322,7 @@ Now you can put the function into your header line. A Function that
 applies a function to a \ci{gsl\_vector} would have a header like
 this:
 \begin{lstlisting}
-void apply (gsl_vector *v, double (*function_name) (double x));
+void apply (gsl_vector *v, int (*function_name) (double x));
 \end{lstlisting}
 
 \ckeyind{typedef}
@@ -290,13 +330,13 @@ Are you confused yet? Each component basically makes sense, but together
 it is cluttered and confusing. There is a way out: \ci{typedef}. By prepending
 that word before the above type declaration,
 \begin{lstlisting}
-typedef double (*double_to_double) (double x);
+typedef int (*double_to_int) (double x);
 \end{lstlisting}
-we have created an new type named \ci{double\_to\_double} that we can
+we have created an new type named \ci{double\_to\_int} that we can
 use like any other type. Now, the declaration of the \ci{apply} Function
 simplifies to:
-\begin{lstlisting}[emph={double_to_double,gsl_vector}]
-void apply (gsl_vector *v, double_to_double function_name);
+\begin{lstlisting}[emph={double_to_int,gsl_vector}]
+void apply (gsl_vector *v, double_to_int function_name);
 \end{lstlisting}
 
 \subsection{Putting \ci{typedef} to work}
@@ -338,7 +378,7 @@ double *array, int array\_len)}, that takes as arguments a function, an
 array, and the length of the array, and changes each element
 \ci{array[i]} to \ci{fn(array[i])}.
 
-Test your Function by creating an array of the natural number $1, 2,
+Test your Function by creating an array of the natural numbers $1, 2,
 3,\dots 20$ and transforming it to a list of squares.}
 
 \subsection{\ci{void}ing types} Forthcoming.
@@ -354,20 +394,22 @@ This requires prepending \ci{typedef} to the function pointer
 declaration in the last summary point.
 \item Once you have a \ci{typedef} in place, you can declare Functions
 that take functions, use the passed-in functions, and call the parent
-Function as you would expect. Given the \ci{typedef} You need neither
+Function as you would expect. Given the \ci{typedef}, you need neither
 stars nor ampersands for these operations.  
 \item If the input function can take multiple types of input, use a
 \ci{void *} to tell the compiler not to check types. Use this with
 caution.
 }
 
-\section{Data structures} Let us say that you have a few million
-observations to store on your computer. How will you organize them?
+\section{Data structures}\index{data structures} Let us say that you
+have a few million observations to store on your computer. How will you
+organize them?
 
 There are a few options, and choosing among them is not trivial. This
 section will consider three: the array, the linked list, and the binary
 tree.
 
+\index{strings!\ci{glib} library}
 This section adds yet another library to the mix: \cind{glib}, a library
 of general-use functions that every C programmer seems to reimplement.
 It includes a few features for string handling and other such
@@ -385,13 +427,26 @@ add to, remove from, and find elements within the structure.
 This game consists of a series of meetings between pairs of birds. Each
 bird can contribute to building a nest, in which case the other bird
 reaps a benefit of two \vocab{utils}, but the bird doing the work
-loses one \vocab{util} from energy expended.\footnote{Economists
-frequently refer to the utility that an agent gains from an action. 
-The util is a joke unit of measurement for agents' utility levels.}
+loses one util from energy expended.\footnote{The util is a joke unit of measurement for the quantity of utility an agent gets from an action.}
 Thus, if two birds cooperate, both gain one util; if one birds
 cooperates and the other does not, then the first loses a util and the
 other gains two; if both birds do not cooperate, then neither gains any
 utility at all.
+
+\begin{figure}[htb]
+\hspace {-0.5cm}
+\begin{center}
+\begin{tabular}{ccc}
+ & cooperate & defect \\
+\hhline{~--}
+cooperate &\multicolumn{1}{|c}{(1,1)} & \multicolumn{1}{c|}{(-1,2)} \\
+defect &\multicolumn{1}{|c}{(2,-1)} &  \multicolumn{1}{c|}{(0,0)} \\
+\hhline{~--}
+\end{tabular}
+\end{center}
+\caption{The payoff matrix for the prisoner's dilemma game.}
+\label{pdfig}
+\end{figure}
 
 This game is commonly known as a \vocab{prisoner's dilemma}, due to a
 rather contrived story about two separated prisoners who must choose
@@ -408,9 +463,27 @@ that always defect; let \airq{doves} be birds that always cooperate. In
 any one interaction, a bird gets a  better payoff as a hawk than as a dove.
 So it seems that over time, the doves would all die out. 
 
-Listing \ref{birds.c} shows half of a program to simulate the game
-among a flock of birds.  Begin reading at the \ci{main} function at the
-end. It begins by calling \ci{setup}, and then, for each period until
+Let us begin exploring the implementations of this simulation with a
+header file listing almost all of the functions involved. It begins by
+describing the basic structure that the rest of the functions depend
+upon, describing a single bird.
+
+The functions divide into two parts. The first are functions for
+each relevant action in the simulation: startup, births, deaths, and
+actual plays of the prisoner's delimma game. The second group are
+functions for flock management, such as counting the flock or iterating
+over every member of the flock. Program flow will alternate between
+these two sets of routines, such as when the main program starts its
+birth and death segment, which calls a function to iterate through the
+flock and test each bird's status, and that function calls the functions
+to generate new birds.
+
+\birdfig{birds.h}{Header file for the birds.}
+
+Listing \ref{birds.c} shows the first half of the program's functions.
+As with any program, a good way to begin reading
+it is to follow the stack: begin reading at the \ci{main} function at the
+end, which begins by calling \ci{setup}, and then, for each period until
 the end of the simulation, calls the \ci{flock\_plays} and then the
 \ci{count} function. Every $50^{\rm th}$ period, it commits the result
 to the database.
@@ -425,36 +498,24 @@ function, which checks for each bird whether it lives or dies.
 
 \birdfig{birds.c}{The birds.}
 
-Some of these functions are required by the files handling data structures
-below, so the function headers should all be in a header file, for
-easy reference:
-
-\birdfig{birds.h}{Header file for the birds.}
-
-You can see that the header file expects the existence of a few more
-functions, that represent the basics for any data structure: functions
-for initialization, adding elements, deleting elements, and finding
-elements. Below, you will also see functions for iterating through the
-entire flock.
-
-As you will see, each data structure handles these operations differently.
+Now for the flock management routines, which will be implemented three
+times: as an array, as a list, and as a binary tree.
 
 \subsection{Arrays} An array is as simple as data representation can
 get: just write each element right after the other. The matrices
-throughout this book are arrays of this type.
+and vectors throughout this book are arrays of this type.\footnote{The glib
+library also includes its own implementation of a self-managing array
+that internally calls \ci{realloc} as necessary.}
 
-However, as you have no doubt observed to this point, you basically need
-to know how large the data set is when you initialize the array. This is
-OK for data sets, but not so good for simulations.
-
-The real failing of arrays comes in adding and deleting elements. For
-adding elements, the simulation has to call \ci{realloc} every time the
+The real failing of arrays comes in adding and deleting elements. Since
+the array is given a set size at initialization,
+the simulation has to call \ci{realloc} every time the
 list expands. If you are lucky, \cind{realloc} will not move the array
 from its current location, but will simply find that there is more free
 space for the array to grow. If you are not lucky, then the array will
 have to be moved in its entirety to a new, more spacious home.
 
-An array can not have a hole in the middle, so elements can not just be
+An array can not have a hole in the middle, so elements can not be
 deleted by freeing the memory. There are a few solutions, none of which
 are very pleasant. The last element of the list could be moved in to the
 space, requiring a copy, a shrinking of the array, and a loss of order
@@ -465,8 +526,8 @@ by setting their \ci{id} to \ci{-1}. This means that as the program runs,
 more and more memory is used by dead elements, and the rest of the system
 must check for the marker at every use.
 
-As for finding an element, we got lucky here because the \ci{id} could
-be matched one-to-one with the array indices. Notice how
+As for finding an element, we got lucky here because the \ci{id} 
+matches one-to-one with the array indices. Notice how
 \ci{add\_to\_flock} takes pains to ensure that the \ci{id} and array
 index will always match.
 
@@ -474,7 +535,7 @@ index will always match.
 is that birds are copied in, but never eliminated. Dead birds will eventually
 pile up.}
 
-\subsection{Linked lists} A linked list is a set \ci{struct}s connected
+\subsection{Linked lists} A linked list is a set of \ci{struct}s connected
 by pointers. The first \ci{struct} includes a \ci{next} pointer, that
 points to the next element, et cetera; see Figure \ref{listfig}.
 
@@ -489,10 +550,11 @@ points to the next element, et cetera; see Figure \ref{listfig}.
 
 The linked list is a favorite for agent-based simulation, because birth
 and death is easy to handle.  Adding an element to a linked list is
-simple: create a new node anywhere, and replace the \ci{NULL} pointer at
-the end with a pointer to the new node. Deleting a node is also simple:
-take the pointer pointing to the node, and pass it through so that it
-instead points to the node's successor.
+simple: create a new node, and replace the \ci{NULL} pointer at
+the end of the list with a pointer to the new node. Deleting a node is also simple:
+to delete bird 2, simply reroute the \ci{next} pointer from bird 1 to bird 2 so
+that it points from bird 1 to bird 3, and then free the memory holding
+bird 2.
 
 But the real failing of the linked list is the trouble of finding an
 arbitrary element.  In an array, finding the ten thousandth element is
@@ -501,16 +563,33 @@ You can see in the code below
 that glib provides a \ci{g\_list\_nth\_data} function to return the
 $n^{\rm th}$ element of the list, which makes it look simple,
 but the only way that that function can find the ten
-thousandth member of the \ci{flock} is via 9,999 \ci{->next}
-steps from the head of the list. In fact, if you compile and run this
-program, you will see that it runs much more slowly than the tree and
-array versions.
+thousandth member of the \ci{flock} is to start at the head of the list
+and take 9,999 \ci{->next}
+steps. In fact, if you compile and run this
+program, you will see that it runs much more slowly than the array and tree 
+versions.
+
+\labelitemi The \ci{g\_list\_foreach} function is also worthy of note. It implements
+exactly the sort of apply-function-to-list setup implemented above. It
+takes in a list and a function, and internally applies the function to
+each element. Notice also that it uses void pointers to do this, which
+explains why the \ci{bird\_plays} and \ci{birth\_or\_death} functions
+above took \ci{void*} arguments, and begin by casting their arguments to
+their correct type.
+
+\labelitemi As for adding and removing, the glib implementation of the list takes in
+a pointer to a \ci{GList} and a pointer to the data to be added, and
+returns a new pointer to a \ci{GList}. The input and output pointers
+could be identical, but since this is not guaranteed, you will always
+want to use the form below, that reassigns the list to a new value for
+every add/delete. For example, the flock starts as \ci{NULL}, and is
+given its first non-\ci{NULL} value when the first item is inserted.
+
+
 
 \birdfig{listflock.c}{The birds, linked list version. The fatal flaw
 is that finding a given bird requires traversing the entire list every
 time.}
-
-
 
 
 \subsection{Binary trees} The binary tree takes the linked list a step further
@@ -522,7 +601,7 @@ directions to an element are now less than trivial---to get to
 But with eight data points in a linked list, one would need up to seven
 steps to get to any element, and on average 3.5 steps. In a tree, the
 longest walk is three steps, and the average is 1.625 steps. Generally,
-the linked list will require on the order of $n$ steps, and a b-tree
+the linked list will require on the order of $n$ steps to find an item, and a b-tree
 will require on the order of $\ln(n)$ steps.
 
 \begin{figure}[htb]
@@ -544,13 +623,7 @@ This adds some complication, because you now need to associate with each
 tree a function for comparing keys. In the code below, \ci{g\_tree\_new}
 initializes a tree using the \ci{compare\_birds} function.
 
-The process of adding an element is also complicated by the fact that
-a tree is only useful if it remains \airq{balanced}, meaning that
-there are about as many left-pointing elements as right-pointing
-elements. After all, if every element were to the left of the element
-above it, you would just have a linked list.
-
-In the next chapter, you will see an interesting interface for a binary
+In the next chapter, you will see an interesting implementation of a binary
 tree: a database. Since databases require fast access to every element, 
 it is natural that they would internally structure data in a binary
 tree, and this is exactly how SQLite operates internally.
@@ -561,18 +634,23 @@ retrieve them. Thus, the key for each element must be unique.
 
 The added complication solved many of the problems above. As with the
 list, inserting and deleting elements does not require major
-\ci{realloc}ing, although maintaining balance may induce some shuffling. 
+\ci{realloc}ing, although there is often minor internal reshuffling to
+keep the branches of the tree about even.
 With the key and short chains, finding an element is much faster.
 However, for this to work, we need to maintain a distinct key for every
 bird.
 
+This listing begins with a function to compare two keys, appropriately
+named \ci{compare\_keys}. When the tree
+is created (via \ci{g\_tree\_new} in the \ci{flock\_init} function), it
+uses \ci{compare\_keys} as a basis for its sorting of birds.
 
 \birdfig{treeflock.c}{The birds, linked list version. The fatal flaw
 is the complication in maintaining the key for every bird. You still do
 not know whether a given bird is still in the tree or not.}
 
 
-\section{Parameters} \index{Command line!arguments on}
+\section{Parameters} \index{Command line!arguments on}\label{paramsec}
 Your simulations and analyses will require
 tweaking. You will want to try more agents, or you may want your program
 to load a data set from a text file to a database for one run and then
@@ -586,9 +664,10 @@ to recompile every time you change parameters.
 The second option is to put the data in a parameter file. There are
 various libraries that will read parameter files in various formats that
 you can find online, and once you have learned about how to read data
-from a text file to a database in Chapter \ref{sql}, you will have
-another easy means of reading in a text file of parameters. 
-The implementation is fairly easy given the available tools, and it is
+from a text file to a database in Chapter \ref{sql}, you will be able to
+use that as another easy means of reading in a text file of
+parameters; see the exercise on page \pageref{paramex} for details.
+The parameter-file method is fairly easy given the available tools, and it is
 moderately easy to change a text file, since you won't have to recompile
 after changing it.
 
@@ -616,12 +695,13 @@ expect to see those two names everywhere.
 Figure \ref{argv} shows the rudimentary use of \ci{argc} and \ci{argv}.
 Here is a sample usage from my command line:
 \begin{lstlisting}
->>>  /home/klemens/argv one 2 --three fo\ ur
+>>>  /home/klemens/argv one 2 --three fo\ ur "cinco -- \"five\""
 command line argument 0: /home/klemens/argv
 command line argument 1: one
 command line argument 2: 2
 command line argument 3: --three
 command line argument 4: fo ur
+command line argument 5: cinco -- "five"
 \end{lstlisting}
 Argument zero (\ci{argv[0]}) is always the name of the command itself.
 Some creative programs run differently if they are referred to by
@@ -630,7 +710,8 @@ After that, the elements of \ci{argv} are the command line broken at
 the spaces, and could be dashes, numbers, or any other sort of text. As
 you can see from the parsing of \ci{fo\textbs{} ur}, a space prepended
 with a backslash is taken to be a character like any other, rather than an
-argument separator.
+argument separator. Argument five shows that everything between a pair
+of quotation marks is a single argument.
 
 For some purposes, this is all you will need to set program options from your
 command line. For example you could have one program to run three
@@ -693,7 +774,7 @@ converts ASCII text to integers, and the function
 \cind{atof} converts text to \ci{float}s. 
 
 Second, \ci{optarg} also sets the variable \ci{optind} to indicate the
-position in \ci{argv} that it last looked at. Thus, line 38 was able to
+position in \ci{argv} that it last visited. Thus, line 38 was able to
 check whether there are any non-switch arguments remaining, and line 39
 could parse the remaining argument (if any) without \ci{getopt}'s help.
 
@@ -703,19 +784,33 @@ program prints a help message and exits. Every variable that the
 user could forget to set via the command line has a default value.
 
 \section{More tools} 
-Since C is so stable and widely used, there is an ecosystem of tools built around
+Since C is so widely used, there is an ecosystem of tools built around
 helping you easily write good code.  Beyond there debugger, here are a
 few more programs that will make your life as a programmer easier.
 
 \subsection{Help} \index{help, getting}
 You probably have have all the manuals for the programs listed in this
-chapter on your hard drive now. Most of them are in \TeX info format,
-which you can read by commands such as \bi{info gcc} or \bi{info make}. If
+chapter on your hard drive now. 
+
+Over time, documentation has grown increasingly interactive and
+hyperlinked. The original UNIX systems included manual pages via the
+\ci{man} command, and there are manual pages for most of the C functions
+in the standard libraries. Try \bi{man printf} or \bi{man atoi},
+for example.
+
+\index{\TeX info@texinfo}
+By the mid-90s, the \TeX info format emerged. \TeX info documents
+require a \TeX info reader (EMACS can serve as one, or there is a
+standalone version), which can navigate among links and tables of
+contents in the documentation.
+\TeX info documentation is a part of the GNU coding standards, so you
+are generally guaranteed that parts of the GNU toolchain, such as
+\ci{gcc} and the version of \ci{make} that you are probably using, will
+have \TeX info documentation.
+You can read by commands such as \bi{info gcc} or \bi{info make}. If
 you have trouble navigating in the \bi{info} program, then you can
 get help with \bi{info info}.
 
-There are manual pages for most of the C functions in the standard
-libraries. Try \bi{man printf} or \bi{man atoi}, for example.
 
 This help may not be available on every system---it's a bit of
 a crap shoot. But all of these documents are online. Just enter the
@@ -725,21 +820,22 @@ turn up exactly the documentation that is missing from your system,
 formatted for the web.
 
 \subsection{Make} \label{make} \index{make@\bi{make}|(}
-Once your program has many sections (or sooner), you will want to use
-\bi{make} to automate the process of turning your mess of files into
-a C program.  It is a program entirely separate from C, but which
-is always found wherever compilers are.
+As you have noticed by now, compiling a program can sometimes be a
+rather complex process, requiring that you include flags for warnings,
+debugging symbols, library locations, header files, and who knows what
+other details.  The \bi{make} program takes care of these things for
+you. You write a Makefile (capital M) that describes what source files are
+needed for compilation and the flags the compiler needs on your system, and then 
+\bi{make} assembles the elaborate command line required to invoke
+\ci{gcc}. Because assembling that command line by hand is so time
+consuming and error-prone, you are strongly encouraged to have a Makefile
+for each program.  Many programs, such as \bind{gdb}, \ind{vi} and
+\ind{EMACS}, will even let you run \bi{make} without leaving the program.
 
-Typically, you have ten \ci{.c} files, which will compile
-to ten \ci{.o} files, which will then be linked into one executable.
-You can describe the situation using a
-text file named \ci{Makefile} (capital M). The file will specify a
-series of dependencies: \ci{file1.o} depends on \ci{file1.c}, but does
-not depend on \ci{file2.c}, while \ci{run\_me} depends on both {\tt
-file1.o} and \ci{file2.o}.  Then, it specifies what actions need to be taken
-when a file is dependent on something which has changed.  For example,
-Figure \ref{makefig} is a Makefile for a program named \ci{run\_me}, which has two {\tt
-.c} files and one header file.
+For concreteness, 
+Figure \ref{makefig} is a Makefile for a program named \ci{run\_me},
+which has two {\tt .c} files and one header file. It is not very far
+removed from the sample Makefile in the online code supplement.
 
 \begin{figure*}
 \begin{verbatim}
@@ -761,64 +857,87 @@ file2.o: file2.c my_headers.h       #User-defined
 \label{makefig}
 \end{figure*}
 
-The white space at the beginning of the indented lines is a single tab,
-not a bunch of spaces.  C never cares about this, but \bi{make}
-does.
+The \bi{make} program does two types of calculation: expanding variable
+names and folowing dependences. 
 
-\paragraph{The executive summary} This Makefile is reprinted from the \airq{Setup}
-section of the Apophenia documentation, at
-\url{http://apophenia.info/doc}, and in the sample code at 
-\samplecodelocation. Cut and paste it into a file named
-\bi{Makefile}, taking care to retain the tabs, and put that file in
-the same directory as your source code. Then, change the first two lines
-to include one object file for each of your source files (you may only
-have one), and
-to the program name you prefer.  You may also need to change the
-\bi{LINKFLAGS} line if you get errors from the linker about symbols
-not found.
+Variable names, by custom, are in all caps, and for convenience are
+primarily grouped at the top of the file. When \bi{make} sees text of
+the form \ci{\$(VAR)} in the Makefile, then it will substitute the
+definition of \ci{VAR} into that point. This is very much in the
+blind text-replacement style of the C preprocessor. The \ci{\$<} and
+\ci{\$@} variables are special variables that indicate the dependency
+and target, respectively, which brings us to the discussion of
+dependency handling.
 
-Having saved those changes, just run
-\bi{make} from the command prompt to compile.
-Also, many programs will let you run
-make from within the program. \bi{gdb} lets you do this,
-as will most implementations of \ind{vi} and \ind{EMACS}.
+The remainder of the file is a series of target/dependency pairs and
+actions. A \airq{target} is something to be produced, such as an object
+file or an executable. On page \pageref{latexmake}, there is a Makefile
+to produce PDFs and graphics. The \airq{dependency} is the file
+containing the data used to produce the target. An object file depends
+on the C source code defining the functions and structures, an
+executable depends on the object files being linked together, and a PDF
+document depends on the underlying text. Notice that in most of these
+cases, the dependency is data that you yourself wrote, while the target is
+always computer generated. 
+
+The lines with colons, such as \ci{file1.o: file1.c my\_headers.h}, are
+target/dependency descriptions: the single item on the left is the
+target, and the one or several items on the right are the files upon
+which the target depends.
+
+After each target line, there are instructions for building the target
+from the dependencies. For a simple C program, the instructions are one
+line (typically a call to \ci{gcc}). The Makefile on page
+\pageref{latexmake} shows some more involved target build scripts that
+span several lines. 
+
+An important annoyance: the lines describing the building
+process are tab-indented. If your text editor replaces tabs with a set
+of spaces, \ci{make} will fail.
+
+Having described the format of the Makefile, let us go over the process
+that Make will go through when you type \bi{make} on the command line.
+The first target in a Makefile is the default target, and is where
+\bi{make} begins if you do not specify a target on the command line. So
+\ci{make} looks at the target specification, and, using its powers of
+variable expansion, sees that \ci{run\_me} depends on \ci{file1.o} and
+\ci{file2.o}. Let us assume that this is the first time the program is
+being built, so neither object file exists. Then \ci{make} will search
+for a rule to build them, and thus digresses to the later targets.
+There, it executes the command specified by \ci{\$(COMPILE)}.
+Having created the targets, it then returns to the original target, and
+runs the command to link together the two object files. 
+
+Let us say that you then modify \bi{file1.c} (but none of the other
+files) and then call \bi{make} again. The program again starts at the
+top of the tree of targets, and sees that it needs to check on
+\bi{file1.o} and \bi{file2.o}. Checking the dependencies for
+\bi{file1.o}, it sees that the file is not up-to-date, because its
+dependency has a newer time stamp.\footnote{What should you do if the
+time stamp on a file is broken, because it was copied from a computer in
+a different time zone or was otherwise mis-stamped? The \bind{touch}
+command will update the time stamp on a file to the current time.}
+So \bi{file1.o} is recompiled, and \bi{run\_me} then recreated. Notice
+that \bi{make} knows that \bi{file2.o} does not need to be recompiled,
+and so it does not bother to do so. In a larger project, where
+recompilation of the whole project can take several seconds, \bi{make}
+will thus save you time as well as typing.
 
 
-\paragraph{The details} For the curious and those who need to modify
-the standard Makefile, here are some details about its format.
-
-At the top are a list of variables, such as the list of object file names, the final program, et cetera.
-When \bi{make} encounters \ci{\$(PROGNAME)}, it will insert the value of the variable \ci{PROGNAME} in that
-slot, so the line 
-\begin{lstlisting}
-gcc $(CFLAGS) $(OBJECTS) $(LINKFLAGS) -o $(PROGNAME)
-\end{lstlisting}
-will translate into
-\begin{lstlisting}
-gcc  -g -Wall file1.o file2.o -L/usr/local/lib -lgsl -lgslcblas -lsqlite -o run_me
-\end{lstlisting}
-which looks an awful lot like what we had typed before (but not quite---this does the linking step only).
-
-The remainder of the file are dependency lists and commands. Begin
-with the second set: \bi{file1.o} depends on \bi{file1.c} and \bi{my\_headers.h}, meaning that if either file is newer than \bi{file1.o}
-(as indicated by the time stamp), then you will need to recompile \bi{file1.o}. \bi{make} will do this by using the command which begins with
-\bi{gcc} in the subsequent line. No need to go in to the details, but
-this line will expand to \bi{gcc -g -Wall -c file1.c -o file1.o}. This
-is the compilation step, without the linking. \bi{file2.o} has similar
-dependencies.
-
-The first dependency set says that \bi{\$(PROGNAME)}---that is, \bi{run\_me}---depends on all of the object files. Meanwhile, the object files
-depend on the \bi{.c} files and \bi{my\_header.h}, as above. So when
-you edit \bi{file1.c} and then type \bi{make} at the command prompt,
-\bi{make} will see that \bi{file1.o} is now out of date and needs
-recompilation. This change cascades: \bi{run\_me} is now out of date,
-and needs to be re-linked.
-
-Notice that \bi{file2.o} did not get recompiled, since it is still
-up-to-date. Thus, not only will \bi{make} save you typing, it will also
-save you time, since you will usually be hacking at one file at a time,
-so there is no point waiting for the other object files to recompile
-to exactly what they were before. 
+\exercise{Take one of the sample programs you wrote in Chapter
+\ref{c_crash} and create a directory for it.
+\begin{itemize}
+\item Create a new directory, and copy over the \bi{.c} file. 
+\item Copy over the sample \bi{Makefile} from the online sample code.
+\item Modify the \ci{PROGNAME} and \ci{OBJECTS} line to correspond to
+your project. 
+\item  You may also need to change the \bi{LINKFLAGS}
+line if you get errors from the linker about symbols not found.
+\item Type \ci{make} and verify that the commands it prints are what
+they should be, and that you get the object and executable files you
+expected.
+\end{itemize}
+}
 \index{make@\bi{make}|)}
 
 \subsection{Memory debugger} \index{memory debugger|see{valgrind}} \index{Valgrind|(}
@@ -830,15 +949,14 @@ data. Later on in the program, you do something innocuous with your bad
 data and get a segfault. This is a pain to trace using \bi{gdb}, so
 there are packages designed to handle just this problem.
 
-The first alternative is \ind{Electric Fence}, a
-library by Bruce Perens that allocates memory so that all memory
-mis-allocations and mis-reads will immediately crash.  That means that
-the debugger will stop on the line with the error, instead of continuing
-along with its bad data, so your debugger will give you much more useful
-information.  Electric Fence works by redefining \cind{malloc} in 
-its library. To use it, you would recompile the function
-using the efence library (adding \bi{-lefence} to the compilation
-command).
+The first alternative is \ind{Electric Fence}, a library by Bruce Perens,
+available via your package manager. It allocates memory so that all memory
+mis-allocations and mis-reads will immediately crash, so
+the debugger will stop on the line with the error, rather than continuing
+along with bad data. Electric Fence works by redefining \cind{malloc}
+in its library. To use it, you would simply recompile the program using
+the efence library, by either adding \bi{-lefence} to the compilation command
+or the \ci{LINKFLAGS} line in your Makefile.
 
 
 Another option is \ind{Valgrind}, a program that will
@@ -883,11 +1001,10 @@ This method also works for any other text files you have in your
 life, such as papers written in \LaTeX, HTML, or any other text-based
 format. For example, this book is under revision control.
 
-The standard revision control software (at the moment) is named
-subversion; if it is not already installed, it is probably available as
-a package for the system you are using. For usage, the reader is referred
-to subversion's own detailed manual describing set-up and operation from
-the command line.
+There is no universal standard revision control software, but the
+Subversion package is readily avialable via your package manager (if it is
+not already installed) For usage, the reader is referred to subversion's
+own detailed manual describing set-up and operation from the command line.
 
 If subversion is not readily available, the next best is its predecessor,
 CVS, which is well-supported and even has a number of graphical
@@ -923,12 +1040,48 @@ run a modestly complex program through the profiler, because, like the
 debugger's backtrace, its output provides another useful view of how
 functions call each other.
 
-\exercise{At this point you have a few programs with two or more
-functions. [The profiler gets confused if your program only has a
-\ci{main} and no subfunctions.] Run the profiler as above and have a
-look at the output. Are the calls as you had expected? If you have
-several assertions (you should), try recompiling with -DNDEBUG and see
-how the profiler timings change.}
+\exercise{Add the \ci{-pg} switch to the Makefile in the birds
+directory and check the timing of the three different versions. }
+
+\exercise{In Chapter \ref{c_crash}, you wrote a number of short programs
+with assertions.  [For this exercise, pick a program where \ci{main}
+calls at least one other function in your code, since the profiler gets
+confused by programs that only contain a \ci{main} function.] Profile
+the program's timing, then re-profile it with -DNDEBUG and see how the
+profiler timings change.
+
+If the program is too fast for the profiler, then rename \ci{main} to
+\ci{internal\_main} and write a new \ci{main} function with a \ci{for}
+loop to call \ci{internal\_main} ten thousand times.}
+
+\paragraph{Optimization} \index{optimization}
+The \cind{gcc} compiler can do a number of things to your code to make it
+run faster. For example, if you assign \ci{a = b + c}, it may replace
+every instance of \ci{a} with \ci{b + c}, or it may change the order
+in which lines of code are executed. To turn on \ind{optimization},
+use the \ci{-O3} flag when compiling with \ci{gcc}. [That's an `O'
+as in optimization, not a zero. There is also an \ci{-O1} and an \ci{-O2}, but as long as you are optimizing, why not go all out?]
+
+The problem with optimization, however, is that it makes debugging
+difficult. The program jumps around, making stepping through an odd
+trip, and if \ci{a} is optimized out, then you can not check its value.
+It also sometimes happens that you did not do your memory allocation duties
+quite right, and things went OK without optimization, but suddenly the
+program crashes when you have optimization on; the debugger will be some
+help, but you may just have to re-scour your code to find the problem.
+Thus, the \ci{-O3} flag is a final step, to be used only after you
+are reasonably confident that your code is debugged.
+
+\ckeyind{inline} 
+Finally, you may run into authors who give you advice about how to write
+faster code, telling you to use loops here and unroll them there, make
+frequent use of the \ci{inline} keyword, or order your commands based
+on memory usage instead of human logic. Ignore them. It is much more
+valuable to minimize the time you spend deciphering and debugging your
+code than shaving seconds off of your run time.  Write code to maximize
+readability for yourself and your fellow humans. If you want optimization,
+\ci{gcc -O3} will do almost all of these rearrangements for you.
+
 
 
 
