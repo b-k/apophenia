@@ -135,14 +135,14 @@ debugging, and output.
 \item Decompress the \bi{.zip} file, go into the directory thus created, and compile the
 program with the command \bi{gcc hello\_world.c}. If you are using an
 IDE, see your manual for compilation instructions.
+\item If all went well, you will now have a program in the directory
+named \bi{a.out}. From the command line, you can execute it using
+\bi{./a.out}.
 \end{itemize}
 (continued)
 }
 \exercise{(continued)
 \begin{itemize}
-\item If all went well, you will now have a program in the directory
-named \bi{a.out}. From the command line, you can execute it using
-\bi{./a.out}.
 \item If that basic compilation went well, you may also want to try the
 \bi{Makefile} included the \bi{.zip} file. See the instructions in the
 file.
@@ -252,8 +252,12 @@ Most of the work you will be doing will be simple assignments. For example,
 \begin{lstlisting}
 ratio = a / b;
 \end{lstlisting}
+
+\noindent
 will find the value of \ci{a} divided by \ci{b} and put the
-value in \ci{ratio}. Notice that there is a semicolon at the end of
+value in \ci{ratio}. Computer scientists often write this as \ci{ratio}
+$\leftarrow$ \ci{a/b}, which nicely gets across an image of \ci{ratio}
+taking on the value of \ci{a/b}. Notice that there is a semicolon at the end of
 the line; you will need a semicolon at the end of everything but the few
 exceptions I mention below.\footnote{The number one cause of compiler
 complaints like ``line 41: \ind{syntax error}'' is a missing semicolon on line 40.} All of the usual operations work: \ci{+

@@ -159,19 +159,21 @@
 \def\gi#1{{\bf\tt #1}}
 \def\gitwo#1{{\tt #1}}
 
-\long\def\codefig#1#2{
+\long\def\codefigure#1#2#3{
 	\begin{figure}[htb]
-    \indwcsub{sample code}{#1.c}
+    \indwcsub{sample code}{#1#2}
 	\hrule\vskip4pt
 \lstset{frame=,showstringspaces=false, basicstyle=\small, emphstyle=\bf\small,%
 language=C, breaklines=true}
-\lstinputlisting{sources/#1.c}
+\lstinputlisting{sources/#1#2}
 	\hrule
 
-\caption{#2 [Online source: \bi{#1.c}]}\label{#1}
+\caption{#3 [Online source: \bi{#1#2}]}\label{#1}
     \setlistdefaults
 	\end{figure}
 }
+
+\long\def\codefig#1#2{\codefigure{#1}{.c}{#2}}
 
 \long\def\birdfig#1#2{
 	%\begin{figure}[htb]

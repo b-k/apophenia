@@ -22,19 +22,41 @@ beats inverting matrices by hand, but as computation goes, many stats
 packages are still relatively slow, and that slowness can make otherwise
 useful statistical methods infeasible.
 
+\lstset{numbers=left, numberstyle=\scshape}
+\codefig{timefisher}{C code to time a Fisher Exact test. It runs the same
+test 10,000 times.}
+
+\codefigure{Rtimefisher}{}{R code to do the same test as Figure
+\ref{fisher}.}
+\lstset{numbers=none}
+
 R and Apophenia use identical C code for doing the \ind{Fisher
-exact test}, so it makes a good basis for comparison.\comment{The
+exact test}, so it makes a good basis for comparison.  Figures
+\ref{timefisher} and \ref{Rtimefisher} show programs in C and R
+(respectively) that will run a Fisher Exact test 10,000 times on the
+same data set.  You can see that the C program is generally a bit more
+verbose: there is a one-to-one correspondence between lines 3--8 of the
+first and lines 1--6 of the second, but those lines are longer in C,
+and the C program has some preliminary and concluding code that the R
+script did not have.
+
+On my laptop, Figure \ref{timefisher} runs in
+10.1 seconds, while Figure \ref{Rtimefisher} does the same work in nine
+minutes---over fifty times as long.\footnote{The online source to which
+the caption refers is \samplecodelocation, so if you already have R and
+a C compiler set up, you can download the code and try these timing
+tests on your own computer.} So the investment of a little more
+verbosity and a few extra stars and semicolons returns a fifty-fold
+speed gain. Nor is this just an isolated test case: I can't count how
+many times people have told me stories about an analysis or simulation
+that took days or weeks in a stats package but ran in minutes after they
+rewrote it in C.
+\comment{The
 Apophenia code was literally cut and pasted from R's source code. The
 only key change was that instances of \ci{R\_malloc} were replaced by
 \ci{malloc}. This is not the place for a full exposition on memory
 management in packages like R, but as the example shows, its basic design
-emphasizes minimal maintenance at the cost of speed.} On my laptop,
-a C program using Apophenia does 10,000 of these tests in 10.1 seconds;
-a minimal R script does the same work in nine minutes---over fifty times
-as long. Nor is this just an isolated test case: I can't count how many
-times people have told me stories about an analysis or simulation that
-took days or weeks in a stats package but ran in minutes after they
-rewrote it in C.
+emphasizes minimal maintenance at the cost of speed.}
 
 OLS used to be the only technique that we had the computing power to
 actually implement. But when you can do a maximum likelihood search
