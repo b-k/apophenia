@@ -23,6 +23,7 @@ bootstrapping and jackknifing are methods of getting a variance out of
 data that, by all rights, should not be able to give you a variance. 
 
 \section{Random number generation}\index{random numbers|(}\label{randomnumbers}\label{rngs}
+\vocabmarker{random number generators}
 Random number generators are not random: given the same setup, they
 will produce the same value every time you use them. To lay-intuition,
 this is not really \airq{random}, but for the programmer, it is wonderful,
@@ -38,7 +39,7 @@ decimal places.
 Of course, using the same stream of numbers every time creates the
 possibility of getting a lucky draw, where \airq{lucky} can mean any of a
 number of things. The solution is a fixed process of pseudorandom
-number generation plus a varying initializing seed. The GSL implements
+number generation plus a varying initializing \vocab{seed}. The GSL implements
 such a process.
 
 
@@ -454,7 +455,7 @@ global properties of the model that improve in accuracy as the number of
 draws $\to \infty$.
 \item The variance of the Monte Carlo estimation of a parameter tends to
 mirror the variance of the underlying parameter. The maximum likelihood
-estimator for a parameter achieves the Cramer-Rao lower bound, so the
+estimator for a parameter achieves the Cram\'er-Rao lower bound, so the
 variance of the Monte Carlo estimate will only be worse. For reasonable
 parameters, this is not a problem, but in extreme cases, the Monte Carlo
 estimate may not converge to a consistent value.
@@ -506,7 +507,7 @@ bootstrapping, even if that estimate overstates the variance, then use
 that instead of bootstrapping. Otherwise, you dishonor your name, and
 bring shame to your research group.}
 
-\subsection{Creating random samples} \index{bootstrap}
+\subsection{Creating random samples} \vocabmarker{jackknife}\blindvocab{bootstrap}
 \index{jackknife|(textbf}
 The primary difference between bootstrapping and jackknifing is that
 the bootstrap takes a series of draws with replacement from a data set,
@@ -614,7 +615,7 @@ More forthcoming, but notice that the \ind{simulated annealing}
 algorithm from Chapter \ref{mle} was such an algorithm.
 
 
-\subsection{The curse of dimensionality}\index{Gibbs sampling}
+\subsection{The curse of dimensionality}
 
 If your data is described by
 many parameters, then getting a good view of the distribution can require
@@ -629,7 +630,7 @@ best value of $x_1$, keeping
 $(x_2, \dots, x_{20})$ fixed. Then, search for $x_2$, keeping
 $(x_1, x_3,  \dots, x_{20})$ fixed. Repeat until the $\xv$ converges.
 
-This is known as Gibbs sampling.
+This is known as \vocab{Gibbs sampling}.
 The method is popular for Bayesian techniques, but is also applicable in
 other contexts.
 

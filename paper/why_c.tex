@@ -23,7 +23,7 @@ packages are still relatively slow, and that slowness can make otherwise
 useful statistical methods infeasible.
 
 \lstset{numbers=left, numberstyle=\scshape}
-\codefig{timefisher}{C code to time a Fisher Exact test. It runs the same
+\codefig{timefisher}{C code to time a Fisher exact test. It runs the same
 test 10,000 times.}
 
 \codefigure{Rtimefisher}{}{R code to do the same test as Figure
@@ -31,14 +31,17 @@ test 10,000 times.}
 \lstset{numbers=none}
 
 R and Apophenia use identical C code for doing the \ind{Fisher
-exact test}, so it makes a good basis for comparison.  Figures
-\ref{timefisher} and \ref{Rtimefisher} show programs in C and R
-(respectively) that will run a Fisher Exact test 10,000 times on the
-same data set.  You can see that the C program is generally a bit more
-verbose: there is a one-to-one correspondence between lines 3--8 of the
-first and lines 1--6 of the second, but those lines are longer in C,
-and the C program has some preliminary and concluding code that the R
-script did not have.
+exact test}, so it makes a good basis for comparison.\footnote{That is,
+if you download the source code for R's \ci{fisher.test} function,
+you will find a set of procedures written in C.  Save for a few minor
+modifications, the code underlying the \ci{apop\_test\_fisher\_exact}
+function is line-for-line identical.} Figures \ref{timefisher} and
+\ref{Rtimefisher} show programs in C and R (respectively) that will run
+a Fisher exact test 10,000 times on the same data set.  You can see that
+the C program is generally a bit more verbose: the steps taken in lines
+3--8 of the C code and lines 1--6 of the R code are identical, but those lines
+are longer in C, and the C program has some preliminary and concluding
+code that the R script did not have.
 
 On my laptop, Figure \ref{timefisher} runs in
 10.1 seconds, while Figure \ref{Rtimefisher} does the same work in nine
@@ -61,7 +64,7 @@ emphasizes minimal maintenance at the cost of speed.}
 OLS used to be the only technique that we had the computing power to
 actually implement. But when you can do a maximum likelihood search
 or Monte Carlo simulation in reasonable time, you can write models
-that rely on fewer false assumptions. The Monte Carlo examples in Section
+that rely on fewer false assumptions. For example, the Monte Carlo examples in Section
 \ref{billiondraws} were produced using over a billion draws from $t$
 distributions. If your stats package can't produce a few hundred thousand 
 draws per second (some can't), such work will be unfeasibly
@@ -75,10 +78,11 @@ while C produced draws at $\approx 425,000/{\rm sec}$.}
 
 The features of C that stats package users will find most annoying are
 exactly the features that make it orders of magnitude faster than the cuter
-alternatives.  Type declarations mean that the computer does not need
-to guess the data type you mean at every use, saving time on
-every calculation.  Pointers and the call-by-reference mechanism reduce
-internal copying during function calls.
+alternatives.  Type declarations (the \ci{int}, \ci{double}, and
+\ci{apop\_data*} on lines 3, 4, and 6 of Figure \ref{timefisher}) mean
+that the computer does not need to guess the data type you mean at every
+use, saving time on every calculation.  Pointers and the call-by-reference
+mechanism reduce internal copying during function calls.
 
 Further, C's syntactic unpleasantness pays off immensely when extending
 quick-and-dirty scripts to involved, complex analyses.
@@ -168,7 +172,7 @@ shows that C code can also be short, concise, and thoroughly modern.
 
 There is the complaint that C is a compiled language, meaning that
 you must write your instructions to a text file and compile the file
-to an excecutable before seeing results. Interpreted systems,
+to an excecutable before seeing results. \blindvocab{interpreter}Interpreted systems,
 like Perl, Python, or most of the packages above, provide a means of
 giving immediate feedback for every command. Interpreted languages
 certainly have their convenience, and are useful for certain settings,
@@ -192,8 +196,9 @@ Python, too. Type declarations are one more detail to remember,
 but the alternatives have their own warts: Perl basically requires that
 you declare the type of your variable (\ci{@, \$, or \#}) with every use,
 and R will guess the type you meant to use, but will often guess wrong,
-such as thinking that the text string \ci{"14"} is an integer. No system is
-wart-free, but C earns its warts by being fast, extensible, and portable.
+such as thinking that the one-element list \ci{\{14\}} is really just
+an integer. No system is wart-free, but C justifies its warts by being fast,
+extensible, and portable.
 
 \index{statistics packages!rants regarding|)}
 

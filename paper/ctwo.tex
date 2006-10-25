@@ -72,7 +72,7 @@ the obfuscatory if, these four lines can be reduced to one:
 out->type  = gsl_rng_uniform(r) > 0.5 ? 'd' : 'h';
 \end{lstlisting}
 
-\paragraph{Macros} \label{macros} 
+\paragraph{Macros} \label{macros} \vocabmarker{macro}
 
 As well \ci{\#including} files, 
 the preprocessor also can define macros, which take
@@ -535,7 +535,7 @@ index will always match.
 is that birds are copied in, but never eliminated. Dead birds will eventually
 pile up.}
 
-\subsection{Linked lists} A linked list is a set of \ci{struct}s connected
+\subsection{Linked lists} A \vocab{linked list} is a set of \ci{struct}s connected
 by pointers. The first \ci{struct} includes a \ci{next} pointer, that
 points to the next element, et cetera; see Figure \ref{listfig}.
 
@@ -592,7 +592,7 @@ is that finding a given bird requires traversing the entire list every
 time.}
 
 
-\subsection{Binary trees} The binary tree takes the linked list a step further
+\subsection{Binary trees} The \vocab{binary tree} takes the linked list a step further
 by giving each node two outgoing pointers instead of one. As in Figure
 \ref{btreefig}, one may think of these pointers as the left pointer and
 the right pointer, and the branching allows for a tree structure. The
@@ -819,7 +819,7 @@ search engine. A search for \bi{info gsl} or \bi{man printf} will
 turn up exactly the documentation that is missing from your system,
 formatted for the web.
 
-\subsection{Make} \label{make} \index{make@\bi{make}|(}
+\subsection{Make} \label{make} \index{make@\bi{make}|(}\vocabmarker{make}
 As you have noticed by now, compiling a program can sometimes be a
 rather complex process, requiring that you include flags for warnings,
 debugging symbols, library locations, header files, and who knows what
@@ -858,7 +858,7 @@ file2.o: file2.c my_headers.h       #User-defined
 \end{figure*}
 
 The \bi{make} program does two types of calculation: expanding variable
-names and folowing dependences. 
+names and folowing dependencies. \vocabmarker{dependency}
 
 Variable names, by custom, are in all caps, and for convenience are
 primarily grouped at the top of the file. When \bi{make} sees text of
@@ -1011,7 +1011,7 @@ CVS, which is well-supported and even has a number of graphical
 front-ends, such as tkCVS.  
 \index{subversion|)}
 
-\subsection{The \ind{profiler}} The profiler times how long every function
+\subsection{The \ind{profiler}} The \vocab{profiler} times how long every function
 takes to execute. Its usage is much like the debugger. First, you need
 to add a flag to the compilation to include profiler symbols,
 \ci{-pg}. Then, execute your program, which will produce a file named

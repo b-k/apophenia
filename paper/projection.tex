@@ -38,7 +38,7 @@ The first step in analyzing a data set is always to get a quick lay of
 the land: where do the variables generally lie? How far do they wander?
 As variable $A$ goes up, does variable $B$ generally go up as well?
 
-\paragraph{Expected value:} 
+\paragraph{Expected value:} \blindvocab{expected value}
 First, let us say that a value of $x$ has probability $P(x)$. Then
 if $f(x)$ is an arbitrary function, 
 $$E\left(f(x)\right)=\int_{\forall x} f(x)p(x) dx.$$
@@ -51,7 +51,7 @@ becomes the familiar calculation $$E(\xv)={\sum_i x_i\over n},$$ and is
 \ref{CLT} will discuss the magical properties of the sample expected
 value that make statistical analysis possible.
 
-\paragraph{More moments:}\index{skew} \index{kurtosis} \index{moments} 
+\paragraph{More moments:}\blindvocab{skew} \blindvocab{kurtosis} \index{moments} 
 The variance for discrete data is the familiar formula of the mean
 squared distance to the average. Let $\overline x$ indicate the mean of
 $x$, then the variance of the sample is:
@@ -130,21 +130,23 @@ false---the observations are interconnected.\label{kurt1} One often sees
 this among social networks or other systems where independent entities
 observe and imitate each other.
 
-\paragraph{Covariance:} The population \ind{covariance}, given a data set,
-is $\sigma_{xy} = E[(x-\overline x)(y-\overline y)]$, which is equivalent
+\paragraph{Covariance:} The population \vocab{covariance}, given a data set,
+is $\sigma^2_{\xv\yv} = {1\over n}\sum_i(x_i-\overline \xv)(y_i-\overline \yv)$, which is equivalent
 to $E[\xv\yv]-E[\xv]E[\yv]$. The \ind{variance} is a special case where $\xv=\yv$.
 
 As with the variance, the unbiased estimate of the 
-sample covariance is $s_{xy}=\sigma_{xy}\cdot {n\over n-1}$---the
+sample covariance is $s^2_{xy}=\sigma^2_{xy}\cdot {n\over n-1}$---the
 expectation if you  divided the sum of $(x-\overline x)(y-\overline y)$ by
 $n-1$ instead of $n$.
 
-\paragraph{Correlation/Cauchy-Schwarz:} The correlation coefficient is
-defined as $$\rho_{xy}\equiv{s_{xy}\over s_x s_y}.$$ This is mostly just another
-statistic useful for describing two columns of data,
-but it makes a surprise appearance in Section \ref{ts}. It
-also allowed Cauchy \& Schwarz to state the \ind{Cauchy-Schwarz
-inequality}: $0\leq \rho^2 \leq 1$.  \label{correlation}
+\paragraph{Correlation/Cauchy-Schwarz:} The \vocab{correlation coefficient} is
+defined as $$\rho_{\xv\yv}\equiv{\sigma_{\xv\yv}\over \sigma_\xv
+\sigma_\xv},$$ and is usually estimated using ${s_{\xv\yv}\over
+s_\xv s_\xv}$.  This is mostly just another statistic useful for
+describing two columns of data, but it makes a surprise appearance
+in Section \ref{ts}. It also allowed Cauchy \& Schwarz to state
+the \vocab{Cauchy-Schwarz inequality}: $0\leq \rho^2 \leq 1$.
+\label{correlation}
 
 \paragraph{Coding it} Given a vector, Apophenia provides functions to
 calculate most of the above, e.g.:
@@ -667,7 +669,7 @@ most likely value for $(\alpha, \beta)$ is simply $(\min(x), \max(x))$.
 \section{Factor analysis} \label{pca} \index{factor analysis}
 This is also known as \ind{principal component
 analysis}, or \ind{spectral decomposition}, depending upon your field. 
-The first phase (calculating the eigenvalues) is known as the \ind{singular value decomposition}.
+The first phase (calculating the eigenvalues) is known as the \vocab{singular value decomposition}.
 
 It is a purely descriptive method.  The idea is that we want a few
 dimensions that will capture the most variance possible---usually two,
@@ -826,7 +828,7 @@ descriptive goal, from fitting distributions to telling a causal story.
 
 There is a catalog of methods to estimate the values of $\betav$,
 depending on the assumptions behind how the $\Xv$s are related. If they
-are basically unrelated, then we can use the model known as {\em ordinary
+are basically unrelated, then we can use the model known as \vocab{ordinary
 least squares} (fully specified below). When we believe that some parts
 of the $\Xv$ matrix are correlated to other rows, such as rows $t$ and
 $t+1$ of 
@@ -872,7 +874,7 @@ In Section \ref{tstat} we get rid of $\sigma$, but we need to know
 $\mu$, and unbiasedness means that if all is going well, $\mu
 =\hat\betav$.
 
-\subsection{OLS}
+\subsection{OLS}\label{olsdef}
 \index{Ordinary Least Squares|(textbf}\index{OLS|see{Ordinary Least Squares}}
 The model: 
 \begin{itemize}
@@ -914,8 +916,8 @@ E(\hat\betav_{\rm OLS} ) &=& \beta					\nonumber\\
 }
 
 	\index{Ordinary Least Squares|)textbf}
-\subsection{GLS} \label{GLS}\index{GLS|see{Generalized Least Squares}}
-\index{Generalized Least Squares} 
+\subsection{GLS} \label{GLS}\index{GLS|see{generalized least squares}}
+\blindvocab{generalized least squares} 
 Generalized Least Squares generalizes OLS by allowing $\uv'\uv$ to be a
 known matrix $\Sigma$, with no additional restrictions.
 Note how neatly plugging $\sigma^2{\bf I}$ in to the
@@ -930,7 +932,7 @@ E(\hat\betav_{\rm GLS}) &=& \beta					\nonumber\\
 % 			(\Xv'\Xv)^{-1}\Xv'\Sigma\Xv(\Xv'\Xv)^{-1}\nonumber
 }
 
-\subsection{IV} \index{instrumental variables} 
+\subsection{IV} \blindvocab{instrumental variable} 
 \index{IV|see{instrumental variables}}	\label{IV} 
 If a column of $\Xv$ is measured with error, then $\hat\betav_{OLS}$ is
 inconsistent and asymptotically biased toward zero (in most cases, see
@@ -1009,7 +1011,7 @@ just find $r=(\sum \hat\epsilon_t \hat\epsilon_{t-1})/(\sum
 
 \index{time series|)}
 
-\paragraph{\ind{Weighted Least Squares}}
+\paragraph{\ind{Weighted Least Squares}}\vocabmarker{weighted least squares}
 Let $\Sigma$ be a diagonal matrix. That is, errors among different
 observations are uncorrelated, but the error for each observation itself
 is different. This is \vocab{heteroskedastic} data. The classic example
@@ -1083,7 +1085,7 @@ gsl_matrix_get_col(y_data, set->matrix, 0);
 
 We now have the $\yv$-values safely stored.  When doing an OLS projection,
 there needs to be a column of ones in the data set (because OLS is an
-{\sl affine} linear projection), so we can overwrite the first column
+\vocab{affine linear projection}), so we can overwrite the first column
 with ones. 
 \cindex{gsl\_vector\_set\_all} 
 \begin{lstlisting}

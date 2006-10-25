@@ -12,7 +12,7 @@ Database and matrix operations are excellent
 complements. Some things, like making a \vocab{crosstab} or \vocab{pivot
 table}, are a bit of a
 pain using traditional techniques of matrix manipulation. Meanwhile,
-some things, like matrix multiplication or inversion, just can not be done via SQL (Structured Query Language)
+some things, like matrix multiplication or inversion, just can not be done via SQL (\vocab{Structured Query Language})
 queries. With both, your data analysis technique will be unstoppable.
 
 As a broad rule, try to do data manipulation, like pulling subsets
@@ -24,7 +24,7 @@ SQL is not nearly as complex a language as C, making it easy to learn and
 one might even say outright pleasant to work with. Here is some valid SQL:
 {\tt select age, gender, year from survey}. Why, that's almost proper
 English. It goes downhill from there in terms of properness, but at its
-worst, it is still not difficult to look at an SQL query and have some
+worst, it is still not difficult to look at an SQL \vocab{query} and have some
 idea of what the rows and columns of the output table will look like.
 
 Like C, SQL is merely a language, and it is left to the programmers of
@@ -289,7 +289,7 @@ is a list of conditions that all rows must meet. It can be missing
 conditions, like \si {where (a == b) and (b <= c)}.
 }
 
-\subsection{Joining}\index{join!database|(}
+\subsection{Joining}\index{join!database|(}\vocabmarker{join}
 If you specify two tables in your \si{from} line, then, lacking any
 restrictions, the database will return one joined line for every pair of lines.
 Let table 1 have one column with data $\left[\begin{matrix}1\cr 2\cr 3\end{matrix}\right]$ and table 2 have one column
@@ -373,8 +373,9 @@ number of rows in the \si{data} table.
 \exercise{Verify that \si{select * from population, gdp} produces 43,264
 rows.}
 
-\index{pivot tables}\index{crosstabs}\label{crosstabs}
-\marginaliafixed{16}{Crosstabs}{In the spreadsheet world, we often get tables
+\marginaliafixed{16}{Crosstabs}{\blindvocab{crosstab}
+\blindvocab{pivot table}\label{crosstabs}
+In the spreadsheet world, we often get tables
 where the X-dimension is the year, the Y-dimension is the location,
 and the $(x,y)$ point is a measurement taken that year at that location.
 

@@ -54,7 +54,7 @@ scripts to reformat text files into a format appropriate for your
 data-handling systems.
 
 \section{Shell scripts} As with Gnuplot or SQLite's command-line
-utility, you can operate the shell (what many just call the command line)
+utility, you can operate the \vocab{shell} (what many just call the command line)
 by typing in commands or by writing a script and having the shell read
 the script. Thus, you can try the commands below on the command line,
 and when they work as desired, cut and paste them into a script as a permanent
@@ -256,7 +256,7 @@ contents of \bi{input\_file} to the screen.
 
 \exercise{Use \bi{sed -n p} and input/output redirection to copy a file.}
 
-Your final redirection option is the pipe. The pipe connects \bi{STDOUT}
+Your final redirection option is the \vocab{pipe}. The pipe connects \bi{STDOUT}
 for one program to \bi{STDIN} for another. 
 
 Question: what exponents of four end in a six?  On page \pageref{getopt}
@@ -882,7 +882,7 @@ sed -i~ -e "s/\([0-9]\),\([0-9]\)/\\1\\2/g" fixme.txt
 
 \paragraph{Suspicious non-printing characters} Some sources like to
 put odd non-printing characters in their data. Since they don't print,
-they are hard to spot, but they produce odd side-effects, like columns
+they are hard to spot, but they produce odd side-effects like columns
 in tables named \bi{pop$\square$\"O\'E$\square$tion}. It is a hard
 problem to diagnose, but an easy problem to fix. Since \bi{[:print:]}
 matches all printing characters, \bi{[\that{}[:print:]]} matches all

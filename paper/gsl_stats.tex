@@ -71,6 +71,7 @@
 \def\vv{{\bf v}\xspace} \def\xv{{\bf x}\xspace} \def\yv{{\bf y}\xspace} \def\pv{{\bf p}\xspace}
 \def\Iv{{\bf I}}\def\Sv{{\bf S}}\def\zv{{\bf z}}\def\Zv{{\bf Z}} \def\cv{{\bf c}} \def\uv{{\bf u}} \def\Yv{{\bf Y}} \def\Xv{{\bf X}} \def\Qv{{\bf Q}}
 \def\betav{{\mbox{\boldmath$\beta$}}}
+\def\thetav{{\mbox{\boldmath$\theta$}}}
 \def\Xuv{\underbar{\bf X}}
 %\def\vector#1{\left[\matrix{#1}\right]}
 \def\vector#1{\left[\begin{matrix}#1\end{matrix}\right]}
@@ -115,8 +116,12 @@
 %\def\ttind#1{\index{#1@{\tt #1}}{\tt #1}}
 %\def\ttindex#1{\index{#1@{\tt #1}}}
 \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
-\def\vocab#1{{\sl #1}\index{#1}}
-\def\gind#1{\gindx{#1}{}\ginline{#1}}
+
+\def\airq#1{{\sl #1}}
+\def\vocabmarker#1{\label{#1firstuse}}
+\def\blindvocab#1{\index{#1}\vocabmarker{#1}}
+\def\vocab#1{\airq{#1}\blindvocab{#1}}
+
 
 
 \def\skeyind#1{\index{#1@\sinlinetwo{#1} (SQL keyword)}\index{SQL keywords!\sinlinetwo{#1}}}
@@ -155,9 +160,9 @@
 \def\sinlinetwo#1{{\tt #1}}
 \def\binlinetwo#1{{\tt #1}}
 \def\ginlinetwo#1{{\tt #1}}
-\def\airq#1{{\sl #1}}
 \def\gi#1{{\bf\tt #1}}
 \def\gitwo#1{{\tt #1}}
+\def\gind#1{\gindx{#1}{}\ginline{#1}}
 
 \long\def\codefigure#1#2#3{
 	\begin{figure}[htb]
@@ -327,6 +332,7 @@ Plain old \copyright 2006, Ben Klemens.]
 \input boot.tex
 \backmatter
 \input text.tex
+\input glossary.tex
 \citeindexfalse
 \nocite{*}
 \bibliographystyle{plainnat}

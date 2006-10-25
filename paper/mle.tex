@@ -2,16 +2,20 @@
 \index{maximum likelihood estimation|ff}
 \index{MLE|see{maximum likelihood estimation}}
 
+There have been  
+closed-form solutions for the optimal parameters of the various models
+presented to thips point. 
+\comment{
 Maximum likelihood estimators (MLEs) are the bread and butter of
 statistics.  Most of the techniques discussed so far are MLE
 techniques, except mathematicians over the ages have found ways to hide
 that fact from you, by proving that under certain conditions the
-maximum must have an easy-to-calculate form. But if there is not a nice,
-convenient shortcut, you will have to search for the optimal parameters
-yourself. There are optimization routines from a variety of sources,
-and Apophenia provides a consistent front-end to many of them via its
-\cind{apop\_maximum\_likelihood} function. You give it a function and
-some parameters, and it will find the optimum.
+maximum must have an easy-to-calculate form.} But if there is not a nice
+computational shortcut to finding the optimal parameters, you will have
+to search for them. There are routines to find optima from a variety
+of sources, and Apophenia provides a consistent front-end to many of
+them via its \cind{apop\_maximum\_likelihood} function. You give it a
+function and some parameters, and it will find the optimum.
 
 \paragraph{The \ind{log likelihood function}}	\label{the score}
 By itself, the PDF is the likelihood that a given value occurs (given
@@ -29,11 +33,14 @@ probabilities; that is, $P(\{x_1,x_2\}|p)=P(x_1|p)\cdot P(x_2|p)$.
 The assumption of identical distributions allows us to write this more
 neatly, as $$P(\{x_1,x_2\}|p)=\Pi_{i=\{1,2\}}P(x_i|p).$$
 
-Define the Log likelihood as $L=\ln P$, the Score\index{score} as
+Define the \vocab{log likelihood function} as $L=\ln P$, the \vocab{score} as
 
-$$S={\partial \ln P\over \partial \theta}$$ 
+\begin{eqnarray}
+S&=&{\partial \ln P\over \partial \theta} \nonumber\\
+&=&-{\partial L \over \partial \theta},		\nonumber
+\end{eqnarray}
 
-and the Information variable\index{information variable} as
+and the \vocab{information matrix} as
 
 \begin{eqnarray}
 I&=&-{\partial S \over \partial \theta}			\nonumber\\
@@ -127,13 +134,13 @@ $\xv$. Then the probit parameters can be estimated using
 
 \section{Why likelihood functions are great} The process of finding a
 maximum of the log likelihood function is 
-useful for two reasons, with four names: the Cramer-Rao lower bound and
+useful for two reasons, with four names: the Cram\'er-Rao lower bound and
 the Neyman-Pearson lemma.
 
-\paragraph{MLEs achieve the Cramer-Rao lower bound} 
-        \index{Cramer-Rao Inequality|(}		\label{cr} 
+\paragraph{MLEs achieve the Cram\'er-Rao lower bound} 
+        \index{Cram\'er-Rao Inequality|(}		\label{cr} 
 Say we have an unbiased estimator of $\theta$,
-$\hat\theta(y_1,\dots,y_n)$. Cramer \& Rao say:
+$\hat\theta(y_1,\dots,y_n)$. Cram\'er \& Rao say:
 \begin{eqnarray}
 \var(\hat\theta)&\geq&(n \var(S))^{-1}		\nonumber\\
 		&=&\left(nE\left({\partial^2 L\over \partial
@@ -149,19 +156,19 @@ $\var(S)=n\var(\overline S)$ in to that, and the first line of the above
 drops out\cite{goldberger}. The second line uses the information
 equality from above.
 
-Just remember: the Cramer-Rao lower bound is the inverse of $n$ times
+Just remember: the Cram\'er-Rao lower bound is the inverse of $n$ times
 the expectation of the derivative of the derivative of the log of the
 likelihood function.
 	}
 
-The Cramer-Rao lower bound is
-called a `lower bound' because Mr.s Cramer and Rao proved that any
+The Cram\'er-Rao lower bound is
+called a `lower bound' because Mr.s Cram\'er and Rao proved that any
 estimator of $\theta$ must have a variance greater than or equal to the
 CRLB. Your favorite probability textbook (e.g., \cite{casella:berger})
 will also prove that for the MLE, the variance is actually equal to the
 CRLB, meaning that we can not get an estimator of $\theta$ that will
 have a smaller variance.
-        \index{Cramer-Rao Inequality|)}
+        \index{Cram\'er-Rao Inequality|)}
 
 \subsection{How to evaluate a test}
 A test will either reject or accept a hypothesis given data. It can be
@@ -173,18 +180,18 @@ or the hypothesis could be false but the test accepts it anyway.
 Here are some vocabulary terms; if you are in a stats class right now,
 you will be tested on this:
 
-Likelihood of {\bf Type I errors} $\equiv\alpha$: rejecting the null when it is true.
+Likelihood of a \vocab{Type I error} $\equiv\alpha$: rejecting the null when it is true.
 
-Likelihood of {\bf Type II errors} $\equiv\beta$: accepting the null when
+Likelihood of a \vocab{Type II error} $\equiv\beta$: accepting the null when
 it is false.
 
-{\bf Power}$\equiv 1-\beta$, or the likelihood of rejecting a false null.\index{power}
+\airq{Power}$\equiv 1-\beta$, or the likelihood of rejecting a false null.\blindvocab{power}
 
-{\bf Unbiased}$\equiv (1-\beta)\geq \alpha\ \forall$ values of the parameter.
+\airq{Unbiased}$\equiv (1-\beta)\geq \alpha\ \forall$ values of the parameter.
 I.e., you are less likely to accept the null when it is false than when
-it is true.\index{unbiased estimator}
+it is true.\blindvocab{unbiased estimator}
 
-{\bf Consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.\index{consistency}
+\airq{Consistency}$\equiv$ the power $\to 1$ as $n\to \infty$.\blindvocab{consistency}
 }
 
 There
@@ -274,7 +281,7 @@ easier to work with; the product then becomes a sum.
 \item The parameters that maximize the likelihood function (or 
 identically, maximize the log likelihood) will have the minimum variance
 among all unbiased estimators. The variance is a known quantity, given
-by the Cramer-Rao lower bound, Equation \ref{CRLB}.
+by the Cram\'er-Rao lower bound, Equation \ref{CRLB}.
 \item Type I and Type II errors are complementary: as one goes up,
 the other generally goes down. However, given a Type I error level,
 different tests will have different Type II error levels.
@@ -290,7 +297,7 @@ provides a standardized interface to several types of optimization
 routines that take very different approaches toward finding optima. You
 will have to provide a log likelihood function, but if you are unable to
 provide the derivatives, the maximization routines will find them for
-you. Since the Cramer-Rao lower bound tells us the variance of a
+you. Since the Cram\'er-Rao lower bound tells us the variance of a
 most-likely parameter, \cinline{apop\_maximum\_likelihood} will return an
 \cind{apop\_estimate} with the variances and other useful information.
 
@@ -425,7 +432,7 @@ the \cinline{wn/wnbridge.c} file. More methods will be forthcoming.}
 \index{gradients}
 If analytic gradients are available, then those are probably preferable,
 but Apophenia will automatically calculate numerical gradients
-as necessary.  Since the variance of an MLE is the Cramer-Rao lower
+as necessary.  Since the variance of an MLE is the Cram\'er-Rao lower
 bound (Equation \ref{CRLB}), we will use the gradients to calculate
 the variance, so even when using a derivative-free simplex algorithm,
 the variance will still be using gradients, somehow derived.

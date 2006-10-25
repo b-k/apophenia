@@ -31,6 +31,7 @@ through any sort of computations or transformations, you may be better
 off using a shell script as per Appendix A instead of writing a C
 program as per this chapter.
 
+\vocabmarker{plot}
 The plot-producing program with which this chapter will primarily be
 concerned is Gnuplot. Its language
 basically has only two verbs---\ci{set} and \ci{plot}---plus a few
@@ -116,7 +117,7 @@ Say that you just want to see a single data series, say column five; then
 assume that the $X$ values are the ordinal series $1, 2, 3, \dots$ and
 your data is the $Y$ values.
 
-\subsection{\gi{splot}}\gkeyind{splot} The \ci{plot} command prints flat, 2-D graphs.
+\subsection{\gi{splot}}\gkeyind{splot} The \ci{plot} command prints flat, 2-D plots.
 To plot 3-D surfaces, use \ci{splot}. All of the above now applies
 directly, but with three dimensions. If your data set has three columns, then
 you can plot it with \ci{splot 'datafile'}. If your data set has more
@@ -968,7 +969,7 @@ interesting animation.
 \index{Graphviz|(}
 \index{dot, graphing program}
 \section{\treesymbol Graphs---nodes and flowcharts} In common conversation, we
-typically mean the word \airq{graph} to be a plot of data like every
+typically mean the word \vocab{graph} to be a plot of data like every
 diagram to this point in the chapter. The mathematician's definition
 of \airq{graph}, however, is a set of nodes connected by edges. The
 authors of Gnuplot have no interest in such graphs, so the reader is

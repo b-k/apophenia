@@ -67,7 +67,7 @@ are hundreds of programs available to help you write the text file and
 produce the output. Your problem is not in finding such tools, but in
 choosing which you will use.
 
-The first element you will need is a compiler. If you are using
+The first element you will need is a \vocab{compiler}. If you are using
 a UNIX-like system, you probably already have \cind{gcc} on your
 computer. Try typing \bi{cc} on your command line; if you get an
 error like ``command not found'', then you will need to get a compiler,
@@ -565,7 +565,7 @@ flip through, you may
 also want to find a few examples of \ci{printf}\ckeyind{printf} and
 verify that they will indeed print what they promise to.
 
-Second, the example shows that every variable has a type. Lines two and
+Second, the example shows that every variable has a \vocab{type}. Lines two and
 three declared \ci{position} to be an \ci{int}eger, and \ci{name} to be an
 array of \ci{char}acters. The next section will take on the issue of
 types and declarations in detail.
@@ -587,7 +587,7 @@ iteration clearer: \ci{for (i=0; i< limit; i++) \{do\_this(i);\}}.
 
 \section{Variables and their declarations} \label{declaring}
 
-\index{declaration!of variables|(}
+\index{declaration!of variables|(}\vocabmarker{declaration}
 Having covered the verbs that a line of code will execute, we move on
 to the nouns---variables. 
 
@@ -643,7 +643,7 @@ make your code readable. Imagine how much of your life you have spent
 flipping back through journal articles trying to remember what $\mu$,
 $M$, and $m$ stood for. Why impose that on yourself?
 
-\paragraph{Arrays} An \ind{array} is a numbered list of items of the same type. To declare a list of a hundred
+\paragraph{Arrays} An \vocab{array} is a numbered list of items of the same type. To declare a list of a hundred
 integers, you would use:
 \begin{lstlisting}
 int a_list[100];
@@ -689,6 +689,7 @@ function to tell you how you had declared the array.
 }
 
 \subsection{Declaring types}\ckeyind{typedef} \index{declaration!of types} 
+\vocabmarker{structure}
 You can define your own
 types. For example, these lines will declare two (badly names) triplets
 of numbers, \ci{a} and \ci{b}:
@@ -734,7 +735,7 @@ mentioned above.
 
 
 
-\subsection{\treesymbol Type casting}\label{casting} \index{casting|see{type casting}} \index{type casting|(} 
+\subsection{\treesymbol Type casting}\label{casting} \index{casting|see{type casting}} \index{type casting|(} \vocabmarker{type cast}
 This section covers a few details of the type system, and what happens
 when a value of one type is assigned to a variable of a different type.
 
@@ -941,7 +942,7 @@ of elements.
 The manner in which the computer evaluates functions also abides by the
 principle of encapsulating functions, focusing on the context of one
 function at a time. When a function is called, the computer creates a
-{\sl frame} for that function. Into that frame are placed any variables
+\vocab{frame} for that function. Into that frame are placed any variables
 that are declared at the top of the file in which the function is defined,
 including those in files which were \ci{\#include}d (see below); and copies of
 variables which are passed as arguments. 
@@ -959,17 +960,14 @@ is sent back to the function which had called the frame into existence.
 \codefig{dosomething}{A complete program.}
 \lstset{numbers=none}
 
-One way to think about this is in terms of a \ind{stack} of frames. 
-The base the stack is always a function named \ci{main}. 
-For example, in the program in Figure \ref{dosomething} 
-the computer will ignore the function
-\ci{do\_something}, instead starting its work on line eight, where it
-finds the \ci{main} function head: \ci{int
-main(void)}. It will
-create a \ci{main} frame and
-then start working, first reading the declarations of \ci{output},
-\ci{first}, \ci{second}, and \ci{third} and putting them
-into the frame.
+One way to think about this is in terms of a \vocab{stack} of frames.
+The base the stack is always a function named \ci{main}.  For example,
+in the program in Figure \ref{dosomething} the computer will ignore the
+function \ci{do\_something}, instead starting its work on line eight,
+where it finds the \ci{main} function head: \ci{int main(void)}. It
+will create a \ci{main} frame and then start working, first reading the
+declarations of \ci{output}, \ci{first}, \ci{second}, and \ci{third}
+and putting them into the frame.
 
 Then, on line 13, it will get to the part where it is told to
 assign something to \ci{output}, and to do that it will need
@@ -1140,7 +1138,7 @@ don't want to have to always bear in mind the current state of all the
 variables in your program, the GSL, the standard library, and who knows
 what else.
 
-A variable's {\sl scope} is the set of functions that can see the
+A variable's \vocab{scope} is the set of functions that can see the
 variable. A variable declared inside a function is only visible inside
 that function.  If a variable is declared at the top of a file, then
 that variable is \airq{global} to the file, and any function in that
@@ -1179,7 +1177,7 @@ now become an involved analysis of the original program.  \index{scope|)}
 
 \codefig{callbyval}{A function using call-by-value.}
 
-\paragraph{Call-by-value} \index{call-by-value}
+\paragraph{Call-by-value} \blindvocab{call-by-value}
 A common error is to forget that global variables are put in all function
 frames, but only {\sl copies} of the variables in the function's argument
 list are put in the frame.  
@@ -1260,7 +1258,7 @@ Even though we call this program \airq{the compiler} and refer to the
 process as \airq{compilation}, it actually
 embodies three separate programs: a
 preprocessor, a compiler, and a linker. The compiler I use
-throughout this book is the GCC, the GNU Compiler Collection, which will
+throughout this book is the \vocab{GCC}, the GNU Compiler Collection, which will
 compile C as well as a few other languages. I will use \bi{gcc} (herein
 lower case to refer to the command you will be typing) because it is probably
 the most universally available program in the world today---and it is free.
@@ -1377,10 +1375,8 @@ see section \ref{debug}.]
 
 \subsection{The preprocessing step} \label{headers}\index{preprocessor|(}
 As noted above, \bi{gcc} takes your code through three steps.
-The first step is preprocessing,
-which does nothing but take text 
+The first step is preprocessing, which does nothing but take text 
 you wrote and convert it into more text.
-
 
 \index{header file!aggregation} 
 \marginaliafixed{16}{Header aggregation}{The Apophenia library provides a convenience header that aggregates
@@ -1394,7 +1390,7 @@ code snippets in this chapter.\par Of course, you will still need to
 include any headers you have written, and if the compiler complains
 about an undeclared function, then its header is evidently not included in
 \ci{apophenia/\-head\-ers.h}.}
-There are a dozen things the preprocessor can do, but you will basically only care about one of them: \cind{\#include}. 
+There are a dozen things the \vocab{preprocessor} can do, but you will basically only care about one of them: \cind{\#include}. 
 [The runner-up is \ci{\#define}, which is discussed on page \pageref{macros}.] 
 When the preprocessor is processing the file \bi{main.c} and sees
 the line
@@ -1419,8 +1415,8 @@ entire program, then create a file named \ci{globals.h}, and put all
 declarations in that file. By putting \ci{\#include "globals.h"} at
 the top of every file in your project, all variables declared therein
 are now project-global.  If a variable is only used in two code files,
-then project-global scope is overkill: declare the variable in a header
-file and include that file in only the code files that need it.
+then project-global scope is overkill: declare the variable in a 
+\vocab{header file} and include that file in only the code files that need it.
 
 \comment{
 As above, the header will consist only of declarations of variables
@@ -1481,9 +1477,9 @@ one and only one \ci{.c} file, and if you want other \ci{.c} files to
 see them, re-declare them in a header file with the \ci{extern} keyword.
 
 \subsection{The compilation step} 
-The \ind{compilation}
+The \vocab{compilation}
 stage consists of taking each \ci{.c} file in turn and
-writing a machine-readable object file, so \ci{file1.c} will
+writing a machine-readable \vocab{object file}, so \ci{file1.c} will
 result in \ci{file1.o}, and \ci{file2.c} will compile to
 \ci{file2.o}. These \index{object files} are self-encapsulated
 files that include a table of all of the symbols declared in that file
@@ -1505,7 +1501,7 @@ called functions to create executable calling functions.
 
 
 \subsection{The \ind{linking} step}
-The next step in the process is linking. At the moment, we have one
+The next step in the process is \vocab{linking}. At the moment, we have one
 function that calls \ci{gsl\_matrix\_add} in one file, and in the
 GSL library, we have machine instructions that dictate how to construct
 a frame to execute the \ci{gsl\_matrix\_add} function; the linker links
@@ -1624,17 +1620,65 @@ flexible. If you have never dealt with them before, you will spent some
 quantity of time puzzling over them, and then you will wonder what all the
 fuss is about. 
 
-They are used to do two things in C: handle references and implement arrays.
+\paragraph{A motivating example} Let us say that you have a colleague on
+another continent. She has a process that she runs occasionally,
+that needs to have the most current readings from your instruments.
+Every time the readings change, you call her with new information,
+and she copies it down.
+
+But long-distance calls are expensive, especially
+since the data you are providing is many pages long.
+Eventually, the expense of the calls, and the time absorbed waiting for
+your colleague to copy down your information, begins to frustrate you.
+So, you make a short call with a simple instruction: ``check your
+email.'' When the data changes, you send her a new email.
+
+Writing down new data in an email takes as long as it
+did, but now your colleague can copy off the data at her leisure.
+There are days when she does not run her process, so even though you
+have to keep the data in her email inbox current, she does not have to
+waste time reading it unless she needs to; when she does, the data
+will be current.
+
+Initially, you sent data to be copied. Every time the data changed, you
+had to call up your colleauge and notify her. The new approach was to
+send the {\em location} of data. Once you and she were looking at the
+same location, the process of writing data and the process of reading
+data became decoupled: you could write at your leisure, and she could
+read at hers. The process was cheaper, since you didn't have to
+telephone every time you made a change. If you have fifty colleagues,
+sending each of them data would mean fifty phone calls per day; sending
+each of them the location of data would mean fifty phone calls the first
+day, and only one email from then on.
+
+
+There are some disadvantages to sending a location, primarily logistic.
+You need to set up an email address, and make
+sure you do not forget which email address should receive instrument
+readings and which should receive love letters. If you are not careful,
+you can wind up with a dozen email addresses to check, cluttering up
+your memory with now-irrelevant information. If you just have a
+quick one-time reading to send to somebody, you are probably better off 
+just calling them with the data point rather than establishing a new
+email address.
+
+Returning to the world of programming, there are many reasons to assign to
+a variable the location of data. All of the assignments to this point have
+been direct assignments of data; this section looks managing the location
+of data. It is easy to confuse your data and its location---and C's syntax
+may or may not help with keeping them straight---but you will see that
+having the location of data solves a number of problems. The key problems
+that they solve in C are handling references and implementing arrays.
 
 \paragraph{Call-by-reference v \ind{call-by-value}} 
-\index{call-by-reference} \index{frames} 
-As discussed above, when you call a function, the computer sets up a
-separate frame for the function, and puts into that frame {\it copies} of
-all of the variables that have been passed to the function. The function
-then does its thing and produces a return value. Then, the entire frame
-is destroyed, including all of the copies of variables therein. A copy
-of the return value gets sent back to the main program, and that is all
-that remains of the defunct frame.
+\blindvocab{call-by-reference} \index{frames} 
+First, a quick review of how functions are called: when you call a function,
+the computer sets up a separate frame for the function, and puts into
+that frame {\it copies} of all of the variables that have been passed
+to the function. The function then does its thing and produces a return
+value. Then, the entire frame is destroyed, including all of the copies
+of variables therein. A copy of the return value gets sent back to the
+main program, and that is all that remains of the defunct frame.
 
 This setup, known as call-by-value since only values are passed to the
 function, has good and bad features. The main good feature is that you
@@ -1646,11 +1690,12 @@ you call a common function will take a noticeable amount of time. Also,
 you will often want your function to change the variables that get
 sent to it.
 
-This is where pointers come in. A pointer is the address of a piece of
-data. After all, when you declare \ci{int k}, then the computer is
-going to put \ci{k} somewhere in memory. Perhaps with a microscope,
-you could even find it: there on the third chip, two hundred transistors
-from the bottom. You could point to it.
+This is where pointers come in. A \vocab{pointer} is the location of a piece of
+data---the email address of the metaphor above. When you
+declare \ci{int k}, then the computer is going to put \ci{k} somewhere
+in memory. Perhaps with a microscope, you could even find it: there on
+the third chip, two hundred transistors from the bottom. You could point
+to it.
 
 Lacking a finger with which to point, the computer will use
 an illegible hexadecimal address, but you will never have to deal with
@@ -1719,6 +1764,21 @@ fades away into the irrelevant background.  Exhortations to ignore
 C's syntactic warts date as far back as 1623, when one author wrote:
 ``The fault \dots lies not in our stars, but in our
 selves.''\index{Shakespeare, William}}
+
+\marginalia{18}{Declaration vs Use}{The number one point of
+confusion with pointers is that stars mean different things in a
+declaration and a usage. The declaration \ci{int *p, i} means that
+\ci{p} will be a pointer to an integer and \ci{i} is an integer, but in
+a non-declaration line like \ci{i = *p}, \ci{*p} refers to the intenger
+value that \ci{p} points to. It looks like the symbol \ci{*p} has changed
+meaning, and in some respects it has. Just be clear as to whether you
+are declaring or using a pointer, and use the star accordingly.
+
+For example, let us say
+that we are declaring a new variable \ci{p2} that will be initialized to
+have the same value as \ci{p}. Then the declaration would be \ci{int *p2
+= p}, because \ci{p2} is being declared as a pointer, and \ci{p} is
+being used as a pointer.}
 
 The spaces around our stars do not matter, so use whichever of \ci{int
 *k}, \ci{int* k}, or \ci{int * k} you like best. General
@@ -1858,7 +1918,7 @@ send to \ci{swap} now?
 }
 
 
-\paragraph{The joy of segfaults} \index{segmentation fault} \index{segfault|see{segmentation fault}}
+\paragraph{The joy of segfaults} \index{segfault|see{segmentation fault}}
 When you initialize a non-pointer variable, say \ci{int k}, then all of
 the care and feeding of that variable is the compiler's responsibility:
 it has to allocate memory for \ci{k}, check whether the variable is
@@ -1882,7 +1942,7 @@ dereference a null pointer}.\index{dereferencing}\index{null pointer} Finally, \
 protected memory, such as the memory that is being used for the operating
 system or your dissertation. In this case, referring to \ci{*k} will
 halt the program with the greatest of haste, before it destroys something
-valuable. This is a {\sl segmentation fault}, since you attempted to refer
+valuable. This is a \vocab{segmentation fault}, since you attempted to refer
 to memory outside of the segment that had been allocated for your program.
 
 A segfault means that you mis-coded something, and 
@@ -2167,6 +2227,7 @@ variables. Refer to a pointer-to-struct using \ci{->}.
 }
 
 \section{Strings} \index{strings|ff} \label{stringsec}
+\vocabmarker{string}
 
 Lines of text such as \ci{"hello"} are implemented as arrays of
 individual characters, followed by an invisible null character, written
@@ -2280,7 +2341,7 @@ to the screen; \ci{sprintf} will store it in a (pre-allocated) string;
 Scripting languages typically show every line as it is being executed,
 so when something breaks, the user can see the exact line in the code
 where things went wrong. In the world of C, the same line-by-line
-execution is achieved using a debugger. You may want to get into the
+execution is achieved using a \vocab{debugger}. You may want to get into the
 habit of always running your programs using the debugger, whether you
 are actively debugging or not.
 
