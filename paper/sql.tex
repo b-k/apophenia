@@ -972,7 +972,7 @@ first be importing data from a text file.  The \cinline{apop\_text\_to\_db}
 function will do this for you; see the online reference for details. The
 first line of the text file can be column names, and the remaining rows
 are the data. If your data is not quite in the right format (and it
-rarely is), you may want to look at Appendix A on text
+rarely is), you may want to look at Appendix B on text
 massaging techniques.
 
 When you are done with all of your queries, run
@@ -1098,7 +1098,7 @@ other will seamlessly translate between database \ci{NULL}s and
 floating-point \ci{GSL\_NAN}s. When dealing with text, you will have
 to set \ci{apop\_opts.db\_nan} to a regular expression that matches the
 missing data marker. If you are unfamiliar with regular expressions, see
-Appendix A for a quick tutorial. Here are some examples:
+Appendix B for a quick tutorial. Here are some examples:
 \begin{lstlisting}
 //Apophenia's default NaN string, matching NaN, nan, or NAN:
 strcpy(apop_opts.db_nan, "\\(NaN\\|nan\\|NAN\\)");
@@ -1120,7 +1120,7 @@ indicating that the third value is missing. Apophenia's text-reading
 functions have no tolerance for such things, so you will need to
 preprocess your file to insert a marker of your choosing, such as:\\
 \bi{1,2,"NaN",4,5}.\\
-Again, see Appendix A for notes on how one would do such preprocessing.
+Again, see Appendix B for notes on how one would do such preprocessing.
 
 
 \paragraph{Merging databases} Apophenia handles exactly one database at

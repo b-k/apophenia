@@ -213,16 +213,6 @@ caption={#2 Online source: \bi{birds/#1}},captionpos=b,label=#1}
 }
 
 
-\long\def\codefigbyinclusion#1#2#3{
-	\begin{figure*}
-	\hrule\vskip4pt
-	#1
-	\hrule
-
-	\caption{#3}\label{#2}
-	\end{figure*}
-}
-
 \def\samplecodelocation{\url{http://apophenia.info/msc_book_samples.zip}\xspace}
 \def\onlinereflocation{\url{http://apophenia.info/doc}\xspace}
 
@@ -349,6 +339,7 @@ Plain old \copyright 2006, Ben Klemens.]
 \input mle.tex
 \input boot.tex
 \backmatter
+\input make.tex
 \input text.tex
 \input glossary.tex
 \citeindexfalse
