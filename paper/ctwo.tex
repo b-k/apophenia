@@ -203,7 +203,7 @@ return out;
 
 \paragraph{Switch}\ckeyind{switch} The \ci{switch} statement is a
 clean way to branch among many options. First, you will need a variable
-indicating a single character. For example, Figure \ref{getopt} (page
+indicating a single character. For example, Listing \ref{getopt} (page
 \pageref{getopt}) uses the \ci{getopt} function to read command line
 arguments. That function will return a single character, and then a
 \ci{switch} statment can branch depending on the value returned.
@@ -288,9 +288,15 @@ functions, we need to take the type of input function into
 consideration, because not every function makes sense in every context. Say
 that we want to write a Function that will take in an array of
 \ci{double}s plus a function, and will apply the function to every
-element of the array.\footnote{Incidentally, Apophenia has the
-\cind{apop\_matrix\_apply} function to apply a function to every row of
-a data set. If \cind{apop\_opts.thread\_count}\ci{>1}, then the
+element of the array.\footnote{Incidentally, Apophenia has 
+\cind{apop\_matrix\_apply}, \cind{apop\_matrix\_map},
+\cind{apop\_vector\_apply}, and \cind{apop\_vector\_map} 
+Functions to apply a function to every row of
+a matrix or every element of a vector. The \ci{\dots{}apply} Functions 
+apply the input function and return nothing, the \ci{\dots{}map}
+Functions map the input data to an output vector via the input function,
+$f: {\tt in}\rightarrow {\tt out}$.
+If \cind{apop\_opts.thread\_count}\ci{>1}, then the
 application will be threaded over multiple processes. See the online
 reference for details.\index{threading}}
 Then the input function has to have a form like:
@@ -340,7 +346,7 @@ void apply (gsl_vector *v, double_to_int function_name);
 \end{lstlisting}
 
 \subsection{Putting \ci{typedef} to work}
-Figure \ref{plotafunction} shows a program to plot any function of the
+Listing \ref{plotafunction} shows a program to plot any function of the
 form $\Re\to\Re$. The
 details of Gnuplot and its use probably won't make sense to you until
 you read Chapter \ref{gnuplot}, and you may need to modify the
@@ -372,7 +378,7 @@ the pointed-to function like any other.
 any function $\Re\to\Re$ and plots it.}
 \lstset{numbers=none}
 
-\exercise{Define a type \ci{dfn} as in line three of Figure \ref{plotafunction}. Then
+\exercise{Define a type \ci{dfn} as in line three of Listing \ref{plotafunction}. Then
 write a Function with header \ci{void apply(dfn fn,
 double *array, int array\_len)}, that takes as arguments a function, an
 array, and the length of the array, and changes each element
@@ -380,8 +386,6 @@ array, and the length of the array, and changes each element
 
 Test your Function by creating an array of the natural numbers $1, 2,
 3,\dots 20$ and transforming it to a list of squares.}
-
-\subsection{\ci{void}ing types} Forthcoming.
 
 \summary{\item You can pass functions as function arguments, just as you
 would pass arrays or numbers.
@@ -496,6 +500,22 @@ two birds against each other.
 The \ci{count} function will primarily call the \ci{birth\_or\_death}
 function, which checks for each bird whether it lives or dies.
 
+\comment{
+\labelitemi The \ci{birth\_or\_death} function takes two arguments, both of
+which are \ci{void *}. A \ci{void} pointer could be pointing to any type
+of data, so it is perfect for a generic list that could be holding
+anything. Internally, the \ci{GList} stores a \ci{void} pointer to your
+data, plus its own internal bookkeeping (such as pointers to other 
+list elements). Thus, when \ci{g\_list\_foreach} applies a function to a
+list's elements, the function being input must have a header that
+accepts a \ci{void*} as well. The third argument to
+\ci{g\_list\_foreach} gets passed through directly to the function being
+applied, which is why \ci{bird\_count} takes two arguments; this is
+another perfect opportunity for a \ci{void*} that could represent any
+type at all.
+
+The first line of \ci{bird\_count} p
+}
 \birdfig{birds.c}{The birds.}
 
 Now for the flock management routines, which will be implemented three
@@ -584,7 +604,6 @@ could be identical, but since this is not guaranteed, you will always
 want to use the form below, that reassigns the list to a new value for
 every add/delete. For example, the flock starts as \ci{NULL}, and is
 given its first non-\ci{NULL} value when the first item is inserted.
-
 
 
 \birdfig{listflock.c}{The birds, linked list version. The fatal flaw
@@ -692,7 +711,7 @@ expect to see those two names everywhere.
 
 \codefig{argv}{Command-line parsing by directly reading \ci{argv}.}
 
-Figure \ref{argv} shows the rudimentary use of \ci{argc} and \ci{argv}.
+Listing \ref{argv} shows the rudimentary use of \ci{argc} and \ci{argv}.
 Here is a sample usage from my command line:
 \begin{lstlisting}
 >>>  /home/klemens/argv one 2 --three fo\ ur "cinco -- \"five\""
@@ -744,7 +763,7 @@ an alternative, the GNU C library provides a library named \cind{argp}
 that provides many more features and does more automatically, but is
 correspondingly more complex and less portable.} 
 
-Figure
+Listing
 \ref{getopt} shows a program that will display a series of exponents.
 As explained by the message on lines 9--14, you can set the minimum of
 the series via \ci{-m}, the maximum via \ci{-M}, and the increment via
@@ -762,7 +781,7 @@ There are three steps to the process:
 \begin{itemize}
 \item \ci{\#include <unistd.h>}.\footnote{Apophenia's aggregate header,
 \ci{\#include <apophenia/headers.h>} includes \cind{unistd.h}.}
-\item Specify a set of letters indicating valid single-letter switches in a crunched-together string like line 7 of Figure \ref{getopt}. If the switch
+\item Specify a set of letters indicating valid single-letter switches in a crunched-together string like line 7 of Listing \ref{getopt}. If the switch
 takes in additional info (here, every switch but \ci{-h}), indicate this with a colon after the letter. 
 \item Write a \ci{while} loop to call \ci{getopt} (line 26), and then
 act based upon the value of the \ci{char} that \ci{getopt} returned.
@@ -782,6 +801,11 @@ Finally, notice that the program provides human assistance. If the user
 gives the \ci{-h} switch or leaves off all switches entirely, then the
 program prints a help message and exits. Every variable that the
 user could forget to set via the command line has a default value.
+
+\exercise{Listing \ref{plotafunction} (page \pageref{plotafunction}) is hard-coded to plot a range from
+$x=0$ to $x=15$. Modify it to use \ci{getopt} to get a minimum and 
+maximum from the user, with zero and fifteen as defaults. Provide help
+if the user uses the \ci{-h} flag.}
 
 \section{More tools} 
 Since C is so widely used, there is an ecosystem of tools built around

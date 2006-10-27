@@ -243,7 +243,7 @@ the system will add $\xv\betav$ to \ci{beta\_dot\_x}, not just write it in,
 so \ci{beta\_dot\_x} needs to start as all zeros.
 \cindex{gsl\_blas\_dgemv|)}
 
-\paragraph{Vector $\cdot$ vector}
+\paragraph{Vector $\cdot$ vector}\label{ddot}
 To find the dot product of two vectors, use this function:
 \cindex{gsl\_blas\_ddot}
 \begin{lstlisting}
@@ -269,7 +269,7 @@ and the returned value.
 
 
 \comment{
-For example, \label{ddot}
+For example, 
 
 \begin{lstlisting}
 double *beta_dot_gamma;
@@ -665,17 +665,51 @@ its address to the various functions, as in the call to
 \ci{apop\_\-vec\-tor\_\-show} above.
 \cindex{apop\_vector\_show}
 
-If you want to retain the vector after the function exits, your best bet
-is to just copy it to another vector:
+Apopehnia provides a few macros that are significantly less verbose than
+the above use of \ci{gsl\_matrix\_row}, but may or may not be more
+readable. The macro
+\cindex{APOP\_MATRIX\_ROW}
+\cindex{APOP\_MATRIX\_COL}
+\begin{lstlisting}
+APOP_MATRIX_ROW(m, row, v);
+\end{lstlisting}
+expands to
+\begin{lstlisting}
+gsl_vector apop_vv_v = gsl_matrix_row(m, row).vector;
+gsl_vector *v        = &apov_vv_v
+\end{lstlisting}
+meaning that the macro declares a typical pointer to a \ci{gsl\_vector},
+which can be handled as normal. You will never deal with the
+\ci{apop\_vv\_v} variable, and so can ignore it as the internal
+machinery that it is.
+
+The main drawback to the \ci{APOP\_MATRIX\_ROW} and \ci{APOP\_MATRIX\_COL}
+macros is that they make declarations, but do not {\em look}
+like declarations.  However, the hidden \ci{apop\_vv\_v} variable is
+automatically-allocated memory, and the \ci{v} pointer required no new
+memory allocation---it points to data elsewhere.  Therefore, unlike the
+standard declarations of a \ci{gsl\_vector}, this vector automatically
+disappears once it is out of scope.  If you want to retain the vector
+after the function exits, your best bet is to just copy it to another
+vector. For example, given \ci{a\_matrix}, you could quickly copy the
+contents of the fifth column to a new vector via:
 
 \cindex{gsl\_vector\_alloc}
 \cindex{gsl\_vector\_memcpy}
-\cindex{gsl\_matrix\_col}
 \begin{lstlisting}
 gsl_vector *a_new_vector = gsl_vector_alloc(a_matrix->size1);
-gsl_vector v = gsl_matrix_col(a_matrix, 4).vector;
+APOP_MATRIX_COL(a_matrix, 4, v);
 gsl_vector_memcpy(a_new_vector, &v);
 \end{lstlisting}
+
+For the \ci{apop\_data} structure, the analogous functions are
+\cind{APOP\_ROW} and \cind{APOP\_COL}; given an \ci{apop\_data} set
+\ci{d}, one could produce a vector version of the fifth column named \ci{v} 
+using:
+\begin{lstlisting}
+APOP_COL(d, 4, v);
+\end{lstlisting}
+
 
 \index{submatrices}
 \paragraph{Submatrices} Just as one can extract a column or row
@@ -828,7 +862,7 @@ losing its way.
 
 Errors compound, so adding ten numbers
 with four significant digits can leave you with only three significant
-digits. As a general rule of thumb, if you are writing an internal
+digits. As a general rule of thumb, if you are writing a
 function to act on a \ci{float}, use \ci{double} variables internally,
 and if you are taking in \ci{double}s, use \ci{long double} internally.
 
@@ -840,10 +874,10 @@ have a column of a thousand values each around $\frac{1}{2}$. Then the
 product of a thousand of these is about $2^{-1000}$, which strains what
 a \ci{double} can represent. Here is a table of powers of two, as
 represented by a \ci{double}. For $i>1,000$, a
-modest number of data points, the system throws in the towel and just
+modest number of data points, the system throws in the towel and 
 calls $2^i = \infty$ and $2^{-i} = 0$; these are referred to as
-\vocab{overflow errors} and \vocab{undeflow errors}, respectively. For those who would like
-to try this at home, figure \ref{powersoftwo} shows the code used to
+an \vocab{overflow error} and \vocab{undeflow error}, respectively. For those who would like
+to try this at home, Listing \ref{powersoftwo} shows the code used to
 produce this table.
 \cindex{ldexp}
 \codefig{powersoftwo}{Find the computer's representation of $2^i$ and $2^{-i}$ for large $i$.}

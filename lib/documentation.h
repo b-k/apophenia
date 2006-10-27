@@ -245,16 +245,16 @@ gsl_rng *       r;
         //create the database and the data table.
         apop_db_open("runs.db");
         apop_table_exists("samples",1); //If the table already exists, delete it.
-        apop_query_db("create table samples(iteration, process, value); begin;");
+        apop_query("create table samples(iteration, process, value); begin;");
 
         //populate the data table with runs.
         for (i=0; i<1000; i++){
                 p1      = process_one(r);
                 p2      = process_two(r);
-                apop_query_db("insert into samples values(%i, %i, %g);", i, 1, p1);
-                apop_query_db("insert into samples values(%i, %i, %g);", i, 2, p2);
+                apop_query("insert into samples values(%i, %i, %g);", i, 1, p1);
+                apop_query("insert into samples values(%i, %i, %g);", i, 2, p2);
         }
-        apop_query_db("commit;"); //the begin-commit wrapper saves writes to the drive.
+        apop_query("commit;"); //the begin-commit wrapper saves writes to the drive.
 
         //pull the data from the database. Use the GSL's vector views to minimize copying.
         m  = apop_db_to_crosstab("samples", "iteration","process", "value");

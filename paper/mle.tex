@@ -4,7 +4,7 @@
 
 There have been  
 closed-form solutions for the optimal parameters of the various models
-presented to thips point. 
+presented to this point. 
 \comment{
 Maximum likelihood estimators (MLEs) are the bread and butter of
 statistics.  Most of the techniques discussed so far are MLE
@@ -37,7 +37,7 @@ Define the \vocab{log likelihood function} as $L=\ln P$, the \vocab{score} as
 
 \begin{eqnarray}
 S&=&{\partial \ln P\over \partial \theta} \nonumber\\
-&=&-{\partial L \over \partial \theta},		\nonumber
+&=&{\partial L \over \partial \theta},		\nonumber
 \end{eqnarray}
 
 and the \vocab{information matrix} as
@@ -52,19 +52,61 @@ of Section \ref{distlist}, $L$ is often much easier to deal with, yet
 is equivalent to the PDF for most of our purposes---notably, if we have
 found a maximum for one, the we have found a maximum for the other.
 
+\paragraph{A \ind{Bernoulli} example} Say that we have nine draws from a
+Bernoulli distribution, which you will recall from page \pageref{bernie}
+means that the draw is 1 with probability $p$ and is 0 with probability
+$1-p$, and say that in our case five draws were ones and four were zeros. The likelihood
+of drawing five ones is $p^5$; the likelihood of drawing four zeros is
+$(1-p)^4$; putting them together, the likelihood of 
+arbitrary value of $p$ given this data set $\xv$ is
+$$P(p|\xv) = p^5\cdot (1-p)^4.$$
+The log likelihood is thus
+$$L(p|\xv) = 5 \ln(p)+ 4 \ln(1-p),$$
+the score is 
+\begin{equation}
+S(p|\xv) = {5\over p} - {4\over (1-p)}, \label{llscore}
+\end{equation}
+and the information value (a $1\times1$ matrix) is
+$$I(p|\xv) = {5\over p^2} + {4\over (1-p)^2}.$$
+
+Both intuitively and for a number of reasons discussed below, it makes
+sense to focus on the most likely value of $p$---that is, the value that
+maximizes $P(p|\xv)$. Since the log is a monotonic transformation, $p$
+maximizes $P(p|\xv)$ if and only if it maximizes $L(p|\xv)$. And recall
+from basic calculus that a necessary condition for a smooth function
+like $L(p|\xv)$ to be at a maximum is that ${dL\over dp} = 0$---in other
+words, that $S(p|\xv) = 0$. Setting Equation \ref{llscore} to zero and
+solving for $p$ gives $p={5\over 9}$. 
+
+But a zero derivative can indicate either a maximum or a minimum; to
+tell which, we look at the second derivative. If the second derivative
+is negative and the first derivative is zero, then the first derivative
+is about to become negative---the function is
+beginning to dip downward. At this point, the function must be at a
+maximum and not a minimum.
+
+Since the information matrix is customarily the negation of the score,
+we can check that we are at a maximum and not a minimum by verifying
+that the information matrix is positive---and indeed it is: $I=4.05$.
+
+To summarize, given $p={5\over 9}$, $P=0.0020649$, $L=-6.182$, $S=0$,
+and $I=4.05$.
+
+
+\paragraph{More on $L$, $S$, and $I$}
 \label{precisionfix}
 Further, consider calculating the likelihood function above given
 a thousand data points.  Then the probability of observing the data set
 we have (fixing $p$ for now) is $\prod_{i=1}^{1000} P(x_i)$.  Since each
 $P(x_i)\in (0,1]$, this product is typically on the order of $1\times
-10^{-1000}$. This is a delicate number, and details of implementation in
-memory could easily break it; this risks what computer scientists call an
-{\sl underflow error} (see page \pageref{precisionproblem}). Taking logs, each value of $p_i$ is now a negative
-number, e.g., $\ln(0.5)\approx -0.69$ and $\ln(0.1)\approx -2.3$.  But the
+10^{-1000}$. As discussed on page \pageref{precisionproblem}, such a
+number is too delicate for a computer to readily deal with it.
+Taking logs, each value of $p_i$ is now a negative
+number ( e.g., $\ln(0.5)\approx -0.69$ and $\ln(0.1)\approx -2.3$),  and the
 product above is now a sum: $$\ln\left[\prod_{i=1}^{1000} P(x_i)\right]
 = \sum_{i=1}^{1000} \ln\left(P(x_i)\right).$$ Thus, the log likelihood of our typical
-data set is on the order of -1000 instead of $1\times 10^{-1000}$---much
-more robust and manageable.\footnote{Zero probability events are still
+thousand-point data set is on the order of -1000 instead of $1\times 10^{-1000}$---much
+more robust and manageable.\comment{Zero probability events are still
 a problem: they make the original likelihood product zero, and the log
 likelihood $-\infty$. The problem is that if a statistical model
 specifies a zero-probability event, and that event happens, then the

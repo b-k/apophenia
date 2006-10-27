@@ -560,9 +560,12 @@ apop_data * apop_data_summarize(apop_data *indata){
 			apop_name_add(out->names, rowname, 'r');
 		}
 	for (i=0; i< indata->matrix->size2; i++){
-                v       = gsl_matrix_column(indata->matrix, i);
+        APOP_MATRIX_COL(indata->matrix, i, v);
+		mean	= apop_vector_mean(v);
+		var 	= apop_vector_var_m(v,mean);
+/*        v       = gsl_matrix_column(indata->matrix, i);
 		mean	= apop_vector_mean(&(v.vector));
-		var 	= apop_vector_var_m(&(v.vector),mean);
+		var 	= apop_vector_var_m(&(v.vector),mean);*/
 		stddev	= sqrt(var);
 		gsl_matrix_set(out->matrix, i, 0, mean);
 		gsl_matrix_set(out->matrix, i, 1, stddev);

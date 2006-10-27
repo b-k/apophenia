@@ -10,6 +10,10 @@
 --apop_t_test returns GSL_NAN when given a one-element vector instead of
 hanging.
 --no more soft links in the tgz file==>may work better on Windows machines.
+--apop_(vector|matrix)_(map|apply) will apply a function to every
+row of a matrix or every element of a vector. The map functions return a
+gsl_vector.
+--bug fix in apop_test_goodness_of_fit.
 
 		September 2006
 

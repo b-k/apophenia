@@ -74,7 +74,7 @@ and similarly for higher powers as well:
 \begin{eqnarray*}
 {\rm skew}\left(f(x)\right)&=&\int_{\forall x} \left(f(x) - \overline{f(x})\right)^3 p(x) dx\\
 {\rm kurtosis}\left(f(x)\right)&=&\int_{\forall x} \left(f(x) - \overline{f(x})\right)^4 p(x) dx.
-\end{eqnarray*}
+\end{eqnarray*} \blindvocab{noncentral moment}
 These three integrals are the \vocab{central moments} of $f(x)$. They
 are central because we subtracted the mean from the function before
 taking the second, third, or fourth power.\footnote{The
@@ -309,7 +309,7 @@ reference, and each requires a pointer to a \ci{gsl\_rng}, which will be
 named \ci{r}.
 
 
-\paragraph{Bernoulli\index{Bernoulli distribution|textbf}}
+\paragraph{Bernoulli\index{Bernoulli distribution|textbf}}\label{bernie}
 
 The number of times that an event which has likelihood $p$ happens in
 one trial. I.e., $x$ is zero or one here.
@@ -361,7 +361,7 @@ Since $n$ is known and $E(x)$ and $\var(x)$ are values calculated from
 the data, Equations \ref{binome} and \ref{binomv} are an oversolved
 system of two variables for one unknown, $p$. Thus, you can test for
 \vocab{excess variance}, which indicates that there are interactions that
-falsify that the observations were iid Bernoulli events.
+falsify that the observations were \vocab{iid} Bernoulli events.
 
 \paragraph{Normal\index{Normal distribution|textbf}}
 

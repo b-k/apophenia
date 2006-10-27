@@ -15,7 +15,7 @@ C-specific. The functional approach, stacks of frames, debugging,
 test functions, and overall good style are immediately applicable to
 virtually every programming language in use today.\footnote{What does
 change from language to language?  Besides the details of syntax, the
-rules for scope and the call-by-value/call-by-reference mechanism tend
+rules for scope and the call-by-value/call-by-address mechanism tend
 to be different for every language. When faced with a new language, I
 always check the scoping rules first.} Thus, this chapter on C may help
 the reader to become a better programmer with any programming language.
@@ -438,10 +438,65 @@ do {
 \end{lstlisting}
 Naturally, you would want to run \ci{eval\_fn()} at least once.
 
-\comment{
-\exercise{Modify \bi{hello\_world.c} to print its greeting five times,
-then re-compile and re-run it.}
-}
+\paragraph{The birthday example} The \ind{birthday paradox} is a staple
+of undergraduate statistics classes. The professor writes down the birth
+date of every student in the class, and finds that even though there is
+a 1 in 365 chance that any given pair of students have the same birthday, 
+the odds are good that there is a match in the class at large.
+
+\lstset{numbers=left, numberstyle=\scshape}
+\codefig{birthday}{Print the odds that other students share my birthday,
+and that any two students in the room share a birthday.}
+\lstset{numbers=none}
+
+Listing \ref{birthday} shows code to find the likelihood that another
+student shares the first person's birthday, and the likelihood that any
+two students share a birthday. 
+
+Lines 1--7 are introductory material, to be discussed below, including a
+preface \ci{\#include}-ing a few external files, and a list of the
+dramatis person\ae: variables named \ci{no\_match}, \ci{matches\_me},
+and \ci{ct}.
+
+Line 8 prints a header line labelling the columns of numbers the
+\ci{for} loop will be producing, and line 9 begins the \ci{for} loop
+itself. As above, line 9 tells us that the counter \ci{ct} will start at
+two, and count up until it reaches 40.
+
+As for the math itself, it is easier to calculate the complement---the odds that
+nobody shares a birthday. The odds that one person does not share the first person's
+birthday is ${364\over 365}$; the odds that two people both do not share the
+first person's birthday is $\left(364\over 365\right)^2$, et
+cetera.\footnote{We assume away leap years, and the fact that the odds
+of being born on any given day are not exactly $1/365$---more children
+are born in the summer.} You can see this calculation on line ten.
+
+As above, the odds that the second person does not share the first
+person's birthday is $1 - \left(364\over 365\right)$. The odds that an
+additional person shares no birthday with the first two (given that the
+first two do not share a birthday) is $1 - \left(363\over 365\right)$,
+so the odds that the first three do not share a birthday is:
+\begin{equation}
+\left(1 - \left(364\over 365\right)\right)\left(1 - \left(363\over 365\right)\right).
+\label{birthmath}
+\end{equation}
+
+This expression is best produced incrementally. In the introductory
+material, \ci{no\_match} was initialized at 1, and on line 11, 
+another element of Equation \ref{birthmath} gets
+multiplied in to \ci{no\_match} 
+at each step of the \ci{for} loop.
+
+Line 12 prints the results. The first element in the \ci{printf} will be
+discussed in detail below, but the next elements indicate what is to be
+printed: the counter, \ci{matches\_me*100}, and \ci{1-(no\_match*100)}.
+As you can verify by compiling and running the program, it prints the
+odds in a percentage format rather than as probabilities $\in [0,1]$.
+
+\exercise{Modify the \ci{for} loop to verify that the program prints the
+right values for a class of one student.}
+
+
 \subsection{Comments} \index{commenting code|(}
 Put a long block of comments 
 at the head of a file and at the head of each function to describe what
@@ -896,7 +951,7 @@ list consists of a variable name prepended by the type that that
 variable should be. You can see that both versions of \ci{is\_even}
 take one integer as an input, and
 \ci{round} takes one floating-point number.
-As shown in the examples below, e.g. line 2 of Figure \ref{dosomething}, a
+As shown in the examples below, e.g. line 2 of Listing \ref{dosomething}, a
 function can take multiple inputs, in which case there will be a
 comma-separated list in the parentheses in the header.
 
@@ -962,7 +1017,7 @@ is sent back to the function which had called the frame into existence.
 
 One way to think about this is in terms of a \vocab{stack} of frames.
 The base the stack is always a function named \ci{main}.  For example,
-in the program in Figure \ref{dosomething} the computer will ignore the
+in the program in Listing \ref{dosomething} the computer will ignore the
 function \ci{do\_something}, instead starting its work on line eight,
 where it finds the \ci{main} function head: \ci{int main(void)}. It
 will create a \ci{main} frame and then start working, first reading the
@@ -1182,7 +1237,7 @@ A common error is to forget that global variables are put in all function
 frames, but only {\sl copies} of the variables in the function's argument
 list are put in the frame.  
 
-Figure \ref{callbyval} shows a sample program demonstrating the
+Listing \ref{callbyval} shows a sample program demonstrating the
 call-by-value paradigm.  
 When the \ci{doubling} function is called, it puts a copy of \ci{a} into \ci{a\_c} and a copy of \ci{b}
 into \ci{b\_c}. It gives \ci{a\_c} the value of twice \ci{b\_c} and returns that value. But \ci{a}
@@ -1501,10 +1556,10 @@ called functions to create executable calling functions.
 
 
 \subsection{The \ind{linking} step}
-The next step in the process is \vocab{linking}. At the moment, we have one
+The next step in the process is linking. At the moment, we have one
 function that calls \ci{gsl\_matrix\_add} in one file, and in the
 GSL library, we have machine instructions that dictate how to construct
-a frame to execute the \ci{gsl\_matrix\_add} function; the linker links
+a frame to execute the \ci{gsl\_matrix\_add} function; the \vocab{linker} links
 the call and the execution, gathering together all the necessary black
 boxes from disparate locations.
 
@@ -1612,6 +1667,125 @@ you can imagine.
 \end{itemize}
 }
 
+\section{The debugger} \index{debugging|(} \index{gdb@\ci{gdb}|see{debugging}} \label{debug}
+Scripting languages typically show every line as it is being executed,
+so when something breaks, the user can see the exact line in the code
+where things went wrong. In the world of C, the same line-by-line
+execution is achieved using a \vocab{debugger}. You may want to get into the
+habit of always running your programs using the debugger, whether you
+are actively debugging or not.
+
+To debug the program \ci{run\_me} under the debugger, type \ci{gdb
+run\_me} at the command line.  You will be given the gdb
+prompt.\footnote{There are a number of graphical shells built
+around gdb, which list local variables and let you click on parts of
+your code to set breakpoints. Some are stand-alone programs like \bi{ddd} and others are integrated into IDEs. Their operation is much like 
+that described here for the command-line debugger, except
+it involves using the mouse more. There is currently a list of graphical
+front-ends available at \url{http://sources.redhat.com/gdb/links/}.}
+
+If you know the program will segfault, then at this point, just run the program
+by typing \ci{run}, and wait for it to break. When it does, you will
+be returned to gdb's prompt, so you can interrogate the 
+program. 
+
+If the debugger complains that it can't find
+any debugging symbols, then that means that you forget the \bi{-g}
+switch when you compiled the program. Without that switch, the compiler
+discards the names of variables and other information necessary for
+debugging. Unless you are worried about competitors reverse-engineering
+your code, there is no reason not to always include \bi{-g} in the
+compilation.
+
+The first thing you will want to know is where you are in the program. You
+can do this with the \ci{backtrace} command, which you can abbreviate to
+either \ci{bt} or \ci{where}. It will show you the \ind{stack} of function
+calls that were pending when the program stopped.  The first, frame
+\#0, is always \ci{main}, where the program started. If \ci{main}
+called another function, then that will be frame \#1, et
+cetera.\footnote{Fast debugging frequently involves jumping among
+frames---that is, (debugging $\neq$ stepping slowly).
+Some systems provide debuggers that do not allow the user to see the
+stack of frames or jump to an arbitrary frame; if the debugger is limited in
+this way, it is probably a good indication that the system is not designed
+for programming beyond simple scripts.} Often, your program will break
+somewhere in the internals of a piece of code you did not write, such
+as in a call to \ci{mallopt}. Ignore those: you did not find a bug in
+\ci{mallopt}. Find the last line that is in the code that you wrote.
+
+At this point, the best thing to do is look at a listing of your code
+in another window and look at the line the debugger pointed out. Often,
+knowing which line failed is enough to make the error painfully obvious.
+
+
+If the error is still not evident, then go back to the debugger and look
+at the variables. You need to be aware of which frame you are working in,
+so you know which set of variables you have at your disposal.  You
+will default to the last frame in the stack; to change to frame number
+three, give the command \ci{frame 3} (\ci{f 3} for short).
+
+Once you are in the frame you want, get information about the
+variables. You can get a list of the local variables using \ci{info
+locals}. You can get information about the arguments to the function
+using \ci{info args} (though this information is already in the frame
+description). Or, you can print any variable that you think may be in the
+frame using {\tt print var\_name}, or more briefly, \ci{p var\_name}.
+More generally, you can print the value of any expression in scope:
+\ci{p sqrt(var)} or \ci{p apop\_show\_matrix(m)} will display the square
+root of \ci{var} and the matrix \ci{m}, provided the variables and
+functions are available to the scope in which you are working.
+
+GDB has its own syntax for viewing the contents of an array. If you
+would like to see the first five elements of the array \ci{items},
+then use: \ci{p *items@5}.
+
+Sometimes, you will swear up and down that the line the program segfaulted on is
+entirely correct; in that case, the memory had probably been corrupted
+earlier and you will need to use a memory debugger to find the error;
+see page \pageref{valgrind}.
+
+\paragraph{Breaking the program} If your program is doing things wrong but is not kind
+enough to segfault, then you will need to find places to halt the program
+yourself. Do this with the \ci{break} command. For a program with only
+one file of code, simply give a line number: \ci{break 35}. With many
+files, you may need to specify a file name: \ci{break file2.c:35}. You
+may also want the program to only break under certain conditions, such
+as when an iterator reaches 10,000. GDB lets you do this by specifying
+conditions: \ci{break 35 if counter$>$10000}.
+
+All breakpoints are given a number, which can be listed with
+\ci{info break}. You can delete break point number three with
+the command \ci{del 3}.
+
+Once you have set the breakpoints, \ci{run} will run the program until it
+reaches a break point, and then you can apply the interrogation techniques
+above. You may want to carefully step through from there; \ci{s}
+will step to the next line, which could mean backing up in the current
+function or going to a subfunction. Alternatively, \ci{next} or 
+\ci{n} will step through the function (which may involve backtracking) but
+will run without stopping in any subframes which may be created
+(i.e., if subfunctions are called).  \ci{until} or \ci{u} will keep
+going until you get to the next line in the function, so the debugger
+will run through subfunctions and loops until forward progress is made
+in the current function.  Finally, \ci{c} will continue along until the next
+break point or the end of the program.\footnote{A mnemonic device for
+remembering which is which: \ci{s} is the slowest means of stepping,
+\ci{n} slightly faster, \ci{u} still faster, and \ci{c} the fastest. In
+this order, they spell \ci{snuc}, which is almost an English word
+with implications of stepping slowly.} This is also a good place to
+point out that just hitting $<$enter$>$ will repeat the last command,
+so you won't have to keep hitting \ci{n} to step through many lines.
+\index{debugging|)}
+
+\summary{\item The debugger will allow you to view intermediate results
+at any point along a program's execution.
+\item You can either wait for the program to segfault by itself, or use
+\bi{break} to insert breakpoints.
+\item You can print any expression or variable using \ci{p variable}.
+\item Once the program has stopped, use \ci{s}, \ci{n}, and \ci{u} to
+step through the program at various speeds.
+}
+
  \label{prepointers}\section{Pointers} \label{pointers} \index{pointers|ff}
 
 Pointers are the thing that really distinguishes C from scripting
@@ -1670,8 +1844,8 @@ may or may not help with keeping them straight---but you will see that
 having the location of data solves a number of problems. The key problems
 that they solve in C are handling references and implementing arrays.
 
-\paragraph{Call-by-reference v \ind{call-by-value}} 
-\blindvocab{call-by-reference} \index{frames} 
+\paragraph{Call-by-address v \ind{call-by-value}} 
+\blindvocab{call-by-address} \index{frames} 
 First, a quick review of how functions are called: when you call a function,
 the computer sets up a separate frame for the function, and puts into
 that frame {\it copies} of all of the variables that have been passed
@@ -1717,7 +1891,7 @@ is easy for the function to change the value pointed to to seven. When
 the function returns, in the \airq{after} picture, the copy of a finger is
 destroyed but the changes are not undone.  The original finger (which
 hasn't changed and is pointing to the same place it was always pointing
-to) will now be pointing to a modified value.  Figure \ref{callbyref}
+to) will now be pointing to a modified value.  Listing \ref{callbyref}
 gives a sample program which does this.
 
 
@@ -1729,7 +1903,7 @@ gives a sample program which does this.
 \end{figure*}
 
 \lstset{numbers=left, numberstyle=\scshape}
-\codefig{callbyref}{Call-by-reference.}
+\codefig{callbyref}{Call-by-address.}
 \lstset{numbers=none}
 
 You can see that the code has stars everywhere. These
@@ -1787,7 +1961,7 @@ will write \ci{int * k, b} (allocate a pointer named \ci{k}
 and an \ci{int} named \ci{b}) when you meant \ci{int *k, *b} (allocate two pointers). The star also
 still means multiply; if you think there is ambiguity, use parentheses.
 
-Returning to the code in Figure \ref{callbyref}, in the \ci{main}
+Returning to the code in Listing \ref{callbyref}, in the \ci{main}
 function, \ci{k} is a pointer, the address of an integer, as
 indicated by the star in its declaration on line 10. To print the integer
 being pointed to, as on line 13, we use \ci{*k}.
@@ -1796,7 +1970,7 @@ which will be named \ci{k\_c} (so \ci{*k\_c} is an integer),
 and a plain integer, which will be named
 \ci{b\_c}.
 
-Now for the call-by-reference trick.  When the call to \ci{doubling}
+Now for the call-by-address trick.  When the call to \ci{doubling}
 is made on line 12, we pass the pointer \ci{k}.
 The computer builds itself a frame, using a copy of
 \ci{k}---that is, a copy of the address of an integer. Both
@@ -2300,7 +2474,7 @@ ungraceful overallocation or the precise but lengthy \ci{realloc}
 route. Generally, strings for haphazard messages or labels are fine with 
 an allocation like \ci{char hello[1000]}, while anything in a
 \ci{for} loop probably merits the \ci{realloc} treatment;
-see Figure \ref{dummy}, page \pageref{dummy}, for an example. Apophenia
+see Listing \ref{dummy}, page \pageref{dummy}, for an example. Apophenia
 provides two convenience functions, \cind{apop\_strcat} and
 \cind{apop\_strcpy}, that do the \ci{realloc} for you; see the
 online reference for details.
@@ -2335,125 +2509,6 @@ and \ci{strcat} to concatenate two strings.
 text, variable strings, and numbers. \ci{printf} will dump that string
 to the screen; \ci{sprintf} will store it in a (pre-allocated) string;
 \ci{fprintf} will write it to a file (see page \pageref{fprintf}).
-}
-
-\section{The debugger} \index{debugging|(} \index{gdb@\ci{gdb}|see{debugging}} \label{debug}
-Scripting languages typically show every line as it is being executed,
-so when something breaks, the user can see the exact line in the code
-where things went wrong. In the world of C, the same line-by-line
-execution is achieved using a \vocab{debugger}. You may want to get into the
-habit of always running your programs using the debugger, whether you
-are actively debugging or not.
-
-To debug the program \ci{run\_me} under the debugger, type \ci{gdb
-run\_me} at the command line.  You will be given the gdb
-prompt.\footnote{There are a number of graphical shells built
-around gdb, which list local variables and let you click on parts of
-your code to set breakpoints. Some are stand-alone programs like \bi{ddd} and others are integrated into IDEs. Their operation is much like 
-that described here for the command-line debugger, except
-it involves using the mouse more. There is currently a list of graphical
-front-ends available at \url{http://sources.redhat.com/gdb/links/}.}
-
-If you know the program will segfault, then at this point, just run the program
-by typing \ci{run}, and wait for it to break. When it does, you will
-be returned to gdb's prompt, so you can interrogate the 
-program. 
-
-If the debugger complains that it can't find
-any debugging symbols, then that means that you forget the \bi{-g}
-switch when you compiled the program. Without that switch, the compiler
-discards the names of variables and other information necessary for
-debugging. Unless you are worried about competitors reverse-engineering
-your code, there is no reason not to always include \bi{-g} in the
-compilation.
-
-The first thing you will want to know is where you are in the program. You
-can do this with the \ci{backtrace} command, which you can abbreviate to
-either \ci{bt} or \ci{where}. It will show you the \ind{stack} of function
-calls that were pending when the program stopped.  The first, frame
-\#0, is always \ci{main}, where the program started. If \ci{main}
-called another function, then that will be frame \#1, et
-cetera.\footnote{Fast debugging frequently involves jumping among
-frames---that is, (debugging $\neq$ stepping slowly).
-Some systems provide debuggers that do not allow the user to see the
-stack of frames or jump to an arbitrary frame; if the debugger is limited in
-this way, it is probably a good indication that the system is not designed
-for programming beyond simple scripts.} Often, your program will break
-somewhere in the internals of a piece of code you did not write, such
-as in a call to \ci{mallopt}. Ignore those: you did not find a bug in
-\ci{mallopt}. Find the last line that is in the code that you wrote.
-
-At this point, the best thing to do is look at a listing of your code
-in another window and look at the line the debugger pointed out. Often,
-knowing which line failed is enough to make the error painfully obvious.
-
-
-If the error is still not evident, then go back to the debugger and look
-at the variables. You need to be aware of which frame you are working in,
-so you know which set of variables you have at your disposal.  You
-will default to the last frame in the stack; to change to frame number
-three, give the command \ci{frame 3} (\ci{f 3} for short).
-
-Once you are in the frame you want, get information about the
-variables. You can get a list of the local variables using \ci{info
-locals}. You can get information about the arguments to the function
-using \ci{info args} (though this information is already in the frame
-description). Or, you can print any variable that you think may be in the
-frame using {\tt print var\_name}, or more briefly, \ci{p var\_name}.
-More generally, you can print the value of any expression in scope:
-\ci{p sqrt(var)} or \ci{p apop\_show\_matrix(m)} will display the square
-root of \ci{var} and the matrix \ci{m}, provided the variables and
-functions are available to the scope in which you are working.
-
-GDB has its own syntax for viewing the contents of an array. If you
-would like to see the first five elements of the array \ci{items},
-then use: \ci{p *items@5}.
-
-Sometimes, you will swear up and down that the line the program segfaulted on is
-entirely correct; in that case, the memory had probably been corrupted
-earlier and you will need to use a memory debugger to find the error;
-see page \pageref{valgrind}.
-
-\paragraph{Breaking the program} If your program is doing things wrong but is not kind
-enough to segfault, then you will need to find places to halt the program
-yourself. Do this with the \ci{break} command. For a program with only
-one file of code, simply give a line number: \ci{break 35}. With many
-files, you may need to specify a file name: \ci{break file2.c:35}. You
-may also want the program to only break under certain conditions, such
-as when an iterator reaches 10,000. GDB lets you do this by specifying
-conditions: \ci{break 35 if counter$>$10000}.
-
-All breakpoints are given a number, which can be listed with
-\ci{info break}. You can delete break point number three with
-the command \ci{del 3}.
-
-Once you have set the breakpoints, \ci{run} will run the program until it
-reaches a break point, and then you can apply the interrogation techniques
-above. You may want to carefully step through from there; \ci{s}
-will step to the next line, which could mean backing up in the current
-function or going to a subfunction. Alternatively, \ci{next} or 
-\ci{n} will step through the function (which may involve backtracking) but
-will run without stopping in any subframes which may be created
-(i.e., if subfunctions are called).  \ci{until} or \ci{u} will keep
-going until you get to the next line in the function, so the debugger
-will run through subfunctions and loops until forward progress is made
-in the current function.  Finally, \ci{c} will continue along until the next
-break point or the end of the program.\footnote{A mnemonic device for
-remembering which is which: \ci{s} is the slowest means of stepping,
-\ci{n} slightly faster, \ci{u} still faster, and \ci{c} the fastest. In
-this order, they spell \ci{snuc}, which is almost an English word
-with implications of stepping slowly.} This is also a good place to
-point out that just hitting $<$enter$>$ will repeat the last command,
-so you won't have to keep hitting \ci{n} to step through many lines.
-\index{debugging|)}
-
-\summary{\item The debugger will allow you to view intermediate results
-at any point along a program's execution.
-\item You can either wait for the program to segfault by itself, or use
-\bi{break} to insert breakpoints.
-\item You can print any expression or variable using \ci{p variable}.
-\item Once the program has stopped, use \ci{s}, \ci{n}, and \ci{u} to
-step through the program at various speeds.
 }
 
 \section{\treesymbol Errors} The compiler will warn you of syntax

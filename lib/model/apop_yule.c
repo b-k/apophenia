@@ -71,7 +71,7 @@ static double yule_log_likelihood(const gsl_vector *beta, apop_data *d){
     bb	            = gsl_vector_get(beta, 0);
   long double   ln_bb		    = gsl_sf_lngamma(bb),
                 ln_bb_less_1    = log(bb-1);
-  gsl_vector *  v               = apop_matrix_apply(d->matrix, apply_me);
+  gsl_vector *  v               = apop_matrix_map(d->matrix, apply_me);
   double        likelihood      = apop_vector_sum(v);
     gsl_vector_free(v);
 	return likelihood + (ln_bb_less_1 + ln_bb) * d->matrix->size1 * d->matrix->size2;
@@ -82,7 +82,7 @@ static void yule_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vecto
     bb		= gsl_vector_get(beta, 0);
 double		    bb_minus_one_inv= 1/(bb-1),
 		        psi_bb	        = gsl_sf_psi(bb);
-  gsl_vector *  v               = apop_matrix_apply(d->matrix, dapply_me);
+  gsl_vector *  v               = apop_matrix_map(d->matrix, dapply_me);
   double        d_bb            = apop_vector_sum(v);
     gsl_vector_free(v);
     d_bb    += (bb_minus_one_inv + psi_bb) * d->matrix->size1 * d->matrix->size2;

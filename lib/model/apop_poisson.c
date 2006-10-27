@@ -57,7 +57,7 @@ static double poisson_log_likelihood(const gsl_vector *beta, apop_data *d){
   double        lambda      = gsl_vector_get(beta, 0);
   double        llikelihood = 0;
     ln_l 	= log(lambda);
-  gsl_vector *  v           = apop_matrix_apply(d->matrix, apply_me);
+  gsl_vector *  v           = apop_matrix_map(d->matrix, apply_me);
   double        ll          = apop_vector_sum(v);
     gsl_vector_free(v);
     return llikelihood - d->matrix->size1*d->matrix->size2*lambda;

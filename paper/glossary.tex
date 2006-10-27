@@ -8,46 +8,64 @@
 \parskip 12pt
 
 \gloss{affine linear projection}{A linear projection can always be
-expressed as a matrix $\bf T$, so that $\xv$ transformed is $\xv'{\bf
-T}$ or ${\bf T}\xv$. But any such projection maps $\bf 0$ to $\bf 0$. An
+expressed as a matrix $\bf T$ such that $\xv$ transformed is $\xv'{\bf
+T}$. But any such projection maps $\bf 0$ to $\bf 0$. An
 affine projection adds a constant, transforming $\xv$ to $\xv'{\bf T}+
-K$ or ${\bf T}\xv' + K$, so $\bf 0$ now transforms to a nonzero value.}
+K$, so $\bf 0$ now transforms to a nonzero value.}
 
-\gloss{ANOVA}{``The analysis of variance is a statistical technique for
-analyzing measurements depending on several kinds of effects operating
-simultaneously, to decide which kinds of effects are important and to
-estimate the effects.'' \citep{scheffe:anova}}
+\gloss{ANOVA}{``The analysis of variance is a body of statistical
+methods of
+analyzing measurements assumed to be of the structure [$y_i =
+x_{1i}\beta_1 + x_{2i} \beta_2 + \cdots + x_{pi}\beta_p + e_i$, $i=1,2,
+\cdots, n$], where the coefficients $\{x_{ji}\}$ are integers usually 0
+or 1'' \citep{scheffe:anova}}
 
 \gloss{apophenia}{The human tendency to see patterns in static.}
 
 \gloss{array}{A sequence of elements, all of the same type. An array of
 text characters is called a \qv{string}.}
 
-\gloss{arguments}{The inputs to a function.}
+\gloss{arguments}{The inputs to a function.} 
 
-\gloss{binary tree}{.}
+\gloss{binary tree}{A set of structures, similar to a \qv{linked list},
+where each structure consists of data and two pointers, one to a next-left
+structure and one to a next-right structure. One can typically go from the head of
+the tree to an arbitrary element much more quickly than if the same data
+were organized as a linked list.}
 
-\gloss{bootstrap}{.}
+\gloss{bootstrap}{By repeated sampling with replacement from a
+population, one can produce a sequence of \qv{iid} draws. The
+\qv{Central Limit Theorem}
+then applies, and one can find the expected value and variance of a
+parameter. The name implies that using samples from the data to learn
+about the data is a bit like pulling oneself up by the bootstraps.}
 
-\gloss{call-by-value}{.}
+\gloss{call-by-address}{When calling a function, sending to the function a
+copy of an input variable's location.}
 
-\gloss{call-by-reference}{.}
+\gloss{call-by-value}{When calling a function, sending to the function a
+copy of an input variable's value.}
 
 \gloss{Cauchy-Schwarz inequality}{Given the correlation coefficient
-between any two vectors $\xv$ and $\yv$, $\rho_{\xv\yv}$, $0\leq \rho_{\xv\yv}^2 \leq 1$.}
+between any two vectors $\xv$ and $\yv$, $\rho_{\xv\yv}$:  $0\leq \rho_{\xv\yv}^2 \leq 1$.}
 
-\gloss{CDF}{Cumulative density function. The integral of a \qv{PDF}.
+\glossy{CDF}{Cumulative density function. The integral of a \qv{PDF}.
 Its value at any given point indicates the likelihood that a draw from
 the distribution will be below the given point. Since the PDF is always
-non-negative, the CDF is monotonically nondecreasing, at $-\infty$,
-the CDF is always zero, and at $\infty$ the CDF is always one.}
+non-negative, the CDF is monotonically nondecreasing; at $-\infty$,
+the CDF is always zero; and at $\infty$ the CDF is always one.}
+
+\gloss{Central Limit Theorem}{Given a set of means, each from a set of
+\qv{iid} draws from any data set, the set of means will approach a Normal
+distribution as $n\to \infty$.}
 
 \gloss{central moments}{Given a data vector $\xv$ and mean $\overline
 \xv$, the $n^{\rm th}$ central moment is ${1\over n}\sum_{x\in \xv}
-(x-\xv)^n$. In the continuous case, if $x$ has distribution $p(x)$, then
+(x-\overline\xv)^n$. In the continuous case, if $x$ has distribution $p(x)$, then
 the  $n^{\rm th}$ central moment of $f(x)$ is $\int_{-\infty}^\infty
 (f(x)-\overline{f(x)})p(x) dx$. In both cases, the first central moment
-is always zero.}
+is always zero. The second is known as the \qv{variance}, the third as
+\qv{skew}, and the fourth as \qv{kurtosis}.}
 
 \gloss{compiler}{A non-interactive program to translate code from a human-readable
 \qv{source file} to a computer-readable \qv{object file}.  The compiler
@@ -58,15 +76,23 @@ just called the compiler.  The main compiler used in this book is
 
 \gloss{consistent}{A test is consistent if  the \qv{power} $\to 1$ as $n\to \infty$.}
 
-\gloss{correlation coefficient}{Given the covariance $\sigma_{\xv\yv}$,
-and variances $\sigma_\xv$ and $\sigma_\yv$,
+\gloss{correlation coefficient}{Given the square roots of the covariance and variances, $\sigma_{\xv\yv}$, $\sigma_\xv$, and $\sigma_\yv$,
 the correlation coefficient $\rho_{\xv\yv}\equiv{\sigma_{\xv\yv}\over
 \sigma_\xv \sigma_\xv}.$}
 
 \gloss{covariance}{For two data vectors $\xv$ and $\yv$, $\sigma^2_{\xv\yv}
 \equiv {1\over n}\sum_i(x_i-\overline \xv)(y_i-\overline \yv)$.}
 
-\gloss{crosstab}{.}
+\gloss{crosstab}{A two-dimensional table, where each row represents
+values of one variable ($y$), each column represents values of another
+variable ($x$), and each (row,column) entry provides some summary statistic of
+the subset of data where $y$ has the given row value and $x$ has the
+given column value. For example, $y$ may be gender, $x$ may be a set of
+age ranges, and the summary statistic may be average income; then the
+first cell would give the average income for males age 0--18, the one
+below it would give average income for females 0--18; the next colum
+would have values for males and females 18--25, et cetera.
+}
 
 \glossy{Cram\'er-Rao lower bound}{The elements of the covariance matrix of
 the estimate of a parameter vector must be equal to or greater than the
@@ -81,41 +107,45 @@ point in the program's execution.}
 \gloss{declaration}{A line of code that indicates the \qv{type} of a
 variable.}
 
-\gloss{degrees of freedom}{The number of dimensions along which a set of
-variables varies. If all $n$ variables are independent, then $df=n$, but if
+\gloss{degrees of freedom}{The number of dimensions along which a data set 
+varies. If all $n$ data points are independent, then $df=n$, but if
 there are restrictions that reduce the data's dimensionality, then
 $df<n$.}
 
-\gloss{dependency}{A statement in a Makefile indicating that one file,
-such as an \qv{object file}, depends on another, such as a \qv{source
-file}. When the depended-on file changes, the dependent file will need
+\gloss{dependency}{A statement in a Makefile indicating that one file
+depends on another, such as an \qv{object file} that depends on a \qv{source file}. 
+When the depended-on file changes, the dependent file will need
 to be re-produced.}
 
-\gloss{dummy variable}{.}
+\glossy{dummy variable}{A variable that takes on discrete values
+(usually just zero or one) to indicate the category in which an
+observation lies.}
 
-\gloss{efficiency}{A parameter estimate that comes as close as possible
+\glossy{efficiency}{A parameter estimate that comes as close as possible
 to achieving the \qv{Cram\'er-Rao lower bound}, and thus
 has as small a variance as possible, is dubbed an efficient estimate.}
 
 \gloss{expected value}{The first \qv{central moment}, aka the mean.}
 
-\gloss{frame}{.}
+\gloss{frame}{A collection of a function and all of the variables that
+are in \qv{scope} for the function.}
 
 \gloss{GCC}{The GNU Compiler Collection, which reads \qv{source files}
 in a variety of languages and produces \qv{object files} accordingly.
 This book only uses its ability to read and compile C code.}
 
-\gloss{generalized least squares}{The OLS model assumes that the
+\gloss{generalized least squares}{The \qv{ordinary least squares} model assumes that the
 covariance matrix among the observations is $\Sigma = \Iv$ (the identity matrix).
 A GLS model is any model that otherwise conforms to the OLS assumptions,
 but allows  $\Sigma$ to take on a different form.}
 
 \gloss{Gibbs sampling}{A method of Markov Chain Monte Carlo. All
 dimensions but one are held fixed, and a Monte Carlo method is used to
-determine the optimum value for the free dimension. Then, that dimension
-is held fixed and the next dimension is allowed to vary, and its optimum
-found. By repeatedly iterating through the dimensions, an overall
-optimum can be found.}
+determine the optimum value for the free dimension given the fixed
+values. Then, that dimension is held fixed at its new pseudo-optimum,
+and the next dimension is allowed to vary, and its optimum found. By
+repeatedly iterating through the dimensions, an overall optimum can
+be found.}
 
 \gloss{globbing}{The limited \qv{regular expression} parsing provided by
 a \qv{shell}, such as expandind \bi{*.c} to the full list of file names
@@ -146,20 +176,20 @@ solves this problem.}
 derivatives of the log likelihood. See also the \qv{Cram\'er-Rao lower
 bound}.}
 
-\gloss{Instrumental variable}{If a variable is measured with error, then
+\gloss{instrumental variable}{If a variable is measured with error, then
 the OLS parameter estimate based on that variable will not be
 \qv{unbiased}. An instrumental variable is a replacement variable that
 is highly correlated with the measured-with-error variable. A variant
-of OLS using the instrumental variable will produced unbiased parameter
+of OLS using the instrumental variable will produce unbiased parameter
 estimates.}
 
 \gloss{Interaction}{.}
 
 \glossy{interpreter}{A program to translate code from a human-readable
-language to a computer’s \qv{object code} or some other binary
+language to a computer's \qv{object code} or some other binary
 format. The user inputs individual commands, and then the interpreter
 produces the appropriate machine code and executes that code. Gnuplot
-and the sqlite3 command-line program can be used as interpreters. Compare
+and the sqlite3 command-line program are interpreters. Compare
 with \qv{compiler}. }
 
 \gloss{jackknife}{.}
@@ -171,9 +201,12 @@ with \qv{compiler}. }
 \glossy{library}{A set of functions and variables that perform tasks
 related to some specific task, such as numeric methods or 
 \qv{linked list} handling. The library is basically an \qv{object file}
-in a slightly different format.}
+in a slightly different format, and typically kept elsewhere on the library \qv{path}.}
 
-\gloss{linked list}{.}
+\gloss{linked list}{A set of structures, where each structure holds data
+and a pointer to the next structure in the list. One could traverse the
+list by following the pointer from the head element to the next element,
+then following that element's pointer to the next element, et cetera.}
 
 \gloss{linker}{A program that takes in a set of \qv{libraries} and
 \qv{object files} and outputs an executable program.}
@@ -188,8 +221,9 @@ text substituted in its place. For example, a \qv{preprocessor} may
 replace every occurence of  
 \ci{GSL\_MIN(a,b)} with \ci{((a) < (b) ? (a) : (b))}.}
 
-\gloss{method}{A structure can contain pointers to functions as well as
-plain data. Object-oriented programmers call a function inside a structure a method of the structure.}
+\gloss{method}{A \qv{structure} can contain pointers to functions as well
+as plain data. Object-oriented programmers call a function inside a
+structure a method of the structure.}
 
 \gloss{Monte Carlo method}{Generating information about a distribution,
 such as parameter estimates, by repeatedly making random draws from
@@ -212,7 +246,22 @@ combination of
 a number of independent variables, plus a Normally distributed error
 term.}
 
-\gloss{PDF}{Probability density function, such as the familiar bell-curve
+\gloss{overflow error}{When the value of a variable is too large for its
+type, unpredictable things may occur. For example, on some systems,
+\ci{MAX\_INT + 1 == -MAX\_INT}. The IEEE standard specifies that if a
+variable overflows, it be set to a special pattern indicating infinity.
+See also \qv{underflow error}.}
+
+\glossy{path}{A list of directories along which the computer will search
+for files. Most shells have a \ci{PATH} environment variable along which
+they search for executable programs. The preprocessor searches for header
+files included with angle brackets (e.g., \ci{\#include <stdlib.h>})
+along the directories in the  \ci{INCLUDEPATH} environment variable, which 
+can be extended using the \bi{-I} flag for the compiler. The linker
+searches for libraries to include using the \ci{LIBPATH} and its
+extenstions using the \bi{-L} compiler flag.}
+
+\glossy{PDF}{Probability density function, such as the familiar bell-curve
 of a Normal distribution. The total area under a PDF for any given range
 is equal to the probability that a draw from the distribution will fall
 in that range. The PDF is always nonnegative. Compare with \qv{CDF}.}
@@ -222,7 +271,7 @@ in that range. The PDF is always nonnegative. Compare with \qv{CDF}.}
 \gloss{plot}{A graphic with two or three axes and a function plotted
 along those axes. Not to be confused with a \qv{graph}.}
 
-\gloss{pointer}{The location of a piece of data.}
+\gloss{pointer}{A variable holding the location of a piece of data.}
 
 \gloss{power}{The likelihood of rejecting a false null. This is one
 minus the likelihood of a \qv{Type II error}.}
@@ -234,23 +283,24 @@ used to determine where the bottlenecks are in a slow-running program.}
 \gloss{query}{Any command to a database. Typically, the command uses 
 the \si{select} keyword to request data from the database, but a query
 may also be a non-question command, such as a command to create a new
-\qv{table}, drop an index, et cetera.}
+table, drop an index, et cetera.}
 
 \gloss{pipe}{A \qv{shell} facility that directly redirects the output
 from one program to the input of another.}
 
 \glossy{POSIX}{The Portable Operating System Interface standard.
-By the mid-1980s, a multitude of variants on the \qv{UNIX} operating system ap-
-peared; the Institute of Electrical and Electronics Engineers convened
-a panel to write this standard so that programs written on one ﬂavor
-of UNIX could be more easily ported to another ﬂavor. Santa Cruz
-Operation’s UNIX, International Business Machines’ AIX, Hewlett-
-Packard’s HP-UX, Linux, and others all more or less comply with this
+By the mid-1980s, a multitude of variants on the \qv{UNIX} operating
+system appeared; the Institute of Electrical and Electronics Engineers
+convened a panel to write this standard so that programs written on one
+flavor of UNIX could be more easily ported to another flavor. Santa
+Cruz Operation's UNIX, International Business Machines' AIX, Hewlett-
+Packard's HP-UX, Linux, and others all more or less comply with this
 standard.}
 
 \gloss{random number generator}{Formally known as a pseudorandom number
-generator, a function that produces a sequence of numbers that seem
-to have no pattern.}
+generator, a function that produces a deterministic sequence of numbers that seem
+to have no pattern. By initializing the RNG with a different \qv{seed},
+one can obtain different streams of numbers.}
 
 \gloss{scope}{The section of code that is able to refer to a variable.
 For variables declared outside of a function, the scope is 
@@ -260,20 +310,21 @@ the function.\footnote{There is also \qv{block scope}, which this book
 does not discuss; see \citet{kandr:c}.}}
 
 \gloss{score}{If the log likelihood function is $L(\thetav)$, then the
-score is the vector its derivatives: $S={\partial \ln P\over \partial \theta}$. }
+score is the vector of its derivatives: $S={\partial \ln P\over \partial \theta}$. }
 
 \gloss{seed}{The value with which a random number generator is initialized.}
 
 \gloss{segmentation fault}{An error wherin the program attempts to
 access a part of the computer's memory that was not allocated to the
-program. If reading from the memory, this is a security hole; if writing to
-the memory, this could destroy data or create system instability.
+program. If reading from unauthorized memory, this is a security hole; if writing to
+unauthorized memory, this could destroy data or create system instability.
 Therefore, the system catches segfaults and halts the program
-immediately when the occur.}
+immediately when they occur.}
 
 \gloss{shell}{A program that does little more than facilitate running
 other programs. When you log in to most text-driven systems, you are
-immediately put at the shell's input prompt.}
+immediately put at the shell's input prompt. Most include some amount of
+scripting capability.}
 
 \gloss{singular value decomposition}{Given an $m\times n$ data matrix $\Xv$ (where typically $m >> n$), it can
 be projected onto a basis space, consisting of the $n$ eigenvalues of
@@ -309,7 +360,9 @@ structure contains a pointer to a function, the function is called a
 \gloss{Structured Query Language}{A standard language for writing
 database \qv{queries}.}
 
-\gloss{type}{.}
+\gloss{type}{The class of data a variable is intended to represent, such
+as an integer, character, or structure (which is an amalgamation of
+subtypes).}
 
 \gloss{type cast}{A command to convert a variable from one \qv{type} to
 another. Some casts are done automatically, such as \ci{int}
@@ -321,16 +374,19 @@ requires an \ci{int}).}
 
 \gloss{Type II error}{Accepting the null when it is false.}
 
-\gloss{unbiased}{A test is unbiased if $(1-\beta)\geq \alpha\ \forall$ values of the parameter.
+\gloss{unbiased estimator}{A test is unbiased if $(1-\beta)\geq \alpha$ for all values of the parameter.
 I.e., you are less likely to accept the null when it is false than when
 it is true.}
 
+\gloss{underflow error}{When the value of a variable is smaller than the
+smallest number the system can represent. For example, on any
+modern system with finite-precision arithmetic, $2^{-10,000}$ is simply
+zero. See also \qv{overflow error}.}
 
 \glossy{UNIX}{An operating system developed at Bell Labs. Many
 call any UNIX-like operating system by this name (often by the plural, Unices),
 but UNIX properly refers only to the code written by Bell Labs, which
-has evolved into code owned by Santa Cruz Operation. Others are cor-
-rectly called \qv{POSIX}-compliant. The name does not stand for anything,
+has evolved into code owned by Santa Cruz Operation. Others are correctly called \qv{POSIX}-compliant. The name does not stand for anything,
 but is a pun on a predecessor operating system, Multics.}
 
 \gloss{weighted least squares}{A type of \qv{GLS} method wherein

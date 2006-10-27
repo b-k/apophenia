@@ -699,7 +699,7 @@ Some of these are full models, some are distributions, some are
 estimated via closed-form calculations and some via MLEs. However, all
 of them can be estimated via a form such as
 \begin{lstlisting}
-apop_normal.estimate(data,  NULL);
+apop_estimate *est = apop_normal.estimate(data,  NULL);
 \end{lstlisting}
 
 The optional parameter, set to \cinline{NULL} here,

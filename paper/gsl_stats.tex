@@ -117,13 +117,6 @@
 %\def\ttindex#1{\index{#1@{\tt #1}}}
 \def\ff#1{#1 {\it ff}} %e.g. \index{pointers|ff}
 
-\def\airq#1{{\sl #1}}
-\def\vocabmarker#1{\label{#1firstuse}}
-\def\blindvocab#1{\index{#1}\vocabmarker{#1}}
-\def\vocab#1{\airq{#1}\blindvocab{#1}}
-
-
-
 \def\skeyind#1{\index{#1@\sinlinetwo{#1} (SQL keyword)}\index{SQL keywords!\sinlinetwo{#1}}}
 \def\gkeyind#1{\index{#1@\ginlinetwo{#1} (Gnuplot keyword)}\index{Gnuplot keywords!\ginlinetwo{#1}}}
 \def\gsetind#1{\index{#1@\ginlinetwo{#1} (Gnuplot setting)}\index{Gnuplot settings!\ginlinetwo{#1}}}
@@ -135,12 +128,22 @@
 \renewcommand\NAT@idxtxt{\NAT@name}
 \makeatother
 
+%glossary + index
+\def\airq#1{{\sl #1}}
+\def\vocabmarker#1{\label{#1firstuse}}
+\def\blindvocab#1{\index{#1}\vocabmarker{#1}}
+\def\vocab#1{\airq{#1}\blindvocab{#1}}
+
 
 %code listing:
 \lstset{columns=fullflexible, basicstyle=\small, emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,gsl_vector,gsl_matrix},emphstyle=\bf\small}
 %\def\setlistdefaults{\lstset{frame=single, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
-\def\setlistdefaults{\lstset{frame=single, frameround=tttt, showstringspaces=false,%
- basicstyle=\small, language=C, breaklines=true,caption=,label=}}
+\def\setlistdefaults{\lstset{ showstringspaces=false,%
+ basicstyle=\small, language=C, breaklines=true,caption=,label=%
+,xleftmargin=\mwidth,%
+,frameshape=
+,frameshape={nnnynnnnn}{nyn}{nnn}{nnnynnnnn}
+}}
 \setlistdefaults
 %C inline just uses \tt, rather than any fancy encoding.
 %\def\cinline#1{\lstinline[language=C, showstringspaces=false, basicstyle=\small\bf,breaklines=true,breakatwhitespace=false,escapechar=\%]{#1}\setlistdefaults}
@@ -164,6 +167,7 @@
 \def\gitwo#1{{\tt #1}}
 \def\gind#1{\gindx{#1}{}\ginline{#1}}
 
+\comment{
 \long\def\codefigure#1#2#3{
 	\begin{figure}[htb]
     \indwcsub{sample code}{#1#2}
@@ -177,6 +181,20 @@ language=C, breaklines=true}
     \setlistdefaults
 	\end{figure}
 }
+}
+
+\long\def\codefigure#1#2#3{
+\begin{figure}[htb]
+    \indwcsub{sample code}{#1#2}
+\lstset{float=htb,caption={#3 Online source: \bi{#1#2}.},label={#1},%
+captionpos=b,xleftmargin=\mwidth,%
+%frameshape={nyn}{nnn}{nnn}{nyn},%
+showstringspaces=false,basicstyle=\small, emphstyle=\bf\small,%
+language=C, breaklines=true}
+\lstinputlisting{sources/#1#2}
+    \setlistdefaults
+\end{figure}
+}
 
 \long\def\codefig#1#2{\codefigure{#1}{.c}{#2}}
 
@@ -186,7 +204,7 @@ language=C, breaklines=true}
     \indwcsub{sample code}{#1}
 \lstset{showstringspaces=false, basicstyle=\small, emphstyle=\bf\small, language=C,%
 breaklines=true,%
-caption={#2 Online source: \bi{birds/#1}},frame=single,captionpos=b,label=#1}
+caption={#2 Online source: \bi{birds/#1}},captionpos=b,label=#1}
 \lstinputlisting{sources/birds/#1}
 	\vskip 0.5cm
     \setlistdefaults

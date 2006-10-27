@@ -334,6 +334,11 @@ void apop_cats_free(char ***freeme, int rows, int cols); //in apop_data.c
 apop_model * apop_model_copy(apop_model in); //this is in apop_estimate.c.
 
 void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
-gsl_vector *apop_matrix_apply(gsl_matrix *m, double (*fn)(gsl_vector*));
+
+gsl_vector *apop_matrix_map(gsl_matrix *m, double (*fn)(gsl_vector*));
+gsl_vector *apop_vector_map(gsl_vector *v, double (*fn)(double));
+void apop_matrix_apply(gsl_matrix *m, void (*fn)(gsl_vector*));
+void apop_vector_apply(gsl_vector *v, void (*fn)(double));
+
 __END_DECLS
 #endif

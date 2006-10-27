@@ -76,7 +76,7 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 static double normal_log_likelihood(const gsl_vector *beta, apop_data *d){
     mu	        = gsl_vector_get(beta,0),
     variance    = gsl_vector_get(beta,1);
-  gsl_vector *  v       = apop_matrix_apply(d->matrix, apply_me);
+  gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me);
   double        ll      = apop_vector_sum(v);
     gsl_vector_free(v);
 	return ll;

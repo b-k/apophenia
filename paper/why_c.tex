@@ -5,7 +5,7 @@ Computing} that is based on a language written in 1972.
 Why use C instead of a specialized language like SAS, Stata, SPSS,
 S-Plus, SIENA, SUDAAN, SST, SHAZAM, GAUSS, GAMS, GLIM, GENSTAT, GRETL, EViews,
 PcGive, MatLab, Minitab, Mupad, Maple, Mplus, Maxima, Mathematica, WinBUGS, TSP,
-HLM, R, RATS, LISREL, LIMDEP, Lisp-Stat, Octave, OxMetrics, Weka, or Yorick?
+HLM, R, RATS, LISREL, LIMDEP, Lisp-Stat, Octave, Orange, OxMetrics, Weka, or Yorick?
 There are more than enough books that advocate for the use of such
 languages; as one editor at a well-known scientific publishing company
 explained to me, ``\dots most of the statistics [book] market is quite
@@ -26,8 +26,8 @@ useful statistical methods infeasible.
 \codefig{timefisher}{C code to time a Fisher exact test. It runs the same
 test 10,000 times.}
 
-\codefigure{Rtimefisher}{}{R code to do the same test as Figure
-\ref{fisher}.}
+\codefigure{Rtimefisher}{}{R code to do the same test as Listing
+\ref{timefisher}.}
 \lstset{numbers=none}
 
 R and Apophenia use identical C code for doing the \ind{Fisher
@@ -35,7 +35,7 @@ exact test}, so it makes a good basis for comparison.\footnote{That is,
 if you download the source code for R's \ci{fisher.test} function,
 you will find a set of procedures written in C.  Save for a few minor
 modifications, the code underlying the \ci{apop\_test\_fisher\_exact}
-function is line-for-line identical.} Figures \ref{timefisher} and
+function is line-for-line identical.} Listings \ref{timefisher} and
 \ref{Rtimefisher} show programs in C and R (respectively) that will run
 a Fisher exact test 10,000 times on the same data set.  You can see that
 the C program is generally a bit more verbose: the steps taken in lines
@@ -43,8 +43,8 @@ the C program is generally a bit more verbose: the steps taken in lines
 are longer in C, and the C program has some preliminary and concluding
 code that the R script did not have.
 
-On my laptop, Figure \ref{timefisher} runs in
-10.1 seconds, while Figure \ref{Rtimefisher} does the same work in nine
+On my laptop, Listing \ref{timefisher} runs in
+10.1 seconds, while Listing \ref{Rtimefisher} does the same work in nine
 minutes---over fifty times as long.\footnote{The online source to which
 the caption refers is \samplecodelocation, so if you already have R and
 a C compiler set up, you can download the code and try these timing
@@ -79,9 +79,9 @@ while C produced draws at $\approx 425,000/{\rm sec}$.}
 The features of C that stats package users will find most annoying are
 exactly the features that make it orders of magnitude faster than the cuter
 alternatives.  Type declarations (the \ci{int}, \ci{double}, and
-\ci{apop\_data*} on lines 3, 4, and 6 of Figure \ref{timefisher}) mean
+\ci{apop\_data*} on lines 3, 4, and 6 of Listing \ref{timefisher}) mean
 that the computer does not need to guess the data type you mean at every
-use, saving time on every calculation.  Pointers and the call-by-reference
+use, saving time on every calculation.  Pointers and the call-by-address
 mechanism reduce internal copying during function calls.
 
 Further, C's syntactic unpleasantness pays off immensely when extending
@@ -112,7 +112,7 @@ but ease-of-use.
 management commands and byte-shifting. With the right commands, they are
 as brief as programs in hipper modern languages.}
 
-C can be used anywhere along the spectrum. Figure \ref{regress} gives
+C can be used anywhere along the spectrum. Listing \ref{regress} gives
 an example on the high end, showing a complete C program that works on
 the level of data sets and statistical models. It reads in a data set in
 one line, runs a regression in the next, and displays a page of
@@ -158,7 +158,7 @@ software for machines with comically limited memory---situations where
 memory management and reliable byte-wrangling are essential.
 
 But that is where the \airq{modern} part of this book's title comes
-in. Have another look at Figure \ref{regress}.  It does not bother with
+in. Have another look at Listing \ref{regress}.  It does not bother with
 memory management, because it is a short program and your computer has
 literally a million times more memory. It includes the declarations
 that some find to be so onerous, but they consist simply of preceding
@@ -167,7 +167,7 @@ Most importantly, the commands themselves are not
 about bit-shifting, but using high-level structures like data sets and
 statistical models.  Yes, there are thousand-page code bases written in
 baroque, bit-twiddling C, like the Windows and Linux operating systems
-or most of the stats packages listed above. But Figure \ref{regress}
+or most of the stats packages listed above. But Listing \ref{regress}
 shows that C code can also be short, concise, and thoroughly modern.
 
 There is the complaint that C is a compiled language, meaning that
@@ -279,7 +279,7 @@ calculation. For very complex data types,
 such as lists of lists, it is often difficult (and for exceptionally
 perverse cases, impossible) to get the computer to correctly guess what the
 type of a variable should be.
-\item Pointers and the call-by-reference mechanism reduce internal copying
+\item Pointers and the call-by-address mechanism reduce internal copying
 during function calls.  As you read \ifbook Chapter \ref{c_crash}\else
 this overview\fi, imagine that it ends at Section \ref{prepointers}
 and you will have an idea of what most stats packages are like.

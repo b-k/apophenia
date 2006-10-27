@@ -300,59 +300,24 @@ int         i,
 */
 apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model m,
 int bins, long int draws, double *params, gsl_rng *r){
-int     i;
-double  diff        = 0;
+int     i, count    = bins;
+double  diff        = 0,
+        sum;
 gsl_histogram *h1   = apop_vector_to_histogram(v1, bins),
             *h2     = apop_model_to_histogram(m, h1, draws, params, r);
+    sum      = gsl_histogram_sum(h1);//h1 is not normalized; h2 is.
     diff    += gsl_pow_2(h2->bin[0]);
-    for (i=1; i< bins; i++)
-        diff    += gsl_pow_2(h1->bin[i] - h2->bin[i])/h1->bin[i];
-    diff    += gsl_pow_2(h2->bin[bins+1]);
+    for (i=0; i< bins; i++){
+        if (h1->bin[i])
+            diff    += gsl_pow_2(h1->bin[i]/sum - h2->bin[i+1])/(h1->bin[i]/sum);
+        else
+            count   --;//ignore this bin.
+        }
+    diff    += gsl_pow_2(h2->bin[bins+2]);
     gsl_histogram_free(h1);
     gsl_histogram_free(h2);
-    return gof_output(diff, bins);
+    return gof_output(diff, count);
 }
-
-
-/*
-gsl_histogram ** apop_pdf_test_goodness_of_fit(gsl_histogram_pdf *h, apop_model *m, double *params, int bins, int draws){
-int     i;
-gsl_rng *r      = apop_rng_alloc();
-double  diff    = 0;
-    //Must be careful that the histograms match, but the range for the
-    //PDF is \f$(-\infty, infty)\f$. 
-            //GSL documentation says newbins should be one elemnt too big.
-    double  *newbins = malloc(sizeof(double)* (h->n +3));
-    newbins[0]                  = GSL_NEGINF;
-    memcpy((newbins + 1), h->range);
-    newbins[h->n +1]            = GSL_POSINF;
-    gsl_histogram *modelhist    = gsl_histogram_alloc(h->n +2);
-    gsl_histogram_set_ranges(modelhist, newbins, h->n +2);
-    for (i=0; i< draws; i++)
-        gsl_histogram_accumulate(modelhist, m.rng(rng,params),1);
-    for (i=0; i< modelhist->n; i++)
-        (modelhist->bin)[i] /= draws;
-
-        //OK, now we can sum up the chi-squared statistic.
-    diff    += gsl_pow_2((modelhist->bin)[0]);
-    diff    += gsl_pow_2((modelhist->bin)[1] - h->sum[0])/(modelhist->bin)[1];
-    for (i=1; i< modelhist->n -1; i++)
-        diff    += gsl_pow_2((modelhist->bin)[i] - (h->sum[i]- h->sum[i-1]))/(modelhist->bin)[i];
-    diff    += gsl_pow_2((modelhist->bin)[modelhist->n]);
-    gsl_histogram_free(modelhist);
-
-apop_data   *out    = apop_data_alloc(3,1);
-double      pval    = gsl_cdf_chisq_P(diff, modelhist->n);
-    apop_name_add(out, "Chi squared statistic", 'r');
-    gsl_matrix_set(out->matrix, 0, 0, diff);
-    apop_name_add(out, "p value", 'r');
-    gsl_matrix_set(out->matrix, 1, 0, pval);
-    apop_name_add(out, "confidence", 'r');
-    gsl_matrix_set(out->matrix, 2, 0, 1 - pval);
-    return out;
-}
-*/
-
 
 
 /*psmirnov2x is cut/pasted/trivially modified from the R project. Copyright them. */
