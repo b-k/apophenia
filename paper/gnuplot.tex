@@ -630,7 +630,7 @@ All of the above methods involved writing your commands data to a file and then
 running Gnuplot, but you may want to produce plots as your program runs.
 This is often useful for simulations, to give you a hint that all is OK
 while the program runs, and to impress your friends and funders. This is
-easy to do using a \vocab{pipe}, so named because of UNIX's running
+easy to do using a \ind{pipe}, so named because of UNIX's running
 data-as-water metaphor.\footnote{There is a readily available
 package named \cind{gnuplot\_i} that provides some functions to simplify
 piping commands to Gnuplot. It basically works via the same method as
@@ -833,7 +833,7 @@ It allocates a histogram with
 \ci{bin\_ct} bins, then sets its range to just past the min and max
 of the data. Then the \ci{for} loop pulls data points from the vector and
 dumps them to the histogram, without any further calculation on our part.
-Once everything is neatly aggregated, the function opens a file and dumps the data to a Gnuplottable file. There is an example of this function in use in Figure \ref{draw_beta_curve}, page \pageref{draw_beta_curve}.
+Once everything is neatly aggregated, the function opens a file and dumps the data to a Gnuplottable file. There is an example of this function in use in Listing \ref{drawbeta}, page \pageref{drawbeta}.
 \begin{lstlisting}
 void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
 int             i;

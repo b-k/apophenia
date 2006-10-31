@@ -1,5 +1,6 @@
 \chapter{Monte Carlo} \label{boot} 
 
+\blindvocab{Monte Carlo method}
 Monte Carlo (Spanish and French for Mount Carl) is a city in Monaco
 famous for its casinos, and has more glamorous associations with its name
 than Reno or Atlantic City.
@@ -317,7 +318,8 @@ One way to calculate the expected value of $f(\cdot)$ would be to a numeric
 integral over the entire domain of the distribution. Write a loop to
 sum $$\frac{f(-500.00)\cdot p(-500.00)}{100000} + \frac{f(-499.99)\cdot
 p(-499.99)}{100000} + \cdots + \frac{f(500.00)\cdot p(500.00)}{100000}.$$ This can be effective, but there are
-some details to be hammered out: should you integrate from $[-3,3]$
+some details to be hammered out: if your distribution has a domain over all
+$\Re$, should you integrate from $[-3,3]$
 or $[-30,30]$? You must decide up-front how much finer resolution will
 affect the integral, because (barring some exceptional tricks) each
 resolution is a new calculation rather than a modification of prior 
@@ -329,8 +331,8 @@ from the distribution.  Just as we produced a nice picture of the
 Beta distribution by taking enough random draws, we can calculate
 statistics of the overall distribution via random draws.  Values will,
 by definition, appear in proportion to their likelihood, so the $p(\cdot)$
-part takes care of itself. Draws in the distant tails of the distribution
-will appear as often as necessary.  You can incrementally monitor
+part takes care of itself. There is no cutoff such that the tails of the
+distribution are assumed away. You can incrementally monitor
 $E[f(\cdot)]$ at 1,000 random draws, at 10,000, and so on, to see how
 much more you are getting with the extra computation.
 
@@ -345,7 +347,7 @@ The kurtosis of a vector is easy to calculate---just call
 distribution, we can produce a vector whose values cover the $t$
 distribution rather well, and then find the kurtosis of that vector.
 
-Figure \ref{kurtosis_of_a_t_dist} shows a program to execute this procedure. 
+Listing \ref{tdistkurtosis} shows a program to execute this procedure. 
 It opens with the usual introductory material, where variables are
 declared and constants set. The draws are done by the line
 \ci{gsl\_vector\_set(v, i, gsl\_ran\_tdist(r, df))}, which sets an
@@ -409,7 +411,7 @@ df       &k (est)    &     k (analytic)\\
 Appropriately enough, the estimates for $df\leq 4$ are terrible.  
 The fact that there is no consistent estimator for these small 
 $df$ cases makes itself evident in re-estimations. The reader could readily
-modify Figure \ref{kurtosis_of_a_t_dist} (page \pageref{kurtosis_of_a_t_dist}) to repeat the kurtosis estimation
+modify the code in Listing \ref{tdistkurtosis} to repeat the kurtosis estimation
 procedure many times; here are eight runs and their means:
 
 \vspace{\baselineskip}
@@ -523,15 +525,15 @@ a single OLS coefficient.
 %bootdraw should be here.
 
 The easiest means of drawing without replacement is to
-systematically remove one line of data at a time, as we saw in Figure
-\ref{jack_iteration} (page \pageref{jack_iteration}). For each subset of data, we find the parameter;
+systematically remove one line of data at a time, as we saw in Listing
+\ref{jackiteration} (page \pageref{jackiteration}). For each subset of data, we find the parameter;
 once we have a list of $n$ different values for the parameter, $p_1,
 p_2, \dots, p_n$, then the standard deviation can be estimated as
 $\hat\sigma = \sqrt{\sum{(p_i - \overline p_{\forall})}}$, where $p_{\forall}$ is
 the parameter using the entire data set.
 
 \exercise{
-Modify Figure \ref{jackiteration} to calculate the jackknife estimate
+Modify Listing \ref{jackiteration} to calculate the jackknife estimate
 for a model, replacing the ``Do math here'' comments with the
 appropriate parameter estimations.
 }
@@ -540,7 +542,7 @@ Alternatively, we can try different-sized subsets,
 drawing some subset of the data
 without replacement. Drawing without replacement means that we need to
 keep track of what has been drawn to date, and must check every new draw
-to make sure that the new draw is not a repeat. Figure \ref{bootdraw} lists a function which
+to make sure that the new draw is not a repeat. Listing \ref{bootdraw} lists a function which
 does all of this. It makes a series of random draws from a uniform distribution in the range
 [0, \cinline{data-$>$size}]. It then checks the list of indices which have
 already been drawn. If it finds a match, then it invalidates the draw

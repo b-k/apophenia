@@ -505,12 +505,12 @@ function expects to come in, and what the function will put out.
 As for describing the code inside the black box, the common wisdom
 indicates that these comments should focus on why a function is doing what it is doing,
 rather than how (which will be self-explanatory in clearly-written code).
-\begin{verbatim}
+\begin{lstlisting}
 /* Long comments begin with a slash-star,
    continue as long as you want, and end 
    at the first star-slash:   
    */
-\end{verbatim}
+\end{lstlisting}
 
 The primary audience of your comment should be you, six months from
 now. When you are shopping for black boxes to plug in to your next project,
@@ -544,11 +544,11 @@ will be read as code---and malformed code at that.
 
 You will always need to watch out for this when commenting out large blocks of code. But for small
 blocks, there is another syntax for comments:
-\begin{verbatim}
+\begin{lstlisting}
 this_is_code;    //Everything on a line 
-                 //after two slashes 
-                 //will be ignored.
-\end{verbatim}
+            //after two slashes 
+            //will be ignored.
+\end{lstlisting}
 
 This is good for commenting individual lines of code that deserve a
 note.\footnote{The two-slash comment style has only officially been

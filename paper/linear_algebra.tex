@@ -311,7 +311,6 @@ the result. It introduces a new data type, \cind{apop\_data} to be
 discussed fully in Chapter \ref{apop}. For now, just take it to be a
 \ci{gsl\_matrix} with labels. On page \pageref{markovtwo}, the
 program is simplified using \cind{apop\_data}-specific functions.
-%\label{markovone}\lstinputlisting{sources/markov.c}
 
 Here is the output:
 \ns{7}\begin{lstlisting}
@@ -735,7 +734,7 @@ gsl_matrix_memcpy(a_new_matrix, &m);
 The typical means of doing a jackknife estimation (as discussed in
 Chapter \ref{boot}) involves re-estimating a parameter for the data set
 excluding the first row, re-estimating it for the data set excluding the
-second row, et cetera.  Figure \ref{jack_iteration}
+second row, et cetera.  Listing \ref{jackiteration}
 shows how this can be done using views.  First, it uses
 \cind{gsl\_matrix\_submatrix} to produce a view of the main matrix
 starting at the position (1,0), and with size (\ci{in-$>$size1 -1,
@@ -876,7 +875,7 @@ a \ci{double} can represent. Here is a table of powers of two, as
 represented by a \ci{double}. For $i>1,000$, a
 modest number of data points, the system throws in the towel and 
 calls $2^i = \infty$ and $2^{-i} = 0$; these are referred to as
-an \vocab{overflow error} and \vocab{undeflow error}, respectively. For those who would like
+an \vocab{overflow error} and \vocab{underflow error}, respectively. For those who would like
 to try this at home, Listing \ref{powersoftwo} shows the code used to
 produce this table.
 \cindex{ldexp}

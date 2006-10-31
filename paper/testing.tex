@@ -25,7 +25,7 @@ the properties of your model for $n$ significantly smaller than infinity.
 This chapter goes over the process of testing an \airq{oversolved system},
 a term defined in detail in Section \ref{mcsec}. The key to constructing
 a test is in knowing how the distribution of the data informs the likely
-distribution of our estimates of the $\alpha$s, and the key to that
+distribution of our estimates of the estimated parameters, and the key to that
 process is the Central Limit Theorem. Section \ref{dist2} will
 thus return to probability theory, describing how the CLT affects various
 parameter distributions, and then the remainder of the chapter considers
@@ -272,7 +272,7 @@ The summation property is immensely useful, because we often have sums
 of variables to contend with. The easiest case is the sample variance,
 which is a sum of squares. Being a sum of squares of Normally-distributed
 elements, it is easy to show that 
-\begin{equation}\label{chisqvar}
+\begin{equation}\label{chisqvar}  
 {\left[\sum_n (x-\overline x)^2\right]\over \sigma^2}\sim \chi^2_{n-1}.
 \end{equation}
 The numerator there is the sample variance times $n$, so
@@ -284,17 +284,28 @@ last one can actually be calculated from that data, meaning that we
 effectively have the sum of $n-1$ $\{\chi^2_1\}$s plus a no longer
 stochastic constant.
 
-\subsection{Student's $t$ distribution\index{t distribution}} Let $\uv$ be
+\subsection{Student's $t$ distribution\index{t distribution}} \label{tstat}
+Let $\uv$ be
 a vector of data (such as the error terms in a regression). Then
-${\overline X - \mu \over S/\sqrt{n}}\sim
-t_{n-1}$, where $S=\uv'\uv/n$ (a scalar). This is a work of genius by
-Mr. Student.\footnote{\airq{Student} is actually Mr. William Sealy
-Gosset, who published the t test in 1908 based on his work as an employee
-of the Guinness Brewery. \index{Student} \index{William S Gosset}}
-By dividing a normal by $\sqrt{\chi^2_{n-1}\over (n-1)}$, the unknown
-$\sigma$s cancel, and we have a function whose elements are all known,
-and its distribution.  If $n=2$, we call it a \ind{Cauchy distribution}.
-\label{tstat}
+$${\overline X - \mu \over S/\sqrt{n}}\sim t_{n-1},$$
+where $S=\uv'\uv/n$ (a scalar).  To see where this came from, consider
+dividing ${\overline X -\mu /{\sigma\over \sqrt{n}}}\sim {\cal N}(0,1)$
+by $\sqrt{S^2\over \sigma^2}\sim {\sqrt{\chi^2_{n-1}\over n-1}}$:
+$${{\overline X -\mu \over {\sigma\over \sqrt{n}}}\Bigg/
+\sqrt{S^2\over \sigma^2}}.$$
+
+This is a work of genius by
+Mr. Student, because he could calculate the exact shape of the distribution 
+through trivial-but-tedious manipulation of the Normal and $\chi^2$
+tables, but the key stumbling block, the unknown value of $\sigma$,
+cancels out from the numerator and denominator.\footnote{\airq{Student}
+is actually Mr. William Sealy Gosset, who published the $t$ test in 1908
+based on his work as an employee of the Guinness Brewery. \index{Student}
+\index{William S Gosset}}
+
+\begin{itemize}
+\item The $t_1$ distribution (i.e., $n=2$) is called a \ind{Cauchy distribution}.
+\end{itemize}
 
 
 \subsection{$F$ distribution\index{F distribution}}  This is the same cancel-the-$\sigma$s trick as with the $t$, but here the form
@@ -572,10 +583,11 @@ or an $F$ test for a combination of multiple variables.
 
 Say that $H_0$ asks, is ${\Qv'
 \betav} = \cv$?  This is a very versatile question. E.g., $\Qv =
-\vector{1\cr 0\cr 0}$ plus $\cv = [7]$ gives $H_0: \beta_1 = 7$. Or, $\Qv = \vector{1 \cr
+\vector{1\cr 0\cr 0}$ and $\cv = [7]$ gives $H_0: \beta_1 = 7$. Or, $\Qv = \vector{1 \cr
 -1}$ and $\cv = \vector{0}$ gives $H_0: \beta_1=\beta_2$. 
-Or, say we want to test that $\beta_2 = 2\beta_3$. Then let $\Qv=\vector{0 \cr 1 \cr -2}$ and $\cv = 0$.
-To test multiple hypotheses at once, simply stack the above:
+Or, say we want to test that $\beta_2 = 2\beta_3$. Then let $\Qv=\vector{0 \cr 1 \cr -2}$ and $\cv = 0$. In ANOVA terminology, a hypothesis about a linear combination of coefficients is known as a \vocab{contrast}.
+
+To test multiple hypotheses at once, simply stack them:
 \begin{equation}
 \begin{matrix}\Qv' = \vector{1 & 0 & 0  \cr
                 0 &1 &-2} 
@@ -780,7 +792,7 @@ primarily to some independent variables more than others?
 \paragraph{Producing the data set} The typical ANOVA data set is a grid
 where each row is a subject or group, and each column is a treatment or
 experiment; not all cells need to be filled. In the context of the
-database discussion, it is a \vocab{crosstab}, which differs slightly
+database discussion, it is a \airq{crosstab}, which differs slightly
 from the usual data sets.
 
 This section forthcoming.

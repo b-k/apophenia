@@ -3,11 +3,10 @@ double  pu, pd, pl, pr;
 int     n;
 
 void find_marginals(apop_data *d){
-  gsl_vector  v;
-    v   = gsl_matrix_row(d->matrix, 0).vector;
-    pu  = apop_vector_sum(&v)/n;
-    v   = gsl_matrix_column(d->matrix, 0).vector;
-    pl  = apop_vector_sum(&v)/n;
+    APOP_ROW(d, 0, vr);
+    APOP_COL(d, 0, vc);
+    pu  = apop_vector_sum(vr)/n;
+    pl  = apop_vector_sum(vc)/n;
     pd  = 1 - pu;
     pr  = 1 - pl;
 }

@@ -157,15 +157,14 @@ calculate most of the above, e.g.:
 \cindex{apop\_matrix\_summarize}
 \begin{lstlisting}
 apop_data *set = gather_data();
-gsl_vector v1, v2;
-v1 = gsl_matrix_col(set->matrix, 0).vector;
-v2 = gsl_matrix_col(set->matrix, 1).vector;
-double mean1 = apop_vector_mean(&v1);
-double var1 = apop_vector_var(&v1);
-double skew1 = apop_vector_skew(&v1);
-double kurt1 = apop_vector_kurtosis(&v1);
-double covar = apop_vector_covar(&v1, &v2);
-double corr = apop_vector_correlation(&v1, &v2);
+APOP_COL(set, 0, v1);
+APOP_COL(set, 1, v2);
+double mean1 = apop_vector_mean(v1);
+double var1 = apop_vector_var(v1);
+double skew1 = apop_vector_skew(v1);
+double kurt1 = apop_vector_kurtosis(v1);
+double covar = apop_vector_covar(v1, v2);
+double corr = apop_vector_correlation(v1, v2);
 apop_data_show(apop_matrix_summarize(set));
 \end{lstlisting}
 The last item in the code, \cind{apop\_matrix\_summarize} produces a table of
@@ -757,15 +756,14 @@ finding the indices of the largest elements of a vector.
 \begin{lstlisting}
 int dimensions_we_want = 2;
 gsl_matrix *pc_space = gsl_matrix_alloc(ds,dimensions_we_want);
-gsl_vector temp_vector;
 int indexes[dimensions_we_want];
 int i;
 
 gsl_sort_vector_largest_index(indexes, dimensions_we_want, eigenvals);
 
 for (i=0;i<dimensions_we_want; i++){
-   temp_vector  = gsl_matrix_column(eigenvecs, indexes[i]).vector;
-   gsl_matrix_set_col(pc_space, i, &temp_vector);
+   APOP_MATRIX_COL(eigenvecs, indexes[i],temp_vector);
+   gsl_matrix_set_col(pc_space, i, temp_vector);
 }
 \end{lstlisting}
 
@@ -1042,8 +1040,8 @@ $\sqrt\Sigma$. That is:
 void columnwise_product(gsl_matrix *data, gsl_vector *sqrt_sigma){
   int i;
     for (i=0; i< data->size2; i++){
-        v   = gsl_matrix_column(data, i).vector;
-        gsl_vector_mul(&v, sqrt_sigma);
+        APOP_MATRIX_COL(data, i, v);
+        gsl_vector_mul(v, sqrt_sigma);
     }
 }
 \end{lstlisting}

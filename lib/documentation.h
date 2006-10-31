@@ -304,6 +304,17 @@ nice-looking terminal (and the ability to do a few thousand other things
 which are beyond the scope of this documentation).
 Once you have Cygwin installed and a good terminal running, you can
 follow along with the remainder of the discussion without modification.
+
+Sqlite3 is difficult to build from scratch, but you can get a 
+packaged version by pointing Cygwin's install program to the
+Cygwin Ports site: http://cygwinports.dotsrc.org/ .
+
+Second, some older (but still pretty recent) versions of Cygwin
+have a search.h file which doesn't include the function lsearch().
+If this is the case on your system, you will have to update your Cygwin
+installation.
+
+[Thanks to Andrew Felton and Derrick Higgins for their Cygwin debugging efforts.]
 */
 
 /** \page notroot  Not root? 

@@ -497,11 +497,11 @@ in the sense of being somehow more difficult than unmarked text, but a
 reader who is trying to get the overall picture may want to cover them 
 later. 
 
-\paragraph{Some notation}  \hfill
+\paragraph{Some notation}  \label{notation}\hfill
 
-$\Xv$: boldface, capital letters are matrices. All data matrices in this
+$\Yv$: boldface, capital letters are matrices. All data matrices in this
 book are organized so that the rows are each a single observation, and
-each column is a variable.
+each column is a variable. $\Xv$ is always a data matrix.
 
 $\xv$: lowercase boldface indicates a vector. Vectors are generally a
 column of numbers, and their transpose, $\xv'$, is a row.
@@ -514,6 +514,9 @@ that can be typed directly into a text file and understood by C, SQL, or
 the command prompt. Thus, when translating from a mathematical model
 with variables $a$ and $b$, the typeface will shift to indicate the
 analogous function inputs \ci{a} and \ci{b}.
+
+$\uv \sim {\cal N}(0,1)$ Read this as $\uv$ is distributed as a Normal
+distribution.
 
 \summarynoitems{Most sections end with a summary of the main points, set
 like this paragraph. There is much to be said for the strategy of
