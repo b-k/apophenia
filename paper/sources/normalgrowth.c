@@ -2,6 +2,9 @@
 
 int             agentct     = 5000;
 int             periods     = 50;
+int             binct       = 30;
+double          pauselength = 0.6;
+char            outfile[]   = "hist";
 
 void initialize(gsl_vector *agentlist, gsl_rng *r){
   int   i;
@@ -26,9 +29,6 @@ double estimate(gsl_vector *agentlist){
 
 int main(){
   gsl_vector    *agentlist  = gsl_vector_alloc(agentct);
-  int           binct       = 30;
-  double        pauselength = 0.6;
-  char          *outfile    = "hist";
   gsl_rng       *r          = apop_rng_alloc(39);
   int           i;
   FILE          *f;

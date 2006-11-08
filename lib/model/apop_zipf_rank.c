@@ -40,45 +40,28 @@ double  mu          = gsl_vector_get(beta, 0);
 ///////////////////////
 #include <gsl/gsl_sf_zeta.h>
 
-/* The Zipf distribution.
-
-\f$Z(a)        = {1\over \zeta(a) * i^a}        \f$<br>
-
- \todo link this fn in with the object 
-static double apop_zipf_likelihood(double a, int i){
-double        z    = 1/(gsl_sf_zeta(a) * pow(i, a));
-    return z;
-}
-*/
-
 static double zipf_log_likelihood(const gsl_vector *beta, apop_data *d){
-gsl_matrix      *data   = d->matrix;
-double          like    = 0, 
-                bb      = gsl_vector_get(beta, 0),
-                z;
+long double     like    = 0, 
+                a       = gsl_vector_get(beta, 0);
 int             j;
-gsl_vector_view v;
-    for(j=0; j< data->size2; j++){
-        z       = -log(gsl_sf_zeta(bb)) - bb * log(j+1);
-        v       = gsl_matrix_column(data, j);
-        like   += apop_sum(&(v.vector)) * z;
+    for(j=0; j< d->matrix->size2; j++){
+        APOP_COL(d, j, v);
+        like   -= apop_sum(v) * log(j+1);
     }
+    like    *= a;
+    like    -= log(gsl_sf_zeta(a)) * d->matrix->size1 * d->matrix->size2;
     return like;
-    printf(">%g<",like);
 }    
 
 static void zipf_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
-double          a       = gsl_vector_get(beta, 0);
-gsl_matrix      *data   = d->matrix;
+long double     a       = gsl_vector_get(beta, 0),
+                dlike   = 0;
 int             j;
-double          dlike   = 0,  
-                dz;
-gsl_vector_view v;
-    for(j=0; j< data->size2; j++){
-        dz      = a * gsl_sf_zeta(a+1)/gsl_sf_zeta(a) - log(j+1);
-        v       = gsl_matrix_column(data, j);
-        dlike   += apop_sum(&(v.vector)) * dz;
+    for(j=0; j< d->matrix->size2; j++){
+        APOP_COL(d, j, v);
+        dlike   -= apop_sum(v) * log(j+1);
     }
+    dlike   -= (gsl_sf_zeta(a-1)/(a*gsl_sf_zeta(a))) * d->matrix->size1 * d->matrix->size2;
     gsl_vector_set(gradient,0,dlike);
 }    
 

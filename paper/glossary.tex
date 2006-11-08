@@ -9,6 +9,18 @@
 
 [See also the list of notation  on page \pageref{notation}.]
 
+\comment{
+\paragraph{Acronyms}\vfill 2pt
+
+\glossy{CDF}{Cumulative density function}
+
+\glossy{MLE}{Maximum likelihood estimation}
+
+\glossy{PDF}{Probability density function}
+
+
+\paragraph{Terms}\vfill 2pt
+}
 \gloss{affine linear projection}{A linear projection can always be
 expressed as a matrix $\bf T$ such that $\xv$ transformed is $\xv'{\bf
 T}$. But any such projection maps $\bf 0$ to $\bf 0$. An
@@ -28,6 +40,11 @@ or 1'' \citep{scheffe:anova}}
 text characters is called a \qv{string}.}
 
 \gloss{arguments}{The inputs to a function.} 
+
+\gloss{assertion}{A statement in a program used to make sure no errors
+have occured. The statement does nothing, but should
+always evaluate to being true; if it does not, the program halts with a
+message about the failed assertion.}
 
 \gloss{binary tree}{A set of structures, similar to a \qv{linked list},
 where each structure consists of data and two pointers, one to a next-left
@@ -51,7 +68,7 @@ copy of an input variable's value.}
 \gloss{Cauchy-Schwarz inequality}{Given the correlation coefficient
 between any two vectors $\xv$ and $\yv$, $\rho_{\xv\yv}$:  $0\leq \rho_{\xv\yv}^2 \leq 1$.}
 
-\glossy{CDF}{Cumulative density function. The integral of a \qv{PDF}.
+\gloss{cumulative density function}{Cumulative density function. The integral of a \qv{PDF}.
 Its value at any given point indicates the likelihood that a draw from
 the distribution will be below the given point. Since the PDF is always
 non-negative, the CDF is monotonically nondecreasing; at $-\infty$,
@@ -88,6 +105,12 @@ the correlation coefficient $\rho_{\xv\yv}\equiv{\sigma_{\xv\yv}\over
 \gloss{covariance}{For two data vectors $\xv$ and $\yv$, $\sigma^2_{\xv\yv}
 \equiv {1\over n}\sum_i(x_i-\overline \xv)(y_i-\overline \yv)$.}
 
+\glossy{Cram\'er-Rao lower bound}{The elements of the covariance matrix of
+the estimate of a parameter vector must be equal to or greater than the
+elements of the inverse of the negation of the \qv{information matrix}; that is,
+$(-\Iv)^{-1}$
+provides the lower bound on the variance of an estimate.}
+
 \gloss{crosstab}{A two-dimensional table, where each row represents
 values of one variable ($y$), each column represents values of another
 variable ($x$), and each (row,column) entry provides some summary statistic of
@@ -98,11 +121,6 @@ first cell would give the average income for males age 0--18, the one
 below it would give average income for females 0--18; the next colum
 would have values for males and females 18--25, et cetera.
 }
-
-\glossy{Cram\'er-Rao lower bound}{The elements of the covariance matrix of
-the estimate of a parameter vector must be equal to or greater than the
-elements of the \qv{information matrix}; that is, the information matrix
-provides the lower bound on the variance of an estimate.}
 
 \gloss{debugger}{A standalone program that runs a program, allowing the
 user to halt the program at any point, view the \qv{stack} of
@@ -181,7 +199,11 @@ poor and the wealthy. This violates an assumption of OLS, and can
 therefore produce inefficient estimates; \qv{weighted least squares}
 solves this problem.}
 
-\glossy{information matrix}{The matrix of expected values of the second
+\gloss{independent draws}{Two events $x_1$ and $x_2$(such as draws from a data set) are
+independent if $P(x_1\cap x_2)$ (that is, the probability of $x_1$ and
+$x_2$) is equal to $P(x_1)\cdot P(x_2)$.}
+
+\gloss{information matrix}{The matrix of expected values of the second
 derivatives of the log likelihood. See also the \qv{Cram\'er-Rao lower
 bound}.}
 
@@ -211,6 +233,10 @@ with \qv{compiler}. }
 related to some specific task, such as numeric methods or 
 \qv{linked list} handling. The library is basically an \qv{object file}
 in a slightly different format, and typically kept elsewhere on the library \qv{path}.}
+
+\vocab{likelihood function}{Typically notated $L(\betav|\xv)$, the
+probability that we'd have the parameters we have given some observed
+data.}
 
 \gloss{linked list}{A set of structures, where each structure holds data
 and a pointer to the next structure in the list. One could traverse the
@@ -270,10 +296,8 @@ can be extended using the \bi{-I} flag for the compiler. The linker
 searches for libraries to include using the \ci{LIBPATH} and its
 extenstions using the \bi{-L} compiler flag.}
 
-\glossy{PDF}{Probability density function, such as the familiar bell-curve
-of a Normal distribution. The total area under a PDF for any given range
-is equal to the probability that a draw from the distribution will fall
-in that range. The PDF is always nonnegative. Compare with \qv{CDF}.}
+\gloss{pipe}{A \qv{shell} facility that directly redirects the output
+from one program to the input of another.}
 
 \gloss{pivot table}{See \qv{crosstab}.}
 
@@ -281,21 +305,6 @@ in that range. The PDF is always nonnegative. Compare with \qv{CDF}.}
 along those axes. Not to be confused with a \qv{graph}.}
 
 \gloss{pointer}{A variable holding the location of a piece of data.}
-
-\gloss{power}{The likelihood of rejecting a false null. This is one
-minus the likelihood of a \qv{Type II error}.}
-
-\gloss{profiler}{A program that executes other programs, and determines how much time 
-is spent in each of  the program's various functions. It can thus be
-used to determine where the bottlenecks are in a slow-running program.}
-
-\gloss{query}{Any command to a database. Typically, the command uses 
-the \si{select} keyword to request data from the database, but a query
-may also be a non-question command, such as a command to create a new
-table, drop an index, et cetera.}
-
-\gloss{pipe}{A \qv{shell} facility that directly redirects the output
-from one program to the input of another.}
 
 \glossy{POSIX}{The Portable Operating System Interface standard.
 By the mid-1980s, a multitude of variants on the \qv{UNIX} operating
@@ -305,6 +314,24 @@ flavor of UNIX could be more easily ported to another flavor. Santa
 Cruz Operation's UNIX, International Business Machines' AIX, Hewlett-
 Packard's HP-UX, Linux, and others all more or less comply with this
 standard.}
+
+\gloss{power}{The likelihood of rejecting a false null. This is one
+minus the likelihood of a \qv{Type II error}.}
+
+\gloss{probability density function}{Probability density function, such as the familiar bell-curve
+of a Normal distribution. The total area under a PDF for any given range
+is equal to the probability that a draw from the distribution will fall
+in that range. The PDF is always nonnegative. Compare with
+\qv{cumulative density function}.}
+
+\gloss{profiler}{A program that executes other programs, and determines how much time 
+is spent in each of  the program's various functions. It can thus be
+used to determine where the bottlenecks are in a slow-running program.}
+
+\gloss{query}{Any command to a database. Typically, the command uses 
+the \si{select} keyword to request data from the database, but a query
+may also be a non-question command, such as a command to create a new
+table, drop an index, et cetera.}
 
 \gloss{random number generator}{Formally known as a pseudorandom number
 generator, a function that produces a deterministic sequence of numbers that seem

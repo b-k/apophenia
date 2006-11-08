@@ -1,3 +1,4 @@
+#include <gsl/gsl_blas.h>
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_sf_exp.h>
 #include <gsl/gsl_matrix.h>

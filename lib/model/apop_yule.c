@@ -47,10 +47,10 @@ static double  apply_me(gsl_vector *v){
   int 	        k;
   double        pt;
     for (k=0; k< v->size; k++)	{
-        pt          = gsl_vector_get(v, k);
-        if (k>=1) 	ln_k	= gsl_sf_lngamma(pt+1);
-        else		ln_k	= 0;
-        ln_bb_k		= gsl_sf_lngamma(pt+1+bb);
+        pt            = gsl_vector_get(v, k);
+		if (pt>=1) 	ln_k	= gsl_sf_lngamma(pt);
+		else		ln_k	= 0;
+        ln_bb_k		  = gsl_sf_lngamma(pt+bb);
         likelihood   +=  ln_k - ln_bb_k;
     }
     return likelihood;
@@ -62,7 +62,7 @@ static double  dapply_me(gsl_vector *v){
   long double   d   = 0;
     for (k=0; k< v->size; k++)	{
         pt   = gsl_vector_get(v, k);
-        d	-= gsl_sf_psi(pt +1 + bb);
+        d	-= gsl_sf_psi(pt + bb);
     }
     return d;
 }

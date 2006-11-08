@@ -82,28 +82,22 @@ try different sets of parameters to hunt for the best ones.
 \comment{
 As with many things in life, describing the process is much easier than
 doing it.} The function box in Figure \ref{modelflow} is probably a
-function in the mathematical sense, $f:\Xv, \betav \to \yv$. It may
-be as simple as $\yv = \Xv\betav$ or an elaborate flowchart where
+function in the mathematical sense, $f:\Xv, \betav \to \yv_{\rm out}$. It may
+be as simple as $\yv_{\rm out} = \Xv\betav$ or an elaborate flowchart where
 ingredients are mixed and re-mixed.  But as a practical matter, such
 functions are really just pseudo-code, which we can make operational by
 translating them into functions in the computational sense of a series
 of instructions for a computer to follow.
 
-I wrote this book to help you make that translation. The first focus
-is purely mathematical: we need to select models and techniques bearing
-in mind that they will eventually be code. The second focus is about
-practical coding: your life is short, and you want to spend as little
-of it as possible trying to coax systems into complying with your wishes
-and learning yet more computer languages.
-
-Fortunately, we have the technology. Before computers, we could only
+\comment{
+But if OLS is not appropriate, we have the technology to go much further.
+ Before computers, we could only
 use simple functions like linear combinations, because hunting for
 parameters without a closed-form solution was impossible. 
 But now that we can easily compute thousand-term likelihood functions
 or take millions of random samples, we can use functions that mirror
 reality better than a simple sum.
 
-\comment{
 The good news is that
 doing math with a computer is unfettering. Instead of using restrictive
 regression techniques designed before computers, we can use techniques
@@ -115,27 +109,42 @@ are cheap, and we can use these techniques as we would their simplified
 brethren.
 }
 
+I wrote this book to help you select appropriate models, and then make
+the translation to code.
+
 In my own pain-filled experience, the best way to operationalize
 statistical concepts is using C; the GNU Scientific Library,  which
 facilitates the linear algebra and the Gaussian distribution work;
 and SQLite, a package which facilitates handling large data sets. This
 book will cover the basics of these components and the manner in which
 we can translate from the mathematical language to the language these
-libraries speak.  All of the tools and libraries
-used in this book are open, in the sense that they may be freely
-downloaded and used on the computer where you do your work right now.
+libraries speak.  
 
-The book also makes use of the Apophenia library, an open set of
+The book also makes use of the Apophenia library, a set of
 functions based on the GSL and SQLite intended to simplify the hard
 parts of using these packages for fitting models to data. Many books on
 computing have a CD taped to the back cover providing useful code to
 facilitate the methods used in the book; think of Apophenia as the code
 appendix to this book.
-\comment{
-Most stats packages include a manual that attempts to instruct the reader,
-and an alphabetical-order reference providing detailed usage notes for
-functions and structures.  You are reading Apophenia's manual now,
-and the reference is online at \url{http://apophenia.info/doc}.}
+
+All of the tools and libraries
+used in this book are open, in the sense that they may be freely
+downloaded and used on the computer where you do your work right now.
+
+\lstset{numbers=left, numberstyle=\scshape}
+\codefig{regress}{A translation of Figure \ref{modelflowback} into C.}
+\lstset{numbers=none}
+
+With these tools in hand, the process of translating a statistical model
+to computer code is relatively painless.
+For example, Listing \ref{regress} shows the C translation
+of Figure \ref{modelflowback} for the simple case of the OLS model. Line
+three indicates that we are using these libraries listed above, and then
+the translation flows easily: line
+six reads data from a text file, line seven produces a set of parameter
+estimates using the \ci{apop\_OLS} model, and line eight displays the
+parameters and some other data on the screen. [The other lines will be
+explained in due time.]
 
 \paragraph{The goals}
 Part I of this book will cover methods for efficient computing. Part II
@@ -173,7 +182,7 @@ hypothesis testing
 All of these things are independent of computing environment. However,
 this book is about taking the computing part of computational modeling
 and statistics seriously, so the concepts will be demonstrated both
-in equation and flowchart form and in the form of executable code. As
+in equation form and in the form of executable code. As
 noted above, the code will primarily be in C and SQL (Structured Query
 Language).
 
@@ -207,8 +216,8 @@ more complex waters. Finally, when you do run your simulation, you will
 be marking down the variables in each period, thus producing a data set
 that will need analysis, probably via classical statistical methods.
 
-I assume that you are computer-literate. On top of the basics of logging
-in and basic file- and directory-handling (either via a GUI or \bi{ls},
+I assume that you are computer-literate. On top of the basics of 
+file- and directory-handling (either via a GUI or \bi{ls},
 \bi{cd}, \bi{mkdir}, \bi{rm}, \&c),  you have some experience
 writing scripts in a stats package or scripting language like Perl or
 Python. Those who are entirely new to the idea of writing a sequence
@@ -297,7 +306,7 @@ learning curve. Chapter \ref{sql} presents a tutorial of SQL syntax to
 get you up to speed, and shows you how to move data between databases
 and matrices.
 
-Apophenia implements SQL via the \ind{SQLite} library, so that it the
+Apophenia implements SQL via the \ind{SQLite} library, so that is the
 dialect of SQL upon which this book focuses.  Those of you
 who have data which is already handled by another database engine will
 easily be able to adapt the techniques used here, but will need to brush
@@ -341,11 +350,11 @@ the computer you are using right now. Gnuplot is highly automatable, so once
 you have a plot you like, you can have your C programs autogenerate
 it or manipulate it in amusing ways, or can send your program to your
 colleague in Madras and he will have no problem reproducing and modifying
-your graphs. Once you have the basics down, animation and real-time
+your plots. Once you have the basics down, animation and real-time
 plots for simulations are easy. Chapter \ref{gnuplot} will cover creative uses of
 Gnuplot to display data, and will also give a quick introduction to
-Graphviz, a program to automatically produce graphs in the sense of a network of nodes
-connected by edges.
+Graphviz, a program to automatically produce graphs (i.e., networks of nodes
+connected by edges).
 
 
 \input why_c.tex

@@ -48,6 +48,8 @@ apop_data structure with a zero-sized vector to your matrix of strings.
 The \c weights vector is set to \c NULL. If you need it, allocate it via
 \code d->weights   = gsl_vector_alloc(row_ct); \endcode.
 
+See also \ref apop_data_calloc.
+
   \param size1, size2   row and column size for the matrix. If \c size2>0
   this exactly mirrors the format of \c gsl_matrix_alloc. If \c size2==-1,
   then allocate a vector. \c apop_data_alloc(0,0) will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
@@ -64,6 +66,34 @@ apop_data * apop_data_alloc(int size1, int size2){
         setme->matrix   = gsl_matrix_alloc(size1,size2);
     else if (size1>0)
         setme->vector   = gsl_vector_alloc(size1);
+
+    setme->names        = apop_name_alloc();
+    setme->categories   = NULL;
+    setme->catsize[0]   = 
+    setme->catsize[1]   = 0;
+    return setme;
+}
+
+
+/** Allocate a \ref apop_data structure, to be filled with data; set
+ everything in the allocated portion to zero. See \ref apop_data_alloc for details.
+
+  \param size1, size2   row and column size for the matrix. If \c size2>0
+  this exactly mirrors the format of \c gsl_matrix_calloc. If \c size2==-1,
+  then allocate a vector. \c apop_data_calloc(0,0) will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
+
+ \return    The \ref apop_data structure, allocated and zeroed out.
+ \ingroup data_struct
+  */
+apop_data * apop_data_calloc(int size1, int size2){
+  apop_data  *setme       = malloc(sizeof(apop_data));
+    setme->vector   = NULL;
+    setme->matrix   = NULL;
+    setme->weights   = NULL;
+    if (size2 > 0)
+        setme->matrix   = gsl_matrix_calloc(size1,size2);
+    else if (size1>0)
+        setme->vector   = gsl_vector_calloc(size1);
 
     setme->names        = apop_name_alloc();
     setme->categories   = NULL;

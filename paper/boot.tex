@@ -655,21 +655,66 @@ on how this mapping will occur. We would write down a model describing
 some subset of distributions; the most popular is to say that the
 true distribution is the sum of $n$ ${\cal N}(\mu_i, \sigma_i)$
 distributions. Then, we would estimate the best values of $n$ and
-$(\mu_i, \sigma_i)$ from the data.  
+$(\mu_i, \sigma_i), i =\{1\dots n\}$, from the data.  
 
 In other words, non-parametric modeling involves writing down a
 para\-metrized model and estimating the parameters from data.  This is
 especially clear when we sit down to implement such a model at the
-computer, because the model will be a black box that take in a data set
-and return a set of parameter estimates, just like every other model in
+computer, because the model will be a black box that takes in a data set
+and returns a set of parameter estimates, just like every other model in
 this book. 
 Such terms as {\em distribution-fitting methods} or {\em optimal
 distribution estimation} would probably better describe the methods
 discussed in this section.
 
-This section forthcoming. It will focus on \ind{kernel density estimation}
-and testing, such as the method of \citet{silverman:boot} for testing a
-multimodality hypothesis.
+
+\paragraph{Testing for bimodality}
+A good example of the use of kernel densities is the metod of testing
+for multimodality from \citet{silverman:boot}.
+
+It is based on this function:
+	%\eqn{smooth}{\hat f(t,X)={{\sum_{i=1}^n{\cal N}((t-X_i)/h)\over n\cdot h}},}
+\begin{equation}
+	\hat f(t,\Xv,h)={{\sum_{i=1}^n{\cal N}((t-x_i)/h)\over n\cdot
+h}},\label{bikernel}
+\end{equation}
+where $\Xv = [x_1, x_2,\dots x_n] \in \Re^n$ is the vector
+of $n$ data points observed, ${\cal N}(y)$ is a Normal$(0,1)$
+density function evaluated at $y$, and $h\in \Re^+$ is a smoothing
+parameter. 
+Figure \ref{smoothing} shows the effect of raising $h$ on the shape of
+the fitted curve.\footnote{The data is the male viewership for 86 TV
+specials, gathered by Michael Chwe for \citet{chwe:ritual}.} When
+$h$ is very small, the Normal distributions around each data point
+approach spikes, so there is a mode at every data point. As $h$ rises,
+the spike around each point spreads out and merges with other spikes,
+until eventualy the entire data set is subsumed under one single-peaked
+curve. Thus, there is a monotonic relationship between $h$ and the number
+of modes in the density function induced by $h$.
+
+Thus, although $f(t, \Xv, h)$ is a one-parameter distribution, its
+behavior matches the data much more closely than a simple bell curve for
+small values of $h$, and can represent an arbitrarily smooth
+distribution for large values of $h$.
+ 
+\citet{silverman:boot} offers a bootstrap method of testing a null
+hypothesis of the form `the distribution has $k$ or fewer modes'. Let
+$h_0$ be the smallest value of $h$ such that $\hat f(t,\Xv,h_0)$ has
+$k$ modes; then the null hypothesis is that $h_0$ is consistent with
+the data.  We then draw a few hundred bootstrap samples from the data,
+$\Xv_1'$, \dots, $\Xv_{200}'$; write down $\hat f(t,\Xv_1',h_0)$, \dots, $\hat
+f(t,\Xv_{200}',h_0)$; and count the modes of each of these functions. Thanks
+to the monotonic relationship between $h$ and the number of modes, the
+percentage of bootstrap distributions with $k$ or fewer modes matches
+the likelihood that $\hat f(t,\Xv,h_0)$ is consistent with the data.
+If we reject this hypothesis, then we would need a lower value of $h$,
+and therefore more modes, to explain the data.
+
+A parsimonious researcher should begin by testing
+the unimodal hypothesis, and if he fails to reject that hypothesis, he
+should stop. Else, he should check the bimodal hypothesis, and should
+stop there if he fails to reject, et cetera. 
+
 
 \begin{figure}[htb]
 \hskip -.4cm
@@ -681,7 +726,105 @@ multimodality hypothesis.
 \label{smoothing}
 \end{figure}
 
-\exercise{Figure  \ref{smoothing} shows some sample output from the search
-for the number of modes in a data set. Write the code that would produce
-these graphs. The solution will be given when this section is fleshed
-out.}
+
+\paragraph{A run through the code}
+Listing \ref{bimodality} shows the code used to produce these figures,
+and tests a data set of television program ratings for bimodality.
+
+As with any run through the code, we begin with \ci{main}. After the
+variable-declaration preface, it:
+
+\begin{enumerate}
+\item Reads in a data file, and pulls the
+first column to the \ci{data} vector. 
+\item Produces a mapping from $k \to h$.
+\item Produces an animation of the values of $h$ from the lower end of
+the rante of $h$ to the upper end.
+\item Runs a bootstrap test on each value of $k$ to find the confidence
+with which we can reject the statement `the distribution has $k$ or
+fewer modes'.
+\end{enumerate}
+
+Step one, which reads in data and calls \ci{setvars} to set some
+parameters, is self-explanatory. 
+The input data is simply
+a list of values---no need to produce a histogram or otherwise
+pre-aggregate the data, since the kernel density provides a
+semi-histogram itself.
+
+Step two begins at the \ci{produce\_k\_to\_h\_table} function. That
+function is simply a \ci{for} loop that calls
+\ci{find\_smallest\_h\_for\_k} for each value of $k$. The function is
+called with data, the number of modes the function is seeking
+(\ci{goal\_k}), and a minimum and maximum in which to search for $h$.
+
+The function sets $h$ to the midpoint of \ci{min} and \ci{max}, and
+runs the \ci{countmodes} function, discussed below, to find the number
+of modes for that value of $h$. There are three possibilities. The first
+is that the mode count equals the number of modes sought, and the range
+in which we are searching is small enough that we can conclude our
+search and return the given value of $h$ as the smallest value that will
+produce $k$ modes. 
+
+The other two possibilities are that the mode is definitely smaller than
+$h$ (when the mode count given $h$ is too large) and so we should be
+searching $[$\ci{min}, \ci{h}$]$, or that it is definitely larger than
+$h$, meaning that we should be searching $[$\ci{h}, \ci{max}$]$. In
+these cases, the function {\em calls itself} with the modified range.
+This is known as \vocab{recursion}. The function takes in an input (in
+this case a range), and then either modifies the input (shrinking it)
+and tries again, or it returns a value. When one function in the chain
+of repeated calls
+finally returns a value, it passes it to the parent function, who passes
+the value to its parent function, et cetera.\footnote{This type of
+recursion is known as tail recursion. Incidentally, it is one of the few
+cases where C is not the fastest language around, because the interpreters
+of some recursion-oriented languages have built in tail-recursion
+optimizations that C compilers typically lack.} Thus, by repeatedly
+splitting $[$\ci{min}, \ci{max}$]$, the function eventually converges
+upon a smallest value of $h$ that produces $k$ modes (to within the
+given tolerance). 
+
+How does the function count modes? This is the crux of the kernel
+density estimation process, and the function \ci{countmodes} does this.
+It runs two loops, both indexed by \ci{t}; in the animations
+produced in step three and the plots in Figure \ref{smoothing}, \ci{t}
+is stepping along the $x$-axis.
+The first loop finds the value of Equation \ref{bikernel} at
+$t$, for each value of $t$ along the $x$-axis. The \ci{fmap} structure
+now has a table mapping \ci{t} $\to$ $f(\ci{t}, \Xv, h)$.
+
+The second loop searches for modes, which simply involves looping
+through each point and checking whether it is larger than both the
+point's predecessor and successor.  The $\ci{t} \to f(\ci{t}, \Xv, h)$
+map is then thrown out, and the count of modes returned.
+
+Step three, produce an animation, is of course not necessary for the
+calculation of probabilities, but the animation produced here is one of
+the most amusing in the book, as the density function slowly
+melts from a sharp series of spikes like the first panel of Figure
+\ref{smoothing} to a unimodal blob. The plot function itself should be
+familiar from the section on animation (Section \ref{animation}): it
+simply writes a \ind{Gnuplot} plot header, the mapping, an \ci{e} to mark the
+end of data, and a pause. Doing this a hundred times produces the
+Gnuplottable animation.
+
+Step four, the bootstrap tests, consist of simply calling
+\ci{countmodes} a few thousand times. As above, Silverman showed that
+if $n\%$ of bootstrap estimates produce kernel densities for $h(k)$
+with more than $k$ modes, then we can reject the hypothesis that the
+data has more than $k$ modes with $n\%$ confidence.
+
+Thus, this step produces \ci{boot\_iterations} bootstrap draws of the
+data, and counts the modes in each. 
+
+The program will spend the most time bootstrapping. After all, it
+will evaluate a Normal distribution \ci{boot\_iterations} $\times$
+\ci{data->size} $\times$ \ci{resolution} $\times$ \ci{max\_k} times
+(398 million times, by the current calibration).
+
+\lstset{showstringspaces=false, basicstyle=\small, emphstyle=\bf\small, language=C,%
+breaklines=true,%
+caption={Silverman's kernel density test for bimodality. Online source: \bi{bimodality.c}},captionpos=b,label=bimodality}
+\lstinputlisting{sources/bimodality.c}
+    \setlistdefaults

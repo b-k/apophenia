@@ -127,7 +127,7 @@ grad_params 	gp;
 	for (i=0; i< beta->size; i++){
 		gp.dimension	= i;
 		gsl_vector_memcpy(gp.beta, beta);
-		gsl_deriv_central(&F, gsl_vector_get(beta,i), 1e-4, &result, &err);
+		gsl_deriv_central(&F, gsl_vector_get(beta,i), 1e-5, &result, &err);
 		gsl_vector_set(out, i, result);
 	}
 }
@@ -185,8 +185,6 @@ static void insert_path_into_db(gsl_vector *beta, double out){
     }
 
 }
-
-typedef double apop_constify  (const gsl_vector * beta, apop_data * d);
 
 static double negshell (gsl_vector * beta, apop_data * d){
 gsl_vector 	    *returned_beta	= gsl_vector_alloc(beta->size);

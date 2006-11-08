@@ -17,44 +17,51 @@ of sources, and Apophenia provides a consistent front-end to many of
 them via its \cind{apop\_maximum\_likelihood} function. You give it a
 function and some parameters, and it will find the optimum.
 
-\paragraph{The \ind{log likelihood function}}	\label{the score}
+\section{The \ind{log likelihood function}}	\label{the score}
 By itself, the PDF is the likelihood that a given value occurs (given
 the parameters of the PDF); any of the functions listed in Section
 \ref{distlist} will do. That distribution, say $P(x|p)\sim$ Bernoulli,
 plus a given value for the parameter(s) $p$, will tell us the likelihood
-that we would get the data point that we saw. Or, we could reverse this:
+that we would get a given value of $x$. Or, we could reverse this:
 given the data $x$, we can use the Bernoulli distribution to calculate the
 likelihood that $p$ has any given value.
 
 Say that we have two data points, $x_1$ and $x_2$. Assume further that
-they are independently drawn.  The independence assumption allows us
-to say the the joint probability is the product of the individual
+they are \vocab{independent draws}.  The independence assumption 
+means that the joint probability is the product of the individual
 probabilities; that is, $P(\{x_1,x_2\}|p)=P(x_1|p)\cdot P(x_2|p)$.
 The assumption of identical distributions allows us to write this more
 neatly, as $$P(\{x_1,x_2\}|p)=\Pi_{i=\{1,2\}}P(x_i|p).$$
 
+
+So a probability function gives the probability that we'd see the data
+that we have given some parameters; a \vocab{likelihood function}
+is the probability that we'd have the parameters we have given some
+observed data. The distinction is primarily just vocabulary, because in
+many senses, the two are identical.\footnote{One could write $P(A|B)$
+as a symmetric two-variable function: $P(A,B)$, with the understanding
+that $\int_{\forall A} P(a,B)da = 1, \forall B$.} But the notation here
+will distinguish between them, using $P(\xv|\betav)$ for the probability
+of data given parameters, and $L(\betav|\xv)$ for the probability of the
+parameters given data.
+
 Define the \vocab{log likelihood function} as $L=\ln P$, the \vocab{score} as
 
 \begin{eqnarray}
-S&=&{\partial \ln P\over \partial \theta} \nonumber\\
-&=&{\partial L \over \partial \theta},		\nonumber
+S&=&{\partial \ln P\over \partial \beta} \nonumber\\
+&=&{\partial L \over \partial \beta},		\nonumber
 \end{eqnarray}
 
 and the \vocab{information matrix} as
 
 \begin{eqnarray}
-I&=&-{\partial S \over \partial \theta}			\nonumber\\
-&=&-{\partial^2 L \over \partial \theta^2}.		\nonumber
+I&=&-{\partial S \over \partial \beta}			\nonumber\\
+&=&-{\partial^2 L \over \partial \beta^2}.		\nonumber
 \end{eqnarray}
-
-First, due to all that exponentiation in the distributions
-of Section \ref{distlist}, $L$ is often much easier to deal with, yet
-is equivalent to the PDF for most of our purposes---notably, if we have
-found a maximum for one, the we have found a maximum for the other.
 
 \paragraph{A \ind{Bernoulli} example} Say that we have nine draws from a
 Bernoulli distribution, which you will recall from page \pageref{bernie}
-means that the draw is 1 with probability $p$ and is 0 with probability
+means that the draw is one with probability $p$ and is zero with probability
 $1-p$, and say that in our case five draws were ones and four were zeros. The likelihood
 of drawing five ones is $p^5$; the likelihood of drawing four zeros is
 $(1-p)^4$; putting them together, the likelihood of 
@@ -89,11 +96,16 @@ Since the information matrix is customarily the negation of the score,
 we can check that we are at a maximum and not a minimum by verifying
 that the information matrix is positive---and indeed it is: $I=4.05$.
 
-To summarize, given $p={5\over 9}$, $P=0.0020649$, $L=-6.182$, $S=0$,
-and $I=4.05$.
+To summarize, given $p={5\over 9}$, $P\approx 0.0020649$, $L\approx -6.182$, $S=0$,
+and $I\approx 4.05$.
 
 
 \paragraph{More on $L$, $S$, and $I$}
+First, due to all that exponentiation in the distributions
+of Section \ref{distlist}, $L$ is often much easier to deal with, yet
+is equivalent to the PDF for most of our purposes---notably, if we have
+found a maximum for one, the we have found a maximum for the other.
+
 \label{precisionfix}
 Further, consider calculating the likelihood function above given
 a thousand data points.  Then the probability of observing the data set
@@ -117,33 +129,67 @@ small probability should be taken as signs that the model is false,
 should be handled as outliers, or should simply be taken as 
 measurement error.}
 
+\comment{
 \marginalia{15}{\ind{Exponential families}}{%
-	There is a bit of a sleight of hand in asserting that $S \cdot P = {\partial P
-\over \partial \theta}$: the derivative of the expectation is
-	${d\over d\theta}\int P dy$, while we want $\int {d P\over
-	d\theta} dy=\int S \cdot P dy$ [Note how this means $E(S)=0$, by the
-	way, since the integral of the PDF is one, and $d1/d\theta=0$].
+	Equation \ref{exptrick} used the claim that
+ the derivative of the expectation is
+	${d\over d\beta}\int P dx$ and $\int {d P\over
+	d\beta} dx$ are identical.
 	If we can't reverse the integral and derivative like this, none
 	of this applies. But we can in the case of any exponential
 	family. You can look that up, but here, we can rest assured that
 	the \ind{Normal}, \ind{Gamma}, \ind{Beta}, \ind{Binomial}, \ind{Poisson}, \&c. are all exponential
 	families.} 
+}
 The second benefit to using the log likelihood is analytic: since $S \cdot
-f = {\partial f \over \partial \theta}$, the derivative of the expectation
-in terms of $\theta$ can be rewritten as the expectation of $S$. See box
-at left for a few details.
+f = {\partial f \over \partial \beta}$, the derivative of the expectation
+in terms of $\beta$ can be rewritten as the expectation of $S$. 
 
-There are some fun tricks you can do with these functions.
-The trick most worth mentioning is the
-\ind{information equality}, that $E(I)=\var(S)$, which you can prove by
-calculating ${\partial E(L)\over \partial \theta}$.
+Now consider $E(S)$, and $E(I)$. The expected value of the Score is 
+\begin{eqnarray}
+E(S) &=& \int_{\forall x} {\partial \ln P(x,\betav)\over\partial\beta}
+ P(\beta,x) dx \label{firstscoreeq}\\
+E(S) &=& \int_{\forall x} {{\partial P(x,\betav)\over\partial\beta}\over
+P(\beta,x)} P(\beta,x) dx \nonumber\\
+    &=& \int_{\forall x} {{\partial P(x,\betav)\over\partial\beta} dx}\nonumber\\
+    &=& {\partial \left(\int_{\forall x} P(x,\betav) dx\right)\over \partial \beta}\label{exptrick}\\
+    &=& {\partial 1 \over \partial \beta} \label{pdfssumtoone}\\
+    &=& 0 \nonumber
+\end{eqnarray}
 
-The reader can also verify that 
-\begin{align}
-\frac{\partial \ln P}{\partial \theta}\cdot \frac{\partial \ln P}{\partial \theta} &= -\frac{\partial^2 \ln P}{\partial \theta^2}.\nonumber\\
-\intertext{That is,}
-S\cdot S &= -I.\nonumber
-\end{align}
+Equation \ref{pdfssumtoone} used the fact that the integral of a PDF
+over its relevant space is one, by definition.
+The reversal of the
+derivative and the integral at Equation \ref{exptrick} requires a
+somewhat more elaborate explanation. It is not univerally valid,
+but is valid for any \airq{exponential family}. The definition of this
+term goes a bit beyond the scope of this text, but rest assured that the
+\ind{Normal}, \ind{Gamma}, \ind{Beta}, \ind{Binomial}, \ind{Poisson},
+\&c. are all exponential families.
+
+The fact that the expectation of the score is zero (for any parameter,
+not just the most likely) allows a few pleasant tricks. For example,
+$\var(S)= E\left((S - E(S))^2\right) = E\left(S^2\right)$. That is, the
+variance of the score is just $E(S\cdot S)$.
+
+Now consider the derivative of equation \ref{firstscoreeq}. We know it
+is zero, since the derivative of a constant zero is zero. This allows
+the following:
+\begin{eqnarray}
+0 &=& {\partial \left(\int_{\forall x} {\partial \ln P(x,\betav)\over\partial\beta} P(\beta,x) dx\right)\over \partial \beta} \nonumber\\
+ &=& \int_{\forall x} {\partial^2 \ln P(x,\betav)\over\partial\beta^2} P(\beta,x) +  {\partial \ln P(x,\betav)\over\partial\beta} {\partial P(\beta,x)\over \partial \beta} dx \nonumber\\
+ E\left( {\partial^2 \ln P(x,\betav)\over\partial\beta^2} P(\beta,x)\right) &=& - E\left({\partial \ln P(x,\betav)\over\partial\beta} {\partial P(\beta,x)\over \partial \beta}\right) \nonumber\\
+ E\left( {\partial^2 \ln P(x,\betav)\over\partial\beta^2}\right) &=& - E\left({\partial \ln P(x,\betav)\over\partial\beta}^2\right) \nonumber\\
+E(I) &=& -\var(S)   \label{moneyone}\\
+ &=& -E(S\cdot S)      \label{moneytwo}
+\end{eqnarray}
+
+Even if you have forgotten the calculus behind the bulk of these
+equations, have a look at Equation \ref{moneyone}, which is known as the
+\ind{information equality}.  Along with the above derivation that
+$\var(S)=E(S\cdot S)$, we have Equation \ref{moneytwo}, which will prove
+to be useful in finding the variance of the maximum likelihood estimate
+below.
 
 
 \subsection{An example: probit} \index{probit|(}
@@ -181,19 +227,19 @@ the Neyman-Pearson lemma.
 
 \paragraph{MLEs achieve the Cram\'er-Rao lower bound} 
         \index{Cram\'er-Rao Inequality|(}		\label{cr} 
-Say we have an unbiased estimator of $\theta$,
-$\hat\theta(y_1,\dots,y_n)$. Cram\'er \& Rao say:
+Say we have an unbiased estimator of $\beta$,
+$\hat\beta(y_1,\dots,y_n)$. Cram\'er \& Rao say:
 \begin{eqnarray}
-\var(\hat\theta)&\geq&(n \var(S))^{-1}		\nonumber\\
+\var(\hat\beta)&\geq&(n \var(S))^{-1}		\nonumber\\
 		&=&\left(nE\left({\partial^2 L\over \partial
-\theta^2}\right)\right)^{-1}			\label{CRLB}
+\beta^2}\right)\right)^{-1}			\label{CRLB}
 \end{eqnarray}
 
 \comment{
-A sketch of the proof: Take my word for it that $E(\hat\theta
+A sketch of the proof: Take my word for it that $E(\hat\beta
 \overline S)={1\over n}$. Since $\overline S=0$, that's equivalent to
-$\cov(\hat\theta, \overline S)={1\over n}$.  Plug that into Cauchy-Schwarz:
-$\var(\hat\theta)\var(\overline S)\geq {1\over n^2}$. Plug
+$\cov(\hat\beta, \overline S)={1\over n}$.  Plug that into Cauchy-Schwarz:
+$\var(\hat\beta)\var(\overline S)\geq {1\over n^2}$. Plug
 $\var(S)=n\var(\overline S)$ in to that, and the first line of the above
 drops out\cite{goldberger}. The second line uses the information
 equality from above.
@@ -205,10 +251,10 @@ likelihood function.
 
 The Cram\'er-Rao lower bound is
 called a `lower bound' because Mr.s Cram\'er and Rao proved that any
-estimator of $\theta$ must have a variance greater than or equal to the
+unbiased estimator of $\beta$ must have a variance greater than or equal to the
 CRLB. Your favorite probability textbook (e.g., \cite{casella:berger})
 will also prove that for the MLE, the variance is actually equal to the
-CRLB, meaning that we can not get an estimator of $\theta$ that will
+CRLB, meaning that we can not get an estimator of $\beta$ that will
 have a smaller variance.
         \index{Cram\'er-Rao Inequality|)}
 
@@ -257,11 +303,11 @@ Type I, and the secondary error of acquitting the guilty---failing to
 reject a false $H_0$---as Type II.
 
 
-\subsection{The Neyman-Pearson lemma} \index{Neyman-Pearson lemma} 
-The other reason that we ignore Type II errors is that Neyman and Pearson
-told us we could.  They showed that a likelihood ratio test will have
+\subsection{The Neyman-Pearson lemma} the \ind{Neyman-Pearson lemma}
+gives us another reason for why Type II errors are secondary.
+The lemma states that a likelihood ratio test will have
 the minimum possible Type II error of any test with the $\alpha$ that
-we selected. After establishing this fact, we just ignore Type II errors.
+we selected. After establishing this fact, we can select a Type I error level and be confident that we did the best we could with the Type II errors.
 
 \paragraph{Likelihood ratios} \index{likelihood ratio|ff}
 
@@ -270,26 +316,18 @@ is $C_{II}$.  Then it is sensible to reject $H_0$ iff the expected cost is less
 than the likely cost of not rejecting. That is, reject $H_0$ iff $C_I
 P(H_0|\xv)<C_{II} P(H_1|\xv)$.
 
-We need to note two things from here. First, the difference between a
-`probability', which is the probability of an event given data; and a
-`likelihood', which is the probability that we'd have the data we have
-given some event. This is primarily just vocabulary, because in many
-senses, the two are identical.\footnote{One could write $P(A|B)$ as a symmetric two-variable function:
-$P(A,B)$, with the understanding that $\int_{\forall A} P(a,B)da = 1,
-\forall B$.} 
-
-Second, ?`remember the definition of a \ind{conditional probability}? It's based on the
+?`remember the definition of a \ind{conditional probability}? It's based on the
 statement $P(A\cap B)=P(A|B)P(B)$, and symmetrically, $P(A\cap B)=P(B|A)P(A)$.  Equating
 the two and shunting over $P(B)$ gives us \ind{Bayes's rule}: $$P(A|B)={P(B|A) P(A)\over P(B)}$$
-Applying Bayes's rule to the rejection test is easy: set $A=H_0$, $B=\xv$,
-$P(A|B)=P(H_0|\xv)$, and $P(B|A)=L(\xv|H_0)$. Then:
-\begin{align}
+Applying Bayes's rule to the rejection test is easy: set $A=H_0$ and $B=\xv$,
+so $P(A|B)=P(H_0|\xv)$ and $P(B|A)=L(\xv|H_0)$. Then:
+\begin{eqnarray}
 C_I P(H_0|\xv)&<&C_{II} P(H_1|\xv)\label{firstnp}\\
 \nonumber\\
 C_I {L(\xv|H_0)P(H_0)\over P(\xv)}&<& C_{II} {L(\xv|H_1)P(H_1)\over P(\xv)}\label{secondnp}\\
 \nonumber\\
 c&<& {L(\xv|H_1)\over L(\xv|H_0)}\label{thirdnp}
-\end{align}
+\end{eqnarray}
 
 Inequality \ref{firstnp} is the rejection rule from above; Inequality
 \ref{secondnp} uses Bayes's rule to insert the likelihood functions;
@@ -301,11 +339,10 @@ such that Inequality \ref{thirdnp} is true with probability
 $\alpha$. The test will then be: fail to reject $H_0$ iff Inequality
 \ref{thirdnp} is true.
 
-Neyman and Pearson\index{Neyman-Pearson lemma} proved\footnote{See
-e.g. \citet[189--191]{amemiya:ez}.}
+The Neyman-Pearson lemma states
 that this test is the `best' in the sense that for a
 fixed Type I error (fixed at $\alpha$), the probability of a Type II
-error is minimized. So we can design any test we like by just fixing $\alpha$
+error is minimized.\footnote{See e.g. \citet[189--191]{amemiya:ez}.} So we can design any test we like by just fixing $\alpha$
 at a value with which we are comfortable (custom says to use
 90, 95 or 99\%), calculate a few likelihood functions, and we are assured
 that we did the best we could regarding Type II errors. You will see that
@@ -382,7 +419,7 @@ conjugate gradient method, that generally works better for functions
 that digress significantly from quadratic.  See \citet[thorough, mathematician audience]{avriel:nonlinear}
 or \citet[practical, modeling audience]{practical:optimization}  for definitions of all of these methods.
 
-\paragraph{500: \ind{Simulated annealing}} A controlled random walk.
+\paragraph{500: Simulated annealing}\index{simulated annealing} A controlled random walk.
 As with the other methods, the system tries a new point, and if it
 is better, switches. Initially, the system is allowed to make large
 jumps, and then with each iteration, the jumps get smaller, eventually

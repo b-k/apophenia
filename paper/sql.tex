@@ -1049,7 +1049,7 @@ even back to the database). If you want a quick on-screen picture of a
 table, try:\footnote{Notice that since \cinline{apop\_query\_to\_data}
 allocates a pointer to an \cinline{apop\_data} set but does not name
 that pointer, there is no way to free the memory afterward. This is
-rarely not a problem in practice.} 
+rarely a problem in practice.} 
 \begin{lstlisting}
 apop_data_show(apop_query_to_data("select * from table"));
 \end{lstlisting}
@@ -1072,7 +1072,7 @@ apop_opts.output_type == 'd';
 apop_data_print(datatab, "my_data");
 \end{lstlisting}
 Say that tomorrow you decide you would prefer to have the data dumped to
-a file; then just change the \cinline{'d'} to an \cinline{'f'} and away you go.\footnote{By the way, dots are common in file names but an annoyance in tables. So if the second argument to \cinline{apop\_data\_print} is \cinline{out.data.csv}, you will get that file name, but a table named \cinline{out\_data}, with no dots and everything after the last dot stripped away.}
+a file; then just change the \cinline{'d'} to an \cinline{'f'} and away you go.\footnote{Dots are common in file names but an annoyance in tables. So if the second argument to \cinline{apop\_data\_print} is \cinline{out.data.csv}, you will get that file name, but a table named \cinline{out\_data}, with no dots and everything after the last dot stripped away.}
 
 There is one inconvenience to this convenience, however: dots are popular
 in file names, e.g. \binline{dump.csv}, but are not valid in table names. If

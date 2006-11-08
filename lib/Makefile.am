@@ -1,12 +1,12 @@
 
 #AM_CFLAGS = -g -O3 -Wall -I./
 AM_CFLAGS = -g -Wall -I./
-LIBADD = -lgsl -lgslcblas -lsqlite3
+LIBADD = -lgsl -lgslcblas -lsqlite3 -lefence
 #AUTOMAKE_OPTIONS = no-dependencies
 
 #The library
 LDADD = libapophenia.la
-AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 #-lefence
+AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 -lefence
 #apop_text_to_db_LDADD = libapophenia.la
 #apop_text_to_db_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
 lib_LTLIBRARIES = libapophenia.la

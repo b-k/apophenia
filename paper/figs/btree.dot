@@ -32,7 +32,7 @@ p4:f7 -> p8;
         shape = "record"
         ];
 "p7" [
-        label = "{data 7|{<f7>left|<f8>right}}"
+        label = "{bird 7|{<f7>left|<f8>right}}"
         shape = "record"
         ];
 "p8" [

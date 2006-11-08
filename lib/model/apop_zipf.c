@@ -62,7 +62,7 @@ static void zipf_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vecto
   gsl_matrix  *data     = d->matrix;
   gsl_vector    *logs   = apop_matrix_map(data, oneline_log);
   long double   dlike   = apop_vector_sum(logs);
-    dlike   -= bb*gsl_sf_zeta(bb-1)/gsl_sf_zeta(bb)  * data->size1 * data->size2;
+    dlike   -= gsl_sf_zeta(bb-1)/(bb*gsl_sf_zeta(bb))  * data->size1 * data->size2;
     gsl_vector_set(gradient,0,dlike);
     gsl_vector_free(logs);
 }    

@@ -55,10 +55,9 @@ static double apply_me(gsl_vector *v){
 
 static double poisson_log_likelihood(const gsl_vector *beta, apop_data *d){
   double        lambda      = gsl_vector_get(beta, 0);
-  double        llikelihood = 0;
     ln_l 	= log(lambda);
   gsl_vector *  v           = apop_matrix_map(d->matrix, apply_me);
-  double        ll          = apop_vector_sum(v);
+  double        llikelihood = apop_vector_sum(v);
     gsl_vector_free(v);
     return llikelihood - d->matrix->size1*d->matrix->size2*lambda;
 }
@@ -66,16 +65,10 @@ static double poisson_log_likelihood(const gsl_vector *beta, apop_data *d){
 /** The derivative of the poisson distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
 static void poisson_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
-double       	lambda    	= gsl_vector_get(beta, 0);
-int             i, k;
-gsl_matrix      *data	= d->matrix;
-float           d_a     = 0,
-                x;
-    for (i=0; i< data->size1; i++)
-        for (k=0; k< data->size2; k++){
-            x	= gsl_matrix_get(data, i, k);
-            d_a    += x/lambda;
-            }
+  double       	lambda  = gsl_vector_get(beta, 0);
+  gsl_matrix      *data	= d->matrix;
+  float           d_a;
+    d_a  = apop_matrix_sum(data)/lambda;
     d_a -= data->size1*data->size2;
     gsl_vector_set(gradient,0, d_a);
 }

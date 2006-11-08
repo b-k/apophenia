@@ -136,7 +136,7 @@
 
 
 %code listing:
-\lstset{columns=fullflexible, basicstyle=\small, emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,gsl_vector,gsl_matrix},emphstyle=\bf\small}
+\lstset{columns=fullflexible, basicstyle=\small, emph={apop_data,apop_model,apop_inventory,apop_estimate,apop_estimation_params,gsl_vector,gsl_matrix,gsl_rng,FILE},emphstyle=\bf\small}
 %\def\setlistdefaults{\lstset{frame=single, showstringspaces=false, basicstyle=\small, language=C, breaklines=true}}
 \def\setlistdefaults{\lstset{ showstringspaces=false,%
  basicstyle=\small, language=C, breaklines=true,caption=,label=%
@@ -184,7 +184,7 @@ language=C, breaklines=true}
 }
 
 \long\def\codefigure#1#2#3{
-\begin{figure}[htb]
+\begin{figure}[tb]
     \indwcsub{sample code}{#1#2}
 \lstset{float=htb,caption={#3 Online source: \bi{#1#2}.},label={#1},%
 captionpos=b,xleftmargin=\mwidth,%

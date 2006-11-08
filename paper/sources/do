@@ -19,6 +19,7 @@ os.popen3("""
     cp markov_data msc_book_samples 
     cp data-classroom msc_book_samples 
     cp data-wb* msc_book_samples 
+    cp data-census* msc_book_samples 
     cp Makefile.std msc_book_samples/Makefile
     zip -r msc_book_samples.zip msc_book_samples
     rm -rf msc_book_samples

@@ -40,11 +40,11 @@ static apop_estimate * waring_estimate(apop_data * data, void *parameters){
 }
 
 static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
-double  limit0      = 1,
-        limit1      = 0,
-        tolerance   = 1e-1;  //GSL_DBL_EPSILON;
-double  beta0       = gsl_vector_get(beta, 0),
-        beta1       = gsl_vector_get(beta, 1);
+  double  limit0      = 1,
+          limit1      = 0,
+          tolerance   = 1e-1;  //GSL_DBL_EPSILON;
+  double  beta0       = gsl_vector_get(beta, 0),
+          beta1       = gsl_vector_get(beta, 1);
     if (beta0 > limit0 && beta1 > limit1) 
         return 0;
     //else:
@@ -55,23 +55,22 @@ double  beta0       = gsl_vector_get(beta, 0),
 }
 
 static double waring_log_likelihood(const gsl_vector *beta, apop_data *d){
-float		    bb	    = gsl_vector_get(beta, 0),
-    		    a	    = gsl_vector_get(beta, 1);
-int 		    k;
-gsl_matrix      *data	= d->matrix;
-gsl_vector      v;
-double 		    ln_a_k, ln_bb_a_k, p,
-		        likelihood 	= 0,
-		        ln_bb_a		= gsl_sf_lngamma(bb + a),
-		        ln_a_mas_1	= gsl_sf_lngamma(a + 1),
-		        ln_bb_less_1= log(bb - 1);
+  float		      bb	= gsl_vector_get(beta, 0),
+    		      a	    = gsl_vector_get(beta, 1);
+  int 		      k;
+  gsl_matrix      *data	= d->matrix;
+  double 		  ln_a_k, ln_bb_a_k,
+		          likelihood 	= 0,
+		          ln_bb_a		= gsl_sf_lngamma(bb + a),
+		          ln_a_mas_1	= gsl_sf_lngamma(a + 1),
+		          ln_bb_less_1= log(bb - 1);
 	for (k=0; k< data->size2; k++){	//more efficient to go column-by-column
 		ln_bb_a_k	 = gsl_sf_lngamma(k +1 + a + bb);
 		ln_a_k		 = gsl_sf_lngamma(k +1 + a);
-		p		     = ln_bb_less_1 + ln_a_k + ln_bb_a - ln_a_mas_1 - ln_bb_a_k;
-        v            = gsl_matrix_column(data, k).vector;
-		likelihood   += apop_sum(&v) * p; 
+        APOP_COL(d,k, v);
+		likelihood   += apop_sum(v) * (ln_a_k - ln_bb_a_k);
 	}
+    likelihood   +=  (ln_bb_less_1 + ln_bb_a - ln_a_mas_1) * d->matrix->size1 * d->matrix->size2;
 	return likelihood;
 }
 
@@ -79,25 +78,26 @@ double 		    ln_a_k, ln_bb_a_k, p,
  minimization. You'll probably never need to call this directy.*/
 static void waring_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 	//Psi is the derivative of the log gamma function.
-float		    bb		        = gsl_vector_get(beta, 0),
-	    	    a		        = gsl_vector_get(beta, 1);
-int 		    k;
-gsl_matrix	    *data		    = d->matrix;
-gsl_vector_view v;
-double		    bb_minus_one_inv= 1/(bb-1),
-    		    psi_a_bb	        = gsl_sf_psi(bb + a),
-		        psi_a_mas_one	    = gsl_sf_psi(a+1),
-		        psi_a_k,
-		        psi_bb_a_k,
-		        d_bb		        = 0,
-		        d_a		            = 0;
+  float		      bb		    = gsl_vector_get(beta, 0),
+	    	      a		        = gsl_vector_get(beta, 1);
+  int 		      k;
+  gsl_matrix	  *data		    = d->matrix;
+  double		  bb_minus_one_inv= 1/(bb-1),
+    		      psi_a_bb	        = gsl_sf_psi(bb + a),
+		          psi_a_mas_one	    = gsl_sf_psi(a+1),
+		          psi_a_k,
+		          psi_bb_a_k,
+		          d_bb		        = 0,
+		          d_a		            = 0;
 	for (k=0; k< data->size2; k++){	//more efficient to go column-by-column
 		psi_bb_a_k	 = gsl_sf_psi(k +1 + a + bb);
 		psi_a_k		 = gsl_sf_psi(k +1 + a);
-        v            = gsl_matrix_column(data, k);
-		d_bb	    += apop_sum(&(v.vector)) * (bb_minus_one_inv + psi_a_bb - psi_bb_a_k);
-		d_a		    += apop_sum(&(v.vector)) * (psi_a_bb + psi_a_k - psi_a_mas_one - psi_bb_a_k);
+        APOP_COL(d, k, v);
+		d_bb	    += apop_sum(v) * -psi_bb_a_k;
+		d_a		    += apop_sum(v) * (psi_a_k - psi_bb_a_k);
 	}
+    d_bb	    += (bb_minus_one_inv + psi_a_bb) * d->matrix->size1 * d->matrix->size2;
+    d_a		    += (psi_a_bb - psi_a_mas_one) * d->matrix->size1 * d->matrix->size2;
 	gsl_vector_set(gradient, 0, d_bb);
 	gsl_vector_set(gradient, 1, d_a);
 }
@@ -120,7 +120,7 @@ static double waring_rng(gsl_rng *r, double *a){
 // c = b - 1 
 // n = k - 1 , so if it returns 0, that's first rank.
 // OK, I hope that clears everything up.
-double		x, u,
+  double		x, u,
 		params[]	={a[0]+1, 1, a[1]-1};
 	do{
 		x	= 1+ apop_GHgB3_rng(r, params);

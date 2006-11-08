@@ -49,7 +49,6 @@ can jackknife every parameter at once. Remember that if \c e is an
 \ingroup boot
  */
 gsl_matrix * apop_jackknife(apop_data *in, apop_model model, apop_estimation_params *ep){
-gsl_vector              v;
 int                     i;
 apop_data               *subset  = apop_data_alloc(in->matrix->size1 - 1, in->matrix->size2);
 apop_data               *array_of_boots = NULL;
@@ -57,9 +56,8 @@ apop_estimation_params  *e;
 apop_estimate           *boot_est;
 
 //Allocate a matrix, get a reduced view of the original, and copy.
-gsl_matrix  *reduced= subset->matrix;
 gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1, in->matrix->size2).matrix;
-    gsl_matrix_memcpy(reduced, &mv);
+    gsl_matrix_memcpy(subset->matrix, &mv);
 
     //prep the parameters.
     if (ep){
@@ -71,15 +69,13 @@ gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1,
     e->uses.parameters  = 1;
 	boot_est        = model.estimate(subset, e);
 	array_of_boots  = apop_data_alloc(in->matrix->size1, boot_est->parameters->vector->size);
-    i = -1;
-    //printf("Fuck. %i, %i, %i\n", reduced->size1, i, (i< (int) reduced->size1));
-    
-    for(i = -1; i< (int) reduced->size1; i++){
+    for(i = -1; i< (int) subset->matrix->size1; i++){
         //Get a view of row i, and copy it to position i-1 in the
         //short matrix.
         if (i >= 0){
-            v   = gsl_matrix_row(in->matrix, i).vector;
-            gsl_matrix_set_row(reduced, i, &v);
+            APOP_ROW(in, i, v);
+            //v   = gsl_matrix_row(in->matrix, i).vector;
+            gsl_matrix_set_row(subset->matrix, i, v);
 	        boot_est        = model.estimate(subset, e);
         }
         gsl_matrix_set_row(array_of_boots->matrix, i+1, boot_est->parameters->vector);

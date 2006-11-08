@@ -47,9 +47,7 @@ If we have a vector of data points, $\xv$, consisting of $n$ elements
 $x_i$, then we take each single observation to be equally likely:
 $p(x_i)={1\over n}\ \forall i$.  The expected value for a sample then
 becomes the familiar calculation $$E(\xv)={\sum_i x_i\over n},$$ and is
-\comment{(I should check this) }the BLUE of the true mean $\mu$. Section
-\ref{CLT} will discuss the magical properties of the sample expected
-value that make statistical analysis possible.
+\comment{(I should check this) }the BLUE of the true mean $\mu$. 
 
 \paragraph{More moments:}\blindvocab{skew} \blindvocab{kurtosis} \index{moments} 
 The variance for discrete data is the familiar formula of the mean
@@ -67,9 +65,12 @@ every statistics textbook ever written provides a proof that Equation
 \ref{vareqn} is an unbiased estimator of the population's true variance.
 
 Given a continuous probability distribution from which the data was
-taken, one write out the
+taken, one could write out the
 expectation in the variance equation as an integral,
-$$\var(f(x))=\int_{\forall x} \left(f(x) - \overline{f(x})\right)^2 p(x) dx.$$
+\begin{eqnarray}
+\var(f(x))&=&E\left(\left(f(x) - \overline{f(x)}\right)^2\right)\nonumber\\
+        &=&\int_{\forall x} \left(f(x) - \overline{f(x})\right)^2 p(x) dx.\nonumber
+\end{eqnarray}
 and similarly for higher powers as well:
 \begin{eqnarray*}
 {\rm skew}\left(f(x)\right)&=&\int_{\forall x} \left(f(x) - \overline{f(x})\right)^3 p(x) dx\\
@@ -118,8 +119,10 @@ deviation assuming a sample, the calculation proceeds as if the data are a
 population. Of course, this detail is only relevant for for small $n$.}
 
 
-What information can we get from the higher moments?  Below, we will
-see the powerful Central Limit Theorem, which says that if a variable
+What information can we get from the higher moments?  
+Section
+\ref{CLT} will discuss 
+the powerful Central Limit Theorem, which says that if a variable
 represents the mean of a set of independent and identical draws, then it
 will have a ${\cal N}(\mu,\sigma)$ distribution, where $\mu$ and $\sigma$
 are unknowns that can be estimated from the data. These two parameters
@@ -141,7 +144,7 @@ $n-1$ instead of $n$.
 
 \paragraph{Correlation/Cauchy-Schwarz:} The \vocab{correlation coefficient} is
 defined as $$\rho_{\xv\yv}\equiv{\sigma_{\xv\yv}\over \sigma_\xv
-\sigma_\xv},$$ and is usually estimated using ${s_{\xv\yv}\over
+\sigma_\yv},$$ and is usually estimated using ${s_{\xv\yv}\over
 s_\xv s_\xv}$.  This is mostly just another statistic useful for
 describing two columns of data, but it makes a surprise appearance
 in Section \ref{ts}. It also allowed Cauchy \& Schwarz to state
@@ -169,6 +172,28 @@ apop_data_show(apop_matrix_summarize(set));
 \end{lstlisting}
 The last item in the code, \cind{apop\_matrix\_summarize} produces a table of
 some summary statistics for every column of the data set.
+
+\exercise{\begin{itemize}
+\item Write a query that pulls the number of males per 100 females and
+the population density from the Census data (\bi{data-census.db}). The query will:
+    \begin{itemize}
+    \item join together the \si{geography} and \si{demos} tables by county name or number, and
+    \item exclude states and the national total, and
+    \item return a two-column table.
+    \end{itemize}
+\item Write a function \ci{void summarize\_paired\_data(char *q)} that takes in a query that produces a two-column
+table, and outputs some of the above summary information about both
+columns, including the correlation coefficient.
+\item Write a \bi{main()} that sends your query to the above function;
+run the program.
+\end{itemize} (continued)} \addtocounter{ex}{-1}\exercise{(continued) \begin{itemize}
+\item Write another query that pulls the ratio of 
+(median income for full-time workers, female)/(median income for full-time workers, male) and
+the population density. 
+\item Add a line to \bi{main()} to send that query to your summarizing function as well.
+\end{itemize}
+
+}
 
 \paragraph{Percentiles} \index{percentiles} The mean and variance can be misleading for
 skewed data. The first option for describing a data set whose
@@ -233,7 +258,7 @@ Write a function with
 header \ci{double show\_quartiles(gsl\_vector *v, char rounding\_method,
 int divisions)} that passes \ci{v} and \ci{rounding\_method} to
 \ci{apop\_vector\_percentiles}, and then prints a table of selected
-percentiles to the screen. If \ci{divisions==4}, print quartiles, if
+percentiles to the screen. For example, if \ci{divisions==4}, print quartiles, if
 \ci{divisions==5}, print quintiles, if \ci{divisions==10}, print
 deciles, et cetera.
 
@@ -244,7 +269,7 @@ Use your function to print the deciles for country incomes from
 
 \paragraph{\treesymbol{} Weighted data} Your data may be aggregated so
 that one line of data represents multiple observations. For example,
-sampling efficiencly can be improved by sampling subpopulations
+sampling efficiency can be improved by sampling subpopulations
 differently depending upon their expected variance \citep{sarndal:mass}.
 For this and other reasons, data from statistical agencies often
 includes weightings.
@@ -299,10 +324,12 @@ Binomial distribution, and once you estimate the parameter to the
 distribution, you will have a full model of that variable, that you can
 even test if so inclined.
 
+\index{PDF|see{probability density function}}
+\index{CDF|see{cumulative density function}}
 The catalog below includes the three most typical items one would want
 from a distribution: a random number generator (RNG) that would produce
-data with the given distribution, a probability density function (PDF),
-and a cumulative density function (CDF). The full details of RNG use
+data with the given distribution, a \vocab{probability density function} (PDF),
+and a \vocab{cumulative density function} (CDF). The full details of RNG use
 will be discussed below, but the functions are cataloged here for easy
 reference, and each requires a pointer to a \ci{gsl\_rng}, which will be
 named \ci{r}.
@@ -377,7 +404,7 @@ that this is a proper name and not an adjective.} See the CLT (Section
 \cindex{gsl\_ran\_gaussian} \cindex{gsl\_ran\_gaussian\_pdf}
 \cindex{gsl\_cdf\_gaussian\_Q}\cindex{gsl\_cdf\_gaussian\_P}
 \eqnbox{ \label{normal}
-P(x|\mu,\sigma)&=&{1\over \sigma\sqrt{2\pi}} e^{-{1\over 2}[{(x-\mu)\over\sigma}]^2}\\ 
+P(x|\mu,\sigma)&=&{1\over \sigma\sqrt{2\pi}} \exp\left({-{1\over 2}\left[{(x-\mu)\over\sigma}\right]^2}\right)\\ 
     &=& \ci{gsl\_ran\_gaussian\_pdf(x, sigma) + mu}\nonumber\\
 E(x)&=&\mu							\nonumber\\
 \var(x)&=&\sigma^2						\nonumber\\
@@ -395,7 +422,7 @@ RNG&:&\ci{gsl\_ran\_gaussian(r, sigma)+mu}			\nonumber
 
 \paragraph{Multivariate Normal}\index{multivariate normal distribution}
 All of the other distributions are for a single variable---one
-dimension. Let us say that we have a data set $\Xv$, which includes a
+dimension. Let us say that we have a data set $\Xv$ which includes a
 thousand observations and seven variables (so $\Xv$ is a 1000$\times$7
 matrix). We know its mean is
 $\mu$ (a vector of length seven) and that the covariance among the
@@ -517,7 +544,7 @@ RNG_2&:&\ci{apop\_random\_beta(r, mu, sigma)} \nonumber
 \cindex{gsl\_cdf\_flat\_(P,Q)}
 \paragraph{Uniform distribution\index{Uniform distribution|textbf}} What discussion of distributions
 would be complete without mention of the Uniform? It represents a neutral
-prior belief that any value within $[\alpha, \beta]$ is equally possible.
+belief that any value within $[\alpha, \beta]$ is equally possible.
 
 \eqnbox{
 P(x) &=& \frac{1}{\beta - \alpha}       \nonumber\\
@@ -611,10 +638,12 @@ covered in some detail in Chapter \ref{boot}.
 \codefig{normalgrowth}{A model of Normally distributed growth.}
 
 Figure \ref{normalgrowth} gives a quick initial example. It is based on
-work by Axtell and others [CITATIONS HERE] regarding \vocab{Zipf's law},
-that cities, firms, and other such agglomerations tend to take on an
-Exponential distribution. In the model here, this comes about because
-agents' growth rates are Normally distributed.
+work originated by \citet{gibrat:growth} and extended by
+\citet{axtell:firmwp} and
+others regarding \vocab{Zipf's law}, that cities,
+firms, and other such agglomerations tend to take on an Exponential
+distribution. In the model here, this comes about because agents' growth
+rates are Normally distributed.
 
 
 First, the program produces a set of agents with one characteristic: size,
@@ -773,9 +802,12 @@ dimensionality we want in the end. Below, I transpose that before premultiplying
 the data set by the principal component matrix.
 
 \begin{lstlisting}
+gsl_matrix *projected = apop_dot(pc_space, data, 1, 0);
+\end{lstlisting}
+\comment{
 gsl_matrix *projected = gsl_matrix_alloc(data->size1, dimensions_we_want);
 gsl_blas_dgemm(CblasTrans,CblasNoTrans, pc_space, data, projected);
-\end{lstlisting}
+}
 
 You will probably want to plot the \cinline{projected} matrix; the means
 of doing so are discussed in Chapter \ref{gnuplot}
@@ -1070,6 +1102,14 @@ I will assume that we have already read a data matrix in to \cinline{apop\_data 
 \begin{lstlisting}
 apop_estimate_show(apop_OLS.estimate(set, NULL));
 \end{lstlisting}
+
+\exercise{Above, you found a relationship between males per female (the
+dependent variable) and
+both density and male-female wage ratios (the independent
+variables). Produce an appropriate data set and send it to
+\ci{apop\_OLS.estimate} to check the coefficients when both independent
+variables are included.}
+
 But if the assumptions of OLS do not fit, then you will need to know how
 the \cinline{a\-pop\_OLS.\-est\-i\-mate} function works, so the remainder of this
 section goes over the steps one would take to estimate $\betav$.  \cindex{apop\_OLS}

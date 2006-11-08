@@ -890,7 +890,7 @@ in the command file immediately after the command. You can use this and
 \ci{apop\_data\_print} to produce plot files of your data.
 }
 
-\section{Animation}\index{animation} Perhaps three dimensions is not
+\section{Animation}\label{animation}\index{animation} Perhaps three dimensions is not
 quite enough, and you need one more. Gnuplot easily supports animation:
 just stack plots one after the next and call \ci{plot} in between. However,
 many media (such as paper) do not yet support animation, meaning that your
@@ -959,8 +959,8 @@ them with a screen viewer, or perhaps print them into a flipbook. When writing a
 file, set \ci{p=0} in the above, since there is no use delaying between
 outputs.
 
-Figure \ref{normalgrowth} shows another sample program that produces an
-interesting animation.
+For more examples of animation production, see
+the sample code in Listings \ref{normalgrowth} and \ref{bimodality}.
 
 \index{Gnuplot|)}
 

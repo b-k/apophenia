@@ -22,7 +22,7 @@ sense for the ever-eccentric Windows operating system.
 
 The solution is to set \vocab{environment variables} that will specify
 how your compiler will find the various elements it needs to produce
-your program.
+your program.\label{makeappendix}
 
 \section{Environment variables} If you type \bind{env} at the command
 prompt, you will get a list of the environment variables set on your
@@ -36,7 +36,7 @@ HOME=/home/klemens
 \end{lstlisting}
 
 These variables are maintained by the operating system, and every time
-a program spawns a new program, the environment variables are duplicated
+a program spawns a new subprogram, the environment variables are duplicated
 and passed to the child program.  Notably, when you type a command at the
 shell prompt, all of the environment variables you saw when you typed
 \bi{env} are passed on to the program.
@@ -46,12 +46,13 @@ page \pageref{grep}). For example, to find out which shell you are using,
 try \bi{env | grep SHELL}.
 
 \paragraph{Setting}
-Now that you know which shell to use, the syntax for setting environment
+Now that you know which shell you are using, the syntax for setting environment
 variables differs slightly from shell to shell.
 
-You are probably using \bi{bash} or another variant of the Bourne
-shell.\footnote{\bi{bash}= Bourne-again shell.} In these systems,
-set environment variables using the shell's \bi{export} command:
+\index{bash}
+You are probably using \bi{bash} or another variant of the \ind{Bourne
+shell}.\footnote{\bi{bash}=Bourne-again shell.} In these systems,
+set environment variables using the shell's \bind{export} command:
 \begin{lstlisting}[language=sh]
 export USER=Steven
 \end{lstlisting}
@@ -63,7 +64,7 @@ USER=Steven
 export USER
 \end{lstlisting}
 
-The other family of shells is the C shell, which bears a vague, passing
+The other family of shells is the \ind{C shell}, which bears a vague, passing
 resemblance to the C programming language. In \bi{csh}, use \bi{setenv}:
 \begin{lstlisting}[language=csh]
 setenv USER Steven
@@ -105,7 +106,7 @@ backed up.
 The \bi{.rc} files are plain text, and generally look like the sort of
 thing one would type on a command line---because that is what they are.
 If you put an \bi{export} or \bi{setenv} command in this file, then 
-those commands will be input every time your shell starts, and the
+those commands will be read every time your shell starts, and the
 variables will thus be set appropriately for all of your
 work.\footnote{Remember, when you first edit the file, it is not auto-read, so either exit and
 re-enter the shell to see the effects of your edit, or use \bi{source
@@ -114,8 +115,8 @@ re-enter the shell to see the effects of your edit, or use \bi{source
 \paragraph{\treesymbol Getting and setting from C}
 It will be no surprise that it is very easy to read and write 
 environment variables from within a C program. Listing \ref{env}
-shows that \cind{getenv} will return a string holding the value of the
-environment variable, and \cind{setenv} will set the given environemnt
+shows that the \cind{getenv} function will return a string holding the value of the
+environment variable, and \cind{setenv} will set the given environment
 variable (on line 6, \ci{USER}) to the given value (``Steven''). The third
 argument to \ci{setenv} specifies whether an existing environment variable
 should be overwritten. There are a few other useful environment-handling
@@ -127,7 +128,7 @@ shell). Overriding this basic security precaution requires explicit
 cooperation from the parent process.}
 
 \lstset{numbers=left, numberstyle=\scshape}
-\codefig{env}{Getting and setting environment variables}
+\codefig{env}{Getting and setting environment variables.}
 \lstset{numbers=none}
 
 \summary{\item The operating system maintains a set of variables
@@ -178,15 +179,21 @@ The complication is that there are several ways for a directory to
 appear on the include or library path.
 
 \begin{itemize}
-\item There is a default include path and a default library path. Both
-of these do include the current directory.
+\item There is a default include path and a default library path,
+precompiled into the system. This typically includes \bi{/usr/include}
+\bi{/usr/local/include} in the include path, and \bi{/usr/lib} and \bi{/usr/local/lib}
+in the libpath.
 \item The environment variables \bi{INCLUDEPATH} and \bi{LIBPATH} are
 part of the path. These names are sometimes different, depending on the linker
 used: \bi{gcc} uses \bi{ld}, so it looks for
 \bi{LD\_LIBRARY\_PATH}---except on Mac systems, where it looks for
 \bi{DYLD\_LIBRARY\_PATH}. On HP-UX systems, try \bi{SHLIB\_PATH}. Or more
 generally, try \bi{man ld} or \bi{man cc} to find the right environment
-variable for your system.
+variable for your system. Some libraries are \airq{shared}, which in
+this context means that they are linked when actually called in
+execution. Thus, when you execute your newly-complied program, you could
+still get a missing library error; to fix this you would need to add to
+your \bi{LIBRARY\_PATH} environment variable.
 \item You can add to the paths on the compiler's command line. The flag
 \bi{-I/usr/local/include} would add that directory to the include path,
 and the flag \bi{-L/usr/local/lib} would add that directory to the
@@ -221,7 +228,8 @@ The Sqlite3 library is the only one that is not dependent on or a
 dependency of other libraries, and therefore is the only one that can be
 placed anywhere. The others must be in this order for the compilation to
 work.\footnote{With some linkers, order does not matter. If this is the case on your system, consider yourself
-lucky.} You may also need to specify the location of some of these
+lucky, but try to preserve the ordering anyway to ease any potential
+transition to another system.} You may also need to specify the location of some of these
 libraries; this will have to come first, and the command now looks like:
 \begin{lstlisting}
 gcc -L/usr/local/lib source.o -lapophenia -lgsl -lcblas -lsqlite3
@@ -234,7 +242,7 @@ program explcitly designed to save you from such labor.
 \item Many systems, including the shell, the preprocessor, and the
 linker, search a specified directory path for requested items.
 \item The default path for the preprocessor and linker can be extended
-via both environment variables and instructions on the command line.
+via both environment variables and instructions on the compiler's command line.
 }
 
 
@@ -283,15 +291,17 @@ file2.o: file2.c my_headers.h       #User-defined
 The \bi{make} program does two types of calculation: expanding variable
 names and folowing dependencies. \vocabmarker{dependency}
 
+\paragraph{Variable expansion}
 Variable names in a Makefile look much like environment
-variables, and they behave much like them. They are slightly easier to
+variables, and behave much like them as well. They are slightly easier to
 set---just use \bi{VAR = value}---and when referencing them, use a
 dollar sign and parens: \bi{\$(VAR)} will expand to \bi{value}.
 The environment variables are also available this way, so
 your Makefile can include definitions like \bi{INCLUDEPATH =
 \$(INCLUDEPATH):\$(HOME)/includes}.  Like the custom for environment
-variables, variables in Makefiles are customarily in all caps, and for
-convenience are primarily grouped at the top of the file. 
+variables, variables in Makefiles are customarily in all caps, and as
+with constants in any program, they are grouped at the top of the file
+for ease of reference and adjustment. 
 
 This is where you can place the include path, library path, and included
 libraries that works best for your system. Most C-oriented Makefiles
@@ -303,10 +313,12 @@ The \ci{\$<} and \ci{\$@} variables (in the \bi{COMPILE} variable
 definition) are special variables that indicate the dependency and target,
 respectively, which brings us to the discussion of dependency handling.
 
+\paragraph{Dependencies}
 The remainder of the file is a series of target/dependency pairs and
-actions. A \airq{target} is something to be produced, such as an object
-file or an executable. On page \pageref{latexmake}, there is a Makefile
-to produce PDFs and graphics. The \airq{dependency} is the file
+actions. A \airq{target} is something to be produced. Here the targets
+are object
+files and an executable, and on page \pageref{latexmake}, there is a Makefile
+whose targets are PDFs and graphics. The \airq{dependency} is the file
 containing the data used to produce the target. An object file depends
 on the C source code defining the functions and structures, an
 executable depends on the object files being linked together, and a PDF

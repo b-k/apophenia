@@ -314,6 +314,7 @@ apop_data * apop_data_from_matrix(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
 apop_data * apop_data_from_vector(gsl_vector *v);
 apop_data * apop_data_alloc(int size1, int size2);
+apop_data * apop_data_calloc(int size1, int size2);
 apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c);
 apop_data * apop_data_copy(apop_data *in);
