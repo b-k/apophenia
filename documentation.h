@@ -376,7 +376,7 @@ If your text editor supports syntax highlighting, there are a few types defined 
 For <tt>vim</tt>, for example. add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
 \verbatim
 syn keyword     cType           gsl_matrix gsl_vector apop_data
-syn keyword     cType           apop_name apop_model apop_inventory apop_estimate  apop_estimation_params
+syn keyword     cType           apop_name apop_model apop_inventory apop_estimate  apop_ep
 \endverbatim
 Other text editors have similar files to which you can add the above types.
 */

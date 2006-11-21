@@ -19,7 +19,7 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include "likelihoods.h"
 #include <assert.h>
 #include <gsl/gsl_deriv.h>
-static apop_estimate * apop_annealing(apop_model m, apop_data *data, apop_estimation_params *ep);  //below.
+static apop_estimate * apop_annealing(apop_model m, apop_data *data, apop_ep *ep);  //below.
 
 /** \page trace_path Plotting the path of an ML estimation.
 
@@ -326,7 +326,7 @@ gsl_matrix	    *hessian;
 	apop_det_and_inv(hessian, &(est->covariance->matrix), 0, 1);
 	gsl_matrix_free(hessian);
 
-	if (est->estimation_params.uses.confidence == 0)
+	if (est->ep.uses.confidence == 0)
 		return;
 	//else:
         apop_estimate_parameter_t_tests(est);
@@ -370,7 +370,7 @@ gsl_vector  v;
 	gsl_matrix_free(pre_cov);
 	gsl_vector_free(diff);
 
-	if (est->estimation_params.uses.confidence == 0)
+	if (est->ep.uses.confidence == 0)
 		return;
 	//else:
 	for (i=0; i<betasize; i++) // confidence[i] = |1 - (1-N(Mu[i],sigma[i]))*2|
@@ -395,7 +395,7 @@ If no derivative exists, will calculate a numerical gradient.
 
   \todo readd names */
 static apop_estimate *	apop_maximum_likelihood_w_d(apop_data * data,
-			apop_model dist, apop_estimation_params *est_params){
+			apop_model dist, apop_ep *est_params){
 gsl_multimin_function_fdf 	minme;
 gsl_multimin_fdfminimizer 	*s;
 gsl_vector 			        *x;
@@ -458,13 +458,13 @@ apop_estimate			    *est;
 	if (est_params && est_params->starting_pt==NULL) 
 		gsl_vector_free(x);
 	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data);
-	if (!est_params || est->estimation_params.uses.covariance) 
+	if (!est_params || est->ep.uses.covariance) 
 		apop_numerical_covariance_matrix(dist, est, data);
 	return est;
 }
 
 static apop_estimate *	apop_maximum_likelihood_no_d(apop_data * data, 
-			apop_model dist, apop_estimation_params * est_params){
+			apop_model dist, apop_ep * est_params){
     //, double *starting_pt, double step_size, double tolerance, int verbose){
 int			            status,
 			            iter 		= 0,
@@ -525,7 +525,7 @@ apop_estimate		    *est;
 	gsl_vector_memcpy(est->parameters->vector, s->x);
 	gsl_multimin_fminimizer_free(s);
 	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data);
-	if (est->estimation_params.uses.covariance) 
+	if (est->ep.uses.covariance) 
 		apop_numerical_covariance_matrix(dist, est, data);
 	return est;
 }
@@ -535,7 +535,7 @@ apop_estimate		    *est;
 
 \param data	the data matrix
 \param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
-\param params	an \ref apop_estimation_params structure, featuring:<br>
+\param params	an \ref apop_ep structure, featuring:<br>
 starting_pt:	an array of doubles suggesting a starting point. If NULL, use zero.<br>
 an \ref apop_inventory: which will be pared down and folded into the output \ref apop_estimate<br>
 step_size:	the initial step size.<br>
@@ -553,7 +553,7 @@ Thus, the default method is 100+0 = 100. To use the Nelder-Mead simplex algorith
 \return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
  \ingroup mle */
-apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_estimation_params *params){
+apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_ep *params){
 	if (params && params->method/100==5)
         return apop_annealing(dist, data, params);  //below.
     if (params && params->method/100==0)
@@ -623,17 +623,17 @@ est = apop_estimate_restart(est, 200, 1e-2);
 apop_estimate * apop_estimate_restart(apop_estimate *e,int  new_method, int scale){
 double                 *start_pt2;
 apop_estimate          *out;
-apop_estimation_params new_params;
+apop_ep new_params;
             //copy off the old params; modify the starting pt, method, and scale
-    memcpy(&new_params, &(e->estimation_params),sizeof(apop_estimation_params));
+    memcpy(&new_params, &(e->ep),sizeof(apop_ep));
     if (apop_vector_bounded(e->parameters->vector,1e4)){
         apop_vector_to_array(e->parameters->vector, &start_pt2);
 	    new_params.starting_pt	= start_pt2;
     }
     else
-	    new_params.starting_pt	= e->estimation_params.starting_pt;
-    new_params.tolerance   = e->estimation_params.tolerance * scale;
-    new_params.step_size   = e->estimation_params.step_size * scale;
+	    new_params.starting_pt	= e->ep.starting_pt;
+    new_params.tolerance   = e->ep.tolerance * scale;
+    new_params.step_size   = e->ep.step_size * scale;
     new_params.method	    = new_method;
 	out	                    = (e->model)->estimate(e->data, &new_params);
             //Now check whether the new output is better than the old
@@ -765,7 +765,7 @@ static void annealing_free(void *xp){
     gsl_vector_free(xp);
 }
 
-apop_estimate * apop_annealing(apop_model m, apop_data *data, apop_estimation_params *ep){
+apop_estimate * apop_annealing(apop_model m, apop_data *data, apop_ep *ep){
     //annealing_model = m;
     //annealing_data  = data;
     if (m.parameter_ct == -1) {
@@ -811,7 +811,7 @@ gsl_siman_params_t params = {N_TRIES,
     //Clean up, copy results to output estimate.
     gsl_vector_memcpy(est->parameters->vector, beta);
     est->log_likelihood = m.log_likelihood(est->parameters->vector, data);
-    if (est->estimation_params.uses.covariance)
+    if (est->ep.uses.covariance)
         apop_numerical_covariance_matrix(m, est, data);
     return est;
 }

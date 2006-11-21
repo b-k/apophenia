@@ -105,26 +105,26 @@ Also, the parameters, and anything else specified in the inventory, is allocated
 
 \param data	        A pointer to an input apop_data set
 \param model	    A pointer to the model you're estimating
-\param  params      An \ref apop_estimation_params structure. May be NULL. Don't forget that this may include an apop_inventory (or that field may be NULL)
+\param  params      An \ref apop_ep structure. May be NULL. Don't forget that this may include an apop_inventory (or that field may be NULL)
 
 \ingroup inv_and_est  */
-apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_estimation_params *params){
+apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_ep *params){
 apop_estimate * prep_me;
 	prep_me	= malloc(sizeof(apop_estimate));
     if (params){
-        memcpy(&(prep_me->estimation_params), params, sizeof(apop_estimation_params));
-	   // apop_inventory_copy(apop_inventory_filter(&(params->uses), model.inventory_filter), &(prep_me->estimation_params.uses));
+        memcpy(&(prep_me->ep), params, sizeof(apop_ep));
+	   // apop_inventory_copy(apop_inventory_filter(&(params->uses), model.inventory_filter), &(prep_me->ep.uses));
     } else {
-        apop_estimation_params *delme =  apop_estimation_params_alloc();
-        memcpy(&(prep_me->estimation_params), delme, sizeof(apop_estimation_params));
-        apop_estimation_params_free(delme);
-	  //  apop_inventory_filter(&(prep_me->estimation_params.uses), model.inventory_filter);
+        apop_ep *delme =  apop_ep_alloc();
+        memcpy(&(prep_me->ep), delme, sizeof(apop_ep));
+        apop_ep_free(delme);
+	  //  apop_inventory_filter(&(prep_me->ep.uses), model.inventory_filter);
     }
-	if (prep_me->estimation_params.uses.parameters)
+	if (prep_me->ep.uses.parameters)
 		prep_me->parameters	= apop_data_alloc(model.parameter_ct
                                                 * (params? params->params_per_column: 1),-1);
-	if (prep_me->estimation_params.uses.dependent ||
-	                prep_me->estimation_params.uses.predicted){
+	if (prep_me->ep.uses.dependent ||
+	                prep_me->ep.uses.predicted){
         if (data && data->matrix)
 		    prep_me->dependent	= apop_data_alloc(data->matrix->size1,3);
         else if (data && data->vector)
@@ -141,7 +141,7 @@ apop_estimate * prep_me;
         if (data && data->names && data->names->rownamect > 0)
             apop_name_stack(prep_me->dependent->names, data->names, 'r');
     }
-	if (prep_me->estimation_params.uses.covariance){
+	if (prep_me->ep.uses.covariance){
 		prep_me->covariance	= apop_data_alloc(model.parameter_ct,model.parameter_ct);
         if (data && data->names){
             apop_name_stack(prep_me->covariance->names, data->names, 'c');
@@ -157,13 +157,13 @@ apop_estimate * prep_me;
 
 \ingroup inv_and_est */
 void apop_estimate_free(apop_estimate * free_me){
-	if (free_me->estimation_params.uses.predicted
-	    || free_me->estimation_params.uses.dependent)
+	if (free_me->ep.uses.predicted
+	    || free_me->ep.uses.dependent)
         if (free_me->dependent)
 		    apop_data_free(free_me->dependent);
-	if (free_me->estimation_params.uses.covariance)
+	if (free_me->ep.uses.covariance)
 		apop_data_free(free_me->covariance);
-	if (free_me->estimation_params.uses.parameters)
+	if (free_me->ep.uses.parameters)
         apop_data_free(free_me->parameters);
 	free(free_me);
 }
@@ -172,13 +172,13 @@ void apop_estimate_free(apop_estimate * free_me){
 
 \ingroup output */
 void apop_estimate_show(apop_estimate * print_me){
-	if (print_me->estimation_params.uses.parameters)
+	if (print_me->ep.uses.parameters)
         apop_data_show(print_me->parameters);
-	if (print_me->estimation_params.uses.covariance){
+	if (print_me->ep.uses.covariance){
 		printf("\nThe variance/covariance matrix:\n");
         apop_data_show(print_me->covariance);
 	}
-	if (print_me->estimation_params.uses.log_likelihood)
+	if (print_me->ep.uses.log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);
 }
 
@@ -207,13 +207,13 @@ apop_model * apop_model_copy(apop_model in){
 }
 
 
-/** Neatly allocate an \ref apop_estimation_params structure. Sets a
+/** Neatly allocate an \ref apop_ep structure. Sets a
 few defaults, so you can change just one or two values and everything
 else will be predictable.
 
  */
-apop_estimation_params *apop_estimation_params_alloc(){
-  apop_estimation_params *setme = calloc(sizeof(apop_estimation_params),1);
+apop_ep *apop_ep_alloc(){
+  apop_ep *setme = calloc(sizeof(apop_ep),1);
     setme->starting_pt          = NULL;
     setme->weights              = NULL;
     setme->step_size            = 
@@ -222,11 +222,11 @@ apop_estimation_params *apop_estimation_params_alloc(){
     return setme;
 }
 
-/** Neatly allocate an \ref apop_estimation_params structure. Sets a
+/** Neatly allocate an \ref apop_ep structure. Sets a
 few defaults, so you can change just one or two values and everything
 else will be predictable.
 
  */
-void apop_estimation_params_free(apop_estimation_params *freeme){
+void apop_ep_free(apop_ep *freeme){
     free(freeme);
 }

@@ -69,7 +69,7 @@ Here is a simple example; see also \ref mle for other examples.
 apop_estimate   * waring_parameters;
 double          starting_pt[2] = {3, 0};
 double          likelihood;
-apop_estimation_params params;
+apop_ep params;
         params.starting_pt	= starting_pt;
         params.method          	= 1;
         params.step_size       	= 1e-2;

@@ -108,7 +108,7 @@ Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distributi
 
 The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
 
-apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_ep.
 
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
 

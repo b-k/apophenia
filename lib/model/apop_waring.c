@@ -143,7 +143,7 @@ static double waring_rng(gsl_rng *r, double *a){
 /** The Waring distribution
 Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
 
-apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_ep.
 
 \f$W(x,k, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
 

@@ -99,7 +99,7 @@ static double gamma_rng(gsl_rng* r, double * a){
   list of numbers to which \f$\alpha\f$ and \f$\beta\f$ will be fit,
   that hapens to be in grid format.
 
-apop_gamma_rank.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+apop_gamma_rank.estimate() is an MLE, so feed it appropriate \ref apop_ep.
 
 Here, we assume that the data is ranking frequencies: data[7][0] is
 the number of times the first-ranked item appears in data set number

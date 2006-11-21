@@ -30,9 +30,9 @@ double		mean, var;
 	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
 	gsl_vector_set(est->parameters->vector, 0, mean);
 	gsl_vector_set(est->parameters->vector, 1, var);
-	if (est->estimation_params.uses.log_likelihood)
+	if (est->ep.uses.log_likelihood)
 		est->log_likelihood	= normal_log_likelihood(est->parameters->vector, data);
-	if (est->estimation_params.uses.covariance)
+	if (est->ep.uses.covariance)
 		apop_numerical_covariance_matrix(apop_normal, est, data);
 	return est;
 }

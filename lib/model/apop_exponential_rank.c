@@ -39,9 +39,9 @@ int             i;
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters->vector, 0, numerator/grand_total);
-	if (est->estimation_params.uses.log_likelihood)
+	if (est->ep.uses.log_likelihood)
 		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters->vector, data);
-	if (est->estimation_params.uses.covariance)
+	if (est->ep.uses.covariance)
 		apop_numerical_covariance_matrix(apop_exponential_rank, est, data);
 	return est;
 }
@@ -124,7 +124,7 @@ If you prefer this form, just convert your parameter via \f$\mu = {1\over
 \ln C}\f$ (and convert back from the parameters this function gives you
 via \f$C=\exp(1/\mu)\f$.
 
-apop_exponential.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+apop_exponential.estimate() is an MLE, so feed it appropriate \ref apop_ep.
 
 \ingroup models
 \todo Check that the borderline work here is correct.

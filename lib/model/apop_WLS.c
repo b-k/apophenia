@@ -17,7 +17,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 the modified data, and then claim that the output was from WLS.
 */
 apop_estimate * wls_estimate(apop_data *inset, void *epin){
-  apop_estimation_params    *epcopy = malloc(sizeof(*epcopy)),
+  apop_ep    *epcopy = malloc(sizeof(*epcopy)),
                             *ep     = epin;
   apop_estimate             *out;
   apop_data                 *set;

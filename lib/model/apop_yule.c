@@ -125,7 +125,7 @@ The data set needs to be in rank-form. The first column is the frequency
 of the most common item, the second is the frequency of the second most
 common item, &c.
 
-apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_ep.
 
 \f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$
 

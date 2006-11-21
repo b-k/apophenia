@@ -21,10 +21,10 @@ static apop_estimate * poisson_estimate(apop_data * data,  void *parameters){
 apop_estimate 	*est= apop_estimate_alloc(data,apop_poisson, parameters);
 double		mean    = apop_matrix_mean(data->matrix);
 	gsl_vector_set(est->parameters->vector, 0, mean);
-	if (est->estimation_params.uses.log_likelihood)
+	if (est->ep.uses.log_likelihood)
 		est->log_likelihood	= poisson_log_likelihood(est->parameters->vector, data);
-	if (est->estimation_params.uses.covariance)
-		    est->covariance->matrix = apop_jackknife(data, apop_poisson, &(est->estimation_params));
+	if (est->ep.uses.covariance)
+		    est->covariance->matrix = apop_jackknife(data, apop_poisson, &(est->ep));
 	return est;
 }
 
@@ -92,7 +92,7 @@ static double poisson_rng(gsl_rng* r, double * a){
 
 Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
 
-apop_poisson.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+apop_poisson.estimate() is an MLE, so feed it appropriate \ref apop_ep.
   
 \f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
 

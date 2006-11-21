@@ -132,7 +132,7 @@ static double waring_rng(gsl_rng *r, double *a){
 /** The Waring distribution
 The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
 
-apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_estimation_params.
+apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_ep.
 
 \f$W(x,k, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
 

@@ -34,8 +34,7 @@ The \ref apop_inventory structure lists the elements that an \ref
 apop_estimate has generated (no model produces everything). Model
 estimates accept an inventory, but all work fine if you send in
 NULL. Finally, the more elaborate models, such as MLEs, require some parameters to run,
-in which case you will need to fill out an \ref apop_estimation_params
-form and hand it in to the model.
+in which case you will need to fill out an \ref apop_ep form and hand it in to the model.
 
 
 \li Data 
@@ -72,7 +71,7 @@ will include its own <tt>apop_inventory</tt>,  which can be used later on
 to test whether any given element is in use. See \ref inv_and_est.
 
 \li Estimate parameters
-The \ref apop_estimation_params are the details for how an \ref
+The \ref apop_ep are the details for how an \ref
 apop_estimate should do its work; currently it is just the specifications
 for tolerances, step sizes, starting points, et cetera, for \ref apop_maximum_likelihood.
  See \ref inv_and_est.
@@ -101,7 +100,7 @@ If the <tt>apop_inventory</tt> will be sent in to a regression/MLE
 function, set the appropriate element to either zero or one if you would
 like the function to return the designated \ref apop_estimate element.
 
-The \ref apop_estimation_params of the \ref apop_estimate structure
+The \ref apop_ep of the \ref apop_estimate structure
 has an <tt>apop_inventory</tt> element named <tt>uses</tt> embedded
 within it. Those elements for which <tt>uses.elmt</tt> are zero are
 unallocated pointers (so be careful: precede all dereferences with an
@@ -125,21 +124,21 @@ should either be zero or one.
 Unlike almost everything else in the GSL and Apophenia, it is
 generally assumed that <tt>apop_inventory</tt>s are not pointers, but
 are automatically allocated. Notably, this is true of the <tt>uses</tt>
-element of the \ref apop_estimation_params structure; therefore, to check
+element of the \ref apop_ep structure; therefore, to check
 whether the variance-covariance matrix of an <tt>apop_estimate*</tt>
 is present, for example, you would look at 
-<tt>est->estimation_params.uses.covariance</tt>.
+<tt>est->ep.uses.covariance</tt>.
 
 
 It may sometimes be useful to manipulate the ["apop_estimate"] structure's
 internal <tt>apop_inventory</tt> element to your own benefit. For
-example, if you set <tt>est->estimation_params.uses.predicted =
+example, if you set <tt>est->ep.uses.predicted =
 0</tt> before calling <tt>apop_print_estimate(est, NULL)</tt>, then
 the predicted values won't get printed. But be careful: if you then call
 <tt>apop_estimate_free(est)</tt>, then the predicted values won't get freed,
 either.  
 */
-typedef struct apop_inventory{
+typedef struct {
 	int	parameters, covariance, confidence, dependent, predicted, log_likelihood, names;
 } apop_inventory;
 
@@ -158,7 +157,7 @@ with \ref apop_name_add .
 Typically, the row names are not used, but they are there for your convenience.  
 \ingroup names
 */
-typedef struct apop_name{
+typedef struct{
 	char * vecname;
 	char ** colnames;
 	char ** rownames;
@@ -170,7 +169,7 @@ typedef struct apop_name{
   E.g., the MLE functions don't look at preserve_data but OLS and GLS do, while OLS and GLS ignore all the other params.
  \ingroup inv_and_est
  */
-typedef struct apop_estimation_params{
+typedef struct{
 	int 	    method;
 	double      *starting_pt; 
 	double 	    step_size; 
@@ -181,13 +180,13 @@ typedef struct apop_estimation_params{
 	apop_inventory	uses;
     void        *parameters;
     gsl_vector  *weights;
-} apop_estimation_params;
+} apop_ep;
 
 /**
 Gathers together a <tt>gsl_vector</tt>, a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space for a table of non-numeric data.
 \ingroup data_struct
 */
-typedef struct apop_data{
+typedef struct {
     gsl_vector  *vector;
     gsl_matrix  *matrix;
     apop_name   *names;
@@ -216,13 +215,13 @@ independent vars, then the first column is the actual data. Let our model be \f$
 \param status		The return status from the estimate that had populated this apop_estimate, if any.
 \ingroup inv_and_est
 */
-typedef struct apop_estimate{
-	apop_data 	       *parameters, *dependent, *covariance;
-	double		       log_likelihood;
-	int		           status;
-    apop_data          *data;
+typedef struct{
+	apop_data 	*parameters, *dependent, *covariance;
+	double		log_likelihood;
+	int		    status;
+    apop_data   *data;
     struct apop_model  *model;
-    struct apop_estimation_params  estimation_params;
+    apop_ep     ep;
 } apop_estimate;
 
 /** This is an object to describe a model whose parameters are to be
@@ -254,7 +253,7 @@ typedef struct apop_model{
 
 /** The global options.
   \ingroup global_vars */
-typedef struct apop_opts_type{
+typedef struct{
             /** Set this to zero for silent mode, one for errors and warnings. default = 0. */
     int verbose;
             /** 's'   = to screen
@@ -294,13 +293,13 @@ void apop_name_memcpy(apop_name **out, apop_name *in);
 apop_name * apop_name_copy(apop_name *in);
 size_t  apop_name_find(apop_name *n, char *findme, char type);
 
-apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_estimation_params *params);
+apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_ep *params);
 void 		apop_estimate_free(apop_estimate * free_me);
 void 		apop_estimate_print(apop_estimate * print_me);
 void 		apop_estimate_show(apop_estimate * print_me);
 
-apop_estimation_params *apop_estimation_params_alloc();
-void apop_estimation_params_free(apop_estimation_params *freeme);
+apop_ep *apop_ep_alloc();
+void apop_ep_free(apop_ep *freeme);
 
 apop_inventory * apop_inventory_alloc(int value);
 void 		apop_inventory_copy(apop_inventory in, apop_inventory *out);

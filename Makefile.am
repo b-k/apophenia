@@ -26,9 +26,9 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_waring.c model/apop_waring_rank.c model/apop_yule.c 	\
 			model/apop_zipf_rank.c model/apop_zipf.c model/apop_OLS.c 		\
 			model/apop_yule_rank.c \
-			wn/wnasrt.c  wn/wnbridge.c  wn/wncnjdn2.c  	\
-			wn/wnconjg.c  wn/wnmatrices.c				\
-			wn/wnmbtr.c wn/wnmem.c  wn/wnmemg.c  wn/wnmemn.c  wn/wnvect.c
+			#wn/wnasrt.c  wn/wnbridge.c  wn/wncnjdn2.c  	\
+			#wn/wnconjg.c  wn/wnmatrices.c				\
+			#wn/wnmbtr.c wn/wnmem.c  wn/wnmemg.c  wn/wnmemn.c  wn/wnvect.c
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \
@@ -37,7 +37,7 @@ pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 			vasprintf/alloca_.h vasprintf/printf-parse.h  	\
 			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
 			vasprintf/printf-args.h vasprintf/vasnprintf.h 	\
-			wn/wnaux.h wn/wnlib.h
+			#wn/wnaux.h wn/wnlib.h
 
 
 #The programs

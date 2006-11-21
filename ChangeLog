@@ -7,6 +7,7 @@
 --The preeminently useful APOP_COL and APOP_ROW
 --apop_data_calloc
 --apop_vector_(apply|map) debugged.
+**apop_estimation_params is just too darn long; reduced to apop_ep.
 
 		October 2006
 --apop_text_to_db now reads from STDIN.

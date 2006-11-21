@@ -13,7 +13,7 @@ a great deal of real-world testing that didn't make it into this file.
 
 //I'm using the test script an experiment to see if 
 //these macros add any value.
-#define APOP_ESTIMATION_PARAMS_ALLOC(name) apop_estimation_params *name = apop_estimation_params_alloc()
+#define APOP_ep_ALLOC(name) apop_ep *name = apop_ep_alloc()
 #define APOP_MATRIX_ALLOC(name, r, c) gsl_matrix *name = gsl_matrix_alloc((r),(c))
 #define APOP_VECTOR_ALLOC(name, r) gsl_vector *name = gsl_vector_alloc(r)
 #define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc((r),(c))
@@ -226,7 +226,7 @@ apop_estimate   *out;
 apop_data       *bkup;
 APOP_DATA_ALLOC(set, len, 2);
 APOP_RNG_ALLOC(r, 23);
-APOP_ESTIMATION_PARAMS_ALLOC(ep);
+APOP_ep_ALLOC(ep);
 
 
 for(i=0; i< len; i++){
@@ -333,7 +333,7 @@ int estimate_model(gsl_matrix *data, apop_model dist){
 int                     i,
                         score         = 0;
 double                  starting_pt[] = {3.2, 1.4};
-apop_estimation_params  *params = apop_estimation_params_alloc();
+apop_ep  *params = apop_ep_alloc();
 apop_estimate           *e;
     params->method           = 100;
     params->step_size        = 1e-2;
@@ -553,7 +553,7 @@ apop_data     *d  = apop_text_to_data("test_data2",0,1);
 apop_estimate *e  = apop_OLS.estimate(d,NULL);
     apop_opts.thread_count  = 2;
 /*  //now specified above.
-apop_estimation_params  params;
+apop_ep  params;
         params.method           = 1;
         params.step_size        = 1e-2;
         params.tolerance        = 1e-3;

@@ -90,8 +90,7 @@ void apop_numerical_covariance_matrix(apop_model dist, apop_estimate *est, apop_
 void apop_numerical_var_covar_matrix(apop_model dist, apop_estimate *est, apop_data *data);
 
 
-apop_estimate *	apop_maximum_likelihood(apop_data * data, 
-			apop_model dist, apop_estimation_params *params);
+apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_ep *params);
 
 
     //This is a global var for numerical differentiation.

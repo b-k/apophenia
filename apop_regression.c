@@ -137,7 +137,7 @@ includes a set of t-test values: p value, confidence (=1-pval), t statistic, sta
 void apop_estimate_parameter_t_tests(apop_estimate *est){
 int     i, df;
 double  val, var, pval, tstat, rootn, stddev, two_tail;
-    est->estimation_params.uses.confidence  = 1;
+    est->ep.uses.confidence  = 1;
     if (!est->data)
         return;
     assert(est->covariance);
@@ -261,13 +261,13 @@ int i;
 		sprintf(e->dependent->names->colnames[0], 
                 e->data->names->colnames[0]);*/
 		sprintf(e->data->names->colnames[0], "1");
-        if (e->estimation_params.uses.parameters){
+        if (e->ep.uses.parameters){
             apop_name_add(e->parameters->names, "1", 'r');
             apop_name_add(e->parameters->names, "parameters", 'v');
             for(i=1; i< e->data->names->colnamect; i++)
                 apop_name_add(e->parameters->names, e->data->names->colnames[i], 'r');
         }
-        if (e->estimation_params.uses.covariance){
+        if (e->ep.uses.covariance){
 		    sprintf(e->covariance->names->colnames[0], "1");
 		    sprintf(e->covariance->names->rownames[0], "1");
             }
@@ -275,7 +275,7 @@ int i;
 }
 
 void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_estimate *out){
-	if (out->estimation_params.uses.covariance + out->estimation_params.uses.confidence + out->estimation_params.uses.predicted == 0 ){	
+	if (out->ep.uses.covariance + out->ep.uses.confidence + out->ep.uses.predicted == 0 ){	
 		//then don't calculate (X'X)^{-1}
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
 		return;
@@ -293,9 +293,9 @@ double		upu;
 	gsl_vector_scale(error,-1);	
 	gsl_blas_ddot(error, error, &upu);
 	gsl_matrix_scale(cov, upu/data->size2);	//Having multiplied by the variance, it's now it's the covariance.
-	if (out->estimation_params.uses.dependent)
+	if (out->ep.uses.dependent)
         gsl_matrix_set_col(out->dependent->matrix, 0, y_data);
-	if (out->estimation_params.uses.predicted){
+	if (out->ep.uses.predicted){
         gsl_matrix_set_col(out->dependent->matrix, 2, error);
         predicted   = gsl_matrix_column(out->dependent->matrix, 1).vector;
         gsl_vector_set_zero(&predicted);
@@ -303,7 +303,7 @@ double		upu;
         gsl_vector_sub(&predicted, error);
     }
     gsl_vector_free(error);
-	if (out->estimation_params.uses.covariance == 0) 	
+	if (out->ep.uses.covariance == 0) 	
         gsl_matrix_free(cov);
 	else 				
         out->covariance->matrix	= cov;
@@ -321,7 +321,7 @@ The first column is the dependent variable, and the remaining columns the indepe
 \param sigma 
 A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>. Survives the function intact. The first column refers to the constant unit vector, so it's always zero.
 
-\param estimation_params
+\param ep
 Most notable for its \ref apop_inventory element, <tt>uses</tt>.
 If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
 
@@ -362,7 +362,7 @@ gsl_vector_view	v 		= gsl_matrix_column(set->matrix, 0);
 
 \param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
-\param epin    An \ref apop_estimation_params object. The only
+\param epin    An \ref apop_ep object. The only
 thing we look at is the \c destroy_data element. If this is NULL or
 \c destroy_data==0, then the entire data set is copied off, and then
 mangled. If \c destroy_data==1, then this doesn't copy off the data set,
@@ -428,7 +428,7 @@ int main(){
 
  */
 apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
-  apop_estimation_params *ep  = epin;
+  apop_ep *ep  = epin;
   apop_model      *modded_ols;
   apop_data       *set;
   gsl_vector      *weights    = NULL;
@@ -475,7 +475,7 @@ apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
     if ((ep == NULL) || (ep->destroy_data==0)){
         apop_data_free(set);
     }
-	if (out->estimation_params.uses.confidence)
+	if (out->ep.uses.confidence)
         apop_estimate_parameter_t_tests(out);
     return out;
 }
@@ -691,10 +691,10 @@ size_t          obs     = in->data->matrix->size1;
 size_t          indep_ct= in->data->matrix->size2 - 1;
 gsl_vector      v;  
 apop_data       *out    = apop_data_alloc(5,-1);
-    if (!in->estimation_params.uses.predicted
-        || !in->estimation_params.uses.dependent){
+    if (!in->ep.uses.predicted
+        || !in->ep.uses.dependent){
         if (apop_opts.verbose)
-            printf("I need predicted and dependent to be set in the apop_estimate->estimation_params.uses before I can calculate the correlation coefficient. returning NULL.\n");
+            printf("I need predicted and dependent to be set in the apop_estimate->ep.uses before I can calculate the correlation coefficient. returning NULL.\n");
         return NULL;
     }
     v   = gsl_matrix_column(in->dependent->matrix, 

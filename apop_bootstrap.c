@@ -43,16 +43,16 @@ can jackknife every parameter at once. Remember that if \c e is an
 
 \param in	    The data set. A gsl_matrix where each row is a single data point
 \param model    An \ref apop_model, whose \c estimate method will be used here.
-\param ep        The \ref apop_estimation_params for your model, to be passed in directly.
+\param ep        The \ref apop_ep for your model, to be passed in directly.
 
 \todo I couldn't find a reference on how big the jackknife subsample should be relative to the data set. So I hard-coded the subsample size to 1/3 the original data set. If you have better, code it in.
 \ingroup boot
  */
-gsl_matrix * apop_jackknife(apop_data *in, apop_model model, apop_estimation_params *ep){
+gsl_matrix * apop_jackknife(apop_data *in, apop_model model, apop_ep *ep){
 int                     i;
 apop_data               *subset  = apop_data_alloc(in->matrix->size1 - 1, in->matrix->size2);
 apop_data               *array_of_boots = NULL;
-apop_estimation_params  *e;
+apop_ep  *e;
 apop_estimate           *boot_est;
 
 //Allocate a matrix, get a reduced view of the original, and copy.
@@ -64,7 +64,7 @@ gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1,
         e   = malloc(sizeof(*e));
         memcpy(e, ep, sizeof(*e));
     } else
-        e   = apop_estimation_params_alloc();
+        e   = apop_ep_alloc();
     apop_inventory_set(&(e->uses), 0);      //our re-run will only ask parameters.
     e->uses.parameters  = 1;
 	boot_est        = model.estimate(subset, e);
@@ -90,11 +90,11 @@ gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1,
                 Take everything herein as debris.
 
 
-gsl_matrix * apop_jackknife_multirow(apop_data *data, apop_model model, apop_estimation_params *ep){
+gsl_matrix * apop_jackknife_multirow(apop_data *data, apop_model model, apop_ep *ep){
 int		        i, j, row;
 int             boot_iterations	= 1000;
 apop_data	    *subset	        = apop_data_alloc(data->matrix->size1, data->matrix->size2);
-apop_estimation_params  *e;
+apop_ep  *e;
 apop_data       *array_of_boots = NULL;
 gsl_vector_view	v;
 apop_estimate   *boot_est;
@@ -103,7 +103,7 @@ gsl_rng		    *rn	            = gsl_rng_alloc(gsl_rng_default);
         e   = malloc(sizeof(*e));
         memcpy(e, ep, sizeof(*e));
     } else
-        e   = apop_estimation_params_alloc();
+        e   = apop_ep_alloc();
     apop_inventory_set(&(e->uses), 0);      //our re-run will only ask parameters.
     e->uses.parameters  = 1;
 	for (i=0; i<boot_iterations; i++){
