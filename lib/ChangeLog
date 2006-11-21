@@ -3,6 +3,11 @@
 **Change that could require recoding existing code.
 ]
 
+		November 2006
+--The preeminently useful APOP_COL and APOP_ROW
+--apop_data_calloc
+--apop_vector_(apply|map) debugged.
+
 		October 2006
 --apop_text_to_db now reads from STDIN.
 **deleted apop_query_db; use apop_query.

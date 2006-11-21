@@ -1,12 +1,12 @@
 
 #AM_CFLAGS = -g -O3 -Wall -I./
 AM_CFLAGS = -g -Wall -I./
-LIBADD = -lgsl -lgslcblas -lsqlite3 -lefence
+LIBADD = -lgsl -lgslcblas -lsqlite3 
 #AUTOMAKE_OPTIONS = no-dependencies
 
 #The library
 LDADD = libapophenia.la
-AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 -lefence
+AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 
 #apop_text_to_db_LDADD = libapophenia.la
 #apop_text_to_db_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
 lib_LTLIBRARIES = libapophenia.la
@@ -15,6 +15,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			apop_asst.c apop_data.c apop_regression.c 		\
 			apop_fexact.c apop_stats.c apop_bootstrap.c 	\
 			apop_name.c apop_output.c apop_estimate.c 		\
+			apop_mapply.c									\
 			vasprintf/asnprintf.c vasprintf/printf-args.c 	\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
 			vasprintf/printf-parse.c 						\
@@ -31,7 +32,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \
-				histogram.h									\
+				histogram.h	mapply.h						\
 		     	model/model.h 								\
 			vasprintf/alloca_.h vasprintf/printf-parse.h  	\
 			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\

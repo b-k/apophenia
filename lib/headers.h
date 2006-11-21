@@ -3,7 +3,7 @@
 #include <apophenia/types.h>
 #include <apophenia/stats.h>
 #include <apophenia/output.h>
-#include <apophenia/output.h>
+#include <apophenia/mapply.h>
 #include <apophenia/bootstrap.h>
 #include <apophenia/histogram.h>
 #include <apophenia/regression.h>
