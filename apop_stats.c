@@ -837,7 +837,7 @@ gsl_vector_view	v, v1, v2;
 	return out;
 }
 
-/** Returns the matrix of correlation coefficients (\f$\sigma^2_{xy}/(\sigma_x\sigma_y)\f$ relating each column with each other.
+/** Returns the matrix of correlation coefficients (\f$\sigma^2_{xy}/(\sigma_x\sigma_y)\f$) relating each column with each other.
 
 This is the \c gsl_matrix  version of \ref apop_data_covariance_matrix; if you have column names, use that one.
 
@@ -886,7 +886,7 @@ int         i;
     return out;
 }
 
-/** Returns the matrix of correlation coefficients (\f$\sigma^2_{xy}/(\sigma_x\sigma_y)\f$ relating each column with each other.
+/** Returns the matrix of correlation coefficients (\f$\sigma^2_{xy}/(\sigma_x\sigma_y)\f$) relating each column with each other.
 
 This is the \ref apop_data version of \ref apop_correlation_matrix; if you don't have column names (or want the option for the faster, data-destroying version), use that one.
 

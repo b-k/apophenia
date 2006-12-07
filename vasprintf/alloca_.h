@@ -39,7 +39,7 @@
 #elif defined _AIX
 # define alloca __alloca
 #elif defined _MSC_VER
-# include <malloc.h>
+# include <stdlib.h>
 # define alloca _alloca
 #else
 # include <stddef.h>

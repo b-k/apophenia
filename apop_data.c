@@ -170,7 +170,7 @@ int     i,j;
 }
 
 
-/** Free an \ref apop_name structure.
+/** Free an \ref apop_data structure.
 
  \ingroup data_struct
   */

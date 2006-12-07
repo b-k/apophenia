@@ -49,14 +49,14 @@ can jackknife every parameter at once. Remember that if \c e is an
 \ingroup boot
  */
 gsl_matrix * apop_jackknife(apop_data *in, apop_model model, apop_ep *ep){
-int                     i;
-apop_data               *subset  = apop_data_alloc(in->matrix->size1 - 1, in->matrix->size2);
-apop_data               *array_of_boots = NULL;
-apop_ep  *e;
-apop_estimate           *boot_est;
+  int                     i;
+  apop_data               *subset  = apop_data_alloc(in->matrix->size1 - 1, in->matrix->size2);
+  apop_data               *array_of_boots = NULL;
+  apop_ep                 *e;
+  apop_estimate           *boot_est;
 
 //Allocate a matrix, get a reduced view of the original, and copy.
-gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1, in->matrix->size2).matrix;
+  gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1, in->matrix->size2).matrix;
     gsl_matrix_memcpy(subset->matrix, &mv);
 
     //prep the parameters.
@@ -82,7 +82,6 @@ gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1,
         apop_estimate_free(boot_est);
     }
     apop_data   *out    = apop_data_covar(array_of_boots);
-    gsl_matrix_scale(out->matrix, gsl_pow_2(in->matrix->size1-1));
     return out->matrix;
 }
 
@@ -175,12 +174,12 @@ if (boot_iterations ==0) boot_iterations	= 1000;
 \ingroup convenience_fns
 */
 gsl_rng *apop_rng_alloc(int seed){
-static int first_use    = 1;
-   if (first_use){
+  static int first_use    = 1;
+    if (first_use){
        first_use --;
        gsl_rng_env_setup();
-   }
-gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
+    }
+  gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
     gsl_rng_set(setme, seed);
     return setme;
 }

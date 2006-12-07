@@ -168,7 +168,8 @@ The method is to produce a histogram for the PDF using the RNG.
 \todo The double* that gets sent in to the model RNGs is ungraceful.
 \ingroup histograms
 */
-gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, int draws, double *params, gsl_rng *r){
+gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, 
+                        int draws, gsl_vector *params, gsl_rng *r){
 int     i;
 //int     bc      = h ? h->n + 2 : bins;
 int     bc      =  h->n + 2;
@@ -182,7 +183,7 @@ int     bc      =  h->n + 2;
     gsl_histogram *modelhist    = gsl_histogram_alloc(bc);
     gsl_histogram_set_ranges(modelhist, newbins, bc+1);
     for (i=0; i< draws; i++)
-        gsl_histogram_increment(modelhist, m.rng(r,params));
+        gsl_histogram_increment(modelhist, m.draw(r,params, NULL));
     for (i=0; i< modelhist->n; i++)
         modelhist->bin[i] /= draws;
     return modelhist;
@@ -192,7 +193,7 @@ int     bc      =  h->n + 2;
 /** Test the goodness-of-fit between a data vector and a model.
 
 This just produces a PDF and calls \ref apop_pdf_test_goodness_of_fit.
-apop_data *apop_pdf_test_goodness_of_fit(gsl_vector *v, apop_model *m, double *params, int bins, int draws){
+apop_data *apop_pdf_test_goodness_of_fit(gsl_vector *v, apop_model *m, gsl_vector *params, int bins, int draws){
 gsl_histogram_pdf   *h      = apop_vector_to_pdf(v, bins);
 apop_data           *out    = apop_pdf_test_goodness_of_fit(h, m, params, bins);
     gsl_histogram_pdf_free(h);
@@ -299,7 +300,7 @@ int         i,
 \ingroup histograms
 */
 apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model m,
-int bins, long int draws, double *params, gsl_rng *r){
+int bins, long int draws, gsl_vector *params, gsl_rng *r){
 int     i, count    = bins;
 double  diff        = 0,
         sum;

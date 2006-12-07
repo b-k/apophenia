@@ -18,6 +18,7 @@ int     colnames            = 0,
 e.g.: %s -d\",|\" infile.txt a_table info.db\n\
 If the input text file name is a single dash, -, then read from STDIN.\n\
 -c\t\tData includes column names\n\
+-m\t\tUse a mysql database (default: SQLite)\n\
 -r\t\tData includes row names\n\
 -v\t\tVerbose\n\
 -O\t\tIf table exists, erase it and write from scratch\n\
@@ -28,7 +29,7 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 		printf(msg);
 		return 0;
 	}
-	while ((c = getopt (argc, argv, "cd:hrvO")) != -1){
+	while ((c = getopt (argc, argv, "cd:hmrvO")) != -1){
 		switch (c){
 		  case 'c':
 			colnames    ++;
@@ -38,6 +39,9 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 			break;
 		  case 'h':
 			printf(msg);
+			return 0;
+		  case 'm':
+			apop_opts.db_engine = 'm';
 			return 0;
 		  case 'r':
 			rownames    ++;

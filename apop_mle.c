@@ -81,6 +81,8 @@ typedef double 	(*apop_fn_with_void) (const gsl_vector *beta, void *d);
 typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 typedef	void 	(*apop_fdf_with_void)( const gsl_vector *beta, void *d, double *f, gsl_vector *df);
 
+void    *model_params   = NULL;
+
 //Including numerical differentiation and a couple of functions to
 //negate the likelihood fns without bothering the user.
 
@@ -130,6 +132,10 @@ grad_params 	gp;
 		gsl_deriv_central(&F, gsl_vector_get(beta,i), 1e-5, &result, &err);
 		gsl_vector_set(out, i, result);
 	}
+}
+
+static void gradient_shell(const gsl_vector *beta, apop_data *d , gsl_vector *out, void *v){
+    apop_numerical_gradient(beta, d, out);
 }
 
 
@@ -194,13 +200,13 @@ static double	base_for_penalty= 0;
 	if (negshell_model.constraint){
 		penalty	= negshell_model.constraint(beta, d, returned_beta);
 		if (penalty > 0){
-			base_for_penalty	= negshell_model.log_likelihood(returned_beta, d);
+			base_for_penalty	= negshell_model.log_likelihood(returned_beta, d, model_params);
 			out = -base_for_penalty + penalty;
             done++;
 		}
 	}
     if (!done)
-	    out = - negshell_model.log_likelihood(beta, d);
+	    out = - negshell_model.log_likelihood(beta, d, model_params);
     if (strlen(apop_opts.mle_trace_path) > 0)
         insert_path_into_db(beta,-out);
 	gsl_vector_free(returned_beta);
@@ -214,7 +220,7 @@ If the constraint binds
     numerical derivative of the penalty.
     else: just find dlog_likelihood. If the model doesn't have a
     dlog likelihood or the user asked to ignore it, then the main
-    maximum likelihood fn replaced model.dlog_likelihood with
+    maximum likelihood fn replaced model.score with
     apop_numerical_gradient anyway.
 Finally, reverse the sign, since the GSL is trying to minimize instead of maximize.
 */
@@ -228,7 +234,7 @@ double 		    (*tmp) (const gsl_vector *beta, void *d);
 		    apop_numerical_gradient(beta, d, g);
 		    apop_fn_for_derivative 	= tmp;
 	} else {
-	    negshell_model.dlog_likelihood(beta, d, g);
+	    negshell_model.score(beta, d, g, model_params);
 	    gsl_vector_scale(g, -1);
     }
 	gsl_vector_free(returned_beta);
@@ -236,14 +242,14 @@ double 		    (*tmp) (const gsl_vector *beta, void *d);
 
 //static void fdf_shell(const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df){
 static void fdf_shell(gsl_vector *beta, apop_data *d, double *f, gsl_vector *df){
-	if (negshell_model.fdf==NULL){
+	//if (negshell_model.fdf==NULL){
 		*f	= negshell(beta, d);
 		dnegshell(beta, d, df);
-	} else	{
+	/*} else	{
 		negshell_model.fdf(beta, d, f, df);
 		(*f) 	*= -1;
 		gsl_vector_scale(df, -1);
-	}
+	}*/
 }
 
 
@@ -254,8 +260,8 @@ static void fdf_shell(gsl_vector *beta, apop_data *d, double *f, gsl_vector *df)
 
 //The next two variables are just for the current_gradient fn.
 static size_t	current_dimension;
-static double 	(*likelihood_for_hess) (const gsl_vector *beta, apop_data *d);
-void		(*dlikelihood_for_hess) (const gsl_vector *beta, apop_data *d, gsl_vector *out);
+static double 	(*likelihood_for_hess) (const gsl_vector *beta, apop_data *d, void *p);
+void		(*dlikelihood_for_hess) (const gsl_vector *beta, apop_data *d, gsl_vector *out, void *o);
 
 	//Turn the full vector of derivatives into a single number.
 	//Is this ever inefficient for large parameter spaces.
@@ -265,13 +271,13 @@ apop_fn_with_void 		tmp;
 gsl_vector	*waste	= gsl_vector_alloc(beta->size);
 double		return_me;
 
-	if (dlikelihood_for_hess == apop_numerical_gradient){	//then we need a numerical derivative.
+	if (dlikelihood_for_hess == gradient_shell){	//then we need a numerical derivative.
 		tmp			            = (apop_fn_with_void) apop_fn_for_derivative;
 		apop_fn_for_derivative 	= (apop_fn_with_void) likelihood_for_hess;
 		apop_numerical_gradient(beta, d , waste);
 		apop_fn_for_derivative 	= tmp;
 	}
-	else 	dlikelihood_for_hess(beta, d , waste);
+	else 	dlikelihood_for_hess(beta, d , waste, model_params);
 	return_me	= gsl_vector_get(waste, current_dimension);
 	gsl_vector_free(waste);
 	return return_me;
@@ -288,9 +294,9 @@ gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta,
 gsl_vector_view	v;
 gsl_matrix	*out	= gsl_matrix_alloc(beta->size, beta->size);
 	likelihood_for_hess	= dist.log_likelihood;
-	if (dist.dlog_likelihood)
-		dlikelihood_for_hess	= dist.dlog_likelihood;
-	else	dlikelihood_for_hess	= apop_numerical_gradient;
+	if (dist.score)
+		dlikelihood_for_hess	= dist.score;
+	else	dlikelihood_for_hess	= gradient_shell;
 	apop_fn_for_derivative	= (apop_fn_with_void) gradient_for_hessian;
 	for (current_dimension=0; current_dimension< beta->size; current_dimension++){
 		v	= gsl_matrix_row(out, current_dimension);
@@ -358,7 +364,7 @@ gsl_matrix	*pre_cov	= gsl_matrix_alloc(betasize, betasize);
 gsl_vector  v;
 	//estimate->covariance	= gsl_matrix_alloc(betasize, betasize);
 	diff			= gsl_vector_alloc(betasize);
-	dist.dlog_likelihood(est->parameters->vector, data, diff);
+	dist.score(est->parameters->vector, data, diff);
 	for (i=0; i< betasize; i++){
 		gsl_matrix_set_row(pre_cov, i, diff);
 	}
@@ -416,8 +422,8 @@ apop_estimate			    *est;
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_pr, betasize);
     else
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
-	if (dist.dlog_likelihood == NULL || (est_params && est_params->method % 100 ==1))
-		dist.dlog_likelihood 	= apop_numerical_gradient;
+	if (dist.score == NULL || (est_params && est_params->method % 100 ==1))
+		dist.score 	= gradient_shell;
 	apop_fn_for_derivative	= (apop_fn_with_void) dist.log_likelihood;
 	if (!est_params || est_params->starting_pt==NULL){
 		x	= gsl_vector_alloc(betasize);
@@ -457,7 +463,7 @@ apop_estimate			    *est;
 	gsl_multimin_fdfminimizer_free(s);
 	if (est_params && est_params->starting_pt==NULL) 
 		gsl_vector_free(x);
-	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data);
+	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data, model_params);
 	if (!est_params || est->ep.uses.covariance) 
 		apop_numerical_covariance_matrix(dist, est, data);
 	return est;
@@ -524,7 +530,7 @@ apop_estimate		    *est;
 
 	gsl_vector_memcpy(est->parameters->vector, s->x);
 	gsl_multimin_fminimizer_free(s);
-	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data);
+	est->log_likelihood	= dist.log_likelihood(est->parameters->vector, data, model_params);
 	if (est->ep.uses.covariance) 
 		apop_numerical_covariance_matrix(dist, est, data);
 	return est;
@@ -586,7 +592,7 @@ int             i;
 	*v	= gsl_vector_alloc(m->size1);
         for(i=0; i< m->size1; i++){
                 mm      = gsl_matrix_submatrix(m,i,0, 1,m->size2).matrix;      //get a single row
-                gsl_vector_set(*v, i, dist.log_likelihood(fn_beta, apop_matrix_to_data(&mm)));
+                gsl_vector_set(*v, i, dist.log_likelihood(fn_beta, apop_matrix_to_data(&mm), model_params));
         }
 }
 
@@ -688,10 +694,7 @@ is welcome to override these functions.
 #define MU_T 1.002              /* damping factor for temperature */
 #define T_MIN 5.0e-1
 
-static apop_model   annealing_model;
 static apop_data    *annealing_data;
-//static negshell_params    anneal_nsp;
-
 static double annealing_energy(void *beta)
 {
   //return -annealing_model.log_likelihood(beta, annealing_data->matrix);
@@ -792,7 +795,7 @@ gsl_siman_params_t params = {N_TRIES,
                     ITERS_FIXED_T, 
                     (ep) ? ep->step_size : 1,
                     K, 
-                    -m.log_likelihood(beta, data), 
+                    -m.log_likelihood(beta, data, model_params), 
                     MU_T, 
                     T_MIN};
 
@@ -810,7 +813,7 @@ gsl_siman_params_t params = {N_TRIES,
 
     //Clean up, copy results to output estimate.
     gsl_vector_memcpy(est->parameters->vector, beta);
-    est->log_likelihood = m.log_likelihood(est->parameters->vector, data);
+    est->log_likelihood = m.log_likelihood(est->parameters->vector, data, model_params);
     if (est->ep.uses.covariance)
         apop_numerical_covariance_matrix(m, est, data);
     return est;

@@ -167,7 +167,16 @@ and then the usual <tt>./prepare; ./configure; make; sudo make
 install</tt>. [Be careful if you now have two versions of Gnuplot on
 your system that you are using the right one.]
 
-\param data A \c gsl_vector holding the data. No need to sort or bin; this function does that for you.
+The function respects the <tt>output_type</tt> option, so code like:
+\code
+f   = popen("/usr/bin/gnuplot", "w");
+apop_opts.output_type = 'p';
+apop_opts.output_pipe = f;
+apop_plot_histogram(data, 100, NULL);
+\endcode
+will print directly to Gnuplot.
+
+\param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you.
 \param bin_ct   The number of bins in the output histogram
 \param outfile  The file to be written. If NULL then write to STDOUT.
 
@@ -186,18 +195,29 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 		   gsl_histogram_increment(h, pt);
 		}
 	//Now that you have a histogram, print it.
+    if (apop_opts.output_type == 'p')
+        f   = apop_opts.output_pipe;
+    else {
         if (outfile == NULL) 	f       = stdout;
         else    		f       = fopen(outfile, "a");
+    }
 	fprintf(f, "set key off					                    ;\n\
+                        plot '-' with lines\n");
+    //I can't tell which versions of Gnuplot support this form:
+	/*fprintf(f, "set key off					                    ;\n\
                         set style data histograms		        ;\n\
                         set style histogram cluster gap 0	    ;\n\
                         set xrange [0:%i]			            ;\n\
                         set style fill solid border -1          ;\n\
                         set boxwidth 0.9                        ;\n\
-                        plot '-' using 2:xticlabels(1);\n", bin_ct);
+                        plot '-' using 2:xticlabels(1);\n", bin_ct);*/
 	for (i=0; i < bin_ct; i++)
-	fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
-	if (outfile !=NULL)    fclose(f);
+	    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
+	fprintf(f, "e\n");
+    if (apop_opts.output_type == 'p')
+        fflush(f);
+    else if (outfile !=NULL)    
+        fclose(f);
 }
 	
 
@@ -350,6 +370,10 @@ int     i,
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
 void apop_data_show(apop_data *data){
+    if (!data){
+        fprintf(stderr, "You asked me to show a NULL apop_data set.\n");
+        return;
+    }
 char    tmptype = apop_opts.output_type;
 int     i, j, L = 0, Lc = 6,
         start   = (data->vector)? -1 : 0,

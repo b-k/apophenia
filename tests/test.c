@@ -20,8 +20,10 @@ a great deal of real-world testing that didn't make it into this file.
 #define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed)
 
 
-double  true_parameter[]    = {1.82,2.1},
-        true_y_parameter[]  = {0,2.1};
+double  true_parameter_v[]    = {1.82,2.1},
+        true_y_parameter_v[]  = {0,2.1};
+
+gsl_vector *true_parameter, *true_y_parameter;
 
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
@@ -343,8 +345,8 @@ apop_estimate           *e;
 
     e    = dist.estimate(apop_matrix_to_data(data),params);
     for (i=0; i < dist.parameter_ct; i++){
-        printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters->vector,i));
-        score += (fabs(gsl_vector_get(e->parameters->vector,i) - true_parameter[i]) >= 1e-1);
+        printf("parameter estimate, which should be %g: %g\n", true_parameter_v[i], gsl_vector_get(e->parameters->vector,i));
+        score += (fabs(gsl_vector_get(e->parameters->vector,i) - true_parameter_v[i]) >= 1e-1);
         //apop_estimate_print(e);
     }
 
@@ -371,7 +373,7 @@ size_t          i,j;
     //generate.
     for (i=0; i< runsize; i++){
         for (j=0; j< rowsize; j++){
-            gsl_matrix_set(data, i, j, model.rng(r, true_parameter));
+            gsl_matrix_set(data, i, j, model.draw(r, true_parameter, NULL));
         }
     }
     return estimate_model(data, model);
@@ -385,7 +387,7 @@ gsl_vector_view v;
     for (i=0; i< runsize; i++){
         rowsum    = 0;
         for (j=0; j< runct; j++){
-            z    = dist.rng(r, true_parameter);
+            z    = dist.draw(r, true_parameter, NULL);
             if (!strcmp(dist.name, "Exponential, rank data"))
                     z++;
             assert (z >=1);
@@ -425,11 +427,12 @@ gsl_matrix  *invme   = gsl_matrix_alloc(INVERTSIZE, INVERTSIZE);
 gsl_matrix  *inved;
 gsl_matrix  *inved_back;
 int         i,j;
-double      error   = 0,
-            four[]  = {4};
+double      error   = 0;
+  gsl_vector *four     = gsl_vector_alloc(1);
+    gsl_vector_set(four, 0, 4);
     for(i=0; i<INVERTSIZE; i++)
         for(j=0; j<INVERTSIZE; j++)
-            gsl_matrix_set(invme, i,j, apop_zipf.rng(r, four));
+            gsl_matrix_set(invme, i,j, apop_zipf.draw(r, four, NULL));
     apop_det_and_inv(invme, &inved, 0, 1);
     apop_det_and_inv(inved, &inved_back, 0, 1);
     for(i=0; i<INVERTSIZE; i++)
@@ -483,14 +486,15 @@ APOP_DATA_ALLOC(d, len, 1);
 APOP_RNG_ALLOC(r, 8);
 size_t      i;
 apop_model  *m   = &apop_normal;
-double      p[] = {1.09,2.8762};
+double      pv[] = {1.09,2.8762};
+gsl_vector  *p  = apop_array_to_vector(pv, 2);
 //double      no;
     for (i =0; i< len; i++){
-        apop_data_set(d, i, 0, m->rng(r,p)); 
+        apop_data_set(d, i, 0, m->draw(r,p, NULL)); 
     }
     gsl_matrix *out = apop_jackknife(d, *m , NULL);
     //apop_matrix_show(out);
-    return (fabs(gsl_matrix_get(out, 0,0) - p[1]) > lite_tolerance);
+    return (fabs(gsl_matrix_get(out, 0,0) - pv[1]) > lite_tolerance);
 }
 
 
@@ -543,6 +547,9 @@ gsl_rng         *r  = apop_rng_alloc(107);
                                 {printf("%s  failed.\n", text);exit(0);}
 
 int main(){
+    true_parameter  = apop_array_to_vector(true_parameter_v, 2);
+    true_y_parameter= apop_array_to_vector(true_y_parameter_v, 2);
+
 gsl_rng       *r              = apop_rng_alloc(8); 
 apop_model    rank_dist[]     = {apop_zipf_rank,apop_exponential_rank,apop_yule_rank, apop_waring_rank},
               dist[]          = {apop_exponential, apop_normal, apop_poisson, apop_zipf,apop_yule, apop_waring};

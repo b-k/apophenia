@@ -1,13 +1,7 @@
 
-#AM_CFLAGS = -g -O3 -Wall -I./
-AM_CFLAGS = -g -Wall -I./
-LIBADD = -lgsl -lgslcblas -lsqlite3 
-#AUTOMAKE_OPTIONS = no-dependencies
-
 #The library
-LDADD = libapophenia.la
-AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 
-#apop_text_to_db_LDADD = libapophenia.la
+#AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 -L/usr/lib/mysql -lmysqlclient -lz 
+AM_CFLAGS = -g -Wall -I./ -I/usr/include/mysql
 #apop_text_to_db_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
@@ -20,15 +14,14 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
 			vasprintf/printf-parse.c 						\
 			vasprintf/vasprintf.c  							\
-			model/apop_gamma.c model/apop_gamma_rank.c model/apop_normal.c 	\
-			model/apop_logit.c model/apop_probit.c model/apop_exponential.c \
-			model/apop_poisson.c	model/apop_WLS.c	model/apop_exponential_rank.c			\
-			model/apop_waring.c model/apop_waring_rank.c model/apop_yule.c 	\
-			model/apop_zipf_rank.c model/apop_zipf.c model/apop_OLS.c 		\
-			model/apop_yule_rank.c \
-			#wn/wnasrt.c  wn/wnbridge.c  wn/wncnjdn2.c  	\
-			#wn/wnconjg.c  wn/wnmatrices.c				\
-			#wn/wnmbtr.c wn/wnmem.c  wn/wnmemg.c  wn/wnmemn.c  wn/wnvect.c
+			model/apop_normal.c model/apop_OLS.c 		 	\
+			model/apop_WLS.c	model/apop_logit.c 			\
+			model/apop_zipf.c model/apop_zipf_rank.c 		\
+			model/apop_exponential.c model/apop_exponential_rank.c			\
+			model/apop_gamma.c model/apop_gamma_rank.c 		\
+			model/apop_poisson.c	model/apop_probit.c 	\
+			model/apop_waring.c model/apop_waring_rank.c 	\
+			model/apop_yule.c 	model/apop_yule_rank.c 
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \
@@ -36,15 +29,27 @@ pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 		     	model/model.h 								\
 			vasprintf/alloca_.h vasprintf/printf-parse.h  	\
 			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
-			vasprintf/printf-args.h vasprintf/vasnprintf.h 	\
-			#wn/wnaux.h wn/wnlib.h
-
+			vasprintf/printf-args.h vasprintf/vasnprintf.h 	
 
 #The programs
-bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_merge_dbs
+bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_merge_dbs apop_plot_query
 apop_text_to_db_SOURCES = cmd_apop_text_to_db.c
 apop_db_to_crosstab_SOURCES = cmd_apop_db_to_crosstab.c
 apop_merge_dbs_SOURCES = cmd_apop_merge_dbs.c
+apop_plot_query_SOURCES = cmd_apop_plot_query.c
+
+apop_text_to_db_LDADD = libapophenia.la
+apop_db_to_crosstab_LDADD = libapophenia.la
+apop_merge_dbs_LDADD = libapophenia.la
+apop_plot_query_LDADD = libapophenia.la
+
+EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
+		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
+		tests/Makefile tests/Readme tests/nist_tests.c tests/numacc4.dat \
+		tests/pontius.dat tests/test.c tests/test_data tests/test_data2 \
+		tests/test_data_nans tests/wampler1.dat \
+		apop_db_mysql.c		\
+		apophenia/*.h
 
 #The documentation
 
@@ -53,8 +58,6 @@ apop_merge_dbs_SOURCES = cmd_apop_merge_dbs.c
 #AM_MAKEINFOHTMLFLAGS = --cssinclude = typical.css
 
 #the doxygen version. You've gotta call it yourself.
-##EXTRA_DIST = $(man_MANS)
-##install_man3_MANS = man/man3/*
 
 doc: 
 	doxygen doxy/doxyconfig
@@ -62,4 +65,6 @@ doc:
 	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
 
 test:
-	cd tests; gcc -o test -lapophenia -lgsl -lgslcblas -lsqlite3 test.c -g -Wall; ./test;
+	cd tests; gcc -o test -lapophenia $(AM_LDFLAGS) test.c -g -Wall; ./test;
+
+

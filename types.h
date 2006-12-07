@@ -180,6 +180,8 @@ typedef struct{
 	apop_inventory	uses;
     void        *parameters;
     gsl_vector  *weights;
+    struct apop_model  *model;
+    void        *model_params;
 } apop_ep;
 
 /**
@@ -243,12 +245,21 @@ distribution to have too, like a random number generator.
 typedef struct apop_model{
 	char	name[101]; 
 	int	parameter_ct;
+	apop_estimate *	(*estimate)(apop_data * data, void *params);
+	double 	(*p)(const gsl_vector *beta, apop_data *d, void *params);
+	double 	(*log_likelihood)(const gsl_vector *beta, apop_data *d, void *params);
+	void 	(*score)(const gsl_vector *beta, apop_data *d, gsl_vector *gradient, void *params);
+    double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta);
+	double (*draw)(gsl_rng* r, gsl_vector *a, void *params);
+    void    *more;
+    /*
 	apop_estimate *	(*estimate)(apop_data * data, void *parameters);
 	double 	(*log_likelihood)(const gsl_vector *beta, apop_data *d);
 	void 	(*dlog_likelihood)(const gsl_vector *beta, apop_data *d, gsl_vector *gradient);
 	void 	(*fdf)( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df);
     double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta);
 	double (*rng)(gsl_rng* r, double *a);
+    */
 } apop_model;
 
 /** The global options.
@@ -274,6 +285,8 @@ typedef struct{
     char db_name_column[300];
             /** If set, plot the path of the max. likelihood search. */
     char db_nan[100];
+            /** If this is 'm', use mySQL, else use SQLite. */
+    char db_engine;
             /** If set, plot the path of the max. likelihood search. */
     char  mle_trace_path[1000];
             /** Threads to use internally. See \ref apop_apply. */

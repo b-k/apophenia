@@ -3,11 +3,17 @@
 **Change that could require recoding existing code.
 ]
 
+		December 2006
+**Apop_model struct has lost the fdf object, which was annoying, and now
+has the p function.
+--mySQL support.
+
 		November 2006
 --The preeminently useful APOP_COL and APOP_ROW
 --apop_data_calloc
 --apop_vector_(apply|map) debugged.
 **apop_estimation_params is just too darn long; reduced to apop_ep.
+
 
 		October 2006
 --apop_text_to_db now reads from STDIN.

@@ -40,8 +40,9 @@ apop_data	*m;
               apop_opts.output_append = 0;
 			  break;
 		  case 'f':
-			  outfile   = optarg;
-			  apop_opts.output_type	= 1;
+              outfile   = malloc(1000);
+			  sprintf(outfile, optarg);
+			  apop_opts.output_type	= 'f';
 			  break;
 		  case 'h':
 			printf(msg);

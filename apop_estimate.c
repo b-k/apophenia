@@ -198,11 +198,11 @@ apop_model * apop_model_copy(apop_model in){
     strcpy(out->name, in.name);
     out->parameter_ct       = in.parameter_ct;
 	out->estimate           = in.estimate;
+	out->p                  = in.p;
 	out->log_likelihood     = in.log_likelihood;
-	out->dlog_likelihood    = in.dlog_likelihood;
-	out->fdf                = in.fdf;
+	out->score              = in.score;
     out->constraint         = in.constraint;
-	out->rng                = in.rng;
+	out->draw               = in.draw;
     return out;
 }
 

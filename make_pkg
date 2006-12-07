@@ -1,6 +1,7 @@
 export junkdir=dists
 export pkg=apophenia
-export version=0.16
+export version=0.17
+export date=4_dec_06
 
 #This script is intended for maintainers who are modifying the 
 #package as it appears on sourceforge.net. If you are a user who 
@@ -9,8 +10,7 @@ export version=0.16
 
 #This script copies everything into a junk directory, that GNU's 
 #prep materials will produce a thousand temp files in, concluding 
-#with a file named apophenia-N.NN.tar.gz. Some auxiliary items like
-#the doxygen support are copied into that file. Now that it is ready
+#with a file named apophenia-N.NN.tar.gz. Once that it is ready
 #for distribution, the tar.gz arcive is copied to the main directory
 #and this junk directory is erased. 
 #Finally, the script unzips the archive and compiles from the archive.
@@ -20,10 +20,21 @@ mkdir $junkdir
 mkdir $junkdir/$pkg-$version
 cp -rf * $junkdir/$pkg-$version
 cd $junkdir/$pkg-$version
+	#add a directory with links to all headers:
+	mkdir apophenia
+	cd apophenia
+		cp ../*.h ./        #linking won't work for Windows
+		cp ../vasprintf/*.h ./
+		cp ../model/*.h ./
+		#ln -s ../*.h ./
+		#ln -s ../vasprintf/*.h ./
+		#ln -s ../model/*.h ./
+		cd ..
 	#let the GNU prep everything and produce a distribution pkg.
 	libtoolize
 	aclocal
 	autoconf
+	autoheader
 	automake -a
 	./configure
 	#rm apophenia-$version.tar.gz 
@@ -31,42 +42,15 @@ cd $junkdir/$pkg-$version
 #    cp ../../debian_control debian/control
 #    cp ../../debian_copyright debian/copyright
 #    debuild -us -uc 
-    rm ../$pkg_$version.tar.gz
+#    rm ../$pkg-$version.tar.gz
 	make dist
+    mv apophenia-$version.tar.gz ../apophenia-$version-$date.tgz 
 
-	#produce a directory with bonus materials:
-	mkdir apophenia-$version
-
-	#add a directory with links to all headers:
-	mkdir apophenia
-	cd apophenia
-		cp ../*.h ./
-		cp ../vasprintf/*.h ./
-		cp ../model/*.h ./
-		#ln -s ../*.h ./
-		#ln -s ../vasprintf/*.h ./
-		#ln -s ../model/*.h ./
-		cd ..
-	mv apophenia apophenia-$version
-
-	#helpers for doxygen
-	cp -rf doxy documentation.h apophenia-$version
-
-	#the testing program and scripts
-	cp -rf tests apophenia-$version
-	#cp test.c test_data test_script apophenia-$version
-
-	#add bonus materials to tarball produced by make dist
-	gzip -d apophenia-$version.tar.gz
-	tar rf apophenia-$version.tar apophenia-$version
-	gzip apophenia-$version.tar
-	mv apophenia-$version.tar.gz ../
-	cd ..
 #rm -rf $junkdir
 echo "***********tgz done; now prepping Debian package*********************"
 #Prerequisites: You will need the debian build tools; try:
 # apt-get install dpkg-dev debhelper devscripts fakeroot linda dh-make 
-tar xz < apophenia-$version.tar.gz
+#tar xz < apophenia-$version-#date.tar.gz
 
 echo "***********Done with packing; now compiling***********"
 #Compile using the downloadable tarball.

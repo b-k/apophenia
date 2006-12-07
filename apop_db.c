@@ -60,12 +60,22 @@ Apophenia reserves the right to insert temp tables into the opened database. The
 #include <apophenia/bootstrap.h>	//apop_rng_alloc
 
 #include <apophenia/vasprintf.h>
+#include "config.h"
 
-sqlite3	*db=NULL;	                //There's only one database handle. Here it is.
+#ifdef HAVE_LIBSQLITE3 
+#include <sqlite3.h>
+
+sqlite3	*db=NULL;	                //There's only one SQLite database handle. Here it is.
+#endif
+
+int	total_rows, total_cols;		    //the counts from the last query.
+
+#ifdef HAVE_LIBMYSQLCLIENT
+#include "apop_db_mysql.c"
+#endif
 
 apop_name *last_names = NULL;	    //The column names from the last query to matrix
 
-int	total_rows, total_cols;		    //the counts from the last query.
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
@@ -78,7 +88,8 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 "| ,\t",        //input delimiters
                                 "row_names",    //db_name_column
                                 "\\(NAN\\|NaN\\|nan\\)", //db_nan
-                                "\0",            //mle_trace_path
+                                '\0',            //db_engine
+                                "\0",           //mle_trace_path
                                 1               //threadct
 };
 
@@ -117,6 +128,7 @@ math library function of the same name to calculate \f$\sqrt{x}\f$,
 
 */
 
+#ifdef HAVE_LIBSQLITE3
 
 typedef struct StdDevCtx StdDevCtx;
 struct StdDevCtx {
@@ -265,6 +277,8 @@ static void rngFn(sqlite3_context *context, int argc, sqlite3_value **argv){
     sqlite3_result_double(context, gsl_rng_uniform(db_rng));
 }
 
+#endif
+
 /** Random numbers are generated inside the database using a separate
  RNG. This will initialize it for you, just like \ref apop_rng_alloc,
  except the RNG it produces is kept for internal use. If you don't call
@@ -319,12 +333,27 @@ don't need to bother).
 \ingroup db
 */
 int apop_db_open(char *filename){
-//char	*err;
-	//if (filename==NULL) 	db	=sqlite_open(":memory:",0,&err);
-	//else			db	=sqlite_open(filename,0,&err);
-	if (filename==NULL) 	sqlite3_open(":memory:",&db);
+#ifdef HAVE_LIBSQLITE3
+    if (!db) //check the environment.
+#endif
+#ifdef HAVE_LIBMYSQLCLIENT
+       if(!mysql_db)  
+#endif
+        if (getenv("APOP_DB_ENGINE") && !strcasecmp(getenv("APOP_DB_ENGINE"), "mysql"))
+            apop_opts.db_engine = 'm';
+
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        return apop_mysql_db_open(filename);
+#else
+        {fprintf(stderr, "apop_db_open: Apophenia was compiled without mysql support.\n");
+        return 0;
+        }
+#endif
+#ifdef HAVE_LIBSQLITE3
+	if (!filename) 	sqlite3_open(":memory:",&db);
 	else			sqlite3_open(filename,&db);
-	if (db == NULL)	
+	if (!db)	
 		{if (apop_opts.verbose)
             printf("Not sure why, but the database didn't open.\n");
 		return 1; }
@@ -346,6 +375,7 @@ int apop_db_open(char *filename){
 	sqlite3_create_function(db, "log", 1, SQLITE_ANY, NULL, &logFn, NULL, NULL);
 	sqlite3_create_function(db, "ran", 0, SQLITE_ANY, NULL, &rngFn, NULL, NULL);
 	apop_query("pragma short_column_names");
+#endif
 	return 0;
 }
 
@@ -367,14 +397,32 @@ apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_hei
 int apop_query(const char *fmt, ...){
   char 		*err, *q;
   va_list   argp;
-	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
 	va_end(argp);
 	if (apop_opts.verbose) {printf("\n%s\n",q);}
-	sqlite3_exec(db, q, NULL,NULL, &err);
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        {if (!mysql_db) {fprintf(stderr, "No database is open.");
+            return 0;}
+        apop_mysql_query(q);}
+#else
+        {fprintf(stderr, "apop_query: Apophenia was compiled without mysql support.\n");
+        return 0;
+        }
+#endif
+    else 
+#ifdef HAVE_LIBSQLITE3
+        {if (!db) apop_db_open(NULL);
+        sqlite3_exec(db, q, NULL,NULL, &err);
+	    ERRCHECK
+        }
+#else
+        {fprintf(stderr, "apop_query: Apophenia was compiled without SQLite support.\n");
+        return 0;
+        }
+#endif
 	free(q);
-	ERRCHECK
 	return 1;
 }
 
@@ -401,9 +449,17 @@ Also, this is the stylish way to delete a table, since just calling <tt>"drop ta
 \ingroup db
 */
 int apop_table_exists(char *q, char whattodo){
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        return apop_mysql_table_exists(q, whattodo);
+#else
+        {fprintf(stderr, "apop_table_exists: Apophenia was compiled without mysql support.\n");
+        return 0; }
+#endif
+#ifdef HAVE_LIBSQLITE3
   char 		*err, q2[10000];
 	isthere=0;
-	if (db==NULL) {apop_db_open(NULL); return 0;}
+	if (db==NULL) return 0;
 	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,q, &err); 
 	ERRCHECK
 	if ((whattodo==1|| whattodo=='d') && isthere){
@@ -411,6 +467,7 @@ int apop_table_exists(char *q, char whattodo){
         ERRCHECK
     }
 	return isthere;
+#endif
 }
 
 //colct is global for the count_cols callback.
@@ -448,6 +505,16 @@ Closes the database on disk. If you opened the database with
 'q': Don't bother; just close the database.
 */
 int apop_db_close(char vacuum){
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        {apop_mysql_db_close(0);
+        return 0;}
+#else
+        {fprintf(stderr, "apop_db_close: Apophenia was compiled without mysql support.\n");
+        return 0; }
+#endif
+    else{
+#ifdef HAVE_LIBSQLITE3
   char		*err;
 	if (vacuum==1 || vacuum=='v') 
         sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
@@ -455,6 +522,11 @@ int apop_db_close(char vacuum){
 	sqlite3_close(db);
     db  = NULL;
 	return 0;
+#else
+        {fprintf(stderr, "apop_db_close: Apophenia was compiled without SQLite support.\n");
+        return 0; }
+#endif
+    }
 	}
 
 static int names_callback(void *o,int argc, char **argv, char **whatever){
@@ -526,12 +598,20 @@ char *** apop_query_to_chars(const char * fmt, ...){
   char		***output;
   char		*q2, *err=NULL, *query;
   va_list	argp;
-    currentrow  =0;
-	if (db==NULL) apop_db_open(NULL);
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	if (apop_opts.verbose) {printf("\n%s\n",query);}
 	va_end(argp);
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        return apop_mysql_query_to_chars(query);
+#else
+        {fprintf(stderr, "apop_query_to_chars: Apophenia was compiled without mysql support.\n");
+        return 0;}
+#endif
+#ifdef HAVE_LIBSQLITE3
+    currentrow  =0;
+	if (db==NULL) apop_db_open(NULL);
 
 	total_rows	= 0;
 	q2		= malloc(sizeof(char)*(strlen(query)+300));
@@ -555,6 +635,10 @@ char *** apop_query_to_chars(const char * fmt, ...){
 	sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
 	free(q2);
 	return output;
+#else
+        {fprintf(stderr, "apop_query_to_chars: Apophenia was compiled without SQLite support.\n");
+        return NULL; }
+#endif
 }
 
 static int     firstcall;
@@ -618,16 +702,24 @@ Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop
 are filled with <tt>GSL_NAN</tt>s in the matrix.
 */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
+  char      *query;
+  va_list	argp;
+	va_start(argp, fmt);
+	vasprintf(&query, fmt, argp);
+	va_end(argp);
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        return apop_mysql_query_to_matrix(query);
+#else
+        {fprintf(stderr, "apop_query_to_matrix: Apophenia was compiled without mysql support.\n");
+        return 0;}
+#endif
   gsl_matrix	*output = NULL;
-  char		*q2, *err=NULL, *query;
-  va_list		argp;
+  char		*q2, *err=NULL;
     firstcall   = 
     currentrow  = 
 	total_rows  = 0;
 	if (db==NULL) apop_db_open(NULL);
-	va_start(argp, fmt);
-	vasprintf(&query, fmt, argp);
-	va_end(argp);
 	if (apop_opts.verbose)	printf("%s\n", query);
 	q2	 = malloc(sizeof(char)*(strlen(query)+300));
 	apop_table_exists("apop_temp_table",1);
@@ -665,14 +757,22 @@ the first in the list.
 If the query returns no columns at all, the function returns <tt>NULL</tt>.
 */
 gsl_vector * apop_query_to_vector(const char * fmt, ...){
-  gsl_matrix	*m=NULL;
-  gsl_vector  *out;
-  va_list		argp;
   char		*query;
-	if (db==NULL) apop_db_open(NULL);
+  va_list	argp;
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
+
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        return apop_mysql_query_to_vector(query);
+#else
+        {fprintf(stderr, "apop_query_to_vector: Apophenia was compiled without mysql support.\n");
+        return 0;}
+#endif
+  gsl_matrix	*m=NULL;
+  gsl_vector  *out;
+	if (db==NULL) apop_db_open(NULL);
 	m	= apop_query_to_matrix(query);
 	if (m==NULL){
         if (apop_opts.verbose)
@@ -697,14 +797,22 @@ the first in the list (which is not always well-defined).
 If the query returns no rows at all, the function returns <tt>GSL_NAN</tt>.
 */
 double apop_query_to_float(const char * fmt, ...){
-  gsl_matrix	*m=NULL;
-  va_list		argp;
   char		*query;
-  double		out;
-	if (db==NULL) apop_db_open(NULL);
+  va_list	argp;
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        return apop_mysql_query_to_float(query);
+#else
+        {fprintf(stderr, "apop_query_to_float: Apophenia was compiled without mysql support.\n");
+        return 0;}
+#endif
+#ifdef HAVE_LIBSQLITE3
+  gsl_matrix	*m=NULL;
+  double		out;
+	if (db==NULL) apop_db_open(NULL);
 	m	= apop_query_to_matrix(query);
 	if (m==NULL){
         if (apop_opts.verbose)
@@ -714,7 +822,7 @@ double apop_query_to_float(const char * fmt, ...){
 	out	= gsl_matrix_get(m, 0, 0);
 	gsl_matrix_free(m);
 	return out;
-
+#endif
 }
 
 /** Queries the database, and dumps the result into an \ref apop_data set.
@@ -743,6 +851,18 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 	va_start(argp, fmt);
 	vasprintf(&query, fmt, argp);
 	va_end(argp);
+	if (apop_opts.verbose)	
+        printf("%s\n", query);
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        return apop_mysql_query_to_data(query);
+#else
+        {fprintf(stderr, "apop_query_to_data: Apophenia was compiled without mysql support.\n");
+        return 0;
+        }
+#endif
+
+#ifdef HAVE_LIBSQLITE3
     data_or_matrix  = 'd';
 	m	        = apop_query_to_matrix(query);
     data_or_matrix  = 'm';
@@ -752,6 +872,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
     apop_name_free(out->names);
     out->names  = apop_db_get_names();
 	return out;
+#endif
 }
 
 /** This function returns an \ref apop_name structure with the column
@@ -845,24 +966,55 @@ int apop_data_to_db(apop_data *set, char *tabname){
   double    v;
   char		*q 		    = malloc(sizeof(char)*1000);
   int       use_rownames= strlen(apop_opts.db_name_column) &&set->names->rownamect == set->matrix->size1;
-	if (db==NULL) apop_db_open(NULL);
-	sprintf(q, "create table %s (", tabname);
-    if (use_rownames) {
-        sprintf(q, "%s\n %s, \n", q, apop_opts.db_name_column);
-		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+    {
+        sprintf(q, "create table %s (", tabname);
+        if (use_rownames) {
+            sprintf(q, "%s\n %s varchar(1000), \n", q, apop_opts.db_name_column);
+            q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+        }
+        for(i=0;i< set->matrix->size2; i++){
+            q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+            if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i varchar(1000)", q,i);
+            else			sprintf(q, "%s\n %s  varchar(1000)", q,apop_strip_dots(set->names->colnames[i],'d'));
+            if (i< set->matrix->size2-1) 	strcat(q, ", ");
+        }
+        strcat(q,"); ");
+        apop_query(q);
+        sprintf(q, " ");
     }
-	for(i=0;i< set->matrix->size2; i++){
-		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
-		if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i", q,i);
-		else			sprintf(q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->colnames[i],'d'));
-		if (i< set->matrix->size2-1) 	sprintf(q, "%s,",q);
-		else			sprintf(q,"%s);  begin;",q);
-	}
+#else 
+        {fprintf(stderr, "apop_data_to_db: Apophenia was compiled without mysql support.\n");
+        return 1;
+        }
+#endif
+    else {
+#ifdef HAVE_LIBSQLITE3
+        if (db==NULL) apop_db_open(NULL);
+        sprintf(q, "create table %s (", tabname);
+        if (use_rownames) {
+            sprintf(q, "%s\n %s, \n", q, apop_opts.db_name_column);
+            q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+        }
+        for(i=0;i< set->matrix->size2; i++){
+            q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+            if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i", q,i);
+            else			sprintf(q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->colnames[i],'d'));
+            if (i< set->matrix->size2-1) 	sprintf(q, "%s,",q);
+            else			sprintf(q,"%s);  begin;",q);
+        }
+#else
+        {fprintf(stderr, "apop_data_to_db: Apophenia was compiled without SQLite support.\n");
+        return 1;}
+#endif
+    }
 	for(i=0;i< set->matrix->size1; i++){
-		q	=realloc(q,sizeof(char)*(strlen(q)+(1+set->matrix->size1)*batch_size*1000));
+		q	=realloc(q,sizeof(char)*(strlen(q)+(1+set->matrix->size2)*batch_size*1000));
 		sprintf(q, "%s \n insert into %s values(",q, tabname);
         if (use_rownames)
-			sprintf(q,"%s \"%s\", ",q, set->names->rownames[i]);
+			sprintf(q,"%s \'%s\', ",q, set->names->rownames[i]);
 		for(j=0;j< set->matrix->size2; j++){
             v   =gsl_matrix_get(set->matrix,i,j);
             if (gsl_isnan(v))
@@ -875,13 +1027,17 @@ int apop_data_to_db(apop_data *set, char *tabname){
                     j < set->matrix->size2 -1 ? "," : ");");
         }
 		ctr++;
-		if(ctr==batch_size) {
-				apop_query("%s commit;",q);
-				ctr = 0;
-				sprintf(q,"begin; \n insert into %s values(",tabname);
+		if(ctr==batch_size || apop_opts.db_engine == 'm') {
+		    if(apop_opts.db_engine == 'm')   apop_query(q);
+            else                                apop_query("%s commit;",q);
+            ctr = 0;
+		    if(apop_opts.db_engine == 'm')   
+                sprintf(q," ");
+            else                            
+                sprintf(q,"begin; \n insert into %s values(",tabname);
 			}
 	}
-    if (ctr>0) 
+    if ( !(apop_opts.db_engine == 'm') && ctr>0) 
         apop_query("%s commit;",q);
 	free(q);
 	return 0;

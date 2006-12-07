@@ -643,7 +643,7 @@ static char * prep_string_for_sqlite(char *astring){
 		}
 		if (tmpstring[0]!='"'){
 			out	= malloc(sizeof(char) * (strlen(tmpstring)+3));
-			sprintf(out, "\"%s\"",tmpstring);
+			sprintf(out, "'%s'",tmpstring);
             goto leave;
 		} else {
             out	= malloc(sizeof(char) * (strlen(tmpstring)+1));
@@ -724,6 +724,31 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
     return ct;
 }
 
+static void tab_create_mysql(char *tabname, int ct, int has_row_names){
+  char  *q = NULL;
+  int   i;
+    apop_strcpy(&q, "CREATE TABLE ");
+    apop_strcat(&q, tabname);
+    for (i=0; i<ct; i++){
+        if (i==0) 	{
+            if (has_row_names)
+                apop_strcat(&q, " (row_names varchar(100), ");
+            else
+                apop_strcat(&q, " (");
+        } else		apop_strcat(&q, " varchar(100) , ");
+        apop_strcat(&q, " ");
+        apop_strcat(&q, fn[i]);
+    }
+    apop_query("%s varchar(100) );", q);
+    if (use_names_in_file){
+        for (i=0; i<ct; i++)
+            free(fn[i]);
+        free(fn);
+        fn  = NULL;
+    }
+}
+
+
 static void tab_create(char *tabname, int ct, int has_row_names){
   char  *q = NULL;
   int   i;
@@ -732,14 +757,14 @@ static void tab_create(char *tabname, int ct, int has_row_names){
     for (i=0; i<ct; i++){
         if (i==0) 	{
             if (has_row_names)
-                apop_strcat(&q, " (row_names, \"");
+                apop_strcat(&q, " (row_names, '");
             else
                 apop_strcat(&q, " (");
-        } else		apop_strcat(&q, "\" , ");
-        apop_strcat(&q, " \"");
+        } else		apop_strcat(&q, "' , ");
+        apop_strcat(&q, " '");
         apop_strcat(&q, fn[i]);
     }
-    apop_query("%s\" ); begin;", q);
+    apop_query("%s' ); begin;", q);
     if (use_names_in_file){
         for (i=0; i<ct; i++)
             free(fn[i]);
@@ -756,7 +781,7 @@ static void line_to_insert(char instr[], char *tabname){
   char      *q  = malloc(sizeof(char)*(100+ strlen(tabname)));
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
     while (last_match < length_of_string 
-            && !regexec(regex, (instr+last_match), 2, result, 0)){
+           && !regexec(regex, (instr+last_match), 2, result, 0)){
         if(one_in++) 	apop_strcat(&q, ", ");
         pull_string(instr,  outstr, result,  &last_match);
         prepped	=prep_string_for_sqlite(outstr);
@@ -835,7 +860,10 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 			return 0;
 		}
         ct  = get_field_names(has_col_names, field_names, infile);
-        tab_create(tabname, ct, has_row_names);
+        if (apop_opts.db_engine=='m')
+            tab_create_mysql(tabname, ct, has_row_names);
+        else
+            tab_create(tabname, ct, has_row_names);
         //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
         ct  = 0;
         if (add_this_line){
@@ -846,10 +874,10 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
 				rows	        ++;
                 line_to_insert(instr, tabname);
-                if (!(ct++ % batch_size)) apop_query("commit; begin;");
+                if (apop_opts.db_engine != 'm' && !(ct++ % batch_size)) apop_query("commit; begin;");
 			}
 		}
-		apop_query("commit;");
+		if (apop_opts.db_engine != 'm') apop_query("commit;");
         if (strcmp(text_file,"-"))
 		    fclose(infile);
         if (nan_regex){
@@ -861,3 +889,4 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 		return rows;
 	}
 }
+
