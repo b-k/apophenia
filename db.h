@@ -49,7 +49,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...);
 	//	gsl_matrix * outmatrix;
 	//	outmatrix = apop_query_to_matrix("select a, b, c from some_table");
 
-char *** apop_query_to_chars(const char * fmt, ...);
+apop_data * apop_query_to_chars(const char * fmt, ...);
 
 apop_data * apop_query_to_data(const char * fmt, ...);
 

@@ -3,10 +3,18 @@
 **Change that could require recoding existing code.
 ]
 
-		December 2006
+	January 2007
+**Root finding hooked into the max likelihood fns.
+
+0.17	December 2006
 **Apop_model struct has lost the fdf object, which was annoying, and now
 has the p function.
 --mySQL support.
+**apop_query_to_chars now returns an apop_data structure, so you don't
+have to go back and gather column names and dimensions.
+**apop_name_get (and the apop_get_tt family) now use regular expressions
+instead of SQL's LIKE operator. This is _much_ faster.
+--the apop_distribution model.
 
 		November 2006
 --The preeminently useful APOP_COL and APOP_ROW

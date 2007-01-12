@@ -87,7 +87,7 @@ double apop_multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* 
 //first_use to 1, then feed in as many new values of X as you want.
 
 double apop_random_double(double min, double max, gsl_rng *r);
-int apop_random_int(double min, double max, gsl_rng *r);
+int apop_random_int(const double min, const double max, const gsl_rng *r);
 
 //produce a 101-element vector of percentiles.
 double * apop_vector_percentiles(gsl_vector *data, char rounding);

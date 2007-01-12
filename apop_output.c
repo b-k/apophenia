@@ -500,3 +500,66 @@ int     i,j;
         fprintf(f, "set label \"%s\" at %g, %g\n", d->names->colnames[i], offx, offy);
     } fprintf(f, "unset multiplot\n"); fclose(f);
 }
+
+
+
+/** Plot the percentiles of a data set against the percentiles of a distribution.
+Defaults to printing to stdout.
+
+The function respects the <tt>output_type</tt> option, so code like:
+\code
+f   = popen("/usr/bin/gnuplot", "w");
+apop_opts.output_type = 'p';
+apop_opts.output_pipe = f;
+apop_qq_plot(data, apop_normal, params, NULL, NULL);
+\endcode
+will print directly to Gnuplot.
+
+
+\param v    The data
+\param m    The distribution, such as apop_normal.
+\param beta The parameters for the distribution.
+\param ep   The \ref apop_ep structure for the distribution, if any.
+\param outfile   The name of the text file to print to.  If NULL then write to STDOUT.
+\bugs The RNG is hard-coded, as is the size of the histogram.
+*/
+void apop_qq_plot(gsl_vector *v, apop_model m, gsl_vector *beta, void *ep, char *outfile){
+  FILE  *f;
+  double *pctdata = apop_vector_percentiles(v, 'a');
+
+    //produce percentiles from the model via RNG.
+  gsl_vector  *vd  = gsl_vector_alloc(2000);
+  int         i;
+  gsl_rng     *r  = apop_rng_alloc(123);
+    for(i=0; i< 2000; i++)
+        gsl_vector_set(vd, i, m.draw(r, beta, ep));
+  double *pctdist = apop_vector_percentiles(vd, 'a');
+
+    if (apop_opts.output_type == 'p')
+        f   = apop_opts.output_pipe;
+    else {
+        if (outfile == NULL)    f       = stdout;
+        else            f       = fopen(outfile, "a");
+    }
+    fprintf(f, "set key off; set size square;\n\
+plot x;\n\
+replot '-' with points\n");
+    //I can't tell which versions of Gnuplot support this form:
+    /*fprintf(f, "set key off                                       ;\n\
+                        set style data histograms               ;\n\
+                        set style histogram cluster gap 0       ;\n\
+                        set xrange [0:%i]                       ;\n\
+                        set style fill solid border -1          ;\n\
+                        set boxwidth 0.9                        ;\n\
+                        plot '-' using 2:xticlabels(1);\n", bin_ct);*/
+    for (i=0; i < 101; i++)
+        fprintf(f, "%g\t %g\n", pctdist[i], pctdata[i]);
+    fprintf(f, "e\n");
+    if (apop_opts.output_type == 'p')
+        fflush(f);
+    else if (outfile !=NULL)
+        fclose(f);
+    gsl_vector_free(vd);
+    gsl_rng_free(r);
+}
+

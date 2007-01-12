@@ -26,11 +26,12 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 
 /** GSL gives p-values for a one-tailed test; convert it to two, assuming a
  symmetric distribution.
-  */
+ This function is silly and needs to go.
+*/
+  
 double apop_two_tailify(double in){
 	return	fabs(1 - (1 - in)*2);
 }
-
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
   apop_data *out    = apop_data_alloc(7,-1);
@@ -38,7 +39,7 @@ static apop_data * produce_t_test_output(int df, double stat, double diff){
   if(!gsl_isnan(stat)){
         pval    = gsl_cdf_tdist_P(stat, df);
         qval    = gsl_cdf_tdist_Q(stat, df);
-        two_tail= apop_two_tailify(pval);
+        two_tail= 2*GSL_MIN(pval,qval);
   } else {
         pval    = GSL_NAN;
         qval    = GSL_NAN;
@@ -331,6 +332,7 @@ A pointer to an \ref apop_estimate structure with the appropriate elements fille
 \todo 
 Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
  */
+/*
 apop_estimate * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma){
 apop_model      *modded_ols;
     modded_ols              = apop_model_copy(apop_GLS);
@@ -355,6 +357,7 @@ gsl_vector_view	v 		= gsl_matrix_column(set->matrix, 0);
 	gsl_vector_free(y_data); gsl_vector_free(xsy);
 	return out;
 }
+*/
 
 /** ordinary least squares.
 

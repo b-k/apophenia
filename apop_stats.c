@@ -410,7 +410,7 @@ double apop_random_double(double min, double max, gsl_rng *r){
 \param min, max 	Y'know.
 \param r		The random number generator you're using.
 */
-int apop_random_int(double min, double max, gsl_rng *r){
+int apop_random_int(const double min, const double max, const gsl_rng *r){
   double		base = gsl_rng_uniform(r);
 	return (int) (base * (max - min + 1) - min);
 }

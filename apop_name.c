@@ -7,6 +7,7 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include "db.h" //just for apop_opts.verbose.
 #include "types.h"
 #include <stdio.h>
+#include <regex.h>
 
 /** \defgroup names apop_names: a structure and functions to handle column names for matrices. 
 \ingroup types */
@@ -31,7 +32,7 @@ apop_name	* init_me;
 /** Adds a name to the \ref apop_name structure. Puts it at the end of the given list.
 
 \param n 	An existing, allocated \ref apop_name structure.
-\param add_me 	A string.
+\param add_me 	A string. If NULL, do nothing; return -1.
 \param type 	'r': add a row name<br>
 'c': add a column name<br>
 't': add a text category name<br>
@@ -40,6 +41,8 @@ apop_name	* init_me;
 \ingroup names
 */
 int apop_name_add(apop_name * n, char *add_me, char type){
+    if (!add_me)
+        return -1;
 	if (type == 'v'){
         if (add_me){
 		n->vecname	= realloc(n->vecname, sizeof(char) * (strlen(add_me) + 1));
@@ -255,6 +258,7 @@ int         i, max      = n->colnamect;
 }
 
 
+/*
 //For printf compatibility, you will need to use <tt>%%</tt> instead
 //of a single percent sign. A single percent sign will segfault. Thus,
 //this fn doubles all percent signs input, rather than making the user
@@ -269,23 +273,19 @@ char    *out    = malloc(sizeof(char) * (2*strlen(in)+1));
         if (i <= strlen(in)+1){
             out[j++]    = '%';
             out[j++]    = '%';
-            while (in[++i] == '%') /*eat.*/;
+            while (in[++i] == '%') //eat.
         }
     }
     return out;
 }
+*/
 
 
 /** Finds the position of an element in a list of names.
 
-The function uses the SQL LIKE operator to search. From the SQLite manual:
-" A percent symbol % in the pattern matches any sequence of zero or
-more characters in the string. An underscore _ in the pattern matches
-any single character in the string. Any other character matches itself
-or its lower/upper case equivalent (i.e. case-insensitive matching)."
+The function uses case-insensitive regular expressions to search. 
 
-
-For example, "p_val%" will match "P value", "p.value", and "p values".
+For example, "p.val.*" will match "P value", "p.value", and "p values".
 
 \param n        the \ref apop_name object to search.
 \param in       the name you seek; see above.
@@ -294,9 +294,10 @@ For example, "p_val%" will match "P value", "p.value", and "p values".
 \ingroup names
   */
 size_t  apop_name_find(apop_name *n, char *in, char type){
-char    **list;
-int     i, listct;
-char    *findme = precheck(in);
+  regex_t   re;
+  char      **list;
+  int       i, listct;
+//  char      *findme = precheck(in);
     if (type == 'r'){
         list    = n->rownames;
         listct  = n->rownamect;
@@ -309,12 +310,14 @@ char    *findme = precheck(in);
         list    = n->colnames;
         listct  = n->colnamect;
     }
+    regcomp(&re, in, REG_ICASE);
     for (i = 0; i < listct; i++){
-        if (apop_query_to_float("select \"%s\" like \"%s\";", list[i], findme)){
-            free(findme);
+        if (!regexec(&re, list[i], 0, NULL, 0)){
+            //free(findme);
+            //regfree(re);
             return i;
         }
     }
-    free(findme);
+    //regfree(re);
     return -1;
 }

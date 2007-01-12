@@ -17,7 +17,7 @@
  \li \ref boot
 
 \section shuntdata Shunting data 
- \li \ref db "Database utilities": an easy front end to SQLite
+ \li \ref db "Database utilities": an easy front end to SQLite and mySQL.
  \li \ref conversions
  \li \ref output "Output functions": Summarize data and print tables to the screen or a file.
  \li \ref convenience_fns "Convenience functions": a few utilities to make life with the GSL a little easier.
@@ -67,12 +67,13 @@ Apophenia facilitates data management by including a database
 interface. By reading your data into a database instead of an in-memory
 matrix, you effectively have no limits on the size of your data set,
 and can massage the data in ways that are very difficult in the
-matrix-oriented world most statisticians are used to. This is all done
-via SQLite, but there are wrappers such that the user does not need
-to know anything about the details of SQLite's API. Also, under the
-"minimize annoyances" column, queries sent to SQLite via Apophenia can
-calculate variances, powers, and logs, which are not standard SQL but are
-very common statistician needs.
+matrix-oriented world most statisticians are used to. 
+
+This is all done via either SQLite or mySQL, but there are wrappers
+such that the user does not need to know anything about the details
+of their APIs. Also, under the "minimize annoyances" column, queries
+sent to SQLite via Apophenia can calculate variances, powers, and logs,
+which are not standard SQL but are very common statistician needs.
 
 Apophenia makes heavy use of the GNU Scientific Library, which is
 a well-optimized system for processing large matrices of numbers. That is,
@@ -402,7 +403,7 @@ $(objects): %.o: %.c
 */
 
 /** \page sql SQL
-Until some notes show up here, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite. 
+Your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite. 
 This is a reference, not a tutorial; there is an abundance of <a
 href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.
 Also, the  <a href="http://ben.klemens.org/pdfs/gsl_stats.pdf">PDF
@@ -411,6 +412,16 @@ for statisticians.
 The blog of Apophenia's author includes an <a
 href="http://fluff.info/blog/arch/00000118.htm">entry</a> about
 complementarities between SQL and matrix manipulation packages.
+
+Apophenia currently supports two database engines: SQLite and
+mySQL. SQLite is the default, because it is simpler and generally more
+easygoing than mySQL, and supports in-memory databases.
+
+You can switch to mySQL two ways: set <tt>apop_opts.db_engine = 'm'</tt>,
+or set the environment variable <tt>APOP_DB_ENGINE=mysql</tt>. Otherwise,
+the system will use SQLite. Ideally, after you make this switch, you need make no other changes---
+\ref apop_query, \ref apop_query_to_data, \ref apop_table_exists, et cetera, will work
+as before. 
 
 Finally, Apophenia provides a few nonstandard SQL functions to facilitate
 math via database; see \ref db_moments.

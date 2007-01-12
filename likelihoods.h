@@ -98,5 +98,7 @@ extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
 
 apop_estimate * apop_estimate_restart(apop_estimate *e,int  new_method, int scale);
 
+double apop_linear_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta);
+
 __END_DECLS
 #endif

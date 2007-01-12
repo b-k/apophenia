@@ -260,13 +260,15 @@ gsl_matrix* apop_mysql_query_to_matrix(char *query){
     }
 }
 
-char *** process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
+apop_data * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
   unsigned int     jj, currentrow = 0;
     total_cols  = mysql_num_fields(res_set);
     total_rows  = mysql_num_rows(res_set);
   char ***out   = malloc(sizeof(char**) * total_rows );
-     while ((row = mysql_fetch_row (res_set)) ) {
+  apop_data *out= apop_data_alloc(1,0);
+    gsl_vector_free(out->vector);
+    while ((row = mysql_fetch_row (res_set)) ) {
 		out[currentrow]	= malloc(sizeof(char*) * total_cols);
 		for (jj=0;jj<total_cols;jj++){
 			if (row[jj]==NULL){
@@ -279,6 +281,9 @@ char *** process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
 		}
 		currentrow++;
     }
+    output->categories  = out;
+    output->catsize[0]  = total_rows;
+    output->catsize[1]  = total_cols;
     if (mysql_errno (conn)){
          print_error (conn, "mysql_fetch_row() failed");
          return NULL;
@@ -286,9 +291,9 @@ char *** process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
     return out;
 }
 
-char*** apop_mysql_query_to_chars(char *query){
+apop_data * apop_mysql_query_to_chars(char *query){
   MYSQL_RES *res_set;
-  char		***out;
+  apop_data *output;
     if (mysql_query (mysql_db, query)){
         print_error (mysql_db, "mysql_query() failed");
         return NULL;
@@ -299,7 +304,7 @@ char*** apop_mysql_query_to_chars(char *query){
        return NULL;
     }
     // process result set, and then deallocate it 
-    out = process_result_set_chars (mysql_db, res_set);
+    output = process_result_set_chars (mysql_db, res_set);
     mysql_free_result (res_set);
-    return out;
+    return output;
 }

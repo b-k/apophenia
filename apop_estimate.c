@@ -216,6 +216,7 @@ apop_ep *apop_ep_alloc(){
   apop_ep *setme = calloc(sizeof(apop_ep),1);
     setme->starting_pt          = NULL;
     setme->weights              = NULL;
+    setme->more                 = NULL;
     setme->step_size            = 
     setme->params_per_column    = 1;
     apop_inventory_set(&(setme->uses),1); 

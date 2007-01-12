@@ -1,6 +1,8 @@
 #include <apophenia/mapply.h>
 #include <apophenia/types.h>
 
+/** \file apop_mapply.c vector/matrix map/apply. */
+
 
 //Support for apop_matrix_apply:
 

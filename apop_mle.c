@@ -19,6 +19,7 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include "likelihoods.h"
 #include <assert.h>
 #include <gsl/gsl_deriv.h>
+#include "apop_findzeros.c"
 static apop_estimate * apop_annealing(apop_model m, apop_data *data, apop_ep *ep);  //below.
 
 /** \page trace_path Plotting the path of an ML estimation.
@@ -548,6 +549,10 @@ step_size:	the initial step size.<br>
 tolerance:	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
 verbose:	Y'know.<br>
 method:		The sum of a method and a gradient-handling rule.
+\li 10: Find a root of the derivative via Newton's method
+\li 11: Find a root of the derivative via the Broyden Algorithm
+\li 12: Find a root of the derivative via the Hybrid method
+\li 13: Find a root of the derivative via the Hybrid method; no internal scaling
 \li 000: Nelder-Mead simplex (gradient handling rule is irrelevant)
 \li 100: conjugate gradient (Fletcher-Reeves) (default)
 \li 200: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
@@ -560,10 +565,12 @@ Thus, the default method is 100+0 = 100. To use the Nelder-Mead simplex algorith
 
  \ingroup mle */
 apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_ep *params){
-	if (params && params->method/100==5)
+	if (params && (params->method/100==5 || params->method == 5))
         return apop_annealing(dist, data, params);  //below.
-    if (params && params->method/100==0)
+    else if (params && (params->method/100==0 || params->method==0))
 		return apop_maximum_likelihood_no_d(data, dist, params);
+    else if (params && params->method >= 10 && params->method <= 13)
+        return  find_roots (data, dist, params);
 	//else:
 	return apop_maximum_likelihood_w_d(data, dist, params);
 }
@@ -817,4 +824,59 @@ gsl_siman_params_t params = {N_TRIES,
     if (est->ep.uses.covariance)
         apop_numerical_covariance_matrix(m, est, data);
     return est;
+}
+
+
+
+//The reader will recognize this as solving the linear equation.
+static double set_one_constraint_elmt(gsl_vector *beta, apop_data *c, int constraint_no, int beta_no){
+   double   denom   = gsl_matrix_get(c->matrix, constraint_no, beta_no);
+   assert (denom);
+  int       i;
+  double    score   = gsl_vector_get(c->vector, constraint_no);
+    for (i=0; i< beta->size; i++)
+        if(i!=beta_no)
+            score   -= gsl_matrix_get(c->matrix, constraint_no, i) * gsl_vector_get(beta, i);
+    score   /= denom;
+    return score;
+}
+
+/** Use this for producing models. 
+
+  \param beta The parameter vector to be tested against the constraint.
+  \param d   an apop_data set, where each row represents one constraint.
+  \param returned_beta  The pre-allocated backup vector that will be modified if the given parameter vector is out of bounds.
+
+  \bugs The tolerance is hard-coded, wich is _terrible_.
+
+*/
+double apop_linear_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
+  double  tolerance     = 1e-3;
+  double  penalty       = 0,
+            p, goal;
+  int       i, j, modded[beta->size];
+  apop_data *c          = d;
+  apop_data *v          = apop_data_alloc(1,1);
+    v->vector = beta;
+    gsl_matrix_free(v->matrix);
+    v->matrix = NULL;
+  apop_data *test  = apop_dot(c, v, 0);//c->matrix
+    memset(modded, 0, sizeof(int)*beta->size);
+    for (i=0; i< test->vector->size; i++){
+        p   = gsl_vector_get(test->vector, i);
+        goal= gsl_vector_get(c->vector, i);
+        if (p> 0){
+            penalty += p;
+            j = i;
+            while (modded[j] || !gsl_matrix_get(c->matrix, i, j)){
+                j   = (j+1)% beta->size;
+                if (j==i)   //then _everything_ has been modded. Oh my.
+                    memset(modded, 0, sizeof(int)*beta->size);
+            }
+            gsl_vector_set(returned_beta, j, set_one_constraint_elmt(beta,c,i, j) + tolerance);
+            modded[j]   ++;
+        }
+    }
+    apop_data_free(test);
+    return penalty;
 }

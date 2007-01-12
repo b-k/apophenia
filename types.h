@@ -170,10 +170,11 @@ typedef struct{
  \ingroup inv_and_est
  */
 typedef struct{
-	int 	    method;
 	double      *starting_pt; 
 	double 	    step_size; 
 	double 	    tolerance; 
+	double 	    resolution; 
+	int 	    method;
 	int 	    verbose;
 	int 	    destroy_data;
     int         params_per_column;
@@ -181,7 +182,7 @@ typedef struct{
     void        *parameters;
     gsl_vector  *weights;
     struct apop_model  *model;
-    void        *model_params;
+    void        *more;
 } apop_ep;
 
 /**
@@ -252,14 +253,6 @@ typedef struct apop_model{
     double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta);
 	double (*draw)(gsl_rng* r, gsl_vector *a, void *params);
     void    *more;
-    /*
-	apop_estimate *	(*estimate)(apop_data * data, void *parameters);
-	double 	(*log_likelihood)(const gsl_vector *beta, apop_data *d);
-	void 	(*dlog_likelihood)(const gsl_vector *beta, apop_data *d, gsl_vector *gradient);
-	void 	(*fdf)( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df);
-    double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta);
-	double (*rng)(gsl_rng* r, double *a);
-    */
 } apop_model;
 
 /** The global options.

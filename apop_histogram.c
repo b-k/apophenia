@@ -78,7 +78,7 @@ Anyway, here are some functions to deal with these various histograms and such.
   \param bins   The number of (evenly-spaced) bins
   \ingroup histograms
   */
-gsl_histogram * apop_vector_to_histogram(gsl_vector *data, int bins){
+gsl_histogram * apop_vector_to_histogram(const gsl_vector *data, int bins){
 int                 i;
 gsl_histogram       *h  = gsl_histogram_alloc(bins);
 double              min, max;
@@ -86,6 +86,34 @@ double              min, max;
     gsl_histogram_set_ranges_uniform(h, min, max+10*GSL_DBL_EPSILON);
     for (i=0; i< data->size; i++)
         gsl_histogram_increment(h,gsl_vector_get(data,i));
+    return h;
+}
+
+/** Produce a <tt>gsl_histogram</tt> from an \ref apop_data set. Puts
+ all data in both the <tt>vector</tt> and <tt>matrix</tt> elements
+ into the bin.
+
+  \param data   The data set
+  \param bins   The number of (evenly-spaced) bins
+  \ingroup histograms
+  */
+gsl_histogram * apop_data_to_histogram(apop_data *data, int bins){
+int                 i, j;
+gsl_histogram       *h      = gsl_histogram_alloc(bins);
+double              minv    = GSL_POSINF, 
+                    maxv    = GSL_NEGINF,
+                    minm    = GSL_POSINF,
+                    maxm    = GSL_NEGINF;
+    if (data->vector) gsl_vector_minmax(data->vector, &minv, &maxv);
+    if (data->matrix) gsl_matrix_minmax(data->matrix, &minm, &maxm);
+    gsl_histogram_set_ranges_uniform(h, GSL_MIN(minv,minm), GSL_MAX(maxv,maxm)+10*GSL_DBL_EPSILON);
+    if (data->vector)
+        for (i=0; i< data->vector->size; i++)
+            gsl_histogram_increment(h,gsl_vector_get(data->vector,i));
+    if (data->matrix)
+        for (i=0; i< data->matrix->size1; i++)
+            for (j=0; j< data->matrix->size2; j++)
+            gsl_histogram_increment(h,gsl_matrix_get(data->matrix,i,j));
     return h;
 }
 

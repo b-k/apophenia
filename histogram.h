@@ -9,7 +9,8 @@
 #endif
 
 __BEGIN_DECLS
-gsl_histogram * apop_vector_to_histogram(gsl_vector *data, int bins);
+gsl_histogram * apop_vector_to_histogram(const gsl_vector *data, int bins);
+gsl_histogram * apop_data_to_histogram(apop_data *data, int bins);
 gsl_histogram_pdf * apop_vector_to_cmf(gsl_vector *data, int bins);
 gsl_histogram ** apop_vectors_to_histograms(gsl_vector *v1, gsl_vector *v2, int bins);
 gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, int draws, gsl_vector *params, gsl_rng *r);

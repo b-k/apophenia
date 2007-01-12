@@ -1,7 +1,7 @@
 
 #The library
 #AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 -L/usr/lib/mysql -lmysqlclient -lz 
-AM_CFLAGS = -g -Wall -I./ -I/usr/include/mysql
+AM_CFLAGS = -g -Wall -I./ -I/usr/include/mysql -pthread
 #apop_text_to_db_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
@@ -48,7 +48,7 @@ EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
 		tests/Makefile tests/Readme tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data tests/test_data2 \
 		tests/test_data_nans tests/wampler1.dat \
-		apop_db_mysql.c		\
+		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
 		apophenia/*.h
 
 #The documentation
