@@ -281,9 +281,11 @@ apop_data * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
 		}
 		currentrow++;
     }
-    output->categories  = out;
+    output->textegories  = out;
     output->catsize[0]  = total_rows;
     output->catsize[1]  = total_cols;
+    output->textsize[0]  = total_rows;
+    output->textsize[1]  = total_cols;
     if (mysql_errno (conn)){
          print_error (conn, "mysql_fetch_row() failed");
          return NULL;
@@ -291,7 +293,7 @@ apop_data * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
     return out;
 }
 
-apop_data * apop_mysql_query_to_chars(char *query){
+apop_data * apop_mysql_query_to_text(char *query){
   MYSQL_RES *res_set;
   apop_data *output;
     if (mysql_query (mysql_db, query)){

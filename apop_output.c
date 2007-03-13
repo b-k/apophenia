@@ -390,13 +390,17 @@ double  datapt;
             printf("%*s  |  ", L+2, data->names->vecname);
     }
     if (data->matrix){
-        for(i=0; i< data->names->colnamect; i++)
-            printf("%s  ", data->names->colnames[i]);
+        for(i=0; i< data->names->colnamect; i++){
+            if (i < data->names->colnamect -1)
+                printf("%s%s", data->names->colnames[i], apop_opts.output_delimiter);
+            else
+                printf("%s", data->names->colnames[i]);
+        }
     }
     printf("\n");
     for(j=0; j< rowend; j++){
         if (data->names->rownamect > j)
-            printf("%*s  ", L+2, data->names->rownames[j]);
+            printf("%*s%s", L+2, data->names->rownames[j], apop_opts.output_delimiter);
         for(i=start; i< end; i++){
             if (i==-1 && data->names->vecname) 
                 Lc  =  strlen(data->names->vecname);
@@ -406,11 +410,13 @@ double  datapt;
                 Lc  =  6;
             datapt  = apop_data_get(data, j, i);
             if (datapt == (int) datapt)
-                printf("%*i  ", Lc, (int) datapt);
+                printf("%*i", Lc, (int) datapt);
             else
-                printf("%*f  ", Lc, datapt);
+                printf("%*f", Lc, datapt);
             if (i==-1 && data->matrix) 
                 printf ("| ");
+            if (i < end-1)
+                printf(apop_opts.output_delimiter);
         }
         printf("\n");
     }

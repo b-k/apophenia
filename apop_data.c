@@ -42,7 +42,7 @@ and row_names elements: the rownames are assumed to apply for both.
 /** Allocate a \ref apop_data structure, to be filled with data. If
 \c size2>0, then the matrix will be allocated; else, the vector will
 be allocated. Your best bet for allocating the categories is to produce
-them elsewhere, such as \ref apop_query_to_chars and then point an
+them elsewhere, such as \ref apop_query_to_text and then point an
 apop_data structure with a zero-sized vector to your matrix of strings.
 
 The \c weights vector is set to \c NULL. If you need it, allocate it via
@@ -68,7 +68,10 @@ apop_data * apop_data_alloc(int size1, int size2){
         setme->vector   = gsl_vector_alloc(size1);
 
     setme->names        = apop_name_alloc();
-    setme->categories   = NULL;
+    setme->text         = NULL;
+    setme->categories   = setme->text;
+    setme->textsize[0]  = 
+    setme->textsize[1]  =
     setme->catsize[0]   = 
     setme->catsize[1]   = 0;
     return setme;
@@ -96,7 +99,10 @@ apop_data * apop_data_calloc(int size1, int size2){
         setme->vector   = gsl_vector_calloc(size1);
 
     setme->names        = apop_name_alloc();
-    setme->categories   = NULL;
+    setme->text         = NULL;
+    setme->categories   = setme->text;
+    setme->textsize[0]  = 
+    setme->textsize[1]  = 
     setme->catsize[0]   = 
     setme->catsize[1]   = 0;
     return setme;
@@ -135,7 +141,10 @@ apop_data * apop_data_from_vector(gsl_vector *v){
     setme->vector       = v;
     setme->names        = apop_name_alloc();
     setme->matrix       = NULL;
-    setme->categories   = NULL;
+    setme->text         = NULL;
+    setme->categories   = setme->text;
+    setme->textsize[0]   = 
+    setme->textsize[1]   = 
     setme->catsize[0]   = 
     setme->catsize[1]   = 0;
     return setme;
@@ -154,7 +163,7 @@ apop_data * apop_vector_to_data(gsl_vector *v){
 /** free a matrix of chars* (i.e., a char***).
 
   */
-void apop_cats_free(char ***freeme, int rows, int cols){
+void apop_text_free(char ***freeme, int rows, int cols){
 int     i,j;
     if (rows && cols){
         for (i=0; i < rows; i++){
@@ -182,7 +191,7 @@ void apop_data_free(apop_data *freeme){
     if (freeme->weights)
         gsl_vector_free(freeme->weights);
     apop_name_free(freeme->names);
-    apop_cats_free(freeme->categories, freeme->catsize[0] , freeme->catsize[1]);
+    apop_text_free(freeme->text, freeme->textsize[0] , freeme->textsize[1]);
     free(freeme);
 }
 
@@ -223,9 +232,9 @@ void apop_data_memcpy(apop_data *out, apop_data *in){
     apop_name_stack(out->names, in->names, 'r');
     apop_name_stack(out->names, in->names, 'c');
     apop_name_stack(out->names, in->names, 't');
-    if (in->catsize[0] && in->catsize[1]){
-        out->categories  = malloc(sizeof(char **) * in->catsize[0] * in->catsize[1]);
-        memcpy( out->categories, in->categories, sizeof(char **) * in->catsize[0] * in->catsize[1]);
+    if (in->textsize[0] && in->textsize[1]){
+        out->text  = malloc(sizeof(char **) * in->textsize[0] * in->textsize[1]);
+        memcpy(out->text, in->text, sizeof(char **) * in->textsize[0] * in->textsize[1]);
     }
 }
 

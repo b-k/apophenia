@@ -162,7 +162,8 @@ typedef struct{
 	char ** colnames;
 	char ** rownames;
 	char ** catnames;
-	int colnamect, rownamect, catnamect;
+	char ** textnames;
+	int colnamect, rownamect, catnamect, textnamect;
 } apop_name;
 
 /** Parameters for running estimations. No estimation uses all of them.
@@ -194,7 +195,9 @@ typedef struct {
     gsl_matrix  *matrix;
     apop_name   *names;
     char        ***categories;
+    char        ***text;
     int         catsize[2];
+    int         textsize[2];
     gsl_vector  *weights;
 } apop_data;
 
@@ -233,7 +236,7 @@ but is intended to have anything else you would want a probability
 distribution to have too, like a random number generator.  
 
 \param name	The model name. You have 100 characters. 
-\param parameter_ct	The number of parameters. If this is -1, it will be dynamically set to the size of the given data set minus one.
+\param parameter_ct	The number of parameters. If this is 0, it will be dynamically set to the number of columns in the given data set's matrix; if -1 it will be set to columns minus one.
 \param estimate		the estimator fn, which is all most users will care about.
 \param log_likelihood	the likelihood fn given data 
 \param 	dlog_likelihood	the derivative of the likelihood fn
@@ -334,7 +337,7 @@ void apop_data_set_nt(apop_data *in, size_t row, char* col, double data);
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data);
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 
-void apop_cats_free(char ***freeme, int rows, int cols); //in apop_data.c
+void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 
 apop_model * apop_model_copy(apop_model in); //this is in apop_estimate.c.
 

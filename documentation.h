@@ -292,7 +292,7 @@ your system. You should install at least the following programs:
  \li more -- not as good as less but still good to have
 If you are missing anything else, the program will probably tell you.
 The following are not necessary but are good to have on hand as long as you are going to be using Unix and programming.
- \li cvs -- to partake in the versioning system
+ \li svn -- to partake in the versioning system
  \li emacs -- steep learning curve, but people love it
  \li ghostscript (for reading .ps/.pdf files)
  \li openssh -- needed for cvs
@@ -314,6 +314,12 @@ Second, some older (but still pretty recent) versions of Cygwin
 have a search.h file which doesn't include the function lsearch().
 If this is the case on your system, you will have to update your Cygwin
 installation.
+
+Finally, windows compilers often spit out lines like:
+\code
+Info: resolving _gsl_rng_taus by linking to __imp__gsl_rng_taus (auto-import)
+\endcode
+These lines are indeed just information, and not errors. Feel free to ignore them.
 
 [Thanks to Andrew Felton and Derrick Higgins for their Cygwin debugging efforts.]
 */

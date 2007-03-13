@@ -7,6 +7,9 @@ AM_INIT_AUTOMAKE(apophenia, 0.17)
 AC_CONFIG_SRCDIR([db.h])
 AC_CONFIG_HEADER([config.h])
 
+# Windows:
+AC_LIBTOOL_WIN32_DLL
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_LIBTOOL

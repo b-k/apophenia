@@ -102,7 +102,11 @@ typedef struct grad_params{
 static double one_d(double b, void *p){
 grad_params	*params	= p;
     gsl_vector_set(params->beta, params->dimension, b);
-	return apop_fn_for_derivative(params->beta, params->d);
+	double out= apop_fn_for_derivative(params->beta, params->d);
+        /*apop_fn_for_derivative == negshell
+           ? apop_fn_for_derivative(params->beta, params->d)
+            : dist.log_likelihood(params->beta, params->d, model_params); */
+    return out;
 }
 
 /**The GSL provides one-dimensional numerical differentiation; here's
@@ -254,6 +258,7 @@ static void fdf_shell(gsl_vector *beta, apop_data *d, double *f, gsl_vector *df)
 }
 
 
+
 			//////////////////////////////////////////
 			//The max likelihood functions themselves. 
 			//Mostly straight out of the GSL manual.
@@ -328,7 +333,7 @@ apop_fn_with_void tmp;
 gsl_matrix	    *hessian;
 	tmp			= apop_fn_for_derivative;
 	//The information matrix is the inverse of the negation of the hessian.
-	hessian			= apop_numerical_hessian(dist, est->parameters->vector, data);
+	hessian			= apop_numerical_second_derivative(dist, est->parameters->vector, data);
 	gsl_matrix_scale(hessian, -1);
 	apop_det_and_inv(hessian, &(est->covariance->matrix), 0, 1);
 	gsl_matrix_free(hessian);
@@ -410,9 +415,9 @@ int				            iter 	= 0,
 				            status  = 0,
 				            betasize= dist.parameter_ct;
 apop_estimate			    *est;
-	if (betasize == -1)	{
+	if (betasize == 0 || betasize == -1)	{
         dist.parameter_ct   =
-        betasize            = data->matrix->size2 - 1;
+        betasize            = data->matrix->size2 - betasize;
     }
     betasize    *=  (est_params ? est_params->params_per_column : 1);
 	prep_inventory_mle(est_params->uses);
@@ -482,9 +487,9 @@ gsl_multimin_fminimizer *s;
 gsl_vector 		        *x, *ss;
 double			        size;
 apop_estimate		    *est;
-	if (betasize == -1)	{
+	if (betasize == 0 || betasize == -1)	{
         dist.parameter_ct   =
-        betasize            = data->matrix->size2 - 1;
+        betasize            = data->matrix->size2 - betasize;
     }
     betasize    *=  (est_params ? est_params->params_per_column : 1);
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
@@ -549,22 +554,20 @@ step_size:	the initial step size.<br>
 tolerance:	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
 verbose:	Y'know.<br>
 method:		The sum of a method and a gradient-handling rule.
+\li 0: Nelder-Mead simplex (gradient handling rule is irrelevant)
+\li 1: conjugate gradient (Fletcher-Reeves) (default)
+\li 2: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
+\li 3: conjugate gradient (Polak-Ribiere)
+\li 5: \ref simanneal "simulated annealing"
 \li 10: Find a root of the derivative via Newton's method
 \li 11: Find a root of the derivative via the Broyden Algorithm
 \li 12: Find a root of the derivative via the Hybrid method
 \li 13: Find a root of the derivative via the Hybrid method; no internal scaling
-\li 000: Nelder-Mead simplex (gradient handling rule is irrelevant)
-\li 100: conjugate gradient (Fletcher-Reeves) (default)
-\li 200: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
-\li 300: conjugate gradient (Polak-Ribiere)
-\li 500: \ref simanneal "simulated annealing"
-\li 0: If no gradient is available, use numerical approximations. (default)
-\li 1: Use numerical approximations even if an explicit dlog likelihood is given. <br>
-Thus, the default method is 100+0 = 100. To use the Nelder-Mead simplex algorithm, use 0, or to use the Polak_Ribiere method ignoring any analytic dlog likelihood function, use 201.
 \return	an \ref apop_estimate with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
  \ingroup mle */
 apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_ep *params){
+    model_params = params;
 	if (params && (params->method/100==5 || params->method == 5))
         return apop_annealing(dist, data, params);  //below.
     else if (params && (params->method/100==0 || params->method==0))
@@ -688,6 +691,9 @@ is the Manhattan metric, the copy/destroy functions are just the usual
 vector-handling fns., et cetera. The reader who wants further control
 is welcome to override these functions.
 
+Verbosity: if ep->verbose==1, show likelihood,  temp, &c. in a table;
+if ep->verbose>1, show that plus the vector of params.
+
  \ingroup mle
  */
 
@@ -758,6 +764,11 @@ double      step_left, amt;
     gsl_vector_free(original);
 }
 
+static void annealing_print2(void *xp)
+{
+    return;
+}
+
 static void annealing_print(void *xp)
 {
     apop_vector_show(xp);
@@ -795,8 +806,10 @@ gsl_vector      *beta;
 	negshell_model	    = m;
 
 gsl_siman_print_t printing_fn   = NULL;
-    if (ep && ep->verbose)
+    if (ep && ep->verbose>1)
         printing_fn = annealing_print;
+    else if (ep && ep->verbose)
+        printing_fn = annealing_print2;
 
 gsl_siman_params_t params = {N_TRIES, 
                     ITERS_FIXED_T, 

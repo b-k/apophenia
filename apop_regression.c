@@ -118,7 +118,7 @@ int     df      = count-1;
 }
 
 static double two_tailed_t_test(double mean, double variance, long int ct){
-double  t_stat  = fabs(mean)/sqrt(variance / ct),
+double  t_stat  = fabs(mean)/sqrt(variance),
         p       = 1 - gsl_cdf_tdist_P(t_stat, ct),
         q       = 1 - gsl_cdf_tdist_Q(-t_stat, ct);
     return  p + q;
@@ -160,7 +160,7 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
         val     = apop_data_get(est->parameters, i, -1);
         var     = apop_data_get(est->covariance, i, i);
         stddev  = sqrt(var);
-        tstat   = val*rootn/stddev;
+        tstat   = val/stddev;
         pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
         two_tail= (df > 0)? two_tailed_t_test(val, var, df): GSL_NAN;
         apop_data_set_nt(est->parameters, i, "df", df);
@@ -281,19 +281,18 @@ void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
 		return;
 	} //else:
-gsl_vector 	*error;
-gsl_vector 	predicted;
-gsl_matrix	*cov;
-double		upu;
-	error	= gsl_vector_alloc(data->size1);
+  gsl_vector 	*error = gsl_vector_alloc(data->size1);
+  gsl_vector 	predicted;
+  gsl_matrix	*cov;
+  double        s_sq;
 	cov	= gsl_matrix_alloc(data->size2, data->size2);
-	apop_det_and_inv(xpx, &cov, 0, 1);		//(X'X)^{-1} (not yet cov)
-	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters->vector);
-	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters->vector, 0, error);
-	gsl_vector_sub(error,y_data);//until this line, 'error' is the predicted values
-	gsl_vector_scale(error,-1);	
-	gsl_blas_ddot(error, error, &upu);
-	gsl_matrix_scale(cov, upu/data->size2);	//Having multiplied by the variance, it's now it's the covariance.
+	apop_det_and_inv(xpx, &cov, 0, 1);	    //not yet cov, just (X'X)^-1.
+	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters->vector);      // \beta=(X'X)^{-1}X'Y
+	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters->vector, 0, error);   // X'\beta ==predicted
+	gsl_vector_sub(error,y_data);           //X'\beta - Y == error
+    gsl_blas_ddot(error, error, &s_sq);   // e'e
+    s_sq    /= data->size1 - data->size2;   //\sigma^2 = e'e / df
+	gsl_matrix_scale(cov, s_sq);            //cov = \sigma^2 (X'X)^{-1}
 	if (out->ep.uses.dependent)
         gsl_matrix_set_col(out->dependent->matrix, 0, y_data);
 	if (out->ep.uses.predicted){
@@ -395,7 +394,7 @@ Y, X_1, X_2, X_3
 
 The program:
 \code
-#include <apophenia/headers.h>
+#include <apop.h>
 
 int main(void){
 apop_data       *data;
@@ -422,7 +421,7 @@ Feeling lazy? The program above was good form and demonstrated useful
 features, but the code below will do the same thing in four lines:
 
 \code
-#include <apophenia/headers.h>
+#include <apop.h>
 int main(){
     apop_estimate_show(apop_OLS.estimate(apop_text_to_data("data", 0, 0), NULL));
     return 0; }
@@ -457,18 +456,17 @@ apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
   gsl_vector      *y_data     = gsl_vector_alloc(set->matrix->size1); 
   gsl_vector      *xpy        = gsl_vector_calloc(set->matrix->size2);
   gsl_matrix      *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
-  gsl_vector      v           = gsl_matrix_column(set->matrix, 0).vector;
     prep_names(out);
-    gsl_matrix_get_col(y_data, set->matrix, 0);
-    gsl_vector_set_all(&v, 1);     //affine: first column is ones.
+    APOP_COL(set, 0, firstcol);
+    gsl_vector_memcpy(y_data,firstcol);
+    gsl_vector_set_all(firstcol, 1);     //affine: first column is ones.
     if (weights){
         gsl_vector_mul(y_data, weights);
         for (i = 0; i < set->matrix->size2; i++){
-            v   = gsl_matrix_column(set->matrix, i).vector;
-            gsl_vector_mul(&v, weights);
+            APOP_COL(set, i, v);
+            gsl_vector_mul(v, weights);
         }
     }
-
 
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   //(X'X)
     gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)

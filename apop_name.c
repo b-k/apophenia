@@ -21,9 +21,11 @@ apop_name	* init_me;
 	init_me	= malloc(sizeof(apop_name));
 	init_me->vecname	= NULL;
 	init_me->colnames	= malloc(1);
-	init_me->catnames	= malloc(1);
+	init_me->textnames	= malloc(1);
+	init_me->catnames	= init_me->textnames;
 	init_me->rownames	= malloc(1);
 	init_me->colnamect	= 
+	init_me->textnamect	= 
 	init_me->catnamect	= 
 	init_me->rownamect	= 0;
 	return init_me;
@@ -59,10 +61,11 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 	} 
 	if (type == 't'){
 		(n->catnamect)++;
-		n->catnames	= realloc(n->catnames, sizeof(char*) * n->catnamect);
-		n->catnames[n->catnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
-		strcpy(n->rownames[n->catnamect -1], add_me);
-		return n->catnamect;
+		(n->textnamect)++;
+		n->textnames	= realloc(n->textnames, sizeof(char*) * n->textnamect);
+		n->textnames[n->textnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
+		strcpy(n->rownames[n->textnamect -1], add_me);
+		return n->textnamect;
 	}
 	//else assume (type == 'c'){
         if (type != 'c' && apop_opts.verbose)
@@ -92,10 +95,10 @@ int		i;
 			printf("\t%s", n->colnames[i]);
 		printf("\n");
 	}
-	if (n->catnamect > 0){
+	if (n->textnamect > 0){
 		printf("\t\t\t");
-		for (i=0; i < n->catnamect; i++)
-			printf("\t%s", n->catnames[i]);
+		for (i=0; i < n->textnamect; i++)
+			printf("\t%s", n->textnames[i]);
 		printf("\n");
 	}
 	if (n->rownamect > 0){
@@ -112,14 +115,14 @@ void  apop_name_free(apop_name * free_me){
 int		i;
 	for (i=0; i < free_me->colnamect; i++)
 		free(free_me->colnames[i]);
-	for (i=0; i < free_me->catnamect; i++)
-		free(free_me->catnames[i]);
+	for (i=0; i < free_me->textnamect; i++)
+		free(free_me->textnames[i]);
 	for (i=0; i < free_me->rownamect; i++)
 		free(free_me->rownames[i]);
     if (free_me->vecname);
         free(free_me->vecname);
 	free(free_me->colnames);
-	free(free_me->catnames);
+	free(free_me->textnames);
 	free(free_me->rownames);
 	free(free_me);
 }
@@ -148,8 +151,8 @@ int     i;
         return;
     }
     if (type == 't'){
-        for (i=0; i< n2->catnamect; i++)
-            apop_name_add(n1, n2->catnames[i], 't');
+        for (i=0; i< n2->textnamect; i++)
+            apop_name_add(n1, n2->textnames[i], 't');
         return;
     }
     if (type == 'c'){
@@ -180,8 +183,8 @@ int     i;
             apop_name_add(n1, n2->rownames[i], type2);
         }
     else if (type1 == 't'){
-        for (i=0; i< n2->catnamect; i++)
-            apop_name_add(n1, n2->catnames[i], type2);
+        for (i=0; i< n2->textnamect; i++)
+            apop_name_add(n1, n2->textnames[i], type2);
         }
     else {
         if (type1 != 'c' && apop_opts.verbose)
@@ -303,8 +306,8 @@ size_t  apop_name_find(apop_name *n, char *in, char type){
         listct  = n->rownamect;
     }
     else if (type == 't'){
-        list    = n->catnames;
-        listct  = n->catnamect;
+        list    = n->textnames;
+        listct  = n->textnamect;
     }
     else { // default: (type == 'c')
         list    = n->colnames;

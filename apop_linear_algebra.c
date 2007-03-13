@@ -132,35 +132,33 @@ The input matrix.
 \param dimensions_we_want 
 The singular value decomposition will return this many of the eigenvectors with the largest eigenvalues.
 
-\param pc_space 
-This will be the principal component space. Each column of the returned matrix will be another eigenvector; the columns will be ordered by the eigenvalues. Input the address of an un-allocated {{{gsl_matrix}}}.
+\return     Returns a \ref apop_data set whose matrix is the principal component space. Each column of the returned matrix will be another eigenvector; the columns will be ordered by the eigenvalues. 
+The data set's vector will be the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
 
-\param total_explained
-This will return the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
 \ingroup linear_algebra */
-void apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want, gsl_matrix ** pc_space, gsl_vector **total_explained) {
+apop_data * apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want) {
 //Get X'X
-gsl_matrix * 	eigenvectors 	= gsl_matrix_alloc(data->size2, data->size2);
-gsl_vector * 	dummy_v 	    = gsl_vector_alloc(data->size2);
-gsl_vector * 	all_evalues 	= gsl_vector_alloc(data->size2);
-gsl_matrix * 	square  	    = gsl_matrix_calloc(data->size2, data->size2);
-gsl_vector_view v;
-int 		i;
-double		eigentotals	= 0;
-	*pc_space	    = gsl_matrix_alloc(data->size2, dimensions_we_want);
-	*total_explained= gsl_vector_alloc(dimensions_we_want);
+  gsl_matrix * 	eigenvectors 	= gsl_matrix_alloc(data->size2, data->size2);
+  gsl_vector * 	dummy_v 	    = gsl_vector_alloc(data->size2);
+  gsl_vector * 	all_evalues 	= gsl_vector_alloc(data->size2);
+  gsl_matrix * 	square  	    = gsl_matrix_calloc(data->size2, data->size2);
+  int 		    i;
+  double		eigentotals	= 0;
+  apop_data    *pc_space	    = apop_data_alloc(data->size2, dimensions_we_want);
+	pc_space->vector = gsl_vector_alloc(dimensions_we_want);
 	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, square);
 	apop_normalize_for_svd(square);	
 	gsl_linalg_SV_decomp(square, eigenvectors, all_evalues, dummy_v);
 	for (i=0; i< all_evalues->size; i++)
 		eigentotals	+= gsl_vector_get(all_evalues, i);
 	for (i=0; i<dimensions_we_want; i++){
-		v	= gsl_matrix_column(eigenvectors, i);
-		gsl_matrix_set_col(*pc_space, i, &(v.vector));
-		gsl_vector_set(*total_explained, i, gsl_vector_get(all_evalues, i)/eigentotals);
+		APOP_MATRIX_COL(eigenvectors, i, v);
+		gsl_matrix_set_col(pc_space->matrix, i, v);
+		gsl_vector_set(pc_space->vector, i, gsl_vector_get(all_evalues, i)/eigentotals);
 	}
 	gsl_vector_free(dummy_v); 	gsl_vector_free(all_evalues);
 	gsl_matrix_free(square); 	gsl_matrix_free(eigenvectors);
+    return pc_space;
 }
 
 

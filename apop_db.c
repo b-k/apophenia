@@ -24,7 +24,7 @@ out for analysis.
 
 \li \ref apop_query_to_float: Pull out a single number.
 
-\li \ref apop_query_to_chars: Pull out columns of not-numbers.
+\li \ref apop_query_to_text: Pull out columns of not-numbers.
 
 \par Maintenance 
 \li \ref apop_db_open: Optional, for when you want to use a database on disk.
@@ -326,9 +326,9 @@ and \ref apop_db_get_cols .
 \param fmt 	As with \ref apop_query , a string containing a query,
 which may include <tt>printf</tt>-style tags (<tt>\%i, \%s</tt>, et cetera).
 
-\return		An \ci apop_data structure with the <tt>categories</tt>
+\return		An \ci apop_data structure with the <tt>text</tt>
 element filled. Notice that this is always a 2-D array, even if the query
-returns a single column. In that case, use <tt>returned_tab->categories[i][0]</tt>
+returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt>
 to refer to row <tt>i</tt>.
 
 
@@ -342,9 +342,9 @@ void print_table_list(char *db_file){
 apop_data   *tab_list;
 int         i;
         apop_db_open(db_file);
-        tab_list= apop_query_to_chars("select name from sqlite_master where type==\"table\";");
-        for(i=0; i< tab_list->catsize[0]; i++)
-                printf("%s\n", tab_list->categories[i][0]);
+        tab_list= apop_query_to_text("select name from sqlite_master where type==\"table\";");
+        for(i=0; i< tab_list->textsize[0]; i++)
+                printf("%s\n", tab_list->text[i][0]);
 }
 
 int main(int argc, char **argv){
@@ -357,7 +357,7 @@ int main(int argc, char **argv){
 
 \endverbatim
 */
-apop_data * apop_query_to_chars(const char * fmt, ...){
+apop_data * apop_query_to_text(const char * fmt, ...){
   va_list	argp;
   char		*query;
 	va_start(argp, fmt);
@@ -366,15 +366,15 @@ apop_data * apop_query_to_chars(const char * fmt, ...){
 	va_end(argp);
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_query_to_chars(query);
+        return apop_mysql_query_to_text(query);
 #else
-        {fprintf(stderr, "apop_query_to_chars: Apophenia was compiled without mysql support.\n");
+        {fprintf(stderr, "apop_query_to_text: Apophenia was compiled without mysql support.\n");
         return 0;}
 #endif
 #ifdef HAVE_LIBSQLITE3
-        return apop_sqlite_query_to_chars(query);
+        return apop_sqlite_query_to_text(query);
 #else
-        {fprintf(stderr, "apop_query_to_chars: Apophenia was compiled without SQLite support.\n");
+        {fprintf(stderr, "apop_query_to_text: Apophenia was compiled without SQLite support.\n");
         return NULL; }
 #endif
 }
@@ -407,7 +407,7 @@ static int db_to_table(void *o,int argc, char **argv, char **colnames){
             }
         }
     }
-	if (*argv !=NULL){
+	if (argv !=NULL){
         ncfound =0;
 		for (jj=0;jj<argc;jj++){
             if (jj != namecol){
@@ -579,7 +579,7 @@ and the name of a column matches the name, then the row names are read from that
 
 \bug Currently, this is but a wrapper for \ref apop_query_to_matrix,
 meaning that only numerical results are returned. If you want
-non-numeric data, try \code mydata->categories  = apop_query_to_chars("select ...");\endcode. 
+non-numeric data, try \code mydata->text  = apop_query_to_text("select ...");\endcode. 
 */ 
 apop_data * apop_query_to_data(const char * fmt, ...){
   gsl_matrix	*m=NULL;
@@ -694,7 +694,7 @@ then a so-named column is created, and the row names are placed there.
 \param set 	    The name of the matrix
 \param tabname	The name of the db table to be created
 \ingroup apop_data
-\todo add category names.
+\todo add text names.
  \ingroup conversions
 */
 int apop_data_to_db(apop_data *set, char *tabname){
@@ -800,7 +800,7 @@ void apop_db_merge_table(char *db_file, char *tabname){
   int		row_ct;
 	if (db_file !=NULL)
 		apop_query("attach database \"%s\" as merge_me;", db_file);
-	apop_query_to_chars("select name from sqlite_master where name == \"%s\";", tabname);
+	apop_query_to_text("select name from sqlite_master where name == \"%s\";", tabname);
 	row_ct	= apop_db_get_rows();
 	if (row_ct==0){	//just import table
 		if (apop_opts.verbose)	printf("adding in %s\n", tabname);
@@ -830,9 +830,9 @@ void apop_db_merge(char *db_file){
   apop_data	*tab_list;
   int		i;
 	apop_query("attach database \"%s\" as merge_me;", db_file);
-	tab_list= apop_query_to_chars("select name from merge_me.sqlite_master where type==\"table\";");
-	for(i=0; i< tab_list->catsize[0]; i++)
-		apop_db_merge_table(NULL, (tab_list->categories)[i][0]);
+	tab_list= apop_query_to_text("select name from merge_me.sqlite_master where type==\"table\";");
+	for(i=0; i< tab_list->textsize[0]; i++)
+		apop_db_merge_table(NULL, (tab_list->text)[i][0]);
 	apop_query("detach database merge_me;");
 	apop_data_free(tab_list);
 }

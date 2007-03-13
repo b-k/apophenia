@@ -74,7 +74,6 @@ gsl_matrix * apop_jackknife(apop_data *in, apop_model model, apop_ep *ep){
         //short matrix.
         if (i >= 0){
             APOP_ROW(in, i, v);
-            //v   = gsl_matrix_row(in->matrix, i).vector;
             gsl_matrix_set_row(subset->matrix, i, v);
 	        boot_est        = model.estimate(subset, e);
         }

@@ -10,14 +10,15 @@
 int main(int argc, char **argv){
 char		c, 
 		msg[1000];
-int     colnames            = 0,
+int     colnames            = 1,
+        colwarn             = 1,
         rownames            = 0,
         tab_exists_check    = 0;
 
 	sprintf(msg, "%s [-d delimiters] text_file table_name dbname\n\
 e.g.: %s -d\",|\" infile.txt a_table info.db\n\
 If the input text file name is a single dash, -, then read from STDIN.\n\
--c\t\tData includes column names\n\
+-nc\t\tData does not include column names\n\
 -m\t\tUse a mysql database (default: SQLite)\n\
 -r\t\tData includes row names\n\
 -v\t\tVerbose\n\
@@ -29,10 +30,16 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 		printf(msg);
 		return 0;
 	}
-	while ((c = getopt (argc, argv, "cd:hmrvO")) != -1){
+	while ((c = getopt (argc, argv, "cn:d:hmrvO")) != -1){
 		switch (c){
 		  case 'c':
-			colnames    ++;
+              fprintf(stderr,"I assume column names by default now.\n");
+            break;
+		  case 'n':
+              if (optarg=='c'){
+			    colnames    --;
+                colwarn     --;
+              }
 			break;
 		  case 'd':
 			strcpy(apop_opts.input_delimiters, optarg);
@@ -55,6 +62,8 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 		}
 	}
 	apop_db_open(argv[optind + 2]);
+    if (colwarn)
+        fprintf(stderr, "Assuming first row are column names\n");
     if (tab_exists_check)
         apop_table_exists(argv[optind],1);
 	apop_text_to_db(argv[optind], argv[optind+1], rownames,colnames, NULL);

@@ -8,7 +8,7 @@ a great deal of real-world testing that didn't make it into this file.
 
 */
 
-#include <apophenia/headers.h>
+#include <apop.h>
 #include "nist_tests.c"
 
 //I'm using the test script an experiment to see if 
@@ -66,6 +66,25 @@ int test_skew_and_kurt(){
     assert (fabs(apop_vector_skew(v) -apop_query_to_float("select skew(vals) from t"))<1e-6);
     assert (fabs(apop_vector_kurt(v) -apop_query_to_float("select kurt(vals) from t"))<1e-6);
     apop_table_exists("t",1);
+    return 0;
+}
+
+int test_listwise_delete(){
+  apop_data *t1 = apop_data_calloc(10,10);
+  apop_data *t1c = apop_data_listwise_delete(t1);
+  assert(t1c->matrix->size1==10);
+  assert(t1c->matrix->size2==10);
+  t1->vector    = gsl_vector_calloc(10);
+  apop_data_set(t1, 4,-1, GSL_NAN);
+  apop_data *t2c = apop_data_listwise_delete(t1);
+  assert(t2c->matrix->size1==9);
+  apop_data_set(t1, 4,-1, GSL_NAN);
+  apop_data_set(t1, 7,-1, GSL_NAN);
+  apop_data *t3c = apop_data_listwise_delete(t1);
+  assert(t3c->matrix->size1==8);
+  APOP_COL(t1, 7, v)
+  gsl_vector_set_all(v, GSL_NAN);
+  assert(!apop_data_listwise_delete(t1));
     return 0;
 }
 
@@ -573,11 +592,12 @@ apop_ep  params;
     for (i=0; i< dist_ct; i++){
         do_test(dist[i].name, test_distribution(r, dist[i]));
     }
+    do_test("nist_tests:", nist_tests());
+    do_test("listwise delete", test_listwise_delete());
     do_test("NaN handling", test_nan_data());
     do_test("database skew and kurtosis", test_skew_and_kurt());
     do_test("test_percentiles:", test_percentiles());
     do_test("weighted moments:", test_weigted_moments());
-    do_test("nist_tests:", nist_tests());
     do_test("split and stack to vector test:", test_matrix_split_to_vector());
     do_test("split and stack test:", test_split_and_stack());
     do_test("apop_dot test:", test_dot());

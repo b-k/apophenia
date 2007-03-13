@@ -221,17 +221,17 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 		        k; 
   apop_data     *pre_d1, *pre_d2, *datachars;
   apop_data     *outdata    = apop_data_alloc(1,1);
-	datachars	= apop_query_to_chars("select %s, %s, %s from %s", r1, r2, datacol, tabname);
+	datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
-	pre_d1	    = apop_query_to_chars("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
+	pre_d1	    = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
 	if (!pre_d1) 
 		fprintf (stderr, "apop_db_to_crosstab: selecting %s from %s returned an empty table.\n", r1, tabname);
     for (i=0; i < pre_d1->catsize[0]; i++)
         apop_name_add(outdata->names, pre_d1->categories[i][0], 'r');
 
-	pre_d2	= apop_query_to_chars("select distinct %s from %s order by %s", r2, tabname, r2);
+	pre_d2	= apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
 	if (!pre_d2) 
 		fprintf(stderr, " apop_db_to_crosstab: selecting %s from %s returned an empty table.\n", r2, tabname);
     for (i=0; i < pre_d2->catsize[0]; i++)

@@ -3,6 +3,19 @@
 **Change that could require recoding existing code.
 ]
 
+	March 2007
+**apop_text_to_db now assumes column names unless you specify -nc.
+--If you set parameter_ct==0 in your model definition, the MLEs will
+assign parameter_ct == the number of columns in your data set.
+--Missing data functions: apop_listwise_delete and apop_ml_imputation
+
+	February 2007
+
+**Apop_sv_decomposition has a slightly nicer interface.
+**data->categories was too much to type, and too specific. The apop_data
+struct now has a data->text element, and textsize[0] and [1]. The
+categories element is linked to this, but is now deprecated.
+
 	January 2007
 **Root finding hooked into the max likelihood fns.
 
