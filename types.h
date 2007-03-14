@@ -253,7 +253,7 @@ typedef struct apop_model{
 	double 	(*p)(const gsl_vector *beta, apop_data *d, void *params);
 	double 	(*log_likelihood)(const gsl_vector *beta, apop_data *d, void *params);
 	void 	(*score)(const gsl_vector *beta, apop_data *d, gsl_vector *gradient, void *params);
-    double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta);
+    double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta, void *params);
 	double (*draw)(gsl_rng* r, gsl_vector *a, void *params);
     void    *more;
 } apop_model;

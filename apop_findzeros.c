@@ -45,13 +45,13 @@ static apop_estimate * find_roots (apop_data * data, apop_model dist, apop_ep *e
     p.model           = &dist;
     p.model_params    = est_params;
   gsl_multiroot_function f = {score_shell, betasize, &p};
-    if (est_params->method == 10)
+    if (est_params->method == 13)
         T = gsl_multiroot_fsolver_dnewton;
     else if (est_params->method == 11)
         T = gsl_multiroot_fsolver_broyden;
     else if (est_params->method == 12)
         T = gsl_multiroot_fsolver_hybrids;
-    else if (est_params->method == 13)
+    else //if (est_params->method == 10)        --default
         T = gsl_multiroot_fsolver_hybrid;
     s = gsl_multiroot_fsolver_alloc (T, betasize);
     gsl_multiroot_fsolver_set (s, &f, x);
