@@ -36,7 +36,7 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
               fprintf(stderr,"I assume column names by default now.\n");
             break;
 		  case 'n':
-              if (optarg=='c'){
+              if (optarg[0]=='c'){
 			    colnames    --;
                 colwarn     --;
               }

@@ -151,20 +151,20 @@ static void gradient_shell(const gsl_vector *beta, infostruct *i , gsl_vector *o
 down the input inventory to a modified output mle.
 
 \todo This should really just modify the input inventory. */
-static void prep_inventory_mle(apop_inventory in){
+static void prep_inventory_mle(apop_ep * in){
 //These are the rules going from what you can ask for to what you'll get.
-	in.log_likelihood	= 1;
-	in.parameters		= 1;
+	in->uses.log_likelihood	= 1;
+	in->uses.parameters		= 1;
 	//OK, some things are not yet implemented.
-	in.names		    = 0;
-	in.confidence		= 0;
+	in->uses.names		    = 0;
+	in->uses.confidence		= 0;
 	//OK, some things are not yet implemented.
-	in.dependent		= 
-	in.predicted		= 0;
-	if (in.confidence==1)
-		in.covariance = 1;
-	if (in.covariance==1)
-		in.confidence = 1;
+	in->uses.dependent		= 
+	in->uses.predicted		= 0;
+	if (in->uses.confidence==1)
+		in->uses.covariance = 1;
+	if (in->uses.covariance==1)
+		in->uses.confidence = 1;
 }
 
 
@@ -412,7 +412,7 @@ static apop_estimate *	apop_maximum_likelihood_w_d(apop_data * data,
         betasize            = data->matrix->size2 - betasize;
     }
     betasize    *=  (ep ? ep->params_per_column : 1);
-	prep_inventory_mle(ep->uses);
+	prep_inventory_mle(ep);
 	est	= apop_estimate_alloc(data, dist, ep);
     if (!ep || ep->method/100 ==2 || ep->method == 2)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
@@ -489,7 +489,7 @@ static apop_estimate *	apop_maximum_likelihood_no_d(apop_data * data,
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
 	x	= gsl_vector_alloc(betasize);
-	prep_inventory_mle(ep->uses);
+	prep_inventory_mle(ep);
 	//est	= apop_estimate_alloc(data->size1, betasize, NULL, actual_uses);
 	est	= apop_estimate_alloc(data, dist, ep);
 	est->status	= 1;	//assume failure until we score a success.
@@ -542,7 +542,6 @@ static apop_estimate *	apop_maximum_likelihood_no_d(apop_data * data,
 \param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
 \param params	an \ref apop_ep structure, featuring:<br>
 starting_pt:	an array of doubles suggesting a starting point. If NULL, use zero.<br>
-an \ref apop_inventory: which will be pared down and folded into the output \ref apop_estimate<br>
 step_size:	the initial step size.<br>
 tolerance:	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
 verbose:	Y'know.<br>

@@ -22,7 +22,8 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_gamma.c model/apop_gamma_rank.c 		\
 			model/apop_poisson.c	model/apop_probit.c 	\
 			model/apop_waring.c model/apop_waring_rank.c 	\
-			model/apop_yule.c 	model/apop_yule_rank.c 
+			model/apop_yule.c 	model/apop_yule_rank.c 		\
+			model/apop_multivariate_normal.c
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \

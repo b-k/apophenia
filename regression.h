@@ -18,7 +18,7 @@ __BEGIN_DECLS
 //apop_estimate * apop_estimate_OLS(apop_data *set, apop_ep *ep);
 apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin);
 apop_estimate * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma);
-apop_estimate *apop_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories);
+apop_estimate *apop_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 //Returns GLS/OLS parameter estimates.
 //Destroys the data in the process.
 
@@ -34,7 +34,7 @@ double apop_two_tailify(double in);
 //My convenience fn to turn the results from a symmetric one-tailed table lookup
 //into a two-tailed confidence interval.
 
-apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories);
+apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 
 apop_data *apop_estimate_correlation_coefficient(apop_estimate *in);
 apop_data *apop_estimate_r_squared(apop_estimate *in);

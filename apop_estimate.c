@@ -8,84 +8,17 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include "apophenia/output.h"
 #include "apophenia/linear_algebra.h"
 
-/** \defgroup inv_and_est  Using inventories and estimates 
+/** \defgroup inv_and_est  Using estimates (and their parameters)
 
 The \ref apop_estimate structure is the output for every regression or maximum likelihood technique here.
 It gathers together the parameter estimates, the variance-covariance matrix of the parameter
 estimates, the likelihood of the data if a max. likelihood technique,
-and whatever else comes to mind.
+and whatever else comes to mind. 
 
-\todo Rewrite the inventory and estimate documentation to cohere better. 
+See the page on \ref types for more.
+
 \ingroup types
  */
-
-/** Allocate an \ref apop_inventory and set all of its elements to some
-value. If the inventory is already allocated, use \ref apop_inventory_set.
-
-\param value	probably one or zero.  
-\return A ready-to-use inventory
- *
- \ingroup inv_and_est 
- */
-apop_inventory * apop_inventory_alloc(int value){
-  apop_inventory  *setme;
-    setme  = malloc(sizeof(apop_inventory));
-    apop_inventory_set(setme, value);
-    return setme;
-}
-
-/** Copy one inventory to another.
- \ingroup inv_and_est 
- */
-void apop_inventory_copy(apop_inventory in, apop_inventory *out){
-	out->parameters	= in.parameters;
-	out->covariance	= in.covariance;
-	out->confidence	= in.confidence;
-	out->predicted	= in.predicted;
-	out->dependent	= in.dependent;
-	out->names  	= in.names;
-	out->log_likelihood = in.log_likelihood;
-}
-
-/** set all the values of the inventory to a certain value. Like 
- \ref apop_inventory_alloc but doesn't call malloc().
-
-\param out	a pointer to the inventory to be set
-\param value	probably one or zero.  
-\ingroup inv_and_est */
-void apop_inventory_set(apop_inventory *out, int value){
-	out->parameters	= 
-	out->predicted	= 
-	out->confidence	= 
-	out->covariance	= 
-	out->dependent	= 
-	out->names  	= 
-	out->log_likelihood = value;
-}
-
-/** Apply a filter to an input inventory.
-
-Inventories sent in to most estimation functions are just the wish list; it wouldn't make sense (and is often not implemented) that every estimator return every element of the \ref apop_estimate.
-
-\param in   	a pointer to the inventory desired. If null, the filter will be copied to this spot.
-\param filter	an \ref apop_inventory where the values are one if the value will be calculated, zero if not.
-\ingroup inv_and_est */
-apop_inventory apop_inventory_filter(apop_inventory *in, apop_inventory filter){
-  apop_inventory  out;
-	if (in==NULL){
-		apop_inventory_copy(filter, &out);
-        return out;
-    }// else:
-	apop_inventory_copy(*in, &out);
-	out.parameters	    &= filter.parameters;
-	out.covariance	    &= filter.covariance;
-	out.confidence	    &= filter.confidence;
-	out.predicted	    &= filter.predicted;
-	out.dependent	    &= filter.dependent;
-	out.log_likelihood &= filter.log_likelihood;
-	out.names          &= filter.names;
-    return out;
-}
 
 /** Allocate an \ref apop_estimate.
 
@@ -105,7 +38,7 @@ Also, the parameters, and anything else specified in the inventory, is allocated
 
 \param data	        A pointer to an input apop_data set
 \param model	    A pointer to the model you're estimating
-\param  params      An \ref apop_ep structure. May be NULL. Don't forget that this may include an apop_inventory (or that field may be NULL)
+\param  params      An \ref apop_ep structure. May be NULL. 
 
 \ingroup inv_and_est  */
 apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_ep *params){
@@ -113,12 +46,10 @@ apop_estimate * prep_me;
 	prep_me	= malloc(sizeof(apop_estimate));
     if (params){
         memcpy(&(prep_me->ep), params, sizeof(apop_ep));
-	   // apop_inventory_copy(apop_inventory_filter(&(params->uses), model.inventory_filter), &(prep_me->ep.uses));
     } else {
         apop_ep *delme =  apop_ep_alloc();
         memcpy(&(prep_me->ep), delme, sizeof(apop_ep));
         apop_ep_free(delme);
-	  //  apop_inventory_filter(&(prep_me->ep.uses), model.inventory_filter);
     }
 	if (prep_me->ep.uses.parameters)
 		prep_me->parameters	= apop_data_alloc(model.parameter_ct
@@ -219,7 +150,7 @@ apop_ep *apop_ep_alloc(){
     setme->more                 = NULL;
     setme->step_size            = 
     setme->params_per_column    = 1;
-    apop_inventory_set(&(setme->uses),1); 
+    memset(&(setme->uses),1, sizeof(setme->uses)); 
     return setme;
 }
 

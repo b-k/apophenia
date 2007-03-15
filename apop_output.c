@@ -11,6 +11,7 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 */
 
 #include <apophenia/output.h>
+#include <apophenia/bootstrap.h>
 #include <gsl/gsl_histogram.h>
 #include <apophenia/conversions.h>
 /** Prep for gnuplot one of those cute scatterplots with a regression line through it.

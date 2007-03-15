@@ -460,7 +460,10 @@ gsl_vector  *p  = apop_array_to_vector(pv, 2);
     }
     apop_data *out = apop_jackknife_cov(d, m , NULL);
     //apop_data_show(out);
-    return (fabs(apop_data_get(out, 0,0) - pv[1]) > lite_tolerance);
+    //printf("%g\n",  2*gsl_pow_2(pv[1])/(len-1));
+    assert (fabs(apop_data_get(out, 0,0) - pv[1]/len) < lite_tolerance
+                && fabs(apop_data_get(out, 1,1) - 2*gsl_pow_2(pv[1])/(len-1)) < lite_tolerance);
+    return 0;
 }
 
 

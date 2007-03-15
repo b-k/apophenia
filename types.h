@@ -30,10 +30,7 @@ for fine tuning.
 The \ref apop_name
 structure is an organized list of row and column names; functions that
 take an \ref apop_data set try to automatically handle the names for you.
-The \ref apop_inventory structure lists the elements that an \ref
-apop_estimate has generated (no model produces everything). Model
-estimates accept an inventory, but all work fine if you send in
-NULL. Finally, the more elaborate models, such as MLEs, require some parameters to run,
+The more elaborate models, such as MLEs, require some parameters to run,
 in which case you will need to fill out an \ref apop_ep form and hand it in to the model.
 
 
@@ -62,14 +59,6 @@ is intended to accompany the <tt>gsl_matrix</tt> structure, which holds
 all the other information about a data aaray such as the number of rows
 and columns.  See \ref names.
 
-\li Inventory
-The \ref apop_inventory structure serves two purposes. It is an input
-to a regression or ML estimation, tells the function what output you
-would like the <tt>apop_estimate</tt> output to include. It is also an
-output from these functions, since the returned <tt>apop_estimate</tt>
-will include its own <tt>apop_inventory</tt>,  which can be used later on
-to test whether any given element is in use. See \ref inv_and_est.
-
 \li Estimate parameters
 The \ref apop_ep are the details for how an \ref
 apop_estimate should do its work; currently it is just the specifications
@@ -96,51 +85,21 @@ int     parameters, covariance, confidence, dependent, predicted, log_likelihood
 
 There is one element for each element of the \ref apop_estimate structure.
 
-If the <tt>apop_inventory</tt> will be sent in to a regression/MLE
-function, set the appropriate element to either zero or one if you would
-like the function to return the designated \ref apop_estimate element.
-
 The \ref apop_ep of the \ref apop_estimate structure
-has an <tt>apop_inventory</tt> element named <tt>uses</tt> embedded
+has an  element named <tt>uses</tt> embedded
 within it. Those elements for which <tt>uses.elmt</tt> are zero are
 unallocated pointers (so be careful: precede all dereferences with an
 <tt>if(est->uses.element)</tt> clause).
 
-<b>functions</b><br>
-\code
-void apop_inventory_copy(apop_inventory in, apop_inventory *out);
-\endcode
-Copy the input inventory list to a new output list. Notice that the input list is an actual inventory, while the output is a pointer to an inventory (since it will be modified).
-
-\code
-void apop_inventory_set(apop_inventory *out, int value);
-\endcode
-Set all of the elements of the inventory to the value given, e.g.,
-<tt>apop_set_inventory(&want_all, 1)</tt>. Clearly, <tt>value</tt>
-should either be zero or one.
-
-<b>notes </b><br>
-
-Unlike almost everything else in the GSL and Apophenia, it is
-generally assumed that <tt>apop_inventory</tt>s are not pointers, but
-are automatically allocated. Notably, this is true of the <tt>uses</tt>
-element of the \ref apop_ep structure; therefore, to check
-whether the variance-covariance matrix of an <tt>apop_estimate*</tt>
-is present, for example, you would look at 
-<tt>est->ep.uses.covariance</tt>.
-
 
 It may sometimes be useful to manipulate the ["apop_estimate"] structure's
-internal <tt>apop_inventory</tt> element to your own benefit. For
+<tt>uses</tt> element to your own benefit. For
 example, if you set <tt>est->ep.uses.predicted =
 0</tt> before calling <tt>apop_print_estimate(est, NULL)</tt>, then
 the predicted values won't get printed. But be careful: if you then call
 <tt>apop_estimate_free(est)</tt>, then the predicted values won't get freed,
 either.  
 */
-typedef struct {
-	int	parameters, covariance, confidence, dependent, predicted, log_likelihood, names;
-} apop_inventory;
 
 #include <string.h>
 
@@ -179,7 +138,9 @@ typedef struct{
 	int 	    verbose;
 	int 	    destroy_data;
     int         params_per_column;
-	apop_inventory	uses;
+    struct {
+	    char	parameters, covariance, confidence, dependent, predicted, log_likelihood, names;
+    } uses;
     void        *parameters;
     gsl_vector  *weights;
     struct apop_model  *model;
@@ -204,9 +165,6 @@ typedef struct {
 /** Regression and MLE functions return this structure, which includes
 the various elements that one would want from a model estimate.
 
-If you need control of the types of information these functions return,
-see the \ref apop_inventory page. [If you don't, just send <tt>NULL</tt>
-every time a function asks for an <tt>apop_inventory*</tt> structure.]
 
 <b>An example</b><br>
 
@@ -309,11 +267,6 @@ void 		apop_estimate_show(apop_estimate * print_me);
 
 apop_ep *apop_ep_alloc();
 void apop_ep_free(apop_ep *freeme);
-
-apop_inventory * apop_inventory_alloc(int value);
-void 		apop_inventory_copy(apop_inventory in, apop_inventory *out);
-void 		apop_inventory_set(apop_inventory *out, int value);
-apop_inventory apop_inventory_filter(apop_inventory *in, apop_inventory filter);
 
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);

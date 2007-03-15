@@ -12,6 +12,8 @@ assign parameter_ct == the number of columns in your data set.
 like it should have all this time.
 **apop_jackknife (1) renamed to apop_jackknife_cov and (2) now actually
 works.
+**Entirely eliminated the apop_inventory structure. Its sole utility is
+inside the apop_ep struct.
 
 	February 2007
 

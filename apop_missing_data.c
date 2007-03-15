@@ -1,3 +1,9 @@
+/** \file apop_missing_data.c
+ 
+  Some missing data handlers.
+
+  (c) 2007, Ben Klemens. Licensed under the GNU GPL v 2.
+*/
 
 #include <apop.h>
 
@@ -63,4 +69,91 @@ apop_data * apop_data_listwise_delete(apop_data *d){
     }
     gsl_vector_free(marked);
     return out;
+}
+
+
+
+
+//ML imputation
+
+static apop_model apop_ml_imputation_model;
+
+typedef struct {
+size_t      *row, *col;
+int         ct;
+apop_data   *meanvar;
+} apop_ml_imputation_struct;
+
+static void addin(apop_ml_imputation_struct *m, size_t i, size_t j){
+    m->row  = realloc(m->row, ++(m->ct) * sizeof(size_t));
+    m->col  = realloc(m->col, m->ct * sizeof(size_t));
+    m->row[m->ct-1]    = i;
+    m->col[m->ct-1]    = j;
+}
+
+static void  find_missing(apop_data *d, apop_ml_imputation_struct *mask){
+  int i, j, min = 0, max = 0;
+    //get to know the input.
+    if (d->matrix)
+        max = d->matrix->size2;
+    if (d->vector)
+        min = -1;
+    mask->row   = 
+    mask->col   = NULL;
+    mask->ct    = 0;
+    //find out where the NaNs are
+    for (i=0; i< d->matrix->size1; i++)
+        for (j=min; j <max; j++)
+            if (gsl_isnan(apop_data_get(d, i, j)))
+                addin(mask, i, j);
+}
+
+
+//The model to send to the optimization
+
+static void unpack(const gsl_vector *v, apop_data *x, apop_ml_imputation_struct * m){
+  int                       i;
+    for (i=0; i< m->ct; i++){
+        apop_data_set(x, m->row[i], m->col[i], gsl_vector_get(v,i));
+    }
+}
+
+static double ll(const gsl_vector *v, apop_data *x, void * ep){
+  apop_ml_imputation_struct *m  = ((apop_ep*)ep)->more;
+    unpack(v, x, m);
+    return apop_multivariate_normal.log_likelihood(v, x, m->meanvar);
+}
+
+
+static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0, NULL, NULL, ll, NULL, NULL};
+
+
+
+
+/**
+    Impute the most likely data points to replace NaNs in the data, and
+    insert them into the given data. That is, the data set is modified
+    in place.
+
+
+\param  d       The data set. It comes in with NaNs and leaves entirely filled in.
+\param  meanvar An \c apop_data set where the vector is the mean of each column and the matrix is the covariance matrix
+\param  parameters  The most likely data points are naturally found via MLE. These are the parameters sent to the MLE.
+
+*/
+apop_estimate * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_ep * parameters){
+  apop_ml_imputation_struct mask;
+  apop_model *mc    = apop_model_copy(apop_ml_imputation_model);
+    find_missing(d, &mask);
+    mc->parameter_ct    = mask.ct;
+    mask.meanvar        = meanvar;
+    if (!parameters)
+        parameters  = apop_ep_alloc();
+    parameters->method  = 5;
+    parameters->more    = &mask;
+    parameters->step_size    = 2;
+    parameters->tolerance    = 0.2;
+//    parameters->starting_pt     = calloc(mask.ct, sizeof(double));
+    return apop_maximum_likelihood(d, *mc, parameters);
+    //We're done. The last step of the MLE filled the data with the best estimate.
 }

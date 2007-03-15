@@ -322,7 +322,7 @@ The first column is the dependent variable, and the remaining columns the indepe
 A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>. Survives the function intact. The first column refers to the constant unit vector, so it's always zero.
 
 \param ep
-Most notable for its \ref apop_inventory element, <tt>uses</tt>.
+Most notable for its <tt>uses</tt> element, 
 If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
 
 \return
@@ -399,12 +399,9 @@ The program:
 int main(void){
 apop_data       *data;
 apop_estimate   *est;
-apop_inventory  invent;
     apop_text_to_db("data","d",0,1,NULL);
-    apop_inventory_set(&invent, 0);
-    invent.parameters   = 1;
     data = apop_query_to_data("select * from d");
-    est  = apop_OLS.estimate(data, &invent, NULL);
+    est  = apop_OLS.estimate(data, NULL);
     apop_estimate_print(est);
     return 0;
 }
@@ -508,7 +505,7 @@ apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
 \bug The cross-variances are assumed to be zero, which is wholeheartedly false. It's not too big a deal because nobody ever uses them for anything.
 */
 /*
-apop_estimate * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2, apop_inventory *uses){
+apop_estimate * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2){
 apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
     prep_inventory_names(set1->names);
 apop_estimate	*out1, *out2,
@@ -660,7 +657,7 @@ char        n[1000];
 
 \todo finish this documentation. [Was in a rush today.]
 */
-apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data, apop_inventory *uses, gsl_vector *categories){
+apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data,  gsl_vector *categories){
 apop_data *dummies = apop_produce_dummies(categories, 0);
     apop_data_stack(data, dummies, 'c');
     return apop_OLS.estimate(dummies, NULL);

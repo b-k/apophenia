@@ -28,7 +28,7 @@ static apop_ep *parameter_prep(apop_ep *in){
         memcpy(e, in, sizeof(*e));
     } else
         e   = apop_ep_alloc();
-    apop_inventory_set(&(e->uses), 0);      //our re-run will only ask parameters.
+    memset(&(e->uses),0, sizeof(e->uses)); //our re-run will only ask parameters. 
     e->uses.parameters  = 1;
     return e;
 }
@@ -80,6 +80,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_ep *ep){
         apop_estimate_free(boot_est);
     }
     apop_data   *out    = apop_data_covar(array_of_boots);
+    gsl_matrix_scale(out->matrix, 1./in->matrix->size1);
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
     apop_estimate_free(overall_est);
