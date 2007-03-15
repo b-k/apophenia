@@ -20,10 +20,10 @@ apop_name * apop_name_alloc(void){
 apop_name	* init_me;
 	init_me	= malloc(sizeof(apop_name));
 	init_me->vecname	= NULL;
-	init_me->colnames	= malloc(1);
-	init_me->textnames	= malloc(1);
+	init_me->colnames	= NULL;
+	init_me->textnames	= NULL;
+	init_me->rownames	= NULL;
 	init_me->catnames	= init_me->textnames;
-	init_me->rownames	= malloc(1);
 	init_me->colnamect	= 
 	init_me->textnamect	= 
 	init_me->catnamect	= 

@@ -217,7 +217,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     v   = gsl_matrix_column(est->dependent->matrix, apop_name_find(est->dependent->names, "residual", 'c')).vector;
     assert(fabs(apop_mean(&v)) < tolerance);
 
-    v   = gsl_matrix_column(est->dependent->matrix, apop_name_find(est->dependent->names, "pred%", 'c')).vector;
+    v   = gsl_matrix_column(est->dependent->matrix, apop_name_find(est->dependent->names, "pred", 'c')).vector;
     gsl_blas_dgemv(CblasNoTrans, 1, m, est->parameters->vector, 0, prediction);
     gsl_vector_sub(prediction, &v);
     assert(fabs(apop_vector_sum(prediction)) < tolerance);
@@ -233,8 +233,8 @@ apop_data   *rsq    = apop_estimate_correlation_coefficient(est);
 apop_data   *ftab   = apop_F_test(est, NULL, NULL);
 double      n       = est->data->matrix->size1;
 double      K       = est->parameters->vector->size;
-double      r       = apop_data_get_tn(rsq,"R_squared",-1);
-double      f       = apop_data_get_tn(ftab,"F_stat%",-1);
+double      r       = apop_data_get_tn(rsq,"R.squared",-1);
+double      f       = apop_data_get_tn(ftab,"F.stat",-1);
     assert(fabs(f - r*(n-K)/ ((1-r)*K)) < tolerance);
     return 0;
 }
@@ -361,25 +361,15 @@ apop_estimate           *e;
     params->starting_pt      = starting_pt;
     params->tolerance        = 1e-5;
     params->verbose          = 1;
-
     e    = dist.estimate(apop_matrix_to_data(data),params);
-    for (i=0; i < dist.parameter_ct; i++){
-        printf("parameter estimate, which should be %g: %g\n", true_parameter_v[i], gsl_vector_get(e->parameters->vector,i));
+    e   = apop_estimate_restart(e, 0, 1);
+    if (verbose)
+        for (i=0; i < dist.parameter_ct; i++){
+            printf("parameter estimate, which should be %g: %g\n", true_parameter_v[i], gsl_vector_get(e->parameters->vector,i));
         score += (fabs(gsl_vector_get(e->parameters->vector,i) - true_parameter_v[i]) >= 1e-1);
         //apop_estimate_print(e);
     }
-
-/*
-    //wn versions:
-    e    = apop_wn_maximum_likelihood(data2,&inv, dist, dummy, 1e-1, 1e-2, 1);
-    for (i=0; i < dist.parameter_ct; i++){
-        printf("parameter estimate, which should be %g: %g\n", true_parameter[i], gsl_vector_get(e->parameters,i));
-        score += (fabs(gsl_vector_get(e->parameters,i) - true_parameter[i]) >= 1e-1);
-        //apop_estimate_print(e);
-    }
-*/
-    //return score;
-    return 0;
+    return score;
 }
 
 
@@ -396,48 +386,6 @@ size_t          i,j;
         }
     }
     return estimate_model(data, model);
-}
-
-void generate_for_rank_test(gsl_matrix *data, gsl_rng *r, apop_model dist, int runsize, int rowsize){
-int             i, z, j,
-                runct   = 10000,
-                rowsum;
-gsl_vector_view v;
-    for (i=0; i< runsize; i++){
-        rowsum    = 0;
-        for (j=0; j< runct; j++){
-            z    = dist.draw(r, true_parameter, NULL);
-            if (!strcmp(dist.name, "Exponential, rank data"))
-                    z++;
-            assert (z >=1);
-            if (z < rowsize){    //else, just throw it out.
-                apop_matrix_increment(data, i, (int)z-1, 1);
-                rowsum    ++;
-            }
-        }
-        v    = gsl_matrix_row(data,i);
-        gsl_vector_scale(&(v.vector), 1./rowsum);    //Normalize!!
-    }
-}
-int test_rank_distribution(gsl_rng *r, apop_model dist){
-long int        //i,j,
-                runsize             = 500,
-                rowsize             = 100;
-gsl_matrix      *data               = gsl_matrix_calloc(runsize,rowsize),
-                *data2              = gsl_matrix_calloc(1, rowsize);    
-apop_data       *summary;
-gsl_vector      v;
-    //generate.
-    generate_for_rank_test(data, r, dist, runsize, rowsize);
-    summary     = apop_matrix_summarize (data);
-    v           = gsl_matrix_column(summary->matrix,0).vector;
-    gsl_matrix_set_row(data2, 0, &v);
-
-/*    printf("the abbreviated data matrix:\n");
-    apop_matrix_print(data2, "\t", NULL);
-    printf("\n");*/
-        //for (j=0; j< rowsize; j++){printf("%g ",apop_zipf.log_likelihood(zipf_param-1, j+1));}
-    return estimate_model(data2, dist);
 }
 
 #define INVERTSIZE 100
@@ -504,16 +452,15 @@ int test_jackknife(){
 APOP_DATA_ALLOC(d, len, 1);
 APOP_RNG_ALLOC(r, 8);
 size_t      i;
-apop_model  *m   = &apop_normal;
+apop_model  m   = apop_normal;
 double      pv[] = {1.09,2.8762};
 gsl_vector  *p  = apop_array_to_vector(pv, 2);
-//double      no;
     for (i =0; i< len; i++){
-        apop_data_set(d, i, 0, m->draw(r,p, NULL)); 
+        apop_data_set(d, i, 0, m.draw(r,p, NULL)); 
     }
-    gsl_matrix *out = apop_jackknife(d, *m , NULL);
-    //apop_matrix_show(out);
-    return (fabs(gsl_matrix_get(out, 0,0) - pv[1]) > lite_tolerance);
+    apop_data *out = apop_jackknife_cov(d, m , NULL);
+    //apop_data_show(out);
+    return (fabs(apop_data_get(out, 0,0) - pv[1]) > lite_tolerance);
 }
 
 
@@ -570,10 +517,8 @@ int main(){
     true_y_parameter= apop_array_to_vector(true_y_parameter_v, 2);
 
 gsl_rng       *r              = apop_rng_alloc(8); 
-apop_model    rank_dist[]     = {apop_zipf_rank,apop_exponential_rank,apop_yule_rank, apop_waring_rank},
-              dist[]          = {apop_exponential, apop_normal, apop_poisson, apop_zipf,apop_yule, apop_waring};
-int           rank_dist_ct    = 4,
-              dist_ct         = 6,
+apop_model    dist[]          = {apop_exponential, apop_normal, apop_poisson, apop_zipf,apop_yule};
+int           dist_ct         = 5,
               i;
 apop_data     *d  = apop_text_to_data("test_data2",0,1);
 apop_estimate *e  = apop_OLS.estimate(d,NULL);
@@ -585,10 +530,6 @@ apop_ep  params;
         params.tolerance        = 1e-3;
         params.verbose          = 1;
         */
-    for (i=0; i< rank_dist_ct; i++){
-        do_test(rank_dist[i].name, test_rank_distribution(r, rank_dist[i]));
-    }
-
     for (i=0; i< dist_ct; i++){
         do_test(dist[i].name, test_distribution(r, dist[i]));
     }
@@ -601,7 +542,6 @@ apop_ep  params;
     do_test("split and stack to vector test:", test_matrix_split_to_vector());
     do_test("split and stack test:", test_split_and_stack());
     do_test("apop_dot test:", test_dot());
-    do_test("apop_jackknife test:", test_jackknife());
     do_test("OLS test:", test_OLS());
     do_test("apop_estimate->dependent test:", test_predicted_and_residual(e));
     do_test("apop_f_test and apop_coefficient_of_determination test:", test_f(e));
@@ -610,8 +550,8 @@ apop_ep  params;
     do_test("apop_strip_dots test:", test_strip_dots());
     do_test("apop_distance test:", test_distances());
     do_test("Inversion test: ", test_inversion(r));
+    do_test("apop_jackknife test:", test_jackknife());
     do_test("apop_matrix_summarize test:", test_summarize());
-    verbose ++;
-
+    printf("\nApophenia has passed all of its tests. Yay.\n");
     return 0;
 }

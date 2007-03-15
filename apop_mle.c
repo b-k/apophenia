@@ -232,7 +232,10 @@ gsl_vector      *returned_beta  = gsl_vector_alloc(beta->size);
 	if (i->model->constraint && i->model->constraint(beta, i->data, returned_beta, i->params))
 		    apop_numerical_gradient(i->model->log_likelihood, beta, i->data, i->params, g);
 	else {
-	    i->model->score(beta, i->data, g, i->params);
+        if (i->model->score)
+	        i->model->score(beta, i->data, g, i->params);
+        else
+            apop_numerical_gradient(i->model->log_likelihood, beta, i->data, i->params, g);
 	    gsl_vector_scale(g, -1);
     }
 	gsl_vector_free(returned_beta);
@@ -497,7 +500,7 @@ static apop_estimate *	apop_maximum_likelihood_no_d(apop_data * data,
   	gsl_vector_set_all (ss,  ep->step_size);
 	minme.f		    = negshell;
 	minme.n		    = betasize;
-	minme.params	= data;
+	minme.params	= i;
 	gsl_multimin_fminimizer_set (s, &minme, x,  ss);
       	do { 	iter++;
 		status 	= gsl_multimin_fminimizer_iterate(s);
@@ -560,7 +563,7 @@ apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_
   infostruct    info    = {&dist, data, NULL, NULL, params, NULL, NULL, 1};
 	if (params && (params->method/100==5 || params->method == 5))
         return apop_annealing(&info);  //below.
-    else if (params && (params->method/100==0 || params->method==0))
+    else if (params && params->method==0)
 		return apop_maximum_likelihood_no_d(data, dist, &info);
     else if (params && params->method >= 10 && params->method <= 13)
         return  find_roots (data, dist, params);
@@ -644,11 +647,11 @@ apop_ep new_params;
 	out	                    = (e->model)->estimate(e->data, &new_params);
             //Now check whether the new output is better than the old
     if (apop_vector_bounded(out->parameters->vector, 1e4) && out->log_likelihood > e->log_likelihood){
-        apop_estimate_free(out);
-        return e;
+        apop_estimate_free(e);
+        return out;
     } //else:
-    apop_estimate_free(e);
-    return out;
+    apop_estimate_free(out);
+    return e;
 }
 
 
@@ -694,7 +697,7 @@ if ep->verbose>1, show that plus the vector of params.
 #define N_TRIES 200             /* how many points do we try before stepping */
 #define ITERS_FIXED_T 200      /* how many iterations for each T? */
 #define K 1.0                   /* Boltzmann constant */
-#define MU_T 1.002              /* damping factor for temperature */
+#define MU_T 1.005              /* damping factor for temperature */
 #define T_MIN 5.0e-1
 
 static double annealing_energy(void *in)

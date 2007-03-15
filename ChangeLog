@@ -8,6 +8,10 @@
 --If you set parameter_ct==0 in your model definition, the MLEs will
 assign parameter_ct == the number of columns in your data set.
 --Missing data functions: apop_listwise_delete and apop_ml_imputation
+**The constraint element of the apop_model now takes a void* parameter,
+like it should have all this time.
+**apop_jackknife (1) renamed to apop_jackknife_cov and (2) now actually
+works.
 
 	February 2007
 
@@ -80,7 +84,7 @@ and have been removed.
 
 		June 2006
 --added preprocessor cruft to let the library work for C++
---Jackknife actually works.
+--Jackknife revised
 
 		May 2006
 **The apop_model no longer includes an inventory. I leave it to the

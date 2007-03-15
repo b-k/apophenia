@@ -1,4 +1,3 @@
-#include <gsl/gsl_matrix.h>
 
 #undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
 #undef __END_DECLS
@@ -12,7 +11,8 @@
 
 __BEGIN_DECLS
 
-gsl_matrix * apop_jackknife(apop_data *data, apop_model model, apop_ep *e);
+apop_data * apop_jackknife_cov(apop_data *data, apop_model model, apop_ep *e);
+//apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, apop_ep *e, gsl_rng*, float, int);
 gsl_rng *apop_rng_alloc(int seed);
 
 __END_DECLS

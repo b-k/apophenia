@@ -596,8 +596,10 @@ apop_data *apop_data_covar(apop_data *in){
             if (i!=j)
                 gsl_matrix_set(out->matrix, j,i, var);
         }
-    apop_name_add(out->names, in->names->colnames[i],'c');
-    apop_name_add(out->names, in->names->colnames[i],'r');
+        if (in->names->colnamect > i){
+            apop_name_add(out->names, in->names->colnames[i],'c');
+            apop_name_add(out->names, in->names->colnames[i],'r');
+        }
     }
     return out;
 }
