@@ -21,6 +21,25 @@ for details.
 #include <gsl/gsl_rng.h>
 
 
+/** Initialize an RNG.
+ 
+  Uses the Tausworth routine.
+
+\param  seed    The seed. No need to get funny with it: 0, 1, and 2 will produce wholly different streams.
+\return The RNG ready for your use.
+\ingroup convenience_fns
+*/
+gsl_rng *apop_rng_alloc(int seed){
+  static int first_use    = 1;
+    if (first_use){
+       first_use --;
+       gsl_rng_env_setup();
+    }
+  gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(setme, seed);
+    return setme;
+}
+
 static apop_ep *parameter_prep(apop_ep *in){
   apop_ep *e;
     if (in){
@@ -33,16 +52,11 @@ static apop_ep *parameter_prep(apop_ep *in){
     return e;
 }
 
-/** Give me a data set and a function that goes from data set to
-	parameter, and I'll give you the jackknifed standard deviation (sqrt(var)) of the parameter 
+/** Give me a data set and a model, and I'll give you the jackknifed covariance matrix of the model parameters.
  
-
-The function returns a full matrix so you can jackknife every parameter
-at once. 
-
-\param in	    The data set. A gsl_matrix where each row is a single data point
+\param in	    The data set. An \c apop_data set where each row is a single data point.
 \param model    An \ref apop_model, whose \c estimate method will be used here.
-\param ep        The \ref apop_ep for your model, to be passed in directly.
+\param ep        The \ref apop_ep to be passed to the model.
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
 \ingroup boot
@@ -80,49 +94,36 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_ep *ep){
         apop_estimate_free(boot_est);
     }
     apop_data   *out    = apop_data_covar(array_of_boots);
-    gsl_matrix_scale(out->matrix, 1./in->matrix->size1);
+    gsl_matrix_scale(out->matrix, 1./(in->matrix->size1-1));
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
     apop_estimate_free(overall_est);
     return out;
 }
 
-/** Initialize an RNG.
- 
-  Uses the Tausworth routine.
 
-\param  seed    The seed. No need to get funny with it: 0, 1, and 2 will produce wholly different streams.
-\return The RNG ready for your use.
-\ingroup convenience_fns
-*/
-gsl_rng *apop_rng_alloc(int seed){
-  static int first_use    = 1;
-    if (first_use){
-       first_use --;
-       gsl_rng_env_setup();
-    }
-  gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
-    gsl_rng_set(setme, seed);
-    return setme;
-}
+/** Give me a data set and a model, and I'll give you the bootstrapped covariance matrix of the parameter estimates.
 
+\param data	    The data set. An \c apop_data set where each row is a single data point.
+\param model    An \ref apop_model, whose \c estimate method will be used here.
+\param epin        The \ref apop_ep to be passed to the model. 
+\param r        An RNG that you have initialized (probably with \c apop_rng_alloc)
+\param boot_iterations How many bootstrap draws should I make? A positive integer; if you express indifference by specifying zero, I'll make 1,000 draws.
+\return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
-
-/*
-                Take everything herein as debris.
-
-apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, apop_ep *epin, gsl_rng *r, float boot_size_d, int boot_iterations) {
+\ingroup boot
+ */
+apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, apop_ep *epin, gsl_rng *r, int boot_iterations) {
     if (boot_iterations ==0)    boot_iterations	= 1000;
-    if (boot_size_d ==0)        boot_size_d	= 3;
   apop_ep           *ep  = parameter_prep(epin);
   size_t	        i, j, row;
-  apop_data	        *subset	= apop_data_alloc(data->matrix->size1*boot_size_d, data->matrix->size2);
+  apop_data	        *subset	= apop_data_alloc(data->matrix->size1, data->matrix->size2);
   apop_data         *array_of_boots = NULL,
                     *summary;
   apop_estimate     *e;
 	for (i=0; i<boot_iterations; i++){
 		//create the data set
-		for (j=0; j< data->matrix->size1*boot_size_d; j++){
+		for (j=0; j< data->matrix->size1; j++){
 			row	= gsl_rng_uniform_int(r, data->matrix->size1);
 			APOP_ROW(data, row,v);
 			gsl_matrix_set_row(subset->matrix, j, v);
@@ -140,8 +141,8 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, apop_ep *epin
 		} 
 	}
 	summary	= apop_data_covariance_matrix(array_of_boots, 1);
+    gsl_matrix_scale(summary->matrix, 1./boot_iterations);
     apop_data_free(array_of_boots);
     apop_data_free(subset);
 	return summary;
 }
-*/

@@ -447,14 +447,11 @@ int test_distances(){
     return 0;
 }
 
-
-int test_jackknife(){
-APOP_DATA_ALLOC(d, len, 1);
-APOP_RNG_ALLOC(r, 8);
-size_t      i;
-apop_model  m   = apop_normal;
-double      pv[] = {1.09,2.8762};
-gsl_vector  *p  = apop_array_to_vector(pv, 2);
+void jtest(apop_model m, double *pv){
+  APOP_DATA_ALLOC(d, len, 1);
+  APOP_RNG_ALLOC(r, 8);
+  gsl_vector  *p  = apop_array_to_vector(pv, 2);
+  size_t      i;
     for (i =0; i< len; i++){
         apop_data_set(d, i, 0, m.draw(r,p, NULL)); 
     }
@@ -463,6 +460,15 @@ gsl_vector  *p  = apop_array_to_vector(pv, 2);
     //printf("%g\n",  2*gsl_pow_2(pv[1])/(len-1));
     assert (fabs(apop_data_get(out, 0,0) - pv[1]/len) < lite_tolerance
                 && fabs(apop_data_get(out, 1,1) - 2*gsl_pow_2(pv[1])/(len-1)) < lite_tolerance);
+    apop_data *out2 = apop_bootstrap_cov(out, m , NULL, r, 0);
+    assert (fabs(apop_data_get(out2, 0,0) - pv[1]/len) < lite_tolerance
+                && fabs(apop_data_get(out2, 1,1) - 2*gsl_pow_2(pv[1])/(len-1)) < lite_tolerance);
+    apop_data_free(d);
+}
+
+int test_jackknife(){
+  double      pv[] = {3.09,2.8762};
+    jtest(apop_normal, pv);
     return 0;
 }
 
