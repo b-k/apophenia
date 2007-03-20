@@ -47,7 +47,7 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 /** Returns the sum of the data in the given vector.
 \ingroup convenience_fns
 */
-inline long double apop_vector_sum(gsl_vector *in){
+inline long double apop_vector_sum(const gsl_vector *in){
     if (in==NULL){
         if (apop_opts.verbose)
             fprintf(stderr, "You just asked me to sum a NULL. Returning zero.\n");
@@ -65,14 +65,14 @@ inline long double apop_vector_sum(gsl_vector *in){
   An alias for \ref apop_vector_sum.
 \ingroup convenience_fns
 */
-inline long double apop_sum(gsl_vector *in){
+inline long double apop_sum(const gsl_vector *in){
     return apop_vector_sum(in);
 }
 
 /** Returns the mean of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_vector_mean(gsl_vector *in){
+inline double apop_vector_mean(const gsl_vector *in){
 	return gsl_stats_mean(in->data,in->stride, in->size); }
 
 /** Returns the mean of the data in the given vector.
@@ -80,14 +80,14 @@ inline double apop_vector_mean(gsl_vector *in){
   An alias for \ref apop_vector_mean.
 \ingroup vector_moments
 */
-inline double apop_mean(gsl_vector *in){
+inline double apop_mean(const gsl_vector *in){
 	return apop_vector_mean(in); 
 }
 
 /** Returns the variance of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_vector_var(gsl_vector *in){
+inline double apop_vector_var(const gsl_vector *in){
 	return gsl_stats_variance(in->data,in->stride, in->size); }
 
 /** Returns the variance of the data in the given vector.
@@ -95,14 +95,14 @@ inline double apop_vector_var(gsl_vector *in){
   An alias for \ref apop_vector_var.
 \ingroup vector_moments
 */
-inline double apop_var(gsl_vector *in){
+inline double apop_var(const gsl_vector *in){
 	return apop_vector_var(in); 
 }
 
 /** Returns the sample skew (divide by \f$n-1\f$) of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_vector_skew(gsl_vector *in){
+inline double apop_vector_skew(const gsl_vector *in){
 	return gsl_stats_skew(in->data,in->stride, in->size)
                 *pow(apop_vector_var(in),3./2)*in->size/(in->size -1.); }
 
@@ -110,7 +110,7 @@ inline double apop_vector_skew(gsl_vector *in){
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
 \ingroup vector_moments
 */
-inline double apop_vector_kurtosis(gsl_vector *in){
+inline double apop_vector_kurtosis(const gsl_vector *in){
 	return ((gsl_stats_kurtosis(in->data,in->stride, in->size)+3)
                 *pow(apop_vector_var(in),4./2))*in->size/(in->size -1.); }
 
@@ -118,7 +118,7 @@ inline double apop_vector_kurtosis(gsl_vector *in){
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
 \ingroup vector_moments
 */
-inline double apop_vector_kurt(gsl_vector *in){
+inline double apop_vector_kurt(const gsl_vector *in){
 	return apop_vector_kurtosis(in);}
 
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
@@ -126,27 +126,27 @@ inline double apop_vector_kurt(gsl_vector *in){
 \param mean	the mean, which you've already calculated using \ref apop_vector_mean.
 \ingroup vector_moments
 */
-inline double apop_vector_var_m(gsl_vector *in, double mean){
+inline double apop_vector_var_m(const gsl_vector *in, const double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
 /** returns the covariance of two vectors
 \ingroup vector_moments
 */
-inline double apop_vector_covar(gsl_vector *ina, gsl_vector *inb){
+inline double apop_vector_covar(const gsl_vector *ina, const gsl_vector *inb){
 	return gsl_stats_covariance(ina->data,ina->stride,inb->data,inb->stride,inb->size); }
 
 /** returns the correllation coefficient of two vectors. It's just
 \f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
 \ingroup vector_moments
 */
-inline double apop_vector_correlation(gsl_vector *ina, gsl_vector *inb){
+inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
 	return apop_vector_covar(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb));
 }
 
 /** returns the covariance of two vectors
 \ingroup vector_moments
 */
-inline double apop_vector_cov(gsl_vector *ina, gsl_vector *inb){return  apop_vector_covar(ina,inb);}
+inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb){return  apop_vector_covar(ina,inb);}
 
 
 /** returns the scalar distance (standard Euclidian metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
@@ -154,7 +154,7 @@ where \f$i\f$ iterates over dimensions.
 
 \ingroup convenience_fns
 */
-double apop_vector_distance(gsl_vector *ina, gsl_vector *inb){
+double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb){
   double  dist    = 0;
   size_t  i;
     if (ina->size != inb->size){
@@ -174,7 +174,7 @@ where \f$i\f$ iterates over dimensions.
 
 \ingroup convenience_fns
 */
-double apop_vector_grid_distance(gsl_vector *ina, gsl_vector *inb){
+double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb){
   double  dist    = 0;
   size_t  i;
     if (ina->size != inb->size){
@@ -238,7 +238,7 @@ return 0;
 }
 \endcode
 \ingroup basic_stats */
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, char normalization_type){
+void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const int in_place, const char normalization_type){
   double		mu, min, max;
 	if (in_place) 	
 		out	= &in;
@@ -277,7 +277,7 @@ void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, char 
 \param normalization     see \ref apop_vector_normalize.
 
 \ingroup basic_stats */
-void apop_matrix_normalize(gsl_matrix *data, char row_or_col, char normalization){
+void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization){
   gsl_vector  v;
   int         j;
         if (row_or_col == 'r')
@@ -542,7 +542,7 @@ of the data in each column; should give more in the near future.
 */
 apop_data * apop_data_summarize(apop_data *indata){
   int		    i;
-  apop_data	*out	= apop_data_alloc(indata->matrix->size2, 3);
+  apop_data	*out	= apop_data_alloc(0,indata->matrix->size2, 3);
   double		mean, stddev,var;
   char		rowname[10000]; //crashes on more than 10^9995 columns.
 	apop_name_add(out->names, "mean", 'c');
@@ -584,7 +584,7 @@ apop_data * apop_matrix_summarize(gsl_matrix *m){
 \ingroup vector_moments
 */
 apop_data *apop_data_covar(apop_data *in){
-  apop_data   *out = apop_data_alloc(in->matrix->size2, in->matrix->size2);
+  apop_data   *out = apop_data_alloc(0,in->matrix->size2, in->matrix->size2);
   int         i, j;
   double      var;
     for (i=0; i < in->matrix->size2; i++){
@@ -659,7 +659,7 @@ void apop_matrix_replace(gsl_matrix *m, int (* test)(double in), double replace_
 \param  w   the weight vector. If NULL, assume equal weights.
 \return     The weighted mean
 */
-double apop_vector_weighted_mean(gsl_vector *v, gsl_vector *w){
+double apop_vector_weighted_mean(const gsl_vector *v,const  gsl_vector *w){
   int           i;
   long double   sum = 0, wsum = 0;
     if (!w)
@@ -686,7 +686,7 @@ double apop_vector_weighted_mean(gsl_vector *v, gsl_vector *w){
 \param  w   the weight vector. If NULL, assume equal weights.
 \return     The weighted sample variance
 */
-double apop_vector_weighted_var(gsl_vector *v, gsl_vector *w){
+double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
   int           i;
   long double   sum = 0, wsum = 0, sumsq = 0, vv, ww;
     if (!w)
@@ -711,7 +711,7 @@ double apop_vector_weighted_var(gsl_vector *v, gsl_vector *w){
     return (sumsq/wsum  - gsl_pow_2(sum/wsum)) *(wsum/(wsum-1));
 }
 
-static double skewkurt(gsl_vector *v, gsl_vector *w, int exponent, char *fn_name){
+static double skewkurt(const gsl_vector *v, const gsl_vector *w, const int exponent, const char *fn_name){
   int           i;
   long double   wsum = 0, sumcu = 0, vv, ww, mu;
     if (!w)
@@ -745,7 +745,7 @@ static double skewkurt(gsl_vector *v, gsl_vector *w, int exponent, char *fn_name
 \return     The weighted sample variance
 \todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
 */
-double apop_vector_weighted_skew(gsl_vector *v, gsl_vector *w){
+double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w){
     return skewkurt(v,w,3, "apop_vector_weighted_skew");
 }
 
@@ -756,7 +756,7 @@ double apop_vector_weighted_skew(gsl_vector *v, gsl_vector *w){
 \return     The weighted sample variance
 \todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
 */
-double apop_vector_weighted_kurt(gsl_vector *v, gsl_vector *w){
+double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w){
     return skewkurt(v,w,4, "apop_vector_weighted_kurt");
 }
 
@@ -767,7 +767,7 @@ makes sense if the weightings are identical, so the function takes only one weig
 \param  w   the weight vector. If NULL, assume equal weights.
 \return     The weighted sample covariance
 */
-double apop_vector_weighted_cov(gsl_vector *v1, gsl_vector *v2, gsl_vector *w){
+double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *w){
   int           i;
   long double   sum1 = 0, sum2 = 0, wsum = 0, sumsq = 0, vv1, vv2, ww;
     if (!w)

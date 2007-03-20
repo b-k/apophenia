@@ -2090,7 +2090,7 @@ int     *intified   = apop_data_to_int_array(intab),
         mult        = 30,
         rowct       = intab->matrix->size1,
         colct       = intab->matrix->size2;
-apop_data *out      = apop_data_alloc(2,1);
+apop_data *out      = apop_data_alloc(0,2,1);
 fexact(&rowct, 
        &colct,
        intified,

@@ -36,32 +36,32 @@ gsl_vector * v = &( apop_vv_##v );
 	//The following are just convenient hooks to gsl vector functions.
 	//var_m lets you input a mean if you've already calculated it, saving
 	//some repetition.
-inline long double apop_vector_sum(gsl_vector *in);
-inline long double apop_sum(gsl_vector *in);
-inline double apop_vector_mean(gsl_vector *in);
-inline double apop_mean(gsl_vector *in);
-inline double apop_vector_var(gsl_vector *in);
-inline double apop_var(gsl_vector *in);
-inline double apop_vector_var_m(gsl_vector *in, double mean);
-inline double apop_vector_covar(gsl_vector *ina, gsl_vector *inb);
-inline double apop_vector_cov(gsl_vector *ina, gsl_vector *inb);
-inline double apop_vector_correlation(gsl_vector *ina, gsl_vector *inb);
-inline double apop_vector_kurtosis(gsl_vector *in);
-inline double apop_vector_skew(gsl_vector *in);
-inline double apop_vector_kurt(gsl_vector *in);
-double apop_vector_weighted_mean(gsl_vector *, gsl_vector *);
-double apop_vector_weighted_var(gsl_vector *v, gsl_vector *w);
-double apop_vector_weighted_cov(gsl_vector *, gsl_vector *, gsl_vector *);
-double apop_vector_weighted_skew(gsl_vector *v, gsl_vector *w);
-double apop_vector_weighted_kurt(gsl_vector *v, gsl_vector *w);
+inline long double apop_vector_sum(const gsl_vector *in);
+inline long double apop_sum(const gsl_vector *in);
+inline double apop_vector_mean(const gsl_vector *in);
+inline double apop_mean(const gsl_vector *in);
+inline double apop_vector_var(const gsl_vector *in);
+inline double apop_var(const gsl_vector *in);
+inline double apop_vector_var_m(const gsl_vector *in, const double mean);
+inline double apop_vector_covar(const gsl_vector *ina, const gsl_vector *inb);
+inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb);
+inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb);
+inline double apop_vector_kurtosis(const gsl_vector *in);
+inline double apop_vector_skew(const gsl_vector *in);
+inline double apop_vector_kurt(const gsl_vector *in);
+double apop_vector_weighted_mean(const gsl_vector *, const gsl_vector *);
+double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w);
+double apop_vector_weighted_cov(const gsl_vector *, const gsl_vector *, const gsl_vector *);
+double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w);
+double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w);
 
 //Distances, Euclidian and Manhattan:
-double apop_vector_distance(gsl_vector *ina, gsl_vector *inb);
-double apop_vector_grid_distance(gsl_vector *ina, gsl_vector *inb);
+double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb);
+double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
 
 
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, int in_place, char normalization_type);
-void apop_matrix_normalize(gsl_matrix *data, char row_or_col, char normalization);
+void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const int in_place, const char normalization_type);
+void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
 inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
 	//As described: give it a vector, and it'll tell you the confidence 

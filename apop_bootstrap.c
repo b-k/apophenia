@@ -66,7 +66,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_ep *ep){
   apop_estimate *boot_est;
   apop_ep       *e              = parameter_prep(ep);
   int           n               = in->matrix->size1;
-  apop_data     *subset         = apop_data_alloc(in->matrix->size1 - 1, in->matrix->size2);
+  apop_data     *subset         = apop_data_alloc(0, in->matrix->size1 - 1, in->matrix->size2);
   apop_data     *array_of_boots = NULL;
   apop_estimate *overall_est    = model.estimate(subset, e);
   int           paramct         = overall_est->parameters->vector->size;
@@ -76,7 +76,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_ep *ep){
   gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1, in->matrix->size2).matrix;
     gsl_matrix_memcpy(subset->matrix, &mv);
 
-	array_of_boots          = apop_data_alloc(in->matrix->size1, overall_est->parameters->vector->size);
+	array_of_boots          = apop_data_alloc(0,in->matrix->size1, overall_est->parameters->vector->size);
     array_of_boots->names   = in->names;
     for(i = -1; i< (int) subset->matrix->size1; i++){
         //Get a view of row i, and copy it to position i-1 in the
@@ -117,7 +117,7 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, apop_ep *epin
     if (boot_iterations ==0)    boot_iterations	= 1000;
   apop_ep           *ep  = parameter_prep(epin);
   size_t	        i, j, row;
-  apop_data	        *subset	= apop_data_alloc(data->matrix->size1, data->matrix->size2);
+  apop_data	        *subset	= apop_data_alloc(0,data->matrix->size1, data->matrix->size2);
   apop_data         *array_of_boots = NULL,
                     *summary;
   apop_estimate     *e;
@@ -133,7 +133,7 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, apop_ep *epin
 		if (!e) i--;
         else {
 			if (i==0){
-				array_of_boots	        = apop_data_alloc(boot_iterations, e->parameters->vector->size);
+				array_of_boots	        = apop_data_alloc(0,boot_iterations, e->parameters->vector->size);
                 array_of_boots->names   = data->names;
             }
 			gsl_matrix_set_row(array_of_boots->matrix,i,e->parameters->vector);

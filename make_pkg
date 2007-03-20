@@ -1,6 +1,6 @@
 export junkdir=dists
 export pkg=apophenia
-export version=0.17
+export version=0.18
 export date=`date +%d_%b_%y`
 
 #This script is intended for maintainers who are modifying the 
@@ -13,6 +13,7 @@ export date=`date +%d_%b_%y`
 #with a file named apophenia-N.NN.tar.gz. Once that it is ready
 #for distribution, the tar.gz arcive is copied to the main directory
 #and this junk directory is erased. 
+#If the appropriate tools are available, it also produces Debian pkgs.
 #Finally, the script unzips the archive and compiles from the archive.
 
 rm -rf $junkdir
@@ -80,7 +81,7 @@ cp ../../../deb.copyright i/DEBIAN
 cp ../../../deb.control-dev i/DEBIAN/control
 cp -rf ../apophenia i/usr/include
 cp ../apop.h i/usr/include
-dpkg -b i ../../libapophenia-0.17-dev-0.deb
+dpkg -b i ../../libapophenia-0.18-dev-0.deb
 
 cp ../../../deb.control i/DEBIAN/control
 rm -rf i/usr/include
@@ -91,4 +92,4 @@ cp ../apop_text_to_db i/usr/bin/apop_text_to_db
 cp ../apop_db_to_crosstab i/usr/bin/apop_db_to_crosstab
 cp ../apop_plot_query i/usr/bin/apop_plot_query
 cp ../apop_merge_dbs i/usr/bin/apop_merge_dbs
-dpkg -b i ../../libapophenia-0.17-0.deb
+dpkg -b i ../../libapophenia-0.18-0.deb

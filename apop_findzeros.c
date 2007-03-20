@@ -9,13 +9,15 @@
 
 typedef struct {
   apop_model *model;
-  void *model_params;
+  apop_ep *model_params;
   apop_data* data;
 } score_struct;
 
 int score_shell (const gsl_vector * in, void *params, gsl_vector * out) {
   score_struct *p = params;
-    p->model->score(in, p->data, out, p->model_params);
+  apop_data     *d  = apop_data_unpack(in, p->model->vsize, p->model->msize1, p->model->msize2);
+    p->model->score(d, p->data, out, p->model_params);
+    apop_data_free(d);
     return GSL_SUCCESS;
 }
 
@@ -26,12 +28,12 @@ static apop_estimate * find_roots (apop_data * data, apop_model dist, apop_ep *e
   const gsl_multiroot_fsolver_type *T;
   gsl_multiroot_fsolver *s;
 
-  int status, betasize  = dist.parameter_ct;
+  int status, betasize  = dist.vsize + dist.msize1* dist.msize2;
   size_t  iter = 0;
   gsl_vector *x;
     if (betasize == -1) {
-        dist.parameter_ct   =
-        betasize            = data->matrix->size2 - 1;
+        dist.vsize   =
+        betasize     = data->matrix->size2 - 1;
     }
     apop_estimate *est = apop_estimate_alloc(data, dist, est_params);
     est->status = 1;    //assume failure until we score a success.
@@ -66,6 +68,7 @@ static apop_estimate * find_roots (apop_data * data, apop_model dist, apop_ep *e
      } while (status == GSL_CONTINUE && iter < 1000);
      if(GSL_SUCCESS) est->status = 0;
   printf ("status = %s\n", gsl_strerror (status));
+  est->parameters   = apop_data_unpack(s->x, dist.vsize, dist.msize1, dist.msize2);
   gsl_multiroot_fsolver_free (s);
   gsl_vector_free (x);
   return est;

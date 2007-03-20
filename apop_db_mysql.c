@@ -129,7 +129,7 @@ static apop_data * process_result_set_data (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
   unsigned int     i, j=0;
   unsigned int num_fields = mysql_num_fields(res_set);
-  apop_data *out   =apop_data_alloc( mysql_num_rows (res_set), num_fields);
+  apop_data *out   =apop_data_alloc(0, mysql_num_rows (res_set), num_fields);
      while ((row = mysql_fetch_row (res_set)) ) {
              for (i = 0; i < mysql_num_fields (res_set); i++) {
                  apop_data_set(out, j , i, atof(row[i]));
@@ -266,8 +266,7 @@ apop_data * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
     total_cols  = mysql_num_fields(res_set);
     total_rows  = mysql_num_rows(res_set);
   char ***out   = malloc(sizeof(char**) * total_rows );
-  apop_data *out= apop_data_alloc(1,0);
-    gsl_vector_free(out->vector);
+  apop_data *out= apop_data_alloc(0,0,0);
     while ((row = mysql_fetch_row (res_set)) ) {
 		out[currentrow]	= malloc(sizeof(char*) * total_cols);
 		for (jj=0;jj<total_cols;jj++){

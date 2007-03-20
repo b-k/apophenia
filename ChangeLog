@@ -3,7 +3,7 @@
 **Change that could require recoding existing code.
 ]
 
-	March 2007
+	0.18 March 2007
 **apop_text_to_db now assumes column names unless you specify -nc.
 --If you set parameter_ct==0 in your model definition, the MLEs will
 assign parameter_ct == the number of columns in your data set.
@@ -14,6 +14,14 @@ like it should have all this time.
 works.
 **Entirely eliminated the apop_inventory structure. Its sole utility is
 inside the apop_ep struct.
+**Changed the RNG interface for the sake of allowing multidimensional
+draws. [Not that I have any functions that do that right now.]
+--Bayes-oriented MCMC algorithm: apop_mcmc_update
+--Bayesian model generator: apop_bayesian_update
+**apop_model paramters is now an apop_model. See the documentation of
+the model for all the changes.
+**apop_data_alloc now takes three arguments: vsize, msize1, msize2. To
+update, just put a 0, at the head of the arg list.
 
 	February 2007
 

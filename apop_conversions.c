@@ -220,7 +220,7 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 		        j	= 0,
 		        k; 
   apop_data     *pre_d1, *pre_d2, *datachars;
-  apop_data     *outdata    = apop_data_alloc(1,1);
+  apop_data     *outdata    = apop_data_alloc(0,1,1);
 	datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
 
     //A bit inefficient, but well-encapsulated.
@@ -429,7 +429,7 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
   regmatch_t    result[2];
 	ct	    = apop_count_cols_in_text(text_file);
 	rowct	= apop_count_rows_in_text(text_file);
-    set     = apop_data_alloc(rowct+1-has_col_names,ct);
+    set     = apop_data_alloc(0,rowct+1-has_col_names,ct);
 	infile	= fopen(text_file,"r");
     if (infile == NULL){
         printf("Error opening file %s. apop_text_to_data returning NULL.", text_file);
@@ -887,3 +887,70 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 	}
 }
 
+
+
+
+
+/** This is the complement to \c apop_data_pack. It converts the \c gsl_vector produced by that function back
+    to an \c apop_data set with the given dimensions. 
+
+ \param in a \c gsl_vector of the form produced by \c apop_data_pack.
+\param v_size   size of the vector element of the output data set. Zero indicates no vector.
+\param m_size1   rows of the matrix element of the output data set. Zero indicates no matrix.
+\param m_size2   columns of the matrix element of the output data set. 
+ \return An \c apop_data set.
+\ingroup conversions
+ */
+apop_data * apop_data_unpack(const gsl_vector *in, size_t v_size, size_t m_size1, size_t m_size2){
+  apop_data     *out        = apop_data_alloc(v_size, m_size1, m_size2);
+  int           i, offset   = 0;
+  gsl_vector    vin, vout;
+    if(v_size){
+        vin = gsl_vector_subvector(in, 0, v_size).vector;
+        gsl_vector_memcpy(out->vector, &vin);
+        offset  += v_size;
+    }
+    if(m_size2>0)
+        for (i=0; i< m_size1; i++){
+            vin     = gsl_vector_subvector(in, offset, m_size2).vector;
+            vout    = gsl_matrix_row(out->matrix, i).vector;
+            gsl_vector_memcpy(&vout, &vin);
+            offset  += m_size2;
+        }
+    return out;
+}
+
+/** Sometimes, you need to turn an \c apop_data set into a column of
+ numbers. E.g., certain GSL subsystems require such things. Thus, this
+ function, that takes in an apop_data set and outputs a \c gsl_vector.
+ It is valid to use the \c out_vector->data element as an array of \ci doubles of size \c out_vector->data->size.
+
+ The complement is \c apop_data_unpack. I.e., \c apop_data_unpack(apop_data_pack(in_data, vsize, m1size, m2size)) will return the same data
+ set (stripped of text and names).
+
+ \param in an \c apop_data set.
+ \return A \c gsl_vector with the vector data (if any), then each row of data (if any).
+\ingroup conversions
+ */
+gsl_vector * apop_data_pack(const apop_data *in){
+  int total_size    = (in->vector ? in->vector->size : 0)
+                       + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0);
+    if (!total_size)
+        return NULL;
+  int i, offset        = 0;
+  gsl_vector *out   = gsl_vector_alloc(total_size);
+  gsl_vector vout, vin;
+    if (in->vector){
+        vout     = gsl_vector_subvector(out, 0, in->vector->size).vector;
+        gsl_vector_memcpy(&vout, in->vector);
+        offset  += in->vector->size;
+    }
+    if (in->matrix)
+        for (i=0; i< in->matrix->size1; i++){
+            vin = gsl_matrix_row(in->matrix, i).vector;
+            vout= gsl_vector_subvector(out, offset, in->matrix->size2).vector;
+            gsl_vector_memcpy(&vout, &vin);
+            offset  += in->matrix->size2;
+        }
+    return out;
+}

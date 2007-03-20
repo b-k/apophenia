@@ -137,7 +137,6 @@ typedef struct{
 	int 	    method;
 	int 	    verbose;
 	int 	    destroy_data;
-    int         params_per_column;
     struct {
 	    char	parameters, covariance, confidence, dependent, predicted, log_likelihood, names;
     } uses;
@@ -206,13 +205,13 @@ distribution to have too, like a random number generator.
  */
 typedef struct apop_model{
 	char	name[101]; 
-	int	parameter_ct;
+	int	vsize, msize1, msize2;
 	apop_estimate *	(*estimate)(apop_data * data, void *params);
-	double 	(*p)(const gsl_vector *beta, apop_data *d, void *params);
-	double 	(*log_likelihood)(const gsl_vector *beta, apop_data *d, void *params);
-	void 	(*score)(const gsl_vector *beta, apop_data *d, gsl_vector *gradient, void *params);
-    double  (*constraint)(gsl_vector *beta, void * d, gsl_vector *returned_beta, void *params);
-	double (*draw)(gsl_rng* r, gsl_vector *a, void *params);
+	double 	(*p)(const apop_data *beta, apop_data *d, void *params);
+	double 	(*log_likelihood)(const apop_data *beta, apop_data *d, void *params);
+	void 	(*score)(const apop_data *beta, apop_data *d, gsl_vector *gradient, void *params);
+    double  (*constraint)(const apop_data *beta, void * d, apop_data *returned_beta, void *params);
+	void (*draw)(double *out, apop_data *params, apop_ep *eps, gsl_rng* r);
     void    *more;
 } apop_model;
 
@@ -273,17 +272,18 @@ apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_data_from_matrix(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
 apop_data * apop_data_from_vector(gsl_vector *v);
-apop_data * apop_data_alloc(int size1, int size2);
-apop_data * apop_data_calloc(int size1, int size2);
+apop_data * apop_data_alloc(const size_t, const size_t, const int);
+apop_data * apop_data_calloc(const size_t, const size_t, const int);
 apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c);
-apop_data * apop_data_copy(apop_data *in);
+apop_data * apop_data_copy(const apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);
-void apop_data_memcpy(apop_data *out, apop_data *in);
-double apop_data_get(apop_data *in, size_t row, int  col);
-double apop_data_get_nt(apop_data *in, size_t row, char* col);
-double apop_data_get_tn(apop_data *in, char* row, int col);
-double apop_data_get_tt(apop_data *in, char *row, char* col);
+void apop_data_memcpy(apop_data *out, const apop_data *in);
+double * apop_data_ptr(const apop_data *data, const size_t i, const size_t j);
+double apop_data_get(const apop_data *in, size_t row, int  col);
+double apop_data_get_nt(const apop_data *in, size_t row, char* col);
+double apop_data_get_tn(const apop_data *in, char* row, int col);
+double apop_data_get_tt(const apop_data *in, char *row, char* col);
 void apop_data_set(apop_data *in, size_t row, int col, double data);
 void apop_data_set_tn(apop_data *in, char* row, int col, double data);
 void apop_data_set_nt(apop_data *in, size_t row, char* col, double data);

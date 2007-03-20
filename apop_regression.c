@@ -34,7 +34,7 @@ double apop_two_tailify(double in){
 }
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
-  apop_data *out    = apop_data_alloc(7,-1);
+  apop_data *out    = apop_data_alloc(0,7,-1);
   double    pval, qval, two_tail;
   if(!gsl_isnan(stat)){
         pval    = gsl_cdf_tdist_P(stat, df);
@@ -203,7 +203,7 @@ gsl_vector      v;
 double          f_stat, variance, pval;
 int             q_df,
                 data_df     = set->size1 - est->parameters->vector->size;
-apop_data       *out        = apop_data_alloc(3,-1);
+apop_data       *out        = apop_data_alloc(0,3,-1);
     gsl_matrix_memcpy(data, set);
     v   = gsl_matrix_column(data, 0).vector;
     gsl_vector_set_all(&v, 1);
@@ -448,7 +448,7 @@ apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
     modded_ols              = apop_model_copy(apop_OLS); 
-    modded_ols->parameter_ct= set->matrix->size2;
+    modded_ols->vsize       = set->matrix->size2;
   apop_estimate	*out		= apop_estimate_alloc(inset, *modded_ols, ep);
   gsl_vector      *y_data     = gsl_vector_alloc(set->matrix->size1); 
   gsl_vector      *xpy        = gsl_vector_calloc(set->matrix->size2);
@@ -626,9 +626,8 @@ char        n[1000];
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
     //the dummy matrix to one.
-    if (keep_first)     out  = apop_data_alloc(in->size, elmt_ctr+1);
-    else                out  = apop_data_alloc(in->size, elmt_ctr);
-    gsl_matrix_set_zero(out->matrix);
+    if (keep_first)     out  = apop_data_calloc(0,in->size, elmt_ctr+1);
+    else                out  = apop_data_calloc(0,in->size, elmt_ctr);
     for (i=0; i< in->size; i++){
         val     = gsl_vector_get(in, i);
         index   = ((long int)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (long int)elmts)/sizeof(double);
@@ -688,7 +687,7 @@ double          sse, sst, rsq, adjustment;
 size_t          obs     = in->data->matrix->size1;
 size_t          indep_ct= in->data->matrix->size2 - 1;
 gsl_vector      v;  
-apop_data       *out    = apop_data_alloc(5,-1);
+apop_data       *out    = apop_data_alloc(0, 5,-1);
     if (!in->ep.uses.predicted
         || !in->ep.uses.dependent){
         if (apop_opts.verbose)

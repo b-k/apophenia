@@ -54,7 +54,7 @@ static void *vectorloop(void *t){
   return NULL;
 }
 
-static size_t *threadminmax(int threadno, int totalct, int threadct){
+static size_t *threadminmax(const int threadno, const int totalct, const int threadct){
   int       segment_size        = totalct/threadct;
   size_t    *out                = malloc(sizeof(int)*3);
         out[0]  = threadno*segment_size;

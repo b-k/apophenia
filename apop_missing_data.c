@@ -49,7 +49,7 @@ apop_data * apop_data_listwise_delete(apop_data *d){
     //copy the good data.
     if (to_rm  == height)
         return NULL;
-  apop_data *out = apop_data_alloc(height-to_rm, has_matrix ? max : -1);
+  apop_data *out = apop_data_alloc(0,height-to_rm, has_matrix ? max : -1);
     out->names  = apop_name_copy(d->names);                           ///You loser!!! Fix this. And add text!!!!
     if (has_vector && has_matrix)
         out->vector = gsl_vector_alloc(height - to_rm);
@@ -111,21 +111,21 @@ static void  find_missing(apop_data *d, apop_ml_imputation_struct *mask){
 
 //The model to send to the optimization
 
-static void unpack(const gsl_vector *v, apop_data *x, apop_ml_imputation_struct * m){
+static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct * m){
   int                       i;
     for (i=0; i< m->ct; i++){
-        apop_data_set(x, m->row[i], m->col[i], gsl_vector_get(v,i));
+        apop_data_set(x, m->row[i], m->col[i], gsl_vector_get(v->vector,i));
     }
 }
 
-static double ll(const gsl_vector *v, apop_data *x, void * ep){
+static double ll(const apop_data *d, apop_data *x, void * ep){
   apop_ml_imputation_struct *m  = ((apop_ep*)ep)->more;
-    unpack(v, x, m);
-    return apop_multivariate_normal.log_likelihood(v, x, m->meanvar);
+    unpack(d, x, m);
+    return apop_multivariate_normal.log_likelihood(d, x, m->meanvar);
 }
 
 
-static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0, NULL, NULL, ll, NULL, NULL};
+static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0, 0, NULL, NULL, ll, NULL, NULL};
 
 
 
@@ -145,7 +145,7 @@ apop_estimate * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_ep * 
   apop_ml_imputation_struct mask;
   apop_model *mc    = apop_model_copy(apop_ml_imputation_model);
     find_missing(d, &mask);
-    mc->parameter_ct    = mask.ct;
+    mc->vsize           = mask.ct;
     mask.meanvar        = meanvar;
     if (!parameters)
         parameters  = apop_ep_alloc();

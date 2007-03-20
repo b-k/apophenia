@@ -23,7 +23,8 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_poisson.c	model/apop_probit.c 	\
 			model/apop_waring.c model/apop_waring_rank.c 	\
 			model/apop_yule.c 	model/apop_yule_rank.c 		\
-			model/apop_multivariate_normal.c
+			model/apop_multivariate_normal.c				\
+			model/apop_uniform.c
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \
@@ -52,7 +53,7 @@ EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
 		tests/pontius.dat tests/test.c tests/test_data tests/test_data2 \
 		tests/test_data_nans tests/wampler1.dat \
 		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
-		apophenia/*.h
+		apophenia/*.h apop.h
 
 #The documentation
 
@@ -68,7 +69,7 @@ doc:
 	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
 
 test:
-	cd tests; gcc -o test -lapophenia $(AM_LDFLAGS) test.c -g -Wall; ./test;
+	cd tests; make; ./test;
 
 install-data-local:
 	cp apop.h $(includedir)

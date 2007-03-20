@@ -52,16 +52,15 @@ apop_estimate * prep_me;
         apop_ep_free(delme);
     }
 	if (prep_me->ep.uses.parameters)
-		prep_me->parameters	= apop_data_alloc(model.parameter_ct
-                                                * (params? params->params_per_column: 1),-1);
+		prep_me->parameters	= apop_data_alloc(model.vsize, model.msize1, model.msize2);
 	if (prep_me->ep.uses.dependent ||
 	                prep_me->ep.uses.predicted){
         if (data && data->matrix)
-		    prep_me->dependent	= apop_data_alloc(data->matrix->size1,3);
+		    prep_me->dependent	= apop_data_alloc(0, data->matrix->size1,3);
         else if (data && data->vector)
-		    prep_me->dependent	= apop_data_alloc(data->vector->size,3);
+		    prep_me->dependent	= apop_data_alloc(0, data->vector->size,3);
         else if (data && data->categories)
-		    prep_me->dependent	= apop_data_alloc(data->catsize[0],3);
+		    prep_me->dependent	= apop_data_alloc(0, data->catsize[0],3);
         else
 		    prep_me->dependent	= NULL;
         if (prep_me->dependent){
@@ -73,7 +72,7 @@ apop_estimate * prep_me;
             apop_name_stack(prep_me->dependent->names, data->names, 'r');
     }
 	if (prep_me->ep.uses.covariance){
-		prep_me->covariance	= apop_data_alloc(model.parameter_ct,model.parameter_ct);
+		prep_me->covariance	= apop_data_alloc(0, model.vsize,model.vsize);
         if (data && data->names){
             apop_name_stack(prep_me->covariance->names, data->names, 'c');
             apop_name_cross_stack(prep_me->covariance->names, data->names, 'c', 'r');
@@ -127,7 +126,9 @@ void apop_estimate_print(apop_estimate * print_me){
 apop_model * apop_model_copy(apop_model in){
   apop_model * out = malloc(sizeof(apop_model));
     strcpy(out->name, in.name);
-    out->parameter_ct       = in.parameter_ct;
+    out->vsize              = in.vsize;
+    out->msize1             = in.msize1;
+    out->msize2             = in.msize2;
 	out->estimate           = in.estimate;
 	out->p                  = in.p;
 	out->log_likelihood     = in.log_likelihood;
@@ -148,8 +149,7 @@ apop_ep *apop_ep_alloc(){
     setme->starting_pt          = NULL;
     setme->weights              = NULL;
     setme->more                 = NULL;
-    setme->step_size            = 
-    setme->params_per_column    = 1;
+    setme->step_size            = 1;
     memset(&(setme->uses),1, sizeof(setme->uses)); 
     return setme;
 }

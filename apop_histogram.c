@@ -197,10 +197,11 @@ The method is to produce a histogram for the PDF using the RNG.
 \ingroup histograms
 */
 gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, 
-                        int draws, gsl_vector *params, gsl_rng *r){
-int     i;
+                        int draws, apop_data *params, gsl_rng *r){
+  int     i;
 //int     bc      = h ? h->n + 2 : bins;
-int     bc      =  h->n + 2;
+  int     bc      =  h->n + 2;
+  double  draw;
     //Must be careful that the histograms match, but the range for the
     //PDF is \f$(-\infty, infty)\f$. 
             //GSL documentation says newbins should be one elemnt too big.
@@ -210,8 +211,10 @@ int     bc      =  h->n + 2;
     newbins[bc]                 = GSL_POSINF;
     gsl_histogram *modelhist    = gsl_histogram_alloc(bc);
     gsl_histogram_set_ranges(modelhist, newbins, bc+1);
-    for (i=0; i< draws; i++)
-        gsl_histogram_increment(modelhist, m.draw(r,params, NULL));
+    for (i=0; i< draws; i++){
+        m.draw(&draw, params, NULL, r);
+        gsl_histogram_increment(modelhist, draw);
+    }
     for (i=0; i< modelhist->n; i++)
         modelhist->bin[i] /= draws;
     return modelhist;
@@ -230,7 +233,7 @@ apop_data           *out    = apop_pdf_test_goodness_of_fit(h, m, params, bins);
 */
 
 static apop_data *gof_output(double diff, int bins){
-apop_data   *out    = apop_data_alloc(4,-1);
+apop_data   *out    = apop_data_alloc(0,4,-1);
 double      pval    = gsl_cdf_chisq_P(diff, bins-1);
     apop_data_add_named_elmt(out, "Chi squared statistic", diff);
     apop_data_add_named_elmt(out, "df", bins-1);
@@ -328,7 +331,7 @@ int         i,
 \ingroup histograms
 */
 apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model m,
-int bins, long int draws, gsl_vector *params, gsl_rng *r){
+int bins, long int draws, apop_data *params, gsl_rng *r){
 int     i, count    = bins;
 double  diff        = 0,
         sum;
@@ -441,7 +444,7 @@ printf("sum1: %g; sum2: %g\n", sum1, sum2);
     //return 1-psmirnov2x(diff-0.02, n1, n2);
    // return 1-psmirnov2x(0.2204, n1, n2);
 
-apop_data   *out    = apop_data_alloc(3,-1);
+apop_data   *out    = apop_data_alloc(0,3,-1);
     apop_data_add_named_elmt(out, "max distance", diff);
     apop_data_add_named_elmt(out, "p value, 2 tail", 1-psmirnov2x(diff, sum1, sum2));
     apop_data_add_named_elmt(out, "confidence, 2 tail", psmirnov2x(diff, sum1, sum2));

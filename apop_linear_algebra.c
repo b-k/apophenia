@@ -144,7 +144,7 @@ apop_data * apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want) {
   gsl_matrix * 	square  	    = gsl_matrix_calloc(data->size2, data->size2);
   int 		    i;
   double		eigentotals	= 0;
-  apop_data    *pc_space	    = apop_data_alloc(data->size2, dimensions_we_want);
+  apop_data    *pc_space	    = apop_data_alloc(0,data->size2, dimensions_we_want);
 	pc_space->vector = gsl_vector_alloc(dimensions_we_want);
 	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, square);
 	apop_normalize_for_svd(square);	
@@ -437,7 +437,7 @@ gsl_vector  *lv = d1->vector,
             *rv = d2->vector;
 CBLAS_TRANSPOSE_t   lt  ,//= (t1=='t' || t1=='T' || t1=='p' || t1=='P') ? CblasTrans : CblasNoTrans,
                     rt  ;//= (t2=='t' || t2=='T' || t2=='p' || t2=='P') ? CblasTrans : CblasNoTrans;
-apop_data   *out    = apop_data_alloc(0,0);
+apop_data   *out    = apop_data_alloc(0,0,0);
 va_list		argp;
 	va_start(argp, d2);
     if (d1->matrix)
