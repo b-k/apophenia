@@ -7,19 +7,6 @@
 /** \file apop_findzero.c
  This just includes the root-finding routine. It is #included in apop_mle, because I expect you to call it via that. */
 
-typedef struct {
-  apop_model *model;
-  apop_ep *model_params;
-  apop_data* data;
-} score_struct;
-
-int score_shell (const gsl_vector * in, void *params, gsl_vector * out) {
-  score_struct *p = params;
-  apop_data     *d  = apop_data_unpack(in, p->model->vsize, p->model->msize1, p->model->msize2);
-    p->model->score(d, p->data, out, p->model_params);
-    apop_data_free(d);
-    return GSL_SUCCESS;
-}
 
 /** This function is cut/pasted/modified from the GSL documentation. It
  calls the various GSL root-finding algorithms to find the zero of the score.
@@ -42,11 +29,11 @@ static apop_estimate * find_roots (apop_data * data, apop_model dist, apop_ep *e
         gsl_vector_set_all (x,  2);
     } else
         x   = apop_array_to_vector(est_params->starting_pt, betasize);
-  score_struct      p;
+  infostruct      p;
     p.data            = data;
     p.model           = &dist;
     p.model_params    = est_params;
-  gsl_multiroot_function f = {score_shell, betasize, &p};
+  gsl_multiroot_function f = {dnegshell, betasize, &p};
     if (est_params->method == 13)
         T = gsl_multiroot_fsolver_dnewton;
     else if (est_params->method == 11)

@@ -19,7 +19,6 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include "likelihoods.h"
 #include <assert.h>
 #include <gsl/gsl_deriv.h>
-#include "apop_findzeros.c"
 
 /** \page trace_path Plotting the path of an ML estimation.
 
@@ -94,6 +93,7 @@ typedef struct {
 typedef struct {
     apop_model  *model;
     apop_data   *data;
+    apop_ep     *model_params; //only used by findzeros.
     apop_fn_with_void   *f;
     apop_df_with_void   *df;
     void        *params;
@@ -102,7 +102,8 @@ typedef struct {
     int         use_constraint;
 }   infostruct;
 
-static apop_estimate * apop_annealing(infostruct*);  //below.
+static apop_estimate * apop_annealing(infostruct*);                         //below.
+static int dnegshell (const gsl_vector * betain, void * , gsl_vector * g); //below.
 
 static double one_d(double b, void *in){
   infostruct    *i   =in;
@@ -112,6 +113,10 @@ static double one_d(double b, void *in){
     apop_data_free(p);
     return out;
 }
+
+
+#include "apop_findzeros.c"
+
 
 /**The GSL provides one-dimensional numerical differentiation; here's
  the multidimensional extension.
@@ -123,16 +128,16 @@ static double one_d(double b, void *in){
  \ingroup linear_algebra
  \todo This fn has a hard-coded tolerance (1e-5).
  */
-void apop_numerical_gradient(apop_fn_with_void ll, const gsl_vector *beta, apop_data* d, void *v , gsl_vector *out){
+void apop_numerical_gradient(apop_fn_with_void ll, const gsl_vector *beta, infostruct* info, gsl_vector *out){
   int		    j;
   gsl_function	F;
   double		result, err;
   grad_params 	gp;
   infostruct    i;
-    i.params    = v;
+    memcpy(&i, info, sizeof(i));
     i.f         = &ll;
 	gp.beta		= gsl_vector_alloc(beta->size);
-	gp.d		= d;
+	gp.d		= info->data;
     i.gp        = &gp;
 	F.function	= one_d;
 	F.params	= &i;
@@ -196,17 +201,21 @@ static double negshell (const gsl_vector * betain, void * in){
   double		penalty         = 0,
                 out             = 0; 
   static double	base_for_penalty= 0;
+  double 	(*f)(const apop_data *, apop_data *, void *);
   apop_data     *beta           = apop_data_unpack(betain, i->model->vsize, i->model->msize1, i->model->msize2);
+    f   = i->model->log_likelihood? i->model->log_likelihood : i->model->p;
+    if (!f)
+        apop_error(0, 's', "The model you sent to the MLE function has neither log_likelihood element nor p element.\n");
 	if (i->use_constraint && i->model->constraint){
         returned_beta	= apop_data_alloc(i->model->vsize, i->model->msize1, i->model->msize2);
 		penalty	= i->model->constraint(beta, i->data, returned_beta, i->params);
 		if (penalty > 0){
-			base_for_penalty	= i->model->log_likelihood(returned_beta, i->data, i->params);
+			base_for_penalty	= f(returned_beta, i->data, i->params);
 			out = -base_for_penalty + penalty;
 		}
 	}
     if (!penalty){
-	    out = - i->model->log_likelihood(beta, i->data, i->params);
+	    out = - f(beta, i->data, i->params);
     }
     if (strlen(apop_opts.mle_trace_path))
         insert_path_into_db(betain,-out);
@@ -226,11 +235,13 @@ If the constraint binds
 Finally, reverse the sign, since the GSL is trying to minimize instead of maximize.
 */
 //static void dnegshell (const gsl_vector * beta, apop_data * d, gsl_vector * g){
-static void dnegshell (gsl_vector * betain, infostruct * i, gsl_vector * g){
-  apop_data    *returned_beta  = apop_data_alloc(i->model->vsize, i->model->msize1, i->model->msize2);
+static int dnegshell (const gsl_vector * betain, void * in, gsl_vector * g){
+  infostruct    *i              = in;
+  apop_data     *returned_beta  = apop_data_alloc(i->model->vsize, i->model->msize1, i->model->msize2);
   apop_data     *beta           = apop_data_unpack(betain, i->model->vsize, i->model->msize1, i->model->msize2);
-  gsl_vector     *usemep          = betain;
+  const gsl_vector    *usemep;
   apop_data     *useme          = beta;
+    usemep  = betain;
 	if (i->model->constraint && i->model->constraint(beta, i->data, returned_beta, i->params)){
 		usemep  = apop_data_pack(returned_beta);
         useme   = returned_beta;
@@ -238,10 +249,11 @@ static void dnegshell (gsl_vector * betain, infostruct * i, gsl_vector * g){
     if (i->model->score)
         i->model->score(useme, i->data, g, i->params);
     else
-        apop_numerical_gradient(i->model->log_likelihood, usemep, i->data, i->params, g);
+        apop_numerical_gradient(i->model->log_likelihood, usemep, i, g);
     gsl_vector_scale(g, -1);
 	apop_data_free(returned_beta);
     apop_data_free(beta);
+    return GSL_SUCCESS;
 }
 
 //static void fdf_shell(const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df){
@@ -560,7 +572,7 @@ method:		The sum of a method and a gradient-handling rule.
 
  \ingroup mle */
 apop_estimate *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_ep *params){
-  infostruct    info    = {&dist, data, NULL, NULL, params, NULL, NULL, 1};
+  infostruct    info    = {&dist, data, NULL, NULL, NULL, params, NULL, NULL, 1};
 	if (params && (params->method/100==5 || params->method == 5))
         return apop_annealing(&info);  //below.
     else if (params && params->method==0)
@@ -691,14 +703,6 @@ if ep->verbose>1, show that plus the vector of params.
  */
 
 
-/* set up parameters for this simulated annealing run. Cut 'n' pasted
- * from GSL traveling salesman sample code */
-
-#define N_TRIES 200             /* how many points do we try before stepping */
-#define ITERS_FIXED_T 200      /* how many iterations for each T? */
-#define K 1.0                   /* Boltzmann constant */
-#define MU_T 1.005              /* damping factor for temperature */
-#define T_MIN 5.0e-1
 
 static double annealing_energy(void *in)
 {
@@ -724,36 +728,31 @@ static void annealing_step(const gsl_rng * r, void *in, double step_size){
   infostruct  *i          = in;
   gsl_vector  *original   = gsl_vector_alloc(i->beta->size);
   int         dims_used[i->beta->size];
-  int         dims_left, dim, sign, first_run = 0;
+  int         dims_left, dim, sign;
   double      step_left, amt;
   apop_data     *testme     = NULL,
                 *dummy      = apop_data_alloc(i->model->vsize, i->model->msize1, i->model->msize2);
     gsl_vector_memcpy(original, i->beta);
-    do{
-        memset(dims_used, 0, i->beta->size * sizeof(int));
-        dims_left   = i->beta->size;
-        step_left   = step_size;
-        if (!first_run)
-            gsl_vector_memcpy(i->beta, original);
-        else
-            first_run   ++; 
-        while (dims_left){
-            do {
-                dim = apop_random_int(0, i->beta->size, r);
-            } while (dims_used[dim]);
-            dims_used[dim]  ++;
-            dims_left       --;
-            sign    = (gsl_rng_uniform(r) > 0.5) ? 1 : -1;
-            amt     = gsl_rng_uniform(r);
-//printf("ss: %g, amt: %g, vector: ", step_left, amt * step_left * sign);
-            apop_vector_increment(i->beta, dim, amt * step_left * sign); 
-            step_left   *= amt;
-//apop_vector_show(beta);
-//printf("x");
-            if (testme) apop_data_free(testme);
-            testme      = apop_data_unpack(i->beta, i->model->vsize, i->model->msize1, i->model->msize2);
-        }
-    } while (i->model->constraint && i->model->constraint(testme, i->data, dummy, i->params));
+    memset(dims_used, 0, i->beta->size * sizeof(int));
+    dims_left   = i->beta->size;
+    step_left   = step_size;
+    while (dims_left){
+        do {
+            dim = apop_random_int(0, i->beta->size, r);
+        } while (dims_used[dim]);
+        dims_used[dim]  ++;
+        dims_left       --;
+        sign    = (gsl_rng_uniform(r) > 0.5) ? 1 : -1;
+        amt     = gsl_rng_uniform(r);
+        apop_vector_increment(i->beta, dim, amt * step_left * sign); 
+        step_left   *= amt;
+    }
+    testme      = apop_data_unpack(i->beta, i->model->vsize, i->model->msize1, i->model->msize2);
+    if (i->model->constraint && i->model->constraint(testme, i->data, dummy, i->params)){
+        gsl_vector *cv  = apop_data_pack(dummy);
+        gsl_vector_memcpy(i->beta, cv);
+        gsl_vector_free(cv);
+    }
     apop_data_free(dummy);
     apop_data_free(testme);
     gsl_vector_free(original);
@@ -787,11 +786,14 @@ static void annealing_free(void *xp){
 apop_estimate * apop_annealing(infostruct *i){
   apop_data     *data   = i->data;
   apop_model     *m     = i->model;
+  apop_ep           *ep = i->params;
+                        //iters_fixed_T, step_size, k, t_initial, damping factor, t_min
+  gsl_siman_params_t    simparams = {200, 200, 1., 1.0, 50, 1.002, 5.0e-1};
+  if (ep && ep->ep_more) memcpy(&simparams, ep->ep_more, sizeof(simparams));
   int           paramct = i->model->vsize + i->model->msize1* i->model->msize2;
     if (m->vsize == -1) {
         m->vsize   = i->data->matrix->size2 - 1;
     }
-  apop_ep           *ep = i->params;
   apop_estimate *est    = apop_estimate_alloc(i->data, *(i->model), ep);
 const gsl_rng   * r ;
 gsl_vector      *beta;
@@ -811,14 +813,6 @@ gsl_siman_print_t printing_fn   = NULL;
     else if (ep && ep->verbose)
         printing_fn = annealing_print2;
 
-gsl_siman_params_t params = {N_TRIES, 
-                    ITERS_FIXED_T, 
-                    (ep) ? ep->step_size : 1,
-                    K, 
-                    212.6, //-i->model->log_likelihood(beta, i->data, ep), 
-                    MU_T, 
-                    T_MIN};
-
     gsl_siman_solve(r,        //   const gsl_rng * r
           i,                //   void * x0_p
           annealing_energy, //   gsl_siman_Efunc_t Ef
@@ -829,7 +823,7 @@ gsl_siman_params_t params = {N_TRIES,
           annealing_copy,   //   gsl_siman_copy_construct_t copy_constructor
           annealing_free,   //   gsl_siman_destroy_t destructor
          paramct,    //   size_t element_size
-         params);           //   gsl_siman_params_t params
+         simparams);           //   gsl_siman_params_t params
 
     //Clean up, copy results to output estimate.
     gsl_vector_memcpy(est->parameters->vector, i->beta);
@@ -837,57 +831,4 @@ gsl_siman_params_t params = {N_TRIES,
     if (est->ep.uses.covariance)
         apop_numerical_covariance_matrix(*m,est, data);
     return est;
-}
-
-
-
-//The reader will recognize this as solving the linear equation.
-static double set_one_constraint_elmt(gsl_vector *beta, apop_data *c, int constraint_no, int beta_no){
-   double   denom   = gsl_matrix_get(c->matrix, constraint_no, beta_no);
-   assert (denom);
-  int       i;
-  double    score   = gsl_vector_get(c->vector, constraint_no);
-    for (i=0; i< beta->size; i++)
-        if(i!=beta_no)
-            score   -= gsl_matrix_get(c->matrix, constraint_no, i) * gsl_vector_get(beta, i);
-    score   /= denom;
-    return score;
-}
-
-/** Use this for producing models. 
-
-  \param beta The parameter vector to be tested against the constraint.
-  \param d   an apop_data set, where each row represents one constraint.
-  \param returned_beta  The pre-allocated backup vector that will be modified if the given parameter vector is out of bounds.
-
-  \bugs The tolerance is hard-coded, wich is _terrible_.
-
-*/
-double apop_linear_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
-  double  tolerance     = 1e-3;
-  double  penalty       = 0,
-            p, goal;
-  int       i, j, modded[beta->size];
-  apop_data *c          = d;
-  apop_data *v          = apop_data_alloc(0,0,0);
-    v->vector = beta;
-  apop_data *test  = apop_dot(c, v, 0);//c->matrix
-    memset(modded, 0, sizeof(int)*beta->size);
-    for (i=0; i< test->vector->size; i++){
-        p   = gsl_vector_get(test->vector, i);
-        goal= gsl_vector_get(c->vector, i);
-        if (p> 0){
-            penalty += p;
-            j = i;
-            while (modded[j] || !gsl_matrix_get(c->matrix, i, j)){
-                j   = (j+1)% beta->size;
-                if (j==i)   //then _everything_ has been modded. Oh my.
-                    memset(modded, 0, sizeof(int)*beta->size);
-            }
-            gsl_vector_set(returned_beta, j, set_one_constraint_elmt(beta,c,i, j) + tolerance);
-            modded[j]   ++;
-        }
-    }
-    apop_data_free(test);
-    return penalty;
 }

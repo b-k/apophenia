@@ -188,8 +188,10 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
  \return The confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
  */
-apop_data *apop_F_test(apop_estimate *est, gsl_matrix *q, gsl_vector *c){
+apop_data *apop_F_test(apop_estimate *est, apop_data *contrast){
 gsl_matrix      *set        = est->data->matrix;
+gsl_matrix      *q          = contrast->matrix;
+gsl_vector      *c          = contrast->vector;
 gsl_matrix      *data       = gsl_matrix_alloc(set->size1, set->size2);    //potentially huge.
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->size2, set->size2);
 gsl_matrix      *xpxinv     = gsl_matrix_calloc(set->size2, set->size2);
@@ -244,8 +246,8 @@ apop_data       *out        = apop_data_alloc(0,3,-1);
 }
 
 /** a synonym for \ref apop_F_test, qv. */
-apop_data * apop_f_test(apop_estimate *est, gsl_matrix *q, gsl_vector *c){
-return apop_F_test(est, q, c);
+apop_data * apop_f_test(apop_estimate *est, apop_data *contrast){
+return apop_F_test(est, contrast);
 }
 
 //shift first col to depvar, rename first col "one".

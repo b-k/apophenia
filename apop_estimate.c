@@ -149,6 +149,7 @@ apop_ep *apop_ep_alloc(){
     setme->starting_pt          = NULL;
     setme->weights              = NULL;
     setme->more                 = NULL;
+    setme->ep_more              = NULL;
     setme->step_size            = 1;
     memset(&(setme->uses),1, sizeof(setme->uses)); 
     return setme;

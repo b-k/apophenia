@@ -70,8 +70,8 @@ If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns 
 \ingroup linear_algebra
 */
 double apop_det_and_inv(gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
-int 		sign;
-double 		the_determinant = 0;
+  int 		sign;
+  double 	the_determinant = 0;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
 	gsl_permutation * perm = gsl_permutation_alloc(in->size1);
 	invert_me = gsl_matrix_alloc(in->size1, in->size1);
@@ -95,8 +95,8 @@ double 		the_determinant = 0;
 \ingroup linear_algebra
 */
 double apop_x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
-gsl_vector * 	sigma_dot_x	= gsl_vector_calloc(x->size);
-double		the_result;
+  gsl_vector * 	sigma_dot_x	= gsl_vector_calloc(x->size);
+  double		the_result;
 	gsl_blas_dsymv(CblasUpper, 1, sigma, x, 0, sigma_dot_x); //sigma should be symmetric
 	gsl_blas_ddot(x, sigma_dot_x, &the_result);
 	gsl_vector_free(sigma_dot_x);
@@ -105,9 +105,9 @@ double		the_result;
 
 void apop_normalize_for_svd(gsl_matrix *in){
 //Greene (2nd ed, p 271) recommends pre- and post-multiplying by sqrt(diag(X'X)) so that X'X = I.
-gsl_vector_view	v;
-gsl_vector	*diagonal = gsl_vector_alloc(in->size1);
-int 		i;
+  gsl_vector_view	v;
+  gsl_vector	*diagonal = gsl_vector_alloc(in->size1);
+  int 		i;
 	//Get the diagonal, take the square root
 	v	= gsl_matrix_diagonal(in);
 	gsl_vector_memcpy(diagonal, &(v.vector));
@@ -190,8 +190,8 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 \ingroup convenience_fns
  */
 void apop_vector_log(gsl_vector *v){
-int     i;
-double  d;
+  int     i;
+  double  d;
     for (i=0; i< v->size; i++){
 	    d   = v->data[i * v->stride];
 	    v->data[i * v->stride]  = gsl_sf_log(d);
@@ -202,8 +202,8 @@ double  d;
 \ingroup convenience_fns
  */
 void apop_vector_exp(gsl_vector *v){
-int     i;
-double  d;
+  int     i;
+  double  d;
     for (i=0; i< v->size; i++){
 	    d   = v->data[i * v->stride];
 	    v->data[i * v->stride]  = gsl_sf_exp(d);
@@ -220,8 +220,8 @@ double  d;
 \ingroup convenience_fns
 */
 gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2){
-gsl_vector      *out;
-gsl_vector      t;
+  gsl_vector      *out;
+  gsl_vector      t;
     if (!v1  && v2){
         out = gsl_vector_alloc(v2->size);
         gsl_vector_memcpy(out, v2);

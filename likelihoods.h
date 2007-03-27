@@ -11,6 +11,7 @@
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_psi.h>
+#include "asst.h"
 #include "stats.h"
 #include "output.h"
 #include "conversions.h"
@@ -82,7 +83,7 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist,
   apop_xxx_mle function.
   */
 typedef double 	(*apop_fn_with_void) (const apop_data *beta, apop_data *, void *);
-void apop_numerical_gradient(apop_fn_with_void ll, const gsl_vector *beta, apop_data* d, void *v , gsl_vector *out);
+//void apop_numerical_gradient(apop_fn_with_void ll, const gsl_vector *beta, apop_data* d, void *v , gsl_vector *out);
 gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
 gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
 
@@ -99,7 +100,8 @@ extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
 
 apop_estimate * apop_estimate_restart(apop_estimate *e,int  new_method, int scale);
 
-double apop_linear_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta);
+//in apop_linear_constraint.c
+double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin,  gsl_vector *returned_beta);
 
 __END_DECLS
 #endif

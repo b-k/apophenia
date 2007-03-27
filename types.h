@@ -140,7 +140,7 @@ typedef struct{
     struct {
 	    char	parameters, covariance, confidence, dependent, predicted, log_likelihood, names;
     } uses;
-    void        *parameters;
+    void        *ep_more;
     gsl_vector  *weights;
     struct apop_model  *model;
     void        *more;

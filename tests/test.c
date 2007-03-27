@@ -229,7 +229,8 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
 */
 int test_f(apop_estimate *est){
 apop_data   *rsq    = apop_estimate_correlation_coefficient(est);
-apop_data   *ftab   = apop_F_test(est, NULL, NULL);
+apop_data   *contr  = apop_data_alloc(0,0,0);
+apop_data   *ftab   = apop_F_test(est, contr);
 double      n       = est->data->matrix->size1;
 double      K       = est->parameters->vector->size;
 double      r       = apop_data_get_tn(rsq,"R.squared",-1);
@@ -545,6 +546,41 @@ void apop_pack_test(gsl_rng *r){
 }
 
 
+int test_linear_constraint(){
+  gsl_vector *beta      = gsl_vector_alloc(2);
+  gsl_vector *betaout  = gsl_vector_alloc(2);
+    gsl_vector_set(beta, 0, 7);
+    gsl_vector_set(beta, 1, 7);
+  apop_data *contrasts  = apop_data_calloc(1,1,2);
+    apop_data_set(contrasts, 0, 0, -1);
+    apop_data_set(contrasts, 0, 1, -1);
+    assert(apop_linear_constraint(beta, contrasts, 0, betaout) == sqrt(2*49));
+    assert(!apop_vector_sum(betaout));
+    gsl_vector_set(beta, 0, 0);
+    assert(apop_linear_constraint(beta, contrasts, 0, betaout) == sqrt(49/2.));
+    assert(!apop_vector_sum(betaout));
+    assert(gsl_vector_get(betaout,0)==-7/2.);
+    //inside corner: find the corner
+  gsl_vector *beta2     = gsl_vector_alloc(3);
+  gsl_vector *betaout2  = gsl_vector_alloc(3);
+    gsl_vector_set(beta2, 0, 7);
+    gsl_vector_set(beta2, 1, 7);
+    gsl_vector_set(beta2, 2, 7);
+  apop_data *contrasts2  = apop_data_calloc(3,3,3);
+    apop_data_set(contrasts2, 0, 0, -1);
+    apop_data_set(contrasts2, 1, 1, -1);
+    apop_data_set(contrasts2, 2, 2, -1);
+    assert(apop_linear_constraint(beta2, contrasts2, 0, betaout2) == sqrt(3*49));
+    assert(apop_vector_sum(betaout2)==0);
+    //sharp corner: go to one wall.
+    apop_data_set(contrasts2, 0, 1, 1);
+    assert(apop_linear_constraint(beta2, contrasts2, 0, betaout2) == sqrt(2*49));
+    assert(gsl_vector_get(betaout2,0)==7);
+    assert(gsl_vector_get(betaout2,1)==0);
+    assert(gsl_vector_get(betaout2,2)==0);
+    return 0;
+}
+
 
 
 #define do_int_test(text, fn)   if (verbose)    \
@@ -563,7 +599,7 @@ void apop_pack_test(gsl_rng *r){
                             {if (verbose) printf(" passed.\n");} 
 
 int main(){
-    verbose++;
+    //verbose++;
     true_parameter  = apop_data_alloc(0,0,0);
     true_parameter->vector  = apop_array_to_vector(true_parameter_v, 2);
 
@@ -604,6 +640,7 @@ apop_ep  params;
     do_int_test("Inversion test: ", test_inversion(r));
     do_int_test("apop_jackknife test:", test_jackknife());
     do_int_test("apop_matrix_summarize test:", test_summarize());
+    do_int_test("apop_linear_constraint test:", test_linear_constraint());
     do_test("apop_pack/unpack test:", apop_pack_test());
     printf("\nApophenia has passed all of its tests. Yay.\n");
     return 0;

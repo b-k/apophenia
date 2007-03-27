@@ -1,7 +1,7 @@
 /** \file apop_asst.c  The odds and ends bin. 
 Copyright (c) 2005, 2006 by Ben Klemens. Licensed under the GNU GPL v2. */
 
-#include <apophenia/headers.h>
+#include <apop.h>
 
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
 
@@ -104,3 +104,20 @@ char    *out    = NULL;
     }
     return out;
 }
+
+/** Inform the user of a faux pas.
+
+  Notice that the message is the last parameter, since it is probably long.
+
+ \param level   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2. You can set apop_opts.verbose==-1 to turn off virtually all messages, but this is probably ill-advised.
+ \param stop   Either 's' or 'c', indicating whether the program should stop or continue. If stopping, uses \c assert(0) for easy debugging. You can use 'h' (halt) as a synonym for 's'.
+ \param message The message to write to STDERR (presuming the verbosity level is high enough).
+*/
+void apop_error(int level, char stop, char *message){
+    if (apop_opts.verbose >= level)
+        fprintf(stderr, message);
+    if (stop == 's' || stop == 'h')
+        assert(0);
+}
+
+

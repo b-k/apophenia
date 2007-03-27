@@ -22,6 +22,7 @@ draws. [Not that I have any functions that do that right now.]
 the model for all the changes.
 **apop_data_alloc now takes three arguments: vsize, msize1, msize2. To
 update, just put a 0, at the head of the arg list.
+--An absolutely fabulous apop_linear_constraint function.
 
 	February 2007
 
