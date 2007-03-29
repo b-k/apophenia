@@ -138,7 +138,7 @@ typedef struct{
 	int 	    verbose;
 	int 	    destroy_data;
     struct {
-	    char	parameters, covariance, confidence, dependent, predicted, log_likelihood, names;
+	    char	parameters, covariance, confidence, dependent, predicted, log_likelihood;
     } uses;
     void        *ep_more;
     gsl_vector  *weights;

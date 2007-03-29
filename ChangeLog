@@ -23,6 +23,8 @@ the model for all the changes.
 **apop_data_alloc now takes three arguments: vsize, msize1, msize2. To
 update, just put a 0, at the head of the arg list.
 --An absolutely fabulous apop_linear_constraint function.
+--Produce a model with some parameters fixed via apop_model_fix_params.
+--apop_beta distribution
 
 	February 2007
 

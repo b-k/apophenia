@@ -83,7 +83,7 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist,
   apop_xxx_mle function.
   */
 typedef double 	(*apop_fn_with_void) (const apop_data *beta, apop_data *, void *);
-//void apop_numerical_gradient(apop_fn_with_void ll, const gsl_vector *beta, apop_data* d, void *v , gsl_vector *out);
+gsl_vector * apop_numerical_gradient(gsl_vector *beta, apop_data *data, apop_model m, apop_ep *eps);
 gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
 gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
 

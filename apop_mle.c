@@ -118,17 +118,7 @@ static double one_d(double b, void *in){
 #include "apop_findzeros.c"
 
 
-/**The GSL provides one-dimensional numerical differentiation; here's
- the multidimensional extension.
- 
- \code
- apop_numerical_gradient(your_model.log_likelihood, beta, params, out);
- \endcode
-
- \ingroup linear_algebra
- \todo This fn has a hard-coded tolerance (1e-5).
- */
-void apop_numerical_gradient(apop_fn_with_void ll, const gsl_vector *beta, infostruct* info, gsl_vector *out){
+static void apop_internal_numerical_gradient(apop_fn_with_void ll, const gsl_vector *beta, infostruct* info, gsl_vector *out){
   int		    j;
   gsl_function	F;
   double		result, err;
@@ -149,6 +139,27 @@ void apop_numerical_gradient(apop_fn_with_void ll, const gsl_vector *beta, infos
 	}
 }
 
+/**The GSL provides one-dimensional numerical differentiation; here's
+ the multidimensional extension.
+ 
+ \code
+ gradient = apop_numerical_gradient(beta, data, your_model, params);
+ \endcode
+
+ \ingroup linear_algebra
+ \todo This fn has a hard-coded differential (1e-5).
+ */
+gsl_vector * apop_numerical_gradient(gsl_vector *beta, apop_data *data, apop_model m, apop_ep *eps){
+  infostruct    i;
+  apop_fn_with_void ll  = m.log_likelihood ? m.log_likelihood : m.p;
+  gsl_vector        *out= gsl_vector_alloc(beta->size);
+    i.model = &m;
+    i.data  = data;
+    i.params    = eps;
+    i.beta      = beta;
+    apop_internal_numerical_gradient(ll, beta, &i, out);
+    return out;
+}
 
 /** The MLEs don't return everything you could ask for, so this pares
 down the input inventory to a modified output mle.
@@ -159,7 +170,6 @@ static void prep_inventory_mle(apop_ep * in){
 	in->uses.log_likelihood	= 1;
 	in->uses.parameters		= 1;
 	//OK, some things are not yet implemented.
-	in->uses.names		    = 0;
 	in->uses.confidence		= 0;
 	//OK, some things are not yet implemented.
 	in->uses.dependent		= 
@@ -248,8 +258,10 @@ static int dnegshell (const gsl_vector * betain, void * in, gsl_vector * g){
     }
     if (i->model->score)
         i->model->score(useme, i->data, g, i->params);
-    else
-        apop_numerical_gradient(i->model->log_likelihood, usemep, i, g);
+    else{
+        apop_fn_with_void ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
+        apop_internal_numerical_gradient(ll, usemep, i, g);
+        }
     gsl_vector_scale(g, -1);
 	apop_data_free(returned_beta);
     apop_data_free(beta);
@@ -421,7 +433,7 @@ static apop_estimate *	apop_maximum_likelihood_w_d(apop_data * data,
 				            status  = 0,
 				            betasize= dist.vsize + dist.msize1* dist.msize2;
   apop_estimate			    *est;
-  apop_ep                   *ep     = i->params;
+  apop_ep                   *ep         = i->params ? i->params : apop_ep_alloc(); 
 	if (betasize == 0 || betasize == -1)	{
         dist.vsize   =
         betasize     = data->matrix->size2 - betasize;
@@ -476,7 +488,9 @@ static apop_estimate *	apop_maximum_likelihood_w_d(apop_data * data,
 	gsl_multimin_fdfminimizer_free(s);
 	if (ep && ep->starting_pt==NULL) 
 		gsl_vector_free(x);
-	est->log_likelihood	= dist.log_likelihood(est->parameters, data, ep);
+	est->log_likelihood	= dist.log_likelihood ? 
+        dist.log_likelihood(est->parameters, data, ep):
+        log(dist.p(est->parameters, data, ep));
 	if (!ep || est->ep.uses.covariance) 
 		apop_numerical_covariance_matrix(dist, est, data);
 	return est;
@@ -494,7 +508,7 @@ static apop_estimate *	apop_maximum_likelihood_no_d(apop_data * data,
   gsl_vector 		        *x, *ss;
   double			        size;
   apop_estimate		        *est;
-  apop_ep                   *ep         = i->params; 
+  apop_ep                   *ep         = i->params ? i->params : apop_ep_alloc(); 
 	if (betasize == 0 || betasize == -1)	{
         dist.vsize   =
         betasize     = data->matrix->size2 - betasize;
@@ -538,11 +552,13 @@ static apop_estimate *	apop_maximum_likelihood_no_d(apop_data * data,
 		}
       	} while (status == GSL_CONTINUE && iter < MAX_ITERATIONS);
 	if (iter == MAX_ITERATIONS && ep->verbose)
-		printf("Minimization reached maximum number of iterations.");
+		apop_error(1, 'c', "Minimization reached maximum number of iterations.");
 
     est->parameters = apop_data_unpack(s->x, dist.vsize, dist.msize1, dist.msize2);
 	gsl_multimin_fminimizer_free(s);
-	est->log_likelihood	= dist.log_likelihood(est->parameters, data, i->params);
+	est->log_likelihood	= dist.log_likelihood ?
+        dist.log_likelihood(est->parameters, data, i->params):
+        dist.p(est->parameters, data, i->params);
 	if (est->ep.uses.covariance) 
 		apop_numerical_covariance_matrix(dist, est, data);
 	return est;
@@ -826,8 +842,9 @@ gsl_siman_print_t printing_fn   = NULL;
          simparams);           //   gsl_siman_params_t params
 
     //Clean up, copy results to output estimate.
-    gsl_vector_memcpy(est->parameters->vector, i->beta);
-    est->log_likelihood = i->model->log_likelihood(est->parameters, data, ep);
+	est->log_likelihood	= i->model->log_likelihood ? 
+        i->model->log_likelihood(est->parameters, data, ep):
+        log(i->model->p(est->parameters, data, ep));
     if (est->ep.uses.covariance)
         apop_numerical_covariance_matrix(*m,est, data);
     return est;

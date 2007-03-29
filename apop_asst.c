@@ -2,6 +2,7 @@
 Copyright (c) 2005, 2006 by Ben Klemens. Licensed under the GNU GPL v2. */
 
 #include <apop.h>
+#include <apophenia/vasprintf.h>
 
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
 
@@ -111,11 +112,18 @@ char    *out    = NULL;
 
  \param level   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2. You can set apop_opts.verbose==-1 to turn off virtually all messages, but this is probably ill-advised.
  \param stop   Either 's' or 'c', indicating whether the program should stop or continue. If stopping, uses \c assert(0) for easy debugging. You can use 'h' (halt) as a synonym for 's'.
- \param message The message to write to STDERR (presuming the verbosity level is high enough).
+ \param message The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_error(0, 's', "Beta is %g but should be greater than zero.", beta);.
 */
-void apop_error(int level, char stop, char *message){
+void apop_error(int level, char stop, char *msg, ...){
+  va_list   argp;
+  char      *message;
+    va_start(argp, msg);
+    vasprintf(&message, msg, argp);
+    va_end(argp);
+
     if (apop_opts.verbose >= level)
         fprintf(stderr, message);
+    free(message);
     if (stop == 's' || stop == 'h')
         assert(0);
 }

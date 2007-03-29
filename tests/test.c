@@ -350,13 +350,13 @@ int		count = 0;
 	return count;
 }
 
-int estimate_model(gsl_matrix *data, apop_model dist){
+int estimate_model(gsl_matrix *data, apop_model dist, int method){
 int                     i,
                         score         = 0;
 double                  starting_pt[] = {3.2, 1.4};
 apop_ep  *params = apop_ep_alloc();
 apop_estimate           *e;
-    params->method           = 100;
+    params->method           = method;
     params->step_size        = 1e-2;
     params->starting_pt      = starting_pt;
     params->tolerance        = 1e-5;
@@ -366,14 +366,14 @@ apop_estimate           *e;
     if (verbose)
         for (i=0; i < dist.vsize; i++){
             printf("parameter estimate, which should be %g: %g\n", true_parameter_v[i], gsl_vector_get(e->parameters->vector,i));
-        score += (fabs(gsl_vector_get(e->parameters->vector,i) - true_parameter_v[i]) >= 1e-1);
+        score += (fabs(gsl_vector_get(e->parameters->vector,i) - true_parameter_v[i]) >= lite_tolerance);
         //apop_estimate_print(e);
     }
     return score;
 }
 
 
-int test_distribution(gsl_rng *r, apop_model model){
+void test_distribution(gsl_rng *r, apop_model model){
 long int        runsize             = 1000,
                 rowsize             = 50;
 gsl_matrix      *data               = gsl_matrix_calloc(runsize,rowsize);
@@ -383,7 +383,10 @@ size_t          i,j;
     for (i=0; i< runsize; i++)
         for (j=0; j< rowsize; j++)
             model.draw(gsl_matrix_ptr(data,i,j), true_parameter, NULL, r);
-    return estimate_model(data, model);
+    int score= estimate_model(data, model,0);
+    score   += estimate_model(data, model,1);
+    score   += estimate_model(data, model,5);
+    assert(!score);
 }
 
 #define INVERTSIZE 100
@@ -546,6 +549,47 @@ void apop_pack_test(gsl_rng *r){
 }
 
 
+void test_model_fix_parameters(){
+  apop_data *pv   = apop_data_alloc(2,2,2);
+  apop_data *mask = apop_data_calloc(2,2,2);
+  size_t    i, ct = 1000;
+  apop_data *d  = apop_data_alloc(0,ct,2);
+  //apop_data *v  = apop_data_alloc(2,0,0);
+  //apop_data *v2 = apop_data_alloc(2,0,0);
+  apop_ep *ep   = apop_ep_alloc();
+  gsl_rng *r    = apop_rng_alloc(10);
+  double    draw[2];
+    apop_data_set(pv, 0, -1, 8);
+    apop_data_set(pv, 1, -1, 2);
+    gsl_matrix_set(pv->matrix, 0,0,1);
+    gsl_matrix_set(pv->matrix, 1,1,1);
+    gsl_matrix_set(pv->matrix, 1,0,0.5);
+    gsl_matrix_set(pv->matrix, 0,1,0.5);
+    ep->method      = 0;
+    for(i=0; i< ct; i++){
+        apop_multivariate_normal.draw(draw, pv, NULL, r);
+        apop_data_set(d, i, 0, draw[0]);
+        apop_data_set(d, i, 1, draw[1]);
+        //*apop_data_ptr(d,i,1)    +=3;
+    }
+
+
+    gsl_matrix_set_all(mask->matrix, 1);
+    apop_ep *mep1   = apop_model_fix_params(pv, mask, apop_multivariate_normal, NULL, ep);
+    apop_estimate   *e1  = mep1->model->estimate(d, mep1);
+    gsl_vector_sub(e1->parameters->vector, pv->vector);
+    assert(apop_vector_sum(e1->parameters->vector) < 1e-2);
+
+
+  double    start2[] = {1,0,0,1};
+    ep->starting_pt = start2;
+    gsl_vector_set_all(mask->vector, 1);
+    apop_ep *mep2   = apop_model_fix_params(pv, mask, apop_multivariate_normal, NULL, ep);
+    apop_estimate   *e2  = mep2->model->estimate(d, mep2);
+    gsl_matrix_sub(e2->parameters->matrix, pv->matrix);
+    assert(apop_matrix_sum(e2->parameters->matrix) < 1e-2);
+}
+
 int test_linear_constraint(){
   gsl_vector *beta      = gsl_vector_alloc(2);
   gsl_vector *betaout  = gsl_vector_alloc(2);
@@ -554,10 +598,10 @@ int test_linear_constraint(){
   apop_data *contrasts  = apop_data_calloc(1,1,2);
     apop_data_set(contrasts, 0, 0, -1);
     apop_data_set(contrasts, 0, 1, -1);
-    assert(apop_linear_constraint(beta, contrasts, 0, betaout) == sqrt(2*49));
+    assert(fabs(apop_linear_constraint(beta, contrasts, 0, betaout) - sqrt(2*49)) < tolerance);
     assert(!apop_vector_sum(betaout));
     gsl_vector_set(beta, 0, 0);
-    assert(apop_linear_constraint(beta, contrasts, 0, betaout) == sqrt(49/2.));
+    assert(fabs(apop_linear_constraint(beta, contrasts, 0, betaout) - sqrt(49/2.)) < tolerance);
     assert(!apop_vector_sum(betaout));
     assert(gsl_vector_get(betaout,0)==-7/2.);
     //inside corner: find the corner
@@ -570,11 +614,11 @@ int test_linear_constraint(){
     apop_data_set(contrasts2, 0, 0, -1);
     apop_data_set(contrasts2, 1, 1, -1);
     apop_data_set(contrasts2, 2, 2, -1);
-    assert(apop_linear_constraint(beta2, contrasts2, 0, betaout2) == sqrt(3*49));
+    assert(fabs(apop_linear_constraint(beta2, contrasts2, 0, betaout2) - sqrt(3*49)) < tolerance);
     assert(apop_vector_sum(betaout2)==0);
     //sharp corner: go to one wall.
     apop_data_set(contrasts2, 0, 1, 1);
-    assert(apop_linear_constraint(beta2, contrasts2, 0, betaout2) == sqrt(2*49));
+    assert(fabs(apop_linear_constraint(beta2, contrasts2, 0, betaout2) - sqrt(2*49)) < tolerance);
     assert(gsl_vector_get(betaout2,0)==7);
     assert(gsl_vector_get(betaout2,1)==0);
     assert(gsl_vector_get(betaout2,2)==0);
@@ -599,7 +643,7 @@ int test_linear_constraint(){
                             {if (verbose) printf(" passed.\n");} 
 
 int main(){
-    //verbose++;
+    verbose++;
     true_parameter  = apop_data_alloc(0,0,0);
     true_parameter->vector  = apop_array_to_vector(true_parameter_v, 2);
 
@@ -622,6 +666,7 @@ apop_ep  params;
         do_test(dist[i].name, test_distribution(r, dist[i]));
     }
     do_int_test("nist_tests:", nist_tests());
+    do_int_test("apop_model_fix_parameters test:", test_model_fix_parameters());
     do_int_test("listwise delete", test_listwise_delete());
     do_int_test("NaN handling", test_nan_data());
     do_int_test("database skew and kurtosis", test_skew_and_kurt());

@@ -153,14 +153,14 @@ int apop_db_open(char *filename){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_db_open(filename);
 #else
-        {fprintf(stderr, "apop_db_open: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_db_open: Apophenia was compiled without mysql support.\n");
         return 0;
         }
 #endif
 #ifdef HAVE_LIBSQLITE3
         return apop_sqlite_db_open(filename);
 #else
-        {fprintf(stderr, "apop_db_open: Apophenia was compiled without sqlite support.\n");
+        {apop_error(0, 'c', "apop_db_open: Apophenia was compiled without sqlite support.\n");
         return 0;
         }
 #endif
@@ -190,11 +190,11 @@ int apop_query(const char *fmt, ...){
 	if (apop_opts.verbose) {printf("\n%s\n",q);}
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        {if (!mysql_db) {fprintf(stderr, "No database is open.");
+        {if (!mysql_db) {apop_error(0, 'c', "No database is open.");
             return 0;}
         apop_mysql_query(q);}
 #else
-        {fprintf(stderr, "apop_query: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_query: Apophenia was compiled without mysql support.\n");
         return 0;
         }
 #endif
@@ -205,7 +205,7 @@ int apop_query(const char *fmt, ...){
 	    ERRCHECK
         }
 #else
-        {fprintf(stderr, "apop_query: Apophenia was compiled without SQLite support.\n");
+        {apop_error(0, 'c', "apop_query: Apophenia was compiled without SQLite support.\n");
         return 0;
         }
 #endif
@@ -240,7 +240,7 @@ int apop_table_exists(char *q, char whattodo){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_table_exists(q, whattodo);
 #else
-        {fprintf(stderr, "apop_table_exists: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_table_exists: Apophenia was compiled without mysql support.\n");
         return 0; }
 #endif
 #ifdef HAVE_LIBSQLITE3
@@ -297,7 +297,7 @@ int apop_db_close(char vacuum){
         {apop_mysql_db_close(0);
         return 0;}
 #else
-        {fprintf(stderr, "apop_db_close: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_db_close: Apophenia was compiled without mysql support.\n");
         return 0; }
 #endif
     else{
@@ -310,7 +310,7 @@ int apop_db_close(char vacuum){
     db  = NULL;
 	return 0;
 #else
-        {fprintf(stderr, "apop_db_close: Apophenia was compiled without SQLite support.\n");
+        {apop_error(0, 'c', "apop_db_close: Apophenia was compiled without SQLite support.\n");
         return 0; }
 #endif
     }
@@ -368,13 +368,13 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_to_text(query);
 #else
-        {fprintf(stderr, "apop_query_to_text: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_query_to_text: Apophenia was compiled without mysql support.\n");
         return 0;}
 #endif
 #ifdef HAVE_LIBSQLITE3
         return apop_sqlite_query_to_text(query);
 #else
-        {fprintf(stderr, "apop_query_to_text: Apophenia was compiled without SQLite support.\n");
+        {apop_error(0, 'c', "apop_query_to_text: Apophenia was compiled without SQLite support.\n");
         return NULL; }
 #endif
 }
@@ -449,7 +449,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_to_matrix(query);
 #else
-        {fprintf(stderr, "apop_query_to_matrix: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_query_to_matrix: Apophenia was compiled without mysql support.\n");
         return 0;}
 #endif
   gsl_matrix	*output = NULL;
@@ -505,7 +505,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_to_vector(query);
 #else
-        {fprintf(stderr, "apop_query_to_vector: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_query_to_vector: Apophenia was compiled without mysql support.\n");
         return 0;}
 #endif
   gsl_matrix	*m=NULL;
@@ -544,7 +544,7 @@ double apop_query_to_float(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_to_float(query);
 #else
-        {fprintf(stderr, "apop_query_to_float: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_query_to_float: Apophenia was compiled without mysql support.\n");
         return 0;}
 #endif
 #ifdef HAVE_LIBSQLITE3
@@ -595,7 +595,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_to_data(query);
 #else
-        {fprintf(stderr, "apop_query_to_data: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_query_to_data: Apophenia was compiled without mysql support.\n");
         return 0;
         }
 #endif
@@ -724,7 +724,7 @@ int apop_data_to_db(apop_data *set, char *tabname){
         sprintf(q, " ");
     }
 #else 
-        {fprintf(stderr, "apop_data_to_db: Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_data_to_db: Apophenia was compiled without mysql support.\n");
         return 1;
         }
 #endif
@@ -744,7 +744,7 @@ int apop_data_to_db(apop_data *set, char *tabname){
             else			sprintf(q,"%s);  begin;",q);
         }
 #else
-        {fprintf(stderr, "apop_data_to_db: Apophenia was compiled without SQLite support.\n");
+        {apop_error(0, 'c', "apop_data_to_db: Apophenia was compiled without SQLite support.\n");
         return 1;}
 #endif
     }
