@@ -92,7 +92,7 @@ static double histogram_log_likelihood(const apop_data *beta, apop_data *d, apop
 	return log(histogram_p(beta,d,parameters)) ;
 }
 
-static void histogram_rng(double *out, apop_data * a, gsl_rng *r, apop_params* eps){
+static void histogram_rng(double *out, gsl_rng *r, apop_params* eps){
   apop_histogram_params *hp   = eps->model_params;
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!

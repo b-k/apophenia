@@ -84,8 +84,8 @@ static void exponential_dlog_likelihood(const apop_data *beta, apop_data *d, gsl
 
 See the notes for \ref apop_exponential on a popular alternate form.
 */
-static void exponential_rng(double *out, apop_data * a, gsl_rng* r, apop_params *p){
-	*out = gsl_ran_exponential(r, a->vector->data[0]);
+static void exponential_rng(double *out, gsl_rng* r, apop_params *p){
+	*out = gsl_ran_exponential(r, p->parameters->vector->data[0]);
 }
 
 

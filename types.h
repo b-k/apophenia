@@ -187,7 +187,7 @@ typedef struct apop_model{
     double  (*log_likelihood)(const apop_data *beta, apop_data *d, apop_params *params);
     void    (*score)(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *params);
     double  (*constraint)(const apop_data *beta, apop_data *returned_beta, apop_params *params);
-    void (*draw)(double *out, apop_data *beta, gsl_rng* r, apop_params *params);
+    void (*draw)(double *out, gsl_rng* r, apop_params *params);
     void    *more;
     apop_params *ep;
 } apop_model;
@@ -237,6 +237,7 @@ apop_name * apop_name_copy(apop_name *in);
 size_t  apop_name_find(apop_name *n, char *findme, char type);
 
 apop_params * apop_params_alloc(apop_data * data, apop_model *model, void *method_params, void *model_params);
+apop_params *apop_params_alloc_p(apop_data *params);
 apop_params *apop_params_copy(apop_params *in);
 apop_params *apop_params_clone(apop_params *in, size_t method_size, size_t model_size, size_t more_size);
 void 		apop_params_free (apop_params * free_me);

@@ -530,7 +530,7 @@ will print directly to Gnuplot.
 \param outfile   The name of the text file to print to.  If NULL then write to STDOUT.
 \bugs The RNG is hard-coded, as is the size of the histogram.
 */
-void apop_qq_plot(gsl_vector *v, apop_model m, apop_data *beta, apop_params *ep, char *outfile){
+void apop_qq_plot(gsl_vector *v, apop_model m, apop_params *ep, char *outfile){
   FILE  *f;
   double *pctdata = apop_vector_percentiles(v, 'a');
 
@@ -539,7 +539,7 @@ void apop_qq_plot(gsl_vector *v, apop_model m, apop_data *beta, apop_params *ep,
   int         i;
   gsl_rng     *r  = apop_rng_alloc(123);
     for(i=0; i< 2000; i++)
-        m.draw(gsl_vector_ptr(vd, i), beta, r, ep);
+        m.draw(gsl_vector_ptr(vd, i), r, ep);
   double *pctdist = apop_vector_percentiles(vd, 'a');
 
     if (apop_opts.output_type == 'p')

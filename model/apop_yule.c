@@ -106,12 +106,12 @@ apop_yule_rng(r, 1.4);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
-static void yule_rng( double *out, apop_data * a, gsl_rng * r, apop_params *p){
+static void yule_rng( double *out, gsl_rng * r, apop_params *a){
 double 	e1, e2;
 int		x;
 	e1	= gsl_ran_exponential(r, 1);
 	e2	= gsl_ran_exponential(r, 1);
-	x	= GSL_MAX((int) (- e1  / log(1 - exp(-e2 / ((a->vector->data)[0] -1)))), 0);
+	x	= GSL_MAX((int) (- e1  / log(1 - exp(-e2 / (*a->parameters->vector->data -1)))), 0);
 	*out =  x + 1;	//we rounded down to floor, but want ceil.
 }
 

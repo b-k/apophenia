@@ -43,8 +43,8 @@ static double unif_p(const apop_data *params, apop_data *d, apop_params *v){
 }
 
 
-static void uniform_rng( double *out, apop_data * a, gsl_rng *r, apop_params* eps){
-    *out =  gsl_rng_uniform(r) *(a->vector->data[1]- a->vector->data[0])+ a->vector->data[0];
+static void uniform_rng( double *out, gsl_rng *r, apop_params* eps){
+    *out =  gsl_rng_uniform(r) *(eps->parameters->vector->data[1]- eps->parameters->vector->data[0])+ eps->parameters->vector->data[0];
 }
 
 /** The uniform model.

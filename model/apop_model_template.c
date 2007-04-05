@@ -110,7 +110,7 @@ static void MODELNAME_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_
 }
 	*/
 
-static void MODELNAME_rng( double *out, apop_data * a, gsl_rng *r, apop_params* eps){
+static void MODELNAME_rng( double *out, gsl_rng *r, apop_params* eps){
     //place math here.
 }
 

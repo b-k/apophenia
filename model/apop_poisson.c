@@ -85,8 +85,8 @@ p(k) = {\mu^k \over k!} \exp(-\mu), \f$
 
 where \f$k\geq 0\f$.
 */
-static void poisson_rng(double *out, apop_data * a, gsl_rng* r, apop_params *p){
-    *out = gsl_ran_poisson(r, *a->vector->data);
+static void poisson_rng(double *out, gsl_rng* r, apop_params *p){
+    *out = gsl_ran_poisson(r, *p->parameters->vector->data);
 }
 
 

@@ -80,8 +80,9 @@ apop_zipf.rng(r, 1.4);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
-static void  zipf_rng( double *out, apop_data* a, gsl_rng* r, apop_params *p){
-    if (a->vector->data[0]  <= 1){
+static void  zipf_rng( double *out, gsl_rng* r, apop_params *a){
+  double    p   =a->parameters->vector->data[0];
+    if (p <= 1){
 //        if (apop_opts.verbose)
             printf("apop_zipf.rng: Zipf needs a parameter >=1. Returning 0.\n"); 
             *out    = 0;
@@ -89,14 +90,14 @@ static void  zipf_rng( double *out, apop_data* a, gsl_rng* r, apop_params *p){
     }
   int     x;
   double  u, v, t, 
-        b       = pow(2, a->vector->data[0] -1), 
-        ainv    = -(1.0/(a->vector->data[0] -1));
+        b       = pow(2, p -1), 
+        ainv    = -(1.0/(p -1));
     do {
         u    = gsl_rng_uniform(r);
         v    = gsl_rng_uniform(r);
     //    x    = GSL_MIN(pow(u, ainv), 1e8); //prevent overflows.
         x    = pow(u, ainv);
-        t    = pow((1.0 + 1.0/x), (a->vector->data[0] -1));
+        t    = pow((1.0 + 1.0/x), (p -1));
     } while (v * x * (t-1.0)/(b-1) > t/b);
     *out = x;
 }

@@ -88,8 +88,8 @@ apop_zipf.draw(r, 1.4, NULL);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
-static void zipf_rng( double *out, apop_data * param, gsl_rng* r, apop_params *ignore_me){
-  double a  = gsl_vector_get(param->vector, 0);
+static void zipf_rng( double *out, gsl_rng* r, apop_params *param){
+  double a  = gsl_vector_get(param->parameters->vector, 0);
     if (a  <= 1){
 //        if (apop_opts.verbose)
             fprintf(stderr, "apop_zipf.rng: Zipf needs a parameter >=1. Returning 0.\n"); 

@@ -122,7 +122,7 @@ L. Devroye, <a href="http://cgm.cs.mcgill.ca/~luc/digammapaper.ps">Random
 variate generation for the digamma and trigamma distributions</a>, Journal
 of Statistical Computation and Simulation, vol. 43, pp. 197-216, 1992.
 */
-static void waring_rng(double *out, apop_data *in, gsl_rng *r, apop_params *p){
+static void waring_rng(double *out, gsl_rng *r, apop_params *eps){
 //The key to covnert from Devroye's GHgB3 notation to what I
 //consider to be the standard Waring notation in \ref apop_waring:
 // a = a + 1
@@ -131,8 +131,8 @@ static void waring_rng(double *out, apop_data *in, gsl_rng *r, apop_params *p){
 // n = k - 1 , so if it returns 0, that's first rank.
 // OK, I hope that clears everything up.
   double		x, u,
-                b   = gsl_vector_get(in->vector, 0),
-                a   = gsl_vector_get(in->vector, 1),
+                b   = gsl_vector_get(eps->parameters->vector, 0),
+                a   = gsl_vector_get(eps->parameters->vector, 1),
 		params[]	={a+1, 1, b-1};
 	do{
 		x	= apop_GHgB3_rng(r, params);

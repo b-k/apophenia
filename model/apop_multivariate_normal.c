@@ -54,7 +54,8 @@ static apop_params * multivariate_normal_estimate(apop_data * data, apop_params 
 }
 
 /** The nice, easy method from Devroye, p 565 */
-static void mvnrng(double *out, apop_data *params, gsl_rng *r, apop_params *eps){
+static void mvnrng(double *out, gsl_rng *r, apop_params *eps){
+  apop_data *params = eps->parameters;
   int i, j;
   gsl_vector *v     = gsl_vector_alloc(params->vector->size);
   gsl_vector *dotted= gsl_vector_calloc(params->vector->size);

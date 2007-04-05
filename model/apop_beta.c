@@ -115,8 +115,8 @@ static double beta_constraint(const apop_data *beta, apop_data *returned_beta, a
 }
 
 
-static void beta_rng(double *out, apop_data * a, gsl_rng *r, apop_params* eps){
-    *out = gsl_ran_beta(r, apop_data_get(a,0,-1), apop_data_get(a,1,-1));
+static void beta_rng(double *out, gsl_rng *r, apop_params* eps){
+    *out = gsl_ran_beta(r, apop_data_get(eps->parameters,0,-1), apop_data_get(eps->parameters,1,-1));
 }
 
 /** The beta model.

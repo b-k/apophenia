@@ -158,7 +158,7 @@ The method is to produce a histogram for the PDF using the RNG.
 \ingroup histograms
 */
 gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, 
-                        int draws, apop_data *params, gsl_rng *r){
+                        int draws, apop_params *params, gsl_rng *r){
   int     i;
 //int     bc      = h ? h->n + 2 : bins;
   int     bc      =  h->n + 2;
@@ -173,7 +173,7 @@ gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h,
     gsl_histogram *modelhist    = gsl_histogram_alloc(bc);
     gsl_histogram_set_ranges(modelhist, newbins, bc+1);
     for (i=0; i< draws; i++){
-        m.draw(&draw, params, NULL, r);
+        m.draw(&draw, r, params);
         gsl_histogram_increment(modelhist, draw);
     }
     for (i=0; i< modelhist->n; i++)

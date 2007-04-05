@@ -12,7 +12,7 @@ typedef struct apop_model_fixed_params{
     apop_data *mask;
     apop_data *filled_beta;
     apop_model *m;
-    void * base_model_params;
+    apop_params * base_model_params;
     apop_params *selfep;
     struct apop_model_fixed_params *selfparams;
 } apop_model_fixed_params;
@@ -59,10 +59,13 @@ static double  i_constraint(const apop_data *beta, apop_data *returned_beta, apo
     return p->m->constraint(p->filled_beta, returned_beta, p->base_model_params);
 }
 
-static void i_draw(double *out, apop_data *beta, gsl_rng* r, apop_params *eps){
+static void i_draw(double *out, gsl_rng* r, apop_params *eps){
   apop_model_fixed_params *p    = eps->more;
-    fixed_param_unpack(beta->vector, p);
-    p->m->draw(out, p->filled_beta, r, p->base_model_params);
+  apop_data             *tmp    = p->base_model_params->parameters;
+    fixed_param_unpack(eps->parameters->vector, p);
+    p->base_model_params->parameters    = p->filled_beta;
+    p->m->draw(out, r, p->base_model_params);
+    p->base_model_params->parameters    = tmp;
 }
 
 static apop_params *fixed_est(apop_data * data, apop_params *params){

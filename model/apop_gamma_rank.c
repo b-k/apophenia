@@ -86,8 +86,8 @@ gsl_vector_view v;
 
 See the notes for \ref apop_exponential on a popular alternate form.
 */
-static void gamma_rng(double *out, apop_data * a, gsl_rng* r, apop_params *p){
-    *out    = gsl_ran_gamma(r, gsl_vector_get(a->vector, 0), gsl_vector_get(a->vector, 1));
+static void gamma_rng(double *out, gsl_rng* r, apop_params *p){
+    *out    = gsl_ran_gamma(r, gsl_vector_get(p->parameters->vector, 0), gsl_vector_get(p->parameters->vector, 1));
 }
 
 

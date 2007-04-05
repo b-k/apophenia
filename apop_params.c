@@ -77,6 +77,26 @@ apop_params * prep_me = malloc(sizeof(apop_params));
 	return prep_me;
 }
 
+/** Sometimes, you have parameters in mind, and just want to turn them
+  into parameters as quickly as possible. 
+
+  \param params An \c apop_data struct with the parameters. It will be copied in to the \c apop_params structure.
+  \return An \c apop\_params structure that is basically empty, except for the \c parameters element. This should already be enough for most \c log_likelihood or \c draw methods.
+ 
+ */
+apop_params *apop_params_alloc_p(apop_data *params){
+  apop_params * prep_me = malloc(sizeof(apop_params));
+    prep_me->parameters = apop_data_copy(params);
+    prep_me->method_name[0] = '\0';
+    prep_me->data           =
+    prep_me->expected       =
+    prep_me->covariance     = NULL;
+    prep_me->model_params   =
+    prep_me->method_params  = NULL;
+    return prep_me;
+}
+
+
 /** Copy an \c apop_params structure.
 
 

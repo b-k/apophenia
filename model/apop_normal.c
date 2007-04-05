@@ -140,8 +140,8 @@ uses the standard deviation here (\f$\sigma\f$)
 \param r	a gsl_rng already allocated
 \param a	the mean and the variance
  */
-static void normal_rng( double *out, apop_data *a, gsl_rng *r, apop_params *p){
-	*out = gsl_ran_gaussian(r, sqrt(a->vector->data[1])) + a->vector->data[0];
+static void normal_rng(double *out, gsl_rng *r, apop_params *p){
+	*out = gsl_ran_gaussian(r, sqrt(p->parameters->vector->data[1])) + p->parameters->vector->data[0];
 }
 
 /** You know it, it's your attractor in the limit, it's the Gaussian distribution.

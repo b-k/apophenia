@@ -23,6 +23,7 @@ a great deal of real-world testing that didn't make it into this file.
 double  true_parameter_v[]    = {1.82,2.1};
 
 apop_data *true_parameter;
+apop_params *true_params;
 
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
@@ -384,7 +385,7 @@ size_t          i,j;
     //generate.
     for (i=0; i< runsize; i++)
         for (j=0; j< rowsize; j++)
-            model.draw(gsl_matrix_ptr(data,i,j), true_parameter, r, NULL);
+            model.draw(gsl_matrix_ptr(data,i,j), r, true_params);
     estimate_model(data, model,0);
     estimate_model(data, model,1);
 //    estimate_model(data, model,5); //works, but takes forever.
@@ -392,16 +393,17 @@ size_t          i,j;
 
 #define INVERTSIZE 100
 int test_inversion(gsl_rng *r){
-gsl_matrix  *invme   = gsl_matrix_alloc(INVERTSIZE, INVERTSIZE);
-gsl_matrix  *inved;
-gsl_matrix  *inved_back;
-int         i,j;
-double      error   = 0;
+  gsl_matrix  *invme   = gsl_matrix_alloc(INVERTSIZE, INVERTSIZE);
+  gsl_matrix  *inved;
+  gsl_matrix  *inved_back;
+  int         i,j;
+  double      error   = 0;
   apop_data *four     = apop_data_alloc(1,0,0);
     apop_data_set(four, 0, -1, 4);
+  apop_params *fourp    = apop_params_alloc_p(four);
     for(i=0; i<INVERTSIZE; i++)
         for(j=0; j<INVERTSIZE; j++)
-            apop_zipf.draw(gsl_matrix_ptr(invme, i,j), four, r, NULL);
+            apop_zipf.draw(gsl_matrix_ptr(invme, i,j),r,  fourp);
     apop_det_and_inv(invme, &inved, 0, 1);
     apop_det_and_inv(inved, &inved_back, 0, 1);
     for(i=0; i<INVERTSIZE; i++)
@@ -454,9 +456,10 @@ void jtest(apop_model m, double *pv){
   APOP_RNG_ALLOC(r, 8);
   apop_data  *p  = apop_data_alloc(0,0,0);
   p->vector      = apop_array_to_vector(pv, 2);
+  apop_params*pp = apop_params_alloc_p(p);
   size_t      i;
     for (i =0; i< len; i++)
-        m.draw(apop_data_ptr(d, i, 0),p, r, NULL); 
+        m.draw(apop_data_ptr(d, i, 0), r, pp); 
     apop_data *out = apop_jackknife_cov(d, m , NULL);
     //apop_data_show(out);
     //printf("%g\n",  2*gsl_pow_2(pv[1])/(len-1));
@@ -566,9 +569,10 @@ void test_model_fix_parameters(){
     gsl_matrix_set(pv->matrix, 1,1,1);
     gsl_matrix_set(pv->matrix, 1,0,0.5);
     gsl_matrix_set(pv->matrix, 0,1,0.5);
+  apop_params *pp = apop_params_alloc_p(pv);
     ep->method      = 0;
     for(i=0; i< ct; i++){
-        apop_multivariate_normal.draw(draw, pv, r, NULL);
+        apop_multivariate_normal.draw(draw, r, pp);
         apop_data_set(d, i, 0, draw[0]);
         apop_data_set(d, i, 1, draw[1]);
         //*apop_data_ptr(d,i,1)    +=3;
@@ -649,7 +653,7 @@ void test_histograms(){
         gsl_matrix_set(d->matrix, i, 0, gsl_ran_gaussian(r, sqrt(sigmasq))+mu);
     apop_params   *hp = apop_histogram_params_alloc(d, 1000, NULL);
     for (i=0; i< n; i++){
-        apop_histogram.draw(gsl_matrix_ptr(out, i,0), NULL, r, hp);
+        apop_histogram.draw(gsl_matrix_ptr(out, i,0), r, hp);
         assert(gsl_finite(gsl_matrix_get(out, i,0)));
     }
     apop_params *outparams   = apop_normal.estimate(apop_matrix_to_data(out), NULL);
@@ -679,6 +683,7 @@ int main(){
     verbose++;
     true_parameter  = apop_data_alloc(0,0,0);
     true_parameter->vector  = apop_array_to_vector(true_parameter_v, 2);
+    true_params             = apop_params_alloc_p(true_parameter);
 
 gsl_rng       *r              = apop_rng_alloc(8); 
 apop_model    dist[]          = {apop_gamma, apop_exponential, apop_normal, 
