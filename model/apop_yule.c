@@ -22,11 +22,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-static apop_estimate * yule_estimate(apop_data * data, void *parameters){
+static apop_params * yule_estimate(apop_data * data, apop_params *parameters){
 	return apop_maximum_likelihood(data, apop_yule, parameters);
 }
 
-static double beta_greater_than_x_constraint(const apop_data *beta, void * d, apop_data *returned_beta, void *v){
+static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
     //constraint is 1 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint)constraint= apop_data_calloc(1,1,1);
@@ -63,7 +63,7 @@ static double  dapply_me(gsl_vector *v){
     return d;
 }
 
-static double yule_log_likelihood(const apop_data *beta, apop_data *d, void *p){
+static double yule_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
     bb	            = gsl_vector_get(beta->vector, 0);
   long double   ln_bb		    = gsl_sf_lngamma(bb),
                 ln_bb_less_1    = log(bb-1);
@@ -73,7 +73,7 @@ static double yule_log_likelihood(const apop_data *beta, apop_data *d, void *p){
 	return likelihood + (ln_bb_less_1 + ln_bb) * d->matrix->size1 * d->matrix->size2;
 }
 
-static void yule_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, void *p){
+static void yule_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
 	//Psi is the derivative of the log gamma function.
     bb		= gsl_vector_get(beta->vector, 0);
 double		    bb_minus_one_inv= 1/(bb-1),
@@ -85,7 +85,7 @@ double		    bb_minus_one_inv= 1/(bb-1),
 	gsl_vector_set(gradient, 0, d_bb);
 }
 
-static double yule_p(const apop_data *beta, apop_data *d, void *p){
+static double yule_p(const apop_data *beta, apop_data *d, apop_params *p){
     return exp(yule_log_likelihood(beta, d, p));
 }
 
@@ -106,7 +106,7 @@ apop_yule_rng(r, 1.4);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
-static void yule_rng( double *out, apop_data * a, apop_ep *p, gsl_rng * r){
+static void yule_rng( double *out, apop_data * a, gsl_rng * r, apop_params *p){
 double 	e1, e2;
 int		x;
 	e1	= gsl_ran_exponential(r, 1);
@@ -125,7 +125,7 @@ The data set needs to be in rank-form. The first column is the frequency
 of the most common item, the second is the frequency of the second most
 common item, &c.
 
-apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_ep.
+apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_params.
 
 \f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$
 
@@ -135,5 +135,5 @@ apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_ep.
 \ingroup models
 \todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I can check references.
 */
-apop_model apop_yule = {"Yule", 1, 0,0, 
+apop_model apop_yule = {"Yule", 1,0,0, 
 	yule_estimate, yule_p, yule_log_likelihood, yule_dlog_likelihood, beta_greater_than_x_constraint, yule_rng};

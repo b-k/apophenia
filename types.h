@@ -23,7 +23,7 @@ __BEGIN_DECLS
 The basic story for a statistical analysis is that the researcher
 assembles a data set into an \ref apop_data structure, then sends it to
 an \ref apop_model so that the model's parameters can be estimated,
-and that is returned in an \ref apop_estimate structure.
+and that is returned in an \ref apop_params structure.
 
 Supporting these main structures are a few more structures you'd only have to worry about 
 for fine tuning.
@@ -31,7 +31,7 @@ The \ref apop_name
 structure is an organized list of row and column names; functions that
 take an \ref apop_data set try to automatically handle the names for you.
 The more elaborate models, such as MLEs, require some parameters to run,
-in which case you will need to fill out an \ref apop_ep form and hand it in to the model.
+in which case you will need to fill out an \ref apop_params form and hand it in to the model.
 
 
 \li Data 
@@ -47,10 +47,9 @@ apop_model.estimate() method takes in data and produces an \ref
 apop_estimate. See \ref models.
 
 \li Estimates
-The \ref apop_estimate structure returns all the data one would want
-from a regression or ML estimation, including the parameters estimated,
-the variance/covariance matrix, the residuals, et cetera. The structure
-includes instances of both of the strucutres below. See \ref inv_and_est.
+The \ref apop_params structure complements the \c apop_model by
+providing input params (like the method and tolerance for an ML
+estimation) and the output parameters.
 
 \li Names 
 The \ref apop_name structure has three components: a list of column
@@ -58,12 +57,6 @@ names, a list of row names, and a list of dependent variable names. It
 is intended to accompany the <tt>gsl_matrix</tt> structure, which holds
 all the other information about a data aaray such as the number of rows
 and columns.  See \ref names.
-
-\li Estimate parameters
-The \ref apop_ep are the details for how an \ref
-apop_estimate should do its work; currently it is just the specifications
-for tolerances, step sizes, starting points, et cetera, for \ref apop_maximum_likelihood.
- See \ref inv_and_est.
 
 */
 
@@ -83,10 +76,10 @@ likelihood, and the ML estimates won't return an  R^2.
 int     parameters, covariance, confidence, dependent, predicted, log_likelihood;
 \endverbatim
 
-There is one element for each element of the \ref apop_estimate structure.
+There is one element for each element of the \ref apop_params structure.
 
-The \ref apop_ep of the \ref apop_estimate structure
-has an  element named <tt>uses</tt> embedded
+The \ref apop_params structure
+has an element named <tt>uses</tt> embedded
 within it. Those elements for which <tt>uses.elmt</tt> are zero are
 unallocated pointers (so be careful: precede all dereferences with an
 <tt>if(est->uses.element)</tt> clause).
@@ -125,27 +118,6 @@ typedef struct{
 	int colnamect, rownamect, catnamect, textnamect;
 } apop_name;
 
-/** Parameters for running estimations. No estimation uses all of them.
-  E.g., the MLE functions don't look at preserve_data but OLS and GLS do, while OLS and GLS ignore all the other params.
- \ingroup inv_and_est
- */
-typedef struct{
-	double      *starting_pt; 
-	double 	    step_size; 
-	double 	    tolerance; 
-	double 	    resolution; 
-	int 	    method;
-	int 	    verbose;
-	int 	    destroy_data;
-    struct {
-	    char	parameters, covariance, confidence, dependent, predicted, log_likelihood;
-    } uses;
-    void        *ep_more;
-    gsl_vector  *weights;
-    struct apop_model  *model;
-    void        *more;
-} apop_ep;
-
 /**
 Gathers together a <tt>gsl_vector</tt>, a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space for a table of non-numeric data.
 \ingroup data_struct
@@ -161,9 +133,7 @@ typedef struct {
     gsl_vector  *weights;
 } apop_data;
 
-/** Regression and MLE functions return this structure, which includes
-the various elements that one would want from a model estimate.
-
+/** The data to accompany an \c apop_model, including the input settings and the output parameters, expected values, et cetera.
 
 <b>An example</b><br>
 
@@ -179,13 +149,19 @@ independent vars, then the first column is the actual data. Let our model be \f$
 \ingroup inv_and_est
 */
 typedef struct{
-	apop_data 	*parameters, *dependent, *covariance;
-	double		log_likelihood;
-	int		    status;
+    char        method_name[101];
+    void        *method_params;
+    void        *model_params;
+    struct {
+        char    parameters, covariance, confidence, expected, predicted, log_likelihood;
+    } uses;
+    apop_data   *parameters, *expected, *covariance;
+    double      log_likelihood;
+    int         status;
     apop_data   *data;
     struct apop_model  *model;
-    apop_ep     ep;
-} apop_estimate;
+    void        *more;
+} apop_params;
 
 /** This is an object to describe a model whose parameters are to be
 estimated. It would primarily be used for maximum likelihood estimation,
@@ -204,15 +180,16 @@ distribution to have too, like a random number generator.
 \ingroup models
  */
 typedef struct apop_model{
-	char	name[101]; 
-	int	vsize, msize1, msize2;
-	apop_estimate *	(*estimate)(apop_data * data, void *params);
-	double 	(*p)(const apop_data *beta, apop_data *d, void *params);
-	double 	(*log_likelihood)(const apop_data *beta, apop_data *d, void *params);
-	void 	(*score)(const apop_data *beta, apop_data *d, gsl_vector *gradient, void *params);
-    double  (*constraint)(const apop_data *beta, void * d, apop_data *returned_beta, void *params);
-	void (*draw)(double *out, apop_data *params, apop_ep *eps, gsl_rng* r);
+    char    name[101]; 
+    int     vbase, m1base, m2base;
+    apop_params * (*estimate)(apop_data * data, apop_params *params);
+    double  (*p)(const apop_data *beta, apop_data *d, apop_params *params);
+    double  (*log_likelihood)(const apop_data *beta, apop_data *d, apop_params *params);
+    void    (*score)(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *params);
+    double  (*constraint)(const apop_data *beta, apop_data *returned_beta, apop_params *params);
+    void (*draw)(double *out, apop_data *beta, gsl_rng* r, apop_params *params);
     void    *more;
+    apop_params *ep;
 } apop_model;
 
 /** The global options.
@@ -259,13 +236,12 @@ void apop_name_memcpy(apop_name **out, apop_name *in);
 apop_name * apop_name_copy(apop_name *in);
 size_t  apop_name_find(apop_name *n, char *findme, char type);
 
-apop_estimate * apop_estimate_alloc(apop_data * data, apop_model model, apop_ep *params);
-void 		apop_estimate_free(apop_estimate * free_me);
-void 		apop_estimate_print(apop_estimate * print_me);
-void 		apop_estimate_show(apop_estimate * print_me);
-
-apop_ep *apop_ep_alloc();
-void apop_ep_free(apop_ep *freeme);
+apop_params * apop_params_alloc(apop_data * data, apop_model *model, void *method_params, void *model_params);
+apop_params *apop_params_copy(apop_params *in);
+apop_params *apop_params_clone(apop_params *in, size_t method_size, size_t model_size, size_t more_size);
+void 		apop_params_free (apop_params * free_me);
+void 		apop_params_print (apop_params * print_me);
+void 		apop_params_show (apop_params * print_me);
 
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
@@ -292,7 +268,7 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 
 void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 
-apop_model * apop_model_copy(apop_model in); //this is in apop_estimate.c.
+apop_model * apop_model_copy(apop_model in); //in apop_estimate.c.
 
 void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
 

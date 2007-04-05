@@ -24,6 +24,7 @@ extern apop_model apop_gamma;
 extern apop_model apop_gamma_rank;
 extern apop_model apop_gaussian;//synonym for apop_normal
 //extern apop_model apop_GLS;
+extern apop_model apop_histogram;
 extern apop_model apop_logit;
 extern apop_model apop_multivariate_normal;
 extern apop_model apop_normal;
@@ -39,6 +40,16 @@ extern apop_model apop_yule_rank;
 extern apop_model apop_zipf;
 extern apop_model apop_zipf_rank;
 
+
+//For apop_histogram:
+#include <gsl/gsl_histogram.h>
+typedef struct{
+    gsl_histogram       *pdf;
+    gsl_histogram_pdf   *cdf;
+    apop_params         *ep;
+} apop_histogram_params;
+
+apop_params *apop_histogram_params_alloc(apop_data *data, int bins, apop_params *params_in); //see apop_histogram.c
 
 __END_DECLS
 #endif

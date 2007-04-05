@@ -199,6 +199,7 @@ int     i,j;
  \ingroup data_struct
   */
 void apop_data_free(apop_data *freeme){
+    if (!freeme) return;
     if (freeme->vector)
         gsl_vector_free(freeme->vector);
     if (freeme->matrix)
@@ -223,7 +224,7 @@ void apop_data_free(apop_data *freeme){
   */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
     if (!out)
-        fprintf(stderr,"apop_data_mecpy: you are copying to a NULL vector. Do you mean to use apop_data_copy instead?\n");
+        apop_error(1,'c',"apop_data_memcpy: you are copying to a NULL vector. Do you mean to use apop_data_copy instead?\n");
     if (in->matrix){
         if (in->matrix->size1 != out->matrix->size1 ||
                 in->matrix->size2 != out->matrix->size2){
@@ -675,5 +676,3 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     gsl_vector_set(d->vector, d->names->rownamect, val);
     apop_name_add(d->names, name, 'r');
 }
-
-

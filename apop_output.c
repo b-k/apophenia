@@ -23,7 +23,7 @@ It appends instead of overwriting, so you can prep the file if you want; see sam
 
 
 \param	data	This is a copy of what you'd sent to the regression fn. That is, the first column is the dependent variable and the second is the independent. That is, what will be on Y axis is the <i>first</i> column, and what is on the X axis is the second. Custom for regressions and custom for graphs just clash on this one.
-\param	est	The \ref apop_estimate structure your regression function gave you.
+\param	est	The \ref apop_params structure your regression function gave you.
 \param outfile The name of the output file. NULL will send output to STDOUT.
 
 The sample program below will pull data from a database (you'll need to
@@ -35,7 +35,7 @@ to make further modifications.
 \code
 int main(){
 apop_data 	    *data, *data_copy;
-apop_estimate   *est;
+apop_params   *est;
 FILE		    *f;
 char		    outfile[]	= "auto",
 		        do_me[10000];
@@ -66,7 +66,7 @@ char		    outfile[]	= "auto",
 \todo The sample data here should correspond to that which apophenia ships with.
 \ingroup output
 */
-void apop_plot_line_and_scatter(apop_data *data, apop_estimate *est, char * outfile){
+void apop_plot_line_and_scatter(apop_data *data, apop_params *est, char * outfile){
 FILE *          f;
 char            exdelimiter[100];
 int             append_state;
@@ -77,8 +77,8 @@ int             append_state;
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters->vector,0), gsl_vector_get(est->parameters->vector,1));
 	if (data->names){
 		fprintf(f, "set xlabel \"%s\"\n", data->names->colnames[1]);
-        if (est->dependent !=NULL)
-		    fprintf(f, "set ylabel \"%s\"\n", est->dependent->names->colnames[0]);
+        if (est->expected !=NULL)
+		    fprintf(f, "set ylabel \"%s\"\n", est->expected->names->colnames[0]);
 	}
 	fprintf(f, "set key off\n");
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");
@@ -186,7 +186,7 @@ will print directly to Gnuplot.
 void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
 int             i;
 FILE *          f;
-double		min, max, pt;
+double		min=GSL_POSINF, max=GSL_NEGINF, pt;
 gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 	gsl_vector_minmax(data, &min, &max);
         gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
@@ -526,11 +526,11 @@ will print directly to Gnuplot.
 \param v    The data
 \param m    The distribution, such as apop_normal.
 \param beta The parameters for the distribution.
-\param ep   The \ref apop_ep structure for the distribution, if any.
+\param ep   The \ref apop_params structure for the distribution, if any.
 \param outfile   The name of the text file to print to.  If NULL then write to STDOUT.
 \bugs The RNG is hard-coded, as is the size of the histogram.
 */
-void apop_qq_plot(gsl_vector *v, apop_model m, apop_data *beta, void *ep, char *outfile){
+void apop_qq_plot(gsl_vector *v, apop_model m, apop_data *beta, apop_params *ep, char *outfile){
   FILE  *f;
   double *pctdata = apop_vector_percentiles(v, 'a');
 
@@ -539,7 +539,7 @@ void apop_qq_plot(gsl_vector *v, apop_model m, apop_data *beta, void *ep, char *
   int         i;
   gsl_rng     *r  = apop_rng_alloc(123);
     for(i=0; i< 2000; i++)
-        m.draw(gsl_vector_ptr(vd, i), beta, ep, r);
+        m.draw(gsl_vector_ptr(vd, i), beta, r, ep);
   double *pctdist = apop_vector_percentiles(vd, 'a');
 
     if (apop_opts.output_type == 'p')

@@ -30,7 +30,7 @@ Feel free to augment this with your own copyright: modifications (c) you, today.
 
  a
 */
-static apop_estimate * MODELNAME_estimate(apop_data * data,  void *parameters){
+static apop_params * MODELNAME_estimate(apop_data * data,  apop_params *parameters){
 	return apop_maximum_likelihood(data,  apop_MODELNAME, parameters);
 }
 
@@ -62,7 +62,7 @@ static double MODELNAME_p(const apop_data *beta, apop_data *d){
 You can delete this function entirely if so inclined. If so, remember
 to replace this function with NULL in the model definition below.
  */
-static void MODELNAME_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
+static void MODELNAME_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
 int		    i,j;
 double	    dtotal[3];
 gsl_matrix 	*data 	= d->matrix;
@@ -86,7 +86,7 @@ gsl_matrix 	*data 	= d->matrix;
 You can delete this function entirely if so inclined. If so, remember
 to replace this function with NULL in the model definition below.
  */
-static double MODELNAME_constraint(const apop_data *beta, void * d, apop_data *returned_beta, void *v){
+static double MODELNAME_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
     //constraint is 0 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint)constraint= apop_data_calloc(2,2,1);
@@ -110,7 +110,7 @@ static void MODELNAME_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_
 }
 	*/
 
-static void MODELNAME_rng( double *out, apop_data * a, apop_ep* eps, gsl_rng *r){
+static void MODELNAME_rng( double *out, apop_data * a, gsl_rng *r, apop_params* eps){
     //place math here.
 }
 
@@ -122,5 +122,5 @@ You should describe the format of the input data here.
 
 \ingroup models
 */
-apop_model apop_MODELNAME = {"MODELNAME", -1, 0,0,
+apop_model apop_MODELNAME = {"MODELNAME", 1,0,0,
 	MODELNAME_estimate, MODELNAME_p, MODELNAME_log_likelihood, MODELNAME_dlog_likelihood, MODELNAME_constraint, MODELNAME_rng};

@@ -580,6 +580,7 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
 \ingroup convenience_fns
   */
 gsl_vector *apop_vector_copy(gsl_vector *in){
+    if (!in) return NULL;
   gsl_vector *out = gsl_vector_alloc(in->size);
     gsl_vector_memcpy(out, in);
     return out;
@@ -809,13 +810,13 @@ Using the data set from the example on the \ref apop_OLS "apop_OLS" page, here's
 
 int main(void){ 
 apop_data       *data; 
-apop_estimate   *est;
+apop_params   *est;
     apop_db_open(NULL);
     apop_text_to_db("data", "d", 0,1,NULL);
     data       = apop_query_to_data("select * from d");
-    estimate   = apop_OLS.estimate(data, NULL, NULL);
+    est        = apop_OLS.estimate(data, NULL);
     printf("The OLS coefficients:\n");
-    apop_estimate_print(est);
+    apop_params_print(est);
     return 0;
 } 
 \endcode

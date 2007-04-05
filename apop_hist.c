@@ -39,7 +39,6 @@ Things to do:
         vector          -> pmf
         (vector, vector)-> pmf
         (pmf, model)    -> pmf
-        vector          -> cmf
         pmf             -> cmf
         (pmf, pmf)      -> gof
 
@@ -115,44 +114,6 @@ double              minv    = GSL_POSINF,
             for (j=0; j< data->matrix->size2; j++)
             gsl_histogram_increment(h,gsl_matrix_get(data->matrix,i,j));
     return h;
-}
-
-/** produce a GSL_histogram_pdf structure.
-
-The GSL provides a means of making random draws from a data set, or to
-put it another way, to produce an artificial PDF from a data set. It
-does so by taking a histogram and producing a CDF. 
-
-This function takes the requisite steps for you, producing a histogram
-from the data and then converting it to a <tt>gsl_histogram_pdf</tt>
-structure from which draws can be made. Usage:
-
-\code
-    //assume data is a gsl_vector* already filled with data.
-    gsl_histogram_pdf *p = apop_vector_to_cmf(data, 1000);
-    gsl_rng_env_setup();
-    gsl_rng *r=gsl_rng_alloc(gsl_rng_taus);
-
-    //Draw from the PDF:
-    gsl_histogram_pdf_sample(p, gsl_rng_uniform(r));
-
-    //Eventually, clean up:
-    gsl_histogram_pdf_free(p);
-\endcode
-
-\param data a <tt>gsl_vector*</tt> with the sample data
-\param bins The number of bins in the artificial PDF. It is OK if most
-of the bins are empty, so feel free to set this to a thousand or even
-a million, depending on the level of resoultion your data has.
-
-\ingroup histograms
-*/
-gsl_histogram_pdf * apop_vector_to_cmf(gsl_vector *data, int bins){
-gsl_histogram_pdf   *p  = gsl_histogram_pdf_alloc(bins);
-gsl_histogram       *h  = apop_vector_to_histogram(data,bins);
-    gsl_histogram_pdf_init(p, h);
-    gsl_histogram_free(h);
-    return p;
 }
 
 /** Make two histograms that share bin structures: same max/min, same

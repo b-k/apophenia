@@ -17,11 +17,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-static apop_estimate * gamma_rank_estimate(apop_data * data,  void *parameters){
+static apop_params * gamma_rank_estimate(apop_data * data,  apop_params *parameters){
     return apop_maximum_likelihood(data, apop_gamma_rank, parameters);
 }
 
-static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta, void * d, apop_data *returned_beta, void *v){
+static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
     //constraint is 0 < beta_1 and 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint)constraint= apop_data_calloc(2,2,1);
@@ -30,7 +30,7 @@ static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta,
     return apop_linear_constraint(beta->vector, constraint, 1e-3, returned_beta->vector);
 }
 
-static double gamma_rank_log_likelihood(const apop_data *beta, apop_data *d, void *p){
+static double gamma_rank_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
 float           a           = gsl_vector_get(beta->vector, 0),
                 b           = gsl_vector_get(beta->vector, 1);
     //assert (a>0 && b>0);
@@ -51,13 +51,13 @@ gsl_vector      v;
     return llikelihood;
 }
 
-static double gamma_rank_p(const apop_data *beta, apop_data *d, void *p){
+static double gamma_rank_p(const apop_data *beta, apop_data *d, apop_params *p){
     return exp(gamma_rank_log_likelihood(beta, d, p));
 }
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void gamma_rank_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, void *p){
+static void gamma_rank_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
 double          a       = gsl_vector_get(beta->vector, 0),
                 b       = gsl_vector_get(beta->vector, 1);
 int             k;
@@ -86,7 +86,7 @@ gsl_vector_view v;
 
 See the notes for \ref apop_exponential on a popular alternate form.
 */
-static void gamma_rng(double *out, apop_data * a, apop_ep *p, gsl_rng* r){
+static void gamma_rng(double *out, apop_data * a, gsl_rng* r, apop_params *p){
     *out    = gsl_ran_gamma(r, gsl_vector_get(a->vector, 0), gsl_vector_get(a->vector, 1));
 }
 
@@ -97,7 +97,7 @@ static void gamma_rng(double *out, apop_data * a, apop_ep *p, gsl_rng* r){
   list of numbers to which \f$\alpha\f$ and \f$\beta\f$ will be fit,
   that hapens to be in grid format.
 
-apop_gamma_rank.estimate() is an MLE, so feed it appropriate \ref apop_ep.
+apop_gamma_rank.estimate() is an MLE, so feed it appropriate \ref apop_params.
 
 Here, we assume that the data is ranking frequencies: data[7][0] is
 the number of times the first-ranked item appears in data set number
@@ -115,6 +115,6 @@ Also, \f$d ln \gamma(k) \equiv \psi(k)\f$.
 
 \ingroup models
 */
-apop_model apop_gamma_rank = {"Gamma, rank data", 2, 0,0,
+apop_model apop_gamma_rank = {"Gamma, rank data", 2,0,0,
     gamma_rank_estimate, gamma_rank_p, gamma_rank_log_likelihood, gamma_rank_dlog_likelihood,
     beta_zero_and_one_greater_than_x_constraint,  gamma_rng};

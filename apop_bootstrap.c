@@ -40,13 +40,13 @@ gsl_rng *apop_rng_alloc(int seed){
     return setme;
 }
 
-static apop_ep *parameter_prep(apop_ep *in){
-  apop_ep *e;
+static apop_params *parameter_prep(apop_data *d, apop_model *m, apop_params *in){
+  apop_params *e;
     if (in){
         e   = malloc(sizeof(*e));
         memcpy(e, in, sizeof(*e));
     } else
-        e   = apop_ep_alloc();
+        e   = apop_params_alloc(d, m, NULL, NULL);
     memset(&(e->uses),0, sizeof(e->uses)); //our re-run will only ask parameters. 
     e->uses.parameters  = 1;
     return e;
@@ -61,14 +61,13 @@ static apop_ep *parameter_prep(apop_ep *in){
 
 \ingroup boot
  */
-apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_ep *ep){
+apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_params *ep){
   int           i;
-  apop_estimate *boot_est;
-  apop_ep       *e              = parameter_prep(ep);
+  apop_params   *e              = parameter_prep(in, &model, ep);
   int           n               = in->matrix->size1;
   apop_data     *subset         = apop_data_alloc(0, in->matrix->size1 - 1, in->matrix->size2);
   apop_data     *array_of_boots = NULL;
-  apop_estimate *overall_est    = model.estimate(subset, e);
+  apop_params *overall_est    = model.estimate(subset, e);
   int           paramct         = overall_est->parameters->vector->size;
   gsl_vector    *pseudoval      = gsl_vector_alloc(paramct);
 
@@ -85,19 +84,19 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_ep *ep){
             APOP_ROW(in, i, v);
             gsl_matrix_set_row(subset->matrix, i, v);
         }
-        boot_est        = model.estimate(subset, e);
+        model.estimate(subset, e);
         gsl_vector_memcpy(pseudoval, overall_est->parameters->vector);
         gsl_vector_scale(pseudoval, n);
-        gsl_vector_scale(boot_est->parameters->vector, n-1);
-        gsl_vector_sub(pseudoval, boot_est->parameters->vector);
+        gsl_vector_scale(e->parameters->vector, n-1);
+        gsl_vector_sub(pseudoval, e->parameters->vector);
         gsl_matrix_set_row(array_of_boots->matrix, i+1, pseudoval);
-        apop_estimate_free(boot_est);
     }
     apop_data   *out    = apop_data_covar(array_of_boots);
     gsl_matrix_scale(out->matrix, 1./(in->matrix->size1-1));
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
-    apop_estimate_free(overall_est);
+    apop_params_free(overall_est);
+    //apop_params_free(e);
     return out;
 }
 
@@ -106,21 +105,20 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_ep *ep){
 
 \param data	    The data set. An \c apop_data set where each row is a single data point.
 \param model    An \ref apop_model, whose \c estimate method will be used here.
-\param epin        The \ref apop_ep to be passed to the model. 
+\param epin        The \ref apop_params to be passed to the model. 
 \param r        An RNG that you have initialized (probably with \c apop_rng_alloc)
 \param boot_iterations How many bootstrap draws should I make? A positive integer; if you express indifference by specifying zero, I'll make 1,000 draws.
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
 \ingroup boot
  */
-apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, apop_ep *epin, gsl_rng *r, int boot_iterations) {
+apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, apop_params *epin, gsl_rng *r, int boot_iterations) {
     if (boot_iterations ==0)    boot_iterations	= 1000;
-  apop_ep           *ep  = parameter_prep(epin);
+  apop_params       *e  = parameter_prep(data, &model, epin);
   size_t	        i, j, row;
   apop_data	        *subset	= apop_data_alloc(0,data->matrix->size1, data->matrix->size2);
   apop_data         *array_of_boots = NULL,
                     *summary;
-  apop_estimate     *e;
 	for (i=0; i<boot_iterations; i++){
 		//create the data set
 		for (j=0; j< data->matrix->size1; j++){
@@ -129,20 +127,17 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, apop_ep *epin
 			gsl_matrix_set_row(subset->matrix, j, v);
 		}
 		//get the parameter estimates.
-		e   = model.estimate(subset, ep);
-		if (!e) i--;
-        else {
-			if (i==0){
-				array_of_boots	        = apop_data_alloc(0,boot_iterations, e->parameters->vector->size);
-                array_of_boots->names   = data->names;
-            }
-			gsl_matrix_set_row(array_of_boots->matrix,i,e->parameters->vector);
-            apop_estimate_free(e);
-		} 
+		model.estimate(subset, e);
+        if (i==0){
+            array_of_boots	        = apop_data_alloc(0,boot_iterations, e->parameters->vector->size);
+            array_of_boots->names   = data->names;
+        }
+        gsl_matrix_set_row(array_of_boots->matrix, i, e->parameters->vector);
 	}
 	summary	= apop_data_covariance_matrix(array_of_boots, 1);
     gsl_matrix_scale(summary->matrix, 1./boot_iterations);
     apop_data_free(array_of_boots);
     apop_data_free(subset);
+    //apop_params_free(e);
 	return summary;
 }

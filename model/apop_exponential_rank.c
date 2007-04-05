@@ -25,11 +25,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 /* Let k be the rank, and x_k be the number of elements at that rank;
  then the mean rank (and therefore the most likely estimate for the
  exponential parameter) is sum(k * x_k)/sum(x) */
-static apop_estimate * exponential_rank_estimate(apop_data * data, void *parameters){
+static apop_params * exponential_rank_estimate(apop_data * data, apop_params *parameters){
   double          colsum,
                   numerator   = 0,
                   grand_total = 0;
-  apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential_rank, parameters);
+  apop_params 	*est	    = apop_params_alloc(data,&apop_exponential_rank, parameters, NULL);
   int             i;
     for(i=0; i< data->matrix->size2; i++){
         APOP_MATRIX_COL(data->matrix, i, v);
@@ -38,14 +38,14 @@ static apop_estimate * exponential_rank_estimate(apop_data * data, void *paramet
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters->vector, 0, numerator/grand_total);
-	if (est->ep.uses.log_likelihood)
+	if (est->uses.log_likelihood)
 		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters, data, parameters);
-	if (est->ep.uses.covariance)
+	if (est->uses.covariance)
 		apop_numerical_covariance_matrix(apop_exponential_rank, est, data);
 	return est;
 }
 
-static double beta_greater_than_x_constraint(const apop_data *beta, void * d, apop_data *returned_beta, void *v){
+static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
     //constraint is 0 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint) constraint = apop_data_calloc(1,1,1);
@@ -54,7 +54,7 @@ static double beta_greater_than_x_constraint(const apop_data *beta, void * d, ap
 }
 
 
-static double rank_exponential_log_likelihood(const apop_data *beta, apop_data *d, void *params){
+static double rank_exponential_log_likelihood(const apop_data *beta, apop_data *d, apop_params *params){
   double		    b		    = gsl_vector_get(beta->vector, 0),
 		          p,
 		          llikelihood = 0,
@@ -70,14 +70,14 @@ static double rank_exponential_log_likelihood(const apop_data *beta, apop_data *
 	return llikelihood;
 }
 
-static double rank_exp_p(const apop_data *beta, apop_data *d, void *p){
+static double rank_exp_p(const apop_data *beta, apop_data *d, apop_params *p){
     return exp(rank_exponential_log_likelihood(beta, d, p));
 }
 
 // The exponential distribution. A one-parameter likelihood fn.
 //
 //\todo Check that the borderline work here is correct too.
-static void rank_exponential_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, void *params){
+static void rank_exponential_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *params){
   double		    bb		        = gsl_vector_get(beta->vector, 0);
   int 		    k;
   gsl_matrix	    *data		    = d->matrix;
@@ -111,12 +111,12 @@ If you prefer this form, just convert your parameter via \f$\mu = {1\over
 \ln C}\f$ (and convert back from the parameters this function gives you
 via \f$C=\exp(1/\mu)\f$.
 
-apop_exponential.estimate() is an MLE, so feed it appropriate \ref apop_ep.
+apop_exponential.estimate() is an MLE, so feed it appropriate \ref apop_params.
 
 \ingroup models
 \todo Check that the borderline work here is correct.
 \todo Write a second object for the plain old not-network data Exponential.
 */
-apop_model apop_exponential_rank = {"Exponential, rank data", 1,0,0,
+apop_model apop_exponential_rank = {"Exponential, rank data",  1,0,0,
 	 exponential_rank_estimate, rank_exp_p, rank_exponential_log_likelihood, rank_exponential_dlog_likelihood,
     beta_greater_than_x_constraint};

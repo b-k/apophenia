@@ -128,7 +128,7 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
     if (constraint->vector->size==1){
         APOP_ROW(constraint, 0, c);
         find_nearest_point(beta, constraint->vector->data[0],c, returned_beta);
-        return apop_vector_distance(beta,returned_beta);
+        goto add_margin;
     }
     /* Finally, multiple constraints, at least one binding.
        For each surface, pick a candidate point.
@@ -146,6 +146,7 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
             gsl_vector_memcpy(closest_pt, candidate);
     }
     gsl_vector_memcpy(returned_beta, closest_pt);
+add_margin:
     for (i=0; i< constraint->matrix->size1; i++){
         if(bindlist[i]){
             APOP_ROW(constraint, i, c);

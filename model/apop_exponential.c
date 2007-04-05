@@ -14,19 +14,19 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-static double exponential_log_likelihood(const apop_data *beta, apop_data *d, void *p);
+static double exponential_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p);
 
-static apop_estimate * exponential_estimate(apop_data * data,  void *parameters){
-apop_estimate 	*est	    = apop_estimate_alloc(data,apop_exponential, parameters);
+static apop_params * exponential_estimate(apop_data * data,  apop_params *parameters){
+apop_params 	*est	    = apop_params_alloc(data,&apop_exponential, parameters, NULL);
 	gsl_vector_set(est->parameters->vector, 0, apop_matrix_mean(data->matrix));
-	if (est->ep.uses.log_likelihood)
+	if (est->uses.log_likelihood)
 		est->log_likelihood	= exponential_log_likelihood(est->parameters, data, NULL);
 	//if (est->ep.uses.covariance)
 		//apop_numerical_var_covar_matrix(apop_exponential, est, data->matrix);
 	return est;
 }
 
-static double beta_greater_than_x_constraint(const apop_data *beta, void * d, apop_data *returned_beta, void *v){
+static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
     //constraint is 0 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint) constraint = apop_data_calloc(1,1,1);
@@ -49,7 +49,7 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Set up an exponential object which makes use of the GSL.
 \todo Check that the borderline work here is correct.
 */
-static double exponential_log_likelihood(const apop_data *beta, apop_data *d, void *p){
+static double exponential_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
   gsl_matrix	*data	= d->matrix;
   double		mu		= gsl_vector_get(beta->vector, 0),
 		llikelihood;
@@ -58,7 +58,7 @@ static double exponential_log_likelihood(const apop_data *beta, apop_data *d, vo
 	return llikelihood;
 }
 
-static double exp_p(const apop_data *beta, apop_data *d, void *p){
+static double exp_p(const apop_data *beta, apop_data *d, apop_params *p){
     return exp(exponential_log_likelihood(beta, d, p));
 }
 
@@ -67,7 +67,7 @@ static double exp_p(const apop_data *beta, apop_data *d, void *p){
 \f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
 \todo Check that the borderline work here is correct too.
 */
-static void exponential_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, void *p){
+static void exponential_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
   double		mu	    = gsl_vector_get(beta->vector, 0);
   gsl_matrix	*data	= d->matrix;
   double 		d_likelihood;
@@ -84,7 +84,7 @@ static void exponential_dlog_likelihood(const apop_data *beta, apop_data *d, gsl
 
 See the notes for \ref apop_exponential on a popular alternate form.
 */
-static void exponential_rng(double *out, apop_data * a, apop_ep *p, gsl_rng* r){
+static void exponential_rng(double *out, apop_data * a, gsl_rng* r, apop_params *p){
 	*out = gsl_ran_exponential(r, a->vector->data[0]);
 }
 
@@ -108,7 +108,7 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Check that the borderline work here is correct.
 \todo Write a second object for the plain old not-network data Exponential.
 */
-apop_model apop_exponential = {"Exponential", 1,0,0,
+apop_model apop_exponential = {"Exponential distribution", 1,0,0,
 	 exponential_estimate, exp_p, exponential_log_likelihood, exponential_dlog_likelihood, beta_greater_than_x_constraint, exponential_rng};
 
 

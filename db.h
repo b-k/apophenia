@@ -2,6 +2,7 @@
 #ifndef apop_db_included
 #define apop_db_included
 #include <apophenia/types.h>
+#include <apophenia/asst.h>
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 

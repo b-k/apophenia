@@ -118,14 +118,14 @@ static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct *
     }
 }
 
-static double ll(const apop_data *d, apop_data *x, void * ep){
-  apop_ml_imputation_struct *m  = ((apop_ep*)ep)->more;
+static double ll(const apop_data *d, apop_data *x, apop_params * ep){
+  apop_ml_imputation_struct *m  = ep->model_params;
     unpack(d, x, m);
-    return apop_multivariate_normal.log_likelihood(d, x, m->meanvar);
+    return apop_multivariate_normal.log_likelihood(x, m->meanvar, NULL);
 }
 
 
-static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0, 0, NULL, NULL, ll, NULL, NULL};
+static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0,0, NULL, NULL, ll, NULL, NULL};
 
 
 
@@ -141,19 +141,26 @@ static apop_model apop_ml_imputation_model= {"Impute missing data via maximum li
 \param  parameters  The most likely data points are naturally found via MLE. These are the parameters sent to the MLE.
 
 */
-apop_estimate * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_ep * parameters){
+apop_params * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_params * parameters){
   apop_ml_imputation_struct mask;
   apop_model *mc    = apop_model_copy(apop_ml_imputation_model);
+  apop_mle_params *mlp   = NULL;
+  apop_params   *p;
     find_missing(d, &mask);
-    mc->vsize           = mask.ct;
+    mc->vbase           = mask.ct;
     mask.meanvar        = meanvar;
-    if (!parameters)
-        parameters  = apop_ep_alloc();
-    parameters->method  = 5;
-    parameters->more    = &mask;
-    parameters->step_size    = 2;
-    parameters->tolerance    = 0.2;
+    if (!parameters || strcmp(parameters->method_name, "MLE")){
+        mlp     = apop_mle_params_alloc(d, mc, parameters);
+        p = parameters          = mlp->ep;
+    } else{
+        p       = apop_params_alloc(d, mc, parameters->method_params,parameters->model_params);
+        mlp     = apop_mle_params_alloc(d, mc, parameters);
+    } 
+    mlp->method             = 5;
+    parameters->model_params= &mask;
+    mlp->step_size          = 2;
+    mlp->tolerance          = 0.2;
 //    parameters->starting_pt     = calloc(mask.ct, sizeof(double));
-    return apop_maximum_likelihood(d, *mc, parameters);
+    return apop_maximum_likelihood(d, *mc, p);
     //We're done. The last step of the MLE filled the data with the best estimate.
 }

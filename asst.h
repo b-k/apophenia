@@ -21,7 +21,7 @@ __BEGIN_DECLS
 
 double apop_generalized_harmonic(int N, double s);
 void apop_error(int level, char stop, char *message, ...);
-apop_ep *apop_model_fix_params(apop_data *paramvals, apop_data *mask, apop_model model_in, apop_ep *params_for_model, apop_ep *mle_params);
+apop_model *apop_model_fix_params(apop_data *paramvals, apop_data *mask, apop_model model_in, apop_params *params_for_model, apop_params *mle_params);
 
 __END_DECLS
 #endif

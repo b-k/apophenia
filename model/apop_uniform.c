@@ -20,22 +20,22 @@ Copyright (c) 2007 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 apop_model apop_uniform;
 
-static apop_estimate * uniform_estimate(apop_data * data,  void *parameters){
-  apop_estimate 	*est	    = apop_estimate_alloc(data,apop_uniform, parameters);
+static apop_params * uniform_estimate(apop_data * data,  apop_params *parameters){
+  apop_params 	*est	    = apop_params_alloc(data, &apop_uniform, parameters, NULL);
     est->parameters->vector->data[0]    = gsl_matrix_min(data->matrix);
     est->parameters->vector->data[1]    = gsl_matrix_max(data->matrix);
     return est;
 }
 
 
-static double unif_ll(const apop_data *params, apop_data *d, void *v){
+static double unif_ll(const apop_data *params, apop_data *d, apop_params *v){
     if (gsl_matrix_min(d->matrix)> params->vector->data[0] && gsl_matrix_max(d->matrix)< params->vector->data[1])
         return log(params->vector->data[1] - params->vector->data[0]) *  d->matrix->size1 * d->matrix->size2;
     else
         return GSL_NEGINF;
 }
 
-static double unif_p(const apop_data *params, apop_data *d, void *v){
+static double unif_p(const apop_data *params, apop_data *d, apop_params *v){
     if (gsl_matrix_min(d->matrix)> params->vector->data[0] && gsl_matrix_max(d->matrix)< params->vector->data[1])
         return pow(params->vector->data[1] - params->vector->data[0],  d->matrix->size1 * d->matrix->size2);
     else
@@ -43,7 +43,7 @@ static double unif_p(const apop_data *params, apop_data *d, void *v){
 }
 
 
-static void uniform_rng( double *out, apop_data * a, apop_ep* eps, gsl_rng *r){
+static void uniform_rng( double *out, apop_data * a, gsl_rng *r, apop_params* eps){
     *out =  gsl_rng_uniform(r) *(a->vector->data[1]- a->vector->data[0])+ a->vector->data[0];
 }
 
@@ -55,4 +55,4 @@ Primarily useful for the RNG, such as when you have a Uniform prior model.
 
 \ingroup models
 */
-apop_model apop_uniform = {"Uniform distribution", 2, 0,0, uniform_estimate,  unif_p,unif_ll,  NULL, NULL, uniform_rng};
+apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,  uniform_estimate,  unif_p,unif_ll,  NULL, NULL, uniform_rng};

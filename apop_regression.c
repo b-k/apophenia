@@ -23,6 +23,14 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include <assert.h> 
 #include <gsl/gsl_blas.h>
 
+apop_OLS_params * apop_OLS_params_alloc(int destroy_data, apop_data *data, apop_model *model, apop_params *model_params){
+  apop_OLS_params *out  = malloc(sizeof(*out));
+    out->destroy_data       = destroy_data;
+    out->ep                 = apop_params_alloc(data, model, out, NULL);
+    out->ep->model_params   = out;
+    snprintf(out->ep->method_name, 100, "OLS");
+    return out;
+}
 
 /** GSL gives p-values for a one-tailed test; convert it to two, assuming a
  symmetric distribution.
@@ -135,10 +143,10 @@ Returns nothing. At the end of the routine, the est->parameters->matrix
 includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
 
 */
-void apop_estimate_parameter_t_tests(apop_estimate *est){
+void apop_estimate_parameter_t_tests (apop_params *est){
 int     i, df;
 double  val, var, pval, tstat, rootn, stddev, two_tail;
-    est->ep.uses.confidence  = 1;
+    est->uses.confidence  = 1;
     if (!est->data)
         return;
     assert(est->covariance);
@@ -182,13 +190,13 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
 
  At the moment, this copies the data set. Plan accordingly.
 
- \param est     an \ref apop_estimate that you have already calculated.
+ \param est     an \ref apop_params that you have already calculated.
  \param q       The matrix \f${\bf Q}\f$, where each row represents a hypothesis.
  \param c       The vector \f${\bf c}\f$. The PDF manual explains all of this.
  \return The confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
  */
-apop_data *apop_F_test(apop_estimate *est, apop_data *contrast){
+apop_data *apop_F_test (apop_params *est, apop_data *contrast){
 gsl_matrix      *set        = est->data->matrix;
 gsl_matrix      *q          = contrast->matrix;
 gsl_vector      *c          = contrast->vector;
@@ -200,7 +208,7 @@ gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(est->parameters->vector-
 gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(est->parameters->vector->size, est->parameters->vector->size);
 gsl_matrix      *qprimexpxinvqinv   = gsl_matrix_calloc(est->parameters->vector->size, est->parameters->vector->size);
 gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(est->parameters->vector->size);
-gsl_vector      error       = gsl_matrix_column(est->dependent->matrix, apop_name_find(est->dependent->names, "residual", 'c')).vector;
+gsl_vector      error       = gsl_matrix_column(est->expected->matrix, apop_name_find(est->expected->names, "residual", 'c')).vector;
 gsl_vector      v;
 double          f_stat, variance, pval;
 int             q_df,
@@ -246,39 +254,39 @@ apop_data       *out        = apop_data_alloc(0,3,-1);
 }
 
 /** a synonym for \ref apop_F_test, qv. */
-apop_data * apop_f_test(apop_estimate *est, apop_data *contrast){
+apop_data * apop_f_test (apop_params *est, apop_data *contrast){
 return apop_F_test(est, contrast);
 }
 
 //shift first col to depvar, rename first col "one".
-static void prep_names(apop_estimate *e){
+static void prep_names (apop_params *e){
 int i;
 	if (e->data->names->colnamect > 0) {		
 		//apop_name_add(n, n->colnames[0], 'd');
-        apop_name_add(e->dependent->names, e->data->names->colnames[0], 'c');
-        apop_name_add(e->dependent->names, "predicted", 'c');
-        apop_name_add(e->dependent->names, "residual", 'c');
-		/*e->dependent->names->colnames[0] =
-            realloc(e->dependent->names->colnames[0],
+        apop_name_add(e->expected->names, e->data->names->colnames[0], 'c');
+        apop_name_add(e->expected->names, "predicted", 'c');
+        apop_name_add(e->expected->names, "residual", 'c');
+		/*e->expected->names->colnames[0] =
+            realloc(e->expected->names->colnames[0],
                     sizeof(e->data->names->colnames[0]));
-		sprintf(e->dependent->names->colnames[0], 
+		sprintf(e->expected->names->colnames[0], 
                 e->data->names->colnames[0]);*/
 		sprintf(e->data->names->colnames[0], "1");
-        if (e->ep.uses.parameters){
+        if (e->uses.parameters){
             apop_name_add(e->parameters->names, "1", 'r');
             apop_name_add(e->parameters->names, "parameters", 'v');
             for(i=1; i< e->data->names->colnamect; i++)
                 apop_name_add(e->parameters->names, e->data->names->colnames[i], 'r');
         }
-        if (e->ep.uses.covariance){
+        if (e->uses.covariance){
 		    sprintf(e->covariance->names->colnames[0], "1");
 		    sprintf(e->covariance->names->rownames[0], "1");
             }
 	}
 }
 
-void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_estimate *out){
-	if (out->ep.uses.covariance + out->ep.uses.confidence + out->ep.uses.predicted == 0 ){	
+void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_params *out){
+	if (out->uses.covariance + out->uses.confidence + out->uses.predicted == 0 ){	
 		//then don't calculate (X'X)^{-1}
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
 		return;
@@ -295,17 +303,17 @@ void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector
     gsl_blas_ddot(error, error, &s_sq);   // e'e
     s_sq    /= data->size1 - data->size2;   //\sigma^2 = e'e / df
 	gsl_matrix_scale(cov, s_sq);            //cov = \sigma^2 (X'X)^{-1}
-	if (out->ep.uses.dependent)
-        gsl_matrix_set_col(out->dependent->matrix, 0, y_data);
-	if (out->ep.uses.predicted){
-        gsl_matrix_set_col(out->dependent->matrix, 2, error);
-        predicted   = gsl_matrix_column(out->dependent->matrix, 1).vector;
+	if (out->uses.expected)
+        gsl_matrix_set_col(out->expected->matrix, 0, y_data);
+	if (out->uses.predicted){
+        gsl_matrix_set_col(out->expected->matrix, 2, error);
+        predicted   = gsl_matrix_column(out->expected->matrix, 1).vector;
         gsl_vector_set_zero(&predicted);
         gsl_vector_add(&predicted, y_data);
         gsl_vector_sub(&predicted, error);
     }
     gsl_vector_free(error);
-	if (out->ep.uses.covariance == 0) 	
+	if (out->uses.covariance == 0) 	
         gsl_matrix_free(cov);
 	else 				
         out->covariance->matrix	= cov;
@@ -325,20 +333,20 @@ A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>.
 
 \param ep
 Most notable for its <tt>uses</tt> element, 
-If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
+If NULL, do everything; else, produce those \ref apop_params elements which you specify. You always get the parameters and never get the log likelihood.
 
 \return
-A pointer to an \ref apop_estimate structure with the appropriate elements filled. See the description in \ref apop_OLS .
+A pointer to an \ref apop_params structure with the appropriate elements filled. See the description in \ref apop_OLS .
 
 \todo 
 Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
  */
 /*
-apop_estimate * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma){
+apop_params * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma){
 apop_model      *modded_ols;
     modded_ols              = apop_model_copy(apop_GLS);
     modded_ols->parameter_ct= set->matrix->size2;
-apop_estimate	*out	= apop_estimate_alloc(set, *modded_ols, NULL);
+apop_estimate	*out	= apop_params_alloc(set, *modded_ols, NULL);
 gsl_vector 	*y_data		= gsl_vector_alloc(set->matrix->size1);
 gsl_matrix 	*temp		= gsl_matrix_calloc(set->matrix->size2, set->matrix->size1);
 gsl_vector 	*xsy 		= gsl_vector_calloc(set->matrix->size2);
@@ -366,14 +374,14 @@ gsl_vector_view	v 		= gsl_matrix_column(set->matrix, 0);
 
 \param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
-\param epin    An \ref apop_ep object. The only
+\param epin    An \ref apop_params object. The only
 thing we look at is the \c destroy_data element. If this is NULL or
 \c destroy_data==0, then the entire data set is copied off, and then
 mangled. If \c destroy_data==1, then this doesn't copy off the data set,
 but destroys it in place.
 
 \return
-Will return an \ref apop_estimate <tt>*</tt>.
+Will return an \ref apop_params <tt>*</tt>.
 <tt>The_result->parameters</tt> will hold the coefficients; the first
 coefficient will be the coefficient on the constant term, and the
 remaining will correspond to the independent variables. It will therefore
@@ -400,7 +408,7 @@ The program:
 
 int main(void){
 apop_data       *data;
-apop_estimate   *est;
+apop_params   *est;
     apop_text_to_db("data","d",0,1,NULL);
     data = apop_query_to_data("select * from d");
     est  = apop_OLS.estimate(data, NULL);
@@ -428,34 +436,38 @@ int main(){
 
 
  */
-apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
-  apop_ep *ep  = epin;
-  apop_model      *modded_ols;
-  apop_data       *set;
-  gsl_vector      *weights    = NULL;
-  int             i;
+apop_params * apop_estimate_OLS(apop_data *inset, apop_params *ep){
+  apop_data         *set;
+  apop_params       *epout;
+  gsl_vector        *weights    = NULL;
+  int               i;
+  apop_OLS_params  *olp;
+    if (!ep || strcmp(ep->method_name, "OLS")) {
+        olp             = apop_OLS_params_alloc(0, inset, &apop_OLS, NULL);
+        epout           = olp->ep;
+    } else {
+        olp             = ep->method_params;
+        epout           = ep;
+    }
     //check whether we get to destroy the data set or need to copy it.
-    if (ep == NULL || ep->destroy_data==0)
+    if (!olp->destroy_data)
         set = apop_data_copy(inset); 
     else
         set = inset;
 
     //prep weights.
-    if (ep && ep->destroy_data)
-        weights = ep->weights;  //may be NULL.
-    if (ep && !ep->destroy_data)
-        weights = apop_vector_copy(ep->weights); //may be NULL.
+    if (olp->destroy_data)
+        weights = epout->data->weights;  //may be NULL.
+    else
+        weights = apop_vector_copy(epout->data->weights); //may be NULL.
     if (weights)
         for (i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
-    modded_ols              = apop_model_copy(apop_OLS); 
-    modded_ols->vsize       = set->matrix->size2;
-  apop_estimate	*out		= apop_estimate_alloc(inset, *modded_ols, ep);
-  gsl_vector      *y_data     = gsl_vector_alloc(set->matrix->size1); 
-  gsl_vector      *xpy        = gsl_vector_calloc(set->matrix->size2);
-  gsl_matrix      *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
-    prep_names(out);
+  gsl_vector    *y_data     = gsl_vector_alloc(set->matrix->size1); 
+  gsl_vector    *xpy        = gsl_vector_calloc(set->matrix->size2);
+  gsl_matrix    *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
+    prep_names(epout);
     APOP_COL(set, 0, firstcol);
     gsl_vector_memcpy(y_data,firstcol);
     gsl_vector_set_all(firstcol, 1);     //affine: first column is ones.
@@ -469,15 +481,15 @@ apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
 
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   //(X'X)
     gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)
-    xpxinvxpy(set->matrix, y_data, xpx, xpy, out);
+    xpxinvxpy(set->matrix, y_data, xpx, xpy, epout);
     gsl_vector_free(y_data); gsl_vector_free(xpy);
 
-    if ((ep == NULL) || (ep->destroy_data==0)){
+    if (!olp->destroy_data){
         apop_data_free(set);
     }
-	if (out->ep.uses.confidence)
-        apop_estimate_parameter_t_tests(out);
-    return out;
+	if (epout->uses.confidence)
+        apop_estimate_parameter_t_tests(epout);
+    return epout;
 }
 
 /** The partitioned regression.
@@ -502,16 +514,16 @@ apop_estimate * apop_estimate_OLS(apop_data *inset, void *epin){
 \param set2    the second half of the data set
 \param  m1      If you have these, give them to me and I won't waste time calculating them.
 \param  m2      If you have these, give them to me and I won't waste time calculating them.
-\param uses     If NULL, do everything; else, produce those \ref apop_estimate elements which you specify. You always get the parameters and never get the log likelihood.
+\param uses     If NULL, do everything; else, produce those \ref apop_params elements which you specify. You always get the parameters and never get the log likelihood.
 
 \bug The cross-variances are assumed to be zero, which is wholeheartedly false. It's not too big a deal because nobody ever uses them for anything.
 */
 /*
-apop_estimate * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2){
+apop_params * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2){
 apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
     prep_inventory_names(set1->names);
 apop_estimate	*out1, *out2,
-                *out	= apop_estimate_alloc(set1->matrix->size1, set1->matrix->size2 + set2->matrix->size2, set1->names, actual_uses);
+                *out	= apop_params_alloc(set1->matrix->size1, set1->matrix->size2 + set2->matrix->size2, set1->names, actual_uses);
 gsl_matrix      *t1,*t2, *augmented_first_matrix, *zero1, *zero2,
                 *dependent  =gsl_matrix_alloc(set1->matrix->size1, 1);
 gsl_vector_view d;
@@ -658,7 +670,7 @@ char        n[1000];
 
 \todo finish this documentation. [Was in a rush today.]
 */
-apop_estimate *apop_estimate_fixed_effects_OLS(apop_data *data,  gsl_vector *categories){
+apop_params *apop_estimate_fixed_effects_OLS(apop_data *data,  gsl_vector *categories){
 apop_data *dummies = apop_produce_dummies(categories, 0);
     apop_data_stack(data, dummies, 'c');
     return apop_OLS.estimate(dummies, NULL);
@@ -684,22 +696,22 @@ apop_data *dummies = apop_produce_dummies(categories, 0);
 
 \ingroup regression
   */
-apop_data *apop_estimate_correlation_coefficient(apop_estimate *in){
+apop_data *apop_estimate_correlation_coefficient (apop_params *in){
 double          sse, sst, rsq, adjustment;
 size_t          obs     = in->data->matrix->size1;
 size_t          indep_ct= in->data->matrix->size2 - 1;
 gsl_vector      v;  
 apop_data       *out    = apop_data_alloc(0, 5,-1);
-    if (!in->ep.uses.predicted
-        || !in->ep.uses.dependent){
+    if (!in->uses.predicted
+        || !in->uses.expected){
         if (apop_opts.verbose)
-            printf("I need predicted and dependent to be set in the apop_estimate->ep.uses before I can calculate the correlation coefficient. returning NULL.\n");
+            printf("I need predicted and dependent to be set in the apop_estimate->uses before I can calculate the correlation coefficient. returning NULL.\n");
         return NULL;
     }
-    v   = gsl_matrix_column(in->dependent->matrix, 
-                apop_name_find(in->dependent->names, "residual", 'c')).vector;
+    v   = gsl_matrix_column(in->expected->matrix, 
+                apop_name_find(in->expected->names, "residual", 'c')).vector;
     gsl_blas_ddot(&v, &v, &sse);
-    v   = gsl_matrix_column(in->dependent->matrix, 0).vector; //actual.
+    v   = gsl_matrix_column(in->expected->matrix, 0).vector; //actual.
     sst = apop_vector_var(&v) * (v.size - 1);
 //    gsl_blas_ddot(&v, &v, &sst);
     rsq = 1. - (sse/sst);
@@ -715,6 +727,6 @@ apop_data       *out    = apop_data_alloc(0, 5,-1);
 /** A synonym for \ref apop_estimate_correlation_coefficient, q.v. 
  \ingroup regression
  */
-apop_data *apop_estimate_r_squared(apop_estimate *in){
+apop_data *apop_estimate_r_squared (apop_params *in){
     return apop_estimate_correlation_coefficient(in);
 }

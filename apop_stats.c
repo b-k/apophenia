@@ -7,7 +7,6 @@
 #include "db.h"     //just for apop_opts
 #include "apophenia/stats.h"
 #include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort_vector.h>
 
 /** \defgroup basic_stats Some basic statistical functions. 
 
@@ -413,40 +412,6 @@ double apop_random_double(double min, double max, gsl_rng *r){
 int apop_random_int(const double min, const double max, const gsl_rng *r){
   double		base = gsl_rng_uniform(r);
 	return (int) (base * (max - min + 1) - min);
-}
-
-/** Returns a vector of size 101, where returned_vector[95] gives the
-value of the 95th percentile, for example. Returned_vector[100] is always
-the maximum value, and returned_vector[0] is always the min (regardless
-of rounding rule).
-
-\param data	a gsl_vector of data.
-\param rounding This will either be 'u', 'd', or 'a'. Unless your data is
-exactly a multiple of 100, some percentiles will be ambiguous. If 'u',
-then round up (use the next highest value); if 'd' (or anything else),
-round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or
-more  of the sample is below returned_vector[5]"; if 'd' or 'a', then you can
-say "5% or more of the sample is above returned_vector[5]".  
-
-\ingroup basic_stats
-*/ 
-double * apop_vector_percentiles(gsl_vector *data, char rounding){
-  gsl_vector	*sorted	= gsl_vector_alloc(data->size);
-  double		*pctiles= malloc(sizeof(double) * 101);
-  int		i, index;
-	gsl_vector_memcpy(sorted,data);
-	gsl_sort_vector(sorted);
-	for(i=0; i<101; i++){
-		index = i*(data->size-1)/100.0;
-		if (rounding == 'u' && index != i*(data->size-1)/100.0)
-			index ++; //index was rounded down, but should be rounded up.
-		if (rounding == 'a' && index != i*(data->size-1)/100.0)
-            pctiles[i]	= (gsl_vector_get(sorted, index)+gsl_vector_get(sorted, index+1))/2.;
-        else pctiles[i]	= gsl_vector_get(sorted, index);
-	}
-	gsl_vector_free(sorted);
-	return pctiles;
-
 }
 
 /** Returns the sum of the elements of a matrix. Occasionally convenient.

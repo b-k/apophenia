@@ -89,9 +89,6 @@ double apop_multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* 
 double apop_random_double(double min, double max, gsl_rng *r);
 int apop_random_int(const double min, const double max, const gsl_rng *r);
 
-//produce a 101-element vector of percentiles.
-double * apop_vector_percentiles(gsl_vector *data, char rounding);
-
 long double apop_matrix_sum(gsl_matrix *m);
 double apop_matrix_mean(gsl_matrix *data);
 double apop_matrix_var_m(gsl_matrix *data, double mean);
@@ -109,5 +106,9 @@ void apop_matrix_replace(gsl_matrix *m, int (* test)(double), double replace_wit
 
 //from apop_fisher.c:
 apop_data *apop_test_fisher_exact(apop_data *intab);
+
+//from apop_sort.c:
+double * apop_vector_percentiles(gsl_vector *data, char rounding);
+apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
 
 __END_DECLS

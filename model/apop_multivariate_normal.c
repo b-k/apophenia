@@ -9,7 +9,7 @@
 
 apop_model apop_multivariate_normal;
 
-double apop_multinormal_ll_prob(const apop_data *v, apop_data *x, void * m){
+double apop_multinormal_ll_prob(const apop_data *v, apop_data *x, apop_params * m){
   double    determinant = 0;
   gsl_matrix* inverse   = NULL;
   int       i, dimensions  = x->matrix->size2;
@@ -33,32 +33,28 @@ double apop_multinormal_ll_prob(const apop_data *v, apop_data *x, void * m){
     return ll;
 }
 
-double apop_multinormal_prob(const apop_data *v, apop_data *x, void * m){
+double apop_multinormal_prob(const apop_data *v, apop_data *x, apop_params * m){
     return exp(apop_multinormal_ll_prob(v, x, m));
 }
 
-static apop_estimate * multivariate_normal_estimate(apop_data * data, void *parameters){
-    apop_model *mn_copy = apop_model_copy(apop_multivariate_normal);
-    mn_copy->vsize      = 
-    mn_copy->msize1     = 
-    mn_copy->msize2     = data->matrix->size2;
-apop_estimate   *est    = apop_estimate_alloc(data,*mn_copy, parameters);
+static apop_params * multivariate_normal_estimate(apop_data * data, apop_params *p){
+    if (!p) p = apop_params_alloc(data, &apop_multivariate_normal, NULL, NULL);
   int   i;
     for (i=0; i< data->matrix->size2; i++){
         APOP_COL(data,i,v);
-        gsl_vector_set(est->parameters->vector, i, apop_mean(v));
+        gsl_vector_set(p->parameters->vector, i, apop_mean(v));
     }
-    est->covariance         =  apop_data_covariance_matrix(data, 0);
-    est->parameters->matrix =  est->covariance->matrix;
+    p->covariance         =  apop_data_covariance_matrix(data, 0);
+    p->parameters->matrix =  p->covariance->matrix;
     /*if (est->ep.uses.log_likelihood)
         est->log_likelihood = normal_log_likelihood(est->parameters->vector, data, NULL);
     if (est->ep.uses.covariance)
         apop_numerical_covariance_matrix(apop_normal, est, data);*/
-    return est;
+    return p;
 }
 
 /** The nice, easy method from Devroye, p 565 */
-static void mvnrng(double *out, apop_data *params, apop_ep *eps, gsl_rng *r){
+static void mvnrng(double *out, apop_data *params, gsl_rng *r, apop_params *eps){
   int i, j;
   gsl_vector *v     = gsl_vector_alloc(params->vector->size);
   gsl_vector *dotted= gsl_vector_calloc(params->vector->size);
@@ -85,6 +81,6 @@ static void mvnrng(double *out, apop_data *params, apop_ep *eps, gsl_rng *r){
   \todo This needs an RNG and other filling in.
   \ingroup models
  */
-apop_model apop_multivariate_normal= {"Multivariate normal distribution", 0, 0, 0,
+apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1,
      multivariate_normal_estimate, apop_multinormal_prob, apop_multinormal_ll_prob, NULL, NULL, mvnrng};
      /*multinormal_estimate, normal_p, normal_log_likelihood, normal_dlog_likelihood, beta_1_greater_than_x_constraint, normal_rng};*/

@@ -51,7 +51,7 @@ Thus, the typical analysis using Apophenia would take the following steps:
  \li Read the data into the database using \ref apop_convert_text_to_db.
  \li Use SQL queries handled by \ref apop_query to massage the data as needed.
  \li Use \ref apop_query_to_data to pull the data into an in-memory apop_data set.
- \li Call a regression function such as \ref apop_OLS "apop_OLS.estimate(data_set)" or a maximum likelihood estimator such as a \ref apop_probit "apop_probit.estimate(data_set)" to fit parameters to the data. This will return an \ref apop_estimate object.
+ \li Call a regression function such as \ref apop_OLS "apop_OLS.estimate(data_set)" or a maximum likelihood estimator such as a \ref apop_probit "apop_probit.estimate(data_set)" to fit parameters to the data. This will return an \ref apop_params object.
  \li Interrogate the returned estimate, by dumping it to the screen with \ref apop_estimate_print, sending its parameters and variance-covariance matrices to a test, et cetera.
 
 If this seems a bit vague, have a look at this \ref sample_program.
@@ -380,10 +380,10 @@ The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such a
 
 \subsection vim Syntax highlighting 
 If your text editor supports syntax highlighting, there are a few types defined in the Apophenia and GSL headers which may be worth coloring.
-For <tt>vim</tt>, for example. add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
+E.g., for <tt>vim</tt>, add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
 \verbatim
-syn keyword     cType           gsl_matrix gsl_vector apop_data
-syn keyword     cType           apop_name apop_model apop_estimate  apop_ep
+syn keyword     cType           gsl_matrix gsl_rng gsl_vector apop_data
+syn keyword     cType           apop_name apop_model apop_params 
 \endverbatim
 Other text editors have similar files to which you can add the above types.
 */
@@ -462,7 +462,7 @@ statements about those parameters.
 
 Apophenia facilitates this via its \ref apop_model objects. Each object is
 a model as described above, and includes a method named <tt>estimate</tt>
-which takes in data and returns an \ref apop_estimate which includes
+which takes in data and returns an \ref apop_params which includes
 the parameter estimates and the characteristics one would need for
 hypothesis testing.
 
@@ -495,7 +495,7 @@ an estimate:
 
 \code
 apop_data 	    *data 		    = read_in_data();
-apop_estimate 	*the_estimate 	= apop_probit.estimate(data, NULL, NULL);
+apop_params 	*the_estimate 	= apop_probit.estimate(data, NULL, NULL);
 apop_estimate_print(the_estimate);
 \endcode
 

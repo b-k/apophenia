@@ -16,18 +16,19 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 /** The procedure here is to simply modify the input data, run OLS on
 the modified data, and then claim that the output was from WLS.
 */
-apop_estimate * wls_estimate(apop_data *inset, void *epin){
-  apop_ep    *epcopy = malloc(sizeof(*epcopy)),
+apop_params * wls_estimate(apop_data *inset, apop_params *epin){
+  apop_params    *epcopy = malloc(sizeof(*epcopy)),
                             *ep     = epin;
-  apop_estimate             *out;
+  apop_params             *out;
   apop_data                 *set;
   int                       i;
   gsl_vector                v;
+  apop_OLS_params           *op = malloc(sizeof(*op));
     if (!inset->weights){
-        printf("You need to specify weights to use apop_WLS.\n");
+        printf("You need to specify weights in the data set to use apop_WLS.\n");
         return NULL;
     }
-    if (ep == NULL || ep->destroy_data==0)
+    if (!ep || strcmp(ep->method_name, "OLS") || ((apop_OLS_params*)ep->method_params)->destroy_data==0)
         set = apop_data_copy(inset);
     else
         set = inset;
@@ -36,11 +37,12 @@ apop_estimate * wls_estimate(apop_data *inset, void *epin){
         gsl_vector_mul(&v, inset->weights);
     }
     memcpy(epcopy, ep, sizeof(*epcopy));
-    epcopy->destroy_data    = 1;
-    out                     = apop_OLS.estimate(set, epcopy);
+    op->destroy_data    = 1;
+    epcopy->method_params = op;
+    op->ep              = ep;
+    out                 = apop_OLS.estimate(set, epcopy);
     free(out->model);
-    out->model              = apop_model_copy(apop_WLS);
-    out->model->vsize       = set->matrix->size2;
+    out->model          = apop_model_copy(apop_WLS);
     return out;
 }
 
@@ -51,7 +53,7 @@ This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.
 
  */
-static double wls_log_likelihood (const apop_data *beta, apop_data *d, void *params){ 
+static double wls_log_likelihood (const apop_data *beta, apop_data *d, apop_params *params){ 
   int           i; 
   long double   total_prob  = 0; 
   double        sigma, expected, actual, weight;
@@ -79,7 +81,7 @@ static double wls_log_likelihood (const apop_data *beta, apop_data *d, void *par
 }
 
 
-static double wls_p (const apop_data *beta, apop_data *d, void *p){ 
+static double wls_p (const apop_data *beta, apop_data *d, apop_params *p){ 
     return exp(wls_log_likelihood(beta, d, p));
             }
 
@@ -88,4 +90,4 @@ static double wls_p (const apop_data *beta, apop_data *d, void *p){
   You will need to provide the weights in data->weights. Otherwise, this model is just like \ref apop_OLS.
 \ingroup models
 */
-apop_model apop_WLS = {"WLS", -1, 0,0, wls_estimate, wls_p, wls_log_likelihood};
+apop_model apop_WLS = {"WLS", -1,0,0, wls_estimate, wls_p, wls_log_likelihood};

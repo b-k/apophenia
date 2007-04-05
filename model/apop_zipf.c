@@ -23,11 +23,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <gsl/gsl_sf_zeta.h>
 
 
-static apop_estimate * zipf_estimate(apop_data * data, void *parameters){
+static apop_params * zipf_estimate(apop_data * data, apop_params *parameters){
     return apop_maximum_likelihood(data, apop_zipf, parameters);
 }
 
-static double beta_greater_than_x_constraint(const apop_data *beta, void * d, apop_data *returned_beta, void *v){
+static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
     //constraint is 1 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint) constraint = apop_data_calloc(1,1,1);
@@ -44,7 +44,7 @@ static double oneline_log(gsl_vector *v){
     return like;
 }
 
-static double zipf_log_likelihood(const apop_data *beta, apop_data *d, void *v){
+static double zipf_log_likelihood(const apop_data *beta, apop_data *d, apop_params *v){
   gsl_matrix    *data   = d->matrix;
   long double   bb      = gsl_vector_get(beta->vector, 0);
   gsl_vector    *logs   = apop_matrix_map(data, oneline_log);
@@ -55,11 +55,11 @@ static double zipf_log_likelihood(const apop_data *beta, apop_data *d, void *v){
     return like;
 }    
 
-static double zipf_p(const apop_data *beta, apop_data *d, void *v){
+static double zipf_p(const apop_data *beta, apop_data *d, apop_params *v){
     return exp(zipf_log_likelihood(beta, d, v));
 }    
 
-static void zipf_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, void *v){
+static void zipf_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *v){
   double      bb        = gsl_vector_get(beta->vector, 0);
   gsl_matrix  *data     = d->matrix;
   gsl_vector  *logs     = apop_matrix_map(data, oneline_log);
@@ -88,7 +88,7 @@ apop_zipf.draw(r, 1.4, NULL);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
-static void zipf_rng( double *out, apop_data * param, apop_ep *ignore_me, gsl_rng* r){
+static void zipf_rng( double *out, apop_data * param, gsl_rng* r, apop_params *ignore_me){
   double a  = gsl_vector_get(param->vector, 0);
     if (a  <= 1){
 //        if (apop_opts.verbose)
@@ -115,7 +115,7 @@ Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distributi
 
 Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
 
-apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_ep.
+apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_params.
 
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
 
@@ -124,5 +124,5 @@ apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_ep.
 \f$dlnZ(a)/da    = -{a \zeta(a)\over\log(\zeta(a-1))} -  \log(i)        \f$
 \ingroup models
 */
-apop_model apop_zipf = {"Zipf", 1,  0,0, 
+apop_model apop_zipf = {"Zipf", 1,0,0, 
     zipf_estimate, zipf_p, zipf_log_likelihood, zipf_dlog_likelihood, beta_greater_than_x_constraint, zipf_rng};

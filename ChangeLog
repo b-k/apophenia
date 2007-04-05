@@ -3,6 +3,20 @@
 **Change that could require recoding existing code.
 ]
 
+	0.19 April 2007
+****Eliminated the apop_estimate and apop_ep structures, replacing them
+with te apop_params structure. The apop_params + apop_model pair form a
+closure representing a parametrized model. Expect the uses element to go
+away soon; after that, things should be stable. Parameters for individual methods now have their own space; try
+apop_ml_params_alloc and apop_OLS_params_alloc, for example.
+If you are just doing things like
+apop_estimate_show(apop_OLS.estimate(data,NULL));
+then don't worry, but if you are doing a lot with the input parameters,
+then have a look at Chapter 6 of _Modeling with Data_.
+--apop_histogram model
+**Gradually rewriting the histogram functions from before to make use of
+that model. E.g., eliminated apop_vector_to_cmf.
+
 	0.18 March 2007
 **apop_text_to_db now assumes column names unless you specify -nc.
 --If you set parameter_ct==0 in your model definition, the MLEs will
@@ -24,7 +38,7 @@ the model for all the changes.
 update, just put a 0, at the head of the arg list.
 --An absolutely fabulous apop_linear_constraint function.
 --Produce a model with some parameters fixed via apop_model_fix_params.
---apop_beta distribution
+--apop_beta model
 
 	February 2007
 

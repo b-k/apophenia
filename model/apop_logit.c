@@ -24,7 +24,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 /* 
 This is an MLE, so this is a one-liner.
 */
-static apop_estimate * logit_estimate(apop_data * data,  void *parameters){
+static apop_params * logit_estimate(apop_data * data,  apop_params *parameters){
 	return apop_maximum_likelihood(data,  apop_logit, parameters);
 }
 
@@ -41,7 +41,7 @@ int         keep_xdotbeta       = 0;
 
 
 */
-static double logit_log_likelihood(const apop_data *beta, apop_data *d, void *p){
+static double logit_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
 size_t	    i;
 double	    loglike 	= 0,
             xb;
@@ -64,7 +64,7 @@ gsl_matrix  independent = gsl_matrix_submatrix(data, 0,1,
 	return loglike;
 }
 
-static double logit_p(const apop_data *beta, apop_data *d, void *p){
+static double logit_p(const apop_data *beta, apop_data *d, apop_params *p){
     return exp(logit_log_likelihood(beta, d, p));
 }
 
@@ -73,7 +73,7 @@ static double logit_p(const apop_data *beta, apop_data *d, void *p){
   The format is often the same as above: go line by line through a gsl_matrix.
   The sample is a three-dimensional parameter vector.
  */
-static void logit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, void *p){
+static void logit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
 int		    i,j;
 double	    dtotal[3];
 gsl_matrix 	*data 	= d->matrix;
@@ -95,7 +95,7 @@ gsl_matrix 	*data 	= d->matrix;
   Simple, but some trickery to keep xdotbeta. Notice that the two switches
   leave the function with the same values with which they came in.
 
-static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df, void *p){
+static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df, apop_params *p){
     keep_xdotbeta       = 1;
 	*f	= logit_log_likelihood(beta, d, NULL);
     calculate_xdotbeta  = 0;
@@ -106,14 +106,6 @@ static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vect
 	*/
 
 
-/* For making random draws from your model given the parameters.
-You can delete this function entirely if so inclined. If so, remember
-to replace this function with NULL in the model definition below.
-*/
-static void logit_rng( double *out, gsl_vector * a, apop_ep* r){
-    //place math here.
-    return;
-}
 
 /** The binary logit model.
  The first column of the data matrix this model expects is ones and zeros;
@@ -122,4 +114,4 @@ static void logit_rng( double *out, gsl_vector * a, apop_ep* r){
 
 \ingroup models
 */
-apop_model apop_logit = {"logit", -1, 0,0, logit_estimate, logit_p, logit_log_likelihood, logit_dlog_likelihood};
+apop_model apop_logit = {"logit",-1,0,0,  logit_estimate, logit_p, logit_log_likelihood, logit_dlog_likelihood};

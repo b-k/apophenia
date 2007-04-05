@@ -6,12 +6,12 @@ AM_CFLAGS = -g -Wall -I./ -I/usr/include/mysql -pthread
 #apop_text_to_db_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
-			apop_linear_algebra.c apop_mle.c apop_histogram.c \
+			apop_linear_algebra.c apop_mle.c apop_hist.c 	\
 			apop_asst.c apop_data.c apop_regression.c 		\
 			apop_fexact.c apop_stats.c apop_bootstrap.c 	\
 			apop_name.c apop_output.c apop_estimate.c 		\
 			apop_mapply.c apop_missing_data.c				\
-			apop_linear_constraint.c 						\
+			apop_linear_constraint.c apop_sort.c			\
 			apop_model_fix_params.c							\
 			vasprintf/asnprintf.c vasprintf/printf-args.c 	\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
@@ -26,7 +26,8 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_waring.c model/apop_waring_rank.c 	\
 			model/apop_yule.c 	model/apop_yule_rank.c 		\
 			model/apop_multivariate_normal.c				\
-			model/apop_uniform.c model/apop_beta.c
+			model/apop_uniform.c model/apop_beta.c			\
+			model/apop_histogram.c 
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \

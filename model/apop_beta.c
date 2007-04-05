@@ -21,7 +21,7 @@ Feel free to augment this with your own copyright: modifications (c) you, today.
 #include <stdio.h>
 #include <assert.h>
 
-static double beta_log_likelihood(const apop_data *beta, apop_data *d, void *p);
+static double beta_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p);
 
 /* Every model should have an estimate function. If you are doing an
  MLE, then it should be the one line function here, and then you will need
@@ -31,17 +31,17 @@ static double beta_log_likelihood(const apop_data *beta, apop_data *d, void *p);
 
  a
 */
-static apop_estimate * beta_estimate(apop_data * data,  void *parameters){
-apop_estimate 	*est	    = apop_estimate_alloc(data, apop_beta, parameters);
+static apop_params * beta_estimate(apop_data * data,  apop_params *parameters){
+apop_params 	*est	    = apop_params_alloc(data, &apop_beta, parameters, NULL);
 double		mean, var, alpha, beta;
 	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
     alpha   = gsl_pow_2(mean) * ((1-mean)/var - 1/mean);
     beta    = alpha * (1-mean)/mean;
 	gsl_vector_set(est->parameters->vector, 0, alpha);
 	gsl_vector_set(est->parameters->vector, 1, beta);
-	if (est->ep.uses.log_likelihood)
+	if (est->uses.log_likelihood)
 		est->log_likelihood	= beta_log_likelihood(est->parameters, data, parameters);
-	if (est->ep.uses.covariance)
+	if (est->uses.covariance)
 		apop_numerical_covariance_matrix(apop_beta, est, data);
 	return est;
     
@@ -54,7 +54,7 @@ Often, the input data is a gsl_matrix, and you need to go line by line
 through the matrix, calculating the log likelihood. That's the sample
 code here.  
 */
-static double beta_log_likelihood(const apop_data *in, apop_data *d, void *p){
+static double beta_log_likelihood(const apop_data *in, apop_data *d, apop_params *p){
 int		    i,j;
 double	    x, 
             loglike    	= 0,
@@ -69,7 +69,7 @@ gsl_matrix 	*data 		= d->matrix;
 	return loglike  + gsl_sf_lnbeta (alpha, beta)*data->size1*data->size2;
 }
 
-static double beta_p(const apop_data *beta, apop_data *d, void *p){
+static double beta_p(const apop_data *beta, apop_data *d, apop_params *p){
     return exp(beta_log_likelihood(beta, d, p));
 }
 
@@ -105,7 +105,7 @@ gsl_matrix 	*data 	= d->matrix;
 You can delete this function entirely if so inclined. If so, remember
 to replace this function with NULL in the model definition below.
  */
-static double beta_constraint(const apop_data *beta, void * d, apop_data *returned_beta, void *v){
+static double beta_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
     //constraint is 0 < beta_1 and  0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint)constraint= apop_data_calloc(2,2,1);
@@ -115,7 +115,7 @@ static double beta_constraint(const apop_data *beta, void * d, apop_data *return
 }
 
 
-static void beta_rng(double *out, apop_data * a, apop_ep* eps, gsl_rng *r){
+static void beta_rng(double *out, apop_data * a, gsl_rng *r, apop_params* eps){
     *out = gsl_ran_beta(r, apop_data_get(a,0,-1), apop_data_get(a,1,-1));
 }
 
@@ -127,5 +127,5 @@ You should describe the format of the input data here.
 
 \ingroup models
 */
-apop_model apop_beta = {"Beta distribution", -1, 0,0,
+apop_model apop_beta = {"Beta distribution", 2,0,0,
 	beta_estimate, beta_p, beta_log_likelihood, NULL, beta_constraint, beta_rng};

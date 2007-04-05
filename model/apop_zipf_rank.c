@@ -19,11 +19,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <assert.h>
 
 
-static apop_estimate * zipf_estimate(apop_data * data, void *parameters){
+static apop_params * zipf_estimate(apop_data * data, apop_params *parameters){
     return apop_maximum_likelihood(data, apop_zipf_rank, parameters);
 }
 
-static double beta_greater_than_x_constraint(const apop_data *beta, void * d, apop_data *returned_beta, void *v){
+static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
     //constraint is 1 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint) constraint = apop_data_calloc(1,1,1);
@@ -34,7 +34,7 @@ static double beta_greater_than_x_constraint(const apop_data *beta, void * d, ap
 
 #include <gsl/gsl_sf_zeta.h>
 
-static double zipf_log_likelihood(const apop_data *beta, apop_data *d, void *params){
+static double zipf_log_likelihood(const apop_data *beta, apop_data *d, apop_params *params){
   long double     like    = 0, 
                   a       = gsl_vector_get(beta->vector, 0);
   int             j;
@@ -47,11 +47,11 @@ static double zipf_log_likelihood(const apop_data *beta, apop_data *d, void *par
     return like;
 }    
 
-static double zipf_p(const apop_data *beta, apop_data *d, void *params){
+static double zipf_p(const apop_data *beta, apop_data *d, apop_params *params){
     return exp(zipf_log_likelihood(beta, d, params));
 }
 
-static void zipf_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, void *params){
+static void zipf_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *params){
   long double     a       = gsl_vector_get(beta->vector, 0),
                   dlike   = 0;
   int             j;
@@ -80,7 +80,7 @@ apop_zipf.rng(r, 1.4);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
-static void  zipf_rng( double *out, apop_data* a, apop_ep *p, gsl_rng* r){
+static void  zipf_rng( double *out, apop_data* a, gsl_rng* r, apop_params *p){
     if (a->vector->data[0]  <= 1){
 //        if (apop_opts.verbose)
             printf("apop_zipf.rng: Zipf needs a parameter >=1. Returning 0.\n"); 
@@ -108,7 +108,7 @@ Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distributi
 
 The data set needs to be in rank-form. The first column is the frequency of the most common item, the second is the frequency of the second most common item, &c.
 
-apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_ep.
+apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_params.
 
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
 
@@ -117,5 +117,5 @@ apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_ep.
 \f$dlnZ(a)/da    = -{\zeta(a)\over a \log(\zeta(a-1))} -  \log(i)        \f$
 \ingroup models
 */
-apop_model apop_zipf_rank = {"Zipf, rank data", 1,  0,0, 
+apop_model apop_zipf_rank = {"Zipf, rank data", 1,0,0, 
     zipf_estimate, zipf_p, zipf_log_likelihood, zipf_dlog_likelihood, beta_greater_than_x_constraint, zipf_rng};
