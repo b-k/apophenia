@@ -662,6 +662,44 @@ void test_histograms(){
 //    apop_plot_histogram(out, 100, NULL); 
 }
 
+int subtest_updating(apop_model prior, apop_model likelihood){
+  int i, j, reps    = 10;
+  int tsize         = 1e3;
+  gsl_rng   *r      = apop_rng_alloc(2343);
+  apop_data *p      = apop_data_alloc(2,0,0);
+  apop_data *pb     = apop_data_alloc(1,0,0);
+  apop_data *tdata  = apop_data_alloc(0,tsize,1);
+    apop_data_set(p, 0, -1, 1);
+    apop_data_set(p, 1, -1, 1);
+    apop_data_set(pb, 0, -1, .55);
+  apop_params   *prior_eps = apop_params_alloc_p(p);
+  apop_params   *pbp       = apop_params_alloc_p(pb);
+  apop_params   *outparamsbb;
+  apop_model *almost_bern  = apop_model_copy(likelihood);
+    strcpy(almost_bern->name, "Bernie's distribution");
+    for (j=0; j< reps; j++){
+        for (i=0; i< tsize; i++)
+            likelihood.draw(apop_data_ptr(tdata,i,0), r, pbp);
+        if (j==0)
+            outparamsbb  = apop_update(tdata, prior, *almost_bern, prior_eps, NULL, NULL, r, 6e3, 0.53,1200);
+        else
+            outparamsbb  = apop_update(tdata, *outparamsbb->model, likelihood, outparamsbb, NULL, NULL, r, 6e3, 0.53,1200);
+        prior_eps =  apop_update(tdata, prior, likelihood, prior_eps, NULL, NULL, r, 0, 0,0);
+    }
+    float r1= prior_eps->parameters->vector->data[0]/ prior_eps->parameters->vector->data[1];
+    printf("the alt:\n");
+    for (i=0; i< tsize; i++)
+        apop_histogram.draw(apop_data_ptr(tdata, i, 0), r, outparamsbb);
+    apop_params *final= prior.estimate(tdata, NULL);
+    float r2= final->parameters->vector->data[0]/ final->parameters->vector->data[1];
+    printf("%g\n", r1/r2);
+    return 0;
+}
+
+void test_updating (){
+    subtest_updating(apop_gamma, apop_exponential);
+    subtest_updating(apop_beta, apop_bernoulli);
+}
 
 #define do_int_test(text, fn)   if (verbose)    \
                                 printf(text);  \
@@ -696,6 +734,7 @@ apop_params *e  = apop_OLS.estimate(d,NULL);
     for (i=0; i< dist_ct; i++){
         do_test(dist[i].name, test_distribution(r, dist[i]));
     }
+    do_test("test apop_update", test_updating());
     do_test("test apop_histogram model", test_histograms());
     do_test("test apop_data sort", test_data_sort());
     do_int_test("nist_tests:", nist_tests());

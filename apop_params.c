@@ -108,7 +108,7 @@ See also \c apop_params_complete_copy, which also copies most of the internal po
   
   \param in The apop_param to copy
   \return  A pointer to a new copy.
-  */
+\ingroup inv_and_est  */
 apop_params *apop_params_copy(apop_params *in){
     if (!in) return NULL;
   apop_params *out  = malloc(sizeof(apop_params));
@@ -128,7 +128,7 @@ data, under the assumption that it is huge.
 \param method_size  The size of the \c method_params structure. E.g. \c sizeof(apop_mle_params). Zero if there is no such structure.
 \param model_size The size of the \c model_params structure. Zero if there is no such structure.
 \param more_size The size of the \c more structure. Zero if there is no such structure.
-*/
+\ingroup inv_and_est  */
 apop_params *apop_params_clone(apop_params *in, size_t method_size, size_t model_size, size_t more_size){
     if (!in) return NULL;
   apop_params *out  = malloc(sizeof(apop_params));

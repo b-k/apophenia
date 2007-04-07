@@ -88,34 +88,6 @@ double              min, max;
     return h;
 }
 
-/** Produce a <tt>gsl_histogram</tt> from an \ref apop_data set. Puts
- all data in both the <tt>vector</tt> and <tt>matrix</tt> elements
- into the bin.
-
-  \param data   The data set
-  \param bins   The number of (evenly-spaced) bins
-  \ingroup histograms
-  */
-gsl_histogram * apop_data_to_histogram(apop_data *data, int bins){
-int                 i, j;
-gsl_histogram       *h      = gsl_histogram_alloc(bins);
-double              minv    = GSL_POSINF, 
-                    maxv    = GSL_NEGINF,
-                    minm    = GSL_POSINF,
-                    maxm    = GSL_NEGINF;
-    if (data->vector) gsl_vector_minmax(data->vector, &minv, &maxv);
-    if (data->matrix) gsl_matrix_minmax(data->matrix, &minm, &maxm);
-    gsl_histogram_set_ranges_uniform(h, GSL_MIN(minv,minm), GSL_MAX(maxv,maxm)+10*GSL_DBL_EPSILON);
-    if (data->vector)
-        for (i=0; i< data->vector->size; i++)
-            gsl_histogram_increment(h,gsl_vector_get(data->vector,i));
-    if (data->matrix)
-        for (i=0; i< data->matrix->size1; i++)
-            for (j=0; j< data->matrix->size2; j++)
-            gsl_histogram_increment(h,gsl_matrix_get(data->matrix,i,j));
-    return h;
-}
-
 /** Make two histograms that share bin structures: same max/min, same
  bin partitions. You can then plot the two together or run goodness-of-fit tests.
 

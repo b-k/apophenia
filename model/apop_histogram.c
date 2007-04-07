@@ -37,10 +37,16 @@ apop_params *apop_histogram_params_alloc(apop_data *data, int bins, apop_params 
     } else
         hp->ep  = pin;
     snprintf(pin->method_name,100, "Histogram");
-  double min, max;
-    gsl_matrix_minmax(data->matrix, &min, &max);
+  size_t              i, j, sum = 0;
+  double              minv    = GSL_POSINF,
+                      maxv    = GSL_NEGINF,
+                      minm    = GSL_POSINF,
+                      maxm    = GSL_NEGINF;
+    if (data->vector) gsl_vector_minmax(data->vector, &minv, &maxv);
+    if (data->matrix) gsl_matrix_minmax(data->matrix, &minm, &maxm);
     hp->pdf = gsl_histogram_alloc(bins);
-    gsl_histogram_set_ranges_uniform (hp->pdf, min, max);
+    gsl_histogram_set_ranges_uniform(hp->pdf, GSL_MIN(minv,minm), GSL_MAX(maxv,maxm));
+   //add infinity bins.
     double  *newbins = malloc(sizeof(double)* ( bins +3));
     newbins[0]                  = GSL_NEGINF;
     memcpy((newbins + 1), hp->pdf->range, sizeof(double) * (bins+1));
@@ -50,19 +56,29 @@ apop_params *apop_histogram_params_alloc(apop_data *data, int bins, apop_params 
     hp->pdf = gsl_histogram_alloc(bins+2);
     gsl_histogram_set_ranges(hp->pdf, newbins,bins+3);
 
-  size_t i,j, sum;
-    for (i=0; i< data->matrix->size1; i++)
-        for (j=0; j< data->matrix->size2; j++){
-            gsl_histogram_increment(hp->pdf, gsl_matrix_get(data->matrix, i,j));
+    if (data->vector)
+        for (i=0; i< data->vector->size; i++){
+            gsl_histogram_increment(hp->pdf,gsl_vector_get(data->vector,i));
+            sum++;
+        }
+    if (data->matrix)
+        for (i=0; i< data->matrix->size1; i++)
+            for (j=0; j< data->matrix->size2; j++){
+            gsl_histogram_increment(hp->pdf,gsl_matrix_get(data->matrix,i,j));
             sum ++;
         }
     for (i=0; i< hp->pdf->n; i++)
-            hp->pdf->bin[i]    /= (sum + 0.0);
+        hp->pdf->bin[i]    /= (sum + 0.0);
     hp->cdf =NULL;
     return hp->ep;
 }
 
 gsl_histogram *gpdf;
+
+apop_params *est(apop_data *d, apop_params *in){
+    return apop_histogram_params_alloc(d, 1000, in);
+
+}
 
 static double one_vector(gsl_vector *in){
   size_t    i, k;
@@ -120,4 +136,4 @@ static void histogram_rng(double *out, gsl_rng *r, apop_params* eps){
 
 \ingroup models
 */
-apop_model apop_histogram = {"histogram", 0,0,0, NULL, histogram_p, histogram_log_likelihood, NULL, NULL, histogram_rng};
+apop_model apop_histogram = {"histogram", 0,0,0, est, histogram_p, histogram_log_likelihood, NULL, NULL, histogram_rng};

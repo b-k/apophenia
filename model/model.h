@@ -18,6 +18,8 @@
 __BEGIN_DECLS
 
 extern apop_model apop_beta;
+extern apop_model apop_bernoulli;
+extern apop_model apop_binomial; //on hiatus.
 extern apop_model apop_exponential;
 extern apop_model apop_exponential_rank;
 extern apop_model apop_gamma;

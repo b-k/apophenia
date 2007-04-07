@@ -12,21 +12,22 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			apop_name.c apop_output.c apop_params.c 		\
 			apop_mapply.c apop_missing_data.c				\
 			apop_linear_constraint.c apop_sort.c			\
-			apop_model_fix_params.c							\
+			apop_model_fix_params.c	 apop_update.c			\
 			vasprintf/asnprintf.c vasprintf/printf-args.c 	\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
 			vasprintf/printf-parse.c 						\
 			vasprintf/vasprintf.c  							\
+			model/apop_multivariate_normal.c				\
 			model/apop_normal.c model/apop_OLS.c 		 	\
 			model/apop_WLS.c	model/apop_logit.c 			\
-			model/apop_zipf.c model/apop_zipf_rank.c 		\
 			model/apop_exponential.c model/apop_exponential_rank.c			\
 			model/apop_gamma.c model/apop_gamma_rank.c 		\
 			model/apop_poisson.c	model/apop_probit.c 	\
+			model/apop_uniform.c model/apop_beta.c			\
 			model/apop_waring.c model/apop_waring_rank.c 	\
 			model/apop_yule.c 	model/apop_yule_rank.c 		\
-			model/apop_multivariate_normal.c				\
-			model/apop_uniform.c model/apop_beta.c			\
+			model/apop_zipf.c model/apop_zipf_rank.c 		\
+			model/apop_bernoulli.c model/apop_binomial.c 	\
 			model/apop_histogram.c 
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \

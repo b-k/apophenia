@@ -1,9 +1,6 @@
-/** apop_beta.c 
+/** \file apop_binomial.c 
  
- (This file is not handled by Doxygen)
-
-Base file copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
-Feel free to augment this with your own copyright: modifications (c) you, today.
+copyright (c) 2007 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
 #include "model.h"
 
