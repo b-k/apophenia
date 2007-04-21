@@ -48,8 +48,7 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 */
 inline long double apop_vector_sum(const gsl_vector *in){
     if (in==NULL){
-        if (apop_opts.verbose)
-            fprintf(stderr, "You just asked me to sum a NULL. Returning zero.\n");
+        apop_error(1,'c', "You just asked me to sum a NULL. Returning zero.\n");
         return 0;
     }
   int     i;

@@ -317,10 +317,10 @@ size_t  apop_name_find(apop_name *n, char *in, char type){
     for (i = 0; i < listct; i++){
         if (!regexec(&re, list[i], 0, NULL, 0)){
             //free(findme);
-            //regfree(re);
+            regfree(&re);
             return i;
         }
     }
-    //regfree(re);
+    regfree(&re);
     return -1;
 }

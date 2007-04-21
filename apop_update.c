@@ -6,9 +6,9 @@ The header is in asst.h.
  */
 #include <apop.h>
 
-static void write_double(double *draw, apop_data *d){
+static void write_double(const double *draw, apop_data *d){
   int i;
-  int size = (d->vector ? d->vector->size : 0) + (d->matrix ? d->matrix->size1 + d->matrix->size2 : 0);
+  int size = (d->vector ? d->vector->size : 0) + (d->matrix ? d->matrix->size1 * d->matrix->size2 : 0);
   gsl_vector *v = gsl_vector_alloc(size);
     for (i=0; i< v->size; i++)
         gsl_vector_set(v, i, draw[i]);
@@ -88,10 +88,10 @@ apop_params * apop_update(apop_data *data, apop_model prior, apop_model likeliho
   int           vs  = likelihood.vbase >= 0 ? likelihood.vbase : data->matrix->size2;
   int           ms1 = likelihood.m1base >= 0 ? likelihood.m1base : data->matrix->size2;
   int           ms2 = likelihood.m2base >= 0 ? likelihood.m2base : data->matrix->size2;
-  double        *draw               = malloc(sizeof(double)* (vs+ms1+ms2));
+  double        *draw               = malloc(sizeof(double)* (vs+ms1*ms2));
   apop_data     *candidate_param    = apop_data_alloc(vs , ms1 , ms2),
                 *current_param      = apop_data_alloc(vs , ms1 , ms2);
-  apop_data     *out                = apop_data_alloc(0, periods*(1-burnin), vs+ms1+ms2);
+  apop_data     *out                = apop_data_alloc(0, periods*(1-burnin), vs+ms1*ms2);
     if (starting_pt)
         apop_data_memcpy(current_param, starting_pt);
     else{
@@ -109,7 +109,7 @@ apop_params * apop_update(apop_data *data, apop_model prior, apop_model likeliho
         }
         if (ratio >=0 || log(gsl_rng_uniform(r)) < ratio)
             apop_data_memcpy(current_param,candidate_param);
-        if (i > periods * burnin){
+        if (i >= periods * burnin){
             APOP_ROW(out, i-(periods *burnin), v)
             gsl_vector *vv = apop_data_pack(current_param);
             gsl_vector_memcpy(v, vv);

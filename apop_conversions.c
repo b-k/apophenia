@@ -162,7 +162,24 @@ apop_data * apop_array_to_data(double **in, int rows, int cols){
     return apop_matrix_to_data(apop_array_to_matrix(in, rows, cols));
 }
 
-/** convert a <tt>double **</tt> array to a <tt>gsl_matrix</tt>
+/** convert a <tt>double *</tt> array to a <tt>gsl_vector</tt>
+
+\param line	the array to read in
+\param vsize	the vector size.
+\return the <tt>gsl_vector</tt>, allocated for you and ready to use.
+
+\ingroup convertfromarray 
+*/
+gsl_vector * apop_line_to_vector(double *line, int vsize){
+  gsl_vector_view	v;
+  gsl_vector        *out;
+	out	= gsl_vector_alloc(vsize);
+	v	= gsl_vector_view_array(line, vsize);
+	gsl_vector_memcpy(out,&(v.vector));
+    return out;
+}
+
+/** convert a <tt>double *</tt> array to a <tt>gsl_matrix</tt>
 
 \param line	the array to read in
 \param rows, cols	the size of the array.
@@ -183,15 +200,28 @@ gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
 /** convert a <tt>double **</tt> array to an \ref apop_data set. It will
 have no names.
 
-\param in	the array to read in
+\param in	The array to read in
+\param vsize    The vector size
 \param rows, cols	the size of the array.
 \return the \ref apop_data set, allocated for you and ready to use.
 
-usage: \code apop_data *d = apop_array_to_data(indata, 34, 4); \endcode
 \ingroup convertfromarray 
 */
-apop_data * apop_line_to_data(double *in, int rows, int cols){
-    return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
+apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
+    if (vsize==0 && (rows>0 && cols>0))
+      return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
+    if ((rows==0 || cols==0) && vsize>0)
+      return apop_vector_to_data(apop_line_to_vector(in, vsize));
+    if (vsize!=rows){
+        apop_error(0,'c',"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
+        return NULL;
+    }
+  int i, j, ctr = 0;
+  apop_data *out  = apop_data_alloc(vsize, rows, cols);
+    for (i=0; i< rows; i++)
+        for (j=-1; j< cols; j++)
+            apop_data_set(out, i, j, in[ctr++]);
+    return out;
 }
 
 static int find_cat_index(char **d, char * r, int start_from, int size){
@@ -954,4 +984,113 @@ gsl_vector * apop_data_pack(const apop_data *in){
             offset  += in->matrix->size2;
         }
     return out;
+}
+
+
+#include <stdarg.h>
+
+/** Fill a pre-allocated data set with values.
+
+  For example:
+
+\code
+int main(){
+  apop_data *a =apop_data_alloc(2,2,2);
+  double    eight   = 8.0;
+    apop_data_fill(a, 8.,    2.0, eight/2,
+                      0.,    6.0, eight);
+    apop_data_show(a);
+    return 0;
+}
+\endcode
+
+This function has two important caveats, which are just inevitable facts
+of C's handling of variadic functions.
+
+* You must have exactly as many values as spaces in the data set. There
+is no partial filling, though see \c apop_matrix_fill and apop_vector_fill.
+Too many values will be ignored; too few will segfault.
+
+* Every value must be floating point. Int values will cauase a segfault
+or erratic results.
+
+\param in   An \c apop_data set (that you have already allocated).
+\param ...  A series of exactly as many floating-point values as there are blanks in the data set.
+\return     A pointer to the same matrix that was input.
+*/
+apop_data *apop_data_fill(apop_data *in, ...){
+    if (!in) 
+        return NULL;
+  va_list  ap;
+  int       i, j, start=0, fin=0, height=0;
+    if (in->vector){
+        start   = -1;
+        height  = in->vector->size;
+    }
+    if (in->matrix){
+        fin   = in->matrix->size2;
+        height  = in->matrix->size1;
+    }
+    va_start(ap, in);
+    for (i=0; i< height; i++)
+        for (j=start; j< fin; j++)
+            apop_data_set(in, i, j, va_arg(ap, double));
+    return in;
+}
+
+/** Fill a pre-allocated \c gsl_vector with values.
+
+  See \c apop_data_alloc for a relevant example. See also \c apop_matrix_alloc.
+
+This function has two important caveats, which are just inevitable facts
+of C's handling of variadic functions.
+
+* You must have exactly as many values as spaces in the data set.
+ Too many values will be ignored; too few will segfault.
+
+* Every value must be floating point. Int values will cauase a segfault
+or erratic results.
+
+\param in   A \c gsl_vector (that you have already allocated).
+\param ...  A series of exactly as many floating-point values as there are blanks in the vector.
+\return     A pointer to the same vector that was input.
+*/
+gsl_vector *apop_vector_fill(gsl_vector *in, ...){
+    if (!in) 
+        return NULL;
+  va_list  ap;
+  int       i;
+    va_start(ap, in);
+    for (i=0; i< in->size; i++)
+        gsl_vector_set(in, i, va_arg(ap, double));
+    return in;
+}
+
+/** Fill a pre-allocated \c gsl_matrix with values.
+
+  See \c apop_data_alloc for a relevant example. See also \c apop_vector_alloc.
+
+This function has two important caveats, which are just inevitable facts
+of C's handling of variadic functions.
+
+* You must have exactly as many values as spaces in the data set. 
+Too many values will be ignored; too few will segfault.
+
+* Every value must be floating point. Int values will cauase a segfault
+or erratic results.
+
+\param in   A \c gsl_matrix (that you have already allocated).
+\param ...  A series of exactly as many floating-point values as there are blanks in the matrix.
+\return     A pointer to the same matrix that was input.
+*/
+gsl_matrix *apop_matrix_fill(gsl_matrix *in, ...){
+    if (!in) 
+        return NULL;
+  va_list  ap;
+  int       i, j;
+    va_start(ap, in);
+    for (i=0; i< in->size1; i++)
+        for (j=0; j< in->size2; j++)
+            gsl_matrix_set(in, i, j, va_arg(ap, double));
+    return in;
 }

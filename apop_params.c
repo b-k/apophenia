@@ -67,7 +67,8 @@ apop_params * prep_me = malloc(sizeof(apop_params));
             apop_name_stack(prep_me->covariance->names, data->names, 'c');
             apop_name_cross_stack(prep_me->covariance->names, data->names, 'c', 'r');
         }
-    }
+    } else
+		prep_me->covariance	= NULL;
     prep_me->data               = data;
     prep_me->model              = model;
     prep_me->method_name[0]     = '\0';

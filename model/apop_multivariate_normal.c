@@ -9,7 +9,7 @@
 
 apop_model apop_multivariate_normal;
 
-double apop_multinormal_ll_prob(const apop_data *v, apop_data *x, apop_params * m){
+double apop_multinormal_ll_prob(const apop_data *x, apop_data *v, apop_params * m){
   double    determinant = 0;
   gsl_matrix* inverse   = NULL;
   int       i, dimensions  = x->matrix->size2;
@@ -33,8 +33,8 @@ double apop_multinormal_ll_prob(const apop_data *v, apop_data *x, apop_params * 
     return ll;
 }
 
-double apop_multinormal_prob(const apop_data *v, apop_data *x, apop_params * m){
-    return exp(apop_multinormal_ll_prob(v, x, m));
+double apop_multinormal_prob(const apop_data *x, apop_data *v, apop_params * m){
+    return exp(apop_multinormal_ll_prob(x, v, m));
 }
 
 static apop_params * multivariate_normal_estimate(apop_data * data, apop_params *p){

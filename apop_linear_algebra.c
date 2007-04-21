@@ -52,8 +52,8 @@ Calculate the determinant of a matrix, its inverse, or both. The \c in matrix is
 \param in
 The matrix to be inverted/determined.
 
-\param out 
-If you want an inverse, this is where to place the matrix to be filled with the inverse. If <tt>calc_inv == 0</tt>, then use <tt>NULL</tt>. 
+\param out
+If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function.
 
 \param calc_det 
 0: Do not calculate the determinant.
@@ -69,7 +69,7 @@ If you want an inverse, this is where to place the matrix to be filled with the 
 If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.
 \ingroup linear_algebra
 */
-double apop_det_and_inv(gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
+double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
   int 		sign;
   double 	the_determinant = 0;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);

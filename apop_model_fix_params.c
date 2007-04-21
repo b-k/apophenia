@@ -19,7 +19,21 @@ typedef struct apop_model_fixed_params{
 
 static apop_model fixed_param_model;
 
-void  fixed_param_unpack(gsl_vector *in, apop_model_fixed_params *p){
+static void  fixed_params_pack(const apop_data *in, apop_data  *out, apop_data  *mask){
+  int ctr   = 0;
+  int i, j;
+    if (mask->vector)
+        for(i=0; i< mask->vector->size; i++)
+            if (!apop_data_get(mask, i, -1))
+                apop_data_set(out, ctr++, -1, apop_data_get(in, i, -1));
+    if (mask->matrix)
+        for(i=0; i< mask->matrix->size1; i++)
+            for(j=0; j< mask->matrix->size2; j++)
+                if (!apop_data_get(mask, i, j))
+                    apop_data_set(out, ctr++, -1, apop_data_get(in, i, j));
+}
+
+static void  fixed_param_unpack(const gsl_vector *in, apop_model_fixed_params *p){
   int ctr   = 0;
   int i, j;
     if (!p->filled_beta)
@@ -38,25 +52,28 @@ void  fixed_param_unpack(gsl_vector *in, apop_model_fixed_params *p){
 static double i_ll(const apop_data *beta, apop_data *d, apop_params *params){
   apop_model_fixed_params *p    = params->more;
     fixed_param_unpack(beta->vector, p);
-    return p->m->log_likelihood(p->filled_beta, d, p->base_model_params);
+    return p->m->log_likelihood(d, p->filled_beta, p->base_model_params);
 }
 
 static double i_p(const apop_data *beta, apop_data *d, apop_params *params){
   apop_model_fixed_params *p    = params->more;
     fixed_param_unpack(beta->vector, p);
-    return p->m->p(p->filled_beta, d, p->base_model_params);
+    return p->m->p(d, p->filled_beta, p->base_model_params);
 }
 
 static void i_score(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *params){
   apop_model_fixed_params *p    = params->more;
     fixed_param_unpack(beta->vector, p);
-    p->m->score(p->filled_beta, d, gradient, p->base_model_params);
+    p->m->score(d, p->filled_beta, gradient, p->base_model_params);
 }
 
 static double  i_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *params){
   apop_model_fixed_params *p    = params->more;
     fixed_param_unpack(beta->vector, p);
-    return p->m->constraint(p->filled_beta, returned_beta, p->base_model_params);
+  apop_data *return_unpacked    = apop_data_copy(p->filled_beta);
+  double out = p->m->constraint(p->filled_beta, return_unpacked, p->base_model_params);
+    fixed_params_pack(return_unpacked, returned_beta, p->mask);
+    return out;
 }
 
 static void i_draw(double *out, gsl_rng* r, apop_params *eps){
@@ -138,7 +155,6 @@ apop_model *apop_model_fix_params(apop_data *paramvals, apop_data *mask, apop_mo
   apop_model_fixed_params   *p          = malloc(sizeof(*p));
   apop_model                *model_out  = apop_model_copy(fixed_param_model);
   int        i, j;
-    if (!model_in.estimate) model_out->estimate = NULL;
     if (!model_in.p) model_out->p = NULL;
     if (!model_in.log_likelihood) model_out->log_likelihood = NULL;
     if (!model_in.score) model_out->score = NULL;

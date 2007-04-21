@@ -1,10 +1,11 @@
 [Key: 
 --Addition or improvement
 **Change that could require recoding existing code.
+!!Big.
 ]
 
 	0.19 April 2007
-****Eliminated the apop_estimate and apop_ep structures, replacing them
+!!**Eliminated the apop_estimate and apop_ep structures, replacing them
 with te apop_params structure. The apop_params + apop_model pair form a
 closure representing a parametrized model. Expect the uses element to go
 away soon; after that, things should be stable. Parameters for individual methods now have their own space; try
@@ -16,6 +17,13 @@ then have a look at Chapter 6 of _Modeling with Data_.
 --apop_histogram model
 **Gradually rewriting the histogram functions from before to make use of
 that model. E.g., eliminated apop_vector_to_cmf.
+**apop_line_to_data fixed to use both vector and matrix terms. Now
+requires arguments (indata, vsize, m1size, m2size).
+--MLE now approximates the Information matrix using data gathered during
+the MLE search. This is wrong but cheap; right but expensive procedures
+forthcoming. [Hint: Simulated annealing gathers more info.]
+--apop_(data|matrix|vector)_fill functions, which are a touch fragile,
+but very useful when used with care.
 
 	0.18 March 2007
 **apop_text_to_db now assumes column names unless you specify -nc.
@@ -31,12 +39,12 @@ inside the apop_ep struct.
 **Changed the RNG interface for the sake of allowing multidimensional
 draws. [Not that I have any functions that do that right now.]
 --Bayes-oriented MCMC algorithm: apop_mcmc_update
---Bayesian model generator: apop_bayesian_update
+!!Bayesian model generator: apop_update
 **apop_model paramters is now an apop_model. See the documentation of
 the model for all the changes.
 **apop_data_alloc now takes three arguments: vsize, msize1, msize2. To
 update, just put a 0, at the head of the arg list.
---An absolutely fabulous apop_linear_constraint function.
+!!An absolutely fabulous apop_linear_constraint function.
 --Produce a model with some parameters fixed via apop_model_fix_params.
 --apop_beta model
 

@@ -1,4 +1,4 @@
-/** \file apop_histogram.c	PMF and CMF manipulations.
+/** \file apop_hist.c	PMF and CMF manipulations.
 
  Copyright 2006 by Ben Klemens. Licensed under the GNU GPL v2.
  (Except psmirnov2x, Copyright R Project, but also licensed under the GPL.)

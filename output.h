@@ -28,5 +28,5 @@ void apop_data_print(apop_data *data, char *file);
 
 void apop_matrix_show(gsl_matrix *data);
 void apop_vector_show(gsl_vector *data);
-void apop_data_show(apop_data *data);
+void apop_data_show(const apop_data *data);
 __END_DECLS

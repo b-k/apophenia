@@ -141,7 +141,7 @@ FILE 		*output;
 int		i,j;
 	output = popen ("gnuplot", "w");
 	if (!output) {
-		fprintf (stderr, "Can't find gnuplot.\n");
+		apop_error(0,'c', "Can't find gnuplot.\n");
 		return;
 	}
   	if (plot_type == 's')
@@ -370,9 +370,9 @@ int     i,
 /** Print an \ref apop_data to the screen.
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
-void apop_data_show(apop_data *data){
+void apop_data_show(const apop_data *data){
     if (!data){
-        fprintf(stderr, "You asked me to show a NULL apop_data set.\n");
+        printf("NULL\n");
         return;
     }
 char    tmptype = apop_opts.output_type;
@@ -425,48 +425,51 @@ double  datapt;
 }
 
 /* the next function plots a single graph for the \ref apop_plot_lattice  fn */
-static void printone(char filename[], double width, double height, double margin, int xposn, int yposn, apop_data *d){
+static void printone(FILE *f, double width, double height, double margin, int xposn, int yposn, apop_data *d){
     //pull two columns
 gsl_vector  v1  = gsl_matrix_column(d->matrix, xposn).vector;
 gsl_vector  v2  = gsl_matrix_column(d->matrix, yposn).vector;
 gsl_matrix  *m  = gsl_matrix_alloc(d->matrix->size1, 2);
     gsl_matrix_set_col(m, 0, &v1);
     gsl_matrix_set_col(m, 1, &v2);
-FILE    *f          = fopen(filename, "a");
 double sizex        = (double)(width - margin * (d->matrix->size2 -1))/d->matrix->size2;
 double sizey        = (double)(height - margin * (d->matrix->size2 -1))/d->matrix->size2;
 double offx        = width - (sizex +margin)* (1+xposn);
 double offy        = height - (sizey +margin)* (1+yposn);
+//I've commented out tics.
     if (xposn)
         fprintf(f, "unset y2tics; unset y2label; unset ytics; unset ylabel\n");
     else
-        fprintf(f, "set y2tics   \n\
-                    set y2label \"%s\" \n\
+        fprintf(f, "#set y2tics   \n\
+set y2label \"%s\" \n\
                     ", (d->names->colnamect >yposn)? d->names->colnames[yposn]: "");
     if (yposn)
         fprintf(f, "unset x2tics; unset x2label; unset xtics; unset xlabel\n");
     else 
-        fprintf(f, "set x2tics\n \
-                    set x2label \"%s\" \n\
+        fprintf(f, "#set x2tics\n \
+set x2label \"%s\" \n\
                     ", (d->names->colnamect >xposn)? d->names->colnames[xposn]: "");
     fprintf(f, "set size   %g, %g\n\
-            set origin %g, %g\n\
-            plot '-'        \n\
+set origin %g, %g\n\
+plot '-'        \n\
             ",  sizex, sizey, offx, offy);
-    /*
-    fprintf(f, "plot '-'        \n ");
-            */
-    fclose(f);
-    apop_matrix_print(m, filename);
-    f   = fopen(filename, "a");
+    fflush(f);
+    char tmptype = apop_opts.output_type;
+    FILE *tp     = apop_opts.output_pipe;
+    apop_opts.output_type = 'p';
+    apop_opts.output_pipe = f;
+    apop_matrix_print(m, NULL);
+    apop_opts.output_type = tmptype;
+    apop_opts.output_pipe = tp;
     fprintf(f,"e\n");
-    fclose(f);
     gsl_matrix_free(m);
 }
 
+/*
 static void printlabel(char filename[], char *name){
     //maybe some day this will have content.
 }
+*/
 
 /** This produces a Gnuplot file that will produce an array of 2-D
  plots, one for each pair of columns in the data set. Along the diagonal
@@ -483,29 +486,44 @@ void apop_plot_lattice(apop_data *d, char filename[]){
 double  width   = 1,//these used to be options, but who's ever gonna set them to something else.
         height  = 1;
 double  margin  = 0;
-FILE    *f      = fopen(filename, "a");
+FILE    *f;
 int     i,j;
+    if (apop_opts.output_type == 'f')
+        f      = fopen(filename, "a");
+    else if (apop_opts.output_type == 'p')
+        f      = apop_opts.output_pipe;
+    else if (apop_opts.output_type == 's')
+        f      = stdout;
+    else {
+            apop_error(0, 'c', "apop_plot_lattice: please set apop_opts.output_type = 'f', 'p', or 's' before using this function.\n");
+            return;
+        }
     fprintf(f, "set size %g, %g\n\
-        set origin %g, %g       \n\
-        set multiplot   #layout %i, %i downwards        \n\
-        unset xtics; unset xlabel; unset ytics; unset ylabel\n\
-        set nokey           \n\
+set rmargin 5\n\
+set lmargin -1\n\
+set tmargin 2.4\n\
+set bmargin -2\n\
+set origin %g, %g       \n\
+set multiplot   #layout %i, %i downwards        \n\
+unset xtics; unset xlabel; unset ytics; unset ylabel\n\
+set nokey           \n\
         ", width, height, margin,margin, d->matrix->size2, d->matrix->size2);
-    apop_opts.output_type = 'f'; fclose(f); for (i = 0; i<
-    d->matrix->size2; i++)
+    for (i = 0; i< d->matrix->size2; i++)
         for (j = 0; j< d->matrix->size2; j++)
 /*            if (i==j && i!=0)
                 printlabel(filename, d->names->colnames[i]);
             else */
-                printone(filename, width, height, margin, i, j, d);
-    f   = fopen(filename, "a"); 
+                printone(f, width, height, margin, i, j, d);
     for (i=0; i< d->names->colnamect; i++){
         double sizex        = (double)(width - margin * (d->matrix->size2 -1))/d->matrix->size2; 
         double sizey        = (double)(height - margin * (d->matrix->size2 -1))/d->matrix->size2;
         double offx        = (sizex +margin)* (i+0.5);
         double offy        = (sizey +margin)* (i+0.5);
         fprintf(f, "set label \"%s\" at %g, %g\n", d->names->colnames[i], offx, offy);
-    } fprintf(f, "unset multiplot\n"); fclose(f);
+    } 
+    fprintf(f, "unset multiplot\n"); 
+    if (apop_opts.output_type == 'f')
+        fclose(f);
 }
 
 

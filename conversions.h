@@ -50,8 +50,9 @@ apop_data * apop_array_to_data(double **in, int rows, int cols);
 /////////////
 //From line
 /////////////
+gsl_vector * apop_line_to_vector(double *line, int vsize);
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
-apop_data * apop_line_to_data(double *in, int rows, int cols);
+apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
 
 ///////////
 //From text
@@ -72,5 +73,9 @@ apop_data * apop_data_unpack(const gsl_vector *in, size_t v_size, size_t m_size1
 char * apop_strip_dots(char *in, char strip_type);
 char *apop_strcat(char **base, char *addme);
 char *apop_strcpy(char **base, char *addme);
+
+apop_data *apop_data_fill(apop_data *in, ...);
+gsl_vector *apop_vector_fill(gsl_vector *in, ...);
+gsl_matrix *apop_matrix_fill(gsl_matrix *in, ...);
 
 __END_DECLS
