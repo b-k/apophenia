@@ -170,4 +170,5 @@ apop_model apop_normal = {"Normal", 2, 0, 0,
 \ingroup models
 */
 apop_model apop_gaussian = {"Gaussian", 2,0,0,
- normal_estimate, normal_p, normal_log_likelihood, normal_dlog_likelihood, beta_1_greater_than_x_constraint, normal_rng};
+ .estimate = normal_estimate, .p = normal_p, .log_likelihood = normal_log_likelihood, 
+ .score = normal_dlog_likelihood, .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng};

@@ -136,4 +136,4 @@ static void histogram_rng(double *out, gsl_rng *r, apop_params* eps){
 
 \ingroup models
 */
-apop_model apop_histogram = {"histogram", 0,0,0, est, histogram_p, histogram_log_likelihood, NULL, NULL, histogram_rng};
+apop_model apop_histogram = {"histogram", 0,0,0, est, histogram_p, histogram_log_likelihood, .draw = histogram_rng};

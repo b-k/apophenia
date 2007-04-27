@@ -125,4 +125,5 @@ You should describe the format of the input data here.
 \ingroup models
 */
 apop_model apop_beta = {"Beta distribution", 2,0,0,
-	beta_estimate, beta_p, beta_log_likelihood, NULL, beta_constraint, beta_rng};
+	.estimate = beta_estimate, .p = beta_p, .log_likelihood = beta_log_likelihood, 
+    .constraint = beta_constraint, .draw = beta_rng};

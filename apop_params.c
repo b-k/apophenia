@@ -49,8 +49,8 @@ apop_params * prep_me = malloc(sizeof(apop_params));
 		    prep_me->expected	= apop_data_alloc(0, data->matrix->size1,3);
         else if (data && data->vector)
 		    prep_me->expected	= apop_data_alloc(0, data->vector->size,3);
-        else if (data && data->categories)
-		    prep_me->expected	= apop_data_alloc(0, data->catsize[0],3);
+        else if (data && data->text)
+		    prep_me->expected	= apop_data_alloc(0, data->textsize[0],3);
         else
 		    prep_me->expected	= NULL;
         if (prep_me->expected){

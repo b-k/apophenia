@@ -113,9 +113,9 @@ typedef struct{
 	char * vecname;
 	char ** colnames;
 	char ** rownames;
-	char ** catnames;
 	char ** textnames;
-	int colnamect, rownamect, catnamect, textnamect;
+	int colnamect, rownamect, textnamect;
+    char title[101];
 } apop_name;
 
 /**
@@ -126,9 +126,7 @@ typedef struct {
     gsl_vector  *vector;
     gsl_matrix  *matrix;
     apop_name   *names;
-    char        ***categories;
     char        ***text;
-    int         catsize[2];
     int         textsize[2];
     gsl_vector  *weights;
 } apop_data;
@@ -246,9 +244,7 @@ void 		apop_params_show (apop_params * print_me);
 
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
-apop_data * apop_data_from_matrix(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
-apop_data * apop_data_from_vector(gsl_vector *v);
 apop_data * apop_data_alloc(const size_t, const size_t, const int);
 apop_data * apop_data_calloc(const size_t, const size_t, const int);
 apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
@@ -258,12 +254,12 @@ void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data *out, const apop_data *in);
 double * apop_data_ptr(const apop_data *data, const size_t i, const size_t j);
 double apop_data_get(const apop_data *in, size_t row, int  col);
-double apop_data_get_nt(const apop_data *in, size_t row, char* col);
-double apop_data_get_tn(const apop_data *in, char* row, int col);
+double apop_data_get_it(const apop_data *in, size_t row, char* col);
+double apop_data_get_ti(const apop_data *in, char* row, int col);
 double apop_data_get_tt(const apop_data *in, char *row, char* col);
 void apop_data_set(apop_data *in, size_t row, int col, double data);
-void apop_data_set_tn(apop_data *in, char* row, int col, double data);
-void apop_data_set_nt(apop_data *in, size_t row, char* col, double data);
+void apop_data_set_ti(apop_data *in, char* row, int col, double data);
+void apop_data_set_it(apop_data *in, size_t row, char* col, double data);
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data);
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 

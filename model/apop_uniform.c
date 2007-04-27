@@ -55,4 +55,5 @@ Primarily useful for the RNG, such as when you have a Uniform prior model.
 
 \ingroup models
 */
-apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,  uniform_estimate,  unif_p,unif_ll,  NULL, NULL, uniform_rng};
+apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,  
+    .estimate = uniform_estimate,  .p = unif_p,.log_likelihood = unif_ll,  .draw = uniform_rng};

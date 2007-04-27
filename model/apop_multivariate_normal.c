@@ -83,5 +83,5 @@ static void mvnrng(double *out, gsl_rng *r, apop_params *eps){
   \ingroup models
  */
 apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1,
-     multivariate_normal_estimate, apop_multinormal_prob, apop_multinormal_ll_prob, NULL, NULL, mvnrng};
-     /*multinormal_estimate, normal_p, normal_log_likelihood, normal_dlog_likelihood, beta_1_greater_than_x_constraint, normal_rng};*/
+     .estimate = multivariate_normal_estimate, .p = apop_multinormal_prob, 
+     .log_likelihood = apop_multinormal_ll_prob, .draw = mvnrng};

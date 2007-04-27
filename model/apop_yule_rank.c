@@ -121,4 +121,6 @@ apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_params.
 \todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I can check references.
 */
 apop_model apop_yule_rank = {"Yule, rank data", 1,0,0, 
-	yule_estimate, yule_rank_p, yule_log_likelihood, yule_dlog_likelihood, beta_greater_than_x_constraint, yule_rng};
+	.estimate = yule_estimate, .p = yule_rank_p, .log_likelihood = yule_log_likelihood, 
+    .score = yule_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
+    .draw = yule_rng};

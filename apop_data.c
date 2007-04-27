@@ -76,15 +76,10 @@ apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int m
 
     setme->names        = apop_name_alloc();
     setme->text         = NULL;
-    setme->categories   = setme->text;
     setme->textsize[0]  =
-    setme->textsize[1]  =
-    setme->catsize[0]   =
-    setme->catsize[1]   = 0;
+    setme->textsize[1]  = 0;
     return setme;
 }
-
-
 
 
 /** Allocate a \ref apop_data structure, to be filled with data; set
@@ -114,11 +109,8 @@ apop_data * apop_data_calloc(const size_t vsize, const size_t msize1, const int 
 
     setme->names        = apop_name_alloc();
     setme->text         = NULL;
-    setme->categories   = setme->text;
     setme->textsize[0]  =
-    setme->textsize[1]  =
-    setme->catsize[0]   =
-    setme->catsize[1]   = 0;
+    setme->textsize[1]  = 0;
     return setme;
 }
 
@@ -128,18 +120,12 @@ apop_data * apop_data_calloc(const size_t vsize, const size_t msize1, const int 
 \param m    The existing matrix you'd like to turn into an \ref apop_data structure.
 return      The \ref apop_data structure in question.
   */
-apop_data * apop_data_from_matrix(gsl_matrix *m){
+apop_data * apop_matrix_to_data(gsl_matrix *m){
   apop_data  *setme   = apop_data_alloc(0,0,0);
     if (m==NULL && apop_opts.verbose) 
-        {fprintf(stderr,"apop_data_from_matrix: converting a NULL matrix to an apop_data structure.\n");}
+        {fprintf(stderr,"apop_matrix_to_data: converting a NULL matrix to an apop_data structure.\n");}
     setme->matrix       = m;
     return setme;
-}
-
-/** A synonym for \ref apop_data_from_matrix. Use that one.
- */
-apop_data * apop_matrix_to_data(gsl_matrix *m){
-    return apop_data_from_matrix(m);
 }
 
 /** Wrap an \ref apop_name structure around an existing \c gsl_vector.
@@ -149,30 +135,17 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 \param  v   The data vector
 \return     an allocated, ready-to-use \ref apop_data struture.
 */
-apop_data * apop_data_from_vector(gsl_vector *v){
+apop_data * apop_vector_to_data(gsl_vector *v){
   apop_data  *setme   = malloc(sizeof(apop_data));
     if (v==NULL && apop_opts.verbose) 
-        {fprintf(stderr,"apop_data_from_vector: converting a NULL vector to an apop_data structure.\n");}
+        {fprintf(stderr,"apop_vector_to_data: converting a NULL vector to an apop_data structure.\n");}
     setme->vector       = v;
     setme->names        = apop_name_alloc();
     setme->matrix       = NULL;
     setme->text         = NULL;
-    setme->categories   = setme->text;
     setme->textsize[0]   = 
-    setme->textsize[1]   = 
-    setme->catsize[0]   = 
-    setme->catsize[1]   = 0;
+    setme->textsize[1]   = 0;
     return setme;
-}
-
-
-/** Wrap an \ref apop_name structure around an existing \c gsl_vector.
-
-\param  v   The data vector
-\return     an allocated, ready-to-use \ref apop_data struture.
-*/
-apop_data * apop_vector_to_data(gsl_vector *v){
-    return apop_data_from_vector(v);
 }
 
 /** free a matrix of chars* (i.e., a char***).
@@ -524,7 +497,7 @@ matching rules.
 
  \ingroup data_struct
  */
-double apop_data_get_tn(const apop_data *in, char* row, int col){
+double apop_data_get_ti(const apop_data *in, char* row, int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     if (rownum == -1){
         if(apop_opts.verbose)
@@ -545,7 +518,7 @@ matching rules.
 
  \ingroup data_struct
  */
-double apop_data_get_nt(const apop_data *in, size_t row, char* col){
+double apop_data_get_it(const apop_data *in, size_t row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     if (colnum == -1){
         if(apop_opts.verbose)
@@ -609,7 +582,7 @@ matching rules.
 
  \ingroup data_struct
  */
-void apop_data_set_tn(apop_data *in, char* row, int col, double data){
+void apop_data_set_ti(apop_data *in, char* row, int col, double data){
   int rownum =  apop_name_find(in->names, row, 'r');
     if (rownum == -1){
         if(apop_opts.verbose)
@@ -629,7 +602,7 @@ matching rules.
 
  \ingroup data_struct
  */
-void apop_data_set_nt(apop_data *in, size_t row, char* col, double data){
+void apop_data_set_it(apop_data *in, size_t row, char* col, double data){
   int colnum =  apop_name_find(in->names, col, 'c');
     if (colnum == -1){
         if(apop_opts.verbose)

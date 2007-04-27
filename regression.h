@@ -24,7 +24,7 @@ typedef struct {
     apop_params *ep;
 } apop_OLS_params;
 
-apop_OLS_params * apop_OLS_params_alloc(int destroy_data, apop_data *data, apop_model *model, apop_params *model_params);
+apop_OLS_params * apop_OLS_params_alloc(char destroy_data, apop_data *data, apop_model *model, apop_params *model_params);
 apop_params * apop_estimate_OLS(apop_data *set, apop_params *ep);
 apop_params * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma);
 apop_params *apop_fixed_effects_OLS(apop_data *data, gsl_vector *categories);

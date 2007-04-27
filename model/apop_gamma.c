@@ -115,4 +115,6 @@ If you have frequency or ranking data, you probably mean to be using \ref apop_g
 \ingroup models
 */
 apop_model apop_gamma = {"Gamma distribution", 2,0,0,
-     gamma_estimate, gamma_p, gamma_log_likelihood, gamma_dlog_likelihood, beta_zero_and_one_greater_than_x_constraint, gamma_rng};
+     .estimate = gamma_estimate, .p = gamma_p, .log_likelihood = gamma_log_likelihood, 
+     .score = gamma_dlog_likelihood, .constraint = beta_zero_and_one_greater_than_x_constraint, 
+     .draw = gamma_rng};

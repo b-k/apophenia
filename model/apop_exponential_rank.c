@@ -118,5 +118,5 @@ apop_exponential.estimate() is an MLE, so feed it appropriate \ref apop_params.
 \todo Write a second object for the plain old not-network data Exponential.
 */
 apop_model apop_exponential_rank = {"Exponential, rank data",  1,0,0,
-	 exponential_rank_estimate, rank_exp_p, rank_exponential_log_likelihood, rank_exponential_dlog_likelihood,
-    beta_greater_than_x_constraint};
+	 .estimate = exponential_rank_estimate, .p = rank_exp_p, .log_likelihood = rank_exponential_log_likelihood, 
+     .score = rank_exponential_dlog_likelihood, .constraint = beta_greater_than_x_constraint};

@@ -77,4 +77,5 @@ The parameters are kept in the vector element of the \c apop_params parameters e
 \ingroup models
 */
 apop_model apop_binomial = {"Binomial distribution", 2,0,0,
-	binomial_estimate, binomial_p, binomial_log_likelihood, NULL, binomial_constraint, binomial_rng};
+	.estimate = binomial_estimate, .p = binomial_p, .log_likelihood = binomial_log_likelihood, 
+   .constraint = binomial_constraint, .draw = binomial_rng};

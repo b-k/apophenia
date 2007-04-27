@@ -101,5 +101,6 @@ apop_poisson.estimate() is an MLE, so feed it appropriate \ref apop_params.
 \ingroup models
 */
 apop_model apop_poisson = {"poisson", 1, 0,0, 
-     poisson_estimate, poisson_p, poisson_log_likelihood, poisson_dlog_likelihood,
-     beta_zero_greater_than_x_constraint, poisson_rng};
+     .estimate = poisson_estimate, .p = poisson_p, .log_likelihood = poisson_log_likelihood, 
+     .score = poisson_dlog_likelihood, .constraint = beta_zero_greater_than_x_constraint, 
+     .draw = poisson_rng};

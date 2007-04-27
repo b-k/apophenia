@@ -114,4 +114,6 @@ static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vect
 
 \ingroup models
 */
-apop_model apop_logit = {"logit",-1,0,0,  logit_estimate, logit_p, logit_log_likelihood, logit_dlog_likelihood};
+apop_model apop_logit = {"logit",-1,0,0,  
+    .estimate = logit_estimate, .p = logit_p, .log_likelihood = logit_log_likelihood, 
+    .score = logit_dlog_likelihood};

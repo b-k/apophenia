@@ -23,10 +23,20 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include <assert.h> 
 #include <gsl/gsl_blas.h>
 
-apop_OLS_params * apop_OLS_params_alloc(int destroy_data, apop_data *data, apop_model *model, apop_params *model_params){
+/** Allocate an \c apop_OLS_params structure. There's currently only one
+ option to set: whether to destroy data. Otherwise, this is just like 
+ \c apop_params_alloc.
+
+ \param destroy_data    If 'd', then destroy data (faster), if anything else, like 'k', keep the data.
+ \param data the data
+ \param model   The model, like \c apop_OLS or \c apop_WLS.
+ \param method_params   If you are using a nonstandard method to estimate the model, put the params there.
+ \return an \c apop_OLS_params 
+ */
+apop_OLS_params * apop_OLS_params_alloc(char destroy_data, apop_data *data, apop_model *model, apop_params *method_params){
   apop_OLS_params *out  = malloc(sizeof(*out));
-    out->destroy_data       = destroy_data;
-    out->ep                 = apop_params_alloc(data, model, out, NULL);
+    out->destroy_data       = destroy_data == 'd' ? 1 : 0;
+    out->ep                 = apop_params_alloc(data, model, out, method_params);
     out->ep->model_params   = out;
     snprintf(out->ep->method_name, 100, "OLS");
     return out;
@@ -171,13 +181,13 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
         tstat   = val/stddev;
         pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
         two_tail= (df > 0)? two_tailed_t_test(val, var, df): GSL_NAN;
-        apop_data_set_nt(est->parameters, i, "df", df);
-        apop_data_set_nt(est->parameters, i, "t statistic", tstat);
-        apop_data_set_nt(est->parameters, i, "standard deviation", stddev);
-        apop_data_set_nt(est->parameters, i, "p value", two_tail);
-        apop_data_set_nt(est->parameters, i, "confidence", 1-two_tail);
-        apop_data_set_nt(est->parameters, i, "p value, 1 tail", pval);
-        apop_data_set_nt(est->parameters, i, "confidence, 1 tail", 1-pval);
+        apop_data_set_it(est->parameters, i, "df", df);
+        apop_data_set_it(est->parameters, i, "t statistic", tstat);
+        apop_data_set_it(est->parameters, i, "standard deviation", stddev);
+        apop_data_set_it(est->parameters, i, "p value", two_tail);
+        apop_data_set_it(est->parameters, i, "confidence", 1-two_tail);
+        apop_data_set_it(est->parameters, i, "p value, 1 tail", pval);
+        apop_data_set_it(est->parameters, i, "confidence, 1 tail", 1-pval);
     }
 }
 
@@ -214,6 +224,7 @@ double          f_stat, variance, pval;
 int             q_df,
                 data_df     = set->size1 - est->parameters->vector->size;
 apop_data       *out        = apop_data_alloc(0,3,-1);
+    sprintf(out->names->title, "F test");
     gsl_matrix_memcpy(data, set);
     v   = gsl_matrix_column(data, 0).vector;
     gsl_vector_set_all(&v, 1);
@@ -266,6 +277,8 @@ int i;
         apop_name_add(e->expected->names, e->data->names->colnames[0], 'c');
         apop_name_add(e->expected->names, "predicted", 'c');
         apop_name_add(e->expected->names, "residual", 'c');
+        if (e->parameters)
+            snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->colnames[0]);
 		/*e->expected->names->colnames[0] =
             realloc(e->expected->names->colnames[0],
                     sizeof(e->data->names->colnames[0]));

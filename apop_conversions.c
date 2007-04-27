@@ -258,20 +258,20 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 	pre_d1	    = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
 	if (!pre_d1) 
 		fprintf (stderr, "apop_db_to_crosstab: selecting %s from %s returned an empty table.\n", r1, tabname);
-    for (i=0; i < pre_d1->catsize[0]; i++)
-        apop_name_add(outdata->names, pre_d1->categories[i][0], 'r');
+    for (i=0; i < pre_d1->textsize[0]; i++)
+        apop_name_add(outdata->names, pre_d1->text[i][0], 'r');
 
 	pre_d2	= apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
 	if (!pre_d2) 
 		fprintf(stderr, " apop_db_to_crosstab: selecting %s from %s returned an empty table.\n", r2, tabname);
-    for (i=0; i < pre_d2->catsize[0]; i++)
-        apop_name_add(outdata->names, pre_d2->categories[i][0], 'c');
+    for (i=0; i < pre_d2->textsize[0]; i++)
+        apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
-	out	= gsl_matrix_calloc(pre_d1->catsize[0], pre_d2->catsize[0]);
-	for (k =0; k< datachars->catsize[0]; k++){
-		i	= find_cat_index(outdata->names->rownames, datachars->categories[k][0], i, pre_d1->catsize[0]);
-		j	= find_cat_index(outdata->names->colnames, datachars->categories[k][1], j, pre_d2->catsize[0]);
-		gsl_matrix_set(out, i, j, atof(datachars->categories[k][2]));
+	out	= gsl_matrix_calloc(pre_d1->textsize[0], pre_d2->textsize[0]);
+	for (k =0; k< datachars->textsize[0]; k++){
+		i	= find_cat_index(outdata->names->rownames, datachars->text[k][0], i, pre_d1->textsize[0]);
+		j	= find_cat_index(outdata->names->colnames, datachars->text[k][1], j, pre_d2->textsize[0]);
+		gsl_matrix_set(out, i, j, atof(datachars->text[k][2]));
 	}
     apop_data_free(pre_d1);
     apop_data_free(pre_d2);

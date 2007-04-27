@@ -90,4 +90,4 @@ static double wls_p (const apop_data *beta, apop_data *d, apop_params *p){
   You will need to provide the weights in data->weights. Otherwise, this model is just like \ref apop_OLS.
 \ingroup models
 */
-apop_model apop_WLS = {"WLS", -1,0,0, wls_estimate, wls_p, wls_log_likelihood};
+apop_model apop_WLS = {"WLS", -1,0,0, .estimate = wls_estimate, .p = wls_p, .log_likelihood = wls_log_likelihood};

@@ -234,8 +234,8 @@ apop_data   *contr  = apop_data_alloc(0,0,0);
 apop_data   *ftab   = apop_F_test(est, contr);
 double      n       = est->data->matrix->size1;
 double      K       = est->parameters->vector->size;
-double      r       = apop_data_get_tn(rsq,"R.squared",-1);
-double      f       = apop_data_get_tn(ftab,"F.stat",-1);
+double      r       = apop_data_get_ti(rsq,"R.squared",-1);
+double      f       = apop_data_get_ti(ftab,"F.stat",-1);
     assert(fabs(f - r*(n-K)/ ((1-r)*K)) < tolerance);
     return 0;
 }

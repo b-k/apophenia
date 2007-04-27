@@ -6,10 +6,11 @@
 
 	0.19 April 2007
 !!**Eliminated the apop_estimate and apop_ep structures, replacing them
-with te apop_params structure. The apop_params + apop_model pair form a
+with the apop_params structure. The apop_params + apop_model pair form a
 closure representing a parametrized model. Expect the uses element to go
-away soon; after that, things should be stable. Parameters for individual methods now have their own space; try
-apop_ml_params_alloc and apop_OLS_params_alloc, for example.
+away soon; after that, things should be stable. Parameters for individual
+methods now have their own space; try apop_ml_params_alloc and
+apop_OLS_params_alloc, for example.
 If you are just doing things like
 apop_estimate_show(apop_OLS.estimate(data,NULL));
 then don't worry, but if you are doing a lot with the input parameters,
@@ -18,12 +19,16 @@ then have a look at Chapter 6 of _Modeling with Data_.
 **Gradually rewriting the histogram functions from before to make use of
 that model. E.g., eliminated apop_vector_to_cmf.
 **apop_line_to_data fixed to use both vector and matrix terms. Now
-requires arguments (indata, vsize, m1size, m2size).
+requires arguments: (indata, vsize, m1size, m2size).
 --MLE now approximates the Information matrix using data gathered during
 the MLE search. This is wrong but cheap; right but expensive procedures
 forthcoming. [Hint: Simulated annealing gathers more info.]
 --apop_(data|matrix|vector)_fill functions, which are a touch fragile,
 but very useful when used with care.
+**apop_data_(get|set)_(tn|nt) changed to (ti|it), because n could stand
+for name or number, while i stands for index, and is often used for integers.
+--apop_names now have a title element, so you can give your data
+structures a title.
 
 	0.18 March 2007
 **apop_text_to_db now assumes column names unless you specify -nc.

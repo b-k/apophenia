@@ -116,5 +116,6 @@ Also, \f$d ln \gamma(k) \equiv \psi(k)\f$.
 \ingroup models
 */
 apop_model apop_gamma_rank = {"Gamma, rank data", 2,0,0,
-    gamma_rank_estimate, gamma_rank_p, gamma_rank_log_likelihood, gamma_rank_dlog_likelihood,
-    beta_zero_and_one_greater_than_x_constraint,  gamma_rng};
+    .estimate = gamma_rank_estimate, .p = gamma_rank_p, .log_likelihood = gamma_rank_log_likelihood, 
+    .score = gamma_rank_dlog_likelihood, .constraint = beta_zero_and_one_greater_than_x_constraint,  
+    .draw = gamma_rng};

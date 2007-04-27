@@ -50,8 +50,9 @@ static double ols_p (const apop_data *beta, apop_data *d, apop_params *p){
   This is basically a wrapper for the OLS regression function, \ref apop_params_OLS.
 \ingroup models
 */
-apop_model apop_OLS = {"OLS", -1,0,0,
-	apop_estimate_OLS, ols_p, ols_log_likelihood, NULL, NULL, NULL};
+//apop_model apop_OLS = {"OLS", -1,0,0, apop_estimate_OLS, ols_p, ols_log_likelihood, NULL, NULL, NULL};
+apop_model apop_OLS = {.name="OLS", .vbase = -1, .estimate =apop_estimate_OLS, .p=ols_p,
+                            .log_likelihood = ols_log_likelihood};
 
 /** The GLS model
 

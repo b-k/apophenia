@@ -123,4 +123,5 @@ You should describe the format of the input data here.
 \ingroup models
 */
 apop_model apop_MODELNAME = {"MODELNAME", 1,0,0,
-	MODELNAME_estimate, MODELNAME_p, MODELNAME_log_likelihood, MODELNAME_dlog_likelihood, MODELNAME_constraint, MODELNAME_rng};
+	.estimate = MODELNAME_estimate, .p = MODELNAME_p, .log_likelihood = MODELNAME_log_likelihood, 
+    .score = MODELNAME_dlog_likelihood, .constraint = MODELNAME_constraint, .draw = MODELNAME_rng};

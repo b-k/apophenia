@@ -537,11 +537,11 @@ apop_data * apop_data_summarize(apop_data *indata){
  This is just the version of \ref apop_data_summarize for when
  you have a gsl_matrix instead of an \ref apop_data set. In
  fact, here's the source code for this function: <tt>return
- apop_data_summarize(apop_data_from_matrix(m));</tt>
+ apop_data_summarize(apop_matrix_to_data(m));</tt>
 
  */
 apop_data * apop_matrix_summarize(gsl_matrix *m){
-    return apop_data_summarize(apop_data_from_matrix(m));
+    return apop_data_summarize(apop_matrix_to_data(m));
 }
 
 /** returns the covariance matrix for the columns of a data set.

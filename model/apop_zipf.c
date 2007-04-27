@@ -125,4 +125,6 @@ apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_params.
 \ingroup models
 */
 apop_model apop_zipf = {"Zipf", 1,0,0, 
-    zipf_estimate, zipf_p, zipf_log_likelihood, zipf_dlog_likelihood, beta_greater_than_x_constraint, zipf_rng};
+    .estimate = zipf_estimate, .p = zipf_p, .log_likelihood = zipf_log_likelihood, 
+    .score = zipf_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
+    .draw = zipf_rng};

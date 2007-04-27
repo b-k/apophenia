@@ -109,6 +109,8 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Write a second object for the plain old not-network data Exponential.
 */
 apop_model apop_exponential = {"Exponential distribution", 1,0,0,
-	 exponential_estimate, exp_p, exponential_log_likelihood, exponential_dlog_likelihood, beta_greater_than_x_constraint, exponential_rng};
+	 .estimate = exponential_estimate, .p = exp_p, .log_likelihood = exponential_log_likelihood, 
+     .score = exponential_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
+     .draw = exponential_rng};
 
 

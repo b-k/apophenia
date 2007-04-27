@@ -23,11 +23,10 @@ apop_name	* init_me;
 	init_me->colnames	= NULL;
 	init_me->textnames	= NULL;
 	init_me->rownames	= NULL;
-	init_me->catnames	= init_me->textnames;
 	init_me->colnamect	= 
 	init_me->textnamect	= 
-	init_me->catnamect	= 
 	init_me->rownamect	= 0;
+	init_me->title[0]   = '\0';
 	return init_me;
 }
 
@@ -38,6 +37,7 @@ apop_name	* init_me;
 \param type 	'r': add a row name<br>
 'c': add a column name<br>
 't': add a text category name<br>
+'h': add a title (or a header. 't' is taken).<br>
 'v': add (or overwrite) the vector name<br>
 \return 	Returns the number of rows/cols/depvars after you have added the new one.
 \ingroup names
@@ -45,6 +45,12 @@ apop_name	* init_me;
 int apop_name_add(apop_name * n, char *add_me, char type){
     if (!add_me)
         return -1;
+	if (type == 'h'){
+        if (add_me){
+            snprintf(n->title, 100, add_me);
+		    return 1;
+        } else return 0;
+	} 
 	if (type == 'v'){
         if (add_me){
 		n->vecname	= realloc(n->vecname, sizeof(char) * (strlen(add_me) + 1));
@@ -60,7 +66,6 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 		return n->rownamect;
 	} 
 	if (type == 't'){
-		(n->catnamect)++;
 		(n->textnamect)++;
 		n->textnames	= realloc(n->textnames, sizeof(char*) * n->textnamect);
 		n->textnames[n->textnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
@@ -69,7 +74,7 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 	}
 	//else assume (type == 'c'){
         if (type != 'c' && apop_opts.verbose)
-            printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
+            apop_error(2,'c',"You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
 		(n->colnamect)++;
 		n->colnames	= realloc(n->colnames, sizeof(char*) * n->colnamect);
 		n->colnames[n->colnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
@@ -213,6 +218,7 @@ void apop_name_memcpy(apop_name **out, apop_name *in){
     apop_name_stack(*out, in, 'c');
     apop_name_stack(*out, in, 'r');
     apop_name_stack(*out, in, 't');
+    snprintf((*out)->title, 100, in->title);
 }
 
 /** Copy one \ref apop_name structure to another. That is, all data is duplicated. 
@@ -233,6 +239,7 @@ apop_name *out = apop_name_alloc();
     apop_name_stack(out, in, 'c');
     apop_name_stack(out, in, 'r');
     apop_name_stack(out, in, 't');
+    snprintf(out->title, 100, in->title);
     return out;
 }
 

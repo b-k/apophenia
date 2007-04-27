@@ -240,10 +240,8 @@ FILE * 		f;
     }
     if (apop_opts.output_type == 'p')
         f   = apop_opts.output_pipe;
-    if (data == NULL){
-        if (apop_opts.verbose)
-            printf("Printing an empty vector, so the output will be blank.\n");
-    } 
+    if (data == NULL)
+        fprintf(f, "NULL\n");
     else {
 	    for (i=0; i<data->size; i++){
 		    p_fn(f, gsl_vector_get(data, i));
@@ -275,10 +273,10 @@ size_t 		i,j, max_name_size  = 0;
     }
     if (apop_opts.output_type == 'p')
         f   = apop_opts.output_pipe;
-    if (data == NULL){
-        if (apop_opts.verbose)
-            printf("Printing an empty matrix, so the output will be blank.\n");
-    } 
+    if (strlen(n->title)>0)
+        fprintf(f, "%s%s\n\n", apop_opts.output_type=='s'? "\t\t" : "", n->title);
+    if (data == NULL)
+        fprintf(f, "NULL\n");
     else {
         if (n != NULL && n->colnamect > 0){ //then print a row of column headers.
 		    fprintf(f,"\t");
@@ -331,11 +329,12 @@ void apop_matrix_print(gsl_matrix *data, char *file){
 void apop_data_print(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
         apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
-    } else
-        if (data->matrix)
-            print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf, data->names); 
-        else if (data->vector)
-            print_core_v(data->vector, apop_opts.output_delimiter, file, dumb_little_pf); 
+        return;
+    }
+    if (data->matrix)
+        print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf, data->names); 
+    else if (data->vector)
+        print_core_v(data->vector, apop_opts.output_delimiter, file, dumb_little_pf); 
 }
 
 
