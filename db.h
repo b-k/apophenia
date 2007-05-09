@@ -53,6 +53,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...);
 apop_data * apop_query_to_text(const char * fmt, ...);
 
 apop_data * apop_query_to_data(const char * fmt, ...);
+apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...);
 
 gsl_vector * apop_query_to_vector(const char * fmt, ...);
 double apop_query_to_float(const char * fmt, ...);

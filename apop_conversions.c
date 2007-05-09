@@ -369,7 +369,7 @@ static void strip_regex_alloc(){
 //OK, OK. C sucks. This fn just strips leading and trailing blanks.
 static char * strip(char *in){
   size_t      dummy       = 0;
-  char 		*out 	    = malloc(sizeof(char) * (1+strlen(in)));
+  char 		*out 	    = malloc(1+strlen(in));
   regmatch_t  result[3];
     if(!regexec(strip_regex, in, 2, result, 0))
         pull_string(in, out, result,  &dummy);
@@ -533,7 +533,7 @@ this will crash.
 */
 char *apop_strcpy(char **base, char *addme){
   int     addlen  = (addme) ? strlen(addme): 0;
-    *base    = realloc(*base, sizeof(char)*(addlen+1));
+    *base    = realloc(*base, addlen+1);
     if (!*base)
         printf("Ran out of memory in apop_strcpy. Returning NULL.\n");
     strcpy(*base, addme);
@@ -560,7 +560,7 @@ char *apop_strcat(char **base, char *addme){
     }
   int   baselen = strlen(*base),
         addlen  = (addme) ? strlen(addme): 0;
-    *base    = realloc(*base, sizeof(char)*(baselen+addlen+1));
+    *base    = realloc(*base, baselen+addlen+1);
     if (!*base)
         printf("Ran out of memory in apop_strcat. Returning NULL.\n");
     strcat(*base, addme);
@@ -659,33 +659,33 @@ static char * prep_string_for_sqlite(char *astring){
 	strtod(astring, &tail);
     tmpstring=strip(astring); 
     if (!regexec(nan_regex, tmpstring, 1, result, 0)){
-		out	= malloc(sizeof(char) * (strlen(tmpstring)+3));
+		out	= malloc(strlen(tmpstring)+3);
         sprintf(out, "NULL");
         goto leave;
     }
 	if (tail){	//then it's not a number.
 		if (strlen (tmpstring)==0){
-			out	= malloc(sizeof(char) * 2);
+			out	= malloc(2);
 			sprintf(out, " ");
             goto leave;
 		}
 		if (tmpstring[0]!='"'){
-			out	= malloc(sizeof(char) * (strlen(tmpstring)+3));
+			out	= malloc(strlen(tmpstring)+3);
 			sprintf(out, "'%s'",tmpstring);
             goto leave;
 		} else {
-            out	= malloc(sizeof(char) * (strlen(tmpstring)+1));
+            out	= malloc(strlen(tmpstring)+1);
             strcpy(out, tmpstring);
             goto leave;
         }
 	} else {			//sqlite wants 0.1, not .1
 		assert(strlen (tmpstring)!=0);
 		if (tmpstring[0]=='.'){
-			out	= malloc(sizeof(char) * (strlen(tmpstring)+2));
+			out	= malloc(strlen(tmpstring)+2);
 			sprintf(out, "0%s",tmpstring);
             goto leave;
 		} else {
-            out	= malloc(sizeof(char) * (strlen(tmpstring)+1));
+            out	= malloc(strlen(tmpstring)+1);
             strcpy(out, tmpstring);
             goto leave;
         }
@@ -744,7 +744,7 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
             apop_strcpy(&add_this_line, instr); //save this line for later.
             fn	= malloc(ct * sizeof(char*));
             for (i =0; i < ct; i++){
-                fn[i]	= malloc(1000 * sizeof(char));
+                fn[i]	= malloc(1000);
                 sprintf(fn[i], "col_%i", i);
             }
         }
@@ -806,7 +806,7 @@ static void line_to_insert(char instr[], char *tabname){
             length_of_string= strlen(instr);
   size_t    last_match      = 0;
   char	    outstr[Text_Line_Limit], *prepped;
-  char      *q  = malloc(sizeof(char)*(100+ strlen(tabname)));
+  char      *q  = malloc(100+ strlen(tabname));
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
     while (last_match < length_of_string 
            && !regexec(regex, (instr+last_match), 2, result, 0)){

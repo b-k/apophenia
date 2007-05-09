@@ -31,7 +31,7 @@ apop_params *apop_histogram_params_alloc(apop_data *data, int bins, apop_params 
     //header is in model.h.
   apop_params *pin  = params_in;
   apop_histogram_params *hp= malloc(sizeof(*hp));
-    hp->ep  = apop_params_alloc(data, &apop_histogram, NULL, hp);
+    hp->ep  = apop_params_alloc(data, apop_histogram, NULL, hp);
     if (!params_in){
         pin     = hp->ep;
     } else
@@ -136,4 +136,11 @@ static void histogram_rng(double *out, gsl_rng *r, apop_params* eps){
 
 \ingroup models
 */
-apop_model apop_histogram = {"histogram", 0,0,0, est, histogram_p, histogram_log_likelihood, .draw = histogram_rng};
+apop_model apop_histogram = {"histogram", 0,0,0, .estimate = est, 
+    .p = histogram_p, .log_likelihood = histogram_log_likelihood, 
+    .draw = histogram_rng};
+
+
+//By the way, here's the null model.
+apop_model apop_null = {"The null model", 0,0,0};
+

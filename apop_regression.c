@@ -33,9 +33,11 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
  \param method_params   If you are using a nonstandard method to estimate the model, put the params there.
  \return an \c apop_OLS_params 
  */
-apop_OLS_params * apop_OLS_params_alloc(char destroy_data, apop_data *data, apop_model *model, apop_params *method_params){
+apop_OLS_params * apop_OLS_params_alloc(apop_data *data, apop_model model, apop_params *method_params){
   apop_OLS_params *out  = malloc(sizeof(*out));
-    out->destroy_data       = destroy_data == 'd' ? 1 : 0;
+    out->destroy_data       =  0;
+    out->want_cov           =  1;
+    out->want_expected_value=  1;
     out->ep                 = apop_params_alloc(data, model, out, method_params);
     out->ep->model_params   = out;
     snprintf(out->ep->method_name, 100, "OLS");
@@ -156,7 +158,6 @@ includes a set of t-test values: p value, confidence (=1-pval), t statistic, sta
 void apop_estimate_parameter_t_tests (apop_params *est){
 int     i, df;
 double  val, var, pval, tstat, rootn, stddev, two_tail;
-    est->uses.confidence  = 1;
     if (!est->data)
         return;
     assert(est->covariance);
@@ -271,7 +272,8 @@ return apop_F_test(est, contrast);
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_params *e){
-int i;
+  int i;
+  apop_OLS_params   *p = e->model_params;
 	if (e->data->names->colnamect > 0) {		
 		//apop_name_add(n, n->colnames[0], 'd');
         apop_name_add(e->expected->names, e->data->names->colnames[0], 'c');
@@ -279,27 +281,25 @@ int i;
         apop_name_add(e->expected->names, "residual", 'c');
         if (e->parameters)
             snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->colnames[0]);
-		/*e->expected->names->colnames[0] =
-            realloc(e->expected->names->colnames[0],
-                    sizeof(e->data->names->colnames[0]));
-		sprintf(e->expected->names->colnames[0], 
-                e->data->names->colnames[0]);*/
 		sprintf(e->data->names->colnames[0], "1");
-        if (e->uses.parameters){
-            apop_name_add(e->parameters->names, "1", 'r');
-            apop_name_add(e->parameters->names, "parameters", 'v');
-            for(i=1; i< e->data->names->colnamect; i++)
-                apop_name_add(e->parameters->names, e->data->names->colnames[i], 'r');
-        }
-        if (e->uses.covariance){
+        apop_name_add(e->parameters->names, "1", 'r');
+        apop_name_add(e->parameters->names, "parameters", 'v');
+        for(i=1; i< e->data->names->colnamect; i++)
+            apop_name_add(e->parameters->names, e->data->names->colnames[i], 'r');
+        if (p->want_cov){
+            if (e->data->names){
+                apop_name_stack(e->covariance->names, e->data->names, 'c');
+                apop_name_cross_stack(e->covariance->names, e->data->names, 'c', 'r');
+            }
 		    sprintf(e->covariance->names->colnames[0], "1");
 		    sprintf(e->covariance->names->rownames[0], "1");
-            }
+        }
 	}
 }
 
 void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_params *out){
-	if (out->uses.covariance + out->uses.confidence + out->uses.predicted == 0 ){	
+  apop_OLS_params   *p = out->model_params;
+	if (p->want_cov + p->want_expected_value == 0 ){	
 		//then don't calculate (X'X)^{-1}
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
 		return;
@@ -316,9 +316,8 @@ void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector
     gsl_blas_ddot(error, error, &s_sq);   // e'e
     s_sq    /= data->size1 - data->size2;   //\sigma^2 = e'e / df
 	gsl_matrix_scale(cov, s_sq);            //cov = \sigma^2 (X'X)^{-1}
-	if (out->uses.expected)
+	if (p->want_expected_value){
         gsl_matrix_set_col(out->expected->matrix, 0, y_data);
-	if (out->uses.predicted){
         gsl_matrix_set_col(out->expected->matrix, 2, error);
         predicted   = gsl_matrix_column(out->expected->matrix, 1).vector;
         gsl_vector_set_zero(&predicted);
@@ -326,10 +325,7 @@ void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector
         gsl_vector_sub(&predicted, error);
     }
     gsl_vector_free(error);
-	if (out->uses.covariance == 0) 	
-        gsl_matrix_free(cov);
-	else 				
-        out->covariance->matrix	= cov;
+    out->covariance->matrix	= cov;
 }
 
 /** generalized least squares.
@@ -425,7 +421,7 @@ apop_params   *est;
     apop_text_to_db("data","d",0,1,NULL);
     data = apop_query_to_data("select * from d");
     est  = apop_OLS.estimate(data, NULL);
-    apop_estimate_print(est);
+    apop_params_show(est);
     return 0;
 }
 \endcode
@@ -456,7 +452,7 @@ apop_params * apop_estimate_OLS(apop_data *inset, apop_params *ep){
   int               i;
   apop_OLS_params  *olp;
     if (!ep || strcmp(ep->method_name, "OLS")) {
-        olp             = apop_OLS_params_alloc(0, inset, &apop_OLS, NULL);
+        olp             = apop_OLS_params_alloc(inset, apop_OLS, NULL);
         epout           = olp->ep;
     } else {
         olp             = ep->method_params;
@@ -480,6 +476,10 @@ apop_params * apop_estimate_OLS(apop_data *inset, apop_params *ep){
   gsl_vector    *y_data     = gsl_vector_alloc(set->matrix->size1); 
   gsl_vector    *xpy        = gsl_vector_calloc(set->matrix->size2);
   gsl_matrix    *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
+    if (olp->want_expected_value)
+        epout->expected   = apop_data_alloc(0, set->matrix->size1, 3);
+    if (olp->want_cov)
+        epout->covariance = apop_data_alloc(0, set->matrix->size1, set->matrix->size1);
     prep_names(epout);
     APOP_COL(set, 0, firstcol);
     gsl_vector_memcpy(y_data,firstcol);
@@ -497,11 +497,9 @@ apop_params * apop_estimate_OLS(apop_data *inset, apop_params *ep){
     xpxinvxpy(set->matrix, y_data, xpx, xpy, epout);
     gsl_vector_free(y_data); gsl_vector_free(xpy);
 
-    if (!olp->destroy_data){
+    if (!olp->destroy_data)
         apop_data_free(set);
-    }
-	if (epout->uses.confidence)
-        apop_estimate_parameter_t_tests(epout);
+    apop_estimate_parameter_t_tests(epout);
     return epout;
 }
 
@@ -527,7 +525,6 @@ apop_params * apop_estimate_OLS(apop_data *inset, apop_params *ep){
 \param set2    the second half of the data set
 \param  m1      If you have these, give them to me and I won't waste time calculating them.
 \param  m2      If you have these, give them to me and I won't waste time calculating them.
-\param uses     If NULL, do everything; else, produce those \ref apop_params elements which you specify. You always get the parameters and never get the log likelihood.
 
 \bug The cross-variances are assumed to be zero, which is wholeheartedly false. It's not too big a deal because nobody ever uses them for anything.
 */
@@ -608,13 +605,20 @@ apop_data *newfirst = malloc(sizeof(apop_data));
     return out;
 }
 */
-
+//
+//
 //Cut and pasted from the GNU std library documentation:
 static int compare_doubles (const void *a, const void *b) {
     const double *da = (const double *) a;
     const double *db = (const double *) b;
     return (*da > *db) - (*da < *db);
 }
+
+typedef const char * ccp;
+static int strcmpwrap(const void *a, const void *b){
+    const ccp *aa = a;
+    const ccp *bb = b;
+    return strcmp(*aa, *bb);}
 
 /** A utility to make a matrix of dummy variables. You give me a single
 vector that lists the category number for each item, and I'll return
@@ -627,37 +631,64 @@ a gsl_matrix with a single one in each row in the column specified.
     has an entry in column zero, et cetera. If you don't know why this
     is useful, then this is what you need. If you know what you're doing
     and need something special, set this to one and the first category won't be dropped.
+param type 'd'==data column (-1==vector), 't'==text column.
 \return out
 */
-apop_data * apop_produce_dummies(gsl_vector *in, int keep_first){
-size_t      i, index,
-            prior_elmt_ctr  = 107,
-            elmt_ctr        = 0;
-apop_data   *out; 
-double      *elmts          = malloc(sizeof(double)),
-            val;
-char        n[1000];
-
+apop_data * apop_data_produce_dummies(apop_data *d, int col, char type, int keep_first){
+  size_t      i, index,
+              prior_elmt_ctr  = 107,
+              elmt_ctr        = 0;
+  apop_data   *out; 
+  double      *elmts          = malloc(sizeof(double)),
+              val;
+  char        n[1000], **tval,
+              **telmts        = malloc(sizeof(char*));
+  gsl_vector  *in             = NULL;
+    if (type == 'd'){
+        if ((col == -1) && !d->vector)
+            apop_error(0, 's', "%s: You asked for the vector element (col==-1) but the data's vector element is NULL.\n", __func__);
+        if (col >=0 && col >= d->matrix->size2)
+            apop_error(0, 's', "%s: You asked for the matrix element %i but the data's matrix element has only %i columns.\n", 
+                    __func__, col, d->matrix->size2);
+        APOP_COL(d, col, in_t);
+        in  = in_t;
+    } else
+        if (col >= d->textsize[1])
+            apop_error(0, 's', "%s: You asked for the text element %i but the data's text element has only %i elements.\n", 
+                    __func__, col, d->textsize[1]);
     //first, create an ordered list of unique elements.
-    //Note to the reader: this may or may not be more efficient on the
-    //db side.
-    for (i=0; i< in->size; i++){
-        if (prior_elmt_ctr != elmt_ctr)
-            elmts   = realloc(elmts, sizeof(double)*(elmt_ctr+1));
-        prior_elmt_ctr  = elmt_ctr;
-        val             =  gsl_vector_get(in, i);
-        lsearch (&val, elmts, &elmt_ctr, sizeof(double), compare_doubles);
-    }
-    qsort(elmts, elmt_ctr, sizeof(double), compare_doubles);
+    //Note to the reader: this may or may not be more efficient on the db side.
+    int s = type == 'd' ? in->size : d->textsize[0];
+    if (type == 'd')
+        for (i=0; i< s; i++){
+            if (prior_elmt_ctr != elmt_ctr)
+                elmts   = realloc(elmts, sizeof(double)*(elmt_ctr+1));
+            prior_elmt_ctr  = elmt_ctr;
+            val     =  gsl_vector_get(in, i);
+            lsearch (&val, elmts, &elmt_ctr, sizeof(double), compare_doubles);
+            qsort(elmts, elmt_ctr, sizeof(double), compare_doubles);
+        }
+    else 
+        for (i=0; i< s; i++){
+            if (prior_elmt_ctr != elmt_ctr)
+                telmts   = realloc(telmts, sizeof(char**)*(elmt_ctr+1));
+            prior_elmt_ctr  = elmt_ctr;
+            tval    =  &(d->text[i][col]);
+            lsearch (tval, telmts, &elmt_ctr, sizeof(char**), strcmpwrap);
+            qsort(telmts, elmt_ctr, sizeof(char**), strcmpwrap);
+        }
 
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
     //the dummy matrix to one.
-    if (keep_first)     out  = apop_data_calloc(0,in->size, elmt_ctr+1);
-    else                out  = apop_data_calloc(0,in->size, elmt_ctr);
-    for (i=0; i< in->size; i++){
-        val     = gsl_vector_get(in, i);
-        index   = ((long int)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (long int)elmts)/sizeof(double);
+    if (keep_first)     out  = apop_data_calloc(0, s, elmt_ctr);
+    else                out  = apop_data_calloc(0, s, elmt_ctr-1);
+    for (i=0; i< s; i++){
+        if (type == 'd'){
+            val     = gsl_vector_get(in, i);
+            index   = ((size_t)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (long int)elmts)/sizeof(double);
+        } else 
+            index   = ((size_t)bsearch(&(d->text[i][col]), telmts, elmt_ctr, sizeof(char**), strcmpwrap) - (size_t)telmts)/sizeof(char**);
         if (keep_first)
             gsl_matrix_set(out->matrix, i, index,1); 
         else if (index>0)
@@ -667,12 +698,14 @@ char        n[1000];
     //Add names:
     i   = (keep_first) ? 0 : 1;
     for (  ; i< elmt_ctr; i++){
-        sprintf(n,"dummy %g", elmts[i]);
+        if (type =='d')
+            sprintf(n,"dummy %g", elmts[i]);
+        else
+            sprintf(n, telmts[i]);
         apop_name_add(out->names, n, 'c');
     }
     return out;
 }
-
 
 /** A fixed-effects regression.
     The input is a data matrix for a regression, plus a single vector giving the fixed effect vectors.
@@ -684,7 +717,7 @@ char        n[1000];
 \todo finish this documentation. [Was in a rush today.]
 */
 apop_params *apop_estimate_fixed_effects_OLS(apop_data *data,  gsl_vector *categories){
-apop_data *dummies = apop_produce_dummies(categories, 0);
+apop_data *dummies = apop_data_produce_dummies(apop_vector_to_data(categories),-1, 'd', 0);
     apop_data_stack(data, dummies, 'c');
     return apop_OLS.estimate(dummies, NULL);
 }
@@ -707,18 +740,21 @@ apop_data *dummies = apop_produce_dummies(categories, 0);
 "SST"\\
 "SSR"
 
+I need the \c apop_params sent in to have the expected value table. This
+is the default, but if you explicitly set want_expected_value = 0,
+then turn back and unset it.
+
 \ingroup regression
   */
 apop_data *apop_estimate_correlation_coefficient (apop_params *in){
-double          sse, sst, rsq, adjustment;
-size_t          obs     = in->data->matrix->size1;
-size_t          indep_ct= in->data->matrix->size2 - 1;
-gsl_vector      v;  
-apop_data       *out    = apop_data_alloc(0, 5,-1);
-    if (!in->uses.predicted
-        || !in->uses.expected){
-        if (apop_opts.verbose)
-            printf("I need predicted and dependent to be set in the apop_estimate->uses before I can calculate the correlation coefficient. returning NULL.\n");
+  double          sse, sst, rsq, adjustment;
+  size_t          obs     = in->data->matrix->size1;
+  size_t          indep_ct= in->data->matrix->size2 - 1;
+  gsl_vector      v;  
+  apop_data       *out    = apop_data_alloc(0, 5,-1);
+  apop_OLS_params *p      = in->model_params;
+    if (!p->want_expected_value){
+        apop_error(0, 'c', "I need an estimate that used want_expected_value to calculate the correlation coefficient. returning NULL.\n");
         return NULL;
     }
     v   = gsl_matrix_column(in->expected->matrix, 

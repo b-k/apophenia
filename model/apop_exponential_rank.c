@@ -29,7 +29,7 @@ static apop_params * exponential_rank_estimate(apop_data * data, apop_params *pa
   double          colsum,
                   numerator   = 0,
                   grand_total = 0;
-  apop_params 	*est	    = apop_params_alloc(data,&apop_exponential_rank, parameters, NULL);
+  apop_params 	*est	    = apop_params_alloc(data, apop_exponential_rank, parameters, NULL);
   int             i;
     for(i=0; i< data->matrix->size2; i++){
         APOP_MATRIX_COL(data->matrix, i, v);
@@ -38,10 +38,9 @@ static apop_params * exponential_rank_estimate(apop_data * data, apop_params *pa
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters->vector, 0, numerator/grand_total);
-	if (est->uses.log_likelihood)
-		est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters, data, parameters);
-	if (est->uses.covariance)
-		apop_numerical_covariance_matrix(apop_exponential_rank, est, data);
+    est->log_likelihood	= apop_exponential_rank.log_likelihood(est->parameters, data, parameters);
+	/*if (est->uses.covariance)
+		apop_numerical_covariance_matrix(apop_exponential_rank, est, data);*/
 	return est;
 }
 

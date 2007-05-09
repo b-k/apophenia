@@ -353,7 +353,7 @@ int		count = 0;
 void estimate_model(gsl_matrix *data, apop_model dist, int method){
 int                     i;
 double                  starting_pt[] = {3.2, 1.4};
-apop_mle_params  *params = apop_mle_params_alloc(apop_matrix_to_data(data), &dist, NULL);
+apop_mle_params  *params = apop_mle_params_alloc(apop_matrix_to_data(data), dist, NULL);
     params->method           = method;
     params->step_size        = 1e-2;
     params->starting_pt      = starting_pt;
@@ -363,7 +363,7 @@ apop_mle_params  *params = apop_mle_params_alloc(apop_matrix_to_data(data), &dis
     params->t_min           = .5;
     params->k               = 1.8;
     apop_data_free(params->ep->covariance);
-    params->ep->uses.covariance = 0;
+    params->want_cov        = 0;
     apop_params *e    = dist.estimate(apop_matrix_to_data(data),params->ep);
     e   = apop_estimate_restart(e, method ? 0 : 1, 1);
     if (verbose)
@@ -560,7 +560,7 @@ void test_model_fix_parameters(){
   apop_data *d  = apop_data_alloc(0,ct,2);
   //apop_data *v  = apop_data_alloc(2,0,0);
   //apop_data *v2 = apop_data_alloc(2,0,0);
-  apop_mle_params *ep   = apop_mle_params_alloc(d, &apop_multivariate_normal, NULL);
+  //apop_mle_params *ep   = apop_mle_params_alloc(d, apop_multivariate_normal, NULL);
   gsl_rng *r    = apop_rng_alloc(10);
   double    draw[2];
     apop_data_set(pv, 0, -1, 8);
@@ -570,7 +570,6 @@ void test_model_fix_parameters(){
     gsl_matrix_set(pv->matrix, 1,0,0.5);
     gsl_matrix_set(pv->matrix, 0,1,0.5);
   apop_params *pp = apop_params_alloc_p(pv);
-    ep->method      = 0;
     for(i=0; i< ct; i++){
         apop_multivariate_normal.draw(draw, r, pp);
         apop_data_set(d, i, 0, draw[0]);
@@ -579,17 +578,19 @@ void test_model_fix_parameters(){
     }
 
     gsl_matrix_set_all(mask->matrix, 1);
-    apop_model *mep1   = apop_model_fix_params(pv, mask, apop_multivariate_normal, NULL, ep->ep);
-    apop_params   *e1  = mep1->estimate(d, mep1->ep);
+    apop_mle_params *mep1   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal, NULL);
+    mep1->method      = 0;
+    apop_params   *e1  = mep1->ep->model->estimate(NULL, mep1->ep);
     gsl_vector_sub(e1->parameters->vector, pv->vector);
     assert(apop_vector_sum(e1->parameters->vector) < 1e-2);
 
   double    start2[] = {1,0,0,1};
-    ep->starting_pt = start2;
     gsl_matrix_set_all(mask->matrix, 0);
     gsl_vector_set_all(mask->vector, 1);
-    apop_model *mep2   = apop_model_fix_params(pv, mask, apop_multivariate_normal, NULL, ep->ep);
-    apop_params   *e2  = mep2->estimate(d, mep2->ep);
+    apop_mle_params *mep2   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal, NULL);
+    mep2->method      = 0;
+    mep2->starting_pt = start2;
+    apop_params   *e2  = mep2->ep->model->estimate(NULL, mep2->ep);
     gsl_matrix_sub(e2->parameters->matrix, pv->matrix);
     assert(apop_matrix_sum(e2->parameters->matrix) < 1e-2);
 }

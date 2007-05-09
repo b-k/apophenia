@@ -19,15 +19,18 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL version 2.
 static double poisson_log_likelihood(const apop_data *beta, apop_data *d, apop_params *);
 
 static apop_params * poisson_estimate(apop_data * data,  apop_params *parameters){
-  apop_params 	*est= parameters ? parameters : apop_params_alloc(data,&apop_poisson, parameters->method_params, NULL);
+  apop_params 	*est= parameters ? parameters : apop_params_alloc(data, apop_poisson, parameters->method_params, NULL);
   double		mean    = apop_matrix_mean(data->matrix);
     if (!est->parameters->vector) 
         est->parameters->vector   = gsl_vector_alloc(1);
 	gsl_vector_set(est->parameters->vector, 0, mean);
-	if (parameters->uses.log_likelihood)
-		est->log_likelihood	= poisson_log_likelihood(est->parameters, data, parameters);
-	if (parameters->uses.covariance)
-		    est->covariance = apop_jackknife_cov(data, apop_poisson, est);
+    est->log_likelihood	= poisson_log_likelihood(est->parameters, data, parameters);
+    if (est->method_params 
+            && ((apop_mle_params *)(est->method_params))->want_cov){
+        apop_mle_params   *extra  = apop_mle_params_alloc(data, apop_poisson, NULL);
+        extra->want_cov = 0;
+        est->covariance = apop_jackknife_cov(data, apop_poisson, est);
+    }
 	return est;
 }
 
@@ -97,6 +100,8 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
 apop_poisson.estimate() is an MLE, so feed it appropriate \ref apop_params.
   
 \f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
+
+If you want, you can use the \c apop_mle_estimate_params for the method_params element of the input \c apop_params. The model will only look at the \c want_cov element.
 
 \ingroup models
 */

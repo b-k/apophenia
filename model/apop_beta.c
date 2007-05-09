@@ -29,17 +29,15 @@ static double beta_log_likelihood(const apop_data *beta, apop_data *d, apop_para
  a
 */
 static apop_params * beta_estimate(apop_data * data,  apop_params *parameters){
-apop_params 	*est	    = apop_params_alloc(data, &apop_beta, parameters, NULL);
+apop_params 	*est	    = apop_params_alloc(data, apop_beta, parameters, NULL);
 double		mean, var, alpha, beta;
 	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
     alpha   = gsl_pow_2(mean) * ((1-mean)/var - 1/mean);
     beta    = alpha * (1-mean)/mean;
 	gsl_vector_set(est->parameters->vector, 0, alpha);
 	gsl_vector_set(est->parameters->vector, 1, beta);
-	if (est->uses.log_likelihood)
-		est->log_likelihood	= beta_log_likelihood(est->parameters, data, parameters);
-	if (est->uses.covariance)
-		apop_numerical_covariance_matrix(apop_beta, est, data);
+    est->log_likelihood	= beta_log_likelihood(est->parameters, data, parameters);
+    apop_numerical_covariance_matrix(apop_beta, est, data);
 	return est;
     
 	return NULL;

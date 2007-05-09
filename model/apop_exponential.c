@@ -17,10 +17,9 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 static double exponential_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p);
 
 static apop_params * exponential_estimate(apop_data * data,  apop_params *parameters){
-apop_params 	*est	    = apop_params_alloc(data,&apop_exponential, parameters, NULL);
+apop_params 	*est	    = apop_params_alloc(data, apop_exponential, parameters, NULL);
 	gsl_vector_set(est->parameters->vector, 0, apop_matrix_mean(data->matrix));
-	if (est->uses.log_likelihood)
-		est->log_likelihood	= exponential_log_likelihood(est->parameters, data, NULL);
+    est->log_likelihood	= exponential_log_likelihood(est->parameters, data, NULL);
 	//if (est->ep.uses.covariance)
 		//apop_numerical_var_covar_matrix(apop_exponential, est, data->matrix);
 	return est;

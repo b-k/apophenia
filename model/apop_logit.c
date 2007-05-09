@@ -20,14 +20,18 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-
-/* 
-This is an MLE, so this is a one-liner.
-*/
-static apop_params * logit_estimate(apop_data * data,  apop_params *parameters){
-	return apop_maximum_likelihood(data,  apop_logit, parameters);
+static void modify_in_data(apop_data *d){
+    if (!d->vector){
+        APOP_COL(d, 0, independent);
+        d->vector = apop_vector_copy(independent);
+        gsl_vector_set_all(independent, 1);
+    }
 }
 
+static apop_params * logit_estimate(apop_data * data,  apop_params *parameters){
+    modify_in_data(data);
+	return apop_maximum_likelihood(data,  apop_logit, parameters);
+}
 
 /*For the sake of the fdf function, we keep xdotbeta global.
   */
@@ -36,25 +40,18 @@ gsl_vector  *xdotbeta;
 int         calculate_xdotbeta  = 1;
 int         keep_xdotbeta       = 0;
 
-/*
-
-
-
-*/
 static double logit_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
-size_t	    i;
-double	    loglike 	= 0,
-            xb;
-gsl_matrix 	*data 		= d->matrix;
-gsl_matrix  independent = gsl_matrix_submatrix(data, 0,1, 
-                                    data->size1, data->size2 -1).matrix;
+  size_t	    i;
+  double	    loglike 	= 0,
+              xb;
+  gsl_matrix 	*data 		= d->matrix;
     if (calculate_xdotbeta){
         xdotbeta    = gsl_vector_calloc(data->size1);
-        gsl_blas_dgemv(CblasNoTrans, 1.0, &independent, beta->vector, 0, xdotbeta);
-        }
+        gsl_blas_dgemv(CblasNoTrans, 1.0, data, beta->vector, 0, xdotbeta);
+    }
 	for(i=0;i< data->size1; i++){
         xb    = gsl_vector_get(xdotbeta, i);
-		if (gsl_matrix_get(data, i, 0))
+		if (gsl_vector_get(d->vector, i))
             loglike   += xb/(1.+xb);
         else
             loglike   += 1./(1.+xb);
@@ -74,9 +71,9 @@ static double logit_p(const apop_data *beta, apop_data *d, apop_params *p){
   The sample is a three-dimensional parameter vector.
  */
 static void logit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
-int		    i,j;
-double	    dtotal[3];
-gsl_matrix 	*data 	= d->matrix;
+  int		    i,j;
+  double	    dtotal[3];
+  gsl_matrix 	*data 	= d->matrix;
     dtotal[0]  = 0,
     dtotal[1]  = 0,
     dtotal[2]  = 0;
@@ -89,7 +86,6 @@ gsl_matrix 	*data 	= d->matrix;
 	    gsl_vector_set(gradient,j,dtotal[j]);
     }
 }
-
 
 /** 
   Simple, but some trickery to keep xdotbeta. Notice that the two switches
@@ -114,6 +110,6 @@ static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vect
 
 \ingroup models
 */
-apop_model apop_logit = {"logit",-1,0,0,  
-    .estimate = logit_estimate, .p = logit_p, .log_likelihood = logit_log_likelihood, 
-    .score = logit_dlog_likelihood};
+apop_model apop_logit = {"Logit",-1,0,0,  
+    .estimate = logit_estimate, .p = logit_p, .log_likelihood = logit_log_likelihood};
+    //.score = logit_dlog_likelihood};

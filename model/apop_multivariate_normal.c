@@ -38,7 +38,7 @@ double apop_multinormal_prob(const apop_data *x, apop_data *v, apop_params * m){
 }
 
 static apop_params * multivariate_normal_estimate(apop_data * data, apop_params *p){
-    if (!p) p = apop_params_alloc(data, &apop_multivariate_normal, NULL, NULL);
+    if (!p) p = apop_params_alloc(data, apop_multivariate_normal, NULL, NULL);
   int   i;
     for (i=0; i< data->matrix->size2; i++){
         APOP_COL(data,i,v);

@@ -264,7 +264,7 @@ int         i,
 \ingroup histograms
 */
 apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model m,
-int bins, long int draws, apop_data *params, gsl_rng *r){
+int bins, long int draws, apop_params *params, gsl_rng *r){
 int     i, count    = bins;
 double  diff        = 0,
         sum;

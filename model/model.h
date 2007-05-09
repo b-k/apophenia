@@ -29,6 +29,7 @@ extern apop_model apop_gaussian;//synonym for apop_normal
 extern apop_model apop_histogram;
 extern apop_model apop_logit;
 extern apop_model apop_multivariate_normal;
+extern apop_model apop_null; //I threw this one in apop_histogram.c
 extern apop_model apop_normal;
 extern apop_model apop_OLS;
 extern apop_model apop_poisson;

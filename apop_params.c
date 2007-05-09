@@ -31,20 +31,22 @@ there for your reference. They are just pointers to the original data,
 so if you destroy your data eleswhere, these pointers will faithfully
 point to garbage.
 
-Also, the parameters, and anything else specified in the inventory, is allocated and ready for you to use.
+If for some reason you don't have a model in mind but want to use this function, then use the null model, \c apop_null.
+
+Also, the parameters are allocated and ready for you to use. You (or the estimate method you call) has to allocate the covariance and expected values your/itself.
 
 \ingroup inv_and_est  */
-apop_params * apop_params_alloc(apop_data * data, apop_model *model, void *method_params, void *model_params){
+apop_params * apop_params_alloc(apop_data * data, apop_model model, void *method_params, void *model_params){
 apop_params * prep_me = malloc(sizeof(apop_params));
     /* This has some cruft from when there were separate apop_ep and
        apop_params structs. Harmless, so I didn't mess with it.*/
-    int vsize  = model->vbase == -1 ? data->matrix->size2 : model->vbase;
-    int msize1 = model->m1base == -1 ? data->matrix->size2 : model->m1base ;
-    int msize2 = model->m2base == -1 ? data->matrix->size2 : model->m2base ;
+    int vsize  = model.vbase == -1 ? data->matrix->size2 : model.vbase;
+    int msize1 = model.m1base == -1 ? data->matrix->size2 : model.m1base ;
+    int msize2 = model.m2base == -1 ? data->matrix->size2 : model.m2base ;
     prep_me->parameters	= apop_data_alloc(vsize, msize1, msize2);
-    memset(&(prep_me->uses), 1, sizeof(prep_me->uses));
 	//if (prep_me->uses.expected ||
 	 //               prep_me->uses.predicted){
+     /*
         if (data && data->matrix)
 		    prep_me->expected	= apop_data_alloc(0, data->matrix->size1,3);
         else if (data && data->vector)
@@ -68,9 +70,11 @@ apop_params * prep_me = malloc(sizeof(apop_params));
             apop_name_cross_stack(prep_me->covariance->names, data->names, 'c', 'r');
         }
     } else
-		prep_me->covariance	= NULL;
+    */
+    prep_me->covariance	= NULL;
+    prep_me->expected	= NULL;
     prep_me->data               = data;
-    prep_me->model              = model;
+    prep_me->model              = apop_model_copy(model);
     prep_me->method_name[0]     = '\0';
     prep_me->method_params      = method_params;
     prep_me->model_params       = model_params;
@@ -155,16 +159,16 @@ apop_params *apop_params_clone(apop_params *in, size_t method_size, size_t model
 
 /** Free an \ref apop_params structure.
 
+  If \c free_me is \c NULL, this does nothing.
 \ingroup inv_and_est */
 void apop_params_free (apop_params * free_me){
-	if (free_me->uses.predicted
-	    || free_me->uses.expected)
-        if (free_me->expected)
-		    apop_data_free(free_me->expected);
-	if (free_me->uses.covariance)
-		apop_data_free(free_me->covariance);
-	if (free_me->uses.parameters)
+    if (!free_me) return;
+	if (free_me->parameters)
         apop_data_free(free_me->parameters);
+	if (free_me->covariance)
+		apop_data_free(free_me->covariance);
+    if (free_me->expected)
+        apop_data_free(free_me->expected);
 	free(free_me);
 }
 
@@ -179,13 +183,14 @@ void apop_params_show (apop_params * print_me){
     if (strlen(print_me->method_name))
         printf (print_me->method_name);
     printf("\n\n");
-	if (print_me->uses.parameters)
+	if (print_me->parameters)
         apop_data_show(print_me->parameters);
-	if (print_me->uses.covariance){
+	if (print_me->covariance){
 		printf("\nThe covariance matrix:\n");
         apop_data_show(print_me->covariance);
 	}
-	if (print_me->uses.log_likelihood)
+//under the false presumption that if it is calculated it is never quite ==0.
+	if (print_me->log_likelihood)
 		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);
 }
 

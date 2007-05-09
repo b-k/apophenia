@@ -18,7 +18,7 @@ char		c,
 		printf(msg);
 		return 0;
 	}
-	delimiter	= malloc(sizeof(char) * 5);
+	delimiter	= malloc(5);
 	strcpy(delimiter, ",");
 	while ((c = getopt (argc, argv, "vh")) != -1){
 		switch (c){

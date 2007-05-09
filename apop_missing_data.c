@@ -150,11 +150,11 @@ apop_params * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_params 
     mc->vbase           = mask.ct;
     mask.meanvar        = meanvar;
     if (!parameters || strcmp(parameters->method_name, "MLE")){
-        mlp     = apop_mle_params_alloc(d, mc, parameters);
+        mlp     = apop_mle_params_alloc(d, *mc, parameters);
         p = parameters          = mlp->ep;
     } else{
-        p       = apop_params_alloc(d, mc, parameters->method_params,parameters->model_params);
-        mlp     = apop_mle_params_alloc(d, mc, parameters);
+        p       = apop_params_alloc(d, *mc, parameters->method_params,parameters->model_params);
+        mlp     = apop_mle_params_alloc(d, *mc, parameters);
     } 
     mlp->method             = 5;
     parameters->model_params= &mask;

@@ -26,15 +26,13 @@ static double binomial_log_likelihood(const apop_data*, apop_data*, apop_params*
 
 \todo Look up  the covariance matrix for the parameters of the Binomial */
 static apop_params * binomial_estimate(apop_data * data,  apop_params *parameters){
-apop_params *est	    = apop_params_alloc(data, &apop_binomial, parameters, NULL);
+apop_params *est	    = apop_params_alloc(data, apop_binomial, parameters, NULL);
 double		mean, var;
 	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
 	gsl_vector_set(est->parameters->vector, 0, gsl_pow_2(mean)/(mean-var));      //n
 	gsl_vector_set(est->parameters->vector, 1, 1- var/mean); //p
-	if (est->uses.log_likelihood)
-		est->log_likelihood	= binomial_log_likelihood(est->parameters, data, parameters);
-	if (est->uses.covariance)
-		apop_numerical_covariance_matrix(apop_binomial, est, data);
+    est->log_likelihood	= binomial_log_likelihood(est->parameters, data, parameters);
+    apop_numerical_covariance_matrix(apop_binomial, est, data);
 	return est;
 }
 

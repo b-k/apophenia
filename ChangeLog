@@ -3,6 +3,11 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+	May 2007
+--apop_query_to_mixed_data
+**apop_produce_dummies now makes dummy variables from both data and
+text. This means that there's another parameter you need to set to 'd'
+or 't' to indicate what you want dummified.
 
 	0.19 April 2007
 !!**Eliminated the apop_estimate and apop_ep structures, replacing them
@@ -29,6 +34,16 @@ but very useful when used with care.
 for name or number, while i stands for index, and is often used for integers.
 --apop_names now have a title element, so you can give your data
 structures a title.
+**apop_params_alloc takes an apop_model, not an &apop_model. It's more
+natural that way.
+**Finally erradicated every last vestige of inventories: apop_params no
+longer has a .uses element. Instead, apop_specific_model_params may have
+a want_cov, want_expected_value, want_whatever element if the element is
+optional. And really, the parameters themselves should never be
+optional. What was I thinking.
+**apop_model_fix_params now sets up and returns an apop_mle_params object,
+thus resolving the problem that the MLE params needs a model input,
+and the model_fix_params model needed an MLE params input.
 
 	0.18 March 2007
 **apop_text_to_db now assumes column names unless you specify -nc.

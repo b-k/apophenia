@@ -53,7 +53,7 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 	} 
 	if (type == 'v'){
         if (add_me){
-		n->vecname	= realloc(n->vecname, sizeof(char) * (strlen(add_me) + 1));
+		n->vecname	= realloc(n->vecname,  strlen(add_me) + 1);
 		strcpy(n->vecname, add_me);
 		return 1;
         } else return 0;
@@ -61,15 +61,15 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 	if (type == 'r'){
 		(n->rownamect)++;
 		n->rownames	= realloc(n->rownames, sizeof(char*) * n->rownamect);
-		n->rownames[n->rownamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
+		n->rownames[n->rownamect -1]	= malloc(strlen(add_me) + 1);
 		strcpy(n->rownames[n->rownamect -1], add_me);
 		return n->rownamect;
 	} 
 	if (type == 't'){
 		(n->textnamect)++;
 		n->textnames	= realloc(n->textnames, sizeof(char*) * n->textnamect);
-		n->textnames[n->textnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
-		strcpy(n->rownames[n->textnamect -1], add_me);
+		n->textnames[n->textnamect -1]	= malloc(strlen(add_me) + 1);
+		strcpy(n->textnames[n->textnamect -1], add_me);
 		return n->textnamect;
 	}
 	//else assume (type == 'c'){
@@ -77,7 +77,7 @@ int apop_name_add(apop_name * n, char *add_me, char type){
             apop_error(2,'c',"You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
 		(n->colnamect)++;
 		n->colnames	= realloc(n->colnames, sizeof(char*) * n->colnamect);
-		n->colnames[n->colnamect -1]	= malloc(sizeof(char) * (strlen(add_me) + 1));
+		n->colnames[n->colnamect -1]	= malloc(strlen(add_me) + 1);
 		strcpy(n->colnames[n->colnamect -1], add_me);
 		return n->colnamect;
 	//} 
@@ -276,7 +276,7 @@ int         i, max      = n->colnamect;
 static char *precheck(char *in){
 int     i       = 0,
         j       = 0;
-char    *out    = malloc(sizeof(char) * (2*strlen(in)+1));
+char    *out    = malloc(2*strlen(in)+1);
     while (i< strlen(in) + 1){
         while (in[i] != '%' &&  (i<= strlen(in) + 1))
             out[j++]  = in[i++];

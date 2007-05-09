@@ -33,7 +33,7 @@ FILE *open_output(char *outfile, int sf){
 
 char *read_query(char *infile){
   char in[1000];
-  char *q       = malloc(sizeof(char)*10);
+  char *q       = malloc(10);
     q[0]        = '\0';
   FILE  *inf    = fopen(infile, "r");
     if (!inf){
@@ -41,7 +41,7 @@ char *read_query(char *infile){
         exit(0);
     }
     while(fgets(in, 1000, inf)){
-        q   = realloc(q, sizeof(char) * (strlen(q) + strlen(in) + 4));
+        q   = realloc(q, strlen(q) + strlen(in) + 4);
         sprintf(q, "%s%s", q, in);
     }
     sprintf(q, "%s;\n", q);
@@ -95,11 +95,11 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
 	while ((c = getopt (argc, argv, "ad:f:hH:Q:q:st:")) != -1){
 		switch (c){
 		  case 'd':
-              d   = malloc(sizeof(char)*(2+strlen(optarg)));
+              d   = malloc(2+strlen(optarg));
 			  sprintf(d, optarg);
 			  break;
 		  case 'f':
-              outfile   = malloc(sizeof(char)*1000);
+              outfile   = malloc(1000);
 			  sprintf(outfile, optarg);
 			  apop_opts.output_type	= 'f';
               sf  ++;
@@ -111,11 +111,11 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
               q   = read_query(optarg);
 			  break;
 		  case 'q':
-              q   = malloc(sizeof(char)*(2+strlen(optarg)));
+              q   = malloc(2+strlen(optarg));
 			  sprintf(q, optarg);
 			  break;
 		  case 't':
-              plot_type   = malloc(sizeof(char)*(2+strlen(optarg)));
+              plot_type   = malloc(2+strlen(optarg));
 			  sprintf(plot_type, optarg);
 			  break;
 		  case 'h':
@@ -124,7 +124,7 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
 		}
 	}
     if (!plot_type){
-              plot_type   = malloc(sizeof(char)*20);
+              plot_type   = malloc(20);
 			  sprintf(plot_type, "lines");
     }
     if (!q){

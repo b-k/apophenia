@@ -21,7 +21,7 @@ Copyright (c) 2007 by Ben Klemens. Licensed under the GNU GPL version 2.
 apop_model apop_uniform;
 
 static apop_params * uniform_estimate(apop_data * data,  apop_params *parameters){
-  apop_params 	*est	    = apop_params_alloc(data, &apop_uniform, parameters, NULL);
+  apop_params 	*est	    = apop_params_alloc(data, apop_uniform, parameters, NULL);
     est->parameters->vector->data[0]    = gsl_matrix_min(data->matrix);
     est->parameters->vector->data[1]    = gsl_matrix_max(data->matrix);
     return est;

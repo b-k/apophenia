@@ -374,27 +374,40 @@ void apop_data_show(const apop_data *data){
         printf("NULL\n");
         return;
     }
-char    tmptype = apop_opts.output_type;
-int     i, j, L = 0, Lc = 6,
-        start   = (data->vector)? -1 : 0,
-        end     = (data->matrix)? data->matrix->size2 : 0,
-        rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : -1;
-double  datapt;
+  char    tmptype = apop_opts.output_type;
+  int     i, j, L = 0, Lc = 6,
+          start   = (data->vector)? -1 : 0,
+          end     = (data->matrix)? data->matrix->size2 : 0,
+          rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
+  double  datapt;
+    if (data->names->title)
+        printf("\t%s\n\n", data->names->title);
     if (data->names->rownames)
         L   = get_max_strlen(data->names->rownames, data->names->rownamect);
     apop_opts.output_type = 's';
     if (data->names->rownames)
         printf("%*s  ", L+2, " ");
-    if (data->vector){
-        if (data->names->vecname)
-            printf("%*s  |  ", L+2, data->names->vecname);
+    if (data->vector && data->names->vecname){
+        printf("%*s", L+2, data->names->vecname);
     }
     if (data->matrix){
+        if (data->vector && data->names->colnamect)
+                printf("%c |  ", data->names->vecname ? ' ' : '\t' );
         for(i=0; i< data->names->colnamect; i++){
             if (i < data->names->colnamect -1)
                 printf("%s%s", data->names->colnames[i], apop_opts.output_delimiter);
             else
                 printf("%s", data->names->colnames[i]);
+        }
+    }
+    if (data->textsize[1] && data->names->textnames){
+        if ((data->vector && data->names->vecname) || (data->matrix && data->names->colnamect))
+            printf(" | ");
+        for(i=0; i< data->names->textnamect; i++){
+            if (i < data->names->textnamect -1)
+                printf("%s%s", data->names->textnames[i], apop_opts.output_delimiter);
+            else
+                printf("%s", data->names->textnames[i]);
         }
     }
     printf("\n");
@@ -417,6 +430,12 @@ double  datapt;
                 printf ("| ");
             if (i < end-1)
                 printf(apop_opts.output_delimiter);
+        }
+        if (data->text){
+            if (data->vector || data->matrix)
+                printf (" | ");
+            for(i=0; i< data->textsize[1]; i++)
+                printf("%*s%s", L+2, data->text[j][i], apop_opts.output_delimiter);
         }
         printf("\n");
     }

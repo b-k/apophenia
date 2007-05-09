@@ -115,7 +115,7 @@ static double apop_mysql_table_exists(char *table, int delme){
        return 0;
     if (delme){
        int len         = 100+strlen(table);
-       char *a_query   = malloc(sizeof(char)*len);
+       char *a_query   = malloc(len);
        snprintf(a_query, len, "drop table %s", table);
        if (mysql_query (mysql_db, a_query)) 
            print_error (mysql_db, "table dropping failed");
@@ -274,7 +274,7 @@ apop_data * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
 				out[currentrow][jj]	= malloc(sizeof(char));
 				strcpy(out[currentrow][jj], "\0");
 			} else {
-				out[currentrow][jj]	= malloc(sizeof(char) * (1+strlen(row[jj])));
+				out[currentrow][jj]	= malloc(1+strlen(row[jj]));
 				strcpy(out[currentrow][jj], row[jj]);
 			}
 		}

@@ -154,7 +154,7 @@ program crashes.
   \param v  The input vector
   \param fn A function of the form <tt>double fn(double in)</tt>
 
-  \return A \c gsl_vector with the corresponding value for each row.
+  \return A \c gsl_vector (allocated by this function) with the corresponding value for each row.
 
   See also \ref apop_vector_apply, which works like this function but does not return a value.
 

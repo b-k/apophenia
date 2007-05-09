@@ -20,6 +20,10 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include <assert.h>
 #include <gsl/gsl_deriv.h>
 
+//in apop_regress.c:
+void apop_estimate_parameter_t_tests (apop_params *est);
+
+
 /** \page trace_path Plotting the path of an ML estimation.
 
 If \c apop_opts.mle_trace_path has a name of positive length, then every time
@@ -81,22 +85,24 @@ Below is a sample of the sort of output one would get:<br>
  */
 apop_mle_params *apop_mle_params_set_default(apop_params *parent){
   apop_mle_params *setme =   calloc(1,sizeof(apop_mle_params));
-    setme->starting_pt          = 0;
-    setme->tolerance            = 0;
-    setme->resolution           = 0;
-    setme->method               = 1;
-    setme->verbose              = 0;
-    setme->step_size            = 1;
+    setme->starting_pt      = 0;
+    setme->tolerance        = 0;
+    setme->resolution       = 0;
+    setme->method           = 1;
+    setme->verbose          = 0;
+    setme->step_size        = 1;
+    setme->want_cov         = 1;
 //siman:
     //siman also uses step_size  = 1.;  
-    setme->n_tries              = 200; 
-    setme->iters_fixed_T        = 200; 
-    setme->k                    = 1.0;
-    setme->t_initial            = 50;  
-    setme->mu_t                 = 1.002; 
-    setme->t_min                = 5.0e-1;
-    setme->ep                   = parent;
-    parent->method_params       = setme;
+    setme->n_tries          = 200; 
+    setme->iters_fixed_T    = 200; 
+    setme->k                = 1.0;
+    setme->t_initial        = 50;  
+    setme->mu_t             = 1.002; 
+    setme->t_min            = 5.0e-1;
+    setme->rng              = NULL;
+    setme->ep               = parent;
+    parent->method_params   = setme;
     strcpy(setme->ep->method_name, "MLE");
     return setme;
 }
@@ -109,7 +115,7 @@ When you finally call your MLE, use the \c ep element of this
 
 \ingroup mle
  */
-apop_mle_params *apop_mle_params_alloc(apop_data * data, apop_model *model, apop_params* model_params){
+apop_mle_params *apop_mle_params_alloc(apop_data * data, apop_model model, apop_params* model_params){
   apop_mle_params *setme = apop_mle_params_set_default(apop_params_alloc(data, model, NULL, model_params));
     return setme;
 }
@@ -209,26 +215,6 @@ gsl_vector * apop_numerical_gradient(gsl_vector *beta, apop_data *data, apop_mod
     apop_internal_numerical_gradient(ll, beta, &i, out);
     return out;
 }
-
-/** The MLEs don't return everything you could ask for, so this pares
-down the input inventory to a modified output mle.
-
-\todo This should really just modify the input inventory. */
-static void prep_inventory_mle(apop_params * in){
-//These are the rules going from what you can ask for to what you'll get.
-	in->uses.log_likelihood	= 1;
-	in->uses.parameters		= 1;
-	//OK, some things are not yet implemented.
-	in->uses.confidence		= 0;
-	//OK, some things are not yet implemented.
-	in->uses.expected		= 
-	in->uses.predicted		= 0;
-	if (in->uses.confidence==1)
-		in->uses.covariance = 1;
-	if (in->uses.covariance==1)
-		in->uses.confidence = 1;
-}
-
 
 /* They always tell you to just negate your likelihood function to turn
 a minimization routine into a maximization routine---and this is the
@@ -403,10 +389,8 @@ void apop_numerical_covariance_matrix(apop_model dist, apop_params *est, apop_da
 }
 
 void cov_cleanup(infostruct *i){
-    if (*i->gradient_list)
-        free(*i->gradient_list);
-    if(*i->gradientp)
-        free(*i->gradientp);
+    free(*i->gradient_list);
+    free(*i->gradientp);
     free(i->gsize);
     free(i->gpsize);
     free(i->gradient_list);
@@ -414,7 +398,8 @@ void cov_cleanup(infostruct *i){
 }
 
 void produce_covariance_matrix(apop_params * est, infostruct *i){
-  if (!i->params->uses.covariance){
+  apop_mle_params *p = i->params->method_params;
+  if (!p->want_cov){
       cov_cleanup(i);
       return;
   }
@@ -428,17 +413,18 @@ void produce_covariance_matrix(apop_params * est, infostruct *i){
     for (j=0; j<  *i->gpsize; j++)
         for (k=0; k<  *i->gpsize; k++)
             if (j!=k)
-                proportion[j]   += exp(*(i->gradientp)[k] - *(i->gradientp)[j]);
-    for (j=0; j<  *i->gpsize; j++)
+                proportion[j]   += exp((*i->gradientp)[k] - (*i->gradientp)[j]);
+    for (j=0; j< *i->gpsize; j++)
         printf("%i: %f\n", j, proportion[j]);
-    //inv (E(score) dot E(score)) = info matrix.
+    //inv (n E(score) dot E(score)) = info matrix.
     for (m=0; m<  *i->gpsize; m++)
         if (gsl_finite(proportion[m]))
-        for (j=0; j< betasize; j++)
-        for (k=0; k< betasize; k++)
-            apop_matrix_increment(preinv, j,k, *(i->gradient_list)[m*betasize +k] * *(i->gradient_list)[m*betasize +j]/ proportion[m]);
+         for (j=0; j< betasize; j++)
+          for (k=0; k< betasize; k++)
+            apop_matrix_increment(preinv, j,k, (*i->gradient_list)[m*betasize +k] * (*i->gradient_list)[m*betasize +j]/ proportion[m]);
     gsl_matrix *inv;
-    gsl_matrix_scale(preinv, est->data->matrix->size1);
+    if (est->data && est->data->matrix)
+        gsl_matrix_scale(preinv, est->data->matrix->size1);
     apop_det_and_inv(preinv, &inv, 0, 1);
     est->covariance = apop_matrix_to_data(inv);
     if (est->parameters->names->colnames){
@@ -476,7 +462,6 @@ static apop_params *	apop_maximum_likelihood_w_d(apop_data * data,
 				            status  = 0,
 				            betasize= vsize+ msize1*msize2;
   apop_mle_params           *mp     = est->method_params;
-	prep_inventory_mle(i->params);
     if (mp->method == 2)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
     else if (mp->method == 3)
@@ -523,8 +508,8 @@ static apop_params *	apop_maximum_likelihood_w_d(apop_data * data,
 	est->log_likelihood	= dist.log_likelihood ? 
         dist.log_likelihood(est->parameters, data, i->params):
         log(dist.p(est->parameters, data, i->params));
-	//if (est->uses.covariance) 
-        //produce_covariance_matrix(est, i);
+    produce_covariance_matrix(est, i);
+    apop_estimate_parameter_t_tests (est);
 	return est;
 }
 
@@ -548,7 +533,6 @@ static apop_params *	apop_maximum_likelihood_no_d(apop_data * data,
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
 	x	= gsl_vector_alloc(betasize);
-	prep_inventory_mle(i->params);
 	//est	= apop_params_alloc(data->size1, betasize, NULL, actual_uses);
 	est->status	= 1;	//assume failure until we score a success.
 	if (mp->starting_pt==NULL)
@@ -588,7 +572,7 @@ static apop_params *	apop_maximum_likelihood_no_d(apop_data * data,
 	est->log_likelihood	= dist.log_likelihood ?
         dist.log_likelihood(est->parameters, data, i->params):
         dist.p(est->parameters, data, i->params);
-	if (est->uses.covariance) 
+	if (mp->want_cov) 
 		apop_numerical_covariance_matrix(dist, est, data);
 	return est;
 }
@@ -624,7 +608,7 @@ apop_params *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_pa
     info.gpsize         = malloc(sizeof(size_t)); *info.gpsize = 0;
   apop_mle_params   *mp;
     if (!params){
-        mp  = apop_mle_params_alloc(data, &dist, NULL);
+        mp  = apop_mle_params_alloc(data, dist, NULL);
         info.params = mp->ep;
     } else if (strcmp(params->method_name, "MLE")){
         mp  = apop_mle_params_set_default(params);
@@ -770,9 +754,10 @@ static void an_record(infostruct *i, double energy){
 }
 
 static double annealing_energy(void *in) {
-  infostruct *i = in;
-  double energy = negshell(i->beta, i);
-    if (i->params->uses.covariance)
+  infostruct *i      = in;
+  double energy      = negshell(i->beta, i);
+  apop_mle_params *p = i->params->method_params;
+    if (p->want_cov)
         an_record(i, energy);
     return energy;
 }
@@ -859,10 +844,11 @@ apop_params * apop_annealing(infostruct *i){
                         //iters_fixed_T, step_size, k, t_initial, damping factor, t_min
   gsl_siman_params_t    simparams;
   apop_mle_params       *mp = NULL;
+  gsl_vector    *beta;
   int           vsize       =(i->params->parameters->vector ? i->params->parameters->vector->size :0),
                 msize1      =(i->params->parameters->matrix ? i->params->parameters->matrix->size1 :0),
                 msize2      =(i->params->parameters->matrix ? i->params->parameters->matrix->size2:0);
-
+  int           paramct = vsize + msize1*msize2;
     //parameter setup
     if (ep && !strcmp(ep->method_name, "MLE")){
         mp  = ep->method_params;
@@ -882,13 +868,13 @@ apop_params * apop_annealing(infostruct *i){
         simparams.mu_t        = 1.002, 
         simparams.t_min       = 5.0e-1;
     }
-  int           paramct = vsize + msize1*msize2;
-    if (i->params->parameters->vector->size == -1) {
-        i->params->parameters->vector->size   = i->data->matrix->size2 - 1;
-    }
-const gsl_rng   * r ;
-gsl_vector      *beta;
-    r   = gsl_rng_alloc(gsl_rng_env_setup()) ; 
+
+    static const gsl_rng   * r    = NULL;
+    if (mp && mp->rng) 
+        r    =  mp->rng;
+    if (!r)
+        r =  gsl_rng_alloc(gsl_rng_env_setup()) ; 
+
     if (mp && mp->starting_pt)
         beta = apop_array_to_vector(mp->starting_pt, paramct);
     else{
@@ -898,7 +884,7 @@ gsl_vector      *beta;
 	i->beta             = beta;
     i->use_constraint   = 0; //negshell doesn't check it; annealing_step does.
 
-gsl_siman_print_t printing_fn   = NULL;
+    gsl_siman_print_t printing_fn   = NULL;
     if (mp && mp->verbose>1)
         printing_fn = annealing_print;
     else if (mp && mp->verbose)
@@ -921,7 +907,7 @@ gsl_siman_print_t printing_fn   = NULL;
 	i->params->log_likelihood	= i->model->log_likelihood ? 
         i->model->log_likelihood(i->params->parameters, data, i->params):
         log(i->model->p(i->params->parameters, data, i->params));
-/*    if (i->params->uses.covariance)
-        produce_covariance_matrix(i->params, i);*/
+    produce_covariance_matrix(i->params, i);
+    apop_estimate_parameter_t_tests(i->params);
     return i->params;
 }

@@ -1,6 +1,6 @@
 /** \file apop_probit.c
 
-Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
+Copyright (c) 2005-7 by Ben Klemens. Licensed under the GNU GPL version 2.
 */
 #include "model.h"
 
@@ -20,11 +20,18 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-
-static apop_params * probit_estimate(apop_data * data,  apop_params *parameters){
-	return apop_maximum_likelihood(data,  apop_probit, parameters);
+static void modify_in_data(apop_data *d){
+    if (!d->vector){
+        APOP_COL(d, 0, independent);
+        d->vector = apop_vector_copy(independent);
+        gsl_vector_set_all(independent, 1);
+    }
 }
 
+static apop_params * probit_estimate(apop_data * data,  apop_params *parameters){
+    modify_in_data(data);
+	return apop_maximum_likelihood(data,  apop_probit, parameters);
+}
 
 //////////////////
 //The probit model
@@ -33,25 +40,20 @@ static apop_params * probit_estimate(apop_data * data,  apop_params *parameters)
 //This section includes some trickery to avoid recalculating beta dot x.
 //
 static gsl_vector *beta_dot_x 		= NULL;
+static gsl_matrix  *last_data_set   = NULL;
 static int	beta_dot_x_is_current	= 0;
 
 static void	dot(const apop_data *beta, gsl_matrix *data){
-gsl_matrix_view p 	= gsl_matrix_submatrix(data,0,1,data->size1,data->size2-1);
-gsl_vector	*t;
 	//if (beta_dot_x) printf("comparing %i with %i ",data->size1, beta_dot_x->size); fflush(NULL);
-	if (beta_dot_x && (data->size1 != beta_dot_x->size)){
-		//printf("freeing. "); fflush(NULL);
+	if ((data != last_data_set) && beta_dot_x){
 		gsl_vector_free(beta_dot_x); 
 		beta_dot_x = NULL;
-		//printf("freed.\n"); fflush(NULL);
-		}
+    }
 	if (!beta_dot_x){
-		//printf("allocating %i. ",data->size1); fflush(NULL);
-		t 		= gsl_vector_alloc(data->size1);		//global var
-		beta_dot_x 	= t;						//global var
-		//printf("allocated.\n"); fflush(NULL);
-		}
-        gsl_blas_dgemv (CblasNoTrans, 1.0, &p.matrix, beta->vector, 0.0, beta_dot_x);	//dot product
+        last_data_set   = data;
+		beta_dot_x 	    = gsl_vector_alloc(data->size1);		//global var
+    }
+    gsl_blas_dgemv (CblasNoTrans, 1.0, data, beta->vector, 0.0, beta_dot_x);	//dot product
 }
 
 /*
@@ -60,14 +62,13 @@ up to that point. Multiply likelihood either by that or by 1-that, depending
 on the choice the data made.
 */
 static double probit_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
-int		i;
-long double	n, total_prob	= 0;
-gsl_matrix 	*data 		= d->matrix;
-	dot(beta,data);
-	for(i=0;i< data->size1; i++){
-		n	=gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1);
-		if (gsl_matrix_get(data, i, 0)==0) 	total_prob	+= log(n);
-		else 					total_prob	+= log((1 - n));
+  int		    i;
+  long double	n, total_prob	= 0;
+  gsl_matrix    *data           = d->matrix;
+	dot(beta, data);
+	for(i=0; i< data->size1; i++){
+		n	        = gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1);
+        total_prob += apop_data_get(d, i, -1)==0 ?  log(n): log(1 - n);
 	}
 	return total_prob;
 }
@@ -81,21 +82,20 @@ static double probit_p(const apop_data *beta, apop_data *d, apop_params *p){
 static void probit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
 	//derivative of the above. 
 int		i, j;
-long double	one_term, beta_term_sum;
+long double	one_term, beta_term_sum, cdf;
 gsl_matrix 	*data 		= d->matrix;
 	if (!beta_dot_x_is_current) 	
 		dot(beta,data); 
 	for(j=0; j< beta->vector->size; j++){
 		beta_term_sum	= 0;
 		for(i=0; i< data->size1; i++){
-			one_term	 = gsl_matrix_get(data, i,j+1)
-						* gsl_ran_gaussian_pdf(gsl_vector_get(beta_dot_x,i),1);
-			if (gsl_matrix_get(data, i, 0)==0) 	
-				one_term	/= gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1);
-			else 	one_term	/= (gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1)-1);
+			one_term	     = gsl_matrix_get(data, i,j)
+						        * gsl_ran_gaussian_pdf(gsl_vector_get(beta_dot_x,i),1);
+            cdf              = gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1);
+            one_term        /= apop_data_get(d, i, -1)==0 ? cdf : cdf-1;
 			beta_term_sum	+= one_term;
 		}
-	gsl_vector_set(gradient,j,beta_term_sum);
+        gsl_vector_set(gradient,j,beta_term_sum);
 	}
 	gsl_vector_free(beta_dot_x);
 	beta_dot_x	= NULL;

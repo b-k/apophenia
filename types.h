@@ -3,6 +3,7 @@
 #define __apop_estimate__
 
 #include <assert.h>
+#include <string.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
 
@@ -60,41 +61,7 @@ and columns.  See \ref names.
 
 */
 
-/** The structure has two uses. The first is to tell the regression/MLE
-functions what you would like to receive in return. Alternatively, you
-can just send in a <tt>NULL</tt> pointer, and the functions will return
-everything apropos.
 
-The second is for the internal workings of the \ref apop_estimate
-structure, giving a list of the elements of the structure which are
-actually in use. For example, the regressions won't return a log
-likelihood, and the ML estimates won't return an  R^2.
-
-
-\b the elements 
-\verbatim
-int     parameters, covariance, confidence, dependent, predicted, log_likelihood;
-\endverbatim
-
-There is one element for each element of the \ref apop_params structure.
-
-The \ref apop_params structure
-has an element named <tt>uses</tt> embedded
-within it. Those elements for which <tt>uses.elmt</tt> are zero are
-unallocated pointers (so be careful: precede all dereferences with an
-<tt>if(est->uses.element)</tt> clause).
-
-
-It may sometimes be useful to manipulate the ["apop_estimate"] structure's
-<tt>uses</tt> element to your own benefit. For
-example, if you set <tt>est->ep.uses.predicted =
-0</tt> before calling <tt>apop_print_estimate(est, NULL)</tt>, then
-the predicted values won't get printed. But be careful: if you then call
-<tt>apop_estimate_free(est)</tt>, then the predicted values won't get freed,
-either.  
-*/
-
-#include <string.h>
 
 
 /** A data set is assumed to be a matrix where each row is a single
@@ -142,7 +109,6 @@ The \ref apop_OLS page has a sample program which uses an <tt>apop_estimate</tt>
 three columns. If this is a model with a single dependent and lots of
 independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally. There is thus currently no way to get just the predicted but not the residuals or vice versa.
 \param covariance 	The variance-covariance matrix.
-\param confidence 	The two-tailed test of the hypothesis that the variable is zero. One element for each parameter.
 \param status		The return status from the estimate that had populated this apop_estimate, if any.
 \ingroup inv_and_est
 */
@@ -150,9 +116,6 @@ typedef struct{
     char        method_name[101];
     void        *method_params;
     void        *model_params;
-    struct {
-        char    parameters, covariance, confidence, expected, predicted, log_likelihood;
-    } uses;
     apop_data   *parameters, *expected, *covariance;
     double      log_likelihood;
     int         status;
@@ -211,7 +174,7 @@ typedef struct{
     char input_delimiters[100];
             /** If set, the name of the column in your tables that holds row names. */
     char db_name_column[300];
-            /** If set, plot the path of the max. likelihood search. */
+            /** The string that the database takes to indicate NaN. May be a regex. */
     char db_nan[100];
             /** If this is 'm', use mySQL, else use SQLite. */
     char db_engine;
@@ -234,7 +197,7 @@ void apop_name_memcpy(apop_name **out, apop_name *in);
 apop_name * apop_name_copy(apop_name *in);
 size_t  apop_name_find(apop_name *n, char *findme, char type);
 
-apop_params * apop_params_alloc(apop_data * data, apop_model *model, void *method_params, void *model_params);
+apop_params * apop_params_alloc(apop_data * data, apop_model model, void *method_params, void *model_params);
 apop_params *apop_params_alloc_p(apop_data *params);
 apop_params *apop_params_copy(apop_params *in);
 apop_params *apop_params_clone(apop_params *in, size_t method_size, size_t model_size, size_t more_size);

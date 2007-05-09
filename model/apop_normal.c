@@ -30,15 +30,14 @@ static apop_params * normal_estimate(apop_data * data, apop_params *parameters){
   apop_params 	*est	    = parameters;
   apop_OLS_params *p;
     if (!parameters) {
-        p = apop_OLS_params_alloc(0,data,&apop_normal, NULL);
+        p = apop_OLS_params_alloc(data, apop_normal, NULL);
         est   = p->ep;
-    }
+    } else p = parameters->model_params;
 	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
 	gsl_vector_set(est->parameters->vector, 0, mean);
 	gsl_vector_set(est->parameters->vector, 1, var);
-	if (est->uses.log_likelihood)
-		est->log_likelihood	= normal_log_likelihood(est->parameters, data, NULL);
-	if (est->uses.covariance)
+    est->log_likelihood	= normal_log_likelihood(est->parameters, data, NULL);
+	if (p && p->want_cov)
 		apop_numerical_covariance_matrix(apop_normal, est, data);
 	return est;
 }

@@ -22,9 +22,11 @@ typedef struct {
     int destroy_data;
     gsl_vector *weights;
     apop_params *ep;
+    int want_cov;
+    int want_expected_value;
 } apop_OLS_params;
 
-apop_OLS_params * apop_OLS_params_alloc(char destroy_data, apop_data *data, apop_model *model, apop_params *model_params);
+apop_OLS_params * apop_OLS_params_alloc(apop_data *data, apop_model model, apop_params *model_params);
 apop_params * apop_estimate_OLS(apop_data *set, apop_params *ep);
 apop_params * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma);
 apop_params *apop_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
@@ -37,7 +39,7 @@ apop_data *apop_f_test (apop_params *est, apop_data *contrast);
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
 
-apop_data * apop_produce_dummies(gsl_vector *in, int keep_first);
+apop_data * apop_data_produce_dummies(apop_data *d, int col, char type, int keep_first);
 
 double apop_two_tailify(double in);
 //My convenience fn to turn the results from a symmetric one-tailed table lookup

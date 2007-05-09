@@ -122,8 +122,8 @@ return      The \ref apop_data structure in question.
   */
 apop_data * apop_matrix_to_data(gsl_matrix *m){
   apop_data  *setme   = apop_data_alloc(0,0,0);
-    if (m==NULL && apop_opts.verbose) 
-        {fprintf(stderr,"apop_matrix_to_data: converting a NULL matrix to an apop_data structure.\n");}
+    if (!m)
+        apop_error(1, 'c',"%s: converting a NULL matrix to an apop_data structure.\n", __func__);
     setme->matrix       = m;
     return setme;
 }
@@ -137,8 +137,8 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 */
 apop_data * apop_vector_to_data(gsl_vector *v){
   apop_data  *setme   = malloc(sizeof(apop_data));
-    if (v==NULL && apop_opts.verbose) 
-        {fprintf(stderr,"apop_vector_to_data: converting a NULL vector to an apop_data structure.\n");}
+    if (!v)
+        apop_error(1, 'c',"%s: converting a NULL vector to an apop_data structure.\n", __func__);
     setme->vector       = v;
     setme->names        = apop_name_alloc();
     setme->matrix       = NULL;
@@ -168,6 +168,8 @@ int     i,j;
 
 
 /** Free an \ref apop_data structure.
+ 
+  As with \c free(), it is safe to send in a \c NULL pointer (in which case the funtion does nothing).
 
  \ingroup data_struct
   */
@@ -197,13 +199,13 @@ void apop_data_free(apop_data *freeme){
   */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
     if (!out)
-        apop_error(1,'c',"apop_data_memcpy: you are copying to a NULL vector. Do you mean to use apop_data_copy instead?\n");
+        apop_error(1,'c',"%s: you are copying to a NULL vector. Do you mean to use apop_data_copy instead?\n", __func__);
     if (in->matrix){
         if (in->matrix->size1 != out->matrix->size1 ||
                 in->matrix->size2 != out->matrix->size2){
             if (apop_opts.verbose)
-                apop_error(1, 'c',"You're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix. Returning w/o any copying.\n", 
-                in->matrix->size1, in->matrix->size2, 
+                apop_error(1, 'c',"%s: You're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix. Returning w/o any copying.\n", 
+                __func__, in->matrix->size1, in->matrix->size2, 
                 out->matrix->size1, out->matrix->size2);
             return;
         }
@@ -212,8 +214,8 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
     if (in->vector){
         if (in->vector->size != out->vector->size){
             if (apop_opts.verbose)
-                apop_error(1, 'c',"You're trying to copy a %zu-elmt vector into a %zu-elmt vector. Returning w/o any copying.\n", 
-                in->vector->size, out->vector->size);
+                apop_error(1, 'c',"%s: You're trying to copy a %zu-elmt vector into a %zu-elmt vector. Returning w/o any copying.\n", 
+                __func__, in->vector->size, out->vector->size);
             return;
         }
         gsl_vector_memcpy(out->vector, in->vector);
@@ -300,9 +302,8 @@ apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
         out         = apop_vector_to_data(stacked);
         out->names  = apop_name_copy(m1->names);
         apop_name_stack(out->names, m2->names, posn);
-    } */else{
-        fprintf(stderr,"apop_data_stack: valid positions are 'r' or 'c' ('v' is deprecated); you gave me >%c<. Returning NULL.", posn);
-    }
+    } */else
+        apop_error(0, 'c',"%s: valid positions are 'r' or 'c' ('v' is deprecated); you gave me >%c<. Returning NULL.", __func__, posn);
     return out;
 }
 
@@ -402,8 +403,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             goto allocation;
         }
     } else {
-        if (apop_opts.verbose)
-            fprintf(stderr,"apop_data_split: Please set r_or_c == 'r' or == 'c'. Returning two NULLs.\n");
+        apop_error(0, 'c',"%s: Please set r_or_c == 'r' or == 'c'. Returning two NULLs.\n", __func__);
         out[0]  = NULL;
         out[1]  = NULL;
     }
@@ -500,8 +500,7 @@ matching rules.
 double apop_data_get_ti(const apop_data *in, char* row, int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     if (rownum == -1){
-        if(apop_opts.verbose)
-            fprintf(stderr,"couldn't find %s amongst the column names.\n",row);
+        apop_error(0,'c',"%s:couldn't find %s amongst the row names.\n",__func__, row);
         return GSL_NAN;
     }
     if (col>=0)
@@ -521,8 +520,7 @@ matching rules.
 double apop_data_get_it(const apop_data *in, size_t row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     if (colnum == -1){
-        if(apop_opts.verbose)
-            fprintf(stderr,"couldn't find %s amongst the column names.\n",col);
+        apop_error(0,'c',"%s:couldn't find %s amongst the column names.\n",__func__, col);
         return GSL_NAN;
     }
     return gsl_matrix_get(in->matrix, row, colnum);
@@ -539,13 +537,11 @@ double apop_data_get_tt(const apop_data *in, char *row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
     if (colnum == -1){
-        if(apop_opts.verbose)
-            fprintf(stderr,"couldn't find %s amongst the column names.\n",col);
+        apop_error(0,'c',"%s:couldn't find %s amongst the column names.\n",__func__, col);
         return GSL_NAN;
     }
     if (rownum == -1){
-        if(apop_opts.verbose)
-            fprintf(stderr,"couldn't find %s amongst the column names.\n",row);
+        apop_error(0,'c',"%s:couldn't find %s amongst the row names.\n",__func__, row);
         return GSL_NAN;
     }
     return gsl_matrix_get(in->matrix, rownum, colnum);
@@ -584,10 +580,8 @@ matching rules.
  */
 void apop_data_set_ti(apop_data *in, char* row, int col, double data){
   int rownum =  apop_name_find(in->names, row, 'r');
-    if (rownum == -1){
-        if(apop_opts.verbose)
-            fprintf(stderr,"couldn't find %s amongst the column names.\n",row);
-    }
+    if (rownum == -1)
+        apop_error(0,'c',"%s:couldn't find %s amongst the row names.\n",__func__, row);
     if (col>=0)
         gsl_matrix_set(in->matrix, rownum, col, data);
     else
@@ -604,10 +598,8 @@ matching rules.
  */
 void apop_data_set_it(apop_data *in, size_t row, char* col, double data){
   int colnum =  apop_name_find(in->names, col, 'c');
-    if (colnum == -1){
-        if(apop_opts.verbose)
-            fprintf(stderr,"couldn't find %s amongst the column names.\n",col);
-    }
+    if (colnum == -1)
+        apop_error(0,'c',"%s:couldn't find %s amongst the column names.\n",__func__, col);
     gsl_matrix_set(in->matrix, row, colnum, data);
 }
 
@@ -621,14 +613,10 @@ matching rules.
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
-    if (colnum == -1){
-        if(apop_opts.verbose)
-            fprintf(stderr,"couldn't find %s amongst the column names.\n",col);
-    }
-    if (rownum == -1){
-        if(apop_opts.verbose)
-            fprintf(stderr,"couldn't find %s amongst the column names.\n",row);
-    }
+    if (colnum == -1)
+            apop_error(0,'c',"%s:couldn't find %s amongst the column names.\n",__func__, col);
+    if (rownum == -1)
+            apop_error(0, 'c',"couldn't find %s amongst the column names.\n",__func__, row);
     gsl_matrix_set(in->matrix, rownum, colnum, data);
 }
 

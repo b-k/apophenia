@@ -14,7 +14,6 @@ typedef struct apop_model_fixed_params{
     apop_model *m;
     apop_params * base_model_params;
     apop_params *selfep;
-    struct apop_model_fixed_params *selfparams;
 } apop_model_fixed_params;
 
 static apop_model fixed_param_model;
@@ -89,6 +88,8 @@ static apop_params *fixed_est(apop_data * data, apop_params *params){
     if (!params)
         apop_error(0,'c',"Fixed parameter model, closure error: you need to send the parameters as the second argument of the estimate function.\n");
   apop_model_fixed_params *p    = params->more;
+    if (!data)
+        data    = params->data;
     apop_params *e = apop_maximum_likelihood(data,  *(p->selfep->model), p->selfep);
     fixed_param_unpack(e->parameters->vector, p);
     apop_data_free(e->parameters);
@@ -96,7 +97,8 @@ static apop_params *fixed_est(apop_data * data, apop_params *params){
     return e;
 }
 
-static apop_model fixed_param_model = {"Fill me", 0,0,0, fixed_est, i_p, i_ll, i_score, i_constraint, i_draw};
+static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = i_p, .log_likelihood=i_ll, .score=i_score, 
+                                        .constraint= i_constraint, .draw=i_draw};
 
 
 /* Produce a model based on another model, but with some of the 
@@ -144,14 +146,27 @@ int main(){
 
   \endcode
   
+  \param data       The model data
   \param paramvals  An \c apop_data set with the values of the variables to be fixed.
   \param mask       Set to zero for free values, one for values to be read from \c paramvals
   \param model_in   The base model
   \param params_for_model   the parameters to be passed to the model (if any)
-  \param mle_params The parameters to send to the MLE that will be used for the \c estimate method.
+ \return an \c apop_mle_params structure for you to fill as desired. If this is named \c m, then \c m->estimate(NULL, m->ep) will run the estimation.
   */
 
-apop_model *apop_model_fix_params(apop_data *paramvals, apop_data *mask, apop_model model_in, apop_params *params_for_model, apop_params *mle_params){
+apop_mle_params *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in, apop_params *params_for_model){
+/*
+--copy the model. Change the params to an appropriately-sized vector.
+--create MLE_params mle_out. mle_out->ep are the base apop_params (B).
+--B->model_params is an apop_model_fixed_params. So set b->model_params = p; set model->ep = p->selfep=B.
+--p->base_model_params are as input by the user.
+
+So given mle_out:
+base params = mle_out->ep
+fixed model params = mle_out->ep->model_params
+original model = mle_out->ep->model_params->m
+original model params = mle_out->ep->model_params->base_model_params
+*/
   apop_model_fixed_params   *p          = malloc(sizeof(*p));
   apop_model                *model_out  = apop_model_copy(fixed_param_model);
   int        i, j;
@@ -172,18 +187,18 @@ apop_model *apop_model_fix_params(apop_data *paramvals, apop_data *mask, apop_mo
             for(j=0; j< mask->matrix->size2; j++)
                 if (apop_data_get(mask, i, j))
                     size    --;
-    p->selfep           = mle_params ? mle_params :
-                            apop_params_alloc(NULL, model_out, mle_params, params_for_model);
-    apop_data_free(p->selfep->parameters);
-    p->selfep->parameters = apop_data_alloc(size, 0, 0);
-    p->mask             = mask;
-    p->paramvals        = paramvals;
-    p->base_model_params= params_for_model;
-    p->selfep->more     = p;
-    p->m                =  apop_model_copy(model_in);
-    p->filled_beta      =  NULL;
-    p->selfep->model    =  apop_model_copy(*model_out);
-    p->selfep->model->vbase    = size;
-    p->selfep->model->ep= p->selfep;
-    return p->selfep->model;
+    model_out->vbase            = size;
+    model_out->m1base           = 
+    model_out->m2base           = 0;
+  apop_mle_params   *mle_out    = apop_mle_params_alloc(data, *model_out, params_for_model);
+    p->selfep                   = mle_out->ep;
+    p->selfep->model->ep        = p->selfep;
+    mle_out->ep->model_params   = p;
+    p->mask                     = mask;
+    p->paramvals                = paramvals;
+    p->base_model_params        = params_for_model;
+    p->selfep->more             = p;
+    p->m                        = apop_model_copy(model_in);
+    p->filled_beta              = NULL;
+    return mle_out;
 }

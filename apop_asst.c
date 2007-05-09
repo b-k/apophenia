@@ -79,7 +79,7 @@ char * apop_strip_dots(char *in, char strip_type){
 int     i;
 char    *out    = NULL;
     if ((strip_type ==0) || (strip_type == 'd')){
-        out    = malloc(sizeof(char)* (strlen(in)+1));
+        out    = malloc(strlen(in)+1);
         for (i=0; i< strlen(in)+1; i++){//will copy over the '/0' too.
             if (in[i] == '.')
                 out[i] = '_';
@@ -88,7 +88,7 @@ char    *out    = NULL;
         }
     }
     else if ((strip_type ==1) || (strip_type == 'b')){
-        out    = malloc(sizeof(char)* (strlen(in)+1));
+        out    = malloc(strlen(in)+1);
         strcpy(out, in);
         for (i=strlen(in)+1; i--; )
             if (in[i] == '.'){
@@ -100,7 +100,7 @@ char    *out    = NULL;
         for (i=0; i< strlen(in)+1; i++)
             if (in[i] == '.')
                 break;
-        out    = malloc(sizeof(char)* (strlen(in)-i));
+        out    = malloc(strlen(in)-i);
         strcpy(out, (in+i+1));
     }
     return out;

@@ -26,6 +26,8 @@ out for analysis.
 
 \li \ref apop_query_to_text: Pull out columns of not-numbers.
 
+\li \ref apop_query_to_multi: Pull data into an apop_data set, but with mixed numeric/text types.
+
 \par Maintenance 
 \li \ref apop_db_open: Optional, for when you want to use a database on disk.
 
@@ -459,7 +461,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 	total_rows  = 0;
 	if (db==NULL) apop_db_open(NULL);
 	if (apop_opts.verbose)	printf("%s\n", query);
-	q2	 = malloc(sizeof(char)*(strlen(query)+300));
+	q2	 = malloc(strlen(query)+300);
 	apop_table_exists("apop_temp_table",1);
 	sqlite3_exec(db,strcat(strcpy(q2,
 		"CREATE TABLE apop_temp_table AS "),query),NULL,NULL, &err); ERRCHECK
@@ -613,6 +615,53 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #endif
 }
 
+
+/** Query data to an \c apop_data set, but a mix of names, vectors, matrix elements, and text.
+
+If you are querying to a matrix and maybe a name, use \c
+apop_query_to_data (and set \c apop_opts.db_name_column if desired). But
+if your data is a mix of text and numbers, use this.
+
+The first argument is a character string consisting of the letters \c
+nvmt, one for each column of the SQL output, indicating whether the
+column is a name, vector, matrix colum, or text column. You can have only
+one n and v. 
+
+If the query produces more columns than there are elements in the column
+specification, then the remainder are dumped into the text section. If
+there are fewer columns produced than given in the spec, the additional
+elements will be allocated but not filled (i.e., they are uninitialized
+and will have garbage).
+
+The 'n' character indicates rownames, meaning that \c apop_opts.db_name_column is ignored).
+
+As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers.
+*/
+apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...){
+  va_list   argp;
+  char      *query;
+    va_start(argp, fmt);
+    vasprintf(&query, fmt, argp);
+    if (apop_opts.verbose) {printf("\n%s\n",query);}
+    va_end(argp);
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        {apop_error(0, 'c', "%s: Sorry, this function has only been written for SQLITE so far.\n", __func__);
+        return 0;}
+        //return apop_mysql_query_to_text(query);
+#else
+        {apop_error(0, 'c', "%s: Apophenia was compiled without mysql support.\n", __func__);
+        apop_error(0, 'c', "%s: Also, this function has only been written for SQLITE so far.\n", __func__);
+        return 0;}
+#endif
+#ifdef HAVE_LIBSQLITE3
+        return apop_sqlite_multiquery(typelist, query);
+#else
+        {apop_error(0, 'c', "%s: Apophenia was compiled without SQLite support.\n", __func__);
+        return NULL; }
+#endif
+}
+
 /** This function returns an \ref apop_name structure with the column
 names from the last <tt>apop_query_...</tt> . Since only the names from
 the last query are saved, you will want to use this immediately
@@ -641,18 +690,18 @@ int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
   double    v;
   int		ctr		= 0;
   int		batch_size	= 100;
-  char		*q 		= malloc(sizeof(char)*1000);
+  char		*q 		= malloc(1000);
 	if (db==NULL) apop_db_open(NULL);
 	sprintf(q, "create table %s (", tabname);
 	for(i=0;i< data->size2; i++){
-		q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+		q	=realloc(q,strlen(q)+1000);
 		if(headers == NULL) 	sprintf(q, "%s\n c%i", q,i);
 		else			sprintf(q, "%s\n %s ", q,headers[i]);
 		if (i< data->size2-1) 	sprintf(q, "%s,",q);
 		else			sprintf(q,"%s);  begin;",q);
 	}
 	for(i=0;i< data->size1; i++){
-		q	=realloc(q,sizeof(char)*(strlen(q)+(1+data->size2)*1000));
+		q	=realloc(q,strlen(q)+(1+data->size2)*1000);
 		sprintf(q,"%s \n insert into %s values(",q,tabname);
 		for(j=0;j< data->size2; j++){
             v   =gsl_matrix_get(data,i,j);
@@ -702,7 +751,7 @@ int apop_data_to_db(apop_data *set, char *tabname){
   int		ctr		    = 0;
   int		batch_size	= 100;
   double    v;
-  char		*q 		    = malloc(sizeof(char)*1000);
+  char		*q 		    = malloc(1000);
   int       use_rownames= strlen(apop_opts.db_name_column) &&set->names->rownamect == set->matrix->size1;
 
     if (apop_opts.db_engine == 'm')
@@ -711,10 +760,10 @@ int apop_data_to_db(apop_data *set, char *tabname){
         sprintf(q, "create table %s (", tabname);
         if (use_rownames) {
             sprintf(q, "%s\n %s varchar(1000), \n", q, apop_opts.db_name_column);
-            q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+            q	=realloc(q,strlen(q)+1000);
         }
         for(i=0;i< set->matrix->size2; i++){
-            q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+            q	=realloc(q,strlen(q)+1000);
             if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i varchar(1000)", q,i);
             else			sprintf(q, "%s\n %s  varchar(1000)", q,apop_strip_dots(set->names->colnames[i],'d'));
             if (i< set->matrix->size2-1) 	strcat(q, ", ");
@@ -734,10 +783,10 @@ int apop_data_to_db(apop_data *set, char *tabname){
         sprintf(q, "create table %s (", tabname);
         if (use_rownames) {
             sprintf(q, "%s\n %s, \n", q, apop_opts.db_name_column);
-            q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+            q	=realloc(q,strlen(q)+1000);
         }
         for(i=0;i< set->matrix->size2; i++){
-            q	=realloc(q,sizeof(char)*(strlen(q)+1000));
+            q	=realloc(q,strlen(q)+1000);
             if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i", q,i);
             else			sprintf(q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->colnames[i],'d'));
             if (i< set->matrix->size2-1) 	sprintf(q, "%s,",q);
@@ -749,7 +798,7 @@ int apop_data_to_db(apop_data *set, char *tabname){
 #endif
     }
 	for(i=0;i< set->matrix->size1; i++){
-		q	=realloc(q,sizeof(char)*(strlen(q)+(1+set->matrix->size2)*batch_size*1000));
+		q	=realloc(q,strlen(q)+(1+set->matrix->size2)*batch_size*1000);
 		sprintf(q, "%s \n insert into %s values(",q, tabname);
         if (use_rownames)
 			sprintf(q,"%s \'%s\', ",q, set->names->rownames[i]);
