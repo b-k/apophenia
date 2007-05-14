@@ -21,11 +21,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <stdio.h>
 #include <assert.h>
 
-static apop_params * yule_estimate(apop_data * data, apop_params *parameters){
-	return apop_maximum_likelihood(data, apop_yule, parameters);
+static apop_model * yule_estimate(apop_data * data, apop_model *parameters){
+	return apop_maximum_likelihood(data, *parameters);
 }
 
-static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
+static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
     //constraint is 1 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint)constraint= apop_data_calloc(1,1,1);
@@ -34,7 +34,7 @@ static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *r
     return apop_linear_constraint(beta->vector, constraint, 1e-3, returned_beta->vector);
 }
 
-static double yule_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
+static double yule_log_likelihood(const apop_data *beta, apop_data *d, apop_model *p){
   float         bb	            = gsl_vector_get(beta->vector, 0);
   int 		    k;
   float 	    ln_k, ln_bb_k,
@@ -52,7 +52,7 @@ static double yule_log_likelihood(const apop_data *beta, apop_data *d, apop_para
 	return likelihood;
 }
 
-static void yule_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
+static void yule_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
 	//Psi is the derivative of the log gamma function.
   float         bb		        = gsl_vector_get(beta->vector, 0);
   gsl_matrix    *data	        = d->matrix;
@@ -71,7 +71,7 @@ static void yule_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector
 }
 
 
-static double yule_rank_p(const apop_data *beta, apop_data *d, apop_params *p){
+static double yule_rank_p(const apop_data *beta, apop_data *d, apop_model *p){
     return exp(yule_log_likelihood(beta, d, p));
 }
 
@@ -91,7 +91,7 @@ apop_yule_rng(r, 1.4);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
-static void yule_rng( double *out, gsl_rng * r, apop_params *a){
+static void yule_rng( double *out, gsl_rng * r, apop_model *a){
 double 	e1, e2;
 int		x;
 	e1	= gsl_ran_exponential(r, 1);

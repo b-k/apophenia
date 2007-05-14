@@ -17,25 +17,27 @@ apop_model apop_histogram;
 
 /** Allocate the parameters for the \c apop_histogram model.
 
-  This produces the \c apop_params half of the \c apop_model/apop_params
+  This produces the \c apop_model half of the \c apop_model/apop_params
   pair. 
 
   \param    data The input data. As with other distributions, the data
   should be in the matrix element of the \c apop_data set, and can have any dimensions
   ($1\times 10000$, $10000\times 1$, $100\times 100$...).
   \param bins How many bins should the PDF have?
-  \param params_in If you want to hook the output parameters in to an existing \c apop_params set, then put that input set here.
+  \param params_in If you want to hook the output parameters in to an existing \c apop_model set, then put that input set here.
 
  */
-apop_params *apop_histogram_params_alloc(apop_data *data, int bins, apop_params *params_in){
+apop_model *apop_histogram_params_alloc(apop_data *data, int bins, apop_model *model_in){
     //header is in model.h.
-  apop_params *pin  = params_in;
-  apop_histogram_params *hp= malloc(sizeof(*hp));
-    hp->ep  = apop_params_alloc(data, apop_histogram, NULL, hp);
-    if (!params_in){
-        pin     = hp->ep;
+  apop_model *pin  = model_in;
+  apop_histogram_params *hp = malloc(sizeof(*hp));
+    hp->model  = apop_model_copy(apop_histogram);
+    hp->model->model_params        = hp;
+    hp->model->model_params_size   = sizeof(*hp);
+    if (!model_in){
+        pin     = hp->model;
     } else
-        hp->ep  = pin;
+        hp->model  = pin;
     snprintf(pin->method_name,100, "Histogram");
   size_t              i, j, sum = 0;
   double              minv    = GSL_POSINF,
@@ -70,12 +72,12 @@ apop_params *apop_histogram_params_alloc(apop_data *data, int bins, apop_params 
     for (i=0; i< hp->pdf->n; i++)
         hp->pdf->bin[i]    /= (sum + 0.0);
     hp->cdf =NULL;
-    return hp->ep;
+    return hp->model;
 }
 
 gsl_histogram *gpdf;
 
-apop_params *est(apop_data *d, apop_params *in){
+apop_model *est(apop_data *d, apop_model *in){
     return apop_histogram_params_alloc(d, 1000, in);
 
 }
@@ -90,7 +92,7 @@ static double one_vector(gsl_vector *in){
     return product;
 }
 
-static double histogram_p(const apop_data *beta, apop_data *d, apop_params *parameters){
+static double histogram_p(const apop_data *beta, apop_data *d, apop_model *parameters){
   apop_histogram_params *hp = parameters->model_params;
   long double           product = 0;
     gpdf    = hp->pdf;
@@ -104,11 +106,11 @@ static double histogram_p(const apop_data *beta, apop_data *d, apop_params *para
     return product;
 }
 
-static double histogram_log_likelihood(const apop_data *beta, apop_data *d, apop_params *parameters){
+static double histogram_log_likelihood(const apop_data *beta, apop_data *d, apop_model *parameters){
 	return log(histogram_p(beta,d,parameters)) ;
 }
 
-static void histogram_rng(double *out, gsl_rng *r, apop_params* eps){
+static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
   apop_histogram_params *hp   = eps->model_params;
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!

@@ -39,16 +39,16 @@ typedef struct{
     double      *starting_pt;
     double      step_size;
     double      tolerance;
-    double      resolution;
     int         method;
     int         verbose;
     int         want_cov;
 //simulated annealing (also uses step_size);
     int         n_tries;
+    int         use_score;
     int         iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
-    apop_params *ep;
+    apop_model *model;
 } apop_mle_params;
 
 
@@ -90,7 +90,7 @@ printf("Your most likely waring parameter is %g, with likelihood %g",
 gsl_vector_free(waring_parameter); 	//Don't forget to clean up when you're done.
 
 */
-apop_mle_params *apop_mle_params_alloc(apop_data*, apop_model, apop_params*);
+apop_mle_params *apop_mle_params_alloc(apop_data*, apop_model);
 
 void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist, gsl_vector* fn_beta);
 /*This function goes row by row through m and calculates the likelihood
@@ -100,29 +100,30 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist,
   and fn_beta will probably be the beta calculated using the corresponding
   apop_xxx_mle function.
   */
-typedef double 	(*apop_fn_with_params) (const apop_data *beta, apop_data *, apop_params *);
-gsl_vector * apop_numerical_gradient(gsl_vector *beta, apop_data *data, apop_model m, apop_params *eps);
+typedef double 	(*apop_fn_with_params) (const apop_data *beta, apop_data *, apop_model *);
+gsl_vector * apop_numerical_gradient(gsl_vector *beta, apop_data *data, apop_model*);
 gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
 gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
 
 /* Find the var/covar matrix via the hessian. */
-void apop_numerical_covariance_matrix(apop_model dist, apop_params *est, apop_data *data);
-void apop_numerical_var_covar_matrix(apop_model dist, apop_params *est, apop_data *data);
+//void apop_numerical_covariance_matrix(apop_model dist, apop_model *est, apop_data *data);
+//void apop_numerical_var_covar_matrix(apop_model dist, apop_model *est, apop_data *data);
 
 
-apop_params *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_params *params);
+//apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_model *params);
+apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist);
 
 
     //This is a global var for numerical differentiation.
 extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
 
-apop_params * apop_estimate_restart (apop_params *e,int  new_method, int scale);
+apop_model * apop_estimate_restart (apop_model *e,int  new_method, int scale);
 
 //in apop_linear_constraint.c
 double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin,  gsl_vector *returned_beta);
 
 
 //in apop_model_fix_params.c
-apop_mle_params *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in, apop_params *params_for_model);
+apop_mle_params *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in);
 __END_DECLS
 #endif

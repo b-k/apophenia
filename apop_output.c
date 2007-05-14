@@ -23,7 +23,7 @@ It appends instead of overwriting, so you can prep the file if you want; see sam
 
 
 \param	data	This is a copy of what you'd sent to the regression fn. That is, the first column is the dependent variable and the second is the independent. That is, what will be on Y axis is the <i>first</i> column, and what is on the X axis is the second. Custom for regressions and custom for graphs just clash on this one.
-\param	est	The \ref apop_params structure your regression function gave you.
+\param	est	The \ref apop_model structure your regression function gave you.
 \param outfile The name of the output file. NULL will send output to STDOUT.
 
 The sample program below will pull data from a database (you'll need to
@@ -35,7 +35,7 @@ to make further modifications.
 \code
 int main(){
 apop_data 	    *data, *data_copy;
-apop_params   *est;
+apop_model   *est;
 FILE		    *f;
 char		    outfile[]	= "auto",
 		        do_me[10000];
@@ -66,7 +66,7 @@ char		    outfile[]	= "auto",
 \todo The sample data here should correspond to that which apophenia ships with.
 \ingroup output
 */
-void apop_plot_line_and_scatter(apop_data *data, apop_params *est, char * outfile){
+void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * outfile){
 FILE *          f;
 char            exdelimiter[100];
 int             append_state;
@@ -226,7 +226,7 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 /////The printing functions.
 ////////////////////////////
 
-static void print_core_v(gsl_vector *data, char *separator, char *filename, 
+static void print_core_v(const gsl_vector *data, char *separator, char *filename, 
 			void (* p_fn)(FILE * f, double number)){
 int 		i;
 FILE * 		f;
@@ -252,7 +252,7 @@ FILE * 		f;
 	if (filename !=NULL && apop_opts.output_type != 'p')	fclose(f);
 }
 
-static void print_core_m(gsl_matrix *data, char *separator, char *filename, 
+static void print_core_m(const gsl_matrix *data, char *separator, char *filename, 
 			void (* p_fn)(FILE * f, double number), apop_name *n){
 FILE * 		f;
 size_t 		i,j, max_name_size  = 0;
@@ -341,7 +341,7 @@ void apop_data_print(apop_data *data, char *file){
 /** Dump a <tt>gsl_vector</tt> to the screen. 
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
-void apop_vector_show(gsl_vector *data){
+void apop_vector_show(const gsl_vector *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
 	print_core_v(data, apop_opts.output_delimiter, NULL, dumb_little_pf); 
@@ -351,7 +351,7 @@ char tmptype    = apop_opts.output_type;
 /** Dump a <tt>gsl_matrix</tt> to the screen.
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
-void apop_matrix_show(gsl_matrix *data){
+void apop_matrix_show(const gsl_matrix *data){
 char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
 	print_core_m(data, apop_opts.output_delimiter, NULL, dumb_little_pf, NULL); 
@@ -562,11 +562,11 @@ will print directly to Gnuplot.
 \param v    The data
 \param m    The distribution, such as apop_normal.
 \param beta The parameters for the distribution.
-\param ep   The \ref apop_params structure for the distribution, if any.
+\param ep   The \ref apop_model structure for the distribution, if any.
 \param outfile   The name of the text file to print to.  If NULL then write to STDOUT.
 \bugs The RNG is hard-coded, as is the size of the histogram.
 */
-void apop_qq_plot(gsl_vector *v, apop_model m, apop_params *ep, char *outfile){
+void apop_qq_plot(gsl_vector *v, apop_model m, apop_model *ep, char *outfile){
   FILE  *f;
   double *pctdata = apop_vector_percentiles(v, 'a');
 

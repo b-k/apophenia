@@ -16,7 +16,7 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <gsl/gsl_rng.h>
 #include <stdio.h>
 #include <assert.h>
-static double normal_log_likelihood(const apop_data *beta, apop_data *d, apop_params *params);
+static double normal_log_likelihood(const apop_data *beta, apop_data *d, apop_model *params);
 
 
 //////////////////
@@ -25,24 +25,24 @@ static double normal_log_likelihood(const apop_data *beta, apop_data *d, apop_pa
 
 /** The normal estimate
 \todo Get off my ass and check the closed-form var-covar matrix, instead of using the inverse hessian. */
-static apop_params * normal_estimate(apop_data * data, apop_params *parameters){
+static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
   double		mean, var;
-  apop_params 	*est	    = parameters;
+  apop_model 	*est	    = parameters;
   apop_OLS_params *p;
     if (!parameters) {
-        p = apop_OLS_params_alloc(data, apop_normal, NULL);
-        est   = p->ep;
+        p = apop_OLS_params_alloc(data, apop_normal);
+        est   = p->model;
     } else p = parameters->model_params;
 	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
 	gsl_vector_set(est->parameters->vector, 0, mean);
 	gsl_vector_set(est->parameters->vector, 1, var);
-    est->log_likelihood	= normal_log_likelihood(est->parameters, data, NULL);
-	if (p && p->want_cov)
-		apop_numerical_covariance_matrix(apop_normal, est, data);
+    est->llikelihood	= normal_log_likelihood(est->parameters, data, NULL);
+	/*if (p && p->want_cov)
+		apop_numerical_covariance_matrix(apop_normal, est, data);*/
 	return est;
 }
 
-static double beta_1_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
+static double beta_1_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
     //constraint is 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint) constraint = apop_data_calloc(1,1,2);
@@ -81,7 +81,7 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 \param beta	beta[0]=the mean; beta[1]=the variance
 \param d	the set of data points; see notes.
 */
-static double normal_log_likelihood(const apop_data *beta, apop_data *d, apop_params *params){
+static double normal_log_likelihood(const apop_data *beta, apop_data *d, apop_model *params){
     mu	        = gsl_vector_get(beta->vector,0);
     variance    = gsl_vector_get(beta->vector,1);
   gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me2);
@@ -90,7 +90,7 @@ static double normal_log_likelihood(const apop_data *beta, apop_data *d, apop_pa
 	return ll;
 }
 
-static double normal_p(const apop_data *beta, apop_data *d, apop_params *params){
+static double normal_p(const apop_data *beta, apop_data *d, apop_model *params){
     mu	        = gsl_vector_get(beta->vector,0);
     variance    = gsl_vector_get(beta->vector,1);
   gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me);
@@ -110,7 +110,7 @@ To tell you the truth, I have no idea when anybody would need this, but it's her
 \todo Add constraint that \f$\sigma^2>0\f$.
  */
 static void normal_dlog_likelihood(const apop_data *beta, apop_data *d, 
-                                    gsl_vector *gradient, apop_params *params){    
+                                    gsl_vector *gradient, apop_model *params){    
             mu      = gsl_vector_get(beta->vector,0);
 double      ss      = gsl_vector_get(beta->vector,1),
             dll     = 0,
@@ -139,7 +139,7 @@ uses the standard deviation here (\f$\sigma\f$)
 \param r	a gsl_rng already allocated
 \param a	the mean and the variance
  */
-static void normal_rng(double *out, gsl_rng *r, apop_params *p){
+static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = gsl_ran_gaussian(r, sqrt(p->parameters->vector->data[1])) + p->parameters->vector->data[0];
 }
 
@@ -163,7 +163,8 @@ likelihood of those 56 observations given the mean and variance you provide.
 \ingroup models
 */
 apop_model apop_normal = {"Normal", 2, 0, 0,
- normal_estimate, normal_p, normal_log_likelihood, normal_dlog_likelihood, beta_1_greater_than_x_constraint, normal_rng};
+ .estimate = normal_estimate, .p = normal_p, .log_likelihood = normal_log_likelihood, .score = normal_dlog_likelihood, 
+ .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng};
 
 /** This is a synonym for \ref apop_normal, q.v.
 \ingroup models

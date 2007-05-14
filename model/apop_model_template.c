@@ -30,8 +30,8 @@ Feel free to augment this with your own copyright: modifications (c) you, today.
 
  a
 */
-static apop_params * MODELNAME_estimate(apop_data * data,  apop_params *parameters){
-	return apop_maximum_likelihood(data,  apop_MODELNAME, parameters);
+static apop_model * MODELNAME_estimate(apop_data * data,  apop_model *parameters){
+	return apop_maximum_likelihood(data, *parameters);
 }
 
 
@@ -62,7 +62,7 @@ static double MODELNAME_p(const apop_data *beta, apop_data *d){
 You can delete this function entirely if so inclined. If so, remember
 to replace this function with NULL in the model definition below.
  */
-static void MODELNAME_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
+static void MODELNAME_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
 int		    i,j;
 double	    dtotal[3];
 gsl_matrix 	*data 	= d->matrix;
@@ -86,7 +86,7 @@ gsl_matrix 	*data 	= d->matrix;
 You can delete this function entirely if so inclined. If so, remember
 to replace this function with NULL in the model definition below.
  */
-static double MODELNAME_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
+static double MODELNAME_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
     //constraint is 0 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint)constraint= apop_data_calloc(2,2,1);

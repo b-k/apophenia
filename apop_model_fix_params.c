@@ -11,9 +11,7 @@ typedef struct apop_model_fixed_params{
     apop_data *paramvals;
     apop_data *mask;
     apop_data *filled_beta;
-    apop_model *m;
-    apop_params * base_model_params;
-    apop_params *selfep;
+    apop_model * base_model;
 } apop_model_fixed_params;
 
 static apop_model fixed_param_model;
@@ -48,49 +46,50 @@ static void  fixed_param_unpack(const gsl_vector *in, apop_model_fixed_params *p
                     apop_data_set(p->filled_beta, i, j, gsl_vector_get(in, ctr++));
 }
 
-static double i_ll(const apop_data *beta, apop_data *d, apop_params *params){
-  apop_model_fixed_params *p    = params->more;
+static double i_ll(const apop_data *beta, apop_data *d, apop_model *fixed_model){
+  apop_model_fixed_params *p    = fixed_model->model_params;
     fixed_param_unpack(beta->vector, p);
-    return p->m->log_likelihood(d, p->filled_beta, p->base_model_params);
+    return p->base_model->log_likelihood(d, p->filled_beta, p->base_model);
 }
 
-static double i_p(const apop_data *beta, apop_data *d, apop_params *params){
-  apop_model_fixed_params *p    = params->more;
+static double i_p(const apop_data *beta, apop_data *d, apop_model *params){
+  apop_model_fixed_params *p    = params->model_params;
     fixed_param_unpack(beta->vector, p);
-    return p->m->p(d, p->filled_beta, p->base_model_params);
+    return p->base_model->p(d, p->filled_beta, p->base_model);
 }
 
-static void i_score(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *params){
-  apop_model_fixed_params *p    = params->more;
+static void i_score(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *params){
+  apop_model_fixed_params *p    = params->model_params;
     fixed_param_unpack(beta->vector, p);
-    p->m->score(d, p->filled_beta, gradient, p->base_model_params);
+    p->base_model->score(d, p->filled_beta, gradient, p->base_model);
 }
 
-static double  i_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *params){
-  apop_model_fixed_params *p    = params->more;
+static double  i_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *params){
+  apop_model_fixed_params *p    = params->model_params;
     fixed_param_unpack(beta->vector, p);
   apop_data *return_unpacked    = apop_data_copy(p->filled_beta);
-  double out = p->m->constraint(p->filled_beta, return_unpacked, p->base_model_params);
+  double out = p->base_model->constraint(p->filled_beta, return_unpacked, p->base_model);
     fixed_params_pack(return_unpacked, returned_beta, p->mask);
     return out;
 }
 
-static void i_draw(double *out, gsl_rng* r, apop_params *eps){
-  apop_model_fixed_params *p    = eps->more;
-  apop_data             *tmp    = p->base_model_params->parameters;
+static void i_draw(double *out, gsl_rng* r, apop_model *eps){
+  apop_model_fixed_params *p    = eps->model_params;
+  apop_data             *tmp    = p->base_model->parameters;
     fixed_param_unpack(eps->parameters->vector, p);
-    p->base_model_params->parameters    = p->filled_beta;
-    p->m->draw(out, r, p->base_model_params);
-    p->base_model_params->parameters    = tmp;
+    p->base_model->parameters   = p->filled_beta;
+    p->base_model->draw(out, r, p->base_model);
+    p->base_model->parameters   = tmp;
 }
 
-static apop_params *fixed_est(apop_data * data, apop_params *params){
+static apop_model *fixed_est(apop_data * data, apop_model *params){
     if (!params)
         apop_error(0,'c',"Fixed parameter model, closure error: you need to send the parameters as the second argument of the estimate function.\n");
-  apop_model_fixed_params *p    = params->more;
+  apop_model_fixed_params *p    = params->model_params;
     if (!data)
         data    = params->data;
-    apop_params *e = apop_maximum_likelihood(data,  *(p->selfep->model), p->selfep);
+    //apop_model *e = apop_maximum_likelihood(data,  *p->base_model);
+    apop_model *e = apop_maximum_likelihood(data,  *params);
     fixed_param_unpack(e->parameters->vector, p);
     apop_data_free(e->parameters);
     e->parameters   = apop_data_copy(p->filled_beta);
@@ -101,7 +100,7 @@ static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = i_p,
                                         .constraint= i_constraint, .draw=i_draw};
 
 
-/* Produce a model based on another model, but with some of the 
+/** Produce a model based on another model, but with some of the 
   parameters fixed at a given value. You input one \c apop_data set with the values at which you want 
   the values fixed, and one apop_data set which is zero at the location of the free parameters and 
   one at the location of the fixed parameters.
@@ -139,7 +138,7 @@ int main(){
 
     gsl_matrix_set_all(mask->matrix, 1);
     apop_ep *mep1   = apop_model_fix_params(pv, mask, apop_multivariate_normal, NULL, ep);
-    apop_params   *e1  = mep1->model->estimate(d, mep1);
+    apop_model   *e1  = mep1->model->estimate(d, mep1);
     gsl_vector_sub(e1->parameters->vector, pv->vector);
     assert(apop_vector_sum(e1->parameters->vector) < 1e-2);
 }
@@ -150,15 +149,14 @@ int main(){
   \param paramvals  An \c apop_data set with the values of the variables to be fixed.
   \param mask       Set to zero for free values, one for values to be read from \c paramvals
   \param model_in   The base model
-  \param params_for_model   the parameters to be passed to the model (if any)
- \return an \c apop_mle_params structure for you to fill as desired. If this is named \c m, then \c m->estimate(NULL, m->ep) will run the estimation.
+ \return an \c apop_mle_params structure for you to fill as desired. If this is named \c m, then \c m->ep->estimate(NULL, m->ep) will run the estimation.
   */
 
-apop_mle_params *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in, apop_params *params_for_model){
+apop_mle_params *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in){
 /*
 --copy the model. Change the params to an appropriately-sized vector.
---create MLE_params mle_out. mle_out->ep are the base apop_params (B).
---B->model_params is an apop_model_fixed_params. So set b->model_params = p; set model->ep = p->selfep=B.
+--create MLE_params mle_out. mle_out->ep are the base apop_model (B).
+--B->model_params is an apop_model_fixed_params. So set b->model_params = p; set model->ep = B.
 --p->base_model_params are as input by the user.
 
 So given mle_out:
@@ -190,15 +188,11 @@ original model params = mle_out->ep->model_params->base_model_params
     model_out->vbase            = size;
     model_out->m1base           = 
     model_out->m2base           = 0;
-  apop_mle_params   *mle_out    = apop_mle_params_alloc(data, *model_out, params_for_model);
-    p->selfep                   = mle_out->ep;
-    p->selfep->model->ep        = p->selfep;
-    mle_out->ep->model_params   = p;
+  apop_mle_params   *mle_out    = apop_mle_params_alloc(data, *model_out);
+    mle_out->model->model_params   = p;
     p->mask                     = mask;
     p->paramvals                = paramvals;
-    p->base_model_params        = params_for_model;
-    p->selfep->more             = p;
-    p->m                        = apop_model_copy(model_in);
+    p->base_model               = apop_model_copy(model_in);
     p->filled_beta              = NULL;
     return mle_out;
 }

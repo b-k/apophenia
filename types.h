@@ -24,7 +24,7 @@ __BEGIN_DECLS
 The basic story for a statistical analysis is that the researcher
 assembles a data set into an \ref apop_data structure, then sends it to
 an \ref apop_model so that the model's parameters can be estimated,
-and that is returned in an \ref apop_params structure.
+and that is returned in an \ref apop_model structure.
 
 Supporting these main structures are a few more structures you'd only have to worry about 
 for fine tuning.
@@ -32,7 +32,7 @@ The \ref apop_name
 structure is an organized list of row and column names; functions that
 take an \ref apop_data set try to automatically handle the names for you.
 The more elaborate models, such as MLEs, require some parameters to run,
-in which case you will need to fill out an \ref apop_params form and hand it in to the model.
+in which case you will need to fill out an \ref apop_model form and hand it in to the model.
 
 
 \li Data 
@@ -48,7 +48,7 @@ apop_model.estimate() method takes in data and produces an \ref
 apop_estimate. See \ref models.
 
 \li Estimates
-The \ref apop_params structure complements the \c apop_model by
+The \ref apop_model structure complements the \c apop_model by
 providing input params (like the method and tolerance for an ML
 estimation) and the output parameters.
 
@@ -98,6 +98,8 @@ typedef struct {
     gsl_vector  *weights;
 } apop_data;
 
+typedef struct _apop_model apop_model;
+
 /** The data to accompany an \c apop_model, including the input settings and the output parameters, expected values, et cetera.
 
 <b>An example</b><br>
@@ -112,46 +114,25 @@ independent vars, then the first column is the actual data. Let our model be \f$
 \param status		The return status from the estimate that had populated this apop_estimate, if any.
 \ingroup inv_and_est
 */
-typedef struct{
-    char        method_name[101];
+struct _apop_model{
+    char        name[101]; 
+    int         vbase, m1base, m2base;
+    char        method_name[101]; 
     void        *method_params;
     void        *model_params;
     apop_data   *parameters, *expected, *covariance;
-    double      log_likelihood;
+    double      llikelihood;
     int         status;
+    size_t      method_params_size, model_params_size, more_size;
     apop_data   *data;
-    struct apop_model  *model;
-    void        *more;
-} apop_params;
-
-/** This is an object to describe a model whose parameters are to be
-estimated. It would primarily be used for maximum likelihood estimation,
-but is intended to have anything else you would want a probability
-distribution to have too, like a random number generator.  
-
-\param name	The model name. You have 100 characters. 
-\param parameter_ct	The number of parameters. If this is 0, it will be dynamically set to the number of columns in the given data set's matrix; if -1 it will be set to columns minus one.
-\param estimate		the estimator fn, which is all most users will care about.
-\param log_likelihood	the likelihood fn given data 
-\param 	dlog_likelihood	the derivative of the likelihood fn
-\param 	fdf	Do both of the above at once. Can be NULL if it'd just call them separately. 
-\param 	constraint	The constraints to the parameters, if any. Really only necessary for MLEs.
-\param rng 	a random number generator. 
-
-\ingroup models
- */
-typedef struct apop_model{
-    char    name[101]; 
-    int     vbase, m1base, m2base;
-    apop_params * (*estimate)(apop_data * data, apop_params *params);
-    double  (*p)(const apop_data *beta, apop_data *d, apop_params *params);
-    double  (*log_likelihood)(const apop_data *beta, apop_data *d, apop_params *params);
-    void    (*score)(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *params);
-    double  (*constraint)(const apop_data *beta, apop_data *returned_beta, apop_params *params);
-    void (*draw)(double *out, gsl_rng* r, apop_params *params);
+    apop_model * (*estimate)(apop_data * data, apop_model *params);
+    double  (*p)(const apop_data *beta, apop_data *d, apop_model *params);
+    double  (*log_likelihood)(const apop_data *beta, apop_data *d, apop_model *params);
+    void    (*score)(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *params);
+    double  (*constraint)(const apop_data *beta, apop_data *returned_beta, apop_model *params);
+    void (*draw)(double *out, gsl_rng* r, apop_model *params);
     void    *more;
-    apop_params *ep;
-} apop_model;
+} ;
 
 /** The global options.
   \ingroup global_vars */
@@ -197,13 +178,9 @@ void apop_name_memcpy(apop_name **out, apop_name *in);
 apop_name * apop_name_copy(apop_name *in);
 size_t  apop_name_find(apop_name *n, char *findme, char type);
 
-apop_params * apop_params_alloc(apop_data * data, apop_model model, void *method_params, void *model_params);
-apop_params *apop_params_alloc_p(apop_data *params);
-apop_params *apop_params_copy(apop_params *in);
-apop_params *apop_params_clone(apop_params *in, size_t method_size, size_t model_size, size_t more_size);
-void 		apop_params_free (apop_params * free_me);
-void 		apop_params_print (apop_params * print_me);
-void 		apop_params_show (apop_params * print_me);
+void 		apop_params_free (apop_model * free_me);
+void 		apop_params_print (apop_model * print_me);
+void 		apop_params_show (apop_model * print_me);
 
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
@@ -225,10 +202,15 @@ void apop_data_set_ti(apop_data *in, char* row, int col, double data);
 void apop_data_set_it(apop_data *in, size_t row, char* col, double data);
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data);
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
+void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *text);
+apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 
 void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 
-apop_model * apop_model_copy(apop_model in); //in apop_estimate.c.
+apop_model * apop_model_copy(apop_model in); //in apop_params.c.
+apop_model * apop_model_clear(apop_data * data, apop_model *model);
+void         apop_model_free(apop_model *m);
+apop_model * apop_estimate(apop_data *d, apop_model m);
 
 void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
 

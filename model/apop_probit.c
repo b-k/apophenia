@@ -28,9 +28,9 @@ static void modify_in_data(apop_data *d){
     }
 }
 
-static apop_params * probit_estimate(apop_data * data,  apop_params *parameters){
+static apop_model * probit_estimate(apop_data * data,  apop_model *parameters){
     modify_in_data(data);
-	return apop_maximum_likelihood(data,  apop_probit, parameters);
+	return apop_maximum_likelihood(data, *parameters);
 }
 
 //////////////////
@@ -61,7 +61,7 @@ find (data dot beta'), then find the integral of the \f$\cal{N}(0,1)\f$
 up to that point. Multiply likelihood either by that or by 1-that, depending 
 on the choice the data made.
 */
-static double probit_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
+static double probit_log_likelihood(const apop_data *beta, apop_data *d, apop_model *p){
   int		    i;
   long double	n, total_prob	= 0;
   gsl_matrix    *data           = d->matrix;
@@ -73,13 +73,13 @@ static double probit_log_likelihood(const apop_data *beta, apop_data *d, apop_pa
 	return total_prob;
 }
 
-static double probit_p(const apop_data *beta, apop_data *d, apop_params *p){
+static double probit_p(const apop_data *beta, apop_data *d, apop_model *p){
     return exp(probit_log_likelihood(beta, d, p));
 }
 
 /* The derivative of the probit distribution, for use in likelihood
   minimization. You'll probably never need to call this directly.*/
-static void probit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
+static void probit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
 	//derivative of the above. 
 int		i, j;
 long double	one_term, beta_term_sum, cdf;

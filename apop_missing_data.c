@@ -118,14 +118,14 @@ static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct *
     }
 }
 
-static double ll(const apop_data *d, apop_data *x, apop_params * ep){
+static double ll(const apop_data *d, apop_data *x, apop_model * ep){
   apop_ml_imputation_struct *m  = ep->model_params;
     unpack(d, x, m);
     return apop_multivariate_normal.log_likelihood(x, m->meanvar, NULL);
 }
 
 
-static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0,0, NULL, NULL, ll, NULL, NULL};
+static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0,0, .log_likelihood= ll};
 
 
 
@@ -141,26 +141,18 @@ static apop_model apop_ml_imputation_model= {"Impute missing data via maximum li
 \param  parameters  The most likely data points are naturally found via MLE. These are the parameters sent to the MLE.
 
 */
-apop_params * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_params * parameters){
+apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_mle_params * parameters){
   apop_ml_imputation_struct mask;
   apop_model *mc    = apop_model_copy(apop_ml_imputation_model);
-  apop_mle_params *mlp   = NULL;
-  apop_params   *p;
+  apop_mle_params *mlp   = parameters ? parameters :  apop_mle_params_alloc(d, *mc);
     find_missing(d, &mask);
     mc->vbase           = mask.ct;
     mask.meanvar        = meanvar;
-    if (!parameters || strcmp(parameters->method_name, "MLE")){
-        mlp     = apop_mle_params_alloc(d, *mc, parameters);
-        p = parameters          = mlp->ep;
-    } else{
-        p       = apop_params_alloc(d, *mc, parameters->method_params,parameters->model_params);
-        mlp     = apop_mle_params_alloc(d, *mc, parameters);
-    } 
     mlp->method             = 5;
-    parameters->model_params= &mask;
+    mc->model_params        = &mask;
     mlp->step_size          = 2;
     mlp->tolerance          = 0.2;
 //    parameters->starting_pt     = calloc(mask.ct, sizeof(double));
-    return apop_maximum_likelihood(d, *mc, p);
+    return apop_maximum_likelihood(d, *mc);
     //We're done. The last step of the MLE filled the data with the best estimate.
 }

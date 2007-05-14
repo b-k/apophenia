@@ -8,6 +8,10 @@
 **apop_produce_dummies now makes dummy variables from both data and
 text. This means that there's another parameter you need to set to 'd'
 or 't' to indicate what you want dummified.
+!!**Merged the apop_params and apop_model structures, leaving everything
+in just one struct. That's about all the merging left.
+--apop_text_alloc and apop_text_add to make text manipulation a little
+easier.
 
 	0.19 April 2007
 !!**Eliminated the apop_estimate and apop_ep structures, replacing them

@@ -16,25 +16,25 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
 #include <assert.h>
-static double poisson_log_likelihood(const apop_data *beta, apop_data *d, apop_params *);
+static double poisson_log_likelihood(const apop_data *beta, apop_data *d, apop_model *);
 
-static apop_params * poisson_estimate(apop_data * data,  apop_params *parameters){
-  apop_params 	*est= parameters ? parameters : apop_params_alloc(data, apop_poisson, parameters->method_params, NULL);
+static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
+  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_poisson);
   double		mean    = apop_matrix_mean(data->matrix);
     if (!est->parameters->vector) 
         est->parameters->vector   = gsl_vector_alloc(1);
 	gsl_vector_set(est->parameters->vector, 0, mean);
-    est->log_likelihood	= poisson_log_likelihood(est->parameters, data, parameters);
+    est->llikelihood	= poisson_log_likelihood(est->parameters, data, parameters);
     if (est->method_params 
             && ((apop_mle_params *)(est->method_params))->want_cov){
-        apop_mle_params   *extra  = apop_mle_params_alloc(data, apop_poisson, NULL);
+        apop_mle_params   *extra  = apop_mle_params_alloc(data, apop_poisson);
         extra->want_cov = 0;
-        est->covariance = apop_jackknife_cov(data, apop_poisson, est);
+        est->covariance = apop_jackknife_cov(data, *est);
     }
 	return est;
 }
 
-static double beta_zero_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
+static double beta_zero_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
     //constraint is 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint)constraint= apop_data_calloc(1,1,1);
@@ -56,7 +56,7 @@ static double apply_me(gsl_vector *v){
     return llikelihood;
 }
 
-static double poisson_log_likelihood(const apop_data *beta, apop_data *d, apop_params * p){
+static double poisson_log_likelihood(const apop_data *beta, apop_data *d, apop_model * p){
   double        lambda      = gsl_vector_get(beta->vector, 0);
     ln_l 	= log(lambda);
   gsl_vector *  v           = apop_matrix_map(d->matrix, apply_me);
@@ -65,13 +65,13 @@ static double poisson_log_likelihood(const apop_data *beta, apop_data *d, apop_p
     return llikelihood - d->matrix->size1*d->matrix->size2*lambda;
 }
 
-static double poisson_p(const apop_data *beta, apop_data *d, apop_params * v){
+static double poisson_p(const apop_data *beta, apop_data *d, apop_model * v){
     return exp(poisson_log_likelihood(beta, d, v));
 }
 
 /** The derivative of the poisson distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void poisson_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
+static void poisson_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
   double       	lambda  = gsl_vector_get(beta->vector, 0);
   gsl_matrix      *data	= d->matrix;
   float           d_a;
@@ -88,7 +88,7 @@ p(k) = {\mu^k \over k!} \exp(-\mu), \f$
 
 where \f$k\geq 0\f$.
 */
-static void poisson_rng(double *out, gsl_rng* r, apop_params *p){
+static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
     *out = gsl_ran_poisson(r, *p->parameters->vector->data);
 }
 

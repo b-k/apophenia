@@ -12,14 +12,15 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <assert.h>
 #include <gsl/gsl_blas.h>
 
+static double wls_p (const apop_data *beta, apop_data *d, apop_model *p);
+static double wls_log_likelihood (const apop_data *beta, apop_data *d, apop_model *params);
 
 /** The procedure here is to simply modify the input data, run OLS on
 the modified data, and then claim that the output was from WLS.
 */
-apop_params * wls_estimate(apop_data *inset, apop_params *epin){
-  apop_params    *epcopy = malloc(sizeof(*epcopy)),
+apop_model * wls_estimate(apop_data *inset, apop_model *epin){
+  apop_model    *epcopy = malloc(sizeof(*epcopy)),
                             *ep     = epin;
-  apop_params             *out;
   apop_data                 *set;
   int                       i;
   gsl_vector                v;
@@ -39,10 +40,11 @@ apop_params * wls_estimate(apop_data *inset, apop_params *epin){
     memcpy(epcopy, ep, sizeof(*epcopy));
     op->destroy_data    = 1;
     epcopy->method_params = op;
-    op->ep              = ep;
-    out                 = apop_OLS.estimate(set, epcopy);
-    free(out->model);
-    out->model          = apop_model_copy(apop_WLS);
+    op->model              = ep;
+    apop_model *out     = apop_OLS.estimate(set, epcopy);
+    out->estimate       = wls_estimate;
+    out->p              = wls_p;
+    out->log_likelihood = wls_log_likelihood;
     return out;
 }
 
@@ -53,7 +55,7 @@ This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.
 
  */
-static double wls_log_likelihood (const apop_data *beta, apop_data *d, apop_params *params){ 
+static double wls_log_likelihood (const apop_data *beta, apop_data *d, apop_model *params){ 
   int           i; 
   long double   total_prob  = 0; 
   double        sigma, expected, actual, weight;
@@ -81,7 +83,7 @@ static double wls_log_likelihood (const apop_data *beta, apop_data *d, apop_para
 }
 
 
-static double wls_p (const apop_data *beta, apop_data *d, apop_params *p){ 
+static double wls_p (const apop_data *beta, apop_data *d, apop_model *p){ 
     return exp(wls_log_likelihood(beta, d, p));
             }
 

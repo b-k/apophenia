@@ -840,7 +840,7 @@ Using the data set from the example on the \ref apop_OLS "apop_OLS" page, here's
 
 int main(void){ 
 apop_data       *data; 
-apop_params   *est;
+apop_model   *est;
     apop_db_open(NULL);
     apop_text_to_db("data", "d", 0,1,NULL);
     data       = apop_query_to_data("select * from d");

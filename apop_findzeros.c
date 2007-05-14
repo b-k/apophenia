@@ -11,17 +11,17 @@
 /** This function is cut/pasted/modified from the GSL documentation. It
  calls the various GSL root-finding algorithms to find the zero of the score.
 */
-static apop_params * find_roots (apop_data * data, apop_model dist, apop_params *est_params) {
+static apop_model * find_roots (apop_data * data, apop_model *dist) {
   const gsl_multiroot_fsolver_type *T;
   gsl_multiroot_fsolver *s;
-  int           vsize       =(est_params->parameters->vector ? est_params->parameters->vector->size :0),
-                msize1      =(est_params->parameters->matrix ? est_params->parameters->matrix->size1 :0),
-                msize2      =(est_params->parameters->matrix ? est_params->parameters->matrix->size2:0);
+  int           vsize       =(dist->parameters->vector ? dist->parameters->vector->size :0),
+                msize1      =(dist->parameters->matrix ? dist->parameters->matrix->size1 :0),
+                msize2      =(dist->parameters->matrix ? dist->parameters->matrix->size2:0);
   int status, betasize      = vsize + msize1* msize2;
   size_t  iter = 0;
   gsl_vector *x;
-    apop_mle_params *mlep   = est_params->method_params;
-    est_params->status = 1;    //assume failure until we score a success.
+    apop_mle_params *mlep   = dist->method_params;
+    dist->status = 1;    //assume failure until we score a success.
     if (!mlep || mlep->starting_pt==NULL){
         x = gsl_vector_alloc(betasize);
         gsl_vector_set_all (x,  2);
@@ -29,8 +29,7 @@ static apop_params * find_roots (apop_data * data, apop_model dist, apop_params 
         x   = apop_array_to_vector(mlep->starting_pt, betasize);
   infostruct      p;
     p.data            = data;
-    p.model           = &dist;
-    p.params          = est_params;
+    p.model           = dist;
   gsl_multiroot_function f = {dnegshell, betasize, &p};
     if (mlep->method == 13)
         T = gsl_multiroot_fsolver_dnewton;
@@ -51,10 +50,10 @@ static apop_params * find_roots (apop_data * data, apop_model dist, apop_params 
             break;
         status = gsl_multiroot_test_residual (s->f, 1e-7);
      } while (status == GSL_CONTINUE && iter < 1000);
-     if(GSL_SUCCESS) est_params->status = 0;
+     if(GSL_SUCCESS) dist->status = 0;
   printf ("status = %s\n", gsl_strerror (status));
-  est_params->parameters   = apop_data_unpack(s->x, vsize, msize1, msize2);
+  dist->parameters   = apop_data_unpack(s->x, vsize, msize1, msize2);
   gsl_multiroot_fsolver_free (s);
   gsl_vector_free (x);
-  return est_params;
+  return dist;
 }

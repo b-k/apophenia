@@ -8,7 +8,7 @@
 void pontius(){
     apop_text_to_db("pontius.dat","d", 0,1, NULL);
 apop_data *d        = apop_query_to_data("select y, x, pow(x,2) as p from d");
-apop_params *est  =  apop_OLS.estimate(d, NULL);
+apop_model *est  =  apop_OLS.estimate(d, NULL);
 
     assert(fabs(apop_data_get(est->parameters, 0, -1) - 0.673565789473684E-03) < TOL);
     assert(fabs(apop_data_get(est->parameters, 1, -1) - 0.732059160401003E-06) < TOL);
@@ -26,7 +26,7 @@ void wampler1(){
 int             i;
 apop_data       *d    = apop_query_to_data("select y, x, pow(x,2) as p2, \
                                 pow(x,3) as p3, pow(x,4) as p4, pow(x,5) as p5 from w1");
-apop_params   *est  =  apop_OLS.estimate(d, NULL);
+apop_model   *est  =  apop_OLS.estimate(d, NULL);
     for (i=0; i<6; i++)
         assert(fabs(apop_data_get(est->parameters, i, -1) - 1) < TOL4);
     for (i=0; i<6; i++)

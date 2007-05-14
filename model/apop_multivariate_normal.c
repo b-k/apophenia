@@ -9,7 +9,7 @@
 
 apop_model apop_multivariate_normal;
 
-double apop_multinormal_ll_prob(const apop_data *x, apop_data *v, apop_params * m){
+double apop_multinormal_ll_prob(const apop_data *x, apop_data *v, apop_model * m){
   double    determinant = 0;
   gsl_matrix* inverse   = NULL;
   int       i, dimensions  = x->matrix->size2;
@@ -33,12 +33,13 @@ double apop_multinormal_ll_prob(const apop_data *x, apop_data *v, apop_params * 
     return ll;
 }
 
-double apop_multinormal_prob(const apop_data *x, apop_data *v, apop_params * m){
+double apop_multinormal_prob(const apop_data *x, apop_data *v, apop_model * m){
     return exp(apop_multinormal_ll_prob(x, v, m));
 }
 
-static apop_params * multivariate_normal_estimate(apop_data * data, apop_params *p){
-    if (!p) p = apop_params_alloc(data, apop_multivariate_normal, NULL, NULL);
+static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
+    if (!p) p = apop_model_copy(apop_multivariate_normal);
+    apop_model_clear(data, p);
   int   i;
     for (i=0; i< data->matrix->size2; i++){
         APOP_COL(data,i,v);
@@ -46,15 +47,15 @@ static apop_params * multivariate_normal_estimate(apop_data * data, apop_params 
     }
     p->covariance         =  apop_data_covariance_matrix(data, 0);
     p->parameters->matrix =  p->covariance->matrix;
-    /*if (est->ep.uses.log_likelihood)
+    /*if (est->model.uses.log_likelihood)
         est->log_likelihood = normal_log_likelihood(est->parameters->vector, data, NULL);
-    if (est->ep.uses.covariance)
+    if (est->model.uses.covariance)
         apop_numerical_covariance_matrix(apop_normal, est, data);*/
     return p;
 }
 
 /** The nice, easy method from Devroye, p 565 */
-static void mvnrng(double *out, gsl_rng *r, apop_params *eps){
+static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
   apop_data *params = eps->parameters;
   int i, j;
   gsl_vector *v     = gsl_vector_alloc(params->vector->size);

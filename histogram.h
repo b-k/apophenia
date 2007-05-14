@@ -11,9 +11,9 @@
 __BEGIN_DECLS
 gsl_histogram * apop_vector_to_histogram(const gsl_vector *data, int bins);
 gsl_histogram ** apop_vectors_to_histograms(gsl_vector *v1, gsl_vector *v2, int bins);
-gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, int draws, apop_params *params, gsl_rng *r);
+gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, int draws, apop_model *params, gsl_rng *r);
 apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model m,
-int bins, long int draws, apop_params*, gsl_rng *r);
+int bins, long int draws, apop_model*, gsl_rng *r);
 apop_data *apop_vectors_test_goodness_of_fit(gsl_vector *v0, gsl_vector *v1);
 apop_data *apop_histograms_test_goodness_of_fit(gsl_histogram *h0, gsl_histogram *h1, int bins);
 apop_data *apop_test_kolmogorov(gsl_histogram *h1, gsl_histogram *h2);

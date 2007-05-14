@@ -23,11 +23,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <gsl/gsl_sf_zeta.h>
 
 
-static apop_params * zipf_estimate(apop_data * data, apop_params *parameters){
-    return apop_maximum_likelihood(data, apop_zipf, parameters);
+static apop_model * zipf_estimate(apop_data * data, apop_model *parameters){
+    return apop_maximum_likelihood(data, *parameters);
 }
 
-static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
+static double beta_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
     //constraint is 1 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint) constraint = apop_data_calloc(1,1,1);
@@ -44,7 +44,7 @@ static double oneline_log(gsl_vector *v){
     return like;
 }
 
-static double zipf_log_likelihood(const apop_data *beta, apop_data *d, apop_params *v){
+static double zipf_log_likelihood(const apop_data *beta, apop_data *d, apop_model *v){
   gsl_matrix    *data   = d->matrix;
   long double   bb      = gsl_vector_get(beta->vector, 0);
   gsl_vector    *logs   = apop_matrix_map(data, oneline_log);
@@ -55,11 +55,11 @@ static double zipf_log_likelihood(const apop_data *beta, apop_data *d, apop_para
     return like;
 }    
 
-static double zipf_p(const apop_data *beta, apop_data *d, apop_params *v){
+static double zipf_p(const apop_data *beta, apop_data *d, apop_model *v){
     return exp(zipf_log_likelihood(beta, d, v));
 }    
 
-static void zipf_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *v){
+static void zipf_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *v){
   double      bb        = gsl_vector_get(beta->vector, 0);
   gsl_matrix  *data     = d->matrix;
   gsl_vector  *logs     = apop_matrix_map(data, oneline_log);
@@ -88,7 +88,7 @@ apop_zipf.draw(r, 1.4, NULL);
 \endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
-static void zipf_rng( double *out, gsl_rng* r, apop_params *param){
+static void zipf_rng( double *out, gsl_rng* r, apop_model *param){
   double a  = gsl_vector_get(param->parameters->vector, 0);
     if (a  <= 1){
 //        if (apop_opts.verbose)

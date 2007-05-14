@@ -19,35 +19,31 @@ static void write_double(const double *draw, apop_data *d){
     gsl_vector_free(v);
 }
 
-static apop_params *check_conjugacy(apop_data *data, apop_model prior, apop_model likelihood, 
-                         apop_params *prior_eps, apop_params * likelihood_eps){
-  apop_params   *outp;
+static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model likelihood){
+  apop_model   *outp;
     if (!strcmp(prior.name, "Gamma distribution") && !strcmp(likelihood.name, "Exponential distribution")){
-        outp = apop_params_clone(prior_eps, 0,0,0);
+        outp = apop_model_copy(prior);
         apop_vector_increment(outp->parameters->vector, 0, data->matrix->size1*data->matrix->size2);
         apop_vector_increment(outp->parameters->vector, 1, apop_matrix_sum(data->matrix));
-        outp->model = &apop_gamma;
         return outp;
     }
     if (!strcmp(prior.name, "Beta distribution") && !strcmp(likelihood.name, "Binomial distribution")){
-        outp        = apop_params_clone(prior_eps, 0,0,0);
+        outp = apop_model_copy(prior);
         double  y   = apop_matrix_sum(data->matrix);
         apop_vector_increment(outp->parameters->vector, 0, y);
         apop_vector_increment(outp->parameters->vector, 1, data->matrix->size1*data->matrix->size2 - y);
-        outp->model = &apop_beta;
         return outp;
     }
     if (!strcmp(prior.name, "Beta distribution") && !strcmp(likelihood.name, "Bernoulli distribution")){
-        outp        = apop_params_clone(prior_eps, 0,0,0);
-      double        sum     = 0;
-      int           i, j, n = (data->matrix->size1*data->matrix->size2);
+        outp = apop_model_copy(prior);
+        double  sum     = 0;
+        int     i, j, n = (data->matrix->size1*data->matrix->size2);
         for (i=0; i< data->matrix->size1; i++)
             for (j=0; j< data->matrix->size2; j++)
                 if (gsl_matrix_get(data->matrix, i, j))
                     sum++;
         apop_vector_increment(outp->parameters->vector, 0, sum);
         apop_vector_increment(outp->parameters->vector, 1, n - sum);
-        outp->model = &apop_beta;
         return outp;
     }
     return NULL;
@@ -68,20 +64,19 @@ the input to this function, so you can chain Bayesian updating procedures.
 \param  prior   The prior \c apop_model
 \param likelihood The likelihood \c apop_model. If the system needs to
 estimate the posterior via MCMC, this needs to have a \c draw method.
-\param prior_eps    The \c apop_params for the prior model
-\param likelihood_eps    The \c apop_params for the likelihood model
+\param prior_eps    The \c apop_model for the prior model
+\param likelihood_eps    The \c apop_model for the likelihood model
 \param starting_pt      The first parameter to check in the MCMC routine
 \param r        A \c gsl_rng, already initialized (e.g., via \c apop_rng_alloc).
 \param periods How many steps should the MCMC chain run?
 \param burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
 \param histosegments If outputting a \c apop\_histogram, how many segments should it have?
-\return an \c apop_params struct, including a \c model element and correctly specified parameters.
+\return an \c apop_model struct, including a \c model element and correctly specified parameters.
 \todo The \c apop_update routine has an internal table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), and that list can always be longer.
 */
-apop_params * apop_update(apop_data *data, apop_model prior, apop_model likelihood, 
-                        apop_params *prior_eps, apop_params * likelihood_eps, 
+apop_model * apop_update(apop_data *data, apop_model prior, apop_model likelihood, 
                         apop_data *starting_pt, gsl_rng *r, int periods, double burnin, int histosegments){
-  apop_params *maybe_out = check_conjugacy(data, prior, likelihood, prior_eps,  likelihood_eps);
+  apop_model *maybe_out = check_conjugacy(data, prior, likelihood);
     if (maybe_out) return maybe_out;
   double        ratio;
   int           i;
@@ -99,10 +94,10 @@ apop_params * apop_update(apop_data *data, apop_model prior, apop_model likeliho
         if (current_param->matrix) gsl_matrix_set_all(current_param->matrix, 1);
     }
     for (i=0; i< periods; i++){     //main loop
-        prior.draw(draw, r, prior_eps);
+        prior.draw(draw, r, &prior);
         write_double(draw, candidate_param);
-        ratio = likelihood.log_likelihood(candidate_param, data,likelihood_eps)
-                    -likelihood.log_likelihood(current_param, data, likelihood_eps);
+        ratio = likelihood.log_likelihood(candidate_param, data,&likelihood)
+                    -likelihood.log_likelihood(current_param, data, &likelihood);
         if (gsl_isnan(ratio)){
             apop_error(0, 'c',"Trouble evaluating the likelihood function at vector beginning with %g or %g. Maybe offer a new starting point.\n", current_param->vector->data[0], candidate_param->vector->data[0]);
             return NULL;
@@ -116,7 +111,7 @@ apop_params * apop_update(apop_data *data, apop_model prior, apop_model likeliho
             gsl_vector_free(vv);
         }
     }
-    apop_params *outp   = apop_histogram_params_alloc(out, histosegments, NULL);
+    apop_model *outp   = apop_histogram_params_alloc(out, histosegments, NULL);
     apop_data_free(out);
     return outp;
 }

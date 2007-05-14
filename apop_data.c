@@ -637,3 +637,60 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     gsl_vector_set(d->vector, d->names->rownamect, val);
     apop_name_add(d->names, name, 'r');
 }
+
+
+
+/* Add a string to the text element of an \c apop_data set. 
+
+
+   By the way, the \c text element is simply an array of arrays of
+   strings, so there are no special tricks to this function. After some
+   checks, it just runs:
+
+\code
+in->text[row][col]  = malloc(strlen(text)+1);
+strcpy(in->text[row][col], text);
+\endcode
+
+\param in   The \c apop_data set, that already has an allocated \c text element.
+\param row  The row
+\param col  The col
+\param text The text to write.
+*/
+void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *text){
+    if (in->textsize[0] < (int)row-1 || in->textsize[1] < (int)col-1) {
+        apop_error(0, 'c', "You asked me to put the text '%s' at (%i, %i), but the text array has size (%i, %i)\n", text, row, col,
+                in->textsize[0], in->textsize[1]);
+        return;
+    }
+    if (text==NULL){
+        in->text[row][col]  = malloc(strlen("NaN") +1);
+        strcpy(in->text[row][col], "NaN");
+    } else {
+        in->text[row][col]  = malloc(strlen(text)+1);
+        strcpy(in->text[row][col], text);
+    }
+}
+
+/* This allocates an array of strings and puts it in the \c text element
+  of an \c apop_data set. 
+
+  \param in An \c apop_data set. It's OK to send in \c NULL, in which case an apop_data set with \c NULL \c matrix and \vector elements is returned.
+  \param row    the number of rows of text.
+  \param col     the number of columns of text.
+  \return       A pointer to the relevant \c apop_data set. If the input was not \c NULL, then this is a repeat of the input pointer.
+  */
+apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
+  int   i, j;
+    if (!in)
+        in  = apop_data_alloc(0,0,0);
+    in->text = malloc(sizeof(char**) * row);
+    for (i=0; i< row; i++){
+        in->text[i] = malloc(sizeof(char*) * col);
+        for (j=0; j< col; j++)
+            in->text[i][j] = NULL;
+    }
+    in->textsize[0] = row;
+    in->textsize[1] = col;
+    return in;
+}

@@ -40,35 +40,23 @@ gsl_rng *apop_rng_alloc(int seed){
     return setme;
 }
 
-/* This used to matter more, but it basically produces a disposable 
-   apop_params for us to throw around.
-   */
-static apop_params *parameter_prep(apop_data *d, apop_model *m, apop_params *in){
-  apop_params *e;
-    if (in){
-        e   = malloc(sizeof(*e));
-        memcpy(e, in, sizeof(*e));
-    } else
-        e   = apop_params_alloc(d, *m, NULL, NULL);
-    return e;
-}
-
 /** Give me a data set and a model, and I'll give you the jackknifed covariance matrix of the model parameters.
  
 \param in	    The data set. An \c apop_data set where each row is a single data point.
 \param model    An \ref apop_model, whose \c estimate method will be used here.
-\param ep        The \ref apop_params to be passed to the model. Use a stripped- down version that sets \c want_cov, \c want_expected_value, and anything else to zero, because the jackknife only uses the parameter estimates. If your model calls this function to estimate the covariance and \c want_cov=1, then you've got an infinite loop.
+\param ep        The \ref apop_model to be passed to the model. Use a stripped- down version that sets \c want_cov, \c want_expected_value, and anything else to zero, because the jackknife only uses the parameter estimates. If your model calls this function to estimate the covariance and \c want_cov=1, then you've got an infinite loop.
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
 \ingroup boot
  */
-apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_params *ep){
+apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
   int           i;
-  apop_params   *e              = parameter_prep(in, &model, ep);
+  apop_model   *e              = apop_model_copy(model);
+  apop_model_clear(in, e);
   int           n               = in->matrix->size1;
   apop_data     *subset         = apop_data_alloc(0, in->matrix->size1 - 1, in->matrix->size2);
   apop_data     *array_of_boots = NULL;
-  apop_params *overall_est    = model.estimate(in, e);
+  apop_model *overall_est       = model.estimate(in, e);
   int           paramct         = overall_est->parameters->vector->size;
   gsl_vector    *pseudoval      = gsl_vector_alloc(paramct);
 
@@ -106,18 +94,18 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model, apop_params *ep)
 
 \param data	    The data set. An \c apop_data set where each row is a single data point.
 \param model    An \ref apop_model, whose \c estimate method will be used here.
-\param epin        The \ref apop_params to be passed to the model. 
 \param r        An RNG that you have initialized (probably with \c apop_rng_alloc)
 \param boot_iterations How many bootstrap draws should I make? A positive integer; if you express indifference by specifying zero, I'll make 1,000 draws.
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
 \ingroup boot
  */
-apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, apop_params *epin, gsl_rng *r, int boot_iterations) {
+apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *r, int boot_iterations) {
     if (boot_iterations ==0)    boot_iterations	= 1000;
-  apop_params       *e  = parameter_prep(data, &model, epin);
+  apop_model        *e              = apop_model_copy(model);
+  apop_model_clear(data, e);
   size_t	        i, j, row;
-  apop_data	        *subset	= apop_data_alloc(0,data->matrix->size1, data->matrix->size2);
+  apop_data	        *subset	        = apop_data_alloc(0,data->matrix->size1, data->matrix->size2);
   apop_data         *array_of_boots = NULL,
                     *summary;
 	for (i=0; i<boot_iterations; i++){

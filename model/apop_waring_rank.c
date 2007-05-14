@@ -35,11 +35,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 \ingroup likelihood_fns
 */
-static apop_params * waring_estimate(apop_data * data, apop_params *parameters){
-	return apop_maximum_likelihood(data, apop_waring, parameters);
+static apop_model * waring_estimate(apop_data * data, apop_model *parameters){
+	return apop_maximum_likelihood(data, *parameters);
 }
 
-static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
+static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
     //constraint is 1 < beta_1 and  0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint)constraint= apop_data_calloc(2,2,2);
@@ -49,7 +49,7 @@ static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta,
     return apop_linear_constraint(beta->vector, constraint, 1e-3, returned_beta->vector);
 }
 
-static double waring_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
+static double waring_log_likelihood(const apop_data *beta, apop_data *d, apop_model *p){
   float		      bb	= gsl_vector_get(beta->vector, 0),
     		      a	    = gsl_vector_get(beta->vector, 1);
   int 		      k;
@@ -71,7 +71,7 @@ static double waring_log_likelihood(const apop_data *beta, apop_data *d, apop_pa
 
 /** The derivative of the Waring distribution, for use in likelihood
  minimization. You'll probably never need to call this directy.*/
-static void waring_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
+static void waring_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
 	//Psi is the derivative of the log gamma function.
   float		      bb		    = gsl_vector_get(beta->vector, 0),
 	    	      a		        = gsl_vector_get(beta->vector, 1);
@@ -98,7 +98,7 @@ static void waring_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vect
 }
 
 
-static double waring_p(const apop_data *beta, apop_data *d, apop_params *p){
+static double waring_p(const apop_data *beta, apop_data *d, apop_model *p){
     return exp(waring_log_likelihood(beta, d, p));
 }
 
@@ -111,7 +111,7 @@ L. Devroye, <a href="http://cgm.cs.mcgill.ca/~luc/digammapaper.ps">Random
 variate generation for the digamma and trigamma distributions</a>, Journal
 of Statistical Computation and Simulation, vol. 43, pp. 197-216, 1992.
 */
-static void waring_rng( double *out, gsl_rng *r, apop_params *in){
+static void waring_rng( double *out, gsl_rng *r, apop_model *in){
 //The key to covnert from Devroye's GHgB3 notation to what I
 //consider to be the standard Waring notation in \ref apop_waring:
 // a = a + 1

@@ -130,7 +130,7 @@ The method is to produce a histogram for the PDF using the RNG.
 \ingroup histograms
 */
 gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, 
-                        int draws, apop_params *params, gsl_rng *r){
+                        int draws, apop_model *params, gsl_rng *r){
   int     i;
 //int     bc      = h ? h->n + 2 : bins;
   int     bc      =  h->n + 2;
@@ -264,7 +264,7 @@ int         i,
 \ingroup histograms
 */
 apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model m,
-int bins, long int draws, apop_params *params, gsl_rng *r){
+int bins, long int draws, apop_model *params, gsl_rng *r){
 int     i, count    = bins;
 double  diff        = 0,
         sum;

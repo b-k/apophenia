@@ -23,24 +23,22 @@ Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
 #include <assert.h> 
 #include <gsl/gsl_blas.h>
 
-/** Allocate an \c apop_OLS_params structure. There's currently only one
- option to set: whether to destroy data. Otherwise, this is just like 
- \c apop_params_alloc.
+/** Allocate an \c apop_OLS_params structure. 
 
- \param destroy_data    If 'd', then destroy data (faster), if anything else, like 'k', keep the data.
  \param data the data
  \param model   The model, like \c apop_OLS or \c apop_WLS.
  \param method_params   If you are using a nonstandard method to estimate the model, put the params there.
  \return an \c apop_OLS_params 
  */
-apop_OLS_params * apop_OLS_params_alloc(apop_data *data, apop_model model, apop_params *method_params){
+apop_OLS_params * apop_OLS_params_alloc(apop_data *data, apop_model model){
   apop_OLS_params *out  = malloc(sizeof(*out));
     out->destroy_data       =  0;
     out->want_cov           =  1;
     out->want_expected_value=  1;
-    out->ep                 = apop_params_alloc(data, model, out, method_params);
-    out->ep->model_params   = out;
-    snprintf(out->ep->method_name, 100, "OLS");
+    out->model                 = apop_model_copy(model);
+    apop_model_clear(data, out->model);
+    out->model->model_params   = out;
+    out->model->model_params_size = sizeof(*out);
     return out;
 }
 
@@ -155,13 +153,15 @@ Returns nothing. At the end of the routine, the est->parameters->matrix
 includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
 
 */
-void apop_estimate_parameter_t_tests (apop_params *est){
+void apop_estimate_parameter_t_tests (apop_model *est){
 int     i, df;
 double  val, var, pval, tstat, rootn, stddev, two_tail;
     if (!est->data)
         return;
-    assert(est->covariance);
-    assert(est->parameters);
+    if (!est->covariance || !est->parameters){
+        apop_error(1,'c', "%s: You asked me to estimate t statistics, but I'm missing either the covariance matrix or the parameters (probably the cov matrix)\n", __func__);
+        return;
+    }
     est->parameters->matrix = gsl_matrix_alloc(est->parameters->vector->size, 7);
     apop_name_add(est->parameters->names, "p value", 'c');
     apop_name_add(est->parameters->names, "confidence", 'c');
@@ -201,13 +201,13 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
 
  At the moment, this copies the data set. Plan accordingly.
 
- \param est     an \ref apop_params that you have already calculated.
+ \param est     an \ref apop_model that you have already calculated.
  \param q       The matrix \f${\bf Q}\f$, where each row represents a hypothesis.
  \param c       The vector \f${\bf c}\f$. The PDF manual explains all of this.
  \return The confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
  */
-apop_data *apop_F_test (apop_params *est, apop_data *contrast){
+apop_data *apop_F_test (apop_model *est, apop_data *contrast){
 gsl_matrix      *set        = est->data->matrix;
 gsl_matrix      *q          = contrast->matrix;
 gsl_vector      *c          = contrast->vector;
@@ -266,12 +266,12 @@ apop_data       *out        = apop_data_alloc(0,3,-1);
 }
 
 /** a synonym for \ref apop_F_test, qv. */
-apop_data * apop_f_test (apop_params *est, apop_data *contrast){
+apop_data * apop_f_test (apop_model *est, apop_data *contrast){
 return apop_F_test(est, contrast);
 }
 
 //shift first col to depvar, rename first col "one".
-static void prep_names (apop_params *e){
+static void prep_names (apop_model *e){
   int i;
   apop_OLS_params   *p = e->model_params;
 	if (e->data->names->colnamect > 0) {		
@@ -297,7 +297,7 @@ static void prep_names (apop_params *e){
 	}
 }
 
-void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_params *out){
+void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_model *out){
   apop_OLS_params   *p = out->model_params;
 	if (p->want_cov + p->want_expected_value == 0 ){	
 		//then don't calculate (X'X)^{-1}
@@ -342,16 +342,16 @@ A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>.
 
 \param ep
 Most notable for its <tt>uses</tt> element, 
-If NULL, do everything; else, produce those \ref apop_params elements which you specify. You always get the parameters and never get the log likelihood.
+If NULL, do everything; else, produce those \ref apop_model elements which you specify. You always get the parameters and never get the log likelihood.
 
 \return
-A pointer to an \ref apop_params structure with the appropriate elements filled. See the description in \ref apop_OLS .
+A pointer to an \ref apop_model structure with the appropriate elements filled. See the description in \ref apop_OLS .
 
 \todo 
 Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
  */
 /*
-apop_params * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma){
+apop_model * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma){
 apop_model      *modded_ols;
     modded_ols              = apop_model_copy(apop_GLS);
     modded_ols->parameter_ct= set->matrix->size2;
@@ -383,14 +383,14 @@ gsl_vector_view	v 		= gsl_matrix_column(set->matrix, 0);
 
 \param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
-\param epin    An \ref apop_params object. The only
+\param epin    An \ref apop_model object. The only
 thing we look at is the \c destroy_data element. If this is NULL or
 \c destroy_data==0, then the entire data set is copied off, and then
 mangled. If \c destroy_data==1, then this doesn't copy off the data set,
 but destroys it in place.
 
 \return
-Will return an \ref apop_params <tt>*</tt>.
+Will return an \ref apop_model <tt>*</tt>.
 <tt>The_result->parameters</tt> will hold the coefficients; the first
 coefficient will be the coefficient on the constant term, and the
 remaining will correspond to the independent variables. It will therefore
@@ -417,7 +417,7 @@ The program:
 
 int main(void){
 apop_data       *data;
-apop_params   *est;
+apop_model   *est;
     apop_text_to_db("data","d",0,1,NULL);
     data = apop_query_to_data("select * from d");
     est  = apop_OLS.estimate(data, NULL);
@@ -445,25 +445,21 @@ int main(){
 
 
  */
-apop_params * apop_estimate_OLS(apop_data *inset, apop_params *ep){
+apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
   apop_data         *set;
-  apop_params       *epout;
+  apop_model       *epout;
   gsl_vector        *weights    = NULL;
   int               i;
   apop_OLS_params  *olp;
-    if (!ep || strcmp(ep->method_name, "OLS")) {
-        olp             = apop_OLS_params_alloc(inset, apop_OLS, NULL);
-        epout           = olp->ep;
+    if (!ep) {
+        olp             = apop_OLS_params_alloc(inset, apop_OLS);
+        epout           = olp->model;
     } else {
-        olp             = ep->method_params;
+        olp             = ep->model_params;
         epout           = ep;
     }
-    //check whether we get to destroy the data set or need to copy it.
-    if (!olp->destroy_data)
-        set = apop_data_copy(inset); 
-    else
-        set = inset;
-
+    set = olp->destroy_data ? inset : apop_data_copy(inset); 
+    
     //prep weights.
     if (olp->destroy_data)
         weights = epout->data->weights;  //may be NULL.
@@ -500,6 +496,7 @@ apop_params * apop_estimate_OLS(apop_data *inset, apop_params *ep){
     if (!olp->destroy_data)
         apop_data_free(set);
     apop_estimate_parameter_t_tests(epout);
+    epout->status   = 1;
     return epout;
 }
 
@@ -529,7 +526,7 @@ apop_params * apop_estimate_OLS(apop_data *inset, apop_params *ep){
 \bug The cross-variances are assumed to be zero, which is wholeheartedly false. It's not too big a deal because nobody ever uses them for anything.
 */
 /*
-apop_params * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2){
+apop_model * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2){
 apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
     prep_inventory_names(set1->names);
 apop_estimate	*out1, *out2,
@@ -716,7 +713,7 @@ apop_data * apop_data_produce_dummies(apop_data *d, int col, char type, int keep
 
 \todo finish this documentation. [Was in a rush today.]
 */
-apop_params *apop_estimate_fixed_effects_OLS(apop_data *data,  gsl_vector *categories){
+apop_model *apop_estimate_fixed_effects_OLS(apop_data *data,  gsl_vector *categories){
 apop_data *dummies = apop_data_produce_dummies(apop_vector_to_data(categories),-1, 'd', 0);
     apop_data_stack(data, dummies, 'c');
     return apop_OLS.estimate(dummies, NULL);
@@ -740,13 +737,13 @@ apop_data *dummies = apop_data_produce_dummies(apop_vector_to_data(categories),-
 "SST"\\
 "SSR"
 
-I need the \c apop_params sent in to have the expected value table. This
+I need the \c apop_model sent in to have the expected value table. This
 is the default, but if you explicitly set want_expected_value = 0,
 then turn back and unset it.
 
 \ingroup regression
   */
-apop_data *apop_estimate_correlation_coefficient (apop_params *in){
+apop_data *apop_estimate_correlation_coefficient (apop_model *in){
   double          sse, sst, rsq, adjustment;
   size_t          obs     = in->data->matrix->size1;
   size_t          indep_ct= in->data->matrix->size2 - 1;
@@ -776,6 +773,6 @@ apop_data *apop_estimate_correlation_coefficient (apop_params *in){
 /** A synonym for \ref apop_estimate_correlation_coefficient, q.v. 
  \ingroup regression
  */
-apop_data *apop_estimate_r_squared (apop_params *in){
+apop_data *apop_estimate_r_squared (apop_model *in){
     return apop_estimate_correlation_coefficient(in);
 }

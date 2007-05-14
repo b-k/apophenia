@@ -49,10 +49,10 @@ extern apop_model apop_zipf_rank;
 typedef struct{
     gsl_histogram       *pdf;
     gsl_histogram_pdf   *cdf;
-    apop_params         *ep;
+    apop_model          *model;
 } apop_histogram_params;
 
-apop_params *apop_histogram_params_alloc(apop_data *data, int bins, apop_params *params_in); //see apop_histogram.c
+apop_model *apop_histogram_params_alloc(apop_data *data, int bins, apop_model *params_in); //see apop_histogram.c
 
 __END_DECLS
 #endif

@@ -23,7 +23,7 @@ a great deal of real-world testing that didn't make it into this file.
 double  true_parameter_v[]    = {1.82,2.1};
 
 apop_data *true_parameter;
-apop_params *true_params;
+apop_model *true_params;
 
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
@@ -205,7 +205,7 @@ apop_data   **splits, *dv2;
   value is \f$X'\beta\f$.
 
   */
-int test_predicted_and_residual(apop_params *est){
+int test_predicted_and_residual(apop_model *est){
 gsl_vector  v,
             *prediction = gsl_vector_alloc(est->data->matrix->size1);
 gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->matrix->size2);
@@ -228,7 +228,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
  equals a transformation of R^2.
 
 */
-int test_f(apop_params *est){
+int test_f(apop_model *est){
 apop_data   *rsq    = apop_estimate_correlation_coefficient(est);
 apop_data   *contr  = apop_data_alloc(0,0,0);
 apop_data   *ftab   = apop_F_test(est, contr);
@@ -243,7 +243,7 @@ double      f       = apop_data_get_ti(ftab,"F.stat",-1);
 
 int test_OLS(){
 int             i;
-apop_params   *out;
+apop_model   *out;
 ////gsl_rng         *r  =  apop_rng_alloc(12);
 apop_data       *bkup;
 APOP_DATA_ALLOC(set, len, 2);
@@ -353,18 +353,18 @@ int		count = 0;
 void estimate_model(gsl_matrix *data, apop_model dist, int method){
 int                     i;
 double                  starting_pt[] = {3.2, 1.4};
-apop_mle_params  *params = apop_mle_params_alloc(apop_matrix_to_data(data), dist, NULL);
+apop_mle_params  *params = apop_mle_params_alloc(apop_matrix_to_data(data), dist);
     params->method           = method;
-    params->step_size        = 1e-2;
+    params->step_size        = 1e-1;
     params->starting_pt      = starting_pt;
-    params->tolerance        = 1e-5;
-    params->verbose          = 1;
+    params->tolerance        = 1e-4;
+    params->verbose          = 0;
     params->t_initial       = 1;
     params->t_min           = .5;
     params->k               = 1.8;
-    apop_data_free(params->ep->covariance);
+    params->use_score       = 0;
     params->want_cov        = 0;
-    apop_params *e    = dist.estimate(apop_matrix_to_data(data),params->ep);
+    apop_model *e    = apop_estimate(apop_matrix_to_data(data),*params->model);
     e   = apop_estimate_restart(e, method ? 0 : 1, 1);
     if (verbose)
         for (i=0; i < e->parameters->vector->size; i++)
@@ -400,7 +400,8 @@ int test_inversion(gsl_rng *r){
   double      error   = 0;
   apop_data *four     = apop_data_alloc(1,0,0);
     apop_data_set(four, 0, -1, 4);
-  apop_params *fourp    = apop_params_alloc_p(four);
+  apop_model *fourp    = apop_model_copy(apop_zipf);
+    fourp->parameters  = four;
     for(i=0; i<INVERTSIZE; i++)
         for(j=0; j<INVERTSIZE; j++)
             apop_zipf.draw(gsl_matrix_ptr(invme, i,j),r,  fourp);
@@ -456,18 +457,19 @@ void jtest(apop_model m, double *pv){
   APOP_RNG_ALLOC(r, 8);
   apop_data  *p  = apop_data_alloc(0,0,0);
   p->vector      = apop_array_to_vector(pv, 2);
-  apop_params*pp = apop_params_alloc_p(p);
+  apop_model*pp = apop_model_copy(m);
+      pp->parameters    = p;
   size_t      i;
     for (i =0; i< len; i++)
         m.draw(apop_data_ptr(d, i, 0), r, pp); 
-    apop_data *out = apop_jackknife_cov(d, m , NULL);
+    apop_data *out = apop_jackknife_cov(d, m);
     //apop_data_show(out);
     //printf("%g\n",  2*gsl_pow_2(pv[1])/(len-1));
     //fflush(NULL);
     //Notice that the jackknife just ain't a great estimator here.
     assert (fabs(apop_data_get(out, 0,0) - pv[1]/len) < lite_tolerance
                 && fabs(apop_data_get(out, 1,1) - 2*gsl_pow_2(pv[1])/(len-1)) < lite_tolerance*100);
-    apop_data *out2 = apop_bootstrap_cov(out, m , NULL, r, 0);
+    apop_data *out2 = apop_bootstrap_cov(out, m, r, 0);
     assert (fabs(apop_data_get(out2, 0,0) - pv[1]/len) < lite_tolerance
                 && fabs(apop_data_get(out2, 1,1) - 2*gsl_pow_2(pv[1])/(len-1)) < lite_tolerance);
     apop_data_free(d);
@@ -569,7 +571,8 @@ void test_model_fix_parameters(){
     gsl_matrix_set(pv->matrix, 1,1,1);
     gsl_matrix_set(pv->matrix, 1,0,0.5);
     gsl_matrix_set(pv->matrix, 0,1,0.5);
-  apop_params *pp = apop_params_alloc_p(pv);
+  apop_model *pp = apop_model_copy(apop_multivariate_normal);
+    pp->parameters  = pv;
     for(i=0; i< ct; i++){
         apop_multivariate_normal.draw(draw, r, pp);
         apop_data_set(d, i, 0, draw[0]);
@@ -578,19 +581,19 @@ void test_model_fix_parameters(){
     }
 
     gsl_matrix_set_all(mask->matrix, 1);
-    apop_mle_params *mep1   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal, NULL);
+    apop_mle_params *mep1   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);
     mep1->method      = 0;
-    apop_params   *e1  = mep1->ep->model->estimate(NULL, mep1->ep);
+    apop_model   *e1  = mep1->model->estimate(NULL, mep1->model);
     gsl_vector_sub(e1->parameters->vector, pv->vector);
     assert(apop_vector_sum(e1->parameters->vector) < 1e-2);
 
   double    start2[] = {1,0,0,1};
     gsl_matrix_set_all(mask->matrix, 0);
     gsl_vector_set_all(mask->vector, 1);
-    apop_mle_params *mep2   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal, NULL);
+    apop_mle_params *mep2   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);
     mep2->method      = 0;
     mep2->starting_pt = start2;
-    apop_params   *e2  = mep2->ep->model->estimate(NULL, mep2->ep);
+    apop_model   *e2  = mep2->model->estimate(NULL, mep2->model);
     gsl_matrix_sub(e2->parameters->matrix, pv->matrix);
     assert(apop_matrix_sum(e2->parameters->matrix) < 1e-2);
 }
@@ -652,12 +655,12 @@ void test_histograms(){
     for (i=0; i< n; i++)
         //gsl_matrix_set(d->matrix, i, 0, gsl_rng_uniform(r));
         gsl_matrix_set(d->matrix, i, 0, gsl_ran_gaussian(r, sqrt(sigmasq))+mu);
-    apop_params   *hp = apop_histogram_params_alloc(d, 1000, NULL);
+    apop_model   *hp = apop_histogram_params_alloc(d, 1000, NULL);
     for (i=0; i< n; i++){
         apop_histogram.draw(gsl_matrix_ptr(out, i,0), r, hp);
         assert(gsl_finite(gsl_matrix_get(out, i,0)));
     }
-    apop_params *outparams   = apop_normal.estimate(apop_matrix_to_data(out), NULL);
+    apop_model *outparams   = apop_normal.estimate(apop_matrix_to_data(out), NULL);
     assert(fabs(outparams->parameters->vector->data[0]-mu) < 1e2);
     assert(fabs(outparams->parameters->vector->data[1]-sigmasq) < 1e2);
 //    apop_plot_histogram(out, 100, NULL); 
@@ -673,25 +676,27 @@ int subtest_updating(apop_model prior, apop_model likelihood){
     apop_data_set(p, 0, -1, 1);
     apop_data_set(p, 1, -1, 1);
     apop_data_set(pb, 0, -1, .55);
-  apop_params   *prior_eps = apop_params_alloc_p(p);
-  apop_params   *pbp       = apop_params_alloc_p(pb);
-  apop_params   *outparamsbb;
+  apop_model   *prior_eps = apop_model_copy(prior);
+    prior_eps->parameters   = p;
+  apop_model   *pbp       = apop_model_copy(likelihood);
+  pbp->parameters   = pb;
+  apop_model   *outparamsbb;
   apop_model *almost_bern  = apop_model_copy(likelihood);
     strcpy(almost_bern->name, "Bernie's distribution");
     for (j=0; j< reps; j++){
         for (i=0; i< tsize; i++)
             likelihood.draw(apop_data_ptr(tdata,i,0), r, pbp);
         if (j==0)
-            outparamsbb  = apop_update(tdata, prior, *almost_bern, prior_eps, NULL, NULL, r, 6e3, 0.53,1200);
+            outparamsbb  = apop_update(tdata, *prior_eps, *almost_bern, NULL, r, 6e3, 0.53,1200);
         else
-            outparamsbb  = apop_update(tdata, *outparamsbb->model, likelihood, outparamsbb, NULL, NULL, r, 6e3, 0.53,1200);
-        prior_eps =  apop_update(tdata, prior, likelihood, prior_eps, NULL, NULL, r, 0, 0,0);
+            outparamsbb  = apop_update(tdata, *outparamsbb, likelihood, NULL, r, 6e3, 0.53,1200);
+        prior_eps =  apop_update(tdata, *prior_eps, likelihood, NULL, r, 0, 0,0);
     }
     float r1= prior_eps->parameters->vector->data[0]/ prior_eps->parameters->vector->data[1];
     printf("the alt:\n");
     for (i=0; i< tsize; i++)
         apop_histogram.draw(apop_data_ptr(tdata, i, 0), r, outparamsbb);
-    apop_params *final= prior.estimate(tdata, NULL);
+    apop_model *final= prior_eps->estimate(tdata, prior_eps);
     float r2= final->parameters->vector->data[0]/ final->parameters->vector->data[1];
     printf("%g\n", r1/r2);
     return 0;
@@ -719,22 +724,22 @@ void test_updating (){
                             {if (verbose) printf(" passed.\n");} 
 
 int main(){
-    verbose++;
     true_parameter  = apop_data_alloc(0,0,0);
     true_parameter->vector  = apop_array_to_vector(true_parameter_v, 2);
-    true_params             = apop_params_alloc_p(true_parameter);
+    true_params             = apop_model_copy(apop_gamma);//irrelevant.
+    true_params->parameters = true_parameter;
 
-gsl_rng       *r              = apop_rng_alloc(8); 
-apop_model    dist[]          = {apop_gamma, apop_exponential, apop_normal, 
+  gsl_rng       *r              = apop_rng_alloc(8); 
+  apop_model    dist[]          = {apop_gamma, apop_exponential, apop_normal, 
                                     apop_poisson, apop_zipf,apop_yule, apop_uniform};
-int           dist_ct         = 7,
-              i;
-apop_data     *d  = apop_text_to_data("test_data2",0,1);
-apop_params *e  = apop_OLS.estimate(d,NULL);
+  int           dist_ct         = 7,
+                i;
+  apop_data     *d  = apop_text_to_data("test_data2",0,1);
+  apop_OLS_params *olp  = apop_OLS_params_alloc(d, apop_OLS);
+    olp->want_expected_value    = 1;
+
+  apop_model *e  = apop_estimate(d,*olp->model);
 //    apop_opts.thread_count  = 2;
-    for (i=0; i< dist_ct; i++){
-        do_test(dist[i].name, test_distribution(r, dist[i]));
-    }
     do_test("test apop_update", test_updating());
     do_test("test apop_histogram model", test_histograms());
     do_test("test apop_data sort", test_data_sort());
@@ -760,6 +765,9 @@ apop_params *e  = apop_OLS.estimate(d,NULL);
     do_int_test("apop_matrix_summarize test:", test_summarize());
     do_int_test("apop_linear_constraint test:", test_linear_constraint());
     do_test("apop_pack/unpack test:", apop_pack_test(r));
+    for (i=0; i< dist_ct; i++){
+        do_test(dist[i].name, test_distribution(r, dist[i]));
+    }
     printf("\nApophenia has passed all of its tests. Yay.\n");
     return 0;
 }

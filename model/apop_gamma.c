@@ -23,11 +23,11 @@ Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
 #include <assert.h>
 
 
-static apop_params * gamma_estimate(apop_data * data, apop_params *parameters){
-    return apop_maximum_likelihood(data, apop_gamma, parameters);
+static apop_model * gamma_estimate(apop_data * data, apop_model *parameters){
+    return apop_maximum_likelihood(data, *parameters);
 }
 
-static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_params *v){
+static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint) constraint = apop_data_calloc(2,2,2);
@@ -36,7 +36,7 @@ static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta,
     return apop_linear_constraint(beta->vector, constraint, 1e-3, returned_beta->vector);
 }
 
-static double gamma_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
+static double gamma_log_likelihood(const apop_data *beta, apop_data *d, apop_model *p){
 float         a    = gsl_vector_get(beta->vector, 0),
               b    = gsl_vector_get(beta->vector, 1);
 int           i, k;
@@ -55,13 +55,13 @@ double        llikelihood  = 0,
     return llikelihood;
 }
 
-static double gamma_p(const apop_data *beta, apop_data *d, apop_params *p){
+static double gamma_p(const apop_data *beta, apop_data *d, apop_model *p){
     return exp(gamma_log_likelihood(beta, d, p));
 }
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void gamma_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
+static void gamma_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
 float       	a    	= gsl_vector_get(beta->vector, 0),
         		b    	= gsl_vector_get(beta->vector, 1);
     //if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
@@ -92,7 +92,7 @@ double          d_a     = 0,
 
 See the notes for \ref apop_exponential on a popular alternate form.
 */
-static void gamma_rng( double *out, gsl_rng* r, apop_params *p){
+static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
     *out    = gsl_ran_gamma(r, gsl_vector_get(p->parameters->vector, 0), gsl_vector_get(p->parameters->vector, 1));
 }
 

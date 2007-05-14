@@ -28,9 +28,9 @@ static void modify_in_data(apop_data *d){
     }
 }
 
-static apop_params * logit_estimate(apop_data * data,  apop_params *parameters){
+static apop_model * logit_estimate(apop_data * data,  apop_model *parameters){
     modify_in_data(data);
-	return apop_maximum_likelihood(data,  apop_logit, parameters);
+	return apop_maximum_likelihood(data,  *parameters);
 }
 
 /*For the sake of the fdf function, we keep xdotbeta global.
@@ -40,7 +40,7 @@ gsl_vector  *xdotbeta;
 int         calculate_xdotbeta  = 1;
 int         keep_xdotbeta       = 0;
 
-static double logit_log_likelihood(const apop_data *beta, apop_data *d, apop_params *p){
+static double logit_log_likelihood(const apop_data *beta, apop_data *d, apop_model *p){
   size_t	    i;
   double	    loglike 	= 0,
               xb;
@@ -61,7 +61,7 @@ static double logit_log_likelihood(const apop_data *beta, apop_data *d, apop_par
 	return loglike;
 }
 
-static double logit_p(const apop_data *beta, apop_data *d, apop_params *p){
+static double logit_p(const apop_data *beta, apop_data *d, apop_model *p){
     return exp(logit_log_likelihood(beta, d, p));
 }
 
@@ -70,7 +70,7 @@ static double logit_p(const apop_data *beta, apop_data *d, apop_params *p){
   The format is often the same as above: go line by line through a gsl_matrix.
   The sample is a three-dimensional parameter vector.
  */
-static void logit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_params *p){
+static void logit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
   int		    i,j;
   double	    dtotal[3];
   gsl_matrix 	*data 	= d->matrix;
@@ -91,7 +91,7 @@ static void logit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vecto
   Simple, but some trickery to keep xdotbeta. Notice that the two switches
   leave the function with the same values with which they came in.
 
-static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df, apop_params *p){
+static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df, apop_model *p){
     keep_xdotbeta       = 1;
 	*f	= logit_log_likelihood(beta, d, NULL);
     calculate_xdotbeta  = 0;

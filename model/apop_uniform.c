@@ -20,30 +20,30 @@ Copyright (c) 2007 by Ben Klemens. Licensed under the GNU GPL version 2.
 
 apop_model apop_uniform;
 
-static apop_params * uniform_estimate(apop_data * data,  apop_params *parameters){
-  apop_params 	*est	    = apop_params_alloc(data, apop_uniform, parameters, NULL);
+static apop_model * uniform_estimate(apop_data * data,  apop_model *parameters){
+  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_uniform);
+  apop_model_clear(data, est);
     est->parameters->vector->data[0]    = gsl_matrix_min(data->matrix);
     est->parameters->vector->data[1]    = gsl_matrix_max(data->matrix);
     return est;
 }
 
 
-static double unif_ll(const apop_data *params, apop_data *d, apop_params *v){
+static double unif_ll(const apop_data *params, apop_data *d, apop_model *v){
     if (gsl_matrix_min(d->matrix)> params->vector->data[0] && gsl_matrix_max(d->matrix)< params->vector->data[1])
         return log(params->vector->data[1] - params->vector->data[0]) *  d->matrix->size1 * d->matrix->size2;
     else
         return GSL_NEGINF;
 }
 
-static double unif_p(const apop_data *params, apop_data *d, apop_params *v){
+static double unif_p(const apop_data *params, apop_data *d, apop_model *v){
     if (gsl_matrix_min(d->matrix)> params->vector->data[0] && gsl_matrix_max(d->matrix)< params->vector->data[1])
         return pow(params->vector->data[1] - params->vector->data[0],  d->matrix->size1 * d->matrix->size2);
     else
         return 0;
 }
 
-
-static void uniform_rng( double *out, gsl_rng *r, apop_params* eps){
+static void uniform_rng(double *out, gsl_rng *r, apop_model* eps){
     *out =  gsl_rng_uniform(r) *(eps->parameters->vector->data[1]- eps->parameters->vector->data[0])+ eps->parameters->vector->data[0];
 }
 

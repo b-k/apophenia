@@ -19,149 +19,40 @@ See the page on \ref types for more.
 
 /** Allocate an \ref apop_params.
 
-Are you sure you need to use this? Every regression and MLE function
-provided by Apophenia creates this for you. [You will, however, have to
-free the estimate yourself.]
+This sets up the output elements of the \c apop_model: the parameters,
+covarinace, and expected data sets. 
 
-It takes in all the inputs to the model: data, 
-parameters, plus the model itself. Those elements of the inventory
-that are valid are copied in, the parameters are copied, and you also get
-pointers to the data and model. Those pointers are  primarily
-there for your reference. They are just pointers to the original data,
-so if you destroy your data eleswhere, these pointers will faithfully
-point to garbage.
+At close, the input model has parameters of the correct size, the
+covariance and expected elements are \c NULL, and the \c status element
+is zero, indicating no estimation has been done yet.
 
-If for some reason you don't have a model in mind but want to use this function, then use the null model, \c apop_null.
+The input model is modified, so you probably want to call this after you call \c apop_model_copy.
 
-Also, the parameters are allocated and ready for you to use. You (or the estimate method you call) has to allocate the covariance and expected values your/itself.
+\param data If your params vary with the size of the data set, then the function needs a data set to calibrate against. Otherwise, it's OK to set this to \c NULL
+\param model    The model whose output elements will be modified.
+\return A pointer to the same model, should you need it.
 
 \ingroup inv_and_est  */
-apop_params * apop_params_alloc(apop_data * data, apop_model model, void *method_params, void *model_params){
-apop_params * prep_me = malloc(sizeof(apop_params));
-    /* This has some cruft from when there were separate apop_ep and
-       apop_params structs. Harmless, so I didn't mess with it.*/
-    int vsize  = model.vbase == -1 ? data->matrix->size2 : model.vbase;
-    int msize1 = model.m1base == -1 ? data->matrix->size2 : model.m1base ;
-    int msize2 = model.m2base == -1 ? data->matrix->size2 : model.m2base ;
-    prep_me->parameters	= apop_data_alloc(vsize, msize1, msize2);
-	//if (prep_me->uses.expected ||
-	 //               prep_me->uses.predicted){
-     /*
-        if (data && data->matrix)
-		    prep_me->expected	= apop_data_alloc(0, data->matrix->size1,3);
-        else if (data && data->vector)
-		    prep_me->expected	= apop_data_alloc(0, data->vector->size,3);
-        else if (data && data->text)
-		    prep_me->expected	= apop_data_alloc(0, data->textsize[0],3);
-        else
-		    prep_me->expected	= NULL;
-        if (prep_me->expected){
-            apop_name_add(prep_me->expected->names, "actual", 'c');
-            apop_name_add(prep_me->expected->names, "predicted", 'c');
-            apop_name_add(prep_me->expected->names, "residual", 'c');
-            if (data && data->names && data->names->rownamect > 0)
-                apop_name_stack(prep_me->expected->names, data->names, 'r');
-        }
-    //}
-	if (prep_me->uses.covariance){
-		prep_me->covariance	= apop_data_alloc(0, vsize,vsize);
-        if (data && data->names){
-            apop_name_stack(prep_me->covariance->names, data->names, 'c');
-            apop_name_cross_stack(prep_me->covariance->names, data->names, 'c', 'r');
-        }
-    } else
-    */
-    prep_me->covariance	= NULL;
-    prep_me->expected	= NULL;
-    prep_me->data               = data;
-    prep_me->model              = apop_model_copy(model);
-    prep_me->method_name[0]     = '\0';
-    prep_me->method_params      = method_params;
-    prep_me->model_params       = model_params;
-    prep_me->status             = 0;
-	return prep_me;
+apop_model * apop_model_clear(apop_data * data, apop_model *model){
+  int vsize  = model->vbase == -1 ? data->matrix->size2 : model->vbase;
+  int msize1 = model->m1base == -1 ? data->matrix->size2 : model->m1base ;
+  int msize2 = model->m2base == -1 ? data->matrix->size2 : model->m2base ;
+    apop_data_free(model->parameters);
+    apop_data_free(model->covariance);
+    apop_data_free(model->expected);
+    model->parameters	    = apop_data_alloc(vsize, msize1, msize2);
+    model->data             = data;
+    model->status           = 0;
+    model->covariance	    = NULL;
+    model->expected	        = NULL;
+	return model;
 }
 
-/** Sometimes, you have parameters in mind, and just want to turn them
-  into parameters as quickly as possible. 
-
-  \param params An \c apop_data struct with the parameters. It will be copied in to the \c apop_params structure.
-  \return An \c apop\_params structure that is basically empty, except for the \c parameters element. This should already be enough for most \c log_likelihood or \c draw methods.
- 
- */
-apop_params *apop_params_alloc_p(apop_data *params){
-  apop_params * prep_me = malloc(sizeof(apop_params));
-    prep_me->parameters = apop_data_copy(params);
-    prep_me->method_name[0] = '\0';
-    prep_me->data           =
-    prep_me->expected       =
-    prep_me->covariance     = NULL;
-    prep_me->model_params   =
-    prep_me->method_params  = NULL;
-    return prep_me;
-}
-
-
-/** Copy an \c apop_params structure.
-
-
-The structure includes several pointers, so this
-function just returns a new bundle of pointers pointing at the same data.
-Changes to the copy's elements affect the original until you change individual pointers to point to new locations.
-
-See also \c apop_params_complete_copy, which also copies most of the internal pointers.
-  
-  \param in The apop_param to copy
-  \return  A pointer to a new copy.
-\ingroup inv_and_est  */
-apop_params *apop_params_copy(apop_params *in){
-    if (!in) return NULL;
-  apop_params *out  = malloc(sizeof(apop_params));
-    memcpy(out, &in, sizeof(apop_params));
-    return out;
-}
-
-/** Make a copy an \c apop_params structure, and most of its constituent elements.
-
-This copies all the static elements, does a \c memcpy of the
-method_params, model_params, more, parameters, expected, and covariance
-elements. It does not copy the model, under the assumption that the model
-is static (use \c apop_model_copy if you need), and it does not copy the
-data, under the assumption that it is huge.
-
-\param *in  The \c apop_params structure to be copied.
-\param method_size  The size of the \c method_params structure. E.g. \c sizeof(apop_mle_params). Zero if there is no such structure.
-\param model_size The size of the \c model_params structure. Zero if there is no such structure.
-\param more_size The size of the \c more structure. Zero if there is no such structure.
-\ingroup inv_and_est  */
-apop_params *apop_params_clone(apop_params *in, size_t method_size, size_t model_size, size_t more_size){
-    if (!in) return NULL;
-  apop_params *out  = malloc(sizeof(apop_params));
-    memcpy(out, in, sizeof(apop_params));
-    if (method_size && in->method_params){
-        out->method_params  = malloc(method_size);
-        memcpy(out->method_params, in->method_params, method_size);
-    }
-    if (model_size && in->model_params){
-        out->model_params  = malloc(model_size);
-        memcpy(out->model_params, in->model_params, model_size);
-    }
-    if (more_size && in->more){
-        out->more  = malloc(more_size);
-        memcpy(out->more, in->more, more_size);
-    }
-    out->parameters = apop_data_copy(in->parameters);
-    out->expected = apop_data_copy(in->expected);
-    out->covariance = apop_data_copy(in->covariance);
-    return out;
-}
-
-
-/** Free an \ref apop_params structure.
+/** Free an \ref apop_model structure.
 
   If \c free_me is \c NULL, this does nothing.
 \ingroup inv_and_est */
-void apop_params_free (apop_params * free_me){
+void apop_params_free (apop_model * free_me){
     if (!free_me) return;
 	if (free_me->parameters)
         apop_data_free(free_me->parameters);
@@ -175,10 +66,10 @@ void apop_params_free (apop_params * free_me){
 /** Print the results of an estimation
 
 \ingroup output */
-void apop_params_show (apop_params * print_me){
-    if (strlen(print_me->model->name))
-        printf (print_me->model->name);
-    if (strlen(print_me->model->name) && strlen(print_me->method_name))
+void apop_params_show (apop_model * print_me){
+    if (strlen(print_me->name))
+        printf (print_me->name);
+    if (strlen(print_me->name) && strlen(print_me->method_name))
         printf(" estimated via ");
     if (strlen(print_me->method_name))
         printf (print_me->method_name);
@@ -191,22 +82,66 @@ void apop_params_show (apop_params * print_me){
 	}
 //under the false presumption that if it is calculated it is never quite ==0.
 	if (print_me->log_likelihood)
-		printf("\nlog likelihood: \t%g\n", print_me->log_likelihood);
+		printf("\nlog likelihood: \t%g\n", print_me->llikelihood);
 }
 
 /** Currently an alias for \ref apop_params_show, but when I get
   around to it, it will conform better with the other apop_..._print
   fns.*/
-void apop_params_print (apop_params * print_me){
+void apop_params_print (apop_model * print_me){
     apop_params_show(print_me);
 }
 
 /** Outputs a copy of the \ref apop_model input.
 \param in   The model to be copied
-\return A pointer to a copy of the original, which you can mangle as you see fit. Includes a copy of the pointer to the original model's \c apop_params if any.
+\return A pointer to a copy of the original, which you can mangle as you see fit. Includes a copy of the pointer to the original model's \c apop_model if any.
 */
 apop_model * apop_model_copy(apop_model in){
   apop_model * out = malloc(sizeof(apop_model));
     memcpy(out, &in, sizeof(apop_model));
+    if (in.method_params_size){
+        out->method_params  = malloc(in.method_params_size);
+        //out->method_params_size  = in.method_params_size;
+        memcpy(out->method_params, in.method_params, in.method_params_size);
+    }
+    if (in.model_params_size){
+        out->model_params  = malloc(in.model_params_size);
+        //out->model_params_size  = in.model_params_size;
+        memcpy(out->model_params, in.model_params, in.model_params_size);
+    }
+    if (in.more_size){
+        out->more  = malloc(in.more_size);
+        //out->more_size  = in.more_size;
+        memcpy(out->more, in.more, in.more_size);
+    }
+    out->parameters = apop_data_copy(in.parameters);
+    out->expected   = apop_data_copy(in.expected);
+    out->covariance = apop_data_copy(in.covariance);
     return out;
 }
+
+/* Frees the memory taken by an \c apop_model. 
+   Notably the \c method_params, \c model_params, \c more, \c parameters,
+   \c expected, and \c covariance elements are freed.  These are all
+   the things that are completely copied, by \c apop_model_copy, so the
+   parent model is still safe after this is called.
+
+   The system has no idea what the \c method_params, \c model_params,
+   and \c more elements contain, so if they point to other things,
+   they need to be freed before calling this function.
+
+   \param in A pointer to the model to be freed.
+
+ */
+void apop_model_free(apop_model *in){
+    free (in->method_params);
+    free (in->model_params);
+    free (in->more);
+    apop_data_free(in->parameters);
+    apop_data_free(in->expected);
+    apop_data_free(in->covariance);
+    free(in);
+}
+
+apop_model *apop_estimate(apop_data *d, apop_model m){
+    return m.estimate(d, &m); }
