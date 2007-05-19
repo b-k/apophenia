@@ -67,9 +67,6 @@ inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
 	//As described: give it a vector, and it'll tell you the confidence 
 	//with which you can say that the vector is not zero.
 
-inline double apop_double_abs(double a);
-	//This has to exist somewhere...
-
 double apop_random_beta(gsl_rng *r, double m, double v) ;
 	/*Give me mean m and variance v, and I'll give you
 	 * n draws from the appropriate beta dist.

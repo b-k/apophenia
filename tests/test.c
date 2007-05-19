@@ -498,6 +498,7 @@ apop_data *d9   = apop_dot(d5, d1, 1);
     return 0;
 }
 
+/*
 static void one_matrix_for_split_to_vector(int rows, int cols, gsl_rng *r){
 gsl_matrix      *m   = gsl_matrix_alloc(rows,cols),
                 *m2;
@@ -520,6 +521,8 @@ gsl_rng         *r  = apop_rng_alloc(107);
     one_matrix_for_split_to_vector(10,10, r);
     return 0;
 }
+    do_int_test("split and stack to vector test:", test_matrix_split_to_vector());
+*/
 
 
 
@@ -750,7 +753,6 @@ int main(){
     do_int_test("database skew and kurtosis", test_skew_and_kurt());
     do_int_test("test_percentiles:", test_percentiles());
     do_int_test("weighted moments:", test_weigted_moments());
-    do_int_test("split and stack to vector test:", test_matrix_split_to_vector());
     do_int_test("split and stack test:", test_split_and_stack());
     do_int_test("apop_dot test:", test_dot());
     do_int_test("OLS test:", test_OLS());

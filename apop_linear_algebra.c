@@ -398,7 +398,7 @@ long double x;
 }
 
 
-static apop_data *dot_for_apop_dot(gsl_matrix *m, gsl_vector *v, CBLAS_TRANSPOSE_t flip){
+static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,const  CBLAS_TRANSPOSE_t flip){
 gsl_vector *outv;
     if (flip ==CblasNoTrans)
         outv = gsl_vector_calloc(m->size1);
@@ -429,7 +429,7 @@ gsl_vector *outv;
 \ingroup linear_algebra
   */
 //apop_data * apop_dot(apop_data *d1, apop_data *d2, char t1, char t2){
-apop_data * apop_dot(apop_data *d1, apop_data *d2, ...){
+apop_data * apop_dot(const apop_data *d1, const apop_data *d2, ...){
 int         uselm, userm;
 gsl_matrix  *lm = d1->matrix, 
             *rm = d2->matrix;
@@ -486,52 +486,3 @@ va_list		argp;
 	va_end(argp);
     return out;
 }
-
-
-/** Take a matrix and stack the second column under the first, the third
- under those, et cetera, producing a single vector. Reverse the process
- with \ref apop_vector_split_to_matrix.
-
- This is a relatively obscure function that you'll probably never
- use. Maybe you have in mind <tt>gsl_matrix_get_col</tt> to pull a single
- column from a matrix?
-
-
- \param m An \f$m\times n\f$ matrix to stack
- \return A single vector of length \f$m\times n\f$
-
- \ingroup conversions
-
- */
-gsl_vector *apop_matrix_stack_to_vector(gsl_matrix *m){
-int         i;
-gsl_vector  *out    = gsl_vector_alloc(m->size1 * m->size2);
-gsl_vector  view;
-    for(i=0; i< m->size2; i++){
-        view    = gsl_vector_subvector(out, i*m->size1, m->size1).vector;
-        gsl_matrix_get_col(&view, m, i);
-    }
-    return out;
-}
-
-/** Put the first few elements of a vector in the first column of a
-  matrix, the next few in the second column, et cetera, thus producing a matrix from a vector.
-  Reverse the process with \ref apop_matrix_stack_to_vector.
-
- \param     v   A vector of length \f$m\f$.
- \param columns The number of columns to be output.
- \return        A matrix of dimension \f$\frac{m}{\rm cols} \times {\rm cols}\f$
-
- \ingroup conversions
-*/
-gsl_matrix *apop_vector_split_to_matrix(gsl_vector *v, int columns){
-int         i;
-gsl_vector  view;
-gsl_matrix  *out    = gsl_matrix_alloc(v->size/columns, columns);
-    for(i=0; i< columns; i++){
-        view    = gsl_vector_subvector(v, i*v->size/columns, v->size/columns).vector;
-        gsl_matrix_set_col(out, i, &view);
-    }
-    return out;
-}
-

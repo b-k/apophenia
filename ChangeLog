@@ -12,6 +12,8 @@ or 't' to indicate what you want dummified.
 in just one struct. That's about all the merging left.
 --apop_text_alloc and apop_text_add to make text manipulation a little
 easier.
+--apop_matrix_apply_all and apop_matrix_map_all operate on all items in
+a matrix.
 
 	0.19 April 2007
 !!**Eliminated the apop_estimate and apop_ep structures, replacing them

@@ -386,13 +386,49 @@ void apop_numerical_covariance_matrix(apop_model *est, apop_data *data){
     return;
 }
 
-void cov_cleanup(infostruct *i){
+static void cov_cleanup(infostruct *i){
     free(*i->gradient_list);
     free(*i->gradientp);
     free(i->gsize);
     free(i->gpsize);
     free(i->gradient_list);
     free(i->gradientp);
+}
+
+
+/** Transform the list of probabilities to a set of weightings where all
+ ps are divided by the total.
+
+ If the list of prob.s is from i->model->p, this is trivial.
+ If the list of prob.s is from i->model->log_likelihood, then we don't
+ want to exponentiate---that defeats the purpose of taking logs to
+ begin with.  Instead, rescale against the median of the set, then
+ exponentiate. The hope is that any given value is within a factor of
+ maybe ten of the median, so exp(ln(beta_n)-ln(median)) is a reasonable
+ value.
+
+ */
+static void get_weightings(infostruct *i){
+  int           j;
+  long double   psum            = 0;
+  long double   scaling_factor  = 0;
+    if (i->model->log_likelihood){
+        gsl_vector  *sortme = apop_array_to_vector(*i->gradientp,  *i->gpsize);
+        double      *pctiles= apop_vector_percentiles(sortme, 'u');
+        double      median  = pctiles[50];
+        gsl_vector_free(sortme);
+        free(pctiles);
+        for (j=0; j< *i->gpsize; j++)
+            scaling_factor  +=
+            (*i->gradientp)[j] = exp((*i->gradientp)[j] - median);
+        for (j=0; j< *i->gpsize; j++)
+            (*i->gradientp)[j] /= scaling_factor;
+    } else {
+        for (j=0; j< *i->gpsize; j++)
+            psum   += (*i->gradientp)[j];
+        for (j=0; j< *i->gpsize; j++)
+            (*i->gradientp)[j]    /= psum;
+    }
 }
 
 void produce_covariance_matrix(apop_model * est, infostruct *i){
@@ -402,32 +438,22 @@ void produce_covariance_matrix(apop_model * est, infostruct *i){
       return;
   }
   int        m, j, k, betasize  = *i->gsize/ *i->gpsize;
-  double     proportion[*i->gpsize];
   gsl_matrix *preinv    = gsl_matrix_calloc(betasize, betasize);
-    memset(proportion, 1, sizeof(double)* *i->gpsize);
-    //If p_2 = k p_1, then ln(k) = ln(p_2) - ln(p_1).
-    //So p_1+p_2 ... = 1 + exp(ln p_2-ln p1) + exp(ln p_3- ln p1)+...
-    //and the weight we place on item i is p_i/p_1+p_2+... = 1/(1+exp()+exp()...
-    for (j=0; j<  *i->gpsize; j++)
-        for (k=0; k<  *i->gpsize; k++)
-            if (j!=k)
-                proportion[j]   += exp((*i->gradientp)[k] - (*i->gradientp)[j]);
-    for (j=0; j< *i->gpsize; j++)
-        printf("%i: %f\n", j, proportion[j]);
+    get_weightings(i);
     //inv (n E(score) dot E(score)) = info matrix.
     for (m=0; m<  *i->gpsize; m++)
-        if (gsl_finite(proportion[m]))
+        if (gsl_finite((*i->gradientp)[m]))
          for (j=0; j< betasize; j++)
           for (k=0; k< betasize; k++)
-            apop_matrix_increment(preinv, j,k, (*i->gradient_list)[m*betasize +k] * (*i->gradient_list)[m*betasize +j]/ proportion[m]);
+            apop_matrix_increment(preinv, j,k, (*i->gradient_list)[m*betasize +k] * (*i->gradient_list)[m*betasize +j]* (*i->gradientp)[m]);
     gsl_matrix *inv;
     if (est->data && est->data->matrix)
         gsl_matrix_scale(preinv, est->data->matrix->size1);
     apop_det_and_inv(preinv, &inv, 0, 1);
     est->covariance = apop_matrix_to_data(inv);
-    if (est->parameters->names->colnames){
-        apop_name_stack(est->covariance->names, est->parameters->names, 'c');
-        apop_name_cross_stack(est->covariance->names, est->parameters->names, 'r', 'c');
+    if (est->parameters->names->rownames){
+        apop_name_stack(est->covariance->names, est->parameters->names, 'r');
+        apop_name_cross_stack(est->covariance->names, est->parameters->names, 'c', 'r');
     }
     gsl_matrix_free(preinv);
     cov_cleanup(i);
@@ -738,6 +764,7 @@ static void an_record(infostruct *i, double energy){
     gsl_vector_free(grad);
 }
 
+
 static double annealing_energy(void *in) {
   infostruct *i      = in;
   double energy      = negshell(i->beta, i);
@@ -832,25 +859,17 @@ static void annealing_free(void *xp){
 static double set_start(double in){
     return in ? in : 1; }
 
-apop_model * apop_annealing(infostruct *i){
-  apop_model            *ep = i->model;
-  gsl_siman_params_t    simparams;
-  apop_mle_params       *mp = NULL;
-  gsl_vector    *beta;
-  int           vsize       =(i->model->parameters->vector ? i->model->parameters->vector->size :0),
-                msize1      =(i->model->parameters->matrix ? i->model->parameters->matrix->size1 :0),
-                msize2      =(i->model->parameters->matrix ? i->model->parameters->matrix->size2:0);
-  int           paramct = vsize + msize1*msize2;
-    //parameter setup
+static gsl_siman_params_t set_params(apop_model *ep, apop_mle_params **mp){
+gsl_siman_params_t simparams;
     if (ep && !strcmp(ep->method_name, "MLE")){
-        mp  = ep->method_params;
-        simparams.n_tries       = mp->n_tries;
-        simparams.iters_fixed_T = mp->iters_fixed_T;
-        simparams.step_size     = mp->step_size;
-        simparams.k             = mp->k;
-        simparams.t_initial     = mp->t_initial;
-        simparams.mu_t          = mp->mu_t;
-        simparams.t_min         = mp->t_min;
+        *mp  = ep->method_params;
+        simparams.n_tries       = (*mp)->n_tries;
+        simparams.iters_fixed_T = (*mp)->iters_fixed_T;
+        simparams.step_size     = (*mp)->step_size;
+        simparams.k             = (*mp)->k;
+        simparams.t_initial     = (*mp)->t_initial;
+        simparams.mu_t          = (*mp)->mu_t;
+        simparams.t_min         = (*mp)->t_min;
     } else{
         simparams.n_tries =200; //The number of points to try for each step. 
         simparams.iters_fixed_T = 200;  //The number of iterations at each temperature. 
@@ -860,11 +879,23 @@ apop_model * apop_annealing(infostruct *i){
         simparams.mu_t        = 1.002, 
         simparams.t_min       = 5.0e-1;
     }
+    return simparams;
+}
+
+apop_model * apop_annealing(infostruct *i){
+  apop_model            *ep = i->model;
+  apop_mle_params       *mp = NULL;
+  gsl_vector    *beta;
+  int           vsize       =(i->model->parameters->vector ? i->model->parameters->vector->size :0),
+                msize1      =(i->model->parameters->matrix ? i->model->parameters->matrix->size1 :0),
+                msize2      =(i->model->parameters->matrix ? i->model->parameters->matrix->size2:0);
+  int           paramct = vsize + msize1*msize2;
+  gsl_siman_params_t    simparams = set_params(ep, &mp);
     static const gsl_rng   * r    = NULL;
     if (mp && mp->rng) 
         r    =  mp->rng;
     if (!r)
-        r =  gsl_rng_alloc(gsl_rng_env_setup()) ; 
+        r =  apop_rng_alloc(8) ; 
     if (mp && mp->starting_pt)
         beta = apop_array_to_vector(mp->starting_pt, paramct);
     else{
@@ -874,7 +905,6 @@ apop_model * apop_annealing(infostruct *i){
     i->starting_pt      = apop_vector_map(beta, set_start);
 	i->beta             = beta;
     i->use_constraint   = 0; //negshell doesn't check it; annealing_step does.
-
     gsl_siman_print_t printing_fn   = NULL;
     if (mp && mp->verbose>1)
         printing_fn = annealing_print;
@@ -889,8 +919,8 @@ apop_model * apop_annealing(infostruct *i){
           annealing_memcpy, //   gsl_siman_copy_t copyfunc
           annealing_copy,   //   gsl_siman_copy_construct_t copy_constructor
           annealing_free,   //   gsl_siman_destroy_t destructor
-         paramct,    //   size_t element_size
-         simparams);           //   gsl_siman_params_t params
+         paramct,           //   size_t element_size
+         simparams);        //   gsl_siman_params_t params
     i->model->parameters   = apop_data_unpack(i->beta, vsize, msize1, msize2); 
     produce_covariance_matrix(i->model, i);
     apop_estimate_parameter_t_tests(i->model);

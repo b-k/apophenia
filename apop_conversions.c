@@ -63,7 +63,7 @@ A pointer to a <tt>double*</tt>, which will be <tt>malloc</tt>ed inside the func
 \note Does not use memcpy, because we don't know the stride of the vector.
 \ingroup convertfromvector 
 */
-int apop_vector_to_array(gsl_vector *in, double **out){
+int apop_vector_to_array(const gsl_vector *in, double **out){
   int		i;	
 	*out	= malloc(sizeof(double) * in->size);
 	for (i=0; i < in->size; i++)
@@ -78,22 +78,12 @@ int apop_vector_to_array(gsl_vector *in, double **out){
 \return         A <tt>gsl_vector</tt>. Declare but do not allocate.
 \ingroup convertfromarray 
 */ 
-gsl_vector * apop_array_to_vector(double *in, int size){
-  int		    i;
-  gsl_vector  *out;
-    out	= gsl_vector_alloc(size);
-	for(i=0; i < size; i++)
-		gsl_vector_set(out, i, in[i]);
+gsl_vector * apop_array_to_vector(const double *line, const int vsize){
+  gsl_vector        *out    = gsl_vector_alloc(vsize);
+  gsl_vector_view	v	    = gsl_vector_view_array((double*)line, vsize);
+	gsl_vector_memcpy(out,&(v.vector));
     return out;
 }
-/*
-void apop_array_to_vector(double *in, gsl_vector **out, int size){
-int		i;
-	*out	= gsl_vector_alloc(size);
-	for(i=0; i < size; i++)
-		gsl_vector_set(*out, i, in[i]);
-}
-*/
 
 /* Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N
  \times 1 \f$ are equivalent, but they're two different types in C.
@@ -103,10 +93,9 @@ int		i;
 
  \ingroup convenience_fns
  */
-gsl_matrix * apop_vector_to_matrix(gsl_vector *in){
+gsl_matrix * apop_vector_to_matrix(const gsl_vector *in){
     if (!in){
-        if (apop_opts.verbose)
-            printf("apop_vector_to_matrix: converting NULL vector to NULL matrix.\n");
+        apop_error(1,'c', "apop_vector_to_matrix: converting NULL vector to NULL matrix.\n");
         return NULL;
     }
     gsl_matrix *out = gsl_matrix_alloc(in->size, 1);
@@ -114,7 +103,7 @@ gsl_matrix * apop_vector_to_matrix(gsl_vector *in){
     return out;
 }
 
-static void convert_array_to_line(double **in, double **out, int rows, int cols){
+static void convert_array_to_line(const double **in, double **out, const int rows, const int cols){
 	//go from in[i][j] form to the GSL's preferred out[i*cols + j] form
   int		i, j;
 	*out	= malloc(sizeof(double) * rows * cols);
@@ -134,7 +123,7 @@ usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
 If you want to intialize on the allocation line, this isn't what you want. See \ref apop_line_to_matrix.
 \ingroup convertfromarray 
 */
-gsl_matrix * apop_array_to_matrix(double **in, int rows, int cols){
+gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols){
   gsl_matrix_view   m;
   gsl_matrix        *out;
   double		    *line;
@@ -158,26 +147,10 @@ usage: \code apop_data *d = apop_array_to_data(indata, 34, 4); \endcode
 
 If you want to intialize on the allocation line, this isn't what you want. See \ref apop_line_to_data.
 */
-apop_data * apop_array_to_data(double **in, int rows, int cols){
+apop_data * apop_array_to_data(const double **in, const int rows, const int cols){
     return apop_matrix_to_data(apop_array_to_matrix(in, rows, cols));
 }
 
-/** convert a <tt>double *</tt> array to a <tt>gsl_vector</tt>
-
-\param line	the array to read in
-\param vsize	the vector size.
-\return the <tt>gsl_vector</tt>, allocated for you and ready to use.
-
-\ingroup convertfromarray 
-*/
-gsl_vector * apop_line_to_vector(double *line, int vsize){
-  gsl_vector_view	v;
-  gsl_vector        *out;
-	out	= gsl_vector_alloc(vsize);
-	v	= gsl_vector_view_array(line, vsize);
-	gsl_vector_memcpy(out,&(v.vector));
-    return out;
-}
 
 /** convert a <tt>double *</tt> array to a <tt>gsl_matrix</tt>
 
@@ -211,7 +184,7 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
     if (vsize==0 && (rows>0 && cols>0))
       return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
     if ((rows==0 || cols==0) && vsize>0)
-      return apop_vector_to_data(apop_line_to_vector(in, vsize));
+      return apop_vector_to_data(apop_array_to_vector(in, vsize));
     if (vsize!=rows){
         apop_error(0,'c',"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
         return NULL;
@@ -609,7 +582,7 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
   \return       a structure that this function will allocate and fill
 \ingroup convenience_fns
   */
-gsl_vector *apop_vector_copy(gsl_vector *in){
+gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
   gsl_vector *out = gsl_vector_alloc(in->size);
     gsl_vector_memcpy(out, in);
@@ -627,7 +600,7 @@ gsl_vector *apop_vector_copy(gsl_vector *in){
   \return       a structure that this function will allocate and fill
 \ingroup convenience_fns
   */
-gsl_matrix *apop_matrix_copy(gsl_matrix *in){
+gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
   gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
     gsl_matrix_memcpy(out, in);
     return out;
@@ -937,13 +910,13 @@ apop_data * apop_data_unpack(const gsl_vector *in, size_t v_size, size_t m_size1
   int           i, offset   = 0;
   gsl_vector    vin, vout;
     if(v_size){
-        vin = gsl_vector_subvector(in, 0, v_size).vector;
+        vin = gsl_vector_subvector((gsl_vector *)in, 0, v_size).vector;
         gsl_vector_memcpy(out->vector, &vin);
         offset  += v_size;
     }
     if(m_size2>0)
         for (i=0; i< m_size1; i++){
-            vin     = gsl_vector_subvector(in, offset, m_size2).vector;
+            vin     = gsl_vector_subvector((gsl_vector *)in, offset, m_size2).vector;
             vout    = gsl_matrix_row(out->matrix, i).vector;
             gsl_vector_memcpy(&vout, &vin);
             offset  += m_size2;
@@ -972,14 +945,14 @@ gsl_vector * apop_data_pack(const apop_data *in){
   gsl_vector *out   = gsl_vector_alloc(total_size);
   gsl_vector vout, vin;
     if (in->vector){
-        vout     = gsl_vector_subvector(out, 0, in->vector->size).vector;
+        vout     = gsl_vector_subvector((gsl_vector *)out, 0, in->vector->size).vector;
         gsl_vector_memcpy(&vout, in->vector);
         offset  += in->vector->size;
     }
     if (in->matrix)
         for (i=0; i< in->matrix->size1; i++){
             vin = gsl_matrix_row(in->matrix, i).vector;
-            vout= gsl_vector_subvector(out, offset, in->matrix->size2).vector;
+            vout= gsl_vector_subvector((gsl_vector *)out, offset, in->matrix->size2).vector;
             gsl_vector_memcpy(&vout, &vin);
             offset  += in->matrix->size2;
         }

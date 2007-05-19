@@ -273,19 +273,19 @@ size_t 		i,j, max_name_size  = 0;
     }
     if (apop_opts.output_type == 'p')
         f   = apop_opts.output_pipe;
-    if (strlen(n->title)>0)
+    if (n && strlen(n->title)>0)
         fprintf(f, "%s%s\n\n", apop_opts.output_type=='s'? "\t\t" : "", n->title);
     if (data == NULL)
         fprintf(f, "NULL\n");
     else {
-        if (n != NULL && n->colnamect > 0){ //then print a row of column headers.
+        if (n && n->colnamect > 0){ //then print a row of column headers.
 		    fprintf(f,"\t");
 		    for (j=0; j< n->colnamect; j++)
 			    fprintf(f,"%s\t\t", n->colnames[j]);
 		    fprintf(f,"\n");
         }
 	    for (i=0; i<data->size1; i++){
-            if (n !=NULL && n->rownamect > 0)
+            if (n && n->rownamect > 0)
 			    fprintf(f,"%-*s", max_name_size+4, n->rownames[i]);
 		    for (j=0; j<data->size2; j++){
 			    p_fn(f, gsl_matrix_get(data, i,j));

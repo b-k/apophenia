@@ -842,7 +842,7 @@ This is the \ref apop_data version of \ref apop_covariance_matrix; if you don't 
 \return Returns a \ref apop_data set the variance/covariance matrix relating each column with each other.
 
 \ingroup matrix_moments */
-apop_data *apop_data_covariance_matrix(apop_data *in, int normalize){
+apop_data *apop_data_covariance_matrix(apop_data *in, const int normalize){
 apop_data   *out    = apop_matrix_to_data(apop_covariance_matrix(in->matrix, normalize));
 int         i;
     for(i=0; i< in->names->colnamect; i++){
@@ -860,7 +860,7 @@ This is the \ref apop_data version of \ref apop_correlation_matrix; if you don't
 
 \return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
 \ingroup matrix_moments */
-apop_data *apop_data_correlation_matrix(apop_data *in){
+apop_data *apop_data_correlation_matrix(const apop_data *in){
 apop_data   *out    = apop_matrix_to_data(apop_correlation_matrix(in->matrix, 0));
 int         i;
     for(i=0; i< in->names->colnamect; i++){

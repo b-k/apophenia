@@ -185,3 +185,36 @@ program crashes.
 void apop_vector_apply(gsl_vector *v, void (*fn)(double*)){
     mapply_core(NULL, v, fn, NULL);
 }
+
+
+
+
+void apop_matrix_map_all_vector_subfn(const gsl_vector *in, gsl_vector *outv, double (*fn)(double)){
+    mapply_core(NULL, in, fn, outv);
+}
+
+void  apop_matrix_apply_all_vector_subfn(const gsl_vector *in, void (*fn)(double *)){
+    apop_vector_apply(in, fn);
+}
+
+
+gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
+  int i;
+  gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
+  gsl_vector_view v, inv;
+    for (i=0; i< in->size1; i++){
+        inv = gsl_matrix_row(in, i);
+        v = gsl_matrix_row(out, i);
+        apop_matrix_map_all_vector_subfn(&inv.vector, &v.vector, fn);
+    }
+    return out;
+}
+
+void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
+  int   i;
+  gsl_vector_view v;
+    for (i=0; i< in->size1; i++){
+        v   = gsl_matrix_row(in, i);
+        apop_vector_apply(&v.vector, fn);
+    }
+}
