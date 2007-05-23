@@ -156,8 +156,7 @@ double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb){
   double  dist    = 0;
   size_t  i;
     if (ina->size != inb->size){
-        if (apop_opts.verbose)
-            fprintf(stderr, "You sent to apop_vector_distance a vector of size %i and a vector of size %i. Returning zero.\n", ina->size, inb->size);
+        apop_error(0,'c', "You sent to %s a vector of size %u and a vector of size %u. Returning zero.\n", __func__, ina->size, inb->size);
         return 0;
     }
     //else:
@@ -176,8 +175,7 @@ double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb){
   double  dist    = 0;
   size_t  i;
     if (ina->size != inb->size){
-        if (apop_opts.verbose)
-            fprintf(stderr,"You sent to apop_vector_grid_distance a vector of size %i and a vector of size %i. Returning zero.\n", ina->size, inb->size);
+        apop_error(0,'c', "You sent to %s a vector of size %u and a vector of size %u. Returning zero.\n", __func__, ina->size, inb->size);
         return 0;
     }
     //else:
@@ -192,11 +190,8 @@ zero and variance one, or such that it ranges between zero and one, or sums to o
 
 \param in 	A gsl_vector which you have already allocated and filled
 
-\param out 	If normalizing in place, <tt>NULL</tt> (or anything else; it will be ignored).
+\param out 	If normalizing in place, <tt>NULL</tt>.
 If not, the address of a <tt>gsl_vector</tt>. Do not allocate.
-
-\param in_place 	0: <tt>in</tt> will not be modified, <tt>out</tt> will be allocated and filled.<br> 
-1: <tt>in</tt> will be modified to the appropriate normalization.
 
 \param normalization_type 
 'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br>
@@ -220,15 +215,15 @@ gsl_vector_set(in, 2, 2);
 printf("The orignal vector:\n");
 apop_vector_print(in, "\t", NULL);
 
-apop_normalize_vector(in, &out, 0, 's');
+apop_normalize_vector(in, &out, 's');
 printf("Standardized with mean zero and variance one:\n");
 apop_vector_print(out, "\t", NULL);
 
-apop_normalize_vector(in, &out, 0, 'r');
+apop_normalize_vector(in, &out, 'r');
 printf("Normalized range with max one and min zero:\n");
 apop_vector_print(out, "\t", NULL);
 
-apop_normalize_vector(in, NULL, 1, 'p');
+apop_normalize_vector(in, NULL, 'p');
 printf("Normalized into percentages:\n");
 apop_vector_print(in, "\t", NULL);
 
@@ -236,9 +231,9 @@ return 0;
 }
 \endcode
 \ingroup basic_stats */
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const int in_place, const char normalization_type){
+void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type){
   double		mu, min, max;
-	if (in_place) 	
+	if (!out) 	
 		out	= &in;
 	else {
 		*out 	= gsl_vector_alloc (in->size);
@@ -281,12 +276,12 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
         if (row_or_col == 'r')
             for (j = 0; j < data->size1; j++){
                 v	= gsl_matrix_row(data, j).vector;
-                apop_vector_normalize(&v, NULL, 1, normalization);
+                apop_vector_normalize(&v, NULL, normalization);
             }
         else
             for (j = 0; j < data->size2; j++){
                 v	= gsl_matrix_column(data, j).vector;
-                apop_vector_normalize(&v, NULL, 1, normalization);
+                apop_vector_normalize(&v, NULL, normalization);
             }
 }
 
@@ -295,11 +290,11 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
 \param in a gsl_vector of data.
 \ingroup asst_tests
  */
-inline double apop_test_chi_squared_var_not_zero(gsl_vector *in){
+inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
   gsl_vector	*normed;
   int		    i;
   double 		sum=0;
-	apop_vector_normalize(in,&normed, 0, 1);
+	apop_vector_normalize((gsl_vector *)in,&normed, 1);
 	gsl_vector_mul(normed,normed);
 	for(i=0;i< normed->size; 
 			sum +=gsl_vector_get(normed,i++));
@@ -629,12 +624,11 @@ double apop_vector_weighted_mean(const gsl_vector *v,const  gsl_vector *w){
     if (!w)
         return apop_vector_mean(v);
     if (!v->size){
-        if (apop_opts.verbose)
-            fprintf(stderr, "apop_vector_weighted_mean: data vector has size 0. Returning zero.\n");
+        apop_error(1, 'c', "apop_vector_weighted_mean: data vector has size 0. Returning zero.\n");
         return 0;
     }
     if (w->size != v->size){
-        fprintf(stderr,"apop_vector_weighted_mean: data vector has size %i; weighting vector has size %i. Returning zero.\n", v->size, w->size);
+        apop_error(0,'c', "apop_vector_weighted_mean: data vector has size %u; weighting vector has size %u. Returning zero.\n", v->size, w->size);
         return 0;
     }
     for (i=0; i< w->size; i++){
@@ -656,12 +650,11 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
     if (!w)
         return apop_vector_var(v);
     if (!v->size){
-        if (apop_opts.verbose)
-            fprintf(stderr, "apop_vector_weighted_variance: data vector has size 0. Returning zero.\n");
+        apop_error(0,'c', "apop_vector_weighted_variance: data vector has size 0. Returning zero.\n");
         return 0;
     }
     if (w->size != v->size){
-        printf("apop_vector_weighted_variance: data vector has size %i; weighting vector has size %i. Returning zero.\n", v->size, w->size);
+        apop_error(0,'c', "apop_vector_weighted_variance: data vector has size %u; weighting vector has size %u. Returning zero.\n", v->size, w->size);
         return 0;
     }
     //Using the E(x^2) - E^2(x) form.
@@ -681,12 +674,11 @@ static double skewkurt(const gsl_vector *v, const gsl_vector *w, const int expon
     if (!w)
         return apop_vector_var(v);
     if (!v->size){
-        if (apop_opts.verbose)
-            fprintf(stderr,"%s: data vector has size 0. Returning zero.\n", fn_name);
+        apop_error(1, 'c',"%s: data vector has size 0. Returning zero.\n", fn_name);
         return 0;
     }
     if (w->size != v->size){
-        printf("%s: data vector has size %i; weighting vector has size %i. Returning zero.\n", fn_name, v->size, w->size);
+        apop_error(1, 'c',"%s: data vector has size %i; weighting vector has size %i. Returning zero.\n", fn_name, v->size, w->size);
         return 0;
     }
     //Using the E(x - \bar x)^3 form, which is lazy.
@@ -737,12 +729,11 @@ double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, cons
     if (!w)
         return apop_vector_cov(v1,v2);
     if (!v1->size){
-        if (apop_opts.verbose)
-            fprintf(stderr, "apop_vector_weighted_variance: data vector has size 0. Returning zero.\n");
+        apop_error(1, 'c', "apop_vector_weighted_variance: data vector has size 0. Returning zero.\n");
         return 0;
     }
     if (w->size != v1->size || w->size != v2->size){
-        fprintf(stderr, "apop_vector_weighted_variance: data vectors have sizes %i and %i; weighting vector has size %i. Returning zero.\n", v1->size, v2->size, w->size);
+        apop_error(0, 'c', "apop_vector_weighted_variance: data vectors have sizes %i and %i; weighting vector has size %i. Returning zero.\n", v1->size, v2->size, w->size);
         return 0;
     }
     //Using the E(x^2) - E^2(x) form.

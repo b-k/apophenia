@@ -139,7 +139,7 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
         Once you have a candidate point, compare its distance to the
         current favorite; keep the best.
      */
-    for (i=0; i< constraint->matrix->size2; i++){
+    for (i=0; i< constraint->matrix->size1; i++){
         if (bindlist[i])
             get_candiate(beta, constraint, i, candidate);
         if(apop_vector_distance(beta, candidate) < apop_vector_distance(beta, closest_pt))

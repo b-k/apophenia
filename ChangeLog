@@ -14,6 +14,15 @@ in just one struct. That's about all the merging left.
 easier.
 --apop_matrix_apply_all and apop_matrix_map_all operate on all items in
 a matrix.
+**small tweak to apop_vector_normalize interface.
+--apop_matrix_inverse and apop_matrix_determinant, because the
+apop_det_and_inv interface is sort of ugly.
+--APOP_SUBMATRIX macro
+--MLEs put the expected score in the ->more element of the returned
+apop_model. If people find this useful, we can maybe put a
+proper expected_score element in the model.
+--More consts in function headers. You can decide whether this
+is actually useful.
 
 	0.19 April 2007
 !!**Eliminated the apop_estimate and apop_ep structures, replacing them

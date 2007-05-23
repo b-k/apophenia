@@ -21,6 +21,9 @@
 
 __BEGIN_DECLS
 
+#define APOP_SUBMATRIX(m, srow, scol, nrows, ncols, o) gsl_matrix apop_mm_##o = gsl_matrix_submatrix(m, (srow), (scol), (nrows),(ncols)).matrix;\
+gsl_matrix * o = &( apop_mm_##o );
+
 #define APOP_MATRIX_ROW(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row(m, (row)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
@@ -60,10 +63,10 @@ double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb);
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
 
 
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const int in_place, const char normalization_type);
+void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type);
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
-inline double apop_test_chi_squared_var_not_zero(gsl_vector *in);
+inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in);
 	//As described: give it a vector, and it'll tell you the confidence 
 	//with which you can say that the vector is not zero.
 

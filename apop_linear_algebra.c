@@ -45,6 +45,46 @@ function.
 #include "math.h" //pow!
 #include <apophenia/vasprintf.h>
 
+/**
+Find the determinant of a matrix. The \c in matrix is not destroyed in the process.
+
+\param in The matrix to be determined.
+\return     The determinant.
+\ingroup linear_algebra
+*/
+double apop_matrix_determinant(const gsl_matrix *in) {
+  int 		sign;
+  double 	the_determinant = 0;
+  gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
+  gsl_permutation * perm = gsl_permutation_alloc(in->size1);
+	gsl_matrix_memcpy (invert_me, in);
+	gsl_linalg_LU_decomp(invert_me, perm, &sign);
+    the_determinant	= gsl_linalg_LU_det(invert_me, sign);
+	gsl_matrix_free(invert_me);
+	gsl_permutation_free(perm);
+	return the_determinant;
+}
+
+/**
+Inverts a matrix. The \c in matrix is not destroyed in the process.
+You may want to call \c apop_matrix_determinant first to check that your input is invertible.
+
+\param in The matrix to be inverted.
+\return Its inverse.
+\ingroup linear_algebra
+*/
+gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) {
+  int 		sign;
+  gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
+  gsl_permutation * perm = gsl_permutation_alloc(in->size1);
+	gsl_matrix_memcpy (invert_me, in);
+	gsl_linalg_LU_decomp(invert_me, perm, &sign);
+    gsl_matrix *out	= gsl_matrix_alloc(in->size1, in->size1); 
+    gsl_linalg_LU_invert(invert_me, perm, out);
+	gsl_matrix_free(invert_me);
+	gsl_permutation_free(perm);
+	return out;
+}
 
 /**
 Calculate the determinant of a matrix, its inverse, or both. The \c in matrix is not destroyed in the process.
@@ -56,13 +96,11 @@ The matrix to be inverted/determined.
 If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function.
 
 \param calc_det 
-0: Do not calculate the determinant.
-
+0: Do not calculate the determinant.\\
 1: Do.
 
 \param calc_inv
-0: Do not calculate the inverse.
-
+0: Do not calculate the inverse.\\
 1: Do.
 
 \return
@@ -74,13 +112,12 @@ double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, in
   double 	the_determinant = 0;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
 	gsl_permutation * perm = gsl_permutation_alloc(in->size1);
-	invert_me = gsl_matrix_alloc(in->size1, in->size1);
 	gsl_matrix_memcpy (invert_me, in);
 	gsl_linalg_LU_decomp(invert_me, perm, &sign);
 	if (calc_inv){
 		*out	= gsl_matrix_alloc(in->size1, in->size1); //square.
 		gsl_linalg_LU_invert(invert_me, perm, *out);
-		}
+    }
 	if (calc_det)
 		the_determinant	= gsl_linalg_LU_det(invert_me, sign);
 	gsl_matrix_free(invert_me);

@@ -21,6 +21,8 @@ gsl_matrix *apop_covariance_matrix(gsl_matrix *in, int normalize);
 apop_data * apop_data_covariance_matrix(apop_data *in, const int normalize);
 apop_data * apop_data_correlation_matrix(const apop_data *in);
 double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
+gsl_matrix *apop_matrix_inverse(const gsl_matrix *in) ;
+double      apop_matrix_determinant(const gsl_matrix *in) ;
 double      apop_x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma);
 apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);
 inline void apop_vector_increment(gsl_vector * v, int i, double amt);
