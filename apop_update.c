@@ -1,9 +1,8 @@
 /** \file apop_update.c The \c apop_update function.
-
-(c) 2007 Ben Klemens. Licensed under the GNU GPL v2.
-
 The header is in asst.h.
- */
+
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+
 #include <apop.h>
 
 static void write_double(const double *draw, apop_data *d){

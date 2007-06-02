@@ -6,6 +6,9 @@
    documented below. The C code below was cut and pasted from the
    R project. Thanks, guys.
 
+Un-R-ifying modifications Copyright (c) 2006--2007 by Ben Klemens.
+Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+
         R version credits:
    fexact.f -- translated by f2c (version 19971204).
    Run through a slightly modified version of MM's f2c-clean.

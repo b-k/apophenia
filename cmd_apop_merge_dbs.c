@@ -1,8 +1,8 @@
 /** \file cmd_apop_merge_dbs.c	A little command-line utility to merge
  two databases. Try <tt>apop_merge_dbs -h</tt> for help.
 
- Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
- */
+Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+
 #include "apophenia/db.h"
 #include <unistd.h>
 

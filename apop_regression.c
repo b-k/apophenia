@@ -1,7 +1,6 @@
 /** \file apop_regression.c	Generally, if it assumes something is  Normally distributed, it's here.\n
-Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
  \author Ben Klemens
- */
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 /** \defgroup regression  OLS/GLS: The linear projection methods */
 /** \defgroup ttest  T-tests: comparing two vectors */

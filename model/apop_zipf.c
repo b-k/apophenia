@@ -4,9 +4,7 @@
 
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$<br>
 
-Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
-*/
-
+Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 //The default list. Probably don't need them all.
 #include "db.h" //apop_opts

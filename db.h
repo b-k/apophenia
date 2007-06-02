@@ -1,4 +1,4 @@
-//db.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+//db.h		Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 #ifndef apop_db_included
 #define apop_db_included
 #include <apophenia/types.h>

@@ -4,7 +4,7 @@ This implements a one-d histogram representing an empirical
 distribution. It is primarily a wrapper for the GSL's comparable functions
 in the standard \c apop_model form, for easy comparison with other models.
 
-(c) 2007 Ben Klemens. Licensed under the GNU GPL v 2. */
+Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include <apophenia/model.h>
 #include <apophenia/types.h>

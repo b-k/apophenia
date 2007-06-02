@@ -2,7 +2,7 @@
  
  (This file is not handled by Doxygen)
 
-Base file copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
+Base file Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 Feel free to augment this with your own copyright: modifications (c) you, today.
 */
 #include "model.h"

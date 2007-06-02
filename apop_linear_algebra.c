@@ -3,8 +3,7 @@ such as take determinants or do singular value decompositions.  Includes
 many convenience functions that don't actually do math but add/delete
 columns, check bounds, et cetera.
 
-Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
-*/
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 /** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  
 

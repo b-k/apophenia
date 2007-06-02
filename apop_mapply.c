@@ -3,7 +3,7 @@
 
 /** \file apop_mapply.c vector/matrix map/apply. 
  
- (c) 2007 Ben Klemens. Licensed under the GNU GPL v2. */
+Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 
 //Support for apop_matrix_apply:

@@ -4,7 +4,7 @@
 
  There's only one function here. Its header is in asst.h
  
- (c) 2007 Ben Klemens. Licensed under the GNU GPL v2. */
+Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 
 typedef struct apop_model_fixed_params{
@@ -88,7 +88,6 @@ static apop_model *fixed_est(apop_data * data, apop_model *params){
   apop_model_fixed_params *p    = params->model_params;
     if (!data)
         data    = params->data;
-    //apop_model *e = apop_maximum_likelihood(data,  *p->base_model);
     apop_model *e = apop_maximum_likelihood(data,  *params);
     fixed_param_unpack(e->parameters->vector, p);
     apop_data_free(e->parameters);
@@ -190,6 +189,11 @@ original model params = mle_out->ep->model_params->base_model_params
     model_out->m2base           = 0;
   apop_mle_params   *mle_out    = apop_mle_params_alloc(data, *model_out);
     mle_out->model->model_params   = p;
+    apop_data *startingpt = apop_data_alloc(size, 0, 0);
+    fixed_params_pack(paramvals, startingpt, mask);
+    mle_out->starting_pt        = malloc(sizeof(double) * size);
+    memcpy(mle_out->starting_pt, startingpt->vector->data, sizeof(double) * size);
+    apop_data_free(startingpt);
     p->mask                     = mask;
     p->paramvals                = paramvals;
     p->base_model               = apop_model_copy(model_in);

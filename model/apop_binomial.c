@@ -2,8 +2,8 @@
  
   The binomial distribution as an \c apop_model.
 
-Copyright (c) 2007 by Ben Klemens. Licensed under the GNU GPL version 2.
-*/
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+
 #include "model.h"
 
 //The default list. You probably don't need them all.

@@ -1,7 +1,6 @@
 /** \file apop_logit.c
 
-Copyright (c) 2005 by Ben Klemens. Licensed under the GNU GPL version 2.
-*/
+Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "model.h"
 
 

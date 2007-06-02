@@ -1,7 +1,7 @@
 /** \file cmd_apop_plot_query.c	Command line utility to take in a query and put out a Gnuplottable file.
 
- Copyright 2006 by Ben Klemens. Licensed under the GNU GPL v 2.
- */
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+
 #include "apophenia/db.h"
 #include "apophenia/output.h"
 #include "apophenia/conversions.h"

@@ -1,8 +1,6 @@
-/** \file apop_params.c	 sets up the estimate structure which outputs from the various regressions and MLEs.
+/** \file apop_model.c	 sets up the estimate structure which outputs from the various regressions and MLEs.
 
-
-Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
-*/
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include <gsl/gsl_matrix.h>
 #include "apophenia/output.h"
@@ -94,7 +92,7 @@ void apop_params_print (apop_model * print_me){
 
 /** Outputs a copy of the \ref apop_model input.
 \param in   The model to be copied
-\return A pointer to a copy of the original, which you can mangle as you see fit. Includes a copy of the pointer to the original model's \c apop_model if any.
+\return A pointer to a copy of the original, which you can mangle as you see fit. 
 */
 apop_model * apop_model_copy(apop_model in){
   apop_model * out = malloc(sizeof(apop_model));
@@ -143,5 +141,30 @@ void apop_model_free(apop_model *in){
     free(in);
 }
 
+/* estimate the parameters of a model given data.
+
+   This is a one-line convenience function, which expands to \c m.estimate(d,&m).
+
+
+\param d    The data
+\param m    The model
+\return     A pointer to an output model, which typically matches the input model but has its \c parameters element filled in.
+*/
 apop_model *apop_estimate(apop_data *d, apop_model m){
     return m.estimate(d, &m); }
+
+/* Find the log likelihood of a data/param pair using a given model.
+
+\param d    The data
+\param beta The parameters. Maybe be \c NULL, in which case the function will use \c m.parameters.
+\param m    The model, which must have either a \c log_likelihood or a \c p method.
+*/
+double apop_log_likelihood(const apop_data *beta, apop_data *d, apop_model m){
+  apop_data *params = beta ? beta : m.parameters;
+    if (m.log_likelihood)
+        return m.log_likelihood(params, d, &m);
+    else if (m.p)
+        return log(m.p(params, d, &m));
+    apop_error(0, 's', "%s: You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n", __func__);
+    return 0;
+}

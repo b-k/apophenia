@@ -1,9 +1,7 @@
 /** \file apop_data.c	 The apop_data structure joins together a
   gsl_matrix, apop_name, and a table of strings. No biggie.
 
-
-Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
-*/
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include <assert.h>
 #include <gsl/gsl_matrix.h>

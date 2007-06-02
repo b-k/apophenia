@@ -1,4 +1,4 @@
-//types.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+//types.h   Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 #ifndef __apop_estimate__
 #define __apop_estimate__
 

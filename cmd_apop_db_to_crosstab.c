@@ -1,7 +1,7 @@
 /** \file cmd_apop_db_to_crosstab.c	Command line utility to convert a three-column table to a crosstab.
 
- Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
- */
+Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+
 #include "apophenia/db.h"
 #include "apophenia/output.h"
 #include "apophenia/conversions.h"

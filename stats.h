@@ -1,4 +1,4 @@
-//stats.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+//stats.h	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 #include <math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_cdf.h>

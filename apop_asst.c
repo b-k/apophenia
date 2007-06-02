@@ -1,5 +1,5 @@
 /** \file apop_asst.c  The odds and ends bin. 
-Copyright (c) 2005, 2006 by Ben Klemens. Licensed under the GNU GPL v2. */
+Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include <apop.h>
 #include <apophenia/vasprintf.h>

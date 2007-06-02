@@ -1,3 +1,4 @@
+//model.h Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 #ifndef __apop_models_h__
 #define __apop_models_h__
 
@@ -53,6 +54,8 @@ typedef struct{
 } apop_histogram_params;
 
 apop_model *apop_histogram_params_alloc(apop_data *data, int bins, apop_model *params_in); //see apop_histogram.c
+
+double apop_log_likelihood(const apop_data *d, apop_data *beta, apop_model m);
 
 __END_DECLS
 #endif

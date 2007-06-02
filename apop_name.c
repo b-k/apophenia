@@ -1,8 +1,6 @@
 /** \file apop_name.c
 
-Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
-*/
-
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "db.h" //just for apop_opts.verbose.
 #include "types.h"
@@ -268,28 +266,6 @@ int         i, max      = n->colnamect;
 }
 
 
-/*
-//For printf compatibility, you will need to use <tt>%%</tt> instead
-//of a single percent sign. A single percent sign will segfault. Thus,
-//this fn doubles all percent signs input, rather than making the user
-//remember.
-static char *precheck(char *in){
-int     i       = 0,
-        j       = 0;
-char    *out    = malloc(2*strlen(in)+1);
-    while (i< strlen(in) + 1){
-        while (in[i] != '%' &&  (i<= strlen(in) + 1))
-            out[j++]  = in[i++];
-        if (i <= strlen(in)+1){
-            out[j++]    = '%';
-            out[j++]    = '%';
-            while (in[++i] == '%') //eat.
-        }
-    }
-    return out;
-}
-*/
-
 
 /** Finds the position of an element in a list of names.
 
@@ -307,7 +283,6 @@ size_t  apop_name_find(apop_name *n, char *in, char type){
   regex_t   re;
   char      **list;
   int       i, listct;
-//  char      *findme = precheck(in);
     if (type == 'r'){
         list    = n->rownames;
         listct  = n->rownamect;
@@ -323,7 +298,6 @@ size_t  apop_name_find(apop_name *n, char *in, char type){
     regcomp(&re, in, REG_ICASE);
     for (i = 0; i < listct; i++){
         if (!regexec(&re, list[i], 0, NULL, 0)){
-            //free(findme);
             regfree(&re);
             return i;
         }

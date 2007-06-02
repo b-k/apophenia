@@ -1,4 +1,4 @@
-//regression.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+//regression.h	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 
 #ifndef apop_regression_h
 #define  apop_regression_h

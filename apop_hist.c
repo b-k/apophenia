@@ -1,6 +1,6 @@
 /** \file apop_hist.c	PMF and CMF manipulations.
 
- Copyright 2006 by Ben Klemens. Licensed under the GNU GPL v2.
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
  (Except psmirnov2x, Copyright R Project, but also licensed under the GPL.)
  \author Ben Klemens
  */

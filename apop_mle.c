@@ -14,7 +14,7 @@ are two: the no-derivative version and the with-derivative version.
 Use the with-derivative version wherever possible---in fact, it is at
 the moment entirely unused, but is just here for future use.
 
-Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 */
 #include "likelihoods.h"
 #include <assert.h>
@@ -91,6 +91,7 @@ apop_mle_params *apop_mle_params_set_default(apop_model *parent){
     setme->verbose          = 0;
     setme->use_score        = 1;
     setme->step_size        = 0.05;
+    setme->delta            = 1e-2;
     setme->want_cov         = 1;
 //siman:
     //siman also uses step_size  = 1.;  
@@ -178,6 +179,7 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, const gsl_v
   double		result, err;
   grad_params 	gp;
   infostruct    i;
+  apop_mle_params   *mp = info->model->method_params;
     memcpy(&i, info, sizeof(i));
     i.f         = &ll;
 	gp.beta		= gsl_vector_alloc(beta->size);
@@ -188,7 +190,7 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, const gsl_v
 	for (j=0; j< beta->size; j++){
 		gp.dimension	= j;
 		gsl_vector_memcpy(gp.beta, beta);
-		gsl_deriv_central(&F, gsl_vector_get(beta,j), 1e-2, &result, &err);
+		gsl_deriv_central(&F, gsl_vector_get(beta,j), mp->delta, &result, &err);
 		gsl_vector_set(out, j, result);
 	}
 }
@@ -203,13 +205,14 @@ double 	log_shell (const apop_data *beta, apop_data *d, apop_model *m){
 
 /**The GSL provides one-dimensional numerical differentiation; here's
  the multidimensional extension.
+
+ If \c m has \c model_params of type \c apop_ml_params, then the \c delta element is used for the differential.
  
  \code
- gradient = apop_numerical_gradient(beta, data, your_model, params);
+ gradient = apop_numerical_gradient(beta, data, your_model);
  \endcode
 
  \ingroup linear_algebra
- \todo This fn has a hard-coded differential (1e-5).
  */
 gsl_vector * apop_numerical_gradient(gsl_vector *beta, apop_data *data, apop_model *m){
   infostruct    i;
@@ -301,9 +304,8 @@ static int dnegshell (const gsl_vector * betain, void * in, gsl_vector * g){
                 msize2      =(i->model->parameters->matrix ? i->model->parameters->matrix->size2:0);
   apop_data     *returned_beta  = apop_data_alloc(vsize, msize1, msize2);
   apop_data     *beta           = apop_data_unpack(betain, vsize, msize1, msize2);
-  const gsl_vector    *usemep;
+  const gsl_vector    *usemep   = betain;
   apop_data     *useme          = beta;
-    usemep  = betain;
 	if (i->model->constraint && i->model->constraint(beta, returned_beta, i->model)){
 		usemep  = apop_data_pack(returned_beta);
         useme   = returned_beta;
@@ -774,27 +776,27 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
 static void annealing_step(const gsl_rng * r, void *in, double step_size){
   infostruct  *i          = in;
   int         dims_used[i->beta->size];
-  int         dims_left, dim, sign;
-  double      step_left, amt, scale;
+  int         sign, j;
+  double      amt, scale;
   int           vsize       =(i->model->parameters->vector ? i->model->parameters->vector->size :0),
                 msize1      =(i->model->parameters->matrix ? i->model->parameters->matrix->size1 :0),
                 msize2      =(i->model->parameters->matrix ? i->model->parameters->matrix->size2:0);
   apop_data     *testme     = NULL,
                 *dummy      = apop_data_alloc(vsize, msize1, msize2);
     memset(dims_used, 0, i->beta->size * sizeof(int));
-    dims_left   = i->beta->size;
-    step_left   = step_size;
-    while (dims_left){
-        do {
-            dim = gsl_rng_uniform(r)* i->beta->size;
-        } while (dims_used[dim]);
-        dims_used[dim]  ++;
-        dims_left       --;
+
+    double cutpoints[i->beta->size+1];
+    cutpoints[0]                = 0;
+    cutpoints[i->beta->size]    = 1;
+    for (j=1; j< i->beta->size-1; j++)
+        cutpoints[j] = gsl_rng_uniform(r);
+
+    for (j=0; j< i->beta->size; j++){
         sign    = (gsl_rng_uniform(r) > 0.5) ? 1 : -1;
-        amt     = gsl_rng_uniform(r);
-        scale   = gsl_vector_get(i->starting_pt, dim);
-        apop_vector_increment(i->beta, dim, amt * step_left * sign * scale); 
-        step_left   *= amt;
+        scale   = gsl_vector_get(i->starting_pt, j);
+        scale   = scale ? scale : 1; //if starting pt is zero, assume 1.
+        amt     = cutpoints[j+1]- cutpoints[j];
+        apop_vector_increment(i->beta, j,  amt * sign * scale); 
     }
     testme      = apop_data_unpack(i->beta, vsize, msize1, msize2);
     if (i->model->constraint && i->model->constraint(testme, dummy, i->model)){

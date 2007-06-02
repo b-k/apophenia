@@ -1,4 +1,4 @@
-//likelihoods.h			  	Copyright 2005 by Ben Klemens. Licensed under the GNU GPL.
+//likelihoods.h	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
 
 #ifndef apop_likelihoods_h
 #define  apop_likelihoods_h
@@ -39,6 +39,7 @@ typedef struct{
     double      *starting_pt;
     double      step_size;
     double      tolerance;
+    double      delta;
     int         method;
     int         verbose;
     int         want_cov;

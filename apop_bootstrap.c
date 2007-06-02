@@ -1,7 +1,6 @@
 /** \file apop_bootstrap.c
 
-Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
- */
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 /** \defgroup boot Bootstrapping
 

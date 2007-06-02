@@ -7,8 +7,7 @@ ornery, so autogeneration of these files is very desirable, and that's
 where this file comes in. It includes a few simple functions to produce
 files which gnuplot can plot directly.
 
-Copyright (c) 2006 by Ben Klemens. Licensed under the GNU GPL v2.
-*/
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include <apophenia/output.h>
 #include <apophenia/bootstrap.h>
