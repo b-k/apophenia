@@ -64,7 +64,7 @@ void apop_params_free (apop_model * free_me){
 /** Print the results of an estimation
 
 \ingroup output */
-void apop_params_show (apop_model * print_me){
+void apop_model_show (apop_model * print_me){
     if (strlen(print_me->name))
         printf (print_me->name);
     if (strlen(print_me->name) && strlen(print_me->method_name))
@@ -83,11 +83,14 @@ void apop_params_show (apop_model * print_me){
 		printf("\nlog likelihood: \t%g\n", print_me->llikelihood);
 }
 
-/** Currently an alias for \ref apop_params_show, but when I get
+void apop_params_show (apop_model * print_me){
+    apop_model_show(print_me);}
+
+/** Currently an alias for \ref apop_model_show, but when I get
   around to it, it will conform better with the other apop_..._print
   fns.*/
-void apop_params_print (apop_model * print_me){
-    apop_params_show(print_me);
+void apop_model_print (apop_model * print_me){
+    apop_model_show(print_me);
 }
 
 /** Outputs a copy of the \ref apop_model input.

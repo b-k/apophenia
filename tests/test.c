@@ -438,6 +438,8 @@ double          t, v;
 
 /** Just a 3-4-5 triangle */
 int test_distances(){
+    int v = apop_opts.verbose;
+    apop_opts.verbose = -1;
     gsl_vector *v1 = gsl_vector_alloc(2);
     gsl_vector *v2 = gsl_vector_alloc(2);
     gsl_vector *v3 = gsl_vector_calloc(3);
@@ -449,6 +451,7 @@ int test_distances(){
     assert(apop_vector_distance(v1,v2) == 5.);
     assert(apop_vector_grid_distance(v2,v3) == 0);
     assert(apop_vector_grid_distance(v1,v2) == 7.);
+    apop_opts.verbose = v;
     return 0;
 }
 
@@ -705,6 +708,23 @@ int subtest_updating(apop_model prior, apop_model likelihood){
     return 0;
 }
 
+
+int test_jack(){
+  int i, draws     = 2000;
+  apop_data *d  =apop_data_alloc(0, draws, 1);
+  gsl_rng   *r  = apop_rng_alloc(2);
+  apop_model  m   = apop_normal;
+  double      pv[] = {1., 3.};
+    m.parameters = apop_line_to_data(pv, 2,0,0);
+    for (i =0; i< draws; i++)
+        m.draw(apop_data_ptr(d, i, 0), r, &m); 
+    apop_data *out = apop_jackknife_cov(d, m);
+    double error = fabs(apop_data_get(out, 0,0)-gsl_pow_2(pv[1])/draws) //var(mu)
+                + fabs(apop_data_get(out, 1,1)-gsl_pow_2(pv[1])/(2*draws))//var(sigma)
+                +fabs(apop_data_get(out, 0,1)) +fabs(apop_data_get(out, 1,0));//cov(mu,sigma); should be 0.
+    return (error < 1e-3);
+}
+
 void test_updating (){
     subtest_updating(apop_gamma, apop_exponential);
     subtest_updating(apop_beta, apop_bernoulli);
@@ -743,6 +763,7 @@ int main(){
 
   apop_model *e  = apop_estimate(d,*olp->model);
 //    apop_opts.thread_count  = 2;
+    do_test("test jackknife covariance", test_jack());
     do_test("test apop_update", test_updating());
     do_test("test apop_histogram model", test_histograms());
     do_test("test apop_data sort", test_data_sort());

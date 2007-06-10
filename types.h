@@ -180,7 +180,8 @@ size_t  apop_name_find(apop_name *n, char *findme, char type);
 
 void 		apop_params_free (apop_model * free_me);
 void 		apop_params_print (apop_model * print_me);
-void 		apop_params_show (apop_model * print_me);
+void 		apop_model_show (apop_model * print_me);
+void 		apop_params_show (apop_model * print_me);//deprecated.
 
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);

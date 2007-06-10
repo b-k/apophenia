@@ -275,12 +275,12 @@ static double negshell (const gsl_vector * betain, void * in){
 		}
 	}
     if (!penalty)
-	    out = - f(beta, i->data, i->model);
+	    out = - f(beta, i->data, i->model); //negative llikelihood
     if (strlen(apop_opts.mle_trace_path))
         insert_path_into_db(betain,-out);
 	if (returned_beta) apop_data_free(returned_beta);
     apop_data_free(beta);
-    i->model->llikelihood = out;
+    i->model->llikelihood = -out; //negative negative llikelihood.
     return out;
 }
 
@@ -315,7 +315,7 @@ static int dnegshell (const gsl_vector * betain, void * in, gsl_vector * g){
     else{
         apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
         apop_internal_numerical_gradient(ll, usemep, i, g);
-        }
+    }
     gsl_vector_scale(g, -1);
 	apop_data_free(returned_beta);
     apop_data_free(beta);
@@ -411,7 +411,7 @@ static void cov_cleanup(infostruct *i){
  want to exponentiate---that defeats the purpose of taking logs to
  begin with.  Instead, rescale against the median of the set, then
  exponentiate. The hope is that any given value is within a factor of
- maybe ten of the median, so exp(ln(beta_n)-ln(median)) is a reasonable
+ maybe 100 of the median, so exp(ln(beta_n)-ln(median)) is a reasonable
  value.
 
  */
@@ -446,7 +446,7 @@ void produce_covariance_matrix(apop_model * est, infostruct *i){
   gsl_matrix *preinv    = gsl_matrix_calloc((*i->gradient_list)[0]->size1,(*i->gradient_list)[0]->size1);
   gsl_vector *escore    = gsl_vector_calloc((*i->gradient_list)[0]->size1);
     get_weightings(i);
-    //inv (n E(score) dot E(score)) = info matrix.
+    //inv (n E(score dot score)) = info matrix.
     for (m=0; m<  *i->gsize; m++)
         if (gsl_finite((*i->gradientp)[m])){
             gsl_matrix_scale((*i->gradient_list)[m], (*i->gradientp)[m]);
@@ -456,6 +456,8 @@ void produce_covariance_matrix(apop_model * est, infostruct *i){
         }
     if (est->data && est->data->matrix)
         gsl_matrix_scale(preinv, est->data->matrix->size1);
+printf("preinv:\n");
+apop_matrix_show(preinv);
     gsl_matrix *inv = apop_matrix_inverse(preinv);
     est->covariance = apop_matrix_to_data(inv);
     if (est->parameters->names->rownames){
@@ -467,7 +469,6 @@ void produce_covariance_matrix(apop_model * est, infostruct *i){
   cov_clean:
     cov_cleanup(i);
 }
-
 
 /* The maximum likelihood calculations, given a derivative of the log likelihood.
 
@@ -775,7 +776,6 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
 */
 static void annealing_step(const gsl_rng * r, void *in, double step_size){
   infostruct  *i          = in;
-  int         dims_used[i->beta->size];
   int         sign, j;
   double      amt, scale;
   int           vsize       =(i->model->parameters->vector ? i->model->parameters->vector->size :0),
@@ -783,12 +783,11 @@ static void annealing_step(const gsl_rng * r, void *in, double step_size){
                 msize2      =(i->model->parameters->matrix ? i->model->parameters->matrix->size2:0);
   apop_data     *testme     = NULL,
                 *dummy      = apop_data_alloc(vsize, msize1, msize2);
-    memset(dims_used, 0, i->beta->size * sizeof(int));
 
     double cutpoints[i->beta->size+1];
     cutpoints[0]                = 0;
     cutpoints[i->beta->size]    = 1;
-    for (j=1; j< i->beta->size-1; j++)
+    for (j=1; j< i->beta->size; j++)
         cutpoints[j] = gsl_rng_uniform(r);
 
     for (j=0; j< i->beta->size; j++){
@@ -796,7 +795,7 @@ static void annealing_step(const gsl_rng * r, void *in, double step_size){
         scale   = gsl_vector_get(i->starting_pt, j);
         scale   = scale ? scale : 1; //if starting pt is zero, assume 1.
         amt     = cutpoints[j+1]- cutpoints[j];
-        apop_vector_increment(i->beta, j,  amt * sign * scale); 
+        apop_vector_increment(i->beta, j,  amt * sign * scale * step_size); 
     }
     testme      = apop_data_unpack(i->beta, vsize, msize1, msize2);
     if (i->model->constraint && i->model->constraint(testme, dummy, i->model)){

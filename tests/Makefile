@@ -11,7 +11,6 @@ CC = gcc
 #Alternatively, you can run any of the targets listed below.
 
 c: $(objects)
-	rm -f $(PROGNAME).o
 	$(CC) $(CFLAGS) $(objects) $(LINKFLAGS) -o $(PROGNAME)
 
 $(objects): %.o: %.c 

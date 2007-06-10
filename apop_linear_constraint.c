@@ -106,7 +106,8 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
   static gsl_vector *closest_pt = NULL;
   static gsl_vector *candidate  = NULL;
   static gsl_vector *fix        = NULL;
-  int               bindlist[beta->size];
+  int               constraint_ct   = constraint->matrix->size1;
+  int               bindlist[constraint_ct];
   int               i, bound     = 0;
     /* For added efficiency, keep a scratch vector or two on hand. */
     if (closest_pt==NULL || closest_pt->size != constraint->matrix->size2){
@@ -116,8 +117,8 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
         closest_pt->data[0] = GSL_NEGINF;
     }
     /* Do any constraints bind?*/
-    memset(bindlist, 0, sizeof(int)*beta->size);
-    for (i=0; i< constraint->matrix->size1; i++){
+    memset(bindlist, 0, sizeof(int)*constraint_ct);
+    for (i=0; i< constraint_ct; i++){
         APOP_ROW(constraint, i, c);
         bound           +=
         bindlist[i]      = binds(beta, apop_data_get(constraint, i, -1), c);
@@ -139,7 +140,7 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
         Once you have a candidate point, compare its distance to the
         current favorite; keep the best.
      */
-    for (i=0; i< constraint->matrix->size1; i++){
+    for (i=0; i< constraint_ct; i++){
         if (bindlist[i])
             get_candiate(beta, constraint, i, candidate);
         if(apop_vector_distance(beta, candidate) < apop_vector_distance(beta, closest_pt))
@@ -147,7 +148,7 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
     }
     gsl_vector_memcpy(returned_beta, closest_pt);
 add_margin:
-    for (i=0; i< constraint->matrix->size1; i++){
+    for (i=0; i< constraint_ct; i++){
         if(bindlist[i]){
             APOP_ROW(constraint, i, c);
             gsl_vector_memcpy(fix, c);

@@ -43,7 +43,7 @@ gsl_rng *apop_rng_alloc(int seed){
  
 \param in	    The data set. An \c apop_data set where each row is a single data point.
 \param model    An \ref apop_model, whose \c estimate method will be used here.
-\param ep        The \ref apop_model to be passed to the model. Use a stripped- down version that sets \c want_cov, \c want_expected_value, and anything else to zero, because the jackknife only uses the parameter estimates. If your model calls this function to estimate the covariance and \c want_cov=1, then you've got an infinite loop.
+            Use a stripped- down version that sets \c want_cov, \c want_expected_value, and anything else to zero, because the jackknife only uses the parameter estimates. If your model calls this function to estimate the covariance and \c want_cov=1, then you've got an infinite loop.
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
 \ingroup boot
@@ -66,21 +66,21 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
 	array_of_boots          = apop_data_alloc(0,in->matrix->size1, overall_est->parameters->vector->size);
     array_of_boots->names   = in->names;
     for(i = -1; i< (int) subset->matrix->size1; i++){
-        //Get a view of row i, and copy it to position i-1 in the
-        //short matrix.
+        //Get a view of row i, and copy it to position i-1 in the short matrix.
         if (i >= 0){
             APOP_ROW(in, i, v);
             gsl_matrix_set_row(subset->matrix, i, v);
         }
-        model.estimate(subset, e);
+        apop_model *est = model.estimate(subset, e);
         gsl_vector_memcpy(pseudoval, overall_est->parameters->vector);
         gsl_vector_scale(pseudoval, n);
-        gsl_vector_scale(e->parameters->vector, n-1);
-        gsl_vector_sub(pseudoval, e->parameters->vector);
+        gsl_vector_scale(est->parameters->vector, n-1);
+        gsl_vector_sub(pseudoval, est->parameters->vector);
         gsl_matrix_set_row(array_of_boots->matrix, i+1, pseudoval);
+        //apop_model_free(est);
     }
     apop_data   *out    = apop_data_covar(array_of_boots);
-    gsl_matrix_scale(out->matrix, 1./(in->matrix->size1-1));
+    gsl_matrix_scale(out->matrix, (in->matrix->size1-1));
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
     apop_params_free(overall_est);

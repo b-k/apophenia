@@ -57,7 +57,8 @@ EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
 		tests/pontius.dat tests/test.c tests/test_data tests/test_data2 \
 		tests/test_data_nans tests/wampler1.dat \
 		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
-		apophenia/*.h apop.h
+		apophenia/*.h apop.h	\
+		COPYING2
 
 #The documentation
 

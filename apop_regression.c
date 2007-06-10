@@ -453,10 +453,17 @@ apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     if (!ep) {
         olp             = apop_OLS_params_alloc(inset, apop_OLS);
         epout           = olp->model;
+    } else if (!ep->model_params) {
+        olp             = apop_OLS_params_alloc(inset, *ep);
+        epout           = olp->model;
     } else {
         olp             = ep->model_params;
         epout           = ep;
     }
+    epout->data = inset;
+    if(epout->parameters)
+        apop_data_free(epout->parameters);
+    epout->parameters = apop_data_alloc(inset->matrix->size2,0,0);
     set = olp->destroy_data ? inset : apop_data_copy(inset); 
     
     //prep weights.
