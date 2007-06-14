@@ -89,7 +89,6 @@ int test_listwise_delete(){
 }
 
 int test_nan_data(){
-
     apop_text_to_db("test_data_nans", "nandata", 0,1, NULL);
     strcpy(apop_opts.db_name_column, "head");
     strcpy(apop_opts.db_nan, "\\.");
@@ -103,12 +102,11 @@ int test_nan_data(){
     assert(!apop_data_get_tt(d2,"fourth", "b"));
     apop_data_free(d2);
     strcpy(apop_opts.db_nan, "XX");
-
-
     return 0;
 }
 
 
+//test weighted moments
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
     assert(apop_vector_mean(v) == apop_vector_weighted_mean(v,NULL));
     assert(apop_vector_mean(av) == apop_vector_weighted_mean(v,w));
@@ -195,6 +193,9 @@ apop_data   **splits, *dv2;
             tc  = (int) gsl_rng_uniform(r)*11-1;
             assert(apop_data_get(dv2, tr, tc) == apop_data_get(d1,tr,tc));
         }
+        apop_data_free(splits[0]);
+        apop_data_free(splits[1]);
+        apop_data_free(dv2);
     }
     return 0;
 }
@@ -455,35 +456,6 @@ int test_distances(){
     return 0;
 }
 
-void jtest(apop_model m, double *pv){
-  APOP_DATA_ALLOC(d, len, 1);
-  APOP_RNG_ALLOC(r, 8);
-  apop_data  *p  = apop_data_alloc(0,0,0);
-  p->vector      = apop_array_to_vector(pv, 2);
-  apop_model*pp = apop_model_copy(m);
-      pp->parameters    = p;
-  size_t      i;
-    for (i =0; i< len; i++)
-        m.draw(apop_data_ptr(d, i, 0), r, pp); 
-    apop_data *out = apop_jackknife_cov(d, m);
-    //apop_data_show(out);
-    //printf("%g\n",  2*gsl_pow_2(pv[1])/(len-1));
-    //fflush(NULL);
-    //Notice that the jackknife just ain't a great estimator here.
-    assert (fabs(apop_data_get(out, 0,0) - pv[1]/len) < lite_tolerance
-                && fabs(apop_data_get(out, 1,1) - 2*gsl_pow_2(pv[1])/(len-1)) < lite_tolerance*100);
-    apop_data *out2 = apop_bootstrap_cov(out, m, r, 0);
-    assert (fabs(apop_data_get(out2, 0,0) - pv[1]/len) < lite_tolerance
-                && fabs(apop_data_get(out2, 1,1) - 2*gsl_pow_2(pv[1])/(len-1)) < lite_tolerance);
-    apop_data_free(d);
-}
-
-int test_jackknife(){
-  double      pv[] = {3.09,2.8762};
-    jtest(apop_normal, pv);
-    return 0;
-}
-
 
 int test_dot(){
 apop_data *d1   = apop_text_to_data("test_data2",0,1); // 100 x 2
@@ -557,7 +529,6 @@ void apop_pack_test(gsl_rng *r){
         if (mid) gsl_vector_free(mid); 
         apop_data_free(d); apop_data_free(dout);
         }
-        
 }
 
 
@@ -669,7 +640,57 @@ void test_histograms(){
     apop_model *outparams   = apop_normal.estimate(apop_matrix_to_data(out), NULL);
     assert(fabs(outparams->parameters->vector->data[0]-mu) < 1e2);
     assert(fabs(outparams->parameters->vector->data[1]-sigmasq) < 1e2);
+    apop_model_free(hp);
+    apop_model_free(outparams);
 //    apop_plot_histogram(out, 100, NULL); 
+}
+
+
+
+void jtest(apop_model m, double *pv){
+  APOP_DATA_ALLOC(d, len, 1);
+  APOP_RNG_ALLOC(r, 8);
+  apop_data  *p  = apop_data_alloc(0,0,0);
+  p->vector      = apop_array_to_vector(pv, 2);
+  apop_model*pp = apop_model_copy(m);
+      pp->parameters    = p;
+  size_t      i;
+    for (i =0; i< len; i++)
+        m.draw(apop_data_ptr(d, i, 0), r, pp); 
+    apop_data *out = apop_jackknife_cov(d, *pp);
+    //apop_data_show(out);
+    //printf("%g\n",  2*gsl_pow_2(pv[1])/(len-1));
+    //fflush(NULL);
+    //Notice that the jackknife just ain't a great estimator here.
+assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < lite_tolerance 
+            && fabs(apop_data_get(out, 1,1) - gsl_pow_2(pv[1])/(2*len)) < lite_tolerance*100);
+    apop_data *out2 = apop_bootstrap_cov(d, m, r, 0);
+    assert (fabs(apop_data_get(out2, 0,0) - gsl_pow_2(pv[1])/len) < lite_tolerance
+                && fabs(apop_data_get(out2, 1,1) - gsl_pow_2(pv[1])/(2*len)) < lite_tolerance);
+    apop_data_free(d);
+}
+
+int test_jackknife(){
+  double      pv[] = {3.09,2.8762};
+    jtest(apop_normal, pv);
+    return 0;
+}
+
+//In my inattention, I wrote two jackknife tests. So you get double the checks.
+int test_jack(){
+  int i, draws     = 2000;
+  apop_data *d  =apop_data_alloc(0, draws, 1);
+  gsl_rng   *r  = apop_rng_alloc(2);
+  apop_model  m   = apop_normal;
+  double      pv[] = {1., 3.};
+    m.parameters = apop_line_to_data(pv, 2,0,0);
+    for (i =0; i< draws; i++)
+        m.draw(apop_data_ptr(d, i, 0), r, &m); 
+    apop_data *out = apop_jackknife_cov(d, m);
+    double error = fabs(apop_data_get(out, 0,0)-gsl_pow_2(pv[1])/draws) //var(mu)
+                + fabs(apop_data_get(out, 1,1)-gsl_pow_2(pv[1])/(2*draws))//var(sigma)
+                +fabs(apop_data_get(out, 0,1)) +fabs(apop_data_get(out, 1,0));//cov(mu,sigma); should be 0.
+    return (error < 1e-3);
 }
 
 int subtest_updating(apop_model prior, apop_model likelihood){
@@ -708,28 +729,12 @@ int subtest_updating(apop_model prior, apop_model likelihood){
     return 0;
 }
 
-
-int test_jack(){
-  int i, draws     = 2000;
-  apop_data *d  =apop_data_alloc(0, draws, 1);
-  gsl_rng   *r  = apop_rng_alloc(2);
-  apop_model  m   = apop_normal;
-  double      pv[] = {1., 3.};
-    m.parameters = apop_line_to_data(pv, 2,0,0);
-    for (i =0; i< draws; i++)
-        m.draw(apop_data_ptr(d, i, 0), r, &m); 
-    apop_data *out = apop_jackknife_cov(d, m);
-    double error = fabs(apop_data_get(out, 0,0)-gsl_pow_2(pv[1])/draws) //var(mu)
-                + fabs(apop_data_get(out, 1,1)-gsl_pow_2(pv[1])/(2*draws))//var(sigma)
-                +fabs(apop_data_get(out, 0,1)) +fabs(apop_data_get(out, 1,0));//cov(mu,sigma); should be 0.
-    return (error < 1e-3);
-}
-
 void test_updating (){
     subtest_updating(apop_gamma, apop_exponential);
     subtest_updating(apop_beta, apop_bernoulli);
 }
 
+//The do_test macros
 #define do_int_test(text, fn)   if (verbose)    \
                                 printf(text);  \
                             else printf(".");   \

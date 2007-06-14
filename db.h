@@ -65,11 +65,6 @@ int apop_data_to_db(apop_data *set, char *tabname);
 	//At the moment, the headers are ignored. 
 	//With no headers specified, you get columns C0, C1, C2...
 
-apop_name * apop_db_get_names(void);
-int apop_db_get_cols(void);
-int apop_db_get_rows(void);
-	//give the column names and counts from the last query.
-
 void apop_db_merge(char *infile);
 	//copy all of the tables in the database at the given file into
 	//the database apophenia has already opened. If there are

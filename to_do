@@ -1,4 +1,4 @@
---Apop_data needs an other field.
+--Apop_data needs a scalar field. ?
 --Now that there's no ..._print_int, clean up printing fns.
 --estimate_restart should allow a new starting point.
 --if there's a comma in a column name, apop_query_to... miscounts columns.

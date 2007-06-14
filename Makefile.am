@@ -72,6 +72,7 @@ doc:
 	doxygen doxy/doxyconfig
 	cp doxy/flake.gif doxy/search.gif html/
 	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
+	sudo cp man/man3/* /usr/share/man/man3/
 
 test:
 	cd tests; make; ./test;

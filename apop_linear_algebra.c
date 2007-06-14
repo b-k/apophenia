@@ -66,7 +66,7 @@ double apop_matrix_determinant(const gsl_matrix *in) {
 
 /**
 Inverts a matrix. The \c in matrix is not destroyed in the process.
-You may want to call \c apop_matrix_determinant first to check that your input is invertible.
+You may want to call \ref apop_matrix_determinant first to check that your input is invertible.
 
 \param in The matrix to be inverted.
 \return Its inverse.
@@ -304,10 +304,9 @@ gsl_matrix  *t1, *t2, *output;
 \endcode
 */
 gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
-gsl_matrix      *out;
-gsl_vector_view tmp_vector;
-int             i;
-
+  gsl_matrix      *out;
+  gsl_vector_view tmp_vector;
+  int             i;
     if (!m1 && m2){
         out = gsl_matrix_alloc(m2->size1, m2->size2);
         gsl_matrix_memcpy(out, m2);
@@ -321,10 +320,10 @@ int             i;
 
     if (posn == 'r'){
         if (m1->size2 != m2->size2){
-            printf("When stacking matrices on top of each other, they have to have the same number of columns (m1->size2==m2->size2). Returning NULL.\n");
+            apop_error(0, 's', "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%i and m2->size2==%i. Halting.\n", m1->size2, m2->size2);
             return NULL;
         }
-        out         = gsl_matrix_alloc(m1->size1 + m2->size1, m1->size2);
+        out     = gsl_matrix_alloc(m1->size1 + m2->size1, m1->size2);
         for (i=0; i< m1->size1; i++){
             tmp_vector  = gsl_matrix_row(m1, i);
             gsl_matrix_set_row(out, i, &(tmp_vector.vector));
@@ -336,10 +335,10 @@ int             i;
         return out;
     } else {
         if (m1->size1 != m2->size1){
-            printf("When stacking matrices side by side, they have to have the same number of rows (m1->size1==m2->size1). Returning NULL.\n");
+            apop_error(0, 's', "When stacking matrices side by side, they have to have the same number of rows, but  m1->size1==%i and m2->size1==%i. Halting.\n", m1->size1, m2->size1);
             return NULL;
         }
-        out         = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
+        out     = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
         for (i=0; i< m1->size2; i++){
             tmp_vector  = gsl_matrix_column(m1, i);
             gsl_matrix_set_col(out, i, &(tmp_vector.vector));
@@ -363,11 +362,11 @@ int             i;
 \param drop an array of ints. If use[7]==1, then column seven will be cut from the output. 
 */
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
-gsl_matrix      *out;
-int             i, 
-                ct  = 0, 
-                j   = 0;
-gsl_vector_view v;
+  gsl_matrix      *out;
+  int             i, 
+                  ct  = 0, 
+                  j   = 0;
+  gsl_vector_view v;
     for (i=0; i < in->size2; i++)
         if (drop[i]==0)
             ct++;
@@ -391,7 +390,7 @@ gsl_vector_view v;
  \ingroup convenience_fns
  */
 int apop_vector_isnan(gsl_vector *in){
-size_t  i;
+  size_t  i;
     for (i=0; i< in->size; i++)
         if (gsl_isnan(gsl_vector_get(in, i)))
             return 1;
@@ -406,7 +405,7 @@ size_t  i;
  \ingroup convenience_fns
  */
 int apop_vector_finite(gsl_vector *in){
-size_t  i;
+  size_t  i;
     for (i=0; i< in->size; i++)
         if (!gsl_finite(gsl_vector_get(in, i)))
             return 0;
@@ -423,8 +422,8 @@ so you can preempt a procedure that is about to break on infinite values.
  \ingroup convenience_fns
  */
 int apop_vector_bounded(gsl_vector *in, long double max){
-size_t      i;
-long double x;
+  size_t      i;
+  long double x;
     for (i=0; i< in->size; i++){
         x   = gsl_vector_get(in, i);
         if (!gsl_finite(x) || x> max || x< -max)
@@ -435,7 +434,7 @@ long double x;
 
 
 static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,const  CBLAS_TRANSPOSE_t flip){
-gsl_vector *outv;
+  gsl_vector *outv;
     if (flip ==CblasNoTrans)
         outv = gsl_vector_calloc(m->size1);
     else
@@ -466,11 +465,11 @@ gsl_vector *outv;
   */
 //apop_data * apop_dot(apop_data *d1, apop_data *d2, char t1, char t2){
 apop_data * apop_dot(const apop_data *d1, const apop_data *d2, ...){
-int         uselm, userm;
-gsl_matrix  *lm = d1->matrix, 
-            *rm = d2->matrix;
-gsl_vector  *lv = d1->vector, 
-            *rv = d2->vector;
+  int         uselm, userm;
+  gsl_matrix  *lm = d1->matrix, 
+              *rm = d2->matrix;
+  gsl_vector  *lv = d1->vector, 
+              *rv = d2->vector;
 CBLAS_TRANSPOSE_t   lt  ,//= (t1=='t' || t1=='T' || t1=='p' || t1=='P') ? CblasTrans : CblasNoTrans,
                     rt  ;//= (t2=='t' || t2=='T' || t2=='p' || t2=='P') ? CblasTrans : CblasNoTrans;
 apop_data   *out    = apop_data_alloc(0,0,0);

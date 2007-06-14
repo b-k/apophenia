@@ -152,6 +152,7 @@ apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_mle_para
     mlp->step_size          = 2;
     mlp->tolerance          = 0.2;
 //    parameters->starting_pt     = calloc(mask.ct, sizeof(double));
-    return apop_maximum_likelihood(d, *mc);
-    //We're done. The last step of the MLE filled the data with the best estimate.
+    apop_model *out = apop_maximum_likelihood(d, *mc);
+    apop_model_free(mc);
+    return out;
 }

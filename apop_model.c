@@ -48,16 +48,25 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
 /** Free an \ref apop_model structure.
 
+   The  \c parameters, \c expected, and \c covariance elements are
+   freed.  These are all the things that are completely copied, by
+   \c apop_model_copy, so the parent model is still safe after this is
+   called. \c data is not freed, because the odds are you still need it.
+
+   The system has no idea what the \c method_params, \c model_params,
+   and \c more elements contain, so if they point to other things,
+   they need to be freed before calling this function.
+
   If \c free_me is \c NULL, this does nothing.
+
+   \param free_me A pointer to the model to be freed.
+
 \ingroup inv_and_est */
-void apop_params_free (apop_model * free_me){
+void apop_model_free (apop_model * free_me){
     if (!free_me) return;
-	if (free_me->parameters)
-        apop_data_free(free_me->parameters);
-	if (free_me->covariance)
-		apop_data_free(free_me->covariance);
-    if (free_me->expected)
-        apop_data_free(free_me->expected);
+    apop_data_free(free_me->parameters);
+    apop_data_free(free_me->covariance);
+    apop_data_free(free_me->expected);
 	free(free_me);
 }
 
@@ -121,28 +130,6 @@ apop_model * apop_model_copy(apop_model in){
     return out;
 }
 
-/* Frees the memory taken by an \c apop_model. 
-   Notably the \c method_params, \c model_params, \c more, \c parameters,
-   \c expected, and \c covariance elements are freed.  These are all
-   the things that are completely copied, by \c apop_model_copy, so the
-   parent model is still safe after this is called.
-
-   The system has no idea what the \c method_params, \c model_params,
-   and \c more elements contain, so if they point to other things,
-   they need to be freed before calling this function.
-
-   \param in A pointer to the model to be freed.
-
- */
-void apop_model_free(apop_model *in){
-    free (in->method_params);
-    free (in->model_params);
-    free (in->more);
-    apop_data_free(in->parameters);
-    apop_data_free(in->expected);
-    apop_data_free(in->covariance);
-    free(in);
-}
 
 /* estimate the parameters of a model given data.
 
@@ -163,11 +150,15 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
 \param m    The model, which must have either a \c log_likelihood or a \c p method.
 */
 double apop_log_likelihood(const apop_data *beta, apop_data *d, apop_model m){
-  apop_data *params = beta ? beta : m.parameters;
+  const apop_data *params = beta ? beta : m.parameters;
     if (m.log_likelihood)
         return m.log_likelihood(params, d, &m);
     else if (m.p)
         return log(m.p(params, d, &m));
     apop_error(0, 's', "%s: You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n", __func__);
     return 0;
+}
+
+void apop_draw(double *out, gsl_rng *r, apop_model *m){
+    m->draw(out,r, m);
 }

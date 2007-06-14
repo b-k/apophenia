@@ -454,10 +454,12 @@ void produce_covariance_matrix(apop_model * est, infostruct *i){
             gsl_vector_scale((*i->score_list)[m], (*i->gradientp)[m]);
             gsl_vector_add(escore,(*i->score_list)[m]);
         }
+    if (apop_opts.verbose > 1){
+        printf("The Hessian:\n");
+        apop_matrix_show(preinv);
+    }
     if (est->data && est->data->matrix)
         gsl_matrix_scale(preinv, est->data->matrix->size1);
-printf("preinv:\n");
-apop_matrix_show(preinv);
     gsl_matrix *inv = apop_matrix_inverse(preinv);
     est->covariance = apop_matrix_to_data(inv);
     if (est->parameters->names->rownames){
@@ -695,14 +697,14 @@ apop_model * apop_estimate_restart (apop_model *e, int  new_method, int scale){
     new_params->method	    = new_method;
 	copy                    = e->estimate(e->data, copy);
             //Now check whether the new output is better than the old
-printf("orig: 1st: %g, ll %g\n", e->parameters->vector->data[0],e->llikelihood );
-printf("copy: 1st: %g, ll %g\n", copy->parameters->vector->data[0],copy->llikelihood );
+//printf("orig: 1st: %g, ll %g\n", e->parameters->vector->data[0],e->llikelihood );
+//printf("copy: 1st: %g, ll %g\n", copy->parameters->vector->data[0],copy->llikelihood );
     if (apop_vector_bounded(copy->parameters->vector, 1e4) && copy->llikelihood > e->llikelihood){
-        //apop_model_free(e);
+        apop_model_free(e);
         return copy;
     } //else:
-    //free(new_params);
-    //apop_model_free(copy);
+    free(new_params);
+    apop_model_free(copy);
     return e;
 }
 

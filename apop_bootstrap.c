@@ -49,22 +49,22 @@ gsl_rng *apop_rng_alloc(int seed){
 \ingroup boot
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
-  int           i;
   apop_model   *e              = apop_model_copy(model);
   apop_model_clear(in, e);
-  int           n               = in->matrix->size1;
-  apop_data     *subset         = apop_data_alloc(0, in->matrix->size1 - 1, in->matrix->size2);
+  int           i, n            = in->matrix->size1;
+  apop_data     *subset         = apop_data_alloc(0, n - 1, in->matrix->size2);
   apop_data     *array_of_boots = NULL;
   apop_model *overall_est       = model.estimate(in, e);
+    gsl_vector_scale(overall_est->parameters->vector, n); //do it just once.
   int           paramct         = overall_est->parameters->vector->size;
   gsl_vector    *pseudoval      = gsl_vector_alloc(paramct);
 
 //Allocate a matrix, get a reduced view of the original, and copy.
-  gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, in->matrix->size1-1, in->matrix->size2).matrix;
+  gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, n-1, in->matrix->size2).matrix;
     gsl_matrix_memcpy(subset->matrix, &mv);
 
-	array_of_boots          = apop_data_alloc(0,in->matrix->size1, overall_est->parameters->vector->size);
-    array_of_boots->names   = in->names;
+	array_of_boots          = apop_data_alloc(0, n, overall_est->parameters->vector->size);
+    array_of_boots->names   = apop_name_copy(in->names);
     for(i = -1; i< (int) subset->matrix->size1; i++){
         //Get a view of row i, and copy it to position i-1 in the short matrix.
         if (i >= 0){
@@ -72,19 +72,18 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
             gsl_matrix_set_row(subset->matrix, i, v);
         }
         apop_model *est = model.estimate(subset, e);
-        gsl_vector_memcpy(pseudoval, overall_est->parameters->vector);
-        gsl_vector_scale(pseudoval, n);
+        gsl_vector_memcpy(pseudoval, overall_est->parameters->vector);// *n above.
         gsl_vector_scale(est->parameters->vector, n-1);
         gsl_vector_sub(pseudoval, est->parameters->vector);
         gsl_matrix_set_row(array_of_boots->matrix, i+1, pseudoval);
-        //apop_model_free(est);
+        apop_model_free(est);
     }
     apop_data   *out    = apop_data_covar(array_of_boots);
-    gsl_matrix_scale(out->matrix, (in->matrix->size1-1));
+    gsl_matrix_scale(out->matrix, 1./(n-1.));
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
-    apop_params_free(overall_est);
-    //apop_params_free(e);
+    apop_model_free(overall_est);
+    apop_model_free(e);
     return out;
 }
 
@@ -115,17 +114,18 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *r, i
 			gsl_matrix_set_row(subset->matrix, j, v);
 		}
 		//get the parameter estimates.
-		model.estimate(subset, e);
+		apop_model *est = model.estimate(subset, e);
         if (i==0){
-            array_of_boots	        = apop_data_alloc(0,boot_iterations, e->parameters->vector->size);
-            array_of_boots->names   = data->names;
+            array_of_boots	        = apop_data_alloc(0,boot_iterations, est->parameters->vector->size);
+            array_of_boots->names   = apop_name_copy(data->names);
         }
-        gsl_matrix_set_row(array_of_boots->matrix, i, e->parameters->vector);
+        gsl_matrix_set_row(array_of_boots->matrix, i, est->parameters->vector);
+        apop_model_free(est);
 	}
 	summary	= apop_data_covariance_matrix(array_of_boots, 1);
     gsl_matrix_scale(summary->matrix, 1./boot_iterations);
     apop_data_free(array_of_boots);
     apop_data_free(subset);
-    //apop_params_free(e);
+    apop_model_free(e);
 	return summary;
 }

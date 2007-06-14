@@ -178,7 +178,7 @@ void apop_name_memcpy(apop_name **out, apop_name *in);
 apop_name * apop_name_copy(apop_name *in);
 size_t  apop_name_find(apop_name *n, char *findme, char type);
 
-void 		apop_params_free (apop_model * free_me);
+void 		apop_model_free (apop_model * free_me);
 void 		apop_params_print (apop_model * print_me);
 void 		apop_model_show (apop_model * print_me);
 void 		apop_params_show (apop_model * print_me);//deprecated.
@@ -210,8 +210,8 @@ void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 
 apop_model * apop_model_copy(apop_model in); //in apop_params.c.
 apop_model * apop_model_clear(apop_data * data, apop_model *model);
-void         apop_model_free(apop_model *m);
 apop_model * apop_estimate(apop_data *d, apop_model m);
+void apop_draw(double *out, gsl_rng *r, apop_model *m);
 
 void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
 

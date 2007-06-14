@@ -78,8 +78,6 @@ apop_opts_type apop_opts	= { 0,              //verbose
 };
 
 
-int	total_rows, total_cols;		    //the counts from the last query.
-
 #ifdef HAVE_LIBMYSQLCLIENT
 #include "apop_db_mysql.c"
 #endif
@@ -315,14 +313,10 @@ int apop_db_close(char vacuum){
         return 0; }
 #endif
     }
-	}
+}
 
 
 /** Dump the results of a query into an array of strings.
-
-You will probably be curious as to the dimensions of the
-array just returned. To get this information, use \ref apop_db_get_rows
-and \ref apop_db_get_cols .
 
 \param fmt 	As with \ref apop_query , a string containing a query,
 which may include <tt>printf</tt>-style tags (<tt>\%i, \%s</tt>, et cetera).
@@ -386,31 +380,29 @@ static char        full_divider[103];
 static regmatch_t  result[3];
 static regex_t     *regex;
 
+
+size_t tr;
 //apop_query_to_matrix callback.
 static int db_to_table(void *o,int argc, char **argv, char **colnames){
-  int		jj, i, ncfound;
+  int		jj, i, ncfound = 0;
   gsl_matrix ** 	output = (gsl_matrix **) o;
     if (firstcall){
         firstcall   --;
-        total_cols  = argc;
-        for(i=0; i<argc; i++){
+        for(i=0; i<argc; i++)
             if (!strcmp(colnames[i], apop_opts.db_name_column)){
-                namecol     = i;
-                total_cols  --;
+                namecol = i;
+                ncfound = 1;
                 break;
             }
-        }
-	    *output		= gsl_matrix_alloc(total_rows, total_cols);
-        if (data_or_matrix == 'd'){
-            for(i=0; i<argc; i++){
+	    *output		= gsl_matrix_alloc(tr, argc-ncfound);
+        if (data_or_matrix == 'd')
+            for(i=0; i<argc; i++)
                 if (namecol != i)
                     apop_name_add(last_names, colnames[i], 'c');
-            }
-        }
     }
 	if (argv !=NULL){
         ncfound =0;
-		for (jj=0;jj<argc;jj++){
+		for (jj=0;jj<argc;jj++)
             if (jj != namecol){
                 if (!argv[jj] || !regexec(regex, argv[jj], 1, result, 0))
 				    gsl_matrix_set(*output,currentrow,jj-ncfound, GSL_NAN);
@@ -420,7 +412,6 @@ static int db_to_table(void *o,int argc, char **argv, char **colnames){
                 apop_name_add(last_names, argv[jj], 'r');
                 ncfound = 1;
             }
-		}
 		currentrow++;
 	}
 	return 0;
@@ -454,17 +445,17 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
         return 0;}
 #endif
   gsl_matrix	*output = NULL;
-  char		*q2, *err=NULL;
+  char		    *q2, *err=NULL;
+  size_t        total_rows  = 0;
     firstcall   = 
-    currentrow  = 
-	total_rows  = 0;
+    currentrow  = 0;
 	if (db==NULL) apop_db_open(NULL);
 	if (apop_opts.verbose)	printf("%s\n", query);
 	q2	 = malloc(strlen(query)+300);
 	apop_table_exists("apop_temp_table",1);
 	sqlite3_exec(db,strcat(strcpy(q2,
 		"CREATE TABLE apop_temp_table AS "),query),NULL,NULL, &err); ERRCHECK
-	sqlite3_exec(db,"SELECT count(*) FROM apop_temp_table",length_callback,NULL, &err);
+	sqlite3_exec(db,"SELECT count(*) FROM apop_temp_table",length_callback,&total_rows, &err);
 	free(query);
 	ERRCHECK
     sprintf(full_divider, "^%s$", apop_opts.db_nan);
@@ -475,6 +466,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 		if (last_names !=NULL) 
 			apop_name_free(last_names); 
 		last_names = apop_name_alloc();
+        tr = total_rows;  //globalize
 		sqlite3_exec(db,"SELECT * FROM apop_temp_table",db_to_table,&output, &err); ERRCHECK
         namecol     = -1;
 	}
@@ -562,6 +554,15 @@ double apop_query_to_float(const char * fmt, ...){
 	gsl_matrix_free(m);
 	return out;
 #endif
+}
+
+/** This function returns an \ref apop_name structure with the column
+names from the last <tt>apop_query_...</tt> . Since only the names from
+the last query are saved, you will want to use this immediately
+after your query.  */
+apop_name * apop_db_get_names(void){
+  apop_name   *out    = apop_name_copy(last_names);
+    return out; 
 }
 
 /** Queries the database, and dumps the result into an \ref apop_data set.
@@ -660,21 +661,6 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
         return NULL; }
 #endif
 }
-
-/** This function returns an \ref apop_name structure with the column
-names from the last <tt>apop_query_...</tt> . Since only the names from
-the last query are saved, you will want to use this immediately
-after your query.  */
-apop_name * apop_db_get_names(void){
-  apop_name   *out    = apop_name_copy(last_names);
-    return out; 
-}
-
-/** This function returns the column count from the last query run. */
-int apop_db_get_cols(void){ return total_cols; }
-
-/** This function returns the row count from the last query run. */
-int apop_db_get_rows(void){ return total_rows; }
 
 /** Dump a <tt>gsl_matrix</tt> into the database. This function is
 basically preempted by \ref apop_matrix_print. Use that one; this may soon no longer be available.
@@ -845,16 +831,15 @@ calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
 */
 void apop_db_merge_table(char *db_file, char *tabname){
 //char		***tab_list;
-  int		row_ct;
 	if (db_file !=NULL)
 		apop_query("attach database \"%s\" as merge_me;", db_file);
-	apop_query_to_text("select name from sqlite_master where name == \"%s\";", tabname);
-	row_ct	= apop_db_get_rows();
-	if (row_ct==0){	//just import table
+	apop_data *d = apop_query_to_text("select name from sqlite_master where name == \"%s\";", tabname);
+	if (!d){	//just import table
 		if (apop_opts.verbose)	printf("adding in %s\n", tabname);
 		apop_query("create table main.%s as select * from merge_me.%s;", tabname, tabname);
 	}
 	else	{			//merge tables.
+        apop_data_free(d);
 		if (apop_opts.verbose)	printf("merging in %s\n", tabname);
 		apop_query("insert into main.%s select * from merge_me.%s;", tabname, tabname);
 	}

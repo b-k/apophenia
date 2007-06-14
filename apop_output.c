@@ -66,13 +66,10 @@ char		    outfile[]	= "auto",
 \ingroup output
 */
 void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * outfile){
-FILE *          f;
-char            exdelimiter[100];
-int             append_state;
-        if (!outfile) 	
-            f       = stdout;
-        else    		
-            f       = fopen(outfile, "a");
+  FILE  *f;
+  char  exdelimiter[100];
+  int   append_state;
+    f   = (outfile? fopen(outfile, "a") : stdout);
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters->vector,0), gsl_vector_get(est->parameters->vector,1));
 	if (data->names){
 		fprintf(f, "set xlabel \"%s\"\n", data->names->colnames[1]);
@@ -136,8 +133,8 @@ void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in){
 \ingroup output
 */
 void apop_plot(gsl_matrix *data, char plot_type, int delay){
-FILE 		*output;
-int		i,j;
+  FILE 	*output;
+  int	i,j;
 	output = popen ("gnuplot", "w");
 	if (!output) {
 		apop_error(0,'c', "Can't find gnuplot.\n");
@@ -183,10 +180,10 @@ will print directly to Gnuplot.
   \ingroup output
 */
 void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
-int             i;
-FILE *          f;
-double		min=GSL_POSINF, max=GSL_NEGINF, pt;
-gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
+  int             i;
+  FILE *          f;
+  double		  min=GSL_POSINF, max=GSL_NEGINF, pt;
+  gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 	gsl_vector_minmax(data, &min, &max);
         gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
 	for (i=0; i < data->size; i++){
@@ -197,10 +194,8 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 	//Now that you have a histogram, print it.
     if (apop_opts.output_type == 'p')
         f   = apop_opts.output_pipe;
-    else {
-        if (outfile == NULL) 	f       = stdout;
-        else    		f       = fopen(outfile, "a");
-    }
+    else 
+        f = (outfile ? fopen(outfile, "a") : stdout);
 	fprintf(f, "set key off					                    ;\n\
                         plot '-' with lines\n");
     //I can't tell which versions of Gnuplot support this form:
@@ -216,7 +211,7 @@ gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
 	fprintf(f, "e\n");
     if (apop_opts.output_type == 'p')
         fflush(f);
-    else if (outfile !=NULL)    
+    else if (outfile)    
         fclose(f);
 }
 	
@@ -229,17 +224,13 @@ static void print_core_v(const gsl_vector *data, char *separator, char *filename
 			void (* p_fn)(FILE * f, double number)){
 int 		i;
 FILE * 		f;
-	if ((filename == NULL) || (!strcmp(filename, "STDOUT")))
+	if (!filename || !strcmp(filename, "STDOUT"))
 		f	= stdout;
-	else	{
-        if (apop_opts.output_append)
-            f	= fopen(filename, "a");
-        else
-            f	= fopen(filename, "w");
-    }
+	else	
+        f = fopen(filename, apop_opts.output_append ? "a": "w");
     if (apop_opts.output_type == 'p')
         f   = apop_opts.output_pipe;
-    if (data == NULL)
+    if (!data)
         fprintf(f, "NULL\n");
     else {
 	    for (i=0; i<data->size; i++){
@@ -248,33 +239,28 @@ FILE * 		f;
 	    }
 	    fprintf(f,"\n");
     }
-	if (filename !=NULL && apop_opts.output_type != 'p')	fclose(f);
+	if (filename && apop_opts.output_type != 'p')	fclose(f);
 }
 
 static void print_core_m(const gsl_matrix *data, char *separator, char *filename, 
 			void (* p_fn)(FILE * f, double number), apop_name *n){
-FILE * 		f;
-size_t 		i,j, max_name_size  = 0;
-
-    if (n != NULL){
+  FILE * 	f;
+  size_t    i,j; 
+  int       max_name_size  = 0;
+    if (n)
         for (i=0; i< n->rownamect; i++)
             max_name_size   = GSL_MAX(strlen(n->rownames[i]), max_name_size);
-    }
 
 	//if ((apop_opts.output_type == 's') || (filename == NULL) || (!strcmp(filename, "STDOUT")))
 	if ((filename == NULL) || (!strcmp(filename, "STDOUT")))
 		f	= stdout;
-	else	{
-        if (apop_opts.output_append)
-            f	= fopen(filename, "a");
-        else
-            f	= fopen(filename, "w");
-    }
+	else
+        f	= fopen(filename, apop_opts.output_append ? "a" : "w");
     if (apop_opts.output_type == 'p')
         f   = apop_opts.output_pipe;
     if (n && strlen(n->title)>0)
         fprintf(f, "%s%s\n\n", apop_opts.output_type=='s'? "\t\t" : "", n->title);
-    if (data == NULL)
+    if (!data)
         fprintf(f, "NULL\n");
     else {
         if (n && n->colnamect > 0){ //then print a row of column headers.
@@ -313,10 +299,10 @@ void apop_vector_print(gsl_vector *data, char *file){
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
 void apop_matrix_print(gsl_matrix *data, char *file){
-    if (apop_opts.output_type   == 'd'){
+    if (apop_opts.output_type   == 'd')
         apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(file,1),0), NULL);
-    } else
-	print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf, NULL); 
+    else
+        print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf, NULL); 
 }
 
 /** Print an \ref apop_data set in float format.
@@ -341,7 +327,7 @@ void apop_data_print(apop_data *data, char *file){
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
 void apop_vector_show(const gsl_vector *data){
-char tmptype    = apop_opts.output_type;
+  char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
 	print_core_v(data, apop_opts.output_delimiter, NULL, dumb_little_pf); 
     apop_opts.output_type = tmptype;
@@ -351,14 +337,14 @@ char tmptype    = apop_opts.output_type;
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
 void apop_matrix_show(const gsl_matrix *data){
-char tmptype    = apop_opts.output_type;
+  char tmptype    = apop_opts.output_type;
     apop_opts.output_type = 's';
 	print_core_m(data, apop_opts.output_delimiter, NULL, dumb_little_pf, NULL); 
     apop_opts.output_type = tmptype;
 }
 
 static size_t get_max_strlen(char **names, size_t len){
-int     i, 
+  int   i, 
         max  = 0;
     for (i=0; i< len; i++)
         max = GSL_MAX(max, strlen(names[i]));
@@ -444,16 +430,16 @@ void apop_data_show(const apop_data *data){
 /* the next function plots a single graph for the \ref apop_plot_lattice  fn */
 static void printone(FILE *f, double width, double height, double margin, int xposn, int yposn, apop_data *d){
     //pull two columns
-gsl_vector  v1  = gsl_matrix_column(d->matrix, xposn).vector;
-gsl_vector  v2  = gsl_matrix_column(d->matrix, yposn).vector;
-gsl_matrix  *m  = gsl_matrix_alloc(d->matrix->size1, 2);
+  gsl_vector  v1  = gsl_matrix_column(d->matrix, xposn).vector;
+  gsl_vector  v2  = gsl_matrix_column(d->matrix, yposn).vector;
+  gsl_matrix  *m  = gsl_matrix_alloc(d->matrix->size1, 2);
     gsl_matrix_set_col(m, 0, &v1);
     gsl_matrix_set_col(m, 1, &v2);
-double sizex        = (double)(width - margin * (d->matrix->size2 -1))/d->matrix->size2;
-double sizey        = (double)(height - margin * (d->matrix->size2 -1))/d->matrix->size2;
-double offx        = width - (sizex +margin)* (1+xposn);
-double offy        = height - (sizey +margin)* (1+yposn);
-//I've commented out tics.
+  double sizex        = (double)(width - margin * (d->matrix->size2 -1))/d->matrix->size2;
+  double sizey        = (double)(height - margin * (d->matrix->size2 -1))/d->matrix->size2;
+  double offx        = width - (sizex +margin)* (1+xposn);
+  double offy        = height - (sizey +margin)* (1+yposn);
+  //I've commented out tics.
     if (xposn)
         fprintf(f, "unset y2tics; unset y2label; unset ytics; unset ylabel\n");
     else
@@ -500,11 +486,11 @@ static void printlabel(char filename[], char *name){
 \ingroup output
  */
 void apop_plot_lattice(apop_data *d, char filename[]){ 
-double  width   = 1,//these used to be options, but who's ever gonna set them to something else.
-        height  = 1;
-double  margin  = 0;
-FILE    *f;
-int     i,j;
+  double  width   = 1,//these used to be options, but who's ever gonna set them to something else.
+          height  = 1;
+  double  margin  = 0;
+  FILE    *f;
+  int     i,j;
     if (apop_opts.output_type == 'f')
         f      = fopen(filename, "a");
     else if (apop_opts.output_type == 'p')
@@ -527,10 +513,7 @@ set nokey           \n\
         ", width, height, margin,margin, d->matrix->size2, d->matrix->size2);
     for (i = 0; i< d->matrix->size2; i++)
         for (j = 0; j< d->matrix->size2; j++)
-/*            if (i==j && i!=0)
-                printlabel(filename, d->names->colnames[i]);
-            else */
-                printone(f, width, height, margin, i, j, d);
+            printone(f, width, height, margin, i, j, d);
     for (i=0; i< d->names->colnamect; i++){
         double sizex        = (double)(width - margin * (d->matrix->size2 -1))/d->matrix->size2; 
         double sizey        = (double)(height - margin * (d->matrix->size2 -1))/d->matrix->size2;
@@ -542,7 +525,6 @@ set nokey           \n\
     if (apop_opts.output_type == 'f')
         fclose(f);
 }
-
 
 
 /** Plot the percentiles of a data set against the percentiles of a distribution.
@@ -575,14 +557,12 @@ void apop_qq_plot(gsl_vector *v, apop_model m, char *outfile){
   gsl_rng     *r  = apop_rng_alloc(123);
     for(i=0; i< 2000; i++)
         m.draw(gsl_vector_ptr(vd, i), r, &m);
-  double *pctdist = apop_vector_percentiles(vd, 'a');
+    double *pctdist = apop_vector_percentiles(vd, 'a');
 
     if (apop_opts.output_type == 'p')
         f   = apop_opts.output_pipe;
-    else {
-        if (outfile == NULL)    f       = stdout;
-        else            f       = fopen(outfile, "a");
-    }
+    else 
+        f   = (outfile ? fopen(outfile, "a") : stdout);
     fprintf(f, "set key off; set size square;\n\
 plot x;\n\
 replot '-' with points\n");
@@ -599,7 +579,7 @@ replot '-' with points\n");
     fprintf(f, "e\n");
     if (apop_opts.output_type == 'p')
         fflush(f);
-    else if (outfile !=NULL)
+    else if (outfile)
         fclose(f);
     gsl_vector_free(vd);
     gsl_rng_free(r);
