@@ -39,10 +39,11 @@ function.
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>	//popen, I think.
-#include <apophenia/linear_algebra.h> 
+#include <apophenia/asst.h>
 #include <apophenia/stats.h>
-#include "math.h" //pow!
 #include <apophenia/vasprintf.h>
+#include <apophenia/linear_algebra.h> 
+#include "math.h" //pow!
 
 /**
 Find the determinant of a matrix. The \c in matrix is not destroyed in the process.

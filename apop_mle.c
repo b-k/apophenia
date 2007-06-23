@@ -218,10 +218,21 @@ gsl_vector * apop_numerical_gradient(gsl_vector *beta, apop_data *data, apop_mod
   infostruct    i;
   apop_fn_with_params ll  = m->log_likelihood ? m->log_likelihood : m->p;
   gsl_vector        *out= gsl_vector_alloc(beta->size);
-    i.model = m;
+  apop_mle_params *mp;
+  int clean = 0;
+    if(strcmp(m->method_name, "MLE")){
+        mp       = apop_mle_params_alloc(data, *m);
+        i.model  = mp->model;
+        clean ++;
+    } else 
+        i.model  = m;
     i.data  = data;
-    i.beta      = beta;
+    i.beta  = beta;
     apop_internal_numerical_gradient(ll, beta, &i, out);
+    if (clean) {
+        free(mp);
+        apop_model_free(i.model);
+    }
     return out;
 }
 
@@ -462,7 +473,7 @@ void produce_covariance_matrix(apop_model * est, infostruct *i){
         gsl_matrix_scale(preinv, est->data->matrix->size1);
     gsl_matrix *inv = apop_matrix_inverse(preinv);
     est->covariance = apop_matrix_to_data(inv);
-    if (est->parameters->names->rownames){
+    if (est->parameters->names->row){
         apop_name_stack(est->covariance->names, est->parameters->names, 'r');
         apop_name_cross_stack(est->covariance->names, est->parameters->names, 'c', 'r');
     }

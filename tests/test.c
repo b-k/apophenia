@@ -632,7 +632,7 @@ void test_histograms(){
     for (i=0; i< n; i++)
         //gsl_matrix_set(d->matrix, i, 0, gsl_rng_uniform(r));
         gsl_matrix_set(d->matrix, i, 0, gsl_ran_gaussian(r, sqrt(sigmasq))+mu);
-    apop_model   *hp = apop_histogram_params_alloc(d, 1000, NULL);
+    apop_model   *hp = apop_histogram_params_alloc(d, 1000);
     for (i=0; i< n; i++){
         apop_histogram.draw(gsl_matrix_ptr(out, i,0), r, hp);
         assert(gsl_finite(gsl_matrix_get(out, i,0)));

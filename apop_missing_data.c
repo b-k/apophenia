@@ -60,8 +60,8 @@ apop_data * apop_data_listwise_delete(apop_data *d){
             if (has_matrix){
                 APOP_ROW(d, i, v);
                 gsl_matrix_set_row(out->matrix, j, v);
-            if (d->names->rownames && d->names->rownamect > i)
-                apop_name_add(out->names, d->names->rownames[i], 'r');
+            if (d->names->row && d->names->rowct > i)
+                apop_name_add(out->names, d->names->row[i], 'r');
             }
             j++;
         }

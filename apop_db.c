@@ -121,6 +121,8 @@ be useful for debugging. There are also some graphical
 front-ends; just ask your favorite search engine for <a
 href="http://www.google.com/search?&q=sqlite+gui">SQLite GUI</a>.
 
+MySQL users: either set the environment variable APOP_DB_ENGINE=mysql or set \c apop_opts.db_engine = 'm'.
+
 The Apophenia package assumes you are only using a single
 SQLite database at a time; if not, the \ref apop_db_merge and \ref
 apop_db_merge_table functions may help.
@@ -383,13 +385,13 @@ static regex_t     *regex;
 
 size_t tr;
 //apop_query_to_matrix callback.
-static int db_to_table(void *o,int argc, char **argv, char **colnames){
+static int db_to_table(void *o,int argc, char **argv, char **column){
   int		jj, i, ncfound = 0;
   gsl_matrix ** 	output = (gsl_matrix **) o;
     if (firstcall){
         firstcall   --;
         for(i=0; i<argc; i++)
-            if (!strcmp(colnames[i], apop_opts.db_name_column)){
+            if (!strcmp(column[i], apop_opts.db_name_column)){
                 namecol = i;
                 ncfound = 1;
                 break;
@@ -398,7 +400,7 @@ static int db_to_table(void *o,int argc, char **argv, char **colnames){
         if (data_or_matrix == 'd')
             for(i=0; i<argc; i++)
                 if (namecol != i)
-                    apop_name_add(last_names, colnames[i], 'c');
+                    apop_name_add(last_names, column[i], 'c');
     }
 	if (argv !=NULL){
         ncfound =0;
@@ -633,7 +635,7 @@ there are fewer columns produced than given in the spec, the additional
 elements will be allocated but not filled (i.e., they are uninitialized
 and will have garbage).
 
-The 'n' character indicates rownames, meaning that \c apop_opts.db_name_column is ignored).
+The 'n' character indicates row, meaning that \c apop_opts.db_name_column is ignored).
 
 As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers.
 */
@@ -737,20 +739,20 @@ int apop_data_to_db(apop_data *set, char *tabname){
   int		batch_size	= 100;
   double    v;
   char		*q 		    = malloc(1000);
-  int       use_rownames= strlen(apop_opts.db_name_column) &&set->names->rownamect == set->matrix->size1;
+  int       use_row= strlen(apop_opts.db_name_column) &&set->names->rowct == set->matrix->size1;
 
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
     {
         sprintf(q, "create table %s (", tabname);
-        if (use_rownames) {
+        if (use_row) {
             sprintf(q, "%s\n %s varchar(1000), \n", q, apop_opts.db_name_column);
             q	=realloc(q,strlen(q)+1000);
         }
         for(i=0;i< set->matrix->size2; i++){
             q	=realloc(q,strlen(q)+1000);
-            if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i varchar(1000)", q,i);
-            else			sprintf(q, "%s\n %s  varchar(1000)", q,apop_strip_dots(set->names->colnames[i],'d'));
+            if(set->names->colct <= i) 	sprintf(q, "%s\n c%i varchar(1000)", q,i);
+            else			sprintf(q, "%s\n %s  varchar(1000)", q,apop_strip_dots(set->names->column[i],'d'));
             if (i< set->matrix->size2-1) 	strcat(q, ", ");
         }
         strcat(q,"); ");
@@ -766,14 +768,14 @@ int apop_data_to_db(apop_data *set, char *tabname){
 #ifdef HAVE_LIBSQLITE3
         if (db==NULL) apop_db_open(NULL);
         sprintf(q, "create table %s (", tabname);
-        if (use_rownames) {
+        if (use_row) {
             sprintf(q, "%s\n %s, \n", q, apop_opts.db_name_column);
             q	=realloc(q,strlen(q)+1000);
         }
         for(i=0;i< set->matrix->size2; i++){
             q	=realloc(q,strlen(q)+1000);
-            if(set->names->colnamect <= i) 	sprintf(q, "%s\n c%i", q,i);
-            else			sprintf(q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->colnames[i],'d'));
+            if(set->names->colct <= i) 	sprintf(q, "%s\n c%i", q,i);
+            else			sprintf(q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->column[i],'d'));
             if (i< set->matrix->size2-1) 	sprintf(q, "%s,",q);
             else			sprintf(q,"%s);  begin;",q);
         }
@@ -785,8 +787,8 @@ int apop_data_to_db(apop_data *set, char *tabname){
 	for(i=0;i< set->matrix->size1; i++){
 		q	=realloc(q,strlen(q)+(1+set->matrix->size2)*batch_size*1000);
 		sprintf(q, "%s \n insert into %s values(",q, tabname);
-        if (use_rownames)
-			sprintf(q,"%s \'%s\', ",q, set->names->rownames[i]);
+        if (use_row)
+			sprintf(q,"%s \'%s\', ",q, set->names->row[i]);
 		for(j=0;j< set->matrix->size2; j++){
             v   =gsl_matrix_get(set->matrix,i,j);
             if (gsl_isnan(v))

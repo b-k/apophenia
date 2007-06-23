@@ -15,7 +15,7 @@ See the page on \ref types for more.
 \ingroup types
  */
 
-/** Allocate an \ref apop_params.
+/** Allocate an \ref apop_model.
 
 This sets up the output elements of the \c apop_model: the parameters,
 covarinace, and expected data sets. 

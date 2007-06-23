@@ -77,11 +77,11 @@ Typically, the row names are not used, but they are there for your convenience.
 \ingroup names
 */
 typedef struct{
-	char * vecname;
-	char ** colnames;
-	char ** rownames;
-	char ** textnames;
-	int colnamect, rownamect, textnamect;
+	char * vector;
+	char ** column;
+	char ** row;
+	char ** text;
+	int colct, rowct, textct;
     char title[101];
 } apop_name;
 

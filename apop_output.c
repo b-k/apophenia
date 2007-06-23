@@ -72,9 +72,9 @@ void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * outfile
     f   = (outfile? fopen(outfile, "a") : stdout);
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters->vector,0), gsl_vector_get(est->parameters->vector,1));
 	if (data->names){
-		fprintf(f, "set xlabel \"%s\"\n", data->names->colnames[1]);
+		fprintf(f, "set xlabel \"%s\"\n", data->names->column[1]);
         if (est->expected !=NULL)
-		    fprintf(f, "set ylabel \"%s\"\n", est->expected->names->colnames[0]);
+		    fprintf(f, "set ylabel \"%s\"\n", est->expected->names->column[0]);
 	}
 	fprintf(f, "set key off\n");
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");
@@ -248,8 +248,8 @@ static void print_core_m(const gsl_matrix *data, char *separator, char *filename
   size_t    i,j; 
   int       max_name_size  = 0;
     if (n)
-        for (i=0; i< n->rownamect; i++)
-            max_name_size   = GSL_MAX(strlen(n->rownames[i]), max_name_size);
+        for (i=0; i< n->rowct; i++)
+            max_name_size   = GSL_MAX(strlen(n->row[i]), max_name_size);
 
 	//if ((apop_opts.output_type == 's') || (filename == NULL) || (!strcmp(filename, "STDOUT")))
 	if ((filename == NULL) || (!strcmp(filename, "STDOUT")))
@@ -263,15 +263,15 @@ static void print_core_m(const gsl_matrix *data, char *separator, char *filename
     if (!data)
         fprintf(f, "NULL\n");
     else {
-        if (n && n->colnamect > 0){ //then print a row of column headers.
+        if (n && n->colct > 0){ //then print a row of column headers.
 		    fprintf(f,"\t");
-		    for (j=0; j< n->colnamect; j++)
-			    fprintf(f,"%s\t\t", n->colnames[j]);
+		    for (j=0; j< n->colct; j++)
+			    fprintf(f,"%s\t\t", n->column[j]);
 		    fprintf(f,"\n");
         }
 	    for (i=0; i<data->size1; i++){
-            if (n && n->rownamect > 0)
-			    fprintf(f,"%-*s", max_name_size+4, n->rownames[i]);
+            if (n && n->rowct > 0)
+			    fprintf(f,"%-*s", max_name_size+4, n->row[i]);
 		    for (j=0; j<data->size2; j++){
 			    p_fn(f, gsl_matrix_get(data, i,j));
 			    if (j< data->size2 -1)	fprintf(f, "%s", separator);
@@ -367,43 +367,43 @@ void apop_data_show(const apop_data *data){
   double  datapt;
     if (data->names->title)
         printf("\t%s\n\n", data->names->title);
-    if (data->names->rownames)
-        L   = get_max_strlen(data->names->rownames, data->names->rownamect);
+    if (data->names->row)
+        L   = get_max_strlen(data->names->row, data->names->rowct);
     apop_opts.output_type = 's';
-    if (data->names->rownames)
+    if (data->names->row)
         printf("%*s  ", L+2, " ");
-    if (data->vector && data->names->vecname){
-        printf("%*s", L+2, data->names->vecname);
+    if (data->vector && data->names->vector){
+        printf("%*s", L+2, data->names->vector);
     }
     if (data->matrix){
-        if (data->vector && data->names->colnamect)
-                printf("%c |  ", data->names->vecname ? ' ' : '\t' );
-        for(i=0; i< data->names->colnamect; i++){
-            if (i < data->names->colnamect -1)
-                printf("%s%s", data->names->colnames[i], apop_opts.output_delimiter);
+        if (data->vector && data->names->colct)
+                printf("%c |  ", data->names->vector ? ' ' : '\t' );
+        for(i=0; i< data->names->colct; i++){
+            if (i < data->names->colct -1)
+                printf("%s%s", data->names->column[i], apop_opts.output_delimiter);
             else
-                printf("%s", data->names->colnames[i]);
+                printf("%s", data->names->column[i]);
         }
     }
-    if (data->textsize[1] && data->names->textnames){
-        if ((data->vector && data->names->vecname) || (data->matrix && data->names->colnamect))
+    if (data->textsize[1] && data->names->text){
+        if ((data->vector && data->names->vector) || (data->matrix && data->names->colct))
             printf(" | ");
-        for(i=0; i< data->names->textnamect; i++){
-            if (i < data->names->textnamect -1)
-                printf("%s%s", data->names->textnames[i], apop_opts.output_delimiter);
+        for(i=0; i< data->names->textct; i++){
+            if (i < data->names->textct -1)
+                printf("%s%s", data->names->text[i], apop_opts.output_delimiter);
             else
-                printf("%s", data->names->textnames[i]);
+                printf("%s", data->names->text[i]);
         }
     }
     printf("\n");
     for(j=0; j< rowend; j++){
-        if (data->names->rownamect > j)
-            printf("%*s%s", L+2, data->names->rownames[j], apop_opts.output_delimiter);
+        if (data->names->rowct > j)
+            printf("%*s%s", L+2, data->names->row[j], apop_opts.output_delimiter);
         for(i=start; i< end; i++){
-            if (i==-1 && data->names->vecname) 
-                Lc  =  strlen(data->names->vecname);
-            else if (i>=0 && data->names->colnamect > i) 
-                Lc  =  strlen(data->names->colnames[i]);
+            if (i==-1 && data->names->vector) 
+                Lc  =  strlen(data->names->vector);
+            else if (i>=0 && data->names->colct > i) 
+                Lc  =  strlen(data->names->column[i]);
             else
                 Lc  =  6;
             datapt  = apop_data_get(data, j, i);
@@ -445,13 +445,13 @@ static void printone(FILE *f, double width, double height, double margin, int xp
     else
         fprintf(f, "#set y2tics   \n\
 set y2label \"%s\" \n\
-                    ", (d->names->colnamect >yposn)? d->names->colnames[yposn]: "");
+                    ", (d->names->colct >yposn)? d->names->column[yposn]: "");
     if (yposn)
         fprintf(f, "unset x2tics; unset x2label; unset xtics; unset xlabel\n");
     else 
         fprintf(f, "#set x2tics\n \
 set x2label \"%s\" \n\
-                    ", (d->names->colnamect >xposn)? d->names->colnames[xposn]: "");
+                    ", (d->names->colct >xposn)? d->names->column[xposn]: "");
     fprintf(f, "set size   %g, %g\n\
 set origin %g, %g\n\
 plot '-'        \n\
@@ -514,12 +514,12 @@ set nokey           \n\
     for (i = 0; i< d->matrix->size2; i++)
         for (j = 0; j< d->matrix->size2; j++)
             printone(f, width, height, margin, i, j, d);
-    for (i=0; i< d->names->colnamect; i++){
+    for (i=0; i< d->names->colct; i++){
         double sizex        = (double)(width - margin * (d->matrix->size2 -1))/d->matrix->size2; 
         double sizey        = (double)(height - margin * (d->matrix->size2 -1))/d->matrix->size2;
         double offx        = (sizex +margin)* (i+0.5);
         double offy        = (sizey +margin)* (i+0.5);
-        fprintf(f, "set label \"%s\" at %g, %g\n", d->names->colnames[i], offx, offy);
+        fprintf(f, "set label \"%s\" at %g, %g\n", d->names->column[i], offx, offy);
     } 
     fprintf(f, "unset multiplot\n"); 
     if (apop_opts.output_type == 'f')
