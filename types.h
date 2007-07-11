@@ -126,10 +126,10 @@ struct _apop_model{
     size_t      method_params_size, model_params_size, more_size;
     apop_data   *data;
     apop_model * (*estimate)(apop_data * data, apop_model *params);
-    double  (*p)(const apop_data *beta, apop_data *d, apop_model *params);
-    double  (*log_likelihood)(const apop_data *beta, apop_data *d, apop_model *params);
-    void    (*score)(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *params);
-    double  (*constraint)(const apop_data *beta, apop_data *returned_beta, apop_model *params);
+    double  (*p)(const apop_data *d, apop_model *params);
+    double  (*log_likelihood)(const apop_data *d, apop_model *params);
+    void    (*score)(const apop_data *d, gsl_vector *gradient, apop_model *params);
+    double  (*constraint)(const apop_data *data, apop_model *params);
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
     void    *more;
 } ;

@@ -15,7 +15,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <gsl/gsl_rng.h>
 #include <stdio.h>
 #include <assert.h>
-static double normal_log_likelihood(const apop_data *beta, apop_data *d, apop_model *params);
+static double normal_log_likelihood(const apop_data *d, apop_model *params);
 
 
 //////////////////
@@ -39,7 +39,7 @@ static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
         est->parameters = apop_data_alloc(2, 0, 0);
 	gsl_vector_set(est->parameters->vector, 0, mean);
 	gsl_vector_set(est->parameters->vector, 1, sqrt(var));
-    est->llikelihood	= normal_log_likelihood(est->parameters, data, NULL);
+    est->llikelihood	= normal_log_likelihood(data, est);
 	if (!p || p->want_cov){
         est->covariance   = apop_data_calloc(0, 2, 2);
         int ct  = data->matrix->size1 * data->matrix->size2;
@@ -49,14 +49,14 @@ static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
 	return est;
 }
 
-static double beta_1_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
+static double beta_1_greater_than_x_constraint(const apop_data *data, apop_model *v){
     //constraint is 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint) {
         constraint = apop_data_calloc(1,1,2);
         apop_data_set(constraint, 0, 1, 1);
     }
-    return apop_linear_constraint(beta->vector, constraint, 1e-3, returned_beta->vector);
+    return apop_linear_constraint(v->parameters->vector, constraint, 1e-5);
 }
 
 static double   mu, sd;
@@ -92,18 +92,22 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 \param beta	beta[0]=the mean; beta[1]=the variance
 \param d	the set of data points; see notes.
 */
-static double normal_log_likelihood(const apop_data *beta, apop_data *d, apop_model *params){
-    mu	        = gsl_vector_get(beta->vector,0);
-    sd          = gsl_vector_get(beta->vector,1);
+static double normal_log_likelihood(const apop_data *d, apop_model *params){
+  if (!params->parameters)
+      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+    mu	        = gsl_vector_get(params->parameters->vector,0);
+    sd          = gsl_vector_get(params->parameters->vector,1);
   gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me2);//sum of (x-mu)^2
   long double   ll      = -apop_vector_sum(v)/(2*gsl_pow_2(sd)) - d->matrix->size1*d->matrix->size2*(M_LNPI+M_LN2+log(sd));
     gsl_vector_free(v);
 	return ll;
 }
 
-static double normal_p(const apop_data *beta, apop_data *d, apop_model *params){
-    mu	        = gsl_vector_get(beta->vector,0);
-    sd          = gsl_vector_get(beta->vector,1);
+static double normal_p(const apop_data *d, apop_model *params){
+  if (!params->parameters)
+      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+    mu	        = gsl_vector_get(params->parameters->vector,0);
+    sd          = gsl_vector_get(params->parameters->vector,1);
   gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me);
   int           i;
   long double   ll      = 1;
@@ -120,10 +124,9 @@ To tell you the truth, I have no idea when anybody would need this, but it's her
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 \f$d\ln N(\mu,\sigma)/d\sigma = ((x-\mu)^2 / \sigma^3) - 1/\sigma \f$
  */
-static void normal_dlog_likelihood(const apop_data *beta, apop_data *d, 
-                                    gsl_vector *gradient, apop_model *params){    
-              mu      = gsl_vector_get(beta->vector,0);
-  double      sd      = gsl_vector_get(beta->vector,1),
+static void normal_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *params){    
+              mu      = gsl_vector_get(params->parameters->vector,0);
+  double      sd      = gsl_vector_get(params->parameters->vector,1),
               dll     = 0,
               sll     = 0,
               x;
@@ -141,6 +144,7 @@ static void normal_dlog_likelihood(const apop_data *beta, apop_data *d,
 }
 
 
+
 /** An apophenia wrapper for the GSL's Normal RNG.
 
 Two differences: this one asks explicitly for a mean, and the GSL
@@ -149,7 +153,8 @@ prefer the variance (\f$\sigma^2\f$) wherever possible, while the GSL
 uses the standard deviation here (\f$\sigma\f$)
 
 \param r	a gsl_rng already allocated
-\param a	the mean and the variance
+\param *out	To where I will write the drawn number
+\param *p   A pointer to the model.
  */
 static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0];

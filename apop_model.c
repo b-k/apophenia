@@ -143,18 +143,38 @@ apop_model * apop_model_copy(apop_model in){
 apop_model *apop_estimate(apop_data *d, apop_model m){
     return m.estimate(d, &m); }
 
-/* Find the log likelihood of a data/param pair using a given model.
+/* Find the probability of a data/parametrized model pair.
 
 \param d    The data
-\param beta The parameters. Maybe be \c NULL, in which case the function will use \c m.parameters.
-\param m    The model, which must have either a \c log_likelihood or a \c p method.
+\param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
 */
-double apop_log_likelihood(const apop_data *beta, apop_data *d, apop_model m){
-  const apop_data *params = beta ? beta : m.parameters;
+double apop_p(const apop_data *d, apop_model m){
+    if (!m.parameters){
+        apop_error(0, 's', "%s: You gave me a function that has no parameters.\n", __func__);
+        return 0;
+    }
+    if (m.p)
+        return m.p(d, &m);
+    else if (m.log_likelihood)
+        return exp(m.log_likelihood(d, &m));
+    apop_error(0, 's', "%s: You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n", __func__);
+    return 0;
+}
+
+/* Find the log likelihood of a data/parametrized model pair.
+
+\param d    The data
+\param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
+*/
+double apop_log_likelihood(const apop_data *d, apop_model m){
+    if (!m.parameters){
+        apop_error(0, 's', "%s: You gave me a function that has no parameters.\n", __func__);
+        return 0;
+    }
     if (m.log_likelihood)
-        return m.log_likelihood(params, d, &m);
+        return m.log_likelihood(d, &m);
     else if (m.p)
-        return log(m.p(params, d, &m));
+        return log(m.p(d, &m));
     apop_error(0, 's', "%s: You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n", __func__);
     return 0;
 }

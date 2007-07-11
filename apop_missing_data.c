@@ -80,7 +80,7 @@ static apop_model apop_ml_imputation_model;
 typedef struct {
 size_t      *row, *col;
 int         ct;
-apop_data   *meanvar;
+apop_model  *local_mvn;
 } apop_ml_imputation_struct;
 
 static void addin(apop_ml_imputation_struct *m, size_t i, size_t j){
@@ -120,12 +120,11 @@ static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct *
 static double ll(const apop_data *d, apop_data *x, apop_model * ep){
   apop_ml_imputation_struct *m  = ep->model_params;
     unpack(d, x, m);
-    return apop_multivariate_normal.log_likelihood(x, m->meanvar, NULL);
+    return apop_multivariate_normal.log_likelihood(x, m->local_mvn);
 }
 
 
 static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0,0, .log_likelihood= ll};
-
 
 
 
@@ -146,7 +145,8 @@ apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_mle_para
   apop_mle_params *mlp   = parameters ? parameters :  apop_mle_params_alloc(d, *mc);
     find_missing(d, &mask);
     mc->vbase           = mask.ct;
-    mask.meanvar        = meanvar;
+    mask.local_mvn      = apop_model_copy(apop_multivariate_normal);
+    mask.local_mvn->parameters = meanvar;
     mlp->method             = 5;
     mc->model_params        = &mask;
     mlp->step_size          = 2;

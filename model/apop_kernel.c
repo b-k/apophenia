@@ -114,7 +114,7 @@ apop_model *apop_kernel_density_params_alloc(apop_data *data,
             for(j=1; j < out->pdf->n-1; j ++){
                 smallset->matrix->data[0] = apop_getmidpt(out->pdf,j);
                 out->pdf->bin[j] += bh->pdf->bin[i] * 
-                        out->kernelbase->p(out->kernelbase->parameters, smallset, out->kernelbase);
+                        out->kernelbase->p(smallset, out->kernelbase);
             }
         }
     //normalize
@@ -139,12 +139,12 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
 	return apop_kernel_density_params_alloc(data, NULL, *m, set_params);
 }
 
-static double apop_kernel_density_log_likelihood(const apop_data *beta, apop_data *d, apop_model *p){
-    return apop_histogram.log_likelihood(beta, d,p);
+static double apop_kernel_density_log_likelihood(const apop_data *d, apop_model *p){
+    return apop_histogram.log_likelihood(d,p);
 }
 
-static double apop_kernel_density_p(const apop_data *beta, apop_data *d, apop_model *p){
-    return apop_histogram.p(beta, d, p);
+static double apop_kernel_density_p(const apop_data *d, apop_model *p){
+    return apop_histogram.p(d, p);
 }
 
 static void apop_kernel_density_rng( double *out, gsl_rng *r, apop_model* eps){
