@@ -797,6 +797,22 @@ void test_updating (){
     subtest_updating(apop_beta, apop_bernoulli);
 }
 
+void test_blank_db_queries(){
+    apop_db_open(NULL);
+    apop_query("create table t (a, b, c)");
+    apop_data *d = apop_query_to_data("select * from t");
+    apop_data *e = apop_query_to_text("select * from t");
+    gsl_matrix *f = apop_query_to_matrix("select * from t");
+    gsl_vector *g = apop_query_to_vector("select * from t");
+    double h = apop_query_to_float("select * from t");
+    assert(d==NULL);
+    assert(e==NULL);
+    assert(f==NULL);
+    assert(g==NULL);
+    assert(gsl_isnan(h));
+}
+
+
 //The do_test macros
 #define do_int_test(text, fn)   if (verbose)    \
                                 printf(text);  \
@@ -851,6 +867,7 @@ int main(int argc, char **argv){
     do_int_test("apop_f_test and apop_coefficient_of_determination test:", test_f(e));
     do_test("test binomial estimations", test_binomial(r));
     do_test("test lognormal estimations", test_lognormal(r));
+    do_test("test queries returning empty tables", test_blank_db_queries());
     do_test("test jackknife covariance", test_jack(r));
     do_test("test apop_update", test_updating());
     do_test("test apop_histogram model", test_histograms(r));

@@ -194,6 +194,9 @@ apop_data * apop_data_copy(const apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data *out, const apop_data *in);
 double * apop_data_ptr(const apop_data *data, const size_t i, const size_t j);
+double * apop_data_ptr_it(const apop_data *in, size_t row, char* col);
+double * apop_data_ptr_ti(const apop_data *in, char* row, int col);
+double * apop_data_ptr_tt(const apop_data *in, char *row, char* col);
 double apop_data_get(const apop_data *in, size_t row, int  col);
 double apop_data_get_it(const apop_data *in, size_t row, char* col);
 double apop_data_get_ti(const apop_data *in, char* row, int col);
@@ -211,6 +214,7 @@ void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 apop_model * apop_model_copy(apop_model in); //in apop_params.c.
 apop_model * apop_model_clear(apop_data * data, apop_model *model);
 apop_model * apop_estimate(apop_data *d, apop_model m);
+void apop_score(const apop_data *d, gsl_vector *out, apop_model m);
 void apop_draw(double *out, gsl_rng *r, apop_model *m);
 
 void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c

@@ -53,6 +53,8 @@ Find the determinant of a matrix. The \c in matrix is not destroyed in the proce
 \ingroup linear_algebra
 */
 double apop_matrix_determinant(const gsl_matrix *in) {
+  if (in->size1 != in->size2)
+      apop_error(0, 's', "%s: You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.\n", __func__, in->size1, in->size2);
   int 		sign;
   double 	the_determinant = 0;
   gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
@@ -74,6 +76,8 @@ You may want to call \ref apop_matrix_determinant first to check that your input
 \ingroup linear_algebra
 */
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) {
+  if (in->size1 != in->size2)
+      apop_error(0, 's', "%s: You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.\n", __func__, in->size1, in->size2);
   int 		sign;
   gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
   gsl_permutation * perm = gsl_permutation_alloc(in->size1);
@@ -108,6 +112,8 @@ If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns 
 \ingroup linear_algebra
 */
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
+  if (in->size1 != in->size2)
+      apop_error(0, 's', "%s: You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.\n", __func__, in->size1, in->size2);
   int 		sign;
   double 	the_determinant = 0;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
@@ -222,6 +228,18 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 	m->data[i * m->tda +j]	+= amt;
 }
 
+
+/** Take the log of every element in a vector.
+\ingroup convenience_fns
+ */
+void apop_vector_log10(gsl_vector *v){
+  int     i;
+  double  d;
+    for (i=0; i< v->size; i++){
+	    d   = v->data[i * v->stride];
+	    v->data[i * v->stride]  = log10(d);
+    }
+}
 
 /** Take the log of every element in a vector.
 \ingroup convenience_fns

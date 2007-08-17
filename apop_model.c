@@ -179,6 +179,25 @@ double apop_log_likelihood(const apop_data *d, apop_model m){
     return 0;
 }
 
+/* Find the vector of derivatives of the log likelihood of a data/parametrized model pair.
+
+\param d    The data
+\param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
+*/
+void apop_score(const apop_data *d, gsl_vector *out, apop_model m){
+    if (!m.parameters){
+        apop_error(0, 's', "%s: You gave me a function that has no parameters.\n", __func__);
+        return;
+    }
+    if (m.score){
+        m.score(d, out, &m);
+        return;
+    }
+    gsl_vector * numeric_default = apop_numerical_gradient(d, &m);
+    gsl_vector_memcpy(out, numeric_default);
+    gsl_vector_free(numeric_default);
+}
+
 void apop_draw(double *out, gsl_rng *r, apop_model *m){
     m->draw(out,r, m);
 }

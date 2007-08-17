@@ -208,6 +208,10 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
 gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *m){
   infostruct    i;
   apop_fn_with_params ll  = m->log_likelihood ? m->log_likelihood : m->p;
+    if (!ll){
+        apop_error(0, 'c', "%s: Input model has neither p nor log_likelihood method. Returning zero.\n");
+        return 0;
+    }
   gsl_vector        *out= gsl_vector_alloc(m->parameters->vector->size);
   apop_mle_params *mp;
   int clean = 0;

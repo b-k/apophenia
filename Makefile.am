@@ -15,8 +15,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			apop_model_fix_params.c	 apop_update.c			\
 			vasprintf/asnprintf.c vasprintf/printf-args.c 	\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
-			vasprintf/printf-parse.c 						\
-			vasprintf/vasprintf.c  							\
+			vasprintf/printf-parse.c vasprintf/vasprintf.c  \
 			model/apop_multivariate_normal.c				\
 			model/apop_normal.c model/apop_OLS.c 		 	\
 			model/apop_WLS.c	model/apop_logit.c 			\
@@ -29,7 +28,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_zipf.c model/apop_zipf_rank.c 		\
 			model/apop_bernoulli.c model/apop_binomial.c 	\
 			model/apop_histogram.c model/apop_kernel.c 		\
-			model/apop_lognormal.c 
+			model/apop_lognormal.c model/apop_IV.c 
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \
@@ -54,7 +53,7 @@ apop_plot_query_LDADD = libapophenia.la
 
 EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
 		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
-		tests/Makefile tests/Readme tests/nist_tests.c tests/numacc4.dat \
+		tests/Makefile tests/Readme tests/slower.c tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data tests/test_data2 \
 		tests/test_data_nans tests/wampler1.dat \
 		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\

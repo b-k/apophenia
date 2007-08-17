@@ -65,7 +65,7 @@ Apophenia reserves the right to insert temp tables into the opened database. The
 
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= { 0,              //verbose
-                                's',            //output type
+                                'f',            //output type
                                 NULL,            //output pipe
                                 "\t",           //output delimiter
                                 1,              //output append
@@ -607,6 +607,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #ifdef HAVE_LIBSQLITE3
     data_or_matrix  = 'd';
 	m	        = apop_query_to_matrix(query);
+    if (!m) return NULL;
     data_or_matrix  = 'm';
     out         = apop_matrix_to_data(m);
     //replace name struct allocated in apop_matrix_to_data with the
