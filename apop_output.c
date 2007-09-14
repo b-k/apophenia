@@ -215,6 +215,23 @@ void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
         fclose(f);
 }
 	
+void apop_histogram_print(apop_model *h, char *outfile){
+  apop_histogram_params *hp = h->model_params;
+  if (!hp)
+      apop_error(0, 's', "%s: You sent me an apop_model with no model_params. Have you estimated this histogram with data yet?\n", __func__);
+  int             i;
+  FILE *          f;
+    if (apop_opts.output_type == 'p')
+        f   = apop_opts.output_pipe;
+    else 
+        f = (outfile ? fopen(outfile, "a") : stdout);
+	for (i=0; i < hp->pdf->n; i++)
+	    fprintf(f, "%4f\t %g\n", hp->pdf->range[i], gsl_histogram_get(hp->pdf, i));
+    if (apop_opts.output_type == 'p')
+        fflush(f);
+    else if (outfile)    
+        fclose(f);
+}
 
 ////////////////////////////
 /////The printing functions.

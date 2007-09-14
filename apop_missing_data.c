@@ -18,6 +18,8 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 
     \param d    The data, with NaNs
     \return     A (potentially shorter) copy of the data set, without NaNs.
+
+    \todo  Doesn't handle names or text.
 */
 apop_data * apop_data_listwise_delete(apop_data *d){
   int i, j, min = 0, max = 0, height=0, has_vector=0, has_matrix=0, to_rm;
@@ -49,7 +51,7 @@ apop_data * apop_data_listwise_delete(apop_data *d){
     if (to_rm  == height)
         return NULL;
   apop_data *out = apop_data_alloc(0,height-to_rm, has_matrix ? max : -1);
-    out->names  = apop_name_copy(d->names);                           ///You loser!!! Fix this. And add text!!!!
+    out->names  = apop_name_copy(d->names);                           //You loser!!! Fix this. And add text!!!!
     if (has_vector && has_matrix)
         out->vector = gsl_vector_alloc(height - to_rm);
     j   = 0;

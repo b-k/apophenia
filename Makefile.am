@@ -54,7 +54,7 @@ apop_plot_query_LDADD = libapophenia.la
 EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
 		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
 		tests/Makefile tests/Readme tests/slower.c tests/nist_tests.c tests/numacc4.dat \
-		tests/pontius.dat tests/test.c tests/test_data tests/test_data2 \
+		tests/pontius.dat tests/test.c tests/data-mixed tests/test_data tests/test_data2 \
 		tests/test_data_nans tests/wampler1.dat \
 		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
 		apophenia/*.h apop.h	\
@@ -75,7 +75,7 @@ doc:
 	sudo cp man/man3/* /usr/share/man/man3/
 
 test:
-	cd tests; make; ./test;
+	cd tests; rm test.o; make; ./test;
 
 install-data-local:
 	cp apop.h $(includedir)

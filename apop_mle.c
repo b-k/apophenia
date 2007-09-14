@@ -26,47 +26,15 @@ void apop_estimate_parameter_t_tests (apop_model *est);
 
 /** \page trace_path Plotting the path of an ML estimation.
 
-If \c apop_opts.mle_trace_path has a name of positive length, then every time
-the MLE evaluates the function, then the value will be output to a table
-in the database with the given name. You can then plot this table to
-get an idea of the path the estimation routine used to arrive at its MLE.
+If \c trace_path (in the \c apop_mle_params struct) has a name of positive
+length, then every time the MLE evaluates the function, then the value
+will be output to a table in the database/a file with the given name
+(depending on the value of \c apop_opts.output_type). You can then plot this
+table to get an idea of the path the estimation routine used to arrive
+at its MLE.
 
-First, set this variable and run the MLE. The begin/commit wrapper
-speeds things up a touch, but this will clearly be slower than without
-taking notes:
+To write to a pipe or stdout, set \c apop_opts.output_type appropriately and set \c trace_path to the literal string \c "NULL".
 
-\code
-    strcpy(apop_opts.mle_trace_path, "path");
-    apop_query("begin;");
-    e   = apop_zipf.estimate(...);
-    apop_query("commit;");
-\endcode
-
-
-Then, plot using a function like the below. Notice that you will want
-\c splot for 3-d variables and \c plot for 2-d. The change in width
-and pointsize is to remind the eye that the lines connecting the points
-only indicate the path the maximizer went along, not actual values of
-the function.
-
-\code
-static void plotme(char *outfile){
-FILE            *f;
-gsl_matrix      *traced_path;
-    f       = fopen(outfile, "w");  //overwrites. Use "a" to append.
-    fprintf(f,"splot '-' with linespoints linewidth 0.5 pointsize 2\n");
-    traced_path = apop_query_to_matrix("select * from %s", apop_opts.mle_trace_path);
-    fclose(f);
-    apop_matrix_print(traced_path, "\t", outfile);
-}
-\endcode
-
-Finally, call gnuplot:
-\code 
-gnuplot -persist < plotme
-(or)
-gnuplot plotme -
-\endcode
 
 Below is a sample of the sort of output one would get:<br>
 \image latex "search.gif" "An ML search, tracing out the surface of the function" width=\textwidth
@@ -107,6 +75,7 @@ apop_mle_params *apop_mle_params_set_default(apop_model *parent){
     parent->method_params   = setme;
     parent->method_params_size   = sizeof(apop_mle_params);
     strcpy(setme->model->method_name, "MLE");
+    setme->trace_path[0]    = '\0';
     return setme;
 }
 
@@ -152,6 +121,8 @@ typedef struct {
     double      **gradientp;
     gsl_vector  ***score_list;
     size_t      *gsize;
+    char        *trace_path;
+    FILE        **trace_file;
 }   infostruct;
 
 static apop_model * apop_annealing(infostruct*);                         //below.
@@ -241,15 +212,36 @@ if any, and are otherwise the primary point of contact between the
 apop_models' methods and the GSL's MLE routines.
 */
 
-static void insert_path_into_db(const gsl_vector *beta, double out){
-    if (beta->size == 1){
-        if(!apop_table_exists(apop_opts.mle_trace_path, 0))
-            apop_query("create table  %s (beta0, ll);", apop_opts.mle_trace_path);
-        apop_query("insert into %s values (%g, %g);", apop_opts.mle_trace_path, gsl_vector_get(beta,0), out);
+static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
+    if (apop_opts.output_type == 'd'){
+        if (beta->size == 1){
+            if(!apop_table_exists(tp, 0))
+                apop_query("create table  %s (beta0, ll);", tp);
+            apop_query("insert into %s values (%g, %g);", tp, gsl_vector_get(beta,0), out);
+        } else {
+            if(!apop_table_exists(tp, 0))
+                apop_query("create table  %s (beta0, beta1, ll);", tp);
+            apop_query("insert into %s values (%g, %g, %g);", tp, gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
+        }
+    } else if (apop_opts.output_type == 'p'){
+        if (beta->size == 1)
+            fprintf(apop_opts.output_pipe, "%g\t %g\n",  gsl_vector_get(beta,0), out);
+        else
+            fprintf(apop_opts.output_pipe, "%g\t %g\t %g\n",  gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
     } else {
-        if(!apop_table_exists(apop_opts.mle_trace_path, 0))
-            apop_query("create table  %s (beta0, beta1, ll);", apop_opts.mle_trace_path);
-        apop_query("insert into %s values (%g, %g, %g);", apop_opts.mle_trace_path, gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
+        if (!*tf){
+            if (apop_opts.output_type == 's' && !strcmp(tp, "NULL"))
+                *tf = stdout;
+            else
+                if (!(*tf = fopen(tp, "a"))) {
+                    apop_error(0, 'c', "%s: couldn't open %s for writing. Continuing without the path trace.\n", __func__, tp);
+                    return;
+                }
+        }
+        if (beta->size == 1)
+            fprintf(*tf, "%g\t %g\n",  gsl_vector_get(beta,0), out);
+        else
+            fprintf(*tf, "%g\t %g\t %g\n",  gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
     }
 }
 
@@ -277,8 +269,8 @@ static double negshell (const gsl_vector *beta, void * in){
     out = penalty - f(i->data, i->model); //negative llikelihood
     if (penalty)
         apop_pack_in_place(i->model->parameters, i->beta);
-    if (strlen(apop_opts.mle_trace_path))
-        insert_path_into_db(i->model->parameters->vector,-out);
+    if (strlen(i->trace_path))
+        tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
     i->model->llikelihood = -out; //negative negative llikelihood.
     return out;
 }
@@ -309,6 +301,8 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
         apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
         apop_internal_numerical_gradient(ll, i, g);
     }
+    if (strlen(i->trace_path))
+        negshell (beta,  in);
     gsl_vector_scale(g, -1);
     return GSL_SUCCESS;
 }
@@ -481,11 +475,11 @@ static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i)
 				            status  = 0,
 				            betasize= vsize+ msize1*msize2;
   apop_mle_params           *mp     = est->method_params;
-    if (mp->method == 2)
+    if (mp->method == APOP_CG_BFGS)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
-    else if (mp->method == 3)
+    else if (mp->method == APOP_CG_PR)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_pr, betasize);
-    else
+    else //Default:    APOP_CG_FR      conjugate gradient (Fletcher-Reeves)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
 	if (mp->starting_pt==NULL){
 		x	= gsl_vector_alloc(betasize);
@@ -598,16 +592,16 @@ starting_pt:	an array of doubles suggesting a starting point. If NULL, use zero.
 step_size:	the initial step size.<br>
 tolerance:	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
 verbose:	Y'know.<br>
-method:		The sum of a method and a gradient-handling rule.
-\li 0: Nelder-Mead simplex (gradient handling rule is irrelevant)
-\li 1: conjugate gradient (Fletcher-Reeves) (default)
-\li 2: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
-\li 3: conjugate gradient (Polak-Ribiere)
-\li 5: \ref simanneal "simulated annealing"
-\li 10: Find a root of the derivative via Newton's method
-\li 11: Find a root of the derivative via the Broyden Algorithm
-\li 12: Find a root of the derivative via the Hybrid method
-\li 13: Find a root of the derivative via the Hybrid method; no internal scaling
+method:		
+\li    APOP_SIMPLEX_NM      Nelder-Mead simplex (gradient handling rule is irrelevant)
+\li    APOP_CG_FR      conjugate gradient (Fletcher-Reeves) (default)
+\li    APOP_CG_BFGS    conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
+\li    APOP_CG_PR      conjugate gradient (Polak-Ribiere)
+\li    APOP_SIMAN       \ref simanneal "simulated annealing"
+\li    APOP_RF_NEWTON   Find a root of the derivative via Newton's method
+\li    APOP_RF_BROYDEN  Find a root of the derivative via the Broyden Algorithm
+\li    APOP_RF_HYBRID   Find a root of the derivative via the Hybrid method
+\li    APOP_RF_HYBRID_NOSCALE   Find a root of the derivative via the Hybrid method; no internal scaling
 \return	an \ref apop_model with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
 By the way, the output model will have the expected score in the \c more slot. Do enough people use this to give it its own slot in the \c apop_model struct?
@@ -620,6 +614,7 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
     info.gradient_list  = malloc(sizeof(gsl_matrix*)); *info.gradient_list = NULL;
     info.score_list  = malloc(sizeof(gsl_vector*)); *info.score_list = NULL;
     info.gsize          = malloc(sizeof(size_t)); *info.gsize = 0;
+    info.trace_file     = malloc(sizeof(FILE *)); *info.trace_file = NULL;
     if(strcmp(dist.method_name, "MLE")){
         mp          = apop_mle_params_alloc(data, dist);
         info.model  = mp->model;
@@ -627,14 +622,20 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
         info.model  = apop_model_copy(dist);
         mp          = info.model->method_params;
     }
+    if (mp->trace_path)
+        info.trace_path = mp->trace_path;
     apop_model_clear(data, info.model);
-	if (mp->method == 5)
+	if (mp->method == APOP_SIMAN)
         return apop_annealing(&info);  //below.
-    else if (mp->method==0)
+    else if (mp->method==APOP_SIMPLEX_NM)
 		return apop_maximum_likelihood_no_d(data, &info);
-    else if (mp->method >= 10 && mp->method <= 13)
-        return  find_roots (data, &dist);
-	//else:
+    else if (mp->method == APOP_RF_NEWTON    ||
+                mp->method == APOP_RF_BROYDEN  ||
+                mp->method == APOP_RF_HYBRID  ||
+                mp->method == APOP_RF_HYBRID_NOSCALE ) 
+        return  find_roots (info);
+        //return  find_roots (data, &dist);
+	//else, Conjugate Gradient:
 	return apop_maximum_likelihood_w_d(data, &info);
 }
 

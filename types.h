@@ -159,8 +159,6 @@ typedef struct{
     char db_nan[100];
             /** If this is 'm', use mySQL, else use SQLite. */
     char db_engine;
-            /** If set, plot the path of the max. likelihood search. */
-    char  mle_trace_path[1000];
             /** Threads to use internally. See \ref apop_apply. */
     int  thread_count;
 } apop_opts_type;

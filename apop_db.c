@@ -48,7 +48,6 @@ out for analysis.
 \par P.S.
 Apophenia reserves the right to insert temp tables into the opened database. They will all have names beginning with "apop_", so the reader is advised to not use tables with such names, and is free to ignore or delete any such tables that turn up.
  */
-#include <math.h> 	                //sqrt
 #include <string.h>
 #include <stdarg.h>
 #include <apophenia/types.h>
@@ -62,6 +61,7 @@ Apophenia reserves the right to insert temp tables into the opened database. The
 
 #include <apophenia/vasprintf.h>
 #include "config.h"
+#include <math.h> 	                //sqrt
 
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= { 0,              //verbose
@@ -73,7 +73,6 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 "row_names",    //db_name_column
                                 "\\(NAN\\|NaN\\|nan\\)", //db_nan
                                 '\0',            //db_engine
-                                "\0",           //mle_trace_path
                                 1               //threadct
 };
 
@@ -431,7 +430,7 @@ Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
 A <tt>gsl_matrix</tt>, which you passed in declared but not allocated.
 
 Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts.db_nan
-are filled with <tt>GSL_NAN</tt>s in the matrix.
+are filled with <tt>NAN</tt>s in the matrix.
 */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
   char      *query;
@@ -509,7 +508,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 	m	= apop_query_to_matrix(query);
 	if (m==NULL){
         if (apop_opts.verbose)
-		    printf("apop, %s, %i: Query turned up a blank table. Returning GSL_NAN.\n", __FILE__, __LINE__);
+		    printf("apop, %s, %i: Query turned up a blank table. Returning NULL.\n", __FILE__, __LINE__);
 		return NULL;
 	} //else
     out = gsl_vector_alloc(m->size1);
@@ -527,7 +526,7 @@ the (0,0)th element of the returned matrix. Thus, if your query returns
 multiple lines, you will get no warning, and the function will return
 the first in the list (which is not always well-defined).
 
-If the query returns no rows at all, the function returns <tt>GSL_NAN</tt>.
+If the query returns no rows at all, the function returns <tt>NAN</tt>.
 */
 double apop_query_to_float(const char * fmt, ...){
   char		*query;
@@ -549,7 +548,7 @@ double apop_query_to_float(const char * fmt, ...){
 	m	= apop_query_to_matrix(query);
 	if (m==NULL){
         if (apop_opts.verbose)
-		    printf("apop, %s, %i: Query turned up a blank table. Returning GSL_NAN.\n", __FILE__, __LINE__);
+		    printf("apop, %s, %i: Query turned up a blank table. Returning NAN.\n", __FILE__, __LINE__);
 		return GSL_NAN;
 	} //else
 	out	= gsl_matrix_get(m, 0, 0);
@@ -576,7 +575,7 @@ Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
 An \ref apop_data set, which you passed in declared but not allocated.
 
 Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts.db_nan
-are filled with <tt>GSL_NAN</tt>s in the matrix.
+are filled with <tt>NAN</tt>s in the matrix.
 
 If \ref apop_opts.db_name_column is set (it defaults to being "row_name"),
 and the name of a column matches the name, then the row names are read from that column.

@@ -761,6 +761,29 @@ void test_binomial(gsl_rng *r){
     }
 }
 
+void db_to_text(){
+    apop_db_open(NULL);
+    apop_text_to_db("data-mixed", "d", 0, 1, NULL);
+    apop_data *d = apop_query_to_mixed_data ("tmttmmmt", "select * from d");
+    int b_allele_col = apop_name_find(d->names, "b_all.*", 't');
+    assert(!strcmp("T",  d->text[3][b_allele_col]));
+    int rsid_col = apop_name_find(d->names, "rsid", 't');
+    assert(!strcmp("rs2977656",  d->text[4][rsid_col]));
+    assert(apop_data_get_it(d, 5, "ab")==201);
+
+    apop_data *dd = apop_query_to_text ("select * from d");
+    b_allele_col = apop_name_find(dd->names, "b_all.*", 't');
+    assert(!strcmp("T",  dd->text[3][b_allele_col]));
+    rsid_col = apop_name_find(dd->names, "rsid", 't');
+    assert(!strcmp("rs2977656",  dd->text[4][rsid_col]));
+    
+    apop_data *dc = apop_data_copy(d);
+    b_allele_col = apop_name_find(dc->names, "b_all.*", 't');
+    assert(!strcmp("T",  dc->text[3][b_allele_col]));
+    rsid_col = apop_name_find(dc->names, "rsid", 't');
+    assert(!strcmp("rs2977656",  dc->text[4][rsid_col]));
+    assert(apop_data_get_it(dc, 5, "ab")==201);
+}
 
 void subtest_updating(apop_model prior, apop_model likelihood){
   int i, j, reps    = 10;
@@ -846,11 +869,11 @@ int main(int argc, char **argv){
     true_params             = apop_model_copy(apop_gamma);//irrelevant.
     true_params->parameters = true_parameter;
 
+  apop_model    null_model      = {"the null model"};
   gsl_rng       *r              = apop_rng_alloc(8); 
   apop_model    dist[]          = {apop_gamma, apop_exponential, apop_normal, 
-                                    apop_poisson,/* apop_zipf,*/apop_yule, apop_uniform};
-  int           dist_ct         = 7,
-                i;
+                                    apop_poisson,/* apop_zipf,*/apop_yule, apop_uniform, null_model};
+  int           i;
   apop_data     *d  = apop_text_to_data("test_data2",0,1);
   apop_OLS_params *olp  = apop_OLS_params_alloc(d, apop_OLS);
     olp->want_expected_value    = 1;
@@ -859,10 +882,11 @@ int main(int argc, char **argv){
     if (slow_tests){
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
-    for (i=0; i< dist_ct; i++){
+    for (i=0; strcmp(dist[i].name, "the null model"); i++){
         do_test(dist[i].name, test_distribution(r, dist[i]));
     }
     apop_model *e  = apop_estimate(d,*olp->model);
+    do_int_test("db_to_text:", db_to_text());
     do_int_test("apop_estimate->dependent test:", test_predicted_and_residual(e));
     do_int_test("apop_f_test and apop_coefficient_of_determination test:", test_f(e));
     do_test("test binomial estimations", test_binomial(r));
