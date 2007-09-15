@@ -751,9 +751,16 @@ int apop_data_to_db(apop_data *set, char *tabname){
         }
         for(i=0;i< set->matrix->size2; i++){
             q	=realloc(q,strlen(q)+1000);
-            if(set->names->colct <= i) 	sprintf(q, "%s\n c%i varchar(1000)", q,i);
-            else			sprintf(q, "%s\n %s  varchar(1000)", q,apop_strip_dots(set->names->column[i],'d'));
-            if (i< set->matrix->size2-1) 	strcat(q, ", ");
+            if(set->names->colct <= i) 	sprintf(q, "%s\n c%i double", q,i);
+            else			sprintf(q, "%s\n %s  double", q,apop_strip_dots(set->names->column[i],'d'));
+            if (i< set->matrix->size2-1 || set->textsize[1]) 	
+                strcat(q, ", ");
+        }
+        for(i=0;i< set->textsize[1]; i++){
+            q	=realloc(q,strlen(q)+1000);
+            if(set->names->textct <= i) 	sprintf(q, "%s\n tc%i varchar(1000)", q,i);
+            else			sprintf(q, "%s\n %s  varchar(1000)", q,apop_strip_dots(set->names->text[i],'d'));
+            if (i< set->textsize[1]-1) 	strcat(q, ", ");
         }
         strcat(q,"); ");
         apop_query(q);
@@ -776,9 +783,16 @@ int apop_data_to_db(apop_data *set, char *tabname){
             q	=realloc(q,strlen(q)+1000);
             if(set->names->colct <= i) 	sprintf(q, "%s\n c%i", q,i);
             else			sprintf(q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->column[i],'d'));
-            if (i< set->matrix->size2-1) 	sprintf(q, "%s,",q);
-            else			sprintf(q,"%s);  begin;",q);
+            if (i< set->matrix->size2-1 || set->textsize[1]) 	
+                sprintf(q, "%s,",q);
         }
+        for(i=0; i< set->textsize[1]; i++){
+            q	=realloc(q,strlen(q)+1000);
+            if(set->names->textct <= i) 	sprintf(q, "%s\n tc%i ", q,i);
+            else			sprintf(q, "%s\n %s ", q,apop_strip_dots(set->names->text[i],'d'));
+            if (i< set->textsize[1]-1) 	strcat(q, ", ");
+        }
+        sprintf(q,"%s);  begin;",q);
 #else
         {apop_error(0, 'c', "apop_data_to_db: Apophenia was compiled without SQLite support.\n");
         return 1;}
@@ -794,12 +808,15 @@ int apop_data_to_db(apop_data *set, char *tabname){
             if (gsl_isnan(v))
 			    sprintf(q,"%s NULL%s ",
                     q, 
-                    j < set->matrix->size2 -1 ? "," : ");");
+                    (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
             else
 			    sprintf(q,"%s %g%s ",
                     q, v,
-                    j < set->matrix->size2 -1 ? "," : ");");
+                    (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
         }
+		for(j=0;j< set->textsize[1]; j++)
+			sprintf(q,"%s \'%s\' %c ",q, set->text[i][j], j < set->textsize[1]-1 ? ',' : ' ');
+        sprintf(q,"%s);",q);
 		ctr++;
 		if(ctr==batch_size || apop_opts.db_engine == 'm') {
 		    if(apop_opts.db_engine == 'm')   apop_query(q);

@@ -783,6 +783,17 @@ void db_to_text(){
     rsid_col = apop_name_find(dc->names, "rsid", 't');
     assert(!strcmp("rs2977656",  dc->text[4][rsid_col]));
     assert(apop_data_get_it(dc, 5, "ab")==201);
+
+    char oldtype = apop_opts.output_type;
+    apop_opts.output_type = 'd';
+    apop_data_print(dc, "mixedtest");
+    apop_data *de = apop_query_to_mixed_data("mmmmtttt","select * from mixedtest");
+    b_allele_col = apop_name_find(de->names, "b_all.*", 't');
+    assert(!strcmp("T",  de->text[3][b_allele_col]));
+    rsid_col = apop_name_find(de->names, "rsid", 't');
+    assert(!strcmp("rs2977656",  de->text[4][rsid_col]));
+    assert(apop_data_get_it(de, 5, "ab")==201);
+    apop_opts.output_type = oldtype;
 }
 
 void subtest_updating(apop_model prior, apop_model likelihood){
@@ -886,7 +897,7 @@ int main(int argc, char **argv){
         do_test(dist[i].name, test_distribution(r, dist[i]));
     }
     apop_model *e  = apop_estimate(d,*olp->model);
-    do_int_test("db_to_text:", db_to_text());
+    do_test("db_to_text:", db_to_text());
     do_int_test("apop_estimate->dependent test:", test_predicted_and_residual(e));
     do_int_test("apop_f_test and apop_coefficient_of_determination test:", test_f(e));
     do_test("test binomial estimations", test_binomial(r));

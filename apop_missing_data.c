@@ -80,9 +80,9 @@ apop_data * apop_data_listwise_delete(apop_data *d){
 static apop_model apop_ml_imputation_model;
 
 typedef struct {
-size_t      *row, *col;
-int         ct;
-apop_model  *local_mvn;
+    size_t      *row, *col;
+    int         ct;
+    apop_model  *local_mvn;
 } apop_ml_imputation_struct;
 
 static void addin(apop_ml_imputation_struct *m, size_t i, size_t j){
@@ -109,20 +109,19 @@ static void  find_missing(apop_data *d, apop_ml_imputation_struct *mask){
                 addin(mask, i, j);
 }
 
-
-//The model to send to the optimization
-
 static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct * m){
-  int                       i;
+  int i;
     for (i=0; i< m->ct; i++){
         apop_data_set(x, m->row[i], m->col[i], gsl_vector_get(v->vector,i));
     }
 }
 
-static double ll(const apop_data *d, apop_data *x, apop_model * ep){
+//The model to send to the optimization
+
+static double ll(const apop_data *d, apop_model * ep){
   apop_ml_imputation_struct *m  = ep->model_params;
-    unpack(d, x, m);
-    return apop_multivariate_normal.log_likelihood(x, m->local_mvn);
+    unpack(ep->parameters, d, m);
+    return apop_multivariate_normal.log_likelihood(d, m->local_mvn);
 }
 
 
@@ -143,16 +142,16 @@ static apop_model apop_ml_imputation_model= {"Impute missing data via maximum li
 */
 apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_mle_params * parameters){
   apop_ml_imputation_struct mask;
-  apop_model *mc    = apop_model_copy(apop_ml_imputation_model);
-  apop_mle_params *mlp   = parameters ? parameters :  apop_mle_params_alloc(d, *mc);
+  apop_model *mc       = apop_model_copy(apop_ml_imputation_model);
+  apop_mle_params *mlp = parameters ? parameters :  apop_mle_params_alloc(d, *mc);
     find_missing(d, &mask);
     mc->vbase           = mask.ct;
     mask.local_mvn      = apop_model_copy(apop_multivariate_normal);
     mask.local_mvn->parameters = meanvar;
-    mlp->method             = 5;
-    mc->model_params        = &mask;
-    mlp->step_size          = 2;
-    mlp->tolerance          = 0.2;
+    mlp->method          = 5;
+    mc->model_params     = &mask;
+    mlp->step_size       = 2;
+    mlp->tolerance       = 0.2;
 //    parameters->starting_pt     = calloc(mask.ct, sizeof(double));
     apop_model *out = apop_maximum_likelihood(d, *mc);
     apop_model_free(mc);
