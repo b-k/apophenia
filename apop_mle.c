@@ -54,7 +54,7 @@ Below is a sample of the sort of output one would get:<br>
  */
 apop_mle_params *apop_mle_params_set_default(apop_model *parent){
   apop_mle_params *setme =   calloc(1,sizeof(apop_mle_params));
-    setme->starting_pt      = 0;
+    setme->starting_pt      = NULL;
     setme->tolerance        = 1e-2;
     setme->method           = 1;
     setme->verbose          = 0;
@@ -669,7 +669,8 @@ est = apop_estimate_restart(est, 200, 1e-2);
 \ingroup mle
 \todo The tolerance for testing boundaries are hard coded (1e4). Will need to either add another input term or a global var.
 */ 
-apop_model * apop_estimate_restart (apop_model *e, int  new_method, int scale){
+apop_model * apop_estimate_restart (apop_model *e, apop_model *copy){
+  /*
   double      *start_pt2;
   apop_model *copy  = apop_model_copy(*e);
   apop_mle_params *old_params   = e->method_params;
@@ -686,15 +687,17 @@ apop_model * apop_estimate_restart (apop_model *e, int  new_method, int scale){
     new_params->step_size   = old_params->step_size * scale;
     new_params->method	    = new_method;
 	copy                    = e->estimate(e->data, copy);
+    */
             //Now check whether the new output is better than the old
 //printf("orig: 1st: %g, ll %g\n", e->parameters->vector->data[0],e->llikelihood );
 //printf("copy: 1st: %g, ll %g\n", copy->parameters->vector->data[0],copy->llikelihood );
+  apop_model *newcopy = apop_estimate(e->data, *copy);
+    apop_model_free(copy);
     if (apop_vector_bounded(copy->parameters->vector, 1e4) && copy->llikelihood > e->llikelihood){
         apop_model_free(e);
-        return copy;
+        return newcopy;
     } //else:
-    free(new_params);
-    apop_model_free(copy);
+    apop_model_free(newcopy);
     return e;
 }
 

@@ -215,6 +215,8 @@ void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
         fclose(f);
 }
 	
+/** Print an \c apop_histogram. Put a "plot '-'\n" before this, and
+ you can send it straight to Gnuplot. The -inf and +inf elements are not printed. */
 void apop_histogram_print(apop_model *h, char *outfile){
   apop_histogram_params *hp = h->model_params;
   if (!hp)
@@ -225,7 +227,7 @@ void apop_histogram_print(apop_model *h, char *outfile){
         f   = apop_opts.output_pipe;
     else 
         f = (outfile ? fopen(outfile, "a") : stdout);
-	for (i=0; i < hp->pdf->n; i++)
+	for (i=1; i < hp->pdf->n-1; i++)
 	    fprintf(f, "%4f\t %g\n", hp->pdf->range[i], gsl_histogram_get(hp->pdf, i));
     if (apop_opts.output_type == 'p')
         fflush(f);
@@ -273,8 +275,13 @@ static void print_core_m(const gsl_matrix *data, char *separator, char *filename
 		f	= stdout;
 	else
         f	= fopen(filename, apop_opts.output_append ? "a" : "w");
-    if (apop_opts.output_type == 'p')
+    if (apop_opts.output_type == 'p'){
         f   = apop_opts.output_pipe;
+        if (!f){ 
+            apop_error(1, 'c', "%s: You set apop_opts.output_type to 'p', but apop_opts.output_pipe is NULL. Assuming you meant stdout.\n", __func__);
+            f = stdout;
+        }
+    }
     if (n && strlen(n->title)>0)
         fprintf(f, "%s%s\n\n", apop_opts.output_type=='s'? "\t\t" : "", n->title);
     if (!data)
@@ -360,7 +367,7 @@ void apop_matrix_show(const gsl_matrix *data){
     apop_opts.output_type = tmptype;
 }
 
-static size_t get_max_strlen(char **names, size_t len){
+static int get_max_strlen(char **names, size_t len){
   int   i, 
         max  = 0;
     for (i=0; i< len; i++)

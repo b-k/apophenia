@@ -35,7 +35,7 @@ apop_data * apop_data_listwise_delete(apop_data *d){
         has_vector  ++;
     } 
     if (!has_matrix && !has_vector) {
-        fprintf(stderr, "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
+        apop_error(0, 'c', "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
         return NULL;
         }
     //find out where the NaNs are
@@ -85,14 +85,16 @@ typedef struct {
     apop_model  *local_mvn;
 } apop_ml_imputation_struct;
 
-static void addin(apop_ml_imputation_struct *m, size_t i, size_t j){
+static void addin(apop_ml_imputation_struct *m, size_t i, size_t j, double** starting_pt, apop_data *meanvar){
     m->row  = realloc(m->row, ++(m->ct) * sizeof(size_t));
     m->col  = realloc(m->col, m->ct * sizeof(size_t));
+    *starting_pt = realloc(*starting_pt, m->ct*sizeof(double));
     m->row[m->ct-1]    = i;
     m->col[m->ct-1]    = j;
+    (*starting_pt)[m->ct-1] = gsl_vector_get(meanvar->vector, j);
 }
 
-static void  find_missing(apop_data *d, apop_ml_imputation_struct *mask){
+static void  find_missing(apop_data *d, apop_ml_imputation_struct *mask, double **starting_pt, apop_data *meanvar){
   int i, j, min = 0, max = 0;
     //get to know the input.
     if (d->matrix)
@@ -106,7 +108,7 @@ static void  find_missing(apop_data *d, apop_ml_imputation_struct *mask){
     for (i=0; i< d->matrix->size1; i++)
         for (j=min; j <max; j++)
             if (gsl_isnan(apop_data_get(d, i, j)))
-                addin(mask, i, j);
+                addin(mask, i, j, starting_pt, meanvar);
 }
 
 static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct * m){
@@ -128,7 +130,6 @@ static double ll(const apop_data *d, apop_model * ep){
 static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0,0, .log_likelihood= ll};
 
 
-
 /**
     Impute the most likely data points to replace NaNs in the data, and
     insert them into the given data. That is, the data set is modified
@@ -144,16 +145,15 @@ apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_mle_para
   apop_ml_imputation_struct mask;
   apop_model *mc       = apop_model_copy(apop_ml_imputation_model);
   apop_mle_params *mlp = parameters ? parameters :  apop_mle_params_alloc(d, *mc);
-    find_missing(d, &mask);
-    mc->vbase           = mask.ct;
-    mask.local_mvn      = apop_model_copy(apop_multivariate_normal);
+    find_missing(d, &mask, &(mlp->starting_pt), meanvar);
+    mlp->model->vbase          = mask.ct;
+    mask.local_mvn             = apop_model_copy(apop_multivariate_normal);
     mask.local_mvn->parameters = meanvar;
-    mlp->method          = 5;
-    mc->model_params     = &mask;
-    mlp->step_size       = 2;
-    mlp->tolerance       = 0.2;
-//    parameters->starting_pt     = calloc(mask.ct, sizeof(double));
-    apop_model *out = apop_maximum_likelihood(d, *mc);
+    mlp->method                 = APOP_SIMPLEX_NM;
+    mlp->model->model_params    = &mask;
+    mlp->step_size              = 2;
+    mlp->tolerance              = 0.2;
+    apop_model *out = apop_maximum_likelihood(d, *mlp->model);
     apop_model_free(mc);
     return out;
 }

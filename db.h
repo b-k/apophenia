@@ -18,6 +18,9 @@
 
 __BEGIN_DECLS
 
+//From the GNU's vasprintf suite:
+extern int asprintf (char **result, const char *format, ...);
+
 int apop_table_exists(char *q, char whattodo);
 
 void apop_db_rng_init(int seed);

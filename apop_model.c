@@ -133,7 +133,7 @@ apop_model * apop_model_copy(apop_model in){
 
 /* estimate the parameters of a model given data.
 
-   This is a one-line convenience function, which expands to \c m.estimate(d,&m).
+   This is a brief convenience function, which expands to \c m.estimate(d,&m). If your model has no \c estimate method, then I assume \c apop_maximum_likelihood(d, m), with the default MLE params.
 
 
 \param d    The data
@@ -141,7 +141,10 @@ apop_model * apop_model_copy(apop_model in){
 \return     A pointer to an output model, which typically matches the input model but has its \c parameters element filled in.
 */
 apop_model *apop_estimate(apop_data *d, apop_model m){
-    return m.estimate(d, &m); }
+    if (m.estimate)
+        return m.estimate(d, &m); 
+    return apop_maximum_likelihood(d, m);
+}
 
 /* Find the probability of a data/parametrized model pair.
 

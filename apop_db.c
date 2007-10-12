@@ -389,6 +389,7 @@ static int db_to_table(void *o,int argc, char **argv, char **column){
   gsl_matrix ** 	output = (gsl_matrix **) o;
     if (firstcall){
         firstcall   --;
+        namecol     = -1;
         for(i=0; i<argc; i++)
             if (!strcmp(column[i], apop_opts.db_name_column)){
                 namecol = i;
@@ -469,7 +470,6 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 		last_names = apop_name_alloc();
         tr = total_rows;  //globalize
 		sqlite3_exec(db,"SELECT * FROM apop_temp_table",db_to_table,&output, &err); ERRCHECK
-        namecol     = -1;
 	}
 	assert(apop_table_exists("apop_temp_table",0));
 	sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
