@@ -18,6 +18,8 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 */
 #include "likelihoods.h"
 #include <assert.h>
+#include <setjmp.h>
+#include <signal.h>
 #include <gsl/gsl_deriv.h>
 
 //in apop_regress.c:
@@ -450,6 +452,9 @@ void produce_covariance_matrix(apop_model * est, infostruct *i){
     cov_cleanup(i);
 }
 
+static int ctrl_c;
+static void mle_sigint(){ ctrl_c ++; }
+
 /* The maximum likelihood calculations, given a derivative of the log likelihood.
 
 If no derivative exists, will calculate a numerical gradient.
@@ -492,7 +497,10 @@ static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i)
 	minme.n		= betasize;
 	minme.params	= i;
     i->beta     = s->x;
+    ctrl_c      =
+    est->status = 0;
 	gsl_multimin_fdfminimizer_set (s, &minme, x, mp->step_size, mp->tolerance);
+    signal(SIGINT, mle_sigint);
     do { 	
         iter++;
         status 	= gsl_multimin_fdfminimizer_iterate(s);
@@ -505,7 +513,8 @@ static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i)
             est->status	= 1;
             if(mp->verbose)	printf ("Minimum found.\n");
         }
-    } while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d);
+    } while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d && !ctrl_c);
+    signal(SIGINT, NULL);
 	if (iter==MAX_ITERATIONS_w_d) {
 		est->status	= -1;
 		if (mp->verbose) printf("No min!!\n");
@@ -538,6 +547,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
 	x	= gsl_vector_alloc(betasize);
+    ctrl_c      =
 	est->status	= 0;	//assume failure until we score a success.
 	if (mp->starting_pt==NULL)
   		gsl_vector_set_all (x,  0);
@@ -552,6 +562,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 	minme.n		    = betasize;
 	minme.params	= i;
 	gsl_multimin_fminimizer_set (s, &minme, x,  ss);
+    signal(SIGINT, mle_sigint);
       	do { 	iter++;
 		status 	= gsl_multimin_fminimizer_iterate(s);
 		if (status) 	break; 
@@ -570,7 +581,8 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
                 printf ("f()=%7.3f size=%.3f\n", s->fval, size);
 			}
 		}
-      	} while (status == GSL_CONTINUE && iter < MAX_ITERATIONS);
+      	} while (status == GSL_CONTINUE && iter < MAX_ITERATIONS && !ctrl_c);
+    signal(SIGINT, NULL);
 	if (iter == MAX_ITERATIONS && mp->verbose)
 		apop_error(1, 'c', "Optimization reached maximum number of iterations.");
     if (status == GSL_SUCCESS) 
@@ -643,21 +655,19 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
  where the last one ended. You can specify greater precision or a new
  search method.
 
-The prior estimation parameters are copied over.  If the estimate
-converged to an OK value, then use the converged value; else use the
+If the estimate converged to an OK value, then restart the converged value; else use the
 starting point from the last estimate.
 
 Only one estimate is returned, either the one you sent in or a new
 one. The loser (which may be the one you sent in) is freed. That is,
 there is no memory leak when you do
 \code
-est = apop_estimate_restart(est, 200, 1e-2);
+est = apop_estimate_restart(est, alt_model);
 \endcode
 
  \param e   An \ref apop_model that is the output from a prior MLE estimation.
- \param new_method  If -1, use the prior method; otherwise, a new method to try.
- \param scale       Something like 1e-2. The step size and tolerance
-                    will both be mutliplied by this amount. Of course, if this is 1, nothing changes.
+ \param alt_model  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> equal
+ to the parameters of <tt>e</tt>. If this is <tt>NULL</tt>, then copy off <tt>e</tt> and restart from the end of the last estimation.
 
 \return         At the end of this procedure, we'll have two \ref
     apop_model structs: the one you sent in, and the one produced using the
@@ -670,8 +680,18 @@ est = apop_estimate_restart(est, 200, 1e-2);
 \todo The tolerance for testing boundaries are hard coded (1e4). Will need to either add another input term or a global var.
 */ 
 apop_model * apop_estimate_restart (apop_model *e, apop_model *copy){
-  /*
   double      *start_pt2;
+  if (!copy)
+      copy = apop_model_copy(*e);
+  apop_mle_params* prm;
+            //copy off the old params; modify the starting pt, method, and scale
+    if (apop_vector_bounded(e->parameters->vector, 1e4)){
+        apop_vector_to_array(e->parameters->vector, &start_pt2);
+        if (!copy->method_params)
+            prm = apop_mle_params_alloc(copy->data,*copy);
+        ((apop_mle_params*)copy->method_params)->starting_pt	= start_pt2;
+    }
+  /*
   apop_model *copy  = apop_model_copy(*e);
   apop_mle_params *old_params   = e->method_params;
   apop_mle_params *new_params   = copy->method_params; 
@@ -693,7 +713,7 @@ apop_model * apop_estimate_restart (apop_model *e, apop_model *copy){
 //printf("copy: 1st: %g, ll %g\n", copy->parameters->vector->data[0],copy->llikelihood );
   apop_model *newcopy = apop_estimate(e->data, *copy);
     apop_model_free(copy);
-    if (apop_vector_bounded(copy->parameters->vector, 1e4) && copy->llikelihood > e->llikelihood){
+    if (apop_vector_bounded(newcopy->parameters->vector, 1e4) && newcopy->llikelihood > e->llikelihood){
         apop_model_free(e);
         return newcopy;
     } //else:
@@ -852,6 +872,10 @@ gsl_siman_params_t simparams;
     return simparams;
 }
 
+jmp_buf anneal_jump;
+
+static void anneal_sigint(){ longjmp(anneal_jump,1); }
+
 apop_model * apop_annealing(infostruct *i){
   apop_model            *ep = i->model;
   apop_mle_params       *mp = NULL;
@@ -880,7 +904,9 @@ apop_model * apop_annealing(infostruct *i){
         printing_fn = annealing_print;
     else if (mp && mp->verbose)
         printing_fn = annealing_print2;
-    gsl_siman_solve(r,        //   const gsl_rng * r
+    if (!setjmp(anneal_jump)){
+        signal(SIGINT, anneal_sigint);
+        gsl_siman_solve(r,        //   const gsl_rng * r
           i,                //   void * x0_p
           annealing_energy, //   gsl_siman_Efunc_t Ef
           annealing_step,   //   gsl_siman_step_t take_step
@@ -889,8 +915,10 @@ apop_model * apop_annealing(infostruct *i){
           annealing_memcpy, //   gsl_siman_copy_t copyfunc
           annealing_copy,   //   gsl_siman_copy_construct_t copy_constructor
           annealing_free,   //   gsl_siman_destroy_t destructor
-         paramct,           //   size_t element_size
-         simparams);        //   gsl_siman_params_t params
+          paramct,           //   size_t element_size
+          simparams);        //   gsl_siman_params_t params
+    }
+    signal(SIGINT, NULL);
     i->model->parameters   = apop_data_unpack(i->beta, vsize, msize1, msize2); 
     produce_covariance_matrix(i->model, i);
     apop_estimate_parameter_t_tests(i->model);

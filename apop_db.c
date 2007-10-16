@@ -71,7 +71,7 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 1,              //output append
                                 "| ,\t",        //input delimiters
                                 "row_names",    //db_name_column
-                                "\\(NAN\\|NaN\\|nan\\)", //db_nan
+                                "NaN", //db_nan
                                 '\0',            //db_engine
                                 1               //threadct
 };
@@ -462,7 +462,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 	ERRCHECK
     sprintf(full_divider, "^%s$", apop_opts.db_nan);
     regex           = malloc(sizeof(regex_t));
-    regcomp(regex, full_divider, 0);
+    regcomp(regex, full_divider, REG_EXTENDED+REG_ICASE);
 	if (total_rows>0){
         firstcall   = 1;
 		if (last_names !=NULL) 

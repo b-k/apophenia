@@ -355,19 +355,23 @@ void estimate_model(gsl_matrix *data, apop_model dist, int method){
 int                     i;
 double                  starting_pt[] = {3.2, 1.4};
 apop_mle_params  *params = apop_mle_params_alloc(apop_matrix_to_data(data), dist);
-    params->method           = method;
-    params->step_size        = 1e-1;
-    params->starting_pt      = starting_pt;
-    params->tolerance        = 1e-4;
-    params->verbose          = 0;
+    params->method          = method;
+    params->step_size       = 1e-1;
+    params->starting_pt     = starting_pt;
+    params->tolerance       = 1e-4;
+    params->verbose         = 0;
     params->t_initial       = 1;
     params->t_min           = .5;
     params->k               = 1.8;
     params->use_score       = 0;
     params->want_cov        = 0;
     apop_model *e    = apop_estimate(apop_matrix_to_data(data),*params->model);
-    if (e->method_params)  //else, it's not an MLE
-        e   = apop_estimate_restart(e, method ? 0 : 1, 1);
+    if (e->method_params && !(!strcmp(dist.name,"poisson") || !strcmp(dist.name, "Uniform distribution"))){  //then it's an MLE
+        apop_model *compare_me = apop_model_copy(*(params->model));
+        apop_mle_params *p = compare_me->method_params;
+        p->method = p->method == APOP_SIMPLEX_NM ? APOP_CG_FR : APOP_SIMPLEX_NM;
+        e   = apop_estimate_restart(e, compare_me);
+    }
     if (verbose)
         for (i=0; i < e->parameters->vector->size; i++)
             printf("parameter estimate, which should be %g: %g\n",
