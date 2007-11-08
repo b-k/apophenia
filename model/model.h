@@ -24,13 +24,14 @@ extern apop_model apop_binomial; //on hiatus.
 extern apop_model apop_exponential;
 extern apop_model apop_exponential_rank;
 extern apop_model apop_gamma;
-extern apop_model apop_gamma_rank;
 extern apop_model apop_gaussian;//synonym for apop_normal
 //extern apop_model apop_GLS;
 extern apop_model apop_histogram;
+extern apop_model apop_IV;
+extern apop_model apop_kernel_density;
 extern apop_model apop_logit;
+extern apop_model apop_lognormal;
 extern apop_model apop_multivariate_normal;
-extern apop_model apop_null; //I threw this one in apop_histogram.c
 extern apop_model apop_normal;
 extern apop_model apop_OLS;
 extern apop_model apop_poisson;
@@ -42,7 +43,6 @@ extern apop_model apop_WLS;
 extern apop_model apop_yule;
 extern apop_model apop_yule_rank;
 extern apop_model apop_zipf;
-extern apop_model apop_zipf_rank;
 
 
 //For apop_histogram:
@@ -50,12 +50,21 @@ extern apop_model apop_zipf_rank;
 typedef struct{
     gsl_histogram       *pdf;
     gsl_histogram_pdf   *cdf;
+    apop_model          *histobase;
+    apop_model          *kernelbase;
     apop_model          *model;
 } apop_histogram_params;
 
-apop_model *apop_histogram_params_alloc(apop_data *data, int bins, apop_model *params_in); //see apop_histogram.c
+apop_model *apop_model_set_parameters(apop_model in, ...);
+apop_model *apop_histogram_params_alloc(apop_data *data, int bins); //see apop_histogram.c
+void apop_histogram_plot(apop_model *in, char *outfile);
+apop_model *apop_kernel_density_params_alloc(apop_data *data, 
+        apop_model *histobase, apop_model kernelbase, void (*set_params)(double, apop_model*));
 
-double apop_log_likelihood(const apop_data *d, apop_data *beta, apop_model m);
+double apop_log_likelihood(const apop_data *d, apop_model m);
+double apop_p(const apop_data *d, apop_model m);
+apop_model *apop_estimate(apop_data *d, apop_model m);
+void apop_draw(double *out, gsl_rng *r, apop_model *m);
 
 __END_DECLS
 #endif

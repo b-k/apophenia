@@ -13,33 +13,35 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 /** This function is cut/pasted/modified from the GSL documentation. It
  calls the various GSL root-finding algorithms to find the zero of the score.
 */
-static apop_model * find_roots (apop_data * data, apop_model *dist) {
+static apop_model * find_roots (infostruct p) {
+//static apop_model * find_roots (apop_data * data, apop_model *dist) {
   const gsl_multiroot_fsolver_type *T;
   gsl_multiroot_fsolver *s;
+  apop_model *dist = p.model;
   int           vsize       =(dist->parameters->vector ? dist->parameters->vector->size :0),
                 msize1      =(dist->parameters->matrix ? dist->parameters->matrix->size1 :0),
                 msize2      =(dist->parameters->matrix ? dist->parameters->matrix->size2:0);
   int status, betasize      = vsize + msize1* msize2;
   size_t  iter = 0;
   gsl_vector *x;
-    apop_mle_params *mlep   = dist->method_params;
+    apop_mle_settings *mlep   = dist->method_settings;
     dist->status = 1;    //assume failure until we score a success.
     if (!mlep || mlep->starting_pt==NULL){
         x = gsl_vector_alloc(betasize);
         gsl_vector_set_all (x,  2);
     } else
         x   = apop_array_to_vector(mlep->starting_pt, betasize);
-  infostruct      p;
+  /*infostruct      p;
     p.data            = data;
-    p.model           = dist;
+    p.model           = dist;*/
   gsl_multiroot_function f = {dnegshell, betasize, &p};
-    if (mlep->method == 13)
+    if (mlep->method == APOP_RF_NEWTON)
         T = gsl_multiroot_fsolver_dnewton;
-    else if (mlep->method == 11)
+    else if (mlep->method == APOP_RF_BROYDEN)
         T = gsl_multiroot_fsolver_broyden;
-    else if (mlep->method == 12)
+    else if (mlep->method == APOP_RF_HYBRID_NOSCALE)
         T = gsl_multiroot_fsolver_hybrids;
-    else //if (mlep->method == 10)        --default
+    else //if (mlep->method == APOP_RF_HYBRID)        --default
         T = gsl_multiroot_fsolver_hybrid;
     s = gsl_multiroot_fsolver_alloc (T, betasize);
     gsl_multiroot_fsolver_set (s, &f, x);
@@ -50,7 +52,7 @@ static apop_model * find_roots (apop_data * data, apop_model *dist) {
             printf ("iter = %3u x = % .3f f(x) = % .3e\n", iter, gsl_vector_get (s->x, 0), gsl_vector_get (s->f, 0));
         if (status)   /* check if solver is stuck */
             break;
-        status = gsl_multiroot_test_residual (s->f, 1e-7);
+        status = gsl_multiroot_test_residual (s->f, mlep->tolerance);
      } while (status == GSL_CONTINUE && iter < 1000);
      if(GSL_SUCCESS) dist->status = 0;
   printf ("status = %s\n", gsl_strerror (status));

@@ -121,7 +121,7 @@ static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct *
 //The model to send to the optimization
 
 static double ll(const apop_data *d, apop_model * ep){
-  apop_ml_imputation_struct *m  = ep->model_params;
+  apop_ml_imputation_struct *m  = ep->model_settings;
     unpack(ep->parameters, d, m);
     return apop_multivariate_normal.log_likelihood(d, m->local_mvn);
 }
@@ -141,16 +141,16 @@ static apop_model apop_ml_imputation_model= {"Impute missing data via maximum li
 \param  parameters  The most likely data points are naturally found via MLE. These are the parameters sent to the MLE.
 
 */
-apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_mle_params * parameters){
+apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_mle_settings * parameters){
   apop_ml_imputation_struct mask;
   apop_model *mc       = apop_model_copy(apop_ml_imputation_model);
-  apop_mle_params *mlp = parameters ? parameters :  apop_mle_params_alloc(d, *mc);
+  apop_mle_settings *mlp = parameters ? parameters :  apop_mle_settings_alloc(d, *mc);
     find_missing(d, &mask, &(mlp->starting_pt), meanvar);
     mlp->model->vbase          = mask.ct;
     mask.local_mvn             = apop_model_copy(apop_multivariate_normal);
     mask.local_mvn->parameters = meanvar;
     mlp->method                 = APOP_SIMPLEX_NM;
-    mlp->model->model_params    = &mask;
+    mlp->model->model_settings    = &mask;
     mlp->step_size              = 2;
     mlp->tolerance              = 0.2;
     apop_model *out = apop_maximum_likelihood(d, *mlp->model);

@@ -139,70 +139,7 @@ don't yet exist in Matlab, R, STATA, &c.
 \section cast The supporting cast 
 To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or higher) and SQLite installed. 
 
-\subsection C C
-The <a href="http://gcc.gnu.org/">Gnu Compiler Collection</a> (GCC) is certainly available for your system. If you are using a unix-type system, it is probably already installed. Windows users, see \ref windows .
-\subsection gsl The GSL 
-This is often available as a package: try <tt>apt-get install gsl-devel</tt>,
-<tt>urpmi gsl-devel</tt>, or whatever means you use to install a
-package. [If that doesn't work, maybe try <tt>apt-get install libgsl0-dev sqlite3-dev</tt>; the package names sometimes drift.]
-Notice that you will need GSL version 1.7; your system may not
-have a sufficiently up-to-date package. If all else fails, download the
-source code from the <a href="http://sources.redhat.com/gsl">GSL home
-page</a> (if you are near North Carolina, maybe try the <a href="ftp://ftp.ibiblio.org/pub/mirrors/gnu/ftp/gnu/gsl/gsl-1.7.tar.gz">ibiblio mirror</a>). Compilation and installation is simple:
-
-\verbatim
-tar xvzf pkg.tgz  #change pkg.tgz to the appropriate name
-cd package_dir    #same here.
-./configure
-make
-su -c "make install"   #see below if you don't have root priveleges.
-\endverbatim
-
-If you don't have root priveleges, then see the \ref notroot "not root" section.
-
-\subsection sqlite SQLite
-SQLite is gaining popularity, and so may or may not be an available
-package for your system. If not, you will need to download it from
-<a href="http://www.sqlite.org">the SQLite home page</a> and compile it. The
-instructions are identical to compiling the GSL above. You will need to
-set your <tt>LD_LIBRARY_PATH</tt>; see below.
-
-\section apop_install The package 
-If you're reading this on a web browser, you can download Apophenia from <a href="https://sourceforge.net/project/showfiles.php?group_id=130901">here</a>; else, go to apophenia.info and follow the download link. The library installation is just like the above:
-\verbatim
-tar xvzf apophenia-0.01.tgz
-cd apophenia_install
-./configure
-make
-su -c "make install"
-\endverbatim
-Notice that, after making the object files, we again set the <tt>LD_LIBRARY_PATH</tt> environment variable to include this directory.
-
-\subsection libpath LD_LIBRARY_PATH 
-During one or many of the installation steps above, you probably got a warning that looks like this:
-\verbatim
-----------------------------------------------------------------------
-Libraries have been installed in:
-   /usr/local/lib
- 
-If you ever happen to want to link against installed libraries
-in a given directory, LIBDIR, you must either use libtool, and
-specify the full pathname of the library, or use the `-LLIBDIR'
-flag during linking and do at least one of the following:
-[...]
-----------------------------------------------------------------------
-\endverbatim
-If you did, then that means you will need to tell the linker where to look for your newly installed libraries, by adding a line in your shell's configuration file to search for the libraries you'd just installed. Cutting and pasting the following to the command prompt should do the trick. You will only need to do it once.
-If your operating system's name ends in the letter X, use this:
-\verbatim 
-echo "export LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc
-\endverbatim 
-If you are using Cygwin:
-\verbatim 
-echo "export PATH=/usr/local/lib:\$PATH" >> ~/.bashrc
-echo "export LIBRARY_PATH=/usr/local/lib:\$LIBRARY_PATH" >> ~/.bashrc
-\endverbatim 
-These commands add a line to your <tt>.bashrc</tt> file; having modified it, reload it either by restarting your shell or the command <tt>source ~/.bashrc</tt> .
+We've moved the setup documentation to <a href="http://avocado.econ.jhu.edu/modeling/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em>. Please see that page.
 
 \subsection testing Testing
 There is a short, complete program in the \ref apop_estimate_OLS "apop_OLS" entry which runs a simple OLS regression on a data file. Follow the instructions there to compile and run. There is also a slightly longer \ref sample_program on a separate page.
@@ -498,7 +435,7 @@ an estimate:
 
 \code
 apop_data 	    *data 		    = read_in_data();
-apop_model 	*the_estimate 	= apop_probit.estimate(data, NULL, NULL);
+apop_model 	*the_estimate 	= apop_estimate(data, apop_probit);
 apop_estimate_print(the_estimate);
 \endcode
 
@@ -530,12 +467,7 @@ to that. This function will return the value of the log likelihood function at t
 \li Write the object. In your header file, include 
 \code
 apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, 
-            new_estimate,
-            new_log_likelihood, 
-            NULL,   //place dlog likelihood here.
-            NULL,   //place constraint fn here.
-            NULL    //place RNG here.
-            };
+            .estimate = new_estimate, .log_likelihood = new_log_likelihood };
 \endcode
 If there are constraints, then replace the appropriate <tt>NULL</tt> with the right constraint function: beta_zero_and_one_greater_than_x_constraint
 \c number_of_parameters is probably a positive integer like \c 2, but

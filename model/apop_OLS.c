@@ -9,6 +9,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "stats.h"
 #include <math.h>
 #include <assert.h>
+#include <apophenia/asst.h>
 #include <gsl/gsl_blas.h>
 
 /** The assumption that makes a log likelihood possible is that the
@@ -18,18 +19,20 @@ This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.
 
  */
-static double ols_log_likelihood (const apop_data *beta, apop_data *d, apop_model *p){ 
-int         i; 
-long double	total_prob  = 0; 
-double      sigma, expected, actual;
-gsl_matrix	*data		    = d->matrix;
-gsl_vector  v;
-gsl_vector  *errors         = gsl_vector_alloc(data->size1);
+static double ols_log_likelihood (const apop_data *d, apop_model *p){ 
+  if (!p->parameters)
+      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  int         i; 
+  long double	total_prob  = 0; 
+  double      sigma, expected, actual;
+  gsl_matrix	*data		    = d->matrix;
+  gsl_vector  v;
+  gsl_vector  *errors         = gsl_vector_alloc(data->size1);
 	for(i=0;i< data->size1; i++){
         v            = gsl_matrix_row(data, i).vector;
-        gsl_blas_ddot(beta->vector, &v, &expected);
+        gsl_blas_ddot(p->parameters->vector, &v, &expected);
         actual       = gsl_matrix_get(data,i, 0);
-        expected    += gsl_vector_get(beta->vector,0) * (1 - actual); //data isn't affine.
+        expected    += gsl_vector_get(p->parameters->vector,0) * (1 - actual); //data isn't affine.
         gsl_vector_set(errors, i, expected-actual);
     }
     sigma   = sqrt(apop_vector_var(errors));
@@ -40,16 +43,14 @@ gsl_vector  *errors         = gsl_vector_alloc(data->size1);
     return total_prob;
 }
 
-static double ols_p (const apop_data *beta, apop_data *d, apop_model *p){ 
-    return exp(ols_log_likelihood(beta, d, p));
-            }
+static double ols_p (const apop_data *d, apop_model *p){ 
+    return exp(ols_log_likelihood(d, p)); }
 
 /** The OLS model
 
   This is basically a wrapper for the OLS regression function, \ref apop_params_OLS.
 \ingroup models
 */
-//apop_model apop_OLS = {"OLS", -1,0,0, apop_estimate_OLS, ols_p, ols_log_likelihood, NULL, NULL, NULL};
 apop_model apop_OLS = {.name="OLS", .vbase = -1, .estimate =apop_estimate_OLS, .p=ols_p,
                             .log_likelihood = ols_log_likelihood};
 

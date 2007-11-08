@@ -118,12 +118,12 @@ struct _apop_model{
     char        name[101]; 
     int         vbase, m1base, m2base;
     char        method_name[101]; 
-    void        *method_params;
-    void        *model_params;
+    void        *method_settings;
+    void        *model_settings;
     apop_data   *parameters, *expected, *covariance;
     double      llikelihood;
     int         status;
-    size_t      method_params_size, model_params_size, more_size;
+    size_t      method_settings_size, model_settings_size, more_size;
     apop_data   *data;
     apop_model * (*estimate)(apop_data * data, apop_model *params);
     double  (*p)(const apop_data *d, apop_model *params);
@@ -209,7 +209,8 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 
 void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 
-apop_model * apop_model_copy(apop_model in); //in apop_params.c.
+apop_model * apop_model_copy(apop_model in); //in apop_model.c
+apop_model * apop_model_copy_set_string(apop_model m, char* param);
 apop_model * apop_model_clear(apop_data * data, apop_model *model);
 apop_model * apop_estimate(apop_data *d, apop_model m);
 void apop_score(const apop_data *d, gsl_vector *out, apop_model m);

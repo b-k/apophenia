@@ -22,22 +22,22 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <assert.h> 
 #include <gsl/gsl_blas.h>
 
-/** Allocate an \c apop_OLS_params structure. 
+/** Allocate an \c apop_ls_settings structure. 
 
  \param data the data
  \param model   The model, like \c apop_OLS or \c apop_WLS.
- \param method_params   If you are using a nonstandard method to estimate the model, put the params there.
- \return an \c apop_OLS_params 
+ \param method_settings   If you are using a nonstandard method to estimate the model, put the params there.
+ \return an \c apop_ls_settings 
  */
-apop_OLS_params * apop_OLS_params_alloc(apop_data *data, apop_model model){
-  apop_OLS_params *out  = malloc(sizeof(*out));
+apop_ls_settings * apop_ls_settings_alloc(apop_data *data, apop_model model){
+  apop_ls_settings *out  = malloc(sizeof(*out));
     out->destroy_data       =  0;
     out->want_cov           =  1;
     out->want_expected_value=  1;
     out->model                 = apop_model_copy(model);
     apop_model_clear(data, out->model);
-    out->model->model_params   = out;
-    out->model->model_params_size = sizeof(*out);
+    out->model->model_settings   = out;
+    out->model->model_settings_size = sizeof(*out);
     return out;
 }
 
@@ -88,9 +88,9 @@ static apop_data * produce_t_test_output(int df, double stat, double diff){
     confidence, 2 tail: 1-p value
 */
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
-int		a_count	= a->size,
+  int	a_count	= a->size,
 		b_count	= b->size;
-double		a_avg	= apop_vector_mean(a),
+  double a_avg	= apop_vector_mean(a),
 		a_var	= apop_vector_var(a),
 		b_avg	= apop_vector_mean(b),
 		b_var	= apop_vector_var(b),
@@ -173,6 +173,7 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
                     est->data->matrix->size1:
                     est->data->vector->size;
     df      -= est->parameters->vector->size;
+    df       = df < 1 ? 1 : df; //some models aren't data-oriented.
     rootn    = sqrt(df);
     for (i=0; i< est->parameters->vector->size; i++){
         val     = apop_data_get(est->parameters, i, -1);
@@ -208,8 +209,8 @@ double  val, var, pval, tstat, rootn, stddev, two_tail;
  */
 apop_data *apop_F_test (apop_model *est, apop_data *contrast){
 gsl_matrix      *set        = est->data->matrix;
-gsl_matrix      *q          = contrast->matrix;
-gsl_vector      *c          = contrast->vector;
+gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
+gsl_vector      *c          = contrast ? contrast->vector: NULL;
 gsl_matrix      *data       = gsl_matrix_alloc(set->size1, set->size2);    //potentially huge.
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->size2, set->size2);
 gsl_matrix      *xpxinv     = gsl_matrix_calloc(set->size2, set->size2);
@@ -272,32 +273,32 @@ return apop_F_test(est, contrast);
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
   int i;
-  apop_OLS_params   *p = e->model_params;
-	if (e->data->names->colnamect > 0) {		
-		//apop_name_add(n, n->colnames[0], 'd');
-        apop_name_add(e->expected->names, e->data->names->colnames[0], 'c');
+  apop_ls_settings   *p = e->model_settings;
+	if (e->data->names->colct > 0) {		
+		//apop_name_add(n, n->column[0], 'd');
+        apop_name_add(e->expected->names, e->data->names->column[0], 'c');
         apop_name_add(e->expected->names, "predicted", 'c');
         apop_name_add(e->expected->names, "residual", 'c');
         if (e->parameters)
-            snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->colnames[0]);
-		sprintf(e->data->names->colnames[0], "1");
+            snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->column[0]);
+		sprintf(e->data->names->column[0], "1");
         apop_name_add(e->parameters->names, "1", 'r');
         apop_name_add(e->parameters->names, "parameters", 'v');
-        for(i=1; i< e->data->names->colnamect; i++)
-            apop_name_add(e->parameters->names, e->data->names->colnames[i], 'r');
+        for(i=1; i< e->data->names->colct; i++)
+            apop_name_add(e->parameters->names, e->data->names->column[i], 'r');
         if (p->want_cov){
             if (e->data->names){
                 apop_name_stack(e->covariance->names, e->data->names, 'c');
                 apop_name_cross_stack(e->covariance->names, e->data->names, 'c', 'r');
             }
-		    sprintf(e->covariance->names->colnames[0], "1");
-		    sprintf(e->covariance->names->rownames[0], "1");
+		    sprintf(e->covariance->names->column[0], "1");
+		    sprintf(e->covariance->names->row[0], "1");
         }
 	}
 }
 
 void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_model *out){
-  apop_OLS_params   *p = out->model_params;
+  apop_ls_settings   *p = out->model_settings;
 	if (p->want_cov + p->want_expected_value == 0 ){	
 		//then don't calculate (X'X)^{-1}
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
@@ -419,8 +420,8 @@ apop_data       *data;
 apop_model   *est;
     apop_text_to_db("data","d",0,1,NULL);
     data = apop_query_to_data("select * from d");
-    est  = apop_OLS.estimate(data, NULL);
-    apop_params_show(est);
+    est  = apop_estimate(data, apop_OLS);
+    apop_model_show(est);
     return 0;
 }
 \endcode
@@ -433,31 +434,31 @@ gcc sample.c -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
 and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
 
 Feeling lazy? The program above was good form and demonstrated useful
-features, but the code below will do the same thing in four lines:
+features, but the code below will do the same thing in two lines:
 
 \code
 #include <apop.h>
-int main(){
-    apop_estimate_show(apop_OLS.estimate(apop_text_to_data("data", 0, 0), NULL));
-    return 0; }
+int main(){ apop_model_show(apop_estimate(apop_text_to_data("data", 0, 0), apop_OLS)); }
 \endcode
 
 
  */
 apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
+    if (!inset)
+        apop_error(0,'s', "%s: You asked me to estimate a regression with NULL data.\n", __func__);
   apop_data         *set;
   apop_model       *epout;
   gsl_vector        *weights    = NULL;
   int               i;
-  apop_OLS_params  *olp;
+  apop_ls_settings  *olp;
     if (!ep) {
-        olp             = apop_OLS_params_alloc(inset, apop_OLS);
+        olp             = apop_ls_settings_alloc(inset, apop_OLS);
         epout           = olp->model;
-    } else if (!ep->model_params) {
-        olp             = apop_OLS_params_alloc(inset, *ep);
+    } else if (!ep->model_settings) {
+        olp             = apop_ls_settings_alloc(inset, *ep);
         epout           = olp->model;
     } else {
-        olp             = ep->model_params;
+        olp             = ep->model_settings;
         epout           = ep;
     }
     epout->data = inset;
@@ -627,17 +628,23 @@ static int strcmpwrap(const void *a, const void *b){
 vector that lists the category number for each item, and I'll return
 a gsl_matrix with a single one in each row in the column specified.
 
-\param  in The gsl_vector of categories
+After running this, you will almost certainly want to join together the output here with your main data set. E.g.,:
+\code
+apop_data *dummies  = apop_produce_dummies(main_regression_vars, 8, 't', 0);
+apop_data_stack(main_regression_vars, dummies, 'c');
+\endcode
+
+\param  d The data set with the column to be dummified
+\param col The column number to be transformed
+\param type 'd'==data column (-1==vector), 't'==text column.
 \param  keep_first  if zero, return 
     a matrix where each row has a one in the (column specified MINUS
     ONE). That is, the zeroth category is dropped, the first category
     has an entry in column zero, et cetera. If you don't know why this
     is useful, then this is what you need. If you know what you're doing
     and need something special, set this to one and the first category won't be dropped.
-param type 'd'==data column (-1==vector), 't'==text column.
-\return out
 */
-apop_data * apop_data_produce_dummies(apop_data *d, int col, char type, int keep_first){
+apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first){
   size_t      i, index,
               prior_elmt_ctr  = 107,
               elmt_ctr        = 0;
@@ -699,8 +706,7 @@ apop_data * apop_data_produce_dummies(apop_data *d, int col, char type, int keep
         //else don't keep first, and index==0; throw it out.
     }
     //Add names:
-    i   = (keep_first) ? 0 : 1;
-    for (  ; i< elmt_ctr; i++){
+    for (i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
         if (type =='d')
             sprintf(n,"dummy %g", elmts[i]);
         else
@@ -720,7 +726,7 @@ apop_data * apop_data_produce_dummies(apop_data *d, int col, char type, int keep
 \todo finish this documentation. [Was in a rush today.]
 */
 apop_model *apop_estimate_fixed_effects_OLS(apop_data *data,  gsl_vector *categories){
-apop_data *dummies = apop_data_produce_dummies(apop_vector_to_data(categories),-1, 'd', 0);
+apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd', 0);
     apop_data_stack(data, dummies, 'c');
     return apop_OLS.estimate(dummies, NULL);
 }
@@ -755,7 +761,7 @@ apop_data *apop_estimate_correlation_coefficient (apop_model *in){
   size_t          indep_ct= in->data->matrix->size2 - 1;
   gsl_vector      v;  
   apop_data       *out    = apop_data_alloc(0, 5,-1);
-  apop_OLS_params *p      = in->model_params;
+  apop_ls_settings *p      = in->model_settings;
     if (!p->want_expected_value){
         apop_error(0, 'c', "I need an estimate that used want_expected_value to calculate the correlation coefficient. returning NULL.\n");
         return NULL;
@@ -782,3 +788,132 @@ apop_data *apop_estimate_correlation_coefficient (apop_model *in){
 apop_data *apop_estimate_r_squared (apop_model *in){
     return apop_estimate_correlation_coefficient(in);
 }
+
+
+
+
+
+
+static apop_data *prep_z(apop_data *x, apop_data *instruments){
+  int       i;
+  apop_data *out    = apop_data_copy(x);
+    if (instruments->vector)
+        for (i=0; i< instruments->vector->size; i++){
+            APOP_COL(instruments, i, inv);
+            APOP_COL(out, instruments->vector->data[i], outv);
+            gsl_vector_memcpy(outv, inv);
+        }
+    else if (instruments->names->rowct)
+        for (i=0; i< instruments->names->rowct; i++){
+            int rownumber = apop_name_find(x->names, instruments->names->row[i], 'c');
+            if (rownumber == -1)
+                apop_error(0, 's', "%s: You asked me to substitute instrument column %i for the data column named %s, but I could find no such name.\n", __func__, i, instruments->names->row[i]);
+            APOP_COL(instruments, i, inv);
+            APOP_COL(out, rownumber, outv);
+            gsl_vector_memcpy(outv, inv);
+        }
+    else 
+        apop_error(0, 's', "%s: Your instrument matrix has data, but neither a vector element nor row names indicating what columns in the original data should be replaced.\n", __func__);
+    return out;
+}
+
+/** Instrumental variable regression
+
+ Operates much like the \ref apop_estmate_OLS function, but the input
+ parameters also need to have a table of substitutions. The vector
+ element of the table lists the column numbers to be substituted (the
+ dependent var is zero; first independent col is one), and then one
+ column for each item to substitute.
+
+If the vector of your apop_data set is NULL, then I will use the row
+names to find the columns to substitute. This is generally more robust
+and/or convenient.
+
+If the \c instruments data set is somehow NULL or empty, I'll just run OLS.
+
+\code
+apop_ls_settings *ivp = apop_ls_settings_alloc(data, apop_IV);
+ivp->instruments    = apop_data_alloc(data->matrix->size1, 2);
+APOP_COL(ivp->instruments, 0, firstcol);
+gsl_vector_memcpy(firstcol, your_data_vector);
+APOP_COL(ivp->instruments, 1, secondcol);
+gsl_vector_memcpy(firstcol, your_other_data_vector);
+apop_name_add(ivp->names, "subme_1", 'r');
+apop_name_add(ivp->names, "subme_2", 'r');
+apop_estimate(data, ivp->model);
+\endcode
+
+
+\ingroup regression
+\todo This function does some serious internal data copying. It would be
+only slightly more human- and labor-intensive to do the linear algebra
+without producing the Z matrix explicitly.
+
+ */
+apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
+    if (!inset)
+        apop_error(0,'s', "%s: You asked me to estimate a regression with NULL data.\n", __func__);
+  apop_data         *set, *z;
+  apop_model       *epout;
+  gsl_vector        *weights    = NULL;
+  int               i;
+  apop_ls_settings  *olp;
+    if (!ep || !ep->model_settings)
+        return apop_estimate(inset, apop_OLS);
+    olp                 = ep->model_settings;
+    olp->want_cov       = 0;//not working yet.
+    epout               = apop_model_copy(*ep);
+    epout->model_settings = malloc(sizeof(apop_ls_settings));
+    memcpy(epout->model_settings, olp, sizeof(apop_ls_settings));
+    if (!olp->instruments || !olp->instruments->matrix->size2) 
+        return apop_estimate(inset, apop_OLS);
+    epout->data = inset;
+    if(epout->parameters)
+        apop_data_free(epout->parameters);
+    epout->parameters = apop_data_alloc(inset->matrix->size2,0,0);
+    set = olp->destroy_data ? inset : apop_data_copy(inset); 
+    z   = prep_z(inset, olp->instruments);
+    
+    //prep weights.
+    if (olp->destroy_data)
+        weights = epout->data->weights;  //may be NULL.
+    else
+        weights = apop_vector_copy(epout->data->weights); //may be NULL.
+    if (weights)
+        for (i =0; i< weights->size; i++)
+            gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
+
+  apop_data    *y_data     = apop_data_alloc(set->matrix->size1, 0, 0); 
+    if (olp->want_expected_value)
+        epout->expected   = apop_data_alloc(0, set->matrix->size1, 3);
+    if (olp->want_cov)
+        epout->covariance = apop_data_alloc(0, set->matrix->size1, set->matrix->size1);
+    prep_names(epout);
+    APOP_COL(set, 0, firstcol);
+    gsl_vector_memcpy(y_data->vector,firstcol);
+    gsl_vector_set_all(firstcol, 1);     //affine: first column is ones.
+    if (weights){
+        gsl_vector_mul(y_data->vector, weights);
+        for (i = 0; i < set->matrix->size2; i++){
+            APOP_COL(set, i, v);
+            gsl_vector_mul(v, weights);
+        }
+    }
+
+    apop_data *zpx    = apop_dot(z, set, 1, 0);
+    apop_data *zpy    = apop_dot(z, y_data, 1, 0);
+    apop_data *zpxinv = apop_matrix_to_data(apop_matrix_inverse(zpx->matrix));
+    epout->parameters = apop_dot(zpxinv, zpy, 0);
+    apop_data_free(y_data);
+    apop_data_free(zpx); 
+    apop_data_free(zpxinv);
+    apop_data_free(zpy);
+
+    if (!olp->destroy_data)
+        apop_data_free(set);
+//    apop_estimate_parameter_t_tests(epout);
+    epout->status   = 1;
+    return epout;
+}
+
+

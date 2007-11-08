@@ -22,23 +22,17 @@ apop_model apop_histogram;
 
   \param    data The input data. As with other distributions, the data
   should be in the matrix element of the \c apop_data set, and can have any dimensions
-  ($1\times 10000$, $10000\times 1$, $100\times 100$...).
+  (\f$1\times 10000\f$, \f$10000\times 1\f$, \f$100\times 100\f$...).
   \param bins How many bins should the PDF have?
   \param params_in If you want to hook the output parameters in to an existing \c apop_model set, then put that input set here.
 
  */
-apop_model *apop_histogram_params_alloc(apop_data *data, int bins, apop_model *model_in){
+apop_model *apop_histogram_params_alloc(apop_data *data, int bins){
     //header is in model.h.
-  apop_model *pin  = model_in;
   apop_histogram_params *hp = malloc(sizeof(*hp));
     hp->model  = apop_model_copy(apop_histogram);
-    hp->model->model_params        = hp;
-    hp->model->model_params_size   = sizeof(*hp);
-    if (!model_in){
-        pin     = hp->model;
-    } else
-        hp->model  = pin;
-    snprintf(pin->method_name,100, "Histogram");
+    hp->model->model_settings        = hp;
+    hp->model->model_settings_size   = sizeof(*hp);
   size_t              i, j, sum = 0;
   double              minv    = GSL_POSINF,
                       maxv    = GSL_NEGINF,
@@ -78,8 +72,7 @@ apop_model *apop_histogram_params_alloc(apop_data *data, int bins, apop_model *m
 gsl_histogram *gpdf;
 
 apop_model *est(apop_data *d, apop_model *in){
-    return apop_histogram_params_alloc(d, 1000, in);
-
+    return apop_histogram_params_alloc(d, 1000);
 }
 
 static double one_vector(gsl_vector *in){
@@ -92,8 +85,8 @@ static double one_vector(gsl_vector *in){
     return product;
 }
 
-static double histogram_p(const apop_data *beta, apop_data *d, apop_model *parameters){
-  apop_histogram_params *hp = parameters->model_params;
+static double histogram_p(const apop_data *d, apop_model *parameters){
+  apop_histogram_params *hp = parameters->model_settings;
   long double           product = 0;
     gpdf    = hp->pdf;
     if (d->vector)
@@ -106,12 +99,12 @@ static double histogram_p(const apop_data *beta, apop_data *d, apop_model *param
     return product;
 }
 
-static double histogram_log_likelihood(const apop_data *beta, apop_data *d, apop_model *parameters){
-	return log(histogram_p(beta,d,parameters)) ;
+static double histogram_log_likelihood(const apop_data *d, apop_model *parameters){
+	return log(histogram_p(d,parameters)) ;
 }
 
 static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
-  apop_histogram_params *hp   = eps->model_params;
+  apop_histogram_params *hp   = eps->model_settings;
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!
         gsl_histogram_pdf_init(hp->cdf, hp->pdf);
@@ -133,16 +126,12 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
 
   The model is unlike most other models in that there are no parameters
   of any sort (beyond the data itself), so there is no \c estimate
-  method; instead all the work of producing the histogram is done in
-  \c apop_histogram_params_alloc.
+  method; instead all the work of producing the histogram is done in \c
+  apop_histogram_params_alloc. [Actually, there is an \c estimate method,
+  but it is just an alias for the histogram_alloc function.]
 
 \ingroup models
 */
-apop_model apop_histogram = {"histogram", 0,0,0, .estimate = est, 
+apop_model apop_histogram = {"Histogram", 0,0,0, .estimate = est, 
     .p = histogram_p, .log_likelihood = histogram_log_likelihood, 
     .draw = histogram_rng};
-
-
-//By the way, here's the null model.
-apop_model apop_null = {"The null model", 0,0,0};
-

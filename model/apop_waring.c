@@ -40,14 +40,67 @@ static apop_model * waring_estimate(apop_data * data, apop_model *parameters){
 	return apop_maximum_likelihood(data, *parameters);
 }
 
-static double beta_zero_and_one_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
+
+//First the rank versions
+static double waring_log_likelihood_rank(const apop_data *d, apop_model *m){
+  float		      bb	= gsl_vector_get(m->parameters->vector, 0),
+    		      a	    = gsl_vector_get(m->parameters->vector, 1);
+  int 		      k;
+  gsl_matrix      *data	= d->matrix;
+  double 		  ln_a_k, ln_bb_a_k,
+		          likelihood 	= 0,
+		          ln_bb_a		= gsl_sf_lngamma(bb + a),
+		          ln_a_mas_1	= gsl_sf_lngamma(a + 1),
+		          ln_bb_less_1= log(bb - 1);
+	for (k=0; k< data->size2; k++){	//more efficient to go column-by-column
+		ln_bb_a_k	 = gsl_sf_lngamma(k +1 + a + bb);
+		ln_a_k		 = gsl_sf_lngamma(k +1 + a);
+        APOP_COL(d,k, v);
+		likelihood   += apop_sum(v) * (ln_a_k - ln_bb_a_k);
+	}
+    likelihood   +=  (ln_bb_less_1 + ln_bb_a - ln_a_mas_1) * d->matrix->size1 * d->matrix->size2;
+	return likelihood;
+}
+
+static void waring_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient, apop_model *m){
+  float		      bb		    = gsl_vector_get(m->parameters->vector, 0),
+	    	      a		        = gsl_vector_get(m->parameters->vector, 1);
+  int 		      k;
+  gsl_matrix	  *data		    = d->matrix;
+  double		  bb_minus_one_inv= 1/(bb-1),
+    		      psi_a_bb	        = gsl_sf_psi(bb + a),
+		          psi_a_mas_one	    = gsl_sf_psi(a+1),
+		          psi_a_k,
+		          psi_bb_a_k,
+		          d_bb		        = 0,
+		          d_a		            = 0;
+	for (k=0; k< data->size2; k++){	//more efficient to go column-by-column
+		psi_bb_a_k	 = gsl_sf_psi(k +1 + a + bb);
+		psi_a_k		 = gsl_sf_psi(k +1 + a);
+        APOP_COL(d, k, v);
+		d_bb	    += apop_sum(v) * -psi_bb_a_k;
+		d_a		    += apop_sum(v) * (psi_a_k - psi_bb_a_k);
+	}
+    d_bb	    += (bb_minus_one_inv + psi_a_bb) * d->matrix->size1 * d->matrix->size2;
+    d_a		    += (psi_a_bb - psi_a_mas_one) * d->matrix->size1 * d->matrix->size2;
+	gsl_vector_set(gradient, 0, d_bb);
+	gsl_vector_set(gradient, 1, d_a);
+}
+
+
+
+
+
+static double beta_zero_and_one_greater_than_x_constraint(const apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1 and  0 < beta_2
   static apop_data *constraint = NULL;
-    if (!constraint)constraint= apop_data_calloc(2,2,2);
-    apop_data_set(constraint, 0, -1, 1);
-    apop_data_set(constraint, 0, 0, 1);
-    apop_data_set(constraint, 1, 1, 1);
-    return apop_linear_constraint(beta->vector, constraint, 1e-3, returned_beta->vector);
+    if (!constraint){
+        constraint= apop_data_calloc(2,2,2);
+        apop_data_set(constraint, 0, -1, 1);
+        apop_data_set(constraint, 0, 0, 1);
+        apop_data_set(constraint, 1, 1, 1);
+    }
+    return apop_linear_constraint(m->parameters->vector, constraint, 1e-3);
 }
 
 
@@ -65,9 +118,13 @@ static double apply_me(gsl_vector *data){
     return likelihood;
 }
 
-static double waring_log_likelihood(const apop_data *beta, apop_data *d, apop_model *p){
-    bb	= gsl_vector_get(beta->vector, 0),
-    a	= gsl_vector_get(beta->vector, 1);
+static double waring_log_likelihood(const apop_data *d, apop_model *m){
+  if (!m->parameters)
+      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
+      return waring_log_likelihood_rank(d, m);
+  bb	= gsl_vector_get(m->parameters->vector, 0),
+  a	    = gsl_vector_get(m->parameters->vector, 1);
   double 		likelihood 	= 0,
 		        ln_bb_a		= gsl_sf_lngamma(bb + a),
                 ln_a_mas_1	= gsl_sf_lngamma(a + 1),
@@ -79,12 +136,14 @@ static double waring_log_likelihood(const apop_data *beta, apop_data *d, apop_mo
 	return likelihood;
 }
 
-/** The derivative of the Waring distribution, for use in likelihood
- minimization. You'll probably never need to call this directy.*/
-static void waring_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
+static void waring_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *m){
 	//Psi is the derivative of the log gamma function.
-    bb		        = gsl_vector_get(beta->vector, 0);
-	a		        = gsl_vector_get(beta->vector, 1);
+  if (!m->parameters)
+      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
+      return waring_dlog_likelihood_rank(d, gradient, m);
+  bb		        = gsl_vector_get(m->parameters->vector, 0);
+  a		        = gsl_vector_get(m->parameters->vector, 1);
   int 		    i, k;
   gsl_matrix	*data		    = d->matrix;
   double		bb_minus_one_inv= 1/(bb-1), val,
@@ -109,8 +168,8 @@ static void waring_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vect
 	gsl_vector_set(gradient, 1, d_a);
 }
 
-static double waring_p(const apop_data *beta, apop_data *d, apop_model *p){
-    return exp(waring_log_likelihood(beta, d, p));
+static double waring_p(const apop_data *d, apop_model *p){
+    return exp(waring_log_likelihood(d, p));
 }
 
 /** Give me parameters, and I'll draw a ranking from the appropriate

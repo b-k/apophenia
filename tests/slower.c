@@ -11,7 +11,7 @@ void test_score(){
         gsl_vector_set(source->parameters->vector, 1, gsl_ran_flat(r, .01, 5));
         for (j=0; j< len; j++)
             apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
-        apop_mle_params *estme = apop_mle_params_alloc(data, apop_normal);
+        apop_mle_settings *estme = apop_mle_settings_alloc(data, apop_normal);
         estme->method =5;
         apop_model *out = apop_maximum_likelihood(data, *estme->model);
         double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;

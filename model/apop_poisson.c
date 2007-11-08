@@ -15,30 +15,32 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
 #include <assert.h>
-static double poisson_log_likelihood(const apop_data *beta, apop_data *d, apop_model *);
+static double poisson_log_likelihood(const apop_data *d, apop_model *);
 
 static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
   apop_model 	*est= parameters ? parameters : apop_model_copy(apop_poisson);
   double		mean    = apop_matrix_mean(data->matrix);
-    if (!est->parameters->vector) 
-        est->parameters->vector   = gsl_vector_alloc(1);
+    if (!est->parameters) 
+        est->parameters   = apop_data_alloc(1,0,0);
 	gsl_vector_set(est->parameters->vector, 0, mean);
-    est->llikelihood	= poisson_log_likelihood(est->parameters, data, parameters);
-    if (est->method_params 
-            && ((apop_mle_params *)(est->method_params))->want_cov){
-        apop_mle_params   *extra  = apop_mle_params_alloc(data, apop_poisson);
+    est->llikelihood	= poisson_log_likelihood(data, parameters);
+    if (est->method_settings
+            && ((apop_mle_settings *)(est->method_settings))->want_cov){
+        apop_mle_settings   *extra  = apop_mle_settings_alloc(data, apop_poisson);
         extra->want_cov = 0;
         est->covariance = apop_jackknife_cov(data, *est);
     }
 	return est;
 }
 
-static double beta_zero_greater_than_x_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
+static double beta_zero_greater_than_x_constraint(const apop_data *returned_beta, apop_model *v){
     //constraint is 0 < beta_2
   static apop_data *constraint = NULL;
-    if (!constraint)constraint= apop_data_calloc(1,1,1);
-    apop_data_set(constraint, 0, 0, 1);
-    return apop_linear_constraint(beta->vector, constraint, 1e-3, returned_beta->vector);
+    if (!constraint){
+        constraint= apop_data_calloc(1,1,1);
+        apop_data_set(constraint, 0, 0, 1);
+    }
+    return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
 }
 
 static double ln_l;
@@ -55,8 +57,10 @@ static double apply_me(gsl_vector *v){
     return llikelihood;
 }
 
-static double poisson_log_likelihood(const apop_data *beta, apop_data *d, apop_model * p){
-  double        lambda      = gsl_vector_get(beta->vector, 0);
+static double poisson_log_likelihood(const apop_data *d, apop_model * p){
+  if (!p->parameters)
+      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  double        lambda      = gsl_vector_get(p->parameters->vector, 0);
     ln_l 	= log(lambda);
   gsl_vector *  v           = apop_matrix_map(d->matrix, apply_me);
   double        llikelihood = apop_vector_sum(v);
@@ -64,14 +68,16 @@ static double poisson_log_likelihood(const apop_data *beta, apop_data *d, apop_m
     return llikelihood - d->matrix->size1*d->matrix->size2*lambda;
 }
 
-static double poisson_p(const apop_data *beta, apop_data *d, apop_model * v){
-    return exp(poisson_log_likelihood(beta, d, v));
+static double poisson_p(const apop_data *d, apop_model * v){
+    return exp(poisson_log_likelihood(d, v));
 }
 
 /** The derivative of the poisson distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void poisson_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
-  double       	lambda  = gsl_vector_get(beta->vector, 0);
+static void poisson_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *p){
+  if (!p->parameters)
+      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  double       	lambda  = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix      *data	= d->matrix;
   float           d_a;
     d_a  = apop_matrix_sum(data)/lambda;
@@ -100,7 +106,7 @@ apop_poisson.estimate() is an MLE, so feed it appropriate \ref apop_params.
   
 \f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
 
-If you want, you can use the \c apop_mle_estimate_params for the method_params element of the input \c apop_params. The model will only look at the \c want_cov element.
+If you want, you can use the \c apop_mle_estimate_params for the method_settings element of the input \c apop_params. The model will only look at the \c want_cov element.
 
 \ingroup models
 */

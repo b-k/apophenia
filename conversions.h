@@ -11,6 +11,7 @@
 #include "db.h"
 #include <regex.h>
 #include <string.h>
+#include <stdarg.h>
 #include <gsl/gsl_matrix.h>
 
 #undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
@@ -29,7 +30,7 @@ __BEGIN_DECLS
 //From vector
 /////////////
 gsl_vector *apop_vector_copy(const gsl_vector *in);
-int apop_vector_to_array(const gsl_vector *in, double **out);
+double * apop_vector_to_array(const gsl_vector *in);
 gsl_matrix * apop_vector_to_matrix(const gsl_vector *in);
 
 /////////////
@@ -73,6 +74,7 @@ char * apop_strip_dots(char *in, char strip_type);
 char *apop_strcat(char **base, char *addme);
 char *apop_strcpy(char **base, char *addme);
 
+gsl_vector *apop_vector_vfill(gsl_vector *in, va_list ap);
 apop_data *apop_data_fill(apop_data *in, ...);
 gsl_vector *apop_vector_fill(gsl_vector *in, ...);
 gsl_matrix *apop_matrix_fill(gsl_matrix *in, ...);

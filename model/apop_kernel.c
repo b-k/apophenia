@@ -26,7 +26,7 @@ void set_params(double in, apop_model *m){
 void apop_histogram_plot(apop_model *in, char *outfile){
   int             i, k;
   FILE *          f;
-  apop_histogram_params   *inhist  = in->model_params;
+  apop_histogram_params   *inhist  = in->model_settings;
   gsl_histogram   *h      = inhist->pdf;
 
     double midpoints[h->n]; //cut 'n' pasted from kernel density alloc.
@@ -93,9 +93,9 @@ apop_model *apop_kernel_density_params_alloc(apop_data *data,
   size_t   i, j;
   apop_data *smallset = apop_data_alloc(0,1,1);
   apop_histogram_params *out = malloc(sizeof(apop_histogram_params));
-  apop_histogram_params *bh  = histobase->model_params;
+  apop_histogram_params *bh  = histobase->model_settings;
     out->model               = apop_model_copy(apop_kernel_density);
-    out->model->model_params = out;
+    out->model->model_settings = out;
     out->kernelbase          = apop_model_copy(kernelbase);
     out->histobase = data && !histobase ?
                 apop_histogram_params_alloc(data, 1000)

@@ -34,7 +34,7 @@ gsl_rng *apop_rng_alloc(int seed){
        first_use --;
        gsl_rng_env_setup();
     }
-  gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus);
+  gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus2);
     gsl_rng_set(setme, seed);
     return setme;
 }

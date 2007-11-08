@@ -71,23 +71,6 @@ Anyway, here are some functions to deal with these various histograms and such.
 
  */
 
-/** Produce a <tt>gsl_histogram</tt> from a vector. 
-
-  \param data   The data vector
-  \param bins   The number of (evenly-spaced) bins
-  \ingroup histograms
-  */
-gsl_histogram * apop_vector_to_histogram(const gsl_vector *data, int bins){
-int                 i;
-gsl_histogram       *h  = gsl_histogram_alloc(bins);
-double              min, max;
-    gsl_vector_minmax(data, &min, &max);
-    gsl_histogram_set_ranges_uniform(h, min, max+10*GSL_DBL_EPSILON);
-    for (i=0; i< data->size; i++)
-        gsl_histogram_increment(h,gsl_vector_get(data,i));
-    return h;
-}
-
 /** Make two histograms that share bin structures: same max/min, same
  bin partitions. You can then plot the two together or run goodness-of-fit tests.
 
@@ -180,10 +163,12 @@ double      pval    = gsl_cdf_chisq_P(diff, bins-1);
   \todo Right now, I'm assuming the histograms are aligned---h0->bins == h1->bins. This needs to go away.
   \ingroup histograms
 */
-apop_data *apop_histograms_test_goodness_of_fit(gsl_histogram *h0, gsl_histogram *h1){
-int     i;
-double  diff    = 0,
-        bins    = h0->n;
+apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
+  gsl_histogram *h0 = ((apop_histogram_params *)m0)->pdf;
+  gsl_histogram *h1 = ((apop_histogram_params *)m1)->pdf;
+  int     i;
+  double  diff    = 0,
+          bins    = h0->n;
     if (h0->n == h1->n){
         for (i=0; i< bins; i++)
             if (h0->bin[i]==0){
@@ -192,68 +177,8 @@ double  diff    = 0,
             } else
                 diff    += gsl_pow_2(h0->bin[i] - h1->bin[i])/h0->bin[i];
     } else
-        printf("Sorry, I haven't implemented the case where the bin counts of the two histograms are unequal.");
+        apop_error(0, 's', "%s: Sorry, I haven't implemented the case where the bin counts of the two histograms are unequal.", __func__);
     return gof_output(diff, bins);
-}
-
-/** Test the goodness-of-fit between two vectors
- Here, I assume that the vectors are already histogram-like,
- and that the first element of v1 corresponds to the first
- element of v2, et cetera. If you have unordered data, see \ref
- apop_histograms_test_goodness_of_fit.
-
-The denominator of the chi-squared test is the first vector, unless
-the second vector is longer:
-
-\code
-gsl_vector  *denom  = (v1->size > v0->size) ? v1 : v0;
-\endcode
-
-If any elements of your denominator vector are zero, then the chi-squared
-statistic will be GSL_POSINF. The claim of the test is that the test
-vector was drawn from the denominator vector, and if the denominator
-vector has density zero at some point while the test vector does not,
-then the claim must be false.
-
-Meanwhile, if either vector's value is GSL_NAN, then that bin is
-skipped. If you really think the zeros are a fluke, then try
-\code
-apop_vector_replace(v1, apop_double_is_zero, GSL_NAN);
-apop_vector_replace(v2, apop_double_is_zero, GSL_NAN);
-apop_vectors_test_goodness_of_fit(v1,v2);
-\endcode
-
-
-\param  v0, v1  The first vector is assumed to be the denominator of
-the test (unless the second is longer; see notes).
-
-\return     An \ref apop_data table with the chi-squared statistic, df, p value, confidence, et cetera.
-
-\ingroup histograms
-*/
-apop_data *apop_vectors_test_goodness_of_fit(gsl_vector *v0, gsl_vector *v1){
-double      diff    = 0,
-            d0, d1;
-gsl_vector  *denom  = (v1->size > v0->size) ? v1 : v0,
-            *num    = (v1->size > v0->size) ? v0 : v1;
-int         i, 
-            nanct   = 0;
-    for (i=0; i< denom->size; i++){
-        d0  = gsl_vector_get(denom, i);
-        d1  = (i < num->size) ? gsl_vector_get(num, i): 0;
-        if (gsl_isnan(d0) || gsl_isnan(d1))
-            nanct   ++;
-        else {
-            if (d0 == 0){
-                if(apop_opts.verbose)
-                    printf ("element %i of the denominator vector is zero. Returning GSL_POSINF\n", i);
-                diff     = GSL_POSINF;
-                break;
-            } else
-                diff    += gsl_pow_2(d0 - d1)/d0;
-        }
-    }
-    return gof_output(diff, v0->size - nanct);
 }
 
 /** Test the goodness-of-fit between a histogram and a model.
@@ -263,13 +188,14 @@ int         i,
 \todo The double* that gets sent in to the model RNGs is ungraceful.
 \ingroup histograms
 */
-apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model m,
+apop_data *apop_model_test_goodness_of_fit(apop_data *v1, apop_model m,
 int bins, long int draws, apop_model *params, gsl_rng *r){
-int     i, count    = bins;
-double  diff        = 0,
-        sum;
-gsl_histogram *h1   = apop_vector_to_histogram(v1, bins),
-            *h2     = apop_model_to_histogram(m, h1, draws, params, r);
+  int     i, count  = bins;
+  double  diff      = 0,
+          sum;
+  apop_model    *m1 = apop_estimate(v1, apop_histogram);
+  gsl_histogram *h1 = ((apop_histogram_params *)m1)->pdf,
+                *h2 = apop_model_to_histogram(m, h1, draws, params, r);
     sum      = gsl_histogram_sum(h1);//h1 is not normalized; h2 is.
     diff    += gsl_pow_2(h2->bin[0]);
     for (i=0; i< bins; i++){
@@ -324,24 +250,23 @@ static double psmirnov2x(double x, int m, int n) {
 /** Run the Kolmogorov test to determine whether two distributions are
  identical.
 
- \param h1, h2  Two matching histograms, probably produced via \ref apop_vectors_to_histogram or \ref apop_model_to_histogram.
-
- \param n1, n2 How many data points are in your set? Since this is
- not inferred from the histograms, you can set them to an arbitrarily
- large number of bins.
+ \param m1, m2  Two matching \ref apop_histograms, probably produced via \ref apop_vectors_to_histogram or \ref apop_model_to_histogram.
 
  \return The \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
 
  \ingroup histograms
  */
-apop_data *apop_test_kolmogorov(gsl_histogram *h1, gsl_histogram *h2){
-  double    cdf1    = 0,
-            cdf2    = 0,
-            sum1    = 0,
-            sum2    = 0,
-            diff    = 0;
-  int       offset, i;
-  gsl_histogram *first, *second;
+//apop_data *apop_test_kolmogorov(gsl_histogram *h1, gsl_histogram *h2){
+apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
+  gsl_histogram *h1   = ((apop_histogram_params *)m1)->pdf;
+  gsl_histogram *h2   = ((apop_histogram_params *)m2)->pdf;
+  double    cdf1      = 0,
+            cdf2      = 0,
+            sum1      = 0,
+            sum2      = 0,
+            diff      = 0;
+  int       i, offset = 0;
+  gsl_histogram *first=NULL, *second=NULL;
   //If empirical data, h1->n == h2->n; if one is a distribution
   //then there are -inf and +inf bins; else, bail out.
     if(h1->n == h2->n){
@@ -358,10 +283,8 @@ apop_data *apop_test_kolmogorov(gsl_histogram *h1, gsl_histogram *h2){
         first   = h2;
         second  = h1;
         cdf1    = first->bin[0];
-    } else {
-        printf("apop_test_kolmogorov needs matching histograms.  Produce them via apop_vectors_to_histogram or apop_model_to_histogram. Returning NULL.\n");
-        return NULL;
-    }
+    } else 
+        apop_error(0, 's', "%s: needs matching histograms.  Produce them via apop_vectors_to_histogram or apop_model_to_histogram. Returning NULL.\n", __func__);
     //Scaling step. 
     for (i=0; i< first->n; i++)
         sum1    += first->bin[i];
@@ -377,9 +300,20 @@ printf("sum1: %g; sum2: %g\n", sum1, sum2);
     //return 1-psmirnov2x(diff-0.02, n1, n2);
    // return 1-psmirnov2x(0.2204, n1, n2);
 
-apop_data   *out    = apop_data_alloc(0,3,-1);
+    apop_data   *out    = apop_data_alloc(0,3,-1);
     apop_data_add_named_elmt(out, "max distance", diff);
     apop_data_add_named_elmt(out, "p value, 2 tail", 1-psmirnov2x(diff, sum1, sum2));
     apop_data_add_named_elmt(out, "confidence, 2 tail", psmirnov2x(diff, sum1, sum2));
     return out;
+}
+
+/** Scale a histogram so it integrates to one (and is thus a proper PMF). */
+void apop_histogram_normalize(apop_model *m){
+  gsl_histogram *h = ((apop_histogram_params *)m->model_settings)->pdf;
+  int           i;
+  long double   sum = 0;
+    for (i=0; i< h->n; i++)
+        sum       += h->bin[i];
+    for (i=0; i< h->n; i++)
+        h->bin[i] /= sum;
 }

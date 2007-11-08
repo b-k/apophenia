@@ -218,9 +218,9 @@ void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
 /** Print an \c apop_histogram. Put a "plot '-'\n" before this, and
  you can send it straight to Gnuplot. The -inf and +inf elements are not printed. */
 void apop_histogram_print(apop_model *h, char *outfile){
-  apop_histogram_params *hp = h->model_params;
+  apop_histogram_params *hp = h->model_settings;
   if (!hp)
-      apop_error(0, 's', "%s: You sent me an apop_model with no model_params. Have you estimated this histogram with data yet?\n", __func__);
+      apop_error(0, 's', "%s: You sent me an apop_model with no model_settings. Have you estimated this histogram with data yet?\n", __func__);
   int             i;
   FILE *          f;
     if (apop_opts.output_type == 'p')

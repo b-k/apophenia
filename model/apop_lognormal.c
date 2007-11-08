@@ -20,14 +20,14 @@ static double lognormal_log_likelihood(const apop_data *d, apop_model *params);
 /** The normal estimate */
 static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters){
   apop_model 	*est;
-  apop_OLS_params *p;
+  apop_ls_settings *p;
   double   mean    = 0,
            var     = 0; 
     if (!parameters) {
-        p   = apop_OLS_params_alloc(data, apop_normal);
+        p   = apop_ls_settings_alloc(data, apop_normal);
         est = p->model;
     } else {
-        p   = parameters->model_params;
+        p   = parameters->model_settings;
         est	= apop_model_copy(*parameters);
     }
     apop_matrix_mean_and_var(data->matrix, &mean, &var);

@@ -354,7 +354,7 @@ int		count = 0;
 void estimate_model(gsl_matrix *data, apop_model dist, int method){
 int                     i;
 double                  starting_pt[] = {3.2, 1.4};
-apop_mle_params  *params = apop_mle_params_alloc(apop_matrix_to_data(data), dist);
+apop_mle_settings  *params = apop_mle_settings_alloc(apop_matrix_to_data(data), dist);
     params->method          = method;
     params->step_size       = 1e-1;
     params->starting_pt     = starting_pt;
@@ -366,9 +366,9 @@ apop_mle_params  *params = apop_mle_params_alloc(apop_matrix_to_data(data), dist
     params->use_score       = 0;
     params->want_cov        = 0;
     apop_model *e    = apop_estimate(apop_matrix_to_data(data),*params->model);
-    if (e->method_params && !(!strcmp(dist.name,"poisson") || !strcmp(dist.name, "Uniform distribution"))){  //then it's an MLE
+    if (e->method_settings && !(!strcmp(dist.name,"poisson") || !strcmp(dist.name, "Uniform distribution"))){  //then it's an MLE
         apop_model *compare_me = apop_model_copy(*(params->model));
-        apop_mle_params *p = compare_me->method_params;
+        apop_mle_settings *p = compare_me->method_settings;
         p->method = p->method == APOP_SIMPLEX_NM ? APOP_CG_FR : APOP_SIMPLEX_NM;
         e   = apop_estimate_restart(e, compare_me);
     }
@@ -477,34 +477,6 @@ apop_data *d9   = apop_dot(d5, d1, 1);
     return 0;
 }
 
-/*
-static void one_matrix_for_split_to_vector(int rows, int cols, gsl_rng *r){
-gsl_matrix      *m   = gsl_matrix_alloc(rows,cols),
-                *m2;
-int             i,j;
-    for (i=0; i< rows; i++)
-        for (j=0; j< cols; j++)
-            gsl_matrix_set(m, i,j, gsl_rng_uniform(r));
-    m2   = apop_vector_split_to_matrix(apop_matrix_stack_to_vector(m),cols);
-    for (i=0; i< rows; i++)
-        for (j=0; j< cols; j++)
-            assert(gsl_matrix_get(m,i,j) ==gsl_matrix_get(m2,i,j));
-}
-
-int test_matrix_split_to_vector(){
-gsl_rng         *r  = apop_rng_alloc(107);
-    one_matrix_for_split_to_vector(10,17, r);
-    one_matrix_for_split_to_vector(17,10, r);
-    one_matrix_for_split_to_vector(1,17, r);
-    one_matrix_for_split_to_vector(17,1, r);
-    one_matrix_for_split_to_vector(10,10, r);
-    return 0;
-}
-    do_int_test("split and stack to vector test:", test_matrix_split_to_vector());
-*/
-
-
-
 void apop_pack_test(gsl_rng *r){
   int i, j, k, v, m1,m2;
   apop_data *d, *dout;
@@ -543,7 +515,7 @@ void test_model_fix_parameters(gsl_rng *r){
   apop_data *d  = apop_data_alloc(0,ct,2);
   //apop_data *v  = apop_data_alloc(2,0,0);
   //apop_data *v2 = apop_data_alloc(2,0,0);
-  //apop_mle_params *ep   = apop_mle_params_alloc(d, apop_multivariate_normal, NULL);
+  //apop_mle_settings *ep   = apop_mle_settings_alloc(d, apop_multivariate_normal, NULL);
   double    draw[2];
     apop_data_set(pv, 0, -1, 8);
     apop_data_set(pv, 1, -1, 2);
@@ -561,7 +533,7 @@ void test_model_fix_parameters(gsl_rng *r){
     }
 
     gsl_matrix_set_all(mask->matrix, 1);
-    apop_mle_params *mep1   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);
+    apop_mle_settings *mep1   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);
     mep1->method      = 0;
     apop_model   *e1  = mep1->model->estimate(NULL, mep1->model);
     gsl_vector_sub(e1->parameters->vector, pv->vector);
@@ -570,7 +542,7 @@ void test_model_fix_parameters(gsl_rng *r){
   double    start2[] = {1,0,0,1};
     gsl_matrix_set_all(mask->matrix, 0);
     gsl_vector_set_all(mask->vector, 1);
-    apop_mle_params *mep2   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);
+    apop_mle_settings *mep2   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);
     mep2->method      = 0;
     mep2->starting_pt = start2;
     apop_model   *e2  = mep2->model->estimate(NULL, mep2->model);
@@ -731,6 +703,29 @@ void test_lognormal(gsl_rng *r){
     }
 }
 
+void test_multivariate_normal(gsl_rng *r){
+  int       len = 3e5;
+  size_t    i;
+  apop_data *rdraws = apop_data_alloc(0, len, 2);
+  double params[] = {1, 3, 0,
+                    2, 0, 1};
+    apop_data *p = apop_line_to_data(params, 2,2,2);
+    apop_model *mv = apop_model_copy(apop_multivariate_normal);
+    mv->parameters=p;
+    for(i=0; i < len; i ++){
+        APOP_ROW(rdraws, i, ping);
+        apop_draw(ping->data, r, mv);
+    }
+    apop_model *est =apop_estimate(rdraws, apop_multivariate_normal);
+    double error = fabs(est->parameters->vector->data[0] - p->vector->data[0])
+                  +fabs(est->parameters->vector->data[1] - p->vector->data[1])
+                  +fabs(est->parameters->matrix->data[0] - p->matrix->data[0])
+                  +fabs(est->parameters->matrix->data[1] - p->matrix->data[1])
+                  +fabs(est->parameters->matrix->data[2] - p->matrix->data[2])
+                  +fabs(est->parameters->matrix->data[3] - p->matrix->data[3]);
+    assert (error < 3e-2); //yes, unimpressive, but we don't wanna be here all day.
+}
+
 void test_binomial(gsl_rng *r){
     size_t  i, j;
     
@@ -747,9 +742,9 @@ void test_binomial(gsl_rng *r){
         apop_data_free(d);
     }
     for(j=0; j < 20; j ++){
-        char t[]    = "t";
-        apop_model *bint = apop_model_copy(apop_binomial);
-        bint->model_params = t;
+        //char t[]    = "t";
+        apop_model *bint = apop_model_copy_set_string(apop_binomial, "t");
+        //bint->model_settings = t;
         double p = gsl_rng_uniform(r);
         int n     = gsl_ran_flat(r,1,4e5);
         apop_data *d = apop_data_calloc(0,n,2);
@@ -804,16 +799,9 @@ void subtest_updating(apop_model prior, apop_model likelihood){
   int i, j, reps    = 10;
   int tsize         = 1e3;
   gsl_rng   *r      = apop_rng_alloc(2343);
-  apop_data *p      = apop_data_alloc(2,0,0);
-  apop_data *pb     = apop_data_alloc(1,0,0);
   apop_data *tdata  = apop_data_alloc(0,tsize,1);
-    apop_data_set(p, 0, -1, 1);
-    apop_data_set(p, 1, -1, 1);
-    apop_data_set(pb, 0, -1, .55);
-  apop_model   *prior_eps = apop_model_copy(prior);
-    prior_eps->parameters   = p;
-  apop_model   *pbp       = apop_model_copy(likelihood);
-  pbp->parameters   = pb;
+  apop_model   *prior_eps = apop_model_set_parameters(prior, 1., 1.);
+  apop_model   *pbp       = apop_model_set_parameters(likelihood, 0.55);
   apop_model   *outparamsbb;
   apop_model *almost_bern  = apop_model_copy(likelihood);
     strcpy(almost_bern->name, "Bernie's distribution");
@@ -890,7 +878,7 @@ int main(int argc, char **argv){
                                     apop_poisson,/* apop_zipf,*/apop_yule, apop_uniform, null_model};
   int           i;
   apop_data     *d  = apop_text_to_data("test_data2",0,1);
-  apop_OLS_params *olp  = apop_OLS_params_alloc(d, apop_OLS);
+  apop_ls_settings *olp  = apop_ls_settings_alloc(d, apop_OLS);
     olp->want_expected_value    = 1;
 
 //    apop_opts.thread_count  = 2;
@@ -911,6 +899,7 @@ int main(int argc, char **argv){
     do_test("test apop_update", test_updating());
     do_test("test apop_histogram model", test_histograms(r));
     do_test("test apop_data sort", test_data_sort());
+    do_test("test multivariate_normal", test_multivariate_normal(r));
     do_int_test("nist_tests:", nist_tests());
     do_test("apop_model_fix_parameters test:", test_model_fix_parameters(r));
     do_int_test("listwise delete", test_listwise_delete());

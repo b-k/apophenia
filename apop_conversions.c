@@ -62,12 +62,12 @@ A pointer to a <tt>double*</tt>, which will be <tt>malloc</tt>ed inside the func
 \note Does not use memcpy, because we don't know the stride of the vector.
 \ingroup convertfromvector 
 */
-int apop_vector_to_array(const gsl_vector *in, double **out){
+double * apop_vector_to_array(const gsl_vector *in){
   int		i;	
-	*out	= malloc(sizeof(double) * in->size);
+  double	*out	= malloc(sizeof(double) * in->size);
 	for (i=0; i < in->size; i++)
-		(*out)[i]	= gsl_vector_get(in, i);
-	return in->size;
+		out[i]	= gsl_vector_get(in, i);
+	return out;
 }
 
 /** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
@@ -218,31 +218,36 @@ r2. if !=NULL, d1 and d2 will list the labels on the dimensions.
 */
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
   gsl_matrix	*out;
-  int		    i	= 0,
-		        j	= 0,
-		        k; 
+  int		i = 0,
+		j = 0,
+		k; 
   apop_data     *pre_d1, *pre_d2, *datachars;
   apop_data     *outdata    = apop_data_alloc(0,1,1);
-	datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
+
+    char p = apop_opts.db_name_column[0];
+    apop_opts.db_name_column[0]= '\0';//we put this back at the end.
+    datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
+    if (!datachars) 
+    	apop_error(0, 's', "%s: selecting %s, %s, %s from %s returned an empty table.\n", __func__, r1, r2, datacol, tabname);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
-	pre_d1	    = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
-	if (!pre_d1) 
-		fprintf (stderr, "apop_db_to_crosstab: selecting %s from %s returned an empty table.\n", r1, tabname);
+    pre_d1	    = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
+    if (!pre_d1) 
+    	apop_error(0, 's', "%s: selecting %s from %s returned an empty table.\n", __func__, r1, tabname);
     for (i=0; i < pre_d1->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d1->text[i][0], 'r');
 
 	pre_d2	= apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
 	if (!pre_d2) 
-		fprintf(stderr, " apop_db_to_crosstab: selecting %s from %s returned an empty table.\n", r2, tabname);
+		apop_error(0, 's', "%s: selecting %s from %s returned an empty table.\n", __func__, r2, tabname);
     for (i=0; i < pre_d2->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
 	out	= gsl_matrix_calloc(pre_d1->textsize[0], pre_d2->textsize[0]);
 	for (k =0; k< datachars->textsize[0]; k++){
-		i	= find_cat_index(outdata->names->rownames, datachars->text[k][0], i, pre_d1->textsize[0]);
-		j	= find_cat_index(outdata->names->colnames, datachars->text[k][1], j, pre_d2->textsize[0]);
+		i	= find_cat_index(outdata->names->row, datachars->text[k][0], i, pre_d1->textsize[0]);
+		j	= find_cat_index(outdata->names->column, datachars->text[k][1], j, pre_d2->textsize[0]);
 		gsl_matrix_set(out, i, j, atof(datachars->text[k][2]));
 	}
     apop_data_free(pre_d1);
@@ -250,6 +255,7 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
     apop_data_free(datachars);
     gsl_matrix_free(outdata->matrix);
     outdata->matrix   = out;
+    apop_opts.db_name_column[0]= p;
 	return outdata;
 }
 
@@ -447,8 +453,8 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
         line_no   ++;
 	    while(instr[0]=='#')	//burn off comment lines
 		    fgets(instr, Text_Line_Limit, infile);
-	    set->names->colnamect= 0;
-	    set->names->colnames	= malloc(sizeof(char*));
+	    set->names->colct= 0;
+	    set->names->column	= malloc(sizeof(char*));
         last_match      = 0;
         length_of_string= strlen(instr);
         while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
@@ -551,14 +557,18 @@ int apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
             apop_strip_dots(row_col_name, 'd'), 
             apop_strip_dots(col_col_name, 'd'), 
             apop_strip_dots(data_col_name, 'd'));
-	for (i=0; i< n->colnamect; i++){
-		apop_query("begin;");
-		for (j=0; j< n->rownamect; j++)
-			apop_query("INSERT INTO %s VALUES ('%s', '%s',%g);", tabname, 
-					n->rownames[j], n->colnames[i], 
-                                    gsl_matrix_get(in->matrix, j, i));
-		apop_query("commit;");
-	}
+	apop_query("begin;");
+	if (in->matrix)
+		for (i=0; i< n->colct; i++)
+			for (j=0; j< n->rowct; j++)
+				apop_query("INSERT INTO %s VALUES ('%s', '%s',%g);", tabname, 
+					n->row[j], n->column[i], gsl_matrix_get(in->matrix, j, i));
+	if (in->text)
+		for (i=0; i< n->textct; i++)
+			for (j=0; j< n->rowct; j++)
+				apop_query("INSERT INTO %s VALUES ('%s', '%s','%s');", tabname, 
+					n->row[j], n->text[i], in->text[j][i]);
+	apop_query("commit;");
 	return 0;
 }
 
@@ -1010,6 +1020,16 @@ apop_data *apop_data_fill(apop_data *in, ...){
     return in;
 }
 
+/** The version of \c apop_vector_fill that takes in a <tt>va_list</tt>.
+  If this doesn't make sense to you, then you should be using \c apop_vector_fill.
+  */
+gsl_vector *apop_vector_vfill(gsl_vector *in, va_list ap){
+  int i;
+    for (i=0; i< in->size; i++)
+        gsl_vector_set(in, i, va_arg(ap, double));
+    return in;
+}
+
 /** Fill a pre-allocated \c gsl_vector with values.
 
   See \c apop_data_alloc for a relevant example. See also \c apop_matrix_alloc.
@@ -1035,6 +1055,7 @@ gsl_vector *apop_vector_fill(gsl_vector *in, ...){
     va_start(ap, in);
     for (i=0; i< in->size; i++)
         gsl_vector_set(in, i, va_arg(ap, double));
+    va_end(ap);
     return in;
 }
 

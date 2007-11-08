@@ -53,7 +53,7 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
    \c apop_model_copy, so the parent model is still safe after this is
    called. \c data is not freed, because the odds are you still need it.
 
-   The system has no idea what the \c method_params, \c model_params,
+   The system has no idea what the \c method_settings, \c model_settings,
    and \c more elements contain, so if they point to other things,
    they need to be freed before calling this function.
 
@@ -92,9 +92,6 @@ void apop_model_show (apop_model * print_me){
 		printf("\nlog likelihood: \t%g\n", print_me->llikelihood);
 }
 
-void apop_params_show (apop_model * print_me){
-    apop_model_show(print_me);}
-
 /** Currently an alias for \ref apop_model_show, but when I get
   around to it, it will conform better with the other apop_..._print
   fns.*/
@@ -109,15 +106,15 @@ void apop_model_print (apop_model * print_me){
 apop_model * apop_model_copy(apop_model in){
   apop_model * out = malloc(sizeof(apop_model));
     memcpy(out, &in, sizeof(apop_model));
-    if (in.method_params_size){
-        out->method_params  = malloc(in.method_params_size);
-        //out->method_params_size  = in.method_params_size;
-        memcpy(out->method_params, in.method_params, in.method_params_size);
+    if (in.method_settings_size){
+        out->method_settings  = malloc(in.method_settings_size);
+        //out->method_settings_size  = in.method_settings_size;
+        memcpy(out->method_settings, in.method_settings, in.method_settings_size);
     }
-    if (in.model_params_size){
-        out->model_params  = malloc(in.model_params_size);
-        //out->model_params_size  = in.model_params_size;
-        memcpy(out->model_params, in.model_params, in.model_params_size);
+    if (in.model_settings_size){
+        out->model_settings  = malloc(in.model_settings_size);
+        //out->model_settings_size  = in.model_settings_size;
+        memcpy(out->model_settings, in.model_settings, in.model_settings_size);
     }
     if (in.more_size){
         out->more  = malloc(in.more_size);
@@ -130,6 +127,37 @@ apop_model * apop_model_copy(apop_model in){
     return out;
 }
 
+/** Take in an unparametrized \c apop_model and return a
+  new \c apop_model with the given parameters. This would have been
+  called apop_model_parametrize, but the OED lists four acceptable
+  spellings for parameterise, so it's not a great candidate for a function name.
+
+For example, if you need a N(0,1) quickly: 
+\code
+apop_model *std_normal = apop_model_set_parameters(apop_normal, 0.0, 1.0);
+\endcode
+
+Warning: Your parameters need to be <tt>double</tt>s, not <tt>int</tt>s. 
+If you were to use <tt> apop_model_set_parameters(apop_normal, 0, 1);</tt>, you'd wind up with a N(0,0). This is an unfortunate feature of C's variadic function handling.
+
+This doesn't take in data, so it won't work with models that take the number of parameters from the data, and it will only set the vector of the model's parameter apop_data set. This is most standard models, so that's not a real problem either.
+If you have a situation where these options are out, you'll have to do something like
+<tt>apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in);</tt> and then set in->parameters using your data.
+
+  \param in An unparametrized model, like \c apop_normal or \c apop_poisson.
+  \param ... The list of parameters.
+  */
+apop_model *apop_model_set_parameters(apop_model in, ...){
+  va_list  ap;
+    if (in.vbase == -1 || in.m1base == -1 || in.m2base == -1)
+        apop_error(0, 's', "%s only works with models whose number of params does not depend on data size. You'll have to use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then set in->parameters using your data.\n");
+    apop_model *out = apop_model_copy(in);
+    apop_model_clear(NULL, out);
+    va_start(ap, in);
+    apop_vector_vfill(out->parameters->vector, ap);
+    va_end(ap);
+    return out; 
+}
 
 /* estimate the parameters of a model given data.
 
@@ -182,7 +210,7 @@ double apop_log_likelihood(const apop_data *d, apop_model m){
     return 0;
 }
 
-/* Find the vector of derivatives of the log likelihood of a data/parametrized model pair.
+/** Find the vector of derivatives of the log likelihood of a data/parametrized model pair.
 
 \param d    The data
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
@@ -201,6 +229,34 @@ void apop_score(const apop_data *d, gsl_vector *out, apop_model m){
     gsl_vector_free(numeric_default);
 }
 
+
+/** draw from a model. If the model has its own RNG, then you're good to
+ go; if not, then do a simulated annealing run to generate a million draws from the data. 
+
+ That second half is actually forthcoming...
+
+ */
 void apop_draw(double *out, gsl_rng *r, apop_model *m){
-    m->draw(out,r, m);
+    if (m->draw){
+        m->draw(out,r, m); 
+        return;
+    } 
 }
+
+
+/** Some models have a \c model_settings element that consists of a
+ string. In that case, you can copy off a new model and set that setting 
+ at the same time with this function. 
+\param m The base model to be copied.
+\param param The string to be placed in the <tt>model_settings</tt> slot.
+\return A copy of \c m, with the appropriately set <tt>model_settings</tt> element.
+ 
+ */
+apop_model *apop_model_copy_set_string(apop_model m, char* param){
+  apop_model *out = apop_model_copy(m);
+    out->model_settings = malloc(strlen(param)+1);
+        strcpy((char *) out->model_settings ,param);
+    out->model_settings_size = strlen(param)+1;
+    return out;
+}
+
