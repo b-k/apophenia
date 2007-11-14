@@ -22,7 +22,6 @@ extern apop_model apop_beta;
 extern apop_model apop_bernoulli;
 extern apop_model apop_binomial; //on hiatus.
 extern apop_model apop_exponential;
-extern apop_model apop_exponential_rank;
 extern apop_model apop_gamma;
 extern apop_model apop_gaussian;//synonym for apop_normal
 //extern apop_model apop_GLS;
@@ -38,10 +37,8 @@ extern apop_model apop_poisson;
 extern apop_model apop_probit;
 extern apop_model apop_uniform;
 extern apop_model apop_waring;
-extern apop_model apop_waring_rank;
 extern apop_model apop_WLS;
 extern apop_model apop_yule;
-extern apop_model apop_yule_rank;
 extern apop_model apop_zipf;
 
 

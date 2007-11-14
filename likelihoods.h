@@ -41,7 +41,7 @@ typedef enum {
     APOP_CG_PR     =3,      //  3: conjugate gradient (Polak-Ribiere)
     APOP_SIMAN      =5,         //  5: \ref simanneal "simulated annealing"
     APOP_RF_NEWTON  =10,        //  10: Find a root of the derivative via Newton's method
-    APOP_RF_BROYDEN =11,        //  11: Find a root of the derivative via the Broyden Algorithm
+//    APOP_RF_BROYDEN =11,        //  11: Find a root of the derivative via the Broyden Algorithm
     APOP_RF_HYBRID  =12,        //  12: Find a root of the derivative via the Hybrid method
     APOP_RF_HYBRID_NOSCALE  =13 //  13: Find a root of the derivative via the Hybrid method; no internal scaling
 } apop_optimization_enum;

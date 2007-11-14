@@ -39,51 +39,32 @@ gsl_vector  *xdotbeta;
 int         calculate_xdotbeta  = 1;
 int         keep_xdotbeta       = 0;
 
-static double logit_log_likelihood(const apop_data *beta, apop_data *d, apop_model *p){
+static double logit_log_likelihood(const apop_data *d, apop_model *p){
+  if (!p->parameters)
+      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   size_t	    i;
   double	    loglike 	= 0,
-              xb;
+                xb, exb;
   gsl_matrix 	*data 		= d->matrix;
     if (calculate_xdotbeta){
         xdotbeta    = gsl_vector_calloc(data->size1);
-        gsl_blas_dgemv(CblasNoTrans, 1.0, data, beta->vector, 0, xdotbeta);
+        gsl_blas_dgemv(CblasNoTrans, 1.0, data, p->parameters->vector, 0, xdotbeta);
     }
-	for(i=0;i< data->size1; i++){
+	for (i=0;i< data->size1; i++) {
         xb    = gsl_vector_get(xdotbeta, i);
+        exb   = exp(gsl_vector_get(xdotbeta, i));
 		if (gsl_vector_get(d->vector, i))
-            loglike   += xb/(1.+xb);
+            loglike   += xb - log(1 + exb);
         else
-            loglike   += 1./(1.+xb);
+            loglike   +=  - log(1 + exb);
 	}
     if (!keep_xdotbeta)
         gsl_vector_free(xdotbeta);
 	return loglike;
 }
 
-static double logit_p(const apop_data *beta, apop_data *d, apop_model *p){
-    return exp(logit_log_likelihood(beta, d, p));
-}
-
-/* The derivative of the logit distribution, for use in likelihood
-  minimization. 
-  The format is often the same as above: go line by line through a gsl_matrix.
-  The sample is a three-dimensional parameter vector.
- */
-static void logit_dlog_likelihood(const apop_data *beta, apop_data *d, gsl_vector *gradient, apop_model *p){
-  int		    i,j;
-  double	    dtotal[3];
-  gsl_matrix 	*data 	= d->matrix;
-    dtotal[0]  = 0,
-    dtotal[1]  = 0,
-    dtotal[2]  = 0;
-	for(i=0; i< data->size1; i++){
-		dtotal[0]  += 0; //PLACE MATH HERE
-		dtotal[1]  += 0; //PLACE MATH HERE
-		dtotal[2]  += 0; //PLACE MATH HERE
-	}
-	for(j=0; j< beta->vector->size; j++){
-	    gsl_vector_set(gradient,j,dtotal[j]);
-    }
+static double logit_p(const apop_data *d, apop_model *p){
+    return exp(logit_log_likelihood(d, p));
 }
 
 /** 
@@ -104,8 +85,8 @@ static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vect
 
 /** The binary logit model.
  The first column of the data matrix this model expects is ones and zeros;
- the remaining columns are values of the independent variables. Thus,
- the model will return (data columns)-1 parameters.
+ the remaining columns are values of the independent variables. As with other regression-type models, the 
+ system will move the first column to the vector and insert a column of ones as the first variable.
 
 \ingroup models
 */

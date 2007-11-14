@@ -24,5 +24,9 @@ void apop_vector_apply(gsl_vector *v, void (*fn)(double*));
 gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double));
 void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *));
 
+double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double));
+double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*));
+double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double));
+
 __END_DECLS
 #endif

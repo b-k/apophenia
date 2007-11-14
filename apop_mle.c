@@ -58,7 +58,7 @@ apop_mle_settings *apop_mle_settings_set_default(apop_model *parent){
   apop_mle_settings *setme =   calloc(1,sizeof(apop_mle_settings));
     setme->starting_pt      = NULL;
     setme->tolerance        = 1e-2;
-    setme->method           = 1;
+    setme->method           = parent->score ? APOP_CG_PR : APOP_SIMPLEX_NM;
     setme->verbose          = 0;
     setme->use_score        = 1;
     setme->step_size        = 0.05;
@@ -641,7 +641,6 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
     else if (mp->method==APOP_SIMPLEX_NM)
 		return apop_maximum_likelihood_no_d(data, &info);
     else if (mp->method == APOP_RF_NEWTON    ||
-                mp->method == APOP_RF_BROYDEN  ||
                 mp->method == APOP_RF_HYBRID  ||
                 mp->method == APOP_RF_HYBRID_NOSCALE ) 
         return  find_roots (info);

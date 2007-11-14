@@ -25,7 +25,7 @@ static apop_model * rank_exponential_estimate(apop_data * data, apop_model *para
   double          colsum,
                   numerator   = 0,
                   grand_total = 0;
-  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_exponential_rank);
+  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_exponential);
   apop_model_clear(data, est);
   int             i;
     for(i=0; i< data->matrix->size2; i++){
@@ -35,7 +35,7 @@ static apop_model * rank_exponential_estimate(apop_data * data, apop_model *para
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters->vector, 0, numerator/grand_total);
-    est->llikelihood	= apop_exponential_rank.log_likelihood(data, parameters);
+    est->llikelihood	= apop_exponential.log_likelihood(data, parameters);
 	/*if (est->uses.covariance)
 		apop_numerical_covariance_matrix(apop_exponential_rank, est, data);*/
 	return est;

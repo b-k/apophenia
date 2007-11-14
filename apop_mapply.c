@@ -1,3 +1,4 @@
+#include <apophenia/stats.h>
 #include <apophenia/mapply.h>
 #include <apophenia/types.h>
 
@@ -217,4 +218,42 @@ void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
         v   = gsl_matrix_row(in, i);
         apop_vector_apply(&v.vector, fn);
     }
+}
+
+/** like \c apop_vector_map, but returns the sum of the resulting mapped
+ function. For example, <tt>apop_vector_map_sum(v, isnan)</tt> returns the number of elements of <tt>v</tt> that are \c NaN.
+
+ Calls \c apop_vector_map internally, meaning that you will need adequate free memory.
+ */
+double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double)){
+    gsl_vector *m = apop_vector_map (in, fn);
+    double out = apop_vector_sum(m);
+    gsl_vector_free(m);
+    return out;
+}
+
+/** like \c apop_matrix_map_all, but returns the sum of the resulting mapped
+ function. For example, <tt>apop_matrix_map_all_sum(v, isnan)</tt> returns the number of elements of <tt>m</tt> that are \c NaN.
+
+ Calls \c apop_matrix_map_all, meaning that you will need adequate free memory.
+ */
+double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double)){
+    gsl_matrix *m = apop_matrix_map_all (in, fn);
+    double out = apop_matrix_sum(m);
+    gsl_matrix_free(m);
+    return out;
+}
+
+/** Like \c apop_matrix_map, but returns the sum of the resulting mapped
+ vector. For example, let \c log_like be a function that returns the
+ log likelihood of an input vector; then <tt>apop_matrix_map_sum(m,
+ log_like)</tt> returns the total log likelihood of the rows of \c m.
+
+ Calls \c apop_matrix_map, meaning that you will need adequate free memory.
+ */
+double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*)){
+    gsl_vector *v = apop_matrix_map (in, fn);
+    double out = apop_vector_sum(v);
+    gsl_vector_free(v);
+    return out;
 }

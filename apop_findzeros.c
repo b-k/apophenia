@@ -5,7 +5,7 @@
 #include <apophenia/headers.h>
 
 /** \file apop_findzero.c
- This just includes the root-finding routine. It is #included in apop_mle, because I expect you to call it via that. 
+ This just includes the root-finding routine. It is #included in apop_mle.c, because I expect you to call it via that. 
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -14,7 +14,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
  calls the various GSL root-finding algorithms to find the zero of the score.
 */
 static apop_model * find_roots (infostruct p) {
-//static apop_model * find_roots (apop_data * data, apop_model *dist) {
   const gsl_multiroot_fsolver_type *T;
   gsl_multiroot_fsolver *s;
   apop_model *dist = p.model;
@@ -31,14 +30,9 @@ static apop_model * find_roots (infostruct p) {
         gsl_vector_set_all (x,  2);
     } else
         x   = apop_array_to_vector(mlep->starting_pt, betasize);
-  /*infostruct      p;
-    p.data            = data;
-    p.model           = dist;*/
   gsl_multiroot_function f = {dnegshell, betasize, &p};
     if (mlep->method == APOP_RF_NEWTON)
         T = gsl_multiroot_fsolver_dnewton;
-    else if (mlep->method == APOP_RF_BROYDEN)
-        T = gsl_multiroot_fsolver_broyden;
     else if (mlep->method == APOP_RF_HYBRID_NOSCALE)
         T = gsl_multiroot_fsolver_hybrids;
     else //if (mlep->method == APOP_RF_HYBRID)        --default
