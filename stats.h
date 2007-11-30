@@ -39,24 +39,24 @@ gsl_vector * v = &( apop_vv_##v );
 	//The following are just convenient hooks to gsl vector functions.
 	//var_m lets you input a mean if you've already calculated it, saving
 	//some repetition.
-inline long double apop_vector_sum(const gsl_vector *in);
-inline long double apop_sum(const gsl_vector *in);
-inline double apop_vector_mean(const gsl_vector *in);
-inline double apop_mean(const gsl_vector *in);
-inline double apop_vector_var(const gsl_vector *in);
-inline double apop_var(const gsl_vector *in);
-inline double apop_vector_var_m(const gsl_vector *in, const double mean);
-inline double apop_vector_covar(const gsl_vector *ina, const gsl_vector *inb);
-inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb);
-inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb);
-inline double apop_vector_kurtosis(const gsl_vector *in);
-inline double apop_vector_skew(const gsl_vector *in);
-inline double apop_vector_kurt(const gsl_vector *in);
-double apop_vector_weighted_mean(const gsl_vector *, const gsl_vector *);
-double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w);
-double apop_vector_weighted_cov(const gsl_vector *, const gsl_vector *, const gsl_vector *);
-double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w);
-double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w);
+inline long double apop_vector_sum(const gsl_vector *in) __attribute__((pure));
+inline long double apop_sum(const gsl_vector *in) __attribute__((pure));
+inline double apop_vector_mean(const gsl_vector *in) __attribute__((pure));
+inline double apop_mean(const gsl_vector *in) __attribute__((pure));
+inline double apop_vector_var(const gsl_vector *in) __attribute__((pure));
+inline double apop_var(const gsl_vector *in) __attribute__((pure));
+inline double apop_vector_var_m(const gsl_vector *in, const double mean) __attribute__((pure));
+inline double apop_vector_covar(const gsl_vector *ina, const gsl_vector *inb) __attribute__((pure));
+inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb) __attribute__((pure));
+inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb) __attribute__((pure));
+inline double apop_vector_kurtosis(const gsl_vector *in) __attribute__((pure));
+inline double apop_vector_skew(const gsl_vector *in) __attribute__((pure));
+inline double apop_vector_kurt(const gsl_vector *in) __attribute__((pure));
+double apop_vector_weighted_mean(const gsl_vector *, const gsl_vector *) __attribute__((pure));
+double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
+double apop_vector_weighted_cov(const gsl_vector *, const gsl_vector *, const gsl_vector *) __attribute__((pure));
+double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
+double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
 
 //Distances, Euclidian and Manhattan:
 double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb);
@@ -76,23 +76,13 @@ double apop_random_beta(gsl_rng *r, double m, double v) ;
 	 * remember: 0<m<1, and v is tiny (<<1/12). You get NaNs if no
 	 * appropriate distribution exists.*/
 
-double apop_multivariate_normal_prob(gsl_vector *x, gsl_vector* mu, gsl_matrix* sigma, int first_use);
-	//Evaluate a multivariate normal(mu, sigma) at the point x.
-//The equation:
-//	exp(-1/2 (X-mu)' sigma^-1 (x-mu))
-//	--------------------------
-//	sqrt((2 Pi)^n det(sigma))
-//
-//The inverse and determinant are expensive, so keep them around where possible: on the first call, set 
-//first_use to 1, then feed in as many new values of X as you want.
-
 double apop_random_double(double min, double max, gsl_rng *r);
 int apop_random_int(const double min, const double max, const gsl_rng *r);
 
-long double apop_matrix_sum(gsl_matrix *m);
-double apop_matrix_mean(gsl_matrix *data);
-double apop_matrix_var_m(gsl_matrix *data, double mean);
-void apop_matrix_mean_and_var(gsl_matrix *data, double *mean, double *var);
+long double apop_matrix_sum(const gsl_matrix *m) __attribute__((pure));
+double apop_matrix_mean(const gsl_matrix *data) __attribute__((pure));
+double apop_matrix_var_m(const gsl_matrix *data, double mean) __attribute__((pure));
+void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
 double apop_GHgB3_rng(gsl_rng * r, double* a); //in asst.c
 apop_data * apop_data_summarize(apop_data *data);
 apop_data * apop_matrix_summarize(gsl_matrix *data);
@@ -100,7 +90,7 @@ apop_data *apop_data_covar(apop_data *in);
 
 gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins);
 
-int apop_double_is_zero(double in);
+int apop_double_is_zero(double in) __attribute__((pure));
 void apop_vector_replace(gsl_vector *v, int (* test)(double), double replace_with);
 void apop_matrix_replace(gsl_matrix *m, int (* test)(double), double replace_with);
 

@@ -312,8 +312,14 @@ void apop_histogram_normalize(apop_model *m){
   gsl_histogram *h = ((apop_histogram_params *)m->model_settings)->pdf;
   int           i;
   long double   sum = 0;
+    if (!h)
+        apop_error(0, 's', "%s: You sent me a model which is not a histogram or which is unparametrized.\n", __func__);
     for (i=0; i< h->n; i++)
         sum       += h->bin[i];
+    if (!sum){
+        apop_error(0, 'c', "%s: You sent me a histogram with a total density of zero. Returning same.\n", __func__);
+        return;
+    }
     for (i=0; i< h->n; i++)
         h->bin[i] /= sum;
 }

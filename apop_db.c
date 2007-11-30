@@ -25,7 +25,7 @@ out for analysis.
 
 \li \ref apop_query_to_text: Pull out columns of not-numbers.
 
-\li \ref apop_query_to_multi: Pull data into an apop_data set, but with mixed numeric/text types.
+\li \ref apop_query_to_mixed_data: Pull data into an apop_data set, but with mixed numeric/text types.
 
 \par Maintenance 
 \li \ref apop_db_open: Optional, for when you want to use a database on disk.
@@ -625,9 +625,9 @@ apop_query_to_data (and set \c apop_opts.db_name_column if desired). But
 if your data is a mix of text and numbers, use this.
 
 The first argument is a character string consisting of the letters \c
-nvmt, one for each column of the SQL output, indicating whether the
-column is a name, vector, matrix colum, or text column. You can have only
-one n and v. 
+nvmtw, one for each column of the SQL output, indicating whether the
+column is a name, vector, matrix colum, text column, or weight vector. You can have only
+one n, v, and w. 
 
 If the query produces more columns than there are elements in the column
 specification, then the remainder are dumped into the text section. If

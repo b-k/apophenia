@@ -440,7 +440,7 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
     set     = apop_data_alloc(0,rowct+1-has_col_names,ct);
 	infile	= fopen(text_file,"r");
     if (infile == NULL){
-        printf("Error opening file %s. apop_text_to_data returning NULL.", text_file);
+        printf("Error opening file %s. %s returning NULL.", text_file, __func__);
         return NULL;
     }
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
@@ -749,7 +749,10 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
         apop_strcat(&q, " ");
         apop_strcat(&q, fn[i]);
     }
-    apop_query("%s varchar(100) );", q);
+    asprintf(&q, "%s varchar(100) );", q);
+    apop_query(q);
+    if (!apop_table_exists(tabname, 0))
+        apop_error(0, 's', "%s: query \"%s\" failed.\n", __func__, q);
     if (use_names_in_file){
         for (i=0; i<ct; i++)
             free(fn[i]);
@@ -767,14 +770,17 @@ static void tab_create(char *tabname, int ct, int has_row_names){
     for (i=0; i<ct; i++){
         if (i==0) 	{
             if (has_row_names)
-                apop_strcat(&q, " (row_names, '");
+                apop_strcat(&q, " (row_names, ");
             else
                 apop_strcat(&q, " (");
         } else		apop_strcat(&q, "' , ");
         apop_strcat(&q, " '");
         apop_strcat(&q, fn[i]);
     }
-    apop_query("%s' ); begin;", q);
+    asprintf(&q, "%s' ); begin;", q);
+    apop_query(q);
+    if (!apop_table_exists(tabname, 0))
+        apop_error(0, 's', "%s: query \"%s\" failed.\n", __func__, q);
     if (use_names_in_file){
         for (i=0; i<ct; i++)
             free(fn[i]);
@@ -866,7 +872,7 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
         else
             infile  = stdin;
 	       	if (infile==NULL) {
-			printf("Trouble opening %s. apop_text_to_db bailing.\n", text_file);
+			printf("Trouble opening %s. %s bailing.\n", text_file, __func__);
 			return 0;
 		}
         ct  = get_field_names(has_col_names, field_names, infile);

@@ -390,7 +390,7 @@ int apop_random_int(const double min, const double max, const gsl_rng *r){
 
   \param m	the matrix to be summed. 
 \ingroup convenience_fns*/
-  long double apop_matrix_sum(gsl_matrix *m){
+  long double apop_matrix_sum(const gsl_matrix *m){
   int 		i,j;
   long double	sum	= 0;
 	for (j=0; j< m->size1; j++)
@@ -405,7 +405,7 @@ int apop_random_int(const double min, const double max, const gsl_rng *r){
 
   \param data	the matrix to be averaged. 
 \ingroup convenience_fns*/
-double apop_matrix_mean(gsl_matrix *data){
+double apop_matrix_mean(const gsl_matrix *data){
   double          avg     = 0;
   int             i,j, cnt= 0;
   double          x, ratio;
@@ -427,7 +427,7 @@ apop_matrix_mean_and_var.
 \param data	the matrix to be averaged. 
 \param mean	the pre-calculated mean
 \ingroup convenience_fns*/
-double apop_matrix_var_m(gsl_matrix *data, double mean){
+double apop_matrix_var_m(const gsl_matrix *data, double mean){
   double          avg2    = 0;
   int             i,j, cnt= 0;
   double          x, ratio;
@@ -449,7 +449,7 @@ double apop_matrix_var_m(gsl_matrix *data, double mean){
 \param	var	where to put the variance to be calculated
 \ingroup convenience_fns
 */
-void apop_matrix_mean_and_var(gsl_matrix *data, double *mean, double *var){
+void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var){
   long double avg     = 0,
               avg2    = 0;
   int         i,j, cnt= 0;
@@ -651,9 +651,15 @@ double apop_vector_weighted_mean(const gsl_vector *v,const  gsl_vector *w){
 
 /** Find the sample variance of a weighted vector.
 
+Note: Apophenia tries to be smart about reading the weights. If weights
+sum to one, then the system uses \c w->size as the number of elements,
+and returns the usual sum over \f$n-1\f$. If weights > 1, then the
+system uses the total weights as \f$n\f$. Thus, you can use the weights
+as standard weightings or to represent elements that appear repeatedly.
+
 \param  v   The data vector
 \param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted sample variance
+\return     The weighted sample variance. 
 */
 double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
   int           i;
@@ -665,11 +671,11 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
         return 0;
     }
     if (!v->size){
-        apop_error(0,'c', "apop_vector_weighted_variance: data vector has size 0. Returning zero.\n");
+        apop_error(0,'c', "%s: data vector has size 0. Returning zero.\n", __func__);
         return 0;
     }
     if (w->size != v->size){
-        apop_error(0,'c', "apop_vector_weighted_variance: data vector has size %u; weighting vector has size %u. Returning zero.\n", v->size, w->size);
+        apop_error(0,'c', "%s: data vector has size %u; weighting vector has size %u. Returning zero.\n", __func__, v->size, w->size);
         return 0;
     }
     //Using the E(x^2) - E^2(x) form.
@@ -680,7 +686,8 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
         sumsq+= ww * gsl_pow_2(vv); 
         wsum += ww; 
     }
-    return (sumsq/wsum  - gsl_pow_2(sum/wsum)) *(wsum/(wsum-1));
+    double len = (wsum < 1.1 ? w->size : wsum);
+    return (sumsq/len - gsl_pow_2(sum/len)) * len/(len -1.);
 }
 
 static double skewkurt(const gsl_vector *v, const gsl_vector *w, const int exponent, const char *fn_name){
@@ -708,16 +715,23 @@ static double skewkurt(const gsl_vector *v, const gsl_vector *w, const int expon
         sumcu+= ww * gsl_pow_int(vv - mu, exponent); 
         wsum += ww; 
     }
-    return sumcu/(wsum-1);
+    double len = wsum < 1.1 ? w->size : wsum;
+    return sumcu/(len -1);
 
 
 }
 
 /** Find the sample skew of a weighted vector.
 
+Note: Apophenia tries to be smart about reading the weights. If weights
+sum to one, then the system uses \c w->size as the number of elements,
+and returns the usual sum over \f$n-1\f$. If weights > 1, then the
+system uses the total weights as \f$n\f$. Thus, you can use the weights
+as standard weightings or to represent elements that appear repeatedly.
+
 \param  v   The data vector
 \param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted sample variance
+\return     The weighted skew. No sample adjustment given weights.
 \todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
 */
 double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w){
@@ -728,7 +742,7 @@ double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w){
 
 \param  v   The data vector
 \param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted sample variance
+\return     The weighted kurtosis. No sample adjustment given weights.
 \todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
 */
 double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w){
@@ -770,7 +784,8 @@ double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, cons
         sumsq+= ww * vv1 * vv2;
         wsum += ww; 
     }
-    return (sumsq/wsum  - sum1*sum2/gsl_pow_2(wsum)) *(wsum/(wsum-1));
+    double len = (wsum < 1.1 ? w->size : wsum);
+    return (sumsq/len  - sum1*sum2/gsl_pow_2(len)) *(len/(len-1));
 }
 
 

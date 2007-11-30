@@ -13,13 +13,14 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 
 #include <apophenia/model.h>
 #include <apophenia/types.h>
+#include <apophenia/histogram.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_histogram.h>
 #include <stdio.h>
 #include <assert.h>
 
 
-void set_params(double in, apop_model *m){
+void set_first_params(double in, apop_model *m){
     m->parameters->vector->data[0]  = in;
 }
 
@@ -90,22 +91,20 @@ static gsl_histogram *apop_alloc_wider_range(const gsl_histogram *in, const doub
 */
 apop_model *apop_kernel_density_params_alloc(apop_data *data, 
         apop_model *histobase, apop_model kernelbase, void (*set_params)(double, apop_model*)){
-  size_t   i, j;
-  apop_data *smallset = apop_data_alloc(0,1,1);
-  apop_histogram_params *out = malloc(sizeof(apop_histogram_params));
-  apop_histogram_params *bh  = histobase->model_settings;
-    out->model               = apop_model_copy(apop_kernel_density);
+  size_t    i, j;
+  apop_data *smallset          = apop_data_alloc(0,1,1);
+  apop_histogram_params *out   = malloc(sizeof(apop_histogram_params));
+    set_params                 = set_params ? set_params : set_first_params;
+    out->model                 = apop_model_copy(apop_kernel_density);
     out->model->model_settings = out;
-    out->kernelbase          = apop_model_copy(kernelbase);
+    out->kernelbase            = apop_model_copy(kernelbase);
     out->histobase = data && !histobase ?
                 apop_histogram_params_alloc(data, 1000)
                 : apop_model_copy(*histobase);
+  apop_histogram_params *bh    = out->histobase->model_settings;
 
     double  padding = 0.1;
     out->pdf        = apop_alloc_wider_range(bh->pdf, padding);
-
-    //out->pdf        = gsl_histogram_clone(bh->pdf);    
-    //gsl_histogram_reset(out->pdf);
 
     //finally, the double-loop producing the density.
     for (i=0; i< bh->pdf->n; i++)
@@ -123,21 +122,27 @@ apop_model *apop_kernel_density_params_alloc(apop_data *data,
         sum +=
         out->pdf->bin[j]   /= bh->pdf->n;
     }
-    //set end-bins.
+    //set end-bins. As you can see, I've commented this part out for now.
+    out->pdf->bin[0]    = 0;
+    out->pdf->bin[out->pdf->n-1]  = 0;
+        /*
     double ratio = out->pdf->bin[1]/(out->pdf->bin[1] + out->pdf->bin[out->pdf->n-2]);
-    out->pdf->bin[0]    = (1-sum)*ratio;
-    out->pdf->bin[out->pdf->n-1]  = (1-sum)*(1-ratio);
+    if (gsl_isnan(ratio)){ //then both bins are zero.
+        out->pdf->bin[0]    = 0;
+        out->pdf->bin[out->pdf->n-1]  = 0;
+    } else {
+        out->pdf->bin[0]    = (1-sum)*ratio;
+        out->pdf->bin[out->pdf->n-1]  = (1-sum)*(1-ratio);
+    }*/
     apop_data_free(smallset);
+    apop_histogram_normalize(out->model);
     return out->model;
 }
 
 static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *parameters){
-    apop_model *m   = apop_model_copy(apop_normal);
-    m->parameters   = apop_data_alloc(2,0,0);
-    m->parameters->vector->data[0]  = 0;
-    m->parameters->vector->data[1]  = 1;
+    apop_model *m   = apop_model_set_parameters(apop_normal, 0., 1.);
     apop_model *h   = apop_estimate(data, apop_histogram);
-	return apop_kernel_density_params_alloc(data, h, *m, set_params);
+	return apop_kernel_density_params_alloc(data, h, *m, set_first_params);
 }
 
 static double apop_kernel_density_log_likelihood(const apop_data *d, apop_model *p){

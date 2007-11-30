@@ -224,6 +224,8 @@ void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
  function. For example, <tt>apop_vector_map_sum(v, isnan)</tt> returns the number of elements of <tt>v</tt> that are \c NaN.
 
  Calls \c apop_vector_map internally, meaning that you will need adequate free memory.
+
+  \ingroup convenience_fns
  */
 double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double)){
     gsl_vector *m = apop_vector_map (in, fn);
@@ -236,6 +238,8 @@ double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double)){
  function. For example, <tt>apop_matrix_map_all_sum(v, isnan)</tt> returns the number of elements of <tt>m</tt> that are \c NaN.
 
  Calls \c apop_matrix_map_all, meaning that you will need adequate free memory.
+
+  \ingroup convenience_fns
  */
 double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double)){
     gsl_matrix *m = apop_matrix_map_all (in, fn);
@@ -250,6 +254,8 @@ double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double)){
  log_like)</tt> returns the total log likelihood of the rows of \c m.
 
  Calls \c apop_matrix_map, meaning that you will need adequate free memory.
+
+  \ingroup convenience_fns
  */
 double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*)){
     gsl_vector *v = apop_matrix_map (in, fn);
