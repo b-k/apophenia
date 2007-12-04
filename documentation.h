@@ -7,7 +7,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
  \li \ref intro "Intro": The motivation for the package.
  \li \ref setup "Setup": Installing GCC, the GSL, SQLite, and Apophenia itself.
  \li \ref types "Types": New structures defined by Apophenia.
- \li The <a href="http://ben.klemens.org/pdfs/gsl_stats.pdf">manual</a> (PDF). 
+ \li A <a href="http://ben.klemens.org/pdfs/gsl_stats.pdf">textbook</a> (PDF) on statistical computing, which covers much of the basics behind Apophenia.
 
 \section dostats Doing statistics 
  \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.

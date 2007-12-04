@@ -90,17 +90,6 @@ verbose is zero or one depending on whether you want to see the
 maximizer's iterations.
 
 For each function, the return value is the vector of most likely parameters.
-
-Sample usage:
-
-gsl_vector * 	waring_parameter; 	//do not allocate.
-double 		starting_pt[2] = {3, 0};
-double		likelihood;
-waring_parameter	= mle_waring(data, &likelihood, starting_pt, .01, 0);
-printf("Your most likely waring parameter is %g, with likelihood %g", 
-				gsl_vector_get(waring_parameter, 0), likelihood);
-gsl_vector_free(waring_parameter); 	//Don't forget to clean up when you're done.
-
 */
 apop_mle_settings *apop_mle_settings_alloc(apop_data*, apop_model);
 
@@ -112,7 +101,7 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist,
   and fn_beta will probably be the beta calculated using the corresponding
   apop_xxx_mle function.
   */
-typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
+typedef double 	(*apop_fn_with_params) (const apop_data *, apop_model *);
 gsl_vector * apop_numerical_gradient(apop_data *data, apop_model*);
 gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
 gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
@@ -122,7 +111,6 @@ gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data
 //void apop_numerical_var_covar_matrix(apop_model dist, apop_model *est, apop_data *data);
 
 
-//apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist, apop_model *params);
 apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist);
 
 

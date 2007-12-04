@@ -48,21 +48,20 @@ static void prep_names (apop_model *e){
 */
 
 
-static void modify_in_data(apop_data *d){
+static void probit_prep(apop_data *d, apop_model *m){
     if (!d->vector){
         APOP_COL(d, 0, independent);
         d->vector = apop_vector_copy(independent);
         gsl_vector_set_all(independent, 1);
         if (d->names->colct > 0) {		
             apop_name_add(d->names, d->names->column[0], 'v');
-            d->names->column++; //one-string memory leak.
-            d->names->colct--;
+            sprintf(d->names->column[0], "1");
         }
     }
 }
 
 static apop_model * probit_estimate(apop_data * data,  apop_model *parameters){
-    modify_in_data(data);
+    //modify_in_data(data);
 	return apop_maximum_likelihood(data, *parameters);
 }
 
@@ -161,4 +160,4 @@ static void probit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vec
 */
 apop_model apop_probit = {"Probit", -1,0,0, 
     .estimate = probit_estimate, .p = probit_p, .log_likelihood = probit_log_likelihood, 
-    .score = probit_dlog_likelihood};
+    .score = probit_dlog_likelihood, .prep = probit_prep};

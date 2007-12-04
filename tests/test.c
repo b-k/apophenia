@@ -838,6 +838,20 @@ void test_blank_db_queries(){
     assert(gsl_isnan(h));
 }
 
+void test_vector_moving_average(){
+  int   i;
+  gsl_vector *v = gsl_vector_alloc(100);
+    for(i=0; i < 100; i ++)
+        gsl_vector_set(v, i, i);
+    gsl_vector *unsmooth = apop_vector_moving_average(v, 1);
+    for(i=0; i < 100; i ++)
+        assert(gsl_vector_get(v, i) == gsl_vector_get(unsmooth, i));
+    gsl_vector *slightly_smooth = apop_vector_moving_average(v, 2);
+    //With evenly-spaced data, a moving average returns the original,
+    //with tails missing:
+    for(i=0; i < 98; i ++)
+        assert(gsl_vector_get(v, i+1) == gsl_vector_get(slightly_smooth, i));
+}
 
 //The do_test macros
 #define do_int_test(text, fn)   if (verbose)    \
@@ -890,6 +904,7 @@ int main(int argc, char **argv){
     }
     apop_model *e  = apop_estimate(d,*olp->model);
     do_test("db_to_text:", db_to_text());
+    do_test("test_vector_moving_average", test_vector_moving_average());
     do_int_test("apop_estimate->dependent test:", test_predicted_and_residual(e));
     do_int_test("apop_f_test and apop_coefficient_of_determination test:", test_f(e));
     do_test("test binomial estimations", test_binomial(r));

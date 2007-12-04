@@ -66,7 +66,7 @@ static size_t *threadminmax(const int threadno, const int totalct, const int thr
         return out;
 }
 
-static gsl_vector*mapply_core(gsl_matrix *m,gsl_vector *vin, void *fn, gsl_vector *vout){
+static gsl_vector*mapply_core(const gsl_matrix *m,const gsl_vector *vin, void *fn, gsl_vector *vout){
   int           threadct    = apop_opts.thread_count;
   pthread_t     thread_id[threadct];
   int           i;

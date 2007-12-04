@@ -633,6 +633,10 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
         info.model  = apop_model_copy(dist);
         mp          = info.model->method_settings;
     }
+    if (info.model->prep && !info.model->prepared){
+        info.model->prep(data, info.model);
+        info.model->prepared++;
+    }
     if (mp->trace_path)
         info.trace_path = mp->trace_path;
     apop_model_clear(data, info.model);

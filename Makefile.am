@@ -13,7 +13,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			apop_mapply.c apop_missing_data.c				\
 			apop_linear_constraint.c apop_sort.c			\
 			apop_model_fix_params.c	 apop_update.c			\
-			apop_tests.c									\
+			apop_tests.c apop_smoothing.c					\
 			vasprintf/asnprintf.c vasprintf/printf-args.c 	\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
 			vasprintf/printf-parse.c vasprintf/vasprintf.c  \

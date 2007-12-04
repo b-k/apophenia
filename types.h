@@ -122,7 +122,7 @@ struct _apop_model{
     void        *model_settings;
     apop_data   *parameters, *expected, *covariance;
     double      llikelihood;
-    int         status;
+    int         prepared, status;
     size_t      method_settings_size, model_settings_size, more_size;
     apop_data   *data;
     apop_model * (*estimate)(apop_data * data, apop_model *params);
@@ -131,6 +131,8 @@ struct _apop_model{
     void    (*score)(const apop_data *d, gsl_vector *gradient, apop_model *params);
     double  (*constraint)(const apop_data *data, apop_model *params);
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
+    void (*prep)(apop_data *data, apop_model *params);
+    void (*print)(apop_model *params);
     void    *more;
 } ;
 
@@ -209,12 +211,6 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 
 void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 
-apop_model * apop_model_copy(apop_model in); //in apop_model.c
-apop_model * apop_model_copy_set_string(apop_model m, char* param);
-apop_model * apop_model_clear(apop_data * data, apop_model *model);
-apop_model * apop_estimate(apop_data *d, apop_model m);
-void apop_score(const apop_data *d, gsl_vector *out, apop_model m);
-void apop_draw(double *out, gsl_rng *r, apop_model *m);
 
 void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
 

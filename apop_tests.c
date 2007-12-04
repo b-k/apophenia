@@ -31,7 +31,9 @@ apop_data * apop_test_ANOVA(apop_data *d){
       apop_error(0,'c', "%s: You sent me data with no matrix element. Returning NULL.\n", __func__);
       return NULL;
   }
-  double df    = (d->matrix->size1 - 1)* (d->matrix->size2 - 1);
+  //You can have a one-column or one-row matrix if you want; else df = (rows-1)*(cols-1)
+  double df    = d->matrix->size1==1 ? d->matrix->size2-1 : d->matrix->size2 == 1 ? d->matrix->size1 
+                            : (d->matrix->size1 - 1)* (d->matrix->size2 - 1);
   if (!df) {
       apop_error(0,'c', "%s: You sent a degenerate matrix. Returning NULL.\n", __func__);
       return NULL;
@@ -43,7 +45,7 @@ apop_data * apop_test_ANOVA(apop_data *d){
     apop_data *out = apop_data_alloc(3,0,0);
     double chisq   = gsl_cdf_chisq_Q(total, df);
     apop_data_add_named_elmt(out, "chi squared statistic", total);
-    apop_data_add_named_elmt(out, "df", (d->matrix->size1 - 1)* (d->matrix->size2 - 1));
+    apop_data_add_named_elmt(out, "df", df);
     apop_data_add_named_elmt(out, "p value", chisq);
     return out;
 }

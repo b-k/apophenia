@@ -58,9 +58,14 @@ void apop_histogram_plot(apop_model *in, char *outfile);
 apop_model *apop_kernel_density_params_alloc(apop_data *data, 
         apop_model *histobase, apop_model kernelbase, void (*set_params)(double, apop_model*));
 
-double apop_log_likelihood(const apop_data *d, apop_model m);
-double apop_p(const apop_data *d, apop_model m);
-apop_model *apop_estimate(apop_data *d, apop_model m);
+apop_model * apop_model_copy(apop_model in); //in apop_model.c
+apop_model * apop_model_copy_set_string(apop_model m, char* param);
+apop_model * apop_model_clear(apop_data * data, apop_model *model);
+
+apop_model * apop_estimate(apop_data *d, apop_model m);
+void apop_score(apop_data *d, gsl_vector *out, apop_model *m);
+double apop_log_likelihood(apop_data *d, apop_model *m);
+double apop_p(apop_data *d, apop_model *m);
 void apop_draw(double *out, gsl_rng *r, apop_model *m);
 
 __END_DECLS

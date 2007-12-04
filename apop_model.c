@@ -40,6 +40,7 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
     apop_data_free(model->expected);
     model->parameters	    = apop_data_alloc(vsize, msize1, msize2);
     model->data             = data;
+    model->prepared         = 0;
     model->status           = 0;
     model->covariance	    = NULL;
     model->expected	        = NULL;
@@ -70,10 +71,28 @@ void apop_model_free (apop_model * free_me){
 	free(free_me);
 }
 
-/** Print the results of an estimation
+/** Print the results of an estimation. If your model has a \c print
+ method, then I'll use that, else I'll use a default setup.
 
-\ingroup output */
+ Your \c print method can use both by masking itself for a second:
+ \code
+void print_method(apop_model *in){
+  void *temp = in->print;
+  in->print = NULL;
+  apop_model_show(in);
+  in->print = temp;
+
+  printf("Additional info:\n");
+  ...
+}
+ \endcode
+
+\ingroup output models */
 void apop_model_show (apop_model * print_me){
+    if (print_me->print){
+        print_me->print(print_me);
+        return;
+    }
     if (strlen(print_me->name))
         printf (print_me->name);
     if (strlen(print_me->name) && strlen(print_me->method_name))
@@ -102,6 +121,8 @@ void apop_model_print (apop_model * print_me){
 /** Outputs a copy of the \ref apop_model input.
 \param in   The model to be copied
 \return A pointer to a copy of the original, which you can mangle as you see fit. 
+
+\ingroup models
 */
 apop_model * apop_model_copy(apop_model in){
   apop_model * out = malloc(sizeof(apop_model));
@@ -146,6 +167,8 @@ If you have a situation where these options are out, you'll have to do something
 
   \param in An unparametrized model, like \c apop_normal or \c apop_poisson.
   \param ... The list of parameters.
+
+  \ingroup models
   */
 apop_model *apop_model_set_parameters(apop_model in, ...){
   va_list  ap;
@@ -167,6 +190,8 @@ apop_model *apop_model_set_parameters(apop_model in, ...){
 \param d    The data
 \param m    The model
 \return     A pointer to an output model, which typically matches the input model but has its \c parameters element filled in.
+
+\ingroup models
 */
 apop_model *apop_estimate(apop_data *d, apop_model m){
     if (m.estimate)
@@ -178,16 +203,22 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
 
 \param d    The data
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
+
+\ingroup models
 */
-double apop_p(const apop_data *d, apop_model m){
-    if (!m.parameters){
+double apop_p(apop_data *d, apop_model *m){
+    if (!m->parameters){
         apop_error(0, 's', "%s: You gave me a function that has no parameters.\n", __func__);
         return 0;
     }
-    if (m.p)
-        return m.p(d, &m);
-    else if (m.log_likelihood)
-        return exp(m.log_likelihood(d, &m));
+    if (m->prep && !m->prepared){
+        m->prep(d, m);
+        m->prepared++;
+    }
+    if (m->p)
+        return m->p(d, m);
+    else if (m->log_likelihood)
+        return exp(m->log_likelihood(d, m));
     apop_error(0, 's', "%s: You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n", __func__);
     return 0;
 }
@@ -196,16 +227,22 @@ double apop_p(const apop_data *d, apop_model m){
 
 \param d    The data
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
+
+\ingroup models
 */
-double apop_log_likelihood(const apop_data *d, apop_model m){
-    if (!m.parameters){
+double apop_log_likelihood(apop_data *d, apop_model *m){
+    if (!m->parameters){
         apop_error(0, 's', "%s: You gave me a function that has no parameters.\n", __func__);
         return 0;
     }
-    if (m.log_likelihood)
-        return m.log_likelihood(d, &m);
-    else if (m.p)
-        return log(m.p(d, &m));
+    if (m->prep && !m->prepared){
+        m->prep(d, m);
+        m->prepared++;
+    }
+    if (m->log_likelihood)
+        return m->log_likelihood(d, m);
+    else if (m->p)
+        return log(m->p(d, m));
     apop_error(0, 's', "%s: You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n", __func__);
     return 0;
 }
@@ -214,17 +251,23 @@ double apop_log_likelihood(const apop_data *d, apop_model m){
 
 \param d    The data
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
+
+\ingroup models
 */
-void apop_score(const apop_data *d, gsl_vector *out, apop_model m){
-    if (!m.parameters){
+void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
+    if (!m->parameters){
         apop_error(0, 's', "%s: You gave me a function that has no parameters.\n", __func__);
         return;
     }
-    if (m.score){
-        m.score(d, out, &m);
+    if (m->prep && !m->prepared){
+        m->prep(d, m);
+        m->prepared++;
+    }
+    if (m->score){
+        m->score(d, out, m);
         return;
     }
-    gsl_vector * numeric_default = apop_numerical_gradient(d, &m);
+    gsl_vector * numeric_default = apop_numerical_gradient(d, m);
     gsl_vector_memcpy(out, numeric_default);
     gsl_vector_free(numeric_default);
 }
@@ -235,7 +278,8 @@ void apop_score(const apop_data *d, gsl_vector *out, apop_model m){
 
  That second half is actually forthcoming...
 
- */
+ \ingroup models
+*/
 void apop_draw(double *out, gsl_rng *r, apop_model *m){
     if (m->draw){
         m->draw(out,r, m); 
@@ -251,6 +295,8 @@ void apop_draw(double *out, gsl_rng *r, apop_model *m){
 \param param The string to be placed in the <tt>model_settings</tt> slot.
 \return A copy of \c m, with the appropriately set <tt>model_settings</tt> element.
  
+
+\ingroup models
  */
 apop_model *apop_model_copy_set_string(apop_model m, char* param){
   apop_model *out = apop_model_copy(m);
