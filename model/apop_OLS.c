@@ -12,6 +12,22 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <apophenia/asst.h>
 #include <gsl/gsl_blas.h>
 
+static void ols_prep(apop_data *d, apop_model *m){
+    if (!d->vector){
+        APOP_COL(d, 0, independent);
+        d->vector = apop_vector_copy(independent);
+        gsl_vector_set_all(independent, 1);
+        if (d->names->colct > 0) {		
+            apop_name_add(d->names, d->names->column[0], 'v');
+            sprintf(d->names->column[0], "1");
+        }
+    }
+    void *mpt = m->prep; //also use the defaults.
+    m->prep = NULL;
+    apop_model_prep(d, m);
+    m->prep = mpt;
+}
+
 /** The assumption that makes a log likelihood possible is that the
 errors are normally distributed.
 
@@ -52,7 +68,7 @@ static double ols_p (const apop_data *d, apop_model *p){
 \ingroup models
 */
 apop_model apop_OLS = {.name="OLS", .vbase = -1, .estimate =apop_estimate_OLS, .p=ols_p,
-                            .log_likelihood = ols_log_likelihood};
+                            .log_likelihood = ols_log_likelihood, .prep = ols_prep};
 
 /** The GLS model
 

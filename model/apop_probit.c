@@ -58,6 +58,10 @@ static void probit_prep(apop_data *d, apop_model *m){
             sprintf(d->names->column[0], "1");
         }
     }
+    void *mpt = m->prep; //and use the defaults.
+    m->prep = NULL;
+    apop_model_prep(d, m);
+    m->prep = mpt;
 }
 
 static apop_model * probit_estimate(apop_data * data,  apop_model *parameters){

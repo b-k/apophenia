@@ -306,3 +306,17 @@ apop_model *apop_model_copy_set_string(apop_model m, char* param){
     return out;
 }
 
+/** The default prep is to simply call \c apop_model_clear. If the
+ function has a prep method, then that gets called instead.
+
+\ingroup models
+ */
+void apop_model_prep(apop_data *d, apop_model *m){
+    if (m->prepared)
+        return;
+    if (m->prep)
+        m->prep(d, m);
+    else
+        apop_model_clear(d, m);
+    m->prepared++;
+}

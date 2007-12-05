@@ -482,7 +482,7 @@ apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     if (olp->want_expected_value)
         epout->expected   = apop_data_alloc(0, set->matrix->size1, 3);
     if (olp->want_cov)
-        epout->covariance = apop_data_alloc(0, set->matrix->size1, set->matrix->size1);
+        epout->covariance = apop_data_alloc(0, set->matrix->size2, set->matrix->size2);
     prep_names(epout);
     APOP_COL(set, 0, firstcol);
     gsl_vector_memcpy(y_data,firstcol);

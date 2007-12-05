@@ -30,6 +30,7 @@ extern apop_model apop_IV;
 extern apop_model apop_kernel_density;
 extern apop_model apop_logit;
 extern apop_model apop_lognormal;
+extern apop_model apop_multinomial_probit;
 extern apop_model apop_multivariate_normal;
 extern apop_model apop_normal;
 extern apop_model apop_OLS;
@@ -67,6 +68,7 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m);
 double apop_log_likelihood(apop_data *d, apop_model *m);
 double apop_p(apop_data *d, apop_model *m);
 void apop_draw(double *out, gsl_rng *r, apop_model *m);
+void apop_model_prep(apop_data *d, apop_model *m);
 
 __END_DECLS
 #endif

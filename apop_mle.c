@@ -633,13 +633,9 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
         info.model  = apop_model_copy(dist);
         mp          = info.model->method_settings;
     }
-    if (info.model->prep && !info.model->prepared){
-        info.model->prep(data, info.model);
-        info.model->prepared++;
-    }
+    apop_model_prep(data, info.model);
     if (mp->trace_path)
         info.trace_path = mp->trace_path;
-    apop_model_clear(data, info.model);
 	if (mp->method == APOP_SIMAN)
         return apop_annealing(&info);  //below.
     else if (mp->method==APOP_SIMPLEX_NM)

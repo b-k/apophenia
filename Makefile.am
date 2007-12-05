@@ -18,6 +18,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
 			vasprintf/printf-parse.c vasprintf/vasprintf.c  \
 			model/apop_multivariate_normal.c				\
+			model/apop_multinomial_probit.c					\
 			model/apop_normal.c model/apop_OLS.c 		 	\
 			model/apop_WLS.c	model/apop_logit.c 			\
 			model/apop_exponential.c 						\
