@@ -73,7 +73,6 @@ This structure holds the names of these variables. You can fill it quickly
 with \ref apop_db_get_names after running a query, or add names manually
 with \ref apop_name_add .
 
-Typically, the row names are not used, but they are there for your convenience.  
 \ingroup names
 */
 typedef struct{
