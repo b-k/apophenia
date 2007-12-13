@@ -329,23 +329,6 @@ void apop_matrix_print(gsl_matrix *data, char *file){
         print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf, NULL); 
 }
 
-/** Print an \ref apop_data set in float format.
-    You may want to set \ref apop_opts.output_delimiter.
-    
-    \bug If dumping to a db, the row names are lost.
-    \bug If there's a matrix, only that is printed. If matrix==NULL, the vector is printed. This fails to implement the vector==-1st column paradigm.
-\ingroup apop_print */
-void apop_data_print(apop_data *data, char *file){
-    if (apop_opts.output_type   == 'd'){
-        apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
-        return;
-    }
-    if (data->matrix)
-        print_core_m(data->matrix, apop_opts.output_delimiter, file, dumb_little_pf, data->names); 
-    else if (data->vector)
-        print_core_v(data->vector, apop_opts.output_delimiter, file, dumb_little_pf); 
-}
-
 
 /** Dump a <tt>gsl_vector</tt> to the screen. 
     You may want to set \ref apop_opts.output_delimiter.
@@ -375,54 +358,63 @@ static int get_max_strlen(char **names, size_t len){
     return max;
 }
 
+//On screen, display a pipe, else use the usual output delimiter.
+static void a_pipe(FILE *f, char displaytype){
+    if (displaytype == 's')
+        fprintf(f, " | ");
+    else
+        fprintf(f, apop_opts.output_delimiter);
+
+}
+
 /** Print an \ref apop_data to the screen.
     You may want to set \ref apop_opts.output_delimiter.
 \ingroup apop_print */
-void apop_data_show(const apop_data *data){
+void apop_data_show_core(const apop_data *data, FILE *f, char displaytype){
     if (!data){
-        printf("NULL\n");
+        fprintf(f, "NULL\n");
         return;
     }
-  char    tmptype = apop_opts.output_type;
   int     i, j, L = 0, Lc = 6,
           start   = (data->vector)? -1 : 0,
           end     = (data->matrix)? data->matrix->size2 : 0,
           rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
   double  datapt;
     if (data->names->title)
-        printf("\t%s\n\n", data->names->title);
-    if (data->names->row)
+        fprintf(f, "\t%s\n\n", data->names->title);
+    if (data->names->rowct)
         L   = get_max_strlen(data->names->row, data->names->rowct);
-    apop_opts.output_type = 's';
-    if (data->names->row)
-        printf("%*s  ", L+2, " ");
+    if (data->names->rowct)
+        fprintf(f, "%*s  ", L+2, " ");
     if (data->vector && data->names->vector){
-        printf("%*s", L+2, data->names->vector);
+        fprintf(f, "%*s", L+2, data->names->vector);
     }
     if (data->matrix){
-        if (data->vector && data->names->colct)
-                printf("%c |  ", data->names->vector ? ' ' : '\t' );
+        if (data->vector && data->names->colct){
+            fprintf(f, "%c ", data->names->vector ? ' ' : '\t' );
+            a_pipe(f, displaytype);
+        }
         for(i=0; i< data->names->colct; i++){
             if (i < data->names->colct -1)
-                printf("%s%s", data->names->column[i], apop_opts.output_delimiter);
+                fprintf(f, "%s%s", data->names->column[i], apop_opts.output_delimiter);
             else
-                printf("%s", data->names->column[i]);
+                fprintf(f, "%s", data->names->column[i]);
         }
     }
-    if (data->textsize[1] && data->names->text){
+    if (data->textsize[1] && data->names->textct){
         if ((data->vector && data->names->vector) || (data->matrix && data->names->colct))
-            printf(" | ");
+            a_pipe(f, displaytype);
         for(i=0; i< data->names->textct; i++){
             if (i < data->names->textct -1)
-                printf("%s%s", data->names->text[i], apop_opts.output_delimiter);
+                fprintf(f, "%s%s", data->names->text[i], apop_opts.output_delimiter);
             else
-                printf("%s", data->names->text[i]);
+                fprintf(f, "%s", data->names->text[i]);
         }
     }
-    printf("\n");
+    fprintf(f, "\n");
     for(j=0; j< rowend; j++){
         if (data->names->rowct > j)
-            printf("%*s%s", L+2, data->names->row[j], apop_opts.output_delimiter);
+            fprintf(f, "%*s%s", L+2, data->names->row[j], apop_opts.output_delimiter);
         for(i=start; i< end; i++){
             if (i==-1 && data->names->vector) 
                 Lc  =  strlen(data->names->vector);
@@ -432,23 +424,45 @@ void apop_data_show(const apop_data *data){
                 Lc  =  6;
             datapt  = apop_data_get(data, j, i);
             if (datapt == (int) datapt)
-                printf("%*i", Lc, (int) datapt);
+                fprintf(f, "%*i", Lc, (int) datapt);
             else
-                printf("%*f", Lc, datapt);
+                fprintf(f, "%*f", Lc, datapt);
             if (i==-1 && data->matrix) 
-                printf ("| ");
+                a_pipe(f, displaytype);
             if (i < end-1)
-                printf(apop_opts.output_delimiter);
+                fprintf(f, apop_opts.output_delimiter);
         }
         if (data->text){
             if (data->vector || data->matrix)
-                printf (" | ");
+                a_pipe(f, displaytype);
             for(i=0; i< data->textsize[1]; i++)
-                printf("%*s%s", L+2, data->text[j][i], apop_opts.output_delimiter);
+                fprintf(f, "%*s%s", L+2, data->text[j][i], apop_opts.output_delimiter);
         }
-        printf("\n");
+        fprintf(f, "\n");
     }
-    apop_opts.output_type = tmptype;
+}
+
+/** Display an \ref apop_data set on screen.
+\ingroup apop_print */
+void apop_data_show(const apop_data *data){
+    apop_data_show_core(data, stdout, 's');
+}
+
+/** Print an \ref apop_data set to a file, the database, or the screen,
+  as determined by the \ref apop_opts.output_delimiter.
+    
+\ingroup apop_print */
+void apop_data_print(apop_data *data, char *file){
+    if (apop_opts.output_type   == 'd'){
+        apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
+        return;
+    }
+    if (file){
+        FILE *f = fopen(file, apop_opts.output_append ? "a" : "w");
+        apop_data_show_core(data, f, 'p');
+        fclose(f);
+    } else
+        apop_data_show_core(data, stdout, 'p');
 }
 
 

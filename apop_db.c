@@ -68,7 +68,7 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 'f',            //output type
                                 NULL,            //output pipe
                                 "\t",           //output delimiter
-                                1,              //output append
+                                0,              //output append
                                 "| ,\t",        //input delimiters
                                 "row_names",    //db_name_column
                                 "NaN", //db_nan
