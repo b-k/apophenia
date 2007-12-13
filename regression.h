@@ -54,5 +54,8 @@ void apop_estimate_parameter_t_tests (apop_model *est);
 
 apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep);
 
+//apop_testing.c
+apop_data* apop_ANOVA(char *table, char *data, char *grouping1, char *grouping2);
+
 __END_DECLS
 #endif
