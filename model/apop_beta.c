@@ -18,7 +18,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <stdio.h>
 #include <assert.h>
 
-static double beta_log_likelihood(const apop_data *beta, apop_data *d, apop_model *p);
+static double beta_log_likelihood(apop_data *d, apop_model *p);
 
 /* Every model should have an estimate function. If you are doing an
  MLE, then it should be the one line function here, and then you will need
@@ -37,7 +37,7 @@ static apop_model * beta_estimate(apop_data * data,  apop_model *parameters){
     beta    = alpha * (1-mean)/mean;
 	gsl_vector_set(est->parameters->vector, 0, alpha);
 	gsl_vector_set(est->parameters->vector, 1, beta);
-    est->llikelihood	= beta_log_likelihood(est->parameters, data, parameters);
+    est->llikelihood	= beta_log_likelihood(data, parameters);
     //apop_numerical_covariance_matrix(apop_beta, est, data);
 	return est;
 }
@@ -48,12 +48,14 @@ Often, the input data is a gsl_matrix, and you need to go line by line
 through the matrix, calculating the log likelihood. That's the sample
 code here.  
 */
-static double beta_log_likelihood(const apop_data *in, apop_data *d, apop_model *p){
+static double beta_log_likelihood(apop_data *d, apop_model *p){
+    if (!p->parameters)
+        apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
 int		    i,j;
 double	    x, 
             loglike    	= 0,
-            alpha       = apop_data_get(in,0,-1),
-            beta        = apop_data_get(in,1,-1);
+            alpha       = apop_data_get(p->parameters,0,-1),
+            beta        = apop_data_get(p->parameters,1,-1);
 gsl_matrix 	*data 		= d->matrix;
 	for(i=0;i< data->size1; i++)
         for(j=0; j< data->size2; j++){
@@ -63,8 +65,8 @@ gsl_matrix 	*data 		= d->matrix;
 	return loglike  + gsl_sf_lnbeta (alpha, beta)*data->size1*data->size2;
 }
 
-static double beta_p(const apop_data *beta, apop_data *d, apop_model *p){
-    return exp(beta_log_likelihood(beta, d, p));
+static double beta_p(apop_data *d, apop_model *p){
+    return exp(beta_log_likelihood(d, p));
 }
 
 /* The derivative of the beta distribution, for use in likelihood
@@ -74,7 +76,7 @@ static double beta_p(const apop_data *beta, apop_data *d, apop_model *p){
 
 You can delete this function entirely if so inclined. If so, remember
 to replace this function with NULL in the model definition below.
-static void beta_dlog_likelihood(const gsl_vector *beta, apop_data *d, gsl_vector *gradient){
+static void beta_dlog_likelihood(gsl_vector *beta, apop_data *d, gsl_vector *gradient){
 int		    i,j;
 double	    dtotal[3];
 gsl_matrix 	*data 	= d->matrix;
@@ -99,13 +101,15 @@ gsl_matrix 	*data 	= d->matrix;
 You can delete this function entirely if so inclined. If so, remember
 to replace this function with NULL in the model definition below.
  */
-static double beta_constraint(const apop_data *beta, apop_data *returned_beta, apop_model *v){
+static double beta_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and  0 < beta_2
   static apop_data *constraint = NULL;
-    if (!constraint)constraint= apop_data_calloc(2,2,1);
-    apop_data_set(constraint, 0, 0, 1);
-    apop_data_set(constraint, 1, 0, 1);
-    return apop_linear_constraint(beta->vector, constraint, 1e-3, returned_beta->vector);
+    if (!constraint){
+        constraint= apop_data_alloc(2,2,1);
+        apop_data_fill(constraint, 0., 1., 0.,
+                                   0., 0., 1.);
+    }
+    return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
 }
 
 

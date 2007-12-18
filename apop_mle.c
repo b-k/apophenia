@@ -257,7 +257,7 @@ static double negshell (const gsl_vector *beta, void * in){
   infostruct    *i              = in;
   double		penalty         = 0,
                 out             = 0; 
-  double 	(*f)(const apop_data *, apop_model *);
+  double 	(*f)(apop_data *, apop_model *);
   int           vsize           = (i->model->parameters->vector? i->model->parameters->vector->size:0),
                 msize1          = (i->model->parameters->matrix? i->model->parameters->matrix->size1:0),
                 msize2          = (i->model->parameters->matrix? i->model->parameters->matrix->size2:0);

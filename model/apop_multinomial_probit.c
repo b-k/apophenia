@@ -48,7 +48,7 @@ static double onerow(double in){
 /*
 This is just a for loop that runs a probit on each row.
 */
-static double multiprobit_log_likelihood(const apop_data *d, apop_model *p){
+static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
 

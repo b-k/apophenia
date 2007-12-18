@@ -15,7 +15,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <gsl/gsl_rng.h>
 #include <stdio.h>
 #include <assert.h>
-static double normal_log_likelihood(const apop_data *d, apop_model *params);
+static double normal_log_likelihood(apop_data *d, apop_model *params);
 
 
 //////////////////
@@ -49,7 +49,7 @@ static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
 	return est;
 }
 
-static double beta_1_greater_than_x_constraint(const apop_data *data, apop_model *v){
+static double beta_1_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint) {
@@ -92,7 +92,7 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 \param beta	beta[0]=the mean; beta[1]=the variance
 \param d	the set of data points; see notes.
 */
-static double normal_log_likelihood(const apop_data *d, apop_model *params){
+static double normal_log_likelihood(apop_data *d, apop_model *params){
   if (!params->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
     mu	        = gsl_vector_get(params->parameters->vector,0);
@@ -103,7 +103,7 @@ static double normal_log_likelihood(const apop_data *d, apop_model *params){
 	return ll;
 }
 
-static double normal_p(const apop_data *d, apop_model *params){
+static double normal_p(apop_data *d, apop_model *params){
   if (!params->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
     mu	        = gsl_vector_get(params->parameters->vector,0);
@@ -124,7 +124,7 @@ To tell you the truth, I have no idea when anybody would need this, but it's her
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 \f$d\ln N(\mu,\sigma)/d\sigma = ((x-\mu)^2 / \sigma^3) - 1/\sigma \f$
  */
-static void normal_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *params){    
+static void normal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *params){    
               mu      = gsl_vector_get(params->parameters->vector,0);
   double      sd      = gsl_vector_get(params->parameters->vector,1),
               dll     = 0,

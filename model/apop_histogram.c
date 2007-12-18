@@ -85,7 +85,7 @@ static double one_vector(gsl_vector *in){
     return product;
 }
 
-static double histogram_p(const apop_data *d, apop_model *parameters){
+static double histogram_p(apop_data *d, apop_model *parameters){
   apop_histogram_params *hp = parameters->model_settings;
   long double           product = 0;
     gpdf    = hp->pdf;
@@ -99,7 +99,7 @@ static double histogram_p(const apop_data *d, apop_model *parameters){
     return product;
 }
 
-static double histogram_log_likelihood(const apop_data *d, apop_model *parameters){
+static double histogram_log_likelihood(apop_data *d, apop_model *parameters){
 	return log(histogram_p(d,parameters)) ;
 }
 

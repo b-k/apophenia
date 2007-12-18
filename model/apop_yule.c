@@ -22,7 +22,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 
 
-static double yule_log_likelihood_rank(const apop_data *d, apop_model *m){
+static double yule_log_likelihood_rank(apop_data *d, apop_model *m){
   float         bb	            = gsl_vector_get(m->parameters->vector, 0);
   int 		    k;
   float 	    ln_k, ln_bb_k,
@@ -40,7 +40,7 @@ static double yule_log_likelihood_rank(const apop_data *d, apop_model *m){
 	return likelihood;
 }
 
-static void yule_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient, apop_model *p){
+static void yule_dlog_likelihood_rank(apop_data *d, gsl_vector *gradient, apop_model *p){
   float         bb		        = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix    *data	        = d->matrix;
   int 		    k;
@@ -72,7 +72,7 @@ static apop_model * yule_estimate(apop_data * data, apop_model *parameters){
 	return apop_maximum_likelihood(data, *parameters);
 }
 
-static double beta_greater_than_x_constraint(const apop_data *returned_beta, apop_model *m){
+static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
   if (!m->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
     //constraint is 1 < beta_1
@@ -113,7 +113,7 @@ static double  dapply_me(gsl_vector *v){
     return d;
 }
 
-static double yule_log_likelihood(const apop_data *d, apop_model *m){
+static double yule_log_likelihood(apop_data *d, apop_model *m){
   if (!m->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
@@ -127,7 +127,7 @@ static double yule_log_likelihood(const apop_data *d, apop_model *m){
 	return likelihood + (ln_bb_less_1 + ln_bb) * d->matrix->size1 * d->matrix->size2;
 }
 
-static void yule_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *m){
+static void yule_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
   if (!m->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
@@ -143,7 +143,7 @@ double		    bb_minus_one_inv= 1/(bb-1),
 	gsl_vector_set(gradient, 0, d_bb);
 }
 
-static double yule_p(const apop_data *d, apop_model *p){
+static double yule_p(apop_data *d, apop_model *p){
     return exp(yule_log_likelihood(d, p));
 }
 

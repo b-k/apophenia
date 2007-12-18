@@ -35,7 +35,7 @@ This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.
 
  */
-static double ols_log_likelihood (const apop_data *d, apop_model *p){ 
+static double ols_log_likelihood (apop_data *d, apop_model *p){ 
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   int         i; 
@@ -59,7 +59,7 @@ static double ols_log_likelihood (const apop_data *d, apop_model *p){
     return total_prob;
 }
 
-static double ols_p (const apop_data *d, apop_model *p){ 
+static double ols_p (apop_data *d, apop_model *p){ 
     return exp(ols_log_likelihood(d, p)); }
 
 /** The OLS model

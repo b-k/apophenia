@@ -91,7 +91,7 @@ static void waring_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient
 
 
 
-static double beta_zero_and_one_greater_than_x_constraint(const apop_data *returned_beta, apop_model *m){
+static double beta_zero_and_one_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1 and  0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint){
@@ -118,7 +118,7 @@ static double apply_me(gsl_vector *data){
     return likelihood;
 }
 
-static double waring_log_likelihood(const apop_data *d, apop_model *m){
+static double waring_log_likelihood(apop_data *d, apop_model *m){
   if (!m->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
@@ -136,7 +136,7 @@ static double waring_log_likelihood(const apop_data *d, apop_model *m){
 	return likelihood;
 }
 
-static void waring_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *m){
+static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
 	//Psi is the derivative of the log gamma function.
   if (!m->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
@@ -168,7 +168,7 @@ static void waring_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apo
 	gsl_vector_set(gradient, 1, d_a);
 }
 
-static double waring_p(const apop_data *d, apop_model *p){
+static double waring_p(apop_data *d, apop_model *p){
     return exp(waring_log_likelihood(d, p));
 }
 

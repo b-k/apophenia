@@ -13,7 +13,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <stdio.h>
 #include <assert.h>
 
-static double exponential_log_likelihood(const apop_data *d, apop_model *p);
+static double exponential_log_likelihood(apop_data *d, apop_model *p);
 
 
 
@@ -94,7 +94,7 @@ static apop_model * exponential_estimate(apop_data * data,  apop_model *m){
 	return est;
 }
 
-static double beta_greater_than_x_constraint(const apop_data *data, apop_model *v){
+static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint){ 
@@ -119,7 +119,7 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Set up an exponential object which makes use of the GSL.
 \todo Check that the borderline work here is correct.
 */
-static double exponential_log_likelihood(const apop_data *d, apop_model *p){
+static double exponential_log_likelihood(apop_data *d, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
@@ -132,7 +132,7 @@ static double exponential_log_likelihood(const apop_data *d, apop_model *p){
 	return llikelihood;
 }
 
-static double exp_p(const apop_data *d, apop_model *p){
+static double exp_p(apop_data *d, apop_model *p){
     return exp(exponential_log_likelihood(d, p));
 }
 
@@ -141,7 +141,7 @@ static double exp_p(const apop_data *d, apop_model *p){
 \f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
 \todo Check that the borderline work here is correct too.
 */
-static void exponential_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *p){
+static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))

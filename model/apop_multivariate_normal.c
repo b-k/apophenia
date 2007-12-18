@@ -8,22 +8,24 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 
 apop_model apop_multivariate_normal;
 
-double apop_multinormal_ll_prob(const apop_data *x, apop_data *v, apop_model * m){
+double apop_multinormal_ll_prob(apop_data *data, apop_model * m){
+  if (!m->parameters)
+      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   double    determinant = 0;
   gsl_matrix* inverse   = NULL;
-  int       i, dimensions  = x->matrix->size2;
-  gsl_vector* x_minus_mu= gsl_vector_alloc(x->matrix->size2);
+  int       i, dimensions  = data->matrix->size2;
+  gsl_vector* x_minus_mu= gsl_vector_alloc(data->matrix->size2);
   double        ll      = 0;
-    determinant = apop_det_and_inv(v->matrix, &inverse, 1,1);
+    determinant = apop_det_and_inv(m->parameters->matrix, &inverse, 1,1);
     if (determinant == 0) {
         fprintf(stderr, "apop_multivariate_normal.p: the determinant of the given covariance is zero. Returning GSL_NEGINF.  \n"); 
         gsl_vector_free(x_minus_mu);
         return(GSL_NEGINF); //tell maximizers to look elsewhere.
     }
-    for (i=0; i< x->matrix->size1; i++){
-        APOP_ROW(x,i, vv);
+    for (i=0; i< data->matrix->size1; i++){
+        APOP_ROW(data,i, vv);
         gsl_vector_memcpy(x_minus_mu, vv);
-        gsl_vector_sub(x_minus_mu, v->vector);
+        gsl_vector_sub(x_minus_mu, m->parameters->vector);
        ll  += - apop_x_prime_sigma_x(x_minus_mu, inverse) / 2;
        ll  -= log(2 * M_PI)* dimensions/2. + .5 *  log(determinant);
     }
@@ -32,8 +34,8 @@ double apop_multinormal_ll_prob(const apop_data *x, apop_data *v, apop_model * m
     return ll;
 }
 
-double apop_multinormal_prob(const apop_data *x, apop_data *v, apop_model * m){
-    return exp(apop_multinormal_ll_prob(x, v, m));
+double apop_multinormal_prob(apop_data *data, apop_model * m){
+    return exp(apop_multinormal_ll_prob(data, m));
 }
 
 static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){

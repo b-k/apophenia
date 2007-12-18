@@ -39,7 +39,7 @@ gsl_vector  *xdotbeta;
 int         calculate_xdotbeta  = 1;
 int         keep_xdotbeta       = 0;
 
-static double logit_log_likelihood(const apop_data *d, apop_model *p){
+static double logit_log_likelihood(apop_data *d, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   size_t	    i;
@@ -63,7 +63,7 @@ static double logit_log_likelihood(const apop_data *d, apop_model *p){
 	return loglike;
 }
 
-static double logit_p(const apop_data *d, apop_model *p){
+static double logit_p(apop_data *d, apop_model *p){
     return exp(logit_log_likelihood(d, p));
 }
 
@@ -71,7 +71,7 @@ static double logit_p(const apop_data *d, apop_model *p){
   Simple, but some trickery to keep xdotbeta. Notice that the two switches
   leave the function with the same values with which they came in.
 
-static void logit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df, apop_model *p){
+static void logit_fdf(gsl_vector *beta, apop_data *d, double *f, gsl_vector *df, apop_model *p){
     keep_xdotbeta       = 1;
 	*f	= logit_log_likelihood(beta, d, NULL);
     calculate_xdotbeta  = 0;

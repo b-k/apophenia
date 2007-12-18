@@ -56,7 +56,7 @@ static void zipf_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient, 
 
 
 
-static double beta_greater_than_x_constraint(const apop_data *returned_beta, apop_model *m){
+static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint) {
@@ -75,7 +75,7 @@ static double oneline_log(gsl_vector *v){
     return like;
 }
 
-static double zipf_log_likelihood(const apop_data *d, apop_model *m){
+static double zipf_log_likelihood(apop_data *d, apop_model *m){
   if (!m->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
@@ -90,13 +90,13 @@ static double zipf_log_likelihood(const apop_data *d, apop_model *m){
     return like;
 }    
 
-static double zipf_p(const apop_data *d, apop_model *v){
+static double zipf_p(apop_data *d, apop_model *v){
   if (v->model_settings && (!strcmp((char *)v->model_settings, "r") || !strcmp((char *)v->model_settings, "R")))
         return exp(zipf_log_likelihood_rank(d, v));
     return exp(zipf_log_likelihood(d, v));
 }    
 
-static void zipf_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *m){
+static void zipf_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
   if (!m->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))

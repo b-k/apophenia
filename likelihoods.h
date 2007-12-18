@@ -101,7 +101,7 @@ void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist,
   and fn_beta will probably be the beta calculated using the corresponding
   apop_xxx_mle function.
   */
-typedef double 	(*apop_fn_with_params) (const apop_data *, apop_model *);
+typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
 gsl_vector * apop_numerical_gradient(apop_data *data, apop_model*);
 gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
 gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);

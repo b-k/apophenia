@@ -15,7 +15,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
 #include <assert.h>
-static double poisson_log_likelihood(const apop_data *d, apop_model *);
+static double poisson_log_likelihood(apop_data *d, apop_model *);
 
 static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
   apop_model 	*est= parameters ? parameters : apop_model_copy(apop_poisson);
@@ -33,7 +33,7 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
 	return est;
 }
 
-static double beta_zero_greater_than_x_constraint(const apop_data *returned_beta, apop_model *v){
+static double beta_zero_greater_than_x_constraint(apop_data *returned_beta, apop_model *v){
     //constraint is 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint){
@@ -57,7 +57,7 @@ static double apply_me(gsl_vector *v){
     return llikelihood;
 }
 
-static double poisson_log_likelihood(const apop_data *d, apop_model * p){
+static double poisson_log_likelihood(apop_data *d, apop_model * p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   double        lambda      = gsl_vector_get(p->parameters->vector, 0);
@@ -68,13 +68,13 @@ static double poisson_log_likelihood(const apop_data *d, apop_model * p){
     return llikelihood - d->matrix->size1*d->matrix->size2*lambda;
 }
 
-static double poisson_p(const apop_data *d, apop_model * v){
+static double poisson_p(apop_data *d, apop_model * v){
     return exp(poisson_log_likelihood(d, v));
 }
 
 /** The derivative of the poisson distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void poisson_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *p){
+static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   double       	lambda  = gsl_vector_get(p->parameters->vector, 0);

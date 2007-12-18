@@ -12,8 +12,8 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <assert.h>
 #include <gsl/gsl_blas.h>
 
-static double wls_p (const apop_data *, apop_model *);
-static double wls_log_likelihood (const apop_data *, apop_model *);
+static double wls_p (apop_data *, apop_model *);
+static double wls_log_likelihood (apop_data *, apop_model *);
 
 /** The procedure here is to simply modify the input data, run OLS on
 the modified data, and then claim that the output was from WLS.
@@ -55,7 +55,7 @@ This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.
 
  */
-static double wls_log_likelihood (const apop_data *d, apop_model *params){ 
+static double wls_log_likelihood (apop_data *d, apop_model *params){ 
   if (!params->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   int           i; 
@@ -85,7 +85,7 @@ static double wls_log_likelihood (const apop_data *d, apop_model *params){
 }
 
 
-static double wls_p (const apop_data *d, apop_model *p){ 
+static double wls_p (apop_data *d, apop_model *p){ 
     return exp(wls_log_likelihood(d, p));
             }
 

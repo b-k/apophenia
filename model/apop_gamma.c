@@ -23,7 +23,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 
 
-static double gamma_rank_log_likelihood(const apop_data *d, apop_model *p){
+static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
   float           a           = gsl_vector_get(p->parameters->vector, 0),
                   b           = gsl_vector_get(p->parameters->vector, 1);
     if (a<=0 || b<=0) 
@@ -46,7 +46,7 @@ static double gamma_rank_log_likelihood(const apop_data *d, apop_model *p){
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void gamma_rank_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *p){
+static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   double          a       = gsl_vector_get(p->parameters->vector, 0),
                   b       = gsl_vector_get(p->parameters->vector, 1);
   int             k;
@@ -78,7 +78,7 @@ static apop_model * gamma_estimate(apop_data * data, apop_model *parameters){
     return apop_maximum_likelihood(data, *parameters);
 }
 
-static double beta_zero_and_one_greater_than_x_constraint(const apop_data *data, apop_model *v){
+static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint){
@@ -89,7 +89,7 @@ static double beta_zero_and_one_greater_than_x_constraint(const apop_data *data,
     return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
 }
 
-static double gamma_log_likelihood(const apop_data *d, apop_model *p){
+static double gamma_log_likelihood(apop_data *d, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
@@ -112,13 +112,13 @@ static double gamma_log_likelihood(const apop_data *d, apop_model *p){
     return llikelihood;
 }
 
-static double gamma_p(const apop_data *d, apop_model *p){
+static double gamma_p(apop_data *d, apop_model *p){
     return exp(gamma_log_likelihood(d, p));
 }
 
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
-static void gamma_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *p){
+static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))

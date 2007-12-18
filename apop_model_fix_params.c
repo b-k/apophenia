@@ -45,19 +45,19 @@ static void  fixed_param_unpack(const gsl_vector *in, apop_model_fixed_params *p
                     apop_data_set(target, i, is_gradient ? -1 : j, gsl_vector_get(in, ctr++));
 }
 
-static double i_ll(const apop_data *d, apop_model *fixed_model){
+static double i_ll(apop_data *d, apop_model *fixed_model){
   apop_model_fixed_params *p    = fixed_model->model_settings;
     fixed_param_unpack(fixed_model->parameters->vector, p, 0);
     return p->base_model->log_likelihood(d, p->base_model);
 }
 
-static double i_p(const apop_data *d, apop_model *params){
+static double i_p(apop_data *d, apop_model *params){
   apop_model_fixed_params *p    = params->model_settings;
     fixed_param_unpack(params->parameters->vector, p, 0);
     return p->base_model->p(d, p->base_model);
 }
 
-static void i_score(const apop_data *d, gsl_vector *gradient, apop_model *params){
+static void i_score(apop_data *d, gsl_vector *gradient, apop_model *params){
   apop_model_fixed_params *p    = params->model_settings;
   static apop_data *gdummy   = NULL;
     fixed_param_unpack(params->parameters->vector, p, 0);
@@ -70,7 +70,7 @@ static void i_score(const apop_data *d, gsl_vector *gradient, apop_model *params
     fixed_params_pack(p->gradient_for_base, gdummy, p->mask, 1);
 }
 
-static double  i_constraint(const apop_data *data, apop_model *params){
+static double  i_constraint(apop_data *data, apop_model *params){
   apop_model_fixed_params *p    = params->model_settings;
     fixed_param_unpack(params->parameters->vector, p, 0);
   double out = p->base_model->constraint(data, p->base_model);

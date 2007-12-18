@@ -13,7 +13,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <gsl/gsl_rng.h>
 #include <stdio.h>
 #include <assert.h>
-static double lognormal_log_likelihood(const apop_data *d, apop_model *params);
+static double lognormal_log_likelihood(apop_data *d, apop_model *params);
 
 
 
@@ -40,7 +40,7 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
 	return est;
 }
 
-static double beta_1_greater_than_x_constraint(const apop_data *data, apop_model *v){
+static double beta_1_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint) {
@@ -76,7 +76,7 @@ static double apply_me2b(gsl_vector *v){
 \param beta	beta[0]=the mean; beta[1]=the variance
 \param d	the set of data points; see notes.
 */
-static double lognormal_log_likelihood(const apop_data *d, apop_model *params){
+static double lognormal_log_likelihood(apop_data *d, apop_model *params){
   if (!params->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
     mu	        = gsl_vector_get(params->parameters->vector,0);
@@ -91,7 +91,7 @@ static double lognormal_log_likelihood(const apop_data *d, apop_model *params){
 	return ll;
 }
 
-static double lognormal_p(const apop_data *d, apop_model *params){
+static double lognormal_p(apop_data *d, apop_model *params){
   if (!params->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   int   i, j;
@@ -108,7 +108,7 @@ static double lognormal_p(const apop_data *d, apop_model *params){
 
 /* This is copied from the Normal. The first one who needs it gets to
  * fix it. 
-static void lognormal_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *params){    
+static void lognormal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *params){    
               mu      = gsl_vector_get(params->parameters->vector,0);
   double      sd      = gsl_vector_get(params->parameters->vector,1),
               dll     = 0,

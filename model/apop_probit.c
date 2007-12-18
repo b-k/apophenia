@@ -79,7 +79,7 @@ static gsl_vector *beta_dot_x 		= NULL;
 static gsl_matrix  *last_data_set   = NULL;
 static int	beta_dot_x_is_current	= 0;
 
-static void	dot(const apop_data *beta, gsl_matrix *data){
+static void	dot(apop_data *beta, gsl_matrix *data){
 	//if (beta_dot_x) printf("comparing %i with %i ",data->size1, beta_dot_x->size); fflush(NULL);
 	if ((data != last_data_set) && beta_dot_x){
 		gsl_vector_free(beta_dot_x); 
@@ -97,7 +97,7 @@ find (data dot beta'), then find the integral of the \f$\cal{N}(0,1)\f$
 up to that point. Multiply likelihood either by that or by 1-that, depending 
 on the choice the data made.
 */
-static double probit_log_likelihood(const apop_data *d, apop_model *p){
+static double probit_log_likelihood(apop_data *d, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   int		    i;
@@ -113,13 +113,13 @@ static double probit_log_likelihood(const apop_data *d, apop_model *p){
 	return total_prob;
 }
 
-static double probit_p(const apop_data *d, apop_model *p){
+static double probit_p(apop_data *d, apop_model *p){
     return exp(probit_log_likelihood(d, p));
 }
 
 /* The derivative of the probit distribution, for use in likelihood
   minimization. You'll probably never need to call this directly.*/
-static void probit_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *p){
+static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
 	//derivative of the above. 
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
@@ -148,7 +148,7 @@ static void probit_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apo
 
 /** Saves some time in calculating both log likelihood and dlog
 likelihood for probit.	
-static void probit_fdf( const gsl_vector *beta, apop_data *d, double *f, gsl_vector *df){
+static void probit_fdf(gsl_vector *beta, apop_data *d, double *f, gsl_vector *df){
 	*f	= probit_log_likelihood(beta, d, NULL);
 	beta_dot_x_is_current	=1;
 	probit_dlog_likelihood(beta, d, df, NULL);

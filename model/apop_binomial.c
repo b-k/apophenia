@@ -20,8 +20,8 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <stdio.h>
 #include <assert.h>
 
-static double binomial_p(const apop_data *d, apop_model *p);
-static double binomial_log_likelihood(const apop_data*, apop_model*);
+static double binomial_p(apop_data *d, apop_model *p);
+static double binomial_log_likelihood(apop_data*, apop_model*);
 
 static void get_hits_and_misses(const apop_data *data, char *method, double *hitcount, double *misscount){
     if (!method || !strcmp(method,"b")|| !strcmp(method,"B")){
@@ -58,13 +58,13 @@ static apop_model * binomial_estimate(apop_data * data,  apop_model *parameters)
     return est;
 }
 
-static double binomial_log_likelihood(const apop_data *d, apop_model *params){
+static double binomial_log_likelihood(apop_data *d, apop_model *params){
     if (!params->parameters)
         apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
     return exp(binomial_p(d, params));
 }
 
-static double binomial_p(const apop_data *d, apop_model *params){
+static double binomial_p(apop_data *d, apop_model *params){
     if (!params->parameters)
         apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
   double	  n       = apop_data_get(params->parameters,0,-1),
@@ -74,7 +74,7 @@ static double binomial_p(const apop_data *d, apop_model *params){
     return gsl_ran_binomial_pdf(hitcount/(hitcount+misscount), p, n);
 }
 
-static double binomial_constraint(const apop_data *data, apop_model *b){
+static double binomial_constraint(apop_data *data, apop_model *b){
     //constraint is 0 < binomial_1 and  0 < binomial_2
   static apop_data *constraint = NULL;
     if (!constraint){

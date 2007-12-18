@@ -145,11 +145,11 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
 	return apop_kernel_density_params_alloc(data, h, *m, set_first_params);
 }
 
-static double apop_kernel_density_log_likelihood(const apop_data *d, apop_model *p){
+static double apop_kernel_density_log_likelihood(apop_data *d, apop_model *p){
     return apop_histogram.log_likelihood(d,p);
 }
 
-static double apop_kernel_density_p(const apop_data *d, apop_model *p){
+static double apop_kernel_density_p(apop_data *d, apop_model *p){
     return apop_histogram.p(d, p);
 }
 
