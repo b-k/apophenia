@@ -841,10 +841,11 @@ int apop_data_to_db(apop_data *set, char *tabname){
 		    if(apop_opts.db_engine == 'm')   apop_query(q);
             else                                apop_query("%s commit;",q);
             ctr = 0;
-		    if(apop_opts.db_engine == 'm')   
+		    /*if(apop_opts.db_engine == 'm')   
                 asprintf(&q,"%s ", q);
-            else                            
-                asprintf(&q,"begin; \n insert into %s values(",tabname);
+            else                            */
+		    if(apop_opts.db_engine != 'm')   
+                asprintf(&q,"begin; \n");
 			}
 	}
     if ( !(apop_opts.db_engine == 'm') && ctr>0) 

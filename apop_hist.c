@@ -7,7 +7,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 
 /*
-
 The characters:
     vectors
     hisograms (PDFs)
@@ -63,8 +62,8 @@ a PMF via random draws from a model, use \ref apop_model_to_pmf.
 The second structure from the GSL incrementally sums up the PMF's bins to
 produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1]
 to a draw from the PMF.  Because it can be used to draw from the PMF,
-the GSL calls this the <tt>gsl_histogram_PMF</tt> structure. That's right:
-the the data in the <tt>gsl_histogram_PMF</tt> structure is a cumulative
+the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right:
+the the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative
 sum---a CMF.
 
 Anyway, here are some functions to deal with these various histograms and such.
@@ -158,9 +157,9 @@ double      pval    = gsl_cdf_chisq_P(diff, bins-1);
     return out;
 }
 
-/** Test the goodness-of-fit between two histograms
+/** Test the goodness-of-fit between two histograms (in \c apop\_model form). I assume that the histograms are aligned.
 
-  \todo Right now, I'm assuming the histograms are aligned---h0->bins == h1->bins. This needs to go away.
+  \todo It'd be nice if this could test histograms where one has the infinibins and the other doesn't.
   \ingroup histograms
 */
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
