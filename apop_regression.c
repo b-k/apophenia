@@ -289,7 +289,7 @@ static void prep_names (apop_model *e){
         if (p->want_cov){
             if (e->data->names){
                 apop_name_stack(e->covariance->names, e->data->names, 'c');
-                apop_name_cross_stack(e->covariance->names, e->data->names, 'c', 'r');
+                apop_name_cross_stack(e->covariance->names, e->data->names, 'r', 'c');
             }
 		    sprintf(e->covariance->names->column[0], "1");
 		    sprintf(e->covariance->names->row[0], "1");

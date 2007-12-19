@@ -17,13 +17,13 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 apop_name * apop_name_alloc(void){
 apop_name	* init_me;
 	init_me	= malloc(sizeof(apop_name));
-	init_me->vecname	= NULL;
-	init_me->colnames	= NULL;
-	init_me->textnames	= NULL;
-	init_me->rownames	= NULL;
-	init_me->colnamect	= 
-	init_me->textnamect	= 
-	init_me->rownamect	= 0;
+	init_me->vector	= NULL;
+	init_me->column	= NULL;
+	init_me->text   = NULL;
+	init_me->row    = NULL;
+	init_me->colct	= 
+	init_me->textct	= 
+	init_me->rowct	= 0;
 	init_me->title[0]   = '\0';
 	return init_me;
 }
@@ -51,33 +51,33 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 	} 
 	if (type == 'v'){
         if (add_me){
-		n->vecname	= realloc(n->vecname,  strlen(add_me) + 1);
-		strcpy(n->vecname, add_me);
+		n->vector	= realloc(n->vector,  strlen(add_me) + 1);
+		strcpy(n->vector, add_me);
 		return 1;
         } else return 0;
 	} 
 	if (type == 'r'){
-		(n->rownamect)++;
-		n->rownames	= realloc(n->rownames, sizeof(char*) * n->rownamect);
-		n->rownames[n->rownamect -1]	= malloc(strlen(add_me) + 1);
-		strcpy(n->rownames[n->rownamect -1], add_me);
-		return n->rownamect;
+		(n->rowct)++;
+		n->row	= realloc(n->row, sizeof(char*) * n->rowct);
+		n->row[n->rowct -1]	= malloc(strlen(add_me) + 1);
+		strcpy(n->row[n->rowct -1], add_me);
+		return n->rowct;
 	} 
 	if (type == 't'){
-		(n->textnamect)++;
-		n->textnames	= realloc(n->textnames, sizeof(char*) * n->textnamect);
-		n->textnames[n->textnamect -1]	= malloc(strlen(add_me) + 1);
-		strcpy(n->textnames[n->textnamect -1], add_me);
-		return n->textnamect;
+		(n->textct)++;
+		n->text	= realloc(n->text, sizeof(char*) * n->textct);
+		n->text[n->textct -1]	= malloc(strlen(add_me) + 1);
+		strcpy(n->text[n->textct -1], add_me);
+		return n->textct;
 	}
 	//else assume (type == 'c'){
         if (type != 'c' && apop_opts.verbose)
             apop_error(2,'c',"You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
-		(n->colnamect)++;
-		n->colnames	= realloc(n->colnames, sizeof(char*) * n->colnamect);
-		n->colnames[n->colnamect -1]	= malloc(strlen(add_me) + 1);
-		strcpy(n->colnames[n->colnamect -1], add_me);
-		return n->colnamect;
+		(n->colct)++;
+		n->column	= realloc(n->column, sizeof(char*) * n->colct);
+		n->column[n->colct -1]	= malloc(strlen(add_me) + 1);
+		strcpy(n->column[n->colct -1], add_me);
+		return n->colct;
 	//} 
 }
 
@@ -87,27 +87,27 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 */
 void  apop_name_print(apop_name * n){
 int		i;
-	if (n->vecname){
+	if (n->vector){
 		printf("\t\t\t");
-			printf("\t%s", n->vecname);
+			printf("\t%s", n->vector);
 		printf("\n");
 	}
-	if (n->colnamect > 0){
+	if (n->colct > 0){
 		printf("\t\t\t");
-		for (i=0; i < n->colnamect; i++)
-			printf("\t%s", n->colnames[i]);
+		for (i=0; i < n->colct; i++)
+			printf("\t%s", n->column[i]);
 		printf("\n");
 	}
-	if (n->textnamect > 0){
+	if (n->textct > 0){
 		printf("\t\t\t");
-		for (i=0; i < n->textnamect; i++)
-			printf("\t%s", n->textnames[i]);
+		for (i=0; i < n->textct; i++)
+			printf("\t%s", n->text[i]);
 		printf("\n");
 	}
-	if (n->rownamect > 0){
+	if (n->rowct > 0){
 		printf("\t\t\t");
-		for (i=0; i < n->rownamect; i++)
-			printf("\t%s", n->rownames[i]);
+		for (i=0; i < n->rowct; i++)
+			printf("\t%s", n->row[i]);
 		printf("\n");
 	}
 }
@@ -116,17 +116,17 @@ int		i;
 \ingroup names 	*/
 void  apop_name_free(apop_name * free_me){
 int		i;
-	for (i=0; i < free_me->colnamect; i++)
-		free(free_me->colnames[i]);
-	for (i=0; i < free_me->textnamect; i++)
-		free(free_me->textnames[i]);
-	for (i=0; i < free_me->rownamect; i++)
-		free(free_me->rownames[i]);
-    if (free_me->vecname);
-        free(free_me->vecname);
-	free(free_me->colnames);
-	free(free_me->textnames);
-	free(free_me->rownames);
+	for (i=0; i < free_me->colct; i++)
+		free(free_me->column[i]);
+	for (i=0; i < free_me->textct; i++)
+		free(free_me->text[i]);
+	for (i=0; i < free_me->rowct; i++)
+		free(free_me->row[i]);
+    if (free_me->vector);
+        free(free_me->vector);
+	free(free_me->column);
+	free(free_me->text);
+	free(free_me->row);
 	free(free_me);
 }
 
@@ -145,22 +145,22 @@ int     i;
     if (!n2)
         return;
     if (type == 'v'){
-        apop_name_add(n1, n2->vecname, 'v');
+        apop_name_add(n1, n2->vector, 'v');
         return;
     }
     if (type == 'r'){
-        for (i=0; i< n2->rownamect; i++)
-            apop_name_add(n1, n2->rownames[i], 'r');
+        for (i=0; i< n2->rowct; i++)
+            apop_name_add(n1, n2->row[i], 'r');
         return;
     }
     if (type == 't'){
-        for (i=0; i< n2->textnamect; i++)
-            apop_name_add(n1, n2->textnames[i], 't');
+        for (i=0; i< n2->textct; i++)
+            apop_name_add(n1, n2->text[i], 't');
         return;
     }
     if (type == 'c'){
-        for (i=0; i< n2->colnamect; i++)
-            apop_name_add(n1, n2->colnames[i], 'c');
+        for (i=0; i< n2->colct; i++)
+            apop_name_add(n1, n2->column[i], 'c');
         return;
     }
     if (apop_opts.verbose)
@@ -175,25 +175,25 @@ not be the same type. If they are, just use \ref apop_name_stack.
 Notice that if the first list in NULL, then this is a copy function.
 
 \param  n1      The first set of names
-\param  n2      The second set of names, which will be appended after the first.
+\param  nadd      The second set of names, which will be appended after the first.
 \param type1     Either 'c', 'r', or 't' stating whether you are merging from the columns, rows, or text. [Default: cols]
-\param type2     Either 'c', 'r', or 't' stating whether you are merging to the columns, rows, or text. [Default: cols]
+\param typeadd     Either 'c', 'r', or 't' stating whether you are merging to the columns, rows, or text. [Default: cols]
 \ingroup names */
-void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type2){
+void  apop_name_cross_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
 int     i;
-    if (type1 == 'r'){
-        for (i=0; i< n2->rownamect; i++)
-            apop_name_add(n1, n2->rownames[i], type2);
+    if (typeadd == 'r'){
+        for (i=0; i< nadd->rowct; i++)
+            apop_name_add(n1, nadd->row[i], type1);
         }
-    else if (type1 == 't'){
-        for (i=0; i< n2->textnamect; i++)
-            apop_name_add(n1, n2->textnames[i], type2);
+    else if (typeadd == 't'){
+        for (i=0; i< nadd->textct; i++)
+            apop_name_add(n1, nadd->text[i], type1);
         }
     else {
-        if (type1 != 'c' && apop_opts.verbose)
-            printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n",type1);
-        for (i=0; i< n2->colnamect; i++)
-            apop_name_add(n1, n2->colnames[i], type2);
+        if (typeadd != 'c' && apop_opts.verbose)
+            printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n", typeadd);
+        for (i=0; i< nadd->colct; i++)
+            apop_name_add(n1, nadd->column[i], type1);
         }
 }
 
@@ -244,24 +244,24 @@ apop_name *out = apop_name_alloc();
 
 /** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down
-\param drop  a vector with n->colnamect elements, mostly zero, with a one marking those columns to be removed.
+\param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
 \ingroup names
  */
 void apop_name_rm_columns(apop_name *n, int *drop){
 apop_name   *newname    = apop_name_alloc();
-int         i, max      = n->colnamect;
+int         i, max      = n->colct;
     for (i=0; i< max; i++){
         if (drop[i]==0)
-            apop_name_add(newname, n->colnames[i],'c');
+            apop_name_add(newname, n->column[i],'c');
         else
-            n->colnamect    --;
+            n->colct    --;
     }
-    free(n->colnames);
-    n->colnames = newname->colnames;
-    //we need to free the newname struct, but leave the colnames intact.
+    free(n->column);
+    n->column = newname->column;
+    //we need to free the newname struct, but leave the column intact.
     //A one-byte memory leak.
-    newname->colnames   = malloc(1);
-    newname->colnamect  = 0;
+    newname->column   = malloc(1);
+    newname->colct  = 0;
     apop_name_free(newname);
 }
 
@@ -284,18 +284,18 @@ size_t  apop_name_find(apop_name *n, char *in, char type){
   char      **list;
   int       i, listct;
     if (type == 'r'){
-        list    = n->rownames;
-        listct  = n->rownamect;
+        list    = n->row;
+        listct  = n->rowct;
     }
     else if (type == 't'){
-        list    = n->textnames;
-        listct  = n->textnamect;
+        list    = n->text;
+        listct  = n->textct;
     }
     else { // default: (type == 'c')
-        list    = n->colnames;
-        listct  = n->colnamect;
+        list    = n->column;
+        listct  = n->colct;
     }
-    regcomp(&re, in, REG_ICASE);
+    regcomp(&re, in, REG_EXTENDED + REG_ICASE);
     for (i = 0; i < listct; i++){
         if (!regexec(&re, list[i], 0, NULL, 0)){
             regfree(&re);

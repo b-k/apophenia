@@ -12,10 +12,11 @@ static void write_double(const double *draw, apop_data *d){
     for (i=0; i< v->size; i++)
         gsl_vector_set(v, i, draw[i]);
 
-    apop_data *d2   = apop_data_unpack(v, (d->vector ? d->vector->size : 0) , (d->matrix ? d->matrix->size1: 0) , (d->matrix ?d->matrix->size2 : 0));
+    /*apop_data *d2   = apop_data_unpack(v, (d->vector ? d->vector->size : 0) , (d->matrix ? d->matrix->size1: 0) , (d->matrix ?d->matrix->size2 : 0));
     apop_data_memcpy(d,d2);
     apop_data_free(d2);
-    gsl_vector_free(v);
+    gsl_vector_free(v);*/
+    apop_data_unpack(v, d);
 }
 
 static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model likelihood){
@@ -28,9 +29,16 @@ static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model
     }
     if (!strcmp(prior.name, "Beta distribution") && !strcmp(likelihood.name, "Binomial distribution")){
         outp = apop_model_copy(prior);
-        double  y   = apop_matrix_sum(data->matrix);
-        apop_vector_increment(outp->parameters->vector, 0, y);
-        apop_vector_increment(outp->parameters->vector, 1, data->matrix->size1*data->matrix->size2 - y);
+        if (!data && likelihood.parameters){
+            double  n   = likelihood.parameters->vector->data[0];
+            double  p   = likelihood.parameters->vector->data[1];
+            apop_vector_increment(outp->parameters->vector, 0, n*p);
+            apop_vector_increment(outp->parameters->vector, 1, n*(1-p));
+        } else {
+            double  y   = apop_matrix_sum(data->matrix);
+            apop_vector_increment(outp->parameters->vector, 0, y);
+            apop_vector_increment(outp->parameters->vector, 1, data->matrix->size1*data->matrix->size2 - y);
+        }
         return outp;
     }
     if (!strcmp(prior.name, "Beta distribution") && !strcmp(likelihood.name, "Bernoulli distribution")){
@@ -43,6 +51,32 @@ static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model
                     sum++;
         apop_vector_increment(outp->parameters->vector, 0, sum);
         apop_vector_increment(outp->parameters->vector, 1, n - sum);
+        return outp;
+    }
+
+    /*
+output \f$(\mu, \sigma) = (\frac{\mu_0}{\sigma_0^2} + \frac{\sum_{i=1}^n x_i}{\sigma^2})/(\frac{1}{\sigma_0^2} + \frac{n}{\sigma^2}), (\frac{1}{\sigma_0^2} + \frac{n}{\sigma^2})^{-1}\f$
+
+That is, the output is weighted by the number of data points for the
+likelihood. If you give me a parametrized normal, with no data, then I'll take the weight to be \f$n=1\f$. 
+
+*/
+    if (!strcmp(prior.name, "Normal distribution") && !strcmp(likelihood.name, "Normal distribution")){
+        double mu_like, var_like;
+        long int n;
+        outp = apop_model_copy(prior);
+        long double  mu_pri    = prior.parameters->vector->data[0];
+        long double  var_pri = gsl_pow_2(prior.parameters->vector->data[1]);
+        if (!data && likelihood.parameters){
+            mu_like  = likelihood.parameters->vector->data[0];
+            var_like = gsl_pow_2(likelihood.parameters->vector->data[1]);
+            n        = 1;
+        } else {
+            n = data->matrix->size1 * data->matrix->size2;
+            apop_matrix_mean_and_var(data->matrix, &mu_like, &var_like);
+        }
+        gsl_vector_set(outp->parameters->vector, 0, (mu_pri/var_pri + n*mu_like/var_like)/(1/var_pri + n/var_like));
+        gsl_vector_set(outp->parameters->vector, 1, pow((1/var_pri + n/var_like), -.5));
         return outp;
     }
     return NULL;
@@ -77,14 +111,13 @@ apop_model * apop_update(apop_data *data, apop_model prior, apop_model likelihoo
                         apop_data *starting_pt, gsl_rng *r, int periods, double burnin, int histosegments){
   apop_model *maybe_out = check_conjugacy(data, prior, likelihood);
     if (maybe_out) return maybe_out;
-  double        ratio;
+  double        ratio, cp_ll = GSL_NEGINF;
   int           i;
   int           vs  = likelihood.vbase >= 0 ? likelihood.vbase : data->matrix->size2;
   int           ms1 = likelihood.m1base >= 0 ? likelihood.m1base : data->matrix->size2;
   int           ms2 = likelihood.m2base >= 0 ? likelihood.m2base : data->matrix->size2;
   double        *draw               = malloc(sizeof(double)* (vs+ms1*ms2));
-  apop_data     *candidate_param    = apop_data_alloc(vs , ms1 , ms2),
-                *current_param      = apop_data_alloc(vs , ms1 , ms2);
+  apop_data     *current_param      = apop_data_alloc(vs , ms1 , ms2);
   apop_data     *out                = apop_data_alloc(0, periods*(1-burnin), vs+ms1*ms2);
     if (starting_pt)
         apop_data_memcpy(current_param, starting_pt);
@@ -92,17 +125,20 @@ apop_model * apop_update(apop_data *data, apop_model prior, apop_model likelihoo
         if (current_param->vector) gsl_vector_set_all(current_param->vector, 1);
         if (current_param->matrix) gsl_matrix_set_all(current_param->matrix, 1);
     }
+    if (!likelihood.parameters)
+        likelihood.parameters = apop_data_alloc(vs, ms1, ms2);
     for (i=0; i< periods; i++){     //main loop
         prior.draw(draw, r, &prior);
-        write_double(draw, candidate_param);
-        ratio = likelihood.log_likelihood(candidate_param, data,&likelihood)
-                    -likelihood.log_likelihood(current_param, data, &likelihood);
+        write_double(draw, likelihood.parameters);
+        ratio = likelihood.log_likelihood(data,&likelihood) - cp_ll;
         if (gsl_isnan(ratio)){
-            apop_error(0, 'c',"Trouble evaluating the likelihood function at vector beginning with %g or %g. Maybe offer a new starting point.\n", current_param->vector->data[0], candidate_param->vector->data[0]);
+            apop_error(0, 'c',"Trouble evaluating the likelihood function at vector beginning with %g or %g. Maybe offer a new starting point.\n", current_param->vector->data[0], likelihood.parameters->vector->data[0]);
             return NULL;
         }
-        if (ratio >=0 || log(gsl_rng_uniform(r)) < ratio)
-            apop_data_memcpy(current_param,candidate_param);
+        if (ratio >=0 || log(gsl_rng_uniform(r)) < ratio){
+            apop_data_memcpy(current_param,likelihood.parameters);
+            cp_ll = likelihood.log_likelihood(data,&likelihood);
+        }
         if (i >= periods * burnin){
             APOP_ROW(out, i-(periods *burnin), v)
             gsl_vector *vv = apop_data_pack(current_param);
@@ -110,7 +146,7 @@ apop_model * apop_update(apop_data *data, apop_model prior, apop_model likelihoo
             gsl_vector_free(vv);
         }
     }
-    apop_model *outp   = apop_histogram_params_alloc(out, histosegments, NULL);
+    apop_model *outp   = apop_histogram_params_alloc(out, histosegments);
     apop_data_free(out);
     return outp;
 }

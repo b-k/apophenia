@@ -132,12 +132,8 @@ static int dnegshell (const gsl_vector *, void * , gsl_vector * g); //below.
 
 static double one_d(double b, void *in){
   infostruct    *i   =in;
-  int           vsize           = (i->model->parameters->vector? i->model->parameters->vector->size:0),
-                msize1          = (i->model->parameters->matrix? i->model->parameters->matrix->size1:0),
-                msize2          = (i->model->parameters->matrix? i->model->parameters->matrix->size2:0);
     gsl_vector_set(i->gp->beta, i->gp->dimension, b);
-    apop_data_free(i->model->parameters);
-    i->model->parameters    =  apop_data_unpack(i->gp->beta, vsize, msize1, msize2);
+    apop_data_unpack(i->gp->beta, i->model->parameters);
 	double out= (*(i->f))(i->gp->d, i->model);
     return out;
 }
@@ -258,14 +254,10 @@ static double negshell (const gsl_vector *beta, void * in){
   double		penalty         = 0,
                 out             = 0; 
   double 	(*f)(apop_data *, apop_model *);
-  int           vsize           = (i->model->parameters->vector? i->model->parameters->vector->size:0),
-                msize1          = (i->model->parameters->matrix? i->model->parameters->matrix->size1:0),
-                msize2          = (i->model->parameters->matrix? i->model->parameters->matrix->size2:0);
     f   = i->model->log_likelihood? i->model->log_likelihood : i->model->p;
     if (!f)
         apop_error(0, 's', "The model you sent to the MLE function has neither log_likelihood element nor p element.\n");
-    apop_data_free(i->model->parameters);
-    i->model->parameters  = apop_data_unpack(beta, vsize, msize1, msize2);
+    apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
     out = penalty - f(i->data, i->model); //negative llikelihood
@@ -290,11 +282,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
 */
   infostruct    *i              = in;
   apop_mle_settings *mp       = i->model->method_settings;
-  int           vsize           = (i->model->parameters->vector? i->model->parameters->vector->size:0),
-                msize1          = (i->model->parameters->matrix? i->model->parameters->matrix->size1:0),
-                msize2          = (i->model->parameters->matrix? i->model->parameters->matrix->size2:0);
-    apop_data_free(i->model->parameters);
-    i->model->parameters  = apop_data_unpack(beta, vsize, msize1, msize2);
+    apop_data_unpack(beta, i->model->parameters);
     if(i->model->constraint)
         i->model->constraint(i->data, i->model);
     if (mp->use_score && i->model->score)
@@ -586,7 +574,8 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 		apop_error(1, 'c', "Optimization reached maximum number of iterations.");
     if (status == GSL_SUCCESS) 
         est->status	= 1;
-    est->parameters = apop_data_unpack(s->x, vsize, msize1, msize2);
+    //negshell unpacks for us.
+    //est->parameters = apop_data_unpack(s->x, vsize, msize1, msize2);
 	gsl_multimin_fminimizer_free(s);
 	if (mp->want_cov) 
 		apop_numerical_covariance_matrix(est, data);
@@ -788,10 +777,7 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
   infostruct  *i          = in;
   int         sign, j;
   double      amt, scale;
-  int           vsize       =(i->model->parameters->vector ? i->model->parameters->vector->size :0),
-                msize1      =(i->model->parameters->matrix ? i->model->parameters->matrix->size1 :0),
-                msize2      =(i->model->parameters->matrix ? i->model->parameters->matrix->size2:0);
-    double cutpoints[i->beta->size+1];
+  double cutpoints[i->beta->size+1];
     cutpoints[0]                = 0;
     cutpoints[i->beta->size]    = 1;
     for (j=1; j< i->beta->size; j++)
@@ -804,8 +790,7 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
         amt     = cutpoints[j+1]- cutpoints[j];
         apop_vector_increment(i->beta, j,  amt * sign * scale * step_size); 
     }
-    apop_data_free(i->model->parameters);
-    i->model->parameters      = apop_data_unpack(i->beta, vsize, msize1, msize2);
+    apop_data_unpack(i->beta, i->model->parameters);
     if (i->model->constraint && i->model->constraint(i->data, i->model)){
         gsl_vector *cv  = apop_data_pack(i->model->parameters);
         gsl_vector_memcpy(i->beta, cv);
@@ -916,7 +901,7 @@ apop_model * apop_annealing(infostruct *i){
           simparams);        //   gsl_siman_params_t params
     }
     signal(SIGINT, NULL);
-    i->model->parameters   = apop_data_unpack(i->beta, vsize, msize1, msize2); 
+    apop_data_unpack(i->beta, i->model->parameters); 
     produce_covariance_matrix(i->model, i);
     apop_estimate_parameter_t_tests(i->model);
     return i->model;

@@ -494,7 +494,8 @@ void apop_pack_test(gsl_rng *r){
                 for (k=0; k< m2; k++)
                     gsl_matrix_set(d->matrix, j, k, gsl_rng_uniform(r));
         mid     = apop_data_pack(d);
-        dout    = apop_data_unpack(mid, v, m1, m2);
+        dout    = apop_data_alloc(v, m1, m2);
+        apop_data_unpack(mid, dout);
         if (v)
             for (j=0; j< v; j++)
                 assert(dout->vector->data[j] == d->vector->data[j]);

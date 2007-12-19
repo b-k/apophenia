@@ -908,9 +908,33 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 
 
 
-
-
 /** This is the complement to \c apop_data_pack. It converts the \c gsl_vector produced by that function back
+    to an \c apop_data set with the given dimensions. It overwrites the data in the vector and matrix elements (and that's it).
+
+ \param in a \c gsl_vector of the form produced by \c apop_data_pack.
+\param d   that data set to be filled. Must be allocated to the correct size.
+\ingroup conversions
+*/
+void apop_data_unpack(const gsl_vector *in, apop_data *d){
+  int           i, offset   = 0;
+  gsl_vector    vin, vout;
+    if(d->vector){
+        vin = gsl_vector_subvector((gsl_vector *)in, 0, d->vector->size).vector;
+        gsl_vector_memcpy(d->vector, &vin);
+        offset  += d->vector->size;
+    }
+    if(d->matrix)
+        for (i=0; i< d->matrix->size1; i++){
+            vin     = gsl_vector_subvector((gsl_vector *)in, offset, d->matrix->size2).vector;
+            vout    = gsl_matrix_row(d->matrix, i).vector;
+            gsl_vector_memcpy(&vout, &vin);
+            offset  += d->matrix->size2;
+        }
+}
+
+
+/*
+** This is the complement to \c apop_data_pack. It converts the \c gsl_vector produced by that function back
     to an \c apop_data set with the given dimensions. 
 
  \param in a \c gsl_vector of the form produced by \c apop_data_pack.
@@ -919,7 +943,6 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 \param m_size2   columns of the matrix element of the output data set. 
  \return An \c apop_data set.
 \ingroup conversions
- */
 apop_data * apop_data_unpack(const gsl_vector *in, size_t v_size, size_t m_size1, size_t m_size2){
   apop_data     *out        = apop_data_alloc(v_size, m_size1, m_size2);
   int           i, offset   = 0;
@@ -938,6 +961,7 @@ apop_data * apop_data_unpack(const gsl_vector *in, size_t v_size, size_t m_size1
         }
     return out;
 }
+ */
 
 /** Sometimes, you need to turn an \c apop_data set into a column of
  numbers. E.g., certain GSL subsystems require such things. Thus, this

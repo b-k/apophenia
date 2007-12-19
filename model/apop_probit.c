@@ -62,6 +62,7 @@ static void probit_prep(apop_data *d, apop_model *m){
     m->prep = NULL;
     apop_model_prep(d, m);
     m->prep = mpt;
+    apop_name_cross_stack(m->parameters->names, d->names, 'r', 'c');
 }
 
 static apop_model * probit_estimate(apop_data * data,  apop_model *parameters){

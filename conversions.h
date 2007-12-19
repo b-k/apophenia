@@ -67,7 +67,7 @@ int apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name,
 						char *col_col_name, char *data_col_name);
 
 gsl_vector * apop_data_pack(const apop_data *in);
-apop_data * apop_data_unpack(const gsl_vector *in, size_t v_size, size_t m_size1, size_t m_size2);
+void apop_data_unpack(const gsl_vector *in, apop_data *d);
 
 
 char * apop_strip_dots(char *in, char strip_type);

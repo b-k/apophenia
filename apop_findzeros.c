@@ -50,7 +50,8 @@ static apop_model * find_roots (infostruct p) {
      } while (status == GSL_CONTINUE && iter < 1000);
      if(GSL_SUCCESS) dist->status = 0;
   printf ("status = %s\n", gsl_strerror (status));
-  dist->parameters   = apop_data_unpack(s->x, vsize, msize1, msize2);
+  //dist->parameters   = apop_data_unpack(s->x, vsize, msize1, msize2);
+  apop_data_unpack(s->x, dist->parameters);
   gsl_multiroot_fsolver_free (s);
   gsl_vector_free (x);
   return dist;
