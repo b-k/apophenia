@@ -624,96 +624,157 @@ static int strcmpwrap(const void *a, const void *b){
     const ccp *bb = b;
     return strcmp(*aa, *bb);}
 
-/** A utility to make a matrix of dummy variables. You give me a single
-vector that lists the category number for each item, and I'll return
-a gsl_matrix with a single one in each row in the column specified.
 
-After running this, you will almost certainly want to join together the output here with your main data set. E.g.,:
-\code
-apop_data *dummies  = apop_produce_dummies(main_regression_vars, 8, 't', 0);
-apop_data_stack(main_regression_vars, dummies, 'c');
-\endcode
 
-\param  d The data set with the column to be dummified
-\param col The column number to be transformed
-\param type 'd'==data column (-1==vector), 't'==text column.
-\param  keep_first  if zero, return 
-    a matrix where each row has a one in the (column specified MINUS
-    ONE). That is, the zeroth category is dropped, the first category
-    has an entry in column zero, et cetera. If you don't know why this
-    is useful, then this is what you need. If you know what you're doing
-    and need something special, set this to one and the first category won't be dropped.
-*/
-apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first){
+/* This is a utility used by the dummies and factors functions, and is
+  basically running "select distinct * from datacolumn", but without 
+  the aid of the database.  
+ */
+static void  apop_get_unique_elements(const apop_data *d, int col, char type, 
+                        const gsl_vector *in, size_t *elmt_ctr, double **elmts, char ***telmts){
+  int    i;
+  char   **tval;
+  double val;
+  size_t prior_elmt_ctr  = 107;
+  int    s = type == 'd' ? in->size : d->textsize[0];
+    if (type == 'd')
+        for (i=0; i< s; i++){
+            if (prior_elmt_ctr != *elmt_ctr)
+                *elmts   = realloc(*elmts, sizeof(double)*(*elmt_ctr+1));
+            prior_elmt_ctr  = *elmt_ctr;
+            val     =  gsl_vector_get(in, i);
+            lsearch (&val, *elmts, elmt_ctr, sizeof(double), compare_doubles);
+            qsort(*elmts, *elmt_ctr, sizeof(double), compare_doubles);
+        }
+    else 
+        for (i=0; i< s; i++){
+            if (prior_elmt_ctr != *elmt_ctr)
+                *telmts   = realloc(*telmts, sizeof(char**)*(*elmt_ctr+1));
+            prior_elmt_ctr  = *elmt_ctr;
+            tval    =  &(d->text[i][col]);
+            lsearch (tval, *telmts, elmt_ctr, sizeof(char**), strcmpwrap);
+            qsort(*telmts, *elmt_ctr, sizeof(char**), strcmpwrap);
+        }
+}
+
+/* Producing dummies consists of finding the index of element i, for all i, then
+ * setting (i, index) to one.
+ * Producing factors consists of finding the index and then setting (i, datacol) to index.
+ * Otherwise the work is basically identical.
+ */
+apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_first, 
+                                                int datacol, char dummyfactor){
   size_t      i, index,
-              prior_elmt_ctr  = 107,
               elmt_ctr        = 0;
   apop_data   *out; 
   double      *elmts          = malloc(sizeof(double)),
               val;
-  char        n[1000], **tval,
+  char        n[1000],
               **telmts        = malloc(sizeof(char*));
   gsl_vector  *in             = NULL;
-    if (type == 'd'){
-        if ((col == -1) && !d->vector)
-            apop_error(0, 's', "%s: You asked for the vector element (col==-1) but the data's vector element is NULL.\n", __func__);
-        if (col >=0 && col >= d->matrix->size2)
-            apop_error(0, 's', "%s: You asked for the matrix element %i but the data's matrix element has only %i columns.\n", 
-                    __func__, col, d->matrix->size2);
+  int         s = type == 'd' ? in->size : d->textsize[0];
+
         APOP_COL(d, col, in_t);
         in  = in_t;
-    } else
-        if (col >= d->textsize[1])
-            apop_error(0, 's', "%s: You asked for the text element %i but the data's text element has only %i elements.\n", 
-                    __func__, col, d->textsize[1]);
     //first, create an ordered list of unique elements.
-    //Note to the reader: this may or may not be more efficient on the db side.
-    int s = type == 'd' ? in->size : d->textsize[0];
-    if (type == 'd')
-        for (i=0; i< s; i++){
-            if (prior_elmt_ctr != elmt_ctr)
-                elmts   = realloc(elmts, sizeof(double)*(elmt_ctr+1));
-            prior_elmt_ctr  = elmt_ctr;
-            val     =  gsl_vector_get(in, i);
-            lsearch (&val, elmts, &elmt_ctr, sizeof(double), compare_doubles);
-            qsort(elmts, elmt_ctr, sizeof(double), compare_doubles);
-        }
-    else 
-        for (i=0; i< s; i++){
-            if (prior_elmt_ctr != elmt_ctr)
-                telmts   = realloc(telmts, sizeof(char**)*(elmt_ctr+1));
-            prior_elmt_ctr  = elmt_ctr;
-            tval    =  &(d->text[i][col]);
-            lsearch (tval, telmts, &elmt_ctr, sizeof(char**), strcmpwrap);
-            qsort(telmts, elmt_ctr, sizeof(char**), strcmpwrap);
-        }
+    apop_get_unique_elements(d, col, type, in, &elmt_ctr, &elmts, &telmts);
 
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
     //the dummy matrix to one.
-    if (keep_first)     out  = apop_data_calloc(0, s, elmt_ctr);
-    else                out  = apop_data_calloc(0, s, elmt_ctr-1);
+    if (dummyfactor == 'd'){
+        if (keep_first)     out  = apop_data_calloc(0, s, elmt_ctr);
+        else                out  = apop_data_calloc(0, s, elmt_ctr-1);
+    } else
+        out = d;
     for (i=0; i< s; i++){
         if (type == 'd'){
             val     = gsl_vector_get(in, i);
             index   = ((size_t)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (long int)elmts)/sizeof(double);
         } else 
             index   = ((size_t)bsearch(&(d->text[i][col]), telmts, elmt_ctr, sizeof(char**), strcmpwrap) - (size_t)telmts)/sizeof(char**);
-        if (keep_first)
-            gsl_matrix_set(out->matrix, i, index,1); 
-        else if (index>0)
-            gsl_matrix_set(out->matrix, i, index-1, 1); 
-        //else don't keep first, and index==0; throw it out.
+        if (dummyfactor == 'd'){
+            if (keep_first)
+                gsl_matrix_set(out->matrix, i, index,1); 
+            else if (index>0)
+                gsl_matrix_set(out->matrix, i, index-1, 1); 
+           //else don't keep first, and index==0; throw it out. 
+        } else
+            apop_data_set(out, i, datacol, index); 
+
     }
     //Add names:
-    for (i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
-        if (type =='d')
-            sprintf(n,"dummy %g", elmts[i]);
-        else
-            sprintf(n, telmts[i]);
-        apop_name_add(out->names, n, 'c');
-    }
+    if (dummyfactor == 'd')
+        for (i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
+            if (type =='d')
+                sprintf(n,"dummy %g", elmts[i]);
+            else
+                sprintf(n, telmts[i]);
+            apop_name_add(out->names, n, 'c');
+        }
     return out;
+
+}
+
+/** A utility to make a matrix of dummy variables. You give me a single
+vector that lists the category number for each item, and I'll return
+a gsl_matrix with a single one in each row in the column specified.
+
+After running this, you will almost certainly want to join together the output here with your main data set. E.g.,:
+\code
+apop_data *dummies  = apop_data_to_dummies(main_regression_vars, 8, 't', 0);
+apop_data_stack(main_regression_vars, dummies, 'c');
+\endcode
+
+\param  d The data set with the column to be dummified
+\param col The column number to be transformed
+\param type 'd'==data column (-1==vector), 't'==text column.
+\param  keep_first  if zero, return a matrix where each row has a one in the (column specified MINUS
+    ONE). That is, the zeroth category is dropped, the first category
+    has an entry in column zero, et cetera. If you don't know why this
+    is useful, then this is what you need. If you know what you're doing
+    and need something special, set this to one and the first category won't be dropped.
+*/
+apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first){
+    if (type == 'd'){
+        if ((col == -1) && !d->vector)
+            apop_error(0, 's', "%s: You asked for the vector element (col==-1) but the data's vector element is NULL.\n", __func__);
+        if (col >=0 && col >= d->matrix->size2)
+            apop_error(0, 's', "%s: You asked for the matrix element %i but the data's matrix element has only %i columns.\n", 
+                    __func__, col, d->matrix->size2);
+    } else
+        if (col >= d->textsize[1])
+            apop_error(0, 's', "%s: You asked for the text element %i but the data's text element has only %i elements.\n", 
+                    __func__, col, d->textsize[1]);
+    return dummies_and_factors_core(d, col, type, keep_first, 0, 'd');
+}
+
+
+/** Convert a column of text in the text portion of an \c apop_data set
+  into a column of numeric elements, which you can use for a multinomial probit, for example.
+
+\param d The data set to be modified in place.
+\param datacol The column in the data set where the numeric factors will be written (-1 means the vector)
+\param textcol The column in the text that will be converted.
+
+For example:
+\code
+apop_data *d  = apop_query_to_mixed_data("mmt", "select 1, year, color from data");
+apop_data_text_to_factors(d, 0, 0);
+\endcode
+Notice that the query pulled a column of ones for the sake of saving room for the factors.
+
+*/
+void apop_data_text_to_factors(apop_data *d, size_t textcol, int datacol){
+    if ((datacol == -1) && !d->vector)
+        apop_error(0, 's', "%s: You asked for the vector element (col==-1) but the data's vector element is NULL.\n", __func__);
+    if (datacol >=0 && datacol >= d->matrix->size2)
+        apop_error(0, 's', "%s: You asked for the matrix element %i but the data's matrix element has only %i columns.\n", 
+                __func__, datacol, d->matrix->size2);
+    if (textcol >= d->textsize[1])
+        apop_error(0, 's', "%s: You asked for the text element %i but the data's text element has only %i elements.\n", __func__, datacol, d->textsize[1]);
+
+    dummies_and_factors_core(d, textcol, 't', 1, datacol, 'f');
 }
 
 /** A fixed-effects regression.

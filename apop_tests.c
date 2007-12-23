@@ -24,7 +24,7 @@ static double one_chi_sq(apop_data *d, int row, int col, int n){
  \param d The input data, which is a crosstab of various elements. They don't have to sum to one.
  \ingroup asst_tests
  */
-apop_data * apop_test_ANOVA(apop_data *d){
+apop_data * apop_test_ANOVA_independence(apop_data *d){
   double total = 0;
   size_t row, col;
   if (!d || !d->matrix) {

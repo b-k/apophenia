@@ -2064,6 +2064,7 @@ L30:
 /** Convert from an \ref apop_data set to a table of integers.
 
 Not too necessary, but I needed it for the Fisher exact test.
+\ingroup conversions
 */
 int *apop_data_to_int_array(apop_data *intab){
 int i,j,

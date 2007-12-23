@@ -120,7 +120,7 @@ static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct *
 
 //The model to send to the optimization
 
-static double ll(const apop_data *d, apop_model * ep){
+static double ll(apop_data *d, apop_model * ep){
   apop_ml_imputation_struct *m  = ep->model_settings;
     unpack(ep->parameters, d, m);
     return apop_multivariate_normal.log_likelihood(d, m->local_mvn);

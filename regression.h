@@ -41,6 +41,7 @@ apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
 
 apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first);
+void apop_data_text_to_factors(apop_data *d, size_t textcol, int datacol);
 
 double apop_two_tailify(double in);
 //My convenience fn to turn the results from a symmetric one-tailed table lookup

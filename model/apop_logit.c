@@ -19,6 +19,27 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <stdio.h>
 #include <assert.h>
 
+
+//So blatantly cut and pasted from the probit that I didn't even bother
+//to change the name.
+static void probit_prep(apop_data *d, apop_model *m){
+    if (!d->vector){
+        APOP_COL(d, 0, independent);
+        d->vector = apop_vector_copy(independent);
+        gsl_vector_set_all(independent, 1);
+        if (d->names->colct > 0) {		
+            apop_name_add(d->names, d->names->column[0], 'v');
+            sprintf(d->names->column[0], "1");
+        }
+    }
+    void *mpt = m->prep; //and use the defaults.
+    m->prep = NULL;
+    apop_model_prep(d, m);
+    m->prep = mpt;
+    apop_name_cross_stack(m->parameters->names, d->names, 'r', 'c');
+}
+
+
 static void modify_in_data(apop_data *d){
     if (!d->vector){
         APOP_COL(d, 0, independent);
@@ -91,5 +112,5 @@ static void logit_fdf(gsl_vector *beta, apop_data *d, double *f, gsl_vector *df,
 \ingroup models
 */
 apop_model apop_logit = {"Logit",-1,0,0,  
-    .estimate = logit_estimate, .p = logit_p, .log_likelihood = logit_log_likelihood};
+    .estimate = logit_estimate, .p = logit_p, .log_likelihood = logit_log_likelihood, .prep=probit_prep};
     //.score = logit_dlog_likelihood};

@@ -495,57 +495,6 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
 }
 
 
-/** This function will print a string to another string, allocating the
-appropriate amount of space along the way.
- 
-That is, it will (1) reallocate base to exactly the needed length,
-and then (2) write addme. 
-
-\param base     The pointer to be written to. May be NULL. If base is
-automatically allocated (i.e., you declared it with char base[]), then
-this will crash.
-\param addme    A string.
-\return a pointer to base. 
-
-\ingroup convenience_fns
-*/
-char *apop_strcpy(char **base, char *addme){
-  int     addlen  = (addme) ? strlen(addme): 0;
-    *base    = realloc(*base, addlen+1);
-    if (!*base)
-        printf("Ran out of memory in apop_strcpy. Returning NULL.\n");
-    strcpy(*base, addme);
-    return *base;
-}
-
-/** In the proud tradition of every library providing its own haphazard string handling functions, this function will safely append one string on to another.
- 
-That is, it will (1) reallocate base to exactly the needed length,
-and then (2) append addme. 
-
-\param base     The pointer to be extended. May be NULL. If base is
-automatically allocated (i.e., you declared it with char base[]), then
-this will crash.
-\param addme    A string.
-\return a pointer to base. 
-
-\ingroup convenience_fns
-*/
-char *apop_strcat(char **base, char *addme){
-    if (!*base){
-        *base    = malloc(sizeof(char));
-        (*base)[0] = '\0';
-    }
-  int   baselen = strlen(*base),
-        addlen  = (addme) ? strlen(addme): 0;
-    *base    = realloc(*base, baselen+addlen+1);
-    if (!*base)
-        printf("Ran out of memory in apop_strcat. Returning NULL.\n");
-    strcat(*base, addme);
-    return *base;
-}
-
-
 /** See \ref apop_db_to_crosstab for the storyline; this is the complement.
  \ingroup db
  */
@@ -705,7 +654,7 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
     if (has_col_names && field_names == NULL){
         use_names_in_file++;
         if (!has_col_names) //then you have a data line, which you should save
-            apop_strcpy(&add_this_line, instr);
+            asprintf(&add_this_line, instr);
         fn	            = malloc(ct * sizeof(char*));
         last_match      = 0;
         length_of_string= strlen(instr);
@@ -714,7 +663,7 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
             stripme	    = strip(outstr);
             stripped    = apop_strip_dots(stripme,'d');
             fn[i]	    = NULL;
-            apop_strcpy(&fn[i], stripped);
+            asprintf(&fn[i], stripped);
             free(stripme);
             free(stripped);
             i++;
@@ -723,7 +672,7 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
         if (field_names)
             fn	= field_names;
         else{
-            apop_strcpy(&add_this_line, instr); //save this line for later.
+            asprintf(&add_this_line, instr); //save this line for later.
             fn	= malloc(ct * sizeof(char*));
             for (i =0; i < ct; i++){
                 fn[i]	= malloc(1000);
@@ -737,17 +686,16 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
 static void tab_create_mysql(char *tabname, int ct, int has_row_names){
   char  *q = NULL;
   int   i;
-    apop_strcpy(&q, "CREATE TABLE ");
-    apop_strcat(&q, tabname);
+    asprintf(&q, "CREATE TABLE %s", tabname);
     for (i=0; i<ct; i++){
         if (i==0) 	{
             if (has_row_names)
-                apop_strcat(&q, " (row_names varchar(100), ");
+                asprintf(&q, "%s (row_names varchar(100), ", q);
             else
-                apop_strcat(&q, " (");
-        } else		apop_strcat(&q, " varchar(100) , ");
-        apop_strcat(&q, " ");
-        apop_strcat(&q, fn[i]);
+                asprintf(&q, "%s (", q);
+        } else		asprintf(&q, "%s varchar(100) , ", q);
+        asprintf(&q, "%s ", q);
+        asprintf(&q, "%s%s", q, fn[i]);
     }
     asprintf(&q, "%s varchar(100) );", q);
     apop_query(q);
@@ -765,17 +713,16 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
 static void tab_create(char *tabname, int ct, int has_row_names){
   char  *q = NULL;
   int   i;
-    apop_strcpy(&q, "CREATE TABLE ");
-    apop_strcat(&q, tabname);
+    asprintf(&q, "create table %s", tabname);
     for (i=0; i<ct; i++){
         if (i==0) 	{
             if (has_row_names)
-                apop_strcat(&q, " (row_names, ");
+                asprintf(&q, "%s (row_names, ", q);
             else
-                apop_strcat(&q, " (");
-        } else		apop_strcat(&q, "' , ");
-        apop_strcat(&q, " '");
-        apop_strcat(&q, fn[i]);
+                asprintf(&q, "%s (", q);
+        } else		asprintf(&q, "%s' , ", q);
+        asprintf(&q, "%s '", q);
+        asprintf(&q, "%s%s", q, fn[i]);
     }
     asprintf(&q, "%s' ); begin;", q);
     apop_query(q);
@@ -798,11 +745,11 @@ static void line_to_insert(char instr[], char *tabname){
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
     while (last_match < length_of_string 
            && !regexec(regex, (instr+last_match), 2, result, 0)){
-        if(one_in++) 	apop_strcat(&q, ", ");
+        if(one_in++) 	asprintf(&q, "%s, ", q);
         pull_string(instr,  outstr, result,  &last_match);
         prepped	=prep_string_for_sqlite(outstr);
         if (strlen(prepped) > 0)
-            apop_strcat(&q, prepped);
+            asprintf(&q, "%s%s", q, prepped);
         free(prepped);
     }
     apop_query("%s);",q); 

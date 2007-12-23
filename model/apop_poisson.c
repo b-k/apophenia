@@ -72,8 +72,6 @@ static double poisson_p(apop_data *d, apop_model * v){
     return exp(poisson_log_likelihood(d, v));
 }
 
-/** The derivative of the poisson distribution, for use in likelihood
- * minimization. You'll probably never need to call this directly.*/
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
@@ -102,8 +100,6 @@ static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
 
 Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
 
-apop_poisson.estimate() is an MLE, so feed it appropriate \ref apop_params.
-  
 \f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
 
 If you want, you can use the \c apop_mle_estimate_params for the method_settings element of the input \c apop_params. The model will only look at the \c want_cov element.

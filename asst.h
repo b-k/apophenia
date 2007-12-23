@@ -26,7 +26,7 @@ void apop_error(int level, char stop, char *message, ...);
 apop_model * apop_update(apop_data *data, apop_model prior, apop_model likelihood, 
                         apop_data *starting_pt, gsl_rng *r, int periods, double burnin, int histosegments);
 
-apop_data * apop_test_ANOVA(apop_data *d);
+apop_data * apop_test_ANOVA_independence(apop_data *d);
 
 int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 
