@@ -839,6 +839,29 @@ void test_blank_db_queries(){
     assert(gsl_isnan(h));
 }
 
+void dummies_and_factors(){
+  int i, j, n;
+    apop_text_to_db("data-mixed", "genes", 0, 1, NULL);
+    apop_data *d = apop_query_to_mixed_data("mmmt", "select aa, bb, 1, a_allele from genes");
+    apop_data *dum = apop_data_to_dummies(d, 0, 't', 0);
+    for(i=0; i < d->textsize[0]; i ++)
+        if ((n = apop_name_find(dum->names, d->text[i][0], 'c'))>=0)
+            for(j=1; j < dum->names->colct; j ++){
+                if (j-1==n)
+                    assert(apop_data_get(dum, i, j-1));
+                else
+                    assert(!apop_data_get(dum, i, j-1));
+        } else
+            for(j=0; j < dum->names->colct; j ++)
+                assert(!apop_data_get(dum, i, j));
+    apop_data_text_to_factors(d, 0, 2);
+    for(i=0; i < d->textsize[0]; i ++) //the set is only As and Cs.
+        if (!strcmp(d->text[i][0], "A"))
+            assert(apop_data_get(d, i, 2) == 0);
+        else
+            assert(apop_data_get(d, i, 2) == 1);
+}
+
 void test_vector_moving_average(){
   int   i;
   gsl_vector *v = gsl_vector_alloc(100);
@@ -872,6 +895,7 @@ void test_vector_moving_average(){
                             {if (verbose) printf(" passed.\n");} 
 
 int main(int argc, char **argv){
+    do_test("dummies and factors", dummies_and_factors());
   int  slow_tests = 0;
   char c, opts[]  = "sv";
     if (argc==1)
