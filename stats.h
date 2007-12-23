@@ -30,10 +30,16 @@ gsl_vector * v = &( apop_vv_##v );
 #define APOP_MATRIX_COL(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column(m, (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
-#define APOP_ROW(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row(m->matrix, (row)).vector;\
+#define APOP_ROW_T(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, apop_name_find((m)->names, row, 'r')).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
-#define APOP_COL(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column(m->matrix, (col)).vector;\
+#define APOP_COL_T(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)->matrix, apop_name_find((m)->names, col, 'c')).vector;\
+gsl_vector * v = &( apop_vv_##v );
+
+#define APOP_ROW(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, (row)).vector;\
+gsl_vector * v = &( apop_vv_##v );
+
+#define APOP_COL(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)->matrix, (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
 	//The following are just convenient hooks to gsl vector functions.
