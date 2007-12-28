@@ -131,21 +131,6 @@ double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, in
 	return(the_determinant);
 }
 
-/** This comes up often enough that it deserves its own convenience function.
-\param x	A vector.
-\param sigma 	A symmetric matrix.
-\return 	The scalar X'SX
-\ingroup linear_algebra
-*/
-double apop_x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
-  gsl_vector * 	sigma_dot_x	= gsl_vector_calloc(x->size);
-  double		the_result;
-	gsl_blas_dsymv(CblasUpper, 1, sigma, x, 0, sigma_dot_x); //sigma should be symmetric
-	gsl_blas_ddot(x, sigma_dot_x, &the_result);
-	gsl_vector_free(sigma_dot_x);
-	return(the_result);
-}
-
 void apop_normalize_for_svd(gsl_matrix *in){
 //Greene (2nd ed, p 271) recommends pre- and post-multiplying by sqrt(diag(X'X)) so that X'X = I.
   gsl_vector_view	v;
@@ -261,7 +246,7 @@ void apop_vector_exp(gsl_vector *v){
   double  d;
     for (i=0; i< v->size; i++){
 	    d   = v->data[i * v->stride];
-	    v->data[i * v->stride]  = gsl_sf_exp(d);
+	    v->data[i * v->stride]  = exp(d);
     }
 }
 

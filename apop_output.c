@@ -529,7 +529,7 @@ static void printlabel(char filename[], char *name){
 \image html "lattice.png" "A lattice showing three variables graphed against each other."
 \ingroup output
  */
-void plot_lattice(apop_data *d, char filename[]){ 
+void apop_plot_lattice(apop_data *d, char filename[]){ 
   double  width   = 1.2,//these used to be options, but who's ever gonna set them to something else.
           height  = 1.2;
   double  margin  = 0;
@@ -576,7 +576,7 @@ The function respects the <tt>output_type</tt> option, so code like:
 f   = popen("/usr/bin/gnuplot", "w");
 apop_opts.output_type = 'p';
 apop_opts.output_pipe = f;
-apop_qq_plot(data, apop_normal, params, NULL, NULL);
+apop_plot_qq(data, apop_normal, params, NULL, NULL);
 \endcode
 will print directly to Gnuplot.
 
@@ -588,7 +588,7 @@ will print directly to Gnuplot.
 \param outfile   The name of the text file to print to.  If NULL then write to STDOUT.
 \bugs The RNG is hard-coded, as is the size of the histogram.
 */
-void apop_qq_plot(gsl_vector *v, apop_model m, char *outfile){
+void apop_plot_qq(gsl_vector *v, apop_model m, char *outfile){
   FILE  *f;
   double *pctdata = apop_vector_percentiles(v, 'a');
 

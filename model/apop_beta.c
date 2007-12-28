@@ -18,6 +18,43 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <stdio.h>
 #include <assert.h>
 
+
+/** The Beta distribution is useful for modeling because it is bounded
+between zero and one, and can be either unimodal (if the variance is low)
+or bimodal (if the variance is high), and can have either a slant toward
+the bottom or top of the range (depending on the mean).
+
+The distribution has two parameters, typically named \f$\alpha\f$ and \f$\beta\f$, which
+can be difficult to interpret. However, there is a one-to-one mapping
+between (alpha, beta) pairs and (mean, variance) pairs. Since we have
+good intuition about the meaning of means and variances, this function
+takes in a mean and variance, calculates alpha and beta behind the scenes,
+and returns a random draw from the appropriate Beta distribution.
+
+\param m
+The mean the Beta distribution should have. Notice that m
+is in [0,1].
+
+\param v
+The variance which the Beta distribution should have. It is in (0, 1/12),
+where (1/12) is the variance of a Uniform(0,1) distribution. The closer
+to 1/12, the worse off you are.
+
+\param r
+An already-declared and already-initialized {{{gsl_rng}}}.
+
+\return
+Returns an \c apop_beta model with its parameters appropriately set.
+
+*/
+apop_model *apop_beta_from_mean_var(double m, double v){
+    double k     = (m * (1- m)/ v) -1 ;
+    double alpha = m*k;
+    double beta  = k * (1-m);
+    return apop_model_set_parameters(apop_beta, alpha, beta);
+}
+
+
 static double beta_log_likelihood(apop_data *d, apop_model *p);
 
 /* Every model should have an estimate function. If you are doing an

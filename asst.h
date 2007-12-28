@@ -31,6 +31,7 @@ apop_data * apop_test_ANOVA_independence(apop_data *d);
 int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
+apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
 
 __END_DECLS
 #endif

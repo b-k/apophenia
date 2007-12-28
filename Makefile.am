@@ -69,6 +69,7 @@ EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
 #the doxygen version. You've gotta call it yourself.
 
 doc: 
+	cp model/*.c .
 	doxygen doxy/doxyconfig
 	cp doxy/flake.gif doxy/search.gif html/
 	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/

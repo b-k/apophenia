@@ -69,7 +69,7 @@ apop_model *apop_histogram_params_alloc(apop_data *data, int bins){
     return hp->model;
 }
 
-gsl_histogram *gpdf;
+static gsl_histogram *gpdf;
 
 apop_model *est(apop_data *d, apop_model *in){
     return apop_histogram_params_alloc(d, 1000);

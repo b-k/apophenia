@@ -30,6 +30,7 @@ extern apop_model apop_IV;
 extern apop_model apop_kernel_density;
 extern apop_model apop_logit;
 extern apop_model apop_lognormal;
+extern apop_model apop_multinomial_logit;
 extern apop_model apop_multinomial_probit;
 extern apop_model apop_multivariate_normal;
 extern apop_model apop_normal;
@@ -57,7 +58,7 @@ apop_model *apop_model_set_parameters(apop_model in, ...);
 apop_model *apop_histogram_params_alloc(apop_data *data, int bins); //see apop_histogram.c
 void apop_histogram_plot(apop_model *in, char *outfile);
 apop_model *apop_kernel_density_params_alloc(apop_data *data, 
-        apop_model *histobase, apop_model kernelbase, void (*set_params)(double, apop_model*));
+        apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*));
 
 apop_model * apop_model_copy(apop_model in); //in apop_model.c
 apop_model * apop_model_copy_set_string(apop_model m, char* param);
@@ -69,6 +70,9 @@ double apop_log_likelihood(apop_data *d, apop_model *m);
 double apop_p(apop_data *d, apop_model *m);
 void apop_draw(double *out, gsl_rng *r, apop_model *m);
 void apop_model_prep(apop_data *d, apop_model *m);
+
+//in apop_beta.c
+apop_model *apop_beta_from_mean_var(double m, double v);
 
 __END_DECLS
 #endif

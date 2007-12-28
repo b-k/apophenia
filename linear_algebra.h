@@ -23,7 +23,7 @@ apop_data * apop_data_correlation_matrix(const apop_data *in);
 double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 gsl_matrix *apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
-double      apop_x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma);
+void apop_normalize_for_svd(gsl_matrix *in);
 apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);
 inline void apop_vector_increment(gsl_vector * v, int i, double amt);
 inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt);
@@ -35,5 +35,6 @@ int         apop_vector_finite(gsl_vector *in);
 int         apop_vector_bounded(gsl_vector *in, long double max);
 apop_data * apop_dot(const apop_data *d1, const apop_data *d2, ...);
 void        apop_vector_log(gsl_vector *v);
+void        apop_vector_log10(gsl_vector *v);
 void        apop_vector_exp(gsl_vector *v);
 __END_DECLS

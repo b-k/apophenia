@@ -1,4 +1,4 @@
-/** \file apop_kernel_density.c 
+/** \file apop_kernel.c 
 
   A Kernel density is simply a smoothing of a histogram. At each point
   along the histogram, put a distribution (default: Normal(0,1)) on
@@ -20,7 +20,7 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 #include <assert.h>
 
 
-void set_first_params(double in, apop_model *m){
+static void apop_set_first_params(double in, apop_model *m){
     m->parameters->vector->data[0]  = in;
 }
 
@@ -67,7 +67,7 @@ static gsl_histogram *apop_alloc_wider_range(const gsl_histogram *in, const doub
   double  diff = in->range[2] - in->range[1];
   int     k;
     memcpy(&newrange[(int)(in->n * padding)], in->range, sizeof(double)*in->n);
-    for (k = in->n *padding +1; k>1; k--)
+    for (k = in->n *padding +1; k>=1; k--)
         newrange[k] = newrange[k+1] - diff;
     for (k = in->n *(1+padding); k <newsize-1; k++)
         newrange[k] = newrange[k-1] + diff;
@@ -88,16 +88,24 @@ static gsl_histogram *apop_alloc_wider_range(const gsl_histogram *in, const doub
   \param histobase This is the preferred format for input data. It is the histogram to be smoothed.
 \param d    a data set, which, if  not \c NULL and \c !histobase , will be converted to a histogram.
 \param kernelbase The kernel to use for smoothing, with all parameters set and a \c p method. Popular favorites are \ref apop_normal and \ref apop_uniform.
+\param set_params A function that takes in a single number and the model, and sets the parameters accordingly. The function will call this for every point in the data set. Below is the default, which is used if this is \c NULL. It simply sets the first element of the model's parameter vector to the input number; this is appropriate for a Normal distribution, where we want to center the distribution on each data point in turn.
+
+\code
+void apop_set_first_params(double in, apop_model *m){
+    m->parameters->vector->data[0]  = in;
+}
+\endcode
+
 */
 apop_model *apop_kernel_density_params_alloc(apop_data *data, 
-        apop_model *histobase, apop_model kernelbase, void (*set_params)(double, apop_model*)){
+        apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*)){
   size_t    i, j;
   apop_data *smallset          = apop_data_alloc(0,1,1);
   apop_histogram_params *out   = malloc(sizeof(apop_histogram_params));
-    set_params                 = set_params ? set_params : set_first_params;
+    set_params                 = set_params ? set_params : apop_set_first_params;
     out->model                 = apop_model_copy(apop_kernel_density);
     out->model->model_settings = out;
-    out->kernelbase            = apop_model_copy(kernelbase);
+    out->kernelbase            = apop_model_copy(*kernelbase);
     out->histobase = data && !histobase ?
                 apop_histogram_params_alloc(data, 1000)
                 : apop_model_copy(*histobase);
@@ -142,7 +150,7 @@ apop_model *apop_kernel_density_params_alloc(apop_data *data,
 static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *parameters){
     apop_model *m   = apop_model_set_parameters(apop_normal, 0., 1.);
     apop_model *h   = apop_estimate(data, apop_histogram);
-	return apop_kernel_density_params_alloc(data, h, *m, set_first_params);
+	return apop_kernel_density_params_alloc(data, h, m, apop_set_first_params);
 }
 
 static double apop_kernel_density_log_likelihood(apop_data *d, apop_model *p){

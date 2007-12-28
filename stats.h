@@ -76,7 +76,7 @@ inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in);
 	//As described: give it a vector, and it'll tell you the confidence 
 	//with which you can say that the vector is not zero.
 
-double apop_random_beta(gsl_rng *r, double m, double v) ;
+double apop_random_beta(gsl_rng *r, double m, double v) __attribute__((deprecated));
 	/*Give me mean m and variance v, and I'll give you
 	 * n draws from the appropriate beta dist.
 	 * remember: 0<m<1, and v is tiny (<<1/12). You get NaNs if no

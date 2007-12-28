@@ -8,6 +8,16 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 
 apop_model apop_multivariate_normal;
 
+
+static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
+  gsl_vector *  sigma_dot_x = gsl_vector_calloc(x->size);
+  double        the_result;
+    gsl_blas_dsymv(CblasUpper, 1, sigma, x, 0, sigma_dot_x); //sigma should be symmetric
+    gsl_blas_ddot(x, sigma_dot_x, &the_result);
+    gsl_vector_free(sigma_dot_x);
+    return(the_result);
+}
+
 double apop_multinormal_ll_prob(apop_data *data, apop_model * m){
   if (!m->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
@@ -26,7 +36,7 @@ double apop_multinormal_ll_prob(apop_data *data, apop_model * m){
         APOP_ROW(data,i, vv);
         gsl_vector_memcpy(x_minus_mu, vv);
         gsl_vector_sub(x_minus_mu, m->parameters->vector);
-       ll  += - apop_x_prime_sigma_x(x_minus_mu, inverse) / 2;
+       ll  += - x_prime_sigma_x(x_minus_mu, inverse) / 2;
        ll  -= log(2 * M_PI)* dimensions/2. + .5 *  log(determinant);
     }
     gsl_matrix_free(inverse);
