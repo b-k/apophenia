@@ -147,7 +147,7 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
   double		result, err;
   grad_params 	gp;
   infostruct    i;
-  gsl_vector    *beta   = info->model->parameters->vector;
+  gsl_vector    *beta   = apop_data_pack(info->model->parameters);
   apop_mle_settings   *mp = info->model->method_settings;
     memcpy(&i, info, sizeof(i));
     i.f         = &ll;
@@ -162,6 +162,7 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
 		gsl_deriv_central(&F, gsl_vector_get(beta,j), mp->delta, &result, &err);
 		gsl_vector_set(out, j, result);
 	}
+    gsl_vector_free(beta);
 }
 
 /**The GSL provides one-dimensional numerical differentiation; here's the multidimensional extension.
@@ -511,8 +512,10 @@ static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i)
 	gsl_multimin_fdfminimizer_free(s);
 	if (mp->starting_pt==NULL) 
 		gsl_vector_free(x);
-    produce_covariance_matrix(est, i);
-    apop_estimate_parameter_t_tests (est);
+    if (est->parameters->vector && !est->parameters->matrix){
+        produce_covariance_matrix(est, i);
+        apop_estimate_parameter_t_tests (est);
+    }
 	return est;
 }
 

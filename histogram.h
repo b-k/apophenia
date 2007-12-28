@@ -9,12 +9,9 @@
 #endif
 
 __BEGIN_DECLS
-gsl_histogram * apop_vector_to_histogram(const gsl_vector *data, int bins);
-gsl_histogram ** apop_vectors_to_histograms(gsl_vector *v1, gsl_vector *v2, int bins);
-gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, int draws, apop_model *params, gsl_rng *r);
-apop_data *apop_model_test_goodness_of_fit(gsl_vector *v1, apop_model m,
-int bins, long int draws, apop_model*, gsl_rng *r);
-apop_data *apop_vectors_test_goodness_of_fit(gsl_vector *v0, gsl_vector *v1);
-apop_data *apop_histograms_test_goodness_of_fit(gsl_histogram *h0, gsl_histogram *h1, int bins);
-apop_data *apop_test_kolmogorov(gsl_histogram *h1, gsl_histogram *h2);
+apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *indata);
+apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m, long int draws, gsl_rng *r);
+apop_data *apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1);
+apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2);
+void apop_histogram_normalize(apop_model *m);
 __END_DECLS

@@ -46,6 +46,7 @@ Things to do:
 
 #include "db.h"     //just for apop_opts
 #include "apophenia/stats.h"
+#include "apophenia/histogram.h"
 #include "apophenia/bootstrap.h" //rng_alloc
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
@@ -70,69 +71,57 @@ Anyway, here are some functions to deal with these various histograms and such.
 
  */
 
-/** Make two histograms that share bin structures: same max/min, same
- bin partitions. You can then plot the two together or run goodness-of-fit tests.
 
-\param v1       a gsl_vector
-\param v2       another gsl_vector
-\param bins     How many bins?
-\return an array of two histograms. 
 
-\code
-gsl_histogram *out = apop_vectors_to_histograms(d1, d2, 1000);
-apop_test_goodness_of_fit(out[0], out[1]);
-\endcode
+/** Give me an existing histogram (i.e., an \c apop_model) and I'll
+ create a new histogram with the same bins, but with data from the vector you provide 
 
+\param template An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram).
+\param indata The new data to be binned.
 \ingroup histograms
 */
-gsl_histogram ** apop_vectors_to_histograms(gsl_vector *v1, gsl_vector *v2, int bins){
-int                 i;
-gsl_histogram       **h  = malloc(sizeof(gsl_histogram)*2);
-double              max0, max1, max2, min0, min1,min2;
-    h[0]    = gsl_histogram_alloc(bins);
-    h[1]    = gsl_histogram_alloc(bins);
-    gsl_vector_minmax(v1, &min1, &max1);
-    gsl_vector_minmax(v2, &min2, &max2);
-    min0    = GSL_MIN(min1, min2);
-    max0    = GSL_MAX(max1, max2)+1e-5;
-    gsl_histogram_set_ranges_uniform(h[0], min0, max0);
-    gsl_histogram_set_ranges_uniform(h[1], min0, max0);
-    for (i=0; i< v1->size; i++)
-        gsl_histogram_increment(h[0], gsl_vector_get(v1,i));
-    for (i=0; i< v2->size; i++)
-        gsl_histogram_increment(h[1], gsl_vector_get(v2,i));
-    return h;
+apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *indata){
+  if (!template || strcmp(template->name, "Histogram"))
+      apop_error(0, 's', "%s: The first argument needs to be an apop_histogram model.\n", __func__);
+  size_t  i;
+    apop_model *out = apop_model_copy(*template); 
+    gsl_histogram *hout  = ((apop_histogram_params*) out->model_settings)->pdf;
+    gsl_histogram_reset(hout);
+    for (i=0; i< indata->size; i++)
+        gsl_histogram_increment(hout, gsl_vector_get(indata, i));
+    return out;
 }
 
-/** Produce a histogram for a model matching an existing histogram of data.
 
-The method is to produce a histogram for the PDF using the RNG.
+/** Give me an existing histogram (i.e., an \c apop_model) and I'll
+ create a new histogram with the same bins, but with data from \c draws
+ random draws from the parametrized model you provide.
 
-\todo The double* that gets sent in to the model RNGs is ungraceful.
+ Unlike with most other histogram-genrating functions, this one will normalize the output to integrate to one.
+
+\param template An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram).
+\param m The model to be drawn from. Because this function works via random draws, the model needs to have a 
+\c draw method.
+\param draws The number of random draws to make.
+\param r The \c gsl_rng used to make random draws.
 \ingroup histograms
 */
-gsl_histogram * apop_model_to_histogram(apop_model m, gsl_histogram *h, 
-                        int draws, apop_model *params, gsl_rng *r){
-  int     i;
-//int     bc      = h ? h->n + 2 : bins;
-  int     bc      =  h->n + 2;
-  double  draw;
-    //Must be careful that the histograms match, but the range for the
-    //PDF is \f$(-\infty, infty)\f$. 
-            //GSL documentation says newbins should be one elemnt too big.
-    double  *newbins = malloc(sizeof(double)* (bc +1));
-    newbins[0]                  = GSL_NEGINF;
-    memcpy((newbins + 1), h->range, sizeof(double) * h->n);
-    newbins[bc]                 = GSL_POSINF;
-    gsl_histogram *modelhist    = gsl_histogram_alloc(bc);
-    gsl_histogram_set_ranges(modelhist, newbins, bc+1);
+apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m, long int draws, gsl_rng *r){
+  if (!template || strcmp(template->name, "Histogram"))
+      apop_error(0, 's', "%s: The first argument needs to be an apop_histogram model.\n", __func__);
+  if (!m || !m->draw)
+      apop_error(0, 's', "%s: The second argument needs to be an apop_model with a function to make radom draws.\n", __func__);
+  long double i;
+  double d;
+    apop_model *out = apop_model_copy(*template); 
+    gsl_histogram *hout  = ((apop_histogram_params*) out->model_settings)->pdf;
+    gsl_histogram_reset(hout);
     for (i=0; i< draws; i++){
-        m.draw(&draw, r, params);
-        gsl_histogram_increment(modelhist, draw);
+        m->draw(&d, r, m);
+        gsl_histogram_increment(hout, d);
     }
-    for (i=0; i< modelhist->n; i++)
-        modelhist->bin[i] /= draws;
-    return modelhist;
+    apop_histogram_normalize(out);
+    return out;
 }
 
 
@@ -163,8 +152,8 @@ double      pval    = gsl_cdf_chisq_P(diff, bins-1);
   \ingroup histograms
 */
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
-  gsl_histogram *h0 = ((apop_histogram_params *)m0)->pdf;
-  gsl_histogram *h1 = ((apop_histogram_params *)m1)->pdf;
+  gsl_histogram *h0 = ((apop_histogram_params *)m0->model_settings)->pdf;
+  gsl_histogram *h1 = ((apop_histogram_params *)m1->model_settings)->pdf;
   int     i;
   double  diff    = 0,
           bins    = h0->n;
@@ -179,36 +168,6 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
         apop_error(0, 's', "%s: Sorry, I haven't implemented the case where the bin counts of the two histograms are unequal.", __func__);
     return gof_output(diff, bins);
 }
-
-/** Test the goodness-of-fit between a histogram and a model.
-
-  The method is to produce a histogram for the PDF using the RNG, then do a chi-squared test on the two PDFs.
-
-\todo The double* that gets sent in to the model RNGs is ungraceful.
-\ingroup histograms
-*/
-apop_data *apop_model_test_goodness_of_fit(apop_data *v1, apop_model m,
-int bins, long int draws, apop_model *params, gsl_rng *r){
-  int     i, count  = bins;
-  double  diff      = 0,
-          sum;
-  apop_model    *m1 = apop_estimate(v1, apop_histogram);
-  gsl_histogram *h1 = ((apop_histogram_params *)m1)->pdf,
-                *h2 = apop_model_to_histogram(m, h1, draws, params, r);
-    sum      = gsl_histogram_sum(h1);//h1 is not normalized; h2 is.
-    diff    += gsl_pow_2(h2->bin[0]);
-    for (i=0; i< bins; i++){
-        if (h1->bin[i])
-            diff    += gsl_pow_2(h1->bin[i]/sum - h2->bin[i+1])/(h1->bin[i]/sum);
-        else
-            count   --;//ignore this bin.
-        }
-    diff    += gsl_pow_2(h2->bin[bins+2]);
-    gsl_histogram_free(h1);
-    gsl_histogram_free(h2);
-    return gof_output(diff, count);
-}
-
 
 /*psmirnov2x is cut/pasted/trivially modified from the R project. Copyright them. */
 static double psmirnov2x(double x, int m, int n) {

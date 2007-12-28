@@ -101,7 +101,7 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
 
 \ingroup models
 */
-apop_model apop_multinomial_probit = {"Multinomial probit", -1,0,0, 
+apop_model apop_multinomial_probit = {"Multinomial probit",
      .log_likelihood = multiprobit_log_likelihood, .prep = multiprobit_prep};
 
 
@@ -150,6 +150,7 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
         apop_vector_exp(thisrow);
         ll -= max + log(apop_vector_sum(thisrow));
     }
+    apop_data_free(xbeta);
 	return ll;
 }
 
@@ -161,5 +162,5 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
 
 \ingroup models
 */
-apop_model apop_multinomial_logit = {"Multinomial logit", -1,0,0, 
+apop_model apop_multinomial_logit = {"Multinomial logit",
      .log_likelihood = multilogit_log_likelihood, .prep = multiprobit_prep};
