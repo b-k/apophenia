@@ -3,16 +3,13 @@
 This file includes a number of distributions and models whose parameters
 one would estimate using maximum likelihood techniques.
 
-Each typically includes four functions: the likelihood function, the 
-derivative of the likelihood function, a function that calls both of them,
-and a user-usable function which takes in data and a blank vector, fills 
-the vector with the most likely parameters, and returns the likelihood
-of those parameters.
+Each typically includes the likelihood function, the derivative of the
+likelihood function, which is used by \c apop_maximum_likelihood. The \c apop_estimate function defaults to using maximum likelihood
+estimation if there is no model-specific estimation routine provided.
 
 At the bottom are the maximum likelihood procedures themselves. There
-are two: the no-derivative version and the with-derivative version.
-Use the with-derivative version wherever possible---in fact, it is at
-the moment entirely unused, but is just here for future use.
+are three: the no-derivative version, the with-derivative version,
+and the simulated annealing routine.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 */
@@ -24,7 +21,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 //in apop_regress.c:
 void apop_estimate_parameter_t_tests (apop_model *est);
-
 
 /** \page trace_path Plotting the path of an ML estimation.
 
@@ -119,10 +115,6 @@ typedef struct {
     gsl_vector  *beta;
     gsl_vector  *starting_pt;
     int         use_constraint;
-    gsl_matrix  ***gradient_list;
-    double      **gradientp;
-    gsl_vector  ***score_list;
-    size_t      *gsize;
     char        *trace_path;
     FILE        **trace_file;
 }   infostruct;
@@ -141,6 +133,8 @@ static double one_d(double b, void *in){
 
 #include "apop_findzeros.c"
 
+/* For each element of the parameter set, jiggle it to find its
+ gradient. Return a vector as long as the parameter list. */
 static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct* info, gsl_vector *out){
   int		    j;
   gsl_function	F;
@@ -184,16 +178,16 @@ gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *m){
     }
   gsl_vector        *out= gsl_vector_alloc(m->parameters->vector->size);
   apop_mle_settings *mp;
-  int clean = 0;
+  int cleanup = 0;
     if(strcmp(m->method_name, "MLE")){
-        mp       = apop_mle_settings_alloc(data, *m);
+        mp       = apop_mle_settings_set_default(apop_model_copy(*m));
         i.model  = mp->model;
-        clean ++;
+        cleanup ++;
     } else 
         i.model  = m;
     i.data  = data;
     apop_internal_numerical_gradient(ll, &i, out);
-    if (clean) {
+    if (cleanup) {
         free(mp);
         apop_model_free(i.model);
     }
@@ -244,12 +238,6 @@ static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
     }
 }
 
-static void apop_pack_in_place(apop_data *from, gsl_vector *to){
-    gsl_vector *v = apop_data_pack(from);
-    gsl_vector_memcpy(to, v);
-    gsl_vector_free(v);
-}
-
 static double negshell (const gsl_vector *beta, void * in){
   infostruct    *i              = in;
   double		penalty         = 0,
@@ -263,7 +251,7 @@ static double negshell (const gsl_vector *beta, void * in){
 		penalty	= i->model->constraint(i->data, i->model);
     out = penalty - f(i->data, i->model); //negative llikelihood
     if (penalty)
-        apop_pack_in_place(i->model->parameters, i->beta);
+        apop_data_unpack(i->beta, i->model->parameters);
     if (strlen(i->trace_path))
         tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
     i->model->llikelihood = -out; //negative negative llikelihood.
@@ -296,18 +284,6 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
         negshell (beta,  in);
     gsl_vector_scale(g, -1);
     return GSL_SUCCESS;
-}
-
-static void record_gradient_info(double f, gsl_vector *g, infostruct *i){
-//By the way, the awkward pointer-to-pointer for the gradient list and
-//plist is because the simulated annealing algorithm breaks if
-//i->gradient_list or i->gradientp itself changes.
-    if (!gsl_finite(f) || !gsl_finite(apop_vector_sum(g))) return;
-    *i->score_list    = realloc(*i->score_list, sizeof(gsl_vector*)*(*i->gsize +1));
-    (*i->score_list)[*i->gsize] = apop_vector_copy(g);
-    (*i->gradientp)            = realloc(*i->gradientp, sizeof(double)*(*i->gsize + 1));
-    (*i->gradientp)[*i->gsize] = i->model->log_likelihood? -f : -log(f);
-    (*i->gsize)               ++;
 }
 
 static void fdf_shell(const gsl_vector *beta, void *i, double *f, gsl_vector *df){
@@ -343,89 +319,59 @@ void apop_numerical_covariance_matrix(apop_model *est, apop_data *data){
     return;
 }
 
-static void cov_cleanup(infostruct *i){
-  /*int j;
-    for (j=0; j< *i->gsize; j++)
-        gsl_vector_free((*i->score_list)[j]);
-    free(*i->score_list);
-    free(i->score_list);*/
-    free(*i->gradientp);
-    free(i->gsize);
-    free(i->gradientp);
+
+/*This model is needed to make life easier with the
+ apop_numerical_gradient function. It stores the actual model in the
+ more element, and the current position in the params to be worked on
+ in the model_settings element. */ 
+
+static double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
+    static gsl_vector *v = NULL;
+    apop_model *mm = m->more;
+    if (mm->score){
+        if (!v || v->size != mm->parameters->vector->size){
+            if (v) gsl_vector_free(v);
+            v = gsl_vector_alloc(mm->parameters->vector->size);
+        }
+         mm->score(d, v, mm);
+        return gsl_vector_get(v, *((int*)m->model_settings));
+    } //else:
+        gsl_vector *vv = apop_numerical_gradient(d, mm);
+        double out = gsl_vector_get(vv, *((int*)m->model_settings));
+        gsl_vector_free(vv);
+        return out;
 }
 
-/** Transform the list of probabilities to a set of weightings where all
- ps are divided by the total.
+apop_model apop_model_for_infomatrix = {"Ad hoc model for working out the information matrix.", .log_likelihood = apop_fn_for_infomatrix};
 
- If the list of prob.s is from i->model->p, this is trivial.
- If the list of prob.s is from i->model->log_likelihood, then we don't
- want to exponentiate---that defeats the purpose of taking logs to
- begin with.  Instead, rescale against the median of the set, then
- exponentiate. The hope is that any given value is within a factor of
- maybe 100 of the median, so exp(ln(beta_n)-ln(median)) is a reasonable
- value.
- */
-static void get_weightings(infostruct *i){
-  int           j;
-  long double   psum            = 0;
-  long double   scaling_factor  = 0;
-    if (i->model->log_likelihood){
-        gsl_vector  *sortme = apop_array_to_vector(*i->gradientp,  *i->gsize);
-        double      *pctiles= apop_vector_percentiles(sortme, 'u');
-        double      median  = pctiles[50];
-        gsl_vector_free(sortme);
-        free(pctiles);
-        for (j=0; j< *i->gsize; j++)
-            scaling_factor  +=
-            (*i->gradientp)[j] = exp((*i->gradientp)[j] - median);
-        for (j=0; j< *i->gsize; j++)
-            (*i->gradientp)[j] /= scaling_factor;
-    } else {
-        for (j=0; j< *i->gsize; j++)
-            psum   += (*i->gradientp)[j];
-        for (j=0; j< *i->gsize; j++)
-            (*i->gradientp)[j]    /= psum;
-    }
-}
-
-
-typedef struct {
-    size_t  len;
-    gsl_vector *score;
-    gsl_vector **score_list;
-} adhocstruct;
-
-void produce_covariance_matrix(apop_model * est, infostruct *i){
-  apop_mle_settings *parm = i->model->method_settings;
-  if (!parm->want_cov)
-      goto cov_clean;
-  int        m, p, q;
-  size_t    betasize    = (*i->score_list)[0]->size;
+/* We produce the covariance matrix via the derivative of the score
+ function at the parameter. I follow Efron and Hinkley in using the
+ estimated information matrix---the value of the information matrix at
+ the estimated value of the score---not the expected information matrix
+ that is the integral over all possible data. See Pawitan 2001 (who
+ cribbed off of Efron and Hinkley) or Klemens 2008 (who cribbed off of
+ both) for further details. If you really want to use E(I), check
+ out a version of this file from before the end of 2007.*/
+static void produce_covariance_matrix(apop_model * est, infostruct *i){
+  int    j, k;
+  size_t betasize  = i->model->parameters->vector->size;
   gsl_matrix *preinv    = gsl_matrix_calloc(betasize, betasize);
-  adhocstruct *out      = malloc(sizeof(adhocstruct));
-    out->len        = *i->gsize;
-    out->score      = gsl_vector_calloc(betasize);
-    out->score_list = *i->score_list;
-    get_weightings(i);
-    //inv (n E(score dot score)) = info matrix.
-    for (m=0; m<  *i->gsize; m++)
-        if (gsl_finite((*i->gradientp)[m])){
-            gsl_vector_scale((*i->score_list)[m], (*i->gradientp)[m]);
-            gsl_vector_add(out->score,(*i->score_list)[m]);
+  gsl_vector *dscore    = gsl_vector_alloc(betasize);
+    apop_model_for_infomatrix.more           = i->model;
+    apop_model_for_infomatrix.model_settings = &k;
+    apop_model_for_infomatrix.parameters     = i->model->parameters;
+    apop_model_for_infomatrix.method_settings= i->model->method_settings;
+    strcpy(apop_model_for_infomatrix.method_name, i->model->method_name);
+    for (k=0; k< betasize; k++){
+        dscore = apop_numerical_gradient(i->data, &apop_model_for_infomatrix);
+        for (j=0; j< betasize; j++){
+            gsl_matrix_set(preinv, k, j, gsl_vector_get(dscore, j));
+            gsl_matrix_set(preinv, j, k, gsl_vector_get(dscore, j));
         }
-    for (p=0; p < betasize; p ++)
-        for (q=p; q < betasize; q ++){
-            long double total   = 0;
-            for (m=0; m< *i->gsize; m++)
-                if (gsl_finite((*i->gradientp)[m]))
-                    total += gsl_vector_get((*i->score_list)[m], p) * gsl_vector_get((*i->score_list)[m], q);
-            total   *= i->data ? (i->data->matrix ? i->data->matrix->size1 
-                        : i->data->vector->size) : 1;
-            gsl_matrix_set(preinv, p, q, total);
-            gsl_matrix_set(preinv, q, p, total);
-        }
+        gsl_vector_free(dscore);
+    }
     if (apop_opts.verbose > 1){
-        printf("The expected Hessian:\n");
+        printf("The estimated Hessian:\n");
         apop_matrix_show(preinv);
     }
     gsl_matrix *inv = apop_matrix_inverse(preinv);
@@ -434,10 +380,11 @@ void produce_covariance_matrix(apop_model * est, infostruct *i){
         apop_name_stack(est->covariance->names, est->parameters->names, 'r');
         apop_name_cross_stack(est->covariance->names, est->parameters->names, 'c', 'r');
     }
+    /*
+printf("\n\nTHE COV\n");
+apop_data_show(est->covariance);
+printf("\n\nOK!!");*/
     gsl_matrix_free(preinv);
-    est->more   = out;
-  cov_clean:
-    cov_cleanup(i);
 }
 
 static int ctrl_c;
@@ -492,7 +439,6 @@ static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i)
     do { 	
         iter++;
         status 	= gsl_multimin_fdfminimizer_iterate(s);
-        record_gradient_info(gsl_multimin_fdfminimizer_minimum(s), gsl_multimin_fdfminimizer_gradient(s), i);
         if (status) 	break; 
         status = gsl_multimin_test_gradient(s->gradient,  mp->tolerance);
         if (mp->verbose)
@@ -577,8 +523,6 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 		apop_error(1, 'c', "Optimization reached maximum number of iterations.");
     if (status == GSL_SUCCESS) 
         est->status	= 1;
-    //negshell unpacks for us.
-    //est->parameters = apop_data_unpack(s->x, vsize, msize1, msize2);
 	gsl_multimin_fminimizer_free(s);
 	if (mp->want_cov) 
 		apop_numerical_covariance_matrix(est, data);
@@ -613,10 +557,6 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
   apop_mle_settings   *mp;
   infostruct    info    = { .data   = data,
                             .use_constraint = 1};
-    info.gradientp      = malloc(sizeof(double*)); *info.gradientp = NULL;
-    info.gradient_list  = malloc(sizeof(gsl_matrix*)); *info.gradient_list = NULL;
-    info.score_list  = malloc(sizeof(gsl_vector*)); *info.score_list = NULL;
-    info.gsize          = malloc(sizeof(size_t)); *info.gsize = 0;
     info.trace_file     = malloc(sizeof(FILE *)); *info.trace_file = NULL;
     if(strcmp(dist.method_name, "MLE")){
         mp          = apop_mle_settings_alloc(data, dist);
@@ -636,7 +576,6 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
                 mp->method == APOP_RF_HYBRID  ||
                 mp->method == APOP_RF_HYBRID_NOSCALE ) 
         return  find_roots (info);
-        //return  find_roots (data, &dist);
 	//else, Conjugate Gradient:
 	return apop_maximum_likelihood_w_d(data, &info);
 }
@@ -744,20 +683,9 @@ if ep->verbose>1, show that plus the vector of params.
  \ingroup mle
  */
 
-static void an_record(infostruct *i, double energy){
-    gsl_vector *grad = gsl_vector_alloc(i->beta->size);
-    dnegshell(i->beta, i, grad);   //make sure the current param is in place. 
-    record_gradient_info(energy, grad, i);
-    gsl_vector_free(grad);
-}
-
 static double annealing_energy(void *in) {
   infostruct *i      = in;
-  double energy      = negshell(i->beta, i);
-  apop_mle_settings *p = i->model->method_settings;
-    if (p->want_cov)
-        an_record(i, energy);
-    return energy;
+  return negshell(i->beta, i);
 }
 
 static double annealing_distance(void *xin, void *yin) {

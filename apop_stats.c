@@ -566,59 +566,6 @@ apop_data *apop_data_covar(apop_data *in){
     return out;
 }
 
-/** Here is the code:
-   \code
-    return !in;
-   \endcode
-This is just here for use in  \ref apop_vector_replace and \ref apop_matrix_replace .
-\ingroup convenience_fns
-*/
-int apop_double_is_zero(double in){
-    return !in;
-}
-
-/** Apply a test to every element of a vector; if the test returns true,
-then replace the element with the given value.
-
-There is a sample of usage in \ref apop_vectors_test_goodness_of_fit.
-
-\param v    the vector to be modified
-\param test A test that takes a single <tt>double</tt> as input. Candidates include <tt>gsl_isnan</tt> or \ref apop_double_is_zero.
-\param  replace_with    a value to be plugged in when the test is true
-
-\return nothing. But the vector is modified accordingly.
-\ingroup convenience_fns
- */
-void apop_vector_replace(gsl_vector *v, int (* test)(double in), double replace_with){
-  int     i;
-    for (i=0; i < v->size; i++)
-        if (test(gsl_vector_get(v, i)))
-                gsl_vector_set(v, i, replace_with);
-}
-
-/** Apply a test to every element of a matrix; if the test returns true,
-then replace the element with the given value.
-
-
-\param m    the matrix to be modified
-\param test A test that takes a single <tt>double</tt> as input. Candidates include <tt>gsl_isnan</tt> or \ref apop_double_is_zero.
-\param  replace_with    a value to be plugged in when the test is true
-
-\return nothing. But the matrix is modified accordingly.
-\ingroup convenience_fns
- */
-void apop_matrix_replace(gsl_matrix *m, int (* test)(double in), double replace_with){
-  if (!m){
-      apop_error(1, 'c', "%s: You sent me a NULL gsl_matrix.\n", __func__);
-      return;
-  }
-  int     i, j;
-    for (i=0; i < m->size1; i++)
-        for (j=0; j < m->size2; j++)
-        if (test(gsl_matrix_get(m, i, j)))
-                gsl_matrix_set(m, i, j, replace_with);
-}
-
 /** Find the weighted mean. 
 
 \param  v   The data vector

@@ -96,10 +96,6 @@ apop_data *apop_data_covar(apop_data *in);
 
 gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins);
 
-int apop_double_is_zero(double in) __attribute__((pure));
-void apop_vector_replace(gsl_vector *v, int (* test)(double), double replace_with);
-void apop_matrix_replace(gsl_matrix *m, int (* test)(double), double replace_with);
-
 //from apop_fisher.c:
 apop_data *apop_test_fisher_exact(apop_data *intab);
 

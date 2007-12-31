@@ -557,14 +557,6 @@ double apop_query_to_float(const char * fmt, ...){
 #endif
 }
 
-/** This function returns an \ref apop_name structure with the column
-names from the last <tt>apop_query_...</tt> . Since only the names from
-the last query are saved, you will want to use this immediately
-after your query.  */
-apop_name * apop_db_get_names(void){
-  apop_name   *out    = apop_name_copy(last_names);
-    return out; 
-}
 
 /** Queries the database, and dumps the result into an \ref apop_data set.
 
@@ -612,7 +604,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
     //replace name struct allocated in apop_matrix_to_data with the
     //actual names.
     apop_name_free(out->names);
-    out->names  = apop_db_get_names();
+    out->names  = apop_name_copy(last_names);
 	return out;
 #endif
 }

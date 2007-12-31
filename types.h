@@ -69,10 +69,7 @@ observation and each column is a variable. Usually there is only one
 dependent variable (the value to be predicted), which is the first column;
 the independent variables (the predictors) follow thereafter.
 
-This structure holds the names of these variables. You can fill it quickly
-with \ref apop_db_get_names after running a query, or add names manually
-with \ref apop_name_add .
-
+This structure holds the names of these variables. It is pretty much always associated with (and generated along with) an \c apop_data set.
 \ingroup names
 */
 typedef struct{

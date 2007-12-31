@@ -457,12 +457,11 @@ Writing apop_model objects is easy:
 
 \li Write a likelihood function. Its header will look like this:
 \code
-double apop_new_log_likelihood(const gsl_vector *beta, void *d)
+double apop_new_log_likelihood(apop_data *data, apop_model *m)
 \endcode 
-where \c beta will be the parameters to be maximized, and \c
-d is the fixed parameters---the data. In every case currently included
-with Apophenia, \c d is a \c gsl_matrix, but you do not have to conform
-to that. This function will return the value of the log likelihood function at the given parameters.
+where \c data is the input data, and \c
+m is the parametrized model (i.e., your model with a set \c parameters element). 
+This function will return the value of the log likelihood function at the given parameters.
 \li Is this a constrained optimization? See the \ref constraints "Constraints page" on how to set them.
 \li Write the object. In your header file, include 
 \code
@@ -478,15 +477,15 @@ set \c number_of_parameters to \c -1.
 typically involves calculating a derivative by hand, which is an easy
 problem in high-school calculus. The function's header will look like: 
 \code
-void apop_new_dlog_likelihood(const gsl_vector *beta, void *d, gsl_vector *gradient)
+void apop_new_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m)
 \endcode 
-where \c beta and \c d are fixed as above, and \c gradient is a \c gsl_vector with dimension matching \c beta. 
+where \c m and \c d are as above, and \c gradient is a \c gsl_vector to be filled with the gradient of the parameters. 
 At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
 \code
 gsl_vector_set(gradient,0, d_a);
 gsl_vector_set(gradient,1, d_b);
 \endcode 
-Now add the resulting dlog likelihood function to your object, by replacing the \c NULL labeled "place dlog likelihood here" with the name of your dlog likelihood function.
+Now add the resulting dlog likelihood function to your object, by adding a \c .dlog_likelihood=your_function to the declaration.
 \li Send the code to the maintainer for inclusion in future versions of Apophenia.
 
 \todo This page needs a sample model for the reader to cut 'n' paste.
@@ -514,18 +513,14 @@ will ensure that both parameters of a two-dimensional input are both
 greater than zero:
 
 \code
-static double beta_zero_and_one_greater_than_x_constraint(gsl_vector *beta, void * d, gsl_vector *returned_beta){
-double          limit0          = 0,
-                limit1          = 0,
-                tolerance       = 1e-3; // GSL_EPSILON_DOUBLE is also a popular choice, but sometimes fails.
-double          beta0   = gsl_vector_get(beta, 0),
-                beta1   = gsl_vector_get(beta, 1);
-        if (beta0 > limit0 && beta1 > limit1)
-                return 0;
-        //else:
-        gsl_vector_set(returned_beta, 0, GSL_MAX(limit0 + tolerance, beta0));   //create a valid return vector.
-        gsl_vector_set(returned_beta, 1, GSL_MAX(limit1 + tolerance, beta1));
-        return GSL_MAX(limit0 - beta0, 0) + GSL_MAX(limit1 - beta1, 0);         //return a penalty.
+static double beta_zero_greater_than_x_constraint(apop_data *returned_beta, apop_model *v){
+    //constraint is 0 < beta_2
+  static apop_data *constraint = NULL;
+    if (!constraint){
+        constraint= apop_data_calloc(1,1,1);
+        apop_data_set(constraint, 0, 0, 1);
+    }
+    return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
 }
 \endcode
 

@@ -367,10 +367,7 @@ static void a_pipe(FILE *f, char displaytype){
 
 }
 
-/** Print an \ref apop_data to the screen.
-    You may want to set \ref apop_opts.output_delimiter.
-\ingroup apop_print */
-void apop_data_show_core(const apop_data *data, FILE *f, char displaytype){
+static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype){
     if (!data){
         fprintf(f, "NULL\n");
         return;
