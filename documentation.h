@@ -40,25 +40,25 @@ First, if you are still wondering why this is different from all the
 stats packages of the world, have a look at the introduction to the 
 <a href="http://ben.klemens.org/pdfs/gsl_stats.pdf">manual</a> (PDF). 
 
-The key goal of Apophenia is to estimate models using data.
-As such, Apophenia provides 
-interlocking structures to smooth the process: \ref apop_data, \ref
-apop_model, and \ref apop_estimate. Beginning in the middle, every \ref
+The key goal of Apophenia is to estimate models using data. As such, Apophenia provides 
+two interlocking structures to smooth the process: the \ref apop_data and \ref apop_model. On the data side, the intent is to provide 
+the usual tools for manipulating data, such as getting it in and out of a text file or database, dealing with metadata like column labels, stacking it, splitting it, and otherwise collating it. Every \ref
 apop_model includes an \c estimate function, that takes in a data set
-and outputs a vector of parameters. Notice that this broad description
+and outputs a vector (or matrix) of parameters. Notice that this broad description
 includes "non-parameteric" methods, the process of fitting a distribution
 to a data set, and about anything else that a statistician could want
 to do.
 
 Thus, the typical analysis using Apophenia would take the following steps:
- \li Read the data into the database using \ref apop_convert_text_to_db.
+ \li Read the data into the database using \ref apop_text_to_db.
  \li Use SQL queries handled by \ref apop_query to massage the data as needed.
  \li Use \ref apop_query_to_data to pull the data into an in-memory apop_data set.
- \li Call a regression function such as \ref apop_OLS "apop_OLS.estimate(data_set)" or a maximum likelihood estimator such as a \ref apop_probit "apop_probit.estimate(data_set)" to fit parameters to the data. This will return an \ref apop_model object.
- \li Interrogate the returned estimate, by dumping it to the screen with \ref apop_estimate_print, sending its parameters and variance-covariance matrices to a test, et cetera.
+ \li Call a model estimation such as \code apop_estimate (data_set, apop_OLS)\endcode  or \code apop_estimate (data_set, apop_probit)\endcode to fit parameters to the data. This will return an \ref apop_model object.
+ \li Interrogate the returned estimate, by dumping it to the screen with \ref apop_model_show, sending its parameters and variance-covariance matrices to a test, et cetera.
 
 If this seems a bit vague, have a look at this \ref sample_program.
 
+<!--
 \section basis Not reinventing the wheel
 All of the above is focused on statistics, not low-level computing. Thus,
 unlike typical stats packages, the Apophenia project avoids writing
@@ -88,7 +88,7 @@ for you. However, the project makes an effort to not replicate any of
 the functionality in the GSL, because we're not going to write a better
 Normal RNG than they already have.
 
-<!--
+
 \section librant Stats libraries vs Stats packages 
 The reason I (BK) started up this library is that I was sick of learning
 new languages. There are a few dozen statistics packages to choose from,
@@ -142,7 +142,10 @@ To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or h
 We've moved the setup documentation to <a href="http://avocado.econ.jhu.edu/modeling/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em>. Please see that page.
 
 \subsection testing Testing
-There is a short, complete program in the \ref apop_estimate_OLS "apop_OLS" entry which runs a simple OLS regression on a data file. Follow the instructions there to compile and run. There is also a slightly longer \ref sample_program on a separate page.
+There is a short, complete program in the \ref apop_estimate_OLS
+"apop_OLS" entry which runs a simple OLS regression on a data file. Follow
+the instructions there to compile and run. See also the 
+\ref sample_program below.
 
 \subsection using Using 
 Now that it's installed, do some stats! For those who are new to C, there are some notes on the \ref C page; if you are familiar with the process, see the \ref usagenotes "usage notes" for Apophenia itself.
@@ -161,7 +164,7 @@ This program will compile cleanly with the sample \ref makefile.
 \code
 
 
-#include <apophenia/headers.h>
+#include <apop.h>
 
 //Your processes are probably a bit more complex.
 double process_one(gsl_rng *r){
@@ -177,11 +180,7 @@ apop_data      *m;
 gsl_vector      v1, v2;
 double          p1, p2;
 int             i;
-gsl_rng *       r;
-
-        //set up the GSL's random number generator.
-        gsl_rng_env_setup();
-        r=gsl_rng_alloc(gsl_rng_default);
+gsl_rng *       r = apop_rng_alloc(15);
 
         //create the database and the data table.
         apop_db_open("runs.db");
@@ -207,7 +206,7 @@ gsl_rng *       r;
         printf("process 1: %f\t%f\n", apop_mean(&v1), apop_var(&v1));
         printf("process 2: %f\t%f\n\n", apop_mean(&v2), apop_var(&v2));
         printf("t test\n");
-        apop_data_print(apop_t_test(&v1,&v2), NULL);
+        apop_data_show(apop_t_test(&v1,&v2));
         apop_data_print(m, "the_data.txt"); //does not overwrite; appends.
         return 0;
 }
@@ -284,9 +283,8 @@ echo "export LD_LIBRARY_PATH=$HOME/$MY_LIBS:\$LD_LIBRARY_PATH" >> ~/.bashrc
 /** \page c C
  
 \section learning  Learning C
-The Apophenia manual has a full tutorial for C, which
-The tutorial is more conceptual than most and is aimed at clearing up the most common failures of understanding about C. More nuts-and-bolts
-tutorials are 
+<a href="http://avocado.econ.jhu.edu/modeling">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages.
+More nuts-and-bolts tutorials are 
 <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.
 Some people find pointers to be especially difficult. Fortunately, there's a claymation cartoon which clarifies everything
 <a href=http://cslibrary.stanford.edu/104/>here</a>.
@@ -300,7 +298,7 @@ Here are some notes about the technical details of using the Apophenia library.
 \subsection headertrick Header aggregation 
 If you put 
 \verbatim
-#include <apophenia/headers.h>
+#include <apop.h>
 \endverbatim
 at the top of your file, then it will call virtually every header file you could need: gsl_matrix.h, gsl_blas.h, sqlite3.h, stdio.h, string.h, math.h, apophenia_all_of_them.h, et cetera. Of course, if you get `implicit declaration of...' then you will need to manually include something else.
 Bear in mind that every book on C will tell you this is bad form and you shouldn't do it.
@@ -323,7 +321,7 @@ If your text editor supports syntax highlighting, there are a few types defined 
 E.g., for <tt>vim</tt>, add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
 \verbatim
 syn keyword     cType           gsl_matrix gsl_rng gsl_vector apop_data
-syn keyword     cType           apop_name apop_model apop_model 
+syn keyword     cType           apop_name apop_model
 \endverbatim
 Other text editors have similar files to which you can add the above types.
 */

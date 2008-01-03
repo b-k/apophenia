@@ -6,14 +6,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "apophenia/output.h"
 #include "apophenia/linear_algebra.h"
 
-/** \defgroup inv_and_est  Using \ci apop_paramss 
-
-The data to accompany an \c apop_model, including the input settings and the output parameters, expected values, et cetera.
-
-See the page on \ref types for more.
-
-\ingroup types
- */
 
 /** Allocate an \ref apop_model.
 
@@ -30,7 +22,7 @@ The input model is modified, so you probably want to call this after you call \c
 \param model    The model whose output elements will be modified.
 \return A pointer to the same model, should you need it.
 
-\ingroup inv_and_est  */
+\ingroup models  */
 apop_model * apop_model_clear(apop_data * data, apop_model *model){
   int vsize  = model->vbase == -1 ? data->matrix->size2 : model->vbase;
   int msize1 = model->m1base == -1 ? data->matrix->size2 : model->m1base ;
@@ -62,7 +54,7 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
    \param free_me A pointer to the model to be freed.
 
-\ingroup inv_and_est */
+\ingroup models */
 void apop_model_free (apop_model * free_me){
     if (!free_me) return;
     apop_data_free(free_me->parameters);
@@ -182,7 +174,7 @@ apop_model *apop_model_set_parameters(apop_model in, ...){
     return out; 
 }
 
-/* estimate the parameters of a model given data.
+/** estimate the parameters of a model given data.
 
    This is a brief convenience function, which expands to \c m.estimate(d,&m). If your model has no \c estimate method, then I assume \c apop_maximum_likelihood(d, m), with the default MLE params.
 
@@ -199,7 +191,7 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
     return apop_maximum_likelihood(d, m);
 }
 
-/* Find the probability of a data/parametrized model pair.
+/** Find the probability of a data/parametrized model pair.
 
 \param d    The data
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
@@ -223,7 +215,7 @@ double apop_p(apop_data *d, apop_model *m){
     return 0;
 }
 
-/* Find the log likelihood of a data/parametrized model pair.
+/** Find the log likelihood of a data/parametrized model pair.
 
 \param d    The data
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.

@@ -781,7 +781,7 @@ apop_model   *est;
     data       = apop_query_to_data("select * from d");
     est        = apop_OLS.estimate(data, NULL);
     printf("The OLS coefficients:\n");
-    apop_params_print(est);
+    apop_model_print(est);
     return 0;
 } 
 \endcode

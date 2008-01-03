@@ -7,9 +7,9 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "apophenia/stats.h"
 #include <gsl/gsl_rng.h>
 
-/** \defgroup basic_stats Some basic statistical functions. 
+/** \defgroup basic_stats Some basic statistical functions
 
-Many of these are juse one-line convenience functions for finding moments and normalizing matrices.
+Many of these are just one-line convenience functions for finding moments and normalizing matrices.
 */
 
 /** \defgroup vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
@@ -212,9 +212,9 @@ standard deviation.<br>
 'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin.<br>
 'm': normalize to mean zero: Replace each X with \f$(X-\mu)\f$<br>
 
-\b example 
+\b Example 
 \code
-#include <apophenia/headers.h>
+#include <apop.h>
 
 int main(void){
 gsl_vector  *in, *out;
@@ -224,21 +224,19 @@ gsl_vector_set(in, 1, 1);
 gsl_vector_set(in, 2, 2);
 
 printf("The orignal vector:\n");
-apop_vector_print(in, "\t", NULL);
+apop_vector_show(in);
 
 apop_vector_normalize(in, &out, 's');
 printf("Standardized with mean zero and variance one:\n");
-apop_vector_print(out, "\t", NULL);
+apop_vector_show(out);
 
 apop_vector_normalize(in, &out, 'r');
 printf("Normalized range with max one and min zero:\n");
-apop_vector_print(out, "\t", NULL);
+apop_vector_show(out);
 
 apop_vector_normalize(in, NULL, 'p');
 printf("Normalized into percentages:\n");
-apop_vector_print(in, "\t", NULL);
-
-return 0;
+apop_vector_show(in);
 }
 \endcode
 \ingroup basic_stats */

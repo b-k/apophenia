@@ -44,13 +44,8 @@ variables. See \ref data_struct.
 \li Models 
 The \ref apop_model structure encapsulates a description of the world
 in which the data and the parameters produce observed outcomes. The
-apop_model.estimate() method takes in data and produces an \ref
-apop_estimate. See \ref models.
-
-\li Estimates
-The \ref apop_model structure complements the \c apop_model by
-providing input params (like the method and tolerance for an ML
-estimation) and the output parameters.
+\apop_estimate() function takes in data and an un-parametrizes model and outputs a parametrized model.
+See \ref models, or the full declaration of the structure on the \c _apop_model page.
 
 \li Names 
 The \ref apop_name structure has three components: a list of column
@@ -94,20 +89,25 @@ typedef struct {
     gsl_vector  *weights;
 } apop_data;
 
-typedef struct _apop_model apop_model;
-
-/** The data to accompany an \c apop_model, including the input settings and the output parameters, expected values, et cetera.
+/** A description of a parametrized statistical model, including the
+input settings and the output parameters, expected values, et cetera.
+The full declaration is given in the \c _apop_model page.
 
 <b>An example</b><br>
 
 The \ref apop_OLS page has a sample program which uses an <tt>apop_estimate</tt> structure.
+\ingroup types
+*/
+typedef struct _apop_model apop_model;
 
+
+/**
 \param parameters 	The vector of coefficients or parameters estimated by the regression/MLE. Usually has as many dimensions as your data set has columns.
-\param dependent	An \ref apop_data structure with
+\param expected	An \ref apop_data structure with
 three columns. If this is a model with a single dependent and lots of
 independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally. There is thus currently no way to get just the predicted but not the residuals or vice versa.
 \param covariance 	The variance-covariance matrix.
-\param status		The return status from the estimate that had populated this apop_estimate, if any.
+\param status		The return status from the estimate that had populated this apop_model, if any.
 \ingroup inv_and_est
 */
 struct _apop_model{
@@ -175,9 +175,7 @@ apop_name * apop_name_copy(apop_name *in);
 size_t  apop_name_find(apop_name *n, char *findme, char type);
 
 void 		apop_model_free (apop_model * free_me);
-void 		apop_params_print (apop_model * print_me);
 void 		apop_model_show (apop_model * print_me);
-void 		apop_params_show (apop_model * print_me);//deprecated.
 
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
