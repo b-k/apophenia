@@ -59,19 +59,6 @@ static void yule_dlog_likelihood_rank(apop_data *d, gsl_vector *gradient, apop_m
 
 
 
-
-
-
-
-
-
-
-
-
-static apop_model * yule_estimate(apop_data * data, apop_model *parameters){
-	return apop_maximum_likelihood(data, *parameters);
-}
-
 static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
   if (!m->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
@@ -143,10 +130,6 @@ double		    bb_minus_one_inv= 1/(bb-1),
 	gsl_vector_set(gradient, 0, d_bb);
 }
 
-static double yule_p(apop_data *d, apop_model *p){
-    return exp(yule_log_likelihood(d, p));
-}
-
 
 /** Draw from a Yule distribution with parameter a
 
@@ -193,7 +176,7 @@ apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_params.
 \ingroup models
 \todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I have references on hand.
 */
-apop_model apop_yule = {"Yule", 1,0,0, 
-	.estimate = yule_estimate, .p = yule_p, .log_likelihood = yule_log_likelihood, 
+apop_model apop_yule = {"Yule", 1,0,0, .log_likelihood = yule_log_likelihood, 
     .score = yule_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
     .draw = yule_rng};
+//estimate via the default MLE method

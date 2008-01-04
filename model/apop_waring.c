@@ -21,24 +21,6 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <stdio.h>
 #include <assert.h>
 
-/////////////////////////
-//The Waring distribution
-/////////////////////////
-/** The Waring distribution
-
-\f$W(x, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
-
-\f$\ln W(x, b, a) = \ln(b-1) + \ln\gamma(b+a) + \ln\gamma(k+a) - \ln\gamma(a+1) - \ln\gamma(k+a+b)\f$
-
-\f$dlnW/db	= 1/(b-1)  + \psi(b+a) - \psi(k+a+b)\f$
-
-\f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
-
-\ingroup likelihood_fns
-*/
-static apop_model * waring_estimate(apop_data * data, apop_model *parameters){
-	return apop_maximum_likelihood(data, *parameters);
-}
 
 
 //First the rank versions
@@ -168,10 +150,6 @@ static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 	gsl_vector_set(gradient, 1, d_a);
 }
 
-static double waring_p(apop_data *d, apop_model *p){
-    return exp(waring_log_likelihood(d, p));
-}
-
 /** Give me parameters, and I'll draw a ranking from the appropriate
 Waring distribution. [I.e., if I randomly draw from a Waring-distributed
 population, return the ranking of the item I just drew.]
@@ -207,7 +185,7 @@ apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_params.
 
 \f$W(x,k, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
 
-\f$\ln W(x,k, b, a) = ln(b-1) + lng(b+a) + lng(k+a) - lng(a+1) - lng(k+a+b)\f$
+\f$\ln W(x, b, a) = \ln(b-1) + \ln\gamma(b+a) + \ln\gamma(k+a) - \ln\gamma(a+1) - \ln\gamma(k+a+b)\f$
 
 \f$dlnW/db	= 1/(b-1)  + \psi(b+a) - \psi(k+a+b)\f$
 
@@ -215,8 +193,7 @@ apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_params.
 \ingroup models
 \bugs This function needs better testing.
 */
-//apop_model apop_waring = {"Waring", 2, apop_waring_log_likelihood, NULL, NULL, 0, NULL, apop_waring_rng};
 apop_model apop_waring = {"Waring", 2,0,0, 
-	.estimate = waring_estimate, .p = waring_p, .log_likelihood =  waring_log_likelihood, 
-    .score = waring_dlog_likelihood, .constraint =  beta_zero_and_one_greater_than_x_constraint,  
-    .draw = waring_rng};
+	 .log_likelihood =  waring_log_likelihood, .score = waring_dlog_likelihood, 
+     .constraint =  beta_zero_and_one_greater_than_x_constraint,  .draw = waring_rng};
+//estimate via the default MLE 

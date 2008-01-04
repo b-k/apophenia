@@ -84,7 +84,7 @@ gsl_vector * apop_array_to_vector(const double *line, const int vsize){
     return out;
 }
 
-/* Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N
+/** Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N
  \times 1 \f$ are equivalent, but they're two different types in C.
 
  \param in a <tt>gsl_vector</tt>
@@ -967,7 +967,7 @@ This function has two important caveats, which are just inevitable facts
 of C's handling of variadic functions.
 
 * You must have exactly as many values as spaces in the data set. There
-is no partial filling, though see \c apop_matrix_fill and apop_vector_fill.
+is no partial filling, though see \ref apop_matrix_fill and \ref apop_vector_fill.
 Too many values will be ignored; too few will segfault.
 
 * Every value must be floating point. Int values will cauase a segfault

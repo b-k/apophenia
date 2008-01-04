@@ -44,10 +44,6 @@ double apop_multinormal_ll_prob(apop_data *data, apop_model * m){
     return ll;
 }
 
-double apop_multinormal_prob(apop_data *data, apop_model * m){
-    return exp(apop_multinormal_ll_prob(data, m));
-}
-
 static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
     if (!p) p = apop_model_copy(apop_multivariate_normal);
     apop_model_clear(data, p);
@@ -95,5 +91,4 @@ static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
   \ingroup models
  */
 apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1,
-     .estimate = multivariate_normal_estimate, .p = apop_multinormal_prob, 
-     .log_likelihood = apop_multinormal_ll_prob, .draw = mvnrng};
+     .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll_prob, .draw = mvnrng};

@@ -154,7 +154,7 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
 }
 
 static double apop_kernel_density_log_likelihood(apop_data *d, apop_model *p){
-    return apop_histogram.log_likelihood(d,p);
+    return log(apop_histogram.p(d,p));
 }
 
 static double apop_kernel_density_p(apop_data *d, apop_model *p){

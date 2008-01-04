@@ -68,10 +68,6 @@ static double poisson_log_likelihood(apop_data *d, apop_model * p){
     return llikelihood - d->matrix->size1*d->matrix->size2*lambda;
 }
 
-static double poisson_p(apop_data *d, apop_model * v){
-    return exp(poisson_log_likelihood(d, v));
-}
-
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   if (!p->parameters)
       apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
@@ -107,6 +103,6 @@ If you want, you can use the \c apop_mle_estimate_params for the method_settings
 \ingroup models
 */
 apop_model apop_poisson = {"poisson", 1, 0,0, 
-     .estimate = poisson_estimate, .p = poisson_p, .log_likelihood = poisson_log_likelihood, 
+     .estimate = poisson_estimate, .log_likelihood = poisson_log_likelihood, 
      .score = poisson_dlog_likelihood, .constraint = beta_zero_greater_than_x_constraint, 
      .draw = poisson_rng};

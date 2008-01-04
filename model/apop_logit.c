@@ -39,7 +39,7 @@ static void probit_prep(apop_data *d, apop_model *m){
     apop_name_cross_stack(m->parameters->names, d->names, 'r', 'c');
 }
 
-
+/*
 static void modify_in_data(apop_data *d){
     if (!d->vector){
         APOP_COL(d, 0, independent);
@@ -52,6 +52,7 @@ static apop_model * logit_estimate(apop_data * data,  apop_model *parameters){
     modify_in_data(data);
 	return apop_maximum_likelihood(data,  *parameters);
 }
+*/
 
 /*For the sake of the fdf function, we keep xdotbeta global.
   */
@@ -84,10 +85,6 @@ static double logit_log_likelihood(apop_data *d, apop_model *p){
 	return loglike;
 }
 
-static double logit_p(apop_data *d, apop_model *p){
-    return exp(logit_log_likelihood(d, p));
-}
-
 /** 
   Simple, but some trickery to keep xdotbeta. Notice that the two switches
   leave the function with the same values with which they came in.
@@ -111,6 +108,5 @@ static void logit_fdf(gsl_vector *beta, apop_data *d, double *f, gsl_vector *df,
 
 \ingroup models
 */
-apop_model apop_logit = {"Logit",-1,0,0,  
-    .estimate = logit_estimate, .p = logit_p, .log_likelihood = logit_log_likelihood, .prep=probit_prep};
-    //.score = logit_dlog_likelihood};
+apop_model apop_logit = {"Logit",-1,0,0, .log_likelihood = logit_log_likelihood, .prep=probit_prep};
+    //.score = logit_dlog_likelihood}; //estimate method is the default MLE.

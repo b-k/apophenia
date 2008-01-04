@@ -65,10 +65,12 @@ static void probit_prep(apop_data *d, apop_model *m){
     apop_name_cross_stack(m->parameters->names, d->names, 'r', 'c');
 }
 
+/*
 static apop_model * probit_estimate(apop_data * data,  apop_model *parameters){
     //modify_in_data(data);
 	return apop_maximum_likelihood(data, *parameters);
 }
+*/
 
 //////////////////
 //The probit model
@@ -112,10 +114,6 @@ static double probit_log_likelihood(apop_data *d, apop_model *p){
         total_prob += apop_data_get(d, i, -1)==0 ?  log(n): log(1 - n);
 	}
 	return total_prob;
-}
-
-static double probit_p(apop_data *d, apop_model *p){
-    return exp(probit_log_likelihood(d, p));
 }
 
 /* The derivative of the probit distribution, for use in likelihood
@@ -163,6 +161,6 @@ static void probit_fdf(gsl_vector *beta, apop_data *d, double *f, gsl_vector *df
 
 \ingroup models
 */
-apop_model apop_probit = {"Probit", -1,0,0, 
-    .estimate = probit_estimate, .p = probit_p, .log_likelihood = probit_log_likelihood, 
+apop_model apop_probit = {"Probit", -1,0,0, .log_likelihood = probit_log_likelihood, 
     .score = probit_dlog_likelihood, .prep = probit_prep};
+//estimate via the default MLE.

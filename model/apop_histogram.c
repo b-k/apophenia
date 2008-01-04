@@ -99,10 +99,6 @@ static double histogram_p(apop_data *d, apop_model *parameters){
     return product;
 }
 
-static double histogram_log_likelihood(apop_data *d, apop_model *parameters){
-	return log(histogram_p(d,parameters)) ;
-}
-
 static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
   apop_histogram_params *hp   = eps->model_settings;
     if (!hp->cdf){
@@ -133,5 +129,4 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
 \ingroup models
 */
 apop_model apop_histogram = {"Histogram", 0,0,0, .estimate = est, 
-    .p = histogram_p, .log_likelihood = histogram_log_likelihood, 
-    .draw = histogram_rng};
+    .p = histogram_p, .draw = histogram_rng};

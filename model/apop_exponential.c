@@ -132,10 +132,6 @@ static double exponential_log_likelihood(apop_data *d, apop_model *p){
 	return llikelihood;
 }
 
-static double exp_p(apop_data *d, apop_model *p){
-    return exp(exponential_log_likelihood(d, p));
-}
-
 /** The exponential distribution. A one-parameter likelihood fn.
 
 \f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
@@ -187,6 +183,6 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Write a second object for the plain old not-network data Exponential.
 */
 apop_model apop_exponential = {"Exponential distribution", 1,0,0,
-	 .estimate = exponential_estimate, .p = exp_p, .log_likelihood = exponential_log_likelihood, 
+	 .estimate = exponential_estimate, .log_likelihood = exponential_log_likelihood, 
      .score = exponential_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
      .draw = exponential_rng};

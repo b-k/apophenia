@@ -51,11 +51,6 @@ static void zipf_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient, 
 
 
 
-
-
-
-
-
 static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1
   static apop_data *constraint = NULL;

@@ -43,13 +43,10 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
     return total_prob;
 }
 
-static double ols_p (apop_data *d, apop_model *p){ 
-    return exp(ols_log_likelihood(d, p)); }
-
 /** The IV model
 
   This is basically a wrapper for the IV regression function, \ref apop_estimate_IV
 \ingroup models
 */
-apop_model apop_IV = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, .p=ols_p,
+apop_model apop_IV = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, 
                             .log_likelihood = ols_log_likelihood};

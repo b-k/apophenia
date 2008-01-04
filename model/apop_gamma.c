@@ -71,13 +71,6 @@ static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_
 
 
 
-
-
-
-static apop_model * gamma_estimate(apop_data * data, apop_model *parameters){
-    return apop_maximum_likelihood(data, *parameters);
-}
-
 static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
   static apop_data *constraint = NULL;
@@ -110,10 +103,6 @@ static double gamma_log_likelihood(apop_data *d, apop_model *p){
                 llikelihood    += -ln_ga - a_ln_b + (a-1) * log(x) - x/b;
         }
     return llikelihood;
-}
-
-static double gamma_p(apop_data *d, apop_model *p){
-    return exp(gamma_log_likelihood(d, p));
 }
 
 /** The derivative of the Gamma distribution, for use in likelihood
@@ -174,7 +163,7 @@ If you have frequency or ranking data, you probably mean to be using \ref apop_g
 \f$d ln G/ db    =  -a/b - x \f$
 \ingroup models
 */
-apop_model apop_gamma = {"Gamma distribution", 2,0,0,
-     .estimate = gamma_estimate, .p = gamma_p, .log_likelihood = gamma_log_likelihood, 
+apop_model apop_gamma = {"Gamma distribution", 2,0,0, //estimate method is just the default MLE.
+      .log_likelihood = gamma_log_likelihood, 
      .score = gamma_dlog_likelihood, .constraint = beta_zero_and_one_greater_than_x_constraint, 
      .draw = gamma_rng};

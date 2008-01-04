@@ -102,10 +102,6 @@ gsl_matrix 	*data 		= d->matrix;
 	return loglike  + gsl_sf_lnbeta (alpha, beta)*data->size1*data->size2;
 }
 
-static double beta_p(apop_data *d, apop_model *p){
-    return exp(beta_log_likelihood(d, p));
-}
-
 /* The derivative of the beta distribution, for use in likelihood
   minimization. 
   The format is often the same as above: go line by line through a gsl_matrix.
@@ -163,5 +159,5 @@ You should describe the format of the input data here.
 \ingroup models
 */
 apop_model apop_beta = {"Beta distribution", 2,0,0,
-	.estimate = beta_estimate, .p = beta_p, .log_likelihood = beta_log_likelihood, 
+	.estimate = beta_estimate, .log_likelihood = beta_log_likelihood, 
     .constraint = beta_constraint, .draw = beta_rng};
