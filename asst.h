@@ -1,4 +1,4 @@
-//asst.h		Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/** \file asst.h		Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #ifndef __apop_asst__
 #define __apop_asst__
 

@@ -100,8 +100,7 @@ apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
 		printf("2st avg: %g; 2st std dev: %g; 2st count: %i.\n", b_avg, sqrt(b_var), b_count);
 		printf("t-statistic: %g.\n", stat);
 	}
-
-int         df      = a_count+b_count-2;
+    int df      = a_count+b_count-2;
     return produce_t_test_output(df, stat, a_avg - b_avg);
 }
 
@@ -838,8 +837,6 @@ apop_data *apop_estimate_r_squared (apop_model *in){
 
 
 
-
-
 static apop_data *prep_z(apop_data *x, apop_data *instruments){
   int       i;
   apop_data *out    = apop_data_copy(x);
@@ -959,5 +956,3 @@ apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     epout->status   = 1;
     return epout;
 }
-
-

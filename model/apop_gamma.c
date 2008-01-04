@@ -144,7 +144,7 @@ static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
 
 Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
 
-apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_params.
+apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
   
 If you have frequency or ranking data, you probably mean to be using \ref apop_gamma_rank.
 
