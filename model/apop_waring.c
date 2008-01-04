@@ -101,8 +101,7 @@ static double apply_me(gsl_vector *data){
 }
 
 static double waring_log_likelihood(apop_data *d, apop_model *m){
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
       return waring_log_likelihood_rank(d, m);
   bb	= gsl_vector_get(m->parameters->vector, 0),
@@ -120,8 +119,7 @@ static double waring_log_likelihood(apop_data *d, apop_model *m){
 
 static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
 	//Psi is the derivative of the log gamma function.
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
       return waring_dlog_likelihood_rank(d, gradient, m);
   bb		        = gsl_vector_get(m->parameters->vector, 0);

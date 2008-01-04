@@ -164,8 +164,7 @@ If you have a situation where these options are out, you'll have to do something
   */
 apop_model *apop_model_set_parameters(apop_model in, ...){
   va_list  ap;
-    if (in.vbase == -1 || in.m1base == -1 || in.m2base == -1)
-        apop_error(0, 's', "%s only works with models whose number of params does not depend on data size. You'll have to use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then set in->parameters using your data.\n");
+    apop_assert((in.vbase != -1) && (in.m1base != -1) && (in.m2base != -1),  NULL, 0, 's', "This function only works with models whose number of params does not depend on data size. You'll have to use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then set in->parameters using your data.");
     apop_model *out = apop_model_copy(in);
     apop_model_clear(NULL, out);
     va_start(ap, in);
@@ -199,10 +198,7 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
 \ingroup models
 */
 double apop_p(apop_data *d, apop_model *m){
-    if (!m->parameters){
-        apop_error(0, 's', "%s: You gave me a function that has no parameters.\n", __func__);
-        return 0;
-    }
+    apop_assert(m->parameters,  0, 0, 's', "You gave me a function that has no parameters. Returning zero.");
     if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;
@@ -211,7 +207,7 @@ double apop_p(apop_data *d, apop_model *m){
         return m->p(d, m);
     else if (m->log_likelihood)
         return exp(m->log_likelihood(d, m));
-    apop_error(0, 's', "%s: You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n", __func__);
+    apop_error(0, 's', "You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n");
     return 0;
 }
 
@@ -223,10 +219,7 @@ double apop_p(apop_data *d, apop_model *m){
 \ingroup models
 */
 double apop_log_likelihood(apop_data *d, apop_model *m){
-    if (!m->parameters){
-        apop_error(0, 's', "%s: You gave me a function that has no parameters.\n", __func__);
-        return 0;
-    }
+    apop_assert(m->parameters,  0, 0, 's', "You gave me a function that has no parameters.");
     if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;
@@ -247,10 +240,7 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 \ingroup models
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
-    if (!m->parameters){
-        apop_error(0, 's', "%s: You gave me a function that has no parameters.\n", __func__);
-        return;
-    }
+    apop_assert_void(m->parameters, 0, 's', "You gave me a function that has no parameters.");
     if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;

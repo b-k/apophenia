@@ -153,14 +153,11 @@ includes a set of t-test values: p value, confidence (=1-pval), t statistic, sta
 
 */
 void apop_estimate_parameter_t_tests (apop_model *est){
-int     i, df;
-double  val, var, pval, tstat, rootn, stddev, two_tail;
-    if (!est->data)
-        return;
-    if (!est->covariance || !est->parameters){
-        apop_error(1,'c', "%s: You asked me to estimate t statistics, but I'm missing either the covariance matrix or the parameters (probably the cov matrix)\n", __func__);
-        return;
-    }
+  int     i, df;
+  double  val, var, pval, tstat, rootn, stddev, two_tail;
+  if (!est->data)
+      return;
+  apop_assert_void(est->covariance && est->parameters, 1,'c', "You asked me to estimate t statistics, but I'm missing either the covariance matrix or the parameters (probably the cov matrix)");
     est->parameters->matrix = gsl_matrix_alloc(est->parameters->vector->size, 7);
     apop_name_add(est->parameters->names, "p value", 'c');
     apop_name_add(est->parameters->names, "confidence", 'c');
@@ -444,8 +441,7 @@ int main(){ apop_model_show(apop_estimate(apop_text_to_data("data", 0, 0), apop_
 
  */
 apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
-    if (!inset)
-        apop_error(0,'s', "%s: You asked me to estimate a regression with NULL data.\n", __func__);
+    apop_assert(inset,  NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set;
   apop_model       *epout;
   gsl_vector        *weights    = NULL;
@@ -737,15 +733,11 @@ apop_data_stack(main_regression_vars, dummies, 'c');
 */
 apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first){
     if (type == 'd'){
-        if ((col == -1) && !d->vector)
-            apop_error(0, 's', "%s: You asked for the vector element (col==-1) but the data's vector element is NULL.\n", __func__);
-        if (col >=0 && col >= d->matrix->size2)
-            apop_error(0, 's', "%s: You asked for the matrix element %i but the data's matrix element has only %i columns.\n", 
-                    __func__, col, d->matrix->size2);
+        apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element (col==-1) but the data's vector element is NULL.");
+        apop_assert(col < d->matrix->size2,  NULL, 0, 's', "You asked for the matrix element %i but the data's matrix element has only %i columns.", col, d->matrix->size2);
     } else
-        if (col >= d->textsize[1])
-            apop_error(0, 's', "%s: You asked for the text element %i but the data's text element has only %i elements.\n", 
-                    __func__, col, d->textsize[1]);
+        apop_assert(col < d->textsize[1],  NULL, 0, 's', "You asked for the text element %i but the data's text element has only %i elements.", col, d->textsize[1]);
+
     return dummies_and_factors_core(d, col, type, keep_first, 0, 'd');
 }
 
@@ -766,13 +758,9 @@ Notice that the query pulled a column of ones for the sake of saving room for th
 
 */
 void apop_data_text_to_factors(apop_data *d, size_t textcol, int datacol){
-    if ((datacol == -1) && !d->vector)
-        apop_error(0, 's', "%s: You asked for the vector element (col==-1) but the data's vector element is NULL.\n", __func__);
-    if (datacol >=0 && datacol >= d->matrix->size2)
-        apop_error(0, 's', "%s: You asked for the matrix element %i but the data's matrix element has only %i columns.\n", 
-                __func__, datacol, d->matrix->size2);
-    if (textcol >= d->textsize[1])
-        apop_error(0, 's', "%s: You asked for the text element %i but the data's text element has only %i elements.\n", __func__, datacol, d->textsize[1]);
+    apop_assert_void((datacol != -1) || d->vector, 0, 's', "You asked for the vector element (col==-1) but the data's vector element is NULL.");
+    apop_assert_void(datacol < d->matrix->size2, 0, 's', "You asked for the matrix element %i but the data's matrix element has only %i columns.", datacol, d->matrix->size2);
+    apop_assert_void(textcol < d->textsize[1], 0, 's', "You asked for the text element %i but the data's text element has only %i elements.", datacol, d->textsize[1]);
 
     dummies_and_factors_core(d, textcol, 't', 1, datacol, 'f');
 }
@@ -823,10 +811,7 @@ apop_data *apop_estimate_correlation_coefficient (apop_model *in){
   gsl_vector      v;  
   apop_data       *out    = apop_data_alloc(0, 5,-1);
   apop_ls_settings *p      = in->model_settings;
-    if (!p->want_expected_value){
-        apop_error(0, 'c', "I need an estimate that used want_expected_value to calculate the correlation coefficient. returning NULL.\n");
-        return NULL;
-    }
+    apop_assert(p->want_expected_value,  NULL, 0, 'c', "I need an estimate that used want_expected_value to calculate the correlation coefficient. returning NULL.\n");
     v   = gsl_matrix_column(in->expected->matrix, 
                 apop_name_find(in->expected->names, "residual", 'c')).vector;
     gsl_blas_ddot(&v, &v, &sse);
@@ -867,8 +852,7 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
     else if (instruments->names->rowct)
         for (i=0; i< instruments->names->rowct; i++){
             int rownumber = apop_name_find(x->names, instruments->names->row[i], 'c');
-            if (rownumber == -1)
-                apop_error(0, 's', "%s: You asked me to substitute instrument column %i for the data column named %s, but I could find no such name.\n", __func__, i, instruments->names->row[i]);
+            apop_assert(rownumber != -1,  NULL, 0, 's', "You asked me to substitute instrument column %i for the data column named %s, but I could find no such name.",  i, instruments->names->row[i]);
             APOP_COL(instruments, i, inv);
             APOP_COL(out, rownumber, outv);
             gsl_vector_memcpy(outv, inv);
@@ -912,8 +896,7 @@ without producing the Z matrix explicitly.
 
  */
 apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
-    if (!inset)
-        apop_error(0,'s', "%s: You asked me to estimate a regression with NULL data.\n", __func__);
+  apop_assert(inset, NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set, *z;
   apop_model       *epout;
   gsl_vector        *weights    = NULL;

@@ -15,8 +15,6 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "conversions.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"
-#include <stdio.h>
-#include <assert.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_zeta.h>
 
@@ -71,8 +69,7 @@ static double oneline_log(gsl_vector *v){
 }
 
 static double zipf_log_likelihood(apop_data *d, apop_model *m){
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
         return zipf_log_likelihood_rank(d, m);
   gsl_matrix    *data   = d->matrix;
@@ -92,8 +89,7 @@ static double zipf_p(apop_data *d, apop_model *v){
 }    
 
 static void zipf_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
         return zipf_dlog_likelihood_rank(d, gradient, m);
   double      bb        = gsl_vector_get(m->parameters->vector, 0);
@@ -126,8 +122,7 @@ apop_zipf.draw(r, 1.4, NULL);
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
 static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
   double a  = gsl_vector_get(param->parameters->vector, 0);
-  if (a <= 1)
-      apop_error(0, 's', "%s: Zipf needs a parameter >=1. Returning 0.\n", __func__); 
+  apop_assert_void(a >= 1, 0, 's', "Zipf needs a parameter >=1. Stopping."); 
   int     x;
   double  u, v, t, 
           b       = pow(2, a-1), 

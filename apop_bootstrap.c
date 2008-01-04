@@ -49,8 +49,8 @@ gsl_rng *apop_rng_alloc(int seed){
 \ingroup boot
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
-  if (!in->matrix)
-      apop_error(0, 's', "%s: At the moment, this function uses only the matrix element of the input data.\n", __func__);
+  apop_assert(in,  NULL, 0, 's', "You sent me NULL input data.");
+  apop_assert(in->matrix,  NULL, 0, 's', "At the moment, this function uses only the matrix element of the input data.");
   apop_model   *e              = apop_model_copy(model);
   apop_model_clear(in, e);
   int           i, n            = in->matrix->size1;

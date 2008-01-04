@@ -93,10 +93,7 @@ gsl_vector * apop_array_to_vector(const double *line, const int vsize){
  \ingroup convenience_fns
  */
 gsl_matrix * apop_vector_to_matrix(const gsl_vector *in){
-    if (!in){
-        apop_error(1,'c', "apop_vector_to_matrix: converting NULL vector to NULL matrix.\n");
-        return NULL;
-    }
+    apop_assert(in,  NULL, 1,'c', "apop_vector_to_matrix: converting NULL vector to NULL matrix.\n");
     gsl_matrix *out = gsl_matrix_alloc(in->size, 1);
     gsl_matrix_set_col(out, 0, in);
     return out;
@@ -184,10 +181,7 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
       return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
     if ((rows==0 || cols==0) && vsize>0)
       return apop_vector_to_data(apop_array_to_vector(in, vsize));
-    if (vsize!=rows){
-        apop_error(0,'c',"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
-        return NULL;
-    }
+    apop_assert(vsize==rows,  NULL, 0,'c',"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
   int i, j, ctr = 0;
   apop_data *out  = apop_data_alloc(vsize, rows, cols);
     for (i=0; i< rows; i++)
@@ -227,20 +221,17 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
     datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
-    if (!datachars) 
-    	apop_error(0, 's', "%s: selecting %s, %s, %s from %s returned an empty table.\n", __func__, r1, r2, datacol, tabname);
+    apop_assert(datachars,  NULL, 0, 's', "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
     pre_d1	    = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
-    if (!pre_d1) 
-    	apop_error(0, 's', "%s: selecting %s from %s returned an empty table.\n", __func__, r1, tabname);
+    apop_assert(pre_d1,  NULL, 0, 's', "selecting %s from %s returned an empty table.\n", r1, tabname);
     for (i=0; i < pre_d1->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d1->text[i][0], 'r');
 
 	pre_d2	= apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
-	if (!pre_d2) 
-		apop_error(0, 's', "%s: selecting %s from %s returned an empty table.\n", __func__, r2, tabname);
+	apop_assert(pre_d2,  NULL, 0, 's', "selecting %s from %s returned an empty table.\n", r2, tabname);
     for (i=0; i < pre_d2->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
@@ -295,11 +286,7 @@ int apop_count_cols_in_text(char *text_file){
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 1);
 	infile	= fopen(text_file,"r");
-    if (infile == NULL){
-        printf("Error opening file %s. apop_count_cols_in_text returning 0.", text_file);
-        return 0;
-    }
-	if (infile==NULL) {printf("Error opening %s", text_file); return 1;}
+    apop_assert(infile, 0, 0, 'c', "Error opening file %s. Returning 0.", text_file);
 	fgets(instr, Text_Line_Limit, infile);
 	while(instr[0]=='#')	//burn off comment lines
 		fgets(instr, Text_Line_Limit, infile);
@@ -321,7 +308,7 @@ int apop_count_rows_in_text(char *text_file){
   char		instr[Text_Line_Limit];
   int		ct	= 0;
 	infile	= fopen(text_file,"r");
-	if (infile==NULL) {printf("Error opening %s", text_file); return 1;}
+    apop_assert(infile, 0, 0, 'c', "Error opening file %s. Returning 0.", text_file);
 	while(fgets(instr,Text_Line_Limit,infile)!=NULL)
 	    if(instr[0]!='#')	//burn off comment lines
 		    ct  ++;
@@ -439,10 +426,7 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
 	rowct	= apop_count_rows_in_text(text_file);
     set     = apop_data_alloc(0,rowct+1-has_col_names,ct);
 	infile	= fopen(text_file,"r");
-    if (infile == NULL){
-        printf("Error opening file %s. %s returning NULL.", text_file, __func__);
-        return NULL;
-    }
+    apop_assert(infile, NULL, 0, 'c', "Error opening file %s. Returning NULL.", text_file);
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 1);
     strip_regex_alloc();
@@ -699,8 +683,7 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
     }
     asprintf(&q, "%s varchar(100) );", q);
     apop_query(q);
-    if (!apop_table_exists(tabname, 0))
-        apop_error(0, 's', "%s: query \"%s\" failed.\n", __func__, q);
+    apop_assert_void(apop_table_exists(tabname, 0),  0, 0, 's', "query \"%s\" failed.\n", q);
     if (use_names_in_file){
         for (i=0; i<ct; i++)
             free(fn[i]);
@@ -726,8 +709,7 @@ static void tab_create(char *tabname, int ct, int has_row_names){
     }
     asprintf(&q, "%s' ); begin;", q);
     apop_query(q);
-    if (!apop_table_exists(tabname, 0))
-        apop_error(0, 's', "%s: query \"%s\" failed.\n", __func__, q);
+    apop_assert(apop_table_exists(tabname, 0),  0, 0, 's', "query \"%s\" failed.\n", q);
     if (use_names_in_file){
         for (i=0; i<ct; i++)
             free(fn[i]);
@@ -818,10 +800,7 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 		    infile	= fopen(text_file,"r");
         else
             infile  = stdin;
-	       	if (infile==NULL) {
-			printf("Trouble opening %s. %s bailing.\n", text_file, __func__);
-			return 0;
-		}
+        apop_assert(infile, 0,  0, 'c', "Trouble opening %s. Bailing.\n", text_file);
         ct  = get_field_names(has_col_names, field_names, infile);
         if (apop_opts.db_engine=='m')
             tab_create_mysql(tabname, ct, has_row_names);

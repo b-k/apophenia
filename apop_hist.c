@@ -81,8 +81,7 @@ Anyway, here are some functions to deal with these various histograms and such.
 \ingroup histograms
 */
 apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *indata){
-  if (!template || strcmp(template->name, "Histogram"))
-      apop_error(0, 's', "%s: The first argument needs to be an apop_histogram model.\n", __func__);
+  apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be an apop_histogram model.");
   size_t  i;
     apop_model *out = apop_model_copy(*template); 
     gsl_histogram *hout  = ((apop_histogram_params*) out->model_settings)->pdf;
@@ -107,10 +106,8 @@ apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *
 \ingroup histograms
 */
 apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m, long int draws, gsl_rng *r){
-  if (!template || strcmp(template->name, "Histogram"))
-      apop_error(0, 's', "%s: The first argument needs to be an apop_histogram model.\n", __func__);
-  if (!m || !m->draw)
-      apop_error(0, 's', "%s: The second argument needs to be an apop_model with a function to make radom draws.\n", __func__);
+  apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be an apop_histogram model.");
+  apop_assert(m && m->draw, NULL, 0, 's', "The second argument needs to be an apop_model with a function to make random draws.");
   long double i;
   double d;
     apop_model *out = apop_model_copy(*template); 
@@ -270,14 +267,10 @@ void apop_histogram_normalize(apop_model *m){
   gsl_histogram *h = ((apop_histogram_params *)m->model_settings)->pdf;
   int           i;
   long double   sum = 0;
-    if (!h)
-        apop_error(0, 's', "%s: You sent me a model which is not a histogram or which is unparametrized.\n", __func__);
+  apop_assert_void(h, 0, 's', "You sent me a model which is not a histogram or which is unparametrized.");
     for (i=0; i< h->n; i++)
         sum       += h->bin[i];
-    if (!sum){
-        apop_error(0, 'c', "%s: You sent me a histogram with a total density of zero. Returning same.\n", __func__);
-        return;
-    }
+    apop_assert_void(sum, 0, 'c', "You sent me a histogram with a total density of zero. Returning same.");
     for (i=0; i< h->n; i++)
         h->bin[i] /= sum;
 }

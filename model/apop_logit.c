@@ -62,8 +62,7 @@ int         calculate_xdotbeta  = 1;
 int         keep_xdotbeta       = 0;
 
 static double logit_log_likelihood(apop_data *d, apop_model *p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   size_t	    i;
   double	    loglike 	= 0,
                 xb, exb;

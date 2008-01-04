@@ -31,7 +31,23 @@ apop_data * apop_test_ANOVA_independence(apop_data *d);
 int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
-apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
+
+/** A convenient front for \ref apop_error, that tests the first element and
+ basically runs \ref apop_error if it is false. See also \ref apop_assert_void and \ref apop_error*/
+#define apop_assert(test, returnval, level, stop, ...) do \
+    if (!(test)) {  \
+        if (apop_opts.verbose >= level) { fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");}   \
+        if (stop == 's' || stop == 'h') assert(test);   \
+        return returnval;  \
+} while (0);
+
+/** Like \ref apop_assert, but useful in void functions. */
+#define apop_assert_void(test,  level, stop, ...) do \
+    if (!(test)) {  \
+        if (apop_opts.verbose >= level) { fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");}   \
+        if (stop == 's' || stop == 'h') assert(test);   \
+} while (0);
+
 
 __END_DECLS
 #endif

@@ -86,14 +86,13 @@ through the matrix, calculating the log likelihood. That's the sample
 code here.  
 */
 static double beta_log_likelihood(apop_data *d, apop_model *p){
-    if (!p->parameters)
-        apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
-int		    i,j;
-double	    x, 
-            loglike    	= 0,
-            alpha       = apop_data_get(p->parameters,0,-1),
-            beta        = apop_data_get(p->parameters,1,-1);
-gsl_matrix 	*data 		= d->matrix;
+  apop_assert(p->parameters,  0, 0, 's', "You asked me to evaluate an un-parametrized model.");
+  int		    i,j;
+  double	    x, 
+              loglike    	= 0,
+              alpha       = apop_data_get(p->parameters,0,-1),
+              beta        = apop_data_get(p->parameters,1,-1);
+  gsl_matrix 	*data 		= d->matrix;
 	for(i=0;i< data->size1; i++)
         for(j=0; j< data->size2; j++){
             x       = gsl_matrix_get(data, i, j);

@@ -30,8 +30,7 @@ static apop_model * uniform_estimate(apop_data * data,  apop_model *parameters){
 
 
 static double unif_ll(apop_data *d, apop_model *m){
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     if (gsl_matrix_min(d->matrix)> m->parameters->vector->data[0] 
             && gsl_matrix_max(d->matrix)< m->parameters->vector->data[1])
         return log(m->parameters->vector->data[1] - m->parameters->vector->data[0]) * d->matrix->size1 * d->matrix->size2;
@@ -39,8 +38,7 @@ static double unif_ll(apop_data *d, apop_model *m){
 }
 
 static double unif_p(apop_data *d, apop_model *m){
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     if (gsl_matrix_min(d->matrix)> m->parameters->vector->data[0] 
             && gsl_matrix_max(d->matrix)< m->parameters->vector->data[1])
         return pow(m->parameters->vector->data[1] - m->parameters->vector->data[0],  

@@ -101,8 +101,7 @@ up to that point. Multiply likelihood either by that or by 1-that, depending
 on the choice the data made.
 */
 static double probit_log_likelihood(apop_data *d, apop_model *p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   int		    i;
   long double	n, total_prob	= 0;
   gsl_matrix    *data           = d->matrix;
@@ -120,8 +119,7 @@ static double probit_log_likelihood(apop_data *d, apop_model *p){
   minimization. You'll probably never need to call this directly.*/
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
 	//derivative of the above. 
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   int		i, j;
   long double	one_term, beta_term_sum, cdf;
   gsl_matrix 	*data 		= d->matrix;

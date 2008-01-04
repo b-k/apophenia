@@ -62,9 +62,7 @@ static double onerow(double in){
 This is just a for loop that runs a probit on each row.
 */
 static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
-
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   static apop_model *spare_probit = NULL;
     if (!spare_probit){
         spare_probit = apop_model_copy(apop_probit);
@@ -128,8 +126,7 @@ Minka, who implemented it in his Lightspeed Matlab toolkit.]
 
   */
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   size_t i, index, choicect = p->parameters->matrix->size2;
 
   //Find X\beta_i for each row of X and each column of \beta.

@@ -42,8 +42,7 @@ static apop_model * rank_exponential_estimate(apop_data * data, apop_model *para
 }
 
 static double rank_exponential_log_likelihood(const apop_data *d, apop_model *params){
-  if (!params->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double          b		    = gsl_vector_get(params->parameters->vector, 0),
 		          p,
 		          llikelihood = 0,
@@ -60,8 +59,7 @@ static double rank_exponential_log_likelihood(const apop_data *d, apop_model *pa
 }
 
 static void rank_exponential_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *params){
-  if (!params->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert_void(params->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double		    bb		        = gsl_vector_get(params->parameters->vector, 0);
   int 		    k;
   gsl_matrix	    *data		    = d->matrix;
@@ -120,8 +118,7 @@ via \f$C=\exp(1/\mu)\f$.
 \todo Check that the borderline work here is correct.
 */
 static double exponential_log_likelihood(apop_data *d, apop_model *p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
       return rank_exponential_log_likelihood(d, p);
   gsl_matrix	*data	= d->matrix;
@@ -138,8 +135,7 @@ static double exponential_log_likelihood(apop_data *d, apop_model *p){
 \todo Check that the borderline work here is correct too.
 */
 static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
       return rank_exponential_dlog_likelihood(d, gradient, p);
   double		mu	    = gsl_vector_get(p->parameters->vector, 0);

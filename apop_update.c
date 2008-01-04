@@ -131,10 +131,7 @@ apop_model * apop_update(apop_data *data, apop_model prior, apop_model likelihoo
         prior.draw(draw, r, &prior);
         write_double(draw, likelihood.parameters);
         ratio = likelihood.log_likelihood(data,&likelihood) - cp_ll;
-        if (gsl_isnan(ratio)){
-            apop_error(0, 'c',"Trouble evaluating the likelihood function at vector beginning with %g or %g. Maybe offer a new starting point.\n", current_param->vector->data[0], likelihood.parameters->vector->data[0]);
-            return NULL;
-        }
+        apop_assert(!gsl_isnan(ratio),  NULL, 0, 'c',"Trouble evaluating the likelihood function at vector beginning with %g or %g. Maybe offer a new starting point.\n", current_param->vector->data[0], likelihood.parameters->vector->data[0]);
         if (ratio >=0 || log(gsl_rng_uniform(r)) < ratio){
             apop_data_memcpy(current_param,likelihood.parameters);
             cp_ll = likelihood.log_likelihood(data,&likelihood);

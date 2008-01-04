@@ -56,8 +56,7 @@ which you may have already done in the OLS estimation.
 
  */
 static double wls_log_likelihood (apop_data *d, apop_model *params){ 
-  if (!params->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   int           i; 
   long double   total_prob  = 0; 
   double        sigma, expected, actual, weight;

@@ -93,8 +93,7 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 \param d	the set of data points; see notes.
 */
 static double normal_log_likelihood(apop_data *d, apop_model *params){
-  if (!params->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     mu	        = gsl_vector_get(params->parameters->vector,0);
     sd          = gsl_vector_get(params->parameters->vector,1);
   gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me2);//sum of (x-mu)^2
@@ -104,8 +103,7 @@ static double normal_log_likelihood(apop_data *d, apop_model *params){
 }
 
 static double normal_p(apop_data *d, apop_model *params){
-  if (!params->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     mu	        = gsl_vector_get(params->parameters->vector,0);
     sd          = gsl_vector_get(params->parameters->vector,1);
   gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me);

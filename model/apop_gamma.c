@@ -18,16 +18,12 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_permutation.h>
-#include <stdio.h>
-#include <assert.h>
-
 
 
 static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
   float           a           = gsl_vector_get(p->parameters->vector, 0),
                   b           = gsl_vector_get(p->parameters->vector, 1);
-    if (a<=0 || b<=0) 
-      apop_error(0,'c', "%s: The Gamma's log likelihood needs positive params, and you gave me %g and %g.", __func__, a, b);
+    apop_assert(a>0 && b>0, 0, 0,'c', "The Gamma's log likelihood needs positive params, and you gave me %g and %g. Returning zero.", a, b);
     if (gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
   int             k;
   gsl_matrix      *data       = d->matrix;
@@ -83,8 +79,7 @@ static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_
 }
 
 static double gamma_log_likelihood(apop_data *d, apop_model *p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
         return gamma_rank_log_likelihood(d, p);
   float         a    = gsl_vector_get(p->parameters->vector, 0),
@@ -108,8 +103,7 @@ static double gamma_log_likelihood(apop_data *d, apop_model *p){
 /** The derivative of the Gamma distribution, for use in likelihood
  * minimization. You'll probably never need to call this directly.*/
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
        return gamma_rank_dlog_likelihood(d, gradient, p);
   float       	a    	= gsl_vector_get(p->parameters->vector, 0),

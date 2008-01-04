@@ -53,8 +53,7 @@ Find the determinant of a matrix. The \c in matrix is not destroyed in the proce
 \ingroup linear_algebra
 */
 double apop_matrix_determinant(const gsl_matrix *in) {
-  if (in->size1 != in->size2)
-      apop_error(0, 's', "%s: You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.\n", __func__, in->size1, in->size2);
+  apop_assert(in->size1 == in->size2,  0, 0, 's', "You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
   int 		sign;
   double 	the_determinant = 0;
   gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
@@ -76,8 +75,7 @@ You may want to call \ref apop_matrix_determinant first to check that your input
 \ingroup linear_algebra
 */
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) {
-  if (in->size1 != in->size2)
-      apop_error(0, 's', "%s: You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.\n", __func__, in->size1, in->size2);
+  apop_assert(in->size1 == in->size2,  NULL, 0, 's', "You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
   int 		sign;
   gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
   gsl_permutation * perm = gsl_permutation_alloc(in->size1);
@@ -112,8 +110,7 @@ If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns 
 \ingroup linear_algebra
 */
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
-  if (in->size1 != in->size2)
-      apop_error(0, 's', "%s: You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.\n", __func__, in->size1, in->size2);
+  apop_assert(in->size1 == in->size2,  0, 0, 's', "You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
   int 		sign;
   double 	the_determinant = 0;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
@@ -323,10 +320,7 @@ gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
         return NULL;
 
     if (posn == 'r'){
-        if (m1->size2 != m2->size2){
-            apop_error(0, 's', "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%i and m2->size2==%i. Halting.\n", m1->size2, m2->size2);
-            return NULL;
-        }
+        apop_assert(m1->size2 == m2->size2,  NULL, 0, 's', "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%i and m2->size2==%i. Halting.\n", m1->size2, m2->size2);
         out     = gsl_matrix_alloc(m1->size1 + m2->size1, m1->size2);
         for (i=0; i< m1->size1; i++){
             tmp_vector  = gsl_matrix_row(m1, i);
@@ -338,10 +332,7 @@ gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
         }
         return out;
     } else {
-        if (m1->size1 != m2->size1){
-            apop_error(0, 's', "When stacking matrices side by side, they have to have the same number of rows, but  m1->size1==%i and m2->size1==%i. Halting.\n", m1->size1, m2->size1);
-            return NULL;
-        }
+        apop_assert(m1->size1 == m2->size1,  NULL, 0, 's', "When stacking matrices side by side, they have to have the same number of rows, but  m1->size1==%i and m2->size1==%i. Halting.\n", m1->size1, m2->size1);
         out     = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
         for (i=0; i< m1->size2; i++){
             tmp_vector  = gsl_matrix_column(m1, i);
@@ -495,7 +486,7 @@ CBLAS_TRANSPOSE_t   lt  ,//= (t1=='t' || t1=='T' || t1=='p' || t1=='P') ? CblasT
     else if (d1->vector)
         uselm   = 0;
     else if (l_flag == 'v') {
-        apop_error(0, 'c', "%s: You asked for a vector from the left data set, but its vector==NULL. Returning NULL.\n", __func__);
+        apop_error(0, 'c', "%s: You asked for a vector from the left data set, but its vector==NULL. Returning NULL.", __func__);
         return NULL;
     } else {
         apop_error(0, 'c', "%s: the left data set has neither non-NULL matrix nor vector. Returning NULL.\n", __func__);

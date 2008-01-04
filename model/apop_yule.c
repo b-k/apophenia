@@ -60,8 +60,7 @@ static void yule_dlog_likelihood_rank(apop_data *d, gsl_vector *gradient, apop_m
 
 
 static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     //constraint is 1 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint){
@@ -101,8 +100,7 @@ static double  dapply_me(gsl_vector *v){
 }
 
 static double yule_log_likelihood(apop_data *d, apop_model *m){
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
       return yule_log_likelihood_rank(d, m);
     bb	            = gsl_vector_get(m->parameters->vector, 0);
@@ -115,8 +113,7 @@ static double yule_log_likelihood(apop_data *d, apop_model *m){
 }
 
 static void yule_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
       return yule_dlog_likelihood_rank(d, gradient, m);
 	//Psi is the derivative of the log gamma function.

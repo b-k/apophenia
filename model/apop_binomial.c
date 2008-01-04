@@ -45,8 +45,7 @@ static void get_hits_and_misses(const apop_data *data, char *method, double *hit
 
 \todo Look up  the covariance matrix for the parameters of the Binomial */
 static apop_model * binomial_estimate(apop_data * data,  apop_model *parameters){
-    if (!data)
-        apop_error(0,'s', "%s: You asked me to estimate the parameters of a model but sent NULL data.", __func__);
+  apop_assert(data,  0, 0,'s', "You asked me to estimate the parameters of a model but sent NULL data.");
   apop_model 	*est= parameters ? parameters : apop_model_copy(apop_binomial);
   apop_model_clear(data, est);
   double hitcount, misscount;
@@ -59,14 +58,12 @@ static apop_model * binomial_estimate(apop_data * data,  apop_model *parameters)
 }
 
 static double binomial_log_likelihood(apop_data *d, apop_model *params){
-    if (!params->parameters)
-        apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     return exp(binomial_p(d, params));
 }
 
 static double binomial_p(apop_data *d, apop_model *params){
-    if (!params->parameters)
-        apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double	  n       = apop_data_get(params->parameters,0,-1),
               p       = apop_data_get(params->parameters,1,-1);
   double hitcount, misscount;

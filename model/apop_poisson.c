@@ -58,8 +58,7 @@ static double apply_me(gsl_vector *v){
 }
 
 static double poisson_log_likelihood(apop_data *d, apop_model * p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double        lambda      = gsl_vector_get(p->parameters->vector, 0);
     ln_l 	= log(lambda);
   gsl_vector *  v           = apop_matrix_map(d->matrix, apply_me);
@@ -69,8 +68,7 @@ static double poisson_log_likelihood(apop_data *d, apop_model * p){
 }
 
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  if (!p->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double       	lambda  = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix      *data	= d->matrix;
   float           d_a;

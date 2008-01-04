@@ -19,8 +19,7 @@ static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
 }
 
 double apop_multinormal_ll_prob(apop_data *data, apop_model * m){
-  if (!m->parameters)
-      apop_error(0,'s', "%s: You asked me to evaluate an un-parametrized model.", __func__);
+  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double    determinant = 0;
   gsl_matrix* inverse   = NULL;
   int       i, dimensions  = data->matrix->size2;

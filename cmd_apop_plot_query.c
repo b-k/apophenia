@@ -53,6 +53,7 @@ gsl_matrix *query(char *d, char *q){
 	apop_db_open(d);
  gsl_matrix *m 	= apop_query_to_matrix(q);
 	apop_db_close(0);
+    apop_assert(m, 0, 0, 's', "Your query returned a blank table. Quitting.");
     return m;
 }
 
@@ -127,6 +128,12 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
               plot_type   = malloc(20);
 			  sprintf(plot_type, "lines");
     }
+    if (optind == argc -2){
+        d = argv[optind];
+        q = argv[optind+1];
+    } else if (optind == argc-1)
+        q = argv[optind];
+    
     if (!q){
         fprintf(stderr, "I need a query specified with -q.\n");
         return 0;
