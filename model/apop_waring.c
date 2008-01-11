@@ -163,7 +163,7 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
                 a   = gsl_vector_get(eps->parameters->vector, 1),
 		params[]	={a+1, 1, b-1};
 	do{
-		x	= apop_GHgB3_rng(r, params);
+		x	= apop_rng_GHgB3(r, params);
 		u	= gsl_rng_uniform(r);
 	} while (u >= (x + a)/(GSL_MAX(a+1,1)*x));
 	*out = x+1;
@@ -172,7 +172,9 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 /** The Waring distribution
 Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
 
-apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_params.
+If you have frequency or ranking data, then use \ref apop_model_copy_set_string to set the model_setting to "R".
+
+apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
 \f$W(x,k, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
 
@@ -182,7 +184,7 @@ apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_params.
 
 \f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
 \ingroup models
-\bugs This function needs better testing.
+\todo This function needs better testing.
 */
 apop_model apop_waring = {"Waring", 2,0,0, 
 	 .log_likelihood =  waring_log_likelihood, .score = waring_dlog_likelihood, 

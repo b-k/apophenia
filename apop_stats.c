@@ -17,8 +17,7 @@ Many of these are just one-line convenience functions for finding moments and no
 
 These functions simply take in a GSL vector and return its mean, variance, or kurtosis; the covariance functions take two GSL vectors as inputs.
 
-\ref apop_vector_cov and \ref apop_vector_covar are identical; \ref apop_vector_kurtosis and
-\ref apop_vector_kurt are identical; pick the one which sounds better to you.
+\ref apop_vector_kurtosis and \ref apop_vector_kurt are identical; pick the one which sounds better to you.
 
 See also \ref db_moments.
 
@@ -126,7 +125,7 @@ inline double apop_vector_var_m(const gsl_vector *in, const double mean){
 /** returns the covariance of two vectors
 \ingroup vector_moments
 */
-inline double apop_vector_covar(const gsl_vector *ina, const gsl_vector *inb){
+inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb){
 	return gsl_stats_covariance(ina->data,ina->stride,inb->data,inb->stride,inb->size); }
 
 /** returns the correllation coefficient of two vectors. It's just
@@ -134,13 +133,8 @@ inline double apop_vector_covar(const gsl_vector *ina, const gsl_vector *inb){
 \ingroup vector_moments
 */
 inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
-	return apop_vector_covar(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb));
+	return apop_vector_cov(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb));
 }
-
-/** returns the covariance of two vectors
-\ingroup vector_moments
-*/
-inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb){return  apop_vector_covar(ina,inb);}
 
 
 /** returns the scalar distance (standard Euclidian metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
@@ -299,50 +293,6 @@ inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
 			sum +=gsl_vector_get(normed,i++));
 	gsl_vector_free(normed);
 	return gsl_cdf_chisq_P(sum,in->size); 
-}
-
-
-/** The Beta distribution is useful for modeling because it is bounded
-between zero and one, and can be either unimodal (if the variance is low)
-or bimodal (if the variance is high), and can have either a slant toward
-the bottom or top of the range (depending on the mean).
-
-The distribution has two parameters, typically named \f$\alpha\f$ and \f$\beta\f$, which
-can be difficult to interpret. However, there is a one-to-one mapping
-between (alpha, beta) pairs and (mean, variance) pairs. Since we have
-good intuition about the meaning of means and variances, this function
-takes in a mean and variance, calculates alpha and beta behind the scenes,
-and returns a random draw from the appropriate Beta distribution.
-
-\param m
-The mean the Beta distribution should have. Notice that m
-is in [0,1].
-
-\param v
-The variance which the Beta distribution should have. It is in (0, 1/12),
-where (1/12) is the variance of a Uniform(0,1) distribution. The closer
-to 1/12, the worse off you are.
-
-\param r
-An already-declared and already-initialized {{{gsl_rng}}}.
-
-\return
-Returns one random draw from the given distribution
-
-
-Example:
-\verbatim
-	gsl_rng  *r;
-	double  a_draw;
-	gsl_rng_env_setup();
-	r = gsl_rng_alloc(gsl_rng_default);
-	a_draw = apop_random_beta(r, .25, 1.0/24.0);
-\endverbatim
-\ingroup convenience_fns
-*/
-double apop_random_beta(gsl_rng *r, double m, double v) {
-  double 		k        = (m * (1- m)/ v) -1 ;
-        return gsl_ran_beta(r, m* k ,  k*(1 - m) );
 }
 
 /** give me a random double between min and max [inclusive].
@@ -505,29 +455,6 @@ apop_data * apop_matrix_summarize(gsl_matrix *m){
     return apop_data_summarize(apop_matrix_to_data(m));
 }
 
-/** returns the covariance matrix for the columns of a data set.
-\ingroup vector_moments
-*/
-apop_data *apop_data_covar(apop_data *in){
-  apop_assert(in,  NULL, 0, 'c', "You sent me a NULL apop_data set. Returning NULL.\n");
-  apop_assert(in->matrix,  NULL, 0, 'c', "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
-  apop_data   *out = apop_data_alloc(0,in->matrix->size2, in->matrix->size2);
-  int         i, j;
-  double      var;
-    for (i=0; i < in->matrix->size2; i++){
-        for (j=i; j < in->matrix->size2; j++){
-            APOP_COL(in, i, v1);
-            APOP_COL(in, j, v2);
-            var = apop_vector_weighted_cov(v1, v2, in->weights);
-            gsl_matrix_set(out->matrix, i,j, var);
-            if (i!=j)
-                gsl_matrix_set(out->matrix, j,i, var);
-        }
-    }
-    apop_name_stack(out->names, in->names, 'c');
-    apop_name_cross_stack(out->names, in->names, 'r', 'c');
-    return out;
-}
 
 /** Find the weighted mean. 
 
@@ -735,19 +662,31 @@ gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char normalize){
     return out;
 }
 
-/** Returns the variance/covariance matrix relating each column with each other.
+/** Returns the variance/covariance matrix relating each column of the matrix to each other column.
 
-This is the \ref apop_data version of \ref apop_covariance_matrix; if you don't have column names, or would like to use the speed-saving and data-destroying normalization option, use that one.
-\param in 	An \ref apop_data set
+This is the \ref apop_data version of \ref apop_matrix_covariance; if you don't have column names or weights, or would like to use the speed-saving and data-destroying normalization option, use that one.
 
+\param in 	An \ref apop_data set. If the weights vector is set, I'll take it into account.
 
 \return Returns a \ref apop_data set the variance/covariance matrix relating each column with each other.
 
 \ingroup matrix_moments */
-apop_data *apop_data_covariance(apop_data *in){
-  apop_assert(in,  NULL, 0, 'c', "Input apop_data set has a NULL matrix element. Returning NULL.\n");
-  apop_assert(in->matrix,  NULL, 0, 'c', "input matrix is NULL. Returning NULL.\n");
-    apop_data   *out    = apop_matrix_to_data(apop_matrix_covariance(in->matrix, 0));
+apop_data *apop_data_covariance(const apop_data *in){
+  apop_assert(in,  NULL, 0, 'c', "You sent me a NULL apop_data set. Returning NULL.\n");
+  apop_assert(in->matrix,  NULL, 0, 'c', "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
+  apop_data   *out = apop_data_alloc(0,in->matrix->size2, in->matrix->size2);
+  int         i, j;
+  double      var;
+    for (i=0; i < in->matrix->size2; i++){
+        for (j=i; j < in->matrix->size2; j++){
+            APOP_COL(in, i, v1);
+            APOP_COL(in, j, v2);
+            var = apop_vector_weighted_cov(v1, v2, in->weights);
+            gsl_matrix_set(out->matrix, i,j, var);
+            if (i!=j)
+                gsl_matrix_set(out->matrix, j,i, var);
+        }
+    }
     apop_name_stack(out->names, in->names, 'c');
     apop_name_cross_stack(out->names, in->names, 'r', 'c');
     return out;
@@ -755,17 +694,23 @@ apop_data *apop_data_covariance(apop_data *in){
 
 /** Returns the matrix of correlation coefficients (\f$\sigma^2_{xy}/(\sigma_x\sigma_y)\f$) relating each column with each other.
 
-This is the \ref apop_data version of \ref apop_matrix_correlation; if you don't have column names (or want the option for the faster, data-destroying version), use that one.
+This is the \ref apop_data version of \ref apop_matrix_correlation; if you don't have column names or weights, (or want the option for the faster, data-destroying version), use that one.
 
-\param in 	A data matrix: rows are observations, columns are variables.
+\param in 	A data matrix: rows are observations, columns are variables. If you give me a weights vector, I'll use it.
 
 \return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
 \ingroup matrix_moments */
 apop_data *apop_data_correlation(const apop_data *in){
-  apop_assert(!in,  NULL, 0, 'c', "Input apop_data set has a NULL matrix element. Returning NULL.\n");
-  apop_assert(!in->matrix,  NULL, 0, 'c', "Input matrix is NULL. Returning NULL.\n");
-  apop_data   *out    = apop_matrix_to_data(apop_matrix_correlation(in->matrix, 0));
-    apop_name_stack(out->names, in->names, 'c');
-    apop_name_cross_stack(out->names, in->names, 'r', 'c');
+  apop_data *out = apop_data_covariance(in);
+  int       i;
+  double    std_dev;
+    for(i=0; i< in->matrix->size2; i++){
+        APOP_COL(in, i, cvin);
+        APOP_COL(out, i, cvout);
+        APOP_ROW(out, i, rvout);
+        std_dev     = sqrt(apop_vector_weighted_var(cvin,in->weights));
+        gsl_vector_scale(cvout, 1.0/std_dev);
+        gsl_vector_scale(rvout, 1.0/std_dev);
+    }
     return out;
 }

@@ -26,7 +26,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
  \param data the data
  \param model   The model, like \c apop_OLS or \c apop_WLS.
- \param method_settings   If you are using a nonstandard method to estimate the model, put the params there.
  \return an \c apop_ls_settings 
  */
 apop_ls_settings * apop_ls_settings_alloc(apop_data *data, apop_model model){
@@ -198,8 +197,7 @@ void apop_estimate_parameter_t_tests (apop_model *est){
  At the moment, this copies the data set. Plan accordingly.
 
  \param est     an \ref apop_model that you have already calculated.
- \param q       The matrix \f${\bf Q}\f$, where each row represents a hypothesis.
- \param c       The vector \f${\bf c}\f$. The PDF manual explains all of this.
+ \param contrast       The matrix \f${\bf Q}\f$ and the vector \f${\bf c}\f$, where each row represents a hypothesis.
  \return The confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
  */

@@ -41,7 +41,7 @@ gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
         return returnval;  \
 } while (0);
 
-/** Like \ref apop_assert, but useful in void functions. */
+/** Like \ref apop_assert, but no return step --> useful in void functions. */
 #define apop_assert_void(test,  level, stop, ...) do \
     if (!(test)) {  \
         if (apop_opts.verbose >= level) { fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");}   \

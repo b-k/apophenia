@@ -51,18 +51,15 @@ gsl_vector_memcpy(a_new_vector, &(v.vector));
 
 /** Um, converts a GSL vector to an array.
 
-\param in
-A GSL vector
+\param in A GSL vector
 
-\param out
-A pointer to a <tt>double*</tt>, which will be <tt>malloc</tt>ed inside the function.
-
-\return Returns the size of the vector, i.e., <tt>in->size</tt>.
+\return A pointer to a <tt>double*</tt>, which will be <tt>malloc</tt>ed inside the function.
 
 \note Does not use memcpy, because we don't know the stride of the vector.
 \ingroup convertfromvector 
 */
 double * apop_vector_to_array(const gsl_vector *in){
+  apop_assert(in, NULL, 1, 'c', "You sent me a NULL vector; returning NULL");
   int		i;	
   double	*out	= malloc(sizeof(double) * in->size);
 	for (i=0; i < in->size; i++)
@@ -72,12 +69,14 @@ double * apop_vector_to_array(const gsl_vector *in){
 
 /** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
 
-\param in 	    A vector.
-\param size 	You will have to tell the function how long <tt>in</tt> is.
+\param line     A vector.
+\param vsize 	You will have to tell the function how long <tt>in</tt> is.
 \return         A <tt>gsl_vector</tt>. Declare but do not allocate.
 \ingroup convertfromarray 
 */ 
 gsl_vector * apop_array_to_vector(const double *line, const int vsize){
+  apop_assert(line, NULL, 1, 'c', "You sent me NULL data; returning NULL.");
+  apop_assert(vsize, NULL, 1, 'c', "You sent me vsize==0, so I'm returning NULL.");
   gsl_vector        *out    = gsl_vector_alloc(vsize);
   gsl_vector_view	v	    = gsl_vector_view_array((double*)line, vsize);
 	gsl_vector_memcpy(out,&(v.vector));
@@ -272,9 +271,8 @@ static void pull_string(char *line, char * outstr, regmatch_t *result, size_t * 
     (*last_match)                += result[1].rm_eo+1;
 }
 
-/** Open file, find the first non-comment row, count columns, close file.
- */
-int apop_count_cols_in_text(char *text_file){
+/* Open file, find the first non-comment row, count columns, close file.  */
+static int apop_count_cols_in_text(char *text_file){
   FILE * 		infile;
   char		    instr[Text_Line_Limit], outstr[Text_Line_Limit],
                 full_divider[1000];
@@ -301,9 +299,8 @@ int apop_count_cols_in_text(char *text_file){
 	return ct;
 }
 
-/** Open file, count lines that don't start with #, close file.
- */
-int apop_count_rows_in_text(char *text_file){
+/* Open file, count lines that don't start with #, close file.  */
+static int apop_count_rows_in_text(char *text_file){
   FILE * 	infile;
   char		instr[Text_Line_Limit];
   int		ct	= 0;
@@ -365,8 +362,7 @@ that there is a missing data point. Try:
 		perl -pi.bak -e 's/,,/,NaN,/g' data_file
 \endcode
 
-If you have missing data delimiters, you will need to set \ref
-apop_opts.db_nan to a regular expression that matches the given
+If you have missing data delimiters, you will need to set \ref apop_opts_type "apop_opts.db_nan" to a regular expression that matches the given
 format. Some examples:
 
 \code
@@ -751,13 +747,6 @@ static void line_to_insert(char instr[], char *tabname){
 
   See \ref text_format.
 
-\param text_file    The name of the text file to be read in. If \code "-", then read from STDIN.
-\param tabname      The name to give the table in the database
-\param has_row_names Does the lines of data have row names?
-\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way.
-\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names. 
-
-\return Returns the number of rows.
 
 Using the data set from the example on the \ref apop_OLS "apop_OLS" page, here's another way to do the regression:
 
@@ -778,6 +767,14 @@ apop_model   *est;
 \endcode
 
 By the way, there is a begin/commit wrapper that bundles the process into bundles of 2000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.
+
+\param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN.
+\param tabname      The name to give the table in the database
+\param has_row_names Does the lines of data have row names?
+\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way.
+\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names. 
+
+\return Returns the number of rows.
 \ingroup convertfromtext
 */
 int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
@@ -901,7 +898,7 @@ apop_data * apop_data_unpack(const gsl_vector *in, size_t v_size, size_t m_size1
 /** Sometimes, you need to turn an \c apop_data set into a column of
  numbers. E.g., certain GSL subsystems require such things. Thus, this
  function, that takes in an apop_data set and outputs a \c gsl_vector.
- It is valid to use the \c out_vector->data element as an array of \ci doubles of size \c out_vector->data->size.
+ It is valid to use the \c out_vector->data element as an array of \c doubles of size \c out_vector->data->size.
 
  The complement is \c apop_data_unpack. I.e., \c apop_data_unpack(apop_data_pack(in_data, vsize, m1size, m2size)) will return the same data
  set (stripped of text and names).

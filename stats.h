@@ -76,27 +76,20 @@ inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in);
 	//As described: give it a vector, and it'll tell you the confidence 
 	//with which you can say that the vector is not zero.
 
-double apop_random_beta(gsl_rng *r, double m, double v) __attribute__((deprecated));
-	/*Give me mean m and variance v, and I'll give you
-	 * n draws from the appropriate beta dist.
-	 * remember: 0<m<1, and v is tiny (<<1/12). You get NaNs if no
-	 * appropriate distribution exists.*/
-
 double apop_random_double(double min, double max, gsl_rng *r);
 int apop_random_int(const double min, const double max, const gsl_rng *r);
 
 gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize);
 gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char normalize);
-apop_data * apop_data_covariance(apop_data *in);
+apop_data * apop_data_covariance(const apop_data *in);
 apop_data * apop_data_correlation(const apop_data *in);
 long double apop_matrix_sum(const gsl_matrix *m) __attribute__((pure));
 double apop_matrix_mean(const gsl_matrix *data) __attribute__((pure));
 double apop_matrix_var_m(const gsl_matrix *data, double mean) __attribute__((pure));
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
-double apop_GHgB3_rng(gsl_rng * r, double* a); //in asst.c
+double apop_rng_GHgB3(gsl_rng * r, double* a); //in asst.c
 apop_data * apop_data_summarize(apop_data *data);
 apop_data * apop_matrix_summarize(gsl_matrix *data);
-apop_data *apop_data_covar(apop_data *in);
 
 gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins);
 

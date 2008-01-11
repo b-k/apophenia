@@ -79,7 +79,7 @@ void print_method(apop_model *in){
 }
  \endcode
 
-\ingroup output models */
+\ingroup output */
 void apop_model_show (apop_model * print_me){
     if (print_me->print){
         print_me->print(print_me);
@@ -235,6 +235,7 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 /** Find the vector of derivatives of the log likelihood of a data/parametrized model pair.
 
 \param d    The data
+\param out  The score to be returned. I expect you to have allocated this already.
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
 
 \ingroup models

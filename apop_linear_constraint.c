@@ -98,14 +98,15 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
  4y - 7z$; then the first row of your \c data->vector element would be 3, and the
  first row of the \c data->matrix element would be [2 4 -7].
  \param margin If zero, then this is a >= constraint, otherwise I will return a point this amount within the borders. You could try \c GSL_DBL_EPSILON, which is the smallest value a \c double can hold, or something like 1e-3.
- \param returned_beta If the constraint is not met, this is the closest point that meets the constraints (Euclidian distance)
  \return The penalty = the distance between beta and the closest point that meets the constraints.
+ If the constraint is not met, this \c beta is nudged to the closest point that meets the constraints (Euclidian distance).
 \todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints.
  */
-double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin,  gsl_vector *returned_beta){
+double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin){
   static gsl_vector *closest_pt = NULL;
   static gsl_vector *candidate  = NULL;
   static gsl_vector *fix        = NULL;
+  gsl_vector        *base_beta  = apop_vector_copy(beta);
   int               constraint_ct   = constraint->matrix->size1;
   int               bindlist[constraint_ct];
   int               i, bound     = 0;
@@ -128,7 +129,7 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
     /* With only one constraint, it's easy. */
     if (constraint->vector->size==1){
         APOP_ROW(constraint, 0, c);
-        find_nearest_point(beta, constraint->vector->data[0],c, returned_beta);
+        find_nearest_point(base_beta, constraint->vector->data[0],c, beta);
         goto add_margin;
     }
     /* Finally, multiple constraints, at least one binding.
@@ -142,11 +143,11 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
      */
     for (i=0; i< constraint_ct; i++){
         if (bindlist[i])
-            get_candiate(beta, constraint, i, candidate);
-        if(apop_vector_distance(beta, candidate) < apop_vector_distance(beta, closest_pt))
+            get_candiate(base_beta, constraint, i, candidate);
+        if(apop_vector_distance(base_beta, candidate) < apop_vector_distance(base_beta, closest_pt))
             gsl_vector_memcpy(closest_pt, candidate);
     }
-    gsl_vector_memcpy(returned_beta, closest_pt);
+    gsl_vector_memcpy(beta, closest_pt);
 add_margin:
     for (i=0; i< constraint_ct; i++){
         if(bindlist[i]){
@@ -154,8 +155,8 @@ add_margin:
             gsl_vector_memcpy(fix, c);
             gsl_vector_scale(fix, magnitude(fix));
             gsl_vector_scale(fix, margin);
-            gsl_vector_add(returned_beta, fix);
+            gsl_vector_add(beta, fix);
         }
     }
-    return apop_vector_distance(beta, returned_beta);
+    return apop_vector_distance(base_beta, beta);
 }

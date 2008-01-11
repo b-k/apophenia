@@ -24,14 +24,14 @@ void apop_estimate_parameter_t_tests (apop_model *est);
 
 /** \page trace_path Plotting the path of an ML estimation.
 
-If \c trace_path (in the \c apop_mle_settings struct) has a name of positive
+If \c trace_path (in the \ref apop_mle_settings struct) has a name of positive
 length, then every time the MLE evaluates the function, then the value
 will be output to a table in the database/a file with the given name
-(depending on the value of \c apop_opts.output_type). You can then plot this
+(depending on the value of \ref apop_opts_type "apop_opts.output_type"). You can then plot this
 table to get an idea of the path the estimation routine used to arrive
 at its MLE.
 
-To write to a pipe or stdout, set \c apop_opts.output_type appropriately and set \c trace_path to the literal string \c "NULL".
+To write to a pipe or stdout, set \ref apop_opts_type "apop_opts.output_type" appropriately and set \c trace_path to the literal string \c "NULL".
 
 
 Below is a sample of the sort of output one would get:<br>
@@ -41,13 +41,13 @@ Below is a sample of the sort of output one would get:<br>
 \ingroup mle
 */
 
-/** Use this if you already have an \c apop_model struct, but want to set the \c method_settings element to the default MLE parameters. 
- Returns the \c apop_mle_settings pointer, but the argument now has the
+/** Use this if you already have an \ref apop_model struct, but want to set the \c method_settings element to the default MLE parameters. 
+ Returns the \ref apop_mle_settings pointer, but the argument now has the
  method_settings element set, so you can ignore the returned pointer if
  you prefer.
 
- \param parent  A pointer to an allocated \c apop_model struct.
- \return A pointer to a set-up \c apop_mle_settings struct. The parent's \c method_settings element points to this struct as well.
+ \param parent  A pointer to an allocated \ref apop_model struct.
+ \return A pointer to a set-up \ref apop_mle_settings struct. The parent's \c method_settings element points to this struct as well.
 
  */
 apop_mle_settings *apop_mle_settings_set_default(apop_model *parent){
@@ -309,8 +309,7 @@ gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data
 /** Feeling lazy? Rather than doing actual pencil-and-paper math to find
 your variance-covariance matrix, just use the negative inverse of the Hessian.
 
-\param dist	The model
-\param est	The estimate, with the parameters already calculated. The var/covar matrix will be placed in est->covariance.
+\param est	The model with the parameters already calculated. The var/covar matrix will be placed in est->covariance.
 \param data	The data
 \ingroup basic_stats
 */
@@ -595,7 +594,7 @@ est = apop_estimate_restart(est, alt_model);
 \endcode
 
  \param e   An \ref apop_model that is the output from a prior MLE estimation.
- \param alt_model  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> equal
+ \param copy  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> equal
  to the parameters of <tt>e</tt>. If this is <tt>NULL</tt>, then copy off <tt>e</tt> and restart from the end of the last estimation.
 
 \return         At the end of this procedure, we'll have two \ref

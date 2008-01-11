@@ -56,8 +56,9 @@ Things to do:
 The GSL provides a few structures that basically accumulate data into
 bins. The first is the <tt>gsl_histogram</tt> structure, that produces a PMF.
 
-To produce a PMF from a vector, use \ref apop_vector_to_histogram; to produce
-a PMF via random draws from a model, use \ref apop_model_to_pmf.
+To produce a PMF from \c your_data, use \ref apop_histogram "apop_estimate(your_data, apop_histogram)", then produce a synced histogram of other data (observed or theoretical) using 
+\ref apop_histogram_refill_with_vector or 
+\ref apop_histogram_refill_with_model.
 
 
 The second structure from the GSL incrementally sums up the PMF's bins to
@@ -143,7 +144,7 @@ double      pval    = gsl_cdf_chisq_P(diff, bins-1);
     return out;
 }
 
-/** Test the goodness-of-fit between two histograms (in \c apop\_model form). I assume that the histograms are aligned.
+/** Test the goodness-of-fit between two histograms (in \c apop_model form). I assume that the histograms are aligned.
 
   \todo It'd be nice if this could test histograms where one has the infinibins and the other doesn't.
   \ingroup histograms
@@ -205,7 +206,7 @@ static double psmirnov2x(double x, int m, int n) {
 /** Run the Kolmogorov test to determine whether two distributions are
  identical.
 
- \param m1, m2  Two matching \ref apop_histograms, probably produced via \ref apop_vectors_to_histogram or \ref apop_model_to_histogram.
+ \param m1, m2  Two matching \ref apop_histogram "apop_histograms", probably produced via \ref apop_histogram_refill_with_vector or \ref apop_histogram_refill_with_model.
 
  \return The \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
 
@@ -239,7 +240,7 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
         second  = h1;
         cdf1    = first->bin[0];
     } else 
-        apop_error(0, 's', "%s: needs matching histograms.  Produce them via apop_vectors_to_histogram or apop_model_to_histogram. Returning NULL.\n", __func__);
+        apop_error(0, 's', "%s: needs matching histograms.  Produce them via apop_histogram_refill_with_vector or apop_histogram_refill_with_model. Returning NULL.\n", __func__);
     //Scaling step. 
     for (i=0; i< first->n; i++)
         sum1    += first->bin[i];

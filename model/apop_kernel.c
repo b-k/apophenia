@@ -85,8 +85,8 @@ static gsl_histogram *apop_alloc_wider_range(const gsl_histogram *in, const doub
   NULL histogram and a real data set, in which case I will convert the
   data set into a histogram and use the histogram thus created.
 
+\param data    a data set, which, if  not \c NULL and \c !histobase , will be converted to a histogram.
   \param histobase This is the preferred format for input data. It is the histogram to be smoothed.
-\param d    a data set, which, if  not \c NULL and \c !histobase , will be converted to a histogram.
 \param kernelbase The kernel to use for smoothing, with all parameters set and a \c p method. Popular favorites are \ref apop_normal and \ref apop_uniform.
 \param set_params A function that takes in a single number and the model, and sets the parameters accordingly. The function will call this for every point in the data set. Below is the default, which is used if this is \c NULL. It simply sets the first element of the model's parameter vector to the input number; this is appropriate for a Normal distribution, where we want to center the distribution on each data point in turn.
 

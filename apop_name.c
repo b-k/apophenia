@@ -15,8 +15,8 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 \ingroup names
 */
 apop_name * apop_name_alloc(void){
-apop_name	* init_me;
-	init_me	= malloc(sizeof(apop_name));
+  apop_name	* init_me = malloc(sizeof(apop_name));
+  apop_assert(init_me, NULL, 0, 's', "malloc failed. Probably out of memory.");
 	init_me->vector	= NULL;
 	init_me->column	= NULL;
 	init_me->text   = NULL;
@@ -197,31 +197,7 @@ int     i;
         }
 }
 
-/** Copy one \ref apop_name structure to another. That is, all data is duplicated. Usage: 
-
-Much like \ref apop_name_memcpy, but a slightly different calling form. Usage:
-\code
-apop_name *out;
-apop_name_memcpy(&out, in);
-\endcode
- 
-  \param out    a structure that this function will allocate and fill
-  \param in    the input names
-
- \ingroup names
-  */
-void apop_name_memcpy(apop_name **out, apop_name *in){
-    *out = apop_name_alloc();
-    apop_name_stack(*out, in, 'v');
-    apop_name_stack(*out, in, 'c');
-    apop_name_stack(*out, in, 'r');
-    apop_name_stack(*out, in, 't');
-    snprintf((*out)->title, 100, in->title);
-}
-
-/** Copy one \ref apop_name structure to another. That is, all data is duplicated. 
-
-Much like \ref apop_name_memcpy, but a slightly different calling form. Usage:
+/** Copy one \ref apop_name structure to another. That is, all data is duplicated. Usage:
 
 \code
 apop_name *out  = apop_name_copy(in);
@@ -232,7 +208,7 @@ apop_name *out  = apop_name_copy(in);
     \ingroup names
   */
 apop_name * apop_name_copy(apop_name *in){
-apop_name *out = apop_name_alloc();
+  apop_name *out = apop_name_alloc();
     apop_name_stack(out, in, 'v');
     apop_name_stack(out, in, 'c');
     apop_name_stack(out, in, 'r');
@@ -240,32 +216,6 @@ apop_name *out = apop_name_alloc();
     snprintf(out->title, 100, in->title);
     return out;
 }
-
-
-/** Remove the columns set to one in the \c drop vector.
-\param n the \ref apop_name structure to be pared down
-\param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
-\ingroup names
- */
-void apop_name_rm_columns(apop_name *n, int *drop){
-apop_name   *newname    = apop_name_alloc();
-int         i, max      = n->colct;
-    for (i=0; i< max; i++){
-        if (drop[i]==0)
-            apop_name_add(newname, n->column[i],'c');
-        else
-            n->colct    --;
-    }
-    free(n->column);
-    n->column = newname->column;
-    //we need to free the newname struct, but leave the column intact.
-    //A one-byte memory leak.
-    newname->column   = malloc(1);
-    newname->colct  = 0;
-    apop_name_free(newname);
-}
-
-
 
 /** Finds the position of an element in a list of names.
 

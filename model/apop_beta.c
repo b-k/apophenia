@@ -1,4 +1,4 @@
-/** \file apop_binomial.c 
+/** \file apop_beta.c 
  
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -39,9 +39,6 @@ is in [0,1].
 The variance which the Beta distribution should have. It is in (0, 1/12),
 where (1/12) is the variance of a Uniform(0,1) distribution. The closer
 to 1/12, the worse off you are.
-
-\param r
-An already-declared and already-initialized {{{gsl_rng}}}.
 
 \return
 Returns an \c apop_beta model with its parameters appropriately set.

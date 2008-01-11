@@ -142,13 +142,12 @@ To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or h
 We've moved the setup documentation to <a href="http://avocado.econ.jhu.edu/modeling/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em>. Please see that page.
 
 \subsection testing Testing
-There is a short, complete program in the \ref apop_estimate_OLS
-"apop_OLS" entry which runs a simple OLS regression on a data file. Follow
+There is a short, complete program in the \ref apop_OLS entry which runs a simple OLS regression on a data file. Follow
 the instructions there to compile and run. See also the 
 \ref sample_program below.
 
 \subsection using Using 
-Now that it's installed, do some stats! For those who are new to C, there are some notes on the \ref C page; if you are familiar with the process, see the \ref usagenotes "usage notes" for Apophenia itself.
+Now that it's installed, do some stats! For those who are new to C, there are some notes on the \ref c "C" page; if you are familiar with the process, see the \ref usagenotes "usage notes" for Apophenia itself.
 
 \subsection sample_program sample program
 The sample program below is intended to show how one would integrate
@@ -387,7 +386,9 @@ if you're curious).]
 Oh, but have a look at \ref apop_plot_line_and_scatter and \ref apop_plot_histogram.
 */
 
-/** \defgroup global_vars The global variables. */
+/** \defgroup global_vars The global variables */
+/** \defgroup mle Maximum likelihood estimation */
+/** \defgroup command_line "Command line programs" */
 
 /** \defgroup models Models
 
@@ -414,9 +415,8 @@ linear models.  "Linear" models can include a wide range of nonlinear
 features, but they are still a subset of measure zero within the class of
 models as described above. Currently, Apophenia has no plans to include
 a summary syntax for describing linear models; the reader who has a linear
-model to be estimated via OLS or GLS is advised to instead manipulate
-the data set to the appropriate form and then call \ref apop_OLS or
-\ref apop_GLS.]
+model to be estimated via OLS and friends is advised to instead manipulate
+the data set to the appropriate form and then call \ref apop_OLS, \ref apop_IV, et cetera.]
 
 Frequently, a model is a probability distribution. The data is assumed
 to have been drawn from a given distribution and the question is
@@ -444,8 +444,8 @@ such as a likelihood function that could be used for ML estimation or
 for estimating the Hessian, and a random number generator. Some effort
 has been made to ensure that the prepackaged models include as many of
 these auxiliary functions as possible; if you are writing your own,
-there is no requirement that you provide all functions, and the \ref
-apop_maximum_likelihood and \ref apop_numerical_hessian functions do a
+there is no requirement that you provide all functions, and \ref
+apop_maximum_likelihood and its Numerical gradient function do a
 good job of filling in blanks.
 
 

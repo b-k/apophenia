@@ -1,4 +1,5 @@
-//likelihoods.h	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
+/** \file likelihoods.h	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
+ */
 
 #ifndef apop_likelihoods_h
 #define  apop_likelihoods_h
@@ -46,6 +47,7 @@ typedef enum {
     APOP_RF_HYBRID_NOSCALE  =13 //  13: Find a root of the derivative via the Hybrid method; no internal scaling
 } apop_optimization_enum;
 
+/** The settings for maximum likelihood estimation (including simulated annealing).*/
 typedef struct{
 //traditional
     double      *starting_pt;

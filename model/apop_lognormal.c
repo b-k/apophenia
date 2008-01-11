@@ -1,4 +1,4 @@
-/** \file apop_normal.c
+/** \file apop_lognormal.c
 
 Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -15,9 +15,6 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <assert.h>
 static double lognormal_log_likelihood(apop_data *d, apop_model *params);
 
-
-
-/** The normal estimate */
 static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters){
   apop_model 	*est;
   apop_ls_settings *p;
@@ -82,11 +79,9 @@ static double lognormal_log_likelihood(apop_data *d, apop_model *params){
     sd          = gsl_vector_get(params->parameters->vector,1);
     gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me2b);//sum of (ln(x)-mu)^2
     long double   ll      = -apop_vector_sum(v)/(2*gsl_pow_2(sd));
-    gsl_vector *  v1      = apop_matrix_map(d->matrix, apply_me2a);//sum of ln(x)
-                ll       -= apop_vector_sum(v1);
+                ll       -= apop_matrix_map_sum(d->matrix, apply_me2a);//sum of ln(x)
                 ll       -= d->matrix->size1*d->matrix->size2*(M_LNPI+M_LN2+log(sd));
     gsl_vector_free(v);
-    gsl_vector_free(v1);
 	return ll;
 }
 

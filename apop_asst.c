@@ -51,9 +51,9 @@ int			        j, old_len, i;
 /** RNG from a Generalized Hypergeometric type B3.
 
  Devroye uses this as the base for many of his
- distribution-generators, e.g., \ref apop_waring.rng. 
+ distribution-generators, e.g., \ref apop_waring "apop_waring.rng". 
 */  //Header in stats.h
-double apop_GHgB3_rng(gsl_rng * r, double* a){
+double apop_rng_GHgB3(gsl_rng * r, double* a){
 if ((a[0]<=0) || (a[1] <= 0) || (a[2] <=0)){
 	printf("apop_GHgB3_rng took a zero parameter; bad.\n");
 	return 0;
@@ -112,7 +112,7 @@ char    *out    = NULL;
 
  \param level   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2. You can set apop_opts.verbose==-1 to turn off virtually all messages, but this is probably ill-advised.
  \param stop   Either 's' or 'c', indicating whether the program should stop or continue. If stopping, uses \c assert(0) for easy debugging. You can use 'h' (halt) as a synonym for 's'.
- \param message The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_error(0, 's', "Beta is %g but should be greater than zero.", beta);.
+ \param msg The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_error(0, 's', "Beta is %g but should be greater than zero.", beta);.
 */
 void apop_error(int level, char stop, char *msg, ...){
   va_list   argp;
@@ -129,3 +129,21 @@ void apop_error(int level, char stop, char *msg, ...){
 }
 
 
+/** Call \c system(), but with \c printf arguments. e.g.,
+  
+ \code
+char filename[] = "apop_asst.c"
+apop_system("ls %s", filenames);
+\endcode
+
+ */
+int apop_system(const char *fmt, ...){
+  char 		*q;
+  va_list   argp;
+	va_start(argp, fmt);
+	vasprintf(&q, fmt, argp);
+	va_end(argp);
+    int out = system(q);
+    free(q);
+    return out;
+}

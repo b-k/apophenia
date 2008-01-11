@@ -15,30 +15,30 @@ and finally \ref apop_query_to_data to pull some subset of the data
 out for analysis.
 
 \par Querying 
-\li \ref apop_query: Manipulate the database, return nothing (e.g., input data).
+\li \ref apop_query : Manipulate the database, return nothing (e.g., input data).
 
-\li \ref apop_query_to_data: Pull data into an apop_data set.
+\li \ref apop_query_to_data : Pull data into an apop_data set.
 
-\li \ref apop_query_to_matrix: Pull data into a \c gsl_matrix.
+\li \ref apop_query_to_matrix : Pull data into a \c gsl_matrix.
 
-\li \ref apop_query_to_float: Pull out a single number.
+\li \ref apop_query_to_float : Pull out a single number.
 
-\li \ref apop_query_to_text: Pull out columns of not-numbers.
+\li \ref apop_query_to_text : Pull out columns of not-numbers.
 
-\li \ref apop_query_to_mixed_data: Pull data into an apop_data set, but with mixed numeric/text types.
+\li \ref apop_query_to_mixed_data : Pull data into an apop_data set, but with mixed numeric/text types.
 
 \par Maintenance 
-\li \ref apop_db_open: Optional, for when you want to use a database on disk.
+\li \ref apop_db_open : Optional, for when you want to use a database on disk.
 
-\li \ref apop_db_close: If you used \ref apop_db_open, you will need to use this too.
+\li \ref apop_db_close : If you used \ref apop_db_open, you will need to use this too.
 
-\li \ref apop_table_exists: Check to make sure you aren't reinventing or destroying data. Also, the clean way to drop a table.
+\li \ref apop_table_exists : Check to make sure you aren't reinventing or destroying data. Also, the clean way to drop a table.
 
-\li \ref apop_count_cols: Count the columns in a table.
+\li \ref apop_count_cols : Count the columns in a table.
 
-\li \ref apop_db_merge: Import or merge the whole of another database into the currently open db.
+\li \ref apop_db_merge : Import or merge the whole of another database into the currently open db.
 
-\li \ref apop_db_merge_table: Import/merge just one table.
+\li \ref apop_db_merge_table : Import/merge just one table.
 
 \par See also
  \li The \ref conversions, including \ref apop_text_to_db and \ref apop_matrix_to_db.
@@ -322,7 +322,7 @@ int apop_db_close(char vacuum){
 \param fmt 	As with \ref apop_query , a string containing a query,
 which may include <tt>printf</tt>-style tags (<tt>\%i, \%s</tt>, et cetera).
 
-\return		An \ci apop_data structure with the <tt>text</tt>
+\return		An \ref apop_data structure with the <tt>text</tt>
 element filled. Notice that this is always a 2-D array, even if the query
 returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt>
 to refer to row <tt>i</tt>.
@@ -430,7 +430,7 @@ Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
 \return
 A <tt>gsl_matrix</tt>, which you passed in declared but not allocated.
 
-Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts.db_nan
+Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan"
 are filled with <tt>NAN</tt>s in the matrix.
 */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
@@ -566,10 +566,10 @@ Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
 \return
 An \ref apop_data set, which you passed in declared but not allocated.
 
-Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts.db_nan
+Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan"
 are filled with <tt>NAN</tt>s in the matrix.
 
-If \ref apop_opts.db_name_column is set (it defaults to being "row_name"),
+If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_name"),
 and the name of a column matches the name, then the row names are read from that column.
 
 \bug Currently, this is but a wrapper for \ref apop_query_to_matrix,
@@ -613,7 +613,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 /** Query data to an \c apop_data set, but a mix of names, vectors, matrix elements, and text.
 
 If you are querying to a matrix and maybe a name, use \c
-apop_query_to_data (and set \c apop_opts.db_name_column if desired). But
+apop_query_to_data (and set \ref apop_opts_type "apop_opts.db_name_column" if desired). But
 if your data is a mix of text and numbers, use this.
 
 The first argument is a character string consisting of the letters \c
@@ -627,7 +627,7 @@ there are fewer columns produced than given in the spec, the additional
 elements will be allocated but not filled (i.e., they are uninitialized
 and will have garbage).
 
-The 'n' character indicates row, meaning that \c apop_opts.db_name_column is ignored).
+The 'n' character indicates row, meaning that \ref apop_opts_type "apop_opts.db_name_column" is ignored).
 
 As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers.
 */
@@ -714,7 +714,7 @@ Column names are inserted if there are any. If there are, all dots
 are converted to underscores. 
 Otherwise, the columns will be named <tt>c1</tt>, <tt>c2</tt>, <tt>c3</tt>, &c.
 
-If \ref apop_opts.db_name_column is not blank (the default is "row_name"),
+If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is "row_name"),
 then a so-named column is created, and the row names are placed there.
 
 \param set 	    The name of the matrix

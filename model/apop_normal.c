@@ -96,9 +96,8 @@ static double normal_log_likelihood(apop_data *d, apop_model *params){
   apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     mu	        = gsl_vector_get(params->parameters->vector,0);
     sd          = gsl_vector_get(params->parameters->vector,1);
-  gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me2);//sum of (x-mu)^2
-  long double   ll      = -apop_vector_sum(v)/(2*gsl_pow_2(sd)) - d->matrix->size1*d->matrix->size2*(M_LNPI+M_LN2+log(sd));
-    gsl_vector_free(v);
+  long double   ll  = -apop_matrix_map_sum(d->matrix, apply_me2)/(2*gsl_pow_2(sd));//sum of (x-mu)^2/(2 sd^2)
+    ll    -=  d->matrix->size1*d->matrix->size2*(M_LNPI+M_LN2+log(sd));
 	return ll;
 }
 
@@ -117,7 +116,6 @@ static double normal_p(apop_data *d, apop_model *params){
 
 /** Gradient of the log likelihood function
 
-To tell you the truth, I have no idea when anybody would need this, but it's here for completeness.
 \f$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 \f$
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 \f$d\ln N(\mu,\sigma)/d\sigma = ((x-\mu)^2 / \sigma^3) - 1/\sigma \f$

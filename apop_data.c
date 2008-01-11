@@ -119,9 +119,8 @@ apop_data * apop_data_calloc(const size_t vsize, const size_t msize1, const int 
 return      The \ref apop_data structure in question.
   */
 apop_data * apop_matrix_to_data(gsl_matrix *m){
+  apop_assert_void(m, 1, 'c',"Converting a NULL matrix to an apop_data structure.");
   apop_data  *setme   = apop_data_alloc(0,0,0);
-    if (!m)
-        apop_error(1, 'c',"%s: converting a NULL matrix to an apop_data structure.\n", __func__);
     setme->matrix = m;
     return setme;
 }
@@ -134,9 +133,8 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 \return     an allocated, ready-to-use \ref apop_data struture.
 */
 apop_data * apop_vector_to_data(gsl_vector *v){
+  apop_assert_void(v, 1, 'c',"Converting a NULL vector to an apop_data structure.");
   apop_data  *setme   = apop_data_alloc(0,0,0);
-    if (!v)
-        apop_error(1, 'c',"%s: converting a NULL vector to an apop_data structure.\n", __func__);
     setme->vector = v;
     return setme;
 }
@@ -305,6 +303,7 @@ apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
  in the first matrix (unless it is -1, in which case the first matrix
  will have zero rows, or it is greater than the matrix's size, in which
  case it will have as many rows as the original).
+ \param r_or_c If this is 'r' or 'R', then cleave the rows; of 'c' or 'C' cleave the columns.
 
  \return An array of two \ref apop_data sets. If one is empty then a
  NULL pointer will be returned.
@@ -319,7 +318,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             set_v2  = 1,
             set_m1  = 1,
             set_m2  = 1;
-     if (r_or_c == 'r') {
+     if (r_or_c == 'r' || r_or_c == 'r') {
         if (splitpoint <=0){
             out[0]  = NULL;
             out[1]  = apop_data_copy(in);
@@ -342,7 +341,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
                 set_m2  = 0;
             goto allocation;
         }
-    } else if (r_or_c == 'c') {
+    } else if (r_or_c == 'c' || r_or_c == 'C') {
         if (splitpoint <= -1){
             out[0]  = NULL;
             out[1]  = apop_data_copy(in);
@@ -414,6 +413,33 @@ allocation:
     return out;
 }
 
+
+
+
+/* Remove the columns set to one in the \c drop vector.
+\param n the \ref apop_name structure to be pared down
+\param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
+\ingroup names
+ */
+static void apop_name_rm_columns(apop_name *n, int *drop){
+apop_name   *newname    = apop_name_alloc();
+int         i, max      = n->colct;
+    for (i=0; i< max; i++){
+        if (drop[i]==0)
+            apop_name_add(newname, n->column[i],'c');
+        else
+            n->colct    --;
+    }
+    free(n->column);
+    n->column = newname->column;
+    //we need to free the newname struct, but leave the column intact.
+    //A one-byte memory leak.
+    newname->column   = malloc(1);
+    newname->colct  = 0;
+    apop_name_free(newname);
+}
+
+
 /** Remove the columns set to one in the \c drop vector.
 The returned data structure looks like it was modified in place, but
 the data matrix and the names are duplicated before being pared down,
@@ -442,12 +468,12 @@ void apop_data_rm_columns(apop_data *d, int *drop){
   \param    j   The column
   \return       A pointer to double pointing to the appropriate element.
   */
-double * apop_data_ptr(const apop_data *data, const size_t i, const size_t j){
+double * apop_data_ptr(const apop_data *data, const int i, const int j){
     if (j == -1){
-        assert(data->vector);
+        apop_assert(data->vector, NULL, 0, 's', "You asked for the vector element (i=-1) but it is NULL.");
         return gsl_vector_ptr(data->vector, i);
     } else {
-        assert(data->matrix);
+        apop_assert(data->matrix, NULL, 0, 's', "You asked for the matrix element (%i, %i) but the matrix is NULL.", i, j);
         return gsl_matrix_ptr(data->matrix, i,j);
     }
 }
@@ -513,10 +539,10 @@ return the \c apop_data's vector element.
 */
 double apop_data_get(const apop_data *in, size_t row, int col){
     if (col>=0){
-        assert(in->matrix);
+        apop_assert(in->matrix, 0, 0, 's', "You asked for the matrix element (%u, %i) but the matrix is NULL.", row, col);
         return gsl_matrix_get(in->matrix, row, col);
     } else {
-        assert(in->vector);
+        apop_assert(in->vector, 0, 0, 's', "You asked for the vector element (col=-1) but it is NULL.");
         return gsl_vector_get(in->vector, row);
     }
 }
@@ -582,10 +608,10 @@ Oh, and if \c col<0, then this will set the element of \c in->vector.
 */
 void apop_data_set(apop_data *in, size_t row, int col, double data){
     if (col>=0){
-        assert(in->matrix);
+        apop_assert_void(in->matrix, 0, 's', "You're trying to set the matrix element (%u, %i) but the matrix is NULL.", row, col);
         gsl_matrix_set(in->matrix, row, col, data);
     } else {
-        assert(in->vector);
+        apop_assert_void(in->vector, 0, 's', "You're trying to set a vector element (row=-1) but the vector is NULL.");
         gsl_vector_set(in->vector, row, data);
     }
 }

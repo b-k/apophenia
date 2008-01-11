@@ -90,22 +90,20 @@ you sent in. If the names match the table, then the function returns a
 closed-form model with updated parameters.  If the parameters aren't in
 the table of conjugate priors/likelihoods, then it uses Markov Chain Monte
 Carlo to sample from the posterior distribution, and then outputs an \c
-apop\_histogram model for further analysis. Notably, it can be used as
+apop_histogram model for further analysis. Notably, it can be used as
 the input to this function, so you can chain Bayesian updating procedures.
 
 \param data     The input data, that will be used by the likelihood function
-\param  prior   The prior \c apop_model
-\param likelihood The likelihood \c apop_model. If the system needs to
+\param  prior   The prior \ref apop_model
+\param likelihood The likelihood \ref apop_model. If the system needs to
 estimate the posterior via MCMC, this needs to have a \c draw method.
-\param prior_eps    The \c apop_model for the prior model
-\param likelihood_eps    The \c apop_model for the likelihood model
 \param starting_pt      The first parameter to check in the MCMC routine
-\param r        A \c gsl_rng, already initialized (e.g., via \c apop_rng_alloc).
+\param r        A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc).
 \param periods How many steps should the MCMC chain run?
 \param burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
-\param histosegments If outputting a \c apop\_histogram, how many segments should it have?
-\return an \c apop_model struct, including a \c model element and correctly specified parameters.
-\todo The \c apop_update routine has an internal table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), and that list can always be longer.
+\param histosegments If outputting a \ref apop_histogram, how many segments should it have?
+\return an \ref apop_model struct, including a \c model element and correctly specified parameters.
+\todo The \ref apop_update routine has an internal table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), and that list can always be longer.
 */
 apop_model * apop_update(apop_data *data, apop_model prior, apop_model likelihood, 
                         apop_data *starting_pt, gsl_rng *r, int periods, double burnin, int histosegments){

@@ -80,7 +80,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
         gsl_matrix_set_row(array_of_boots->matrix, i+1, pseudoval);
         apop_model_free(est);
     }
-    apop_data   *out    = apop_data_covar(array_of_boots);
+    apop_data   *out    = apop_data_covariance(array_of_boots);
     gsl_matrix_scale(out->matrix, 1./(n-1.));
     apop_data_free(subset);
     gsl_vector_free(pseudoval);

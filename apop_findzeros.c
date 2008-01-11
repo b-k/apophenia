@@ -4,13 +4,13 @@
 #include <gsl/gsl_multiroots.h>
 #include <apophenia/headers.h>
 
-/** \file apop_findzero.c
- This just includes the root-finding routine. It is #included in apop_mle.c, because I expect you to call it via that. 
+/** \file apop_findzeros.c
+ This just includes the root-finding routine. It is \c \#included in apop_mle.c, because I expect you to call it via that. 
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 
-/** This function is cut/pasted/modified from the GSL documentation. It
+/* This function is cut/pasted/modified from the GSL documentation. It
  calls the various GSL root-finding algorithms to find the zero of the score.
 */
 static apop_model * find_roots (infostruct p) {

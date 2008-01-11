@@ -1,4 +1,4 @@
-/** \file apop_mysql.c
+/** \file apop_db_mysql.c
 This file is included directly into \ref apop_db.c. It is read only if APOP_USE_MYSQL is defined.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
@@ -6,6 +6,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <my_global.h>
 #include <my_sys.h>
 #include <mysql.h>
+#include <math.h>
 
 
 static MYSQL *mysql_db; 
@@ -56,23 +57,18 @@ static void process_results(void){
 }
 
 static int apop_mysql_db_open(char *in){
-    if (!in){
-        fprintf(stderr, "MySQL needs a non-NULL db name.");
-        return 1;
-    } else{
-        mysql_db = mysql_init (NULL);
-        if (!mysql_db) {
-            fprintf (stderr, "mysql_init() failed (probably out of memory)\n");
-            return 1;
-        }
-        /* connect to server */
-        if (!mysql_real_connect (mysql_db, opt_host_name, opt_user_name, opt_password,
-                in, opt_port_num, opt_socket_name, CLIENT_MULTI_STATEMENTS+opt_flags)) {
-                    fprintf (stderr, "mysql_real_connect() to %s failed\n", in);
-                    mysql_close (mysql_db);
-                    return 1;
-                }
-    }
+    if (!in)
+        apop_error(0, 's', "MySQL needs a non-NULL db name.");
+    mysql_db = mysql_init (NULL);
+    if (!mysql_db) 
+        apop_error(0, 's', "mysql_init() failed (probably out of memory)\n");
+    /* connect to server */
+    if (!mysql_real_connect (mysql_db, opt_host_name, opt_user_name, opt_password,
+            in, opt_port_num, opt_socket_name, CLIENT_MULTI_STATEMENTS+opt_flags)) {
+                apop_error(0, 'c', "mysql_real_connect() to %s failed\n", in);
+                mysql_close (mysql_db);
+                return 1;
+            }
     return 0;
 }
 
@@ -191,9 +187,12 @@ double apop_mysql_query_to_float(char *query){
 gsl_vector * process_result_set_vector (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
   unsigned int     j=0;
-  gsl_vector *out   =gsl_vector_alloc( mysql_num_rows (res_set));
+   gsl_vector *out   =gsl_vector_alloc( mysql_num_rows (res_set));
      while ((row = mysql_fetch_row (res_set)) ) {
-         gsl_vector_set(out, j,  atof(row[0]));
+         if (!strcmp(row[0], "NULL"))
+            gsl_vector_set(out, j,  GSL_NAN);
+         else
+            gsl_vector_set(out, j,  atof(row[0]));
          j++;
     }
     if (mysql_errno (conn)){
@@ -215,7 +214,8 @@ gsl_vector* apop_mysql_query_to_vector(char *query){
          print_error (mysql_db, "mysql_store_result() failed");
        return NULL;
     }
-    // process result set, and then deallocate it 
+    if (!res_set->row_count) //just a blank table.
+        return NULL;
     out = process_result_set_vector (mysql_db, res_set);
     mysql_free_result (res_set);
     return out;
@@ -260,13 +260,15 @@ gsl_matrix* apop_mysql_query_to_matrix(char *query){
     }
 }
 
+size_t total_cols, total_rows; //sqlite no longer uses these.
+
 apop_data * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
   unsigned int     jj, currentrow = 0;
-    total_cols  = mysql_num_fields(res_set);
-    total_rows  = mysql_num_rows(res_set);
-  char ***out   = malloc(sizeof(char**) * total_rows );
-  apop_data *out= apop_data_alloc(0,0,0);
+  total_cols       = mysql_num_fields(res_set);
+  total_rows       = mysql_num_rows(res_set);
+  char ***out      = malloc(sizeof(char**) * total_rows );
+  apop_data *output= apop_data_alloc(0,0,0);
     while ((row = mysql_fetch_row (res_set)) ) {
 		out[currentrow]	= malloc(sizeof(char*) * total_cols);
 		for (jj=0;jj<total_cols;jj++){
@@ -280,16 +282,14 @@ apop_data * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
 		}
 		currentrow++;
     }
-    output->textegories  = out;
-    output->catsize[0]  = total_rows;
-    output->catsize[1]  = total_cols;
-    output->textsize[0]  = total_rows;
-    output->textsize[1]  = total_cols;
+    output->text        = out;
+    output->textsize[0] = total_rows;
+    output->textsize[1] = total_cols;
     if (mysql_errno (conn)){
          print_error (conn, "mysql_fetch_row() failed");
          return NULL;
     } 
-    return out;
+    return output;
 }
 
 apop_data * apop_mysql_query_to_text(char *query){
@@ -304,7 +304,6 @@ apop_data * apop_mysql_query_to_text(char *query){
        print_error (mysql_db, "mysql_store_result() failed");
        return NULL;
     }
-    // process result set, and then deallocate it 
     output = process_result_set_chars (mysql_db, res_set);
     mysql_free_result (res_set);
     return output;

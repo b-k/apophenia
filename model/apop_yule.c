@@ -159,11 +159,9 @@ int		x;
 
 The special case of Waring where \f$ \alpha = 0.	\f$<br>
 
-The data set needs to be in rank-form. The first column is the frequency
-of the most common item, the second is the frequency of the second most
-common item, &c.
+If you have frequency or ranking data, then use \ref apop_model_copy_set_string to set the model_setting to "R".
 
-apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_params.
+apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
 \f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$
 

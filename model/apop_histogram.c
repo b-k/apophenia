@@ -17,15 +17,10 @@ apop_model apop_histogram;
 
 /** Allocate the parameters for the \c apop_histogram model.
 
-  This produces the \c apop_model half of the \c apop_model/apop_params
-  pair. 
-
   \param    data The input data. As with other distributions, the data
   should be in the matrix element of the \c apop_data set, and can have any dimensions
   (\f$1\times 10000\f$, \f$10000\times 1\f$, \f$100\times 100\f$...).
   \param bins How many bins should the PDF have?
-  \param params_in If you want to hook the output parameters in to an existing \c apop_model set, then put that input set here.
-
  */
 apop_model *apop_histogram_params_alloc(apop_data *data, int bins){
     //header is in model.h.

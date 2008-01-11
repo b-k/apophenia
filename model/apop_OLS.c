@@ -395,7 +395,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
 /** Instrumental variable regression
 \ingroup models
 
- Operates much like the \ref apop_estmate_OLS function, but the input
+ Operates much like the \ref apop_OLS model, but the input
  parameters also need to have a table of substitutions. The vector
  element of the table lists the column numbers to be substituted (the
  dependent var is zero; first independent col is one), and then one
@@ -425,5 +425,4 @@ only slightly more human- and labor-intensive to do the linear algebra
 without producing the Z matrix explicitly.
 
  */
-apop_model apop_IV = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, 
-                            .log_likelihood = ols_log_likelihood};
+apop_model apop_IV = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, .log_likelihood = ols_log_likelihood};

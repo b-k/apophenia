@@ -105,7 +105,7 @@ static apop_data* apop_ANOVA_one_way(char *table, char *data, char *grouping){
   \param table The table to be queried. 
   \param data The name of the column holding the data
   \param grouping1 The name of the first column by which to group data
-  \param grouping1 If this is \c NULL, then the function will return a one-way ANOVA. Otherwise, the name of the second column by which to group data in a two-way ANOVA.
+  \param grouping2 If this is \c NULL, then the function will return a one-way ANOVA. Otherwise, the name of the second column by which to group data in a two-way ANOVA.
  */
 apop_data* apop_ANOVA(char *table, char *data, char *grouping1, char *grouping2){
     apop_data *first = apop_ANOVA_one_way(table, data, grouping1);

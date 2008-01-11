@@ -17,7 +17,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 Currently, you only get two dimensions.
 
-Set the global \ref apop_opts.output_name to the filename you want before running this.
+Set the global \ref apop_opts_type "apop_opts.output_name" to the filename you want before running this.
 It appends instead of overwriting, so you can prep the file if you want; see sample code. [to overwrite a file, just remove it first with the standard C function <tt>remove("filename");</tt>]
 
 
@@ -314,13 +314,13 @@ void dumb_little_pf(FILE * f, double data){
 }
 
 /** Print a vector in float format.
-    You may want to set \ref apop_opts.output_delimiter.
+    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 \ingroup apop_print */
 void apop_vector_print(gsl_vector *data, char *file){
 	print_core_v(data, apop_opts.output_delimiter, file, dumb_little_pf); }
 
 /** Print a matrix in float format.
-    You may want to set \ref apop_opts.output_delimiter.
+    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 \ingroup apop_print */
 void apop_matrix_print(gsl_matrix *data, char *file){
     if (apop_opts.output_type   == 'd')
@@ -331,7 +331,7 @@ void apop_matrix_print(gsl_matrix *data, char *file){
 
 
 /** Dump a <tt>gsl_vector</tt> to the screen. 
-    You may want to set \ref apop_opts.output_delimiter.
+    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 \ingroup apop_print */
 void apop_vector_show(const gsl_vector *data){
   char tmptype    = apop_opts.output_type;
@@ -341,7 +341,7 @@ void apop_vector_show(const gsl_vector *data){
 }
 
 /** Dump a <tt>gsl_matrix</tt> to the screen.
-    You may want to set \ref apop_opts.output_delimiter.
+    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 \ingroup apop_print */
 void apop_matrix_show(const gsl_matrix *data){
   char tmptype    = apop_opts.output_type;
@@ -446,7 +446,7 @@ void apop_data_show(const apop_data *data){
 }
 
 /** Print an \ref apop_data set to a file, the database, or the screen,
-  as determined by the \ref apop_opts.output_delimiter.
+  as determined by the \ref apop_opts_type "apop_opts.output_delimiter".
     
 \ingroup apop_print */
 void apop_data_print(apop_data *data, char *file){
@@ -563,27 +563,15 @@ set nokey           \n\
         fclose(f);
 }
 
-
-
 /** Plot the percentiles of a data set against the percentiles of a distribution.
 Defaults to printing to stdout.
 
-The function respects the <tt>output_type</tt> option, so code like:
-\code
-f   = popen("/usr/bin/gnuplot", "w");
-apop_opts.output_type = 'p';
-apop_opts.output_pipe = f;
-apop_plot_qq(data, apop_normal, params, NULL, NULL);
-\endcode
-will print directly to Gnuplot.
-
+The function respects the <tt>output_type</tt> option.
 
 \param v    The data
 \param m    The distribution, such as apop_normal.
-\param beta The parameters for the distribution.
-\param ep   The \ref apop_model structure for the distribution, if any.
 \param outfile   The name of the text file to print to.  If NULL then write to STDOUT.
-\bugs The RNG is hard-coded, as is the size of the histogram.
+\todo The RNG is hard-coded, as is the size of the histogram.
 */
 void apop_plot_qq(gsl_vector *v, apop_model m, char *outfile){
   FILE  *f;

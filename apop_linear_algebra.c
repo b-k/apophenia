@@ -28,7 +28,7 @@ See \ref apop_name_print.
 /** \defgroup apop_print 	Asst printing functions		
 
 The <tt>apop_*_print</tt> functions will print to screen, text file,
-or database, depending on how you set \ref apop_opts.output_type.
+or database, depending on how you set \ref apop_opts_type "apop_opts.output_type".
 The <tt>apop_*_show</tt> functions print only to screen, and are basically
 just a convenience shell to the corresponding <tt>apop_*_print</tt>
 function.
@@ -45,48 +45,6 @@ function.
 #include <apophenia/linear_algebra.h> 
 #include "math.h" //pow!
 
-/**
-Find the determinant of a matrix. The \c in matrix is not destroyed in the process.
-
-\param in The matrix to be determined.
-\return     The determinant.
-\ingroup linear_algebra
-*/
-double apop_matrix_determinant(const gsl_matrix *in) {
-  apop_assert(in->size1 == in->size2,  0, 0, 's', "You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
-  int 		sign;
-  double 	the_determinant = 0;
-  gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
-  gsl_permutation * perm = gsl_permutation_alloc(in->size1);
-	gsl_matrix_memcpy (invert_me, in);
-	gsl_linalg_LU_decomp(invert_me, perm, &sign);
-    the_determinant	= gsl_linalg_LU_det(invert_me, sign);
-	gsl_matrix_free(invert_me);
-	gsl_permutation_free(perm);
-	return the_determinant;
-}
-
-/**
-Inverts a matrix. The \c in matrix is not destroyed in the process.
-You may want to call \ref apop_matrix_determinant first to check that your input is invertible.
-
-\param in The matrix to be inverted.
-\return Its inverse.
-\ingroup linear_algebra
-*/
-gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) {
-  apop_assert(in->size1 == in->size2,  NULL, 0, 's', "You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
-  int 		sign;
-  gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
-  gsl_permutation * perm = gsl_permutation_alloc(in->size1);
-	gsl_matrix_memcpy (invert_me, in);
-	gsl_linalg_LU_decomp(invert_me, perm, &sign);
-    gsl_matrix *out	= gsl_matrix_alloc(in->size1, in->size1); 
-    gsl_linalg_LU_invert(invert_me, perm, out);
-	gsl_matrix_free(invert_me);
-	gsl_permutation_free(perm);
-	return out;
-}
 
 /**
 Calculate the determinant of a matrix, its inverse, or both. The \c in matrix is not destroyed in the process.
@@ -125,7 +83,34 @@ double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, in
 		the_determinant	= gsl_linalg_LU_det(invert_me, sign);
 	gsl_matrix_free(invert_me);
 	gsl_permutation_free(perm);
-	return(the_determinant);
+	return the_determinant;
+}
+
+/**
+Inverts a matrix. The \c in matrix is not destroyed in the process.
+You may want to call \ref apop_matrix_determinant first to check that your input is invertible, or use \ref apop_det_and_inv to do both at once.
+
+\param in The matrix to be inverted.
+\return Its inverse.
+\ingroup linear_algebra
+*/
+gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) {
+    gsl_matrix *out;
+    apop_det_and_inv(in, &out, 0, 1);
+    return out;
+}
+
+/**
+Find the determinant of a matrix. The \c in matrix is not destroyed in the process.
+
+See also \ref apop_matrix_inverse ,  or \ref apop_det_and_inv to do both at once.
+
+\param in The matrix to be determined.
+\return     The determinant.
+\ingroup linear_algebra
+*/
+double apop_matrix_determinant(const gsl_matrix *in) {
+    return apop_det_and_inv(in, NULL, 1, 0);
 }
 
 void apop_normalize_for_svd(gsl_matrix *in){
@@ -376,40 +361,10 @@ gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
     return out;
 }
 
-
-
-/** test whether any of the elements of a <tt>gsl_vector</tt> are missing.
-
- \param in  A <tt>gsl_vector</tt>
- \return    1 if any element is NaN; zero if all elements are numbers.
- \ingroup convenience_fns
- */
-int apop_vector_isnan(gsl_vector *in){
-  size_t  i;
-    for (i=0; i< in->size; i++)
-        if (gsl_isnan(gsl_vector_get(in, i)))
-            return 1;
-    return 0;
-}
-
-/** test whether all of the elements of a <tt>gsl_vector</tt> are
- * finite.
-
- \param in  A <tt>gsl_vector</tt>
- \return    1 if everything is finite (not Inf, -Inf, or NaN); zero otherwise.
- \ingroup convenience_fns
- */
-int apop_vector_finite(gsl_vector *in){
-  size_t  i;
-    for (i=0; i< in->size; i++)
-        if (!gsl_finite(gsl_vector_get(in, i)))
-            return 0;
-    return 1;
-}
-
-/** This is a variant of \ref apop_vector_finite, qv. This lets you
-test for a situation when a vector is diverging, but not actually Inf,
+/** Test for a situation when a vector is diverging,
 so you can preempt a procedure that is about to break on infinite values.
+
+Alternatively, set \c max to \c INFINITY (or \c GSL_INF) to just test whether all of the matrix's elements are finite.
 
  \param in  A <tt>gsl_vector</tt>
  \param max An upper and lower bound to the elements of the vector.
@@ -417,8 +372,8 @@ so you can preempt a procedure that is about to break on infinite values.
  \ingroup convenience_fns
  */
 int apop_vector_bounded(gsl_vector *in, long double max){
-  size_t      i;
-  long double x;
+  size_t i;
+  double x;
     for (i=0; i< in->size; i++){
         x   = gsl_vector_get(in, i);
         if (!gsl_finite(x) || x> max || x< -max)
@@ -426,7 +381,6 @@ int apop_vector_bounded(gsl_vector *in, long double max){
     }
     return 1;
 }
-
 
 static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,const  CBLAS_TRANSPOSE_t flip){
   gsl_vector *outv;
@@ -449,11 +403,8 @@ static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,cons
 
 \param d1 the left part of \f$ d1 \cdot d2\f$
 \param d2 the right part of \f$ d1 \cdot d2\f$
-\param t1 't' or 'p': transpose or prime d1.<br>
+\param ... 't' or 'p': transpose or prime each matrix.<br>
                     'n' or 0: no transpose. <br>
-                    'v': ignore the matrix and use the vector.
-\param t2 't' or 'p': transpose or prime d2.
-                    'n' or 0: no transpose.<br>
                     'v': ignore the matrix and use the vector.
 \return     an \ref apop_data set. If two matrices come in, the vector element is \c NULL and the 
             matrix has the dot product; if either or both are vectors,

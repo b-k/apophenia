@@ -1,6 +1,6 @@
-/** \file apop_OLS.c
+/** \file apop_WLS.c
 
-  OLS models. Much of the real work is done in regression.c.
+  Weighted Least Squares. Much of the real work is done in regression.c.
 
 Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -15,10 +15,9 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 static double wls_p (apop_data *, apop_model *);
 static double wls_log_likelihood (apop_data *, apop_model *);
 
-/** The procedure here is to simply modify the input data, run OLS on
-the modified data, and then claim that the output was from WLS.
-*/
-apop_model * wls_estimate(apop_data *inset, apop_model *epin){
+/* The procedure here is to simply modify the input data, run OLS on
+the modified data, and then claim that the output was from WLS.  */
+static apop_model * wls_estimate(apop_data *inset, apop_model *epin){
   apop_model    *epcopy = malloc(sizeof(*epcopy)),
                             *ep     = epin;
   apop_data                 *set;
@@ -43,7 +42,6 @@ apop_model * wls_estimate(apop_data *inset, apop_model *epin){
     op->model              = ep;
     apop_model *out     = apop_OLS.estimate(set, epcopy);
     out->estimate       = wls_estimate;
-    out->p              = wls_p;
     out->log_likelihood = wls_log_likelihood;
     return out;
 }
@@ -83,15 +81,9 @@ static double wls_log_likelihood (apop_data *d, apop_model *params){
     return total_prob;
 }
 
-
-static double wls_p (apop_data *d, apop_model *p){ 
-    return exp(wls_log_likelihood(d, p));
-            }
-
 /** The WLS model
 
   You will need to provide the weights in data->weights. Otherwise, this model is just like \ref apop_OLS.
 \ingroup models
 */
-apop_model apop_WLS = {"WLS", 
-    -1,0,0, .estimate = wls_estimate, .p = wls_p, .log_likelihood = wls_log_likelihood};
+apop_model apop_WLS = {"WLS", -1,0,0, .estimate = wls_estimate, .log_likelihood = wls_log_likelihood};

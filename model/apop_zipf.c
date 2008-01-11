@@ -142,8 +142,9 @@ Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distributi
 
 Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
 
-apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_params.
+If you have frequency or ranking data, then use \ref apop_model_copy_set_string to set the model_setting to "R".
 
+apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
 
 \f$lnZ(a)    = -(\log(\zeta(a)) + a \log(i))    \f$

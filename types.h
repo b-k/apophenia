@@ -42,10 +42,10 @@ top of the basic \c gsl_matrix and \c gsl_vector. It includes an
 variables. See \ref data_struct.
 
 \li Models 
-The \ref apop_model structure encapsulates a description of the world
+The \ref _apop_model "apop_model" structure encapsulates a description of the world
 in which the data and the parameters produce observed outcomes. The
-\apop_estimate() function takes in data and an un-parametrizes model and outputs a parametrized model.
-See \ref models, or the full declaration of the structure on the \c _apop_model page.
+\ref apop_estimate function takes in data and an un-parametrizes model and outputs a parametrized model.
+See \ref models, or the full declaration of the structure on the \ref _apop_model "apop_model" page.
 
 \li Names 
 The \ref apop_name structure has three components: a list of column
@@ -95,7 +95,7 @@ The full declaration is given in the \c _apop_model page.
 
 <b>An example</b><br>
 
-The \ref apop_OLS page has a sample program which uses an <tt>apop_estimate</tt> structure.
+The \ref apop_OLS page has a sample program which uses an \ref apop_model.
 \ingroup types
 */
 typedef struct _apop_model apop_model;
@@ -157,7 +157,7 @@ typedef struct{
     char db_nan[100];
             /** If this is 'm', use mySQL, else use SQLite. */
     char db_engine;
-            /** Threads to use internally. See \ref apop_apply. */
+            /** Threads to use internally. See \ref apop_matrix_apply and family. */
     int  thread_count;
 } apop_opts_type;
 
@@ -169,8 +169,6 @@ void  apop_name_free(apop_name * free_me);
 void  apop_name_print(apop_name * n);
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
 void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type2);
-void apop_name_rm_columns(apop_name *n, int *drop);
-void apop_name_memcpy(apop_name **out, apop_name *in);
 apop_name * apop_name_copy(apop_name *in);
 size_t  apop_name_find(apop_name *n, char *findme, char type);
 
@@ -187,7 +185,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c);
 apop_data * apop_data_copy(const apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data *out, const apop_data *in);
-double * apop_data_ptr(const apop_data *data, const size_t i, const size_t j);
+double * apop_data_ptr(const apop_data *data, const int i, const int j);
 double * apop_data_ptr_it(const apop_data *in, size_t row, char* col);
 double * apop_data_ptr_ti(const apop_data *in, char* row, int col);
 double * apop_data_ptr_tt(const apop_data *in, char *row, char* col);

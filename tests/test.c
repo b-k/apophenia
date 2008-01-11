@@ -113,9 +113,9 @@ static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gs
     assert(apop_vector_mean(av) == apop_vector_weighted_mean(v,w));
     assert(apop_vector_weighted_mean(v,w) == mean);
     assert(fabs(apop_vector_var(v) - apop_vector_weighted_var(v,NULL))<1e-5);
-    assert(fabs(apop_vector_covar(v,v2) - apop_vector_weighted_cov(v,v2,NULL))<1e-5);
+    assert(fabs(apop_vector_cov(v,v2) - apop_vector_weighted_cov(v,v2,NULL))<1e-5);
     assert(fabs(apop_vector_var(av) - apop_vector_weighted_var(v,w))<1e-5);
-    assert(fabs(apop_vector_covar(av,av2) - apop_vector_weighted_cov(v,v2,w))<1e-5);
+    assert(fabs(apop_vector_cov(av,av2) - apop_vector_weighted_cov(v,v2,w))<1e-5);
     assert(fabs(apop_vector_skew(av) - apop_vector_weighted_skew(v,w))<1e-5);
     assert(fabs(apop_vector_kurt(av) - apop_vector_weighted_kurt(v,w))<1e-5);
 }
