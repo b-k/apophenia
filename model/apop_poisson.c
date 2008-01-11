@@ -14,7 +14,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "likelihoods.h"
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
-#include <assert.h>
+
 static double poisson_log_likelihood(apop_data *d, apop_model *);
 
 static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
@@ -68,7 +68,7 @@ static double poisson_log_likelihood(apop_data *d, apop_model * p){
 }
 
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double       	lambda  = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix      *data	= d->matrix;
   float           d_a;

@@ -64,11 +64,11 @@ static double binomial_log_likelihood(apop_data *d, apop_model *params){
 
 static double binomial_p(apop_data *d, apop_model *params){
   apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  double	  n       = apop_data_get(params->parameters,0,-1),
-              p       = apop_data_get(params->parameters,1,-1);
+  double	  n       = apop_data_get(params->parameters, 0, -1),
+              p       = apop_data_get(params->parameters, 1, -1);
   double hitcount, misscount;
     get_hits_and_misses(d, params->model_settings, &hitcount, &misscount);
-    return gsl_ran_binomial_pdf(hitcount/(hitcount+misscount), p, n);
+    return gsl_ran_binomial_pdf(hitcount, p, n);
 }
 
 static double binomial_constraint(apop_data *data, apop_model *b){
@@ -92,7 +92,7 @@ The parameters are kept in the vector element of the \c apop_model parameters el
 
 Input data can take two forms:
 
-If \c model_settings is \c NULL or the one-character string \c "b", then the data is taken to have a binary form, meaning that the system counts zeros as failures and non-zeros as successes. \$N\$ is the sie of the matrix.
+If \c model_settings is \c NULL or the one-character string \c "b", then the data is taken to have a binary form, meaning that the system counts zeros as failures and non-zeros as successes. \f$N\f$ is the size of the matrix.
 
 If \c model_settings is \c NULL or the one-character string \c "t", then the data is taken to be the two-column miss-hit format: column zero of the matrix represents failures and column one represents successes.
 

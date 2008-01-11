@@ -124,7 +124,7 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *r, i
         gsl_matrix_set_row(array_of_boots->matrix, i, est->parameters->vector);
         apop_model_free(est);
 	}
-	summary	= apop_data_covariance_matrix(array_of_boots, 1);
+	summary	= apop_data_covariance(array_of_boots);
     gsl_matrix_scale(summary->matrix, 1./boot_iterations);
     apop_data_free(array_of_boots);
     apop_data_free(subset);

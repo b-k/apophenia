@@ -28,8 +28,6 @@ typedef struct {
 } apop_ls_settings;
 
 apop_ls_settings * apop_ls_settings_alloc(apop_data *data, apop_model model);
-apop_model * apop_estimate_OLS(apop_data *set, apop_model *ep);
-apop_model * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma);
 apop_model *apop_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 //Returns GLS/OLS parameter estimates.
 //Destroys the data in the process.
@@ -52,8 +50,6 @@ apop_model *apop_estimate_fixed_effects_OLS(apop_data *data, gsl_vector *categor
 apop_data *apop_estimate_correlation_coefficient (apop_model *in);
 apop_data *apop_estimate_r_squared (apop_model *in);
 void apop_estimate_parameter_t_tests (apop_model *est);
-
-apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep);
 
 //apop_testing.c
 apop_data* apop_ANOVA(char *table, char *data, char *grouping1, char *grouping2);

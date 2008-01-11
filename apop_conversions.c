@@ -683,7 +683,7 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
     }
     asprintf(&q, "%s varchar(100) );", q);
     apop_query(q);
-    apop_assert_void(apop_table_exists(tabname, 0),  0, 0, 's', "query \"%s\" failed.\n", q);
+    apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s\" failed.\n", q);
     if (use_names_in_file){
         for (i=0; i<ct; i++)
             free(fn[i]);
@@ -694,22 +694,24 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
 
 
 static void tab_create(char *tabname, int ct, int has_row_names){
-  char  *q = NULL;
+  char  *r, *q = NULL;
   int   i;
     asprintf(&q, "create table %s", tabname);
     for (i=0; i<ct; i++){
+        r = q;
         if (i==0) 	{
             if (has_row_names)
                 asprintf(&q, "%s (row_names, ", q);
             else
                 asprintf(&q, "%s (", q);
         } else		asprintf(&q, "%s' , ", q);
-        asprintf(&q, "%s '", q);
-        asprintf(&q, "%s%s", q, fn[i]);
+        free(r); r=q;
+        asprintf(&q, "%s '%s", q, fn[i]);
+        free(r);
     }
     asprintf(&q, "%s' ); begin;", q);
     apop_query(q);
-    apop_assert(apop_table_exists(tabname, 0),  0, 0, 's', "query \"%s\" failed.\n", q);
+    apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s\" failed.\n", q);
     if (use_names_in_file){
         for (i=0; i<ct; i++)
             free(fn[i]);
@@ -723,15 +725,22 @@ static void line_to_insert(char instr[], char *tabname){
             length_of_string= strlen(instr);
   size_t    last_match      = 0;
   char	    outstr[Text_Line_Limit], *prepped;
-  char      *q  = malloc(100+ strlen(tabname));
+  char      *r, *q  = malloc(100+ strlen(tabname));
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
     while (last_match < length_of_string 
            && !regexec(regex, (instr+last_match), 2, result, 0)){
-        if(one_in++) 	asprintf(&q, "%s, ", q);
+        if(one_in++){
+            r = q;
+            asprintf(&q, "%s, ", r);
+            free(r);
+        }
         pull_string(instr,  outstr, result,  &last_match);
         prepped	=prep_string_for_sqlite(outstr);
-        if (strlen(prepped) > 0)
-            asprintf(&q, "%s%s", q, prepped);
+        if (strlen(prepped) > 0){
+            r = q;
+            asprintf(&q, "%s%s", r, prepped);
+            free(r);
+        }
         free(prepped);
     }
     apop_query("%s);",q); 

@@ -28,7 +28,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_waring.c model/apop_yule.c 	 		\
 			model/apop_bernoulli.c model/apop_binomial.c 	\
 			model/apop_histogram.c model/apop_kernel.c 		\
-			model/apop_lognormal.c model/apop_IV.c 
+			model/apop_lognormal.c 
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \

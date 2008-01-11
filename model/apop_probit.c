@@ -119,7 +119,7 @@ static double probit_log_likelihood(apop_data *d, apop_model *p){
   minimization. You'll probably never need to call this directly.*/
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
 	//derivative of the above. 
-  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
   int		i, j;
   long double	one_term, beta_term_sum, cdf;
   gsl_matrix 	*data 		= d->matrix;

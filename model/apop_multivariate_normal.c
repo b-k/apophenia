@@ -51,7 +51,7 @@ static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p
         APOP_COL(data,i,v);
         gsl_vector_set(p->parameters->vector, i, apop_mean(v));
     }
-    p->covariance         =  apop_data_covariance_matrix(data, 0);
+    p->covariance         =  apop_data_covariance(data);
     p->parameters->matrix =  p->covariance->matrix;
     /*if (est->model.uses.log_likelihood)
         est->log_likelihood = normal_log_likelihood(est->parameters->vector, data, NULL);

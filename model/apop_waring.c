@@ -18,10 +18,6 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_permutation.h>
-#include <stdio.h>
-#include <assert.h>
-
-
 
 //First the rank versions
 static double waring_log_likelihood_rank(const apop_data *d, apop_model *m){
@@ -70,9 +66,6 @@ static void waring_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient
 }
 
 
-
-
-
 static double beta_zero_and_one_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1 and  0 < beta_2
   static apop_data *constraint = NULL;
@@ -119,7 +112,7 @@ static double waring_log_likelihood(apop_data *d, apop_model *m){
 
 static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
 	//Psi is the derivative of the log gamma function.
-  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
   if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
       return waring_dlog_likelihood_rank(d, gradient, m);
   bb		        = gsl_vector_get(m->parameters->vector, 0);
