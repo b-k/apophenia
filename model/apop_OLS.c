@@ -260,7 +260,7 @@ apop_data       *data;
 apop_model   *est;
     apop_text_to_db("data","d",0,1,NULL);
     data = apop_query_to_data("select * from d");
-    est  = apop_estimate(data, apop_OLS);
+    est  = apop_estimate(data, apop_ols);
     apop_model_show(est);
     return 0;
 }
@@ -278,12 +278,12 @@ features, but the code below will do the same thing in two lines:
 
 \code
 #include <apop.h>
-int main(){ apop_model_show(apop_estimate(apop_text_to_data("data", 0, 0), apop_OLS)); }
+int main(){ apop_model_show(apop_estimate(apop_text_to_data("data", 0, 0), apop_ols)); }
 \endcode
 
 
  */
-apop_model apop_OLS = {.name="OLS", .vbase = -1, .estimate =apop_estimate_OLS, 
+apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .estimate =apop_estimate_OLS, 
                             .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep};
 
 /** The GLS model
@@ -298,8 +298,6 @@ apop_model apop_OLS = {.name="OLS", .vbase = -1, .estimate =apop_estimate_OLS,
 
 
 //Instrumental variables
-
-
 
 
 
@@ -335,14 +333,14 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
   int               i;
   apop_ls_settings  *olp;
     if (!ep || !ep->model_settings)
-        return apop_estimate(inset, apop_OLS);
+        return apop_estimate(inset, apop_ols);
     olp                 = ep->model_settings;
     olp->want_cov       = 0;//not working yet.
     epout               = apop_model_copy(*ep);
     epout->model_settings = malloc(sizeof(apop_ls_settings));
     memcpy(epout->model_settings, olp, sizeof(apop_ls_settings));
     if (!olp->instruments || !olp->instruments->matrix->size2) 
-        return apop_estimate(inset, apop_OLS);
+        return apop_estimate(inset, apop_ols);
     epout->data = inset;
     if(epout->parameters)
         apop_data_free(epout->parameters);
@@ -395,7 +393,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
 /** Instrumental variable regression
 \ingroup models
 
- Operates much like the \ref apop_OLS model, but the input
+ Operates much like the \ref apop_ols model, but the input
  parameters also need to have a table of substitutions. The vector
  element of the table lists the column numbers to be substituted (the
  dependent var is zero; first independent col is one), and then one
@@ -425,4 +423,4 @@ only slightly more human- and labor-intensive to do the linear algebra
 without producing the Z matrix explicitly.
 
  */
-apop_model apop_IV = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, .log_likelihood = ols_log_likelihood};
+apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, .log_likelihood = ols_log_likelihood};

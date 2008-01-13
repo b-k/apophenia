@@ -82,6 +82,42 @@ likelihood. If you give me a parametrized normal, with no data, then I'll take t
     return NULL;
 }
 
+/** Method settings for a model to be put through Bayesian updating. 
+\item starting_pt      The first parameter to check in the MCMC routine
+\item periods How many steps should the MCMC chain run?
+\item burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
+\item histosegments If outputting a \ref apop_histogram, how many segments should it have?
+ 
+ */
+typedef struct{
+    apop_data *data;
+    apop_model *model; 
+    apop_data *starting_pt;
+    long int periods;
+    double burnin;
+    int histosegments;
+    char use_gibbs;
+} apop_update_settings;
+
+
+
+
+/** Allocate an \ref apop_update_settings struct. See also the \ref Apop_settings_alloc macro.  */
+apop_update_settings *apop_update_settings_alloc(apop_data *d, apop_model *m){
+   apop_update_settings *out = malloc(sizeof(apop_update_settings));
+   Apop_assert(out, NULL, 0, 's', "malloc failed. You are probably out of memory.");
+   out->starting_pt = NULL;
+   out->periods = 1e5;
+   out->histosegments = 5e3;
+   out->burnin = 0.05;
+   out->use_gibbs = 'd'; //default
+   out->model = apop_model_copy(*m);
+   out->model->method_settings = out;
+   sprintf(out->model->method_name, "Bayesian updating");
+   out->model->method_settings_size = sizeof(apop_update_settings);
+   return out;
+}
+
 /** Take in a prior and likelihood distribution, and output a posterior
  distribution.
 
@@ -97,51 +133,51 @@ the input to this function, so you can chain Bayesian updating procedures.
 \param  prior   The prior \ref apop_model
 \param likelihood The likelihood \ref apop_model. If the system needs to
 estimate the posterior via MCMC, this needs to have a \c draw method.
-\param starting_pt      The first parameter to check in the MCMC routine
 \param r        A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc).
-\param periods How many steps should the MCMC chain run?
-\param burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
-\param histosegments If outputting a \ref apop_histogram, how many segments should it have?
-\return an \ref apop_model struct, including a \c model element and correctly specified parameters.
+\return an \ref apop_model struct representing the posterior, with updated parameters. 
 \todo The \ref apop_update routine has an internal table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), and that list can always be longer.
 */
-apop_model * apop_update(apop_data *data, apop_model prior, apop_model likelihood, 
-                        apop_data *starting_pt, gsl_rng *r, int periods, double burnin, int histosegments){
-  apop_model *maybe_out = check_conjugacy(data, prior, likelihood);
+apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *r){
+  apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
     if (maybe_out) return maybe_out;
+  apop_update_settings *s = 
+      (prior->method_settings && !strcmp(prior->method_name, "Bayesian updating"))
+        ? prior->method_settings
+        : apop_update_settings_alloc(data, prior);
+  prior = s->model;
   double        ratio, cp_ll = GSL_NEGINF;
   int           i;
-  int           vs  = likelihood.vbase >= 0 ? likelihood.vbase : data->matrix->size2;
-  int           ms1 = likelihood.m1base >= 0 ? likelihood.m1base : data->matrix->size2;
-  int           ms2 = likelihood.m2base >= 0 ? likelihood.m2base : data->matrix->size2;
+  int           vs  = likelihood->vbase >= 0 ? likelihood->vbase : data->matrix->size2;
+  int           ms1 = likelihood->m1base >= 0 ? likelihood->m1base : data->matrix->size2;
+  int           ms2 = likelihood->m2base >= 0 ? likelihood->m2base : data->matrix->size2;
   double        *draw               = malloc(sizeof(double)* (vs+ms1*ms2));
   apop_data     *current_param      = apop_data_alloc(vs , ms1 , ms2);
-  apop_data     *out                = apop_data_alloc(0, periods*(1-burnin), vs+ms1*ms2);
-    if (starting_pt)
-        apop_data_memcpy(current_param, starting_pt);
+  apop_data     *out                = apop_data_alloc(0, s->periods*(1-s->burnin), vs+ms1*ms2);
+    if (s->starting_pt)
+        apop_data_memcpy(current_param, s->starting_pt);
     else{
         if (current_param->vector) gsl_vector_set_all(current_param->vector, 1);
         if (current_param->matrix) gsl_matrix_set_all(current_param->matrix, 1);
     }
-    if (!likelihood.parameters)
-        likelihood.parameters = apop_data_alloc(vs, ms1, ms2);
-    for (i=0; i< periods; i++){     //main loop
-        prior.draw(draw, r, &prior);
-        write_double(draw, likelihood.parameters);
-        ratio = likelihood.log_likelihood(data,&likelihood) - cp_ll;
-        apop_assert(!gsl_isnan(ratio),  NULL, 0, 'c',"Trouble evaluating the likelihood function at vector beginning with %g or %g. Maybe offer a new starting point.\n", current_param->vector->data[0], likelihood.parameters->vector->data[0]);
+    if (!likelihood->parameters)
+        likelihood->parameters = apop_data_alloc(vs, ms1, ms2);
+    for (i=0; i< s->periods; i++){     //main loop
+        prior->draw(draw, r, prior);
+        write_double(draw, likelihood->parameters);
+        ratio = likelihood->log_likelihood(data,likelihood) - cp_ll;
+        apop_assert(!gsl_isnan(ratio),  NULL, 0, 'c',"Trouble evaluating the likelihood function at vector beginning with %g or %g. Maybe offer a new starting point.\n", current_param->vector->data[0], likelihood->parameters->vector->data[0]);
         if (ratio >=0 || log(gsl_rng_uniform(r)) < ratio){
-            apop_data_memcpy(current_param,likelihood.parameters);
-            cp_ll = likelihood.log_likelihood(data,&likelihood);
+            apop_data_memcpy(current_param,likelihood->parameters);
+            cp_ll = apop_log_likelihood(data,likelihood);
         }
-        if (i >= periods * burnin){
-            APOP_ROW(out, i-(periods *burnin), v)
+        if (i >= s->periods * s->burnin){
+            APOP_ROW(out, i-(s->periods *s->burnin), v)
             gsl_vector *vv = apop_data_pack(current_param);
             gsl_vector_memcpy(v, vv);
             gsl_vector_free(vv);
         }
     }
-    apop_model *outp   = apop_histogram_params_alloc(out, histosegments);
+    apop_model *outp   = apop_histogram_settings_alloc(out, s->histosegments);
     apop_data_free(out);
     return outp;
 }

@@ -2,7 +2,7 @@
  \author Ben Klemens
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
  
-At the moment, the header for  apop_test_ANOVA is in \c asst.h.
+At the moment, the header for  apop_test_anova is in \c asst.h.
  */
 #include <asst.h>
 #include <types.h>
@@ -24,7 +24,7 @@ static double one_chi_sq(apop_data *d, int row, int col, int n){
  \param d The input data, which is a crosstab of various elements. They don't have to sum to one.
  \ingroup asst_tests
  */
-apop_data * apop_test_ANOVA_independence(apop_data *d){
+apop_data * apop_test_anova_independence(apop_data *d){
   double total = 0;
   size_t row, col;
   if (!d || !d->matrix) {
@@ -54,7 +54,7 @@ apop_data * apop_test_ANOVA_independence(apop_data *d){
 
 
 
-static apop_data* apop_ANOVA_one_way(char *table, char *data, char *grouping){
+static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
     //ANOVA has always just been a process of filling in a form, and
     //that's what this function does. I use apop_data_get instead of
     //apop_data_get_tt for efficiency reasons.
@@ -107,14 +107,14 @@ static apop_data* apop_ANOVA_one_way(char *table, char *data, char *grouping){
   \param grouping1 The name of the first column by which to group data
   \param grouping2 If this is \c NULL, then the function will return a one-way ANOVA. Otherwise, the name of the second column by which to group data in a two-way ANOVA.
  */
-apop_data* apop_ANOVA(char *table, char *data, char *grouping1, char *grouping2){
-    apop_data *first = apop_ANOVA_one_way(table, data, grouping1);
+apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2){
+    apop_data *first = apop_anova_one_way(table, data, grouping1);
     if (!grouping2)
         return first;
-    apop_data *second = apop_ANOVA_one_way(table, data, grouping2);
+    apop_data *second = apop_anova_one_way(table, data, grouping2);
     char *joined = NULL;
     asprintf(&joined, "%s, %s", grouping1, grouping2);
-    apop_data *interaction = apop_ANOVA_one_way(table, data, joined);
+    apop_data *interaction = apop_anova_one_way(table, data, joined);
     apop_data *out         = apop_data_calloc(0, 5, 6);
     apop_name_stack(out->names, first->names, 'c');
     apop_name_add(out->names, first->names->row[0], 'r');

@@ -2,7 +2,6 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
  (Except psmirnov2x, Copyright R Project, but also licensed under the GPL.)
- \author Ben Klemens
  */
 
 
@@ -85,7 +84,7 @@ apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *
   apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be an apop_histogram model.");
   size_t  i;
     apop_model *out = apop_model_copy(*template); 
-    gsl_histogram *hout  = ((apop_histogram_params*) out->model_settings)->pdf;
+    gsl_histogram *hout  = ((apop_histogram_settings*) out->model_settings)->pdf;
     gsl_histogram_reset(hout);
     for (i=0; i< indata->size; i++)
         gsl_histogram_increment(hout, gsl_vector_get(indata, i));
@@ -112,7 +111,7 @@ apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m
   long double i;
   double d;
     apop_model *out = apop_model_copy(*template); 
-    gsl_histogram *hout  = ((apop_histogram_params*) out->model_settings)->pdf;
+    gsl_histogram *hout  = ((apop_histogram_settings*) out->model_settings)->pdf;
     gsl_histogram_reset(hout);
     for (i=0; i< draws; i++){
         m->draw(&d, r, m);
@@ -150,8 +149,8 @@ double      pval    = gsl_cdf_chisq_P(diff, bins-1);
   \ingroup histograms
 */
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
-  gsl_histogram *h0 = ((apop_histogram_params *)m0->model_settings)->pdf;
-  gsl_histogram *h1 = ((apop_histogram_params *)m1->model_settings)->pdf;
+  gsl_histogram *h0 = ((apop_histogram_settings *)m0->model_settings)->pdf;
+  gsl_histogram *h1 = ((apop_histogram_settings *)m1->model_settings)->pdf;
   int     i;
   double  diff    = 0,
           bins    = h0->n;
@@ -214,8 +213,8 @@ static double psmirnov2x(double x, int m, int n) {
  */
 //apop_data *apop_test_kolmogorov(gsl_histogram *h1, gsl_histogram *h2){
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
-  gsl_histogram *h1   = ((apop_histogram_params *)m1)->pdf;
-  gsl_histogram *h2   = ((apop_histogram_params *)m2)->pdf;
+  gsl_histogram *h1   = ((apop_histogram_settings *)m1)->pdf;
+  gsl_histogram *h2   = ((apop_histogram_settings *)m2)->pdf;
   double    cdf1      = 0,
             cdf2      = 0,
             sum1      = 0,
@@ -265,7 +264,7 @@ printf("sum1: %g; sum2: %g\n", sum1, sum2);
 
 /** Scale a histogram so it integrates to one (and is thus a proper PMF). */
 void apop_histogram_normalize(apop_model *m){
-  gsl_histogram *h = ((apop_histogram_params *)m->model_settings)->pdf;
+  gsl_histogram *h = ((apop_histogram_settings *)m->model_settings)->pdf;
   int           i;
   long double   sum = 0;
   apop_assert_void(h, 0, 's', "You sent me a model which is not a histogram or which is unparametrized.");

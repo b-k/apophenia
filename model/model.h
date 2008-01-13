@@ -29,7 +29,7 @@ extern apop_model apop_gamma;
 extern apop_model apop_gaussian;//synonym for apop_normal
 //extern apop_model apop_GLS;
 extern apop_model apop_histogram;
-extern apop_model apop_IV;
+extern apop_model apop_iv;
 extern apop_model apop_kernel_density;
 extern apop_model apop_logit;
 extern apop_model apop_lognormal;
@@ -37,15 +37,18 @@ extern apop_model apop_multinomial_logit;
 extern apop_model apop_multinomial_probit;
 extern apop_model apop_multivariate_normal;
 extern apop_model apop_normal;
-extern apop_model apop_OLS;
+extern apop_model apop_ols;
 extern apop_model apop_poisson;
 extern apop_model apop_probit;
 extern apop_model apop_uniform;
 extern apop_model apop_waring;
-extern apop_model apop_WLS;
+extern apop_model apop_wls;
 extern apop_model apop_yule;
 extern apop_model apop_zipf;
 
+#define apop_OLS apop_ols
+#define apop_WLS apop_wls
+#define apop_IV apop_iv
 
 //For apop_histogram:
 #include <gsl/gsl_histogram.h>
@@ -55,12 +58,12 @@ typedef struct{
     apop_model          *histobase;
     apop_model          *kernelbase;
     apop_model          *model;
-} apop_histogram_params;
+} apop_histogram_settings;
 
 apop_model *apop_model_set_parameters(apop_model in, ...);
-apop_model *apop_histogram_params_alloc(apop_data *data, int bins); //see apop_histogram.c
+apop_model *apop_histogram_settings_alloc(apop_data *data, int bins); //see apop_histogram.c
 void apop_histogram_plot(apop_model *in, char *outfile);
-apop_model *apop_kernel_density_params_alloc(apop_data *data, 
+apop_model *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*));
 
 apop_model * apop_model_copy(apop_model in); //in apop_model.c
@@ -80,7 +83,7 @@ apop_model *apop_beta_from_mean_var(double m, double v);
 __END_DECLS
 #endif
 
-/** \defgroup mle  Maximum likelihood estimation
+/* \defgroup mle  Maximum likelihood estimation
 
 Most of the action with regards to maximum likelihood estimation is in
 the function \ref apop_maximum_likelihood and the \ref models "model objects".

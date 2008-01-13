@@ -27,7 +27,7 @@ static void apop_set_first_params(double in, apop_model *m){
 void apop_histogram_plot(apop_model *in, char *outfile){
   int             i, k;
   FILE *          f;
-  apop_histogram_params   *inhist  = in->model_settings;
+  apop_histogram_settings   *inhist  = in->model_settings;
   gsl_histogram   *h      = inhist->pdf;
 
     double midpoints[h->n]; //cut 'n' pasted from kernel density alloc.
@@ -97,19 +97,19 @@ void apop_set_first_params(double in, apop_model *m){
 \endcode
 
 */
-apop_model *apop_kernel_density_params_alloc(apop_data *data, 
+apop_model *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*)){
   size_t    i, j;
   apop_data *smallset          = apop_data_alloc(0,1,1);
-  apop_histogram_params *out   = malloc(sizeof(apop_histogram_params));
+  apop_histogram_settings *out   = malloc(sizeof(apop_histogram_settings));
     set_params                 = set_params ? set_params : apop_set_first_params;
     out->model                 = apop_model_copy(apop_kernel_density);
     out->model->model_settings = out;
     out->kernelbase            = apop_model_copy(*kernelbase);
     out->histobase = data && !histobase ?
-                apop_histogram_params_alloc(data, 1000)
+                apop_histogram_settings_alloc(data, 1000)
                 : apop_model_copy(*histobase);
-  apop_histogram_params *bh    = out->histobase->model_settings;
+  apop_histogram_settings *bh    = out->histobase->model_settings;
 
     double  padding = 0.1;
     out->pdf        = apop_alloc_wider_range(bh->pdf, padding);
@@ -150,7 +150,7 @@ apop_model *apop_kernel_density_params_alloc(apop_data *data,
 static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *parameters){
     apop_model *m   = apop_model_set_parameters(apop_normal, 0., 1.);
     apop_model *h   = apop_estimate(data, apop_histogram);
-	return apop_kernel_density_params_alloc(data, h, m, apop_set_first_params);
+	return apop_kernel_density_settings_alloc(data, h, m, apop_set_first_params);
 }
 
 static double apop_kernel_density_log_likelihood(apop_data *d, apop_model *p){

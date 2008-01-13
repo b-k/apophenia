@@ -87,13 +87,14 @@ gsl_vector * apop_array_to_vector(const double *line, const int vsize){
  \times 1 \f$ are equivalent, but they're two different types in C.
 
  \param in a <tt>gsl_vector</tt>
- \return a <tt>gsl_matrix</tt> with one column.
+ \return a newly-allocated <tt>gsl_matrix</tt> with one column.
 
  \ingroup convenience_fns
  */
 gsl_matrix * apop_vector_to_matrix(const gsl_vector *in){
-    apop_assert(in,  NULL, 1,'c', "apop_vector_to_matrix: converting NULL vector to NULL matrix.\n");
+    apop_assert(in,  NULL, 1,'c', "Converting NULL vector to NULL matrix.");
     gsl_matrix *out = gsl_matrix_alloc(in->size, 1);
+    apop_assert(out,  NULL, 0,'s', "gsl_matrix_alloc failed; probably out of memory.");
     gsl_matrix_set_col(out, 0, in);
     return out;
 }
@@ -402,7 +403,7 @@ longer than this, you will need to open up apop_conversions.c, modify
 \param has_col_names Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
 \return 	Returns an apop_data set.
 
-<b>example:</b> See \ref apop_OLS.
+<b>example:</b> See \ref apop_ols.
 \ingroup convertfromtext	*/
 apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
   apop_data     *set;
@@ -747,22 +748,20 @@ static void line_to_insert(char instr[], char *tabname){
 
   See \ref text_format.
 
-
-Using the data set from the example on the \ref apop_OLS "apop_OLS" page, here's another way to do the regression:
+Using the data set from the example on the \ref apop_ols page, here's another way to do the regression:
 
 \code
-#include <apophenia/headers.h>
+#include <apop.h>
 
 int main(void){ 
-apop_data       *data; 
-apop_model   *est;
+  apop_data       *data; 
+  apop_model   *est;
     apop_db_open(NULL);
     apop_text_to_db("data", "d", 0,1,NULL);
     data       = apop_query_to_data("select * from d");
-    est        = apop_OLS.estimate(data, NULL);
+    est        = apop_estimate(data, apop_ols);
     printf("The OLS coefficients:\n");
     apop_model_print(est);
-    return 0;
 } 
 \endcode
 
@@ -938,17 +937,18 @@ gsl_vector * apop_data_pack(const apop_data *in){
   For example:
 
 \code
+#include <apop.h>
+
 int main(){
   apop_data *a =apop_data_alloc(2,2,2);
   double    eight   = 8.0;
     apop_data_fill(a, 8.,    2.0, eight/2,
                       0.,    6.0, eight);
     apop_data_show(a);
-    return 0;
 }
 \endcode
 
-This function has two important caveats, which are just inevitable facts
+This function has two important and subtle caveats, which are just inevitable facts
 of C's handling of variadic functions.
 
 * You must have exactly as many values as spaces in the data set. There
@@ -956,7 +956,7 @@ is no partial filling, though see \ref apop_matrix_fill and \ref apop_vector_fil
 Too many values will be ignored; too few will segfault.
 
 * Every value must be floating point. Int values will cauase a segfault
-or erratic results.
+or erratic results. So use \c 0. (a double) not \c 0 (an int). 
 
 \param in   An \c apop_data set (that you have already allocated).
 \param ...  A series of exactly as many floating-point values as there are blanks in the data set.

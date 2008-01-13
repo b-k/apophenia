@@ -14,7 +14,6 @@ a great deal of real-world testing that didn't make it into this file.
 
 //I'm using the test script an experiment to see if 
 //these macros add any value.
-#define APOP_ep_ALLOC(name) apop_ep *name = apop_ep_alloc()
 #define APOP_MATRIX_ALLOC(name, r, c) gsl_matrix *name = gsl_matrix_alloc((r),(c))
 #define APOP_VECTOR_ALLOC(name, r) gsl_vector *name = gsl_vector_alloc(r)
 #define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc(0, (r),(c))
@@ -323,9 +322,10 @@ int		count = 0;
 }
 
 void estimate_model(gsl_matrix *data, apop_model dist, int method){
-int                     i;
-double                  starting_pt[] = {3.2, 1.4};
-apop_mle_settings  *params = apop_mle_settings_alloc(apop_matrix_to_data(data), dist);
+  int                     i;
+  double                  starting_pt[] = {3.2, 1.4};
+//apop_mle_settings  *params = apop_mle_settings_alloc(apop_matrix_to_data(data), dist);
+  Apop_settings_alloc(mle, params, apop_matrix_to_data(data), dist);
     params->method          = method;
     params->step_size       = 1e-1;
     params->starting_pt     = starting_pt;
@@ -580,7 +580,7 @@ void test_histograms(gsl_rng *r){
     for (i=0; i< n; i++)
         //gsl_matrix_set(d->matrix, i, 0, gsl_rng_uniform(r));
         gsl_matrix_set(d->matrix, i, 0, gsl_ran_gaussian(r, sqrt(sigmasq))+mu);
-    apop_model   *hp = apop_histogram_params_alloc(d, 1000);
+    apop_model   *hp = apop_histogram_settings_alloc(d, 1000);
     for (i=0; i< n; i++){
         apop_histogram.draw(gsl_matrix_ptr(out, i,0), r, hp);
         assert(gsl_finite(gsl_matrix_get(out, i,0)));
@@ -781,10 +781,13 @@ void subtest_updating(apop_model prior, apop_model likelihood){
         for (i=0; i< tsize; i++)
             likelihood.draw(apop_data_ptr(tdata,i,0), r, pbp);
         if (j==0)
-            outparamsbb  = apop_update(tdata, *prior_eps, *almost_bern, NULL, r, 6e3, 0.53,1200);
+            outparamsbb  = apop_update(tdata, prior_eps, almost_bern, r);
+            //outparamsbb  = apop_update(tdata, *prior_eps, *almost_bern, NULL, r, 6e3, 0.53,1200);
         else
-            outparamsbb  = apop_update(tdata, *outparamsbb, likelihood, NULL, r, 6e3, 0.53,1200);
-        prior_eps =  apop_update(tdata, *prior_eps, likelihood, NULL, r, 0, 0,0);
+            outparamsbb  = apop_update(tdata, outparamsbb, &likelihood, r);
+            //outparamsbb  = apop_update(tdata, *outparamsbb, likelihood, NULL, r, 6e3, 0.53,1200);
+        //prior_eps =  apop_update(tdata, *prior_eps, likelihood, NULL, r, 0, 0,0);
+        prior_eps =  apop_update(tdata, prior_eps, &likelihood, r);
     }
     for (i=0; i< tsize; i++)
         apop_histogram.draw(apop_data_ptr(tdata, i, 0), r, outparamsbb);
@@ -888,7 +891,8 @@ int main(int argc, char **argv){
                                     apop_poisson,/* apop_zipf,*/apop_yule, apop_uniform, null_model};
   int           i;
   apop_data     *d  = apop_text_to_data("test_data2",0,1);
-  apop_ls_settings *olp  = apop_ls_settings_alloc(d, apop_OLS);
+  //apop_ls_settings *olp  = apop_ls_settings_alloc(d, apop_OLS);
+  Apop_settings_alloc(ls, olp, d, apop_OLS);
     olp->want_expected_value    = 1;
 
 //    apop_opts.thread_count  = 2;

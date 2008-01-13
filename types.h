@@ -95,7 +95,7 @@ The full declaration is given in the \c _apop_model page.
 
 <b>An example</b><br>
 
-The \ref apop_OLS page has a sample program which uses an \ref apop_model.
+The \ref apop_ols page has a sample program which uses an \ref apop_model.
 \ingroup types
 */
 typedef struct _apop_model apop_model;

@@ -12,7 +12,6 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <assert.h>
 #include <gsl/gsl_blas.h>
 
-static double wls_p (apop_data *, apop_model *);
 static double wls_log_likelihood (apop_data *, apop_model *);
 
 /* The procedure here is to simply modify the input data, run OLS on
@@ -25,7 +24,7 @@ static apop_model * wls_estimate(apop_data *inset, apop_model *epin){
   gsl_vector                v;
   apop_ls_settings           *op = malloc(sizeof(*op));
     if (!inset->weights){
-        printf("You need to specify weights in the data set to use apop_WLS.\n");
+        printf("You need to specify weights in the data set to use apop_wls.\n");
         return NULL;
     }
     if (!ep || strcmp(ep->method_name, "OLS") || ((apop_ls_settings*)ep->method_settings)->destroy_data==0)
@@ -62,7 +61,7 @@ static double wls_log_likelihood (apop_data *d, apop_model *params){
   gsl_vector    v;
   gsl_vector    *errors     = gsl_vector_alloc(data->size1);
     if (!d->weights){
-        printf("You need to specify weights to use apop_WLS.\n");
+        printf("You need to specify weights to use apop_wls.\n");
         return 0;
     }
 	for(i=0;i< data->size1; i++){
@@ -83,7 +82,7 @@ static double wls_log_likelihood (apop_data *d, apop_model *params){
 
 /** The WLS model
 
-  You will need to provide the weights in data->weights. Otherwise, this model is just like \ref apop_OLS.
+  You will need to provide the weights in yourdata->weights. Otherwise, this model is just like \ref apop_ols.
 \ingroup models
 */
-apop_model apop_WLS = {"WLS", -1,0,0, .estimate = wls_estimate, .log_likelihood = wls_log_likelihood};
+apop_model apop_wls = {"Weighted Least Squares", -1,0,0, .estimate = wls_estimate, .log_likelihood = wls_log_likelihood};

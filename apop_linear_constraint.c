@@ -93,7 +93,7 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
  function. Just write the constraint vector and this will do the rest.
  
  \param beta    The proposed vector about to be tested. 
- \param constraint  The constraints. See \ref apop_F_test on writing
+ \param constraint  The constraints. See \ref apop_f_test on writing
  contrasts. To give a quick example, say your constraint is $3 < 2x +
  4y - 7z$; then the first row of your \c data->vector element would be 3, and the
  first row of the \c data->matrix element would be [2 4 -7].

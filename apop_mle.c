@@ -41,7 +41,10 @@ Below is a sample of the sort of output one would get:<br>
 \ingroup mle
 */
 
-/** Use this if you already have an \ref apop_model struct, but want to set the \c method_settings element to the default MLE parameters. 
+/* I'm not sure if this is function is useful, so I'm setting it as static
+but leaving the documentation for the reader to ponder whether it should be public.
+
+Use this if you already have an \ref apop_model struct, but want to set the \c method_settings element to the default MLE parameters. 
  Returns the \ref apop_mle_settings pointer, but the argument now has the
  method_settings element set, so you can ignore the returned pointer if
  you prefer.
@@ -50,7 +53,7 @@ Below is a sample of the sort of output one would get:<br>
  \return A pointer to a set-up \ref apop_mle_settings struct. The parent's \c method_settings element points to this struct as well.
 
  */
-apop_mle_settings *apop_mle_settings_set_default(apop_model *parent){
+static apop_mle_settings *apop_mle_settings_set_default(apop_model *parent){
   apop_mle_settings *setme =   calloc(1,sizeof(apop_mle_settings));
     setme->starting_pt      = NULL;
     setme->tolerance        = 1e-2;
@@ -453,7 +456,7 @@ static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i)
 		if (mp->verbose) printf("No min!!\n");
 	}
 	//Clean up, copy results to output estimate.
-    //est->parameters = apop_data_unpack(s->x, vsize, msize1, msize2);
+    apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fdfminimizer_free(s);
 	if (mp->starting_pt==NULL) 
 		gsl_vector_free(x);
@@ -522,6 +525,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 		apop_error(1, 'c', "Optimization reached maximum number of iterations.");
     if (status == GSL_SUCCESS) 
         est->status	= 1;
+    apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fminimizer_free(s);
 	if (mp->want_cov) 
 		apop_numerical_covariance_matrix(est, data);
@@ -545,7 +549,6 @@ method:
 \li    APOP_CG_PR      conjugate gradient (Polak-Ribiere)
 \li    APOP_SIMAN       \ref simanneal "simulated annealing"
 \li    APOP_RF_NEWTON   Find a root of the derivative via Newton's method
-\li    APOP_RF_BROYDEN  Find a root of the derivative via the Broyden Algorithm
 \li    APOP_RF_HYBRID   Find a root of the derivative via the Hybrid method
 \li    APOP_RF_HYBRID_NOSCALE   Find a root of the derivative via the Hybrid method; no internal scaling
 \return	an \ref apop_model with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.

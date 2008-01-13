@@ -22,9 +22,9 @@ apop_model apop_histogram;
   (\f$1\times 10000\f$, \f$10000\times 1\f$, \f$100\times 100\f$...).
   \param bins How many bins should the PDF have?
  */
-apop_model *apop_histogram_params_alloc(apop_data *data, int bins){
+apop_model *apop_histogram_settings_alloc(apop_data *data, int bins){
     //header is in model.h.
-  apop_histogram_params *hp = malloc(sizeof(*hp));
+  apop_histogram_settings *hp = malloc(sizeof(*hp));
     hp->model  = apop_model_copy(apop_histogram);
     hp->model->model_settings        = hp;
     hp->model->model_settings_size   = sizeof(*hp);
@@ -67,7 +67,7 @@ apop_model *apop_histogram_params_alloc(apop_data *data, int bins){
 static gsl_histogram *gpdf;
 
 apop_model *est(apop_data *d, apop_model *in){
-    return apop_histogram_params_alloc(d, 1000);
+    return apop_histogram_settings_alloc(d, 1000);
 }
 
 static double one_vector(gsl_vector *in){
@@ -81,7 +81,7 @@ static double one_vector(gsl_vector *in){
 }
 
 static double histogram_p(apop_data *d, apop_model *parameters){
-  apop_histogram_params *hp = parameters->model_settings;
+  apop_histogram_settings *hp = parameters->model_settings;
   long double           product = 0;
     gpdf    = hp->pdf;
     if (d->vector)
@@ -95,7 +95,7 @@ static double histogram_p(apop_data *d, apop_model *parameters){
 }
 
 static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
-  apop_histogram_params *hp   = eps->model_settings;
+  apop_histogram_settings *hp   = eps->model_settings;
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!
         gsl_histogram_pdf_init(hp->cdf, hp->pdf);
@@ -118,7 +118,7 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
   The model is unlike most other models in that there are no parameters
   of any sort (beyond the data itself), so there is no \c estimate
   method; instead all the work of producing the histogram is done in \c
-  apop_histogram_params_alloc. [Actually, there is an \c estimate method,
+  apop_histogram_settings_alloc. [Actually, there is an \c estimate method,
   but it is just an alias for the histogram_alloc function.]
 
 \ingroup models

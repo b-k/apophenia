@@ -201,7 +201,7 @@ void apop_estimate_parameter_t_tests (apop_model *est){
  \return The confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
  */
-apop_data *apop_F_test (apop_model *est, apop_data *contrast){
+apop_data *apop_f_test (apop_model *est, apop_data *contrast){
 gsl_matrix      *set        = est->data->matrix;
 gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
 gsl_vector      *c          = contrast ? contrast->vector: NULL;
@@ -259,10 +259,7 @@ apop_data       *out        = apop_data_alloc(0,3,-1);
     return out;
 }
 
-/** a synonym for \ref apop_F_test, qv. */
-apop_data * apop_f_test (apop_model *est, apop_data *contrast){
-return apop_F_test(est, contrast);
-}
+apop_data * apop_F_test (apop_model *est, apop_data *contrast){ return apop_f_test(est, contrast); }
 
 /** generalized least squares.
 

@@ -142,7 +142,7 @@ To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or h
 We've moved the setup documentation to <a href="http://avocado.econ.jhu.edu/modeling/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em>. Please see that page.
 
 \subsection testing Testing
-There is a short, complete program in the \ref apop_OLS entry which runs a simple OLS regression on a data file. Follow
+There is a short, complete program in the \ref apop_ols entry which runs a simple OLS regression on a data file. Follow
 the instructions there to compile and run. See also the 
 \ref sample_program below.
 
@@ -416,7 +416,7 @@ features, but they are still a subset of measure zero within the class of
 models as described above. Currently, Apophenia has no plans to include
 a summary syntax for describing linear models; the reader who has a linear
 model to be estimated via OLS and friends is advised to instead manipulate
-the data set to the appropriate form and then call \ref apop_OLS, \ref apop_IV, et cetera.]
+the data set to the appropriate form and then call \ref apop_ols, \ref apop_iv, et cetera.]
 
 Frequently, a model is a probability distribution. The data is assumed
 to have been drawn from a given distribution and the question is

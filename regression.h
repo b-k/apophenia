@@ -52,7 +52,10 @@ apop_data *apop_estimate_r_squared (apop_model *in);
 void apop_estimate_parameter_t_tests (apop_model *est);
 
 //apop_testing.c
-apop_data* apop_ANOVA(char *table, char *data, char *grouping1, char *grouping2);
+apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2);
+
+
+#define apop_ANOVA(table, data, grouping1, grouping2) apop_anova(table, data, grouping1, grouping2)
 
 __END_DECLS
 #endif
