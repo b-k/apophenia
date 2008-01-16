@@ -1,16 +1,38 @@
-#include <apop.h>
+#include "asst.h"
 /** \file apop_model_fix_params.c 
  Set some of the parameters of a model to fixed values.
 
- There's only one function here. Its header is in asst.h
+ There's only one function here. Its header is in likelioods.h
  
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 
-typedef struct apop_model_fixed_params{
+typedef struct {
     apop_data *paramvals, *mask, *gradient_for_base;
-    apop_model * base_model;
-} apop_model_fixed_params;
+    apop_model *base_model;
+} apop_model_fixed_params_settings;
+
+apop_model_fixed_params_settings *apop_model_fixed_params_settings_alloc (apop_model base_model, apop_data *paramvals, 
+                apop_data *mask, int size){
+    apop_model_fixed_params_settings *out = malloc(sizeof(apop_model_fixed_params_settings));
+    out->base_model  = apop_model_copy(base_model);
+    out->paramvals  = paramvals;
+    out->mask       = mask;
+    out->base_model->parameters   = NULL;
+    out->gradient_for_base       = apop_data_alloc(size,0,0); //use full size.
+    return out;
+}
+
+void *apop_model_fixed_params_settings_copy (apop_model_fixed_params_settings *in ){ 
+    apop_model_fixed_params_settings *out = malloc(sizeof(apop_model_fixed_params_settings));
+    out->base_model  = in->base_model;
+    out->paramvals  = in->paramvals;
+    out->mask       = in->mask;
+    out->gradient_for_base       = in->gradient_for_base;
+    return out;
+ } 
+
+void apop_model_fixed_params_settings_free (apop_model_fixed_params_settings *in ){ free(in); }
 
 static apop_model fixed_param_model;
 
@@ -28,7 +50,7 @@ static void  fixed_params_pack(const apop_data *in, apop_data  *out, apop_data  
                     apop_data_set(out, ctr++, -1, apop_data_get(in, i, is_gradient ? -1 : j));
 }
 
-static void  fixed_param_unpack(const gsl_vector *in, apop_model_fixed_params *p, int is_gradient){
+static void  fixed_param_unpack(const gsl_vector *in, apop_model_fixed_params_settings *p, int is_gradient){
   int ctr   = 0;
   int i, j;
     if (!is_gradient && !p->base_model->parameters)
@@ -46,19 +68,19 @@ static void  fixed_param_unpack(const gsl_vector *in, apop_model_fixed_params *p
 }
 
 static double i_ll(apop_data *d, apop_model *fixed_model){
-  apop_model_fixed_params *p    = fixed_model->model_settings;
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, "apop_model_fixed_params");
     fixed_param_unpack(fixed_model->parameters->vector, p, 0);
     return p->base_model->log_likelihood(d, p->base_model);
 }
 
 static double i_p(apop_data *d, apop_model *params){
-  apop_model_fixed_params *p    = params->model_settings;
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(params, "apop_model_fixed_params");
     fixed_param_unpack(params->parameters->vector, p, 0);
     return p->base_model->p(d, p->base_model);
 }
 
 static void i_score(apop_data *d, gsl_vector *gradient, apop_model *params){
-  apop_model_fixed_params *p    = params->model_settings;
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(params, "apop_model_fixed_params");
   static apop_data *gdummy   = NULL;
     fixed_param_unpack(params->parameters->vector, p, 0);
     fixed_param_unpack(gradient, p, 1);
@@ -71,7 +93,7 @@ static void i_score(apop_data *d, gsl_vector *gradient, apop_model *params){
 }
 
 static double  i_constraint(apop_data *data, apop_model *params){
-  apop_model_fixed_params *p    = params->model_settings;
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(params, "apop_model_fixed_params");
     fixed_param_unpack(params->parameters->vector, p, 0);
   double out = p->base_model->constraint(data, p->base_model);
     if (out) 
@@ -80,7 +102,7 @@ static double  i_constraint(apop_data *data, apop_model *params){
 }
 
 static void i_draw(double *out, gsl_rng* r, apop_model *eps){
-  apop_model_fixed_params *p    = eps->model_settings;
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(eps, "apop_model_fixed_params");
   apop_data             *tmp    = p->base_model->parameters;
     fixed_param_unpack(eps->parameters->vector, p, 0);
     p->base_model->draw(out, r, p->base_model);
@@ -88,9 +110,7 @@ static void i_draw(double *out, gsl_rng* r, apop_model *eps){
 }
 
 static apop_model *fixed_est(apop_data * data, apop_model *params){
-    if (!params)
-        apop_error(0,'c',"Fixed parameter model, closure error: you need to send the parameters as the second argument of the estimate function.\n");
-  apop_model_fixed_params *p    = params->model_settings;
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(params, "apop_model_fixed_params");
     if (!data)
         data    = params->data;
     apop_model *e = apop_maximum_likelihood(data,  *params);
@@ -157,31 +177,14 @@ int main(){
  \return an \c apop_mle_settings structure for you to fill as desired. If this is named \c m, then \c m->ep->estimate(NULL, m->ep) will run the estimation.
   */
 
-apop_mle_settings *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in){
-/*
---copy the model. Change the params to an appropriately-sized vector.
---create MLE_params mle_out. mle_out->ep are the base apop_model (B).
---B->model_settings is an apop_model_fixed_params. So set b->model_settings = p; set model->ep = B.
---p->base_model_settings are as input by the user.
-
-So given mle_out:
-base params = mle_out->ep
-fixed model params = mle_out->ep->model_settings
-original model = mle_out->ep->model_settings->m
-original model params = mle_out->ep->model_settings->base_model_settings
-*/
-  apop_model_fixed_params   *p          = malloc(sizeof(*p));
-  apop_model                *model_out  = apop_model_copy(fixed_param_model);
+apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in){
   int        i, j;
-    if (!model_in.p) model_out->p = NULL;
-    if (!model_in.log_likelihood) model_out->log_likelihood = NULL;
-    if (!model_in.score) model_out->score = NULL;
-    if (!model_in.constraint) model_out->constraint = NULL;
-    if (!model_in.draw) model_out->draw = NULL;
-    snprintf(model_out->name, 100, "%s, with some params fixed", model_in.name);
     int size  = (mask->vector? mask->vector->size : 0 )+
             (mask->matrix? mask->matrix->size1 * mask->matrix->size2 : 0);
-    p->gradient_for_base       = apop_data_alloc(size,0,0); //use full size.
+    
+  apop_model                *model_out  = apop_model_copy(fixed_param_model);
+  Apop_settings_add_group(model_out, apop_model_fixed_params, model_in, paramvals, mask, size);
+
     if (mask->vector)
         for(i=0; i< mask->vector->size; i++)
             if (apop_data_get(mask, i, -1))
@@ -194,18 +197,23 @@ original model params = mle_out->ep->model_settings->base_model_settings
     if (!size)
         apop_error(0,'s',"You're asking me to estimate a model where every single parameter is fixed.\n");
     model_out->vbase            = size;
-    model_out->m1base           = 
-    model_out->m2base           = 0;
-  apop_mle_settings   *mle_out    = apop_mle_settings_alloc(data, *model_out);
-    mle_out->model->model_settings   = p;
-    apop_data *startingpt = apop_data_alloc(size, 0, 0);
-    fixed_params_pack(paramvals, startingpt, mask, 0);
-    mle_out->starting_pt        = malloc(sizeof(double) * size);
+  
+    apop_data *starting_pt = apop_data_alloc(size, 0, 0);
+    fixed_params_pack(paramvals, starting_pt, mask, 0);
+    double *sp           = malloc(sizeof(double) * size);
+    memcpy(sp, starting_pt->vector->data, sizeof(double) * size);
+    Apop_settings_alloc_add(model_out, apop_mle, starting_pt, sp, model_out);
+    apop_data_free(starting_pt);
+
+/*    mle_out->starting_pt        = malloc(sizeof(double) * size);
     memcpy(mle_out->starting_pt, startingpt->vector->data, sizeof(double) * size);
-    apop_data_free(startingpt);
-    p->mask                     = mask;
-    p->paramvals                = paramvals;
-    p->base_model               = apop_model_copy(model_in);
-    p->base_model->parameters   = NULL;
-    return mle_out;
+    apop_data_free(startingpt);*/
+
+    if (!model_in.p) model_out->p = NULL;
+    if (!model_in.log_likelihood) model_out->log_likelihood = NULL;
+    if (!model_in.score) model_out->score = NULL;
+    if (!model_in.constraint) model_out->constraint = NULL;
+    if (!model_in.draw) model_out->draw = NULL;
+    snprintf(model_out->name, 100, "%s, with some params fixed", model_in.name);
+    return model_out;
 }

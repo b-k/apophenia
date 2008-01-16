@@ -12,6 +12,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "model.h"
 #include "output.h"
 #include "mapply.h"
+#include "settings.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"
@@ -70,7 +71,7 @@ static double oneline_log(gsl_vector *v){
 
 static double zipf_log_likelihood(apop_data *d, apop_model *m){
   apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
+    if (apop_settings_get_group(m, "apop_rank"))
         return zipf_log_likelihood_rank(d, m);
   gsl_matrix    *data   = d->matrix;
   long double   bb      = gsl_vector_get(m->parameters->vector, 0);
@@ -83,14 +84,14 @@ static double zipf_log_likelihood(apop_data *d, apop_model *m){
 }    
 
 static double zipf_p(apop_data *d, apop_model *v){
-  if (v->model_settings && (!strcmp((char *)v->model_settings, "r") || !strcmp((char *)v->model_settings, "R")))
+    if (apop_settings_get_group(v, "apop_rank"))
         return exp(zipf_log_likelihood_rank(d, v));
     return exp(zipf_log_likelihood(d, v));
 }    
 
 static void zipf_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
   apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
+    if (apop_settings_get_group(m, "apop_rank"))
         return zipf_dlog_likelihood_rank(d, gradient, m);
   double      bb        = gsl_vector_get(m->parameters->vector, 0);
   gsl_matrix  *data     = d->matrix;
@@ -142,14 +143,18 @@ Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distributi
 
 Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
 
-If you have frequency or ranking data, then use \ref apop_model_copy_set_string to set the model_setting to "R".
-
 apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
 
 \f$lnZ(a)    = -(\log(\zeta(a)) + a \log(i))    \f$
 
 \f$dlnZ(a)/da    = -{a \zeta(a)\over\log(\zeta(a-1))} -  \log(i)        \f$
+
+To specify that you have frequency or ranking data, use 
+\code
+Apop_settings_add_group(your_model, apop_rank, NULL);
+\endcode
+
 \ingroup models
 */
 apop_model apop_zipf = {"Zipf", 1,0,0, 

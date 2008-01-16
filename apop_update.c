@@ -3,7 +3,9 @@ The header is in asst.h.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include <apop.h>
+#include "asst.h"
+#include "model.h"
+#include "settings.h"
 
 static void write_double(const double *draw, apop_data *d){
   int i;
@@ -82,39 +84,16 @@ likelihood. If you give me a parametrized normal, with no data, then I'll take t
     return NULL;
 }
 
-/** Method settings for a model to be put through Bayesian updating. 
-\item starting_pt      The first parameter to check in the MCMC routine
-\item periods How many steps should the MCMC chain run?
-\item burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
-\item histosegments If outputting a \ref apop_histogram, how many segments should it have?
- 
- */
-typedef struct{
-    apop_data *data;
-    apop_model *model; 
-    apop_data *starting_pt;
-    long int periods;
-    double burnin;
-    int histosegments;
-    char use_gibbs;
-} apop_update_settings;
-
-
-
 
 /** Allocate an \ref apop_update_settings struct. See also the \ref Apop_settings_alloc macro.  */
-apop_update_settings *apop_update_settings_alloc(apop_data *d, apop_model *m){
+apop_update_settings *apop_update_settings_alloc(apop_data *d){
    apop_update_settings *out = malloc(sizeof(apop_update_settings));
    Apop_assert(out, NULL, 0, 's', "malloc failed. You are probably out of memory.");
    out->starting_pt = NULL;
-   out->periods = 1e5;
+   out->periods = 6e3;
    out->histosegments = 5e3;
    out->burnin = 0.05;
    out->use_gibbs = 'd'; //default
-   out->model = apop_model_copy(*m);
-   out->model->method_settings = out;
-   sprintf(out->model->method_name, "Bayesian updating");
-   out->model->method_settings_size = sizeof(apop_update_settings);
    return out;
 }
 
@@ -140,11 +119,12 @@ estimate the posterior via MCMC, this needs to have a \c draw method.
 apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *r){
   apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
     if (maybe_out) return maybe_out;
-  apop_update_settings *s = 
-      (prior->method_settings && !strcmp(prior->method_name, "Bayesian updating"))
-        ? prior->method_settings
-        : apop_update_settings_alloc(data, prior);
-  prior = s->model;
+    apop_update_settings *s = apop_settings_get_group(prior, "apop_update");
+    if (!s) {
+        Apop_settings_add_group(prior, apop_update, data);
+        s = apop_settings_get_group(prior, "apop_update");
+    }
+
   double        ratio, cp_ll = GSL_NEGINF;
   int           i;
   int           vs  = likelihood->vbase >= 0 ? likelihood->vbase : data->matrix->size2;
@@ -177,7 +157,8 @@ apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelih
             gsl_vector_free(vv);
         }
     }
-    apop_model *outp   = apop_histogram_settings_alloc(out, s->histosegments);
+    apop_model *outp   = apop_model_copy(apop_histogram);
+    Apop_settings_add_group(outp, apop_histogram, out, s->histosegments);
     apop_data_free(out);
     return outp;
 }

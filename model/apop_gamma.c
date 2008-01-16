@@ -9,6 +9,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 //The default list. Probably don't need them all.
 #include "types.h"
+#include "settings.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "model.h"
@@ -80,7 +81,7 @@ static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_
 
 static double gamma_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
+    if (apop_settings_get_group(p, "apop_rank"))
         return gamma_rank_log_likelihood(d, p);
   float         a    = gsl_vector_get(p->parameters->vector, 0),
                 b    = gsl_vector_get(p->parameters->vector, 1);
@@ -104,7 +105,7 @@ static double gamma_log_likelihood(apop_data *d, apop_model *p){
  * minimization. You'll probably never need to call this directly.*/
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
+    if (apop_settings_get_group(p, "apop_rank"))
        return gamma_rank_dlog_likelihood(d, gradient, p);
   float       	a    	= gsl_vector_get(p->parameters->vector, 0),
         		b    	= gsl_vector_get(p->parameters->vector, 1);
@@ -146,7 +147,10 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
 
 apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
   
-If you have frequency or ranking data, then use \ref apop_model_copy_set_string to set the model_setting to "R".
+To specify that you have frequency or ranking data, use 
+\code
+Apop_settings_add_group(your_model, apop_rank, NULL);
+\endcode
 
 \f$G(x, a, b)     = 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
 

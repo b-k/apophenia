@@ -105,7 +105,7 @@ inline double apop_vector_skew(const gsl_vector *in){
 */
 inline double apop_vector_kurtosis(const gsl_vector *in){
 	return ((gsl_stats_kurtosis(in->data,in->stride, in->size)+3)
-                *pow(apop_vector_var(in),4./2))*in->size/(in->size -1.); }
+                *gsl_pow_2(apop_vector_var(in)))*in->size/(in->size -1.); }
 
 /** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.

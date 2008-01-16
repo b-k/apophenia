@@ -17,7 +17,8 @@ Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 
 /* <UTF8> chars are handled as whole strings */
 
-#include <apophenia/headers.h>
+#include "types.h"
+#include <gsl/gsl_math.h>
 
 /* These are the R-specific items. */
 typedef enum { FALSE = 0, TRUE /*, MAYBE */ } Rboolean;

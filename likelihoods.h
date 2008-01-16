@@ -14,11 +14,12 @@
 #include <gsl/gsl_sf_psi.h>
 #include "stats.h"
 #include "output.h"
+#include "model.h"
+#include "types.h"
+#include "settings.h"
+#include "regression.h"
 #include "conversions.h"
 #include "linear_algebra.h"
-#include <apophenia/model.h>
-#include <apophenia/types.h>
-#include <apophenia/regression.h>
 
 #define MAX_ITERATIONS 		5000
 #define MAX_ITERATIONS_w_d	5000
@@ -63,37 +64,13 @@ typedef struct{
     int         iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
-    apop_model  *model;
     char        trace_path[1000];
 } apop_mle_settings;
 
+apop_mle_settings *apop_mle_settings_alloc(apop_model *model);
+void *apop_mle_settings_copy(apop_mle_settings * in);
+void apop_mle_settings_free(void * in);
 
-/*
-For the Probit, the first column of the data matrix is the dependent
-variable, and the remaining variables are the independent. This means
-that the beta which will be output will be of size (data->size2 - 1).
-
-For the Waring, Yule, and Zipf estimates, each row of the data matrix
-is one observation. The first column is the number of elements with one
-link, the second is the number of elements with two links, et cetera.
-
-If you want the total likelihood, likelihood should be a double*; else,
-send in NULL and get nothing back.
-
-starting_pt is a vector of the appropriate size which indicates your
-best initial guess for beta. if starting_pt=NULL, then (0,0,...0) will
-be assumed.
-
-step_size is the scale of the initial steps the maximization algorithm
-will take. Currently, it is a scalar, so every dimension will have the
-same step_size.
-
-verbose is zero or one depending on whether you want to see the
-maximizer's iterations.
-
-For each function, the return value is the vector of most likely parameters.
-*/
-apop_mle_settings *apop_mle_settings_alloc(apop_data*, apop_model);
 
 void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist, gsl_vector* fn_beta);
 /*This function goes row by row through m and calculates the likelihood
@@ -115,7 +92,6 @@ gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data
 
 apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist);
 
-
     //This is a global var for numerical differentiation.
 extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
 
@@ -124,8 +100,7 @@ apop_model * apop_estimate_restart (apop_model *, apop_model *);
 //in apop_linear_constraint.c
 double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin);
 
-
 //in apop_model_fix_params.c
-apop_mle_settings *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in);
+apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in);
 __END_DECLS
 #endif

@@ -11,9 +11,10 @@
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 */
 
-#include <apophenia/model.h>
-#include <apophenia/types.h>
-#include <apophenia/histogram.h>
+#include "model.h"
+#include "types.h"
+#include "settings.h"
+#include "histogram.h"
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_histogram.h>
 #include <stdio.h>
@@ -27,8 +28,7 @@ static void apop_set_first_params(double in, apop_model *m){
 void apop_histogram_plot(apop_model *in, char *outfile){
   int             i, k;
   FILE *          f;
-  apop_histogram_settings   *inhist  = in->model_settings;
-  gsl_histogram   *h      = inhist->pdf;
+  gsl_histogram   *h      = Apop_settings_get(in, apop_histogram, pdf);
 
     double midpoints[h->n]; //cut 'n' pasted from kernel density alloc.
     midpoints[0]            = h->range[1];
@@ -101,15 +101,17 @@ apop_model *apop_kernel_density_settings_alloc(apop_data *data,
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*)){
   size_t    i, j;
   apop_data *smallset          = apop_data_alloc(0,1,1);
-  apop_histogram_settings *out   = malloc(sizeof(apop_histogram_settings));
+  apop_model *outm               = apop_model_copy(apop_kernel_density);
+  //This produces a dummy histogram, which is inefficient.
+  Apop_settings_add_group(outm, apop_histogram, data, 2);
+  apop_histogram_settings *out   = apop_settings_get_group(outm, "apop_histogram");
+  //apop_histogram_settings *out   = malloc(sizeof(apop_histogram_settings));
     set_params                 = set_params ? set_params : apop_set_first_params;
-    out->model                 = apop_model_copy(apop_kernel_density);
-    out->model->model_settings = out;
     out->kernelbase            = apop_model_copy(*kernelbase);
-    out->histobase = data && !histobase ?
-                apop_histogram_settings_alloc(data, 1000)
+    out->histobase = data && !histobase 
+                ? apop_estimate(data, apop_histogram)
                 : apop_model_copy(*histobase);
-  apop_histogram_settings *bh    = out->histobase->model_settings;
+  apop_histogram_settings *bh    = apop_settings_get_group(out->histobase, "apop_histogram");
 
     double  padding = 0.1;
     out->pdf        = apop_alloc_wider_range(bh->pdf, padding);
@@ -143,8 +145,8 @@ apop_model *apop_kernel_density_settings_alloc(apop_data *data,
         out->pdf->bin[out->pdf->n-1]  = (1-sum)*(1-ratio);
     }*/
     apop_data_free(smallset);
-    apop_histogram_normalize(out->model);
-    return out->model;
+    apop_histogram_normalize(outm);
+    return outm;
 }
 
 static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *parameters){

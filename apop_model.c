@@ -46,9 +46,9 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
    \c apop_model_copy, so the parent model is still safe after this is
    called. \c data is not freed, because the odds are you still need it.
 
-   The system has no idea what the \c method_settings, \c model_settings,
-   and \c more elements contain, so if they point to other things,
-   they need to be freed before calling this function.
+   The system has no idea what the \c more element contains, so if
+   they point to other things, they need to be freed before calling
+   this function.
 
   If \c free_me is \c NULL, this does nothing.
 
@@ -56,10 +56,15 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
 \ingroup models */
 void apop_model_free (apop_model * free_me){
+  int   i;
     if (!free_me) return;
     apop_data_free(free_me->parameters);
     apop_data_free(free_me->covariance);
     apop_data_free(free_me->expected);
+    for (i=0; i< free_me->setting_ct; i++)
+        if (free_me->settings[i].free)
+             ((void (*)(void*))(free_me->settings[i].free))(free_me->settings[i].setting_group);
+    free(free_me->settings);
 	free(free_me);
 }
 
@@ -87,10 +92,10 @@ void apop_model_show (apop_model * print_me){
     }
     if (strlen(print_me->name))
         printf (print_me->name);
-    if (strlen(print_me->name) && strlen(print_me->method_name))
+    /*if (strlen(print_me->name) && strlen(print_me->method_name))
         printf(" estimated via ");
     if (strlen(print_me->method_name))
-        printf (print_me->method_name);
+        printf (print_me->method_name);*/
     printf("\n\n");
 	if (print_me->parameters)
         apop_data_show(print_me->parameters);
@@ -119,21 +124,23 @@ void apop_model_print (apop_model * print_me){
 apop_model * apop_model_copy(apop_model in){
   apop_model * out = malloc(sizeof(apop_model));
     memcpy(out, &in, sizeof(apop_model));
-    if (in.method_settings_size){
-        out->method_settings  = malloc(in.method_settings_size);
-        //out->method_settings_size  = in.method_settings_size;
-        memcpy(out->method_settings, in.method_settings, in.method_settings_size);
-    }
-    if (in.model_settings_size){
-        out->model_settings  = malloc(in.model_settings_size);
-        //out->model_settings_size  = in.model_settings_size;
-        memcpy(out->model_settings, in.model_settings, in.model_settings_size);
-    }
     if (in.more_size){
         out->more  = malloc(in.more_size);
-        //out->more_size  = in.more_size;
         memcpy(out->more, in.more, in.more_size);
     }
+
+    int i; //if a setting isn't copied, this is several bytes of overallocing.
+    out->settings = malloc(sizeof(apop_settings_type)*(in.setting_ct));
+    out->setting_ct = 0;
+    for (i=0; i< in.setting_ct; i++){
+        if (in.settings[i].copy)
+            out->settings[i].setting_group = ((void *(*)(void*))in.settings[i].copy)(in.settings[i].setting_group);
+        strcpy(out->settings[i].name, in.settings[i].name);
+        out->settings[i].copy = in.settings[i].copy;
+        out->settings[i].free = in.settings[i].free;
+        out->setting_ct++;
+    }
+
     out->parameters = apop_data_copy(in.parameters);
     out->expected   = apop_data_copy(in.expected);
     out->covariance = apop_data_copy(in.covariance);
@@ -268,25 +275,6 @@ void apop_draw(double *out, gsl_rng *r, apop_model *m){
         m->draw(out,r, m); 
         return;
     } 
-}
-
-
-/** Some models have a \c model_settings element that consists of a
- string. In that case, you can copy off a new model and set that setting 
- at the same time with this function. 
-\param m The base model to be copied.
-\param param The string to be placed in the <tt>model_settings</tt> slot.
-\return A copy of \c m, with the appropriately set <tt>model_settings</tt> element.
- 
-
-\ingroup models
- */
-apop_model *apop_model_copy_set_string(apop_model m, char* param){
-  apop_model *out = apop_model_copy(m);
-    out->model_settings = malloc(strlen(param)+1);
-        strcpy((char *) out->model_settings ,param);
-    out->model_settings_size = strlen(param)+1;
-    return out;
 }
 
 /** The default prep is to simply call \c apop_model_clear. If the

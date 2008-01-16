@@ -21,13 +21,13 @@ __BEGIN_DECLS
 typedef struct {
     int destroy_data;
     gsl_vector *weights;
-    apop_model *model;
     apop_data *instruments;
     int want_cov;
     int want_expected_value;
+    void *copy;
+    void *free;
 } apop_ls_settings;
 
-apop_ls_settings * apop_ls_settings_alloc(apop_data *data, apop_model model);
 apop_model *apop_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 //Returns GLS/OLS parameter estimates.
 //Destroys the data in the process.

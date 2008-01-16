@@ -10,6 +10,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "stats.h"
 #include "model.h"
 #include "mapply.h"
+#include "settings.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"
@@ -95,7 +96,7 @@ static double apply_me(gsl_vector *data){
 
 static double waring_log_likelihood(apop_data *d, apop_model *m){
   apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
+    if (apop_settings_get_group(m, "apop_rank"))
       return waring_log_likelihood_rank(d, m);
   bb	= gsl_vector_get(m->parameters->vector, 0),
   a	    = gsl_vector_get(m->parameters->vector, 1);
@@ -113,7 +114,7 @@ static double waring_log_likelihood(apop_data *d, apop_model *m){
 static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
 	//Psi is the derivative of the log gamma function.
   apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
+    if (apop_settings_get_group(m, "apop_rank"))
       return waring_dlog_likelihood_rank(d, gradient, m);
   bb		        = gsl_vector_get(m->parameters->vector, 0);
   a		        = gsl_vector_get(m->parameters->vector, 1);
@@ -172,8 +173,6 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 /** The Waring distribution
 Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
 
-If you have frequency or ranking data, then use \ref apop_model_copy_set_string to set the model_setting to "R".
-
 apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
 \f$W(x,k, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
@@ -183,6 +182,12 @@ apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 \f$dlnW/db	= 1/(b-1)  + \psi(b+a) - \psi(k+a+b)\f$
 
 \f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
+
+To specify that you have frequency or ranking data, use 
+\code
+Apop_settings_add_group(your_model, apop_rank, NULL);
+\endcode
+
 \ingroup models
 \todo This function needs better testing.
 */

@@ -9,10 +9,11 @@ files which gnuplot can plot directly.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include <apophenia/output.h>
-#include <apophenia/bootstrap.h>
+#include "output.h"
+#include "settings.h"
+#include "bootstrap.h"
+#include "conversions.h"
 #include <gsl/gsl_histogram.h>
-#include <apophenia/conversions.h>
 /** Prep for gnuplot one of those cute scatterplots with a regression line through it.
 
 Currently, you only get two dimensions.
@@ -218,9 +219,9 @@ void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
 /** Print an \c apop_histogram. Put a "plot '-'\n" before this, and
  you can send it straight to Gnuplot. The -inf and +inf elements are not printed. */
 void apop_histogram_print(apop_model *h, char *outfile){
-  apop_histogram_settings *hp = h->model_settings;
+  apop_histogram_settings *hp = apop_settings_get_group(h, "apop_histogram"); 
   if (!hp)
-      apop_error(0, 's', "%s: You sent me an apop_model with no model_settings. Have you estimated this histogram with data yet?\n", __func__);
+      apop_error(0, 's', "%s: You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?\n", __func__);
   int             i;
   FILE *          f;
     if (apop_opts.output_type == 'p')

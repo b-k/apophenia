@@ -10,35 +10,16 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
  */
 
 #include "db.h"     //just for apop_opts
-#include "types.h"
-#include "stats.h"
 #include "output.h"
+#include "settings.h"
 #include "regression.h"
 #include "conversions.h"
 #include "model/model.h"
-#include "linear_algebra.h"
 #include <search.h> //lsearch
 #include <stdlib.h> //bsearch
 #include <assert.h> 
 #include <gsl/gsl_blas.h>
 
-/** Allocate an \c apop_ls_settings structure. 
-
- \param data the data
- \param model   The model, like \c apop_OLS or \c apop_WLS.
- \return an \c apop_ls_settings 
- */
-apop_ls_settings * apop_ls_settings_alloc(apop_data *data, apop_model model){
-  apop_ls_settings *out  = malloc(sizeof(*out));
-    out->destroy_data       =  0;
-    out->want_cov           =  1;
-    out->want_expected_value=  1;
-    out->model                 = apop_model_copy(model);
-    apop_model_clear(data, out->model);
-    out->model->model_settings   = out;
-    out->model->model_settings_size = sizeof(*out);
-    return out;
-}
 
 /** GSL gives p-values for a one-tailed test; convert it to two, assuming a
  symmetric distribution.
@@ -618,7 +599,7 @@ apop_data *apop_estimate_correlation_coefficient (apop_model *in){
   size_t          indep_ct= in->data->matrix->size2 - 1;
   gsl_vector      v;  
   apop_data       *out    = apop_data_alloc(0, 5,-1);
-  apop_ls_settings *p      = in->model_settings;
+  apop_ls_settings *p      = apop_settings_get_group(in, "apop_ls");
     apop_assert(p->want_expected_value,  NULL, 0, 'c', "I need an estimate that used want_expected_value to calculate the correlation coefficient. returning NULL.\n");
     v   = gsl_matrix_column(in->expected->matrix, 
                 apop_name_find(in->expected->names, "residual", 'c')).vector;

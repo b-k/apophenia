@@ -39,10 +39,10 @@ function.
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>	//popen, I think.
-#include <apophenia/asst.h>
-#include <apophenia/stats.h>
-#include <apophenia/vasprintf.h>
-#include <apophenia/linear_algebra.h> 
+#include "asst.h"
+#include "stats.h"
+#include "vasprintf.h"
+#include "linear_algebra.h"
 #include "math.h" //pow!
 
 

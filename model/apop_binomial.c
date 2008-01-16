@@ -23,8 +23,8 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 static double binomial_p(apop_data *d, apop_model *p);
 static double binomial_log_likelihood(apop_data*, apop_model*);
 
-static void get_hits_and_misses(const apop_data *data, char *method, double *hitcount, double *misscount){
-    if (!method || !strcmp(method,"b")|| !strcmp(method,"B")){
+static void get_hits_and_misses(const apop_data *data, char method, double *hitcount, double *misscount){
+    if (method == 't'){
         size_t        i, j;
         *hitcount=0, *misscount=0;
         for(i=0; i < data->matrix->size1; i ++)
@@ -49,7 +49,8 @@ static apop_model * binomial_estimate(apop_data * data,  apop_model *parameters)
   apop_model 	*est= parameters ? parameters : apop_model_copy(apop_binomial);
   apop_model_clear(data, est);
   double hitcount, misscount;
-    get_hits_and_misses(data, parameters->model_settings, &hitcount, &misscount);
+  char method = apop_settings_get_group(parameters, "apop_rank") ? 'b' : 't';
+    get_hits_and_misses(data, method, &hitcount, &misscount);
     gsl_vector_set(est->parameters->vector, 0, hitcount + misscount);      //n
     gsl_vector_set(est->parameters->vector, 1, hitcount/(hitcount + misscount)); //p
     est->llikelihood	= binomial_log_likelihood(data, parameters);
@@ -67,7 +68,8 @@ static double binomial_p(apop_data *d, apop_model *params){
   double	  n       = apop_data_get(params->parameters, 0, -1),
               p       = apop_data_get(params->parameters, 1, -1);
   double hitcount, misscount;
-    get_hits_and_misses(d, params->model_settings, &hitcount, &misscount);
+  char method = apop_settings_get_group(params, "apop_rank") ? 'b' : 't';
+    get_hits_and_misses(d, method, &hitcount, &misscount);
     return gsl_ran_binomial_pdf(hitcount, p, n);
 }
 
@@ -92,9 +94,18 @@ The parameters are kept in the vector element of the \c apop_model parameters el
 
 Input data can take two forms:
 
-If \c model_settings is \c NULL or the one-character string \c "b", then the data is taken to have a binary form, meaning that the system counts zeros as failures and non-zeros as successes. \f$N\f$ is the size of the matrix.
+The default is to take the data to have a binary form, meaning that
+the system counts zeros as failures and non-zeros as successes. \f$N\f$
+is the size of the matrix.
 
-If \c model_settings is \c NULL or the one-character string \c "t", then the data is taken to be the two-column miss-hit format: column zero of the matrix represents failures and column one represents successes.
+In rank-type format, the data is taken to be the two-column miss-hit
+format: column zero of the matrix represents failures and column one
+represents successes. Set this using, e.g.,
+\code
+apop_model *estimate_me = apop_model_copy(apop_binomial);
+Apop_settings_alloc(estimate_me, apop_rank, NULL);
+apop_estimate(your_data, estimate_me);
+\endcode
 
 \ingroup models
 */

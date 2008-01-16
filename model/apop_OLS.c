@@ -6,18 +6,50 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 #include "model.h"
 #include "regression.h"
+#include "settings.h"
 #include "stats.h"
 #include "asst.h"
+
+void * apop_ls_settings_copy(apop_ls_settings *in){
+  apop_ls_settings *out  = malloc(sizeof(*out));
+    out->destroy_data       =  in->destroy_data;
+    out->want_cov           =  in->want_cov;
+    out->want_expected_value=  in->want_expected_value;
+    out->weights = apop_vector_copy(in->weights);
+    out->instruments = apop_data_copy(in->instruments);
+    return out;
+}
+
+void apop_ls_settings_free(apop_ls_settings *in){ free(in); }
+
+/** Allocate an \c apop_ls_settings structure. 
+
+ \param data the data
+ \param model   The model, like \c apop_OLS or \c apop_WLS.
+ \return an \c apop_ls_settings 
+ */
+apop_ls_settings * apop_ls_settings_alloc(apop_data *data){
+  apop_ls_settings *out  = malloc(sizeof(*out));
+    out->destroy_data       =  0;
+    out->want_cov           =  1;
+    out->want_expected_value=  1;
+    out->weights            = NULL;
+    out->instruments        = NULL;
+    return out;
+}
+
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
   int i;
-  apop_ls_settings   *p = e->model_settings;
+  apop_ls_settings   *p = apop_settings_get_group(e, "apop_ls");
 	if (e->data->names->colct > 0) {		
 		//apop_name_add(n, n->column[0], 'd');
-        apop_name_add(e->expected->names, e->data->names->column[0], 'c');
-        apop_name_add(e->expected->names, "predicted", 'c');
-        apop_name_add(e->expected->names, "residual", 'c');
+        if (e->expected){
+            apop_name_add(e->expected->names, e->data->names->column[0], 'c');
+            apop_name_add(e->expected->names, "predicted", 'c');
+            apop_name_add(e->expected->names, "residual", 'c');
+        }
         if (e->parameters)
             snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->column[0]);
 		sprintf(e->data->names->column[0], "1");
@@ -123,7 +155,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
 
 
 static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_model *out){
-  apop_ls_settings   *p = out->model_settings;
+  apop_ls_settings   *p =  apop_settings_get_group(out, "apop_ls");
 	if (p->want_cov + p->want_expected_value == 0 ){	
 		//then don't calculate (X'X)^{-1}
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
@@ -156,20 +188,15 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
 static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     apop_assert(inset,  NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set;
-  apop_model       *epout;
+  apop_model       *epout = apop_model_copy(*ep);
   gsl_vector        *weights    = NULL;
   int               i;
-  apop_ls_settings  *olp;
-    if (!ep) {
-        olp             = apop_ls_settings_alloc(inset, apop_OLS);
-        epout           = olp->model;
-    } else if (!ep->model_settings) {
-        olp             = apop_ls_settings_alloc(inset, *ep);
-        epout           = olp->model;
-    } else {
-        olp             = ep->model_settings;
-        epout           = ep;
+    apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
+    if (!olp) {
+        Apop_settings_add_group(epout, apop_ls, inset);
+        olp             =  apop_settings_get_group(epout, "apop_ls");
     }
+  //  apop_model_clear(data, out->model);
     epout->data = inset;
     if(epout->parameters)
         apop_data_free(epout->parameters);
@@ -331,14 +358,13 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
   apop_model       *epout;
   gsl_vector        *weights    = NULL;
   int               i;
-  apop_ls_settings  *olp;
-    if (!ep || !ep->model_settings)
-        return apop_estimate(inset, apop_ols);
-    olp                 = ep->model_settings;
-    olp->want_cov       = 0;//not working yet.
     epout               = apop_model_copy(*ep);
-    epout->model_settings = malloc(sizeof(apop_ls_settings));
-    memcpy(epout->model_settings, olp, sizeof(apop_ls_settings));
+    apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
+    if (!olp) {
+        Apop_settings_add_group(ep, apop_ls, inset);
+        olp             =  apop_settings_get_group(epout, "apop_ls");
+    }
+    olp->want_cov       = 0;//not working yet.
     if (!olp->instruments || !olp->instruments->matrix->size2) 
         return apop_estimate(inset, apop_ols);
     epout->data = inset;

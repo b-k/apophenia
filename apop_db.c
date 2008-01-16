@@ -50,16 +50,16 @@ Apophenia reserves the right to insert temp tables into the opened database. The
  */
 #include <string.h>
 #include <stdarg.h>
-#include <apophenia/types.h>
+#include "types.h"
 #include <gsl/gsl_math.h>           //GSL_NAN
-#include <apophenia/db.h>
-#include <apophenia/linear_algebra.h>
-#include <apophenia/stats.h>	    //t_dist
-#include <apophenia/conversions.h>	//apop_strip_dots
-#include <apophenia/regression.h>	//two_tailify
-#include <apophenia/bootstrap.h>	//apop_rng_alloc
+#include "db.h"
+#include "linear_algebra.h"
+#include "stats.h"	    //t_dist
+#include "conversions.h"	//apop_strip_dots
+#include "regression.h"	//two_tailify
+#include "bootstrap.h"	//apop_rng_alloc
 
-#include <apophenia/vasprintf.h>
+#include "vasprintf.h"
 #include "config.h"
 #include <math.h> 	                //sqrt
 
@@ -332,7 +332,7 @@ example
 The following function will list the tables in a database (much like you could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
 
 \verbatim
-#include <apophenia/headers.h>
+#include <apop.h>
 
 void print_table_list(char *db_file){
 apop_data   *tab_list;

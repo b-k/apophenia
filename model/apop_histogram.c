@@ -6,12 +6,14 @@ in the standard \c apop_model form, for easy comparison with other models.
 
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include <apophenia/model.h>
-#include <apophenia/types.h>
+#include "asst.h"
+#include "model.h"
+#include "types.h"
+#include "mapply.h"
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_histogram.h>
 #include <stdio.h>
 #include <assert.h>
-#include <apop.h>
 
 apop_model apop_histogram;
 
@@ -22,12 +24,9 @@ apop_model apop_histogram;
   (\f$1\times 10000\f$, \f$10000\times 1\f$, \f$100\times 100\f$...).
   \param bins How many bins should the PDF have?
  */
-apop_model *apop_histogram_settings_alloc(apop_data *data, int bins){
+apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins){
     //header is in model.h.
   apop_histogram_settings *hp = malloc(sizeof(*hp));
-    hp->model  = apop_model_copy(apop_histogram);
-    hp->model->model_settings        = hp;
-    hp->model->model_settings_size   = sizeof(*hp);
   size_t              i, j, sum = 0;
   double              minv    = GSL_POSINF,
                       maxv    = GSL_NEGINF,
@@ -61,14 +60,36 @@ apop_model *apop_histogram_settings_alloc(apop_data *data, int bins){
     for (i=0; i< hp->pdf->n; i++)
         hp->pdf->bin[i]    /= (sum + 0.0);
     hp->cdf =NULL;
-    return hp->model;
+    return hp;
+}
+
+void * apop_histogram_settings_copy(apop_histogram_settings *in){
+    apop_histogram_settings *out = malloc(sizeof(apop_histogram_settings));
+    out->pdf = gsl_histogram_clone(in->pdf);
+    out->cdf = NULL; //the GSL doesn't provide a copy function, so screw it---just regenerate.
+    if (in->histobase)
+        out->histobase = apop_model_copy(*in->histobase);
+    if (in->kernelbase)
+        out->kernelbase = apop_model_copy(*in->kernelbase);
+    return out;
+}
+
+void apop_histogram_settings_free(apop_histogram_settings *in){
+    //I'll come back to this later...
+    /*gsl_histogram_free(in->pdf);
+    gsl_histogram_pdf_free(in->cdf);
+    apop_model_free(in->histobase);
+    apop_model_free(in->kernelbase);*/
+}
+
+
+apop_model *est(apop_data *d, apop_model *in){
+    apop_model *out = apop_model_copy(*in);
+    Apop_settings_add_group(out, apop_histogram, d, 1000);
+    return out;
 }
 
 static gsl_histogram *gpdf;
-
-apop_model *est(apop_data *d, apop_model *in){
-    return apop_histogram_settings_alloc(d, 1000);
-}
 
 static double one_vector(gsl_vector *in){
   size_t    i, k;
@@ -81,7 +102,8 @@ static double one_vector(gsl_vector *in){
 }
 
 static double histogram_p(apop_data *d, apop_model *parameters){
-  apop_histogram_settings *hp = parameters->model_settings;
+  apop_histogram_settings *hp = apop_settings_get_group(parameters, "apop_histogram");
+  apop_assert(hp, 0, 0, 's', "you sent me an unparametrized model.");
   long double           product = 0;
     gpdf    = hp->pdf;
     if (d->vector)
@@ -95,7 +117,8 @@ static double histogram_p(apop_data *d, apop_model *parameters){
 }
 
 static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
-  apop_histogram_settings *hp   = eps->model_settings;
+  apop_histogram_settings *hp = apop_settings_get_group(eps, "apop_histogram");
+  apop_assert_void(hp, 0, 's', "you sent me an unparametrized model.");
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!
         gsl_histogram_pdf_init(hp->cdf, hp->pdf);
@@ -123,5 +146,4 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
 
 \ingroup models
 */
-apop_model apop_histogram = {"Histogram", 0,0,0, .estimate = est, 
-    .p = histogram_p, .draw = histogram_rng};
+apop_model apop_histogram = {"Histogram", 0,0,0, .estimate = est, .p = histogram_p, .draw = histogram_rng};

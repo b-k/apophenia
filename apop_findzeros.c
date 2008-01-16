@@ -2,7 +2,10 @@
 #include <stdio.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_multiroots.h>
-#include <apophenia/headers.h>
+#include "asst.h"
+#include "types.h"
+#include "mapply.h"
+#include "bootstrap.h"
 
 /** \file apop_findzeros.c
  This just includes the root-finding routine. It is \c \#included in apop_mle.c, because I expect you to call it via that. 
@@ -23,7 +26,7 @@ static apop_model * find_roots (infostruct p) {
   int status, betasize      = vsize + msize1* msize2;
   size_t  iter = 0;
   gsl_vector *x;
-    apop_mle_settings *mlep   = dist->method_settings;
+    apop_mle_settings *mlep   = apop_settings_get_group(dist, "apop_mle");
     dist->status = 1;    //assume failure until we score a success.
     if (!mlep || mlep->starting_pt==NULL){
         x = gsl_vector_alloc(betasize);

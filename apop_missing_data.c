@@ -4,7 +4,7 @@
 
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include <apop.h>
+#include "likelihoods.h"
 
 /** If there is an NaN anywhere in the row of data (including the matrix
     and the vector) then delete the row from the data set.
@@ -73,8 +73,6 @@ apop_data * apop_data_listwise_delete(apop_data *d){
 }
 
 
-
-
 //ML imputation
 
 static apop_model apop_ml_imputation_model;
@@ -83,9 +81,26 @@ typedef struct {
     size_t      *row, *col;
     int         ct;
     apop_model  *local_mvn;
-} apop_ml_imputation_struct;
+} apop_ml_imputation_settings;
 
-static void addin(apop_ml_imputation_struct *m, size_t i, size_t j, double** starting_pt, apop_data *meanvar){
+apop_ml_imputation_settings * apop_ml_imputation_settings_alloc(apop_model *local){
+    apop_ml_imputation_settings *out = malloc(sizeof(apop_ml_imputation_settings));
+    out->local_mvn = local;
+    return out;
+}
+
+void  apop_ml_imputation_settings_free(apop_ml_imputation_settings *in){free(in);}
+
+void * apop_ml_imputation_settings_copy(apop_ml_imputation_settings *in){
+    apop_ml_imputation_settings *out = malloc(sizeof(apop_ml_imputation_settings));
+    out->local_mvn = in->local_mvn;
+    out->ct = in->ct;
+    out->row = in->row;
+    out->col = in->col;
+    return out;
+}
+
+static void addin(apop_ml_imputation_settings *m, size_t i, size_t j, double** starting_pt, apop_data *meanvar){
     m->row  = realloc(m->row, ++(m->ct) * sizeof(size_t));
     m->col  = realloc(m->col, m->ct * sizeof(size_t));
     *starting_pt = realloc(*starting_pt, m->ct*sizeof(double));
@@ -94,7 +109,9 @@ static void addin(apop_ml_imputation_struct *m, size_t i, size_t j, double** sta
     (*starting_pt)[m->ct-1] = gsl_vector_get(meanvar->vector, j);
 }
 
-static void  find_missing(apop_data *d, apop_ml_imputation_struct *mask, double **starting_pt, apop_data *meanvar){
+static void  find_missing(apop_data *d, apop_model *mc, apop_data *meanvar){
+  apop_ml_imputation_settings  *mask = apop_settings_get_group(mc, "apop_ml_imputation");
+  double ** starting_pt = &(Apop_settings_get(mc, apop_mle, starting_pt));
   int i, j, min = 0, max = 0;
     //get to know the input.
     if (d->matrix)
@@ -111,7 +128,7 @@ static void  find_missing(apop_data *d, apop_ml_imputation_struct *mask, double 
                 addin(mask, i, j, starting_pt, meanvar);
 }
 
-static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct * m){
+static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_settings * m){
   int i;
     for (i=0; i< m->ct; i++){
         apop_data_set(x, m->row[i], m->col[i], gsl_vector_get(v->vector,i));
@@ -121,7 +138,7 @@ static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_struct *
 //The model to send to the optimization
 
 static double ll(apop_data *d, apop_model * ep){
-  apop_ml_imputation_struct *m  = ep->model_settings;
+  apop_ml_imputation_settings  *m = apop_settings_get_group(ep, "apop_ml_imputation");
     unpack(ep->parameters, d, m);
     return apop_multivariate_normal.log_likelihood(d, m->local_mvn);
 }
@@ -138,22 +155,19 @@ static apop_model apop_ml_imputation_model= {"Impute missing data via maximum li
 
 \param  d       The data set. It comes in with NaNs and leaves entirely filled in.
 \param  meanvar An \c apop_data set where the vector is the mean of each column and the matrix is the covariance matrix
-\param  parameters  The most likely data points are naturally found via MLE. These are the parameters sent to the MLE.
+\return A model ready for estimation. It includes a set of \ci apop_mle settings, which you will almost certainly want to tune.
 
 */
-apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar, apop_mle_settings * parameters){
-  apop_ml_imputation_struct mask;
+apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar){
   apop_model *mc       = apop_model_copy(apop_ml_imputation_model);
-  apop_mle_settings *mlp = parameters ? parameters :  apop_mle_settings_alloc(d, *mc);
-    find_missing(d, &mask, &(mlp->starting_pt), meanvar);
-    mlp->model->vbase          = mask.ct;
-    mask.local_mvn             = apop_model_copy(apop_multivariate_normal);
-    mask.local_mvn->parameters = meanvar;
-    mlp->method                 = APOP_SIMPLEX_NM;
-    mlp->model->model_settings    = &mask;
-    mlp->step_size              = 2;
-    mlp->tolerance              = 0.2;
-    apop_model *out = apop_maximum_likelihood(d, *mlp->model);
-    apop_model_free(mc);
-    return out;
+  Apop_settings_add_group(mc, apop_mle, mc);
+    apop_model *local_mvn             = apop_model_copy(apop_multivariate_normal);
+    local_mvn->parameters = meanvar;
+    Apop_settings_add_group(mc, apop_ml_imputation, local_mvn);
+    Apop_settings_add(mc, apop_mle, method, APOP_SIMPLEX_NM);
+    Apop_settings_add(mc, apop_mle, step_size, 2);
+    Apop_settings_add(mc, apop_mle, tolerance, 0.2);
+    find_missing(d, mc, meanvar);
+    mc->vbase          = Apop_settings_get(mc, apop_ml_imputation, ct);
+    return mc;
 }

@@ -1,8 +1,8 @@
 //db.h		Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 #ifndef apop_db_included
 #define apop_db_included
-#include <apophenia/types.h>
-#include <apophenia/asst.h>
+#include "types.h"
+#include "asst.h"
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 

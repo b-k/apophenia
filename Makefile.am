@@ -14,6 +14,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			apop_linear_constraint.c apop_sort.c			\
 			apop_model_fix_params.c	 apop_update.c			\
 			apop_tests.c apop_smoothing.c					\
+			apop_settings.c									\
 			vasprintf/asnprintf.c vasprintf/printf-args.c 	\
 			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
 			vasprintf/printf-parse.c vasprintf/vasprintf.c  \
@@ -27,13 +28,12 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_uniform.c model/apop_beta.c			\
 			model/apop_waring.c model/apop_yule.c 	 		\
 			model/apop_bernoulli.c model/apop_binomial.c 	\
-			model/apop_histogram.c model/apop_kernel.c 		\
-			model/apop_lognormal.c 
+			model/apop_histogram.c model/apop_kernel.c 
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \
 				histogram.h	mapply.h missing_data.h			\
-		     	model/model.h asst.h 						\
+		     	model/model.h asst.h settings.h				\
 			vasprintf/alloca_.h vasprintf/printf-parse.h  	\
 			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
 			vasprintf/printf-args.h vasprintf/vasnprintf.h 	

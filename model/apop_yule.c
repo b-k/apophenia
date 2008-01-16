@@ -10,6 +10,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "types.h"
 #include "output.h"
 #include "mapply.h"
+#include "settings.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"
@@ -101,20 +102,20 @@ static double  dapply_me(gsl_vector *v){
 
 static double yule_log_likelihood(apop_data *d, apop_model *m){
   apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
+  if (apop_settings_get_group(m, "apop_rank"))
       return yule_log_likelihood_rank(d, m);
     bb	            = gsl_vector_get(m->parameters->vector, 0);
-  long double   ln_bb		    = gsl_sf_lngamma(bb),
-                ln_bb_less_1    = log(bb-1);
-  gsl_vector *  v               = apop_matrix_map(d->matrix, apply_me);
-  double        likelihood      = apop_vector_sum(v);
+    long double   ln_bb		    = gsl_sf_lngamma(bb),
+                  ln_bb_less_1    = log(bb-1);
+    gsl_vector *  v               = apop_matrix_map(d->matrix, apply_me);
+    double        likelihood      = apop_vector_sum(v);
     gsl_vector_free(v);
 	return likelihood + (ln_bb_less_1 + ln_bb) * d->matrix->size1 * d->matrix->size2;
 }
 
 static void yule_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
   apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
+    if (apop_settings_get_group(m, "apop_rank"))
       return yule_dlog_likelihood_rank(d, gradient, m);
 	//Psi is the derivative of the log gamma function.
     bb		= gsl_vector_get(m->parameters->vector, 0);
@@ -159,8 +160,6 @@ int		x;
 
 The special case of Waring where \f$ \alpha = 0.	\f$<br>
 
-If you have frequency or ranking data, then use \ref apop_model_copy_set_string to set the model_setting to "R".
-
 apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
 \f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$
@@ -168,6 +167,12 @@ apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 \f$ \ln Y(x, b)	= \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b)	\f$
 
 \f$ d\ln Y/db	= 1/(b-1)  + \psi(b) - \psi(k+b)				\f$
+
+To specify that you have frequency or ranking data, use 
+\code
+Apop_settings_add_group(your_model, apop_rank, NULL);
+\endcode
+
 \ingroup models
 \todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I have references on hand.
 */

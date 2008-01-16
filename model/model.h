@@ -5,7 +5,8 @@
 #ifndef __apop_models_h__
 #define __apop_models_h__
 
-#include <apophenia/types.h>
+#include "types.h"
+#include "regression.h"
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
@@ -29,6 +30,7 @@ extern apop_model apop_gamma;
 extern apop_model apop_gaussian;//synonym for apop_normal
 //extern apop_model apop_GLS;
 extern apop_model apop_histogram;
+extern apop_model apop_improper_uniform;
 extern apop_model apop_iv;
 extern apop_model apop_kernel_density;
 extern apop_model apop_logit;
@@ -50,24 +52,59 @@ extern apop_model apop_zipf;
 #define apop_WLS apop_wls
 #define apop_IV apop_iv
 
-//For apop_histogram:
+
+
+/////////Settings
+
+
+apop_ls_settings * apop_ls_settings_alloc(apop_data *data);
+void * apop_ls_settings_copy(apop_ls_settings *in);
+void apop_ls_settings_free(apop_ls_settings *in);
+
+typedef struct {
+    int want_cov;
+    void *copy;
+    void *free;
+} apop_normal_settings;
+
+apop_normal_settings *apop_normal_settings_alloc(int want_cov);
+apop_normal_settings *apop_normal_settings_copy(apop_normal_settings *in);
+void apop_normal_settings_free(apop_normal_settings *in);
+
+/** This is serious overkill for a single character of data---we could
+ simply check for the presence of this struct and be done with it.
+ But this allows for future expansion if so desired. */
+typedef struct {
+    char rank_data;
+    void *copy;
+    void *free;
+}apop_rank_settings;
+
+//in apop_exponential.c
+apop_rank_settings *apop_rank_settings_alloc(void *ignoreme);
+void apop_rank_settings_free(apop_rank_settings *in);
+void *apop_rank_settings_copy(apop_rank_settings *in);
+
 #include <gsl/gsl_histogram.h>
 typedef struct{
     gsl_histogram       *pdf;
     gsl_histogram_pdf   *cdf;
     apop_model          *histobase;
     apop_model          *kernelbase;
-    apop_model          *model;
 } apop_histogram_settings;
 
+apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins);
+void  apop_histogram_settings_free(apop_histogram_settings *in);
+void * apop_histogram_settings_copy(apop_histogram_settings *in);
+
+
+
 apop_model *apop_model_set_parameters(apop_model in, ...);
-apop_model *apop_histogram_settings_alloc(apop_data *data, int bins); //see apop_histogram.c
 void apop_histogram_plot(apop_model *in, char *outfile);
 apop_model *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*));
 
 apop_model * apop_model_copy(apop_model in); //in apop_model.c
-apop_model * apop_model_copy_set_string(apop_model m, char* param);
 apop_model * apop_model_clear(apop_data * data, apop_model *model);
 
 apop_model * apop_estimate(apop_data *d, apop_model m);

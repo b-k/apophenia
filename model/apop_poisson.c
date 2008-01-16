@@ -18,16 +18,19 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 static double poisson_log_likelihood(apop_data *d, apop_model *);
 
 static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
-  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_poisson);
+  apop_model 	*est= apop_model_copy(parameters ? *parameters : apop_poisson);
   double		mean    = apop_matrix_mean(data->matrix);
     if (!est->parameters) 
         est->parameters   = apop_data_alloc(1,0,0);
 	gsl_vector_set(est->parameters->vector, 0, mean);
-    est->llikelihood	= poisson_log_likelihood(data, parameters);
-    if (est->method_settings
-            && ((apop_mle_settings *)(est->method_settings))->want_cov){
-        apop_mle_settings   *extra  = apop_mle_settings_alloc(data, apop_poisson);
-        extra->want_cov = 0;
+    est->llikelihood	= poisson_log_likelihood(data, est);
+    //to prevent an infinite loop, the jackknife needs to be flagged to
+    //not run itself. We free-ride of the apop_ls_settings struct to signal.
+    apop_ls_settings *dummy = apop_settings_get_group(est, "apop_ls");
+    if (!dummy || dummy->want_cov){
+        if (!dummy)
+            Apop_settings_add_group(est, apop_ls, data);
+        Apop_settings_add(est, apop_ls, want_cov, 0);
         est->covariance = apop_jackknife_cov(data, *est);
     }
 	return est;
@@ -95,8 +98,6 @@ static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
 Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
 
 \f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
-
-If you want, you can use the \c apop_mle_estimate_params for the method_settings element of the input \c apop_params. The model will only look at the \c want_cov element.
 
 \ingroup models
 */

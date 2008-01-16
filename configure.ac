@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.60)
 AC_INIT(FULL-PACKAGE-NAME, VERSION, BUG-REPORT-ADDRESS)
-AM_INIT_AUTOMAKE(apophenia, 0.20)
+AM_INIT_AUTOMAKE(apophenia, 0.21)
 AC_CONFIG_SRCDIR([db.h])
 AC_CONFIG_HEADER([config.h])
 
@@ -15,13 +15,9 @@ AC_PROG_CC
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
-# FIXME: Replace `main' with a function in `-lgsl':
 AC_CHECK_LIB([gsl], [gsl_vector_alloc], , , [-lgslcblas])
-# FIXME: Replace `main' with a function in `-lgslcblas':
 AC_CHECK_LIB([gslcblas], [cblas_dgemm])
-# FIXME: Replace `main' with a function in `-lmysqlclient':
-AC_CHECK_LIB([mysqlclient], [mysql_query], [libs="$libs -L/usr/lib/mysql -lmysqlclient"], , [-lz])
-# FIXME: Replace `main' with a function in `-lsqlite3':
+AC_CHECK_LIB([mysqlclient], [mysql_query], , , [-L/usr/lib/mysql -lz])
 AC_CHECK_LIB([sqlite3], [sqlite3_exec])
 # FIXME: Replace `main' with a function in `-lz':
 #AC_CHECK_LIB([z], [main])

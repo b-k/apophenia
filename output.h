@@ -1,8 +1,8 @@
 #include <gsl/gsl_matrix.h>
-#include <apophenia/db.h>
-#include <apophenia/types.h>
-#include <apophenia/stats.h>
-#include <apophenia/linear_algebra.h>
+#include "db.h"
+#include "types.h"
+#include "stats.h"
+#include "linear_algebra.h"
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS

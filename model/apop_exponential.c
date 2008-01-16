@@ -6,6 +6,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "types.h"
 #include "stats.h"
 #include "model.h"
+#include "settings.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"
@@ -13,10 +14,21 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <stdio.h>
 #include <assert.h>
 
+apop_rank_settings *apop_rank_settings_alloc(void *ignoreme){
+    apop_rank_settings *out = malloc(sizeof(apop_rank_settings));
+    out->rank_data = 'r';
+    return out;
+}
+
+void apop_rank_settings_free(apop_rank_settings *in){free(in);}
+
+void *apop_rank_settings_copy(apop_rank_settings *in){
+    apop_rank_settings *out = apop_rank_settings_alloc(NULL);
+    out->rank_data = in->rank_data;
+    return out;
+}
+
 static double exponential_log_likelihood(apop_data *d, apop_model *p);
-
-
-
 
 /* Let k be the rank, and x_k be the number of elements at that rank;
  then the mean rank (and therefore the most likely estimate for the
@@ -75,13 +87,8 @@ static void rank_exponential_dlog_likelihood(const apop_data *d, gsl_vector *gra
 	gsl_vector_set(gradient,0, d_likelihood);
 }
 
-
-
-
-
-
 static apop_model * exponential_estimate(apop_data * data,  apop_model *m){
-  if (m->model_settings && (!strcmp((char *)m->model_settings, "r") || !strcmp((char *)m->model_settings, "R")))
+    if (apop_settings_get_group(m, "apop_rank"))
       return rank_exponential_estimate(data, m);
   apop_model 	*est= apop_model_copy(apop_exponential);
   apop_model_clear(data, est);
@@ -119,7 +126,7 @@ via \f$C=\exp(1/\mu)\f$.
 */
 static double exponential_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
+    if (apop_settings_get_group(p, "apop_rank"))
       return rank_exponential_log_likelihood(d, p);
   gsl_matrix	*data	= d->matrix;
   double		mu		= gsl_vector_get(p->parameters->vector, 0),
@@ -136,7 +143,7 @@ static double exponential_log_likelihood(apop_data *d, apop_model *p){
 */
 static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  if (p->model_settings && (!strcmp((char *)p->model_settings, "r") || !strcmp((char *)p->model_settings, "R")))
+    if (apop_settings_get_group(p, "apop_rank"))
       return rank_exponential_dlog_likelihood(d, gradient, p);
   double		mu	    = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix	*data	= d->matrix;
@@ -173,6 +180,11 @@ Some write the function as:
 If you prefer this form, just convert your parameter via \f$\mu = {1\over
 \ln C}\f$ (and convert back from the parameters this function gives you
 via \f$C=\exp(1/\mu)\f$.
+
+To specify that you have frequency or ranking data, use 
+\code
+Apop_settings_add_group(your_model, apop_rank, NULL);
+\endcode
 
 \ingroup models
 \todo Check that the borderline work here is correct.

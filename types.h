@@ -101,6 +101,14 @@ The \ref apop_ols page has a sample program which uses an \ref apop_model.
 typedef struct _apop_model apop_model;
 
 
+typedef struct {
+    char name[101];
+    void *setting_group;
+    void *copy;
+    void *free;
+} apop_settings_type;
+
+
 /**
 \param parameters 	The vector of coefficients or parameters estimated by the regression/MLE. Usually has as many dimensions as your data set has columns.
 \param expected	An \ref apop_data structure with
@@ -113,13 +121,11 @@ independent vars, then the first column is the actual data. Let our model be \f$
 struct _apop_model{
     char        name[101]; 
     int         vbase, m1base, m2base;
-    char        method_name[101]; 
-    void        *method_settings;
-    void        *model_settings;
+    apop_settings_type *settings;
+    int         setting_ct;
     apop_data   *parameters, *expected, *covariance;
     double      llikelihood;
     int         prepared, status;
-    size_t      method_settings_size, model_settings_size, more_size;
     apop_data   *data;
     apop_model * (*estimate)(apop_data * data, apop_model *params);
     double  (*p)(apop_data *d, apop_model *params);
@@ -130,6 +136,7 @@ struct _apop_model{
     void (*prep)(apop_data *data, apop_model *params);
     void (*print)(apop_model *params);
     void    *more;
+    size_t  more_size;
 } ;
 
 /** The global options.

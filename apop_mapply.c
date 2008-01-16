@@ -1,6 +1,6 @@
-#include <apophenia/stats.h>
-#include <apophenia/mapply.h>
-#include <apophenia/types.h>
+#include "stats.h"
+#include "mapply.h"
+#include "types.h"
 
 /** \file apop_mapply.c vector/matrix map/apply. 
  

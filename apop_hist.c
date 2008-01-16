@@ -44,9 +44,10 @@ Things to do:
 */
 
 #include "db.h"     //just for apop_opts
-#include "apophenia/stats.h"
-#include "apophenia/histogram.h"
-#include "apophenia/bootstrap.h" //rng_alloc
+#include "stats.h"
+#include "settings.h"
+#include "histogram.h"
+#include "bootstrap.h" //rng_alloc
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 
@@ -83,8 +84,8 @@ Anyway, here are some functions to deal with these various histograms and such.
 apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *indata){
   apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be an apop_histogram model.");
   size_t  i;
-    apop_model *out = apop_model_copy(*template); 
-    gsl_histogram *hout  = ((apop_histogram_settings*) out->model_settings)->pdf;
+  apop_model *out = apop_model_copy(*template); 
+  gsl_histogram *hout  = Apop_settings_get(out, apop_histogram, pdf);
     gsl_histogram_reset(hout);
     for (i=0; i< indata->size; i++)
         gsl_histogram_increment(hout, gsl_vector_get(indata, i));
@@ -111,7 +112,7 @@ apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m
   long double i;
   double d;
     apop_model *out = apop_model_copy(*template); 
-    gsl_histogram *hout  = ((apop_histogram_settings*) out->model_settings)->pdf;
+    gsl_histogram *hout  = Apop_settings_get(out, apop_histogram, pdf);
     gsl_histogram_reset(hout);
     for (i=0; i< draws; i++){
         m->draw(&d, r, m);
@@ -149,8 +150,8 @@ double      pval    = gsl_cdf_chisq_P(diff, bins-1);
   \ingroup histograms
 */
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
-  gsl_histogram *h0 = ((apop_histogram_settings *)m0->model_settings)->pdf;
-  gsl_histogram *h1 = ((apop_histogram_settings *)m1->model_settings)->pdf;
+  gsl_histogram *h0 = Apop_settings_get(m0, apop_histogram, pdf);
+  gsl_histogram *h1 = Apop_settings_get(m1, apop_histogram, pdf);
   int     i;
   double  diff    = 0,
           bins    = h0->n;
@@ -213,8 +214,8 @@ static double psmirnov2x(double x, int m, int n) {
  */
 //apop_data *apop_test_kolmogorov(gsl_histogram *h1, gsl_histogram *h2){
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
-  gsl_histogram *h1   = ((apop_histogram_settings *)m1)->pdf;
-  gsl_histogram *h2   = ((apop_histogram_settings *)m2)->pdf;
+  gsl_histogram *h1 = Apop_settings_get(m1, apop_histogram, pdf);
+  gsl_histogram *h2 = Apop_settings_get(m2, apop_histogram, pdf);
   double    cdf1      = 0,
             cdf2      = 0,
             sum1      = 0,
@@ -264,7 +265,7 @@ printf("sum1: %g; sum2: %g\n", sum1, sum2);
 
 /** Scale a histogram so it integrates to one (and is thus a proper PMF). */
 void apop_histogram_normalize(apop_model *m){
-  gsl_histogram *h = ((apop_histogram_settings *)m->model_settings)->pdf;
+  gsl_histogram *h = Apop_settings_get(m, apop_histogram, pdf);
   int           i;
   long double   sum = 0;
   apop_assert_void(h, 0, 's', "You sent me a model which is not a histogram or which is unparametrized.");

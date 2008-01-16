@@ -7,6 +7,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "asst.h"
 #include "model.h"
 #include "stats.h"
+#include "settings.h"
 #include "regression.h"
 #include <math.h>
 #include <assert.h>
@@ -22,26 +23,25 @@ static apop_model * wls_estimate(apop_data *inset, apop_model *epin){
   apop_data                 *set;
   int                       i;
   gsl_vector                v;
-  apop_ls_settings           *op = malloc(sizeof(*op));
+  apop_ls_settings *insettings = apop_settings_get_group(epin, "apop_ls");
     if (!inset->weights){
         printf("You need to specify weights in the data set to use apop_wls.\n");
         return NULL;
     }
-    if (!ep || strcmp(ep->method_name, "OLS") || ((apop_ls_settings*)ep->method_settings)->destroy_data==0)
-        set = apop_data_copy(inset);
-    else
-        set = inset;
+    set = (insettings && insettings->destroy_data)
+        ? inset
+        : apop_data_copy(inset);
     for (i=0; i< inset->matrix->size2; i++){
         v   = gsl_matrix_column(set->matrix, i).vector;
         gsl_vector_mul(&v, inset->weights);
     }
     memcpy(epcopy, ep, sizeof(*epcopy));
-    op->destroy_data    = 1;
-    epcopy->method_settings = op;
-    op->model              = ep;
-    apop_model *out     = apop_OLS.estimate(set, epcopy);
+    apop_model *od = apop_model_copy(apop_ols);
+    Apop_settings_alloc_add(od, apop_ls, destroy_data, 1, inset);
+    apop_model *out     = apop_estimate(set, *od);
     out->estimate       = wls_estimate;
     out->log_likelihood = wls_log_likelihood;
+    apop_model_free(od);
     return out;
 }
 
