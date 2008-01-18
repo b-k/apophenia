@@ -50,9 +50,9 @@ static apop_model * binomial_estimate(apop_data * data,  apop_model *parameters)
   apop_model_clear(data, est);
   double hitcount, misscount;
   char method = apop_settings_get_group(parameters, "apop_rank") ? 'b' : 't';
-    get_hits_and_misses(data, method, &hitcount, &misscount);
-    gsl_vector_set(est->parameters->vector, 0, hitcount + misscount);      //n
-    gsl_vector_set(est->parameters->vector, 1, hitcount/(hitcount + misscount)); //p
+    get_hits_and_misses(data, method, &hitcount, &misscount);   
+    apop_data_add_named_elmt(est->parameters, "n", hitcount+misscount);
+    apop_data_add_named_elmt(est->parameters, "p", hitcount/(hitcount + misscount));
     est->llikelihood	= binomial_log_likelihood(data, parameters);
     //apop_numerical_covariance_matrix(apop_binomial, est, data);
     return est;

@@ -62,6 +62,7 @@ static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
         apop_data_set(est->covariance, 0, 0, mean/ct);
         apop_data_set(est->covariance, 1, 1, 2*gsl_pow_2(var)/(ct-1));
     }
+    est->data = data;
 	return est;
 }
 
@@ -230,6 +231,7 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
 	gsl_vector_set(est->parameters->vector, 0, log(mean)- sigsq/2);
 	gsl_vector_set(est->parameters->vector, 1, sqrt(sigsq));
     est->llikelihood	= lognormal_log_likelihood(data, est);
+    est->data           = data;
 	return est;
 }
 

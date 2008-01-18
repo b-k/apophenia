@@ -2,8 +2,8 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "apophenia/db.h"
-#include "apophenia/conversions.h"
+#include "db.h"
+#include "conversions.h"
 #include <unistd.h>
 
 
@@ -11,7 +11,6 @@ int main(int argc, char **argv){
 char		c, 
 		msg[1000];
 int     colnames            = 1,
-        colwarn             = 1,
         rownames            = 0,
         tab_exists_check    = 0;
 
@@ -30,16 +29,11 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 		printf(msg);
 		return 0;
 	}
-	while ((c = getopt (argc, argv, "cn:d:hmrvO")) != -1){
+	while ((c = getopt (argc, argv, "n:d:hmrvO")) != -1){
 		switch (c){
-		  case 'c':
-              fprintf(stderr,"I assume column names by default now.\n");
-            break;
 		  case 'n':
-              if (optarg[0]=='c'){
+              if (optarg[0]=='c')
 			    colnames    --;
-                colwarn     --;
-              }
 			break;
 		  case 'd':
 			strcpy(apop_opts.input_delimiters, optarg);
@@ -49,7 +43,7 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 			return 0;
 		  case 'm':
 			apop_opts.db_engine = 'm';
-			return 0;
+            break;
 		  case 'r':
 			rownames    ++;
 			break;
@@ -62,8 +56,6 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 		}
 	}
 	apop_db_open(argv[optind + 2]);
-    if (colwarn)
-        fprintf(stderr, "Assuming first row are column names\n");
     if (tab_exists_check)
         apop_table_exists(argv[optind],1);
 	apop_text_to_db(argv[optind], argv[optind+1], rownames,colnames, NULL);

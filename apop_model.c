@@ -2,9 +2,13 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
+#include "types.h"
+#include "output.h"
+#include "settings.h"
+#include "likelihoods.h"
+#include "linear_algebra.h"
+#include <stdarg.h>
 #include <gsl/gsl_matrix.h>
-#include "apophenia/output.h"
-#include "apophenia/linear_algebra.h"
 
 
 /** Allocate an \ref apop_model.
@@ -130,7 +134,8 @@ apop_model * apop_model_copy(apop_model in){
     }
 
     int i; //if a setting isn't copied, this is several bytes of overallocing.
-    out->settings = malloc(sizeof(apop_settings_type)*(in.setting_ct));
+    if (in.setting_ct)
+        out->settings = malloc(sizeof(apop_settings_type)*(in.setting_ct));
     out->setting_ct = 0;
     for (i=0; i< in.setting_ct; i++){
         if (in.settings[i].copy)

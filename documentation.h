@@ -22,6 +22,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 \section shuntdata Shunting data 
  \li \ref db "Database utilities": an easy front end to SQLite and mySQL.
  \li \ref conversions
+ \li \ref settings "Setting model parameters"
  \li \ref output "Output functions": Summarize data and print tables to the screen or a file.
  \li \ref convenience_fns "Convenience functions": a few utilities to make life with the GSL a little easier.
 

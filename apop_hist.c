@@ -45,6 +45,7 @@ Things to do:
 
 #include "db.h"     //just for apop_opts
 #include "stats.h"
+#include "model.h"
 #include "settings.h"
 #include "histogram.h"
 #include "bootstrap.h" //rng_alloc

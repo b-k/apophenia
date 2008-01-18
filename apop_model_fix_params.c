@@ -1,8 +1,10 @@
 #include "asst.h"
+#include "model.h"
+#include "likelihoods.h"
 /** \file apop_model_fix_params.c 
  Set some of the parameters of a model to fixed values.
 
- There's only one function here. Its header is in likelioods.h
+ There's only one function here. Its header is in likelihoods.h
  
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -12,8 +14,8 @@ typedef struct {
     apop_model *base_model;
 } apop_model_fixed_params_settings;
 
-apop_model_fixed_params_settings *apop_model_fixed_params_settings_alloc (apop_model base_model, apop_data *paramvals, 
-                apop_data *mask, int size){
+apop_model_fixed_params_settings *apop_model_fixed_params_settings_alloc (apop_model base_model, 
+            apop_data *paramvals, apop_data *mask, int size){
     apop_model_fixed_params_settings *out = malloc(sizeof(apop_model_fixed_params_settings));
     out->base_model  = apop_model_copy(base_model);
     out->paramvals  = paramvals;

@@ -4,7 +4,6 @@
 
 #include <assert.h>
 #include "types.h"
-#include "likelihoods.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
 
@@ -99,10 +98,10 @@ ps: we just capitalize the first letter to remind you that it's a macro, but so 
 
 
 /** Method settings for a model to be put through Bayesian updating. 
-\item starting_pt      The first parameter to check in the MCMC routine
-\item periods How many steps should the MCMC chain run?
-\item burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
-\item histosegments If outputting a \ref apop_histogram, how many segments should it have?
+\li starting_pt      The first parameter to check in the MCMC routine
+\li periods How many steps should the MCMC chain run?
+\li burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
+\li histosegments If outputting a \ref apop_histogram, how many segments should it have?
  
  */
 typedef struct{

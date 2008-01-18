@@ -42,6 +42,14 @@ gsl_vector * v = &( apop_vv_##v );
 #define APOP_COL(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)->matrix, (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
+#define Apop_col APOP_COL 
+#define Apop_row APOP_ROW
+#define Apop_col_t APOP_COL_T
+#define Apop_row_t APOP_ROW_T
+#define Apop_matrix_col APOP_MATRIX_COL 
+#define Apop_matrix_row APOP_MATRIX_ROW
+#define Apop_submatrix APOP_SUBMATRIX
+
 	//The following are just convenient hooks to gsl vector functions.
 	//var_m lets you input a mean if you've already calculated it, saving
 	//some repetition.

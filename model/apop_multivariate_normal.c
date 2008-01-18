@@ -1,10 +1,13 @@
-/* \file apop_multivariate_normal.c
+/** \file apop_multivariate_normal.c
 
    The multivariate Normal distribution.
 
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
  
 #include "asst.h"
+#include "model.h"
+#include "stats.h"
+#include "conversions.h"
 
 apop_model apop_multivariate_normal;
 
@@ -44,20 +47,17 @@ double apop_multinormal_ll_prob(apop_data *data, apop_model * m){
 }
 
 static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
-    if (!p) p = apop_model_copy(apop_multivariate_normal);
-    apop_model_clear(data, p);
+  apop_model *out = p ? apop_model_copy(*p) : apop_model_copy(apop_multivariate_normal);
   int   i;
+    apop_model_clear(data, out);
     for (i=0; i< data->matrix->size2; i++){
         APOP_COL(data,i,v);
-        gsl_vector_set(p->parameters->vector, i, apop_mean(v));
+        gsl_vector_set(out->parameters->vector, i, apop_mean(v));
     }
-    p->covariance         =  apop_data_covariance(data);
-    p->parameters->matrix =  p->covariance->matrix;
-    /*if (est->model.uses.log_likelihood)
-        est->log_likelihood = normal_log_likelihood(est->parameters->vector, data, NULL);
-    if (est->model.uses.covariance)
-        apop_numerical_covariance_matrix(apop_normal, est, data);*/
-    return p;
+    out->covariance         =  apop_data_covariance(data);
+    out->parameters->matrix =  out->covariance->matrix;
+    out->llikelihood = apop_multinormal_ll_prob(data, out);
+    return out;
 }
 
 /** The nice, easy method from Devroye, p 565 */
@@ -86,7 +86,8 @@ static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
   means, and whose matrix is the covariances; the estimate method
   returns parameters of that form.
 
-  \todo This needs an RNG and other filling in.
+  The RNG fills an input array whose length is based on the input parameters.
+
   \ingroup models
  */
 apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1,

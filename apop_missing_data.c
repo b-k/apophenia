@@ -4,6 +4,14 @@
 
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
+#include "mapply.h"
+#include "stats.h"
+#include "output.h"
+#include "model.h"
+#include "types.h"
+#include "settings.h"
+#include "regression.h"
+#include "conversions.h"
 #include "likelihoods.h"
 
 /** If there is an NaN anywhere in the row of data (including the matrix
@@ -89,7 +97,8 @@ apop_ml_imputation_settings * apop_ml_imputation_settings_alloc(apop_model *loca
     return out;
 }
 
-void  apop_ml_imputation_settings_free(apop_ml_imputation_settings *in){free(in);}
+void  apop_ml_imputation_settings_free(apop_ml_imputation_settings *in){
+    free(in->row);  free(in->col); free(in);}
 
 void * apop_ml_imputation_settings_copy(apop_ml_imputation_settings *in){
     apop_ml_imputation_settings *out = malloc(sizeof(apop_ml_imputation_settings));
@@ -100,16 +109,17 @@ void * apop_ml_imputation_settings_copy(apop_ml_imputation_settings *in){
     return out;
 }
 
-static void addin(apop_ml_imputation_settings *m, size_t i, size_t j, double** starting_pt, apop_data *meanvar){
+static void addin(apop_ml_imputation_settings *m, size_t i, size_t j, double** starting_pt, gsl_vector *imean){
     m->row  = realloc(m->row, ++(m->ct) * sizeof(size_t));
     m->col  = realloc(m->col, m->ct * sizeof(size_t));
     *starting_pt = realloc(*starting_pt, m->ct*sizeof(double));
     m->row[m->ct-1]    = i;
     m->col[m->ct-1]    = j;
-    (*starting_pt)[m->ct-1] = gsl_vector_get(meanvar->vector, j);
+//    (*starting_pt)[m->ct-1] = gsl_vector_get(imean, j);
+    (*starting_pt)[m->ct-1] = 1;
 }
 
-static void  find_missing(apop_data *d, apop_model *mc, apop_data *meanvar){
+static void  find_missing(apop_data *d, apop_model *mc, gsl_vector *initialmean){
   apop_ml_imputation_settings  *mask = apop_settings_get_group(mc, "apop_ml_imputation");
   double ** starting_pt = &(Apop_settings_get(mc, apop_mle, starting_pt));
   int i, j, min = 0, max = 0;
@@ -125,7 +135,7 @@ static void  find_missing(apop_data *d, apop_model *mc, apop_data *meanvar){
     for (i=0; i< d->matrix->size1; i++)
         for (j=min; j <max; j++)
             if (gsl_isnan(apop_data_get(d, i, j)))
-                addin(mask, i, j, starting_pt, meanvar);
+                addin(mask, i, j, starting_pt, initialmean);
 }
 
 static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_settings * m){
@@ -140,12 +150,21 @@ static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_settings
 static double ll(apop_data *d, apop_model * ep){
   apop_ml_imputation_settings  *m = apop_settings_get_group(ep, "apop_ml_imputation");
     unpack(ep->parameters, d, m);
-    return apop_multivariate_normal.log_likelihood(d, m->local_mvn);
+    //return apop_multivariate_normal.log_likelihood(d, m->local_mvn);
+    return apop_log_likelihood(d, m->local_mvn);
 }
 
 
 static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0,0, .log_likelihood= ll};
 
+
+/*
+static double no_nan_val(const double in){ return isnan(in)? 0 : in;}
+static double no_nan_col(const double in){ return isnan(in);}
+
+static double apop_mean_no_nans(gsl_vector *in){
+    return apop_vector_map_sum(in, no_nan_val)/apop_vector_map_sum(in, no_nan_col);
+}*/
 
 /**
     Impute the most likely data points to replace NaNs in the data, and
@@ -154,20 +173,32 @@ static apop_model apop_ml_imputation_model= {"Impute missing data via maximum li
 
 
 \param  d       The data set. It comes in with NaNs and leaves entirely filled in.
-\param  meanvar An \c apop_data set where the vector is the mean of each column and the matrix is the covariance matrix
-\return A model ready for estimation. It includes a set of \ci apop_mle settings, which you will almost certainly want to tune.
+\param  mvn A parametrized \c apop_model from which you expect the data was derived.
+This is traditionally a Multivariate Normal.
+
+\return A model ready for estimation. It includes a set of \c apop_mle settings, which you will almost certainly want to tune.
 
 */
-apop_model * apop_ml_imputation(apop_data *d,  apop_data* meanvar){
+apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
   apop_model *mc       = apop_model_copy(apop_ml_imputation_model);
   Apop_settings_add_group(mc, apop_mle, mc);
-    apop_model *local_mvn             = apop_model_copy(apop_multivariate_normal);
-    local_mvn->parameters = meanvar;
-    Apop_settings_add_group(mc, apop_ml_imputation, local_mvn);
-    Apop_settings_add(mc, apop_mle, method, APOP_SIMPLEX_NM);
+    /*apop_model *local_mvn             = apop_model_copy(apop_multivariate_normal);
+    local_mvn->parameters = meanvar;*/
+    Apop_settings_add_group(mc, apop_ml_imputation, mvn);
+    Apop_settings_add(mc, apop_mle, method, APOP_CG_PR);
     Apop_settings_add(mc, apop_mle, step_size, 2);
     Apop_settings_add(mc, apop_mle, tolerance, 0.2);
-    find_missing(d, mc, meanvar);
+
+/*    gsl_vector *initial_col_mean = gsl_vector_alloc(d->matrix->size2);
+  int        i;
+    for(i=0; i < d->matrix->size2; i ++){
+        Apop_col(d, i, mmm);
+        gsl_vector_set(initial_col_mean, i, apop_mean_no_nans(mmm));
+    }
+*/
+   find_missing(d, mc, NULL);
     mc->vbase          = Apop_settings_get(mc, apop_ml_imputation, ct);
-    return mc;
+    apop_model *out = apop_maximum_likelihood(d, *mc);
+    //unpack(out->parameters, d, apop_settings_get_group(mc, "apop_ml_imputation"));//already unpacked.
+    return out;
 }

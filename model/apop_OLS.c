@@ -6,6 +6,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 #include "model.h"
 #include "regression.h"
+#include "conversions.h"
 #include "settings.h"
 #include "stats.h"
 #include "asst.h"
@@ -25,7 +26,6 @@ void apop_ls_settings_free(apop_ls_settings *in){ free(in); }
 /** Allocate an \c apop_ls_settings structure. 
 
  \param data the data
- \param model   The model, like \c apop_OLS or \c apop_WLS.
  \return an \c apop_ls_settings 
  */
 apop_ls_settings * apop_ls_settings_alloc(apop_data *data){

@@ -3,7 +3,7 @@
 #include <gsl/gsl_sf_exp.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
-#include <apophenia/types.h>
+#include "types.h"
 
 #undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
 #undef __END_DECLS

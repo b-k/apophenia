@@ -9,7 +9,9 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 #include "asst.h"
 #include "model.h"
 #include "types.h"
+#include "stats.h"
 #include "mapply.h"
+#include "settings.h"
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_histogram.h>
 #include <stdio.h>

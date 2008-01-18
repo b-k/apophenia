@@ -22,8 +22,6 @@ a great deal of real-world testing that didn't make it into this file.
 
 double  true_parameter_v[]    = {1.82,2.1};
 
-apop_model *true_params;
-
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
 int     len                 = 8000;
@@ -337,9 +335,9 @@ void estimate_model(gsl_matrix *data, apop_model dist, int method){
     Apop_settings_add(&dist, apop_mle, use_score       , 0);
     Apop_settings_add(&dist, apop_mle, want_cov        , 0);
     apop_model *e    = apop_estimate(apop_matrix_to_data(data),dist);
-    if (e->method_settings && !(!strcmp(dist.name,"poisson") || !strcmp(dist.name, "Uniform distribution"))){  //then it's an MLE
+    if (Apop_settings_get_group(e, apop_mle) && !(!strcmp(dist.name,"poisson") || !strcmp(dist.name, "Uniform distribution"))){  //then it's an MLE
         apop_model *compare_me = apop_model_copy(dist);
-        apop_mle_settings *p = compare_me->method_settings;
+        apop_mle_settings *p = Apop_settings_get_group(compare_me, apop_mle);
         p->method = p->method == APOP_SIMPLEX_NM ? APOP_CG_FR : APOP_SIMPLEX_NM;
         e   = apop_estimate_restart(e, compare_me);
     }
@@ -353,7 +351,7 @@ void estimate_model(gsl_matrix *data, apop_model dist, int method){
 }
 
 
-void test_one_distribution(gsl_rng *r, apop_model model){
+void test_one_distribution(gsl_rng *r, apop_model model, apop_model *true_params){
 long int        runsize             = 1000,
                 rowsize             = 100;
 gsl_matrix      *data               = gsl_matrix_calloc(runsize,rowsize);
@@ -873,8 +871,11 @@ void test_distributions(gsl_rng *r){
   apop_model    dist[]          = {apop_gamma, apop_exponential, apop_normal, 
                                     apop_poisson,/* apop_zipf,*/apop_yule, apop_uniform, null_model};
 
+    apop_model* true_params             = apop_model_copy(apop_gamma);//irrelevant.
+    true_params->parameters = apop_line_to_data(true_parameter_v, 2,0,0);
+
     for (i=0; strcmp(dist[i].name, "the null model"); i++){
-        do_test(dist[i].name, test_one_distribution(r, dist[i]));
+        do_test(dist[i].name, test_one_distribution(r, dist[i], true_params));
     }
 }
 
@@ -892,11 +893,9 @@ int main(int argc, char **argv){
             apop_opts.thread_count  = atoi(optarg);
 
     //set up some global or common variables
-    true_params             = apop_model_copy(apop_gamma);//irrelevant.
-    true_params->parameters = apop_line_to_data(true_parameter_v, 2,0,0);
     gsl_rng       *r              = apop_rng_alloc(8); 
     apop_data     *d  = apop_text_to_data("test_data2",0,1);
-    apop_model *an_ols_model = apop_model_copy(apop_OLS);
+    apop_model *an_ols_model = apop_model_copy(apop_ols);
     Apop_settings_alloc_add(an_ols_model, apop_ls, want_expected_value, 1, d);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 

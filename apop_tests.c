@@ -4,9 +4,10 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
  
 At the moment, the header for  apop_test_anova is in \c asst.h.
  */
-#include <asst.h>
-#include <types.h>
-#include <stats.h>
+#include "asst.h"
+#include "types.h"
+#include "stats.h"
+#include "conversions.h"
 
 static double one_chi_sq(apop_data *d, int row, int col, int n){
     APOP_ROW(d, row, vr);

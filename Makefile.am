@@ -40,16 +40,18 @@ pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 
 
 #The programs
-bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_merge_dbs apop_plot_query
+bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_merge_dbs apop_plot_query apop_lookup
 apop_text_to_db_SOURCES = cmd_apop_text_to_db.c
 apop_db_to_crosstab_SOURCES = cmd_apop_db_to_crosstab.c
 apop_merge_dbs_SOURCES = cmd_apop_merge_dbs.c
 apop_plot_query_SOURCES = cmd_apop_plot_query.c
+apop_lookup_SOURCES = cmd_apop_lookup.c
 
 apop_text_to_db_LDADD = libapophenia.la
 apop_db_to_crosstab_LDADD = libapophenia.la
 apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
+apop_lookup_LDADD = libapophenia.la
 
 EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
 		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
@@ -57,7 +59,7 @@ EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
 		tests/pontius.dat tests/test.c tests/data-mixed tests/test_data tests/test_data2 \
 		tests/test_data_nans tests/wampler1.dat \
 		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
-		apophenia/*.h apop.h	\
+		apop.h	\
 		COPYING2
 
 #The documentation

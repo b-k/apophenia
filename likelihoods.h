@@ -13,13 +13,9 @@
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_psi.h>
 #include "stats.h"
-#include "output.h"
-#include "model.h"
 #include "types.h"
 #include "settings.h"
-#include "regression.h"
 #include "conversions.h"
-#include "linear_algebra.h"
 
 #define MAX_ITERATIONS 		5000
 #define MAX_ITERATIONS_w_d	5000
@@ -64,7 +60,7 @@ typedef struct{
     int         iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
-    char        trace_path[1000];
+    char        *trace_path;
 } apop_mle_settings;
 
 apop_mle_settings *apop_mle_settings_alloc(apop_model *model);

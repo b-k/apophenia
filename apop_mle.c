@@ -13,6 +13,8 @@ and the simulated annealing routine.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 */
+#include "model.h"
+#include "output.h"
 #include "likelihoods.h"
 #include <assert.h>
 #include <setjmp.h>
@@ -41,17 +43,9 @@ Below is a sample of the sort of output one would get:<br>
 \ingroup mle
 */
 
-/* I'm not sure if this is function is useful, so I'm setting it as static
-but leaving the documentation for the reader to ponder whether it should be public.
-
-Use this if you already have an \ref apop_model struct, but want to set the \c method_settings element to the default MLE parameters. 
- Returns the \ref apop_mle_settings pointer, but the argument now has the
- method_settings element set, so you can ignore the returned pointer if
- you prefer.
+/** Allocate settings for a maximum likelihood estimation.
 
  \param parent  A pointer to an allocated \ref apop_model struct.
- \return A pointer to a set-up \ref apop_mle_settings struct. The parent's \c method_settings element points to this struct as well.
-
  */
 apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
   apop_mle_settings *setme =   calloc(1,sizeof(apop_mle_settings));
@@ -78,7 +72,6 @@ apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
 void *apop_mle_settings_copy(apop_mle_settings * in){
   apop_mle_settings *setme =   malloc(sizeof(apop_mle_settings));
     memmove(setme, in, sizeof(apop_mle_settings));
-    strcpy(setme->trace_path, in->trace_path);
     return setme;
 }
 
@@ -240,7 +233,7 @@ static double negshell (const gsl_vector *beta, void * in){
     out = penalty - f(i->data, i->model); //negative llikelihood
     if (penalty)
         apop_data_unpack(i->beta, i->model->parameters);
-    if (strlen(i->trace_path))
+    if (i->trace_path && strlen(i->trace_path))
         tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
     i->model->llikelihood = -out; //negative negative llikelihood.
     return out;
@@ -268,7 +261,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
         apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
         apop_internal_numerical_gradient(ll, i, g);
     }
-    if (strlen(i->trace_path))
+    if (i->trace_path && strlen(i->trace_path))
         negshell (beta,  in);
     gsl_vector_scale(g, -1);
     return GSL_SUCCESS;
