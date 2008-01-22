@@ -162,12 +162,12 @@ For example, if you need a N(0,1) quickly:
 apop_model *std_normal = apop_model_set_parameters(apop_normal, 0.0, 1.0);
 \endcode
 
-Warning: Your parameters need to be <tt>double</tt>s, not <tt>int</tt>s. 
+<b>Warning!</b>: Your parameters need to be <tt>double</tt>s, not <tt>int</tt>s. 
 If you were to use <tt> apop_model_set_parameters(apop_normal, 0, 1);</tt>, you'd wind up with a N(0,0). This is an unfortunate feature of C's variadic function handling.
 
 This doesn't take in data, so it won't work with models that take the number of parameters from the data, and it will only set the vector of the model's parameter apop_data set. This is most standard models, so that's not a real problem either.
 If you have a situation where these options are out, you'll have to do something like
-<tt>apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in);</tt> and then set in->parameters using your data.
+<tt>apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in);</tt> and then set \c in->parameters using your data.
 
   \param in An unparametrized model, like \c apop_normal or \c apop_poisson.
   \param ... The list of parameters.

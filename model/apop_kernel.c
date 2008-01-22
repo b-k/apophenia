@@ -100,21 +100,26 @@ void apop_set_first_params(double in, apop_model *m){
 apop_model *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*)){
   size_t    i, j;
-  apop_data *smallset          = apop_data_alloc(0,1,1);
-  apop_model *outm               = apop_model_copy(apop_kernel_density);
-  //This produces a dummy histogram, which is inefficient.
-  Apop_settings_add_group(outm, apop_histogram, data, 2);
-  apop_histogram_settings *out   = apop_settings_get_group(outm, "apop_histogram");
-  //apop_histogram_settings *out   = malloc(sizeof(apop_histogram_settings));
-    set_params                 = set_params ? set_params : apop_set_first_params;
-    out->kernelbase            = apop_model_copy(*kernelbase);
-    out->histobase = data && !histobase 
-                ? apop_estimate(data, apop_histogram)
-                : apop_model_copy(*histobase);
-  apop_histogram_settings *bh    = apop_settings_get_group(out->histobase, "apop_histogram");
+  apop_data *smallset  = apop_data_alloc(0,1,1);
+  double    padding    = 0.1;
 
-    double  padding = 0.1;
+  apop_model *outm     = apop_model_copy(apop_kernel_density);
+  apop_model *base     = NULL;
+    if(apop_settings_get_group(histobase, "apop_histogram")){
+        base = histobase;
+        apop_settings_copy_group(outm, base, "apop_histogram");
+    } else if (data){
+        base = apop_model_copy(apop_histogram);
+        Apop_settings_add_group(outm, apop_histogram, data, 1000);
+    } else
+        apop_error(0, 's', "%s: I need either a histobase model with a histogram or a non-NULL data set.\n", __func__);
+
+    apop_histogram_settings *bh    = apop_settings_get_group(base, "apop_histogram");
+    apop_histogram_settings *out   = Apop_settings_get_group(outm, apop_histogram);
     out->pdf        = apop_alloc_wider_range(bh->pdf, padding);
+    out->kernelbase = apop_model_copy(*kernelbase);
+    out->histobase  = base;
+    set_params      = set_params ? set_params : apop_set_first_params;
 
     //finally, the double-loop producing the density.
     for (i=0; i< bh->pdf->n; i++)

@@ -4,7 +4,7 @@
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "db.h"     //just for apop_opts
-#include "apophenia/stats.h"
+#include "stats.h"
 #include <gsl/gsl_rng.h>
 
 /** \defgroup basic_stats Some basic statistical functions

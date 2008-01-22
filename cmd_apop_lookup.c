@@ -5,13 +5,20 @@
 
 Copyright (c) 2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include <apop.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_cdf.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_multimin.h>
+#include <gsl/gsl_histogram.h>
+#include <gsl/gsl_statistics_double.h>
+#include "linear_algebra.h"
 #include <unistd.h>
 
 char *plot_type = NULL;
 int histobins   = 0;
 
-typedef enum {Beta, Binomial, F, Normal, Poisson, T} distlist ;
+typedef enum {Beta, Binomial, F, Negbinom, Normal, Poisson, T} distlist ;
 
 int main(int argc, char **argv){
   distlist      distribution = Normal;
@@ -33,12 +40,13 @@ find the area of the Normal(0,1) between -infty and 2.  \n\
 \n\
 After giving an optional -p or -q, specify the distribution. \n\
 Default is Normal(0, 1). Other options:\n\
-\t\t-dbinom Binomial(n, p)\n\
-\t\t-dbeta Beta(a, b)\n\
-\t\t-df F distribution(df1, df2)\n\
-\t\t-dn Normal(mu, sigma)\n\
-\t\t-dpoisson Poisson(L)\n\
-\t\t-dt t distribution(df)\n\
+\t\t-binom Binomial(n, p)\n\
+\t\t-beta Beta(a, b)\n\
+\t\t-f F distribution(df1, df2)\n\
+\t\t-norm Normal(mu, sigma)\n\
+\t\t-negative bin Negative binomial(n, p)\n\
+\t\t-poisson Poisson(L)\n\
+\t\t-t t distribution(df)\n\
 I just need enough letters to distinctly identify a distribution.\n\
 ", argv[0], argv[0], argv[0]); 
 
@@ -74,9 +82,19 @@ I just need enough letters to distinctly identify a distribution.\n\
 			return 0;
           case 'n':
           case 'N':
-              param1 = atof(argv[optind]);
-              param2 = atof(argv[optind+1]);
-              findme =  atof(argv[optind+2]);
+            if (optarg[0]=='o'){ //normal
+                  param1 = atof(argv[optind]);
+                  param2 = atof(argv[optind+1]);
+                  findme =  atof(argv[optind+2]);
+            } else if (optarg[0]=='e'){
+                  distribution = Negbinom;
+                  param1 = atof(argv[optind]);
+                  param2 = atof(argv[optind+1]);
+                  findme =  atof(argv[optind+2]);
+            } else {
+                printf("I can't parse the option -n%s\n", optarg);
+                exit(0);
+            }
 			  break;
           case 'p':
             if (!optarg || optarg[0] == 'v')
@@ -117,6 +135,7 @@ I just need enough letters to distinctly identify a distribution.\n\
         distribution == Beta ? gsl_ran_beta_pdf(findme, param1, param2)
         : distribution == Binomial ? gsl_ran_binomial_pdf(findme, param2, param1)
         : distribution == F ? gsl_ran_fdist_pdf(findme, param1, param2) 
+        : distribution == Negbinom ? gsl_ran_negative_binomial_pdf(findme, param2, param1)
         : distribution == Normal ? gsl_ran_gaussian_pdf(findme, param2)+param1
         : distribution == Poisson ? gsl_ran_poisson_pdf(findme, param1) 
         : distribution == T ? gsl_ran_tdist_pdf(findme, param1) : GSL_NAN;
@@ -125,12 +144,13 @@ I just need enough letters to distinctly identify a distribution.\n\
     }
     if (distribution == Binomial){
         printf("Sorry, the GSL doesn't have a Binomial CDF.\n");
-        return 0;
-    }
+        return 0; }
+    if (distribution == Negbinom){
+        printf("Sorry, the GSL doesn't have a Negative Binomial CDF.\n");
+        return 0; }
     if (distribution == Poisson){
         printf("Sorry, the GSL doesn't have a Poisson CDF.\n");
-        return 0;
-    }
+        return 0; }
     if (pval){
         double val =
         distribution == Beta ? gsl_cdf_beta_P(findme, param1, param2)

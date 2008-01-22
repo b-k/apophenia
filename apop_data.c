@@ -5,9 +5,9 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 #include <assert.h>
 #include <gsl/gsl_matrix.h>
-#include "apophenia/types.h"
-#include "apophenia/output.h"
-#include "apophenia/linear_algebra.h"
+#include "types.h"
+#include "output.h"
+#include "linear_algebra.h"
 
 /** \defgroup data_struct apop_data
 

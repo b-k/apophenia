@@ -53,8 +53,8 @@ static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
 	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
     if (!est->parameters)
         est->parameters = apop_data_alloc(2, 0, 0);
-	gsl_vector_set(est->parameters->vector, 0, mean);
-	gsl_vector_set(est->parameters->vector, 1, sqrt(var));
+	apop_data_add_named_elmt(est->parameters,"mu", mean);
+	apop_data_add_named_elmt(est->parameters,"sigma", sqrt(var));
     est->llikelihood	= normal_log_likelihood(data, est);
 	if (!p || p->want_cov){
         est->covariance   = apop_data_calloc(0, 2, 2);

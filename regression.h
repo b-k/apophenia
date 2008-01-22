@@ -3,8 +3,8 @@
 #ifndef apop_regression_h
 #define  apop_regression_h
 
+#include "types.h"
 #include <gsl/gsl_matrix.h>
-#include <apophenia/types.h>
 
 #undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
 #undef __END_DECLS

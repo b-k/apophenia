@@ -11,11 +11,11 @@ for details.
 \todo It would be nice if one had a means of producing random views of the input data, rather than requiring the copying of half the data set for every run. Todo: write such a function.
 */
 
+#include "model.h"
 #include "stats.h"
 #include "output.h"
 #include "bootstrap.h"
 #include "likelihoods.h"
-#include <apophenia/model.h>
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
 

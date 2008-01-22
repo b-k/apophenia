@@ -62,6 +62,8 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
     for (i=0; i< hp->pdf->n; i++)
         hp->pdf->bin[i]    /= (sum + 0.0);
     hp->cdf =NULL;
+    hp->histobase =NULL;
+    hp->kernelbase =NULL;
     return hp;
 }
 
