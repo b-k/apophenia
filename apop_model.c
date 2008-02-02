@@ -296,3 +296,14 @@ void apop_model_prep(apop_data *d, apop_model *m){
         apop_model_clear(d, m);
     m->prepared++;
 }
+
+/** Return a matrix of the expected value for each observation. This may
+ also be set within the model.
+
+\ingroup models
+ */
+apop_data * apop_expected_value(apop_data *d, apop_model *m){
+    if (m->expected_value)
+         return m->expected_value(d, m);
+    else return NULL;
+}

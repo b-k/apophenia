@@ -27,11 +27,11 @@ static int multiprobit_count(apop_data *d, apop_model *m){
         }
     }
     //probit uses a numeraire; logit doesn't.
-    if (!strcmp(m->name, "Multinomial probit")){
+    //if (!strcmp(m->name, "Multinomial probit")){
         vals ++;//drop the first entry---a one-double memory leak!
         gsl_sort(vals, 1, --count);
-    } else
-        gsl_sort(vals, 1, count);
+    //} else
+    //    gsl_sort(vals, 1, count);
     m->more = vals;
     return count;
 }
@@ -53,10 +53,43 @@ static void multiprobit_prep(apop_data *d, apop_model *m){
 }
 
 
-static double val;
-static double onerow(double in){
-    return in >= val;
+static apop_data *multilogit_expected(apop_data *in, apop_model *m){
+  int i, j;
+  apop_assert(m->parameters, NULL, 0, 's', "You're asking me to provide expected values of an un-parameterized model. Please run apop_estimate first.");
+    apop_model_prep(in, m);
+    gsl_matrix *params = m->parameters->matrix;
+    apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
+    for (i=0; i < in->matrix->size1; i ++){
+        Apop_row(in, i, observation);
+        Apop_row(out, i, outrow);
+        double oneterm;
+        int    bestindex  = 0;
+        double bestscore  = 0;
+        gsl_vector_set(outrow, 0, 1);
+        for(j=0; j < params->size2+1; j ++){
+            if (j==0)
+                oneterm = 1;
+            else{
+                Apop_matrix_col(params, j-1, p);
+                gsl_blas_ddot(observation, p, &oneterm);
+            }
+            if (oneterm > bestscore){
+                bestindex = j;
+                bestscore = oneterm;
+            }
+            gsl_vector_set(outrow, j, exp(oneterm));
+        }
+        double total = apop_sum(outrow);
+        gsl_vector_scale(outrow, 1/total);
+        apop_data_set(out, i, -1, bestindex);
+    }
+    apop_name_stack(out->names, m->parameters->names, 'c');
+    return out;
 }
+
+
+static double val;
+static double onerow(double in){ return in >= val; }
 
 /*
 This is just a for loop that runs a probit on each row.
@@ -123,8 +156,7 @@ the elements of the sum are all now exp(something negative), so we don't
 have to worry about overflow, and if there's underflow, then that term
 must not have been very important. [This trick is attributed to Tom
 Minka, who implemented it in his Lightspeed Matlab toolkit.]
-
-  */
+*/
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   size_t i, index, choicect = p->parameters->matrix->size2;
@@ -136,22 +168,24 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
     //get the $x\beta_j$ numerator for the appropriate choice:
     for(i=0; i < d->vector->size; i++){
         index   = find_index(gsl_vector_get(d->vector, i), p->more, choicect);
-        ll += apop_data_get(xbeta, i, index);
+        if (index< choicect)  //otherwise it's beta_0, which is fixed at zero.
+            ll += apop_data_get(xbeta, i, index);
     }
 
     //Get the denominator, using the subtract-the-max trick above.
+    //Don't forget the implicit beta_0, fixed at zero (so exp(beta_0)=1).
     for(i=0; i < xbeta->matrix->size1; i++){
         APOP_ROW(xbeta, i, thisrow);
         double max = gsl_vector_max(thisrow);
         gsl_vector_add_constant(thisrow, -max);
         apop_vector_exp(thisrow);
-        ll -= max + log(apop_vector_sum(thisrow));
+        ll -= max + log(apop_vector_sum(thisrow) +exp(-max)) ;
     }
     apop_data_free(xbeta);
 	return ll;
 }
 
-/** The Multinomial Logit model.
+/** The Logit model.
  The first column of the data matrix this model expects a number
  indicating the preferred category; the remaining columns are values of
  the independent variables. Thus, the model will return N-1 columns of
@@ -159,5 +193,5 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
 
 \ingroup models
 */
-apop_model apop_multinomial_logit = {"Multinomial logit",
-     .log_likelihood = multilogit_log_likelihood, .prep = multiprobit_prep};
+apop_model apop_logit = {"Logit",
+     .log_likelihood = multilogit_log_likelihood, .expected_value=multilogit_expected, .prep = multiprobit_prep};

@@ -132,6 +132,7 @@ struct _apop_model{
     double  (*log_likelihood)(apop_data *d, apop_model *params);
     void    (*score)(apop_data *d, gsl_vector *gradient, apop_model *params);
     double  (*constraint)(apop_data *data, apop_model *params);
+    apop_data*  (*expected_value)(apop_data *d, apop_model *params);
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
     void (*prep)(apop_data *data, apop_model *params);
     void (*print)(apop_model *params);

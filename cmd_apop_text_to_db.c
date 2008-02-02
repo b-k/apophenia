@@ -21,7 +21,7 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 -m\t\tUse a mysql database (default: SQLite)\n\
 -r\t\tData includes row names\n\
 -v\t\tVerbose\n\
--O\t\tIf table exists, erase it and write from scratch\n\
+-O\t\tIf table exists, erase it and write from scratch (i.e., Overwrite)\n\
 -h\t\tPrint this help\n\
 \n", argv[0], argv[0]); 
 
@@ -57,7 +57,7 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 	}
 	apop_db_open(argv[optind + 2]);
     if (tab_exists_check)
-        apop_table_exists(argv[optind],1);
+        apop_table_exists(argv[optind+1],1);
 	apop_text_to_db(argv[optind], argv[optind+1], rownames,colnames, NULL);
 	return 0;
 }

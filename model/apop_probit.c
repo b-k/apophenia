@@ -107,7 +107,7 @@ static double probit_log_likelihood(apop_data *d, apop_model *p){
   gsl_matrix    *data           = d->matrix;
 	dot(p->parameters, data);
 	for(i=0; i< data->size1; i++){
-		n	        = gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1);
+		n	        = gsl_cdf_gaussian_Q(gsl_vector_get(beta_dot_x,i),1);
         n = n ? n : 1e-10; //prevent -inf in the next step.
         n = n<1 ? n : 1-1e-10; 
         total_prob += apop_data_get(d, i, -1)==0 ?  log(n): log(1 - n);
@@ -130,10 +130,10 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 		for(i=0; i< data->size1; i++){
 			one_term	     = gsl_matrix_get(data, i,j)
 						        * gsl_ran_gaussian_pdf(gsl_vector_get(beta_dot_x,i),1);
-            cdf              = gsl_cdf_gaussian_P(gsl_vector_get(beta_dot_x,i),1);
+            cdf              = gsl_cdf_gaussian_Q(gsl_vector_get(beta_dot_x,i),1);
         cdf = cdf ? cdf : 1e-10; //prevent -inf in the next step.
         cdf = cdf<1 ? cdf : 1-1e-10; 
-            one_term        /= apop_data_get(d, i, -1)==0 ? cdf : cdf-1;
+            one_term        /= apop_data_get(d, i, -1)==0 ? cdf : 1-cdf;
 			beta_term_sum	+= one_term;
 		}
         gsl_vector_set(gradient,j,beta_term_sum);

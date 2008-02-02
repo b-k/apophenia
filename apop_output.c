@@ -49,7 +49,7 @@ char		    outfile[]	= "auto",
 	data_copy   = apop_data_copy(data);
 
 	//Run OLS, display results on terminal
-	est  = apop_OLS.estimate(data, NULL, NULL);
+	est  = apop_estimate(data, apop_OLS);
 	apop_estimate_print(est);
 
 	//Prep the file with a header, then call the function.
@@ -435,7 +435,7 @@ static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype
             if (data->vector || data->matrix)
                 a_pipe(f, displaytype);
             for(i=0; i< data->textsize[1]; i++)
-                fprintf(f, "%*s%s", L+2, data->text[j][i], apop_opts.output_delimiter);
+                fprintf(f, "%s%s", data->text[j][i], apop_opts.output_delimiter);
         }
         fprintf(f, "\n");
     }
@@ -454,6 +454,10 @@ void apop_data_show(const apop_data *data){
 void apop_data_print(apop_data *data, char *file){
     if (apop_opts.output_type   == 'd'){
         apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
+        return;
+    }
+    if (apop_opts.output_type   == 'p'){
+        apop_data_show_core(data,  apop_opts.output_pipe, 'p');
         return;
     }
     if (file){

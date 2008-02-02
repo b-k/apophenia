@@ -81,4 +81,5 @@ test:
 	cd tests; rm test.o; make; ./test;
 
 install-data-local:
-	cp apop.h $(includedir)
+	test -z "$(includedir)" || $(mkdir_p) "$(includedir)"
+	cp apop.h $(includedir)/

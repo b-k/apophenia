@@ -39,6 +39,9 @@ static void probit_prep(apop_data *d, apop_model *m){
     apop_name_cross_stack(m->parameters->names, d->names, 'r', 'c');
 }
 
+//OK, there's no point keeping the binary logit. The multinomial logit works fine for the binary case.
+//
+#if 0
 /*
 static void modify_in_data(apop_data *d){
     if (!d->vector){
@@ -109,3 +112,4 @@ static void logit_fdf(gsl_vector *beta, apop_data *d, double *f, gsl_vector *df,
 */
 apop_model apop_logit = {"Logit",-1,0,0, .log_likelihood = logit_log_likelihood, .prep=probit_prep};
     //.score = logit_dlog_likelihood}; //estimate method is the default MLE.
+#endif

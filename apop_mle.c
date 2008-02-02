@@ -151,7 +151,7 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
  If \c m has \c method_settings of type \c apop_ml_params, then the \c delta element is used for the differential.
  
  \code
- gradient = apop_numerical_gradient(beta, data, your_model);
+ gsl_vector *gradient = apop_numerical_gradient(data, your_parametrized_model);
  \endcode
 
  \ingroup linear_algebra
@@ -350,9 +350,11 @@ static void produce_covariance_matrix(apop_model * est, infostruct *i){
         apop_settings_copy_group(&apop_model_for_infomatrix, i->model, "apop_mle");
     for (k=0; k< betasize; k++){
         dscore = apop_numerical_gradient(i->data, &apop_model_for_infomatrix);
+        //We get two estimates of the (k,j)th element, which are often very close,
+        //and take the mean.
         for (j=0; j< betasize; j++){
-            gsl_matrix_set(preinv, k, j, gsl_vector_get(dscore, j));
-            gsl_matrix_set(preinv, j, k, gsl_vector_get(dscore, j));
+            apop_matrix_increment(preinv, k, j, gsl_vector_get(dscore, j)/2);
+            apop_matrix_increment(preinv, j, k, gsl_vector_get(dscore, j)/2);
         }
         gsl_vector_free(dscore);
     }

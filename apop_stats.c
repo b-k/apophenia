@@ -417,8 +417,7 @@ apop_data * apop_data_summarize(apop_data *indata){
 	apop_name_add(out->names, "std dev", 'c');
 	apop_name_add(out->names, "variance", 'c');
 	if (indata->names !=NULL)
-		for (i=0; i< indata->names->colct; i++)
-			apop_name_add(out->names, indata->names->column[i], 'r');
+        apop_name_cross_stack(out->names,indata->names, 'r', 'c');
 	else
 		for (i=0; i< indata->matrix->size2; i++){
 			sprintf(rowname, "col %i", i);

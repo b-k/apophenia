@@ -27,7 +27,7 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
     \param d    The data, with NaNs
     \return     A (potentially shorter) copy of the data set, without NaNs.
 
-    \todo  Doesn't handle names or text.
+    \todo  Doesn't handle text; doesn't delete row names as necessary.
 */
 apop_data * apop_data_listwise_delete(apop_data *d){
   int i, j, min = 0, max = 0, height=0, has_vector=0, has_matrix=0, to_rm;
@@ -42,10 +42,8 @@ apop_data * apop_data_listwise_delete(apop_data *d){
         min         = -1;
         has_vector  ++;
     } 
-    if (!has_matrix && !has_vector) {
-        apop_error(0, 'c', "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
-        return NULL;
-        }
+    apop_assert(has_matrix || has_vector, NULL, 0, 'c', 
+            "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
     //find out where the NaNs are
   gsl_vector *marked = gsl_vector_calloc(height);
     for (i=0; i< d->matrix->size1; i++)
@@ -59,7 +57,7 @@ apop_data * apop_data_listwise_delete(apop_data *d){
     if (to_rm  == height)
         return NULL;
   apop_data *out = apop_data_alloc(0,height-to_rm, has_matrix ? max : -1);
-    out->names  = apop_name_copy(d->names);                           //You loser!!! Fix this. And add text!!!!
+    out->names  = apop_name_copy(d->names); 
     if (has_vector && has_matrix)
         out->vector = gsl_vector_alloc(height - to_rm);
     j   = 0;
@@ -115,14 +113,13 @@ static void addin(apop_ml_imputation_settings *m, size_t i, size_t j, double** s
     *starting_pt = realloc(*starting_pt, m->ct*sizeof(double));
     m->row[m->ct-1]    = i;
     m->col[m->ct-1]    = j;
-//    (*starting_pt)[m->ct-1] = gsl_vector_get(imean, j);
     (*starting_pt)[m->ct-1] = 1;
 }
 
-static void  find_missing(apop_data *d, apop_model *mc, gsl_vector *initialmean){
+static int  find_missing(apop_data *d, apop_model *mc, gsl_vector *initialmean){
   apop_ml_imputation_settings  *mask = apop_settings_get_group(mc, "apop_ml_imputation");
   double ** starting_pt = &(Apop_settings_get(mc, apop_mle, starting_pt));
-  int i, j, min = 0, max = 0;
+  int i, j, min = 0, max = 0, ct = 0;
     //get to know the input.
     if (d->matrix)
         max = d->matrix->size2;
@@ -134,8 +131,11 @@ static void  find_missing(apop_data *d, apop_model *mc, gsl_vector *initialmean)
     //find out where the NaNs are
     for (i=0; i< d->matrix->size1; i++)
         for (j=min; j <max; j++)
-            if (gsl_isnan(apop_data_get(d, i, j)))
+            if (gsl_isnan(apop_data_get(d, i, j))){
+                ct ++;
                 addin(mask, i, j, starting_pt, initialmean);
+            }
+    return ct;
 }
 
 static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_settings * m){
@@ -150,7 +150,6 @@ static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_settings
 static double ll(apop_data *d, apop_model * ep){
   apop_ml_imputation_settings  *m = apop_settings_get_group(ep, "apop_ml_imputation");
     unpack(ep->parameters, d, m);
-    //return apop_multivariate_normal.log_likelihood(d, m->local_mvn);
     return apop_log_likelihood(d, m->local_mvn);
 }
 
@@ -181,22 +180,17 @@ This is traditionally a Multivariate Normal.
 */
 apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
   apop_model *mc       = apop_model_copy(apop_ml_imputation_model);
-  Apop_settings_add_group(mc, apop_mle, mc);
-    /*apop_model *local_mvn             = apop_model_copy(apop_multivariate_normal);
-    local_mvn->parameters = meanvar;*/
     Apop_settings_add_group(mc, apop_ml_imputation, mvn);
-    Apop_settings_add(mc, apop_mle, method, APOP_CG_PR);
-    Apop_settings_add(mc, apop_mle, step_size, 2);
-    Apop_settings_add(mc, apop_mle, tolerance, 0.2);
-
-/*    gsl_vector *initial_col_mean = gsl_vector_alloc(d->matrix->size2);
-  int        i;
-    for(i=0; i < d->matrix->size2; i ++){
-        Apop_col(d, i, mmm);
-        gsl_vector_set(initial_col_mean, i, apop_mean_no_nans(mmm));
+    if (Apop_settings_get_group(mvn, apop_mle))
+        apop_settings_copy_group(mc, mvn, "apop_mle");
+    else {
+        Apop_settings_add_group(mc, apop_mle, mc);
+        Apop_settings_add(mc, apop_mle, method, APOP_CG_PR);
+        Apop_settings_add(mc, apop_mle, step_size, 2);
+        Apop_settings_add(mc, apop_mle, tolerance, 0.2);
     }
-*/
-   find_missing(d, mc, NULL);
+    int missing_ct = find_missing(d, mc, NULL);
+    apop_assert(missing_ct, NULL, 1, 'c', "You sent apop_ml_imputation a data set with no NANs");
     mc->vbase          = Apop_settings_get(mc, apop_ml_imputation, ct);
     apop_model *out = apop_maximum_likelihood(d, *mc);
     //unpack(out->parameters, d, apop_settings_get_group(mc, "apop_ml_imputation"));//already unpacked.

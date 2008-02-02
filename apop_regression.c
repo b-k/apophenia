@@ -188,19 +188,24 @@ gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
 gsl_vector      *c          = contrast ? contrast->vector: NULL;
 gsl_matrix      *data       = gsl_matrix_alloc(set->size1, set->size2);    //potentially huge.
 gsl_matrix      *xpx        = gsl_matrix_calloc(set->size2, set->size2);
-gsl_matrix      *xpxinv     = gsl_matrix_calloc(set->size2, set->size2);
-gsl_vector      *qprimebeta = gsl_vector_calloc(est->parameters->vector->size);
-gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(est->parameters->vector->size, set->size2);
-gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(est->parameters->vector->size, est->parameters->vector->size);
-gsl_matrix      *qprimexpxinvqinv   = gsl_matrix_calloc(est->parameters->vector->size, est->parameters->vector->size);
-gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(est->parameters->vector->size);
+gsl_matrix      *xpxinv     = NULL;
+size_t          contrast_ct;
+if (contrast){
+    if (contrast->vector)
+        contrast_ct = contrast->vector->size;
+    else 
+        contrast_ct = contrast->matrix->size1;
+} else contrast_ct = est->parameters->vector->size;
+gsl_vector      *qprimebeta = gsl_vector_calloc(contrast_ct);
+gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(contrast_ct, set->size2);
+gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(contrast_ct, contrast_ct);
+gsl_matrix      *qprimexpxinvqinv = NULL;
+gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(contrast_ct);
 gsl_vector      error       = gsl_matrix_column(est->expected->matrix, apop_name_find(est->expected->names, "residual", 'c')).vector;
 gsl_vector      v;
 double          f_stat, variance, pval;
 int             q_df,
                 data_df     = set->size1 - est->parameters->vector->size;
-apop_data       *out        = apop_data_alloc(0,3,-1);
-    sprintf(out->names->title, "F test");
     gsl_matrix_memcpy(data, set);
     v   = gsl_matrix_column(data, 0).vector;
     gsl_vector_set_all(&v, 1);
@@ -209,14 +214,14 @@ apop_data       *out        = apop_data_alloc(0,3,-1);
     gsl_matrix_free(data);
     if (q != NULL){
         q_df    = q->size1;
-	    apop_det_and_inv(xpx, &xpxinv, 0, 1);		
+        xpxinv = apop_matrix_inverse(xpx);
         gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, q, xpxinv, 0, qprimexpxinv);  
         gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, qprimexpxinv, q,  0,  qprimexpxinvq);  
-	    apop_det_and_inv(qprimexpxinvq, &qprimexpxinvqinv, 0, 1);		
+	    qprimexpxinvqinv = apop_matrix_inverse(qprimexpxinvq);		
         gsl_blas_dgemv(CblasNoTrans, 1, q, est->parameters->vector, 0, qprimebeta);
     } else {
-        q_df    = est->parameters->vector->size;
-        gsl_matrix_memcpy(qprimexpxinvqinv, xpx);
+        q_df             = est->parameters->vector->size;
+        qprimexpxinvqinv = apop_matrix_copy(xpx);
         gsl_vector_memcpy(qprimebeta, est->parameters->vector);
     }
     if (c !=NULL)
@@ -226,17 +231,22 @@ apop_data       *out        = apop_data_alloc(0,3,-1);
 
     gsl_blas_ddot(&error, &error, &variance);
     f_stat  *=  data_df / (variance * q_df);
-    pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_P(f_stat, q_df, data_df): GSL_NAN; 
+    pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
+
+    if (xpxinv)          gsl_matrix_free(xpxinv);
+    if(qprimexpxinvqinv) gsl_matrix_free(qprimexpxinvqinv);
     gsl_matrix_free(xpx);
-    gsl_matrix_free(xpxinv);
     gsl_matrix_free(qprimexpxinv);
     gsl_matrix_free(qprimexpxinvq);
-    gsl_matrix_free(qprimexpxinvqinv);
     gsl_vector_free(qprimebeta);
     gsl_vector_free(qprimebetaminusc_qprimexpxinvqinv);
+apop_data       *out        = apop_data_alloc(0,5,-1);
+    sprintf(out->names->title, "F test");
     apop_data_add_named_elmt(out, "F statistic", f_stat);
     apop_data_add_named_elmt(out, "p value", pval);
     apop_data_add_named_elmt(out, "confidence", 1- pval);
+    apop_data_add_named_elmt(out, "df1", q_df);
+    apop_data_add_named_elmt(out, "df2", data_df);
     return out;
 }
 
