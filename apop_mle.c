@@ -13,7 +13,7 @@ and the simulated annealing routine.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 */
-#include "model.h"
+#include "model/model.h"
 #include "output.h"
 #include "likelihoods.h"
 #include <assert.h>

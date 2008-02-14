@@ -228,8 +228,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
 */
 int test_f(apop_model *est){
 apop_data   *rsq    = apop_estimate_correlation_coefficient(est);
-apop_data   *contr  = apop_data_alloc(0,0,0);
-apop_data   *ftab   = apop_F_test(est, contr);
+apop_data   *ftab   = apop_F_test(est, NULL);
 double      n       = est->data->matrix->size1;
 double      K       = est->parameters->vector->size;
 double      r       = apop_data_get_ti(rsq,"R.squared",-1);

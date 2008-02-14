@@ -7,7 +7,7 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 #include "mapply.h"
 #include "stats.h"
 #include "output.h"
-#include "model.h"
+#include "model/model.h"
 #include "types.h"
 #include "settings.h"
 #include "regression.h"

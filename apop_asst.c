@@ -2,7 +2,7 @@
 Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "types.h"
-#include "vasprintf.h"
+#include "vasprintf/vasprintf.h"
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
 

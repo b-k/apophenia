@@ -41,7 +41,7 @@ function.
 #include <stdlib.h>	//popen, I think.
 #include "asst.h"
 #include "stats.h"
-#include "vasprintf.h"
+#include "vasprintf/vasprintf.h"
 #include "linear_algebra.h"
 #include "math.h" //pow!
 

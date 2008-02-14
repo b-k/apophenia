@@ -127,8 +127,6 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 
 /** Wrap an \ref apop_name structure around an existing \c gsl_vector.
 
-    A synonym for \ref apop_vector_to_data.
-
 \param  v   The data vector
 \return     an allocated, ready-to-use \ref apop_data struture.
 */

@@ -1,6 +1,6 @@
 #include "asst.h"
-#include "model.h"
 #include "likelihoods.h"
+#include "model/model.h"
 /** \file apop_model_fix_params.c 
  Set some of the parameters of a model to fixed values.
 

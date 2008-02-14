@@ -45,7 +45,7 @@ Things to do:
 
 #include "db.h"     //just for apop_opts
 #include "stats.h"
-#include "model.h"
+#include "model/model.h"
 #include "settings.h"
 #include "histogram.h"
 #include "bootstrap.h" //rng_alloc
@@ -259,8 +259,8 @@ printf("sum1: %g; sum2: %g\n", sum1, sum2);
 
     apop_data   *out    = apop_data_alloc(0,3,-1);
     apop_data_add_named_elmt(out, "max distance", diff);
-    apop_data_add_named_elmt(out, "p value, 2 tail", 1-psmirnov2x(diff, sum1, sum2));
-    apop_data_add_named_elmt(out, "confidence, 2 tail", psmirnov2x(diff, sum1, sum2));
+    apop_data_add_named_elmt(out, "p value, 2 tail", 1-psmirnov2x(diff, first->n, second->n));
+    apop_data_add_named_elmt(out, "confidence, 2 tail", psmirnov2x(diff, first->n, second->n));
     return out;
 }
 

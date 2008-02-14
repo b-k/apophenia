@@ -59,7 +59,7 @@ Apophenia reserves the right to insert temp tables into the opened database. The
 #include "regression.h"	//two_tailify
 #include "bootstrap.h"	//apop_rng_alloc
 
-#include "vasprintf.h"
+#include "vasprintf/vasprintf.h"
 #include "config.h"
 #include <math.h> 	                //sqrt
 

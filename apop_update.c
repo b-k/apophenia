@@ -4,7 +4,7 @@ The header is in asst.h.
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "asst.h"
-#include "model.h"
+#include "model/model.h"
 #include "stats.h"
 #include "settings.h"
 #include "conversions.h"
