@@ -208,6 +208,7 @@ void apop_data_set_tt(apop_data *in, char *row, char* col, double data);
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *text);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
+apop_data *apop_data_transpose(apop_data *in);
 
 void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 

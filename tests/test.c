@@ -847,6 +847,16 @@ void test_vector_moving_average(){
         assert(gsl_vector_get(v, i+1) == gsl_vector_get(slightly_smooth, i));
 }
 
+
+void test_transpose(){
+    apop_data *t = apop_text_to_data("test_data", 0, 1);
+    apop_data *tt = apop_data_transpose(t);
+    assert(apop_data_get(tt, 0, 3) == 9);
+    assert(apop_data_get(tt, 1, 0) == 4);
+    assert(!strcmp(tt->names->row[2], "c"));
+    assert(!tt->names->colct);
+}
+
 //The do_test macros
 #define do_int_test(text, fn)   if (verbose)    \
                                 printf(text);  \
@@ -933,6 +943,7 @@ int main(int argc, char **argv){
     do_int_test("apop_matrix_summarize test:", test_summarize());
     do_int_test("apop_linear_constraint test:", test_linear_constraint());
     do_test("apop_pack/unpack test:", apop_pack_test(r));
+    do_test("transposition test:", test_transpose());
     printf("\nApophenia has passed all of its tests. Yay.\n");
     return 0;
 }

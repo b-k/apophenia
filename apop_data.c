@@ -414,7 +414,7 @@ allocation:
 
 
 
-/* Remove the columns set to one in the \c drop vector.
+/** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down
 \param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
 \ingroup names
@@ -684,7 +684,7 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val){
 
 
 
-/* Add a string to the text element of an \c apop_data set. 
+/** Add a string to the text element of an \c apop_data set. 
 
 
    By the way, the \c text element is simply an array of arrays of
@@ -712,7 +712,7 @@ void apop_text_add(apop_data *in, const size_t row, const size_t col, const char
     }
 }
 
-/* This allocates an array of strings and puts it in the \c text element
+/** This allocates an array of strings and puts it in the \c text element
   of an \c apop_data set. 
 
   \param in An \c apop_data set. It's OK to send in \c NULL, in which case an apop_data set with \c NULL \c matrix and \vector elements is returned.
@@ -733,4 +733,23 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
     in->textsize[0] = row;
     in->textsize[1] = col;
     return in;
+}
+
+
+
+/** Transpose the matrix element of the input \ref apop_data set,
+ including the row/column names. The vector and text elements of the input data set are completely ignored.
+
+ This is really just a friendly wrapper for \c gsl_matrix_transpose_memcpy; if you have a \c gsl_matrix with no names, you may prefer to just use that function.
+
+ \param in The input \ref apop_data set.
+ \return  A newly alloced \ref apop_data set, with the appropriately transposed matrix. The vector and text elements will be \c NULL.
+ */ 
+apop_data *apop_data_transpose(apop_data *in){
+  apop_assert(in->matrix, NULL, 0, 'c', "input data set has no matrix element, so I'm returning NULL.");
+  apop_data *out = apop_data_alloc(0, in->matrix->size2, in->matrix->size1);
+    gsl_matrix_transpose_memcpy(out->matrix, in->matrix);
+    apop_name_cross_stack(out->names, in->names, 'r', 'c');
+    apop_name_cross_stack(out->names, in->names, 'c', 'r');
+    return out;
 }

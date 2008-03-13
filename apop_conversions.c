@@ -394,7 +394,8 @@ longer than this, you will need to open up apop_conversions.c, modify
 
 */
 
-/** Read a delimited text file into an array. 
+/** Read a delimited text file into the matrix element of an \ref
+ apop_data set.
 
   See \ref text_format.
 
@@ -404,6 +405,7 @@ longer than this, you will need to open up apop_conversions.c, modify
 \return 	Returns an apop_data set.
 
 <b>example:</b> See \ref apop_ols.
+
 \ingroup convertfromtext	*/
 apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
   apop_data     *set;
