@@ -506,7 +506,7 @@ void test_model_fix_parameters(gsl_rng *r){
     Apop_settings_add(mep1, apop_mle, method, APOP_SIMPLEX_NM);
     apop_model   *e1  = apop_estimate(d, *mep1);
     gsl_vector_sub(e1->parameters->vector, pv->vector);
-    assert(apop_vector_sum(e1->parameters->vector) < 1e-2);
+    assert(apop_vector_sum(e1->parameters->vector) < 1e-1);
 
   double    start2[] = {1,0,0,1};
     gsl_matrix_set_all(mask->matrix, 0);
