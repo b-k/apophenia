@@ -405,6 +405,7 @@ static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,cons
 \param d2 the right part of \f$ d1 \cdot d2\f$
 \param ... 't' or 'p': transpose or prime each matrix.<br>
                     'n' or 0: no transpose. <br>
+                    't' or 1: transpose. <br>
                     'v': ignore the matrix and use the vector.
 \return     an \ref apop_data set. If two matrices come in, the vector element is \c NULL and the 
             matrix has the dot product; if either or both are vectors,
@@ -481,5 +482,21 @@ CBLAS_TRANSPOSE_t   lt  ,//= (t1=='t' || t1=='T' || t1=='p' || t1=='P') ? CblasT
         gsl_vector_set(out->vector, 0, outd);
     }
 	va_end(argp);
+
+    //last step: names.
+    //If using the vector, there's no meaningful name to assign.
+    if (d1->names && uselm){
+        if (lt == CblasTrans)
+            apop_name_cross_stack(out->names, d1->names, 'r', 'c');
+        else
+            apop_name_stack(out->names, d1->names, 'r');
+    }
+    if (d2->names && userm){
+        if (rt == CblasTrans)
+            apop_name_cross_stack(out->names, d2->names, 'c', 'r');
+        else
+            apop_name_stack(out->names, d2->names, 'c');
+    }
+
     return out;
 }

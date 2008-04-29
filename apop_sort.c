@@ -116,7 +116,7 @@ of rounding rule).
 
 \param data	a gsl_vector of data.
 \param rounding This will either be 'u', 'd', or 'a'. Unless your data is
-exactly a multiple of 100, some percentiles will be ambiguous. If 'u',
+exactly a multiple of 101, some percentiles will be ambiguous. If 'u',
 then round up (use the next highest value); if 'd' (or anything else),
 round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or
 more  of the sample is below returned_vector[5]"; if 'd' or 'a', then you can

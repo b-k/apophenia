@@ -72,7 +72,6 @@ static int apop_mysql_db_open(char *in){
     return 0;
 }
 
-
 static double apop_mysql_query(char *query){
     if (mysql_query(mysql_db,query)) {
         print_error (mysql_db, "apop_mysql_query failed");
@@ -86,26 +85,13 @@ static void apop_mysql_db_close(int ignoreme){
         mysql_close (mysql_db);
 }
 
-
 static double apop_mysql_table_exists(char *table, int delme){
-  MYSQL_RES         *res_set;
-  MYSQL_ROW         row;
-  int               is_found    =0;
-    if (mysql_query (mysql_db, "show tables")){
+  MYSQL_RES         *res_set = mysql_list_tables(mysql_db, table);
+    if (!mysql_list_tables(mysql_db, table)){
          print_error (mysql_db, "show tables query failed.");
          return GSL_NAN;
     }
-    res_set = mysql_store_result (mysql_db);     // generate result set
-    if (res_set == NULL){
-        print_error (mysql_db, "mysql_store_result() failed");
-        return GSL_NAN;
-    }
-    while ((row = mysql_fetch_row (res_set)) ) {
-        if(!strcmp(row[0], table)){
-            is_found   ++;
-            break;
-        }
-    }
+    int is_found    = mysql_num_rows(res_set);
     mysql_free_result(res_set);
     if (!is_found)
        return 0;
@@ -114,11 +100,10 @@ static double apop_mysql_table_exists(char *table, int delme){
        char *a_query   = malloc(len);
        snprintf(a_query, len, "drop table %s", table);
        if (mysql_query (mysql_db, a_query)) 
-           print_error (mysql_db, "table dropping failed");
-       } else process_results();
+           print_error (mysql_db, "table exists, but table dropping failed");
+    }
     return 1;
 }
-
 
 
 static apop_data * process_result_set_data (MYSQL *conn, MYSQL_RES *res_set) {
@@ -189,7 +174,7 @@ gsl_vector * process_result_set_vector (MYSQL *conn, MYSQL_RES *res_set) {
   unsigned int     j=0;
    gsl_vector *out   =gsl_vector_alloc( mysql_num_rows (res_set));
      while ((row = mysql_fetch_row (res_set)) ) {
-         if (!strcmp(row[0], "NULL"))
+         if (!row[0] || !strcmp(row[0], "NULL"))
             gsl_vector_set(out, j,  GSL_NAN);
          else
             gsl_vector_set(out, j,  atof(row[0]));

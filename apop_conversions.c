@@ -2,7 +2,9 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "conversions.h"
+#include <gsl/gsl_math.h> //GSL_NAN
 #include <assert.h>
+
 
 #define Text_Line_Limit 100000
 
@@ -294,7 +296,8 @@ static int apop_count_cols_in_text(char *text_file){
     length_of_string= strlen(instr);
     while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
         pull_string(instr,  outstr, result,  &last_match);
-		ct++;
+        if (strlen(outstr))
+            ct++;
 	}
 	fclose(infile);
     regfree(regex);
@@ -468,11 +471,19 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
 			}
             while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
                 pull_string(instr,  outstr, result,  &last_match);
-				colno++;
-				gsl_matrix_set(set->matrix, i-1, colno-1,	 strtod(outstr, &str));
-				if (apop_opts.verbose && !strcmp(outstr, str))
-				    printf("trouble converting item %i on line %i; using zero.\n", colno, i);
-			}
+                if (strlen(outstr)){
+                    colno++;
+                    gsl_matrix_set(set->matrix, i-1, colno-1,	 strtod(outstr, &str));
+                    if (apop_opts.verbose && !strcmp(outstr, str))
+                        printf("trouble converting item %i on line %i; using zero.\n", colno, i);
+                } else{
+                    char d = instr[last_match-1];
+                    if (d!='\t' && d!=' '){
+                        gsl_matrix_set(set->matrix, i-1, colno-1, GSL_NAN);
+                        colno++;
+                    }
+                }
+            }
 		}
 	}
 	fclose(infile);
@@ -748,7 +759,7 @@ static void line_to_insert(char instr[], char *tabname){
             advance ++;
         } else {
             prepped	= prep_string_for_sqlite(outstr);
-            if (strlen(prepped) > 0){
+            if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
                 r = q;
                 asprintf(&q, "%s%s", r, prepped);
                 free(r);
@@ -900,37 +911,6 @@ void apop_data_unpack(const gsl_vector *in, apop_data *d){
             offset  += d->matrix->size2;
         }
 }
-
-
-/*
-** This is the complement to \c apop_data_pack. It converts the \c gsl_vector produced by that function back
-    to an \c apop_data set with the given dimensions. 
-
- \param in a \c gsl_vector of the form produced by \c apop_data_pack.
-\param v_size   size of the vector element of the output data set. Zero indicates no vector.
-\param m_size1   rows of the matrix element of the output data set. Zero indicates no matrix.
-\param m_size2   columns of the matrix element of the output data set. 
- \return An \c apop_data set.
-\ingroup conversions
-apop_data * apop_data_unpack(const gsl_vector *in, size_t v_size, size_t m_size1, size_t m_size2){
-  apop_data     *out        = apop_data_alloc(v_size, m_size1, m_size2);
-  int           i, offset   = 0;
-  gsl_vector    vin, vout;
-    if(v_size){
-        vin = gsl_vector_subvector((gsl_vector *)in, 0, v_size).vector;
-        gsl_vector_memcpy(out->vector, &vin);
-        offset  += v_size;
-    }
-    if(m_size2>0)
-        for (i=0; i< m_size1; i++){
-            vin     = gsl_vector_subvector((gsl_vector *)in, offset, m_size2).vector;
-            vout    = gsl_matrix_row(out->matrix, i).vector;
-            gsl_vector_memcpy(&vout, &vin);
-            offset  += m_size2;
-        }
-    return out;
-}
- */
 
 /** Sometimes, you need to turn an \c apop_data set into a column of
  numbers. E.g., certain GSL subsystems require such things. Thus, this

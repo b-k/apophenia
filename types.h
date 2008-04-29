@@ -153,7 +153,9 @@ typedef struct{
     char output_type;
             /** If printing to a pipe or FILE, set it here. */
     FILE *output_pipe;
-            /** If writing to a file, its name. Limit: 1000 chars. */
+            /** The separator between elements of output tables. The
+             default is "\t", but for LaTeX, use "&\t", or use "|" to
+             get pipe-delimited output. */
     char output_delimiter[100];
             /** Append to output files(1), or overwrite(0)? default = 0 */
     int output_append;

@@ -71,10 +71,13 @@ apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
   int	a_count	= a->size,
 		b_count	= b->size;
   double a_avg	= apop_vector_mean(a),
-		a_var	= apop_vector_var(a),
+		a_var	= a_count > 1 ? apop_vector_var(a): 0,
 		b_avg	= apop_vector_mean(b),
-		b_var	= apop_vector_var(b),
-		stat	= (a_avg - b_avg)/ sqrt(b_var/(b_count-1) + a_var/(a_count-1));
+		b_var	= b_count > 1 ? apop_vector_var(b): 0,
+		stat	= (a_avg - b_avg)/ sqrt(
+                        b_count > 1 ? b_var/(b_count-1) : 0 
+                        + a_count > 1 ? a_var/(a_count-1) : 0 
+                        );
 	if (apop_opts.verbose){
 		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
 		printf("2st avg: %g; 2st std dev: %g; 2st count: %i.\n", b_avg, sqrt(b_var), b_count);
