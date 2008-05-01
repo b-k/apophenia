@@ -20,8 +20,9 @@ __BEGIN_DECLS
 double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 gsl_matrix *apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
-void apop_normalize_for_svd(gsl_matrix *in);
-apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);
+//void apop_normalize_for_svd(gsl_matrix *in);
+//apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);
+apop_data*  apop_matrix_pca(gsl_matrix *data, int dimensions_we_want);
 inline void apop_vector_increment(gsl_vector * v, int i, double amt);
 inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt);
 gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2);

@@ -51,7 +51,7 @@ gsl_vector_memcpy(a_new_vector, &(v.vector));
 */
 
 
-/** Um, converts a GSL vector to an array.
+/** Converts a GSL vector to an array.
 
 \param in A GSL vector
 
@@ -252,6 +252,18 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 	return outdata;
 }
 
+
+/*
+Empirically, this divider seems to work better for the header line.
+
+Without backslashes and spaced out in perl's /x style, it would look like this:
+("[^"][^"]*"        (starts with a ", has no "" in between, ends with a ".
+|               or
+[^%s"][^%s"]*)  anything but a "" or the user-specified delimiters. At least 1 char long.)
+([%s\n]|$)      and ends with a delimiter or the end of line.
+*/
+static const char      headerdivider[]="(\"[^\"][^\"]*\"|[^\"%s][^\"%s]*)[%s\n]";
+
 /*
 Much of the magic below is due to the following regular expression.
 
@@ -286,7 +298,7 @@ static int apop_count_cols_in_text(char *text_file){
   size_t        last_match          = 0;
   regex_t       *regex              = malloc(sizeof(regex_t));
   regmatch_t    result[3];
-    sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
+    sprintf(full_divider, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 1);
 	infile	= fopen(text_file,"r");
     apop_assert(infile, 0, 0, 'c', "Error opening file %s. Returning 0.", text_file);
@@ -420,13 +432,15 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
   char		    instr[Text_Line_Limit], 
                 *str, *stripped,
                 outstr[Text_Line_Limit],
-                full_divider[1000];
+                full_divider[1000],
+                header_divider[1000];
   int 		    i	        = 0,
                 line_no     = 0,
                 length_of_string,
 		        ct, colno, rowct;
   size_t        last_match;
-  regex_t       *regex  = malloc(sizeof(regex_t));
+  regex_t       *regex      = malloc(sizeof(regex_t));
+  regex_t       *headregex  = malloc(sizeof(regex_t));
   regmatch_t    result[2];
 	ct	    = apop_count_cols_in_text(text_file);
 	rowct	= apop_count_rows_in_text(text_file);
@@ -434,7 +448,9 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
 	infile	= fopen(text_file,"r");
     apop_assert(infile, NULL, 0, 'c', "Error opening file %s. Returning NULL.", text_file);
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
+    sprintf(header_divider, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 1);
+    regcomp(headregex, header_divider, 1);
     strip_regex_alloc();
 
     //First, handle the top line, if we're told that it has column names.
@@ -447,7 +463,7 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
 	    set->names->column	= malloc(sizeof(char*));
         last_match      = 0;
         length_of_string= strlen(instr);
-        while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
+        while (last_match < length_of_string && !regexec(headregex, (instr+last_match), 2, result, 0)){
             pull_string(instr,  outstr, result,  &last_match);
 	        stripped	    = strip(outstr);
             apop_name_add(set->names, stripped, 'c');
@@ -487,8 +503,8 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
 		}
 	}
 	fclose(infile);
-    regfree(regex);
-    free(regex);
+    regfree(regex);     free(regex);
+    regfree(headregex); free(headregex);
 	return set;
 }
 
@@ -571,6 +587,7 @@ gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
 /////////////////////////////
 
 static regex_t   *regex;
+static regex_t   *headregex;
 static regex_t   *nan_regex = NULL;
 static int  use_names_in_file;
 static char *add_this_line  = NULL;
@@ -621,7 +638,7 @@ static int count_cols_in_row(char *instr){
   size_t    last_match          = 0;
   char	    outstr[Text_Line_Limit];
   regmatch_t result[3];
-    while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
+    while (last_match < length_of_string && !regexec(headregex, (instr+last_match), 2, result, 0)){
         pull_string(instr,  outstr, result,  &last_match);
         if (outstr && strlen(outstr) > 0)
             ct++;
@@ -637,7 +654,8 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
 
   char full_divider2[1000];
   regex_t       *regex_no_blank_fields = malloc(sizeof(regex_t));
-    sprintf(full_divider2, divider2, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
+    //sprintf(full_divider2, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
+    sprintf(full_divider2, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex_no_blank_fields, full_divider2, 1);
 
     fgets(instr, Text_Line_Limit, infile);
@@ -732,8 +750,7 @@ static void tab_create(char *tabname, int ct, int has_row_names){
 }
 
 static void line_to_insert(char instr[], char *tabname){
-  int       one_in          = 0,
-            advance         = 1,
+  int       pc   = 0, //pending comma.
             length_of_string= strlen(instr);
   size_t    last_match      = 0;
   char	    outstr[Text_Line_Limit], *prepped;
@@ -742,12 +759,6 @@ static void line_to_insert(char instr[], char *tabname){
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
     while (last_match < length_of_string 
            && !regexec(regex, instr+last_match, 2, result, 0)){
-        if(one_in++ && advance){
-            r = q;
-            asprintf(&q, "%s, ", r);
-            free(r);
-        }
-        advance = 0;
         pull_string(instr,  outstr, result,  &last_match);
         //We need to check for , "fields with, uh, delimiters",
         if (!regexec(one_quote,outstr, 1, result, 0) 
@@ -756,21 +767,21 @@ static void line_to_insert(char instr[], char *tabname){
             regexec(end_quote, instr+last_match, 2, other_result, 0);
             pull_string(instr,  outstr, other_result,  &last_match);
             asprintf(&q, "%s%s", q, outstr);
-            advance ++;
+            pc =1;
         } else {
             prepped	= prep_string_for_sqlite(outstr);
             if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
                 r = q;
-                asprintf(&q, "%s%s", r, prepped);
+                asprintf(&q, "%s%s%s", r, (pc ? ", ": ""),  prepped);
                 free(r);
-                advance ++;
+                pc = 1;
             } else {
                 char d = instr[last_match-1];
-                if (d!='\t' && d!=' '){
+                if (d!='\t' && d!='\r' && d!='\n' && d!=' '){
                     r = q;
-                    asprintf(&q, "%sNULL", r);
+                    asprintf(&q, "%s%sNULL", (pc ? ", ": ""), r);
                     free(r);
-                    advance ++;
+                    pc = 1;
                 }
             }
             free(prepped);
@@ -818,7 +829,7 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 		    rows    = 0;
   FILE * 	infile;
   char		*q  = NULL, instr[Text_Line_Limit];
-  char		full_divider[1000], nan_string[500];
+  char		full_divider[1000], head_divider[1000], nan_string[500];
 
     if (!one_quote){ //initialize a few global regexes.
         one_quote   = malloc(sizeof(regex_t));
@@ -833,15 +844,20 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 
     strip_regex_alloc();
 	use_names_in_file   = 0;    //file-global.
-    regex               = malloc(sizeof(regex_t));//file-global, above.
+    if (!regex){
+        regex               = malloc(sizeof(regex_t));//file-global, above.
+        sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
+        regcomp(regex, full_divider, 1);
+        headregex           = malloc(sizeof(regex_t));//file-global, above.
+        sprintf(head_divider, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
+        regcomp(headregex, head_divider, 1);
+    }
 
 	if (apop_table_exists(tabname,0)){
 	       	printf("apop: %s table exists; not recreating it.\n", tabname);
 		return 0; //to do: return the length of the table.
 	} else{
         //divider regex:
-        sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
-        regcomp(regex, full_divider, 1);
         //NaN regex:
         if (strlen(apop_opts.db_nan)){
             //sprintf(nan_string, "\\\"*%s\\\"*", apop_opts.db_nan);
