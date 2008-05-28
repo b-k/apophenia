@@ -56,6 +56,8 @@ static apop_data * produce_t_test_output(int df, double stat, double diff){
 /** Answers the question: with what confidence can I say that the means of these two columns of data are different?
 <tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
+If \ci{apop_opts.verbose} is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to STDOUT.
+
 \ingroup ttest
 \param {a, b} two columns of data
 \return an \ref apop_data set with the following elements:
@@ -80,7 +82,7 @@ apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
                         );
 	if (apop_opts.verbose){
 		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
-		printf("2st avg: %g; 2st std dev: %g; 2st count: %i.\n", b_avg, sqrt(b_var), b_count);
+		printf("2st avg: %g; 2st std dev: %g; 2nd count: %i.\n", b_avg, sqrt(b_var), b_count);
 		printf("t-statistic: %g.\n", stat);
 	}
     int df      = a_count+b_count-2;
