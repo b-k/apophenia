@@ -29,7 +29,7 @@ apop_model apop_histogram;
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins){
     //header is in model.h.
   apop_histogram_settings *hp = malloc(sizeof(*hp));
-  size_t              i, j, sum = 0;
+  size_t              i, j;
   double              minv    = GSL_POSINF,
                       maxv    = GSL_NEGINF,
                       minm    = GSL_POSINF,
@@ -39,7 +39,7 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
     hp->pdf = gsl_histogram_alloc(bins);
     gsl_histogram_set_ranges_uniform(hp->pdf, GSL_MIN(minv,minm), GSL_MAX(maxv,maxm));
    //add infinity bins.
-    double  *newbins = malloc(sizeof(double)* ( bins +3));
+    double  *newbins = malloc(sizeof(double)* (bins + 3));
     newbins[0]                  = GSL_NEGINF;
     memcpy((newbins + 1), hp->pdf->range, sizeof(double) * (bins+1));
     newbins[bins+1]      += 2*GSL_DBL_EPSILON; //so max won't fall in the infinity bin.
@@ -49,18 +49,12 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
     gsl_histogram_set_ranges(hp->pdf, newbins,bins+3);
 
     if (data->vector)
-        for (i=0; i< data->vector->size; i++){
-            gsl_histogram_increment(hp->pdf,gsl_vector_get(data->vector,i));
-            sum++;
-        }
+        for (i=0; i< data->vector->size; i++)
+            gsl_histogram_increment(hp->pdf, apop_data_get(data, i, -1));
     if (data->matrix)
         for (i=0; i< data->matrix->size1; i++)
-            for (j=0; j< data->matrix->size2; j++){
-            gsl_histogram_increment(hp->pdf,gsl_matrix_get(data->matrix,i,j));
-            sum ++;
-        }
-    for (i=0; i< hp->pdf->n; i++)
-        hp->pdf->bin[i]    /= (sum + 0.0);
+            for (j=0; j< data->matrix->size2; j++)
+                gsl_histogram_increment(hp->pdf, apop_data_get(data, i, j));
     hp->cdf =NULL;
     hp->histobase =NULL;
     hp->kernelbase =NULL;
@@ -89,7 +83,8 @@ void apop_histogram_settings_free(apop_histogram_settings *in){
 
 apop_model *est(apop_data *d, apop_model *in){
     apop_model *out = apop_model_copy(*in);
-    Apop_settings_add_group(out, apop_histogram, d, 1000);
+    if (!(apop_settings_get_group(in, "apop_histogram") || apop_settings_get_group(in, "apop_kernel_density")))
+        Apop_settings_add_group(out, apop_histogram, d, 1000);
     return out;
 }
 
@@ -105,9 +100,11 @@ static double one_vector(gsl_vector *in){
     return product;
 }
 
-static double histogram_p(apop_data *d, apop_model *parameters){
-  apop_histogram_settings *hp = apop_settings_get_group(parameters, "apop_histogram");
+static double histogram_p(apop_data *d, apop_model *in){
+  apop_histogram_settings *hp = apop_settings_get_group(in, "apop_histogram");
+  if (!hp) apop_settings_get_group(in, "apop_kernel_density");
   apop_assert(hp, 0, 0, 's', "you sent me an unparametrized model.");
+
   long double           product = 0;
     gpdf    = hp->pdf;
     if (d->vector)
@@ -120,8 +117,9 @@ static double histogram_p(apop_data *d, apop_model *parameters){
     return product;
 }
 
-static void histogram_rng(double *out, gsl_rng *r, apop_model* eps){
-  apop_histogram_settings *hp = apop_settings_get_group(eps, "apop_histogram");
+static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
+  apop_histogram_settings *hp = apop_settings_get_group(in, "apop_histogram");
+  if (!hp) apop_settings_get_group(in, "apop_kernel_density");
   apop_assert_void(hp, 0, 's', "you sent me an unparametrized model.");
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!

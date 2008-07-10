@@ -1,0 +1,27 @@
+
+
+digraph {
+    node [shape="rect"];
+
+
+"info" [
+        label = "{Info |{name|data}|{params| vbase}|{...}}"
+        shape = "record"
+        ];
+
+"functions" [
+        label = "{Functions |{estimate|p}|{log_likelihood| draw}|{...}}"
+        shape = "record"
+        ];
+
+"settings" [
+        label = "{Settings |{name|*}|{name| *}|{...}}"
+        shape = "record"
+        ];
+
+
+    model -> info;
+    model -> functions;
+    model -> settings;
+
+}

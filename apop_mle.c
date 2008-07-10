@@ -473,7 +473,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
     ctrl_c      =
 	est->status	= 0;	//assume failure until we score a success.
 	if (mp->starting_pt==NULL)
-  		gsl_vector_set_all (x,  0);
+  		gsl_vector_set_all (x,  1);
 	else
 		x   = apop_array_to_vector(mp->starting_pt, betasize);
     /*if (!msize1 && !msize2)

@@ -97,25 +97,26 @@ void apop_set_first_params(double in, apop_model *m){
 \endcode
 
 */
-apop_model *apop_kernel_density_settings_alloc(apop_data *data, 
+apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*)){
   size_t    i, j;
   apop_data *smallset  = apop_data_alloc(0,1,1);
   double    padding    = 0.1;
 
-  apop_model *outm     = apop_model_copy(apop_kernel_density);
   apop_model *base     = NULL;
+  apop_histogram_settings *out = NULL;
+    //establish and copy the base histogram
     if(apop_settings_get_group(histobase, "apop_histogram")){
         base = histobase;
-        apop_settings_copy_group(outm, base, "apop_histogram");
     } else if (data){
         base = apop_model_copy(apop_histogram);
-        Apop_settings_add_group(outm, apop_histogram, data, 1000);
+        Apop_settings_add_group(base, apop_histogram, data, 1000);
+        //Apop_settings_add_group(outm, apop_histogram, data, 1000);
     } else
-        apop_error(0, 's', "%s: I need either a histobase model with a histogram or a non-NULL data set.\n", __func__);
+        apop_error(0, 's', "I need either a histobase model with a histogram or a non-NULL data set.");
 
     apop_histogram_settings *bh    = apop_settings_get_group(base, "apop_histogram");
-    apop_histogram_settings *out   = Apop_settings_get_group(outm, apop_histogram);
+    out             = apop_histogram_settings_copy(bh);
     out->pdf        = apop_alloc_wider_range(bh->pdf, padding);
     out->kernelbase = apop_model_copy(*kernelbase);
     out->histobase  = base;
@@ -123,20 +124,15 @@ apop_model *apop_kernel_density_settings_alloc(apop_data *data,
 
     //finally, the double-loop producing the density.
     for (i=0; i< bh->pdf->n; i++)
-        if(bh->pdf->bin[i]){
+        if (bh->pdf->bin[i]){
             set_params(apop_getmidpt(bh->pdf,i), out->kernelbase);
-            for(j=1; j < out->pdf->n-1; j ++){
+            for (j=1; j < out->pdf->n-1; j ++){
                 smallset->matrix->data[0] = apop_getmidpt(out->pdf,j);
                 out->pdf->bin[j] += bh->pdf->bin[i] * 
                         out->kernelbase->p(smallset, out->kernelbase);
             }
         }
-    //normalize
-    double sum = 0;
-    for(j=1; j < out->pdf->n-1; j ++){
-        sum +=
-        out->pdf->bin[j]   /= bh->pdf->n;
-    }
+
     //set end-bins. As you can see, I've commented this part out for now.
     out->pdf->bin[0]    = 0;
     out->pdf->bin[out->pdf->n-1]  = 0;
@@ -149,15 +145,28 @@ apop_model *apop_kernel_density_settings_alloc(apop_data *data,
         out->pdf->bin[0]    = (1-sum)*ratio;
         out->pdf->bin[out->pdf->n-1]  = (1-sum)*(1-ratio);
     }*/
+
+    //normalize to one.
+    double sum = 0;
+    for (j=1; j < out->pdf->n-1; j ++)
+        sum += out->pdf->bin[j];
+    for (j=1; j < out->pdf->n-1; j ++)
+        out->pdf->bin[j]   /= sum;
+
     apop_data_free(smallset);
-    apop_histogram_normalize(outm);
-    return outm;
+    return out;
 }
 
 static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *parameters){
     apop_model *m   = apop_model_set_parameters(apop_normal, 0., 1.);
-    apop_model *h   = apop_estimate(data, apop_histogram);
-	return apop_kernel_density_settings_alloc(data, h, m, apop_set_first_params);
+    apop_model *h   = NULL;
+    if (!(h = apop_settings_get_group(parameters, "apop_histogram")))
+        h = apop_estimate(data, apop_histogram);
+    Apop_assert(h, NULL, 0, 's', "I need either a model with a histogram or a non-NULL data set.\n");
+    apop_model *out = apop_model_copy(apop_kernel_density);
+    Apop_settings_add_group(out, apop_kernel_density, data, h, m, apop_set_first_params);
+	//apop_kernel_density_settings_alloc(data, h, m, apop_set_first_params);
+    return out;
 }
 
 static double apop_kernel_density_log_likelihood(apop_data *d, apop_model *p){

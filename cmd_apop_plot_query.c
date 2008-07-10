@@ -3,6 +3,7 @@
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "db.h"
+#include "model.h"
 #include "output.h"
 #include "conversions.h"
 #include "linear_algebra.h"
@@ -65,8 +66,9 @@ void print_out(FILE *f, char *outfile, gsl_matrix *m){
 	    apop_matrix_print(m, NULL);
     }
     else {
-        APOP_MATRIX_COL(m, 0, v);
-        apop_plot_histogram(v, histobins, NULL);
+        //APOP_MATRIX_COL(m, 0, v);
+        apop_model *histo = apop_estimate(apop_matrix_to_data(m), apop_histogram);
+        apop_plot_histogram(histo, NULL);
     }
     if (outfile) fclose(f);
 }

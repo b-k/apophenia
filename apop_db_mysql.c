@@ -59,7 +59,7 @@ static void process_results(void){
 static int apop_mysql_db_open(char *in){
     if (!in)
         apop_error(0, 's', "MySQL needs a non-NULL db name.");
-    mysql_db = mysql_init (NULL);
+    mysql_db = mysql_init (CLIENT_MULTI_STATEMENTS);
     if (!mysql_db) 
         apop_error(0, 's', "mysql_init() failed (probably out of memory)\n");
     /* connect to server */

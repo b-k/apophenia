@@ -122,56 +122,15 @@ void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in){
     memcpy(out, in, sizeof(apop_opts_type));
 }
 
-/** This is a dumb little function to call gnuplot for you,
-   in case you're so exceptionally lazy that you can't call
-   <tt>apop_print_matrix(data, "\t", "outfile")</tt> yourself.
 
-   I have such disdain for this function that it will probably be replaced shortly with something which works more like 
-   \ref apop_plot_line_and_scatter, producing a text file which you then get to plot yourself.
-
-\param data the data to be plotted.
-\param plot_type 's'=surface plot; anything else = 2D x-y plot
-\param delay the amount of time before gnuplot closes itself.
-\ingroup output
-*/
-void apop_plot(gsl_matrix *data, char plot_type, int delay){
-  FILE 	*output;
-  int	i,j;
-	output = popen ("gnuplot", "w");
-	if (!output) {
-		apop_error(0,'c', "Can't find gnuplot.\n");
-		return;
-	}
-  	if (plot_type == 's')
-		fprintf(output, "splot \"-\"\n");
-  	if (plot_type != 's')
-		fprintf(output, "plot \"-\" using 1:2\n");
-	for (i=0; i<data->size1; i++){
-		for (j=0; j<data->size2; j++){
-			fprintf(output, "%g", gsl_matrix_get(data, i,j));
-			if (j< data->size2 -1)	fprintf(output, "\t");
-		}
-		fprintf(output,"\n");
-	}
-	fprintf(output,"e\n pause %i\n", delay);
-	pclose (output);
-}
-
-/** This function will take in a gsl_vector of data and put out a histogram.
-  This requires Gnuplot 4.1, which is (as of Nov 2005) not yet standard. You can obtain it via:
-  \code
-  cvs -z3 -d:pserver:anonymous@cvs.sf.net:/cvsroot/gnuplot checkout -P gnuplot
-  \endcode
-and then the usual <tt>./prepare; ./configure; make; sudo make
-install</tt>. [Be careful if you now have two versions of Gnuplot on
-your system that you are using the right one.]
+/** This function will plot a histogram model.
 
 The function respects the <tt>output_type</tt> option, so code like:
 \code
-f   = popen("/usr/bin/gnuplot", "w");
 apop_opts.output_type = 'p';
-apop_opts.output_pipe = f;
-apop_plot_histogram(data, 100, NULL);
+apop_opts.output_pipe = popen("/usr/bin/gnuplot", "w");
+apop_model *m = apop_estimate(data, apop_histogram);
+apop_plot_histogram(m, NULL);
 \endcode
 will print directly to Gnuplot.
 
@@ -181,18 +140,12 @@ will print directly to Gnuplot.
 
   \ingroup output
 */
-void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
+void apop_plot_histogram(apop_model *hist, char *outfile){
   int             i;
-  FILE *          f;
-  double		  min=GSL_POSINF, max=GSL_NEGINF, pt;
-  gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
-	gsl_vector_minmax(data, &min, &max);
-        gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
-	for (i=0; i < data->size; i++){
-		pt	= gsl_vector_get(data, i);
-        if (!gsl_isnan(pt))
-		   gsl_histogram_increment(h, pt);
-		}
+  FILE           *f;
+  gsl_histogram  *h  = Apop_settings_get(hist, apop_histogram, pdf);
+    if (!h) h = Apop_settings_get(hist, apop_kernel_density, pdf);
+
 	//Now that you have a histogram, print it.
     if (apop_opts.output_type == 'p')
         f   = apop_opts.output_pipe;
@@ -208,7 +161,7 @@ void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
                         set style fill solid border -1          ;\n\
                         set boxwidth 0.9                        ;\n\
                         plot '-' using 2:xticlabels(1);\n", bin_ct);*/
-	for (i=0; i < bin_ct; i++)
+	for (i=0; i < h->n-1; i++)
 	    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
 	fprintf(f, "e\n");
     if (apop_opts.output_type == 'p')
@@ -221,6 +174,7 @@ void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
  you can send it straight to Gnuplot. The -inf and +inf elements are not printed. */
 void apop_histogram_print(apop_model *h, char *outfile){
   apop_histogram_settings *hp = apop_settings_get_group(h, "apop_histogram"); 
+  if (!hp) hp = apop_settings_get_group(h, "apop_kernel_density"); 
   if (!hp)
       apop_error(0, 's', "%s: You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?\n", __func__);
   int             i;

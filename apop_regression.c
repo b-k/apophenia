@@ -77,8 +77,8 @@ apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
 		b_avg	= apop_vector_mean(b),
 		b_var	= b_count > 1 ? apop_vector_var(b): 0,
 		stat	= (a_avg - b_avg)/ sqrt(
-                        b_count > 1 ? b_var/(b_count-1) : 0 
-                        + a_count > 1 ? a_var/(a_count-1) : 0 
+                        (b_count > 1 ? b_var/(b_count-1) : 0) 
+                        + (a_count > 1 ? a_var/(a_count-1) : 0) 
                         );
 	if (apop_opts.verbose){
 		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
@@ -585,21 +585,21 @@ apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd
 }
 
 /** Good ol' \f$R^2\f$.  Let \f$Y\f$ be the dependent variable,
-\f$\epsilon\f$ the residual,  \f$n\f$ the number of data points, and \f$k\f$ the number of independent vars (including the constant).
+\f$\epsilon\f$ the residual,  \f$n\f$ the number of data points, and \f$k\f$ the number of independent vars (including the constant). Returns an \ref apop_data set with the following entries (in the vector element):
 
-  \f$ SST \equiv \sum (Y_i - \bar Y) ^2 \f$
-  \f$ SSE \equiv \sum \epsilon ^2       \f$
-  \f$ R^2 \equiv 1 - {SSE\over SST}     \f$
+  \f$ SST \equiv \sum (Y_i - \bar Y) ^2 \f$\br
+  \f$ SSE \equiv \sum \epsilon ^2       \f$\br
+  \f$ R^2 \equiv 1 - {SSE\over SST}     \f$\br
   \f$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k)}(1-R^2)     \f$
 
   Internally allocates (and frees) a vector the size of your data set.
 \param  in  The estimate. I need residuals to have been calculated, and the first column of in->data needs to be the dependent variable.
 
 \return: a \f$1 \times 5\f$ apop_data table with the following fields:
-"R_squared"\\
-"R_squared_adj"\\
-"SSE"\\
-"SST"\\
+"R_squared"\br
+"R_squared_adj"\br
+"SSE"\br
+"SST"\br
 "SSR"
 
 I need the \c apop_model sent in to have the expected value table. This

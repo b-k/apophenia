@@ -58,8 +58,8 @@ The GSL provides a few structures that basically accumulate data into
 bins. The first is the <tt>gsl_histogram</tt> structure, that produces a PMF.
 
 To produce a PMF from \c your_data, use \ref apop_histogram "apop_estimate(your_data, apop_histogram)", then produce a synced histogram of other data (observed or theoretical) using 
-\ref apop_histogram_refill_with_vector or 
-\ref apop_histogram_refill_with_model.
+\ref apop_histogram_vector_reset or 
+\ref apop_histogram_model_reset.
 
 
 The second structure from the GSL incrementally sums up the PMF's bins to
@@ -73,6 +73,15 @@ Anyway, here are some functions to deal with these various histograms and such.
 
  */
 
+apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *indata){
+    apop_error(0, 'c', "Deprecated. Rename to apop_histogram_vector_reset.");
+    return apop_histogram_vector_reset(template, indata);
+}
+
+apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m, long int draws, gsl_rng *r){
+    apop_error(0, 'c', "Deprecated. Rename to apop_histogram_model_reset.");
+    return apop_histogram_model_reset(template, m, draws, r);
+}
 
 
 /** Give me an existing histogram (i.e., an \c apop_model) and I'll
@@ -82,7 +91,7 @@ Anyway, here are some functions to deal with these various histograms and such.
 \param indata The new data to be binned.
 \ingroup histograms
 */
-apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *indata){
+apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata){
   apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be an apop_histogram model.");
   size_t  i;
   apop_model *out = apop_model_copy(*template); 
@@ -107,7 +116,7 @@ apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *
 \param r The \c gsl_rng used to make random draws.
 \ingroup histograms
 */
-apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m, long int draws, gsl_rng *r){
+apop_model *apop_histogram_model_reset(apop_model *template, apop_model *m, long int draws, gsl_rng *r){
   apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be an apop_histogram model.");
   apop_assert(m && m->draw, NULL, 0, 's', "The second argument needs to be an apop_model with a function to make random draws.");
   long double i;
@@ -137,35 +146,39 @@ apop_data           *out    = apop_pdf_test_goodness_of_fit(h, m, params, bins);
 
 static apop_data *gof_output(double diff, int bins){
 apop_data   *out    = apop_data_alloc(0,4,-1);
-double      pval    = gsl_cdf_chisq_P(diff, bins-1);
+double      toptail = gsl_cdf_chisq_Q(diff, bins-1);
     apop_data_add_named_elmt(out, "Chi squared statistic", diff);
     apop_data_add_named_elmt(out, "df", bins-1);
-    apop_data_add_named_elmt(out, "p value", pval);
-    apop_data_add_named_elmt(out, "confidence", 1 - pval);
+    apop_data_add_named_elmt(out, "p value",  toptail); 
+    apop_data_add_named_elmt(out, "confidence", 1 - toptail);
     return out;
 }
 
 /** Test the goodness-of-fit between two histograms (in \c apop_model form). I assume that the histograms are aligned.
 
-  \todo It'd be nice if this could test histograms where one has the infinibins and the other doesn't.
   \ingroup histograms
 */
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
   gsl_histogram *h0 = Apop_settings_get(m0, apop_histogram, pdf);
   gsl_histogram *h1 = Apop_settings_get(m1, apop_histogram, pdf);
-  int     i;
-  double  diff    = 0,
+    if (!h0) {h0 = Apop_settings_get(m0, apop_kernel_density, pdf);}
+    if (!h1) {h1 = Apop_settings_get(m1, apop_kernel_density, pdf);}
+    Apop_assert(h0, NULL, 0, 's', "The first model you gave me has a NULL PDF.");
+    Apop_assert(h1, NULL, 0, 's', "The second model you gave me has a NULL PDF.");
+    Apop_assert(h0->n == h1->n, NULL,
+        0, 's', "Sorry, I haven't implemented the case where the bin counts of the two histograms are unequal.");
+
+  int     i,
+          df      = h0->n,
           bins    = h0->n;
-    if (h0->n == h1->n){
-        for (i=0; i< bins; i++)
-            if (h0->bin[i]==0){
-                if(apop_opts.verbose)
-                    printf ("element %i of the first vector is zero. Skipping it.\n", i);
-            } else
-                diff    += gsl_pow_2(h0->bin[i] - h1->bin[i])/h0->bin[i];
-    } else
-        apop_error(0, 's', "%s: Sorry, I haven't implemented the case where the bin counts of the two histograms are unequal.", __func__);
-    return gof_output(diff, bins);
+  double  diff    = 0;
+    for (i=0; i< bins; i++)
+        if (h0->bin[i]==0){
+            apop_error(1, 'c', "element %i of the first vector is zero. Skipping it.\n", i);
+            df --;
+        } else 
+            diff    += gsl_pow_2(h0->bin[i] - h1->bin[i])/h0->bin[i];
+    return gof_output(diff, df);
 }
 
 /*psmirnov2x is cut/pasted/trivially modified from the R project. Copyright them. */
@@ -207,7 +220,7 @@ static double psmirnov2x(double x, int m, int n) {
 /** Run the Kolmogorov test to determine whether two distributions are
  identical.
 
- \param m1, m2  Two matching \ref apop_histogram "apop_histograms", probably produced via \ref apop_histogram_refill_with_vector or \ref apop_histogram_refill_with_model.
+ \param m1, m2  Two matching \ref apop_histogram "apop_histograms", probably produced via \ref apop_histogram_vector_reset or \ref apop_histogram_model_reset.
 
  \return The \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
 
@@ -217,6 +230,8 @@ static double psmirnov2x(double x, int m, int n) {
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
   gsl_histogram *h1 = Apop_settings_get(m1, apop_histogram, pdf);
   gsl_histogram *h2 = Apop_settings_get(m2, apop_histogram, pdf);
+    if (!h1) {h1 = Apop_settings_get(m1, apop_kernel_density, pdf);}
+    if (!h2) {h2 = Apop_settings_get(m2, apop_kernel_density, pdf);}
   double    cdf1      = 0,
             cdf2      = 0,
             sum1      = 0,
@@ -241,13 +256,14 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
         second  = h1;
         cdf1    = first->bin[0];
     } else 
-        apop_error(0, 's', "%s: needs matching histograms.  Produce them via apop_histogram_refill_with_vector or apop_histogram_refill_with_model. Returning NULL.\n", __func__);
+        apop_error(0, 's', "%s: needs matching histograms.  Produce them via apop_histogram_vector_reset or apop_histogram_model_reset. Returning NULL.\n", __func__);
     //Scaling step. 
     for (i=0; i< first->n; i++)
         sum1    += first->bin[i];
     for (i=0; i< second->n; i++)
         sum2    += second->bin[i];
-printf("sum1: %g; sum2: %g\n", sum1, sum2);
+    if (apop_opts.verbose)
+        printf("sum1: %g; sum2: %g\n", sum1, sum2);
     //Find point of greatest difference
     for (i=0; i< h2->n; i++){
         cdf1    += first->bin[i+offset]/sum1;
@@ -267,6 +283,7 @@ printf("sum1: %g; sum2: %g\n", sum1, sum2);
 /** Scale a histogram so it integrates to one (and is thus a proper PMF). */
 void apop_histogram_normalize(apop_model *m){
   gsl_histogram *h = Apop_settings_get(m, apop_histogram, pdf);
+    if (!h) {h = Apop_settings_get(m, apop_kernel_density, pdf);}
   int           i;
   long double   sum = 0;
   apop_assert_void(h, 0, 's', "You sent me a model which is not a histogram or which is unparametrized.");
