@@ -92,20 +92,66 @@ inline double apop_var(const gsl_vector *in){
 	return apop_vector_var(in); 
 }
 
-/** Returns the sample skew (divide by \f$n-1\f$) of the data in the given vector.
+/** Returns an unbiased estmate of the sample skew (population skew times  y \f$n^2/(n^2-1)\f$) of the data in the given vector.
 \ingroup vector_moments
 */
 inline double apop_vector_skew(const gsl_vector *in){
-	return gsl_stats_skew(in->data,in->stride, in->size)
-                *pow(apop_vector_var(in),3./2)*in->size/(in->size -1.); }
+	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/(gsl_pow_2(in->size) -1.); }
+
+/** Returns the population skew (\f\sum_i (x_i - \mu)^3/n)\f$) of the data in the given vector.
+ 
+  Some people like to normalize the skew by dividing by variance\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
+\ingroup vector_moments
+*/
+inline double apop_vector_skew_pop(const gsl_vector *in){
+  //I reimplement the skew calculation here without the division by var^3/2
+  //that the GSL does. 
+  //Lawyers may want to know that this code is cut/pasted/modified from the GSL. 
+
+  size_t i; 
+  size_t n = in->size;
+  long double avg = 0;
+  long double mean = apop_vector_mean(in);
+    for (i = 0; i < n; i++) {
+        const long double x = gsl_vector_get(in, i) - mean; 
+        avg += (x * x * x  - avg)/(i + 1);
+    } 
+    return avg;
+}
+
+/** Returns the population kurtosis (\f\sum_i (x_i - \mu)^4/n)\f$) of the data in the given vector.
+ 
+  Some people like to normalize the skew by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
+\ingroup vector_moments
+*/
+inline double apop_vector_kurtosis_pop(const gsl_vector *in){
+  //I reimplement the kurtosis calculation here without the division by var^2
+  //that the GSL does. 
+  //Lawyers may want to know that this code is cut/pasted/modified from the GSL. 
+
+  size_t i; 
+  size_t n = in->size;
+  long double avg  = 0;
+  long double mean = apop_vector_mean(in);
+    for (i = 0; i < n; i++) {
+        const long double x = gsl_vector_get(in, i) - mean; 
+        avg += (x * x * x * x - avg)/(i + 1);
+    } 
+    return avg;
+}
+
 
 /** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
 \ingroup vector_moments
 */
 inline double apop_vector_kurtosis(const gsl_vector *in){
-	return ((gsl_stats_kurtosis(in->data,in->stride, in->size)+3)
-                *gsl_pow_2(apop_vector_var(in)))*in->size/(in->size -1.); }
+  size_t n = in->size;
+  long double scale =  gsl_pow_3(n)/(gsl_pow_3(n)-1);
+    return scale * (apop_vector_kurtosis_pop(in) + 6./n * gsl_pow_2(apop_vector_var(in)*((n-1.)/n)));
+
+	//return ((gsl_stats_kurtosis(in->data,in->stride, in->size)+3) *gsl_pow_2(apop_vector_var(in)))*in->size/(in->size -1.); }
+}
 
 /** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.

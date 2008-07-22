@@ -59,82 +59,34 @@ Thus, the typical analysis using Apophenia would take the following steps:
 
 If this seems a bit vague, have a look at this \ref sample_program.
 
-<!--
-\section basis Not reinventing the wheel
-All of the above is focused on statistics, not low-level computing. Thus,
-unlike typical stats packages, the Apophenia project avoids writing
-code to calculate Normal distributions or other comparable stock
-numerical recipes. It uses two existing packages for this: SQLite and
-the GNU Scientific Library.
+\section The components
 
-Apophenia facilitates data management by including a database
-interface. By reading your data into a database instead of an in-memory
-matrix, you effectively have no limits on the size of your data set,
-and can massage the data in ways that are very difficult in the
-matrix-oriented world most statisticians are used to. 
+The elements of the package basically fall into a few categories, some of which have their own thinking about them:
 
-This is all done via either SQLite or mySQL, but there are wrappers
-such that the user does not need to know anything about the details
-of their APIs. Also, under the "minimize annoyances" column, queries
-sent to SQLite via Apophenia can calculate variances, powers, and logs,
-which are not standard SQL but are very common statistician needs.
+\li The \ref db "database utilities", which open a database and allow
+query output to be put into a data set, vector, or matrix.
 
-Apophenia makes heavy use of the GNU Scientific Library, which is
-a well-optimized system for processing large matrices of numbers. That is,
-the models are not written from first principles, but use well-optimized
-and -tested functions for low-level number crunching. Apophenia does
-include a number of convenience functions---if a function always involves
-the same setup and cleanup, Apophenia probably has a function to do all that
-for you. However, the project makes an effort to not replicate any of
-the functionality in the GSL, because we're not going to write a better
-Normal RNG than they already have.
+\li The \ref apop_data object, which is basically a vector, a matrix,
+and a set of column and row names. This is sufficient to express a surprisingly wide range of 
+situations, and is to some extent the glue that holds together the other components.
+
+\li \ref basic_stats "Basic statistics", like the mean, variance,
+percentiles, &c. These typically act on the \c apop_data struct.
+
+\li \ref convenience_fns "Convenience functions" for the usual logistics,
+like taking the log of a vector of numbers or building partitioned matrices.
+
+\li The \ref models "apop_model struct", which is intended to
+encapsulate any statistical model. This is a tall order, and I (BK)
+know of no statistics package that has anything like it. Many of the
+statistical concepts given different functions in the typical package,
+including the probit, logit, OLS, and distributions such as the Normal,
+beta, gamma, poisson, ... are all implemented as standard \c apop_model objects.
+The price of the standardization is a bit of awkwardness in 
+ \li \ref settings "setting model parameters", but as above, you can estimate most of these models with a one-line call to \ref apop_estimate.
 
 
-\section librant Stats libraries vs Stats packages 
-The reason I (BK) started up this library is that I was sick of learning
-new languages. There are a few dozen statistics packages to choose from,
-all of which are best for one task or another, but none of which was
-portable and versatile enough to work for every project I had.
-In most of the programming world, the evolution has been that there
-a few core libraries emerged to handle the specifics of the task at hand, and
-then front-ends developed to suit various tastes and specialties. In
-the stats world, the process has been entirely backward: a few dozen packages
-have started from scratch whith entirely new libraries of essentialy
-the same functions. Each has its own specialty, each is tied to only
-one front end, and each requires learning a brand new language.
-Most are designed around students, and so are easy to learn but virtually
-useless for one who knows stats well and wants to use the package on
-an industrial-strength data set---several gigabytes of data from the
-US Census or USGS or what-have-you.
-
-Meanwhile, C has absolutely no built-in memory limitations, and using a
-database makes handling large data sets still more manageable. Also, C is
-the most supported programming language on Earth. Type "C tutorial" into
-your favorite search engine and you will get hundreds of choices. Even
-though it requires understanding one concept which is missing from more
-idiot-proof lanugages (pointers), I found that it is worth the marginal
-extra time spent learning because it means not having to waste time
-learning yet another language when the next project comes around.
-To use the database half of Apophenia of course requires learning SQL
-(Structured query language), but SQL is not quite a complete language;
-it is more a means of describing the rows and columns of a table. The
-reader can have the basics of SQL down in a few minutes (since <tt>select
-row from table</tt> is almost English), and the return on that investment
- is again huge, since so many programs support SQL.
-
-Thus, Apophenia does not impose its own language for you to learn, but
-instead relies on the existing grammar and structure of C and SQL. It
-therefore ties in seamlessly with the thousands of existing C libraries,
-is documented in part by the hundreds of books and web pages which
-teach C and SQL, and can be used as the base for further extensions. 
-
-Finally, there are also a few of the more typical reasons to write a
-new library. This library focuses on MLE methods over linear projection
-methods that most packages tend to rely on. Because it focuses on
-likelihoods and distributions, the package provides certain procedures,
-such as random draws from a Waring distribution, which to my knowledge
-don't yet exist in Matlab, R, STATA, &c. 
--->*/
+*/
 
 /** \page setup Setting up
 \section cast The supporting cast 
@@ -399,6 +351,13 @@ readily includes "non-parametric" models.] Much of statistical analysis
 consists of writing down a model, estimating its parameters, and running
 hypothesis tests to determine the confidence with which we can make
 statements about those parameters.
+<!--\footnote{Many statistics packages include a model structure that describes only
+linear models.  "Linear" models can include a wide range of nonlinear
+features, but they are still a subset of measure zero within the class of
+models as described above. Currently, Apophenia has no plans to include
+a summary syntax for describing linear models; the reader who has a linear
+model to be estimated via OLS and friends is advised to instead manipulate
+the data set to the appropriate form and then call \ref apop_ols, \ref apop_iv, et cetera.}-->
 
 Apophenia facilitates this via its \ref apop_model objects. Each object is
 a model as described above, and includes a method named <tt>estimate</tt>
@@ -406,25 +365,17 @@ which takes in data and returns an \ref apop_model which includes
 the parameter estimates and the characteristics one would need for
 hypothesis testing.
 
+For example, a model may be a probability distribution. The data is assumed
+to have been drawn from a given distribution and the question is
+only what distributional parameters best fit; e.g., assume the data
+is Normally distributed and find the mean and variance.
+
 The design of the objects hopes to make it as easy as possible for you,
 dear reader, to write new models. For the most part, all you need to
 do is write a log likelihood function, and \ref apop_maximum_likelihood
 does the rest; see below.
 
-[Many statistics packages include a model structure that describes only
-linear models.  "Linear" models can include a wide range of nonlinear
-features, but they are still a subset of measure zero within the class of
-models as described above. Currently, Apophenia has no plans to include
-a summary syntax for describing linear models; the reader who has a linear
-model to be estimated via OLS and friends is advised to instead manipulate
-the data set to the appropriate form and then call \ref apop_ols, \ref apop_iv, et cetera.]
-
-Frequently, a model is a probability distribution. The data is assumed
-to have been drawn from a given distribution and the question is
-only what distributional parameters best fit; e.g., assume the data
-is Normally distributed and find the mean and variance.
-
-The main function in the systems below is the apop_model.estimate
+The main function in the systems below is the \ref apop_estimate
 function. It takes in a model and data, and outputs an apop_estimate,
 that includes the parameter estimates and the various auxiliary data
 that one may need to test the estimates, such as the variance-covariance
@@ -438,6 +389,7 @@ apop_model 	*the_estimate 	= apop_estimate(data, apop_probit);
 apop_estimate_print(the_estimate);
 \endcode
 
+<!--
 Because models are often distributions, and because it is not our place
 to dictate what you will do with a model, the apop_model also includes a
 number of additional functions that may be useful for additional analyis,
@@ -447,11 +399,43 @@ has been made to ensure that the prepackaged models include as many of
 these auxiliary functions as possible; if you are writing your own,
 there is no requirement that you provide all functions, and \ref
 apop_maximum_likelihood and its Numerical gradient function do a
-good job of filling in blanks.
+good job of filling in blanks. -->
+
+\section The internals
+
+\image html http://apophenia.sourceforge.net/doc/model.png
+\image latex model.png
+
+The \ref apop_model struct breaks down into three parts:
+
+\li Info like names, the pointer to the input data, and the parameters, are for the most part self-descriptive.
+
+\li There is a broad class of functions that cover most of what you
+would do with a model. You can see that there is a bit of a bias toward
+maximum likelihood estimation. There are helper functions for most of
+them, like the \ref apop_estimate function above, that meant that you
+never had to directly handle the model's \c estimate method. 
+In the list at the top of this page, 
+all of the functions whose last argument is a model are helper functions
+of this type. The helper functions do some boilerplate error checking,
+and mean that you don't have to fill in every blank in your model: if
+you have a \c log_likelihood method but no \c p method, then \ref apop_p
+will use exp(\c log_likelihood). If you don't give an \c estimate method,
+then \c apop_estimate will use maximum likelihood.
+
+\li I refer to the values output from an estimation as \em parameters,
+and the details of how the model's machinery work as \em settings. The
+parameters are pretty standardized, and a \ref apop_data set is sufficient
+to handle the great majority of models. However, the settings of an OLS
+regression are drastically different from those of a histogram or an MLE.
+The solution is a list of settings structures. This is probably the
+least pleasant structural element in the system, to the point that you will not want to handle the settings structures directly. Instead, you should use the various \ref settings "helper functions for model settings".
 
 
-\section write_likelihoods Writing your own
-Writing apop_model objects is easy:
+
+\section write_likelihoods Writing your own 
+Writing apop_model objects is easy. Here is the procedure for an MLE, possibly the most involved
+type of model estimation in common use:
 
 
 \li Write a likelihood function. Its header will look like this:

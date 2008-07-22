@@ -101,7 +101,6 @@ void * apop_histogram_settings_copy(apop_histogram_settings *in);
 
 
 apop_model *apop_model_set_parameters(apop_model in, ...);
-void apop_histogram_plot(apop_model *in, char *outfile);
 apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*));
 

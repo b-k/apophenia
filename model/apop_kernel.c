@@ -25,32 +25,6 @@ static void apop_set_first_params(double in, apop_model *m){
     m->parameters->vector->data[0]  = in;
 }
 
-void apop_histogram_plot(apop_model *in, char *outfile){
-  int             i, k;
-  FILE *          f;
-  gsl_histogram   *h      = Apop_settings_get(in, apop_histogram, pdf);
-
-    double midpoints[h->n]; //cut 'n' pasted from kernel density alloc.
-    midpoints[0]            = h->range[1];
-    midpoints[h->n]  = h->range[h->n-1];
-    for(k=1; k < h->n-1; k ++)
-        midpoints[k] = (h->range[k+1] +h->range[k])/2.;
-
-    if (apop_opts.output_type == 'p')
-        f   = apop_opts.output_pipe;
-    else 
-        f = (outfile ? fopen(outfile, "a") : stdout);
-	fprintf(f, "set key off					                    ;\n\
-                        plot '-' with lines\n");
-	for (i=1; i < h->n-1; i++)
-	    fprintf(f, "%4f\t %g\n", midpoints[i], gsl_histogram_get(h, i));
-	fprintf(f, "e\n");
-    if (apop_opts.output_type == 'p')
-        fflush(f);
-    else if (outfile)    
-        fclose(f);
-}
-
 static double apop_getmidpt(const gsl_histogram *pdf, const size_t n){
     if (!n) 
         return pdf->range[1];

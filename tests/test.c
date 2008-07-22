@@ -266,11 +266,6 @@ APOP_VECTOR_ALLOC(w, set->matrix->size1);
     return 0;
 }
 
-
-int is_neg(double in){
-    return in < 0;
-}
-
 int test_strip_dots(void){
     /* 0: replace all dots with _
       1: everything before the last dot.
@@ -508,7 +503,7 @@ void test_model_fix_parameters(gsl_rng *r){
     gsl_vector_sub(e1->parameters->vector, pv->vector);
     assert(apop_vector_sum(e1->parameters->vector) < 1e-1);
 
-  double    start2[] = {1,0,0,1};
+  double    start2[] = {1,0,0,2};
     gsl_matrix_set_all(mask->matrix, 0);
     gsl_vector_set_all(mask->vector, 1);
     apop_model *mep2   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);

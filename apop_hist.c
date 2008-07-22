@@ -12,34 +12,18 @@ The characters:
     histogram_pdfs (CDFs)
     models
 
-Things to do:
-    --produce PDFs from vectors
-    --produce PDFs from models
+Things to do: (* = done)
+    *-produce PDFs from vectors
+    *-produce PDFs from models
     --produce CDFs from PDFs
     --produce CDFs from vectors
-    --produce synced PDFs from (v,v), (v,m)
+    *-produce synced PDFs from (v,v), (v,m) [Done using the histogram_refill functions]
     --produce synced PDFs (from scratch w/shared maxmin, from scratch w/one having infinite range)
     --type I v type II trials.
 
     --send two vectors to goodness-of-fit test.
     --send vector, model to goodness-of-fit test.
     --send synced pdfs to goodness-of-fit test.
-
-
-    OK, here are my functions:
-
-    apop_vector_to_pmf()    //incorporate both synced and unsynced.
-    apop_model_to_pmf()     //same.
-    apop_pmf_to_cmf()
-    apop_pmf_goodness_of_fit()
-
-    filters provided:
-        vector          -> pmf
-        (vector, vector)-> pmf
-        (pmf, model)    -> pmf
-        pmf             -> cmf
-        (pmf, pmf)      -> gof
-
 
 */
 
@@ -74,12 +58,12 @@ Anyway, here are some functions to deal with these various histograms and such.
  */
 
 apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *indata){
-    apop_error(0, 'c', "Deprecated. Rename to apop_histogram_vector_reset.");
+    apop_error(0, 'c', "Deprecated. Renamed to apop_histogram_vector_reset.");
     return apop_histogram_vector_reset(template, indata);
 }
 
 apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m, long int draws, gsl_rng *r){
-    apop_error(0, 'c', "Deprecated. Rename to apop_histogram_model_reset.");
+    apop_error(0, 'c', "Deprecated. Renamed to apop_histogram_model_reset.");
     return apop_histogram_model_reset(template, m, draws, r);
 }
 

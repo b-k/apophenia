@@ -158,7 +158,7 @@ must not have been very important. [This trick is attributed to Tom
 Minka, who implemented it in his Lightspeed Matlab toolkit.]
 */
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
-  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  apop_assert(p->parameters, 0, 0, 's', "You asked me to evaluate an un-parametrized model.");
   size_t i, index, choicect = p->parameters->matrix->size2;
 
   //Find X\beta_i for each row of X and each column of \beta.

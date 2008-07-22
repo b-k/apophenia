@@ -17,8 +17,8 @@
 
 __BEGIN_DECLS
 
-gsl_vector *apop_matrix_map(gsl_matrix *m, double (*fn)(gsl_vector*));
-gsl_vector *apop_vector_map(gsl_vector *v, double (*fn)(double));
+gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*));
+gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double));
 void apop_matrix_apply(gsl_matrix *m, void (*fn)(gsl_vector*));
 void apop_vector_apply(gsl_vector *v, void (*fn)(double*));
 gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double));

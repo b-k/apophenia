@@ -66,7 +66,7 @@ static size_t *threadminmax(const int threadno, const int totalct, const int thr
         return out;
 }
 
-static gsl_vector*mapply_core(const gsl_matrix *m,const gsl_vector *vin, void *fn, gsl_vector *vout){
+static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout){
   int           threadct    = apop_opts.thread_count;
   pthread_t     thread_id[threadct];
   int           i;
@@ -115,9 +115,9 @@ program crashes.
 
   \ingroup convenience_fns
  */
-gsl_vector *apop_matrix_map(gsl_matrix *m, double (*fn)(gsl_vector*)){
+gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*)){
   gsl_vector    *out        = gsl_vector_alloc(m->size1);
-    return mapply_core(m, NULL, fn, out);
+    return mapply_core((gsl_matrix*) m, NULL, fn, out);
 }
 
 /** Apply a function to every row of a matrix.  The function that you
@@ -161,9 +161,9 @@ program crashes.
 
   \ingroup convenience_fns
  */
-gsl_vector *apop_vector_map(gsl_vector *v, double (*fn)(double)){
+gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double)){
   gsl_vector    *out        = gsl_vector_alloc(v->size);
-    return mapply_core(NULL, v, fn, out);
+    return mapply_core(NULL, (gsl_vector*) v, fn, out);
 }
 
 /** Apply a function to every row of a matrix.  The function that you
@@ -191,20 +191,20 @@ void apop_vector_apply(gsl_vector *v, void (*fn)(double*)){
 
 
 void apop_matrix_map_all_vector_subfn(const gsl_vector *in, gsl_vector *outv, double (*fn)(double)){
-    mapply_core(NULL, in, fn, outv);
+    mapply_core(NULL, (gsl_vector *) in, fn, outv);
 }
 
 void  apop_matrix_apply_all_vector_subfn(const gsl_vector *in, void (*fn)(double *)){
-    apop_vector_apply(in, fn);
+    apop_vector_apply((gsl_vector*) in, fn);
 }
 
 
 gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
   int i;
   gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
-  gsl_vector_view v, inv;
+  gsl_vector_view v;
     for (i=0; i< in->size1; i++){
-        inv = gsl_matrix_row(in, i);
+        gsl_vector_const_view inv = gsl_matrix_const_row(in, i);
         v = gsl_matrix_row(out, i);
         apop_matrix_map_all_vector_subfn(&inv.vector, &v.vector, fn);
     }

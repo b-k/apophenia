@@ -64,7 +64,9 @@ inline double apop_vector_covar(const gsl_vector *ina, const gsl_vector *inb) __
 inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb) __attribute__((pure));
 inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb) __attribute__((pure));
 inline double apop_vector_kurtosis(const gsl_vector *in) __attribute__((pure));
+inline double apop_vector_kurtosis_pop(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_skew(const gsl_vector *in) __attribute__((pure));
+inline double apop_vector_skew_pop(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_kurt(const gsl_vector *in) __attribute__((pure));
 double apop_vector_weighted_mean(const gsl_vector *, const gsl_vector *) __attribute__((pure));
 double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
