@@ -16,7 +16,7 @@ apop_model *est  =  apop_estimate(d, apop_ols);
     assert(fabs(apop_data_get(est->covariance, 0, 0) - pow(0.107938612033077E-03,2))    < TOL2);
     assert(fabs(apop_data_get(est->covariance, 1, 1) - pow(0.157817399981659E-09,2))    < TOL2);
     assert(fabs(apop_data_get(est->covariance, 2, 2) - pow(0.486652849992036E-16,2))    < TOL2);
-apop_data *cc   = apop_estimate_correlation_coefficient(est);
+apop_data *cc   = apop_estimate_coefficient_of_determination(est);
     assert(fabs(apop_data_get_ti(cc, "R.sq.*", -1) - 0.999999900178537)    < TOL);
     assert(fabs(apop_data_get_ti(cc, "SSR", -1) - 15.6040343244198)    < TOL3);
 }
@@ -31,7 +31,7 @@ apop_model   *est  =  apop_estimate(d, apop_ols);
         assert(fabs(apop_data_get(est->parameters, i, -1) - 1) < TOL4);
     for (i=0; i<6; i++)
         assert(fabs(apop_data_get(est->covariance, i, i)) < TOL2);
-apop_data *cc   = apop_estimate_correlation_coefficient(est);
+apop_data *cc   = apop_estimate_coefficient_of_determination(est);
     assert(fabs(apop_data_get_ti(cc, "R.sq.*", -1) - 1)    < TOL);
 }
 

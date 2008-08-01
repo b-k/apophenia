@@ -7,7 +7,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
  \li \ref intro "Intro": The motivation for the package.
  \li \ref setup "Setup": Installing GCC, the GSL, SQLite, and Apophenia itself.
  \li \ref types "Types": New structures defined by Apophenia.
- \li A <a href="http://ben.klemens.org/pdfs/gsl_stats.pdf">textbook</a> (PDF) on statistical computing, which covers much of the basics behind Apophenia.
+ \li A <a href="http://modelingwithdata.org">textbook</a> on statistical computing, which covers much of the basics behind Apophenia.
 
 \section dostats Doing statistics 
  \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.
@@ -37,9 +37,11 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 /** \page intro Intro
 
-First, if you are still wondering why this is different from all the
-stats packages of the world, have a look at the introduction to the 
-<a href="http://ben.klemens.org/pdfs/gsl_stats.pdf">manual</a> (PDF). 
+First, this library co-evolved with a 
+<a href="http://modelingwithdata.org">textbook on statistical
+computing</a>. So you can look there for a much more broad discussion this
+package's place in the world, as well as a thorough tutorial on C and SQL.
+
 
 The key goal of Apophenia is to estimate models using data. As such, Apophenia provides 
 two interlocking structures to smooth the process: the \ref apop_data and \ref apop_model. On the data side, the intent is to provide 

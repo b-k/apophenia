@@ -78,6 +78,10 @@ inline double apop_mean(const gsl_vector *in){
 }
 
 /** Returns the variance of the data in the given vector.
+ 
+  This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
+
+  At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
 \ingroup vector_moments
 */
 inline double apop_vector_var(const gsl_vector *in){
@@ -98,7 +102,7 @@ inline double apop_var(const gsl_vector *in){
 inline double apop_vector_skew(const gsl_vector *in){
 	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/(gsl_pow_2(in->size) -1.); }
 
-/** Returns the population skew (\f\sum_i (x_i - \mu)^3/n)\f$) of the data in the given vector.
+/** Returns the population skew (\f$\sum_i (x_i - \mu)^3/n)\f$) of the data in the given vector.
  
   Some people like to normalize the skew by dividing by variance\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
 \ingroup vector_moments
@@ -141,13 +145,15 @@ inline double apop_vector_kurtosis_pop(const gsl_vector *in){
 }
 
 
-/** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
-  This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
+/** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector. Corrections are made to produce an unbiased result.
+
+
+  This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three \f$\sigma^4\f$, not three, one, or zero.
 \ingroup vector_moments
 */
 inline double apop_vector_kurtosis(const gsl_vector *in){
   size_t n = in->size;
-  long double scale =  gsl_pow_3(n)/(gsl_pow_3(n)-1);
+  long double scale =  gsl_pow_3(n)/(gsl_pow_3(n)-1.);
     return scale * (apop_vector_kurtosis_pop(in) + 6./n * gsl_pow_2(apop_vector_var(in)*((n-1.)/n)));
 
 	//return ((gsl_stats_kurtosis(in->data,in->stride, in->size)+3) *gsl_pow_2(apop_vector_var(in)))*in->size/(in->size -1.); }
@@ -571,12 +577,12 @@ static double skewkurt(const gsl_vector *v, const gsl_vector *w, const int expon
         wsum += ww; 
     }
     double len = wsum < 1.1 ? w->size : wsum;
-    return sumcu/(len -1);
+    return sumcu/len;
 
 
 }
 
-/** Find the sample skew of a weighted vector.
+/** Find the population skew of a weighted vector.
 
 Note: Apophenia tries to be smart about reading the weights. If weights
 sum to one, then the system uses \c w->size as the number of elements,
@@ -593,7 +599,7 @@ double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w){
     return skewkurt(v,w,3, "apop_vector_weighted_skew");
 }
 
-/** Find the sample kurtosis of a weighted vector.
+/** Find the population kurtosis of a weighted vector.
 
 \param  v   The data vector
 \param  w   the weight vector. If NULL, assume equal weights.

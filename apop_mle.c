@@ -230,12 +230,18 @@ static double negshell (const gsl_vector *beta, void * in){
     apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
+    if(penalty){
+        gsl_vector *o = apop_data_pack(i->model->parameters);
+        gsl_vector_memcpy((gsl_vector *)beta, o);
+        gsl_vector_free(o);
+    }
     out = penalty - f(i->data, i->model); //negative llikelihood
     if (penalty)
         apop_data_unpack(i->beta, i->model->parameters);
     if (i->trace_path && strlen(i->trace_path))
         tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
-    i->model->llikelihood = -out; //negative negative llikelihood.
+    //The next line is not used anywhere else here. It's just for output.
+    i->model->llikelihood = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
     return out;
 }
 
@@ -254,7 +260,11 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
   apop_mle_settings *mp       =  apop_settings_get_group(i->model, "apop_mle");
     apop_data_unpack(beta, i->model->parameters);
     if(i->model->constraint)
-        i->model->constraint(i->data, i->model);
+        if(i->model->constraint(i->data, i->model)){
+            gsl_vector *o = apop_data_pack(i->model->parameters);
+            gsl_vector_memcpy((gsl_vector *)beta, o);
+            gsl_vector_free(o);
+        }
     if (mp->use_score && i->model->score)
         i->model->score(i->data, g, i->model);
     else {

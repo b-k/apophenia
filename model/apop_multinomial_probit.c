@@ -28,8 +28,9 @@ static int multiprobit_count(apop_data *d, apop_model *m){
     }
     //probit uses a numeraire; logit doesn't.
     //if (!strcmp(m->name, "Multinomial probit")){
-        vals ++;//drop the first entry---a one-double memory leak!
-        gsl_sort(vals, 1, --count);
+        gsl_sort(vals, 1, count);
+        vals  ++;//drop the first entry---a one-double memory leak!
+        count --;
     //} else
     //    gsl_sort(vals, 1, count);
     m->more = vals;

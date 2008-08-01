@@ -482,10 +482,9 @@ apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
     //the dummy matrix to one.
-    if (dummyfactor == 'd'){
-        if (keep_first)     out  = apop_data_calloc(0, s, elmt_ctr);
-        else                out  = apop_data_calloc(0, s, elmt_ctr-1);
-    } else
+    if (dummyfactor == 'd')
+        out = apop_data_calloc(0, s, (keep_first ? elmt_ctr : elmt_ctr-1));
+    else
         out = d;
     for (i=0; i< s; i++){
         if (type == 'd'){
@@ -596,19 +595,20 @@ apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd
 \param  in  The estimate. I need residuals to have been calculated, and the first column of in->data needs to be the dependent variable.
 
 \return: a \f$1 \times 5\f$ apop_data table with the following fields:
-"R_squared"\br
-"R_squared_adj"\br
-"SSE"\br
-"SST"\br
+"R_squared"\\
+"R_squared_adj"\\
+"SSE"\\
+"SST"\\
 "SSR"
 
-I need the \c apop_model sent in to have the expected value table. This
-is the default, but if you explicitly set want_expected_value = 0,
-then turn back and unset it.
+\param in   An estimated model. I use the \c expected table (which
+gives the expected value and residual for each observation), so if you
+had explicitly set \c want_expected_value=0 when doing your estimation,
+you'll have to redo the estimation without that.
 
 \ingroup regression
   */
-apop_data *apop_estimate_correlation_coefficient (apop_model *in){
+apop_data *apop_estimate_coefficient_of_determination (apop_model *in){
   double          sse, sst, rsq, adjustment;
   size_t          obs     = in->data->matrix->size1;
   size_t          indep_ct= in->data->matrix->size2 - 1;
@@ -620,7 +620,7 @@ apop_data *apop_estimate_correlation_coefficient (apop_model *in){
                 apop_name_find(in->expected->names, "residual", 'c')).vector;
     gsl_blas_ddot(&v, &v, &sse);
     v   = gsl_matrix_column(in->expected->matrix, 0).vector; //actual.
-    sst = apop_vector_var(&v) * (v.size - 1);
+    sst = apop_vector_var(&v) * (v.size-1);
 //    gsl_blas_ddot(&v, &v, &sst);
     rsq = 1. - (sse/sst);
     adjustment  = ((indep_ct -1.) /(obs - indep_ct)) * (1.-rsq) ;
@@ -632,11 +632,11 @@ apop_data *apop_estimate_correlation_coefficient (apop_model *in){
     return out;
 }
 
-/** A synonym for \ref apop_estimate_correlation_coefficient, q.v. 
+/** A synonym for \ref * apop_estimate_coefficient_of_determination, q.v. 
  \ingroup regression
  */
 apop_data *apop_estimate_r_squared (apop_model *in){
-    return apop_estimate_correlation_coefficient(in);
+    return apop_estimate_coefficient_of_determination(in);
 }
 
 

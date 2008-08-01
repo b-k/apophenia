@@ -61,7 +61,7 @@ int test_skew_and_kurt(){
     printf ("kurt %g %g\n", apop_vector_kurt(v) ,apop_query_to_float("select kurt(vals) from t"));*/
     assert (fabs(apop_var(v) -apop_query_to_float("select var(vals) from t"))<1e-6);
     assert (fabs(apop_vector_skew(v) -apop_query_to_float("select skew(vals) from t"))<1e-6);
-    assert (fabs(apop_vector_kurt(v) -apop_query_to_float("select kurt(vals) from t"))<1e-6);
+    assert (fabs(apop_vector_kurt(v) -apop_query_to_float("select kurt(vals) from t"))<1e-5);
     apop_table_exists("t",1);
     return 0;
 }
@@ -112,8 +112,8 @@ static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gs
     assert(fabs(apop_vector_cov(v,v2) - apop_vector_weighted_cov(v,v2,NULL))<1e-5);
     assert(fabs(apop_vector_var(av) - apop_vector_weighted_var(v,w))<1e-5);
     assert(fabs(apop_vector_cov(av,av2) - apop_vector_weighted_cov(v,v2,w))<1e-5);
-    assert(fabs(apop_vector_skew(av) - apop_vector_weighted_skew(v,w))<1e-5);
-    assert(fabs(apop_vector_kurt(av) - apop_vector_weighted_kurt(v,w))<1e-5);
+    assert(fabs(apop_vector_skew_pop(av) - apop_vector_weighted_skew(v,w))<1e-5);
+    assert(fabs(apop_vector_kurtosis_pop(av) - apop_vector_weighted_kurt(v,w))<1e-5);
 }
 
 int test_weigted_moments(){
@@ -227,7 +227,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
 
 */
 int test_f(apop_model *est){
-apop_data   *rsq    = apop_estimate_correlation_coefficient(est);
+apop_data   *rsq    = apop_estimate_coefficient_of_determination(est);
 apop_data   *ftab   = apop_F_test(est, NULL);
 double      n       = est->data->matrix->size1;
 double      K       = est->parameters->vector->size;

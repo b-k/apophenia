@@ -47,7 +47,7 @@ double apop_two_tailify(double in);
 
 apop_model *apop_estimate_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 
-apop_data *apop_estimate_correlation_coefficient (apop_model *in);
+apop_data *apop_estimate_coefficient_of_determination (apop_model *in);
 apop_data *apop_estimate_r_squared (apop_model *in);
 void apop_estimate_parameter_t_tests (apop_model *est);
 
