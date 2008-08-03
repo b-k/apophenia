@@ -27,8 +27,12 @@ __END_DECLS
 
 #define Apop_settings_model_copy(newm, m, type, ...) apop_model *newm = apop_model_copy(m); Apop_settings_add_group(newm, type, __VA_ARGS__);
 
+
+/* If the group already exists, it is silently removed. */
+
 #define Apop_settings_add_group(model, type, ...)  do {     \
-        apop_assert_void(!apop_settings_get_group(model, #type), 0, 's', "You're trying to add a setting group of type " #type " to " #model " but that model already has such a group."); \
+        if(apop_settings_get_group(model, #type))  \
+                apop_settings_rm_group(model, #type); \
         (model)->settings = realloc((model)->settings, sizeof(apop_settings_type)*((model)->setting_ct+1));   \
         strncpy((model)->settings[(model)->setting_ct].name , #type , 100) ;    \
         (model)->settings[(model)->setting_ct].setting_group = type ##_settings_alloc (__VA_ARGS__);    \

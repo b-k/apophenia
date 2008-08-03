@@ -41,10 +41,10 @@ static double probit_log_likelihood(apop_data *d, apop_model *p){
   long double	n, total_prob	= 0;
   apop_data *betadotx = apop_dot(d, p->parameters, 0, 'v'); 
 	for(i=0; i< d->matrix->size1; i++){
-		n	        = gsl_cdf_gaussian_P(gsl_vector_get(betadotx->vector,i),1);
+		n	        = gsl_cdf_gaussian_P(-gsl_vector_get(betadotx->vector,i),1);
         n = n ? n : 1e-10; //prevent -inf in the next step.
         n = n<1 ? n : 1-1e-10; 
-        total_prob += apop_data_get(d, i, -1) ?  log(n): log(1 - n);
+        total_prob += apop_data_get(d, i, -1) ?  log(1-n): log(n);
 	}
     apop_data_free(betadotx);
 	return total_prob;
@@ -58,13 +58,13 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
     gsl_vector_set_all(gradient,0);
     for (i=0; i< d->matrix->size1; i++){
         betax            = gsl_vector_get(betadotx->vector, i);
-        cdf              = gsl_cdf_gaussian_P(betax, 1);
+        cdf              = gsl_cdf_gaussian_P(-betax, 1);
         cdf = cdf ? cdf : 1e-10; //prevent -inf in the next step.
         cdf = cdf<1 ? cdf : 1-1e-10; 
         if (apop_data_get(d, i, -1))
-            deriv_base      = gsl_ran_gaussian_pdf(betax, 1) /  cdf;
+            deriv_base      = gsl_ran_gaussian_pdf(-betax, 1) /(1-cdf);
         else
-            deriv_base      = -gsl_ran_gaussian_pdf(betax, 1) /(1-cdf);
+            deriv_base      = -gsl_ran_gaussian_pdf(-betax, 1) /  cdf;
         for (j=0; j< p->parameters->vector->size; j++)
             apop_vector_increment(gradient, j, apop_data_get(d, i, j) * deriv_base);
 	}

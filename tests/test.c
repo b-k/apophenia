@@ -852,6 +852,62 @@ void test_transpose(){
     assert(!tt->names->colct);
 }
 
+
+
+
+
+
+
+
+apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, apop_model *method){
+  int i, j;
+  double val;
+  int samples = 5e4;
+  apop_data *data = apop_data_alloc(0, samples, true_params->size);
+        //generate a random vector of data X, then set the outcome to one if the probit/logit condition holds
+        for (i = 0; i < samples; i++){
+            apop_data_set(data, i, 0, 1);
+            for (j = 1; j < true_params->size; j++)
+                apop_data_set(data, i, j, (gsl_rng_uniform(r)-0.5) *2);
+            APOP_ROW(data, i, asample);
+            gsl_blas_ddot(asample, true_params, &val);
+            if (method == &apop_probit)
+                apop_data_set(data, i, 0, (gsl_ran_gaussian(r, 1) > -val));
+            else   //Logit:   p(act) = e(xb) / (1+e(xb));
+                apop_data_set(data, i, 0, gsl_rng_uniform(r) < exp(val)/(1+exp(val)));
+        }
+    return data;
+}
+
+void test_probit_and_logit(gsl_rng *r){
+  int i;
+  for (i=0; i < 5; i++){
+    int param_ct = gsl_rng_uniform(r)*7 + 1; //up to seven params.
+    int j;
+    gsl_vector *true_params = gsl_vector_alloc(param_ct);
+    for (j = 0; j < param_ct; j++)
+        gsl_vector_set(true_params, j, (gsl_rng_uniform(r)-0.5)*2);
+    //apop_vector_show(true_params);
+
+    //Logit
+    apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
+    apop_model *m = apop_estimate(data, apop_logit);
+    APOP_COL(m->parameters, 0, logit_params);
+    assert(apop_vector_distance(logit_params, true_params) < 0.07);
+    apop_data_free(data);
+    apop_model_free(m);
+
+    //Probit
+    apop_data* data2 = generate_probit_logit_sample(true_params, r, &apop_probit);
+    m = apop_estimate(data2, apop_probit);
+    assert(apop_vector_distance(m->parameters->vector, true_params) < 0.07);
+    apop_model_free(m);
+    apop_data_free(data2);
+  }
+}
+
+
+
 //The do_test macros
 #define do_int_test(text, fn)   if (verbose)    \
                                 printf(text);  \
@@ -939,6 +995,7 @@ int main(int argc, char **argv){
     do_int_test("apop_linear_constraint test:", test_linear_constraint());
     do_test("apop_pack/unpack test:", apop_pack_test(r));
     do_test("transposition test:", test_transpose());
+    do_test("test probit and logit", test_probit_and_logit(r));
     printf("\nApophenia has passed all of its tests. Yay.\n");
     return 0;
 }
