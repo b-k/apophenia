@@ -72,7 +72,7 @@ double * apop_vector_to_array(const gsl_vector *in){
 /** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
 
 \param line     A vector.
-\param vsize 	You will have to tell the function how long <tt>in</tt> is.
+\param vsize 	You will have to tell the function how long \c line is.
 \return         A <tt>gsl_vector</tt>. Declare but do not allocate.
 \ingroup convertfromarray 
 */ 
@@ -640,7 +640,7 @@ static int count_cols_in_row(char *instr){
   regmatch_t result[3];
     while (last_match < length_of_string && !regexec(headregex, (instr+last_match), 2, result, 0)){
         pull_string(instr,  outstr, result,  &last_match);
-        if (outstr && strlen(outstr) > 0)
+        if (strlen(outstr))
             ct++;
 	}
 	return ct;

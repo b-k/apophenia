@@ -70,7 +70,7 @@ apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
 }
 
 void *apop_mle_settings_copy(apop_mle_settings * in){
-  apop_mle_settings *setme =   malloc(sizeof(apop_mle_settings));
+  apop_mle_settings *setme = malloc(sizeof(apop_mle_settings));
     memmove(setme, in, sizeof(apop_mle_settings));
     return setme;
 }
@@ -557,7 +557,7 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
     info.trace_file     = malloc(sizeof(FILE *)); *info.trace_file = NULL;
     info.model  = apop_model_copy(dist);
     if(!mp){
-        Apop_settings_add_group(info.model, apop_mle, &dist);
+        Apop_settings_add_group(info.model, apop_mle, &info.model);
         mp          =  apop_settings_get_group(info.model, "apop_mle");
     } 
     apop_model_prep(data, info.model);

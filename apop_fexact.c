@@ -2067,14 +2067,14 @@ L30:
 Not too necessary, but I needed it for the Fisher exact test.
 \ingroup conversions
 */
-int *apop_data_to_int_array(apop_data *intab){
+static int *apop_data_to_int_array(apop_data *intab){
 int i,j,
     rowct   = intab->matrix->size1,
     colct   = intab->matrix->size2,
     *out    =malloc(sizeof(int)*(rowct* colct));
     for (i=0; i< rowct; i++)
         for (j=0; j< colct; j++)
-            out[i*rowct + j] = (int) gsl_matrix_get(intab->matrix, i, j);
+            out[j*rowct + i] = (int) gsl_matrix_get(intab->matrix, i, j);
     return out;
 }
 
@@ -2087,7 +2087,7 @@ int i,j,
 */
 apop_data *apop_test_fisher_exact(apop_data *intab){
 double  prt, pre,
-        expect      = 5,
+        expect      = -1,
         percent     = 80,
         emin        = 1;
 int     *intified   = apop_data_to_int_array(intab),
@@ -2095,7 +2095,6 @@ int     *intified   = apop_data_to_int_array(intab),
         mult        = 30,
         rowct       = intab->matrix->size1,
         colct       = intab->matrix->size2;
-apop_data *out      = apop_data_alloc(0,2,1);
 fexact(&rowct, 
        &colct,
        intified,
@@ -2109,10 +2108,12 @@ fexact(&rowct,
        &workspace,
        &mult);
     free(intified);
-    apop_name_add(out->names, "probability of table", 'r');
-    gsl_matrix_set(out->matrix, 0, 0, prt);
+apop_data *out      = apop_data_alloc(2,0,0);
+    apop_data_add_named_elmt(out, "probability of table", prt);
+    apop_data_add_named_elmt(out, "p value", pre);
+    /*gsl_matrix_set(out->matrix, 0, 0, prt);
     apop_name_add(out->names, "p value", 'r');
-    gsl_matrix_set(out->matrix, 1, 0, pre);
+    gsl_matrix_set(out->matrix, 1, 0, pre);*/
     return out;
 }
 

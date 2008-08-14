@@ -425,59 +425,122 @@ static int strcmpwrap(const void *a, const void *b){
     return strcmp(*aa, *bb);}
 
 
-
-/* This is a utility used by the dummies and factors functions, and is
-  basically running "select distinct * from datacolumn", but without 
+/** Give me a vector of numbers, and I'll give you a sorted list of the unique
+  elements. 
+  This is basically running "select distinct * from datacolumn", but without 
   the aid of the database.  
- */
-static void  apop_get_unique_elements(const apop_data *d, int col, char type, 
-                        const gsl_vector *in, size_t *elmt_ctr, double **elmts, char ***telmts){
+
+  \param d An \c apop_data set with a text component
+  \param col The text column you want me to use.
+  \param telmts The list of names. Sample usage:
+  \code
+  char **list;
+   size_t elmt_ct =  apop_text_unique_elements(d, 3, &list);
+   for (int i=0; i< elmt_ct; i++)
+        printf("Unique element #%i: %s\n", i, list[i]);
+  \endcode
+
+  \return The number of elements in the list.
+  \see{apop_text_unique_elements}
+*/
+gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
   int    i;
-  char   **tval;
   double val;
   size_t prior_elmt_ctr  = 107;
-  int    s = type == 'd' ? in->size : d->textsize[0];
-    if (type == 'd')
-        for (i=0; i< s; i++){
-            if (prior_elmt_ctr != *elmt_ctr)
-                *elmts   = realloc(*elmts, sizeof(double)*(*elmt_ctr+1));
-            prior_elmt_ctr  = *elmt_ctr;
-            val     =  gsl_vector_get(in, i);
-            lsearch (&val, *elmts, elmt_ctr, sizeof(double), compare_doubles);
-            qsort(*elmts, *elmt_ctr, sizeof(double), compare_doubles);
+  size_t elmt_ctr = 0;
+  double *elmts   = NULL;
+  gsl_vector *out = NULL;
+    for (i=0; i< v->size; i++){
+        if (prior_elmt_ctr != elmt_ctr)
+            elmts   = realloc(elmts, sizeof(double)*(elmt_ctr+1));
+        prior_elmt_ctr  = elmt_ctr;
+        val     =  gsl_vector_get(v, i);
+        lsearch (&val, elmts, &elmt_ctr, sizeof(double), compare_doubles);
+        if (prior_elmt_ctr < elmt_ctr)
+            qsort(elmts, elmt_ctr, sizeof(double), compare_doubles);
+        out = apop_array_to_vector(elmts, elmt_ctr);
+    }
+    free(elmts);
+    return out;
+}
+
+/** Give me a column of text, and I'll give you a sorted list of the unique
+  elements. 
+  This is basically running "select distinct * from datacolumn", but without 
+  the aid of the database.  
+
+  \param d An \c apop_data set with a text component
+  \param col The text column you want me to use.
+  \param telmts The list of names. Sample usage:
+  \code
+  char **list;
+   size_t elmt_ct =  apop_text_unique_elements(d, 3, &list);
+   for (int i=0; i< elmt_ct; i++)
+        printf("Unique element #%i: %s\n", i, list[i]);
+  \endcode
+
+  \return The number of elements in the list.
+  \see{apop_vector_unique_elements}
+*/
+apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
+  int    i, j;
+  char   **tval;
+
+  //first element for free
+  size_t prior_elmt_ctr, elmt_ctr = 1;
+  char **telmts = malloc(sizeof(char**)*2);
+  telmts[0] = d->text[0][col];
+
+    for (i=1; i< d->textsize[0]; i++){
+        prior_elmt_ctr  = elmt_ctr;
+        tval    =  &(d->text[i][col]);
+        lsearch (tval, telmts, &elmt_ctr, sizeof(char*), strcmpwrap);
+        if (prior_elmt_ctr  < elmt_ctr){
+            qsort(telmts, elmt_ctr, sizeof(char*), strcmpwrap);
+            telmts = realloc(telmts, sizeof(char**)*(elmt_ctr+1));
         }
-    else 
-        for (i=0; i< s; i++){
-            if (prior_elmt_ctr != *elmt_ctr)
-                *telmts   = realloc(*telmts, sizeof(char**)*(*elmt_ctr+1));
-            prior_elmt_ctr  = *elmt_ctr;
-            tval    =  &(d->text[i][col]);
-            lsearch (tval, *telmts, elmt_ctr, sizeof(char**), strcmpwrap);
-            qsort(*telmts, *elmt_ctr, sizeof(char**), strcmpwrap);
-        }
+    }
+
+    //pack and ship
+    apop_data *out = apop_text_alloc(NULL, elmt_ctr, 1);
+    for (j=0; j< elmt_ctr; j++)
+        apop_text_add(out, j, 0, telmts[j]);
+    free(telmts);
+    return out;
 }
 
 /* Producing dummies consists of finding the index of element i, for all i, then
- * setting (i, index) to one.
- * Producing factors consists of finding the index and then setting (i, datacol) to index.
- * Otherwise the work is basically identical.
- */
+ setting (i, index) to one.
+ Producing factors consists of finding the index and then setting (i, datacol) to index.
+ Otherwise the work is basically identical.  */
 apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_first, 
-                                                int datacol, char dummyfactor){
-  size_t      i, index,
+                                                int datacol, char dummyfactor, apop_data **factor_list){
+  size_t      i, j, index,
               elmt_ctr        = 0;
   apop_data   *out; 
-  double      *elmts          = malloc(sizeof(double)),
-              val;
+  double      val;
+  gsl_vector  *delmts         = NULL;
   char        n[1000],
-              **telmts        = malloc(sizeof(char*));
+              **telmts        = NULL;//unfortunately needed for the bsearch.
   gsl_vector  *in             = NULL;
   int         s = type == 'd' ? in->size : d->textsize[0];
 
         APOP_COL(d, col, in_t);
         in  = in_t;
     //first, create an ordered list of unique elements.
-    apop_get_unique_elements(d, col, type, in, &elmt_ctr, &elmts, &telmts);
+    if (type == 'd'){
+        APOP_COL(d, col, sortme);
+        delmts = apop_vector_unique_elements(sortme);
+        elmt_ctr = delmts->size;
+        *factor_list =  apop_data_alloc(0,0,0);
+        (*factor_list)->vector = delmts;
+    } else{
+        *factor_list = apop_text_unique_elements(d, col);
+        elmt_ctr = (*factor_list)->textsize[0];
+        telmts = malloc(sizeof(char*)*elmt_ctr);
+        for (j=0; j< elmt_ctr; j++)
+            asprintf(&(telmts[j]), (*factor_list)->text[j][0]);
+    }
 
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
@@ -489,28 +552,31 @@ apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_
     for (i=0; i< s; i++){
         if (type == 'd'){
             val     = gsl_vector_get(in, i);
-            index   = ((size_t)bsearch(&val, elmts, elmt_ctr, sizeof(double), compare_doubles) - (long int)elmts)/sizeof(double);
+            index   = ((size_t)bsearch(&val, delmts->data, elmt_ctr, sizeof(double), compare_doubles) - (long int)delmts->data)/sizeof(double);
         } else 
             index   = ((size_t)bsearch(&(d->text[i][col]), telmts, elmt_ctr, sizeof(char**), strcmpwrap) - (size_t)telmts)/sizeof(char**);
         if (dummyfactor == 'd'){
             if (keep_first)
                 gsl_matrix_set(out->matrix, i, index,1); 
-            else if (index>0)
+            else if (index>0)   //else and index==0; throw it out. 
                 gsl_matrix_set(out->matrix, i, index-1, 1); 
-           //else don't keep first, and index==0; throw it out. 
         } else
             apop_data_set(out, i, datacol, index); 
-
     }
     //Add names:
-    if (dummyfactor == 'd')
+    if (dummyfactor == 'd'){
         for (i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
             if (type =='d')
-                sprintf(n,"dummy %g", elmts[i]);
+                sprintf(n,"dummy %g", gsl_vector_get(delmts,i));
             else
                 sprintf(n, telmts[i]);
             apop_name_add(out->names, n, 'c');
         }
+        apop_data_free(*factor_list);
+    }
+    for (j=0; j< elmt_ctr; j++)
+        free(telmts[j]);
+    free(telmts);
     return out;
 
 }
@@ -536,12 +602,15 @@ apop_data_stack(main_regression_vars, dummies, 'c');
 */
 apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first){
     if (type == 'd'){
-        apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element (col==-1) but the data's vector element is NULL.");
-        apop_assert(col < d->matrix->size2,  NULL, 0, 's', "You asked for the matrix element %i but the data's matrix element has only %i columns.", col, d->matrix->size2);
+        apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
+                                                    "(col==-1) but the data's vector element is NULL.");
+        apop_assert(col < d->matrix->size2,  NULL, 0, 's', "You asked for the matrix element %i "
+                               "but the data's matrix element has only %i columns.", col, d->matrix->size2);
     } else
-        apop_assert(col < d->textsize[1],  NULL, 0, 's', "You asked for the text element %i but the data's text element has only %i elements.", col, d->textsize[1]);
-
-    return dummies_and_factors_core(d, col, type, keep_first, 0, 'd');
+        apop_assert(col < d->textsize[1],  NULL, 0, 's', "You asked for the text element %i but "
+                                    "the data's text element has only %i elements.", col, d->textsize[1]);
+    apop_data *fdummy;
+    return dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
 }
 
 
@@ -549,23 +618,32 @@ apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_firs
   into a column of numeric elements, which you can use for a multinomial probit, for example.
 
 \param d The data set to be modified in place.
-\param datacol The column in the data set where the numeric factors will be written (-1 means the vector)
+\param datacol The column in the data set where the numeric factors will be written (-1 means the vector, which I will allocate for you if it is \c NULL)
 \param textcol The column in the text that will be converted.
 
 For example:
 \code
 apop_data *d  = apop_query_to_mixed_data("mmt", "select 1, year, color from data");
-apop_data_text_to_factors(d, 0, 0);
+apop_text_to_factors(d, 0, 0);
 \endcode
 Notice that the query pulled a column of ones for the sake of saving room for the factors.
 
-*/
-void apop_data_text_to_factors(apop_data *d, size_t textcol, int datacol){
-    apop_assert_void((datacol != -1) || d->vector, 0, 's', "You asked for the vector element (col==-1) but the data's vector element is NULL.");
-    apop_assert_void(datacol < d->matrix->size2, 0, 's', "You asked for the matrix element %i but the data's matrix element has only %i columns.", datacol, d->matrix->size2);
-    apop_assert_void(textcol < d->textsize[1], 0, 's', "You asked for the text element %i but the data's text element has only %i elements.", datacol, d->textsize[1]);
+\return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
 
-    dummies_and_factors_core(d, textcol, 't', 1, datacol, 'f');
+*/
+apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
+    /*apop_assert_void((datacol != -1) || d->vector, 0, 's', "You asked for the vector element (datacol==-1)"
+                                                           " but the data's vector element is NULL.");
+    apop_assert_void(datacol < (int) d->matrix->size2, 0, 's', "You asked for the matrix element %i but the "
+                                    "data's matrix has only %i columns.", datacol, d->matrix->size2);*/
+    apop_assert_void(textcol < d->textsize[1], 0, 's', "You asked for the text element %i but the data's "
+                                            "text has only %i elements.", datacol, d->textsize[1]);
+
+    if (!d->vector && datacol == -1) //allocate a vector for the user.
+        d->vector = gsl_vector_alloc(d->textsize[0]);
+    apop_data *out;
+    dummies_and_factors_core(d, textcol, 't', 1, datacol, 'f', &out);
+    return out;
 }
 
 /** A fixed-effects regression.
@@ -595,11 +673,11 @@ apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd
 \param  in  The estimate. I need residuals to have been calculated, and the first column of in->data needs to be the dependent variable.
 
 \return: a \f$1 \times 5\f$ apop_data table with the following fields:
-"R_squared"\\
-"R_squared_adj"\\
-"SSE"\\
-"SST"\\
-"SSR"
+\li "R_squared"
+\li "R_squared_adj"
+\li "SSE"
+\li "SST"
+\li "SSR"
 
 \param in   An estimated model. I use the \c expected table (which
 gives the expected value and residual for each observation), so if you
@@ -638,6 +716,3 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *in){
 apop_data *apop_estimate_r_squared (apop_model *in){
     return apop_estimate_coefficient_of_determination(in);
 }
-
-
-

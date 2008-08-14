@@ -102,7 +102,7 @@ inline double apop_var(const gsl_vector *in){
 inline double apop_vector_skew(const gsl_vector *in){
 	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/(gsl_pow_2(in->size) -1.); }
 
-/** Returns the population skew (\f$\sum_i (x_i - \mu)^3/n)\f$) of the data in the given vector.
+/** Returns the population skew \f$(\sum_i (x_i - \mu)^3/n))\f$ of the data in the given vector.
  
   Some people like to normalize the skew by dividing by variance\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
 \ingroup vector_moments
@@ -123,7 +123,7 @@ inline double apop_vector_skew_pop(const gsl_vector *in){
     return avg;
 }
 
-/** Returns the population kurtosis (\f\sum_i (x_i - \mu)^4/n)\f$) of the data in the given vector.
+/** Returns the population kurtosis (\f$\sum_i (x_i - \mu)^4/n)\f$) of the data in the given vector.
  
   Some people like to normalize the skew by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
 \ingroup vector_moments
@@ -456,8 +456,7 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 \ingroup    output
 \todo At the moment, only gives the mean, standard deviation, and variance
 of the data in each column; should give more in the near future.
-\todo We should probably let this summarize rows as well.
-*/
+\todo We should probably let this summarize rows as well.  */
 apop_data * apop_data_summarize(apop_data *indata){
   apop_assert(indata, NULL, 0, 'c', "You sent me a NULL apop_data set. Returning NULL.\n");
   apop_assert(indata->matrix, NULL, 0, 'c', "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
@@ -498,9 +497,7 @@ apop_data * apop_data_summarize(apop_data *indata){
  This is just the version of \ref apop_data_summarize for when
  you have a gsl_matrix instead of an \ref apop_data set. In
  fact, here's the source code for this function: <tt>return
- apop_data_summarize(apop_matrix_to_data(m));</tt>
-
- */
+ apop_data_summarize(apop_matrix_to_data(m));</tt> */
 apop_data * apop_matrix_summarize(gsl_matrix *m){
   apop_assert(m,  NULL, 0, 'c', "You sent me a NULL gsl_matrix. Returning NULL.\n");
     return apop_data_summarize(apop_matrix_to_data(m));
@@ -511,8 +508,7 @@ apop_data * apop_matrix_summarize(gsl_matrix *m){
 
 \param  v   The data vector
 \param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted mean
-*/
+\return     The weighted mean */
 double apop_vector_weighted_mean(const gsl_vector *v,const  gsl_vector *w){
   int           i;
   long double   sum = 0, wsum = 0;
@@ -538,8 +534,7 @@ as standard weightings or to represent elements that appear repeatedly.
 
 \param  v   The data vector
 \param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted sample variance. 
-*/
+\return     The weighted sample variance.  */
 double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
   int           i;
   long double   sum = 0, wsum = 0, sumsq = 0, vv, ww;
@@ -686,7 +681,7 @@ gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize){
 	return out;
 }
 
-/** Returns the matrix of correlation coefficients (\f$\sigma^2_{xy}/(\sigma_x\sigma_y)\f$) relating each column with each other.
+/** Returns the matrix of correlation coefficients \f$(\sigma^2_{xy}/(\sigma_x\sigma_y))\f$ relating each column with each other.
 
 This is the \c gsl_matrix  version of \ref apop_data_covariance; if you have column names, use that one.
 
@@ -743,7 +738,7 @@ apop_data *apop_data_covariance(const apop_data *in){
     return out;
 }
 
-/** Returns the matrix of correlation coefficients (\f$\sigma^2_{xy}/(\sigma_x\sigma_y)\f$) relating each column with each other.
+/** Returns the matrix of correlation coefficients \f$(\sigma^2_{xy}/(\sigma_x\sigma_y))\f$ relating each column with each other.
 
 This is the \ref apop_data version of \ref apop_matrix_correlation; if you don't have column names or weights, (or want the option for the faster, data-destroying version), use that one.
 

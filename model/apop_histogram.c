@@ -28,6 +28,7 @@ apop_model apop_histogram;
  */
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins){
     //header is in model.h.
+  Apop_assert(data, NULL, 0, 'c', "You asked me to set up a histogram with NULL data. Returning a NULL settings group.");
   apop_histogram_settings *hp = malloc(sizeof(*hp));
   size_t              i, j;
   double              minv    = GSL_POSINF,

@@ -78,6 +78,7 @@ typedef struct{
 
 /**
 Gathers together a <tt>gsl_vector</tt>, a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space for a table of non-numeric data.
+Allocate using \c apop_data_alloc, free via \c apop_data_free, or more generally, see the \c apop_data_... section of the index (in the header links) for the many other functions that operate on this struct.
 \ingroup data_struct
 */
 typedef struct {
@@ -91,11 +92,8 @@ typedef struct {
 
 /** A description of a parametrized statistical model, including the
 input settings and the output parameters, expected values, et cetera.
-The full declaration is given in the \c _apop_model page.
-
-<b>An example</b><br>
-
-The \ref apop_ols page has a sample program which uses an \ref apop_model.
+The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see 
+the \ref apop_ols page for a sample program that uses an \ref apop_model.
 \ingroup types
 */
 typedef struct _apop_model apop_model;
@@ -122,7 +120,6 @@ struct _apop_model{
     char        name[101]; 
     int         vbase, m1base, m2base;
     apop_settings_type *settings;
-    int         setting_ct;
     apop_data   *parameters, *expected, *covariance;
     double      llikelihood;
     int         prepared, status;
@@ -208,12 +205,11 @@ void apop_data_set_ti(apop_data *in, char* row, int col, double data);
 void apop_data_set_it(apop_data *in, size_t row, char* col, double data);
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data);
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
-void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *text);
+void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 apop_data *apop_data_transpose(apop_data *in);
 
 void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
-
 
 void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
 

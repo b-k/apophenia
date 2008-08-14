@@ -1,10 +1,11 @@
 /** \file apop_data.c	 The apop_data structure joins together a
   gsl_matrix, apop_name, and a table of strings. No biggie.
 
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2006--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include <assert.h>
 #include <gsl/gsl_matrix.h>
+#include "vasprintf/vasprintf.h"
 #include "types.h"
 #include "output.h"
 #include "linear_algebra.h"
@@ -51,9 +52,7 @@ The \c weights vector is set to \c NULL. If you need it, allocate it via
 See also \ref apop_data_calloc.
 
   \param vsize              vector size, if any. 
-  \param msize1, msize2     Row and column size for the matrix. If \c size2>0
-  this exactly mirrors the format of \c gsl_matrix_alloc. If \c size2==-1,
-  then allocate a vector. 
+  \param msize1, msize2     Row and column size for the matrix. 
   
   \c apop_data_alloc(0,0,0) will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
 
@@ -69,6 +68,7 @@ apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int m
         setme->matrix   = gsl_matrix_alloc(msize1,msize2);
     if (vsize)
         setme->vector   = gsl_vector_alloc(vsize);
+    //I allocate a vector of msize2==-1. This is deprecated, and will one day be deleted.
     else if (msize2==-1 && msize1>0)
         setme->vector   = gsl_vector_alloc(msize1);
 
@@ -113,10 +113,10 @@ apop_data * apop_data_calloc(const size_t vsize, const size_t msize1, const int 
 }
 
 
-/** Wrap an \ref apop_name structure around an existing \c gsl_matrix.
+/** Wrap an \ref apop_data structure around an existing \c gsl_matrix.
 
 \param m    The existing matrix you'd like to turn into an \ref apop_data structure.
-return      The \ref apop_data structure in question.
+\return      The \ref apop_data structure whose \c matrix pointer points to the input matrix. The rest of the struct is basically blank.
   */
 apop_data * apop_matrix_to_data(gsl_matrix *m){
   apop_assert_void(m, 1, 'c',"Converting a NULL matrix to an apop_data structure.");
@@ -125,7 +125,7 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
     return setme;
 }
 
-/** Wrap an \ref apop_name structure around an existing \c gsl_vector.
+/** Wrap an \ref apop_data structure around an existing \c gsl_vector.
 
 \param  v   The data vector
 \return     an allocated, ready-to-use \ref apop_data struture.
@@ -137,7 +137,13 @@ apop_data * apop_vector_to_data(gsl_vector *v){
     return setme;
 }
 
-/** free a matrix of chars* (i.e., a char***).  */
+/** Free a matrix of chars* (i.e., a char***). This is the form of the
+ text element of the \ref apop_data set, so you can use this for:
+ \code
+ apop_text_free(yourdata->text, yourdata->textsize[0], yourdata->textsize[1]);
+ \endcode
+ This is what \c apop_data_free does internally.
+   */
 void apop_text_free(char ***freeme, int rows, int cols){
   int  i, j;
     if (rows && cols)
@@ -257,11 +263,12 @@ If m1 or m2 are NULL, this returns a copy of the other element, and if
 both are NULL, you get NULL back.
 
 \return         a new \ref apop_data set with the stacked data.
-Categories get dropped. If stacking rows on rows, the output vector is the input
+\li text is ignored
+\li If stacking rows on rows, the output vector is the input
 vectors stacked accordingly. If stacking columns by columns, the output
 vector is just the vector of m1 and m2->vector doesn't appear in the
-output at all.  [If you don't like this behavior, send me code showing
-what you'd prefer.]
+output at all.  
+\li Names are a copy of the names for \c m1, with the names for \c m2 appended to the row or column list, as appropriate.
 
 \ingroup data_struct
 */
@@ -269,20 +276,19 @@ apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
   gsl_matrix  *stacked= NULL;
   apop_data   *out    = NULL;
     if (m1 == NULL)
-        out = apop_data_copy(m2);
-    else if (m2 == NULL)
-        out = apop_data_copy(m1);
-    else if (posn == 'r' || posn == 'c'){
-        stacked = apop_matrix_stack(m1->matrix, m2->matrix, posn);
-        out     = apop_matrix_to_data(stacked);
-        if (posn == 'c')
-            out->vector = apop_vector_stack(m1->vector, m2->vector);
-        else 
-            out->vector = m1->vector;
-        out->names  = apop_name_copy(m1->names);
-        apop_name_stack(out->names, m2->names, posn);
-    } else
-        apop_error(0, 'c',"%s: valid positions are 'r' or 'c' ('v' is deprecated); you gave me >%c<. Returning NULL.", __func__, posn);
+        return apop_data_copy(m2);
+    if (m2 == NULL)
+        return apop_data_copy(m1);
+    Apop_assert((posn == 'r' || posn == 'c'), NULL, 0, 'c', "Valid positions are 'r' or 'c' ('v' is deprecated); "
+                                                         "you gave me >%c<. Returning NULL.", posn);
+    stacked = apop_matrix_stack(m1->matrix, m2->matrix, posn);
+    out     = apop_matrix_to_data(stacked);
+    if (posn == 'c')
+        out->vector = apop_vector_stack(m1->vector, m2->vector);
+    else 
+        out->vector = m1->vector;
+    out->names  = apop_name_copy(m1->names);
+    apop_name_stack(out->names, m2->names, posn);
     return out;
 }
 
@@ -290,8 +296,7 @@ apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
 
  For the opposite operation, see \ref apop_data_stack.
 
- For this function, the \ref apop_data->vector is taken to be the -1st
- element of the matrix.
+ The \ref apop_data\c->vector is taken to be the -1st element of the matrix.
  \param in  The \ref apop_data structure to split
  \param splitpoint The index of what will be the first row/column of the
  second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole
@@ -459,7 +464,7 @@ void apop_data_rm_columns(apop_data *d, int *drop){
 }
 
 /** Get a pointer to an element of an \c apop_data set. Column -1 is the
-  vector. For symmetry with \c gsl_vector_ptr and \c gsl_matrix_ptr.
+  vector. This function follows the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr.
 
   \param data   The data set.
   \param    i   The row
@@ -664,52 +669,49 @@ void apop_data_set_tt(apop_data *in, char *row, char* col, double data){
     gsl_matrix_set(in->matrix, rownum, colnum, data);
 }
 
-/** Add a named element to a data vector. For example, this is primarily
-used by the testing procedures, that produce a column of named parameters.
+/** Add a named element to a data vector. For example, 
+many of the testing procedures use this to easily produce a column of named parameters.
 
 \param d    The \ref apop_data structure.
 \param name The name to add
 \param val  the vector value to add.
 
-I use the position of the name to know where to put the value. If there
-are two names in the data set, then I will put the data in the third
-slot in the vector. If you use this function from start to finish in
-building your vector, then you'll be fine.
+I use the position of the name to know where to put the value. If
+there are two names in the data set, then I will put the new name in
+the third name slot and the data in the third slot in the vector. If
+you use this function from start to finish in building your vector,
+then you'll be fine.
 
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
+    Apop_assert_void(d, 0, 's', "You sent me a NULL apop_data set. I'm not sure what you want me to do with that.");
+    Apop_assert_void(d->vector, 0, 's', "The apop_data set you sent me has a NULL vector.");
     gsl_vector_set(d->vector, d->names->rowct, val);
     apop_name_add(d->names, name, 'r');
 }
 
 
 
-/** Add a string to the text element of an \c apop_data set. 
-
-
-   By the way, the \c text element is simply an array of arrays of
-   strings, so there are no special tricks to this function. After some
-   checks, it just runs:
-
-\code
-in->text[row][col]  = malloc(strlen(yourtext)+1);
-strcpy(in->text[row][col], yourtext);
-\endcode
+/** Add a string to the text element of an \c apop_data set.  If you
+ send me a \c NULL string, I will write the string <tt>"NaN"</tt> in the given slot.
 
 \param in   The \c apop_data set, that already has an allocated \c text element.
 \param row  The row
 \param col  The col
-\param text The text to write.
+\param fmt The text to write.
+\param ... You can use a printf-style fmt and follow it with the usual variables to fill in.
 */
-void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *text){
-    apop_assert_void((in->textsize[0] >= (int)row-1) && (in->textsize[1] >= (int)col-1), 0, 'c', "You asked me to put the text '%s' at (%i, %i), but the text array has size (%i, %i)\n", text, row, col, in->textsize[0], in->textsize[1]);
-    if (text==NULL){
-        in->text[row][col]  = malloc(strlen("NaN") +1);
-        strcpy(in->text[row][col], "NaN");
-    } else {
-        in->text[row][col]  = malloc(strlen(text)+1);
-        strcpy(in->text[row][col], text);
+void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
+  va_list   argp;
+  apop_assert_void((in->textsize[0] >= (int)row-1) && (in->textsize[1] >= (int)col-1), 0, 'c', "You asked me to put the text "
+                            " '%s' at (%i, %i), but the text array has size (%i, %i)\n", fmt, row, col, in->textsize[0], in->textsize[1]);
+    if (!fmt){
+        asprintf(&(in->text[row][col]), "NaN");
+        return;
     }
+	va_start(argp, fmt);
+    vasprintf(&(in->text[row][col]), fmt, argp);
+	va_end(argp);
 }
 
 /** This allocates an array of strings and puts it in the \c text element

@@ -56,14 +56,14 @@ Thus, the typical analysis using Apophenia would take the following steps:
  \li Read the data into the database using \ref apop_text_to_db.
  \li Use SQL queries handled by \ref apop_query to massage the data as needed.
  \li Use \ref apop_query_to_data to pull the data into an in-memory apop_data set.
- \li Call a model estimation such as \code apop_estimate (data_set, apop_OLS)\endcode  or \code apop_estimate (data_set, apop_probit)\endcode to fit parameters to the data. This will return an \ref apop_model object.
+ \li Call a model estimation such as \code apop_estimate (data_set, apop_OLS)\endcode  or \code apop_estimate (data_set, apop_probit)\endcode to fit parameters to the data. This will return an \ref apop_model like the original, but with parameter estimates.
  \li Interrogate the returned estimate, by dumping it to the screen with \ref apop_model_show, sending its parameters and variance-covariance matrices to a test, et cetera.
 
 If this seems a bit vague, have a look at this \ref sample_program.
 
-\section The components
+\section comp The components
 
-The elements of the package basically fall into a few categories, some of which have their own thinking about them:
+The elements of the package basically fall into a few categories:
 
 \li The \ref db "database utilities", which open a database and allow
 query output to be put into a data set, vector, or matrix.
@@ -73,17 +73,17 @@ and a set of column and row names. This is sufficient to express a surprisingly 
 situations, and is to some extent the glue that holds together the other components.
 
 \li \ref basic_stats "Basic statistics", like the mean, variance,
-percentiles, &c. These typically act on the \c apop_data struct.
+percentiles, &c. These typically act on the \ref apop_data struct.
 
 \li \ref convenience_fns "Convenience functions" for the usual logistics,
 like taking the log of a vector of numbers or building partitioned matrices.
 
 \li The \ref models "apop_model struct", which is intended to
-encapsulate any statistical model. This is a tall order, and I (BK)
-know of no statistics package that has anything like it. Many of the
+encapsulate any statistical model. This is a tall order, and few if any 
+statistics packages have anything like it. Many of the
 statistical concepts given different functions in the typical package,
 including the probit, logit, OLS, and distributions such as the Normal,
-beta, gamma, poisson, ... are all implemented as standard \c apop_model objects.
+beta, gamma, poisson, ... are all implemented as standard \ref apop_model objects.
 The price of the standardization is a bit of awkwardness in 
  \li \ref settings "setting model parameters", but as above, you can estimate most of these models with a one-line call to \ref apop_estimate.
 
@@ -403,7 +403,7 @@ there is no requirement that you provide all functions, and \ref
 apop_maximum_likelihood and its Numerical gradient function do a
 good job of filling in blanks. -->
 
-\section The internals
+\section internals The internals
 
 \image html http://apophenia.sourceforge.net/doc/model.png
 \image latex model.png

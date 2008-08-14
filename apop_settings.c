@@ -62,8 +62,8 @@ or two. Here's a sample:
 \endcode
 
 Line three establishes the baseline form of the model. Line four adds
-a settings group of type apop_ls_settings to the model. If you check the
-manual for apop_ls_settings_alloc, you'll see that it takes one
+a settings group of type \ref apop_ls_settings to the model. If you check the
+manual for \ref apop_ls_settings_alloc, you'll see that it takes one
 argument---the input data---and the inputs to the alloc function appear
 after the model and settings group name. Line five sets the weights
 element in that group to w, and looks like the config-file format above.
@@ -103,21 +103,21 @@ all caps to indicate macros, those work as well.
 For just using a model, that's about 100% of what you need to know.
 
 
-\section settings_writng  "Writing new settings"
+\section settings_writng  Writing new settings
 
 To store the settings for your own models, you don't necessarily
-need any of this. The apop_model structure has a void pointer named
-more which you can use as you see fit. If more_size is larger than zero
-(i.e., you set it to sizeof(your_struct)), then it will be copied via
-memcpy as necessary. Apohenia's estimation routines will never impinge
+need any of this. The \ref apop_model structure has a \c void pointer named
+\c more which you can use as you see fit. If \c more_size is larger than zero
+(i.e., you set it to \c sizeof(your_struct)), then it will be copied via
+\c memcpy as necessary. Apohenia's estimation routines will never impinge
 on this item, so do what you feel with it.
 
 If you do want to set up a new model, then you will need four items. 
 This is the sort of boilerplate that will be familiar to users of 
 object oriented languages in the style of C++ or Java. Let
-your settings group be named ysg; then you will need
+your settings group be named \c ysg; then you will need
 
---The settings struct
+\li The settings struct
 \code
 typedef struct {
 ...
@@ -125,7 +125,7 @@ typedef struct {
 \endcode
 
 
---The allocate function
+\li The allocate function
 \code
 ysg_settings *ysg_settings_alloc(...){ 
     ysg_settings *out = malloc(sizeof(ysg_settings));
@@ -134,28 +134,28 @@ ysg_settings *ysg_settings_alloc(...){
 \endcode
 
 
---The copy function
+\li The copy function
 \code
 void *ysg_settings_copy(ysg_settings *copyme) {
     ysg_settings *out = malloc(sizeof(ysg_settings));
-    ...
+    //copy elements (or perhaps memcpy the whole struct) here.
     return out; }
 \endcode
 
 
---The free function, which can be as brief as:
+\li The free function, which can be as brief as:
 \code
 void ysg_settings_free(ysg_settings *copyme) {
     free(copyme);
 }
 \endcode
-(but may include a freeing of pointed-to subelements as necessary).
+but may include a freeing of pointed-to subelements as necessary.
 
 The names are not negotiable: when you call
 \code
 Apop_settings_alloc(m, ysg, ...)
 \endcode
-the macro will look for ysg_settings, ysg_settings_alloc, et cetera.
+the macro will look for \c ysg_settings, \c ysg_settings_alloc, et cetera.
 
 The lines-of-code averse will cringe at having to write such boilerplate
 code (I do), but after spending a year resisting it, I have to concede
@@ -175,45 +175,92 @@ you can declare, get, and set in a reasonably graceful manner.
 \ingroup settings
  */
 
-void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
-  int i;
-    for (i=0; i< inm->setting_ct; i++)
-        if (!strcmp(inm->settings[i].name, copyme)){
-            apop_settings_type c = inm->settings[i];
-            outm->settings = realloc(outm->settings, sizeof(apop_settings_type)*(outm->setting_ct+1)); 
-            strncpy(outm->settings[outm->setting_ct].name , copyme, 100) ; 
-            if (c.copy)
-                outm->settings[outm->setting_ct].setting_group = ((void *(*)(void*))c.copy)(c.setting_group);
-            outm->settings[outm->setting_ct].free = c.free;
-            outm->settings[outm->setting_ct].copy = c.copy;
-            outm->setting_ct ++; 
-            return;
-        }
-    apop_assert_void(0, 1, 'c', "I couldn't find %s in the input model, so nothing was copied.", copyme);
+static size_t get_settings_ct(apop_model *model){
+  int ct =0;
+    if (!model->settings) return 0;
+    while (strlen(model->settings[ct].name)) ct++;
+    return ct;
 }
 
 void apop_settings_rm_group(apop_model *m, char *delme){
-  int i, j;
-    for (i=0; i< m->setting_ct; i++)
+  apop_assert_void(m->settings, 1, 'c', "The model had no settings, so nothing was removed.");
+  int i = 0, j;
+  int ct = get_settings_ct(m);
+    while (strlen(m->settings[i].name)){
         if (!strcmp(m->settings[i].name, delme)){
             ((void (*)(void*))m->settings[i].free)(m->settings[i].setting_group);
-            for (j=i+1; j< m->setting_ct; j++){
-                strcpy(m->settings[m->setting_ct-1].name, m->settings[m->setting_ct].name);
-                m->settings[m->setting_ct-1].free = m->settings[m->setting_ct].free;
-                m->settings[m->setting_ct-1].copy = m->settings[m->setting_ct].copy;
-                m->settings[m->setting_ct-1].setting_group = m->settings[m->setting_ct].setting_group;
+            for (j=i+1; j< ct+1; j++){//don't forget the null sentinel.
+                strcpy(m->settings[j-1].name, m->settings[j].name);
+                m->settings[j-1].free = m->settings[j].free;
+                m->settings[j-1].copy = m->settings[j].copy;
+                m->settings[j-1].setting_group = m->settings[j].setting_group;
             }
-            m->setting_ct --; 
-            return;
+            i--;
         }
+        i++;
+    }
     apop_assert_void(0, 1, 'c', "I couldn't find %s in the input model, so nothing was removed.", delme);
 }
 
+/** Don't use this function. It's what the \c Apop_settings_add_group macro uses internally. Use that.  */
+void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group){
+    if(apop_settings_get_group(model, type))  
+        apop_settings_rm_group(model, type); 
+    int ct = get_settings_ct(model);
+    model->settings = realloc(model->settings, sizeof(apop_settings_type)*(ct+2));   
+    strncpy(model->settings[ct].name, type, 100);
+    model->settings[ct].setting_group = the_group;
+    model->settings[ct].free = free_fn; 
+    model->settings[ct].copy = copy_fn;
+    model->settings[ct+1].name[0] = '\0';
+    model->settings[ct+1].free = NULL;
+    model->settings[ct+1].copy = NULL;
+    model->settings[ct+1].setting_group = NULL;
+}
+
+/** This function gets the settings group with the given name. If it
+  isn't found, then it returns NULL, so you can easily put it in a conditional like 
+  \code 
+  if (!apop_settings_get_group(m, "apop_ols")) ...
+  \endcode
+
+  The settings macros don't need quotation marks, e.g. 
+  \code 
+  if (!Apop_settings_get_group(m, apop_ols)) ...
+  \endcode
+  It is recommended that you stick with this form, because other operations on settings require this form.
+*/
 void * apop_settings_get_group(apop_model *m, char *type){
-  int   i;
-    for (i=0; i< m->setting_ct; i++){
-        if (!strcmp(type, m->settings[i].name))
-            return m->settings[i].setting_group;
+  int   i = 0;
+    if (!m->settings) return NULL;
+    while (strlen(m->settings[i].name)){
+       if (!strcmp(type, m->settings[i].name))
+           return m->settings[i].setting_group;
+       i++;
     }
+    if (!strlen(type)) //requesting the blank sentinel.
+       return m->settings[i].setting_group;
     return NULL;
+}
+
+/** Copy a settings group with the given name from the second model to
+ the first.  (i.e., the arguments are in memcpy order). */
+void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
+  apop_assert_void(inm->settings, 0, 's', "The input model (i.e., the second argument to this function) has no settings.\n");
+  void *g =  apop_settings_get_group(inm, copyme);
+  if (strlen(copyme))
+      apop_assert_void(g, 0, 's', "I couldn't find the group %s in "
+                                    "the input model (i.e., the second argument to this function).\n", copyme);
+  int i=0;
+    while (strlen(inm->settings[i].name)){
+       if (!strcmp(copyme, inm->settings[i].name))
+           break;
+       i++;
+    }
+    void *gnew;
+    if (inm->settings[i].copy)
+        gnew = ((void *(*)(void*))inm->settings[i].copy)(g);
+    else
+        gnew = g;
+    apop_settings_group_alloc(outm, copyme, inm->settings[i].free, inm->settings[i].copy, gnew);
 }

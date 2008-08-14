@@ -60,15 +60,19 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
 \ingroup models */
 void apop_model_free (apop_model * free_me){
-  int   i;
+  int   i=0;
     if (!free_me) return;
     apop_data_free(free_me->parameters);
     apop_data_free(free_me->covariance);
     apop_data_free(free_me->expected);
-    for (i=0; i< free_me->setting_ct; i++)
-        if (free_me->settings[i].free)
-             ((void (*)(void*))(free_me->settings[i].free))(free_me->settings[i].setting_group);
-    free(free_me->settings);
+    if (free_me->settings){
+        while (strlen(free_me->settings[i].name)){
+            if (free_me->settings[i].free)
+                ((void (*)(void*))(free_me->settings[i].free))(free_me->settings[i].setting_group);
+            i++;
+        }
+        free(free_me->settings);
+    }
 	free(free_me);
 }
 
@@ -132,20 +136,12 @@ apop_model * apop_model_copy(apop_model in){
         out->more  = malloc(in.more_size);
         memcpy(out->more, in.more, in.more_size);
     }
-
-    int i; //if a setting isn't copied, this is several bytes of overallocing.
-    if (in.setting_ct)
-        out->settings = malloc(sizeof(apop_settings_type)*(in.setting_ct));
-    out->setting_ct = 0;
-    for (i=0; i< in.setting_ct; i++){
-        if (in.settings[i].copy)
-            out->settings[i].setting_group = ((void *(*)(void*))in.settings[i].copy)(in.settings[i].setting_group);
-        strcpy(out->settings[i].name, in.settings[i].name);
-        out->settings[i].copy = in.settings[i].copy;
-        out->settings[i].free = in.settings[i].free;
-        out->setting_ct++;
-    }
-
+    int i=0; 
+    out->settings = NULL;
+    if (in.settings)
+        do 
+            apop_settings_copy_group(out, &in, in.settings[i].name);
+        while (strlen(in.settings[i++].name));
     out->parameters = apop_data_copy(in.parameters);
     out->expected   = apop_data_copy(in.expected);
     out->covariance = apop_data_copy(in.covariance);

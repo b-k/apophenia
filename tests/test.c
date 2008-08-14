@@ -819,7 +819,7 @@ void dummies_and_factors(){
         } else
             for(j=0; j < dum->names->colct; j ++)
                 assert(!apop_data_get(dum, i, j));
-    apop_data_text_to_factors(d, 0, 2);
+    apop_text_to_factors(d, 0, 2);
     for(i=0; i < d->textsize[0]; i ++) //the set is only As and Cs.
         if (!strcmp(d->text[i][0], "A"))
             assert(apop_data_get(d, i, 2) == 0);
@@ -879,6 +879,32 @@ apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, ap
     return data;
 }
 
+void test_unique_elements(){
+    double d[] = {0, -3, 1.2, 2.4, -2, -3, 0.1, -0.1, 1.2, -2};
+    gsl_vector *dv = apop_array_to_vector(d, sizeof(d)/sizeof(double));
+    gsl_vector *distinct = apop_vector_unique_elements(dv);
+    assert(distinct->size == 7);
+    assert(gsl_vector_get(distinct, 2) == -.1);
+    assert(gsl_vector_get(distinct, 3) == 0);
+    assert(gsl_vector_get(distinct, 4) == .1);
+
+    apop_data *t = apop_text_alloc(NULL, 9, 7);
+    apop_text_add(t, 0, 0, "Hi,");
+    apop_text_add(t, 1, 0, "there");
+    apop_text_add(t, 2, 0, ".");
+    apop_text_add(t, 3, 0, "This");
+    apop_text_add(t, 4, 0, "there");
+    apop_text_add(t, 5, 0, "is");
+    apop_text_add(t, 6, 0, "dummy");
+    apop_text_add(t, 7, 0, "text");
+    apop_text_add(t, 8, 0, ".");
+    apop_data *dt = apop_text_unique_elements(t, 0);
+    assert(dt->textsize[0] == 7);
+    assert(!strcmp(".", dt->text[0][0]));
+    assert(!strcmp("Hi,", dt->text[1][0]));
+    assert(!strcmp("text", dt->text[5][0]));
+}
+
 void test_probit_and_logit(gsl_rng *r){
   int i;
   for (i=0; i < 5; i++){
@@ -892,7 +918,7 @@ void test_probit_and_logit(gsl_rng *r){
     //Logit
     apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
     apop_model *m = apop_estimate(data, apop_logit);
-    APOP_COL(m->parameters, 0, logit_params);
+    APOP_COL(m->parameters, 1, logit_params);
     assert(apop_vector_distance(logit_params, true_params) < 0.07);
     apop_data_free(data);
     apop_model_free(m);
@@ -906,6 +932,14 @@ void test_probit_and_logit(gsl_rng *r){
   }
 }
 
+void test_fisher() {
+    /* This test is thanks to Nick Eriksson, who sent it to me in the
+       form of a bug report. */
+    double data[] = { 30, 50, 45, 34, 12,17 };
+    apop_data * testdata = apop_line_to_data(data,0,2,3);
+    apop_data * t2 = apop_test_fisher_exact(testdata);
+    assert(fabs(apop_data_get(t2,1,-1) - 0.0001761) < 1e-6);
+}
 
 
 //The do_test macros
@@ -962,6 +996,7 @@ int main(int argc, char **argv){
     if (slow_tests){
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
+    do_test("test Fisher exact test", test_fisher());
     do_test("test distributions", test_distributions(r));
     do_test("test apop_update", test_updating());
     do_test("dummies and factors", dummies_and_factors());
@@ -995,6 +1030,7 @@ int main(int argc, char **argv){
     do_int_test("apop_linear_constraint test:", test_linear_constraint());
     do_test("apop_pack/unpack test:", apop_pack_test(r));
     do_test("transposition test:", test_transpose());
+    do_test("test unique elements", test_unique_elements());
     do_test("test probit and logit", test_probit_and_logit(r));
     printf("\nApophenia has passed all of its tests. Yay.\n");
     return 0;

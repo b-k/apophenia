@@ -70,14 +70,23 @@ apop_normal_settings *apop_normal_settings_alloc(int want_cov);
 apop_normal_settings *apop_normal_settings_copy(apop_normal_settings *in);
 void apop_normal_settings_free(apop_normal_settings *in);
 
-/** This is serious overkill for a single character of data---we could
- simply check for the presence of this struct and be done with it.
- But this allows for future expansion if so desired. */
+// Find apop_category_settings routines in apop_probit.c
+typedef struct {
+    apop_data *factors;
+    char source_type;
+    char source_column;
+    apop_data *source_data;
+} apop_category_settings;
+
+apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_column, char source_type);
+apop_category_settings *apop_category_settings_copy(apop_category_settings *in);
+void apop_category_settings_free(apop_category_settings *in);
+
 typedef struct {
     char rank_data;
     void *copy;
     void *free;
-}apop_rank_settings;
+} apop_rank_settings;
 
 //in apop_exponential.c
 apop_rank_settings *apop_rank_settings_alloc(void *ignoreme);
