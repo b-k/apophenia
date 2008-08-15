@@ -110,7 +110,7 @@ static void convert_array_to_line(const double **in, double **out, const int row
 			(*out)[i * cols + j]	= in[i][j];
 }
 
-/** convert a <tt>double **</tt> array to a <tt>gsl_matrix</tt>
+/** Convert a <tt>double **</tt> array to a <tt>gsl_matrix</tt>
 
 \param in	the array to read in
 \param rows, cols	the size of the array.
@@ -133,7 +133,7 @@ gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int c
     return out;
 }
 
-/** convert a <tt>double **</tt> array to an \ref apop_data set. It will
+/** Convert a <tt>double **</tt> array to an \ref apop_data set. It will
 have no names.
 
 \param in	the array to read in
@@ -150,7 +150,7 @@ apop_data * apop_array_to_data(const double **in, const int rows, const int cols
 }
 
 
-/** convert a <tt>double *</tt> array to a <tt>gsl_matrix</tt>
+/** Convert a <tt>double *</tt> array to a <tt>gsl_matrix</tt>
 
 \param line	the array to read in
 \param rows, cols	the size of the array.
@@ -168,7 +168,7 @@ gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
     return out;
 }
 
-/** convert a <tt>double **</tt> array to an \ref apop_data set. It will
+/** Convert a <tt>double **</tt> array to an \ref apop_data set. It will
 have no names.
 
 \param in	The array to read in
@@ -535,7 +535,7 @@ int apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
 	return 0;
 }
 
-/** \page dbtomatrix converting from database table to <tt>gsl_matrix</tt> or \ref apop_data
+/** \page dbtomatrix Converting from database table to <tt>gsl_matrix</tt> or \ref apop_data
 
 Use <tt>fill_me = apop_query_to_matrix("select * from table_name;");</tt>
 or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \ref apop_query_to_matrix; \ref apop_query_to_data.]

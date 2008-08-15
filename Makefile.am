@@ -52,7 +52,7 @@ apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
 apop_lookup_LDADD = libapophenia.la
 
-EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
+EXTRA_DIST = doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/foot.html \
 		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
 		tests/Makefile tests/Readme tests/slower.c tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/data-mixed tests/test_data tests/test_data2 \
@@ -72,7 +72,9 @@ EXTRA_DIST = doxy/doxyconfig doxy/flake.gif doxy/foot.html \
 doc: 
 	cp model/*.c .
 	doxygen doxy/doxyconfig
-	cp doxy/flake.gif doxy/search.gif html/
+	cp doxy/flake.gif doxy/search.gif doxy/right.png doxy/down.png html/
+	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)<p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1'\'');swapFolder('\''\1f'\'')"> <img src="right.png" border="0" id="\1f">\2</div></a></h2><div class="branch" id="\1">|' \
+-e 's|endofdiv<p>|</div>|'  html/outline.html
 	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
 	sudo cp man/man3/* /usr/share/man/man3/
 

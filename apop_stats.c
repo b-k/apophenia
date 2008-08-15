@@ -174,13 +174,13 @@ inline double apop_vector_kurt(const gsl_vector *in){
 inline double apop_vector_var_m(const gsl_vector *in, const double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
-/** returns the covariance of two vectors
+/** Returns the covariance of two vectors
 \ingroup vector_moments
 */
 inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb){
 	return gsl_stats_covariance(ina->data,ina->stride,inb->data,inb->stride,inb->size); }
 
-/** returns the correllation coefficient of two vectors. It's just
+/** Returns the correllation coefficient of two vectors. It's just
 \f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
 \ingroup vector_moments
 */
@@ -189,7 +189,7 @@ inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *i
 }
 
 
-/** returns the scalar distance (standard Euclidian metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
+/** Returns the scalar distance (standard Euclidian metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
 where \f$i\f$ iterates over dimensions.
 
 \ingroup convenience_fns
@@ -207,7 +207,7 @@ double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb){
 	return sqrt(dist); 
 }
 
-/** returns the scalar Manhattan metric distance  between two vectors. Simply \f$\sum_i{|a_i - b_i|},\f$
+/** Returns the scalar Manhattan metric distance  between two vectors. Simply \f$\sum_i{|a_i - b_i|},\f$
 where \f$i\f$ iterates over dimensions.
 
 \ingroup convenience_fns
@@ -347,7 +347,7 @@ inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
 	return gsl_cdf_chisq_P(sum,in->size); 
 }
 
-/** give me a random double between min and max [inclusive].
+/** Gives a random double between min and max [inclusive].
 
 \param min, max 	Y'know.
 \param r		The random number generator you're using.
@@ -357,7 +357,7 @@ double apop_random_double(double min, double max, gsl_rng *r){
 	return base * (max - min) - min;
 }
 
-/** give me a random integer between min and max [inclusive].
+/** Gives a random integer between min and max [inclusive].
 
 \param min, max 	Y'know.
 \param r		The random number generator you're using.

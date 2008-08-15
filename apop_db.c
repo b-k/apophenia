@@ -3,7 +3,9 @@ features like a variance, skew, and kurtosis aggregator for SQL.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-/** \defgroup db Database utilities 
+/* Deprecated; folded into the outline.
+ 
+  \defgroup db Database utilities 
 
 These are convenience functions to handle interaction with SQLite. They
 open one and only one database, and handle most of the interaction

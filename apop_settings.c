@@ -4,7 +4,10 @@ Copyright (c) 2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 #include "types.h"
 #include "settings.h"
 
-/** \page settings Tweaks and metadata for models.
+/*  This documentation is deprecated, having been folded into the outline in documentation.h
+  [i.e., http://apophenia.sourceforge.net/doc/outline.html ]
+
+ \page settings Tweaks and metadata for models.
 
 Apophenia is really only based on two objects, the \ref apop_data
 set and the \ref apop_model. Data sets come in a pretty standard form,

@@ -36,7 +36,9 @@ Things to do: (* = done)
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 
-/** \defgroup histograms Histograms, PMFs, and CMFs
+/* This documenation is deprecated, having been folded into the outline page.
+ 
+  \defgroup histograms Histograms, PMFs, and CMFs
 
 The GSL provides a few structures that basically accumulate data into
 bins. The first is the <tt>gsl_histogram</tt> structure, that produces a PMF.

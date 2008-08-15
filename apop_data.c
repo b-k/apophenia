@@ -560,7 +560,7 @@ matching rules.
 \param  row the name of the row you seek.
 \param  col the number of the column. If -1, return the vector element.
 
- \ingroup data_struct
+ \ingroup setget
  */
 double apop_data_get_ti(const apop_data *in, char* row, int col){
   int rownum =  apop_name_find(in->names, row, 'r');
@@ -577,7 +577,7 @@ double apop_data_get_ti(const apop_data *in, char* row, int col){
 Uses \ref apop_name_find for the search; see notes there on the name
 matching rules.
 
- \ingroup data_struct
+ \ingroup setget
  */
 double apop_data_get_it(const apop_data *in, size_t row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
@@ -590,7 +590,7 @@ double apop_data_get_it(const apop_data *in, size_t row, char* col){
 Uses \ref apop_name_find for the search; see notes there on the name
 matching rules.
 
- \ingroup data_struct
+ \ingroup setget
  */
 double apop_data_get_tt(const apop_data *in, char *row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
@@ -607,7 +607,7 @@ Q: How does <tt> apop_data_set(in, row, col, data)</tt> differ from
 A: It's seven characters shorter.
 
 Oh, and if \c col<0, then this will set the element of \c in->vector.
- \ingroup data_struct
+ \ingroup setget
 */
 void apop_data_set(apop_data *in, size_t row, int col, double data){
     if (col>=0){
@@ -629,7 +629,7 @@ matching rules.
 \param  col the number of the column. If -1, set the vector element.
 \param  data the value to insert
 
- \ingroup data_struct
+ \ingroup setget
  */
 void apop_data_set_ti(apop_data *in, char* row, int col, double data){
   int rownum =  apop_name_find(in->names, row, 'r');
@@ -646,7 +646,7 @@ void apop_data_set_ti(apop_data *in, char* row, int col, double data){
 Uses \ref apop_name_find for the search; see notes there on the name
 matching rules.
 
- \ingroup data_struct
+ \ingroup setget
  */
 void apop_data_set_it(apop_data *in, size_t row, char* col, double data){
   int colnum =  apop_name_find(in->names, col, 'c');
@@ -659,7 +659,7 @@ void apop_data_set_it(apop_data *in, size_t row, char* col, double data){
 Uses \ref apop_name_find for the search; see notes there on the name
 matching rules.
 
- \ingroup data_struct
+ \ingroup setget
  */
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data){
   int colnum =  apop_name_find(in->names, col, 'c');
@@ -682,6 +682,7 @@ the third name slot and the data in the third slot in the vector. If
 you use this function from start to finish in building your vector,
 then you'll be fine.
 
+\ingroup setget
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     Apop_assert_void(d, 0, 's', "You sent me a NULL apop_data set. I'm not sure what you want me to do with that.");
