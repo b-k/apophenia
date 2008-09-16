@@ -13,7 +13,7 @@ See also the printing functions, \ref apop_print, and the
 \ref convenience_fns "Convenience functions".
 */
 
-/** \defgroup convenience_fns 	Things to make life easier with the GSL.
+/** \defgroup convenience_fns 	Things to make life easier with the GSL
  */
 
 /** \defgroup output		Printing to the screen or a text file
@@ -25,7 +25,7 @@ consumption, while you are printing a matrix for import into another program.
 
 See \ref apop_name_print.
 */
-/** \defgroup apop_print 	Asst printing functions		
+/** \defgroup apop_print 	Assortet printing functions		
 
 The <tt>apop_*_print</tt> functions will print to screen, text file,
 or database, depending on how you set \ref apop_opts_type "apop_opts.output_type".
@@ -229,7 +229,7 @@ apop_matrix_normalize(data, 'c', 'm');
 
 \param v The \c gsl_vector in question
 \param i The location in the vector to be incremented.
-\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amt.
+\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount.
 \ingroup convenience_fns
  */
 inline void apop_vector_increment(gsl_vector * v, int i, double amt){
@@ -241,7 +241,7 @@ inline void apop_vector_increment(gsl_vector * v, int i, double amt){
 \param m The \c gsl_matrix in question
 \param i The row of the element to be incremented.
 \param j The column of the element to be incremented.
-\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amt.
+\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount.
 \ingroup convenience_fns
  */
 inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
@@ -445,6 +445,35 @@ static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,cons
     return apop_vector_to_data(outv);
 }
 
+
+apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE_t lt, CBLAS_TRANSPOSE_t rt){
+        if (lt==CblasNoTrans) {
+            if (rt==CblasNoTrans) 
+                Apop_assert(lm->size2==rm->size1, NULL, 0, 's', "You sent me a matrix with %u columns to "
+                                                               "multiply against a matrix with %u rows. Those "
+                                                               "two need to be equal.", lm->size2, rm->size1)
+            else
+                Apop_assert(lm->size2==rm->size2, NULL, 0, 's', "You sent me a matrix with %u columns to "
+                                                               "multiply against a matrix with %u rows "
+                                                               "(after the transposition you requested). Those "
+                                                               "two need to be equal.", lm->size2, rm->size2)
+        } else {
+            if (rt==CblasNoTrans) 
+                Apop_assert(lm->size1==rm->size1, NULL, 0, 's', "You sent me a matrix with %u columns "
+                                                                "(after the transposition you requested) to "
+                                                               "multiply against a matrix with %u rows. Those "
+                                                               "two need to be equal.", lm->size1, rm->size1)
+            else
+                Apop_assert(lm->size1==rm->size2, NULL, 0, 's', "You sent me a matrix with %u columns to "
+                                                               "multiply against a matrix with %u rows "
+                                                               "(after the two transpositions you requested). "
+                                                               "Those two need to be equal.", lm->size1, rm->size2)
+        }
+        return NULL;
+}
+
+
+
 /** A convenience function for dot products.
 
   First, this requires less typing than the <tt>gsl_cblas_dgexx</tt> functions.
@@ -490,13 +519,12 @@ CBLAS_TRANSPOSE_t   lt  ,//= (t1=='t' || t1=='T' || t1=='p' || t1=='P') ? CblasT
         uselm   = 1;
     else if (d1->vector)
         uselm   = 0;
-    else if (l_flag == 'v') {
-        apop_error(0, 'c', "%s: You asked for a vector from the left data set, but its vector==NULL. Returning NULL.", __func__);
-        return NULL;
-    } else {
-        apop_error(0, 'c', "%s: the left data set has neither non-NULL matrix nor vector. Returning NULL.\n", __func__);
-        return NULL;
-    }
+    else if (l_flag == 'v')
+        Apop_assert(0, NULL, 0, 'c', "You asked for a vector from the left data set, but its vector==NULL. "
+                                      "Returning NULL.")
+    else 
+        Apop_assert(0, NULL, 0, 'c', "The left data set has neither non-NULL matrix nor vector. Returning NULL.");
+
     if (d2->matrix && r_flag != 'v')
         userm   = 1;
     else if (d2->vector)
@@ -512,6 +540,7 @@ CBLAS_TRANSPOSE_t   lt  ,//= (t1=='t' || t1=='T' || t1=='p' || t1=='P') ? CblasT
     lt  = (l_flag == 't' || l_flag == 1) ? CblasTrans: CblasNoTrans;
     rt  = (r_flag == 't' || r_flag == 1) ? CblasTrans: CblasNoTrans;
     if (uselm && userm){
+        apop_check_dimensions(lm, rm, lt, rt);
         gsl_matrix *outm    = gsl_matrix_calloc((lt== CblasTrans)? lm->size2: lm->size1, 
                                                 (rt== CblasTrans)? rm->size1: rm->size2);
         gsl_blas_dgemm (lt,rt, 1, lm, rm, 0, outm);

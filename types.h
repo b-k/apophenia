@@ -177,7 +177,7 @@ void  apop_name_print(apop_name * n);
 void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
 void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type2);
 apop_name * apop_name_copy(apop_name *in);
-size_t  apop_name_find(apop_name *n, char *findme, char type);
+int  apop_name_find(apop_name *n, char *findme, char type);
 
 void 		apop_model_free (apop_model * free_me);
 void 		apop_model_show (apop_model * print_me);

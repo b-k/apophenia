@@ -18,6 +18,7 @@
 
 __BEGIN_DECLS
 
+/** Settings for least-squares type models */
 typedef struct {
     int destroy_data;
     gsl_vector *weights;

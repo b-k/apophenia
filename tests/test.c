@@ -918,7 +918,7 @@ void test_probit_and_logit(gsl_rng *r){
     //Logit
     apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
     apop_model *m = apop_estimate(data, apop_logit);
-    APOP_COL(m->parameters, 1, logit_params);
+    APOP_COL(m->parameters, 0, logit_params);
     assert(apop_vector_distance(logit_params, true_params) < 0.07);
     apop_data_free(data);
     apop_model_free(m);
@@ -926,7 +926,8 @@ void test_probit_and_logit(gsl_rng *r){
     //Probit
     apop_data* data2 = generate_probit_logit_sample(true_params, r, &apop_probit);
     m = apop_estimate(data2, apop_probit);
-    assert(apop_vector_distance(m->parameters->vector, true_params) < 0.07);
+    APOP_COL(m->parameters, 0, probit_params);
+    assert(apop_vector_distance(probit_params, true_params) < 0.07);
     apop_model_free(m);
     apop_data_free(data2);
   }

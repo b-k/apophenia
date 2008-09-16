@@ -23,7 +23,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_normal.c model/apop_OLS.c 		 	\
 			model/apop_WLS.c model/apop_exponential.c 		\
 			model/apop_gamma.c model/apop_zipf.c 		    \
-			model/apop_poisson.c	model/apop_probit.c 	\
+			model/apop_poisson.c	                    	\
 			model/apop_uniform.c model/apop_beta.c			\
 			model/apop_waring.c model/apop_yule.c 	 		\
 			model/apop_bernoulli.c model/apop_binomial.c 	\
@@ -58,8 +58,7 @@ EXTRA_DIST = doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/fo
 		tests/pontius.dat tests/test.c tests/data-mixed tests/test_data tests/test_data2 \
 		tests/test_data_nans tests/wampler1.dat \
 		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
-		apop.h	\
-		COPYING2
+		apop.h	COPYING2
 
 #The documentation
 
@@ -73,8 +72,9 @@ doc:
 	cp model/*.c .
 	doxygen doxy/doxyconfig
 	cp doxy/flake.gif doxy/search.gif doxy/right.png doxy/down.png html/
-	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)<p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1'\'');swapFolder('\''\1f'\'')"> <img src="right.png" border="0" id="\1f">\2</div></a></h2><div class="branch" id="\1">|' \
+	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)<p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
 -e 's|endofdiv<p>|</div>|'  html/outline.html
+	sed -i -e '/index_a/s/- a -/ /' -e '15,27d' html/globals.html
 	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
 	sudo cp man/man3/* /usr/share/man/man3/
 

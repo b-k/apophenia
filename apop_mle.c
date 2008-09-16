@@ -289,7 +289,7 @@ static void fdf_shell(const gsl_vector *beta, void *i, double *f, gsl_vector *df
 	}*/
 }
 
-/** Calculate the Hessian.
+/* * Calculate the Hessian.
 
   This is a synonym for \ref apop_numerical_second_derivative, q.v.
 gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d, void *params){
@@ -297,7 +297,7 @@ gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data
 }
 */
 
-/** Feeling lazy? Rather than doing actual pencil-and-paper math to find
+/* * Feeling lazy? Rather than doing actual pencil-and-paper math to find
 your variance-covariance matrix, just use the negative inverse of the Hessian.
 
 \param est	The model with the parameters already calculated. The var/covar matrix will be placed in est->covariance.
@@ -557,7 +557,7 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
     info.trace_file     = malloc(sizeof(FILE *)); *info.trace_file = NULL;
     info.model  = apop_model_copy(dist);
     if(!mp){
-        Apop_settings_add_group(info.model, apop_mle, &info.model);
+        Apop_settings_add_group(info.model, apop_mle, info.model);
         mp          =  apop_settings_get_group(info.model, "apop_mle");
     } 
     apop_model_prep(data, info.model);

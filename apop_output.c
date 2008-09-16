@@ -1,11 +1,4 @@
-/** \file apop_output.c	 Some printing and gnuplot interface functions. 
-
-No, gnuplot is not associated with the GNU, and it is not as free as GNU
-software (they don't want forking), but it's free enough for virtually
-any purposes. It interfaces with text files which are often painfully
-ornery, so autogeneration of these files is very desirable, and that's
-where this file comes in. It includes a few simple functions to produce
-files which gnuplot can plot directly.
+/** \file apop_output.c	 Some printing and output interface functions. 
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -134,8 +127,7 @@ apop_plot_histogram(m, NULL);
 \endcode
 will print directly to Gnuplot.
 
-\param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you.
-\param bin_ct   The number of bins in the output histogram
+\param hist A parametrized \ref apop_model holding the histogram. 
 \param outfile  The file to be written. If NULL then write to STDOUT.
 
   \ingroup output

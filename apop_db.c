@@ -3,53 +3,6 @@ features like a variance, skew, and kurtosis aggregator for SQL.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-/* Deprecated; folded into the outline.
- 
-  \defgroup db Database utilities 
-
-These are convenience functions to handle interaction with SQLite. They
-open one and only one database, and handle most of the interaction
-therewith for you.
-
-You will probably first use \ref apop_text_to_db to pull data into
-the database, then \ref apop_query to clean the data in the database,
-and finally \ref apop_query_to_data to pull some subset of the data
-out for analysis.
-
-\par Querying 
-\li \ref apop_query : Manipulate the database, return nothing (e.g., input data).
-
-\li \ref apop_query_to_data : Pull data into an apop_data set.
-
-\li \ref apop_query_to_matrix : Pull data into a \c gsl_matrix.
-
-\li \ref apop_query_to_float : Pull out a single number.
-
-\li \ref apop_query_to_text : Pull out columns of not-numbers.
-
-\li \ref apop_query_to_mixed_data : Pull data into an apop_data set, but with mixed numeric/text types.
-
-\par Maintenance 
-\li \ref apop_db_open : Optional, for when you want to use a database on disk.
-
-\li \ref apop_db_close : If you used \ref apop_db_open, you will need to use this too.
-
-\li \ref apop_table_exists : Check to make sure you aren't reinventing or destroying data. Also, the clean way to drop a table.
-
-\li \ref apop_count_cols : Count the columns in a table.
-
-\li \ref apop_db_merge : Import or merge the whole of another database into the currently open db.
-
-\li \ref apop_db_merge_table : Import/merge just one table.
-
-\par See also
- \li The \ref conversions, including \ref apop_text_to_db and \ref apop_matrix_to_db.
-
- \li The \ref command_line "Command-line utilities".
-
-\par P.S.
-Apophenia reserves the right to insert temp tables into the opened database. They will all have names beginning with "apop_", so the reader is advised to not use tables with such names, and is free to ignore or delete any such tables that turn up.
- */
 #include <string.h>
 #include <stdarg.h>
 #include "types.h"
@@ -128,7 +81,7 @@ The Apophenia package assumes you are only using a single
 SQLite database at a time; if not, the \ref apop_db_merge and \ref
 apop_db_merge_table functions may help.
 
-When you are done doing your database manipulations, be sure to call \ref apop_db_close .
+When you are done doing your database manipulations, be sure to call \ref apop_db_close if writing to disk.
 
 \param filename
 The name of a file on the hard drive on which to store the database. If

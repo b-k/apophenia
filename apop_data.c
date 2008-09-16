@@ -296,7 +296,7 @@ apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
 
  For the opposite operation, see \ref apop_data_stack.
 
- The \ref apop_data\c->vector is taken to be the -1st element of the matrix.
+ The \ref apop_data->vector is taken to be the -1st element of the matrix.
  \param in  The \ref apop_data structure to split
  \param splitpoint The index of what will be the first row/column of the
  second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole
@@ -718,7 +718,7 @@ void apop_text_add(apop_data *in, const size_t row, const size_t col, const char
 /** This allocates an array of strings and puts it in the \c text element
   of an \c apop_data set. 
 
-  \param in An \c apop_data set. It's OK to send in \c NULL, in which case an apop_data set with \c NULL \c matrix and \vector elements is returned.
+  \param in An \c apop_data set. It's OK to send in \c NULL, in which case an apop_data set with \c NULL \c matrix and \c vector elements is returned.
   \param row    the number of rows of text.
   \param col     the number of columns of text.
   \return       A pointer to the relevant \c apop_data set. If the input was not \c NULL, then this is a repeat of the input pointer.

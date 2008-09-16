@@ -7,12 +7,52 @@ Copyright (c) 2005--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "likelihoods.h"
 
 
+
+/////////  Part II: Methods for the apop_category_settings struct
+
+apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_column, char source_type){
+  int i;
+  apop_category_settings *out = malloc (sizeof(apop_category_settings));
+    out->source_column = source_column;
+    out->source_data = d;
+    if (source_type == 't'){
+        out->factors = apop_text_unique_elements(d, source_column);
+        out->factors->vector = gsl_vector_alloc(d->textsize[0]);
+        for (i=0; i< out->factors->vector->size; i++)
+            apop_data_set(out->factors, i, -1, i);
+    } else{ //Save if statements by giving everything a text label.
+        Apop_col(d, source_column, list);
+        out->factors = apop_data_alloc(0,0,0);
+        out->factors->vector = apop_vector_unique_elements(list);
+        apop_text_alloc(out->factors, out->factors->vector->size, 1);
+        for (i=0; i< out->factors->vector->size; i++)
+            apop_text_add(out->factors, i, 0, "%g", apop_data_get(out->factors, i, -1));
+    }
+    return out;
+}
+
+apop_category_settings *apop_category_settings_copy(apop_category_settings *in){
+  apop_category_settings *out = malloc (sizeof(apop_category_settings));
+    out->source_column = in->source_column;
+    out->source_type = in->source_type;
+    out->source_data = in->source_data;
+    out->factors = apop_data_copy(in->factors);
+    return out;
+}
+
+void apop_category_settings_free(apop_category_settings *in){
+    apop_data_free(in->factors);
+    free(in);
+}
+
+/////////  Part II: plain old probit
+
 /** If we find the apop_category group, then you've already converted
  something to factors and, I assume, put it in your data set's vector.
 
  If we don't find the apop_category group, then convert the first column of the matrix to categories, put it in the vector, and add a ones column.
  */
-static void multiprobit_prep(apop_data *d, apop_model *m){
+static void probit_prep(apop_data *d, apop_model *m){
   if (m->prepared) return;
   int       i, count;
   apop_data *factor_list;
@@ -21,22 +61,85 @@ static void multiprobit_prep(apop_data *d, apop_model *m){
         Apop_col(d, 0, outcomes);
         d->vector = apop_vector_copy(outcomes);
         gsl_vector_set_all(outcomes, 1);
+        if (d->names->column && d->names->column[0]){
+            apop_name_add(d->names, d->names->column[0], 'v');
+            sprintf(d->names->column[0], "1");
+        }
     }
 
-    apop_probit.prep(d, m); 
-    apop_data_free(m->parameters);
+    if (!d->vector){
+        APOP_COL(d, 0, independent);
+        d->vector = apop_vector_copy(independent);
+        gsl_vector_set_all(independent, 1);
+    }
+    void *mpt = m->prep; //and use the defaults.
+    m->prep = NULL;
+    apop_model_prep(d, m);
+    m->prep = mpt;
+    apop_name_cross_stack(m->parameters->names, d->names, 'r', 'c');
 
-    /*Apop_assert_void(, 0, 's', "At the moment, this function requires that you call, e.g., "
-                          "Apop_settings_add_group(your_model, apop_category, your_data, col, 't'); "
-                          "before estimating the model. This may change in the near future.");*/
     factor_list = Apop_settings_get(m, apop_category, factors);
     count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(0, d->matrix->size2, count-1);
     apop_name_cross_stack(m->parameters->names, d->names, 'r', 'c');
-    for (i=0; i< count; i++) 
+    for (i=1; i< count; i++) 
         apop_name_add(m->parameters->names, factor_list->text[i][0], 'c');
     gsl_matrix_set_all(m->parameters->matrix, 1);
+    snprintf(m->name, 100, "%s with %s as numeraire", m->name, factor_list->text[0][0]);
 }
+
+
+static double probit_log_likelihood(apop_data *d, apop_model *p){
+  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  int		    i;
+  long double	n, total_prob	= 0;
+  apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
+	for(i=0; i< d->matrix->size1; i++){
+		n	        = gsl_cdf_gaussian_P(-apop_data_get(betadotx, i, 0),1);
+        n = n ? n : 1e-10; //prevent -inf in the next step.
+        n = n<1 ? n : 1-1e-10; 
+        total_prob += apop_data_get(d, i, -1) ?  log(1-n): log(n);
+	}
+    apop_data_free(betadotx);
+	return total_prob;
+}
+
+static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
+  apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  int		i, j;
+  long double	cdf, betax, deriv_base;
+  apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
+    gsl_vector_set_all(gradient,0);
+    for (i=0; i< d->matrix->size1; i++){
+        betax            = apop_data_get(betadotx, i, 0);
+        cdf              = gsl_cdf_gaussian_P(-betax, 1);
+        cdf = cdf ? cdf : 1e-10; //prevent -inf in the next step.
+        cdf = cdf<1 ? cdf : 1-1e-10; 
+        if (apop_data_get(d, i, -1))
+            deriv_base      = gsl_ran_gaussian_pdf(-betax, 1) /(1-cdf);
+        else
+            deriv_base      = -gsl_ran_gaussian_pdf(-betax, 1) /  cdf;
+        for (j=0; j< d->matrix->size2; j++)
+            apop_vector_increment(gradient, j, apop_data_get(d, i, j) * deriv_base);
+	}
+	apop_data_free(betadotx);
+}
+
+
+
+/** The Probit model.
+ The first column of the data matrix this model expects is ones and zeros;
+ the remaining columns are values of the independent variables. Thus,
+ the model will return (data columns)-1 parameters.
+
+\ingroup models
+*/
+apop_model apop_probit = {"Probit", -1,0,0, .log_likelihood = probit_log_likelihood, 
+    .score = probit_dlog_likelihood, .prep = probit_prep};
+
+
+
+/////////  Part III: Multinomial Logit (plain logit is a special case)
 
 static apop_data *multilogit_expected(apop_data *in, apop_model *m){
   int i, j;
@@ -111,17 +214,6 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
 	return ll;
 }
 
-
-/** The Multinomial Probit model.
- The first column of the data matrix this model expects a number
- indicating the preferred category; the remaining columns are values of
- the independent variables. Thus, the model will return N-1 columns of
- parameters, where N is the number of categories chosen.
-
-\ingroup models
-*/
-apop_model apop_multinomial_probit = {"Multinomial probit",
-     .log_likelihood = multiprobit_log_likelihood, .prep = multiprobit_prep};
 
 
 static size_t find_index(double in, double *m, size_t max){
@@ -198,5 +290,17 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
 
 \ingroup models
 */
-apop_model apop_logit = {"Logit", .estimate = logit_estimate,
-     .log_likelihood = multilogit_log_likelihood, .expected_value=multilogit_expected, .prep = multiprobit_prep};
+apop_model apop_logit = {"Logit", 
+     .log_likelihood = multilogit_log_likelihood, 
+     .expected_value=multilogit_expected, .prep = probit_prep};
+
+/** The Multinomial Probit model.
+ The first column of the data matrix this model expects a number
+ indicating the preferred category; the remaining columns are values of
+ the independent variables. Thus, the model will return N-1 columns of
+ parameters, where N is the number of categories chosen.
+
+\ingroup models
+*/
+apop_model apop_multinomial_probit = {"Multinomial probit",
+     .log_likelihood = multiprobit_log_likelihood, .prep = probit_prep};

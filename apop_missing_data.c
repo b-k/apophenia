@@ -81,8 +81,6 @@ apop_data * apop_data_listwise_delete(apop_data *d){
 
 //ML imputation
 
-static apop_model apop_ml_imputation_model;
-
 typedef struct {
     size_t      *row, *col;
     int         ct;
@@ -140,9 +138,8 @@ static int  find_missing(apop_data *d, apop_model *mc, gsl_vector *initialmean){
 
 static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_settings * m){
   int i;
-    for (i=0; i< m->ct; i++){
+    for (i=0; i< m->ct; i++)
         apop_data_set(x, m->row[i], m->col[i], gsl_vector_get(v->vector,i));
-    }
 }
 
 //The model to send to the optimization
@@ -153,17 +150,7 @@ static double ll(apop_data *d, apop_model * ep){
     return apop_log_likelihood(d, m->local_mvn);
 }
 
-
 static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0,0, .log_likelihood= ll};
-
-
-/*
-static double no_nan_val(const double in){ return isnan(in)? 0 : in;}
-static double no_nan_col(const double in){ return isnan(in);}
-
-static double apop_mean_no_nans(gsl_vector *in){
-    return apop_vector_map_sum(in, no_nan_val)/apop_vector_map_sum(in, no_nan_col);
-}*/
 
 /**
     Impute the most likely data points to replace NaNs in the data, and
@@ -175,8 +162,7 @@ static double apop_mean_no_nans(gsl_vector *in){
 \param  mvn A parametrized \c apop_model from which you expect the data was derived.
 This is traditionally a Multivariate Normal.
 
-\return A model ready for estimation. It includes a set of \c apop_mle settings, which you will almost certainly want to tune.
-
+\return An estimated \ref apop_ml_imputation_model . Also, the data input will be filled in and ready to use.
 */
 apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
   apop_model *mc       = apop_model_copy(apop_ml_imputation_model);

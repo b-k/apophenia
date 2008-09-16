@@ -56,7 +56,7 @@ static apop_data * produce_t_test_output(int df, double stat, double diff){
 /** Answers the question: with what confidence can I say that the means of these two columns of data are different?
 <tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
-If \ci{apop_opts.verbose} is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to STDOUT.
+If \c apop_opts.verbose is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to STDOUT.
 
 \ingroup ttest
 \param {a, b} two columns of data
@@ -430,17 +430,9 @@ static int strcmpwrap(const void *a, const void *b){
   This is basically running "select distinct * from datacolumn", but without 
   the aid of the database.  
 
-  \param d An \c apop_data set with a text component
-  \param col The text column you want me to use.
-  \param telmts The list of names. Sample usage:
-  \code
-  char **list;
-   size_t elmt_ct =  apop_text_unique_elements(d, 3, &list);
-   for (int i=0; i< elmt_ct; i++)
-        printf("Unique element #%i: %s\n", i, list[i]);
-  \endcode
+  \param v a vector of items
 
-  \return The number of elements in the list.
+  \return a sorted vector of the distinct elements that appear in the input.
   \see{apop_text_unique_elements}
 */
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
@@ -469,17 +461,9 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
   This is basically running "select distinct * from datacolumn", but without 
   the aid of the database.  
 
-  \param d An \c apop_data set with a text component
+  \param d An \ref apop_data set with a text component
   \param col The text column you want me to use.
-  \param telmts The list of names. Sample usage:
-  \code
-  char **list;
-   size_t elmt_ct =  apop_text_unique_elements(d, 3, &list);
-   for (int i=0; i< elmt_ct; i++)
-        printf("Unique element #%i: %s\n", i, list[i]);
-  \endcode
-
-  \return The number of elements in the list.
+  \return An \ref apop_data set with a single sorted column of text, where each unique text input appears once.
   \see{apop_vector_unique_elements}
 */
 apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
@@ -710,7 +694,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *in){
     return out;
 }
 
-/** A synonym for \ref * apop_estimate_coefficient_of_determination, q.v. 
+/** A synonym for \ref apop_estimate_coefficient_of_determination, q.v. 
  \ingroup regression
  */
 apop_data *apop_estimate_r_squared (apop_model *in){

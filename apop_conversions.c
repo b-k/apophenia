@@ -757,16 +757,19 @@ static void line_to_insert(char instr[], char *tabname){
   char      *r, *q  = malloc(100+ strlen(tabname));
   regmatch_t  result[2], other_result[2];
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
-    while (last_match < length_of_string 
-           && !regexec(regex, instr+last_match, 2, result, 0)){
+    while (last_match < length_of_string && !regexec(regex, instr+last_match, 2, result, 0)){
         pull_string(instr,  outstr, result,  &last_match);
         //We need to check for , "fields with, uh, delimiters",
         if (!regexec(one_quote,outstr, 1, result, 0) 
                 && regexec(full_quote,outstr, 1, result, 0)){
-            asprintf(&q, "%s%s%c", q, outstr, instr[last_match-1]);
+            r = q;
+            asprintf(&q, "%s%s%s%c", r, (pc ? ", ": ""), outstr, instr[last_match-1]);
+            free(r);
             regexec(end_quote, instr+last_match, 2, other_result, 0);
             pull_string(instr,  outstr, other_result,  &last_match);
-            asprintf(&q, "%s%s", q, outstr);
+            r = q;
+            asprintf(&q, "%s%s", r, outstr);
+            free(r);
             pc =1;
         } else {
             prepped	= prep_string_for_sqlite(outstr);
@@ -904,7 +907,7 @@ int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_c
 
 
 
-/** This is the complement to \c apop_data_pack. It converts the \c gsl_vector produced by that function back
+/** This is the complement to \c apop_data_pack, qv. It converts the \c gsl_vector produced by that function back
     to an \c apop_data set with the given dimensions. It overwrites the data in the vector and matrix elements (and that's it).
 
  \param in a \c gsl_vector of the form produced by \c apop_data_pack.
@@ -929,12 +932,14 @@ void apop_data_unpack(const gsl_vector *in, apop_data *d){
 }
 
 /** Sometimes, you need to turn an \c apop_data set into a column of
- numbers. E.g., certain GSL subsystems require such things. Thus, this
- function, that takes in an apop_data set and outputs a \c gsl_vector.
+ numbers. Thus, this function, that takes in an apop_data set and outputs a \c gsl_vector.
  It is valid to use the \c out_vector->data element as an array of \c doubles of size \c out_vector->data->size.
 
- The complement is \c apop_data_unpack. I.e., \c apop_data_unpack(apop_data_pack(in_data, vsize, m1size, m2size)) will return the same data
- set (stripped of text and names).
+ The complement is \c apop_data_unpack. I.e., 
+\code
+apop_data_unpack(apop_data_pack(in_data, vsize, m1size, m2size)) 
+\endcode
+will return the original data set (stripped of text and names).
 
  \param in an \c apop_data set.
  \return A \c gsl_vector with the vector data (if any), then each row of data (if any).

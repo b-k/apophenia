@@ -20,7 +20,7 @@ for details.
 #include <gsl/gsl_rng.h>
 
 
-/** Initialize an RNG.
+/** Initialize a \c gsl_rng.
  
   Uses the Tausworth routine.
 
@@ -40,51 +40,79 @@ gsl_rng *apop_rng_alloc(int seed){
 }
 
 /** Give me a data set and a model, and I'll give you the jackknifed covariance matrix of the model parameters.
+
+The basic algorithm for the jackknife (with many details glossed over): create a sequence of data
+sets, each with exactly one observation removed, and then produce a new set of parameter estimates 
+using that slightly shortened data set. Then, find the covariance matrix of the derived parameters.
+
+Sample usage:
+\code
+apop_data_show(apop_jackknife_cov(your_data, your_model));
+\endcode
  
-\param in	    The data set. An \c apop_data set where each row is a single data point.
-\param model    An \ref apop_model, whose \c estimate method will be used here.
-            Use a stripped- down version that sets \c want_cov, \c want_expected_value, and anything else to zero, because the jackknife only uses the parameter estimates. If your model calls this function to estimate the covariance and \c want_cov=1, then you've got an infinite loop.
+\param in	    The data set. An \ref apop_data set where each row is a single data point.
+\param model    An \ref apop_model, that will be used internally by \ref apop_estimate.
+            
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
+
+When building models, you can use this function to produce the model
+covariance matrix.  But if your model calls this function to estimate the
+covariance and this function then calls your model's estimate function,
+which calls this function, then you've got an infinite loop. So call
+this function with a stripped-down copy of your model that sets 
+\c want_cov, \c want_expected_value, and anything else to zero, since
+the jackknife only uses the parameter estimates. Then, make sure your
+\c estimate function has an if-then clause to call or not call this
+function as appropriate.
 
 \ingroup boot
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
   apop_assert(in,  NULL, 0, 's', "You sent me NULL input data.");
-  apop_assert(in->matrix,  NULL, 0, 's', "At the moment, this function uses only the matrix element of the input data.");
   apop_model   *e              = apop_model_copy(model);
   apop_model_clear(in, e);
   int           i, n            = in->matrix->size1;
-  apop_data     *subset         = apop_data_alloc(0, n - 1, in->matrix->size2);
+  apop_data     *subset         = apop_data_alloc(in->vector ? in->vector->size -1 : 0, n - 1, in->matrix->size2);
   apop_data     *array_of_boots = NULL;
-  apop_model *overall_est       = model.estimate(in, e);
-    gsl_vector_scale(overall_est->parameters->vector, n); //do it just once.
-  int           paramct         = overall_est->parameters->vector->size;
+  apop_model *overall_est       = apop_estimate(in, *e);
+  gsl_vector *overall_params    = apop_data_pack(overall_est->parameters);
+    gsl_vector_scale(overall_params, n); //do it just once.
+  int           paramct         = overall_params->size;
   gsl_vector    *pseudoval      = gsl_vector_alloc(paramct);
 
 //Allocate a matrix, get a reduced view of the original, and copy.
   gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, n-1, in->matrix->size2).matrix;
     gsl_matrix_memcpy(subset->matrix, &mv);
-
-	array_of_boots          = apop_data_alloc(0, n, overall_est->parameters->vector->size);
+    if (in->vector){
+        gsl_vector v = gsl_vector_subvector(in->vector, 1, n-1).vector;
+        gsl_vector_memcpy(subset->vector, &v);
+    }
+	array_of_boots          = apop_data_alloc(0, n, overall_params->size);
     array_of_boots->names   = apop_name_copy(in->names);
+
     for(i = -1; i< (int) subset->matrix->size1; i++){
         //Get a view of row i, and copy it to position i-1 in the short matrix.
         if (i >= 0){
             APOP_ROW(in, i, v);
             gsl_matrix_set_row(subset->matrix, i, v);
+            if (subset->vector)
+                gsl_vector_set(subset->vector, i, apop_data_get(in, i, -1));
         }
-        apop_model *est = model.estimate(subset, e);
-        gsl_vector_memcpy(pseudoval, overall_est->parameters->vector);// *n above.
-        gsl_vector_scale(est->parameters->vector, n-1);
-        gsl_vector_sub(pseudoval, est->parameters->vector);
+        apop_model *est = apop_estimate(subset, *e);
+        gsl_vector *estp = apop_data_pack(est->parameters);
+        gsl_vector_memcpy(pseudoval, overall_params);// *n above.
+        gsl_vector_scale(estp, n-1);
+        gsl_vector_sub(pseudoval, estp);
         gsl_matrix_set_row(array_of_boots->matrix, i+1, pseudoval);
         apop_model_free(est);
+        gsl_vector_free(estp);
     }
     apop_data   *out    = apop_data_covariance(array_of_boots);
     gsl_matrix_scale(out->matrix, 1./(n-1.));
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
     apop_model_free(overall_est);
+    gsl_vector_free(overall_params);
     apop_model_free(e);
     return out;
 }
@@ -105,7 +133,8 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *r, i
   apop_model        *e              = apop_model_copy(model);
   apop_model_clear(data, e);
   size_t	        i, j, row;
-  apop_data	        *subset	        = apop_data_alloc(0,data->matrix->size1, data->matrix->size2);
+  apop_data     *subset         = apop_data_alloc(data->vector ? data->vector->size : 0
+                                                    , data->matrix->size1, data->matrix->size2);
   apop_data         *array_of_boots = NULL,
                     *summary;
 	for (i=0; i<boot_iterations; i++){
@@ -114,15 +143,19 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *r, i
 			row	= gsl_rng_uniform_int(r, data->matrix->size1);
 			APOP_ROW(data, row,v);
 			gsl_matrix_set_row(subset->matrix, j, v);
+            if (subset->vector)
+                gsl_vector_set(subset->vector, j, apop_data_get(data, row, -1));
 		}
 		//get the parameter estimates.
-		apop_model *est = model.estimate(subset, e);
+		apop_model *est = apop_estimate(subset, *e);
+        gsl_vector *estp = apop_data_pack(est->parameters);
         if (i==0){
-            array_of_boots	        = apop_data_alloc(0,boot_iterations, est->parameters->vector->size);
+            array_of_boots	        = apop_data_alloc(0,boot_iterations, estp->size);
             array_of_boots->names   = apop_name_copy(data->names);
         }
-        gsl_matrix_set_row(array_of_boots->matrix, i, est->parameters->vector);
+        gsl_matrix_set_row(array_of_boots->matrix, i, estp);
         apop_model_free(est);
+        gsl_vector_free(estp);
 	}
 	summary	= apop_data_covariance(array_of_boots);
     gsl_matrix_scale(summary->matrix, 1./boot_iterations);

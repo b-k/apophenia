@@ -72,7 +72,8 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 	}
 	//else assume (type == 'c'){
         if (type != 'c' && apop_opts.verbose)
-            apop_error(2,'c',"You gave me >%c<, I'm assuming you meant c; copying column names.\n",type);
+            apop_error(2,'c',"%s: You gave me >%c<, I'm assuming you meant c; "
+                             " copying column names.\n", __func__, type);
 		(n->colct)++;
 		n->column	= realloc(n->column, sizeof(char*) * n->colct);
 		n->column[n->colct -1]	= malloc(strlen(add_me) + 1);
@@ -225,11 +226,11 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 
 \param n        the \ref apop_name object to search.
 \param in       the name you seek; see above.
-\param type     'c', 'r', or 't'.
+\param type     'c', 'r', or 't'. Default is 'c'.
 \return         The position of \c findme. If not found, returns -1.
 \ingroup names
   */
-size_t  apop_name_find(apop_name *n, char *in, char type){
+int  apop_name_find(apop_name *n, char *in, char type){
   regex_t   re;
   char      **list;
   int       i, listct;

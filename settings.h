@@ -1,3 +1,4 @@
+/** \file settings.h Copyright (c) 2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #ifndef __apop_settings_h__
 #define __apop_settings_h__
 
@@ -23,23 +24,32 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
 
 __END_DECLS
 
+/** Retrieves a settings group from a model.  See \ref Apop_settings_get
+ to just pull a single item from within the settings group.*/
 #define Apop_settings_get_group(m, type) apop_settings_get_group(m, #type)
+
+/** Removes a settings group from a model's list. */
 #define Apop_settings_rm_group(m, type) apop_settings_rm_group(m, #type)
 
 /* If the group already exists, it is silently removed. */
 
+/** Add a settings group. You will need to provide arguments for the
+ specific settings group you are dealing with, such as \ref apop_mle_settings_alloc, \ref apop_ls_settings_alloc, \ref apop_histogram_settings_alloc. */
 #define Apop_settings_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_alloc (__VA_ARGS__)); 
 
+/** Call \ref Apop_settings_add_group and \ref Apop_settings_add in sequence. */
 #define Apop_settings_alloc_add(model, type, setting, data, ...)  \
     do {                                                \
         Apop_settings_add_group(model, type, __VA_ARGS__)           \
         Apop_settings_add(model, type, setting, data)       \
     } while (0);
 
+/** Retrieves a setting from a model.  See \ref Apop_settings_get_group pull the entire group.*/
 #define Apop_settings_get(model, type, setting)  \
     (((type ## _settings *) apop_settings_get_group(model, #type))->setting)
 
+/** Modifies a single element of a settings group to the given value. */
 #define Apop_settings_add(model, type, setting, data)  \
     do {                                                \
     apop_assert_void(apop_settings_get_group(model, #type), 0, 's', "You're trying to modify a setting in " \

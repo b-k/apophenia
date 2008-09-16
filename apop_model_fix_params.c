@@ -131,7 +131,7 @@ static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = i_p,
   the values fixed, and one apop_data set which is zero at the location of the free parameters and 
   one at the location of the fixed parameters.
 
-  You also need to input the base model, and two sets of parameters:
+  You also need to input the base model (which should have any settings groups attached before calling this function), and two sets of parameters:
   the parameters for your model, which will be blindly passed on, and MLE-style parameters for the 
   \c estimate method. The \c estimate method always uses an MLE, and it never calls the base model's \c estimate method. So if that method does prep work before doing anything, that prep work won't get done.
 
@@ -142,7 +142,9 @@ static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = i_p,
 
   \code
 
+
 #include <apop.h>
+
 int main(){
   apop_data *pv   = apop_data_alloc(2,2,2);
   apop_data *mask = apop_data_calloc(2,2,2);
@@ -150,12 +152,8 @@ int main(){
   apop_data *d  = apop_data_alloc(0,ct,2);
   gsl_rng *r    = apop_rng_alloc(10);
   double    draw[2];
-    apop_data_set(pv, 0, -1, 8);
-    apop_data_set(pv, 1, -1, 2);
-    gsl_matrix_set(pv->matrix, 0,0,1);
-    gsl_matrix_set(pv->matrix, 1,1,1);
-    gsl_matrix_set(pv->matrix, 1,0,0.5);
-    gsl_matrix_set(pv->matrix, 0,1,0.5);
+  apop_data_fill(pv, 8.,  1., 0.5,
+                     2., 0.5, 1.);
     apop_model *pvm = apop_model_copy(apop_multivariate_normal);
     pvm->parameters = pv;
     for(i=0; i< ct; i++){
@@ -165,10 +163,12 @@ int main(){
     }
 
     gsl_matrix_set_all(mask->matrix, 1);
-    apop_mle_settings *mep1   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);
-    apop_model   *e1  = apop_estimate(d, *mep1->model);
-    gsl_vector_sub(e1->parameters->vector, pv->vector);
-    assert(apop_vector_sum(e1->parameters->vector) < 1e-2);
+    apop_model *mep1   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);
+    apop_model *e1  = apop_estimate(d, *mep1);
+    printf("original params: ");
+    apop_vector_show(pv->vector);
+    printf("estimated params: ");
+    apop_vector_show(e1->parameters->vector);
 }
   \endcode
   
