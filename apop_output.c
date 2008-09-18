@@ -187,6 +187,122 @@ void apop_histogram_print(apop_model *h, char *outfile){
 /////The printing functions.
 ////////////////////////////
 
+void white_pad(int ct){
+  size_t i;
+    for(i=0; i < ct; i ++)
+        printf(" ");
+}
+
+/** This function prettyprints the apop_data set to a screen.
+
+This takes a lot of machinery. I write every last element to a text
+array, then measure column widths, then print to screen with padding to
+guarantee that everything lines up.  There's no way to have the first
+element of a column line up with the last unless you interrogate the
+width of every element in the column, so printing columns really can't be a one-pass 
+process.
+
+So, I produce an \ref apop_data set with no numeric elements and a text
+element to be filled with the input data set, and then print that. That
+means that I'll be using (more than) twice the memory to print this. If
+this is a problem, you can use \ref apop_print to dump your data to a text file,
+and view the text file, or print subsets.
+
+For more machine-readable printing, see \ref apop_print.
+
+\ingroup output
+
+*/
+void apop_data_show(const apop_data *in){
+  size_t i, j;
+//Take inventory and get sizes
+  size_t hasrownames = in->names->rowct ? 1 : 0;
+  size_t hascolnames = (in->names->vector || in->names->colct || in->names->textct);
+  size_t hasvector   = in->vector ? 1 : 0;
+  size_t matrixcols  = in->matrix ? in->matrix->size2 : 0;
+
+    size_t outsize_r = GSL_MAX(in->matrix ? in->matrix->size1 : 0, in->vector ? in->vector->size: 0);
+    outsize_r   = GSL_MAX(outsize_r, in->textsize[0]);
+    outsize_r   += hascolnames;
+
+    size_t outsize_c = matrixcols;
+    outsize_c   += in->textsize[1];
+    outsize_c   += hasvector;
+    outsize_c   += hasrownames;
+
+//Write to the printout data set.
+    apop_data *printout = apop_text_alloc(NULL , outsize_r, outsize_c);
+    if (hasrownames)
+        for(i=0; i < in->names->rowct; i ++)
+            apop_text_add(printout, i + hascolnames, 0, in->names->row[i]);
+    if (hasvector)
+        for(i=0; i < in->vector->size; i ++)
+            apop_text_add(printout, i + hascolnames, hasrownames, "%g", gsl_vector_get(in->vector, i));
+    if (matrixcols)
+        for(i=0; i < in->matrix->size1; i ++)
+            for(j=0; j < in->matrix->size2; j ++)
+                apop_text_add(printout, i + hascolnames, hasrownames + hasvector+ j, "%g", gsl_matrix_get(in->matrix, i, j));
+    if (in->textsize[0])
+        for(i=0; i < in->textsize[0]; i ++)
+            for(j=0; j < in->textsize[1]; j ++)
+                apop_text_add(printout, i + hascolnames, hasrownames + hasvector+ matrixcols + j, in->text[i][j]);
+
+//column names
+    apop_text_add(printout, 0 , 0,  ""); 
+    if (hascolnames){
+        if (hasvector){
+            if (in->names->vector)
+                apop_text_add(printout, 0 , hasrownames,  in->names->vector);
+            else
+                apop_text_add(printout, 0 , hasrownames,  "");
+        }
+        if (matrixcols){
+            for(i=0; i < in->names->colct; i ++)
+                apop_text_add(printout, 0 , hasrownames + hasvector + i,  in->names->column[i]);
+            for(i=in->names->colct; i< in->matrix->size2; i ++)
+                apop_text_add(printout, 0 , hasrownames + hasvector + in->names->colct +i,  "");
+        }
+        if (in->textsize[1]){
+            for(i=0; i < in->names->textct; i ++)
+                apop_text_add(printout, 0 , hasrownames + hasvector + matrixcols + i, in->names->text[i]);
+            for(i=in->names->textct; i< in->textsize[1]; i ++)
+                apop_text_add(printout, 0 , hasrownames + hasvector+ matrixcols + in->names->textct + i ,  "");
+        }
+    }
+
+//get column sizes
+    int colsizes[outsize_c];
+    for(i=0; i < outsize_c; i ++){
+        colsizes[i] = strlen(printout->text[0][i]);
+        for(j=1; j < outsize_r; j ++)
+            colsizes[i] = GSL_MAX(colsizes[i], strlen(printout->text[j][i]));
+    }
+
+//Finally, print
+    for(j=0; j < outsize_r; j ++){
+        for(i=0; i < outsize_c; i ++){
+            white_pad(colsizes[i] - strlen(printout->text[j][i]));
+            printf(printout->text[j][i]);
+            if (i > 0 && i< outsize_c-1) 
+                printf(" %s ", apop_opts.output_delimiter);
+        }
+        printf("\n");
+    }
+
+    apop_data_free(printout);
+    return;
+}
+
+
+
+
+
+
+
+
+
+
+
 static void print_core_v(const gsl_vector *data, char *separator, char *filename, 
 			void (* p_fn)(FILE * f, double number)){
 int 		i;
@@ -387,11 +503,6 @@ static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype
     }
 }
 
-/** Display an \ref apop_data set on screen.
-\ingroup apop_print */
-void apop_data_show(const apop_data *data){
-    apop_data_show_core(data, stdout, 's');
-}
 
 /** Print an \ref apop_data set to a file, the database, or the screen,
   as determined by the \ref apop_opts_type "apop_opts.output_delimiter".

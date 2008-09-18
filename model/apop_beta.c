@@ -37,8 +37,8 @@ is in [0,1].
 
 \param v
 The variance which the Beta distribution should have. It is in (0, 1/12),
-where (1/12) is the variance of a Uniform(0,1) distribution. The closer
-to 1/12, the worse off you are.
+where (1/12) is the variance of a Uniform(0,1) distribution. Funny things happen with variance near
+1/12 and mean far from 1/2.
 
 \return
 Returns an \c apop_beta model with its parameters appropriately set.

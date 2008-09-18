@@ -75,7 +75,8 @@ doc:
 	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)<p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
 -e 's|endofdiv<p>|</div>|'  html/outline.html
 	sed -i -e '/index_a/s/- a -/ /' -e '15,27d' html/globals.html
-	rsync -avPe ssh html/ $(SFSSH):ap/htdocs/doc/
+	sed -i 's|<td width="100%"></td>||g' html/*html
+	rsync -avPe ssh html/ $(SFSSH):/home/groups/a/ap/htdocs/doc/
 	sudo cp man/man3/* /usr/share/man/man3/
 
 test:
