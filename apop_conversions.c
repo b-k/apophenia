@@ -86,7 +86,7 @@ gsl_vector * apop_array_to_vector(const double *line, const int vsize){
 }
 
 /** Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N
- \times 1 \f$ are equivalent, but they're two different types in C.
+ \times 1 \f$ are equivalent, but they're two different types in C. This function copies the data in a vector to a new one-column matrix and returns the newly-allocated and filled matrix.
 
  \param in a <tt>gsl_vector</tt>
  \return a newly-allocated <tt>gsl_matrix</tt> with one column.

@@ -82,6 +82,11 @@ apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_co
 apop_category_settings *apop_category_settings_copy(apop_category_settings *in);
 void apop_category_settings_free(apop_category_settings *in);
 
+/** If this settings group is present, models that can take rank data
+  will read the input data as such.  Allocation is thus very simple, e.g.
+  \code
+  Apop_settings_group_add(your_model, apop_rank, NULL);
+  \endcode */
 typedef struct {
     char rank_data;
     void *copy;

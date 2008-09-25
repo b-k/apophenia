@@ -249,7 +249,7 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
 }
 
 
-/** Take the log of every element in a vector.
+/** Take the log (base ten) of every element in a vector.
 \ingroup convenience_fns
  */
 void apop_vector_log10(gsl_vector *v){
@@ -261,7 +261,7 @@ void apop_vector_log10(gsl_vector *v){
     }
 }
 
-/** Take the log of every element in a vector.
+/** Take the natural log of every element in a vector.
 \ingroup convenience_fns
  */
 void apop_vector_log(gsl_vector *v){
@@ -273,7 +273,7 @@ void apop_vector_log(gsl_vector *v){
     }
 }
 
-/** Take the exponent of every element in a vector.
+/** Replace every vector element \f$v_i\f$ with exp(\f$v_i\f$).
 \ingroup convenience_fns
  */
 void apop_vector_exp(gsl_vector *v){

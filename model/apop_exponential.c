@@ -14,6 +14,11 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <stdio.h>
 #include <assert.h>
 
+/** If this settings group is present, models that can take rank data
+  will read the input data as such.  Allocation is thus very simple, e.g.
+  \code
+  Apop_settings_group_add(your_model, apop_rank, NULL);
+  \endcode */
 apop_rank_settings *apop_rank_settings_alloc(void *ignoreme){
     apop_rank_settings *out = malloc(sizeof(apop_rank_settings));
     out->rank_data = 'r';

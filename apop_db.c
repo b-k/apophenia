@@ -524,7 +524,7 @@ An \ref apop_data set, which you passed in declared but not allocated.
 Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan"
 are filled with <tt>NAN</tt>s in the matrix.
 
-If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_name"),
+If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_names"),
 and the name of a column matches the name, then the row names are read from that column.
 
 \bug Currently, this is but a wrapper for \ref apop_query_to_matrix,

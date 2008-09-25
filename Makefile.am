@@ -67,6 +67,7 @@ EXTRA_DIST = doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/fo
 #AM_MAKEINFOHTMLFLAGS = --cssinclude = typical.css
 
 #the doxygen version. You've gotta call it yourself.
+#the doxygen version. If you're Ben K., then it will post to Sourceforge.
 
 doc: 
 	cp model/*.c .
@@ -76,7 +77,7 @@ doc:
 -e 's|endofdiv<p>|</div>|'  html/outline.html
 	sed -i -e '/index_a/s/- a -/ /' -e '15,27d' html/globals.html
 	sed -i 's|<td width="100%"></td>||g' html/*html
-	rsync -avPe ssh html/ $(SFSSH):/home/groups/a/ap/htdocs/doc/
+	rsync -avPe ssh html/ ben_k,apophenia@web.sourceforge.net:htdocs/doc/
 	sudo cp man/man3/* /usr/share/man/man3/
 
 test:

@@ -165,8 +165,7 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
   gsl_vector 	predicted;
   gsl_matrix	*cov;
   double        s_sq;
-	cov	= gsl_matrix_alloc(data->size2, data->size2);
-	apop_det_and_inv(xpx, &cov, 0, 1);	    //not yet cov, just (X'X)^-1.
+	cov	= apop_matrix_inverse(xpx);	    //not yet cov, just (X'X)^-1.
 	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters->vector);      // \beta=(X'X)^{-1}X'Y
 	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters->vector, 0, error);   // X'\beta ==predicted
 	gsl_vector_sub(error,y_data);           //X'\beta - Y == error

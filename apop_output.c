@@ -260,13 +260,13 @@ void apop_data_show(const apop_data *in){
             for(i=0; i < in->names->colct; i ++)
                 apop_text_add(printout, 0 , hasrownames + hasvector + i,  in->names->column[i]);
             for(i=in->names->colct; i< in->matrix->size2; i ++)
-                apop_text_add(printout, 0 , hasrownames + hasvector + in->names->colct +i,  "");
+                apop_text_add(printout, 0 , hasrownames + hasvector + i,  "");
         }
         if (in->textsize[1]){
             for(i=0; i < in->names->textct; i ++)
                 apop_text_add(printout, 0 , hasrownames + hasvector + matrixcols + i, in->names->text[i]);
             for(i=in->names->textct; i< in->textsize[1]; i ++)
-                apop_text_add(printout, 0 , hasrownames + hasvector+ matrixcols + in->names->textct + i ,  "");
+                apop_text_add(printout, 0 , hasrownames + hasvector+ matrixcols + i ,  "");
         }
     }
 
@@ -281,7 +281,7 @@ void apop_data_show(const apop_data *in){
 //Finally, print
     for(j=0; j < outsize_r; j ++){
         for(i=0; i < outsize_c; i ++){
-            white_pad(colsizes[i] - strlen(printout->text[j][i]));
+            white_pad(colsizes[i] - strlen(printout->text[j][i]) + 1);//one spare space.
             printf(printout->text[j][i]);
             if (i > 0 && i< outsize_c-1) 
                 printf(" %s ", apop_opts.output_delimiter);
@@ -485,9 +485,11 @@ static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype
                 Lc  =  6;
             datapt  = apop_data_get(data, j, i);
             if (datapt == (int) datapt)
-                fprintf(f, "%*i", Lc, (int) datapt);
+                //fprintf(f, "%*i", Lc, (int) datapt);
+                fprintf(f, "%i", (int) datapt);
             else
-                fprintf(f, "%*f", Lc, datapt);
+                fprintf(f, "%g", datapt);
+            //    fprintf(f, "%*f", Lc, datapt);
             if (i==-1 && data->matrix) 
                 a_pipe(f, displaytype);
             if (i < end-1)

@@ -46,7 +46,7 @@ perspectives, and more details on working Apophenia.
 
 
 As with many computer programs, the preferred manner of citing Apophenia is to cite its related book.
-Here is a BiBtex-formatted entry, which should be be easy to re-shape for other environments:
+Here is a BibTeX-formatted entry, which should be be easy to re-shape for other environments:
 
 \@book{klemens:modeling,<br>
 title = "Modeling with Data: Tools and Techniques for Statistical Computing",<br>
@@ -91,13 +91,11 @@ To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or h
 
 We've moved the setup documentation to <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em>. Please see that page. This site has a few more notes for \ref windows "Windows" users.
 
-\subsection testing Testing
-There is a short, complete program in the \ref apop_ols entry which runs a simple OLS regression on a data file. Follow
-the instructions there to compile and run. See also the 
-\ref sample_program "sample program" below.
+\subsection sample_program Sample programs
+First, there is a short, complete program in the \ref apop_ols entry which runs a simple OLS regression on a data file. Follow
+the instructions there to compile and run. 
 
-\subsection sample_program Sample program
-The sample program below is intended to show how one would integrate
+Here is another sample program, intended to show how one would integrate
 Apophenia into an existing program. For example, say that you are running
 a simulation of two different treatments, or say that two sensors are
 posting data at regular intervals. You need to gather the data in an
@@ -412,7 +410,7 @@ a \c gsl_vector, a \c gsl_matrix, an \ref apop_name, and a table of strings. It
 tries to be lightweight, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
 
 For example, let us say that you are running a regression: there is
-a vector for the dependent variable, and a matrix for the dependent
+a vector for the one dependent variable, and a matrix for the several independent
 variables. Think of them as a partitioned matrix, where the vector is column -1, and the first column of the matrix is column zero. Here is some code to print the entire matrix. Notice that the column counter \c i starts counting at -1.
 
   \code
@@ -535,7 +533,7 @@ endofdiv
 Outlineheader mapplysec   Map/apply
 
 These functions allow you to send each element of a vector or matrix to
-a function, either producing a new matrix (map) or transforming a new one (apply). 
+a function, either producing a new matrix (map) or transforming the original (apply). 
 The \c ..._sum functions return the sum of the mapped output.
 
 You can do many things quickly with these functions.
@@ -749,11 +747,11 @@ endofdiv
 
 Outlineheader fact   Generating factors
 
-`factor' is jargon for a numbered category. These number-crunching
+\em Factor is jargon for a numbered category. Number-crunching
 programs work best on numbers, so we need a function to produce a
 one-to-one mapping from text categories into numeric factors. 
 
-A dummy is a variable that is either one or zero, depending on membership
+A \em dummy is a variable that is either one or zero, depending on membership
 in a given group. Some methods (typically when the variable is an input
 or independent variable) prefer dummies; some methods (typically for
 outcome or dependent variables) pefer factors.
@@ -770,7 +768,7 @@ endofdiv
 Outlineheader dbs Databases
 
 
-These are convenience functions to handle interaction with SQLite. They
+These are convenience functions to handle interaction with SQLite or mySQL. They
 open one and only one database, and handle most of the interaction
 therewith for you.
 
@@ -1198,6 +1196,7 @@ endofdiv
             \li\ref apop_histogram_settings_alloc()  
             \li\ref apop_ls_settings_alloc()
             \li\ref apop_mle_settings_alloc() \anchor mlesettingsa
+            \li\ref apop_rank_settings_alloc()
             \li\ref apop_update_settings_alloc()
 
         endofdiv
