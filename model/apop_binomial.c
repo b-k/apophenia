@@ -58,19 +58,28 @@ static apop_model * binomial_estimate(apop_data * data,  apop_model *parameters)
     return est;
 }
 
-static double binomial_log_likelihood(apop_data *d, apop_model *params){
+static double binomial_p(apop_data *d, apop_model *params){
   apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-    return exp(binomial_p(d, params));
+    return exp(binomial_log_likelihood(d, params));
 }
 
-static double binomial_p(apop_data *d, apop_model *params){
+static double binomial_log_likelihood(apop_data *d, apop_model *params){
   apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double	  n       = apop_data_get(params->parameters, 0, -1),
               p       = apop_data_get(params->parameters, 1, -1);
-  double hitcount, misscount;
+  double hitcount, misscount, ll = 0;
+  int    i;
   char method = apop_settings_get_group(params, "apop_rank") ? 'b' : 't';
-    get_hits_and_misses(d, method, &hitcount, &misscount);
-    return gsl_ran_binomial_pdf(hitcount, p, n);
+    if (method == 't'){
+        get_hits_and_misses(d, method, &hitcount, &misscount);
+        return log(gsl_ran_binomial_pdf(hitcount, p, n));
+    } else {
+        for (i=0; i< d->matrix->size1; i++){
+            hitcount = gsl_matrix_get(d->matrix, i, 1);
+            ll += log(gsl_ran_binomial_pdf(hitcount, p, n));
+        }
+        return ll;
+    }
 }
 
 static double binomial_constraint(apop_data *data, apop_model *b){

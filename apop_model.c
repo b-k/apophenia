@@ -206,7 +206,6 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
 \ingroup models
 */
 double apop_p(apop_data *d, apop_model *m){
-    apop_assert(m->parameters,  0, 0, 's', "You gave me a function that has no parameters. Returning zero.");
     if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;

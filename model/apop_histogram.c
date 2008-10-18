@@ -29,7 +29,7 @@ apop_model apop_histogram;
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins){
     //header is in model.h.
   Apop_assert(data, NULL, 0, 'c', "You asked me to set up a histogram with NULL data. Returning a NULL settings group.");
-  apop_histogram_settings *hp = malloc(sizeof(*hp));
+  apop_histogram_settings *hp  = malloc(sizeof(apop_histogram_settings));
   size_t              i, j;
   double              minv    = GSL_POSINF,
                       maxv    = GSL_NEGINF,
@@ -56,9 +56,9 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
         for (i=0; i< data->matrix->size1; i++)
             for (j=0; j< data->matrix->size2; j++)
                 gsl_histogram_increment(hp->pdf, apop_data_get(data, i, j));
-    hp->cdf =NULL;
-    hp->histobase =NULL;
-    hp->kernelbase =NULL;
+    hp->cdf        = NULL;
+    hp->histobase  = NULL;
+    hp->kernelbase = NULL;
     return hp;
 }
 
@@ -66,10 +66,8 @@ void * apop_histogram_settings_copy(apop_histogram_settings *in){
     apop_histogram_settings *out = malloc(sizeof(apop_histogram_settings));
     out->pdf = gsl_histogram_clone(in->pdf);
     out->cdf = NULL; //the GSL doesn't provide a copy function, so screw it---just regenerate.
-    if (in->histobase)
-        out->histobase = apop_model_copy(*in->histobase);
-    if (in->kernelbase)
-        out->kernelbase = apop_model_copy(*in->kernelbase);
+    out->histobase  = in->histobase  ? apop_model_copy(*in->histobase)  : NULL;
+    out->kernelbase = in->kernelbase ? apop_model_copy(*in->kernelbase) : NULL;
     return out;
 }
 
@@ -96,12 +94,12 @@ static double one_vector(gsl_vector *in){
   double    product = 0;
     for (i=0; i< in->size; i++){
         gsl_histogram_find(gpdf, gsl_vector_get(in, i), &k);
-        product += gsl_histogram_get (gpdf, k);
+        product += log(gsl_histogram_get (gpdf, k));
     }
     return product;
 }
 
-static double histogram_p(apop_data *d, apop_model *in){
+static double histogram_ll(apop_data *d, apop_model *in){
   apop_histogram_settings *hp = apop_settings_get_group(in, "apop_histogram");
   if (!hp) apop_settings_get_group(in, "apop_kernel_density");
   apop_assert(hp, 0, 0, 's', "you sent me an unparametrized model.");
@@ -110,13 +108,12 @@ static double histogram_p(apop_data *d, apop_model *in){
     gpdf    = hp->pdf;
     if (d->vector)
         product += one_vector(d->vector);
-    if (d->matrix){
-        gsl_vector *outp = apop_matrix_map(d->matrix, one_vector);
-        product += apop_vector_sum(outp);
-        gsl_vector_free(outp);
-    }
+    if (d->matrix)
+         product += apop_matrix_map_sum(d->matrix, one_vector);
     return product;
 }
+
+static double histogram_p(apop_data *d, apop_model *in){ return exp(histogram_ll(d, in)); }
 
 static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
   apop_histogram_settings *hp = apop_settings_get_group(in, "apop_histogram");
@@ -149,4 +146,4 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
 
 \ingroup models
 */
-apop_model apop_histogram = {"Histogram", 0,0,0, .estimate = est, .p = histogram_p, .draw = histogram_rng};
+apop_model apop_histogram = {"Histogram", 0,0,0, .estimate = est, .p = histogram_p, .log_likelihood = histogram_ll, .draw = histogram_rng};

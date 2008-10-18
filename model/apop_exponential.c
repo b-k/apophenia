@@ -114,21 +114,6 @@ static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
 }
 
-/** The exponential distribution. A one-parameter likelihood fn.
-\f$Z(\mu,k) 		= \sum_k 1/\mu e^{-k/\mu} 			\f$ <br>
-\f$ln Z(\mu,k) 		= \sum_k -\ln(\mu) - k/\mu			\f$ <br>
-\f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
-
-Some folks write the function as:
-\f$Z(C,k) dx = \ln C C^{-k}. \f$
-If you prefer this form, just convert your parameter via \f$\mu = {1\over
-\ln C}\f$ (and convert back from the parameters this function gives you
-via \f$C=\exp(1/\mu)\f$.
-
-\ingroup likelihood_fns
-\todo Set up an exponential object which makes use of the GSL.
-\todo Check that the borderline work here is correct.
-*/
 static double exponential_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     if (apop_settings_get_group(p, "apop_rank"))
@@ -141,10 +126,9 @@ static double exponential_log_likelihood(apop_data *d, apop_model *p){
 	return llikelihood;
 }
 
-/** The exponential distribution. A one-parameter likelihood fn.
+/* The exponential distribution. A one-parameter likelihood fn.
 
 \f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
-\todo Check that the borderline work here is correct too.
 */
 static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
@@ -192,8 +176,6 @@ Apop_settings_add_group(your_model, apop_rank, NULL);
 \endcode
 
 \ingroup models
-\todo Check that the borderline work here is correct.
-\todo Write a second object for the plain old not-network data Exponential.
 */
 apop_model apop_exponential = {"Exponential distribution", 1,0,0,
 	 .estimate = exponential_estimate, .log_likelihood = exponential_log_likelihood, 

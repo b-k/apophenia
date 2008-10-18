@@ -67,7 +67,6 @@ static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_
 
 
 
-
 static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
   static apop_data *constraint = NULL;
@@ -101,8 +100,6 @@ static double gamma_log_likelihood(apop_data *d, apop_model *p){
     return llikelihood;
 }
 
-/** The derivative of the Gamma distribution, for use in likelihood
- * minimization. You'll probably never need to call this directly.*/
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
     if (apop_settings_get_group(p, "apop_rank"))

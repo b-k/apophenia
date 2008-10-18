@@ -111,7 +111,7 @@ typedef struct{
     long int periods;
     double burnin;
     int histosegments;
-    char use_gibbs;
+    char method;
 } apop_update_settings;
 
 apop_update_settings *apop_update_settings_alloc(apop_data *d);

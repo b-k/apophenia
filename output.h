@@ -17,7 +17,8 @@
 __BEGIN_DECLS
 
 void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char *);
-void apop_plot_histogram(apop_model *hist, char *outfile);
+void apop_histogram_plot(apop_model *hist, char *outfile);
+void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile);
 void apop_histogram_print(apop_model *h, char *outfile);
 void apop_plot_lattice(apop_data *d, char filename[]);
 void apop_plot_qq(gsl_vector *v, apop_model m, char *outfile);

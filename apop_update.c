@@ -7,6 +7,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "model/model.h"
 #include "stats.h"
 #include "settings.h"
+#include "histogram.h"
 #include "conversions.h"
 
 static void write_double(const double *draw, apop_data *d){
@@ -15,12 +16,8 @@ static void write_double(const double *draw, apop_data *d){
   gsl_vector *v = gsl_vector_alloc(size);
     for (i=0; i< v->size; i++)
         gsl_vector_set(v, i, draw[i]);
-
-    /*apop_data *d2   = apop_data_unpack(v, (d->vector ? d->vector->size : 0) , (d->matrix ? d->matrix->size1: 0) , (d->matrix ?d->matrix->size2 : 0));
-    apop_data_memcpy(d,d2);
-    apop_data_free(d2);
-    gsl_vector_free(v);*/
     apop_data_unpack(v, d);
+    gsl_vector_free(v);
 }
 
 static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model likelihood){
@@ -28,7 +25,8 @@ static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model
     if (!strcmp(prior.name, "Gamma distribution") && !strcmp(likelihood.name, "Exponential distribution")){
         outp = apop_model_copy(prior);
         apop_vector_increment(outp->parameters->vector, 0, data->matrix->size1*data->matrix->size2);
-        apop_vector_increment(outp->parameters->vector, 1, apop_matrix_sum(data->matrix));
+        apop_data_set(outp->parameters, 1, -1, 1/(1/apop_data_get(outp->parameters, 1, -1) + apop_matrix_sum(data->matrix)));
+  //      apop_vector_increment(outp->parameters->vector, 1, apop_matrix_sum(data->matrix));
         return outp;
     }
     if (!strcmp(prior.name, "Beta distribution") && !strcmp(likelihood.name, "Binomial distribution")){
@@ -93,9 +91,9 @@ apop_update_settings *apop_update_settings_alloc(apop_data *d){
    Apop_assert(out, NULL, 0, 's', "malloc failed. You are probably out of memory.");
    out->starting_pt = NULL;
    out->periods = 6e3;
-   out->histosegments = 5e3;
+   out->histosegments = 5e2;
    out->burnin = 0.05;
-   out->use_gibbs = 'd'; //default
+   out->method = 'd'; //default
    return out;
 }
 
@@ -106,9 +104,12 @@ This function first checks a table of conjugate distributions for the pair
 you sent in. If the names match the table, then the function returns a
 closed-form model with updated parameters.  If the parameters aren't in
 the table of conjugate priors/likelihoods, then it uses Markov Chain Monte
-Carlo to sample from the posterior distribution, and then outputs an \c
-apop_histogram model for further analysis. Notably, it can be used as
+Carlo to sample from the posterior distribution, and then outputs a histogram
+model for further analysis. Notably, the histogram can be used as
 the input to this function, so you can chain Bayesian updating procedures.
+
+To change the default settings (MCMC starting point, periods, burnin...),
+add an \ref apop_update_settings struct to the prior.
 
 \param data     The input data, that will be used by the likelihood function
 \param  prior   The prior \ref apop_model
@@ -126,10 +127,9 @@ apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelih
         Apop_settings_add_group(prior, apop_update, data);
         s = apop_settings_get_group(prior, "apop_update");
     }
-
-  double        ratio, cp_ll = GSL_NEGINF;
+  double        ratio, ll, cp_ll = GSL_NEGINF;
   int           i;
-  int           vs  = likelihood->vbase >= 0 ? likelihood->vbase : data->matrix->size2;
+  int           vs  = likelihood->vbase  >= 0 ? likelihood->vbase  : data->matrix->size2;
   int           ms1 = likelihood->m1base >= 0 ? likelihood->m1base : data->matrix->size2;
   int           ms2 = likelihood->m2base >= 0 ? likelihood->m2base : data->matrix->size2;
   double        *draw               = malloc(sizeof(double)* (vs+ms1*ms2));
@@ -137,20 +137,23 @@ apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelih
   apop_data     *out                = apop_data_alloc(0, s->periods*(1-s->burnin), vs+ms1*ms2);
     if (s->starting_pt)
         apop_data_memcpy(current_param, s->starting_pt);
-    else{
+    else {
         if (current_param->vector) gsl_vector_set_all(current_param->vector, 1);
         if (current_param->matrix) gsl_matrix_set_all(current_param->matrix, 1);
     }
     if (!likelihood->parameters)
         likelihood->parameters = apop_data_alloc(vs, ms1, ms2);
     for (i=0; i< s->periods; i++){     //main loop
-        prior->draw(draw, r, prior);
+        apop_draw(draw, r, prior);
         write_double(draw, likelihood->parameters);
-        ratio = likelihood->log_likelihood(data,likelihood) - cp_ll;
-        apop_assert(!gsl_isnan(ratio),  NULL, 0, 'c',"Trouble evaluating the likelihood function at vector beginning with %g or %g. Maybe offer a new starting point.\n", current_param->vector->data[0], likelihood->parameters->vector->data[0]);
-        if (ratio >=0 || log(gsl_rng_uniform(r)) < ratio){
-            apop_data_memcpy(current_param,likelihood->parameters);
-            cp_ll = apop_log_likelihood(data,likelihood);
+        ll    = apop_log_likelihood(data,likelihood);
+        ratio = ll - cp_ll;
+        apop_assert(!gsl_isnan(ratio),  NULL, 0, 'c',"Trouble evaluating the likelihood function at vector "
+                                        "beginning with %g or %g. Maybe offer a new starting point.\n"
+                                        , current_param->vector->data[0], likelihood->parameters->vector->data[0]);
+        if (ratio >= 0 || log(gsl_rng_uniform(r)) < ratio){
+            apop_data_memcpy(current_param, likelihood->parameters);
+            cp_ll = ll;
         }
         if (i >= s->periods * s->burnin){
             APOP_ROW(out, i-(s->periods *s->burnin), v)
@@ -161,6 +164,7 @@ apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelih
     }
     apop_model *outp   = apop_model_copy(apop_histogram);
     Apop_settings_add_group(outp, apop_histogram, out, s->histosegments);
-    apop_data_free(out);
+    apop_histogram_normalize(outp);
+    apop_data_free(out); free(draw);
     return outp;
 }

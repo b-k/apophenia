@@ -773,11 +773,8 @@ void subtest_updating(apop_model prior, apop_model likelihood){
             likelihood.draw(apop_data_ptr(tdata,i,0), r, pbp);
         if (j==0)
             outparamsbb  = apop_update(tdata, prior_eps, almost_bern, r);
-            //outparamsbb  = apop_update(tdata, *prior_eps, *almost_bern, NULL, r, 6e3, 0.53,1200);
         else
             outparamsbb  = apop_update(tdata, outparamsbb, &likelihood, r);
-            //outparamsbb  = apop_update(tdata, *outparamsbb, likelihood, NULL, r, 6e3, 0.53,1200);
-        //prior_eps =  apop_update(tdata, *prior_eps, likelihood, NULL, r, 0, 0,0);
         prior_eps =  apop_update(tdata, prior_eps, &likelihood, r);
     }
     for (i=0; i< tsize; i++)

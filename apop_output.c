@@ -116,7 +116,7 @@ void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in){
 }
 
 
-/** This function will plot a histogram model.
+/** This function will plot a histogram model. Compare with \ref apop_plot_histogram, which is a convenience function to plot a \c gsl_vector as a histogram.
 
 The function respects the <tt>output_type</tt> option, so code like:
 \code
@@ -132,7 +132,7 @@ will print directly to Gnuplot.
 
   \ingroup output
 */
-void apop_plot_histogram(apop_model *hist, char *outfile){
+void apop_histogram_plot(apop_model *hist, char *outfile){
   int             i;
   FILE           *f;
   gsl_histogram  *h  = Apop_settings_get(hist, apop_histogram, pdf);
@@ -161,6 +161,63 @@ void apop_plot_histogram(apop_model *hist, char *outfile){
     else if (outfile)    
         fclose(f);
 }
+
+
+
+/** This function will take in a \c gsl_vector of data and put out a histogram. Compare with \ref apop_histogram_plot, which plots an estimated \ref apop_histogram model.
+
+The function respects the <tt>output_type</tt> option, so code like:
+\code
+f   = popen("/usr/bin/gnuplot", "w");
+apop_opts.output_type = 'p';
+apop_opts.output_pipe = f;
+apop_plot_histogram(data, 100, NULL);
+\endcode
+will print directly to Gnuplot.
+
+\param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you.
+\param bin_ct   The number of bins in the output histogram
+\param outfile  The file to be written. If NULL then write to STDOUT.
+
+  \ingroup output
+*/
+void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
+  int             i;
+  FILE *          f;
+  double          min=GSL_POSINF, max=GSL_NEGINF, pt;
+  gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
+    gsl_vector_minmax(data, &min, &max);
+        gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
+    for (i=0; i < data->size; i++){
+        pt  = gsl_vector_get(data, i);
+        if (!gsl_isnan(pt))
+           gsl_histogram_increment(h, pt);
+        }
+    //Now that you have a histogram, print it.
+    if (apop_opts.output_type == 'p')
+        f   = apop_opts.output_pipe;
+    else
+        f = (outfile ? fopen(outfile, "a") : stdout);
+    fprintf(f, "set key off                                     ;\n\
+                        plot '-' with lines\n");
+    //I can't tell which versions of Gnuplot support this form:
+    /*fprintf(f, "set key off                                       ;\n\
+                        set style data histograms               ;\n\
+                        set style histogram cluster gap 0       ;\n\
+                        set xrange [0:%i]                       ;\n\
+                        set style fill solid border -1          ;\n\
+                        set boxwidth 0.9                        ;\n\
+                        plot '-' using 2:xticlabels(1);\n", bin_ct);*/
+    for (i=0; i < bin_ct; i++)
+        fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
+    fprintf(f, "e\n");
+    if (apop_opts.output_type == 'p')
+        fflush(f);
+    else if (outfile)
+        fclose(f);
+}
+
+
 	
 /** Print an \c apop_histogram. Put a "plot '-'\n" before this, and
  you can send it straight to Gnuplot. The -inf and +inf elements are not printed. */
@@ -248,8 +305,9 @@ void apop_data_show(const apop_data *in){
                 apop_text_add(printout, i + hascolnames, hasrownames + hasvector+ matrixcols + j, in->text[i][j]);
 
 //column names
-    apop_text_add(printout, 0 , 0,  ""); 
     if (hascolnames){
+        if (hasrownames)
+            apop_text_add(printout, 0 , 0,  ""); 
         if (hasvector){
             if (in->names->vector)
                 apop_text_add(printout, 0 , hasrownames,  in->names->vector);
@@ -292,11 +350,6 @@ void apop_data_show(const apop_data *in){
     apop_data_free(printout);
     return;
 }
-
-
-
-
-
 
 
 
@@ -483,13 +536,16 @@ static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype
                 Lc  =  strlen(data->names->column[i]);
             else
                 Lc  =  6;
-            datapt  = apop_data_get(data, j, i);
-            if (datapt == (int) datapt)
-                //fprintf(f, "%*i", Lc, (int) datapt);
-                fprintf(f, "%i", (int) datapt);
-            else
-                fprintf(f, "%g", datapt);
-            //    fprintf(f, "%*f", Lc, datapt);
+            if ((i < 0 && j < data->vector->size) || (i> 0 && j < data->matrix->size1 && i < data->matrix->size2)){
+                datapt  = apop_data_get(data, j, i);
+                if (datapt == (int) datapt)
+                    //fprintf(f, "%*i", Lc, (int) datapt);
+                    fprintf(f, "%i", (int) datapt);
+                else
+                    fprintf(f, "%g", datapt);
+                //    fprintf(f, "%*f", Lc, datapt);
+            } else
+                fprintf(f, " ");
             if (i==-1 && data->matrix) 
                 a_pipe(f, displaytype);
             if (i < end-1)

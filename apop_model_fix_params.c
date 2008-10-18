@@ -72,13 +72,13 @@ static void  fixed_param_unpack(const gsl_vector *in, apop_model_fixed_params_se
 static double i_ll(apop_data *d, apop_model *fixed_model){
   apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, "apop_model_fixed_params");
     fixed_param_unpack(fixed_model->parameters->vector, p, 0);
-    return p->base_model->log_likelihood(d, p->base_model);
+    return apop_log_likelihood(d, p->base_model);
 }
 
 static double i_p(apop_data *d, apop_model *params){
   apop_model_fixed_params_settings *p    = apop_settings_get_group(params, "apop_model_fixed_params");
     fixed_param_unpack(params->parameters->vector, p, 0);
-    return p->base_model->p(d, p->base_model);
+    return apop_p(d, p->base_model);
 }
 
 static void i_score(apop_data *d, gsl_vector *gradient, apop_model *params){
@@ -133,9 +133,9 @@ static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = i_p,
 
   You also need to input the base model (which should have any settings groups attached before calling this function), and two sets of parameters:
   the parameters for your model, which will be blindly passed on, and MLE-style parameters for the 
-  \c estimate method. The \c estimate method always uses an MLE, and it never calls the base model's \c estimate method. So if that method does prep work before doing anything, that prep work won't get done.
+  \c estimate method. The \c estimate method always uses an MLE, and it never calls the base model's \c estimate method.
 
-  The output is an \c apop_mle_settings struct.
+  The output is an \c apop_model that can be estimated, Bayesian updated, et cetera.
 
   Here is a sample program. It produces a few thousand draws from a multivariate normal distribution,
   and then tries to recover the means given a var/covar matrix fixed at the correct variance.

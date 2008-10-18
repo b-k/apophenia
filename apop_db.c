@@ -611,6 +611,19 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
 #endif
 }
 
+/* Convenience function for extending a string. 
+ asprintf(%q, "%s and stuff", q);
+ gives you a memory leak. This takes care of that.
+ */
+void qxprintf(char **q, char *format, ...){
+    va_list ap;
+    char *r = *q;
+    va_start(ap, format);
+    vasprintf(q, format, ap);
+    va_end(ap);
+    free(r);
+}
+
 /** Dump a <tt>gsl_matrix</tt> into the database. This function is
 basically preempted by \ref apop_matrix_print. Use that one; this may soon no longer be available.
 
@@ -628,21 +641,21 @@ int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 	if (db==NULL) apop_db_open(NULL);
 	asprintf(&q, "create table %s (", tabname);
 	for(i=0;i< data->size2; i++){
-		if(headers == NULL) 	asprintf(&q, "%s\n c%i", q,i);
-		else			asprintf(&q, "%s\n %s ", q,headers[i]);
-		if (i< data->size2-1) 	asprintf(&q, "%s,",q);
-		else			asprintf(&q,"%s);  begin;",q);
+		if(headers == NULL) 	qxprintf(&q, "%s\n c%i", q,i);
+		else			qxprintf(&q, "%s\n %s ", q,headers[i]);
+		if (i< data->size2-1) 	qxprintf(&q, "%s,",q);
+		else			qxprintf(&q,"%s);  begin;",q);
 	}
 	for(i=0;i< data->size1; i++){
-		asprintf(&q,"%s \n insert into %s values(",q,tabname);
+		qxprintf(&q,"%s \n insert into %s values(",q,tabname);
 		for(j=0;j< data->size2; j++){
             v   =gsl_matrix_get(data,i,j);
             if (gsl_isnan(v))
-			    asprintf(&q,"%s NULL%s ",
+			    qxprintf(&q,"%s NULL%s ",
                     q, 
                     j < data->size2 -1 ? "," : ");");
             else
-			    asprintf(&q,"%s %g%s ",
+			    qxprintf(&q,"%s %g%s ",
                     q, v,
                     j < data->size2 -1 ? "," : ");");
         }
@@ -650,7 +663,7 @@ int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 	if(ctr==batch_size) {
 			apop_query("%s commit;",q);
 			ctr = 0;
-			asprintf(&q,"begin; \n insert into %s values(",tabname);
+			qxprintf(&q,"begin; \n insert into %s values(",tabname);
 		}
 	}
     if (ctr>0) 
@@ -679,7 +692,7 @@ then a so-named column is created, and the row names are placed there.
  \ingroup conversions
 */
 int apop_data_to_db(apop_data *set, char *tabname){
-  int		i,j; 
+  int		i,j, comma; 
   int		ctr		    = 0;
   int		batch_size	= 100;
   double    v;
@@ -693,27 +706,30 @@ int apop_data_to_db(apop_data *set, char *tabname){
     {
         asprintf(&q, "create table %s (", tabname);
         if (use_row) 
-            asprintf(&q, "%s\n %s varchar(1000), \n", q, apop_opts.db_name_column);
+            qxprintf(&q, "%s\n %s varchar(1000), \n", q, apop_opts.db_name_column);
         if (set->vector){
-            if(!set->names->vector) 	asprintf(&q, "%s\n vector double", q);
-            else			asprintf(&q, "%s\n \"%s\" double", q,apop_strip_dots(set->names->vector,'d'));
-            if (set->matrix || set->textsize[1]) 	
-                asprintf(&q, "%s,",q);
+            comma = (set->matrix || set->textsize[1]);
+            if(!set->names->vector) 
+                qxprintf(&q, "%s\n vector double%s", q, comma ? ", " : " ");
+            else
+                qxprintf(&q, "%s\n \"%s\" double%s", q,apop_strip_dots(set->names->vector,'d'), comma ? ", " : " ");
         }
         if (set->matrix)
             for(i=0;i< set->matrix->size2; i++){
-                if(set->names->colct <= i) 	asprintf(&q, "%s\n c%i double", q,i);
-                else			asprintf(&q, "%s\n %s  double", q,apop_strip_dots(set->names->column[i],'d'));
-                if (i< set->matrix->size2-1 || set->textsize[1]) 	
-                    asprintf(&q, "%s, ", q);
+                comma = (i< set->matrix->size2-1 || set->textsize[1]);
+                if(set->names->colct <= i) 
+                    qxprintf(&q, "%s\n c%i double%s", q,i, comma ? ", " : " ");
+                 else
+                    qxprintf(&q, "%s\n %s  double%s", q,apop_strip_dots(set->names->column[i],'d'), comma ? ", " : " ");
             }
         for(i=0;i< set->textsize[1]; i++){
-            if(set->names->textct <= i) 	asprintf(&q, "%s\n tc%i varchar(1000)", q,i);
-            else			asprintf(&q, "%s\n %s  varchar(1000)", q,apop_strip_dots(set->names->text[i],'d'));
-            if (i< set->textsize[1]-1) 	asprintf(&q, "%s, ", q);
+            comma = (i< set->textsize[1]-1);
+            if (set->names->textct <= i)
+                qxprintf(&q, "%s\n tc%i varchar(1000)%s", q,i, comma ? ", " : " ");
+            else
+                qxprintf(&q, "%s\n %s  varchar(1000)%s", q,apop_strip_dots(set->names->text[i],'d'), comma ? ", " : " ");
         }
-        asprintf(&q,"); ");
-        apop_query(q);
+        apop_query("%s); ", q);
         sprintf(q, " ");
     }
 #else 
@@ -726,27 +742,27 @@ int apop_data_to_db(apop_data *set, char *tabname){
         if (db==NULL) apop_db_open(NULL);
         asprintf(&q, "create table %s (", tabname);
         if (use_row) {
-            asprintf(&q, "%s\n %s, \n", q, apop_opts.db_name_column);
+            qxprintf(&q, "%s\n %s, \n", q, apop_opts.db_name_column);
         }
         if (set->vector){
-            if(!set->names->vector) 	asprintf(&q, "%s\n vector", q);
-            else			asprintf(&q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->vector,'d'));
+            if(!set->names->vector) 	qxprintf(&q, "%s\n vector", q);
+            else			qxprintf(&q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->vector,'d'));
             if (set->matrix || set->textsize[1]) 	
-                asprintf(&q, "%s,",q);
+                qxprintf(&q, "%s,",q);
         }
         if (set->matrix)
             for(i=0;i< set->matrix->size2; i++){
-                if(set->names->colct <= i) 	asprintf(&q, "%s\n c%i", q,i);
-                else			asprintf(&q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->column[i],'d'));
+                if(set->names->colct <= i) 	qxprintf(&q, "%s\n c%i", q,i);
+                else			qxprintf(&q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->column[i],'d'));
                 if (i< set->matrix->size2-1 || set->textsize[1]) 	
-                    asprintf(&q, "%s,",q);
+                    qxprintf(&q, "%s,",q);
             }
         for(i=0; i< set->textsize[1]; i++){
-            if(set->names->textct <= i) 	asprintf(&q, "%s\n tc%i ", q,i);
-            else			asprintf(&q, "%s\n %s ", q, apop_strip_dots(set->names->text[i],'d'));
-            if (i< set->textsize[1]-1) 	asprintf(&q, "%s, ", q);
+            if(set->names->textct <= i) 	qxprintf(&q, "%s\n tc%i ", q,i);
+            else			qxprintf(&q, "%s\n %s ", q, apop_strip_dots(set->names->text[i],'d'));
+            if (i< set->textsize[1]-1) 	qxprintf(&q, "%s, ", q);
         }
-        asprintf(&q,"%s);  begin;",q);
+        qxprintf(&q,"%s);  begin;",q);
 #else
         {apop_error(0, 'c', "apop_data_to_db: Apophenia was compiled without SQLite support.\n");
         return 1;}
@@ -754,17 +770,17 @@ int apop_data_to_db(apop_data *set, char *tabname){
     }
     int lim = set->vector ? set->vector->size : set->matrix->size1;
 	for(i=0; i< lim; i++){
-		asprintf(&q, "%s \n insert into %s values(",q, tabname);
+		qxprintf(&q, "%s \n insert into %s values(",q, tabname);
         if (use_row)
-			asprintf(&q,"%s \'%s\', ",q, set->names->row[i]);
+			qxprintf(&q,"%s \'%s\', ",q, set->names->row[i]);
         if (set->vector){
             v   =gsl_vector_get(set->vector,i);
             if (gsl_isnan(v))
-                asprintf(&q,"%s NULL%s ",
+                qxprintf(&q,"%s NULL%s ",
                     q, 
                     (set->matrix || set->textsize[1]) ? "," : " ");
             else
-                asprintf(&q,"%s %g%s ",
+                qxprintf(&q,"%s %g%s ",
                     q, v,
                     (set->matrix || set->textsize[1]) ? "," : " ");
         }
@@ -772,27 +788,27 @@ int apop_data_to_db(apop_data *set, char *tabname){
             for(j=0;j< set->matrix->size2; j++){
                 v   =gsl_matrix_get(set->matrix,i,j);
                 if (gsl_isnan(v))
-                    asprintf(&q,"%s NULL%s ",
+                    qxprintf(&q,"%s NULL%s ",
                         q, 
                         (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
                 else
-                    asprintf(&q,"%s %g%s ",
+                    qxprintf(&q,"%s %g%s ",
                         q, v,
                         (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
             }
 		for(j=0;j< set->textsize[1]; j++)
-			asprintf(&q,"%s \'%s\' %c ",q, set->text[i][j], j < set->textsize[1]-1 ? ',' : ' ');
-        asprintf(&q,"%s);",q);
+			qxprintf(&q,"%s \'%s\' %c ",q, set->text[i][j], j < set->textsize[1]-1 ? ',' : ' ');
+        qxprintf(&q,"%s);",q);
 		ctr++;
 		if(ctr==batch_size || apop_opts.db_engine == 'm') {
 		    if(apop_opts.db_engine == 'm')   apop_query(q);
             else                                apop_query("%s commit;",q);
             ctr = 0;
 		    /*if(apop_opts.db_engine == 'm')   
-                asprintf(&q,"%s ", q);
+                qxprintf(&q,"%s ", q);
             else                            */
 		    if(apop_opts.db_engine != 'm')   
-                asprintf(&q,"begin; \n");
+                qxprintf(&q,"begin; \n");
 			}
 	}
     if ( !(apop_opts.db_engine == 'm') && ctr>0) 
