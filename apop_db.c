@@ -791,6 +791,14 @@ int apop_data_to_db(apop_data *set, char *tabname){
                     qxprintf(&q,"%s NULL%s ",
                         q, 
                         (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
+                else if (isinf(v)==1)
+                    qxprintf(&q,"%s 'inf'%s ",
+                        q, 
+                        (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
+                else if (isinf(v)==-1)
+                    qxprintf(&q,"%s '-inf'%s ",
+                        q, 
+                        (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
                 else
                     qxprintf(&q,"%s %g%s ",
                         q, v,

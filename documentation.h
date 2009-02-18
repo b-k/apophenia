@@ -991,7 +991,7 @@ endofdiv
         \li\ref apop_model_free()
         \li\ref apop_model_set_parameters()
         \li\ref apop_model_show()
-
+        \li\ref apop_model_prep()
 
     endofdiv
 
@@ -1002,7 +1002,6 @@ endofdiv
         \li\ref apop_expected_value()
         \li\ref apop_log_likelihood()
         \li\ref apop_score()
-        \li\ref apop_model_prep()
         \li\ref apop_model_print()
         \li\ref apop_p()
 
@@ -1193,6 +1192,7 @@ endofdiv
 
         Outlineheader Spec Specific settings
 
+            \li\ref apop_category_settings_alloc()  
             \li\ref apop_histogram_settings_alloc()  
             \li\ref apop_ls_settings_alloc()
             \li\ref apop_mle_settings_alloc() \anchor mlesettingsa

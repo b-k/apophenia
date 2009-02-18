@@ -1,6 +1,6 @@
-/** \file apop_multinomial_probit.c
+/** \file apop_multinomial_probit.c */
 
-Copyright (c) 2005--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2005--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "mapply.h"
@@ -8,12 +8,19 @@ Copyright (c) 2005--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 
 
-/////////  Part II: Methods for the apop_category_settings struct
+/////////  Part I: Methods for the apop_category_settings struct
 
+/** Convert a column of input data into factors, for use with \ref apop_probit, apop_logit, &c.
+    
+  \param d The input data set that you're probably about to run a regression on
+  \param source_column The number of the column to convert to factors. As usual, the vector is -1.
+  \param source_type 't' = text; anything else ('d' is a good choice) is numeric data.
+ */
 apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_column, char source_type){
   int i;
   apop_category_settings *out = malloc (sizeof(apop_category_settings));
     out->source_column = source_column;
+    out->source_type = source_type;
     out->source_data = d;
     if (source_type == 't'){
         out->factors = apop_text_unique_elements(d, source_column);
@@ -56,22 +63,30 @@ static void probit_prep(apop_data *d, apop_model *m){
   if (m->prepared) return;
   int       i, count;
   apop_data *factor_list;
-    if (!Apop_settings_get_group(m, apop_category)){
-        Apop_settings_add_group(m, apop_category, d, 0, 'd');
-        Apop_col(d, 0, outcomes);
-        d->vector = apop_vector_copy(outcomes);
-        gsl_vector_set_all(outcomes, 1);
-        if (d->names->column && d->names->column[0]){
-            apop_name_add(d->names, d->names->column[0], 'v');
-            sprintf(d->names->column[0], "1");
+    if (!d->vector){
+        if (!Apop_settings_get_group(m, apop_category)){
+            Apop_settings_add_group(m, apop_category, d, 0, 'd');
+            Apop_col(d, 0, outcomes);
+            d->vector = apop_vector_copy(outcomes);
+            gsl_vector_set_all(outcomes, 1);
+            if (d->names->column && d->names->column[0]){
+                apop_name_add(d->names, d->names->column[0], 'v');
+                sprintf(d->names->column[0], "1");
+            }
+        } else{
+            int sourcecol = Apop_settings_get(m, apop_category, source_column);
+            char sourcetype = Apop_settings_get(m, apop_category, source_type);
+            if (sourcetype == 't')
+                apop_text_to_factors(d, sourcecol, -1);
+            else {
+                Apop_col(d, sourcecol, outcomes);
+                d->vector = apop_vector_copy(outcomes);
+                gsl_vector_set_all(outcomes, 1);
+            }
         }
+            //else, I assume you already have the vector set up with something good.
     }
 
-    if (!d->vector){
-        APOP_COL(d, 0, independent);
-        d->vector = apop_vector_copy(independent);
-        gsl_vector_set_all(independent, 1);
-    }
     void *mpt = m->prep; //and use the defaults.
     m->prep = NULL;
     apop_model_prep(d, m);
@@ -134,7 +149,7 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 
 \ingroup models
 */
-apop_model apop_probit = {"Probit", -1,0,0, .log_likelihood = probit_log_likelihood, 
+apop_model apop_probit = {"Probit", .log_likelihood = probit_log_likelihood, 
     .score = probit_dlog_likelihood, .prep = probit_prep};
 
 
@@ -147,7 +162,7 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
                                            "un-parameterized model. Please run apop_estimate first.");
     apop_model_prep(in, m);
     gsl_matrix *params = m->parameters->matrix;
-    apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2);
+    apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
     for (i=0; i < in->matrix->size1; i ++){
         Apop_row(in, i, observation);
         Apop_row(out, i, outrow);
@@ -155,23 +170,25 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
         int    bestindex  = 0;
         double bestscore  = 0;
         gsl_vector_set(outrow, 0, 1);
-        for (j=0; j < params->size2; j ++){
+        for (j=0; j < params->size2+1; j ++){
             if (j == 0)
                 oneterm = 0;
             else {
-                Apop_matrix_col(params, j, p);
+                Apop_matrix_col(params, j-1, p);
                 gsl_blas_ddot(observation, p, &oneterm);
+                gsl_vector_set(outrow, j, exp(oneterm));
             }
             if (oneterm > bestscore){
                 bestindex = j;
                 bestscore = oneterm;
             }
-            gsl_vector_set(outrow, j, exp(oneterm));
         }
         double total = apop_sum(outrow);
         gsl_vector_scale(outrow, 1/total);
         apop_data_set(out, i, -1, bestindex);
     }
+    apop_data *factor_list = Apop_settings_get(m, apop_category, factors);
+    apop_name_add(out->names, factor_list->text[0][0], 'c');
     apop_name_stack(out->names, m->parameters->names, 'c');
     return out;
 }
@@ -207,9 +224,11 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
         APOP_COL(p->parameters, i, param);
         val = vals[i];
         working_data->vector = apop_vector_map(original_outcome, unordered);
-        spare_probit->parameters->vector = param;
+        //gsl_matrix_set_col(spare_probit->parameters->matrix, 0, param);
+        spare_probit->parameters->matrix = apop_vector_to_matrix(param);
         ll  += apop_log_likelihood(working_data, spare_probit);
         gsl_vector_free(working_data->vector); //yup. It's inefficient.
+        gsl_matrix_free(spare_probit->parameters->matrix);
     }
 	return ll;
 }
@@ -225,15 +244,17 @@ static size_t find_index(double in, double *m, size_t max){
 /**
 
   The likelihood of choosing item $j$ is:
-  $e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$
+  \f$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})\f$
 
   so the log likelihood is 
-  $x\beta_j  - ln(\sum_i{e^{x\beta_i}})$
+  \f$x\beta_j  - ln(\sum_i{e^{x\beta_i}})\f$
 
-  A nice trick: let $y_i = x\beta_i$.
-$ln(\sum_i{e^{x\beta_i}}) = max(y_i) - ln(\sum_i{e^{y_i - max(y_i)}})$
-the elements of the sum are all now exp(something negative), so we don't
-have to worry about overflow, and if there's underflow, then that term
+  A nice trick used in the implementation: let \f$y_i = x\beta_i\f$.
+  Then
+\f$$ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f$$
+
+The elements of the sum are all now exp(something negative), so 
+overflow won't happen, and if there's underflow, then that term
 must not have been very important. [This trick is attributed to Tom
 Minka, who implemented it in his Lightspeed Matlab toolkit.]
 */
@@ -249,12 +270,11 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
     long double ll    = 0;
     for(i=0; i < d->vector->size; i++){
         index   = find_index(gsl_vector_get(d->vector, i), factor_list, choicect);
-        if (index> 0)  //otherwise it's beta_0, which is fixed at zero.
-            ll += apop_data_get(xbeta, i, index-1);
+        ll += (index==0) ? 1 : apop_data_get(xbeta, i, index-1);
     }
 
     //Get the denominator, using the subtract-the-max trick above.
-    //Don't forget the implicit beta_0, fixed at zero (so exp(beta_0)=1).
+    //Don't forget the implicit beta_0, fixed at zero (so we need to add exp(0-max)).
     for(j=0; j < xbeta->matrix->size1; j++){
         APOP_ROW(xbeta, j, thisrow);
         double max = gsl_vector_max(thisrow);

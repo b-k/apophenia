@@ -66,9 +66,8 @@ void print_out(FILE *f, char *outfile, gsl_matrix *m){
 	    apop_matrix_print(m, NULL);
     }
     else {
-        //APOP_MATRIX_COL(m, 0, v);
-        apop_model *histo = apop_estimate(apop_matrix_to_data(m), apop_histogram);
-        apop_histogram_plot(histo, NULL);
+        APOP_MATRIX_COL(m, 0, v);
+        apop_plot_histogram(v, histobins, NULL);
     }
     if (outfile) fclose(f);
 }

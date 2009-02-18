@@ -52,7 +52,6 @@ extern apop_model apop_zipf;
 #define apop_IV apop_iv
 
 
-
 /////////Settings
 
 
@@ -71,11 +70,19 @@ apop_normal_settings *apop_normal_settings_copy(apop_normal_settings *in);
 void apop_normal_settings_free(apop_normal_settings *in);
 
 // Find apop_category_settings routines in apop_probit.c
+/** for dependent-category models, send in this settings struct to
+  specify which column is the dependent variable. 
+
+  If you don't use it, these models will assume that the vector or first
+  numeric column is already a coherent set of factors, but by sending
+  this in, those functions have a little more information, such as names
+  to use in the output.
+
+  See also the \ref apop_category_settings_alloc function.
+ */
 typedef struct {
-    apop_data *factors;
-    char source_type;
-    char source_column;
-    apop_data *source_data;
+    apop_data *factors; char source_type; char source_column; apop_data
+    *source_data;
 } apop_category_settings;
 
 apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_column, char source_type);

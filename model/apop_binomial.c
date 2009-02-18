@@ -27,12 +27,19 @@ static void get_hits_and_misses(const apop_data *data, char method, double *hitc
     if (method == 't'){
         size_t        i, j;
         *hitcount=0, *misscount=0;
-        for(i=0; i < data->matrix->size1; i ++)
-            for(j=0; j < data->matrix->size2; j ++)
-                if (gsl_matrix_get(data->matrix, i, j))
+        if (data->vector)
+            for(i=0; i < data->vector->size; i ++)
+                if (gsl_vector_get(data->vector, i))
                     (*hitcount)    ++;
                 else
                     (*misscount)   ++;
+        if (data->matrix)
+            for(i=0; i < data->matrix->size1; i ++)
+                for(j=0; j < data->matrix->size2; j ++)
+                    if (gsl_matrix_get(data->matrix, i, j))
+                        (*hitcount)    ++;
+                    else
+                        (*misscount)   ++;
     } else {
         APOP_COL(data, 0, misses);
         APOP_COL(data, 1, hits);
@@ -105,7 +112,7 @@ Input data can take two forms:
 
 The default is to take the data to have a binary form, meaning that
 the system counts zeros as failures and non-zeros as successes. \f$N\f$
-is the size of the matrix.
+is the size of the matrix, vector, or both (whichever is not \c NULL).
 
 In rank-type format, the data is taken to be the two-column miss-hit
 format: column zero of the matrix represents failures and column one

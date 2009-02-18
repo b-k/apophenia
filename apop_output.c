@@ -289,6 +289,10 @@ void apop_data_show(const apop_data *in){
 
 //Write to the printout data set.
     apop_data *printout = apop_text_alloc(NULL , outsize_r, outsize_c);
+    for(i= 0; i< outsize_r; i ++)
+        for(j= 0; j < outsize_c; j ++)
+            apop_text_add(printout, i, j, "");
+
     if (hasrownames)
         for(i=0; i < in->names->rowct; i ++)
             apop_text_add(printout, i + hascolnames, 0, in->names->row[i]);
@@ -306,26 +310,14 @@ void apop_data_show(const apop_data *in){
 
 //column names
     if (hascolnames){
-        if (hasrownames)
-            apop_text_add(printout, 0 , 0,  ""); 
-        if (hasvector){
-            if (in->names->vector)
+        if (hasvector && in->names->vector)
                 apop_text_add(printout, 0 , hasrownames,  in->names->vector);
-            else
-                apop_text_add(printout, 0 , hasrownames,  "");
-        }
-        if (matrixcols){
+        if (matrixcols)
             for(i=0; i < in->names->colct; i ++)
                 apop_text_add(printout, 0 , hasrownames + hasvector + i,  in->names->column[i]);
-            for(i=in->names->colct; i< in->matrix->size2; i ++)
-                apop_text_add(printout, 0 , hasrownames + hasvector + i,  "");
-        }
-        if (in->textsize[1]){
+        if (in->textsize[1])
             for(i=0; i < in->names->textct; i ++)
                 apop_text_add(printout, 0 , hasrownames + hasvector + matrixcols + i, in->names->text[i]);
-            for(i=in->names->textct; i< in->textsize[1]; i ++)
-                apop_text_add(printout, 0 , hasrownames + hasvector+ matrixcols + i ,  "");
-        }
     }
 
 //get column sizes
@@ -387,17 +379,17 @@ static void print_core_m(const gsl_matrix *data, char *separator, char *filename
         for (i=0; i< n->rowct; i++)
             max_name_size   = GSL_MAX(strlen(n->row[i]), max_name_size);
 
-	//if ((apop_opts.output_type == 's') || (filename == NULL) || (!strcmp(filename, "STDOUT")))
-	if ((filename == NULL) || (!strcmp(filename, "STDOUT")))
-		f	= stdout;
-	else
-        f	= fopen(filename, apop_opts.output_append ? "a" : "w");
     if (apop_opts.output_type == 'p'){
         f   = apop_opts.output_pipe;
         if (!f){ 
             apop_error(1, 'c', "%s: You set apop_opts.output_type to 'p', but apop_opts.output_pipe is NULL. Assuming you meant stdout.\n", __func__);
             f = stdout;
         }
+    } else {
+          if ((filename == NULL) || (!strcmp(filename, "STDOUT")))
+            f	= stdout;
+          else
+            f	= fopen(filename, apop_opts.output_append ? "a" : "w");
     }
     if (n && strlen(n->title)>0)
         fprintf(f, "%s%s\n\n", apop_opts.output_type=='s'? "\t\t" : "", n->title);

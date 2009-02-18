@@ -111,13 +111,30 @@ the input to this function, so you can chain Bayesian updating procedures.
 To change the default settings (MCMC starting point, periods, burnin...),
 add an \ref apop_update_settings struct to the prior.
 
+Here are the conjugate distributions currently defined:
+
+<table>
+<tr>
+<td> Prior <td></td> Likelihood  <td></td>  Notes 
+</td> </tr> <tr>
+<td> \ref apop_beta "Beta" <td></td> \ref apop_binomial "Binomial"  <td></td>  
+</td> </tr> <tr>
+<td> \ref apop_beta "Beta" <td></td> \ref apop_bernoulli "Bernoulli"  <td></td> 
+</td> </tr> <tr>
+<td> \ref apop_exponential "Exponential" <td></td> \ref apop_gamma "Gamma"  <td></td>  Gamma likelihood represents the distribution of \f$\lambda^{-1}\f$, not plain \f$\lambda\f$
+</td> </tr> <tr>
+<td> \ref apop_normal "Normal" <td></td> \ref apop_normal "Normal" <td></td>  Assumes prior with fixed \f$\sigma\f$; updates distribution for \f$\mu\f$
+</td></tr>
+</table>
+
 \param data     The input data, that will be used by the likelihood function
 \param  prior   The prior \ref apop_model
 \param likelihood The likelihood \ref apop_model. If the system needs to
 estimate the posterior via MCMC, this needs to have a \c draw method.
 \param r        A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc).
 \return an \ref apop_model struct representing the posterior, with updated parameters. 
-\todo The \ref apop_update routine has an internal table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), and that list can always be longer.
+\todo The table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), is a little short, and can always be longer.
+
 */
 apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *r){
   apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);

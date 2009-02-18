@@ -134,7 +134,6 @@ The data set's vector will be the largest eigenvalues, scaled by the total of al
 
 \ingroup linear_algebra */
 apop_data * apop_matrix_pca(gsl_matrix *data, int dimensions_we_want) {
-//Get X'X
   gsl_matrix * 	eigenvectors 	= gsl_matrix_alloc(data->size2, data->size2);
   gsl_vector * 	dummy_v 	    = gsl_vector_alloc(data->size2);
   gsl_vector * 	all_evalues 	= gsl_vector_alloc(data->size2);

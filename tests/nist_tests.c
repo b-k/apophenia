@@ -44,9 +44,8 @@ gsl_vector  v   = gsl_matrix_column(d->matrix, 0).vector;
     //Sample Autocorrelation Coefficient (lag 1) r(1):   -0.999     (exact)
 }
 
-int nist_tests(){
+void nist_tests(){
     pontius();
     wampler1();
     numacc4();
-    return 0;
 }

@@ -131,12 +131,14 @@ void apop_error(int level, char stop, char *msg, ...){
 }
 
 
-/** Call \c system(), but with \c printf arguments. e.g.,
+/** Call \c system(), but with <tt>printf</tt>-style arguments. E.g.,
   
  \code
-char filename[] = "apop_asst.c"
-apop_system("ls %s", filenames);
+char filenames[] = "apop_asst.c apop_asst.o"
+apop_system("ls -l %s", filenames);
 \endcode
+
+\return The return value of the \c system() call.
 
  */
 int apop_system(const char *fmt, ...){

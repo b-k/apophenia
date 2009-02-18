@@ -27,7 +27,7 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
     \param d    The data, with NaNs
     \return     A (potentially shorter) copy of the data set, without NaNs.
 
-    \todo  Doesn't handle text; doesn't delete row names as necessary.
+    \todo  Doesn't handle text.
 */
 apop_data * apop_data_listwise_delete(apop_data *d){
   int i, j, min = 0, max = 0, height=0, has_vector=0, has_matrix=0, to_rm;
@@ -150,21 +150,28 @@ static double ll(apop_data *d, apop_model * ep){
     return apop_log_likelihood(d, m->local_mvn);
 }
 
-static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", 0,0,0, .log_likelihood= ll};
+static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", .log_likelihood= ll};
 
 /**
     Impute the most likely data points to replace NaNs in the data, and
     insert them into the given data. That is, the data set is modified
     in place.
 
-
 \param  d       The data set. It comes in with NaNs and leaves entirely filled in.
 \param  mvn A parametrized \c apop_model from which you expect the data was derived.
-This is traditionally a Multivariate Normal.
+if \c NULL, then I'll use the Multivariate Normal that best fits the data after listwise deletion.
 
 \return An estimated \ref apop_ml_imputation_model . Also, the data input will be filled in and ready to use.
 */
 apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
+    if (!mvn){
+        apop_data *list_d = apop_data_listwise_delete(d);
+        apop_error(0, 's', "Listwise deletion returned no whole rows, "
+                            "so I couldn't fit a Multivariate Normal to your data. "
+                            "Please provide a pre-estimated initial model.");
+        mvn = apop_estimate(list_d, apop_multivariate_normal);
+        apop_data_free(list_d);
+    }
   apop_model *mc       = apop_model_copy(apop_ml_imputation_model);
     Apop_settings_add_group(mc, apop_ml_imputation, mvn);
     if (Apop_settings_get_group(mvn, apop_mle))

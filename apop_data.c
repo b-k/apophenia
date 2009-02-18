@@ -8,6 +8,7 @@ Copyright (c) 2006--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "vasprintf/vasprintf.h"
 #include "types.h"
 #include "output.h"
+#include "conversions.h"
 #include "linear_algebra.h"
 
 /** \defgroup data_struct apop_data
@@ -246,7 +247,7 @@ apop_data *apop_data_copy(const apop_data *in){
     return out;
 }
 
-/** Put the first data set either on top of or to the right of the second matrix.
+/** Put the first data set either on top of or to the left of the second matrix.
 
 The fn returns a new data set, meaning that at the end of this function,
 until you apop_data_free() the original data sets, you will be taking up
@@ -257,7 +258,7 @@ twice as much memory. Plan accordingly.
 \param  m1      the upper/rightmost data set
 \param  m2      the second data set
 \param  posn    if 'r', stack rows of m1's matrix above rows of m2's<br>
-if 'c', stack columns of m1's matrix to right of m2's<br>
+if 'c', stack columns of m1's matrix to left of m2's<br>
 
 If m1 or m2 are NULL, this returns a copy of the other element, and if
 both are NULL, you get NULL back.
@@ -266,7 +267,7 @@ both are NULL, you get NULL back.
 \li text is ignored
 \li If stacking rows on rows, the output vector is the input
 vectors stacked accordingly. If stacking columns by columns, the output
-vector is just the vector of m1 and m2->vector doesn't appear in the
+vector is just a copy of the vector of m1 and m2->vector doesn't appear in the
 output at all.  
 \li Names are a copy of the names for \c m1, with the names for \c m2 appended to the row or column list, as appropriate.
 
@@ -283,10 +284,10 @@ apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
                                                          "you gave me >%c<. Returning NULL.", posn);
     stacked = apop_matrix_stack(m1->matrix, m2->matrix, posn);
     out     = apop_matrix_to_data(stacked);
-    if (posn == 'c')
+    if (posn == 'r')
         out->vector = apop_vector_stack(m1->vector, m2->vector);
     else 
-        out->vector = m1->vector;
+        out->vector = apop_vector_copy(m1->vector);
     out->names  = apop_name_copy(m1->names);
     apop_name_stack(out->names, m2->names, posn);
     return out;

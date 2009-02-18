@@ -201,8 +201,7 @@ static int find_cat_index(char **d, char * r, int start_from, int size){
 		i	++;
 		i	%= size;	//loop around as necessary.
 	} while(i!=start_from); 
-	printf(" apop %s, %i: something went wrong in the crosstabbing; couldn't find %s.\n", __FILE__, __LINE__, r);
-	return 0;
+    Apop_assert(0, 0, 0, 'c', "Something went wrong in the crosstabbing; couldn't find %s.", r);
 }
 
 /**Give the name of a table in the database, and names of three of its
@@ -218,7 +217,7 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 		j = 0,
 		k; 
   apop_data     *pre_d1, *pre_d2, *datachars;
-  apop_data     *outdata    = apop_data_alloc(0,1,1);
+  apop_data     *outdata    = apop_data_alloc(0,0,0);
 
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
@@ -228,12 +227,12 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
     pre_d1	    = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
-    apop_assert(pre_d1,  NULL, 0, 's', "selecting %s from %s returned an empty table.\n", r1, tabname);
+    apop_assert(pre_d1,  NULL, 0, 's', "selecting %s from %s returned an empty table.", r1, tabname);
     for (i=0; i < pre_d1->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d1->text[i][0], 'r');
 
 	pre_d2	= apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
-	apop_assert(pre_d2,  NULL, 0, 's', "selecting %s from %s returned an empty table.\n", r2, tabname);
+	apop_assert(pre_d2,  NULL, 0, 's', "selecting %s from %s returned an empty table.", r2, tabname);
     for (i=0; i < pre_d2->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
@@ -246,7 +245,6 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
     apop_data_free(pre_d1);
     apop_data_free(pre_d2);
     apop_data_free(datachars);
-    gsl_matrix_free(outdata->matrix);
     outdata->matrix   = out;
     apop_opts.db_name_column[0]= p;
 	return outdata;
