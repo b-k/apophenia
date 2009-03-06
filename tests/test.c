@@ -914,6 +914,34 @@ void test_probit_and_logit(gsl_rng *r){
   }
 }
 
+void test_resize(){
+    int i;
+    //This is the multiplication table from _Modeling with Data_
+    //with a +.1 to distinguish columns from rows.
+  gsl_matrix *m = gsl_matrix_alloc(20,15);
+    gsl_matrix_set_all(m, 1);
+    for (i=0; i< m->size1; i++){
+        Apop_matrix_row(m, i, one_row);
+        gsl_vector_scale(one_row, i+1);
+    }
+    for (i=0; i< m->size2; i++){
+        Apop_matrix_col(m, i, one_col);
+        gsl_vector_scale(one_col, i+1);
+        gsl_vector_add_constant(one_col, (i+1)/10.);
+    }
+    apop_matrix_realloc(m, 11, 17);
+    assert(gsl_matrix_get(m, 3, 5) == 4*6+.6);
+    apop_matrix_realloc(m, 10, 10);
+    assert (fabs(apop_matrix_sum(m) - 55 * 56 )<1e-6);
+    gsl_vector *v = gsl_vector_alloc(m->size2);
+    for (i=0; i< m->size2; i++)
+        gsl_vector_set(v, i, i);
+    apop_vector_realloc(v, 38);
+    assert(gsl_vector_get(v, 5) == 5);
+    apop_vector_realloc(v, 11);
+    assert(apop_vector_sum(v) == 45);
+}
+
 void test_fisher() {
     /* This test is thanks to Nick Eriksson, who sent it to me in the
        form of a bug report. */
@@ -979,6 +1007,7 @@ int main(int argc, char **argv){
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
     do_test("test db to crosstab", test_crosstabbing());
+    do_test("test vector/matrix realloc", test_resize());
     do_test("test Fisher exact test", test_fisher());
     do_test("test distributions", test_distributions(r));
     do_test("test apop_update", test_updating());

@@ -278,6 +278,7 @@ static int db_to_chars(void *o,int argc, char **argv, char **column){
     }
     if (!d->textsize[1])
         d->textsize[1] = argc - ncfound;
+    d->text  = realloc(d->text, sizeof(char*) * ++(d->textsize[0]));
     d->text[currentrow]	= malloc(sizeof(char**) * argc);
     for (jj=0; jj<argc; jj++)
         if (jj == namecol){
@@ -293,29 +294,16 @@ static int db_to_chars(void *o,int argc, char **argv, char **column){
 }
 
 apop_data * apop_sqlite_query_to_text(char *query){
-  char		*q2, *err   =NULL;
-  size_t    total_rows  = 0;
-  apop_data *out        = apop_data_alloc(0,0, 0);
+  char		*err        = NULL;
+  apop_data *out        = apop_data_alloc(0, 0, 0);
     currentrow  =0;
     firstcall = 1;
     if (db==NULL) apop_db_open(NULL);
-    q2		= malloc(strlen(query) + 300);
-    apop_table_exists("apop_temp_table",1);
-    sqlite3_exec(db,strcat(strcpy(q2,
-        "CREATE TABLE apop_temp_table AS "), query), NULL, NULL, &err); ERRCHECK
-    sqlite3_exec(db, "SELECT count(*) FROM apop_temp_table", length_callback, &total_rows, &err);
-    free(query);
-    ERRCHECK
-    if (total_rows==0){
+    sqlite3_exec(db, query, db_to_chars, out, &err); ERRCHECK
+    if (out->textsize[0]==0){
         apop_data_free(out);
-        out     = NULL;
-    } else {
-        out->textsize[0] = total_rows;
-        out->text        = malloc(sizeof(char***) * total_rows);
-		sqlite3_exec(db, "SELECT * FROM apop_temp_table", db_to_chars, out, &err); ERRCHECK
+        return NULL;
     }
-    sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
-    free(q2);
     return out;
 }
 

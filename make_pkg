@@ -1,6 +1,6 @@
 export junkdir=dists
 export pkg=apophenia
-export version=0.20
+export version=0.21
 export date=`date +%d_%b_%y`
 
 #This script is intended for maintainers who are modifying the 

@@ -757,3 +757,96 @@ apop_data *apop_data_transpose(apop_data *in){
     apop_name_cross_stack(out->names, in->names, 'c', 'r');
     return out;
 }
+
+
+
+
+/** This function will resize a gsl_matrix to a new height or width.
+
+ Data in the matrix will be retained. If the new height or width is
+ smaller than the old, then data in the later rows/columns will be
+ cropped away and lost. If the new height or width is larger than the old,
+ then new cells will be filled with garbage; it is your repsonsibility
+ to zero out or otherwise fill new rows/columns before use.
+
+ <b>Warning I</b>: Using this function is basically bad form---especially
+ when used in a <tt>for</tt> loop that adds a column each time. A large
+ number of
+<tt>realloc</tt>s can take a noticeable amount of time. You are
+thus encouraged to make an effort to determine the size of your data
+beforehand.
+
+ <b>Warning II</b>: The <tt>gsl\_matrix</tt> is a versatile struct that
+ can represent submatrices and other cuts from parent data. I can't
+ deal with those, and check for such situations beforehand. [Besides,
+ resizing a portion of a parent matrix makes no sense.]
+
+\param m The already-allocated matrix to resize.  If you give me \c NULL, I will crash
+\param newheight, newwidth The height and width you'd like the matrix to be.
+\return m, now resized
+ */
+gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth){
+    size_t i, oldoffset=0, newoffset=0, realloced = 0;
+    apop_assert(m, NULL, 0, 's', "I can't resize a NULL matrix. "
+                            "Please call gsl_matrix_alloc(%u, %u) first.", newheight, newwidth);
+    apop_assert((m->block->data==m->data) && m->owner & (m->tda == m->size2),
+        NULL, 0, 's', "I can't resize submatrices or other subviews.");
+    m->block->size = newheight * newwidth;
+    if (m->size2 > newwidth)
+        for (i=1; i< GSL_MIN(m->size1, newheight); i++){
+            oldoffset +=m->size2;
+            newoffset +=newwidth;
+            memmove(m->data+newoffset, m->data+oldoffset, sizeof(double)*newwidth);
+        } 
+    else if (m->size2 < newwidth){
+        m->block->data = m->data = realloc(m->data, sizeof(double) * m->block->size);
+        realloced = 1;
+        int height = GSL_MIN(m->size1, newheight);
+        for (i= height-1; i > 0; i--){
+            newoffset +=newwidth;
+            memmove(m->data+(height * newwidth) - newoffset, m->data+i*m->size2, sizeof(double)*m->size2);
+        }
+    }
+    m->size1 = newheight;
+    m->tda   =
+    m->size2 = newwidth;
+    if (!realloced)
+        m->block->data = m->data = realloc(m->data, sizeof(double) * m->block->size);
+    return m;
+}
+
+/** This function will resize a gsl_vector to a new length.
+
+ Data in the vector will be retained. If the new height is
+ smaller than the old, then data in the bottom of the vector will be
+ cropped away and lost. If the new height is larger than the old,
+ then new cells will be filled with garbage; it is your repsonsibility
+ to zero out or otherwise fill them before use.
+
+ <b>Warning I</b>: Using this function is basically bad form---especially
+ when used in a <tt>for</tt> loop that adds an element each time. A large
+ number of <tt>realloc</tt>s can take a noticeable amount of time. You are
+thus encouraged to make an effort to determine the size of your data
+beforehand.
+
+ <b>Warning II</b>: The <tt>gsl\_vector</tt> is a versatile struct that
+ can represent subvectors, matrix columns and other cuts from parent data. I can't
+ deal with those, and check for such situations beforehand. [Besides,
+ resizing a portion of a parent matrix makes no sense.]
+
+\param v The already-allocated vector to resize.  If you give me \c NULL, I will crash
+\param newheight The height you'd like the vector to be.
+\return v, now resized
+ */
+gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
+    apop_assert(v, NULL, 0, 's', "I can't resize a NULL vector. "
+                            "Please call gsl_vector_alloc(%u) first.", newheight);
+    apop_assert((v->block->data==v->data) && v->owner & (v->stride == 1),
+                NULL, 0, 's', "I can't resize subvectors or other views.");
+    v->block->size = newheight;
+    v->stride   = 1;
+    v->size     = newheight;
+    v->block->data = 
+    v->data        = realloc(v->data, sizeof(double) * v->block->size);
+    return v;
+}
