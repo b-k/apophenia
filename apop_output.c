@@ -679,6 +679,8 @@ set nokey           \n\
 /** Plot the percentiles of a data set against the percentiles of a distribution.
 Defaults to printing to stdout.
 
+The distribution percentiles will be on the $x$-axis, your data percentiles on the $y$-.
+
 The function respects the <tt>output_type</tt> option.
 
 \param v    The data

@@ -978,9 +978,8 @@ void test_distributions(gsl_rng *r){
     apop_model* true_params             = apop_model_copy(apop_gamma);//irrelevant.
     true_params->parameters = apop_line_to_data(true_parameter_v, 2,0,0);
 
-    for (i=0; strcmp(dist[i].name, "the null model"); i++){
+    for (i=0; strcmp(dist[i].name, "the null model"); i++)
         do_test(dist[i].name, test_one_distribution(r, dist[i], true_params));
-    }
 }
 
 int main(int argc, char **argv){

@@ -28,18 +28,20 @@ static void get_hits_and_misses(const apop_data *data, char method, double *hitc
         size_t        i, j;
         *hitcount=0, *misscount=0;
         if (data->vector)
-            for(i=0; i < data->vector->size; i ++)
+            for(i=0; i < data->vector->size; i ++){
                 if (gsl_vector_get(data->vector, i))
                     (*hitcount)    ++;
                 else
                     (*misscount)   ++;
+            }
         if (data->matrix)
             for(i=0; i < data->matrix->size1; i ++)
-                for(j=0; j < data->matrix->size2; j ++)
+                for(j=0; j < data->matrix->size2; j ++){
                     if (gsl_matrix_get(data->matrix, i, j))
                         (*hitcount)    ++;
                     else
                         (*misscount)   ++;
+                }
     } else {
         APOP_COL(data, 0, misses);
         APOP_COL(data, 1, hits);
