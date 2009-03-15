@@ -78,13 +78,9 @@ cd deb
 mkdir -p i/usr/include
 mkdir i/DEBIAN
 cp ../../../deb.copyright i/DEBIAN
-cp ../../../deb.control-dev i/DEBIAN/control
+cp ../../../deb.control i/DEBIAN/control
 cp -rf ../apophenia i/usr/include
 cp ../apop.h i/usr/include
-dpkg -b i ../../libapophenia-$version-dev-0.deb
-
-cp ../../../deb.control i/DEBIAN/control
-rm -rf i/usr/include
 mkdir i/usr/bin
 mkdir i/usr/lib
 /bin/bash ../libtool --mode=install /usr/bin/install -c ../libapophenia.la `pwd`/i/usr/lib/libapophenia.la

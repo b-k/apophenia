@@ -342,12 +342,18 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
   char      c;
   int       thistcol    = 0, 
             thismcol    = 0,
+            colct       = 0,
             i, addnames = 0;
+    in->thisrow ++;
     if (!(in->d->names->colct + in->d->names->textct + (in->d->names->vector!=NULL)))
         addnames    ++;
-    if (in->d->textsize[1])
-        in->d->text[in->thisrow]   = malloc(sizeof(char**) * in->d->textsize[1]);
-
+    if (in->d->textsize[1]){
+        in->d->textsize[0]          = in->thisrow;
+        in->d->text                 = realloc(in->d->text, sizeof(char ***)*in->thisrow);
+        in->d->text[in->thisrow-1]  = malloc(sizeof(char**) * in->d->textsize[1]);
+    }
+    if (in->intypes[2])
+        apop_matrix_realloc(in->d->matrix, in->thisrow, in->intypes[2]);
     for (i=in->current=0; i< argc; i++){
         c   = in->instring[in->current++];
         if (c=='n'||c=='N'){
@@ -355,57 +361,48 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
             if(addnames)
                 apop_name_add(in->d->names, column[i], 'h'); 
         } else if (c=='v'||c=='V'){
-            apop_data_set(in->d, in->thisrow, -1, 
+            apop_vector_realloc(in->d->vector, in->thisrow);
+            apop_data_set(in->d, in->thisrow-1, -1, 
                                     argv[i] ? atof(argv[i]) : GSL_NAN);
             if(addnames)
                 apop_name_add(in->d->names, column[i], 'v'); 
         } else if (c=='m'||c=='M'){
-            apop_data_set(in->d, in->thisrow, thismcol++, 
+            apop_data_set(in->d, in->thisrow-1, thismcol++, 
                                     argv[i] ? atof(argv[i]) : GSL_NAN);
             if(addnames)
                 apop_name_add(in->d->names, column[i], 'c'); 
         } else if (c=='t'||c=='T'){
-            asprintf(&(in->d->text[in->thisrow][thistcol++]),
+            asprintf(&(in->d->text[in->thisrow-1][thistcol++]),
 			                        argv[i] ? argv[i] : "NaN");
             if(addnames)
                 apop_name_add(in->d->names, column[i], 't'); 
-        } else if (c=='w'||c=='W')
-                gsl_vector_set(in->d->weights, in->thisrow, 
+        } else if (c=='w'||c=='W'){
+            apop_vector_realloc(in->d->weights, in->thisrow);
+            gsl_vector_set(in->d->weights, in->thisrow-1, 
                                     argv[i] ? atof(argv[i]) : GSL_NAN);
+        }
+        colct++;
     }
-    in->thisrow ++;
+    int requested = in->intypes[0]+in->intypes[1]+in->intypes[2]+in->intypes[3]+in->intypes[4];
+      apop_assert(colct == requested, 1, 0, 'c', 
+      "you asked for %i rows in your list of types, but your query produced %u columns. \
+      The remainder will be placed in the text section." , requested, colct);
     return 0;
 }
 
 apop_data *apop_sqlite_multiquery(const char *intypes, char *query){
-  //info.intypes      =  count_types(intypes);      //names, vectors, mcols, textcols.
-  char		*q2,*err    = NULL;
+  char		*err        = NULL;
   apop_qt   info        = {.thisrow = 0};
-  size_t	total_rows 	= 0;
     count_types(&info, intypes);
 	if (db==NULL) apop_db_open(NULL);
-	q2		    = malloc(strlen(query) + 300);
-	apop_table_exists("apop_temp_table",1);
-	sqlite3_exec(db,strcat(strcpy(q2,
-		"CREATE TABLE apop_temp_table AS "), query), NULL, NULL, &err); ERRCHECK
-	sqlite3_exec(db, "SELECT count(*) FROM apop_temp_table", length_callback, &total_rows, &err);
-	free(query);
-	ERRCHECK
-	if (total_rows){
-        info.d               = apop_data_alloc(info.intypes[1]*total_rows, total_rows, info.intypes[2]);
-        if (info.intypes[4])
-            info.d->weights  = gsl_vector_alloc(total_rows);
-        info.d->textsize[0]  = total_rows;
-        size_t total_cols    = apop_count_cols("apop_temp_table");
-        info.d->textsize[1]  = total_cols - (info.intypes[0]+info.intypes[1]+info.intypes[2]+info.intypes[4]);
-        info.d->text 	     = malloc(sizeof(char***) * total_rows);
-        apop_assert(info.d->textsize[1] == info.intypes[3], NULL, 0, 'c', 
-            "you asked for %i rows in your list of types, but your query produced %u columns. \
-            The remainder will be placed in the text section."
-            , info.intypes[0]+info.intypes[1]+info.intypes[2]+info.intypes[3]+info.intypes[4], total_cols);
-		sqlite3_exec(db, "SELECT * FROM apop_temp_table", multiquery_callback, &info, &err); ERRCHECK
+    info.d               = apop_data_alloc(info.intypes[1], 1, info.intypes[2]);
+    if (info.intypes[4])
+        info.d->weights  = gsl_vector_alloc(1);
+    if (info.intypes[3]){
+        info.d->textsize[0]  = 1;
+        info.d->textsize[1]  = info.intypes[3];
+        info.d->text 	     = malloc(sizeof(char***) * 1);
     }
-	sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
-	free(q2);
+    sqlite3_exec(db, query, multiquery_callback, &info, &err); ERRCHECK
 	return info.d;
 }

@@ -427,23 +427,15 @@ void test_model_fix_parameters(gsl_rng *r){
   apop_data *mask = apop_data_calloc(2,2,2);
   size_t    i, ct = 1000;
   apop_data *d  = apop_data_alloc(0,ct,2);
-  //apop_data *v  = apop_data_alloc(2,0,0);
-  //apop_data *v2 = apop_data_alloc(2,0,0);
-  //apop_mle_settings *ep   = apop_mle_settings_alloc(d, apop_multivariate_normal, NULL);
   double    draw[2];
-    apop_data_set(pv, 0, -1, 8);
-    apop_data_set(pv, 1, -1, 2);
-    gsl_matrix_set(pv->matrix, 0,0,1);
-    gsl_matrix_set(pv->matrix, 1,1,1);
-    gsl_matrix_set(pv->matrix, 1,0,0.5);
-    gsl_matrix_set(pv->matrix, 0,1,0.5);
+    apop_vector_fill(pv->vector, 8., 2.);
+    apop_matrix_fill(pv->matrix, 1., 0.5, 0.5, 1.);
   apop_model *pp = apop_model_copy(apop_multivariate_normal);
     pp->parameters  = pv;
     for(i=0; i< ct; i++){
         apop_multivariate_normal.draw(draw, r, pp);
         apop_data_set(d, i, 0, draw[0]);
         apop_data_set(d, i, 1, draw[1]);
-        //*apop_data_ptr(d,i,1)    +=3;
     }
 
     gsl_matrix_set_all(mask->matrix, 1);
@@ -453,7 +445,7 @@ void test_model_fix_parameters(gsl_rng *r){
     gsl_vector_sub(e1->parameters->vector, pv->vector);
     assert(apop_vector_sum(e1->parameters->vector) < 1e-1);
 
-  double    start2[] = {1,0,0,2};
+  double    start2[] = {2,0,0,1};
     gsl_matrix_set_all(mask->matrix, 0);
     gsl_vector_set_all(mask->vector, 1);
     apop_model *mep2   = apop_model_fix_params(d, pv, mask, apop_multivariate_normal);
@@ -978,8 +970,11 @@ void test_distributions(gsl_rng *r){
     apop_model* true_params             = apop_model_copy(apop_gamma);//irrelevant.
     true_params->parameters = apop_line_to_data(true_parameter_v, 2,0,0);
 
-    for (i=0; strcmp(dist[i].name, "the null model"); i++)
-        do_test(dist[i].name, test_one_distribution(r, dist[i], true_params));
+    for (i=0; strcmp(dist[i].name, "the null model"); i++){
+        printf("%s: ", dist[i].name); fflush(NULL);
+        test_one_distribution(r, dist[i], true_params);
+        printf("Passed.\n");
+    }
 }
 
 int main(int argc, char **argv){
@@ -1006,16 +1001,15 @@ int main(int argc, char **argv){
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
     do_test("test db to crosstab", test_crosstabbing());
+    do_test("dummies and factors", dummies_and_factors());
     do_test("test vector/matrix realloc", test_resize());
     do_test("test Fisher exact test", test_fisher());
-    do_test("test distributions", test_distributions(r));
     do_test("test apop_update", test_updating());
-    do_test("dummies and factors", dummies_and_factors());
-    do_test("db_to_text:", db_to_text());
+    do_test("db_to_text", db_to_text());
     do_test("test_vector_moving_average", test_vector_moving_average());
-    do_test("apop_estimate->dependent test:", test_predicted_and_residual(e));
-    do_test("apop_f_test and apop_coefficient_of_determination test:", test_f(e));
-    do_test("OLS test:", test_OLS());
+    do_test("apop_estimate->dependent test", test_predicted_and_residual(e));
+    do_test("apop_f_test and apop_coefficient_of_determination test", test_f(e));
+    do_test("OLS test", test_OLS());
     do_test("test binomial estimations", test_binomial(r));
     do_test("test lognormal estimations", test_lognormal(r));
     do_test("test queries returning empty tables", test_blank_db_queries());
@@ -1023,24 +1017,23 @@ int main(int argc, char **argv){
     do_test("test apop_histogram model", test_histograms(r));
     do_test("test apop_data sort", test_data_sort());
     do_test("test multivariate_normal", test_multivariate_normal(r));
-    do_test("nist_tests:", nist_tests());
-    do_test("apop_model_fix_parameters test:", test_model_fix_parameters(r));
+    do_test("nist_tests", nist_tests());
     do_test("listwise delete", test_listwise_delete());
     do_test("NaN handling", test_nan_data());
     do_test("database skew and kurtosis", test_skew_and_kurt());
-    do_test("test_percentiles:", test_percentiles());
-    do_test("weighted moments:", test_weigted_moments());
-    do_test("split and stack test:", test_split_and_stack());
-    do_test("apop_dot test:", test_dot());
-    do_test("apop_generalized_harmonic test:", test_harmonic());
-    do_test("apop_strip_dots test:", test_strip_dots());
-    do_test("apop_distance test:", test_distances());
-    do_test("Inversion test: ", test_inversion(r));
-    do_test("apop_jackknife test:", test_jackknife());
-    do_test("apop_matrix_summarize test:", test_summarize());
-    do_test("apop_linear_constraint test:", test_linear_constraint());
-    do_test("apop_pack/unpack test:", apop_pack_test(r));
-    do_test("transposition test:", test_transpose());
+    do_test("test_percentiles", test_percentiles());
+    do_test("weighted moments", test_weigted_moments());
+    do_test("split and stack test", test_split_and_stack());
+    do_test("apop_dot test", test_dot());
+    do_test("apop_generalized_harmonic test", test_harmonic());
+    do_test("apop_strip_dots test", test_strip_dots());
+    do_test("apop_distance test", test_distances());
+    do_test("Inversion test", test_inversion(r));
+    do_test("apop_jackknife test", test_jackknife());
+    do_test("apop_matrix_summarize test", test_summarize());
+    do_test("apop_linear_constraint test", test_linear_constraint());
+    do_test("apop_pack/unpack test", apop_pack_test(r));
+    do_test("transposition test", test_transpose());
     do_test("test unique elements", test_unique_elements());
     do_test("test probit and logit", test_probit_and_logit(r));
     printf("\nApophenia has passed all of its tests. Yay.\n");
