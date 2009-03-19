@@ -6,6 +6,8 @@
 
 	March 2009
 --apop_matrix_realloc, apop_vector_realloc
+--sqlite queries no longer rely on a temp table ==> faster
+--fixed bugs in apop_table_exists making queries fail in Cygwin.
 
 	Jan/Feb 2009
 --Added more tests; some cleanup in test.c

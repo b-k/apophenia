@@ -445,6 +445,7 @@ Thus, there are a great many functions to collate, copy, merge, sort, prune, and
     \li\ref apop_matrix_copy()
     \li\ref apop_matrix_fill()
     \li\ref apop_matrix_increment()
+    \li\ref apop_matrix_realloc()
     \li\ref apop_matrix_rm_columns()
     \li\ref apop_matrix_stack()
     \li\ref apop_text_add()
@@ -453,7 +454,7 @@ Thus, there are a great many functions to collate, copy, merge, sort, prune, and
     \li\ref apop_vector_fill()
     \li\ref apop_vector_increment()
     \li\ref apop_vector_stack()
-    \li\ref apop_vector_vfill()
+    \li\ref apop_vector_realloc()
 
     Note: Apophenia builds upon the GSL, but it would be inappropriate to redundantly
     replicate the GSL's documentation here. You will find a link to

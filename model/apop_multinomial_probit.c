@@ -251,7 +251,7 @@ static size_t find_index(double in, double *m, size_t max){
 
   A nice trick used in the implementation: let \f$y_i = x\beta_i\f$.
   Then
-\f$$ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f$$
+\f[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f]
 
 The elements of the sum are all now exp(something negative), so 
 overflow won't happen, and if there's underflow, then that term

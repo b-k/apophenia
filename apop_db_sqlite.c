@@ -246,12 +246,6 @@ static int apop_sqlite_db_open(char *filename){
     return 0;
 }
 
-static int length_callback(void *o,int argc, char **argv, char **whatever){
-    size_t *total_rows = o;
-	*total_rows=atoi(argv[0]); 
-	return 0;
-}
-
 //these are global for the apop_db_to_... callbacks.
 int		currentrow;
 int     namecol;

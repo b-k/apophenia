@@ -174,7 +174,7 @@ static int tab_exists_callback(void *in, int argc, char **argv, char **whatever)
   char *q	= in;
 	if (!strcmp(argv[argc-1],q))
 		isthere=1;
-	return isthere;
+	return 0;
 }
 
 /** Check for the existence of a table, and maybe delete it.
@@ -337,7 +337,6 @@ static regmatch_t  result[3];
 static regex_t     *regex;
 
 
-size_t tr;
 //apop_query_to_matrix callback.
 static int db_to_table(void *o,int argc, char **argv, char **column){
   int		jj, i, ncfound = 0;
@@ -351,12 +350,13 @@ static int db_to_table(void *o,int argc, char **argv, char **column){
                 ncfound = 1;
                 break;
             }
-	    *output		= gsl_matrix_alloc(tr, argc-ncfound);
+	    *output		= gsl_matrix_alloc(1, argc-ncfound);
         if (data_or_matrix == 'd')
             for(i=0; i<argc; i++)
                 if (namecol != i)
                     apop_name_add(last_names, column[i], 'c');
-    }
+    } else 
+        apop_matrix_realloc(*output, currentrow+1, (*output)->size2);
 	if (argv !=NULL){
         ncfound =0;
 		for (jj=0;jj<argc;jj++)
@@ -402,35 +402,20 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
         return 0;}
 #endif
   gsl_matrix	*output = NULL;
-  char		    *q2, *err=NULL;
-  size_t        total_rows  = 0;
-    firstcall   = 
+  char		    *err=NULL;
+    firstcall   = 1;
     currentrow  = 0;
 	if (db==NULL) apop_db_open(NULL);
 	if (apop_opts.verbose)	printf("%s\n", query);
-	q2	 = malloc(strlen(query)+300);
-	apop_table_exists("apop_temp_table",1);
-	sqlite3_exec(db,strcat(strcpy(q2,
-		"CREATE TABLE apop_temp_table AS "),query),NULL,NULL, &err); ERRCHECK
-	sqlite3_exec(db,"SELECT count(*) FROM apop_temp_table",length_callback,&total_rows, &err);
-	free(query);
-	ERRCHECK
     sprintf(full_divider, "^%s$", apop_opts.db_nan);
     regex           = malloc(sizeof(regex_t));
     regcomp(regex, full_divider, REG_EXTENDED+REG_ICASE);
-	if (total_rows>0){
-        firstcall   = 1;
-		if (last_names !=NULL) 
-			apop_name_free(last_names); 
-		last_names = apop_name_alloc();
-        tr = total_rows;  //globalize
-		sqlite3_exec(db,"SELECT * FROM apop_temp_table",db_to_table,&output, &err); ERRCHECK
-	}
-	assert(apop_table_exists("apop_temp_table",0));
-	sqlite3_exec(db,"DROP TABLE apop_temp_table",NULL,NULL, &err);  ERRCHECK
+    if (last_names !=NULL) 
+        apop_name_free(last_names); 
+    last_names = apop_name_alloc();
+    sqlite3_exec(db, query,db_to_table,&output, &err); ERRCHECK
     regfree(regex);
     free(regex);
-	free(q2);
 	return output;
 }
 
