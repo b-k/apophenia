@@ -4,6 +4,9 @@
 !!Big.
 ]
 
+    April 2009
+--sample moments are now mega-accurate---probably the most unbiased estimators in code today.
+
 	March 2009
 --apop_matrix_realloc, apop_vector_realloc
 --sqlite queries no longer rely on a temp table ==> faster

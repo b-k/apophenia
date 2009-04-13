@@ -85,21 +85,16 @@ static void threeStep(sqlite3_context *context, int argc, sqlite3_value **argv){
 
 static void fourStep(sqlite3_context *context, int argc, sqlite3_value **argv){
   StdDevCtx 	*p;
-  double 		x,ratio;
+  double 		x;
     if( argc<1 ) return;
     p = sqlite3_aggregate_context(context, sizeof(*p));
     if( p && argv[0] ){
         x = sqlite3_value_double(argv[0]);
-        ratio	=  p->cnt/(p->cnt+1.0);
         p->cnt++;
-        p->avg	*= ratio;
-        p->avg2	*= ratio;
-        p->avg3	*= ratio;
-        p->avg4	*= ratio;
-        p->avg += x/p->cnt;
-        p->avg2 += gsl_pow_2(x)/p->cnt;
-        p->avg3 += gsl_pow_3(x)/p->cnt;
-        p->avg4 += gsl_pow_4(x)/p->cnt;
+        p->avg = (x + p->avg * (p->cnt-1.))/p->cnt;
+        p->avg2 = (gsl_pow_2(x)+ p->avg2 * (p->cnt-1.))/p->cnt;
+        p->avg3 = (gsl_pow_3(x)+ p->avg3 * (p->cnt-1.))/p->cnt;
+        p->avg4 = (gsl_pow_4(x)+ p->avg4 * (p->cnt-1.))/p->cnt;
     }
 }
 
@@ -147,7 +142,7 @@ static void skewFinalize(sqlite3_context *context){
       double rCnt = p->cnt;
       sqlite3_result_double(context,
          (p->avg3*rCnt - 3*p->avg2*p->avg*rCnt 
-                        + 2*rCnt * gsl_pow_3(p->avg)) * rCnt/(gsl_pow_2(rCnt)-1.0));
+                        + 2*rCnt * gsl_pow_3(p->avg)) * rCnt/((rCnt-1.0)*(rCnt-2.0)));
     } else if (p->cnt == 1)
       	sqlite3_result_double(context, 0);
 }
@@ -155,14 +150,14 @@ static void skewFinalize(sqlite3_context *context){
 static void kurtFinalize(sqlite3_context *context){
   StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
     if( p && p->cnt>1 ){
-      double rCnt = p->cnt;
-      long double scale =  gsl_pow_2(rCnt)/(gsl_pow_3(rCnt)-1.0);
-      sqlite3_result_double(context, 
-                 scale * ((p->avg4*rCnt - 4*p->avg3*p->avg*rCnt 
-                            + 6 * p->avg2*gsl_pow_2(p->avg)*rCnt
-                            - 3*rCnt* gsl_pow_4(p->avg))
-                          + 6./rCnt *(p->avg2 - gsl_pow_2(p->avg)))
-                );
+      double n = p->cnt;
+      double kurtovern = p->avg4 - 4*p->avg3*p->avg
+                        + 6 * p->avg2*gsl_pow_2(p->avg)
+                        - 3* gsl_pow_4(p->avg);
+      double var = p->avg2 - gsl_pow_2(p->avg);
+      double coeff1 = gsl_pow_3(n)/(n-1)/(gsl_pow_2(n)-3*n+3);
+      double coeff2 = (6*n-9)/(gsl_pow_2(n)-3*n+3);
+      sqlite3_result_double(context, coeff1 * kurtovern + coeff2 * gsl_pow_2(var));
     } else if (p->cnt == 1)
       	sqlite3_result_double(context, 0);
 }

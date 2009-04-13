@@ -539,6 +539,12 @@ The \c ..._sum functions return the sum of the mapped output.
 
 You can do many things quickly with these functions.
 
+Get the sum of squares of a vector's elements:
+
+\code
+double sum_of_squares = apop_vector_map_sum(dataset, gsl_pow_2);
+\endcode
+
 Given your log likelihood function and a data set where each row of the matrix is an observation, find the total log likelihood:
 
 \code

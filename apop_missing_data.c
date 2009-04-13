@@ -185,7 +185,5 @@ apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
     int missing_ct = find_missing(d, mc, NULL);
     apop_assert(missing_ct, NULL, 1, 'c', "You sent apop_ml_imputation a data set with no NANs");
     mc->vbase          = Apop_settings_get(mc, apop_ml_imputation, ct);
-    apop_model *out = apop_maximum_likelihood(d, *mc);
-    //unpack(out->parameters, d, apop_settings_get_group(mc, "apop_ml_imputation"));//already unpacked.
-    return out;
+    return  apop_maximum_likelihood(d, *mc);//already unpacked.
 }

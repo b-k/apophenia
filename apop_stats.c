@@ -100,7 +100,7 @@ inline double apop_var(const gsl_vector *in){
 \ingroup vector_moments
 */
 inline double apop_vector_skew(const gsl_vector *in){
-	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/(gsl_pow_2(in->size) -1.); }
+	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/((in->size -1.)*(in->size -2.)); }
 
 /** Returns the population skew \f$(\sum_i (x_i - \mu)^3/n))\f$ of the data in the given vector.
  
@@ -153,10 +153,12 @@ inline double apop_vector_kurtosis_pop(const gsl_vector *in){
 */
 inline double apop_vector_kurtosis(const gsl_vector *in){
   size_t n = in->size;
-  long double scale =  gsl_pow_3(n)/(gsl_pow_3(n)-1.);
-    return scale * (apop_vector_kurtosis_pop(in) + 6./n * gsl_pow_2(apop_vector_var(in)*((n-1.)/n)));
+  double coeff1 = gsl_pow_3(n)/(n-1)/(gsl_pow_2(n)-3*n+3);
+  double coeff2 = (6*n-9)/(gsl_pow_2(n)-3*n+3);
+    return  coeff1 * apop_vector_kurtosis_pop(in) + coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n);
+//  long double scale =  gsl_pow_3(n)/(gsl_pow_3(n)+1.);
+//    return scale * (apop_vector_kurtosis_pop(in) + 6./n * gsl_pow_2(apop_vector_var(in)*((n-1.)/n)));
 
-	//return ((gsl_stats_kurtosis(in->data,in->stride, in->size)+3) *gsl_pow_2(apop_vector_var(in)))*in->size/(in->size -1.); }
 }
 
 /** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
