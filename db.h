@@ -36,7 +36,6 @@ int apop_db_open(char *filename);
 int apop_db_close(char vacuum);
 
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
-int apop_query_db(const char *q, ...) __attribute__ ((format (printf,1,2)));
 	//Run a query but output nothing outside the DB.
 	//It's fastest to compound as many queries as possible here;
 	//q can be a several-line string of the form:

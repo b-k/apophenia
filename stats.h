@@ -101,8 +101,6 @@ double apop_rng_GHgB3(gsl_rng * r, double* a); //in asst.c
 apop_data * apop_data_summarize(apop_data *data);
 apop_data * apop_matrix_summarize(gsl_matrix *data);
 
-gsl_histogram_pdf * apop_vector_to_pdf(gsl_vector *data, int bins);
-
 //from apop_fisher.c:
 apop_data *apop_test_fisher_exact(apop_data *intab);
 

@@ -71,8 +71,6 @@ void apop_data_unpack(const gsl_vector *in, apop_data *d);
 
 
 char * apop_strip_dots(char *in, char strip_type);
-char *apop_strcat(char **base, char *addme);
-char *apop_strcpy(char **base, char *addme);
 
 gsl_vector *apop_vector_vfill(gsl_vector *in, va_list ap);
 apop_data *apop_data_fill(apop_data *in, ...);

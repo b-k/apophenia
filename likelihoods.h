@@ -68,14 +68,6 @@ void *apop_mle_settings_copy(apop_mle_settings * in);
 void apop_mle_settings_free(void * in);
 
 
-void apop_make_likelihood_vector(gsl_matrix *m, gsl_vector **v, apop_model dist, gsl_vector* fn_beta);
-/*This function goes row by row through m and calculates the likelihood
-  of the given row, putting the result in v. You will need this to find
-  the variance of the estimator via some means.
-  The likelihood function can be any of &apop_xxx_likelihood from above, 
-  and fn_beta will probably be the beta calculated using the corresponding
-  apop_xxx_mle function.
-  */
 typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
 gsl_vector * apop_numerical_gradient(apop_data *data, apop_model*);
 gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
