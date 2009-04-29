@@ -1402,6 +1402,43 @@ endofdiv
 
 endofdiv
 
+Outlineheader python Python interface
+
+The distribution includes a Python interface via the SWIG tool for
+bridging across languages. The focus of the work is still in C, so there
+will likely always be things that you can do in C that can't be done in
+Python, and strage Python-side errors that will only be explicable if
+you understand the C-side.
+
+That said, you cn still access all of the functions from Python (including those that make little sense from Python).
+
+Installation: You will need to have the SWIG and Python-development packages installed on your computer when compiling. From there, the usual {\tt ./configure; make; sudo make install} will produce the Python library and install it in Python's site-packages directory.
+
+Sample script:
+
+On the page on the \ref apop_ols model, you will find a few lines of
+toy data and a sample program to run an OLS regression. Hhere is the script via Python:
+
+\code
+from apop import *
+apop_text_to_db("data","d",0,1,None);
+data = apop_query_to_data("select * from d");
+est  = apop_estimate(data, cvar.apop_ols);
+print est
+print est.parameters.transpose()
+\endcode
+
+
+Caveats and notes: SWIG sets all C-side global variables into a category
+named cvar. Thus the \c apop_ols variable had to be called \c cvar.apop_ols.
+
+The verbose package-object-action scheme for naming functions is
+mostly unnecessary in Python, where objects can more closely be attached
+to functions. Thus, instead of calling apop_vector_skew(v), you would
+call v.skew(). Of course, if you want a list of methods, just use {\tt help(v)} or any of the other familiar means of introspection.
+
+endofdiv 
+
 Outlineheader links Further references
 
 For your convenience, here are links to some other libraries you are probably using.

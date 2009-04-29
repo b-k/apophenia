@@ -37,6 +37,22 @@ pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
 			vasprintf/printf-args.h vasprintf/vasnprintf.h 	
 
+#SWIG
+
+python_PYTHON = apop.py
+
+apop.py: apop.i
+	swig -python apop.i
+	sed -i "s/:print/:_print/" apop.py
+	sed -i "s/def print/def _print/" apop.py
+	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I/usr/local/include -I/usr/include/python$(PYTHON_VERSION)/
+	$(CC) -shared apop_wrap.o -o _apop.so -lapophenia -lgsl -lgslcblas -lsqlite3
+
+
+install-exec-hook:
+	cp _apop.so ${pythondir}
+
+
 
 #The programs
 bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_merge_dbs apop_plot_query apop_lookup
@@ -58,7 +74,7 @@ EXTRA_DIST = doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/fo
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \
 		tests/data-mixed tests/test_data_nans tests/wampler1.dat \
 		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
-		apop.h	COPYING2
+		apop.h	apop.i COPYING2
 
 #The documentation
 
