@@ -24,3 +24,18 @@ function changeSheets(whichSheet){
     for(var i=0;i<c;i++)
         var objBranch = document.getElementById(branch).style.display="block";
 }
+
+function showAll(){
+var arrElements = document.getElementsByClassName("branch");
+        for(var i=0; i<arrElements.length; i++){
+            arrElements[i].style.display="block";
+        }
+    }
+
+function closeAll(){
+var arrElements = document.getElementsByClassName("branch");
+        for(var i=0; i<arrElements.length; i++){
+            arrElements[i].style.display="none";
+        }
+    }
+

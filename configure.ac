@@ -7,6 +7,9 @@ AM_INIT_AUTOMAKE(apophenia, 0.22)
 AC_CONFIG_SRCDIR([db.h])
 AC_CONFIG_HEADER([config.h])
 
+# The normal /usr/local default just confused too many people
+AC_PREFIX_DEFAULT([/usr])
+
 # Windows:
 AC_LIBTOOL_WIN32_DLL
 

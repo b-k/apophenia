@@ -164,6 +164,10 @@ typedef struct{
     char db_nan[100];
             /** If this is 'm', use mySQL, else use SQLite. */
     char db_engine;
+            /** Username for database login. Max 100 chars. */
+    char db_user[101];
+            /** Password for database login. Max 100 chars. */
+    char db_pass[101];
             /** Threads to use internally. See \ref apop_matrix_apply and family. */
     int  thread_count;
 } apop_opts_type;

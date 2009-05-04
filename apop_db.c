@@ -18,7 +18,8 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "config.h"
 #include <math.h> 	                //sqrt
 
-/** Here are where the options are initially set. */
+/** Here are where the options are initially set. Not using designated
+  initializers because Apophenia tries to not use C99. */
 apop_opts_type apop_opts	= { 0,              //verbose
                                 'f',            //output type
                                 NULL,            //output pipe
@@ -26,8 +27,10 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 0,              //output append
                                 "| ,\t",        //input delimiters
                                 "row_names",    //db_name_column
-                                "NaN", //db_nan
+                                "NaN",          //db_nan
                                 '\0',            //db_engine
+                                "\0",           //db_user
+                                "\0",           //db_pass
                                 1               //threadct
 };
 

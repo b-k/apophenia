@@ -42,17 +42,22 @@ pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 python_PYTHON = apop.py
 
 apop.py: apop.i
-	swig -python apop.i
-	sed -i "s/:print/:_print/" apop.py
-	sed -i "s/def print/def _print/" apop.py
-	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I/usr/local/include -I/usr/include/python$(PYTHON_VERSION)/
-	$(CC) -shared apop_wrap.o -o _apop.so -lapophenia -lgsl -lgslcblas -lsqlite3
-
+	@if test -e /usr/include/python$(PYTHON_VERSION)/Python.h ; then \
+	swig -python apop.i ; \
+	sed -i "s/:print/:_print/" apop.py ; \
+	sed -i "s/def print/def _print/" apop.py ; \
+	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I/usr/local/include -I/usr/include/python$(PYTHON_VERSION)/ ; \
+	$(CC) -shared apop_wrap.o -o _apop.so -lapophenia -lgsl -lgslcblas -lsqlite3 ; \
+	else \
+	echo "NOT setting up the Python interface, because I couldn't find /usr/include/python$(PYTHON_VERSION)/Python.h. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
+	touch apop.py ; \
+	fi
 
 install-exec-hook:
-	cp _apop.so ${pythondir}
-
-
+	@if test -e _apop.so ; then \
+	cp _apop.so ${pythondir} ; \
+	echo "Python interface NOT set up, because I couldn't find /usr/include/python$(PYTHON_VERSION)/Python.h. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
+	fi
 
 #The programs
 bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_merge_dbs apop_plot_query apop_lookup
@@ -90,9 +95,11 @@ doc:
 	doxygen doxy/doxyconfig
 	cp doxy/flake.gif doxy/search.gif doxy/right.png doxy/down.png html/
 	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)<p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
--e 's|endofdiv<p>|</div>|'  html/outline.html
+-e 's|endofdiv<p>|</div>|' \
+-e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/outline.html
 	sed -i -e '/index_a/s/- a -/ /' -e '15,27d' html/globals.html
 	sed -i 's|<td width="100%"></td>||g' html/*html
+	cp doxy/*js html/
 	rsync -avPe ssh html/ ben_k,apophenia@web.sourceforge.net:htdocs/doc/
 	sudo cp man/man3/* /usr/share/man/man3/
 

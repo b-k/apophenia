@@ -19,6 +19,8 @@ e.g.: %s -d\",|\" infile.txt a_table info.db\n\
 If the input text file name is a single dash, -, then read from STDIN.\n\
 -nc\t\tData does not include column names\n\
 -m\t\tUse a mysql database (default: SQLite)\n\
+-u\t\tmysql username\n\
+-p\t\tmysql password\n\
 -r\t\tData includes row names\n\
 -v\t\tVerbose\n\
 -O\t\tIf table exists, erase it and write from scratch (i.e., Overwrite)\n\
@@ -29,7 +31,7 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 		printf(msg);
 		return 0;
 	}
-	while ((c = getopt (argc, argv, "n:d:hmrvO")) != -1){
+	while ((c = getopt (argc, argv, "n:d:hmp:ru:vO")) != -1){
 		switch (c){
 		  case 'n':
               if (optarg[0]=='c')
@@ -44,6 +46,12 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 		  case 'm':
 			apop_opts.db_engine = 'm';
             break;
+		  case 'u':
+			strcpy(apop_opts.db_user, optarg);
+			break;
+		  case 'p':
+			strcpy(apop_opts.db_pass, optarg);
+			break;
 		  case 'r':
 			rownames    ++;
 			break;

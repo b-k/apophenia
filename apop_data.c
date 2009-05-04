@@ -776,7 +776,7 @@ apop_data *apop_data_transpose(apop_data *in){
 thus encouraged to make an effort to determine the size of your data
 beforehand.
 
- <b>Warning II</b>: The <tt>gsl\_matrix</tt> is a versatile struct that
+ <b>Warning II</b>: The <tt>gsl_matrix</tt> is a versatile struct that
  can represent submatrices and other cuts from parent data. I can't
  deal with those, and check for such situations beforehand. [Besides,
  resizing a portion of a parent matrix makes no sense.]
@@ -829,7 +829,7 @@ gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidt
 thus encouraged to make an effort to determine the size of your data
 beforehand.
 
- <b>Warning II</b>: The <tt>gsl\_vector</tt> is a versatile struct that
+ <b>Warning II</b>: The <tt>gsl_vector</tt> is a versatile struct that
  can represent subvectors, matrix columns and other cuts from parent data. I can't
  deal with those, and check for such situations beforehand. [Besides,
  resizing a portion of a parent matrix makes no sense.]

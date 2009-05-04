@@ -1,4 +1,26 @@
+/*.memitem:before {content:"\00A\00A\00A\00A"}*/
 
+.memitem {
+border: 2px solid #a6cb5e;
+-moz-border-radius: 8px 8px 8px 8px;
+padding: 2px;
+ } 
+
+.memproto table {
+white-space:nowrap;
+border: 1px solid #a6cb5e;
+-moz-border-radius: 8px 8px 8px 8px;
+padding: 1px;
+ } =
+.memproto table td{
+white-space:nowrap;
+border: 1px solid black; } =
+.memdoc table {
+border: 1px solid black; /* Change to suit your preferences */ } =
+.memdoc table td {
+border: 1px solid black; /* Change to suit your preferences */ }
+
+.memdoc { padding-left: 40px; padding-right: 40px; }
 
 h6{ display: inline; font-size:100%; font-style:italic; }
 h5{ display: inline; font-size:100% }
@@ -24,7 +46,7 @@ H2 {
        font-size: 120%;
 }
 H3 {
-       font-size: 110%;
+       font-size: 100%;
 }
 CAPTION { font-weight: bold }
 DIV.qindex {
@@ -304,11 +326,23 @@ a:visited {
 TH.dirtab { background: #eeeeff;
             font-weight: bold;
 }
-HR { height: 1px;
+HR {/* height: 1px;
      border: none;
-     border-top: 1px solid black;
+     border-top: 1px solid black;*/
+width: 80%;
 }
 BODY {
 font-family: "Lucida Grande", "Lucida Sans Unicode", "Verdana", "Geneva", sans-serif;
 background-color: #FFFFDE;
+}
+
+
+/*For the tree controls */
+.trigger{
+	cursor: pointer;
+	cursor: hand;
+}
+.branch{
+	display: none;
+	margin-left: 32px;
 }

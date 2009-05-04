@@ -8,12 +8,9 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <mysql.h>
 #include <math.h>
 
-
 static MYSQL *mysql_db; 
 
 static char *opt_host_name = NULL;      /* server host (default=localhost) */
-static char *opt_user_name = NULL;      /* username (default=login name) */
-static char *opt_password = NULL;       /* password (default=none) */
 static unsigned int opt_port_num = 0;   /* port number (use built-in value) */
 static char *opt_socket_name = NULL;    /* socket name (use built-in value) */
 static unsigned int opt_flags = 0;      /* connection flags (none) */
@@ -36,6 +33,26 @@ static void print_error (MYSQL *conn, char *message) {
     }
 }
 
+static int apop_mysql_db_open(char *in){
+    if (!in)
+        apop_error(0, 's', "MySQL needs a non-NULL db name.");
+    mysql_db = mysql_init (NULL);
+    if (!mysql_db) 
+        apop_error(0, 's', "mysql_init() failed (probably out of memory)\n");
+    /* connect to server */
+    if (!mysql_real_connect (mysql_db, opt_host_name, apop_opts.db_user, apop_opts.db_pass,
+            in, opt_port_num, opt_socket_name, CLIENT_MULTI_STATEMENTS+opt_flags)) {
+                apop_error(0, 'c', "mysql_real_connect() to %s failed\n", in);
+                mysql_close (mysql_db);
+                return 1;
+            }
+    return 0;
+}
+
+static void apop_mysql_db_close(int ignoreme){
+        mysql_close (mysql_db);
+}
+
     //Cut & pasted from the mysql manual.
 static void process_results(void){
   MYSQL_RES *result;
@@ -56,22 +73,6 @@ static void process_results(void){
     }
 }
 
-static int apop_mysql_db_open(char *in){
-    if (!in)
-        apop_error(0, 's', "MySQL needs a non-NULL db name.");
-    mysql_db = mysql_init (CLIENT_MULTI_STATEMENTS);
-    if (!mysql_db) 
-        apop_error(0, 's', "mysql_init() failed (probably out of memory)\n");
-    /* connect to server */
-    if (!mysql_real_connect (mysql_db, opt_host_name, opt_user_name, opt_password,
-            in, opt_port_num, opt_socket_name, CLIENT_MULTI_STATEMENTS+opt_flags)) {
-                apop_error(0, 'c', "mysql_real_connect() to %s failed\n", in);
-                mysql_close (mysql_db);
-                return 1;
-            }
-    return 0;
-}
-
 static double apop_mysql_query(char *query){
     if (mysql_query(mysql_db,query)) {
         print_error (mysql_db, "apop_mysql_query failed");
@@ -79,10 +80,6 @@ static double apop_mysql_query(char *query){
     } 
     process_results();
     return 0;
-}
-
-static void apop_mysql_db_close(int ignoreme){
-        mysql_close (mysql_db);
 }
 
 static double apop_mysql_table_exists(char *table, int delme){
@@ -105,8 +102,7 @@ static double apop_mysql_table_exists(char *table, int delme){
     return 1;
 }
 
-
-static apop_data * process_result_set_data (MYSQL *conn, MYSQL_RES *res_set) {
+static void * process_result_set_data (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
   unsigned int     i, j=0;
   unsigned int num_fields = mysql_num_fields(res_set);
@@ -127,49 +123,7 @@ static apop_data * process_result_set_data (MYSQL *conn, MYSQL_RES *res_set) {
             return out;
 }
 
-static apop_data* apop_mysql_query_to_data(char *query){
-  MYSQL_RES *res_set;
-  apop_data *out;
-    if (mysql_query (mysql_db, query) != 0){
-         print_error (mysql_db, "mysql_query() failed");
-         return NULL;
-    }
-     res_set = mysql_store_result (mysql_db);     // generate result set
-     if (res_set == NULL){
-          print_error (mysql_db, "mysql_store_result() failed");
-        return NULL;
-     }
-      // process result set, and then deallocate it 
-      out = process_result_set_data (mysql_db, res_set);
-      mysql_free_result (res_set);
-      return out;
-}
-
-double apop_mysql_query_to_float(char *query){
-  MYSQL_RES *res_set;
-  double out;
-  MYSQL_ROW        row;
-    if (mysql_query (mysql_db, query) != 0){
-         print_error (mysql_db, "mysql_query() failed");
-         return GSL_NAN;
-    } 
-    res_set = mysql_store_result (mysql_db);     // generate result set
-    if (res_set == NULL){
-       print_error (mysql_db, "mysql_store_result() failed");
-       return GSL_NAN;
-    } 
-    row = mysql_fetch_row (res_set);
-    out    = atof(row[0]);
-    if (mysql_errno (mysql_db)){
-         print_error (mysql_db, "mysql_fetch_row() failed");
-         return GSL_NAN;
-    } 
-    mysql_free_result (res_set);
-    return out;
-}
-
-
-gsl_vector * process_result_set_vector (MYSQL *conn, MYSQL_RES *res_set) {
+static void * process_result_set_vector (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
   unsigned int     j=0;
    gsl_vector *out   =gsl_vector_alloc( mysql_num_rows (res_set));
@@ -187,27 +141,8 @@ gsl_vector * process_result_set_vector (MYSQL *conn, MYSQL_RES *res_set) {
     return out;
 }
 
-gsl_vector* apop_mysql_query_to_vector(char *query){
-  MYSQL_RES *res_set;
-  gsl_vector *out;
-    if (mysql_query (mysql_db, query) != 0){
-         print_error (mysql_db, "mysql_query() failed");
-         return NULL;
-    }
-    res_set = mysql_store_result (mysql_db);     // generate result set
-    if (res_set == NULL){
-         print_error (mysql_db, "mysql_store_result() failed");
-       return NULL;
-    }
-    if (!res_set->row_count) //just a blank table.
-        return NULL;
-    out = process_result_set_vector (mysql_db, res_set);
-    mysql_free_result (res_set);
-    return out;
-}
 
-
-gsl_matrix * process_result_set_matrix (MYSQL *conn, MYSQL_RES *res_set) {
+static void * process_result_set_matrix (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
   unsigned int     i, j=0;
   unsigned int num_fields = mysql_num_fields(res_set);
@@ -225,29 +160,9 @@ gsl_matrix * process_result_set_matrix (MYSQL *conn, MYSQL_RES *res_set) {
         return out;
 }
 
-gsl_matrix* apop_mysql_query_to_matrix(char *query){
-  MYSQL_RES *res_set;
-  gsl_matrix *out;
-    if (mysql_query (mysql_db, query) != 0){
-         print_error (mysql_db, "mysql_query() failed");
-         return NULL;
-    }else {
-         res_set = mysql_store_result (mysql_db);     // generate result set
-         if (res_set == NULL){
-              print_error (mysql_db, "mysql_store_result() failed");
-            return NULL;
-         }else {
-              // process result set, and then deallocate it 
-              out = process_result_set_matrix (mysql_db, res_set);
-              mysql_free_result (res_set);
-              return out;
-         }
-    }
-}
-
 size_t total_cols, total_rows; //sqlite no longer uses these.
 
-apop_data * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
+static void * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
   unsigned int     jj, currentrow = 0;
   total_cols       = mysql_num_fields(res_set);
@@ -277,19 +192,64 @@ apop_data * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
     return output;
 }
 
-apop_data * apop_mysql_query_to_text(char *query){
+static void * apop_mysql_query_core(char *query, void *(*callback)(MYSQL*, MYSQL_RES*)){
   MYSQL_RES *res_set;
   apop_data *output;
     if (mysql_query (mysql_db, query)){
         print_error (mysql_db, "mysql_query() failed");
         return NULL;
     }
-    res_set = mysql_store_result (mysql_db);     // generate result set
+    res_set = mysql_store_result (mysql_db);
     if (!res_set){
        print_error (mysql_db, "mysql_store_result() failed");
        return NULL;
     }
-    output = process_result_set_chars (mysql_db, res_set);
+    if (!res_set->row_count){ //just a blank table.
+        mysql_free_result (res_set);
+        return NULL;
+    }
+    output = callback(mysql_db, res_set);
     mysql_free_result (res_set);
     return output;
 }
+
+static apop_data* apop_mysql_query_to_data(char *query){
+    return apop_mysql_query_core(query, process_result_set_data);
+}
+
+static gsl_vector* apop_mysql_query_to_vector(char *query){
+    return apop_mysql_query_core(query, process_result_set_vector);
+}
+
+static gsl_matrix* apop_mysql_query_to_matrix(char *query){
+    return apop_mysql_query_core(query, process_result_set_matrix);
+}
+
+static apop_data * apop_mysql_query_to_text(char *query){
+    return apop_mysql_query_core(query, process_result_set_chars);
+}
+
+static double apop_mysql_query_to_float(char *query){
+  MYSQL_RES *res_set;
+  double out;
+  MYSQL_ROW        row;
+    if (mysql_query (mysql_db, query) != 0){
+         print_error (mysql_db, "mysql_query() failed");
+         return GSL_NAN;
+    } 
+    res_set = mysql_store_result (mysql_db);
+    if (!res_set){
+        print_error (mysql_db, "mysql_store_result() failed");
+        return GSL_NAN;
+    } 
+    row = mysql_fetch_row (res_set);
+    if (mysql_errno (mysql_db)){
+        print_error (mysql_db, "mysql_fetch_row() failed");
+        mysql_free_result (res_set);
+        return GSL_NAN;
+    } 
+    out    = atof(row[0]);
+    mysql_free_result (res_set);
+    return out;
+}
+

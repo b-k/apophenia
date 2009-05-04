@@ -33,6 +33,12 @@ forms like yourdata.copy() instead of apop_data_copy(yourdata).
 %ignore apop_name_print;
 %ignore apop_name_cross_stack;
 %ignore apop_name_find;
+%ignore gsl_vector_get;
+%ignore gsl_vector_set;
+%ignore gsl_vector_ptr;
+%ignore gsl_matrix_get;
+%ignore gsl_matrix_set;
+%ignore gsl_matrix_ptr;
 
 %module apop
 %{
@@ -767,6 +773,11 @@ apop_data * apop_matrix_summarize(gsl_matrix *data);
 };
 
 %extend gsl_matrix {
+    gsl_matrix(size_t i, size_t j) {return gsl_matrix_alloc(i, j);}
+    ~gsl_matrix() {gsl_matrix_free($self);}
+    double __get(size_t i,size_t  j) {return gsl_matrix_get($self, i, j);}
+    double* __ptr(size_t i, size_t j) {return gsl_matrix_ptr($self, i, j);}
+    double __set(size_t i, size_t j, double val) {gsl_matrix_set($self, i, j, val);}
     char* __str__() {apop_matrix_show($self); return " ";}
     apop_data * to_data(){ return apop_matrix_to_data($self); }
 
@@ -811,6 +822,11 @@ apop_data * apop_matrix_summarize(gsl_matrix *data);
 };
 
 %extend gsl_vector {
+    gsl_vector(size_t i) {return gsl_vector_alloc(i);}
+    ~gsl_vector() {gsl_vector_free($self);}
+    double __get(size_t i) {return gsl_vector_get($self, i);}
+    double* __ptr(size_t i) {gsl_vector_ptr($self, i);}
+    double __set(size_t i, double val) {gsl_vector_set($self, i, val);}
     char* __str__() {apop_vector_show($self); return " ";}
 
     long double sum() { return apop_sum($self) ; }
