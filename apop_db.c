@@ -15,7 +15,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "bootstrap.h"	//apop_rng_alloc
 
 #include "vasprintf/vasprintf.h"
-#include "config.h"
+#include <config.h>
 #include <math.h> 	                //sqrt
 
 /** Here are where the options are initially set. Not using designated
@@ -680,7 +680,7 @@ then a so-named column is created, and the row names are placed there.
  \ingroup conversions
 */
 int apop_data_to_db(apop_data *set, char *tabname){
-  int		i,j, comma; 
+  int		i,j; 
   int		ctr		    = 0;
   int		batch_size	= 100;
   double    v;
@@ -692,6 +692,7 @@ int apop_data_to_db(apop_data *set, char *tabname){
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
     {
+        int comma;
         asprintf(&q, "create table %s (", tabname);
         if (use_row) 
             qxprintf(&q, "%s\n %s varchar(1000), \n", q, apop_opts.db_name_column);

@@ -4,10 +4,6 @@ be found at http://apophenia.sourceforge.net/doc/setup.html . [Not
 online? You can see the source for that page in documentation.h in this
 directory.]
 
-More generally, the user manual is in the form of a textbook on
-statistical computing at http://apophenia.info/gsl_stats.pdf
-and the command-by-command reference is at http://apophenia.info/doc
-
 The executive summary:
 --You need the usual C compiler and the supporting environment that a
 sane programmer requires. 
@@ -21,3 +17,10 @@ cd apophenia-X.XX
 ./configure; make; sudo make install
 
 should compile for you (where X.XX indicates the version number.)
+
+There are Python wrappers, which will require all of the above plus the
+swig and Python-dev packages.
+
+Once you have it installed, the user manual is in the form of a textbook
+on statistical computing at http://apophenia.info/gsl_stats.pdf and the
+command-by-command reference is at http://apophenia.info/doc
