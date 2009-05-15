@@ -416,15 +416,21 @@ longer than this, you will need to open up apop_conversions.c, modify
 
   See \ref text_format.
 
-\param text_file    The name of the text file to be read in.
-\param has_row_names Does the lines of data have row names?
-\param has_col_names Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
+\param text_file  = "-"  The name of the text file to be read in. If "-" (the default), use stdin.
+\param has_row_names = 0. Does the lines of data have row names?
+\param has_col_names = 1. Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
 \return 	Returns an apop_data set.
 
 <b>example:</b> See \ref apop_ols.
 
+This function uses the \ref designated syntax for inputs.
+
 \ingroup convertfromtext	*/
+#ifdef APOP_NO_VARIADIC
 apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
+#else
+apop_data * apop_text_to_data_base(char *text_file, int has_row_names, int has_col_names){
+#endif
   apop_data     *set;
   FILE * 		infile;
   char		    instr[Text_Line_Limit], 
@@ -443,7 +449,10 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
 	ct	    = apop_count_cols_in_text(text_file);
 	rowct	= apop_count_rows_in_text(text_file);
     set     = apop_data_alloc(0,rowct+1-has_col_names,ct);
-	infile	= fopen(text_file,"r");
+    if (strcmp(text_file,"-"))
+        infile	= fopen(text_file,"r");
+    else
+        infile  = stdin;
     apop_assert(infile, NULL, 0, 'c', "Error opening file %s. Returning NULL.", text_file);
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
     sprintf(header_divider, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
@@ -506,6 +515,14 @@ apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_na
 	return set;
 }
 
+#ifndef APOP_NO_VARIADIC
+apop_varad_head(apop_data *, apop_text_to_data){
+    char *apop_varad_var(text_file, "-")
+    int apop_varad_var(has_row_names, 0)
+    int apop_varad_var(has_col_names, 1)
+    return apop_text_to_data_base(text_file,has_row_names, has_col_names);
+}
+#endif
 
 /** See \ref apop_db_to_crosstab for the storyline; this is the complement.
  \ingroup db
@@ -815,16 +832,30 @@ int main(void){
 
 By the way, there is a begin/commit wrapper that bundles the process into bundles of 2000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.
 
-\param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN.
-\param tabname      The name to give the table in the database
-\param has_row_names Does the lines of data have row names?
-\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way.
-\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names. 
+\param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
+\param tabname      The name to give the table in the database (default = <tt> apop_strip_dots (text_file, 'd')</tt>)
+\param has_row_names Does the lines of data have row names? (default = 0)
+\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1)
+\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
 
 \return Returns the number of rows.
+This function uses the \ref designated syntax for inputs.
 \ingroup convertfromtext
 */
+#ifdef APOP_NO_VARIADIC
 int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
+#else
+apop_varad_head(int, apop_text_to_db){
+    char *apop_varad_var(text_file, "-")
+    char *apop_varad_var(tabname, apop_strip_dots(text_file, 'd'))
+    int apop_varad_var(has_row_names, 0)
+    int apop_varad_var(has_col_names, 1)
+    char ** apop_varad_var(field_names, NULL)
+    return apop_text_to_db_base(text_file,tabname, has_row_names, has_col_names, field_names);
+}
+
+int apop_text_to_db_base(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
+#endif
   int       batch_size  = 2000,
       		ct, 
 		    rows    = 0;

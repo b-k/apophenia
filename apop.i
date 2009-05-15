@@ -41,6 +41,7 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 %ignore gsl_matrix_max;
 %ignore gsl_matrix_min;
 %ignore gsl_matrix_mul_elements;
+%ignore gsl_matrix_ptr;
 %ignore gsl_matrix_row;
 %ignore gsl_matrix_scale;
 %ignore gsl_matrix_set;
@@ -56,6 +57,7 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 %ignore gsl_vector_get;
 %ignore gsl_vector_isnull;
 %ignore gsl_vector_mul;
+%ignore gsl_vector_ptr;
 %ignore gsl_vector_scale;
 %ignore gsl_vector_set;
 %ignore gsl_vector_set_all;
@@ -137,6 +139,11 @@ def apop_row(data, colno):
 %rename(swap_rows) __swap_rows;
 %rename(transpose_memcpy) __transpose_memcpy;
 %rename(transpose) __transpose;
+
+/* Variadics: */
+%rename(apop_text_to_data) apop_text_to_data_base;
+%rename(apop_text_to_db) apop_text_to_db_base;
+%rename(apop_data_to_dummies) apop_data_to_dummies_base;
 
 %extend apop_data {
     apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
@@ -508,8 +515,8 @@ gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int c
 apop_data * apop_array_to_data(const double **in, const int rows, const int cols);
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
 apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
-apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names);
-int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names);
+apop_data * apop_text_to_data_base(char *text_file, int has_row_names, int has_col_names);
+int apop_text_to_db_base(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names);
 int apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name);
 
@@ -672,7 +679,7 @@ apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
 apop_data * apop_text_unique_elements(const apop_data *d, size_t col);
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);
-apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first);
+apop_data * apop_data_to_dummies_base(apop_data *d, int col, char type, int keep_first);
 
 double apop_two_tailify(double in);
 

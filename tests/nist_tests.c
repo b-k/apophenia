@@ -37,9 +37,9 @@ apop_data *cc   = apop_estimate_coefficient_of_determination(est);
 
 void numacc4(){
 apop_data   *d  = apop_text_to_data("numacc4.dat", 0, 0);
-gsl_vector  v   = gsl_matrix_column(d->matrix, 0).vector;
-    assert(apop_vector_mean(&v) == 10000000.2);
-    assert(apop_vector_var(&v) - 0.01 < TOL3);
+    APOP_COL(d, 0, v)
+    assert(apop_vector_mean(v) == 10000000.2);
+    assert(apop_vector_var(v)*(v->size -1)/v->size - 0.01 < TOL3);
     //I don't do this yet:
     //Sample Autocorrelation Coefficient (lag 1) r(1):   -0.999     (exact)
 }

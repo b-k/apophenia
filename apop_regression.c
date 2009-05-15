@@ -571,20 +571,35 @@ a gsl_matrix with a single one in each row in the column specified.
 
 After running this, you will almost certainly want to join together the output here with your main data set. E.g.,:
 \code
-apop_data *dummies  = apop_data_to_dummies(main_regression_vars, 8, 't', 0);
+apop_data *dummies  = apop_data_to_dummies(main_regression_vars, .col=8, .type='t');
 apop_data_stack(main_regression_vars, dummies, 'c');
 \endcode
 
-\param  d The data set with the column to be dummified
-\param col The column number to be transformed
-\param type 'd'==data column (-1==vector), 't'==text column.
+\param  d The data set with the column to be dummified (No default.)
+\param col The column number to be transformed (default = 0)
+\param type 'd'==data column (-1==vector), 't'==text column. (default = 't')
 \param  keep_first  if zero, return a matrix where each row has a one in the (column specified MINUS
     ONE). That is, the zeroth category is dropped, the first category
     has an entry in column zero, et cetera. If you don't know why this
     is useful, then this is what you need. If you know what you're doing
-    and need something special, set this to one and the first category won't be dropped.
+    and need something special, set this to one and the first category won't be dropped. (default = 0)
+
+This function uses the \ref designated syntax for inputs.
 */
+#ifdef APOP_NO_VARIADIC
 apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first){
+#else
+apop_varad_head(apop_data *, apop_data_to_dummies){
+    apop_data *apop_varad_var(d, NULL)
+    apop_assert(d, NULL, 0, 'c', "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
+    int apop_varad_var(col, 0)
+    char apop_varad_var(type, 't')
+    int apop_varad_var(keep_first, 0)
+    return apop_data_to_dummies_base(d, col, type, keep_first);
+}
+
+apop_data * apop_data_to_dummies_base(apop_data *d, int col, char type, int keep_first){
+#endif
     if (type == 'd'){
         apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
                                                     "(col==-1) but the data's vector element is NULL.");

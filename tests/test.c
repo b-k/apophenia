@@ -10,6 +10,7 @@
 #define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed)
 
 
+
 double  true_parameter_v[]    = {1.82,2.1};
 
 double  tolerance           = 1e-5;
@@ -73,7 +74,7 @@ void test_listwise_delete(){
 }
 
 void test_nan_data(){
-    apop_text_to_db("test_data_nans", "nandata", 0,1, NULL);
+    apop_text_to_db("test_data_nans", "nandata");
     strcpy(apop_opts.db_name_column, "head");
     strcpy(apop_opts.db_nan, "\\.");
   apop_data *d  = apop_query_to_data("select * from nandata");
@@ -347,7 +348,7 @@ void test_summarize(){
 gsl_matrix      *m;
 apop_data       *s;
 double          t, v;
-    apop_text_to_db("test_data", "td", 0,1,NULL );
+    apop_text_to_db("test_data", .has_row_names= 0,1, .tabname = "td");
     m    = apop_query_to_matrix("select * from td");
     s    = apop_matrix_summarize(m);
     //apop_matrix_print(s,"\t", NULL);
@@ -377,8 +378,8 @@ void test_distances(){
 }
 
 void test_dot(){
-apop_data *d1   = apop_text_to_data("test_data2",0,1); // 100 x 2
-apop_data *d2   = apop_text_to_data("test_data2",0,1); // 100 x 2
+apop_data *d1   = apop_text_to_data(.text_file="test_data2",0,1); // 100 x 2
+apop_data *d2   = apop_text_to_data("test_data2"); // 100 x 2
 apop_data *d3   = apop_dot(d1, d2, 0, 1);
 //apop_data *d4   = apop_dot(d1, d2, 'p', 0);
 gsl_vector  v1 = gsl_matrix_row(d1->matrix, 0).vector;
@@ -784,7 +785,7 @@ void test_blank_db_queries(){
 
 void dummies_and_factors(){
   int i, j, n;
-    apop_text_to_db("data-mixed", "genes", 0, 1, NULL);
+    apop_text_to_db("data-mixed", "genes");
     apop_data *d = apop_query_to_mixed_data("mmmt", "select aa, bb, 1, a_allele from genes");
     apop_data *dum = apop_data_to_dummies(d, 0, 't', 0);
     for(i=0; i < d->textsize[0]; i ++)
@@ -945,7 +946,7 @@ void test_fisher() {
 
 void test_crosstabbing() {
     if (!apop_table_exists("snps",0))
-        apop_text_to_db("test_data_mixed", "snps", 0, 1, NULL);
+        apop_text_to_db("test_data_mixed", "snps", 0, 1);
     apop_query("create table snp_ct as "
                  " select a_allele, b_allele, count(*) as ct "
                  " from snps group by a_allele, b_allele ");

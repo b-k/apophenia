@@ -247,9 +247,20 @@ Closes the database on disk. If you opened the database with
 
 \param vacuum 
 'v': vacuum---do clean-up to minimize the size of the database on disk.<br>
-'q': Don't bother; just close the database.
+'q': Don't bother; just close the database. (default = 'q')
+
+This function uses the \ref designated syntax for inputs.
 */
+#ifdef APOP_NO_VARIADIC
 int apop_db_close(char vacuum){
+#else
+apop_varad_head(int, apop_db_close){
+    char apop_varad_var(vacuum, 'q')
+    return apop_db_close_base(vacuum);
+}
+
+int apop_db_close_base(char vacuum){
+#endif
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         {apop_mysql_db_close(0);

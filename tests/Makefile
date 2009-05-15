@@ -7,9 +7,6 @@ LINKFLAGS = -L/usr/local/lib -lapophenia -lgsl -lgslcblas -lsqlite3
 CC = gcc
 #CC = g++
 
-#By default, this runs latex twice on the document named above.
-#Alternatively, you can run any of the targets listed below.
-
 c: $(objects)
 	$(CC) $(CFLAGS) $(objects) $(LINKFLAGS) -o $(PROGNAME)
 

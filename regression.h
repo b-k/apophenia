@@ -4,6 +4,7 @@
 #define  apop_regression_h
 
 #include "types.h"
+#include "variadic.h"
 #include <gsl/gsl_matrix.h>
 
 #undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
@@ -43,7 +44,14 @@ apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
 apop_data * apop_text_unique_elements(const apop_data *d, size_t col);
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);
+
+#ifdef APOP_NO_VARIADIC
 apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first);
+#else
+apop_data * apop_data_to_dummies_base(apop_data *d, int col, char type, int keep_first);
+apop_varad_declare(apop_data *, apop_data_to_dummies,apop_data *d; int col; char type; int keep_first );
+#define apop_data_to_dummies(...) apop_varad_link(apop_data_to_dummies, __VA_ARGS__)
+#endif
 
 double apop_two_tailify(double in);
 //My convenience fn to turn the results from a symmetric one-tailed table lookup

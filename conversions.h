@@ -7,8 +7,12 @@
   and allocate the output object for you.
 */
 
+#ifndef APOP_CONVERSIONS_H
+#define APOP_CONVERSIONS_H
+
 
 #include "db.h"
+#include "variadic.h"
 #include <regex.h>
 #include <string.h>
 #include <stdarg.h>
@@ -57,8 +61,19 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
 ///////////
 //From text
 ///////////
+#ifdef APOP_NO_VARIADIC
 apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names);
 int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names);
+#else
+apop_data * apop_text_to_data_base(char *text_file, int has_row_names, int has_col_names);
+apop_varad_declare(apop_data *, apop_text_to_data, char *text_file; int has_row_names; int has_col_names);
+#define apop_text_to_data(...) apop_varad_link(apop_text_to_data, __VA_ARGS__)
+
+int apop_text_to_db_base(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names);
+apop_varad_declare(int, apop_text_to_db, char *text_file; char *tabname; int has_row_names; int has_col_names; char **field_names);
+#define apop_text_to_db(...) apop_varad_link(apop_text_to_db, __VA_ARGS__)
+#endif
+
 
 ///////////
 //From crosstabs
@@ -78,3 +93,4 @@ gsl_vector *apop_vector_fill(gsl_vector *in, ...);
 gsl_matrix *apop_matrix_fill(gsl_matrix *in, ...);
 
 __END_DECLS
+#endif

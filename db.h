@@ -33,7 +33,14 @@ int apop_count_cols(const char *name);
 int apop_db_open(char *filename);
 	//If filename==NULL, it'll open a database in memory
 
-int apop_db_close(char vacuum);
+#include "variadic.h"
+#ifdef APOP_NO_VARIADIC
+int apop_db_close(char vacuum); //more args=commas.
+#else
+int apop_db_close_base(char vacuum); //more args=commas.
+apop_varad_declare(int, apop_db_close, char vacuum); //more args=semicolons.
+#define apop_db_close(...) apop_varad_link(apop_db_close, __VA_ARGS__)
+#endif
 
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
 	//Run a query but output nothing outside the DB.
