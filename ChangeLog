@@ -3,12 +3,14 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+	May 2009
+--mysql functions slightly cleaned up
+--apop_opts.db_user and apop_opts.db_pass for mysql.
+--Functions that take lots of basically optional inputs, like apop_text_to_db, now use some designated initializer magic to let the user rearrange or omit inputs.
 
     April 2009
 --sample moments are now mega-accurate---probably the most unbiased estimators in code today.
 !!Python interface via swig
---mysql functions slightly cleaned up
---apop_opts.db_user and apop_opts.db_pass for mysql.
 
 	March 2009
 --apop_matrix_realloc, apop_vector_realloc

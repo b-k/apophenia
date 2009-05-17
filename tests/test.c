@@ -336,8 +336,8 @@ void test_inversion(gsl_rng *r){
     for(i=0; i<INVERTSIZE; i++)
         for(j=0; j<INVERTSIZE; j++)
             apop_zipf.draw(gsl_matrix_ptr(invme, i,j),r,  fourp);
-    apop_det_and_inv(invme, &inved, 0, 1);
-    apop_det_and_inv(inved, &inved_back, 0, 1);
+    apop_det_and_inv(invme, &inved, .calc_det = 0);
+    apop_det_and_inv(inved, &inved_back, 0);
     for(i=0; i<INVERTSIZE; i++)
         for(j=0; j<INVERTSIZE; j++)
             error    += gsl_matrix_get(invme, i,j) - gsl_matrix_get(inved_back, i,j);
@@ -387,7 +387,7 @@ apop_data *d5   = apop_vector_to_data(&v1); // 2 x 1
 apop_data *d7   = apop_dot(d5, d5, 0, 0);
     assert(apop_data_get(d7, 0, -1) == apop_data_get(d3, 0,0));
 apop_data *d8   = apop_dot(d1, d5, 0, 0);
-apop_data *d9   = apop_dot(d5, d1, 1);
+apop_data *d9   = apop_dot(d5, d1, .form2=1);
     gsl_vector_sub(d8->vector, d9->vector);
     assert(!apop_vector_sum(d8->vector));
 }

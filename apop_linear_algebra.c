@@ -50,24 +50,38 @@ function.
 Calculate the determinant of a matrix, its inverse, or both. The \c in matrix is not destroyed in the process.
 
 \param in
-The matrix to be inverted/determined.
+The matrix to be inverted/determined. (No default. Returns NULL if this is not set.)
 
 \param out
-If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function.
+If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function. (default = NULL)
 
 \param calc_det 
 0: Do not calculate the determinant.\\
-1: Do.
+1: Do. (default)
 
 \param calc_inv
 0: Do not calculate the inverse.\\
-1: Do.
+1: Do. (default)
 
 \return
 If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.
 \ingroup linear_algebra
 */
+
+#ifdef APOP_NO_VARIADIC
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
+#else
+apop_varad_head(double, apop_det_and_inv){
+    const gsl_matrix * apop_varad_var(in, NULL)
+    apop_assert(in, 0, 0, 'c', "You sent in a NULL matrix; returning NULL.");
+    gsl_matrix ** apop_varad_var(out, NULL)
+    int apop_varad_var(calc_det, 1)
+    int apop_varad_var(calc_inv, 1)
+    return apop_det_and_inv_base(in, out, calc_det, calc_inv);
+}
+
+double apop_det_and_inv_base(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
+#endif
   apop_assert(in->size1 == in->size2,  0, 0, 's', "You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
   int 		sign;
   double 	the_determinant = 0;
@@ -482,62 +496,72 @@ apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE
   this function can do vector dot matrix, matrix dot matrix, and so on. If
   \c d1 includes both a vector and a matrix, then later parameters will indicate which to use.
 
+This function uses the \ref designated syntax for inputs.
+
 \param d1 the left part of \f$ d1 \cdot d2\f$
 \param d2 the right part of \f$ d1 \cdot d2\f$
-\param ... 't' or 'p': transpose or prime each matrix.<br>
+\param form1 't' or 'p' or 1: transpose or prime the first data element.<br>
                     'n' or 0: no transpose. <br>
-                    't' or 1: transpose. <br>
                     'v': ignore the matrix and use the vector.
+\param form2 As above, with the second data element.
 \return     an \ref apop_data set. If two matrices come in, the vector element is \c NULL and the 
             matrix has the dot product; if either or both are vectors,
             the vector has the output and the matrix is \c NULL
+
+A note for readers of <em>Modeling with Data</em>: the awkward
+instructions on using this function on p 130 are now obsolete, thanks
+the designated initializer syntax for function calls. Notably, in the case where <tt>d1</tt> is a vector and <tt>d2</tt> a matrix, then <tt>apop_dot(d1,d2,'t')</tt> won't work, because <tt>'t'</tt> now refers to <tt>d1</tt>. Instead use <tt>apop_dot(d1,d2,.form2='t')</tt> or  <tt>apop_dot(d1,d2,0, 't')</tt> 
+
 \ingroup linear_algebra
   */
-//apop_data * apop_dot(apop_data *d1, apop_data *d2, char t1, char t2){
-apop_data * apop_dot(const apop_data *d1, const apop_data *d2, ...){
+
+
+#ifdef APOP_NO_VARIADIC
+    apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2){
+#else
+apop_varad_head(apop_data *, apop_dot){
+    const apop_data * apop_varad_var(d1, NULL)
+    const apop_data * apop_varad_var(d2, NULL)
+    apop_assert(d1, NULL, 0, 'c', "d1 is NULL; returning NULL\n");
+    apop_assert(d2, NULL, 0, 'c', "d2 is NULL; returning NULL\n");
+    char apop_varad_var(form1, 0)
+    char apop_varad_var(form2, 0)
+    return apop_dot_base(d1, d2, form1, form2);
+}
+
+    apop_data * apop_dot_base(const apop_data *d1, const apop_data *d2, char form1, char form2){
+#endif
   int         uselm, userm;
   gsl_matrix  *lm = d1->matrix, 
               *rm = d2->matrix;
   gsl_vector  *lv = d1->vector, 
               *rv = d2->vector;
-CBLAS_TRANSPOSE_t   lt  ,//= (t1=='t' || t1=='T' || t1=='p' || t1=='P') ? CblasTrans : CblasNoTrans,
-                    rt  ;//= (t2=='t' || t2=='T' || t2=='p' || t2=='P') ? CblasTrans : CblasNoTrans;
+CBLAS_TRANSPOSE_t   lt, rt;
   apop_data   *out    = apop_data_alloc(0,0,0);
-  va_list		argp;
 
-  //because of variadic argument promotions, this is an int.
-  int        l_flag = 'z', r_flag = 'z';
-	va_start(argp, d2);
-    if (d1->matrix){
-        l_flag  = va_arg(argp, int);
-        if (d2->matrix)
-            r_flag  = va_arg(argp, int);
-    } else if (d2->matrix)
-        r_flag  = va_arg(argp, int);
-    if (d1->matrix && l_flag != 'v')
+    if (d1->matrix && form1 != 'v')
         uselm   = 1;
     else if (d1->vector)
         uselm   = 0;
-    else if (l_flag == 'v')
-        Apop_assert(0, NULL, 0, 'c', "You asked for a vector from the left data set, but its vector==NULL. "
-                                      "Returning NULL.")
-    else 
-        Apop_assert(0, NULL, 0, 'c', "The left data set has neither non-NULL matrix nor vector. Returning NULL.");
-
-    if (d2->matrix && r_flag != 'v')
+    else {
+        apop_assert (form1 != 'v',  NULL, 0, 'c', 
+                    "You asked for a vector from the right data set, but its vector==NULL. Returning NULL.");
+        apop_assert(0, NULL, 0, 'c', 
+                    "The right data set has neither non-NULL matrix nor vector. Returning NULL.");
+    }
+    if (d2->matrix && form2 != 'v')
         userm   = 1;
     else if (d2->vector)
         userm   = 0;
-    else if (r_flag == 'v') {
-        apop_error(0, 'c', "%s: You asked for a vector from the right data set, but its vector==NULL. Returning NULL.\n", __func__);
-        return NULL;
-    } else {
-        apop_error(0, 'c', "%s: the right data set has neither non-NULL matrix nor vector. Returning NULL.\n", __func__);
-        return NULL;
+    else {
+        apop_assert (form2 != 'v',  NULL, 0, 'c', 
+                    "You asked for a vector from the right data set, but its vector==NULL. Returning NULL.");
+        apop_assert(0, NULL, 0, 'c', 
+                    "The right data set has neither non-NULL matrix nor vector. Returning NULL.");
     }
 
-    lt  = (l_flag == 't' || l_flag == 1) ? CblasTrans: CblasNoTrans;
-    rt  = (r_flag == 't' || r_flag == 1) ? CblasTrans: CblasNoTrans;
+    lt  = (form1 == 't' || form1 == 1) ? CblasTrans: CblasNoTrans;
+    rt  = (form2 == 't' || form2 == 1) ? CblasTrans: CblasNoTrans;
     if (uselm && userm){
         apop_check_dimensions(lm, rm, lt, rt);
         gsl_matrix *outm    = gsl_matrix_calloc((lt== CblasTrans)? lm->size2: lm->size1, 
@@ -562,7 +586,6 @@ CBLAS_TRANSPOSE_t   lt  ,//= (t1=='t' || t1=='T' || t1=='p' || t1=='P') ? CblasT
         out->vector = gsl_vector_alloc(1);
         gsl_vector_set(out->vector, 0, outd);
     }
-	va_end(argp);
 
     //last step: names.
     //If using the vector, there's no meaningful name to assign.

@@ -144,6 +144,9 @@ def apop_row(data, colno):
 %rename(apop_text_to_data) apop_text_to_data_base;
 %rename(apop_text_to_db) apop_text_to_db_base;
 %rename(apop_data_to_dummies) apop_data_to_dummies_base;
+%rename(apop_det_and_inv) apop_det_and_inv_base;
+%rename(apop_db_close) apop_db_close_base;
+%rename(apop_dot) apop_dot_base;
 
 %extend apop_data {
     apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
@@ -539,7 +542,7 @@ void apop_db_rng_init(int seed);
 int apop_count_cols(const char *name);
 int apop_db_open(char *filename);
 
-int apop_db_close(char vacuum);
+int apop_db_close_base(char vacuum);
 
 int apop_query(const char *q, ...) ;
 
@@ -616,7 +619,7 @@ double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double 
 
 apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in);
 
-double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
+double      apop_det_and_inv_base(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 gsl_matrix *apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
 apop_data*  apop_matrix_pca(gsl_matrix *data, int dimensions_we_want);
@@ -626,7 +629,7 @@ gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2);
 gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn);
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop);
 int         apop_vector_bounded(gsl_vector *in, long double max);
-apop_data * apop_dot(const apop_data *d1, const apop_data *d2, ...);
+apop_data * apop_dot_base(const apop_data *d1, const apop_data *d2, char form1, char form2);
 void        apop_vector_log(gsl_vector *v);
 void        apop_vector_log10(gsl_vector *v);
 void        apop_vector_exp(gsl_vector *v);
