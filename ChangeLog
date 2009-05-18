@@ -7,9 +7,13 @@
 --mysql functions slightly cleaned up
 --apop_opts.db_user and apop_opts.db_pass for mysql.
 --Functions that take lots of basically optional inputs, like apop_text_to_db, now use some designated initializer magic to let the user rearrange or omit inputs.
+**apop_dot also now allows designated initializers, which breaks
+(only) calls of the form apop_dot(a_vector, a_matrix, 't'). Replace with
+apop_dot(a_vector, a_matrix, 0, 't') or apop_dot(a_vector, a_matrix,
+.form2='t')
 
     April 2009
---sample moments are now mega-accurate---probably the most unbiased estimators in code today.
+--sample moments are now mega-accurate---possibly the most unbiased estimators in code today.
 !!Python interface via swig
 
 	March 2009

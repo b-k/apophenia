@@ -33,6 +33,7 @@ pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 				bootstrap.h regression.h stats.h headers.h types.h output.h \
 				histogram.h	mapply.h missing_data.h			\
 		     	model/model.h asst.h settings.h				\
+		     	variadic.h									\
 			vasprintf/alloca_.h vasprintf/printf-parse.h  	\
 			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
 			vasprintf/printf-args.h vasprintf/vasnprintf.h 	

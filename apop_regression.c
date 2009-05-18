@@ -174,7 +174,7 @@ void apop_estimate_parameter_t_tests (apop_model *est){
 }
 
 /** Runs an F-test specified by \c q and \c c. Your best bet is to see
- the chapter on hypothesis testing in the <a href="http://apophenia.sourceforge.net/gsl_stats.pdf">PDF manual</a> (check the index for F-tests). It will tell you that:
+ the chapter on hypothesis testing in  <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309. It will tell you that:
  \f[{N-K\over q}
  {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c})
  \over {\bf u}' {\bf u} } \sim F_{q,N-K},\f]
@@ -182,12 +182,25 @@ void apop_estimate_parameter_t_tests (apop_model *est){
 
  At the moment, this copies the data set. Plan accordingly.
 
- \param est     an \ref apop_model that you have already calculated.
- \param contrast       The matrix \f${\bf Q}\f$ and the vector \f${\bf c}\f$, where each row represents a hypothesis.
- \return The confidence with which we can reject the joint hypothesis.
+ \param est     an \ref apop_model that you have already calculated. (No default)
+ \param contrast       The matrix \f${\bf Q}\f$ and the vector \f${\bf c}\f$, where each row represents a hypothesis. (Defaults: if matrix is \c NULL, it is set to the identity matrix; if the vector is \c NULL, it is set to zero; if the entire \c apop_data set is NULL or omitted, both of these settings are made.)
+ \return An \c apop_data set with a few variants on the confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
+
+This function uses the \ref designated syntax for inputs.
  */
+#ifdef APOP_NO_VARIADIC
 apop_data *apop_f_test (apop_model *est, apop_data *contrast){
+#else
+apop_varad_head(apop_data *, apop_f_test){
+    apop_model *apop_varad_var(est, NULL)
+    apop_assert(est, NULL, 0, 's', "You sent me a NULL data set. Please estimate a model, then run this on the result.")
+    apop_data * apop_varad_var(contrast, NULL)
+    return apop_f_test_base(est, contrast);
+}
+
+apop_data *apop_f_test_base (apop_model *est, apop_data *contrast){
+#endif
 gsl_matrix      *set        = est->data->matrix;
 gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
 gsl_vector      *c          = contrast ? contrast->vector: NULL;
@@ -255,7 +268,6 @@ apop_data       *out        = apop_data_alloc(0,5,-1);
     return out;
 }
 
-apop_data * apop_F_test (apop_model *est, apop_data *contrast){ return apop_f_test(est, contrast); }
 
 /** generalized least squares.
 

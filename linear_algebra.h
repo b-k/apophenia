@@ -23,10 +23,20 @@ __BEGIN_DECLS
 
 #ifdef APOP_NO_VARIADIC
 double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
+apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2);
+int         apop_vector_bounded(gsl_vector *in, long double max);
 #else
 double      apop_det_and_inv_base(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 apop_varad_declare(double, apop_det_and_inv,const gsl_matrix *in; gsl_matrix **out; int calc_det; int calc_inv);
 #define apop_det_and_inv(...) apop_varad_link(apop_det_and_inv, __VA_ARGS__)
+
+apop_data * apop_dot_base(const apop_data *d1, const apop_data *d2, char form1, char form2);
+apop_varad_declare(apop_data *, apop_dot, const apop_data *d1; const apop_data *d2; char form1; char form2); 
+#define apop_dot(...) apop_varad_link(apop_dot, __VA_ARGS__)
+
+int         apop_vector_bounded_base(const gsl_vector *in, long double max);
+apop_varad_declare(int, apop_vector_bounded, gsl_vector *in; long double max); 
+#define apop_vector_bounded(...) apop_varad_link(apop_vector_bounded, __VA_ARGS__)
 #endif
 gsl_matrix *apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
@@ -38,14 +48,6 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt);
 gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2);
 gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn);
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop);
-int         apop_vector_bounded(gsl_vector *in, long double max);
-#ifdef APOP_NO_VARIADIC
-apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2);
-#else
-apop_data * apop_dot_base(const apop_data *d1, const apop_data *d2, char form1, char form2);
-apop_varad_declare(apop_data *, apop_dot, const apop_data *d1; const apop_data *d2; char form1; char form2); 
-#define apop_dot(...) apop_varad_link(apop_dot, __VA_ARGS__)
-#endif
 
 void        apop_vector_log(gsl_vector *v);
 void        apop_vector_log10(gsl_vector *v);

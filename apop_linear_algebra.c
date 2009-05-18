@@ -65,6 +65,9 @@ If you want an inverse, this is where to place the matrix to be filled with the 
 
 \return
 If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.
+
+This function uses the \ref designated syntax for inputs.
+
 \ingroup linear_algebra
 */
 
@@ -433,11 +436,25 @@ so you can preempt a procedure that is about to break on infinite values.
 Alternatively, set \c max to \c INFINITY (or \c GSL_INF) to just test whether all of the matrix's elements are finite.
 
  \param in  A <tt>gsl_vector</tt>
- \param max An upper and lower bound to the elements of the vector.
- \return    1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$; zero otherwise.
+ \param max An upper and lower bound to the elements of the vector. (default: GSL_POSINF)
+ \return    1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$; zero otherwise. A \c NULL vector has no unbounded elements, so \c NULL input returns 1.
+
+This function uses the \ref designated syntax for inputs.
+
  \ingroup convenience_fns
  */
-int apop_vector_bounded(gsl_vector *in, long double max){
+#ifdef APOP_NO_VARIADIC
+int apop_vector_bounded(const gsl_vector *in, long double max){
+#else
+apop_varad_head(int, apop_vector_bounded){
+    const gsl_vector * apop_varad_var(in, NULL)
+    apop_assert(in, 0, 1, 'c', "You sent in a NULL vector; returning 1.");
+    long double apop_varad_var(max, GSL_POSINF)
+    return apop_vector_bounded_base(in, max);
+}
+
+int apop_vector_bounded_base(const gsl_vector *in, long double max){
+#endif
   size_t i;
   double x;
     for (i=0; i< in->size; i++){

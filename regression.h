@@ -31,11 +31,8 @@ typedef struct {
 } apop_ls_settings;
 
 apop_model *apop_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
-//Returns GLS/OLS parameter estimates.
-//Destroys the data in the process.
 
-apop_data *apop_F_test (apop_model *est, apop_data *contrast);
-apop_data *apop_f_test (apop_model *est, apop_data *contrast);
+#define apop_F_test apop_f_test
 
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
@@ -47,10 +44,15 @@ apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);
 
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first);
+apop_data *apop_f_test (apop_model *est, apop_data *contrast);
 #else
 apop_data * apop_data_to_dummies_base(apop_data *d, int col, char type, int keep_first);
 apop_varad_declare(apop_data *, apop_data_to_dummies,apop_data *d; int col; char type; int keep_first );
 #define apop_data_to_dummies(...) apop_varad_link(apop_data_to_dummies, __VA_ARGS__)
+
+apop_data *apop_f_test_base (apop_model *est, apop_data *contrast);
+apop_varad_declare(apop_data *, apop_f_test, apop_model *est; apop_data *contrast);
+#define apop_f_test(...) apop_varad_link(apop_f_test, __VA_ARGS__)
 #endif
 
 double apop_two_tailify(double in);
