@@ -21,6 +21,7 @@ mkdir $junkdir
 mkdir $junkdir/$pkg-$version
 cp -rf * $junkdir/$pkg-$version
 cd $junkdir/$pkg-$version
+sed -i -f prep_variadics.sed *c *h
 	#add a directory with links to all headers:
 	mkdir apophenia
 	cd apophenia

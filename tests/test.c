@@ -40,7 +40,7 @@ void test_percentiles(){
 void test_skew_and_kurt(){
   gsl_rng *r  = apop_rng_alloc(time(0));
   int     i;
-    apop_table_exists("t",1);
+    apop_table_exists(.remove=1, .name="t");
     apop_query("create table t(vals)");
     for(i=0;i<1e4; i++){
         apop_query("insert into t values(%g)", gsl_rng_uniform(r));
@@ -945,7 +945,7 @@ void test_fisher() {
 }
 
 void test_crosstabbing() {
-    if (!apop_table_exists("snps",0))
+    if (!apop_table_exists("snps"))
         apop_text_to_db("test_data_mixed", "snps", 0, 1);
     apop_query("create table snp_ct as "
                  " select a_allele, b_allele, count(*) as ct "

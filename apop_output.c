@@ -123,16 +123,22 @@ The function respects the <tt>output_type</tt> option, so code like:
 apop_opts.output_type = 'p';
 apop_opts.output_pipe = popen("/usr/bin/gnuplot", "w");
 apop_model *m = apop_estimate(data, apop_histogram);
-apop_plot_histogram(m, NULL);
+apop_plot_histogram(m);
 \endcode
 will print directly to Gnuplot.
 
-\param hist A parametrized \ref apop_model holding the histogram. 
-\param outfile  The file to be written. If NULL then write to STDOUT.
+\param hist A parametrized \ref apop_model holding the histogram.  (No default. Must not be \c NULL.)
+\param outfile  The file to be written. If NULL then write to STDOUT. (Default = \c NULL.)
 
+This function uses the \ref designated syntax for inputs.
   \ingroup output
 */
-void apop_histogram_plot(apop_model *hist, char *outfile){
+APOP_VAR_HEAD void apop_histogram_plot(apop_model *hist, char *outfile){
+      apop_model * apop_varad_var(hist, NULL);
+      apop_assert_void(hist, 0, 's', "Input histogram is NULL.\n");
+      char * apop_varad_var(outfile, NULL);
+      apop_histogram_plot_base(hist, outfile);
+APOP_VAR_END_HEAD
   int             i;
   FILE           *f;
   gsl_histogram  *h  = Apop_settings_get(hist, apop_histogram, pdf);
@@ -152,7 +158,7 @@ void apop_histogram_plot(apop_model *hist, char *outfile){
                         set xrange [0:%i]			            ;\n\
                         set style fill solid border -1          ;\n\
                         set boxwidth 0.9                        ;\n\
-                        plot '-' using 2:xticlabels(1);\n", bin_ct);*/
+                        plot '-' using 2:xticlabels(1);\n", bins);*/
 	for (i=0; i < h->n-1; i++)
 	    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
 	fprintf(f, "e\n");
@@ -175,17 +181,24 @@ apop_plot_histogram(data, 100, NULL);
 \endcode
 will print directly to Gnuplot.
 
-\param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you.
-\param bin_ct   The number of bins in the output histogram
-\param outfile  The file to be written. If NULL then write to STDOUT.
+\param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be \c NULL)
+\param bins   The number of bins in the output histogram (default = MAX(10, data->size/20); denominator subject to future adjustment)
+\param outfile  The file to be written. If NULL then write to STDOUT. (default = \c NULL)
 
+This function uses the \ref designated syntax for inputs.
   \ingroup output
 */
-void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
+APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bins, char *outfile){
+      gsl_vector * apop_varad_var(data, NULL);
+      apop_assert_void(data, 0, 's', "Input histogram is NULL.\n");
+      char * apop_varad_var(outfile, NULL);
+      size_t apop_varad_var(bins, GSL_MAX(10, data->size/20));
+      apop_plot_histogram_base(data, bins, outfile);
+APOP_VAR_END_HEAD
   int             i;
   FILE *          f;
   double          min=GSL_POSINF, max=GSL_NEGINF, pt;
-  gsl_histogram   *h      = gsl_histogram_alloc(bin_ct);
+  gsl_histogram   *h      = gsl_histogram_alloc(bins);
     gsl_vector_minmax(data, &min, &max);
         gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
     for (i=0; i < data->size; i++){
@@ -207,8 +220,8 @@ void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
                         set xrange [0:%i]                       ;\n\
                         set style fill solid border -1          ;\n\
                         set boxwidth 0.9                        ;\n\
-                        plot '-' using 2:xticlabels(1);\n", bin_ct);*/
-    for (i=0; i < bin_ct; i++)
+                        plot '-' using 2:xticlabels(1);\n", bins);*/
+    for (i=0; i < bins; i++)
         fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
     fprintf(f, "e\n");
     if (apop_opts.output_type == 'p')
@@ -220,8 +233,19 @@ void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile){
 
 	
 /** Print an \c apop_histogram. Put a "plot '-'\n" before this, and
- you can send it straight to Gnuplot. The -inf and +inf elements are not printed. */
-void apop_histogram_print(apop_model *h, char *outfile){
+ you can send it straight to Gnuplot. The -inf and +inf elements are not printed. 
+ 
+\param h The input histogram (no default, must not be \c NULL.)
+\param outfile  The file to be written. If NULL then write to STDOUT. (default = \c NULL)
+ 
+This function uses the \ref designated syntax for inputs.
+ */
+APOP_VAR_HEAD void apop_histogram_print(apop_model *h, char *outfile){
+      apop_model * apop_varad_var(h, NULL);
+      apop_assert_void(h, 0, 's', "Input histogram is NULL.\n");
+      char * apop_varad_var(outfile, NULL);
+      apop_histogram_plot_base(h, outfile);
+APOP_VAR_END_HEAD
   apop_histogram_settings *hp = apop_settings_get_group(h, "apop_histogram"); 
   if (!hp) hp = apop_settings_get_group(h, "apop_kernel_density"); 
   if (!hp)
@@ -577,7 +601,7 @@ void apop_data_print(apop_data *data, char *file){
 
 
 /* the next function plots a single graph for the \ref apop_plot_lattice  fn */
-static void printone(FILE *f, double width, double height, double margin, int xposn, int yposn, apop_data *d){
+static void printone(FILE *f, double width, double height, double margin, int xposn, int yposn, const apop_data *d){
     //pull two columns
   size_t count    = d->matrix->size2;
   double nudge    = 0.08;
@@ -632,22 +656,30 @@ static void printlabel(char filename[], char *name){
  plots, one for each pair of columns in the data set. Along the diagonal
  is a plot of the variable against itself---a density plot of the variable.
 
- \param filename The output file, to which a Gnuplot command file will be written.
- \param d       The data set whose (matrix) columns will be compared.
+ \param d       The data set whose (matrix) columns will be compared. (No default, must not be \c NULL.)
+ \param outfile The output file, to which a Gnuplot command file will be written. If \c NULL, print to STDOUT (default = \c NULL.)
 
 \image latex "lattice.png" "A lattice showing three variables graphed against each other."
 \image html "lattice.png" "A lattice showing three variables graphed against each other."
+
+This function uses the \ref designated syntax for inputs.
+
 \ingroup output
  */
-void apop_plot_lattice(apop_data *d, char filename[]){ 
+APOP_VAR_HEAD void apop_plot_lattice(const apop_data *d, char *outfile){ 
+    const apop_data * apop_varad_var(d, NULL);
+    apop_assert_void(d, 0, 's', "Input data set is NULL.\n");
+    char * apop_varad_var(outfile, NULL);
+    apop_plot_lattice_base(d, outfile);
+APOP_VAR_END_HEAD
   double  width   = 1.2,//these used to be options, but who's ever gonna set them to something else.
           height  = 1.2;
   double  margin  = 0;
   FILE    *f;
   int     i,j;
     if (apop_opts.output_type == 'f'){
-        if (filename)
-            f      = fopen(filename, "a");
+        if (outfile)
+            f      = fopen(outfile, "a");
         else
             f      = stdout;
     } else if (apop_opts.output_type == 'p')
@@ -672,32 +704,50 @@ set nokey           \n\
         for (j = 0; j< d->matrix->size2; j++)
             printone(f, width, height, margin, i, j, d);
     fprintf(f, "unset multiplot\n"); 
-    if (apop_opts.output_type == 'f' && filename)
+    if (apop_opts.output_type == 'f' && outfile)
         fclose(f);
 }
 
 /** Plot the percentiles of a data set against the percentiles of a distribution.
-Defaults to printing to stdout.
 
 The distribution percentiles will be on the $x$-axis, your data percentiles on the $y$-.
 
 The function respects the <tt>output_type</tt> option.
+It uses the \ref designated syntax for inputs.
 
-\param v    The data
-\param m    The distribution, such as apop_normal.
-\param outfile   The name of the text file to print to.  If NULL then write to STDOUT.
-\todo The RNG is hard-coded, as is the size of the histogram.
+\param v    The data (No default, must not be \c NULL.)
+\param m    The distribution, such as apop_normal. I'll be using the \c draw method. (Default = best-fitting Normal)
+\param outfile   The name of the text file to print to.  If NULL then write to STDOUT. (Default = \c NULL)
+\param bins The number of bins in the histogram. The number of points on the plot will always be 101 (i.e. percentiles). (default = MAX(10, data->size/10); denominator subject to future adjustment)\param r    A \c gsl_rng. If NULL, I will use my own with a fixed seed (123). (Default = \c NULL)
 */
-void apop_plot_qq(gsl_vector *v, apop_model m, char *outfile){
+APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, char *outfile, size_t bins, gsl_rng *r){
+    int free_m = 0;
+    gsl_vector * apop_varad_var(v, NULL);
+    apop_assert_void(v, 0, 's', "Input vector is NULL.\n");
+    apop_model  *apop_varad_var(m, NULL);
+    if (!m){
+        free_m++;
+        apop_data *d = apop_vector_to_data(v);
+        m = apop_estimate(d, apop_normal);
+        d->vector = NULL;
+        apop_data_free(d);
+    }
+    char * apop_varad_var(outfile, NULL);
+    size_t apop_varad_var(bins, GSL_MAX(10, v->size/10));
+    gsl_rng *apop_varad_var(r, apop_rng_alloc(123));
+
+      apop_plot_qq_base(v, m, outfile, bins, r);
+      if (free_m) apop_model_free(m);
+      if (!x.r) gsl_rng_free(r);
+APOP_VAR_END_HEAD
   FILE  *f;
   double *pctdata = apop_vector_percentiles(v, 'a');
 
     //produce percentiles from the model via RNG.
-  gsl_vector  *vd  = gsl_vector_alloc(2000);
+  gsl_vector  *vd  = gsl_vector_alloc(bins);
   int         i;
-  gsl_rng     *r  = apop_rng_alloc(123);
-    for(i=0; i< 2000; i++)
-        m.draw(gsl_vector_ptr(vd, i), r, &m);
+    for(i=0; i< bins; i++)
+        m->draw(gsl_vector_ptr(vd, i), r, m);
     double *pctdist = apop_vector_percentiles(vd, 'a');
 
     if (apop_opts.output_type == 'p')
@@ -714,7 +764,7 @@ replot '-' with points\n");
                         set xrange [0:%i]                       ;\n\
                         set style fill solid border -1          ;\n\
                         set boxwidth 0.9                        ;\n\
-                        plot '-' using 2:xticlabels(1);\n", bin_ct);*/
+                        plot '-' using 2:xticlabels(1);\n", bins);*/
     for (i=0; i < 101; i++)
         fprintf(f, "%g\t %g\n", pctdist[i], pctdata[i]);
     fprintf(f, "e\n");
@@ -725,4 +775,3 @@ replot '-' with points\n");
     gsl_vector_free(vd);
     gsl_rng_free(r);
 }
-

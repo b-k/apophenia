@@ -71,20 +71,14 @@ This function uses the \ref designated syntax for inputs.
 \ingroup linear_algebra
 */
 
-#ifdef APOP_NO_VARIADIC
-double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
-#else
-apop_varad_head(double, apop_det_and_inv){
+APOP_VAR_HEAD double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
     const gsl_matrix * apop_varad_var(in, NULL)
     apop_assert(in, 0, 0, 'c', "You sent in a NULL matrix; returning NULL.");
     gsl_matrix ** apop_varad_var(out, NULL)
     int apop_varad_var(calc_det, 1)
     int apop_varad_var(calc_inv, 1)
     return apop_det_and_inv_base(in, out, calc_det, calc_inv);
-}
-
-double apop_det_and_inv_base(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
-#endif
+APOP_VAR_END_HEAD
   apop_assert(in->size1 == in->size2,  0, 0, 's', "You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
   int 		sign;
   double 	the_determinant = 0;
@@ -443,18 +437,12 @@ This function uses the \ref designated syntax for inputs.
 
  \ingroup convenience_fns
  */
-#ifdef APOP_NO_VARIADIC
-int apop_vector_bounded(const gsl_vector *in, long double max){
-#else
-apop_varad_head(int, apop_vector_bounded){
+APOP_VAR_HEAD int apop_vector_bounded(const gsl_vector *in, long double max){
     const gsl_vector * apop_varad_var(in, NULL)
     apop_assert(in, 0, 1, 'c', "You sent in a NULL vector; returning 1.");
     long double apop_varad_var(max, GSL_POSINF)
     return apop_vector_bounded_base(in, max);
-}
-
-int apop_vector_bounded_base(const gsl_vector *in, long double max){
-#endif
+APOP_VAR_END_HEAD
   size_t i;
   double x;
     for (i=0; i< in->size; i++){
@@ -533,10 +521,7 @@ the designated initializer syntax for function calls. Notably, in the case where
   */
 
 
-#ifdef APOP_NO_VARIADIC
-    apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2){
-#else
-apop_varad_head(apop_data *, apop_dot){
+APOP_VAR_HEAD apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2){
     const apop_data * apop_varad_var(d1, NULL)
     const apop_data * apop_varad_var(d2, NULL)
     apop_assert(d1, NULL, 0, 'c', "d1 is NULL; returning NULL\n");
@@ -544,10 +529,7 @@ apop_varad_head(apop_data *, apop_dot){
     char apop_varad_var(form1, 0)
     char apop_varad_var(form2, 0)
     return apop_dot_base(d1, d2, form1, form2);
-}
-
-    apop_data * apop_dot_base(const apop_data *d1, const apop_data *d2, char form1, char form2){
-#endif
+APOP_VAR_ENDHEAD
   int         uselm, userm;
   gsl_matrix  *lm = d1->matrix, 
               *rm = d2->matrix;

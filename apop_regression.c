@@ -189,40 +189,34 @@ void apop_estimate_parameter_t_tests (apop_model *est){
 
 This function uses the \ref designated syntax for inputs.
  */
-#ifdef APOP_NO_VARIADIC
-apop_data *apop_f_test (apop_model *est, apop_data *contrast){
-#else
-apop_varad_head(apop_data *, apop_f_test){
+APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     apop_model *apop_varad_var(est, NULL)
     apop_assert(est, NULL, 0, 's', "You sent me a NULL data set. Please estimate a model, then run this on the result.")
     apop_data * apop_varad_var(contrast, NULL)
     return apop_f_test_base(est, contrast);
-}
-
-apop_data *apop_f_test_base (apop_model *est, apop_data *contrast){
-#endif
-gsl_matrix      *set        = est->data->matrix;
-gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
-gsl_vector      *c          = contrast ? contrast->vector: NULL;
-gsl_matrix      *data       = gsl_matrix_alloc(set->size1, set->size2);    //potentially huge.
-gsl_matrix      *xpx        = gsl_matrix_calloc(set->size2, set->size2);
-gsl_matrix      *xpxinv     = NULL;
-size_t          contrast_ct;
-if (contrast){
-    if (contrast->vector)
-        contrast_ct = contrast->vector->size;
-    else 
-        contrast_ct = contrast->matrix->size1;
-} else contrast_ct = est->parameters->vector->size;
-gsl_vector      *qprimebeta = gsl_vector_calloc(contrast_ct);
-gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(contrast_ct, set->size2);
-gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(contrast_ct, contrast_ct);
-gsl_matrix      *qprimexpxinvqinv = NULL;
-gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(contrast_ct);
-gsl_vector      error       = gsl_matrix_column(est->expected->matrix, apop_name_find(est->expected->names, "residual", 'c')).vector;
-gsl_vector      v;
-double          f_stat, variance, pval;
-int             q_df,
+APOP_VAR_END_HEAD
+    gsl_matrix      *set        = est->data->matrix;
+    gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
+    gsl_vector      *c          = contrast ? contrast->vector: NULL;
+    gsl_matrix      *data       = gsl_matrix_alloc(set->size1, set->size2);    //potentially huge.
+    gsl_matrix      *xpx        = gsl_matrix_calloc(set->size2, set->size2);
+    gsl_matrix      *xpxinv     = NULL;
+    size_t          contrast_ct;
+    if (contrast){
+        if (contrast->vector)
+            contrast_ct = contrast->vector->size;
+        else 
+            contrast_ct = contrast->matrix->size1;
+    } else contrast_ct = est->parameters->vector->size;
+    gsl_vector      *qprimebeta = gsl_vector_calloc(contrast_ct);
+    gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(contrast_ct, set->size2);
+    gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(contrast_ct, contrast_ct);
+    gsl_matrix      *qprimexpxinvqinv = NULL;
+    gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(contrast_ct);
+    gsl_vector      error       = gsl_matrix_column(est->expected->matrix, apop_name_find(est->expected->names, "residual", 'c')).vector;
+    gsl_vector      v;
+    double          f_stat, variance, pval;
+    int             q_df,
                 data_df     = set->size1 - est->parameters->vector->size;
     gsl_matrix_memcpy(data, set);
     v   = gsl_matrix_column(data, 0).vector;
@@ -598,20 +592,14 @@ apop_data_stack(main_regression_vars, dummies, 'c');
 
 This function uses the \ref designated syntax for inputs.
 */
-#ifdef APOP_NO_VARIADIC
-apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first){
-#else
-apop_varad_head(apop_data *, apop_data_to_dummies){
+APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first){
     apop_data *apop_varad_var(d, NULL)
     apop_assert(d, NULL, 0, 'c', "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
     int apop_varad_var(col, 0)
     char apop_varad_var(type, 't')
     int apop_varad_var(keep_first, 0)
     return apop_data_to_dummies_base(d, col, type, keep_first);
-}
-
-apop_data * apop_data_to_dummies_base(apop_data *d, int col, char type, int keep_first){
-#endif
+APOP_VAR_END_HEAD
     if (type == 'd'){
         apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
                                                     "(col==-1) but the data's vector element is NULL.");

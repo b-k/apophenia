@@ -21,23 +21,9 @@
 
 __BEGIN_DECLS
 
-#ifdef APOP_NO_VARIADIC
-double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
-apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2);
-int         apop_vector_bounded(gsl_vector *in, long double max);
-#else
-double      apop_det_and_inv_base(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
-apop_varad_declare(double, apop_det_and_inv,const gsl_matrix *in; gsl_matrix **out; int calc_det; int calc_inv);
-#define apop_det_and_inv(...) apop_varad_link(apop_det_and_inv, __VA_ARGS__)
-
-apop_data * apop_dot_base(const apop_data *d1, const apop_data *d2, char form1, char form2);
-apop_varad_declare(apop_data *, apop_dot, const apop_data *d1; const apop_data *d2; char form1; char form2); 
-#define apop_dot(...) apop_varad_link(apop_dot, __VA_ARGS__)
-
-int         apop_vector_bounded_base(const gsl_vector *in, long double max);
-apop_varad_declare(int, apop_vector_bounded, gsl_vector *in; long double max); 
-#define apop_vector_bounded(...) apop_varad_link(apop_vector_bounded, __VA_ARGS__)
-#endif
+APOP_VAR_DECLARE double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
+APOP_VAR_DECLARE apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2);
+APOP_VAR_DECLARE int         apop_vector_bounded(const gsl_vector *in, long double max);
 gsl_matrix *apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
 //void apop_normalize_for_svd(gsl_matrix *in);

@@ -53,24 +53,16 @@ static void apop_mysql_db_close(int ignoreme){
         mysql_close (mysql_db);
 }
 
-    //Cut & pasted from the mysql manual.
+    //Cut & pasted & cleaned from the mysql manual.
 static void process_results(void){
   MYSQL_RES *result;
-  unsigned int num_fields;
-  unsigned int num_rows;
     result = mysql_store_result(mysql_db);
-    if (result){  // there are rows
-        num_fields = mysql_num_fields(result);
+    if (result) 
         mysql_free_result(result);
-        // retrieve rows, then call mysql_free_result(result)
-    } else {  // mysql_store_result() returned nothing; should it have?
-        if(mysql_field_count(mysql_db) == 0) {
-            // query does not return data
-            // (it was not a SELECT)
-            num_rows = mysql_affected_rows(mysql_db);
-        } else  // mysql_store_result() should have returned data
-            fprintf(stderr, "apop_query error: %s\n", mysql_error(mysql_db));
-    }
+    else                // mysql_store_result() returned nothing; should it have?
+        if (mysql_field_count(mysql_db) != 0) 
+            apop_error(0, 's', "apop_query error: %s\n", mysql_error(mysql_db));
+        //else query wasn't a select & just didn't return data.
 }
 
 static double apop_mysql_query(char *query){
@@ -118,6 +110,7 @@ static void * process_result_set_data (MYSQL *conn, MYSQL_RES *res_set) {
          apop_name_add(out->names, fields[i].name, 'c');
         if (mysql_errno (conn)){
              print_error (conn, "mysql_fetch_row() failed");
+             apop_data_free(out);
              return NULL;
         } else
             return out;
@@ -136,6 +129,7 @@ static void * process_result_set_vector (MYSQL *conn, MYSQL_RES *res_set) {
     }
     if (mysql_errno (conn)){
          print_error (conn, "mysql_fetch_row() failed");
+         if (out) gsl_vector_free(out);
          return NULL;
     } 
     return out;
@@ -155,6 +149,7 @@ static void * process_result_set_matrix (MYSQL *conn, MYSQL_RES *res_set) {
     }
     if (mysql_errno (conn)){
          print_error (conn, "mysql_fetch_row() failed");
+         if (out) gsl_matrix_free(out);
          return NULL;
     } else
         return out;

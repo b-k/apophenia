@@ -426,11 +426,12 @@ longer than this, you will need to open up apop_conversions.c, modify
 This function uses the \ref designated syntax for inputs.
 
 \ingroup convertfromtext	*/
-#ifdef APOP_NO_VARIADIC
-apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
-#else
-apop_data * apop_text_to_data_base(char *text_file, int has_row_names, int has_col_names){
-#endif
+APOP_VAR_HEAD apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
+    char *apop_varad_var(text_file, "-")
+    int apop_varad_var(has_row_names, 0)
+    int apop_varad_var(has_col_names, 1)
+    return apop_text_to_data_base(text_file,has_row_names, has_col_names);
+APOP_VAR_END_HEAD
   apop_data     *set;
   FILE * 		infile;
   char		    instr[Text_Line_Limit], 
@@ -514,15 +515,6 @@ apop_data * apop_text_to_data_base(char *text_file, int has_row_names, int has_c
     regfree(headregex); free(headregex);
 	return set;
 }
-
-#ifndef APOP_NO_VARIADIC
-apop_varad_head(apop_data *, apop_text_to_data){
-    char *apop_varad_var(text_file, "-")
-    int apop_varad_var(has_row_names, 0)
-    int apop_varad_var(has_col_names, 1)
-    return apop_text_to_data_base(text_file,has_row_names, has_col_names);
-}
-#endif
 
 /** See \ref apop_db_to_crosstab for the storyline; this is the complement.
  \ingroup db
@@ -842,20 +834,14 @@ By the way, there is a begin/commit wrapper that bundles the process into bundle
 This function uses the \ref designated syntax for inputs.
 \ingroup convertfromtext
 */
-#ifdef APOP_NO_VARIADIC
-int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
-#else
-apop_varad_head(int, apop_text_to_db){
+APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
     char *apop_varad_var(text_file, "-")
     char *apop_varad_var(tabname, apop_strip_dots(text_file, 'd'))
     int apop_varad_var(has_row_names, 0)
     int apop_varad_var(has_col_names, 1)
     char ** apop_varad_var(field_names, NULL)
     return apop_text_to_db_base(text_file,tabname, has_row_names, has_col_names, field_names);
-}
-
-int apop_text_to_db_base(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
-#endif
+APOP_VAR_END_HEAD
   int       batch_size  = 2000,
       		ct, 
 		    rows    = 0;

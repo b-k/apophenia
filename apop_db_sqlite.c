@@ -334,6 +334,16 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
             colct       = 0,
             i, addnames = 0;
     in->thisrow ++;
+    if (!in->d) {
+        in->d             = apop_data_alloc(in->intypes[1], 1, in->intypes[2]);
+        if (in->intypes[4])
+            in->d->weights  = gsl_vector_alloc(1);
+        if (in->intypes[3]){
+            in->d->textsize[0]  = 1;
+            in->d->textsize[1]  = in->intypes[3];
+            in->d->text         = malloc(sizeof(char***) * 1);
+        }
+    }
     if (!(in->d->names->colct + in->d->names->textct + (in->d->names->vector!=NULL)))
         addnames    ++;
     if (in->d->textsize[1]){
@@ -384,14 +394,6 @@ apop_data *apop_sqlite_multiquery(const char *intypes, char *query){
   apop_qt   info        = {.thisrow = 0};
     count_types(&info, intypes);
 	if (db==NULL) apop_db_open(NULL);
-    info.d               = apop_data_alloc(info.intypes[1], 1, info.intypes[2]);
-    if (info.intypes[4])
-        info.d->weights  = gsl_vector_alloc(1);
-    if (info.intypes[3]){
-        info.d->textsize[0]  = 1;
-        info.d->textsize[1]  = info.intypes[3];
-        info.d->text 	     = malloc(sizeof(char***) * 1);
-    }
     sqlite3_exec(db, query, multiquery_callback, &info, &err); ERRCHECK
 	return info.d;
 }

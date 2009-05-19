@@ -185,18 +185,25 @@ static int tab_exists_callback(void *in, int argc, char **argv, char **whatever)
 Recreating a table which already exists can cause errors, so it is good practice to check for existence first.
 Also, this is the stylish way to delete a table, since just calling <tt>"drop table"</tt> will give you an error if the table doesn't exist.
 
-\param q 	the table name
-\param whattodo 'd'	==>delete table so it can be recreated in main.<br>
-		'n'	==>no action. return error so program can continue.
+\param name 	the table name (no default)
+\param remove 'd'	==>delete table so it can be recreated in main.<br>
+		'n'	==>no action. return error so program can continue. (default)
 \return
 0 = table does not exist<br>
 1 = table was found, and if whattodo==1, has been deleted
+
+This function uses the \ref designated syntax for inputs.
 \ingroup db
 */
-int apop_table_exists(char *q, char whattodo){
+APOP_VAR_HEAD int apop_table_exists(char *name, char remove){
+    char *apop_varad_var(name, NULL)
+    apop_assert(name, 0, 0, 's', "You gave me a NULL table name.");
+    char apop_varad_var(remove, 'n')
+    return apop_table_exists_base(name, remove);
+APOP_VAR_END_HEAD
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_table_exists(q, whattodo);
+        return apop_mysql_table_exists(name, remove);
 #else
         {apop_error(0, 'c', "apop_table_exists: Apophenia was compiled without mysql support.\n");
         return 0; }
@@ -205,10 +212,10 @@ int apop_table_exists(char *q, char whattodo){
   char 		*err, q2[10000];
 	isthere=0;
 	if (db==NULL) return 0;
-	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,q, &err); 
+	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,name, &err); 
 	ERRCHECK
-	if ((whattodo==1|| whattodo=='d') && isthere){
-		sqlite3_exec(db,strcat(strcpy(q2, "DROP TABLE "),q),NULL,NULL, &err); 
+	if ((remove==1|| remove=='d') && isthere){
+		sqlite3_exec(db,strcat(strcpy(q2, "DROP TABLE "),name),NULL,NULL, &err); 
         ERRCHECK
     }
 	return isthere;
@@ -251,16 +258,10 @@ Closes the database on disk. If you opened the database with
 
 This function uses the \ref designated syntax for inputs.
 */
-#ifdef APOP_NO_VARIADIC
-int apop_db_close(char vacuum){
-#else
-apop_varad_head(int, apop_db_close){
+APOP_VAR_HEAD int apop_db_close(char vacuum){
     char apop_varad_var(vacuum, 'q')
     return apop_db_close_base(vacuum);
-}
-
-int apop_db_close_base(char vacuum){
-#endif
+APOP_VAR_END_HEAD
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         {apop_mysql_db_close(0);

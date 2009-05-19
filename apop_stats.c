@@ -230,17 +230,17 @@ double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb){
 /** This function will normalize a vector, either such that it has mean
 zero and variance one, or such that it ranges between zero and one, or sums to one.
 
-\param in 	A gsl_vector which you have already allocated and filled
+\param in 	A gsl_vector which you have already allocated and filled. \c NULL input gives \c NULL output. (No default)
 
-\param out 	If normalizing in place, <tt>NULL</tt>.
-If not, the address of a <tt>gsl_vector</tt>. Do not allocate.
+\param out 	If normalizing in place, \c NULL.
+If not, the address of a <tt>gsl_vector</tt>. Do not allocate. (default = \c NULL.)
 
 \param normalization_type 
+'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin. (the default)<br>
 'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br>
 's': normalized vector will have mean zero and variance one. Replace
 each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample
 standard deviation.<br>
-'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin.<br>
 'm': normalize to mean zero: Replace each X with \f$(X-\mu)\f$<br>
 
 \b Example 
@@ -270,11 +270,17 @@ printf("Normalized into percentages:\n");
 apop_vector_show(in);
 }
 \endcode
+
+This function uses the \ref designated syntax for inputs.
+
 \ingroup basic_stats */
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type){
-  if (!in){
-      apop_error(1, 'c', "Input vector is NULL. Doing nothing.\n");
-      return; }
+APOP_VAR_HEAD void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type){
+      gsl_vector * apop_varad_var(in, NULL);
+      apop_assert_void(in, 1, 'c', "Input vector is NULL. Doing nothing.\n");
+      gsl_vector ** apop_varad_var(out, NULL);
+      const char  apop_varad_var(normalization_type, 'p');
+      return apop_vector_normalize_base(in, out, normalization_type);
+APOP_VAR_END_HEAD
   double		mu, min, max;
 	if (!out) 	
 		out	= &in;

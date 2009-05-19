@@ -1,4 +1,6 @@
 //stats.h	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+#ifndef APOP_STATS_H
+#define APOP_STATS_H
 #include <math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_cdf.h>
@@ -79,7 +81,7 @@ double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb);
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
 
 
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type);
+APOP_VAR_DECLARE void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type);
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
 inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in);
@@ -109,3 +111,4 @@ double * apop_vector_percentiles(gsl_vector *data, char rounding);
 apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
 
 __END_DECLS
+#endif

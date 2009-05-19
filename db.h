@@ -2,6 +2,7 @@
 #ifndef apop_db_included
 #define apop_db_included
 #include "types.h"
+#include "variadic.h"
 #include "asst.h"
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
@@ -21,7 +22,7 @@ __BEGIN_DECLS
 //From the GNU's vasprintf suite:
 extern int asprintf (char **result, const char *format, ...);
 
-int apop_table_exists(char *q, char whattodo);
+APOP_VAR_DECLARE int apop_table_exists(char *name, char remove);
 
 void apop_db_rng_init(int seed);
 
@@ -33,14 +34,14 @@ int apop_count_cols(const char *name);
 int apop_db_open(char *filename);
 	//If filename==NULL, it'll open a database in memory
 
-#include "variadic.h"
-#ifdef APOP_NO_VARIADIC
+APOP_VAR_DECLARE int apop_db_close(char vacuum);
+/*#ifdef APOP_NO_VARIADIC
 int apop_db_close(char vacuum); //more args=commas.
 #else
 int apop_db_close_base(char vacuum); //more args=commas.
 apop_varad_declare(int, apop_db_close, char vacuum); //more args=semicolons.
 #define apop_db_close(...) apop_varad_link(apop_db_close, __VA_ARGS__)
-#endif
+#endif*/
 
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
 	//Run a query but output nothing outside the DB.
