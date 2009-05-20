@@ -235,26 +235,56 @@ apop_matrix_normalize(data, 'c', 'm');
 
 #endif
 
-/** Just add <tt>amt</tt> to a \c gsl_vector element. Equivalent to <tt>gsl_vector_set(gsl_vector_get(v, i) + amt, i)</tt>, but more readable (and potentially faster).
+/** Just add <tt>amt</tt> to a \c gsl_vector element. 
+ * This is a readable convenience function that does some checks along the way. If you need speed, try
 
-\param v The \c gsl_vector in question
-\param i The location in the vector to be incremented.
-\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount.
+  \code
+  *gsl_vector_ptr(v, i) += amt;
+  \endcode
+
+  which is roughly 25\% faster.
+
+\param v The \c gsl_vector in question (No default, must not be NULL)
+\param i The location in the vector to be incremented. (No default)
+\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1)
+
+This function uses the \ref designated syntax for inputs.
+
 \ingroup convenience_fns
  */
-inline void apop_vector_increment(gsl_vector * v, int i, double amt){
+APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
+    gsl_vector * apop_varad_var(v, NULL);
+    apop_assert_void(v, 0, 's', "You sent me a NULL vector.");
+    int apop_varad_var(i, 0);
+    double apop_varad_var(amt, 1);
+    apop_vector_increment_base(v, i, amt);
+APOP_VAR_END_HEAD
 	v->data[i * v->stride]	+= amt;
 }
 
-/** Just add <tt>amt</tt> to a \c gsl_matrix element. Equivalent to <tt>gsl_matrix_set(gsl_matrix_get(m, i, j) + amt, i, j)</tt>, but more readable (and potentially faster).
+/** Just add <tt>amt</tt> to a \c gsl_matrix element.
+ This is a readable convenience function that does some checks along the way. If you need speed, try
 
-\param m The \c gsl_matrix in question
-\param i The row of the element to be incremented.
-\param j The column of the element to be incremented.
-\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount.
+  \code
+  *gsl_matrix_ptr(v, i, j) += amt;
+  \endcode
+
+  which is roughly 25\% faster.
+
+\param m The \c gsl_matrix in question (No default, must not be \c NULL)
+\param i The row of the element to be incremented. (No default)
+\param j The column of the element to be incremented. (No default)
+\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1)
 \ingroup convenience_fns
  */
-inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
+APOP_VAR_HEAD void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
+    gsl_matrix * apop_varad_var(m, NULL);
+    apop_assert_void(m, 0, 's', "You sent me a NULL matrix.");
+    int apop_varad_var(i, 0);
+    int apop_varad_var(j, 0);
+    double apop_varad_var(amt, 1);
+    apop_matrix_increment_base(m, i, j, amt);
+APOP_VAR_END_HEAD
 	m->data[i * m->tda +j]	+= amt;
 }
 

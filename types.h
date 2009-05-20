@@ -170,6 +170,7 @@ typedef struct{
     char db_pass[101];
             /** Threads to use internally. See \ref apop_matrix_apply and family. */
     int  thread_count;
+    int  rng_seed;
 } apop_opts_type;
 
 extern apop_opts_type apop_opts;

@@ -24,13 +24,13 @@ __BEGIN_DECLS
 APOP_VAR_DECLARE double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 APOP_VAR_DECLARE apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2);
 APOP_VAR_DECLARE int         apop_vector_bounded(const gsl_vector *in, long double max);
+APOP_VAR_DECLARE void apop_vector_increment(gsl_vector * v, int i, double amt);
+APOP_VAR_DECLARE void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt);
 gsl_matrix *apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
 //void apop_normalize_for_svd(gsl_matrix *in);
 //apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);
 apop_data*  apop_matrix_pca(gsl_matrix *data, int dimensions_we_want);
-inline void apop_vector_increment(gsl_vector * v, int i, double amt);
-inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt);
 gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2);
 gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn);
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop);

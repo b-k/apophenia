@@ -334,8 +334,9 @@ math via database; see \ref db_moments.
 
 /** \page designated Designated initializers
 
-  Functions so marked in this documentation use designated initializers to allow you to
-  omit, call by name, or change the order of inputs. The following examples are all equivalent.
+  Functions so marked in this documentation use standard C designated initializers
+  and compound literals to allow you to omit, call by name, or change
+  the order of inputs. The following examples are all equivalent.
 
   The standard format:
   \code
@@ -357,7 +358,38 @@ math via database; see \ref db_moments.
   apop_text_to_db("infile.txt", "intable", .has_col_name=1, NULL);
   \endcode
 
+  There is some overhead to checking for defaults, which could slow the code by up to 25\%. If this is noticeable for your situation, you can pass on this convenient form and call the underlying function directly, by adding \c _base to the name and giving all arguments:
+
+  \code
+  apop_text_to_db_base("infile.txt", "intable", 0, 1, NULL);
+  \endcode
+
   */
+
+/** \page autorng Auto-allocated RNGs.
+
+  Functions that use the \ref designated syntax for reading inputs and
+  assigning default values use the following rules for handling RNGs.
+
+  $\bullet$ The first time a function is called with no \c gsl_rng as
+  input, a new \c gsl_rng is produced. The call will effectively look like this
+  \code  
+  static gsl_rng *internal_rng = gsl_rng_alloc(++apop_opts.rng_seed);
+  \endcode
+
+  $\bullet$ Because \c internal_rng is declared \c static, it will remember its state as you repeatedly call the function, so you will get appropriate random numbers.
+
+  $\bullet$ \c apop_opts.rng_seed is incremented at each use, so you can write down the seed used for later reference. 
+  
+  $\bullet$ Because it increments, the next function to auto-allocate an RNG will produce different random numbers. That is, every function that uses this setup will have a different, independent RNG.
+
+  $\bullet$ If you would like a different outcome every time the program runs, set the seed to the time before running:
+\code  
+#include <time.h>
+apop_opts.rng_seed = time(NULL);
+\endcode  
+
+ */
 
 /** \defgroup global_vars The global variables */
 /** \defgroup mle Maximum likelihood estimation */

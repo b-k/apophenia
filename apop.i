@@ -147,7 +147,17 @@ def apop_row(data, colno):
 %rename(apop_det_and_inv) apop_det_and_inv_base;
 %rename(apop_db_close) apop_db_close_base;
 %rename(apop_dot) apop_dot_base;
-
+%rename(apop_f_test) apop_f_test_base;
+%rename(apop_histogram_plot) apop_histogram_plot_base;
+%rename(apop_plot_histogram) apop_plot_histogram_base;
+%rename(apop_histogram_print) apop_histogram_print_base;
+%rename(apop_plot_lattice) apop_plot_lattice_base;
+%rename(apop_plot_qq) apop_plot_qq_base;
+%rename(apop_table_exists) apop_table_exists_base;
+%rename(apop_vector_bounded) apop_vector_bounded_base;
+%rename(apop_vector_normalize) apop_vector_normalize_base;
+%rename(apop_histogram_model_reset) apop_histogram_model_reset_base;
+%rename(apop_bootstrap_cov) apop_bootstrap_cov_base;
 %extend apop_data {
     apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
     ~apop_data()    {apop_data_free($self);}
@@ -503,7 +513,7 @@ apop_update_settings *apop_update_settings_alloc(apop_data *d);
 apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *r);
 
 apop_data * apop_jackknife_cov(apop_data *data, apop_model model);
-apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, gsl_rng*, int);
+apop_data * apop_bootstrap_cov_base(apop_data *data, apop_model model, gsl_rng*, int);
 gsl_rng *apop_rng_alloc(int seed);
 
 gsl_vector *apop_vector_copy(const gsl_vector *in);
@@ -535,7 +545,7 @@ gsl_matrix *apop_matrix_fill(gsl_matrix *in, ...);
 
 extern int asprintf (char **result, const char *format, ...);
 
-int apop_table_exists(char *q, char whattodo);
+int apop_table_exists_base(char *q, char whattodo);
 
 void apop_db_rng_init(int seed);
 
@@ -561,10 +571,8 @@ void apop_db_merge_table(char *infile, char *tabname);
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2);
 double apop_db_paired_t_test(char * tab1, char *col1, char *col2);
 
-apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *indata);
-apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m, long int draws, gsl_rng *r);
 apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata);
-apop_model *apop_histogram_model_reset(apop_model *template, apop_model *m, long int draws, gsl_rng *r);
+apop_model *apop_histogram_model_reset_base(apop_model *template, apop_model *m, long int draws, gsl_rng *r);
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1);
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2);
 void apop_histogram_normalize(apop_model *m);
@@ -628,7 +636,7 @@ inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt);
 gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2);
 gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn);
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop);
-int         apop_vector_bounded(gsl_vector *in, long double max);
+int         apop_vector_bounded_base(gsl_vector *in, long double max);
 apop_data * apop_dot_base(const apop_data *d1, const apop_data *d2, char form1, char form2);
 void        apop_vector_log(gsl_vector *v);
 void        apop_vector_log10(gsl_vector *v);
@@ -648,11 +656,11 @@ apop_data * apop_data_listwise_delete(apop_data *d);
 apop_model * apop_ml_imputation(apop_data *d, apop_model* meanvar);
 
 void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char *);
-void apop_histogram_plot(apop_model *hist, char *outfile);
-void apop_plot_histogram(gsl_vector *data, size_t bin_ct, char *outfile);
-void apop_histogram_print(apop_model *h, char *outfile);
-void apop_plot_lattice(apop_data *d, char filename[]);
-void apop_plot_qq(gsl_vector *v, apop_model m, char *outfile);
+void apop_histogram_plot_base(apop_model *hist, char *outfile);
+void apop_plot_histogram_base(gsl_vector *data, size_t bin_ct, char *outfile);
+void apop_histogram_print_base(apop_model *h, char *outfile);
+void apop_plot_lattice_base(apop_data *d, char *outfile);
+void apop_plot_qq_base(gsl_vector *v, apop_model *m, char *outfile, size_t bins, gsl_rng *r);
 
 void apop_matrix_print(gsl_matrix *data, char *file);
 void apop_vector_print(gsl_vector *data, char *file);
@@ -674,7 +682,7 @@ typedef struct {
 } apop_ls_settings;
 
 apop_data *apop_F_test (apop_model *est, apop_data *contrast);
-apop_data *apop_f_test (apop_model *est, apop_data *contrast);
+apop_data *apop_f_test_base (apop_model *est, apop_data *contrast);
 
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
@@ -782,7 +790,7 @@ double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb);
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
 
 
-void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type);
+void apop_vector_normalize_base(gsl_vector *in, gsl_vector **out, const char normalization_type);
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
 inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in);

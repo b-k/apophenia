@@ -737,7 +737,7 @@ void test_updating(){
   //First, the easy estimation using the conjugate distribution table.
   apop_model *bin = apop_model_set_parameters(apop_binomial, n, binom_start);
   apop_model *beta = apop_model_set_parameters(apop_beta, beta_start_a, beta_start_b);
-    apop_model *updated = apop_update(NULL, beta, bin,r);
+    apop_model *updated = apop_update(.prior= beta, .likelihood=bin,.rng=r);
     //apop_model_show(updated);
 
     //Now estimate via Gibbs sampling. 
@@ -745,14 +745,14 @@ void test_updating(){
     //and a data set of n data points with the right p.
     apop_data *bin_draws = apop_data_calloc(0, n, 1);
     for(i=0; i < n*binom_start; i ++)
-        apop_matrix_increment(bin_draws->matrix, i, 0, 1);
+        apop_matrix_increment(bin_draws->matrix, i, 0);
     //sprintf(bin->name, "steven"); //not even needed due to the fix_params.
     apop_data *vals = apop_data_calloc(2, 0, 0);
     apop_data *mask = apop_data_calloc(2, 0, 0);
     apop_data_set(vals, 0, -1, n);
     apop_data_set(mask, 0, -1, 1);
     bin = apop_model_fix_params(NULL, vals, mask, apop_binomial);
-    apop_model *out_h = apop_update(bin_draws, beta, bin, r);
+    apop_model *out_h = apop_update(bin_draws, beta, bin, NULL);
 
     //We now have a histogram of values for p. What's the closest beta
     //distribution?

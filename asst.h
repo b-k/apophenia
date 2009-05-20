@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include "types.h"
+#include "variadic.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
 
@@ -118,7 +119,7 @@ apop_update_settings *apop_update_settings_alloc(apop_data *d);
 #define apop_update_settings_copy NULL
 #define  apop_update_settings_free NULL
 
-apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *r);
+APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng);
 
 __END_DECLS
 #endif

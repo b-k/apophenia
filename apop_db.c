@@ -31,7 +31,8 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 '\0',            //db_engine
                                 "\0",           //db_user
                                 "\0",           //db_pass
-                                1               //threadct
+                                1,              //threadct
+                                479901          //rng_seed (randomly generated)
 };
 
 

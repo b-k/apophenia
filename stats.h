@@ -88,7 +88,7 @@ inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in);
 	//As described: give it a vector, and it'll tell you the confidence 
 	//with which you can say that the vector is not zero.
 
-double apop_random_double(double min, double max, gsl_rng *r);
+APOP_VAR_DECLARE double apop_random_double(double min, double max, gsl_rng *r);
 int apop_random_int(const double min, const double max, const gsl_rng *r);
 
 gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize);

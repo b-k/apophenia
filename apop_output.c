@@ -71,7 +71,6 @@ void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * outfile
         if (est->expected !=NULL)
 		    fprintf(f, "set ylabel \"%s\"\n", est->expected->names->column[0]);
 	}
-	fprintf(f, "set key off\n");
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");
     if (apop_opts.output_type != 0) 	fclose(f);
 
@@ -718,9 +717,11 @@ It uses the \ref designated syntax for inputs.
 \param v    The data (No default, must not be \c NULL.)
 \param m    The distribution, such as apop_normal. I'll be using the \c draw method. (Default = best-fitting Normal)
 \param outfile   The name of the text file to print to.  If NULL then write to STDOUT. (Default = \c NULL)
-\param bins The number of bins in the histogram. The number of points on the plot will always be 101 (i.e. percentiles). (default = MAX(10, data->size/10); denominator subject to future adjustment)\param r    A \c gsl_rng. If NULL, I will use my own with a fixed seed (123). (Default = \c NULL)
+\param bins The number of bins in the histogram. The number of points on the plot will always be 101 (i.e. percentiles). (default = MAX(10, data->size/10); denominator subject to future adjustment)
+\param r    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
 */
 APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, char *outfile, size_t bins, gsl_rng *r){
+    static gsl_rng *spare = NULL;
     int free_m = 0;
     gsl_vector * apop_varad_var(v, NULL);
     apop_assert_void(v, 0, 's', "Input vector is NULL.\n");
@@ -734,11 +735,13 @@ APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, char *outfile, siz
     }
     char * apop_varad_var(outfile, NULL);
     size_t apop_varad_var(bins, GSL_MAX(10, v->size/10));
-    gsl_rng *apop_varad_var(r, apop_rng_alloc(123));
+    gsl_rng *apop_varad_var(r, NULL)
+    if (!r && !spare) 
+        spare = apop_rng_alloc(++apop_opts.rng_seed);
+    if (!r)  r = spare;
 
-      apop_plot_qq_base(v, m, outfile, bins, r);
-      if (free_m) apop_model_free(m);
-      if (!x.r) gsl_rng_free(r);
+    apop_plot_qq_base(v, m, outfile, bins, r);
+    if (free_m) apop_model_free(m);
 APOP_VAR_END_HEAD
   FILE  *f;
   double *pctdata = apop_vector_percentiles(v, 'a');

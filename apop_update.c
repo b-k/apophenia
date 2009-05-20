@@ -6,8 +6,10 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "asst.h"
 #include "model/model.h"
 #include "stats.h"
+#include "variadic.h"
 #include "settings.h"
 #include "histogram.h"
+#include "bootstrap.h" //apop_rng_alloc
 #include "conversions.h"
 
 static void write_double(const double *draw, apop_data *d){
@@ -127,16 +129,27 @@ Here are the conjugate distributions currently defined:
 </td></tr>
 </table>
 
-\param data     The input data, that will be used by the likelihood function
-\param  prior   The prior \ref apop_model
+\param data     The input data, that will be used by the likelihood function (default = \c NULL.)
+\param  prior   The prior \ref apop_model (No default, must not be \c NULL.)
 \param likelihood The likelihood \ref apop_model. If the system needs to
-estimate the posterior via MCMC, this needs to have a \c draw method.
-\param r        A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc).
+estimate the posterior via MCMC, this needs to have a \c draw method. (No default, must not be \c NULL.)
+\param r        A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc). (default: see \ref autorng)
 \return an \ref apop_model struct representing the posterior, with updated parameters. 
 \todo The table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), is a little short, and can always be longer.
 
 */
-apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *r){
+APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng){
+    static gsl_rng *spare_rng = NULL;
+    apop_data *apop_varad_var(data, NULL);
+    apop_model *apop_varad_var(prior, NULL);
+    apop_model *apop_varad_var(likelihood, NULL);
+    gsl_rng *apop_varad_var(rng, NULL);
+    if (!rng){
+        if (!spare_rng) spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
+        rng = spare_rng;
+    }
+    return apop_update_base(data, prior, likelihood, rng);
+APOP_VAR_END_HEAD
   apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
     if (maybe_out) return maybe_out;
     apop_update_settings *s = apop_settings_get_group(prior, "apop_update");
@@ -161,14 +174,14 @@ apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelih
     if (!likelihood->parameters)
         likelihood->parameters = apop_data_alloc(vs, ms1, ms2);
     for (i=0; i< s->periods; i++){     //main loop
-        apop_draw(draw, r, prior);
+        apop_draw(draw, rng, prior);
         write_double(draw, likelihood->parameters);
         ll    = apop_log_likelihood(data,likelihood);
         ratio = ll - cp_ll;
         apop_assert(!gsl_isnan(ratio),  NULL, 0, 'c',"Trouble evaluating the likelihood function at vector "
                                         "beginning with %g or %g. Maybe offer a new starting point.\n"
                                         , current_param->vector->data[0], likelihood->parameters->vector->data[0]);
-        if (ratio >= 0 || log(gsl_rng_uniform(r)) < ratio){
+        if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio){
             apop_data_memcpy(current_param, likelihood->parameters);
             cp_ll = ll;
         }

@@ -59,16 +59,6 @@ Anyway, here are some functions to deal with these various histograms and such.
 
  */
 
-apop_model *apop_histogram_refill_with_vector(apop_model *template, gsl_vector *indata){
-    apop_error(0, 'c', "Deprecated. Renamed to apop_histogram_vector_reset.");
-    return apop_histogram_vector_reset(template, indata);
-}
-
-apop_model *apop_histogram_refill_with_model(apop_model *template, apop_model *m, long int draws, gsl_rng *r){
-    apop_error(0, 'c', "Deprecated. Renamed to apop_histogram_model_reset.");
-    return apop_histogram_model_reset(template, m, draws, r);
-}
-
 
 /** Give me an existing histogram (i.e., an \c apop_model) and I'll
  create a new histogram with the same bins, but with data from the vector you provide 
@@ -93,25 +83,38 @@ apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata
  create a new histogram with the same bins, but with data from \c draws
  random draws from the parametrized model you provide.
 
- Unlike with most other histogram-genrating functions, this one will normalize the output to integrate to one.
+Unlike with most other histogram-genrating functions, this one will normalize the output to integrate to one.
+It uses the \ref designated syntax for inputs.
 
-\param template An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram).
+\param template An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram). I.e., a histogram model. (No default)
 \param m The model to be drawn from. Because this function works via random draws, the model needs to have a 
-\c draw method.
-\param draws The number of random draws to make.
-\param r The \c gsl_rng used to make random draws.
+\c draw method. (No default)
+\param draws The number of random draws to make. (arbitrary default = 1e5)
+\param r The \c gsl_rng used to make random draws. (default: see note on \ref autorng)
+
+
 \ingroup histograms
 */
-apop_model *apop_histogram_model_reset(apop_model *template, apop_model *m, long int draws, gsl_rng *r){
+APOP_VAR_HEAD apop_model *apop_histogram_model_reset(apop_model *template, apop_model *m, long int draws, gsl_rng *rng){
+    static gsl_rng *spare = NULL;
+    apop_model* apop_varad_var(template, NULL);
+    apop_model* apop_varad_var(m, NULL);
+    long int apop_varad_var(draws, 1e5);
   apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be an apop_histogram model.");
   apop_assert(m && m->draw, NULL, 0, 's', "The second argument needs to be an apop_model with a function to make random draws.");
+    gsl_rng *apop_varad_var(rng, NULL)
+    if (!rng && !spare) 
+        spare = apop_rng_alloc(++apop_opts.rng_seed);
+    if (!rng)  rng = spare;
+    return apop_histogram_model_reset_base(template, m, draws, rng);
+APOP_VAR_ENDHEAD
   long double i;
   double d;
     apop_model *out = apop_model_copy(*template); 
     gsl_histogram *hout  = Apop_settings_get(out, apop_histogram, pdf);
     gsl_histogram_reset(hout);
     for (i=0; i< draws; i++){
-        m->draw(&d, r, m);
+        m->draw(&d, rng, m);
         gsl_histogram_increment(hout, d);
     }
     apop_histogram_normalize(out);

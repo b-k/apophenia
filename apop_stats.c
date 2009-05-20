@@ -5,6 +5,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 #include "db.h"     //just for apop_opts
 #include "stats.h"
+#include "bootstrap.h" //rng_alloc
 #include <gsl/gsl_rng.h>
 
 /** \defgroup basic_stats Some basic statistical functions
@@ -357,10 +358,27 @@ inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
 
 /** Gives a random double between min and max [inclusive].
 
-\param min, max 	Y'know.
-\param r		The random number generator you're using.
+This function uses the \ref designated syntax for inputs. Notice that calling this function with no arguments, 
+
+\code
+apop_random_double()
+\endcode
+conveniently produces a number between zero and one. [To do this with less overhead, allocate your own RNG and use \c gsl_ran_uniform(r).]
+
+\param min      Default = 0
+\param  max 	Default = 1
+\param r    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
 */
-double apop_random_double(double min, double max, gsl_rng *r){
+APOP_VAR_HEAD double apop_random_double(double min, double max, gsl_rng *r){
+    static gsl_rng * spare_rng = NULL;
+    double apop_varad_var(min, 0);
+    double apop_varad_var(max, 1);
+    gsl_rng * apop_varad_var(r, NULL);
+    if (!r && !spare_rng) 
+        spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
+    if (!r)  r = spare_rng;
+    return apop_random_double_base(min, max, r);
+APOP_VAR_ENDHEAD
   double		base = gsl_rng_uniform(r);
 	return base * (max - min) - min;
 }

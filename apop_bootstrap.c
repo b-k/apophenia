@@ -14,6 +14,7 @@ for details.
 #include "model/model.h"
 #include "stats.h"
 #include "output.h"
+#include "variadic.h"
 #include "bootstrap.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"
@@ -120,16 +121,26 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
 
 /** Give me a data set and a model, and I'll give you the bootstrapped covariance matrix of the parameter estimates.
 
-\param data	    The data set. An \c apop_data set where each row is a single data point.
-\param model    An \ref apop_model, whose \c estimate method will be used here.
-\param r        An RNG that you have initialized (probably with \c apop_rng_alloc)
-\param boot_iterations How many bootstrap draws should I make? A positive integer; if you express indifference by specifying zero, I'll make 1,000 draws.
+\param data	    The data set. An \c apop_data set where each row is a single data point. (No default)
+\param model    An \ref apop_model, whose \c estimate method will be used here. (No default)
+\param iterations How many bootstrap draws should I make? (default: 1,000) 
+\param rng        An RNG that you have initialized, probably with \c apop_rng_alloc. (Default: see \ref autorng)
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
+This function uses the \ref designated syntax for inputs.
 \ingroup boot
  */
-apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *r, int boot_iterations) {
-    if (boot_iterations ==0)    boot_iterations	= 1000;
+APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *rng, int iterations) {
+    static gsl_rng *spare = NULL;
+    apop_data * apop_varad_var(data, NULL);
+    int apop_varad_var(iterations, 1000);
+    apop_assert(data, NULL, 0, 's', "The data element can't be NULL.");
+    gsl_rng * apop_varad_var(rng, NULL);
+    if (!rng && !spare) 
+        spare = apop_rng_alloc(++apop_opts.rng_seed);
+    if (!rng)  rng = spare;
+    return apop_bootstrap_cov_base(data, x.model, rng, iterations);
+APOP_VAR_END_HEAD
   apop_model        *e              = apop_model_copy(model);
   apop_model_clear(data, e);
   size_t	        i, j, row;
@@ -137,10 +148,10 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *r, i
                                                     , data->matrix->size1, data->matrix->size2);
   apop_data         *array_of_boots = NULL,
                     *summary;
-	for (i=0; i<boot_iterations; i++){
+	for (i=0; i<iterations; i++){
 		//create the data set
 		for (j=0; j< data->matrix->size1; j++){
-			row	= gsl_rng_uniform_int(r, data->matrix->size1);
+			row	= gsl_rng_uniform_int(rng, data->matrix->size1);
 			APOP_ROW(data, row,v);
 			gsl_matrix_set_row(subset->matrix, j, v);
             if (subset->vector)
@@ -150,7 +161,7 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *r, i
 		apop_model *est = apop_estimate(subset, *e);
         gsl_vector *estp = apop_data_pack(est->parameters);
         if (i==0){
-            array_of_boots	        = apop_data_alloc(0,boot_iterations, estp->size);
+            array_of_boots	        = apop_data_alloc(0,iterations, estp->size);
             array_of_boots->names   = apop_name_copy(data->names);
         }
         gsl_matrix_set_row(array_of_boots->matrix, i, estp);
@@ -158,7 +169,7 @@ apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *r, i
         gsl_vector_free(estp);
 	}
 	summary	= apop_data_covariance(array_of_boots);
-    gsl_matrix_scale(summary->matrix, 1./boot_iterations);
+    gsl_matrix_scale(summary->matrix, 1./iterations);
     apop_data_free(array_of_boots);
     apop_data_free(subset);
     apop_model_free(e);

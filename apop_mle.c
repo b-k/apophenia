@@ -16,6 +16,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "model/model.h"
 #include "output.h"
 #include "likelihoods.h"
+#include "bootstrap.h" //apop_rng_alloc
 #include <assert.h>
 #include <setjmp.h>
 #include <signal.h>
