@@ -158,6 +158,10 @@ def apop_row(data, colno):
 %rename(apop_vector_normalize) apop_vector_normalize_base;
 %rename(apop_histogram_model_reset) apop_histogram_model_reset_base;
 %rename(apop_bootstrap_cov) apop_bootstrap_cov_base;
+%rename(apop_linear_constraint) apop_linear_constraint_base;
+%rename(apop_data_sort) apop_data_sort_base;
+%rename(apop_vector_percentiles) apop_vector_percentiles_base;
+
 %extend apop_data {
     apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
     ~apop_data()    {apop_data_free($self);}
@@ -315,8 +319,8 @@ def apop_row(data, colno):
     double correlation(const gsl_vector *inb) { return apop_vector_correlation($self, inb) ; }
     gsl_vector * moving_average(size_t window){ return  apop_vector_moving_average($self, window);}
 
-    //double * percentiles(char rounding) {return apop_vector_percentiles($self, rounding);}
-    apop_double * percentiles(char rounding) {return apop_vector_percentiles($self, rounding);}
+    //double * percentiles(char rounding) {return apop_vector_percentiles_base($self, rounding);}
+    apop_double * percentiles(char rounding) {return apop_vector_percentiles_base($self, rounding);}
     double weighted_mean( const gsl_vector *weight) {
         return apop_vector_weighted_mean($self, weight);
     }
@@ -623,7 +627,7 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist);
 
 apop_model * apop_estimate_restart (apop_model *, apop_model *);
 
-double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin);
+double  apop_linear_constraint_base(gsl_vector *beta, apop_data * constraint, double margin);
 
 apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in);
 
@@ -812,8 +816,8 @@ apop_data * apop_matrix_summarize(gsl_matrix *data);
 
 apop_data *apop_test_fisher_exact(apop_data *intab);
 
-double * apop_vector_percentiles(gsl_vector *data, char rounding);
-apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
+double * apop_vector_percentiles_base(gsl_vector *data, char rounding);
+apop_data * apop_data_sort_base(apop_data *data, int sortby, char asc);
 
 extern apop_model apop_beta;
 extern apop_model apop_bernoulli;

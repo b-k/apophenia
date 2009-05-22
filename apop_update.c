@@ -133,7 +133,7 @@ Here are the conjugate distributions currently defined:
 \param  prior   The prior \ref apop_model (No default, must not be \c NULL.)
 \param likelihood The likelihood \ref apop_model. If the system needs to
 estimate the posterior via MCMC, this needs to have a \c draw method. (No default, must not be \c NULL.)
-\param r        A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc). (default: see \ref autorng)
+\param rng      A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc). (default: see \ref autorng)
 \return an \ref apop_model struct representing the posterior, with updated parameters. 
 \todo The table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), is a little short, and can always be longer.
 

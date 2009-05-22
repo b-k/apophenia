@@ -5,6 +5,7 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
+#include "variadic.h"
 #include "likelihoods.h"
 #include <gsl/gsl_sort_vector.h>
 
@@ -59,13 +60,23 @@ static void shift(apop_data *d, size_t from,  size_t to){
 
  Uses the \c gsl_sort_vector_index function internally, and that function just ignores NaNs; therefore this function just leaves NaNs exactly where they lay.
 
- \param data    The input set to be modified.
- \param sortby  The column of data by which the sorting will take place. As usual, -1 indicates the vector element.
- \param asc   If 'd' or 'D', sort in descending order; else sort in ascending order.
- \return A pointer to the data set, so you can do things like \c apop_data_show(apop_data_sort(d, -1, 'a')).
+ \param data    The input set to be modified. (No default, must not be \c NULL.)
+ \param sortby  The column of data by which the sorting will take place. As usual, -1 indicates the vector element. (default: column zero of the matrix)
+ \param asc   If 'd' or 'D', sort in descending order; else sort in ascending order. (Default: ascending)
+ \return A pointer to the data set, so you can do things like \c apop_data_show(apop_data_sort(d, -1)).
+
+This function uses the \ref designated syntax for inputs.
+
  \ingroup data_struct
 */
-apop_data * apop_data_sort(apop_data *data, int sortby, char asc){
+
+APOP_VAR_HEAD apop_data * apop_data_sort(apop_data *data, int sortby, char asc){
+    apop_data * apop_varad_var(data, NULL);
+    apop_assert(data, NULL, 0, 's', "You gave me NULL data to sort.");
+    int apop_varad_var(sortby, 0);
+    char apop_varad_var(asc, 0);
+    return apop_data_sort_base(data, sortby, asc);
+APOP_VAR_ENDHEAD
   size_t            i, j;
   size_t            height  = (sortby==-1) ? data->vector->size: data->matrix->size1;
   size_t            sorted[height];
@@ -114,17 +125,23 @@ value of the 95th percentile, for example. Returned_vector[100] is always
 the maximum value, and returned_vector[0] is always the min (regardless
 of rounding rule).
 
-\param data	a gsl_vector of data.
+\param data	a gsl_vector of data. (No default, must not be \c NULL.)
 \param rounding This will either be 'u', 'd', or 'a'. Unless your data is
 exactly a multiple of 101, some percentiles will be ambiguous. If 'u',
 then round up (use the next highest value); if 'd' (or anything else),
 round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or
 more  of the sample is below returned_vector[5]"; if 'd' or 'a', then you can
-say "5% or more of the sample is above returned_vector[5]".  
+say "5% or more of the sample is above returned_vector[5]".   (Default = 'd'.)
 
+This function uses the \ref designated syntax for inputs.
 \ingroup basic_stats
 */ 
-double * apop_vector_percentiles(gsl_vector *data, char rounding){
+APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
+    gsl_vector *apop_varad_var(data, NULL);
+    apop_assert(data, NULL, 0, 's', "You gave me NULL data to sort.");
+    char apop_varad_var(rounding, 'd');
+    return apop_vector_percentiles_base(data, rounding);
+APOP_VAR_ENDHEAD
   gsl_vector	*sorted	= gsl_vector_alloc(data->size);
   double		*pctiles= malloc(sizeof(double) * 101);
   int		i, index;

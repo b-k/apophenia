@@ -284,7 +284,7 @@ The program:
 int main(void){
 apop_data       *data;
 apop_model   *est;
-    apop_text_to_db("data","d",0,1,NULL);
+    apop_text_to_db("data","d");
     data = apop_query_to_data("select * from d");
     est  = apop_estimate(data, apop_ols);
     apop_model_show(est);
@@ -304,7 +304,7 @@ features, but the code below will do the same thing in two lines:
 
 \code
 #include <apop.h>
-int main(){ apop_model_show(apop_estimate(apop_text_to_data("data", 0, 0), apop_ols)); }
+int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols)); }
 \endcode
 
 

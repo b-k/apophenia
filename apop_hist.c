@@ -90,7 +90,7 @@ It uses the \ref designated syntax for inputs.
 \param m The model to be drawn from. Because this function works via random draws, the model needs to have a 
 \c draw method. (No default)
 \param draws The number of random draws to make. (arbitrary default = 1e5)
-\param r The \c gsl_rng used to make random draws. (default: see note on \ref autorng)
+\param rng The \c gsl_rng used to make random draws. (default: see note on \ref autorng)
 
 
 \ingroup histograms

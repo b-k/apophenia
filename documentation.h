@@ -121,7 +121,7 @@ int main(){
 apop_data      *m;
 double          p1, p2;
 int             i;
-gsl_rng *       r = apop_rng_alloc(15);
+gsl_rng *       r = apop_rng_alloc();
 
         //create the database and the data table.
         apop_db_open("runs.db");
@@ -371,19 +371,19 @@ math via database; see \ref db_moments.
   Functions that use the \ref designated syntax for reading inputs and
   assigning default values use the following rules for handling RNGs.
 
-  $\bullet$ The first time a function is called with no \c gsl_rng as
+  - The first time a function is called with no \c gsl_rng as
   input, a new \c gsl_rng is produced. The call will effectively look like this
   \code  
   static gsl_rng *internal_rng = gsl_rng_alloc(++apop_opts.rng_seed);
   \endcode
 
-  $\bullet$ Because \c internal_rng is declared \c static, it will remember its state as you repeatedly call the function, so you will get appropriate random numbers.
+  - Because \c internal_rng is declared \c static, it will remember its state as you repeatedly call the function, so you will get appropriate random numbers.
 
-  $\bullet$ \c apop_opts.rng_seed is incremented at each use, so you can write down the seed used for later reference. 
+  - \c apop_opts.rng_seed is incremented at each use, so you can write down the seed used for later reference. 
   
-  $\bullet$ Because it increments, the next function to auto-allocate an RNG will produce different random numbers. That is, every function that uses this setup will have a different, independent RNG.
+  - Because it increments, the next function to auto-allocate an RNG will produce different random numbers. That is, every function that uses this setup will have a different, independent RNG.
 
-  $\bullet$ If you would like a different outcome every time the program runs, set the seed to the time before running:
+  - If you would like a different outcome every time the program runs, set the seed to the time before running:
 \code  
 #include <time.h>
 apop_opts.rng_seed = time(NULL);

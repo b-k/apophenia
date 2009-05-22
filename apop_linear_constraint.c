@@ -1,9 +1,10 @@
 /** \file apop_linear_constraint.c 
   \c apop_linear_constraint finds a point that meets a set of linear constraints. This takes a lot of machinery, so it gets its own file.
 
-Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 */
 #include "types.h"
+#include "variadic.h"
 #include "likelihoods.h"
 
 static double magnitude(gsl_vector *v){
@@ -93,17 +94,39 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
 /** This is designed to be called from within your own constraint
  function. Just write the constraint vector and this will do the rest.
  
- \param beta    The proposed vector about to be tested. 
- \param constraint  The constraints. See \ref apop_f_test on writing
+ \param beta    The proposed vector about to be tested. (No default, must not be \c NULL)
+ \param constraint  The constraints. See \ref apop_f_test on writing (Default: all elements are greater than zero)
  contrasts. To give a quick example, say your constraint is $3 < 2x +
  4y - 7z$; then the first row of your \c data->vector element would be 3, and the
  first row of the \c data->matrix element would be [2 4 -7].
  \param margin If zero, then this is a >= constraint, otherwise I will return a point this amount within the borders. You could try \c GSL_DBL_EPSILON, which is the smallest value a \c double can hold, or something like 1e-3.
  \return The penalty = the distance between beta and the closest point that meets the constraints.
- If the constraint is not met, this \c beta is nudged to the closest point that meets the constraints (Euclidian distance).
+ If the constraint is not met, this \c beta is nudged to the closest point that meets the constraints (Euclidian distance). (Default = 0.)
+
+This function uses the \ref designated syntax for inputs.
 \todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints.
  */
-double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin){
+APOP_VAR_HEAD double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin){
+    static apop_data *default_constraint;
+    gsl_vector * apop_varad_var(beta, NULL);
+    double apop_varad_var(margin, 0);
+    apop_data * apop_varad_var(constraint, NULL);
+    apop_assert(beta, 0, 0, 's', "The vector to be checked is NULL.");
+    if (!constraint){
+        if (default_constraint && beta->size != default_constraint->vector->size){
+            apop_data_free(default_constraint);
+            default_constraint = NULL;
+        }
+        if (!default_constraint){
+            default_constraint = apop_data_alloc(0,beta->size, beta->size);
+            default_constraint->vector = gsl_vector_calloc(beta->size);
+            gsl_matrix_set_identity(default_constraint->matrix);
+        }
+        constraint = default_constraint;
+    }
+    return apop_linear_constraint_base(beta, constraint, margin);
+
+APOP_VAR_ENDHEAD
   static gsl_vector *closest_pt = NULL;
   static gsl_vector *candidate  = NULL;
   static gsl_vector *fix        = NULL;

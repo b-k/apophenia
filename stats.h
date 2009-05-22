@@ -107,8 +107,8 @@ apop_data * apop_matrix_summarize(gsl_matrix *data);
 apop_data *apop_test_fisher_exact(apop_data *intab);
 
 //from apop_sort.c:
-double * apop_vector_percentiles(gsl_vector *data, char rounding);
-apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
+APOP_VAR_DECLARE double * apop_vector_percentiles(gsl_vector *data, char rounding);
+APOP_VAR_DECLARE apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
 
 __END_DECLS
 #endif

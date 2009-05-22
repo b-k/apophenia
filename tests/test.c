@@ -544,7 +544,7 @@ void jtest(apop_model m, double *pv){
     //Notice that the jackknife just ain't a great estimator here.
 assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < lite_tolerance 
             && fabs(apop_data_get(out, 1,1) - gsl_pow_2(pv[1])/(2*len)) < lite_tolerance*100);
-    apop_data *out2 = apop_bootstrap_cov(d, m, r, 0);
+    apop_data *out2 = apop_bootstrap_cov(d, m);
     assert (fabs(apop_data_get(out2, 0,0) - gsl_pow_2(pv[1])/len) < lite_tolerance
                 && fabs(apop_data_get(out2, 1,1) - gsl_pow_2(pv[1])/(2*len)) < lite_tolerance);
     apop_data_free(d);

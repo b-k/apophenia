@@ -44,7 +44,7 @@ python_PYTHON = apop.py
 
 apop.py: apop.i
 	@if test -e /usr/include/python$(PYTHON_VERSION)/Python.h ; then \
-	swig -globals avar -python apop.i ; \
+	swig -python -globals avar apop.i ; \
 	sed -i "s/:print/:_print/" apop.py ; \
 	sed -i "s/def print/def _print/" apop.py ; \
 	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I/usr/local/include -I/usr/include/python$(PYTHON_VERSION)/ ; \
