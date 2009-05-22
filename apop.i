@@ -161,6 +161,9 @@ def apop_row(data, colno):
 %rename(apop_linear_constraint) apop_linear_constraint_base;
 %rename(apop_data_sort) apop_data_sort_base;
 %rename(apop_vector_percentiles) apop_vector_percentiles_base;
+%rename(apop_vector_distance) apop_vector_distance_base;
+%rename(apop_matrix_covariance) apop_matrix_covariance_base;
+%rename(apop_matrix_correlation) apop_matrix_correlation_base;
 
 %extend apop_data {
     apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
@@ -239,7 +242,6 @@ def apop_row(data, colno):
     gsl_matrix  *copy()                 { return apop_matrix_copy($self);}
     gsl_matrix  *inverse()              { return apop_matrix_inverse($self) ;}
     double      determinant()           { return apop_matrix_determinant($self) ;}
-    apop_data   *summarize()            { return apop_matrix_summarize($self);}
     long double sum()                   { return apop_matrix_sum($self) ;}
     double      mean()                  { return apop_matrix_mean($self) ;}
 
@@ -259,10 +261,10 @@ def apop_row(data, colno):
     return apop_matrix_rm_columns($self, drop);}
 
     gsl_matrix *covariance(const char normalize){
-        return apop_matrix_covariance($self, normalize);}
+        return apop_matrix_covariance_base($self, normalize);}
 
     gsl_matrix * correlation(const char normalize){
-        return apop_matrix_correlation($self, normalize);}
+        return apop_matrix_correlation_base($self, normalize);}
 
     double  var_m(double mean)                          { return apop_matrix_var_m($self, mean) ;}
     void    mean_and_var (double *mean, double *var)    { apop_matrix_mean_and_var($self, mean, var);}
@@ -342,7 +344,7 @@ def apop_row(data, colno):
     }
 
     double distance(const gsl_vector *inb){
-        return apop_vector_distance($self, inb); }
+        return apop_vector_distance_base($self, inb, 'e', 0); }
 
     double grid_distance(const gsl_vector *inb){
         return apop_vector_grid_distance($self, inb);}
@@ -790,7 +792,7 @@ double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w) ;
 double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w) ;
 
 //Distances, Euclidian and Manhattan:
-double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb);
+double apop_vector_distance_base(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm);
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
 
 
@@ -802,8 +804,8 @@ inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in);
 double apop_random_double(double min, double max, gsl_rng *r);
 int apop_random_int(const double min, const double max, const gsl_rng *r);
 
-gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize);
-gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char normalize);
+gsl_matrix *apop_matrix_covariance_base(gsl_matrix *in, const char normalize);
+gsl_matrix *apop_matrix_correlation_base(gsl_matrix *in, const char normalize);
 //apop_data * apop_data_covariance(const apop_data *in);
 //apop_data * apop_data_correlation(const apop_data *in);
 long double apop_matrix_sum(const gsl_matrix *m) ;
@@ -812,7 +814,6 @@ double apop_matrix_var_m(const gsl_matrix *data, double mean) ;
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in asst.c
 //apop_data * apop_data_summarize(apop_data *data);
-apop_data * apop_matrix_summarize(gsl_matrix *data);
 
 apop_data *apop_test_fisher_exact(apop_data *intab);
 

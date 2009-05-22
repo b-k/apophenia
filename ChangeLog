@@ -11,6 +11,10 @@
 (only) calls of the form apop_dot(a_vector, a_matrix, 't'). Replace with
 apop_dot(a_vector, a_matrix, 0, 't') or apop_dot(a_vector, a_matrix,
 .form2='t')
+--apop_vector_distance is much more versatile
+**Removed apop_matrix_summarize. Too much like apop_data_summarize. Just
+replace every instance of apop_matrix_summarize(m) with apop_data_summarize(apop_matrix_to_data(m)).
+
 
     April 2009
 --sample moments are now mega-accurate---possibly the most unbiased estimators in code today.

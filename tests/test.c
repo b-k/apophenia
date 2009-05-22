@@ -365,15 +365,16 @@ void test_distances(){
     apop_opts.verbose = -1;
     gsl_vector *v1 = gsl_vector_alloc(2);
     gsl_vector *v2 = gsl_vector_alloc(2);
-    gsl_vector *v3 = gsl_vector_calloc(3);
     gsl_vector_set(v1, 0,2);
     gsl_vector_set(v1, 1,2);
     gsl_vector_set(v2, 0,5);
     gsl_vector_set(v2, 1,6);
-    assert(apop_vector_distance(v1,v3) == 0);
+    assert(apop_vector_distance(v1, NULL, 'm') == 4.);
     assert(apop_vector_distance(v1,v2) == 5.);
-    assert(apop_vector_grid_distance(v2,v3) == 0);
+    assert(apop_vector_distance(v2, NULL, 's') == 6);
     assert(apop_vector_grid_distance(v1,v2) == 7.);
+    assert(apop_vector_distance(v1,v2, 'm') == 7.);
+    assert(apop_vector_distance(v1,v2, 'L', 2) == 5.);
     apop_opts.verbose = v;
 }
 

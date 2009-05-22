@@ -244,6 +244,26 @@ If you put
 at the top of your file, then it will call virtually every header file you could need: gsl_matrix.h, gsl_blas.h, sqlite3.h, stdio.h, string.h, math.h, apophenia_all_of_them.h, et cetera. Of course, if you get `implicit declaration of...' then you will need to manually include something else.
 Bear in mind that every book on C will tell you this is bad form and you shouldn't do it.
 
+\subsection desiref Easier calling syntax
+Several functions (but nowhere near all) use a script-like syntax for calling functions. For example, the \ref apop_vector_distance function finds the distance between two vectors using various metrics. The full function call, using an \f$L_3\f$ norm for vectors \f$v_1\f$ and \f$v_2\f$ would be 
+\code
+apop_vector_distance(v1, v2, 'L', 3);
+\endcode
+But some metrics don't need a number to be fully described, so you can leave that off. Here's the standard (Euclidian) distance:
+\code
+apop_vector_distance(v1, v2, 'E');
+\endcode
+Because Euclidian distance is so standard, it is assumed as the default if you don't specify a norm, so you can leave out the third input:
+\code
+apop_vector_distance(v1, v2);
+\endcode
+If you give only one vector, I'll assume the other is the zero vector, and thus return the length of the first vector. Here is the length of a vector using the Manhattan metric:
+\code
+apop_vector_distance(v1, .metric='M');
+\endcode
+
+See the \ref designated page for details of this syntax.
+
 \subsection liblinking Libraries 
 Your best bet is to write yourself a \ref makefile "Makefile".
 If you don't want to use the sample \ref makefile "Makefile", then here are some notes for the command line.

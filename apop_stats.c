@@ -157,9 +157,6 @@ inline double apop_vector_kurtosis(const gsl_vector *in){
   double coeff1 = gsl_pow_3(n)/(n-1)/(gsl_pow_2(n)-3*n+3);
   double coeff2 = (6*n-9)/(gsl_pow_2(n)-3*n+3);
     return  coeff1 * apop_vector_kurtosis_pop(in) + coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n);
-//  long double scale =  gsl_pow_3(n)/(gsl_pow_3(n)+1.);
-//    return scale * (apop_vector_kurtosis_pop(in) + 6./n * gsl_pow_2(apop_vector_var(in)*((n-1.)/n)));
-
 }
 
 /** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
@@ -192,34 +189,100 @@ inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *i
 }
 
 
-/** Returns the scalar distance (standard Euclidian metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
+/** Returns the distance between two vectors, where distance is defined
+ based on the third (optional) parameter:
+
+ - 'e' or 'E' (the default): scalar distance (standard Euclidian metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
 where \f$i\f$ iterates over dimensions.
 
+ - 'm' or 'M'  Returns the Manhattan metric distance  between two vectors: \f$\sum_i{|a_i - b_i|},\f$
+where \f$i\f$ iterates over dimensions.
+
+ - 'd' or 'D' The discrete norm: if \f$a = b\f$, return zero, else return one.
+
+ - 's' or 'S' The sup norm: find the dimension where \f$|a_i - b_i|\f$, return the distance along that one dimension.
+ - 'l' or 'L' The \f$L_p\f$ norm, \f$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},\f$. The value of \f$p\f$ is set by the fourth (optional) argument.
+
+ \param ina First vector (No default, must not be \c NULL)
+ \param inb Second vector (Default = zero)
+ \param metric The type of metric, as above.
+ \param norm  If you are using an \f$L_p\f$ norm, this is \f$p\f$. Must be strictly greater than zero. (default = 2)
+
+ Notice that the defaults are such that
+ \code
+ apop_vector_distance(v);
+ apop_vector_distance(v, .metric = 's');
+ \endcode
+ gives you the standard Euclidian length of \c v and its longest element.
+
+This function uses the \ref designated syntax for inputs.
 \ingroup convenience_fns
 */
-double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb){
-  apop_assert(ina, 0, 0, 'c', "first input vector is NULL. Returning 0.\n");
-  apop_assert(inb, 0, 0, 'c', "second input vector is NULL. Returning 0.\n");
-  apop_assert(ina->size == inb->size, 0, 0,'c', 
-                "You sent a vector of size %u and a vector of size %u. Returning zero.\n", ina->size, inb->size);
+APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm){
+    static gsl_vector *zero = NULL;
+    const gsl_vector * apop_varad_var(ina, NULL);
+    apop_assert(ina, 0, 0, 's', "The first vector has to be non-NULL.");
+    const gsl_vector * apop_varad_var(inb, NULL);
+    if (!inb){
+        if (!zero || zero->size !=ina->size){
+            if (zero) gsl_vector_free(zero);
+            zero = gsl_vector_calloc(ina->size);
+        }
+        inb = zero;
+    }
+    const char apop_varad_var(metric, 'e');
+    const double apop_varad_var(norm, 2);
+    return apop_vector_distance_base(ina, inb, metric, norm);
+APOP_VAR_ENDHEAD
+  apop_assert(ina->size == inb->size, 0, 0,'s', 
+                "I need equal-sized vectors, but "
+                "you sent a vector of size %u and a vector of size %u. ", ina->size, inb->size);
   double  dist    = 0;
   size_t  i;
-    for (i=0; i< ina->size; i++){
-        dist    += gsl_pow_2(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
+    if (metric == 'e' || metric == 'E'){
+        for (i=0; i< ina->size; i++){
+            dist    += gsl_pow_2(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
+        }
+        return sqrt(dist); 
     }
-	return sqrt(dist); 
+    if (metric == 'm' || metric == 'M'){ //redundant with vector_grid_distance, below.
+        for (i=0; i< ina->size; i++) 
+            dist    += fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
+        return dist; 
+    }
+    if (metric == 'd' || metric == 'D'){
+        for (i=0; i< ina->size; i++) 
+            if (gsl_vector_get(ina, i) != gsl_vector_get(inb, i))
+                return 1;
+        return 0;
+    }
+    if (metric == 's' || metric == 'S'){
+        for (i=0; i< ina->size; i++) 
+            dist = GSL_MAX(dist, fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i)));
+        return dist;
+    }
+    if (metric == 'l' || metric == 'L'){
+        for (i=0; i< ina->size; i++){
+            dist    += pow(gsl_vector_get(ina, i) - gsl_vector_get(inb, i), norm);
+        }
+        return pow(dist, 1./norm); 
+    }
+  apop_error(0,'s', "I couldn't find the metric type you gave, %c, in my list of supported types.", metric);
+  return 0; //just to keep the compiler quiet.
 }
 
 /** Returns the scalar Manhattan metric distance  between two vectors. Simply \f$\sum_i{|a_i - b_i|},\f$
 where \f$i\f$ iterates over dimensions.
+
+Equivalent to \ref apop_vector_distance<tt>(ina, inb, .metric='M')</tt>.
 
 \ingroup convenience_fns
 */
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb){
   apop_assert(ina, 0, 0, 'c', "first input vector is NULL. Returning 0.\n");
   apop_assert(inb, 0, 0, 'c', "second input vector is NULL. Returning 0.\n");
-  apop_assert(ina->size == inb->size, 0, 0,'c', 
-                "You sent a vector of size %u and a vector of size %u. Returning zero.\n", ina->size, inb->size);
+  apop_assert(ina->size == inb->size, 0, 0,'s', 
+                "You sent a vector of size %u and a vector of size %u.", ina->size, inb->size);
   double  dist    = 0;
   size_t  i;
     for (i=0; i< ina->size; i++){
@@ -397,7 +460,7 @@ int apop_random_int(const double min, const double max, const gsl_rng *r){
 
   \param m	the matrix to be summed. 
 \ingroup convenience_fns*/
-  long double apop_matrix_sum(const gsl_matrix *m){
+long double apop_matrix_sum(const gsl_matrix *m){
   int 		i,j;
   long double	sum	= 0;
 	for (j=0; j< m->size1; j++)
@@ -517,18 +580,6 @@ apop_data * apop_data_summarize(apop_data *indata){
 	}	
 	return out;
 }
-
-/** Put summary information about the columns of a table (mean, std dev, variance) in a table.
-
- This is just the version of \ref apop_data_summarize for when
- you have a gsl_matrix instead of an \ref apop_data set. In
- fact, here's the source code for this function: <tt>return
- apop_data_summarize(apop_matrix_to_data(m));</tt> */
-apop_data * apop_matrix_summarize(gsl_matrix *m){
-  apop_assert(m,  NULL, 0, 'c', "You sent me a NULL gsl_matrix. Returning NULL.\n");
-    return apop_data_summarize(apop_matrix_to_data(m));
-}
-
 
 /** Find the weighted mean. 
 
@@ -666,15 +717,21 @@ double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, cons
 
 This is the \c gsl_matrix  version of \ref apop_data_covariance; if you have column names, use that one.
 
-\param in 	A data matrix: rows are observations, columns are variables.
+\param in 	A data matrix: rows are observations, columns are variables. (No default, must not be \c NULL)
 \param normalize
 'n', 'N', or 1 = subtract the mean from each column, thus changing the input data but speeding up the computation.<br>
-anything else (like 0)= don't modify the input data
+anything else (like 0)= don't modify the input data (default = no modification)
 
 \return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
 This is the sample version---dividing by \f$n-1\f$, not \f$n\f$.
+It uses the \ref designated syntax for inputs.
 \ingroup matrix_moments */
-gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize){
+APOP_VAR_HEAD gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize){
+    gsl_matrix *apop_varad_var(in, NULL)
+    apop_assert(in,  NULL, 0, 'c', "Input matrix is NULL");
+    const char apop_varad_var(normalize, 0)
+    return apop_matrix_covariance_base(in, normalize);
+APOP_VAR_ENDHEAD
   apop_assert(in, NULL, 0, 'c', "input matrix is NULL. Returning NULL.\n");
   gsl_matrix	*out;
   int		i,j;
@@ -711,15 +768,21 @@ gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize){
 
 This is the \c gsl_matrix  version of \ref apop_data_covariance; if you have column names, use that one.
 
-\param in 	A data matrix: rows are observations, columns are variables.
+\param in 	A data matrix: rows are observations, columns are variables. (No default, must not be \c NULL)
 \param normalize
 'n' or 'N' = subtract the mean from each column, thus changing the input data but speeding up the computation.<br>
-anything else (like 0)= don't modify the input data
+anything else (like 0)= don't modify the input data (default = no modification)
 
 \return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
+
+This function uses the \ref designated syntax for inputs.
 \ingroup matrix_moments */
-gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char normalize){
-  apop_assert(in,  NULL, 0, 'c', "input matrix is NULL. Returning NULL.\n");
+APOP_VAR_HEAD gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char normalize){
+    gsl_matrix *apop_varad_var(in, NULL)
+    apop_assert(in,  NULL, 0, 'c', "Input matrix is NULL");
+    const char apop_varad_var(normalize, 0)
+    return apop_matrix_correlation_base(in, normalize);
+APOP_VAR_ENDHEAD
   gsl_matrix      *out    = apop_matrix_covariance(in, normalize);
   int             i;
   double          std_dev;

@@ -77,7 +77,7 @@ double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w) __att
 double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
 
 //Distances, Euclidian and Manhattan:
-double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb);
+APOP_VAR_DECLARE double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm);
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
 
 
@@ -91,8 +91,8 @@ inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in);
 APOP_VAR_DECLARE double apop_random_double(double min, double max, gsl_rng *r);
 int apop_random_int(const double min, const double max, const gsl_rng *r);
 
-gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize);
-gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char normalize);
+APOP_VAR_DECLARE gsl_matrix * apop_matrix_covariance(gsl_matrix *in, const char normalize);
+APOP_VAR_DECLARE gsl_matrix * apop_matrix_correlation(gsl_matrix *in, const char normalize);
 apop_data * apop_data_covariance(const apop_data *in);
 apop_data * apop_data_correlation(const apop_data *in);
 long double apop_matrix_sum(const gsl_matrix *m) __attribute__((pure));
@@ -101,7 +101,6 @@ double apop_matrix_var_m(const gsl_matrix *data, double mean) __attribute__((pur
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in asst.c
 apop_data * apop_data_summarize(apop_data *data);
-apop_data * apop_matrix_summarize(gsl_matrix *data);
 
 //from apop_fisher.c:
 apop_data *apop_test_fisher_exact(apop_data *intab);
