@@ -179,13 +179,12 @@ void apop_data_free(apop_data *freeme){
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
 
-  This function does <i>not</i> allocate the output for you. If you want such behavior, usr \ref apop_data_copy.
+  This function does not allocate the output structure for you for the overall structure or the vector or matrix. If you want such behavior, usr \ref apop_data_copy. Both functions do allocate memory for the text.
  
   \param out    a structure that this function will fill. Must be preallocated
   \param in    the input data
 
  \ingroup data_struct
- \todo This doesn't copy over the category data.
   */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
   size_t   i, j;

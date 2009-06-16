@@ -83,7 +83,7 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist);
     //This is a global var for numerical differentiation.
 extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
 
-apop_model * apop_estimate_restart (apop_model *, apop_model *);
+APOP_VAR_DECLARE apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary);
 
 //in apop_linear_constraint.c
 APOP_VAR_DECLARE double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin);

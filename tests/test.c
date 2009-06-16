@@ -10,7 +10,6 @@
 #define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed)
 
 
-
 double  true_parameter_v[]    = {1.82,2.1};
 
 double  tolerance           = 1e-5;
@@ -350,7 +349,7 @@ apop_data       *s;
 double          t, v;
     apop_text_to_db("test_data", .has_row_names= 0,1, .tabname = "td");
     m    = apop_query_to_matrix("select * from td");
-    s    = apop_matrix_summarize(m);
+    s    = apop_data_summarize(apop_matrix_to_data(m));
     //apop_matrix_print(s,"\t", NULL);
     t    = gsl_matrix_get(s->matrix, 1,0);
     assert (t ==3);
@@ -672,6 +671,11 @@ void db_to_text(){
     assert(!strcmp("rs2977656",  d->text[4][rsid_col]));
     assert(apop_data_get_it(d, 5, "ab")==201);
 
+    apop_data *dcc = apop_data_copy(d); //test apop_data_copy
+    assert(!strcmp("T",  dcc->text[3][b_allele_col]));
+    assert(!strcmp("rs2977656",  dcc->text[4][rsid_col]));
+    assert(apop_data_get_it(dcc, 5, "ab")==201);
+
     apop_data *dd = apop_query_to_text ("select * from d");
     b_allele_col = apop_name_find(dd->names, "b_all.*", 't');
     assert(!strcmp("T",  dd->text[3][b_allele_col]));
@@ -956,6 +960,23 @@ void test_crosstabbing() {
     assert(apop_data_get_tt(d, "C", "G")==1);
 }
 
+void test_data_to_db() {
+  int i, j;
+    if (!apop_table_exists("snps"))
+        apop_text_to_db("test_data_mixed", "snps");
+    apop_data *d = apop_query_to_mixed_data("tvttmmmt", "select * from snps");
+    apop_data_to_db(d, "snps2");
+    apop_data *d2 = apop_query_to_mixed_data("vmmmtttt", "select * from snps2");
+    for (i=0; i< d2->vector->size; i++)
+        assert(d->vector->data[i] == d2->vector->data[i]);
+    for (i=0; i< d2->matrix->size1; i++)
+        for (j=0; j< d2->matrix->size2; j++)
+            assert(gsl_matrix_get(d->matrix, i, j) ==  gsl_matrix_get(d2->matrix, i, j));
+    for (i=0; i< d2->textsize[0]; i++)
+        for (j=0; j< d2->textsize[1]; j++)
+            assert(!strcmp(d->text[i][j],d2->text[i][j]));  
+}
+
 #define do_test(text, fn)   if (verbose)    \
                                 printf("%s:", text);  \
                             else printf(".");   \
@@ -1002,6 +1023,7 @@ int main(int argc, char **argv){
     if (slow_tests){
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
+    do_test("test data to db", test_data_to_db());
     do_test("test db to crosstab", test_crosstabbing());
     do_test("dummies and factors", dummies_and_factors());
     do_test("test vector/matrix realloc", test_resize());

@@ -71,16 +71,21 @@ double * apop_vector_to_array(const gsl_vector *in){
 
 /** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
 
-\param line     A vector.
-\param vsize 	You will have to tell the function how long \c line is.
-\return         A <tt>gsl_vector</tt>. Declare but do not allocate.
+\param in     An array of <tt>double</tt>s. (No default. Must not be \c NULL);
+\param size 	How long \c line is. If this is zero or omitted, I'll guess using the <tt>sizeof(line)/sizeof(line[0])</tt> trick. There are situations where this can break, in which case you'll need to specify this explicitly. (default = auto-guess)
+\return         A <tt>gsl_vector</tt> (which I will allocate for you).
 \ingroup convertfromarray 
+This function uses the \ref designated syntax for inputs.
+
 */ 
-gsl_vector * apop_array_to_vector(const double *line, const int vsize){
-  apop_assert(line, NULL, 1, 'c', "You sent me NULL data; returning NULL.");
-  apop_assert(vsize, NULL, 1, 'c', "You sent me vsize==0, so I'm returning NULL.");
-  gsl_vector        *out    = gsl_vector_alloc(vsize);
-  gsl_vector_view	v	    = gsl_vector_view_array((double*)line, vsize);
+APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
+    double * apop_varad_var(in, NULL);
+    apop_assert(in, NULL, 1, 'c', "You sent me NULL data; returning NULL.");
+    int apop_varad_var(size, sizeof(in)/sizeof(in[0]));
+    return apop_array_to_vector_base(in, size);
+APOP_VAR_END_HEAD
+  gsl_vector        *out    = gsl_vector_alloc(size);
+  gsl_vector_view	v	    = gsl_vector_view_array((double*)in, size);
 	gsl_vector_memcpy(out,&(v.vector));
     return out;
 }

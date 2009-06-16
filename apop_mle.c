@@ -576,23 +576,34 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
 	return apop_maximum_likelihood_w_d(data, &info);
 }
 
-/** Input an earlier estimate, and then I will re-start the MLE search
- where the last one ended. You can specify greater precision or a new
- search method.
+/** 
+  The simplest use of this function is to restart a model at the current parameter estimates.
 
-If the estimate converged to an OK value, then restart the converged value; else use the
-starting point from the last estimate.
+  \code
+apop_model *m = apop_estimate(data, model_using_an_MLE_search);
+for (int i=0; i< 10; i++)
+    m = apop_estimate_restart(m);
+apop_data_show(m);
+  \endcode
+
+By adding a line to reduce the tolerance each round [e.g., <tt>Apop_settings_add(m, apop_mle, tolerance, pow(10,-i))</tt>], you can hone in on a precise optimum.
+ 
+You may have a new estimation method, such as first doing a simulated annealing search, then honing in via a conjugate gradient method:
+  \code
+apop_model *m = apop_estimate(data, model_with_siman_specified);
+m = apop_estimate_restart(m, model_with_cg_specified);
+apop_data_show(m);
+  \endcode
 
 Only one estimate is returned, either the one you sent in or a new
 one. The loser (which may be the one you sent in) is freed. That is,
-there is no memory leak when you do
-\code
-est = apop_estimate_restart(est, alt_model);
-\endcode
+there is no memory leak in the above loop.
 
- \param e   An \ref apop_model that is the output from a prior MLE estimation.
- \param copy  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> equal
- to the parameters of <tt>e</tt>. If this is <tt>NULL</tt>, then copy off <tt>e</tt> and restart from the end of the last estimation.
+ \param e   An \ref apop_model that is the output from a prior MLE estimation. (No default, must not be \c NULL.)
+ \param copy  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> as per the next setting (probably
+ to the parameters of <tt>e</tt>). If this is <tt>NULL</tt>, then copy off <tt>e</tt>. (Default = \c NULL)
+ \param starting_pt "ep"=last estimate of the first model (i.e., its current parameter estimates); "es"= starting point originally used by the first model; "np"=current parameters of the new (second) model; "ns"=starting point specified by the new model's MLE settings. (default = "ep")
+ \param boundary I test whether the starting point you give me is outside this certain bound, so I can warn you if there's divergence in your sequence of re-estimations. (default: 1e8)
 
 \return         At the end of this procedure, we'll have two \ref
     apop_model structs: the one you sent in, and the one produced using the
@@ -602,21 +613,48 @@ est = apop_estimate_restart(est, alt_model);
     is returned.
 
 \ingroup mle
-\todo The tolerance for testing boundaries are hard coded (1e4). Will need to either add another input term or a global var.
+
+This function uses the \ref designated syntax for inputs.
 */ 
-apop_model * apop_estimate_restart (apop_model *e, apop_model *copy){
+APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary){
+    apop_model * apop_varad_var(e, NULL);
+    apop_assert(e, 0, 0, 's', "You gave me a NULL model to restart.");
+    apop_model * apop_varad_var(copy, NULL);
+    char * apop_varad_var(starting_pt, NULL);
+    double apop_varad_var(boundary, 1e8);
+    return apop_estimate_restart(e, copy, starting_pt, boundary);
+APOP_VAR_ENDHEAD
+    gsl_vector *v;
   if (!copy)
       copy = apop_model_copy(*e);
+  apop_mle_settings* prm0 = apop_settings_get_group(e, "apop_mle");
   apop_mle_settings* prm = apop_settings_get_group(copy, "apop_mle");
             //copy off the old params; modify the starting pt, method, and scale
-    if (apop_vector_bounded(e->parameters->vector, 1e4))
-        prm->starting_pt	= apop_vector_to_array(e->parameters->vector);
-//printf("orig: 1st: %g, ll %g\n", e->parameters->vector->data[0],e->llikelihood );
-//printf("copy: 1st: %g, ll %g\n", copy->parameters->vector->data[0],copy->llikelihood );
+    if (starting_pt && !strcmp(starting_pt, "es"))
+        v = apop_array_to_vector(prm0->starting_pt);
+    else if (starting_pt && !strcmp(starting_pt, "ns")){
+        int size =sizeof(prm->starting_pt)/sizeof(double);
+        v = apop_array_to_vector(prm->starting_pt, size);
+        prm0->starting_pt	= malloc(sizeof(double)*size);
+        memcpy(prm0->starting_pt, prm->starting_pt, sizeof(double)*size);
+    }
+    else if (starting_pt && !strcmp(starting_pt, "np")){
+        v                   = apop_data_pack(copy->parameters); 
+        prm->starting_pt	= malloc(sizeof(double)*v->size);
+        memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
+    }
+    else {//"ep" or default.
+        v                   = apop_data_pack(e->parameters); 
+        prm->starting_pt	= malloc(sizeof(double)*v->size);
+        memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
+    }
+    apop_assert(apop_vector_bounded(v, boundary), e, 0, 'c', "Your model has diverged (element(s) > %g); returning your original model without restarting.", boundary);
+    gsl_vector_free(v);
+        
     apop_model *newcopy = apop_estimate(e->data, *copy);
     apop_model_free(copy);
     //Now check whether the new output is better than the old
-    if (apop_vector_bounded(newcopy->parameters->vector, 1e4) && newcopy->llikelihood > e->llikelihood){
+    if (apop_vector_bounded(newcopy->parameters->vector, boundary) && newcopy->llikelihood > e->llikelihood){
         apop_model_free(e);
         return newcopy;
     } //else:
