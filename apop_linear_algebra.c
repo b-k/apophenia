@@ -328,13 +328,20 @@ void apop_vector_exp(gsl_vector *v){
 /** Put the first vector on top of the second vector.
   The fn returns a new vector, meaning that at the end of this function, until you gsl_vector_free() the original vectors, you will be taking up twice as much memory. Plan accordingly.
 
-\param  v1  the upper vector
-\param  v2  the second vector
-\return     a new vector with the stacked data.
+\param  v1  the upper vector (default=\c NULL, in which case this basically copies \c v2)
+\param  v2  the second vector (default=\c NULL, in which case nothing is added)
+\param  inplace If \c 'i' \c 'y', use \t apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
+\return     the stacked data, either in a new vector or a pointer to \c v1.
 
+This function uses the \ref designated syntax for inputs.
 \ingroup convenience_fns
 */
-gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2){
+APOP_VAR_HEAD gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace){
+    gsl_vector * apop_varad_var(v1, NULL);
+    gsl_vector * apop_varad_var(v2, NULL);
+    char apop_varad_var(inplace, 'n');
+    return apop_vector_stack_base(v1, v2, inplace);
+APOP_VAR_ENDHEAD
   gsl_vector      *out;
   gsl_vector      t;
     if (!v1  && v2){
@@ -342,13 +349,18 @@ gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2){
         gsl_vector_memcpy(out, v2);
         return out;
     } else if (!v2  && v1){
+        if (inplace == 'i' || inplace == 'y')
+            return v1;
         out = gsl_vector_alloc(v1->size);
         gsl_vector_memcpy(out, v1);
         return out;
-    } else if (!v2 && !v2)
+    } else if (!v1 && !v2)
         return NULL;
     //else:
-    out = gsl_vector_alloc(v1->size + v2->size);
+    if (inplace == 'i' || inplace == 'y')
+        out = apop_vector_realloc(v1, v1->size+v2->size);
+    else
+        out = gsl_vector_alloc(v1->size + v2->size);
     t   = gsl_vector_subvector(out, 0, v1->size).vector;
     gsl_vector_memcpy(&t, v1);
     t   = gsl_vector_subvector(out, v1->size, v2->size).vector;
@@ -359,10 +371,12 @@ gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2){
 /** Put the first matrix either on top of or to the right of the second matrix.
   The fn returns a new matrix, meaning that at the end of this function, until you gsl_matrix_free() the original matrices, you will be taking up twice as much memory. Plan accordingly.
 
-\param  m1  the upper/rightmost matrix
-\param  m2  the second matrix
-\param  posn    if 'r', stack rows on top of other rows, else, e.g. 'c' stack  columns next to columns.
-\return     a new matrix with the stacked data.
+\param  m1  the upper/rightmost matrix (default=\c NULL, in which case this basically copies \c m2)
+\param  m2  the second matrix (default = \c NULL, in which case \c m1 is returned)
+\param  posn    if 'r', stack rows on top of other rows, else, e.g. 'c' stack  columns next to columns. (default ='r')
+\param  inplace If \c 'i' \c 'y', use \t apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 unmolested. (default='n')
+\return     the stacked data, either in a new matrix or a pointer to \c m1.
+
 \ingroup convenience_fns
 
 For example, here is a little function to merge four matrices into a single two-part-by-two-part matrix:
@@ -381,8 +395,16 @@ gsl_matrix  *t1, *t2, *output;
     return output;
 }
 \endcode
+
+This function uses the \ref designated syntax for inputs.
 */
-gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
+APOP_VAR_HEAD gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace){
+    gsl_matrix *apop_varad_var(m1, NULL);
+    gsl_matrix *apop_varad_var(m2, NULL);
+    char apop_varad_var(posn, 'r');
+    char apop_varad_var(inplace, 'n');
+    return apop_matrix_stack_base(m1, m2, posn, inplace);
+APOP_VAR_ENDHEAD
   gsl_matrix      *out;
   gsl_vector_view tmp_vector;
   int             i;
@@ -391,6 +413,8 @@ gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
         gsl_matrix_memcpy(out, m2);
         return out;
     } else if (!m2 && m1) {
+        if (inplace == 'i' || inplace == 'y')
+            return m1;
         out = gsl_matrix_alloc(m1->size1, m1->size2);
         gsl_matrix_memcpy(out, m1);
         return out;
@@ -399,7 +423,10 @@ gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
 
     if (posn == 'r'){
         apop_assert(m1->size2 == m2->size2,  NULL, 0, 's', "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%i and m2->size2==%i. Halting.\n", m1->size2, m2->size2);
-        out     = gsl_matrix_alloc(m1->size1 + m2->size1, m1->size2);
+        if (inplace == 'i' || inplace == 'y')
+            out = apop_matrix_realloc(m1, m1->size1 + m2->size1, m1->size2);
+        else
+            out     = gsl_matrix_alloc(m1->size1 + m2->size1, m1->size2);
         for (i=0; i< m1->size1; i++){
             tmp_vector  = gsl_matrix_row(m1, i);
             gsl_matrix_set_row(out, i, &(tmp_vector.vector));
@@ -411,7 +438,10 @@ gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn){
         return out;
     } else {
         apop_assert(m1->size1 == m2->size1,  NULL, 0, 's', "When stacking matrices side by side, they have to have the same number of rows, but  m1->size1==%i and m2->size1==%i. Halting.\n", m1->size1, m2->size1);
-        out     = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
+        if (inplace == 'i' || inplace == 'y')
+            out = apop_matrix_realloc(m1, m1->size1, m1->size2 + m2->size2);
+        else
+            out     = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
         for (i=0; i< m1->size2; i++){
             tmp_vector  = gsl_matrix_column(m1, i);
             gsl_matrix_set_col(out, i, &(tmp_vector.vector));

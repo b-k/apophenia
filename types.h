@@ -6,6 +6,7 @@
 #include <string.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
+#include "variadic.h"
 
 #undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
 #undef __END_DECLS
@@ -171,6 +172,7 @@ typedef struct{
             /** Threads to use internally. See \ref apop_matrix_apply and family. */
     int  thread_count;
     int  rng_seed;
+    float version;
 } apop_opts_type;
 
 extern apop_opts_type apop_opts;
@@ -192,7 +194,7 @@ apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
 apop_data * apop_data_alloc(const size_t, const size_t, const int);
 apop_data * apop_data_calloc(const size_t, const size_t, const int);
-apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
+APOP_VAR_DECLARE apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace);
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c);
 apop_data * apop_data_copy(const apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);

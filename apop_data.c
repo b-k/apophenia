@@ -254,15 +254,17 @@ twice as much memory. Plan accordingly.
 
  For the opposite operation, see \ref apop_data_split.
 
-\param  m1      the upper/rightmost data set
-\param  m2      the second data set
-\param  posn    if 'r', stack rows of m1's matrix above rows of m2's<br>
+\param  m1      the upper/rightmost data set (default = \c NULL)
+\param  m2      the second data set (default = \c NULL)
+\param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
 if 'c', stack columns of m1's matrix to left of m2's<br>
+(default = 'r')
+\param  inplace If \c 'i' \c 'y', use \t apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
 
 If m1 or m2 are NULL, this returns a copy of the other element, and if
-both are NULL, you get NULL back.
+both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 back)
 
-\return         a new \ref apop_data set with the stacked data.
+\return         The stacked data, either in a new \ref apop_data set or \c m1
 \li text is ignored
 \li If stacking rows on rows, the output vector is the input
 vectors stacked accordingly. If stacking columns by columns, the output
@@ -270,21 +272,33 @@ vector is just a copy of the vector of m1 and m2->vector doesn't appear in the
 output at all.  
 \li Names are a copy of the names for \c m1, with the names for \c m2 appended to the row or column list, as appropriate.
 
+This function uses the \ref designated syntax for inputs.
 \ingroup data_struct
 */
-apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn){
+APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace){
+    apop_data * apop_varad_var(m1, NULL)
+    apop_data * apop_varad_var(m2, NULL)
+    char apop_varad_var(posn, 'r')
+    char apop_varad_var(inplace, 'n')
+    return apop_data_stack_base(m1, m2, posn, inplace);
+APOP_VAR_ENDHEAD
   gsl_matrix  *stacked= NULL;
   apop_data   *out    = NULL;
-    if (m1 == NULL)
+    if (!m1)
         return apop_data_copy(m2);
-    if (m2 == NULL)
-        return apop_data_copy(m1);
-    Apop_assert((posn == 'r' || posn == 'c'), NULL, 0, 'c', "Valid positions are 'r' or 'c' ('v' is deprecated); "
-                                                         "you gave me >%c<. Returning NULL.", posn);
-    stacked = apop_matrix_stack(m1->matrix, m2->matrix, posn);
-    out     = apop_matrix_to_data(stacked);
+    if (!m2)
+        return (inplace == 'i' || inplace == 'y') ? m1 : apop_data_copy(m1);
+    Apop_assert((posn == 'r' || posn == 'c'), NULL, 0, 'c', "Valid positions are 'r' or 'c'"
+                             " ('v' is deprecated); you gave me >%c<. Returning NULL.", posn);
+    if (inplace == 'i' || inplace == 'y'){
+        out = m1;
+        apop_matrix_stack(m1->matrix, m2->matrix, posn, inplace);
+    } else {
+        stacked = apop_matrix_stack(m1->matrix, m2->matrix, posn);
+        out     = apop_matrix_to_data(stacked);
+    }
     if (posn == 'r')
-        out->vector = apop_vector_stack(m1->vector, m2->vector);
+        out->vector = apop_vector_stack(m1->vector, m2->vector, inplace);
     else 
         out->vector = apop_vector_copy(m1->vector);
     out->names  = apop_name_copy(m1->names);
@@ -764,7 +778,7 @@ apop_data *apop_data_transpose(apop_data *in){
 
  Data in the matrix will be retained. If the new height or width is
  smaller than the old, then data in the later rows/columns will be
- cropped away and lost. If the new height or width is larger than the old,
+ cropped away (in a non--memory-leaking manner). If the new height or width is larger than the old,
  then new cells will be filled with garbage; it is your repsonsibility
  to zero out or otherwise fill new rows/columns before use.
 
@@ -780,14 +794,14 @@ beforehand.
  deal with those, and check for such situations beforehand. [Besides,
  resizing a portion of a parent matrix makes no sense.]
 
-\param m The already-allocated matrix to resize.  If you give me \c NULL, I will crash
+\param m The already-allocated matrix to resize.  If you give me \c NULL, this becomes equivalent to \c gsl_matrix_alloc
 \param newheight, newwidth The height and width you'd like the matrix to be.
 \return m, now resized
  */
 gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth){
+    if (!m)
+        return (newheight && newwidth) ?  gsl_matrix_alloc(newheight, newwidth) : NULL;
     size_t i, oldoffset=0, newoffset=0, realloced = 0;
-    apop_assert(m, NULL, 0, 's', "I can't resize a NULL matrix. "
-                            "Please call gsl_matrix_alloc(%u, %u) first.", newheight, newwidth);
     apop_assert((m->block->data==m->data) && m->owner & (m->tda == m->size2),
         NULL, 0, 's', "I can't resize submatrices or other subviews.");
     m->block->size = newheight * newwidth;
@@ -818,7 +832,7 @@ gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidt
 
  Data in the vector will be retained. If the new height is
  smaller than the old, then data in the bottom of the vector will be
- cropped away and lost. If the new height is larger than the old,
+ cropped away (in a non--memory-leaking manner). If the new height is larger than the old,
  then new cells will be filled with garbage; it is your repsonsibility
  to zero out or otherwise fill them before use.
 
@@ -833,13 +847,13 @@ beforehand.
  deal with those, and check for such situations beforehand. [Besides,
  resizing a portion of a parent matrix makes no sense.]
 
-\param v The already-allocated vector to resize.  If you give me \c NULL, I will crash
+\param v The already-allocated vector to resize.  If you give me \c NULL, this is equivalent to \c gsl_vector_alloc
 \param newheight The height you'd like the vector to be.
 \return v, now resized
  */
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
-    apop_assert(v, NULL, 0, 's', "I can't resize a NULL vector. "
-                            "Please call gsl_vector_alloc(%u) first.", newheight);
+    if (!v)
+        return newheight ?  gsl_vector_alloc(newheight) : NULL;
     apop_assert((v->block->data==v->data) && v->owner & (v->stride == 1),
                 NULL, 0, 's', "I can't resize subvectors or other views.");
     v->block->size = newheight;

@@ -426,59 +426,6 @@ Just a few page links:
 */
 
 
-/*      This is debris. Not parsed by doxygen.
-
-
-\li <b>The world is not linear</b>, so why use a package to fit
-linear models? Apophenia facilitates writing \ref mle "likelihood functions" which
-can be as crazy as the world you are modeling, and then fits them with
-one function call to \ref apop_maximum_likelihood. Comparing competing
-models is easy as well.
-\li <b>Passing queries directly to an SQL engine.</b> if you have a gigabyte of data,
-you do not want it in an in-memory database, until the last possible
-minute---you're probably only using three variables out of six hundred
-anyway. If your data comes from multiple sources, you will need a means
-of merging the sources. In short, data management is best done via a
-database. \ref apop_query allows you to dynamically write queries
-that are passed directly to SQLite.
-\li <b>Converting data is a pain</b>. It's funny and a bit wrong that
-college and even grad school statistics classes present the student with
-perfectly-cleaned data sets and spend 90% of their time on calculating
-statistics and testing hypotheses; while in the real world, we spend
-about 90% of our time getting, cleaning, and managing our data, and
-once it's all perfect we do the statistics with a single function call. 
-Apophenia provides a good number of \ref conversions to make
-data wrangling as painless as it can be in the real world. The
-\ref convertfromtext alone may be worth the time it takes you to install
-the library.
-\li <b>The GSL is just a step shy.</b> Don't get me wrong: it's a great
-library, which drives much of Apophenia (see below). But the authors did not have
-statistical analysis in mind, and often chose generality over ease of
-use. For example, doing a singular value decomposition theoretically
-just requires a single call to \c gsl_linalg_SV_decomp, but in reality
-takes many steps of data massaging to get things in place. But you can
-feed your data directly to \ref apop_sv_decomposition and get a principal
-component space back immediately. Think of Apophenia as the lazy
-statistician's supplement to the GSL.
-
-\section datamanagement Data management and data analysis
-
-That said, there are two simple goals of Apophenia:
-\li Minimize annoyances.
-\li Estimate model parameters and test hypotheses regarding those parameters.
-
-With regard to the first goal, the hope is that every time you are writing
-a program and think "darn it, now I have to write a tedious function to
-massage my data" that function is already in the library. 
-[If it isn't, you can write that function and contribute it.] The
-library thus includes a number of functions to reformat, convert, and
-do simple-but-tedious calculations on data.
-
-With regard to the goal of estimation, Apophenia provides three
-*/
-
-
-
 /**  \page outline An outline of the library
 
 ALLBUTTON
@@ -1302,6 +1249,21 @@ endofdiv
 
 Outlineheader Test Tests & diagnostics
 
+   Just about any hypothesis test consists of a few common steps:
+ 
+\li  specify a statistic
+\li  State the statistic's (hypothesized) distribution
+\li  Find the odds that the statistic would lie within some given range, like `greater than zero' or `near 1.1'
+
+If the statistic is from a common form, like the parameters from an OLS regression, then the commonly-associated \f$t\f$
+test is probably thrown in.
+
+Some tests, like ANOVA, produce a statistic using a specialized prodecure, so Apophenia includes some functions, like \ref apop_test_anovw_independence and \ref apop_test_kolmogorov, to produce the statistic and look up its significance level.
+
+If you are producing a statistic that you know has a common form, like a central limit theorem tells you that your statistic is Normally distributed, then the convenience function \ref apop_test will do the final lookup step of checking where your statistic lies on your chosen distribution.
+
+
+    \li\ref apop_test()
     \li\ref apop_paired_t_test()
     \li\ref apop_f_test()
     \li\ref apop_t_test()
@@ -1539,3 +1501,23 @@ For your convenience, here are links to some other libraries you are probably us
 
 
 */
+
+
+
+/* This will be a useful example when I have an infomatrix method.
+
+For example, conisder the Rao statistic, 
+    \f${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta)\partial\over \partial\beta}\log L(\beta)\f$
+    where \f$L\f$ is your model's likelihood function and \f$I\f$ its information matrix. In code:
+
+    \code
+apop_data * infoinv = apop_inverse(model_infomatrix(data, your_model));
+apop_data * stat    = apop_dot(apop_dot(apop_score(data, your_model), infoinv), apop_score(data, your_model));
+    \endcode
+
+    Given the correct assumptions, this is $\sim \chi^2_m$, where \f$m\f$ is the dimension of $\beta$, so the odds of a Type I error given the model is:
+
+    \code
+    double p_value = apop_test(stat, "chi squared", beta->size);
+    \endcode
+    */

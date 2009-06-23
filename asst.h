@@ -121,5 +121,7 @@ apop_update_settings *apop_update_settings_alloc(apop_data *d);
 
 APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng);
 
+APOP_VAR_DECLARE double apop_test(double statistic, char *distribution, double p1, double p2, char tail);
+
 __END_DECLS
 #endif

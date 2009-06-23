@@ -3,6 +3,12 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+	June 2009
+--More variadicized functions
+	--notably, apop_estimate is much more useful
+--apop_opts.version.
+--apop_(vector|matrix|data)_stack have an inplace option, making stacking inside a for loop easier.
+
 	May 2009
 --mysql functions slightly cleaned up
 --apop_opts.db_user and apop_opts.db_pass for mysql.
