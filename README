@@ -1,26 +1,37 @@
 This is a library of statistical functions in C, plus some command-line
-utilities that make use of those functions. Detailed setup instructions can
-be found at http://apophenia.sourceforge.net/doc/setup.html . [Not
-online? You can see the source for that page in documentation.h in this
-directory.]
+utilities that make use of those functions. 
 
-The executive summary:
---You need the usual C compiler and the supporting environment that a
-sane programmer requires. 
---You need the GNU Scientific Library and SQLite. If you are using a
-system with a package manager of some sort, there is certainly a package
-for both of these.
---One you have it in place, 
+The directory you are in right now, however, is the development
+side---backstage, so to speak. You can't directly compile anything from
+this directory.
 
-tar xzf apophenia-X.XX.tar.gz 
-cd apophenia-X.XX
-./configure; make; sudo make install
+Instead, you can run the make_pkg script to produce compilable
+end-distributions in the dists directory.
 
-should compile for you (where X.XX indicates the version number.)
+The make_pkg script will:
 
-There are Python wrappers, which will require all of the above plus the
-swig and Python-dev packages.
+--Copy everything into a temp directory, so GNU autotools can make a mess.
+--run a few sed scripts to turn some notes in the C code into proper ISO C.
+--Make some minor fixes, like update version numbers and overwrite this
+readme to you with readme.user.
+--Run GNU autotools, which will produce the familiar configure script.
+--Produce a debian package (if you have the right tools).
 
-Once you have it installed, the user manual is in the form of a textbook
-on statistical computing at http://apophenia.info/gsl_stats.pdf and the
-command-by-command reference is at http://apophenia.info/doc
+At the end of this, you will be able to go to the dists directory and
+either install the debian pkg (if it compiled) and/or run
+./configure;make;sudo make install from the generated source directory.
+
+By the way, the Apophenia end-distribution attempts to be
+standards-compliant, but the make_pkg script and such is a little
+looser. E.g., it uses sed -i, which is common but not POSIX-standard. If
+you're working on the development side of a stats library for C, then
+you probably have the technical know-how to make these things work for
+your environment.
+
+Thanks for your interest. I do hope that Apophenia helps you learn more
+from your data.
+
+--BK
+
+PS: Lawyers, please not that COPYING and COPYING2 files can be found in
+the install/ directory.

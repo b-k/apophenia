@@ -1553,12 +1553,6 @@ http://kayalang.org/download/compiling/windows
 \li Comment out "alloc.h" in apophenia-0.22\vasprintf\vasnprintf.c
 \li Modify \c Makefile, adding -lpthread to AM_CFLAGS (removing -pthread) and -lregex to AM_CFLAGS and LIBS
 
-
-\li The Makefile expects Python's includes to be in a certain location, so:
-\code
- ln -s /C/bin/prog/Python2/include /usr/include/python2.6
-\endcode
-
 \li Now compile the main library:
 \code
 make

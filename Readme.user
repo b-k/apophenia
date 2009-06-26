@@ -1,0 +1,43 @@
+This is a library of statistical functions in C, plus some command-line
+utilities that make use of those functions. 
+
+If you want to know more about the package, see the web site,
+http://apophenia.info, or have a look at the textbook from Princeton
+University Press that coevolved with Apophenia, downloadable from
+http://modelingwithdata.org . 
+
+Detailed setup instructions can be found at
+http://apophenia.sourceforge.net/doc/setup.html .
+
+The executive summary:
+--You need the usual C compiler and the supporting environment that a
+sane programmer requires. 
+
+--The library makes an effort to not reinvent already-developed systems
+like matrix inversion or database querying, which means that the package
+has several dependencies. You need the GNU Scientific Library (wich needs
+a BLAS like libgslcblas or lapack), and are strongly encouraged to have a
+database system, either SQLite or mysql (if not sure, install sqlite). If
+you are using a system with a package manager of some sort, there is
+certainly a package for all of these. Be sure to include both the main
+package and the lib-, -dev, or -devel package. On my Ubuntu system,
+I'd run this package-install command:
+
+apt-get install gsl-bin libgsl0-bin libblas3gf liblapack3gf sqlite3 libsqlite3-0 libsqlite3-dev
+
+--There is an optional Python interface, which will require all of the above plus the
+swig and Python-dev packages.
+
+--One you have it in place,
+
+tar xzf apophenia-X.XX.tar.gz 
+cd apophenia-X.XX
+./configure; make; sudo make install
+
+should compile for you.
+
+--Once you have it installed, the user manual is in the form of a textbook
+on statistical computing at http://modelingwithdata.org and the
+command-by-command reference is at http://apophenia.info/doc . You can
+make the online documentation yourself if you have Doxygen installed,
+via make doc.

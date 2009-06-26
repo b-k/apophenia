@@ -33,7 +33,7 @@ apop_opts_type apop_opts	= { 0,              //verbose
                                 "\0",           //db_pass
                                 1,              //threadct
                                 479901,          //rng_seed (randomly generated)
-                                22              //version
+                                X.XX              //version
 };
 
 

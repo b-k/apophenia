@@ -3,10 +3,7 @@ pkg=apophenia
 version=0.22
 date=`date +%d_%b_%y`
 
-#This script is intended for maintainers who are modifying the 
-#package as it appears on sourceforge.net. If you are a user who 
-#just wants to compile and use the package, you don't need this; 
-#see the README.
+#See README for notes.
 
 #This script copies everything into a junk directory, that GNU's 
 #prep materials will produce a thousand temp files in, concluding 
@@ -21,6 +18,10 @@ mkdir $junkdir
 mkdir $junkdir/$pkg-$version
 cp -rf * $junkdir/$pkg-$version
 cd $junkdir/$pkg-$version
+cp install/* .
+mv Readme.user README
+cp ChangeLog NEWS
+sed -i "s/X\.XX/$version/" README apop_db.c configure.ac
 sed -i -f prep_variadics.sed *c *h
 	#add a directory with links to all headers:
 	mkdir apophenia
@@ -39,7 +40,6 @@ sed -i -f prep_variadics.sed *c *h
 	autoheader
 	automake -a
 	./configure
-	#rm apophenia-$version.tar.gz 
 #    yes | dh_make -l -n -c GPL  
 #    cp ../../debian_control debian/control
 #    cp ../../debian_copyright debian/copyright

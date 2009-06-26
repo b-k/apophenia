@@ -9,6 +9,7 @@
 --apop_opts.version.
 --apop_(vector|matrix|data)_stack have an inplace option, making stacking inside a for loop easier.
 --apop_test convenience function
+--more autoconf macros ==> some compilation hacks now done right
 
 	May 2009
 --mysql functions slightly cleaned up

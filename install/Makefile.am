@@ -1,11 +1,6 @@
 
-
-
 AM_LDFLAGS =  -no-undefined $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS)
 AM_CFLAGS = -g -Wall -I./ $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_CFLAGS) $(SQLITE_CFLAGS)
-SQLITE3_CFLAGS = -I/usr/include
-SQLITE3_LDFLAGS = -L/usr/lib -lsqlite3
-SQLITE3_VERSION = 3.4.2
 
 CC = $(PTHREAD_CC)
 lib_LTLIBRARIES = libapophenia.la
@@ -51,7 +46,7 @@ if HAVE_PYTHON
 	swig -python -globals avar apop.i ; \
 	sed  -e "s/:print/:_print/" -e "s/def print/def _print/" < apop.py > apop.tmp.py; \
 	mv apop.tmp.py apop.py; \
-	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I/usr/local/include $(PYTHON_CPPFLAGS) ; \
+	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I$(pkgincludedir) $(PYTHON_CPPFLAGS) ; \
 	$(CC) -shared apop_wrap.o -o _apop.so -lapophenia -lgsl -lgslcblas $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS) ;
 else 
 	echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
@@ -85,14 +80,7 @@ EXTRA_DIST = doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/fo
 		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
 		apop.h	apop.i COPYING2
 
-#The documentation
-
-#the texinfo version, which I didn't like in the end. 
-#info_TEXINFOS = apophenia.texi
-#AM_MAKEINFOHTMLFLAGS = --cssinclude = typical.css
-
-#the doxygen version. You've gotta call it yourself.
-#the doxygen version. If you're Ben K., then it will post to Sourceforge.
+#The Doxygen documentation, which you'll have to call yourself (via make doc).
 
 doc: 
 	cp model/*.c .
@@ -104,7 +92,6 @@ doc:
 	sed -i -e '/index_a/s/- a -/ /' -e '15,27d' html/globals.html
 	sed -i 's|<td width="100%"></td>||g' html/*html
 	cp doxy/*js html/
-	rsync -avPe ssh html/ ben_k,apophenia@web.sourceforge.net:htdocs/doc/
 	sudo cp man/man3/* /usr/share/man/man3/
 
 test:
@@ -113,3 +100,4 @@ test:
 install-data-local:
 	test -z "$(includedir)" || $(mkdir_p) "$(includedir)"
 	cp apop.h $(includedir)/
+	echo "OK. If you'd like to generate documentation, run make doc; to test, run make test."
