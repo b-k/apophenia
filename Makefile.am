@@ -1,9 +1,13 @@
 
-#The library
-#AM_LDFLAGS =  -lgsl -lgslcblas -lsqlite3 -L/usr/lib/mysql -lmysqlclient -lz 
-AM_LDFLAGS =  -no-undefined
-AM_CFLAGS = -g -Wall -I./ -I/usr/include/mysql -pthread
-#apop_text_to_db_LDFLAGS =  -lgsl -lgslcblas -lsqlite3
+
+
+AM_LDFLAGS =  -no-undefined $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS)
+AM_CFLAGS = -g -Wall -I./ $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_CFLAGS) $(SQLITE_CFLAGS)
+SQLITE3_CFLAGS = -I/usr/include
+SQLITE3_LDFLAGS = -L/usr/lib -lsqlite3
+SQLITE3_VERSION = 3.4.2
+
+CC = $(PTHREAD_CC)
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			apop_linear_algebra.c apop_mle.c apop_hist.c 	\
@@ -43,21 +47,20 @@ pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
 python_PYTHON = apop.py
 
 apop.py: apop.i
-	@if test -e /usr/include/python$(PYTHON_VERSION)/Python.h ; then \
+if HAVE_PYTHON
 	swig -python -globals avar apop.i ; \
-	sed -i "s/:print/:_print/" apop.py ; \
-	sed -i "s/def print/def _print/" apop.py ; \
-	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I/usr/local/include -I/usr/include/python$(PYTHON_VERSION)/ ; \
-	$(CC) -shared apop_wrap.o -o _apop.so -lapophenia -lgsl -lgslcblas -lsqlite3 ; \
-	else \
-	echo "NOT setting up the Python interface, because I couldn't find /usr/include/python$(PYTHON_VERSION)/Python.h. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
-	touch apop.py ; \
-	fi
+	sed  -e "s/:print/:_print/" -e "s/def print/def _print/" < apop.py > apop.tmp.py; \
+	mv apop.tmp.py apop.py; \
+	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I/usr/local/include $(PYTHON_CPPFLAGS) ; \
+	$(CC) -shared apop_wrap.o -o _apop.so -lapophenia -lgsl -lgslcblas $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS) ;
+else 
+	echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
+	touch apop.py ; 
+endif
 
-install-exec-hook:
+install-exec-hook: apop.py
 	@if test -e _apop.so ; then \
-	cp _apop.so ${pythondir} ; \
-	echo "Python interface NOT set up, because I couldn't find /usr/include/python$(PYTHON_VERSION)/Python.h. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
+		cp _apop.so ${pythondir} ; \
 	fi
 
 #The programs

@@ -178,10 +178,13 @@ Several more distributions are supported; see below.
 
  \li For a two-tailed test (the default), this returns the density outside the range. I'll only do this for symmetric distributions.
  \li For an upper-tail test ('u'), this returns the density above the cutoff
- \li For a lower-tail test ('l'), this returns the density below the cutoff \parameter statistic    The scalar value to be tested.  \parameter distribution  The name of the distribution; see below.
-\parameter p1  The first parameter for the distribution; see below.
-\parameter p2  The second parameter for the distribution; see below.
-\parameter tail 'u' = upper tail; 'l' = lower tail; anything else = two-tailed. (default = two-tailed)
+ \li For a lower-tail test ('l'), this returns the density below the cutoff 
+ 
+\param statistic    The scalar value to be tested.  
+\param distribution  The name of the distribution; see below.
+\param p1  The first parameter for the distribution; see below.
+\param p2  The second parameter for the distribution; see below.
+\param tail 'u' = upper tail; 'l' = lower tail; anything else = two-tailed. (default = two-tailed)
 
 \return The odds of a Type I error given the model (the \f$p\f$-value).
 
@@ -287,5 +290,5 @@ APOP_VAR_ENDHEAD
          else
              return 2 * gsl_cdf_flat_Q(fabs(statistic - (p1+p2)/2.), p1, p2);
      }
-    else apop_error(0,'s', "Sorry, but I don't recognize %s as a distribution", distribution);
+    apop_error(0,'s', "Sorry, but I don't recognize %s as a distribution", distribution);
 }

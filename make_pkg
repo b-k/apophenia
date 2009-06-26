@@ -1,7 +1,7 @@
-export junkdir=dists
-export pkg=apophenia
-export version=0.22
-export date=`date +%d_%b_%y`
+junkdir=dists
+pkg=apophenia
+version=0.22
+date=`date +%d_%b_%y`
 
 #This script is intended for maintainers who are modifying the 
 #package as it appears on sourceforge.net. If you are a user who 
@@ -34,8 +34,8 @@ sed -i -f prep_variadics.sed *c *h
 		cd ..
 	#let the GNU prep everything and produce a distribution pkg.
 	libtoolize
-	aclocal
-	autoconf
+    	aclocal
+	autoconf 
 	autoheader
 	automake -a
 	./configure

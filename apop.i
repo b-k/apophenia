@@ -23,7 +23,6 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 %ignore apop_data_rm_columns;
 %ignore apop_data_set;
 %ignore apop_data_split;
-%ignore apop_data_stack;
 %ignore apop_data_summarize;
 %ignore apop_data_transpose;
 %ignore apop_model_clear;
@@ -64,6 +63,7 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 %ignore gsl_vector_set_basis;
 %ignore gsl_vector_set_zero;
 %ignore gsl_vector_sub;
+%ignore apop_data_stack;
 
 
 %module apop
@@ -164,6 +164,10 @@ def apop_row(data, colno):
 %rename(apop_vector_distance) apop_vector_distance_base;
 %rename(apop_matrix_covariance) apop_matrix_covariance_base;
 %rename(apop_matrix_correlation) apop_matrix_correlation_base;
+%rename(apop_test) apop_test_base;
+%rename(apop_matrix_stack) apop_matrix_stack_base;
+%rename(apop_vector_stack) apop_vector_stack_base;
+%rename(apop_data_stack) apop_data_stack_base;
 
 %extend apop_data {
     apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
@@ -183,7 +187,7 @@ def apop_row(data, colno):
     void __set(char* row, int col, double data)     { apop_data_set_ti($self, row, col, data); }
     void __set(char* row, char* col, double data)   { apop_data_set_tt($self, row,  col, data); }
     apop_data * __copy()                            { return apop_data_copy($self); }
-    apop_data * __stack(apop_data * m2, char posn)  { return apop_data_stack($self, m2, posn); }
+#    apop_data * __stack(apop_data * m2, char posn,char inplace)  { return apop_data_stack_base($self, m2, posn,inplace); }
     apop_data** __split(int splitpoint, char r_or_c){ return apop_data_split($self, splitpoint, r_or_c); }
     apop_data*  __rm_columns(int *drop)             { apop_data_rm_columns($self, drop); return $self; }
     void __memcpy(apop_data *out)                   { return apop_data_memcpy(out, $self);}
@@ -356,7 +360,7 @@ def apop_row(data, colno):
         return apop_vector_increment($self, i, amt);}
 
     int  bounded(long double max){ return apop_vector_bounded($self, max);}
-    gsl_vector *stack(gsl_vector * v2){ return apop_vector_stack($self, v2);}
+    gsl_vector *stack(gsl_vector * v2){ return apop_vector_stack($self, v2, 'n');}
 
     void __set_zero () {gsl_vector_set_zero ($self);}
     void __set_all (double x) {return gsl_vector_set_all ($self, x);}
@@ -443,7 +447,7 @@ apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
 apop_data * apop_data_alloc(const size_t, const size_t, const int);
 apop_data * apop_data_calloc(const size_t, const size_t, const int);
-apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn);
+apop_data * apop_data_stack_base(apop_data *m1, apop_data * m2, char posn, char inplace);
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c);
 apop_data * apop_data_copy(const apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);
@@ -458,13 +462,6 @@ apop_data *apop_data_transpose(apop_data *in);
 gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth);
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 apop_name * apop_name_alloc(void);
-//int apop_name_add(apop_name * n, char *add_me, char type);
-//void  apop_name_free(apop_name * free_me);
-//void  apop_name_print(apop_name * n);
-//void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
-//void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type2);
-//apop_name * apop_name_copy(apop_name *in);
-//int  apop_name_find(apop_name *n, char *findme, char type);
 
 void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 
@@ -529,7 +526,7 @@ gsl_matrix *apop_matrix_copy(const gsl_matrix *in);
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol);
 //takes a three-column table (dim1, dim2, data) and creates a 2D crosstab.
 //Returns the crosstab, and the dimension names (if d1!=NULL and d2!=NULL).
-gsl_vector * apop_array_to_vector(const double *in, const int size);
+gsl_vector * apop_array_to_vector(double *in, int size);
 gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols);
 apop_data * apop_array_to_data(const double **in, const int rows, const int cols);
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
@@ -639,8 +636,8 @@ double      apop_matrix_determinant(const gsl_matrix *in) ;
 apop_data*  apop_matrix_pca(gsl_matrix *data, int dimensions_we_want);
 inline void apop_vector_increment(gsl_vector * v, int i, double amt);
 inline void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt);
-gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2);
-gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn);
+gsl_vector *apop_vector_stack_base(gsl_vector *v1, gsl_vector * v2, char inplace);
+gsl_matrix *apop_matrix_stack_base(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace);
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop);
 int         apop_vector_bounded_base(gsl_vector *in, long double max);
 apop_data * apop_dot_base(const apop_data *d1, const apop_data *d2, char form1, char form2);
@@ -687,6 +684,7 @@ typedef struct {
     void *free;
 } apop_ls_settings;
 
+double apop_test_base(double statistic, char *distribution, double p1, double p2, char tail);
 apop_data *apop_F_test (apop_model *est, apop_data *contrast);
 apop_data *apop_f_test_base (apop_model *est, apop_data *contrast);
 

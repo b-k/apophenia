@@ -1,4 +1,3 @@
-#                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.60)
@@ -45,6 +44,16 @@ AC_CHECK_FUNCS([floor memset pow regcomp sqrt strcasecmp])
 
 # For SWIG.
 AM_PATH_PYTHON
+AC_PYTHON_DEVEL
+
+#Check for database systems, then export results to automake
+AX_LIB_MYSQL
+AX_LIB_SQLITE3
+AM_CONDITIONAL([HAVE_MYSQL], [test x$HAVE_MYSQL = xtrue])
+AM_CONDITIONAL([HAVE_PYTHON], [test $PYTHON_VERSION > 1 ])
+
+
+ACX_PTHREAD
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

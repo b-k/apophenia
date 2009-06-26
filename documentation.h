@@ -89,7 +89,7 @@ If you would like a more in-depth discussion of Apophenia's raison d'etre and lo
 \section cast The supporting cast 
 To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or higher) and SQLite installed. 
 
-We've moved the setup documentation to <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em>. Please see that page. This site has a few more notes for \ref windows "Windows" users.
+We've moved the setup documentation to <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em>. Please see that page. This site has a few more notes for \ref windows "Windows" users or \ref mingw users.
 
 \subsection sample_program Sample programs
 First, there is a short, complete program in the \ref apop_ols entry which runs a simple OLS regression on a data file. Follow
@@ -156,7 +156,10 @@ gsl_rng *       r = apop_rng_alloc();
 */
 
 /** \page windows The Windows page
-Get <a href="http://www.cygwin.com">Cygwin</a>. The setup program is
+
+\ref mingw users, see that page.
+
+If you have a choice, <a href="http://www.cygwin.com">Cygwin</a> is strongly recommended. The setup program is
 very self-explanatory. As a warning, it will probably take up &gt;300MB on
 your system. You should install at least the following programs:
  \li autoconf/automake
@@ -1521,3 +1524,77 @@ apop_data * stat    = apop_dot(apop_dot(apop_score(data, your_model), infoinv), 
     double p_value = apop_test(stat, "chi squared", beta->size);
     \endcode
     */
+
+/** \page mingw MinGW
+
+Minimalist GNU for Windows is indeed mimimalist: it is not a full POSIX
+subsystem, and provides no package manager. Therefore, you will have to
+make some adjustments and install the dependencies yourself.
+
+Matt P. Dziubinski successfully used Apophenia via MinGW; here are his instructions (with edits by BK):
+
+\li For the Python interface, get Python Windows installer from: http://python.org/download/
+
+\li If installed to "c:\bin\prog\Python2", for example, you'll need to set:
+\code
+export PYTHON=/C/bin/prog/Python2/python
+\endcode
+
+\li Get SWIG at: http://www.swig.org/download.html . Being on Windows, I've opted for "swigwin".
+
+\li get libregex (the ZIP file) from:
+http://sourceforge.net/project/showfiles.php?group_id=204414&package_id=306189
+\li get libintl (three ZIP files) from:
+ http://gnuwin32.sourceforge.net/packages/libintl.htm .
+ download "Binaries", "Dependencies", "Developer files"
+\li follow "libintl" steps from:
+http://kayalang.org/download/compiling/windows
+
+\li Comment out "alloc.h" in apophenia-0.22\vasprintf\vasnprintf.c
+\li Modify \c Makefile, adding -lpthread to AM_CFLAGS (removing -pthread) and -lregex to AM_CFLAGS and LIBS
+
+
+\li The Makefile expects Python's includes to be in a certain location, so:
+\code
+ ln -s /C/bin/prog/Python2/include /usr/include/python2.6
+\endcode
+
+\li Now compile the main library:
+\code
+make
+\endcode
+
+\li Compile the Python interface:
+\code
+make apop.py
+\endcode
+should now run OK. Ignore warnings that
+<em>'print' is a python keyword...</em>.
+
+\li Finally, put one more expected directory in place and install:
+\code
+mkdir -p -- "/usr/local/Lib/site-packages"
+make install
+\endcode
+
+\li You will get the usual warning about library paths, and may have to take the specified action:
+\code
+----------------------------------------------------------------------
+Libraries have been installed in:
+  /usr/local/lib
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the `-LLIBDIR'
+flag during linking and do at least one of the following:
+  - add LIBDIR to the `PATH' environment variable
+    during execution
+  - add LIBDIR to the `LD_RUN_PATH' environment variable
+    during linking
+  - use the `-LLIBDIR' linker flag
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+----------------------------------------------------------------------
+\endcode
+*/
