@@ -1,6 +1,8 @@
-Copyright: Ben Klemens, 2005-2007.
+Copyright: Ben Klemens, 2005-2009.
 
 License:
 
-The Debian packaging is (C) 2007, Ben Klemens <bklemens@gmail.com> and
+The Debian packaging is (C) 2009, Ben Klemens <bklemens@gmail.com> and
 is licensed under the GPL v 2, see `/usr/share/common-licenses/GPL'.
+The actual code is (C) 2009, Ben Klemens, and is licensed under a
+modified GPLv2; see COPYING and COPYING2.

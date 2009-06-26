@@ -721,12 +721,12 @@ Outlineheader  moments  Moments
 
             \li\ref apop_data_correlation ()
             \li\ref apop_data_covariance ()
+            \li\ref apop_data_summarize ()
             \li\ref apop_matrix_correlation ()
             \li\ref apop_matrix_covariance ()
             \li\ref apop_matrix_mean ()
             \li\ref apop_matrix_mean_and_var ()
             \li\ref apop_matrix_sum ()
-            \li\ref apop_matrix_summarize ()
             \li\ref apop_matrix_var_m ()
             \li\ref apop_mean()
             \li\ref apop_sum()
@@ -1261,7 +1261,7 @@ Outlineheader Test Tests & diagnostics
 If the statistic is from a common form, like the parameters from an OLS regression, then the commonly-associated \f$t\f$
 test is probably thrown in.
 
-Some tests, like ANOVA, produce a statistic using a specialized prodecure, so Apophenia includes some functions, like \ref apop_test_anovw_independence and \ref apop_test_kolmogorov, to produce the statistic and look up its significance level.
+Some tests, like ANOVA, produce a statistic using a specialized prodecure, so Apophenia includes some functions, like \ref apop_test_anova_independence and \ref apop_test_kolmogorov, to produce the statistic and look up its significance level.
 
 If you are producing a statistic that you know has a common form, like a central limit theorem tells you that your statistic is Normally distributed, then the convenience function \ref apop_test will do the final lookup step of checking where your statistic lies on your chosen distribution.
 

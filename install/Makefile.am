@@ -100,4 +100,6 @@ test:
 install-data-local:
 	test -z "$(includedir)" || $(mkdir_p) "$(includedir)"
 	cp apop.h $(includedir)/
-	echo "OK. If you'd like to generate documentation, run make doc; to test, run make test."
+	@echo 
+	@echo "OK. If you'd like to generate documentation, run make doc; to test, run make test."
+	@echo 
