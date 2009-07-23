@@ -22,7 +22,7 @@ cp install/* .
 mv Readme.user README
 cp ChangeLog NEWS
 sed -i "s/X\.XX/$version/" README apop_db.c configure.ac
-sed -i -f prep_variadics.sed *c *h
+sed -i -f prep_variadics.sed *c *h model/*c model/*h
 	#add a directory with links to all headers:
 	mkdir apophenia
 	cd apophenia

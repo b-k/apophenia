@@ -508,8 +508,8 @@ APOP_VAR_END_HEAD
                 } else{
                     char d = instr[last_match-1];
                     if (d!='\t' && d!=' '){
-                        gsl_matrix_set(set->matrix, i-1, colno-1, GSL_NAN);
                         colno++;
+                        gsl_matrix_set(set->matrix, i-1, colno-1, GSL_NAN);
                     }
                 }
             }

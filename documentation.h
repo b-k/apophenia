@@ -986,7 +986,9 @@ endofdiv
             \li\ref apop_beta
             \li\ref apop_beta_from_mean_var()
             \li\ref apop_binomial
+            \li\ref apop_chi_squared
             \li\ref apop_exponential
+            \li\ref apop_f_distribution
             \li\ref apop_gamma
             \li\ref apop_gaussian
             \li\ref apop_improper_uniform
@@ -994,8 +996,10 @@ endofdiv
             \li\ref apop_multivariate_normal
             \li\ref apop_normal
             \li\ref apop_poisson
+            \li\ref apop_t_distribution
             \li\ref apop_uniform
             \li\ref apop_waring
+            \li\ref apop_wishart
             \li\ref apop_yule
             \li\ref apop_zipf
 
@@ -1136,10 +1140,11 @@ changed after an estimation, use:
 Apop_settings_get(m, apop_ls, weights);
 \endcode
 
-Notice the use of a single capital to remind you that you are using a
-macro, and so surprising errors can crop up. Here in the modern day, we
-read things like APOP_SETTINGS_ALLOC_ADD as yelling, but if you prefer
-all caps to indicate macros, those work as well.
+Notice the use of a single capital to remind you that you are using
+a macro, so you should beware of the sort of surprising errors
+associated with macros. Here in the modern day, we read things like
+APOP_SETTINGS_ALLOC_ADD as yelling, but if you prefer all caps to indicate
+macros, those work as well.
 
 For just using a model, that's about 100% of what you need to know.
 
@@ -1351,7 +1356,7 @@ will ensure that both parameters of a two-dimensional input are both
 greater than zero:
 
 \code
-static double beta_zero_greater_than_x_constraint(apop_data *returned_beta, apop_model *v){
+static double beta_zero_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2
   static apop_data *constraint = NULL;
     if (!constraint){
@@ -1447,10 +1452,28 @@ to functions. Thus, instead of calling \c apop_vector_skew(my_v), you would
 call \c my_v.skew(). If you want a list of methods, just use
 <tt>help(my_v)</tt> or any of the other familiar means of introspection.
 
+Here is another simple example, that copies a Python-side list into a matrix using \c apop_pylist_to_data, and then runs a Fisher Exact test on the matrix. If the list were one-dimensional (flat), then the data would be copied into the vector element of the returned \ref apop_data structure.
+
+\code
+from apop import *
+data = [[15, 13], [18, 19]]
+adata = apop_pylist_to_data(data) 
+
+print "display the data"
+print adata.matrix
+
+result = apop_test_fisher_exact(adata)
+print result
+
+print "Or, just one value:"
+print result.get("p value", -1)
+\endcode
+
+
 The focus of the work is still in C, so there will likely always be
 things that you can do in C that can't be done in Python, and strage
 Python-side errors that will only be explicable if you understand the
-C-side.  That said, you cn still access all of the functions from Python
+C-side.  That said, you can still access all of the functions from Python
 (including those that make little sense from Python).
 
 endofdiv 
@@ -1471,7 +1494,11 @@ endofdiv
 
 Outlineheader Math Math utilities
 
+    \li\ref apop_matrix_is_positive_semidefinite()
+    \li\ref apop_matrix_to_positive_semidefinite()
     \li\ref apop_generalized_harmonic()
+    \li\ref apop_multivariate_gamma()
+    \li\ref apop_multivariate_lngamma()
     \li\ref apop_rng_alloc()
     \li\ref apop_rng_GHgB3()
     \li\ref apop_random_double ()

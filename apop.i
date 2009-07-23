@@ -68,7 +68,22 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 
 %module apop
 %{
-#include <apop.h>
+#include "stats.h"
+#include "apop.h"
+#include "model/model.h"
+#include "conversions.h"
+#include "db.h"
+#include "documentation.h"
+#include "headers.h"
+#include "histogram.h"
+#include "likelihoods.h"
+#include "linear_algebra.h"
+#include "mapply.h"
+#include "output.h"
+#include "regression.h"
+#include "settings.h"
+#include "types.h"
+#include "variadic.h"
 %}
 
 %include "carrays.i"
@@ -97,6 +112,21 @@ def apop_row(data, colno):
     vive = data.matrix.row(colno)
     vive.thisown = 0
     return vive.vector
+
+def apop_pylist_to_data(inlist):
+    colsize =len(inlist)
+    rowsize =len(inlist[1])
+    dlist = apop_double(colsize*rowsize)
+    if rowsize == 1:
+        for i in xrange(colsize):
+            dlist[i] = inlist[i]
+        out = apop_line_to_data(dlist, rowsize, 0, 0)
+    else:
+        for i in xrange(colsize):
+            for j in xrange(rowsize):
+                dlist[i + j*rowsize] = inlist[i][j]
+        out = apop_line_to_data(dlist, 0, rowsize, colsize)
+    return out
 
 %}
 
@@ -144,7 +174,6 @@ def apop_row(data, colno):
 %rename(apop_text_to_data) apop_text_to_data_base;
 %rename(apop_text_to_db) apop_text_to_db_base;
 %rename(apop_data_to_dummies) apop_data_to_dummies_base;
-%rename(apop_det_and_inv) apop_det_and_inv_base;
 %rename(apop_db_close) apop_db_close_base;
 %rename(apop_dot) apop_dot_base;
 %rename(apop_f_test) apop_f_test_base;
@@ -168,6 +197,7 @@ def apop_row(data, colno):
 %rename(apop_matrix_stack) apop_matrix_stack_base;
 %rename(apop_vector_stack) apop_vector_stack_base;
 %rename(apop_data_stack) apop_data_stack_base;
+%rename(apop_matrix_is_positive_semidefinite) apop_matrix_is_positive_semidefinite_base;
 
 %extend apop_data {
     apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
@@ -251,6 +281,13 @@ def apop_row(data, colno):
 
     void normalize(const char row_or_col, const char normalization){
         return apop_matrix_normalize($self, row_or_col, normalization); }
+
+    int is_positive_semidefinite(char semi){
+    return apop_matrix_is_positive_semidefinite_base($self, semi);
+    }
+
+    double to_positive_semidefinite( ){
+        return apop_matrix_to_positive_semidefinite($self); }
 
     apop_data*  pca( int dimensions_we_want){
     return  apop_matrix_pca($self, dimensions_we_want);}
@@ -622,7 +659,7 @@ gsl_vector * apop_numerical_gradient(apop_data *data, apop_model*);
 //void apop_numerical_var_covar_matrix(apop_model dist, apop_model *est, apop_data *data);
 
 
-apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist);
+apop_model *apop_maximum_likelihood(apop_data * data, apop_model dist);
 
 apop_model * apop_estimate_restart (apop_model *, apop_model *);
 
@@ -630,7 +667,7 @@ double  apop_linear_constraint_base(gsl_vector *beta, apop_data * constraint, do
 
 apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in);
 
-double      apop_det_and_inv_base(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
+double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 gsl_matrix *apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
 apop_data*  apop_matrix_pca(gsl_matrix *data, int dimensions_we_want);
@@ -672,6 +709,8 @@ void apop_data_print(apop_data *data, char *file);
 void apop_matrix_show(const gsl_matrix *data);
 void apop_vector_show(const gsl_vector *data);
 void apop_data_show(const apop_data *data);
+double apop_multivariate_gamma(double a, double p);
+double apop_multivariate_lngamma(double a, double p);
 
 /** Settings for least-squares type models */
 typedef struct {
@@ -812,6 +851,8 @@ double apop_matrix_var_m(const gsl_matrix *data, double mean) ;
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in asst.c
 //apop_data * apop_data_summarize(apop_data *data);
+int apop_matrix_is_positive_semidefinite_base(gsl_matrix *m, char semi);
+double apop_matrix_to_positive_semidefinite(gsl_matrix *m);
 
 apop_data *apop_test_fisher_exact(apop_data *intab);
 
@@ -821,7 +862,9 @@ apop_data * apop_data_sort_base(apop_data *data, int sortby, char asc);
 extern apop_model apop_beta;
 extern apop_model apop_bernoulli;
 extern apop_model apop_binomial; //on hiatus.
+extern apop_model apop_chi_squared;
 extern apop_model apop_exponential;
+extern apop_model apop_f_distribution;
 extern apop_model apop_gamma;
 extern apop_model apop_gaussian;//synonym for apop_normal
 extern apop_model apop_histogram;
@@ -836,8 +879,10 @@ extern apop_model apop_normal;
 extern apop_model apop_ols;
 extern apop_model apop_poisson;
 extern apop_model apop_probit;
+extern apop_model apop_t_distribution;
 extern apop_model apop_uniform;
 extern apop_model apop_waring;
+extern apop_model apop_wishart;
 extern apop_model apop_wls;
 extern apop_model apop_yule;
 extern apop_model apop_zipf;
@@ -851,16 +896,6 @@ void * apop_ls_settings_copy(apop_ls_settings *in);
 void apop_ls_settings_free(apop_ls_settings *in);
 
 typedef struct {
-    int want_cov;
-    void *copy;
-    void *free;
-} apop_normal_settings;
-
-apop_normal_settings *apop_normal_settings_alloc(int want_cov);
-apop_normal_settings *apop_normal_settings_copy(apop_normal_settings *in);
-void apop_normal_settings_free(apop_normal_settings *in);
-
-typedef struct {
     apop_data *factors; char source_type; char source_column; apop_data
     *source_data;
 } apop_category_settings;
@@ -871,8 +906,6 @@ void apop_category_settings_free(apop_category_settings *in);
 
 typedef struct {
     char rank_data;
-    void *copy;
-    void *free;
 } apop_rank_settings;
 
 apop_rank_settings *apop_rank_settings_alloc(void *ignoreme);

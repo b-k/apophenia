@@ -2,9 +2,10 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
+//The reader will find three function headers for this file in asst.h
+#include "asst.h"
 #include "output.h"
 #include "settings.h"
-#include "bootstrap.h"
 #include "conversions.h"
 #include "model/model.h"
 #include <gsl/gsl_histogram.h>
@@ -294,6 +295,7 @@ For more machine-readable printing, see \ref apop_print.
 
 */
 void apop_data_show(const apop_data *in){
+    if (!in) {printf("NULL\n"); return;}
   size_t i, j;
 //Take inventory and get sizes
   size_t hasrownames = in->names->rowct ? 1 : 0;

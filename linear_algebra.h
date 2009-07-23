@@ -21,7 +21,7 @@
 
 __BEGIN_DECLS
 
-APOP_VAR_DECLARE double      apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
+double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 APOP_VAR_DECLARE apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2);
 APOP_VAR_DECLARE int         apop_vector_bounded(const gsl_vector *in, long double max);
 APOP_VAR_DECLARE void apop_vector_increment(gsl_vector * v, int i, double amt);

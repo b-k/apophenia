@@ -6,12 +6,10 @@
 #include <apophenia/output.h>
 #include <apophenia/mapply.h>
 #include <apophenia/settings.h>
-#include <apophenia/bootstrap.h>
 #include <apophenia/histogram.h>
 #include <apophenia/regression.h>
 #include <apophenia/conversions.h>
 #include <apophenia/likelihoods.h>
-#include <apophenia/missing_data.h>
 #include <apophenia/linear_algebra.h>
 
 //Part of the intent of a convenience header like this is that you

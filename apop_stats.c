@@ -4,8 +4,8 @@
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "db.h"     //just for apop_opts
+#include "asst.h" //rng_alloc
 #include "stats.h"
-#include "bootstrap.h" //rng_alloc
 #include <gsl/gsl_rng.h>
 
 /** \defgroup basic_stats Some basic statistical functions
@@ -45,7 +45,7 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 /** Returns the sum of the data in the given vector.
 \ingroup convenience_fns
 */
-inline long double apop_vector_sum(const gsl_vector *in){
+long double apop_vector_sum(const gsl_vector *in){
   apop_assert(in, 0, 1,'c', "You just asked me to sum a NULL. Returning zero.\n")
   int     i;
   double  out = 0;
@@ -54,29 +54,21 @@ inline long double apop_vector_sum(const gsl_vector *in){
 	return out; 
 }
 
-/** Returns the sum of the data in the given vector.
-
-  An alias for \ref apop_vector_sum.
+/** \def apop_sum(in)
+  An alias for \ref apop_vector_sum. Returns the sum of the data in the given vector.
 \ingroup convenience_fns
 */
-inline long double apop_sum(const gsl_vector *in){
-    return apop_vector_sum(in);
-}
 
 /** Returns the mean of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_vector_mean(const gsl_vector *in){
-	return gsl_stats_mean(in->data,in->stride, in->size); }
+double apop_vector_mean(const gsl_vector *in){ return gsl_stats_mean(in->data,in->stride, in->size); }
 
-/** Returns the mean of the data in the given vector.
 
-  An alias for \ref apop_vector_mean.
+/**  \def apop_mean(in)
+  An alias for \ref apop_vector_mean.  Returns the mean of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_mean(const gsl_vector *in){
-	return apop_vector_mean(in); 
-}
 
 /** Returns the variance of the data in the given vector.
  
@@ -85,22 +77,19 @@ inline double apop_mean(const gsl_vector *in){
   At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
 \ingroup vector_moments
 */
-inline double apop_vector_var(const gsl_vector *in){
+double apop_vector_var(const gsl_vector *in){
 	return gsl_stats_variance(in->data,in->stride, in->size); }
 
-/** Returns the variance of the data in the given vector.
-
+/** \def apop_var(in)
   An alias for \ref apop_vector_var.
+Returns the variance of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_var(const gsl_vector *in){
-	return apop_vector_var(in); 
-}
 
 /** Returns an unbiased estmate of the sample skew (population skew times  y \f$n^2/(n^2-1)\f$) of the data in the given vector.
 \ingroup vector_moments
 */
-inline double apop_vector_skew(const gsl_vector *in){
+double apop_vector_skew(const gsl_vector *in){
 	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/((in->size -1.)*(in->size -2.)); }
 
 /** Returns the population skew \f$(\sum_i (x_i - \mu)^3/n))\f$ of the data in the given vector.
@@ -108,7 +97,7 @@ inline double apop_vector_skew(const gsl_vector *in){
   Some people like to normalize the skew by dividing by variance\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
 \ingroup vector_moments
 */
-inline double apop_vector_skew_pop(const gsl_vector *in){
+double apop_vector_skew_pop(const gsl_vector *in){
   //I reimplement the skew calculation here without the division by var^3/2
   //that the GSL does. 
   //Lawyers may want to know that this code is cut/pasted/modified from the GSL. 
@@ -129,7 +118,7 @@ inline double apop_vector_skew_pop(const gsl_vector *in){
   Some people like to normalize the skew by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
 \ingroup vector_moments
 */
-inline double apop_vector_kurtosis_pop(const gsl_vector *in){
+double apop_vector_kurtosis_pop(const gsl_vector *in){
   //I reimplement the kurtosis calculation here without the division by var^2
   //that the GSL does. 
   //Lawyers may want to know that this code is cut/pasted/modified from the GSL. 
@@ -152,7 +141,7 @@ inline double apop_vector_kurtosis_pop(const gsl_vector *in){
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three \f$\sigma^4\f$, not three, one, or zero.
 \ingroup vector_moments
 */
-inline double apop_vector_kurtosis(const gsl_vector *in){
+double apop_vector_kurtosis(const gsl_vector *in){
   size_t n = in->size;
   double coeff1 = gsl_pow_3(n)/(n-1)/(gsl_pow_2(n)-3*n+3);
   double coeff2 = (6*n-9)/(gsl_pow_2(n)-3*n+3);
@@ -163,7 +152,7 @@ inline double apop_vector_kurtosis(const gsl_vector *in){
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
 \ingroup vector_moments
 */
-inline double apop_vector_kurt(const gsl_vector *in){
+double apop_vector_kurt(const gsl_vector *in){
 	return apop_vector_kurtosis(in);}
 
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
@@ -171,20 +160,20 @@ inline double apop_vector_kurt(const gsl_vector *in){
 \param mean	the mean, which you've already calculated using \ref apop_vector_mean.
 \ingroup vector_moments
 */
-inline double apop_vector_var_m(const gsl_vector *in, const double mean){
+double apop_vector_var_m(const gsl_vector *in, const double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
 /** Returns the covariance of two vectors
 \ingroup vector_moments
 */
-inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb){
+double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb){
 	return gsl_stats_covariance(ina->data,ina->stride,inb->data,inb->stride,inb->size); }
 
 /** Returns the correllation coefficient of two vectors. It's just
 \f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
 \ingroup vector_moments
 */
-inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
+double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
 	return apop_vector_cov(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb));
 }
 
@@ -200,7 +189,7 @@ where \f$i\f$ iterates over dimensions.
 
  - 'd' or 'D' The discrete norm: if \f$a = b\f$, return zero, else return one.
 
- - 's' or 'S' The sup norm: find the dimension where \f$|a_i - b_i|\f$, return the distance along that one dimension.
+ - 's' or 'S' The sup norm: find the dimension where \f$|a_i - b_i|\f$ is largest, return the distance along that one dimension.
  - 'l' or 'L' The \f$L_p\f$ norm, \f$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},\f$. The value of \f$p\f$ is set by the fourth (optional) argument.
 
  \param ina First vector (No default, must not be \c NULL)
@@ -406,7 +395,7 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
 \param in a gsl_vector of data.
 \ingroup asst_tests
  */
-inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
+double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
   apop_assert(in, 0, 0, 'c', "input vector is NULL. Doing nothing.\n");
   gsl_vector	*normed;
   int		    i;

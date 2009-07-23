@@ -62,20 +62,6 @@ apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,
     .estimate = uniform_estimate,  .p = unif_p,.log_likelihood = unif_ll,  .draw = uniform_rng};
 
 
-/** The improper uniform returns P(x) = 1 for every value of x, all the time.
-It has zero parameters. It is useful, for example, as an input to Bayesian
-updating, to represent a fully neutral prior.
-
-The \c estimate routine is just a dummy that returns its input.
-
-The \c draw function makes no sense, and therefore returns an error.
-
-
-
-\ingroup models
-*/
-
-
 static apop_model * improper_uniform_estimate(apop_data * data,  apop_model *parameters){
     return parameters;
 }
@@ -89,11 +75,14 @@ static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
     apop_error(0, 's', "%s: It doesn't make sense to make random draws from an improper Uniform.\n", __func__);
 }
 
-/** The uniform model.
-This is the two-parameter version of the uniform, expressing a uniform distribution over [a, b].
+/** The improper uniform returns P(x) = 1 for every value of x, all the
+time (and thus, log likelihood(x)=0).  It has zero parameters. It is
+useful, for example, as an input to Bayesian updating, to represent a
+fully neutral prior.
 
-The MLE of this distribution is simply a = min(your data); b = max(your data).
-Primarily useful for the RNG, such as when you have a Uniform prior model.
+The \c estimate routine is just a dummy that returns its input.
+
+The \c draw function makes no sense, and therefore returns an error.
 
 \ingroup models
 */

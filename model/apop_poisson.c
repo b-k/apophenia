@@ -9,7 +9,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "stats.h"
 #include "types.h"
 #include "mapply.h"
-#include "bootstrap.h"
 #include "conversions.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"

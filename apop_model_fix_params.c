@@ -40,31 +40,29 @@ static apop_model fixed_param_model;
 
 static void  fixed_params_pack(const apop_data *in, apop_data  *out, apop_data  *mask, int is_gradient){
   int ctr   = 0;
-  int i, j;
     if (mask->vector)
-        for(i=0; i< mask->vector->size; i++)
+        for(int i=0; i< mask->vector->size; i++)
             if (!apop_data_get(mask, i, -1))
                 apop_data_set(out, ctr++, -1, apop_data_get(in, i, -1));
     if (mask->matrix)
-        for(i=0; i< mask->matrix->size1; i++)
-            for(j=0; j< mask->matrix->size2; j++)
+        for(int i=0; i< mask->matrix->size1; i++)
+            for(int j=0; j< mask->matrix->size2; j++)
                 if (!apop_data_get(mask, i, j))
                     apop_data_set(out, ctr++, -1, apop_data_get(in, i, is_gradient ? -1 : j));
 }
 
 static void  fixed_param_unpack(const gsl_vector *in, apop_model_fixed_params_settings *p, int is_gradient){
   int ctr   = 0;
-  int i, j;
     if (!is_gradient && !p->base_model->parameters)
         p->base_model->parameters  = apop_data_copy(p->paramvals);
     apop_data *target = (is_gradient ? p->gradient_for_base: p->base_model->parameters);
     if (p->mask->vector)
-        for(i=0; i< p->mask->vector->size; i++)
+        for(int i=0; i< p->mask->vector->size; i++)
             if (!apop_data_get(p->mask, i, -1))
                 apop_data_set(target, i, -1, gsl_vector_get(in, ctr++));
     if (p->mask->matrix)
-        for(i=0; i< p->mask->matrix->size1; i++)
-            for(j=0; j< p->mask->matrix->size2; j++)
+        for(int i=0; i< p->mask->matrix->size1; i++)
+            for(int j=0; j< p->mask->matrix->size2; j++)
                 if (!apop_data_get(p->mask, i, j))
                     apop_data_set(target, i, is_gradient ? -1 : j, gsl_vector_get(in, ctr++));
 }
@@ -180,7 +178,6 @@ int main(){
   */
 
 apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in){
-  int        i, j;
     int size  = (mask->vector? mask->vector->size : 0 )+
             (mask->matrix? mask->matrix->size1 * mask->matrix->size2 : 0);
     
@@ -188,12 +185,12 @@ apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_da
   Apop_settings_add_group(model_out, apop_model_fixed_params, model_in, paramvals, mask, size);
 
     if (mask->vector)
-        for(i=0; i< mask->vector->size; i++)
+        for(int i=0; i< mask->vector->size; i++)
             if (apop_data_get(mask, i, -1))
                 size    --;
     if (mask->matrix)
-        for(i=0; i< mask->matrix->size1; i++)
-            for(j=0; j< mask->matrix->size2; j++)
+        for(int i=0; i< mask->matrix->size1; i++)
+            for(int j=0; j< mask->matrix->size2; j++)
                 if (apop_data_get(mask, i, j))
                     size    --;
     if (!size)

@@ -28,11 +28,11 @@ Things to do: (* = done)
 */
 
 #include "db.h"     //just for apop_opts
+#include "asst.h" //rng_alloc
 #include "stats.h"
 #include "model/model.h"
 #include "settings.h"
 #include "histogram.h"
-#include "bootstrap.h" //rng_alloc
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 

@@ -6,6 +6,7 @@
 #define __apop_models_h__
 
 #include "types.h"
+#include "variadic.h"
 #include "regression.h"
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
@@ -25,10 +26,11 @@ __BEGIN_DECLS
 extern apop_model apop_beta;
 extern apop_model apop_bernoulli;
 extern apop_model apop_binomial; //on hiatus.
+extern apop_model apop_chi_squared;
 extern apop_model apop_exponential;
+extern apop_model apop_f_distribution;
 extern apop_model apop_gamma;
 extern apop_model apop_gaussian;//synonym for apop_normal
-//extern apop_model apop_GLS;
 extern apop_model apop_histogram;
 extern apop_model apop_improper_uniform;
 extern apop_model apop_iv;
@@ -41,33 +43,49 @@ extern apop_model apop_normal;
 extern apop_model apop_ols;
 extern apop_model apop_poisson;
 extern apop_model apop_probit;
+extern apop_model apop_t_distribution;
 extern apop_model apop_uniform;
 extern apop_model apop_waring;
+extern apop_model apop_wishart;
 extern apop_model apop_wls;
 extern apop_model apop_yule;
 extern apop_model apop_zipf;
 
 #define apop_OLS apop_ols
+#define apop_F_distribution apop_f_distribution
 #define apop_WLS apop_wls
 #define apop_IV apop_iv
 
 
 /////////Settings
 
+/** Settings for least-squares type models */
+typedef struct {
+    int destroy_data;
+    gsl_vector *weights;
+    apop_data *instruments;
+    int want_cov;
+    int want_expected_value;
+    void *copy;
+    void *free;
+} apop_ls_settings;
 
 apop_ls_settings * apop_ls_settings_alloc(apop_data *data);
 void * apop_ls_settings_copy(apop_ls_settings *in);
 void apop_ls_settings_free(apop_ls_settings *in);
 
-typedef struct {
-    int want_cov;
-    void *copy;
-    void *free;
-} apop_normal_settings;
 
-apop_normal_settings *apop_normal_settings_alloc(int want_cov);
-apop_normal_settings *apop_normal_settings_copy(apop_normal_settings *in);
-void apop_normal_settings_free(apop_normal_settings *in);
+#if 0
+/*The degrees of freedom parameter, for use in t- chi-squared, F-,
+  Whishart. See apop_tfchi.c.  */
+typedef struct {
+    char method;
+} apop_df_settings;
+
+apop_df_settings * apop_df_settings_alloc(char method);
+apop_df_settings *apop_df_settings_copy(apop_df_settings *in);
+void apop_df_settings_free(apop_df_settings *in);
+#endif
 
 // Find apop_category_settings routines in apop_probit.c
 /** for dependent-category models, send in this settings struct to
@@ -81,8 +99,10 @@ void apop_normal_settings_free(apop_normal_settings *in);
   See also the \ref apop_category_settings_alloc function.
  */
 typedef struct {
-    apop_data *factors; char source_type; char source_column; apop_data
-    *source_data;
+    apop_data *factors; 
+    char source_type; 
+    char source_column; 
+    apop_data *source_data;
 } apop_category_settings;
 
 apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_column, char source_type);
@@ -96,8 +116,6 @@ void apop_category_settings_free(apop_category_settings *in);
   \endcode */
 typedef struct {
     char rank_data;
-    void *copy;
-    void *free;
 } apop_rank_settings;
 
 //in apop_exponential.c

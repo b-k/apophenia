@@ -14,6 +14,7 @@ AC_LIBTOOL_WIN32_DLL
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CC_C99
 AC_PROG_LIBTOOL
 
 # Checks for libraries.

@@ -5,10 +5,10 @@ The Normal and Lognormal distributions.
 Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 //The default list. Probably don't need them all.
+#include "asst.h"
 #include "types.h"
 #include "mapply.h"
 #include "settings.h"
-#include "bootstrap.h"
 #include "regression.h"
 #include "conversions.h"
 #include "likelihoods.h"
@@ -18,25 +18,6 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <gsl/gsl_rng.h>
 static double normal_log_likelihood(apop_data *d, apop_model *params);
 
-
-
-apop_normal_settings *apop_normal_settings_copy(apop_normal_settings *in){
-    apop_normal_settings *out = malloc(sizeof(apop_ls_settings));
-    out->want_cov = in->want_cov;
-    return out;
-}
-
-void apop_normal_settings_free(apop_normal_settings *in){ free(in); }
-
-apop_normal_settings *apop_normal_settings_alloc(int want_cov){
-    apop_normal_settings *out = malloc(sizeof(apop_ls_settings));
-    out->want_cov = want_cov;
-    out->copy       = apop_normal_settings_copy;
-    out->free       = apop_normal_settings_free;
-    return out;
-}
-
-
 //////////////////
 //The Normal (gaussian) distribution
 //////////////////
@@ -45,10 +26,10 @@ apop_normal_settings *apop_normal_settings_alloc(int want_cov){
 static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
   double		mean, var;
   apop_model 	*est = apop_model_copy(*parameters);
-  apop_ls_settings *p = apop_settings_get_group(est, "apop_normal");
+  apop_ls_settings *p = apop_settings_get_group(est, "apop_ls");
     if (!p) {
-        Apop_settings_add_group(est, apop_normal, 1);
-        p = apop_settings_get_group(est, "apop_normal");
+        Apop_settings_add_group(est, apop_ls, data);
+        p = apop_settings_get_group(est, "apop_ls");
     }
 	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
     if (!est->parameters)
@@ -188,6 +169,8 @@ likelihood of those 56 observations given the mean and variance you provide.
 \f$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 \f$
 
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
+
+The \c apop_ls settings group includes a \c want_cov element, which refers to the covariance matrix for the mean and variance. You can set that to zero if you are estimating millions of these and need to save time.
 \ingroup models
 */
 apop_model apop_normal = {"Normal distribution", 2, 0, 0,
@@ -219,10 +202,10 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
   apop_model 	*est = apop_model_copy(*parameters);
   double   mean    = 0,
            var     = 0; 
-  apop_ls_settings *p = apop_settings_get_group(est, "apop_normal");
+  apop_ls_settings *p = apop_settings_get_group(est, "apop_ls");
     if (!p) {
-        Apop_settings_add_group(est, apop_normal, 1);
-        p = apop_settings_get_group(est, "apop_normal");
+        Apop_settings_add_group(est, apop_ls, data);
+        p = apop_settings_get_group(est, "apop_ls");
     }
     apop_matrix_mean_and_var(data->matrix, &mean, &var);
     if (!est->parameters)

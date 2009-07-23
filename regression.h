@@ -19,17 +19,6 @@
 
 __BEGIN_DECLS
 
-/** Settings for least-squares type models */
-typedef struct {
-    int destroy_data;
-    gsl_vector *weights;
-    apop_data *instruments;
-    int want_cov;
-    int want_expected_value;
-    void *copy;
-    void *free;
-} apop_ls_settings;
-
 apop_model *apop_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 
 #define apop_F_test apop_f_test

@@ -12,10 +12,10 @@ for details.
 */
 
 #include "model/model.h"
+#include "asst.h"
 #include "stats.h"
 #include "output.h"
 #include "variadic.h"
-#include "bootstrap.h"
 #include "likelihoods.h"
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>

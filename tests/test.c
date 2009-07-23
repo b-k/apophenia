@@ -9,9 +9,12 @@
 #define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc(0, (r),(c))
 #define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed)
 
+//One-liners for mapply:
+gsl_rng *r_global;
+void random_draw(double *in) { *in = gsl_rng_uniform(r_global);}
+double nan_map(double in){return gsl_isnan(in);}
 
 double  true_parameter_v[]    = {1.82,2.1};
-
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
 int     len                 = 8000;
@@ -275,52 +278,6 @@ double out	= apop_generalized_harmonic(270, 0.0);
 	assert (out == 12*13/2);
 }
 
-void estimate_model(gsl_matrix *data, apop_model dist, int method){
-  int                     i;
-  double                  starting_pt[] = {3.2, 1.4};
-//apop_mle_settings  *params = apop_mle_settings_alloc(apop_matrix_to_data(data), dist);
-    if (!apop_settings_get_group(&dist, "apop_mle"));
-        Apop_settings_add_group(&dist, apop_mle, &dist);
-    Apop_settings_add(&dist, apop_mle, method, method);
-    Apop_settings_add(&dist, apop_mle, step_size       , 1e-1);
-    Apop_settings_add(&dist, apop_mle, starting_pt     , starting_pt);
-    Apop_settings_add(&dist, apop_mle, tolerance       , 1e-4);
-    Apop_settings_add(&dist, apop_mle, verbose         , 0);
-    Apop_settings_add(&dist, apop_mle, t_initial       , 1);
-    Apop_settings_add(&dist, apop_mle, t_min           , .5);
-    Apop_settings_add(&dist, apop_mle, k               , 1.8);
-    Apop_settings_add(&dist, apop_mle, use_score       , 0);
-    Apop_settings_add(&dist, apop_mle, want_cov        , 0);
-    apop_model *e    = apop_estimate(apop_matrix_to_data(data),dist);
-    if (Apop_settings_get_group(e, apop_mle) && !(!strcmp(dist.name,"poisson") || !strcmp(dist.name, "Uniform distribution"))){  //then it's an MLE
-        apop_model *compare_me = apop_model_copy(dist);
-        apop_mle_settings *p = Apop_settings_get_group(compare_me, apop_mle);
-        p->method = p->method == APOP_SIMPLEX_NM ? APOP_CG_FR : APOP_SIMPLEX_NM;
-        e   = apop_estimate_restart(e, compare_me);
-    }
-    if (verbose)
-        for (i=0; i < e->parameters->vector->size; i++)
-            printf("parameter estimate, which should be %g: %g\n",
-            true_parameter_v[i], gsl_vector_get(e->parameters->vector,i));
-    for (i=0; i < e->parameters->vector->size; i++)
-         assert(fabs(gsl_vector_get(e->parameters->vector,i) -
-         true_parameter_v[i]) <= lite_tolerance *5);
-}
-
-void test_one_distribution(gsl_rng *r, apop_model model, apop_model *true_params){
-long int        runsize             = 1000,
-                rowsize             = 100;
-gsl_matrix      *data               = gsl_matrix_calloc(runsize,rowsize);
-size_t          i,j;
-    //generate.
-    for (i=0; i< runsize; i++)
-        for (j=0; j< rowsize; j++)
-            model.draw(gsl_matrix_ptr(data,i,j), r, true_params);
-    estimate_model(data, model,0);
-    estimate_model(data, model,1);
-//    estimate_model(data, model,5); //works, but takes forever.
-}
-
 #define INVERTSIZE 100
 void test_inversion(gsl_rng *r){
   gsl_matrix  *invme   = gsl_matrix_alloc(INVERTSIZE, INVERTSIZE);
@@ -335,8 +292,8 @@ void test_inversion(gsl_rng *r){
     for(i=0; i<INVERTSIZE; i++)
         for(j=0; j<INVERTSIZE; j++)
             apop_zipf.draw(gsl_matrix_ptr(invme, i,j),r,  fourp);
-    apop_det_and_inv(invme, &inved, .calc_det = 0);
-    apop_det_and_inv(inved, &inved_back, 0);
+    apop_det_and_inv(invme, &inved, 0, 1);
+    apop_det_and_inv(inved, &inved_back, 0, 1);
     for(i=0; i<INVERTSIZE; i++)
         for(j=0; j<INVERTSIZE; j++)
             error    += gsl_matrix_get(invme, i,j) - gsl_matrix_get(inved_back, i,j);
@@ -837,11 +794,10 @@ void test_transpose(){
 }
 
 
-
 apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, apop_model *method){
   int i, j;
   double val;
-  int samples = 5e4;
+  int samples = 1e5;
   apop_data *data = apop_data_alloc(0, samples, true_params->size);
         //generate a random vector of data X, then set the outcome to one if the probit/logit condition holds
         for (i = 0; i < samples; i++){
@@ -960,6 +916,11 @@ void test_crosstabbing() {
     assert(apop_data_get_tt(d, "C", "G")==1);
 }
 
+void test_mvn_gamma(){
+    assert(apop_multivariate_gamma(10, 1)==gsl_sf_gamma(10));
+    assert(apop_multivariate_lngamma(10, 1)==gsl_sf_lngamma(10));
+}
+
 void test_data_to_db() {
   int i, j;
     if (!apop_table_exists("snps"))
@@ -977,28 +938,117 @@ void test_data_to_db() {
             assert(!strcmp(d->text[i][j],d2->text[i][j]));  
 }
 
+void test_posdef(gsl_rng *r){
+    r_global = r;
+    size_t j;
+    for(j=0; j < 30; j ++){
+        int size = gsl_rng_uniform(r) *10+1;
+        gsl_matrix *d = gsl_matrix_alloc(size, size);
+        apop_matrix_apply_all(d, random_draw);
+        apop_matrix_to_positive_semidefinite(d);
+        assert(apop_matrix_is_positive_semidefinite(d));
+    }
+}
+
+void estimate_model(apop_data *data, apop_model dist, int method){
+  int                     i;
+  double                  starting_pt[] = {3.2, 1.4},
+                          wishart_start[] = {8, 2, 1, 1, 9};
+                          //wishart_start[] = {1,1,2,4,3};
+//apop_mle_settings  *params = apop_mle_settings_alloc(apop_matrix_to_data(data), dist);
+    if (!apop_settings_get_group(&dist, "apop_mle"));
+        Apop_settings_add_group(&dist, apop_mle, &dist);
+    Apop_settings_add(&dist, apop_mle, method, method);
+    Apop_settings_add(&dist, apop_mle, step_size       , 1e-1);
+    Apop_settings_add(&dist, apop_mle, starting_pt     , starting_pt);
+    Apop_settings_add(&dist, apop_mle, tolerance       , 1e-4);
+    Apop_settings_add(&dist, apop_mle, verbose         , 1);
+    Apop_settings_add(&dist, apop_mle, t_initial       , 1);
+    Apop_settings_add(&dist, apop_mle, t_min           , .5);
+    Apop_settings_add(&dist, apop_mle, k               , 1.8);
+    Apop_settings_add(&dist, apop_mle, use_score       , 0);
+    Apop_settings_add(&dist, apop_mle, want_cov        , 0);
+
+    if (!strcmp(dist.name, "Wishart distribution")){
+        Apop_settings_add_group(&dist, apop_mle, &dist);
+        Apop_settings_add(&dist, apop_mle, method, APOP_CG_PR);
+        Apop_settings_add(&dist, apop_mle, verbose, 1);
+        //Apop_settings_add(&dist, apop_mle, method, APOP_SIMAN);
+        Apop_settings_add(&dist, apop_mle, starting_pt, wishart_start);
+    }
+
+    apop_model *e    = apop_estimate(data,dist);
+    if (Apop_settings_get_group(e, apop_mle) && !(!strcmp(dist.name,"poisson") || !strcmp(dist.name, "Uniform distribution"))){  //then it's an MLE
+        apop_model *compare_me = apop_model_copy(dist);
+        apop_mle_settings *p = Apop_settings_get_group(compare_me, apop_mle);
+        p->method = p->method == APOP_SIMPLEX_NM ? APOP_CG_FR : APOP_SIMPLEX_NM;
+        e   = apop_estimate_restart(e, compare_me);
+    }
+    if (verbose)
+        for (i=0; i < e->parameters->vector->size; i++)
+            printf("parameter estimate, which should be %g: %g\n",
+            true_parameter_v[i], gsl_vector_get(e->parameters->vector,i));
+    for (i=0; i < e->parameters->vector->size; i++)
+         assert(fabs(gsl_vector_get(e->parameters->vector,i) -
+         true_parameter_v[i]) <= lite_tolerance *5);
+}
+
+/*Produce random data, then try to recover the original params */
+  void test_one_distribution(gsl_rng *r, apop_model model, apop_model *true_params){
+  long int        runsize             = 1000,
+                  rowsize             = 100;
+  apop_data      *data; 
+  size_t          i,j;
+    //generate.
+    if (!strcmp(model.name, "Wishart distribution")){
+        data = apop_data_calloc(0,runsize,4);
+        true_params->parameters->vector->data[0] = runsize-4;
+        for (i=0; i< runsize; i++){
+            Apop_row(data, i, v) //make use of row-major order
+            true_params->draw(v->data, r, true_params);
+            assert(!apop_vector_map_sum(v, nan_map));
+        }
+    } else {
+        data = apop_data_calloc(0,runsize,rowsize);
+        for (i=0; i< runsize; i++)
+            for (j=0; j< rowsize; j++)
+                true_params->draw(apop_data_ptr(data,i,j), r, true_params);
+    }
+    estimate_model(data, model,0);
+    estimate_model(data, model,1);
+//    estimate_model(data, model,5); //works, but takes forever.
+}
+
+void test_distributions(gsl_rng *r){
+  int         i;
+  apop_model* true_params;
+  apop_model  null_model      = {"the null model"};
+  apop_model  dist[]          = {/*apop_wishart,*/ apop_gamma, apop_t_distribution, apop_f_distribution,  apop_exponential, apop_normal, 
+                                    apop_poisson,/* apop_zipf,*/apop_yule, apop_uniform, null_model};
+
+    for (i=0; strcmp(dist[i].name, "the null model"); i++){
+        if (verbose) {printf("%s: ", dist[i].name); fflush(NULL);}
+        true_params   = apop_model_copy(dist[i]);
+        true_params->parameters = apop_line_to_data(true_parameter_v, 2,0,0);
+        if (!strcmp(dist[i].name, "Wishart distribution")){
+            true_params->parameters->matrix = gsl_matrix_alloc(2,2);
+            true_params->parameters->vector->data[0] = 996;
+            true_params->parameters->matrix->data[0] = .2;
+            true_params->parameters->matrix->data[1] = .1;
+            true_params->parameters->matrix->data[2] = .1;
+            true_params->parameters->matrix->data[3] = .9;
+        }
+        test_one_distribution(r, dist[i], true_params);
+        printf("Passed.\n");
+    }
+}
+
 #define do_test(text, fn)   if (verbose)    \
                                 printf("%s:", text);  \
                             else printf(".");   \
                             fflush(NULL);   \
                             fn;\
                             {if (verbose) printf(" passed.\n");} 
-
-void test_distributions(gsl_rng *r){
-  int           i;
-  apop_model    null_model      = {"the null model"};
-  apop_model    dist[]          = {apop_gamma, apop_exponential, apop_normal, 
-                                    apop_poisson,/* apop_zipf,*/apop_yule, apop_uniform, null_model};
-
-    apop_model* true_params             = apop_model_copy(apop_gamma);//irrelevant.
-    true_params->parameters = apop_line_to_data(true_parameter_v, 2,0,0);
-
-    for (i=0; strcmp(dist[i].name, "the null model"); i++){
-        printf("%s: ", dist[i].name); fflush(NULL);
-        test_one_distribution(r, dist[i], true_params);
-        printf("Passed.\n");
-    }
-}
 
 int main(int argc, char **argv){
   int  slow_tests = 0;
@@ -1023,6 +1073,7 @@ int main(int argc, char **argv){
     if (slow_tests){
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
+    do_test("test distributions", test_distributions(r));
     do_test("test data to db", test_data_to_db());
     do_test("test db to crosstab", test_crosstabbing());
     do_test("dummies and factors", dummies_and_factors());
@@ -1042,12 +1093,14 @@ int main(int argc, char **argv){
     do_test("test apop_data sort", test_data_sort());
     do_test("test multivariate_normal", test_multivariate_normal(r));
     do_test("nist_tests", nist_tests());
+    do_test("positive definiteness", test_posdef(r));
     do_test("listwise delete", test_listwise_delete());
     do_test("NaN handling", test_nan_data());
     do_test("database skew and kurtosis", test_skew_and_kurt());
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());
     do_test("split and stack test", test_split_and_stack());
+    do_test("multivariate gamma", test_mvn_gamma());
     do_test("apop_dot test", test_dot());
     do_test("apop_generalized_harmonic test", test_harmonic());
     do_test("apop_strip_dots test", test_strip_dots());

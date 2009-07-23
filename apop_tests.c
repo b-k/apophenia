@@ -291,4 +291,5 @@ APOP_VAR_ENDHEAD
              return 2 * gsl_cdf_flat_Q(fabs(statistic - (p1+p2)/2.), p1, p2);
      }
     apop_error(0,'s', "Sorry, but I don't recognize %s as a distribution", distribution);
+    return 0; //shutting up the compiler.
 }

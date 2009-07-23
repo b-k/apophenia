@@ -24,7 +24,7 @@ Copyright (c) 2006--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
   \code
   for (j = 0; j< data->matrix->size1; j++){
-    printf("%s\t", apop_name_get(data->names, j, 'r'));
+    printf("%s\t", data->names->row[j]);
     for (i = -1; i< data->matrix->size2; i++)
         printf("%g\t", apop_data_get(data, j, i));
     printf("\n");
@@ -259,7 +259,7 @@ twice as much memory. Plan accordingly.
 \param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
 if 'c', stack columns of m1's matrix to left of m2's<br>
 (default = 'r')
-\param  inplace If \c 'i' \c 'y', use \t apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
+\param  inplace If \c 'i' \c 'y', use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
 
 If m1 or m2 are NULL, this returns a copy of the other element, and if
 both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 back)
@@ -465,7 +465,7 @@ not work.
 
 \param d the \ref apop_data structure to be pared down. 
 \param drop an array of ints. If use[7]==1, then column seven will be cut from the
-output. A reminder: <tt>calloc(in->size2 * sizeof(int))</tt> will fill your array with zeros on allocation, and 
+output. A reminder: <tt>calloc(in->size2 , sizeof(int))</tt> will fill your array with zeros on allocation, and 
 <tt>memset(use, 1, in->size2 * sizeof(int))</tt> will
 quickly fill an array of ints with nonzero values.
  \ingroup data_struct

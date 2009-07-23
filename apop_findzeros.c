@@ -5,7 +5,6 @@
 #include "asst.h"
 #include "types.h"
 #include "mapply.h"
-#include "bootstrap.h"
 
 /** \file apop_findzeros.c
  This just includes the root-finding routine. It is \c \#included in apop_mle.c, because I expect you to call it via that. 

@@ -9,7 +9,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "variadic.h"
 #include "settings.h"
 #include "histogram.h"
-#include "bootstrap.h" //apop_rng_alloc
 #include "conversions.h"
 
 static void write_double(const double *draw, apop_data *d){

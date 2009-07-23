@@ -1,3 +1,0 @@
-Most of this directory runs tests from NIST. You can look at
-nist_tests.c to see the level of precision at which various operations work.
-http://www.itl.nist.gov/div898/strd/

@@ -3,6 +3,14 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+
+	July 2009
+--multivariate gamma, log-gamma.
+--t, F, chi^2, Wishart distributions, for description [and Bayesian
+updating]
+--apop_matrix_to_positive_semidefinite and apop_matrix_is_positive_semidefinite 
+--bug fixes
+
 	June 2009
 --More variadicized functions
 	--notably, apop_estimate is much more useful

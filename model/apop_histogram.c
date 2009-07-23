@@ -21,8 +21,8 @@ apop_model apop_histogram;
 
 /** Allocate the parameters for the \c apop_histogram model.
 
-  \param    data The input data. As with other distributions, the data
-  should be in the matrix element of the \c apop_data set, and can have any dimensions
+  \param    data The input data. I'll use all data in both the 
+  the matrix and vector element of the \c apop_data set, and the matrix can have any dimensions
   (\f$1\times 10000\f$, \f$10000\times 1\f$, \f$100\times 100\f$...).
   \param bins How many bins should the PDF have?
  */

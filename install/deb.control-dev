@@ -1,8 +1,0 @@
-Package: apophenia-dev
-Section: libdevel
-Architecture: i386
-Depends: apophenia0 , libgsl0-dev (>=1.7)
-Recommends: sqlite3
-Version: 0.17
-Maintainer: Ben Klemens <bklemens@gmail.com>
-Description: Tools for statistical modeling

@@ -41,6 +41,7 @@ function.
 #include <stdlib.h>	//popen, I think.
 #include "asst.h"
 #include "stats.h"
+#include "conversions.h" //apop_matrix_copy
 #include "vasprintf/vasprintf.h"
 #include "linear_algebra.h"
 #include "math.h" //pow!
@@ -50,35 +51,26 @@ function.
 Calculate the determinant of a matrix, its inverse, or both. The \c in matrix is not destroyed in the process.
 
 \param in
-The matrix to be inverted/determined. (No default. Returns NULL if this is not set.)
+The matrix to be inverted/determined. 
 
 \param out
-If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function. (default = NULL)
+If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function. 
 
 \param calc_det 
 0: Do not calculate the determinant.\\
-1: Do. (default)
+1: Do.
 
 \param calc_inv
 0: Do not calculate the inverse.\\
-1: Do. (default)
+1: Do.
 
 \return
 If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.
 
-This function uses the \ref designated syntax for inputs.
-
 \ingroup linear_algebra
 */
 
-APOP_VAR_HEAD double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
-    const gsl_matrix * apop_varad_var(in, NULL)
-    apop_assert(in, 0, 0, 'c', "You sent in a NULL matrix; returning NULL.");
-    gsl_matrix ** apop_varad_var(out, NULL)
-    int apop_varad_var(calc_det, 1)
-    int apop_varad_var(calc_inv, 1)
-    return apop_det_and_inv_base(in, out, calc_det, calc_inv);
-APOP_VAR_END_HEAD
+double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
   apop_assert(in->size1 == in->size2,  0, 0, 's', "You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
   int 		sign;
   double 	the_determinant = 0;
@@ -330,7 +322,7 @@ void apop_vector_exp(gsl_vector *v){
 
 \param  v1  the upper vector (default=\c NULL, in which case this basically copies \c v2)
 \param  v2  the second vector (default=\c NULL, in which case nothing is added)
-\param  inplace If \c 'i' \c 'y', use \t apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
+\param  inplace If \c 'i' \c 'y', use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
 \return     the stacked data, either in a new vector or a pointer to \c v1.
 
 This function uses the \ref designated syntax for inputs.
@@ -374,7 +366,7 @@ APOP_VAR_ENDHEAD
 \param  m1  the upper/rightmost matrix (default=\c NULL, in which case this basically copies \c m2)
 \param  m2  the second matrix (default = \c NULL, in which case \c m1 is returned)
 \param  posn    if 'r', stack rows on top of other rows, else, e.g. 'c' stack  columns next to columns. (default ='r')
-\param  inplace If \c 'i' \c 'y', use \t apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 unmolested. (default='n')
+\param  inplace If \c 'i' \c 'y', use \ref apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 unmolested. (default='n')
 \return     the stacked data, either in a new matrix or a pointer to \c m1.
 
 \ingroup convenience_fns
@@ -461,7 +453,7 @@ APOP_VAR_ENDHEAD
   directly.
 
 \param in   the \c gsl_matrix to be subsetted
-\return     a \c gsl_matrix with the specified columns removed.
+\return     a \c gsl_matrix with the specified columns removed. If you ask me to remove no columns, I'll return a copy of the original. If you ask me to remove all columns, I'll return \c NULL.
 \param drop an array of ints. If use[7]==1, then column seven will be cut from the output. 
 */
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
@@ -473,6 +465,10 @@ gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
     for (i=0; i < in->size2; i++)
         if (drop[i]==0)
             ct++;
+    if (ct == 0)
+        return apop_matrix_copy(in);
+    if (ct == in->size2)
+        return NULL;
     out = gsl_matrix_alloc(in->size1, ct);
     for (i=0; i < in->size2; i++){
         if (drop[i]==0){

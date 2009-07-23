@@ -22,17 +22,17 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_normal.c model/apop_OLS.c 		 	\
 			model/apop_WLS.c model/apop_exponential.c 		\
 			model/apop_gamma.c model/apop_zipf.c 		    \
-			model/apop_poisson.c	                    	\
+			model/apop_poisson.c model/apop_t_f_chi.c		\
 			model/apop_uniform.c model/apop_beta.c			\
 			model/apop_waring.c model/apop_yule.c 	 		\
 			model/apop_bernoulli.c model/apop_binomial.c 	\
-			model/apop_histogram.c model/apop_kernel.c 
+			model/apop_histogram.c model/apop_kernel.c 		
 
-pkginclude_HEADERS = 	conversions.h db.h likelihoods.h linear_algebra.h \
-				bootstrap.h regression.h stats.h headers.h types.h output.h \
-				histogram.h	mapply.h missing_data.h			\
+pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
+				regression.h stats.h headers.h types.h 		\
+				histogram.h	mapply.h output.h 				\
 		     	model/model.h asst.h settings.h				\
-		     	variadic.h									\
+		     	variadic.h	linear_algebra.h 				\
 			vasprintf/alloca_.h vasprintf/printf-parse.h  	\
 			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
 			vasprintf/printf-args.h vasprintf/vasnprintf.h 	

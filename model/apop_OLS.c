@@ -151,9 +151,6 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
 }
 
 
-
-
-
 static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_model *out){
   apop_ls_settings   *p =  apop_settings_get_group(out, "apop_ls");
 	if (p->want_cov + p->want_expected_value == 0 ){	
@@ -178,7 +175,7 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
         predicted   = gsl_matrix_column(out->expected->matrix, 1).vector;
         gsl_vector_set_zero(&predicted);
         gsl_vector_add(&predicted, y_data);
-        gsl_vector_sub(&predicted, error);
+        gsl_vector_add(&predicted, error);
     }
     gsl_vector_free(error);
     out->covariance->matrix	= cov;

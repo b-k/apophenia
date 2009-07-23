@@ -1,3 +1,8 @@
+/* These are stats tests from NIST. See http://www.itl.nist.gov/div898/strd/
+Notice that I use various levels of tolerance, so this gives you an idea
+of the relative accuracies of various operations. */
+
+
 #include <apop.h>
 
 #define TOL 1e-15

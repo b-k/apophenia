@@ -8,11 +8,11 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "types.h"
 #include <gsl/gsl_math.h>           //GSL_NAN
 #include "db.h"
-#include "linear_algebra.h"
+#include "asst.h"	//apop_rng_alloc
 #include "stats.h"	    //t_dist
 #include "conversions.h"	//apop_strip_dots
 #include "regression.h"	//two_tailify
-#include "bootstrap.h"	//apop_rng_alloc
+#include "linear_algebra.h"
 
 #include "vasprintf/vasprintf.h"
 #include <config.h>

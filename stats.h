@@ -1,4 +1,6 @@
-//stats.h	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+/** \file stats.h
+Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+*/
 #ifndef APOP_STATS_H
 #define APOP_STATS_H
 #include <math.h>
@@ -56,9 +58,7 @@ gsl_vector * v = &( apop_vv_##v );
 	//var_m lets you input a mean if you've already calculated it, saving
 	//some repetition.
 inline long double apop_vector_sum(const gsl_vector *in) __attribute__((pure));
-inline long double apop_sum(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_mean(const gsl_vector *in) __attribute__((pure));
-inline double apop_mean(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_var(const gsl_vector *in) __attribute__((pure));
 inline double apop_var(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_var_m(const gsl_vector *in, const double mean) __attribute__((pure));
@@ -75,6 +75,10 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w) __attr
 double apop_vector_weighted_cov(const gsl_vector *, const gsl_vector *, const gsl_vector *) __attribute__((pure));
 double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
 double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
+#define apop_sum(in) apop_vector_sum(in)
+#define apop_var(in) apop_vector_var(in) 
+#define apop_mean(in) apop_vector_mean(in)
+
 
 //Distances, Euclidian and Manhattan:
 APOP_VAR_DECLARE double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm);
@@ -92,7 +96,7 @@ APOP_VAR_DECLARE double apop_random_double(double min, double max, gsl_rng *r);
 int apop_random_int(const double min, const double max, const gsl_rng *r);
 
 APOP_VAR_DECLARE gsl_matrix * apop_matrix_covariance(gsl_matrix *in, const char normalize);
-APOP_VAR_DECLARE gsl_matrix * apop_matrix_correlation(gsl_matrix *in, const char normalize);
+APOP_VAR_DECLARE  gsl_matrix * apop_matrix_correlation(gsl_matrix *in, const char normalize);
 apop_data * apop_data_covariance(const apop_data *in);
 apop_data * apop_data_correlation(const apop_data *in);
 long double apop_matrix_sum(const gsl_matrix *m) __attribute__((pure));
@@ -105,8 +109,14 @@ apop_data * apop_data_summarize(apop_data *data);
 //from apop_fisher.c:
 apop_data *apop_test_fisher_exact(apop_data *intab);
 
+//from apop_t_f_chi.c:
+APOP_VAR_DECLARE int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi);
+double apop_matrix_to_positive_semidefinite(gsl_matrix *m);
+double apop_multivariate_gamma(double a, double p);
+double apop_multivariate_lngamma(double a, double p);
+
 //from apop_sort.c:
-APOP_VAR_DECLARE double * apop_vector_percentiles(gsl_vector *data, char rounding);
+APOP_VAR_DECLARE double * apop_vector_percentiles(gsl_vector *data, char rounding); 
 APOP_VAR_DECLARE apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
 
 __END_DECLS

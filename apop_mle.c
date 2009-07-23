@@ -14,9 +14,9 @@ and the simulated annealing routine.
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 */
 #include "model/model.h"
+#include "asst.h" //apop_rng_alloc
 #include "output.h"
 #include "likelihoods.h"
-#include "bootstrap.h" //apop_rng_alloc
 #include <assert.h>
 #include <setjmp.h>
 #include <signal.h>
@@ -480,24 +480,21 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
   double			        size;
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
-	x	= gsl_vector_alloc(betasize);
     ctrl_c      =
 	est->status	= 0;	//assume failure until we score a success.
-	if (mp->starting_pt==NULL)
+	if (mp->starting_pt==NULL){
+	    x	= gsl_vector_alloc(betasize);
   		gsl_vector_set_all (x,  1);
-	else
+    } else
 		x   = apop_array_to_vector(mp->starting_pt, betasize);
-    /*if (!msize1 && !msize2)
-        i->beta = i->model->parameters->vector;
-    else*/
-        i->beta = gsl_vector_alloc(betasize);
+    i->beta = gsl_vector_alloc(betasize);
   	gsl_vector_set_all (ss,  mp->step_size);
 	minme.f		    = negshell;
 	minme.n		    = betasize;
 	minme.params	= i;
 	gsl_multimin_fminimizer_set (s, &minme, x,  ss);
     signal(SIGINT, mle_sigint);
-      	do { 	iter++;
+    do { 	iter++;
 		status 	= gsl_multimin_fminimizer_iterate(s);
 		if (status) 	break; 
 		size	= gsl_multimin_fminimizer_size(s);
@@ -515,7 +512,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
                 printf ("f()=%7.3f size=%.3f\n", s->fval, size);
 			}
 		}
-      	} while (status == GSL_CONTINUE && iter < MAX_ITERATIONS && !ctrl_c);
+    } while (status == GSL_CONTINUE && iter < MAX_ITERATIONS && !ctrl_c);
     signal(SIGINT, NULL);
 	if (iter == MAX_ITERATIONS && mp->verbose)
 		apop_error(1, 'c', "Optimization reached maximum number of iterations.");
@@ -556,7 +553,8 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
   infostruct    info    = { .data   = data,
                             .use_constraint = 1};
     info.trace_file     = malloc(sizeof(FILE *)); *info.trace_file = NULL;
-    info.model  = apop_model_copy(dist);
+    info.model          = apop_model_copy(dist);
+    info.model->data    = data;
     if(!mp){
         Apop_settings_add_group(info.model, apop_mle, info.model);
         mp          =  apop_settings_get_group(info.model, "apop_mle");
@@ -622,7 +620,7 @@ APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *cop
     apop_model * apop_varad_var(copy, NULL);
     char * apop_varad_var(starting_pt, NULL);
     double apop_varad_var(boundary, 1e8);
-    return apop_estimate_restart(e, copy, starting_pt, boundary);
+    return apop_estimate_restart_base(e, copy, starting_pt, boundary);
 APOP_VAR_ENDHEAD
     gsl_vector *v;
   if (!copy)

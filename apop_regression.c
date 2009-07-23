@@ -666,7 +666,7 @@ apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd
 \li  \f$ SST \equiv \sum (Y_i - \bar Y) ^2 \f$
 \li  \f$ SSE \equiv \sum \epsilon ^2       \f$
 \li  \f$ R^2 \equiv 1 - {SSE\over SST}     \f$
-\li  \f$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k)}(1-R^2)     \f$
+\li  \f$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k-1)}(1-R^2)     \f$
 
   Internally allocates (and frees) a vector the size of your data set.
 \param  in  The estimate. I need residuals to have been calculated, and the first column of in->data needs to be the dependent variable.
@@ -700,9 +700,9 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *in){
     sst = apop_vector_var(&v) * (v.size-1);
 //    gsl_blas_ddot(&v, &v, &sst);
     rsq = 1. - (sse/sst);
-    adjustment  = ((indep_ct -1.) /(obs - indep_ct)) * (1.-rsq) ;
+    adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;
     apop_data_add_named_elmt(out, "R_squared", rsq);
-    apop_data_add_named_elmt(out, "R_squared_adj", rsq - adjustment);
+    apop_data_add_named_elmt(out, "R_squared_adj", 1 - adjustment);
     apop_data_add_named_elmt(out, "SSE", sse);
     apop_data_add_named_elmt(out, "SST", sst);
     apop_data_add_named_elmt(out, "SSR", sst - sse);
