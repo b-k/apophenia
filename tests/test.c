@@ -529,37 +529,27 @@ int test_jack(gsl_rng *r){
 }
 
 
-static void common_binomial_bit(apop_model *out, int n, double p){
-    double phat = apop_data_get(out->parameters, 1,-1);
-    double nhat = apop_data_get(out->parameters, 0,-1);
-    if (verbose) printf("n: %i, p: %g, nhat: %g, phat: %g\n", n, p, phat, nhat);
-    assert(apop_data_get(out->parameters, 0,-1) == n);
-    assert(apop_data_get(out->parameters, 1,-1) - p < 1e-2);
-}
-
 void test_lognormal(gsl_rng *r){
     size_t  i, j;
     apop_model *source = apop_model_copy(apop_normal);
     apop_model_clear(NULL, source);
-    for(i=0; i < 20; i ++){
-        double mu    = gsl_ran_flat(r, -1, 1);
-        double sigma = gsl_ran_flat(r, .01, 1);
-        int n     = gsl_ran_flat(r,1,8e5);
-        apop_data *data = apop_data_alloc(0,1,n);
-        gsl_vector_set(source->parameters->vector, 0, mu);
-        gsl_vector_set(source->parameters->vector, 1, sigma);
-        for (j=0; j< n; j++){
-            double *k   = gsl_matrix_ptr(data->matrix, 0, j);
-            apop_draw(k, r, source);
-            *k = exp(*k);
-        }
-        apop_model *out = apop_estimate(data, apop_lognormal);
-        double muhat = apop_data_get(out->parameters, 0,-1);
-        double sigmahat = apop_data_get(out->parameters, 1,-1);
-        if (verbose) printf("mu: %g, muhat: %g, var: %g, varhat: %g\n", mu, muhat,  sigma,sigmahat);
-        assert(fabs(mu-muhat)<1e-2);
-        assert(fabs(sigma-sigmahat)<1e-2);
+    double mu    = gsl_ran_flat(r, -1, 1);
+    double sigma = gsl_ran_flat(r, .01, 1);
+    int n     = gsl_ran_flat(r,1,8e5);
+    apop_data *data = apop_data_alloc(0,1,n);
+    gsl_vector_set(source->parameters->vector, 0, mu);
+    gsl_vector_set(source->parameters->vector, 1, sigma);
+    for (j=0; j< n; j++){
+        double *k   = gsl_matrix_ptr(data->matrix, 0, j);
+        apop_draw(k, r, source);
+        *k = exp(*k);
     }
+    apop_model *out = apop_estimate(data, apop_lognormal);
+    double muhat = apop_data_get(out->parameters, 0,-1);
+    double sigmahat = apop_data_get(out->parameters, 1,-1);
+    if (verbose) printf("mu: %g, muhat: %g, var: %g, varhat: %g\n", mu, muhat,  sigma,sigmahat);
+    assert(fabs(mu-muhat)<1e-2);
+    assert(fabs(sigma-sigmahat)<1e-2);
 }
 
 void test_multivariate_normal(gsl_rng *r){
@@ -585,37 +575,47 @@ void test_multivariate_normal(gsl_rng *r){
     assert (error < 3e-2); //yes, unimpressive, but we don't wanna be here all day.
 }
 
+static void common_binomial_bit(apop_model *out, int n, double p){
+    double phat = apop_data_get(out->parameters, 1,-1);
+    double nhat = apop_data_get(out->parameters, 0,-1);
+    if (verbose) printf("n: %i, p: %g, nhat: %g, phat: %g\n", n, p, phat, nhat);
+    assert(apop_data_get(out->parameters, 0,-1) == n);
+    assert(apop_data_get(out->parameters, 1,-1) - p < 1e-2);
+}
+
 void test_binomial(gsl_rng *r){
     size_t  i, j;
-    
-    //char method = "b";
-    //apop_model_copy(apop_binomial);
-    for(j=0; j < 20; j ++){
-        double p = gsl_rng_uniform(r);
-        int n     = gsl_ran_flat(r,1,40000);
-        apop_data *d = apop_data_alloc(0,1,n);
-        for(i=0; i < n; i ++)
-            apop_data_set(d, 0,i,(gsl_rng_uniform(r) < p));
-        apop_model *out = apop_estimate(d, apop_binomial);
-        common_binomial_bit(out, n, p);
-        apop_data_free(d);
+    double p = gsl_rng_uniform(r);
+    int n     = gsl_ran_flat(r,1,40000);
+    apop_data *d = apop_data_alloc(0,1,n);
+    for(i=0; i < n; i ++)
+        apop_data_set(d, 0,i,(gsl_rng_uniform(r) < p));
+    apop_model *out = apop_estimate(d, apop_binomial);
+    apop_model *outm = apop_estimate(d, apop_multinomial);
+    common_binomial_bit(out, n, p);
+    common_binomial_bit(outm, n, p);
+    apop_data_free(d);
+
+    p = gsl_rng_uniform(r);
+    n  = gsl_ran_flat(r,1,4e4);
+    d = apop_data_calloc(0,n,2);
+    for(i=0; i < n; i ++){
+        if (gsl_rng_uniform(r) < p)
+            apop_matrix_increment(d->matrix, i,1);
+            //apop_matrix_increment(d->matrix, (int)gsl_ran_flat(r,0, n),1,1);
+        else
+            apop_matrix_increment(d->matrix, i,0);
+            //apop_matrix_increment(d->matrix, (int)gsl_ran_flat(r,0, n),0,1);
     }
-    for(j=0; j < 20; j ++){
-        apop_model *bint = apop_model_copy(apop_binomial);
-        Apop_settings_add_group(bint, apop_rank, NULL);
-        double p = gsl_rng_uniform(r);
-        int n     = gsl_ran_flat(r,1,4e5);
-        apop_data *d = apop_data_calloc(0,n,2);
-        for(i=0; i < n; i ++){
-            if (gsl_rng_uniform(r) < p)
-                apop_matrix_increment(d->matrix, (int)gsl_ran_flat(r,0, n),1,1);
-            else
-                apop_matrix_increment(d->matrix, (int)gsl_ran_flat(r,0, n),0,1);
-        }
-        apop_model *out = apop_estimate(d, *bint);
-        common_binomial_bit(out, n, p);
-        apop_data_free(d);
-    }
+    apop_model *bint = apop_model_copy(apop_binomial);
+    Apop_settings_add_group(bint, apop_rank, NULL);
+    out = apop_estimate(d, *bint);
+    common_binomial_bit(out, n, p);
+    apop_model *mint = apop_model_copy(apop_multinomial);
+    Apop_settings_add_group(mint, apop_rank, NULL);
+    out = apop_estimate(d, *mint);
+    common_binomial_bit(out, n, p);
+    apop_data_free(d);
 }
 
 void db_to_text(){
@@ -792,7 +792,6 @@ void test_transpose(){
     assert(!strcmp(tt->names->row[2], "c"));
     assert(!tt->names->colct);
 }
-
 
 apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, apop_model *method){
   int i, j;
@@ -1070,6 +1069,7 @@ int main(int argc, char **argv){
     Apop_settings_alloc_add(an_ols_model, apop_ls, want_expected_value, 1, d);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test binomial estimations", test_binomial(r));
     if (slow_tests){
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
@@ -1085,7 +1085,6 @@ int main(int argc, char **argv){
     do_test("apop_estimate->dependent test", test_predicted_and_residual(e));
     do_test("apop_f_test and apop_coefficient_of_determination test", test_f(e));
     do_test("OLS test", test_OLS());
-    do_test("test binomial estimations", test_binomial(r));
     do_test("test lognormal estimations", test_lognormal(r));
     do_test("test queries returning empty tables", test_blank_db_queries());
     do_test("test jackknife covariance", test_jack(r));

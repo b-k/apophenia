@@ -1,17 +1,7 @@
-#include "stats.h"
-#include "types.h"
-#include "mapply.h"
-#include "settings.h"
-#include "variadic.h"
-#include "likelihoods.h"
-#include "conversions.h"
-#include "model/model.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_eigen.h>
+/** \file apop_t_f_chi.c	t, F, chi squared, and Wishart distributions. */
+/* Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-
-/** \page tfchi t-, chi-squared, F-, Wishart distributions
+/** \defgroup tfchi t-, chi-squared, F-, Wishart distributions
 
 Most of these distributions are typically used for testing purposes.  For such a situation, you don't need the models here.
 Given a statistic of the right properties, you can find the odds that the statistic is above or below a cutoff on the t-, F, or chi-squared distribution using the \ref apop_test function. 
@@ -20,8 +10,7 @@ In that world, those three distributions are actually parameter free. The data i
 
 For modeling purposes, more could be done. For example, the t-distribution is a favorite proxy for Normal-like situations where there are fat tails relative to the Normal (i.e., high kurtosis). Or, you may just prefer not to take the step of normalizing your data---one could easily rewrite the theorems underlying the t-distribution without the normalizations.
 
-In such a case, the researcher would not want to fix the \f$df\f$, because \f$df\f$ indicates the fatness of the tails, so there is some optimal value given the data. 
-
+In such a case, the researcher would not want to fix the \f$df\f$, because \f$df\f$ indicates the fatness of the tails, which has some optimal value given the data. 
 Thus, there are two modes of use for these distributions: 
 
 \li Parameterized, testing style: the degrees of freedom are determined
@@ -34,22 +23,17 @@ apop_data *t_for_testing = apop_estimate(data, apop_t)
 ---will return exactly the type of \f$t\f$-distribution one would use for testing. For the Wishart
 distribution, the \f$df\f$ is fixed in this form, but the covariance matrix is estimated from the data.
 
-\li Descriptive: The df settings group is used, and it dictates which parameters are or are not free. 
+\li Descriptive: Just add an \ref apop_mle_settings group, and I'll find the best \f$df\f$ via maximum likelihood.
 
 \code
-Apop_settings_add_group(&apop_t, apop_df, .df = 18, .stddev=1);
+Apop_settings_add_group(&apop_t, apop_mle, data);
 apop_data *t_for_description = apop_estimate(data, apop_t);
 \endcode
 
-Your options for what to fix include \c df, \c df2, \c mean, \c stddev (square root of variance).
 \c df works for all four distributions here; \c df2 makes sense only for the \f$F\f$, 
 
-For the Wishart, the covariance matrix is again estimated as before.
+For the Wishart, the degrees of freedom and covariance matrix are always estimated via MLE.
 
-
-\f$
-\frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}}
-                         {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\f$
 
 */
 
@@ -68,6 +52,17 @@ apop_df_settings *apop_df_settings_copy(apop_df_settings *in){
 
 void apop_df_settings_free(apop_df_settings *in){ free(in); }
 */
+#include "stats.h"
+#include "types.h"
+#include "mapply.h"
+#include "settings.h"
+#include "variadic.h"
+#include "likelihoods.h"
+#include "conversions.h"
+#include "model/model.h"
+#include "linear_algebra.h"
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_eigen.h>
 
 double df, df2; 
 int len;
@@ -231,7 +226,7 @@ APOP_VAR_ENDHEAD
     return 1;
 }
 
-/*  First, this function passes tests, but is under development.
+/**  First, this function passes tests, but is under development.
   
     It takes in a matrix and converts it to the `closest' positive
     semidefinite matrix.
@@ -478,26 +473,7 @@ static double wishart_ll(apop_data *in, apop_model *m){ PARAMCHECK
     return ll;
 }
 
-/** Draw a matrix from a Wishart distribution.
-
-Notice that the form for all of the draw methods is to output a \c
-double*. Thus, you might want to use a form like
-
-\code
-gsl_matrix *rmatrix = gsl_marix_alloc(10, 10);
-gsl_rng *r = apop_rng_alloc(8765);
-for (int i=0; i< 1e8; i++){
-    apop_draw(rmatrix->data, r, apop_wishart);
-    do_math_with_matrix(rmatrix);
-}
-\endcode
-
-Originally in Fortran, from
-ALGORITHM AS 53  APPL. STATIST. (1972) VOL.21, NO.3
-translated to C by BK.
-
-*/
-void apop_wishart_draw(double *out, gsl_rng *r, apop_model *m){
+static void apop_wishart_draw(double *out, gsl_rng *r, apop_model *m){
     /*
 Translated from the Fortran by BK. Fortran comments:
 
@@ -552,22 +528,48 @@ static void wishart_prep(apop_data *d, apop_model *m){
      m->parameters = apop_data_alloc(1,sqrt(d->matrix->size2),sqrt(d->matrix->size2));
  }
 
-/* The Wishart distribution, which is currently somewhat untested. */
+/** The Wishart distribution, which is currently somewhat untested. 
+
+Here's the likelihood function. \f$p\f$ is the dimension of the data and covariance matrix,
+\f$n\f$ is the degrees of freedom, \f$\mathbf{V}\f$ is the \f$p\times
+p\f$ matrix of Wishart parameters, and \f${\mathbf{W}}\f$ is the \f$p\times
+p\f$ matrix whose likelihood is being evaluated.  \f$\Gamma_p(\cdot)\f$
+is the \ref apop_multivariate_gamma "multivariate gamma function".
+
+\f$
+P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}}
+                         {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\f$
+
+
+
+The form for all of the draw methods is to output a \c
+double*, so it accommodates drawing from a multivariate distribution like the Wishart. Try a form like:
+
+\code
+gsl_matrix *rmatrix = gsl_marix_alloc(10, 10);
+gsl_rng *r = apop_rng_alloc(8765);
+for (int i=0; i< 1e8; i++){
+    apop_draw(rmatrix->data, r, apop_wishart);
+    do_math_with_matrix(rmatrix);
+}
+\endcode
+
+ \ingroup tfchi */
 apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .draw = apop_wishart_draw,
-                                .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
+         .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
 
-/* The t distribution, for descriptive purposes. If you want to test
-   a hypothesis, you probably don't need this, and should instead use \ref apop_test */
+/** The t distribution, for descriptive purposes. If you want to test
+   a hypothesis, you probably don't need this, and should instead use \ref apop_test. \ingroup tfchi */
 apop_model apop_t_distribution  = {"t distribution", 1, 0, 0, .estimate = apop_t_chi_estimate, 
-                                .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw };
+         .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw };
 
-/* The F distribution, for descriptive purposes. If you want to test
-   a hypothesis, you probably don't need this, and should instead use \ref apop_test */
+/** The F distribution, for descriptive purposes. If you want to test
+   a hypothesis, you probably don't need this, and should instead use \ref apop_test. \ingroup tfchi */
 apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .estimate = apop_fdist_estimate, 
-                                .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
+        .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
 
-/* The \f$\chi^2\f$ distribution, for descriptive purposes. If you want to test
-   a hypothesis, you probably don't need this, and should instead use \ref apop_test */
+/** The \f$\chi^2\f$ distribution, for descriptive purposes. If you want to test
+   a hypothesis, you probably don't need this, and should instead use \ref apop_test. \ingroup tfchi */
 apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .estimate = apop_t_chi_estimate,  
-                                .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };
+        .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };
 

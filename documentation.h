@@ -993,6 +993,7 @@ endofdiv
             \li\ref apop_gaussian
             \li\ref apop_improper_uniform
             \li\ref apop_lognormal
+            \li\ref apop_multinomial
             \li\ref apop_multivariate_normal
             \li\ref apop_normal
             \li\ref apop_poisson

@@ -861,7 +861,7 @@ apop_data * apop_data_sort_base(apop_data *data, int sortby, char asc);
 
 extern apop_model apop_beta;
 extern apop_model apop_bernoulli;
-extern apop_model apop_binomial; //on hiatus.
+extern apop_model apop_binomial;
 extern apop_model apop_chi_squared;
 extern apop_model apop_exponential;
 extern apop_model apop_f_distribution;
@@ -873,6 +873,7 @@ extern apop_model apop_iv;
 extern apop_model apop_kernel_density;
 extern apop_model apop_logit;
 extern apop_model apop_lognormal;
+extern apop_model apop_multinomial; 
 extern apop_model apop_multinomial_probit;
 extern apop_model apop_multivariate_normal;
 extern apop_model apop_normal;

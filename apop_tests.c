@@ -166,7 +166,7 @@ upper tail, lower tail, or both. I will return the odds of a Type I error given 
    apop_test(1.3);
    \endcode
 
-will return the density of the Normal distribution that is more than 1.3 from zero.  
+will return the density of the standard Normal distribution that is more than 1.3 from zero.  
 If this function returns a small value, we can be confident that the statistic is significant. Or, 
    \code
    apop_test(1.3, "t", 10, tail='u');
