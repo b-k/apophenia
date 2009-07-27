@@ -37,6 +37,9 @@ pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
 			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
 			vasprintf/printf-args.h vasprintf/vasnprintf.h 	
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA= apophenia.pc
+
 #SWIG
 
 python_PYTHON = apop.py
@@ -72,7 +75,7 @@ apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
 apop_lookup_LDADD = libapophenia.la
 
-EXTRA_DIST = doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/foot.html \
+EXTRA_DIST = apophenia.ac doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/foot.html \
 		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
 		tests/Makefile tests/Readme tests/slower.c tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \

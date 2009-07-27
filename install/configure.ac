@@ -18,8 +18,9 @@ AC_PROG_CC_C99
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
-AC_CHECK_LIB([gsl], [gsl_vector_alloc], , , [-lgslcblas])
-AC_CHECK_LIB([gslcblas], [cblas_dgemm])
+AC_CHECK_LIB([m],[cos])
+AC_CHECK_LIB([gslcblas],[cblas_dgemm])
+AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
 AC_CHECK_LIB([mysqlclient], [mysql_query], , , [-L/usr/lib/mysql -lz])
 AC_CHECK_LIB([sqlite3], [sqlite3_exec])
 # FIXME: Replace `main' with a function in `-lz':
@@ -53,6 +54,9 @@ AX_LIB_SQLITE3
 AM_CONDITIONAL([HAVE_MYSQL], [test x$HAVE_MYSQL = xtrue])
 AM_CONDITIONAL([HAVE_PYTHON], [test $PYTHON_VERSION > 1 ])
 
+
+PACKAGE_NAME=apophenia
+AX_CREATE_PKGCONFIG_INFO
 
 ACX_PTHREAD
 

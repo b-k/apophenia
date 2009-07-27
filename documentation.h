@@ -321,6 +321,7 @@ Instead of giving lengthy GCC commands at the command prompt, you can use a Make
 \li Change the first line to the name of your program (e.g., if you have written <tt>sample.c</tt>, then the first line will read <tt>PROGNAME=sample</tt>). 
 \li If your program has multiple <tt>.c</tt> files, just add a corresponding <tt>.o</tt> on the <tt>objects</tt> line, e.g. <tt>sample2.o</tt> <tt>sample3.o</tt>
 \li One you have a Makefile in the directory, simply type <tt>make</tt> at the command prompt to generate the executable.
+
  \code
 PROGNAME = your_program_name_here
 objects =$(PROGNAME).o
@@ -331,6 +332,13 @@ c: $(objects)
 $(objects): %.o: %.c 
 	gcc $(CFLAGS) -c $< -o $@
 \endcode
+
+By the way, if your system has \c pkg-config, then you can use it for a slightly more robust and readable makefile. Replace the above C and link flags with:
+\code
+CFLAGS = -g -Wall `pkg-config --cflags apophenia`
+LINKFLAGS = `pkg-config --libs apophenia`
+\endcode
+The \c pkg-config program will then fill in the appropriate directories and libraries. Pkg-config knows Apophenia depends on the GSL and (if applicable) sqlite3, so you need only list the most-dependent library.
 */
 
 /** \page sql SQL
