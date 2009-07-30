@@ -72,9 +72,8 @@ static double beta_zero_and_one_greater_than_x_constraint(apop_data *returned_be
   static apop_data *constraint = NULL;
     if (!constraint){
         constraint= apop_data_calloc(2,2,2);
-        apop_data_set(constraint, 0, -1, 1);
-        apop_data_set(constraint, 0, 0, 1);
-        apop_data_set(constraint, 1, 1, 1);
+        apop_data_fill(constraint, 1., 1., 0.,
+                                   0., 0., 1.);
     }
     return apop_linear_constraint(m->parameters->vector, constraint, 1e-3);
 }
@@ -82,10 +81,9 @@ static double beta_zero_and_one_greater_than_x_constraint(apop_data *returned_be
 
 double a, bb;
 static double apply_me(gsl_vector *data){
-  size_t    i;
   double    likelihood  = 0,
             val, ln_bb_a_k, ln_a_k;
-    for (i=0; i< data->size; i++){
+    for (size_t i=0; i< data->size; i++){
         val          = gsl_vector_get(data, i);
         ln_bb_a_k	 = gsl_sf_lngamma(val + a + bb);
         ln_a_k		 = gsl_sf_lngamma(val + a);

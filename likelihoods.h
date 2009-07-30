@@ -61,9 +61,11 @@ typedef struct{
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
     char        *trace_path;
+    apop_model  *parent;
 } apop_mle_settings;
 
 apop_mle_settings *apop_mle_settings_alloc(apop_model *model);
+apop_mle_settings *apop_mle_settings_init(apop_mle_settings in);
 void *apop_mle_settings_copy(apop_mle_settings * in);
 void apop_mle_settings_free(void * in);
 

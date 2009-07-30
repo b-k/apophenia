@@ -10,6 +10,7 @@
 updating]
 --apop_matrix_to_positive_semidefinite and apop_matrix_is_positive_semidefinite 
 --bug fixes
+--Apop_model_add_group replaces Apop_settings_add_group, and is much more easy to work with.
 
 	June 2009
 --More variadicized functions

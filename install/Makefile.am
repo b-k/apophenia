@@ -29,7 +29,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_histogram.c model/apop_kernel.c 		
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
-				regression.h stats.h headers.h types.h 		\
+				regression.h stats.h types.h        		\
 				histogram.h	mapply.h output.h 				\
 		     	model/model.h asst.h settings.h				\
 		     	variadic.h	linear_algebra.h 				\
@@ -42,24 +42,24 @@ pkgconfig_DATA= apophenia.pc
 
 #SWIG
 
+if HAVE_PYTHON
 python_PYTHON = apop.py
 
 apop.py: apop.i
-if HAVE_PYTHON
 	swig -python -globals avar apop.i ; \
 	sed  -e "s/:print/:_print/" -e "s/def print/def _print/" < apop.py > apop.tmp.py; \
 	mv apop.tmp.py apop.py; \
 	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I$(pkgincludedir) $(PYTHON_CPPFLAGS) ; \
-	$(CC) -shared apop_wrap.o -o _apop.so -lapophenia -lgsl -lgslcblas $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS) ;
-else 
-	echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
-	touch apop.py ; 
-endif
+	$(CC) -shared apop_wrap.o $(PYTHON_CPPFLAGS) -o _apop.so -lapophenia -lgsl -lgslcblas $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS) ;
+#else 
+#	echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
+#	touch apop.py ; 
 
 install-exec-hook: apop.py
 	@if test -e _apop.so ; then \
 		cp _apop.so ${pythondir} ; \
 	fi
+endif
 
 #The programs
 bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_merge_dbs apop_plot_query apop_lookup
@@ -75,7 +75,7 @@ apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
 apop_lookup_LDADD = libapophenia.la
 
-EXTRA_DIST = apophenia.ac doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/foot.html \
+EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/foot.html \
 		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
 		tests/Makefile tests/Readme tests/slower.c tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \

@@ -547,7 +547,6 @@ apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE
 }
 
 
-
 /** A convenience function for dot products.
 
   First, this requires less typing than the <tt>gsl_cblas_dgexx</tt> functions.
@@ -575,8 +574,6 @@ the designated initializer syntax for function calls. Notably, in the case where
 
 \ingroup linear_algebra
   */
-
-
 APOP_VAR_HEAD apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2){
     const apop_data * apop_varad_var(d1, NULL)
     const apop_data * apop_varad_var(d2, NULL)

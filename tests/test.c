@@ -955,7 +955,7 @@ void estimate_model(apop_data *data, apop_model dist, int method){
                           wishart_start[] = {8, 2, 1, 1, 9};
                           //wishart_start[] = {1,1,2,4,3};
 //apop_mle_settings  *params = apop_mle_settings_alloc(apop_matrix_to_data(data), dist);
-    if (!apop_settings_get_group(&dist, "apop_mle"));
+    if (!apop_settings_get_group(&dist, "apop_mle"))
         Apop_settings_add_group(&dist, apop_mle, &dist);
     Apop_settings_add(&dist, apop_mle, method, method);
     Apop_settings_add(&dist, apop_mle, step_size       , 1e-1);
@@ -1022,8 +1022,8 @@ void test_distributions(gsl_rng *r){
   int         i;
   apop_model* true_params;
   apop_model  null_model      = {"the null model"};
-  apop_model  dist[]          = {/*apop_wishart,*/ apop_gamma, apop_t_distribution, apop_f_distribution,  apop_exponential, apop_normal, 
-                                    apop_poisson,/* apop_zipf,*/apop_yule, apop_uniform, null_model};
+  apop_model  dist[]          = {/*apop_wishart,*/ apop_gamma, apop_t_distribution, apop_f_distribution, apop_exponential, apop_normal, 
+                                    apop_poisson, apop_zipf, apop_yule, apop_uniform, null_model};
 
     for (i=0; strcmp(dist[i].name, "the null model"); i++){
         if (verbose) {printf("%s: ", dist[i].name); fflush(NULL);}

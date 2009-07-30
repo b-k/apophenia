@@ -17,7 +17,7 @@ sane programmer requires.
 like matrix inversion or database querying, which means that the package
 has several dependencies. You need the GNU Scientific Library (wich needs
 a BLAS like libgslcblas or lapack), and are strongly encouraged to have a
-database system, either SQLite or mysql (if not sure, install sqlite). If
+database system, either SQLite or mysql (if not sure, install sqlite3). If
 you are using a system with a package manager of some sort, there is
 certainly a package for all of these. Be sure to include both the main
 package and the lib-, -dev, or -devel package. On my Ubuntu system,

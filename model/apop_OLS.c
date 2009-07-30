@@ -38,6 +38,13 @@ apop_ls_settings * apop_ls_settings_alloc(apop_data *data){
     return out;
 }
 
+apop_ls_settings * apop_ls_settings_init(apop_ls_settings in){
+  apop_ls_settings *out  = calloc(1, sizeof(*out));
+    apop_varad_setting(in, out, want_cov,  1);
+    apop_varad_setting(in, out, want_expected_value, 1);
+    return out;
+}
+
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){

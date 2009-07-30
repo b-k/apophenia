@@ -12,6 +12,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "stats.h"	    //t_dist
 #include "conversions.h"	//apop_strip_dots
 #include "regression.h"	//two_tailify
+#include "variadic.h"	//two_tailify
 #include "linear_algebra.h"
 
 #include "vasprintf/vasprintf.h"
@@ -830,8 +831,9 @@ int apop_data_to_db(apop_data *set, char *tabname){
 
 /** Merge a single table from a database on the hard drive with the database currently open.
 
-\param db_file	The name of a file on disk.
-\param tabname	The name of the table in that database to be merged in.
+\param db_file	The name of a file on disk. [default = \c NULL]
+\param tabname	The name of the table in that database to be merged in. [No default]
+\param inout  Do we copy data in to the currently-open main db [\c 'i'] or out to the specified auxiliary db[\c 'o']?  [default = 'i']
 
 If the table exists in the new database but not in the currently open one,
 then it is simply copied over. If there is a table with the same name in
@@ -840,21 +842,29 @@ into the main database's table with the same name. [The function just
 calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
 
 \ingroup db
-\todo fix the tab_list bug.
+This function uses the \ref designated syntax for inputs.
 */
-void apop_db_merge_table(char *db_file, char *tabname){
-//char		***tab_list;
+APOP_VAR_HEAD void apop_db_merge_table(char *db_file, char *tabname, char inout){
+    char * apop_varad_var(tabname, NULL);
+    Apop_assert_void(tabname, 0,'s', "I need a non-NULL tabname");
+    char * apop_varad_var(db_file, NULL);
+    char apop_varad_var(inout, 'i');
+    apop_db_merge_table_base(db_file, tabname,inout);
+APOP_VAR_ENDHEAD
+    char maine[] = "main";
+    char merge_me[] = "merge_me";
+    char *from = inout == 'i' ? merge_me : maine;
+    char *to = inout == 'i' ? maine : merge_me ;
 	if (db_file !=NULL)
 		apop_query("attach database \"%s\" as merge_me;", db_file);
-	apop_data *d = apop_query_to_text("select name from sqlite_master where name == \"%s\";", tabname);
+	int d = apop_query_to_float("select count(*) from %s.sqlite_master where name == \"%s\";", to, tabname);
 	if (!d){	//just import table
 		if (apop_opts.verbose)	printf("adding in %s\n", tabname);
-		apop_query("create table main.%s as select * from merge_me.%s;", tabname, tabname);
+		apop_query("create table %s.%s as select * from %s.%s;", to, tabname, from, tabname);
 	}
 	else	{			//merge tables.
-        apop_data_free(d);
 		if (apop_opts.verbose)	printf("merging in %s\n", tabname);
-		apop_query("insert into main.%s select * from merge_me.%s;", tabname, tabname);
+		apop_query("insert into %s.%s select * from %s.%s;", to, tabname, from, tabname);
 	}
 	if (db_file !=NULL)
 		apop_query("detach database merge_me;");
@@ -862,7 +872,8 @@ void apop_db_merge_table(char *db_file, char *tabname){
 
 /** Merge a database on the hard drive with the database currently open.
 
-\param db_file	The name of a file on disk.
+\param db_file	The name of a file on disk. [No default; can't be \c NULL]
+\param inout  Do we copy data in to the currently-open main db [\c 'i'] or out to the specified auxiliary db[\c 'o']?  [default = 'i']
 
 If a table exists in the new database but not in the currently open one,
 then it is simply copied over. If there are  tables with the same name
@@ -870,16 +881,25 @@ in both databases, then the data from the new table is inserted into
 the main database's table with the same name. [The function just calls
 <tt>insert into main.tab select * from merge_me.tab</tt>.]
 
+\todo This is sqlite-only right now. 
+
+This function uses the \ref designated syntax for inputs.
 \ingroup db
 */
-void apop_db_merge(char *db_file){
+APOP_VAR_HEAD void apop_db_merge(char *db_file, char inout){
+    char * apop_varad_var(db_file, NULL);
+    Apop_assert_void(db_file, 0, 's', "This function copies from a named database file to the currently in-memory database. You need to give me the name of that named db.")
+    char apop_varad_var(inout, 'i');
+    apop_db_merge_base(db_file, inout);
+APOP_VAR_ENDHEAD
   apop_data	*tab_list;
-  int		i;
-	apop_query("attach database \"%s\" as merge_me;", db_file);
-	tab_list= apop_query_to_text("select name from merge_me.sqlite_master where type==\"table\";");
-	for(i=0; i< tab_list->textsize[0]; i++)
-		apop_db_merge_table(NULL, (tab_list->text)[i][0]);
-	apop_query("detach database merge_me;");
+	apop_query("attach database \"%s\" as filedb;", db_file);
+	tab_list= apop_query_to_text("select name from %s.sqlite_master where type==\"table\";"
+              , inout == 'i' ? "filedb" : "main" );
+    if(!tab_list) return; //No tables to merge.
+	for(int i=0; i< tab_list->textsize[0]; i++)
+		apop_db_merge_table(db_file, (tab_list->text)[i][0], inout);
+	apop_query("detach database filedb;");
 	apop_data_free(tab_list);
 }
                                                                                                                                

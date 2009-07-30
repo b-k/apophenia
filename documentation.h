@@ -1110,17 +1110,14 @@ or two. Here's a sample:
 2 apop_data *w = your_weights_here;
 
 3 apop_model *m = apop_model_copy(apop_wls);
-4 Apop_settings_add_group(m, apop_ls, data);
-5 Apop_settings_add(m, apop_ls, weights, w);
-6 apop_model *est = apop_estimate(data, *m);
+4 Apop_model_add_group(m, apop_ls, .weights=w);
+5 apop_model *est = apop_estimate(data, *m);
 \endcode
 
 Line three establishes the baseline form of the model. Line four adds
-a settings group of type \ref apop_ls_settings to the model. If you check the
-manual for \ref apop_ls_settings_alloc, you'll see that it takes one
-argument---the input data---and the inputs to the alloc function appear
-after the model and settings group name. Line five sets the weights
-element in that group to w, and looks like the config-file format above.
+a settings group of type \ref apop_ls_settings to the model, and specifies that we want it initialized with the \c weights element set to the data set \c w. The list of elements of the settings structures included in Apophenia are below; the means of specifying the elements follow the \ref designated syntax.
+
+Having set the settings, line 5 does the weighted OLS.
 
 Also, the output to any of Apophenia's estimations will have an
 appropriate group of settings allocated, so you can chain estimations
@@ -1132,31 +1129,27 @@ Apop_settings_add(est, apop_ls, weights, weight_set_two);
 apop_model *est2 = apop_estimate(data, *est);
 \endcode
 
-[Notice that the 'add' function really just modifies.]
-
-Some people are incredibly averse to additional lines of code, so there's
-a convenience to allocate and modify a setting on the same line (joining
-lines 4 and 5 above):
-
-\code
-Apop_settings_alloc_add(m, apop_ls, weights, w, data);
-\endcode
+This uses the above-mentioned address of model/settings group/item, plus the actual value to be set.
+Notice that the \c Apop_settings_add macro really just modifies the existing
+structure; you can think of the defaults as a blank slate, and the only values being those you'd set.
 
 If you need to read a setting, such as to check whether things have
-changed after an estimation, use:
+changed after an estimation, use, e.g.:
 
 \code
-Apop_settings_get(m, apop_ls, weights);
+apop_data *weights_now = Apop_settings_get(m, apop_ls, weights);
 \endcode
 
-Notice the use of a single capital to remind you that you are using
+\li Notice the use of a single capital to remind you that you are using
 a macro, so you should beware of the sort of surprising errors
 associated with macros. Here in the modern day, we read things like
 APOP_SETTINGS_ALLOC_ADD as yelling, but if you prefer all caps to indicate
 macros, those work as well.
 
-For just using a model, that's about 100% of what you need to know.
+\li There are two additional macros which are now deprecated: \ref Apop_settings_add_group and 
+\ref Apop_settings_alloc_add. They made sense at the time.
 
+For just using a model, that's about 100% of what you need to know.
 
 Outlineheader settingswritng  Writing new settings
 
@@ -1182,21 +1175,27 @@ typedef struct {
 
 \li The allocate function
 \code
-ysg_settings *ysg_settings_alloc(...){ 
+ysg_settings *ysg_settings_init(ysg_settings in){ 
     ysg_settings *out = malloc(sizeof(ysg_settings));
     // Give default values for all elements here. 
+    // There is a macro, e.g.,
+    // apop_varad_setting(in, out, want_cov,  1);
+    // that will help you with this. It checks in
+    // for the given element (here, want_cov), and 
+    // if that element is not found, sets it to the 
+    // specified value (here, 1).
     return out; }
 \endcode
-
 
 \li The copy function
 \code
 void *ysg_settings_copy(ysg_settings *copyme) {
     ysg_settings *out = malloc(sizeof(ysg_settings));
-    //copy elements (or perhaps memcpy the whole struct) here.
+    //copy elements here. If you have no pointers or 
+    //other trickery, just use:
+    memcpy(out, copyme, sizeof(ysg_settings));
     return out; }
 \endcode
-
 
 \li The free function, which can be as brief as:
 \code
@@ -1208,9 +1207,9 @@ but may include a freeing of pointed-to subelements as necessary.
 
 The names are not negotiable: when you call
 \code
-Apop_settings_alloc(m, ysg, ...)
+Apop_model_add_group(m, ysg)
 \endcode
-the macro will look for \c ysg_settings, \c ysg_settings_alloc, et cetera.
+the macro will look for \c ysg_settings, \c ysg_settings_init, et cetera.
 
 The lines-of-code averse will cringe at having to write such boilerplate
 code (I do), but after spending a year resisting it, I have to concede
@@ -1226,6 +1225,11 @@ Apop_settings_get(m, ysg, an_element)
 As you saw above, once the typedef/alloc/copy/free machinery is written,
 you can declare, get, and set in a reasonably graceful manner.
 
+\li If for some reason you want to work with the now-deprecated \ref
+Apop_settings_add_group, you'll need a \c ysg_settings_alloc(...) function
+instead of \c ysg_settings_init. They do the same thing, but the \c
+alloc version takes in a variadic list of items, wile the \c init takes
+a single structure.
 
 endofdiv
 

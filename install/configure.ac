@@ -45,6 +45,17 @@ AC_FUNC_STRTOD
 AC_CHECK_FUNCS([floor memset pow regcomp sqrt strcasecmp])
 
 # For SWIG.
+
+## Does the user want to build Python?
+#AC_MSG_CHECKING([whether to build the Python extension])
+#AC_ARG_ENABLE([python],
+#              [AS_HELP_STRING([--enable-python],
+#                              [set flags to build Python extension (ignored if
+#--disable-flag-setting is used)])])
+#test "x$enable_python" = xyes || enable_python=no
+#AC_MSG_RESULT($enable_python)
+#AM_CONDITIONAL([USE_PYTHON], [test "x$enable_python" = xyes ])
+
 AM_PATH_PYTHON
 AC_PYTHON_DEVEL
 

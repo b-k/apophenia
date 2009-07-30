@@ -17,3 +17,11 @@
 
 #define apop_varad_var(name, value) name = x.name ? x.name : (value);
 #define apop_varad_link(name,...) variadic_##name((variadic_type_##name) {__VA_ARGS__})
+
+
+//And for model settings groups:
+
+#define Apop_model_add_group(model, type, ...)  \
+    apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__})); 
+
+#define apop_varad_setting(in, out, name, value) out->name = in.name ? in.name : (value);

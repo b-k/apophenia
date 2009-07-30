@@ -70,6 +70,33 @@ apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
     return setme;
 }
 
+
+/** Initialize an \ref apop_mle_settings struct. */
+apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
+  apop_mle_settings *setme =   calloc(1,sizeof(apop_mle_settings));
+   apop_varad_setting(in, setme, starting_pt, NULL);
+    apop_varad_setting(in, setme, starting_pt, NULL);
+    apop_varad_setting(in, setme, tolerance, 1e-2);
+    setme->method = (in.parent && in.parent->score) ? APOP_CG_PR : APOP_SIMPLEX_NM;
+    apop_varad_setting(in, setme, verbose, 0);
+    apop_varad_setting(in, setme, use_score, 1);
+    apop_varad_setting(in, setme, step_size, 0.05);
+    apop_varad_setting(in, setme, delta, 1e-2);
+    apop_varad_setting(in, setme, want_cov, 1);
+//siman:
+    //siman also uses step_size  = 1.;  
+    apop_varad_setting(in, setme, n_tries, 200);  //The number of points to try for each step. 
+    apop_varad_setting(in, setme, iters_fixed_T, 200);   //The number of iterations at each temperature. 
+    apop_varad_setting(in, setme, k, 1.0);  //The maximum step size in the random walk. 
+    apop_varad_setting(in, setme, t_initial, 50);   //cooling schedule data
+    apop_varad_setting(in, setme, mu_t, 1.002); 
+    apop_varad_setting(in, setme, t_min, 5.0e-1);
+    apop_varad_setting(in, setme, rng, NULL);
+    return setme;
+}
+
+
+
 void *apop_mle_settings_copy(apop_mle_settings * in){
   apop_mle_settings *setme = malloc(sizeof(apop_mle_settings));
     memmove(setme, in, sizeof(apop_mle_settings));

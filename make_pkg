@@ -39,7 +39,7 @@ sed -i -f prep_variadics.sed *c *h model/*c model/*h
 	autoconf 
 	autoheader
 	automake -a
-	./configure
+	./configure --enable-python
 #    yes | dh_make -l -n -c GPL  
 #    cp ../../debian_control debian/control
 #    cp ../../debian_copyright debian/copyright

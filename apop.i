@@ -127,7 +127,6 @@ def apop_pylist_to_data(inlist):
                 dlist[i + j*rowsize] = inlist[i][j]
         out = apop_line_to_data(dlist, 0, rowsize, colsize)
     return out
-
 %}
 
 %rename(add) __add;
@@ -197,6 +196,8 @@ def apop_pylist_to_data(inlist):
 %rename(apop_matrix_stack) apop_matrix_stack_base;
 %rename(apop_vector_stack) apop_vector_stack_base;
 %rename(apop_data_stack) apop_data_stack_base;
+%rename(apop_db_merge) apop_db_merge_base;
+%rename(apop_db_merge_table) apop_db_merge_table_base;
 %rename(apop_matrix_is_positive_semidefinite) apop_matrix_is_positive_semidefinite_base;
 
 %extend apop_data {
@@ -606,8 +607,8 @@ double apop_query_to_float(const char * fmt, ...) ;
 int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
 int apop_data_to_db(apop_data *set, char *tabname);
 
-void apop_db_merge(char *infile);
-void apop_db_merge_table(char *infile, char *tabname);
+void apop_db_merge_base(char *infile, char inout);
+void apop_db_merge_table_base(char *infile, char *tabname, char inout);
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2);
 double apop_db_paired_t_test(char * tab1, char *col1, char *col2);
 

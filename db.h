@@ -32,16 +32,7 @@ int apop_count_cols(const char *name);
 	//how many columns are in the table.
 
 int apop_db_open(char *filename);
-	//If filename==NULL, it'll open a database in memory
-
 APOP_VAR_DECLARE int apop_db_close(char vacuum);
-/*#ifdef APOP_NO_VARIADIC
-int apop_db_close(char vacuum); //more args=commas.
-#else
-int apop_db_close_base(char vacuum); //more args=commas.
-apop_varad_declare(int, apop_db_close, char vacuum); //more args=semicolons.
-#define apop_db_close(...) apop_varad_link(apop_db_close, __VA_ARGS__)
-#endif*/
 
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
 	//Run a query but output nothing outside the DB.
@@ -75,14 +66,11 @@ int apop_data_to_db(apop_data *set, char *tabname);
 	//At the moment, the headers are ignored. 
 	//With no headers specified, you get columns C0, C1, C2...
 
-void apop_db_merge(char *infile);
-	//copy all of the tables in the database at the given file into
+APOP_VAR_DECLARE void apop_db_merge(char *db_file, char inout);
+APOP_VAR_DECLARE void apop_db_merge_table(char *db_file, char *tabname, char inout);
+	//copy all of the tables in the database (or just one) at the given file into
 	//the database apophenia has already opened. If there are
 	//duplicate names, append them.
-
-void apop_db_merge_table(char *infile, char *tabname);
-	//This is just like apop_db_merge, but will
-	//only pull the single table specified.
 
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2);
 double apop_db_paired_t_test(char * tab1, char *col1, char *col2);
