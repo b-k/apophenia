@@ -1,30 +1,14 @@
 /** \file apop_bernoulli.c 
  
-  The Bernoulli distribution as an \ref apop_model.
-
-Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+  The Bernoulli distribution as an \ref apop_model.*/
+/*Copyright (c) 2007--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
-
-//The default list. You probably don't need them all.
-#include "types.h"
-#include "conversions.h"
+#include "mapply.h"
 #include "likelihoods.h"
-#include "model.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_histogram.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_permutation.h>
-#include <stdio.h>
-#include <assert.h>
 
 static double bernoulli_log_likelihood(apop_data*, apop_model*);
 
-/*
-
-\todo Look up  the covariance matrix for the parameters of the bernoulli */
 static apop_model * bernoulli_estimate(apop_data * data,  apop_model *parameters){
   apop_model 	*est= parameters ? parameters : apop_model_copy(apop_bernoulli);
   apop_model_clear(data, est);
@@ -43,20 +27,13 @@ static apop_model * bernoulli_estimate(apop_data * data,  apop_model *parameters
 	return est;
 }
 
+double p;
+static double bernie_ll(double x){ return x ? log(p) : log(1-p); }
+
 static double bernoulli_log_likelihood(apop_data *d, apop_model *params){
     apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  int		    i,j;
-  double	    loglike = 0,
-              p       = apop_data_get(params->parameters,0,-1);
-  gsl_matrix 	*data 	= d->matrix;
-	for(i=0;i< data->size1; i++)
-        for(j=0; j< data->size2; j++){
-            if(gsl_matrix_get(data, i, j))
-                loglike += log(p);
-            else
-                loglike += log(1-p);
-        }
-	return loglike;
+    p       = apop_data_get(params->parameters,0,-1);
+	return apop_matrix_map_all_sum(d, bernie_ll);
 }
 
 static double bernoulli_constraint(apop_data *data, apop_model *inmodel){

@@ -36,30 +36,6 @@ Things to do: (* = done)
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 
-/* This documenation is deprecated, having been folded into the outline page.
- 
-  \defgroup histograms Histograms, PMFs, and CMFs
-
-The GSL provides a few structures that basically accumulate data into
-bins. The first is the <tt>gsl_histogram</tt> structure, that produces a PMF.
-
-To produce a PMF from \c your_data, use \ref apop_histogram "apop_estimate(your_data, apop_histogram)", then produce a synced histogram of other data (observed or theoretical) using 
-\ref apop_histogram_vector_reset or 
-\ref apop_histogram_model_reset.
-
-
-The second structure from the GSL incrementally sums up the PMF's bins to
-produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1]
-to a draw from the PMF.  Because it can be used to draw from the PMF,
-the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right:
-the the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative
-sum---a CMF.
-
-Anyway, here are some functions to deal with these various histograms and such.
-
- */
-
-
 /** Give me an existing histogram (i.e., an \c apop_model) and I'll
  create a new histogram with the same bins, but with data from the vector you provide 
 

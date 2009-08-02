@@ -26,8 +26,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 static double zipf_log_likelihood_rank(const apop_data *d, apop_model *m){
   long double     like    = 0, 
                   a       = gsl_vector_get(m->parameters->vector, 0);
-  int             j;
-    for(j=0; j< d->matrix->size2; j++){
+    for(int j=0; j< d->matrix->size2; j++){
         APOP_COL(d, j, v);
         like   -= apop_sum(v) * log(j+1);
     }
@@ -39,15 +38,13 @@ static double zipf_log_likelihood_rank(const apop_data *d, apop_model *m){
 static void zipf_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient, apop_model *m){
   long double     a       = gsl_vector_get(m->parameters->vector, 0),
                   dlike   = 0;
-  int             j;
-    for(j=0; j< d->matrix->size2; j++){
+    for(int j=0; j< d->matrix->size2; j++){
         APOP_COL(d, j, v);
         dlike   -= apop_sum(v) * log(j+1);
     }
     dlike   -= (gsl_sf_zeta(a-1)/(a*gsl_sf_zeta(a))) * d->matrix->size1 * d->matrix->size2;
     gsl_vector_set(gradient,0,dlike);
 }    
-
 
 
 static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
@@ -61,25 +58,15 @@ static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_mode
     return apop_linear_constraint(m->parameters->vector, constraint, 1e-3);
 }
 
-static double oneline_log(gsl_vector *v){
-  int       j;
-  double    like    = 0;
-    for(j=0; j< v->size; j++)
-        like    -= log(gsl_vector_get(v,j));
-    return like;
-}
-
 static double zipf_log_likelihood(apop_data *d, apop_model *m){
   apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     if (apop_settings_get_group(m, "apop_rank"))
         return zipf_log_likelihood_rank(d, m);
   gsl_matrix    *data   = d->matrix;
   long double   bb      = gsl_vector_get(m->parameters->vector, 0);
-  gsl_vector    *logs   = apop_matrix_map(data, oneline_log);
-  long double   like    = apop_vector_sum(logs);
+  double like = -apop_matrix_map_all_sum(data, log);
     like    *= bb;
     like    -= log(gsl_sf_zeta(bb)) * data->size1 * data->size2;
-    gsl_vector_free(logs);
     return like;
 }    
 
@@ -95,11 +82,9 @@ static void zipf_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model 
         return zipf_dlog_likelihood_rank(d, gradient, m);
   double      bb        = gsl_vector_get(m->parameters->vector, 0);
   gsl_matrix  *data     = d->matrix;
-  gsl_vector  *logs     = apop_matrix_map(data, oneline_log);
-  long double dlike     = apop_vector_sum(logs);
+  long double dlike     =  -apop_matrix_map_all_sum(data, log);
     dlike   -= gsl_sf_zeta(bb-1)/(bb*gsl_sf_zeta(bb))  * data->size1 * data->size2;
     gsl_vector_set(gradient,0,dlike);
-    gsl_vector_free(logs);
 }    
 
 /** Draw from a Zipf distribution with parameter \f$ a \f$

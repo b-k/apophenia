@@ -44,32 +44,6 @@ Below is a sample of the sort of output one would get:<br>
 \ingroup mle
 */
 
-/** Allocate settings for a maximum likelihood estimation.
-
- \param parent  A pointer to an allocated \ref apop_model struct.
- */
-apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
-  apop_mle_settings *setme =   calloc(1,sizeof(apop_mle_settings));
-    setme->starting_pt      = NULL;
-    setme->tolerance        = 1e-2;
-    setme->method           = parent->score ? APOP_CG_PR : APOP_SIMPLEX_NM;
-    setme->verbose          = 0;
-    setme->use_score        = 1;
-    setme->step_size        = 0.05;
-    setme->delta            = 1e-2;
-    setme->want_cov         = 1;
-//siman:
-    //siman also uses step_size  = 1.;  
-    setme->n_tries          = 200;  //The number of points to try for each step. 
-    setme->iters_fixed_T    = 200;   //The number of iterations at each temperature. 
-    setme->k                = 1.0;  //The maximum step size in the random walk. 
-    setme->t_initial        = 50;   //cooling schedule data
-    setme->mu_t             = 1.002; 
-    setme->t_min            = 5.0e-1;
-    setme->rng              = NULL;
-    return setme;
-}
-
 
 /** Initialize an \ref apop_mle_settings struct. */
 apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
@@ -95,7 +69,13 @@ apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
     return setme;
 }
 
+/** Allocate settings for a maximum likelihood estimation. But use \ref
+apop_mle_settings_init instead.
 
+ \param parent  A pointer to an allocated \ref apop_model struct.
+ */
+apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
+    return apop_mle_settings_init((apop_mle_settings){.parent=parent}); }
 
 void *apop_mle_settings_copy(apop_mle_settings * in){
   apop_mle_settings *setme = malloc(sizeof(apop_mle_settings));
@@ -643,7 +623,7 @@ This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary){
     apop_model * apop_varad_var(e, NULL);
-    apop_assert(e, 0, 0, 's', "You gave me a NULL model to restart.");
+    assert(e);
     apop_model * apop_varad_var(copy, NULL);
     char * apop_varad_var(starting_pt, NULL);
     double apop_varad_var(boundary, 1e8);

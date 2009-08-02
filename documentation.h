@@ -16,22 +16,6 @@ overview. But most of the documentation is folded into the \ref outline "outline
 
  */
 
-/* Old, no longer used:
-\section dostats Doing statistics 
- \li \ref basic_stats "Basic statistics": Mean, variance, percentiles, &c.
- \li \ref regression  
- \li \ref mle "Maximum likelihood estimation": estimators requiring a search for the maximum of a likelihood function.
- \li \ref linear_algebra "Linear Algebra": determinants, projections, numerical gradients, &c. Some convenience functions to display matrices and vectors.
- \li \ref ttest "Some tests"
- \li \ref histograms 
- \li \ref boot
-
-\section shuntdata Shunting data 
- \li \ref conversions
- \li \ref output "Output functions": Summarize data and print tables to the screen or a file.
- \li \ref convenience_fns "Convenience functions": a few utilities to make life with the GSL a little easier.
- */
-
 /** \page book The book version
 
 Apophenia co-evolved with <em>Modeling with Data: Tools and

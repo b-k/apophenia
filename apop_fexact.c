@@ -2111,9 +2111,6 @@ fexact(&rowct,
 apop_data *out      = apop_data_alloc(2,0,0);
     apop_data_add_named_elmt(out, "probability of table", prt);
     apop_data_add_named_elmt(out, "p value", pre);
-    /*gsl_matrix_set(out->matrix, 0, 0, prt);
-    apop_name_add(out->names, "p value", 'r');
-    gsl_matrix_set(out->matrix, 1, 0, pre);*/
     return out;
 }
 

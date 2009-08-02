@@ -324,8 +324,8 @@ EOD`
 	# all done!
 	#
 ])
-,  
-AC_DEFUN([AC_PYTHON_DEVEL], )
+#,  
+#AC_DEFUN([AC_PYTHON_DEVEL], )
 
 # ===========================================================================
 #           http://www.nongnu.org/autoconf-archive/acx_pthread.html

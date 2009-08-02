@@ -508,10 +508,13 @@ C     whose elements have a Wishart(N, SIGMA) distribution.
         apop_data_set(rmatrix, i, i, gsl_ran_chisq(r, DF));
     }
     
-    for(int i = 0; i< n; i++) //off-diagonal lower triangle: Normals.
+    double ndraw;
+    for(int i = 0; i< n; i++) //off-diagonal triangles: Normals.
           for(int j = 0; j< i; j++){
-            apop_draw(apop_data_ptr(rmatrix, i, j), r, std_normal);
-            assert (!gsl_isnan(apop_data_get(rmatrix, i, j)));
+            apop_draw(&ndraw, r, std_normal);
+            assert (!gsl_isnan(ndraw));
+            apop_data_set(rmatrix, i, j, ndraw);
+            apop_data_set(rmatrix, j, i, ndraw);
           }
 
     //Now find C * rand * rand' * C'

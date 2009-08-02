@@ -6,13 +6,12 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "db.h"
 #include <unistd.h>
 
-
 int main(int argc, char **argv){
 char		c, 
 		*delimiter,
 		msg[1000];
-	sprintf(msg, "%s [opts] main_db.db db_to_merge_into_main.db\n\
-			-v\tverbose\n", argv[0]); 
+	sprintf(msg, "%s [-v] main_db.db db_to_merge_into_main.db\n"
+			     "   -v\tverbose\n", argv[0]); 
 
 	if(argc<3){
 		printf(msg);

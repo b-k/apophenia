@@ -29,7 +29,6 @@
 # define __BEGIN_DECLS /* empty */
 # define __END_DECLS /* empty */
 #endif
-
 __BEGIN_DECLS
 
 typedef enum {
@@ -78,7 +77,6 @@ gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data
 /* Find the var/covar matrix via the hessian. */
 //void apop_numerical_covariance_matrix(apop_model dist, apop_model *est, apop_data *data);
 //void apop_numerical_var_covar_matrix(apop_model dist, apop_model *est, apop_data *data);
-
 
 apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist);
 

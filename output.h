@@ -16,7 +16,6 @@
 # define __BEGIN_DECLS /* empty */
 # define __END_DECLS /* empty */
 #endif
-
 __BEGIN_DECLS
 
 void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char *);

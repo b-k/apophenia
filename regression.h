@@ -1,4 +1,5 @@
-//regression.h	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+/** \file regression.h	*/
+ /* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.*/
 
 #ifndef apop_regression_h
 #define  apop_regression_h
@@ -16,7 +17,6 @@
 # define __BEGIN_DECLS /* empty */
 # define __END_DECLS /* empty */
 #endif
-
 __BEGIN_DECLS
 
 apop_model *apop_fixed_effects_OLS(apop_data *data, gsl_vector *categories);

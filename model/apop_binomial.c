@@ -1,10 +1,7 @@
 /** \file apop_binomial.c 
  
-  The binomial distribution as an \c apop_model.
-
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
-#include "model.h"
+  The binomial distribution as an \c apop_model.*/
+/*Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 //The default list. You probably don't need them all.
 #include "types.h"

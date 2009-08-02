@@ -7,7 +7,7 @@
 #include "mapply.h"
 
 /** \file apop_findzeros.c
- This just includes the root-finding routine. It is \c \#included in apop_mle.c, because I expect you to call it via that. 
+ This just includes the root-finding routine. It is \c \#included in apop_mle.c, because I expect you to use it via \ref apop_mle. 
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 

@@ -30,7 +30,6 @@ extern apop_model apop_chi_squared;
 extern apop_model apop_exponential;
 extern apop_model apop_f_distribution;
 extern apop_model apop_gamma;
-extern apop_model apop_gaussian;//synonym for apop_normal
 extern apop_model apop_histogram;
 extern apop_model apop_improper_uniform;
 extern apop_model apop_iv;
@@ -52,6 +51,7 @@ extern apop_model apop_wls;
 extern apop_model apop_yule;
 extern apop_model apop_zipf;
 
+#define apop_gaussian apop_normal
 #define apop_OLS apop_ols
 #define apop_F_distribution apop_f_distribution
 #define apop_WLS apop_wls

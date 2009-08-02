@@ -1,27 +1,11 @@
 /** \file apop_yule.c
 
-  The Yule distribution. A special case of the Waring.
+  The Yule distribution. A special case of the Waring.*/ 
+/*Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
-
-//The default list. Probably don't need them all.
-#include "model.h"
 #include "types.h"
-#include "output.h"
 #include "mapply.h"
-#include "settings.h"
-#include "conversions.h"
 #include "likelihoods.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_permutation.h>
-#include <stdio.h>
-#include <assert.h>
-
-
 
 static double yule_log_likelihood_rank(apop_data *d, apop_model *m){
   float         bb	            = gsl_vector_get(m->parameters->vector, 0);
@@ -131,18 +115,10 @@ double		    bb_minus_one_inv= 1/(bb-1),
 
 /** Draw from a Yule distribution with parameter a
 
-Call this fn using \ref apop_yule.rng().
+Call this fn using <tt> apop_draw(*out, r, apop_yule)</tt>.
 
 \param	a	The parameter.
 \param	r	A gsl_rng that you've already set up.
-
-For example:
-\code
-gsl_rng *       r;
-gsl_rng_env_setup();
-r=gsl_rng_alloc(gsl_rng_taus);	//for example. 
-apop_yule_rng(r, 1.4);
-\endcode
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
 static void yule_rng( double *out, gsl_rng * r, apop_model *a){
@@ -153,7 +129,6 @@ int		x;
 	x	= GSL_MAX((int) (- e1  / log(1 - exp(-e2 / (*a->parameters->vector->data -1)))), 0);
 	*out =  x + 1;	//we rounded down to floor, but want ceil.
 }
-
 
 
 /** The Yule distribution

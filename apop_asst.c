@@ -13,17 +13,16 @@ force. To speed things along, I save the results so that they can later
 just be looked up. Each row in the saved structure is an \f$s\f$, and each
 column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
 
-When reading the code, remember that the zeroth element holds the value
-for N=1, and so on.
-
 \todo Look up the tricks for calculating this.
 */
 double apop_generalized_harmonic(int N, double s){
-static double * 	eses	= NULL;
-static int * 		lengths	= NULL;
-static int		    count	= 0;
-static double **	precalced=NULL;
-int			        j, old_len, i;
+//When reading the code, remember that the zeroth element holds 
+//the value for N=1, and so on.
+  static double * 	eses	= NULL;
+  static int * 		lengths	= NULL;
+  static int		  count	= 0;
+  static double **	precalced=NULL;
+  int			        j, old_len, i;
 	for (i=0; i< count; i++)
 		if (eses == NULL || eses[i] == s) 	
             break;
@@ -139,7 +138,6 @@ apop_system("ls -l %s", filenames);
 \endcode
 
 \return The return value of the \c system() call.
-
  */
 int apop_system(const char *fmt, ...){
   char 		*q;

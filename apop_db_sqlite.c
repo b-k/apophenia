@@ -162,47 +162,23 @@ static void kurtFinalize(sqlite3_context *context){
       	sqlite3_result_double(context, 0);
 }
 
-static void sqrtFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, sqrt(sqlite3_value_double(argv[0]))); }
-
 static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
   double  base    = sqlite3_value_double(argv[0]);
   double  exp     = sqlite3_value_double(argv[1]);
     sqlite3_result_double(context, pow(base, exp));
 }
 
-static void expFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, exp(sqlite3_value_double(argv[0]))); }
-
-static void logFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, log(sqlite3_value_double(argv[0]))); }
-
-static void log10Fn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, log10(sqlite3_value_double(argv[0]))); }
-
-static void sinFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, sin(sqlite3_value_double(argv[0]))); }
-
-static void cosFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, cos(sqlite3_value_double(argv[0]))); }
-
-static void tanFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, tan(sqlite3_value_double(argv[0]))); }
-
-static void asinFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, asin(sqlite3_value_double(argv[0]))); }
-
-static void acosFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, acos(sqlite3_value_double(argv[0]))); }
-
-static void atanFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    sqlite3_result_double(context, atan(sqlite3_value_double(argv[0]))); }
-
 static void rngFn(sqlite3_context *context, int argc, sqlite3_value **argv){
     if (!db_rng)
         apop_db_rng_init(0);
     sqlite3_result_double(context, gsl_rng_uniform(db_rng));
 }
+
+#define sqfn(name) static void name##Fn(sqlite3_context *context, int argc, sqlite3_value **argv){ \
+    sqlite3_result_double(context, name(sqlite3_value_double(argv[0]))); }
+
+sqfn(sqrt) sqfn(exp) sqfn(log) sqfn(log10) sqfn(sin) 
+sqfn(cos) sqfn(tan) sqfn(asin) sqfn(acos) sqfn(atan)
 
 
 static int apop_sqlite_db_open(char *filename){
@@ -223,20 +199,13 @@ static int apop_sqlite_db_open(char *filename){
 	sqlite3_create_function(db, "skew", 1, SQLITE_ANY, NULL, NULL, &threeStep, &skewFinalize);
 	sqlite3_create_function(db, "kurt", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
 	sqlite3_create_function(db, "kurtosis", 1, SQLITE_ANY, NULL, NULL, &fourStep, &kurtFinalize);
-	sqlite3_create_function(db, "sqrt", 1, SQLITE_ANY, NULL, &sqrtFn, NULL, NULL);
-	sqlite3_create_function(db, "pow", 2, SQLITE_ANY, NULL, &powFn, NULL, NULL);
-	sqlite3_create_function(db, "exp", 1, SQLITE_ANY, NULL, &expFn, NULL, NULL);
-	sqlite3_create_function(db, "sin", 1, SQLITE_ANY, NULL, &sinFn, NULL, NULL);
-	sqlite3_create_function(db, "cos", 1, SQLITE_ANY, NULL, &cosFn, NULL, NULL);
-	sqlite3_create_function(db, "tan", 1, SQLITE_ANY, NULL, &tanFn, NULL, NULL);
-	sqlite3_create_function(db, "asin", 1, SQLITE_ANY, NULL, &asinFn, NULL, NULL);
-	sqlite3_create_function(db, "acos", 1, SQLITE_ANY, NULL, &acosFn, NULL, NULL);
-	sqlite3_create_function(db, "atan", 1, SQLITE_ANY, NULL, &atanFn, NULL, NULL);
-	sqlite3_create_function(db, "log", 1, SQLITE_ANY, NULL, &logFn, NULL, NULL);
 	sqlite3_create_function(db, "ln", 1, SQLITE_ANY, NULL, &logFn, NULL, NULL);
-	sqlite3_create_function(db, "log10", 1, SQLITE_ANY, NULL, &log10Fn, NULL, NULL);
 	sqlite3_create_function(db, "ran", 0, SQLITE_ANY, NULL, &rngFn, NULL, NULL);
 	sqlite3_create_function(db, "rand", 0, SQLITE_ANY, NULL, &rngFn, NULL, NULL);
+
+#define sqlink(name) sqlite3_create_function(db, #name , 1, SQLITE_ANY, NULL, &name##Fn, NULL, NULL);
+    sqlink(sqrt) sqlink(pow) sqlink(exp) sqlink(sin) sqlink(cos)
+    sqlink(tan) sqlink(asin) sqlink(acos) sqlink(atan) sqlink(log) sqlink(log10)
 	apop_query("pragma short_column_names");
     return 0;
 }

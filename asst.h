@@ -17,14 +17,10 @@
 # define __BEGIN_DECLS /* empty */
 # define __END_DECLS /* empty */
 #endif
-
 __BEGIN_DECLS
 
 double apop_generalized_harmonic(int N, double s);
 void apop_error(int level, char stop, char *message, ...);
-
-
-
 
 apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
@@ -95,18 +91,14 @@ ps: we just capitalize the first letter to remind you that it's a macro, but so 
 
 #define APOP_SETTINGS_ALLOC(type, out, ...) Apop_settings_alloc(type, out, __VA_ARGS__)
 
-
-
 ////////Bootstrapping & RNG
 apop_data * apop_jackknife_cov(apop_data *data, apop_model model);
 APOP_VAR_DECLARE apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, gsl_rng* rng, int iterations);
 gsl_rng *apop_rng_alloc(int seed);
 
-
 ////////Missing data
 apop_data * apop_data_listwise_delete(apop_data *d);
 apop_model * apop_ml_imputation(apop_data *d, apop_model* meanvar);
-
 
 /** Method settings for a model to be put through Bayesian updating. 
 \li starting_pt      The first parameter to check in the MCMC routine
@@ -125,6 +117,7 @@ typedef struct{
 } apop_update_settings;
 
 apop_update_settings *apop_update_settings_alloc(apop_data *d);
+apop_update_settings *apop_update_settings_init(apop_update_settings);
 #define apop_update_settings_copy NULL
 #define  apop_update_settings_free NULL
 

@@ -1,29 +1,25 @@
-/** \file apop_exponential.c
+/** \file apop_exponential.c 
+        The Exponential distribution.
+        */
+/* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
-//The default list. Probably don't need them all.
-#include "types.h"
-#include "stats.h"
 #include "model.h"
 #include "settings.h"
-#include "conversions.h"
 #include "likelihoods.h"
-#include "linear_algebra.h"
-#include <math.h>
-#include <stdio.h>
-#include <assert.h>
 
 /** If this settings group is present, models that can take rank data
   will read the input data as such.  Allocation is thus very simple, e.g.
   \code
-  Apop_settings_group_add(your_model, apop_rank, NULL);
+  Apop_model_group_add(your_model, apop_rank);
   \endcode */
-apop_rank_settings *apop_rank_settings_alloc(void *ignoreme){
+apop_rank_settings *apop_rank_settings_init(apop_rank_settings in){
     apop_rank_settings *out = malloc(sizeof(apop_rank_settings));
     out->rank_data = 'r';
     return out;
 }
+
+apop_rank_settings *apop_rank_settings_alloc(void *ignoreme){
+    return apop_rank_settings_init((apop_rank_settings){}); }
 
 void apop_rank_settings_free(apop_rank_settings *in){free(in);}
 
@@ -155,7 +151,7 @@ static void exponential_rng(double *out, gsl_rng* r, apop_model *p){
 }
 
 
-/** The exponential distribution. A one-parameter likelihood fn.
+/** The Exponential distribution. A one-parameter likelihood fn.
 
 Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
 
@@ -172,7 +168,7 @@ via \f$C=\exp(1/\mu)\f$.
 
 To specify that you have frequency or ranking data, use 
 \code
-Apop_settings_add_group(your_model, apop_rank, NULL);
+Apop_model_add_group(your_model, apop_rank);
 \endcode
 
 \ingroup models

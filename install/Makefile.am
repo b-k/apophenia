@@ -26,7 +26,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			model/apop_uniform.c model/apop_beta.c			\
 			model/apop_waring.c model/apop_yule.c 	 		\
 			model/apop_bernoulli.c model/apop_binomial.c 	\
-			model/apop_histogram.c model/apop_kernel.c 		
+			model/apop_histogram.c 
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
 				regression.h stats.h types.h        		\
@@ -41,7 +41,6 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc
 
 #SWIG
-
 if HAVE_PYTHON
 python_PYTHON = apop.py
 
@@ -51,14 +50,14 @@ apop.py: apop.i
 	mv apop.tmp.py apop.py; \
 	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I$(pkgincludedir) $(PYTHON_CPPFLAGS) ; \
 	$(CC) -shared apop_wrap.o $(PYTHON_CPPFLAGS) -o _apop.so -lapophenia -lgsl -lgslcblas $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS) ;
-#else 
-#	echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
-#	touch apop.py ; 
+	echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
+	touch apop.py ; 
 
 install-exec-hook: apop.py
 	@if test -e _apop.so ; then \
 		cp _apop.so ${pythondir} ; \
 	fi
+else 
 endif
 
 #The programs

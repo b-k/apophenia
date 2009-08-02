@@ -115,6 +115,7 @@ apop_data * apop_data_calloc(const size_t vsize, const size_t msize1, const int 
 
 
 /** Wrap an \ref apop_data structure around an existing \c gsl_matrix.
+ The matrix is not copied, but is pointed to by the new \ref apop_data struct.
 
 \param m    The existing matrix you'd like to turn into an \ref apop_data structure.
 \return      The \ref apop_data structure whose \c matrix pointer points to the input matrix. The rest of the struct is basically blank.
@@ -127,6 +128,7 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 }
 
 /** Wrap an \ref apop_data structure around an existing \c gsl_vector.
+ The vector is not copied, but is pointed to by the new \ref apop_data struct.
 
 \param  v   The data vector
 \return     an allocated, ready-to-use \ref apop_data struture.
@@ -143,7 +145,7 @@ apop_data * apop_vector_to_data(gsl_vector *v){
  \code
  apop_text_free(yourdata->text, yourdata->textsize[0], yourdata->textsize[1]);
  \endcode
- This is what \c apop_data_free does internally.
+ This is what \c apop_data_free uses internally.
    */
 void apop_text_free(char ***freeme, int rows, int cols){
   int  i, j;

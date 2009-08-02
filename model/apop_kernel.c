@@ -1,15 +1,6 @@
 /** \file apop_kernel.c 
 
-  A Kernel density is simply a smoothing of a histogram. At each point
-  along the histogram, put a distribution (default: Normal(0,1)) on
-  top of the point. Sum all of these distributions to form the output
-  histogram.
-
-  The output is a histogram that behaves exactly like the gsl_histogram,
-  except the histobase and kernelbase elements are set.
-
-Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
-*/
+/* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "types.h"
@@ -19,7 +10,6 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 #include <gsl/gsl_histogram.h>
 #include <stdio.h>
 #include <assert.h>
-
 
 static void apop_set_first_params(double in, apop_model *m){
     m->parameters->vector->data[0]  = in;
@@ -143,25 +133,18 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
     return out;
 }
 
-static double apop_kernel_density_log_likelihood(apop_data *d, apop_model *p){
-    return log(apop_histogram.p(d,p));
-}
-
-static double apop_kernel_density_p(apop_data *d, apop_model *p){
-    return apop_histogram.p(d, p);
-}
-
-static void apop_kernel_density_rng( double *out, gsl_rng *r, apop_model* eps){
-    apop_histogram.draw(out, r, eps);
-}
-
 /** The apop_kernel_density model.
-Takes in a histogram, and smooths it out via the kernel density method.
 
+  A Kernel density is simply a smoothing of a histogram. At each point
+  along the histogram, put a distribution (default: Normal(0,1)) on
+  top of the point. Sum all of these distributions to form the output
+  histogram.
+
+  The output is a histogram that behaves exactly like the gsl_histogram,
+  except the histobase and kernelbase elements are set.
 
 \ingroup models
 */
 apop_model apop_kernel_density = {"kernel density estimate", 1,0,0,
-	.estimate = apop_kernel_density_estimate, .p = apop_kernel_density_p,
-    .log_likelihood = apop_kernel_density_log_likelihood,
-     .draw = apop_kernel_density_rng};
+	.estimate = apop_kernel_density_estimate, 
+    .p = histogram_p, .log_likelihood = histogram_ll, .draw = histogram_rng};

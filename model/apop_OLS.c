@@ -23,21 +23,6 @@ void * apop_ls_settings_copy(apop_ls_settings *in){
 
 void apop_ls_settings_free(apop_ls_settings *in){ free(in); }
 
-/** Allocate an \c apop_ls_settings structure. 
-
- \param data the data
- \return an \c apop_ls_settings 
- */
-apop_ls_settings * apop_ls_settings_alloc(apop_data *data){
-  apop_ls_settings *out  = malloc(sizeof(*out));
-    out->destroy_data       =  0;
-    out->want_cov           =  1;
-    out->want_expected_value=  1;
-    out->weights            = NULL;
-    out->instruments        = NULL;
-    return out;
-}
-
 apop_ls_settings * apop_ls_settings_init(apop_ls_settings in){
   apop_ls_settings *out  = calloc(1, sizeof(*out));
     apop_varad_setting(in, out, want_cov,  1);
@@ -45,6 +30,8 @@ apop_ls_settings * apop_ls_settings_init(apop_ls_settings in){
     return out;
 }
 
+apop_ls_settings * apop_ls_settings_alloc(apop_data *data){
+    return apop_ls_settings_init((apop_ls_settings){ }); }
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
@@ -96,7 +83,6 @@ errors are normally distributed.
 
 This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.
-
  */
 static double ols_log_likelihood (apop_data *d, apop_model *p){ 
   apop_assert(p->parameters, 0, 0,'s', "You asked me to evaluate an un-parametrized model. Returning zero.");

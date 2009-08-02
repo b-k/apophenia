@@ -14,7 +14,6 @@
 # define __BEGIN_DECLS /* empty */
 # define __END_DECLS /* empty */
 #endif
-
 __BEGIN_DECLS
 
 void * apop_settings_get_group(apop_model *m, char *type);
@@ -33,7 +32,21 @@ __END_DECLS
 
 /* If the group already exists, it is silently removed. */
 
-/** Add a settings group. You will need to provide arguments for the
+
+
+
+/** Add a settings group. The first two arguments (the model you are
+ attaching to and the settings group name) are mandatory, and then you can use the \ref designated syntax to specify default values (if any).
+ */
+#define Apop_model_add_group(model, type, ...)  \
+    apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__})); 
+
+/* A convenience for your settings group init functions. 
+ Gives the output item either the defaut value if there is one, or the value you specify. */
+#define apop_varad_setting(in, out, name, value) (out)->name = (in).name ? (in).name : (value);
+
+/** Add a settings group. Deprecated; use \ref Apop_model_add_group instead.
+  You will need to provide arguments for the
  specific settings group you are dealing with, such as \ref apop_mle_settings_alloc, \ref apop_ls_settings_alloc, \ref apop_histogram_settings_alloc. */
 #define Apop_settings_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_alloc (__VA_ARGS__)); 

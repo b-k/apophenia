@@ -1,7 +1,7 @@
 /** \file apop_update.c The \c apop_update function.
 The header is in asst.h.
 
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "asst.h"
 #include "model/model.h"
@@ -85,18 +85,20 @@ likelihood. If you give me a parametrized normal, with no data, then I'll take t
     return NULL;
 }
 
-
-/** Allocate an \ref apop_update_settings struct. See also the \ref Apop_settings_alloc macro.  */
-apop_update_settings *apop_update_settings_alloc(apop_data *d){
+/** Allocate an \ref apop_update_settings struct.  */
+apop_update_settings *apop_update_settings_init(apop_update_settings in){
    apop_update_settings *out = malloc(sizeof(apop_update_settings));
    Apop_assert(out, NULL, 0, 's', "malloc failed. You are probably out of memory.");
-   out->starting_pt = NULL;
-   out->periods = 6e3;
-   out->histosegments = 5e2;
-   out->burnin = 0.05;
-   out->method = 'd'; //default
+   apop_varad_setting(in, out, periods, 6e3);
+   apop_varad_setting(in, out, histosegments, 5e2);
+   apop_varad_setting(in, out, burnin, 0.05);
+   apop_varad_setting(in, out, method, 'd'); //default
    return out;
 }
+
+/** Allocate an \ref apop_update_settings struct. See also \ref apop_update_settings_init, which is not deprecated.  */
+apop_update_settings *apop_update_settings_alloc(apop_data *d){
+    return apop_update_settings_init((apop_update_settings){ }); }
 
 /** Take in a prior and likelihood distribution, and output a posterior
  distribution.

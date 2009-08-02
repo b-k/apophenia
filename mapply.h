@@ -14,7 +14,6 @@
 # define __BEGIN_DECLS /* empty */
 # define __END_DECLS /* empty */
 #endif
-
 __BEGIN_DECLS
 
 gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*));

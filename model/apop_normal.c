@@ -1,26 +1,15 @@
 /** \file apop_normal.c
 
-The Normal and Lognormal distributions.
+The Normal and Lognormal distributions.*/
+/* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
-//The default list. Probably don't need them all.
-#include "asst.h"
-#include "types.h"
+#include "model.h"
 #include "mapply.h"
 #include "settings.h"
 #include "regression.h"
-#include "conversions.h"
 #include "likelihoods.h"
-#include "model.h"
-#include "stats.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
 static double normal_log_likelihood(apop_data *d, apop_model *params);
 
-//////////////////
-//The Normal (gaussian) distribution
-//////////////////
 
 /** The normal estimate */
 static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
@@ -69,13 +58,7 @@ static double apply_me(gsl_vector *v){
 
 //This just takes the sum of (x-mu)^2. Using gsl_ran_gaussian_pdf
 //would be to calculate log(exp((x-mu)^2)) == slow.
-static double apply_me2(gsl_vector *v){
-  int           i;
-  long double    ll  = 0;
-    for(i=0; i< v->size; i++)
-	    ll	+= gsl_pow_2(gsl_vector_get(v, i) - mu);
-    return ll;
-}
+static double apply_me2(double x){ return gsl_pow_2(x - mu); }
 
 /* The log likelihood function for the Normal.
 
@@ -91,16 +74,16 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 \param d	the set of data points; see notes.
 */
 static double normal_log_likelihood(apop_data *d, apop_model *params){
-  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  assert(params->parameters);
     mu	        = gsl_vector_get(params->parameters->vector,0);
     sd          = gsl_vector_get(params->parameters->vector,1);
-  long double   ll  = -apop_matrix_map_sum(d->matrix, apply_me2)/(2*gsl_pow_2(sd));//sum of (x-mu)^2/(2 sd^2)
+  long double   ll  = -apop_matrix_map_all_sum(d->matrix, apply_me2)/(2*gsl_pow_2(sd));//sum of (x-mu)^2/(2 sd^2)
     ll    -=  d->matrix->size1*d->matrix->size2*(M_LNPI+M_LN2+log(sd));
 	return ll;
 }
 
 static double normal_p(apop_data *d, apop_model *params){
-  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  assert(params->parameters);
     mu	        = gsl_vector_get(params->parameters->vector,0);
     sd          = gsl_vector_get(params->parameters->vector,1);
   gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me);
@@ -136,7 +119,6 @@ static void normal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
     //gsl_vector_set(gradient, 1, sll/(2*gsl_pow_2(ss))- data->size1 * data->size2 * 0.5/ss);
     gsl_vector_set(gradient, 1, sll/gsl_pow_3(sd)- data->size1 * data->size2 /sd);
 }
-
 
 
 /** An apophenia wrapper for the GSL's Normal RNG.
@@ -177,23 +159,8 @@ apop_model apop_normal = {"Normal distribution", 2, 0, 0,
  .estimate = normal_estimate, .p = normal_p, .log_likelihood = normal_log_likelihood, .score = normal_dlog_likelihood, 
  .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng};
 
-/** This is a synonym for \ref apop_normal, q.v.
-\ingroup models
-*/
-apop_model apop_gaussian = {"Normal distribution", 2,0,0,
- .estimate = normal_estimate, .p = normal_p, .log_likelihood = normal_log_likelihood, 
- .score = normal_dlog_likelihood, .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng};
 
-
-
-
-
-
-//////////////////
 //The Lognormal distribution
-//////////////////
-
-
 
 
 static double lognormal_log_likelihood(apop_data *d, apop_model *params);
@@ -221,17 +188,15 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
 static double   mu, sd;
 
 static double apply_me2a(gsl_vector *v){
-  int           i;
   long double    ll  = 0;
-    for(i=0; i< v->size; i++)
+    for(int i=0; i< v->size; i++)
 	    ll	+= log(gsl_vector_get(v, i));
     return ll;
 }
 
 static double apply_me2b(gsl_vector *v){
-  int           i;
   long double    ll  = 0;
-    for(i=0; i< v->size; i++)
+    for(int i=0; i< v->size; i++)
 	    ll	+= gsl_pow_2(log(gsl_vector_get(v, i)) - mu);
     return ll;
 }
@@ -245,7 +210,7 @@ static double apply_me2b(gsl_vector *v){
 \param d	the set of data points; see notes.
 */
 static double lognormal_log_likelihood(apop_data *d, apop_model *params){
-  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  assert(params->parameters);
     mu	        = gsl_vector_get(params->parameters->vector,0);
     sd          = gsl_vector_get(params->parameters->vector,1);
     gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me2b);//sum of (ln(x)-mu)^2
@@ -257,13 +222,12 @@ static double lognormal_log_likelihood(apop_data *d, apop_model *params){
 }
 
 static double lognormal_p(apop_data *d, apop_model *params){
-  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  int   i, j;
+  assert(params->parameters);
   long double ll    = 1;
     mu	= gsl_vector_get(params->parameters->vector,0);
     sd  = gsl_pow_2(gsl_vector_get(params->parameters->vector,1));//really, var.
-    for (i=0; i< d->matrix->size1; i++)
-        for (j=0; j< d->matrix->size1; j++){
+    for (int i=0; i< d->matrix->size1; i++)
+        for (int j=0; j< d->matrix->size1; j++){
             double x = gsl_matrix_get(d->matrix, i, j);
             ll      *=  exp(-gsl_pow_2(log(x)-mu)/(2*sd))/(x*sd * M_LNPI+M_LN2);
         }

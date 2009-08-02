@@ -17,7 +17,6 @@
 # define __BEGIN_DECLS /* empty */
 # define __END_DECLS /* empty */
 #endif
-
 __BEGIN_DECLS
 
 /**\defgroup types Types defined by Apophenia. 
@@ -56,8 +55,6 @@ all the other information about a data aaray such as the number of rows
 and columns.  See \ref names.
 
 */
-
-
 
 
 /** A data set is assumed to be a matrix where each row is a single

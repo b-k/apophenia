@@ -1,25 +1,12 @@
 /** \file apop_gamma.c
 
-  The gamma distribution.
+  The gamma distribution.*/
 
-Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/*Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "model.h"
-
-
-//The default list. Probably don't need them all.
 #include "types.h"
-#include "settings.h"
-#include "conversions.h"
+#include "mapply.h"
 #include "likelihoods.h"
-#include "model.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_histogram.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_permutation.h>
-
 
 static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
   float           a           = gsl_vector_get(p->parameters->vector, 0),
@@ -41,8 +28,6 @@ static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
     return llikelihood;
 }
 
-/** The derivative of the Gamma distribution, for use in likelihood
- * minimization. You'll probably never need to call this directly.*/
 static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   double          a       = gsl_vector_get(p->parameters->vector, 0),
                   b       = gsl_vector_get(p->parameters->vector, 1);
@@ -65,8 +50,6 @@ static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_
     gsl_vector_set(gradient,1, d_b);
 }
 
-
-
 static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
   static apop_data *constraint = NULL;
@@ -78,25 +61,22 @@ static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_
     return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
 }
 
+double a, b; 
+static double apply_for_gamma(double x) { return (a-1)*log(x) - x/b; }
+
 static double gamma_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     if (apop_settings_get_group(p, "apop_rank"))
         return gamma_rank_log_likelihood(d, p);
-  float         a    = gsl_vector_get(p->parameters->vector, 0),
-                b    = gsl_vector_get(p->parameters->vector, 1);
-  int           i, k;
+  a    = gsl_vector_get(p->parameters->vector, 0),
+  b    = gsl_vector_get(p->parameters->vector, 1);
   gsl_matrix    *data        = d->matrix;
   double        llikelihood  = 0,
         ln_ga 	= gsl_sf_lngamma(a),
         ln_b	= log(b),
-        a_ln_b	= a * ln_b,
-        x;
-    for (i=0; i< data->size1; i++)
-        for (k=0; k< data->size2; k++){
-            x	= gsl_matrix_get(data, i, k);
-            if (x!=0)
-                llikelihood    += -ln_ga - a_ln_b + (a-1) * log(x) - x/b;
-        }
+        a_ln_b	= a * ln_b;
+    llikelihood    = apop_matrix_map_all_sum(data, apply_for_gamma);
+    llikelihood    += (-ln_ga - a_ln_b)*(data->size1*data->size2);
     return llikelihood;
 }
 
