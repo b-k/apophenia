@@ -4,7 +4,6 @@
 
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "mapply.h"
 #include "stats.h"
 #include "output.h"
 #include "model/model.h"

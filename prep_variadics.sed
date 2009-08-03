@@ -14,16 +14,23 @@
 h
 g
 s/APOP_VAR_DECLARE/\#ifdef APOP_NO_VARIADIC\n/
+s/!/,/g
 p
 g
 s/APOP_VAR_DECLARE/\#else\n/
 s/\([^ (]\) *(/\1_base(/
+s/!/,/g
 p
 g
 s/,/;/g
+#annoying detail: if you take in a function, then those commas shouldn't be
+#semicolons. so: declare like this: int (*infunction)(int! double *!  void)
+#and I'll replace ! with , .
+s/!/,/g
 s/ *(/, /
 s/ \([^ ]*,\)/, \1/
 s/APOP_VAR_DECLARE / apop_varad_declare(/
+s/!/,/g
 p
 g
 #This form finds the line between function type and function name:

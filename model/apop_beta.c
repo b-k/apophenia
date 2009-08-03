@@ -54,15 +54,20 @@ static apop_model * beta_estimate(apop_data * data,  apop_model *parameters){
 	return est;
 }
 
-double alpha, beta;
-static double betamap(double x) { return alpha * log(x) + beta *log(1-x); }
+typedef struct{
+    double alpha, beta; 
+} ab_type;
+
+static double betamap(double x, void *abin) {ab_type *ab = abin; return ab->alpha * log(x) + ab->beta *log(1-x); }
 
 static double beta_log_likelihood(apop_data *d, apop_model *p){
+    ab_type ab;
   apop_assert(p->parameters,  0, 0, 's', "You asked me to evaluate an un-parametrized model.");
-    alpha       = apop_data_get(p->parameters,0,-1),
-    beta        = apop_data_get(p->parameters,1,-1);
-	return apop_matrix_map_all_sum(d->matrix, betamap)  
-                    + gsl_sf_lnbeta (alpha, beta)*d->matrix->size1*d->matrix->size2;
+    ab.alpha       = apop_data_get(p->parameters,0,-1),
+    ab.beta        = apop_data_get(p->parameters,1,-1);
+	//return apop_matrix_map_all_sum(d->matrix, betamap)  
+	return apop_map_sum(d, .fn_dp = betamap, .param=&ab) 
+                    + gsl_sf_lnbeta (ab.alpha, ab.beta)*d->matrix->size1*d->matrix->size2;
 }
 
 static double beta_constraint(apop_data *data, apop_model *v){

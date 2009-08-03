@@ -3,6 +3,8 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+	August 2009
+--apop_map and apop_map_sum. Reworks the apop_(map|apply) system to be More flexible but a little more complex.
 
 	July 2009
 --multivariate gamma, log-gamma.

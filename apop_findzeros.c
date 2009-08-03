@@ -4,7 +4,6 @@
 #include <gsl/gsl_multiroots.h>
 #include "asst.h"
 #include "types.h"
-#include "mapply.h"
 
 /** \file apop_findzeros.c
  This just includes the root-finding routine. It is \c \#included in apop_mle.c, because I expect you to use it via \ref apop_mle. 

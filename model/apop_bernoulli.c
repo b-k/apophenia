@@ -27,13 +27,12 @@ static apop_model * bernoulli_estimate(apop_data * data,  apop_model *parameters
 	return est;
 }
 
-double p;
-static double bernie_ll(double x){ return x ? log(p) : log(1-p); }
+static double bernie_ll(double x, void * pin){ double *p = pin; return x ? log(*p) : log(1-*p); }
 
 static double bernoulli_log_likelihood(apop_data *d, apop_model *params){
     apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-    p       = apop_data_get(params->parameters,0,-1);
-	return apop_matrix_map_all_sum(d, bernie_ll);
+    double p   = apop_data_get(params->parameters,0,-1);
+	return apop_map_sum(d, .fn_dp = bernie_ll, .param=&p);
 }
 
 static double bernoulli_constraint(apop_data *data, apop_model *inmodel){

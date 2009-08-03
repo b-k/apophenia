@@ -45,27 +45,17 @@ static double beta_zero_greater_than_x_constraint(apop_data *returned_beta, apop
     return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
 }
 
-static double ln_l;
 
-static double apply_me(gsl_vector *v){
-  int       k;
-  double    x,
-            llikelihood = 0;
-    for (k=0; k< v->size; k++){
-        x	= gsl_vector_get(v, k);
-        if (x!=0)
-            llikelihood    += ln_l *x - gsl_sf_lngamma(x+1);
-    }
-    return llikelihood;
+static double apply_me(double x, void *in){
+  double    *ln_l = in;
+    return x==0 ? 0 :  *ln_l *x - gsl_sf_lngamma(x+1);
 }
 
 static double poisson_log_likelihood(apop_data *d, apop_model * p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double        lambda      = gsl_vector_get(p->parameters->vector, 0);
-    ln_l 	= log(lambda);
-  gsl_vector *  v           = apop_matrix_map(d->matrix, apply_me);
-  double        llikelihood = apop_vector_sum(v);
-    gsl_vector_free(v);
+  double  ln_l 	= log(lambda);
+  double  ll    = apop_map(d, .fn_dp = apply_me, .params=&ln_l, .part='a');
     return llikelihood - d->matrix->size1*d->matrix->size2*lambda;
 }
 

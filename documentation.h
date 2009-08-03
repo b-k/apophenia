@@ -559,12 +559,24 @@ These functions allow you to send each element of a vector or matrix to
 a function, either producing a new matrix (map) or transforming the original (apply). 
 The \c ..._sum functions return the sum of the mapped output.
 
+There is an older and a newer set of functions. The older versions, which act on <tt>gsl_matrix</tt>es or <tt>gsl_vector</tt>s have more verbose names; the newer versions, which act on the elements of an \ref apop_data set, use the \ref designated syntax to ad a few options and a more brief syntax.
+
 You can do many things quickly with these functions.
 
 Get the sum of squares of a vector's elements:
 
 \code
-double sum_of_squares = apop_vector_map_sum(dataset, gsl_pow_2);
+double sum_of_squares = apop_map_sum(dataset, gsl_pow_2); //given <tt> apop_data *dataset</tt>
+
+double sum_of_squares = apop_vector_map_sum(v, gsl_pow_2); //given <tt> gsl_vector *v</tt>
+\endcode
+
+Here, we create an index vector [0, 1, 2, \dots].
+
+\code
+double index(double in, int index){return index;}
+apop_data *d = apop_data_alloc(100, 0, 0);
+apop_map(d, .fn_di=index, .inplace=1);
 \endcode
 
 Given your log likelihood function and a data set where each row of the matrix is an observation, find the total log likelihood:
@@ -580,20 +592,18 @@ How many missing elements are there in your data matrix?
 \code
 static double nan_check(const double in){ return isnan(in);}
 
-    int nan_count = apop_matrix_map_all_sum(in, nan_check);
+    int nan_count_data = apop_map_sum(in, nan_check, .part='m');
 \endcode
 
-Notice that the \c _map_ functions operate one row at a time; the \c _map_all_ functions operate one element at a time.
 
-
-Get the mean of the not-NaN elements of a vector:
+Get the mean of the not-NaN elements of a data set:
 
 \code
 static double no_nan_val(const double in){ return isnan(in)? 0 : in;}
 static double nan_check(const double in){ return isnan(in);}
 
-static double apop_mean_no_nans(gsl_vector *in){
-    return apop_vector_map_sum(in, no_nan_val)/apop_vector_map_sum(in, nan_check);
+static double apop_mean_no_nans(apop_data *in){
+    return apop_map_sum(in, no_nan_val)/apop_map_sum(in, nan_check);
 }
 \endcode
 
@@ -602,39 +612,42 @@ numbers with a different mean. It then finds the \f$t\f$ statistic for
 each row, and the confidence with which we reject the claim that
 the statistic is less than or equal to zero.
 
-Notice how it uses file-global variables to pass information into the functions.
+Notice how the older \ref apop_vector_apply uses file-global variables
+to pass information into the functions, while the \ref apop_map uses a
+pointer to the constant parameters to input to the functions.
 
 \code
 #include <apop.h>
 
-size_t df;
-double col_offset;
+double row_offset;
 gsl_rng *r;
 
-void offset_rng(double *v){*v = gsl_rng_uniform(r) + col_offset;}
-double find_tstat(const gsl_vector *in){ return apop_mean(in)/sqrt(apop_var(in));}
-double conf(const double in){return gsl_cdf_tdist_P(in, df);}
+void offset_rng(double *v){*v = gsl_rng_uniform(r) + row_offset;}
+double find_tstat(gsl_vector *in){ return apop_mean(in)/sqrt(apop_var(in));}
+double conf(double in, void *df){ return gsl_cdf_tdist_P(in, *(int *)df);}
 
 int main(){
     apop_data *d = apop_data_alloc(0, 10, 100);
     r = apop_rng_alloc(3242);
     for (int i=0; i< 10; i++){
-        col_offset = gsl_rng_uniform(r)*2 -1;
+        row_offset = gsl_rng_uniform(r)*2 -1;
         Apop_row(d, i, onerow);
         apop_vector_apply(onerow, offset_rng);
     }
-    
-    df = d->matrix->size2-1;
-    gsl_vector *means = apop_matrix_map(d->matrix, apop_mean);
-    gsl_vector *tstats = apop_matrix_map(d->matrix, find_tstat);
-    gsl_vector *confidences = apop_vector_map(tstats, conf);
 
-    printf("means:\t\t"); apop_vector_show(means);
-    printf("t stats:\t"); apop_vector_show(tstats);
-    printf("confidences:\t"); apop_vector_show(confidences);
+    size_t df = d->matrix->size2-1;
+    apop_data *means = apop_map(d, .fn_v = apop_vector_mean, .part ='r');
+    apop_data *tstats = apop_map(d, .fn_v = find_tstat, .part ='r');
+    apop_data *confidences = apop_map(tstats, .fn_dp = conf, .param = &df);
+
+    printf("means:\t\t"); apop_data_show(means);
+    printf("t stats:\t"); apop_data_show(tstats);
+    printf("confidences:\t"); apop_data_show(confidences);
 }
 \endcode
 
+            \li\ref apop_map()
+            \li\ref apop_map_sum()
             \li\ref apop_matrix_apply()
             \li\ref apop_matrix_map()
             \li\ref apop_matrix_map_all_sum()
@@ -1615,4 +1628,37 @@ See any operating system documentation about shared libraries for
 more information, such as the ld(1) and ld.so(8) manual pages.
 ----------------------------------------------------------------------
 \endcode
+*/
+
+
+
+/*  The old mapply function
+#include <apop.h>
+
+size_t df;
+double col_offset;
+gsl_rng *r;
+
+void offset_rng(double *v){*v = gsl_rng_uniform(r) + col_offset;}
+double find_tstat(const gsl_vector *in){ return apop_mean(in)/sqrt(apop_var(in));}
+double conf(const double in){return gsl_cdf_tdist_P(in, df);}
+
+int main(){
+    apop_data *d = apop_data_alloc(0, 10, 100);
+    r = apop_rng_alloc(3242);
+    for (int i=0; i< 10; i++){
+        col_offset = gsl_rng_uniform(r)*2 -1;
+        Apop_row(d, i, onerow);
+        apop_vector_apply(onerow, offset_rng);
+    }
+    
+    df = d->matrix->size2-1;
+    gsl_vector *means = apop_matrix_map(d->matrix, apop_mean);
+    gsl_vector *tstats = apop_matrix_map(d->matrix, find_tstat);
+    gsl_vector *confidences = apop_vector_map(tstats, conf);
+
+    printf("means:\t\t"); apop_vector_show(means);
+    printf("t stats:\t"); apop_vector_show(tstats);
+    printf("confidences:\t"); apop_vector_show(confidences);
+}
 */

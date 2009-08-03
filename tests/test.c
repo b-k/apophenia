@@ -11,7 +11,7 @@
 
 //One-liners for mapply:
 gsl_rng *r_global;
-void random_draw(double *in) { *in = gsl_rng_uniform(r_global);}
+//void random_draw(double *in) { *in = gsl_rng_uniform(r_global);}
 double nan_map(double in){return gsl_isnan(in);}
 
 double  true_parameter_v[]    = {1.82,2.1};
@@ -937,15 +937,17 @@ void test_data_to_db() {
             assert(!strcmp(d->text[i][j],d2->text[i][j]));  
 }
 
+double ran_uniform(double in, void *r){ return gsl_rng_uniform(r);}
+
 void test_posdef(gsl_rng *r){
     r_global = r;
     size_t j;
     for(j=0; j < 30; j ++){
         int size = gsl_rng_uniform(r) *10+1;
-        gsl_matrix *d = gsl_matrix_alloc(size, size);
-        apop_matrix_apply_all(d, random_draw);
-        apop_matrix_to_positive_semidefinite(d);
-        assert(apop_matrix_is_positive_semidefinite(d));
+        apop_data *d = apop_data_alloc(0, size, size);
+        apop_map(d, .fn_dp=ran_uniform, .params=r, .inplace=1, .part='m');
+        apop_matrix_to_positive_semidefinite(d->matrix);
+        assert(apop_matrix_is_positive_semidefinite(d->matrix));
     }
 }
 
@@ -1003,7 +1005,7 @@ void estimate_model(apop_data *data, apop_model dist, int method){
         data = apop_data_calloc(0,runsize,4);
         true_params->parameters->vector->data[0] = runsize-4;
         for (i=0; i< runsize; i++){
-            Apop_row(data, i, v) //make use of row-major order
+            Apop_row(data, i, v)
             true_params->draw(v->data, r, true_params);
             assert(!apop_vector_map_sum(v, nan_map));
         }
@@ -1069,6 +1071,7 @@ int main(int argc, char **argv){
     Apop_settings_alloc_add(an_ols_model, apop_ls, want_expected_value, 1, d);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("positive definiteness", test_posdef(r));
     do_test("test binomial estimations", test_binomial(r));
     if (slow_tests){
         do_test("Test score (dlog likelihood) calculation", test_score());
@@ -1092,7 +1095,6 @@ int main(int argc, char **argv){
     do_test("test apop_data sort", test_data_sort());
     do_test("test multivariate_normal", test_multivariate_normal(r));
     do_test("nist_tests", nist_tests());
-    do_test("positive definiteness", test_posdef(r));
     do_test("listwise delete", test_listwise_delete());
     do_test("NaN handling", test_nan_data());
     do_test("database skew and kurtosis", test_skew_and_kurt());
