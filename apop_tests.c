@@ -1,6 +1,5 @@
-/** \file apop_tests.c	ANOVA.\n
- \author Ben Klemens
-Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+/** \file apop_tests.c	 */
+/* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
  
 At the moment, the header for  apop_test_anova is in \c asst.h.
  */
@@ -63,6 +62,7 @@ static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
  
     //total sum of squares:
     apop_data* tss = apop_query_to_data("select var_pop(%s), count(*) from %s", data, table);
+    apop_assert(tss, NULL, 0, 's', "Query 'select var_pop(%s), count(*) from %s' returned NULL. Does that look right to you?", data, table);
     apop_data_set(out, 2, 0, apop_data_get(tss, 0, 0)*apop_data_get(tss, 0, 1)); //total sum of squares
     double total_df = apop_data_get(tss, 0, 1);
     apop_data_set(out, 2, 1, apop_data_get(tss, 0, 1)); //total df.

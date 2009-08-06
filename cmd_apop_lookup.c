@@ -168,5 +168,4 @@ I just need enough letters to distinctly identify a distribution.\n\
         : distribution == T ? gsl_cdf_tdist_Q(findme, param1) : GSL_NAN;
         printf("%g\n", val); 
     }
-    return 0;
 }

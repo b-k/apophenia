@@ -143,6 +143,4 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
     f   = open_output(outfile, sf);
     m   = query(d, q);
     print_out(f, outfile, m);
-
-	return 0;
 }

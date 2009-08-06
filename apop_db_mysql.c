@@ -155,13 +155,11 @@ static void * process_result_set_matrix (MYSQL *conn, MYSQL_RES *res_set) {
         return out;
 }
 
-size_t total_cols, total_rows; //sqlite no longer uses these.
-
 static void * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
   unsigned int     jj, currentrow = 0;
-  total_cols       = mysql_num_fields(res_set);
-  total_rows       = mysql_num_rows(res_set);
+  size_t total_cols       = mysql_num_fields(res_set);
+  size_t total_rows       = mysql_num_rows(res_set);
   char ***out      = malloc(sizeof(char**) * total_rows );
   apop_data *output= apop_data_alloc(0,0,0);
     while ((row = mysql_fetch_row (res_set)) ) {

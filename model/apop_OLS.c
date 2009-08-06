@@ -1,8 +1,7 @@
 /** \file apop_OLS.c
 
-  OLS models. Much of the real work is done in regression.c.
-
-Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+  OLS models. Much of the real work is done in regression.c.*/
+/* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "regression.h"
@@ -54,7 +53,7 @@ static void prep_names (apop_model *e){
         if (p->want_cov){
             if (e->data->names){
                 apop_name_stack(e->covariance->names, e->data->names, 'c');
-                apop_name_cross_stack(e->covariance->names, e->data->names, 'r', 'c');
+                apop_name_stack(e->covariance->names, e->data->names, 'r', 'c');
             }
 		    sprintf(e->covariance->names->column[0], "1");
 		    sprintf(e->covariance->names->row[0], "1");
@@ -421,17 +420,18 @@ and/or convenient.
 If the \c instruments data set is somehow NULL or empty, I'll just run OLS.
 
 \code
-apop_ls_settings *ivp = apop_ls_settings_alloc(data, apop_IV);
-ivp->instruments    = apop_data_alloc(data->matrix->size1, 2);
-APOP_COL(ivp->instruments, 0, firstcol);
+apop_data *submatrix =apop_data_alloc(0, data->matrix->size1, 2);
+APOP_COL(submatrix, 0, firstcol);
 gsl_vector_memcpy(firstcol, your_data_vector);
-APOP_COL(ivp->instruments, 1, secondcol);
+APOP_COL(submatrix, 1, secondcol);
 gsl_vector_memcpy(firstcol, your_other_data_vector);
-apop_name_add(ivp->names, "subme_1", 'r');
-apop_name_add(ivp->names, "subme_2", 'r');
-apop_estimate(data, ivp->model);
-\endcode
+apop_name_add(submatrix->names, "subme_1", 'r');
+apop_name_add(submatrix->names, "subme_2", 'r');
 
+Apop_model_add_group(&apop_iv, apop_ls, .instruments = submatrix);
+apop_model *est = apop_estimate(data, apop_iv);
+apop_model_show(est);
+\endcode
 
 \todo This function does some serious internal data copying. It would be
 only slightly more human- and labor-intensive to do the linear algebra

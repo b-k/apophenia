@@ -62,10 +62,14 @@ void apop_data_unpack(const gsl_vector *in, apop_data *d);
 
 char * apop_strip_dots(char *in, char strip_type);
 
+#define apop_vector_fill(in, ...) apop_vector_fill_base((in), (double []) {__VA_ARGS__})
+#define apop_data_fill(in, ...) apop_data_fill_base((in), (double []) {__VA_ARGS__})
+#define apop_matrix_fill(in, ...) apop_matrix_fill_base((in), (double []) {__VA_ARGS__})
+apop_data *apop_data_fill_base(apop_data *in, double []);
+gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
+gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double []);
+
 gsl_vector *apop_vector_vfill(gsl_vector *in, va_list ap);
-apop_data *apop_data_fill(apop_data *in, ...);
-gsl_vector *apop_vector_fill(gsl_vector *in, ...);
-gsl_matrix *apop_matrix_fill(gsl_matrix *in, ...);
 
 __END_DECLS
 #endif

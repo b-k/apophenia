@@ -122,6 +122,7 @@ typedef struct {
 
 //in apop_exponential.c
 apop_rank_settings *apop_rank_settings_alloc(void *ignoreme);
+apop_rank_settings *apop_rank_settings_init(apop_rank_settings);
 void apop_rank_settings_free(apop_rank_settings *in);
 void *apop_rank_settings_copy(apop_rank_settings *in);
 

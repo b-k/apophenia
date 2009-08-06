@@ -91,12 +91,12 @@ static void probit_prep(apop_data *d, apop_model *m){
     m->prep = NULL;
     apop_model_prep(d, m);
     m->prep = mpt;
-    apop_name_cross_stack(m->parameters->names, d->names, 'r', 'c');
+    apop_name_stack(m->parameters->names, d->names, 'r', 'c');
 
     factor_list = Apop_settings_get(m, apop_category, factors);
     count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(0, d->matrix->size2, count-1);
-    apop_name_cross_stack(m->parameters->names, d->names, 'r', 'c');
+    apop_name_stack(m->parameters->names, d->names, 'r', 'c');
     for (i=1; i< count; i++) 
         apop_name_add(m->parameters->names, factor_list->text[i][0], 'c');
     gsl_matrix_set_all(m->parameters->matrix, 1);

@@ -909,7 +909,10 @@ APOP_VAR_END_HEAD
 			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
 				rows	        ++;
                 line_to_insert(instr, tabname);
-                if (apop_opts.db_engine != 'm' && !(ct++ % batch_size)) apop_query("commit; begin;");
+                if (!(ct++ % batch_size)){
+                    if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
+                    if (apop_opts.verbose >= 0) {printf(".");fflush(NULL);}
+                }
 			}
 		}
 		if (apop_opts.db_engine != 'm') apop_query("commit;");
@@ -1007,25 +1010,19 @@ int main(){
 }
 \endcode
 
-This function has two important and subtle caveats, which are just inevitable facts
-of C's handling of variadic functions.
-
-* You must have exactly as many values as spaces in the data set. There
-is no partial filling, though see \ref apop_matrix_fill and \ref apop_vector_fill.
-Too many values will be ignored; too few will segfault.
-
-* Every value must be floating point. Int values will cauase a segfault
-or erratic results. So use \c 0. (a double) not \c 0 (an int). 
+Warning: I need as many arguments as the size of the data set, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
 
 \param in   An \c apop_data set (that you have already allocated).
-\param ...  A series of exactly as many floating-point values as there are blanks in the data set.
-\return     A pointer to the same matrix that was input.
+\param ...  A series of at least as many floating-point values as there are blanks in the data set.
+\return     A pointer to the same data set that was input.
 */
-apop_data *apop_data_fill(apop_data *in, ...){
+apop_data *apop_data_fill_base(apop_data *in, double ap[]){
+/* In conversions.h, you'll find this header, which turns all but the first input into an array of doubles of indeterminate length:
+#define apop_data_fill(in, ...) apop_data_fill_base((in), (double []) {__VA_ARGS__})
+*/
     if (!in) 
         return NULL;
-  va_list  ap;
-  int       i, j, start=0, fin=0, height=0;
+  int  k=0, start=0, fin=0, height=0;
     if (in->vector){
         start   = -1;
         height  = in->vector->size;
@@ -1034,10 +1031,9 @@ apop_data *apop_data_fill(apop_data *in, ...){
         fin   = in->matrix->size2;
         height  = in->matrix->size1;
     }
-    va_start(ap, in);
-    for (i=0; i< height; i++)
-        for (j=start; j< fin; j++)
-            apop_data_set(in, i, j, va_arg(ap, double));
+    for (int i=0; i< height; i++)
+        for (int j=start; j< fin; j++)
+            apop_data_set(in, i, j, ap[k++]);
     return in;
 }
 
@@ -1055,28 +1051,19 @@ gsl_vector *apop_vector_vfill(gsl_vector *in, va_list ap){
 
   See \c apop_data_alloc for a relevant example. See also \c apop_matrix_alloc.
 
-This function has two important caveats, which are just inevitable facts
-of C's handling of variadic functions.
+Warning: I need as many arguments as the size of the vector, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
 
-* You must have exactly as many values as spaces in the data set.
- Too many values will be ignored; too few will segfault.
-
-* Every value must be floating point. Int values will cauase a segfault
-or erratic results.
 
 \param in   A \c gsl_vector (that you have already allocated).
 \param ...  A series of exactly as many floating-point values as there are blanks in the vector.
 \return     A pointer to the same vector that was input.
 */
-gsl_vector *apop_vector_fill(gsl_vector *in, ...){
+gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
     if (!in) 
         return NULL;
-  va_list  ap;
-  int       i;
-    va_start(ap, in);
-    for (i=0; i< in->size; i++)
-        gsl_vector_set(in, i, va_arg(ap, double));
-    va_end(ap);
+  int       k = 0;
+    for (int i=0; i< in->size; i++)
+        gsl_vector_set(in, i, ap[k++]);
     return in;
 }
 
@@ -1084,27 +1071,18 @@ gsl_vector *apop_vector_fill(gsl_vector *in, ...){
 
   See \c apop_data_alloc for a relevant example. See also \c apop_vector_alloc.
 
-This function has two important caveats, which are just inevitable facts
-of C's handling of variadic functions.
-
-* You must have exactly as many values as spaces in the data set. 
-Too many values will be ignored; too few will segfault.
-
-* Every value must be floating point. Int values will cauase a segfault
-or erratic results.
+  I need as many arguments as the size of the matrix. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
 
 \param in   A \c gsl_matrix (that you have already allocated).
 \param ...  A series of exactly as many floating-point values as there are blanks in the matrix.
 \return     A pointer to the same matrix that was input.
 */
-gsl_matrix *apop_matrix_fill(gsl_matrix *in, ...){
+gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
     if (!in) 
         return NULL;
-  va_list  ap;
-  int       i, j;
-    va_start(ap, in);
-    for (i=0; i< in->size1; i++)
-        for (j=0; j< in->size2; j++)
-            gsl_matrix_set(in, i, j, va_arg(ap, double));
+  int       k = 0;
+    for (int i=0; i< in->size1; i++)
+        for (int j=0; j< in->size2; j++)
+            gsl_matrix_set(in, i, j, ap[k++]);
     return in;
 }

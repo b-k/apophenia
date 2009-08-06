@@ -67,5 +67,4 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
     if (tab_exists_check)
         apop_table_exists(argv[optind+1],1);
 	apop_text_to_db(argv[optind], argv[optind+1], rownames,colnames, NULL);
-	return 0;
 }

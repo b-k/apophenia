@@ -30,9 +30,8 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
 				regression.h stats.h types.h        		\
-				histogram.h	mapply.h output.h 				\
-		     	model/model.h asst.h settings.h				\
-		     	variadic.h	linear_algebra.h 				\
+				mapply.h output.h model/model.h asst.h 	    \
+				settings.h variadic.h	linear_algebra.h 	\
 			vasprintf/alloca_.h vasprintf/printf-parse.h  	\
 			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
 			vasprintf/printf-args.h vasprintf/vasnprintf.h 	
@@ -50,14 +49,15 @@ apop.py: apop.i
 	mv apop.tmp.py apop.py; \
 	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I$(pkgincludedir) $(PYTHON_CPPFLAGS) ; \
 	$(CC) -shared apop_wrap.o $(PYTHON_CPPFLAGS) -o _apop.so -lapophenia -lgsl -lgslcblas $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS) ;
-	echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
-	touch apop.py ; 
 
 install-exec-hook: apop.py
 	@if test -e _apop.so ; then \
 		cp _apop.so ${pythondir} ; \
 	fi
 else 
+apop.py: apop.i
+	@echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
+	touch apop.py ; 
 endif
 
 #The programs

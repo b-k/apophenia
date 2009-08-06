@@ -7,17 +7,17 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <gsl/gsl_randist.h>
 
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
-
-There are no doubt efficient shortcuts do doing this, but I use brute
-force. To speed things along, I save the results so that they can later
-just be looked up. Each row in the saved structure is an \f$s\f$, and each
-column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
-
-\todo Look up the tricks for calculating this.
 */
 double apop_generalized_harmonic(int N, double s){
-//When reading the code, remember that the zeroth element holds 
-//the value for N=1, and so on.
+/*
+There are no doubt efficient shortcuts do doing this, but I use brute force. To speed things along,
+I save the results so that they can later just be looked up. Each row in the saved structure
+is an \f$s\f$, and each column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
+
+\todo Look up the tricks for calculating this.
+
+When reading the code, remember that the zeroth element holds the value for N=1, and so on.
+*/
   static double * 	eses	= NULL;
   static int * 		lengths	= NULL;
   static int		  count	= 0;

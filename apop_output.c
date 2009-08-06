@@ -151,14 +151,6 @@ APOP_VAR_END_HEAD
         f = (outfile ? fopen(outfile, "a") : stdout);
 	fprintf(f, "set key off					                    ;\n\
                         plot '-' with lines\n");
-    //I can't tell which versions of Gnuplot support this form:
-	/*fprintf(f, "set key off					                    ;\n\
-                        set style data histograms		        ;\n\
-                        set style histogram cluster gap 0	    ;\n\
-                        set xrange [0:%i]			            ;\n\
-                        set style fill solid border -1          ;\n\
-                        set boxwidth 0.9                        ;\n\
-                        plot '-' using 2:xticlabels(1);\n", bins);*/
 	for (i=0; i < h->n-1; i++)
 	    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
 	fprintf(f, "e\n");
@@ -264,11 +256,9 @@ APOP_VAR_END_HEAD
         fclose(f);
 }
 
-////////////////////////////
 /////The printing functions.
-////////////////////////////
 
-void white_pad(int ct){
+static void white_pad(int ct){
   size_t i;
     for(i=0; i < ct; i ++)
         printf(" ");
@@ -367,10 +357,6 @@ void apop_data_show(const apop_data *in){
     apop_data_free(printout);
     return;
 }
-
-
-
-
 
 
 static void print_core_v(const gsl_vector *data, char *separator, char *filename, 
@@ -647,12 +633,6 @@ set origin %g, %g\n\
         fprintf(f, "unset label %i\n",count);
 }
 
-/*
-static void printlabel(char filename[], char *name){
-    //maybe some day this will have content.
-}
-*/
-
 /** This produces a Gnuplot file that will produce an array of 2-D
  plots, one for each pair of columns in the data set. Along the diagonal
  is a plot of the variable against itself---a density plot of the variable.
@@ -713,7 +693,7 @@ set nokey           \n\
 
 The distribution percentiles will be on the $x$-axis, your data percentiles on the $y$-.
 
-The function respects the <tt>output_type</tt> option.
+The function respects the <tt>apop_opts.output_type</tt> option.
 It uses the \ref designated syntax for inputs.
 
 \param v    The data (No default, must not be \c NULL.)

@@ -1,9 +1,8 @@
 /** \file apop_sort.c 
 
   A few functions to sort data. One sorts an \c apop_data set in place, and one returns percentiles for a sorted vector.
-  The headers are in stats.h
-
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+  The headers are in stats.h. */
+/*Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "variadic.h"
 #include "likelihoods.h"

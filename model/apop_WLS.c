@@ -1,8 +1,7 @@
 /** \file apop_WLS.c
 
-  Weighted Least Squares. Much of the real work is done in regression.c.
-
-Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+  Weighted Least Squares. Much of the real work is done in regression.c.*/
+/* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "asst.h"
 #include "model.h"

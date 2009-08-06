@@ -33,6 +33,16 @@ int apop_count_cols(const char *name);
 int apop_db_open(char *filename);
 APOP_VAR_DECLARE int apop_db_close(char vacuum);
 
+#ifdef OLD_C
+int apop_query(const char *q, ...);
+gsl_matrix * apop_query_to_matrix(const char * fmt, ...);
+apop_data * apop_query_to_text(const char * fmt, ...);
+apop_data * apop_query_to_data(const char * fmt, ...);
+apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...);
+gsl_vector * apop_query_to_vector(const char * fmt, ...);
+double apop_query_to_float(const char * fmt, ...);
+int apop_system(const char *fmt, ...);
+#else
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
 	//Run a query but output nothing outside the DB.
 	//It's fastest to compound as many queries as possible here;
@@ -45,19 +55,15 @@ int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
 	//apop_query_db("select * from %s where date > %i", tabname, earliest);
 
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
-	//dump a query to a matrix. 
-	//do not preallocate *output.
-	//	gsl_matrix * outmatrix;
-	//	outmatrix = apop_query_to_matrix("select a, b, c from some_table");
-
 apop_data * apop_query_to_text(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
-
 apop_data * apop_query_to_data(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...) __attribute__ ((format (printf,2,3)));
-
 gsl_vector * apop_query_to_vector(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 double apop_query_to_float(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
+int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 	//like query_to_matrix, but returns a single number or vector.
+#endif 
+
 
 int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
 int apop_data_to_db(apop_data *set, char *tabname);

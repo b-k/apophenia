@@ -1,7 +1,5 @@
-/** \file apop_stats.c	Basic moments and some distributions.
-
- \author Ben Klemens
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/** \file apop_stats.c	Basic moments and some distributions. */
+/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "db.h"     //just for apop_opts
 #include "asst.h" //rng_alloc
@@ -59,26 +57,25 @@ long double apop_vector_sum(const gsl_vector *in){
 \ingroup convenience_fns
 */
 
-/** Returns the mean of the data in the given vector.
+/**  \def apop_vector_mean(in)
+ 
+ Returns the mean of the data in the given vector.
 \ingroup vector_moments
 */
-double apop_vector_mean(const gsl_vector *in){ return gsl_stats_mean(in->data,in->stride, in->size); }
-
 
 /**  \def apop_mean(in)
   An alias for \ref apop_vector_mean.  Returns the mean of the data in the given vector.
 \ingroup vector_moments
 */
 
-/** Returns the variance of the data in the given vector.
+/** \def apop_vector_var(in)
+ Returns the variance of the data in the given vector.
  
   This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
 
   At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
 \ingroup vector_moments
 */
-double apop_vector_var(const gsl_vector *in){
-	return gsl_stats_variance(in->data,in->stride, in->size); }
 
 /** \def apop_var(in)
   An alias for \ref apop_vector_var.
@@ -148,12 +145,13 @@ double apop_vector_kurtosis(const gsl_vector *in){
     return  coeff1 * apop_vector_kurtosis_pop(in) + coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n);
 }
 
-/** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
+/** \def apop_vector_kurt(in)
+  Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
   This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
+
+  An alias for \ref apop_vector_kurtosis.
 \ingroup vector_moments
 */
-double apop_vector_kurt(const gsl_vector *in){
-	return apop_vector_kurtosis(in);}
 
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
 \param in	the vector in question
@@ -546,7 +544,7 @@ apop_data * apop_data_summarize(apop_data *indata){
 	apop_name_add(out->names, "std dev", 'c');
 	apop_name_add(out->names, "variance", 'c');
 	if (indata->names !=NULL)
-        apop_name_cross_stack(out->names,indata->names, 'r', 'c');
+        apop_name_stack(out->names,indata->names, 'r', 'c');
 	else
 		for (i=0; i< indata->matrix->size2; i++){
 			sprintf(rowname, "col %i", i);
@@ -812,7 +810,7 @@ apop_data *apop_data_covariance(const apop_data *in){
         }
     }
     apop_name_stack(out->names, in->names, 'c');
-    apop_name_cross_stack(out->names, in->names, 'r', 'c');
+    apop_name_stack(out->names, in->names, 'r', 'c');
     return out;
 }
 

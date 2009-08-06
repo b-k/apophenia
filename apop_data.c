@@ -768,8 +768,8 @@ apop_data *apop_data_transpose(apop_data *in){
   apop_assert(in->matrix, NULL, 0, 'c', "input data set has no matrix element, so I'm returning NULL.");
   apop_data *out = apop_data_alloc(0, in->matrix->size2, in->matrix->size1);
     gsl_matrix_transpose_memcpy(out->matrix, in->matrix);
-    apop_name_cross_stack(out->names, in->names, 'r', 'c');
-    apop_name_cross_stack(out->names, in->names, 'c', 'r');
+    apop_name_stack(out->names, in->names, 'r', 'c');
+    apop_name_stack(out->names, in->names, 'c', 'r');
     return out;
 }
 

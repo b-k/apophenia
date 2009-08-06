@@ -8,7 +8,6 @@ Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "stats.h"
 #include "variadic.h"
 #include "settings.h"
-#include "histogram.h"
 #include "conversions.h"
 
 static void write_double(const double *draw, apop_data *d){

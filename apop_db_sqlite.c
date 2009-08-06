@@ -202,9 +202,10 @@ static int apop_sqlite_db_open(char *filename){
 	sqlite3_create_function(db, "ln", 1, SQLITE_ANY, NULL, &logFn, NULL, NULL);
 	sqlite3_create_function(db, "ran", 0, SQLITE_ANY, NULL, &rngFn, NULL, NULL);
 	sqlite3_create_function(db, "rand", 0, SQLITE_ANY, NULL, &rngFn, NULL, NULL);
+	sqlite3_create_function(db, "pow", 2, SQLITE_ANY, NULL, &powFn, NULL, NULL);
 
 #define sqlink(name) sqlite3_create_function(db, #name , 1, SQLITE_ANY, NULL, &name##Fn, NULL, NULL);
-    sqlink(sqrt) sqlink(pow) sqlink(exp) sqlink(sin) sqlink(cos)
+    sqlink(sqrt) sqlink(exp) sqlink(sin) sqlink(cos)
     sqlink(tan) sqlink(asin) sqlink(acos) sqlink(atan) sqlink(log) sqlink(log10)
 	apop_query("pragma short_column_names");
     return 0;

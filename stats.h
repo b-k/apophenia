@@ -52,31 +52,52 @@ gsl_vector * v = &( apop_vv_##v );
 #define Apop_matrix_col APOP_MATRIX_COL 
 #define Apop_matrix_row APOP_MATRIX_ROW
 #define Apop_submatrix APOP_SUBMATRIX
+#define apop_vector_kurt(in) apop_vector_kurtosis(in)
 
 	//The following are just convenient hooks to gsl vector functions.
 	//var_m lets you input a mean if you've already calculated it, saving
 	//some repetition.
+#ifdef OLD_C
+inline long double apop_vector_sum(const gsl_vector *in);
+inline double apop_vector_mean(const gsl_vector *in);
+inline double apop_vector_var(const gsl_vector *in);
+inline double apop_var(const gsl_vector *in);
+inline double apop_vector_var_m(const gsl_vector *in, const double mean);
+inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb);
+inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb);
+inline double apop_vector_kurtosis_pop(const gsl_vector *in);
+inline double apop_vector_kurtosis(const gsl_vector *in);
+inline double apop_vector_skew(const gsl_vector *in);
+inline double apop_vector_skew_pop(const gsl_vector *in);
+double apop_vector_weighted_mean(const gsl_vector *, const gsl_vector *);
+double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w);
+double apop_vector_weighted_cov(const gsl_vector *, const gsl_vector *, const gsl_vector *);
+double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w);
+double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w);
+#else
 inline long double apop_vector_sum(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_mean(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_var(const gsl_vector *in) __attribute__((pure));
 inline double apop_var(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_var_m(const gsl_vector *in, const double mean) __attribute__((pure));
-inline double apop_vector_covar(const gsl_vector *ina, const gsl_vector *inb) __attribute__((pure));
 inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb) __attribute__((pure));
 inline double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb) __attribute__((pure));
 inline double apop_vector_kurtosis_pop(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_kurtosis(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_skew(const gsl_vector *in) __attribute__((pure));
 inline double apop_vector_skew_pop(const gsl_vector *in) __attribute__((pure));
-inline double apop_vector_kurt(const gsl_vector *in) __attribute__((pure));
 double apop_vector_weighted_mean(const gsl_vector *, const gsl_vector *) __attribute__((pure));
 double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
 double apop_vector_weighted_cov(const gsl_vector *, const gsl_vector *, const gsl_vector *) __attribute__((pure));
 double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
 double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w) __attribute__((pure));
+#endif
 #define apop_sum(in) apop_vector_sum(in)
 #define apop_var(in) apop_vector_var(in) 
+#define apop_vector_covar(in) apop_vector_cov(in) 
 #define apop_mean(in) apop_vector_mean(in)
+#define apop_vector_mean(in)  gsl_stats_mean((in)->data,(in)->stride, (in)->size)
+#define apop_vector_var(in)  gsl_stats_variance((in)->data,(in)->stride, (in)->size)
 
 
 //Distances, Euclidian and Manhattan:
@@ -98,9 +119,15 @@ APOP_VAR_DECLARE gsl_matrix * apop_matrix_covariance(gsl_matrix *in, const char 
 APOP_VAR_DECLARE  gsl_matrix * apop_matrix_correlation(gsl_matrix *in, const char normalize);
 apop_data * apop_data_covariance(const apop_data *in);
 apop_data * apop_data_correlation(const apop_data *in);
+#ifdef OLD_C
+long double apop_matrix_sum(const gsl_matrix *m);
+double apop_matrix_mean(const gsl_matrix *data);
+double apop_matrix_var_m(const gsl_matrix *data, double mean);
+#else
 long double apop_matrix_sum(const gsl_matrix *m) __attribute__((pure));
 double apop_matrix_mean(const gsl_matrix *data) __attribute__((pure));
 double apop_matrix_var_m(const gsl_matrix *data, double mean) __attribute__((pure));
+#endif
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in asst.c
 apop_data * apop_data_summarize(apop_data *data);

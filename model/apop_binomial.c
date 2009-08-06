@@ -4,19 +4,9 @@
 /*Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 //The default list. You probably don't need them all.
-#include "types.h"
 #include "model.h"
 #include "mapply.h"
-#include "conversions.h"
 #include "likelihoods.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_histogram.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_permutation.h>
-#include <stdio.h>
-#include <assert.h>
 
 static double binomial_p(apop_data *d, apop_model *p);
 static double binomial_log_likelihood(apop_data*, apop_model*);
@@ -258,37 +248,32 @@ apop_model apop_binomial = {"Binomial distribution", 2,0,0,
    .constraint = multinomial_constraint, .draw = binomial_rng};
 
 
-/** The binomial model.
+/** The multinomial model.
 
 The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
-\c parameters->vector->data[1]==p.
+\c parameters->vector->data[1...]==p_1....
 
 Input data can take two forms:
 
-The default is simply a listing of bins, without regard to whether
-items are in the vector or matrix of the \ref apop_data struct, or the
-dimensions. Here, data like <tt>0, 1, 2, 1, 1</tt> represents one draw of zero,
-three draws of 1, and one draw of 2.
+The default is simply a listing of bins, without regard to whether items are in the vector or
+matrix of the \ref apop_data struct, or the dimensions. Here, data like <tt>0, 1, 2, 1, 1</tt>
+represents one draw of zero, three draws of 1, and one draw of 2.
 
-In rank-type format, the bins are defined by the columns: 
-a nonzero value in column zero of the matrix represents a draw of zero,
-a nonzero value in column seven a draw of seven, et cetera. 
-Set this form using, e.g., 
+In rank-type format, the bins are defined by the columns: a nonzero value in column zero of the
+matrix represents a draw of zero, a nonzero value in column seven a draw of seven, et cetera.
+Set this form using, e.g.,
 \code
 apop_model *estimate_me = apop_model_copy(apop_binomial);
 Apop_settings_alloc(estimate_me, apop_rank, NULL);
 apop_model *estimated = apop_estimate(your_data, estimate_me);
 \endcode
 
-In both cases, the numeraire is zero, meaning that \f$p_0\f$ is not
-explicitly listed, but is \f$p_0=1-\sum_{i=1}^{k-1} p_i\f$, where \f$k\f$
-is the number of bins. Conveniently enough, the zeroth element of the
-parameters vector holds \f$n\f$, and so a full probability vector can
-easily be produced by overwriting that first element. Continuing the above example:
-\code
-int n = apop_data_get(estimated->parameters, 0, -1);
-apop_data_set(estimated->parameters, 0, 1 - (apop_sum(estimated->parameters)-n));
-already have 
+In both cases, the numeraire is zero, meaning that \f$p_0\f$ is not explicitly listed, but is
+\f$p_0=1-\sum_{i=1}^{k-1} p_i\f$, where \f$k\f$ is the number of bins. Conveniently enough,
+the zeroth element of the parameters vector holds \f$n\f$, and so a full probability vector can
+easily be produced by overwriting that first element. Continuing the above example: \code int
+n = apop_data_get(estimated->parameters, 0, -1); apop_data_set(estimated->parameters, 0, 1 -
+(apop_sum(estimated->parameters)-n)); already have
 
 See also the \ref apop_binomial model.
 

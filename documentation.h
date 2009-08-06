@@ -940,50 +940,53 @@ endofdiv
 
 Outlineheader write_likelihoods Writing your own 
 
-Writing apop_model objects is easy. Here is the procedure for an MLE, possibly the most involved
-type of model estimation in common use:
+Writing \c apop_model objects is easy, because (almost) everything has a default of some sort, so you can fill in those segments you know, and let the system use computationally-intensive methods for the rest.
 
+For example, here is how one would set up a model for an MLE:
 
 \li Write a likelihood function. Its header will look like this:
 \code
 double apop_new_log_likelihood(apop_data *data, apop_model *m)
 \endcode 
 where \c data is the input data, and \c
-m is the parametrized model (i.e., your model with a set \c parameters element). 
+m is the parametrized model (i.e., your model with a \c parameters element set by the caller). 
 This function will return the value of the log likelihood function at the given parameters.
-\li Is this a constrained optimization? See the \ref constraints "Constraints page" on how to set them.
+
+\li Is this a constrained optimization? See the \ref constraints "Constraints page" on how to set them. Otherwise, no constraints will be assumed.
+
 \li Write the object. In your header file, include 
 \code
-apop_model apop_new_likelihood = {"The Me distribution", number_of_parameters, 
+apop_model your_new_model = {"The Me distribution", number_of_parameters, 
             .estimate = new_estimate, .log_likelihood = new_log_likelihood };
 \endcode
-If there are constraints, then replace the appropriate <tt>NULL</tt> with the right constraint function: beta_zero_and_one_greater_than_x_constraint
+If there are constraints, add an element for those too.
+
 \c number_of_parameters is probably a positive integer like \c 2, but
 it is often (the number of columns in your data set) -1, in which case,
 set \c number_of_parameters to \c -1.
-\li Test. Debug. Retest.
-\li (optional) Write a gradient for the log likelihood function. This
-typically involves calculating a derivative by hand, which is an easy
-problem in high-school calculus. The function's header will look like: 
+
+You already have enough that something like
 \code
-void apop_new_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m)
-\endcode 
-where \c m and \c d are as above, and \c gradient is a \c gsl_vector to be filled with the gradient of the parameters. 
-At the end of this function, you will have to assign the appropriate derivative to every element of the gradient vector:
+apop_model *estimated = apop_mle(your_data, your_new_model);
+\endcode
+will work. 
+
+For many methods, the first thing you will write is the random number generator. Other elements, such as the 
+gradient---
 \code
-gsl_vector_set(gradient,0, d_a);
-gsl_vector_set(gradient,1, d_b);
+void apop_new_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
+    //some algebra here to find df/dp0, df/dp1, df/dp2....
+    gsl_vector_set(gradient,0, d_0);
+    gsl_vector_set(gradient,1, d_1);
+}
 \endcode 
-Now add the resulting dlog likelihood function to your object, by adding a \c .dlog_likelihood=your_function to the declaration.
-\li Send the code to the maintainer for inclusion in future versions of Apophenia.
+---or the expected value are optional. 
 
 endofdiv
 
 endofdiv
-
 
     Outlineheader modellist  Models that ship with Apophenia
-
 
         Outlineheader Dist Distributions
 
@@ -1523,7 +1526,6 @@ These functions will probably disappear or be replaced soon.
     \li\ref apop_estimate_fixed_effects_OLS()
     \li\ref apop_kernel_density_settings_alloc()
     \li\ref apop_test_chi_squared_var_not_zero ()
-    \li\ref apop_two_tailify()
     \li\ref apop_count_cols()
     \li\ref apop_data_to_db()
 

@@ -55,8 +55,8 @@ static double poisson_log_likelihood(apop_data *d, apop_model * p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double        lambda      = gsl_vector_get(p->parameters->vector, 0);
   double  ln_l 	= log(lambda);
-  double  ll    = apop_map(d, .fn_dp = apply_me, .params=&ln_l, .part='a');
-    return llikelihood - d->matrix->size1*d->matrix->size2*lambda;
+  double  ll    = apop_map_sum(d, .fn_dp = apply_me, .param=&ln_l, .part='a');
+    return ll - d->matrix->size1*d->matrix->size2*lambda;
 }
 
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){

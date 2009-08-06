@@ -1,5 +1,5 @@
-/** \file apop_regression.c	Generally, if it assumes something is  Normally distributed, it's here.\n
- \author Ben Klemens
+/** \file apop_regression.c	Generally, if it assumes something is  Normally distributed, it's here.*/
+/* \author Ben Klemens
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 /** \defgroup regression  OLS/GLS: The linear projection methods */
@@ -11,6 +11,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 #include "db.h"     //just for apop_opts
 #include "output.h"
+#include "output.h"
 #include "settings.h"
 #include "regression.h"
 #include "conversions.h"
@@ -20,15 +21,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <assert.h> 
 #include <gsl/gsl_blas.h>
 
-
-/** GSL gives p-values for a one-tailed test; convert it to two, assuming a
- symmetric distribution.
- This function is silly and needs to go.
-*/
-  
-double apop_two_tailify(double in){
-	return	fabs(1 - (1 - in)*2);
-}
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
   apop_data *out    = apop_data_alloc(0,7,-1);
@@ -72,11 +64,11 @@ If \c apop_opts.verbose is nonzero, then display some information, like the mean
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
   int	a_count	= a->size,
 		b_count	= b->size;
-  double a_avg	= apop_vector_mean(a),
-		a_var	= a_count > 1 ? apop_vector_var(a): 0,
-		b_avg	= apop_vector_mean(b),
-		b_var	= b_count > 1 ? apop_vector_var(b): 0,
-		stat	= (a_avg - b_avg)/ sqrt(
+  double a_avg	= apop_vector_mean(a);
+double		a_var	= (a_count > 1) ? apop_vector_var(a) : 0,
+            b_avg	= apop_vector_mean(b),
+		    b_var	= b_count > 1 ? apop_vector_var(b): 0,
+            stat	= (a_avg - b_avg)/ sqrt(
                         (b_count > 1 ? b_var/(b_count-1) : 0) 
                         + (a_count > 1 ? a_var/(a_count-1) : 0) 
                         );

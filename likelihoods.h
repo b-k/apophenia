@@ -71,17 +71,14 @@ void apop_mle_settings_free(void * in);
 
 typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
 gsl_vector * apop_numerical_gradient(apop_data *data, apop_model*);
-gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
-gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
+//gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
+//gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
 
 /* Find the var/covar matrix via the hessian. */
 //void apop_numerical_covariance_matrix(apop_model dist, apop_model *est, apop_data *data);
 //void apop_numerical_var_covar_matrix(apop_model dist, apop_model *est, apop_data *data);
 
 apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist);
-
-    //This is a global var for numerical differentiation.
-extern double (*apop_fn_for_derivative) (const gsl_vector *beta, void *d);
 
 APOP_VAR_DECLARE apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary);
 

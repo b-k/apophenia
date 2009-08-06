@@ -15,6 +15,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 */
 #include "model/model.h"
 #include "asst.h" //apop_rng_alloc
+#include "mapply.h"
 #include "output.h"
 #include "likelihoods.h"
 #include <assert.h>
@@ -385,7 +386,7 @@ static void produce_covariance_matrix(apop_model * est, infostruct *i){
     est->covariance = apop_matrix_to_data(inv);
     if (est->parameters->names->row){
         apop_name_stack(est->covariance->names, est->parameters->names, 'r');
-        apop_name_cross_stack(est->covariance->names, est->parameters->names, 'c', 'r');
+        apop_name_stack(est->covariance->names, est->parameters->names, 'c', 'r');
     }
     gsl_matrix_free(preinv);
 }

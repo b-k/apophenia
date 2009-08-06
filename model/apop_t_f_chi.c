@@ -37,21 +37,6 @@ For the Wishart, the degrees of freedom and covariance matrix are always estimat
 
 */
 
-/*
-apop_df_settings * apop_df_settings_alloc(char method){
-    apop_df_settings *out = malloc(sizeof(apop_df_settings));
-    out->method = method;
-    return out;
-}
-
-apop_df_settings *apop_df_settings_copy(apop_df_settings *in){
-    apop_df_settings *out = malloc(sizeof(apop_df_settings));
-    memcpy(out, in, sizeof(apop_df_settings));
-    return out;
-}
-
-void apop_df_settings_free(apop_df_settings *in){ free(in); }
-*/
 #include "stats.h"
 #include "types.h"
 #include "mapply.h"
@@ -103,20 +88,18 @@ apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
 #define PARAMCHECK apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
 #define PARAMCHECKNULL apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
  
-static double one_t(double in){ return log(gsl_ran_tdist_pdf(in, df)); }
+static double one_t(double in, void *df){ return log(gsl_ran_tdist_pdf(in, *(double*)df)); }
 static double one_f(double in){ return log(gsl_ran_fdist_pdf(in, df, df2)); }
-static double one_chisq(double in){ return log(gsl_ran_chisq_pdf(in, df)); }
+static double one_chisq(double in, void *df){ return log(gsl_ran_chisq_pdf(in, *(double*)df)); }
 
 double apop_tdist_llike(apop_data *d, apop_model *m){ PARAMCHECK
-    df = m->parameters->vector->data[0];
-    return (d->vector ? apop_vector_map_sum(d->vector, one_t) : 0)
-             +   (d->matrix ? apop_matrix_map_all_sum(d->matrix, one_t) : 0);
+    double df = m->parameters->vector->data[0];
+    return apop_map_sum(d, .fn_dp=one_t, .param=&df, .part='a');
 }
 
 double apop_chisq_llike(apop_data *d, apop_model *m){ PARAMCHECK
-    df = m->parameters->vector->data[0];
-    return (d->vector ? apop_vector_map_sum(d->vector, one_chisq) : 0)
-             +   (d->matrix ? apop_matrix_map_all_sum(d->matrix, one_chisq) : 0);
+    double df = m->parameters->vector->data[0];
+    return apop_map_sum(d, .fn_dp=one_chisq, .param =&df, .part='a');
 }
 
 double apop_fdist_llike(apop_data *d, apop_model *m){ PARAMCHECK
@@ -242,7 +225,7 @@ APOP_VAR_ENDHEAD
 double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
     if (apop_matrix_is_positive_semidefinite(m)) 
         return 0; 
-    double diffsize, dsize;
+    double diffsize=0, dsize;
     apop_data *qdq; 
     gsl_matrix *d = apop_matrix_copy(m);
     double orig_diag_size = diagonal_size(d);
@@ -329,109 +312,12 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
 }
 
 /*  This is junk. Please ignore it for now. Thanks.
-  
-   Adapted from the R Matrix package's nearPD, which is 
-   Copyright (2007) Jens Oehlschlägel.
- */
+  */
 static double pos_def(apop_data *data, apop_model *candidate){
+    double penalty = fabs(candidate->parameters->vector->data[0] - (data->matrix->size1 - data->matrix->size2));
     candidate->parameters->vector->data[0] = data->matrix->size1 - data->matrix->size2;
-    if (apop_matrix_is_positive_semidefinite(candidate->parameters->matrix)) {
-printf("check: %g\n", apop_matrix_determinant(candidate->parameters->matrix));
-//apop_data_show(candidate->parameters);
-printf("\n");
-        return 0;
-    }
-    double diffsize, dsize;
-    apop_data *qdq, *d = apop_data_copy(candidate->parameters);
-    double orig_diag_size = diagonal_size(d->matrix);
-printf("in: \t\t\t\t%g\n", apop_matrix_determinant(candidate->parameters->matrix));
-//apop_data_show(d);
-    int size = d->matrix->size1;
-    gsl_vector *diag = gsl_vector_alloc(size);
-    diagonal_copy(diag, d->matrix, 'o');
-    double origsize = biggest_elmt(d->matrix);
-    do {
-        //get eigenvals
-        apop_data *eigenvecs = apop_data_alloc(0, size, size);
-        gsl_vector *eigenvals = gsl_vector_calloc(size);
-        gsl_matrix *junk_copy = apop_matrix_copy(d->matrix);
-        find_eigens(&junk_copy, eigenvals, eigenvecs->matrix);
-        
-        //prune positive only
-        int j=0;
-        int plussize = eigenvecs->matrix->size1;
-        int *mask = calloc(eigenvals->size , sizeof(int));
-        for (int i=0; i< eigenvals->size; i++)
-            plussize -= 
-            mask[i] = (gsl_vector_get(eigenvals, i) <= 0);
-        
-        //construct Q = pruned eigenvals
-        apop_data_rm_columns(eigenvecs, mask);
-        if (!eigenvecs->matrix) break;
-        
-        //construct D = positive eigen diagonal
-        apop_data *eigendiag = apop_data_calloc(0, plussize, plussize);
-        for (int i=0; i< eigenvals->size; i++)
-            if (!mask[i]) {
-                apop_data_set(eigendiag, j, j, eigenvals->data[i]);
-                j++;
-            }
-
-        // Our candidate is QDQ', symmetrized, with the old diagonal subbed in.
-        apop_data *qd = apop_dot(eigenvecs, eigendiag);
-        qdq = apop_dot(qd, eigenvecs, .form2='t');
-        for (int i=0; i< qdq->matrix->size1; i++)
-            for (int j=i+1; j< qdq->matrix->size1; j++){
-                double avg = (apop_data_get(qdq, i, j) +apop_data_get(qdq, j, i)) /2.;
-                apop_data_set(qdq, i, j, avg);
-                apop_data_set(qdq, j, i, avg);
-            }
-        diagonal_copy(diag, qdq->matrix, 'i');
-        
-        // Evaluate progress, clean up.
-        dsize = biggest_elmt(d->matrix);
-        gsl_matrix_sub(d->matrix, qdq->matrix);
-        diffsize = biggest_elmt(d->matrix);
-        apop_data_free(qd); apop_data_free(d);
-        apop_data_free(eigendiag); free(mask);
-        d = qdq;
-//apop_data_show(d);
-printf("\n");
-    } while (diffsize/dsize > 1e-3);
-
-    apop_data *eigenvecs = apop_data_alloc(0, size, size);
-    gsl_vector *eigenvals = gsl_vector_calloc(size);
-    gsl_matrix *junk_copy = apop_matrix_copy(d->matrix);
-    find_eigens(&junk_copy, eigenvals, eigenvecs->matrix);
-    //make eigenvalues more positive
-    double score =0;
-    for (int i=0; i< eigenvals->size; i++){
-        double v = gsl_vector_get(eigenvals, i);
-        if (v < 1e-1){
-            gsl_vector_set(eigenvals, i, 1e-1);
-            score += 1e-1 - v;
-        }
-    }
-    if (!score){
-        apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
-        return 0;
-    }
-    apop_data *eigendiag = apop_data_calloc(0, size, size);
-    diagonal_copy(eigenvals, eigendiag->matrix, 'i');
-    double new_diag_size = diagonal_size(eigendiag->matrix);
-    gsl_matrix_scale(eigendiag->matrix, orig_diag_size/new_diag_size);
-    apop_data *qd = apop_dot(eigenvecs, eigendiag);
-    qdq = apop_dot(qd, eigenvecs, .form2='t');
-
-//apop_data_show(qdq);
-    gsl_matrix_memcpy(candidate->parameters->matrix, qdq->matrix);
-    assert(apop_matrix_determinant(candidate->parameters->matrix)>0);
-    apop_data_free(qdq); gsl_vector_free(diag);
-printf("out: \t\t\t\t\t%g\n", apop_matrix_determinant(candidate->parameters->matrix));
-//apop_data_show(candidate->parameters);
-    return diffsize/origsize;
+    return penalty + apop_matrix_to_positive_semidefinite(candidate->parameters->matrix);
 }
-
 
 double paramdet;
 apop_data *square;

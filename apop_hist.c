@@ -32,7 +32,6 @@ Things to do: (* = done)
 #include "stats.h"
 #include "model/model.h"
 #include "settings.h"
-#include "histogram.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 
@@ -44,7 +43,7 @@ Things to do: (* = done)
 \ingroup histograms
 */
 apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata){
-  apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be an apop_histogram model.");
+  apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be a model with appropriate apop_histogram settings.");
   size_t  i;
   apop_model *out = apop_model_copy(*template); 
   gsl_histogram *hout  = Apop_settings_get(out, apop_histogram, pdf);
@@ -76,8 +75,8 @@ APOP_VAR_HEAD apop_model *apop_histogram_model_reset(apop_model *template, apop_
     apop_model* apop_varad_var(template, NULL);
     apop_model* apop_varad_var(m, NULL);
     long int apop_varad_var(draws, 1e5);
-  apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be an apop_histogram model.");
-  apop_assert(m && m->draw, NULL, 0, 's', "The second argument needs to be an apop_model with a function to make random draws.");
+  apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be a model with appropriate apop_histogram settings.");
+  apop_assert(m && m->draw, NULL, 0, 's', "The second argument needs to be an apop_model with a 'draw' function that I can use to make random draws.");
     gsl_rng *apop_varad_var(rng, NULL)
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
@@ -96,18 +95,6 @@ APOP_VAR_ENDHEAD
     apop_histogram_normalize(out);
     return out;
 }
-
-
-/** Test the goodness-of-fit between a data vector and a model.
-
-This just produces a PDF and calls \ref apop_pdf_test_goodness_of_fit.
-apop_data *apop_pdf_test_goodness_of_fit(gsl_vector *v, apop_model *m, gsl_vector *params, int bins, int draws){
-gsl_histogram_pdf   *h      = apop_vector_to_pdf(v, bins);
-apop_data           *out    = apop_pdf_test_goodness_of_fit(h, m, params, bins);
-    gsl_histogram_pdf_free(h);
-    return out;
-}
-*/
 
 static apop_data *gof_output(double diff, int bins){
 apop_data   *out    = apop_data_alloc(0,4,-1);

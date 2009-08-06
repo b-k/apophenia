@@ -178,7 +178,7 @@ apop_name * apop_name_alloc(void);
 int apop_name_add(apop_name * n, char *add_me, char type);
 void  apop_name_free(apop_name * free_me);
 void  apop_name_print(apop_name * n);
-void  apop_name_stack(apop_name * n1, apop_name *n2, char type);
+APOP_VAR_DECLARE void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd);
 void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type2);
 apop_name * apop_name_copy(apop_name *in);
 int  apop_name_find(apop_name *n, char *findme, char type);

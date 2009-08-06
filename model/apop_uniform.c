@@ -3,20 +3,7 @@
 Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
-
-//The default list. You probably don't need them all.
-#include "types.h"
-#include "conversions.h"
 #include "likelihoods.h"
-#include "model.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_histogram.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_permutation.h>
-#include <stdio.h>
-#include <assert.h>
 
 apop_model apop_uniform;
 

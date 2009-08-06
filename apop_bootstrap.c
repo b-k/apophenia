@@ -4,11 +4,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 /** \defgroup boot Bootstrapping
 
-There is currently only one jackknifing procedure, to find the covariance
-matrix of a set of parameters.  See the Monte Carlo chapter of the book
-for details.
-
-\todo It would be nice if one had a means of producing random views of the input data, rather than requiring the copying of half the data set for every run. Todo: write such a function.
 */
 
 #include "model/model.h"

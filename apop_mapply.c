@@ -34,10 +34,10 @@ typedef double apop_fn_d(double);
 typedef void apop_fn_dtov(double*);
 typedef double apop_fn_vp(gsl_vector*, void *);
 typedef double apop_fn_dp(double, void *);
-typedef double apop_fn_vpi(gsl_vector*, void *, size_t);
-typedef double apop_fn_dpi(double, void *, size_t);
-typedef double apop_fn_vi(gsl_vector*, size_t);
-typedef double apop_fn_di(double, size_t);
+typedef double apop_fn_vpi(gsl_vector*, void *, int);
+typedef double apop_fn_dpi(double, void *, int);
+typedef double apop_fn_vi(gsl_vector*, int);
+typedef double apop_fn_di(double, int);
 
 
 /**
@@ -80,7 +80,7 @@ Default is 'a', but notice that I'll ignore a \c NULL vector or matrix, so if yo
 
 \ingroup mapply
 */
-APOP_VAR_HEAD apop_data * apop_map(apop_data *in, apop_fn_v fn_v, apop_fn_d fn_d, apop_fn_vp fn_vp, apop_fn_dp fn_dp, apop_fn_vpi fn_vpi, apop_fn_dpi fn_dpi, apop_fn_vi fn_vi, apop_fn_di fn_di, void *param, int inplace, char part){
+APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi,    void *param, int inplace, char part){ 
     apop_data * apop_varad_var(in, NULL)
     if (!in) return NULL;
     apop_fn_v * apop_varad_var(fn_v, NULL)
@@ -94,7 +94,7 @@ APOP_VAR_HEAD apop_data * apop_map(apop_data *in, apop_fn_v fn_v, apop_fn_d fn_d
     int apop_varad_var(inplace, 0)
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, 'a')
-    return apop_map_base(in, fn_v, fn_d, fn_vp, fn_dp, fn_vpi, fn_dpi, fn_vi, fn_di, param, inplace, part);
+    return apop_map_base(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, inplace, part);
 APOP_VAR_ENDHEAD
     int use_param = (fn_vp || fn_dp || fn_vpi || fn_dpi);
     int use_index  = (fn_vi || fn_di || fn_vpi || fn_dpi);
@@ -102,15 +102,18 @@ APOP_VAR_ENDHEAD
     void *fn = fn_v ? (void *)fn_v : fn_d ? (void *)fn_d : fn_vp ? (void *)fn_vp : fn_dp ? (void *)fn_dp : fn_vpi ? (void *)fn_vpi : fn_dpi ? (void *)fn_dpi : fn_vi ? (void *)fn_vi : fn_di ? (void *)fn_di : NULL;
 
     //Allocate output
+    int vsize = in->vector ? in->vector->size : 0;
+    int msize1 = in->matrix ? in->matrix->size1 : 0;
+    int msize2 = in->matrix ? in->matrix->size2 : 0;
     apop_data *out;
     if (inplace)
        out = in;
     else 
-         out = part == 'v' || (in->vector && ! in->matrix) ? apop_data_alloc(in->vector->size, 0, 0)
-             : part == 'm' ? apop_data_alloc(0, in->matrix->size1, in->matrix->size2)
-             : part == 'a' ? apop_data_alloc(in->vector->size, in->matrix->size1, in->matrix->size2)
-             : part == 'r' ? apop_data_alloc(in->matrix->size1, 0, 0)
-             : part == 'c' ?  apop_data_alloc(in->matrix->size2, 0, 0) : NULL;
+         out = part == 'v' || (in->vector && ! in->matrix) ? apop_data_alloc(vsize, 0, 0)
+             : part == 'm' ? apop_data_alloc(0, msize1, msize2)
+             : part == 'a' ? apop_data_alloc(vsize, msize1, msize2)
+             : part == 'r' ? apop_data_alloc(msize1, 0, 0)
+             : part == 'c' ?  apop_data_alloc(msize2, 0, 0) : NULL;
     //Names:
     if (part == 'v'  || (in->vector && ! in->matrix)) {
          apop_name_stack(out->names, in->names, 'v');
@@ -125,7 +128,7 @@ APOP_VAR_ENDHEAD
     else if (part == 'r')
          apop_name_stack(out->names, in->names, 'r');
     else if (part == 'c')
-        apop_name_cross_stack(in->names, out->names, 'r', 'c');
+        apop_name_stack(in->names, out->names, 'r', 'c');
 
     //Call mapply_core.
     if (in->vector && (part == 'v' || part=='a'))
@@ -139,8 +142,8 @@ APOP_VAR_ENDHEAD
                 mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'r');
             }else{
                 Apop_col(in, i, onevector);
-                Apop_row(out, i, twovector);
-                mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'r');
+                Apop_col(out, i, twovector);
+                mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'c');
             }
         }
     }
@@ -155,7 +158,7 @@ APOP_VAR_ENDHEAD
 /** A convenience function to call \ref apop_map, and return the sum of
  the resulting elements. Thus, this function returns a single \ref double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always internally allocate a temp data set and free it before returning.
  */
-APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_v *fn_v, apop_fn_d *fn_d, apop_fn_vp *fn_vp, apop_fn_dp *fn_dp, apop_fn_vpi *fn_vpi,   apop_fn_dpi *fn_dpi, apop_fn_vi *fn_vi, apop_fn_di *fn_di,     void *param, char part){ 
+APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi,    void *param, char part){ 
     apop_data * apop_varad_var(in, NULL)
     apop_fn_v * apop_varad_var(fn_v, NULL)
     apop_fn_d * apop_varad_var(fn_d, NULL)
@@ -166,10 +169,10 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_v *fn_v, apop_fn_d *fn_
     apop_fn_vi * apop_varad_var(fn_vi, NULL)
     apop_fn_di * apop_varad_var(fn_di, NULL)
     void * apop_varad_var(param, NULL)
-    char apop_varad_var(part, 'r')
-    return apop_map_sum_base(in, fn_v, fn_d, fn_vp, fn_dp, fn_vpi, fn_dpi, fn_vi, fn_di, param, part);
+    char apop_varad_var(part, 'a')
+    return apop_map_sum_base(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, part);
 APOP_VAR_ENDHEAD 
-    apop_data *out = apop_map(in, fn_v, fn_d, fn_vp, fn_dp, fn_vpi, fn_dpi, fn_vi, fn_di, param, 0, part);
+    apop_data *out = apop_map(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, 0, part);
     double outsum = apop_sum(out->vector) + apop_matrix_sum(out->matrix);
     apop_data_free(out);
     return outsum;
@@ -201,10 +204,10 @@ static void *forloop(void *t){
     for (i= tc->limlist[0]; i< tc->limlist[1]; i++){
         view    = tc->rc == 'r' ? gsl_matrix_row(tc->m, i).vector : gsl_matrix_column(tc->m, i).vector;
         val     = 
-        tc->use_param ? tc->use_index ? fn_vpi(&view, tc->param, i) : 
-                                     fn_vp(&view, tc->param)
-                     : tc->use_index ? fn_vi(&view, i) : 
-                                     vtod(&view);
+        tc->use_param ? (tc->use_index ? fn_vpi(&view, tc->param, i) : 
+                                     fn_vp(&view, tc->param) )
+                      : (tc->use_index ? fn_vi(&view, i) : 
+                                     vtod(&view) );
         gsl_vector_set(tc->v, i, val);
     }
   return NULL;
@@ -212,7 +215,7 @@ static void *forloop(void *t){
 
 static void *oldforloop(void *t){
   threadpass      *tc = t;
-  apop_fn_v    *vtod=tc->fn;
+  apop_fn_v       *vtod=tc->fn;
   apop_fn_vtov    *vtov=tc->fn;
   int           i;
   gsl_vector    view;
@@ -240,10 +243,10 @@ static void *vectorloop(void *t){
     for (i= tc->limlist[0]; i< tc->limlist[1]; i++){
         inval   = gsl_vector_get(tc->vin, i);
         outval =
-        tc->use_param ? tc->use_index ? fn_dpi(inval, tc->param, i) : 
-                                     fn_dp(inval, tc->param)
-                     : tc->use_index ? fn_di(inval, i) : 
-                                     dtod(inval);
+        tc->use_param ? (tc->use_index ? fn_dpi(inval, tc->param, i) : 
+                                     fn_dp(inval, tc->param))
+                     : (tc->use_index ? fn_di(inval, i) : 
+                                     dtod(inval));
         gsl_vector_set(tc->v, i, outval);
     }
   return NULL;

@@ -530,7 +530,7 @@ int test_jack(gsl_rng *r){
 
 
 void test_lognormal(gsl_rng *r){
-    size_t  i, j;
+    int j;
     apop_model *source = apop_model_copy(apop_normal);
     apop_model_clear(NULL, source);
     double mu    = gsl_ran_flat(r, -1, 1);
@@ -584,7 +584,7 @@ static void common_binomial_bit(apop_model *out, int n, double p){
 }
 
 void test_binomial(gsl_rng *r){
-    size_t  i, j;
+    size_t  i;
     double p = gsl_rng_uniform(r);
     int n     = gsl_ran_flat(r,1,40000);
     apop_data *d = apop_data_alloc(0,1,n);
@@ -945,7 +945,7 @@ void test_posdef(gsl_rng *r){
     for(j=0; j < 30; j ++){
         int size = gsl_rng_uniform(r) *10+1;
         apop_data *d = apop_data_alloc(0, size, size);
-        apop_map(d, .fn_dp=ran_uniform, .params=r, .inplace=1, .part='m');
+        apop_map(d, .fn_dp=ran_uniform, .param=r, .inplace=1, .part='m');
         apop_matrix_to_positive_semidefinite(d->matrix);
         assert(apop_matrix_is_positive_semidefinite(d->matrix));
     }
@@ -979,12 +979,14 @@ void estimate_model(apop_data *data, apop_model dist, int method){
     }
 
     apop_model *e    = apop_estimate(data,dist);
+    /*
     if (Apop_settings_get_group(e, apop_mle) && !(!strcmp(dist.name,"poisson") || !strcmp(dist.name, "Uniform distribution"))){  //then it's an MLE
         apop_model *compare_me = apop_model_copy(dist);
         apop_mle_settings *p = Apop_settings_get_group(compare_me, apop_mle);
         p->method = p->method == APOP_SIMPLEX_NM ? APOP_CG_FR : APOP_SIMPLEX_NM;
         e   = apop_estimate_restart(e, compare_me);
     }
+    */
     if (verbose)
         for (i=0; i < e->parameters->vector->size; i++)
             printf("parameter estimate, which should be %g: %g\n",
@@ -1044,6 +1046,40 @@ void test_distributions(gsl_rng *r){
     }
 }
 
+  void test_one_rank_distribution(gsl_rng *r, apop_model model, apop_model *true_params){
+  long int        runsize             = 1000,
+                  rowsize             = 100;
+  apop_data      *data; 
+  size_t          i,j;
+  double          index;
+    //generate.
+        data = apop_data_calloc(0,runsize,rowsize);
+        for (i=0; i< runsize; i++)
+            for (j=0; j< rowsize; j++){
+                true_params->draw(&index, r, true_params);
+                apop_matrix_increment(data->matrix,i,index);
+            }
+    Apop_model_add_group(&model, apop_rank)
+    estimate_model(data, model,0);
+    estimate_model(data, model,1);
+//    estimate_model(data, model,5); //works, but takes forever.
+}
+
+void test_rank_distributions(gsl_rng *r){
+  int         i;
+  apop_model* true_params;
+  apop_model  null_model      = {"the null model"};
+  apop_model  dist[]          = {apop_zipf, apop_yule, null_model};
+
+    for (i=0; strcmp(dist[i].name, "the null model"); i++){
+        if (verbose) {printf("%s: ", dist[i].name); fflush(NULL);}
+        true_params   = apop_model_copy(dist[i]);
+        true_params->parameters = apop_line_to_data(true_parameter_v, 2,0,0);
+        test_one_distribution(r, dist[i], true_params);
+        printf("Passed.\n");
+    }
+}
+
 #define do_test(text, fn)   if (verbose)    \
                                 printf("%s:", text);  \
                             else printf(".");   \
@@ -1076,7 +1112,9 @@ int main(int argc, char **argv){
     if (slow_tests){
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
+    do_test("test rank distributions", test_rank_distributions(r));
     do_test("test distributions", test_distributions(r));
+    //do_test("test fix params", test_model_fix_params(r));
     do_test("test data to db", test_data_to_db());
     do_test("test db to crosstab", test_crosstabbing());
     do_test("dummies and factors", dummies_and_factors());

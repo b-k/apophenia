@@ -15,15 +15,9 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 \ingroup names
 */
 apop_name * apop_name_alloc(void){
-  apop_name	* init_me = malloc(sizeof(apop_name));
-  apop_assert(init_me, NULL, 0, 's', "malloc failed. Probably out of memory.");
-	init_me->vector	= NULL;
-	init_me->column	= NULL;
-	init_me->text   = NULL;
-	init_me->row    = NULL;
-	init_me->colct	= 
-	init_me->textct	= 
-	init_me->rowct	= 0;
+    apop_name	* init_me = malloc(sizeof(apop_name));
+    apop_assert(init_me, NULL, 0, 's', "malloc failed. Probably out of memory.");
+    *init_me = (apop_name){ };
 	init_me->title[0]   = '\0';
 	return init_me;
 }
@@ -89,24 +83,24 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 void  apop_name_print(apop_name * n){
 int		i;
 	if (n->vector){
-		printf("\t\t\t");
+		printf("\t\t\tvector:");
 			printf("\t%s", n->vector);
 		printf("\n");
 	}
 	if (n->colct > 0){
-		printf("\t\t\t");
+		printf("\t\t\tcolumn:");
 		for (i=0; i < n->colct; i++)
 			printf("\t%s", n->column[i]);
 		printf("\n");
 	}
 	if (n->textct > 0){
-		printf("\t\t\t");
+		printf("\t\t\ttext:");
 		for (i=0; i < n->textct; i++)
 			printf("\t%s", n->text[i]);
 		printf("\n");
 	}
 	if (n->rowct > 0){
-		printf("\t\t\t");
+		printf("\t\t\trow:");
 		for (i=0; i < n->rowct; i++)
 			printf("\t%s", n->row[i]);
 		printf("\n");
@@ -135,67 +129,41 @@ int		i;
 
 Notice that if the first list is NULL, then this is a copy function. If the second is NULL, it is a no-op.
 
-If you are copying row names to columns or vice versa, use \ref apop_name_cross_stack.
-
-\param  n1      The first set of names
-\param  n2      The second set of names, which will be appended after the first.
-\param type     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then overwrite the target with the source vector name.
+\param  n1      The first set of names (no default, must not be \c NULL)
+\param  nadd      The second set of names, which will be appended after the first. (no default, if \c NULL, a no-op)
+\param type1     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then ignore \c typeadd and just overwrite the target vector name with the source name. (default = 'r')
+\param typeadd     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then overwrite the target with the source vector name. (default = type1)
 \ingroup names */
-void  apop_name_stack(apop_name * n1, apop_name *n2, char type){
-int     i;
-    if (!n2)
+APOP_VAR_HEAD void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
+    apop_name * apop_varad_var(n1, NULL);
+    apop_assert_void(n1, 0, 'c', "Can't stack onto a NULL data set (which n1 is).");
+    apop_name * apop_varad_var(nadd, NULL);
+    char  apop_varad_var(type1, 'r');
+    char  apop_varad_var(typeadd, type1);
+    apop_name_stack_base(n1, nadd, type1, typeadd);
+APOP_VAR_ENDHEAD
+  int     i;
+    if (!nadd)
         return;
-    if (type == 'v'){
-        apop_name_add(n1, n2->vector, 'v');
-        return;
-    }
-    if (type == 'r'){
-        for (i=0; i< n2->rowct; i++)
-            apop_name_add(n1, n2->row[i], 'r');
-        return;
-    }
-    if (type == 't'){
-        for (i=0; i< n2->textct; i++)
-            apop_name_add(n1, n2->text[i], 't');
-        return;
-    }
-    if (type == 'c'){
-        for (i=0; i< n2->colct; i++)
-            apop_name_add(n1, n2->column[i], 'c');
-        return;
-    }
-    if (apop_opts.verbose)
-         printf (">%c< sent to apop_name_stack, but the only valid options are r t c. Doing nothing.\n",type);
-}
-
-/** Append one list of names to another; the source and dest list need
-not be the same type. If they are, just use \ref apop_name_stack.
-
-
-
-Notice that if the first list in NULL, then this is a copy function.
-
-\param  n1      The first set of names
-\param  nadd      The second set of names, which will be appended after the first.
-\param type1     Either 'c', 'r', or 't' stating whether you are merging from the columns, rows, or text. [Default: cols]
-\param typeadd     Either 'c', 'r', or 't' stating whether you are merging to the columns, rows, or text. [Default: cols]
-\ingroup names */
-void  apop_name_cross_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
-int     i;
-    if (typeadd == 'r'){
+    if (typeadd == 'v')
+        apop_name_add(n1, nadd->vector, 'v');
+      else if (typeadd == 'r'){
         for (i=0; i< nadd->rowct; i++)
             apop_name_add(n1, nadd->row[i], type1);
-        }
-    else if (typeadd == 't'){
+    } else if (typeadd == 't'){
         for (i=0; i< nadd->textct; i++)
             apop_name_add(n1, nadd->text[i], type1);
-        }
-    else {
-        if (typeadd != 'c' && apop_opts.verbose)
-            printf ("You gave me >%c<, I'm assuming you meant c; copying column names.\n", typeadd);
+    } else if (typeadd == 'c'){
         for (i=0; i< nadd->colct; i++)
             apop_name_add(n1, nadd->column[i], type1);
-        }
+    } else if (apop_opts.verbose)
+         printf (">%c< sent to apop_name_stack, but the only valid options are r t c v. Doing nothing.\n",type1);
+}
+
+/** Deprecated. Use \ref apop_name_stack.  \ingroup names */
+void  apop_name_cross_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
+    printf("apop_name_cross_stack is deprecated. Just use apop_name_stack, which I will run for you now.\n");
+    apop_name_stack(n1, nadd, type1, typeadd);
 }
 
 /** Copy one \ref apop_name structure to another. That is, all data is duplicated. Usage:

@@ -25,10 +25,15 @@ void apop_error(int level, char stop, char *message, ...);
 apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
 
-int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
 apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
+
+apop_model * apop_histogram_vector_reset(apop_model *template, gsl_vector *indata);
+APOP_VAR_DECLARE apop_model * apop_histogram_model_reset(apop_model *template, apop_model *m, long int draws, gsl_rng *rng);
+apop_data * apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1);
+apop_data * apop_test_kolmogorov(apop_model *m1, apop_model *m2);
+void apop_histogram_normalize(apop_model *m);
 
 /** A convenient front for \ref apop_error, that tests the first element and
  basically runs \ref apop_error if it is false. See also \ref Apop_assert_void and \ref apop_error.
@@ -69,20 +74,18 @@ apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
 #define apop_assert_void(test, level, stop, ...) Apop_assert_void(test, level, stop, __VA_ARGS__)
 #define APOP_ASSERT_VOID(test, level, stop, ...) Apop_assert_void(test, level, stop, __VA_ARGS__)
 
-/** An unfortunate side-effect of using standardized naming is that you
- often get unpleasantly verbose declarations like
- \code
- apop_mle_settings *ms = apop_mle_settings_alloc(data, model);
- \endcode
- which is clear and simple but a darn lot of typing. I asked Roget's
- thesaurus for something shorter than ``settings'' that would get the
- idea across, but the closest it could come was ``aura''.
-
- However, because the names are so standard, it's easy to write a macro
+/** This is semi-obsolete. You will almost always be able to get by with
+  just using \ref Apop_model_add_group.
+ 
+  A convenience macro. Expands:
  \code
  Apop_settings_alloc(mle, ms, data, model);
  \endcode
- that expands to the above. As of this writing, options for the first argument include \ref apop_mle_settings_alloc "mle", \ref apop_histogram_settings_alloc "histogram", \ref apop_ls_settings_alloc "ls", and \ref apop_update_settings_alloc "update". See the respective documentations for the arguments to be sent to the respective allocation functions.
+to:
+ \code
+ apop_mle_settings *ms = apop_mle_settings_alloc(data, model);
+ \endcode
+ As of this writing, options for the first argument include \ref apop_mle_settings_alloc "mle", \ref apop_histogram_settings_alloc "histogram", \ref apop_ls_settings_alloc "ls", and \ref apop_update_settings_alloc "update". See the respective documentations for the arguments to be sent to the respective allocation functions.
 
 ps: we just capitalize the first letter to remind you that it's a macro, but so that it doesn't look like we're yelling. I mean, as long as this is a syntactic-sugar macro for aesthetic purposes, it might as well look good.
 

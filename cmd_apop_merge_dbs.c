@@ -32,5 +32,4 @@ char		c,
 	apop_db_open(argv[optind]);
 	apop_db_merge(argv[optind +1]);
 	apop_db_close('n');
-	return 0;
 }
