@@ -42,10 +42,8 @@ function.
 #include "asst.h"
 #include "stats.h"
 #include "conversions.h" //apop_matrix_copy
-#include "vasprintf/vasprintf.h"
 #include "linear_algebra.h"
 #include "math.h" //pow!
-
 
 /**
 Calculate the determinant of a matrix, its inverse, or both. The \c in matrix is not destroyed in the process.
@@ -431,9 +429,8 @@ APOP_VAR_HEAD int apop_vector_bounded(const gsl_vector *in, long double max){
     long double apop_varad_var(max, GSL_POSINF)
     return apop_vector_bounded_base(in, max);
 APOP_VAR_END_HEAD
-  size_t i;
   double x;
-    for (i=0; i< in->size; i++){
+    for (size_t i=0; i< in->size; i++){
         x   = gsl_vector_get(in, i);
         if (!gsl_finite(x) || x> max || x< -max)
             return 0;
@@ -450,7 +447,6 @@ static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,cons
     gsl_blas_dgemv (flip, 1.0, m, v, 0.0, outv);
     return apop_vector_to_data(outv);
 }
-
 
 static apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE_t lt, CBLAS_TRANSPOSE_t rt){
         if (lt==CblasNoTrans) {
@@ -477,7 +473,6 @@ static apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TR
         }
         return NULL;
 }
-
 
 /** A convenience function for dot products.
 

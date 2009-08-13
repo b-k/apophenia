@@ -1,8 +1,8 @@
 /** \file apop_asst.c  The odds and ends bin. 
 Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
+#include "asst.h"
 #include "types.h"
-#include "vasprintf/vasprintf.h"
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
 
@@ -62,8 +62,7 @@ if ((a[0]<=0) || (a[1] <= 0) || (a[2] <=0)){
 double		aa	= gsl_ran_gamma(r, a[0], 1),
 		b	= gsl_ran_gamma(r, a[1], 1),
 		c	= gsl_ran_gamma(r, a[2], 1);
-int		p;
-	p	= gsl_ran_poisson(r, aa*b/c);
+int		p	= gsl_ran_poisson(r, aa*b/c);
 	return p;
 }
 
@@ -72,23 +71,19 @@ int		p;
 
 \param  in          A string
 \param  strip_type  'd': replace all '.' with '_'.<br>
-                    'b': return only the string before the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the first dot.
+                    'b': return only the string before the '.', so 'table.col' becomes 'table'. If there are multiple dots, cuts off at the first dot.
                     'a': return only the string after the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the last dot.
 \ingroup convenience_fns
  */
 char * apop_strip_dots(char *in, char strip_type){
 int     i;
 char    *out    = NULL;
-    if ((strip_type ==0) || (strip_type == 'd')){
+    if ((strip_type ==0) || (strip_type == 'd') || (strip_type == 'D')){
         out    = malloc(strlen(in)+1);
-        for (i=0; i< strlen(in)+1; i++){//will copy over the '/0' too.
-            if (in[i] == '.')
-                out[i] = '_';
-            else
-                out[i] = in[i];
-        }
+        for (i=0; i< strlen(in)+1; i++)   //will copy over the '/0' too.
+            out[i] = (in[i] == '.') ? '_' : in[i];
     }
-    else if ((strip_type ==1) || (strip_type == 'b')){
+    else if ((strip_type ==1) || (strip_type == 'b') || (strip_type == 'B')){
         out    = malloc(strlen(in)+1);
         strcpy(out, in);
         for (i=strlen(in)+1; i--; )
@@ -97,7 +92,7 @@ char    *out    = NULL;
                 break;
             }
     }
-    else if ((strip_type ==2) || (strip_type == 'a')){
+    else if ((strip_type ==2) || (strip_type == 'a') || (strip_type == 'A')){
         for (i=0; i< strlen(in)+1; i++)
             if (in[i] == '.')
                 break;
@@ -107,9 +102,8 @@ char    *out    = NULL;
     return out;
 }
 
-/** Inform the user of a faux pas.
+/** Inform the user of a faux pas. See also \ref apop_assert, which allows the function to return a value.
 
-  Notice that the message is the last parameter, since it is probably long.
 
  \param level   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2. You can set apop_opts.verbose==-1 to turn off virtually all messages, but this is probably ill-advised.
  \param stop   Either 's' or 'c', indicating whether the program should stop or continue. If stopping, uses \c assert(0) for easy debugging. You can use 'h' (halt) as a synonym for 's'.

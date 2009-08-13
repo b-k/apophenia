@@ -9,7 +9,6 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 #include "model/model.h"
 #include "types.h"
 #include "settings.h"
-#include "regression.h"
 #include "conversions.h"
 #include "likelihoods.h"
 
@@ -136,8 +135,7 @@ static int  find_missing(apop_data *d, apop_model *mc, gsl_vector *initialmean){
 }
 
 static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_settings * m){
-  int i;
-    for (i=0; i< m->ct; i++)
+    for (int i=0; i< m->ct; i++)
         apop_data_set(x, m->row[i], m->col[i], gsl_vector_get(v->vector,i));
 }
 
@@ -175,12 +173,9 @@ apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
     Apop_settings_add_group(mc, apop_ml_imputation, mvn);
     if (Apop_settings_get_group(mvn, apop_mle))
         apop_settings_copy_group(mc, mvn, "apop_mle");
-    else {
-        Apop_settings_add_group(mc, apop_mle, mc);
-        Apop_settings_add(mc, apop_mle, method, APOP_CG_PR);
-        Apop_settings_add(mc, apop_mle, step_size, 2);
-        Apop_settings_add(mc, apop_mle, tolerance, 0.2);
-    }
+    else 
+        Apop_model_add_group(mc, apop_mle, .parent=mc, .method = APOP_CG_PR,
+                                    .step_size=2, .tolerance=0.2);
     int missing_ct = find_missing(d, mc, NULL);
     apop_assert(missing_ct, NULL, 1, 'c', "You sent apop_ml_imputation a data set with no NANs");
     mc->vbase          = Apop_settings_get(mc, apop_ml_imputation, ct);

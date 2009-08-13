@@ -20,7 +20,7 @@ At close, the input model has parameters of the correct size, the
 covariance and expected elements are \c NULL, and the \c status element
 is zero, indicating no estimation has been done yet.
 
-The input model is modified, so you probably want to call this after you call \c apop_model_copy.
+The input model is modified, so you may want to call this after you call \c apop_model_copy.
 
 \param data If your params vary with the size of the data set, then the function needs a data set to calibrate against. Otherwise, it's OK to set this to \c NULL
 \param model    The model whose output elements will be modified.
@@ -100,10 +100,6 @@ void apop_model_show (apop_model * print_me){
     }
     if (strlen(print_me->name))
         printf (print_me->name);
-    /*if (strlen(print_me->name) && strlen(print_me->method_name))
-        printf(" estimated via ");
-    if (strlen(print_me->method_name))
-        printf (print_me->method_name);*/
     printf("\n\n");
 	if (print_me->parameters)
         apop_data_show(print_me->parameters);
@@ -148,7 +144,8 @@ apop_model * apop_model_copy(apop_model in){
     return out;
 }
 
-/** Take in an unparametrized \c apop_model and return a
+/** \def apop_mode_set_parameters
+ Take in an unparametrized \c apop_model and return a
   new \c apop_model with the given parameters. This would have been
   called apop_model_parametrize, but the OED lists four acceptable
   spellings for parameterise, so it's not a great candidate for a function name.
@@ -158,26 +155,22 @@ For example, if you need a N(0,1) quickly:
 apop_model *std_normal = apop_model_set_parameters(apop_normal, 0.0, 1.0);
 \endcode
 
-<b>Warning!</b>: Your parameters need to be <tt>double</tt>s, not <tt>int</tt>s. 
-If you were to use <tt> apop_model_set_parameters(apop_normal, 0, 1);</tt>, you'd wind up with a N(0,0). This is an unfortunate feature of C's variadic function handling.
-
 This doesn't take in data, so it won't work with models that take the number of parameters from the data, and it will only set the vector of the model's parameter \ref apop_data set. This is most standard models, so that's not a real problem either.
 If you have a situation where these options are out, you'll have to do something like
 <tt>apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in);</tt> and then set \c in->parameters using your data.
 
   \param in An unparametrized model, like \ref apop_normal or \ref apop_poisson.
   \param ... The list of parameters.
+  \return A copy of the input model, with parameters set.
 
   \ingroup models
   */
-apop_model *apop_model_set_parameters(apop_model in, ...){
-  va_list  ap;
+
+apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
     apop_assert((in.vbase != -1) && (in.m1base != -1) && (in.m2base != -1),  NULL, 0, 's', "This function only works with models whose number of params does not depend on data size. You'll have to use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then set in->parameters using your data.");
     apop_model *out = apop_model_copy(in);
     apop_model_clear(NULL, out);
-    va_start(ap, in);
-    apop_vector_vfill(out->parameters->vector, ap);
-    va_end(ap);
+    apop_data_fill_base(out->parameters, ap);
     return out; 
 }
 
@@ -235,7 +228,7 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
         return m->log_likelihood(d, m);
     else if (m->p)
         return log(m->p(d, m));
-    apop_error(0, 's', "%s: You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n", __func__);
+    apop_error(0, 's', "You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n");
     return 0;
 }
 
@@ -271,10 +264,10 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
  \ingroup models
 */
 void apop_draw(double *out, gsl_rng *r, apop_model *m){
-    if (m->draw){
+    if (m->draw)
         m->draw(out,r, m); 
-        return;
-    } 
+    else
+        apop_error(0, 's', "Sorry, I have no default RNG yet.");
 }
 
 /** The default prep is to simply call \c apop_model_clear. If the
@@ -298,7 +291,5 @@ void apop_model_prep(apop_data *d, apop_model *m){
 \ingroup models
  */
 apop_data * apop_expected_value(apop_data *d, apop_model *m){
-    if (m->expected_value)
-         return m->expected_value(d, m);
-    else return NULL;
+    return m->expected_value ?  m->expected_value(d, m) : NULL;
 }

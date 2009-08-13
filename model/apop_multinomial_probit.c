@@ -17,7 +17,6 @@
   \param source_type 't' = text; anything else ('d' is a good choice) is numeric data.
  */
 apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_column, char source_type){
-  int i;
   apop_category_settings *out = malloc (sizeof(apop_category_settings));
     out->source_column = source_column;
     out->source_type = source_type;
@@ -25,14 +24,14 @@ apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_co
     if (source_type == 't'){
         out->factors = apop_text_unique_elements(d, source_column);
         out->factors->vector = gsl_vector_alloc(d->textsize[0]);
-        for (i=0; i< out->factors->vector->size; i++)
+        for (size_t i=0; i< out->factors->vector->size; i++)
             apop_data_set(out->factors, i, -1, i);
     } else{ //Save if statements by giving everything a text label.
         Apop_col(d, source_column, list);
         out->factors = apop_data_alloc(0,0,0);
         out->factors->vector = apop_vector_unique_elements(list);
         apop_text_alloc(out->factors, out->factors->vector->size, 1);
-        for (i=0; i< out->factors->vector->size; i++)
+        for (size_t i=0; i< out->factors->vector->size; i++)
             apop_text_add(out->factors, i, 0, "%g", apop_data_get(out->factors, i, -1));
     }
     return out;
@@ -40,9 +39,7 @@ apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_co
 
 apop_category_settings *apop_category_settings_copy(apop_category_settings *in){
   apop_category_settings *out = malloc (sizeof(apop_category_settings));
-    out->source_column = in->source_column;
-    out->source_type = in->source_type;
-    out->source_data = in->source_data;
+    *out = *in;
     out->factors = apop_data_copy(in->factors);
     return out;
 }
@@ -61,7 +58,7 @@ void apop_category_settings_free(apop_category_settings *in){
  */
 static void probit_prep(apop_data *d, apop_model *m){
   if (m->prepared) return;
-  int       i, count;
+  int       count;
   apop_data *factor_list;
     if (!d->vector){
         if (!Apop_settings_get_group(m, apop_category)){
@@ -97,7 +94,7 @@ static void probit_prep(apop_data *d, apop_model *m){
     count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(0, d->matrix->size2, count-1);
     apop_name_stack(m->parameters->names, d->names, 'r', 'c');
-    for (i=1; i< count; i++) 
+    for (int i=1; i< count; i++) 
         apop_name_add(m->parameters->names, factor_list->text[i][0], 'c');
     gsl_matrix_set_all(m->parameters->matrix, 1);
     snprintf(m->name, 100, "%s with %s as numeraire", m->name, factor_list->text[0][0]);
@@ -106,10 +103,9 @@ static void probit_prep(apop_data *d, apop_model *m){
 
 static double probit_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  int		    i;
   long double	n, total_prob	= 0;
   apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
-	for(i=0; i< d->matrix->size1; i++){
+	for(int i=0; i< d->matrix->size1; i++){
 		n	        = gsl_cdf_gaussian_P(-apop_data_get(betadotx, i, 0),1);
         n = n ? n : 1e-10; //prevent -inf in the next step.
         n = n<1 ? n : 1-1e-10; 
@@ -121,11 +117,10 @@ static double probit_log_likelihood(apop_data *d, apop_model *p){
 
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
-  int		i, j;
   long double	cdf, betax, deriv_base;
   apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
     gsl_vector_set_all(gradient,0);
-    for (i=0; i< d->matrix->size1; i++){
+    for (size_t i=0; i< d->matrix->size1; i++){
         betax            = apop_data_get(betadotx, i, 0);
         cdf              = gsl_cdf_gaussian_P(-betax, 1);
         cdf = cdf ? cdf : 1e-10; //prevent -inf in the next step.
@@ -134,7 +129,7 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
             deriv_base      = gsl_ran_gaussian_pdf(-betax, 1) /(1-cdf);
         else
             deriv_base      = -gsl_ran_gaussian_pdf(-betax, 1) /  cdf;
-        for (j=0; j< d->matrix->size2; j++)
+        for (size_t j=0; j< d->matrix->size2; j++)
             apop_vector_increment(gradient, j, apop_data_get(d, i, j) * deriv_base);
 	}
 	apop_data_free(betadotx);
@@ -147,6 +142,7 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
  the remaining columns are values of the independent variables. Thus,
  the model will return (data columns)-1 parameters.
 
+\hideinitializer
 \ingroup models
 */
 apop_model apop_probit = {"Probit", .log_likelihood = probit_log_likelihood, 
@@ -157,20 +153,19 @@ apop_model apop_probit = {"Probit", .log_likelihood = probit_log_likelihood,
 /////////  Part III: Multinomial Logit (plain logit is a special case)
 
 static apop_data *multilogit_expected(apop_data *in, apop_model *m){
-  int i, j;
   apop_assert(m->parameters, NULL, 0, 's', "You're asking me to provide expected values of an "
                                            "un-parameterized model. Please run apop_estimate first.");
     apop_model_prep(in, m);
     gsl_matrix *params = m->parameters->matrix;
     apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
-    for (i=0; i < in->matrix->size1; i ++){
+    for (size_t i=0; i < in->matrix->size1; i ++){
         Apop_row(in, i, observation);
         Apop_row(out, i, outrow);
         double oneterm;
         int    bestindex  = 0;
         double bestscore  = 0;
         gsl_vector_set(outrow, 0, 1);
-        for (j=0; j < params->size2+1; j ++){
+        for (size_t j=0; j < params->size2+1; j ++){
             if (j == 0)
                 oneterm = 0;
             else {
@@ -217,10 +212,9 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
 
 
     gsl_vector *original_outcome = d->vector;
-    int    i;
     double ll    = 0;
     double *vals = Apop_settings_get(p, apop_category, factors)->vector->data;
-    for(i=0; i < p->parameters->matrix->size2; i++){
+    for(size_t i=0; i < p->parameters->matrix->size2; i++){
         APOP_COL(p->parameters, i, param);
         val = vals[i];
         working_data->vector = apop_vector_map(original_outcome, unordered);
@@ -308,6 +302,7 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
  the independent variables. Thus, the model will return N-1 columns of
  parameters, where N is the number of categories chosen.
 
+\hideinitializer
 \ingroup models
 */
 apop_model apop_logit = {"Logit", 
@@ -320,6 +315,7 @@ apop_model apop_logit = {"Logit",
  the independent variables. Thus, the model will return N-1 columns of
  parameters, where N is the number of categories chosen.
 
+\hideinitializer
 \ingroup models
 */
 apop_model apop_multinomial_probit = {"Multinomial probit",

@@ -3,12 +3,10 @@
   The binomial distribution as an \c apop_model.*/
 /*Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-//The default list. You probably don't need them all.
 #include "model.h"
 #include "mapply.h"
 #include "likelihoods.h"
 
-static double binomial_p(apop_data *d, apop_model *p);
 static double binomial_log_likelihood(apop_data*, apop_model*);
 
 static void get_hits_and_misses(const apop_data *data, char method, double *hitcount, double *misscount){
@@ -73,23 +71,17 @@ static apop_model * binomial_estimate(apop_data * data,  apop_model *parameters)
     return est;
 }
 
-static double binomial_p(apop_data *d, apop_model *params){
-  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-    return exp(binomial_log_likelihood(d, params));
-}
-
 static double binomial_log_likelihood(apop_data *d, apop_model *params){
   apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double	  n       = apop_data_get(params->parameters, 0, -1),
               p       = apop_data_get(params->parameters, 1, -1);
   double hitcount, misscount, ll = 0;
-  int    i;
   char method = apop_settings_get_group(params, "apop_rank") ? 'b' : 't';
     if (method == 't'){
         get_hits_and_misses(d, method, &hitcount, &misscount);
         return log(gsl_ran_binomial_pdf(hitcount, p, n));
     } else {
-        for (i=0; i< d->matrix->size1; i++){
+        for (size_t i=0; i< d->matrix->size1; i++){
             hitcount = gsl_matrix_get(d->matrix, i, 1);
             ll += log(gsl_ran_binomial_pdf(hitcount, p, n));
         }
@@ -99,22 +91,15 @@ static double binomial_log_likelihood(apop_data *d, apop_model *params){
 
 static double multinomial_constraint(apop_data *data, apop_model *b){
   //constraint is that 0 < all elmts 
-  size_t size = b->parameters->vector->size;
-  static apop_data *constraint = NULL;
-    if (!constraint){
-        constraint= apop_data_calloc(size, size, size);
-        gsl_matrix_set_identity(constraint->matrix);
-    }
-    return apop_linear_constraint(b->parameters->vector, constraint, 1e-3);
+    return apop_linear_constraint(b->parameters->vector, .margin = 1e-3);
 }
 
 static void binomial_rng(double *out, gsl_rng *r, apop_model* eps){
     *out =   gsl_ran_binomial(r, eps->parameters->vector->data[1],eps->parameters->vector->data[0]); }
 
 
-
-
 static double is_nonzero(double in){return in != 0;}
+static double sum_vector_nonzeros(gsl_vector *in){return apop_vector_map_sum(in, is_nonzero); }
 
 static gsl_vector * get_multinomial_hitcount(const apop_data *data, char method){
     size_t        i, j;
@@ -129,12 +114,11 @@ static gsl_vector * get_multinomial_hitcount(const apop_data *data, char method)
             for(i=0; i < data->matrix->size1; i ++)
                 for(j=0; j < data->matrix->size2; j ++)
                     (*gsl_vector_ptr(out, apop_data_get(data, i, j)))++;
-    } else {
-        out = gsl_vector_alloc(data->matrix->size2);
-        for (int i=0; i< data->matrix->size2; i++){
-            APOP_COL(data, i, onecol);
-            gsl_vector_set(out, i, apop_vector_map_sum(onecol, is_nonzero));
-        }
+    } else {//just count nozeros in each column
+        apop_data *outd = apop_map((apop_data *)data, .fn_v=sum_vector_nonzeros, .part='c');
+        out = outd->vector;
+        outd->vector=NULL;
+        apop_data_free(outd);
     }
     return out;
 }
@@ -183,14 +167,9 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *paramete
     return est;
 }
 
-static double multinomial_p(apop_data *d, apop_model *params){
-  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-    return exp(multinomial_log_likelihood(d, params));
-}
-
 static void multinomial_rng(double *out, gsl_rng *r, apop_model* eps){
+    //After the intro, cut/pasted/modded from the GSL. Copyright them.
     apop_assert_void(eps->parameters, 0,'s', "You're trying to draw from an un-parametrized model.");
-    size_t i;
     double * p = eps->parameters->vector->data;
     size_t k = eps->parameters->vector->size;
     //the trick where we turn the params into a p-vector
@@ -205,7 +184,7 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* eps){
    */
     double norm = apop_sum(eps->parameters->vector);
 
-    for (i = 0; i < k; i++) {
+    for (int i = 0; i < k; i++) {
         if (p[i] > 0.0)
             out[i] = gsl_ran_binomial (r, p[i] / (norm - sum_p), N - sum_n);
         else
@@ -233,7 +212,7 @@ and a nonzero value in column one represents successes. Set this using,
 e.g., 
 \code
 apop_model *estimate_me = apop_model_copy(apop_binomial);
-Apop_settings_alloc(estimate_me, apop_rank, NULL);
+Apop_model_add_group(estimate_me, apop_rank);
 apop_model *estimated = apop_estimate(your_data, estimate_me);
 \endcode
 
@@ -241,10 +220,11 @@ In both cases, \f$p\f$ represents the odds of a success==1; the odds of a zero i
 
 See also the \ref apop_multinomial model.
 
+\hideinitializer
 \ingroup models
 */
 apop_model apop_binomial = {"Binomial distribution", 2,0,0,
-	.estimate = binomial_estimate, .p = binomial_p, .log_likelihood = binomial_log_likelihood, 
+	.estimate = binomial_estimate, .log_likelihood = binomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = binomial_rng};
 
 
@@ -264,21 +244,25 @@ matrix represents a draw of zero, a nonzero value in column seven a draw of seve
 Set this form using, e.g.,
 \code
 apop_model *estimate_me = apop_model_copy(apop_binomial);
-Apop_settings_alloc(estimate_me, apop_rank, NULL);
+Apop_model_add_group(estimate_me, apop_rank);
 apop_model *estimated = apop_estimate(your_data, estimate_me);
 \endcode
 
 In both cases, the numeraire is zero, meaning that \f$p_0\f$ is not explicitly listed, but is
 \f$p_0=1-\sum_{i=1}^{k-1} p_i\f$, where \f$k\f$ is the number of bins. Conveniently enough,
 the zeroth element of the parameters vector holds \f$n\f$, and so a full probability vector can
-easily be produced by overwriting that first element. Continuing the above example: \code int
-n = apop_data_get(estimated->parameters, 0, -1); apop_data_set(estimated->parameters, 0, 1 -
-(apop_sum(estimated->parameters)-n)); already have
+easily be produced by overwriting that first element. Continuing the above example: 
+\code 
+int n = apop_data_get(estimated->parameters, 0, -1); 
+apop_data_set(estimated->parameters, 0, 1 - (apop_sum(estimated->parameters)-n)); 
+\endcode
+And now the parameter vector is a proper list of probabilities.
 
 See also the \ref apop_binomial model.
 
+\hideinitializer
 \ingroup models
 */
-apop_model apop_multinomial = {"multinomial distribution", -1,0,0,
-	.estimate = multinomial_estimate, .p = multinomial_p, .log_likelihood = multinomial_log_likelihood, 
+apop_model apop_multinomial = {"Multinomial distribution", -1,0,0,
+	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = multinomial_rng};

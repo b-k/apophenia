@@ -201,7 +201,7 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 int  apop_name_find(apop_name *n, char *in, char type){
   regex_t   re;
   char      **list;
-  int       i, listct;
+  int       listct;
     if (type == 'r'){
         list    = n->row;
         listct  = n->rowct;
@@ -215,7 +215,7 @@ int  apop_name_find(apop_name *n, char *in, char type){
         listct  = n->colct;
     }
     regcomp(&re, in, REG_EXTENDED + REG_ICASE);
-    for (i = 0; i < listct; i++){
+    for (int i = 0; i < listct; i++){
         if (!regexec(&re, list[i], 0, NULL, 0)){
             regfree(&re);
             return i;

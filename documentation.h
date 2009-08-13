@@ -1,5 +1,5 @@
 /* Apophenia's documentation
-Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 /** \mainpage The Apophenia documentation
 
@@ -13,20 +13,48 @@ overview. But most of the documentation is folded into the \ref outline "outline
  \li \ref setup "Setup": Installing GCC, the GSL, SQLite, and Apophenia itself.
  \li \ref c "C": Some notes on C and Apophenia's use of C utilities.
  \li \ref sql About the syntax for querying databases.
+ \li \ref python
+ \li \ref eg 
+
+ */
+
+/** \page eg Some examples
+ Here are a few pieces of sample code, gathered from elsewhere in the documentation, for testing your installation or to give you a sense of what code with Apophenia's tools looks like. If you'd like more context or explanation, please click through to the page from which the example was taken.
+
+In the documentation for the \ref apop_ols model, a program to read in data and run a regression. You'll need to go to that page for the sample data and further discussion.
+
+\include ols1.c
+
+In the \ref apop_text_to_db page, a variant, demonstrating the use of optional, named arguments:
+
+\include ols.c
+
+Now, from \ref python page, the same thing via Python:
+
+\include ols.py
+
+The same page illustrates some other calls of Apophenia functions via Python, such as the \ref apop_test_fisher_exact function.
+
+\include fisher.py
+
+From the \ref setup page, an example of gathering data from two processes, saving the input to a database, then doing a later analysis:
+
+\include draw_to_db.c
+
+In the \ref outline section on map/apply, a new \f$t\f$-test on every row, with all operations acting on entire rows rather than individual data points:
+
+\include t_test_by_rows.c
+
+In the documentation for \ref apop_query_to_text, a program to list all the tables in an Sqlite database.
+\include ls_tables.c
 
  */
 
 /** \page book The book version
 
-Apophenia co-evolved with <em>Modeling with Data: Tools and
-Techniques for Statistical Computing</em>. You can read about
-the book, or download a free PDF copy of the full text, at <a
-href="http://modelingwithdata.org">modelingwithdata.org</a>.
+Apophenia co-evolved with <em>Modeling with Data: Tools and Techniques for Statistical Computing</em>. You can read about the book, or download a free PDF copy of the full text, at <a href="http://modelingwithdata.org">modelingwithdata.org</a>.
 
-If you are at this site, there is probably something there for
-you, including a tutorial on C and general computing form, SQL
-for data-handing, several chapters of statistics from various
-perspectives, and more details on working Apophenia. 
+If you are at this site, there is probably something there for you, including a tutorial on C and general computing form, SQL for data-handing, several chapters of statistics from various perspectives, and more details on working Apophenia. 
 
 
 As with many computer programs, the preferred manner of citing Apophenia is to cite its related book.
@@ -89,54 +117,8 @@ a database. Then, the data is pulled out, some simple statistics are
 compiled, and the data is written to a text file for inspection outside
 of the program.
 This program will compile cleanly with the sample \ref makefile.
-\code
-#include <apop.h>
 
-//Your processes are probably a bit more complex.
-double process_one(gsl_rng *r){
-        return gsl_rng_uniform(r) * gsl_rng_uniform(r) ;
-}
-
-double process_two(gsl_rng *r){
-        return gsl_rng_uniform(r);
-}
-
-int main(){
-apop_data      *m;
-double          p1, p2;
-int             i;
-gsl_rng *       r = apop_rng_alloc();
-
-        //create the database and the data table.
-        apop_db_open("runs.db");
-        apop_table_exists("samples",1); //If the table already exists, delete it.
-        apop_query("create table samples(iteration, process, value); begin;");
-
-        //populate the data table with runs.
-        for (i=0; i<1000; i++){
-                p1      = process_one(r);
-                p2      = process_two(r);
-                apop_query("insert into samples values(%i, %i, %g);", i, 1, p1);
-                apop_query("insert into samples values(%i, %i, %g);", i, 2, p2);
-        }
-        apop_query("commit;"); //the begin-commit wrapper saves writes to the drive.
-
-        //pull the data from the database, converting it into a table along the way. 
-        m  = apop_db_to_crosstab("samples", "iteration","process", "value");
-
-        Apop_col(m, 0, v1); //get vector views of the two table columns.
-        Apop_col(m, 1, v2);
-
-        //Output a table of means/variances, and t-test results.
-        printf("\t   mean\t\t   var\n");
-        printf("process 1: %f\t%f\n", apop_mean(v1), apop_var(v1));
-        printf("process 2: %f\t%f\n\n", apop_mean(v2), apop_var(v2));
-        printf("t test\n");
-        apop_data_show(apop_t_test(v1, v2));
-        apop_data_print(m, "the_data.txt"); //does not overwrite; appends.
-        return 0;
-}
-\endcode
+\include sample_draw_to_db.c
 */
 
 /** \page windows The Windows page
@@ -373,15 +355,17 @@ math via database; see \ref db_moments.
   apop_text_to_db("infile.txt", "intable", .has_col_name=1, NULL);
   \endcode
 
-  There is some overhead to checking for defaults, which could slow the code by up to 25\%. If this is noticeable for your situation, you can pass on this convenient form and call the underlying function directly, by adding \c _base to the name and giving all arguments:
+  \li There is some overhead to checking for defaults, which could slow the code by up to 25\%. If this is noticeable for your situation, you can pass on this convenient form and call the underlying function directly, by adding \c _base to the name and giving all arguments:
 
   \code
   apop_text_to_db_base("infile.txt", "intable", 0, 1, NULL);
   \endcode
 
+\li If one of the optional elements is an RNG, see \ref autorng on what happens when you don't provide an RNG.
+
   */
 
-/** \page autorng Auto-allocated RNGs.
+/** \page autorng Auto-allocated RNGs
 
   Functions that use the \ref designated syntax for reading inputs and
   assigning default values use the following rules for handling RNGs.
@@ -616,35 +600,7 @@ Notice how the older \ref apop_vector_apply uses file-global variables
 to pass information into the functions, while the \ref apop_map uses a
 pointer to the constant parameters to input to the functions.
 
-\code
-#include <apop.h>
-
-double row_offset;
-gsl_rng *r;
-
-void offset_rng(double *v){*v = gsl_rng_uniform(r) + row_offset;}
-double find_tstat(gsl_vector *in){ return apop_mean(in)/sqrt(apop_var(in));}
-double conf(double in, void *df){ return gsl_cdf_tdist_P(in, *(int *)df);}
-
-int main(){
-    apop_data *d = apop_data_alloc(0, 10, 100);
-    r = apop_rng_alloc(3242);
-    for (int i=0; i< 10; i++){
-        row_offset = gsl_rng_uniform(r)*2 -1;
-        Apop_row(d, i, onerow);
-        apop_vector_apply(onerow, offset_rng);
-    }
-
-    size_t df = d->matrix->size2-1;
-    apop_data *means = apop_map(d, .fn_v = apop_vector_mean, .part ='r');
-    apop_data *tstats = apop_map(d, .fn_v = find_tstat, .part ='r');
-    apop_data *confidences = apop_map(tstats, .fn_dp = conf, .param = &df);
-
-    printf("means:\t\t"); apop_data_show(means);
-    printf("t stats:\t"); apop_data_show(tstats);
-    printf("confidences:\t"); apop_data_show(confidences);
-}
-\endcode
+\include t_test_by_rows.c
 
             \li\ref apop_map()
             \li\ref apop_map_sum()
@@ -779,7 +735,6 @@ Outlineheader names   Name handling
                 \li\ref apop_name_add()
             \li\ref apop_name_alloc()
             \li\ref apop_name_copy()
-            \li\ref apop_name_cross_stack()
             \li\ref apop_name_find()
             \li\ref apop_name_free()
             \li\ref apop_name_print()
@@ -826,7 +781,6 @@ See also the \ref conversions, including \ref apop_text_to_db and \ref apop_matr
 \li \ref apop_db_open : Optional, for when you want to use a database on disk.
 \li \ref apop_db_close : If you used \ref apop_db_open, you will need to use this too.
 \li \ref apop_table_exists : Check to make sure you aren't reinventing or destroying data. Also, the clean way to drop a table.
-\li \ref apop_count_cols : Count the columns in a table.
 \li \ref apop_db_merge : Import or merge the whole of another database into the currently open db.
 \li \ref apop_db_merge_table : Import/merge just one table.
    \li \ref apop_crosstab_to_db : Convert between two common data layouts
@@ -867,43 +821,24 @@ Outlineheader Modesec Models \anchor models
 
 Outlineheader introtomodels Introduction
 
-A model is an equation (or system of equations) that relies on data and
-has unknown parameters to be determined. [Notice that this definition
-readily includes "non-parametric" models.] When the parameters are fully specified, the model
-will give you a probability that an observation will occur.  Much of statistical
-analysis consists of writing down a model, estimating its parameters,
-and running hypothesis tests to determine the confidence with which we
-can make statements about those parameters.
+A model intermediates between data, parameters, and likelihoods.  [This definition readily includes "non-parametric" models.] When the parameters are fully specified, the model will give you a likelihood that an observation will occur.  Much of statistical analysis consists of writing down a model, estimating its parameters, and running hypothesis tests to determine the confidence with which we can make statements about those parameters.
 
-Apophenia facilitates this via its \ref apop_model objects. Each object is
-a model as described above, and includes a method named <tt>estimate</tt>
-which takes in data and returns an \ref apop_model which includes
-the parameter estimates and the characteristics one would need for
-hypothesis testing.
+Given data, the model can estimate the parameters that best fit the data. This is the typical model estimation.
 
-For example, a model may be a probability distribution, such as the \ref
-apop_normal, \ref apop_poisson, or \ref apop_beta models. The data is
-assumed to have been drawn from a given distribution and the question
-is only what distributional parameters best fit; e.g., assume the data
-is Normally distributed and find the mean and variance: \c apop_estimate(data,apop_normal).
+Given parameters, the model can generate the expected value of the data, or randomly generate a full artificial data set.
 
-The design of the objects hopes to make it as easy as possible for you,
-dear reader, to write new models. For the most part, all you need to
-do is write a log likelihood function, and \ref apop_maximum_likelihood
-does the rest; see below.
+Apophenia facilitates all this via its \ref apop_model objects. The model includes slots for \c log_likelihood, \c estimate, \c draw, \c expected_value, and other operations we expect from our models.
 
-The main function in the systems below is the \ref apop_estimate
-function. It takes in a model and data, and outputs an apop_estimate,
-that includes the parameter estimates and the various auxiliary data
-that one may need to test the estimates, such as the variance-covariance
-matrix. For most users, the apop_model.estimate function will be all
-one needs from a model. Just prep the data, select a model, and produce
-an estimate:
+For example, a model may be a probability distribution, such as the \ref apop_normal, \ref apop_poisson, or \ref apop_beta models. The data is assumed to have been drawn from a given distribution and the question is only what distributional parameters best fit; e.g., assume the data is Normally distributed and find the mean and variance: \c apop_estimate(data,apop_normal).
+
+The design of the objects hopes to make it as easy as possible for you, dear reader, to write new models. For the most part, all you need to do is write a log likelihood function, and \ref apop_maximum_likelihood does the rest; see below.
+
+The most commonly-used function in the systems below is the \ref apop_estimate function. It takes in a model and data, and outputs an apop_estimate, that includes the parameter estimates and the various auxiliary data that one may need to test the estimates, such as the variance-covariance matrix. For most users, the \c estimate function will be all one needs from a model. Just prep the data, select a model, and produce an estimate:
 
 \code
 apop_data 	    *data 		    = read_in_data();
 apop_model 	*the_estimate 	= apop_estimate(data, apop_probit);
-apop_estimate_print(the_estimate);
+apop_model_show(the_estimate);
 \endcode
 
 Outlineheader internals The internals
@@ -915,26 +850,9 @@ The \ref apop_model struct breaks down into three parts:
 
 \li Info like names, the pointer to the input data, and the parameters, are for the most part self-descriptive.
 
-\li There is a broad class of functions that cover most of what you
-would do with a model. You can see that there is a bit of a bias toward
-maximum likelihood estimation. There are helper functions for most of
-them, like the \ref apop_estimate function above, that meant that you
-never had to directly handle the model's \c estimate method. 
-In the list at the top of this page, 
-all of the functions whose last argument is a model are helper functions
-of this type. The helper functions do some boilerplate error checking,
-and mean that you don't have to fill in every blank in your model: if
-you have a \c log_likelihood method but no \c p method, then \ref apop_p
-will use exp(\c log_likelihood). If you don't give an \c estimate method,
-then \c apop_estimate will use maximum likelihood.
+\li There is a broad class of functions that cover most of what you would do with a model. You can see that there is a bit of a bias toward maximum likelihood estimation. There are helper functions for most of them, like the \ref apop_estimate function above, that meant that you never had to directly handle the model's \c estimate method.  In the list at the top of this page, all of the functions whose last argument is a model are helper functions of this type. The helper functions do some boilerplate error checking, and mean that you don't have to fill in every blank in your model: if you have a \c log_likelihood method but no \c p method, then \ref apop_p will use exp(\c log_likelihood). If you don't give an \c estimate method, then \c apop_estimate will use maximum likelihood.
 
-\li I refer to the values output from an estimation as \em parameters,
-and the details of how the model's machinery work as \em settings. The
-parameters are pretty standardized, and a \ref apop_data set is sufficient
-to handle the great majority of models. However, the settings of an OLS
-regression are drastically different from those of a histogram or an MLE.
-The solution is a list of settings structures. This is probably the
-least pleasant structural element in the system, to the point that you will not want to handle the settings structures directly. Instead, you should use the various \ref settings "helper functions for model settings".
+\li I refer to the values output from an estimation as \em parameters, and the details of how the model's machinery work as \em settings. The parameters are pretty standardized, and a \ref apop_data set is sufficient to handle the great majority of models. However, the settings of an OLS regression are drastically different from those of a histogram or an MLE.  The solution is a list of settings structures. This is probably the least pleasant structural element in the system, to the point that you will not want to handle the settings structures directly. Instead, you should use the various \ref settings "helper functions for model settings".
 
 endofdiv
 
@@ -1426,70 +1344,6 @@ Outlineheader Legi Legible output
 
 endofdiv
 
-Outlineheader python Python interface
-
-The distribution includes a Python interface via the SWIG tool for
-bridging across languages. 
-
-Installation: You will need to have the SWIG and Python-development
-packages installed on your computer when compiling. From there, the
-usual <tt> ./configure; make; sudo make install</tt> will produce the Python
-library and install it in Python's site-packages directory.
-
-Sample script:
-
-On the page on the \ref apop_ols model, you will find a few lines of
-toy data and a sample program to run an OLS regression. Once you have
-set up the \c data file, you can use this Python rewrite of the OLS
-program:
-
-\code
-from apop import *
-apop_text_to_db("data", "d", 0, 1, None)
-data = apop_query_to_data("select * from d")
-est  = apop_estimate(data, avar.apop_ols)
-print est
-
-#And one last example of using a method of the apop_data object:
-
-print est.parameters.transpose()
-\endcode
-
-
-Caveats and notes: SWIG sets all C-side global variables into a category
-named avar. Thus the \c apop_ols variable had to be called \c avar.apop_ols.
-
-The verbose package-object-action scheme for naming functions is
-mostly unnecessary in Python, where objects can more closely be attached
-to functions. Thus, instead of calling \c apop_vector_skew(my_v), you would
-call \c my_v.skew(). If you want a list of methods, just use
-<tt>help(my_v)</tt> or any of the other familiar means of introspection.
-
-Here is another simple example, that copies a Python-side list into a matrix using \c apop_pylist_to_data, and then runs a Fisher Exact test on the matrix. If the list were one-dimensional (flat), then the data would be copied into the vector element of the returned \ref apop_data structure.
-
-\code
-from apop import *
-data = [[15, 13], [18, 19]]
-adata = apop_pylist_to_data(data) 
-
-print "display the data"
-print adata.matrix
-
-result = apop_test_fisher_exact(adata)
-print result
-
-print "Or, just one value:"
-print result.get("p value", -1)
-\endcode
-
-
-The focus of the work is still in C, so there will likely always be
-things that you can do in C that can't be done in Python, and strage
-Python-side errors that will only be explicable if you understand the
-C-side.  That said, you can still access all of the functions from Python
-(including those that make little sense from Python).
-
-endofdiv 
 
 Outlineheader moreasst Assorted
 
@@ -1524,9 +1378,9 @@ Outlineheader Prob Deprecated
 These functions will probably disappear or be replaced soon.
 
     \li\ref apop_estimate_fixed_effects_OLS()
+    \li\ref apop_name_cross_stack()
     \li\ref apop_kernel_density_settings_alloc()
     \li\ref apop_test_chi_squared_var_not_zero ()
-    \li\ref apop_count_cols()
     \li\ref apop_data_to_db()
 
 endofdiv
@@ -1633,34 +1487,38 @@ more information, such as the ld(1) and ld.so(8) manual pages.
 */
 
 
+/** \page python The Python interface
 
-/*  The old mapply function
-#include <apop.h>
+The distribution includes a Python interface via the SWIG tool for
+bridging across languages. 
 
-size_t df;
-double col_offset;
-gsl_rng *r;
+Installation: You will need to have the SWIG and Python-development
+packages installed on your computer when compiling. From there, 
+\code
+./configure --enable-python
+make
+sudo make install
+\endcode 
+will produce the Python
+library and install it in Python's site-packages directory.
 
-void offset_rng(double *v){*v = gsl_rng_uniform(r) + col_offset;}
-double find_tstat(const gsl_vector *in){ return apop_mean(in)/sqrt(apop_var(in));}
-double conf(const double in){return gsl_cdf_tdist_P(in, df);}
+Sample script:
 
-int main(){
-    apop_data *d = apop_data_alloc(0, 10, 100);
-    r = apop_rng_alloc(3242);
-    for (int i=0; i< 10; i++){
-        col_offset = gsl_rng_uniform(r)*2 -1;
-        Apop_row(d, i, onerow);
-        apop_vector_apply(onerow, offset_rng);
-    }
-    
-    df = d->matrix->size2-1;
-    gsl_vector *means = apop_matrix_map(d->matrix, apop_mean);
-    gsl_vector *tstats = apop_matrix_map(d->matrix, find_tstat);
-    gsl_vector *confidences = apop_vector_map(tstats, conf);
+On the page on the \ref apop_ols model, you will find a few lines of toy data and a sample program to run an OLS regression. Once you have set up the \c data file, you can use this Python rewrite of the OLS program:
 
-    printf("means:\t\t"); apop_vector_show(means);
-    printf("t stats:\t"); apop_vector_show(tstats);
-    printf("confidences:\t"); apop_vector_show(confidences);
-}
+\include ols.py
+
+\li SWIG sets all C-side global variables into a category named avar. Thus the \c apop_ols variable had to be called \c avar.apop_ols.
+
+\li The verbose package-object-action scheme for naming functions is mostly unnecessary in Python, where objects can more closely be attached to functions. Thus, instead of calling \c apop_vector_skew(my_v), you would call \c my_v.skew(). If you want a list of methods, just use <tt>help(my_v)</tt> or any of the other familiar means of introspection.
+
+Here is another simple example, that copies a Python-side list into a matrix using \c apop_pylist_to_data, and then runs a Fisher Exact test on the matrix. If the list were one-dimensional (flat), then the data would be copied into the vector element of the returned \ref apop_data structure.
+
+\include fisher.py
+
+\li The focus of the work is still in C, so there will likely always be
+things that you can do in C that can't be done in Python, and strage
+Python-side errors that will only be explicable if you understand the
+C-side.  That said, you can still access all of the functions from Python
+(including those that make little sense from Python).
 */

@@ -6,7 +6,6 @@
 #include <apophenia/output.h>
 #include <apophenia/mapply.h>
 #include <apophenia/settings.h>
-#include <apophenia/regression.h>
 #include <apophenia/conversions.h>
 #include <apophenia/likelihoods.h>
 #include <apophenia/linear_algebra.h>

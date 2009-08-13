@@ -6,7 +6,6 @@ The Normal and Lognormal distributions.*/
 #include "model.h"
 #include "mapply.h"
 #include "settings.h"
-#include "regression.h"
 #include "likelihoods.h"
 static double normal_log_likelihood(apop_data *d, apop_model *params);
 
@@ -87,9 +86,8 @@ static double normal_p(apop_data *d, apop_model *params){
     mu	        = gsl_vector_get(params->parameters->vector,0);
     sd          = gsl_vector_get(params->parameters->vector,1);
   gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me);
-  int           i;
   long double   ll      = 1;
-    for(i=0; i< v->size; i++)
+    for(size_t i=0; i< v->size; i++)
         ll  *= gsl_vector_get(v, i);
     gsl_vector_free(v);
 	return ll;
@@ -107,10 +105,9 @@ static void normal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
               dll     = 0,
               sll     = 0,
               x;
-  int         i,j;
   gsl_matrix  *data   = d->matrix;
-    for (i=0;i< data->size1; i++)
-        for (j=0;j< data->size2; j++){
+    for (size_t i=0;i< data->size1; i++)
+        for (size_t j=0;j< data->size2; j++){
             x    = gsl_matrix_get(data, i, j);
             dll += (x - mu);
             sll += gsl_pow_2(x - mu);
@@ -153,6 +150,7 @@ likelihood of those 56 observations given the mean and variance you provide.
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 
 The \c apop_ls settings group includes a \c want_cov element, which refers to the covariance matrix for the mean and variance. You can set that to zero if you are estimating millions of these and need to save time.
+\hideinitializer
 \ingroup models
 */
 apop_model apop_normal = {"Normal distribution", 2, 0, 0,
@@ -185,20 +183,8 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
 	return est;
 }
 
-static double   mu, sd;
-
-static double apply_me2a(gsl_vector *v){
-  long double    ll  = 0;
-    for(int i=0; i< v->size; i++)
-	    ll	+= log(gsl_vector_get(v, i));
-    return ll;
-}
-
-static double apply_me2b(gsl_vector *v){
-  long double    ll  = 0;
-    for(int i=0; i< v->size; i++)
-	    ll	+= gsl_pow_2(log(gsl_vector_get(v, i)) - mu);
-    return ll;
+static double lnx_minus_mu_squared(double x, void *mu_in){
+	return gsl_pow_2(log(x) - *(double *)mu_in);
 }
 
 /* The log likelihood function for the lognormal distribution.
@@ -206,31 +192,17 @@ static double apply_me2b(gsl_vector *v){
 \$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})\$
 \$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})\$
 
-\param beta	beta[0]=the mean; beta[1]=the variance
+\param beta	beta[0]=the mean (after logging); beta[1]=the variance (after logging)
 \param d	the set of data points; see notes.
 */
 static double lognormal_log_likelihood(apop_data *d, apop_model *params){
   assert(params->parameters);
-    mu	        = gsl_vector_get(params->parameters->vector,0);
-    sd          = gsl_vector_get(params->parameters->vector,1);
-    gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me2b);//sum of (ln(x)-mu)^2
-    long double   ll      = -apop_vector_sum(v)/(2*gsl_pow_2(sd));
-                ll       -= apop_matrix_map_sum(d->matrix, apply_me2a);//sum of ln(x)
-                ll       -= d->matrix->size1*d->matrix->size2*(M_LNPI+M_LN2+log(sd));
-    gsl_vector_free(v);
-	return ll;
-}
-
-static double lognormal_p(apop_data *d, apop_model *params){
-  assert(params->parameters);
-  long double ll    = 1;
-    mu	= gsl_vector_get(params->parameters->vector,0);
-    sd  = gsl_pow_2(gsl_vector_get(params->parameters->vector,1));//really, var.
-    for (int i=0; i< d->matrix->size1; i++)
-        for (int j=0; j< d->matrix->size1; j++){
-            double x = gsl_matrix_get(d->matrix, i, j);
-            ll      *=  exp(-gsl_pow_2(log(x)-mu)/(2*sd))/(x*sd * M_LNPI+M_LN2);
-        }
+    double mu	        = gsl_vector_get(params->parameters->vector,0);
+    double sd          = gsl_vector_get(params->parameters->vector,1);
+    long double   ll    = -apop_map_sum(d, .fn_dp=lnx_minus_mu_squared, .param=&mu, .part='m');
+      ll /= (2*gsl_pow_2(sd));
+      ll -= apop_map_sum(d, log, .part='m');
+      ll -= d->matrix->size1*d->matrix->size2*(M_LNPI+M_LN2+log(sd));
 	return ll;
 }
 
@@ -269,9 +241,10 @@ static void lognormal_rng(double *out, gsl_rng *r, apop_model *p){
 
 /** The lognormal distribution. 
 
+\hideinitializer
 \ingroup models
 */
 apop_model apop_lognormal = {"Lognormal distribution", 2, 0, 0,
- .estimate = lognormal_estimate, .p = lognormal_p, .log_likelihood = lognormal_log_likelihood, /*.score = lognormal_dlog_likelihood,*/ 
+ .estimate = lognormal_estimate, .log_likelihood = lognormal_log_likelihood, /*.score = lognormal_dlog_likelihood,*/ 
  .constraint = beta_1_greater_than_x_constraint, .draw = lognormal_rng};
 

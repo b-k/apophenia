@@ -13,14 +13,13 @@ static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
                   b           = gsl_vector_get(p->parameters->vector, 1);
     apop_assert(a>0 && b>0, 0, 0,'c', "The Gamma's log likelihood needs positive params, and you gave me %g and %g. Returning zero.", a, b);
     if (gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
-  int             k;
   gsl_matrix      *data       = d->matrix;
   double          llikelihood = 0,
                   ln_ga       = gsl_sf_lngamma(a),
                   a_ln_b      = a * log(b),
                   ln_k;
   gsl_vector      v;
-    for (k=0; k< data->size2; k++){
+    for (size_t k=0; k< data->size2; k++){
             ln_k            = log(k+1);
             v               = gsl_matrix_column(data, k).vector;
             llikelihood    += apop_sum(&v) * (-ln_ga - a_ln_b + (a-1) * ln_k  - (k+1)/b);
@@ -31,7 +30,6 @@ static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
 static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   double          a       = gsl_vector_get(p->parameters->vector, 0),
                   b       = gsl_vector_get(p->parameters->vector, 1);
-  int             k;
   gsl_matrix     *data    = d->matrix;
   double          d_a     = 0,
                   d_b     = 0,
@@ -39,7 +37,7 @@ static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_
                   ln_b    = log(b),
                   x, ln_k;
   gsl_vector_view v;
-    for (k=0; k< data->size2; k++){
+    for (size_t k=0; k< data->size2; k++){
         ln_k    = log(k +1);
         v       = gsl_matrix_column(data, k);
         x       = apop_sum(&(v.vector));
@@ -52,13 +50,7 @@ static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_
 
 static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
-  static apop_data *constraint = NULL;
-    if (!constraint){
-        constraint = apop_data_calloc(2,2,2);
-        apop_data_set(constraint, 0, 0, 1);
-        apop_data_set(constraint, 1, 1, 1);
-    }
-    return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
+    return apop_linear_constraint(v->parameters->vector, .margin= 1e-3);
 }
 
 double a, b; 
@@ -136,6 +128,8 @@ Apop_settings_add_group(your_model, apop_rank, NULL);
 \f$d ln G/ da    =  -\psi(a) - ln b + ln(x) \f$    (also, \f$d ln \gamma = \psi\f$)
 
 \f$d ln G/ db    =  -a/b - x \f$
+
+\hideinitializer
 \ingroup models
 */
 apop_model apop_gamma = {"Gamma distribution", 2,0,0, //estimate method is just the default MLE.

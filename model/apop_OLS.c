@@ -1,10 +1,9 @@
 /** \file apop_OLS.c
 
-  OLS models. Much of the real work is done in regression.c.*/
+  OLS models. Much of the real work is done in apop_regression.c.*/
 /* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
-#include "regression.h"
 #include "conversions.h"
 #include "settings.h"
 #include "stats.h"
@@ -12,10 +11,8 @@
 
 void * apop_ls_settings_copy(apop_ls_settings *in){
   apop_ls_settings *out  = malloc(sizeof(*out));
-    out->destroy_data       =  in->destroy_data;
-    out->want_cov           =  in->want_cov;
-    out->want_expected_value=  in->want_expected_value;
-    out->weights = apop_vector_copy(in->weights);
+    *out =  *in;
+    out->weights = apop_vector_copy(in->weights),
     out->instruments = apop_data_copy(in->instruments);
     return out;
 }
@@ -34,10 +31,8 @@ apop_ls_settings * apop_ls_settings_alloc(apop_data *data){
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
-  int i;
   apop_ls_settings   *p = apop_settings_get_group(e, "apop_ls");
 	if (e->data->names->colct > 0) {		
-		//apop_name_add(n, n->column[0], 'd');
         if (e->expected){
             apop_name_add(e->expected->names, e->data->names->column[0], 'c');
             apop_name_add(e->expected->names, "predicted", 'c');
@@ -48,7 +43,7 @@ static void prep_names (apop_model *e){
 		sprintf(e->data->names->column[0], "1");
         apop_name_add(e->parameters->names, "1", 'r');
         apop_name_add(e->parameters->names, "parameters", 'v');
-        for(i=1; i< e->data->names->colct; i++)
+        for(int i=1; i< e->data->names->colct; i++)
             apop_name_add(e->parameters->names, e->data->names->column[i], 'r');
         if (p->want_cov){
             if (e->data->names){
@@ -85,12 +80,12 @@ which you may have already done in the OLS estimation.
  */
 static double ols_log_likelihood (apop_data *d, apop_model *p){ 
   apop_assert(p->parameters, 0, 0,'s', "You asked me to evaluate an un-parametrized model. Returning zero.");
-  int         i; 
   long double	ll  = 0; 
-  double      sigma, expected, actual;
+  double      sigma, expected, actual, weight;
+  int use_weights =  (!strcmp(p->name, "Weighted Least Squares") && d->weights);
   gsl_matrix	*data		    = d->matrix;
   gsl_vector  *errors         = gsl_vector_alloc(data->size1);
-	for(i=0;i< data->size1; i++){
+	for(size_t i=0;i< data->size1; i++){
         APOP_ROW(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
@@ -102,8 +97,9 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
         gsl_vector_set(errors, i, expected-actual);
     }
     sigma   = sqrt(apop_vector_var(errors));
-	for(i=0;i< data->size1; i++){
-        ll  += log(gsl_ran_gaussian_pdf(gsl_vector_get(errors, i), sigma));
+	for(size_t i=0;i< data->size1; i++){
+        weight       = use_weights ? gsl_vector_get(d->weights, i) : 1; 
+        ll  += log(gsl_ran_gaussian_pdf(gsl_vector_get(errors, i), sigma)* weight);
 	} 
     gsl_vector_free(errors);
     return ll;
@@ -112,31 +108,32 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
 /* $\partial {\cal N}(x\beta - y)/\partial \beta_i = \sum{x_i} \partial {\cal N}(K)/\partial K$ (at $K=x\beta -y$) */
 static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){ 
   apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model. Not changing the gradient");
-  size_t         i, j; 
-  double      sigma, expected, actual;
+  double      sigma, expected, actual, weight;
   gsl_matrix	*data		    = d->matrix;
   gsl_vector  *errors         = gsl_vector_alloc(data->size1);
   gsl_vector  *normscore      = gsl_vector_alloc(2);
   apop_data  *subdata      = apop_data_alloc(0,1,1);
-	for(i=0;i< data->size1; i++){
+  int use_weights =  (!strcmp(p->name, "Weighted Least Squares") && d->weights);
+	for(size_t i=0;i< data->size1; i++){
         APOP_ROW(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
             actual       = apop_data_get(d,i, -1);
         } else {
             actual       = gsl_matrix_get(data,i, 0);
-            expected    += gsl_vector_get(p->parameters->vector,0) * (1 - actual); //data isn't affine.
+            expected    +=  gsl_vector_get(p->parameters->vector,0) * (1 - actual); //data isn't affine.
         }
         gsl_vector_set(errors, i, expected-actual);
     }
     sigma   = sqrt(apop_vector_var(errors));
     apop_model *norm = apop_model_set_parameters(apop_normal, 0.0, sigma);
     gsl_vector_set_all(gradient, 0);
-	for(i=0;i< data->size1; i++){
+	for(size_t i=0;i< data->size1; i++){
         apop_data_set(subdata, 0, 0, gsl_vector_get(errors, i));
         apop_score(subdata, normscore, norm);
-        for(j=0; j< data->size2; j++)
-            apop_vector_increment(gradient, j, apop_data_get(d, i, j) * gsl_vector_get(normscore, 0));
+        weight       = use_weights ? gsl_vector_get(d->weights, i) : 1; 
+        for(size_t j=0; j< data->size2; j++)
+            apop_vector_increment(gradient, j, weight * apop_data_get(d, i, j) * gsl_vector_get(normscore, 0));
 	} 
     gsl_vector_free(errors);
     apop_model_free(norm);
@@ -165,9 +162,8 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
         gsl_matrix_set_col(out->expected->matrix, 0, y_data);
         gsl_matrix_set_col(out->expected->matrix, 2, error);
         predicted   = gsl_matrix_column(out->expected->matrix, 1).vector;
-        gsl_vector_set_zero(&predicted);
-        gsl_vector_add(&predicted, y_data);
-        gsl_vector_add(&predicted, error);
+        gsl_vector_memcpy(&predicted, y_data);
+        gsl_vector_add(&predicted, error); //pred = y_data + error
     }
     gsl_vector_free(error);
     out->covariance->matrix	= cov;
@@ -177,18 +173,15 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     apop_assert(inset,  NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set;
   apop_model       *epout = apop_model_copy(*ep);
+  epout->status = 0;
   gsl_vector        *weights    = NULL;
-  int               i;
     apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
     if (!olp) {
-        Apop_settings_add_group(epout, apop_ls, inset);
+        Apop_model_add_group(epout, apop_ls);
         olp             =  apop_settings_get_group(epout, "apop_ls");
     }
-  //  apop_model_clear(data, out->model);
     epout->data = inset;
-    if(epout->parameters)
-        apop_data_free(epout->parameters);
-    epout->parameters = apop_data_alloc(inset->matrix->size2,0,0);
+    apop_model_clear(inset, epout);
     set = olp->destroy_data ? inset : apop_data_copy(inset); 
     
     //prep weights.
@@ -196,8 +189,8 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
         weights = epout->data->weights;  //may be NULL.
     else
         weights = apop_vector_copy(epout->data->weights); //may be NULL.
-    if (weights)
-        for (i =0; i< weights->size; i++)
+    if (!strcmp(epout->name, "Weighted Least Squares") && weights)
+        for (size_t i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
   gsl_vector    *y_data     = gsl_vector_alloc(set->matrix->size1); 
@@ -213,7 +206,7 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     gsl_vector_set_all(firstcol, 1);     //affine: first column is ones.
     if (weights){
         gsl_vector_mul(y_data, weights);
-        for (i = 0; i < set->matrix->size2; i++){
+        for (size_t i = 0; i < set->matrix->size2; i++){
             APOP_COL(set, i, v);
             gsl_vector_mul(v, weights);
         }
@@ -267,19 +260,7 @@ Y, X_1, X_2, X_3
 \endverbatim
 
 The program:
-\code
-#include <apop.h>
-
-int main(void){
-apop_data       *data;
-apop_model   *est;
-    apop_text_to_db("data","d");
-    data = apop_query_to_data("select * from d");
-    est  = apop_estimate(data, apop_ols);
-    apop_model_show(est);
-    return 0;
-}
-\endcode
+\include ols1.c
 
 If you saved this code to <tt>sample.c</tt>, then you can compile it with
 \verbatim
@@ -297,24 +278,25 @@ int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols));
 \endcode
 
 
+\hideinitializer
  */
 apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .estimate =apop_estimate_OLS, 
                             .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep};
 
-/** The GLS model
 
-  This is basically a wrapper for the GLS regression function, \ref apop_params_GLS.
+
+/** The WLS model
+
+  You will need to provide the weights in yourdata->weights. Otherwise, this model will behave just like \ref apop_ols.
+\hideinitializer
 \ingroup models
 */
-//apop_model apop_GLS = {"GLS", -1, apop_params_GLS, NULL, NULL, NULL, NULL, NULL};
-
-
+apop_model apop_wls = {"Weighted Least Squares", -1,0,0, .estimate = apop_estimate_OLS, 
+            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep= ols_prep};
 
 
 
 //Instrumental variables
-
-
 
 
 static apop_data *prep_z(apop_data *x, apop_data *instruments){
@@ -335,7 +317,7 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
             gsl_vector_memcpy(outv, inv);
         }
     else 
-        apop_error(0, 's', "%s: Your instrument matrix has data, but neither a vector element nor row names indicating what columns in the original data should be replaced.\n", __func__);
+        apop_assert(0, 0,  0, 's', "Your instrument matrix has data, but neither a vector element nor row names indicating what columns in the original data should be replaced.");
     return out;
 }
 
@@ -437,5 +419,6 @@ apop_model_show(est);
 only slightly more human- and labor-intensive to do the linear algebra
 without producing the Z matrix explicitly.
 
+\hideinitializer
  */
 apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, .log_likelihood = ols_log_likelihood};

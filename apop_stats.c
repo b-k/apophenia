@@ -45,9 +45,8 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 */
 long double apop_vector_sum(const gsl_vector *in){
   apop_assert(in, 0, 1,'c', "You just asked me to sum a NULL. Returning zero.\n")
-  int     i;
   double  out = 0;
-    for (i=0; i< in->size; i++)
+    for (size_t i=0; i< in->size; i++)
         out += gsl_vector_get(in, i);
 	return out; 
 }
@@ -99,11 +98,10 @@ double apop_vector_skew_pop(const gsl_vector *in){
   //that the GSL does. 
   //Lawyers may want to know that this code is cut/pasted/modified from the GSL. 
 
-  size_t i; 
   size_t n = in->size;
   long double avg = 0;
   long double mean = apop_vector_mean(in);
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         const long double x = gsl_vector_get(in, i) - mean; 
         avg += (x * x * x  - avg)/(i + 1);
     } 
@@ -120,11 +118,10 @@ double apop_vector_kurtosis_pop(const gsl_vector *in){
   //that the GSL does. 
   //Lawyers may want to know that this code is cut/pasted/modified from the GSL. 
 
-  size_t i; 
   size_t n = in->size;
   long double avg  = 0;
   long double mean = apop_vector_mean(in);
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         const long double x = gsl_vector_get(in, i) - mean; 
         avg += (x * x * x * x - avg)/(i + 1);
     } 
@@ -172,8 +169,7 @@ double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb){
 \ingroup vector_moments
 */
 double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
-	return apop_vector_cov(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb));
-}
+	return apop_vector_cov(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb)); }
 
 
 /** Returns the distance between two vectors, where distance is defined
@@ -266,15 +262,13 @@ Equivalent to \ref apop_vector_distance<tt>(ina, inb, .metric='M')</tt>.
 \ingroup convenience_fns
 */
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb){
-  apop_assert(ina, 0, 0, 'c', "first input vector is NULL. Returning 0.\n");
-  apop_assert(inb, 0, 0, 'c', "second input vector is NULL. Returning 0.\n");
+  apop_assert(ina, 0, 0, 'c', "first input vector is NULL. Returning 0.");
+  apop_assert(inb, 0, 0, 'c', "second input vector is NULL. Returning 0.");
   apop_assert(ina->size == inb->size, 0, 0,'s', 
                 "You sent a vector of size %u and a vector of size %u.", ina->size, inb->size);
   double  dist    = 0;
-  size_t  i;
-    for (i=0; i< ina->size; i++){
+    for (size_t i=0; i< ina->size; i++)
         dist    += fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
-    }
 	return dist; 
 }
 
@@ -371,21 +365,17 @@ APOP_VAR_END_HEAD
 
 \ingroup basic_stats */
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization){
-  if (!data){
-      apop_error(1, 'c', "input matrix is NULL. Doing nothing.\n");
-      return; }
-  gsl_vector  v;
-  int         j;
-        if (row_or_col == 'r')
-            for (j = 0; j < data->size1; j++){
-                v	= gsl_matrix_row(data, j).vector;
-                apop_vector_normalize(&v, NULL, normalization);
-            }
-        else
-            for (j = 0; j < data->size2; j++){
-                v	= gsl_matrix_column(data, j).vector;
-                apop_vector_normalize(&v, NULL, normalization);
-            }
+    apop_assert_void(data, 1, 'c', "input matrix is NULL. Doing nothing.");
+    if (row_or_col == 'r')
+        for (size_t j = 0; j < data->size1; j++){
+            Apop_matrix_row(data, j, v);
+            apop_vector_normalize(v, NULL, normalization);
+        }
+    else
+        for (size_t j = 0; j < data->size2; j++){
+            Apop_matrix_col(data, j, v);
+            apop_vector_normalize(v, NULL, normalization);
+        }
 }
 
 /** Input: any old vector. Output: 1 - the p-value for a chi-squared test to answer the question, "with what confidence can I reject the hypothesis that the variance of my data is zero?"
@@ -396,11 +386,10 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
 double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
   apop_assert(in, 0, 0, 'c', "input vector is NULL. Doing nothing.\n");
   gsl_vector	*normed;
-  int		    i;
   double 		sum=0;
 	apop_vector_normalize((gsl_vector *)in,&normed, 1);
 	gsl_vector_mul(normed,normed);
-	for(i=0;i< normed->size; 
+	for(size_t i=0;i< normed->size; 
 			sum +=gsl_vector_get(normed,i++));
 	gsl_vector_free(normed);
 	return gsl_cdf_chisq_P(sum,in->size); 
@@ -435,10 +424,32 @@ APOP_VAR_ENDHEAD
 
 /** Gives a random integer between min and max [inclusive].
 
-\param min, max 	Y'know.
-\param r		The random number generator you're using.
+\param min  (default 0)
+\param max 	(default 1)
+\param r    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
+
+Thus,
+\code
+x = apop_random_int()
+\endcode
+makes a binary zero-one draw, and
+\code
+data fivepoints[] = {1, 2, 3, 5, 7};
+y = apop_random_int(0, 4)
+x = apop_random_int(.max=4)
+\endcode
+gives two draws from a five-item vector. Notice that the max is the largest index, which is one minus the dimension.
 */
-int apop_random_int(const double min, const double max, const gsl_rng *r){
+APOP_VAR_HEAD int apop_random_int(double min, double max, const gsl_rng *r){
+    static gsl_rng * spare_rng = NULL;
+    double apop_varad_var(min, 0);
+    double apop_varad_var(max, 1);
+    const gsl_rng * apop_varad_var(r, NULL);
+    if (!r && !spare_rng) 
+        spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
+    if (!r)  r = spare_rng;
+    return apop_random_int_base(min, max, r);
+APOP_VAR_ENDHEAD
   double		base = gsl_rng_uniform(r);
 	return (int) (base * (max - min + 1) - min);
 }
@@ -448,11 +459,10 @@ int apop_random_int(const double min, const double max, const gsl_rng *r){
   \param m	the matrix to be summed. 
 \ingroup convenience_fns*/
 long double apop_matrix_sum(const gsl_matrix *m){
-  int 		i,j;
   long double	sum	= 0;
-	for (j=0; j< m->size1; j++)
-		for (i=0; i< m->size2; i++)
-			sum     += (gsl_matrix_get(m, j, i));
+	for (size_t j=0; j< m->size1; j++)
+		for (size_t i=0; i< m->size2; i++)
+			sum     += gsl_matrix_get(m, j, i);
 	return sum;
 }
 
@@ -463,17 +473,17 @@ long double apop_matrix_sum(const gsl_matrix *m){
   \param data	the matrix to be averaged. 
 \ingroup convenience_fns*/
 double apop_matrix_mean(const gsl_matrix *data){
-  double          avg     = 0;
-  int             i,j, cnt= 0;
-  double          x, ratio;
-        for(i=0; i < data->size1; i++)
-                for(j=0; j < data->size2; j++){
-                        x       = gsl_matrix_get(data, i,j);
-                        ratio   = cnt/(cnt+1.0);
-                        cnt     ++;
-                        avg     *= ratio;
-                        avg     += x/(cnt +0.0);
-                }
+  double  avg     = 0;
+  int     cnt= 0;
+  double  x, ratio;
+        for(size_t i=0; i < data->size1; i++)
+            for(size_t j=0; j < data->size2; j++){
+                x       = gsl_matrix_get(data, i,j);
+                ratio   = cnt/(cnt+1.0);
+                cnt     ++;
+                avg     *= ratio;
+                avg     += x/(cnt +0.0);
+            }
 	return avg;
 }
 
@@ -485,17 +495,17 @@ apop_matrix_mean_and_var.
 \param mean	the pre-calculated mean
 \ingroup convenience_fns*/
 double apop_matrix_var_m(const gsl_matrix *data, double mean){
-  double          avg2    = 0;
-  int             i,j, cnt= 0;
-  double          x, ratio;
-    for(i=0; i < data->size1; i++)
-            for(j=0; j < data->size2; j++){
-                    x       = gsl_matrix_get(data, i,j);
-                    ratio   = cnt/(cnt+1.0);
-                    cnt     ++;
-                    avg2    *= ratio;
-                    avg2    += gsl_pow_2(x)/(cnt +0.0);
-            }
+  double     avg2    = 0;
+  int        cnt= 0;
+  double     x, ratio;
+    for(size_t i=0; i < data->size1; i++)
+        for(size_t j=0; j < data->size2; j++){
+            x       = gsl_matrix_get(data, i,j);
+            ratio   = cnt/(cnt+1.0);
+            cnt     ++;
+            avg2    *= ratio;
+            avg2    += gsl_pow_2(x)/(cnt +0.0);
+        }
     return mean - gsl_pow_2(mean); //E[x^2] - E^2[x]
 }
 
@@ -509,18 +519,18 @@ double apop_matrix_var_m(const gsl_matrix *data, double mean){
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var){
   long double avg     = 0,
               avg2    = 0;
-  int         i,j, cnt= 0;
+  size_t         cnt= 0;
   long double x, ratio;
-    for(i=0; i < data->size1; i++)
-            for(j=0; j < data->size2; j++){
-                    x       = gsl_matrix_get(data, i,j);
-                    ratio   = cnt/(cnt+1.0);
-                    cnt     ++;
-                    avg     *= ratio;
-                    avg2    *= ratio;
-                    avg     += x/(cnt +0.0);
-                    avg2    += gsl_pow_2(x)/(cnt +0.0);
-            }
+    for(size_t i=0; i < data->size1; i++)
+        for(size_t j=0; j < data->size2; j++){
+            x       = gsl_matrix_get(data, i,j);
+            ratio   = cnt/(cnt+1.0);
+            cnt     ++;
+            avg     *= ratio;
+            avg2    *= ratio;
+            avg     += x/(cnt +0.0);
+            avg2    += gsl_pow_2(x)/(cnt +0.0);
+        }
 	*mean	= avg;
     *var	= avg2 - gsl_pow_2(avg); //E[x^2] - E^2[x]
 }
@@ -536,7 +546,6 @@ of the data in each column; should give more in the near future.
 apop_data * apop_data_summarize(apop_data *indata){
   apop_assert(indata, NULL, 0, 'c', "You sent me a NULL apop_data set. Returning NULL.\n");
   apop_assert(indata->matrix, NULL, 0, 'c', "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
-  int		    i;
   apop_data	*out	= apop_data_alloc(0,indata->matrix->size2, 3);
   double		mean, stddev,var;
   char		rowname[10000]; //crashes on more than 10^9995 columns.
@@ -546,11 +555,11 @@ apop_data * apop_data_summarize(apop_data *indata){
 	if (indata->names !=NULL)
         apop_name_stack(out->names,indata->names, 'r', 'c');
 	else
-		for (i=0; i< indata->matrix->size2; i++){
+		for (size_t i=0; i< indata->matrix->size2; i++){
 			sprintf(rowname, "col %i", i);
 			apop_name_add(out->names, rowname, 'r');
 		}
-	for (i=0; i< indata->matrix->size2; i++){
+	for (size_t i=0; i< indata->matrix->size2; i++){
         APOP_MATRIX_COL(indata->matrix, i, v);
         if (indata->weights){
             mean	= apop_vector_mean(v);
@@ -564,7 +573,7 @@ apop_data * apop_data_summarize(apop_data *indata){
 		gsl_matrix_set(out->matrix, i, 0, mean);
 		gsl_matrix_set(out->matrix, i, 1, stddev);
 		gsl_matrix_set(out->matrix, i, 2, var);
-	}	
+	}
 	return out;
 }
 
@@ -574,14 +583,13 @@ apop_data * apop_data_summarize(apop_data *indata){
 \param  w   the weight vector. If NULL, assume equal weights.
 \return     The weighted mean */
 double apop_vector_weighted_mean(const gsl_vector *v,const  gsl_vector *w){
-  int           i;
   long double   sum = 0, wsum = 0;
     if (!w)
         return apop_vector_mean(v);
     apop_assert(v,  0, 0, 'c', "data vector is NULL. Returning zero.\n");
     apop_assert(v->size,  0, 1, 'c', "data vector has size 0. Returning zero.\n");
     apop_assert(w->size == v->size,  0, 0,'c', "data vector has size %u; weighting vector has size %u. Returning zero.\n", v->size, w->size);
-    for (i=0; i< w->size; i++){
+    for (size_t i=0; i< w->size; i++){
         sum  += gsl_vector_get(w, i) * gsl_vector_get(v,i); 
         wsum += gsl_vector_get(w, i); 
     }
@@ -600,7 +608,6 @@ as standard weightings or to represent elements that appear repeatedly.
 \param  w   the weight vector. If NULL, assume equal weights.
 \return     The weighted sample variance.  */
 double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
-  int           i;
   long double   sum = 0, wsum = 0, sumsq = 0, vv, ww;
     if (!w)
         return apop_vector_var(v);
@@ -608,7 +615,7 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
     apop_assert(v->size,  0, 0,'c', "data vector has size 0. Returning zero.\n");
     apop_assert(w->size == v->size,  0, 0,'c', "data vector has size %u; weighting vector has size %u. Returning zero.\n", v->size, w->size);
     //Using the E(x^2) - E^2(x) form.
-    for (i=0; i< w->size; i++){
+    for (size_t i=0; i< w->size; i++){
         vv    = gsl_vector_get(v,i);
         ww    = gsl_vector_get(w,i);
         sum  += ww * vv;
@@ -677,7 +684,6 @@ makes sense if the weightings are identical, so the function takes only one weig
 \return     The weighted sample covariance
 */
 double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *w){
-  int           i;
   long double   sum1 = 0, sum2 = 0, wsum = 0, sumsq = 0, vv1, vv2, ww;
     if (!w)
         return apop_vector_cov(v1,v2);
@@ -686,7 +692,7 @@ double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, cons
     apop_assert(v1->size,  0, 1, 'c', "apop_vector_weighted_variance: data vector has size 0. Returning zero.\n");
     apop_assert((w->size == v1->size) && (w->size == v2->size),  0, 0, 'c', "apop_vector_weighted_variance: data vectors have sizes %i and %i; weighting vector has size %i. Returning zero.\n", v1->size, v2->size, w->size);
     //Using the E(x^2) - E^2(x) form.
-    for (i=0; i< w->size; i++){
+    for (size_t i=0; i< w->size; i++){
         vv1   = gsl_vector_get(v1,i);
         vv2   = gsl_vector_get(v2,i);
         ww    = gsl_vector_get(w,i);
@@ -715,15 +721,13 @@ It uses the \ref designated syntax for inputs.
 \ingroup matrix_moments */
 APOP_VAR_HEAD gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize){
     gsl_matrix *apop_varad_var(in, NULL)
-    apop_assert(in,  NULL, 0, 'c', "Input matrix is NULL");
+    apop_assert(in,  NULL, 0, 'c', "Input matrix is NULL. Returning same.");
     const char apop_varad_var(normalize, 0)
     return apop_matrix_covariance_base(in, normalize);
 APOP_VAR_ENDHEAD
-  apop_assert(in, NULL, 0, 'c', "input matrix is NULL. Returning NULL.\n");
   gsl_matrix	*out;
-  int		i,j;
   double		means[in->size2];
-  gsl_vector_view	v, v1, v2;
+  gsl_vector_view	v1, v2;
 	if (normalize == 1 || normalize=='n' || normalize == 'N'){
 		out	= gsl_matrix_alloc(in->size2, in->size2);
 		apop_matrix_normalize(in,'c', 0);
@@ -732,13 +736,13 @@ APOP_VAR_ENDHEAD
 	}
 	else{
 		out	= gsl_matrix_calloc(in->size2, in->size2);
-		for(i=0; i< in->size2; i++){
-			v		= gsl_matrix_column(in, i);
-			means[i]	= apop_mean(&(v.vector));
+		for(size_t i=0; i< in->size2; i++){
+			Apop_matrix_col(in, i, v);
+			means[i]	= apop_mean(v);
 		}
-		for(i=0; i< in->size2; i++){
+		for(size_t i=0; i< in->size2; i++){
 			v1		= gsl_matrix_column(in, i);
-			for(j=i; j< in->size2; j++){
+			for(size_t j=i; j< in->size2; j++){
 			    v2		= gsl_matrix_column(in, j);
                 apop_matrix_increment(out, i, j, 
 					   gsl_stats_covariance_m (v1.vector.data, v1.vector.stride, v2.vector.data,  v2.vector.stride,
@@ -771,9 +775,8 @@ APOP_VAR_HEAD gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char nor
     return apop_matrix_correlation_base(in, normalize);
 APOP_VAR_ENDHEAD
   gsl_matrix      *out    = apop_matrix_covariance(in, normalize);
-  int             i;
   double          std_dev;
-    for(i=0; i< in->size2; i++){
+    for(size_t i=0; i< in->size2; i++){
         APOP_MATRIX_COL(in, i, cvin);
         APOP_MATRIX_COL(out, i, cvout);
         APOP_MATRIX_ROW(out, i, rvout);
@@ -797,10 +800,9 @@ apop_data *apop_data_covariance(const apop_data *in){
   apop_assert(in,  NULL, 0, 'c', "You sent me a NULL apop_data set. Returning NULL.\n");
   apop_assert(in->matrix,  NULL, 0, 'c', "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
   apop_data   *out = apop_data_alloc(0,in->matrix->size2, in->matrix->size2);
-  int         i, j;
   double      var;
-    for (i=0; i < in->matrix->size2; i++){
-        for (j=i; j < in->matrix->size2; j++){
+    for (size_t i=0; i < in->matrix->size2; i++){
+        for (size_t j=i; j < in->matrix->size2; j++){
             APOP_COL(in, i, v1);
             APOP_COL(in, j, v2);
             var = apop_vector_weighted_cov(v1, v2, in->weights);
@@ -824,9 +826,8 @@ This is the \ref apop_data version of \ref apop_matrix_correlation; if you don't
 \ingroup matrix_moments */
 apop_data *apop_data_correlation(const apop_data *in){
   apop_data *out = apop_data_covariance(in);
-  int       i;
   double    std_dev;
-    for(i=0; i< in->matrix->size2; i++){
+    for(size_t i=0; i< in->matrix->size2; i++){
         APOP_COL(in, i, cvin);
         APOP_COL(out, i, cvout);
         APOP_ROW(out, i, rvout);

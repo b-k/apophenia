@@ -1,11 +1,12 @@
 #!/bin/sed -f 
 
 /First, here is a comment./{
-    s/This script filters C files to produce the headers for the compound \
-    literal-based variadic function headers. For usage, your best bet is to learn by    \
-    example and just compare files in the base and generated source codes.  \
-    The workings are klunky: each line is saved in the hold-space (via \
-    h) and re-pulled and re-processed for each line of output.  //
+# This script filters C files to produce the headers for the compound
+# literal-based variadic function headers. For usage, your best bet is to learn by 
+# example and just compare files in the base and generated source codes.  
+# The workings are klunky: each line is saved in the hold-space (via h)
+# and re-pulled and re-processed for each line of output.  
+# See also the technical notes at http://modelingwithdata.org/arch/00000022.htm
 }
 
 

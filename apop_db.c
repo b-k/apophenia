@@ -14,7 +14,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "variadic.h"
 #include "linear_algebra.h"
 
-#include "vasprintf/vasprintf.h"
 #include <config.h>
 #include <math.h> 	                //sqrt
 
@@ -41,7 +40,6 @@ apop_opts_type apop_opts	= { 0,              //verbose
 #include "apop_db_mysql.c"
 #endif
 
-apop_name *last_names = NULL;	    //The column names from the last query to matrix
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
 #ifdef HAVE_LIBSQLITE3 
@@ -116,9 +114,9 @@ int apop_db_open(char *filename){
         apop_assert(0, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
 #ifdef HAVE_LIBSQLITE3
-        return apop_sqlite_db_open(filename);
+    return apop_sqlite_db_open(filename);
 #else
-        apop_assert(0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+    apop_assert(0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
 #endif
 }
 
@@ -214,32 +212,6 @@ APOP_VAR_END_HEAD
 #endif
 }
 
-//colct is global for the count_cols callback.
-int		colct;
-
-static int count_cols_callback(void *whatever, int argc, char **argv, char **andever){
-  int 		i=0;
-	while(argv[0][i]!='\0')
-		if (argv[0][i++]==',') 
-			colct	++;
-	return 0;
-}
-
-/** Counts the number of columns in a table. Occasionally useful, e.g., when data is read from a file.
-
-\param name 	The name of the table you are inquiring about.
-\return 	The number of columns the table has.
-*/
-int apop_count_cols(const char *name){
-  char 		*err, q2[5000];
-    colct   = 1;
-	if (db==NULL) {printf("No database open yet."); return 0;}
-	sprintf(q2, "select sql from sqlite_master where type='table' and name=\"%s\"",name);
-	sqlite3_exec(db, q2, count_cols_callback,NULL, &err); 
-	ERRCHECK
-	return colct;
-}
-
 /**
 Closes the database on disk. If you opened the database with
 \c apop_db_open(NULL), then this is basically optional.
@@ -291,27 +263,7 @@ to refer to row <tt>i</tt>.
 example
 The following function will list the tables in a database (much like you could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
 
-\verbatim
-#include <apop.h>
-
-void print_table_list(char *db_file){
-apop_data   *tab_list;
-int         i;
-        apop_db_open(db_file);
-        tab_list= apop_query_to_text("select name from sqlite_master where type==\"table\";");
-        for(i=0; i< tab_list->textsize[0]; i++)
-                printf("%s\n", tab_list->text[i][0]);
-}
-
-int main(int argc, char **argv){
-    if (argc == 1){
-        printf("Give me a database name, and I will print out the list of tables contained therein.\n");
-        return 0; 
-    }
-    print_table_list(argv[1]);
-}
-
-\endverbatim
+\include ls_tables.c
 */
 apop_data * apop_query_to_text(const char * fmt, ...){
   va_list	argp;
@@ -322,7 +274,7 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 	va_end(argp);
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_query_to_text(query);
+        return apop_mysql_query_core(query, process_result_set_chars);
 #else
         apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
@@ -407,7 +359,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
         printf("%s\n", query);
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_query_to_data(query);
+        return apop_mysql_query_core(query, process_result_set_data);
 #else
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
@@ -451,7 +403,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 	va_end(argp);
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_query_to_matrix(query);
+        return apop_mysql_query_core(query, process_result_set_matrix);
 #else
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
@@ -484,7 +436,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_query_to_vector(query);
+        return apop_mysql_query_core(query, process_result_set_vector);
 #else
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
@@ -655,7 +607,7 @@ one; this may soon no longer be available.
 
 Column names are inserted if there are any. If there are, all dots
 are converted to underscores. 
-Otherwise, the columns will be named <tt>c1</tt>, <tt>c2</tt>, <tt>c3</tt>, &c.
+Otherwise, the columns will be named \c c1, \c c2, \c c3, &c.
 
 If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is "row_name"),
 then a so-named column is created, and the row names are placed there.
@@ -872,9 +824,7 @@ APOP_VAR_ENDHEAD
 	apop_data_free(tab_list);
 }
                                                                                                                                
-////////////////////////////////////////////////
-// Part three: some stats wrappers
-////////////////////////////////////////////////
+// Some stats wrappers
 
 /** Do a t-test entirely inside the database.
   Returns only the two-tailed p-value.

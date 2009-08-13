@@ -5,7 +5,7 @@ Copyright (c) 2006--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 #include <assert.h>
 #include <gsl/gsl_matrix.h>
-#include "vasprintf/vasprintf.h"
+#include "asst.h"
 #include "types.h"
 #include "output.h"
 #include "conversions.h"
@@ -62,9 +62,7 @@ See also \ref apop_data_calloc.
   */
 apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int msize2){
   apop_data  *setme       = malloc(sizeof(apop_data));
-    setme->vector   = NULL;
-    setme->matrix   = NULL;
-    setme->weights  = NULL;
+    *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 > 0  && msize1 > 0)
         setme->matrix   = gsl_matrix_alloc(msize1,msize2);
     if (vsize)
@@ -72,11 +70,7 @@ apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int m
     //I allocate a vector of msize2==-1. This is deprecated, and will one day be deleted.
     else if (msize2==-1 && msize1>0)
         setme->vector   = gsl_vector_alloc(msize1);
-
     setme->names        = apop_name_alloc();
-    setme->text         = NULL;
-    setme->textsize[0]  =
-    setme->textsize[1]  = 0;
     return setme;
 }
 
@@ -96,20 +90,14 @@ apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int m
   */
 apop_data * apop_data_calloc(const size_t vsize, const size_t msize1, const int msize2){
   apop_data  *setme       = malloc(sizeof(apop_data));
-    setme->vector   = NULL;
-    setme->matrix   = NULL;
-    setme->weights  = NULL;
+    *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 >0 && msize1 > 0)
         setme->matrix   = gsl_matrix_calloc(msize1,msize2);
     if (vsize)
         setme->vector   = gsl_vector_calloc(vsize);
     else if (msize2==-1 && msize1>0)
         setme->vector   = gsl_vector_calloc(msize1);
-
     setme->names        = apop_name_alloc();
-    setme->text         = NULL;
-    setme->textsize[0]  =
-    setme->textsize[1]  = 0;
     return setme;
 }
 
@@ -148,10 +136,9 @@ apop_data * apop_vector_to_data(gsl_vector *v){
  This is what \c apop_data_free uses internally.
    */
 void apop_text_free(char ***freeme, int rows, int cols){
-  int  i, j;
     if (rows && cols)
-        for (i=0; i < rows; i++){
-            for (j=0; j < cols; j++)
+        for (int i=0; i < rows; i++){
+            for (int j=0; j < cols; j++)
                 free(freeme[i][j]);
             free(freeme[i]);
         }
@@ -189,27 +176,17 @@ void apop_data_free(apop_data *freeme){
  \ingroup data_struct
   */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
-  size_t   i, j;
-    if (!out)
-        apop_error(1,'c',"%s: you are copying to a NULL vector. Do you mean to use apop_data_copy instead?\n", __func__);
+    apop_assert_void(out, 1, 'c', "you are copying to a NULL vector. Do you mean to use apop_data_copy instead?");
     if (in->matrix){
-        if (in->matrix->size1 != out->matrix->size1 ||
-                in->matrix->size2 != out->matrix->size2){
-            if (apop_opts.verbose)
-                apop_error(1, 'c',"%s: You're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix. Returning w/o any copying.\n", 
-                __func__, in->matrix->size1, in->matrix->size2, 
-                out->matrix->size1, out->matrix->size2);
-            return;
-        }
+        apop_assert_void(in->matrix->size1 == out->matrix->size1 && in->matrix->size2 == out->matrix->size2, 
+                1, 'c',"You're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix. Returning w/o any copying.", 
+                        in->matrix->size1, in->matrix->size2, out->matrix->size1, out->matrix->size2);
         gsl_matrix_memcpy(out->matrix, in->matrix);
     }
     if (in->vector){
-        if (in->vector->size != out->vector->size){
-            if (apop_opts.verbose)
-                apop_error(1, 'c',"%s: You're trying to copy a %zu-elmt vector into a %zu-elmt vector. Returning w/o any copying.\n", 
-                __func__, in->vector->size, out->vector->size);
-            return;
-        }
+        apop_assert_void(in->vector->size == out->vector->size,
+                1, 'c',"You're trying to copy a %zu-elmt vector into a %zu-elmt vector. Returning w/o any copying.", 
+                                 in->vector->size, out->vector->size);
         gsl_vector_memcpy(out->vector, in->vector);
     }
     apop_name_stack(out->names, in->names, 'r');
@@ -219,9 +196,9 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
     out->textsize[1] = in->textsize[1];
     if (in->textsize[0] && in->textsize[1]){
         out->text  = malloc(sizeof(char ***) * in->textsize[0] * in->textsize[1]);
-        for (i=0; i< in->textsize[0]; i++){
+        for (size_t i=0; i< in->textsize[0]; i++){
             out->text[i]  = malloc(sizeof(char **) * in->textsize[1]);
-            for(j=0; j < in->textsize[1]; j ++)
+            for(size_t j=0; j < in->textsize[1]; j ++)
 				asprintf(&(out->text[i][j]), in->text[i][j]);
         }
     }
@@ -442,8 +419,7 @@ allocation:
  */
 static void apop_name_rm_columns(apop_name *n, int *drop){
 apop_name   *newname    = apop_name_alloc();
-int         i, max      = n->colct;
-    for (i=0; i< max; i++){
+    for (int i=0; i< n->colct; i++){
         if (drop[i]==0)
             apop_name_add(newname, n->column[i],'c');
         else
@@ -452,7 +428,6 @@ int         i, max      = n->colct;
     free(n->column);
     n->column = newname->column;
     //we need to free the newname struct, but leave the column intact.
-    //A one-byte memory leak.
     newname->column   = malloc(1);
     newname->colct  = 0;
     apop_name_free(newname);
@@ -740,21 +715,18 @@ void apop_text_add(apop_data *in, const size_t row, const size_t col, const char
   \return       A pointer to the relevant \c apop_data set. If the input was not \c NULL, then this is a repeat of the input pointer.
   */
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
-  int   i, j;
     if (!in)
         in  = apop_data_alloc(0,0,0);
     in->text = malloc(sizeof(char**) * row);
-    for (i=0; i< row; i++){
+    for (size_t i=0; i< row; i++){
         in->text[i] = malloc(sizeof(char*) * col);
-        for (j=0; j< col; j++)
+        for (size_t j=0; j< col; j++)
             in->text[i][j] = NULL;
     }
     in->textsize[0] = row;
     in->textsize[1] = col;
     return in;
 }
-
-
 
 /** Transpose the matrix element of the input \ref apop_data set,
  including the row/column names. The vector and text elements of the input data set are completely ignored.
@@ -772,8 +744,6 @@ apop_data *apop_data_transpose(apop_data *in){
     apop_name_stack(out->names, in->names, 'c', 'r');
     return out;
 }
-
-
 
 
 /** This function will resize a gsl_matrix to a new height or width.
@@ -805,7 +775,7 @@ gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidt
         return (newheight && newwidth) ?  gsl_matrix_alloc(newheight, newwidth) : NULL;
     size_t i, oldoffset=0, newoffset=0, realloced = 0;
     apop_assert((m->block->data==m->data) && m->owner & (m->tda == m->size2),
-        NULL, 0, 's', "I can't resize submatrices or other subviews.");
+                NULL, 0, 's', "I can't resize submatrices or other subviews.");
     m->block->size = newheight * newwidth;
     if (m->size2 > newwidth)
         for (i=1; i< GSL_MIN(m->size1, newheight); i++){

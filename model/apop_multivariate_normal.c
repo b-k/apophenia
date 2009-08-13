@@ -11,7 +11,6 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 
 apop_model apop_multivariate_normal;
 
-
 static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
   gsl_vector *  sigma_dot_x = gsl_vector_calloc(x->size);
   double        the_result;
@@ -21,7 +20,7 @@ static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
     return(the_result);
 }
 
-double apop_multinormal_ll_prob(apop_data *data, apop_model * m){
+static double apop_multinormal_ll(apop_data *data, apop_model * m){
   apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double    determinant = 0;
   gsl_matrix* inverse   = NULL;
@@ -46,17 +45,16 @@ double apop_multinormal_ll_prob(apop_data *data, apop_model * m){
     return ll;
 }
 
+#include "mapply.h"
+#include "stats.h"
+static double a_mean(gsl_vector * in){ return apop_vector_mean(in); } //minor type correction.
+
 static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
   apop_model *out = p ? apop_model_copy(*p) : apop_model_copy(apop_multivariate_normal);
-  int   i;
-    apop_model_clear(data, out);
-    for (i=0; i< data->matrix->size2; i++){
-        APOP_COL(data,i,v);
-        gsl_vector_set(out->parameters->vector, i, apop_mean(v));
-    }
+    out->parameters         = apop_map(data, .fn_v=a_mean, .part='c');
     out->covariance         =  apop_data_covariance(data);
     out->parameters->matrix =  out->covariance->matrix;
-    out->llikelihood = apop_multinormal_ll_prob(data, out);
+    out->llikelihood = apop_multinormal_ll(data, out);
     return out;
 }
 
@@ -88,7 +86,8 @@ static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
 
   The RNG fills an input array whose length is based on the input parameters.
 
+\hideinitializer
   \ingroup models
  */
 apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1,
-     .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll_prob, .draw = mvnrng};
+     .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll, .draw = mvnrng};

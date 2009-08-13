@@ -1,6 +1,6 @@
 
 AM_LDFLAGS =  -no-undefined $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS)
-AM_CFLAGS = -g -Wall -I./ $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_CFLAGS) $(SQLITE_CFLAGS)
+AM_CFLAGS = -g -Wall -O3 -I./ $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_CFLAGS) $(SQLITE_CFLAGS)
 
 CC = $(PTHREAD_CC)
 lib_LTLIBRARIES = libapophenia.la
@@ -12,29 +12,22 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			apop_mapply.c apop_missing_data.c				\
 			apop_linear_constraint.c apop_sort.c			\
 			apop_model_fix_params.c	 apop_update.c			\
-			apop_tests.c apop_smoothing.c					\
-			apop_settings.c									\
-			vasprintf/asnprintf.c vasprintf/printf-args.c 	\
-			vasprintf/vasnprintf.c vasprintf/asprintf.c 	\
-			vasprintf/printf-parse.c vasprintf/vasprintf.c  \
+			apop_tests.c apop_smoothing.c apop_settings.c   \
+			asprintf.c \
 			model/apop_multivariate_normal.c				\
 			model/apop_multinomial_probit.c					\
 			model/apop_normal.c model/apop_OLS.c 		 	\
-			model/apop_WLS.c model/apop_exponential.c 		\
+			model/apop_exponential.c model/apop_histogram.c \
 			model/apop_gamma.c model/apop_zipf.c 		    \
 			model/apop_poisson.c model/apop_t_f_chi.c		\
 			model/apop_uniform.c model/apop_beta.c			\
 			model/apop_waring.c model/apop_yule.c 	 		\
-			model/apop_bernoulli.c model/apop_binomial.c 	\
-			model/apop_histogram.c 
+			model/apop_bernoulli.c model/apop_binomial.c 	
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
-				regression.h stats.h types.h        		\
-				mapply.h output.h model/model.h asst.h 	    \
-				settings.h variadic.h	linear_algebra.h 	\
-			vasprintf/alloca_.h vasprintf/printf-parse.h  	\
-			vasprintf/vasprintf.h 		vasprintf/xsize.h 	\
-			vasprintf/printf-args.h vasprintf/vasnprintf.h 	
+				mapply.h stats.h types.h       		 		\
+				output.h model/model.h asst.h 	   			\
+				settings.h variadic.h	linear_algebra.h
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc
@@ -78,7 +71,7 @@ EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/right.png doxy/down.png doxy/flak
 		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
 		tests/Makefile tests/Readme tests/slower.c tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \
-		tests/data-mixed tests/test_data_nans tests/wampler1.dat \
+		tests/data-mixed tests/test_data_nans tests/wampler1.dat eg/* \
 		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
 		apop.h	apop.i COPYING2
 

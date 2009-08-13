@@ -1,4 +1,4 @@
-/*conversions.h 	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
+/*conversions.h 
 
   Convenience functions to convert among vectors (gsl_vector), matrices (gsl_matrix), 
   arrays (double **), and database tables
@@ -6,6 +6,7 @@
   To the extent that it makes sense, all functions are of the form convert_in_to_out(in, out),
   and allocate the output object for you.
 */
+/*	Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #ifndef APOP_CONVERSIONS_H
 #define APOP_CONVERSIONS_H
@@ -31,13 +32,11 @@ __BEGIN_DECLS
 //From vector
 gsl_vector *apop_vector_copy(const gsl_vector *in);
 double * apop_vector_to_array(const gsl_vector *in);
-gsl_matrix * apop_vector_to_matrix(const gsl_vector *in);
+APOP_VAR_DECLARE gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col);
 
 //From matrix
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in);
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol);
-//takes a three-column table (dim1, dim2, data) and creates a 2D crosstab.
-//Returns the crosstab, and the dimension names (if d1!=NULL and d2!=NULL).
 
 //From array
 APOP_VAR_DECLARE gsl_vector * apop_array_to_vector(double *in, int size);
@@ -53,7 +52,7 @@ APOP_VAR_DECLARE apop_data * apop_text_to_data(char *text_file, int has_row_name
 APOP_VAR_DECLARE int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names);
 
 //From crosstabs
-int apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name, 
+void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name);
 
 //packing data into a vector

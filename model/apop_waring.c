@@ -3,16 +3,15 @@
   The Waring distribution.  */
 /* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-
 #include "mapply.h"
 #include "likelihoods.h"
 
 typedef struct {
 double a, bb;
-} apop_ab;
+} ab_type;
 
 static double waring_apply(double in, void *param, int k){
-    apop_ab *ab = param;
+    ab_type *ab = param;
 
 		double ln_bb_a_k	 = gsl_sf_lngamma(k +1 + ab->a + ab->bb);
 		double ln_a_k		 = gsl_sf_lngamma(k +1 + ab->a);
@@ -20,29 +19,8 @@ static double waring_apply(double in, void *param, int k){
 }
 
 //First the rank versions
-static double waring_log_likelihood_old_rank(const apop_data *d, apop_model *m){
-  float		      bb	= gsl_vector_get(m->parameters->vector, 0),
-    		      a	    = gsl_vector_get(m->parameters->vector, 1);
-  int 		      k;
-  gsl_matrix      *data	= d->matrix;
-  double 		  ln_a_k, ln_bb_a_k,
-		          likelihood 	= 0,
-		          ln_bb_a		= gsl_sf_lngamma(bb + a),
-		          ln_a_mas_1	= gsl_sf_lngamma(a + 1),
-		          ln_bb_less_1= log(bb - 1);
-	for (k=0; k< data->size2; k++){	//more efficient to go column-by-column
-		ln_bb_a_k	 = gsl_sf_lngamma(k +1 + a + bb);
-		ln_a_k		 = gsl_sf_lngamma(k +1 + a);
-        APOP_COL(d,k, v);
-		likelihood   += apop_sum(v) * (ln_a_k - ln_bb_a_k);
-	}
-    likelihood   +=  (ln_bb_less_1 + ln_bb_a - ln_a_mas_1) * d->matrix->size1 * d->matrix->size2;
-	return likelihood;
-}
-
-//First the rank versions
 static double waring_log_likelihood_rank(const apop_data *d, apop_model *m){
-  apop_ab ab;
+  ab_type ab;
   ab.bb	= gsl_vector_get(m->parameters->vector, 0),
   ab.a	= gsl_vector_get(m->parameters->vector, 1);
   double 		  likelihood,
@@ -51,15 +29,12 @@ static double waring_log_likelihood_rank(const apop_data *d, apop_model *m){
 		          ln_bb_less_1= log(ab.bb - 1);
         likelihood = apop_map_sum((apop_data*)d, .fn_dpi = waring_apply, .part='c');
     likelihood   +=  (ln_bb_less_1 + ln_bb_a - ln_a_mas_1) * d->matrix->size1 * d->matrix->size2;
-    assert (likelihood == waring_log_likelihood_old_rank(d, m));
-    printf("o");fflush(NULL);
 	return likelihood;
 }
 
 static void waring_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient, apop_model *m){
-  float		      bb		    = gsl_vector_get(m->parameters->vector, 0),
+  double	      bb		    = gsl_vector_get(m->parameters->vector, 0),
 	    	      a		        = gsl_vector_get(m->parameters->vector, 1);
-  int 		      k;
   gsl_matrix	  *data		    = d->matrix;
   double		  bb_minus_one_inv= 1/(bb-1),
     		      psi_a_bb	        = gsl_sf_psi(bb + a),
@@ -68,7 +43,7 @@ static void waring_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient
 		          psi_bb_a_k,
 		          d_bb		        = 0,
 		          d_a		            = 0;
-	for (k=0; k< data->size2; k++){	//more efficient to go column-by-column
+	for (size_t k=0; k< data->size2; k++){	//more efficient to go column-by-column
 		psi_bb_a_k	 = gsl_sf_psi(k +1 + a + bb);
 		psi_a_k		 = gsl_sf_psi(k +1 + a);
         APOP_COL(d, k, v);
@@ -90,11 +65,8 @@ static double beta_zero_and_one_greater_than_x_constraint(apop_data *returned_be
         apop_data_fill(constraint, 1., 1., 0.,
                                    0., 0., 1.);
     }
-    return apop_linear_constraint(m->parameters->vector, constraint, 1e-3);
+    return apop_linear_constraint(m->parameters->vector, constraint, 1e-4);
 }
-
-
-typedef struct{ double a, bb; } ab_type;
 
 static double apply_me(double val, void *in){
     ab_type *ab = in;
@@ -126,7 +98,6 @@ static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
       return waring_dlog_likelihood_rank(d, gradient, m);
   double bb		        = gsl_vector_get(m->parameters->vector, 0);
   double a		        = gsl_vector_get(m->parameters->vector, 1);
-  int 		    i, k;
   gsl_matrix	*data		    = d->matrix;
   double		bb_minus_one_inv= 1/(bb-1), val,
 		        psi_a_bb	        = gsl_sf_psi(bb + a),
@@ -135,8 +106,8 @@ static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 		        psi_bb_a_k,
 		        d_bb		        = 0,
 		        d_a		            = 0;
-	for (i=0; i< data->size1; i++){
-	    for (k=0; k< data->size2; k++){	
+	for (size_t i=0; i< data->size1; i++){
+	    for (size_t k=0; k< data->size2; k++){	
             val          = gsl_matrix_get(data, i, k);
 		    psi_bb_a_k	 = gsl_sf_psi(val + a + bb);
 		    psi_a_k		 = gsl_sf_psi(val + a);
@@ -169,8 +140,8 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 // OK, I hope that clears everything up.
   double		x, u,
                 b   = gsl_vector_get(eps->parameters->vector, 0),
-                a   = gsl_vector_get(eps->parameters->vector, 1),
-		params[]	={a+1, 1, b-1};
+                a   = gsl_vector_get(eps->parameters->vector, 1);
+  double		params[]	={a+1, 1, b-1};
 /*	do{
 		x	= apop_rng_GHgB3(r, params);
 		u	= gsl_rng_uniform(r);
@@ -201,6 +172,7 @@ To specify that you have frequency or ranking data, use
 Apop_settings_add_group(your_model, apop_rank, NULL);
 \endcode
 
+\hideinitializer
 \ingroup models
 \todo This function needs better testing.
 */

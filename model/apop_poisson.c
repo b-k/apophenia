@@ -4,15 +4,9 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-//The default list. Probably don't need them all.
 #include "model.h"
-#include "stats.h"
-#include "types.h"
 #include "mapply.h"
-#include "conversions.h"
 #include "likelihoods.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
 
 static double poisson_log_likelihood(apop_data *d, apop_model *);
 
@@ -36,13 +30,8 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
 }
 
 static double beta_zero_greater_than_x_constraint(apop_data *returned_beta, apop_model *v){
-    //constraint is 0 < beta_2
-  static apop_data *constraint = NULL;
-    if (!constraint){
-        constraint= apop_data_calloc(1,1,1);
-        apop_data_set(constraint, 0, 0, 1);
-    }
-    return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
+    //constraint is 0 < beta_1
+    return apop_linear_constraint(v->parameters->vector, .margin = 1e-4);
 }
 
 
@@ -63,8 +52,7 @@ static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mod
   apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double       	lambda  = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix      *data	= d->matrix;
-  float           d_a;
-    d_a  = apop_matrix_sum(data)/lambda;
+  double           d_a  = apop_matrix_sum(data)/lambda;
     d_a -= data->size1*data->size2;
     gsl_vector_set(gradient,0, d_a);
 }
@@ -88,6 +76,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
 
 \f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
 
+\hideinitializer
 \ingroup models
 */
 apop_model apop_poisson = {"poisson", 1, 0,0, 

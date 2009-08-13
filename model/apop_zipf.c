@@ -3,20 +3,11 @@
   The Zipf distribution.
 
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$<br>
+*/
+/* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
-//The default list. Probably don't need them all.
-#include "db.h" //apop_opts
-#include "types.h"
-#include "model.h"
-#include "output.h"
 #include "mapply.h"
-#include "settings.h"
-#include "conversions.h"
 #include "likelihoods.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_zeta.h>
 
 static double zrank_apply(double in, int k) { return in * log(k+1); }
@@ -47,7 +38,7 @@ static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_mode
         apop_data_set(constraint, 0, 0, 1);
         apop_data_set(constraint, 0, -1, 1);
     }
-    return apop_linear_constraint(m->parameters->vector, constraint, 1e-3);
+    return apop_linear_constraint(m->parameters->vector, constraint, 1e-4);
 }
 
 static double zipf_log_likelihood(apop_data *d, apop_model *m){
@@ -60,12 +51,6 @@ static double zipf_log_likelihood(apop_data *d, apop_model *m){
     like    *= bb;
     like    -= log(gsl_sf_zeta(bb)) * size;
     return like;
-}    
-
-static double zipf_p(apop_data *d, apop_model *v){
-    if (apop_settings_get_group(v, "apop_rank"))
-        return exp(zipf_log_likelihood_rank(d, v));
-    return exp(zipf_log_likelihood(d, v));
 }    
 
 static void zipf_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
@@ -132,9 +117,9 @@ To specify that you have frequency or ranking data, use
 Apop_settings_add_group(your_model, apop_rank, NULL);
 \endcode
 
+\hideinitializer
 \ingroup models
 */
 apop_model apop_zipf = {"Zipf", 1,0,0, 
-    .p = zipf_p, .log_likelihood = zipf_log_likelihood,
-    .score = zipf_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
-    .draw = zipf_rng};
+     .log_likelihood = zipf_log_likelihood, .score = zipf_dlog_likelihood, 
+     .constraint = beta_greater_than_x_constraint, .draw = zipf_rng};

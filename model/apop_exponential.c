@@ -102,12 +102,7 @@ static apop_model * exponential_estimate(apop_data * data,  apop_model *m){
 
 static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1
-  static apop_data *constraint = NULL;
-    if (!constraint){ 
-        constraint = apop_data_calloc(1,1,1);
-        apop_data_set(constraint, 0, 0, 1);
-        }
-    return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
+    return apop_linear_constraint(v->parameters->vector, .margin = 1e-3);
 }
 
 static double exponential_log_likelihood(apop_data *d, apop_model *p){
@@ -170,7 +165,7 @@ To specify that you have frequency or ranking data, use
 \code
 Apop_model_add_group(your_model, apop_rank);
 \endcode
-
+\hideinitializer
 \ingroup models
 */
 apop_model apop_exponential = {"Exponential distribution", 1,0,0,

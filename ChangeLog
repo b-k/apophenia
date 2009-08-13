@@ -6,6 +6,7 @@
 	August 2009
 --apop_map and apop_map_sum. Reworks the apop_(map|apply) system to be More flexible but a little more complex.
 -apop_(data|matrix|vector)_fill is now more robust---no more int vs float issues.
+**Removed apop_count_cols
 
 	July 2009
 --multivariate gamma, log-gamma.

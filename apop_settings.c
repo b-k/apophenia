@@ -1,9 +1,8 @@
-/** \file apop_settings.c Specifying model characteristics and details of estimation methods.
- 
-Copyright (c) 2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/** \file apop_settings.c 
+                            Specifying model characteristics and details of estimation methods. */
+/* Copyright (c) 2008--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "types.h"
 #include "settings.h"
-
 
 static size_t get_settings_ct(apop_model *model){
   int ct =0;
@@ -24,8 +23,6 @@ static size_t get_settings_ct(apop_model *model){
   The macro just calls the function, but is in line with some of the other macros that are preferred over the function.
 
   If the model has no settings or your preferred settings group is not found, this function does nothing.
-
-  \ingroup settings
  */
 void apop_settings_rm_group(apop_model *m, char *delme){
   //apop_assert_void(m->settings, 2, 'c', "The model had no settings, so nothing was removed.");
@@ -50,7 +47,7 @@ void apop_settings_rm_group(apop_model *m, char *delme){
    // apop_assert_void(0, 1, 'c', "I couldn't find %s in the input model, so nothing was removed.", delme);
 }
 
-/** Don't use this function. It's what the \c Apop_settings_add_group macro uses internally. Use that.  */
+/** Don't use this function. It's what the \c Apop_model_add_group macro uses internally. Use that.  */
 void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group){
     if(apop_settings_get_group(model, type))  
         apop_settings_rm_group(model, type); 
@@ -92,7 +89,10 @@ void * apop_settings_get_group(apop_model *m, char *type){
 }
 
 /** Copy a settings group with the given name from the second model to
- the first.  (i.e., the arguments are in memcpy order). */
+ the first.  (i.e., the arguments are in memcpy order). 
+
+ You probably won't need this often---just use \ref apop_model_copy.
+ */
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
   apop_assert_void(inm->settings, 0, 's', "The input model (i.e., the second argument to this function) has no settings.\n");
   void *g =  apop_settings_get_group(inm, copyme);

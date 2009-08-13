@@ -25,7 +25,6 @@ static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vect
 
  */
 
-
 //Support for apop_matrix_apply:
 
 typedef double apop_fn_v(gsl_vector*);
@@ -67,6 +66,7 @@ apop_map(your_data, .fn_di=cutoff, .param=&param, .inplace=1);
 \param fn_di A function of the form <tt>double your_fn(double in, int index)</tt>
 
 \param in   The input data set. If \c NULL, I'll return \c NULL immediately.
+\param param   A pointer to the parameters to be passed to those function forms taking a \c *param.
 
 \param part Which part of the \c apop_data struct should I use?<br>
 'v'==Just the vector<br>
@@ -76,7 +76,7 @@ apop_map(your_data, .fn_di=cutoff, .param=&param, .inplace=1);
 'c'==Apply a function \c gsl_vector \f$\to\f$ \c double to each column of the  matrix<br>
 Default is 'a', but notice that I'll ignore a \c NULL vector or matrix, so if your data set has only a vector (for example), that's what I'll use.
 
-\param inplace  If zero, generate a new \ref apop_data set for output, which will contain the mapped values (and the names from the original set). If one, modify in place. The \c double \f$\to\f$ \double versions, \c 'v', \c 'm', and \c 'a', write to exactly the same location as before. The \c gsl_vector \f$\to\f$ \c double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you are writing in place and there is already a vector there, then the original vector is lost.
+\param inplace  If zero, generate a new \ref apop_data set for output, which will contain the mapped values (and the names from the original set). If one, modify in place. The \c double \f$\to\f$ \c double versions, \c 'v', \c 'm', and \c 'a', write to exactly the same location as before. The \c gsl_vector \f$\to\f$ \c double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you are writing in place and there is already a vector there, then the original vector is lost.
 
 \ingroup mapply
 */
@@ -179,8 +179,6 @@ APOP_VAR_ENDHEAD
 }
 
 
-
-
 typedef struct {
     size_t      *limlist;
     void        *fn;
@@ -217,10 +215,9 @@ static void *oldforloop(void *t){
   threadpass      *tc = t;
   apop_fn_v       *vtod=tc->fn;
   apop_fn_vtov    *vtov=tc->fn;
-  int           i;
   gsl_vector    view;
   double        val;
-    for (i= tc->limlist[0]; i< tc->limlist[1]; i++){
+    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
         view    = gsl_matrix_row(tc->m, i).vector;
         if (tc->v){
             val     = vtod(&view);
@@ -234,13 +231,12 @@ static void *oldforloop(void *t){
 //if mapping to self, then set tc.v = in_v
 static void *vectorloop(void *t){
   threadpass      *tc = t;
-  int             i;
   double          inval, outval;
   apop_fn_d    *dtod=tc->fn;
   apop_fn_dp  *fn_dp=tc->fn;
   apop_fn_dpi *fn_dpi=tc->fn;
   apop_fn_di  *fn_di=tc->fn;
-    for (i= tc->limlist[0]; i< tc->limlist[1]; i++){
+    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
         inval   = gsl_vector_get(tc->vin, i);
         outval =
         tc->use_param ? (tc->use_index ? fn_dpi(inval, tc->param, i) : 
@@ -254,11 +250,10 @@ static void *vectorloop(void *t){
 
 static void *oldvectorloop(void *t){
   threadpass      *tc = t;
-  int             i;
   double          *inval, outval;
   apop_fn_d    *dtod=tc->fn;
   apop_fn_dtov    *dtov=tc->fn;
-    for (i= tc->limlist[0]; i< tc->limlist[1]; i++){
+    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
         inval   = gsl_vector_ptr(tc->vin, i);
         if (tc->v){
             outval  = dtod(*inval);
@@ -283,17 +278,15 @@ static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vect
   pthread_t     thread_id[threadct];
   int           i;
   threadpass    tp[threadct];
-    for (i=0 ; i<threadct; i++){
-        tp[i].limlist   = threadminmax(i, m? ((!post_22 || post_22 == 'r') ? m->size1 : m->size2) : vin->size ,threadct);
-        tp[i].fn        = fn;
-        tp[i].m         = m;
-        tp[i].vin       = vin;
-        tp[i].v         = vout;
-        tp[i].use_index = use_index;
-        tp[i].use_param= use_param;
-        tp[i].param    = param;
-        tp[i].rc        = post_22;
-    }
+    for (i=0 ; i<threadct; i++)
+        tp[i] = (threadpass) {
+            .limlist   = threadminmax(i, 
+                    m? ((!post_22 || post_22 == 'r') ? m->size1 : m->size2) : vin->size ,threadct),
+            .fn = fn,   .m = m, 
+            .vin = vin, .v = vout,
+            .use_index = use_index, .use_param= use_param,
+            .param = param, .rc = post_22
+        };
     if (threadct==1){ //don't thread.
         if (m)  post_22 ? forloop(tp) : oldforloop(tp);
         else    post_22 ? vectorloop(tp) : oldvectorloop(tp);
@@ -309,7 +302,6 @@ static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vect
         free(tp[i].limlist);
     return vout;
 }
-
 
 /** Map a function onto every row of a matrix.  The function that you
  input takes in a gsl_vector and returns a \c double. \c apop_matrix_map will

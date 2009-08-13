@@ -83,12 +83,11 @@ APOP_VAR_HEAD apop_model *apop_histogram_model_reset(apop_model *template, apop_
     if (!rng)  rng = spare;
     return apop_histogram_model_reset_base(template, m, draws, rng);
 APOP_VAR_ENDHEAD
-  long double i;
   double d;
     apop_model *out = apop_model_copy(*template); 
     gsl_histogram *hout  = Apop_settings_get(out, apop_histogram, pdf);
     gsl_histogram_reset(hout);
-    for (i=0; i< draws; i++){
+    for (long int i=0; i< draws; i++){
         m->draw(&d, rng, m);
         gsl_histogram_increment(hout, d);
     }
@@ -120,11 +119,10 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
     Apop_assert(h0->n == h1->n, NULL,
         0, 's', "Sorry, I haven't implemented the case where the bin counts of the two histograms are unequal.");
 
-  int     i,
-          df      = h0->n,
+  int     df      = h0->n,
           bins    = h0->n;
   double  diff    = 0;
-    for (i=0; i< bins; i++)
+    for (int i=0; i< bins; i++)
         if (h0->bin[i]==0){
             apop_error(1, 'c', "element %i of the first vector is zero. Skipping it.\n", i);
             df --;
@@ -166,8 +164,6 @@ static double psmirnov2x(double x, int m, int n) {
     free(u);
     return out;
 }
-
-
 
 /** Run the Kolmogorov test to determine whether two distributions are
  identical.

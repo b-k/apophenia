@@ -1,4 +1,5 @@
-/** \file asst.h		Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/** \file asst.h  */
+/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #ifndef __apop_asst__
 #define __apop_asst__
 
@@ -94,20 +95,20 @@ ps: we just capitalize the first letter to remind you that it's a macro, but so 
 
 #define APOP_SETTINGS_ALLOC(type, out, ...) Apop_settings_alloc(type, out, __VA_ARGS__)
 
-////////Bootstrapping & RNG
+//Bootstrapping & RNG
 apop_data * apop_jackknife_cov(apop_data *data, apop_model model);
 APOP_VAR_DECLARE apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, gsl_rng* rng, int iterations);
 gsl_rng *apop_rng_alloc(int seed);
 
-////////Missing data
+//Missing data
 apop_data * apop_data_listwise_delete(apop_data *d);
 apop_model * apop_ml_imputation(apop_data *d, apop_model* meanvar);
 
 /** Method settings for a model to be put through Bayesian updating. 
-\li starting_pt      The first parameter to check in the MCMC routine
-\li periods How many steps should the MCMC chain run?
-\li burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
-\li histosegments If outputting a \ref apop_histogram, how many segments should it have?
+\param starting_pt      The first parameter to check in the MCMC routine
+\param periods How many steps should the MCMC chain run?
+\param burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
+\param histosegments If outputting a \ref apop_histogram, how many segments should it have?
  
  */
 typedef struct{
@@ -127,6 +128,14 @@ apop_update_settings *apop_update_settings_init(apop_update_settings);
 APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng);
 
 APOP_VAR_DECLARE double apop_test(double statistic, char *distribution, double p1, double p2, char tail);
+
+
+//asprintf, vararg, &c
+#include <stdarg.h>
+extern int asprintf (char **result, const char *format, ...)
+       __attribute__ ((__format__ (__printf__, 2, 3)));
+extern int vasprintf (char **result, const char *format, va_list args)
+       __attribute__ ((__format__ (__printf__, 2, 0)));
 
 __END_DECLS
 #endif

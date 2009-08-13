@@ -45,6 +45,7 @@ Below is a sample of the sort of output one would get:<br>
 \ingroup mle
 */
 
+double default_delta = 1e-2;
 
 /** Initialize an \ref apop_mle_settings struct. */
 apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
@@ -56,7 +57,7 @@ apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
     apop_varad_setting(in, setme, verbose, 0);
     apop_varad_setting(in, setme, use_score, 1);
     apop_varad_setting(in, setme, step_size, 0.05);
-    apop_varad_setting(in, setme, delta, 1e-2);
+    apop_varad_setting(in, setme, delta, default_delta);
     apop_varad_setting(in, setme, want_cov, 1);
 //siman:
     //siman also uses step_size  = 1.;  
@@ -86,9 +87,7 @@ void *apop_mle_settings_copy(apop_mle_settings * in){
 
 void apop_mle_settings_free(void *in){ apop_mle_settings * fin = in; free(fin); }
 
-		///////////////////////
-		//MLE support functions
-		///////////////////////
+//      MLE support functions
 
 typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
@@ -131,14 +130,12 @@ static double one_d(double b, void *in){
 
 /* For each element of the parameter set, jiggle it to find its
  gradient. Return a vector as long as the parameter list. */
-static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct* info, gsl_vector *out){
-  int		    j;
+static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct* info, gsl_vector *out, double delta){
   gsl_function	F;
   double		result, err;
   grad_params 	gp;
   infostruct    i;
   gsl_vector    *beta   = apop_data_pack(info->model->parameters);
-  apop_mle_settings   *mp = apop_settings_get_group(info->model, "apop_mle");
     memcpy(&i, info, sizeof(i));
     i.f         = &ll;
 	gp.beta		= gsl_vector_alloc(beta->size);
@@ -146,10 +143,10 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
     i.gp        = &gp;
 	F.function	= one_d;
 	F.params	= &i;
-	for (j=0; j< beta->size; j++){
+	for (size_t j=0; j< beta->size; j++){
 		gp.dimension	= j;
 		gsl_vector_memcpy(gp.beta, beta);
-		gsl_deriv_central(&F, gsl_vector_get(beta,j), mp->delta, &result, &err);
+		gsl_deriv_central(&F, gsl_vector_get(beta,j), delta, &result, &err);
 		gsl_vector_set(out, j, result);
 	}
     gsl_vector_free(beta);
@@ -157,7 +154,7 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
 
 /**The GSL provides one-dimensional numerical differentiation; here's the multidimensional extension.
 
- If \c m has \c method_settings of type \c apop_ml_params, then the \c delta element is used for the differential.
+ If \c m has \c method_settings of type \c apop_ml_params, then the \c delta element is used for the differential (else, I use a default).
  
  \code
  gsl_vector *gradient = apop_numerical_gradient(data, your_parametrized_model);
@@ -166,21 +163,13 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
  \ingroup linear_algebra
  */
 gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *m){
-  infostruct    i;
   apop_fn_with_params ll  = m->log_likelihood ? m->log_likelihood : m->p;
-    if (!ll){
-        apop_error(0, 'c', "%s: Input model has neither p nor log_likelihood method. Returning zero.\n");
-        return 0;
-    }
+  apop_assert(ll, 0, 0, 'c', "Input model has neither p nor log_likelihood method. Returning zero.");
   gsl_vector        *out= gsl_vector_alloc(m->parameters->vector->size);
   apop_mle_settings *mp = apop_settings_get_group(m, "apop_mle");
-    if(!mp){
-        Apop_settings_add_group(m, apop_mle, m);
-        mp = apop_settings_get_group(m, "apop_mle");
-    }
-    i.model = m;
-    i.data  = data;
-    apop_internal_numerical_gradient(ll, &i, out);
+  double delta = mp ? mp->delta : default_delta;
+  infostruct    i = (infostruct) {.model = m, .data = data};
+    apop_internal_numerical_gradient(ll, &i, out, delta);
     return out;
 }
 
@@ -278,7 +267,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
         i->model->score(i->data, g, i->model);
     else {
         apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
-        apop_internal_numerical_gradient(ll, i, g);
+        apop_internal_numerical_gradient(ll, i, g, mp->delta);
     }
     if (i->trace_path && strlen(i->trace_path))
         negshell (beta,  in);
@@ -356,7 +345,7 @@ apop_model apop_model_for_infomatrix = {"Ad hoc model for working out the inform
  both) for further details. If you really want to use E(I), check
  out a version of this file from before the end of 2007.*/
 static void produce_covariance_matrix(apop_model * est, infostruct *i){
-  int    j, k;
+  int    k;
   size_t betasize  = i->model->parameters->vector->size;
   gsl_matrix *preinv    = gsl_matrix_calloc(betasize, betasize);
   gsl_vector *dscore    = gsl_vector_alloc(betasize);
@@ -371,7 +360,7 @@ static void produce_covariance_matrix(apop_model * est, infostruct *i){
         dscore = apop_numerical_gradient(i->data, &apop_model_for_infomatrix);
         //We get two estimates of the (k,j)th element, which are often very close,
         //and take the mean.
-        for (j=0; j< betasize; j++){
+        for (size_t j=0; j< betasize; j++){
             apop_matrix_increment(preinv, k, j, gsl_vector_get(dscore, j)/2);
             apop_matrix_increment(preinv, j, k, gsl_vector_get(dscore, j)/2);
         }
@@ -669,7 +658,6 @@ APOP_VAR_ENDHEAD
 }
 
 
-//////////////////////////
 // Simulated Annealing.
 
 /** \page simanneal Notes on simulated annealing
@@ -714,7 +702,6 @@ static double annealing_distance(void *xin, void *yin) {
   gsl_vector_div(from, ((infostruct*)xin)->starting_pt);
   gsl_vector_div(to  , ((infostruct*)xin)->starting_pt);//starting pts are the same.
   return apop_vector_grid_distance(from, to);
-  //return apop_vector_grid_distance(((infostruct*)xin)->beta, ((infostruct*)yin)->beta);
 }
 
 static void annealing_step(const gsl_rng * r, void *in, double step_size){
@@ -777,20 +764,7 @@ static void annealing_free(void *xp){
 }
 
 //the starting point is really the list of scaling factors. They can't be zero.
-static double set_start(double in){
-    return in ? in : 1; }
-
-static gsl_siman_params_t set_params(apop_mle_settings *mp){
-gsl_siman_params_t simparams;
-    simparams.n_tries       = mp->n_tries;
-    simparams.iters_fixed_T = mp->iters_fixed_T;
-    simparams.step_size     = mp->step_size;
-    simparams.k             = mp->k;
-    simparams.t_initial     = mp->t_initial;
-    simparams.mu_t          = mp->mu_t;
-    simparams.t_min         = mp->t_min;
-    return simparams;
-}
+static double set_start(double in){ return in ? in : 1; }
 
 jmp_buf anneal_jump;
 static void anneal_sigint(){ longjmp(anneal_jump,1); }
@@ -799,7 +773,14 @@ apop_model * apop_annealing(infostruct *i){
   apop_model            *ep = i->model;
   apop_mle_settings     *mp = apop_settings_get_group(ep, "apop_mle");
   assert(mp);
-  gsl_siman_params_t    simparams = set_params(mp);
+  gsl_siman_params_t    simparams = (gsl_siman_params_t) {
+                            .n_tries       = mp->n_tries, 
+                            .iters_fixed_T = mp->iters_fixed_T,
+                            .step_size     = mp->step_size,
+                            .k             = mp->k,
+                            .t_initial     = mp->t_initial,
+                            .mu_t          = mp->mu_t,
+                            .t_min         = mp->t_min};
   gsl_vector    *beta;
   int           vsize       =(i->model->parameters->vector ? i->model->parameters->vector->size :0),
                 msize1      =(i->model->parameters->matrix ? i->model->parameters->matrix->size1 :0),

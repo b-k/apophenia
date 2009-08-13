@@ -7,7 +7,7 @@
 
 #include "types.h"
 #include "variadic.h"
-#include "regression.h"
+#include "stats.h"
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
@@ -67,27 +67,12 @@ typedef struct {
     apop_data *instruments;
     int want_cov;
     int want_expected_value;
-    void *copy;
-    void *free;
 } apop_ls_settings;
 
 apop_ls_settings * apop_ls_settings_alloc(apop_data *data);
 apop_ls_settings * apop_ls_settings_init(apop_ls_settings);
 void * apop_ls_settings_copy(apop_ls_settings *in);
 void apop_ls_settings_free(apop_ls_settings *in);
-
-
-#if 0
-/*The degrees of freedom parameter, for use in t- chi-squared, F-,
-  Whishart. See apop_tfchi.c.  */
-typedef struct {
-    char method;
-} apop_df_settings;
-
-apop_df_settings * apop_df_settings_alloc(char method);
-apop_df_settings *apop_df_settings_copy(apop_df_settings *in);
-void apop_df_settings_free(apop_df_settings *in);
-#endif
 
 // Find apop_category_settings routines in apop_probit.c
 /** for dependent-category models, send in this settings struct to
@@ -142,7 +127,8 @@ void * apop_histogram_settings_copy(apop_histogram_settings *in);
 
 
 
-apop_model *apop_model_set_parameters(apop_model in, ...);
+#define apop_model_set_parameters(in, ...) apop_model_set_parameters_base((in), (double []) {__VA_ARGS__})
+apop_model *apop_model_set_parameters_base(apop_model in, double ap[]);
 apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*));
 

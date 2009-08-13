@@ -1,5 +1,5 @@
-/** \file likelihoods.h	Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
- */
+/** \file likelihoods.h	 */
+ /* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #ifndef apop_likelihoods_h
 #define  apop_likelihoods_h

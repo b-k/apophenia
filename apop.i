@@ -27,6 +27,8 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 %ignore apop_data_transpose;
 %ignore apop_model_clear;
 %ignore apop_name_add;
+%ignore apop_name_copy;
+%ignore apop_name_stack;
 %ignore apop_name_cross_stack;
 %ignore apop_name_find;
 %ignore apop_name_print;
@@ -79,7 +81,6 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 #include "linear_algebra.h"
 #include "mapply.h"
 #include "output.h"
-#include "regression.h"
 #include "settings.h"
 #include "types.h"
 #include "variadic.h"
@@ -193,9 +194,12 @@ def apop_pylist_to_data(inlist):
 %rename(apop_test) apop_test_base;
 %rename(apop_matrix_stack) apop_matrix_stack_base;
 %rename(apop_vector_stack) apop_vector_stack_base;
+%rename(apop_vector_to_matrix) apop_vector_to_matrix_base;
 %rename(apop_data_stack) apop_data_stack_base;
 %rename(apop_db_merge) apop_db_merge_base;
 %rename(apop_db_merge_table) apop_db_merge_table_base;
+%rename(apop_random_int) apop_random_int_base;
+%rename(apop_model_set_parameters) apop_model_set_parameters_base;
 %rename(apop_matrix_is_positive_semidefinite) apop_matrix_is_positive_semidefinite_base;
 
 %extend apop_data {
@@ -236,20 +240,6 @@ def apop_pylist_to_data(inlist):
 
     apop_model * __clear(apop_data * data){
         return apop_model_clear(data, $self);}
-
-    /*void score(apop_data *d, gsl_vector *out, apop_model *m){
-        apop_score(d, out, $self);}
-
-    double log_likelihood(apop_data *d){
-        double apop_log_likelihood(d, $self);}
-
-    double p(apop_data *d, apop_model *m){ return apop_p(d, $self);}
-
-    void apop_draw(double *out, gsl_rng *r){ apop_draw(out, r, $self);}
-
-    void prep(apop_data *d){ apop_model_prep(d, $self);}
-
-    apop_data * expected_value(apop_data *d){ return apop_expected_value(d, $self);}*/
 }
 
 
@@ -342,6 +332,7 @@ def apop_pylist_to_data(inlist):
     double      var()                   { return apop_vector_var($self) ; }
     double      var_m(const double mean){ return apop_vector_var_m($self, mean) ; }
     apop_data * to_data()               { return apop_vector_to_data($self); }
+    gsl_matrix * to_matrix(char row_col) { return apop_vector_to_matrix($self, row_col); }
     double      kurtosis_pop()          { return apop_vector_kurtosis_pop($self) ; }
     double      kurtosis()              { return apop_vector_kurtosis($self) ; }
     double      skew()                  { return apop_vector_skew($self) ; }
@@ -411,7 +402,7 @@ def apop_pylist_to_data(inlist):
 
 /* Now declare everything that will be included */
 #define APOP_NO_VARIADIC
-#define OLD_C
+#  define __attribute__(Spec) /* empty */
 %include "asst.h"
 %include "stats.h"
 %include "apop.h"
@@ -423,7 +414,6 @@ def apop_pylist_to_data(inlist):
 %include "linear_algebra.h"
 %include "mapply.h"
 %include "output.h"
-%include "regression.h"
 %include "settings.h"
 %include "types.h"
 %include "variadic.h"
@@ -447,10 +437,10 @@ def apop_pylist_to_data(inlist):
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+//Tightened up a bit by BK because you're not going to read this anyway.
 
 typedef struct 
-{
-  size_t size1;
+{ size_t size1;
   size_t size2;
   size_t tda;
   double * data;
@@ -459,15 +449,13 @@ typedef struct
 } gsl_matrix;
 
 typedef struct
-{
-  gsl_matrix matrix;
+{ gsl_matrix matrix;
 } _gsl_matrix_view;
 
 typedef _gsl_matrix_view gsl_matrix_view;
 
 typedef struct
-{
-  gsl_matrix matrix;
+{ gsl_matrix matrix;
 } _gsl_matrix_const_view;
 
 typedef const _gsl_matrix_const_view gsl_matrix_const_view;
@@ -476,105 +464,34 @@ typedef const _gsl_matrix_const_view gsl_matrix_const_view;
 
 gsl_matrix * gsl_matrix_alloc (const size_t n1, const size_t n2);
 gsl_matrix * gsl_matrix_calloc (const size_t n1, const size_t n2);
-gsl_matrix * gsl_matrix_alloc_from_block (gsl_block * b, 
-                                   const size_t offset, 
-                                   const size_t n1, 
-                                   const size_t n2, 
-                                   const size_t d2);
-
-gsl_matrix * gsl_matrix_alloc_from_matrix (gsl_matrix * m,
-                                    const size_t k1, 
-                                    const size_t k2,
-                                    const size_t n1, 
-                                    const size_t n2);
-
-gsl_vector * gsl_vector_alloc_row_from_matrix (gsl_matrix * m,
-                                        const size_t i);
-
-gsl_vector * gsl_vector_alloc_col_from_matrix (gsl_matrix * m,
-                                        const size_t j);
-
+gsl_matrix * gsl_matrix_alloc_from_block (gsl_block * b, const size_t offset, const size_t n1, const size_t n2, const size_t d2);
+gsl_matrix * gsl_matrix_alloc_from_matrix (gsl_matrix * m, const size_t k1, const size_t k2, const size_t n1, const size_t n2);
+gsl_vector * gsl_vector_alloc_row_from_matrix (gsl_matrix * m, const size_t i); 
+gsl_vector * gsl_vector_alloc_col_from_matrix (gsl_matrix * m, const size_t j);
 void gsl_matrix_free (gsl_matrix * m);
 
 /* Views */
 
-_gsl_matrix_view gsl_matrix_submatrix (gsl_matrix * m, 
-                            const size_t i, const size_t j, 
-                            const size_t n1, const size_t n2);
-
+_gsl_matrix_view gsl_matrix_submatrix (gsl_matrix * m, const size_t i, const size_t j, const size_t n1, const size_t n2);
 _gsl_vector_view gsl_matrix_row (gsl_matrix * m, const size_t i);
 _gsl_vector_view gsl_matrix_column (gsl_matrix * m, const size_t j);
 _gsl_vector_view gsl_matrix_diagonal (gsl_matrix * m);
 _gsl_vector_view gsl_matrix_subdiagonal (gsl_matrix * m, const size_t k);
 _gsl_vector_view gsl_matrix_superdiagonal (gsl_matrix * m, const size_t k);
-_gsl_matrix_view gsl_matrix_view_array (double * base,
-                             const size_t n1, 
-                             const size_t n2);
-
-_gsl_matrix_view
-gsl_matrix_view_array_with_tda (double * base, 
-                                      const size_t n1, 
-                                      const size_t n2,
-                                      const size_t tda);
-
-
-_gsl_matrix_view
-gsl_matrix_view_vector (gsl_vector * v,
-                              const size_t n1, 
-                              const size_t n2);
-
-_gsl_matrix_view
-gsl_matrix_view_vector_with_tda (gsl_vector * v,
-                                       const size_t n1, 
-                                       const size_t n2,
-                                       const size_t tda);
-
-
-_gsl_matrix_const_view 
-gsl_matrix_const_submatrix (const gsl_matrix * m, 
-                                  const size_t i, const size_t j, 
-                                  const size_t n1, const size_t n2);
-
-_gsl_vector_const_view 
-gsl_matrix_const_row (const gsl_matrix * m, 
-                            const size_t i);
-
-_gsl_vector_const_view 
-gsl_matrix_const_column (const gsl_matrix * m, 
-                               const size_t j);
-
-_gsl_vector_const_view
-gsl_matrix_const_diagonal (const gsl_matrix * m);
-
-_gsl_vector_const_view 
-gsl_matrix_const_subdiagonal (const gsl_matrix * m, 
-                                    const size_t k);
-
-_gsl_vector_const_view 
-gsl_matrix_const_superdiagonal (const gsl_matrix * m, 
-                                      const size_t k);
-
-_gsl_matrix_const_view
-gsl_matrix_const_view_array (const double * base,
-                                   const size_t n1, 
-                                   const size_t n2);
-
-_gsl_matrix_const_view
-gsl_matrix_const_view_array_with_tda (const double * base, 
-                                            const size_t n1, 
-                                            const size_t n2,
-                                            const size_t tda);
-
-_gsl_matrix_const_view
-gsl_matrix_const_view_vector (const gsl_vector * v,
-                                    const size_t n1, 
-                                    const size_t n2);
-
-_gsl_matrix_const_view
-gsl_matrix_const_view_vector_with_tda (const gsl_vector * v,
-                                             const size_t n1, 
-                                             const size_t n2,
-                                             const size_t tda);
+_gsl_matrix_view gsl_matrix_view_array (double * base, const size_t n1, const size_t n2); 
+_gsl_matrix_view gsl_matrix_view_array_with_tda (double * base, const size_t n1, const size_t n2, const size_t tda); 
+_gsl_matrix_view gsl_matrix_view_vector (gsl_vector * v, const size_t n1, const size_t n2); 
+_gsl_matrix_view gsl_matrix_view_vector_with_tda (gsl_vector * v, const size_t n1, const size_t n2, const size_t tda); 
+_gsl_matrix_const_view gsl_matrix_const_submatrix (const gsl_matrix * m, const size_t i, const size_t j, const size_t n1, const size_t n2); 
+_gsl_vector_const_view gsl_matrix_const_row (const gsl_matrix * m, const size_t i);
+_gsl_vector_const_view gsl_matrix_const_column (const gsl_matrix * m, const size_t j);
+_gsl_vector_const_view gsl_matrix_const_diagonal (const gsl_matrix * m);
+_gsl_vector_const_view gsl_matrix_const_subdiagonal (const gsl_matrix * m, const size_t k);
+_gsl_vector_const_view gsl_matrix_const_superdiagonal (const gsl_matrix * m, const size_t k);
+_gsl_matrix_const_view gsl_matrix_const_view_array (const double * base, const size_t n1, const size_t n2); 
+_gsl_matrix_const_view gsl_matrix_const_view_array_with_tda (const double * base, const size_t n1, const size_t n2, const size_t tda); 
+_gsl_matrix_const_view gsl_matrix_const_view_vector (const gsl_vector * v, const size_t n1, const size_t n2); 
+_gsl_matrix_const_view gsl_matrix_const_view_vector_with_tda (const gsl_vector * v, const size_t n1, const size_t n2, const size_t tda);
 
 /* Operations */
 
@@ -622,15 +539,12 @@ void gsl_matrix_set(gsl_matrix * m, const size_t i, const size_t j, const double
 double * gsl_matrix_ptr(gsl_matrix * m, const size_t i, const size_t j);
 const double * gsl_matrix_const_ptr(const gsl_matrix * m, const size_t i, const size_t j);
 
-
-
 /* vector/gsl_vector_double.h
  * copyright as for gsl_matrix above.
  */
 
 typedef struct 
-{
-  size_t size;
+{ size_t size;
   size_t stride;
   double *data;
   gsl_block *block;
@@ -639,77 +553,35 @@ typedef struct
 gsl_vector;
 
 typedef struct
-{
-  gsl_vector vector;
+{ gsl_vector vector;
 } _gsl_vector_view;
 
 typedef _gsl_vector_view gsl_vector_view;
 
 typedef struct
-{
-  gsl_vector vector;
+{ gsl_vector vector;
 } _gsl_vector_const_view;
 
 typedef const _gsl_vector_const_view gsl_vector_const_view;
 
-
 /* Allocation */
 
 gsl_vector *gsl_vector_alloc (const size_t n);
-gsl_vector *gsl_vector_calloc (const size_t n);
-
-gsl_vector *gsl_vector_alloc_from_block (gsl_block * b,
-                                                     const size_t offset, 
-                                                     const size_t n, 
-                                                     const size_t stride);
-
-gsl_vector *gsl_vector_alloc_from_vector (gsl_vector * v,
-                                                      const size_t offset, 
-                                                      const size_t n, 
-                                                      const size_t stride);
-
+gsl_vector *gsl_vector_calloc (const size_t n); 
+gsl_vector *gsl_vector_alloc_from_block (gsl_block * b, const size_t offset, const size_t n, const size_t stride); 
+gsl_vector *gsl_vector_alloc_from_vector (gsl_vector * v, const size_t offset, const size_t n, const size_t stride); 
 void gsl_vector_free (gsl_vector * v);
 
 /* Views */
 
-_gsl_vector_view 
-gsl_vector_view_array (double *v, size_t n);
-
-_gsl_vector_view 
-gsl_vector_view_array_with_stride (double *base,
-                                         size_t stride,
-                                         size_t n);
-
-_gsl_vector_const_view 
-gsl_vector_const_view_array (const double *v, size_t n);
-
-_gsl_vector_const_view 
-gsl_vector_const_view_array_with_stride (const double *base,
-                                               size_t stride,
-                                               size_t n);
-
-_gsl_vector_view 
-gsl_vector_subvector (gsl_vector *v, 
-                            size_t i, 
-                            size_t n);
-
-_gsl_vector_view 
-gsl_vector_subvector_with_stride (gsl_vector *v, 
-                                        size_t i,
-                                        size_t stride,
-                                        size_t n);
-
-_gsl_vector_const_view 
-gsl_vector_const_subvector (const gsl_vector *v, 
-                                  size_t i, 
-                                  size_t n);
-
-_gsl_vector_const_view 
-gsl_vector_const_subvector_with_stride (const gsl_vector *v, 
-                                              size_t i, 
-                                              size_t stride,
-                                              size_t n);
-
+_gsl_vector_view gsl_vector_view_array (double *v, size_t n); 
+_gsl_vector_view gsl_vector_view_array_with_stride (double *base, size_t stride, size_t n); 
+_gsl_vector_const_view gsl_vector_const_view_array (const double *v, size_t n); 
+_gsl_vector_const_view gsl_vector_const_view_array_with_stride (const double *base, size_t stride, size_t n); 
+_gsl_vector_view gsl_vector_subvector (gsl_vector *v, size_t i, size_t n); 
+_gsl_vector_view gsl_vector_subvector_with_stride (gsl_vector *v, size_t i, size_t stride, size_t n); 
+_gsl_vector_const_view gsl_vector_const_subvector (const gsl_vector *v, size_t i, size_t n); 
+_gsl_vector_const_view gsl_vector_const_subvector_with_stride (const gsl_vector *v, size_t i, size_t stride, size_t n);
 
 /* Operations */
 

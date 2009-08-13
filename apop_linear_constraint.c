@@ -52,7 +52,6 @@ static double trig_bit(gsl_vector *dimv, gsl_vector *otherv, double off_by){
    */
 static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, gsl_vector *candidate){
   double    k, ck, off_by, s;
-  int       i;
   gsl_vector *pseudobeta        = NULL;
   gsl_vector *pseudocandidate   = NULL;
   gsl_vector *pseudocandidate2  = NULL;
@@ -60,7 +59,7 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
   APOP_ROW(constraint, current, cc);
     ck  =gsl_vector_get(constraint->vector, current);
     find_nearest_point(beta, ck, cc, candidate);
-    for (i=0; i< constraint->vector->size; i++){
+    for (size_t i=0; i< constraint->vector->size; i++){
         if (i!=current){
             APOP_ROW(constraint, i, other);
             k   =apop_data_get(constraint, i, -1);

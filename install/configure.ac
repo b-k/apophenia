@@ -75,3 +75,24 @@ ACX_PTHREAD
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
+
+
+#The default is to produce line noise. Kill it.
+#Delete this if you want to see the full compilation commands
+sed -e 's/if $(\(COMPILE\|LIBTOOL\|LTCOMPILE\))/@echo "compiling $<"\n\t@if $(\1)/'  \
+    -e 's/^\t\($(LINK)\)/\t@echo "compiling $<"\n\t@\1/'  \
+    -e 's/^\(LIBTOOL.*\)/\1 --quiet/' < Makefile >maketmp
+mv maketmp Makefile
+
+
+
+#mySQL claims these vars as its own.
+sed '$a\
+\#undef PACKAGE     \
+\#undef PACKAGE_BUGREPORT   \
+\#undef PACKAGE_NAME        \
+\#undef PACKAGE_STRING      \
+\#undef PACKAGE_TARNAME     \
+\#undef PACKAGE_VERSION     \
+\#undef VERSION' < config.h > conftmp
+mv conftmp config.h

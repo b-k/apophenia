@@ -6,7 +6,7 @@
    documented below. The C code below was cut and pasted from the
    R project. Thanks, guys.
 
-Un-R-ifying modifications Copyright (c) 2006--2007 by Ben Klemens.
+Un-R-ifying modifications Copyright (c) 2006--2009 by Ben Klemens.
 Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 
         R version credits:
@@ -18,6 +18,7 @@ Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 /* <UTF8> chars are handled as whole strings */
 
 #include "types.h"
+#include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
 
 /* These are the R-specific items. */
@@ -66,7 +67,6 @@ static int iwork(int iwkmax, int *iwkpt, int number, int itype);
 #else
  static void isort(int *n, int *ix);
  static double gammds(double *y, double *p, int *ifault);
- static double alogam(double *x, int *ifault);
 #endif
 
 /* The only public function : */
@@ -1709,10 +1709,8 @@ double f9xact(int n, int ntot, int *ir, double *fact)
 }
 
 
-Rboolean
-f10act(int nrow, int *irow, int ncol, int *icol, double *val,
-       double *fact, int *nd, int *ne, int *m)
-{
+Rboolean f10act(int nrow, int *irow, int ncol, int *icol, double *val,
+       double *fact, int *nd, int *ne, int *m) {
 /*
   -----------------------------------------------------------------------
   Name:	    F10ACT
@@ -1776,8 +1774,7 @@ f10act(int nrow, int *irow, int ncol, int *icol, double *val,
 }
 
 
-void f11act(int *irow, int i1, int i2, int *new)
-{
+void f11act(int *irow, int i1, int i2, int *new) {
 /*
   -----------------------------------------------------------------------
   Name:	      F11ACT
@@ -1794,13 +1791,10 @@ void f11act(int *irow, int i1, int i2, int *new)
 
     for (i = 0;  i < (i1 - 1); ++i)	new[i] = irow[i];
     for (i = i1; i <= i2; ++i)	      new[i-1] = irow[i];
-
-    return;
 }
 
 
-void prterr(int icode, const char *mes)
-{
+void prterr(int icode, const char *mes) {
 /*
   -----------------------------------------------------------------------
   Name:	      prterr
@@ -1816,8 +1810,7 @@ void prterr(int icode, const char *mes)
     return;
 }
 
-int iwork(int iwkmax, int *iwkpt, int number, int itype)
-{
+int iwork(int iwkmax, int *iwkpt, int number, int itype) {
 /*
   -----------------------------------------------------------------------
   Name:	      iwork
@@ -1852,8 +1845,6 @@ int iwork(int iwkmax, int *iwkpt, int number, int itype)
 
     return i;
 }
-
-
 
 #ifndef USING_R
 
@@ -1966,7 +1957,6 @@ double gammds(double *y, double *p, int *ifault)
   */
 
     static double a, c, f, g;
-    static int ifail;
 
     /* Checks for the admissibility of arguments and value of F */
     *ifault = 1;
@@ -1979,10 +1969,13 @@ double gammds(double *y, double *p, int *ifault)
     /*
       ALOGAM is natural log of gamma function no need to test ifail as
       an error is impossible
+
+      BK edit: using gsl_sf_lngamma instead. More methods--> maybe slower; more precise.
+
       */
 
     a = *p + 1.;
-    f = exp(*p * log(*y) - alogam(&a, &ifail) - *y);
+    f = exp(*p * log(*y) - gsl_sf_lngamma(a) - *y);
     if (f == 0.) {
 	return g;
     }
@@ -2001,65 +1994,6 @@ double gammds(double *y, double *p, int *ifault)
 
     g *= f;
     return g;
-}
-
-/*
-  -----------------------------------------------------------------------
-  Name:	      ALOGAM
-  Purpose:    Value of the log-gamma function.
-  Usage:      ALOGAM (X, IFAULT)
-  Arguments:
-     X	    - Value at which the log-gamma function is to be evaluated.
-	      (Input)
-     IFAULT  - Error indicator.	 (Output)
-	       IFAULT  DEFINITION
-		 0     No error
-		 1     X < 0
-     ALGAMA - The value of the log-gamma function at XX.  (Output)
-  -----------------------------------------------------------------------
-
-  Algorithm ACM 291, Comm. ACM. (1966) Vol. 9, P. 684
-
-  Evaluates natural logarithm of gamma(x) for X greater than zero.
-  */
-
-double alogam(double *x, int *ifault)
-{
-    /* Initialized data */
-
-    static double a1 = .918938533204673;
-    static double a2 = 5.95238095238e-4;
-    static double a3 = 7.93650793651e-4;
-    static double a4 = .002777777777778;
-    static double a5 = .083333333333333;
-
-    /* Local variables */
-    static double f, y, z;
-
-    *ifault = 1;
-    if (*x < 0.) {
-	return(0.);
-    }
-    *ifault = 0;
-    y = *x;
-    f = 0.;
-    if (y >= 7.) {
-	goto L30;
-    }
-    f = y;
-L10:
-    y += 1.;
-    if (y >= 7.) {
-	goto L20;
-    }
-    f *= y;
-    goto L10;
-L20:
-    f = -log(f);
-L30:
-    z = 1. / (y * y);
-    return(f + (y - .5) * log(y) - y + a1 +
-	   (((-a2 * z + a3) * z - a4) * z + a5) / y);
 }
 
 /** Convert from an \ref apop_data set to a table of integers.

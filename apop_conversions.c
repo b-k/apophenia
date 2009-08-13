@@ -9,20 +9,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #define Text_Line_Limit 100000
 
 /** \defgroup conversions Conversion functions
-
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
-/** \defgroup convertfromarray  Functions to convert from an array (i.e., double **).
-\ingroup conversions*/
-/** \defgroup convertfromtext Functions to convert from a text file
-\ingroup conversions*/
-/** \defgroup convertfromdb  Functions to convert from a database
-\ingroup conversions*/
-/** \defgroup convertfrommatrix  Functions to convert from a gsl_matrix.
-See also \ref output for funcions to write a matrix to a text file.
-\ingroup conversions*/
-/** \defgroup convertfromvector  Functions to convert from a gsl_vector.
-See also \ref output for funcions to write a vector to a text file.
-\ingroup conversions*/
 
 /** \page gsl_views 	Using GSL Views
 The GSL includes a convenient structure for pulling a vector from a matrix. Here's how to get the fifth row of <tt>a_matrix</tt> into a vector view:
@@ -47,24 +34,23 @@ gsl_vector *a_new_vector = gsl_vector_alloc(a_matrix->size1);
 v = gsl_matrix_col(a_matrix, 4);
 gsl_vector_memcpy(a_new_vector, &(v.vector));
 \endcode
-\ingroup convertfrommatrix
+\ingroup conversions
 */
 
 
-/** Converts a GSL vector to an array.
+/** Converts a \c gsl_vector to an array.
 
-\param in A GSL vector
+\param in A \c gsl_vector
 
-\return A pointer to a <tt>double*</tt>, which will be <tt>malloc</tt>ed inside the function.
+\return A \c double*, which will be <tt>malloc</tt>ed inside the function.
 
-\note Does not use memcpy, because we don't know the stride of the vector.
-\ingroup convertfromvector 
+\ingroup conversions
 */
 double * apop_vector_to_array(const gsl_vector *in){
+//Does not use memcpy, because we don't know the stride of the vector.
   apop_assert(in, NULL, 1, 'c', "You sent me a NULL vector; returning NULL");
-  int		i;	
   double	*out	= malloc(sizeof(double) * in->size);
-	for (i=0; i < in->size; i++)
+	for (size_t i=0; i < in->size; i++)
 		out[i]	= gsl_vector_get(in, i);
 	return out;
 }
@@ -74,7 +60,7 @@ double * apop_vector_to_array(const gsl_vector *in){
 \param in     An array of <tt>double</tt>s. (No default. Must not be \c NULL);
 \param size 	How long \c line is. If this is zero or omitted, I'll guess using the <tt>sizeof(line)/sizeof(line[0])</tt> trick. There are situations where this can break, in which case you'll need to specify this explicitly. (default = auto-guess)
 \return         A <tt>gsl_vector</tt> (which I will allocate for you).
-\ingroup convertfromarray 
+\ingroup conversions
 This function uses the \ref designated syntax for inputs.
 
 */ 
@@ -90,28 +76,38 @@ APOP_VAR_END_HEAD
     return out;
 }
 
-/** Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N
- \times 1 \f$ are equivalent, but they're two different types in C. This function copies the data in a vector to a new one-column matrix and returns the newly-allocated and filled matrix.
+/** Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N \times 1 \f$ are equivalent, but they're two different types in C. This function copies the data in a vector to a new one-column (or one-row) matrix and returns the newly-allocated and filled matrix.
 
- \param in a <tt>gsl_vector</tt>
+ \param in a \c gsl_vector (No default. If \c NULL, I return \c NULL, with a warning if <tt>apop_opts.verbose >=1 </tt>)
+ \param row_col If \c 'r', then this will be a row (1 x N) instead of the default, a column (N x 1). (default: \c 'c')
  \return a newly-allocated <tt>gsl_matrix</tt> with one column.
 
+This function uses the \ref designated syntax for inputs.
  \ingroup convenience_fns
  */
-gsl_matrix * apop_vector_to_matrix(const gsl_vector *in){
+APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){
+    const gsl_vector * apop_varad_var(in, NULL);
     apop_assert(in,  NULL, 1,'c', "Converting NULL vector to NULL matrix.");
-    gsl_matrix *out = gsl_matrix_alloc(in->size, 1);
+    char apop_varad_var(row_col, 'c');
+    return apop_vector_to_matrix_base(in, row_col);
+APOP_VAR_ENDHEAD
+    gsl_matrix *out = 
+        (row_col == 'r' || row_col == 'R') 
+           ? gsl_matrix_alloc(1, in->size)
+           : gsl_matrix_alloc(in->size, 1);
     apop_assert(out,  NULL, 0,'s', "gsl_matrix_alloc failed; probably out of memory.");
-    gsl_matrix_set_col(out, 0, in);
+    if (row_col == 'r' || row_col == 'R') 
+        gsl_matrix_set_row(out, 0, in);
+    else
+        gsl_matrix_set_col(out, 0, in);
     return out;
 }
 
 static void convert_array_to_line(const double **in, double **out, const int rows, const int cols){
 	//go from in[i][j] form to the GSL's preferred out[i*cols + j] form
-  int		i, j;
 	*out	= malloc(sizeof(double) * rows * cols);
-	for (i=0; i<rows; i++)
-		for (j=0; j<cols; j++)
+	for (size_t i=0; i<rows; i++)
+		for (size_t j=0; j<cols; j++)
 			(*out)[i * cols + j]	= in[i][j];
 }
 
@@ -124,7 +120,7 @@ static void convert_array_to_line(const double **in, double **out, const int row
 usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
 
 If you want to intialize on the allocation line, this isn't what you want. See \ref apop_line_to_matrix.
-\ingroup convertfromarray 
+\ingroup conversions
 */
 gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols){
   gsl_matrix_view   m;
@@ -146,7 +142,7 @@ have no names.
 \return the \ref apop_data set, allocated for you and ready to use.
 
 usage: \code apop_data *d = apop_array_to_data(indata, 34, 4); \endcode
-\ingroup convertfromarray 
+\ingroup conversions
 
 If you want to intialize on the allocation line, this isn't what you want. See \ref apop_line_to_data.
 */
@@ -162,7 +158,7 @@ apop_data * apop_array_to_data(const double **in, const int rows, const int cols
 \return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
 
 usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
-\ingroup convertfromarray 
+\ingroup conversions
 */
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
   gsl_matrix_view	m;
@@ -181,7 +177,7 @@ have no names.
 \param rows, cols	the size of the array.
 \return the \ref apop_data set, allocated for you and ready to use.
 
-\ingroup convertfromarray 
+\ingroup conversions
 */
 apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
     if (vsize==0 && (rows>0 && cols>0))
@@ -189,10 +185,10 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
     if ((rows==0 || cols==0) && vsize>0)
       return apop_vector_to_data(apop_array_to_vector(in, vsize));
     apop_assert(vsize==rows,  NULL, 0,'c',"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
-  int i, j, ctr = 0;
+  int ctr = 0;
   apop_data *out  = apop_data_alloc(vsize, rows, cols);
-    for (i=0; i< rows; i++)
-        for (j=-1; j< cols; j++)
+    for (size_t i=0; i< rows; i++)
+        for (int j=-1; j< cols; j++)
             apop_data_set(out, i, j, in[ctr++]);
     return out;
 }
@@ -212,15 +208,13 @@ static int find_cat_index(char **d, char * r, int start_from, int size){
 /**Give the name of a table in the database, and names of three of its
 columns: the x-dimension, the y-dimension, and the data.
 the output is a 2D matrix with rows indexed by r1 and cols by
-r2. if !=NULL, d1 and d2 will list the labels on the dimensions.
+r2.
 
 \ingroup db
 */
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
   gsl_matrix	*out;
-  int		i = 0,
-		j = 0,
-		k; 
+  int		    i, j=0;
   apop_data     *pre_d1, *pre_d2, *datachars;
   apop_data     *outdata    = apop_data_alloc(0,0,0);
 
@@ -242,7 +236,7 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
         apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
 	out	= gsl_matrix_calloc(pre_d1->textsize[0], pre_d2->textsize[0]);
-	for (k =0; k< datachars->textsize[0]; k++){
+	for (size_t k =0; k< datachars->textsize[0]; k++){
 		i	= find_cat_index(outdata->names->row, datachars->text[k][0], i, pre_d1->textsize[0]);
 		j	= find_cat_index(outdata->names->column, datachars->text[k][1], j, pre_d2->textsize[0]);
 		gsl_matrix_set(out, i, j, atof(datachars->text[k][2]));
@@ -254,7 +248,6 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
     apop_opts.db_name_column[0]= p;
 	return outdata;
 }
-
 
 /*
 Empirically, this divider seems to work better for the header line.
@@ -334,22 +327,22 @@ static int apop_count_rows_in_text(char *text_file){
 	return ct-1;
 }
 
-regex_t     *strip_regex      = NULL;
 
-static void strip_regex_alloc(){
+static void strip_regex_alloc(regex_t **strip_regex){
   char      w[]           = "[:space:]\"";
   char      stripregex[1000];
-    if(!strip_regex){
-        sprintf(stripregex, "[%s]*\\([^%s]*.*[^%s][^%s]*\\)[%s]*", w,w,w,w,w);
-        strip_regex     = malloc(sizeof(regex_t));
-        regcomp(strip_regex, stripregex, 0);
-    }
+    sprintf(stripregex, "[%s]*\\([^%s]*.*[^%s][^%s]*\\)[%s]*", w,w,w,w,w);
+    *strip_regex     = malloc(sizeof(regex_t));
+    regcomp(*strip_regex, stripregex, 0);
 }
 
 //OK, OK. C sucks. This fn just strips leading and trailing blanks.
 static char * strip(char *in){
   size_t      dummy       = 0;
   char 		*out 	    = malloc(1+strlen(in));
+  static regex_t   *strip_regex      = NULL;
+  if (!strip_regex) 
+      strip_regex_alloc(&strip_regex);
   regmatch_t  result[3];
     if(!regexec(strip_regex, in, 2, result, 0))
         pull_string(in, out, result,  &dummy);
@@ -430,7 +423,7 @@ longer than this, you will need to open up apop_conversions.c, modify
 
 This function uses the \ref designated syntax for inputs.
 
-\ingroup convertfromtext	*/
+\ingroup conversions	*/
 APOP_VAR_HEAD apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
     char *apop_varad_var(text_file, "-")
     int apop_varad_var(has_row_names, 0)
@@ -464,7 +457,6 @@ APOP_VAR_END_HEAD
     sprintf(header_divider, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 1);
     regcomp(headregex, header_divider, 1);
-    strip_regex_alloc();
 
     //First, handle the top line, if we're told that it has column names.
     if (has_col_names){
@@ -524,7 +516,7 @@ APOP_VAR_END_HEAD
 /** See \ref apop_db_to_crosstab for the storyline; this is the complement.
  \ingroup db
  */
-int apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name, 
+void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name){
   int		    i,j;
   apop_name   *n = in->names;
@@ -544,14 +536,13 @@ int apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
 				apop_query("INSERT INTO %s VALUES ('%s', '%s','%s');", tabname, 
 					n->row[j], n->text[i], in->text[j][i]);
 	apop_query("commit;");
-	return 0;
 }
 
 /** \page dbtomatrix Converting from database table to <tt>gsl_matrix</tt> or \ref apop_data
 
 Use <tt>fill_me = apop_query_to_matrix("select * from table_name;");</tt>
 or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \ref apop_query_to_matrix; \ref apop_query_to_data.]
-\ingroup convertfromdb
+\ingroup conversions
 */
 
 
@@ -592,11 +583,7 @@ gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
 
 
 
-
-
-/////////////////////////////
-//The text processing section:
-/////////////////////////////
+//The text processing section
 
 static regex_t   *regex;
 static regex_t   *headregex;
@@ -611,8 +598,6 @@ static regex_t   *one_quote = NULL, *end_quote = NULL, *full_quote = NULL;
  --If the string isn't a number, it needs quotes, and sqlite wants 0.1,
   not just .1. 
   --It may be text with no "delimiters"
-
-
  */
 static char * prep_string_for_sqlite(char *astring){
   regmatch_t  result[2];
@@ -622,7 +607,8 @@ static char * prep_string_for_sqlite(char *astring){
 	strtod(astring, &tail);
     tmpstring=strip(astring); 
     if (!strlen(astring)){
-        asprintf(&out, "");
+        out = malloc(1); 
+        out[0] ='\0';
         return out;
     }
     if (!regexec(nan_regex, tmpstring, 1, result, 0))
@@ -631,7 +617,11 @@ static char * prep_string_for_sqlite(char *astring){
 		if (strlen (tmpstring)==0)
 			asprintf(&out, " ");
 		else        //it's text but nothing special
+#ifdef HAVE_LIBSQLITE3 
+            char *out = sqlite3_mprintf("%Q", tmpstring);//extra checks for odd chars.
+#else
             asprintf(&out, "'%s'",tmpstring);
+#endif
 	} else {	    //sqlite wants 0.1, not .1
 		assert(strlen (tmpstring)!=0);
 		if (tmpstring[0]=='.')
@@ -812,20 +802,7 @@ static void line_to_insert(char instr[], char *tabname){
 
 Using the data set from the example on the \ref apop_ols page, here's another way to do the regression:
 
-\code
-#include <apop.h>
-
-int main(void){ 
-  apop_data       *data; 
-  apop_model   *est;
-    apop_db_open(NULL);
-    apop_text_to_db("data", "d",.has_row_names= 0,.has_col_names=1);
-    data       = apop_query_to_data("select * from d");
-    est        = apop_estimate(data, apop_ols);
-    printf("The OLS coefficients:\n");
-    apop_model_print(est);
-} 
-\endcode
+\include ols.c
 
 By the way, there is a begin/commit wrapper that bundles the process into bundles of 2000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.
 
@@ -837,7 +814,7 @@ By the way, there is a begin/commit wrapper that bundles the process into bundle
 
 \return Returns the number of rows.
 This function uses the \ref designated syntax for inputs.
-\ingroup convertfromtext
+\ingroup conversions
 */
 APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
     char *apop_varad_var(text_file, "-")
@@ -865,7 +842,6 @@ APOP_VAR_END_HEAD
         //regcomp(end_quote, "(\\.|[^\\\"])*\"", 0);
     }
 
-    strip_regex_alloc();
 	use_names_in_file   = 0;    //file-global.
     if (!regex){
         regex               = malloc(sizeof(regex_t));//file-global, above.
@@ -877,7 +853,7 @@ APOP_VAR_END_HEAD
     }
 
 	if (apop_table_exists(tabname,0)){
-	       	printf("apop: %s table exists; not recreating it.\n", tabname);
+        printf("apop: %s table exists; not recreating it.\n", tabname);
 		return 0; //to do: return the length of the table.
 	} else{
         //divider regex:
@@ -938,7 +914,7 @@ APOP_VAR_END_HEAD
 \ingroup conversions
 */
 void apop_data_unpack(const gsl_vector *in, apop_data *d){
-  int           i, offset   = 0;
+  int           offset   = 0;
   gsl_vector    vin, vout;
     if(d->vector){
         vin = gsl_vector_subvector((gsl_vector *)in, 0, d->vector->size).vector;
@@ -946,7 +922,7 @@ void apop_data_unpack(const gsl_vector *in, apop_data *d){
         offset  += d->vector->size;
     }
     if(d->matrix)
-        for (i=0; i< d->matrix->size1; i++){
+        for (size_t i=0; i< d->matrix->size1; i++){
             vin     = gsl_vector_subvector((gsl_vector *)in, offset, d->matrix->size2).vector;
             vout    = gsl_matrix_row(d->matrix, i).vector;
             gsl_vector_memcpy(&vout, &vin);
@@ -973,7 +949,7 @@ gsl_vector * apop_data_pack(const apop_data *in){
                        + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0);
     if (!total_size)
         return NULL;
-  int i, offset        = 0;
+  int offset        = 0;
   gsl_vector *out   = gsl_vector_alloc(total_size);
   gsl_vector vout, vin;
     if (in->vector){
@@ -982,7 +958,7 @@ gsl_vector * apop_data_pack(const apop_data *in){
         offset  += in->vector->size;
     }
     if (in->matrix)
-        for (i=0; i< in->matrix->size1; i++){
+        for (size_t i=0; i< in->matrix->size1; i++){
             vin = gsl_matrix_row(in->matrix, i).vector;
             vout= gsl_vector_subvector((gsl_vector *)out, offset, in->matrix->size2).vector;
             gsl_vector_memcpy(&vout, &vin);
@@ -994,7 +970,8 @@ gsl_vector * apop_data_pack(const apop_data *in){
 
 #include <stdarg.h>
 
-/** Fill a pre-allocated data set with values.
+/** \def apop_data_fill_base(in, ap)
+Fill a pre-allocated data set with values.
 
   For example:
 
@@ -1016,6 +993,7 @@ Warning: I need as many arguments as the size of the data set, and can't count t
 \param ...  A series of at least as many floating-point values as there are blanks in the data set.
 \return     A pointer to the same data set that was input.
 */
+
 apop_data *apop_data_fill_base(apop_data *in, double ap[]){
 /* In conversions.h, you'll find this header, which turns all but the first input into an array of doubles of indeterminate length:
 #define apop_data_fill(in, ...) apop_data_fill_base((in), (double []) {__VA_ARGS__})
@@ -1041,13 +1019,13 @@ apop_data *apop_data_fill_base(apop_data *in, double ap[]){
   If this doesn't make sense to you, then you should be using \c apop_vector_fill.
   */
 gsl_vector *apop_vector_vfill(gsl_vector *in, va_list ap){
-  int i;
-    for (i=0; i< in->size; i++)
+    for (size_t i=0; i< in->size; i++)
         gsl_vector_set(in, i, va_arg(ap, double));
     return in;
 }
 
-/** Fill a pre-allocated \c gsl_vector with values.
+/** \def apop_vector_fill(in, ap)
+ Fill a pre-allocated \c gsl_vector with values.
 
   See \c apop_data_alloc for a relevant example. See also \c apop_matrix_alloc.
 
@@ -1067,7 +1045,8 @@ gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
     return in;
 }
 
-/** Fill a pre-allocated \c gsl_matrix with values.
+/** \def apop_matrix_fill(in, ap)
+ Fill a pre-allocated \c gsl_matrix with values.
 
   See \c apop_data_alloc for a relevant example. See also \c apop_vector_alloc.
 

@@ -53,7 +53,7 @@ static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_mode
         apop_data_set(constraint, 0, 0, 1);
         apop_data_set(constraint, 0, -1, 1);
         }
-    return apop_linear_constraint(m->parameters->vector, constraint, 1e-3);
+    return apop_linear_constraint(m->parameters->vector, constraint, 1e-4);
 }
 
 static long double  bb;
@@ -148,6 +148,7 @@ To specify that you have frequency or ranking data, use
 Apop_settings_add_group(your_model, apop_rank, NULL);
 \endcode
 
+\hideinitializer
 \ingroup models
 \todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I have references on hand.
 */

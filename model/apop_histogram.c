@@ -5,16 +5,10 @@ distribution. It is primarily a wrapper for the GSL's comparable functions
 in the standard \c apop_model form, for easy comparison with other models.*/
 /* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "asst.h"
 #include "model.h"
-#include "types.h"
-#include "stats.h"
 #include "mapply.h"
 #include "settings.h"
 #include <gsl/gsl_math.h>
-#include <gsl/gsl_histogram.h>
-#include <stdio.h>
-#include <assert.h>
 
 apop_model apop_histogram;
 
@@ -71,11 +65,9 @@ void * apop_histogram_settings_copy(apop_histogram_settings *in){
 }
 
 void apop_histogram_settings_free(apop_histogram_settings *in){
-    //I'll come back to this later...
-    /*gsl_histogram_free(in->pdf);
+    gsl_histogram_free(in->pdf);
     gsl_histogram_pdf_free(in->cdf);
-    apop_model_free(in->histobase);
-    apop_model_free(in->kernelbase);*/
+    //Assume kernel base and histogram base are freed elsewhere.
 }
 
 
@@ -112,8 +104,6 @@ static double histogram_ll(apop_data *d, apop_model *in){
     return product;
 }
 
-static double histogram_p(apop_data *d, apop_model *in){ return exp(histogram_ll(d, in)); }
-
 static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
   apop_histogram_settings *hp = apop_settings_get_group(in, "apop_histogram");
   if (!hp) apop_settings_get_group(in, "apop_kernel_density");
@@ -143,9 +133,10 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
   apop_histogram_settings_alloc. [Actually, there is an \c estimate method,
   but it is just an alias for the histogram_alloc function.]
 
+\hideinitializer
 \ingroup models
 */
-apop_model apop_histogram = {"Histogram", 0,0,0, .estimate = est, .p = histogram_p, .log_likelihood = histogram_ll, .draw = histogram_rng};
+apop_model apop_histogram = {"Histogram", .estimate = est, .log_likelihood = histogram_ll, .draw = histogram_rng};
 
 
 
@@ -204,7 +195,6 @@ void apop_set_first_params(double in, apop_model *m){
 */
 apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*)){
-  size_t    i, j;
   apop_data *smallset  = apop_data_alloc(0,1,1);
   double    padding    = 0.1;
 
@@ -216,7 +206,6 @@ apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data,
     } else if (data){
         base = apop_model_copy(apop_histogram);
         Apop_settings_add_group(base, apop_histogram, data, 1000);
-        //Apop_settings_add_group(outm, apop_histogram, data, 1000);
     } else
         apop_error(0, 's', "I need either a histobase model with a histogram or a non-NULL data set.");
 
@@ -228,10 +217,10 @@ apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data,
     set_params      = set_params ? set_params : apop_set_first_params;
 
     //finally, the double-loop producing the density.
-    for (i=0; i< bh->pdf->n; i++)
+    for (size_t i=0; i< bh->pdf->n; i++)
         if (bh->pdf->bin[i]){
             set_params(apop_getmidpt(bh->pdf,i), out->kernelbase);
-            for (j=1; j < out->pdf->n-1; j ++){
+            for (size_t j=1; j < out->pdf->n-1; j ++){
                 smallset->matrix->data[0] = apop_getmidpt(out->pdf,j);
                 out->pdf->bin[j] += bh->pdf->bin[i] * 
                         out->kernelbase->p(smallset, out->kernelbase);
@@ -253,9 +242,9 @@ apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data,
 
     //normalize to one.
     double sum = 0;
-    for (j=1; j < out->pdf->n-1; j ++)
+    for (size_t j=1; j < out->pdf->n-1; j ++)
         sum += out->pdf->bin[j];
-    for (j=1; j < out->pdf->n-1; j ++)
+    for (size_t j=1; j < out->pdf->n-1; j ++)
         out->pdf->bin[j]   /= sum;
 
     apop_data_free(smallset);
@@ -270,7 +259,6 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
     Apop_assert(h, NULL, 0, 's', "I need either a model with a histogram or a non-NULL data set.\n");
     apop_model *out = apop_model_copy(apop_kernel_density);
     Apop_settings_add_group(out, apop_kernel_density, data, h, m, apop_set_first_params);
-	//apop_kernel_density_settings_alloc(data, h, m, apop_set_first_params);
     return out;
 }
 
@@ -284,9 +272,9 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
   The output is a histogram that behaves exactly like the gsl_histogram,
   except the histobase and kernelbase elements are set.
 
+\hideinitializer
 \ingroup models
 */
-apop_model apop_kernel_density = {"kernel density estimate", 1,0,0,
-	.estimate = apop_kernel_density_estimate, 
-    .p = histogram_p, .log_likelihood = histogram_ll, .draw = histogram_rng};
+apop_model apop_kernel_density = {"kernel density estimate",
+	.estimate = apop_kernel_density_estimate, .log_likelihood = histogram_ll, .draw = histogram_rng};
 

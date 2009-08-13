@@ -36,17 +36,10 @@ For the Wishart, the degrees of freedom and covariance matrix are always estimat
 
 
 */
-
-#include "stats.h"
-#include "types.h"
 #include "mapply.h"
-#include "settings.h"
 #include "variadic.h"
 #include "likelihoods.h"
-#include "conversions.h"
 #include "model/model.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_math.h>
 #include <gsl/gsl_eigen.h>
 
 double df, df2; 
@@ -443,22 +436,26 @@ for (int i=0; i< 1e8; i++){
 }
 \endcode
 
+\hideinitializer
  \ingroup tfchi */
 apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
 
 /** The t distribution, for descriptive purposes. If you want to test
-   a hypothesis, you probably don't need this, and should instead use \ref apop_test. \ingroup tfchi */
+   a hypothesis, you probably don't need this, and should instead use \ref apop_test.
+\hideinitializer \ingroup tfchi */
 apop_model apop_t_distribution  = {"t distribution", 1, 0, 0, .estimate = apop_t_chi_estimate, 
          .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw };
 
 /** The F distribution, for descriptive purposes. If you want to test
-   a hypothesis, you probably don't need this, and should instead use \ref apop_test. \ingroup tfchi */
+   a hypothesis, you probably don't need this, and should instead use \ref apop_test.
+\hideinitializer \ingroup tfchi */
 apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .estimate = apop_fdist_estimate, 
         .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
 
 /** The \f$\chi^2\f$ distribution, for descriptive purposes. If you want to test
-   a hypothesis, you probably don't need this, and should instead use \ref apop_test. \ingroup tfchi */
+   a hypothesis, you probably don't need this, and should instead use \ref apop_test. 
+\hideinitializer \ingroup tfchi */
 apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .estimate = apop_t_chi_estimate,  
         .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };
 

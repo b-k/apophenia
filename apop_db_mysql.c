@@ -206,22 +206,6 @@ static void * apop_mysql_query_core(char *query, void *(*callback)(MYSQL*, MYSQL
     return output;
 }
 
-static apop_data* apop_mysql_query_to_data(char *query){
-    return apop_mysql_query_core(query, process_result_set_data);
-}
-
-static gsl_vector* apop_mysql_query_to_vector(char *query){
-    return apop_mysql_query_core(query, process_result_set_vector);
-}
-
-static gsl_matrix* apop_mysql_query_to_matrix(char *query){
-    return apop_mysql_query_core(query, process_result_set_matrix);
-}
-
-static apop_data * apop_mysql_query_to_text(char *query){
-    return apop_mysql_query_core(query, process_result_set_chars);
-}
-
 static double apop_mysql_query_to_float(char *query){
   MYSQL_RES *res_set;
   double out;
@@ -245,4 +229,3 @@ static double apop_mysql_query_to_float(char *query){
     mysql_free_result (res_set);
     return out;
 }
-

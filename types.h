@@ -1,4 +1,5 @@
-//types.h   Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+/** \file types.h */
+/* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
 #ifndef __apop_estimate__
 #define __apop_estimate__
 
@@ -21,48 +22,24 @@ __BEGIN_DECLS
 
 /**\defgroup types Types defined by Apophenia. 
 
-The basic story for a statistical analysis is that the researcher
-assembles a data set into an \ref apop_data structure, then sends it to
-an \ref apop_model so that the model's parameters can be estimated,
-and that is returned in an \ref apop_model structure.
+The basic story for a statistical analysis is that the researcher assembles a data set into an \ref apop_data structure, then sends it to an \ref apop_model so that the model's parameters can be estimated, and that is returned in an \ref apop_model structure.
 
-Supporting these main structures are a few more structures you'd only have to worry about 
-for fine tuning.
-The \ref apop_name
-structure is an organized list of row and column names; functions that
-take an \ref apop_data set try to automatically handle the names for you.
-The more elaborate models, such as MLEs, require some parameters to run,
-in which case you will need to fill out an \ref apop_model form and hand it in to the model.
-
+Supporting these main structures are a few more structures you'd only have to worry about for fine tuning. 
 
 \li Data 
-The \ref apop_data structure adds a touch of metadata on
-top of the basic \c gsl_matrix and \c gsl_vector. It includes an
-\ref apop_name structure (see below), and a table for non-numeric
-variables. See \ref data_struct.
-
-\li Models 
-The \ref _apop_model "apop_model" structure encapsulates a description of the world
-in which the data and the parameters produce observed outcomes. The
-\ref apop_estimate function takes in data and an un-parametrizes model and outputs a parametrized model.
-See \ref models, or the full declaration of the structure on the \ref _apop_model "apop_model" page.
+The \ref apop_data structure adds a touch of metadata on top of the basic \c gsl_matrix and \c gsl_vector. It includes an \ref apop_name structure, and a table for non-numeric variables. See \ref data_struct.
 
 \li Names 
-The \ref apop_name structure has three components: a list of column
-names, a list of row names, and a list of dependent variable names. It
-is intended to accompany the <tt>gsl_matrix</tt> structure, which holds
-all the other information about a data aaray such as the number of rows
-and columns.  See \ref names.
+The \ref apop_name structure holds some metatadata for the \ref apop_data struct. It has four main components: a list of column names, a list of row names, a vector name, and a list of text column names. Functions that take an \ref apop_data set will try to automatically handle the names for you.
+
+\li Models 
+The \ref _apop_model "apop_model" structure encapsulates a description of the world in which the data and the parameters produce observed outcomes. The \ref apop_estimate function takes in data and an un-parametrizes model and outputs a parametrized model.  See \ref models, or the full declaration of the structure on the \ref _apop_model "apop_model" page.
 
 */
 
 
-/** A data set is assumed to be a matrix where each row is a single
-observation and each column is a variable. Usually there is only one
-dependent variable (the value to be predicted), which is the first column;
-the independent variables (the predictors) follow thereafter.
-
-This structure holds the names of these variables. It is pretty much always associated with (and generated along with) an \c apop_data set.
+/** 
+This structure holds the names of the components of the \ref apop_data set. You may never have to worry about it directly, because most operation on \ref apop_data sets will take care of the names for you.
 \ingroup names
 */
 typedef struct{
@@ -75,7 +52,7 @@ typedef struct{
 } apop_name;
 
 /**
-Gathers together a <tt>gsl_vector</tt>, a <tt>gsl_matrix</tt>, an \ref apop_name structure, and a space for a table of non-numeric data.
+Gathers together a \c gsl_vector, a \c gsl_matrix, an \ref apop_name structure, and a space for a table of non-numeric data.
 Allocate using \c apop_data_alloc, free via \c apop_data_free, or more generally, see the \c apop_data_... section of the index (in the header links) for the many other functions that operate on this struct.
 \ingroup data_struct
 */
@@ -88,14 +65,10 @@ typedef struct {
     gsl_vector  *weights;
 } apop_data;
 
-/** A description of a parametrized statistical model, including the
-input settings and the output parameters, expected values, et cetera.
-The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see 
-the \ref apop_ols page for a sample program that uses an \ref apop_model.
+/** A description of a parametrized statistical model, including the input settings and the output parameters, expected values, et cetera.  The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
 \ingroup types
 */
 typedef struct _apop_model apop_model;
-
 
 typedef struct {
     char name[101];
@@ -104,11 +77,9 @@ typedef struct {
     void *free;
 } apop_settings_type;
 
-
 /**
-\param parameters 	The vector of coefficients or parameters estimated by the regression/MLE. Usually has as many dimensions as your data set has columns.
-\param expected	An \ref apop_data structure with
-three columns. If this is a model with a single dependent and lots of
+\param parameters 	The vector of coefficients or parameters estimated by the model.
+\param expected	An \ref apop_data structure with three columns. If this is a model with a single dependent and lots of
 independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally. There is thus currently no way to get just the predicted but not the residuals or vice versa.
 \param covariance 	The variance-covariance matrix.
 \param status		The return status from the estimate that had populated this apop_model, if any.

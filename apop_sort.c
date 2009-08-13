@@ -76,10 +76,9 @@ APOP_VAR_HEAD apop_data * apop_data_sort(apop_data *data, int sortby, char asc){
     char apop_varad_var(asc, 0);
     return apop_data_sort_base(data, sortby, asc);
 APOP_VAR_ENDHEAD
-  size_t            i, j;
   size_t            height  = (sortby==-1) ? data->vector->size: data->matrix->size1;
   size_t            sorted[height];
-  size_t            *perm, start=0;
+  size_t            i, *perm, start=0;
   gsl_permutation   *p  = gsl_permutation_alloc(height);
   gsl_vector        *tv = data->matrix ? gsl_vector_alloc(data->matrix->size2) : NULL;
   double            tvd;
@@ -93,7 +92,7 @@ APOP_VAR_ENDHEAD
     }
     perm    = p->data;
     if (asc=='d' || asc=='D')
-        for (j=0; j< height/2; j++){
+        for (size_t j=0; j< height/2; j++){
             tvd            = perm[j];
             perm[j]        = perm[height-1-j];
             perm[height-1-j] = tvd;
@@ -143,10 +142,10 @@ APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
 APOP_VAR_ENDHEAD
   gsl_vector	*sorted	= gsl_vector_alloc(data->size);
   double		*pctiles= malloc(sizeof(double) * 101);
-  int		i, index;
+  int		index;
 	gsl_vector_memcpy(sorted,data);
 	gsl_sort_vector(sorted);
-	for(i=0; i<101; i++){
+	for(int i=0; i<101; i++){
 		index = i*(data->size-1)/100.0;
 		if (rounding == 'u' && index != i*(data->size-1)/100.0)
 			index ++; //index was rounded down, but should be rounded up.

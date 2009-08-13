@@ -25,35 +25,10 @@ APOP_VAR_DECLARE int apop_table_exists(char *name, char remove);
 
 void apop_db_rng_init(int seed);
 
-int apop_count_cols(const char *name);
-	//give me the name of a table, I'll check sqlite_master for the 
-	//create statement that made it, and will use that to tell you
-	//how many columns are in the table.
-
 int apop_db_open(char *filename);
 APOP_VAR_DECLARE int apop_db_close(char vacuum);
 
-#ifdef OLD_C
-int apop_query(const char *q, ...);
-gsl_matrix * apop_query_to_matrix(const char * fmt, ...);
-apop_data * apop_query_to_text(const char * fmt, ...);
-apop_data * apop_query_to_data(const char * fmt, ...);
-apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...);
-gsl_vector * apop_query_to_vector(const char * fmt, ...);
-double apop_query_to_float(const char * fmt, ...);
-int apop_system(const char *fmt, ...);
-#else
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
-	//Run a query but output nothing outside the DB.
-	//It's fastest to compound as many queries as possible here;
-	//q can be a several-line string of the form:
-	//	Begin;
-	//	create table blah ...;
-	//	insert into blah ...;
-	//	commit;
-	//Also, you may use printf-type queries:
-	//apop_query_db("select * from %s where date > %i", tabname, earliest);
-
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 apop_data * apop_query_to_text(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 apop_data * apop_query_to_data(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
@@ -61,26 +36,15 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
 gsl_vector * apop_query_to_vector(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 double apop_query_to_float(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
-	//like query_to_matrix, but returns a single number or vector.
-#endif 
-
 
 int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
 int apop_data_to_db(apop_data *set, char *tabname);
-	//dump a matrix/data set to a database table named tabname.
-	//At the moment, the headers are ignored. 
-	//With no headers specified, you get columns C0, C1, C2...
 
 APOP_VAR_DECLARE void apop_db_merge(char *db_file, char inout);
 APOP_VAR_DECLARE void apop_db_merge_table(char *db_file, char *tabname, char inout);
-	//copy all of the tables in the database (or just one) at the given file into
-	//the database apophenia has already opened. If there are
-	//duplicate names, append them.
 
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2);
 double apop_db_paired_t_test(char * tab1, char *col1, char *col2);
-	//Runs a t-test entirely inside the database. Uses the nifty
-	//var() aggregator function defined by Apophenia.
 
 __END_DECLS
 #endif

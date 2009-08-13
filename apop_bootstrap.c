@@ -15,7 +15,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "linear_algebra.h"
 #include <gsl/gsl_rng.h>
 
-
 /** Initialize a \c gsl_rng.
  
   Uses the Tausworth routine.
@@ -27,7 +26,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 gsl_rng *apop_rng_alloc(int seed){
   static int first_use    = 1;
     if (first_use){
-       first_use --;
+       first_use = 0;
        gsl_rng_env_setup();
     }
   gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus2);
@@ -89,7 +88,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
     for(i = -1; i< (int) subset->matrix->size1; i++){
         //Get a view of row i, and copy it to position i-1 in the short matrix.
         if (i >= 0){
-            APOP_ROW(in, i, v);
+            Apop_row(in, i, v);
             gsl_matrix_set_row(subset->matrix, i, v);
             if (subset->vector)
                 gsl_vector_set(subset->vector, i, apop_data_get(in, i, -1));

@@ -43,6 +43,7 @@ This is the two-parameter version of the uniform, expressing a uniform distribut
 The MLE of this distribution is simply a = min(your data); b = max(your data).
 Primarily useful for the RNG, such as when you have a Uniform prior model.
 
+\hideinitializer
 \ingroup models
 */
 apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,  
@@ -53,13 +54,12 @@ static apop_model * improper_uniform_estimate(apop_data * data,  apop_model *par
     return parameters;
 }
 
-
 static double improper_unif_ll(apop_data *d, apop_model *m){ return 0; }
 
 static double improper_unif_p(apop_data *d, apop_model *m){ return 1; }
 
 static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
-    apop_error(0, 's', "%s: It doesn't make sense to make random draws from an improper Uniform.\n", __func__);
+    apop_assert_void(0, 0, 's', "It doesn't make sense to make random draws from an improper Uniform.");
 }
 
 /** The improper uniform returns P(x) = 1 for every value of x, all the
@@ -71,6 +71,7 @@ The \c estimate routine is just a dummy that returns its input.
 
 The \c draw function makes no sense, and therefore returns an error.
 
+\hideinitializer
 \ingroup models
 */
 apop_model apop_improper_uniform = {"Uniform distribution", 2, 0, 0,  
