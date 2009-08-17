@@ -61,13 +61,8 @@ static void f11act(int *irow, int i1, int i2, int *new);
 static void prterr(int icode, const char *mes);
 static int iwork(int iwkmax, int *iwkpt, int number, int itype);
 
-#ifdef USING_R
-# define isort(n, ix)		R_isort(ix, *n)
-# include <Rmath.h>	/* -> pgamma() */
-#else
  static void isort(int *n, int *ix);
  static double gammds(double *y, double *p, int *ifault);
-#endif
 
 /* The only public function : */
 /* [OK, not any more. apop_test_fisher_exact is now a shell for this: */
@@ -739,15 +734,9 @@ L300:
     } else if (pastp < obs2) {
 	if (chisq) {
 	    df = (double) ((nro2 - 1) * (k1 - 1));
-#ifdef USING_R
-	    pv = pgamma(fmax2(0., tmp + (pastp + drn) * 2.) / 2.,
-			df / 2., /*scale = */ 1.,
-			/*lower_tail = */FALSE, /*log_p = */ FALSE);
-#else
 	    d1 = fmax2(0., tmp + (pastp + drn) * 2.) / 2.;
 	    d2 = df / 2.;
 	    pv = 1. - gammds(&d1, &d2, &ifault);
-#endif
 	    *pre += (double) ifreq * exp(pastp + drn) * pv;
 	} else {
 	    /* Put daughter on queue */
@@ -1931,8 +1920,7 @@ L40:
     goto L10;
 }
 
-double gammds(double *y, double *p, int *ifault)
-{
+double gammds(double *y, double *p, int *ifault) {
 /*
   -----------------------------------------------------------------------
   Name:	      GAMMDS

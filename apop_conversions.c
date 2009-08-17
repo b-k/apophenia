@@ -1,41 +1,14 @@
-/** \file apop_conversions.c	The various functions to convert from one format to another.
-
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/** \file apop_conversions.c	The various functions to convert from one format to another. */
+/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "conversions.h"
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <assert.h>
-
 
 #define Text_Line_Limit 100000
 
 /** \defgroup conversions Conversion functions
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
 
-/** \page gsl_views 	Using GSL Views
-The GSL includes a convenient structure for pulling a vector from a matrix. Here's how to get the fifth row of <tt>a_matrix</tt> into a vector view:
-
-\code
-gsl_vector_view v;
-v = gsl_matrix_col(a_matrix, 4);
-\endcode
-
-For rows, use <tt>gsl_matrix_row(a_matrix, n)</tt>. The vector view is a
-data structure which includes an element of type <tt>gsl_vector</tt> named
-<tt>vector</tt>; this is the only element you will be interested in. The
-expression <tt>&(v.vector)</tt> is of type <tt>gsl_vector *</tt>, and therefore
-can be used as you would any other pointer to a <tt>gsl_vector</tt>. For
-example, try \ref apop_mean<tt>(&(v.vector));</tt>.
-
-The view is intended to be a common variable, not a pointer. If you want
-to retain the data after the function exits, copy it to another vector: 
-\code
-gsl_vector_view v;
-gsl_vector *a_new_vector = gsl_vector_alloc(a_matrix->size1);
-v = gsl_matrix_col(a_matrix, 4);
-gsl_vector_memcpy(a_new_vector, &(v.vector));
-\endcode
-\ingroup conversions
-*/
 
 
 /** Converts a \c gsl_vector to an array.
@@ -78,9 +51,11 @@ APOP_VAR_END_HEAD
 
 /** Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N \times 1 \f$ are equivalent, but they're two different types in C. This function copies the data in a vector to a new one-column (or one-row) matrix and returns the newly-allocated and filled matrix.
 
- \param in a \c gsl_vector (No default. If \c NULL, I return \c NULL, with a warning if <tt>apop_opts.verbose >=1 </tt>)
- \param row_col If \c 'r', then this will be a row (1 x N) instead of the default, a column (N x 1). (default: \c 'c')
- \return a newly-allocated <tt>gsl_matrix</tt> with one column.
+  For the reverse, try \ref apop_data_pack.
+
+\param in a \c gsl_vector (No default. If \c NULL, I return \c NULL, with a warning if <tt>apop_opts.verbose >=1 </tt>)
+\param row_col If \c 'r', then this will be a row (1 x N) instead of the default, a column (N x 1). (default: \c 'c')
+\return a newly-allocated <tt>gsl_matrix</tt> with one column.
 
 This function uses the \ref designated syntax for inputs.
  \ingroup convenience_fns
@@ -123,12 +98,10 @@ If you want to intialize on the allocation line, this isn't what you want. See \
 \ingroup conversions
 */
 gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols){
-  gsl_matrix_view   m;
-  gsl_matrix        *out;
   double		    *line;
-	out	= gsl_matrix_alloc(rows, cols);
+    gsl_matrix  *out = gsl_matrix_alloc(rows, cols);
 	convert_array_to_line(in, &line, rows, cols);
-	m	= gsl_matrix_view_array(line, rows,cols);
+    gsl_matrix_view   m = gsl_matrix_view_array(line, rows,cols);
 	gsl_matrix_memcpy(out,&(m.matrix));
 	free(line);
     return out;
@@ -157,23 +130,30 @@ apop_data * apop_array_to_data(const double **in, const int rows, const int cols
 \param rows, cols	the size of the array.
 \return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
 
-usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
+usage: \code gsl_matrix *m = apop_line_to_matrix(indata, 34, 4); \endcode
+See also \ref apop_arrary_to_matrix.
 \ingroup conversions
 */
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
-  gsl_matrix_view	m;
-  gsl_matrix        *out;
-	out	= gsl_matrix_alloc(rows, cols);
-	m	= gsl_matrix_view_array(line, rows,cols);
+    gsl_matrix    *out= gsl_matrix_alloc(rows, cols);
+    gsl_matrix_view	m = gsl_matrix_view_array(line, rows,cols);
 	gsl_matrix_memcpy(out,&(m.matrix));
     return out;
 }
 
-/** Convert a <tt>double **</tt> array to an \ref apop_data set. It will
+/** A convenience function to convert a <tt>double **</tt> array to an \ref apop_data set. It will
 have no names.
 
-\param in	The array to read in
-\param vsize    The vector size
+See also \ref apop_line_to_matrix or \ref apop_line_to_vector; this function will use exactly one of these and then wrap an \ref apop_data struct around the output.
+
+\param in	The array to read in. If there were appropriately placed line breaks, then this would look like the eventual data set. For example,
+\code
+double params[] = {0, 1, 2
+                   3, 4, 5};
+apop_data_alloc(params, 2, 2, 2);
+\endcode
+will produce a vector \f$\left[\matrix{0 \cr 3}\right]\f$ and a matrix \f$\left[\matrix{1 & 2 \cr 4 & 5}\right]\f$.
+\param vsize    The vector size. If there are also rows/cols, I expect this to equal the number or rows.
 \param rows, cols	the size of the array.
 \return the \ref apop_data set, allocated for you and ready to use.
 
@@ -209,6 +189,11 @@ static int find_cat_index(char **d, char * r, int start_from, int size){
 columns: the x-dimension, the y-dimension, and the data.
 the output is a 2D matrix with rows indexed by r1 and cols by
 r2.
+
+\param tabname The database table I'm querying. Anything that will work inside a \c from clause is OK, such as a subquery in parens.
+\param r1 The column of the data set that will indicate the rows of the output crosstab
+\param r2 The column of the data set that will indicate the columns of the output crosstab
+\param datacol The column of the data set holding the data for the cells of the crosstab
 
 \ingroup db
 */
@@ -253,7 +238,7 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 Empirically, this divider seems to work better for the header line.
 
 Without backslashes and spaced out in perl's /x style, it would look like this:
-("[^"][^"]*"        (starts with a ", has no "" in between, ends with a ".
+("[^"][^"]*"        (starts with a ", has no "" in between, ends with a "., at least one char.
 |               or
 [^%s"][^%s"]*)  anything but a "" or the user-specified delimiters. At least 1 char long.)
 ([%s\n]|$)      and ends with a delimiter or the end of line.
@@ -271,7 +256,7 @@ There are special bits to handle the case of quoted strings, outside of this bas
 */
 //static const char      divider[]="([^%s][^%s]*)[%s\n]";
 static const char      divider[]="([^%s]*)[%s\n]";
-static const char      divider2[]="([^%s][^%s]*)[%s\n][%s\n]*";
+//static const char      divider2[]="([^%s][^%s]*)[%s\n][%s\n]*";
 
 //in: the line being read, the allocated outstring, the result from the regexp search, the offset
 //out: the outstring is filled with a bit of match, last_match is updated.
@@ -297,7 +282,7 @@ static int apop_count_cols_in_text(char *text_file){
     sprintf(full_divider, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, 1);
 	infile	= fopen(text_file,"r");
-    apop_assert(infile, 0, 0, 'c', "Error opening file %s. Returning 0.", text_file);
+    apop_assert(infile, 0, 0, 's', "Error opening file %s.", text_file);
 	fgets(instr, Text_Line_Limit, infile);
 	while(instr[0]=='#')	//burn off comment lines
 		fgets(instr, Text_Line_Limit, infile);
@@ -319,14 +304,13 @@ static int apop_count_rows_in_text(char *text_file){
   char		instr[Text_Line_Limit];
   int		ct	= 0;
 	infile	= fopen(text_file,"r");
-    apop_assert(infile, 0, 0, 'c', "Error opening file %s. Returning 0.", text_file);
+    apop_assert(infile, 0, 0, 's', "Error opening file %s.", text_file);
 	while(fgets(instr,Text_Line_Limit,infile)!=NULL)
 	    if(instr[0]!='#')	//burn off comment lines
 		    ct  ++;
 	fclose(infile);
 	return ct-1;
 }
-
 
 static void strip_regex_alloc(regex_t **strip_regex){
   char      w[]           = "[:space:]\"";
@@ -351,35 +335,18 @@ static char * strip(char *in){
 
 /** \page text_format Notes on input text file formatting
 
-If you are reading into an array or <tt>gsl_matrix</tt> or \ref
-apop_data set, all text fields are taken as zeros. You will be warned
-of such substitutions unless you set \code apop_opts.verbose==0\endcode
-beforehand.
+If you are reading into an array or <tt>gsl_matrix</tt> or \ref apop_data set, all text fields are taken as zeros. You will be warned of such substitutions unless you set \code apop_opts.verbose==0\endcode beforehand.
 
-You will also be interested in \c apop_opts.input_delimiters. By
-default, it is set to "| ,\t", meaning that a pipe,
-comma, space, or tab will delimit separate entries. Try \code
-strcpy(apop_opts.input_delimiters, ";")\endcode to set the delimiter to
-a semicolon, for example.
+You will also be interested in \c apop_opts.input_delimiters. By default, it is set to "| ,\t", meaning that a pipe, comma, space, or tab will delimit separate entries. Try \code strcpy(apop_opts.input_delimiters, ";")\endcode to set the delimiter to a semicolon, for example.
 
-There are often two delimiters in a row, e.g., "23, 32,, 12". When
-it's two commas like this, the user typically means that there is a
-missing value and the system should insert an NAN; when it is two tabs
-in a row, this is typically just a formatting glitch. Thus, if there
-are multiple delimiters in a row, Apophenia checks whether the second
-(and subsequent) is a space or a tab; if it is, then it is ignored,
-and if it is any other delimiter (including the end of the line) then
-an NAN is inserted.
+There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, Apophenia checks whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then an NAN is inserted.
 
-If this rule doesn't work for your situation, you can 
-explicitly insert a note that there is a missing data
+If this rule doesn't work for your situation, you can explicitly insert a note that there is a missing data
 point. E.g., try: \code
 		perl -pi.bak -e 's/,,/,NaN,/g' data_file
 \endcode
 
-If you have missing data delimiters, you will need to set \ref
-apop_opts_type "apop_opts.db_nan" to a regular expression that matches
-the given format. Some examples:
+If you have missing data delimiters, you will need to set \ref apop_opts_type "apop_opts.db_nan" to a regular expression that matches the given format. Some examples:
 
 \code
 //Apophenia's default NaN string, matching NaN, nan, or NAN:
@@ -392,20 +359,13 @@ strcpy(apop_opts.db_nan, "[mM]issing");
 strcpy(apop_opts.db_nan, "\\.\\.");
 \endcode
 
-Text is always delimited by quotes. Delimiters inside quotes are perfectly
-OK, e.g., "Males, 30-40", is an OK column name.
+Text is always delimited by quotes. Delimiters inside quotes are perfectly OK, e.g., "Males, 30-40", is an OK column name.
 
 Lines beginning with # are taken to be comments and ignored. 
 
-If there are row names and column names, then the input will not be
-perfectly square: there should be no first entry in the row with column
-names like 'row names'. That is, for a 100x100 data set with row and
-column names, there are 100 names in the top row, and 101 entries in
-each subsequent row (name plus 100 data points).
+If there are row names and column names, then the input will not be perfectly square: there should be no first entry in the row with column names like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
 
-The maximum line length is 100,000 characters. If you have a line
-longer than this, you will need to open up apop_conversions.c, modify
-<tt>Text_Line_Limit</tt>, and recompile.
+The maximum line length is 100,000 characters. If you have a line longer than this, you will need to open up apop_conversions.c, modify <tt>Text_Line_Limit</tt>, and recompile.
 
 */
 
@@ -560,6 +520,7 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
 gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
   gsl_vector *out = gsl_vector_alloc(in->size);
+    apop_assert(out, NULL, 0, 's', "failed to allocate a gsl_vector of size %u. Out of memory?", in->size);
     gsl_vector_memcpy(out, in);
     return out;
 }
@@ -576,7 +537,9 @@ gsl_vector *apop_vector_copy(const gsl_vector *in){
 \ingroup convenience_fns
   */
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
+    if (!in) return NULL;
   gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
+    apop_assert(out, NULL, 0, 's', "failed to allocate a gsl_matrix of size %u x %u. Out of memory?", in->size1, in->size2);
     gsl_matrix_memcpy(out, in);
     return out;
 }
@@ -701,9 +664,8 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
 
 static void tab_create_mysql(char *tabname, int ct, int has_row_names){
   char  *q = NULL;
-  int   i;
     asprintf(&q, "CREATE TABLE %s", tabname);
-    for (i=0; i<ct; i++){
+    for (int i=0; i<ct; i++){
         if (i==0) 	{
             if (has_row_names)
                 asprintf(&q, "%s (row_names varchar(100), ", q);
@@ -717,7 +679,7 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
     apop_query(q);
     apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s\" failed.\n", q);
     if (use_names_in_file){
-        for (i=0; i<ct; i++)
+        for (int i=0; i<ct; i++)
             free(fn[i]);
         free(fn);
         fn  = NULL;
@@ -726,9 +688,8 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
 
 static void tab_create(char *tabname, int ct, int has_row_names){
   char  *r, *q = NULL;
-  int   i;
     asprintf(&q, "create table %s", tabname);
-    for (i=0; i<ct; i++){
+    for (int i=0; i<ct; i++){
         r = q;
         if (i==0) 	{
             if (has_row_names)
@@ -744,7 +705,7 @@ static void tab_create(char *tabname, int ct, int has_row_names){
     apop_query(q);
     apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s\" failed.\n", q);
     if (use_names_in_file){
-        for (i=0; i<ct; i++)
+        for (int i=0; i<ct; i++)
             free(fn[i]);
         free(fn);
         fn  = NULL;
@@ -852,56 +813,50 @@ APOP_VAR_END_HEAD
         regcomp(headregex, head_divider, 1);
     }
 
-	if (apop_table_exists(tabname,0)){
-        printf("apop: %s table exists; not recreating it.\n", tabname);
-		return 0; //to do: return the length of the table.
-	} else{
-        //divider regex:
-        //NaN regex:
-        if (strlen(apop_opts.db_nan)){
-            //sprintf(nan_string, "\\\"*%s\\\"*", apop_opts.db_nan);
-            //sprintf(nan_string, "^%s$", apop_opts.db_nan);
-            sprintf(nan_string, "^%s$", apop_opts.db_nan);
-            nan_regex   = malloc(sizeof(regex_t));
-            regcomp(nan_regex, nan_string, 0);
-        }
-        if (strcmp(text_file,"-"))
-		    infile	= fopen(text_file,"r");
-        else
-            infile  = stdin;
-        apop_assert(infile, 0,  0, 'c', "Trouble opening %s. Bailing.\n", text_file);
-        ct  = get_field_names(has_col_names, field_names, infile);
-        if (apop_opts.db_engine=='m')
-            tab_create_mysql(tabname, ct, has_row_names);
-        else
-            tab_create(tabname, ct, has_row_names);
-        //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
-        ct  = 0;
-        if (add_this_line){
-            rows    ++;
-            line_to_insert(add_this_line, tabname);
-        }
-		while(fgets(instr,Text_Line_Limit,infile)!=NULL){
-			if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
-				rows	        ++;
-                line_to_insert(instr, tabname);
-                if (!(ct++ % batch_size)){
-                    if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
-                    if (apop_opts.verbose >= 0) {printf(".");fflush(NULL);}
-                }
-			}
+	apop_assert(!apop_table_exists(tabname,0), 0, 0, 'c', "table %s exists; not recreating it.", tabname);
+    if (strlen(apop_opts.db_nan)){
+        //sprintf(nan_string, "\\\"*%s\\\"*", apop_opts.db_nan);
+        //sprintf(nan_string, "^%s$", apop_opts.db_nan);
+        sprintf(nan_string, "^%s$", apop_opts.db_nan);
+        nan_regex   = malloc(sizeof(regex_t));
+        regcomp(nan_regex, nan_string, 0);
+    }
+    if (strcmp(text_file,"-"))
+	    infile	= fopen(text_file,"r");
+    else
+        infile  = stdin;
+    apop_assert(infile, 0,  0, 'c', "Trouble opening %s. Bailing.\n", text_file);
+    ct  = get_field_names(has_col_names, field_names, infile);
+    if (apop_opts.db_engine=='m')
+        tab_create_mysql(tabname, ct, has_row_names);
+    else
+        tab_create(tabname, ct, has_row_names);
+    //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
+    ct  = 0;
+    if (add_this_line){
+        rows    ++;
+        line_to_insert(add_this_line, tabname);
+    }
+	while(fgets(instr,Text_Line_Limit,infile)!=NULL){
+		if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
+			rows	        ++;
+            line_to_insert(instr, tabname);
+            if (!(ct++ % batch_size)){
+                if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
+                if (apop_opts.verbose >= 0) {printf(".");fflush(NULL);}
+            }
 		}
-		if (apop_opts.db_engine != 'm') apop_query("commit;");
-        if (strcmp(text_file,"-"))
-		    fclose(infile);
-        if (nan_regex){
-            regfree(nan_regex);
-            free(nan_regex);
-            nan_regex   = NULL;
-        }
-        free(q);
-		return rows;
 	}
+	if (apop_opts.db_engine != 'm') apop_query("commit;");
+    if (strcmp(text_file,"-"))
+	    fclose(infile);
+    if (nan_regex){
+        regfree(nan_regex);
+        free(nan_regex);
+        nan_regex   = NULL;
+    }
+    free(q);
+	return rows;
 }
 
 
@@ -967,10 +922,7 @@ gsl_vector * apop_data_pack(const apop_data *in){
     return out;
 }
 
-
-#include <stdarg.h>
-
-/** \def apop_data_fill_base(in, ap)
+/** \def apop_data_fill (in, ap)
 Fill a pre-allocated data set with values.
 
   For example:
@@ -1015,15 +967,6 @@ apop_data *apop_data_fill_base(apop_data *in, double ap[]){
     return in;
 }
 
-/** The version of \c apop_vector_fill that takes in a <tt>va_list</tt>.
-  If this doesn't make sense to you, then you should be using \c apop_vector_fill.
-  */
-gsl_vector *apop_vector_vfill(gsl_vector *in, va_list ap){
-    for (size_t i=0; i< in->size; i++)
-        gsl_vector_set(in, i, va_arg(ap, double));
-    return in;
-}
-
 /** \def apop_vector_fill(in, ap)
  Fill a pre-allocated \c gsl_vector with values.
 
@@ -1036,12 +979,12 @@ Warning: I need as many arguments as the size of the vector, and can't count the
 \param ...  A series of exactly as many floating-point values as there are blanks in the vector.
 \return     A pointer to the same vector that was input.
 */
+
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
     if (!in) 
         return NULL;
-  int       k = 0;
     for (int i=0; i< in->size; i++)
-        gsl_vector_set(in, i, ap[k++]);
+        gsl_vector_set(in, i, ap[i]);
     return in;
 }
 
@@ -1056,6 +999,7 @@ gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
 \param ...  A series of exactly as many floating-point values as there are blanks in the matrix.
 \return     A pointer to the same matrix that was input.
 */
+
 gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
     if (!in) 
         return NULL;

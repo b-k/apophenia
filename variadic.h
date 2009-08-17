@@ -14,5 +14,3 @@
 
 #define apop_varad_var(name, value) name = x.name ? x.name : (value);
 #define apop_varad_link(name,...) variadic_##name((variadic_type_##name) {__VA_ARGS__})
-
-

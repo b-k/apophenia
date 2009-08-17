@@ -1,10 +1,7 @@
-/*conversions.h 
+/** \file conversions.h 
 
   Convenience functions to convert among vectors (gsl_vector), matrices (gsl_matrix), 
   arrays (double **), and database tables
-
-  To the extent that it makes sense, all functions are of the form convert_in_to_out(in, out),
-  and allocate the output object for you.
 */
 /*	Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -18,16 +15,9 @@
 #include <stdarg.h>
 #include <gsl/gsl_matrix.h>
 
-#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
-#undef __END_DECLS
-#ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+#ifdef	__cplusplus
+extern "C" {
 #endif
-__BEGIN_DECLS
 
 //From vector
 gsl_vector *apop_vector_copy(const gsl_vector *in);
@@ -68,7 +58,7 @@ apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
 gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double []);
 
-gsl_vector *apop_vector_vfill(gsl_vector *in, va_list ap);
-
-__END_DECLS
+#ifdef	__cplusplus
+}
+#endif
 #endif

@@ -30,7 +30,7 @@ Things to do: (* = done)
 #include "db.h"     //just for apop_opts
 #include "asst.h" //rng_alloc
 #include "stats.h"
-#include "model/model.h"
+#include "model.h"
 #include "settings.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
@@ -52,7 +52,6 @@ apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata
         gsl_histogram_increment(hout, gsl_vector_get(indata, i));
     return out;
 }
-
 
 /** Give me an existing histogram (i.e., an \c apop_model) and I'll
  create a new histogram with the same bins, but with data from \c draws

@@ -9,16 +9,9 @@
 #include <gsl/gsl_matrix.h>
 #include "variadic.h"
 
-#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
-#undef __END_DECLS
-#ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+#ifdef	__cplusplus
+extern "C" {
 #endif
-__BEGIN_DECLS
 
 /**\defgroup types Types defined by Apophenia. 
 
@@ -190,5 +183,7 @@ void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 
 void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
 
-__END_DECLS
+#ifdef	__cplusplus
+}
+#endif
 #endif

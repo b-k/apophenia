@@ -30,6 +30,7 @@ void *apop_rank_settings_copy(apop_rank_settings *in){
 }
 
 static double exponential_log_likelihood(apop_data *d, apop_model *p);
+static double rank_exponential_log_likelihood(const apop_data *d, apop_model *params);
 
 /* Let k be the rank, and x_k be the number of elements at that rank;
  then the mean rank (and therefore the most likely estimate for the
@@ -40,15 +41,14 @@ static apop_model * rank_exponential_estimate(apop_data * data, apop_model *para
                   grand_total = 0;
   apop_model 	*est= parameters ? parameters : apop_model_copy(apop_exponential);
   apop_model_clear(data, est);
-  int             i;
-    for(i=0; i< data->matrix->size2; i++){
+    for(size_t i=0; i< data->matrix->size2; i++){
         APOP_MATRIX_COL(data->matrix, i, v);
         colsum       = apop_sum(v);
         numerator   += colsum * (i+1);
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters->vector, 0, numerator/grand_total);
-    est->llikelihood	= apop_exponential.log_likelihood(data, parameters);
+    est->llikelihood	= rank_exponential_log_likelihood(data, parameters);
 	/*if (est->uses.covariance)
 		apop_numerical_covariance_matrix(apop_exponential_rank, est, data);*/
 	return est;
@@ -61,9 +61,8 @@ static double rank_exponential_log_likelihood(const apop_data *d, apop_model *pa
 		          llikelihood = 0,
 		          ln_b		= log(b);
   gsl_matrix	  *data		= d->matrix;
-  int 		      k;
   gsl_vector      v;
-	for (k=0; k< data->size2; k++){
+	for (size_t k=0; k< data->size2; k++){
 		p	            = -ln_b - (k+1)/b;
         v               = gsl_matrix_column(data, k).vector;
 		llikelihood    += apop_sum(&v) * p; 
@@ -74,13 +73,12 @@ static double rank_exponential_log_likelihood(const apop_data *d, apop_model *pa
 static void rank_exponential_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *params){
   apop_assert_void(params->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
   double		    bb		        = gsl_vector_get(params->parameters->vector, 0);
-  int 		    k;
   gsl_matrix	    *data		    = d->matrix;
   double 		    d_likelihood 	= 0,
 		          one_over_ln_b	    = 1/log(bb),
 		          p;
   gsl_vector      v;
-	for (k=0; k< data->size2; k++) {
+	for (size_t k=0; k< data->size2; k++) {
 		p	            = (one_over_ln_b -(k+1)) /bb;
         v               = gsl_matrix_column(data, k).vector;
 		d_likelihood   += apop_sum(&v) * p; 

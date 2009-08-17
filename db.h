@@ -7,16 +7,9 @@
 #include <gsl/gsl_matrix.h>
 #define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
-#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
-#undef __END_DECLS
 #ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+extern "C" {
 #endif
-__BEGIN_DECLS
 
 //From the GNU's vasprintf suite:
 extern int asprintf (char **result, const char *format, ...);
@@ -46,5 +39,8 @@ APOP_VAR_DECLARE void apop_db_merge_table(char *db_file, char *tabname, char ino
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2);
 double apop_db_paired_t_test(char * tab1, char *col1, char *col2);
 
-__END_DECLS
+#ifdef __cplusplus
+}
+#endif
+
 #endif

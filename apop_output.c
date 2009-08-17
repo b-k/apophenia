@@ -7,7 +7,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "output.h"
 #include "settings.h"
 #include "conversions.h"
-#include "model/model.h"
+#include "model.h"
 #include <gsl/gsl_histogram.h>
 /** Prep for gnuplot one of those cute scatterplots with a regression line through it.
 

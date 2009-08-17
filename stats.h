@@ -1,6 +1,5 @@
-/** \file stats.h
-Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
-*/
+/** \file stats.h */
+/* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
 #ifndef APOP_STATS_H
 #define APOP_STATS_H
 #include <math.h>
@@ -13,16 +12,9 @@ Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <gsl/gsl_statistics_double.h>
 #include "linear_algebra.h"
 
-#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
-#undef __END_DECLS
-#ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+#ifdef	__cplusplus
+extern "C" {
 #endif
-__BEGIN_DECLS
 
 #define APOP_SUBMATRIX(m, srow, scol, nrows, ncols, o) gsl_matrix apop_mm_##o = gsl_matrix_submatrix(m, (srow), (scol), (nrows),(ncols)).matrix;\
 gsl_matrix * o = &( apop_mm_##o );
@@ -102,7 +94,6 @@ long double apop_matrix_sum(const gsl_matrix *m) __PURE;
 double apop_matrix_mean(const gsl_matrix *data) __PURE;
 double apop_matrix_var_m(const gsl_matrix *data, double mean) __PURE;
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
-double apop_rng_GHgB3(gsl_rng * r, double* a); //in asst.c
 apop_data * apop_data_summarize(apop_data *data);
 
 //from apop_fisher.c:
@@ -143,5 +134,7 @@ apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2)
 
 #define apop_ANOVA(table, data, grouping1, grouping2) apop_anova(table, data, grouping1, grouping2)
 
-__END_DECLS
+#ifdef	__cplusplus
+}
+#endif
 #endif

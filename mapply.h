@@ -7,16 +7,9 @@
 #include "variadic.h"
 #include <gsl/gsl_matrix.h>
 
-#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
-#undef __END_DECLS
-#ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+#ifdef	__cplusplus
+extern "C" {
 #endif
-__BEGIN_DECLS
 
 APOP_VAR_DECLARE apop_data * apop_map(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*), double (*fn_dp)(double! void *), double (*fn_vp)(gsl_vector*! void *), double (*fn_dpi)(double! void *! int), double (*fn_vpi)(gsl_vector*! void *! int), double (*fn_di)(double! int), double (*fn_vi)(gsl_vector*! int), void *param, int inplace, char part);
 APOP_VAR_DECLARE double apop_map_sum(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*), double (*fn_dp)(double! void *), double (*fn_vp)(gsl_vector*! void *), double (*fn_dpi)(double! void *! int), double (*fn_vpi)(gsl_vector*! void *! int), double (*fn_di)(double! int), double (*fn_vi)(gsl_vector*! int), void *param, char part);
@@ -32,5 +25,7 @@ double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double));
 double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*));
 double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double));
 
-__END_DECLS
+#ifdef	__cplusplus
+}
+#endif
 #endif

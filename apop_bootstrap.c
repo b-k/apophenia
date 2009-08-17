@@ -6,14 +6,9 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 */
 
-#include "model/model.h"
-#include "asst.h"
-#include "stats.h"
-#include "output.h"
+#include "model.h"
 #include "variadic.h"
 #include "likelihoods.h"
-#include "linear_algebra.h"
-#include <gsl/gsl_rng.h>
 
 /** Initialize a \c gsl_rng.
  
@@ -40,6 +35,8 @@ The basic algorithm for the jackknife (with many details glossed over): create a
 sets, each with exactly one observation removed, and then produce a new set of parameter estimates 
 using that slightly shortened data set. Then, find the covariance matrix of the derived parameters.
 
+Should I use the jackknife or the bootstrap? As a broad rule of thumb, the jackknife works best on models that are closer to linear. The worse a linear approximation does (at the given data), the worse the jackknife approximates the variance.
+
 Sample usage:
 \code
 apop_data_show(apop_jackknife_cov(your_data, your_model));
@@ -49,16 +46,6 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 \param model    An \ref apop_model, that will be used internally by \ref apop_estimate.
             
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
-
-When building models, you can use this function to produce the model
-covariance matrix.  But if your model calls this function to estimate the
-covariance and this function then calls your model's estimate function,
-which calls this function, then you've got an infinite loop. So call
-this function with a stripped-down copy of your model that sets 
-\c want_cov, \c want_expected_value, and anything else to zero, since
-the jackknife only uses the parameter estimates. Then, make sure your
-\c estimate function has an if-then clause to call or not call this
-function as appropriate.
 
 \ingroup boot
  */

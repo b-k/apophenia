@@ -39,7 +39,7 @@ For the Wishart, the degrees of freedom and covariance matrix are always estimat
 #include "mapply.h"
 #include "variadic.h"
 #include "likelihoods.h"
-#include "model/model.h"
+#include "model.h"
 #include <gsl/gsl_eigen.h>
 
 double df, df2; 

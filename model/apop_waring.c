@@ -6,6 +6,24 @@
 #include "mapply.h"
 #include "likelihoods.h"
 
+/** RNG from a Generalized Hypergeometric type B3.
+
+ Devroye uses this as the base for many of his
+ distribution-generators, including the Waring.
+*/  //Header in stats.h
+double apop_rng_GHgB3(gsl_rng * r, double* a){
+if ((a[0]<=0) || (a[1] <= 0) || (a[2] <=0)){
+	printf("apop_GHgB3_rng took a zero parameter; bad.\n");
+	return 0;
+	}
+double		aa	= gsl_ran_gamma(r, a[0], 1),
+		b	= gsl_ran_gamma(r, a[1], 1),
+		c	= gsl_ran_gamma(r, a[2], 1);
+int		p	= gsl_ran_poisson(r, aa*b/c);
+	return p;
+}
+
+
 typedef struct {
 double a, bb;
 } ab_type;
@@ -131,7 +149,7 @@ variate generation for the digamma and trigamma distributions</a>, Journal
 of Statistical Computation and Simulation, vol. 43, pp. 197-216, 1992.
 */
 static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
-//The key to covnert from Devroye's GHgB3 notation to what I
+//The key to convert from Devroye's GHgB3 notation to what I
 //consider to be the standard Waring notation in \ref apop_waring:
 // a = a + 1
 // b = 1 

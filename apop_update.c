@@ -4,7 +4,7 @@ The header is in asst.h.
 Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "asst.h"
-#include "model/model.h"
+#include "model.h"
 #include "stats.h"
 #include "variadic.h"
 #include "settings.h"
@@ -26,7 +26,6 @@ static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model
         outp = apop_model_copy(prior);
         apop_vector_increment(outp->parameters->vector, 0, data->matrix->size1*data->matrix->size2);
         apop_data_set(outp->parameters, 1, -1, 1/(1/apop_data_get(outp->parameters, 1, -1) + apop_matrix_sum(data->matrix)));
-  //      apop_vector_increment(outp->parameters->vector, 1, apop_matrix_sum(data->matrix));
         return outp;
     }
     if (!strcmp(prior.name, "Beta distribution") && !strcmp(likelihood.name, "Binomial distribution")){
@@ -158,7 +157,6 @@ APOP_VAR_END_HEAD
         s = apop_settings_get_group(prior, "apop_update");
     }
   double        ratio, ll, cp_ll = GSL_NEGINF;
-  int           i;
   int           vs  = likelihood->vbase  >= 0 ? likelihood->vbase  : data->matrix->size2;
   int           ms1 = likelihood->m1base >= 0 ? likelihood->m1base : data->matrix->size2;
   int           ms2 = likelihood->m2base >= 0 ? likelihood->m2base : data->matrix->size2;
@@ -173,7 +171,7 @@ APOP_VAR_END_HEAD
     }
     if (!likelihood->parameters)
         likelihood->parameters = apop_data_alloc(vs, ms1, ms2);
-    for (i=0; i< s->periods; i++){     //main loop
+    for (int i=0; i< s->periods; i++){     //main loop
         apop_draw(draw, rng, prior);
         write_double(draw, likelihood->parameters);
         ll    = apop_log_likelihood(data,likelihood);

@@ -6,7 +6,7 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 
 #include "stats.h"
 #include "output.h"
-#include "model/model.h"
+#include "model.h"
 #include "types.h"
 #include "settings.h"
 #include "conversions.h"

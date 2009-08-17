@@ -1,11 +1,8 @@
 /** \file apop_data.c	 The apop_data structure joins together a
-  gsl_matrix, apop_name, and a table of strings. No biggie.
+  gsl_matrix, apop_name, and a table of strings. No biggie. */
 
-Copyright (c) 2006--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include <assert.h>
-#include <gsl/gsl_matrix.h>
-#include "asst.h"
 #include "types.h"
 #include "output.h"
 #include "conversions.h"
@@ -13,10 +10,7 @@ Copyright (c) 2006--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 /** \defgroup data_struct apop_data
 
-  The \c apop_data structure represents a data set.  It joins together
-  a gsl_vector, a gsl_matrix, an apop_name, and a table of strings. It
-  tries to be minimally intrusive, so you can use it everywhere you
-  would use a \c gsl_matrix or a \c gsl_vector.
+  The \c apop_data structure represents a data set.  It joins together a gsl_vector, a gsl_matrix, an apop_name, and a table of strings. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
 
   For example, let us say that you are running a regression: there is
   a vector for the dependent variable, and a matrix for the dependent
@@ -31,10 +25,7 @@ Copyright (c) 2006--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2
     }
     \endcode
 
-We're generally assuming that the data vector and data matrix have the
-same row count: \c data->vector->size==data->matrix->size1 . This means
-that the \ref apop_name structure doesn't have separate vector_names
-and row_names elements: the rownames are assumed to apply for both.
+We're generally assuming that the data vector and data matrix have the same row count: \c data->vector->size==data->matrix->size1 . This means that the \ref apop_name structure doesn't have separate vector_names and row_names elements: the rownames are assumed to apply for both.
 
   \ingroup types
   */
@@ -122,7 +113,7 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 \return     an allocated, ready-to-use \ref apop_data struture.
 */
 apop_data * apop_vector_to_data(gsl_vector *v){
-  apop_assert_void(v, 1, 'c',"Converting a NULL vector to an apop_data structure.");
+  apop_assert(v, NULL, 1, 'c',"Converting a NULL vector to an apop_data structure.");
   apop_data  *setme   = apop_data_alloc(0,0,0);
     setme->vector = v;
     return setme;
@@ -145,7 +136,6 @@ void apop_text_free(char ***freeme, int rows, int cols){
     free(freeme);
 }
 
-
 /** Free an \ref apop_data structure.
  
   As with \c free(), it is safe to send in a \c NULL pointer (in which case the funtion does nothing).
@@ -164,7 +154,6 @@ void apop_data_free(apop_data *freeme){
     apop_text_free(freeme->text, freeme->textsize[0] , freeme->textsize[1]);
     free(freeme);
 }
-
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
 
@@ -192,8 +181,8 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
     apop_name_stack(out->names, in->names, 'r');
     apop_name_stack(out->names, in->names, 'c');
     apop_name_stack(out->names, in->names, 't');
-    out->textsize[0] = in->textsize[0];
-    out->textsize[1] = in->textsize[1];
+    out->textsize[0] = in->textsize[0]; 
+    out->textsize[1] = in->textsize[1]; 
     if (in->textsize[0] && in->textsize[1]){
         out->text  = malloc(sizeof(char ***) * in->textsize[0] * in->textsize[1]);
         for (size_t i=0; i< in->textsize[0]; i++){
@@ -267,8 +256,8 @@ APOP_VAR_ENDHEAD
         return apop_data_copy(m2);
     if (!m2)
         return (inplace == 'i' || inplace == 'y') ? m1 : apop_data_copy(m1);
-    Apop_assert((posn == 'r' || posn == 'c'), NULL, 0, 'c', "Valid positions are 'r' or 'c'"
-                             " ('v' is deprecated); you gave me >%c<. Returning NULL.", posn);
+    apop_assert((posn == 'r' || posn == 'c'), NULL, 0, 'c', "Valid positions are 'r' or 'c'"
+                             " you gave me >%c<. Returning NULL.", posn);
     if (inplace == 'i' || inplace == 'y'){
         out = m1;
         apop_matrix_stack(m1->matrix, m2->matrix, posn, inplace);
@@ -410,8 +399,6 @@ allocation:
 }
 
 
-
-
 /** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down
 \param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
@@ -435,10 +422,7 @@ apop_name   *newname    = apop_name_alloc();
 
 
 /** Remove the columns set to one in the \c drop vector.
-The returned data structure looks like it was modified in place, but
-the data matrix and the names are duplicated before being pared down,
-so if your data is taking up more than half of your memory, this may
-not work.
+The returned data structure looks like it was modified in place, but the data matrix and the names are duplicated before being pared down, so if your data is taking up more than half of your memory, this may not work.
 
 \param d the \ref apop_data structure to be pared down. 
 \param drop an array of ints. If use[7]==1, then column seven will be cut from the
@@ -453,15 +437,23 @@ void apop_data_rm_columns(apop_data *d, int *drop){
     gsl_matrix_free(freeme); 
     apop_name_rm_columns(d->names, drop);
 }
+/** \defgroup data_set_get Set/get/point to the data element at the given point
+  \{
 
-/** Get a pointer to an element of an \c apop_data set. Column -1 is the
-  vector. This function follows the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr.
+Q: How does <tt> apop_data_set(in, row, col, data)</tt> differ from
+ <tt>gsl_matrix_set(in->matrix, row, col, data)</tt>?<br>
+A: It's seven characters shorter.
 
-  \param data   The data set.
-  \param    i   The row
-  \param    j   The column
-  \return       A pointer to double pointing to the appropriate element.
-  */
+There are a few other differences: the \ref apop_data set has names, so we can get/set elements using those names, and it has both matrix and vector elements.
+
+\li The versions that take a column/row name use  \ref apop_name_find
+for the search; see notes there on the name matching rules.
+\li For those that take a column number, column -1 is the vector element.
+
+The \c _ptr functions return a pointer to the given cell. Those functions follow the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr, and like those functions, return a pointer to the appropriate \c double.
+*/
+
+/** Get a pointer to an element of an \c apop_data set. */
 double * apop_data_ptr(const apop_data *data, const int i, const int j){
     if (j == -1){
         apop_assert(data->vector, NULL, 0, 's', "You asked for the vector element (i=-1) but it is NULL.");
@@ -472,18 +464,7 @@ double * apop_data_ptr(const apop_data *data, const int i, const int j){
     }
 }
 
-/** Get a pointer to an element from an \ref apop_data set, using the row name but
- the column number.
-
-Uses \ref apop_name_find for the search; see notes there on the name
-matching rules.
-
-\param  in  the \ref apop_data set.
-\param  row the name of the row you seek.
-\param  col the number of the column. If -1, return the vector element.
-
- \ingroup data_struct
- */
+/** Get a pointer to an element from an \ref apop_data set, using the row name but the column number. */
 double *apop_data_ptr_ti(const apop_data *in, char* row, int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(rownum != -1,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
@@ -493,27 +474,14 @@ double *apop_data_ptr_ti(const apop_data *in, char* row, int col){
         return gsl_vector_ptr(in->vector, rownum);
 }
 
-/** Get a pointer to an element from an \ref apop_data set, using the column name but
- the row number.
-
-Uses \ref apop_name_find for the search; see notes there on the name
-matching rules.
-
- \ingroup data_struct
- */
+/** Get a pointer to an element from an \ref apop_data set, using the column name but the row number. */
 double *apop_data_ptr_it(const apop_data *in, size_t row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert(colnum != -1,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
     return gsl_matrix_ptr(in->matrix, row, colnum);
 }
 
-/** Get a pointer to an element from an \ref apop_data set, using the row and column name.
-
-Uses \ref apop_name_find for the search; see notes there on the name
-matching rules.
-
- \ingroup data_struct
- */
+/** Get a pointer to an element from an \ref apop_data set, using the row and column name.*/
 double *apop_data_ptr_tt(const apop_data *in, char *row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
@@ -522,15 +490,7 @@ double *apop_data_ptr_tt(const apop_data *in, char *row, char* col){
     return gsl_matrix_ptr(in->matrix, rownum, colnum);
 }
 
-/** Returns the data element at the given point.
-
-Q: How does <tt> apop_data_get(in, r, c)</tt> differ from
- <tt>gsl_matrix_get(in->matrix, r, c)</tt>?\\
-A: It's nine characters shorter. Also, if \c c==-1, then this will
-return the \c apop_data's vector element.
-
- \ingroup data_struct
-*/
+/** Returns the data element at the given point, using numeric indices.  */
 double apop_data_get(const apop_data *in, size_t row, int col){
     if (col>=0){
         apop_assert(in->matrix, 0, 0, 's', "You asked for the matrix element (%u, %i) but the matrix is NULL.", row, col);
@@ -541,18 +501,7 @@ double apop_data_get(const apop_data *in, size_t row, int col){
     }
 }
 
-/** Get an element from an \ref apop_data set, using the row name but
- the column number
-
-Uses \ref apop_name_find for the search; see notes there on the name
-matching rules.
-
-\param  in  the \ref apop_data set.
-\param  row the name of the row you seek.
-\param  col the number of the column. If -1, return the vector element.
-
- \ingroup setget
- */
+/** Get an element from an \ref apop_data set, using the row name but the column number */
 double apop_data_get_ti(const apop_data *in, char* row, int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(rownum != -1,  GSL_NAN, 0,'c',"Couldn't find %s amongst the row names.", row);
@@ -562,27 +511,14 @@ double apop_data_get_ti(const apop_data *in, char* row, int col){
         return gsl_vector_get(in->vector, rownum);
 }
 
-/** Get an element from an \ref apop_data set, using the column name but
- the row number
-
-Uses \ref apop_name_find for the search; see notes there on the name
-matching rules.
-
- \ingroup setget
- */
+/** Get an element from an \ref apop_data set, using the column name but the row number */
 double apop_data_get_it(const apop_data *in, size_t row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert(colnum != -1,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
     return gsl_matrix_get(in->matrix, row, colnum);
 }
 
-/** Get an element from an \ref apop_data set, using the row and column name.
-
-Uses \ref apop_name_find for the search; see notes there on the name
-matching rules.
-
- \ingroup setget
- */
+/** Get an element from an \ref apop_data set, using the row and column name.*/
 double apop_data_get_tt(const apop_data *in, char *row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
@@ -591,15 +527,7 @@ double apop_data_get_tt(const apop_data *in, char *row, char* col){
     return gsl_matrix_get(in->matrix, rownum, colnum);
 }
 
-/** Sets the data element at the given point.
-
-Q: How does <tt> apop_data_set(in, row, col, data)</tt> differ from
- <tt>gsl_matrix_set(in->matrix, row, col, data)</tt>?\\
-A: It's seven characters shorter.
-
-Oh, and if \c col<0, then this will set the element of \c in->vector.
- \ingroup setget
-*/
+/**  Set a data element using two numeric indices.  */
 void apop_data_set(apop_data *in, size_t row, int col, double data){
     if (col>=0){
         apop_assert_void(in->matrix, 0, 's', "You're trying to set the matrix element (%u, %i) but the matrix is NULL.", row, col);
@@ -609,19 +537,8 @@ void apop_data_set(apop_data *in, size_t row, int col, double data){
         gsl_vector_set(in->vector, row, data);
     }
 }
-/** Set an element from an \ref apop_data set, using the row name but
- the column number
 
-Uses \ref apop_name_find for the search; see notes there on the name
-matching rules.
-
-\param  in  the \ref apop_data set.
-\param  row the name of the row you seek.
-\param  col the number of the column. If -1, set the vector element.
-\param  data the value to insert
-
- \ingroup setget
- */
+/** Set an element from an \ref apop_data set, using the row name but the column number */
 void apop_data_set_ti(apop_data *in, char* row, int col, double data){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert_void(rownum != -1, 0,'c',"Couldn't find %s amongst the row names. Making no changes.", row);
@@ -631,27 +548,14 @@ void apop_data_set_ti(apop_data *in, char* row, int col, double data){
         gsl_vector_set(in->vector, rownum, data);
 }
 
-/** Set an element from an \ref apop_data set, using the column name but
- the row number
-
-Uses \ref apop_name_find for the search; see notes there on the name
-matching rules.
-
- \ingroup setget
- */
+/** Set an element from an \ref apop_data set, using the column name but the row number */
 void apop_data_set_it(apop_data *in, size_t row, char* col, double data){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert_void(colnum != -1, 0,'c',"Couldn't find %s amongst the column names. Making no changes.", col);
     gsl_matrix_set(in->matrix, row, colnum, data);
 }
 
-/** Set an element from an \ref apop_data set, using the row and column name.
-
-Uses \ref apop_name_find for the search; see notes there on the name
-matching rules.
-
- \ingroup setget
- */
+/** Set an element from an \ref apop_data set, using the row and column name.  */
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
@@ -659,6 +563,7 @@ void apop_data_set_tt(apop_data *in, char *row, char* col, double data){
     apop_assert_void(rownum != -1, 0, 'c',"Couldn't find %s amongst the column names.", row);
     gsl_matrix_set(in->matrix, rownum, colnum, data);
 }
+/** \} //End data_set_get group */
 
 /** Add a named element to a data vector. For example, 
 many of the testing procedures use this to easily produce a column of named parameters.
@@ -673,7 +578,6 @@ the third name slot and the data in the third slot in the vector. If
 you use this function from start to finish in building your vector,
 then you'll be fine.
 
-\ingroup setget
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     Apop_assert_void(d, 0, 's', "You sent me a NULL apop_data set. I'm not sure what you want me to do with that.");
@@ -681,8 +585,6 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     gsl_vector_set(d->vector, d->names->rowct, val);
     apop_name_add(d->names, name, 'r');
 }
-
-
 
 /** Add a string to the text element of an \c apop_data set.  If you
  send me a \c NULL string, I will write the string <tt>"NaN"</tt> in the given slot.
@@ -744,7 +646,6 @@ apop_data *apop_data_transpose(apop_data *in){
     apop_name_stack(out->names, in->names, 'c', 'r');
     return out;
 }
-
 
 /** This function will resize a gsl_matrix to a new height or width.
 

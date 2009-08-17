@@ -499,6 +499,63 @@ Outlineheader datalloc Alloc/free
 
 endofdiv
 
+Outlineheader gslviews 	Using GSL Views
+
+You may need to pull a row of a matrix as a distinct vector. The GSL makes it easy to do so, and Apophenia provides several convenience functions to save any remaining hassle. The data in the new vector will point to the base data, not copy it. Some examples:
+
+\code
+apop_data *d = apop_query_to_data("select obs1, obs2, obs3 from a_table");
+gsl_matrix *m = d->matrix;
+
+//Get a column using its name
+Apop_col_t(d, "obs1", ov);
+double obs1_sum = apop_vector_sum(ov);
+
+//Get a row using its index
+Apop_row(d, 0, v);
+double first_row_sum = apop_vector_sum(v);
+
+//First column's sum, matrix format
+Apop_matrix_col(m, 0, mv);
+double first_col_sum = apop_vector_sum(mv);
+
+//Pull a ten by five submatrix, whose first element is the (2,3)rd
+//element of the parent data set's matrix
+Apop_submatrix(d, 2,3, 10,5, subm);
+double first_col_sum = apop_matrix_sum(subm);
+\endcode
+
+\li\ref Apop_col
+\li\ref Apop_row
+\li\ref Apop_col_t
+\li\ref Apop_row_t
+\li\ref Apop_matrix_col
+\li\ref Apop_matrix_row
+\li\ref Apop_submatrix
+
+
+These macros make use of a set of GSL matrices that produce output of type <tt>gsl_matrix_view</tt> and <tt>gsl_vector_view</tt>. These types point to the source data, and add metadata to turn the data into a coherent matrix/vector. Apophenia's macros generate these views, then pull the matrix/vector from them, so you never have to deal with the <tt>_view</tt> structs directly.
+
+If the macros don't work for you, you can use the GSL's macros directly.
+Here's how to get the fifth row of <tt>a_matrix</tt> into a vector view:
+
+\code
+gsl_vector_view v;
+v = gsl_matrix_col(a_matrix, 4);
+\endcode
+
+For rows, use <tt>gsl_matrix_row(a_matrix, n)</tt>. The vector view is a data structure which includes an element of type <tt>gsl_vector</tt> named <tt>vector</tt>; this is the only element you will be interested in. The expression <tt>&(v.vector)</tt> is of type <tt>gsl_vector *</tt>, and therefore can be used as you would any other pointer to a <tt>gsl_vector</tt>. For example, try \ref apop_mean<tt>(&(v.vector));</tt>.
+
+The view is intended to be a common variable, not a pointer. If you want to retain the data after the function exits, copy it to another vector: 
+\code
+gsl_vector_view v;
+gsl_vector *a_new_vector = gsl_vector_alloc(a_matrix->size1);
+v = gsl_matrix_col(a_matrix, 4);
+gsl_vector_memcpy(a_new_vector, &(v.vector));
+\endcode
+
+endofdiv
+
 Outlineheader setgetsec Set/get
 
 Let \f$t\f$ be text, and \f$i\f$ be an index. Then you can get or set
@@ -1339,9 +1396,6 @@ Outlineheader Legi Legible output
     \li\ref apop_vector_print()
     \li\ref apop_vector_show()
 
-
-
-
 endofdiv
 
 
@@ -1367,7 +1421,6 @@ Outlineheader Math Math utilities
     \li\ref apop_multivariate_gamma()
     \li\ref apop_multivariate_lngamma()
     \li\ref apop_rng_alloc()
-    \li\ref apop_rng_GHgB3()
     \li\ref apop_random_double ()
     \li\ref apop_random_int ()
 
@@ -1443,7 +1496,7 @@ http://sourceforge.net/project/showfiles.php?group_id=204414&package_id=306189
 \li follow "libintl" steps from:
 http://kayalang.org/download/compiling/windows
 
-\li Comment out "alloc.h" in apophenia-0.22\vasprintf\vasnprintf.c
+\li Comment out "alloc.h" in apophenia-0.22/vasprintf/vasnprintf.c
 \li Modify \c Makefile, adding -lpthread to AM_CFLAGS (removing -pthread) and -lregex to AM_CFLAGS and LIBS
 
 \li Now compile the main library:

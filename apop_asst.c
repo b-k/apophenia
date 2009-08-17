@@ -9,10 +9,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
 */
 double apop_generalized_harmonic(int N, double s){
-/*
-There are no doubt efficient shortcuts do doing this, but I use brute force. To speed things along,
-I save the results so that they can later just be looked up. Each row in the saved structure
-is an \f$s\f$, and each column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
+/* There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can later just be looked up. Each row in the saved structure is an \f$s\f$, and each column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
 
 \todo Look up the tricks for calculating this.
 
@@ -47,23 +44,6 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 			precalced[i][j] = precalced[i][j-1] + 1/pow((j+1),s);
 	}
 	return 	precalced[i][N-1];
-}
-
-/** RNG from a Generalized Hypergeometric type B3.
-
- Devroye uses this as the base for many of his
- distribution-generators, e.g., \ref apop_waring "apop_waring.rng". 
-*/  //Header in stats.h
-double apop_rng_GHgB3(gsl_rng * r, double* a){
-if ((a[0]<=0) || (a[1] <= 0) || (a[2] <=0)){
-	printf("apop_GHgB3_rng took a zero parameter; bad.\n");
-	return 0;
-	}
-double		aa	= gsl_ran_gamma(r, a[0], 1),
-		b	= gsl_ran_gamma(r, a[1], 1),
-		c	= gsl_ran_gamma(r, a[2], 1);
-int		p	= gsl_ran_poisson(r, aa*b/c);
-	return p;
 }
 
 

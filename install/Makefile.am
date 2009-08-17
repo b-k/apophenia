@@ -26,8 +26,8 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
 				mapply.h stats.h types.h       		 		\
-				output.h model/model.h asst.h 	   			\
-				settings.h variadic.h	linear_algebra.h
+				output.h model.h asst.h settings.h  		\
+				variadic.h	linear_algebra.h
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc

@@ -1,7 +1,5 @@
-/** \file model.h 
- 
- Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
- */
+/** \file model.h  */
+/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #ifndef __apop_models_h__
 #define __apop_models_h__
 
@@ -11,17 +9,9 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
-#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
-#undef __END_DECLS
-#ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+#ifdef	__cplusplus
+extern "C" {
 #endif
-
-__BEGIN_DECLS
 
 extern apop_model apop_beta;
 extern apop_model apop_bernoulli;
@@ -126,7 +116,6 @@ void  apop_histogram_settings_free(apop_histogram_settings *in);
 void * apop_histogram_settings_copy(apop_histogram_settings *in);
 
 
-
 #define apop_model_set_parameters(in, ...) apop_model_set_parameters_base((in), (double []) {__VA_ARGS__})
 apop_model *apop_model_set_parameters_base(apop_model in, double ap[]);
 apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data, 
@@ -149,5 +138,7 @@ apop_data * apop_expected_value(apop_data *d, apop_model *m);
 //in apop_beta.c
 apop_model *apop_beta_from_mean_var(double m, double v);
 
-__END_DECLS
+#ifdef	__cplusplus
+}
+#endif
 #endif

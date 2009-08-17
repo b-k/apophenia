@@ -9,16 +9,9 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
 
-#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
-#undef __END_DECLS
-#ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+#ifdef	__cplusplus
+extern "C" {
 #endif
-__BEGIN_DECLS
 
 double apop_generalized_harmonic(int N, double s);
 void apop_error(int level, char stop, char *message, ...);
@@ -137,5 +130,8 @@ extern int asprintf (char **result, const char *format, ...)
 extern int vasprintf (char **result, const char *format, va_list args)
        __attribute__ ((__format__ (__printf__, 2, 0)));
 
-__END_DECLS
+#ifdef	__cplusplus
+}
+#endif
+
 #endif

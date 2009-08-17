@@ -14,7 +14,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "output.h"
 #include "settings.h"
 #include "conversions.h"
-#include "model/model.h"
+#include "model.h"
 #include <search.h> //lsearch
 #include <stdlib.h> //bsearch
 #include <assert.h> 

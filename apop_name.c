@@ -1,6 +1,5 @@
-/** \file apop_name.c
-
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/** \file apop_name.c */
+/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "db.h" //just for apop_opts.verbose.
 #include "types.h"
@@ -64,7 +63,7 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 		strcpy(n->text[n->textct -1], add_me);
 		return n->textct;
 	}
-	//else assume (type == 'c'){
+	//else assume (type == 'c')
         if (type != 'c' && apop_opts.verbose)
             apop_error(2,'c',"%s: You gave me >%c<, I'm assuming you meant c; "
                              " copying column names.\n", __func__, type);
@@ -73,7 +72,6 @@ int apop_name_add(apop_name * n, char *add_me, char type){
 		n->column[n->colct -1]	= malloc(strlen(add_me) + 1);
 		strcpy(n->column[n->colct -1], add_me);
 		return n->colct;
-	//} 
 }
 
 /** Prints the given list of names to STDOUT
@@ -137,24 +135,24 @@ Notice that if the first list is NULL, then this is a copy function. If the seco
 APOP_VAR_HEAD void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
     apop_name * apop_varad_var(n1, NULL);
     apop_assert_void(n1, 0, 'c', "Can't stack onto a NULL data set (which n1 is).");
-    apop_name * apop_varad_var(nadd, NULL);
+    apop_name * apop_varad_var(nadd, NULL); 
+    if (!nadd) return;
     char  apop_varad_var(type1, 'r');
     char  apop_varad_var(typeadd, type1);
     apop_name_stack_base(n1, nadd, type1, typeadd);
 APOP_VAR_ENDHEAD
   int     i;
-    if (!nadd)
-        return;
+    apop_name counts = (apop_name) { .rowct=nadd->rowct, .textct = nadd->textct, .colct = nadd->colct };//Necessary when stacking onto self.;
     if (typeadd == 'v')
         apop_name_add(n1, nadd->vector, 'v');
       else if (typeadd == 'r'){
-        for (i=0; i< nadd->rowct; i++)
+        for (i=0; i< counts.rowct; i++)
             apop_name_add(n1, nadd->row[i], type1);
     } else if (typeadd == 't'){
-        for (i=0; i< nadd->textct; i++)
+        for (i=0; i< counts.textct; i++)
             apop_name_add(n1, nadd->text[i], type1);
     } else if (typeadd == 'c'){
-        for (i=0; i< nadd->colct; i++)
+        for (i=0; i< counts.colct; i++)
             apop_name_add(n1, nadd->column[i], type1);
     } else if (apop_opts.verbose)
          printf (">%c< sent to apop_name_stack, but the only valid options are r t c v. Doing nothing.\n",type1);

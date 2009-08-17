@@ -7,7 +7,6 @@
 #include "likelihoods.h"
 
 
-
 /////////  Part I: Methods for the apop_category_settings struct
 
 /** Convert a column of input data into factors, for use with \ref apop_probit, apop_logit, &c.
@@ -100,12 +99,11 @@ static void probit_prep(apop_data *d, apop_model *m){
     snprintf(m->name, 100, "%s with %s as numeraire", m->name, factor_list->text[0][0]);
 }
 
-
 static double probit_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   long double	n, total_prob	= 0;
   apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
-	for(int i=0; i< d->matrix->size1; i++){
+	for(size_t i=0; i< d->matrix->size1; i++){
 		n	        = gsl_cdf_gaussian_P(-apop_data_get(betadotx, i, 0),1);
         n = n ? n : 1e-10; //prevent -inf in the next step.
         n = n<1 ? n : 1-1e-10; 
@@ -136,7 +134,6 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 }
 
 
-
 /** The Probit model.
  The first column of the data matrix this model expects is ones and zeros;
  the remaining columns are values of the independent variables. Thus,
@@ -147,7 +144,6 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 */
 apop_model apop_probit = {"Probit", .log_likelihood = probit_log_likelihood, 
     .score = probit_dlog_likelihood, .prep = probit_prep};
-
 
 
 /////////  Part III: Multinomial Logit (plain logit is a special case)
@@ -210,7 +206,6 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
 
     working_data->matrix = d->matrix;
 
-
     gsl_vector *original_outcome = d->vector;
     double ll    = 0;
     double *vals = Apop_settings_get(p, apop_category, factors)->vector->data;
@@ -226,7 +221,6 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     }
 	return ll;
 }
-
 
 
 static size_t find_index(double in, double *m, size_t max){

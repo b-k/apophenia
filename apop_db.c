@@ -1,40 +1,22 @@
 /** \file apop_db.c	An easy front end to SQLite. Includes a few nice
-features like a variance, skew, and kurtosis aggregator for SQL.
+features like a variance, skew, and kurtosis aggregator for SQL. */
+/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
-#include <string.h>
-#include <stdarg.h>
-#include "types.h"
-#include <gsl/gsl_math.h>           //GSL_NAN
 #include "db.h"
-#include "asst.h"	//apop_rng_alloc
 #include "stats.h"	    //t_dist
 #include "conversions.h"	//apop_strip_dots
 #include "variadic.h"
-#include "linear_algebra.h"
-
 #include <config.h>
-#include <math.h> 	                //sqrt
 
-/** Here are where the options are initially set. Not using designated
-  initializers because Apophenia tries to not use C99. */
-apop_opts_type apop_opts	= { 0,              //verbose
-                                'f',            //output type
-                                NULL,            //output pipe
-                                "\t",           //output delimiter
-                                0,              //output append
-                                "| ,\t",        //input delimiters
-                                "row_names",    //db_name_column
-                                "NaN",          //db_nan
-                                '\0',            //db_engine
-                                "\0",           //db_user
-                                "\0",           //db_pass
-                                1,              //threadct
-                                479901,          //rng_seed (randomly generated)
-                                X.XX              //version
-};
-
+/** Here are where the options are initially set. */
+apop_opts_type apop_opts	= 
+          { .verbose=0,                    .output_type = 'f',
+            .output_pipe = NULL,           .output_delimiter ="\t", 
+            .output_append = 0,            .input_delimiters = "| ,\t", 
+            .db_name_column = "row_names", .db_nan = "NaN", 
+            .db_engine = '\0',             .db_user = "\0", 
+            .db_pass = "\0",               .thread_count = 1,
+            .rng_seed = 479901,            .version = X.XX };
 
 #ifdef HAVE_LIBMYSQLCLIENT
 #include "apop_db_mysql.c"
@@ -45,7 +27,23 @@ static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 #ifdef HAVE_LIBSQLITE3 
 #include "apop_db_sqlite.c"
 #endif
-                                                                                                                               
+
+//This macro declares the query string and fills it from the printf part of the call.
+#define Fillin(query, fmt)          \
+  char		*query;                 \
+  va_list   argp;                   \
+	va_start(argp, fmt);            \
+	vasprintf(&query, fmt, argp);   \
+	va_end(argp);                   \
+	if (apop_opts.verbose) {printf("\n%s\n",query);} 
+
+typedef struct {
+    int         firstcall;
+    size_t      currentrow;
+    regmatch_t  result[3];
+    regex_t     *regex;
+    apop_data   *outdata;
+} callback_t;
 
 /** Random numbers are generated inside the database using a separate
  RNG. This will initialize it for you, just like \ref apop_rng_alloc,
@@ -59,8 +57,6 @@ static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 void apop_db_rng_init(int seed){
     db_rng  = apop_rng_alloc(seed);
 }
-
-
 
 /**
 If you want to use a database on the hard drive instead of memory,
@@ -111,56 +107,49 @@ int apop_db_open(char *filename){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_db_open(filename);
 #else
-        apop_assert(0, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        {apop_error(0, 'c', "apop_db_open: Apophenia was compiled without mysql support.\n");
+        return 0;
+        }
+#endif
+#ifdef HAVE_LIBSQLITE3
+        return apop_sqlite_db_open(filename);
+#else
+        {apop_error(0, 'c', "apop_db_open: Apophenia was compiled without sqlite support.\n");
+        return 0;
+        }
+#endif
+}
+
+/*
+int apop_db_open(char *filename){
+    int check_env = 0;
+#ifdef HAVE_LIBSQLITE3
+    if (!db) //check the environment.
+        check_env = 1;
+#endif
+#ifdef HAVE_LIBMYSQLCLIENT
+   if(!mysql_db)  
+       check_env = 1;
+#endif
+
+
+    if (check_env && getenv("APOP_DB_ENGINE") && !strcasecmp(getenv("APOP_DB_ENGINE"), "mysql"))
+        apop_opts.db_engine = 'm';
+
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        return apop_mysql_db_open(filename);
+#else
+        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
 #ifdef HAVE_LIBSQLITE3
     return apop_sqlite_db_open(filename);
 #else
-    apop_assert(0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+    apop_assert(0, 1, 0, 'c', "Apophenia was compiled without SQLite support.\n");
 #endif
 }
-
-
-/** Send a query to the database, return nothing 
-\param fmt
-An \ref sql "SQL" query.
-
-\param ...
-Your query may be in <tt>printf</tt> form. For example:
-\code
-char tabname[] = "demographics";
-char colname[] = "heights";
-int min_height = 175;
-apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_height);
-\endcode
-\ingroup db
 */
-int apop_query(const char *fmt, ...){
-  char 		*err, *q;
-  va_list   argp;
-	va_start(argp, fmt);
-	vasprintf(&q, fmt, argp);
-	va_end(argp);
-	if (apop_opts.verbose) {printf("\n%s\n",q);}
-    if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
-        {apop_assert(mysql_db, 0, 0, 'c', "No mySQL database is open.");
-        apop_mysql_query(q);}
-#else
-        apop_assert(0, 0, 'c', "Apophenia was compiled without mysql support.\n");
-#endif
-    else 
-#ifdef HAVE_LIBSQLITE3
-        {if (!db) apop_db_open(NULL);
-        sqlite3_exec(db, q, NULL,NULL, &err);
-	    ERRCHECK
-        }
-#else
-        apop_assert(0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
-#endif
-	free(q);
-	return 1;
-}
+
 
 int 		isthere;//used for the next two fns only.
 
@@ -235,43 +224,77 @@ APOP_VAR_END_HEAD
 #endif
     else{
 #ifdef HAVE_LIBSQLITE3
-  char		*err;
-	if (vacuum==1 || vacuum=='v') 
-        sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
-//	ERRCHECK
-	sqlite3_close(db);
-    db  = NULL;
-	return 0;
+      char		*err;
+        if (vacuum==1 || vacuum=='v') 
+            sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
+    //	ERRCHECK
+        sqlite3_close(db);
+        db  = NULL;
+        return 0;
 #else
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
 #endif
     }
 }
 
+/** \defgroup queries Queries
+ 
+  These functions query the database, and most return a value for use on the C-side.
+
+In all cases, your query may be in <tt>printf</tt> form. For example:
+\code
+char tabname[] = "demographics";
+char colname[] = "heights";
+int min_height = 175;
+apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_height);
+\endcode
+
+\li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan"
+are filled with <tt>NAN</tt>s in the matrix.
+
+  \{
+  */
+
+/** Send a query to the database, return nothing 
+\param fmt A <tt>printf</tt>-style \ref sql "SQL" query.
+*/
+int apop_query(const char *fmt, ...){
+  char 		*err;
+  Fillin(q, fmt)
+    if (apop_opts.db_engine == 'm')
+#ifdef HAVE_LIBMYSQLCLIENT
+        {apop_assert(mysql_db, 1, 0, 'c', "No mySQL database is open.");
+        apop_mysql_query(q);}
+#else
+        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.\n");
+#endif
+    else 
+#ifdef HAVE_LIBSQLITE3
+        {if (!db) apop_db_open(NULL);
+        sqlite3_exec(db, q, NULL,NULL, &err);
+	    ERRCHECK
+        }
+#else
+        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+#endif
+	free(q);
+	return 1;
+}
 
 /** Dump the results of a query into an array of strings.
-
-\param fmt 	As with \ref apop_query , a string containing a query,
-which may include <tt>printf</tt>-style tags (<tt>\%i, \%s</tt>, et cetera).
 
 \return		An \ref apop_data structure with the <tt>text</tt>
 element filled. Notice that this is always a 2-D array, even if the query
 returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt>
 to refer to row <tt>i</tt>.
 
-
-example
-The following function will list the tables in a database (much like you could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
+For example,
+the following function will list the tables in a database (much like you could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
 
 \include ls_tables.c
 */
 apop_data * apop_query_to_text(const char * fmt, ...){
-  va_list	argp;
-  char		*query;
-	va_start(argp, fmt);
-	vasprintf(&query, fmt, argp);
-	if (apop_opts.verbose) {printf("\n%s\n",query);}
-	va_end(argp);
+  Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_chars);
@@ -279,21 +302,11 @@ apop_data * apop_query_to_text(const char * fmt, ...){
         apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
 #ifdef HAVE_LIBSQLITE3
-        return apop_sqlite_query_to_text(query);
+    return apop_sqlite_query_to_text(query);
 #else
-        apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+    apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without SQLite support.\n");
 #endif
 }
-
-
-
-typedef struct {
-    int         firstcall;
-    size_t      currentrow;
-    regmatch_t  result[3];
-    regex_t     *regex;
-    apop_data   *outdata;
-} callback_t;
 
 //apop_query_to_matrix callback.
 static int db_to_table(void *qinfo, int argc, char **argv, char **column){
@@ -333,30 +346,11 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 
 /** Queries the database, and dumps the result into an \ref apop_data set.
 
-\param fmt 	A string holding an \ref sql "SQL" query.
-Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
-
-\return
-An \ref apop_data set, which you passed in declared but not allocated.
-
-Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan"
-are filled with <tt>NAN</tt>s in the matrix.
-
 If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_names"),
 and the name of a column matches the name, then the row names are read from that column.
-
-\bug Currently, this is but a wrapper for \ref apop_query_to_matrix,
-meaning that only numerical results are returned. If you want
-non-numeric data, try \code mydata = apop_query_to_text("select ...");\endcode. 
 */ 
 apop_data * apop_query_to_data(const char * fmt, ...){
-  va_list		argp;
-  char		    *query;
-	va_start(argp, fmt);
-	vasprintf(&query, fmt, argp);
-	va_end(argp);
-	if (apop_opts.verbose)	
-        printf("%s\n", query);
+  Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_data);
@@ -384,23 +378,9 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #endif
 }
 
-/** Queries the database, and dumps the result into a matrix.
-
-\param fmt 	A string holding an \ref sql "SQL" query.
-Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
-
-\return
-A <tt>gsl_matrix</tt>, which you passed in declared but not allocated.
-
-Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan"
-are filled with <tt>NAN</tt>s in the matrix.
-*/
+/** Queries the database, and dumps the result into a matrix.  */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
-  va_list	argp;
-  char		*query;
-	va_start(argp, fmt);
-	vasprintf(&query, fmt, argp);
-	va_end(argp);
+    Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_matrix);
@@ -419,21 +399,14 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 }
 
 /** Queries the database, and dumps the first column of the result into a gsl_vector.
-\param fmt	A string holding an \ref sql "SQL" query.
-\param ...	Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
+
 \return		A <tt>gsl_vector</tt> holding the first column of the returned matrix. Thus, if your query returns
 multiple lines, you will get no warning, and the function will return
 the first in the list.
 
-If the query returns no columns at all, the function returns <tt>NULL</tt>.
-*/
+If the query returns no columns at all, the function returns \c NULL.  */
 gsl_vector * apop_query_to_vector(const char * fmt, ...){
-  char		*query;
-  va_list	argp;
-	va_start(argp, fmt);
-	vasprintf(&query, fmt, argp);
-	va_end(argp);
-
+    Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_vector);
@@ -455,21 +428,14 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 }
 
 /** Queries the database, and dumps the result into a single double-precision floating point number.
-\param fmt	A string holding an \ref sql "SQL" query.
-\param ...	Your query may be in <tt>printf</tt> form. See \ref apop_query for an example.
 \return		A double, actually. This calls \ref apop_query_to_matrix and returns
 the (0,0)th element of the returned matrix. Thus, if your query returns
 multiple lines, you will get no warning, and the function will return
 the first in the list (which is not always well-defined).
 
-If the query returns no rows at all, the function returns <tt>NAN</tt>.
-*/
+If the query returns no rows at all, the function returns <tt>NAN</tt>.  */
 double apop_query_to_float(const char * fmt, ...){
-  char		*query;
-  va_list	argp;
-	va_start(argp, fmt);
-	vasprintf(&query, fmt, argp);
-	va_end(argp);
+    Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_to_float(query);
@@ -492,35 +458,22 @@ double apop_query_to_float(const char * fmt, ...){
 #endif
 }
 
-
 /** Query data to an \c apop_data set, but a mix of names, vectors, matrix elements, and text.
 
 If you are querying to a matrix and maybe a name, use \c
 apop_query_to_data (and set \ref apop_opts_type "apop_opts.db_name_column" if desired). But
 if your data is a mix of text and numbers, use this.
 
-The first argument is a character string consisting of the letters \c
-nvmtw, one for each column of the SQL output, indicating whether the
-column is a name, vector, matrix colum, text column, or weight vector. You can have only
-one n, v, and w. 
+The first argument is a character string consisting of the letters \c nvmtw, one for each column of the SQL output, indicating whether the column is a name, vector, matrix colum, text column, or weight vector. You can have only one n, v, and w. 
 
-If the query produces more columns than there are elements in the column
-specification, then the remainder are dumped into the text section. If
-there are fewer columns produced than given in the spec, the additional
-elements will be allocated but not filled (i.e., they are uninitialized
-and will have garbage).
+If the query produces more columns than there are elements in the column specification, then the remainder are dumped into the text section. If there are fewer columns produced than given in the spec, the additional elements will be allocated but not filled (i.e., they are uninitialized and will have garbage).
 
 The 'n' character indicates row, meaning that \ref apop_opts_type "apop_opts.db_name_column" is ignored).
 
 As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers.
 */
 apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...){
-  va_list   argp;
-  char      *query;
-    va_start(argp, fmt);
-    vasprintf(&query, fmt, argp);
-    if (apop_opts.verbose) {printf("\n%s\n",query);}
-    va_end(argp);
+    Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         {apop_error(0, 'c', "%s: Sorry, this function has only been written for SQLITE so far.\n", __func__);
@@ -532,11 +485,13 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
         return 0;}
 #endif
 #ifdef HAVE_LIBSQLITE3
-        return apop_sqlite_multiquery(typelist, query);
+    return apop_sqlite_multiquery(typelist, query);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+    apop_assert(0, 0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
 #endif
 }
+
+/** \} end query group. */
 
 /* Convenience function for extending a string. 
  asprintf(%q, "%s and stuff", q);
@@ -663,8 +618,9 @@ int apop_data_to_db(apop_data *set, char *tabname){
 #else 
         apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
-    else {
+    else
 #ifdef HAVE_LIBSQLITE3
+    {
         if (db==NULL) apop_db_open(NULL);
         asprintf(&q, "create table %s (", tabname);
         if (use_row) {
@@ -689,10 +645,10 @@ int apop_data_to_db(apop_data *set, char *tabname){
             if (i< set->textsize[1]-1) 	qxprintf(&q, "%s, ", q);
         }
         qxprintf(&q,"%s);  begin;",q);
+    }
 #else
         apop_assert(1, 0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
 #endif
-    }
     int lim = set->vector ? set->vector->size : set->matrix->size1;
 	for(i=0; i< lim; i++){
 		qxprintf(&q, "%s \n insert into %s values(",q, tabname);

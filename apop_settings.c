@@ -28,18 +28,14 @@ void apop_settings_rm_group(apop_model *m, char *delme){
   //apop_assert_void(m->settings, 2, 'c', "The model had no settings, so nothing was removed.");
   if (!m->settings)  
       return;
-  int i = 0, j;
+  int i = 0;
   int ct = get_settings_ct(m);
  
     while (strlen(m->settings[i].name)){
         if (!strcmp(m->settings[i].name, delme)){
             ((void (*)(void*))m->settings[i].free)(m->settings[i].setting_group);
-            for (j=i+1; j< ct+1; j++){//don't forget the null sentinel.
-                strcpy(m->settings[j-1].name, m->settings[j].name);
-                m->settings[j-1].free = m->settings[j].free;
-                m->settings[j-1].copy = m->settings[j].copy;
-                m->settings[j-1].setting_group = m->settings[j].setting_group;
-            }
+            for (int j=i+1; j< ct+1; j++) //don't forget the null sentinel.
+                m->settings[j-1] = m->settings[j];
             i--;
         }
         i++;
@@ -53,14 +49,12 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
         apop_settings_rm_group(model, type); 
     int ct = get_settings_ct(model);
     model->settings = realloc(model->settings, sizeof(apop_settings_type)*(ct+2));   
+    model->settings[ct] = (apop_settings_type) {
+                            .setting_group = the_group,
+                            .free= free_fn, .copy = copy_fn };
     strncpy(model->settings[ct].name, type, 100);
-    model->settings[ct].setting_group = the_group;
-    model->settings[ct].free = free_fn; 
-    model->settings[ct].copy = copy_fn;
+    model->settings[ct+1] = (apop_settings_type) { };
     model->settings[ct+1].name[0] = '\0';
-    model->settings[ct+1].free = NULL;
-    model->settings[ct+1].copy = NULL;
-    model->settings[ct+1].setting_group = NULL;
 }
 
 /** This function gets the settings group with the given name. If it

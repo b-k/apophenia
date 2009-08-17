@@ -20,16 +20,9 @@
 #define MAX_ITERATIONS 		5000
 #define MAX_ITERATIONS_w_d	5000
 
-#undef __BEGIN_DECLS    /* extern "C" stuff cut 'n' pasted from the GSL. */
-#undef __END_DECLS
-#ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+#ifdef	__cplusplus
+extern "C" {
 #endif
-__BEGIN_DECLS
 
 typedef enum {
     APOP_SIMPLEX_NM     =0, // 0: Nelder-Mead simplex (gradient handling rule is irrelevant)
@@ -87,5 +80,8 @@ APOP_VAR_DECLARE double  apop_linear_constraint(gsl_vector *beta, apop_data * co
 
 //in apop_model_fix_params.c
 apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in);
-__END_DECLS
+
+#ifdef	__cplusplus
+}
+#endif
 #endif

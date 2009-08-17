@@ -4,7 +4,7 @@
 
 #include "asst.h" //The headers are currently here.
 #include "types.h"
-#include "model/model.h"
+#include "model.h"
 #include "settings.h"
 #include "conversions.h"
 

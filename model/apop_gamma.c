@@ -36,11 +36,10 @@ static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_
                   psi_a   = gsl_sf_psi(a),
                   ln_b    = log(b),
                   x, ln_k;
-  gsl_vector_view v;
     for (size_t k=0; k< data->size2; k++){
         ln_k    = log(k +1);
-        v       = gsl_matrix_column(data, k);
-        x       = apop_sum(&(v.vector));
+        Apop_col(d, k, v);
+        x       = apop_sum(v);
         d_a    += x * (-psi_a - ln_b + ln_k);
         d_b    += x * (a/b - (k+1)/gsl_pow_2(b));
     }
@@ -72,6 +71,9 @@ static double gamma_log_likelihood(apop_data *d, apop_model *p){
     return llikelihood;
 }
 
+double a_callback(double x, void *ab){ return x ? log(x)- *(double*)ab : 0; }
+double b_callback(double x, void *ab){ return x ? -x - *(double*)ab : 0; }
+
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
     if (apop_settings_get_group(p, "apop_rank"))
@@ -80,23 +82,10 @@ static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model
         		b    	= gsl_vector_get(p->parameters->vector, 1);
     //if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
                         //a sign to the minimizer to look elsewhere.
-  int             i, k;
-  gsl_matrix      *data	= d->matrix;
-  double          d_a     = 0,
-        d_b		= 0,
-        psi_a	= gsl_sf_psi(a),
-        ln_b    = log(b),
-        x;
-    for (i=0; i< data->size1; i++)
-        for (k=0; k< data->size2; k++){
-            x	= gsl_matrix_get(data, i, k);
-            if (x!=0){
-                d_a    += -psi_a - ln_b + log(x);
-                d_b    += -a/b - x;
-            }
-        }
-    gsl_vector_set(gradient, 0, d_a);
-    gsl_vector_set(gradient, 1, d_b);
+  double psi_a_ln_b	= gsl_sf_psi(a) + log(b),
+        a_over_b    = a/b;
+    gsl_vector_set(gradient, 0, apop_map_sum(d, .fn_dp = a_callback, .param=&psi_a_ln_b));
+    gsl_vector_set(gradient, 1, apop_map_sum(d, .fn_dp = b_callback, .param=&a_over_b));
 }
 
 /* Just a wrapper for gsl_ran_gamma.
@@ -111,6 +100,7 @@ static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
 }
 
 /** The Gamma distribution
+  gsl_matrix     *data    = d->matrix;
 
 Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
 
@@ -118,7 +108,9 @@ apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
   
 To specify that you have frequency or ranking data, use 
 \code
-Apop_settings_add_group(your_model, apop_rank, NULL);
+apop_data *my_copy = apop_model_copy(apop_gamma);
+Apop_model_add_group(my_copy, apop_rank);
+apop_model *out = apop_estimate(my_rank_data, my_copy);
 \endcode
 
 \f$G(x, a, b)     = 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
