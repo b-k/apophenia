@@ -82,7 +82,7 @@ char    *out    = NULL;
     return out;
 }
 
-/** Inform the user of a faux pas. See also \ref apop_assert, which allows the function to return a value.
+/** Inform the user of a faux pas. See also \ref Apop_assert, which allows the function to return a value.
 
 
  \param level   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2. You can set apop_opts.verbose==-1 to turn off virtually all messages, but this is probably ill-advised.

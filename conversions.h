@@ -30,6 +30,7 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 
 //From array
 APOP_VAR_DECLARE gsl_vector * apop_array_to_vector(double *in, int size);
+#define apop_line_to_vector apop_array_to_vector
 gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols);
 apop_data * apop_array_to_data(const double **in, const int rows, const int cols);
 

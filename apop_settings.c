@@ -54,7 +54,6 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
                             .free= free_fn, .copy = copy_fn };
     strncpy(model->settings[ct].name, type, 100);
     model->settings[ct+1] = (apop_settings_type) { };
-    model->settings[ct+1].name[0] = '\0';
 }
 
 /** This function gets the settings group with the given name. If it

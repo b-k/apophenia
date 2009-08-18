@@ -193,32 +193,35 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 \param n        the \ref apop_name object to search.
 \param in       the name you seek; see above.
 \param type     'c', 'r', or 't'. Default is 'c'.
-\return         The position of \c findme. If not found, returns -1.
+\return         The position of \c findme. If 'c', then this may be -1, meaning the vector name. If not found, returns -2.
 \ingroup names
   */
 int  apop_name_find(apop_name *n, char *in, char type){
   regex_t   re;
   char      **list;
   int       listct;
-    if (type == 'r'){
+    if (type == 'r' || type == 'R'){
         list    = n->row;
         listct  = n->rowct;
     }
-    else if (type == 't'){
+    else if (type == 't' || type == 'T'){
         list    = n->text;
         listct  = n->textct;
     }
-    else { // default: (type == 'c')
+    else { // default type == 'c'
         list    = n->column;
         listct  = n->colct;
     }
     regcomp(&re, in, REG_EXTENDED + REG_ICASE);
-    for (int i = 0; i < listct; i++){
+    for (int i = 0; i < listct; i++)
         if (!regexec(&re, list[i], 0, NULL, 0)){
             regfree(&re);
             return i;
         }
+    if ((type=='c' || type == 'C') && n->vector && !regexec(&re, n->vector, 0, NULL, 0)){
+        regfree(&re);
+        return -1;
     }
     regfree(&re);
-    return -1;
+    return -2;
 }

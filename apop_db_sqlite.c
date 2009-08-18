@@ -22,22 +22,13 @@ select sqrt(x), pow(x,0.5), exp(x), log(x),
 from table
 \endverbatim
 
-The SQL standard includes the <tt>count(x)</tt> and <tt>avg(x)</tt> aggregators,
-but statisticians are usually interested in higher moments as well---at
-least the variance. Therefore, SQL queries using the Apophenia library
-may include any of the moments above.
+The SQL standard includes the <tt>count(x)</tt> and <tt>avg(x)</tt> aggregators, but statisticians are usually interested in higher moments as well---at least the variance. Therefore, SQL queries using the Apophenia library may include any of the moments above.
 
-<tt>var</tt> and <tt>variance</tt>; <tt>kurt</tt> and <tt>kurtosis</tt> do the same
-thing. Choose the one that sounds better to you. <tt>var</tt>, <tt>var_samp</tt>, <tt>stddev</tt> and <tt>stddev_samp</tt> give sample variance/standard deviation; <tt>variance</tt>, <tt>var_pop</tt> <tt>std</tt> and <tt>stddev_pop</tt> give population standard deviation. 
-The plethora of variants are for mySQL compatibility.
+<tt>var</tt> and <tt>variance</tt>; <tt>kurt</tt> and <tt>kurtosis</tt> do the same thing. Choose the one that sounds better to you. <tt>var</tt>, <tt>var_samp</tt>, <tt>stddev</tt> and <tt>stddev_samp</tt> give sample variance/standard deviation; <tt>variance</tt>, <tt>var_pop</tt> <tt>std</tt> and <tt>stddev_pop</tt> give population standard deviation.  The plethora of variants are for mySQL compatibility.
 
 The  var/skew/kurtosis functions calculate sample moments, so if you want the population moment, multiply the result by (n-1)/n .
 
-For bonus points, there are the <tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>,
-<tt>exp(x)</tt>, <tt>log(x)</tt>, and trig functions. They call the standard
-math library function of the same name to calculate \f$\sqrt{x}\f$,
-\f$x^y\f$, \f$e^x\f$, \f$\ln(x)\f$, \f$\sin(x)\f$, \f$\arcsin(x)\f$, et cetera.
-
+For bonus points, there are the <tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, <tt>log(x)</tt>, and trig functions. They call the standard math library function of the same name to calculate \f$\sqrt{x}\f$, \f$x^y\f$, \f$e^x\f$, \f$\ln(x)\f$, \f$\sin(x)\f$, \f$\arcsin(x)\f$, et cetera.
 */
 
 typedef struct StdDevCtx StdDevCtx;
@@ -218,9 +209,8 @@ static int firstcall;
 
 //This is the callback for apop_query_to_text.
 static int db_to_chars(void *o,int argc, char **argv, char **column){
-  int		i; 
   static int	ncfound;
-  int		jj, addnames = 0, ncshift=0;
+  int		addnames = 0, ncshift=0;
   apop_data* d  = o;
     if (!d->names->textct)
         addnames    ++;
@@ -228,7 +218,7 @@ static int db_to_chars(void *o,int argc, char **argv, char **column){
         namecol   = -1;
         ncfound   = 0;
         firstcall = 0;
-        for(i=0; i<argc; i++)
+        for(int i=0; i<argc; i++)
             if (!strcmp(column[i], apop_opts.db_name_column)){
                 namecol = i;
                 ncfound = 1;
@@ -239,7 +229,7 @@ static int db_to_chars(void *o,int argc, char **argv, char **column){
         d->textsize[1] = argc - ncfound;
     d->text  = realloc(d->text, sizeof(char*) * ++(d->textsize[0]));
     d->text[currentrow]	= malloc(sizeof(char**) * argc);
-    for (jj=0; jj<argc; jj++)
+    for (size_t jj=0; jj<argc; jj++)
         if (jj == namecol){
             apop_name_add(d->names, argv[jj], 'r'); 
             ncshift ++;
@@ -360,10 +350,10 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
 }
 
 apop_data *apop_sqlite_multiquery(const char *intypes, char *query){
-  char		*err        = NULL;
-  apop_qt   info        = {.thisrow = 0};
+  char		*err = NULL;
+  apop_qt   info = { };
     count_types(&info, intypes);
-	if (db==NULL) apop_db_open(NULL);
+	if (!db) apop_db_open(NULL);
     sqlite3_exec(db, query, multiquery_callback, &info, &err); ERRCHECK
 	return info.d;
 }

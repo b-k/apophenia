@@ -25,7 +25,7 @@ consumption, while you are printing a matrix for import into another program.
 
 See \ref apop_name_print.
 */
-/** \defgroup apop_print 	Assortet printing functions		
+/** \defgroup apop_print 	Assorted printing functions		
 
 The <tt>apop_*_print</tt> functions will print to screen, text file,
 or database, depending on how you set \ref apop_opts_type "apop_opts.output_type".

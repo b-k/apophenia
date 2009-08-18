@@ -5,26 +5,16 @@
 #include "mapply.h"
 #include "likelihoods.h"
 
-/** The Beta distribution is useful for modeling because it is bounded
-between zero and one, and can be either unimodal (if the variance is low)
-or bimodal (if the variance is high), and can have either a slant toward
-the bottom or top of the range (depending on the mean).
+/** The Beta distribution is useful for modeling because it is bounded between zero and one, and can be either unimodal (if the variance is low) or bimodal (if the variance is high), and can have either a slant toward the bottom or top of the range (depending on the mean).
 
-The distribution has two parameters, typically named \f$\alpha\f$ and \f$\beta\f$, which
-can be difficult to interpret. However, there is a one-to-one mapping
-between (alpha, beta) pairs and (mean, variance) pairs. Since we have
-good intuition about the meaning of means and variances, this function
-takes in a mean and variance, calculates alpha and beta behind the scenes,
-and returns a random draw from the appropriate Beta distribution.
+The distribution has two parameters, typically named \f$\alpha\f$ and \f$\beta\f$, which can be difficult to interpret. However, there is a one-to-one mapping between (alpha, beta) pairs and (mean, variance) pairs. Since we have good intuition about the meaning of means and variances, this function takes in a mean and variance, calculates alpha and beta behind the scenes, and returns a random draw from the appropriate Beta distribution.
 
 \param m
 The mean the Beta distribution should have. Notice that m
 is in [0,1].
 
 \param v
-The variance which the Beta distribution should have. It is in (0, 1/12),
-where (1/12) is the variance of a Uniform(0,1) distribution. Funny things happen with variance near
-1/12 and mean far from 1/2.
+The variance which the Beta distribution should have. It is in (0, 1/12), where (1/12) is the variance of a Uniform(0,1) distribution. Funny things happen with variance near 1/12 and mean far from 1/2.
 
 \return
 Returns an \c apop_beta model with its parameters appropriately set.
@@ -69,9 +59,9 @@ static double betamap(double x, void *abin) {
 }
 
 static double beta_log_likelihood(apop_data *d, apop_model *p){
+    apop_assert(p->parameters,  0, 0, 's', "You asked me to evaluate an un-parametrized model.");
     ab_type ab;
     size_t size = (d->vector ? d->vector->size : 0) + (d->matrix ? d->matrix->size1 + d->matrix->size2 : 0);
-  apop_assert(p->parameters,  0, 0, 's', "You asked me to evaluate an un-parametrized model.");
     ab.alpha       = apop_data_get(p->parameters,0,-1),
     ab.beta        = apop_data_get(p->parameters,1,-1);
 	return apop_map_sum(d, .fn_dp = betamap, .param=&ab) + gsl_sf_lnbeta(ab.alpha, ab.beta) * size;
@@ -102,8 +92,7 @@ static void beta_rng(double *out, gsl_rng *r, apop_model* eps){
 
 /** The beta distribution.
 \hideinitializer
-\ingroup models
-*/
+\ingroup models */
 apop_model apop_beta = {"Beta distribution", 2,0,0, .estimate = beta_estimate, 
     .log_likelihood = beta_log_likelihood, .score = beta_dlog_likelihood, 
     .constraint = beta_constraint, .draw = beta_rng};

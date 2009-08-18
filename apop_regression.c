@@ -20,7 +20,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <assert.h> 
 #include <gsl/gsl_blas.h>
 
-
 static apop_data * produce_t_test_output(int df, double stat, double diff){
   apop_data *out    = apop_data_alloc(0,7,-1);
   double    pval, qval, two_tail;
@@ -42,7 +41,6 @@ static apop_data * produce_t_test_output(int df, double stat, double diff){
     apop_data_add_named_elmt(out, "confidence, 2 tail", 1 - two_tail);
     return out;
 }
-
 
 /** Answers the question: with what confidence can I say that the means of these two columns of data are different?
 <tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
@@ -109,13 +107,6 @@ int     df      = count-1;
     return produce_t_test_output(df, stat, avg);
 }
 
-static double two_tailed_t_test(double mean, double variance, long int ct){
-double  t_stat  = fabs(mean)/sqrt(variance),
-        p       = 1 - gsl_cdf_tdist_P(t_stat, ct),
-        q       = 1 - gsl_cdf_tdist_Q(-t_stat, ct);
-    return  p + q;
-}
-
 /** For many, it is a knee-jerk reaction to a parameter estimation to
 test whether each individual parameter differs from zero. This function
 does that.
@@ -128,7 +119,6 @@ includes a set of t-test values: p value, confidence (=1-pval), t statistic, sta
 
 */
 void apop_estimate_parameter_t_tests (apop_model *est){
-  int     i, df;
   double  val, var, pval, tstat, rootn, stddev, two_tail;
   if (!est->data)
       return;
@@ -141,19 +131,19 @@ void apop_estimate_parameter_t_tests (apop_model *est){
     apop_name_add(est->parameters->names, "p value, 1 tail", 'c');
     apop_name_add(est->parameters->names, "confidence, 1 tail", 'c');
     apop_name_add(est->parameters->names, "df", 'c');
-    df       = est->data->matrix   ?
+    int df   = est->data->matrix   ?
                     est->data->matrix->size1:
                     est->data->vector->size;
     df      -= est->parameters->vector->size;
     df       = df < 1 ? 1 : df; //some models aren't data-oriented.
     rootn    = sqrt(df);
-    for (i=0; i< est->parameters->vector->size; i++){
+    for (size_t i=0; i< est->parameters->vector->size; i++){
         val     = apop_data_get(est->parameters, i, -1);
         var     = apop_data_get(est->covariance, i, i);
         stddev  = sqrt(var);
         tstat   = val/stddev;
         pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
-        two_tail= (df > 0)? two_tailed_t_test(val, var, df): GSL_NAN;
+        two_tail= (df > 0)? apop_test(tstat, "t", .p1=df) : GSL_NAN;
         apop_data_set_it(est->parameters, i, "df", df);
         apop_data_set_it(est->parameters, i, "t statistic", tstat);
         apop_data_set_it(est->parameters, i, "standard deviation", stddev);
@@ -194,24 +184,20 @@ APOP_VAR_END_HEAD
     gsl_matrix      *xpxinv     = NULL;
     size_t          contrast_ct;
     if (contrast){
-        if (contrast->vector)
-            contrast_ct = contrast->vector->size;
-        else 
-            contrast_ct = contrast->matrix->size1;
+        contrast_ct =  contrast->vector ? contrast->vector->size 
+                                        : contrast->matrix->size1;
     } else contrast_ct = est->parameters->vector->size;
     gsl_vector      *qprimebeta = gsl_vector_calloc(contrast_ct);
     gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(contrast_ct, set->size2);
     gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(contrast_ct, contrast_ct);
     gsl_matrix      *qprimexpxinvqinv = NULL;
     gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(contrast_ct);
-    gsl_vector      error       = gsl_matrix_column(est->expected->matrix, apop_name_find(est->expected->names, "residual", 'c')).vector;
-    gsl_vector      v;
     double          f_stat, variance, pval;
     int             q_df,
                 data_df     = set->size1 - est->parameters->vector->size;
     gsl_matrix_memcpy(data, set);
-    v   = gsl_matrix_column(data, 0).vector;
-    gsl_vector_set_all(&v, 1);
+    Apop_matrix_col(data, 0, v);
+    gsl_vector_set_all(v, 1);
     apop_matrix_normalize(data, 'c', 'm');
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, xpx);   
     gsl_matrix_free(data);
@@ -232,7 +218,8 @@ APOP_VAR_END_HEAD
     gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
     gsl_blas_ddot(qprimebeta, qprimebetaminusc_qprimexpxinvqinv, &f_stat);
 
-    gsl_blas_ddot(&error, &error, &variance);
+    Apop_col_t(est->expected, "residual", error)
+    gsl_blas_ddot(error, error, &variance);
     f_stat  *=  data_df / (variance * q_df);
     pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
 
@@ -252,57 +239,6 @@ apop_data       *out        = apop_data_alloc(0,5,-1);
     apop_data_add_named_elmt(out, "df2", data_df);
     return out;
 }
-
-
-/** generalized least squares.
-
-\ingroup regression
-
-The first column is the dependent variable, the remaining columns are the independent variables. NB: \c data is destroyed by this function. If you want to keep it, make a copy beforehand.
-
-\param set
-The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
-
-\param sigma 
-A known variance-covariance matrix, of size <tt>(data->size1, data->size1)</tt>. Survives the function intact. The first column refers to the constant unit vector, so it's always zero.
-
-\param ep
-Most notable for its <tt>uses</tt> element, 
-If NULL, do everything; else, produce those \ref apop_model elements which you specify. You always get the parameters and never get the log likelihood.
-
-\return
-A pointer to an \ref apop_model structure with the appropriate elements filled. See the description in \ref apop_OLS .
-
-\todo 
-Since the first column and row of the var/covar matrix is always zero, users shouldn't have to make it.
- */
-/*
-apop_model * apop_estimate_GLS(apop_data *set, gsl_matrix *sigma){
-apop_model      *modded_ols;
-    modded_ols              = apop_model_copy(apop_GLS);
-    modded_ols->parameter_ct= set->matrix->size2;
-apop_estimate	*out	= apop_params_alloc(set, *modded_ols, NULL);
-gsl_vector 	*y_data		= gsl_vector_alloc(set->matrix->size1);
-gsl_matrix 	*temp		= gsl_matrix_calloc(set->matrix->size2, set->matrix->size1);
-gsl_vector 	*xsy 		= gsl_vector_calloc(set->matrix->size2);
-gsl_matrix 	*xsx 		= gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
-gsl_matrix 	*sigma_inverse;	//= gsl_matrix_alloc(data->size1, data->size1);
-gsl_vector_view	v 		= gsl_matrix_column(set->matrix, 0);
-    prep_names(out);
-	gsl_matrix_get_col(y_data, set->matrix, 0);
-	gsl_vector_set_all(&(v.vector), 1);	                                            //affine: first column is ones.
-	apop_det_and_inv(sigma, &sigma_inverse, 0, 1);					                //find sigma^{-1}
-	gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, sigma_inverse, 0, temp); 	//temp = X' \sigma^{-1}.
-	gsl_matrix_free(sigma_inverse);
-	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, temp, set->matrix, 0, xsx);    		//(X' \sigma^{-1} X)
-	gsl_blas_dgemv(CblasNoTrans, 1, temp, y_data, 0, xsy);     			            //(X' \sigma^{-1} y)
-	gsl_matrix_free(temp);
-	xpxinvxpy(set->matrix, y_data, xsx, xsy, out);
-	gsl_vector_free(y_data); gsl_vector_free(xsy);
-	return out;
-}
-*/
-
 
 /** The partitioned regression.
         Give me two data sets, and I'll take the steps needed to produce
@@ -433,13 +369,12 @@ static int strcmpwrap(const void *a, const void *b){
   \see{apop_text_unique_elements}
 */
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
-  int    i;
   double val;
   size_t prior_elmt_ctr  = 107;
   size_t elmt_ctr = 0;
   double *elmts   = NULL;
   gsl_vector *out = NULL;
-    for (i=0; i< v->size; i++){
+    for (size_t i=0; i< v->size; i++){
         if (prior_elmt_ctr != elmt_ctr)
             elmts   = realloc(elmts, sizeof(double)*(elmt_ctr+1));
         prior_elmt_ctr  = elmt_ctr;
@@ -464,7 +399,6 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
   \see{apop_vector_unique_elements}
 */
 apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
-  int    i, j;
   char   **tval;
 
   //first element for free
@@ -472,7 +406,7 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
   char **telmts = malloc(sizeof(char**)*2);
   telmts[0] = d->text[0][col];
 
-    for (i=1; i< d->textsize[0]; i++){
+    for (int i=1; i< d->textsize[0]; i++){
         prior_elmt_ctr  = elmt_ctr;
         tval    =  &(d->text[i][col]);
         lsearch (tval, telmts, &elmt_ctr, sizeof(char*), strcmpwrap);
@@ -484,7 +418,7 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
 
     //pack and ship
     apop_data *out = apop_text_alloc(NULL, elmt_ctr, 1);
-    for (j=0; j< elmt_ctr; j++)
+    for (int j=0; j< elmt_ctr; j++)
         apop_text_add(out, j, 0, telmts[j]);
     free(telmts);
     return out;
@@ -494,7 +428,7 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
  setting (i, index) to one.
  Producing factors consists of finding the index and then setting (i, datacol) to index.
  Otherwise the work is basically identical.  */
-apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_first, 
+static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_first, 
                                                 int datacol, char dummyfactor, apop_data **factor_list){
   size_t      i, j, index,
               elmt_ctr        = 0;
@@ -622,13 +556,8 @@ Notice that the query pulled a column of ones for the sake of saving room for th
 
 */
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
-    /*apop_assert_void((datacol != -1) || d->vector, 0, 's', "You asked for the vector element (datacol==-1)"
-                                                           " but the data's vector element is NULL.");
-    apop_assert_void(datacol < (int) d->matrix->size2, 0, 's', "You asked for the matrix element %i but the "
-                                    "data's matrix has only %i columns.", datacol, d->matrix->size2);*/
     apop_assert_void(textcol < d->textsize[1], 0, 's', "You asked for the text element %i but the data's "
                                             "text has only %i elements.", datacol, d->textsize[1]);
-
     if (!d->vector && datacol == -1) //allocate a vector for the user.
         d->vector = gsl_vector_alloc(d->textsize[0]);
     apop_data *out;
@@ -680,16 +609,13 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *in){
   double          sse, sst, rsq, adjustment;
   size_t          obs     = in->data->matrix->size1;
   size_t          indep_ct= in->data->matrix->size2 - 1;
-  gsl_vector      v;  
   apop_data       *out    = apop_data_alloc(0, 5,-1);
   apop_ls_settings *p      = apop_settings_get_group(in, "apop_ls");
     apop_assert(p->want_expected_value,  NULL, 0, 'c', "I need an estimate that used want_expected_value to calculate the correlation coefficient. returning NULL.\n");
-    v   = gsl_matrix_column(in->expected->matrix, 
-                apop_name_find(in->expected->names, "residual", 'c')).vector;
-    gsl_blas_ddot(&v, &v, &sse);
-    v   = gsl_matrix_column(in->expected->matrix, 0).vector; //actual.
-    sst = apop_vector_var(&v) * (v.size-1);
-//    gsl_blas_ddot(&v, &v, &sst);
+    Apop_col_t(in->expected, "residual", v)
+    gsl_blas_ddot(v, v, &sse);
+    Apop_col(in->expected, 0, vv);
+    sst = apop_vector_var(vv) * (vv->size-1);
     rsq = 1. - (sse/sst);
     adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;
     apop_data_add_named_elmt(out, "R_squared", rsq);
@@ -700,9 +626,9 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *in){
     return out;
 }
 
-/** A synonym for \ref apop_estimate_coefficient_of_determination, q.v. 
+/**  \def apop_estimate_r_squared(in) 
+ A synonym for \ref apop_estimate_coefficient_of_determination, q.v. 
+ \hideinitializer
  \ingroup regression
  */
-apop_data *apop_estimate_r_squared (apop_model *in){
-    return apop_estimate_coefficient_of_determination(in);
-}
+

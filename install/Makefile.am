@@ -72,8 +72,7 @@ EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/right.png doxy/down.png doxy/flak
 		tests/Makefile tests/Readme tests/slower.c tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \
 		tests/data-mixed tests/test_data_nans tests/wampler1.dat eg/* \
-		apop_db_mysql.c apop_db_sqlite.c	apop_findzeros.c	\
-		apop.h	apop.i COPYING2
+		apop_db_mysql.c apop_db_sqlite.c apop.h apop.i COPYING2
 
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 

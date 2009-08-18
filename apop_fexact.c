@@ -66,12 +66,10 @@ static int iwork(int iwkmax, int *iwkpt, int number, int itype);
 
 /* The only public function : */
 /* [OK, not any more. apop_test_fisher_exact is now a shell for this: */
-static void
-fexact(int *nrow, int *ncol, int *table, int *ldtabl,
+static void fexact(int *nrow, int *ncol, int *table, int *ldtabl,
        double *expect, double *percnt, double *emin, double *prt,
        double *pre, /* new in C : */ int *workspace,
-       /* new arg, was const = 30*/int *mult)
-{
+       /* new arg, was const = 30*/int *mult) {
 
 /*
   ALGORITHM 643, COLLECTED ALGORITHMS FROM ACM.
@@ -191,7 +189,7 @@ fexact(int *nrow, int *ncol, int *table, int *ldtabl,
     iwkpt = 0;
 
     if (*nrow > *ldtabl)
-	prterr(1, "NROW must be less than or equal to LDTABL.");
+        prterr(1, "NROW must be less than or equal to LDTABL.");
 
     ntot = 0;
     for (i = 0; i < *nrow; ++i) {
@@ -212,11 +210,11 @@ fexact(int *nrow, int *ncol, int *table, int *ldtabl,
     /* nco := max(*nrow, *ncol)
      * nro := min(*nrow, *ncol) */
     if(*ncol > *nrow) {
-	nco = *ncol;
-	nro = *nrow;
+        nco = *ncol;
+        nro = *nrow;
     } else {
-	nco = *nrow;
-	nro = *ncol;
+        nco = *nrow;
+        nro = *ncol;
     }
     k = *nrow + *ncol + 1;
     kk = k * nco;
@@ -256,11 +254,10 @@ fexact(int *nrow, int *ncol, int *table, int *ldtabl,
        Can we always assume that sizeof(double) / sizeof(int) is 2?
        */
 
-    if (i_real == 4) {		/* Double precision reals */
-	numb = 18 + 10 * *mult;
-    } else {			/* Single precision reals */
-	numb = (*mult << 3) + 12;
-    }
+    if (i_real == 4) 		/* Double precision reals */
+        numb = 18 + 10 * *mult;
+    else			/* Single precision reals */
+        numb = (*mult << 3) + 12;
     ldkey = (iwkmax - iwkpt) / numb - 1;
     ldstp = *mult * ldkey;
     ikh = ldkey << 1;	i4  = iwork(iwkmax, &iwkpt, ikh, i_int);
@@ -311,15 +308,12 @@ fexact(int *nrow, int *ncol, int *table, int *ldtabl,
 #undef iwrk
 #undef dwrk
 
-
-void
-f2xact(int nrow, int ncol, int *table, int ldtabl,
+void f2xact(int nrow, int ncol, int *table, int ldtabl,
        double *expect, double *percnt, double *emin, double *prt,
        double *pre, double *fact, int *ico, int *iro, int *kyy,
        int *idif, int *irn, int *key, int *ldkey, int *ipoin,
        double *stp, int *ldstp, int *ifrq, double *LP, double *SP,
-       double *tm, int *key2, int *iwk, double *rwk)
-{
+       double *tm, int *key2, int *iwk, double *rwk) {
 /*
   -----------------------------------------------------------------------
   Name:		F2XACT
@@ -381,14 +375,14 @@ f2xact(int nrow, int ncol, int *table, int ldtabl,
 
     /* Check table dimensions */
     if (nrow > ldtabl)
-	prterr(1, "NROW must be less than or equal to LDTABL.");
+        prterr(1, "NROW must be less than or equal to LDTABL.");
     if (ncol <= 1)
-	prterr(4, "NCOL must be at least 2");
+        prterr(4, "NCOL must be at least 2");
 
     /* Initialize KEY array */
     for (i = 1; i <= *ldkey << 1; ++i) {
-	key[i] = -9999;
-	key2[i] = -9999;
+        key[i] = -9999;
+        key2[i] = -9999;
     }
 
     nr_gt_nc =  nrow > ncol;
@@ -784,12 +778,10 @@ L310:
 }/* f2xact() */
 
 
-double
-f3xact(int nrow, int *irow, int ncol, int *icol,
+double f3xact(int nrow, int *irow, int ncol, int *icol,
        int ntot, double *fact, int *ico, int *iro, int *it,
        int *lb, int *nr, int *nt, int *nu, int *itc, int *ist,
-       double *stv, double *alen, const double *tol)
-{
+       double *stv, double *alen, const double *tol) {
 /*
  -----------------------------------------------------------------------
   Name:	      F3XACT
@@ -1107,11 +1099,9 @@ L200: /* Pop item from stack */
     return  - vmn;
 }
 
-double
-f4xact(int nrow, int *irow, int ncol, int *icol, double dspt,
+double f4xact(int nrow, int *irow, int ncol, int *icol, double dspt,
        double *fact, int *icstk, int *ncstk, int *lstk, int *mstk,
-       int *nstk, int *nrstk, int *irstk, double *ystk, const double *tol)
-{
+       int *nstk, int *nrstk, int *irstk, double *ystk, const double *tol) {
 /*
   -----------------------------------------------------------------------
   Name:	      F4XACT
@@ -1311,11 +1301,9 @@ f4xact(int nrow, int *irow, int ncol, int *icol, double dspt,
 }
 
 
-void
-f5xact(double *pastp, const double *tol, int *kval, int *key, int *ldkey,
+void f5xact(double *pastp, const double *tol, int *kval, int *key, int *ldkey,
        int *ipoin, double *stp, int *ldstp, int *ifrq, int *npoin,
-       int *nr, int *nl, int *ifreq, int *itop, Rboolean psh)
-{
+       int *nr, int *nl, int *ifreq, int *itop, Rboolean psh) {
 /*
   -----------------------------------------------------------------------
   Name:	      F5XACT aka "PUT"
@@ -1478,9 +1466,7 @@ L60:
 }
 
 
-Rboolean
-f6xact(int nrow, int *irow, int *kyy, int *key, int *ldkey, int *last, int *ipn)
-{
+Rboolean f6xact(int nrow, int *irow, int *kyy, int *key, int *ldkey, int *last, int *ipn) {
 /*
   -----------------------------------------------------------------------
   Name:	      F6XACT  aka "GET"
@@ -1529,9 +1515,7 @@ L10:
 }
 
 
-void
-f7xact(int nrow, int *imax, int *idif, int *k, int *ks, int *iflag)
-{
+void f7xact(int nrow, int *imax, int *idif, int *k, int *ks, int *iflag) {
 /*
   -----------------------------------------------------------------------
   Name:	      F7XACT
@@ -1629,8 +1613,7 @@ f7xact(int nrow, int *imax, int *idif, int *k, int *ks, int *iflag)
 }
 
 
-void f8xact(int *irow, int is, int i1, int izero, int *new)
-{
+void f8xact(int *irow, int is, int i1, int izero, int *new) {
 /*
   -----------------------------------------------------------------------
   Name:	      F8XACT
@@ -1671,8 +1654,7 @@ void f8xact(int *irow, int is, int i1, int izero, int *new)
     }
 }
 
-double f9xact(int n, int ntot, int *ir, double *fact)
-{
+double f9xact(int n, int ntot, int *ir, double *fact) {
 /*
   -----------------------------------------------------------------------
   Name:	      F9XACT
@@ -1688,11 +1670,8 @@ double f9xact(int n, int ntot, int *ir, double *fact)
      	    - The log of the multinomal coefficient.		(Output)
   -----------------------------------------------------------------------
   */
-    double d;
-    int k;
-
-    d = fact[ntot];
-    for (k = 0; k < n; k++)
+    double d = fact[ntot];
+    for (int k = 0; k < n; k++)
 	d -= fact[ir[k]];
     return d;
 }
@@ -1818,9 +1797,7 @@ int iwork(int iwkmax, int *iwkpt, int number, int itype) {
               the first free element in the workspace array.	(Output)
   -----------------------------------------------------------------------
   */
-    int i;
-
-    i = *iwkpt;
+    int i = *iwkpt;
     if (itype == 2 || itype == 3)
 	*iwkpt += number;
     else { /* double */
@@ -1837,8 +1814,7 @@ int iwork(int iwkmax, int *iwkpt, int number, int itype) {
 
 #ifndef USING_R
 
-void isort(int *n, int *ix)
-{
+void isort(int *n, int *ix) {
 /*
   -----------------------------------------------------------------------
   Name:	      ISORT
@@ -1949,24 +1925,22 @@ double gammds(double *y, double *p, int *ifault) {
     /* Checks for the admissibility of arguments and value of F */
     *ifault = 1;
     g = 0.;
-    if (*y <= 0. || *p <= 0.) {
-	return g;
-    }
+    if (*y <= 0. || *p <= 0.)
+        return g;
     *ifault = 2;
 
     /*
       ALOGAM is natural log of gamma function no need to test ifail as
       an error is impossible
 
-      BK edit: using gsl_sf_lngamma instead. More methods--> maybe slower; more precise.
+      BK edit: using gsl_sf_lngamma instead. It has more methods--> maybe slower; more precise.
 
       */
 
     a = *p + 1.;
     f = exp(*p * log(*y) - gsl_sf_lngamma(a) - *y);
-    if (f == 0.) {
-	return g;
-    }
+    if (f == 0.) 
+        return g;
     *ifault = 0;
 
     /* Series begins */
@@ -1975,9 +1949,9 @@ double gammds(double *y, double *p, int *ifault) {
     a = *p;
 //L10: //note from Ben: compiler says this label is unused.
     do {
-	a += 1.;
-	c *= (*y / a);
-	g += c;
+        a += 1.;
+        c *= (*y / a);
+        g += c;
     } while (c > 1e-6 * g);
 
     g *= f;
@@ -1990,12 +1964,11 @@ Not too necessary, but I needed it for the Fisher exact test.
 \ingroup conversions
 */
 static int *apop_data_to_int_array(apop_data *intab){
-int i,j,
-    rowct   = intab->matrix->size1,
+int rowct   = intab->matrix->size1,
     colct   = intab->matrix->size2,
     *out    =malloc(sizeof(int)*(rowct* colct));
-    for (i=0; i< rowct; i++)
-        for (j=0; j< colct; j++)
+    for (int i=0; i< rowct; i++)
+        for (int j=0; j< colct; j++)
             out[j*rowct + i] = (int) gsl_matrix_get(intab->matrix, i, j);
     return out;
 }

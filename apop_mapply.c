@@ -156,7 +156,7 @@ APOP_VAR_ENDHEAD
 
 
 /** A convenience function to call \ref apop_map, and return the sum of
- the resulting elements. Thus, this function returns a single \ref double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always internally allocate a temp data set and free it before returning.
+ the resulting elements. Thus, this function returns a single \c double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always internally allocate a temp data set and free it before returning.
  */
 APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi,    void *param, char part){ 
     apop_data * apop_varad_var(in, NULL)

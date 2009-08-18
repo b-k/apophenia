@@ -22,9 +22,33 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <setjmp.h>
 #include <signal.h>
 #include <gsl/gsl_deriv.h>
+#include <gsl/gsl_multiroots.h>
 
-//in apop_regress.c:
-void apop_estimate_parameter_t_tests (apop_model *est);
+
+typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
+typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
+
+typedef struct {
+	gsl_vector	*beta;
+	apop_data	*d;
+	int		    dimension;
+} grad_params;
+
+typedef struct {
+    apop_model  *model;
+    apop_data   *data;
+    apop_fn_with_params   *f;
+    apop_df_with_void   *df;
+    grad_params *gp;
+    gsl_vector  *beta;
+    gsl_vector  *starting_pt;
+    int         use_constraint;
+    char        *trace_path;
+    FILE        **trace_file;
+}   infostruct;
+
+static apop_model * find_roots (infostruct p); //see end of file.
+void apop_estimate_parameter_t_tests (apop_model *est); //in apop_regress.c
 
 /** \page trace_path Plotting the path of an ML estimation.
 
@@ -88,31 +112,8 @@ void *apop_mle_settings_copy(apop_mle_settings * in){
 void apop_mle_settings_free(void *in){ apop_mle_settings * fin = in; free(fin); }
 
 //      MLE support functions
-
-typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
-typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
-
 //Including numerical differentiation and a couple of functions to
 //negate the likelihood fns without bothering the user.
-
-typedef struct {
-	gsl_vector	*beta;
-	apop_data	*d;
-	int		    dimension;
-} grad_params;
-
-typedef struct {
-    apop_model  *model;
-    apop_data   *data;
-    apop_fn_with_params   *f;
-    apop_df_with_void   *df;
-    grad_params *gp;
-    gsl_vector  *beta;
-    gsl_vector  *starting_pt;
-    int         use_constraint;
-    char        *trace_path;
-    FILE        **trace_file;
-}   infostruct;
 
 static apop_model * apop_annealing(infostruct*);                         //below.
 static int dnegshell (const gsl_vector *, void * , gsl_vector * g); //below.
@@ -124,9 +125,6 @@ static double one_d(double b, void *in){
 	double out= (*(i->f))(i->gp->d, i->model);
     return out;
 }
-
-
-#include "apop_findzeros.c"
 
 /* For each element of the parameter set, jiggle it to find its
  gradient. Return a vector as long as the parameter list. */
@@ -824,4 +822,50 @@ apop_model * apop_annealing(infostruct *i){
     if (mp->rng)
         r = NULL;
     return i->model;
+}
+
+/* This function calls the various GSL root-finding algorithms to find the zero of the score.
+   Cut/pasted/modified from the GSL documentation.  */
+static apop_model * find_roots (infostruct p) {
+  const gsl_multiroot_fsolver_type *T;
+  gsl_multiroot_fsolver *s;
+  apop_model *dist = p.model;
+  int           vsize       =(dist->parameters->vector ? dist->parameters->vector->size :0),
+                msize1      =(dist->parameters->matrix ? dist->parameters->matrix->size1 :0),
+                msize2      =(dist->parameters->matrix ? dist->parameters->matrix->size2:0);
+  int status, betasize      = vsize + msize1* msize2;
+  size_t  iter = 0;
+  gsl_vector *x;
+    apop_mle_settings *mlep   = apop_settings_get_group(dist, "apop_mle");
+    dist->status = 1;    //assume failure until we score a success.
+    if (!mlep || mlep->starting_pt==NULL){
+        x = gsl_vector_alloc(betasize);
+        gsl_vector_set_all (x,  2);
+    } else
+        x   = apop_array_to_vector(mlep->starting_pt, betasize);
+  gsl_multiroot_function f = {dnegshell, betasize, &p};
+    if (mlep->method == APOP_RF_NEWTON)
+        T = gsl_multiroot_fsolver_dnewton;
+    else if (mlep->method == APOP_RF_HYBRID_NOSCALE)
+        T = gsl_multiroot_fsolver_hybrids;
+    else //if (mlep->method == APOP_RF_HYBRID)        --default
+        T = gsl_multiroot_fsolver_hybrid;
+    s = gsl_multiroot_fsolver_alloc (T, betasize);
+    gsl_multiroot_fsolver_set (s, &f, x);
+    do {
+        iter++;
+        status = gsl_multiroot_fsolver_iterate (s);
+        if (!mlep || mlep->verbose)
+            printf ("iter = %3u x = % .3f f(x) = % .3e\n", iter, gsl_vector_get (s->x, 0), gsl_vector_get (s->f, 0));
+        if (status)   /* check if solver is stuck */
+            break;
+        status = gsl_multiroot_test_residual (s->f, mlep->tolerance);
+     } while (status == GSL_CONTINUE && iter < 1000);
+     if(GSL_SUCCESS) dist->status = 0;
+  printf ("status = %s\n", gsl_strerror (status));
+  //dist->parameters   = apop_data_unpack(s->x, vsize, msize1, msize2);
+  apop_data_unpack(s->x, dist->parameters);
+  gsl_multiroot_fsolver_free (s);
+  gsl_vector_free (x);
+  return dist;
 }

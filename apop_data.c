@@ -227,7 +227,7 @@ twice as much memory. Plan accordingly.
 \param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
 if 'c', stack columns of m1's matrix to left of m2's<br>
 (default = 'r')
-\param  inplace If \c 'i' \c 'y', use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
+\param  inplace If \c 'i' \c 'y' or 1, use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
 
 If m1 or m2 are NULL, this returns a copy of the other element, and if
 both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 back)
@@ -248,6 +248,7 @@ APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char pos
     apop_data * apop_varad_var(m2, NULL)
     char apop_varad_var(posn, 'r')
     char apop_varad_var(inplace, 'n')
+    inplace = (inplace == 'i' || inplace == 'y' || inplace == 1 || inplace == 'I' || inplace == 'Y') ? 1 : 0;
     return apop_data_stack_base(m1, m2, posn, inplace);
 APOP_VAR_ENDHEAD
   gsl_matrix  *stacked= NULL;
@@ -258,7 +259,7 @@ APOP_VAR_ENDHEAD
         return (inplace == 'i' || inplace == 'y') ? m1 : apop_data_copy(m1);
     apop_assert((posn == 'r' || posn == 'c'), NULL, 0, 'c', "Valid positions are 'r' or 'c'"
                              " you gave me >%c<. Returning NULL.", posn);
-    if (inplace == 'i' || inplace == 'y'){
+    if (inplace){
         out = m1;
         apop_matrix_stack(m1->matrix, m2->matrix, posn, inplace);
     } else {
@@ -268,8 +269,10 @@ APOP_VAR_ENDHEAD
     if (posn == 'r')
         out->vector = apop_vector_stack(m1->vector, m2->vector, inplace);
     else 
-        out->vector = apop_vector_copy(m1->vector);
-    out->names  = apop_name_copy(m1->names);
+        if (!inplace)
+            out->vector = apop_vector_copy(m1->vector);
+    if (!inplace)
+        out->names  = apop_name_copy(m1->names);
     apop_name_stack(out->names, m2->names, posn);
     return out;
 }
@@ -278,25 +281,16 @@ APOP_VAR_ENDHEAD
 
  For the opposite operation, see \ref apop_data_stack.
 
- The \ref apop_data->vector is taken to be the -1st element of the matrix.
- \param in  The \ref apop_data structure to split
- \param splitpoint The index of what will be the first row/column of the
- second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole
- data set will be in the second data set; if this is the length of the
- matrix then the whole data set will be in the first data set. Another
- way to put it is that \c splitpoint will equal the number of rows/columns
- in the first matrix (unless it is -1, in which case the first matrix
- will have zero rows, or it is greater than the matrix's size, in which
- case it will have as many rows as the original).
- \param r_or_c If this is 'r' or 'R', then cleave the rows; of 'c' or 'C' cleave the columns.
+ The \ref apop_data->vector is taken to be the -1st element of the matrix.  \param in  The \ref apop_data structure to split \param splitpoint The index of what will be the first row/column of the second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second data set; if this is the length of the matrix then the whole data set will be in the first data set. Another way to put it is that \c splitpoint will equal the number of rows/columns in the first matrix (unless it is -1, in which case the first matrix will have zero rows, or it is greater than the matrix's size, in which case it will have as many rows as the original).  \param r_or_c If this is 'r' or 'R', then cleave the rows; of 'c' or 'C' cleave the columns.
 
  \return An array of two \ref apop_data sets. If one is empty then a
- NULL pointer will be returned.
+ NULL pointer will be returned in that position. For example, for a data set of 50 rows, <tt>apop_data **out = apop_data_split(data, 100, 'r')</tt> sets <tt>out[0] = apop_data_copy(data)</tt> and <tt>out[1] = NULL</tt>.
 
  */
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
-    //A long, dull series of contingencies. Bonus: a valid use of goto.
+    //A long, dull series of contingencies. Bonus: a reasonable use of goto.
   apop_data   **out   = malloc(2*sizeof(apop_data *));
+  out[0] = out[1] = NULL;
   gsl_vector  v1, v2;
   gsl_matrix  m1, m2;
   int       set_v1  = 1,
@@ -304,13 +298,11 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             set_m1  = 1,
             set_m2  = 1;
      if (r_or_c == 'r' || r_or_c == 'r') {
-        if (splitpoint <=0){
-            out[0]  = NULL;
+        if (splitpoint <=0)
             out[1]  = apop_data_copy(in);
-        } else if (splitpoint >= in->matrix->size1) {
+        else if (splitpoint >= in->matrix->size1)
             out[0]  = apop_data_copy(in);
-            out[1]  = NULL;
-        } else {
+        else {
             if (in->vector){
                 v1      = gsl_vector_subvector(in->vector, 0, splitpoint).vector;
                 v2      = gsl_vector_subvector(in->vector, splitpoint, in->vector->size - splitpoint).vector;
@@ -327,13 +319,11 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             goto allocation;
         }
     } else if (r_or_c == 'c' || r_or_c == 'C') {
-        if (splitpoint <= -1){
-            out[0]  = NULL;
+        if (splitpoint <= -1)
             out[1]  = apop_data_copy(in);
-        } else if (splitpoint >= in->matrix->size2){
-            out[1]  = NULL;
+        else if (splitpoint >= in->matrix->size2)
             out[0]  = apop_data_copy(in);
-        } else if (splitpoint == 0){
+        else if (splitpoint == 0){
             if (in->vector)
                 v1      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
             else set_v1 = 0;
@@ -369,11 +359,8 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             set_m2  = 0;
             goto allocation;
         }
-    } else {
+    } else 
         apop_error(0, 'c',"%s: Please set r_or_c == 'r' or == 'c'. Returning two NULLs.\n", __func__);
-        out[0]  = NULL;
-        out[1]  = NULL;
-    }
     return out;
 
 allocation:
@@ -415,7 +402,7 @@ apop_name   *newname    = apop_name_alloc();
     free(n->column);
     n->column = newname->column;
     //we need to free the newname struct, but leave the column intact.
-    newname->column   = malloc(1);
+    newname->column   = NULL;
     newname->colct  = 0;
     apop_name_free(newname);
 }
@@ -448,7 +435,8 @@ There are a few other differences: the \ref apop_data set has names, so we can g
 
 \li The versions that take a column/row name use  \ref apop_name_find
 for the search; see notes there on the name matching rules.
-\li For those that take a column number, column -1 is the vector element.
+\li For those that take a column number, column -1 is the vector element. 
+\li For those that take a column name, I will search the vector last---if I don't find the name among the matrix columns, but the name matches the vector name, I return -1.
 
 The \c _ptr functions return a pointer to the given cell. Those functions follow the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr, and like those functions, return a pointer to the appropriate \c double.
 */
@@ -467,27 +455,27 @@ double * apop_data_ptr(const apop_data *data, const int i, const int j){
 /** Get a pointer to an element from an \ref apop_data set, using the row name but the column number. */
 double *apop_data_ptr_ti(const apop_data *in, char* row, int col){
   int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert(rownum != -1,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
-    if (col>=0)
-        return gsl_matrix_ptr(in->matrix, rownum, col);
-    else
-        return gsl_vector_ptr(in->vector, rownum);
+    apop_assert(rownum != -2,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
+    return (col >= 0) ? gsl_matrix_ptr(in->matrix, rownum, col)
+                      : gsl_vector_ptr(in->vector, rownum);
 }
 
 /** Get a pointer to an element from an \ref apop_data set, using the column name but the row number. */
 double *apop_data_ptr_it(const apop_data *in, size_t row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
-    apop_assert(colnum != -1,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
-    return gsl_matrix_ptr(in->matrix, row, colnum);
+    apop_assert(colnum != -2,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
+    return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, row, colnum)
+                         : gsl_vector_ptr(in->vector, row);
 }
 
 /** Get a pointer to an element from an \ref apop_data set, using the row and column name.*/
 double *apop_data_ptr_tt(const apop_data *in, char *row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert(colnum != -1,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
-    apop_assert(rownum != -1,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
-    return gsl_matrix_ptr(in->matrix, rownum, colnum);
+    apop_assert(rownum != -2,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
+    apop_assert(colnum != -2,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
+    return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, rownum, colnum)
+                         : gsl_vector_ptr(in->vector, rownum);
 }
 
 /** Returns the data element at the given point, using numeric indices.  */
@@ -504,27 +492,27 @@ double apop_data_get(const apop_data *in, size_t row, int col){
 /** Get an element from an \ref apop_data set, using the row name but the column number */
 double apop_data_get_ti(const apop_data *in, char* row, int col){
   int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert(rownum != -1,  GSL_NAN, 0,'c',"Couldn't find %s amongst the row names.", row);
-    if (col>=0)
-        return gsl_matrix_get(in->matrix, rownum, col);
-    else
-        return gsl_vector_get(in->vector, rownum);
+    apop_assert(rownum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the row names.", row);
+    return (col >= 0) ? gsl_matrix_get(in->matrix, rownum, col)
+                      : gsl_vector_get(in->vector, rownum);
 }
 
 /** Get an element from an \ref apop_data set, using the column name but the row number */
 double apop_data_get_it(const apop_data *in, size_t row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
-    apop_assert(colnum != -1,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
-    return gsl_matrix_get(in->matrix, row, colnum);
+    apop_assert(colnum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
+    return (colnum >= 0) ? gsl_matrix_get(in->matrix, row, colnum)
+                         : gsl_vector_get(in->vector, row);
 }
 
 /** Get an element from an \ref apop_data set, using the row and column name.*/
 double apop_data_get_tt(const apop_data *in, char *row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert(colnum != -1,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
-    apop_assert(rownum != -1,  GSL_NAN, 0,'c',"Couldn't find %s amongst the row names.", row);
-    return gsl_matrix_get(in->matrix, rownum, colnum);
+    apop_assert(colnum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
+    apop_assert(rownum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the row names.", row);
+    return (colnum >= 0) ? gsl_matrix_get(in->matrix, rownum, colnum)
+                         : gsl_vector_get(in->vector, rownum);
 }
 
 /**  Set a data element using two numeric indices.  */
@@ -541,47 +529,52 @@ void apop_data_set(apop_data *in, size_t row, int col, double data){
 /** Set an element from an \ref apop_data set, using the row name but the column number */
 void apop_data_set_ti(apop_data *in, char* row, int col, double data){
   int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert_void(rownum != -1, 0,'c',"Couldn't find %s amongst the row names. Making no changes.", row);
-    if (col>=0)
-        gsl_matrix_set(in->matrix, rownum, col, data);
-    else
-        gsl_vector_set(in->vector, rownum, data);
+    apop_assert_void(rownum != -2, 0,'c',"Couldn't find %s amongst the row names. Making no changes.", row);
+    return (col >= 0) ? gsl_matrix_set(in->matrix, rownum, col, data)
+                      : gsl_vector_set(in->vector, rownum, data);
 }
 
 /** Set an element from an \ref apop_data set, using the column name but the row number */
 void apop_data_set_it(apop_data *in, size_t row, char* col, double data){
   int colnum =  apop_name_find(in->names, col, 'c');
-    apop_assert_void(colnum != -1, 0,'c',"Couldn't find %s amongst the column names. Making no changes.", col);
-    gsl_matrix_set(in->matrix, row, colnum, data);
+    apop_assert_void(colnum != -2, 0,'c',"Couldn't find %s amongst the column names. Making no changes.", col);
+    return (colnum >= 0) ? gsl_matrix_set(in->matrix, row, colnum, data)
+                         : gsl_vector_set(in->vector, row, data);
 }
 
 /** Set an element from an \ref apop_data set, using the row and column name.  */
 void apop_data_set_tt(apop_data *in, char *row, char* col, double data){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert_void(colnum != -1, 0, 'c',"Couldn't find %s amongst the column names.", col);
-    apop_assert_void(rownum != -1, 0, 'c',"Couldn't find %s amongst the column names.", row);
-    gsl_matrix_set(in->matrix, rownum, colnum, data);
+    apop_assert_void(colnum != -2, 0, 'c',"Couldn't find %s amongst the column names.", col);
+    apop_assert_void(rownum != -2, 0, 'c',"Couldn't find %s amongst the column names.", row);
+    return (colnum >= 0) ? gsl_matrix_set(in->matrix, rownum, colnum, data)
+                         : gsl_vector_set(in->vector, rownum, data);
 }
 /** \} //End data_set_get group */
 
-/** Add a named element to a data vector. For example, 
+/** A convenience function to add a named element to a data vector. For example, 
 many of the testing procedures use this to easily produce a column of named parameters.
 
-\param d    The \ref apop_data structure.
+\param d    The \ref apop_data structure. Must not be \c NULL.
 \param name The name to add
-\param val  the vector value to add.
+\param val  the value to add to the vector.
 
-I use the position of the name to know where to put the value. If
+\li I use the position of the name to know where to put the value. If
 there are two names in the data set, then I will put the new name in
 the third name slot and the data in the third slot in the vector. If
 you use this function from start to finish in building your vector,
 then you'll be fine.
 
+\li If the vector is too short (or \c NULL), I will call \ref apop_vector_realloc internally to make space in the vector.
+
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
-    Apop_assert_void(d, 0, 's', "You sent me a NULL apop_data set. I'm not sure what you want me to do with that.");
-    Apop_assert_void(d->vector, 0, 's', "The apop_data set you sent me has a NULL vector.");
+    Apop_assert_void(d, 0, 's', "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc(0, 0,0) to start.");
+    if (!d->vector)
+        d->vector = gsl_vector_alloc(1);
+    if (d->vector->size < d->names->rowct)
+        apop_vector_realloc(d->vector, d->names->rowct);
     gsl_vector_set(d->vector, d->names->rowct, val);
     apop_name_add(d->names, name, 'r');
 }
@@ -649,23 +642,11 @@ apop_data *apop_data_transpose(apop_data *in){
 
 /** This function will resize a gsl_matrix to a new height or width.
 
- Data in the matrix will be retained. If the new height or width is
- smaller than the old, then data in the later rows/columns will be
- cropped away (in a non--memory-leaking manner). If the new height or width is larger than the old,
- then new cells will be filled with garbage; it is your repsonsibility
- to zero out or otherwise fill new rows/columns before use.
+Data in the matrix will be retained. If the new height or width is smaller than the old, then data in the later rows/columns will be cropped away (in a non--memory-leaking manner). If the new height or width is larger than the old, then new cells will be filled with garbage; it is your repsonsibility to zero out or otherwise fill new rows/columns before use.
 
- <b>Warning I</b>: Using this function is basically bad form---especially
- when used in a <tt>for</tt> loop that adds a column each time. A large
- number of
-<tt>realloc</tt>s can take a noticeable amount of time. You are
-thus encouraged to make an effort to determine the size of your data
-beforehand.
+<b>Warning I</b>: Using this function is basically bad form---especially when used in a <tt>for</tt> loop that adds a column each time. A large number of <tt>realloc</tt>s can take a noticeable amount of time. You are thus encouraged to make an effort to determine the size of your data beforehand.
 
- <b>Warning II</b>: The <tt>gsl_matrix</tt> is a versatile struct that
- can represent submatrices and other cuts from parent data. I can't
- deal with those, and check for such situations beforehand. [Besides,
- resizing a portion of a parent matrix makes no sense.]
+<b>Warning II</b>: The <tt>gsl_matrix</tt> is a versatile struct that can represent submatrices and other cuts from parent data. I can't deal with those, and check for such situations beforehand. [Besides, resizing a portion of a parent matrix makes no sense.]
 
 \param m The already-allocated matrix to resize.  If you give me \c NULL, this becomes equivalent to \c gsl_matrix_alloc
 \param newheight, newwidth The height and width you'd like the matrix to be.
@@ -730,7 +711,6 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
     apop_assert((v->block->data==v->data) && v->owner & (v->stride == 1),
                 NULL, 0, 's', "I can't resize subvectors or other views.");
     v->block->size = newheight;
-    v->stride   = 1;
     v->size     = newheight;
     v->block->data = 
     v->data        = realloc(v->data, sizeof(double) * v->block->size);

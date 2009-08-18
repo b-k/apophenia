@@ -49,8 +49,6 @@ gsl_vector * v = &( apop_vv_##v );
 	//The following are just convenient hooks to gsl vector functions.
 #define __PURE __attribute__((pure))
 inline long double apop_vector_sum(const gsl_vector *in) __PURE;
-inline double apop_vector_mean(const gsl_vector *in) __PURE;
-inline double apop_vector_var(const gsl_vector *in) __PURE;
 inline double apop_var(const gsl_vector *in) __PURE;
 inline double apop_vector_var_m(const gsl_vector *in, const double mean) __PURE;
 inline double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb) __PURE;
@@ -111,6 +109,7 @@ APOP_VAR_DECLARE apop_data * apop_data_sort(apop_data *data, int sortby, char as
 
 //from the regression code:
 #define apop_F_test apop_f_test
+#define apop_estimate_r_squared(in) apop_estimate_coefficient_of_determination(in)
 
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
@@ -138,3 +137,51 @@ apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2)
 }
 #endif
 #endif
+
+/** \def Apop_submatrix(m, srow, scol, nrow, ncol)
+Pull a pointer to a submatrix into a \c gsl_matrix 
+
+ \param m The root matrix
+ \param srow the first row (in the root matrix) of the top of the submatrix
+ \param scol the first column (in the root matrix) of the left edge of the submatrix
+ \param nrow number of rows in the submatrix
+ \param ncol number of columns in the submatrix
+\hideinitializer */
+
+/** \def Apop_row_t(m, row_name, v)
+ After this call, \c v will hold a vector view of the <tt>row</tt>th row of \c m.
+ Unlike \ref Apop_row, the second argument is a row name, that I'll look up using \ref apop_name_find.
+\hideinitializer */
+
+/** \def Apop_col_t(m, col_name, v)
+ After this call, \c v will hold a vector view of the <tt>col</tt>th column of \c m.
+ Unlike \ref Apop_col, the second argument is a column name, that I'll look up using \ref apop_name_find.
+\hideinitializer */
+
+/** \def Apop_matrix_row(m, row, v)
+ After this call, \c v will hold a vector view of the <tt>row</tt>th row of \c m.
+\hideinitializer */
+
+/** \def Apop_matrix_col(m, col, v)
+ After this call, \c v will hold a vector view of the <tt>col</tt>th column of \c m.
+\hideinitializer */
+
+/** \def Apop_row(d, row, v)
+ After this call, \c v will hold a vector view of the <tt>row</tt>th row of \ref apop_data set \c d.
+\hideinitializer */
+
+/** \def Apop_col(d, col, v)
+ After this call, \c v will hold a vector view of the <tt>col</tt>th column of \ref apop_data set \c d.
+\hideinitializer */
+
+/** \def apop_mean(v)
+ Returns the mean of the elements of the vector \c v.
+\hideinitializer */
+
+/** \def apop_vector_mean(v)
+ Returns the mean of the elements of the vector \c v.
+\hideinitializer */
+
+/** \def apop_vector_var(v)
+ Returns the sample variance of the elements of the vector \c v.
+\hideinitializer */

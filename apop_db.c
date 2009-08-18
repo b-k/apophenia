@@ -45,40 +45,24 @@ typedef struct {
     apop_data   *outdata;
 } callback_t;
 
-/** Random numbers are generated inside the database using a separate
- RNG. This will initialize it for you, just like \ref apop_rng_alloc,
- except the RNG it produces is kept for internal use. If you don't call
- it, then it will be called at first use, with seed zero.
+/** Random numbers are generated inside the database using a separate RNG. This will initialize it for you, just like \ref apop_rng_alloc, except the RNG it produces is kept for internal use. If you don't call it, then it will be called at first use, with seed zero.
 
 \param  seed    The seed. No need to get funny with it: 0, 1, and 2 will produce wholly different streams.
 \return The RNG ready for your use.
 \ingroup db
 */
-void apop_db_rng_init(int seed){
-    db_rng  = apop_rng_alloc(seed);
-}
+void apop_db_rng_init(int seed){ db_rng  = apop_rng_alloc(seed); }
 
 /**
-If you want to use a database on the hard drive instead of memory,
-then call this once and only once before using any other database
-utilities. 
+If you want to use a database on the hard drive instead of memory, then call this once and only once before using any other database utilities. 
 
-If you want a disposable database which you won't use after the program
-ends, don't bother with this function.
+If you want a disposable database which you won't use after the program ends, don't bother with this function.
 
-The trade-offs between an on-disk database and an in-memory db are as
-one would expect: memory is faster, but is destroyed when the program
-exits. SQLite includes a command line utility (<tt>sqlite3</tt>) which
-let you ask queries of a database on disk, which may
-be useful for debugging. There are also some graphical
-front-ends; just ask your favorite search engine for <a
-href="http://www.google.com/search?&q=sqlite+gui">SQLite GUI</a>.
+The trade-offs between an on-disk database and an in-memory db are as one would expect: memory is faster, but is destroyed when the program exits. SQLite includes a command line utility (<tt>sqlite3</tt>) which let you ask queries of a database on disk, which may be useful for debugging. There are also some graphical front-ends; just ask your favorite search engine for <a href="http://www.google.com/search?&q=sqlite+gui">SQLite GUI</a>.
 
 MySQL users: either set the environment variable APOP_DB_ENGINE=mysql or set \c apop_opts.db_engine = 'm'.
 
-The Apophenia package assumes you are only using a single
-SQLite database at a time; if not, the \ref apop_db_merge and \ref
-apop_db_merge_table functions may help.
+The Apophenia package assumes you are only using a single SQLite database at a time; if not, the \ref apop_db_merge and \ref apop_db_merge_table functions may help.
 
 When you are done doing your database manipulations, be sure to call \ref apop_db_close if writing to disk.
 
@@ -150,24 +134,25 @@ int apop_db_open(char *filename){
 }
 */
 
-
-int 		isthere;//used for the next two fns only.
+typedef struct {
+    char *name;
+    int isthere;
+} tab_exists_t;
 
 static int tab_exists_callback(void *in, int argc, char **argv, char **whatever){
-  char *q	= in;
-	if (!strcmp(argv[argc-1],q))
-		isthere=1;
+    tab_exists_t *te = in;
+	if (!strcmp(argv[argc-1], te->name))
+		te->isthere=1;
 	return 0;
 }
 
 /** Check for the existence of a table, and maybe delete it.
 
-Recreating a table which already exists can cause errors, so it is good practice to check for existence first.
-Also, this is the stylish way to delete a table, since just calling <tt>"drop table"</tt> will give you an error if the table doesn't exist.
+Recreating a table which already exists can cause errors, so it is good practice to check for existence first.  Also, this is the stylish way to delete a table, since just calling <tt>"drop table"</tt> will give you an error if the table doesn't exist.
 
 \param name 	the table name (no default)
 \param remove 'd'	==>delete table so it can be recreated in main.<br>
-		'n'	==>no action. return error so program can continue. (default)
+		'n'	==>no action. return result so program can continue. (default)
 \return
 0 = table does not exist<br>
 1 = table was found, and if whattodo==1, has been deleted
@@ -189,21 +174,20 @@ APOP_VAR_END_HEAD
 #endif
 #ifdef HAVE_LIBSQLITE3
   char 		*err, q2[10000];
-	isthere=0;
+  tab_exists_t te = { .name = name };
 	if (db==NULL) return 0;
-	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,name, &err); 
+	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,&te, &err); 
 	ERRCHECK
-	if ((remove==1|| remove=='d') && isthere){
+	if ((remove==1|| remove=='d') && te.isthere){
 		sqlite3_exec(db,strcat(strcpy(q2, "DROP TABLE "),name),NULL,NULL, &err); 
         ERRCHECK
     }
-	return isthere;
+	return te.isthere;
 #endif
 }
 
 /**
-Closes the database on disk. If you opened the database with
-\c apop_db_open(NULL), then this is basically optional.
+Closes the database on disk. If you opened the database with \c apop_db_open(NULL), then this is basically optional.
 
 \param vacuum 
 'v': vacuum---do clean-up to minimize the size of the database on disk.<br>
@@ -283,10 +267,7 @@ int apop_query(const char *fmt, ...){
 
 /** Dump the results of a query into an array of strings.
 
-\return		An \ref apop_data structure with the <tt>text</tt>
-element filled. Notice that this is always a 2-D array, even if the query
-returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt>
-to refer to row <tt>i</tt>.
+\return		An \ref apop_data structure with the <tt>text</tt> element filled. Notice that this is always a 2-D array, even if the query returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt> to refer to row <tt>i</tt>.
 
 For example,
 the following function will list the tables in a database (much like you could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
@@ -310,7 +291,7 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 
 //apop_query_to_matrix callback.
 static int db_to_table(void *qinfo, int argc, char **argv, char **column){
-  int		jj, i, ncfound = 0;
+  int		i, ncfound = 0;
   callback_t *qi= qinfo ;
     if (qi->firstcall){
         qi->firstcall   --;
@@ -329,12 +310,12 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
         apop_matrix_realloc(qi->outdata->matrix, qi->currentrow+1, qi->outdata->matrix->size2);
 	if (argv !=NULL){
         ncfound =0;
-		for (jj=0;jj<argc;jj++)
+		for (int jj=0;jj<argc;jj++)
             if (jj != namecol){
-                if (!argv[jj] || !regexec(qi->regex, argv[jj], 1, qi->result, 0))
-				    gsl_matrix_set(qi->outdata->matrix,qi->currentrow,jj-ncfound, GSL_NAN);
-			    else
-				    gsl_matrix_set(qi->outdata->matrix,qi->currentrow,jj-ncfound, atof(argv[jj]));
+                double valor = 
+                    !argv[jj] || !regexec(qi->regex, argv[jj], 1, qi->result, 0)
+				     ? GSL_NAN : atof(argv[jj]);
+                gsl_matrix_set(qi->outdata->matrix,qi->currentrow,jj-ncfound, valor);
             } else {
                 apop_name_add(qi->outdata->names, argv[jj], 'r');
                 ncfound = 1;
@@ -346,8 +327,7 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 
 /** Queries the database, and dumps the result into an \ref apop_data set.
 
-If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_names"),
-and the name of a column matches the name, then the row names are read from that column.
+If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column.
 */ 
 apop_data * apop_query_to_data(const char * fmt, ...){
   Fillin(query, fmt)
@@ -361,14 +341,11 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #ifdef HAVE_LIBSQLITE3
   char		    *err=NULL;
   char        full_divider[103];
-  callback_t  qinfo;
-    qinfo.firstcall   = 1;
-    qinfo.currentrow  = 0;
-    qinfo.outdata     = NULL;
+  callback_t  qinfo = {.firstcall = 1,
+                       .regex = malloc(sizeof(regex_t))};
 	if (db==NULL) apop_db_open(NULL);
 	if (apop_opts.verbose)	printf("%s\n", query);
     sprintf(full_divider, "^%s$", apop_opts.db_nan);
-    qinfo.regex           = malloc(sizeof(regex_t));
     regcomp(qinfo.regex, full_divider, REG_EXTENDED+REG_ICASE);
     sqlite3_exec(db, query,db_to_table,&qinfo, &err); ERRCHECK
     regfree(qinfo.regex);
@@ -400,9 +377,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 
 /** Queries the database, and dumps the first column of the result into a gsl_vector.
 
-\return		A <tt>gsl_vector</tt> holding the first column of the returned matrix. Thus, if your query returns
-multiple lines, you will get no warning, and the function will return
-the first in the list.
+\return		A <tt>gsl_vector</tt> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.
 
 If the query returns no columns at all, the function returns \c NULL.  */
 gsl_vector * apop_query_to_vector(const char * fmt, ...){
@@ -428,10 +403,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 }
 
 /** Queries the database, and dumps the result into a single double-precision floating point number.
-\return		A double, actually. This calls \ref apop_query_to_matrix and returns
-the (0,0)th element of the returned matrix. Thus, if your query returns
-multiple lines, you will get no warning, and the function will return
-the first in the list (which is not always well-defined).
+\return		A double, actually. This calls \ref apop_query_to_matrix and returns the (0,0)th element of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list (which is not always well-defined).
 
 If the query returns no rows at all, the function returns <tt>NAN</tt>.  */
 double apop_query_to_float(const char * fmt, ...){
@@ -506,8 +478,7 @@ void qxprintf(char **q, char *format, ...){
     free(r);
 }
 
-/** Dump a <tt>gsl_matrix</tt> into the database. This function is
-basically preempted by \ref apop_matrix_print. Use that one; this may soon no longer be available.
+/** Dump a <tt>gsl_matrix</tt> into the database. This function is basically preempted by \ref apop_matrix_print. Use that one; this may soon no longer be available.
 
 \param data 	The name of the matrix
 \param tabname	The name of the db table to be created
@@ -557,15 +528,11 @@ int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 
 /** Dump an \ref apop_data set into the database.
 
-This function is basically preempted by \ref apop_data_print. Use that
-one; this may soon no longer be available.
+This function is basically preempted by \ref apop_data_print. Use that one; this may soon no longer be available.
 
-Column names are inserted if there are any. If there are, all dots
-are converted to underscores. 
-Otherwise, the columns will be named \c c1, \c c2, \c c3, &c.
+Column names are inserted if there are any. If there are, all dots are converted to underscores.  Otherwise, the columns will be named \c c1, \c c2, \c c3, &c.
 
-If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is "row_name"),
-then a so-named column is created, and the row names are placed there.
+If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is "row_name"), then a so-named column is created, and the row names are placed there.
 
 \param set 	    The name of the matrix
 \param tabname	The name of the db table to be created
@@ -586,31 +553,31 @@ int apop_data_to_db(apop_data *set, char *tabname){
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
     {
-        int comma;
+        char comma;
         asprintf(&q, "create table %s (", tabname);
         if (use_row) 
             qxprintf(&q, "%s\n %s varchar(1000), \n", q, apop_opts.db_name_column);
         if (set->vector){
-            comma = (set->matrix || set->textsize[1]);
+            comma = (set->matrix || set->textsize[1]) ? ',' : ' ';
             if(!set->names->vector) 
-                qxprintf(&q, "%s\n vector double%s", q, comma ? ", " : " ");
+                qxprintf(&q, "%s\n vector double%c ", q, comma);
             else
-                qxprintf(&q, "%s\n \"%s\" double%s", q,apop_strip_dots(set->names->vector,'d'), comma ? ", " : " ");
+                qxprintf(&q, "%s\n \"%s\" double%c ", q,apop_strip_dots(set->names->vector,'d'), comma);
         }
         if (set->matrix)
             for(i=0;i< set->matrix->size2; i++){
-                comma = (i< set->matrix->size2-1 || set->textsize[1]);
+                comma = (i< set->matrix->size2-1 || set->textsize[1]) ?  ',' : ' ';
                 if(set->names->colct <= i) 
-                    qxprintf(&q, "%s\n c%i double%s", q,i, comma ? ", " : " ");
+                    qxprintf(&q, "%s\n c%i double%c ", q,i, comma);
                  else
-                    qxprintf(&q, "%s\n %s  double%s", q,apop_strip_dots(set->names->column[i],'d'), comma ? ", " : " ");
+                    qxprintf(&q, "%s\n %s  double%c ", q,apop_strip_dots(set->names->column[i],'d'), comma);
             }
         for(i=0;i< set->textsize[1]; i++){
-            comma = (i< set->textsize[1]-1);
+            comma = (i< set->textsize[1]-1) ?  ',' : ' ';
             if (set->names->textct <= i)
-                qxprintf(&q, "%s\n tc%i varchar(1000)%s", q,i, comma ? ", " : " ");
+                qxprintf(&q, "%s\n tc%i varchar(1000)%c ", q,i, comma);
             else
-                qxprintf(&q, "%s\n %s  varchar(1000)%s", q,apop_strip_dots(set->names->text[i],'d'), comma ? ", " : " ");
+                qxprintf(&q, "%s\n %s  varchar(1000)%c ", q,apop_strip_dots(set->names->text[i],'d'), comma);
         }
         apop_query("%s); ", q);
         sprintf(q, " ");
@@ -656,49 +623,38 @@ int apop_data_to_db(apop_data *set, char *tabname){
 			qxprintf(&q,"%s \'%s\', ",q, set->names->row[i]);
         if (set->vector){
             v   =gsl_vector_get(set->vector,i);
+            char comma = (set->matrix || set->textsize[1]) ? ',' : ' ';
             if (gsl_isnan(v))
-                qxprintf(&q,"%s NULL%s ",
-                    q, 
-                    (set->matrix || set->textsize[1]) ? "," : " ");
+                qxprintf(&q,"%s NULL%c ", q, comma);
             else
-                qxprintf(&q,"%s %g%s ",
-                    q, v,
-                    (set->matrix || set->textsize[1]) ? "," : " ");
+                qxprintf(&q,"%s %g%c ", q, v, comma);
         }
         if (set->matrix)
             for(j=0;j< set->matrix->size2; j++){
                 v   =gsl_matrix_get(set->matrix,i,j);
+                char comma = (j < set->matrix->size2 -1 || set->textsize[1]) ? ',' : ' ';
                 if (gsl_isnan(v))
-                    qxprintf(&q,"%s NULL%s ",
-                        q, 
-                        (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
+                    qxprintf(&q,"%s NULL%c ", q, comma);
                 else if (isinf(v)==1)
-                    qxprintf(&q,"%s 'inf'%s ",
-                        q, 
-                        (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
+                    qxprintf(&q,"%s 'inf'%c ", q, comma);
                 else if (isinf(v)==-1)
-                    qxprintf(&q,"%s '-inf'%s ",
-                        q, 
-                        (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
+                    qxprintf(&q,"%s '-inf'%c ", q, comma);
                 else
-                    qxprintf(&q,"%s %g%s ",
-                        q, v,
-                        (j < set->matrix->size2 -1 || set->textsize[1]) ? "," : " ");
+                    qxprintf(&q,"%s %g%c ", q, v,comma);
             }
-		for(j=0;j< set->textsize[1]; j++)
-			qxprintf(&q,"%s \'%s\' %c ",q, set->text[i][j], j < set->textsize[1]-1 ? ',' : ' ');
+		for(j=0;j< set->textsize[1]; j++){
+            char comma =  j < set->textsize[1]-1 ? ',' : ' ';
+			qxprintf(&q,"%s \'%s\' %c ",q,set->text[i][j], comma);
+        }
         qxprintf(&q,"%s);",q);
 		ctr++;
 		if(ctr==batch_size || apop_opts.db_engine == 'm') {
 		    if(apop_opts.db_engine == 'm')   apop_query(q);
             else                                apop_query("%s commit;",q);
             ctr = 0;
-		    /*if(apop_opts.db_engine == 'm')   
-                qxprintf(&q,"%s ", q);
-            else                            */
 		    if(apop_opts.db_engine != 'm')   
                 qxprintf(&q,"begin; \n");
-			}
+        }
 	}
     if ( !(apop_opts.db_engine == 'm') && ctr>0) 
         apop_query("%s commit;",q);
@@ -712,11 +668,7 @@ int apop_data_to_db(apop_data *set, char *tabname){
 \param tabname	The name of the table in that database to be merged in. [No default]
 \param inout  Do we copy data in to the currently-open main db [\c 'i'] or out to the specified auxiliary db[\c 'o']?  [default = 'i']
 
-If the table exists in the new database but not in the currently open one,
-then it is simply copied over. If there is a table with the same name in
-the currently open database, then the data from the new table is inserted
-into the main database's table with the same name. [The function just
-calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
+If the table exists in the new database but not in the currently open one, then it is simply copied over. If there is a table with the same name in the currently open database, then the data from the new table is inserted into the main database's table with the same name. [The function just calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
 
 \ingroup db
 This function uses the \ref designated syntax for inputs.
@@ -752,13 +704,9 @@ APOP_VAR_ENDHEAD
 \param db_file	The name of a file on disk. [No default; can't be \c NULL]
 \param inout  Do we copy data in to the currently-open main db [\c 'i'] or out to the specified auxiliary db[\c 'o']?  [default = 'i']
 
-If a table exists in the new database but not in the currently open one,
-then it is simply copied over. If there are  tables with the same name
-in both databases, then the data from the new table is inserted into
-the main database's table with the same name. [The function just calls
-<tt>insert into main.tab select * from merge_me.tab</tt>.]
+If a table exists in the new database but not in the currently open one, then it is simply copied over. If there are  tables with the same name in both databases, then the data from the new table is inserted into the main database's table with the same name. [The function just calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
 
-\todo This is sqlite-only right now. 
+\li This is sqlite-only; I'm not sure if it really makes much sense for mySQL.
 
 This function uses the \ref designated syntax for inputs.
 \ingroup db

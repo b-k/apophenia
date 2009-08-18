@@ -1,7 +1,7 @@
 /** \file apop_db_mysql.c
-This file is included directly into \ref apop_db.c. It is read only if APOP_USE_MYSQL is defined.
+This file is included directly into \ref apop_db.c. It is read only if APOP_USE_MYSQL is defined.*/
 
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include <my_global.h>
 #include <my_sys.h>
@@ -15,20 +15,17 @@ static unsigned int opt_port_num = 0;   /* port number (use built-in value) */
 static char *opt_socket_name = NULL;    /* socket name (use built-in value) */
 static unsigned int opt_flags = 0;      /* connection flags (none) */
 
-
 /** This function and the kernel of a few other routines cut and pasted from 
 _MySQL (Third Edition)_, Paul DuBois, Sams Developer's Library, March, 2005
 */
 static void print_error (MYSQL *conn, char *message) {
     fprintf (stderr, "%s\n", message);
-    if (conn != NULL)
-    {
+    if (conn != NULL) {
 #if MYSQL_VERSION_ID >= 40101
         fprintf (stderr, "Error %u (%s): %s\n",
             mysql_errno (conn), mysql_sqlstate(conn), mysql_error (conn));
 #else
-        fprintf (stderr, "Error %u: %s\n",
-            mysql_errno (conn), mysql_error (conn));
+        fprintf (stderr, "Error %u: %s\n", mysql_errno (conn), mysql_error (conn));
 #endif
     }
 }
@@ -94,26 +91,27 @@ static double apop_mysql_table_exists(char *table, int delme){
     return 1;
 }
 
+#define check_and_clean(do_if_failure) \
+    if (mysql_errno (conn)){ \
+         print_error (conn, "mysql_fetch_row() failed"); \
+         if (out) do_if_failure; \
+         return NULL; \
+    } else return out; \
+
 static void * process_result_set_data (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
-  unsigned int     i, j=0;
+  unsigned int     j=0;
   unsigned int num_fields = mysql_num_fields(res_set);
   apop_data *out   =apop_data_alloc(0, mysql_num_rows (res_set), num_fields);
      while ((row = mysql_fetch_row (res_set)) ) {
-             for (i = 0; i < mysql_num_fields (res_set); i++) {
+             for (size_t i = 0; i < mysql_num_fields (res_set); i++) 
                  apop_data_set(out, j , i, atof(row[i]));
-             }
              j++;
         }
      MYSQL_FIELD *fields = mysql_fetch_fields(res_set);
-     for(i = 0; i < num_fields; i++)
+     for(size_t i = 0; i < num_fields; i++)
          apop_name_add(out->names, fields[i].name, 'c');
-        if (mysql_errno (conn)){
-             print_error (conn, "mysql_fetch_row() failed");
-             apop_data_free(out);
-             return NULL;
-        } else
-            return out;
+     check_and_clean(apop_data_free(out))
 }
 
 static void * process_result_set_vector (MYSQL *conn, MYSQL_RES *res_set) {
@@ -121,50 +119,38 @@ static void * process_result_set_vector (MYSQL *conn, MYSQL_RES *res_set) {
   unsigned int     j=0;
    gsl_vector *out   =gsl_vector_alloc( mysql_num_rows (res_set));
      while ((row = mysql_fetch_row (res_set)) ) {
-         if (!row[0] || !strcmp(row[0], "NULL"))
-            gsl_vector_set(out, j,  GSL_NAN);
-         else
-            gsl_vector_set(out, j,  atof(row[0]));
+         double valor = !row[0] || !strcmp(row[0], "NULL")
+                            ? GSL_NAN : atof(row[0]);
+         gsl_vector_set(out, j, valor);
          j++;
     }
-    if (mysql_errno (conn)){
-         print_error (conn, "mysql_fetch_row() failed");
-         if (out) gsl_vector_free(out);
-         return NULL;
-    } 
-    return out;
+     check_and_clean(gsl_vector_free(out))
 }
 
 
 static void * process_result_set_matrix (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
-  unsigned int     i, j=0;
+  unsigned int     j=0;
   unsigned int num_fields = mysql_num_fields(res_set);
   gsl_matrix *out   =gsl_matrix_alloc( mysql_num_rows (res_set), num_fields);
      while ((row = mysql_fetch_row (res_set)) ) {
-         for (i = 0; i < mysql_num_fields (res_set); i++) {
+         for (size_t i = 0; i < mysql_num_fields (res_set); i++) 
              gsl_matrix_set(out, j , i, atof(row[i]));
-         }
          j++;
     }
-    if (mysql_errno (conn)){
-         print_error (conn, "mysql_fetch_row() failed");
-         if (out) gsl_matrix_free(out);
-         return NULL;
-    } else
-        return out;
+    check_and_clean(gsl_matrix_free(out))
 }
 
 static void * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
   MYSQL_ROW        row;
-  unsigned int     jj, currentrow = 0;
+  unsigned int     currentrow = 0;
   size_t total_cols       = mysql_num_fields(res_set);
   size_t total_rows       = mysql_num_rows(res_set);
   char ***out      = malloc(sizeof(char**) * total_rows );
   apop_data *output= apop_data_alloc(0,0,0);
     while ((row = mysql_fetch_row (res_set)) ) {
 		out[currentrow]	= malloc(sizeof(char*) * total_cols);
-		for (jj=0;jj<total_cols;jj++){
+		for (size_t jj=0;jj<total_cols;jj++){
 			if (row[jj]==NULL){
 				out[currentrow][jj]	= malloc(sizeof(char));
 				strcpy(out[currentrow][jj], "\0");
@@ -178,11 +164,7 @@ static void * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
     output->text        = out;
     output->textsize[0] = total_rows;
     output->textsize[1] = total_cols;
-    if (mysql_errno (conn)){
-         print_error (conn, "mysql_fetch_row() failed");
-         return NULL;
-    } 
-    return output;
+    check_and_clean(;)
 }
 
 static void * apop_mysql_query_core(char *query, void *(*callback)(MYSQL*, MYSQL_RES*)){

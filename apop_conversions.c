@@ -144,7 +144,7 @@ gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
 /** A convenience function to convert a <tt>double **</tt> array to an \ref apop_data set. It will
 have no names.
 
-See also \ref apop_line_to_matrix or \ref apop_line_to_vector; this function will use exactly one of these and then wrap an \ref apop_data struct around the output.
+See also \ref apop_line_to_matrix or \ref apop_array_to_vector; this function will use exactly one of these and then wrap an \ref apop_data struct around the output.
 
 \param in	The array to read in. If there were appropriately placed line breaks, then this would look like the eventual data set. For example,
 \code
