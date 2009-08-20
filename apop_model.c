@@ -1,7 +1,7 @@
-/** \file apop_model.c	 sets up the estimate structure which outputs from the various regressions and MLEs.
+/** \file apop_model.c	 sets up the estimate structure which outputs from the various regressions and MLEs.*/
+/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
+#include "arms.h"
 #include "types.h"
 #include "output.h"
 #include "settings.h"
@@ -257,9 +257,12 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
 
 
 /** draw from a model. If the model has its own RNG, then you're good to
- go; if not, then do a simulated annealing run to generate a million draws from the data. 
+ go; if not, use \ref apop_arms_draw to generate random draws.
 
- That second half is actually forthcoming...
+That function has a lot of caveats: most notably, the input data will
+be univariate, and your likelihood function must be nonnegative and sum
+to one. If those aren't appropriate, then don't use this default. [A
+more forgiving default is on the to-do list.]
 
  \ingroup models
 */
@@ -267,7 +270,7 @@ void apop_draw(double *out, gsl_rng *r, apop_model *m){
     if (m->draw)
         m->draw(out,r, m); 
     else
-        apop_error(0, 's', "Sorry, I have no default RNG yet.");
+        apop_arms_draw(out, r, m);
 }
 
 /** The default prep is to simply call \c apop_model_clear. If the

@@ -6,20 +6,28 @@ The Normal and Lognormal distributions.*/
 #include "model.h"
 #include "mapply.h"
 #include "settings.h"
+#include "internal.h"
 #include "likelihoods.h"
 static double normal_log_likelihood(apop_data *d, apop_model *params);
 
-
 /** The normal estimate */
 static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
-  double		mean, var;
+    Get_vmsizes(data)
+  double		mmean=0, mvar=0, vmean=0, vvar=0;
   apop_model 	*est = apop_model_copy(*parameters);
   apop_ls_settings *p = apop_settings_get_group(est, "apop_ls");
     if (!p) {
-        Apop_settings_add_group(est, apop_ls, data);
+        Apop_model_add_group(est, apop_ls);
         p = apop_settings_get_group(est, "apop_ls");
     }
-	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
+    if (vsize){
+        vmean = apop_mean(data->vector);
+        vvar = apop_var(data->vector);
+    }
+    if (msize1)
+        apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
+    double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
+    double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
     if (!est->parameters)
         est->parameters = apop_data_alloc(2, 0, 0);
 	apop_data_add_named_elmt(est->parameters,"mu", mean);
@@ -27,9 +35,8 @@ static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
     est->llikelihood	= normal_log_likelihood(data, est);
 	if (!p || p->want_cov){
         est->covariance   = apop_data_calloc(0, 2, 2);
-        int ct  = data->matrix->size1 * data->matrix->size2;
-        apop_data_set(est->covariance, 0, 0, mean/ct);
-        apop_data_set(est->covariance, 1, 1, 2*gsl_pow_2(var)/(ct-1));
+        apop_data_set(est->covariance, 0, 0, mean/tsize);
+        apop_data_set(est->covariance, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
     }
     est->data = data;
 	return est;
@@ -45,19 +52,10 @@ static double beta_1_greater_than_x_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, constraint, 1e-5);
 }
 
-static double   mu, sd;
-
-static double apply_me(gsl_vector *v){
-  int           i;
-  long double    ll  = 1;
-    for(i=0; i< v->size; i++)
-	    ll	*= gsl_ran_gaussian_pdf((gsl_vector_get(v, i) - mu), sd);
-    return ll;
-}
-
 //This just takes the sum of (x-mu)^2. Using gsl_ran_gaussian_pdf
 //would be to calculate log(exp((x-mu)^2)) == slow.
-static double apply_me2(double x){ return gsl_pow_2(x - mu); }
+static double apply_me(double x, void *mu){ return x - *(double *)mu; }
+static double apply_me2(double x, void *mu){ return gsl_pow_2(x - *(double *)mu); }
 
 /* The log likelihood function for the Normal.
 
@@ -74,22 +72,11 @@ likelihood of those 56 observations given the mean and variance (i.e.,
 */
 static double normal_log_likelihood(apop_data *d, apop_model *params){
   assert(params->parameters);
-    mu	        = gsl_vector_get(params->parameters->vector,0);
-    sd          = gsl_vector_get(params->parameters->vector,1);
-  long double   ll  = -apop_matrix_map_all_sum(d->matrix, apply_me2)/(2*gsl_pow_2(sd));//sum of (x-mu)^2/(2 sd^2)
-    ll    -=  d->matrix->size1*d->matrix->size2*(M_LNPI+M_LN2+log(sd));
-	return ll;
-}
-
-static double normal_p(apop_data *d, apop_model *params){
-  assert(params->parameters);
-    mu	        = gsl_vector_get(params->parameters->vector,0);
-    sd          = gsl_vector_get(params->parameters->vector,1);
-  gsl_vector *  v       = apop_matrix_map(d->matrix, apply_me);
-  long double   ll      = 1;
-    for(size_t i=0; i< v->size; i++)
-        ll  *= gsl_vector_get(v, i);
-    gsl_vector_free(v);
+  Get_vmsizes(d)
+    double mu = gsl_vector_get(params->parameters->vector,0);
+    double sd = gsl_vector_get(params->parameters->vector,1);
+  long double   ll  = -apop_map_sum(d, .fn_dp = apply_me2, .param = &mu)/(2*gsl_pow_2(sd));
+    ll    -=  tsize*(M_LNPI+M_LN2+log(sd));
 	return ll;
 }
 
@@ -100,21 +87,15 @@ static double normal_p(apop_data *d, apop_model *params){
 \f$d\ln N(\mu,\sigma)/d\sigma = ((x-\mu)^2 / \sigma^3) - 1/\sigma \f$
  */
 static void normal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *params){    
-              mu      = gsl_vector_get(params->parameters->vector,0);
-  double      sd      = gsl_vector_get(params->parameters->vector,1),
-              dll     = 0,
-              sll     = 0,
-              x;
-  gsl_matrix  *data   = d->matrix;
-    for (size_t i=0;i< data->size1; i++)
-        for (size_t j=0;j< data->size2; j++){
-            x    = gsl_matrix_get(data, i, j);
-            dll += (x - mu);
-            sll += gsl_pow_2(x - mu);
-        }
+  Get_vmsizes(d)
+  double  mu      = gsl_vector_get(params->parameters->vector,0),
+          sd      = gsl_vector_get(params->parameters->vector,1),
+          dll, sll;
+    dll = apop_map_sum(d, .fn_dp = apply_me, .param=&mu);
+    sll = apop_map_sum(d, .fn_dp = apply_me2, .param=&mu);
     gsl_vector_set(gradient, 0, dll/gsl_pow_2(sd));
     //gsl_vector_set(gradient, 1, sll/(2*gsl_pow_2(ss))- data->size1 * data->size2 * 0.5/ss);
-    gsl_vector_set(gradient, 1, sll/gsl_pow_3(sd)- data->size1 * data->size2 /sd);
+    gsl_vector_set(gradient, 1, sll/gsl_pow_3(sd)- tsize /sd);
 }
 
 
@@ -154,7 +135,7 @@ The \c apop_ls settings group includes a \c want_cov element, which refers to th
 \ingroup models
 */
 apop_model apop_normal = {"Normal distribution", 2, 0, 0,
- .estimate = normal_estimate, .p = normal_p, .log_likelihood = normal_log_likelihood, .score = normal_dlog_likelihood, 
+ .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, .score = normal_dlog_likelihood, 
  .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng};
 
 
@@ -169,7 +150,7 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
            var     = 0; 
   apop_ls_settings *p = apop_settings_get_group(est, "apop_ls");
     if (!p) {
-        Apop_settings_add_group(est, apop_ls, data);
+        Apop_model_add_group(est, apop_ls);
         p = apop_settings_get_group(est, "apop_ls");
     }
     apop_matrix_mean_and_var(data->matrix, &mean, &var);

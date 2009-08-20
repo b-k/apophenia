@@ -22,7 +22,7 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
     apop_ls_settings *dummy = apop_settings_get_group(est, "apop_ls");
     if (!dummy || dummy->want_cov){
         if (!dummy)
-            Apop_settings_add_group(est, apop_ls, data);
+            Apop_model_add_group(est, apop_ls);
         Apop_settings_add(est, apop_ls, want_cov, 0);
         est->covariance = apop_jackknife_cov(data, *est);
     }

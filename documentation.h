@@ -107,16 +107,7 @@ We've moved the setup documentation to <a href="http://modelingwithdata.org/appe
 First, there is a short, complete program in the \ref apop_ols entry which runs a simple OLS regression on a data file. Follow
 the instructions there to compile and run. 
 
-Here is another sample program, intended to show how one would integrate
-Apophenia into an existing program. For example, say that you are running
-a simulation of two different treatments, or say that two sensors are
-posting data at regular intervals. You need to gather the data in an
-organized form, and then ask questions of the resulting data set.
-Below, a thousand draws are made from the two processes and put into
-a database. Then, the data is pulled out, some simple statistics are
-compiled, and the data is written to a text file for inspection outside
-of the program.
-This program will compile cleanly with the sample \ref makefile.
+Here is another sample program, intended to show how one would integrate Apophenia into an existing program. For example, say that you are running a simulation of two different treatments, or say that two sensors are posting data at regular intervals. You need to gather the data in an organized form, and then ask questions of the resulting data set.  Below, a thousand draws are made from the two processes and put into a database. Then, the data is pulled out, some simple statistics are compiled, and the data is written to a text file for inspection outside of the program.  This program will compile cleanly with the sample \ref makefile.
 
 \include sample_draw_to_db.c
 */
@@ -149,21 +140,11 @@ The following are not necessary but are good to have on hand as long as you are 
  \li perl, python, ruby -- these are other languages that you might also be interested in
  \li tetex -- write up your documentation using the nicest-looking formatter around
  \li X11 -- a windowing system
-X-Window will give you a nicer environment in which to work.  After you
-start Cygwin, just type <tt>startx</tt> to bring up a more usable,
-nice-looking terminal (and the ability to do a few thousand other things
-which are beyond the scope of this documentation).
-Once you have Cygwin installed and a good terminal running, you can
-follow along with the remainder of the discussion without modification.
+X-Window will give you a nicer environment in which to work.  After you start Cygwin, just type <tt>startx</tt> to bring up a more usable, nice-looking terminal (and the ability to do a few thousand other things which are beyond the scope of this documentation).  Once you have Cygwin installed and a good terminal running, you can follow along with the remainder of the discussion without modification.
 
-Sqlite3 is difficult to build from scratch, but you can get a 
-packaged version by pointing Cygwin's install program to the
-Cygwin Ports site: http://cygwinports.dotsrc.org/ .
+Sqlite3 is difficult to build from scratch, but you can get a packaged version by pointing Cygwin's install program to the Cygwin Ports site: http://cygwinports.dotsrc.org/ .
 
-Second, some older (but still pretty recent) versions of Cygwin
-have a search.h file which doesn't include the function lsearch().
-If this is the case on your system, you will have to update your Cygwin
-installation.
+Second, some older (but still pretty recent) versions of Cygwin have a search.h file which doesn't include the function lsearch().  If this is the case on your system, you will have to update your Cygwin installation.
 
 Finally, windows compilers often spit out lines like:
 \code
@@ -175,10 +156,7 @@ These lines are indeed just information, and not errors. Feel free to ignore the
 */
 
 /** \page notroot  Not root? 
-If you aren't root, then you will need to create a subdirectory in
-your home directory in which to install packages. The GSL and SQLite
-installations will go like this. The key is the <tt>--prefix</tt> addition
-to the <tt>./configure</tt> command.
+If you aren't root, then you will need to create a subdirectory in your home directory in which to install packages. The GSL and SQLite installations will go like this. The key is the <tt>--prefix</tt> addition to the <tt>./configure</tt> command.
 \verbatim
 export MY_LIBS = src   #choose a directory name to be created in your home directory.
 tar xvzf pkg.tgz       #change pkg.tgz to the appropriate name
@@ -194,11 +172,7 @@ echo "export LD_LIBRARY_PATH=$HOME/$MY_LIBS:\$LD_LIBRARY_PATH" >> ~/.bashrc
 /** \page c C
  
 \section learning  Learning C
-<a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages.
-More nuts-and-bolts tutorials are 
-<a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.
-Some people find pointers to be especially difficult; fortunately, there's a claymation cartoon which clarifies everything
-<a href="http://cslibrary.stanford.edu/104/">here</a>.
+<a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages.  More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.  Some people find pointers to be especially difficult; fortunately, there's a <a href="http://cslibrary.stanford.edu/104/">claymation cartoon</a> which clarifies everything.
 
 Coding often relies on gathering together many libraries; there is a section at the bottom of the \ref outline "outline" linking to references for some libraries upon which Apohenia builds.
 
@@ -234,9 +208,7 @@ apop_vector_distance(v1, .metric='M');
 See the \ref designated page for details of this syntax.
 
 \subsection liblinking Libraries 
-Your best bet is to write yourself a \ref makefile "Makefile".
-If you don't want to use the sample \ref makefile "Makefile", then here are some notes for the command line.
-When compiling, you will need to tell the compiler to use the Apophenia library. That is, you will need to call GCC with <tt>gcc -lapophenia</tt> (as well as the other usual flags). For example,
+Your best bet is to write yourself a \ref makefile "Makefile".  If you don't want to use the sample \ref makefile "Makefile", then here are some notes for the command line.  When compiling, you will need to tell the compiler to use the Apophenia library. That is, you will need to call GCC with <tt>gcc -lapophenia</tt> (as well as the other usual flags). For example,
 <tt>
 gcc sample.c -lapophenia -lsqlite3 -lgsl -lgslcblas -o run_me -g 
 </tt>
@@ -308,58 +280,44 @@ The \c pkg-config program will then fill in the appropriate directories and libr
 */
 
 /** \page sql SQL
- For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite. 
-For a tutorial; there is an abundance of <a
-href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.
-The blog of Apophenia's author includes an <a
-href="http://fluff.info/blog/arch/00000118.htm">entry</a> about
-complementarities between SQL and matrix manipulation packages.
+ For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.  For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.  The blog of Apophenia's author includes an <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementarities between SQL and matrix manipulation packages.
 
-Apophenia currently supports two database engines: SQLite and
-mySQL. SQLite is the default, because it is simpler and generally more
-easygoing than mySQL, and supports in-memory databases.
+Apophenia currently supports two database engines: SQLite and mySQL. SQLite is the default, because it is simpler and generally more easygoing than mySQL, and supports in-memory databases.
 
-You can switch to mySQL two ways: set <tt>apop_opts.db_engine = 'm'</tt>,
-or set the environment variable <tt>APOP_DB_ENGINE=mysql</tt>. Otherwise,
-the system will use SQLite. Ideally, after you make this switch, you need make no other changes---
-\ref apop_query, \ref apop_query_to_data, \ref apop_table_exists, et cetera, will work
-as before. 
+You can switch to mySQL two ways: set <tt>apop_opts.db_engine = 'm'</tt>, or set the environment variable <tt>APOP_DB_ENGINE=mysql</tt>. Otherwise, the system will use SQLite. Ideally, after you make this switch, you need make no other changes--- \ref apop_query, \ref apop_query_to_data, \ref apop_table_exists, et cetera, will work as before. 
 
-Finally, Apophenia provides a few nonstandard SQL functions to facilitate
-math via database; see \ref db_moments.
+Finally, Apophenia provides a few nonstandard SQL functions to facilitate math via database; see \ref db_moments.
 */
 
 /** \page designated Designated initializers
 
-  Functions so marked in this documentation use standard C designated initializers
-  and compound literals to allow you to omit, call by name, or change
-  the order of inputs. The following examples are all equivalent.
+Functions so marked in this documentation use standard C designated initializers and compound literals to allow you to omit, call by name, or change the order of inputs. The following examples are all equivalent.
 
-  The standard format:
-  \code
-  apop_text_to_db("infile.txt", "intable", 0, 1, NULL);
-  \endcode
+The standard format:
+\code
+apop_text_to_db("infile.txt", "intable", 0, 1, NULL);
+\endcode
 
-  Omitted arguments are left at their default vaules:
-  \code
-  apop_text_to_db("infile.txt", "intable");
-  \endcode
+Omitted arguments are left at their default vaules:
+\code
+apop_text_to_db("infile.txt", "intable");
+\endcode
 
-  You can use the variable's name, if you forget its ordering:
-  \code
-  apop_text_to_db("infile.txt", "intable", .has_col_name=1, .has_row_name=0);
-  \endcode
+You can use the variable's name, if you forget its ordering:
+\code
+apop_text_to_db("infile.txt", "intable", .has_col_name=1, .has_row_name=0);
+\endcode
 
-  If an un-named element follows a named element, then that value is given to the next variable in the standard ordering:
-  \code
-  apop_text_to_db("infile.txt", "intable", .has_col_name=1, NULL);
-  \endcode
+If an un-named element follows a named element, then that value is given to the next variable in the standard ordering:
+\code
+apop_text_to_db("infile.txt", "intable", .has_col_name=1, NULL);
+\endcode
 
-  \li There is some overhead to checking for defaults, which could slow the code by up to 25\%. If this is noticeable for your situation, you can pass on this convenient form and call the underlying function directly, by adding \c _base to the name and giving all arguments:
+\li There is some overhead to checking for defaults, which could slow the code by up to 25\%. If this is noticeable for your situation, you can pass on this convenient form and call the underlying function directly, by adding \c _base to the name and giving all arguments:
 
-  \code
-  apop_text_to_db_base("infile.txt", "intable", 0, 1, NULL);
-  \endcode
+\code
+apop_text_to_db_base("infile.txt", "intable", 0, 1, NULL);
+\endcode
 
 \li If one of the optional elements is an RNG, see \ref autorng on what happens when you don't provide an RNG.
 
@@ -367,22 +325,21 @@ math via database; see \ref db_moments.
 
 /** \page autorng Auto-allocated RNGs
 
-  Functions that use the \ref designated syntax for reading inputs and
-  assigning default values use the following rules for handling RNGs.
+Functions that use the \ref designated syntax for reading inputs and assigning default values use the following rules for handling RNGs.
 
-  - The first time a function is called with no \c gsl_rng as
-  input, a new \c gsl_rng is produced. The call will effectively look like this
-  \code  
-  static gsl_rng *internal_rng = gsl_rng_alloc(++apop_opts.rng_seed);
-  \endcode
+- The first time a function is called with no \c gsl_rng as
+input, a new \c gsl_rng is produced. The call will effectively look like this
+\code  
+static gsl_rng *internal_rng = gsl_rng_alloc(++apop_opts.rng_seed);
+\endcode
 
-  - Because \c internal_rng is declared \c static, it will remember its state as you repeatedly call the function, so you will get appropriate random numbers.
+- Because \c internal_rng is declared \c static, it will remember its state as you repeatedly call the function, so you will get appropriate random numbers.
 
-  - \c apop_opts.rng_seed is incremented at each use, so you can write down the seed used for later reference. 
-  
-  - Because it increments, the next function to auto-allocate an RNG will produce different random numbers. That is, every function that uses this setup will have a different, independent RNG.
+- \c apop_opts.rng_seed is incremented at each use, so you can write down the seed used for later reference. 
 
-  - If you would like a different outcome every time the program runs, set the seed to the time before running:
+- Because it increments, the next function to auto-allocate an RNG will produce different random numbers. That is, every function that uses this setup will have a different, independent RNG.
+
+- If you would like a different outcome every time the program runs, set the seed to the time before running:
 \code  
 #include <time.h>
 apop_opts.rng_seed = time(NULL);
@@ -411,13 +368,9 @@ ALLBUTTON
 
 Outlineheader dataoverview Data sets
 
-The \ref apop_data structure represents a data set.  It joins together
-a \c gsl_vector, a \c gsl_matrix, an \ref apop_name, and a table of strings. It
-tries to be lightweight, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
+The \ref apop_data structure represents a data set.  It joins together a \c gsl_vector, a \c gsl_matrix, an \ref apop_name, and a table of strings. It tries to be lightweight, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
 
-For example, let us say that you are running a regression: there is
-a vector for the one dependent variable, and a matrix for the several independent
-variables. Think of them as a partitioned matrix, where the vector is column -1, and the first column of the matrix is column zero. Here is some code to print the entire matrix. Notice that the column counter \c i starts counting at -1.
+For example, let us say that you are running a regression: there is a vector for the one dependent variable, and a matrix for the several independent variables. Think of them as a partitioned matrix, where the vector is column -1, and the first column of the matrix is column zero. Here is some code to print the entire matrix. Notice that the column counter \c i starts counting at -1.
 
   \code
   for (j = 0; j< data->matrix->size1; j++){
@@ -428,14 +381,9 @@ variables. Think of them as a partitioned matrix, where the vector is column -1,
     }
     \endcode
 
-We're generally assuming that the data vector and data matrix have the
-same row count: \c data->vector->size==data->matrix->size1 . This means
-that the \ref apop_name structure doesn't have separate vector_names
-and row_names elements: the rownames are assumed to apply for both.
+We're generally assuming that the data vector and data matrix have the same row count: \c data->vector->size==data->matrix->size1 . This means that the \ref apop_name structure doesn't have separate vector_names and row_names elements: the rownames are assumed to apply for both.
 
-Easy data manipulation is essential for enjoying life as a researcher.
-Thus, there are a great many functions to collate, copy, merge, sort, prune, and otherwise manipulate the \ref apop_data structure and its components.
-
+Easy data manipulation is essential for enjoying life as a researcher.  Thus, there are a great many functions to collate, copy, merge, sort, prune, and otherwise manipulate the \ref apop_data structure and its components.
 
     \li\ref apop_data_add_named_elmt()
     \li\ref apop_data_copy()
@@ -462,12 +410,7 @@ Thus, there are a great many functions to collate, copy, merge, sort, prune, and
     \li\ref apop_vector_stack()
     \li\ref apop_vector_realloc()
 
-    Note: Apophenia builds upon the GSL, but it would be inappropriate to redundantly
-    replicate the GSL's documentation here. You will find a link to
-    the full GSL documentation at the end of this outline, and the text
-    of the outline will list the names a few common functions. 
-    The GSL's naming scheme is very consistent, so a simple reminder of
-    the function name may be sufficient for your needs.
+    Note: Apophenia builds upon the GSL, but it would be inappropriate to redundantly replicate the GSL's documentation here. You will find a link to the full GSL documentation at the end of this outline, and the text of the outline will list the names a few common functions.  The GSL's naming scheme is very consistent, so a simple reminder of the function name may be sufficient for your needs.
 
 \li <tt>gsl_matrix_swap_rows (gsl_matrix * m, size_t i, size_t j)</tt>
 \li <tt>gsl_matrix_swap_columns (gsl_matrix * m, size_t i, size_t j)</tt>
@@ -536,8 +479,7 @@ double first_col_sum = apop_matrix_sum(subm);
 
 These macros make use of a set of GSL matrices that produce output of type <tt>gsl_matrix_view</tt> and <tt>gsl_vector_view</tt>. These types point to the source data, and add metadata to turn the data into a coherent matrix/vector. Apophenia's macros generate these views, then pull the matrix/vector from them, so you never have to deal with the <tt>_view</tt> structs directly.
 
-If the macros don't work for you, you can use the GSL's macros directly.
-Here's how to get the fifth row of <tt>a_matrix</tt> into a vector view:
+If the macros don't work for you, you can use the GSL's macros directly.  Here's how to get the fifth row of <tt>a_matrix</tt> into a vector view:
 
 \code
 gsl_vector_view v;
@@ -558,9 +500,7 @@ endofdiv
 
 Outlineheader setgetsec Set/get
 
-Let \f$t\f$ be text, and \f$i\f$ be an index. Then you can get or set
-an element by row title and column index, row index and column title,
-et cetera. The functions that have no suffix find an element by row and column index.
+Let \f$t\f$ be text, and \f$i\f$ be an index. Then you can get or set an element by row title and column index, row index and column title, et cetera. The functions that have no suffix find an element by row and column index.
 
 The \c apop_data_ptr_... functions return a pointer to the element.
 
@@ -596,9 +536,8 @@ endofdiv
 
 Outlineheader mapplysec   Map/apply
 
-These functions allow you to send each element of a vector or matrix to
-a function, either producing a new matrix (map) or transforming the original (apply). 
-The \c ..._sum functions return the sum of the mapped output.
+\anchor outline_mapply Map/apply
+These functions allow you to send each element of a vector or matrix to a function, either producing a new matrix (map) or transforming the original (apply).  The \c ..._sum functions return the sum of the mapped output.
 
 There is an older and a newer set of functions. The older versions, which act on <tt>gsl_matrix</tt>es or <tt>gsl_vector</tt>s have more verbose names; the newer versions, which act on the elements of an \ref apop_data set, use the \ref designated syntax to ad a few options and a more brief syntax.
 
@@ -612,7 +551,7 @@ double sum_of_squares = apop_map_sum(dataset, gsl_pow_2); //given <tt> apop_data
 double sum_of_squares = apop_vector_map_sum(v, gsl_pow_2); //given <tt> gsl_vector *v</tt>
 \endcode
 
-Here, we create an index vector [0, 1, 2, \dots].
+Here, we create an index vector [0, 1, 2, \f$\dots\f$].
 
 \code
 double index(double in, int index){return index;}
@@ -648,14 +587,9 @@ static double apop_mean_no_nans(apop_data *in){
 }
 \endcode
 
-This program randomly generates a data set where each row is a list of
-numbers with a different mean. It then finds the \f$t\f$ statistic for
-each row, and the confidence with which we reject the claim that
-the statistic is less than or equal to zero.
+This program randomly generates a data set where each row is a list of numbers with a different mean. It then finds the \f$t\f$ statistic for each row, and the confidence with which we reject the claim that the statistic is less than or equal to zero.
 
-Notice how the older \ref apop_vector_apply uses file-global variables
-to pass information into the functions, while the \ref apop_map uses a
-pointer to the constant parameters to input to the functions.
+Notice how the older \ref apop_vector_apply uses file-global variables to pass information into the functions, while the \ref apop_map uses a pointer to the constant parameters to input to the functions.
 
 \include t_test_by_rows.c
 
@@ -697,8 +631,6 @@ Outlineheader  matrixmathtwo  Basic Math
     \li <tt>gsl_vector_scale (gsl_vector * a, const double x)</tt>
     \li <tt>gsl_vector_add_constant (gsl_vector * a, const double x)</tt>
 
-
-
 endofdiv
             
 Outlineheader  matrixmath  Matrix math
@@ -733,9 +665,7 @@ Outlineheader  sumstats  Summary stats
 
 endofdiv
 
-
 Outlineheader  moments  Moments
-
 
             \li\ref apop_data_correlation ()
             \li\ref apop_data_covariance ()
@@ -766,9 +696,7 @@ Outlineheader  moments  Moments
             \li\ref apop_vector_weighted_skew ()
             \li\ref apop_vector_weighted_var ()
 
-
 endofdiv
-
 
 Outlineheader convsec   Conversion among types
 
@@ -801,14 +729,9 @@ endofdiv
 
 Outlineheader fact   Generating factors
 
-\em Factor is jargon for a numbered category. Number-crunching
-programs work best on numbers, so we need a function to produce a
-one-to-one mapping from text categories into numeric factors. 
+\em Factor is jargon for a numbered category. Number-crunching programs work best on numbers, so we need a function to produce a one-to-one mapping from text categories into numeric factors. 
 
-A \em dummy is a variable that is either one or zero, depending on membership
-in a given group. Some methods (typically when the variable is an input
-or independent variable) prefer dummies; some methods (typically for
-outcome or dependent variables) pefer factors.
+A \em dummy is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) pefer factors.
 
             \li\ref apop_data_to_dummies()
             \li\ref apop_text_to_factors()
@@ -821,16 +744,9 @@ endofdiv
 
 Outlineheader dbs Databases
 
+These are convenience functions to handle interaction with SQLite or mySQL. They open one and only one database, and handle most of the interaction therewith for you.
 
-These are convenience functions to handle interaction with SQLite or mySQL. They
-open one and only one database, and handle most of the interaction
-therewith for you.
-
-You will probably first use \ref apop_text_to_db to pull data into
-the database, then \ref apop_query to clean the data in the database,
-and finally \ref apop_query_to_data to pull some subset of the data
-out for analysis.
-
+You will probably first use \ref apop_text_to_db to pull data into the database, then \ref apop_query to clean the data in the database, and finally \ref apop_query_to_data to pull some subset of the data out for analysis.
 
 See also the \ref conversions, including \ref apop_text_to_db and \ref apop_matrix_to_db.
 
@@ -845,7 +761,6 @@ See also the \ref conversions, including \ref apop_text_to_db and \ref apop_matr
 
 \par P.S.
 Apophenia reserves the right to insert temp tables into the opened database. They will all have names beginning with "apop_", so the reader is advised to not use tables with such names, and is free to ignore or delete any such tables that turn up.
-
 
     Outlineheader dbout Out
 
@@ -1034,26 +949,11 @@ endofdiv
 
     Outlineheader modelsettings Model settings \anchor settings
 
+Apophenia is really only based on two objects, the \ref apop_data set and the \ref apop_model. Data sets come in a pretty standard form, so the data object is basically settled. But describing a statistical, agent-based, social, or physical model in a reasonably standardized form is much more difficult, primarily because every model has significantly different settings. E.g., an MLE requires a method of search (conjugate gradient, simplex, simulated annealing), and a histogram needs the number of slots to be filled with data.
 
-Apophenia is really only based on two objects, the \ref apop_data
-set and the \ref apop_model. Data sets come in a pretty standard form,
-so the data object is basically settled. But describing a statistical,
-agent-based, social, or physical model in a reasonably standardized form
-is much more difficult, primarily because every model has significantly
-different settings. E.g., an MLE requires a method of search (conjugate
-gradient, simplex, simulated annealing), and a histogram needs the number
-of slots to be filled with data.
+So, the \ref apop_model includes a single list, whose name is simply \c settings, which can hold an arbitrary number of groups of settings. For example, you can have a set of closed-form variables for estimating the log likelihood, and a histogram for making random draws.
 
-So, the \ref apop_model includes 
-a single list, whose name is simply \c settings, which can hold an arbitrary
-number of groups of settings. For example, you can have a set of
-closed-form variables for estimating the log likelihood, and a histogram
-for making random draws.
-
-To get/set a setting, you would need to specify the model, the settings
-group, and the name of the setting itself.  For the sake of giving you
-a mental model, this is much like a g_lib config file (or for Windows users,
-a .ini file), which would have settings divided into sections, like
+To get/set a setting, you would need to specify the model, the settings group, and the name of the setting itself.  For the sake of giving you a mental model, this is much like a g_lib config file (or for Windows users, a .ini file), which would have settings divided into sections, like
 
 \code
 [MLE]
@@ -1070,15 +970,13 @@ bins = {0.1, 0.3, 0.2,...}
 
 \b Using it
 
-If you don't need to change settings from the default, you don't need to
-care about any of this, because
+If you don't need to change settings from the default, you don't need to care about any of this, because
 \code
 apop_model_show(apop_estimate(your_data_here, apop_ols));
 \endcode
 ---still works fine.
 
-If you do need to change settings, then the process takes another step
-or two. Here's a sample:
+If you do need to change settings, then the process takes another step or two. Here's a sample:
 
 \code
 1 apop_data *data = your_data_here;
@@ -1089,56 +987,36 @@ or two. Here's a sample:
 5 apop_model *est = apop_estimate(data, *m);
 \endcode
 
-Line three establishes the baseline form of the model. Line four adds
-a settings group of type \ref apop_ls_settings to the model, and specifies that we want it initialized with the \c weights element set to the data set \c w. The list of elements of the settings structures included in Apophenia are below; the means of specifying the elements follow the \ref designated syntax.
+Line three establishes the baseline form of the model. Line four adds a settings group of type \ref apop_ls_settings to the model, and specifies that we want it initialized with the \c weights element set to the data set \c w. The list of elements of the settings structures included in Apophenia are below; the means of specifying the elements follow the \ref designated syntax.
 
 Having set the settings, line 5 does the weighted OLS.
 
-Also, the output to any of Apophenia's estimations will have an
-appropriate group of settings allocated, so you can chain estimations
-pretty easily. Continuing the above example, you could re-estimate with
-an alternative set of weights via:
+Also, the output to any of Apophenia's estimations will have an appropriate group of settings allocated, so you can chain estimations pretty easily. Continuing the above example, you could re-estimate with an alternative set of weights via:
 
 \code
 Apop_settings_add(est, apop_ls, weights, weight_set_two);
 apop_model *est2 = apop_estimate(data, *est);
 \endcode
 
-This uses the above-mentioned address of model/settings group/item, plus the actual value to be set.
-Notice that the \c Apop_settings_add macro really just modifies the existing
-structure; you can think of the defaults as a blank slate, and the only values being those you'd set.
+This uses the above-mentioned address of model/settings group/item, plus the actual value to be set.  Notice that the \c Apop_settings_add macro really just modifies the existing structure; you can think of the defaults as a blank slate, and the only values being those you'd set.
 
-If you need to read a setting, such as to check whether things have
-changed after an estimation, use, e.g.:
+If you need to read a setting, such as to check whether things have changed after an estimation, use, e.g.:
 
 \code
 apop_data *weights_now = Apop_settings_get(m, apop_ls, weights);
 \endcode
 
-\li Notice the use of a single capital to remind you that you are using
-a macro, so you should beware of the sort of surprising errors
-associated with macros. Here in the modern day, we read things like
-APOP_SETTINGS_ALLOC_ADD as yelling, but if you prefer all caps to indicate
-macros, those work as well.
+\li Notice the use of a single capital to remind you that you are using a macro, so you should beware of the sort of surprising errors associated with macros. Here in the modern day, we read things like APOP_SETTINGS_ADD as yelling, but if you prefer all caps to indicate macros, those work as well.
 
-\li There are two additional macros which are now deprecated: \ref Apop_settings_add_group and 
-\ref Apop_settings_alloc_add. They made sense at the time.
+\li There are two additional macros which are now deprecated: \ref Apop_settings_add_group and \ref Apop_settings_alloc_add. They made sense at the time.
 
 For just using a model, that's about 100% of what you need to know.
 
 Outlineheader settingswritng  Writing new settings
 
-To store the settings for your own models, you don't necessarily
-need any of this. The \ref apop_model structure has a \c void pointer named
-\c more which you can use as you see fit. If \c more_size is larger than zero
-(i.e., you set it to \c sizeof(your_struct)), then it will be copied via
-\c memcpy as necessary. Apohenia's estimation routines will never impinge
-on this item, so do what you feel with it.
+To store the settings for your own models, you don't necessarily need any of this. The \ref apop_model structure has a \c void pointer named \c more which you can use as you see fit. If \c more_size is larger than zero (i.e., you set it to \c sizeof(your_struct)), then it will be copied via \c memcpy as necessary. Apohenia's estimation routines will never impinge on this item, so do what you feel with it.
 
-If you do want to set up a new model, then you will need four items. 
-This is the sort of boilerplate that will be familiar to users of 
-object oriented languages in the style of C++ or Java. Let
-your settings group be named \c ysg; then you will need
+If you do want to set up a new model, then you will need four items.  This is the sort of boilerplate that will be familiar to users of object oriented languages in the style of C++ or Java. Let your settings group be named \c ysg; then you will need
 
 \li The settings struct
 \code
@@ -1166,16 +1044,15 @@ ysg_settings *ysg_settings_init(ysg_settings in){
 \code
 void *ysg_settings_copy(ysg_settings *copyme) {
     ysg_settings *out = malloc(sizeof(ysg_settings));
-    //copy elements here. If you have no pointers or 
-    //other trickery, just use:
-    memcpy(out, copyme, sizeof(ysg_settings));
+    //copy elements here. If you have no pointers or other trickery, just use:
+    *out = *copyme
     return out; }
 \endcode
 
 \li The free function, which can be as brief as:
 \code
-void ysg_settings_free(ysg_settings *copyme) {
-    free(copyme);
+void ysg_settings_free(ysg_settings *freeme) {
+    free(freeme);
 }
 \endcode
 but may include a freeing of pointed-to subelements as necessary.
@@ -1186,9 +1063,7 @@ Apop_model_add_group(m, ysg)
 \endcode
 the macro will look for \c ysg_settings, \c ysg_settings_init, et cetera.
 
-The lines-of-code averse will cringe at having to write such boilerplate
-code (I do), but after spending a year resisting it, I have to concede
-that it's the least of all evils.
+The lines-of-code averse will cringe at having to write such boilerplate code (I do), but after spending a year resisting it, I have to concede that it's the least of all evils.
 
 You can retrieve the whole group or individual elements via:
 \code
@@ -1197,28 +1072,20 @@ Apop_settings_get_group(m, ysg)
 Apop_settings_get(m, ysg, an_element)
 \endcode
 
-As you saw above, once the typedef/alloc/copy/free machinery is written,
-you can declare, get, and set in a reasonably graceful manner.
+As you saw above, once the typedef/alloc/copy/free machinery is written, you can declare, get, and set in a reasonably graceful manner.
 
-\li If for some reason you want to work with the now-deprecated \ref
-Apop_settings_add_group, you'll need a \c ysg_settings_alloc(...) function
-instead of \c ysg_settings_init. They do the same thing, but the \c
-alloc version takes in a variadic list of items, wile the \c init takes
-a single structure.
+\li If for some reason you want to work with the now-deprecated \ref Apop_settings_add_group, you'll need a \c ysg_settings_alloc(...) function instead of \c ysg_settings_init. They do the same thing, but the \c alloc version takes in a variadic list of items, wile the \c init takes a single structure.
 
 endofdiv
-
 
         \li\ref Apop_settings_add
         \li\ref Apop_settings_add_group
         \li\ref Apop_settings_alloc
-        \li\ref Apop_settings_alloc_add
         \li\ref apop_settings_copy_group
         \li\ref Apop_settings_get
         \li\ref apop_settings_get_group
         \li\ref Apop_settings_get_group
         \li\ref apop_settings_group_alloc
-
 
         Outlineheader Spec Specific settings
 
@@ -1237,8 +1104,6 @@ endofdiv
 
         \li\ref apop_model_fix_params : hold some parameters constant
 
-
-
     endofdiv
 
 endofdiv
@@ -1251,13 +1116,11 @@ Outlineheader Test Tests & diagnostics
 \li  State the statistic's (hypothesized) distribution
 \li  Find the odds that the statistic would lie within some given range, like `greater than zero' or `near 1.1'
 
-If the statistic is from a common form, like the parameters from an OLS regression, then the commonly-associated \f$t\f$
-test is probably thrown in.
+If the statistic is from a common form, like the parameters from an OLS regression, then the commonly-associated \f$t\f$ test is probably thrown in.
 
 Some tests, like ANOVA, produce a statistic using a specialized prodecure, so Apophenia includes some functions, like \ref apop_test_anova_independence and \ref apop_test_kolmogorov, to produce the statistic and look up its significance level.
 
 If you are producing a statistic that you know has a common form, like a central limit theorem tells you that your statistic is Normally distributed, then the convenience function \ref apop_test will do the final lookup step of checking where your statistic lies on your chosen distribution.
-
 
     \li\ref apop_test()
     \li\ref apop_paired_t_test()
@@ -1284,25 +1147,13 @@ endofdiv
 
 Outlineheader Histosec Histograms \anchor histograms
 
-The GSL provides a <tt>gsl_histogram</tt> structure, that produces a PDF by accumulating data into
-bins. Apophenia wraps this into its \ref apop_model struct, so that
-the model-family machinery can be applied to Bayesian updating, kernel smoothing, or other methods that output a PDF.
+The GSL provides a <tt>gsl_histogram</tt> structure, that produces a PDF by accumulating data into bins. Apophenia wraps this into its \ref apop_model struct, so that the model-family machinery can be applied to Bayesian updating, kernel smoothing, or other methods that output a PDF.
 
-To produce a PMF from \c your_data, use \ref apop_histogram
-"apop_estimate(your_data, apop_histogram)". If you would like to compare this histogram to 
-other data (observed or theoretical),then you'll need to produce a second synce
-histogram using \ref apop_histogram_vector_reset or \ref apop_histogram_model_reset.
-Then you can send both histograms to, say, \ref apop_test_kolmogorov.
+To produce a PMF from \c your_data, use \ref apop_histogram "apop_estimate(your_data, apop_histogram)". If you would like to compare this histogram to other data (observed or theoretical),then you'll need to produce a second synce histogram using \ref apop_histogram_vector_reset or \ref apop_histogram_model_reset.  Then you can send both histograms to, say, \ref apop_test_kolmogorov.
 
-The second structure from the GSL incrementally sums up the PMF's bins to
-produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1]
-to a draw from the PMF.  Because it can be used to draw from the PMF,
-the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right:
-the the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative
-sum---a CMF.
+The second structure from the GSL incrementally sums up the PMF's bins to produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1] to a draw from the PMF.  Because it can be used to draw from the PMF, the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right: the the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative sum---a CMF.
 
 Anyway, here are some functions to deal with these various histograms and such; see also the GSL documentation, linked at the bottom of this outline.
-
 
     \li\ref apop_histogram_model_reset()
     \li\ref apop_histogram_moving_average()
@@ -1310,15 +1161,11 @@ Anyway, here are some functions to deal with these various histograms and such; 
     \li\ref apop_histogram_vector_reset()
     \li\ref apop_histograms_test_goodness_of_fit()
 
-
 endofdiv
 
 Outlineheader Maxi Maximum likelihood methods
 
-If you read the section on writing models, then you already know how to
-do maxium likelihood on exotic setups. Just write a model that has a
-\c p or \c log_likelihood function, and call \c apop_estimate(your_data,your_model).
-The default estimation routine is maximum likelihood.
+If you read the section on writing models, then you already know how to do maxium likelihood on exotic setups. Just write a model that has a \c p or \c log_likelihood function, and call \c apop_estimate(your_data,your_model).  The default estimation routine is maximum likelihood.
 
 MLEs have an especially large number of parameter tweaks that could be made; see the section on MLE settings above.
 
@@ -1336,12 +1183,7 @@ A constraint function must do three things:
 \li If the constraint does bind, it must return a penalty, that indicates how far off the parameter is from meeting the constraint.
 \li if the constraint does bind, it must set a return vector that the likelihood function can take as a valid input. The penalty at this returned value must be zero.
 
-The idea is that if the constraint returns zero, the log likelihood
-function will return the log likelihood as usual, and if not, it will
-return the log likelihood at the constraint's return vector minus the
-penalty. To give a concrete example, here is a constraint function that
-will ensure that both parameters of a two-dimensional input are both
-greater than zero:
+The idea is that if the constraint returns zero, the log likelihood function will return the log likelihood as usual, and if not, it will return the log likelihood at the constraint's return vector minus the penalty. To give a concrete example, here is a constraint function that will ensure that both parameters of a two-dimensional input are both greater than zero:
 
 \code
 static double beta_zero_greater_than_x_constraint(apop_data *data, apop_model *v){
@@ -1364,7 +1206,6 @@ endofdiv
     \li\ref apop_numerical_covariance_matrix()
     \li\ref apop_numerical_gradient()
 
-
 endofdiv
 
 Outlineheader Asst More descriptive methods
@@ -1372,7 +1213,6 @@ Outlineheader Asst More descriptive methods
     \li\ref apop_matrix_pca : Principal component analysis
     \li\ref apop_anova : One-way or two-way ANOVA tables
     \li\ref apop_update : Bayesian updating
-
 
 endofdiv
 
@@ -1397,7 +1237,6 @@ Outlineheader Legi Legible output
     \li\ref apop_vector_show()
 
 endofdiv
-
 
 Outlineheader moreasst Assorted
 
@@ -1448,9 +1287,7 @@ For your convenience, here are links to some other libraries you are probably us
     GSL documentation</a>, and <a href="http://www.gnu.org/software/gsl/manual/html_node/Function-Index.html">its index</a>
     \li <a href="http://sqlite.org/lang.html">SQL understood by SQLite</a>
 
-
 */
-
 
 
 /* This will be a useful example when I have an infomatrix method.
@@ -1473,9 +1310,7 @@ apop_data * stat    = apop_dot(apop_dot(apop_score(data, your_model), infoinv), 
 
 /** \page mingw MinGW
 
-Minimalist GNU for Windows is indeed mimimalist: it is not a full POSIX
-subsystem, and provides no package manager. Therefore, you will have to
-make some adjustments and install the dependencies yourself.
+Minimalist GNU for Windows is indeed mimimalist: it is not a full POSIX subsystem, and provides no package manager. Therefore, you will have to make some adjustments and install the dependencies yourself.
 
 Matt P. Dziubinski successfully used Apophenia via MinGW; here are his instructions (with edits by BK):
 
@@ -1542,11 +1377,9 @@ more information, such as the ld(1) and ld.so(8) manual pages.
 
 /** \page python The Python interface
 
-The distribution includes a Python interface via the SWIG tool for
-bridging across languages. 
+The distribution includes a Python interface via the SWIG tool for bridging across languages. 
 
-Installation: You will need to have the SWIG and Python-development
-packages installed on your computer when compiling. From there, 
+Installation: You will need to have the SWIG and Python-development packages installed on your computer when compiling. From there, 
 \code
 ./configure --enable-python
 make
@@ -1569,9 +1402,5 @@ Here is another simple example, that copies a Python-side list into a matrix usi
 
 \include fisher.py
 
-\li The focus of the work is still in C, so there will likely always be
-things that you can do in C that can't be done in Python, and strage
-Python-side errors that will only be explicable if you understand the
-C-side.  That said, you can still access all of the functions from Python
-(including those that make little sense from Python).
+\li The focus of the work is still in C, so there will likely always be things that you can do in C that can't be done in Python, and strage Python-side errors that will only be explicable if you understand the C-side.  That said, you can still access all of the functions from Python (including those that make little sense from Python).
 */

@@ -109,7 +109,7 @@ void *apop_mle_settings_copy(apop_mle_settings * in){
     return setme;
 }
 
-void apop_mle_settings_free(void *in){ apop_mle_settings * fin = in; free(fin); }
+void apop_mle_settings_free(apop_mle_settings *in){ free(in); }
 
 //      MLE support functions
 //Including numerical differentiation and a couple of functions to

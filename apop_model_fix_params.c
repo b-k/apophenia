@@ -201,7 +201,7 @@ apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_da
     fixed_params_pack(paramvals, starting_pt, mask, 0);
     double *sp           = malloc(sizeof(double) * size);
     memcpy(sp, starting_pt->vector->data, sizeof(double) * size);
-    Apop_settings_alloc_add(model_out, apop_mle, starting_pt, sp, model_out);
+    Apop_model_add_group(model_out, apop_mle, .starting_pt=sp,.parent= model_out);
     apop_data_free(starting_pt);
 
 /*    mle_out->starting_pt        = malloc(sizeof(double) * size);

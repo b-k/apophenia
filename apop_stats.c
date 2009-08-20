@@ -44,7 +44,7 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 \ingroup convenience_fns
 */
 long double apop_vector_sum(const gsl_vector *in){
-  apop_assert(in, 0, 1,'c', "You just asked me to sum a NULL. Returning zero.\n")
+  apop_assert(in, 0, 1,'c', "You just asked me to sum a NULL. Returning zero.")
   double  out = 0;
     for (size_t i=0; i< in->size; i++)
         out += gsl_vector_get(in, i);
@@ -459,6 +459,7 @@ APOP_VAR_ENDHEAD
   \param m	the matrix to be summed. 
 \ingroup convenience_fns*/
 long double apop_matrix_sum(const gsl_matrix *m){
+  apop_assert(m, 0, 1,'c', "You just asked me to sum a NULL. Returning zero.")
   long double	sum	= 0;
 	for (size_t j=0; j< m->size1; j++)
 		for (size_t i=0; i< m->size2; i++)

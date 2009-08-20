@@ -36,7 +36,7 @@ apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_co
     return out;
 }
 
-apop_category_settings *apop_category_settings_copy(apop_category_settings *in){
+void *apop_category_settings_copy(apop_category_settings *in){
   apop_category_settings *out = malloc (sizeof(apop_category_settings));
     *out = *in;
     out->factors = apop_data_copy(in->factors);

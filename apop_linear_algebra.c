@@ -23,7 +23,6 @@ and vector printing functions" will let you print to a text file as
 well. The presumption is that statistic estimates are for your own
 consumption, while you are printing a matrix for import into another program.
 
-See \ref apop_name_print.
 */
 /** \defgroup apop_print 	Assorted printing functions		
 
@@ -36,17 +35,11 @@ function.
 \ingroup output
 */
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>	//popen, I think.
-#include "asst.h"
 #include "stats.h"
 #include "conversions.h" //apop_matrix_copy
-#include "linear_algebra.h"
-#include "math.h" //pow!
 
 /**
-Calculate the determinant of a matrix, its inverse, or both. The \c in matrix is not destroyed in the process.
+Calculate the determinant of a matrix, its inverse, or both, via LU decomposition. The \c in matrix is not destroyed in the process.
 
 See also \ref apop_matrix_determinant and \ref apop_matrix_inverse.
 
@@ -116,27 +109,25 @@ double apop_matrix_determinant(const gsl_matrix *in) {
     return apop_det_and_inv(in, NULL, 1, 0);
 }
 
-/**
-Principal component analysis: hand in a matrix and a number of
-desired dimensions, and I'll return a data set where each column of the
-matrix is an eigenvector. The columns are sorted, so column zero has
-the greatest weight. The vector element of the data set gives the weights.
+/** Principal component analysis: hand in a matrix and (optionally) a number of desired dimensions, and I'll return a data set where each column of the matrix is an eigenvector. The columns are sorted, so column zero has the greatest weight. The vector element of the data set gives the weights.
 
-You also specify the number of elements your principal component space
-should have. If this is equal to the rank of the space in which the
-input data lives, then the sum of weights will be one. If the dimensions
-desired is less than that, then the weights will be accordingly smaller, giving you an indication of how much variation these dimensions explain. 
+You also specify the number of elements your principal component space should have. If this is equal to the rank of the space in which the input data lives, then the sum of weights will be one. If the dimensions desired is less than that (probably so you can prepare a plot), then the weights will be accordingly smaller, giving you an indication of how much variation these dimensions explain. 
 
-\param data The input matrix.
+\param data The input matrix. (No default. If \c NULL, I'll return \c NULL.)
 
-\param dimensions_we_want 
+\param dimensions_we_want  (default: the size of the covariance matrix, i.e. <tt>data->size2</tt>)
 The singular value decomposition will return this many of the eigenvectors with the largest eigenvalues.
 
 \return     Returns a \ref apop_data set whose matrix is the principal component space. Each column of the returned matrix will be another eigenvector; the columns will be ordered by the eigenvalues. 
 The data set's vector will be the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
 
 \ingroup linear_algebra */
-apop_data * apop_matrix_pca(gsl_matrix *data, int dimensions_we_want) {
+APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int dimensions_we_want) {
+    gsl_matrix * apop_varad_var(data, NULL);
+    if (!data) return NULL;
+    int apop_varad_var(dimensions_we_want, data->size2)
+    return apop_matrix_pca_base(data, dimensions_we_want);
+APOP_VAR_ENDHEAD
   gsl_matrix * 	eigenvectors 	= gsl_matrix_alloc(data->size2, data->size2);
   gsl_vector * 	dummy_v 	    = gsl_vector_alloc(data->size2);
   gsl_vector * 	all_evalues 	= gsl_vector_alloc(data->size2);
@@ -171,7 +162,7 @@ apop_data * apop_matrix_pca(gsl_matrix *data, int dimensions_we_want) {
 
 \param v The \c gsl_vector in question (No default, must not be NULL)
 \param i The location in the vector to be incremented. (No default)
-\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1)
+\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1. Please note that it is impossible to increment by zero. If that glitch is a possibility, use \c apop_vector_increment_base.)
 
 This function uses the \ref designated syntax for inputs.
 
@@ -199,7 +190,7 @@ APOP_VAR_END_HEAD
 \param m The \c gsl_matrix in question (No default, must not be \c NULL)
 \param i The row of the element to be incremented. (No default)
 \param j The column of the element to be incremented. (No default)
-\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1)
+\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1. Please note that it is impossible to increment by zero. If that glitch is a possibility, use \c apop_vector_increment_base.)
 \ingroup convenience_fns
  */
 APOP_VAR_HEAD void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
@@ -387,23 +378,20 @@ APOP_VAR_ENDHEAD
 \param drop an array of ints. If use[7]==1, then column seven will be cut from the output. 
 */
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
-  gsl_matrix      *out;
-  int             i, 
-                  ct  = 0, 
-                  j   = 0;
-  gsl_vector_view v;
-    for (i=0; i < in->size2; i++)
+  int        ct  = 0, 
+             j   = 0;
+    for (size_t i=0; i < in->size2; i++)
         if (drop[i]==0)
             ct++;
     if (ct == 0)
         return apop_matrix_copy(in);
     if (ct == in->size2)
         return NULL;
-    out = gsl_matrix_alloc(in->size1, ct);
-    for (i=0; i < in->size2; i++){
+    gsl_matrix *out = gsl_matrix_alloc(in->size1, ct);
+    for (size_t i=0; i < in->size2; i++){
         if (drop[i]==0){
-            v   = gsl_matrix_column(in, i);
-            gsl_matrix_set_col(out, j, &(v.vector));
+            Apop_matrix_col(in, i, v);
+            gsl_matrix_set_col(out, j, v);
             j   ++;
         }
     }
@@ -451,25 +439,22 @@ static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,cons
 static apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE_t lt, CBLAS_TRANSPOSE_t rt){
         if (lt==CblasNoTrans) {
             if (rt==CblasNoTrans) 
-                Apop_assert(lm->size2==rm->size1, NULL, 0, 's', "You sent me a matrix with %u columns to "
-                                                               "multiply against a matrix with %u rows. Those "
+                Apop_assert(lm->size2==rm->size1, NULL, 0, 's', 
+                        "You sent me a matrix with %u columns to multiply against a matrix with %u rows. Those "
                                                                "two need to be equal.", lm->size2, rm->size1)
             else
-                Apop_assert(lm->size2==rm->size2, NULL, 0, 's', "You sent me a matrix with %u columns to "
-                                                               "multiply against a matrix with %u rows "
-                                                               "(after the transposition you requested). Those "
-                                                               "two need to be equal.", lm->size2, rm->size2)
+                Apop_assert(lm->size2==rm->size2, NULL, 0, 's', 
+                        "You sent me a matrix with %u columns to multiply against a matrix with %u rows "
+                        "(after the transposition you requested). Those two need to be equal.", lm->size2, rm->size2)
         } else {
             if (rt==CblasNoTrans) 
-                Apop_assert(lm->size1==rm->size1, NULL, 0, 's', "You sent me a matrix with %u columns "
-                                                                "(after the transposition you requested) to "
-                                                               "multiply against a matrix with %u rows. Those "
-                                                               "two need to be equal.", lm->size1, rm->size1)
+                Apop_assert(lm->size1==rm->size1, NULL, 0, 's', 
+                        "You sent me a matrix with %u columns (after the transposition you requested) to "
+                        "multiply against a matrix with %u rows. Those two need to be equal.", lm->size1, rm->size1)
             else
-                Apop_assert(lm->size1==rm->size2, NULL, 0, 's', "You sent me a matrix with %u columns to "
-                                                               "multiply against a matrix with %u rows "
-                                                               "(after the two transpositions you requested). "
-                                                               "Those two need to be equal.", lm->size1, rm->size2)
+                Apop_assert(lm->size1==rm->size2, NULL, 0, 's', 
+                        "You sent me a matrix with %u columns to multiply against a matrix with %u rows "
+                        "(after the two transpositions you requested). Those two need to be equal.", lm->size1, rm->size2)
         }
         return NULL;
 }

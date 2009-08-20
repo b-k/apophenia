@@ -38,6 +38,34 @@ void test_percentiles(){
     assert(pcts_avg[50] == (pcts_down[50] + pcts_up[50])/2);
 }
 
+void test_score(){
+  int         i, j, len = 1e5;
+  gsl_rng     *r        = apop_rng_alloc(123);
+  apop_data   *data     = apop_data_alloc(0, len,1);
+    for (i=0; i<10; i++){
+        apop_model  *source   = apop_model_set_parameters(apop_normal, 
+                                    gsl_ran_flat(r, -5, 5), gsl_ran_flat(r, .01, 5));
+        for (j=0; j< len; j++)
+            apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
+        apop_model *estme = apop_model_copy(apop_normal);
+        Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN,.parent= estme);
+        apop_model *out = apop_maximum_likelihood(data, *estme);
+
+        apop_model *straight_est = apop_estimate(data, apop_normal);
+        assert(fabs(straight_est->parameters->vector->data[0]- source->parameters->vector->data[0])<1e-1);//rough, I know.
+        assert(fabs(straight_est->parameters->vector->data[1]- source->parameters->vector->data[1])<1e-1);
+
+        double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;
+        assert(fabs(apop_data_get(out->covariance, 0,0)-sigsqn) < 1e-3);
+        assert(fabs(apop_data_get(out->covariance, 1,1)-sigsqn/2) < 1e-3);
+        assert(apop_data_get(out->covariance, 0,1) + apop_data_get(out->covariance, 0,1) < 1e-3);
+        apop_model_free(out);
+        printf(".");
+        apop_model_free(source); 
+    }
+    apop_data_free(data);
+}
+
 //This tests the database-side functions.
 void test_skew_and_kurt(){
   gsl_rng *r  = apop_rng_alloc(time(0));
@@ -937,6 +965,19 @@ void test_data_to_db() {
             assert(!strcmp(d->text[i][j],d2->text[i][j]));  
 }
 
+
+void test_default_rng(gsl_rng *r) {
+    gsl_vector *o = gsl_vector_alloc(2e6);
+    apop_model *ncut = apop_model_set_parameters(apop_normal, 1.1, 1.23);
+    ncut->draw = NULL; //forced to use the default.
+    for(size_t i=0; i < 2e6; i ++)
+        apop_draw(o->data+i, r, ncut);
+    apop_model *back_out = apop_estimate(apop_vector_to_data(o), apop_normal);
+    assert(fabs(back_out->parameters->vector->data[0] - 1.1) < 1e-3);
+    assert(fabs(back_out->parameters->vector->data[1] - 1.23) < 1e-3);
+    gsl_vector_free(o);
+}
+
 double ran_uniform(double in, void *r){ return gsl_rng_uniform(r);}
 
 void test_posdef(gsl_rng *r){
@@ -1104,7 +1145,7 @@ int main(int argc, char **argv){
     gsl_rng       *r              = apop_rng_alloc(8); 
     apop_data     *d  = apop_text_to_data("test_data2",0,1);
     apop_model *an_ols_model = apop_model_copy(apop_ols);
-    Apop_settings_alloc_add(an_ols_model, apop_ls, want_expected_value, 1, d);
+    Apop_model_add_group(an_ols_model, apop_ls, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
     do_test("positive definiteness", test_posdef(r));

@@ -1,5 +1,6 @@
 #include <apophenia/db.h>
 #include <apophenia/asst.h>
+#include <apophenia/arms.h>
 #include <apophenia/model.h>
 #include <apophenia/types.h>
 #include <apophenia/stats.h>

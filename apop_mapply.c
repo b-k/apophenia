@@ -1,11 +1,5 @@
-#include "stats.h"
-#include "mapply.h"
-#include "types.h"
-static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, int use_index, int use_param,void *param, char post_22);
-
 /** \file apop_mapply.c vector/matrix map/apply.  */
- 
-/* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
+/* Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
  
    This file is a tour de force of the if statement. There are several possibilities:
 
@@ -13,17 +7,22 @@ static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vect
    --user wants output in a new location, or written to the old.
    --user has extra parameters
    --user needs to know the index of the function
-   --user wants the sum of the result (e.g., to find if any elements are NAN, or a sum of log-likelihoods).
+   --user wants the sum of the result (e.g., to find how many elements are NAN, or a sum of log-likelihoods).
 
    Further, Apophenia v0.22 introduced variadic, optional arguments, so
-   we have a somewhat more robust syntax post-22, and the prior syntax,
-   which some may find useful, but which we certainly don't want to eliminate.
+   we have a somewhat more robust syntax post-22, and also the prior syntax,
+   which some may find useful.
 
    We thus have a lot of functions that all feed in to mapply_core, which, after several if statements,
    then dispatches segments do different threads, and either the vectorloop or forloop that does all the
    actual math.
 
  */
+#include "stats.h"
+#include "mapply.h"
+#include "types.h"
+static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, int use_index, int use_param,void *param, char post_22);
+
 
 //Support for apop_matrix_apply:
 
@@ -147,16 +146,15 @@ APOP_VAR_ENDHEAD
             }
         }
     }
-    if (part == 'r')
-        mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, 'r');
-    if (part == 'c')
-        mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, 'c');
+    if (part == 'r' || part == 'c')
+        mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, part);
     return out;
 }
 
+/** A convenience function to call \ref apop_map, and return the sum of the resulting elements. Thus, this function returns a single \c double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always internally allocate a temp data set and free it before returning.
 
-/** A convenience function to call \ref apop_map, and return the sum of
- the resulting elements. Thus, this function returns a single \c double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always internally allocate a temp data set and free it before returning.
+  See also the \ref mapply "map/apply page" for details.
+ \ingroup mapply
  */
 APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi,    void *param, char part){ 
     apop_data * apop_varad_var(in, NULL)
@@ -183,8 +181,7 @@ typedef struct {
     size_t      *limlist;
     void        *fn;
     gsl_matrix  *m;
-    gsl_vector  *vin;
-    gsl_vector  *v;
+    gsl_vector  *v, *vin;
     int use_index, use_param;
     char rc;
     void *param;
@@ -196,10 +193,9 @@ static void *forloop(void *t){
   apop_fn_vp  *fn_vp=tc->fn;
   apop_fn_vpi *fn_vpi=tc->fn;
   apop_fn_vi  *fn_vi=tc->fn;
-  int           i;
   gsl_vector    view;
   double        val;
-    for (i= tc->limlist[0]; i< tc->limlist[1]; i++){
+    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
         view    = tc->rc == 'r' ? gsl_matrix_row(tc->m, i).vector : gsl_matrix_column(tc->m, i).vector;
         val     = 
         tc->use_param ? (tc->use_index ? fn_vpi(&view, tc->param, i) : 
@@ -213,17 +209,14 @@ static void *forloop(void *t){
 
 static void *oldforloop(void *t){
   threadpass      *tc = t;
-  apop_fn_v       *vtod=tc->fn;
   apop_fn_vtov    *vtov=tc->fn;
-  gsl_vector    view;
-  double        val;
+    if (tc->v){
+        tc->rc = 'r';
+        return forloop(t);
+    }
     for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
-        view    = gsl_matrix_row(tc->m, i).vector;
-        if (tc->v){
-            val     = vtod(&view);
-            gsl_vector_set(tc->v, i, val);
-        } else
-            vtov(&view);
+        Apop_matrix_row(tc->m, i, v);
+        vtov(v);
     }
   return NULL;
 }
@@ -250,16 +243,13 @@ static void *vectorloop(void *t){
 
 static void *oldvectorloop(void *t){
   threadpass      *tc = t;
-  double          *inval, outval;
-  apop_fn_d    *dtod=tc->fn;
+  double          *inval;
   apop_fn_dtov    *dtov=tc->fn;
+    if (tc->v)
+        return vectorloop(t);
     for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
         inval   = gsl_vector_ptr(tc->vin, i);
-        if (tc->v){
-            outval  = dtod(*inval);
-            gsl_vector_set(tc->v, i, outval);
-        } else
-            dtov(inval);
+        dtov(inval);
     }
   return NULL;
 }
@@ -303,93 +293,66 @@ static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vect
     return vout;
 }
 
-/** Map a function onto every row of a matrix.  The function that you
- input takes in a gsl_vector and returns a \c double. \c apop_matrix_map will
- produce a vector view of each row, and send each row to your function. It
- will output a \c gsl_vector holding your function's output for each row.
+/** \defgroup mapply Map or apply a function to a vector or matrix
 
-If \c apop_opts.thread_count is greater than one, then the matrix will be
-broken into chunks and each sent to a different thread. Notice that the
-GSL is generally threadsafe, and SQLite is 100\% not threadsafe. If
-your function calls SQLite behind your back, you will find out when your
-program crashes.
+These functions will pull each element of a vector or matrix, or each row of a matrix, and apply a function to the given element. See the data->map/apply section of the \ref outline_mapply "outline" for many examples. 
+
+Here are a few technical details of usage:
+
+\li If \c apop_opts.thread_count is greater than one, then the matrix will be broken into chunks and each sent to a different thread. Notice that the GSL is generally threadsafe, and SQLite is (as of this writing) not threadsafe.
+
+\li See also \ref apop_map and \ref apop_map_sum, which take in \ref apop_data sets and have options for sending in the index of the item or additional parameters.
+
+\li The \c ...sum functions are convenience functions that just call \c ...map and then add up the contents. Thus, you will need to have adequate memory for the allocation of the temp matrix/vector.
+\{ */
+
+/** Map a function onto every row of a matrix.  The function that you input takes in a gsl_vector and returns a \c double. \c apop_matrix_map will produce a vector view of each row, and send each row to your function. It will output a \c gsl_vector holding your function's output for each row.
+
 
   \param m  The matrix
   \param fn A function of the form <tt>double fn(gsl_vector* in)</tt>
 
   \return A \c gsl_vector with the corresponding value for each row.
 
-  See also \ref apop_matrix_apply, which works like this function but does not return a value.
-
-  \ingroup convenience_fns
+  See \ref mapply "the map/apply page" for details.
  */
 gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*)){
   gsl_vector    *out        = gsl_vector_alloc(m->size1);
     return mapply_core((gsl_matrix*) m, NULL, fn, out, 0, 0, NULL, 0);
 }
 
-/** Apply a function to every row of a matrix.  The function that you
- input takes in a gsl_vector and returns \c NULL. \c apop_matrix_apply will
- produce a vector view of each row, and send each row to your function.
-
-If \c apop_opts.thread_count is greater than one, then the matrix will be
-broken into chunks and each sent to a different thread. Notice that the
-GSL is generally threadsafe, and SQLite is 100\% not threadsafe. If
-your function calls SQLite behind your back, you will find out when your
-program crashes.
+/** Apply a function to every row of a matrix.  The function that you input takes in a gsl_vector and returns nothing. \c apop_matrix_apply will produce a vector view of each row, and send each row to your function.
 
   \param m  The matrix
   \param fn A function of the form <tt>void fn(gsl_vector* in)</tt>
 
-  See also \ref apop_matrix_map, which works like this function but returns a value for each row.
-
-  \ingroup convenience_fns
+  See \ref mapply "the map/apply page" for details.
  */
 void apop_matrix_apply(gsl_matrix *m, void (*fn)(gsl_vector*)){
     mapply_core(m, NULL, fn, NULL, 0, 0, NULL, 0);
 }
 
-/** Map a function onto every element of a vector.  The function that you
- input takes in a \c double and returns a \c double. \c apop_apply will
- send each element to your function, and
- will output a \c gsl_vector holding your function's output for each row.
-
-If \c apop_opts.thread_count is greater than one, then the matrix will be
-broken into chunks and each sent to a different thread. Notice that the
-GSL is generally threadsafe, and SQLite is 100\% not threadsafe. If
-your function calls SQLite behind your back, you will find out when your
-program crashes.
+/** Map a function onto every element of a vector.  The function that you input takes in a \c double and returns a \c double. \c apop_apply will send each element to your function, and will output a \c gsl_vector holding your function's output for each row.
 
   \param v  The input vector
   \param fn A function of the form <tt>double fn(double in)</tt>
 
   \return A \c gsl_vector (allocated by this function) with the corresponding value for each row.
 
-  See also \ref apop_vector_apply, which works like this function but does not return a value.
-
-  \ingroup convenience_fns
+  See \ref mapply "the map/apply page" for details.
  */
 gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double)){
   gsl_vector    *out        = gsl_vector_alloc(v->size);
     return mapply_core(NULL, (gsl_vector*) v, fn, out, 0, 0, NULL, 0);
 }
 
-/** Apply a function to every row of a matrix.  The function that you
- input takes in a gsl_vector and returns \c NULL. \c apop_apply will
+/** Apply a function to every row of a matrix.  The function that you input takes in a gsl_vector and returns nothing. \c apop_apply will
  send a pointer to each element of your vector to your function.
-
-If \c apop_opts.thread_count is greater than one, then the matrix will be
-broken into chunks and each sent to a different thread. Notice that the
-GSL is generally threadsafe, and SQLite is 100\% not threadsafe. If
-your function calls SQLite behind your back, you will find out when your
-program crashes.
 
   \param v  The input vector
   \param fn A function of the form <tt>void fn(double in)</tt>
 
-  See also \ref apop_vector_map, which works like this function but returns a value.
-
-  \ingroup convenience_fns
+  See \ref mapply "the map/apply page" for details.
  */
 void apop_vector_apply(gsl_vector *v, void (*fn)(double*)){
     mapply_core(NULL, v, fn, NULL, 0, 0, NULL, 0); }
@@ -397,35 +360,41 @@ void apop_vector_apply(gsl_vector *v, void (*fn)(double*)){
 static void apop_matrix_map_all_vector_subfn(const gsl_vector *in, gsl_vector *outv, double (*fn)(double)){
     mapply_core(NULL, (gsl_vector *) in, fn, outv, 0, 0, NULL, 0); }
 
-/*static void  apop_matrix_apply_all_vector_subfn(const gsl_vector *in, void (*fn)(double *)){
-    apop_vector_apply((gsl_vector*) in, fn); }*/
+/** Maps a function to every element in a matrix (as opposed to every row)
+
+  \param in The matrix whose elements will be inputs to the function
+  \param fn A function with a form like <tt>double f(double in)</tt>.
+  \return a matrix of the same size as the original, with the function applied.
+
+  See \ref mapply "the map/apply page" for details.
+  */
 
 gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
   gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
-  gsl_vector_view v;
-    for (int i=0; i< in->size1; i++){
+    for (size_t i=0; i< in->size1; i++){
         gsl_vector_const_view inv = gsl_matrix_const_row(in, i);
-        v = gsl_matrix_row(out, i);
-        apop_matrix_map_all_vector_subfn(&inv.vector, &v.vector, fn);
+        Apop_matrix_row(out, i, v);
+        apop_matrix_map_all_vector_subfn(&inv.vector, v, fn);
     }
     return out;
 }
 
+/** Applies a function to every element in a matrix (as opposed to every row)
+
+  \param in The matrix whose elements will be inputs to the function
+  \param fn A function with a form like <tt>void f(double *in)</tt> which will modify the data at the in-pointer in place.
+  See \ref mapply "the map/apply page" for details.
+  */
 void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
-  gsl_vector_view v;
-    for (int i=0; i< in->size1; i++){
-        v   = gsl_matrix_row(in, i);
-        apop_vector_apply(&v.vector, fn);
+    for (size_t i=0; i< in->size1; i++){
+        Apop_matrix_row(in, i, v);
+        apop_vector_apply(v, fn);
     }
 }
 
-/** like \c apop_vector_map, but returns the sum of the resulting mapped
- function. For example, <tt>apop_vector_map_sum(v, isnan)</tt> returns the number of elements of <tt>v</tt> that are \c NaN.
+/** Like \c apop_vector_map, but returns the sum of the resulting mapped function. For example, <tt>apop_vector_map_sum(v, isnan)</tt> returns the number of elements of <tt>v</tt> that are \c NaN.
 
- Calls \c apop_vector_map internally, meaning that you will need adequate free memory.
-
-  \ingroup convenience_fns
- */
+  See \ref mapply "the map/apply page" for details.  */
 double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double)){
     gsl_vector *m = apop_vector_map (in, fn);
     double out = apop_vector_sum(m);
@@ -433,13 +402,9 @@ double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double)){
     return out;
 }
 
-/** like \c apop_matrix_map_all, but returns the sum of the resulting mapped
- function. For example, <tt>apop_matrix_map_all_sum(v, isnan)</tt> returns the number of elements of <tt>m</tt> that are \c NaN.
+/** Like \c apop_matrix_map_all, but returns the sum of the resulting mapped function. For example, <tt>apop_matrix_map_all_sum(v, isnan)</tt> returns the number of elements of <tt>m</tt> that are \c NaN.
 
- Calls \c apop_matrix_map_all, meaning that you will need adequate free memory.
-
-  \ingroup convenience_fns
- */
+  See \ref mapply "the map/apply page" for details.  */
 double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double)){
     gsl_matrix *m = apop_matrix_map_all (in, fn);
     double out = apop_matrix_sum(m);
@@ -447,18 +412,13 @@ double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double)){
     return out;
 }
 
-/** Like \c apop_matrix_map, but returns the sum of the resulting mapped
- vector. For example, let \c log_like be a function that returns the
- log likelihood of an input vector; then <tt>apop_matrix_map_sum(m,
- log_like)</tt> returns the total log likelihood of the rows of \c m.
+/** Like \c apop_matrix_map, but returns the sum of the resulting mapped vector. For example, let \c log_like be a function that returns the log likelihood of an input vector; then <tt>apop_matrix_map_sum(m, log_like)</tt> returns the total log likelihood of the rows of \c m.
 
- Calls \c apop_matrix_map, meaning that you will need adequate free memory.
-
-  \ingroup convenience_fns
- */
+  See \ref mapply "the map/apply page" for details.  */
 double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*)){
     gsl_vector *v = apop_matrix_map (in, fn);
     double out = apop_vector_sum(v);
     gsl_vector_free(v);
     return out;
 }
+/** \} */

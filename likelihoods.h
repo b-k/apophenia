@@ -40,16 +40,11 @@ typedef enum {
 typedef struct{
 //traditional
     double      *starting_pt;
-    double      step_size;
-    double      tolerance;
-    double      delta;
     apop_optimization_enum method;
-    int         verbose;
-    int         want_cov;
+    double      step_size, tolerance, delta;
+    int         verbose, want_cov;
 //simulated annealing (also uses step_size);
-    int         n_tries;
-    int         use_score;
-    int         iters_fixed_T;
+    int         n_tries, use_score, iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
     char        *trace_path;
@@ -57,9 +52,9 @@ typedef struct{
 } apop_mle_settings;
 
 apop_mle_settings *apop_mle_settings_alloc(apop_model *model);
-apop_mle_settings *apop_mle_settings_init(apop_mle_settings in);
-void *apop_mle_settings_copy(apop_mle_settings * in);
-void apop_mle_settings_free(void * in);
+#ifndef SWIG
+Apop_settings_declarations(apop_mle)
+#endif
 
 
 typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);

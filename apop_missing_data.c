@@ -1,26 +1,15 @@
-/** \file apop_missing_data.c
- 
-  Some missing data handlers.
+/** \file apop_missing_data.c Some missing data handlers. */
+/* Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
-#include "stats.h"
-#include "output.h"
 #include "model.h"
-#include "types.h"
-#include "settings.h"
-#include "conversions.h"
+#include "internal.h"
 #include "likelihoods.h"
 
-/** If there is an NaN anywhere in the row of data (including the matrix
-    and the vector) then delete the row from the data set.
+/** If there is an NaN anywhere in the row of data (including the matrix and the vector) then delete the row from the data set.
 
-    The function returns a new data set with the NaNs removed, so
-    the original data set is left unmolested. You may want to \c
-    apop_data_free the original immediately after this function.
+The function returns a new data set with the NaNs removed, so the original data set is left unmolested. You may want to \c apop_data_free the original immediately after this function.
 
-    If every row has an NaN, then this returns NULL; you may want to
-    check for this after the function returns.
+If every row has an NaN, then this returns \c NULL.
 
     \param d    The data, with NaNs
     \return     A (potentially shorter) copy of the data set, without NaNs.
@@ -28,22 +17,14 @@ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
     \todo  Doesn't handle text.
 */
 apop_data * apop_data_listwise_delete(apop_data *d){
-  int i, j, min = 0, max = 0, height=0, has_vector=0, has_matrix=0, to_rm;
-    //get to know the input.
-    if (d->matrix){
-        height      = d->matrix->size1;
-        max         = d->matrix->size2;
-        has_matrix  ++;
-    } 
-    if (d->vector){
-        height      = height ?  height : d->vector->size;
-        min         = -1;
-        has_vector  ++;
-    } 
-    apop_assert(has_matrix || has_vector, NULL, 0, 'c', 
+    Get_vmsizes(d) //defines vsize, msize1, msize2.
+    int i, j, to_rm;
+    int max = d->matrix ? d->matrix->size2: 0;
+    int min = d->vector ? -1 : 0;
+    apop_assert(msize1 || vsize, NULL, 0, 'c', 
             "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
     //find out where the NaNs are
-  gsl_vector *marked = gsl_vector_calloc(height);
+  gsl_vector *marked = gsl_vector_calloc(msize1);
     for (i=0; i< d->matrix->size1; i++)
         for (j=min; j <max; j++)
             if (gsl_isnan(apop_data_get(d, i, j))){
@@ -52,22 +33,22 @@ apop_data * apop_data_listwise_delete(apop_data *d){
             }
     to_rm   = apop_sum(marked);
     //copy the good data.
-    if (to_rm  == height)
+    if (to_rm  == msize1)
         return NULL;
-  apop_data *out = apop_data_alloc(0,height-to_rm, has_matrix ? max : -1);
+  apop_data *out = apop_data_alloc(0, msize1-to_rm, msize1 ? max : -1);
     out->names  = apop_name_copy(d->names); 
-    if (has_vector && has_matrix)
-        out->vector = gsl_vector_alloc(height - to_rm);
+    if (vsize && msize1)
+        out->vector = gsl_vector_alloc(msize1 - to_rm);
     j   = 0;
-    for (i=0; i< height; i++){
+    for (i=0; i< msize1; i++){
         if (!gsl_vector_get(marked, i)){
-            if (has_vector)
+            if (vsize)
                 gsl_vector_set(out->vector, j, gsl_vector_get(d->vector, i));
-            if (has_matrix){
+            if (msize1){
                 APOP_ROW(d, i, v);
                 gsl_matrix_set_row(out->matrix, j, v);
-            if (d->names->row && d->names->rowct > i)
-                apop_name_add(out->names, d->names->row[i], 'r');
+                if (d->names->row && d->names->rowct > i)
+                    apop_name_add(out->names, d->names->row[i], 'r');
             }
             j++;
         }
@@ -96,11 +77,7 @@ void  apop_ml_imputation_settings_free(apop_ml_imputation_settings *in){
 
 void * apop_ml_imputation_settings_copy(apop_ml_imputation_settings *in){
     apop_ml_imputation_settings *out = malloc(sizeof(apop_ml_imputation_settings));
-    out->local_mvn = in->local_mvn;
-    out->ct = in->ct;
-    out->row = in->row;
-    out->col = in->col;
-    return out;
+    return (out = in);
 }
 
 static void addin(apop_ml_imputation_settings *m, size_t i, size_t j, double** starting_pt, gsl_vector *imean){
@@ -163,7 +140,7 @@ if \c NULL, then I'll use the Multivariate Normal that best fits the data after 
 apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
     if (!mvn){
         apop_data *list_d = apop_data_listwise_delete(d);
-        apop_error(0, 's', "Listwise deletion returned no whole rows, "
+        apop_assert(list_d, NULL, 0, 's', "Listwise deletion returned no whole rows, "
                             "so I couldn't fit a Multivariate Normal to your data. "
                             "Please provide a pre-estimated initial model.");
         mvn = apop_estimate(list_d, apop_multivariate_normal);

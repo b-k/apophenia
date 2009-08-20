@@ -26,8 +26,8 @@ apop_ls_settings * apop_ls_settings_init(apop_ls_settings in){
     return out;
 }
 
-apop_ls_settings * apop_ls_settings_alloc(apop_data *data){
-    return apop_ls_settings_init((apop_ls_settings){ }); }
+/*apop_ls_settings * apop_ls_settings_alloc(apop_data *data){
+    return apop_ls_settings_init((apop_ls_settings){ }); }*/
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
@@ -331,7 +331,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     epout               = apop_model_copy(*ep);
     apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
     if (!olp) {
-        Apop_settings_add_group(ep, apop_ls, inset);
+        Apop_model_add_group(ep, apop_ls);
         olp             =  apop_settings_get_group(epout, "apop_ls");
     }
     olp->want_cov       = 0;//not working yet.

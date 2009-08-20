@@ -21,7 +21,7 @@ APOP_VAR_DECLARE void apop_matrix_increment(gsl_matrix * m, int i, int j, double
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
 //apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);
-apop_data *  apop_matrix_pca(gsl_matrix *data, int dimensions_we_want);
+APOP_VAR_DECLARE apop_data *  apop_matrix_pca(gsl_matrix *data, int dimensions_we_want);
 APOP_VAR_DECLARE gsl_vector * apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace);
 APOP_VAR_DECLARE gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace);
 gsl_matrix * apop_matrix_rm_columns(gsl_matrix *in, int *drop);

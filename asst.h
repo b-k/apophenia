@@ -97,26 +97,6 @@ gsl_rng *apop_rng_alloc(int seed);
 apop_data * apop_data_listwise_delete(apop_data *d);
 apop_model * apop_ml_imputation(apop_data *d, apop_model* meanvar);
 
-/** Method settings for a model to be put through Bayesian updating. 
-\param starting_pt      The first parameter to check in the MCMC routine
-\param periods How many steps should the MCMC chain run?
-\param burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
-\param histosegments If outputting a \ref apop_histogram, how many segments should it have?
- 
- */
-typedef struct{
-    apop_data *data;
-    apop_data *starting_pt;
-    long int periods;
-    double burnin;
-    int histosegments;
-    char method;
-} apop_update_settings;
-
-apop_update_settings *apop_update_settings_alloc(apop_data *d);
-apop_update_settings *apop_update_settings_init(apop_update_settings);
-#define apop_update_settings_copy NULL
-#define  apop_update_settings_free NULL
 
 APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng);
 

@@ -91,16 +91,16 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
 }
 
 /** This is designed to be called from within your own constraint
- function. Just write the constraint vector and this will do the rest.
+ function. Just write the constraint vector+matrix and this will do the rest.
  
  \param beta    The proposed vector about to be tested. (No default, must not be \c NULL)
  \param constraint  The constraints. See \ref apop_f_test on writing (Default: each elements is greater than zero)
  contrasts. To give a quick example, say your constraint is $3 < 2x +
  4y - 7z$; then the first row of your \c data->vector element would be 3, and the
  first row of the \c data->matrix element would be [2 4 -7].
- \param margin If zero, then this is a >= constraint, otherwise I will return a point this amount within the borders. You could try \c GSL_DBL_EPSILON, which is the smallest value a \c double can hold, or something like 1e-3.
+ \param margin If zero, then this is a >= constraint, otherwise I will return a point this amount within the borders. You could try \c GSL_DBL_EPSILON, which is the smallest value a \c double can hold, or something like 1e-3. (Default = 0.)
  \return The penalty = the distance between beta and the closest point that meets the constraints.
- If the constraint is not met, this \c beta is nudged to the closest point that meets the constraints (Euclidian distance). (Default = 0.)
+ If the constraint is not met, this \c beta is shifted by \c margin (Euclidian distance) to meet the constraints. 
 
 This function uses the \ref designated syntax for inputs.
 \todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints.

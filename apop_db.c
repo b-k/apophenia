@@ -204,7 +204,7 @@ APOP_VAR_END_HEAD
         {apop_mysql_db_close(0);
         return 0;}
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
     else{
 #ifdef HAVE_LIBSQLITE3
@@ -216,7 +216,7 @@ APOP_VAR_END_HEAD
         db  = NULL;
         return 0;
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without SQLite support.")
 #endif
     }
 }
@@ -250,7 +250,7 @@ int apop_query(const char *fmt, ...){
         {apop_assert(mysql_db, 1, 0, 'c', "No mySQL database is open.");
         apop_mysql_query(q);}
 #else
-        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
     else 
 #ifdef HAVE_LIBSQLITE3
@@ -259,7 +259,7 @@ int apop_query(const char *fmt, ...){
 	    ERRCHECK
         }
 #else
-        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without SQLite support.")
 #endif
 	free(q);
 	return 1;
@@ -280,12 +280,12 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_chars);
 #else
-        apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
 #ifdef HAVE_LIBSQLITE3
     return apop_sqlite_query_to_text(query);
 #else
-    apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+    apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without SQLite support.")
 #endif
 }
 
@@ -335,7 +335,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_data);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
 
 #ifdef HAVE_LIBSQLITE3
@@ -362,7 +362,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_matrix);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
     apop_data * outd = apop_query_to_data(query);
     gsl_matrix *outm = NULL;
@@ -386,7 +386,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_vector);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
   apop_data	*d=NULL;
   gsl_vector  *out;
@@ -412,7 +412,7 @@ double apop_query_to_float(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_to_float(query);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
 #ifdef HAVE_LIBSQLITE3
   gsl_matrix	*m=NULL;
@@ -459,7 +459,7 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
 #ifdef HAVE_LIBSQLITE3
     return apop_sqlite_multiquery(typelist, query);
 #else
-    apop_assert(0, 0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+    apop_assert(0, 0, 0, 'c', "Apophenia was compiled without SQLite support.")
 #endif
 }
 
@@ -583,7 +583,7 @@ int apop_data_to_db(apop_data *set, char *tabname){
         sprintf(q, " ");
     }
 #else 
-        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
     else
 #ifdef HAVE_LIBSQLITE3
@@ -614,7 +614,7 @@ int apop_data_to_db(apop_data *set, char *tabname){
         qxprintf(&q,"%s);  begin;",q);
     }
 #else
-        apop_assert(1, 0, 0, 'c', "Apophenia was compiled without SQLite support.\n");
+        apop_assert(1, 0, 0, 'c', "Apophenia was compiled without SQLite support.")
 #endif
     int lim = set->vector ? set->vector->size : set->matrix->size1;
 	for(i=0; i< lim; i++){

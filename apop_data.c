@@ -441,7 +441,8 @@ for the search; see notes there on the name matching rules.
 The \c _ptr functions return a pointer to the given cell. Those functions follow the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr, and like those functions, return a pointer to the appropriate \c double.
 */
 
-/** Get a pointer to an element of an \c apop_data set. */
+/** Get a pointer to an element of an \ref apop_data set. 
+ See \ref data_set_get "the set/get page" for details. */
 double * apop_data_ptr(const apop_data *data, const int i, const int j){
     if (j == -1){
         apop_assert(data->vector, NULL, 0, 's', "You asked for the vector element (i=-1) but it is NULL.");
@@ -452,7 +453,8 @@ double * apop_data_ptr(const apop_data *data, const int i, const int j){
     }
 }
 
-/** Get a pointer to an element from an \ref apop_data set, using the row name but the column number. */
+/** Get a pointer to an element from an \ref apop_data set, using the row name but the column number. 
+ See \ref data_set_get "the set/get page" for details. */
 double *apop_data_ptr_ti(const apop_data *in, char* row, int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(rownum != -2,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
@@ -460,7 +462,8 @@ double *apop_data_ptr_ti(const apop_data *in, char* row, int col){
                       : gsl_vector_ptr(in->vector, rownum);
 }
 
-/** Get a pointer to an element from an \ref apop_data set, using the column name but the row number. */
+/** Get a pointer to an element from an \ref apop_data set, using the column name but the row number. 
+ See \ref data_set_get "the set/get page" for details. */
 double *apop_data_ptr_it(const apop_data *in, size_t row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert(colnum != -2,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
@@ -468,7 +471,8 @@ double *apop_data_ptr_it(const apop_data *in, size_t row, char* col){
                          : gsl_vector_ptr(in->vector, row);
 }
 
-/** Get a pointer to an element from an \ref apop_data set, using the row and column name.*/
+/** Get a pointer to an element from an \ref apop_data set, using the row and column name.
+ See \ref data_set_get "the set/get page" for details. */
 double *apop_data_ptr_tt(const apop_data *in, char *row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
@@ -478,7 +482,8 @@ double *apop_data_ptr_tt(const apop_data *in, char *row, char* col){
                          : gsl_vector_ptr(in->vector, rownum);
 }
 
-/** Returns the data element at the given point, using numeric indices.  */
+/** Returns the data element at the given point, using numeric indices.  
+ See \ref data_set_get "the set/get page" for details. */
 double apop_data_get(const apop_data *in, size_t row, int col){
     if (col>=0){
         apop_assert(in->matrix, 0, 0, 's', "You asked for the matrix element (%u, %i) but the matrix is NULL.", row, col);
@@ -489,7 +494,8 @@ double apop_data_get(const apop_data *in, size_t row, int col){
     }
 }
 
-/** Get an element from an \ref apop_data set, using the row name but the column number */
+/** Get an element from an \ref apop_data set, using the row name but the column number 
+ See \ref data_set_get "the set/get page" for details. */
 double apop_data_get_ti(const apop_data *in, char* row, int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(rownum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the row names.", row);
@@ -497,7 +503,8 @@ double apop_data_get_ti(const apop_data *in, char* row, int col){
                       : gsl_vector_get(in->vector, rownum);
 }
 
-/** Get an element from an \ref apop_data set, using the column name but the row number */
+/** Get an element from an \ref apop_data set, using the column name but the row number 
+ See \ref data_set_get "the set/get page" for details. */
 double apop_data_get_it(const apop_data *in, size_t row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert(colnum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
@@ -505,7 +512,8 @@ double apop_data_get_it(const apop_data *in, size_t row, char* col){
                          : gsl_vector_get(in->vector, row);
 }
 
-/** Get an element from an \ref apop_data set, using the row and column name.*/
+/** Get an element from an \ref apop_data set, using the row and column name.
+ See \ref data_set_get "the set/get page" for details. */
 double apop_data_get_tt(const apop_data *in, char *row, char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
@@ -579,10 +587,10 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     apop_name_add(d->names, name, 'r');
 }
 
-/** Add a string to the text element of an \c apop_data set.  If you
+/** Add a string to the text element of an \ref apop_data set.  If you
  send me a \c NULL string, I will write the string <tt>"NaN"</tt> in the given slot.
 
-\param in   The \c apop_data set, that already has an allocated \c text element.
+\param in   The \ref apop_data set, that already has an allocated \c text element.
 \param row  The row
 \param col  The col
 \param fmt The text to write.
@@ -602,12 +610,12 @@ void apop_text_add(apop_data *in, const size_t row, const size_t col, const char
 }
 
 /** This allocates an array of strings and puts it in the \c text element
-  of an \c apop_data set. 
+  of an \ref apop_data set. 
 
-  \param in An \c apop_data set. It's OK to send in \c NULL, in which case an apop_data set with \c NULL \c matrix and \c vector elements is returned.
+  \param in An \ref apop_data set. It's OK to send in \c NULL, in which case an apop_data set with \c NULL \c matrix and \c vector elements is returned.
   \param row    the number of rows of text.
   \param col     the number of columns of text.
-  \return       A pointer to the relevant \c apop_data set. If the input was not \c NULL, then this is a repeat of the input pointer.
+  \return       A pointer to the relevant \ref apop_data set. If the input was not \c NULL, then this is a repeat of the input pointer.
   */
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
     if (!in)
