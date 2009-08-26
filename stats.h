@@ -103,10 +103,6 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m);
 double apop_multivariate_gamma(double a, double p);
 double apop_multivariate_lngamma(double a, double p);
 
-//from apop_sort.c:
-APOP_VAR_DECLARE double * apop_vector_percentiles(gsl_vector *data, char rounding); 
-APOP_VAR_DECLARE apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
-
 //from the regression code:
 #define apop_F_test apop_f_test
 #define apop_estimate_r_squared(in) apop_estimate_coefficient_of_determination(in)

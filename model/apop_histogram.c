@@ -1,22 +1,19 @@
 /** \file apop_histogram.c 
 
-This implements a one-d histogram representing an empirical
-distribution. It is primarily a wrapper for the GSL's comparable functions
-in the standard \c apop_model form, for easy comparison with other models.*/
+This implements a one-d histogram representing an empirical distribution. It is primarily a wrapper for the GSL's comparable functions in the standard \c apop_model form, for easy comparison with other models.*/
 /* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "mapply.h"
 #include "settings.h"
+#include "variadic.h"
 #include <gsl/gsl_math.h>
 
 apop_model apop_histogram;
 
 /** Allocate the parameters for the \c apop_histogram model.
 
-  \param    data The input data. I'll use all data in both the 
-  the matrix and vector element of the \c apop_data set, and the matrix can have any dimensions
-  (\f$1\times 10000\f$, \f$10000\times 1\f$, \f$100\times 100\f$...).
+  \param    data The input data. I'll use all data in both the the matrix and vector element of the \c apop_data set, and the matrix can have any dimensions (\f$1\times 10000\f$, \f$10000\times 1\f$, \f$100\times 100\f$...).
   \param bins How many bins should the PDF have?
  */
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins){
@@ -30,6 +27,7 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
                       maxm    = GSL_NEGINF;
     if (data->vector) gsl_vector_minmax(data->vector, &minv, &maxv);
     if (data->matrix) gsl_matrix_minmax(data->matrix, &minm, &maxm);
+    hp->data = data;
     hp->pdf = gsl_histogram_alloc(bins);
     gsl_histogram_set_ranges_uniform(hp->pdf, GSL_MIN(minv,minm), GSL_MAX(maxv,maxm));
    //add infinity bins.
@@ -55,6 +53,13 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
     return hp;
 }
 
+/*
+apop_histogram_settings * apop_histogram_settings_init(apop_histogram_settings in){
+    apop_assert(in.data && in.bins, NULL, 0, 's', "I need both the .data and .bins elements to be set.");
+    return apop_histogram_settings_alloc(in.data, in.bins);
+}
+*/
+
 void * apop_histogram_settings_copy(apop_histogram_settings *in){
     apop_histogram_settings *out = malloc(sizeof(apop_histogram_settings));
     out->pdf = gsl_histogram_clone(in->pdf);
@@ -78,30 +83,17 @@ apop_model *est(apop_data *d, apop_model *in){
     return out;
 }
 
-static gsl_histogram *gpdf;
-
-static double one_vector(gsl_vector *in){
-  size_t    i, k;
-  double    product = 0;
-    for (i=0; i< in->size; i++){
-        gsl_histogram_find(gpdf, gsl_vector_get(in, i), &k);
-        product += log(gsl_histogram_get (gpdf, k));
-    }
-    return product;
+static double one_histo_ll(double i, void *gpdf){
+  size_t    k;
+    gsl_histogram_find(gpdf, i, &k);
+    return log(gsl_histogram_get (gpdf, k));
 }
 
 static double histogram_ll(apop_data *d, apop_model *in){
-  apop_histogram_settings *hp = apop_settings_get_group(in, "apop_histogram");
-  if (!hp) apop_settings_get_group(in, "apop_kernel_density");
-  apop_assert(hp, 0, 0, 's', "you sent me an unparametrized model.");
-
-  long double           product = 0;
-    gpdf    = hp->pdf;
-    if (d->vector)
-        product += one_vector(d->vector);
-    if (d->matrix)
-         product += apop_matrix_map_sum(d->matrix, one_vector);
-    return product;
+    apop_histogram_settings *hp = apop_settings_get_group(in, "apop_histogram");
+    if (!hp) apop_settings_get_group(in, "apop_kernel_density");
+    apop_assert(hp, 0, 0, 's', "you sent me an unparametrized model.");
+    return apop_map_sum(d, .fn_dp =one_histo_ll, .param=hp->pdf);
 }
 
 static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
@@ -139,7 +131,6 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
 apop_model apop_histogram = {"Histogram", .estimate = est, .log_likelihood = histogram_ll, .draw = histogram_rng};
 
 
-
 ////Kernel density estimation
 
 
@@ -161,11 +152,10 @@ static gsl_histogram *apop_alloc_wider_range(const gsl_histogram *in, const doub
   size_t  newsize =in->n * (1+2*padding);
   double  newrange[newsize];
   double  diff = in->range[2] - in->range[1];
-  int     k;
     memcpy(&newrange[(int)(in->n * padding)], in->range, sizeof(double)*in->n);
-    for (k = in->n *padding +1; k>=1; k--)
+    for (int k = in->n *padding +1; k>=1; k--)
         newrange[k] = newrange[k+1] - diff;
-    for (k = in->n *(1+padding); k <newsize-1; k++)
+    for (int k = in->n *(1+padding); k <newsize-1; k++)
         newrange[k] = newrange[k-1] + diff;
     newrange[0]          = GSL_NEGINF;
     newrange[newsize -1] = GSL_POSINF;
@@ -176,10 +166,7 @@ static gsl_histogram *apop_alloc_wider_range(const gsl_histogram *in, const doub
 
 /** Allocate and fill a kernel density, which is a smoothed histogram. 
 
-
-  You may either provide a histogram and a \c NULL data set, or a \c
-  NULL histogram and a real data set, in which case I will convert the
-  data set into a histogram and use the histogram thus created.
+You may either provide a histogram and a \c NULL data set, or a \c NULL histogram and a real data set, in which case I will convert the data set into a histogram and use the histogram thus created.
 
 \param data    a data set, which, if  not \c NULL and \c !histobase , will be converted to a histogram.
   \param histobase This is the preferred format for input data. It is the histogram to be smoothed.
@@ -264,13 +251,9 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
 
 /** The apop_kernel_density model.
 
-  A Kernel density is simply a smoothing of a histogram. At each point
-  along the histogram, put a distribution (default: Normal(0,1)) on
-  top of the point. Sum all of these distributions to form the output
-  histogram.
+A Kernel density is simply a smoothing of a histogram. At each point along the histogram, put a distribution (default: Normal(0,1)) on top of the point. Sum all of these distributions to form the output histogram.
 
-  The output is a histogram that behaves exactly like the gsl_histogram,
-  except the histobase and kernelbase elements are set.
+The output is a histogram that behaves exactly like the gsl_histogram, except the histobase and kernelbase elements are set.
 
 \hideinitializer
 \ingroup models

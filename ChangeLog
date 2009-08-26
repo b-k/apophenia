@@ -8,6 +8,8 @@
 -apop_(data|matrix|vector)_fill is now more robust---no more int vs float issues.
 **Removed apop_count_cols
 --Default univariate RNG, if you don't have one: Adaptive rejection markov chain sampling
+**.use_covar and other such settings now take 'y' or 'n', not 0 or 1.
+--new macro Apop_settings_set = Apop_settings_add, but makes more human sense
 
 	July 2009
 --multivariate gamma, log-gamma.

@@ -1,29 +1,25 @@
 /** \file apop_mle.c	The MLE functions. Call them with an \ref apop_model.
 
-This file includes a number of distributions and models whose parameters
-one would estimate using maximum likelihood techniques.
+This file includes a number of distributions and models whose parameters one would estimate using maximum likelihood techniques.
 
 Each typically includes the likelihood function, the derivative of the
 likelihood function, which is used by \c apop_maximum_likelihood. The \c apop_estimate function defaults to using maximum likelihood
 estimation if there is no model-specific estimation routine provided.
 
 At the bottom are the maximum likelihood procedures themselves. There
-are three: the no-derivative version, the with-derivative version,
-and the simulated annealing routine.
+are four: Newton-type derivative methods, the no-derivative version, the with-derivative version,
+and the simulated annealing routine.*/
 
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
-*/
+/*Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "model.h"
-#include "asst.h" //apop_rng_alloc
 #include "mapply.h"
 #include "output.h"
+#include "internal.h"
 #include "likelihoods.h"
-#include <assert.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_multiroots.h>
-
 
 typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
@@ -69,20 +65,21 @@ Below is a sample of the sort of output one would get:<br>
 \ingroup mle
 */
 
-double default_delta = 1e-2;
+double default_delta = 1e-3;
 
 /** Initialize an \ref apop_mle_settings struct. */
 apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
   apop_mle_settings *setme =   calloc(1,sizeof(apop_mle_settings));
-   apop_varad_setting(in, setme, starting_pt, NULL);
     apop_varad_setting(in, setme, starting_pt, NULL);
     apop_varad_setting(in, setme, tolerance, 1e-2);
     setme->method = (in.parent && in.parent->score) ? APOP_CG_PR : APOP_SIMPLEX_NM;
     apop_varad_setting(in, setme, verbose, 0);
-    apop_varad_setting(in, setme, use_score, 1);
+    apop_varad_setting(in, setme, use_score, 'y');
+    if (in.use_score == 1) setme->use_score = 'y';
     apop_varad_setting(in, setme, step_size, 0.05);
     apop_varad_setting(in, setme, delta, default_delta);
-    apop_varad_setting(in, setme, want_cov, 1);
+    apop_varad_setting(in, setme, want_cov, 'y');
+    if (in.want_cov == 1) setme->want_cov = 'y';
 //siman:
     //siman also uses step_size  = 1.;  
     apop_varad_setting(in, setme, n_tries, 200);  //The number of points to try for each step. 
@@ -95,11 +92,6 @@ apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
     return setme;
 }
 
-/** Allocate settings for a maximum likelihood estimation. But use \ref
-apop_mle_settings_init instead.
-
- \param parent  A pointer to an allocated \ref apop_model struct.
- */
 apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
     return apop_mle_settings_init((apop_mle_settings){.parent=parent}); }
 
@@ -152,7 +144,8 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
 
 /**The GSL provides one-dimensional numerical differentiation; here's the multidimensional extension.
 
- If \c m has \c method_settings of type \c apop_ml_params, then the \c delta element is used for the differential (else, I use a default).
+  If you explicitly give me a \c delta, I'll use that for the differential. If \c delta is not specified,
+ but \c model has \c method_settings of type \c apop_ml_params, then the \c delta element is used for the differential. Else, I use 1e-3.
  
  \code
  gsl_vector *gradient = apop_numerical_gradient(data, your_parametrized_model);
@@ -160,27 +153,24 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
 
  \ingroup linear_algebra
  */
-gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *m){
-  apop_fn_with_params ll  = m->log_likelihood ? m->log_likelihood : m->p;
+APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *model, double delta){
+    apop_data * apop_varad_var(data, NULL);
+    apop_model * apop_varad_var(model, NULL);
+    Nullcheck(model)
+    double apop_varad_var(delta, 0);
+    if (!delta){
+        apop_mle_settings *mp = apop_settings_get_group(model, "apop_mle");
+        delta = mp ? mp->delta : default_delta;
+    }
+    return apop_numerical_gradient_base(data, model, delta);
+APOP_VAR_ENDHEAD
+  apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
   apop_assert(ll, 0, 0, 'c', "Input model has neither p nor log_likelihood method. Returning zero.");
-  gsl_vector        *out= gsl_vector_alloc(m->parameters->vector->size);
-  apop_mle_settings *mp = apop_settings_get_group(m, "apop_mle");
-  double delta = mp ? mp->delta : default_delta;
-  infostruct    i = (infostruct) {.model = m, .data = data};
+  gsl_vector        *out= gsl_vector_alloc(model->parameters->vector->size);
+  infostruct    i = (infostruct) {.model = model, .data = data};
     apop_internal_numerical_gradient(ll, &i, out, delta);
     return out;
 }
-
-/* They always tell you to just negate your likelihood function to turn
-a minimization routine into a maximization routine---and this is the
-sort of annoying little detail that Apophenia is intended to take care
-of for you. The next few functions do the negation, so you have one
-less sign that you have to remember. 
-
-The negshell and dnegshell fns also take care of checking constraints,
-if any, and are otherwise the primary point of contact between the
-apop_models' methods and the GSL's MLE routines.
-*/
 
 static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
     if (apop_opts.output_type == 'd'){
@@ -215,22 +205,28 @@ static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
     }
 }
 
+/* The next few functions bridge between the GSL's setup and Apophenia.
+
+--Negate, because statisticians and social scientists like to maximize; physicists like to minimize.
+--Call trace_path if needed.
+--Go from a single vector to a full apop_data set and back (via apop_data_pack/unpack)
+--Check the derivative function if available.
+
+The negshell and dnegshell fns also take care of checking constraints, if any, and are otherwise the primary point of contact between the apop_models' methods and the GSL's MLE routines.
+*/
+
 static double negshell (const gsl_vector *beta, void * in){
   infostruct    *i              = in;
   double		penalty         = 0,
                 out             = 0; 
   double 	(*f)(apop_data *, apop_model *);
     f   = i->model->log_likelihood? i->model->log_likelihood : i->model->p;
-    if (!f)
-        apop_error(0, 's', "The model you sent to the MLE function has neither log_likelihood element nor p element.\n");
+    apop_assert(f, 0, 0, 's', "The model you sent to the MLE function has neither log_likelihood element nor p element.");
     apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
-    if(penalty){
-        gsl_vector *o = apop_data_pack(i->model->parameters);
-        gsl_vector_memcpy((gsl_vector *)beta, o);
-        gsl_vector_free(o);
-    }
+    if(penalty)
+        apop_data_pack(i->model->parameters, (gsl_vector*) beta);
     out = penalty - f(i->data, i->model); //negative llikelihood
     if (penalty)
         apop_data_unpack(i->beta, i->model->parameters);
@@ -256,12 +252,9 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
   apop_mle_settings *mp       =  apop_settings_get_group(i->model, "apop_mle");
     apop_data_unpack(beta, i->model->parameters);
     if(i->model->constraint)
-        if(i->model->constraint(i->data, i->model)){
-            gsl_vector *o = apop_data_pack(i->model->parameters);
-            gsl_vector_memcpy((gsl_vector *)beta, o);
-            gsl_vector_free(o);
-        }
-    if (mp->use_score && i->model->score)
+        if(i->model->constraint(i->data, i->model))
+            apop_data_pack(i->model->parameters, (gsl_vector *) beta);
+    if (mp->use_score=='y' && i->model->score)
         i->model->score(i->data, g, i->model);
     else {
         apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
@@ -273,16 +266,10 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
     return GSL_SUCCESS;
 }
 
+//This is just to satisfy the GSL's format.
 static void fdf_shell(const gsl_vector *beta, void *i, double *f, gsl_vector *df){
-
-	//if (negshell_model.fdf==NULL){
-		*f	= negshell(beta, i);
-		dnegshell(beta, i, df);
-	/*} else	{
-		negshell_model.fdf(beta, d, f, df);
-		(*f) 	*= -1;
-		gsl_vector_scale(df, -1);
-	}*/
+    *f	= negshell(beta, i);
+    dnegshell(beta, i, df);
 }
 
 /* * Calculate the Hessian.
@@ -293,7 +280,7 @@ gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data
 }
 */
 
-/* * Feeling lazy? Rather than doing actual pencil-and-paper math to find
+/* * Rather than doing actual pencil-and-paper math to find
 your variance-covariance matrix, just use the negative inverse of the Hessian.
 
 \param est	The model with the parameters already calculated. The var/covar matrix will be placed in est->covariance.
@@ -309,9 +296,6 @@ typedef struct {
     apop_model *base_model;
     int *current_index;
 } apop_model_for_infomatrix_struct;
-
-/*This model is needed to make life easier with the
- apop_numerical_gradient function.  */ 
 
 static double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     static gsl_vector *v = NULL;
@@ -334,14 +318,7 @@ static double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
 
 apop_model apop_model_for_infomatrix = {"Ad hoc model for working out the information matrix.", .log_likelihood = apop_fn_for_infomatrix};
 
-/* We produce the covariance matrix via the derivative of the score
- function at the parameter. I follow Efron and Hinkley in using the
- estimated information matrix---the value of the information matrix at
- the estimated value of the score---not the expected information matrix
- that is the integral over all possible data. See Pawitan 2001 (who
- cribbed off of Efron and Hinkley) or Klemens 2008 (who cribbed off of
- both) for further details. If you really want to use E(I), check
- out a version of this file from before the end of 2007.*/
+/* We produce the covariance matrix via the derivative of the score function at the parameter. I follow Efron and Hinkley in using the estimated information matrix---the value of the information matrix at the estimated value of the score---not the expected information matrix that is the integral over all possible data. See Pawitan 2001 (who cribbed off of Efron and Hinkley) or Klemens 2008 (who cribbed off of both) for further details. If you really want to use E(I), check out a version of this file from before the end of 2007.*/
 static void produce_covariance_matrix(apop_model * est, infostruct *i){
   int    k;
   size_t betasize  = i->model->parameters->vector->size;
@@ -381,30 +358,29 @@ static void produce_covariance_matrix(apop_model * est, infostruct *i){
 static int ctrl_c;
 static void mle_sigint(){ ctrl_c ++; }
 
+static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){
 /* The maximum likelihood calculations, given a derivative of the log likelihood.
 
 If no derivative exists, will calculate a numerical gradient.
 
+Inside the infostruct, you'll find these elements:
+
 \param data	the data matrix
-\param	dist	the \ref apop_model object: waring, probit, zipf, &amp;c.
+\param	dist	the \ref apop_model object: waring, probit, zipf, &c.
 \param	starting_pt	an array of doubles suggesting a starting point. If NULL, use a vector whose elements are all 0.1 (zero has too many pathological cases).
 \param step_size	the initial step size.
 \param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
 \param verbose		Y'know.
 \return	an \ref apop_model with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 
-  \todo readd names */
-static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){
-  gsl_multimin_function_fdf minme;
+*/
   gsl_multimin_fdfminimizer *s;
   gsl_vector 			    *x;
   apop_model		        *est    = i->model; //just an alias.
-  int                       vsize   =(est->parameters->vector ? est->parameters->vector->size :0),
-                            msize1  =(est->parameters->matrix ? est->parameters->matrix->size1 :0),
-                            msize2  =(est->parameters->matrix ? est->parameters->matrix->size2:0);
+  Get_vmsizes(est->parameters) //set vsize, msize1, msize2, tsize
   int				        iter 	= 0, 
 				            status  = 0,
-				            betasize= vsize+ msize1*msize2;
+				            betasize= tsize;
   apop_mle_settings           *mp         = apop_settings_get_group(est, "apop_mle");
   assert(mp);
     if (mp->method == APOP_CG_BFGS)
@@ -418,11 +394,12 @@ static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i)
   		gsl_vector_set_all (x,  0.1);
 	}
 	else 	x   = apop_array_to_vector(mp->starting_pt, betasize);
-	minme.f		= negshell;
-	minme.df	= (apop_df_with_void) dnegshell;
-	minme.fdf	= (apop_fdf_with_void) fdf_shell;
-	minme.n		= betasize;
-	minme.params	= i;
+    gsl_multimin_function_fdf minme = {
+        .f		= negshell,
+        .df	= (apop_df_with_void) dnegshell,
+        .fdf	= (apop_fdf_with_void) fdf_shell,
+        .n		= betasize,
+        .params	= i};
     i->beta     = s->x;
     ctrl_c      =
     est->status = 0;
@@ -457,19 +434,17 @@ static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i)
 	return est;
 }
 
+/* See the above function for notes. */
 static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
   apop_model		        *est        = i->model;
   apop_mle_settings           *mp         = apop_settings_get_group(est, "apop_mle");
   assert(mp);
   apop_data                 *p          = est->parameters;
-  int                       vsize       = (p->vector ? p->vector->size :0),
-                            msize1      = (p->matrix ? p->matrix->size1:0),
-                            msize2      = (p->matrix ? p->matrix->size2:0);
+  Get_vmsizes(p) //set vsize, msize1, msize2, tsize
   int			            status,
 			                iter 		= 0,
-			                betasize	= vsize + msize1 * msize2; 
+			                betasize	= tsize; 
   size_t 			        j;
-  gsl_multimin_function 	minme;
   gsl_multimin_fminimizer   *s;
   gsl_vector 		        *x, *ss;
   double			        size;
@@ -484,9 +459,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 		x   = apop_array_to_vector(mp->starting_pt, betasize);
     i->beta = gsl_vector_alloc(betasize);
   	gsl_vector_set_all (ss,  mp->step_size);
-	minme.f		    = negshell;
-	minme.n		    = betasize;
-	minme.params	= i;
+    gsl_multimin_function 	minme = {.f = negshell, .n= betasize, .params	= i};
 	gsl_multimin_fminimizer_set (s, &minme, x,  ss);
     signal(SIGINT, mle_sigint);
     do { 	iter++;
@@ -515,7 +488,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
         est->status	= 1;
     apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fminimizer_free(s);
-	if (mp->want_cov) 
+	if (mp->want_cov=='y') 
 		apop_numerical_covariance_matrix(est, data);
 	return est;
 }
@@ -529,7 +502,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 starting_pt:	an array of doubles suggesting a starting point. If NULL, use zero.<br>
 step_size:	the initial step size.<br>
 tolerance:	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
-verbose:	Y'know.<br>
+verbose:	Give status updates as we go. This is orthogonal to the <tt>apop_opts.verbose</tt> setting.<br>
 method:		
 \li    APOP_SIMPLEX_NM      Nelder-Mead simplex (gradient handling rule is irrelevant)
 \li    APOP_CG_FR      conjugate gradient (Fletcher-Reeves) (default)
@@ -545,11 +518,12 @@ By the way, the output model will have the expected score in the \c more slot. D
  \ingroup mle */
 apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
   apop_mle_settings   *mp = apop_settings_get_group(&dist, "apop_mle");
-  infostruct    info    = { .data   = data,
-                            .use_constraint = 1};
-    info.trace_file     = malloc(sizeof(FILE *)); *info.trace_file = NULL;
-    info.model          = apop_model_copy(dist);
-    info.model->data    = data;
+  infostruct    info    = { .data           = data,
+                            .use_constraint = 1,
+                            .trace_file     = malloc(sizeof(FILE *)),
+                            .model          = apop_model_copy(dist)};
+    *info.trace_file = NULL;
+    info.model->data = data;
     if(!mp){
         Apop_settings_add_group(info.model, apop_mle, info.model);
         mp          =  apop_settings_get_group(info.model, "apop_mle");
@@ -583,8 +557,10 @@ By adding a line to reduce the tolerance each round [e.g., <tt>Apop_settings_add
  
 You may have a new estimation method, such as first doing a simulated annealing search, then honing in via a conjugate gradient method:
   \code
-apop_model *m = apop_estimate(data, model_with_siman_specified);
-m = apop_estimate_restart(m, model_with_cg_specified);
+Apop_settings_set(your_base_model, apop_mle, APOP_SIMAN);
+apop_model *m = apop_estimate(data, your_base_model);
+Apop_settings_set(m, apop_mle, APOP_CG_PR);
+m = apop_estimate_restart(data, m);
 apop_data_show(m);
   \endcode
 

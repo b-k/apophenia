@@ -77,9 +77,9 @@ apop_arms_settings *apop_arms_settings_init(apop_arms_settings in){
 /** \brief Adaptive rejection metropolis sampling.
 
 
-This is a function to make random draws from (approximately) any distribution.
+This is a function to make random draws from any univariate distribution (more or less).
 
-The author, Wally Gilks, explains on \ref
+The author, Wally Gilks, explains on 
 http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.html "this page", that
 ``ARS works by constructing an envelope function of the log of the target density, which is then used in rejection sampling (see, for example,  Ripley, 1987). Whenever a point is rejected by ARS, the envelope is updated to correspond more closely to the true log density, thereby reducing the chance of rejecting subsequent points. Fewer ARS rejection steps implies fewer point-evaluations of the log density.''
 
@@ -89,7 +89,7 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
 
 \li There are a great number of parameters, in the \c apop_arms_settings structure.  The structure also holds a history of the points tested to date. That means that the system will be more acurate as more draws are made. It also means that if the parameters change, or you use \ref apop_model_copy, you should call <tt>Apop_settings_rm_group(your_model, apop_arms)</tt> to clear the model of points that are not valid for a different situation.
 
-\li Here are the parameters that you may want to set, via a form like </tt>apop_model_add_group(your_model, apop_arms, .model=your_model, .p1=8, .p2 =14);</tt>.  The \c model element is mandatory; you'll get a run-time complaint if you forget it.
+\li Here are the parameters that you may want to set, via a form like <tt>apop_model_add_group(your_model, apop_arms, .model=your_model, .p1=8, .p2 =14);</tt>.  The \c model element is mandatory; you'll get a run-time complaint if you forget it.
 
 \c model : the model from which I will draw. Must have either a \c log_likelihood or \c p method.<br>
  \c *xinit       : a double giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't \c NULL, I need at least three items.<br>

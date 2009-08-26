@@ -28,12 +28,11 @@ static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
         apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
     double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
     double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
-    if (!est->parameters)
-        est->parameters = apop_data_alloc(2, 0, 0);
+    apop_model_clear(data, est);
 	apop_data_add_named_elmt(est->parameters,"mu", mean);
 	apop_data_add_named_elmt(est->parameters,"sigma", sqrt(var));
     est->llikelihood	= normal_log_likelihood(data, est);
-	if (!p || p->want_cov){
+	if (!p || p->want_cov=='y'){
         est->covariance   = apop_data_calloc(0, 2, 2);
         apop_data_set(est->covariance, 0, 0, mean/tsize);
         apop_data_set(est->covariance, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
@@ -130,7 +129,7 @@ likelihood of those 56 observations given the mean and variance you provide.
 
 \f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
 
-The \c apop_ls settings group includes a \c want_cov element, which refers to the covariance matrix for the mean and variance. You can set that to zero if you are estimating millions of these and need to save time.
+The \c apop_ls settings group includes a \c want_cov element, which refers to the covariance matrix for the mean and variance. You can set that to \c 'n' if you are estimating millions of these and need to save time (i.e. <tt>Apop_model_add_group(your_model, apop_ls, .want_cov = 'n');</tt>).
 \hideinitializer
 \ingroup models
 */
@@ -177,13 +176,15 @@ static double lnx_minus_mu_squared(double x, void *mu_in){
 \param d	the set of data points; see notes.
 */
 static double lognormal_log_likelihood(apop_data *d, apop_model *params){
-  assert(params->parameters);
-    double mu	        = gsl_vector_get(params->parameters->vector,0);
-    double sd          = gsl_vector_get(params->parameters->vector,1);
-    long double   ll    = -apop_map_sum(d, .fn_dp=lnx_minus_mu_squared, .param=&mu, .part='m');
+    Get_vmsizes(d)
+    Nullcheck(params)
+    Nullcheck_p(params)
+    double mu	   = gsl_vector_get(params->parameters->vector,0);
+    double sd      = gsl_vector_get(params->parameters->vector,1);
+    long double ll = -apop_map_sum(d, .fn_dp=lnx_minus_mu_squared, .param=&mu);
       ll /= (2*gsl_pow_2(sd));
       ll -= apop_map_sum(d, log, .part='m');
-      ll -= d->matrix->size1*d->matrix->size2*(M_LNPI+M_LN2+log(sd));
+      ll -= tsize*(M_LNPI+M_LN2+log(sd));
 	return ll;
 }
 

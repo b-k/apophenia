@@ -46,14 +46,15 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
     (((type ## _settings *) apop_settings_get_group(model, #type))->setting)
 
 /** Modifies a single element of a settings group to the given value. */
-#define Apop_settings_add(model, type, setting, data)  \
+#define Apop_settings_set(model, type, setting, data)  \
     do {                                                \
     apop_assert_void(apop_settings_get_group(model, #type), 0, 's', "You're trying to modify a setting in " \
                         #model "'s setting group of type " #type " but that model doesn't have such a group."); \
     ((type ## _settings *) apop_settings_get_group(model, #type))->setting = (data);    \
     } while (0);
 
-#define APOP_SETTINGS_ADD Apop_settings_add
+#define Apop_settings_add Apop_settings_set
+#define APOP_SETTINGS_ADD Apop_settings_set
 #define APOP_SETTINGS_GET Apop_settings_get
 #define APOP_MODEL_ADD_GROUP Apop_model_add_group
 #define APOP_SETTINGS_ADD_GROUP Apop_settings_add_group
@@ -71,8 +72,8 @@ typedef struct {
     int destroy_data;
     gsl_vector *weights;
     apop_data *instruments;
-    int want_cov;
-    int want_expected_value;
+    char want_cov;
+    char want_expected_value;
 } apop_ls_settings;
 
 Apop_settings_declarations(apop_ls)
@@ -113,6 +114,7 @@ apop_rank_settings *apop_rank_settings_alloc(void *ignoreme);
 
 #include <gsl/gsl_histogram.h>
 typedef struct{
+    apop_data           *data;
     gsl_histogram       *pdf;
     gsl_histogram_pdf   *cdf;
     apop_model          *histobase;

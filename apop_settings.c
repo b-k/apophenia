@@ -7,7 +7,8 @@
 static size_t get_settings_ct(apop_model *model){
   int ct =0;
     if (!model->settings) return 0;
-    while (strlen(model->settings[ct].name)) ct++;
+//    while (strlen(model->settings[ct].name)) ct++;
+    while (model->settings[ct].name[0] !='\0') ct++;
     return ct;
 }
 
@@ -31,7 +32,7 @@ void apop_settings_rm_group(apop_model *m, char *delme){
   int i = 0;
   int ct = get_settings_ct(m);
  
-    while (strlen(m->settings[i].name)){
+    while (m->settings[i].name[0] !='\0'){
         if (!strcmp(m->settings[i].name, delme)){
             ((void (*)(void*))m->settings[i].free)(m->settings[i].setting_group);
             for (int j=i+1; j< ct+1; j++) //don't forget the null sentinel.
@@ -71,7 +72,7 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
 void * apop_settings_get_group(apop_model *m, char *type){
   int   i = 0;
     if (!m->settings) return NULL;
-    while (strlen(m->settings[i].name)){
+    while (m->settings[i].name[0] !='\0'){
        if (!strcmp(type, m->settings[i].name))
            return m->settings[i].setting_group;
        i++;
@@ -89,11 +90,11 @@ void * apop_settings_get_group(apop_model *m, char *type){
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
   apop_assert_void(inm->settings, 0, 's', "The input model (i.e., the second argument to this function) has no settings.\n");
   void *g =  apop_settings_get_group(inm, copyme);
-  if (strlen(copyme))
+  if (!copyme)
       apop_assert_void(g, 0, 's', "I couldn't find the group %s in "
                                     "the input model (i.e., the second argument to this function).\n", copyme);
   int i=0;
-    while (strlen(inm->settings[i].name)){
+    while (inm->settings[i].name[0] !='\0'){
        if (!strcmp(copyme, inm->settings[i].name))
            break;
        i++;

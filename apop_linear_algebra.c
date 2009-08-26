@@ -461,12 +461,9 @@ static apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TR
 
 /** A convenience function for dot products.
 
-  First, this requires less typing than the <tt>gsl_cblas_dgexx</tt> functions.
+First, this requires less typing than the <tt>gsl_cblas_dgexx</tt> functions.
 
-  Second, it makes some use of the semi-overloading of the \ref apop_data
-  structure. \c d1 may be a vector or a matrix, and the same for \c d2, so
-  this function can do vector dot matrix, matrix dot matrix, and so on. If
-  \c d1 includes both a vector and a matrix, then later parameters will indicate which to use.
+Second, it makes some use of the semi-overloading of the \ref apop_data structure. \c d1 may be a vector or a matrix, and the same for \c d2, so this function can do vector dot matrix, matrix dot matrix, and so on. If \c d1 includes both a vector and a matrix, then later parameters will indicate which to use.
 
 This function uses the \ref designated syntax for inputs.
 

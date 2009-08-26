@@ -48,6 +48,9 @@ In the \ref outline section on map/apply, a new \f$t\f$-test on every row, with 
 In the documentation for \ref apop_query_to_text, a program to list all the tables in an Sqlite database.
 \include ls_tables.c
 
+Finally, a demonstration of fixing parameters to create a marginal distribution, via \ref apop_model_fix_params
+\include fix_params.c
+
  */
 
 /** \page book The book version
@@ -109,7 +112,7 @@ the instructions there to compile and run.
 
 Here is another sample program, intended to show how one would integrate Apophenia into an existing program. For example, say that you are running a simulation of two different treatments, or say that two sensors are posting data at regular intervals. You need to gather the data in an organized form, and then ask questions of the resulting data set.  Below, a thousand draws are made from the two processes and put into a database. Then, the data is pulled out, some simple statistics are compiled, and the data is written to a text file for inspection outside of the program.  This program will compile cleanly with the sample \ref makefile.
 
-\include sample_draw_to_db.c
+\include draw_to_db.c
 */
 
 /** \page windows The Windows page
@@ -320,6 +323,7 @@ apop_text_to_db_base("infile.txt", "intable", 0, 1, NULL);
 \endcode
 
 \li If one of the optional elements is an RNG, see \ref autorng on what happens when you don't provide an RNG.
+\li For exhaustive details on implementation of the above (should you wish to write new functions that behave like this) see the \ref optionaldetails page.
 
   */
 
@@ -1032,7 +1036,7 @@ ysg_settings *ysg_settings_init(ysg_settings in){
     ysg_settings *out = malloc(sizeof(ysg_settings));
     // Give default values for all elements here. 
     // There is a macro, e.g.,
-    // apop_varad_setting(in, out, want_cov,  1);
+    // apop_varad_setting(in, out, want_cov,  'y');
     // that will help you with this. It checks in
     // for the given element (here, want_cov), and 
     // if that element is not found, sets it to the 
@@ -1246,7 +1250,6 @@ Outlineheader Gene General utilities
     \li\ref Apop_assert_void
     \li\ref apop_error()
     \li\ref apop_opts
-    \li\ref apop_opts_memcpy()
     \li\ref apop_strip_dots()
     \li\ref apop_system()
 
@@ -1404,3 +1407,317 @@ Here is another simple example, that copies a Python-side list into a matrix usi
 
 \li The focus of the work is still in C, so there will likely always be things that you can do in C that can't be done in Python, and strage Python-side errors that will only be explicable if you understand the C-side.  That said, you can still access all of the functions from Python (including those that make little sense from Python).
 */
+
+/** \page optionaldetails Implementation of optional arguments 
+Optional and named arguments are among the most commonly commented-on features of Apophenia, so this page goes into full detail about the implementation. 
+
+To use these features, see the all-you-really-need summary, at the \ref designated
+page. For a background and rationale, see the blog entry at http://modelingwithdata.org/arch/00000022.htm . 
+
+I'll assume you've read both links before continuing.
+
+OK, now that you've read the how-to-use and the discussion of how optional and named arguments can be constructed in C, this page will show how they are done in Apophenia. The level of details should be sufficient to implement them in your own code if you so desire.
+
+There are three components to the process of generating optional arguments as implemented here:
+\li Produce a \c struct whose elements match the arguments to the function.
+\li Write a wrapper function that takes in the struct, unpacks it, and calls the original function
+\li Write a macro that makes the user think the wrapper function is the real thing.
+
+None of these steps are really rocket science, but there is a huge amount of redundancy. 
+Apophenia includes some macros that reduce the boilerplate redundancy significantly. There are two layers: the C-standard code, and the script that produces the C-standard code.
+
+We'll begin with the C-standard header file:
+\code 
+#ifdef APOP_NO_VARIADIC
+ void apop_vector_increment(gsl_vector * v, int i, double amt);
+#else
+ void apop_vector_increment_base(gsl_vector * v, int i, double amt);
+ apop_varad_declare(void, apop_vector_increment, gsl_vector * v; int i; double amt);
+#define apop_vector_increment(...) apop_varad_link(apop_vector_increment, __VA_ARGS__)
+\endcode
+
+First, there is an if/else that allows the system to degrade gracefully
+if you are sending C code to a parser like swig, whose goals differ
+too much from straight C compilation for this to work. Just set \c
+APOP_NO_VARIADIC to produce a plain function with no variadic support.
+
+Else, we begin the above steps. The \c apop_varad_declare line expands to the following:
+
+\code
+typedef struct { 
+    gsl_vector * v; int i; double amt ; 
+} variadic_type_apop_vector_increment; 
+
+void variadic_apop_vector_increment(variadic_type_apop_vector_increment varad_in);
+  \endcode
+
+So there's the ad-hoc struct and the declaration for the wrapper
+function. Notice how the arguments to the macro had semicilons, like a
+struct declaration, rather than commas, because the macro does indeed
+wrap the arguments into a struct.
+
+  Here is what the \c apop_varad_link would expand to:
+  \code
+#define apop_vector_increment(...) variadic_apop_increment_base((variadic_type_apop_vector_increment) {__VA_ARGS__})
+  \endcode
+That gives us part three: a macro that fools the user into thinking that the function call is a set of arguments, but wraps what we type into a struct.
+
+Now for the code file where the function is declared. Again, there is is an \c APOP_NO_VARIADIC wrapper. Inside the interesting part, we find the wrapper function to unpack the struct that comes in.
+
+\code
+#ifdef APOP_NO_VARIADIC 
+ void apop_vector_increment(gsl_vector * v, int i, double amt){
+#else
+apop_varad_head( void , apop_vector_increment){
+    gsl_vector * apop_varad_var(v, NULL);
+    apop_assert_void(v, 0, 's', "You sent me a NULL vector.");
+    int apop_varad_var(i, 0);
+    double apop_varad_var(amt, 1);
+    apop_vector_increment_base(v, i, amt);
+}
+
+ void apop_vector_increment_base(gsl_vector * v, int i, double amt){
+#endif
+	v->data[i * v->stride]	+= amt;
+}
+\endcode
+
+The 
+\c apop_varad_head macro just reduces redundancy, and will expand to
+\code
+void variadic_apop_vector_increment (variadic_type_variadic_apop_vector_increment varad_in)
+\endcode
+
+The function with this header thus takes in a single struct, and for every variable, there is a line like
+\code
+    double apop_varad_var(amt, 1);
+\endcode
+which simply expands to:
+\code
+    double amt = varad_in.amt ? varad_in.amt : 1;
+\endcode
+Thus, the macro declares each not-in-struct variable, and so there will need to be one such declaration line for each argument. Apart from requiring delcarations, you can be creative: include sanity checks, post-vary the variables of the inputs, unpack without the macro, and so on. That is, this parent function does all of the bookkeeping, checking, and introductory shunting, so the base function can just do the math. Finally, the introductory section has to call the base function.
+
+The setup goes out of its way to leave the \c _base function in the public namespace, so that those who would prefer speed to bounds-checking can simply call that function directly, using standard notation. You could eliminate this feature by just merging the two functions.
+
+
+<b>The sed script</b>
+
+The above is all you need to make this work: the varad.h file, and the above structures. But there is still a lot of redundancy, which can't be eliminated by the  plain C preprocessor.
+
+Thus, below is another preprocessor that converts a few markers to the above form. Here is the code that will expand to the above C-standard code:
+
+\code
+//header file
+APOP_VAR_DECLARE void apop_vector_increment(gsl_vector * v, int i, double amt);
+
+//code file
+APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
+    gsl_vector * apop_varad_var(v, NULL);
+    apop_assert_void(v, 0, 's', "You sent me a NULL vector.");
+    int apop_varad_var(i, 0);
+    double apop_varad_var(amt, 1);
+    apop_vector_increment_base(v, i, amt);
+APOP_VAR_END_HEAD
+	v->data[i * v->stride]	+= amt;
+}
+\endcode
+
+It is obviously much shorter. The declaration line is actually a C-standard declaration with the \c APOP_VAR_DECLARE preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the \c APOP_VAR_END_HEAD line.
+
+One final detail: it is valid to have types with commans in them---function arguments. Because commas get turned to semicolons, and sed isn't a real parser, there is an exception built in: you will have to replace commas with exclamation marks in the header file (only). E.g.,
+
+\code
+APOP_VAR_DECLARE apop_data * f_of_f(apop_data *in, void *param, int n, double (*fn_d)(double ! void * !int));
+\endcode
+
+Sed is POSIX standard, so even if you can't read the below, you have the program needed to run it. For example, if you name it \c prep_variadics.sed, then run
+\code
+./prep_variadics.sed < myfile.pre.c > myfile.c
+\endcode
+
+That said, here is the sed script that does the processing.
+
+\verbatim
+#!/bin/sed -f 
+
+/APOP_VAR_DECLARE/ {
+h
+g
+s/APOP_VAR_DECLARE/\#ifdef APOP_NO_VARIADIC\n/
+s/!/,/g
+p
+g
+s/APOP_VAR_DECLARE/\#else\n/
+s/\([^ (]\) *(/\1_base(/
+s/!/,/g
+p
+g
+s/,/;/g
+#annoying detail: if you take in a function, then those commas shouldn't be
+#semicolons. so: declare like this: int (*infunction)(int! double *!  void)
+#and I'll replace ! with , .
+s/!/,/g
+s/ *(/, /
+s/ \([^ ]*,\)/, \1/
+s/APOP_VAR_DECLARE / apop_varad_declare(/
+s/!/,/g
+p
+g
+#This form finds the line between function type and function name:
+s/\([^* ]* *(\)/START_OF_FNAME\1/ 
+s/.*START_OF_FNAME\([^(]*\)(.*/#define \1(...) apop_varad_link(\1, __VA_ARGS__)\n#endif/
+s/[ \t]*(/(/
+}
+
+/APOP_VAR_HEAD/ {
+h
+g
+s/APOP_VAR_HEAD/#ifdef APOP_NO_VARIADIC \n/
+s/[;{][ \t]*$/{\n#else/
+p
+g
+s/\([^* ]* *(\)/START_OF_FNAME\1/ 
+s/START_OF_FNAME/, / 
+s/(.*/){/
+s/APOP_VAR_HEAD/apop_varad_head(/
+p
+g
+s/APOP_VAR_HEAD//
+s/\(\[^ (]\)* *(/\1_base(/
+s/\(.*\)[;{]/}\n\n\1{\n#endif/
+h
+d
+}
+/APOP_VAR_END_*HEAD/ {
+g
+}
+\endverbatim
+
+*/
+
+ 
+
+/* I should do something with this:
+ *
+ *
+ *
+ *
+ * This function can be used to temporarily modify the global options,
+ to facilitate better encapsulation of code. Usage:
+
+  \code
+  apop_opts_type tmp_opts;
+  apop_opts_memcpy(&tmp_opts, &apop_opts, sizeof(apop_opts_type));
+  strcpy(apop_opts.output_name, "ad_hoc_temp_file");
+  [do things here]
+  apop_opts_memcpy(&apop_opts, &tmp_opts, sizeof(apop_opts_type));
+  \endcode
+
+If you just need a little more verbosity for a procedure, you probably
+don't need to use this function. Just try: 
+  \code
+  apop_opts.verbose ++;
+  [do things here]
+  apop_opts.verbose --;
+  \endcode
+
+The philosophy is that the global variables are generally not going
+to change over the course of a program: either you are working on the
+screen, in the database, or piping out of STDOUT, and you likely won't
+change mid-stream. Thus, it is easier to set these globally at the top of
+the program but less convenient to switch frequently throughout the code.
+\ingroup global_vars
+ */
+
+
+/* \section dataprep Data prep rules  --- probably out of date
+
+There are a lot of ways your data can come in, and we would like to run estimations on a reasonably standardized form.
+
+First, this page will give a little rationale, which you are welcome to skip, and then will present the set of rules.
+
+  \paragraph Dealing with the ones column
+Most standard regression-type estimations require or generally expect
+a constant column. That is, the 0th column of your data is a constant (one), so the first parameter
+\f$\beta_1\f$ is slightly special in corresponding to a constant rather than a variable.
+
+However, there are some estimations that do not use the constant column.
+
+\em "Why not implicitly assume the ones column?"
+Some stats packages implicitly assume a constant column, which the user never sees. This violates the principle of transparency
+upon which Apophenia is based, and is generally annoying.  Given a data matrix \f$X\f$ with the estimated parameters \f$\beta\f$, 
+if the model asserts that the product \f$X\beta\f$ has meaning, then you should be able to calculate that product. With a ones column, a dot product is one line \c apop_dot(x, your_est->parameters, 0, 0)); without a ones column, the problem is left as an unpleasant exercise for the reader. You want to know if the regression included a ones column or not? Just look at your data.
+
+  \paragraph Shunting columns around.
+
+Each regression-type estimation has one dependent variable and several
+independent. In the end, we want the dependent variable to be in the
+vector element. However, continuing the \em "lassies faire" tradition,
+doing major surgery on the data, such as removing a column and moving
+in all subsequent columns, is more invasive than an estimation should be.
+
+\subsection The rules
+So those are the two main considerations in prepping data. Here are the rules,
+intended to balance those considerations:
+
+\paragraph The automatic case
+There is one clever trick we can use to resolve both the need for a
+ones column and for having the dependent column in the vector: given a
+data set with no vector element and the dependent variable in the first
+column of the matrix, we can copy the dependent variable into the vector
+and then replace the first column of the matrix with ones. The result
+fits all of the above expectations.
+
+You as a user merely have to send in a \c apop_data set with no vector and a dependent column in the first column.
+
+\paragraph The already-prepped case
+If your data has a vector element, then the prep routines won't try
+to force something to be there. That is, they won't move anything,
+and won't turn anything into a constant column. If you don't want to use
+a constant column, or your data has already been prepped by an estimation, then this is what you want.
+
+You as a user just have to send in a \c apop_data set with a filled vector element.
+
+\paragraph Probit, logit, and other -obits
+The dependent variable for these models is a list of categories; this
+option is not relevant to continuous-valued dependent variables. 
+
+Your data source may include a list of numeric categories, in which case
+you can pick one of the above cases.
+
+The main exception is when your data is a list of text factors, in which
+case your dependent variable isn't even a part of the data matrix.
+In this case, you can prep the data yourself, via a call to \c apop_text_to_factors, and then insert the column yourself (and pick a constant column or not as you prefer). Or, you can have the system do it for you, via a form like
+\code
+int textcol = 3; //where is the list of dependent categories
+apop_model *setmodel = apop_model_copy(apop_probit);
+Apop_settings_add_group(setmodel, apop_category, textcol);
+apop_estimate(yourdata, setmodel);
+\endcode
+
+
+  You'll see that there are two questions here: should there be a constant
+  column of ones, and where is the dependent column to be found?
+
+Here are the rules for preparing the data set. 
+
+The first item is the 
+
+
+There are two methods:
+
+\li If the data set has no vector, 
+
+
+for the -obit and -ogit models
+
+   If there is a vector in place, then I won't touch anything.
+
+   If there is no vector in place, then:
+        --If you don't tell me where to find the dependent column, I'll go with column zero, and
+            --move the data to the vector
+            --replace the data there with ones, creating a constant column.
+        --If you do tell me where to find the dependent column, via the settings, I'll turn that into a list of factors.
+
+ */

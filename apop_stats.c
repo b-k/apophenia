@@ -419,7 +419,7 @@ APOP_VAR_HEAD double apop_random_double(double min, double max, gsl_rng *r){
     return apop_random_double_base(min, max, r);
 APOP_VAR_ENDHEAD
   double		base = gsl_rng_uniform(r);
-	return base * (max - min) - min;
+	return base * (max - min) + min;
 }
 
 /** Gives a random integer between min and max [inclusive].
@@ -451,7 +451,7 @@ APOP_VAR_HEAD int apop_random_int(double min, double max, const gsl_rng *r){
     return apop_random_int_base(min, max, r);
 APOP_VAR_ENDHEAD
   double		base = gsl_rng_uniform(r);
-	return (int) (base * (max - min + 1) - min);
+	return (int) (base * (max - min + 1) + min);
 }
 
 /** Returns the sum of the elements of a matrix. Occasionally convenient.

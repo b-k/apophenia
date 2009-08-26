@@ -1,14 +1,15 @@
 /** \file apop_gamma.c
 
   The gamma distribution.*/
-
-/*Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/*Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "types.h"
 #include "mapply.h"
+#include "internal.h"
 #include "likelihoods.h"
 
 static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
+  Nullcheck_p(p) 
   float           a           = gsl_vector_get(p->parameters->vector, 0),
                   b           = gsl_vector_get(p->parameters->vector, 1);
     apop_assert(a>0 && b>0, 0, 0,'c', "The Gamma's log likelihood needs positive params, and you gave me %g and %g. Returning zero.", a, b);
@@ -28,6 +29,7 @@ static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
 }
 
 static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
+  Nullcheck_pv(p) 
   double          a       = gsl_vector_get(p->parameters->vector, 0),
                   b       = gsl_vector_get(p->parameters->vector, 1);
   gsl_matrix     *data    = d->matrix;
@@ -52,30 +54,38 @@ static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-3);
 }
 
-double a, b; 
-static double apply_for_gamma(double x) { return (a-1)*log(x) - x/b; }
+typedef struct {double a, b, ln_ga_plus_a_ln_b;} abstruct;
+
+static double apply_for_gamma(double x, void *abin) { 
+    abstruct *ab = abin;
+     return x ? (ab->a-1)*log(x) - x/ab->b - ab->ln_ga_plus_a_ln_b : 0; 
+}
 
 static double gamma_log_likelihood(apop_data *d, apop_model *p){
-  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(p) 
+  Nullcheck_p(p) 
+  Get_vmsizes(d)
     if (apop_settings_get_group(p, "apop_rank"))
         return gamma_rank_log_likelihood(d, p);
-  a    = gsl_vector_get(p->parameters->vector, 0),
-  b    = gsl_vector_get(p->parameters->vector, 1);
-  gsl_matrix    *data        = d->matrix;
+  abstruct ab = {
+      .a    = gsl_vector_get(p->parameters->vector, 0),
+      .b    = gsl_vector_get(p->parameters->vector, 1)
+  };
   double        llikelihood  = 0,
-        ln_ga 	= gsl_sf_lngamma(a),
-        ln_b	= log(b),
-        a_ln_b	= a * ln_b;
-    llikelihood    = apop_matrix_map_all_sum(data, apply_for_gamma);
-    llikelihood    += (-ln_ga - a_ln_b)*(data->size1*data->size2);
+        ln_ga 	= gsl_sf_lngamma(ab.a),
+        ln_b	= log(ab.b),
+        a_ln_b	= ab.a * ln_b;
+    ab.ln_ga_plus_a_ln_b = ln_ga - a_ln_b;
+    llikelihood    = apop_map_sum(d, .fn_dp = apply_for_gamma, .param = &ab);
     return llikelihood;
 }
+
 
 double a_callback(double x, void *ab){ return x ? log(x)- *(double*)ab : 0; }
 double b_callback(double x, void *ab){ return x ? -x - *(double*)ab : 0; }
 
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_pv(p) 
     if (apop_settings_get_group(p, "apop_rank"))
        return gamma_rank_dlog_likelihood(d, gradient, p);
   float       	a    	= gsl_vector_get(p->parameters->vector, 0),

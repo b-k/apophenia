@@ -11,13 +11,15 @@ Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "conversions.h"
 
 static void write_double(const double *draw, apop_data *d){
-  int i;
+  static apop_data *v = NULL;
   int size = (d->vector ? d->vector->size : 0) + (d->matrix ? d->matrix->size1 * d->matrix->size2 : 0);
-  gsl_vector *v = gsl_vector_alloc(size);
-    for (i=0; i< v->size; i++)
-        gsl_vector_set(v, i, draw[i]);
-    apop_data_unpack(v, d);
-    gsl_vector_free(v);
+  if (!v || v->vector->size != size){
+      apop_data_free(v);
+      v = apop_data_alloc(size, 0, 0);
+  }
+    for (size_t i=0; i< size; i++)
+        gsl_vector_set(v->vector, i, draw[i]);
+    apop_data_unpack(v->vector, d);
 }
 
 static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model likelihood){
@@ -86,11 +88,12 @@ likelihood. If you give me a parametrized normal, with no data, then I'll take t
 /** Allocate an \ref apop_update_settings struct.  */
 apop_update_settings *apop_update_settings_init(apop_update_settings in){
    apop_update_settings *out = malloc(sizeof(apop_update_settings));
-   Apop_assert(out, NULL, 0, 's', "malloc failed. You are probably out of memory.");
+   Apop_assert(out, NULL, 0, 's', "malloc failed. Out of memory?");
    apop_varad_setting(in, out, periods, 6e3);
    apop_varad_setting(in, out, histosegments, 5e2);
    apop_varad_setting(in, out, burnin, 0.05);
    apop_varad_setting(in, out, method, 'd'); //default
+   apop_varad_setting(in, out, starting_pt, NULL);
    return out;
 }
 

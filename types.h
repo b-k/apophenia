@@ -181,8 +181,6 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 
 void apop_text_free(char ***freeme, int rows, int cols); //in apop_data.c
 
-void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in); //in apop_output.c
-
 #ifdef	__cplusplus
 }
 #endif

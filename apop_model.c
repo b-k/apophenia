@@ -4,21 +4,13 @@
 #include "arms.h"
 #include "types.h"
 #include "output.h"
-#include "settings.h"
 #include "likelihoods.h"
-#include "linear_algebra.h"
-#include <stdarg.h>
-#include <gsl/gsl_matrix.h>
-
 
 /** Allocate an \ref apop_model.
 
-This sets up the output elements of the \c apop_model: the parameters,
-covarinace, and expected data sets. 
+This sets up the output elements of the \c apop_model: the parameters, covarinace, and expected data sets. 
 
-At close, the input model has parameters of the correct size, the
-covariance and expected elements are \c NULL, and the \c status element
-is zero, indicating no estimation has been done yet.
+At close, the input model has parameters of the correct size, the covariance and expected elements are \c NULL, and the \c status element is zero, indicating no estimation has been done yet.
 
 The input model is modified, so you may want to call this after you call \c apop_model_copy.
 
@@ -45,18 +37,13 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
 /** Free an \ref apop_model structure.
 
-   The  \c parameters, \c expected, and \c covariance elements are
-   freed.  These are all the things that are completely copied, by
-   \c apop_model_copy, so the parent model is still safe after this is
-   called. \c data is not freed, because the odds are you still need it.
+The  \c parameters, \c expected, and \c covariance elements are freed.  These are all the things that are completely copied, by \c apop_model_copy, so the parent model is still safe after this is called. \c data is not freed, because the odds are you still need it.
 
-   The system has no idea what the \c more element contains, so if
-   they point to other things, they need to be freed before calling
-   this function.
+The system has no idea what the \c more element contains, so if they point to other things, they need to be freed before calling this function.
 
-  If \c free_me is \c NULL, this does nothing.
+If \c free_me is \c NULL, this does nothing.
 
-   \param free_me A pointer to the model to be freed.
+\param free_me A pointer to the model to be freed.
 
 \ingroup models */
 void apop_model_free (apop_model * free_me){
@@ -66,7 +53,7 @@ void apop_model_free (apop_model * free_me){
     apop_data_free(free_me->covariance);
     apop_data_free(free_me->expected);
     if (free_me->settings){
-        while (strlen(free_me->settings[i].name)){
+        while (free_me->settings[i].name[0]){
             if (free_me->settings[i].free)
                 ((void (*)(void*))(free_me->settings[i].free))(free_me->settings[i].setting_group);
             i++;
@@ -144,7 +131,7 @@ apop_model * apop_model_copy(apop_model in){
     return out;
 }
 
-/** \def apop_mode_set_parameters
+/** \def apop_model_set_parameters
  Take in an unparametrized \c apop_model and return a
   new \c apop_model with the given parameters. This would have been
   called apop_model_parametrize, but the OED lists four acceptable

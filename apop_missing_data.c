@@ -60,71 +60,28 @@ apop_data * apop_data_listwise_delete(apop_data *d){
 
 //ML imputation
 
-typedef struct {
-    size_t      *row, *col;
-    int         ct;
-    apop_model  *local_mvn;
-} apop_ml_imputation_settings;
+#define Switch_back    \
+    apop_data *real_data = ml_model->parameters;   \
+    apop_model *actual_base = ml_model->more; \
+    actual_base->parameters = d; 
 
-apop_ml_imputation_settings * apop_ml_imputation_settings_alloc(apop_model *local){
-    apop_ml_imputation_settings *out = malloc(sizeof(apop_ml_imputation_settings));
-    out->local_mvn = local;
-    return out;
+static apop_model * i_est(apop_data *d, apop_model *ml_model){
+    Switch_back
+    return apop_estimate(real_data, *actual_base);
 }
 
-void  apop_ml_imputation_settings_free(apop_ml_imputation_settings *in){
-    free(in->row);  free(in->col); free(in);}
-
-void * apop_ml_imputation_settings_copy(apop_ml_imputation_settings *in){
-    apop_ml_imputation_settings *out = malloc(sizeof(apop_ml_imputation_settings));
-    return (out = in);
+#include "mapply.h"
+static double i_ll(apop_data *d, apop_model *ml_model){
+    Switch_back
+    return apop_log_likelihood(real_data, actual_base);
 }
 
-static void addin(apop_ml_imputation_settings *m, size_t i, size_t j, double** starting_pt, gsl_vector *imean){
-    m->row  = realloc(m->row, ++(m->ct) * sizeof(size_t));
-    m->col  = realloc(m->col, m->ct * sizeof(size_t));
-    *starting_pt = realloc(*starting_pt, m->ct*sizeof(double));
-    m->row[m->ct-1]    = i;
-    m->col[m->ct-1]    = j;
-    (*starting_pt)[m->ct-1] = 1;
+static double i_p(apop_data *d, apop_model *ml_model){
+    Switch_back
+    return apop_p(real_data, actual_base);
 }
 
-static int  find_missing(apop_data *d, apop_model *mc, gsl_vector *initialmean){
-  apop_ml_imputation_settings  *mask = apop_settings_get_group(mc, "apop_ml_imputation");
-  double ** starting_pt = &(Apop_settings_get(mc, apop_mle, starting_pt));
-  int i, j, min = 0, max = 0, ct = 0;
-    //get to know the input.
-    if (d->matrix)
-        max = d->matrix->size2;
-    if (d->vector)
-        min = -1;
-    mask->row   = 
-    mask->col   = NULL;
-    mask->ct    = 0;
-    //find out where the NaNs are
-    for (i=0; i< d->matrix->size1; i++)
-        for (j=min; j <max; j++)
-            if (gsl_isnan(apop_data_get(d, i, j))){
-                ct ++;
-                addin(mask, i, j, starting_pt, initialmean);
-            }
-    return ct;
-}
-
-static void unpack(const apop_data *v, apop_data *x, apop_ml_imputation_settings * m){
-    for (int i=0; i< m->ct; i++)
-        apop_data_set(x, m->row[i], m->col[i], gsl_vector_get(v->vector,i));
-}
-
-//The model to send to the optimization
-
-static double ll(apop_data *d, apop_model * ep){
-  apop_ml_imputation_settings  *m = apop_settings_get_group(ep, "apop_ml_imputation");
-    unpack(ep->parameters, d, m);
-    return apop_log_likelihood(d, m->local_mvn);
-}
-
-static apop_model apop_ml_imputation_model= {"Impute missing data via maximum likelihood", .log_likelihood= ll};
+static apop_model apop_ml_imputation_model = {"Internal ML imputation model", .estimate=i_est, .p = i_p, .log_likelihood=i_ll};
 
 /**
     Impute the most likely data points to replace NaNs in the data, and
@@ -146,15 +103,11 @@ apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
         mvn = apop_estimate(list_d, apop_multivariate_normal);
         apop_data_free(list_d);
     }
-  apop_model *mc       = apop_model_copy(apop_ml_imputation_model);
-    Apop_settings_add_group(mc, apop_ml_imputation, mvn);
-    if (Apop_settings_get_group(mvn, apop_mle))
-        apop_settings_copy_group(mc, mvn, "apop_mle");
-    else 
-        Apop_model_add_group(mc, apop_mle, .parent=mc, .method = APOP_CG_PR,
-                                    .step_size=2, .tolerance=0.2);
-    int missing_ct = find_missing(d, mc, NULL);
-    apop_assert(missing_ct, NULL, 1, 'c', "You sent apop_ml_imputation a data set with no NANs");
-    mc->vbase          = Apop_settings_get(mc, apop_ml_imputation, ct);
-    return  apop_maximum_likelihood(d, *mc);//already unpacked.
+    apop_model *impute_me = apop_model_copy(apop_ml_imputation_model);
+    impute_me->parameters = d;
+    impute_me->more = mvn;
+    apop_model *fixed = apop_model_fix_params(impute_me);
+    apop_model *m = apop_estimate(mvn->parameters, *fixed);
+    apop_data_memcpy(d, m->parameters); //A bit inefficient.
+    return m;
 }

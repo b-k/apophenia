@@ -5,6 +5,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 //The reader will find three function headers for this file in asst.h
 #include "asst.h"
 #include "output.h"
+#include "internal.h"
 #include "settings.h"
 #include "conversions.h"
 #include "model.h"
@@ -84,38 +85,6 @@ void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * outfile
     strcpy(apop_opts.output_delimiter, exdelimiter);
     apop_opts.output_append = append_state;
 }
-
-/** This function can be used to temporarily modify the global options,
- to facilitate better encapsulation of code. Usage:
-
-  \code
-  apop_opts_type tmp_opts;
-  apop_opts_memcpy(&tmp_opts, &apop_opts);
-  strcpy(apop_opts.output_name, "ad_hoc_temp_file");
-  [do things here]
-  apop_opts_memcpy(&apop_opts, &tmp_opts);
-  \endcode
-
-If you just need a little more verbosity for a procedure, you probably
-don't need to use this function. Just try: 
-  \code
-  apop_opts.verbose ++;
-  [do things here]
-  apop_opts.verbose --;
-  \endcode
-
-The philosophy is that the global variables are generally not going
-to change over the course of a program: either you are working on the
-screen, in the database, or piping out of STDOUT, and you likely won't
-change mid-stream. Thus, it is easier to set these globally at the top of
-the program but less convenient to switch frequently throughout the code.
-\ingroup global_vars
- */
-void apop_opts_memcpy(apop_opts_type *out, apop_opts_type *in){
-    memcpy(out, in, sizeof(apop_opts_type));
-}
-
-
 /** This function will plot a histogram model. Compare with \ref apop_plot_histogram, which is a convenience function to plot a \c gsl_vector as a histogram.
 
 The function respects the <tt>output_type</tt> option, so code like:
@@ -139,7 +108,6 @@ APOP_VAR_HEAD void apop_histogram_plot(apop_model *hist, char *outfile){
       char * apop_varad_var(outfile, NULL);
       apop_histogram_plot_base(hist, outfile);
 APOP_VAR_END_HEAD
-  int             i;
   FILE           *f;
   gsl_histogram  *h  = Apop_settings_get(hist, apop_histogram, pdf);
     if (!h) h = Apop_settings_get(hist, apop_kernel_density, pdf);
@@ -151,7 +119,7 @@ APOP_VAR_END_HEAD
         f = (outfile ? fopen(outfile, "a") : stdout);
 	fprintf(f, "set key off					                    ;\n\
                         plot '-' with lines\n");
-	for (i=0; i < h->n-1; i++)
+	for (int i=0; i < h->n-1; i++)
 	    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
 	fprintf(f, "e\n");
     if (apop_opts.output_type == 'p')
@@ -199,20 +167,11 @@ APOP_VAR_END_HEAD
            gsl_histogram_increment(h, pt);
         }
     //Now that you have a histogram, print it.
-    if (apop_opts.output_type == 'p')
-        f   = apop_opts.output_pipe;
-    else
-        f = (outfile ? fopen(outfile, "a") : stdout);
-    fprintf(f, "set key off                                     ;\n\
-                        plot '-' with lines\n");
-    //I can't tell which versions of Gnuplot support this form:
-    /*fprintf(f, "set key off                                       ;\n\
-                        set style data histograms               ;\n\
-                        set style histogram cluster gap 0       ;\n\
-                        set xrange [0:%i]                       ;\n\
-                        set style fill solid border -1          ;\n\
-                        set boxwidth 0.9                        ;\n\
-                        plot '-' using 2:xticlabels(1);\n", bins);*/
+    f = (apop_opts.output_type == 'p')
+             ? apop_opts.output_pipe
+             : (outfile ? fopen(outfile, "a") : stdout);
+    fprintf(f, "set key off;\n"
+               "plot '-' with lines\n");
     for (i=0; i < bins; i++)
         fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
     fprintf(f, "e\n");
@@ -240,15 +199,13 @@ APOP_VAR_HEAD void apop_histogram_print(apop_model *h, char *outfile){
 APOP_VAR_END_HEAD
   apop_histogram_settings *hp = apop_settings_get_group(h, "apop_histogram"); 
   if (!hp) hp = apop_settings_get_group(h, "apop_kernel_density"); 
-  if (!hp)
-      apop_error(0, 's', "%s: You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?\n", __func__);
-  int             i;
+  apop_assert_void(hp, 0, 's', "You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?");
   FILE *          f;
     if (apop_opts.output_type == 'p')
         f   = apop_opts.output_pipe;
     else 
         f = (outfile ? fopen(outfile, "a") : stdout);
-	for (i=1; i < hp->pdf->n-1; i++)
+	for (int i=1; i < hp->pdf->n-1; i++)
 	    fprintf(f, "%4f\t %g\n", hp->pdf->range[i], gsl_histogram_get(hp->pdf, i));
     if (apop_opts.output_type == 'p')
         fflush(f);
@@ -259,8 +216,7 @@ APOP_VAR_END_HEAD
 /////The printing functions.
 
 static void white_pad(int ct){
-  size_t i;
-    for(i=0; i < ct; i ++)
+    for(size_t i=0; i < ct; i ++)
         printf(" ");
 }
 
@@ -286,20 +242,19 @@ For more machine-readable printing, see \ref apop_print.
 */
 void apop_data_show(const apop_data *in){
     if (!in) {printf("NULL\n"); return;}
+    Get_vmsizes(in) //vsize, msize1, msize2, tsize
   size_t i, j;
 //Take inventory and get sizes
   size_t hasrownames = in->names->rowct ? 1 : 0;
   size_t hascolnames = (in->names->vector || in->names->colct || in->names->textct);
-  size_t hasvector   = in->vector ? 1 : 0;
-  size_t matrixcols  = in->matrix ? in->matrix->size2 : 0;
 
     size_t outsize_r = GSL_MAX(in->matrix ? in->matrix->size1 : 0, in->vector ? in->vector->size: 0);
     outsize_r   = GSL_MAX(outsize_r, in->textsize[0]);
     outsize_r   += hascolnames;
 
-    size_t outsize_c = matrixcols;
+    size_t outsize_c = msize2;
     outsize_c   += in->textsize[1];
-    outsize_c   += hasvector;
+    outsize_c   += (vsize>0);
     outsize_c   += hasrownames;
 
 //Write to the printout data set.
@@ -311,28 +266,26 @@ void apop_data_show(const apop_data *in){
     if (hasrownames)
         for(i=0; i < in->names->rowct; i ++)
             apop_text_add(printout, i + hascolnames, 0, in->names->row[i]);
-    if (hasvector)
-        for(i=0; i < in->vector->size; i ++)
-            apop_text_add(printout, i + hascolnames, hasrownames, "%g", gsl_vector_get(in->vector, i));
-    if (matrixcols)
-        for(i=0; i < in->matrix->size1; i ++)
-            for(j=0; j < in->matrix->size2; j ++)
-                apop_text_add(printout, i + hascolnames, hasrownames + hasvector+ j, "%g", gsl_matrix_get(in->matrix, i, j));
+    for(i=0; i < vsize; i ++) //vsize may be zero.
+        apop_text_add(printout, i + hascolnames, hasrownames, "%g", gsl_vector_get(in->vector, i));
+    for(i=0; i < msize1; i ++) //msize1 may be zero.
+        for(j=0; j < msize2; j ++)
+            apop_text_add(printout, i + hascolnames, hasrownames + (vsize >0)+ j, "%g", gsl_matrix_get(in->matrix, i, j));
     if (in->textsize[0])
         for(i=0; i < in->textsize[0]; i ++)
             for(j=0; j < in->textsize[1]; j ++)
-                apop_text_add(printout, i + hascolnames, hasrownames + hasvector+ matrixcols + j, in->text[i][j]);
+                apop_text_add(printout, i + hascolnames, hasrownames + (vsize>0)+ msize2 + j, in->text[i][j]);
 
 //column names
     if (hascolnames){
-        if (hasvector && in->names->vector)
+        if (vsize && in->names->vector)
                 apop_text_add(printout, 0 , hasrownames,  in->names->vector);
-        if (matrixcols)
+        if (msize2)
             for(i=0; i < in->names->colct; i ++)
-                apop_text_add(printout, 0 , hasrownames + hasvector + i,  in->names->column[i]);
+                apop_text_add(printout, 0 , hasrownames + (vsize>0) + i,  in->names->column[i]);
         if (in->textsize[1])
             for(i=0; i < in->names->textct; i ++)
-                apop_text_add(printout, 0 , hasrownames + hasvector + matrixcols + i, in->names->text[i]);
+                apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, in->names->text[i]);
     }
 
 //get column sizes
@@ -358,10 +311,8 @@ void apop_data_show(const apop_data *in){
     return;
 }
 
-
 static void print_core_v(const gsl_vector *data, char *separator, char *filename, 
 			void (* p_fn)(FILE * f, double number)){
-int 		i;
 FILE * 		f;
 	if (!filename || !strcmp(filename, "STDOUT"))
 		f	= stdout;
@@ -372,7 +323,7 @@ FILE * 		f;
     if (!data)
         fprintf(f, "NULL\n");
     else {
-	    for (i=0; i<data->size; i++){
+	    for (size_t i=0; i<data->size; i++){
 		    p_fn(f, gsl_vector_get(data, i));
 		    if (i< data->size -1)	fprintf(f, "%s", separator);
 	    }
@@ -384,10 +335,9 @@ FILE * 		f;
 static void print_core_m(const gsl_matrix *data, char *separator, char *filename, 
 			void (* p_fn)(FILE * f, double number), apop_name *n){
   FILE * 	f;
-  size_t    i,j; 
   int       max_name_size  = 0;
     if (n)
-        for (i=0; i< n->rowct; i++)
+        for (int i=0; i< n->rowct; i++)
             max_name_size   = GSL_MAX(strlen(n->row[i]), max_name_size);
 
     if (apop_opts.output_type == 'p'){
@@ -409,14 +359,14 @@ static void print_core_m(const gsl_matrix *data, char *separator, char *filename
     else {
         if (n && n->colct > 0){ //then print a row of column headers.
 		    fprintf(f,"\t");
-		    for (j=0; j< n->colct; j++)
+		    for (int j=0; j< n->colct; j++)
 			    fprintf(f,"%s\t\t", n->column[j]);
 		    fprintf(f,"\n");
         }
-	    for (i=0; i<data->size1; i++){
+	    for (size_t i=0; i<data->size1; i++){
             if (n && n->rowct > 0)
 			    fprintf(f,"%-*s", max_name_size+4, n->row[i]);
-		    for (j=0; j<data->size2; j++){
+		    for (size_t j=0; j<data->size2; j++){
 			    p_fn(f, gsl_matrix_get(data, i,j));
 			    if (j< data->size2 -1)	fprintf(f, "%s", separator);
 		    }
@@ -471,9 +421,8 @@ void apop_matrix_show(const gsl_matrix *data){
 }
 
 static int get_max_strlen(char **names, size_t len){
-  int   i, 
-        max  = 0;
-    for (i=0; i< len; i++)
+  int   max  = 0;
+    for (int i=0; i< len; i++)
         max = GSL_MAX(max, strlen(names[i]));
     return max;
 }
@@ -657,7 +606,6 @@ APOP_VAR_END_HEAD
           height  = 1.2;
   double  margin  = 0;
   FILE    *f;
-  int     i,j;
     if (apop_opts.output_type == 'f'){
         if (outfile)
             f      = fopen(outfile, "a");
@@ -668,21 +616,21 @@ APOP_VAR_END_HEAD
     else if (apop_opts.output_type == 's')
         f      = stdout;
     else {
-            apop_error(0, 'c', "apop_plot_lattice: please set apop_opts.output_type = 'f', 'p', or 's' before using this function.\n");
-            return;
-        }
-    fprintf(f, "set size %g, %g\n\
-set rmargin 5\n\
-set lmargin -1\n\
-set tmargin 2.4\n\
-set bmargin -2\n\
-set origin %g, %g       \n\
-set multiplot   #layout %i, %i downwards        \n\
-unset xtics; unset xlabel; unset ytics; unset ylabel\n\
-set nokey           \n\
-        ", width, height, margin,margin, d->matrix->size2, d->matrix->size2);
-    for (i = 0; i< d->matrix->size2; i++)
-        for (j = 0; j< d->matrix->size2; j++)
+        apop_assert_void(0, 0, 'c', "please set apop_opts.output_type ="
+                                " 'f', 'p', or 's' before using this function.");
+        return;}
+    fprintf(f, "set size %g, %g\n"
+                "set rmargin 5\n"
+                "set lmargin -1\n"
+                "set tmargin 2.4\n"
+                "set bmargin -2\n"
+                "set origin %g, %g       \n"
+                "set multiplot   #layout %i, %i downwards        \n"
+                "unset xtics; unset xlabel; unset ytics; unset ylabel\n"
+                "set nokey           \n"
+        , width, height, margin,margin, d->matrix->size2, d->matrix->size2);
+    for (size_t i = 0; i< d->matrix->size2; i++)
+        for (size_t j = 0; j< d->matrix->size2; j++)
             printone(f, width, height, margin, i, j, d);
     fprintf(f, "unset multiplot\n"); 
     if (apop_opts.output_type == 'f' && outfile)
@@ -730,27 +678,17 @@ APOP_VAR_END_HEAD
 
     //produce percentiles from the model via RNG.
   gsl_vector  *vd  = gsl_vector_alloc(bins);
-  int         i;
-    for(i=0; i< bins; i++)
+    for(int i=0; i< bins; i++)
         m->draw(gsl_vector_ptr(vd, i), r, m);
     double *pctdist = apop_vector_percentiles(vd, 'a');
 
-    if (apop_opts.output_type == 'p')
-        f   = apop_opts.output_pipe;
-    else 
-        f   = (outfile ? fopen(outfile, "a") : stdout);
-    fprintf(f, "set key off; set size square;\n\
-plot x;\n\
-replot '-' with points\n");
-    //I can't tell which versions of Gnuplot support this form:
-    /*fprintf(f, "set key off                                       ;\n\
-                        set style data histograms               ;\n\
-                        set style histogram cluster gap 0       ;\n\
-                        set xrange [0:%i]                       ;\n\
-                        set style fill solid border -1          ;\n\
-                        set boxwidth 0.9                        ;\n\
-                        plot '-' using 2:xticlabels(1);\n", bins);*/
-    for (i=0; i < 101; i++)
+    f = (apop_opts.output_type == 'p')
+             ? apop_opts.output_pipe
+             : (outfile ? fopen(outfile, "a") : stdout);
+    fprintf(f, "set key off; set size square;\n"
+               "plot x;\n"
+               "replot '-' with points\n");
+    for (int i=0; i < 101; i++)
         fprintf(f, "%g\t %g\n", pctdist[i], pctdata[i]);
     fprintf(f, "e\n");
     if (apop_opts.output_type == 'p')

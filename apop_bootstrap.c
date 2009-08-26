@@ -120,7 +120,7 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
     if (!rng)  rng = spare;
-    return apop_bootstrap_cov_base(data, x.model, rng, iterations);
+    return apop_bootstrap_cov_base(data, varad_in.model, rng, iterations);
 APOP_VAR_END_HEAD
   apop_model        *e              = apop_model_copy(model);
   apop_model_clear(data, e);

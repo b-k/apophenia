@@ -1,8 +1,5 @@
-/** \file apop_multivariate_normal.c
-
-   The multivariate Normal distribution.
-
-Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/** \file apop_multivariate_normal.c  The multivariate Normal distribution.*/
+/* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
  
 #include "asst.h"
 #include "model.h"
@@ -17,7 +14,7 @@ static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
     gsl_blas_dsymv(CblasUpper, 1, sigma, x, 0, sigma_dot_x); //sigma should be symmetric
     gsl_blas_ddot(x, sigma_dot_x, &the_result);
     gsl_vector_free(sigma_dot_x);
-    return(the_result);
+    return the_result;
 }
 
 static double apop_multinormal_ll(apop_data *data, apop_model * m){
@@ -31,7 +28,7 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
     if (determinant == 0) {
         fprintf(stderr, "apop_multivariate_normal.p: the determinant of the given covariance is zero. Returning GSL_NEGINF.  \n"); 
         gsl_vector_free(x_minus_mu);
-        return(GSL_NEGINF); //tell maximizers to look elsewhere.
+        return GSL_NEGINF; //tell maximizers to look elsewhere.
     }
     for (i=0; i< data->matrix->size1; i++){
         APOP_ROW(data,i, vv);
@@ -47,7 +44,7 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
 
 #include "mapply.h"
 #include "stats.h"
-static double a_mean(gsl_vector * in){ return apop_vector_mean(in); } //minor type correction.
+static double a_mean(gsl_vector * in){ return apop_vector_mean(in); }
 
 static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
   apop_model *out = p ? apop_model_copy(*p) : apop_model_copy(apop_multivariate_normal);

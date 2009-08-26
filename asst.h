@@ -68,10 +68,9 @@ void apop_histogram_normalize(apop_model *m);
 #define apop_assert_void(test, level, stop, ...) Apop_assert_void(test, level, stop, __VA_ARGS__)
 #define APOP_ASSERT_VOID(test, level, stop, ...) Apop_assert_void(test, level, stop, __VA_ARGS__)
 
-/** This is semi-obsolete. You will almost always be able to get by with
-  just using \ref Apop_model_add_group.
+/** This is obsolete. Use \ref Apop_model_add_group.
  
-  A convenience macro. Expands:
+  For what it's worth, this is a convenience macro. Expands:
  \code
  Apop_settings_alloc(mle, ms, data, model);
  \endcode
@@ -79,9 +78,7 @@ to:
  \code
  apop_mle_settings *ms = apop_mle_settings_alloc(data, model);
  \endcode
- As of this writing, options for the first argument include \ref apop_mle_settings_alloc "mle", \ref apop_histogram_settings_alloc "histogram", \ref apop_ls_settings_alloc "ls", and \ref apop_update_settings_alloc "update". See the respective documentations for the arguments to be sent to the respective allocation functions.
-
-ps: we just capitalize the first letter to remind you that it's a macro, but so that it doesn't look like we're yelling. I mean, as long as this is a syntactic-sugar macro for aesthetic purposes, it might as well look good.
+ As of this writing, options for the first argument include \ref apop_mle_settings_alloc "mle", \ref apop_histogram_settings_alloc "histogram", and \ref apop_update_settings_alloc "update". See the respective documentations for the arguments to be sent to the respective allocation functions. Because this is an obsolete function, that list may shrink.
 
  */
 #define Apop_settings_alloc(type, out, ...) apop_ ##type ##_settings *out = apop_ ##type ##_settings_alloc(__VA_ARGS__);
@@ -102,6 +99,9 @@ APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, ap
 
 APOP_VAR_DECLARE double apop_test(double statistic, char *distribution, double p1, double p2, char tail);
 
+//Sorting (apop_asst.c)
+APOP_VAR_DECLARE double * apop_vector_percentiles(gsl_vector *data, char rounding); 
+APOP_VAR_DECLARE apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
 
 //asprintf, vararg, &c
 #include <stdarg.h>

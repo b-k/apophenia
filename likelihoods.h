@@ -15,6 +15,7 @@
 #include "stats.h"
 #include "types.h"
 #include "settings.h"
+#include "variadic.h"
 #include "conversions.h"
 
 #define MAX_ITERATIONS 		5000
@@ -42,7 +43,8 @@ typedef struct{
     double      *starting_pt;
     apop_optimization_enum method;
     double      step_size, tolerance, delta;
-    int         verbose, want_cov;
+    int         verbose;
+    char        want_cov;
 //simulated annealing (also uses step_size);
     int         n_tries, use_score, iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
@@ -58,7 +60,8 @@ Apop_settings_declarations(apop_mle)
 
 
 typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
-gsl_vector * apop_numerical_gradient(apop_data *data, apop_model*);
+APOP_VAR_DECLARE gsl_vector * apop_numerical_gradient(apop_data * data, apop_model* model, double delta);
+//gsl_vector * apop_numerical_gradient(apop_data * data, apop_model* model);
 //gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
 //gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
 
@@ -74,7 +77,7 @@ APOP_VAR_DECLARE apop_model * apop_estimate_restart (apop_model *e, apop_model *
 APOP_VAR_DECLARE double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin);
 
 //in apop_model_fix_params.c
-apop_model *apop_model_fix_params(apop_data *data, apop_data *paramvals, apop_data *mask, apop_model model_in);
+apop_model * apop_model_fix_params(apop_model *model_in);
 
 #ifdef	__cplusplus
 }

@@ -10,10 +10,10 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			apop_fexact.c apop_stats.c apop_bootstrap.c 	\
 			apop_name.c apop_output.c apop_model.c 			\
 			apop_mapply.c apop_missing_data.c				\
-			apop_linear_constraint.c apop_sort.c			\
+			apop_linear_constraint.c apop_arms.c 			\
 			apop_model_fix_params.c	 apop_update.c			\
 			apop_tests.c apop_smoothing.c apop_settings.c   \
-			apop_arms.c asprintf.c \
+			asprintf.c \
 			model/apop_multivariate_normal.c				\
 			model/apop_multinomial_probit.c					\
 			model/apop_normal.c model/apop_OLS.c 		 	\
@@ -49,7 +49,7 @@ install-exec-hook: apop.py
 	fi
 else 
 apop.py: apop.i
-	@echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package?" ; \
+	@echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package, or run ./configure --enable-python ?" ; \
 	touch apop.py ; 
 endif
 

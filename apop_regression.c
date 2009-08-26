@@ -1,6 +1,5 @@
 /** \file apop_regression.c	Generally, if it assumes something is  Normally distributed, it's here.*/
-/* \author Ben Klemens
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 /** \defgroup regression  OLS/GLS: The linear projection methods */
 /** \defgroup ttest  T-tests: comparing two vectors */
@@ -9,23 +8,17 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
  See also the goodness of fit tests in \ref histograms.
  */
 
-#include "db.h"     //just for apop_opts
-#include "output.h"
-#include "output.h"
+#include "model.h"
 #include "settings.h"
 #include "conversions.h"
-#include "model.h"
-#include <search.h> //lsearch
-#include <stdlib.h> //bsearch
-#include <assert.h> 
-#include <gsl/gsl_blas.h>
+#include <search.h> //lsearch; bsearch is in stdlib.
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
   apop_data *out    = apop_data_alloc(0,7,-1);
   double    pval, qval, two_tail;
   if(!gsl_isnan(stat)){
         pval    = gsl_cdf_tdist_P(stat, df);
-        qval    = gsl_cdf_tdist_Q(stat, df);
+        qval    = 1-pval;
         two_tail= 2*GSL_MIN(pval,qval);
   } else {
         pval    = GSL_NAN;
@@ -107,15 +100,11 @@ int     df      = count-1;
     return produce_t_test_output(df, stat, avg);
 }
 
-/** For many, it is a knee-jerk reaction to a parameter estimation to
-test whether each individual parameter differs from zero. This function
-does that.
+/** For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.
 
-\param est  The \ref apop_estimate, which includes pre-calculated
-parameter estimates, var-covar matrix, and the original data set.
+\param est  The \ref apop_estimate, which includes pre-calculated parameter estimates, var-covar matrix, and the original data set.
 
-Returns nothing. At the end of the routine, the est->parameters->matrix
-includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
+Returns nothing. At the end of the routine, the <tt>est->parameters->matrix</tt> includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
 
 */
 void apop_estimate_parameter_t_tests (apop_model *est){
@@ -183,10 +172,10 @@ APOP_VAR_END_HEAD
     gsl_matrix      *xpx        = gsl_matrix_calloc(set->size2, set->size2);
     gsl_matrix      *xpxinv     = NULL;
     size_t          contrast_ct;
-    if (contrast){
+    if (contrast)
         contrast_ct =  contrast->vector ? contrast->vector->size 
                                         : contrast->matrix->size1;
-    } else contrast_ct = est->parameters->vector->size;
+    else contrast_ct = est->parameters->vector->size;
     gsl_vector      *qprimebeta = gsl_vector_calloc(contrast_ct);
     gsl_matrix      *qprimexpxinv       = gsl_matrix_calloc(contrast_ct, set->size2);
     gsl_matrix      *qprimexpxinvq      = gsl_matrix_calloc(contrast_ct, contrast_ct);
@@ -460,10 +449,9 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
     //the dummy matrix to one.
-    if (dummyfactor == 'd')
-        out = apop_data_calloc(0, s, (keep_first ? elmt_ctr : elmt_ctr-1));
-    else
-        out = d;
+    out = (dummyfactor == 'd')
+                ? apop_data_calloc(0, s, (keep_first ? elmt_ctr : elmt_ctr-1))
+                : d;
     for (i=0; i< s; i++){
         if (type == 'd'){
             val     = gsl_vector_get(in, i);

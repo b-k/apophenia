@@ -9,8 +9,6 @@
 /** \defgroup conversions Conversion functions
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
 
-
-
 /** Converts a \c gsl_vector to an array.
 
 \param in A \c gsl_vector
@@ -43,8 +41,8 @@ APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
     int apop_varad_var(size, sizeof(in)/sizeof(in[0]));
     return apop_array_to_vector_base(in, size);
 APOP_VAR_END_HEAD
-  gsl_vector        *out    = gsl_vector_alloc(size);
-  gsl_vector_view	v	    = gsl_vector_view_array((double*)in, size);
+    gsl_vector      *out = gsl_vector_alloc(size);
+    gsl_vector_view	v	 = gsl_vector_view_array((double*)in, size);
 	gsl_vector_memcpy(out,&(v.vector));
     return out;
 }
@@ -891,21 +889,35 @@ void apop_data_unpack(const gsl_vector *in, apop_data *d){
 
  The complement is \c apop_data_unpack. I.e., 
 \code
-apop_data_unpack(apop_data_pack(in_data, vsize, m1size, m2size)) 
+apop_data_unpack(apop_data_pack(in_data), data_copy) 
 \endcode
 will return the original data set (stripped of text and names).
 
- \param in an \c apop_data set.
- \return A \c gsl_vector with the vector data (if any), then each row of data (if any).
+ \param in an \c apop_data set. (No default. If \c NULL, return \c NULL).
+ \param out If this is not \c NULL, then put the output here. The dimensions must match exactly. If \c NULL, then allocate a new data set. 
+ \return A \c gsl_vector with the vector data (if any), then each row of data (if any). If \c out is not \c NULL, then this is a pointer there.
 \ingroup conversions
  */
-gsl_vector * apop_data_pack(const apop_data *in){
+APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out){
+    const apop_data * apop_varad_var(in, NULL);
+    if (!in) return NULL;
+    gsl_vector * apop_varad_var(out, NULL);
+    if (out) {
+        int total_size    = (in->vector ? in->vector->size : 0)
+                       + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0);
+        apop_assert(in->vector->size == total_size, NULL, 0, 's', "The input data set has %i elements,"
+               " but the output vector you want to fill has size %i. Please make these sizes equal."
+               , total_size, in->vector->size);
+    }
+    return apop_data_pack_base(in, out);
+APOP_VAR_ENDHEAD
   int total_size    = (in->vector ? in->vector->size : 0)
                        + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0);
     if (!total_size)
         return NULL;
   int offset        = 0;
-  gsl_vector *out   = gsl_vector_alloc(total_size);
+  if (!out)
+        out   = gsl_vector_alloc(total_size);
   gsl_vector vout, vin;
     if (in->vector){
         vout     = gsl_vector_subvector((gsl_vector *)out, 0, in->vector->size).vector;

@@ -1,11 +1,11 @@
 /** \file apop_poisson.c
 
-  The poisson distribution.
-
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+  The poisson distribution.*/
+/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "mapply.h"
+#include "internal.h"
 #include "likelihoods.h"
 
 static double poisson_log_likelihood(apop_data *d, apop_model *);
@@ -20,10 +20,10 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
     //to prevent an infinite loop, the jackknife needs to be flagged to
     //not run itself. We free-ride of the apop_ls_settings struct to signal.
     apop_ls_settings *dummy = apop_settings_get_group(est, "apop_ls");
-    if (!dummy || dummy->want_cov){
+    if (!dummy || dummy->want_cov=='y'){
         if (!dummy)
             Apop_model_add_group(est, apop_ls);
-        Apop_settings_add(est, apop_ls, want_cov, 0);
+        Apop_settings_add(est, apop_ls, want_cov, 'n');
         est->covariance = apop_jackknife_cov(data, *est);
     }
 	return est;
@@ -41,19 +41,21 @@ static double apply_me(double x, void *in){
 }
 
 static double poisson_log_likelihood(apop_data *d, apop_model * p){
-  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Get_vmsizes(d) //tsize
+  Nullcheck(d); Nullcheck_m(p); Nullcheck_p(p);
   double        lambda      = gsl_vector_get(p->parameters->vector, 0);
   double  ln_l 	= log(lambda);
-  double  ll    = apop_map_sum(d, .fn_dp = apply_me, .param=&ln_l, .part='m');
-    return ll - d->matrix->size1*d->matrix->size2*lambda;
+  double  ll    = apop_map_sum(d, .fn_dp = apply_me, .param=&ln_l);
+    return ll - tsize*lambda;
 }
 
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Get_vmsizes(d) //tsize
+  Nullcheck_v(d); Nullcheck_mv(p); Nullcheck_pv(p);
   double       	lambda  = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix      *data	= d->matrix;
   double           d_a  = apop_matrix_sum(data)/lambda;
-    d_a -= data->size1*data->size2;
+    d_a -= tsize;
     gsl_vector_set(gradient,0, d_a);
 }
 
