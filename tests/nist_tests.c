@@ -15,7 +15,7 @@ void pontius(){
 apop_data *d        = apop_query_to_data("select y, x, pow(x,2) as p from d");
 apop_model *est  =  apop_estimate(d, apop_ols);
 
-    assert(fabs(apop_data_get(est->parameters, 0, -1) - 0.673565789473684E-03) < TOL);
+    assert(fabs(apop_data_get(est->parameters, 0, -1) - 0.673565789473684E-03) < TOL3);
     assert(fabs(apop_data_get(est->parameters, 1, -1) - 0.732059160401003E-06) < TOL);
     assert(fabs(apop_data_get(est->parameters, 2, -1) - -0.316081871345029E-14)    < TOL);
     assert(fabs(apop_data_get(est->covariance, 0, 0) - pow(0.107938612033077E-03,2))    < TOL2);
@@ -33,7 +33,7 @@ apop_data       *d    = apop_query_to_data("select y, x, pow(x,2) as p2, \
                                 pow(x,3) as p3, pow(x,4) as p4, pow(x,5) as p5 from w1");
 apop_model   *est  =  apop_estimate(d, apop_ols);
     for (i=0; i<6; i++)
-        assert(fabs(apop_data_get(est->parameters, i, -1) - 1) < TOL4);
+        assert(fabs(apop_data_get(est->parameters, i, -1) - 1) < TOL4*10);
     for (i=0; i<6; i++)
         assert(fabs(apop_data_get(est->covariance, i, i)) < TOL2);
 apop_data *cc   = apop_estimate_coefficient_of_determination(est);

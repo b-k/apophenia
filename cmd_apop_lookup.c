@@ -1,7 +1,6 @@
-/** \file cmd_apop_lookup.c	Command line utility to look things up in distribution tables.
+/** \file cmd_apop_lookup.c	Command line utility to look things up in distribution tables. */
 
-  As with many pleasant utility programs, it is mostly parsing of the
-  input text, and then about three lines at the end doing actual work.
+/*  As with many pleasant utility programs, it is mostly parsing of the input text, and then about three lines at the end doing actual work.
 
 Copyright (c) 2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -26,29 +25,29 @@ int main(int argc, char **argv){
   int           pval = 0, qval = 0;
   double        param1 = GSL_NAN, param2 =GSL_NAN, findme = GSL_NAN;
   char          number[1000];
-	sprintf(msg, "%s [opts] number_to_lookup\n\n\
-Look up a probability or p-value for a given standard distribution.\n\
-[This is still loosely written and counts as beta. Notably, negative numbers are hard to parse.]\n\
-E.g.:\n\
-%s -dbin 100 .5 34\n\
-sets the distribution to a Binomial(100, .5), and find the odds of 34 appearing.\n\
-%s -p 2     \n\
-find the area of the Normal(0,1) between -infty and 2.  \n\
-\n\
--pval Find the p-value: integral from -inf to your value\n\
--qval Find the q-value: integral from your value to infinity\n\
-\n\
-After giving an optional -p or -q, specify the distribution. \n\
-Default is Normal(0, 1). Other options:\n\
-\t\t-binom Binomial(n, p)\n\
-\t\t-beta Beta(a, b)\n\
-\t\t-f F distribution(df1, df2)\n\
-\t\t-norm Normal(mu, sigma)\n\
-\t\t-negative bin Negative binomial(n, p)\n\
-\t\t-poisson Poisson(L)\n\
-\t\t-t t distribution(df)\n\
-I just need enough letters to distinctly identify a distribution.\n\
-", argv[0], argv[0], argv[0]); 
+	sprintf(msg, "%s [opts] number_to_lookup\n\n"
+    "Look up a probability or p-value for a given standard distribution.\n"
+    "[This is still loosely written and counts as beta. Notably, negative numbers are hard to parse.]\n"
+    "E.g.:\n"
+    "%s -dbin 100 .5 34\n"
+    "sets the distribution to a Binomial(100, .5), and find the odds of 34 appearing.\n"
+    "%s -p 2     \n"
+    "find the area of the Normal(0,1) between -infty and 2.  \n"
+    "\n"
+    "-pval Find the p-value: integral from -infinity to your value\n"
+    "-qval Find the q-value: integral from your value to infinity\n"
+    "\n"
+    "After giving an optional -p or -q, specify the distribution. \n"
+    "Default is Normal(0, 1). Other options:\n"
+    "\t\t-binom Binomial(n, p)\n"
+    "\t\t-beta Beta(a, b)\n"
+    "\t\t-f F distribution(df1, df2)\n"
+    "\t\t-norm Normal(mu, sigma)\n"
+    "\t\t-negative bin Negative binomial(n, p)\n"
+    "\t\t-poisson Poisson(L)\n"
+    "\t\t-t t distribution(df)\n"
+    "I just need enough letters to distinctly identify a distribution.\n"
+, argv[0], argv[0], argv[0]); 
 
     opterr=0;
 	if(argc==1){
@@ -71,6 +70,7 @@ I just need enough letters to distinctly identify a distribution.\n\
               param2 = atof(argv[optind+1]);
               findme =  atof(argv[optind+2]);
 			  break;
+          case 'F':
           case 'f':
             distribution = F;
             param1 = atof(argv[optind]);

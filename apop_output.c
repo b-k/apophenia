@@ -10,13 +10,13 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "conversions.h"
 #include "model.h"
 #include <gsl/gsl_histogram.h>
+
 /** Prep for gnuplot one of those cute scatterplots with a regression line through it.
 
 Currently, you only get two dimensions.
 
 Set the global \ref apop_opts_type "apop_opts.output_name" to the filename you want before running this.
 It appends instead of overwriting, so you can prep the file if you want; see sample code. [to overwrite a file, just remove it first with the standard C function <tt>remove("filename");</tt>]
-
 
 \param	data	This is a copy of what you'd sent to the regression fn. That is, the first column is the dependent variable and the second is the independent. That is, what will be on Y axis is the <i>first</i> column, and what is on the X axis is the second. Custom for regressions and custom for graphs just clash on this one.
 \param	est	The \ref apop_model structure your regression function gave you.
@@ -85,6 +85,25 @@ void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * outfile
     strcpy(apop_opts.output_delimiter, exdelimiter);
     apop_opts.output_append = append_state;
 }
+
+static void histoplot_common(FILE *f, gsl_histogram *h, int for_gnuplot){
+	//Now that you have a histogram, print it.
+    FILE *f = (apop_opts.output_type == 'p')
+               ? apop_opts.output_pipe
+               : (outfile ? fopen(outfile, "a") : stdout);
+    if (for_gnuplot)
+        fprintf(f, "set key off	;\n"
+               "plot '-' with lines\n");
+	for (int i=0; i < h->n-1; i++)
+	    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
+    if (for_gnuplot)
+        fprintf(f, "e\n");
+    if (apop_opts.output_type == 'p')
+        fflush(f);
+    else if (outfile)    
+        fclose(f);
+}
+
 /** This function will plot a histogram model. Compare with \ref apop_plot_histogram, which is a convenience function to plot a \c gsl_vector as a histogram.
 
 The function respects the <tt>output_type</tt> option, so code like:
@@ -108,27 +127,10 @@ APOP_VAR_HEAD void apop_histogram_plot(apop_model *hist, char *outfile){
       char * apop_varad_var(outfile, NULL);
       apop_histogram_plot_base(hist, outfile);
 APOP_VAR_END_HEAD
-  FILE           *f;
   gsl_histogram  *h  = Apop_settings_get(hist, apop_histogram, pdf);
     if (!h) h = Apop_settings_get(hist, apop_kernel_density, pdf);
-
-	//Now that you have a histogram, print it.
-    if (apop_opts.output_type == 'p')
-        f   = apop_opts.output_pipe;
-    else 
-        f = (outfile ? fopen(outfile, "a") : stdout);
-	fprintf(f, "set key off					                    ;\n\
-                        plot '-' with lines\n");
-	for (int i=0; i < h->n-1; i++)
-	    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
-	fprintf(f, "e\n");
-    if (apop_opts.output_type == 'p')
-        fflush(f);
-    else if (outfile)    
-        fclose(f);
+    histoplot_common(h, 1);
 }
-
-
 
 /** This function will take in a \c gsl_vector of data and put out a histogram. Compare with \ref apop_histogram_plot, which plots an estimated \ref apop_histogram model.
 
@@ -166,22 +168,9 @@ APOP_VAR_END_HEAD
         if (!gsl_isnan(pt))
            gsl_histogram_increment(h, pt);
         }
-    //Now that you have a histogram, print it.
-    f = (apop_opts.output_type == 'p')
-             ? apop_opts.output_pipe
-             : (outfile ? fopen(outfile, "a") : stdout);
-    fprintf(f, "set key off;\n"
-               "plot '-' with lines\n");
-    for (i=0; i < bins; i++)
-        fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
-    fprintf(f, "e\n");
-    if (apop_opts.output_type == 'p')
-        fflush(f);
-    else if (outfile)
-        fclose(f);
+    histoplot_common(h, 1);
+    gsl_histogram_free(h);
 }
-
-
 	
 /** Print an \c apop_histogram. Put a "plot '-'\n" before this, and
  you can send it straight to Gnuplot. The -inf and +inf elements are not printed. 
@@ -200,17 +189,7 @@ APOP_VAR_END_HEAD
   apop_histogram_settings *hp = apop_settings_get_group(h, "apop_histogram"); 
   if (!hp) hp = apop_settings_get_group(h, "apop_kernel_density"); 
   apop_assert_void(hp, 0, 's', "You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?");
-  FILE *          f;
-    if (apop_opts.output_type == 'p')
-        f   = apop_opts.output_pipe;
-    else 
-        f = (outfile ? fopen(outfile, "a") : stdout);
-	for (int i=1; i < hp->pdf->n-1; i++)
-	    fprintf(f, "%4f\t %g\n", hp->pdf->range[i], gsl_histogram_get(hp->pdf, i));
-    if (apop_opts.output_type == 'p')
-        fflush(f);
-    else if (outfile)    
-        fclose(f);
+    histoplot_common(hp->pdf, 0);
 }
 
 /////The printing functions.
@@ -220,20 +199,11 @@ static void white_pad(int ct){
         printf(" ");
 }
 
-/** This function prettyprints the apop_data set to a screen.
+/** This function prettyprints the \c apop_data set to a screen.
 
-This takes a lot of machinery. I write every last element to a text
-array, then measure column widths, then print to screen with padding to
-guarantee that everything lines up.  There's no way to have the first
-element of a column line up with the last unless you interrogate the
-width of every element in the column, so printing columns really can't be a one-pass 
-process.
+This takes a lot of machinery. I write every last element to a text array, then measure column widths, then print to screen with padding to guarantee that everything lines up.  There's no way to have the first element of a column line up with the last unless you interrogate the width of every element in the column, so printing columns really can't be a one-pass process.
 
-So, I produce an \ref apop_data set with no numeric elements and a text
-element to be filled with the input data set, and then print that. That
-means that I'll be using (more than) twice the memory to print this. If
-this is a problem, you can use \ref apop_print to dump your data to a text file,
-and view the text file, or print subsets.
+So, I produce an \ref apop_data set with no numeric elements and a text element to be filled with the input data set, and then print that. That means that I'll be using (more than) twice the memory to print this. If this is a problem, you can use \ref apop_print to dump your data to a text file, and view the text file, or print subsets.
 
 For more machine-readable printing, see \ref apop_print.
 
@@ -399,7 +369,6 @@ void apop_matrix_print(gsl_matrix *data, char *file){
         print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf, NULL); 
 }
 
-
 /** Dump a <tt>gsl_vector</tt> to the screen. 
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 \ingroup apop_print */
@@ -513,7 +482,6 @@ static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype
     }
 }
 
-
 /** Print an \ref apop_data set to a file, the database, or the screen,
   as determined by the \ref apop_opts_type "apop_opts.output_delimiter".
     
@@ -534,7 +502,6 @@ void apop_data_print(apop_data *data, char *file){
     } else
         apop_data_show_core(data, stdout, 'p');
 }
-
 
 /* the next function plots a single graph for the \ref apop_plot_lattice  fn */
 static void printone(FILE *f, double width, double height, double margin, int xposn, int yposn, const apop_data *d){

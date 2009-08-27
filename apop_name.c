@@ -24,7 +24,7 @@ apop_name * apop_name_alloc(void){
 /** Adds a name to the \ref apop_name structure. Puts it at the end of the given list.
 
 \param n 	An existing, allocated \ref apop_name structure.
-\param add_me 	A string. If NULL, do nothing; return -1.
+\param add_me 	A string. If \c NULL, do nothing; return -1.
 \param type 	'r': add a row name<br>
 'c': add a column name<br>
 't': add a text category name<br>
@@ -37,27 +37,23 @@ int apop_name_add(apop_name * n, char *add_me, char type){
     if (!add_me)
         return -1;
 	if (type == 'h'){
-        if (add_me){
-            snprintf(n->title, 100, add_me);
-		    return 1;
-        } else return 0;
+        snprintf(n->title, 100, add_me);
+        return 1;
 	} 
 	if (type == 'v'){
-        if (add_me){
 		n->vector	= realloc(n->vector,  strlen(add_me) + 1);
 		strcpy(n->vector, add_me);
 		return 1;
-        } else return 0;
 	} 
 	if (type == 'r'){
-		(n->rowct)++;
+		n->rowct++;
 		n->row	= realloc(n->row, sizeof(char*) * n->rowct);
 		n->row[n->rowct -1]	= malloc(strlen(add_me) + 1);
 		strcpy(n->row[n->rowct -1], add_me);
 		return n->rowct;
 	} 
 	if (type == 't'){
-		(n->textct)++;
+		n->textct++;
 		n->text	= realloc(n->text, sizeof(char*) * n->textct);
 		n->text[n->textct -1]	= malloc(strlen(add_me) + 1);
 		strcpy(n->text[n->textct -1], add_me);
@@ -67,7 +63,7 @@ int apop_name_add(apop_name * n, char *add_me, char type){
         if (type != 'c' && apop_opts.verbose)
             apop_error(2,'c',"%s: You gave me >%c<, I'm assuming you meant c; "
                              " copying column names.\n", __func__, type);
-		(n->colct)++;
+		n->colct++;
 		n->column	= realloc(n->column, sizeof(char*) * n->colct);
 		n->column[n->colct -1]	= malloc(strlen(add_me) + 1);
 		strcpy(n->column[n->colct -1], add_me);
@@ -125,7 +121,7 @@ int		i;
 
 /** Append one list of names to another.
 
-Notice that if the first list is NULL, then this is a copy function. If the second is NULL, it is a no-op.
+Notice that if the first list is \c NULL, then this is a copy function. If the second is \c NULL, it is a no-op.
 
 \param  n1      The first set of names (no default, must not be \c NULL)
 \param  nadd      The second set of names, which will be appended after the first. (no default, if \c NULL, a no-op)
@@ -134,7 +130,7 @@ Notice that if the first list is NULL, then this is a copy function. If the seco
 \ingroup names */
 APOP_VAR_HEAD void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
     apop_name * apop_varad_var(n1, NULL);
-    apop_assert_void(n1, 0, 'c', "Can't stack onto a NULL data set (which n1 is).");
+    apop_assert_void(n1, 0, 'c', "Can't stack onto a NULL set of names (which n1 is).");
     apop_name * apop_varad_var(nadd, NULL); 
     if (!nadd) return;
     char  apop_varad_var(type1, 'r');
@@ -145,17 +141,17 @@ APOP_VAR_ENDHEAD
     apop_name counts = (apop_name) { .rowct=nadd->rowct, .textct = nadd->textct, .colct = nadd->colct };//Necessary when stacking onto self.;
     if (typeadd == 'v')
         apop_name_add(n1, nadd->vector, 'v');
-      else if (typeadd == 'r'){
+    else if (typeadd == 'r')
         for (i=0; i< counts.rowct; i++)
             apop_name_add(n1, nadd->row[i], type1);
-    } else if (typeadd == 't'){
+    else if (typeadd == 't')
         for (i=0; i< counts.textct; i++)
             apop_name_add(n1, nadd->text[i], type1);
-    } else if (typeadd == 'c'){
+    else if (typeadd == 'c')
         for (i=0; i< counts.colct; i++)
             apop_name_add(n1, nadd->column[i], type1);
-    } else if (apop_opts.verbose)
-         printf (">%c< sent to apop_name_stack, but the only valid options are r t c v. Doing nothing.\n",type1);
+    else apop_assert(0, 1, 'c', ">%c< sent to apop_name_stack, but the only "
+                                "valid options are r t c v. Doing nothing.",type1);
 }
 
 /** Deprecated. Use \ref apop_name_stack.  \ingroup names */

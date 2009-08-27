@@ -210,7 +210,6 @@ static void lognormal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_m
 }
 */
 
-
 /** An Apophenia wrapper for the GSL's Normal RNG, logged.
 
 \param r	a gsl_rng already allocated

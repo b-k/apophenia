@@ -1147,6 +1147,27 @@ If you are producing a statistic that you know has a common form, like a central
 
     endofdiv
 
+    To give another example of testing, here is a function that used to be a part of Apophenia, but seemed a bit out of place. Here it is as a sample:
+
+    \code
+// Input: any old vector. Output: 1 - the p-value for a chi-squared
+// test to answer the question, "with what confidence can I reject the
+// hypothesis that the variance of my data is zero?"
+
+double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
+  apop_assert(in, 0, 0, 'c', "input vector is NULL. Doing nothing.\n");
+  gsl_vector	*normed;
+  double 		sum=0;
+	apop_vector_normalize((gsl_vector *)in,&normed, 1);
+	gsl_vector_mul(normed,normed);
+	for(size_t i=0;i< normed->size; 
+			sum +=gsl_vector_get(normed,i++));
+	gsl_vector_free(normed);
+	return gsl_cdf_chisq_P(sum,in->size); 
+}
+    \endcode
+
+
 endofdiv
 
 Outlineheader Histosec Histograms \anchor histograms
@@ -1647,7 +1668,7 @@ However, there are some estimations that do not use the constant column.
 \em "Why not implicitly assume the ones column?"
 Some stats packages implicitly assume a constant column, which the user never sees. This violates the principle of transparency
 upon which Apophenia is based, and is generally annoying.  Given a data matrix \f$X\f$ with the estimated parameters \f$\beta\f$, 
-if the model asserts that the product \f$X\beta\f$ has meaning, then you should be able to calculate that product. With a ones column, a dot product is one line \c apop_dot(x, your_est->parameters, 0, 0)); without a ones column, the problem is left as an unpleasant exercise for the reader. You want to know if the regression included a ones column or not? Just look at your data.
+if the model asserts that the product \f$X\beta\f$ has meaning, then you should be able to calculate that product. With a ones column, a dot product is one line \c apop_dot(x, your_est->parameters, 0, 0)); without a ones column, the problem is left as an unpleasant exercise for the reader.
 
   \paragraph Shunting columns around.
 

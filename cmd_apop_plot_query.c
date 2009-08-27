@@ -50,12 +50,16 @@ char *read_query(char *infile){
     return q;
 }
 
-gsl_matrix *query(char *d, char *q){
+gsl_matrix *query(char *d, char *q, int no_plot){
 	apop_db_open(d);
- gsl_matrix *m 	= apop_query_to_matrix(q);
+apop_data *result 	= apop_query_to_data(q);
 	apop_db_close(0);
-    apop_assert(m, 0, 0, 's', "Your query returned a blank table. Quitting.");
-    return m;
+    apop_assert(result, 0, 0, 's', "Your query returned a blank table. Quitting.");
+    if (no_plot){
+        apop_data_show(result);
+        exit(0);
+    }
+    return result->matrix;
 }
 
 void print_out(FILE *f, char *outfile, gsl_matrix *m){
@@ -79,13 +83,15 @@ int main(int argc, char **argv){
 		        msg[2000];
   gsl_matrix	*m;
   FILE          *f;
-  int           sf          = 0;
+  int           sf          = 0,
+                no_plot     = 0;
 
 	sprintf(msg, "%s [opts] dbname query\n\n\
 Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT or a file.\n\
 -d\tdatabase to use\t\t\t\t\tmandatory \n\
 -q\tquery to run\t\t\t\t\tmandatory (or use -Q)\n\
 -Q\tfile from which to read the query\t\t\n\
+-n\tno plot: just run the query and display results to STDOUT\t\t\n\
 -t\tplot type (points, bars, ...)\t\t\tdefault=\"lines\"\n\
 -H\tplot histogram with this many bins (e.g., -H100)\n\
 -f\tfile to dump to. If -f- then use STDOUT.\tdefault=pipe to Gnuplot\n", argv[0]); 
@@ -94,7 +100,7 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
 		printf(msg);
 		return 0;
 	}
-	while ((c = getopt (argc, argv, "ad:f:hH:Q:q:st:")) != -1){
+	while ((c = getopt (argc, argv, "ad:f:hH:nQ:q:st:")) != -1){
 		switch (c){
 		  case 'd':
               d   = malloc(2+strlen(optarg));
@@ -109,6 +115,9 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
           case 'H':
               histobins = atoi(optarg);
               break;
+		  case 'n':
+              no_plot ++;
+			  break;
 		  case 'Q':
               q   = read_query(optarg);
 			  break;
@@ -141,6 +150,6 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
     }
 
     f   = open_output(outfile, sf);
-    m   = query(d, q);
+    m   = query(d, q, no_plot);
     print_out(f, outfile, m);
 }

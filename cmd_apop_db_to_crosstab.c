@@ -1,6 +1,6 @@
-/** \file cmd_apop_db_to_crosstab.c	Command line utility to convert a three-column table to a crosstab.
+/** \file cmd_apop_db_to_crosstab.c	Command line utility to convert a three-column table to a crosstab.*/
 
-Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/*Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "db.h"
 #include "output.h"
@@ -16,11 +16,11 @@ char		c,
 		    msg[1000];
 apop_data	*m;
 
-	sprintf(msg, "%s [opts] dbname table_name rows columns data\n\n\
--d\tdelimiter\t\tdefault= \"|,<space><tab>\"\n\
--a\tappend\t\t\tdefault= append\n\
--o\toverwrite\t\tdefault= append\n\
--f\tfile to dump to\t\tdefault=STDOUT\n", argv[0]); 
+	sprintf(msg, "%s [opts] dbname table_name rows columns data\n\n"
+            "-d\tdelimiter\t\tdefault= \"|,<space><tab>\"\n"
+            "-a\tappend\t\t\tdefault= append\n"
+            "-o\toverwrite\t\tdefault= append\n"
+            "-f\tfile to dump to\t\tdefault=STDOUT\n", argv[0]); 
 
 	if(argc<5){
 		printf(msg);

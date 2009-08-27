@@ -2,13 +2,9 @@
 
 This file includes a number of distributions and models whose parameters one would estimate using maximum likelihood techniques.
 
-Each typically includes the likelihood function, the derivative of the
-likelihood function, which is used by \c apop_maximum_likelihood. The \c apop_estimate function defaults to using maximum likelihood
-estimation if there is no model-specific estimation routine provided.
+It has (more-or-less) a single public function: \ref apop_maximum_likelihood, and you don't even need to use that one, because the \c apop_estimate function defaults to using it if there is no model-specific estimation routine provided.
 
-At the bottom are the maximum likelihood procedures themselves. There
-are four: Newton-type derivative methods, the no-derivative version, the with-derivative version,
-and the simulated annealing routine.*/
+At the bottom are the maximum likelihood procedures themselves. There are four: Newton-type derivative methods, the no-derivative version, the with-derivative version, and the simulated annealing routine.*/
 
 /*Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "model.h"
@@ -208,7 +204,7 @@ static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
 /* The next few functions bridge between the GSL's setup and Apophenia.
 
 --Negate, because statisticians and social scientists like to maximize; physicists like to minimize.
---Call trace_path if needed.
+--Call \ref trace_path if needed.
 --Go from a single vector to a full apop_data set and back (via apop_data_pack/unpack)
 --Check the derivative function if available.
 
@@ -631,38 +627,18 @@ APOP_VAR_ENDHEAD
     return e;
 }
 
-
 // Simulated Annealing.
 
 /** \page simanneal Notes on simulated annealing
 
-Simulated annealing is a controlled random walk.
-As with the other methods, the system tries a new point, and if it
-is better, switches. Initially, the system is allowed to make large
-jumps, and then with each iteration, the jumps get smaller, eventually
-converging. Also, there is some decreasing probability that if the new
-point is {\em less} likely, it will still be chosen. Simulated annealing
-is best for situations where there may be multiple local optima. Early
-in the random walk, the system can readily jump from one to another;
-later it will fine-tune its way toward the optimum. The number of points
-tested is basically not dependent on the function: if you give it a
-4,000 step program, that is basically how many steps it will take.
-If you know your function is globally convex (as are most standard
-probability functions), then this method is overkill.
+Simulated annealing is a controlled random walk.  As with the other methods, the system tries a new point, and if it is better, switches. Initially, the system is allowed to make large jumps, and then with each iteration, the jumps get smaller, eventually converging. Also, there is some decreasing probability that if the new point is {\em less} likely, it will still be chosen. Simulated annealing is best for situations where there may be multiple local optima. Early in the random walk, the system can readily jump from one to another; later it will fine-tune its way toward the optimum. The number of points tested is basically not dependent on the function: if you give it a 4,000 step program, that is basically how many steps it will take.  If you know your function is globally convex (as are most standard probability functions), then this method is overkill.
 
-The GSL's simulated annealing system doesn't actually do very much. It
-basically provides a for loop that calls a half-dozen functions that we
-the users get to write. So, the file \ref apop_mle.c handles all of this
-for you. The likelihood function is taken from the model, the metric
-is the Manhattan metric, the copy/destroy functions are just the usual
-vector-handling fns., et cetera. The reader who wants further control
-is welcome to override these functions.
+The GSL's simulated annealing system doesn't actually do very much. It basically provides a for loop that calls a half-dozen functions that we the users get to write. So, the file \ref apop_mle.c handles all of this for you. The likelihood function is taken from the model, the metric is the Manhattan metric, the copy/destroy functions are just the usual vector-handling fns., et cetera. The reader who wants further control is welcome to override these functions.
 
-Verbosity: if ep->verbose==1, show likelihood,  temp, &c. in a table;
-if ep->verbose>1, show that plus the vector of params.
+Verbosity: if ep->verbose==1, show likelihood,  temp, &c. in a table; if ep->verbose>1, show that plus the vector of params.
 
- \ingroup mle
- */
+\ingroup mle
+*/
 
 static double annealing_energy(void *in) {
   infostruct *i      = in;
@@ -744,6 +720,7 @@ jmp_buf anneal_jump;
 static void anneal_sigint(){ longjmp(anneal_jump,1); }
 
 apop_model * apop_annealing(infostruct *i){
+  Get_vmsizes(i->model->parameters) //vsize, msize1, msize2
   apop_model            *ep = i->model;
   apop_mle_settings     *mp = apop_settings_get_group(ep, "apop_mle");
   assert(mp);
@@ -756,17 +733,13 @@ apop_model * apop_annealing(infostruct *i){
                             .mu_t          = mp->mu_t,
                             .t_min         = mp->t_min};
   gsl_vector    *beta;
-  int           vsize       =(i->model->parameters->vector ? i->model->parameters->vector->size :0),
-                msize1      =(i->model->parameters->matrix ? i->model->parameters->matrix->size1 :0),
-                msize2      =(i->model->parameters->matrix ? i->model->parameters->matrix->size2:0);
-  int           paramct = vsize + msize1*msize2;
   static const gsl_rng   * r    = NULL;
     if (!r)
-        r = mp->rng ? mp->rng : apop_rng_alloc(8);
+        r = mp->rng ? mp->rng : apop_rng_alloc(apop_opts.rng_seed++);
     if (mp->starting_pt)
-        beta = apop_array_to_vector(mp->starting_pt, paramct);
+        beta = apop_array_to_vector(mp->starting_pt, tsize);
     else{
-        beta  = gsl_vector_alloc(paramct);
+        beta  = gsl_vector_alloc(tsize);
         gsl_vector_set_all(beta, 1);
     }
     i->starting_pt                  = apop_vector_map(beta, set_start);
@@ -788,7 +761,7 @@ apop_model * apop_annealing(infostruct *i){
           annealing_memcpy, //   gsl_siman_copy_t copyfunc
           annealing_copy,   //   gsl_siman_copy_construct_t copy_constructor
           annealing_free,   //   gsl_siman_destroy_t destructor
-          paramct,           //   size_t element_size
+          tsize,            //   size_t element_size
           simparams);        //   gsl_siman_params_t params
     }
     signal(SIGINT, NULL);

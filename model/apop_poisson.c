@@ -10,9 +10,18 @@
 
 static double poisson_log_likelihood(apop_data *d, apop_model *);
 
+static double data_mean(apop_data *d){
+    Get_vmsizes(d)
+    if (vsize && !msize1) return apop_vector_mean(d->vector);
+    if (!vsize && msize1) return apop_matrix_mean(d->matrix);
+    return apop_matrix_mean(d->matrix)*(msize1*msize2)/tsize +
+               + apop_vector_mean(d->vector)*vsize/tsize;
+}
+
 static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
-  apop_model 	*est= apop_model_copy(parameters ? *parameters : apop_poisson);
-  double		mean    = apop_matrix_mean(data->matrix);
+  Nullcheck(data); Nullcheck_m(parameters);
+  apop_model 	*est = apop_model_copy(parameters ? *parameters : apop_poisson);
+  double		mean = data_mean(data);
     if (!est->parameters) 
         est->parameters   = apop_data_alloc(1,0,0);
 	gsl_vector_set(est->parameters->vector, 0, mean);
@@ -42,7 +51,7 @@ static double apply_me(double x, void *in){
 
 static double poisson_log_likelihood(apop_data *d, apop_model * p){
   Get_vmsizes(d) //tsize
-  Nullcheck(d); Nullcheck_m(p); Nullcheck_p(p);
+  Nullcheck(d); Nullcheck_m(p);
   double        lambda      = gsl_vector_get(p->parameters->vector, 0);
   double  ln_l 	= log(lambda);
   double  ll    = apop_map_sum(d, .fn_dp = apply_me, .param=&ln_l);
@@ -51,7 +60,7 @@ static double poisson_log_likelihood(apop_data *d, apop_model * p){
 
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   Get_vmsizes(d) //tsize
-  Nullcheck_v(d); Nullcheck_mv(p); Nullcheck_pv(p);
+  Nullcheck_v(d); Nullcheck_mv(p);
   double       	lambda  = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix      *data	= d->matrix;
   double           d_a  = apop_matrix_sum(data)/lambda;

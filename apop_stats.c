@@ -6,20 +6,14 @@
 #include "stats.h"
 #include <gsl/gsl_rng.h>
 
-/** \defgroup basic_stats Some basic statistical functions
-
-Many of these are just one-line convenience functions for finding moments and normalizing matrices.
-*/
 
 /** \defgroup vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
-\ingroup basic_stats
 
 These functions simply take in a GSL vector and return its mean, variance, or kurtosis; the covariance functions take two GSL vectors as inputs.
 
 \ref apop_vector_kurtosis and \ref apop_vector_kurt are identical; pick the one which sounds better to you.
 
 See also \ref db_moments.
-
 
 For \ref apop_vector_var_m<tt>(vector, mean)</tt>, <tt>mean</tt> is the mean of the
 vector. This saves the trouble of re-calcuating the mean if you've
@@ -34,11 +28,7 @@ mean = apop_vector_mean(v);
 var  = apop_vector_var_m(v, mean);
 printf("Your vector has mean %g and variance %g\n", mean, var);
 \endcode
-\ingroup basic_stats */
-
-/** \defgroup matrix_moments   Calculate moments such as the covariance matrix
-
-\ingroup basic_stats */
+*/
 
 /** Returns the sum of the data in the given vector.
 \ingroup convenience_fns
@@ -317,8 +307,7 @@ apop_vector_show(in);
 \endcode
 
 This function uses the \ref designated syntax for inputs.
-
-\ingroup basic_stats */
+*/
 APOP_VAR_HEAD void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type){
       gsl_vector * apop_varad_var(in, NULL);
       apop_assert_void(in, 1, 'c', "Input vector is NULL. Doing nothing.\n");
@@ -334,18 +323,18 @@ APOP_VAR_END_HEAD
 		gsl_vector_memcpy(*out,in);
 	}
         //the numbers are deprecated and will go away.
-	if ((normalization_type == 's')|| (normalization_type == 1)){
+	if ((normalization_type == 's')){
 		mu	= apop_vector_mean(in);
 		gsl_vector_add_constant(*out, -mu);
 		gsl_vector_scale(*out, 1/(sqrt(apop_vector_var_m(in, mu))));
 	} 
-	else if ((normalization_type == 'r')||(normalization_type == 0)){
+	else if ((normalization_type == 'r')){
         gsl_vector_minmax(in, &min, &max);
 		gsl_vector_add_constant(*out, -min);
 		gsl_vector_scale(*out, 1/(max-min));	
 
 	}
-	else if ((normalization_type == 'p') ||(normalization_type == 2)){
+	else if ((normalization_type == 'p')){
 		mu	= apop_vector_mean(in);
 		gsl_vector_scale(*out, 1/(mu * in->size));	
 	}
@@ -357,13 +346,12 @@ APOP_VAR_END_HEAD
 
 /** Normalize  each row or column in the given matrix, one by one.
 
-  Basically just a convenience fn to iterate through the columns and run \ref apop_vector_normalize for you.
+  Basically just a convenience fn to iterate through the columns or rows and run \ref apop_vector_normalize for you.
 
 \param data     The data set to normalize.
 \param row_or_col   Either 'r' or 'c'.
 \param normalization     see \ref apop_vector_normalize.
-
-\ingroup basic_stats */
+*/
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization){
     apop_assert_void(data, 1, 'c', "input matrix is NULL. Doing nothing.");
     if (row_or_col == 'r')
@@ -376,23 +364,6 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
             Apop_matrix_col(data, j, v);
             apop_vector_normalize(v, NULL, normalization);
         }
-}
-
-/** Input: any old vector. Output: 1 - the p-value for a chi-squared test to answer the question, "with what confidence can I reject the hypothesis that the variance of my data is zero?"
-
-\param in a gsl_vector of data.
-\ingroup asst_tests
- */
-double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
-  apop_assert(in, 0, 0, 'c', "input vector is NULL. Doing nothing.\n");
-  gsl_vector	*normed;
-  double 		sum=0;
-	apop_vector_normalize((gsl_vector *)in,&normed, 1);
-	gsl_vector_mul(normed,normed);
-	for(size_t i=0;i< normed->size; 
-			sum +=gsl_vector_get(normed,i++));
-	gsl_vector_free(normed);
-	return gsl_cdf_chisq_P(sum,in->size); 
 }
 
 /** Gives a random double between min and max [inclusive].

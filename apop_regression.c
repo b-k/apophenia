@@ -150,25 +150,27 @@ void apop_estimate_parameter_t_tests (apop_model *est){
  \over {\bf u}' {\bf u} } \sim F_{q,N-K},\f]
  and that's what this function is based on.
 
- At the moment, this copies the data set. Plan accordingly.
 
  \param est     an \ref apop_model that you have already calculated. (No default)
  \param contrast       The matrix \f${\bf Q}\f$ and the vector \f${\bf c}\f$, where each row represents a hypothesis. (Defaults: if matrix is \c NULL, it is set to the identity matrix; if the vector is \c NULL, it is set to zero; if the entire \c apop_data set is NULL or omitted, both of these settings are made.)
+ \param normalize If 1, then I will normalize the data set at <tt>est->data</tt> so that each column has mean zero (that is, I run \ref apop_matrix_normalize <tt>(data, 'c', 'm');</tt>).If zero, then I will copy off the entire dataset and do the normalization on my copy, leaving the input data as-is. (Default: 0)
  \return An \c apop_data set with a few variants on the confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
 
 This function uses the \ref designated syntax for inputs.
  */
-APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
+APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
     apop_model *apop_varad_var(est, NULL)
     apop_assert(est, NULL, 0, 's', "You sent me a NULL data set. Please estimate a model, then run this on the result.")
     apop_data * apop_varad_var(contrast, NULL)
+    int apop_varad_var(normalize, 0)
     return apop_f_test_base(est, contrast);
 APOP_VAR_END_HEAD
     gsl_matrix      *set        = est->data->matrix;
     gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
     gsl_vector      *c          = contrast ? contrast->vector: NULL;
-    gsl_matrix      *data       = gsl_matrix_alloc(set->size1, set->size2);    //potentially huge.
+    gsl_matrix      *data       = normalize ?  set
+                                    : gsl_matrix_alloc(set->size1, set->size2);
     gsl_matrix      *xpx        = gsl_matrix_calloc(set->size2, set->size2);
     gsl_matrix      *xpxinv     = NULL;
     size_t          contrast_ct;
@@ -184,12 +186,14 @@ APOP_VAR_END_HEAD
     double          f_stat, variance, pval;
     int             q_df,
                 data_df     = set->size1 - est->parameters->vector->size;
-    gsl_matrix_memcpy(data, set);
+    if (!normalize)
+        gsl_matrix_memcpy(data, set);
     Apop_matrix_col(data, 0, v);
     gsl_vector_set_all(v, 1);
     apop_matrix_normalize(data, 'c', 'm');
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, xpx);   
-    gsl_matrix_free(data);
+    if (!normalize)
+        gsl_matrix_free(data);
     if (q != NULL){
         q_df    = q->size1;
         xpxinv = apop_matrix_inverse(xpx);

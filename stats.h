@@ -77,10 +77,6 @@ double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
 APOP_VAR_DECLARE void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type);
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
-inline double apop_test_chi_squared_var_not_zero(const gsl_vector *in);
-	//As described: give it a vector, and it'll tell you the confidence 
-	//with which you can say that the vector is not zero.
-
 APOP_VAR_DECLARE double apop_random_double(double min, double max, gsl_rng *r);
 APOP_VAR_DECLARE int apop_random_int(double min, double max, const gsl_rng *r);
 
@@ -116,7 +112,7 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);
 
 APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first);
-APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast);
+APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize);
 
 apop_model *apop_estimate_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 

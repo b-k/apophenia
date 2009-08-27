@@ -49,6 +49,7 @@ typedef struct{
     int         n_tries, use_score, iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
+    /** See \ref trace_path */
     char        *trace_path;
     apop_model  *parent;
 } apop_mle_settings;

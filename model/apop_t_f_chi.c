@@ -34,12 +34,12 @@ apop_data *t_for_description = apop_estimate(data, apop_t);
 
 For the Wishart, the degrees of freedom and covariance matrix are always estimated via MLE.
 
-
 */
 #include "mapply.h"
 #include "variadic.h"
 #include "likelihoods.h"
 #include "model.h"
+#include "internal.h"
 #include <gsl/gsl_eigen.h>
 
 double df, df2; 
@@ -55,6 +55,7 @@ apop_data * get_df(apop_data *d){
 }
 
 apop_model* apop_t_chi_estimate(apop_data *d, apop_model *m){
+    Nullcheck(d); Nullcheck_m(m);
     apop_mle_settings *s = Apop_settings_get_group(m, apop_mle);
     if (!s){
         Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
@@ -66,6 +67,7 @@ apop_model* apop_t_chi_estimate(apop_data *d, apop_model *m){
 }
 
 apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
+    Nullcheck(d); Nullcheck_m(m);
     apop_mle_settings *s = Apop_settings_get_group(m, apop_mle);
     if (!s){
         Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
@@ -78,43 +80,45 @@ apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
         return apop_maximum_likelihood(d, *m);
 }
 
-#define PARAMCHECK apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-#define PARAMCHECKNULL apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
- 
 static double one_t(double in, void *df){ return log(gsl_ran_tdist_pdf(in, *(double*)df)); }
-static double one_f(double in){ return log(gsl_ran_fdist_pdf(in, df, df2)); }
+static double one_f(double in, void *df_in){ double *df = df_in; 
+    return log(gsl_ran_fdist_pdf(in, df[0], df[1])); }
 static double one_chisq(double in, void *df){ return log(gsl_ran_chisq_pdf(in, *(double*)df)); }
 
-double apop_tdist_llike(apop_data *d, apop_model *m){ PARAMCHECK
+double apop_tdist_llike(apop_data *d, apop_model *m){ 
+    Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
     double df = m->parameters->vector->data[0];
-    return apop_map_sum(d, .fn_dp=one_t, .param=&df, .part='a');
+    return apop_map_sum(d, .fn_dp=one_t, .param=&df);
 }
 
-double apop_chisq_llike(apop_data *d, apop_model *m){ PARAMCHECK
+double apop_chisq_llike(apop_data *d, apop_model *m){ 
+    Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
     double df = m->parameters->vector->data[0];
-    return apop_map_sum(d, .fn_dp=one_chisq, .param =&df, .part='a');
+    return apop_map_sum(d, .fn_dp=one_chisq, .param =&df);
 }
 
-double apop_fdist_llike(apop_data *d, apop_model *m){ PARAMCHECK
-    df = m->parameters->vector->data[0];
-    df2 = m->parameters->vector->data[1];
-    return (d->vector ? apop_vector_map_sum(d->vector, one_f) : 0)
-             +   (d->matrix ? apop_matrix_map_all_sum(d->matrix, one_f) : 0);
+double apop_fdist_llike(apop_data *d, apop_model *m){ 
+    Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
+    double df[2];
+    df[0] = m->parameters->vector->data[0];
+    df[1] = m->parameters->vector->data[1];
+    return apop_map_sum(d, .fn_dp=one_f, .param =df);
 }
 
-void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){ PARAMCHECKNULL
+void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){ 
+    Nullcheck_mv(m); Nullcheck_pv(m);
     *out = gsl_ran_tdist (r, m->parameters->vector->data[0]);
 }
 
-void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){ PARAMCHECKNULL
+void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){
+    Nullcheck_mv(m); Nullcheck_pv(m);
     *out = gsl_ran_fdist (r, m->parameters->vector->data[0], m->parameters->vector->data[1]);
 }
 
-void apop_chisq_dist_draw(double *out, gsl_rng *r, apop_model *m){ PARAMCHECKNULL
+void apop_chisq_dist_draw(double *out, gsl_rng *r, apop_model *m){
+    Nullcheck_mv(m); Nullcheck_pv(m);
     *out = gsl_ran_chisq (r, m->parameters->vector->data[0]);
 }
-
-
 
 /** The multivariate generalization of the Gamma distribution.
 \f$
@@ -125,10 +129,9 @@ void apop_chisq_dist_draw(double *out, gsl_rng *r, apop_model *m){ PARAMCHECKNUL
 See also \ref apop_multivariate_lngamma, which is more numerically stable in most cases.
 */
 double apop_multivariate_gamma(double a, double p){
-    int i;
     double out = pow(M_PI, p*(p-1.)/4.);
     double factor = 1;
-    for (i=1; i<=p; i++)
+    for (int i=1; i<=p; i++)
         factor *= gsl_sf_gamma(a+(1-i)/2.);
     return out * factor;
 }
@@ -137,10 +140,9 @@ double apop_multivariate_gamma(double a, double p){
  \ref apop_multivariate_gamma.
 */
 double apop_multivariate_lngamma(double a, double p){
-    int i;
     double out = M_LNPI * p*(p-1.)/4.;
     double factor = 0;
-    for (i=1; i<=p; i++){
+    for (int i=1; i<=p; i++){
         factor += gsl_sf_lngamma(a+(1-i)/2.);
     }
     return out + factor;
@@ -172,17 +174,14 @@ static double biggest_elmt(gsl_matrix *d){
 
 /** Test whether the input matrix is positive semidefinite.
 
-    A covariance matrix will always be PSD, so this function can tell you whether your matrix is a valid covariance matrix.
+A covariance matrix will always be PSD, so this function can tell you whether your matrix is a valid covariance matrix.
 
-    Consider the 1x1 matrix in the upper left of the input, then the 2x2
-    matrix in the upper left, on up to the full matrix. If the matrix
-    is PSD, then each of these has a positive determinant. This function
-    thus calculates \f$N\f$ determinants for an \f$N\f$x\f$N\f$ matrix.
+Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in the upper left, on up to the full matrix. If the matrix is PSD, then each of these has a positive determinant. This function thus calculates \f$N\f$ determinants for an \f$N\f$x\f$N\f$ matrix.
 
-    \param m The matrix to test. If \c NULL, I will return zero---not PSD.
-    \param semi If anything but 's', check for positive definite, not semidefinite. (default 's')
+\param m The matrix to test. If \c NULL, I will return zero---not PSD.
+\param semi If anything but 's', check for positive definite, not semidefinite. (default 's')
 
-    See also \ref apop_matrix_to_positive_semidefinite, which will change the input to something PSD.
+See also \ref apop_matrix_to_positive_semidefinite, which will change the input to something PSD.
 
 This function uses the \ref designated syntax for inputs.
 
@@ -312,41 +311,44 @@ static double pos_def(apop_data *data, apop_model *candidate){
     return penalty + apop_matrix_to_positive_semidefinite(candidate->parameters->matrix);
 }
 
-double paramdet;
-apop_data *square;
-gsl_matrix *inv, *inv_dot_params, *wparams;
+typedef struct{
+    double paramdet;
+    gsl_matrix *wparams;
+    int len;
+} wishartstruct_t;
 
-double one_wishart_row(gsl_vector *in){
+double one_wishart_row(gsl_vector *in, void *ws_in){
+    wishartstruct_t *ws = ws_in;
+    gsl_matrix *inv;
+    gsl_matrix *inv_dot_params = gsl_matrix_alloc(ws->len, ws->len);
+    apop_data *square= apop_data_alloc(0, ws->len, ws->len);
     apop_data_unpack(in, square);
     double datadet = apop_det_and_inv(square->matrix, &inv, 1, 1);
     double out = log(datadet) * ((df - len -1.)/2.);
-    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, inv, wparams, 0, inv_dot_params);   
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, inv, ws->wparams, 0, inv_dot_params);   
     assert(datadet);
     gsl_vector_view diag = gsl_matrix_diagonal(inv_dot_params);
     double trace = apop_sum(&diag.vector);
     out += -0.5 * trace;
     out -= log(2) * len*df/2.;
-    out -= log(paramdet) * df/2.;
+    out -= log(ws->paramdet) * df/2.;
     out -= apop_multivariate_lngamma(df/2, len);
     gsl_matrix_free(inv);
+    apop_data_free(square);
     assert(isfinite(out));
     return out;
 }
 
-static double wishart_ll(apop_data *in, apop_model *m){ PARAMCHECK
+static double wishart_ll(apop_data *in, apop_model *m){
+    Nullcheck(in); Nullcheck_m(m); Nullcheck_p(m);
     df = m->parameters->vector->data[0];
-    len = sqrt(in->matrix->size2);
-    if (!square || square->matrix->size1 != len){
-        apop_data_free(square);
-        square = apop_data_alloc(0, len, len);
-        if (inv_dot_params) 
-            gsl_matrix_free(inv_dot_params);
-        inv_dot_params = gsl_matrix_alloc(len, len);
-    }
-    paramdet = apop_matrix_determinant(m->parameters->matrix);
-    if (paramdet < 1e-3) return GSL_NEGINF;
-    wparams = m->parameters->matrix;
-    double ll =  apop_matrix_map_sum(in->matrix, one_wishart_row);
+    wishartstruct_t ws = {
+            .paramdet = apop_matrix_determinant(m->parameters->matrix),
+            .wparams = m->parameters->matrix,
+            .len = sqrt(in->matrix->size2)
+        };
+    if (ws.paramdet < 1e-3) return GSL_NEGINF;
+    double ll =  apop_map_sum(in, .fn_vp = one_wishart_row, .param=&ws, .part='r');
     //return apop_matrix_map_sum(in->matrix, one_wishart_row);
     printf("------------%g\n", ll);
     return ll;
@@ -364,8 +366,7 @@ C     Wishart variate generator.  On output, SA is an upper-triangular
 C     matrix of size NP * NP [...]
 C     whose elements have a Wishart(N, SIGMA) distribution.
 */
-
-    PARAMCHECKNULL
+    Nullcheck_mv(m); Nullcheck_pv(m);
     int DF, n = m->parameters->matrix->size1;
     if (!m->more) { 
         gsl_matrix *ccc = apop_matrix_copy(m->parameters->matrix);
@@ -424,8 +425,7 @@ P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}}
 
 
 
-The form for all of the draw methods is to output a \c
-double*, so it accommodates drawing from a multivariate distribution like the Wishart. Try a form like:
+An example for random draws:
 
 \code
 gsl_matrix *rmatrix = gsl_marix_alloc(10, 10);
@@ -436,25 +436,22 @@ for (int i=0; i< 1e8; i++){
 }
 \endcode
 
-\hideinitializer
- \ingroup tfchi */
+See also notes in \ref tfchi.
+\hideinitializer \ingroup tfchi */
 apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
 
-/** The t distribution, for descriptive purposes. If you want to test
-   a hypothesis, you probably don't need this, and should instead use \ref apop_test.
-\hideinitializer \ingroup tfchi */
+/** The t distribution, for descriptive purposes. If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi. 
+\hideinitializer  \ingroup tfchi */
 apop_model apop_t_distribution  = {"t distribution", 1, 0, 0, .estimate = apop_t_chi_estimate, 
          .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw };
 
-/** The F distribution, for descriptive purposes. If you want to test
-   a hypothesis, you probably don't need this, and should instead use \ref apop_test.
+/** The F distribution, for descriptive purposes. If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.
 \hideinitializer \ingroup tfchi */
 apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .estimate = apop_fdist_estimate, 
         .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
 
-/** The \f$\chi^2\f$ distribution, for descriptive purposes. If you want to test
-   a hypothesis, you probably don't need this, and should instead use \ref apop_test. 
+/** The \f$\chi^2\f$ distribution, for descriptive purposes. If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.
 \hideinitializer \ingroup tfchi */
 apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .estimate = apop_t_chi_estimate,  
         .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };

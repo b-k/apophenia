@@ -9,12 +9,11 @@
 
 The function returns a new data set with the NaNs removed, so the original data set is left unmolested. You may want to \c apop_data_free the original immediately after this function.
 
-If every row has an NaN, then this returns \c NULL.
+\li If every row has an NaN, then this returns \c NULL.
+\li If there is text, it gets pruned as well.
 
     \param d    The data, with NaNs
     \return     A (potentially shorter) copy of the data set, without NaNs.
-
-    \todo  Doesn't handle text.
 */
 apop_data * apop_data_listwise_delete(apop_data *d){
     Get_vmsizes(d) //defines vsize, msize1, msize2.
@@ -40,19 +39,27 @@ apop_data * apop_data_listwise_delete(apop_data *d){
     if (vsize && msize1)
         out->vector = gsl_vector_alloc(msize1 - to_rm);
     j   = 0;
-    for (i=0; i< msize1; i++){
+    for (i=0; i< msize1; i++)
         if (!gsl_vector_get(marked, i)){
             if (vsize)
                 gsl_vector_set(out->vector, j, gsl_vector_get(d->vector, i));
             if (msize1){
-                APOP_ROW(d, i, v);
+                Apop_row(d, i, v);
                 gsl_matrix_set_row(out->matrix, j, v);
                 if (d->names->row && d->names->rowct > i)
                     apop_name_add(out->names, d->names->row[i], 'r');
             }
+            if (i < d->textsize[0]){
+                out->text = realloc(out->text, sizeof(char**) * (j+1));
+                out->text[j] = malloc(sizeof(char*) * d->textsize[1]);
+                out->textsize[0]++;
+                if (!out->textsize[1])
+                    out->textsize[1] = d->textsize[1];
+                for (int k=0; k< d->textsize[1]; k++)
+                    apop_text_add(out, j, k, d->text[i][k]);
+            }
             j++;
         }
-    }
     gsl_vector_free(marked);
     return out;
 }

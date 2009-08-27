@@ -3,19 +3,19 @@
   The Zipf distribution.
 
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$<br>
-*/
-/* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+*/ /* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "mapply.h"
 #include "likelihoods.h"
 #include <gsl/gsl_sf_zeta.h>
+#include "internal.h"
 
 static double zrank_apply(double in, int k) { return in * log(k+1); }
-#define apop_data_size(d) ((d) ? (((d)->vector ? (d)->vector->size : 0) + ((d)->matrix ? (d)->matrix->size1 * (d)->matrix->size2 : 0)) : 0)
 
 //There are two versions: the rank version and the non-rank. Here's
 //Rank's fns:
 static double zipf_log_likelihood_rank(const apop_data *d, apop_model *m){
+  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
   long double  a       = gsl_vector_get(m->parameters->vector, 0);
   long double like = -a * apop_map_sum((apop_data *)d, .fn_di=zrank_apply, .part ='c');
     like    -= log(gsl_sf_zeta(a)) * d->matrix->size1 * d->matrix->size2;
@@ -23,15 +23,17 @@ static double zipf_log_likelihood_rank(const apop_data *d, apop_model *m){
 }    
 
 static void zipf_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient, apop_model *m){
+  Get_vmsizes(d) //tsize
+  Nullcheck_v(d); Nullcheck_mv(m); Nullcheck_pv(m);
   long double     a       = gsl_vector_get(m->parameters->vector, 0);
-  int         size = apop_data_size(d);
   long double dlike =  dlike = apop_map_sum((apop_data *)d, .fn_di = zrank_apply, .part='c');
-    dlike   -= (gsl_sf_zeta(a-1)/(a*gsl_sf_zeta(a))) * size;
+    dlike   -= (gsl_sf_zeta(a-1)/(a*gsl_sf_zeta(a))) * tsize;
     gsl_vector_set(gradient,0,dlike);
 }    
 
 static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1
+  Nullcheck_mv(m); Nullcheck_pv(m);
   static apop_data *constraint = NULL;
     if (!constraint) {
         constraint = apop_data_calloc(1,1,1);
@@ -42,25 +44,25 @@ static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_mode
 }
 
 static double zipf_log_likelihood(apop_data *d, apop_model *m){
-  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Get_vmsizes(d) //tsize
+  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
     if (apop_settings_get_group(m, "apop_rank"))
         return zipf_log_likelihood_rank(d, m);
-  int size = apop_data_size(d);
   long double   bb      = gsl_vector_get(m->parameters->vector, 0);
   double like = -apop_map_sum(d, log);
     like    *= bb;
-    like    -= log(gsl_sf_zeta(bb)) * size;
+    like    -= log(gsl_sf_zeta(bb)) * tsize;
     return like;
 }    
 
 static void zipf_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
-  apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Get_vmsizes(d) //tsize
+  Nullcheck_v(d); Nullcheck_mv(m); Nullcheck_pv(m);
     if (apop_settings_get_group(m, "apop_rank"))
         return zipf_dlog_likelihood_rank(d, gradient, m);
-  int         size      = apop_data_size(d);
   double      bb        = gsl_vector_get(m->parameters->vector, 0);
   long double dlike     =  -apop_map_sum(d, log);
-    dlike   -= gsl_sf_zeta(bb-1)/(bb*gsl_sf_zeta(bb))  * size;
+    dlike   -= gsl_sf_zeta(bb-1)/(bb*gsl_sf_zeta(bb))  * tsize;
     gsl_vector_set(gradient,0,dlike);
 }    
 

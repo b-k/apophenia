@@ -128,10 +128,17 @@ void test_skew_and_kurt(){
 }
 
 void test_listwise_delete(){
+  int i, j;
   apop_data *t1 = apop_data_calloc(0, 10,10);
+  apop_text_alloc(t1, 10, 10);
+  for (i=0; i< 10; i++)
+      for (j=0; j< 10; j++)
+          apop_text_add(t1, i, j, "%i", i*j);
   apop_data *t1c = apop_data_listwise_delete(t1);
   assert(t1c->matrix->size1==10);
   assert(t1c->matrix->size2==10);
+  assert(atoi(t1c->text[3][4])==12);
+
   t1->vector    = gsl_vector_calloc(10);
   apop_data_set(t1, 4,-1, GSL_NAN);
   apop_data *t2c = apop_data_listwise_delete(t1);
@@ -139,6 +146,9 @@ void test_listwise_delete(){
   apop_data_set(t1, 4,-1, GSL_NAN);
   apop_data_set(t1, 7,-1, GSL_NAN);
   apop_data *t3c = apop_data_listwise_delete(t1);
+  assert(atoi(t3c->text[3][4])==12);
+  assert(atoi(t3c->text[4][4])==20);
+  assert(atoi(t3c->text[7][4])==36);
   assert(t3c->matrix->size1==8);
   APOP_COL(t1, 7, v)
   gsl_vector_set_all(v, GSL_NAN);
@@ -1204,6 +1214,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_ls, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("listwise delete", test_listwise_delete());
     do_test("test distributions", test_distributions(r));
     //do_test("test rank distributions", test_rank_distributions(r));
     do_test("test ML imputation", test_ml_imputation(r));
@@ -1233,7 +1244,6 @@ int main(int argc, char **argv){
     do_test("test apop_data sort", test_data_sort());
     do_test("test multivariate_normal", test_multivariate_normal(r));
     do_test("nist_tests", nist_tests());
-    do_test("listwise delete", test_listwise_delete());
     do_test("NaN handling", test_nan_data());
     do_test("database skew and kurtosis", test_skew_and_kurt());
     do_test("test_percentiles", test_percentiles());
