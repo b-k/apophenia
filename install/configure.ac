@@ -5,6 +5,7 @@ AC_INIT(FULL-PACKAGE-NAME, VERSION, BUG-REPORT-ADDRESS)
 AM_INIT_AUTOMAKE(apophenia, X.XX)
 AC_CONFIG_SRCDIR([db.h])
 AC_CONFIG_HEADER([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 # The normal /usr/local default just confused too many people
 AC_PREFIX_DEFAULT([/usr])

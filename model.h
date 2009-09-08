@@ -31,6 +31,7 @@ extern apop_model apop_multinomial_probit;
 extern apop_model apop_multivariate_normal;
 extern apop_model apop_normal;
 extern apop_model apop_ols;
+extern apop_model apop_pmf;
 extern apop_model apop_poisson;
 extern apop_model apop_probit;
 extern apop_model apop_t_distribution;
@@ -41,12 +42,18 @@ extern apop_model apop_wls;
 extern apop_model apop_yule;
 extern apop_model apop_zipf;
 
+/** Alias for the \ref apop_normal distribution, qv.
+\hideinitializer */
 #define apop_gaussian apop_normal
 #define apop_OLS apop_ols
+#define apop_PMF apop_pmf
 #define apop_F_distribution apop_f_distribution
 #define apop_WLS apop_wls
 #define apop_IV apop_iv
 
+
+void apop_model_free (apop_model * free_me);
+void apop_model_show (apop_model * print_me);
 apop_model * apop_model_copy(apop_model in); //in apop_model.c
 apop_model * apop_model_clear(apop_data * data, apop_model *model);
 

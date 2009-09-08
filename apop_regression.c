@@ -164,7 +164,7 @@ APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int
     apop_assert(est, NULL, 0, 's', "You sent me a NULL data set. Please estimate a model, then run this on the result.")
     apop_data * apop_varad_var(contrast, NULL)
     int apop_varad_var(normalize, 0)
-    return apop_f_test_base(est, contrast);
+    return apop_f_test_base(est, contrast, normalize);
 APOP_VAR_END_HEAD
     gsl_matrix      *set        = est->data->matrix;
     gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
@@ -351,10 +351,8 @@ static int strcmpwrap(const void *a, const void *b){
     return strcmp(*aa, *bb);}
 
 
-/** Give me a vector of numbers, and I'll give you a sorted list of the unique
-  elements. 
-  This is basically running "select distinct * from datacolumn", but without 
-  the aid of the database.  
+/** Give me a vector of numbers, and I'll give you a sorted list of the unique elements. 
+  This is basically running "select distinct * from datacolumn", but without the aid of the database.  
 
   \param v a vector of items
 
@@ -375,8 +373,8 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
         lsearch (&val, elmts, &elmt_ctr, sizeof(double), compare_doubles);
         if (prior_elmt_ctr < elmt_ctr)
             qsort(elmts, elmt_ctr, sizeof(double), compare_doubles);
-        out = apop_array_to_vector(elmts, elmt_ctr);
     }
+    out = apop_array_to_vector(elmts, elmt_ctr);
     free(elmts);
     return out;
 }
@@ -447,7 +445,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
         elmt_ctr = (*factor_list)->textsize[0];
         telmts = malloc(sizeof(char*)*elmt_ctr);
         for (j=0; j< elmt_ctr; j++)
-            asprintf(&(telmts[j]), (*factor_list)->text[j][0]);
+            asprintf(&(telmts[j]), "%s", (*factor_list)->text[j][0]);
     }
 
     //Now go through the input vector, and for row i find the posn of the vector's
@@ -476,7 +474,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
             if (type =='d')
                 sprintf(n,"dummy %g", gsl_vector_get(delmts,i));
             else
-                sprintf(n, telmts[i]);
+                sprintf(n, "%s", telmts[i]);
             apop_name_add(out->names, n, 'c');
         }
         apop_data_free(*factor_list);

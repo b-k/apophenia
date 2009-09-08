@@ -18,10 +18,10 @@ static double one_chi_sq(apop_data *d, int row, int col, int n){
     return gsl_pow_2(observed - expected)/expected; 
 }
 
-/** Run a Chi-squared test on an ANOVA table, i.e., an NxN table with
- the null hypothesis that all cells are equally likely.
+/** Run a Chi-squared test on an ANOVA table, i.e., an NxN table with the null hypothesis that all cells are equally likely.
 
  \param d The input data, which is a crosstab of various elements. They don't have to sum to one.
+ \see apop_test_fisher_exact
  \ingroup asst_tests
  */
 apop_data * apop_test_anova_independence(apop_data *d){

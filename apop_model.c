@@ -4,6 +4,7 @@
 #include "arms.h"
 #include "types.h"
 #include "output.h"
+#include "internal.h"
 #include "likelihoods.h"
 
 /** Allocate an \ref apop_model.
@@ -86,7 +87,7 @@ void apop_model_show (apop_model * print_me){
         return;
     }
     if (strlen(print_me->name))
-        printf (print_me->name);
+        printf ("%s", print_me->name);
     printf("\n\n");
 	if (print_me->parameters)
         apop_data_show(print_me->parameters);
@@ -206,7 +207,7 @@ double apop_p(apop_data *d, apop_model *m){
 \ingroup models
 */
 double apop_log_likelihood(apop_data *d, apop_model *m){
-    apop_assert(m->parameters,  0, 0, 's', "You gave me a function that has no parameters.");
+    Nullcheck_mv(m); Nullcheck_pv(m);
     if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;
@@ -228,7 +229,7 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 \ingroup models
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
-    apop_assert_void(m->parameters, 0, 's', "You gave me a function that has no parameters.");
+    Nullcheck_mv(m); Nullcheck_pv(m);
     if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;
@@ -275,8 +276,8 @@ void apop_model_prep(apop_data *d, apop_model *m){
     m->prepared++;
 }
 
-/** Return a matrix of the expected value for each observation. This may
- also be set within the model.
+/** Return a matrix of the expected value for each observation or for
+the model as a whole, as the case may be. This may also be set within the model.
 
 \ingroup models
  */

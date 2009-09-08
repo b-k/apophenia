@@ -15,7 +15,7 @@ char		c,
 			     "   -t\ttable to merge. If none, do all in the source db. Use as many as you'd like.\n"
 			     "   -v\tverbose\n", argv[0]); 
 	if(argc<3){
-		printf(msg);
+		printf("%s", msg);
 		return 0;
 	}
 	delimiter	= malloc(5);
@@ -26,7 +26,7 @@ char		c,
 			apop_opts.verbose	++;
 			break;
 		  case 'h':
-			printf(msg);
+			printf("%s", msg);
 			return 0;
           case 't':
             merges = realloc(merges, sizeof(char*)*merge_ct++);

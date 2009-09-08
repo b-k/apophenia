@@ -144,10 +144,8 @@ and then tries to recover the means given a var/covar matrix fixed at the correc
 
 \include fix_params.c
   
-  \param model_in   The base model (No default; must not be \c NULL)
-  \param paramvals  An \c apop_data set with the values of the variables to be fixed. (default: use model_in->parameters)
-  \param mask       Set to zero for free values, one for values to be read from \c paramvals (default: use \c GSL_NANs from the params set)
- \return an \c apop_mle_settings structure for you to fill as desired. If this is named \c m, then \c m->ep->estimate(NULL, m->ep) will run the estimation.
+  \param model_in   The base model
+ \return a model that can be used like any other, with the given params fixed or free.
   */
 apop_model * apop_model_fix_params(apop_model *model_in){
    apop_assert(model_in, NULL, 0, 's', "You sent me a NULL model.");

@@ -1,4 +1,5 @@
-//db.h		Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+/**\file db.h	*/
+/* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified * GNU GPL v2; see COPYING and COPYING2.  */
 #ifndef apop_db_included
 #define apop_db_included
 #include "types.h"
@@ -10,9 +11,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-//From the GNU's vasprintf suite:
-extern int asprintf (char **result, const char *format, ...);
 
 APOP_VAR_DECLARE int apop_table_exists(char *name, char remove);
 

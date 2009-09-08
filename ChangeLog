@@ -10,6 +10,7 @@
 --Default univariate RNG, if you don't have one: Adaptive rejection markov chain sampling
 **.use_covar and other such settings now take 'y' or 'n', not 0 or 1.
 --new macro Apop_settings_set = Apop_settings_add, but makes more human sense
+--numeric covariance, formerly maligned, now works.
 
 	July 2009
 --multivariate gamma, log-gamma.

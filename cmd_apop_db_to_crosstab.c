@@ -23,7 +23,7 @@ apop_data	*m;
             "-f\tfile to dump to\t\tdefault=STDOUT\n", argv[0]); 
 
 	if(argc<5){
-		printf(msg);
+		printf("%s", msg);
 		return 0;
 	}
 	delimiter	= malloc(5);
@@ -41,11 +41,11 @@ apop_data	*m;
 			  break;
 		  case 'f':
               outfile   = malloc(1000);
-			  sprintf(outfile, optarg);
+			  sprintf(outfile, "%s", optarg);
 			  apop_opts.output_type	= 'f';
 			  break;
 		  case 'h':
-			printf(msg);
+			printf("%s", msg);
 			return 0;
 		}
 	}

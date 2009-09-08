@@ -97,7 +97,7 @@ void apop_error(int level, char stop, char *msg, ...){
     va_end(argp);
 
     if (apop_opts.verbose >= level)
-        fprintf(stderr, message);
+        fprintf(stderr, "%s", message);
     free(message);
     if (stop == 's' || stop == 'h')
         assert(0);

@@ -114,6 +114,7 @@ apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
     impute_me->parameters = d;
     impute_me->more = mvn;
     apop_model *fixed = apop_model_fix_params(impute_me);
+    Apop_model_add_group(fixed, apop_mle, .want_cov='n');
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
     apop_data_memcpy(d, m->parameters); //A bit inefficient.
     return m;

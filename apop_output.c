@@ -86,7 +86,7 @@ void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * outfile
     apop_opts.output_append = append_state;
 }
 
-static void histoplot_common(FILE *f, gsl_histogram *h, int for_gnuplot){
+static void histoplot_common(gsl_histogram *h, int for_gnuplot, char *outfile){
 	//Now that you have a histogram, print it.
     FILE *f = (apop_opts.output_type == 'p')
                ? apop_opts.output_pipe
@@ -121,15 +121,15 @@ will print directly to Gnuplot.
 This function uses the \ref designated syntax for inputs.
   \ingroup output
 */
-APOP_VAR_HEAD void apop_histogram_plot(apop_model *hist, char *outfile){
+APOP_VAR_HEAD  void apop_histogram_plot(apop_model *hist, char *outfile){
       apop_model * apop_varad_var(hist, NULL);
       apop_assert_void(hist, 0, 's', "Input histogram is NULL.\n");
       char * apop_varad_var(outfile, NULL);
       apop_histogram_plot_base(hist, outfile);
-APOP_VAR_END_HEAD
+APOP_VAR_ENDHEAD
   gsl_histogram  *h  = Apop_settings_get(hist, apop_histogram, pdf);
     if (!h) h = Apop_settings_get(hist, apop_kernel_density, pdf);
-    histoplot_common(h, 1);
+    histoplot_common(h, 1, outfile);
 }
 
 /** This function will take in a \c gsl_vector of data and put out a histogram. Compare with \ref apop_histogram_plot, which plots an estimated \ref apop_histogram model.
@@ -156,19 +156,17 @@ APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bins, char *outf
       char * apop_varad_var(outfile, NULL);
       size_t apop_varad_var(bins, GSL_MAX(10, data->size/20));
       apop_plot_histogram_base(data, bins, outfile);
-APOP_VAR_END_HEAD
-  int             i;
-  FILE *          f;
+APOP_VAR_ENDHEAD
   double          min=GSL_POSINF, max=GSL_NEGINF, pt;
   gsl_histogram   *h      = gsl_histogram_alloc(bins);
     gsl_vector_minmax(data, &min, &max);
         gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
-    for (i=0; i < data->size; i++){
+    for (size_t i=0; i < data->size; i++){
         pt  = gsl_vector_get(data, i);
         if (!gsl_isnan(pt))
            gsl_histogram_increment(h, pt);
         }
-    histoplot_common(h, 1);
+    histoplot_common(h, 1, outfile);
     gsl_histogram_free(h);
 }
 	
@@ -185,11 +183,11 @@ APOP_VAR_HEAD void apop_histogram_print(apop_model *h, char *outfile){
       apop_assert_void(h, 0, 's', "Input histogram is NULL.\n");
       char * apop_varad_var(outfile, NULL);
       apop_histogram_plot_base(h, outfile);
-APOP_VAR_END_HEAD
+APOP_VAR_ENDHEAD
   apop_histogram_settings *hp = apop_settings_get_group(h, "apop_histogram"); 
   if (!hp) hp = apop_settings_get_group(h, "apop_kernel_density"); 
   apop_assert_void(hp, 0, 's', "You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?");
-    histoplot_common(hp->pdf, 0);
+    histoplot_common(hp->pdf, 0, outfile);
 }
 
 /////The printing functions.
@@ -270,7 +268,7 @@ void apop_data_show(const apop_data *in){
     for(j=0; j < outsize_r; j ++){
         for(i=0; i < outsize_c; i ++){
             white_pad(colsizes[i] - strlen(printout->text[j][i]) + 1);//one spare space.
-            printf(printout->text[j][i]);
+            printf("%s", printout->text[j][i]);
             if (i > 0 && i< outsize_c-1) 
                 printf(" %s ", apop_opts.output_delimiter);
         }
@@ -316,12 +314,10 @@ static void print_core_m(const gsl_matrix *data, char *separator, char *filename
             apop_error(1, 'c', "%s: You set apop_opts.output_type to 'p', but apop_opts.output_pipe is NULL. Assuming you meant stdout.\n", __func__);
             f = stdout;
         }
-    } else {
-          if ((filename == NULL) || (!strcmp(filename, "STDOUT")))
-            f	= stdout;
-          else
-            f	= fopen(filename, apop_opts.output_append ? "a" : "w");
-    }
+    } else 
+            f = (filename == NULL) || (!strcmp(filename, "STDOUT"))
+                ? stdout
+                : fopen(filename, apop_opts.output_append ? "a" : "w");
     if (n && strlen(n->title)>0)
         fprintf(f, "%s%s\n\n", apop_opts.output_type=='s'? "\t\t" : "", n->title);
     if (!data)
@@ -401,8 +397,7 @@ static void a_pipe(FILE *f, char displaytype){
     if (displaytype == 's')
         fprintf(f, " | ");
     else
-        fprintf(f, apop_opts.output_delimiter);
-
+        fprintf(f, "%s", apop_opts.output_delimiter);
 }
 
 static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype){
@@ -470,13 +465,21 @@ static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype
             if (i==-1 && data->matrix) 
                 a_pipe(f, displaytype);
             if (i < end-1)
-                fprintf(f, apop_opts.output_delimiter);
+                fprintf(f, "%s", apop_opts.output_delimiter);
         }
         if (data->text){
             if (data->vector || data->matrix)
                 a_pipe(f, displaytype);
             for(i=0; i< data->textsize[1]; i++)
                 fprintf(f, "%s%s", data->text[j][i], apop_opts.output_delimiter);
+        }
+        if (data->weights && j < data->weights->size){
+            a_pipe(f, displaytype);
+            datapt  = data->weights->data[j];
+            if (datapt == (int) datapt)
+                fprintf(f, "%i", (int) datapt);
+            else
+                fprintf(f, "%g", datapt);
         }
         fprintf(f, "\n");
     }
@@ -563,12 +566,12 @@ This function uses the \ref designated syntax for inputs.
 
 \ingroup output
  */
-APOP_VAR_HEAD void apop_plot_lattice(const apop_data *d, char *outfile){ 
+APOP_VAR_HEAD  void apop_plot_lattice(const apop_data *d, char *outfile){
     const apop_data * apop_varad_var(d, NULL);
     apop_assert_void(d, 0, 's', "Input data set is NULL.\n");
     char * apop_varad_var(outfile, NULL);
     apop_plot_lattice_base(d, outfile);
-APOP_VAR_END_HEAD
+APOP_VAR_ENDHEAD
   double  width   = 1.2,//these used to be options, but who's ever gonna set them to something else.
           height  = 1.2;
   double  margin  = 0;
@@ -639,7 +642,7 @@ APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, char *outfile, siz
 
     apop_plot_qq_base(v, m, outfile, bins, r);
     if (free_m) apop_model_free(m);
-APOP_VAR_END_HEAD
+APOP_VAR_ENDHEAD
   FILE  *f;
   double *pctdata = apop_vector_percentiles(v, 'a');
 

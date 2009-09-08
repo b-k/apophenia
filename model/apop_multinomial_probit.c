@@ -40,7 +40,6 @@ apop_category_settings *apop_category_settings_init(apop_category_settings in){
     return apop_category_settings_alloc(in.source_data, in.source_column, in.source_type);
 }
 
-
 void *apop_category_settings_copy(apop_category_settings *in){
   apop_category_settings *out = malloc (sizeof(apop_category_settings));
     *out = *in;

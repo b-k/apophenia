@@ -80,9 +80,12 @@ apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
         return apop_maximum_likelihood(d, *m);
 }
 
+static double one_f(double in, void *df_in){ 
+    double *df = df_in; 
+    return log(gsl_ran_fdist_pdf(in, df[0], df[1])); 
+}
+
 static double one_t(double in, void *df){ return log(gsl_ran_tdist_pdf(in, *(double*)df)); }
-static double one_f(double in, void *df_in){ double *df = df_in; 
-    return log(gsl_ran_fdist_pdf(in, df[0], df[1])); }
 static double one_chisq(double in, void *df){ return log(gsl_ran_chisq_pdf(in, *(double*)df)); }
 
 double apop_tdist_llike(apop_data *d, apop_model *m){ 
@@ -269,6 +272,7 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
         diffsize = biggest_elmt(d);
         apop_data_free(qd); gsl_matrix_free(d);
         apop_data_free(eigendiag); free(mask);
+        apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
         d = qdq->matrix;
         qdq->matrix=NULL; apop_data_free(qdq);
     } while (diffsize/dsize > 1e-3);

@@ -171,7 +171,8 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     return apop_map_sum_base(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, part);
 APOP_VAR_ENDHEAD 
     apop_data *out = apop_map(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, 0, part);
-    double outsum = apop_sum(out->vector) + apop_matrix_sum(out->matrix);
+    double outsum = (out->vector ? apop_sum(out->vector) : 0)
+                     + (out->matrix ? apop_matrix_sum(out->matrix) : 0);
     apop_data_free(out);
     return outsum;
 }

@@ -41,7 +41,7 @@ function.
 /**
 Calculate the determinant of a matrix, its inverse, or both, via LU decomposition. The \c in matrix is not destroyed in the process.
 
-See also \ref apop_matrix_determinant and \ref apop_matrix_inverse.
+\see apop_matrix_determinant,  apop_matrix_inverse
 
 \param in
 The matrix to be inverted/determined. 
@@ -64,7 +64,7 @@ If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns 
 */
 
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
-  apop_assert(in->size1 == in->size2,  0, 0, 's', "You asked me to invert a %i X %i matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
+  apop_assert(in->size1 == in->size2,  0, 0, 's', "You asked me to invert a %u X %u matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
   int 		sign;
   double 	the_determinant = 0;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
@@ -331,7 +331,7 @@ APOP_VAR_ENDHEAD
         return NULL;
 
     if (posn == 'r'){
-        apop_assert(m1->size2 == m2->size2,  NULL, 0, 's', "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%i and m2->size2==%i. Halting.\n", m1->size2, m2->size2);
+        apop_assert(m1->size2 == m2->size2,  NULL, 0, 's', "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%u and m2->size2==%u. Halting.\n", m1->size2, m2->size2);
         int m1size = m1->size1;
         if (inplace)
             out = apop_matrix_realloc(m1, m1->size1 + m2->size1, m1->size2);
@@ -440,21 +440,21 @@ static apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TR
         if (lt==CblasNoTrans) {
             if (rt==CblasNoTrans) 
                 Apop_assert(lm->size2==rm->size1, NULL, 0, 's', 
-                        "You sent me a matrix with %u columns to multiply against a matrix with %u rows. Those "
-                                                               "two need to be equal.", lm->size2, rm->size1)
+                   "You sent me a matrix with %u columns to multiply against a matrix with %u rows. Those "
+                  "two need to be equal.", lm->size2, rm->size1)
             else
                 Apop_assert(lm->size2==rm->size2, NULL, 0, 's', 
-                        "You sent me a matrix with %u columns to multiply against a matrix with %u rows "
-                        "(after the transposition you requested). Those two need to be equal.", lm->size2, rm->size2)
+                   "You sent me a matrix with %u columns to multiply against a matrix with %u rows "
+                   "(after the transposition you requested). Those two need to be equal.", lm->size2, rm->size2)
         } else {
             if (rt==CblasNoTrans) 
                 Apop_assert(lm->size1==rm->size1, NULL, 0, 's', 
-                        "You sent me a matrix with %u columns (after the transposition you requested) to "
-                        "multiply against a matrix with %u rows. Those two need to be equal.", lm->size1, rm->size1)
+                   "You sent me a matrix with %u columns (after the transposition you requested) to "
+                   "multiply against a matrix with %u rows. Those two need to be equal.", lm->size1, rm->size1)
             else
                 Apop_assert(lm->size1==rm->size2, NULL, 0, 's', 
-                        "You sent me a matrix with %u columns to multiply against a matrix with %u rows "
-                        "(after the two transpositions you requested). Those two need to be equal.", lm->size1, rm->size2)
+                   "You sent me a matrix with %u columns to multiply against a matrix with %u rows "
+                   "(after the two transpositions you requested). Those two need to be equal.", lm->size1, rm->size2)
         }
         return NULL;
 }

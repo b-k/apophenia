@@ -22,9 +22,6 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
 /** Removes a settings group from a model's list. */
 #define Apop_settings_rm_group(m, type) apop_settings_rm_group(m, #type)
 
-/* If the group already exists, it is silently removed. */
-
-
 /** Add a settings group. The first two arguments (the model you are
  attaching to and the settings group name) are mandatory, and then you can use the \ref designated syntax to specify default values (if any).
  */
@@ -36,8 +33,8 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
 #define apop_varad_setting(in, out, name, value) (out)->name = (in).name ? (in).name : (value);
 
 /** Add a settings group. Deprecated; use \ref Apop_model_add_group instead.
-  You will need to provide arguments for the
- specific settings group you are dealing with, such as \ref apop_mle_settings_alloc, \ref apop_ls_settings_alloc, \ref apop_histogram_settings_alloc. */
+  You will need to provide arguments for the specific settings group you
+  are dealing with, such as <tt>apop_mle_settings_alloc</tt>, <tt>apop_ls_settings_alloc</tt>, <tt>apop_histogram_settings_alloc</tt>. */
 #define Apop_settings_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_alloc (__VA_ARGS__)); 
 
@@ -47,11 +44,17 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
 
 /** Modifies a single element of a settings group to the given value. */
 #define Apop_settings_set(model, type, setting, data)  \
+    do { type ## _settings *apop_tmp_settings = apop_settings_get_group(model, #type);  \
+    apop_assert_void(apop_tmp_settings, 0, 's', "You're trying to modify a setting in " \
+                        #model "'s setting group of type " #type " but that model doesn't have such a group."); \
+    apop_tmp_settings->setting = (data);    \
+    } while (0);
+/*#define Apop_settings_set(model, type, setting, data)  \
     do {                                                \
     apop_assert_void(apop_settings_get_group(model, #type), 0, 's', "You're trying to modify a setting in " \
                         #model "'s setting group of type " #type " but that model doesn't have such a group."); \
     ((type ## _settings *) apop_settings_get_group(model, #type))->setting = (data);    \
-    } while (0);
+    } while (0);*/
 
 #define Apop_settings_add Apop_settings_set
 #define APOP_SETTINGS_ADD Apop_settings_set
@@ -61,7 +64,6 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
 #define APOP_SETTINGS_GET_GROUP Apop_settings_get_group
 #define APOP_SETTINGS_RM_GROUP Apop_settings_rm_group
 
-
 #define Apop_settings_declarations(ysg) \
    ysg##_settings * ysg##_settings_init(ysg##_settings); \
    void * ysg##_settings_copy(ysg##_settings *); \
@@ -69,31 +71,27 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
 
 /** Settings for least-squares type models */
 typedef struct {
-    int destroy_data;
-    gsl_vector *weights;
-    apop_data *instruments;
-    char want_cov;
-    char want_expected_value;
+    int destroy_data; /**< If 'y', then the input data set may be normalized or otherwise mangled */
+    gsl_vector *weights; /**< If this has a value, then I'll do WLS; if \c NULL, OLS */
+    apop_data *instruments; /**< Use for the \ref apop_iv regression, qv. */
+    char want_cov; /**< The covariance can be computationally expensive, so if this is \c 'n' I won't bother with it. */
+    char want_expected_value; /**< If 'y', fill the expected/actual/residual part of the output model. */
 } apop_ls_settings;
 
 Apop_settings_declarations(apop_ls)
 
 // Find apop_category_settings routines in apop_probit.c
-/** for dependent-category models, send in this settings struct to
-  specify which column is the dependent variable. 
+/** For dependent-category models, send in this settings struct to specify which column is the dependent variable. 
 
-  If you don't use it, these models will assume that the vector or first
-  numeric column is already a coherent set of factors, but by sending
-  this in, those functions have a little more information, such as names
-  to use in the output.
+ If you don't use it, these models will assume that the vector or first numeric column is already a coherent set of factors, but by sending this in, those functions have a little more information, such as names to use in the output.
 
-  See also the \ref apop_category_settings_alloc function.
- */
+See also the \ref apop_category_settings_alloc function.
+*/
 typedef struct {
     apop_data *factors; 
-    char source_type; 
-    char source_column; 
-    apop_data *source_data;
+    char source_type; /**< source_type 't' = text; anything else ('d' is a good choice) is * numeric data. */
+    char source_column; /**<  The number of the column to convert to factors.  As usual, the vector is -1. */
+    apop_data *source_data; /**< The input data set that you're probably about to run a regression on */
 } apop_category_settings;
 
 Apop_settings_declarations(apop_category)
@@ -102,7 +100,7 @@ apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_co
 /** If this settings group is present, models that can take rank data
   will read the input data as such.  Allocation is thus very simple, e.g.
   \code
-  Apop_settings_group_add(your_model, apop_rank, NULL);
+  Apop_model_group_add(your_model, apop_rank);
   \endcode */
 typedef struct {
     char rank_data;
@@ -123,23 +121,22 @@ typedef struct{
 
 #define apop_kernel_density_settings apop_histogram_settings
 
-Apop_settings_declarations(apop_histogram)
+//Apop_settings_declarations(apop_histogram)
+void * apop_histogram_settings_copy(apop_histogram_settings *); 
+void apop_histogram_settings_free(apop_histogram_settings *);
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins);
 
 
 /** Method settings for a model to be put through Bayesian updating. 
-\param starting_pt      The first parameter to check in the MCMC routine
-\param periods How many steps should the MCMC chain run?
-\param burnin  What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one.
-\param histosegments If outputting a \ref apop_histogram, how many segments should it have?
  
  */
 typedef struct{
     apop_data *data;
-    apop_data *starting_pt;
-    long int periods;
-    double burnin;
-    int histosegments;
+    apop_data *starting_pt; /**< The first parameter to check in the MCMC routine */
+    long int periods; /**< How many steps should the MCMC chain run? */
+    double burnin; /**< What <em>percentage</em> of the periods should be ignored
+                         as initialization. That is, this is a number between zero and one. */
+    int histosegments; /**< If outputting a \ref apop_histogram, how many segments should it have? */
     char method;
 } apop_update_settings;
 
@@ -147,7 +144,6 @@ apop_update_settings *apop_update_settings_alloc(apop_data *d);
 apop_update_settings *apop_update_settings_init(apop_update_settings);
 #define apop_update_settings_copy NULL
 #define apop_update_settings_free NULL
-
 
 apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*));

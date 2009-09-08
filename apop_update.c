@@ -6,20 +6,21 @@ Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "asst.h"
 #include "model.h"
 #include "stats.h"
+#include "internal.h"
 #include "variadic.h"
 #include "settings.h"
 #include "conversions.h"
 
-static void write_double(const double *draw, apop_data *d){
+static void write_double(const double *draw, apop_data *params){
   static apop_data *v = NULL;
-  int size = (d->vector ? d->vector->size : 0) + (d->matrix ? d->matrix->size1 * d->matrix->size2 : 0);
-  if (!v || v->vector->size != size){
+  Get_vmsizes(params); //tsize
+  if (!v || v->vector->size != tsize){
       apop_data_free(v);
-      v = apop_data_alloc(size, 0, 0);
+      v = apop_data_alloc(tsize, 0, 0);
   }
-    for (size_t i=0; i< size; i++)
+    for (size_t i=0; i< tsize; i++)
         gsl_vector_set(v->vector, i, draw[i]);
-    apop_data_unpack(v->vector, d);
+    apop_data_unpack(v->vector, params);
 }
 
 static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model likelihood){
@@ -179,23 +180,23 @@ APOP_VAR_END_HEAD
         write_double(draw, likelihood->parameters);
         ll    = apop_log_likelihood(data,likelihood);
         ratio = ll - cp_ll;
-        apop_assert(!gsl_isnan(ratio),  NULL, 0, 'c',"Trouble evaluating the likelihood function at vector "
-                                        "beginning with %g or %g. Maybe offer a new starting point.\n"
-                                        , current_param->vector->data[0], likelihood->parameters->vector->data[0]);
+        apop_assert(!gsl_isnan(ratio),  NULL, 0, 'c',"Trouble evaluating the "
+                "likelihood function at vector beginning with %g or %g. "
+                "Maybe offer a new starting point.\n"
+                , current_param->vector->data[0], likelihood->parameters->vector->data[0]);
         if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio){
             apop_data_memcpy(current_param, likelihood->parameters);
             cp_ll = ll;
         }
         if (i >= s->periods * s->burnin){
             APOP_ROW(out, i-(s->periods *s->burnin), v)
-            gsl_vector *vv = apop_data_pack(current_param);
-            gsl_vector_memcpy(v, vv);
-            gsl_vector_free(vv);
+            apop_data_pack(current_param, v);
         }
     }
-    apop_model *outp   = apop_model_copy(apop_histogram);
-    Apop_settings_add_group(outp, apop_histogram, out, s->histosegments);
-    apop_histogram_normalize(outp);
-    apop_data_free(out); free(draw);
+    apop_model *outp   = apop_model_copy(apop_pmf);
+    out->weights = gsl_vector_alloc(s->periods*(1-s->burnin));
+    gsl_vector_set_all(out->weights, 1);
+    outp->parameters = out;
+    free(draw);
     return outp;
 }

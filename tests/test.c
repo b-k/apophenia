@@ -1,6 +1,8 @@
 #include <apop.h>
 #include "nist_tests.c"
 
+#define Diff(L, R, eps) apop_assert_void(fabs((L)-(R)<(eps)), 0, 's', "%g is too different from %g.", L, R);
+
 //I'm using the test script an experiment to see if 
 //these macros add any value.
 #define APOP_MATRIX_ALLOC(name, r, c) gsl_matrix *name = gsl_matrix_alloc((r),(c))
@@ -928,6 +930,7 @@ void test_probit_and_logit(gsl_rng *r){
 
     //Logit
     apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
+    Apop_model_add_group(&apop_logit, apop_mle, .want_cov='n');
     apop_model *m = apop_estimate(data, apop_logit);
     APOP_COL(m->parameters, 0, logit_params);
     assert(apop_vector_distance(logit_params, true_params) < 0.07);
@@ -936,6 +939,7 @@ void test_probit_and_logit(gsl_rng *r){
 
     //Probit
     apop_data* data2 = generate_probit_logit_sample(true_params, r, &apop_probit);
+    Apop_model_add_group(&apop_probit, apop_mle, .want_cov='n');
     m = apop_estimate(data2, apop_probit);
     APOP_COL(m->parameters, 0, probit_params);
     assert(apop_vector_distance(probit_params, true_params) < 0.07);
@@ -1187,6 +1191,49 @@ void test_rank_distributions(gsl_rng *r){
     }
 }
 
+void test_pmf(){
+   double x[] = {0, 0.2, 0 , 0.4, 1, .7, 0 , 0, 0};
+   size_t i;
+	apop_data *d= apop_data_alloc(0,0,0);
+ 	double out;
+	gsl_rng *r = apop_rng_alloc(1234);
+	d->vector = apop_array_to_vector(x, 9);
+	apop_model *m = apop_estimate(d, apop_pmf);
+	gsl_vector *v = gsl_vector_alloc(d->vector->size);
+	for (i=0; i< 1e5; i++){
+		apop_draw(&out, r, m);
+		apop_vector_increment(v, out);
+	}
+    apop_vector_normalize(d->vector);
+    apop_vector_normalize(v);
+    for(i=0; i < v->size; i ++)
+        assert(fabs(d->vector->data[i] - v->data[i]) < 1e-2);
+}
+
+void test_arms(gsl_rng *r){
+    size_t i;
+    gsl_vector *o = gsl_vector_alloc(3e5);
+    apop_model *ncut = apop_model_set_parameters(apop_normal, 1.1, 1.23);
+    ncut->draw = NULL; //testing the default.
+    for(i=0; i < 3e5; i ++)
+        apop_draw(o->data+i, r, ncut);
+    apop_model *back_out = apop_estimate(apop_vector_to_data(o), apop_normal);
+    Diff(back_out->parameters->vector->data[0] , 1.1, 1e-2)
+    Diff(back_out->parameters->vector->data[1] , 1.23, 1e-2)
+
+    apop_opts.verbose ++;
+    apop_model *bcut = apop_model_set_parameters(apop_beta, 0.4, 0.43); //bimodal
+    Apop_model_add_group(bcut, apop_arms, .model=bcut, .xl=1e-5, .xr=1-1e-5);
+    bcut->draw = NULL; //testing the default.
+    for(i=0; i < 3e5; i ++)
+        apop_draw((o->data)+i, r, bcut);
+    apop_model *back_outb = apop_estimate(apop_vector_to_data(o), apop_beta);
+    Diff(back_outb->parameters->vector->data[0] , 0.4, 1e-2)
+    Diff(back_outb->parameters->vector->data[1] , 0.43, 1e-2)
+    apop_opts.verbose --;
+}
+
+
 #define do_test(text, fn)   if (verbose)    \
                                 printf("%s:", text);  \
                             else printf(".");   \
@@ -1214,7 +1261,9 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_ls, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
-    do_test("listwise delete", test_listwise_delete());
+    do_test("test adaptive rejection sampling", test_arms(r));
+    do_test("test PMF", test_pmf());
+    do_test("test listwise delete", test_listwise_delete());
     do_test("test distributions", test_distributions(r));
     //do_test("test rank distributions", test_rank_distributions(r));
     do_test("test ML imputation", test_ml_imputation(r));

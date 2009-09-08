@@ -1,9 +1,8 @@
 /** \file 
   adaptive rejection metropolis sampling */
 
-/** Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
- 
- */
+/** (C) Wally Gilks; see documentation below for details.
+  Adaptations for Apophenia (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "arms.h"
 #include "internal.h"
@@ -14,9 +13,9 @@
 #define YCEIL 50.                /* maximum y avoiding overflow in exp(y) */
 
 /* declarations for functions defined in this file  (minus those in arms.h). */
-void sample(arms_state *env, POINT *p);
+void sample(arms_state *env, POINT *p, gsl_rng *r);
 void invert(double prob, arms_state *env, POINT *p);
-int test(arms_state *state, POINT *p,  apop_arms_settings *params);
+int test(arms_state *state, POINT *p,  apop_arms_settings *params, gsl_rng *r);
 int update(arms_state *state, POINT *p,  apop_arms_settings *params);
 static void cumulate(arms_state *env);
 int meet (POINT *q, arms_state *state, apop_arms_settings *params);
@@ -45,13 +44,17 @@ void apop_arms_settings_free(apop_arms_settings *freeme) {
 
 apop_arms_settings *apop_arms_settings_init(apop_arms_settings in){ 
     apop_arms_settings *out = malloc(sizeof(apop_arms_settings));
-    apop_varad_setting(in, out, xinit, ((double []) {-1, 0, 1}));
+    if ((in.xl || in.xr) && !in.xinit)
+        out->xinit = (double []) {in.xl+GSL_DBL_EPSILON, (in.xl+in.xr)/2., in.xr-GSL_DBL_EPSILON};
+    else{
+        apop_varad_setting(in, out, xinit, ((double []) {-1, 0, 1}));
+    }
     apop_varad_setting(in, out, ninit, 3);
     apop_varad_setting(in, out, xl, GSL_MIN(out->xinit[0]/10., out->xinit[0]*10)-.1);
     apop_varad_setting(in, out, xr, GSL_MAX(out->xinit[out->ninit-1]/10., out->xinit[out->ninit-1]*10)+.1);
     apop_varad_setting(in, out, convex, 0);
     apop_varad_setting(in, out, npoint, 100);
-    apop_varad_setting(in, out, do_metro, 1);
+    apop_varad_setting(in, out, do_metro, 'y');
     apop_varad_setting(in, out, xprev, (out->xinit[0]+out->xinit[out->ninit-1])/2.);
     apop_varad_setting(in, out, neval, 1000);
     apop_varad_setting(in, out, model, NULL);
@@ -64,7 +67,7 @@ apop_arms_settings *apop_arms_settings_init(apop_arms_settings in){
   apop_assert(!err, NULL, 0, 'c', "init failed, error %i. Returning NULL", err);
 
   /* finish setting up metropolis struct (can only do this after setting up env) */
-  if(out->do_metro){
+  if(out->do_metro=='y'){
     /* I don't understand why this is needed.
       if((params->xprev < params->xl) || (params->xprev > params->xr))
         apop_assert(0, 1007, 0, 's', "previous Markov chain iterate out of range")*/
@@ -94,11 +97,12 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
 \c model : the model from which I will draw. Must have either a \c log_likelihood or \c p method.<br>
  \c *xinit       : a double giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't \c NULL, I need at least three items.<br>
  \c ninit        : number of elements in xinit<br>
- \c *xl          : left bound. If you don't give me one, I'll use min[min(xinit)/10, min(xinit)*10]. <br>
- \c *xr          : right bound. If you don't give me one, I'll use max[max(xinit)/10, max(xinit)*10]. <br>
- \c *convex      : adjustment for convexity <br>
+ \c xl          : left bound. If you don't give me one, I'll use min[min(xinit)/10, min(xinit)*10]. <br>
+ \c xr          : right bound. If you don't give me one, I'll use max[max(xinit)/10, max(xinit)*10]. <br>
+ \c convex      : adjustment for convexity <br>
  \c npoint       : maximum number of envelope points. I \c malloc space for this many <tt>double</tt>s at the outset default = 1e5<br>
- \c do_metro     : whether the metropolis step is required (I.e., set to one if you're not sure if the function is log-concave)<br>
+ \c do_metro     : whether the metropolis step is required (I.e., set to
+ one if you're not sure if the function is log-concave). Set  to <tt>'y'</tt>es or <tt>'n'</tt>o<br>
  \c *xprev       : previous value from markov chain <br>
  \c *neval       : on exit, the number of function evaluations performed 
 
@@ -114,15 +118,18 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
   arms_state *state = params->state; 
   /* now do adaptive rejection */
   do {
-    sample (state,&pwork); // sample a new point 
+    sample (state,&pwork, r); // sample a new point 
     /* perform rejection (and perhaps metropolis) tests */
-    int i = test(state,&pwork, params);
+    int i = test(state,&pwork, params, r);
     if (i == 1){ // point accepted 
+//        if (apop_opts.verbose) printf(" point accepted.\n");
         *out = pwork.x;
+        assert(!gsl_isnan(pwork.x));
         return;
     } else if (i != 0) 
       apop_assert_void(0, 0, 's', "envelope error - violation without metropolis")
     msamp ++;
+//    if (apop_opts.verbose) printf(" point rejected.\n");
   } while (msamp < 1e4);
   printf ("I just rejected 1,000 samples. Something is wrong.\n");
   return;
@@ -185,7 +192,7 @@ int initial (apop_arms_settings* params,  arms_state *env){
   return 0;
 }
 
-void sample(arms_state *env, POINT *p){
+void sample(arms_state *env, POINT *p, gsl_rng *r){
 /* To sample from piecewise exponential envelope 
    *env    : envelope attributes 
    *p      : a working POINT to hold the sampled value */
@@ -257,7 +264,7 @@ void invert(double prob, arms_state *env, POINT *p){
   if ((p->x < xl) || (p->x > xr)) exit(1);
 }
 
-int test(arms_state *env, POINT *p, apop_arms_settings *params){
+int test(arms_state *env, POINT *p, apop_arms_settings *params, gsl_rng *r){
 /* to perform rejection, squeezing, and metropolis tests   
    *env        : state data
    *p            : point to be tested   */
@@ -270,7 +277,7 @@ assert(p->pl && p->pr);
   u = gsl_rng_uniform(r) * p->ey;
   y = logshift(u,env->ymax);
 
-  if(!(params->do_metro) && (p->pl->pl != NULL) && (p->pr->pr != NULL)){
+  if(params->do_metro !='y' && (p->pl->pl != NULL) && (p->pr->pr != NULL)){
     /* perform squeezing test */
     ql = p->pl->f ? p->pl : p->pl->pl;
     qr = p->pr->f ? p->pr : p->pr->pr;
@@ -282,10 +289,12 @@ assert(p->pl && p->pr);
 
   /* evaluate log density at point to be tested */
   ynew = perfunc(params,p->x);
-  
+assert(!gsl_isnan(p->x));
 assert(p->pl && p->pr);
+//if (apop_opts.verbose) printf("tested (%g, %g); ", p->x, ynew);
+  
   /* perform rejection test */
-  if(!params->do_metro || (params->do_metro && (y >= ynew))){
+  if(params->do_metro != 'y' || (params->do_metro == 'y' && (y >= ynew))){
     /* update envelope */
     p->y = ynew;
     p->ey = expshift(p->y,env->ymax);
@@ -318,7 +327,12 @@ assert(p->pl && p->pr);
       /* markov chain iterate */
       p->x = env->metro_xprev;
       p->y = env->metro_yprev;
+        //if (apop_opts.verbose) printf("metro step (%g) rejected with w=%g, "
+        //"ynew=%g, yold=%g, znew = %g, zold=%g; ", p->x, w, ynew, yold, znew, zold);
       p->ey = expshift(p->y,env->ymax);
+assert(!gsl_isnan(p->x));
+assert(!gsl_isnan(p->y));
+assert(!gsl_isnan(p->ey));
       p->f = 1;
       p->pl = ql;
       p->pr = qr;
@@ -458,14 +472,14 @@ int meet (POINT *q, arms_state *env, apop_arms_settings *params){
 
   if(irl && il && (gl<grl)){
     /* convexity on left exceeds current threshold */
-    if(!(params->do_metro)) // envelope violation without metropolis
+    if(params->do_metro !='y') // envelope violation without metropolis
         return 1;
     gl = gl + (1.0 + *(env->convex)) * (grl - gl); // adjust left gradient 
   }
 
   if(irl && ir && (gr>grl)){
     /* convexity on right exceeds current threshold */
-    if(!(params->do_metro)) // envelope violation without metropolis 
+    if(params->do_metro !='y') // envelope violation without metropolis 
         return 1;
     gr = gr + (1.0 + *(env->convex)) * (grl - gr); // adjust right gradient 
   }

@@ -1,23 +1,6 @@
 /* Apophenia's documentation
 Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-/** \mainpage The Apophenia documentation
-
-Apophenia is a library of a few hundred functions (in C) intended to make life easier when doing scientific computing.
-
-This welcome page provides some introductory information to give you an
-overview. But most of the documentation is folded into the \ref outline "outline".
-
- \li \ref intro "A quick overview"
- \li \ref book 
- \li \ref setup "Setup": Installing GCC, the GSL, SQLite, and Apophenia itself.
- \li \ref c "C": Some notes on C and Apophenia's use of C utilities.
- \li \ref sql About the syntax for querying databases.
- \li \ref python
- \li \ref eg 
-
- */
-
 /** \page eg Some examples
  Here are a few pieces of sample code, gathered from elsewhere in the documentation, for testing your installation or to give you a sense of what code with Apophenia's tools looks like. If you'd like more context or explanation, please click through to the page from which the example was taken.
 
@@ -53,52 +36,7 @@ Finally, a demonstration of fixing parameters to create a marginal distribution,
 
  */
 
-/** \page book The book version
 
-Apophenia co-evolved with <em>Modeling with Data: Tools and Techniques for Statistical Computing</em>. You can read about the book, or download a free PDF copy of the full text, at <a href="http://modelingwithdata.org">modelingwithdata.org</a>.
-
-If you are at this site, there is probably something there for you, including a tutorial on C and general computing form, SQL for data-handing, several chapters of statistics from various perspectives, and more details on working Apophenia. 
-
-
-As with many computer programs, the preferred manner of citing Apophenia is to cite its related book.
-Here is a BibTeX-formatted entry, which should be be easy to re-shape for other environments:
-
-\@book{klemens:modeling,<br>
-title = "Modeling with Data: Tools and Techniques for Statistical Computing",<br>
-author="Ben Klemens",<br>
-year=2008,<br>
-publisher="Princeton University Press"<br>
-}
-
-*/
-
-/** \page intro A quick overview
-
-  A typical data analysis project using Apophenia's tools would go something like this:
-
- \li Read the raw data into the database using \ref apop_text_to_db.
- \li Use SQL queries handled by \ref apop_query to massage the data as needed.
- \li Use \ref apop_query_to_data to pull the data into an in-memory apop_data set.
- \li Call a model estimation such as \code apop_estimate (data_set, apop_OLS)\endcode  or \code apop_estimate (data_set, apop_probit)\endcode to fit parameters to the data. This will return an \ref apop_model like the original, but with parameter estimates.
- \li Interrogate the returned estimate, by dumping it to the screen with \ref apop_model_show, sending its parameters and variance-covariance matrices to a test, et cetera.
-
-Over the course of this,
-our researcher had to parse text, use a database, manipulate matrices,
-fit statistical models, and then test the results by looking up a
-summary statistic in a table of distributions. Having hooks to all of
-these things in one library makes the flow much more pleasant.
-
-For a concrete example of folding Apophenia into a project, have a look at this \ref sample_program "sample program".
-
-Of course, you may not need all this: you might just want a neat interface to SQLite, or an easy-to-use structure that holds your data 
-in a matrix and allows you to label the rows and columns. Have a look at the \ref outline "library outline" for the various categories of relatively standalone functions that you can fold into your own work.
-
-If you would like a more in-depth discussion of Apophenia's raison d'etre and logic, have a look at these
-<a href="http://apophenia.info/apop_notes.html">design notes</a>.
-
-
-
-*/
 
 /** \page setup Setting up
 \section cast The supporting cast 
@@ -113,6 +51,7 @@ the instructions there to compile and run.
 Here is another sample program, intended to show how one would integrate Apophenia into an existing program. For example, say that you are running a simulation of two different treatments, or say that two sensors are posting data at regular intervals. You need to gather the data in an organized form, and then ask questions of the resulting data set.  Below, a thousand draws are made from the two processes and put into a database. Then, the data is pulled out, some simple statistics are compiled, and the data is written to a text file for inspection outside of the program.  This program will compile cleanly with the sample \ref makefile.
 
 \include draw_to_db.c
+
 */
 
 /** \page windows The Windows page
@@ -172,87 +111,6 @@ echo "export LD_LIBRARY_PATH=$HOME/$MY_LIBS:\$LD_LIBRARY_PATH" >> ~/.bashrc
 \endverbatim
 */
 
-/** \page c C
- 
-\section learning  Learning C
-<a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages.  More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.  Some people find pointers to be especially difficult; fortunately, there's a <a href="http://cslibrary.stanford.edu/104/">claymation cartoon</a> which clarifies everything.
-
-Coding often relies on gathering together many libraries; there is a section at the bottom of the \ref outline "outline" linking to references for some libraries upon which Apohenia builds.
-
-\section usagenotes  Usage notes
-Here are some notes about the technical details of using the Apophenia library in your development enviornment.
-
-\subsection headertrick Header aggregation 
-If you put 
-\verbatim
-#include <apop.h>
-\endverbatim
-at the top of your file, then it will call virtually every header file you could need: gsl_matrix.h, gsl_blas.h, sqlite3.h, stdio.h, string.h, math.h, apophenia_all_of_them.h, et cetera. Of course, if you get `implicit declaration of...' then you will need to manually include something else.
-Bear in mind that every book on C will tell you this is bad form and you shouldn't do it.
-
-\subsection desiref Easier calling syntax
-Several functions (but nowhere near all) use a script-like syntax for calling functions. For example, the \ref apop_vector_distance function finds the distance between two vectors using various metrics. The full function call, using an \f$L_3\f$ norm for vectors \f$v_1\f$ and \f$v_2\f$ would be 
-\code
-apop_vector_distance(v1, v2, 'L', 3);
-\endcode
-But some metrics don't need a number to be fully described, so you can leave that off. Here's the standard (Euclidian) distance:
-\code
-apop_vector_distance(v1, v2, 'E');
-\endcode
-Because Euclidian distance is so standard, it is assumed as the default if you don't specify a norm, so you can leave out the third input:
-\code
-apop_vector_distance(v1, v2);
-\endcode
-If you give only one vector, I'll assume the other is the zero vector, and thus return the length of the first vector. Here is the length of a vector using the Manhattan metric:
-\code
-apop_vector_distance(v1, .metric='M');
-\endcode
-
-See the \ref designated page for details of this syntax.
-
-\subsection liblinking Libraries 
-Your best bet is to write yourself a \ref makefile "Makefile".  If you don't want to use the sample \ref makefile "Makefile", then here are some notes for the command line.  When compiling, you will need to tell the compiler to use the Apophenia library. That is, you will need to call GCC with <tt>gcc -lapophenia</tt> (as well as the other usual flags). For example,
-<tt>
-gcc sample.c -lapophenia -lsqlite3 -lgsl -lgslcblas -o run_me -g 
-</tt>
-will produce an output file named <tt>run_me</tt> from the input source code <tt>sample.c</tt>. It will include symbols for debugging (<tt>-g</tt>) and will correctly find the functions in the Apophenia, GSL, and SQLite libraries (<tt>-lapophenia -lgsl ...</tt>). 
-Order matters in the linking list: the files a package depends on should be listed after the package. E.g., since sample.c depends on Apophenia, <tt>gcc sample.c -lapophenia</tt> will work, while <tt>gcc -lapophenia sample.c</tt> is likely to give you errors. Similarly, list <tt>-lapophenia</tt> before <tt>-lgsl</tt>, which comes before <tt>-lgslcblas</tt>.
-
-\subsection debugging  Debugging
-The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_opts.verbose =1</tt> when you want feedback and <tt>apop_opts.verbose=0</tt> when you don't.
-
-If you use \c gdb, you can define macros to use the pretty-printing functions on your data, which can be a significant help. Add these to your \c .gdbinit:
-\code
-
-define pv
-    p apop_vector_show($arg0)
-end
-
-define pm
-    p apop_matrix_show($arg0)
-end
-
-define pd
-    p apop_data_show($arg0)
-end
-
-define pa
-    p *($arg0)@$arg1
-end
-\endcode
-
-Then just <tt>pd mydata</tt> to see all components of your data set neatly displayed, or <tt>pa myarray 5</tt> to see the first five elements of your array. 
-
-
-\subsection vim Syntax highlighting 
-If your text editor supports syntax highlighting, there are a few types defined in the Apophenia and GSL headers which may be worth coloring.
-E.g., for <tt>vim</tt>, add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
-\verbatim
-syn keyword     cType           gsl_matrix gsl_rng gsl_vector apop_data
-syn keyword     cType           apop_name apop_model
-\endverbatim
-Other text editors have similar files to which you can add the above types.
-*/
 
 /** \page makefile Makefile
  
@@ -282,15 +140,6 @@ LINKFLAGS = `pkg-config --libs apophenia`
 The \c pkg-config program will then fill in the appropriate directories and libraries. Pkg-config knows Apophenia depends on the GSL and (if applicable) sqlite3, so you need only list the most-dependent library.
 */
 
-/** \page sql SQL
- For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.  For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.  The blog of Apophenia's author includes an <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementarities between SQL and matrix manipulation packages.
-
-Apophenia currently supports two database engines: SQLite and mySQL. SQLite is the default, because it is simpler and generally more easygoing than mySQL, and supports in-memory databases.
-
-You can switch to mySQL two ways: set <tt>apop_opts.db_engine = 'm'</tt>, or set the environment variable <tt>APOP_DB_ENGINE=mysql</tt>. Otherwise, the system will use SQLite. Ideally, after you make this switch, you need make no other changes--- \ref apop_query, \ref apop_query_to_data, \ref apop_table_exists, et cetera, will work as before. 
-
-Finally, Apophenia provides a few nonstandard SQL functions to facilitate math via database; see \ref db_moments.
-*/
 
 /** \page designated Designated initializers
 
@@ -366,9 +215,204 @@ Just a few page links:
 */
 
 
-/**  \page outline An outline of the library
+/**  \mainpage An outline of the library
+  \anchor outline
 
 ALLBUTTON
+
+Outlineheader preliminaries Overview and Preliminaries
+
+As well as the information in this outline, there is a separate page covering the details of 
+ \ref setup "setting up a computing environment" and another page with \ref eg "some sample code" for your perusal.
+
+Outlineheader  intro A quick overview
+
+  A typical data analysis project using Apophenia's tools would go something like this:
+
+ \li Read the raw data into the database using \ref apop_text_to_db.
+ \li Use SQL queries handled by \ref apop_query to massage the data as needed.
+ \li Use \ref apop_query_to_data to pull the data into an in-memory apop_data set.
+ \li Call a model estimation such as \code apop_estimate (data_set, apop_OLS)\endcode  or \code apop_estimate (data_set, apop_probit)\endcode to fit parameters to the data. This will return an \ref apop_model like the original, but with parameter estimates.
+ \li Interrogate the returned estimate, by dumping it to the screen with \ref apop_model_show, sending its parameters and variance-covariance matrices to a test, et cetera.
+
+Over the course of this,
+our researcher had to parse text, use a database, manipulate matrices,
+fit statistical models, and then test the results by looking up a
+summary statistic in a table of distributions. Having hooks to all of
+these things in one library makes the flow much more pleasant.
+
+For a concrete example of folding Apophenia into a project, have a look at this \ref sample_program "sample program".
+
+Of course, you may not need all this: you might just want a neat interface to SQLite, or an easy-to-use structure that holds your data 
+in a matrix and allows you to label the rows and columns. Have a look at the \ref outline "library outline" for the various categories of relatively standalone functions that you can fold into your own work.
+
+If you would like a more in-depth discussion of Apophenia's raison d'etre and logic, have a look at these
+<a href="http://apophenia.info/apop_notes.html">design notes</a>.
+
+endofdiv
+
+Outlineheader c Some notes on C and Apophenia's use of C utilities.
+ 
+Outlineheader learning  Learning C
+
+<a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages.  More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.  Some people find pointers to be especially difficult; fortunately, there's a <a href="http://cslibrary.stanford.edu/104/">claymation cartoon</a> which clarifies everything.
+
+Coding often relies on gathering together many libraries; there is a section at the bottom of this outline linking to references for some libraries upon which Apohenia builds.
+
+endofdiv
+
+Outlineheader usagenotes  Usage notes
+
+Here are some notes about the technical details of using the Apophenia library in your development enviornment.
+
+<b> Header aggregation </b>
+
+If you put 
+\verbatim
+#include <apop.h>
+\endverbatim
+at the top of your file, then it will call virtually every header file you could need: gsl_matrix.h, gsl_blas.h, sqlite3.h, stdio.h, string.h, math.h, apophenia_all_of_them.h, et cetera. Of course, if you get `implicit declaration of...' then you will need to manually include something else.
+Bear in mind that every book on C will tell you this is bad form and you shouldn't do it.
+
+<b> Easier calling syntax</b>
+
+Several functions (but nowhere near all) use a script-like syntax for calling functions. For example, the \ref apop_vector_distance function finds the distance between two vectors using various metrics. The full function call, using an \f$L_3\f$ norm for vectors \f$v_1\f$ and \f$v_2\f$ would be 
+\code
+apop_vector_distance(v1, v2, 'L', 3);
+\endcode
+But some metrics don't need a number to be fully described, so you can leave that off. Here's the standard (Euclidian) distance:
+\code
+apop_vector_distance(v1, v2, 'E');
+\endcode
+Because Euclidian distance is so standard, it is assumed as the default if you don't specify a norm, so you can leave out the third input:
+\code
+apop_vector_distance(v1, v2);
+\endcode
+If you give only one vector, I'll assume the other is the zero vector, and thus return the length of the first vector. Here is the length of a vector using the Manhattan metric:
+\code
+apop_vector_distance(v1, .metric='M');
+\endcode
+
+See the \ref designated page for details of this syntax.
+
+endofdiv
+
+Outlineheader liblinking Libraries 
+
+Your best bet is to write yourself a \ref makefile "Makefile".  If you don't want to use the sample \ref makefile "Makefile", then here are some notes for the command line.  When compiling, you will need to tell the compiler to use the Apophenia library. That is, you will need to call GCC with <tt>gcc -lapophenia</tt> (as well as the other usual flags). For example,
+<tt>
+gcc sample.c -lapophenia -lsqlite3 -lgsl -lgslcblas -o run_me -g 
+</tt>
+will produce an output file named <tt>run_me</tt> from the input source code <tt>sample.c</tt>. It will include symbols for debugging (<tt>-g</tt>) and will correctly find the functions in the Apophenia, GSL, and SQLite libraries (<tt>-lapophenia -lgsl ...</tt>). 
+Order matters in the linking list: the files a package depends on should be listed after the package. E.g., since sample.c depends on Apophenia, <tt>gcc sample.c -lapophenia</tt> will work, while <tt>gcc -lapophenia sample.c</tt> is likely to give you errors. Similarly, list <tt>-lapophenia</tt> before <tt>-lgsl</tt>, which comes before <tt>-lgslcblas</tt>.
+
+endofdiv
+
+Outlineheader debugging  Debugging
+
+The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_opts.verbose =1</tt> when you want feedback and <tt>apop_opts.verbose=0</tt> when you don't.
+
+If you use \c gdb, you can define macros to use the pretty-printing functions on your data, which can be a significant help. Add these to your \c .gdbinit:
+\code
+
+define pv
+    p apop_vector_show($arg0)
+end
+
+define pm
+    p apop_matrix_show($arg0)
+end
+
+define pd
+    p apop_data_show($arg0)
+end
+
+define pa
+    p *($arg0)@$arg1
+end
+\endcode
+
+Then just <tt>pd mydata</tt> to see all components of your data set neatly displayed, or <tt>pa myarray 5</tt> to see the first five elements of your array. 
+
+endofdiv
+
+Outlineheader vim Syntax highlighting 
+
+If your text editor supports syntax highlighting, there are a few types defined in the Apophenia and GSL headers which may be worth coloring.
+E.g., for <tt>vim</tt>, add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
+\verbatim
+syn keyword     cType           gsl_matrix gsl_rng gsl_vector apop_data
+syn keyword     cType           apop_name apop_model
+\endverbatim
+Other text editors have similar files to which you can add the above types.
+
+endofdiv
+
+endofdiv
+
+ Outlineheader python The Python interface
+
+The distribution includes a Python interface via the SWIG tool for bridging across languages. 
+
+Installation: You will need to have the SWIG and Python-development packages installed on your computer when compiling. From there, 
+\code
+./configure --enable-python
+make
+sudo make install
+\endcode 
+will produce the Python
+library and install it in Python's site-packages directory.
+
+Sample script:
+
+On the page on the \ref apop_ols model, you will find a few lines of toy data and a sample program to run an OLS regression. Once you have set up the \c data file, you can use this Python rewrite of the OLS program:
+
+\include ols.py
+
+\li SWIG sets all C-side global variables into a category named avar. Thus the \c apop_ols variable had to be called \c avar.apop_ols.
+
+\li The verbose package-object-action scheme for naming functions is mostly unnecessary in Python, where objects can more closely be attached to functions. Thus, instead of calling \c apop_vector_skew(my_v), you would call \c my_v.skew(). If you want a list of methods, just use <tt>help(my_v)</tt> or any of the other familiar means of introspection.
+
+Here is another simple example, that copies a Python-side list into a matrix using \c apop_pylist_to_data, and then runs a Fisher Exact test on the matrix. If the list were one-dimensional (flat), then the data would be copied into the vector element of the returned \ref apop_data structure.
+
+\include fisher.py
+
+\li The focus of the work is still in C, so there will likely always be things that you can do in C that can't be done in Python, and strage Python-side errors that will only be explicable if you understand the C-side.  That said, you can still access all of the functions from Python (including those that make little sense from Python).
+
+endofdiv
+
+Outlineheader About SQL, the syntax for querying databases
+
+ For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.  For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.  The blog of Apophenia's author includes an <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementarities between SQL and matrix manipulation packages.
+
+Apophenia currently supports two database engines: SQLite and mySQL. SQLite is the default, because it is simpler and generally more easygoing than mySQL, and supports in-memory databases.
+
+You can switch to mySQL two ways: set <tt>apop_opts.db_engine = 'm'</tt>, or set the environment variable <tt>APOP_DB_ENGINE=mysql</tt>. Otherwise, the system will use SQLite. Ideally, after you make this switch, you need make no other changes--- \ref apop_query, \ref apop_query_to_data, \ref apop_table_exists, et cetera, will work as before. 
+
+Finally, Apophenia provides a few nonstandard SQL functions to facilitate math via database; see \ref db_moments.
+endofdiv
+
+
+Outlineheader mwd The book version
+
+Apophenia co-evolved with <em>Modeling with Data: Tools and Techniques for Statistical Computing</em>. You can read about the book, or download a free PDF copy of the full text, at <a href="http://modelingwithdata.org">modelingwithdata.org</a>.
+
+If you are at this site, there is probably something there for you, including a tutorial on C and general computing form, SQL for data-handing, several chapters of statistics from various perspectives, and more details on working Apophenia. 
+
+As with many computer programs, the preferred manner of citing Apophenia is to cite its related book.
+Here is a BibTeX-formatted entry, which should be be easy to re-shape for other environments:
+
+\@book{klemens:modeling,<br>
+title = "Modeling with Data: Tools and Techniques for Statistical Computing",<br>
+author="Ben Klemens",<br>
+year=2008,<br>
+publisher="Princeton University Press"<br>
+}
+
+endofdiv
+
+
+endofdiv
 
 Outlineheader dataoverview Data sets
 
@@ -1012,7 +1056,8 @@ apop_data *weights_now = Apop_settings_get(m, apop_ls, weights);
 
 \li Notice the use of a single capital to remind you that you are using a macro, so you should beware of the sort of surprising errors associated with macros. Here in the modern day, we read things like APOP_SETTINGS_ADD as yelling, but if you prefer all caps to indicate macros, those work as well.
 
-\li There are two additional macros which are now deprecated: \ref Apop_settings_add_group and \ref Apop_settings_alloc_add. They made sense at the time.
+\li There are two additional macros which are now deprecated: \ref
+Apop_settings_add_group and \c Apop_settings_alloc_add. They made sense at the time.
 
 For just using a model, that's about 100% of what you need to know.
 
@@ -1082,7 +1127,7 @@ As you saw above, once the typedef/alloc/copy/free machinery is written, you can
 
 endofdiv
 
-        \li\ref Apop_settings_add
+        \li\ref Apop_settings_set
         \li\ref Apop_settings_add_group
         \li\ref Apop_settings_alloc
         \li\ref apop_settings_copy_group
@@ -1093,12 +1138,12 @@ endofdiv
 
         Outlineheader Spec Specific settings
 
-            \li\ref apop_category_settings_alloc()  
-            \li\ref apop_histogram_settings_alloc()  
-            \li\ref apop_ls_settings_alloc()
-            \li\ref apop_mle_settings_alloc() \anchor mlesettingsa
-            \li\ref apop_rank_settings_alloc()
-            \li\ref apop_update_settings_alloc()
+            \li\ref apop_category_settings_init()  
+            \li\ref apop_histogram_settings_init()  
+            \li\ref apop_ls_settings_init()
+            \li\ref apop_mle_settings_init() \anchor mlesettingsa
+            \li\ref apop_rank_settings_init()
+            \li\ref apop_update_settings_init()
 
         endofdiv
 
@@ -1167,6 +1212,22 @@ double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
 }
     \endcode
 
+    Or, consider the Rao statistic, 
+    \f${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta){\partial\over \partial\beta}\log L(\beta)\f$
+    where \f$L\f$ is your model's likelihood function and \f$I\f$ its information matrix. In code:
+
+    \code
+apop_data * infoinv = apop_model_numerical_covariance(data, your_model);
+apop_data * score;
+apop_score(data, score->vector, your_model);
+apop_data * stat    = apop_dot(apop_dot(score, infoinv), score);
+    \endcode
+
+    Given the correct assumptions, this is \f$\sim \chi^2_m\f$, where \f$m\f$ is the dimension of \f$\beta\f$, so the odds of a Type I error given the model is:
+
+    \code
+    double p_value = apop_test(stat, "chi squared", beta->size);
+    \endcode
 
 endofdiv
 
@@ -1228,7 +1289,7 @@ endofdiv
 
     \li\ref apop_estimate_restart : Restarting an MLE with different settings can improve resuls.
     \li\ref apop_maximum_likelihood()
-    \li\ref apop_numerical_covariance_matrix()
+    \li\ref apop_model_numerical_covariance()
     \li\ref apop_numerical_gradient()
 
 endofdiv
@@ -1296,8 +1357,9 @@ These functions will probably disappear or be replaced soon.
     \li\ref apop_estimate_fixed_effects_OLS()
     \li\ref apop_name_cross_stack()
     \li\ref apop_kernel_density_settings_alloc()
-    \li\ref apop_test_chi_squared_var_not_zero ()
     \li\ref apop_data_to_db()
+
+endofdiv
 
 endofdiv
 
@@ -1313,24 +1375,6 @@ For your convenience, here are links to some other libraries you are probably us
 
 */
 
-
-/* This will be a useful example when I have an infomatrix method.
-
-For example, conisder the Rao statistic, 
-    \f${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta)\partial\over \partial\beta}\log L(\beta)\f$
-    where \f$L\f$ is your model's likelihood function and \f$I\f$ its information matrix. In code:
-
-    \code
-apop_data * infoinv = apop_inverse(model_infomatrix(data, your_model));
-apop_data * stat    = apop_dot(apop_dot(apop_score(data, your_model), infoinv), apop_score(data, your_model));
-    \endcode
-
-    Given the correct assumptions, this is $\sim \chi^2_m$, where \f$m\f$ is the dimension of $\beta$, so the odds of a Type I error given the model is:
-
-    \code
-    double p_value = apop_test(stat, "chi squared", beta->size);
-    \endcode
-    */
 
 /** \page mingw MinGW
 
@@ -1399,35 +1443,6 @@ more information, such as the ld(1) and ld.so(8) manual pages.
 */
 
 
-/** \page python The Python interface
-
-The distribution includes a Python interface via the SWIG tool for bridging across languages. 
-
-Installation: You will need to have the SWIG and Python-development packages installed on your computer when compiling. From there, 
-\code
-./configure --enable-python
-make
-sudo make install
-\endcode 
-will produce the Python
-library and install it in Python's site-packages directory.
-
-Sample script:
-
-On the page on the \ref apop_ols model, you will find a few lines of toy data and a sample program to run an OLS regression. Once you have set up the \c data file, you can use this Python rewrite of the OLS program:
-
-\include ols.py
-
-\li SWIG sets all C-side global variables into a category named avar. Thus the \c apop_ols variable had to be called \c avar.apop_ols.
-
-\li The verbose package-object-action scheme for naming functions is mostly unnecessary in Python, where objects can more closely be attached to functions. Thus, instead of calling \c apop_vector_skew(my_v), you would call \c my_v.skew(). If you want a list of methods, just use <tt>help(my_v)</tt> or any of the other familiar means of introspection.
-
-Here is another simple example, that copies a Python-side list into a matrix using \c apop_pylist_to_data, and then runs a Fisher Exact test on the matrix. If the list were one-dimensional (flat), then the data would be copied into the vector element of the returned \ref apop_data structure.
-
-\include fisher.py
-
-\li The focus of the work is still in C, so there will likely always be things that you can do in C that can't be done in Python, and strage Python-side errors that will only be explicable if you understand the C-side.  That said, you can still access all of the functions from Python (including those that make little sense from Python).
-*/
 
 /** \page optionaldetails Implementation of optional arguments 
 Optional and named arguments are among the most commonly commented-on features of Apophenia, so this page goes into full detail about the implementation. 
@@ -1552,68 +1567,10 @@ One final detail: it is valid to have types with commans in them---function argu
 APOP_VAR_DECLARE apop_data * f_of_f(apop_data *in, void *param, int n, double (*fn_d)(double ! void * !int));
 \endcode
 
-Sed is POSIX standard, so even if you can't read the below, you have the program needed to run it. For example, if you name it \c prep_variadics.sed, then run
+Sed is POSIX standard, so even if you can't read the script (included in the subversion directory), you have the program needed to run it. For example, if you name it \c prep_variadics.sed, then run
 \code
 ./prep_variadics.sed < myfile.pre.c > myfile.c
 \endcode
-
-That said, here is the sed script that does the processing.
-
-\verbatim
-#!/bin/sed -f 
-
-/APOP_VAR_DECLARE/ {
-h
-g
-s/APOP_VAR_DECLARE/\#ifdef APOP_NO_VARIADIC\n/
-s/!/,/g
-p
-g
-s/APOP_VAR_DECLARE/\#else\n/
-s/\([^ (]\) *(/\1_base(/
-s/!/,/g
-p
-g
-s/,/;/g
-#annoying detail: if you take in a function, then those commas shouldn't be
-#semicolons. so: declare like this: int (*infunction)(int! double *!  void)
-#and I'll replace ! with , .
-s/!/,/g
-s/ *(/, /
-s/ \([^ ]*,\)/, \1/
-s/APOP_VAR_DECLARE / apop_varad_declare(/
-s/!/,/g
-p
-g
-#This form finds the line between function type and function name:
-s/\([^* ]* *(\)/START_OF_FNAME\1/ 
-s/.*START_OF_FNAME\([^(]*\)(.*/#define \1(...) apop_varad_link(\1, __VA_ARGS__)\n#endif/
-s/[ \t]*(/(/
-}
-
-/APOP_VAR_HEAD/ {
-h
-g
-s/APOP_VAR_HEAD/#ifdef APOP_NO_VARIADIC \n/
-s/[;{][ \t]*$/{\n#else/
-p
-g
-s/\([^* ]* *(\)/START_OF_FNAME\1/ 
-s/START_OF_FNAME/, / 
-s/(.*/){/
-s/APOP_VAR_HEAD/apop_varad_head(/
-p
-g
-s/APOP_VAR_HEAD//
-s/\(\[^ (]\)* *(/\1_base(/
-s/\(.*\)[;{]/}\n\n\1{\n#endif/
-h
-d
-}
-/APOP_VAR_END_*HEAD/ {
-g
-}
-\endverbatim
 
 */
 
@@ -1652,13 +1609,13 @@ the program but less convenient to switch frequently throughout the code.
  */
 
 
-/* \section dataprep Data prep rules  --- probably out of date
+/** \page dataprep Data prep rules 
 
 There are a lot of ways your data can come in, and we would like to run estimations on a reasonably standardized form.
 
 First, this page will give a little rationale, which you are welcome to skip, and then will present the set of rules.
 
-  \paragraph Dealing with the ones column
+  \section Dealing with the ones column
 Most standard regression-type estimations require or generally expect
 a constant column. That is, the 0th column of your data is a constant (one), so the first parameter
 \f$\beta_1\f$ is slightly special in corresponding to a constant rather than a variable.
@@ -1670,47 +1627,32 @@ Some stats packages implicitly assume a constant column, which the user never se
 upon which Apophenia is based, and is generally annoying.  Given a data matrix \f$X\f$ with the estimated parameters \f$\beta\f$, 
 if the model asserts that the product \f$X\beta\f$ has meaning, then you should be able to calculate that product. With a ones column, a dot product is one line \c apop_dot(x, your_est->parameters, 0, 0)); without a ones column, the problem is left as an unpleasant exercise for the reader.
 
-  \paragraph Shunting columns around.
+  \subsection Shunting columns around.
 
-Each regression-type estimation has one dependent variable and several
-independent. In the end, we want the dependent variable to be in the
-vector element. However, continuing the \em "lassies faire" tradition,
-doing major surgery on the data, such as removing a column and moving
-in all subsequent columns, is more invasive than an estimation should be.
+Each regression-type estimation has one dependent variable and several independent. In the end, we want the dependent variable to be in the vector element. However, continuing the \em "lassies faire" tradition, doing major surgery on the data, such as removing a column and moving in all subsequent columns, is more invasive than an estimation should be.
 
 \subsection The rules
-So those are the two main considerations in prepping data. Here are the rules,
-intended to balance those considerations:
+So those are the two main considerations in prepping data. Here are the rules, intended to balance those considerations:
 
-\paragraph The automatic case
-There is one clever trick we can use to resolve both the need for a
-ones column and for having the dependent column in the vector: given a
-data set with no vector element and the dependent variable in the first
-column of the matrix, we can copy the dependent variable into the vector
-and then replace the first column of the matrix with ones. The result
+\subsubsection The automatic case
+There is one clever trick we can use to resolve both the need for a ones column and for having the dependent column in the vector: given a data set with no vector element and the dependent variable in the first column of the matrix, we can copy the dependent variable into the vector and then replace the first column of the matrix with ones. The result
 fits all of the above expectations.
 
 You as a user merely have to send in a \c apop_data set with no vector and a dependent column in the first column.
 
-\paragraph The already-prepped case
-If your data has a vector element, then the prep routines won't try
-to force something to be there. That is, they won't move anything,
-and won't turn anything into a constant column. If you don't want to use
-a constant column, or your data has already been prepped by an estimation, then this is what you want.
+\subsubsection The already-prepped case
+If your data has a vector element, then the prep routines won't try to force something to be there. That is, they won't move anything, and won't turn anything into a constant column. If you don't want to use a constant column, or your data has already been prepped by an estimation, then this is what you want.
 
 You as a user just have to send in a \c apop_data set with a filled vector element.
+ */
 
+/* To finish and add to the dataprep section:
 \paragraph Probit, logit, and other -obits
-The dependent variable for these models is a list of categories; this
-option is not relevant to continuous-valued dependent variables. 
+The dependent variable for these models is a list of categories; this option is not relevant to continuous-valued dependent variables. 
 
-Your data source may include a list of numeric categories, in which case
-you can pick one of the above cases.
+Your data source may include a list of numeric categories, in which case you can pick one of the above cases.
 
-The main exception is when your data is a list of text factors, in which
-case your dependent variable isn't even a part of the data matrix.
-In this case, you can prep the data yourself, via a call to \c apop_text_to_factors, and then insert the column yourself (and pick a constant column or not as you prefer). Or, you can have the system do it for you, via a form like
-\code
+The main exception is when your data is a list of text factors, in which case your dependent variable isn't even a part of the data matrix.  In this case, you can prep the data yourself, via a call to \c apop_text_to_factors, and then insert the column yourself (and pick a constant column or not as you prefer). Or, you can have the system do it for you, via a form like \code
 int textcol = 3; //where is the list of dependent categories
 apop_model *setmodel = apop_model_copy(apop_probit);
 Apop_settings_add_group(setmodel, apop_category, textcol);
@@ -1718,8 +1660,7 @@ apop_estimate(yourdata, setmodel);
 \endcode
 
 
-  You'll see that there are two questions here: should there be a constant
-  column of ones, and where is the dependent column to be found?
+You'll see that there are two questions here: should there be a constant column of ones, and where is the dependent column to be found?
 
 Here are the rules for preparing the data set. 
 

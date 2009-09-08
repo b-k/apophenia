@@ -6,9 +6,6 @@
 #include <stdio.h>
 #include <regex.h>
 
-/** \defgroup names apop_names: a structure and functions to handle column names for matrices. 
-\ingroup types */
-
 /** Allocates a name structure
 \return	An allocated, empty name structure.
 \ingroup names
@@ -37,7 +34,7 @@ int apop_name_add(apop_name * n, char *add_me, char type){
     if (!add_me)
         return -1;
 	if (type == 'h'){
-        snprintf(n->title, 100, add_me);
+        snprintf(n->title, 100, "%s", add_me);
         return 1;
 	} 
 	if (type == 'v'){
@@ -150,7 +147,7 @@ APOP_VAR_ENDHEAD
     else if (typeadd == 'c')
         for (i=0; i< counts.colct; i++)
             apop_name_add(n1, nadd->column[i], type1);
-    else apop_assert(0, 1, 'c', ">%c< sent to apop_name_stack, but the only "
+    else apop_assert_void(0, 1, 'c', ">%c< sent to apop_name_stack, but the only "
                                 "valid options are r t c v. Doing nothing.",type1);
 }
 
@@ -176,7 +173,7 @@ apop_name * apop_name_copy(apop_name *in){
     apop_name_stack(out, in, 'c');
     apop_name_stack(out, in, 'r');
     apop_name_stack(out, in, 't');
-    snprintf(out->title, 100, in->title);
+    snprintf(out->title, 100, "%s", in->title);
     return out;
 }
 

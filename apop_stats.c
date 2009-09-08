@@ -13,7 +13,7 @@ These functions simply take in a GSL vector and return its mean, variance, or ku
 
 \ref apop_vector_kurtosis and \ref apop_vector_kurt are identical; pick the one which sounds better to you.
 
-See also \ref db_moments.
+\see db_moments
 
 For \ref apop_vector_var_m<tt>(vector, mean)</tt>, <tt>mean</tt> is the mean of the
 vector. This saves the trouble of re-calcuating the mean if you've
@@ -742,7 +742,7 @@ This function uses the \ref designated syntax for inputs.
 \ingroup matrix_moments */
 APOP_VAR_HEAD gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char normalize){
     gsl_matrix *apop_varad_var(in, NULL)
-    apop_assert(in,  NULL, 0, 'c', "Input matrix is NULL");
+    apop_assert(in,  NULL, 0, 'c', "Input matrix is NULL; returning NULL.");
     const char apop_varad_var(normalize, 0)
     return apop_matrix_correlation_base(in, normalize);
 APOP_VAR_ENDHEAD

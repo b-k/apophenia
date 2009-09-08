@@ -51,7 +51,7 @@ static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_
 
 static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
-    return apop_linear_constraint(v->parameters->vector, .margin= 1e-3);
+    return apop_linear_constraint(v->parameters->vector, .margin= 1e-5);
 }
 
 typedef struct {double a, b, ln_ga_plus_a_ln_b;} abstruct;

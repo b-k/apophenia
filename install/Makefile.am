@@ -1,10 +1,11 @@
 
 AM_LDFLAGS =  -no-undefined $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS)
-AM_CFLAGS = -g -Wall -O3 -I./ $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_CFLAGS) $(SQLITE_CFLAGS)
+AM_CFLAGS = -g -Wall -O3 -I./ $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_CFLAGS) $(SQLITE_CFLAGS) 
 
 CC = $(PTHREAD_CC)
 lib_LTLIBRARIES = libapophenia.la
-libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
+libapophenia_la_SOURCES = \
+            apop_conversions.c apop_db.c 	\
 			apop_linear_algebra.c apop_mle.c apop_hist.c 	\
 			apop_asst.c apop_data.c apop_regression.c 		\
 			apop_fexact.c apop_stats.c apop_bootstrap.c 	\
@@ -14,8 +15,8 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 			apop_model_fix_params.c	 apop_update.c			\
 			apop_tests.c apop_smoothing.c apop_settings.c   \
 			asprintf.c \
-			model/apop_multivariate_normal.c				\
-			model/apop_multinomial_probit.c					\
+			model/apop_multinomial_probit.c	model/apop_pmf.c \
+			model/apop_multivariate_normal.c 				\
 			model/apop_normal.c model/apop_OLS.c 		 	\
 			model/apop_exponential.c model/apop_histogram.c \
 			model/apop_gamma.c model/apop_zipf.c 		    \
@@ -27,7 +28,7 @@ libapophenia_la_SOURCES = apop_conversions.c apop_db.c 		\
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
 				arms.h mapply.h stats.h types.h		 		\
 				output.h model.h asst.h settings.h  		\
-				variadic.h	linear_algebra.h
+				variadic.h	linear_algebra.h 
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc
@@ -69,7 +70,7 @@ apop_lookup_LDADD = libapophenia.la
 
 EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/foot.html \
 		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
-		tests/Makefile tests/Readme tests/slower.c tests/nist_tests.c tests/numacc4.dat \
+		tests/Makefile tests/test.py tests/Readme tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \
 		tests/data-mixed tests/test_data_nans tests/wampler1.dat eg/* \
 		apop_db_mysql.c apop_db_sqlite.c apop.h apop.i internal.h COPYING2
@@ -82,8 +83,8 @@ doc:
 	cp doxy/flake.gif doxy/search.gif doxy/right.png doxy/down.png html/
 	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)<p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
 -e 's|endofdiv<p>|</div>|' \
--e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/outline.html
-	sed -i -e '/index_a/s/- a -/ /' -e '15,27d' html/globals.html
+-e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/index.html html/outline.html
+	sed -i -e '/index_a/s/- a -/ /' -e '15,27d' -e '/Here is a list of all/d' html/globals.html
 	sed -i 's|<td width="100%"></td>||g' html/*html
 	cp doxy/*js html/
 	sudo cp man/man3/* /usr/share/man/man3/

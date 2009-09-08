@@ -59,16 +59,9 @@ apop_mle_settings *apop_mle_settings_alloc(apop_model *model);
 Apop_settings_declarations(apop_mle)
 #endif
 
-
-typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
 APOP_VAR_DECLARE gsl_vector * apop_numerical_gradient(apop_data * data, apop_model* model, double delta);
-//gsl_vector * apop_numerical_gradient(apop_data * data, apop_model* model);
-//gsl_matrix * apop_numerical_second_derivative(apop_model dist, gsl_vector *beta, apop_data * d);
-//gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d);
-
-/* Find the var/covar matrix via the hessian. */
-//void apop_numerical_covariance_matrix(apop_model dist, apop_model *est, apop_data *data);
-//void apop_numerical_var_covar_matrix(apop_model dist, apop_model *est, apop_data *data);
+APOP_VAR_DECLARE apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta);
+APOP_VAR_DECLARE apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta);
 
 apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist);
 

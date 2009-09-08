@@ -30,25 +30,32 @@ typedef struct {  /* attributes of the entire rejection envelope */
   double metro_yprev;      /* current log density at xprev */
 } arms_state;
 
+/** to perform derivative-free adaptive rejection sampling with metropolis step */
 typedef struct {
-    double *xinit, xl, xr, convex; 
-    int ninit, npoint, do_metro, xprev, neval;
+/** Starting values for x in ascending order */
+    double *xinit;
+/** left bound */
+    double  xl;
+/** right bound */
+    double  xr;
+/** adjustment for convexity */
+    double convex; 
+/** number of starting values supplied */
+    int ninit;
+/** maximum number of envelope points */
+    int npoint;
+/** whether metropolis step is required */
+   char do_metro;
+/** previous value from markov chain */
+   double xprev;
+/** on exit, the number of function evaluations performed */
+   int neval;
     arms_state *state;
     apop_model *model;
 } apop_arms_settings;
 
 Apop_settings_declarations(apop_arms)
 
-/* to perform derivative-free adaptive rejection sampling with metropolis step */
-/* *xinit       : starting values for x in ascending order */
-/* ninit        : number of starting values supplied */
-/* *xl          : left bound */
-/* *xr          : right bound */
-/* *convex      : adjustment for convexity */
-/* npoint       : maximum number of envelope points */
-/* do_metro     : whether metropolis step is required */
-/* *xprev       : previous value from markov chain */
-/* *neval       : on exit, the number of function evaluations performed */
 
 void apop_arms_draw (double *out, gsl_rng *r, apop_model *m);
 

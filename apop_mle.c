@@ -17,6 +17,7 @@ At the bottom are the maximum likelihood procedures themselves. There are four: 
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_multiroots.h>
 
+typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
 typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
 
@@ -114,21 +115,21 @@ static double one_d(double b, void *in){
     return out;
 }
 
+//First, numeric first and second derivatives.
+
 /* For each element of the parameter set, jiggle it to find its
  gradient. Return a vector as long as the parameter list. */
 static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct* info, gsl_vector *out, double delta){
-  gsl_function	F;
   double		result, err;
-  grad_params 	gp;
   infostruct    i;
   gsl_vector    *beta   = apop_data_pack(info->model->parameters);
+  gsl_function	F = {  .function= one_d, 
+                       .params	= &i  };
+  grad_params 	gp = { .beta	= gsl_vector_alloc(beta->size),
+                       .d		= info->data, };
     memcpy(&i, info, sizeof(i));
     i.f         = &ll;
-	gp.beta		= gsl_vector_alloc(beta->size);
-	gp.d		= info->data;
     i.gp        = &gp;
-	F.function	= one_d;
-	F.params	= &i;
 	for (size_t j=0; j< beta->size; j++){
 		gp.dimension	= j;
 		gsl_vector_memcpy(gp.beta, beta);
@@ -160,13 +161,137 @@ APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *
     }
     return apop_numerical_gradient_base(data, model, delta);
 APOP_VAR_ENDHEAD
+  Get_vmsizes(model->parameters); //tsize
   apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
   apop_assert(ll, 0, 0, 'c', "Input model has neither p nor log_likelihood method. Returning zero.");
-  gsl_vector        *out= gsl_vector_alloc(model->parameters->vector->size);
+  gsl_vector        *out= gsl_vector_alloc(tsize);
   infostruct    i = (infostruct) {.model = model, .data = data};
     apop_internal_numerical_gradient(ll, &i, out, delta);
     return out;
 }
+
+typedef struct {
+    apop_model *base_model;
+    int *current_index;
+} apop_model_for_infomatrix_struct;
+
+static double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
+    static gsl_vector *v = NULL;
+    apop_model_for_infomatrix_struct *settings = m->more;
+    apop_model *mm = settings->base_model;
+    if (mm->score){
+        if (!v || v->size != mm->parameters->vector->size){
+            if (v) gsl_vector_free(v);
+            v = gsl_vector_alloc(mm->parameters->vector->size);
+        }
+         mm->score(d, v, mm);
+        return gsl_vector_get(v, *settings->current_index);
+    } //else:
+        gsl_vector *vv = apop_numerical_gradient(d, mm);
+        double out = gsl_vector_get(vv, *settings->current_index);
+        gsl_vector_free(vv);
+        return out;
+}
+
+apop_model apop_model_for_infomatrix = {"Ad hoc model for working out the information matrix.", 
+                                                .log_likelihood = apop_fn_for_infomatrix};
+
+/** Numerically estimate the matrix of second derivatives of the
+parameter values. The math is
+ simply a series of re-evaluations at small differential steps. [Therefore, it may be expensive to do this for a very computationally-intensive model.]  
+
+\param data The data at which the model was estimated
+\param model The model, with parameters already estimated
+\param delta the step size for the differentials. The current default is around 1e-3.
+\return The matrix of estimated second derivatives at the given data and parameter values.
+ 
+This function uses the \ref designated syntax for inputs.
+ */
+APOP_VAR_HEAD apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta){
+    apop_data * apop_varad_var(data, NULL);
+    apop_model * apop_varad_var(model, NULL);
+    Nullcheck(model)
+    double apop_varad_var(delta, 0);
+    if (!delta){
+        apop_mle_settings *mp = apop_settings_get_group(model, "apop_mle");
+        delta = mp ? mp->delta : default_delta;
+    }
+    return apop_model_hessian_base(data, model, delta);
+APOP_VAR_ENDHEAD
+  int    k;
+  Get_vmsizes(model->parameters) //tsize
+  size_t betasize  = tsize;
+  apop_data *out    = apop_data_calloc(0, betasize, betasize);
+  gsl_vector *dscore = gsl_vector_alloc(betasize);
+  apop_model_for_infomatrix_struct ms = { .base_model = model, .current_index = &k, };
+  apop_model *m = apop_model_copy(apop_model_for_infomatrix);
+  m->parameters = model->parameters;
+  m->more = &ms;
+    if (apop_settings_get_group(model, "apop_mle"))
+        apop_settings_copy_group(m, model, "apop_mle");
+    for (k=0; k< betasize; k++){
+        dscore = apop_numerical_gradient(data, m, delta);
+        //We get two estimates of the (k,j)th element, which are often very close,
+        //and take the mean.
+        for (size_t j=0; j< betasize; j++){
+            apop_matrix_increment(out->matrix, k, j, gsl_vector_get(dscore, j)/2);
+            apop_matrix_increment(out->matrix, j, k, gsl_vector_get(dscore, j)/2);
+        }
+        gsl_vector_free(dscore);
+    }
+    if (model->parameters->names->row){
+        apop_name_stack(out->names, model->parameters->names, 'r');
+        apop_name_stack(out->names, model->parameters->names, 'c', 'r');
+    }
+    return out;
+}
+
+/** Produce the covariance matrix for the parameters of an estimated model
+via the derivative of the score function at the parameter. I.e., I find the 
+ second derivative via \ref apop_model_hessian , and take the negation of the inverse.
+
+I follow Efron and Hinkley in using the estimated information matrix---the
+value of the information matrix at the estimated value of the score---not
+the expected information matrix that is the integral over all possible
+data. See Pawitan 2001 (who cribbed a little off of Efron and Hinkley) or Klemens
+2008 (who directly cribbed off of both) for further details. 
+
+ \param data The data by which your model was estimated
+ \param model A model whose parameters have been estimated.
+ \param delta The differential by which to step for sampling changes.  (default currently = 1e-3)
+ \return A covariance matrix for the data. Also, if <tt> model->covariance != NULL</tt>, I'll set it to the result as well.  
+
+This function uses the \ref designated syntax for inputs.
+ */
+APOP_VAR_HEAD apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta){
+    apop_data * apop_varad_var(data, NULL);
+    apop_model * apop_varad_var(model, NULL);
+    Nullcheck(model)
+    double apop_varad_var(delta, 0);
+    if (!delta){
+        apop_mle_settings *mp = apop_settings_get_group(model, "apop_mle");
+        delta = mp ? mp->delta : default_delta;
+    }
+    return apop_model_numerical_covariance_base(data, model, delta);
+APOP_VAR_ENDHEAD
+    apop_data *hessian = apop_model_hessian(data, model, delta);
+    if (apop_opts.verbose > 1){
+        printf("The estimated Hessian:\n");
+        apop_data_show(hessian);
+    }
+    apop_data *out = apop_matrix_to_data(apop_matrix_inverse(hessian->matrix));
+    gsl_matrix_scale(out->matrix, -1);
+    if (hessian->names->row){
+        apop_name_stack(out->names, hessian->names, 'r');
+        apop_name_stack(out->names, hessian->names, 'c');
+    }
+    apop_data_free(hessian);
+    if (!model->covariance)
+        model->covariance = out;
+    return out;
+}
+
+///On to the interfaces between the models and the methods
 
 static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
     if (apop_opts.output_type == 'd'){
@@ -268,88 +393,6 @@ static void fdf_shell(const gsl_vector *beta, void *i, double *f, gsl_vector *df
     dnegshell(beta, i, df);
 }
 
-/* * Calculate the Hessian.
-
-  This is a synonym for \ref apop_numerical_second_derivative, q.v.
-gsl_matrix * apop_numerical_hessian(apop_model dist, gsl_vector *beta, apop_data * d, void *params){
-	return apop_numerical_second_derivative(dist, beta, d, params);
-}
-*/
-
-/* * Rather than doing actual pencil-and-paper math to find
-your variance-covariance matrix, just use the negative inverse of the Hessian.
-
-\param est	The model with the parameters already calculated. The var/covar matrix will be placed in est->covariance.
-\param data	The data
-\ingroup basic_stats
-*/
-void apop_numerical_covariance_matrix(apop_model *est, apop_data *data){
-    //As you can see, this is a placeholder.
-    return;
-}
-
-typedef struct {
-    apop_model *base_model;
-    int *current_index;
-} apop_model_for_infomatrix_struct;
-
-static double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
-    static gsl_vector *v = NULL;
-    apop_model_for_infomatrix_struct *settings = m->more;
-    apop_model *mm = settings->base_model;
-    if (mm->score){
-        if (!v || v->size != mm->parameters->vector->size){
-            if (v) gsl_vector_free(v);
-            v = gsl_vector_alloc(mm->parameters->vector->size);
-        }
-         mm->score(d, v, mm);
-        return gsl_vector_get(v, *settings->current_index);
-    } //else:
-        gsl_vector *vv = apop_numerical_gradient(d, mm);
-        double out = gsl_vector_get(vv, *settings->current_index);
-        gsl_vector_free(vv);
-        return out;
-}
-
-
-apop_model apop_model_for_infomatrix = {"Ad hoc model for working out the information matrix.", .log_likelihood = apop_fn_for_infomatrix};
-
-/* We produce the covariance matrix via the derivative of the score function at the parameter. I follow Efron and Hinkley in using the estimated information matrix---the value of the information matrix at the estimated value of the score---not the expected information matrix that is the integral over all possible data. See Pawitan 2001 (who cribbed off of Efron and Hinkley) or Klemens 2008 (who cribbed off of both) for further details. If you really want to use E(I), check out a version of this file from before the end of 2007.*/
-static void produce_covariance_matrix(apop_model * est, infostruct *i){
-  int    k;
-  size_t betasize  = i->model->parameters->vector->size;
-  gsl_matrix *preinv    = gsl_matrix_calloc(betasize, betasize);
-  gsl_vector *dscore    = gsl_vector_alloc(betasize);
-    apop_model_for_infomatrix_struct m;
-    m.base_model        = i->model;
-    m.current_index     = &k;
-    apop_model_for_infomatrix.more       =  &m;
-    apop_model_for_infomatrix.parameters = i->model->parameters;
-    if (apop_settings_get_group(i->model, "apop_mle"))
-        apop_settings_copy_group(&apop_model_for_infomatrix, i->model, "apop_mle");
-    for (k=0; k< betasize; k++){
-        dscore = apop_numerical_gradient(i->data, &apop_model_for_infomatrix);
-        //We get two estimates of the (k,j)th element, which are often very close,
-        //and take the mean.
-        for (size_t j=0; j< betasize; j++){
-            apop_matrix_increment(preinv, k, j, gsl_vector_get(dscore, j)/2);
-            apop_matrix_increment(preinv, j, k, gsl_vector_get(dscore, j)/2);
-        }
-        gsl_vector_free(dscore);
-    }
-    if (apop_opts.verbose > 1){
-        printf("The estimated Hessian:\n");
-        apop_matrix_show(preinv);
-    }
-    gsl_matrix *inv = apop_matrix_inverse(preinv);
-    gsl_matrix_scale(inv, -1);
-    est->covariance = apop_matrix_to_data(inv);
-    if (est->parameters->names->row){
-        apop_name_stack(est->covariance->names, est->parameters->names, 'r');
-        apop_name_stack(est->covariance->names, est->parameters->names, 'c', 'r');
-    }
-    gsl_matrix_free(preinv);
-}
 
 static int ctrl_c;
 static void mle_sigint(){ ctrl_c ++; }
@@ -424,7 +467,7 @@ Inside the infostruct, you'll find these elements:
 	if (mp->starting_pt==NULL) 
 		gsl_vector_free(x);
     if (est->parameters->vector && !est->parameters->matrix){
-        produce_covariance_matrix(est, i);
+        apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta));
         apop_estimate_parameter_t_tests (est);
     }
 	return est;
@@ -485,7 +528,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
     apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fminimizer_free(s);
 	if (mp->want_cov=='y') 
-		apop_numerical_covariance_matrix(est, data);
+		apop_model_numerical_covariance(data, est);
 	return est;
 }
 
@@ -493,8 +536,9 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 /** The maximum likelihood calculations
 
 \param data	The data matrix (an \ref apop_data set).
-\param	dist	The \ref apop_model object: waring, probit, zipf, &amp;c. This can be allocated using 
-\c apop_mle_settings_alloc (not quite: see that page), featuring:<br>
+\param	dist	The \ref apop_model object: waring, probit, zipf, &amp;c. You can add an \c apop_mle_settings 
+struct to it (<tt>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method=APOP_CG_FR, and_so_on)</tt>, 
+featuring:<br>
 starting_pt:	an array of doubles suggesting a starting point. If NULL, use zero.<br>
 step_size:	the initial step size.<br>
 tolerance:	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
@@ -677,11 +721,8 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
         apop_vector_increment(i->beta, j,  amt * sign * scale * step_size); 
     }
     apop_data_unpack(i->beta, i->model->parameters);
-    if (i->model->constraint && i->model->constraint(i->data, i->model)){
-        gsl_vector *cv  = apop_data_pack(i->model->parameters);
-        gsl_vector_memcpy(i->beta, cv);
-        gsl_vector_free(cv);
-    }
+    if (i->model->constraint && i->model->constraint(i->data, i->model))
+        apop_data_pack(i->model->parameters, i->beta);
 }
 
 static void annealing_print(void *xp) {
@@ -766,7 +807,8 @@ apop_model * apop_annealing(infostruct *i){
     }
     signal(SIGINT, NULL);
     apop_data_unpack(i->beta, i->model->parameters); 
-    produce_covariance_matrix(i->model, i);
+    apop_model_numerical_covariance(i->data, i->model, 
+                            Apop_settings_get(i->model,apop_mle,delta));
     apop_estimate_parameter_t_tests(i->model);
     if (mp->rng)
         r = NULL;

@@ -52,7 +52,7 @@ char *read_query(char *infile){
 
 gsl_matrix *query(char *d, char *q, int no_plot){
 	apop_db_open(d);
-apop_data *result 	= apop_query_to_data(q);
+apop_data *result 	= apop_query_to_data("%s", q);
 	apop_db_close(0);
     apop_assert(result, 0, 0, 's', "Your query returned a blank table. Quitting.");
     if (no_plot){
@@ -97,18 +97,18 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
 -f\tfile to dump to. If -f- then use STDOUT.\tdefault=pipe to Gnuplot\n", argv[0]); 
 
 	if(argc<2){
-		printf(msg);
+		printf("%s", msg);
 		return 0;
 	}
 	while ((c = getopt (argc, argv, "ad:f:hH:nQ:q:st:")) != -1){
 		switch (c){
 		  case 'd':
               d   = malloc(2+strlen(optarg));
-			  sprintf(d, optarg);
+			  sprintf(d, "%s", optarg);
 			  break;
 		  case 'f':
               outfile   = malloc(1000);
-			  sprintf(outfile, optarg);
+			  sprintf(outfile, "%s", optarg);
 			  apop_opts.output_type	= 'f';
               sf  ++;
 			  break;
@@ -123,14 +123,14 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT
 			  break;
 		  case 'q':
               q   = malloc(2+strlen(optarg));
-			  sprintf(q, optarg);
+			  sprintf(q, "%s", optarg);
 			  break;
 		  case 't':
               plot_type   = malloc(2+strlen(optarg));
-			  sprintf(plot_type, optarg);
+			  sprintf(plot_type, "%s", optarg);
 			  break;
 		  case 'h':
-			printf(msg);
+			printf("%s", msg);
 			return 0;
 		}
 	}

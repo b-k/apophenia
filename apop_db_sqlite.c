@@ -234,7 +234,7 @@ static int db_to_chars(void *o,int argc, char **argv, char **column){
             apop_name_add(d->names, argv[jj], 'r'); 
             ncshift ++;
         } else {
-            asprintf(&(d->text[currentrow][jj-ncshift]), (argv[jj]==NULL)? "NaN": argv[jj]);
+            asprintf(&(d->text[currentrow][jj-ncshift]), "%s", (argv[jj]==NULL)? "NaN": argv[jj]);
             if(addnames)
                 apop_name_add(d->names, column[jj], 't'); 
         }
@@ -301,7 +301,7 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
         if (in->intypes[3]){
             in->d->textsize[0]  = 1;
             in->d->textsize[1]  = in->intypes[3];
-            in->d->text         = malloc(sizeof(char***) * 1);
+            in->d->text         = malloc(sizeof(char***));
         }
     }
     if (!(in->d->names->colct + in->d->names->textct + (in->d->names->vector!=NULL)))
@@ -331,7 +331,7 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
             if(addnames)
                 apop_name_add(in->d->names, column[i], 'c'); 
         } else if (c=='t'||c=='T'){
-            asprintf(&(in->d->text[in->thisrow-1][thistcol++]),
+            asprintf(&(in->d->text[in->thisrow-1][thistcol++]), "%s", 
 			                        argv[i] ? argv[i] : "NaN");
             if(addnames)
                 apop_name_add(in->d->names, column[i], 't'); 

@@ -364,7 +364,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 #else
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
-    apop_data * outd = apop_query_to_data(query);
+    apop_data * outd = apop_query_to_data("%s", query);
     gsl_matrix *outm = NULL;
     if (outd){
         outm = outd->matrix;
@@ -391,7 +391,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
   apop_data	*d=NULL;
   gsl_vector  *out;
 	if (db==NULL) apop_db_open(NULL);
-	d	= apop_query_to_data(query);
+	d	= apop_query_to_data("%s", query);
     apop_assert(d, NULL, 1, 'c', "Query turned up a blank table. Returning NULL.");
     //else:
     out = gsl_vector_alloc(d->matrix->size1);
@@ -418,7 +418,7 @@ double apop_query_to_float(const char * fmt, ...){
   gsl_matrix	*m=NULL;
   double		out;
 	if (db==NULL) apop_db_open(NULL);
-	m	= apop_query_to_matrix(query);
+	m	= apop_query_to_matrix("%s", query);
 	if (m==NULL){
         if (apop_opts.verbose)
 		    printf("apop, %s, %i: Query turned up a blank table. Returning NAN.\n", __FILE__, __LINE__);
@@ -649,7 +649,7 @@ int apop_data_to_db(apop_data *set, char *tabname){
         qxprintf(&q,"%s);",q);
 		ctr++;
 		if(ctr==batch_size || apop_opts.db_engine == 'm') {
-		    if(apop_opts.db_engine == 'm')   apop_query(q);
+		    if(apop_opts.db_engine == 'm')   apop_query("%s", q);
             else                                apop_query("%s commit;",q);
             ctr = 0;
 		    if(apop_opts.db_engine != 'm')   

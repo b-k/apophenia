@@ -1,10 +1,14 @@
 /** \file apop_conversions.c	The various functions to convert from one format to another. */
 /* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+#include "internal.h"
 #include "conversions.h"
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <assert.h>
 
 #define Text_Line_Limit 100000
+#define Fgets(instr, infile, filename) if (!fgets((instr), Text_Line_Limit, (infile))) \
+            {apop_error(0, 's', "Trouble reading %s, such as no data lines, a line longer than %i " \
+                    "chars, or garbage in the file.  exiting.", filename, Text_Line_Limit);}
 
 /** \defgroup conversions Conversion functions
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
@@ -29,7 +33,10 @@ double * apop_vector_to_array(const gsl_vector *in){
 /** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
 
 \param in     An array of <tt>double</tt>s. (No default. Must not be \c NULL);
-\param size 	How long \c line is. If this is zero or omitted, I'll guess using the <tt>sizeof(line)/sizeof(line[0])</tt> trick. There are situations where this can break, in which case you'll need to specify this explicitly. (default = auto-guess)
+\param size 	How long \c line is. If this is zero or omitted, I'll
+guess using the <tt>sizeof(line)/sizeof(line[0])</tt> trick, which will
+work for most arrays allocated using <tt>double []</tt> and won't work
+for those allocated using <tt>double *</tt>. (default = auto-guess)
 \return         A <tt>gsl_vector</tt> (which I will allocate for you).
 \ingroup conversions
 This function uses the \ref designated syntax for inputs.
@@ -129,7 +136,7 @@ apop_data * apop_array_to_data(const double **in, const int rows, const int cols
 \return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
 
 usage: \code gsl_matrix *m = apop_line_to_matrix(indata, 34, 4); \endcode
-See also \ref apop_arrary_to_matrix.
+\see apop_arrary_to_matrix
 \ingroup conversions
 */
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
@@ -281,9 +288,9 @@ static int apop_count_cols_in_text(char *text_file){
     regcomp(regex, full_divider, 1);
 	infile	= fopen(text_file,"r");
     apop_assert(infile, 0, 0, 's', "Error opening file %s.", text_file);
-	fgets(instr, Text_Line_Limit, infile);
+	Fgets(instr, infile, text_file);
 	while(instr[0]=='#')	//burn off comment lines
-		fgets(instr, Text_Line_Limit, infile);
+        Fgets(instr, infile, text_file);
     length_of_string= strlen(instr);
     while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
         pull_string(instr,  outstr, result,  &last_match);
@@ -310,21 +317,20 @@ static int apop_count_rows_in_text(char *text_file){
 	return ct-1;
 }
 
-static void strip_regex_alloc(regex_t **strip_regex){
-  char      w[]           = "[:space:]\"";
-  char      stripregex[1000];
+static regex_t * strip_regex_alloc(void){
+  char    w[]           = "[:space:]\"";
+  char    stripregex[1000];
+  regex_t *strip_regex     = malloc(sizeof(regex_t));
     sprintf(stripregex, "[%s]*\\([^%s]*.*[^%s][^%s]*\\)[%s]*", w,w,w,w,w);
-    *strip_regex     = malloc(sizeof(regex_t));
-    regcomp(*strip_regex, stripregex, 0);
+    regcomp(strip_regex, stripregex, 0);
+    return strip_regex;
 }
 
 //OK, OK. C sucks. This fn just strips leading and trailing blanks.
 static char * strip(char *in){
   size_t      dummy       = 0;
   char 		*out 	    = malloc(1+strlen(in));
-  static regex_t   *strip_regex      = NULL;
-  if (!strip_regex) 
-      strip_regex_alloc(&strip_regex);
+  Staticdef(regex_t* ,strip_regex, strip_regex_alloc( ));
   regmatch_t  result[3];
     if(!regexec(strip_regex, in, 2, result, 0))
         pull_string(in, out, result,  &dummy);
@@ -418,10 +424,10 @@ APOP_VAR_END_HEAD
 
     //First, handle the top line, if we're told that it has column names.
     if (has_col_names){
-	    fgets(instr, Text_Line_Limit, infile);
+	    Fgets(instr, infile, text_file);
         line_no   ++;
 	    while(instr[0]=='#')	//burn off comment lines
-		    fgets(instr, Text_Line_Limit, infile);
+            Fgets(instr, infile, text_file);
 	    set->names->colct= 0;
 	    set->names->column	= malloc(sizeof(char*));
         last_match      = 0;
@@ -565,9 +571,9 @@ static char * prep_string_for_sqlite(char *astring){
   char		*tmpstring, 
 		*out	= NULL,
 		*tail	= NULL;
-	strtod(astring, &tail);
+	if(strtod(astring, &tail)) /*do nothing.*/;
     tmpstring=strip(astring); 
-    if (!strlen(astring)){
+    if (!strlen(astring)){ //it's empty
         out = malloc(1); 
         out[0] ='\0';
         return out;
@@ -588,7 +594,7 @@ static char * prep_string_for_sqlite(char *astring){
 		if (tmpstring[0]=='.')
 			asprintf(&out, "0%s",tmpstring);
 		else
-            asprintf(&out, tmpstring);
+            asprintf(&out, "%s", tmpstring);
 	}
     free(tmpstring);
     return out;
@@ -609,27 +615,27 @@ static int count_cols_in_row(char *instr){
 	return ct;
 }
 
-static int get_field_names(int has_col_names, char **field_names, FILE *infile){
+static int get_field_names(int has_col_names, char **field_names, FILE *infile, char *filename){
   char		instr[Text_Line_Limit], *stripped, *stripme, outstr[Text_Line_Limit];
   int       i = 0, ct, length_of_string;
   size_t    last_match;
   regmatch_t  result[2];
 
   char full_divider2[1000];
-  regex_t       *regex_no_blank_fields = malloc(sizeof(regex_t));
+  Staticdef(regex_t *, regex_no_blank_fields, malloc(sizeof(regex_t)));
     //sprintf(full_divider2, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     sprintf(full_divider2, headerdivider, apop_opts.input_delimiters, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex_no_blank_fields, full_divider2, 1);
 
-    fgets(instr, Text_Line_Limit, infile);
+    Fgets(instr, infile, filename);
     while(instr[0]=='#' || instr[0]=='\n')	//burn off comment lines
-        fgets(instr, Text_Line_Limit, infile);
+        Fgets(instr, infile, filename);
     ct              = count_cols_in_row(instr);
 
     if (has_col_names && field_names == NULL){
         use_names_in_file++;
         if (!has_col_names) //then you have a data line, which you should save
-            asprintf(&add_this_line, instr);
+            asprintf(&add_this_line, "%s", instr);
         fn	            = malloc(ct * sizeof(char*));
         last_match      = 0;
         length_of_string= strlen(instr);
@@ -639,7 +645,7 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
                 if (strlen(outstr)){
                     stripped    = apop_strip_dots(stripme,'d');
                     fn[i]	    = NULL;
-                    asprintf(&fn[i], stripped);
+                    asprintf(&fn[i], "%s", stripped);
                     free(stripped);
                     i++;
                 }
@@ -649,7 +655,7 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile){
         if (field_names)
             fn	= field_names;
         else{
-            asprintf(&add_this_line, instr); //save this line for later.
+            asprintf(&add_this_line, "%s", instr); //save this line for later.
             fn	= malloc(ct * sizeof(char*));
             for (i =0; i < ct; i++){
                 fn[i]	= malloc(1000);
@@ -670,11 +676,10 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
             else
                 asprintf(&q, "%s (", q);
         } else		asprintf(&q, "%s varchar(100) , ", q);
-        asprintf(&q, "%s ", q);
-        asprintf(&q, "%s%s", q, fn[i]);
+        asprintf(&q, "%s %s", q, fn[i]);
     }
     asprintf(&q, "%s varchar(100) );", q);
-    apop_query(q);
+    apop_query("%s", q);
     apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s\" failed.\n", q);
     if (use_names_in_file){
         for (int i=0; i<ct; i++)
@@ -699,9 +704,8 @@ static void tab_create(char *tabname, int ct, int has_row_names){
         asprintf(&q, "%s '%s", q, fn[i]);
         free(r);
     }
-    asprintf(&q, "%s' ); begin;", q);
-    apop_query(q);
-    apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s\" failed.\n", q);
+    apop_query("%s' ); begin;", q);
+    apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s' ); begin;\" failed.\n", q);
     if (use_names_in_file){
         for (int i=0; i<ct; i++)
             free(fn[i]);
@@ -824,7 +828,7 @@ APOP_VAR_END_HEAD
     else
         infile  = stdin;
     apop_assert(infile, 0,  0, 'c', "Trouble opening %s. Bailing.\n", text_file);
-    ct  = get_field_names(has_col_names, field_names, infile);
+    ct  = get_field_names(has_col_names, field_names, infile, text_file);
     if (apop_opts.db_engine=='m')
         tab_create_mysql(tabname, ct, has_row_names);
     else
@@ -906,7 +910,7 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out){
         int total_size    = (in->vector ? in->vector->size : 0)
                        + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0);
         apop_assert(in->vector->size == total_size, NULL, 0, 's', "The input data set has %i elements,"
-               " but the output vector you want to fill has size %i. Please make these sizes equal."
+               " but the output vector you want to fill has size %u. Please make these sizes equal."
                , total_size, in->vector->size);
     }
     return apop_data_pack_base(in, out);

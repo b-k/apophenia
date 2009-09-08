@@ -51,7 +51,7 @@ int main(int argc, char **argv){
 
     opterr=0;
 	if(argc==1){
-		printf(msg);
+		printf("%s", msg);
 		return 0;
 	}
 	while ((c = getopt (argc, argv, "B:b:F:f:N:n:pqT:t:")) != -1){
@@ -78,7 +78,7 @@ int main(int argc, char **argv){
             break;
           case 'H':
 		  case 'h':
-			printf(msg);
+			printf("%s", msg);
 			return 0;
           case 'n':
           case 'N':

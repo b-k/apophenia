@@ -41,7 +41,7 @@ apop_data structure with a zero-sized vector to your matrix of strings.
 The \c weights vector is set to \c NULL. If you need it, allocate it via
 \code d->weights   = gsl_vector_alloc(row_ct); \endcode.
 
-See also \ref apop_data_calloc.
+\see{apop_data_calloc}
 
   \param vsize              vector size, if any. 
   \param msize1, msize2     Row and column size for the matrix. 
@@ -53,21 +53,26 @@ See also \ref apop_data_calloc.
   */
 apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int msize2){
   apop_data  *setme       = malloc(sizeof(apop_data));
+    apop_assert(setme, NULL, 0, 's', "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
-    if (msize2 > 0  && msize1 > 0)
+    if (msize2 > 0  && msize1 > 0){
         setme->matrix   = gsl_matrix_alloc(msize1,msize2);
-    if (vsize)
+        apop_assert(setme->matrix, NULL, 0, 's', "malloc failed on a %u x %i matrix. Probably out of memory.", msize1, msize2);
+    }
+    if (vsize){
         setme->vector   = gsl_vector_alloc(vsize);
+        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %u. Probably out of memory.", vsize);
+    }
     //I allocate a vector of msize2==-1. This is deprecated, and will one day be deleted.
-    else if (msize2==-1 && msize1>0)
+    else if (msize2==-1 && msize1>0){
         setme->vector   = gsl_vector_alloc(msize1);
+        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %u. Probably out of memory.", msize1);
+    }
     setme->names        = apop_name_alloc();
     return setme;
 }
 
-
-/** Allocate a \ref apop_data structure, to be filled with data; set
- everything in the allocated portion to zero. See \ref apop_data_alloc for details.
+/** Allocate a \ref apop_data structure, to be filled with data; set everything in the allocated portion to zero. See \ref apop_data_alloc for details.
 
   \param vsize              vector size, if any. 
   \param msize1, msize2     Row and column size for the matrix. If \c size2>0
@@ -76,22 +81,29 @@ apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int m
   
   \c apop_data_calloc(0, 0,0) will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
 
- \return    The \ref apop_data structure, allocated and zeroed out.
- \ingroup data_struct
+\return    The \ref apop_data structure, allocated and zeroed out.
+\see apop_data_alloc 
+\ingroup data_struct
   */
 apop_data * apop_data_calloc(const size_t vsize, const size_t msize1, const int msize2){
   apop_data  *setme       = malloc(sizeof(apop_data));
+    apop_assert(setme, NULL, 0, 's', "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
-    if (msize2 >0 && msize1 > 0)
+    if (msize2 >0 && msize1 > 0){
         setme->matrix   = gsl_matrix_calloc(msize1,msize2);
-    if (vsize)
+        apop_assert(setme->matrix, NULL, 0, 's', "malloc failed on a %u x %u matrix. Probably out of memory.", msize1, msize2);
+    }
+    if (vsize){
         setme->vector   = gsl_vector_calloc(vsize);
-    else if (msize2==-1 && msize1>0)
+        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %u. Probably out of memory.", vsize);
+    }
+    else if (msize2==-1 && msize1>0){
         setme->vector   = gsl_vector_calloc(msize1);
+        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %u. Probably out of memory.", msize1);
+    }
     setme->names        = apop_name_alloc();
     return setme;
 }
-
 
 /** Wrap an \ref apop_data structure around an existing \c gsl_matrix.
  The matrix is not copied, but is pointed to by the new \ref apop_data struct.
@@ -178,6 +190,8 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                                  in->vector->size, out->vector->size);
         gsl_vector_memcpy(out->vector, in->vector);
     }
+    if (in->weights)
+        gsl_vector_memcpy(out->weights, in->weights);
     apop_name_stack(out->names, in->names, 'r');
     apop_name_stack(out->names, in->names, 'c');
     apop_name_stack(out->names, in->names, 't');
@@ -188,7 +202,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
         for (size_t i=0; i< in->textsize[0]; i++){
             out->text[i]  = malloc(sizeof(char **) * in->textsize[1]);
             for(size_t j=0; j < in->textsize[1]; j ++)
-				asprintf(&(out->text[i][j]), in->text[i][j]);
+				asprintf(&(out->text[i][j]), "%s", in->text[i][j]);
         }
     }
 }
@@ -210,6 +224,8 @@ apop_data *apop_data_copy(const apop_data *in){
         out->vector = gsl_vector_alloc(in->vector->size);
     if (in->matrix)
         out->matrix = gsl_matrix_alloc(in->matrix->size1, in->matrix->size2);
+    if (in->weights)
+        out->weights = gsl_vector_alloc(in->weights->size);
     apop_data_memcpy(out, in);
     return out;
 }

@@ -3,6 +3,7 @@
 
 #include "model.h"
 #include "mapply.h"
+#include "internal.h"
 #include "likelihoods.h"
 
 /** The Beta distribution is useful for modeling because it is bounded between zero and one, and can be either unimodal (if the variance is low) or bimodal (if the variance is high), and can have either a slant toward the bottom or top of the range (depending on the mean).
@@ -36,10 +37,18 @@ apop_model *apop_beta_from_mean_var(double m, double v){
 static double beta_log_likelihood(apop_data *d, apop_model *p);
 
 static apop_model * beta_estimate(apop_data * data,  apop_model *parameters){
+  Get_vmsizes(data) //vsize, msize1,...
   apop_model 	*est= parameters ? parameters : apop_model_copy(apop_beta);
   apop_model_clear(data, est);
-  double		mean, var, alpha, beta;
-	apop_matrix_mean_and_var(data->matrix, &mean, &var);	
+  double		mmean=0, mvar=0, vmean=0, vvar=0, alpha, beta;
+    if (vsize){
+        vmean = apop_mean(data->vector);
+        vvar = apop_var(data->vector);
+    }
+    if (msize1)
+        apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
+    double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
+    double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
     alpha   = gsl_pow_2(mean) * ((1-mean)/var - 1/mean);
     beta    = alpha * (1-mean)/mean;
 	gsl_vector_set(est->parameters->vector, 0, alpha);
@@ -55,30 +64,31 @@ typedef struct{
 
 static double betamap(double x, void *abin) {
     ab_type *ab = abin; 
-    return (ab->alpha-1) * log(x) + (ab->beta-1) *log(1-x); 
+    return (x < 0 || x > 1) ? 0
+                : (ab->alpha-1) * log(x) + (ab->beta-1) *log(1-x); 
 }
 
 static double beta_log_likelihood(apop_data *d, apop_model *p){
-    apop_assert(p->parameters,  0, 0, 's', "You asked me to evaluate an un-parametrized model.");
-    ab_type ab;
-    size_t size = (d->vector ? d->vector->size : 0) + (d->matrix ? d->matrix->size1 + d->matrix->size2 : 0);
-    ab.alpha       = apop_data_get(p->parameters,0,-1),
-    ab.beta        = apop_data_get(p->parameters,1,-1);
-	return apop_map_sum(d, .fn_dp = betamap, .param=&ab) + gsl_sf_lnbeta(ab.alpha, ab.beta) * size;
+    Get_vmsizes(d) //tsize
+    Nullcheck_m(p); Nullcheck_p(p);
+    ab_type ab = { .alpha = apop_data_get(p->parameters,0,-1),
+                   .beta  = apop_data_get(p->parameters,1,-1)
+    };
+	return apop_map_sum(d, .fn_dp = betamap, .param=&ab) + gsl_sf_lnbeta(ab.alpha, ab.beta) * tsize;
 }
 
 static double dbeta_callback(double x){ return log(1-x); }
 
 static void beta_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
-  size_t size = (d->vector ? d->vector->size : 0) + (d->matrix ? d->matrix->size1 + d->matrix->size2 : 0);
-  apop_assert_void(m->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
+    Get_vmsizes(d) //tsize
+    Nullcheck_mv(m); Nullcheck_pv(m);
   double bb	= gsl_vector_get(m->parameters->vector, 0);
   double a	= gsl_vector_get(m->parameters->vector, 1);
   double lnsum = apop_map_sum(d, log);
   double ln_x_minus_1_sum = apop_map_sum(d, dbeta_callback);
 	//Psi is the derivative of the log gamma function.
-	gsl_vector_set(gradient, 0, lnsum  + (-gsl_sf_psi(a) + gsl_sf_psi(a+bb))*size);
-	gsl_vector_set(gradient, 1, ln_x_minus_1_sum  + (-gsl_sf_psi(bb) + gsl_sf_psi(a+bb))*size);
+	gsl_vector_set(gradient, 0, lnsum  + (-gsl_sf_psi(a) + gsl_sf_psi(a+bb))*tsize);
+	gsl_vector_set(gradient, 1, ln_x_minus_1_sum  + (-gsl_sf_psi(bb) + gsl_sf_psi(a+bb))*tsize);
 }
 
 static double beta_constraint(apop_data *data, apop_model *v){

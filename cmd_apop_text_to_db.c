@@ -28,7 +28,7 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 \n", argv[0], argv[0]); 
 
 	if(argc<3){
-		printf(msg);
+		printf("%s", msg);
 		return 0;
 	}
 	while ((c = getopt (argc, argv, "n:d:hmp:ru:vO")) != -1){
@@ -41,7 +41,7 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 			strcpy(apop_opts.input_delimiters, optarg);
 			break;
 		  case 'h':
-			printf(msg);
+			printf("%s", msg);
 			return 0;
 		  case 'm':
 			apop_opts.db_engine = 'm';

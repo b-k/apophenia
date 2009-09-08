@@ -219,7 +219,8 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   //(X'X)
     gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)
     xpxinvxpy(set->matrix, y_data, xpx, xpy, epout);
-    gsl_vector_free(y_data); gsl_vector_free(xpy);
+    gsl_vector_free(y_data); 
+    gsl_vector_free(xpy);
 
     epout->llikelihood  = ols_log_likelihood(epout->data, epout);
     if (!olp->destroy_data)
@@ -236,20 +237,13 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
 
 \param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
 
-\param epin    An \ref apop_model object. The only
-thing we look at is the \c destroy_data element. If this is NULL or
-\c destroy_data==0, then the entire data set is copied off, and then
-mangled. If \c destroy_data==1, then this doesn't copy off the data set,
-but destroys it in place.
+\param epin    An \ref apop_model object. It may have a \ref apop_ls_settings group attached.  I'll look at the \c destroy_data element; if this is NULL or \c destroy_data==0, then the entire data set is copied off, and then mangled. If \c destroy_data==1, then this doesn't copy off the data set, but destroys it in place. I also look at \c want_cov and \c want_expected_value, though I'll not produce the covariance matrix only if both are \c 'n'.
 
-\return
-Will return an \ref apop_model <tt>*</tt>.
-<tt>The_result->parameters</tt> will hold the coefficients; the first
-coefficient will be the coefficient on the constant term, and the
-remaining will correspond to the independent variables. It will therefore
-be of size <tt>(data->size2)</tt>. Do not pre-allocate.
+\return Will return an \ref apop_model <tt>*</tt>.  <tt>The_result->parameters</tt> will hold the coefficients; the first coefficient will be the coefficient on the constant term, and the remaining will correspond to the independent variables. It will therefore be of size <tt>(data->size2)</tt>. Do not pre-allocate.
 
-If you asked for it, the covariance matrix, confidence levels, and residuals will also be returned. The confidence intervals give the level of certainty with which we can reject the hypothesis that the given coefficient is zero.
+If you asked for them, the covariance matrix, confidence levels, and residuals will also be returned. The confidence intervals give the level of certainty with which we can reject the hypothesis that the given coefficient is zero.
+
+See also the page on \ref dataprep.
 
 \b sample 
 
@@ -274,14 +268,12 @@ gcc sample.c -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
 
 and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
 
-Feeling lazy? The program above was good form and demonstrated useful
-features, but the code below will do the same thing in two lines:
+Feeling lazy? The program above was good form and demonstrated useful features, but the code below will do the same thing in two lines:
 
 \code
 #include <apop.h>
 int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols)); }
 \endcode
-
 
 \hideinitializer
  */
