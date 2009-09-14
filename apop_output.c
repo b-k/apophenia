@@ -490,15 +490,11 @@ static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype
     
 \ingroup apop_print */
 void apop_data_print(apop_data *data, char *file){
-    if (apop_opts.output_type   == 'd'){
+    if (apop_opts.output_type   == 'd')
         apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
-        return;
-    }
-    if (apop_opts.output_type   == 'p'){
+    else if (apop_opts.output_type   == 'p')
         apop_data_show_core(data,  apop_opts.output_pipe, 'p');
-        return;
-    }
-    if (file){
+    else if (file){
         FILE *f = fopen(file, apop_opts.output_append ? "a" : "w");
         apop_data_show_core(data, f, 'p');
         fclose(f);

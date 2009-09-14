@@ -178,7 +178,6 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
   apop_data         *set;
   apop_model       *epout = apop_model_copy(*ep);
   epout->status = 0;
-  gsl_vector        *weights    = NULL;
     apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
     if (!olp) {
         Apop_model_add_group(epout, apop_ls);
@@ -188,11 +187,9 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     apop_model_clear(inset, epout);
     set = olp->destroy_data ? inset : apop_data_copy(inset); 
     
-    //prep weights.
-    if (olp->destroy_data)
-        weights = epout->data->weights;  //may be NULL.
-    else
-        weights = apop_vector_copy(epout->data->weights); //may be NULL.
+    gsl_vector *weights    = olp->destroy_data      //this may be NULL.
+                                ? epout->data->weights 
+                                : apop_vector_copy(epout->data->weights);
     if (!strcmp(epout->name, "Weighted Least Squares") && weights)
         for (size_t i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
@@ -323,7 +320,6 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
   apop_assert(inset, NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set, *z;
   apop_model       *epout;
-  gsl_vector        *weights    = NULL;
   int               i;
     epout               = apop_model_copy(*ep);
     apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
@@ -341,11 +337,9 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     set = olp->destroy_data ? inset : apop_data_copy(inset); 
     z   = prep_z(inset, olp->instruments);
     
-    //prep weights.
-    if (olp->destroy_data)
-        weights = epout->data->weights;  //may be NULL.
-    else
-        weights = apop_vector_copy(epout->data->weights); //may be NULL.
+    gsl_vector *weights = olp->destroy_data      //the weights may be NULL.
+                             ? epout->data->weights 
+                             : apop_vector_copy(epout->data->weights);
     if (weights)
         for (i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));

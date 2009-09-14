@@ -1,17 +1,39 @@
 //apop.i   Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 
-/* This is the interface file for SWIG, and unfortunately, this file is
-an absolute mess. We can't just #include the other header files, because
-we need to clarify what is from Apophenia and what is just included from
-elsewhere. Also, swig doesn't yet like __attribs__. Thus, this is redundant
-with the other header files.
+/* This is the interface file for SWIG, and unfortunately, it is
+a mess. There are two systematic difficulties, whose solutions are
+something of a slog:
 
-You'll also find a series of %extend elements that link appropriate
-functions to objects, so you can use the familiar forms like
-yourdata.copy() instead of apop_data_copy(yourdata).
+(A) Including apop_data_copy, for example, in the apop_data object will
+produce a name clash. So I need to:
+    --%ignore the function on the Python/R side.
+    --add a %rename directive to change a dummy like __copy to copy
+    --In the apop_data object, declare a method named __copy, which the
+    above rename directive and Swig's rules will change to your_data.copy
+    on the Python/R side.
+
+(B) Swig's system doesn't mesh with the C preprocessor-based method of
+implementing C-side named arguments. So I have to start over,
+re-declaring the function using Swig's form for default values.
+This means redundancy: I have to have the default values set in the code
+itself and here; be careful about that.
+
+[Also, swig doesn't yet like C99 __attribs__.]
+
+That said, here is the current table of contents:
+
+--%ignores for issue (A) above
+--Apophenia's headers, to be pasted as C code into wrapper.c 
+--type mappings, including swig's arrays and some Python conversions like list->apop_data 
+--%renames for (A)
+--declarations with Swig/c++-style defaults for (B)
+--%extend elements that link appropriate functions to objects, so you can use the familiar forms like yourdata.copy() instead of apop_data_copy(yourdata).
+--Apophenia's headers, to be parsed by Swig to produce the interfaces
+--A sample from the GSL's vector and matrix headers, so Swig will produce wrappers for various GSL functions as well (primarily those that have methods declared in the vector and matrix objects)
+
 */
 
-//These guys are all now called via the object.verb form.
+//These are all now called via the object.verb form.
 %ignore apop_data_add_named_elmt;
 %ignore apop_data_copy;
 %ignore apop_data_correlation;
@@ -22,6 +44,7 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 %ignore apop_data_ptr;
 %ignore apop_data_rm_columns;
 %ignore apop_data_set;
+%ignore apop_data_sort;
 %ignore apop_data_split;
 %ignore apop_data_summarize;
 %ignore apop_data_transpose;
@@ -67,7 +90,6 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 %ignore gsl_vector_sub;
 %ignore apop_data_stack;
 
-
 %module apop
 %{
 #include "asst.h"
@@ -89,6 +111,7 @@ yourdata.copy() instead of apop_data_copy(yourdata).
 %array_class(double, apop_double)
 %array_class(int, apop_int)
 
+#ifdef SWIGPYTHON
 %pythoncode %{
 from fpconst import *
 
@@ -127,6 +150,7 @@ def apop_pylist_to_data(inlist):
         out = apop_line_to_data(dlist, 0, rowsize, colsize)
     return out
 %}
+#endif
 
 %rename(add) __add;
 %rename(add_constant) __add_constant;
@@ -158,6 +182,7 @@ def apop_pylist_to_data(inlist):
 %rename(set) __set;
 %rename(set_zero) __set_zero;
 %rename(split) __split;
+%rename(sort) __sort;
 %rename(stack) __stack;
 %rename(sub) __sub;
 %rename(summarize) __summarize;
@@ -168,38 +193,33 @@ def apop_pylist_to_data(inlist):
 %rename(transpose) __transpose;
 
 /* Variadics: */
-%rename(apop_text_to_data) apop_text_to_data_base;
-%rename(apop_text_to_db) apop_text_to_db_base;
-%rename(apop_data_to_dummies) apop_data_to_dummies_base;
-%rename(apop_db_close) apop_db_close_base;
-%rename(apop_dot) apop_dot_base;
-%rename(apop_f_test) apop_f_test_base;
-%rename(apop_histogram_plot) apop_histogram_plot_base;
-%rename(apop_plot_histogram) apop_plot_histogram_base;
-%rename(apop_histogram_print) apop_histogram_print_base;
-%rename(apop_plot_lattice) apop_plot_lattice_base;
-%rename(apop_plot_qq) apop_plot_qq_base;
-%rename(apop_table_exists) apop_table_exists_base;
-%rename(apop_vector_bounded) apop_vector_bounded_base;
-%rename(apop_vector_normalize) apop_vector_normalize_base;
-%rename(apop_histogram_model_reset) apop_histogram_model_reset_base;
+int apop_db_close(char vacuum='q');
+void apop_db_merge(char *db_file, char inout='i');
+void apop_db_merge_table(char *db_file, char *tabname, char inout='i');
+apop_data * apop_text_to_data(char *text_file="-", int has_row_names=0, int has_col_names=1);
+int apop_text_to_db(char *text_file="-", char *tabname="t", int has_row_names =0, int has_col_names=1, char **field_names=NULL);
+int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi='s');
+apop_data * apop_f_test (apop_model *est, apop_data *contrast=NULL, int normalize=0);
+int apop_table_exists(char *name, char remove='n');
+double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb=NULL, const char metric='e', const double norm=2);
+apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1=0, char form2=0);
+apop_data * apop_data_to_dummies(apop_data *d, int col=0, char type='t', int keep_first=0);
+void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
+void apop_histogram_print(apop_model *h, char *outfile=NULL);
+
+
+/*
+//will require a wrapper function
+%rename(test) apop_test;
+%rename(plot_qq) apop_plot_qq;
+%rename(random_int) apop_random_int;
+%rename(histogram_plot) apop_histogram_plot;
 %rename(apop_bootstrap_cov) apop_bootstrap_cov_base;
+%rename(apop_plot_histogram) apop_plot_histogram_base;
 %rename(apop_linear_constraint) apop_linear_constraint_base;
-%rename(apop_data_sort) apop_data_sort_base;
-%rename(apop_vector_percentiles) apop_vector_percentiles_base;
-%rename(apop_vector_distance) apop_vector_distance_base;
-%rename(apop_matrix_covariance) apop_matrix_covariance_base;
-%rename(apop_matrix_correlation) apop_matrix_correlation_base;
-%rename(apop_test) apop_test_base;
-%rename(apop_matrix_stack) apop_matrix_stack_base;
-%rename(apop_vector_stack) apop_vector_stack_base;
-%rename(apop_vector_to_matrix) apop_vector_to_matrix_base;
-%rename(apop_data_stack) apop_data_stack_base;
-%rename(apop_db_merge) apop_db_merge_base;
-%rename(apop_db_merge_table) apop_db_merge_table_base;
-%rename(apop_random_int) apop_random_int_base;
 %rename(apop_model_set_parameters) apop_model_set_parameters_base;
-%rename(apop_matrix_is_positive_semidefinite) apop_matrix_is_positive_semidefinite_base;
+%rename(apop_histogram_model_reset) apop_histogram_model_reset_base;
+*/
 
 %extend apop_data {
     apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
@@ -219,7 +239,6 @@ def apop_pylist_to_data(inlist):
     void __set(char* row, int col, double data)     { apop_data_set_ti($self, row, col, data); }
     void __set(char* row, char* col, double data)   { apop_data_set_tt($self, row,  col, data); }
     apop_data * __copy()                            { return apop_data_copy($self); }
-#    apop_data * __stack(apop_data * m2, char posn,char inplace)  { return apop_data_stack_base($self, m2, posn,inplace); }
     apop_data** __split(int splitpoint, char r_or_c){ return apop_data_split($self, splitpoint, r_or_c); }
     apop_data*  __rm_columns(int *drop)             { apop_data_rm_columns($self, drop); return $self; }
     void __memcpy(apop_data *out)                   { return apop_data_memcpy(out, $self);}
@@ -229,6 +248,10 @@ def apop_pylist_to_data(inlist):
     apop_data* __covariance()                       { return apop_data_covariance($self);}
     apop_data* __correlation()                      { return apop_data_correlation($self);}
     apop_data* __summarize()                        { return apop_data_summarize($self);}
+    apop_data * __stack(apop_data * m2=NULL, char posn='r', char inplace ='n'){
+                                     return apop_data_stack_base($self, m2, posn,inplace); }
+    apop_data * __sort(int sortby=0, char asc='a'){
+                                     return apop_data_sort($self, sortby, asc); }
 };
 
 %extend _apop_model{
@@ -240,7 +263,6 @@ def apop_pylist_to_data(inlist):
     apop_model * __clear(apop_data * data){
         return apop_model_clear(data, $self);}
 }
-
 
 %extend apop_name {
             apop_name()     { return apop_name_alloc(); }
@@ -282,16 +304,16 @@ def apop_pylist_to_data(inlist):
     inline void increment( int i, int j, double amt){
         return apop_matrix_increment($self, i, j, amt);}
 
-    gsl_matrix *stack( gsl_matrix * m2, char posn){
-        return apop_matrix_stack($self,  m2, posn);}
+    gsl_matrix *stack( gsl_matrix * m2=NULL, char posn='r', char inplace=0){
+        return apop_matrix_stack($self,  m2, posn, inplace);}
 
     gsl_matrix *rm_columns( int *drop){
     return apop_matrix_rm_columns($self, drop);}
 
-    gsl_matrix *covariance(const char normalize){
+    gsl_matrix *covariance(const char normalize=0){
         return apop_matrix_covariance_base($self, normalize);}
 
-    gsl_matrix * correlation(const char normalize){
+    gsl_matrix * correlation(const char normalize=0){
         return apop_matrix_correlation_base($self, normalize);}
 
     double  var_m(double mean)                          { return apop_matrix_var_m($self, mean) ;}
@@ -331,7 +353,7 @@ def apop_pylist_to_data(inlist):
     double      var()                   { return apop_vector_var($self) ; }
     double      var_m(const double mean){ return apop_vector_var_m($self, mean) ; }
     apop_data * to_data()               { return apop_vector_to_data($self); }
-    gsl_matrix * to_matrix(char row_col) { return apop_vector_to_matrix($self, row_col); }
+    gsl_matrix * to_matrix(char row_col='c') { return apop_vector_to_matrix($self, row_col); }
     double      kurtosis_pop()          { return apop_vector_kurtosis_pop($self) ; }
     double      kurtosis()              { return apop_vector_kurtosis($self) ; }
     double      skew()                  { return apop_vector_skew($self) ; }
@@ -351,7 +373,7 @@ def apop_pylist_to_data(inlist):
     gsl_vector * moving_average(size_t window){ return  apop_vector_moving_average($self, window);}
 
     //double * percentiles(char rounding) {return apop_vector_percentiles_base($self, rounding);}
-    apop_double * percentiles(char rounding) {return apop_vector_percentiles_base($self, rounding);}
+    apop_double * percentiles(char rounding='d') {return apop_vector_percentiles_base($self, rounding);}
     double weighted_mean( const gsl_vector *weight) {
         return apop_vector_weighted_mean($self, weight);
     }
@@ -378,14 +400,14 @@ def apop_pylist_to_data(inlist):
     double grid_distance(const gsl_vector *inb){
         return apop_vector_grid_distance($self, inb);}
 
-    void normalize(gsl_vector **out, const char normalization_type){
+    void normalize(gsl_vector **out=NULL, const char normalization_type = 'p'){
         apop_vector_normalize($self, out, normalization_type); }
 
     void increment(gsl_vector * v, int i, double amt){
         return apop_vector_increment($self, i, amt);}
 
-    int  bounded(long double max){ return apop_vector_bounded($self, max);}
-    gsl_vector *stack(gsl_vector * v2){ return apop_vector_stack($self, v2, 'n');}
+    int bounded(double max=GSL_POSINF){ return apop_vector_bounded($self, max);}
+    gsl_vector *apop_vector_stack(gsl_vector *v2=NULL, char inplace=0){ return apop_vector_stack($self, v2, 'n');}
 
     void __set_zero () {gsl_vector_set_zero ($self);}
     void __set_all (double x) {return gsl_vector_set_all ($self, x);}
@@ -402,6 +424,7 @@ def apop_pylist_to_data(inlist):
 /* Now declare everything that will be included */
 #define APOP_NO_VARIADIC
 #  define __attribute__(Spec) /* empty */
+
 %include "asst.h"
 %include "stats.h"
 %include "apop.h"
@@ -411,11 +434,10 @@ def apop_pylist_to_data(inlist):
 %include "likelihoods.h"
 %include "linear_algebra.h"
 %include "mapply.h"
-%include "output.h"
 %include "settings.h"
 %include "types.h"
 %include "variadic.h"
-
+%include "output.h"
 
 /* matrix/gsl_matrix_double.h
  * 

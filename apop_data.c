@@ -1,6 +1,5 @@
-/** \file apop_data.c	 The apop_data structure joins together a
-  gsl_matrix, apop_name, and a table of strings. No biggie. */
-
+/** \file 
+The apop_data structure joins together a gsl_matrix, apop_name, and a table of strings. */
 /* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "types.h"
@@ -12,9 +11,7 @@
 
   The \c apop_data structure represents a data set.  It joins together a gsl_vector, a gsl_matrix, an apop_name, and a table of strings. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
 
-  For example, let us say that you are running a regression: there is
-  a vector for the dependent variable, and a matrix for the dependent
-  variables. Think of them as a partitioned matrix, where the vector is column -1, and the first column of the matrix is column zero. Here is some code to print the entire matrix. Notice that the column counter \c i starts counting at -1.
+ For example, let us say that you are running a regression: there is a vector for the dependent variable, and a matrix for the dependent variables. Think of them as a partitioned matrix, where the vector is column -1, and the first column of the matrix is column zero. Here is some code to print the entire matrix. Notice that the column counter \c i starts counting at -1.
 
   \code
   for (j = 0; j< data->matrix->size1; j++){
@@ -177,7 +174,8 @@ void apop_data_free(apop_data *freeme){
  \ingroup data_struct
   */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
-    apop_assert_void(out, 1, 'c', "you are copying to a NULL vector. Do you mean to use apop_data_copy instead?");
+    apop_assert_void(out, 1, 'c', "you are copying to a NULL vector. "
+                                  "Do you mean to use apop_data_copy instead?");
     if (in->matrix){
         apop_assert_void(in->matrix->size1 == out->matrix->size1 && in->matrix->size2 == out->matrix->size2, 
                 1, 'c',"You're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix. Returning w/o any copying.", 
@@ -190,8 +188,14 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                                  in->vector->size, out->vector->size);
         gsl_vector_memcpy(out->vector, in->vector);
     }
-    if (in->weights)
+    if (in->weights){
+        apop_assert_void(in->weights->size == out->weights->size,
+                1, 'c',"Weight vector sizes don't match: you're trying "
+                        "to copy a %zu-elmt vector into a %zu-elmt vector. "
+                        "Weights not copied.", 
+                                 in->weights->size, out->weights->size);
         gsl_vector_memcpy(out->weights, in->weights);
+    }
     apop_name_stack(out->names, in->names, 'r');
     apop_name_stack(out->names, in->names, 'c');
     apop_name_stack(out->names, in->names, 't');
@@ -244,16 +248,16 @@ twice as much memory. Plan accordingly.
 if 'c', stack columns of m1's matrix to left of m2's<br>
 (default = 'r')
 \param  inplace If \c 'i' \c 'y' or 1, use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
-
-If m1 or m2 are NULL, this returns a copy of the other element, and if
-both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 back)
-
 \return         The stacked data, either in a new \ref apop_data set or \c m1
+
+\li If m1 or m2 are NULL, this returns a copy of the other element, and if
+both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 back)
 \li text is ignored
 \li If stacking rows on rows, the output vector is the input
 vectors stacked accordingly. If stacking columns by columns, the output
 vector is just a copy of the vector of m1 and m2->vector doesn't appear in the
 output at all.  
+\li The same rules for dealing with the vector(s) hold for the vector(s) of weights.
 \li Names are a copy of the names for \c m1, with the names for \c m2 appended to the row or column list, as appropriate.
 
 This function uses the \ref designated syntax for inputs.
@@ -274,7 +278,7 @@ APOP_VAR_ENDHEAD
     if (!m2)
         return (inplace == 'i' || inplace == 'y') ? m1 : apop_data_copy(m1);
     apop_assert((posn == 'r' || posn == 'c'), NULL, 0, 'c', "Valid positions are 'r' or 'c'"
-                             " you gave me >%c<. Returning NULL.", posn);
+                             " you gave me '%c'. Returning NULL.", posn);
     if (inplace){
         out = m1;
         apop_matrix_stack(m1->matrix, m2->matrix, posn, inplace);
@@ -282,11 +286,13 @@ APOP_VAR_ENDHEAD
         stacked = apop_matrix_stack(m1->matrix, m2->matrix, posn);
         out     = apop_matrix_to_data(stacked);
     }
-    if (posn == 'r')
+    if (posn == 'r'){
         out->vector = apop_vector_stack(m1->vector, m2->vector, inplace);
-    else 
-        if (!inplace)
-            out->vector = apop_vector_copy(m1->vector);
+        out->weights = apop_vector_stack(m1->weights, m2->weights, inplace);
+    } else if (!inplace){
+        out->vector = apop_vector_copy(m1->vector);
+        out->weights = apop_vector_copy(m1->weights);
+    }
     if (!inplace)
         out->names  = apop_name_copy(m1->names);
     apop_name_stack(out->names, m2->names, posn);
@@ -297,22 +303,29 @@ APOP_VAR_ENDHEAD
 
  For the opposite operation, see \ref apop_data_stack.
 
- The \ref apop_data->vector is taken to be the -1st element of the matrix.  \param in  The \ref apop_data structure to split \param splitpoint The index of what will be the first row/column of the second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second data set; if this is the length of the matrix then the whole data set will be in the first data set. Another way to put it is that \c splitpoint will equal the number of rows/columns in the first matrix (unless it is -1, in which case the first matrix will have zero rows, or it is greater than the matrix's size, in which case it will have as many rows as the original).  \param r_or_c If this is 'r' or 'R', then cleave the rows; of 'c' or 'C' cleave the columns.
+ The \ref apop_data->vector is taken to be the -1st element of the matrix.  
+ 
+\param in  The \ref apop_data structure to split 
+\param splitpoint The index of what will be the first row/column of the second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second data set; if this is the length of the matrix then the whole data set will be in the first data set. Another way to put it is that \c splitpoint will equal the number of rows/columns in the first matrix (unless it is -1, in which case the first matrix will have zero rows, or it is greater than the matrix's size, in which case it will have as many rows as the original).  
+\param r_or_c If this is 'r' or 'R', then cleave the rows; of 'c' or 'C' cleave the columns.
 
  \return An array of two \ref apop_data sets. If one is empty then a
  NULL pointer will be returned in that position. For example, for a data set of 50 rows, <tt>apop_data **out = apop_data_split(data, 100, 'r')</tt> sets <tt>out[0] = apop_data_copy(data)</tt> and <tt>out[1] = NULL</tt>.
 
+ \li Weights will be preserved. If splitting by rows, then the top and bottom parts of the weights vector will be assigned to the top and bottom parts of the main data set. If splitting by columns, identical copies of the weights vector will be assigned to both parts.
  */
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
     //A long, dull series of contingencies. Bonus: a reasonable use of goto.
   apop_data   **out   = malloc(2*sizeof(apop_data *));
   out[0] = out[1] = NULL;
-  gsl_vector  v1, v2;
+  gsl_vector  v1, v2, w1, w2;
   gsl_matrix  m1, m2;
   int       set_v1  = 1,
             set_v2  = 1,
             set_m1  = 1,
-            set_m2  = 1;
+            set_m2  = 1,
+            set_w1  = 1,
+            set_w2  = 1;
      if (r_or_c == 'r' || r_or_c == 'r') {
         if (splitpoint <=0)
             out[1]  = apop_data_copy(in);
@@ -320,11 +333,18 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             out[0]  = apop_data_copy(in);
         else {
             if (in->vector){
-                v1      = gsl_vector_subvector(in->vector, 0, splitpoint).vector;
-                v2      = gsl_vector_subvector(in->vector, splitpoint, in->vector->size - splitpoint).vector;
+                v1 = gsl_vector_subvector(in->vector, 0, splitpoint).vector;
+                v2 = gsl_vector_subvector(in->vector, splitpoint, in->vector->size - splitpoint).vector;
             } else
                 set_v1  = 
                 set_v2  = 0;
+            if (in->weights){
+                w1 = gsl_vector_subvector(in->weights, 0, splitpoint).vector;
+                w2 = gsl_vector_subvector(in->weights, splitpoint,
+                        in->weights->size - splitpoint).vector;
+            } else
+                set_w1  = 
+                set_w2  = 0;
             if (in->matrix){
                 m1      = gsl_matrix_submatrix (in->matrix, 0, 0, splitpoint, in->matrix->size2).matrix;
                 m2      = gsl_matrix_submatrix (in->matrix, splitpoint, 0,
@@ -335,6 +355,13 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             goto allocation;
         }
     } else if (r_or_c == 'c' || r_or_c == 'C') {
+        if (in->weights){
+            w1      = gsl_vector_subvector(in->weights, 0, in->weights->size).vector;
+            w2      = gsl_vector_subvector(in->weights, 0, in->weights->size).vector;
+        } else 
+            set_w1 = 
+            set_w2 = 0;
+
         if (splitpoint <= -1)
             out[1]  = apop_data_copy(in);
         else if (splitpoint >= in->matrix->size2)
@@ -382,25 +409,14 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
 allocation:
     out[0]  = apop_data_alloc(0, 0,0);
     out[1]  = apop_data_alloc(0, 0,0);
-    if (set_v1){
-        out[0]->vector  = gsl_vector_alloc(v1.size);
-        gsl_vector_memcpy(out[0]->vector, &v1);
-    }
-    if (set_v2){
-        out[1]->vector  = gsl_vector_alloc(v2.size);
-        gsl_vector_memcpy(out[1]->vector, &v2);
-    }
-    if (set_m1){
-        out[0]->matrix  = gsl_matrix_alloc(m1.size1, m1.size2);
-        gsl_matrix_memcpy(out[0]->matrix, &m1);
-    }
-    if (set_m2){
-        out[1]->matrix  = gsl_matrix_alloc(m2.size1, m2.size2);
-        gsl_matrix_memcpy(out[1]->matrix, &m2);
-    }
+    if (set_v1) out[0]->vector  = apop_vector_copy(&v1);
+    if (set_v2) out[1]->vector  = apop_vector_copy(&v2);
+    if (set_m1) out[0]->matrix  = apop_matrix_copy(&m1);
+    if (set_m2) out[1]->matrix  = apop_matrix_copy(&m2);
+    if (set_w1) out[0]->weights  = apop_vector_copy(&w1);
+    if (set_w2) out[1]->weights  = apop_vector_copy(&w2);
     return out;
 }
-
 
 /** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down

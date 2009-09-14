@@ -348,7 +348,9 @@ APOP_VAR_ENDHEAD
         }
         return out;
     } else {
-        apop_assert(m1->size1 == m2->size1,  NULL, 0, 's', "When stacking matrices side by side, they have to have the same number of rows, but  m1->size1==%i and m2->size1==%i. Halting.\n", m1->size1, m2->size1);
+        apop_assert(m1->size1 == m2->size1,  NULL, 0, 's', "When stacking matrices side by side, "
+                "they have to have the same number of rows, but m1->size1==%i and m2->size1==%i. "
+                "Halting.\n", m1->size1, m2->size1);
         int m1size = m1->size2;
         if (inplace)
             out = apop_matrix_realloc(m1, m1->size1, m1->size2 + m2->size2);
@@ -359,9 +361,9 @@ APOP_VAR_ENDHEAD
                 gsl_matrix_set_col(out, i, &(tmp_vector.vector));
             }
         }
-        for (i=m1size ; i< m1size + m2->size2; i++){   //i is not reinitialized.
-            tmp_vector  = gsl_matrix_column(m2, i- m1size);
-            gsl_matrix_set_col(out, i, &(tmp_vector.vector));
+        for (i=0; i< m2->size2; i++){
+            tmp_vector  = gsl_matrix_column(m2, i);
+            gsl_matrix_set_col(out, i+ m1size, &(tmp_vector.vector));
         }
         return out;
     } 
@@ -470,7 +472,7 @@ This function uses the \ref designated syntax for inputs.
 \param d1 the left part of \f$ d1 \cdot d2\f$
 \param d2 the right part of \f$ d1 \cdot d2\f$
 \param form1 't' or 'p' or 1: transpose or prime \c d1->matrix.<br>
-                    'n' or 0: no transpose. <br>
+                    'n' or 0: no transpose. (the default)<br>
                     'v': ignore the matrix and use the vector.
 \param form2 As above, with \c d2.
 \return     an \ref apop_data set. If two matrices come in, the vector element is \c NULL and the 

@@ -94,6 +94,7 @@ gsl_rng *apop_rng_alloc(int seed);
 apop_data * apop_data_listwise_delete(apop_data *d);
 apop_model * apop_ml_imputation(apop_data *d, apop_model* meanvar);
 
+
 APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng);
 
 APOP_VAR_DECLARE double apop_test(double statistic, char *distribution, double p1, double p2, char tail);
@@ -104,12 +105,13 @@ APOP_VAR_DECLARE apop_data * apop_data_sort(apop_data *data, int sortby, char as
 
 //asprintf, vararg, &c
 #include <stdarg.h>
-extern int asprintf (char **result, const char *format, ...)
+extern int asprintf (char **res, const char *format, ...)
        __attribute__ ((__format__ (__printf__, 2, 3)));
-extern int vasprintf (char **result, const char *format, va_list args)
+extern int vasprintf (char **res, const char *format, va_list args)
        __attribute__ ((__format__ (__printf__, 2, 0)));
 
 #ifdef	__cplusplus
 }
 #endif
+
 #endif

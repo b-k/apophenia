@@ -770,7 +770,8 @@ Using the data set from the example on the \ref apop_ols page, here's another wa
 By the way, there is a begin/commit wrapper that bundles the process into bundles of 2000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.
 
 \param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
-\param tabname      The name to give the table in the database (default = <tt> apop_strip_dots (text_file, 'd')</tt>)
+\param tabname      The name to give the table in the database (default
+= <tt> apop_strip_dots (text_file, 'd')</tt>; default in Python/R interfaces="t")
 \param has_row_names Does the lines of data have row names? (default = 0)
 \param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1)
 \param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
@@ -949,13 +950,16 @@ Fill a pre-allocated data set with values.
 int main(){
   apop_data *a =apop_data_alloc(2,2,2);
   double    eight   = 8.0;
-    apop_data_fill(a, 8.,    2.0, eight/2,
-                      0.,    6.0, eight);
+    apop_data_fill(a, 8, 2.2, eight/2,
+                      0, 6.0, eight);
     apop_data_show(a);
 }
 \endcode
 
 Warning: I need as many arguments as the size of the data set, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
+
+I assume that <tt>vector->size==matrix->size1</tt>; otherwise I just use
+\c matrix->size1.
 
 \param in   An \c apop_data set (that you have already allocated).
 \param ...  A series of at least as many floating-point values as there are blanks in the data set.
@@ -988,11 +992,11 @@ apop_data *apop_data_fill_base(apop_data *in, double ap[]){
 
   See \c apop_data_alloc for a relevant example. See also \c apop_matrix_alloc.
 
-Warning: I need as many arguments as the size of the vector, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
+Warning: I need as many arguments as the size of the vector, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your vector with garbage or a simple segfault.
 
 
 \param in   A \c gsl_vector (that you have already allocated).
-\param ...  A series of exactly as many floating-point values as there are blanks in the vector.
+\param ...  A series of exactly as many values as there are spaces in the vector.
 \return     A pointer to the same vector that was input.
 */
 
@@ -1005,7 +1009,9 @@ gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
 }
 
 /** \def apop_matrix_fill(in, ap)
- Fill a pre-allocated \c gsl_matrix with values.
+ Fill a pre-allocated \c gsl_matrix with values. 
+ 
+The values should be in row-major order (i.e., list the entire first row, followed by the second row, et cetera). If your data is column-major, then try calling \c gsl_matrix_transpose after this function.
 
   See \c apop_data_alloc for a relevant example. See also \c apop_vector_alloc.
 
