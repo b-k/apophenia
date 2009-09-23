@@ -158,7 +158,7 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *paramete
     est->parameters->vector = count;
     apop_name_add(est->parameters->names, "n", 'c');
     char name[100];
-    for(size_t i=1; i < count->size; i ++){
+    for(int i=1; i < count->size; i ++){
         sprintf(name, "p%i", i);
         apop_name_add(est->parameters->names, name, 'c');
     }

@@ -16,6 +16,7 @@ gsl_rng *r_global;
 double nan_map(double in){return gsl_isnan(in);}
 
 double  true_parameter_v[]    = {1.82,2.1};
+//double  true_parameter_v[]    = {0.8,0.2};
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
 int     len                 = 8000;
@@ -1048,15 +1049,16 @@ void test_posdef(gsl_rng *r){
 
 void estimate_model(apop_data *data, apop_model dist, int method){
   int                     i;
-  double                  starting_pt[] =  {3.2, 1.4}; //{1.82,2.1}; //
+  double                  starting_pt[] =  {0.6, 0.4};//{3.2, 1.4}; //{1.82,2.1};
 
     Apop_model_add_group(&dist, apop_mle, 
-        .parent       = &dist,       .starting_pt = starting_pt,
-        .method       = method, .verbose =1,
-        .step_size = 1e-1,
-        .tolerance    = 1e-3,        .k         = 1.8,
-        .t_initial    = 1,           .t_min     = .5,
-        .use_score    = 1,           .want_cov  = 0);
+        .parent       = &dist,  .starting_pt = starting_pt,
+        .method       = method, .verbose   =1,
+        .step_size    = 1e-1,
+        .tolerance    = 1e-2,   .k         = 1.8,
+        .t_initial    = 1,      .t_min     = .5,
+        .use_score    = 1,      .want_cov  = 0
+        );
     Apop_model_add_group(&dist, apop_ls,  .want_cov = 'n');
     apop_model *e    = apop_estimate(data,dist);
     for (i=0; i < e->parameters->vector->size; i++)
@@ -1111,14 +1113,21 @@ void estimate_model(apop_data *data, apop_model dist, int method){
 
 /*Produce random data, then try to recover the original params */
   void test_one_distribution(gsl_rng *r, apop_model model, apop_model *true_params){
-  long int        runsize             = 1000,
-                  rowsize             = 100;
+  long int        runsize             = 1e5,
+                  rowsize             = 2;
   apop_data      *data; 
   size_t          i,j;
     //generate.
     if (!strcmp(model.name, "Wishart distribution")){
         data = apop_data_calloc(0,runsize,4);
         true_params->parameters->vector->data[0] = runsize-4;
+        for (i=0; i< runsize; i++){
+            Apop_row(data, i, v)
+            true_params->draw(v->data, r, true_params);
+            assert(!apop_vector_map_sum(v, nan_map));
+        }
+    } else if (!strcmp(model.name, "Dirichlet distribution")){
+        data = apop_data_calloc(0,runsize,2);
         for (i=0; i< runsize; i++){
             Apop_row(data, i, v)
             true_params->draw(v->data, r, true_params);
@@ -1139,7 +1148,7 @@ void test_distributions(gsl_rng *r){
   int         i;
   apop_model* true_params;
   apop_model  null_model      = {"the null model"};
-  apop_model  dist[]          = {/*apop_wishart,*/apop_poisson,  /*apop_gamma,*/ apop_exponential, apop_normal, apop_t_distribution, apop_f_distribution, 
+  apop_model  dist[]          = {apop_dirichlet, /*apop_wishart,*/apop_poisson,  /*apop_gamma,*/ apop_exponential, apop_normal, apop_t_distribution, apop_f_distribution, 
                                     /*apop_zipf, apop_yule,*/ apop_uniform, null_model};
 
     for (i=0; strcmp(dist[i].name, "the null model"); i++){

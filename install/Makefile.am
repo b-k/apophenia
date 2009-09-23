@@ -23,7 +23,8 @@ libapophenia_la_SOURCES = \
 			model/apop_poisson.c model/apop_t_f_chi.c		\
 			model/apop_uniform.c model/apop_beta.c			\
 			model/apop_waring.c model/apop_yule.c 	 		\
-			model/apop_bernoulli.c model/apop_binomial.c 	
+			model/apop_bernoulli.c model/apop_binomial.c 	\
+			model/apop_dirichlet.c
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
 				arms.h mapply.h stats.h types.h		 		\

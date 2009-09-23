@@ -3,20 +3,36 @@
 
 #include "model.h"
 #include "internal.h"
+#include "variadic.h"
 #include "likelihoods.h"
 
-/** If there is an NaN anywhere in the row of data (including the matrix and the vector) then delete the row from the data set.
+/** If there is an NaN anywhere in the row of data (including the matrix, the vector, and the weights) then delete the row from the data set.
 
 The function returns a new data set with the NaNs removed, so the original data set is left unmolested. You may want to \c apop_data_free the original immediately after this function.
 
 \li If every row has an NaN, then this returns \c NULL.
 \li If there is text, it gets pruned as well.
+\li If \c inplace = 'y', then I'll free each element of the input data
+    set and refill it with the pruned elements. Again, I'll take up (up to)
+    twice the size of the data set in memory during the function. If
+    every row has an NaN, then your \c apop_data set will have a lot of
+    \c NULL elements.
+\li This function uses the \ref designated syntax for inputs.
 
     \param d    The data, with NaNs
-    \return     A (potentially shorter) copy of the data set, without NaNs.
+    \param inplace If \c 'y', clear out the pointer-to-\ref apop_data that
+    you sent in and refill with the pruned data. If \c 'n', leave the
+    set alone and return a new data set.
+    \return     A (potentially shorter) copy of the data set, without
+    NaNs. If <tt>inplace=='y'</tt>, redundant with the input.
 */
-apop_data * apop_data_listwise_delete(apop_data *d){
-    Get_vmsizes(d) //defines vsize, msize1, msize2.
+APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
+    apop_data * apop_varad_var(d, NULL);
+    if (!d) return NULL;
+    char apop_varad_var(inplace, 'n');
+    return apop_data_listwise_delete_base(d, inplace);
+APOP_VAR_ENDHEAD
+    Get_vmsizes(d) //defines vsize, wsize, msize1, msize2.
     int i, j, to_rm;
     int max = d->matrix ? d->matrix->size2: 0;
     int min = d->vector ? -1 : 0;
@@ -24,17 +40,22 @@ apop_data * apop_data_listwise_delete(apop_data *d){
             "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
     //find out where the NaNs are
   gsl_vector *marked = gsl_vector_calloc(msize1);
-    for (i=0; i< d->matrix->size1; i++)
+    for (i=0; i< msize1; i++)
         for (j=min; j <max; j++)
             if (gsl_isnan(apop_data_get(d, i, j))){
                     gsl_vector_set(marked, i, 1);
                     break;
             }
+    for (i=0; i< wsize; i++)
+        if (gsl_isnan(gsl_vector_get(d->weights, i)))
+                gsl_vector_set(marked, i, 1);
     to_rm   = apop_sum(marked);
     //copy the good data.
     if (to_rm  == msize1)
         return NULL;
   apop_data *out = apop_data_alloc(0, msize1-to_rm, msize1 ? max : -1);
+    if (wsize)
+        out->weights = gsl_vector_alloc(wsize - to_rm);
     out->names  = apop_name_copy(d->names); 
     if (vsize && msize1)
         out->vector = gsl_vector_alloc(msize1 - to_rm);
@@ -58,12 +79,27 @@ apop_data * apop_data_listwise_delete(apop_data *d){
                 for (int k=0; k< d->textsize[1]; k++)
                     apop_text_add(out, j, k, d->text[i][k]);
             }
+            if (wsize)
+                gsl_vector_set(out->weights, j, gsl_vector_get(d->weights, i));
             j++;
         }
     gsl_vector_free(marked);
-    return out;
+    if (inplace=='n')
+        return out;
+    if (vsize) gsl_vector_free(d->vector);
+    if (wsize) gsl_vector_free(d->weights);
+    if (msize1) gsl_matrix_free(d->matrix);
+    if (d->textsize[0]) apop_text_free(d->text, d->textsize[0], d->textsize[1]);
+    apop_name_free(d->names);
+    if (vsize) d->vector = out->vector;
+    if (wsize) d->weights = out->weights;
+    if (msize1) d->matrix = out->matrix;
+    out->names = d->names;
+    out->textsize[0] = d->textsize[0];
+    out->textsize[1] = d->textsize[1];
+    free(out);
+    return d;
 }
-
 
 //ML imputation
 

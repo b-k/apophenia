@@ -3,6 +3,10 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+	September 2009
+--Many minor changes, mostly regarding adding optional arguments.
+--Dirichlet model
+
 	August 2009
 --apop_map and apop_map_sum. Reworks the apop_(map|apply) system to be More flexible but a little more complex.
 -apop_(data|matrix|vector)_fill is now more robust---no more int vs float issues.

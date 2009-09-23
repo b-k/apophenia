@@ -17,6 +17,7 @@ extern apop_model apop_beta;
 extern apop_model apop_bernoulli;
 extern apop_model apop_binomial;
 extern apop_model apop_chi_squared;
+extern apop_model apop_dirichlet;
 extern apop_model apop_exponential;
 extern apop_model apop_f_distribution;
 extern apop_model apop_gamma;

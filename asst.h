@@ -91,7 +91,7 @@ APOP_VAR_DECLARE apop_data * apop_bootstrap_cov(apop_data *data, apop_model mode
 gsl_rng *apop_rng_alloc(int seed);
 
 //Missing data
-apop_data * apop_data_listwise_delete(apop_data *d);
+APOP_VAR_DECLARE apop_data * apop_data_listwise_delete(apop_data *d, char inplace);
 apop_model * apop_ml_imputation(apop_data *d, apop_model* meanvar);
 
 

@@ -79,7 +79,6 @@ apop_arms_settings *apop_arms_settings_init(apop_arms_settings in){
 
 /** \brief Adaptive rejection metropolis sampling.
 
-
 This is a function to make random draws from any univariate distribution (more or less).
 
 The author, Wally Gilks, explains on 
@@ -95,7 +94,7 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
 \li Here are the parameters that you may want to set, via a form like <tt>apop_model_add_group(your_model, apop_arms, .model=your_model, .p1=8, .p2 =14);</tt>.  The \c model element is mandatory; you'll get a run-time complaint if you forget it.
 
 \c model : the model from which I will draw. Must have either a \c log_likelihood or \c p method.<br>
- \c *xinit       : a double giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't \c NULL, I need at least three items.<br>
+ \c *xinit       : a <tt>double*</tt> giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't \c NULL, I need at least three items.<br>
  \c ninit        : number of elements in xinit<br>
  \c xl          : left bound. If you don't give me one, I'll use min[min(xinit)/10, min(xinit)*10]. <br>
  \c xr          : right bound. If you don't give me one, I'll use max[max(xinit)/10, max(xinit)*10]. <br>
