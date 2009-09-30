@@ -209,8 +209,7 @@ apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data,
             set_params(apop_getmidpt(bh->pdf,i), out->kernelbase);
             for (size_t j=1; j < out->pdf->n-1; j ++){
                 smallset->matrix->data[0] = apop_getmidpt(out->pdf,j);
-                out->pdf->bin[j] += bh->pdf->bin[i] * 
-                        out->kernelbase->p(smallset, out->kernelbase);
+                out->pdf->bin[j] += bh->pdf->bin[i] * apop_p(smallset, out->kernelbase);
             }
         }
 

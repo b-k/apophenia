@@ -564,10 +564,8 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
                             .model          = apop_model_copy(dist)};
     *info.trace_file = NULL;
     info.model->data = data;
-    if(!mp){
-        Apop_settings_add_group(info.model, apop_mle, info.model);
-        mp          =  apop_settings_get_group(info.model, "apop_mle");
-    } 
+    if(!mp)
+        mp = Apop_model_add_group(info.model, apop_mle, .parent=info.model);
     apop_model_prep(data, info.model);
     if (mp->trace_path)
         info.trace_path = mp->trace_path;

@@ -25,9 +25,6 @@ apop_model *apop_beta_from_mean_var(double m, double v){
     apop_assert(m<1&&m > 0, NULL, 0, 's', "You asked for a beta distribution "
                         "with mean %g, but the mean of the beta will always "
                         "be strictly between zero and one.", m);
-    apop_assert(v <= 1./12, NULL, 0, 's', "You asked for a beta distribution "
-                        "with variance %g, but the variance of the beta will always "
-                        "be less than 1/12 (=0.08333).", v);
     double k     = (m * (1- m)/ v) -1 ;
     double alpha = m*k;
     double beta  = k * (1-m);

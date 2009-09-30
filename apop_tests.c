@@ -212,7 +212,7 @@ Here is a list of distributions you can use, and their parameters.
 \c "chi squared", \c "chi", \c "chisq": 
 \li p1=df
 \li no default
-\li One-tailed tests only
+\li One-tailed tests only; default='u' (\f$p\f$-value for typical cases)
 
 \c "f"  
 \li p1=df1, p2=df2
@@ -226,17 +226,19 @@ APOP_VAR_HEAD double apop_test(double statistic, char *distribution, double p1, 
     char*  apop_varad_var(distribution, NULL);
     double apop_varad_var(p1, 0);
     double apop_varad_var(p2, 0);
+    int is_chi = strcasecmp(distribution, "chi squared")|| strcasecmp(distribution, "chi")
+                     || strcasecmp(distribution, "chisq");
      apop_assert(strcasecmp(distribution, "f") || p1, 0, 0, 's', "I need both a p1 and p2 parameter specifying the degrees of freedom.")
-     apop_assert(strcasecmp(distribution, "t") || strcasecmp(distribution, "f")
-             || strcasecmp(distribution, "chi squared")|| strcasecmp(distribution, "chi")
-                                                || strcasecmp(distribution, "chisq")
+     apop_assert(strcasecmp(distribution, "t") || strcasecmp(distribution, "f") || is_chi
              || p1, 0, 0, 's', "I need a p1 parameter specifying the degrees of freedom.")
      if (!p2 && (!distribution || !strcasecmp(distribution, "normal") || !strcasecmp(distribution, "gaussian") ))
          p2 = 1;
      if (!p2 && p1 >= 0 && !strcasecmp(distribution, "uniform"))
          p2 = 1;
 
-    char apop_varad_var(tail, 'a');
+    char apop_varad_var(tail, 0);
+    if (!tail) 
+        tail = is_chi ? 'u' : 'a';
     return apop_test_base(statistic, distribution, p1, p2, tail);
 APOP_VAR_ENDHEAD
     //This is a long and boring function. I am aware that there are

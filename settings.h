@@ -13,7 +13,7 @@ extern "C" {
 void * apop_settings_get_group(apop_model *m, char *type);
 void apop_settings_rm_group(apop_model *m, char *delme);
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme);
-void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
+void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
 
 /** Retrieves a settings group from a model.  See \ref Apop_settings_get
  to just pull a single item from within the settings group.*/
@@ -23,7 +23,9 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
 #define Apop_settings_rm_group(m, type) apop_settings_rm_group(m, #type)
 
 /** Add a settings group. The first two arguments (the model you are
- attaching to and the settings group name) are mandatory, and then you can use the \ref designated syntax to specify default values (if any).
+ attaching to and the settings group name) are mandatory, and then you
+ can use the \ref designated syntax to specify default values (if any).
+ Returns a pointer to the newly-prepped group.
  */
 #define Apop_model_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__})); 

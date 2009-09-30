@@ -56,7 +56,12 @@ APOP_VAR_ENDHEAD
   apop_data *out = apop_data_alloc(0, msize1-to_rm, msize1 ? max : -1);
     if (wsize)
         out->weights = gsl_vector_alloc(wsize - to_rm);
+
     out->names  = apop_name_copy(d->names); 
+    for(size_t k=0; k < d->names->rowct; k ++)
+        free(out->names->row[k]);
+    out->names->rowct = 0;
+
     if (vsize && msize1)
         out->vector = gsl_vector_alloc(msize1 - to_rm);
     j   = 0;
@@ -135,7 +140,7 @@ static apop_model apop_ml_imputation_model = {"Internal ML imputation model", .e
 \param  mvn A parametrized \c apop_model from which you expect the data was derived.
 if \c NULL, then I'll use the Multivariate Normal that best fits the data after listwise deletion.
 
-\return An estimated \ref apop_ml_imputation_model . Also, the data input will be filled in and ready to use.
+\return An estimated <tt>apop_ml_imputation_model</tt>. Also, the data input will be filled in and ready to use.
 */
 apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
     if (!mvn){

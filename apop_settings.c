@@ -45,7 +45,7 @@ void apop_settings_rm_group(apop_model *m, char *delme){
 }
 
 /** Don't use this function. It's what the \c Apop_model_add_group macro uses internally. Use that.  */
-void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group){
+void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group){
     if(apop_settings_get_group(model, type))  
         apop_settings_rm_group(model, type); 
     int ct = get_settings_ct(model);
@@ -55,6 +55,7 @@ void apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, voi
                             .free= free_fn, .copy = copy_fn };
     strncpy(model->settings[ct].name, type, 100);
     model->settings[ct+1] = (apop_settings_type) { };
+    return model->settings[ct].setting_group;
 }
 
 /** This function gets the settings group with the given name. If it

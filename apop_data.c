@@ -196,6 +196,8 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                                  in->weights->size, out->weights->size);
         gsl_vector_memcpy(out->weights, in->weights);
     }
+    apop_name_free(out->names);
+    out->names = apop_name_alloc();
     apop_name_stack(out->names, in->names, 'r');
     apop_name_stack(out->names, in->names, 'c');
     apop_name_stack(out->names, in->names, 't');

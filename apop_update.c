@@ -1,15 +1,27 @@
-/** \file apop_update.c The \c apop_update function.
-The header is in asst.h.
+/** \file 
+  The \c apop_update function.  The header is in asst.h. */ 
+/* Copyright (c) 2006--2009 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
-#include "asst.h"
 #include "model.h"
-#include "stats.h"
 #include "internal.h"
-#include "variadic.h"
 #include "settings.h"
 #include "conversions.h"
+
+/** Allocate an \ref apop_update_settings struct.  */
+apop_update_settings *apop_update_settings_init(apop_update_settings in){
+   apop_update_settings *out = malloc(sizeof(apop_update_settings));
+   Apop_assert(out, NULL, 0, 's', "malloc failed. Out of memory?");
+   apop_varad_setting(in, out, periods, 6e3);
+   apop_varad_setting(in, out, histosegments, 5e2);
+   apop_varad_setting(in, out, burnin, 0.05);
+   apop_varad_setting(in, out, method, 'd'); //default
+   apop_varad_setting(in, out, starting_pt, NULL);
+   return out;
+}
+
+/** Allocate an \ref apop_update_settings struct. See also \ref apop_update_settings_init, which is not deprecated.  */
+apop_update_settings *apop_update_settings_alloc(apop_data *d){
+    return apop_update_settings_init((apop_update_settings){ }); }
 
 static void write_double(const double *draw, apop_data *params){
   static apop_data *v = NULL;
@@ -58,6 +70,20 @@ static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model
         return outp;
     }
 
+    /* Posterior alpha = alpha_0 + sum x; posterior beta = beta_0/(beta_0*n + 1) */
+    if (!strcmp(prior.name, "Gamma distribution") && !strcmp(likelihood.name, "Poisson distribution")){
+        outp = apop_model_copy(prior);
+        Get_vmsizes(data); //tsize
+        double sum = 0;
+        if (vsize)  sum = apop_sum(data->vector);
+        if (msize1) sum += apop_matrix_sum(data->matrix);
+        apop_vector_increment(outp->parameters->vector, 0, sum);
+
+        double *beta = gsl_vector_ptr(outp->parameters->vector, 1);
+        *beta = *beta/(*beta * tsize + 1);
+        return outp;
+    }
+
     /*
 output \f$(\mu, \sigma) = (\frac{\mu_0}{\sigma_0^2} + \frac{\sum_{i=1}^n x_i}{\sigma^2})/(\frac{1}{\sigma_0^2} + \frac{n}{\sigma^2}), (\frac{1}{\sigma_0^2} + \frac{n}{\sigma^2})^{-1}\f$
 
@@ -86,22 +112,6 @@ likelihood. If you give me a parametrized normal, with no data, then I'll take t
     return NULL;
 }
 
-/** Allocate an \ref apop_update_settings struct.  */
-apop_update_settings *apop_update_settings_init(apop_update_settings in){
-   apop_update_settings *out = malloc(sizeof(apop_update_settings));
-   Apop_assert(out, NULL, 0, 's', "malloc failed. Out of memory?");
-   apop_varad_setting(in, out, periods, 6e3);
-   apop_varad_setting(in, out, histosegments, 5e2);
-   apop_varad_setting(in, out, burnin, 0.05);
-   apop_varad_setting(in, out, method, 'd'); //default
-   apop_varad_setting(in, out, starting_pt, NULL);
-   return out;
-}
-
-/** Allocate an \ref apop_update_settings struct. See also \ref apop_update_settings_init, which is not deprecated.  */
-apop_update_settings *apop_update_settings_alloc(apop_data *d){
-    return apop_update_settings_init((apop_update_settings){ }); }
-
 /** Take in a prior and likelihood distribution, and output a posterior
  distribution.
 
@@ -129,6 +139,8 @@ Here are the conjugate distributions currently defined:
 <td> \ref apop_exponential "Exponential" <td></td> \ref apop_gamma "Gamma"  <td></td>  Gamma likelihood represents the distribution of \f$\lambda^{-1}\f$, not plain \f$\lambda\f$
 </td> </tr> <tr>
 <td> \ref apop_normal "Normal" <td></td> \ref apop_normal "Normal" <td></td>  Assumes prior with fixed \f$\sigma\f$; updates distribution for \f$\mu\f$
+</td></tr> <tr>
+<td> \ref apop_gamma "Gamma" <td></td> \ref apop_poisson "Poisson" <td></td> Uses sum and size of the data  
 </td></tr>
 </table>
 
@@ -156,10 +168,8 @@ APOP_VAR_END_HEAD
   apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
     if (maybe_out) return maybe_out;
     apop_update_settings *s = apop_settings_get_group(prior, "apop_update");
-    if (!s) {
-        Apop_settings_add_group(prior, apop_update, data);
-        s = apop_settings_get_group(prior, "apop_update");
-    }
+    if (!s) 
+        s = Apop_model_add_group(prior, apop_update);
   double        ratio, ll, cp_ll = GSL_NEGINF;
   int           vs  = likelihood->vbase  >= 0 ? likelihood->vbase  : data->matrix->size2;
   int           ms1 = likelihood->m1base >= 0 ? likelihood->m1base : data->matrix->size2;

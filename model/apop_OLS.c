@@ -19,6 +19,9 @@ void * apop_ls_settings_copy(apop_ls_settings *in){
 
 void apop_ls_settings_free(apop_ls_settings *in){ free(in); }
 
+/** Initialize the settings for a least-squares--type model. For use
+  with \ref Apop_model_add_group.  See \ref apop_ls_settings for the possible elements to set.
+  */
 apop_ls_settings * apop_ls_settings_init(apop_ls_settings in){
   apop_ls_settings *out  = calloc(1, sizeof(*out));
     apop_varad_setting(in, out, want_cov, 'y');
@@ -179,10 +182,8 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
   apop_model       *epout = apop_model_copy(*ep);
   epout->status = 0;
     apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
-    if (!olp) {
-        Apop_model_add_group(epout, apop_ls);
-        olp             =  apop_settings_get_group(epout, "apop_ls");
-    }
+    if (!olp) 
+        olp = Apop_model_add_group(epout, apop_ls);
     epout->data = inset;
     apop_model_clear(inset, epout);
     set = olp->destroy_data ? inset : apop_data_copy(inset); 
@@ -323,10 +324,8 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
   int               i;
     epout               = apop_model_copy(*ep);
     apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
-    if (!olp) {
-        Apop_model_add_group(ep, apop_ls);
-        olp             =  apop_settings_get_group(epout, "apop_ls");
-    }
+    if (!olp) 
+        olp = Apop_model_add_group(ep, apop_ls);
     olp->want_cov       = 'n';//not working yet.
     if (!olp->instruments || !olp->instruments->matrix->size2) 
         return apop_estimate(inset, apop_ols);

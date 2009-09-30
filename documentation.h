@@ -12,7 +12,7 @@ In the \ref apop_text_to_db page, a variant, demonstrating the use of optional, 
 
 \include ols.c
 
-Now, from \ref python page, the same thing via Python:
+Now, from the Python section of the outline page, the same thing via Python:
 
 \include ols.py
 
@@ -23,6 +23,12 @@ The same page illustrates some other calls of Apophenia functions via Python, su
 From the \ref setup page, an example of gathering data from two processes, saving the input to a database, then doing a later analysis:
 
 \include draw_to_db.c
+
+A demonstration of \ref apop_plot_line_and_scatter . You'll need a
+database from the {\em Modeling with Data} sample code, at
+http://modelingwithdata.org/appendices.html.
+
+\incude scatter.c
 
 In the \ref outline section on map/apply, a new \f$t\f$-test on every row, with all operations acting on entire rows rather than individual data points:
 
@@ -1179,6 +1185,7 @@ If you are producing a statistic that you know has a common form, like a central
     \li\ref apop_test_fisher_exact()
     \li\ref apop_test_kolmogorov()
     \li\ref apop_plot_qq()
+    \li\ref apop_plot_triangle()
     \li\ref apop_estimate_coefficient_of_determination()
     \li\ref apop_estimate_r_squared()
     \li\ref apop_estimate_parameter_t_tests()
@@ -1310,6 +1317,48 @@ Outlineheader Miss Missing data
 endofdiv
 
 Outlineheader Legi Legible output
+
+Most of the printing options are intended to operate in different modes
+(as appropriate). The idea is that you will probably working in one
+specific mode for a while---writing to screen, a file, or the
+database---and so can just set one global option reflecting this:
+
+\code 
+apop_opts.output_type = 's'; //Stdout
+apop_opts.output_type = 'f'; //named file
+apop_opts.output_type = 'p'; //a pipe or already-opened file
+apop_opts.output_type = 'd'; //the database
+\endcode
+
+C makes minimal distinction between pipes and files, so you can set a
+pipe or file as output and send all output there until further notice:
+
+\code
+apop_opts.output_type = 'p';
+apop_opts.output_pipe = popen("gnuplot", "w");
+apop_plot_lattice(...);
+fclose(apop_opts.output_pipe);
+apop_opts.output_pipe = fopen("newfile", "w");
+apop_data_print(set1);
+fprintf(apop_opts.output_pipe, "\nNow set 2:\n");
+apop_data_print(set2);
+\endcode
+
+Continuing the example, you can always override the global data with
+a specific request:
+\code
+apop_vector_print(v, "vectorfile"); //put vectors in a separate file
+apop_matrix_print(m, "matrix_table", .output_type = 'd'); //write to the db
+apop_matrix_print(m, .outpipe = stdout);  //now show the same matrix on screen
+\endcode
+
+I will first look to the input file name, then the input pipe, then the
+global \c output_pipe, in that order, to determine to where I should
+write.  Some combinations (like output type = \c 'd' and only a pipe) don't
+make sense, and I'll try to warn you about those. 
+
+The plot functions produce output for Gnuplot (so output type = \c 'd'
+again does not make sense). As above, you can pipe directly to Gnuplot or write to a file.
 
     \li\ref apop_plot_histogram()
     \li\ref apop_plot_line_and_scatter()
@@ -1464,9 +1513,9 @@ Apophenia includes some macros that reduce the boilerplate redundancy significan
 
 We'll begin with the C-standard header file:
 \code 
-#ifdef APOP_NO_VARIADIC
+\#ifdef APOP_NO_VARIADIC
  void apop_vector_increment(gsl_vector * v, int i, double amt);
-#else
+\#else
  void apop_vector_increment_base(gsl_vector * v, int i, double amt);
  apop_varad_declare(void, apop_vector_increment, gsl_vector * v; int i; double amt);
 #define apop_vector_increment(...) apop_varad_link(apop_vector_increment, __VA_ARGS__)
@@ -1501,9 +1550,9 @@ That gives us part three: a macro that fools the user into thinking that the fun
 Now for the code file where the function is declared. Again, there is is an \c APOP_NO_VARIADIC wrapper. Inside the interesting part, we find the wrapper function to unpack the struct that comes in.
 
 \code
-#ifdef APOP_NO_VARIADIC 
+\#ifdef APOP_NO_VARIADIC 
  void apop_vector_increment(gsl_vector * v, int i, double amt){
-#else
+\#else
 apop_varad_head( void , apop_vector_increment){
     gsl_vector * apop_varad_var(v, NULL);
     apop_assert_void(v, 0, 's', "You sent me a NULL vector.");
@@ -1559,7 +1608,7 @@ APOP_VAR_END_HEAD
 }
 \endcode
 
-It is obviously much shorter. The declaration line is actually a C-standard declaration with the \c APOP_VAR_DECLARE preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the \c APOP_VAR_END_HEAD line.
+It is obviously much shorter. The declaration line is actually a C-standard declaration with the \c APOP_VAR_DECLARE preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the \c APOP_VAR_END_HEAD line. Done right, drawing a line between the introductory checks or initializations and the main function can really improve readability.
 
 One final detail: it is valid to have types with commans in them---function arguments. Because commas get turned to semicolons, and sed isn't a real parser, there is an exception built in: you will have to replace commas with exclamation marks in the header file (only). E.g.,
 

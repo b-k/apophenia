@@ -6,6 +6,7 @@
 	September 2009
 --Many minor changes, mostly regarding adding optional arguments.
 --Dirichlet model
+--Output functions now take a consistent set of specs regarding to where they will write. You no longer have to use the global apop_opts settings if you don't want to.
 
 	August 2009
 --apop_map and apop_map_sum. Reworks the apop_(map|apply) system to be More flexible but a little more complex.

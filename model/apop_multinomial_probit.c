@@ -10,6 +10,7 @@
 /////////  Part I: Methods for the apop_category_settings struct
 
 /** Convert a column of input data into factors, for use with \ref apop_probit, apop_logit, &c.
+  Deprecated; use \ref Apop_model_add_group and \ref apop_category_settings_init.
     
   \param d The input data set that you're probably about to run a regression on
   \param source_column The number of the column to convert to factors. As usual, the vector is -1.
@@ -36,6 +37,15 @@ apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_co
     return out;
 }
 
+/** Convert a column of input data into factors, for use with \ref apop_probit, apop_logit, &c.
+
+  You will probably use this with \ref Apop_model_add_group, where
+  you'll be specifying some of these inputs:
+    
+  \li .source_data The input data set that you're probably about to run a regression on
+  \li .source_column The number of the column to convert to factors. As usual, the vector is -1.
+  \li .source_type 't' = text; anything else ('d' is a good choice) is numeric data.
+ */
 apop_category_settings *apop_category_settings_init(apop_category_settings in){
     return apop_category_settings_alloc(in.source_data, in.source_column, in.source_type);
 }

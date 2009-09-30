@@ -9,7 +9,6 @@ extern "C" {
 
 #include "model.h"
 #include "settings.h"
-gsl_rng *r;
 
 typedef struct point {    /* a point in the x,y plane */
   double x,y;             /* x and y coordinates */

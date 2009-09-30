@@ -379,8 +379,8 @@ The maximum line length is 100,000 characters. If you have a line longer than th
   See \ref text_format.
 
 \param text_file  = "-"  The name of the text file to be read in. If "-" (the default), use stdin.
-\param has_row_names = 0. Does the lines of data have row names?
-\param has_col_names = 1. Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
+\param has_row_names = 'n'. Does the lines of data have row names?
+\param has_col_names = 'y'. Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
 \return 	Returns an apop_data set.
 
 <b>example:</b> See \ref apop_ols.
@@ -390,8 +390,8 @@ This function uses the \ref designated syntax for inputs.
 \ingroup conversions	*/
 APOP_VAR_HEAD apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
     char *apop_varad_var(text_file, "-")
-    int apop_varad_var(has_row_names, 0)
-    int apop_varad_var(has_col_names, 1)
+    int apop_varad_var(has_row_names, 'n')
+    int apop_varad_var(has_col_names, 'y')
     return apop_text_to_data_base(text_file,has_row_names, has_col_names);
 APOP_VAR_END_HEAD
   apop_data     *set;
@@ -411,7 +411,7 @@ APOP_VAR_END_HEAD
   regmatch_t    result[2];
 	ct	    = apop_count_cols_in_text(text_file);
 	rowct	= apop_count_rows_in_text(text_file);
-    set     = apop_data_alloc(0,rowct+1-has_col_names,ct);
+    set     = apop_data_alloc(0,rowct+1-(has_col_names=='y'),ct);
     if (strcmp(text_file,"-"))
         infile	= fopen(text_file,"r");
     else
@@ -423,7 +423,7 @@ APOP_VAR_END_HEAD
     regcomp(headregex, header_divider, 1);
 
     //First, handle the top line, if we're told that it has column names.
-    if (has_col_names){
+    if (has_col_names=='y'){
 	    Fgets(instr, infile, text_file);
         line_no   ++;
 	    while(instr[0]=='#')	//burn off comment lines
@@ -448,7 +448,7 @@ APOP_VAR_END_HEAD
             last_match      = 0;
             length_of_string= strlen(instr);
             regexec(regex, (instr+last_match), 2, result, 0);   //one for the headers.
-			if (has_row_names){
+			if (has_row_names=='y'){
                 pull_string(instr,  outstr, result,  &last_match);
 	            stripped	= strip(outstr);
                 apop_name_add(set->names, stripped, 'r');
@@ -491,9 +491,12 @@ void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
 	apop_query("begin;");
 	if (in->matrix)
 		for (i=0; i< n->colct; i++)
-			for (j=0; j< n->rowct; j++)
-				apop_query("INSERT INTO %s VALUES ('%s', '%s',%g);", tabname, 
-					n->row[j], n->column[i], gsl_matrix_get(in->matrix, j, i));
+			for (j=0; j< n->rowct; j++){
+                double x = gsl_matrix_get(in->matrix, j, i); 
+                if (!isnan(x))
+                    apop_query("INSERT INTO %s VALUES ('%s', '%s',%g);", tabname, 
+                        n->row[j], n->column[i], x);
+            }
 	if (in->text)
 		for (i=0; i< n->textct; i++)
 			for (j=0; j< n->rowct; j++)

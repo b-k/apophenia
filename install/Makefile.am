@@ -69,7 +69,8 @@ apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
 apop_lookup_LDADD = libapophenia.la
 
-EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/right.png doxy/down.png doxy/flake.gif doxy/foot.html \
+EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/triangle.png doxy/right.png doxy/down.png \
+        doxy/flake.gif doxy/foot.html \
 		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
 		tests/Makefile tests/test.py tests/Readme tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \
@@ -84,8 +85,8 @@ doc:
 	cp doxy/flake.gif doxy/search.gif doxy/right.png doxy/down.png html/
 	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)<p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
 -e 's|endofdiv<p>|</div>|' \
--e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/index.html html/outline.html
-	sed -i -e '/index_a/s/- a -/ /' -e '15,27d' -e '/Here is a list of all/d' html/globals.html
+-e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/index.html
+	sed -i -e '/index_x/s/- x -/ /' -e '/index_a/s/- a -/ /' -e '15,27d' -e '/Here is a list of all/d' html/globals.html
 	sed -i 's|<td width="100%"></td>||g' html/*html
 	cp doxy/*js html/
 	sudo cp man/man3/* /usr/share/man/man3/

@@ -1,6 +1,6 @@
-/** \file apop_output.c	 Some printing and output interface functions. 
-
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/** \file 
+  Some printing and output interface functions. */
+/* Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 //The reader will find three function headers for this file in asst.h
 #include "asst.h"
@@ -10,6 +10,46 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "conversions.h"
 #include "model.h"
 #include <gsl/gsl_histogram.h>
+ 
+#define Output_vars output_file, output_pipe, output_type, output_append
+#define Output_declares char * output_file, FILE * output_pipe, char output_type, char output_append
+
+//The output functions are all multifaceted. This function and macro handles the dispatch rules.
+//At the end, output_file, output_pipe, and output_type are all set.
+//Notably, output_pipe will have the correct location for you to fprintf to.
+void apop_prep_output(char **output_file, FILE ** output_pipe, char *output_type, char *output_append){
+    *output_append = *output_append ? *output_append :
+        ((apop_opts.output_append==1 || apop_opts.output_append== 'a') ? 'a' : 'w');
+
+    if (!*output_file && !*output_pipe){
+        *output_pipe = apop_opts.output_pipe;                  
+        if (!*output_type)              
+            *output_type = apop_opts.output_type;              
+    } else if (*output_file && !*output_pipe){                  
+        *output_pipe = apop_opts.output_pipe;                  
+        if (!*output_type){            
+            if(*output_type =='d' || apop_opts.output_type == 'd')  
+                 *output_type = 'd';  
+            else *output_type = 'f'; 
+        }                        
+    } else if ((!*output_file && *output_pipe) && !*output_type) 
+        *output_type = 'p';     
+    if (*output_type =='p')    
+        *output_pipe = *output_pipe ? *output_pipe: stdout;      
+    else if (*output_type =='s')
+        *output_pipe = stdout; 
+    else       
+        *output_pipe = *output_file
+                        ? fopen(*output_file, output_append ? "a" : "w") 
+                        : stdout;
+}
+
+#define Dispatch_output \
+    char * apop_varad_var(output_file, NULL);                 \
+    FILE * apop_varad_var(output_pipe, NULL);                 \
+    char apop_varad_var(output_type, 0);                      \
+    char apop_varad_var(output_append, 0);                    \
+    apop_prep_output(&output_file, &output_pipe, &output_type, &output_append);
 
 /** Prep for gnuplot one of those cute scatterplots with a regression line through it.
 
@@ -19,54 +59,38 @@ Set the global \ref apop_opts_type "apop_opts.output_name" to the filename you w
 It appends instead of overwriting, so you can prep the file if you want; see sample code. [to overwrite a file, just remove it first with the standard C function <tt>remove("filename");</tt>]
 
 \param	data	This is a copy of what you'd sent to the regression fn. That is, the first column is the dependent variable and the second is the independent. That is, what will be on Y axis is the <i>first</i> column, and what is on the X axis is the second. Custom for regressions and custom for graphs just clash on this one.
-\param	est	The \ref apop_model structure your regression function gave you.
-\param outfile The name of the output file. NULL will send output to STDOUT.
+\param	est	The \ref apop_model structure your regression function gave
+you. (if \c NULL, I'll estimate an OLS model for you).
 
-The sample program below will pull data from a database (you'll need to
-modify it to produce your own two-column table), then runs OLS, produces
-a gnuplot file to write to a file named "scatter.eps", and finally calls
-gnuplot for you. You'll still have the gnuplot file ("auto") if you want
-to make further modifications.
+The sample program below will pull data from a database (ridership at
+the Silver Spring, MD Metro station; get the database in the {\em Modeling
+with Data} sample code, at http://modelingwithdata.org/appendices.html), then runs OLS, and produce
+a gnuplot file to write to a file named "scatter.eps". You can run the
+result through gnuplot via <tt> gnuplot scatter.gplot</tt>, and if you
+don't like the results,  you have the gnuplot file ("scatter.gplot") on
+hand for modifications.
 
-\code
-int main(){
-apop_data 	    *data, *data_copy;
-apop_model   *est;
-FILE		    *f;
-char		    outfile[]	= "auto",
-		        do_me[10000];
+\include scatter.c
 
-	apop_db_open("cpia.db");
-	data      =apop_query_to_data("select gnppercap, cpia from cpiagnp;");
-	apop_close_db(0);
-
-	//The regression destroys your data, so copy it first.
-	data_copy   = apop_data_copy(data);
-
-	//Run OLS, display results on terminal
-	est  = apop_estimate(data, apop_OLS);
-	apop_estimate_print(est);
-
-	//Prep the file with a header, then call the function.
-	f    = fopen(outfile, "w");
-	fprintf(f,"set term postscript;\n set output \"scatter.eps\"\n set yrange [0:*]\n");
-	fclose(f);
-	apop_plot_line_and_scatter(data_copy,est, outfile);
-
-	//Have the machine run gnuplot for you. 
-	sprintf(do_me, "gnuplot -persist %s", outfile);
-	system (do_me);
-	return 0;
-}
-\endcode
-\todo The sample data here should correspond to that which apophenia ships with.
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
 \ingroup output
 */
-void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * outfile){
-  FILE  *f;
+APOP_VAR_HEAD void apop_plot_line_and_scatter(apop_data *data, apop_model *est, Output_declares){
+    int newmodel=0;
+    apop_data * apop_varad_var(data, NULL);
+    apop_model * apop_varad_var(est, NULL);
+    if (!est) {
+        newmodel++;
+        est = apop_estimate(data, apop_ols);
+    }
+    Dispatch_output
+    apop_plot_line_and_scatter_base(data, est, Output_vars);
+    apop_model_free(est);
+APOP_VAR_ENDHEAD
   char  exdelimiter[100];
-  int   append_state;
-    f   = (outfile? fopen(outfile, "a") : stdout);
+  FILE *f = output_pipe;
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters->vector,0), gsl_vector_get(est->parameters->vector,1));
 	if (data->names){
 		fprintf(f, "set xlabel \"%s\"\n", data->names->column[1]);
@@ -74,33 +98,27 @@ void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * outfile
 		    fprintf(f, "set ylabel \"%s\"\n", est->expected->names->column[0]);
 	}
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");
-    if (apop_opts.output_type != 0) 	fclose(f);
+    if (output_type == 'f') 	fclose(f);
 
     //force the delimiter to be a comma space; don't tell the user.
     strcpy(exdelimiter, apop_opts.output_delimiter);
     strcpy(apop_opts.output_delimiter, ", ");
-    append_state            = apop_opts.output_append;
-    apop_opts.output_append = 1;
-	apop_matrix_print(data->matrix, outfile);
+	apop_matrix_print(data->matrix, output_file, output_pipe, output_type, 'a');
     strcpy(apop_opts.output_delimiter, exdelimiter);
-    apop_opts.output_append = append_state;
 }
 
-static void histoplot_common(gsl_histogram *h, int for_gnuplot, char *outfile){
-	//Now that you have a histogram, print it.
-    FILE *f = (apop_opts.output_type == 'p')
-               ? apop_opts.output_pipe
-               : (outfile ? fopen(outfile, "a") : stdout);
+static void histoplot_common(gsl_histogram *h, int for_gnuplot, Output_declares){
+    FILE *f = output_pipe;
     if (for_gnuplot)
         fprintf(f, "set key off	;\n"
                "plot '-' with lines\n");
-	for (int i=0; i < h->n-1; i++)
+	for (int i=1; i < h->n-1; i++)
 	    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
     if (for_gnuplot)
         fprintf(f, "e\n");
-    if (apop_opts.output_type == 'p')
+    if (output_type == 'p')
         fflush(f);
-    else if (outfile)    
+    else if (output_file)    
         fclose(f);
 }
 
@@ -116,20 +134,20 @@ apop_plot_histogram(m);
 will print directly to Gnuplot.
 
 \param hist A parametrized \ref apop_model holding the histogram.  (No default. Must not be \c NULL.)
-\param outfile  The file to be written. If NULL then write to STDOUT. (Default = \c NULL.)
 
 This function uses the \ref designated syntax for inputs.
   \ingroup output
 */
-APOP_VAR_HEAD  void apop_histogram_plot(apop_model *hist, char *outfile){
+APOP_VAR_HEAD  void apop_histogram_plot(apop_model *hist, Output_declares){
       apop_model * apop_varad_var(hist, NULL);
       apop_assert_void(hist, 0, 's', "Input histogram is NULL.\n");
-      char * apop_varad_var(outfile, NULL);
-      apop_histogram_plot_base(hist, outfile);
+      Dispatch_output
+      apop_histogram_plot_base(hist, Output_vars);
 APOP_VAR_ENDHEAD
-  gsl_histogram  *h  = Apop_settings_get(hist, apop_histogram, pdf);
-    if (!h) h = Apop_settings_get(hist, apop_kernel_density, pdf);
-    histoplot_common(h, 1, outfile);
+  gsl_histogram  *h = Apop_settings_get_group(hist, apop_histogram)
+                        ? Apop_settings_get(hist, apop_histogram, pdf)
+                        : Apop_settings_get(hist, apop_kernel_density, pdf);
+    histoplot_common(h, 1, Output_vars);
 }
 
 /** This function will take in a \c gsl_vector of data and put out a histogram. Compare with \ref apop_histogram_plot, which plots an estimated \ref apop_histogram model.
@@ -145,17 +163,16 @@ will print directly to Gnuplot.
 
 \param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be \c NULL)
 \param bins   The number of bins in the output histogram (default = MAX(10, data->size/20); denominator subject to future adjustment)
-\param outfile  The file to be written. If NULL then write to STDOUT. (default = \c NULL)
 
 This function uses the \ref designated syntax for inputs.
   \ingroup output
 */
-APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bins, char *outfile){
+APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bins, Output_declares){
       gsl_vector * apop_varad_var(data, NULL);
       apop_assert_void(data, 0, 's', "Input histogram is NULL.\n");
-      char * apop_varad_var(outfile, NULL);
       size_t apop_varad_var(bins, GSL_MAX(10, data->size/20));
-      apop_plot_histogram_base(data, bins, outfile);
+      Dispatch_output
+      apop_plot_histogram_base(data, bins, Output_vars);
 APOP_VAR_ENDHEAD
   double          min=GSL_POSINF, max=GSL_NEGINF, pt;
   gsl_histogram   *h      = gsl_histogram_alloc(bins);
@@ -166,7 +183,7 @@ APOP_VAR_ENDHEAD
         if (!gsl_isnan(pt))
            gsl_histogram_increment(h, pt);
         }
-    histoplot_common(h, 1, outfile);
+    histoplot_common(h, 1, Output_vars);
     gsl_histogram_free(h);
 }
 	
@@ -174,20 +191,19 @@ APOP_VAR_ENDHEAD
  you can send it straight to Gnuplot. The -inf and +inf elements are not printed. 
  
 \param h The input histogram (no default, must not be \c NULL.)
-\param outfile  The file to be written. If NULL then write to STDOUT. (default = \c NULL)
  
 This function uses the \ref designated syntax for inputs.
  */
-APOP_VAR_HEAD void apop_histogram_print(apop_model *h, char *outfile){
+APOP_VAR_HEAD void apop_histogram_print(apop_model *h, Output_declares){
       apop_model * apop_varad_var(h, NULL);
       apop_assert_void(h, 0, 's', "Input histogram is NULL.\n");
-      char * apop_varad_var(outfile, NULL);
-      apop_histogram_plot_base(h, outfile);
+      Dispatch_output
+      apop_histogram_print_base(h, Output_vars);
 APOP_VAR_ENDHEAD
   apop_histogram_settings *hp = apop_settings_get_group(h, "apop_histogram"); 
   if (!hp) hp = apop_settings_get_group(h, "apop_kernel_density"); 
   apop_assert_void(hp, 0, 's', "You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?");
-    histoplot_common(hp->pdf, 0, outfile);
+    histoplot_common(hp->pdf, 0, Output_vars);
 }
 
 /////The printing functions.
@@ -279,15 +295,15 @@ void apop_data_show(const apop_data *in){
     return;
 }
 
-static void print_core_v(const gsl_vector *data, char *separator, char *filename, 
-			void (* p_fn)(FILE * f, double number)){
-FILE * 		f;
-	if (!filename || !strcmp(filename, "STDOUT"))
-		f	= stdout;
-	else	
-        f = fopen(filename, apop_opts.output_append ? "a": "w");
-    if (apop_opts.output_type == 'p')
-        f   = apop_opts.output_pipe;
+void p_fn(FILE * f, double data){
+    if (data == (int) data)
+	    fprintf(f, "% 5i", (int) data); 
+    else
+        fprintf(f, "% 5f", data);
+}
+
+static void print_core_v(const gsl_vector *data, char *separator, Output_declares){
+FILE * 		f = output_pipe;
     if (!data)
         fprintf(f, "NULL\n");
     else {
@@ -297,29 +313,17 @@ FILE * 		f;
 	    }
 	    fprintf(f,"\n");
     }
-	if (filename && apop_opts.output_type != 'p')	fclose(f);
+	if (output_file && output_type != 'p')	fclose(f);
 }
 
-static void print_core_m(const gsl_matrix *data, char *separator, char *filename, 
-			void (* p_fn)(FILE * f, double number), apop_name *n){
-  FILE * 	f;
+static void print_core_m(const gsl_matrix *data, char *separator, apop_name *n, Output_declares){
+  FILE * 	f = output_pipe;
   int       max_name_size  = 0;
     if (n)
         for (int i=0; i< n->rowct; i++)
             max_name_size   = GSL_MAX(strlen(n->row[i]), max_name_size);
-
-    if (apop_opts.output_type == 'p'){
-        f   = apop_opts.output_pipe;
-        if (!f){ 
-            apop_error(1, 'c', "%s: You set apop_opts.output_type to 'p', but apop_opts.output_pipe is NULL. Assuming you meant stdout.\n", __func__);
-            f = stdout;
-        }
-    } else 
-            f = (filename == NULL) || (!strcmp(filename, "STDOUT"))
-                ? stdout
-                : fopen(filename, apop_opts.output_append ? "a" : "w");
     if (n && strlen(n->title)>0)
-        fprintf(f, "%s%s\n\n", apop_opts.output_type=='s'? "\t\t" : "", n->title);
+        fprintf(f, "%s%s\n\n", output_type=='s'? "\t\t" : "", n->title);
     if (!data)
         fprintf(f, "NULL\n");
     else {
@@ -339,50 +343,58 @@ static void print_core_m(const gsl_matrix *data, char *separator, char *filename
 		    fprintf(f,"\n");
 	    }
     }
-	if (filename !=NULL && apop_opts.output_type != 'p')	fclose(f);
-}
-
-void dumb_little_pf(FILE * f, double data){
-    if (data == (int) data)
-	    fprintf(f, "% 5i", (int) data); 
-    else
-        fprintf(f, "% 5f", data);
+	if (output_file !=NULL && output_type != 'p')	fclose(f);
 }
 
 /** Print a vector in float format.
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
-void apop_vector_print(gsl_vector *data, char *file){
-	print_core_v(data, apop_opts.output_delimiter, file, dumb_little_pf); }
+APOP_VAR_HEAD void apop_vector_print(gsl_vector *data, Output_declares){
+    gsl_vector *apop_varad_var(data, NULL);
+    Dispatch_output
+    apop_vector_print_base(data, Output_vars);
+APOP_VAR_ENDHEAD
+	print_core_v(data, apop_opts.output_delimiter, Output_vars);
+ }
 
 /** Print a matrix in float format.
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
-void apop_matrix_print(gsl_matrix *data, char *file){
-    if (apop_opts.output_type   == 'd')
-        apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(file,1),0), NULL);
+APOP_VAR_HEAD void apop_matrix_print(gsl_matrix *data, Output_declares){
+    gsl_matrix *apop_varad_var(data, NULL);
+    Dispatch_output
+    apop_matrix_print_base(data, Output_vars);
+APOP_VAR_ENDHEAD
+    if (output_type   == 'd')
+        apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(output_file,1),0), NULL);
     else
-        print_core_m(data, apop_opts.output_delimiter, file, dumb_little_pf, NULL); 
+        print_core_m(data, apop_opts.output_delimiter, NULL, Output_vars); 
 }
 
 /** Dump a <tt>gsl_vector</tt> to the screen. 
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
 void apop_vector_show(const gsl_vector *data){
-  char tmptype    = apop_opts.output_type;
-    apop_opts.output_type = 's';
-	print_core_v(data, apop_opts.output_delimiter, NULL, dumb_little_pf); 
-    apop_opts.output_type = tmptype;
+	print_core_v(data, apop_opts.output_delimiter, NULL, stdout, 's', 0); 
 }
 
 /** Dump a <tt>gsl_matrix</tt> to the screen.
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
 void apop_matrix_show(const gsl_matrix *data){
-  char tmptype    = apop_opts.output_type;
-    apop_opts.output_type = 's';
-	print_core_m(data, apop_opts.output_delimiter, NULL, dumb_little_pf, NULL); 
-    apop_opts.output_type = tmptype;
+	print_core_m(data, apop_opts.output_delimiter, NULL, NULL, stdout, 's', 0); 
 }
 
 static int get_max_strlen(char **names, size_t len){
@@ -400,7 +412,7 @@ static void a_pipe(FILE *f, char displaytype){
         fprintf(f, "%s", apop_opts.output_delimiter);
 }
 
-static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype){
+static void apop_data_print_core(const apop_data *data, FILE *f, char displaytype){
     if (!data){
         fprintf(f, "NULL\n");
         return;
@@ -487,19 +499,25 @@ static void apop_data_show_core(const apop_data *data, FILE *f, char displaytype
 
 /** Print an \ref apop_data set to a file, the database, or the screen,
   as determined by the \ref apop_opts_type "apop_opts.output_delimiter".
-    
+
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
-void apop_data_print(apop_data *data, char *file){
-    if (apop_opts.output_type   == 'd')
-        apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(file,1),0));
-    else if (apop_opts.output_type   == 'p')
-        apop_data_show_core(data,  apop_opts.output_pipe, 'p');
-    else if (file){
-        FILE *f = fopen(file, apop_opts.output_append ? "a" : "w");
-        apop_data_show_core(data, f, 'p');
-        fclose(f);
+APOP_VAR_HEAD void apop_data_print(apop_data *data, Output_declares){
+    apop_data * apop_varad_var(data, NULL);
+    Dispatch_output
+    apop_data_print_base(data, Output_vars);
+APOP_VAR_ENDHEAD 
+    if (output_type   == 'd')
+        apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(output_file,1),0));
+    else if (output_type   == 'p')
+        apop_data_print_core(data,  output_pipe, 'p');
+    else if (output_file){
+        apop_data_print_core(data, output_pipe, 'p');
+        fclose(output_pipe);
     } else
-        apop_data_show_core(data, stdout, 'p');
+        apop_data_print_core(data, stdout, 'p');
 }
 
 /* the next function plots a single graph for the \ref apop_plot_lattice  fn */
@@ -532,13 +550,7 @@ set origin %g, %g\n\
     if (xposn != yposn){
         fprintf(f, "plot '-'\n");
         fflush(f);
-        char tmptype = apop_opts.output_type;
-        FILE *tp     = apop_opts.output_pipe;
-        apop_opts.output_type = 'p';
-        apop_opts.output_pipe = f;
-        apop_matrix_print(m, NULL);
-        apop_opts.output_type = tmptype;
-        apop_opts.output_pipe = tp;
+        apop_matrix_print(m, NULL, f, 'p');
         fprintf(f,"e\n");
         gsl_matrix_free(m);
     } 
@@ -553,38 +565,25 @@ set origin %g, %g\n\
  is a plot of the variable against itself---a density plot of the variable.
 
  \param d       The data set whose (matrix) columns will be compared. (No default, must not be \c NULL.)
- \param outfile The output file, to which a Gnuplot command file will be written. If \c NULL, print to STDOUT (default = \c NULL.)
 
 \image latex "lattice.png" "A lattice showing three variables graphed against each other."
 \image html "lattice.png" "A lattice showing three variables graphed against each other."
 
-This function uses the \ref designated syntax for inputs.
-
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
 \ingroup output
- */
-APOP_VAR_HEAD  void apop_plot_lattice(const apop_data *d, char *outfile){
+*/
+APOP_VAR_HEAD void apop_plot_lattice(const apop_data *d, Output_declares){
     const apop_data * apop_varad_var(d, NULL);
     apop_assert_void(d, 0, 's', "Input data set is NULL.\n");
-    char * apop_varad_var(outfile, NULL);
-    apop_plot_lattice_base(d, outfile);
+    Dispatch_output
+    apop_plot_lattice_base(d, Output_vars);
 APOP_VAR_ENDHEAD
   double  width   = 1.2,//these used to be options, but who's ever gonna set them to something else.
           height  = 1.2;
   double  margin  = 0;
-  FILE    *f;
-    if (apop_opts.output_type == 'f'){
-        if (outfile)
-            f      = fopen(outfile, "a");
-        else
-            f      = stdout;
-    } else if (apop_opts.output_type == 'p')
-        f      = apop_opts.output_pipe;
-    else if (apop_opts.output_type == 's')
-        f      = stdout;
-    else {
-        apop_assert_void(0, 0, 'c', "please set apop_opts.output_type ="
-                                " 'f', 'p', or 's' before using this function.");
-        return;}
+  FILE    *f = output_pipe;
     fprintf(f, "set size %g, %g\n"
                 "set rmargin 5\n"
                 "set lmargin -1\n"
@@ -599,7 +598,7 @@ APOP_VAR_ENDHEAD
         for (size_t j = 0; j< d->matrix->size2; j++)
             printone(f, width, height, margin, i, j, d);
     fprintf(f, "unset multiplot\n"); 
-    if (apop_opts.output_type == 'f' && outfile)
+    if (output_type == 'f' && output_file)
         fclose(f);
 }
 
@@ -612,11 +611,10 @@ It uses the \ref designated syntax for inputs.
 
 \param v    The data (No default, must not be \c NULL.)
 \param m    The distribution, such as apop_normal. I'll be using the \c draw method. (Default = best-fitting Normal)
-\param outfile   The name of the text file to print to.  If NULL then write to STDOUT. (Default = \c NULL)
 \param bins The number of bins in the histogram. The number of points on the plot will always be 101 (i.e. percentiles). (default = MAX(10, data->size/10); denominator subject to future adjustment)
 \param r    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
 */
-APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, char *outfile, size_t bins, gsl_rng *r){
+APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, Output_declares, size_t bins, gsl_rng *r){
     static gsl_rng *spare = NULL;
     int free_m = 0;
     gsl_vector * apop_varad_var(v, NULL);
@@ -629,17 +627,17 @@ APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, char *outfile, siz
         d->vector = NULL;
         apop_data_free(d);
     }
-    char * apop_varad_var(outfile, NULL);
+    Dispatch_output
     size_t apop_varad_var(bins, GSL_MAX(10, v->size/10));
     gsl_rng *apop_varad_var(r, NULL)
     if (!r && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
     if (!r)  r = spare;
 
-    apop_plot_qq_base(v, m, outfile, bins, r);
+    apop_plot_qq_base(v, m, Output_vars, bins, r);
     if (free_m) apop_model_free(m);
 APOP_VAR_ENDHEAD
-  FILE  *f;
+  FILE  *f = output_pipe;
   double *pctdata = apop_vector_percentiles(v, 'a');
 
     //produce percentiles from the model via RNG.
@@ -648,19 +646,62 @@ APOP_VAR_ENDHEAD
         m->draw(gsl_vector_ptr(vd, i), r, m);
     double *pctdist = apop_vector_percentiles(vd, 'a');
 
-    f = (apop_opts.output_type == 'p')
-             ? apop_opts.output_pipe
-             : (outfile ? fopen(outfile, "a") : stdout);
     fprintf(f, "set key off; set size square;\n"
                "plot x;\n"
                "replot '-' with points\n");
     for (int i=0; i < 101; i++)
         fprintf(f, "%g\t %g\n", pctdist[i], pctdata[i]);
     fprintf(f, "e\n");
-    if (apop_opts.output_type == 'p')
+    if (output_type == 'p')
         fflush(f);
-    else if (outfile)
+    else if (output_file)
         fclose(f);
     gsl_vector_free(vd);
     gsl_rng_free(r);
+}
+
+/** This produces a nifty triangle plot from an input matrix with three
+ columns. Each row is plotted inside an equilateral triangle such that
+ (1, 0, 0) is the lower left corner, (0, 1, 0) the lower right corner,
+ and (0, 0, 1) the middle, upper corner. 
+
+\image html "triangle.png" "A triangle plot with a smattering of data points."
+
+\li Gnuplot will rescale for you, so you don't need to worry about whether the row sums to one. 
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
+*/
+APOP_VAR_HEAD void apop_plot_triangle(apop_data *in, Output_declares){
+    apop_data *apop_varad_var(in, NULL);
+    apop_assert_void(in, 0, 's', "You sent me a NULL data set.");
+    Dispatch_output
+    apop_plot_triangle_base(in, Output_vars);
+APOP_VAR_ENDHEAD 
+    FILE *f=output_pipe;
+    apop_assert_void(f, 0, 's', "Error opening file %s for writing.", output_file);
+    if (in->names && in->names->colct>=3){
+        fprintf(f, "set label '%s' at -0.03, 0 right; \n", in->names->column[0]);
+        fprintf(f, "set label '%s' at 1.03, 0 left; \n", in->names->column[1]);
+        fprintf(f, "set label '%s' at 0.5, 1/sqrt(2)+0.05 center; \n", in->names->column[2]);
+    }
+    fprintf(f, 
+        " set size square;      \n"
+        " set noborder; set nogrid;         \n"
+        " set noxtics; set noytics;         \n"
+        " set nokey;        \n"
+        " set lmargin 10;       \n"
+        " set bmargin 3;        \n"
+        " set tmargin 5;        \n"
+        " set arrow 1 from 0,0 to 1,0 nohead        \n"
+        " set arrow 2 from 0.5,1/sqrt(2) to 1,0 nohead      \n"
+        " set arrow 3 from 0.5,1/sqrt(2) to 0,0 nohead      \n"
+        " unset title       \n"
+        " set xrange [-.1:1.1]      \n"
+        " set yrange [-.1:0.81]     \n"
+        " plot '-' using (($2 + $3/2)/($1+$2+$3)):($3/($1+$2+$3)/sqrt(2)) with points;         \n"
+    );
+    Apop_submatrix(in->matrix, 0,0, in->matrix->size1, 3, triplets);
+    apop_matrix_print(triplets, .output_pipe=f, .output_type='p');
+    if (output_file) fclose(f);
 }

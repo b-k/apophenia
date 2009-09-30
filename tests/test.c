@@ -1053,7 +1053,7 @@ void estimate_model(apop_data *data, apop_model dist, int method){
 
     Apop_model_add_group(&dist, apop_mle, 
         .parent       = &dist,  .starting_pt = starting_pt,
-        .method       = method, .verbose   =1,
+        .method       = method, .verbose   =0,
         .step_size    = 1e-1,
         .tolerance    = 1e-2,   .k         = 1.8,
         .t_initial    = 1,      .t_min     = .5,

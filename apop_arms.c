@@ -108,10 +108,8 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
   */
 void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
     apop_arms_settings *params = Apop_settings_get_group(m, apop_arms);
-    if (!params) {
-        Apop_model_add_group(m, apop_arms, .model=m);
-        params = Apop_settings_get_group(m, apop_arms);
-    }
+    if (!params)
+        params = Apop_model_add_group(m, apop_arms, .model=m);
   POINT pwork;        /* a working point, not yet incorporated in envelope */
   int msamp=0;        /* the number of x-values currently sampled */
   arms_state *state = params->state; 

@@ -80,9 +80,8 @@ static double gamma_log_likelihood(apop_data *d, apop_model *p){
     return llikelihood;
 }
 
-
-double a_callback(double x, void *ab){ return x ? log(x)- *(double*)ab : 0; }
-double b_callback(double x, void *ab){ return x ? -x - *(double*)ab : 0; }
+static double a_callback(double x, void *ab){ return x ? log(x)- *(double*)ab : 0; }
+static double b_callback(double x, void *ab){ return x ? -x - *(double*)ab : 0; }
 
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   Nullcheck_pv(p) 
