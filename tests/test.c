@@ -876,7 +876,7 @@ void test_transpose(){
 apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, apop_model *method){
   int i, j;
   double val;
-  int samples = 2e5;
+  int samples = 1e6;
   apop_data *data = apop_data_alloc(0, samples, true_params->size);
         //generate a random vector of data X, then set the outcome to one if the probit/logit condition holds
         for (i = 0; i < samples; i++){
@@ -1062,8 +1062,8 @@ void estimate_model(apop_data *data, apop_model dist, int method){
     Apop_model_add_group(&dist, apop_ls,  .want_cov = 'n');
     apop_model *e    = apop_estimate(data,dist);
     for (i=0; i < e->parameters->vector->size; i++)
-        printf("parameter estimate, which should be %g: %g\n",
-        true_parameter_v[i], gsl_vector_get(e->parameters->vector,i));
+        if (verbose) printf("parameter estimate, which should be %g: %g\n",
+                                true_parameter_v[i], gsl_vector_get(e->parameters->vector,i));
     for (i=0; i < e->parameters->vector->size; i++)
          assert(fabs(gsl_vector_get(e->parameters->vector,i) - true_parameter_v[i]) <= lite_tolerance *5);
 }

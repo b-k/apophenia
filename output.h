@@ -19,9 +19,9 @@ APOP_VAR_DECLARE  void apop_plot_lattice(const apop_data *d, char *output_file, 
 APOP_VAR_DECLARE void apop_plot_qq(gsl_vector *v, apop_model *m, char *output_file, FILE *output_pipe, char output_type, char output_append, size_t bins, gsl_rng *r);
 APOP_VAR_DECLARE void apop_plot_triangle(apop_data *in, char *output_file, FILE *output_pipe, char output_type, char output_append);
 
-APOP_VAR_DECLARE void apop_matrix_print(gsl_matrix *data, char *output_file, FILE *output_pipe, char output_type, char output_append);
+APOP_VAR_DECLARE void apop_matrix_print(const gsl_matrix *data, char *output_file, FILE *output_pipe, char output_type, char output_append);
 APOP_VAR_DECLARE void apop_vector_print(gsl_vector *data, char *output_file, FILE *output_pipe, char output_type, char output_append);
-APOP_VAR_DECLARE void apop_data_print(apop_data *data, char *output_file, FILE *output_pipe, char output_type, char output_append);
+APOP_VAR_DECLARE void apop_data_print(const apop_data *data, char *output_file, FILE *output_pipe, char output_type, char output_append);
 
 void apop_matrix_show(const gsl_matrix *data);
 void apop_vector_show(const gsl_vector *data);

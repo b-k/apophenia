@@ -37,12 +37,12 @@ apop_ls_settings * apop_ls_settings_init(apop_ls_settings in){
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
   apop_ls_settings   *p = apop_settings_get_group(e, "apop_ls");
+    if (e->expected){
+        apop_name_add(e->expected->names, (e->data->names->colct ? e->data->names->column[0] : "expected"), 'c');
+        apop_name_add(e->expected->names, "predicted", 'c');
+        apop_name_add(e->expected->names, "residual", 'c');
+    }
 	if (e->data->names->colct > 0) {		
-        if (e->expected){
-            apop_name_add(e->expected->names, e->data->names->column[0], 'c');
-            apop_name_add(e->expected->names, "predicted", 'c');
-            apop_name_add(e->expected->names, "residual", 'c');
-        }
         if (e->parameters)
             snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->column[0]);
 		sprintf(e->data->names->column[0], "1");

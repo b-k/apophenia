@@ -28,7 +28,7 @@ void apop_prep_output(char **output_file, FILE ** output_pipe, char *output_type
     } else if (*output_file && !*output_pipe){                  
         *output_pipe = apop_opts.output_pipe;                  
         if (!*output_type){            
-            if(*output_type =='d' || apop_opts.output_type == 'd')  
+            if(*output_type == 'd' || apop_opts.output_type == 'd')  
                  *output_type = 'd';  
             else *output_type = 'f'; 
         }                        
@@ -292,7 +292,6 @@ void apop_data_show(const apop_data *in){
     }
 
     apop_data_free(printout);
-    return;
 }
 
 void p_fn(FILE * f, double data){
@@ -313,37 +312,7 @@ FILE * 		f = output_pipe;
 	    }
 	    fprintf(f,"\n");
     }
-	if (output_file && output_type != 'p')	fclose(f);
-}
-
-static void print_core_m(const gsl_matrix *data, char *separator, apop_name *n, Output_declares){
-  FILE * 	f = output_pipe;
-  int       max_name_size  = 0;
-    if (n)
-        for (int i=0; i< n->rowct; i++)
-            max_name_size   = GSL_MAX(strlen(n->row[i]), max_name_size);
-    if (n && strlen(n->title)>0)
-        fprintf(f, "%s%s\n\n", output_type=='s'? "\t\t" : "", n->title);
-    if (!data)
-        fprintf(f, "NULL\n");
-    else {
-        if (n && n->colct > 0){ //then print a row of column headers.
-		    fprintf(f,"\t");
-		    for (int j=0; j< n->colct; j++)
-			    fprintf(f,"%s\t\t", n->column[j]);
-		    fprintf(f,"\n");
-        }
-	    for (size_t i=0; i<data->size1; i++){
-            if (n && n->rowct > 0)
-			    fprintf(f,"%-*s", max_name_size+4, n->row[i]);
-		    for (size_t j=0; j<data->size2; j++){
-			    p_fn(f, gsl_matrix_get(data, i,j));
-			    if (j< data->size2 -1)	fprintf(f, "%s", separator);
-		    }
-		    fprintf(f,"\n");
-	    }
-    }
-	if (output_file !=NULL && output_type != 'p')	fclose(f);
+	if (output_file)	fclose(f);
 }
 
 /** Print a vector in float format.
@@ -360,23 +329,6 @@ APOP_VAR_ENDHEAD
 	print_core_v(data, apop_opts.output_delimiter, Output_vars);
  }
 
-/** Print a matrix in float format.
-    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
-\li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
-\ingroup apop_print */
-APOP_VAR_HEAD void apop_matrix_print(gsl_matrix *data, Output_declares){
-    gsl_matrix *apop_varad_var(data, NULL);
-    Dispatch_output
-    apop_matrix_print_base(data, Output_vars);
-APOP_VAR_ENDHEAD
-    if (output_type   == 'd')
-        apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(output_file,1),0), NULL);
-    else
-        print_core_m(data, apop_opts.output_delimiter, NULL, Output_vars); 
-}
-
 /** Dump a <tt>gsl_vector</tt> to the screen. 
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 \li This function uses the \ref designated syntax for inputs.
@@ -385,16 +337,6 @@ variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
 void apop_vector_show(const gsl_vector *data){
 	print_core_v(data, apop_opts.output_delimiter, NULL, stdout, 's', 0); 
-}
-
-/** Dump a <tt>gsl_matrix</tt> to the screen.
-    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
-\li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
-\ingroup apop_print */
-void apop_matrix_show(const gsl_matrix *data){
-	print_core_m(data, apop_opts.output_delimiter, NULL, NULL, stdout, 's', 0); 
 }
 
 static int get_max_strlen(char **names, size_t len){
@@ -421,8 +363,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
           start   = (data->vector)? -1 : 0,
           end     = (data->matrix)? data->matrix->size2 : 0,
           rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
-  double  datapt;
-    if (data->names->title)
+    if (strlen(data->names->title))
         fprintf(f, "\t%s\n\n", data->names->title);
     if (data->names->rowct)
         L   = get_max_strlen(data->names->row, data->names->rowct);
@@ -452,8 +393,8 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
             else
                 fprintf(f, "%s", data->names->text[i]);
         }
+        fprintf(f, "\n");
     }
-    fprintf(f, "\n");
     for(j=0; j< rowend; j++){
         if (data->names->rowct > j)
             fprintf(f, "%*s%s", L+2, data->names->row[j], apop_opts.output_delimiter);
@@ -464,15 +405,9 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
                 Lc  =  strlen(data->names->column[i]);
             else
                 Lc  =  6;
-            if ((i < 0 && j < data->vector->size) || (i> 0 && j < data->matrix->size1 && i < data->matrix->size2)){
-                datapt  = apop_data_get(data, j, i);
-                if (datapt == (int) datapt)
-                    //fprintf(f, "%*i", Lc, (int) datapt);
-                    fprintf(f, "%i", (int) datapt);
-                else
-                    fprintf(f, "%g", datapt);
-                //    fprintf(f, "%*f", Lc, datapt);
-            } else
+            if ((i < 0 && j < data->vector->size) || (i>= 0 && j < data->matrix->size1 && i < data->matrix->size2))
+                p_fn(f,  apop_data_get(data, j, i));
+            else
                 fprintf(f, " ");
             if (i==-1 && data->matrix) 
                 a_pipe(f, displaytype);
@@ -487,11 +422,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         }
         if (data->weights && j < data->weights->size){
             a_pipe(f, displaytype);
-            datapt  = data->weights->data[j];
-            if (datapt == (int) datapt)
-                fprintf(f, "%i", (int) datapt);
-            else
-                fprintf(f, "%g", datapt);
+            p_fn(f, data->weights->data[j]);
         }
         fprintf(f, "\n");
     }
@@ -504,20 +435,52 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
 \li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
 variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
-APOP_VAR_HEAD void apop_data_print(apop_data *data, Output_declares){
-    apop_data * apop_varad_var(data, NULL);
+APOP_VAR_HEAD void apop_data_print(const apop_data *data, Output_declares){
+    const apop_data * apop_varad_var(data, NULL);
     Dispatch_output
     apop_data_print_base(data, Output_vars);
 APOP_VAR_ENDHEAD 
-    if (output_type   == 'd')
+    if (output_type  == 'd'){
         apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(output_file,1),0));
-    else if (output_type   == 'p')
-        apop_data_print_core(data,  output_pipe, 'p');
-    else if (output_file){
-        apop_data_print_core(data, output_pipe, 'p');
+        return;
+    }
+    apop_data_print_core(data,  output_pipe, output_type);
+    if (output_file)
         fclose(output_pipe);
-    } else
-        apop_data_print_core(data, stdout, 'p');
+}
+
+/** Print a matrix in float format.
+    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
+\ingroup apop_print */
+APOP_VAR_HEAD void apop_matrix_print(const gsl_matrix *data, Output_declares){
+    const gsl_matrix *apop_varad_var(data, NULL);
+    Dispatch_output
+    apop_matrix_print_base(data, Output_vars);
+APOP_VAR_ENDHEAD
+    if (output_type   == 'd')
+        apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(output_file,1),0), NULL);
+    else{
+        apop_data *dtmp = apop_matrix_to_data((gsl_matrix*)data);
+        apop_data_print_core(dtmp,  output_pipe, output_type);
+        dtmp->matrix = NULL;
+        apop_data_free(dtmp);
+    }
+}
+
+/** Dump a <tt>gsl_matrix</tt> to the screen.
+    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+\li This function uses the \ref designated syntax for inputs.
+\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
+variables; see the legible output section of the \ref outline for details.
+\ingroup apop_print */
+void apop_matrix_show(const gsl_matrix *data){
+    apop_data *dtmp = apop_matrix_to_data((gsl_matrix*) data);
+    apop_data_print_core(dtmp,  stdout, 's');
+    dtmp->matrix = NULL;
+    apop_data_free(dtmp);
 }
 
 /* the next function plots a single graph for the \ref apop_plot_lattice  fn */
@@ -536,10 +499,9 @@ static void printone(FILE *f, double width, double height, double margin, int xp
   double offy        = height - (sizey +margin-nudge)* (1 + yposn) - nudge*count;
         fprintf(f, "unset y2tics; unset y2label; unset ytics; unset ylabel\n");
         fprintf(f, "unset x2tics; unset x2label; unset xtics; unset xlabel\n");
-    fprintf(f, "set size   %g, %g\n\
-set origin %g, %g\n\
-#plot '-'        \n\
-            ",  sizex, sizey, offx, offy);
+    fprintf(f, "set size   %g, %g\n"
+               "set origin %g, %g\n"
+                ,  sizex, sizey, offx, offy);
     //Gnuplot has no way to just set a label with no plot, so 
     //labels have to be drawn with a long offset from one of the
     //plots we do display.

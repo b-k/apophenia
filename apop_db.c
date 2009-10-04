@@ -485,7 +485,7 @@ void qxprintf(char **q, char *format, ...){
 \param headers	A list of column names. If <tt>NULL</tt>, then the columns will be named <tt>c1</tt>, <tt>c2</tt>, <tt>c3</tt>, &c.
  \ingroup conversions
 */
-int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
+void apop_matrix_to_db(const gsl_matrix *data, const char *tabname, const char **headers){
   int		i,j; 
   double    v;
   int		ctr		= 0;
@@ -494,7 +494,7 @@ int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
 	if (db==NULL) apop_db_open(NULL);
 	asprintf(&q, "create table %s (", tabname);
 	for(i=0;i< data->size2; i++){
-		if(headers == NULL) 	qxprintf(&q, "%s\n c%i", q,i);
+		if(!headers) 	qxprintf(&q, "%s\n c%i", q,i);
 		else			qxprintf(&q, "%s\n %s ", q,headers[i]);
 		if (i< data->size2-1) 	qxprintf(&q, "%s,",q);
 		else			qxprintf(&q,"%s);  begin;",q);
@@ -522,7 +522,6 @@ int apop_matrix_to_db(gsl_matrix *data, char *tabname, char **headers){
     if (ctr>0) 
         apop_query("%s commit;",q);
 	free(q);
-	return 0;
 }
 
 
@@ -540,7 +539,7 @@ If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is "
 \todo add text names.
  \ingroup conversions
 */
-int apop_data_to_db(apop_data *set, char *tabname){
+void apop_data_to_db(const apop_data *set, const char *tabname){
   int		i,j; 
   int		ctr		    = 0;
   int		batch_size	= 100;
@@ -659,7 +658,6 @@ int apop_data_to_db(apop_data *set, char *tabname){
     if ( !(apop_opts.db_engine == 'm') && ctr>0) 
         apop_query("%s commit;",q);
 	free(q);
-	return 0;
 }
 
 /** Merge a single table from a database on the hard drive with the database currently open.

@@ -392,6 +392,8 @@ APOP_VAR_HEAD apop_data * apop_text_to_data(char *text_file, int has_row_names, 
     char *apop_varad_var(text_file, "-")
     int apop_varad_var(has_row_names, 'n')
     int apop_varad_var(has_col_names, 'y')
+    if (has_row_names==1) has_row_names ='y';
+    if (has_col_names==1) has_col_names ='y';
     return apop_text_to_data_base(text_file,has_row_names, has_col_names);
 APOP_VAR_END_HEAD
   apop_data     *set;

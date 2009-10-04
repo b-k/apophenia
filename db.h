@@ -28,8 +28,8 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...) __attribute__ ((format 
 double apop_query_to_float(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 
-int apop_matrix_to_db(gsl_matrix *data,char *tabname, char **headers);
-int apop_data_to_db(apop_data *set, char *tabname);
+void apop_matrix_to_db(const gsl_matrix *data, const char *tabname, const char **headers);
+void apop_data_to_db(const apop_data *set, const char *tabname);
 
 APOP_VAR_DECLARE void apop_db_merge(char *db_file, char inout);
 APOP_VAR_DECLARE void apop_db_merge_table(char *db_file, char *tabname, char inout);

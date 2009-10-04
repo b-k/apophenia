@@ -52,7 +52,7 @@ def test_nan_data():
     avar.apop_opts.db_nan =  "\\."
     d  = apop_query_to_data("select * from nandata")
     avar.apop_opts.output_type ='d'
-    apop_data_print(d, "nantest")
+#apop_data_print(d, "nantest", 0, 0, 's')
     d2  = apop_query_to_data("select * from nantest")
     assert(isNaN(d2.get("second", "c")))
     assert(isNaN(d2.get("third", "b")))
