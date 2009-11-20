@@ -3,6 +3,12 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+
+    Novmber 2009
+--apop_rm_columns bug fixed by Birger Baksaas.
+--apop_text_to_db attaches numeric affinity to sqlite3 columns, making numeric comparisons easier.
+--apop_histogram_model_reset's first argument is now "base" instead of "template", as a concession to C++ users.
+
 	September 2009
 --Many minor changes, mostly regarding adding optional arguments.
 --Dirichlet model

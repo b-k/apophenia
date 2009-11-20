@@ -23,8 +23,8 @@ apop_data * apop_test_anova_independence(apop_data *d);
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
 apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
 
-apop_model * apop_histogram_vector_reset(apop_model *template, gsl_vector *indata);
-APOP_VAR_DECLARE apop_model * apop_histogram_model_reset(apop_model *template, apop_model *m, long int draws, gsl_rng *rng);
+apop_model * apop_histogram_vector_reset(apop_model *, gsl_vector *);
+APOP_VAR_DECLARE apop_model * apop_histogram_model_reset(apop_model *base, apop_model *m, long int draws, gsl_rng *rng);
 apop_data * apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1);
 apop_data * apop_test_kolmogorov(apop_model *m1, apop_model *m2);
 void apop_histogram_normalize(apop_model *m);

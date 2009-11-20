@@ -426,8 +426,9 @@ allocation:
 \ingroup names
  */
 static void apop_name_rm_columns(apop_name *n, int *drop){
-apop_name   *newname    = apop_name_alloc();
-    for (int i=0; i< n->colct; i++){
+  apop_name   *newname    = apop_name_alloc();
+  size_t initial_colct = n->colct;
+    for (size_t i=0; i< initial_colct; i++){
         if (drop[i]==0)
             apop_name_add(newname, n->column[i],'c');
         else

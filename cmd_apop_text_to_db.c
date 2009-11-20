@@ -18,6 +18,7 @@ int     colnames            = 1,
 e.g.: %s -d\",|\" infile.txt a_table info.db\n\
 If the input text file name is a single dash, -, then read from STDIN.\n\
 -nc\t\tData does not include column names\n\
+-n regex\t\tCase-insensitive regular expression indicating Null values. Default: NaN \n\
 -m\t\tUse a mysql database (default: SQLite)\n\
 -u\t\tmysql username\n\
 -p\t\tmysql password\n\
@@ -36,6 +37,8 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 		  case 'n':
               if (optarg[0]=='c')
 			    colnames    --;
+              else
+                strcpy(apop_opts.db_nan, optarg);
 			break;
 		  case 'd':
 			strcpy(apop_opts.input_delimiters, optarg);

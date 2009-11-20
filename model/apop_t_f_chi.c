@@ -371,7 +371,8 @@ C     matrix of size NP * NP [...]
 C     whose elements have a Wishart(N, SIGMA) distribution.
 */
     Nullcheck_mv(m); Nullcheck_pv(m);
-    int DF, n = m->parameters->matrix->size1;
+    int DF, np = m->parameters->matrix->size1;
+    int n = m->parameters->vector->data[0];
     if (!m->more) { 
         gsl_matrix *ccc = apop_matrix_copy(m->parameters->matrix);
         gsl_linalg_cholesky_decomp(ccc);
@@ -382,18 +383,18 @@ C     whose elements have a Wishart(N, SIGMA) distribution.
     }
     apop_data *Chol = m->more;
     m->more_size = sizeof(apop_data);
-    apop_data *rmatrix = apop_data_calloc(0, n, n);
+    apop_data *rmatrix = apop_data_calloc(0, np, np);
     static apop_model *std_normal = NULL;
     if (!std_normal) std_normal = apop_model_set_parameters(apop_normal, 0.0, 1.0);
 
 //C     Load diagonal elements with square root of chi-square variates
-    for(int i = 0; i< n; i++){
+    for(int i = 0; i< np; i++){
         DF = n - i + 2.;
         apop_data_set(rmatrix, i, i, gsl_ran_chisq(r, DF));
     }
     
     double ndraw;
-    for(int i = 0; i< n; i++) //off-diagonal triangles: Normals.
+    for(int i = 0; i< np; i++) //off-diagonal triangles: Normals.
           for(int j = 0; j< i; j++){
             apop_draw(&ndraw, r, std_normal);
             assert (!gsl_isnan(ndraw));
@@ -405,7 +406,7 @@ C     whose elements have a Wishart(N, SIGMA) distribution.
     apop_data *cr = apop_dot(Chol, rmatrix);
     apop_data *crr = apop_dot(cr, rmatrix, .form2='t');
     apop_data *crrc = apop_dot(crr, Chol, .form2='t');
-    memmove(out, crrc->matrix->data, sizeof(double)*n*n);
+    memmove(out, crrc->matrix->data, sizeof(double)*np*np);
     assert(!gsl_isnan(*out));
     apop_data_free(rmatrix); apop_data_free(cr);
     apop_data_free(crrc);    apop_data_free(crr);

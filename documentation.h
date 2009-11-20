@@ -28,7 +28,7 @@ A demonstration of \ref apop_plot_line_and_scatter . You'll need a
 database from the {\em Modeling with Data} sample code, at
 http://modelingwithdata.org/appendices.html.
 
-\incude scatter.c
+\include scatter.c
 
 In the \ref outline section on map/apply, a new \f$t\f$-test on every row, with all operations acting on entire rows rather than individual data points:
 

@@ -2,8 +2,8 @@
 such as take determinants or do singular value decompositions.  Includes
 many convenience functions that don't actually do math but add/delete
 columns, check bounds, et cetera.
-
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+*/ 
+/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 /** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  
 
@@ -18,8 +18,8 @@ See also the printing functions, \ref apop_print, and the
 
 /** \defgroup output		Printing to the screen or a text file
 
-Most functions print only to the screen, but the \ref apop_print "matrix
-and vector printing functions" will let you print to a text file as
+Most functions print only to the screen, but the 
+\ref apop_print "matrix and vector printing functions" will let you print to a text file as
 well. The presumption is that statistic estimates are for your own
 consumption, while you are printing a matrix for import into another program.
 

@@ -1057,7 +1057,7 @@ void estimate_model(apop_data *data, apop_model dist, int method){
         .step_size    = 1e-1,
         .tolerance    = 1e-2,   .k         = 1.8,
         .t_initial    = 1,      .t_min     = .5,
-        .use_score    = 1,      .want_cov  = 0
+        .use_score    = 1,      .want_cov  = 'n'
         );
     Apop_model_add_group(&dist, apop_ls,  .want_cov = 'n');
     apop_model *e    = apop_estimate(data,dist);
@@ -1278,11 +1278,6 @@ int main(int argc, char **argv){
     do_test("test ML imputation", test_ml_imputation(r));
     do_test("test apop_update", test_updating());
     do_test("test fix params", test_model_fix_parameters(r));
-
-    if (slow_tests){
-        do_test("Test score (dlog likelihood) calculation", test_score());
-    }
-
     do_test("positive definiteness", test_posdef(r));
     do_test("test binomial estimations", test_binomial(r));
     do_test("test data to db", test_data_to_db());
@@ -1319,7 +1314,11 @@ int main(int argc, char **argv){
     do_test("apop_pack/unpack test", apop_pack_test(r));
     do_test("transposition test", test_transpose());
     do_test("test unique elements", test_unique_elements());
-    do_test("test probit and logit", test_probit_and_logit(r));
+    if (slow_tests){
+        if (verbose) printf("Slower tests:\n");
+        do_test("Test score (dlog likelihood) calculation", test_score());
+        do_test("test probit and logit", test_probit_and_logit(r));
+    }
     printf("\nApophenia has passed all of its tests. Yay.\n");
     return 0;
 }

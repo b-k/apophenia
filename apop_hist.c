@@ -60,7 +60,7 @@ apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata
 Unlike with most other histogram-genrating functions, this one will normalize the output to integrate to one.
 It uses the \ref designated syntax for inputs.
 
-\param template An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram). I.e., a histogram model. (No default)
+\param base An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram). I.e. a histogram model to be used as a template. (No default)
 \param m The model to be drawn from. Because this function works via random draws, the model needs to have a 
 \c draw method. (No default)
 \param draws The number of random draws to make. (arbitrary default = 1e5)
@@ -69,21 +69,21 @@ It uses the \ref designated syntax for inputs.
 
 \ingroup histograms
 */
-APOP_VAR_HEAD apop_model *apop_histogram_model_reset(apop_model *template, apop_model *m, long int draws, gsl_rng *rng){
+APOP_VAR_HEAD apop_model *apop_histogram_model_reset(apop_model *base, apop_model *m, long int draws, gsl_rng *rng){
     static gsl_rng *spare = NULL;
-    apop_model* apop_varad_var(template, NULL);
+    apop_model* apop_varad_var(base, NULL);
     apop_model* apop_varad_var(m, NULL);
     long int apop_varad_var(draws, 1e5);
-  apop_assert(template && !strcmp(template->name, "Histogram"), NULL, 0, 's', "The first argument needs to be a model with appropriate apop_histogram settings.");
+  apop_assert(base && !strcmp(base->name, "Histogram"), NULL, 0, 's', "The first argument needs to be a model with appropriate apop_histogram settings.");
   apop_assert(m && m->draw, NULL, 0, 's', "The second argument needs to be an apop_model with a 'draw' function that I can use to make random draws.");
     gsl_rng *apop_varad_var(rng, NULL)
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
     if (!rng)  rng = spare;
-    return apop_histogram_model_reset_base(template, m, draws, rng);
+    return apop_histogram_model_reset_base(base, m, draws, rng);
 APOP_VAR_ENDHEAD
   double d;
-    apop_model *out = apop_model_copy(*template); 
+    apop_model *out = apop_model_copy(*base); 
     gsl_histogram *hout  = Apop_settings_get(out, apop_histogram, pdf);
     gsl_histogram_reset(hout);
     for (long int i=0; i< draws; i++){
