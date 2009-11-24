@@ -1496,7 +1496,7 @@ more information, such as the ld(1) and ld.so(8) manual pages.
 /** \page optionaldetails Implementation of optional arguments 
 Optional and named arguments are among the most commonly commented-on features of Apophenia, so this page goes into full detail about the implementation. 
 
-To use these features, see the all-you-really-need summary, at the \ref designated
+To use these features, see the all-you-really-need summary at the \ref designated
 page. For a background and rationale, see the blog entry at http://modelingwithdata.org/arch/00000022.htm . 
 
 I'll assume you've read both links before continuing.
@@ -1505,7 +1505,7 @@ OK, now that you've read the how-to-use and the discussion of how optional and n
 
 There are three components to the process of generating optional arguments as implemented here:
 \li Produce a \c struct whose elements match the arguments to the function.
-\li Write a wrapper function that takes in the struct, unpacks it, and calls the original function
+\li Write a wrapper function that takes in the struct, unpacks it, and calls the original function.
 \li Write a macro that makes the user think the wrapper function is the real thing.
 
 None of these steps are really rocket science, but there is a huge amount of redundancy. 
@@ -1513,9 +1513,9 @@ Apophenia includes some macros that reduce the boilerplate redundancy significan
 
 We'll begin with the C-standard header file:
 \code 
-\#ifdef APOP_NO_VARIADIC
+#ifdef APOP_NO_VARIADIC
  void apop_vector_increment(gsl_vector * v, int i, double amt);
-\#else
+#else
  void apop_vector_increment_base(gsl_vector * v, int i, double amt);
  apop_varad_declare(void, apop_vector_increment, gsl_vector * v; int i; double amt);
 #define apop_vector_increment(...) apop_varad_link(apop_vector_increment, __VA_ARGS__)
@@ -1537,7 +1537,7 @@ void variadic_apop_vector_increment(variadic_type_apop_vector_increment varad_in
   \endcode
 
 So there's the ad-hoc struct and the declaration for the wrapper
-function. Notice how the arguments to the macro had semicilons, like a
+function. Notice how the arguments to the macro had semicolons, like a
 struct declaration, rather than commas, because the macro does indeed
 wrap the arguments into a struct.
 
@@ -1545,7 +1545,9 @@ wrap the arguments into a struct.
   \code
 #define apop_vector_increment(...) variadic_apop_increment_base((variadic_type_apop_vector_increment) {__VA_ARGS__})
   \endcode
-That gives us part three: a macro that fools the user into thinking that the function call is a set of arguments, but wraps what we type into a struct.
+That gives us part three: a macro that lets the user think that they are
+making a typical function call with a set of arguments, but wraps what
+they type into a struct.
 
 Now for the code file where the function is declared. Again, there is is an \c APOP_NO_VARIADIC wrapper. Inside the interesting part, we find the wrapper function to unpack the struct that comes in.
 
@@ -1610,7 +1612,7 @@ APOP_VAR_END_HEAD
 
 It is obviously much shorter. The declaration line is actually a C-standard declaration with the \c APOP_VAR_DECLARE preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the \c APOP_VAR_END_HEAD line. Done right, drawing a line between the introductory checks or initializations and the main function can really improve readability.
 
-One final detail: it is valid to have types with commans in them---function arguments. Because commas get turned to semicolons, and sed isn't a real parser, there is an exception built in: you will have to replace commas with exclamation marks in the header file (only). E.g.,
+One final detail: it is valid to have types with commas in them---function arguments. Because commas get turned to semicolons, and sed isn't a real parser, there is an exception built in: you will have to replace commas with exclamation marks in the header file (only). E.g.,
 
 \code
 APOP_VAR_DECLARE apop_data * f_of_f(apop_data *in, void *param, int n, double (*fn_d)(double ! void * !int));

@@ -5,11 +5,6 @@
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <assert.h>
 
-#define Text_Line_Limit 100000
-#define Fgets(instr, infile, filename) if (!fgets((instr), Text_Line_Limit, (infile))) \
-            {apop_error(0, 's', "Trouble reading %s, such as no data lines, a line longer than %i " \
-                    "chars, or garbage in the file.  exiting.", filename, Text_Line_Limit);}
-
 /** \defgroup conversions Conversion functions
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
 
@@ -128,7 +123,6 @@ apop_data * apop_array_to_data(const double **in, const int rows, const int cols
     return apop_matrix_to_data(apop_array_to_matrix(in, rows, cols));
 }
 
-
 /** Convert a <tt>double *</tt> array to a <tt>gsl_matrix</tt>. Input data is copied.
 
 \param line	the array to read in
@@ -239,228 +233,6 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 	return outdata;
 }
 
-/*
-Much of the magic below is due to the following regular expression.
-
-Without backslashes and spaced out in perl's /x style, it would look like this:
-("([^"]|[\]")+"        (starts with a ", has no "" in between (or a \"), ends with a "., at least one char.
-|               or
-[^%s"][^%s"]*)  anything but a "" or the user-specified delimiters. At least 1 char long.)
-([%s\n]|$)      and ends with a delimiter or the end of line.
-*/
-static const char      divider[]="(\"([^\"]|[\\]\")+\"|[^\"%s]+)[%s\n]";
-
-//in: the line being read, the allocated outstring, the result from the regexp search, the offset
-//out: the outstring is filled with a bit of match, last_match is updated.
-static void pull_string(char *line, char * outstr, regmatch_t *result, size_t * last_match){
-  int     length_of_match = result[1].rm_eo - result[1].rm_so;
-    memcpy(outstr, line + (*last_match)+result[1].rm_so, length_of_match);
-    /*if (outstr[length_of_match -1] == '"')
-        length_of_match     --;*/
-    outstr[length_of_match]       = '\0';
-    (*last_match)                += result[1].rm_eo+1;
-}
-
-/* Open file, find the first non-comment row, count columns, close file.  */
-static int apop_count_cols_in_text(char *text_file){
-  FILE * 		infile;
-  char		    instr[Text_Line_Limit], outstr[Text_Line_Limit],
-                full_divider[1000];
-  int		    ct	                = 0,
-                length_of_string    = 0;
-  size_t        last_match          = 0;
-  regex_t       *regex              = malloc(sizeof(regex_t));
-  regmatch_t    result[3];
-    sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
-    regcomp(regex, full_divider, REG_EXTENDED);
-	infile	= fopen(text_file,"r");
-    apop_assert(infile, 0, 0, 's', "Error opening file %s.", text_file);
-	Fgets(instr, infile, text_file);
-	while(instr[0]=='#')	//burn off comment lines
-        Fgets(instr, infile, text_file);
-    length_of_string= strlen(instr);
-    while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
-        pull_string(instr,  outstr, result,  &last_match);
-        if (strlen(outstr))
-            ct++;
-	}
-	fclose(infile);
-    regfree(regex);
-    free(regex);
-	return ct;
-}
-
-/* Open file, count lines that don't start with #, close file.  */
-static int apop_count_rows_in_text(char *text_file){
-  FILE * 	infile;
-  char		instr[Text_Line_Limit];
-  int		ct	= 0;
-	infile	= fopen(text_file,"r");
-    apop_assert(infile, 0, 0, 's', "Error opening file %s.", text_file);
-	while(fgets(instr,Text_Line_Limit,infile)!=NULL)
-	    if(instr[0]!='#')	//burn off comment lines
-		    ct  ++;
-	fclose(infile);
-	return ct-1;
-}
-
-static regex_t * strip_regex_alloc(void){
-  char    w[]           = "[:space:]\"";
-  char    stripregex[1000];
-  regex_t *strip_regex     = malloc(sizeof(regex_t));
-    sprintf(stripregex, "[%s]*\\([^%s]*.*[^%s][^%s]*\\)[%s]*", w,w,w,w,w);
-    regcomp(strip_regex, stripregex, 0);
-    return strip_regex;
-}
-
-//OK, OK. C sucks. This fn just strips leading and trailing blanks.
-static char * strip(char *in){
-  size_t      dummy       = 0;
-  char 		*out 	    = malloc(1+strlen(in));
-  Staticdef(regex_t* ,strip_regex, strip_regex_alloc( ));
-  regmatch_t  result[3];
-    if(!regexec(strip_regex, in, 2, result, 0))
-        pull_string(in, out, result,  &dummy);
-	return out;
-}
-
-/** \page text_format Notes on input text file formatting
-
-If you are reading into an array or <tt>gsl_matrix</tt> or \ref apop_data set, all text fields are taken as zeros. You will be warned of such substitutions unless you set \code apop_opts.verbose==0\endcode beforehand.
-
-You will also be interested in \c apop_opts.input_delimiters. By default, it is set to "| ,\t", meaning that a pipe, comma, space, or tab will delimit separate entries. Try \code strcpy(apop_opts.input_delimiters, ";")\endcode to set the delimiter to a semicolon, for example.
-
-There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, Apophenia checks whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then an NAN is inserted.
-
-If this rule doesn't work for your situation, you can explicitly insert a note that there is a missing data
-point. E.g., try: \code
-		perl -pi.bak -e 's/,,/,NaN,/g' data_file
-\endcode
-
-If you have missing data delimiters, you will need to set \ref apop_opts_type "apop_opts.db_nan" to a regular expression that matches the given format. Some examples:
-
-\code
-//Apophenia's default NaN string, matching NaN, nan, or NAN:
-strcpy(apop_opts.db_nan, "\\(NaN\\|nan\\|NAN\\)");
-//Literal text:
-strcpy(apop_opts.db_nan, "Missing");
-//Literal text, capitalized or not:
-strcpy(apop_opts.db_nan, "[mM]issing");
-//Matches two periods. Periods are special in regexes, so they need backslashes.
-strcpy(apop_opts.db_nan, "\\.\\.");
-\endcode
-
-Text is always delimited by quotes. Delimiters inside quotes are perfectly OK, e.g., "Males, 30-40", is an OK column name.
-
-Lines beginning with # (i.e. in the first column) are taken to be comments and ignored. 
-
-If there are row names and column names, then the input will not be perfectly square: there should be no first entry in the row with column names like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
-
-The maximum line length is 100,000 characters. If you have a line longer than this, you will need to open up apop_conversions.c, modify <tt>Text_Line_Limit</tt>, and recompile.
-
-*/
-
-/** Read a delimited text file into the matrix element of an \ref
- apop_data set.
-
-  See \ref text_format.
-
-\param text_file  = "-"  The name of the text file to be read in. If "-" (the default), use stdin.
-\param has_row_names = 'n'. Does the lines of data have row names?
-\param has_col_names = 'y'. Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
-\return 	Returns an apop_data set.
-
-<b>example:</b> See \ref apop_ols.
-
-This function uses the \ref designated syntax for inputs.
-
-\ingroup conversions	*/
-APOP_VAR_HEAD apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names){
-    char *apop_varad_var(text_file, "-")
-    int apop_varad_var(has_row_names, 'n')
-    int apop_varad_var(has_col_names, 'y')
-    if (has_row_names==1) has_row_names ='y';
-    if (has_col_names==1) has_col_names ='y';
-    return apop_text_to_data_base(text_file,has_row_names, has_col_names);
-APOP_VAR_END_HEAD
-  apop_data     *set;
-  FILE * 		infile;
-  char		    instr[Text_Line_Limit], 
-                *str, *stripped,
-                outstr[Text_Line_Limit],
-                full_divider[1000];
-  int 		    i	        = 0,
-                line_no     = 0,
-                length_of_string,
-		        ct, colno, rowct;
-  size_t        last_match;
-  regex_t       *regex      = malloc(sizeof(regex_t));
-  regmatch_t    result[2];
-	ct	    = apop_count_cols_in_text(text_file);
-	rowct	= apop_count_rows_in_text(text_file);
-    set     = apop_data_alloc(0,rowct+1-(has_col_names=='y'),ct);
-    if (strcmp(text_file,"-"))
-        infile	= fopen(text_file,"r");
-    else
-        infile  = stdin;
-    apop_assert(infile, NULL, 0, 'c', "Error opening file %s. Returning NULL.", text_file);
-    sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
-    regcomp(regex, full_divider, REG_EXTENDED);
-
-    //First, handle the top line, if we're told that it has column names.
-    if (has_col_names=='y'){
-	    Fgets(instr, infile, text_file);
-        line_no   ++;
-	    while(instr[0]=='#')	//burn off comment lines
-            Fgets(instr, infile, text_file);
-	    set->names->colct= 0;
-	    set->names->column	= malloc(sizeof(char*));
-        last_match      = 0;
-        length_of_string= strlen(instr);
-        while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
-            pull_string(instr,  outstr, result,  &last_match);
-	        stripped	    = strip(outstr);
-            apop_name_add(set->names, stripped, 'c');
-		    free(stripped);
-	    }
-    }
-
-    //Now do the body. First elmt may be a row name.
-	while(fgets(instr,Text_Line_Limit,infile)!=NULL){
-		colno	= 0;
-		if(instr[0]!='#') {
-			i	            ++;
-            last_match      = 0;
-            length_of_string= strlen(instr);
-            regexec(regex, (instr+last_match), 2, result, 0);   //one for the headers.
-			if (has_row_names=='y'){
-                pull_string(instr,  outstr, result,  &last_match);
-	            stripped	= strip(outstr);
-                apop_name_add(set->names, stripped, 'r');
-			    free(stripped);
-			}
-            while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
-                pull_string(instr,  outstr, result,  &last_match);
-                if (strlen(outstr)){
-                    colno++;
-                    gsl_matrix_set(set->matrix, i-1, colno-1,	 strtod(outstr, &str));
-                    if (apop_opts.verbose && !strcmp(outstr, str))
-                        printf("trouble converting item %i on line %i; using zero.\n", colno, i);
-                } else{
-                    char d = instr[last_match-1];
-                    if (d!='\t' && d!=' '){
-                        colno++;
-                        gsl_matrix_set(set->matrix, i-1, colno-1, GSL_NAN);
-                    }
-                }
-            }
-		}
-	}
-	fclose(infile);
-    regfree(regex);     free(regex);
-	return set;
-}
-
 /** See \ref apop_db_to_crosstab for the storyline; this is the complement.
  \ingroup db
  */
@@ -536,14 +308,139 @@ gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
 }
 
 
-
-//The text processing section
-
-static regex_t   *regex;
-static regex_t   *nan_regex = NULL;
+///////////////The text processing section
 static int  use_names_in_file;
-static char *add_this_line  = NULL;
 static char **fn            = NULL;
+
+/*
+Much of the magic below is due to the following regular expression, which breaks a line into fields.
+
+Without backslashes and spaced out in Perl's /x style, it would look like this:
+[[:space:]]*    all the spaces you can eat.
+("([^"]|[\]")+" (starts with a ", has no "" in between (may have a \"), ends with a "., at least one char.
+|               or
+[^%s"]+)        anything but a "" or the user-specified delimiters. At least 1 char long.)
+[[:space:]]*    has all the spaces you can eat,
+[%s\n]          and ends with a delimiter or the end of line.
+*/
+static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")+\"|[^\"%s]+)[[:space:]]*[%s\n]";
+
+//in: the line being read, the allocated outstring, the result from the regexp search, the offset
+//out: the outstring is filled with a bit of match, last_match is updated.
+static void pull_string(char *line, char * outstr, regmatch_t *result,
+        size_t * last_match, int prev_end, int last_end){
+  int     length_of_match, match_start;
+    if (last_end){
+        length_of_match = last_end - prev_end;
+        match_start = prev_end;
+    } else {
+        length_of_match = result[1].rm_eo - result[1].rm_so;
+        match_start     = (*last_match)+result[1].rm_so;
+        (*last_match)  += result[1].rm_eo+1;
+    }
+    memcpy(outstr, line + match_start, length_of_match);
+    outstr[length_of_match]   = '\0';
+}
+
+//OK, OK. C sucks. This fn just strips leading and trailing blanks.
+static char * strip(char *in){
+  size_t      dummy       = 0;
+  char 		*out 	    = malloc(1+strlen(in));
+  out[0] = '\0';
+  static regex_t *strip_regex     = NULL;
+  if (!strip_regex){
+      char    w[]     = "[:space:]\"\n";
+      strip_regex     = malloc(sizeof(regex_t));
+      /* pattern is: maybe blanks, (either one non-blank, or non-blank/anything/non-blank), 
+                maybe more blanks.  Then retain only the part in parens. */
+      char    stripregex[1000];
+      sprintf(stripregex, "[%s]*([^%s]|[^%s]+.*[^%s]+)[%s]*", w,w,w,w,w);
+      regcomp(strip_regex, stripregex, REG_EXTENDED);
+  }
+  regmatch_t  result[3];
+    if(!regexec(strip_regex, in, 2, result, 0))
+        pull_string(in, out, result,  &dummy, 0, 0);
+	return out;
+}
+
+static char* read_a_line(FILE *infile, char *filename){
+    int chunk = 1000;
+    char *line = NULL, instring[chunk];
+    int len_so_far = 0;
+    int total_so_far, LL;
+    do {
+        LL = line ? strlen(line) : 0;
+        if (fgets(instring, chunk, infile)){
+            total_so_far = LL +strlen(instring);
+            if (len_so_far < total_so_far){
+                len_so_far = total_so_far+1;
+                line = realloc(line, len_so_far);
+            }
+            memcpy(line+LL, instring, strlen(instring)+1);
+        }
+        else return line;
+    } while (!memchr(instring, '\n', strlen(instring)));//while no \n in string.
+    /*if (!line)
+            apop_error(0, 's', "Trouble reading %s, such as no data lines "\
+                    " or garbage in the file. Exiting.", filename);*/
+    return line;
+}
+
+/** \page text_format Notes on input text file formatting
+
+If you are reading into an array or <tt>gsl_matrix</tt> or \ref apop_data set, all text fields are taken as zeros. You will be warned of such substitutions unless you set \code apop_opts.verbose==0\endcode beforehand.
+
+You will also be interested in \c apop_opts.input_delimiters. By default, it is set to "| ,\t", meaning that a pipe, comma, space, or tab will delimit separate entries. Try \code strcpy(apop_opts.input_delimiters, ";")\endcode to set the delimiter to a semicolon, for example.
+
+There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, Apophenia checks whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then an NAN is inserted.
+
+If this rule doesn't work for your situation, you can explicitly insert a note that there is a missing data
+point. E.g., try: \code
+		perl -pi.bak -e 's/,,/,NaN,/g' data_file
+\endcode
+
+If you have missing data delimiters, you will need to set \ref apop_opts_type "apop_opts.db_nan" to a regular expression that matches the given format. Some examples:
+
+\code
+//Apophenia's default NaN string, matching NaN, nan, or NAN:
+strcpy(apop_opts.db_nan, "\\(NaN\\|nan\\|NAN\\)");
+//Literal text:
+strcpy(apop_opts.db_nan, "Missing");
+//Literal text, capitalized or not:
+strcpy(apop_opts.db_nan, "[mM]issing");
+//Matches two periods. Periods are special in regexes, so they need backslashes.
+strcpy(apop_opts.db_nan, "\\.\\.");
+\endcode
+
+The system also uses the standards for C's atof() function for
+floating-point numbers: INFINITY, -INFINITY, and NaN work as expected.
+I use some tricks to get SQLite to accept these values, but they work.
+
+Text is always delimited by quotes. Delimiters inside quotes are
+perfectly OK, e.g., "Males, 30-40", is an OK column name, as is "Males named \\"Joe\\"".
+
+Lines beginning with # (i.e. in the first column) are taken to be comments and ignored.  Blank lines are also ignored.
+
+If there are row names and column names, then the input will not be perfectly square: there should be no first entry in the row with column names like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
+*/
+
+static int prep_text_reading(char *text_file, FILE **infile, regex_t *regex, regex_t *nan_regex){
+  char		full_divider[1000], nan_string[500];
+    if (strcmp(text_file,"-"))
+	    *infile	= fopen(text_file,"r");
+    else
+        *infile  = stdin;
+    apop_assert(infile, 0,  0, 'c', "Trouble opening %s. Returning NULL.\n", text_file);
+
+    sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
+    regcomp(regex, full_divider, REG_EXTENDED);
+
+    if (strlen(apop_opts.db_nan)){
+        sprintf(nan_string, "^%s$", apop_opts.db_nan);
+        regcomp(nan_regex, nan_string, 0);
+    }
+    return 1;
+}
 
 /**
 --If the string has zero length, then it's probably a missing value.
@@ -551,95 +448,100 @@ static char **fn            = NULL;
   not just .1. 
   --It may be text with no "delimiters"
  */
-static char * prep_string_for_sqlite(char *astring){
+static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
   regmatch_t  result[2];
-  char		*tmpstring, 
-		*out	= NULL,
-		*tail	= NULL;
-	if(strtod(astring, &tail)) /*do nothing.*/;
-    tmpstring=strip(astring); 
+  char  *out	    = NULL,
+		*tail	    = NULL,
+		*stripped	= strip(astring);
+	if(strtod(stripped, &tail)) /*do nothing.*/;
+
     if (!strlen(astring)){ //it's empty
         out = malloc(1); 
         out[0] ='\0';
-        return out;
-    }
-    if (!regexec(nan_regex, tmpstring, 1, result, 0))
+    } else if (!regexec(nan_regex, stripped, 1, result, 0) 
+                    || !strlen (stripped)) //nan_regex match or blank field = NaN.
         asprintf(&out, "NULL");
-    else if (tail){	//then it's not a number.
-		if (strlen (tmpstring)==0)
-			asprintf(&out, " ");
-		else        //it's text but nothing special
+    else if (strlen(tail)){	//then it's not a number.
 #ifdef HAVE_LIBSQLITE3 
-            char *out = sqlite3_mprintf("%Q", tmpstring);//extra checks for odd chars.
+        char *out = sqlite3_mprintf("%Q", stripped);//extra checks for odd chars.
 #else
-            asprintf(&out, "'%s'",tmpstring);
+        asprintf(&out, "\"%s\"",stripped);
 #endif
-	} else {	    //sqlite wants 0.1, not .1
-		assert(strlen (tmpstring)!=0);
-		if (tmpstring[0]=='.')
-			asprintf(&out, "0%s",tmpstring);
+	} else {	    //number, but sqlite wants 0.1, not .1
+		assert(strlen (stripped)!=0);
+        if (isinf(atof(stripped))==1)
+			asprintf(&out, "9e9999999");
+        else if (isinf(atof(stripped))==-1)
+			asprintf(&out, "-9e9999999");
+        else if (gsl_isnan(atof(stripped)))
+			asprintf(&out, "0.0/0.0");
+        else if (stripped[0]=='.')
+			asprintf(&out, "0%s",stripped);
 		else
-            asprintf(&out, "%s", tmpstring);
+            asprintf(&out, "%s", stripped);
 	}
-    free(tmpstring);
+    free(stripped);
     return out;
 }
 
-/** Open file, find the first non-comment row, count columns, close file.  */
-static int count_cols_in_row(char *instr){
+static int count_cols_in_row(char *instr, regex_t *regex, int *field_ends){
   int       length_of_string    = strlen(instr);
   int       ct                  = 0;
   size_t    last_match          = 0;
-  char	    outstr[Text_Line_Limit];
+  char	    outstr[strlen(instr+1)];
   regmatch_t result[3];
-    while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
-        pull_string(instr,  outstr, result,  &last_match);
+    if (field_ends){
+        int ct = 0;
+        int len = strlen(instr);
+        while (field_ends[ct++] < len-1)//minus the newline
+            ;
+        return ct;
+    } else while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
+        pull_string(instr,  outstr, result,  &last_match, 0, 0);
         if (strlen(outstr))
             ct++;
 	}
 	return ct;
 }
 
-static int get_field_names(int has_col_names, char **field_names, FILE *infile, char *filename){
-  char		instr[Text_Line_Limit], *stripped, *stripme, outstr[Text_Line_Limit];
-  int       i = 0, ct, length_of_string;
+static int get_field_names(int has_col_names, char **field_names, FILE
+        *infile, char *filename, regex_t *regex, char **add_this_line, int *field_ends){
+  char		*instr;
+  int       i = 0, ct, length_of_string, prev_end, last_end = 0;
   size_t    last_match;
   regmatch_t  result[2];
-
-  char full_divider2[1000];
-  Staticdef(regex_t *, regex_no_blank_fields, malloc(sizeof(regex_t)));
-    sprintf(full_divider2, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
-    regcomp(regex_no_blank_fields, full_divider2, REG_EXTENDED);
-
-    Fgets(instr, infile, filename);
+    instr =  read_a_line(infile, filename);
     while(instr[0]=='#' || instr[0]=='\n')	//burn off comment lines
-        Fgets(instr, infile, filename);
-    ct              = count_cols_in_row(instr);
+        instr =  read_a_line(infile, filename);
+    ct   = count_cols_in_row(instr, regex, field_ends);
 
     if (has_col_names && field_names == NULL){
         use_names_in_file++;
+        last_end = field_names ? field_ends[0] : 0;
         if (!has_col_names) //then you have a data line, which you should save
-            asprintf(&add_this_line, "%s", instr);
+            asprintf(add_this_line, "%s", instr);
         fn	            = malloc(ct * sizeof(char*));
         last_match      = 0;
         length_of_string= strlen(instr);
-        while (last_match < length_of_string && !regexec(regex_no_blank_fields, (instr+last_match), 2, result, 0)){
-            pull_string(instr,  outstr, result,  &last_match);
-                stripme	    = strip(outstr);
-                if (strlen(outstr)){
-                    stripped    = apop_strip_dots(stripme,'d');
-                    fn[i]	    = NULL;
-                    asprintf(&fn[i], "%s", stripped);
-                    free(stripped);
-                    i++;
-                }
-            free(stripme);
+        char outstr[length_of_string+1];
+        while (last_match < length_of_string 
+                && last_end < length_of_string -1
+                && !regexec(regex, (instr+last_match), 2, result, 0)){
+            prev_end = last_end;
+            last_end = field_ends ? field_ends[i] : 0;
+            pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
+            if (strlen(outstr)){
+                char *tmpstring=strip(outstr); //remove "exraneous quotes".
+                fn[i]  = apop_strip_dots(tmpstring,'d');
+                free(tmpstring);
+                i++;
+            }
         }
     } else	{
         if (field_names)
             fn	= field_names;
         else{
-            asprintf(&add_this_line, "%s", instr); //save this line for later.
+            asprintf(add_this_line, "%s", instr); //save this line for later.
             fn	= malloc(ct * sizeof(char*));
             for (i =0; i < ct; i++){
                 fn[i]	= malloc(1000);
@@ -648,6 +550,100 @@ static int get_field_names(int has_col_names, char **field_names, FILE *infile, 
         }
     }
     return ct;
+}
+
+/** Read a delimited text file into the matrix element of an \ref
+ apop_data set.
+
+  See \ref text_format.
+
+\param text_file  = "-"  The name of the text file to be read in. If "-" (the default), use stdin.
+\param has_row_names = 'n'. Does the lines of data have row names?
+\param has_col_names = 'y'. Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
+\param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
+\return 	Returns an apop_data set.
+
+<b>example:</b> See \ref apop_ols.
+
+This function uses the \ref designated syntax for inputs.
+
+\ingroup conversions	*/
+APOP_VAR_HEAD apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names, int *field_ends){
+    char *apop_varad_var(text_file, "-")
+    int apop_varad_var(has_row_names, 'n')
+    int apop_varad_var(has_col_names, 'y')
+    if (has_row_names==1) has_row_names ='y';
+    if (has_col_names==1) has_col_names ='y';
+    int * apop_varad_var(field_ends, NULL);
+    return apop_text_to_data_base(text_file,has_row_names, has_col_names, field_ends);
+APOP_VAR_END_HEAD
+  apop_data     *set = NULL;
+  FILE * 		infile;
+  char		    *instr, *str, *add_this_line= NULL;
+  int 		    i	        = 0,
+                length_of_string, colno,
+                prev_end, last_end=0, 
+                hasrows = (has_row_names == 'y');
+  size_t        last_match;
+  regmatch_t    result[2];
+  regex_t       regex, nan_regex;
+    if (!prep_text_reading(text_file, &infile, &regex, &nan_regex)) 
+        return NULL;
+
+    //First, handle the top line, if we're told that it has column names.
+    if (has_col_names=='y'){
+        int col_ct  = get_field_names(1, NULL, infile, text_file, &regex, &add_this_line, field_ends);
+        set = apop_data_alloc(0,1, col_ct);
+	    set->names->colct   = 0;
+	    set->names->column	= malloc(sizeof(char*));
+        for (int j=0; j< col_ct; j++)
+            apop_name_add(set->names, fn[j], 'c');
+    }
+
+    //Now do the body. First elmt may be a row name.
+	while((instr= add_this_line) || (instr= read_a_line(infile, text_file))!=NULL){
+		colno	= 0;
+		if(instr[0]!='#') {
+            if (!set)
+                set = apop_data_alloc(0,1, count_cols_in_row(instr, &regex, field_ends));
+			i ++;
+            set->matrix = apop_matrix_realloc(set->matrix, i, set->matrix->size2);
+            last_match      = 0;
+            length_of_string= strlen(instr);
+            char outstr[length_of_string+1];
+            regexec(&regex, (instr+last_match), 2, result, 0);   //one for the headers.
+            prev_end = last_end;
+            last_end = field_ends ? field_ends[colno] : 0;
+			if (hasrows){
+                pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
+                apop_name_add(set->names, outstr, 'r');
+			}
+            while (last_match < length_of_string 
+                    && last_end < length_of_string -1
+                    && !regexec(&regex, (instr+last_match), 2, result, 0)){
+                prev_end = last_end;
+                last_end = field_ends ? field_ends[hasrows+colno] : 0;
+                pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
+                if (strlen(outstr)){
+                    colno++;
+                    gsl_matrix_set(set->matrix, i-1, colno-1,	 strtod(outstr, &str));
+                    if (apop_opts.verbose && !strcmp(outstr, str))
+                        printf("trouble converting item %i on line %i; using zero.\n", colno, i);
+                } else{
+                    char d = instr[last_match-1];
+                    if (d!='\t' && d!=' '){
+                        colno++;
+                        gsl_matrix_set(set->matrix, i-1, colno-1, GSL_NAN);
+                    }
+                }
+            }
+		}
+        add_this_line = NULL;
+	}
+    if (strcmp(text_file,"-"))
+        fclose(infile);
+    regfree(&regex); regfree(&nan_regex);
+	return set;
 }
 
 static void tab_create_mysql(char *tabname, int ct, int has_row_names){
@@ -698,32 +694,38 @@ static void tab_create(char *tabname, int ct, int has_row_names){
     }
 }
 
-static void line_to_insert(char instr[], char *tabname){
+static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t *nan_regex, int * field_ends){
   int       pc   = 0, //pending comma.
-            length_of_string= strlen(instr);
-  size_t    last_match      = 0;
-  char	    outstr[Text_Line_Limit], *prepped;
+            length_of_string= strlen(instr),
+            prev_end    = 0, last_end    = 0, ctr = 0;
+  size_t    last_match  = 0;
+  char	    *prepped;
   char      *r, *q  = malloc(100+ strlen(tabname));
   regmatch_t  result[2];
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
-    while (last_match < length_of_string && !regexec(regex, instr+last_match, 2, result, 0)){
-        pull_string(instr,  outstr, result,  &last_match);
-            prepped	= prep_string_for_sqlite(outstr);
-            if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
+    char outstr[length_of_string+1];
+    while (last_match < length_of_string 
+            && last_end < length_of_string-1
+            && !regexec(regex, instr+last_match, 2, result, 0)){
+        prev_end = last_end;
+        last_end = field_ends ? field_ends[ctr++] : 0;
+        pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
+        prepped	= prep_string_for_sqlite(outstr, nan_regex);
+        if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
+            r = q;
+            asprintf(&q, "%s%s%s", r, (pc ? ", ": ""),  prepped);
+            free(r);
+            pc = 1;
+        } else {
+            char d = instr[last_match-1];
+            if (d!='\t' && d!='\r' && d!='\n' && d!=' '){
                 r = q;
-                asprintf(&q, "%s%s%s", r, (pc ? ", ": ""),  prepped);
+                asprintf(&q, "%s%sNULL", (pc ? ", ": ""), r);
                 free(r);
                 pc = 1;
-            } else {
-                char d = instr[last_match-1];
-                if (d!='\t' && d!='\r' && d!='\n' && d!=' '){
-                    r = q;
-                    asprintf(&q, "%s%sNULL", (pc ? ", ": ""), r);
-                    free(r);
-                    pc = 1;
-                }
             }
-            free(prepped);
+        }
+        free(prepped);
     }
     apop_query("%s);",q); 
     free (q);
@@ -745,75 +747,55 @@ By the way, there is a begin/commit wrapper that bundles the process into bundle
 \param has_row_names Does the lines of data have row names? (default = 0)
 \param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1)
 \param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
+\param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
 
 \return Returns the number of rows.
 This function uses the \ref designated syntax for inputs.
 \ingroup conversions
 */
-APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names){
+APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends){
     char *apop_varad_var(text_file, "-")
     char *apop_varad_var(tabname, apop_strip_dots(text_file, 'd'))
     int apop_varad_var(has_row_names, 0)
     int apop_varad_var(has_col_names, 1)
+    int *apop_varad_var(field_ends, NULL)
     char ** apop_varad_var(field_names, NULL)
-    return apop_text_to_db_base(text_file,tabname, has_row_names, has_col_names, field_names);
+    return apop_text_to_db_base(text_file,tabname, has_row_names, has_col_names, field_names, field_ends);
 APOP_VAR_END_HEAD
   int       batch_size  = 2000,
-      		ct, 
-		    rows    = 0;
+      		ct, rows    = 0;
   FILE * 	infile;
-  char		*q  = NULL, instr[Text_Line_Limit];
-  char		full_divider[1000], nan_string[500];
+  char		*q  = NULL, *instr, *add_this_line=NULL;
+  regex_t   regex, nan_regex;
 
+    if(!prep_text_reading(text_file, &infile, &regex, &nan_regex))
+        return 0;
 	use_names_in_file   = 0;    //file-global.
-    if (!regex){
-        regex               = malloc(sizeof(regex_t));//file-global, above.
-        sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
-        regcomp(regex, full_divider, REG_EXTENDED);
-    }
 
 	apop_assert(!apop_table_exists(tabname,0), 0, 0, 'c', "table %s exists; not recreating it.", tabname);
-    if (strlen(apop_opts.db_nan)){
-        //sprintf(nan_string, "\\\"*%s\\\"*", apop_opts.db_nan);
-        sprintf(nan_string, "^%s$", apop_opts.db_nan);
-        nan_regex   = malloc(sizeof(regex_t));
-        regcomp(nan_regex, nan_string, 0);
-    }
-    if (strcmp(text_file,"-"))
-	    infile	= fopen(text_file,"r");
-    else
-        infile  = stdin;
-    apop_assert(infile, 0,  0, 'c', "Trouble opening %s. Bailing.\n", text_file);
-    ct  = get_field_names(has_col_names, field_names, infile, text_file);
+    ct  = get_field_names(has_col_names, field_names, infile, text_file, &regex, &add_this_line, field_ends);
     if (apop_opts.db_engine=='m')
         tab_create_mysql(tabname, ct, has_row_names);
     else
         tab_create(tabname, ct, has_row_names);
     //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
     ct  = 0;
-    if (add_this_line){
-        rows    ++;
-        line_to_insert(add_this_line, tabname);
-    }
-	while(fgets(instr,Text_Line_Limit,infile)!=NULL){
+	while((instr=add_this_line) || (instr= read_a_line(infile, text_file))!=NULL){
 		if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
-			rows	        ++;
-            line_to_insert(instr, tabname);
+			rows ++;
+            line_to_insert(instr, tabname, &regex, &nan_regex, field_ends);
             if (!(ct++ % batch_size)){
                 if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
                 if (apop_opts.verbose >= 0) {printf(".");fflush(NULL);}
             }
 		}
+        add_this_line = NULL;
 	}
 	if (apop_opts.db_engine != 'm') apop_query("commit;");
     if (strcmp(text_file,"-"))
 	    fclose(infile);
-    if (nan_regex){
-        regfree(nan_regex);
-        free(nan_regex);
-        nan_regex   = NULL;
-    }
     free(q);
+    regfree(&regex); regfree(&nan_regex);
 	return rows;
 }
 
@@ -953,7 +935,6 @@ Warning: I need as many arguments as the size of the vector, and can't count the
 \param ...  A series of exactly as many values as there are spaces in the vector.
 \return     A pointer to the same vector that was input.
 */
-
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
     if (!in) 
         return NULL;
@@ -975,7 +956,6 @@ The values should be in row-major order (i.e., list the entire first row, follow
 \param ...  A series of exactly as many floating-point values as there are blanks in the matrix.
 \return     A pointer to the same matrix that was input.
 */
-
 gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
     if (!in) 
         return NULL;

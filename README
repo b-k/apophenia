@@ -15,11 +15,12 @@ The make_pkg script will:
 --Make some minor fixes, like update version numbers and overwrite this
 readme to you with readme.user.
 --Run GNU autotools, which will produce the familiar configure script.
---Produce a debian package (if you have the right tools).
+--Produce a debian package (currently unmaintained---volunteers sought).
 
-At the end of this, you will be able to go to the dists directory and
-either install the debian pkg (if it compiled) and/or run
-./configure;make;sudo make install from the generated source directory.
+At the end of this, you will be able to go to the dists directory
+and either install the debian pkg (if it compiled) and/or go to the
+apophenia-0.xx subdirectory and run ./configure;make;sudo make install
+as usual.
 
 By the way, the Apophenia end-distribution attempts to be
 standards-compliant, but the make_pkg script and such is a little
