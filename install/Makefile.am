@@ -71,7 +71,7 @@ apop_lookup_LDADD = libapophenia.la
 
 EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/triangle.png doxy/right.png doxy/down.png \
         doxy/flake.gif doxy/foot.html \
-		doxy/head.html doxy/search.gif doxy/typical.css	documentation.h \
+		doxy/head.html doxy/search.gif doxy/typical.css	doxy/documentation.h \
 		tests/Makefile tests/test.py tests/Readme tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \
 		tests/data-mixed tests/test_data_nans tests/wampler1.dat eg/* \
@@ -81,6 +81,7 @@ EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/triangle.png doxy/right.png doxy/
 
 doc: 
 	cp model/*.c .
+	mv doxy/documentation.h .
 	doxygen doxy/doxyconfig
 	cp doxy/flake.gif doxy/search.gif doxy/right.png doxy/down.png html/
 	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)<p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \

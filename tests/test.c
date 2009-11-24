@@ -20,7 +20,7 @@ double  true_parameter_v[]    = {1.82,2.1};
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
 int     len                 = 8000;
-int     verbose             = 0;
+int     verbose             = 1;
 
 static void compare_mvn_estimates(apop_model *L, apop_model *R, double tolerance){
     gsl_vector_sub(L->parameters->vector, R->parameters->vector);
@@ -1252,14 +1252,14 @@ void test_arms(gsl_rng *r){
 
 int main(int argc, char **argv){
   int  slow_tests = 0;
-  char c, opts[]  = "svt:";
+  char c, opts[]  = "sqt:";
     if (argc==1)
-        printf("Tests for Apophenia.\nRunning relatively faster tests. To run slower tests (primarily simulated annealing), use -s.\nFor verbose output, use -v. For multiple threads, use -t2, -t3, ...\nRunning...\n");
+        printf("Tests for Apophenia.\nRunning relatively faster tests.  To run slower tests (primarily simulated annealing), use -s.\nFor quieter output, use -q. For multiple threads, use -t2, -t3, ...\nRunning...\n");
     while((c = getopt(argc, argv, opts))!=-1)
         if (c == 's')
             slow_tests  ++;
-        else if (c == 'v')
-            verbose  ++;
+        else if (c == 'q')
+            verbose  --;
         else if (c == 't')
             apop_opts.thread_count  = atoi(optarg);
 

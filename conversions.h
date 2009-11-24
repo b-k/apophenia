@@ -39,8 +39,8 @@ gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
 apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
 
 //From text
-APOP_VAR_DECLARE apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names);
-APOP_VAR_DECLARE int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names);
+APOP_VAR_DECLARE apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names, int *field_ends);
+APOP_VAR_DECLARE int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends);
 
 //From crosstabs
 void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name, 

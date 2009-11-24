@@ -6,6 +6,17 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "conversions.h"
 #include <unistd.h>
 
+int *break_down(char *in){
+  int *out = NULL;
+  int ctr = 0;
+  char *cp = strtok (in, ",");
+  while (cp != NULL) {
+      out = realloc(out, sizeof(int)*(ctr+1));
+      out[ctr++] = atoi(cp);
+      cp = strtok (NULL, ",");
+    }
+  return out;
+}
 
 int main(int argc, char **argv){
 char		c, 
@@ -20,6 +31,7 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 -nc\t\tData does not include column names\n\
 -n regex\t\tCase-insensitive regular expression indicating Null values. Default: NaN \n\
 -m\t\tUse a mysql database (default: SQLite)\n\
+-f\t\tfixed width field ends: -f\"3,8,12,17\" (first char is one, not zero)\n\
 -u\t\tmysql username\n\
 -p\t\tmysql password\n\
 -r\t\tData includes row names\n\
@@ -27,12 +39,13 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 -O\t\tIf table exists, erase it and write from scratch (i.e., Overwrite)\n\
 -h\t\tPrint this help\n\
 \n", argv[0], argv[0]); 
+    int * field_list = NULL;
 
 	if(argc<3){
 		printf("%s", msg);
 		return 0;
 	}
-	while ((c = getopt (argc, argv, "n:d:hmp:ru:vO")) != -1){
+	while ((c = getopt (argc, argv, "n:d:f:hmp:ru:vO")) != -1){
 		switch (c){
 		  case 'n':
               if (optarg[0]=='c')
@@ -43,6 +56,9 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 		  case 'd':
 			strcpy(apop_opts.input_delimiters, optarg);
 			break;
+		  case 'f':
+            field_list = break_down(optarg);
+            break;
 		  case 'h':
 			printf("%s", msg);
 			return 0;
@@ -69,5 +85,5 @@ If the input text file name is a single dash, -, then read from STDIN.\n\
 	apop_db_open(argv[optind + 2]);
     if (tab_exists_check)
         apop_table_exists(argv[optind+1],1);
-	apop_text_to_db(argv[optind], argv[optind+1], rownames,colnames, NULL);
+	apop_text_to_db(argv[optind], argv[optind+1], rownames,colnames, NULL, .field_ends=field_list);
 }
