@@ -41,7 +41,6 @@ typedef struct {
 }   infostruct;
 
 static apop_model * find_roots (infostruct p); //see end of file.
-void apop_estimate_parameter_t_tests (apop_model *est); //in apop_regress.c
 
 /** \page trace_path Plotting the path of an ML estimation.
 
