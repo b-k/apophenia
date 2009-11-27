@@ -17,7 +17,7 @@ At the bottom are the maximum likelihood procedures themselves. There are four: 
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_multiroots.h>
 
-typedef double 	(*apop_fn_with_params) (apop_data *, apop_model);
+typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
 typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
 
@@ -28,7 +28,7 @@ typedef struct {
 } grad_params;
 
 typedef struct {
-    apop_model  model;
+    apop_model  *model;
     apop_data   *data;
     apop_fn_with_params   *f;
     apop_df_with_void   *df;
@@ -40,7 +40,7 @@ typedef struct {
     FILE        **trace_file;
 }   infostruct;
 
-static apop_model find_roots (infostruct p); //see end of file.
+static apop_model * find_roots (infostruct p); //see end of file.
 
 /** \page trace_path Plotting the path of an ML estimation.
 
@@ -68,8 +68,7 @@ apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
   apop_mle_settings *setme =   calloc(1,sizeof(apop_mle_settings));
     apop_varad_setting(in, setme, starting_pt, NULL);
     apop_varad_setting(in, setme, tolerance, 1e-2);
-    //setme->method = (in.parent && in.parent.score) ? APOP_CG_PR : APOP_SIMPLEX_NM;
-    setme->method = in.parent.score ? APOP_CG_PR : APOP_SIMPLEX_NM;
+    setme->method = (in.parent && in.parent->score) ? APOP_CG_PR : APOP_SIMPLEX_NM;
     apop_varad_setting(in, setme, verbose, 0);
     apop_varad_setting(in, setme, use_score, 'y');
     if (in.use_score == 1) setme->use_score = 'y';
@@ -89,7 +88,7 @@ apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
     return setme;
 }
 
-apop_mle_settings *apop_mle_settings_alloc(apop_model parent){
+apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
     return apop_mle_settings_init((apop_mle_settings){.parent=parent}); }
 
 void *apop_mle_settings_copy(apop_mle_settings * in){
@@ -104,13 +103,13 @@ void apop_mle_settings_free(apop_mle_settings *in){ free(in); }
 //Including numerical differentiation and a couple of functions to
 //negate the likelihood fns without bothering the user.
 
-static apop_model apop_annealing(infostruct*);                         //below.
+static apop_model * apop_annealing(infostruct*);                         //below.
 static int dnegshell (const gsl_vector *, void * , gsl_vector * g); //below.
 
 static double one_d(double b, void *in){
   infostruct    *i   =in;
     gsl_vector_set(i->gp->beta, i->gp->dimension, b);
-    apop_data_unpack(i->gp->beta, i->model.parameters);
+    apop_data_unpack(i->gp->beta, i->model->parameters);
 	double out= (*(i->f))(i->gp->d, i->model);
     return out;
 }
@@ -122,7 +121,7 @@ static double one_d(double b, void *in){
 static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct* info, gsl_vector *out, double delta){
   double		result, err;
   infostruct    i;
-  gsl_vector    *beta   = apop_data_pack(info->model.parameters);
+  gsl_vector    *beta   = apop_data_pack(info->model->parameters);
   gsl_function	F = {  .function= one_d, 
                        .params	= &i  };
   grad_params 	gp = { .beta	= gsl_vector_alloc(beta->size),
@@ -150,19 +149,19 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
 
  \ingroup linear_algebra
  */
-APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model model, double delta){
+APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *model, double delta){
     apop_data * apop_varad_var(data, NULL);
-    //apop_model apop_varad_var(model, apop_null_model);
-    //Nullcheck(model)
+    apop_model * apop_varad_var(model, NULL);
+    Nullcheck(model)
     double apop_varad_var(delta, 0);
     if (!delta){
-        apop_mle_settings *mp = apop_settings_get_group(varad_in.model, "apop_mle");
+        apop_mle_settings *mp = apop_settings_get_group(model, "apop_mle");
         delta = mp ? mp->delta : default_delta;
     }
-    return apop_numerical_gradient_base(data, varad_in.model, delta);
+    return apop_numerical_gradient_base(data, model, delta);
 APOP_VAR_ENDHEAD
-  Get_vmsizes(model.parameters); //tsize
-  apop_fn_with_params ll  = model.log_likelihood ? model.log_likelihood : model.p;
+  Get_vmsizes(model->parameters); //tsize
+  apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
   apop_assert(ll, 0, 0, 'c', "Input model has neither p nor log_likelihood method. Returning zero.");
   gsl_vector        *out= gsl_vector_alloc(tsize);
   infostruct    i = (infostruct) {.model = model, .data = data};
@@ -171,20 +170,20 @@ APOP_VAR_ENDHEAD
 }
 
 typedef struct {
-    apop_model base_model;
+    apop_model *base_model;
     int *current_index;
 } apop_model_for_infomatrix_struct;
 
-static double apop_fn_for_infomatrix(apop_data *d, apop_model m){
+static double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     static gsl_vector *v = NULL;
-    apop_model_for_infomatrix_struct *settings = m.more;
-    apop_model mm = settings->base_model;
-    if (mm.score){
-        if (!v || v->size != mm.parameters->vector->size){
+    apop_model_for_infomatrix_struct *settings = m->more;
+    apop_model *mm = settings->base_model;
+    if (mm->score){
+        if (!v || v->size != mm->parameters->vector->size){
             if (v) gsl_vector_free(v);
-            v = gsl_vector_alloc(mm.parameters->vector->size);
+            v = gsl_vector_alloc(mm->parameters->vector->size);
         }
-         mm.score(d, v, mm);
+         mm->score(d, v, mm);
         return gsl_vector_get(v, *settings->current_index);
     } //else:
         gsl_vector *vv = apop_numerical_gradient(d, mm);
@@ -207,26 +206,26 @@ parameter values. The math is
  
 This function uses the \ref designated syntax for inputs.
  */
-APOP_VAR_HEAD apop_data * apop_model_hessian(apop_data * data, apop_model model, double delta){
+APOP_VAR_HEAD apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta){
     apop_data * apop_varad_var(data, NULL);
-    //apop_model apop_varad_var(model, apop_null_model);
-    //Nullcheck(model)
+    apop_model * apop_varad_var(model, NULL);
+    Nullcheck(model)
     double apop_varad_var(delta, 0);
     if (!delta){
-        apop_mle_settings *mp = apop_settings_get_group(varad_in.model, "apop_mle");
+        apop_mle_settings *mp = apop_settings_get_group(model, "apop_mle");
         delta = mp ? mp->delta : default_delta;
     }
-    return apop_model_hessian_base(data, varad_in.model, delta);
+    return apop_model_hessian_base(data, model, delta);
 APOP_VAR_ENDHEAD
   int    k;
-  Get_vmsizes(model.parameters) //tsize
+  Get_vmsizes(model->parameters) //tsize
   size_t betasize  = tsize;
   apop_data *out    = apop_data_calloc(0, betasize, betasize);
   gsl_vector *dscore = gsl_vector_alloc(betasize);
   apop_model_for_infomatrix_struct ms = { .base_model = model, .current_index = &k, };
-  apop_model m = apop_model_copy(apop_model_for_infomatrix);
-  m.parameters = model.parameters;
-  m.more = &ms;
+  apop_model *m = apop_model_copy(apop_model_for_infomatrix);
+  m->parameters = model->parameters;
+  m->more = &ms;
     if (apop_settings_get_group(model, "apop_mle"))
         apop_settings_copy_group(m, model, "apop_mle");
     for (k=0; k< betasize; k++){
@@ -239,9 +238,9 @@ APOP_VAR_ENDHEAD
         }
         gsl_vector_free(dscore);
     }
-    if (model.parameters->names->row){
-        apop_name_stack(out->names, model.parameters->names, 'r');
-        apop_name_stack(out->names, model.parameters->names, 'c', 'r');
+    if (model->parameters->names->row){
+        apop_name_stack(out->names, model->parameters->names, 'r');
+        apop_name_stack(out->names, model->parameters->names, 'c', 'r');
     }
     return out;
 }
@@ -263,16 +262,16 @@ data. See Pawitan 2001 (who cribbed a little off of Efron and Hinkley) or Klemen
 
 This function uses the \ref designated syntax for inputs.
  */
-APOP_VAR_HEAD apop_data * apop_model_numerical_covariance(apop_data * data, apop_model model, double delta){
+APOP_VAR_HEAD apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta){
     apop_data * apop_varad_var(data, NULL);
-    //apop_model apop_varad_var(model, apop_null_model);
-    //Nullcheck(model)
+    apop_model * apop_varad_var(model, NULL);
+    Nullcheck(model)
     double apop_varad_var(delta, 0);
     if (!delta){
-        apop_mle_settings *mp = apop_settings_get_group(varad_in.model, "apop_mle");
+        apop_mle_settings *mp = apop_settings_get_group(model, "apop_mle");
         delta = mp ? mp->delta : default_delta;
     }
-    return apop_model_numerical_covariance_base(data, varad_in.model, delta);
+    return apop_model_numerical_covariance_base(data, model, delta);
 APOP_VAR_ENDHEAD
     apop_data *hessian = apop_model_hessian(data, model, delta);
     if (apop_opts.verbose > 1){
@@ -286,8 +285,8 @@ APOP_VAR_ENDHEAD
         apop_name_stack(out->names, hessian->names, 'c');
     }
     apop_data_free(hessian);
-    if (!model.covariance)
-        model.covariance = out;
+    if (!model->covariance)
+        model->covariance = out;
     return out;
 }
 
@@ -340,21 +339,21 @@ static double negshell (const gsl_vector *beta, void * in){
   infostruct    *i              = in;
   double		penalty         = 0,
                 out             = 0; 
-  double 	(*f)(apop_data *, apop_model);
-    f   = i->model.log_likelihood? i->model.log_likelihood : i->model.p;
+  double 	(*f)(apop_data *, apop_model *);
+    f   = i->model->log_likelihood? i->model->log_likelihood : i->model->p;
     apop_assert(f, 0, 0, 's', "The model you sent to the MLE function has neither log_likelihood element nor p element.");
-    apop_data_unpack(beta, i->model.parameters);
-	if (i->use_constraint && i->model.constraint)
-		penalty	= i->model.constraint(i->data, i->model);
+    apop_data_unpack(beta, i->model->parameters);
+	if (i->use_constraint && i->model->constraint)
+		penalty	= i->model->constraint(i->data, i->model);
     if(penalty)
-        apop_data_pack(i->model.parameters, (gsl_vector*) beta);
+        apop_data_pack(i->model->parameters, (gsl_vector*) beta);
     out = penalty - f(i->data, i->model); //negative llikelihood
     if (penalty)
-        apop_data_unpack(i->beta, i->model.parameters);
+        apop_data_unpack(i->beta, i->model->parameters);
     if (i->trace_path && strlen(i->trace_path))
-        tracepath(i->model.parameters->vector,-out, i->trace_path, i->trace_file);
+        tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
     //The next line is not used anywhere else here. It's just for output.
-    i->model.llikelihood = i->model.log_likelihood? -out : log(-out); //negative negative llikelihood.
+    i->model->llikelihood = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
     return out;
 }
 
@@ -371,14 +370,14 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
 */
   infostruct    *i              = in;
   apop_mle_settings *mp       =  apop_settings_get_group(i->model, "apop_mle");
-    apop_data_unpack(beta, i->model.parameters);
-    if(i->model.constraint)
-        if(i->model.constraint(i->data, i->model))
-            apop_data_pack(i->model.parameters, (gsl_vector *) beta);
-    if (mp->use_score=='y' && i->model.score)
-        i->model.score(i->data, g, i->model);
+    apop_data_unpack(beta, i->model->parameters);
+    if(i->model->constraint)
+        if(i->model->constraint(i->data, i->model))
+            apop_data_pack(i->model->parameters, (gsl_vector *) beta);
+    if (mp->use_score=='y' && i->model->score)
+        i->model->score(i->data, g, i->model);
     else {
-        apop_fn_with_params ll  = i->model.log_likelihood ?  i->model.log_likelihood : i->model.p;
+        apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
         apop_internal_numerical_gradient(ll, i, g, mp->delta);
     }
     if (i->trace_path && strlen(i->trace_path))
@@ -397,7 +396,7 @@ static void fdf_shell(const gsl_vector *beta, void *i, double *f, gsl_vector *df
 static int ctrl_c;
 static void mle_sigint(){ ctrl_c ++; }
 
-static apop_model apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){
+static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){
 /* The maximum likelihood calculations, given a derivative of the log likelihood.
 
 If no derivative exists, will calculate a numerical gradient.
@@ -415,12 +414,12 @@ Inside the infostruct, you'll find these elements:
 */
   gsl_multimin_fdfminimizer *s;
   gsl_vector 			    *x;
-  apop_model		        *est    = &(i->model); //just an alias.
+  apop_model		        *est    = i->model; //just an alias.
   Get_vmsizes(est->parameters) //set vsize, msize1, msize2, tsize
   int				        iter 	= 0, 
 				            status  = 0,
 				            betasize= tsize;
-  apop_mle_settings           *mp         = apop_settings_get_group(*est, "apop_mle");
+  apop_mle_settings           *mp         = apop_settings_get_group(est, "apop_mle");
   assert(mp);
     if (mp->method == APOP_CG_BFGS)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
@@ -467,16 +466,16 @@ Inside the infostruct, you'll find these elements:
 	if (mp->starting_pt==NULL) 
 		gsl_vector_free(x);
     if (est->parameters->vector && !est->parameters->matrix){
-        apop_model_numerical_covariance(i->data, *est, Apop_settings_get(*est,apop_mle,delta));
-        apop_estimate_parameter_t_tests (*est);
+        apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta));
+        apop_estimate_parameter_t_tests (est);
     }
-	return *est;
+	return est;
 }
 
 /* See the above function for notes. */
-static apop_model apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
-  apop_model		        *est        = &(i->model);
-  apop_mle_settings           *mp         = apop_settings_get_group(*est, "apop_mle");
+static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
+  apop_model		        *est        = i->model;
+  apop_mle_settings           *mp         = apop_settings_get_group(est, "apop_mle");
   assert(mp);
   apop_data                 *p          = est->parameters;
   Get_vmsizes(p) //set vsize, msize1, msize2, tsize
@@ -528,8 +527,8 @@ static apop_model apop_maximum_likelihood_no_d(apop_data * data, infostruct * i)
     apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fminimizer_free(s);
 	if (mp->want_cov=='y') 
-		apop_model_numerical_covariance(data, *est);
-	return *est;
+		apop_model_numerical_covariance(data, est);
+	return est;
 }
 
 
@@ -556,14 +555,14 @@ method:
 
 By the way, the output model will have the expected score in the \c more slot. Do enough people use this to give it its own slot in the \c apop_model struct?
  \ingroup mle */
-apop_model apop_maximum_likelihood(apop_data * data, apop_model dist){
-  apop_mle_settings   *mp = apop_settings_get_group(dist, "apop_mle");
+apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
+  apop_mle_settings   *mp = apop_settings_get_group(&dist, "apop_mle");
   infostruct    info    = { .data           = data,
                             .use_constraint = 1,
                             .trace_file     = malloc(sizeof(FILE *)),
                             .model          = apop_model_copy(dist)};
     *info.trace_file = NULL;
-    info.model.data = data;
+    info.model->data = data;
     if(!mp)
         mp = Apop_model_add_group(info.model, apop_mle, .parent=info.model);
     apop_model_prep(data, info.model);
@@ -623,17 +622,17 @@ there is no memory leak in the above loop.
 
 This function uses the \ref designated syntax for inputs.
 */ 
-APOP_VAR_HEAD apop_model apop_estimate_restart (apop_model e, apop_model copy, char * starting_pt, double boundary){
-    //apop_model apop_varad_var(e,  apop_null_model);
-    ////assert(e); //BK says maybe do something.
-    //apop_model apop_varad_var(copy,  apop_null_model);
+APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary){
+    apop_model * apop_varad_var(e, NULL);
+    assert(e);
+    apop_model * apop_varad_var(copy, NULL);
     char * apop_varad_var(starting_pt, NULL);
     double apop_varad_var(boundary, 1e8);
-    return apop_estimate_restart_base(varad_in.e, varad_in.copy, starting_pt, boundary);
+    return apop_estimate_restart_base(e, copy, starting_pt, boundary);
 APOP_VAR_ENDHEAD
     gsl_vector *v;
-  if (!strcmp(copy.name, "Null model"))
-      copy = apop_model_copy(e);
+  if (!copy)
+      copy = apop_model_copy(*e);
   apop_mle_settings* prm0 = apop_settings_get_group(e, "apop_mle");
   apop_mle_settings* prm = apop_settings_get_group(copy, "apop_mle");
             //copy off the old params; modify the starting pt, method, and scale
@@ -646,22 +645,22 @@ APOP_VAR_ENDHEAD
         memcpy(prm0->starting_pt, prm->starting_pt, sizeof(double)*size);
     }
     else if (starting_pt && !strcmp(starting_pt, "np")){
-        v                   = apop_data_pack(copy.parameters); 
+        v                   = apop_data_pack(copy->parameters); 
         prm->starting_pt	= malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
     else {//"ep" or default.
-        v                   = apop_data_pack(e.parameters); 
+        v                   = apop_data_pack(e->parameters); 
         prm->starting_pt	= malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
     apop_assert(apop_vector_bounded(v, boundary), e, 0, 'c', "Your model has diverged (element(s) > %g); returning your original model without restarting.", boundary);
     gsl_vector_free(v);
         
-    apop_model newcopy = apop_estimate(e.data, copy);
+    apop_model *newcopy = apop_estimate(e->data, *copy);
     apop_model_free(copy);
     //Now check whether the new output is better than the old
-    if (apop_vector_bounded(newcopy.parameters->vector, boundary) && newcopy.llikelihood > e.llikelihood){
+    if (apop_vector_bounded(newcopy->parameters->vector, boundary) && newcopy->llikelihood > e->llikelihood){
         apop_model_free(e);
         return newcopy;
     } //else:
@@ -718,9 +717,9 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
         amt     = cutpoints[j+1]- cutpoints[j];
         apop_vector_increment(i->beta, j,  amt * sign * scale * step_size); 
     }
-    apop_data_unpack(i->beta, i->model.parameters);
-    if (i->model.constraint && i->model.constraint(i->data, i->model))
-        apop_data_pack(i->model.parameters, i->beta);
+    apop_data_unpack(i->beta, i->model->parameters);
+    if (i->model->constraint && i->model->constraint(i->data, i->model))
+        apop_data_pack(i->model->parameters, i->beta);
 }
 
 static void annealing_print(void *xp) {
@@ -758,10 +757,10 @@ static double set_start(double in){ return in ? in : 1; }
 jmp_buf anneal_jump;
 static void anneal_sigint(){ longjmp(anneal_jump,1); }
 
-apop_model apop_annealing(infostruct *i){
-  Get_vmsizes(i->model.parameters) //vsize, msize1, msize2
-  apop_model            *ep = &(i->model);
-  apop_mle_settings     *mp = apop_settings_get_group(*ep, "apop_mle");
+apop_model * apop_annealing(infostruct *i){
+  Get_vmsizes(i->model->parameters) //vsize, msize1, msize2
+  apop_model            *ep = i->model;
+  apop_mle_settings     *mp = apop_settings_get_group(ep, "apop_mle");
   assert(mp);
   gsl_siman_params_t    simparams = (gsl_siman_params_t) {
                             .n_tries       = mp->n_tries, 
@@ -804,7 +803,7 @@ apop_model apop_annealing(infostruct *i){
           simparams);        //   gsl_siman_params_t params
     }
     signal(SIGINT, NULL);
-    apop_data_unpack(i->beta, i->model.parameters); 
+    apop_data_unpack(i->beta, i->model->parameters); 
     apop_model_numerical_covariance(i->data, i->model, 
                             Apop_settings_get(i->model,apop_mle,delta));
     apop_estimate_parameter_t_tests(i->model);
@@ -815,17 +814,17 @@ apop_model apop_annealing(infostruct *i){
 
 /* This function calls the various GSL root-finding algorithms to find the zero of the score.
    Cut/pasted/modified from the GSL documentation.  */
-static apop_model  find_roots (infostruct p) {
+static apop_model * find_roots (infostruct p) {
   const gsl_multiroot_fsolver_type *T;
   gsl_multiroot_fsolver *s;
-  apop_model *dist = &(p.model);
+  apop_model *dist = p.model;
   int           vsize       =(dist->parameters->vector ? dist->parameters->vector->size :0),
                 msize1      =(dist->parameters->matrix ? dist->parameters->matrix->size1 :0),
                 msize2      =(dist->parameters->matrix ? dist->parameters->matrix->size2:0);
   int status, betasize      = vsize + msize1* msize2;
   size_t  iter = 0;
   gsl_vector *x;
-    apop_mle_settings *mlep   = apop_settings_get_group(*dist, "apop_mle");
+    apop_mle_settings *mlep   = apop_settings_get_group(dist, "apop_mle");
     dist->status = 1;    //assume failure until we score a success.
     if (!mlep || mlep->starting_pt==NULL){
         x = gsl_vector_alloc(betasize);
@@ -856,5 +855,5 @@ static apop_model  find_roots (infostruct p) {
   apop_data_unpack(s->x, dist->parameters);
   gsl_multiroot_fsolver_free (s);
   gsl_vector_free (x);
-  return *dist;
+  return dist;
 }

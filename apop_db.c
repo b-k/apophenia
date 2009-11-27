@@ -545,6 +545,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
   int		batch_size	= 100;
   double    v;
   char		*q 		    = malloc(1000);
+  char      comma       = ' ';
   int       use_row= strlen(apop_opts.db_name_column) 
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
@@ -552,31 +553,32 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
     {
-        char comma;
         asprintf(&q, "create table %s (", tabname);
-        if (use_row) 
-            qxprintf(&q, "%s\n %s varchar(1000), \n", q, apop_opts.db_name_column);
+        if (use_row) {
+            qxprintf(&q, "%s\n %s varchar(1000)", q, apop_opts.db_name_column);
+            comma = ',';
+        }
         if (set->vector){
-            comma = (set->matrix || set->textsize[1]) ? ',' : ' ';
             if(!set->names->vector) 
-                qxprintf(&q, "%s\n vector double%c ", q, comma);
+                qxprintf(&q, "%s%c\n vector double ", q, comma);
             else
-                qxprintf(&q, "%s\n \"%s\" double%c ", q,apop_strip_dots(set->names->vector,'d'), comma);
+                qxprintf(&q, "%s%c\n \"%s\" double ", q,comma, apop_strip_dots(set->names->vector,'d'));
+            comma = ',';
         }
         if (set->matrix)
             for(i=0;i< set->matrix->size2; i++){
-                comma = (i< set->matrix->size2-1 || set->textsize[1]) ?  ',' : ' ';
                 if(set->names->colct <= i) 
-                    qxprintf(&q, "%s\n c%i double%c ", q,i, comma);
+                    qxprintf(&q, "%s%c\n c%i double ", q, comma,i);
                  else
-                    qxprintf(&q, "%s\n %s  double%c ", q,apop_strip_dots(set->names->column[i],'d'), comma);
+                    qxprintf(&q, "%s%c\n %s  double ", q, comma,apop_strip_dots(set->names->column[i],'d'));
+                comma = ',';
             }
         for(i=0;i< set->textsize[1]; i++){
-            comma = (i< set->textsize[1]-1) ?  ',' : ' ';
             if (set->names->textct <= i)
-                qxprintf(&q, "%s\n tc%i varchar(1000)%c ", q,i, comma);
+                qxprintf(&q, "%s%c\n tc%i varchar(1000) ", q, comma,i);
             else
-                qxprintf(&q, "%s\n %s  varchar(1000)%c ", q,apop_strip_dots(set->names->text[i],'d'), comma);
+                qxprintf(&q, "%s%c\n %s  varchar(1000) ", q, comma,apop_strip_dots(set->names->text[i],'d'));
+            comma = ',';
         }
         apop_query("%s); ", q);
         sprintf(q, " ");
@@ -590,25 +592,26 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
         if (db==NULL) apop_db_open(NULL);
         asprintf(&q, "create table %s (", tabname);
         if (use_row) {
-            qxprintf(&q, "%s\n %s, \n", q, apop_opts.db_name_column);
+            qxprintf(&q, "%s\n %s", q, apop_opts.db_name_column);
+            comma = ',';
         }
         if (set->vector){
-            if(!set->names->vector) 	qxprintf(&q, "%s\n vector", q);
-            else			qxprintf(&q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->vector,'d'));
-            if (set->matrix || set->textsize[1]) 	
-                qxprintf(&q, "%s,",q);
+            if(!set->names->vector) 	qxprintf(&q, "%s%c\n vector numeric", q, comma);
+            else			qxprintf(&q, "%s%c\n \"%s\"", q, comma,apop_strip_dots(set->names->vector,'d'));
+            comma = ',';
         }
         if (set->matrix)
             for(i=0;i< set->matrix->size2; i++){
-                if(set->names->colct <= i) 	qxprintf(&q, "%s\n c%i", q,i);
-                else			qxprintf(&q, "%s\n \"%s\" ", q,apop_strip_dots(set->names->column[i],'d'));
-                if (i< set->matrix->size2-1 || set->textsize[1]) 	
-                    qxprintf(&q, "%s,",q);
+                if(set->names->colct <= i) 	
+                    qxprintf(&q, "%s%c\n c%i numeric", q, comma,i);
+                else			
+                    qxprintf(&q, "%s%c\n \"%s\" numeric", q, comma,apop_strip_dots(set->names->column[i],'d'));
+                comma = ',';
             }
         for(i=0; i< set->textsize[1]; i++){
-            if(set->names->textct <= i) 	qxprintf(&q, "%s\n tc%i ", q,i);
-            else			qxprintf(&q, "%s\n %s ", q, apop_strip_dots(set->names->text[i],'d'));
-            if (i< set->textsize[1]-1) 	qxprintf(&q, "%s, ", q);
+            if(set->names->textct <= i) 	qxprintf(&q, "%s%c\n tc%i ", q,comma,i);
+            else			qxprintf(&q, "%s%c\n %s ", q, comma, apop_strip_dots(set->names->text[i],'d'));
+            comma = ',';
         }
         qxprintf(&q,"%s);  begin;",q);
     }
@@ -616,34 +619,37 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
         apop_assert(1, 0, 0, 'c', "Apophenia was compiled without SQLite support.")
 #endif
     int lim = set->vector ? set->vector->size : set->matrix->size1;
+    comma = ' ';
 	for(i=0; i< lim; i++){
 		qxprintf(&q, "%s \n insert into %s values(",q, tabname);
-        if (use_row)
-			qxprintf(&q,"%s \'%s\', ",q, set->names->row[i]);
+        if (use_row){
+			qxprintf(&q,"%s \'%s\' ",q, set->names->row[i]);
+            comma = ',';
+        }
         if (set->vector){
             v   =gsl_vector_get(set->vector,i);
-            char comma = (set->matrix || set->textsize[1]) ? ',' : ' ';
             if (gsl_isnan(v))
-                qxprintf(&q,"%s NULL%c ", q, comma);
+                qxprintf(&q,"%s%c NULL ", comma, q);
             else
-                qxprintf(&q,"%s %g%c ", q, v, comma);
+                qxprintf(&q,"%s%c %g ", comma, q, v);
+            comma = ',';
         }
         if (set->matrix)
             for(j=0;j< set->matrix->size2; j++){
                 v   =gsl_matrix_get(set->matrix,i,j);
-                char comma = (j < set->matrix->size2 -1 || set->textsize[1]) ? ',' : ' ';
                 if (gsl_isnan(v))
-                    qxprintf(&q,"%s NULL%c ", q, comma);
+                    qxprintf(&q,"%s%c NULL ", q, comma);
                 else if (isinf(v)==1)
-                    qxprintf(&q,"%s 'inf'%c ", q, comma);
+                    qxprintf(&q,"%s%c  'inf'", q, comma);
                 else if (isinf(v)==-1)
-                    qxprintf(&q,"%s '-inf'%c ", q, comma);
+                    qxprintf(&q,"%s%c  '-inf' ", q, comma);
                 else
-                    qxprintf(&q,"%s %g%c ", q, v,comma);
+                    qxprintf(&q,"%s%c %g ",q ,comma, v);
+                comma = ',';
             }
 		for(j=0;j< set->textsize[1]; j++){
-            char comma =  j < set->textsize[1]-1 ? ',' : ' ';
-			qxprintf(&q,"%s \'%s\' %c ",q,set->text[i][j], comma);
+			qxprintf(&q,"%s%c \'%s\' ",q, comma,set->text[i][j]);
+            comma = ',';
         }
         qxprintf(&q,"%s);",q);
 		ctr++;
