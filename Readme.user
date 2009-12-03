@@ -11,7 +11,9 @@ http://apophenia.sourceforge.net/doc/setup.html .
 
 The executive summary:
 --You need the usual C compiler and the supporting environment that a
-sane programmer requires. 
+sane programmer requires. [Please note that C++ is not C, and a C++ compiler
+won't work. For example, as of this writing Microsoft has abandonded
+efforts to support C in its compiler suite.]
 
 --The library makes an effort to not reinvent already-developed systems
 like matrix inversion or database querying, which means that the package

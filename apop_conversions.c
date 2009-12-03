@@ -695,11 +695,10 @@ static void tab_create(char *tabname, int ct, int has_row_names){
 }
 
 static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t *nan_regex, int * field_ends){
-  int       pc   = 0, //pending comma.
-            length_of_string= strlen(instr),
+  int       length_of_string= strlen(instr),
             prev_end    = 0, last_end    = 0, ctr = 0;
   size_t    last_match  = 0;
-  char	    *prepped;
+  char	    *prepped, comma = ' ';
   char      *r, *q  = malloc(100+ strlen(tabname));
   regmatch_t  result[2];
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
@@ -713,16 +712,16 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
         prepped	= prep_string_for_sqlite(outstr, nan_regex);
         if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
             r = q;
-            asprintf(&q, "%s%s%s", r, (pc ? ", ": ""),  prepped);
+            asprintf(&q, "%s%c %s", r, comma,  prepped);
             free(r);
-            pc = 1;
+            comma = ',';
         } else {
             char d = instr[last_match-1];
             if (d!='\t' && d!='\r' && d!='\n' && d!=' '){
                 r = q;
-                asprintf(&q, "%s%sNULL", (pc ? ", ": ""), r);
+                asprintf(&q, "%s%cNULL", r, comma);
                 free(r);
-                pc = 1;
+                comma = ',';
             }
         }
         free(prepped);

@@ -629,9 +629,9 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
         if (set->vector){
             v   =gsl_vector_get(set->vector,i);
             if (gsl_isnan(v))
-                qxprintf(&q,"%s%c NULL ", comma, q);
+                qxprintf(&q,"%s%c NULL ", q, comma);
             else
-                qxprintf(&q,"%s%c %g ", comma, q, v);
+                qxprintf(&q,"%s%c %g ", q, comma, v);
             comma = ',';
         }
         if (set->matrix)
