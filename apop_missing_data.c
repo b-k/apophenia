@@ -57,10 +57,13 @@ APOP_VAR_ENDHEAD
     if (wsize)
         out->weights = gsl_vector_alloc(wsize - to_rm);
 
+    apop_name_free(out->names);
     out->names  = apop_name_copy(d->names); 
     for(size_t k=0; k < d->names->rowct; k ++)
         free(out->names->row[k]);
     out->names->rowct = 0;
+    free(out->names->row);
+    out->names->row   = NULL;
 
     if (vsize && msize1)
         out->vector = gsl_vector_alloc(msize1 - to_rm);

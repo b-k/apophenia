@@ -173,6 +173,8 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
         gsl_vector_add(&predicted, error); //pred = y_data + error
     }
     gsl_vector_free(error);
+    if (out->covariance->matrix)
+        gsl_matrix_free(out->covariance->matrix);
     out->covariance->matrix	= cov;
 }
 
@@ -218,6 +220,7 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)
     xpxinvxpy(set->matrix, y_data, xpx, xpy, epout);
     gsl_vector_free(y_data); 
+    gsl_matrix_free(xpx);
     gsl_vector_free(xpy);
 
     epout->llikelihood  = ols_log_likelihood(epout->data, epout);

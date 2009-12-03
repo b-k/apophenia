@@ -433,9 +433,11 @@ static void apop_name_rm_columns(apop_name *n, int *drop){
             apop_name_add(newname, n->column[i],'c');
         else
             n->colct    --;
+        free(n->column[i]);
     }
     free(n->column);
     n->column = newname->column;
+
     //we need to free the newname struct, but leave the column intact.
     newname->column   = NULL;
     newname->colct  = 0;

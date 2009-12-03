@@ -173,14 +173,16 @@ APOP_VAR_END_HEAD
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
 #ifdef HAVE_LIBSQLITE3
-  char 		*err, q2[10000];
+  char 		*err, *q2;
   tab_exists_t te = { .name = name };
 	if (db==NULL) return 0;
 	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,&te, &err); 
 	ERRCHECK
 	if ((remove==1|| remove=='d') && te.isthere){
-		sqlite3_exec(db,strcat(strcpy(q2, "DROP TABLE "),name),NULL,NULL, &err); 
+        asprintf(&q2, "drop table %s;", name);
+		sqlite3_exec(db, q2, NULL, NULL, &err); 
         ERRCHECK
+        free(q2);
     }
 	return te.isthere;
 #endif
@@ -619,8 +621,8 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
         apop_assert(1, 0, 0, 'c', "Apophenia was compiled without SQLite support.")
 #endif
     int lim = set->vector ? set->vector->size : set->matrix->size1;
-    comma = ' ';
 	for(i=0; i< lim; i++){
+        comma = ' ';
 		qxprintf(&q, "%s \n insert into %s values(",q, tabname);
         if (use_row){
 			qxprintf(&q,"%s \'%s\' ",q, set->names->row[i]);
