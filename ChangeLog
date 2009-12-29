@@ -8,6 +8,8 @@
 --apop_rm_columns bug fixed by Birger Baksaas.
 --apop_text_to_db attaches numeric affinity to sqlite3 columns, making numeric comparisons easier.
 --apop_histogram_model_reset's first argument is now "base" instead of "template", as a concession to C++ users.
+--apop_strcmp
+--apop_loess model: 3,500 lines of code from the netlib archive, lovingly restored.
 
 	September 2009
 --Many minor changes, mostly regarding adding optional arguments.

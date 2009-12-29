@@ -75,8 +75,8 @@ cd deb
 
 mkdir -p i/usr/include
 mkdir i/DEBIAN
-cp ../../../deb.copyright i/DEBIAN
-cp ../../../deb.control i/DEBIAN/control
+cp ../install/deb.copyright i/DEBIAN
+cp ../install/deb.control i/DEBIAN/control
 cp -rf ../apophenia i/usr/include
 cp ../apop.h i/usr/include
 mkdir i/usr/bin

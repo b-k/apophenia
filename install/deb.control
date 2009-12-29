@@ -1,8 +1,7 @@
 Package: apophenia0
 Section: libs
 Architecture: i386
-Depends: libgsl0 (>=1.7), libgsl0-dev, gsl-bin
-Recommends: sqlite3
+Depends: libgsl0-dev, gsl-bin, sqlite3
 Version: 0.17
 Maintainer: Ben Klemens <bklemens@gmail.com>
 Description: Tools for statistical modeling

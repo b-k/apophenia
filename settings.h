@@ -71,7 +71,11 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
    void * ysg##_settings_copy(ysg##_settings *); \
    void ysg##_settings_free(ysg##_settings *);
 
-/** Settings for least-squares type models */
+/** \defgroup settings Settings*/
+
+/** \ingroup settings
+
+  Settings for least-squares type models */
 typedef struct {
     int destroy_data; /**< If 'y', then the input data set may be normalized or otherwise mangled */
     gsl_vector *weights; /**< If this has a value, then I'll do WLS; if \c NULL, OLS */
@@ -88,10 +92,11 @@ Apop_settings_declarations(apop_ls)
  If you don't use it, these models will assume that the vector or first numeric column is already a coherent set of factors, but by sending this in, those functions have a little more information, such as names to use in the output.
 
 See also the \ref apop_category_settings_alloc function.
+\ingroup settings
 */
 typedef struct {
     apop_data *factors; 
-    char source_type; /**< source_type 't' = text; anything else ('d' is a good choice) is * numeric data. */
+    char source_type; /**< source_type \c 't' = text; anything else (\c 'd' is a good choice) is  numeric data. */
     char source_column; /**<  The number of the column to convert to factors.  As usual, the vector is -1. */
     apop_data *source_data; /**< The input data set that you're probably about to run a regression on */
 } apop_category_settings;
@@ -103,7 +108,9 @@ apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_co
   will read the input data as such.  Allocation is thus very simple, e.g.
   \code
   Apop_model_group_add(your_model, apop_rank);
-  \endcode */
+  \endcode 
+\ingroup settings
+ */
 typedef struct {
     char rank_data;
 } apop_rank_settings;
@@ -113,6 +120,7 @@ Apop_settings_declarations(apop_rank)
 apop_rank_settings *apop_rank_settings_alloc(void *ignoreme);
 
 #include <gsl/gsl_histogram.h>
+/**\ingroup settings */
 typedef struct{
     apop_data           *data;
     gsl_histogram       *pdf;
@@ -130,7 +138,7 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
 
 
 /** Method settings for a model to be put through Bayesian updating. 
- 
+\ingroup settings 
  */
 typedef struct{
     apop_data *data;

@@ -111,6 +111,7 @@ APOP_VAR_ENDHEAD
 
 //ML imputation
 
+/** \hideinitializer */
 #define Switch_back    \
     apop_data *real_data = ml_model->parameters;   \
     apop_model *actual_base = ml_model->more; \
