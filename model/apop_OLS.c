@@ -232,63 +232,9 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     return epout;
 }
 
-/** Ordinary least squares.
-
-\ingroup models
-
-\param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
-
-\param epin    An \ref apop_model object. It may have a \ref apop_ls_settings group attached.  I'll look at the \c destroy_data element; if this is NULL or \c destroy_data==0, then the entire data set is copied off, and then mangled. If \c destroy_data==1, then this doesn't copy off the data set, but destroys it in place. I also look at \c want_cov and \c want_expected_value, though I'll not produce the covariance matrix only if both are \c 'n'.
-
-\return Will return an \ref apop_model <tt>*</tt>.  <tt>The_result->parameters</tt> will hold the coefficients; the first coefficient will be the coefficient on the constant term, and the remaining will correspond to the independent variables. It will therefore be of size <tt>(data->size2)</tt>. Do not pre-allocate.
-
-If you asked for them, the covariance matrix, confidence levels, and residuals will also be returned. The confidence intervals give the level of certainty with which we can reject the hypothesis that the given coefficient is zero.
-
-See also the page on \ref dataprep.
-
-\b sample 
-
-First, you will need a file named <tt>data</tt> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent. For example:
-\verbatim
-Y, X_1, X_2, X_3
-2,3,4,5
-1,2,9,3
-4,7,9,0
-2,4,8,16
-1,4,2,9
-9,8,7,6
-\endverbatim
-
-The program:
-\include ols1.c
-
-If you saved this code to <tt>sample.c</tt>, then you can compile it with
-\verbatim
-gcc sample.c -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
-\endverbatim
-
-and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
-
-Feeling lazy? The program above was good form and demonstrated useful features, but the code below will do the same thing in two lines:
-
-\code
-#include <apop.h>
-int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols)); }
-\endcode
-
-\hideinitializer
- */
 apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .estimate =apop_estimate_OLS, 
               .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep};
 
-
-
-/** The WLS model
-
-  You will need to provide the weights in yourdata->weights. Otherwise, this model will behave just like \ref apop_ols.
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_wls = {"Weighted Least Squares", -1,0,0, .estimate = apop_estimate_OLS, 
             .log_likelihood = ols_log_likelihood, .score=ols_score, .prep= ols_prep};
 
@@ -379,39 +325,4 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     return epout;
 }
 
-/** Instrumental variable regression
-\ingroup models
-
- Operates much like the \ref apop_ols model, but the input
- parameters also need to have a table of substitutions. The vector
- element of the table lists the column numbers to be substituted (the
- dependent var is zero; first independent col is one), and then one
- column for each item to substitute.
-
-If the vector of your apop_data set is NULL, then I will use the row
-names to find the columns to substitute. This is generally more robust
-and/or convenient.
-
-If the \c instruments data set is somehow NULL or empty, I'll just run OLS.
-
-\code
-apop_data *submatrix =apop_data_alloc(0, data->matrix->size1, 2);
-APOP_COL(submatrix, 0, firstcol);
-gsl_vector_memcpy(firstcol, your_data_vector);
-APOP_COL(submatrix, 1, secondcol);
-gsl_vector_memcpy(firstcol, your_other_data_vector);
-apop_name_add(submatrix->names, "subme_1", 'r');
-apop_name_add(submatrix->names, "subme_2", 'r');
-
-Apop_model_add_group(&apop_iv, apop_ls, .instruments = submatrix);
-apop_model *est = apop_estimate(data, apop_iv);
-apop_model_show(est);
-\endcode
-
-\todo This function does some serious internal data copying. It would be
-only slightly more human- and labor-intensive to do the linear algebra
-without producing the Z matrix explicitly.
-
-\hideinitializer
- */
 apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, .log_likelihood = ols_log_likelihood};

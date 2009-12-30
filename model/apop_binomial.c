@@ -195,74 +195,10 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* eps){
     p[0]=N;
 }
 
-/** The binomial model.
-
-The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
-\c parameters->vector->data[1]==p.
-
-Input data can take two forms:
-
-The default is to take the data to have a binary form, meaning that
-the system counts zeros as failures and non-zeros as successes. \f$N\f$
-is the size of the matrix, vector, or both (whichever is not \c NULL).
-
-In rank-type format, the data is taken to be the two-column miss-hit
-format: a nonzero value in column zero of the matrix represents a failure
-and a nonzero value in column one represents successes. Set this using,
-e.g., 
-\code
-apop_model *estimate_me = apop_model_copy(apop_binomial);
-Apop_model_add_group(estimate_me, apop_rank);
-apop_model *estimated = apop_estimate(your_data, estimate_me);
-\endcode
-
-In both cases, \f$p\f$ represents the odds of a success==1; the odds of a zero is \f$1-p\f$.
-
-See also the \ref apop_multinomial model.
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_binomial = {"Binomial distribution", 2,0,0,
 	.estimate = binomial_estimate, .log_likelihood = binomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = binomial_rng};
 
-
-/** The multinomial model.
-
-The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
-\c parameters->vector->data[1...]==p_1....
-
-Input data can take two forms:
-
-The default is simply a listing of bins, without regard to whether items are in the vector or
-matrix of the \ref apop_data struct, or the dimensions. Here, data like <tt>0, 1, 2, 1, 1</tt>
-represents one draw of zero, three draws of 1, and one draw of 2.
-
-In rank-type format, the bins are defined by the columns: a nonzero value in column zero of the
-matrix represents a draw of zero, a nonzero value in column seven a draw of seven, et cetera.
-Set this form using, e.g.,
-\code
-apop_model *estimate_me = apop_model_copy(apop_binomial);
-Apop_model_add_group(estimate_me, apop_rank);
-apop_model *estimated = apop_estimate(your_data, estimate_me);
-\endcode
-
-In both cases, the numeraire is zero, meaning that \f$p_0\f$ is not explicitly listed, but is
-\f$p_0=1-\sum_{i=1}^{k-1} p_i\f$, where \f$k\f$ is the number of bins. Conveniently enough,
-the zeroth element of the parameters vector holds \f$n\f$, and so a full probability vector can
-easily be produced by overwriting that first element. Continuing the above example: 
-\code 
-int n = apop_data_get(estimated->parameters, 0, -1); 
-apop_data_set(estimated->parameters, 0, 1 - (apop_sum(estimated->parameters)-n)); 
-\endcode
-And now the parameter vector is a proper list of probabilities.
-
-See also the \ref apop_binomial model.
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_multinomial = {"Multinomial distribution", -1,0,0,
 	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = multinomial_rng};

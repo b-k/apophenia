@@ -1666,7 +1666,7 @@ There are a lot of ways your data can come in, and we would like to run estimati
 
 First, this page will give a little rationale, which you are welcome to skip, and then will present the set of rules.
 
-  \section Dealing with the ones column
+  \section dataones Dealing with the ones column
 Most standard regression-type estimations require or generally expect
 a constant column. That is, the 0th column of your data is a constant (one), so the first parameter
 \f$\beta_1\f$ is slightly special in corresponding to a constant rather than a variable.
@@ -1678,20 +1678,20 @@ Some stats packages implicitly assume a constant column, which the user never se
 upon which Apophenia is based, and is generally annoying.  Given a data matrix \f$X\f$ with the estimated parameters \f$\beta\f$, 
 if the model asserts that the product \f$X\beta\f$ has meaning, then you should be able to calculate that product. With a ones column, a dot product is one line \c apop_dot(x, your_est->parameters, 0, 0)); without a ones column, the problem is left as an unpleasant exercise for the reader.
 
-  \subsection Shunting columns around.
+  \subsection datashunt Shunting columns around.
 
 Each regression-type estimation has one dependent variable and several independent. In the end, we want the dependent variable to be in the vector element. However, continuing the \em "lassies faire" tradition, doing major surgery on the data, such as removing a column and moving in all subsequent columns, is more invasive than an estimation should be.
 
-\subsection The rules
+\subsection datarules The rules
 So those are the two main considerations in prepping data. Here are the rules, intended to balance those considerations:
 
-\subsubsection The automatic case
+\subsubsection datamatic The automatic case
 There is one clever trick we can use to resolve both the need for a ones column and for having the dependent column in the vector: given a data set with no vector element and the dependent variable in the first column of the matrix, we can copy the dependent variable into the vector and then replace the first column of the matrix with ones. The result
 fits all of the above expectations.
 
 You as a user merely have to send in a \c apop_data set with no vector and a dependent column in the first column.
 
-\subsubsection The already-prepped case
+\subsubsection dataprepped The already-prepped case
 If your data has a vector element, then the prep routines won't try to force something to be there. That is, they won't move anything, and won't turn anything into a constant column. If you don't want to use a constant column, or your data has already been prepped by an estimation, then this is what you want.
 
 You as a user just have to send in a \c apop_data set with a filled vector element.

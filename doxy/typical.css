@@ -11,6 +11,7 @@ white-space:nowrap;
 border: 1px solid #a6cb5e;
 -moz-border-radius: 8px 8px 8px 8px;
 padding: 1px;
+bottom-margin= 2px;
  } =
 .memproto table td{
 white-space:nowrap;

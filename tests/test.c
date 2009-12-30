@@ -1219,6 +1219,15 @@ void test_pmf(){
         assert(fabs(d->vector->data[i] - v->data[i]) < 1e-2);
 }
 
+void test_apop_strcmp(){
+    assert(!apop_strcmp("23", NULL));
+    assert(!apop_strcmp("230", "23"));
+    assert(!apop_strcmp("super", " uper"));
+    assert(apop_strcmp(NULL, NULL));
+    assert(apop_strcmp("23", "23"));
+    assert(apop_strcmp("", ""));
+}
+
 void test_arms(gsl_rng *r){
     size_t i;
     gsl_vector *o = gsl_vector_alloc(3e5);
@@ -1305,6 +1314,7 @@ int main(int argc, char **argv){
     do_test("multivariate gamma", test_mvn_gamma());
     do_test("apop_dot test", test_dot());
     do_test("apop_generalized_harmonic test", test_harmonic());
+    do_test("apop_strcmp test", test_apop_strcmp());
     do_test("apop_strip_dots test", test_strip_dots());
     do_test("apop_distance test", test_distances());
     do_test("Inversion test", test_inversion(r));

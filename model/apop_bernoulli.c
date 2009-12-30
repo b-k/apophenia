@@ -49,15 +49,6 @@ static void bernoulli_rng(double *out, gsl_rng *r, apop_model* eps){
     *out = gsl_rng_uniform (r) < eps->parameters->vector->data[0]; 
 }
 
-/** The Bernoulli model.
-
-  Data format: the matrix or vector can have any size, and I just count up zeros
-  and non-zeros. The bernoulli paramter \f$p\f$ is the percentage of non-zero
-  values in the matrix. Its variance is \f$p(1-p)\f$.
-
-  \hideinitializer
-\ingroup models
-*/
 apop_model apop_bernoulli = {"Bernoulli distribution", 1,0,0,
 	.estimate = bernoulli_estimate, .log_likelihood = bernoulli_log_likelihood, 
    .constraint =  bernoulli_constraint, .draw = bernoulli_rng};

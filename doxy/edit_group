@@ -1,0 +1,27 @@
+s/Enumeration Type Documentation/Model Documentation/
+s/<h2>Enumerations/<h2>Models/
+/<h2>Models/,/<h2>Functions/{
+    s/[{}]//
+    s/<br\/>$//
+    s/<li>enum/<li>apop_model/
+    s/.*>Overview[0-9].*//
+    s/.*>Name[0-9].*//
+    s/.*>Data_format[0-9].*//
+    s/.*>Parameter_format[0-9].*//
+    s/.*>Estimate_results[0-9].*//
+    s/.*>Prep_routine[0-9].*//
+    s/.*>RNG[0-9].*//
+    s/.*>[Ee]xample[0-9].*//
+    s/.*>[Kk]ey_settings[0-9].*//
+}
+s/<b>Enumerator: <\/b>//
+s/<td class="memname">enum <a class="el"/<td class="memname">apop_model <a class="el"/
+s/Overview[0-9]*/Overview/g
+s/Name[0-9]*/Name/g
+s/Data_format[0-9]*/Data format/g
+s/Parameter_format[0-9]*/Parameter format/g
+s/Estimate_results[0-9]*/Estimate results/g
+s/Prep_routine[0-9]*/Prep routine/g
+s/RNG[0-9]*/RNG/g
+s/[Ee]xample[0-9]*/Example/g
+s/[Kk]ey_settings[0-9]*/Key settings/g

@@ -46,32 +46,32 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 	return 	precalced[i][N-1];
 }
 
-/** A convenience function to compare strings. 
-  
-  {\tt strcmp()} is a distance function, but 99% of its uses are just to
-  ask whether two strings are equal. This function directly addresses
-  that question. It Differs from {\tt strcmp()} in three ways, one
+/** Are two strings equal?
+ 
+  <tt>strcmp()</tt> is a distance function, but its most common use, by
+  far, is just to ask whether two strings are equal. This function directly addresses
+  that question. It differs from <tt>strcmp()</tt> in three ways, one
   especially important.
 
 Tests for equality: I answer the question {\em Is string one == string
 two?}, so if two strings are identical, I return 1; if they differ, I
 return 0. {\em This is the opposite of strcmp}, which returns zero when
-two strings are identical (and are thus zero distance apart). It is very common for
+two strings are identical (and are thus zero distance apart). It is common for
 people to think strcmp answers the equality question, and then wind up writing the wrong
 thing. If that's you, consider using this function (or one like it) and
-never touching strcmp. If you think having functions with opposite
-outputs would be confusing, feel free to never use this function.
+never touching strcmp. If you think the fact that it's confusing that apop_strcmp and strcmp return opposite
+outputs, feel free to never use this function.
 
 Faster: as soon as I determine a difference, I leave. That is, I'll step
 through both strings until I find a character that differs, and will
-leave at that point. {\tt strcmp} will always step through the whole of both
+leave at that point. <tt>strcmp</tt> will always step through the whole of both
 strings.
 
-Accepts {\tt NULL}s: 
-If one string is {\tt NULL} and the other isn't I return 0 (because a
-{\tt NULL} string surely differs from a non-{\tt NULL}. If both strings
-are {\tt NULL}, that's equality, and I return 1. If you're looking for
-different behavior on {\tt NULL}s, you're best off just testing your
+Accepts <tt>NULL</tt>s: 
+If one string is <tt>NULL</tt> and the other isn't I return 0 (because a
+<tt>NULL</tt> string surely differs from a non-<tt>NULL</tt>. If both strings
+are <tt>NULL</tt>, that's equality, and I return 1. If you're looking for
+different behavior on <tt>NULL</tt>s, you're best off just testing your
 inputs.
 
 \param one The first string to compare
@@ -82,9 +82,11 @@ int apop_strcmp(char *one, char *two){
         return 1;
     if ((!one && two) || (one && !two))
         return 0;
-    for ( ; *one; one++, two++) //pointer arithmetic!
-        if(one[0] != two[0])
+    for ( ; *one && *two; one++, two++)
+        if(*one != *two)
             return 0;
+    if (*one || *two) //different length strings.
+        return 0;
     return 1;
 }
 

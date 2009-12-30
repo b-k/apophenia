@@ -174,6 +174,10 @@ apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
 \ingroup models
 */
 apop_model *apop_estimate(apop_data *d, apop_model m){
+    if (m.prep && !m.prepared){
+        m.prep(d, &m);
+        m.prepared++;
+    }
     if (m.estimate)
         return m.estimate(d, &m); 
     return apop_maximum_likelihood(d, m);
@@ -187,6 +191,7 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
 \ingroup models
 */
 double apop_p(apop_data *d, apop_model *m){
+    Nullcheck_m(m);
     if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;
@@ -207,7 +212,7 @@ double apop_p(apop_data *d, apop_model *m){
 \ingroup models
 */
 double apop_log_likelihood(apop_data *d, apop_model *m){
-    Nullcheck_mv(m); Nullcheck_pv(m);
+    Nullcheck_mv(m); //Nullcheck_pv(m); //Too many models don't use the params.
     if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;
@@ -229,7 +234,7 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 \ingroup models
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
-    Nullcheck_mv(m); Nullcheck_pv(m);
+    Nullcheck_mv(m); // Nullcheck_pv(m);
     if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;

@@ -19,6 +19,7 @@ void apop_error(int level, char stop, char *message, ...);
 apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
 
+int apop_strcmp(char *, char*);
 
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
 apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
