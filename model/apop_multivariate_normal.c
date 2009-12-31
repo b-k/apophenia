@@ -34,8 +34,8 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
         APOP_ROW(data,i, vv);
         gsl_vector_memcpy(x_minus_mu, vv);
         gsl_vector_sub(x_minus_mu, m->parameters->vector);
-       ll  += - x_prime_sigma_x(x_minus_mu, inverse) / 2;
-       ll  -= log(2 * M_PI)* dimensions/2. + .5 *  log(determinant);
+        ll += - x_prime_sigma_x(x_minus_mu, inverse) / 2;
+        ll -= log(2 * M_PI)* dimensions/2. + .5 * log(determinant);
     }
     gsl_matrix_free(inverse);
     gsl_vector_free(x_minus_mu);
@@ -76,15 +76,5 @@ static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
     gsl_matrix_free(copy);
 }
 
-/** This is the multivarate generalization of the Normal distribution.
-  The probability/log_likelihood methods take in an \c apop_data set whose vector element is the vector of
-  means, and whose matrix is the covariances; the estimate method
-  returns parameters of that form.
-
-  The RNG fills an input array whose length is based on the input parameters.
-
-\hideinitializer
-  \ingroup models
- */
 apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1,
      .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll, .draw = mvnrng};

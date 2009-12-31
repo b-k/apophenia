@@ -1,6 +1,6 @@
 /** \file apop_poisson.c
 
-  The poisson distribution.*/
+  The Poisson distribution.*/
 /* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
@@ -68,28 +68,11 @@ static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mod
     gsl_vector_set(gradient,0, d_a);
 }
 
-/* Just a wrapper for gsl_ran_poisson.
-
-   cut & pasted from the GSL documentation:
-\f$       
-p(k) = {\mu^k \over k!} \exp(-\mu), \f$
-
-where \f$k\geq 0\f$.
-*/
+/* Just a wrapper for gsl_ran_poisson.  */
 static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
     *out = gsl_ran_poisson(r, *p->parameters->vector->data);
 }
 
-
-/** The poisson distribution
-
-Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
-
-\f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_poisson = {"poisson", 1, 0,0, 
      .estimate = poisson_estimate, .log_likelihood = poisson_log_likelihood, 
      .score = poisson_dlog_likelihood, .constraint = beta_zero_greater_than_x_constraint, 

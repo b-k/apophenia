@@ -108,31 +108,6 @@ static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
     *out    = gsl_ran_gamma(r, gsl_vector_get(p->parameters->vector, 0), gsl_vector_get(p->parameters->vector, 1));
 }
 
-/** The Gamma distribution
-  gsl_matrix     *data    = d->matrix;
-
-Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
-
-apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
-  
-To specify that you have frequency or ranking data, use 
-\code
-apop_data *my_copy = apop_model_copy(apop_gamma);
-Apop_model_add_group(my_copy, apop_rank);
-apop_model *out = apop_estimate(my_rank_data, my_copy);
-\endcode
-
-\f$G(x, a, b)     = 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
-
-\f$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b\f$
-
-\f$d ln G/ da    =  -\psi(a) - ln b + ln(x) \f$    (also, \f$d ln \gamma = \psi\f$)
-
-\f$d ln G/ db    =  -a/b - x \f$
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_gamma = {"Gamma distribution", 2,0,0, //estimate method is just the default MLE.
       .log_likelihood = gamma_log_likelihood, 
      .score = gamma_dlog_likelihood, .constraint = beta_zero_and_one_greater_than_x_constraint, 

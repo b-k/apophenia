@@ -53,12 +53,16 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
     return hp;
 }
 
-/*
-apop_histogram_settings * apop_histogram_settings_init(apop_histogram_settings in){
-    apop_assert(in.data && in.bins, NULL, 0, 's', "I need both the .data and .bins elements to be set.");
-    return apop_histogram_settings_alloc(in.data, in.bins);
-}
+/** Initialize an  \ref apop_histogram_struct. You'll probably call this via
+  \code
+  int binct = 100; //or some other reasonable number of histogram bins
+  Apop_model_add_group(your_model, apop_histogram, .data = your_data_set, .bins_in = binct);
+  \endcode
 */
+apop_histogram_settings * apop_histogram_settings_init(apop_histogram_settings in){
+    apop_assert(in.data && in.bins_in, NULL, 0, 's', "I need both the .data and .bins_in elements to be set.");
+    return apop_histogram_settings_alloc(in.data, in.bins_in);
+}
 
 void * apop_histogram_settings_copy(apop_histogram_settings *in){
     apop_histogram_settings *out = malloc(sizeof(apop_histogram_settings));
@@ -109,25 +113,6 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
     } while (!gsl_finite(*out));
 }
 
-/** The histogram model.
-
-  This is an empirical distribution. If you have a data set from which you want to make random draws, this is overkill; instead just use something like \code 
-  gsl_rng *r = apop_rng_alloc(27);
-  gsl_vector *my_data = [gather data here.];
-  gsl_vector_get(my_data, gsl_rng_uniform(r)*my_data->size);
-  \endcode
-
-  But this can be used anywhere a model is needed, such as the inputs and outputs to \c apop_update.
-
-  The model is unlike most other models in that there are no parameters
-  of any sort (beyond the data itself), so there is no \c estimate
-  method; instead all the work of producing the histogram is done in \c
-  apop_histogram_settings_alloc. [Actually, there is an \c estimate method,
-  but it is just an alias for the histogram_alloc function.]
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_histogram = {"Histogram", .estimate = est, .log_likelihood = histogram_ll, .draw = histogram_rng};
 
 
@@ -248,15 +233,6 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
     return out;
 }
 
-/** The apop_kernel_density model.
-
-A Kernel density is simply a smoothing of a histogram. At each point along the histogram, put a distribution (default: Normal(0,1)) on top of the point. Sum all of these distributions to form the output histogram.
-
-The output is a histogram that behaves exactly like the gsl_histogram, except the histobase and kernelbase elements are set.
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_kernel_density = {"kernel density estimate",
 	.estimate = apop_kernel_density_estimate, .log_likelihood = histogram_ll, .draw = histogram_rng};
 

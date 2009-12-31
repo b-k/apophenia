@@ -564,6 +564,18 @@ void test_histograms(gsl_rng *r){
     assert(fabs(outparams->parameters->vector->data[1]-sigmasq) < 1e2);
     apop_model_free(hp);
     apop_model_free(outparams);
+
+    apop_model   *hp2 = apop_model_copy(apop_histogram);
+    Apop_model_add_group(hp2, apop_histogram, .data=d, .bins_in=100);
+    for (i=0; i< n; i++){
+        apop_draw(gsl_matrix_ptr(out, i,0), r, hp);
+        assert(gsl_finite(gsl_matrix_get(out, i,0)));
+    }
+    apop_model *outparams2   = apop_estimate(apop_matrix_to_data(out), apop_normal);
+    assert(fabs(outparams2->parameters->vector->data[0]-mu) < 1e2);
+    assert(fabs(outparams2->parameters->vector->data[1]-sigmasq) < 1e2);
+    apop_model_free(hp2);
+    apop_model_free(outparams2);
 //    apop_plot_histogram(out, 100, NULL); 
 }
 

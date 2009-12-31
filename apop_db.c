@@ -242,7 +242,7 @@ are filled with <tt>NAN</tt>s in the matrix.
   */
 
 /** Send a query to the database, return nothing 
-\param fmt A <tt>printf</tt>-style \ref sql "SQL" query.
+\param fmt A <tt>printf</tt>-style SQL query.
 */
 int apop_query(const char *fmt, ...){
   char 		*err;

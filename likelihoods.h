@@ -25,40 +25,6 @@
 extern "C" {
 #endif
 
-typedef enum {
-    APOP_SIMPLEX_NM     =0, // 0: Nelder-Mead simplex (gradient handling rule is irrelevant)
-    APOP_CG_FR     =1,      //  1: conjugate gradient (Fletcher-Reeves) (default)
-    APOP_CG_BFGS   =2,      //  2: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
-    APOP_CG_PR     =3,      //  3: conjugate gradient (Polak-Ribiere)
-    APOP_SIMAN      =5,         //  5: \ref simanneal "simulated annealing"
-    APOP_RF_NEWTON  =10,        //  10: Find a root of the derivative via Newton's method
-//    APOP_RF_BROYDEN =11,        //  11: Find a root of the derivative via the Broyden Algorithm
-    APOP_RF_HYBRID  =12,        //  12: Find a root of the derivative via the Hybrid method
-    APOP_RF_HYBRID_NOSCALE  =13 //  13: Find a root of the derivative via the Hybrid method; no internal scaling
-} apop_optimization_enum;
-
-/** The settings for maximum likelihood estimation (including simulated annealing).*/
-typedef struct{
-//traditional
-    double      *starting_pt;
-    apop_optimization_enum method;
-    double      step_size, tolerance, delta;
-    int         verbose;
-    char        want_cov;
-//simulated annealing (also uses step_size);
-    int         n_tries, use_score, iters_fixed_T;
-    double      k, t_initial, mu_t, t_min ;
-    gsl_rng     *rng;
-    /** See \ref trace_path */
-    char        *trace_path;
-    apop_model  *parent;
-} apop_mle_settings;
-
-apop_mle_settings *apop_mle_settings_alloc(apop_model *model);
-#ifndef SWIG
-Apop_settings_declarations(apop_mle)
-#endif
-
 APOP_VAR_DECLARE gsl_vector * apop_numerical_gradient(apop_data * data, apop_model* model, double delta);
 APOP_VAR_DECLARE apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta);
 APOP_VAR_DECLARE apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta);

@@ -79,7 +79,7 @@ to:
  \code
  apop_mle_settings *ms = apop_mle_settings_alloc(data, model);
  \endcode
- As of this writing, options for the first argument include \ref apop_mle_settings_init "mle", \ref apop_histogram_settings_alloc "histogram", and \ref apop_update_settings_alloc "update". See the respective documentations for the arguments to be sent to the respective allocation functions. Because this is an obsolete function, that list may shrink.
+ As of this writing, options for the first argument include \ref apop_mle_settings_init "mle", \ref apop_histogram_settings_init "histogram", and \ref apop_update_settings_init "update". See the respective documentations for the arguments to be sent to the respective allocation functions. Because this is an obsolete function, that list may shrink.
 
  */
 #define Apop_settings_alloc(type, out, ...) apop_ ##type ##_settings *out = apop_ ##type ##_settings_alloc(__VA_ARGS__);

@@ -233,15 +233,13 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
 }
 
 apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .estimate =apop_estimate_OLS, 
-              .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep};
+            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep};
 
-apop_model apop_wls = {"Weighted Least Squares", -1,0,0, .estimate = apop_estimate_OLS, 
+apop_model apop_wls = {"Weighted Least Squares", .vbase = -1, .estimate = apop_estimate_OLS, 
             .log_likelihood = ols_log_likelihood, .score=ols_score, .prep= ols_prep};
 
 
-
 //Instrumental variables
-
 
 static apop_data *prep_z(apop_data *x, apop_data *instruments){
   int       i;

@@ -4,12 +4,14 @@
 !!Big.
 ]
 
-    Novmber 2009
+    December 2009
+--apop_strcmp
+--apop_loess model: 3,500 lines of code from the netlib archive, lovingly restored.
+
+    November 2009
 --apop_rm_columns bug fixed by Birger Baksaas.
 --apop_text_to_db attaches numeric affinity to sqlite3 columns, making numeric comparisons easier.
 --apop_histogram_model_reset's first argument is now "base" instead of "template", as a concession to C++ users.
---apop_strcmp
---apop_loess model: 3,500 lines of code from the netlib archive, lovingly restored.
 
 	September 2009
 --Many minor changes, mostly regarding adding optional arguments.
@@ -179,7 +181,7 @@ will be const, but it's not the interface's place to dictate that.
 --APOP_COL_T and APOP_ROW_T macros, to pull a column or row by name
 --apop_beta_from_mean_var produces a beta-distributed model with the right (alpha, beta) parameters. 
 **Thus, apop_random_beta is now marked as deprecated.
-**apop_x_prime_sigma_x removed, on grounds of being silly. If ou want it back, see model/apop_multivariate_normal.c, where it is now a static function.
+**apop_x_prime_sigma_x removed, on grounds of being silly. If you want it back, see model/apop_multivariate_normal.c, where it is now a static function.
 **apop_qq_plot --> apop_plot_qq
 --Multinomial logit model (and the probit now has names).
 **Revised the bin-syncing methods. apop_vectors_to_histogram and apop_model_to_histogram are now out; apop_histogram_refill_with_vector and apop_histogram_refill_with_model are in. 

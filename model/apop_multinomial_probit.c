@@ -64,11 +64,6 @@ void apop_category_settings_free(apop_category_settings *in){
 
 /////////  Part II: plain old probit
 
-/** If we find the apop_category group, then you've already converted
- something to factors and, I assume, put it in your data set's vector.
-
- If we don't find the apop_category group, then convert the first column of the matrix to categories, put it in the vector, and add a ones column.
- */
 static void probit_prep(apop_data *d, apop_model *m){
   if (m->prepared) return;
   int       count;
@@ -147,15 +142,6 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 	apop_data_free(betadotx);
 }
 
-
-/** The Probit model.
- The first column of the data matrix this model expects is ones and zeros;
- the remaining columns are values of the independent variables. Thus,
- the model will return (data columns)-1 parameters.
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_probit = {"Probit", .log_likelihood = probit_log_likelihood, 
     .score = probit_dlog_likelihood, .prep = probit_prep};
 
@@ -203,9 +189,7 @@ static double val;
 static double unordered(double in){ return in == val; }
 //static double ordered(double in){ return in >= val; }
 
-/*
-This is just a for loop that runs a probit on each row.
-*/
+// This is just a for loop that runs a probit on each row.
 static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
   static apop_model *spare_probit = NULL;
@@ -243,23 +227,6 @@ static size_t find_index(double in, double *m, size_t max){
     return i;
 }
 
-/**
-
-  The likelihood of choosing item $j$ is:
-  \f$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})\f$
-
-  so the log likelihood is 
-  \f$x\beta_j  - ln(\sum_i{e^{x\beta_i}})\f$
-
-  A nice trick used in the implementation: let \f$y_i = x\beta_i\f$.
-  Then
-\f[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f]
-
-The elements of the sum are all now exp(something negative), so 
-overflow won't happen, and if there's underflow, then that term
-must not have been very important. [This trick is attributed to Tom
-Minka, who implemented it in his Lightspeed Matlab toolkit.]
-*/
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters, 0, 0, 's', "You asked me to evaluate an un-parametrized model.");
   size_t i, j, index, choicect = p->parameters->matrix->size2;
@@ -304,27 +271,8 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
     return out;
 }
 
-/** The Logit model.
- The first column of the data matrix this model expects a number
- indicating the preferred category; the remaining columns are values of
- the independent variables. Thus, the model will return N-1 columns of
- parameters, where N is the number of categories chosen.
-
-\hideinitializer
-\ingroup models
-*/
-apop_model apop_logit = {"Logit", 
-     .log_likelihood = multilogit_log_likelihood, 
+apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, 
      .expected_value=multilogit_expected, .prep = probit_prep};
 
-/** The Multinomial Probit model.
- The first column of the data matrix this model expects a number
- indicating the preferred category; the remaining columns are values of
- the independent variables. Thus, the model will return N-1 columns of
- parameters, where N is the number of categories chosen.
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_multinomial_probit = {"Multinomial probit",
      .log_likelihood = multiprobit_log_likelihood, .prep = probit_prep};

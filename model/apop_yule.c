@@ -105,28 +105,6 @@ int		x;
 	*out =  x + 1;	//we rounded down to floor, but want ceil.
 }
 
-
-/** The Yule distribution
-
-The special case of Waring where \f$ \alpha = 0.	\f$<br>
-
-apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
-
-\f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$
-
-\f$ \ln Y(x, b)	= \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b)	\f$
-
-\f$ d\ln Y/db	= 1/(b-1)  + \psi(b) - \psi(k+b)				\f$
-
-To specify that you have frequency or ranking data, use 
-\code
-Apop_settings_add_group(your_model, apop_rank, NULL);
-\endcode
-
-\hideinitializer
-\ingroup models
-\todo I'm pretty sure Wikipedia's specification of the Yule is wrong; I should check and fix when I have references on hand.
-*/
 apop_model apop_yule = {"Yule", 1,0,0, .log_likelihood = yule_log_likelihood, 
     .score = yule_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
     .draw = yule_rng};

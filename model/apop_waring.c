@@ -176,28 +176,6 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 	*out = x;
 }
 
-/** The Waring distribution
-Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
-
-apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
-
-\f$W(x,k, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
-
-\f$\ln W(x, b, a) = \ln(b-1) + \ln\gamma(b+a) + \ln\gamma(k+a) - \ln\gamma(a+1) - \ln\gamma(k+a+b)\f$
-
-\f$dlnW/db	= 1/(b-1)  + \psi(b+a) - \psi(k+a+b)\f$
-
-\f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
-
-To specify that you have frequency or ranking data, use 
-\code
-Apop_settings_add_group(your_model, apop_rank, NULL);
-\endcode
-
-\hideinitializer
-\ingroup models
-\todo This function needs better testing.
-*/
 apop_model apop_waring = {"Waring", 2,0,0, 
 	 .log_likelihood =  waring_log_likelihood, .score = waring_dlog_likelihood, 
      .constraint =  beta_zero_and_one_greater_than_x_constraint,  .draw = waring_rng};

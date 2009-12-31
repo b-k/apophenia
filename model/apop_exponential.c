@@ -143,29 +143,6 @@ static void exponential_rng(double *out, gsl_rng* r, apop_model *p){
 	*out = gsl_ran_exponential(r, p->parameters->vector->data[0]);
 }
 
-
-/** The Exponential distribution. A one-parameter likelihood fn.
-
-Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
-
-
-\f$Z(\mu,k) 	= \sum_k 1/\mu e^{-k/\mu} 			\f$ <br>
-\f$ln Z(\mu,k) 	= \sum_k -\ln(\mu) - k/\mu			\f$ <br>
-\f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
-
-Some write the function as:
-\f$Z(C,k) dx = \ln C C^{-k}. \f$
-If you prefer this form, just convert your parameter via \f$\mu = {1\over
-\ln C}\f$ (and convert back from the parameters this function gives you
-via \f$C=\exp(1/\mu)\f$.
-
-To specify that you have frequency or ranking data, use 
-\code
-Apop_model_add_group(your_model, apop_rank);
-\endcode
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_exponential = {"Exponential distribution", 1,0,0,
 	 .estimate = exponential_estimate, .log_likelihood = exponential_log_likelihood, 
      .score = exponential_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 

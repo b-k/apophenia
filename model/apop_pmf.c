@@ -2,53 +2,6 @@
 #include "model.h"
 #include "internal.h"
 
-/**
-A probability mass function is commonly known as a histogram, or still more commonly, a bar chart. It indicates that at a given coordinate, there is a given mass.
-
-The data format for the PMF is simple: each row holds the coordinates, and the weights vector holds the mass at the given point. This is in contrast to the standard format, where the location is simply given by the position of the data point in the grid.
-
-For example, here is a typical data matrix:
-
-<table>
-<tr>            <td></td><td> col 0</td><td> col 1</td><td> col 2</td></tr>
-<tr><td>row 0 </td><td>0</td><td> 8.1</td><td> 3.2</td></tr>
-<tr><td>row 1 </td><td>0</td><td> 0</td><td> 2.2</td></tr>
-<tr><td>row 2 </td><td>0</td><td> 7.3</td><td> 1.2</td></tr>
-</table>
-
-Here it is as a sparse listing:
-
-<table>
-<tr>        <td></td> value</td></td> dimension 1<td></td> dimension 2<td></tr>
-<tr> <td>8.1</td> <td>0</td> <td>1</td> </tr>
-<tr> <td>3.2</td> <td>0</td> <td>2</td> </tr>
-<tr> <td>2.2</td> <td>1</td> <td>2</td> </tr>
-<tr> <td>7.3</td> <td>2</td> <td>1</td> </tr>
-<tr> <td>1.2</td> <td>2</td> <td>2</td> </tr>
-</table>
-
-The \c apop_pmf internally represents data in this manner. The dimensions are held in the \c matrix element of the data set, and the values are held in the \c weights element (not the vector).
-
-If your data is in the typical form (with entries in the matrix element for 2-D data or the vector for 1-D data), then 
-\code
-apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
-\endcode
-will produce a PMF from your data set whose \c parameters are in the sparse listing format.
-
-If your data is already in the sparse listing format (which is probably the case for 3- or more dimensional data), then the estimation is inappropriate. Just point the model to your parameter set:
-\code
-apop_model *my_pmf = apop_model_copy(apop_pmf);
-my_pmf->parameters = in_data;
-\endcode
-
-\li The first time you draw from a PMF, I will generate a CMF (Cumulative Mass Function). For an especially large data set this may take a human-noticeable amount of time. The CMF will be stored in <tt>parameters->weights[1]</tt>, and subsequent draws will have no computational overhead.
-
-\li This format is ideal for holding sparse multidimensional matrices, drawing from them, or calculating likelihoods. However, it is not ideal for linear algebra operations on sparse matrices. For this, the column-packed format is recommended. Integration with the CSparse library for linear algebra on sparse matrices is forthcoming.
-
- */
-
-
-
 extern apop_model apop_pmf;
 
 static apop_model *estim (apop_data *d, apop_model *m){

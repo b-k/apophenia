@@ -56,16 +56,8 @@ static double apply_me2(double x, void *mu){ return gsl_pow_2(x - *(double *)mu)
 
 /* The log likelihood function for the Normal.
 
-The log likelihood function and dlog likelihood don't care about your
-rows of data; if you have an 8 x 7 data set, it will give you the log
-likelihood of those 56 observations given the mean and variance (i.e.,
-\f$\sigma^2\f$, not std deviation=\f$\sigma\f$) you provide.
-
 \f$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-(x-\mu)^2 / 2\sigma^2)\f$
 \f$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 \f$
-
-\param beta	beta[0]=the mean; beta[1]=the variance
-\param d	the set of data points; see notes.
 */
 static double normal_log_likelihood(apop_data *d, apop_model *params){
   assert(params->parameters);
@@ -111,33 +103,12 @@ static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0];
 }
 
-/** You know it, it's your attractor in the limit, it's the Gaussian distribution.
-
-  As is custom, the first parameter is the mean, the second is the standard deviation (i.e., the square root of the variance).
-
-The log likelihood function and dlog likelihood don't care about your
-rows of data; if you have an 8 x 7 data set, it will give you the log
-likelihood of those 56 observations given the mean and variance you provide.
-
-\f$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)\f$
-
-\f$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 \f$
-
-\f$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 \f$
-
-\f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
-
-The \c apop_ls settings group includes a \c want_cov element, which refers to the covariance matrix for the mean and variance. You can set that to \c 'n' if you are estimating millions of these and need to save time (i.e. <tt>Apop_model_add_group(your_model, apop_ls, .want_cov = 'n');</tt>).
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_normal = {"Normal distribution", 2, 0, 0,
  .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, .score = normal_dlog_likelihood, 
  .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng};
 
 
 //The Lognormal distribution
-
 
 static double lognormal_log_likelihood(apop_data *d, apop_model *params);
 
@@ -163,14 +134,6 @@ static double lnx_minus_mu_squared(double x, void *mu_in){
 	return gsl_pow_2(log(x) - *(double *)mu_in);
 }
 
-/* The log likelihood function for the lognormal distribution.
-
-\$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})\$
-\$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})\$
-
-\param beta	beta[0]=the mean (after logging); beta[1]=the variance (after logging)
-\param d	the set of data points; see notes.
-*/
 static double lognormal_log_likelihood(apop_data *d, apop_model *params){
     Get_vmsizes(d)
     Nullcheck(params)
@@ -216,11 +179,6 @@ static void lognormal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = exp(gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0]);
 }
 
-/** The lognormal distribution. 
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_lognormal = {"Lognormal distribution", 2, 0, 0,
  .estimate = lognormal_estimate, .log_likelihood = lognormal_log_likelihood, /*.score = lognormal_dlog_likelihood,*/ 
  .constraint = beta_1_greater_than_x_constraint, .draw = lognormal_rng};

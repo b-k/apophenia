@@ -101,27 +101,6 @@ static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
     *out = x;
 }
 
-
-/** The Zipf distribution.
-Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. 
-
-Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
-
-apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
-\f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
-
-\f$lnZ(a)    = -(\log(\zeta(a)) + a \log(i))    \f$
-
-\f$dlnZ(a)/da    = -{a \zeta(a)\over\log(\zeta(a-1))} -  \log(i)        \f$
-
-To specify that you have frequency or ranking data, use 
-\code
-Apop_settings_add_group(your_model, apop_rank, NULL);
-\endcode
-
-\hideinitializer
-\ingroup models
-*/
 apop_model apop_zipf = {"Zipf", 1,0,0, 
      .log_likelihood = zipf_log_likelihood, .score = zipf_dlog_likelihood, 
      .constraint = beta_greater_than_x_constraint, .draw = zipf_rng};

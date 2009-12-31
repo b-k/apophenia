@@ -19,10 +19,6 @@ apop_update_settings *apop_update_settings_init(apop_update_settings in){
    return out;
 }
 
-/** Allocate an \ref apop_update_settings struct. See also \ref apop_update_settings_init, which is not deprecated.  */
-apop_update_settings *apop_update_settings_alloc(apop_data *d){
-    return apop_update_settings_init((apop_update_settings){ }); }
-
 static void write_double(const double *draw, apop_data *params){
   static apop_data *v = NULL;
   Get_vmsizes(params); //tsize

@@ -15,21 +15,30 @@ libapophenia_la_SOURCES = \
 			apop_model_fix_params.c	 apop_update.c			\
 			apop_tests.c apop_smoothing.c apop_settings.c   \
 			asprintf.c \
-			model/apop_multinomial_probit.c	model/apop_pmf.c \
-			model/apop_multivariate_normal.c 				\
-			model/apop_normal.c model/apop_OLS.c 		 	\
-			model/apop_exponential.c model/apop_histogram.c \
-			model/apop_gamma.c model/apop_zipf.c 		    \
-			model/apop_poisson.c model/apop_t_f_chi.c		\
-			model/apop_uniform.c model/apop_beta.c			\
-			model/apop_waring.c model/apop_yule.c 	 		\
-			model/apop_bernoulli.c model/apop_binomial.c 	\
-			model/apop_dirichlet.c
+			model/apop_bernoulli.c      \
+            model/apop_beta.c			\
+            model/apop_binomial.c 	    \
+			model/apop_dirichlet.c      \
+			model/apop_exponential.c    \
+			model/apop_gamma.c          \
+            model/apop_histogram.c      \
+			model/apop_loess.c          \
+			model/apop_multinomial_probit.c	    \
+			model/apop_multivariate_normal.c 	\
+			model/apop_normal.c         \
+            model/apop_OLS.c 		 	\
+            model/apop_pmf.c            \
+			model/apop_poisson.c        \
+            model/apop_t_f_chi.c		\
+			model/apop_uniform.c        \
+			model/apop_waring.c         \
+            model/apop_yule.c 	 		\
+            model/apop_zipf.c 
 
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
 				arms.h mapply.h stats.h types.h		 		\
 				output.h model.h asst.h settings.h  		\
-				variadic.h	linear_algebra.h 
+				variadic.h	linear_algebra.h
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc
@@ -81,16 +90,17 @@ EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/triangle.png doxy/right.png doxy/
 
 doc: 
 	cp model/*.c .
-	cp doxy/documentation.h doxy/model_doc.h .
+	mv doxy/documentation.h doxy/model_doc.h .
 	doxygen doxy/doxyconfig
 	cp doxy/flake.gif doxy/search.gif doxy/right.png doxy/down.png html/
-	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)<p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
--e 's|endofdiv<p>|</div>|' \
+	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)</p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
+-e 's|endofdiv</p>|</div>|' \
 -e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/index.html
-	sed -i -e '/index_x/s/- x -/ /' -e '/index_a/s/- a -/ /' -e '15,27d' -e '/Here is a list of all/d' html/globals.html
+	sed -i -e '/index_x/s/- x -/ /' -e '/index_a/s/- a -/ /' -e '15,27d' -e '/Here is a list of all/d' -e '/<span>[a-z]<\/span><\/a><\/li>/d' html/globals.html
 	sed -i 's|<td width="100%"></td>||g' html/*html
 	sed -i -f doxy/edit_group html/group__models.html 
 	cp doxy/*js html/
+	mv html/index.html html/outline.html
 	sudo cp man/man3/* /usr/share/man/man3/
 
 test:

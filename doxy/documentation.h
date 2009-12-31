@@ -843,7 +843,7 @@ endofdiv
 
 endofdiv
 
-Outlineheader Modesec Models \anchor models
+Outlineheader Modesec Models
 
 Outlineheader introtomodels Introduction
 
@@ -932,6 +932,8 @@ endofdiv
 
     Outlineheader modellist  Models that ship with Apophenia
 
+        A partial list---the full list is on the \ref models page.
+
         Outlineheader Dist Distributions
 
             \li\ref apop_bernoulli
@@ -1001,13 +1003,17 @@ endofdiv
 
     endofdiv
 
-    Outlineheader modelsettings Model settings \anchor settings
+    Outlineheader modelsettings Model settings
+
+       [For info on specific settings groups and their contents and use, see the \ref settings page.]
+
+    Outlineheader usingsettings Intro for model users
 
 Apophenia is really only based on two objects, the \ref apop_data set and the \ref apop_model. Data sets come in a pretty standard form, so the data object is basically settled. But describing a statistical, agent-based, social, or physical model in a reasonably standardized form is much more difficult, primarily because every model has significantly different settings. E.g., an MLE requires a method of search (conjugate gradient, simplex, simulated annealing), and a histogram needs the number of slots to be filled with data.
 
 So, the \ref apop_model includes a single list, whose name is simply \c settings, which can hold an arbitrary number of groups of settings. For example, you can have a set of closed-form variables for estimating the log likelihood, and a histogram for making random draws.
 
-To get/set a setting, you would need to specify the model, the settings group, and the name of the setting itself.  For the sake of giving you a mental model, this is much like a g_lib config file (or for Windows users, a .ini file), which would have settings divided into sections, like
+To get/set a setting, you would need to specify the model, the settings group, and the name of the setting itself.  For the sake of giving you a mental image, this is much like a g_lib config file (or for Windows users, a .ini file), which would have settings divided into sections, like
 
 \code
 [MLE]
@@ -1021,8 +1027,10 @@ weights = your_weight_vector
 bins = {0.1, 0.3, 0.2,...}
 \endcode
 
+To find a setting, You'd have to give a group, then the setting name.
 
-\b Using it
+
+<b>Using it</b>
 
 If you don't need to change settings from the default, you don't need to care about any of this, because
 \code
@@ -1062,10 +1070,11 @@ apop_data *weights_now = Apop_settings_get(m, apop_ls, weights);
 
 \li Notice the use of a single capital to remind you that you are using a macro, so you should beware of the sort of surprising errors associated with macros. Here in the modern day, we read things like APOP_SETTINGS_ADD as yelling, but if you prefer all caps to indicate macros, those work as well.
 
-\li There are two additional macros which are now deprecated: \ref
-Apop_settings_add_group and \c Apop_settings_alloc_add. They made sense at the time.
+\li There are two additional macros which are now deprecated: \c Apop_settings_add_group and \c Apop_settings_alloc_add. They made sense at the time.
 
 For just using a model, that's about 100% of what you need to know.
+
+    endofdiv
 
 Outlineheader settingswritng  Writing new settings
 
@@ -1129,27 +1138,17 @@ Apop_settings_get(m, ysg, an_element)
 
 As you saw above, once the typedef/alloc/copy/free machinery is written, you can declare, get, and set in a reasonably graceful manner.
 
-\li If for some reason you want to work with the now-deprecated \ref Apop_settings_add_group, you'll need a \c ysg_settings_alloc(...) function instead of \c ysg_settings_init. They do the same thing, but the \c alloc version takes in a variadic list of items, wile the \c init takes a single structure.
+\li If for some reason you want to work with the now-deprecated \c Apop_settings_add_group, you'll need a \c ysg_settings_alloc(...) function instead of \c ysg_settings_init. They do the same thing, but the \c alloc version takes in a variadic list of items, wile the \c init takes a single structure.
 
 endofdiv
 
         \li\ref Apop_settings_set
-        \li\ref Apop_settings_add_group
         \li\ref Apop_settings_alloc
         \li\ref apop_settings_copy_group
         \li\ref Apop_settings_get
         \li\ref apop_settings_get_group
         \li\ref Apop_settings_get_group
         \li\ref apop_settings_group_alloc
-
-        Outlineheader Spec Specific settings
-
-            \li\ref apop_category_settings_init()  
-            \li\ref apop_histogram_settings_init()  
-            \li\ref apop_ls_settings_init()
-            \li\ref apop_mle_settings_init() \anchor mlesettingsa
-            \li\ref apop_rank_settings_init()
-            \li\ref apop_update_settings_init()
 
         endofdiv
 
@@ -1407,6 +1406,7 @@ These functions will probably disappear or be replaced soon.
     \li\ref apop_name_cross_stack()
     \li\ref apop_kernel_density_settings_alloc()
     \li\ref apop_data_to_db()
+    \li\c Apop_settings_add_group
 
 endofdiv
 
@@ -1590,7 +1590,7 @@ The setup goes out of its way to leave the \c _base function in the public names
 
 <b>The sed script</b>
 
-The above is all you need to make this work: the varad.h file, and the above structures. But there is still a lot of redundancy, which can't be eliminated by the  plain C preprocessor.
+The above is all you need to make this work: the varad.h file, and the above structures. But there is still a lot of redundancy, which can't be eliminated by the plain C preprocessor.
 
 Thus, below is another preprocessor that converts a few markers to the above form. Here is the code that will expand to the above C-standard code:
 
@@ -1618,7 +1618,7 @@ One final detail: it is valid to have types with commas in them---function argum
 APOP_VAR_DECLARE apop_data * f_of_f(apop_data *in, void *param, int n, double (*fn_d)(double ! void * !int));
 \endcode
 
-Sed is POSIX standard, so even if you can't read the script (included in the subversion directory), you have the program needed to run it. For example, if you name it \c prep_variadics.sed, then run
+Sed is POSIX standard, so even if you can't read the script (included in the git directory), you have the program needed to run it. For example, if you name it \c prep_variadics.sed, then run
 \code
 ./prep_variadics.sed < myfile.pre.c > myfile.c
 \endcode

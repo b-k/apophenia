@@ -25,6 +25,7 @@ extern apop_model apop_histogram;
 extern apop_model apop_improper_uniform;
 extern apop_model apop_iv;
 extern apop_model apop_kernel_density;
+extern apop_model apop_loess;
 extern apop_model apop_logit;
 extern apop_model apop_lognormal;
 extern apop_model apop_multinomial;

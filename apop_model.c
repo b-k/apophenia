@@ -151,7 +151,7 @@ If you have a situation where these options are out, you'll have to do something
   \param ... The list of parameters.
   \return A copy of the input model, with parameters set.
 
-  \ingroup models
+\hideinitializer   \ingroup models
   */
 
 apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
@@ -174,10 +174,6 @@ apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
 \ingroup models
 */
 apop_model *apop_estimate(apop_data *d, apop_model m){
-    if (m.prep && !m.prepared){
-        m.prep(d, &m);
-        m.prepared++;
-    }
     if (m.estimate)
         return m.estimate(d, &m); 
     return apop_maximum_likelihood(d, m);
