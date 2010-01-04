@@ -16,7 +16,12 @@ Provenance:
     By the way, search the code for execnt: many functions will let you
     query how many times they have been hit, which you might find to be useful.
 */
-#include <apop.h>
+#include "apophenia/model.h"
+#include "apophenia/output.h"
+#include "apophenia/mapply.h"
+#include "apophenia/settings.h"
+#include "apophenia/conversions.h"
+
 
 ////////////a few lines from f2c.h
 #define TRUE_ (1)
@@ -2270,8 +2275,8 @@ static void ehg139_(double *v, integer *nvmax, integer *nv, integer *n, integer 
     }
 } /* ehg139_ */
 
-static void dqrdc_(double *x, integer *ldx, integer *n, integer *
-        p, double *qraux, integer *jpvt, double *work, integer *job) {
+static void dqrdc_(double *x, integer *ldx, integer *n, integer *p, double *qraux, 
+        integer *jpvt, double *work, integer *job) {
     integer x_dim1, i__2, i__3;
     double d__1, d__2;
 
@@ -2893,6 +2898,22 @@ static void loess_prune( long	*parameter, long *a, double	*xi, double *vert, dou
 }
 
 ////// predict.c
+/*
+struct  pred_struct	*pre;
+
+	fit: 		the evaluated loess surface at eval.
+	se_fit:		estimates of the standard errors of the surface values.
+	residual_scale: estimate of the scale of the residuals.
+	df:    		the degrees of freedom of the t-distribution used to
+		        compute pointwise confidence intervals for the evaluated surface. 
+*/
+struct pred_struct {
+	double	*fit;
+	double	*se_fit;
+	double  residual_scale;
+	double  df;
+};
+
 static void pred_( double  *y, double *x_, double *new_x, long    *size_info, double *s, double *weights, double *robust,
          double *span, long *degree, long *normalize, long *parametric, long *drop_square, char    **surface, double *cell,
          char **family, long  *parameter, long *a, double *xi, double *vert, double *vval, double *divisor, long *se,
@@ -3218,10 +3239,9 @@ static void loess_(double *y, double *x_, long *size_info, double *weights,
 		pseudovals(&N, y, fitted_values, weights, robust, int_temp, pseudovalues);
 		
         //BK: I believe that temp here does not rely on prior temp
-		loess_raw(pseudovalues, x, weights, weights, &D, &N, span,
-			degree,	&nonparametric, order_drop_sqr, &sum_drop_sqr,
-			&new_cell, &surf_stat, temp, param_tmp, a_tmp, xi_tmp,
-			vert_tmp, vval_tmp, diag_tmp, &trL_tmp, &d1_tmp, &d2_tmp, &zero);
+		loess_raw(pseudovalues, x, weights, weights, &D, &N, span, degree, &nonparametric, 
+            order_drop_sqr, &sum_drop_sqr, &new_cell, &surf_stat, temp, param_tmp, a_tmp, 
+            xi_tmp, vert_tmp, vval_tmp, diag_tmp, &trL_tmp, &d1_tmp, &d2_tmp, &zero);
 		for(i = 0; i < N; i++)
 			pseudo_resid[i] = pseudovalues[i] - temp[i];
 	}
@@ -3369,6 +3389,7 @@ double pf(double q, double df1, double df2) {
 	return ibeta(q*df1/(df2+q*df1), df1/2, df2/2);
 }
 
+/* For comparing two loess models, which is not as useful as one would hope...
 void anova(struct loess_struct *one, struct loess_struct *two, struct anova_struct *out){
 	double	one_d1, one_d2, one_s, two_d1, two_d2, two_s, rssdiff, d1diff, tmp;
 	int     max_enp;
@@ -3390,6 +3411,147 @@ void anova(struct loess_struct *one, struct loess_struct *two, struct anova_stru
         out->F_value = (rssdiff / d1diff) / (tmp * tmp);
         out->Pr_F = 1 - pf(out->F_value, out->dfn, out->dfd);
 }
+*/
+
+
+/*
+ * Rational approximation to inverse Gaussian distribution.
+ * Absolute error is bounded by 4.5e-4.
+ * Reference: Abramowitz and Stegun, page 933.
+ * Assumption: 0 < p < 1.
+ */
+
+static double num[] = {
+        2.515517,
+        0.802853,
+        0.010328
+};
+
+static double den[] = {
+        1.000000,
+        1.432788,
+        0.189269,
+        0.001308
+};
+
+double invigauss_quick(double p) {
+  int lower;
+  double t, n, d, q;
+    if(p == 0.5)
+        return(0);
+    lower = p < 0.5;
+    p = lower ? p : 1 - p;
+    t = sqrt(-2 * log(p));
+    n = (num[2]*t + num[1])*t + num[0];
+    d = ((den[3]*t + den[2])*t + den[1])*t + den[0];
+    q = lower ? n/d - t : t - n/d;
+    return(q);
+}
+
+/*
+ * Quick approximation to inverse incomplete beta function,
+ * by matching first two moments with the Gaussian distribution.
+ * Assumption: 0 < p < 1, a,b > 0.
+ */
+
+static double invibeta_quick(double p, double a, double b) {
+  double x, m, s, invigauss_quick();
+    x = a + b;
+    m = a / x;
+    s = sqrt((a*b) / (x*x*(x+1)));
+    return(GSL_MAX(0.0, GSL_MAX(1.0, invigauss_quick(p)*s + m)));
+}
+
+/*
+ * Inverse incomplete beta function.
+ * Assumption: 0 <= p <= 1, a,b > 0.
+ */
+
+static double invibeta(double p,double  a,double  b) {
+    int i;
+    double ql, qr, qm, qdiff;
+    double pl, pr, pm, pdiff;
+
+/*    MEANINGFUL(qm);*/
+	qm = 0;
+    if(p == 0 || p == 1)
+        return(p);
+
+    /* initialize [ql,qr] containing the root */
+    ql = qr = invibeta_quick(p, a, b);
+    pl = pr = ibeta(ql, a, b);
+    if(pl == p)
+        return(ql);
+    if(pl < p)
+        while(1) {
+            qr += 0.05;
+            if(qr >= 1) {
+                pr = qr = 1;
+                break;
+            }
+            pr = ibeta(qr, a, b);
+            if(pr == p)
+                return(pr);
+            if(pr > p)
+                break;
+        }
+    else
+        while(1) {
+            ql -= 0.05;
+            if(ql <= 0) {
+                pl = ql = 0;
+                break;
+            }
+            pl = ibeta(ql, a, b);
+            if(pl == p)
+                return(pl);
+            if(pl < p)
+                break;
+        }
+
+    /* a few steps of bisection */
+    for(i = 0; i < 5; i++) {
+        qm = (ql + qr) / 2;
+        pm = ibeta(qm, a, b);
+        qdiff = qr - ql;
+        pdiff = pm - p;
+        if(fabs(qdiff) < DOUBLE_EPS*qm || fabs(pdiff) < DOUBLE_EPS)
+            return(qm);
+        if(pdiff < 0) {
+            ql = qm;
+            pl = pm;
+        } else {
+            qr = qm;
+            pr = pm;
+        }
+    }
+
+    /* a few steps of secant */
+    for(i = 0; i < 40; i++) {
+        qm = ql + (p-pl)*(qr-ql)/(pr-pl);
+        pm = ibeta(qm, a, b);
+        qdiff = qr - ql;
+        pdiff = pm - p;
+        if(fabs(qdiff) < 2*DOUBLE_EPS*qm || fabs(pdiff) < 2*DOUBLE_EPS)
+            return(qm);
+        if(pdiff < 0) {
+            ql = qm;
+            pl = pm;
+        } else {
+            qr = qm;
+            pr = pm;
+        }
+    }
+
+    /* no convergence */
+    return(qm);
+}
+
+static double qt(double p, double df) {
+  double t = invibeta(fabs(2*p-1), 0.5, df/2);
+    return((p>0.5?1:-1) * sqrt(t*df/(1-t)));
+}
+
 
 
 ////The apop_model front end.
@@ -3398,6 +3560,7 @@ void loess(struct loess_struct *lo) ;
 void loess_free_mem(struct  loess_struct    *lo) ;
 void loess_setup( double  *x, double *y, long n, long p, struct  loess_struct *lo) ;
 void loess_summary(struct loess_struct *lo) ;
+
 
 void * apop_loess_settings_copy(apop_loess_settings *in){
   apop_loess_settings *out  = malloc(sizeof(*out));
@@ -3408,6 +3571,16 @@ void * apop_loess_settings_copy(apop_loess_settings *in){
 void apop_loess_settings_free(apop_loess_settings *in){ 
     loess_free_mem(&(in->lo_s));
     free(in); 
+}
+
+void matrix_to_FORTRAN(gsl_matrix *inmatrix, double *outFORTRAN, int start_col){
+    double *current_outcol = outFORTRAN; 
+    for (int i=start_col; i< inmatrix->size2; i++){
+        Apop_matrix_col(inmatrix, i, col);
+        for (int j=0; j< col->size; j++)
+            current_outcol[j]=gsl_vector_get(col,j);
+        current_outcol += col->size;
+    }
 }
 
 #define lo_set(var, dflt) .var = in.lo_s.var ? in.lo_s.var : dflt
@@ -3453,6 +3626,7 @@ apop_loess_settings * apop_loess_settings_init(apop_loess_settings in){
         .kd_tree.vert =  malloc(p * 2 * sizeof(double)),
         .kd_tree.vval =  malloc((p + 1) * max_kd * sizeof(double)),
     };
+    apop_varad_setting(in, out, ci_level, 0.95);
     apop_varad_setting(in, out, data, NULL);
     apop_assert(out->data, NULL, 0, 's', "You gave me a NULL data set for lowess smooting.");
     struct loess_struct *lo = &(out->lo_s);
@@ -3466,36 +3640,68 @@ apop_loess_settings * apop_loess_settings_init(apop_loess_settings in){
     int startat = 0;
     if (in.data->vector) //OK, then that's the dependent var.
         memcpy(lo->in.y, in.data->vector->data, n*sizeof(double));
-     else {  //use the first col as the dep. var.
+    else {  //use the first col as the dep. var.
         startat =1;
         Apop_matrix_col(in.data->matrix, 0, col);
         for (int j=0; j< col->size; j++)
             lo->in.y[j] = gsl_vector_get(col,j);
-     }
-    double *current_outcol = lo->in.x; 
-    for (int i=startat; i< in.data->matrix->size2; i++){
-        Apop_matrix_col(in.data->matrix, i, col);
-        for (int j=0; j< col->size; j++)
-            current_outcol[j]=gsl_vector_get(col,j);
-        current_outcol += col->size;
     }
+    matrix_to_FORTRAN(in.data->matrix, lo->in.x, startat);
 	for(int i = 0; i < 8; i++)
 	        lo->model.parametric[i] = lo->model.drop_square[i] = 0;
     return out;
 }
 
-double onerow(gsl_vector *v, void *sd){ 
+apop_data * loess_predict (apop_data *in, apop_model *m){
+    //Massage inputs to FORTRAN's format
+    double *eval_here = malloc(sizeof(double)*in->matrix->size1*(in->matrix->size2-1));
+    matrix_to_FORTRAN(in->matrix, eval_here, 1);
+    int want_cov = Apop_settings_get(m, apop_loess, want_predict_ci)=='y';
+    struct pred_struct pred;
+    struct loess_struct lo_s = Apop_settings_get(m, apop_loess, lo_s);
+
+    predict(eval_here, in->matrix->size1, &lo_s, &pred, want_cov);
+
+    //Massage FORTRAN's output to Apophenia's formats
+    Apop_col(in, 0, firstcol)
+    gsl_vector_view v = gsl_vector_view_array(pred.fit, firstcol->size);
+    gsl_vector_memcpy(firstcol, &(v.vector));
+    apop_data *ci, *tmp = in->more;
+    ci       =  
+    in->more = apop_data_alloc(0, sizeof(double)*in->matrix->size1 ,3);
+    ci->more = tmp;
+    sprintf(ci->names->title, "Confidence");
+
+    //Find confidence intervals. Used to be in loess's pointwise().
+    int coverage = Apop_settings_get(m, apop_loess, ci_level);
+	double t_dist = qt(1 - (1 - coverage)/2, pred.df);
+	for(int i = 0; i < in->matrix->size1; i++) {
+		double limit = pred.se_fit[i] * t_dist;
+        apop_data_set(ci, i, 0, limit);
+        apop_data_set(ci, i, 1, pred.fit[i] + limit);
+        apop_data_set(ci, i, 2, pred.fit[i] - limit);
+	}	
+    apop_name_add(ci->names, "standard error", 'c');
+    apop_name_add(ci->names, "lower CI", 'c');
+    apop_name_add(ci->names, "upper CI", 'c');
+
+    free(eval_here);
+    pred_free_mem(&pred);
+    return in;
+}
+
+static double onerow(gsl_vector *v, void *sd){ 
     return log(gsl_ran_gaussian_pdf(v->data[2], *((double*)sd))); 
 }
 
 //Assumes one gaussian, unweighted.
-double loess_ll(apop_data *d, apop_model *m){
+static double loess_ll(apop_data *d, apop_model *m){
     Apop_col(m->expected, 2, residuals);
     double sd = sqrt(apop_vector_var(residuals));
     return apop_map_sum(m->expected, .param=&sd, .part='r', .fn_vp= onerow);
 }
 
-apop_model *apop_loess_est(apop_data *d, apop_model *m){
+static apop_model *apop_loess_est(apop_data *d, apop_model *m){
   apop_model *out = apop_model_copy(apop_loess);
     if (!Apop_settings_get_group(out, apop_loess))
         Apop_model_add_group(out, apop_loess, .data=d);
@@ -3525,16 +3731,9 @@ apop_model *apop_loess_est(apop_data *d, apop_model *m){
     return out;
 }
 
-void apop_loess_print(apop_model *in){
+static void apop_loess_print(apop_model *in){
     loess_summary(&(Apop_settings_get(in, apop_loess, lo_s)));
 }
 
-apop_model apop_loess = {.name="lowess smoothing", .vbase = -1, .estimate =apop_loess_est, .print=apop_loess_print, .log_likelihood = loess_ll};
-
-int main() {
-    apop_data *indata=apop_text_to_data("airdata", .has_col_names='n');
-    Apop_model_add_group(&apop_loess, apop_loess, .lo_s.model.span=0.9, .data=indata);
-    apop_model *m = apop_estimate(indata, apop_loess);
-    m->print(m);
-    apop_data_show(m->expected);
-}
+apop_model apop_loess = {.name="lowess smoothing", .vbase = -1, .estimate =apop_loess_est, 
+    .print=apop_loess_print, .log_likelihood = loess_ll, .predict = loess_predict};

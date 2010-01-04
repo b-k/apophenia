@@ -149,10 +149,15 @@ void apop_text_free(char ***freeme, int rows, int cols){
  
   As with \c free(), it is safe to send in a \c NULL pointer (in which case the funtion does nothing).
 
+If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
+If you don't want to free data sets down the chain, set <tt>more=NULL</tt> before calling this.
+
  \ingroup data_struct
   */
 void apop_data_free(apop_data *freeme){
     if (!freeme) return;
+    if (freeme->more)
+        apop_data_free(freeme);
     if (freeme->vector)
         gsl_vector_free(freeme->vector);
     if (freeme->matrix)
@@ -167,6 +172,8 @@ void apop_data_free(apop_data *freeme){
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
 
   This function does not allocate the output structure for you for the overall structure or the vector or matrix. If you want such behavior, usr \ref apop_data_copy. Both functions do allocate memory for the text.
+
+  I don't follow the \c more pointer, though \ref apop_data_copy does.
  
   \param out    a structure that this function will fill. Must be preallocated
   \param in    the input data
@@ -215,7 +222,9 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
 
-  Just a front-end for \ref apop_data_memcpy for those who prefer this sort of syntax.
+  Basically a front-end for \ref apop_data_memcpy for those who prefer this sort of syntax. 
+
+  Unlike \ref apop_data_memcpy, I do follow the \c more pointer.
  
   \param in    the input data
   \return       a structure that this function will allocate and fill. If input is NULL, then this will be NULL.
@@ -226,6 +235,8 @@ apop_data *apop_data_copy(const apop_data *in){
     if (!in)
         return NULL;
     apop_data *out  = apop_data_alloc(0, 0, 0);
+    if (in->more)
+        out->more = apop_data_copy(in->more);
     if (in->vector)
         out->vector = gsl_vector_alloc(in->vector->size);
     if (in->matrix)
@@ -254,7 +265,8 @@ if 'c', stack columns of m1's matrix to left of m2's<br>
 
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
 both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 back)
-\li text is ignored
+\li Text is ignored.
+\li \c more is ignored.
 \li If stacking rows on rows, the output vector is the input
 vectors stacked accordingly. If stacking columns by columns, the output
 vector is just a copy of the vector of m1 and m2->vector doesn't appear in the
@@ -314,6 +326,7 @@ APOP_VAR_ENDHEAD
  \return An array of two \ref apop_data sets. If one is empty then a
  NULL pointer will be returned in that position. For example, for a data set of 50 rows, <tt>apop_data **out = apop_data_split(data, 100, 'r')</tt> sets <tt>out[0] = apop_data_copy(data)</tt> and <tt>out[1] = NULL</tt>.
 
+ \li \c more pointer is ignored.
  \li Weights will be preserved. If splitting by rows, then the top and bottom parts of the weights vector will be assigned to the top and bottom parts of the main data set. If splitting by columns, identical copies of the weights vector will be assigned to both parts.
  */
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){

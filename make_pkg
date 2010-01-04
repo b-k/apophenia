@@ -1,6 +1,6 @@
 junkdir=dists
 pkg=apophenia
-version=0.22
+version=0.23
 date=`date +%d_%b_%y`
 
 #See README for notes.

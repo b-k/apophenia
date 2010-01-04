@@ -1,8 +1,9 @@
 /** \file apop_model.c	 sets up the estimate structure which outputs from the various regressions and MLEs.*/
-/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "arms.h"
 #include "types.h"
+#include "mapply.h"
 #include "output.h"
 #include "internal.h"
 #include "likelihoods.h"
@@ -140,7 +141,7 @@ apop_model * apop_model_copy(apop_model in){
 
 For example, if you need a N(0,1) quickly: 
 \code
-apop_model *std_normal = apop_model_set_parameters(apop_normal, 0.0, 1.0);
+apop_model *std_normal = apop_model_set_parameters(apop_normal, 0, 1);
 \endcode
 
 This doesn't take in data, so it won't work with models that take the number of parameters from the data, and it will only set the vector of the model's parameter \ref apop_data set. This is most standard models, so that's not a real problem either.
@@ -277,11 +278,70 @@ void apop_model_prep(apop_data *d, apop_model *m){
     m->prepared++;
 }
 
-/** Return a matrix of the expected value for each observation or for
-the model as a whole, as the case may be. This may also be set within the model.
+static double disnan(double in) {return gsl_isnan(in);}
+
+/** A prediction supplies E(a missing value | original data,
+already-estimated parameters, and other supplied data elments ).
+
+For a regression, one would first estimate the parameters of the model,
+then supply a row of predictors <bf>X</bf>. The value of the dependent
+variable \f$y\f$ is unknown, so the system would predict that value. [In
+some models, this may not be the expected value, but is a best value
+for the missing item using some other meaning of `best'.]
+
+For a univariate model (i.e. a model in one-dimensional data space),
+there is only one variable to omit and fill in, so the prediction
+problem reduces to the expected value: E(a missing value | original data,
+already-estimated parameters).
+
+In other cases, prediction is the missing data problem: for
+three-dimensional data, you may supply the input (34, \c NaN, 12), and
+the parameterized model provides the most likely value of the middle
+parameter.
+
+\li If you give me a \c NULL data set, I will assume you want all values filled in---the expected value.
+
+\li If you give me a data set with no \c NaNs, I will assume the zeroth
+element is missing---e.g., the dependent variable in your regressor.
+Send in a data set with the column for the to-be-filled-in data, and
+I will entirely ignore that column's value and fill in the predicted
+value.
+
+\li If you give me data with NaNs, I will take those as the points to
+be predicted given the provided data.
+
+If the model has no \c predict method, the default is to use the 
+      \ref apop_ml_imputation function to do the work.
+
+\return If you gave me a non-\c NULL data set, I will return that,
+with the zeroth column or the NaNs filled in.  If \c NULL input, I
+will allocate an \ref apop_data set and fill it with the expected values.
+
+There may be a second page (i.e., a \ref apop_data set attached to the
+<tt>->more</tt> pointer of the main) listing confidence and standard
+error information. See your specific model documentation for details.
+
+This segment of the framework is in beta---subject to revision of the
+details.
 
 \ingroup models
- */
-apop_data * apop_expected_value(apop_data *d, apop_model *m){
-    return m->expected_value ?  m->expected_value(d, m) : NULL;
+  */
+apop_data *apop_predict(apop_data *d, apop_model *m){
+    apop_data *prediction = NULL;
+    if (m->predict)
+        prediction = m->predict(d, m);
+    if (prediction)
+        return prediction;
+    //default: set the first column (be it col. -1 or 0) to NaNs and do ML imputation.
+    if (!apop_map_sum(d, disnan)){
+        if (d->vector)
+            gsl_vector_set_all(d->vector, GSL_NAN);
+        else {
+            Apop_col(d, 0, ccc)
+            gsl_vector_set_all(ccc, GSL_NAN);
+        }
+    }
+    apop_model *f = apop_ml_imputation(d, m);
+    apop_model_free(f);
+    return(d);
 }

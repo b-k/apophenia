@@ -61,7 +61,7 @@ static void prep_names (apop_model *e){
 	}
 }
 
-static void ols_prep(apop_data *d, apop_model *m){
+static void ols_shuffle(apop_data *d){
     if (!d->vector){
         APOP_COL(d, 0, independent);
         d->vector = apop_vector_copy(independent);
@@ -71,6 +71,10 @@ static void ols_prep(apop_data *d, apop_model *m){
             sprintf(d->names->column[0], "1");
         }
     }
+}
+
+static void ols_prep(apop_data *d, apop_model *m){
+    ols_shuffle(d);
     void *mpt = m->prep; //also use the defaults.
     m->prep = NULL;
     apop_model_prep(d, m);
@@ -232,8 +236,19 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     return epout;
 }
 
+apop_data *ols_predict (apop_data *in, apop_model *m){
+
+    if (!in->vector) //in->vector = gsl_vector_alloc(in->matrix->size1);
+        ols_shuffle(in);
+
+    //OK, data is now in the right form.
+    //find x dot y
+    gsl_blas_dgemv (CblasNoTrans, 1, in->matrix, m->parameters->vector, 0, in->vector);
+    return in;
+}
+
 apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .estimate =apop_estimate_OLS, 
-            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep};
+            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep, .predict=ols_predict};
 
 apop_model apop_wls = {"Weighted Least Squares", .vbase = -1, .estimate = apop_estimate_OLS, 
             .log_likelihood = ols_log_likelihood, .score=ols_score, .prep= ols_prep};

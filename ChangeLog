@@ -4,6 +4,10 @@
 !!Big.
 ]
 
+    0.23 January 2009
+**expected_value element of the model renamed predict; made coherent across models.
+!!apop_data set now has a ->more pointer to an additional apop_data set, e.g., for data + covariances or predictions + confidence intervals.
+
     December 2009
 --apop_strcmp
 --apop_loess model: 3,500 lines of code from the netlib archive, lovingly restored.
@@ -19,7 +23,7 @@
 --Output functions now take a consistent set of specs regarding to where they will write. You no longer have to use the global apop_opts settings if you don't want to.
 
 	August 2009
---apop_map and apop_map_sum. Reworks the apop_(map|apply) system to be More flexible but a little more complex.
+--apop_map and apop_map_sum. Reworks the apop_(map|apply) system to be more flexible but a little more complex.
 -apop_(data|matrix|vector)_fill is now more robust---no more int vs float issues.
 **Removed apop_count_cols
 --Default univariate RNG, if you don't have one: Adaptive rejection markov chain sampling

@@ -437,6 +437,17 @@ For example, let us say that you are running a regression: there is a vector for
 
 We're generally assuming that the data vector and data matrix have the same row count: \c data->vector->size==data->matrix->size1 . This means that the \ref apop_name structure doesn't have separate vector_names and row_names elements: the rownames are assumed to apply for both.
 
+The \ref apop_data set includes a \c more pointer, which will typically
+be \c NULL, but may point to another \ref apop_data set. This is
+intended for a main data set and a second or third page with auxiliary
+information: estimated parameters on the front page and their
+covariance matrix on page two, or predicted data on the front page and
+a set of prediction intervals on page two. \c apop_data_copy and \c apop_data_free
+will handle all the pages of information. The \c more pointer is not
+intended as a linked list for millions of data points---you can probably
+find a way to restructure your data to use a single table (perhaps via
+\ref apop_data_pack and \ref apop_data_unpack).
+
 Easy data manipulation is essential for enjoying life as a researcher.  Thus, there are a great many functions to collate, copy, merge, sort, prune, and otherwise manipulate the \ref apop_data structure and its components.
 
     \li\ref apop_data_add_named_elmt()
@@ -995,7 +1006,7 @@ endofdiv
 
         \li\ref apop_draw()
         \li\ref apop_estimate()
-        \li\ref apop_expected_value()
+        \li\ref apop_predict()
         \li\ref apop_log_likelihood()
         \li\ref apop_score()
         \li\ref apop_model_print()

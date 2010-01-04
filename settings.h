@@ -177,14 +177,6 @@ apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data,
 
 
 //Loess, including the old FORTRAN-to-C.
-
-struct pred_struct {
-	double	*fit;
-	double	*se_fit;
-	double  residual_scale;
-	double  df;
-};
-
 struct loess_struct {
 	struct {
 		long    n, p;
@@ -230,7 +222,8 @@ struct anova_struct {
 	double  Pr_F;
 };
 
-/* The code for the loess system is based on FORTRAN code from 1988,
+
+/** The code for the loess system is based on FORTRAN code from 1988,
 overhauled in 1992, linked in to Apophenia in 2009. The structure that
 does all the work, then, is a \c loess_struct that you should
 basically take as opaque. 
@@ -260,7 +253,7 @@ mean time.
 			standard normalization is used. If 'n', no
 			normalization is carried out.
 
-            TODO
+            TO DO
 	parametric:	for two or more numeric predictors, this argument
 			specifies those variables that should be 
 			conditionally-parametric. The argument should be a 
@@ -268,7 +261,7 @@ mean time.
 			of the predictor group ordered in x.
 			Default is a vector of 0's of length p.
 
-            TODO
+            TO DO
 	drop_square:	for cases with degree = 2, and with two or more 
 			numeric predictors, this argument specifies those 
 			numeric predictors whose squares should be dropped 
@@ -302,20 +295,17 @@ mean time.
         is greater than or equal to k. default=0.2
 
 	lo_s.control.trace_hat: Options are <tt>"approximate"</tt>, <tt>"exact"</tt>, and <tt>"wait.to.decide"</tt>.	
-        When lo_s.control.surface is <tt>"approximate"</tt>, determines the 
-        computational method used to compute the trace of 
-        the hat matrix, which is used in the computation of 
-        the statistical quantities.  If "exact", an exact 
-        computation is done; normally this goes quite fast 
-        on the fastest machines until n, the number of 
-        observations is 1000 or more, but for very slow 
-        machines, things can slow down at n = 300.  
-        If "wait.to.decide" is selected, then a default 
-        is chosen in loess();  the default is "exact" for 
-        n < 500 and "approximate" otherwise.  If surface 
-        is "exact", an exact computation is always done 
-        for the trace. Set trace_hat to "approximate" for 
-        large dataset will substantially reduce the 
+        When lo_s.control.surface is <tt>"approximate"</tt>, determines
+        the computational method used to compute the trace of the hat
+        matrix, which is used in the computation of the statistical
+        quantities.  If "exact", an exact computation is done; normally
+        this goes quite fast on the fastest machines until n, the number
+        of observations is 1000 or more, but for very slow machines,
+        things can slow down at n = 300.  If "wait.to.decide" is selected,
+        then a default is chosen in loess();  the default is "exact" for
+        n < 500 and "approximate" otherwise.  If surface is "exact", an
+        exact computation is always done for the trace. Set trace_hat to
+        "approximate" for large dataset will substantially reduce the
         computation time.
 
 	lo_s.model.iterations:	if family is <tt>"symmetric"</tt>, the number of iterations 
@@ -348,17 +338,6 @@ out
         divisor:	normalization divisor for numeric predictors.
 
 
-struct  pred_struct	*pre;
-
-	fit: 		the evaluated loess surface at eval.
-
-	se_fit:		estimates of the standard errors of the surface values.
-
-	residual_scale: estimate of the scale of the residuals.
-
-	df:    		the degrees of freedom of the t-distribution used to
-		        compute pointwise confidence intervals for the evaluated surface. 
-
 struct  anova_struct	*aov;
 	
 	dfn:		degrees of freedom of the numerator.
@@ -366,24 +345,23 @@ struct  anova_struct	*aov;
 	F_values:	F statistic.
 	Pr_F:		probability F_value is exceeded if null hypothesis is true.
 
-
-struct	ci_struct	*ci;
-
-	fit:		the evaluated loess surface at eval (see pred_struct).
-	upper:		upper limits of pointwise confidence intervals.
-	lower:		lower limits of pointwise confidence intervals.
-
     \ingroup settings
 */
 typedef struct {
     apop_data *data;
     struct  loess_struct lo_s;
-    struct  pred_struct predicted;
+    int     want_predict_ci; /**< If 'y' (the default), calculate the
+                                confidence bands for predicted values */
+    double  ci_level; /**< If running a prediction, the level at which
+                        to calculate the confidence interval. default:
+                        0.95 */
 } apop_loess_settings;
 
 
 /** \defgroup settings Settings*/
 
+//Doxygen is doing funny things right now; having these down 
+//here seems to help.
 Apop_settings_declarations(apop_category)
 Apop_settings_declarations(apop_histogram)
 Apop_settings_declarations(apop_loess)
@@ -395,7 +373,8 @@ Apop_settings_declarations(apop_rank)
 
     ///All of the below is deprecated.
 
-/** Add a settings group. Deprecated; use \ref Apop_model_add_group instead.
+/** Add a settings group. 
+  \deprecated{Use \ref Apop_model_add_group instead.}
   You will need to provide arguments for the specific settings group you
   are dealing with, such as <tt>apop_mle_settings_alloc</tt>, <tt>apop_ls_settings_alloc</tt>, <tt>apop_histogram_settings_alloc</tt>. */
 #define Apop_settings_add_group(model, type, ...)  \

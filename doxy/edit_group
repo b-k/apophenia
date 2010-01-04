@@ -9,10 +9,11 @@ s/<h2>Enumerations/<h2>Models/
     s/.*>Data_format[0-9].*//
     s/.*>Parameter_format[0-9].*//
     s/.*>Estimate_results[0-9].*//
+    s/.*>Predict[0-9].*//
     s/.*>Prep_routine[0-9].*//
     s/.*>RNG[0-9].*//
     s/.*>[Ee]xample[0-9].*//
-    s/.*>[Kk]ey_settings[0-9].*//
+    s/.*>[Ss]ettings[0-9].*//
 }
 s/<b>Enumerator: <\/b>//
 s/<td class="memname">enum <a class="el"/<td class="memname">apop_model <a class="el"/
@@ -21,7 +22,8 @@ s/Name[0-9]*/Name/g
 s/Data_format[0-9]*/Data format/g
 s/Parameter_format[0-9]*/Parameter format/g
 s/Estimate_results[0-9]*/Estimate results/g
+s/Predict[0-9]*/Predict/g
 s/Prep_routine[0-9]*/Prep routine/g
 s/RNG[0-9]*/RNG/g
-s/[Ee]xample[0-9]*/Example/g
-s/[Kk]ey_settings[0-9]*/Key settings/g
+s/[Ee]xample[0-9]\+/Example/g
+s/[Ss]ettings[0-9]\+/Settings/g

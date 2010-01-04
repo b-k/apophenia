@@ -87,6 +87,17 @@ static void normal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
     gsl_vector_set(gradient, 1, sll/gsl_pow_3(sd)- tsize /sd);
 }
 
+//Just the mean and the variance of the mean.
+apop_data * normal_predict(apop_data *dummy, apop_model *m){
+    Get_vmsizes(m->data) //tsize
+    apop_data *out = apop_data_alloc(0,1,1);
+    out->matrix->data[0] = m->parameters->vector->data[0];
+
+    out->more = apop_data_alloc(0,1,1);
+    sprintf(out->more->names->title, "Covariance");
+    out->more->matrix->data[0] = m->parameters->vector->data[1]/ sqrt(tsize);
+    return out;
+}
 
 /** An apophenia wrapper for the GSL's Normal RNG.
 
@@ -105,7 +116,7 @@ static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 
 apop_model apop_normal = {"Normal distribution", 2, 0, 0,
  .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, .score = normal_dlog_likelihood, 
- .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng};
+ .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng, .predict = normal_predict};
 
 
 //The Lognormal distribution

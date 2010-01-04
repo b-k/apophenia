@@ -203,7 +203,6 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
       working_data = apop_data_alloc(0,0,0);
 
     working_data->matrix = d->matrix;
-
     gsl_vector *original_outcome = d->vector;
     double ll    = 0;
     double *vals = Apop_settings_get(p, apop_category, factors)->vector->data;
@@ -272,7 +271,7 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
 }
 
 apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, 
-     .expected_value=multilogit_expected, .prep = probit_prep};
+     .predict=multilogit_expected, .prep = probit_prep};
 
 apop_model apop_multinomial_probit = {"Multinomial probit",
      .log_likelihood = multiprobit_log_likelihood, .prep = probit_prep};

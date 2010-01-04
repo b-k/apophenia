@@ -10,7 +10,7 @@
 
    I achieve the structured documentation by lying to Doxygen and telling
    it that the model, like apop_OLS, is actually an enum of elements
-   including overview, name, key_settings, &c. It'll then use the enum
+   including overview, name, settings, &c. It'll then use the enum
    format, which has the appropriate look, giving the full documentation
    under each header.
 
@@ -53,7 +53,7 @@ enum apop_ols{
     Also, I'll run \f$t\f$-tests on the hypothesis that each
     parameter is different from zero, by running \ref apop_estimate_parameter_t_tests, qv.
       */
-    key_settings1, /**< \ref apop_ls_settings */
+    settings1, /**< \ref apop_ls_settings */
     example1,
     /**< 
 First, you will need a file named <tt>data</tt> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent. For example:
@@ -97,31 +97,31 @@ enum apop_wls{
     Parameter_format3, /**< As per OLS: a vector */
     Estimate_results3, /**< */
     Prep_routine3, /**< Focuses on the data shunting. */
-    key_settings3 /**< \ref apop_ls_settings */
+    settings3 /**< \ref apop_ls_settings */
 } ;
 
 /** Instrumental variable regression
 
      Operates much like the \ref apop_ols model, but the input
      parameters also need to have a table of substitutions (like the
-     addition of the \c .instruments setting in the example below). The vector
+     addition of the <tt>.instruments</tt> setting in the example below). The vector
      element of the table lists the column numbers to be substituted (the
      dependent var is zero; first independent col is one), and then one
      column for each item to substitute.
 
-    If the vector of your apop_data set is NULL, then I will use the row
+    If the vector of your apop_data set is \c NULL, then I will use the row
     names to find the columns to substitute. This is generally more robust
     and/or convenient.
 
-    If the \c instruments data set is somehow NULL or empty, I'll just run OLS. 
+    If the \c instruments data set is somehow \c NULL or empty, I'll just run OLS. 
 \hideinitializer \ingroup models */
 enum apop_iv{
     Name4,         /**< <tt>instrumental variables</tt> */
     Data_format4,  /**< OLS-style; see \ref dataprep. */
     Parameter_format4, /**< As per OLS: a vector */
     Prep_routine4, /**< Focuses on the data shunting. */
-    Estimate_results4, /**< */
-    key_settings4, /**< \ref apop_ls_settings */
+    Estimate_results4, /**< As per OLS */
+    settings4, /**< \ref apop_ls_settings */
     example4,
     /**<
 \code
@@ -156,11 +156,11 @@ enum apop_bernoulli {
     Parameter_format5, /**< A vector of length one */
     Prep_routine5, /**<  */
     RNG5, /**< Yes. Returns a single zero or one. */
-    key_settings5 /**< None. */
+    settings5 /**< None. */
 } ;
 
 /** 
-Regression via lowess smoothing
+Regression via loess smoothing
 
     This uses a somewhat black-box routine, first written by
     Chamberlain, Devlin, Grosse, and Shyu in 1988, to fit a smoothed
@@ -179,7 +179,7 @@ and thus is a surface of sorts. The word comes from the German löss,
 and is pronounced löíss.''
   \ingroup models \hideinitializer  */
 enum apop_loess{
-    Name2,         /**< <tt>lowess smoothing</tt> */
+    Name2,         /**< <tt>loess smoothing</tt> */
     Data_format2,  /**< 
 The data is basically OLS-like:                     
 the first column of the data is the dependent variable to be explained;
@@ -196,16 +196,24 @@ If your data set has a weights vector, I'll use it.
 In any case, all data is copied into the model's \ref
 apop_loess_settings. The code is primarily FORTRAN code from 1988
 converted to C; the data thus has to be converted into a relatively
-obsolete internal format.  */
+obsolete internal format.  
+                    
+*/
     Parameter_format2, /**< The parameter vector is unused. */
     Estimate_results2, /**< 
         The \ref apop_loess_settings is filled with results (and internal 
         processing cruft). The \c expected data set has the \c actual, 
         \c predicted, and \c residual columns, which is probably what you
         were looking for.*/
+    Predict2, /**<
+Fills in the zeroth column (ignoring and overwriting any data there), and at the data's <tt>->more</tt> pointer, adds an \ref
+apop_data set named "Confidence" (i.e., 
+\code
+apop_strcmp(outdata->more->names->title, "Confidence") == 1.
+\endcode */
     Prep_routine2, /**< None. */
     RNG2, /**< No. */
-    key_settings2 /**< \ref apop_loess_settings */
+    settings2 /**< \ref apop_loess_settings */
 } ;
 
 /** The Beta distribution.
@@ -221,7 +229,7 @@ enum apop_beta{
     Estimate_results31, /**<  Parameter estimates   */
     Prep_routine31, /**<  None. */
     RNG31, /**< Yes, producing a scalar \f$\in[0,1]\f$. */
-    key_settings31 /**<  None. */
+    settings31 /**<  None. */
 } ;
 
 /** The Binomial model.
@@ -265,13 +273,13 @@ And now the parameter vector is a proper list of probabilities.
     Estimate_results6, /**<   Parameters are estimated. Covariance matrix is filled.    */
     Prep_routine6, /**<    None.     */
     RNG6, /**< Yes. */
-    Key_settings6, /**<  \ref apop_rank_settings    */
+    settings6, /**<  \ref apop_rank_settings    */
     Example6 /**<      */
 } ;
 
 /** The Multinomial model.
 
-The \f$n\f$ option generalization of the Binomial distribution.
+The \f$n\f$--option generalization of the Binomial distribution.
     See also the \ref apop_binomial model.
 
 \hideinitializer
@@ -311,7 +319,7 @@ And now the parameter vector is a proper list of probabilities.
                          is filled.   */
     Prep_routine7, /**<   None.      */
     RNG7, /**< Yes. */
-    Key_settings7, /**<  \ref apop_rank_settings    */
+    settings7, /**<  \ref apop_rank_settings    */
     Example7 /**<      */
 } ;
 
@@ -329,7 +337,7 @@ The estimated parameters are in the output model's <tt>parameters->vector</tt>.
     Estimate_results8, /**<  Found via maximum likelihood.   */
     Prep_routine8, /**<   None.      */
     RNG8, /**< Yes. */
-    Key_settings8, /**< None.     */
+    settings8, /**< None.     */
     Example8 /**<      */
 } ;
 
@@ -361,7 +369,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Estimate_results9, /**<  Parameter is set.   */
     Prep_routine9, /**<  None.   */
     RNG9, /**< Yes. */
-    Key_settings9, /**<   \ref apop_rank_settings   */
+    settings9, /**<   \ref apop_rank_settings   */
     Example9 /**<      */
 } ;
 /** The Gamma distribution
@@ -391,7 +399,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
     Estimate_results10, /**<  Parameters are estimated, using MLE.   */
     Prep_routine10, /**<    None.     */
     RNG10, /**< Yes. */
-    Key_settings10, /**<   \ref apop_rank_settings, \ref apop_mle_settings */
+    settings10, /**<   \ref apop_rank_settings, \ref apop_mle_settings */
     Example10 /**<      */
 } ;
 
@@ -412,7 +420,7 @@ enum apop_kernel_density{
     Estimate_results30, /**<     */
     Prep_routine30, /**<         */
     RNG30, /**< No. */
-    Key_settings30, /**< \ref apop_histogram_settings, but see \ref apop_kernel_density_settings_alloc on setting up.    */
+    settings30, /**< \ref apop_histogram_settings, but see \ref apop_kernel_density_settings_alloc on setting up.    */
     Example30 /**<      */
 } ;
 
@@ -444,7 +452,7 @@ enum apop_histogram{
     Prep_routine11, /**<    None.     */
     RNG11, /**< Yes. The first call produces a cumulative density tally,
             and so will take several microseconds longer than later calls.  */
-    Key_settings11, /**<   \ref apop_histogram_settings   */
+    settings11, /**<   \ref apop_histogram_settings   */
     Example11 /**<      */
 };
 
@@ -462,7 +470,7 @@ enum apop_improper_uniform {
     Estimate_results13, /**<   The \c estimate routine is just a dummy that returns its input.  */
     Prep_routine13, /**<    None.     */
     RNG13, /**< The \c draw function makes no sense, and therefore returns an error. */
-    Key_settings13, /**< None.     */
+    settings13, /**< None.     */
     Example13 /**<      */
 } ;
 
@@ -482,7 +490,7 @@ enum apop_uniform {
     Estimate_results14, /**<  Parameters are set.   */
     Prep_routine14, /**<  None.      */
     RNG14, /**< Yes. */
-    Key_settings14, /**<  None.    */
+    settings14, /**<  None.    */
     Example14 /**<      */
 } ;
 
@@ -508,7 +516,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
                          */
     Prep_routine15, /**<   None.      */
     RNG15, /**< Yes. */
-    Key_settings15, /**<  \ref apop_ls_settings, for the \c .want_cov element    */
+    settings15, /**<  \ref apop_ls_settings, for the \c .want_cov element    */
     Example15 /**<      */
 } ;
 
@@ -527,7 +535,7 @@ enum apop_multivariate_normal{
     Estimate_results16, /**< Parameters are set in the above format.    */
     Prep_routine16, /**<  None.       */
     RNG16, /**< The RNG fills an input array whose length is based on the input parameters. */
-    Key_settings16, /**<  None.    */
+    settings16, /**<  None.    */
     Example16 /**<      */
 } ;
 
@@ -559,7 +567,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Estimate_results17, /**< Estimated via MLE.    */
     Prep_routine17, /**<  None.       */
     RNG17, /**< Yes. Um, it may be buggy. */
-    Key_settings17, /**<  \ref apop_mle_settings, \ref apop_rank_settings    */
+    settings17, /**<  \ref apop_mle_settings, \ref apop_rank_settings    */
     Example17 /**<      */
 } ;
 
@@ -588,7 +596,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Estimate_results18, /**< Estimated via MLE.    */
     Prep_routine18, /**<  None.       */
     RNG18, /**< Yes. */
-    Key_settings18, /**<  \ref apop_mle_settings, \ref apop_rank_settings    */
+    settings18, /**<  \ref apop_mle_settings, \ref apop_rank_settings    */
     Example18 /**<      */
 } ;
 
@@ -615,12 +623,12 @@ enum apop_zipf {
     Estimate_results19, /**< Estimates the parameter.    */
     Prep_routine19, /**<  None.       */
     RNG19, /**< Yes. */
-    Key_settings19, /**<  \ref apop_mle_settings, \ref apop_rank_settings    */
+    settings19, /**<  \ref apop_mle_settings, \ref apop_rank_settings    */
     Example19 /**<      */
 } ;
 
 
-/** A probability mass function
+/** 
 A probability mass function is commonly known as a histogram, or still
 more commonly, a bar chart. It indicates that at a given coordinate,
 there is a given mass.
@@ -689,7 +697,7 @@ enum apop_pmf {
 may take a human-noticeable amount of time. The CMF will be stored
 in <tt>parameters->weights[1]</tt>, and subsequent draws will have no
 computational overhead. */
-    Key_settings20, /**<  None.    */
+    settings20, /**<  None.    */
     Example20 /**<      */
 } ;
 
@@ -711,13 +719,13 @@ enum apop_probit {
  If we don't find the \ref apop_category_settings group, then convert the first column of the matrix to categories, put it in the vector, and add a ones column.
  */
     RNG21, /**< No. */
-    Key_settings21, /**<  \ref apop_category_settings    */
+    settings21, /**<  \ref apop_category_settings    */
     Example21 /**<      */
 } ;
 
 /** The Logit model.
 
-  The likelihood of choosing item $j$ is:
+  The likelihood of choosing item \f$j\f$ is:
   \f$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})\f$
 
   so the log likelihood is 
@@ -748,7 +756,7 @@ enum apop_logit {
  If we don't find the \ref apop_category_settings group, then convert the first column of the matrix to categories, put it in the vector, and add a ones column.
  */
     RNG22, /**< No. */
-    Key_settings22, /**<  \ref apop_category_settings    */
+    settings22, /**<  \ref apop_category_settings    */
     Example22 /**<      */
 } ;
 
@@ -771,7 +779,7 @@ enum apop_multinomial_probit {
  If we don't find the \ref apop_category_settings group, then convert the first column of the matrix to categories, put it in the vector, and add a ones column.
  */
     RNG23, /**< No. */
-    Key_settings23, /**<  \ref apop_category_settings    */
+    settings23, /**<  \ref apop_category_settings    */
     Example23 /**<      */
 } ;
 
@@ -798,7 +806,7 @@ enum apop_wishart  {
     Estimate_results24, /**< Via MLE.    */
     Prep_routine24, /**<  Just allocates the parameters based on the size of the input data.       */
     RNG24, /**< Yes. You can use this to generate random covariance matrices, should you need them. See example below. */
-    Key_settings24, /**<  \ref apop_mle_settings    */
+    settings24, /**<  \ref apop_mle_settings    */
     Example24 /**<  
 Making some random draws:
 
@@ -825,7 +833,7 @@ enum apop_t_distribution  {
                           set \f$df = n-1\f$. Else, via MLE.    */
     Prep_routine25, /**<  None.       */
     RNG25, /**< Yes. */
-    Key_settings25, /**<  \ref apop_mle_settings    */
+    settings25, /**<  \ref apop_mle_settings    */
     Example25 /**<   */
 } ;
 
@@ -843,7 +851,7 @@ enum apop_f_distribution  {
                           \f$df2=\f$ matrix count minus one. Else, via MLE.    */
     Prep_routine26, /**<  None.       */
     RNG26, /**< Yes. */
-    Key_settings26, /**<  \ref apop_mle_settings    */
+    settings26, /**<  \ref apop_mle_settings    */
     Example26 /**<   */
 } ;
 
@@ -860,7 +868,7 @@ enum apop_chi_squared  {
                           set \f$df = n-1\f$. Else, via MLE.    */
     Prep_routine27, /**<  None.       */
     RNG27, /**< Yes. */
-    Key_settings27, /**<  \ref apop_mle_settings    */
+    settings27, /**<  \ref apop_mle_settings    */
     Example27 /**<   */
 } ;
 
@@ -879,7 +887,7 @@ enum apop_lognormal {
     Estimate_results28, /**< Parameters are set. Log likelihood is calcuated.    */
     Prep_routine28, /**<  None.       */
     RNG28, /**< Yes. */
-    Key_settings28, /**<  None.    */
+    settings28, /**<  None.    */
     Example28 /**<   */
 } ;
 
@@ -902,9 +910,12 @@ enum apop_normal{
     Parameter_format29, /**< 
   As is custom, the first parameter (in the vector) is the mean, the second is the standard deviation (i.e., the square root of the variance). */
     Estimate_results29, /**< Parameters are set. Log likelihood is calcuated. Covariance of the parameters is calculated unless <tt>.want_cov='n'</tt>; see below.    */
+    Predict29, /**< Returns the expected value. The <tt>->more</tt>
+                 element holds a \ref apop_data set with the title <tt>"Covariance"</tt>, whose matrix holds the covariance of the mean. Format
+                 subject to change. */
     Prep_routine29, /**<  None.       */
     RNG29, /**< Of course. */
-    Key_settings29, /**<  
+    settings29, /**<  
 The \c apop_ls_settings group includes a \c want_cov element, which
 refers to the covariance matrix for the mean and variance. You can set
 that to \c 'n' if you are estimating millions of these and need to save
@@ -913,10 +924,7 @@ time (i.e. <tt>Apop_model_add_group(your_model, apop_ls, .want_cov =
     Example29 /**<   */
 } ;
 
-/** The null model.
-  
-    Sometimes ya need a null model. the name is
-    blank, so <tt>strlen(m->name)</tt> will tell you
+/** Sometimes ya need a null model. The name is blank, so <tt>strlen(m->name)</tt> will tell you
     whether this is the null model.
 \hideinitializer \ingroup models */
 enum apop_null{
@@ -926,6 +934,6 @@ enum apop_null{
     Estimate_results0, /**< None.    */
     Prep_routine0, /**<  None.       */
     RNG0, /**< No. */
-    Key_settings0, /**<  None.    */
+    settings0, /**<  None.    */
     Example0 /**<   */
 } ;

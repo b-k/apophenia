@@ -28,17 +28,19 @@ typedef struct{
 /** The \ref apop_data structure adds a touch of metadata on top of the basic \c gsl_matrix and \c gsl_vector. It includes an \ref apop_name structure, and a table for non-numeric variables.  Allocate using \c apop_data_alloc, free via \c apop_data_free, or more generally, see the \c apop_data_... section of the index (in the header links) for the many other functions that operate on this struct.
 \ingroup data_struct
 */
-typedef struct {
+typedef struct _apop_data apop_data;
+
+struct _apop_data{
     gsl_vector  *vector;
     gsl_matrix  *matrix;
     apop_name   *names;
     char        ***text;
     int         textsize[2];
     gsl_vector  *weights;
-    //cs          grid;
-} apop_data;
+    apop_data   *more;
+};
 
-/** A description of a parametrized statistical model, including the input settings and the output parameters, expected values, et cetera.  The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
+/** A description of a parametrized statistical model, including the input settings and the output parameters, predicted/expected values, et cetera.  The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
 */
 typedef struct _apop_model apop_model;
 
@@ -69,7 +71,7 @@ struct _apop_model{
     double  (*log_likelihood)(apop_data *d, apop_model *params);
     void    (*score)(apop_data *d, gsl_vector *gradient, apop_model *params);
     double  (*constraint)(apop_data *data, apop_model *params);
-    apop_data*  (*expected_value)(apop_data *d, apop_model *params);
+    apop_data*  (*predict)(apop_data *d, apop_model *params);
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
     void (*prep)(apop_data *data, apop_model *params);
     void (*print)(apop_model *params);
