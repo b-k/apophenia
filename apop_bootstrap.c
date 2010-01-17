@@ -52,7 +52,6 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
   apop_assert(in,  NULL, 0, 's', "You sent me NULL input data.");
   apop_model   *e              = apop_model_copy(model);
-  apop_model_clear(in, e);
   int           i, n            = in->matrix->size1;
   apop_data     *subset         = apop_data_alloc(in->vector ? in->vector->size -1 : 0, n - 1, in->matrix->size2);
   apop_data     *array_of_boots = NULL;
@@ -123,7 +122,6 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
     return apop_bootstrap_cov_base(data, varad_in.model, rng, iterations);
 APOP_VAR_END_HEAD
   apop_model        *e              = apop_model_copy(model);
-  apop_model_clear(data, e);
   size_t	        i, j, row;
   apop_data     *subset         = apop_data_alloc(data->vector ? data->vector->size : 0
                                                     , data->matrix->size1, data->matrix->size2);

@@ -14,9 +14,15 @@ This sets up the output elements of the \c apop_model: the parameters, covarinac
 
 At close, the input model has parameters of the correct size, the covariance and expected elements are \c NULL, and the \c status element is zero, indicating no estimation has been done yet.
 
-The input model is modified, so you may want to call this after you call \c apop_model_copy.
+\li This is the default action for \ref apop_model_prep. If your model
+has its own \ref prep method, then that gets used instead, but most
+don't (or call \ref apop_model_clear at the end of their prep routine).
 
-\param data If your params vary with the size of the data set, then the function needs a data set to calibrate against. Otherwise, it's OK to set this to \c NULL
+\ref apop_estimate calls \ref apop_model_prep internally. 
+
+The above two points mean that you probably don't need to call this function directly.
+
+\param data If your params vary with the size of the data set, then the function needs a data set to calibrate against. Otherwise, it's OK to set this to \c NULL.
 \param model    The model whose output elements will be modified.
 \return A pointer to the same model, should you need it.
 
@@ -165,8 +171,13 @@ apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
 
 /** estimate the parameters of a model given data.
 
-   This is a brief convenience function, which expands to \c m.estimate(d,&m). If your model has no \c estimate method, then I assume \c apop_maximum_likelihood(d, m), with the default MLE params.
+This function copies the input model, preps it, and calls \c
+m.estimate(d,&m). If your model has no \c estimate method, then I
+assume \c apop_maximum_likelihood(d, m), with the default MLE params.
 
+I assume that you are using this function rather than directly calling the
+model's the \c estimate method directly. For example, the \c estimate
+method may assume that \c apop_model_prep has already been called.
 
 \param d    The data
 \param m    The model
@@ -175,9 +186,14 @@ apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
 \ingroup models
 */
 apop_model *apop_estimate(apop_data *d, apop_model m){
-    if (m.estimate)
-        return m.estimate(d, &m); 
-    return apop_maximum_likelihood(d, m);
+    apop_model *out = apop_model_copy(m);
+    if (!out->prepared){
+        apop_model_prep(d, out);
+        out->prepared++;
+    }
+    if (out->estimate)
+        return out->estimate(d, out); 
+    return apop_maximum_likelihood(d, out);
 }
 
 /** Find the probability of a data/parametrized model pair.
@@ -189,10 +205,11 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
 */
 double apop_p(apop_data *d, apop_model *m){
     Nullcheck_m(m);
-    if (m->prep && !m->prepared){
+/*    if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;
     }
+    */
     if (m->p)
         return m->p(d, m);
     else if (m->log_likelihood)
@@ -210,10 +227,11 @@ double apop_p(apop_data *d, apop_model *m){
 */
 double apop_log_likelihood(apop_data *d, apop_model *m){
     Nullcheck_mv(m); //Nullcheck_pv(m); //Too many models don't use the params.
-    if (m->prep && !m->prepared){
+/*    if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;
     }
+    */
     if (m->log_likelihood)
         return m->log_likelihood(d, m);
     else if (m->p)
@@ -232,10 +250,11 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     Nullcheck_mv(m); // Nullcheck_pv(m);
-    if (m->prep && !m->prepared){
+/*    if (m->prep && !m->prepared){
         m->prep(d, m);
         m->prepared++;
     }
+    */
     if (m->score){
         m->score(d, out, m);
         return;
@@ -284,7 +303,7 @@ static double disnan(double in) {return gsl_isnan(in);}
 already-estimated parameters, and other supplied data elments ).
 
 For a regression, one would first estimate the parameters of the model,
-then supply a row of predictors <bf>X</bf>. The value of the dependent
+then supply a row of predictors <b>X</b>. The value of the dependent
 variable \f$y\f$ is unknown, so the system would predict that value. [In
 some models, this may not be the expected value, but is a best value
 for the missing item using some other meaning of `best'.]

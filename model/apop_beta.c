@@ -33,10 +33,8 @@ apop_model *apop_beta_from_mean_var(double m, double v){
 
 static double beta_log_likelihood(apop_data *d, apop_model *p);
 
-static apop_model * beta_estimate(apop_data * data,  apop_model *parameters){
+static apop_model * beta_estimate(apop_data * data,  apop_model *est){
   Get_vmsizes(data) //vsize, msize1,...
-  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_beta);
-  apop_model_clear(data, est);
   double		mmean=0, mvar=0, vmean=0, vvar=0, alpha, beta;
     if (vsize){
         vmean = apop_mean(data->vector);
@@ -50,7 +48,7 @@ static apop_model * beta_estimate(apop_data * data,  apop_model *parameters){
     beta    = alpha * (1-mean)/mean;
 	gsl_vector_set(est->parameters->vector, 0, alpha);
 	gsl_vector_set(est->parameters->vector, 1, beta);
-    est->llikelihood	= beta_log_likelihood(data, parameters);
+    est->llikelihood	= beta_log_likelihood(data, est);
     //apop_numerical_covariance_matrix(apop_beta, est, data);
 	return est;
 }

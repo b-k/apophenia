@@ -20,9 +20,7 @@ static double bernoulli_log_likelihood(apop_data *d, apop_model *params){
 
 static double nonzero (double in) { return in !=0; }
 
-static apop_model * bernoulli_estimate(apop_data * data,  apop_model *parameters){
-  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_bernoulli);
-  apop_model_clear(data, est);
+static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
   double		p       = 0;
   double        n       = (data->vector ? data->vector->size : 0)
                         + (data->matrix ? data->matrix->size1*data->matrix->size2 : 0);

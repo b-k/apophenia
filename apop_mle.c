@@ -76,6 +76,7 @@ apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
     apop_varad_setting(in, setme, delta, default_delta);
     apop_varad_setting(in, setme, want_cov, 'y');
     if (in.want_cov == 1) setme->want_cov = 'y';
+    apop_varad_setting(in, setme, dim_cycle_tolerance, 0);
 //siman:
     //siman also uses step_size  = 1.;  
     apop_varad_setting(in, setme, n_tries, 200);  //The number of points to try for each step. 
@@ -396,6 +397,16 @@ static void fdf_shell(const gsl_vector *beta, void *i, double *f, gsl_vector *df
 static int ctrl_c;
 static void mle_sigint(){ ctrl_c ++; }
 
+static gsl_vector * setup_starting_point(apop_mle_settings *mp, int betasize){
+    gsl_vector *x;
+	if (mp->starting_pt==NULL){
+		x	= gsl_vector_alloc(betasize);
+  		gsl_vector_set_all (x, 1);
+	}
+	else 	x   = apop_array_to_vector(mp->starting_pt, betasize);
+    return x;
+}
+
 static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){
 /* The maximum likelihood calculations, given a derivative of the log likelihood.
 
@@ -413,7 +424,6 @@ Inside the infostruct, you'll find these elements:
 
 */
   gsl_multimin_fdfminimizer *s;
-  gsl_vector 			    *x;
   apop_model		        *est    = i->model; //just an alias.
   Get_vmsizes(est->parameters) //set vsize, msize1, msize2, tsize
   int				        iter 	= 0, 
@@ -427,11 +437,7 @@ Inside the infostruct, you'll find these elements:
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_pr, betasize);
     else //Default:    APOP_CG_FR      conjugate gradient (Fletcher-Reeves)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
-	if (mp->starting_pt==NULL){
-		x	= gsl_vector_alloc(betasize);
-  		gsl_vector_set_all (x,  0.1);
-	}
-	else 	x   = apop_array_to_vector(mp->starting_pt, betasize);
+    gsl_vector *x = setup_starting_point(mp, betasize);
     gsl_multimin_function_fdf minme = {
         .f		= negshell,
         .df	= (apop_df_with_void) dnegshell,
@@ -472,29 +478,25 @@ Inside the infostruct, you'll find these elements:
 	return est;
 }
 
-/* See the above function for notes. */
+/* See apop_maximum_likelihood_w_d for notes. */
 static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
   apop_model		        *est        = i->model;
   apop_mle_settings           *mp         = apop_settings_get_group(est, "apop_mle");
   assert(mp);
   apop_data                 *p          = est->parameters;
-  Get_vmsizes(p) //set vsize, msize1, msize2, tsize
+  Get_vmsizes(p) //get vsize, msize1, msize2, tsize
   int			            status,
 			                iter 		= 0,
 			                betasize	= tsize; 
   size_t 			        j;
   gsl_multimin_fminimizer   *s;
-  gsl_vector 		        *x, *ss;
+  gsl_vector 		        *ss;
   double			        size;
 	s	= gsl_multimin_fminimizer_alloc(gsl_multimin_fminimizer_nmsimplex, betasize);
 	ss	= gsl_vector_alloc(betasize);
     ctrl_c      =
 	est->status	= 0;	//assume failure until we score a success.
-	if (mp->starting_pt==NULL){
-	    x	= gsl_vector_alloc(betasize);
-  		gsl_vector_set_all (x,  1);
-    } else
-		x   = apop_array_to_vector(mp->starting_pt, betasize);
+    gsl_vector *x = setup_starting_point(mp, betasize);
     i->beta = gsl_vector_alloc(betasize);
   	gsl_vector_set_all (ss,  mp->step_size);
     gsl_multimin_function 	minme = {.f = negshell, .n= betasize, .params	= i};
@@ -531,38 +533,60 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 	return est;
 }
 
+static apop_model * dim_cycle(apop_data *d, apop_model *est){
+    double last_ll, this_ll = GSL_NEGINF;
+    int iteration    = 0;
+    apop_mle_settings *mp = Apop_settings_get_group(est, apop_mle);
+    double tol       = mp->dim_cycle_tolerance;
+    int verbose      = mp->verbose;
+    apop_data *p     = est->parameters;
+    Get_vmsizes(p) //get vsize, msize1, msize2, tsize
+    int betasize = tsize;
+    gsl_vector *x = setup_starting_point(mp, betasize);
+
+    do {
+        if (verbose){
+            if (!(iteration++))
+                printf("Cycling toward an optimum. Listing (dim):log likelihood.\n");
+            printf("Iteration %i:\n", iteration);
+        }
+        last_ll = this_ll;
+        Apop_settings_set(est, apop_mle, dim_cycle_tolerance, 0);//so sub-estimations won't use this function.
+        for (int i=0; i< betasize; i++){
+            gsl_vector_set(x, i, GSL_NAN);
+            apop_data_unpack(x, est->parameters);
+            apop_model *m_onedim = apop_model_fix_params(est);
+            apop_maximum_likelihood(d, m_onedim);
+            apop_data_pack(m_onedim->parameters, x);
+            if (verbose)
+                printf("(%i):%g\t", i, m_onedim->llikelihood), fflush(NULL);
+            this_ll = m_onedim->llikelihood;//only used on the last iteration.
+            apop_model_free(m_onedim);
+        }
+        if (verbose) printf("\n");
+    } while (fabs(this_ll - last_ll) < tol);
+    Apop_settings_set(est, apop_mle, dim_cycle_tolerance, tol);
+    return est;
+}
 
 /** The maximum likelihood calculations
 
 \param data	The data matrix (an \ref apop_data set).
 \param	dist	The \ref apop_model object: waring, probit, zipf, &amp;c. You can add an \c apop_mle_settings 
-struct to it (<tt>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method=APOP_CG_FR, and_so_on)</tt>, 
-featuring:<br>
-starting_pt:	an array of doubles suggesting a starting point. If NULL, use zero.<br>
-step_size:	the initial step size.<br>
-tolerance:	the precision the minimizer uses. Only vaguely related to the precision of the actual var.<br>
-verbose:	Give status updates as we go. This is orthogonal to the <tt>apop_opts.verbose</tt> setting.<br>
-method:		
-\li    APOP_SIMPLEX_NM      Nelder-Mead simplex (gradient handling rule is irrelevant)
-\li    APOP_CG_FR      conjugate gradient (Fletcher-Reeves) (default)
-\li    APOP_CG_BFGS    conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno)
-\li    APOP_CG_PR      conjugate gradient (Polak-Ribiere)
-\li    APOP_SIMAN       \ref simanneal "simulated annealing"
-\li    APOP_RF_NEWTON   Find a root of the derivative via Newton's method
-\li    APOP_RF_HYBRID   Find a root of the derivative via the Hybrid method
-\li    APOP_RF_HYBRID_NOSCALE   Find a root of the derivative via the Hybrid method; no internal scaling
-\return	an \ref apop_model with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
+struct to it (<tt>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method=APOP_CG_FR, and_so_on)</tt>). So, see the \c apop_mle_settings documentation for the many options, such as choice of method and tuning parameters.
 
-By the way, the output model will have the expected score in the \c more slot. Do enough people use this to give it its own slot in the \c apop_model struct?
+\return	an \ref apop_model with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
  \ingroup mle */
-apop_model *	apop_maximum_likelihood(apop_data * data, apop_model dist){
-  apop_mle_settings   *mp = apop_settings_get_group(&dist, "apop_mle");
+apop_model *	apop_maximum_likelihood(apop_data * data, apop_model *dist){
+  apop_mle_settings   *mp = apop_settings_get_group(dist, "apop_mle");
   infostruct    info    = { .data           = data,
                             .use_constraint = 1,
                             .trace_file     = malloc(sizeof(FILE *)),
-                            .model          = apop_model_copy(dist)};
+                            .model          = dist};
     *info.trace_file = NULL;
     info.model->data = data;
+    if (mp->dim_cycle_tolerance)
+        return dim_cycle(data, info.model);
     if(!mp)
         mp = Apop_model_add_group(info.model, apop_mle, .parent=info.model);
     apop_model_prep(data, info.model);

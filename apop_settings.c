@@ -33,7 +33,7 @@ void apop_settings_rm_group(apop_model *m, char *delme){
   int ct = get_settings_ct(m);
  
     while (m->settings[i].name[0] !='\0'){
-        if (!strcmp(m->settings[i].name, delme)){
+        if (apop_strcmp(m->settings[i].name, delme)){
             ((void (*)(void*))m->settings[i].free)(m->settings[i].setting_group);
             for (int j=i+1; j< ct+1; j++) //don't forget the null sentinel.
                 m->settings[j-1] = m->settings[j];
@@ -74,7 +74,7 @@ void * apop_settings_get_group(apop_model *m, char *type){
   int   i = 0;
     if (!m->settings) return NULL;
     while (m->settings[i].name[0] !='\0'){
-       if (!strcmp(type, m->settings[i].name))
+       if (apop_strcmp(type, m->settings[i].name))
            return m->settings[i].setting_group;
        i++;
     }
@@ -96,7 +96,7 @@ void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
                                     "the input model (i.e., the second argument to this function).\n", copyme);
   int i=0;
     while (inm->settings[i].name[0] !='\0'){
-       if (!strcmp(copyme, inm->settings[i].name))
+       if (apop_strcmp(copyme, inm->settings[i].name))
            break;
        i++;
     }

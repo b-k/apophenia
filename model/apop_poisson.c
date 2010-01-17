@@ -18,9 +18,8 @@ static double data_mean(apop_data *d){
                + apop_vector_mean(d->vector)*vsize/tsize;
 }
 
-static apop_model * poisson_estimate(apop_data * data,  apop_model *parameters){
-  Nullcheck(data); Nullcheck_m(parameters);
-  apop_model 	*est = apop_model_copy(parameters ? *parameters : apop_poisson);
+static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
+  Nullcheck(data); Nullcheck_m(est);
   double		mean = data_mean(data);
     if (!est->parameters) 
         est->parameters   = apop_data_alloc(1,0,0);

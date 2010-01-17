@@ -415,6 +415,31 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
     return out;
 }
 
+
+/* For bonus points, we add a page to the data set listing the factor
+   conversions. */
+static void add_factor_page(apop_data *source_data, char source_type, int source_column){
+    apop_data *factors = source_data; //Find end of chain; add a page.
+    while (factors->more)
+        factors = factors->more;
+    if (source_type == 't'){
+        factors->more = apop_text_unique_elements(source_data, source_column);
+        factors = factors->more;
+        factors->vector = gsl_vector_alloc(source_data->textsize[0]);
+        for (size_t i=0; i< factors->vector->size; i++)
+            apop_data_set(factors, i, -1, i);
+    } else{ //Save if statements by giving everything a text label.
+        factors->more = apop_data_alloc(0,0,0);
+        factors = factors->more;
+        Apop_col(source_data, source_column, list);
+        factors->vector = apop_vector_unique_elements(list);
+        apop_text_alloc(factors, factors->vector->size, 1);
+        for (size_t i=0; i< factors->vector->size; i++)
+            apop_text_add(factors, i, 0, "%g", apop_data_get(factors, i, -1));
+    }
+    sprintf(factors->names->title, "column %i factors", source_column);
+}
+
 /* Producing dummies consists of finding the index of element i, for all i, then
  setting (i, index) to one.
  Producing factors consists of finding the index and then setting (i, datacol) to index.
@@ -482,13 +507,15 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
     for (j=0; j< elmt_ctr; j++)
         free(telmts[j]);
     free(telmts);
+    add_factor_page(out, type, col);
     return out;
-
 }
+
+
 
 /** A utility to make a matrix of dummy variables. You give me a single
 vector that lists the category number for each item, and I'll return
-a gsl_matrix with a single one in each row in the column specified.
+a matrix with a single one in each row in the column specified.
 
 After running this, you will almost certainly want to join together the output here with your main data set. E.g.,:
 \code
@@ -504,6 +531,10 @@ apop_data_stack(main_regression_vars, dummies, 'c');
     has an entry in column zero, et cetera. If you don't know why this
     is useful, then this is what you need. If you know what you're doing
     and need something special, set this to one and the first category won't be dropped. (default = 0)
+
+\return An \ref apop_data set whose \c matrix element is the one-zero
+matrix of dummies. 
+Also, the <tt>more</tt> element is a reference table of names and column numbers.
 
 This function uses the \ref designated syntax for inputs.
 */
@@ -543,6 +574,7 @@ apop_text_to_factors(d, 0, 0);
 Notice that the query pulled a column of ones for the sake of saving room for the factors.
 
 \return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
+Also, the <tt>more</tt> element is a reference table of names and column numbers.
 
 */
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){

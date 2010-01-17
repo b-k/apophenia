@@ -93,7 +93,8 @@ gsl_rng *apop_rng_alloc(int seed);
 
 //Missing data
 APOP_VAR_DECLARE apop_data * apop_data_listwise_delete(apop_data *d, char inplace);
-apop_model * apop_ml_imputation(apop_data *d, apop_model* meanvar);
+apop_model * apop_ml_impute(apop_data *d, apop_model* meanvar);
+#define apop_ml_imputation(d, m) apop_ml_impute(d, m)
 
 
 APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng);

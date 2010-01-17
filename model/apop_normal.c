@@ -11,10 +11,9 @@ The Normal and Lognormal distributions.*/
 static double normal_log_likelihood(apop_data *d, apop_model *params);
 
 /** The normal estimate */
-static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
+static apop_model * normal_estimate(apop_data * data, apop_model *est){
     Get_vmsizes(data)
   double		mmean=0, mvar=0, vmean=0, vvar=0;
-  apop_model 	*est = apop_model_copy(*parameters);
   apop_ls_settings *p = apop_settings_get_group(est, "apop_ls");
     if (!p) 
         p = Apop_model_add_group(est, apop_ls);
@@ -26,7 +25,6 @@ static apop_model * normal_estimate(apop_data * data, apop_model *parameters){
         apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
     double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
     double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
-    apop_model_clear(data, est);
 	apop_data_add_named_elmt(est->parameters,"mu", mean);
 	apop_data_add_named_elmt(est->parameters,"sigma", sqrt(var));
     est->llikelihood	= normal_log_likelihood(data, est);

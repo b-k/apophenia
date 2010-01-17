@@ -83,11 +83,24 @@ typedef enum {
 /** The settings for maximum likelihood estimation (including simulated annealing).
 \ingroup settings */
 typedef struct{
-    double      *starting_pt;
-    apop_optimization_enum method;
-    double      step_size, tolerance, delta;
-    int         verbose;
-    char        want_cov;
+    double      *starting_pt;   /**< An array of doubles (i.e., <tt>double*</tt>) suggesting a starting point. 
+                                  If NULL, use zero.  Note that if \c v is a \c gsl_vector, then 
+                                  \c v->data is of the right form (provided \c v is not a slice of a matrix).*/
+    apop_optimization_enum method; /**< See the  \ref apop_optimization_enum documentation for options. */
+    double      step_size, /**< the initial step size. */
+                tolerance, /**< the precision the minimizer uses. Only vaguely related to the precision of the actual variables. */
+delta;
+    int         verbose; /**<	Give status updates as we go.  This is orthogonal to the 
+                                <tt>apop_opts.verbose</tt> setting. */
+    char        want_cov; /**< Should I calculate a covariance matrix?  Default: 'y', but this can be the most 
+                                time-consuming part of the process. */
+    double      dim_cycle_tolerance; /**< If zero (the default), the usual procedure.
+                             If \f$>0\f$, cycle across dimensions: fix all but the first dimension at the starting
+                             point, optimize only the first dim. Then fix the all but the second dim, and optimize the
+                             second dim. Continue through all dims, until the log likelihood at the outset of one cycle
+                             through the dimensions is within this amount of the previous cycle's log likelihood. There
+                             will be at least two cycles.
+                             */
 //simulated annealing (also uses step_size);
     int         n_tries, use_score, iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
@@ -100,12 +113,10 @@ typedef struct{
 \ingroup settings */
 typedef struct {
     int destroy_data; /**< If 'y', then the input data set may be normalized or otherwise mangled */
-    gsl_vector *weights; /**< If this has a value, then I'll do WLS; if \c NULL, OLS */
     apop_data *instruments; /**< Use for the \ref apop_iv regression, qv. */
     char want_cov; /**< The covariance can be computationally expensive, so if this is \c 'n' I won't bother with it. */
     char want_expected_value; /**< If 'y', fill the expected/actual/residual part of the output model. */
 } apop_ls_settings;
-
 
 // Find apop_category_settings routines in apop_probit.c
 /** For dependent-category models, send in this settings struct to specify which column is the dependent variable. 
@@ -118,7 +129,7 @@ See also the \ref apop_category_settings_init function.
 typedef struct {
     apop_data *factors; 
     char source_type; /**< source_type \c 't' = text; anything else (\c 'd' is a good choice) is  numeric data. */
-    char source_column; /**<  The number of the column to convert to factors.  As usual, the vector is -1. */
+    int source_column; /**<  The number of the column to convert to factors.  As usual, the vector is -1. */
     apop_data *source_data; /**< The input data set that you're probably about to run a regression on */
 } apop_category_settings;
 
@@ -370,7 +381,6 @@ Apop_settings_declarations(apop_mle)
 Apop_settings_declarations(apop_rank)
 
 
-
     ///All of the below is deprecated.
 
 /** Add a settings group. 
@@ -382,7 +392,6 @@ Apop_settings_declarations(apop_rank)
 
 #define APOP_SETTINGS_ADD_GROUP Apop_settings_add_group
 
-apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_column, char source_type);
 apop_rank_settings *apop_rank_settings_alloc(void *ignoreme);
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins);
 apop_mle_settings *apop_mle_settings_alloc(apop_model *model);

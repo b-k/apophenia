@@ -34,7 +34,8 @@ gsl_vector * v = &( apop_vv_##v );
 #define APOP_ROW(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, (row)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
-#define APOP_COL(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)->matrix, (col)).vector;\
+//-1st column is the vector.
+#define APOP_COL(m, col, v) gsl_vector apop_vv_##v = (col < 0) ? *((m)->vector) : gsl_matrix_column((m)->matrix, (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
 #define Apop_col APOP_COL 
@@ -111,6 +112,8 @@ apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);
 
 APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first);
 APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize);
+
+APOP_VAR_DECLARE double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct);
 
 apop_model *apop_estimate_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 

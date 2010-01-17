@@ -7,6 +7,9 @@
     0.23 January 2009
 **expected_value element of the model renamed predict; made coherent across models.
 !!apop_data set now has a ->more pointer to an additional apop_data set, e.g., for data + covariances or predictions + confidence intervals.
+--apop_ml_imputation renamed to apop_ml_impute. "#define apop_ml_imputation apop_ml_impute" retains noun-form name, but consider it deprecated.
+!!apop_estimate now copies, preps, then estimates. Estimate method of apop_model struct can thus assume the copy/prep step has been done;
+probably should not do these itself. As a side-effect, apop_maximum_likelihood's second argument is now a apop_model* (used to be apop_model).
 
     December 2009
 --apop_strcmp

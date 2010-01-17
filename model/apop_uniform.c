@@ -7,9 +7,7 @@
 
 apop_model apop_uniform;
 
-static apop_model * uniform_estimate(apop_data * data,  apop_model *parameters){
-  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_uniform);
-  apop_model_clear(data, est);
+static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
     est->parameters->vector->data[0]    = gsl_matrix_min(data->matrix);
     est->parameters->vector->data[1]    = gsl_matrix_max(data->matrix);
     return est;
@@ -48,8 +46,7 @@ apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,
 
 
 
-static apop_model * improper_uniform_estimate(apop_data * data,  apop_model *parameters){
-    return parameters; }
+static apop_model * improper_uniform_estimate(apop_data * data,  apop_model *m){ return m; }
 
 static double improper_unif_ll(apop_data *d, apop_model *m){ return 0; }
 static double improper_unif_p (apop_data *d, apop_model *m){ return 1; }

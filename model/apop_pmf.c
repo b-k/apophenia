@@ -4,12 +4,11 @@
 
 extern apop_model apop_pmf;
 
-static apop_model *estim (apop_data *d, apop_model *m){
+static apop_model *estim (apop_data *d, apop_model *out){
     Get_vmsizes(d) //tsize
     int use_matrix=0, use_vector = 0;
     size_t ctr = 0;
     double x;
-    apop_model *out = apop_model_copy(*m);
     if (d->matrix) use_matrix++;
     else if (d->vector) use_vector++;
     else apop_error(0, 's', "You gave me an input set with neither vector nor matrix data.\n");
@@ -98,4 +97,18 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
         out[i] = gsl_vector_get(outrow, i);
 }
 
-apop_model apop_pmf = {"PDF or sparse matrix", .estimate = estim, .draw = draw };
+double pmf_p(apop_data *d, apop_model *m){
+    Nullcheck_p(m) 
+    Get_vmsizes(m->parameters)//firstcol, msize2
+    int j;
+    for(int i=0; i< msize1; i++){
+        for (j=firstcol; j < msize2; j++)
+            if (apop_data_get(d, i,j) != apop_data_get(m->parameters, i, j))
+                break;
+        if (j==msize2) //all checks passed
+            return m->parameters->weights->data[i];
+    }
+    return 0;
+}
+
+apop_model apop_pmf = {"PDF or sparse matrix", .estimate = estim, .draw = draw, .p=pmf_p };

@@ -5,15 +5,13 @@ AM_CFLAGS = -g -Wall -O3 -I./ $(PTHREAD_CFLAGS) $(PTHREAD_LIBS) $(MYSQL_CFLAGS) 
 CC = $(PTHREAD_CC)
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = \
-            apop_conversions.c apop_db.c 	\
-			apop_linear_algebra.c apop_mle.c apop_hist.c 	\
-			apop_asst.c apop_data.c apop_regression.c 		\
-			apop_fexact.c apop_stats.c apop_bootstrap.c 	\
-			apop_name.c apop_output.c apop_model.c 			\
-			apop_mapply.c apop_missing_data.c				\
-			apop_linear_constraint.c apop_arms.c 			\
-			apop_model_fix_params.c	 apop_update.c			\
-			apop_tests.c apop_smoothing.c apop_settings.c   \
+            apop_arms.c apop_asst.c apop_bootstrap.c apop_conversions.c \
+            apop_data.c apop_db.c apop_fexact.c apop_hist.c 	        \
+			apop_linear_algebra.c apop_linear_constraint.c              \
+			apop_mapply.c apop_missing_data.c apop_mle.c                \
+			apop_model.c apop_model_fix_params.c apop_name.c            \
+            apop_output.c apop_regression.c apop_settings.c             \
+            apop_smoothing.c apop_stats.c apop_tests.c apop_update.c	\
 			asprintf.c \
 			model/apop_bernoulli.c      \
             model/apop_beta.c			\
@@ -23,12 +21,12 @@ libapophenia_la_SOURCES = \
 			model/apop_gamma.c          \
             model/apop_histogram.c      \
 			model/apop_loess.c          \
-			model/apop_multinomial_probit.c	    \
-			model/apop_multivariate_normal.c 	\
+			model/apop_multivariate_normal.c  \
 			model/apop_normal.c         \
             model/apop_OLS.c 		 	\
             model/apop_pmf.c            \
 			model/apop_poisson.c        \
+			model/apop_probit.c	        \
             model/apop_t_f_chi.c		\
 			model/apop_uniform.c        \
 			model/apop_waring.c         \
@@ -80,7 +78,7 @@ apop_lookup_LDADD = libapophenia.la
 
 EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/triangle.png doxy/right.png doxy/down.png \
         doxy/flake.gif doxy/foot.html \
-		doxy/head.html doxy/search.gif doxy/typical.css	doxy/model.h doxy/documentation.h \
+		doxy/head.html doxy/search.gif doxy/typical.css	doxy/model_doc.h doxy/documentation.h \
 		tests/Makefile tests/test.py tests/Readme tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \
 		tests/data-mixed tests/test_data_nans tests/wampler1.dat eg/* \

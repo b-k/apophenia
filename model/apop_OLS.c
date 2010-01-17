@@ -12,7 +12,6 @@
 void * apop_ls_settings_copy(apop_ls_settings *in){
   apop_ls_settings *out  = malloc(sizeof(*out));
     *out =  *in;
-    out->weights = apop_vector_copy(in->weights),
     out->instruments = apop_data_copy(in->instruments);
     return out;
 }
@@ -65,7 +64,7 @@ static void ols_shuffle(apop_data *d){
     if (!d->vector){
         APOP_COL(d, 0, independent);
         d->vector = apop_vector_copy(independent);
-        gsl_vector_set_all(independent, 1);
+        gsl_vector_set_all(independent, 1);     //affine; first column is ones.
         if (d->names->colct > 0) {		
             apop_name_add(d->names, d->names->column[0], 'v');
             sprintf(d->names->column[0], "1");
@@ -95,7 +94,7 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
   int use_weights =  (!strcmp(p->name, "Weighted Least Squares") && d->weights);
   gsl_matrix	*data		    = d->matrix;
   gsl_vector  *errors         = gsl_vector_alloc(data->size1);
-	for(size_t i=0;i< data->size1; i++){
+	for (size_t i=0;i< data->size1; i++){
         APOP_ROW(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
@@ -185,33 +184,28 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
 static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     apop_assert(inset,  NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set;
-  apop_model       *epout = apop_model_copy(*ep);
-  epout->status = 0;
-    apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
+  ep->status = 0;
+    apop_ls_settings   *olp =  apop_settings_get_group(ep, "apop_ls");
     if (!olp) 
-        olp = Apop_model_add_group(epout, apop_ls);
-    epout->data = inset;
-    apop_model_clear(inset, epout);
+        olp = Apop_model_add_group(ep, apop_ls);
+    ep->data = inset;
     set = olp->destroy_data ? inset : apop_data_copy(inset); 
     
     gsl_vector *weights    = olp->destroy_data      //this may be NULL.
-                                ? epout->data->weights 
-                                : apop_vector_copy(epout->data->weights);
-    if (!strcmp(epout->name, "Weighted Least Squares") && weights)
+                                ? ep->data->weights 
+                                : apop_vector_copy(ep->data->weights);
+    if (apop_strcmp(ep->name, "Weighted Least Squares") && weights)
         for (size_t i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
-  gsl_vector    *y_data     = gsl_vector_alloc(set->matrix->size1); 
-  gsl_vector    *xpy        = gsl_vector_calloc(set->matrix->size2);
-  gsl_matrix    *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
+  gsl_vector *y_data     = apop_vector_copy(set->vector);
+  gsl_vector *xpy        = gsl_vector_calloc(set->matrix->size2);
+  gsl_matrix *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
     if (olp->want_expected_value)
-        epout->expected   = apop_data_alloc(0, set->matrix->size1, 3);
+        ep->expected   = apop_data_alloc(0, set->matrix->size1, 3);
     if (olp->want_cov=='y')
-        epout->covariance = apop_data_alloc(0, set->matrix->size2, set->matrix->size2);
-    prep_names(epout);
-    APOP_COL(set, 0, firstcol);
-    gsl_vector_memcpy(y_data,firstcol);
-    gsl_vector_set_all(firstcol, 1);     //affine: first column is ones.
+        ep->covariance = apop_data_alloc(0, set->matrix->size2, set->matrix->size2);
+    prep_names(ep);
     if (weights){
         gsl_vector_mul(y_data, weights);
         for (size_t i = 0; i < set->matrix->size2; i++){
@@ -222,18 +216,18 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
 
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   //(X'X)
     gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)
-    xpxinvxpy(set->matrix, y_data, xpx, xpy, epout);
+    xpxinvxpy(set->matrix, y_data, xpx, xpy, ep);
     gsl_vector_free(y_data); 
     gsl_matrix_free(xpx);
     gsl_vector_free(xpy);
 
-    epout->llikelihood  = ols_log_likelihood(epout->data, epout);
+    ep->llikelihood  = ols_log_likelihood(ep->data, ep);
     if (!olp->destroy_data)
         apop_data_free(set);
     if (olp->want_cov == 'y')
-        apop_estimate_parameter_t_tests(epout);
-    epout->status       = 1;
-    return epout;
+        apop_estimate_parameter_t_tests(ep);
+    ep->status       = 1;
+    return ep;
 }
 
 apop_data *ols_predict (apop_data *in, apop_model *m){
@@ -282,35 +276,33 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
 static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
   apop_assert(inset, NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set, *z;
-  apop_model       *epout;
   int               i;
-    epout               = apop_model_copy(*ep);
-    apop_ls_settings   *olp =  apop_settings_get_group(epout, "apop_ls");
+    apop_ls_settings   *olp =  apop_settings_get_group(ep, "apop_ls");
     if (!olp) 
         olp = Apop_model_add_group(ep, apop_ls);
     olp->want_cov       = 'n';//not working yet.
     if (!olp->instruments || !olp->instruments->matrix->size2) 
         return apop_estimate(inset, apop_ols);
-    epout->data = inset;
-    if(epout->parameters)
-        apop_data_free(epout->parameters);
-    epout->parameters = apop_data_alloc(inset->matrix->size2,0,0);
+    ep->data = inset;
+    if(ep->parameters)
+        apop_data_free(ep->parameters);
+    ep->parameters = apop_data_alloc(inset->matrix->size2,0,0);
     set = olp->destroy_data ? inset : apop_data_copy(inset); 
     z   = prep_z(inset, olp->instruments);
     
     gsl_vector *weights = olp->destroy_data      //the weights may be NULL.
-                             ? epout->data->weights 
-                             : apop_vector_copy(epout->data->weights);
+                             ? ep->data->weights 
+                             : apop_vector_copy(ep->data->weights);
     if (weights)
         for (i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
   apop_data    *y_data     = apop_data_alloc(set->matrix->size1, 0, 0); 
     if (olp->want_expected_value)
-        epout->expected   = apop_data_alloc(0, set->matrix->size1, 3);
+        ep->expected   = apop_data_alloc(0, set->matrix->size1, 3);
     if (olp->want_cov=='y')
-        epout->covariance = apop_data_alloc(0, set->matrix->size1, set->matrix->size1);
-    prep_names(epout);
+        ep->covariance = apop_data_alloc(0, set->matrix->size1, set->matrix->size1);
+    prep_names(ep);
     APOP_COL(set, 0, firstcol);
     gsl_vector_memcpy(y_data->vector,firstcol);
     gsl_vector_set_all(firstcol, 1);     //affine: first column is ones.
@@ -325,7 +317,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     apop_data *zpx    = apop_dot(z, set, 1, 0);
     apop_data *zpy    = apop_dot(z, y_data, 1, 0);
     apop_data *zpxinv = apop_matrix_to_data(apop_matrix_inverse(zpx->matrix));
-    epout->parameters = apop_dot(zpxinv, zpy, 0);
+    ep->parameters = apop_dot(zpxinv, zpy, 0);
     apop_data_free(y_data);
     apop_data_free(zpx); 
     apop_data_free(zpxinv);
@@ -334,8 +326,8 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     if (!olp->destroy_data)
         apop_data_free(set);
 //    apop_estimate_parameter_t_tests(epout);
-    epout->status   = 1;
-    return epout;
+    ep->status   = 1;
+    return ep;
 }
 
 apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, .log_likelihood = ols_log_likelihood};

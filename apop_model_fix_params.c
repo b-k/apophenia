@@ -5,12 +5,10 @@
  
 Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-
-#include "output.h"
-
 #include "asst.h"
 #include "model.h"
 #include "mapply.h"
+#include "output.h"
 #include "settings.h"
 #include "likelihoods.h"
 
@@ -31,12 +29,12 @@ static int find_missing(const apop_data *mask, apop_model *mc){
     //generate a list of fixed-parameter positions, and their paramvals.
   apop_model_fixed_params_settings  *mset = apop_settings_get_group(mc, "apop_model_fixed_params");
   mset->ct = 0;
-  int min = mask->vector ? -1 : 0;
-  int max = mask->matrix ? mask->matrix->size2 : 0;
-  int height = mask->matrix ?mask->matrix->size1 : mask->vector->size;
     //find out where the NaNs are
-    for (size_t i=0; i< height; i++)
-        for (int j=min; j <max; j++)
+    for (size_t i=0; mask->vector && i< mask->vector->size; i++)
+            if (!apop_data_get(mask, i, -1))
+                addin(mset, i, -1);
+    for (size_t i=0; mask->matrix && i< mask->matrix->size1; i++)
+        for (int j=0; j <mask->matrix->size2; j++)
             if (!apop_data_get(mask, i, j))
                 addin(mset, i, j);
     apop_assert(mset->ct, 0, 0,'s',"You're asking me to estimate a model where every single parameter is fixed.");
@@ -59,7 +57,8 @@ static void  pack(apop_data *out,const  apop_data  *in, apop_model *m){
 
 static void *apop_model_fixed_params_settings_copy (apop_model_fixed_params_settings *in ){ 
     apop_model_fixed_params_settings *out = malloc(sizeof(apop_model_fixed_params_settings));
-    return (out = in);
+    *out = *in;
+    return out;
 } 
 
 static void apop_model_fixed_params_settings_free (apop_model_fixed_params_settings *in ){ 
@@ -105,7 +104,7 @@ static apop_model *fixed_est(apop_data * data, apop_model *params){
   apop_model_fixed_params_settings *p    = apop_settings_get_group(params, "apop_model_fixed_params");
     if (!data)
         data    = params->data;
-    apop_model *e = apop_maximum_likelihood(data,  *params);
+    apop_model *e = apop_maximum_likelihood(data, params);
     unpack(e->parameters, params);
     apop_data_free(e->parameters);
     e->parameters   = apop_data_copy(p->base_model->parameters);

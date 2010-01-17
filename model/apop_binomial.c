@@ -56,17 +56,15 @@ static void make_covar(apop_model *est){
     pv[0]=n;
 }
 
-static apop_model * binomial_estimate(apop_data * data,  apop_model *parameters){
+static apop_model * binomial_estimate(apop_data * data,  apop_model *est){
   apop_assert(data,  0, 0,'s', "You asked me to estimate the parameters of a model but sent NULL data.");
-  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_binomial);
-  apop_model_clear(data, est);
   double hitcount, misscount;
-  char method = apop_settings_get_group(parameters, "apop_rank") ? 'b' : 't';
+  char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
     get_hits_and_misses(data, method, &hitcount, &misscount);   
     int n = hitcount + misscount;
     apop_data_add_named_elmt(est->parameters, "n", n);
     apop_data_add_named_elmt(est->parameters, "p", hitcount/(hitcount + misscount));
-    est->llikelihood	= binomial_log_likelihood(data, parameters);
+    est->llikelihood	= binomial_log_likelihood(data, est);
     make_covar(est);
     return est;
 }
@@ -145,10 +143,8 @@ static double multinomial_log_likelihood(apop_data *d, apop_model *params){
     return out;
 }
 
-static apop_model * multinomial_estimate(apop_data * data,  apop_model *parameters){
+static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     apop_assert(data,  0, 0,'s', "You asked me to estimate the parameters of a model but sent NULL data.");
-    apop_model 	*est= parameters ? parameters : apop_model_copy(apop_multinomial);
-    apop_model_clear(data, est);
     char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
     gsl_vector * count = get_multinomial_hitcount(data, method);
     int n = apop_sum(count);
@@ -162,7 +158,7 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *paramete
         sprintf(name, "p%i", i);
         apop_name_add(est->parameters->names, name, 'c');
     }
-    est->llikelihood	= multinomial_log_likelihood(data, parameters);
+    est->llikelihood	= multinomial_log_likelihood(data, est);
     make_covar(est);
     return est;
 }

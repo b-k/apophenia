@@ -171,7 +171,7 @@ If an un-named element follows a named element, then that value is given to the 
 apop_text_to_db("infile.txt", "intable", .has_col_name=1, NULL);
 \endcode
 
-\li There is some overhead to checking for defaults, which could slow the code by up to 25\%. If this is noticeable for your situation, you can pass on this convenient form and call the underlying function directly, by adding \c _base to the name and giving all arguments:
+\li There is some overhead to checking for defaults; in cases that are more function-calling than actual calculation, this could slow the code by up to 25\%. If this is noticeable for your situation, you can pass on this convenient form and call the underlying function directly, by adding \c _base to the name and giving all arguments:
 
 \code
 apop_text_to_db_base("infile.txt", "intable", 0, 1, NULL);
@@ -254,6 +254,64 @@ in a matrix and allows you to label the rows and columns. Have a look at the \re
 
 If you would like a more in-depth discussion of Apophenia's raison d'etre and logic, have a look at these
 <a href="http://apophenia.info/apop_notes.html">design notes</a>.
+
+endofdiv
+
+Outlineheader othermodels The typical stats package workflow v Apophenia's workflow
+
+From the <em>quick overview</em> section above, you saw that (1) the
+library expects you to keep your data in a database, pulling out the
+data as needed, and (2) that a great deal of statistical information,
+and the workflow, is encapsulated in \ref apop_model structures.
+
+Starting with (2), some stats packages have model structures that
+typically work very differently from those here. The key conceptual
+difference is in breadth, which implies a practical difference in how
+data is handled.
+
+If a stats package has something called a <em>model</em>, then it is
+probably of the form Y = [a function of <b>X</b>], such as \f$y = x_1 +
+\log(x_2) + x_3^2\f$. Trying new models means trying different
+functional forms for the right-hand side, such as including \f$x_2\f$ in
+some cases and excluding it in others. Conversely, Apophenia works to facilitate
+trying new models in the sense of switching out a linear model for a
+hierarchical, or a Bayesian model for a simulation. 
+A formula syntax makes little sense over such a broand range of models.
+
+As a result, Apophenia does not put the form of the left-hand side into
+the model; the data is assumed to be correctly formatted, scaled, or logged
+before being passed to the model. This is where part (1), the database,
+comes in: when you do want to try swapping out different formula specifications,
+the database provides a proxy for the sort of formula specification langauge above:
+ \code
+apop_data *testme= apop_query_to_data("select y, x1, log(x2), pow(x3,2) from data");
+apop_model *est = apop_estimate(testme, apop_ols);
+\endcode
+
+Generating factors and dummies is also considered data prep, not model
+internals. See \ref apop_data_to_dummies and \ref apop_text_to_factors.
+
+Now that you have an estimated model (which holds the estimated \c
+parameters), you can interrogate it.
+
+ \code
+ //If you have a new data set, you can fill in predicted values:
+apop_predict(new_data_set, est);
+apop_data_show(new_data_set)
+
+ //Make random draws. The draw function needs an RNG from
+ //the GNU Scientific Library, and a pointer-to-\c double.
+gsl_rng *r = apop_rng_alloc(218);
+for (int i=0; i< matrix->size1; i++){
+    Apop_matrix_col(matrix, i, one_col);
+    apop_draw(one_col->data, r, est);
+}
+
+So that's the intended workflow: first, gather the data, probably via the
+database, pull the data in the format you want it; then, set up your model,
+estimate and interrogate it. [See also the model settings section below on optional details of model setup.] 
+
+\endcode
 
 endofdiv
 
@@ -878,6 +936,7 @@ apop_model 	*the_estimate 	= apop_estimate(data, apop_probit);
 apop_model_show(the_estimate);
 \endcode
 
+
 Outlineheader internals The internals
 
 \image html http://apophenia.sourceforge.net/doc/model.png
@@ -1020,68 +1079,56 @@ endofdiv
 
     Outlineheader usingsettings Intro for model users
 
-Apophenia is really only based on two objects, the \ref apop_data set and the \ref apop_model. Data sets come in a pretty standard form, so the data object is basically settled. But describing a statistical, agent-based, social, or physical model in a reasonably standardized form is much more difficult, primarily because every model has significantly different settings. E.g., an MLE requires a method of search (conjugate gradient, simplex, simulated annealing), and a histogram needs the number of slots to be filled with data.
 
-So, the \ref apop_model includes a single list, whose name is simply \c settings, which can hold an arbitrary number of groups of settings. For example, you can have a set of closed-form variables for estimating the log likelihood, and a histogram for making random draws.
+Describing a statistical, agent-based, social, or physical model in a standardized form is difficult because every model has significantly different settings. E.g., an MLE requires a method of search (conjugate gradient, simplex, simulated annealing), and a histogram needs the number of slots to be filled with data.
 
-To get/set a setting, you would need to specify the model, the settings group, and the name of the setting itself.  For the sake of giving you a mental image, this is much like a g_lib config file (or for Windows users, a .ini file), which would have settings divided into sections, like
+So, the \ref apop_model includes a single list, whose name is simply \c settings, which can hold an arbitrary number of groups of settings. For example, you can have a set of search specifications for finding the maximum likelihood, and a histogram for making random draws.
 
-\code
-[MLE]
-verbose = 0
-method = APOP_CG_PR
+Settings groups are automatically initialized with default values when
+needed. If the defaults do no harm, then you don't need to think about
+these settings groups at all.
 
-[least squares]
-weights = your_weight_vector
+If you do need to tweak a setting, you will need its location.
+Think of each model having a row of baskets, such as the \c
+apop_mle_settings and the \c apop_histogram_settings baskets. 
+To find a single setting, like the MLE's \c tolerance setting, you would
+need to give the model, the settings group, and the setting. E.g.,
+     \code
+double tol = Apop_settings_get(your_model, apop_mle, tolerance);
+Apop_settings_set(your_model, apop_mle, tolerance, 1e-5);
 
-[histogram]
-bins = {0.1, 0.3, 0.2,...}
-\endcode
+Notice that we don't need the \c _settings ending to the settings
+group's name---macros make it happen.
 
-To find a setting, You'd have to give a group, then the setting name.
-
-
-<b>Using it</b>
-
-If you don't need to change settings from the default, you don't need to care about any of this, because
-\code
-apop_model_show(apop_estimate(your_data_here, apop_ols));
-\endcode
----still works fine.
-
-If you do need to change settings, then the process takes another step or two. Here's a sample:
+But you are probably going to set all of a model's settings at once when
+you first use it. Here is a full example:
 
 \code
 1 apop_data *data = your_data_here;
 2 apop_data *w = your_weights_here;
 
 3 apop_model *m = apop_model_copy(apop_wls);
-4 Apop_model_add_group(m, apop_ls, .weights=w);
+4 Apop_model_add_group(m, apop_ls, .weights=w, .want_cov='y');
 5 apop_model *est = apop_estimate(data, *m);
 \endcode
 
-Line three establishes the baseline form of the model. Line four adds a settings group of type \ref apop_ls_settings to the model, and specifies that we want it initialized with the \c weights element set to the data set \c w. The list of elements of the settings structures included in Apophenia are below; the means of specifying the elements follow the \ref designated syntax.
+Line three establishes the baseline form of the model. Line four adds a settings group of type \ref apop_ls_settings to the model, and specifies that we want it initialized with the \c weights element set to the data set \c w, and the \c want_cov element set to \c 'y'.
+Unlike the single-setting macros above, \c Apop_model_add_group follows the \ref designated syntax of the form <tt>.setting=value</tt>.
 
 Having set the settings, line 5 does the weighted OLS.
 
 Also, the output to any of Apophenia's estimations will have an appropriate group of settings allocated, so you can chain estimations pretty easily. Continuing the above example, you could re-estimate with an alternative set of weights via:
 
 \code
-Apop_settings_add(est, apop_ls, weights, weight_set_two);
+Apop_settings_set(est, apop_ls, weights, weight_set_two);
 apop_model *est2 = apop_estimate(data, *est);
 \endcode
 
-This uses the above-mentioned address of model/settings group/item, plus the actual value to be set.  Notice that the \c Apop_settings_add macro really just modifies the existing structure; you can think of the defaults as a blank slate, and the only values being those you'd set.
-
-If you need to read a setting, such as to check whether things have changed after an estimation, use, e.g.:
-
-\code
-apop_data *weights_now = Apop_settings_get(m, apop_ls, weights);
-\endcode
+\li  The list of elements of the settings structures included in Apophenia are on the \settings page.
 
 \li Notice the use of a single capital to remind you that you are using a macro, so you should beware of the sort of surprising errors associated with macros. Here in the modern day, we read things like APOP_SETTINGS_ADD as yelling, but if you prefer all caps to indicate macros, those work as well.
 
-\li There are two additional macros which are now deprecated: \c Apop_settings_add_group and \c Apop_settings_alloc_add. They made sense at the time.
+\li There are two additional macros which are now deprecated: \c Apop_settings_add_group and \c Apop_settings_alloc_add. They made sense at the time. That's why the \c Apop_model_add_group macro doesn't have \c settings in the name. The \c Apop_settings_add macro is equivalent to \c Apop_settings_set.
 
 For just using a model, that's about 100% of what you need to know.
 

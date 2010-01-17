@@ -1,33 +1,36 @@
 /** \file apop_multinomial_probit.c */
 
-/* Copyright (c) 2005--2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2005--2008, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "mapply.h"
 #include "likelihoods.h"
 
-
 /////////  Part I: Methods for the apop_category_settings struct
 
 /** Convert a column of input data into factors, for use with \ref apop_probit, apop_logit, &c.
-  Deprecated; use \ref Apop_model_add_group and \ref apop_category_settings_init.
+
+  You will probably use this with \ref Apop_model_add_group, where
+  you'll be specifying some of these inputs:
     
-  \param d The input data set that you're probably about to run a regression on
-  \param source_column The number of the column to convert to factors. As usual, the vector is -1.
-  \param source_type 't' = text; anything else ('d' is a good choice) is numeric data.
+  \li .source_data The input data set that you're probably about to run a regression on---mandatory
+  \li .source_column The number of the column to convert to factors. As usual, the vector is -1.
+  \li .source_type 't' = text; anything else ('d' is a good choice) is numeric data.
  */
-apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_column, char source_type){
-  apop_category_settings *out = malloc (sizeof(apop_category_settings));
-    out->source_column = source_column;
-    out->source_type = source_type;
-    out->source_data = d;
-    if (source_type == 't'){
-        out->factors = apop_text_unique_elements(d, source_column);
-        out->factors->vector = gsl_vector_alloc(d->textsize[0]);
+apop_category_settings *apop_category_settings_init(apop_category_settings in){
+    apop_category_settings *out = malloc (sizeof(apop_category_settings));
+    apop_varad_setting(in, out, source_data, NULL);
+    apop_assert(out->source_data, 0, 0, 's', "an input .source_data set is mandatory.");
+    apop_varad_setting(in, out, source_column, 0);
+    apop_varad_setting(in, out, source_type, 't');
+
+    if (out->source_type == 't'){
+        out->factors = apop_text_unique_elements(out->source_data, out->source_column);
+        out->factors->vector = gsl_vector_alloc(out->source_data->textsize[0]);
         for (size_t i=0; i< out->factors->vector->size; i++)
             apop_data_set(out->factors, i, -1, i);
     } else{ //Save if statements by giving everything a text label.
-        Apop_col(d, source_column, list);
+        Apop_col(out->source_data, out->source_column, list);
         out->factors = apop_data_alloc(0,0,0);
         out->factors->vector = apop_vector_unique_elements(list);
         apop_text_alloc(out->factors, out->factors->vector->size, 1);
@@ -37,23 +40,10 @@ apop_category_settings *apop_category_settings_alloc(apop_data *d, int source_co
     return out;
 }
 
-/** Convert a column of input data into factors, for use with \ref apop_probit, apop_logit, &c.
-
-  You will probably use this with \ref Apop_model_add_group, where
-  you'll be specifying some of these inputs:
-    
-  \li .source_data The input data set that you're probably about to run a regression on
-  \li .source_column The number of the column to convert to factors. As usual, the vector is -1.
-  \li .source_type 't' = text; anything else ('d' is a good choice) is numeric data.
- */
-apop_category_settings *apop_category_settings_init(apop_category_settings in){
-    return apop_category_settings_alloc(in.source_data, in.source_column, in.source_type);
-}
-
 void *apop_category_settings_copy(apop_category_settings *in){
   apop_category_settings *out = malloc (sizeof(apop_category_settings));
     *out = *in;
-    out->factors = apop_data_copy(in->factors);
+    out->factors = apop_data_copy(in->factors); 
     return out;
 }
 
@@ -70,7 +60,7 @@ static void probit_prep(apop_data *d, apop_model *m){
   apop_data *factor_list;
     if (!d->vector){
         if (!Apop_settings_get_group(m, apop_category)){
-            Apop_settings_add_group(m, apop_category, d, 0, 'd');
+            Apop_model_add_group(m, apop_category, .source_data=d, .source_column=0, .source_type='d');
             Apop_col(d, 0, outcomes);
             d->vector = apop_vector_copy(outcomes);
             gsl_vector_set_all(outcomes, 1);
@@ -89,15 +79,13 @@ static void probit_prep(apop_data *d, apop_model *m){
                 gsl_vector_set_all(outcomes, 1);
             }
         }
-            //else, I assume you already have the vector set up with something good.
     }
+    //else, I assume you already have the vector set up with something good.
 
     void *mpt = m->prep; //and use the defaults.
     m->prep = NULL;
     apop_model_prep(d, m);
     m->prep = mpt;
-    apop_name_stack(m->parameters->names, d->names, 'r', 'c');
-
     factor_list = Apop_settings_get(m, apop_category, factors);
     count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(0, d->matrix->size2, count-1);
@@ -105,7 +93,9 @@ static void probit_prep(apop_data *d, apop_model *m){
     for (int i=1; i< count; i++) 
         apop_name_add(m->parameters->names, factor_list->text[i][0], 'c');
     gsl_matrix_set_all(m->parameters->matrix, 1);
-    snprintf(m->name, 100, "%s with %s as numeraire", m->name, factor_list->text[0][0]);
+    char *tmp = strdup(m->name);
+    snprintf(m->name, 100, "%s with %s as numeraire", tmp, factor_list->text[0][0]);
+    free(tmp);
 }
 
 static double probit_log_likelihood(apop_data *d, apop_model *p){
@@ -219,7 +209,6 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
 	return ll;
 }
 
-
 static size_t find_index(double in, double *m, size_t max){
   size_t i = 0;
     while (in !=m[i] && i<max) i++;
@@ -255,7 +244,7 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
 }
 
 apop_model *logit_estimate(apop_data *d, apop_model *m){
-  apop_model *out = apop_maximum_likelihood(d, *m);
+  apop_model *out = apop_maximum_likelihood(d, m);
 
     //That's the whole estimation. But now we need to add a row of zeros
     //for the numeraire. This is just tedious matrix-shunting.

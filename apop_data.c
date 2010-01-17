@@ -157,7 +157,7 @@ If you don't want to free data sets down the chain, set <tt>more=NULL</tt> befor
 void apop_data_free(apop_data *freeme){
     if (!freeme) return;
     if (freeme->more)
-        apop_data_free(freeme);
+        apop_data_free(freeme->more);
     if (freeme->vector)
         gsl_vector_free(freeme->vector);
     if (freeme->matrix)

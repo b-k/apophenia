@@ -7,12 +7,13 @@
 /* Many Apop functions try to treat the vector and matrix equally, which
  requires knowing which exists and what the sizes are. */
 #define Get_vmsizes(d) \
+    size_t firstcol = (d)->vector ? -1 : 0; \
     size_t vsize = (d)->vector ? (d)->vector->size : 0; \
     size_t wsize = (d)->weights ? (d)->weights->size : 0; \
     size_t msize1 = (d)->matrix ? (d)->matrix->size1 : 0; \
     size_t msize2 = (d)->matrix ? (d)->matrix->size2 : 0; \
     double tsize = vsize + msize1*msize2; \
-    if (tsize||wsize) /*prevent unused variable complaints */;
+    if (tsize||wsize||firstcol) /*prevent unused variable complaints */;
 
 // Define a static varaible, and initialize on first use.
 #define Staticdef(type, name, def) static type (name) = NULL; if (!(name)) (name) = (def);

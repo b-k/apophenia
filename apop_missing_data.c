@@ -133,7 +133,7 @@ static double i_p(apop_data *d, apop_model *ml_model){
     return apop_p(real_data, actual_base);
 }
 
-static apop_model apop_ml_imputation_model = {"Internal ML imputation model", .estimate=i_est, .p = i_p, .log_likelihood=i_ll};
+static apop_model apop_ml_impute_model = {"Internal ML imputation model", .estimate=i_est, .p = i_p, .log_likelihood=i_ll};
 
 /**
     Impute the most likely data points to replace NaNs in the data, and
@@ -144,9 +144,9 @@ static apop_model apop_ml_imputation_model = {"Internal ML imputation model", .e
 \param  mvn A parametrized \c apop_model from which you expect the data was derived.
 if \c NULL, then I'll use the Multivariate Normal that best fits the data after listwise deletion.
 
-\return An estimated <tt>apop_ml_imputation_model</tt>. Also, the data input will be filled in and ready to use.
+\return An estimated <tt>apop_ml_impute_model</tt>. Also, the data input will be filled in and ready to use.
 */
-apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
+apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     if (!mvn){
         apop_data *list_d = apop_data_listwise_delete(d);
         apop_assert(list_d, NULL, 0, 's', "Listwise deletion returned no whole rows, "
@@ -155,11 +155,11 @@ apop_model * apop_ml_imputation(apop_data *d,  apop_model* mvn){
         mvn = apop_estimate(list_d, apop_multivariate_normal);
         apop_data_free(list_d);
     }
-    apop_model *impute_me = apop_model_copy(apop_ml_imputation_model);
+    apop_model *impute_me = apop_model_copy(apop_ml_impute_model);
     impute_me->parameters = d;
     impute_me->more = mvn;
     apop_model *fixed = apop_model_fix_params(impute_me);
-    Apop_model_add_group(fixed, apop_mle, .want_cov='n');
+    Apop_model_add_group(fixed, apop_mle, .want_cov='n', .dim_cycle_tolerance=1);
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
     apop_data_memcpy(d, m->parameters); //A bit inefficient.
     return m;

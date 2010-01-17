@@ -10,6 +10,7 @@ extern "C" {
 #include "model.h"
 #include "settings.h"
 
+    /** \cond doxy_ignore */
 typedef struct point {    /* a point in the x,y plane */
   double x,y;             /* x and y coordinates */
   double ey;              /* exp(y-ymax+YCEIL) */
@@ -28,29 +29,21 @@ typedef struct {  /* attributes of the entire rejection envelope */
   double metro_xprev;      /* previous Markov chain iterate */
   double metro_yprev;      /* current log density at xprev */
 } arms_state;
+    /** \endcond */
 
 /** to perform derivative-free adaptive rejection sampling with metropolis step */
 typedef struct {
-/** Starting values for x in ascending order */
-    double *xinit;
-/** left bound */
-    double  xl;
-/** right bound */
-    double  xr;
-/** adjustment for convexity */
-    double convex; 
-/** number of starting values supplied */
-    int ninit;
-/** maximum number of envelope points */
-    int npoint;
-/** whether metropolis step is required */
-   char do_metro;
-/** previous value from markov chain */
-   double xprev;
-/** on exit, the number of function evaluations performed */
-   int neval;
-    arms_state *state;
-    apop_model *model;
+    double *xinit;  /**< Starting values for x in ascending order */
+    double  xl;     /**< left bound */
+    double  xr;     /**< right bound */
+    double convex;  /**< adjustment for convexity */
+    int ninit;      /**< number of starting values supplied */
+    int npoint;     /**< maximum number of envelope points */
+   char do_metro;   /**< whether metropolis step is required */
+   double xprev;    /**< previous value from markov chain */
+   int neval;       /**< on exit, the number of function evaluations performed */
+   arms_state *state;
+   apop_model *model;
 } apop_arms_settings;
 
 Apop_settings_declarations(apop_arms)

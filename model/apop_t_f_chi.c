@@ -60,9 +60,10 @@ apop_model* apop_t_chi_estimate(apop_data *d, apop_model *m){
         Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
         apop_model *out = apop_model_copy(*m);
         out->parameters = get_df(d);
+        out->llikelihood = out->log_likelihood(d, out);
         return out;
     } else 
-        return apop_maximum_likelihood(d, *m);
+        return apop_maximum_likelihood(d, m);
 }
 
 apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
@@ -74,9 +75,10 @@ apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
         out->parameters = apop_data_alloc(2,0,0);
         apop_data_add_named_elmt(out->parameters, "df", d->vector->size -1);
         apop_data_add_named_elmt(out->parameters, "df2", d->matrix->size1 * d->matrix->size2 -1);
+        out->llikelihood = apop_f_distribution.log_likelihood(d, out);
         return out;
     } else
-        return apop_maximum_likelihood(d, *m);
+        return apop_maximum_likelihood(d, m);
 }
 
 static double one_f(double in, void *df_in){ 

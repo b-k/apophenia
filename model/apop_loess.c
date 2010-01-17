@@ -16,11 +16,11 @@ Provenance:
     By the way, search the code for execnt: many functions will let you
     query how many times they have been hit, which you might find to be useful.
 */
-#include "apophenia/model.h"
-#include "apophenia/output.h"
-#include "apophenia/mapply.h"
-#include "apophenia/settings.h"
-#include "apophenia/conversions.h"
+#include "model.h"
+#include "output.h"
+#include "mapply.h"
+#include "settings.h"
+#include "conversions.h"
 
 
 ////////////a few lines from f2c.h

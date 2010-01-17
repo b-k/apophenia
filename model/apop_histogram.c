@@ -80,11 +80,10 @@ void apop_histogram_settings_free(apop_histogram_settings *in){
 }
 
 
-apop_model *est(apop_data *d, apop_model *in){
-    apop_model *out = apop_model_copy(*in);
-    if (!(apop_settings_get_group(in, "apop_histogram") || apop_settings_get_group(in, "apop_kernel_density")))
-        Apop_settings_add_group(out, apop_histogram, d, 1000);
-    return out;
+apop_model *est(apop_data *d, apop_model *est){
+    if (!(apop_settings_get_group(est, "apop_histogram") || apop_settings_get_group(est, "apop_kernel_density")))
+        Apop_settings_add_group(est, apop_histogram, d, 1000);
+    return est;
 }
 
 static double one_histo_ll(double i, void *gpdf){

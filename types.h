@@ -54,10 +54,11 @@ typedef struct {
 /** The elements of the \ref apop_model type. */
 struct _apop_model{
     char        name[101]; 
-    int         vbase, m1base, m2base; /**< The size of the parameter set.
+    int         vbase, m1base, m2base, dsize; /**< The size of the parameter set.
                      If a dimension is -1, then use yourdata->matrix->size2. For
                     anything more complex, allocate the parameter set in the prep
-                    method. */
+                    method. \c dsize is for the canonical form, and is
+                    the size of the data the RNG will return. */
     apop_settings_type *settings;
     apop_data   *parameters; /**< The vector of coefficients or parameters estimated by the model. */
     apop_data  *expected; /**< An \ref apop_data structure with three columns. If this is a model with a single dependent and lots of independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally.  There is thus currently no way to get just the predicted but not the residuals or vice versa.*/

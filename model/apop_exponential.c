@@ -35,12 +35,10 @@ static double rank_exponential_log_likelihood(const apop_data *d, apop_model *pa
 /* Let k be the rank, and x_k be the number of elements at that rank;
  then the mean rank (and therefore the most likely estimate for the
  exponential parameter) is sum(k * x_k)/sum(x) */
-static apop_model * rank_exponential_estimate(apop_data * data, apop_model *parameters){
+static apop_model * rank_exponential_estimate(apop_data * data, apop_model *est){
   double          colsum,
                   numerator   = 0,
                   grand_total = 0;
-  apop_model 	*est= parameters ? parameters : apop_model_copy(apop_exponential);
-  apop_model_clear(data, est);
     for(size_t i=0; i< data->matrix->size2; i++){
         APOP_MATRIX_COL(data->matrix, i, v);
         colsum       = apop_sum(v);
@@ -48,9 +46,7 @@ static apop_model * rank_exponential_estimate(apop_data * data, apop_model *para
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters->vector, 0, numerator/grand_total);
-    est->llikelihood	= rank_exponential_log_likelihood(data, parameters);
-	/*if (est->uses.covariance)
-		apop_numerical_covariance_matrix(apop_exponential_rank, est, data);*/
+    est->llikelihood	= rank_exponential_log_likelihood(data, est);
 	return est;
 }
 
@@ -86,15 +82,11 @@ static void rank_exponential_dlog_likelihood(const apop_data *d, gsl_vector *gra
 	gsl_vector_set(gradient,0, d_likelihood);
 }
 
-static apop_model * exponential_estimate(apop_data * data,  apop_model *m){
-    if (apop_settings_get_group(m, "apop_rank"))
-      return rank_exponential_estimate(data, m);
-  apop_model 	*est= apop_model_copy(apop_exponential);
-  apop_model_clear(data, est);
+static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
+    if (apop_settings_get_group(est, "apop_rank"))
+      return rank_exponential_estimate(data, est);
 	gsl_vector_set(est->parameters->vector, 0, apop_matrix_mean(data->matrix));
     est->llikelihood	= exponential_log_likelihood(data, est);
-	//if (est->ep.uses.covariance)
-		//apop_numerical_var_covar_matrix(apop_exponential, est, data->matrix);
 	return est;
 }
 

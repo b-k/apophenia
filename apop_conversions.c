@@ -58,7 +58,7 @@ APOP_VAR_END_HEAD
 \return a newly-allocated <tt>gsl_matrix</tt> with one column.
 
 This function uses the \ref designated syntax for inputs.
- \ingroup convenience_fns
+ \ingroup conversions
  */
 APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){
     const gsl_vector * apop_varad_var(in, NULL);
@@ -140,18 +140,18 @@ gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
     return out;
 }
 
-/** A convenience function to convert a <tt>double **</tt> array to an \ref apop_data set. It will
+/** A convenience function to convert a <tt>double *</tt> array to an \ref apop_data set. It will
 have no names. The input data is copied, not pointed to.
 
-See also \ref apop_line_to_matrix or \ref apop_array_to_vector; this function will use exactly one of these and then wrap an \ref apop_data struct around the output.
+See also \ref apop_line_to_matrix or \ref apop_array_to_vector; this function will use these and then wrap an \ref apop_data struct around the output(s).
 
 \param in	The array to read in. If there were appropriately placed line breaks, then this would look like the eventual data set. For example,
 \code
 double params[] = {0, 1, 2
                    3, 4, 5};
-apop_data_alloc(params, 2, 2, 2);
+apop_data *out = apop_line_to_data(params, 2, 2, 2);
 \endcode
-will produce a vector \f$\left[\matrix{0 \cr 3}\right]\f$ and a matrix \f$\left[\matrix{1 & 2 \cr 4 & 5}\right]\f$.
+will produce an \ref apop_data set with a vector \f$\left[\matrix{0 \cr 3}\right]\f$ and a matrix \f$\left[\matrix{1 & 2 \cr 4 & 5}\right]\f$.
 \param vsize    The vector size. If there are also rows/cols, I expect this to equal the number or rows.
 \param rows, cols	the size of the array.
 \return the \ref apop_data set, allocated for you and ready to use.
@@ -799,8 +799,8 @@ APOP_VAR_END_HEAD
 }
 
 
-/** This is the complement to \c apop_data_pack, qv. It converts the \c gsl_vector produced by that function back
-    to an \c apop_data set with the given dimensions. It overwrites the data in the vector and matrix elements (and that's it).
+/** This is the complement to \c apop_data_pack, qv. It writes the \c gsl_vector produced by that function back
+    to the \c apop_data set you provide. It overwrites the data in the vector and matrix elements (and that's it, so names or text are as before).
 
  \param in a \c gsl_vector of the form produced by \c apop_data_pack.
 \param d   that data set to be filled. Must be allocated to the correct size.
