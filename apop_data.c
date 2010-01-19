@@ -629,12 +629,12 @@ then you'll be fine.
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     Apop_assert_void(d, 0, 's', "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc(0, 0,0) to start.");
+    apop_name_add(d->names, name, 'r');
     if (!d->vector)
         d->vector = gsl_vector_alloc(1);
     if (d->vector->size < d->names->rowct)
         apop_vector_realloc(d->vector, d->names->rowct);
-    gsl_vector_set(d->vector, d->names->rowct, val);
-    apop_name_add(d->names, name, 'r');
+    gsl_vector_set(d->vector, d->names->rowct-1, val);
 }
 
 /** Add a string to the text element of an \ref apop_data set.  If you
@@ -774,3 +774,48 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
     v->data        = realloc(v->data, sizeof(double) * v->block->size);
     return v;
 }
+
+/** It's good form to get a page from your data set by name, because you
+  may not know the order for the pages, and the stepping through makes
+  for dull code anyway (<tt>apop_data *page = dataset; while (page->more) page= page->more;</tt>).
+
+  \param data The \ref apop_data set to use. No default; if \c NULL,
+      gives a warning if <tt>apop_opts.verbose >=1</tt> and returns \c NULL.
+  \param name The name of the page to retrieve. Default=\c "Info", which
+      is the name of the page of additional estimation information returned
+      by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, \dots).
+
+This function uses the \ref designated syntax for inputs.
+*/
+APOP_VAR_HEAD apop_data * apop_data_get_page(apop_data * data, char *title){
+    apop_data * apop_varad_var(data, NULL);
+    apop_assert(data, NULL, '1', 'c', "You requested a page from a NULL data set. Returning NULL");
+    char * apop_varad_var(title, "Info");
+    return apop_data_get_page_base(data, title);
+APOP_VAR_ENDHEAD
+    while (!data->names || !apop_strcmp(data->names->title, title))
+        data = data->more;
+    return data;
+}
+
+/** Add a page to a \ref apop_data set. It gets a name so you can find it later.
+
+  \param dataset The input data set, to which a page will be added.
+  \param newpage The page to append
+  \param title The name of the new page. Remember, this is truncated at 100 characters.
+
+  \return The \c dataset that was the first element. But if this is \c
+  NULL, I return \c newpage (with the title set) and post a warning if
+  <tt>apop_opts.verbose >=1 </tt>.
+  \param
+*/
+apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, char *title){
+    apop_assert(newpage, dataset, '0', 'c', "You are adding a NULL page to a data set. Returning the original data set unchanged.");
+    snprintf(newpage->names->title, 100, "%s", title);
+    apop_assert(dataset, newpage, '1', 'c', "You are adding a page to a NULL data set. Returning the new page as its own data set.");
+    while (dataset->more)
+        dataset = dataset->more;
+    dataset->more = newpage;
+    return dataset;
+}
+

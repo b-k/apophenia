@@ -12,7 +12,7 @@
 
 This sets up the output elements of the \c apop_model: the parameters, covarinace, and expected data sets. 
 
-At close, the input model has parameters of the correct size, the covariance and expected elements are \c NULL, and the \c status element is zero, indicating no estimation has been done yet.
+At close, the input model has parameters of the correct size, the covariance and expected elements are \c NULL.
 
 \li This is the default action for \ref apop_model_prep. If your model
 has its own \ref prep method, then that gets used instead, but most
@@ -37,7 +37,6 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
     model->parameters	    = apop_data_alloc(vsize, msize1, msize2);
     model->data             = data;
     model->prepared         = 0;
-    model->status           = 0;
     model->covariance	    = NULL;
     model->expected	        = NULL;
 	return model;

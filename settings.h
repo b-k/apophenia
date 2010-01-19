@@ -118,6 +118,7 @@ typedef struct {
     char want_expected_value; /**< If 'y', fill the expected/actual/residual part of the output model. */
 } apop_ls_settings;
 
+#if 0
 // Find apop_category_settings routines in apop_probit.c
 /** For dependent-category models, send in this settings struct to specify which column is the dependent variable. 
 
@@ -132,6 +133,7 @@ typedef struct {
     int source_column; /**<  The number of the column to convert to factors.  As usual, the vector is -1. */
     apop_data *source_data; /**< The input data set that you're probably about to run a regression on */
 } apop_category_settings;
+#endif
 
 
 //in apop_exponential.c
@@ -373,7 +375,7 @@ typedef struct {
 
 //Doxygen is doing funny things right now; having these down 
 //here seems to help.
-Apop_settings_declarations(apop_category)
+//Apop_settings_declarations(apop_category)
 Apop_settings_declarations(apop_histogram)
 Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_ls)

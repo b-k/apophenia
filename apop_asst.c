@@ -314,3 +314,86 @@ APOP_VAR_ENDHEAD
 }
 
 /** \} */
+
+static int count_parens(char *string){
+    int out = 0;
+    int last_was_backslash = 0;
+    for(char *step =string; *step !='\0'; step++){
+        if (*step == '\\' && !last_was_backslash){
+            last_was_backslash = 1;
+            continue;
+        }
+        if (*step == ')' && !last_was_backslash)
+            out++;
+        last_was_backslash = 0;
+    }
+    return out;
+}
+
+/** A convenience function for regular expression searching 
+
+\li There are three common flavors of regular expression: Basic, Extended,
+and Perl-compatible (BRE, ERE, PCRE). I use EREs, as per the specs of
+your C library, which should match POSIX's ERE specification. 
+
+For example, "p.val.*" will match "P value", "p.value", and "p values".
+
+\param string        The string to search (no default; if \c NULL, I return 0---no match)
+\param regex       The regular expression (no default)
+\param substrings   Parens in the regex indicate that I should return matching substrings. Give me the _address_ of an \ref apop_data* set, and I will allocate and fill the text portion with matches. Default= \c NULL, meaning do not return substrings (even if parens exist in the regex).
+\param use_case         Should I be case sensitive, \c 'y' or \c 'n'? (default = \c 'n', which is not the POSIX default.)
+
+\return         1 == match; 0 == no match. \c substrings may be allocated and filled if needed.
+\ingroup names
+
+\example Here is the test function. Notice that the substring-pulling
+function call passes \c &subs, not plain \c subs. Also, the non-match
+has a zero-length blank in <tt>subs->text[1][0]</tt>.
+\code
+#include <apop.h>
+
+int main(){
+    char string1[] = "Hello. I am a string.";
+    assert(apop_regex(string1, "hell"));
+    apop_data *subs =apop_data_alloc(0,0,0);
+    apop_regex(string1, "(e).*I.*(xxx)*(am)", .substrings = &subs);
+    apop_data_show(subs);
+    apop_data_free(subs);
+}
+\endcode
+*/
+APOP_VAR_HEAD int  apop_regex(char *string, char* regex, apop_data **substrings, char use_case){
+    char * apop_varad_var(string, NULL);
+    if (!string) return 0;
+    char * apop_varad_var(regex, NULL);
+    apop_assert(regex, 0, 0, 's', "You gave me a NULL regex.");
+    apop_data **apop_varad_var(substrings, NULL);
+    char apop_varad_var(use_case, 'y');
+    return apop_regex_base(string, regex, substrings, use_case);
+APOP_VAR_ENDHEAD
+  regex_t   re;
+  int       matchcount=count_parens(regex);
+  int      found;
+  regmatch_t result[matchcount];
+    int compiled_ok = !regcomp(&re, regex, REG_EXTENDED + (use_case=='y' ? REG_ICASE : 0));
+    apop_assert(compiled_ok, 0, 0, 's', "There's an error in your regular expression: \"%s\"", regex)
+
+    found = !regexec(&re, string, matchcount+1, result, 0);
+    if (substrings){
+        *substrings = apop_text_alloc(NULL, matchcount, 1);
+        //match zero is the whole string; ignore.
+        for (int i=0; i< matchcount; i++){
+            if (result[i+1].rm_eo > 0){//GNU peculiarity: match-to-empty marked with -1.
+                int length_of_match = result[i+1].rm_eo - result[i+1].rm_so;
+                (*substrings)->text[i][0] = malloc(strlen(string)+1);
+                memcpy((*substrings)->text[i][0], string + result[i+1].rm_so, length_of_match);
+                (*substrings)->text[i][0][length_of_match] = '\0';
+            } else{ //matches nothing
+                (*substrings)->text[i][0] = malloc(1);
+                (*substrings)->text[i][0][0]='\0';
+            }
+        }
+    }
+    regfree(&re);
+    return found;
+}

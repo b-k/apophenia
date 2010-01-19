@@ -108,7 +108,8 @@ apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
 
 apop_data * apop_text_unique_elements(const apop_data *d, size_t col);
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
-apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);
+apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);//deprecated
+APOP_VAR_DECLARE apop_data * apop_data_to_factors(apop_data *data, char intype, int incol, int outcol);
 
 APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first);
 APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize);

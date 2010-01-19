@@ -64,7 +64,6 @@ struct _apop_model{
     apop_data  *expected; /**< An \ref apop_data structure with three columns. If this is a model with a single dependent and lots of independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally.  There is thus currently no way to get just the predicted but not the residuals or vice versa.*/
     apop_data  *covariance; /**< The variance-covariance matrix. */
     double      llikelihood;
-    int         status; /**< The return status from the estimate that had populated this \ref apop_model, if any */
     int         prepared;
     apop_data   *data;
     apop_model * (*estimate)(apop_data * data, apop_model *params);
@@ -146,6 +145,8 @@ apop_data *apop_data_transpose(apop_data *in);
 gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth);
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 
+APOP_VAR_DECLARE apop_data * apop_data_get_page(apop_data * data, char * title);
+apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, char *title);
 #ifdef	__cplusplus
 }
 #endif

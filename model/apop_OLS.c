@@ -184,7 +184,7 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
 static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     apop_assert(inset,  NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set;
-  ep->status = 0;
+//    ep->status = 0;
     apop_ls_settings   *olp =  apop_settings_get_group(ep, "apop_ls");
     if (!olp) 
         olp = Apop_model_add_group(ep, apop_ls);
@@ -226,7 +226,7 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
         apop_data_free(set);
     if (olp->want_cov == 'y')
         apop_estimate_parameter_t_tests(ep);
-    ep->status       = 1;
+//    ep->status       = 1;
     return ep;
 }
 
@@ -326,7 +326,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     if (!olp->destroy_data)
         apop_data_free(set);
 //    apop_estimate_parameter_t_tests(epout);
-    ep->status   = 1;
+//    ep->status   = 1;
     return ep;
 }
 

@@ -20,6 +20,7 @@ apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
 
 int apop_strcmp(char *, char*);
+APOP_VAR_DECLARE int  apop_regex(char *string, char* regex, apop_data **substrings, char use_case);
 
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
 apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);

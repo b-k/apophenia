@@ -94,7 +94,7 @@ void test_score(){
             apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
         apop_model *estme = apop_model_copy(apop_normal);
         Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN,.parent= estme);
-        apop_model *out = apop_maximum_likelihood(data, *estme);
+        apop_model *out = apop_maximum_likelihood(data, estme);
 
         apop_model *straight_est = apop_estimate(data, apop_normal);
         assert(fabs(straight_est->parameters->vector->data[0]- source->parameters->vector->data[0])<1e-1);//rough, I know.
@@ -933,7 +933,7 @@ void test_unique_elements(){
 
 void test_probit_and_logit(gsl_rng *r){
   int i;
-  for (i=0; i < 5; i++){
+  for (i=0; i < 3; i++){
     int param_ct = gsl_rng_uniform(r)*7 + 1; //up to seven params.
     int j;
     gsl_vector *true_params = gsl_vector_alloc(param_ct);

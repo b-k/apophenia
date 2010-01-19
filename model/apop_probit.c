@@ -6,87 +6,28 @@
 #include "mapply.h"
 #include "likelihoods.h"
 
-/////////  Part I: Methods for the apop_category_settings struct
-
-/** Convert a column of input data into factors, for use with \ref apop_probit, apop_logit, &c.
-
-  You will probably use this with \ref Apop_model_add_group, where
-  you'll be specifying some of these inputs:
-    
-  \li .source_data The input data set that you're probably about to run a regression on---mandatory
-  \li .source_column The number of the column to convert to factors. As usual, the vector is -1.
-  \li .source_type 't' = text; anything else ('d' is a good choice) is numeric data.
- */
-apop_category_settings *apop_category_settings_init(apop_category_settings in){
-    apop_category_settings *out = malloc (sizeof(apop_category_settings));
-    apop_varad_setting(in, out, source_data, NULL);
-    apop_assert(out->source_data, 0, 0, 's', "an input .source_data set is mandatory.");
-    apop_varad_setting(in, out, source_column, 0);
-    apop_varad_setting(in, out, source_type, 't');
-
-    if (out->source_type == 't'){
-        out->factors = apop_text_unique_elements(out->source_data, out->source_column);
-        out->factors->vector = gsl_vector_alloc(out->source_data->textsize[0]);
-        for (size_t i=0; i< out->factors->vector->size; i++)
-            apop_data_set(out->factors, i, -1, i);
-    } else{ //Save if statements by giving everything a text label.
-        Apop_col(out->source_data, out->source_column, list);
-        out->factors = apop_data_alloc(0,0,0);
-        out->factors->vector = apop_vector_unique_elements(list);
-        apop_text_alloc(out->factors, out->factors->vector->size, 1);
-        for (size_t i=0; i< out->factors->vector->size; i++)
-            apop_text_add(out->factors, i, 0, "%g", apop_data_get(out->factors, i, -1));
-    }
-    return out;
-}
-
-void *apop_category_settings_copy(apop_category_settings *in){
-  apop_category_settings *out = malloc (sizeof(apop_category_settings));
-    *out = *in;
-    out->factors = apop_data_copy(in->factors); 
-    return out;
-}
-
-void apop_category_settings_free(apop_category_settings *in){
-    apop_data_free(in->factors);
-    free(in);
-}
-
 /////////  Part II: plain old probit
+
+static apop_data *get_category_table(apop_data *d){
+    apop_data *dbase = d;
+    //First page is data; no need to check it.
+    while (d->more)
+        if (apop_strcmp(d->more->names->title, "factors"))
+            return d->more;
+        else
+            d = d->more;
+    //If you're here, we didn't find it; make the default
+    int first_col = dbase->vector ? -1 : 0;
+    apop_data_to_factors(dbase, .intype='d', .incol=first_col, .outcol=first_col);
+    return get_category_table(dbase);
+}
 
 static void probit_prep(apop_data *d, apop_model *m){
   if (m->prepared) return;
   int       count;
   apop_data *factor_list;
-    if (!d->vector){
-        if (!Apop_settings_get_group(m, apop_category)){
-            Apop_model_add_group(m, apop_category, .source_data=d, .source_column=0, .source_type='d');
-            Apop_col(d, 0, outcomes);
-            d->vector = apop_vector_copy(outcomes);
-            gsl_vector_set_all(outcomes, 1);
-            if (d->names->column && d->names->column[0]){
-                apop_name_add(d->names, d->names->column[0], 'v');
-                sprintf(d->names->column[0], "1");
-            }
-        } else{
-            int sourcecol = Apop_settings_get(m, apop_category, source_column);
-            char sourcetype = Apop_settings_get(m, apop_category, source_type);
-            if (sourcetype == 't')
-                apop_text_to_factors(d, sourcecol, -1);
-            else {
-                Apop_col(d, sourcecol, outcomes);
-                d->vector = apop_vector_copy(outcomes);
-                gsl_vector_set_all(outcomes, 1);
-            }
-        }
-    }
-    //else, I assume you already have the vector set up with something good.
-
-    void *mpt = m->prep; //and use the defaults.
-    m->prep = NULL;
-    apop_model_prep(d, m);
-    m->prep = mpt;
-    factor_list = Apop_settings_get(m, apop_category, factors);
+    apop_ols.prep(d, m);//also runs the default apop_model_clear.
+    factor_list = get_category_table(d);
     count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(0, d->matrix->size2, count-1);
     apop_name_stack(m->parameters->names, d->names, 'r', 'c');
@@ -168,7 +109,7 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
         gsl_vector_scale(outrow, 1/total);
         apop_data_set(out, i, -1, bestindex);
     }
-    apop_data *factor_list = Apop_settings_get(m, apop_category, factors);
+    apop_data *factor_list = get_category_table(m->data);
     apop_name_add(out->names, factor_list->text[0][0], 'c');
     apop_name_stack(out->names, m->parameters->names, 'c');
     return out;
@@ -195,7 +136,7 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     working_data->matrix = d->matrix;
     gsl_vector *original_outcome = d->vector;
     double ll    = 0;
-    double *vals = Apop_settings_get(p, apop_category, factors)->vector->data;
+    double *vals = get_category_table(p->data)->vector->data;
     for(size_t i=0; i < p->parameters->matrix->size2; i++){
         APOP_COL(p->parameters, i, param);
         val = vals[i];
@@ -218,7 +159,7 @@ static size_t find_index(double in, double *m, size_t max){
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters, 0, 0, 's', "You asked me to evaluate an un-parametrized model.");
   size_t i, j, index, choicect = p->parameters->matrix->size2;
-  double* factor_list = Apop_settings_get(p, apop_category, factors)->vector->data;
+  double* factor_list = get_category_table(p->data)->vector->data;
 
     //Find X\beta_i for each row of X and each column of \beta.
     apop_data  *xbeta = apop_dot(d, p->parameters, 0, 0);

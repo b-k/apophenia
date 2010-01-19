@@ -1033,7 +1033,7 @@ endofdiv
         Outlineheader GLM  GLM family
 
             \li\ref apop_iv
-            \li\ref apop_logit
+            \li\ref apop_logit (incl. multinomial logit)
             \li\ref apop_multinomial_probit
             \li\ref apop_ols
             \li\ref apop_probit

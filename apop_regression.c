@@ -415,35 +415,12 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
     return out;
 }
 
-
-/* For bonus points, we add a page to the data set listing the factor
-   conversions. */
-static void add_factor_page(apop_data *source_data, char source_type, int source_column){
-    apop_data *factors = source_data; //Find end of chain; add a page.
-    while (factors->more)
-        factors = factors->more;
-    if (source_type == 't'){
-        factors->more = apop_text_unique_elements(source_data, source_column);
-        factors = factors->more;
-        factors->vector = gsl_vector_alloc(source_data->textsize[0]);
-        for (size_t i=0; i< factors->vector->size; i++)
-            apop_data_set(factors, i, -1, i);
-    } else{ //Save if statements by giving everything a text label.
-        factors->more = apop_data_alloc(0,0,0);
-        factors = factors->more;
-        Apop_col(source_data, source_column, list);
-        factors->vector = apop_vector_unique_elements(list);
-        apop_text_alloc(factors, factors->vector->size, 1);
-        for (size_t i=0; i< factors->vector->size; i++)
-            apop_text_add(factors, i, 0, "%g", apop_data_get(factors, i, -1));
-    }
-    sprintf(factors->names->title, "column %i factors", source_column);
-}
-
 /* Producing dummies consists of finding the index of element i, for all i, then
  setting (i, index) to one.
  Producing factors consists of finding the index and then setting (i, datacol) to index.
- Otherwise the work is basically identical.  */
+ Otherwise the work is basically identical.  
+ Also, add a ->more page to the input data giving the translation.
+ */
 static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_first, 
                                                 int datacol, char dummyfactor, apop_data **factor_list){
   size_t      i, j, index,
@@ -454,28 +431,49 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
   char        n[1000],
               **telmts        = NULL;//unfortunately needed for the bsearch.
   gsl_vector  *in             = NULL;
-  int         s = type == 'd' ? in->size : d->textsize[0];
+
+    apop_data *factor_page = d; //Find end of chain; add a page.
+    while (factor_page->more)
+        factor_page = factor_page->more;
 
         APOP_COL(d, col, in_t);
         in  = in_t;
     //first, create an ordered list of unique elements.
-    if (type == 'd'){
-        APOP_COL(d, col, sortme);
-        delmts = apop_vector_unique_elements(sortme);
-        elmt_ctr = delmts->size;
-        *factor_list =  apop_data_alloc(0,0,0);
-        (*factor_list)->vector = delmts;
-    } else{
-        *factor_list = apop_text_unique_elements(d, col);
+    //Record that list for use in this function, and in a ->more page of the data set.
+    if (type == 't'){
+        factor_page->more =
+        *factor_list      = apop_text_unique_elements(d, col);
         elmt_ctr = (*factor_list)->textsize[0];
         telmts = malloc(sizeof(char*)*elmt_ctr);
         for (j=0; j< elmt_ctr; j++)
             asprintf(&(telmts[j]), "%s", (*factor_list)->text[j][0]);
+        factor_page = factor_page->more;
+        factor_page->vector = gsl_vector_alloc(elmt_ctr);
+        for (size_t i=0; i< factor_page->vector->size; i++)
+            apop_data_set(factor_page, i, -1, i);
+    } else{
+        APOP_COL(d, col, to_search);
+        factor_page->more = apop_data_alloc(0,0,0);
+        factor_page = factor_page->more;
+        factor_page->vector =
+        delmts          = apop_vector_unique_elements(to_search);
+        elmt_ctr = delmts->size;
+        *factor_list =  apop_data_alloc(0,0,0);
+        (*factor_list)->vector = delmts;
+        apop_text_alloc(factor_page, factor_page->vector->size, 1);
+        for (size_t i=0; i< factor_page->vector->size; i++){
+            apop_data_set(factor_page, i, -1, i);
+            apop_text_add(factor_page, i, 0, "%g", apop_data_get(factor_page, i, -1));
+        }
     }
+    sprintf(factor_page->names->title, "factors");
 
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
     //the dummy matrix to one.
+    int s = type == 't' 
+            ? d->textsize[0]
+            : (col >=0 ? d->matrix->size1 : d->vector->size);
     out = (dummyfactor == 'd')
                 ? apop_data_calloc(0, s, (keep_first ? elmt_ctr : elmt_ctr-1))
                 : d;
@@ -488,7 +486,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
         if (dummyfactor == 'd'){
             if (keep_first)
                 gsl_matrix_set(out->matrix, i, index,1); 
-            else if (index>0)   //else and index==0; throw it out. 
+            else if (index>0)   //else don't keep first and index==0; throw it out. 
                 gsl_matrix_set(out->matrix, i, index-1, 1); 
         } else
             apop_data_set(out, i, datacol, index); 
@@ -504,10 +502,11 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
         }
         apop_data_free(*factor_list);
     }
-    for (j=0; j< elmt_ctr; j++)
-        free(telmts[j]);
-    free(telmts);
-    add_factor_page(out, type, col);
+    if (telmts){
+        for (j=0; j< elmt_ctr; j++)
+            free(telmts[j]);
+        free(telmts);
+    }
     return out;
 }
 
@@ -549,7 +548,7 @@ APOP_VAR_END_HEAD
     if (type == 'd'){
         apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
                                                     "(col==-1) but the data's vector element is NULL.");
-        apop_assert(col < d->matrix->size2,  NULL, 0, 's', "You asked for the matrix element %i "
+        apop_assert((col == -1) || (col < d->matrix->size2),  NULL, 0, 's', "You asked for the matrix element %i "
                                "but the data's matrix element has only %i columns.", col, d->matrix->size2);
     } else
         apop_assert(col < d->textsize[1],  NULL, 0, 's', "You asked for the text element %i but "
@@ -559,7 +558,67 @@ APOP_VAR_END_HEAD
 }
 
 
-/** Convert a column of text in the text portion of an \c apop_data set
+
+/** Convert a column of text or numbers
+  into a column of numeric factors, which you can use for a multinomial probit/logit, for example.
+
+  If you don't run this on your data first, \ref apop_probit and \ref apop_logit default to running 
+  it on the vector or (if no vector) zeroth column of the matrix of the input \ref apop_data set, because those models need a list of the unique values of the dependent variable.
+
+\param data The data set to be modified in place. (No default. If \c NULL, returns \c NULL and a warning)
+\param intype If \c 't', then \c incol refers to text, otherwise (\c 'd'
+is a good choice) refers to the vector or matrix. Default = \c 't'.
+\param incol The column in the text that will be converted. -1 is the vector. Default = 0.
+\param outcol The column in the data set where the numeric factors will be written (-1 means the vector, which I will allocate for you if it is \c NULL). Default = 0.
+
+For example:
+\code
+apop_data *d  = apop_query_to_mixed_data("mmt", "select 1, year, color from data");
+apop_data_to_factors(d);
+\endcode
+Notice that the query pulled a column of ones for the sake of saving room for the factors. It reads column zero of the text, and writes it to column zero of the matrix.
+
+Another example:
+\code
+apop_data *d  = apop_query_to_data("mmt", "select type, year from data");
+apop_data_to_factors(d, .intype='d', .incol=0, .outcol=0);
+\endcode
+Here, the \c type column is converted to sequential integer factors and
+those factors overwrite the original data. Since a reference table is
+added as a second page of the \ref apop_data set, you can recover the
+original values as needed.
+
+\return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
+Also, the <tt>more</tt> element is a reference table of names and column numbers.
+
+*/
+APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
+    apop_data *apop_varad_var(data, NULL)
+    apop_assert(data, NULL, 0, 'c', "You sent me a NULL data set. Returning NULL.")
+    int apop_varad_var(incol, 0)
+    int apop_varad_var(outcol, 0)
+    char apop_varad_var(intype, 't')
+    return apop_data_to_factors_base(data, intype, incol, outcol);
+APOP_VAR_END_HEAD
+    if (intype=='t'){
+        apop_assert_void(incol < data->textsize[1], 0, 's', "You asked for the text column %i but the "
+                                            "data's text has only %i elements.", incol, data->textsize[1]);
+    }else{
+        apop_assert_void((incol != -1) || data->vector, 0, 's', "You asked for the vector of the data set but there is none.");
+        apop_assert_void((incol == -1) || (incol < data->matrix->size2), 0, 's', "You asked for the matrix column %i but "
+                                            "the matrix has only %i elements.", incol, data->matrix->size2);
+    }
+    if (!data->vector && outcol == -1) //allocate a vector for the user.
+        data->vector = gsl_vector_alloc(intype=='t' ? data->textsize[0] : data->matrix->size2);
+    apop_data *out;
+    dummies_and_factors_core(data, incol, intype, 1, outcol, 'f', &out);
+    return out;
+}
+
+
+/** Deprecated. Use \ref apop_data_to_factors.
+  
+  Convert a column of text in the text portion of an \c apop_data set
   into a column of numeric elements, which you can use for a multinomial probit, for example.
 
 \param d The data set to be modified in place.
