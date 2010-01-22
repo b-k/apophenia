@@ -1439,6 +1439,8 @@ Outlineheader Gene General utilities
     \li\ref apop_error()
     \li\ref apop_opts
     \li\ref apop_strip_dots()
+    \li\ref apop_strcmp()
+    \li\ref apop_regex()
     \li\ref apop_system()
 
 endofdiv

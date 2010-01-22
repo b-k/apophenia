@@ -54,16 +54,16 @@ apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int m
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 > 0  && msize1 > 0){
         setme->matrix   = gsl_matrix_alloc(msize1,msize2);
-        apop_assert(setme->matrix, NULL, 0, 's', "malloc failed on a %u x %i matrix. Probably out of memory.", msize1, msize2);
+        apop_assert(setme->matrix, NULL, 0, 's', "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
         setme->vector   = gsl_vector_alloc(vsize);
-        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %u. Probably out of memory.", vsize);
+        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     //I allocate a vector of msize2==-1. This is deprecated, and will one day be deleted.
     else if (msize2==-1 && msize1>0){
         setme->vector   = gsl_vector_alloc(msize1);
-        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %u. Probably out of memory.", msize1);
+        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
     }
     setme->names        = apop_name_alloc();
     return setme;
@@ -88,15 +88,15 @@ apop_data * apop_data_calloc(const size_t vsize, const size_t msize1, const int 
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 >0 && msize1 > 0){
         setme->matrix   = gsl_matrix_calloc(msize1,msize2);
-        apop_assert(setme->matrix, NULL, 0, 's', "malloc failed on a %u x %u matrix. Probably out of memory.", msize1, msize2);
+        apop_assert(setme->matrix, NULL, 0, 's', "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
         setme->vector   = gsl_vector_calloc(vsize);
-        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %u. Probably out of memory.", vsize);
+        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     else if (msize2==-1 && msize1>0){
         setme->vector   = gsl_vector_calloc(msize1);
-        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %u. Probably out of memory.", msize1);
+        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
     }
     setme->names        = apop_name_alloc();
     return setme;
@@ -536,7 +536,7 @@ double *apop_data_ptr_tt(const apop_data *in, char *row, char* col){
  See \ref data_set_get "the set/get page" for details. */
 double apop_data_get(const apop_data *in, size_t row, int col){
     if (col>=0){
-        apop_assert(in->matrix, 0, 0, 's', "You asked for the matrix element (%u, %i) but the matrix is NULL.", row, col);
+        apop_assert(in->matrix, 0, 0, 's', "You asked for the matrix element (%zu, %i) but the matrix is NULL.", row, col);
         return gsl_matrix_get(in->matrix, row, col);
     } else {
         apop_assert(in->vector, 0, 0, 's', "You asked for the vector element (col=-1) but it is NULL.");
@@ -576,7 +576,7 @@ double apop_data_get_tt(const apop_data *in, char *row, char* col){
 /**  Set a data element using two numeric indices.  */
 void apop_data_set(apop_data *in, size_t row, int col, double data){
     if (col>=0){
-        apop_assert_void(in->matrix, 0, 's', "You're trying to set the matrix element (%u, %i) but the matrix is NULL.", row, col);
+        apop_assert_void(in->matrix, 0, 's', "You're trying to set the matrix element (%zu, %i) but the matrix is NULL.", row, col);
         gsl_matrix_set(in->matrix, row, col, data);
     } else {
         apop_assert_void(in->vector, 0, 's', "You're trying to set a vector element (row=-1) but the vector is NULL.");
@@ -649,7 +649,7 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val){
 void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
   va_list   argp;
   apop_assert_void((in->textsize[0] >= (int)row-1) && (in->textsize[1] >= (int)col-1), 0, 'c', "You asked me to put the text "
-                            " '%s' at (%i, %i), but the text array has size (%i, %i)\n", fmt, row, col, in->textsize[0], in->textsize[1]);
+                            " '%s' at (%zu, %zu), but the text array has size (%i, %i)\n", fmt, row, col, in->textsize[0], in->textsize[1]);
     if (!fmt){
         asprintf(&(in->text[row][col]), "NaN");
         return;
@@ -781,9 +781,13 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
 
   \param data The \ref apop_data set to use. No default; if \c NULL,
       gives a warning if <tt>apop_opts.verbose >=1</tt> and returns \c NULL.
-  \param name The name of the page to retrieve. Default=\c "Info", which
+  \param title The name of the page to retrieve. Default=\c "Info", which
       is the name of the page of additional estimation information returned
       by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, \dots).
+      I use \ref apop_regex, so this is really a case-insensitive regular expression.
+
+    \return The page whose title matches what you gave me. If I don't
+    find a match, return \c NULL.
 
 This function uses the \ref designated syntax for inputs.
 */
@@ -793,7 +797,7 @@ APOP_VAR_HEAD apop_data * apop_data_get_page(apop_data * data, char *title){
     char * apop_varad_var(title, "Info");
     return apop_data_get_page_base(data, title);
 APOP_VAR_ENDHEAD
-    while (!data->names || !apop_strcmp(data->names->title, title))
+    while (data && (!data->names || !apop_regex(data->names->title, title)))
         data = data->more;
     return data;
 }
@@ -804,18 +808,28 @@ APOP_VAR_ENDHEAD
   \param newpage The page to append
   \param title The name of the new page. Remember, this is truncated at 100 characters.
 
-  \return The \c dataset that was the first element. But if this is \c
-  NULL, I return \c newpage (with the title set) and post a warning if
-  <tt>apop_opts.verbose >=1 </tt>.
+  \return The new page.  I post a warning if I am appending or appending to a \c NULL data set and  <tt>apop_opts.verbose >=1 </tt>.
+
+  \example 
+  A silly example that establishes a baseline data set, adds a page,
+  modifies it, and then later retrieves it.
+  \code
+  apop_data *d = apop_data_alloc(10, 10, 10); //the base data set.
+  apop_data *a_new_page = apop_data_add_page(d, apop_data_alloc(0,2,2), "new 2 x 2 page");
+  gsl_vector_set_all(a_new_page->matrix, 3);
+
+  //later:
+  apop_data *retrieved = apop_data_get_page(d, "new"); //uses regexes, not literal match.
+  apop_data_show(retrieved); //print a 2x2 grid of 3s.
+  \endcode
   \param
 */
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, char *title){
-    apop_assert(newpage, dataset, '0', 'c', "You are adding a NULL page to a data set. Returning the original data set unchanged.");
+    apop_assert(newpage, NULL, '1', 'c', "You are adding a NULL page to a data set. Doing nothing; returning NULL.");
     snprintf(newpage->names->title, 100, "%s", title);
     apop_assert(dataset, newpage, '1', 'c', "You are adding a page to a NULL data set. Returning the new page as its own data set.");
     while (dataset->more)
         dataset = dataset->more;
     dataset->more = newpage;
-    return dataset;
+    return newpage;
 }
-

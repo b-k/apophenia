@@ -4,7 +4,7 @@
     Copyright (c) 2009 Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 */
 
-#define apop_varad_head(type, name)  type variadic_##name(variadic_type_##name varad_in)
+#define apop_varad_head(type, name) type variadic_##name(variadic_type_##name varad_in)
 
 #define apop_varad_declare(type, name, ...) \
         typedef struct {            \

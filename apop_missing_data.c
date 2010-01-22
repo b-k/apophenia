@@ -6,7 +6,7 @@
 #include "variadic.h"
 #include "likelihoods.h"
 
-/** If there is an NaN anywhere in the row of data (including the matrix, the vector, and the weights) then delete the row from the data set.
+/** If there is an NaN anywhere in the row of numeric data (including the matrix, the vector, and the weights) then delete the row from the data set.
 
 The function returns a new data set with the NaNs removed, so the original data set is left unmolested. You may want to \c apop_data_free the original immediately after this function.
 
@@ -135,10 +135,13 @@ static double i_p(apop_data *d, apop_model *ml_model){
 
 static apop_model apop_ml_impute_model = {"Internal ML imputation model", .estimate=i_est, .p = i_p, .log_likelihood=i_ll};
 
-/**
-    Impute the most likely data points to replace NaNs in the data, and
-    insert them into the given data. That is, the data set is modified
-    in place.
+/** Impute the most likely data points to replace NaNs in the data, and insert them into 
+the given data. That is, the data set is modified in place.
+
+How it works: this uses the machinery for \c apop_model_fix_params. The only difference is 
+that this searches over the data space and takes the parameter space as fixed, while basic 
+fix params model searches parameters and takes data as fixed. So this function just does the
+necessary data-parameter switching to make that happen.
 
 \param  d       The data set. It comes in with NaNs and leaves entirely filled in.
 \param  mvn A parametrized \c apop_model from which you expect the data was derived.
@@ -159,7 +162,7 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     impute_me->parameters = d;
     impute_me->more = mvn;
     apop_model *fixed = apop_model_fix_params(impute_me);
-    Apop_model_add_group(fixed, apop_mle, .want_cov='n', .dim_cycle_tolerance=1);
+//    Apop_model_add_group(fixed, apop_mle, .want_cov='n', .dim_cycle_tolerance=1);
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
     apop_data_memcpy(d, m->parameters); //A bit inefficient.
     return m;

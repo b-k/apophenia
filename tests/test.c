@@ -980,12 +980,13 @@ void test_resize(){
     assert(gsl_matrix_get(m, 3, 5) == 4*6+.6);
     apop_matrix_realloc(m, 10, 10);
     assert (fabs(apop_matrix_sum(m) - 55 * 56 )<1e-6);
-    gsl_vector *v = gsl_vector_alloc(m->size2);
-    for (i=0; i< m->size2; i++)
+    gsl_vector *v = gsl_vector_alloc(20);
+    for (i=0; i< 20; i++)
         gsl_vector_set(v, i, i);
     apop_vector_realloc(v, 38);
-    assert(gsl_vector_get(v, 5) == 5);
-    apop_vector_realloc(v, 11);
+    for (i=0; i< 20; i++)
+        assert(gsl_vector_get(v, i) == i);
+    apop_vector_realloc(v, 10);
     assert(apop_vector_sum(v) == 45);
 }
 
@@ -1157,6 +1158,7 @@ void estimate_model(apop_data *data, apop_model dist, int method){
 }
 
 void test_distributions(gsl_rng *r){
+  if (verbose) printf("\n");
   int         i;
   apop_model* true_params;
   apop_model  null_model      = {"the null model"};
@@ -1178,6 +1180,18 @@ void test_distributions(gsl_rng *r){
         test_one_distribution(r, dist[i], true_params);
         printf("Passed.\n");
     }
+}
+
+void test_regex(){
+    char string1[] = "Hello. I am a string.";
+    assert(apop_regex(string1, "hell"));
+    apop_data *subs;
+    apop_regex(string1, "(e).*I.*(xxx)*(am)", .substrings = &subs);
+    //apop_data_show(subs);
+    assert(apop_strcmp(subs->text[0][0], "e"));
+    assert(!strlen(subs->text[1][0]));
+    assert(apop_strcmp(subs->text[2][0], "am"));
+    apop_data_free(subs);
 }
 
 void test_rank_distributions(gsl_rng *r){
@@ -1291,6 +1305,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_ls, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test regex", test_regex());
     do_test("test adaptive rejection sampling", test_arms(r));
     do_test("test PMF", test_pmf());
     do_test("test listwise delete", test_listwise_delete());

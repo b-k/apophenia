@@ -422,7 +422,7 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
  Also, add a ->more page to the input data giving the translation.
  */
 static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_first, 
-                                                int datacol, char dummyfactor, apop_data **factor_list){
+                                    int datacol, char dummyfactor, apop_data **factor_list){
   size_t      i, j, index,
               elmt_ctr        = 0;
   apop_data   *out; 
@@ -430,43 +430,30 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
   gsl_vector  *delmts         = NULL;
   char        n[1000],
               **telmts        = NULL;//unfortunately needed for the bsearch.
-  gsl_vector  *in             = NULL;
-
-    apop_data *factor_page = d; //Find end of chain; add a page.
-    while (factor_page->more)
-        factor_page = factor_page->more;
-
-        APOP_COL(d, col, in_t);
-        in  = in_t;
     //first, create an ordered list of unique elements.
     //Record that list for use in this function, and in a ->more page of the data set.
     if (type == 't'){
-        factor_page->more =
-        *factor_list      = apop_text_unique_elements(d, col);
+        *factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), "factors");
         elmt_ctr = (*factor_list)->textsize[0];
+        //awkward format conversion:
         telmts = malloc(sizeof(char*)*elmt_ctr);
         for (j=0; j< elmt_ctr; j++)
             asprintf(&(telmts[j]), "%s", (*factor_list)->text[j][0]);
-        factor_page = factor_page->more;
-        factor_page->vector = gsl_vector_alloc(elmt_ctr);
-        for (size_t i=0; i< factor_page->vector->size; i++)
-            apop_data_set(factor_page, i, -1, i);
-    } else{
+        (*factor_list)->vector = gsl_vector_alloc(elmt_ctr);
+        for (size_t i=0; i< (*factor_list)->vector->size; i++)
+            apop_data_set(*factor_list, i, -1, i);
+    } else {
         APOP_COL(d, col, to_search);
-        factor_page->more = apop_data_alloc(0,0,0);
-        factor_page = factor_page->more;
-        factor_page->vector =
         delmts          = apop_vector_unique_elements(to_search);
         elmt_ctr = delmts->size;
-        *factor_list =  apop_data_alloc(0,0,0);
-        (*factor_list)->vector = delmts;
-        apop_text_alloc(factor_page, factor_page->vector->size, 1);
-        for (size_t i=0; i< factor_page->vector->size; i++){
-            apop_data_set(factor_page, i, -1, i);
-            apop_text_add(factor_page, i, 0, "%g", apop_data_get(factor_page, i, -1));
+        *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr, 0, 0), "factors");
+        apop_text_alloc((*factor_list), delmts->size, 1);
+        for (size_t i=0; i< (*factor_list)->vector->size; i++){
+            //shift to the text, for conformity with the more common text version.
+            apop_text_add((*factor_list), i, 0, "%g", gsl_vector_get(delmts, i));
+            apop_data_set((*factor_list), i, -1, i);
         }
     }
-    sprintf(factor_page->names->title, "factors");
 
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
@@ -479,14 +466,14 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
                 : d;
     for (i=0; i< s; i++){
         if (type == 'd'){
-            val     = gsl_vector_get(in, i);
-            index   = ((size_t)bsearch(&val, delmts->data, elmt_ctr, sizeof(double), compare_doubles) - (long int)delmts->data)/sizeof(double);
+            val     = apop_data_get(d, i, col);
+            index   = ((size_t)bsearch(&val, delmts->data, elmt_ctr, sizeof(double), compare_doubles) - (size_t)delmts->data)/sizeof(double);
         } else 
             index   = ((size_t)bsearch(&(d->text[i][col]), telmts, elmt_ctr, sizeof(char**), strcmpwrap) - (size_t)telmts)/sizeof(char**);
         if (dummyfactor == 'd'){
             if (keep_first)
                 gsl_matrix_set(out->matrix, i, index,1); 
-            else if (index>0)   //else don't keep first and index==0; throw it out. 
+            else if (index > 0)   //else don't keep first and index==0; throw it out. 
                 gsl_matrix_set(out->matrix, i, index-1, 1); 
         } else
             apop_data_set(out, i, datacol, index); 
@@ -500,8 +487,9 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
                 sprintf(n, "%s", telmts[i]);
             apop_name_add(out->names, n, 'c');
         }
-        apop_data_free(*factor_list);
     }
+    if (delmts)
+        gsl_vector_free(delmts);
     if (telmts){
         for (j=0; j< elmt_ctr; j++)
             free(telmts[j]);
@@ -549,7 +537,7 @@ APOP_VAR_END_HEAD
         apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
                                                     "(col==-1) but the data's vector element is NULL.");
         apop_assert((col == -1) || (col < d->matrix->size2),  NULL, 0, 's', "You asked for the matrix element %i "
-                               "but the data's matrix element has only %i columns.", col, d->matrix->size2);
+                               "but the data's matrix element has only %zu columns.", col, d->matrix->size2);
     } else
         apop_assert(col < d->textsize[1],  NULL, 0, 's', "You asked for the text element %i but "
                                     "the data's text element has only %i elements.", col, d->textsize[1]);
@@ -606,7 +594,7 @@ APOP_VAR_END_HEAD
     }else{
         apop_assert_void((incol != -1) || data->vector, 0, 's', "You asked for the vector of the data set but there is none.");
         apop_assert_void((incol == -1) || (incol < data->matrix->size2), 0, 's', "You asked for the matrix column %i but "
-                                            "the matrix has only %i elements.", incol, data->matrix->size2);
+                                            "the matrix has only %zu elements.", incol, data->matrix->size2);
     }
     if (!data->vector && outcol == -1) //allocate a vector for the user.
         data->vector = gsl_vector_alloc(intype=='t' ? data->textsize[0] : data->matrix->size2);

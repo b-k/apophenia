@@ -283,7 +283,7 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
 gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
   gsl_vector *out = gsl_vector_alloc(in->size);
-    apop_assert(out, NULL, 0, 's', "failed to allocate a gsl_vector of size %u. Out of memory?", in->size);
+    apop_assert(out, NULL, 0, 's', "failed to allocate a gsl_vector of size %zu. Out of memory?", in->size);
     gsl_vector_memcpy(out, in);
     return out;
 }
@@ -302,7 +302,7 @@ gsl_vector *apop_vector_copy(const gsl_vector *in){
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
     if (!in) return NULL;
   gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
-    apop_assert(out, NULL, 0, 's', "failed to allocate a gsl_matrix of size %u x %u. Out of memory?", in->size1, in->size2);
+    apop_assert(out, NULL, 0, 's', "failed to allocate a gsl_matrix of size %zu x %zu. Out of memory?", in->size1, in->size2);
     gsl_matrix_memcpy(out, in);
     return out;
 }
@@ -846,7 +846,7 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out){
         int total_size    = (in->vector ? in->vector->size : 0)
                        + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0);
         apop_assert(in->vector->size == total_size, NULL, 0, 's', "The input data set has %i elements,"
-               " but the output vector you want to fill has size %u. Please make these sizes equal."
+               " but the output vector you want to fill has size %zu. Please make these sizes equal."
                , total_size, in->vector->size);
     }
     return apop_data_pack_base(in, out);

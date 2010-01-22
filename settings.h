@@ -90,6 +90,8 @@ typedef struct{
     double      step_size, /**< the initial step size. */
                 tolerance, /**< the precision the minimizer uses. Only vaguely related to the precision of the actual variables. */
 delta;
+    int         max_iterations; /**< Ignored by simulated annealing. Other methods halt if
+                                 they do this many iterations without finding an optimum. */
     int         verbose; /**<	Give status updates as we go.  This is orthogonal to the 
                                 <tt>apop_opts.verbose</tt> setting. */
     char        want_cov; /**< Should I calculate a covariance matrix?  Default: 'y', but this can be the most 

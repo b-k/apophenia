@@ -209,7 +209,7 @@ APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vecto
 APOP_VAR_ENDHEAD
   apop_assert(ina->size == inb->size, 0, 0,'s', 
                 "I need equal-sized vectors, but "
-                "you sent a vector of size %u and a vector of size %u. ", ina->size, inb->size);
+                "you sent a vector of size %zu and a vector of size %zu. ", ina->size, inb->size);
   double  dist    = 0;
   size_t  i;
     if (metric == 'e' || metric == 'E'){
@@ -255,7 +255,7 @@ double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb){
   apop_assert(ina, 0, 0, 'c', "first input vector is NULL. Returning 0.");
   apop_assert(inb, 0, 0, 'c', "second input vector is NULL. Returning 0.");
   apop_assert(ina->size == inb->size, 0, 0,'s', 
-                "You sent a vector of size %u and a vector of size %u.", ina->size, inb->size);
+                "You sent a vector of size %zu and a vector of size %zu.", ina->size, inb->size);
   double  dist    = 0;
     for (size_t i=0; i< ina->size; i++)
         dist    += fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
@@ -528,7 +528,7 @@ apop_data * apop_data_summarize(apop_data *indata){
         apop_name_stack(out->names,indata->names, 'r', 'c');
 	else
 		for (size_t i=0; i< indata->matrix->size2; i++){
-			sprintf(rowname, "col %i", i);
+			sprintf(rowname, "col %zu", i);
 			apop_name_add(out->names, rowname, 'r');
 		}
 	for (size_t i=0; i< indata->matrix->size2; i++){
@@ -560,7 +560,7 @@ double apop_vector_weighted_mean(const gsl_vector *v,const  gsl_vector *w){
         return apop_vector_mean(v);
     apop_assert(v,  0, 0, 'c', "data vector is NULL. Returning zero.\n");
     apop_assert(v->size,  0, 1, 'c', "data vector has size 0. Returning zero.\n");
-    apop_assert(w->size == v->size,  0, 0,'c', "data vector has size %u; weighting vector has size %u. Returning zero.\n", v->size, w->size);
+    apop_assert(w->size == v->size,  0, 0,'c', "data vector has size %zu; weighting vector has size %zu. Returning zero.\n", v->size, w->size);
     for (size_t i=0; i< w->size; i++){
         sum  += gsl_vector_get(w, i) * gsl_vector_get(v,i); 
         wsum += gsl_vector_get(w, i); 
@@ -585,7 +585,7 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
         return apop_vector_var(v);
     apop_assert(v,  0, 0, 'c', "data vector is NULL. Returning zero.\n");
     apop_assert(v->size,  0, 0,'c', "data vector has size 0. Returning zero.\n");
-    apop_assert(w->size == v->size,  0, 0,'c', "data vector has size %u; weighting vector has size %u. Returning zero.\n", v->size, w->size);
+    apop_assert(w->size == v->size,  0, 0,'c', "data vector has size %zu; weighting vector has size %zu. Returning zero.\n", v->size, w->size);
     //Using the E(x^2) - E^2(x) form.
     for (size_t i=0; i< w->size; i++){
         vv    = gsl_vector_get(v,i);
@@ -605,7 +605,7 @@ static double skewkurt(const gsl_vector *v, const gsl_vector *w, const int expon
         return exponent ==3 ? apop_vector_skew(v) : apop_vector_kurtosis(v);
     apop_assert(v,  0, 0, 'c', "%s: data vector is NULL. Returning zero.\n", fn_name);
     apop_assert(v->size,  0, 1, 'c',"%s: data vector has size 0. Returning zero.\n", fn_name);
-    apop_assert(w->size == v->size,  0, 1, 'c',"%s: data vector has size %i; weighting vector has size %i. Returning zero.\n", fn_name, v->size, w->size);
+    apop_assert(w->size == v->size,  0, 1, 'c',"%s: data vector has size %zu; weighting vector has size %zu. Returning zero.\n", fn_name, v->size, w->size);
     //Using the E(x - \bar x)^3 form, which is lazy.
     mu  = apop_vector_weighted_mean(v, w);
     for (i=0; i< w->size; i++){
@@ -662,7 +662,7 @@ double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, cons
     apop_assert(v1,  0, 0, 'c', "first data vector is NULL. Returning zero.\n");
     apop_assert(v2,  0, 0, 'c', "second data vector is NULL. Returning zero.\n");
     apop_assert(v1->size,  0, 1, 'c', "apop_vector_weighted_variance: data vector has size 0. Returning zero.\n");
-    apop_assert((w->size == v1->size) && (w->size == v2->size),  0, 0, 'c', "apop_vector_weighted_variance: data vectors have sizes %i and %i; weighting vector has size %i. Returning zero.\n", v1->size, v2->size, w->size);
+    apop_assert((w->size == v1->size) && (w->size == v2->size),  0, 0, 'c', "apop_vector_weighted_variance: data vectors have sizes %zu and %zu; weighting vector has size %zu. Returning zero.\n", v1->size, v2->size, w->size);
     //Using the E(x^2) - E^2(x) form.
     for (size_t i=0; i< w->size; i++){
         vv1   = gsl_vector_get(v1,i);

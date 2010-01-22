@@ -508,7 +508,7 @@ static void printone(FILE *f, double width, double height, double margin, int xp
     if (xposn  == yposn+1)
         fprintf(f, "set label %i '%s' center at graph %g, %g\n",yposn+1, (d->names->colct >yposn)? d->names->column[yposn]: "",  -0.5, 0.5);
     if ((yposn == count-1) && (xposn  == count-2))
-        fprintf(f, "set label %i '%s' center at graph %g, %g\n",count, (d->names->colct >count -1)? d->names->column[count -1]: "",  1.5, 0.5);
+        fprintf(f, "set label %zu '%s' center at graph %g, %g\n",count, (d->names->colct >count -1)? d->names->column[count -1]: "",  1.5, 0.5);
     if (xposn != yposn){
         fprintf(f, "plot '-'\n");
         fflush(f);
@@ -519,7 +519,7 @@ static void printone(FILE *f, double width, double height, double margin, int xp
     if (xposn  == yposn+1)
         fprintf(f, "unset label %i \n",yposn+1);
     if ((yposn == count-1) && (xposn  == count-2))
-        fprintf(f, "unset label %i\n",count);
+        fprintf(f, "unset label %zu\n",count);
 }
 
 /** This produces a Gnuplot file that will produce an array of 2-D
@@ -552,7 +552,7 @@ APOP_VAR_ENDHEAD
                 "set tmargin 2.4\n"
                 "set bmargin -2\n"
                 "set origin %g, %g       \n"
-                "set multiplot   #layout %i, %i downwards        \n"
+                "set multiplot   #layout %zu, %zu downwards        \n"
                 "unset xtics; unset xlabel; unset ytics; unset ylabel\n"
                 "set nokey           \n"
         , width, height, margin,margin, d->matrix->size2, d->matrix->size2);

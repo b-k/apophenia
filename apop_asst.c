@@ -355,9 +355,12 @@ has a zero-length blank in <tt>subs->text[1][0]</tt>.
 int main(){
     char string1[] = "Hello. I am a string.";
     assert(apop_regex(string1, "hell"));
-    apop_data *subs =apop_data_alloc(0,0,0);
+    apop_data *subs;
     apop_regex(string1, "(e).*I.*(xxx)*(am)", .substrings = &subs);
-    apop_data_show(subs);
+    //apop_data_show(subs);
+    assert(apop_strcmp(subs->text[0][0], "e"));
+    assert(!strlen(subs->text[1][0]));
+    assert(apop_strcmp(subs->text[2][0], "am"));
     apop_data_free(subs);
 }
 \endcode
@@ -371,12 +374,14 @@ APOP_VAR_HEAD int  apop_regex(char *string, char* regex, apop_data **substrings,
     char apop_varad_var(use_case, 'y');
     return apop_regex_base(string, regex, substrings, use_case);
 APOP_VAR_ENDHEAD
-  regex_t   re;
-  int       matchcount=count_parens(regex);
-  int      found;
+  regex_t    re;
+  int        matchcount=count_parens(regex);
+  int        found;
   regmatch_t result[matchcount];
-    int compiled_ok = !regcomp(&re, regex, REG_EXTENDED + (use_case=='y' ? REG_ICASE : 0));
-    apop_assert(compiled_ok, 0, 0, 's', "There's an error in your regular expression: \"%s\"", regex)
+    int compiled_ok = !regcomp(&re, regex, REG_EXTENDED 
+                                            + (use_case=='y' ? REG_ICASE : 0)
+                                            + (substrings ? 0 : REG_NOSUB) );
+    apop_assert(compiled_ok, 0, 0, 's', "This regular expression didn't compile: \"%s\"", regex)
 
     found = !regexec(&re, string, matchcount+1, result, 0);
     if (substrings){

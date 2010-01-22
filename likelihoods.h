@@ -18,9 +18,6 @@
 #include "variadic.h"
 #include "conversions.h"
 
-#define MAX_ITERATIONS 		5000
-#define MAX_ITERATIONS_w_d	5000
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

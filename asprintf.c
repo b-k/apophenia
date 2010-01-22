@@ -31,7 +31,6 @@
 
 /* vsprintf with automatic memory allocation. */
 
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -178,7 +177,6 @@ STATIC
 extern
 #endif
 int printf_fetchargs (va_list args, arguments *a);
-
 
 /* Parse printf format string. */
 
@@ -443,7 +441,6 @@ xmax (size_t size1, size_t size2) {
 #endif /* _XSIZE_H */
 
 
-
 #if WIDE_CHAR_VERSION
 # define PRINTF_PARSE wprintf_parse
 # define CHAR_T wchar_t
@@ -531,27 +528,25 @@ PRINTF_PARSE (const CHAR_T *format, DIRECTIVES *d, arguments *a) {
 	  dp->arg_index = ARG_NONE;
 
 	  /* Test for positional argument.  */
-	  if (*cp >= '0' && *cp <= '9')
-	    {
+	  if (*cp >= '0' && *cp <= '9') {
 	      const CHAR_T *np;
 
 	      for (np = cp; *np >= '0' && *np <= '9'; np++)
-		;
-	      if (*np == '$')
-		{
-		  size_t n = 0;
+            ;
+	      if (*np == '$') {
+              size_t n = 0;
 
-		  for (np = cp; *np >= '0' && *np <= '9'; np++)
-		    n = xsum (xtimes (n, 10), *np - '0');
-		  if (n == 0)
-		    /* Positional argument 0.  */
-		    goto error;
-		  if (size_overflow_p (n))
-		    /* n too large, would lead to out of memory later.  */
-		    goto error;
-		  arg_index = n - 1;
-		  cp = np + 1;
-		}
+              for (np = cp; *np >= '0' && *np <= '9'; np++)
+                n = xsum (xtimes (n, 10), *np - '0');
+              if (n == 0)
+                /* Positional argument 0.  */
+                goto error;
+              if (size_overflow_p (n))
+                /* n too large, would lead to out of memory later.  */
+                goto error;
+              arg_index = n - 1;
+              cp = np + 1;
+          }
 	    }
 
 	  /* Read the flags.  */

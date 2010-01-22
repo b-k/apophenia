@@ -586,7 +586,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
         sprintf(q, " ");
     }
 #else 
-        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.")
+        apop_assert_void(0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
     else
 #ifdef HAVE_LIBSQLITE3

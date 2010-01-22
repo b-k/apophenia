@@ -147,7 +147,10 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     apop_assert(data,  0, 0,'s', "You asked me to estimate the parameters of a model but sent NULL data.");
     char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
     gsl_vector * count = get_multinomial_hitcount(data, method);
-    int n = apop_sum(count);
+    //int n = apop_sum(count); //potential double-to-int precision issues.
+    int n = 0;
+    for (int i=0; i< count->size; i++)
+        n += gsl_vector_get(count, i);
     apop_vector_normalize(count);
     gsl_vector_set(count, 0, n);
     est->parameters=apop_data_alloc(0,0,0);

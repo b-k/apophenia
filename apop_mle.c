@@ -68,6 +68,7 @@ apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
   apop_mle_settings *setme =   calloc(1,sizeof(apop_mle_settings));
     apop_varad_setting(in, setme, starting_pt, NULL);
     apop_varad_setting(in, setme, tolerance, 1e-2);
+    apop_varad_setting(in, setme, max_iterations, 5000);
     setme->method = (in.parent && in.parent->score) ? APOP_CG_PR : APOP_SIMPLEX_NM;
     apop_varad_setting(in, setme, verbose, 0);
     apop_varad_setting(in, setme, use_score, 'y');
@@ -409,10 +410,12 @@ static gsl_vector * setup_starting_point(apop_mle_settings *mp, int betasize){
 
 static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
   apop_model		        *est    = i->model; //just an alias.
+  apop_mle_settings          *mp    = apop_settings_get_group(est, "apop_mle");
     Get_vmsizes(i->data); //vsize, msize1, tsize
-    if (est->parameters->vector && !est->parameters->matrix){
-        apop_data_add_page(params, 
-                apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta)), "Covariance");
+    if (mp->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
+//        apop_data_add_page(params, 
+//                apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta)), "Covariance");
+        est->covariance = apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta));
         apop_estimate_parameter_t_tests (est);
     }
     int param_ct = (params->vector ? params->vector->size : 0)
@@ -421,7 +424,7 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
     apop_data_add_page(params, infopage, "Info");
     if (!ll) //then sending function didn't save last value of f().
         ll = apop_log_likelihood(i->data, i->model);
-    else if (!i->model->log_likelihood) // then ll was actually just p; see negshell above.
+    else 
         ll = log(ll);
     //else take ll at face value.
 
@@ -484,9 +487,9 @@ Inside the infostruct, you'll find these elements:
             apopstatus	= 1;
             if(mp->verbose)	printf ("Minimum found.\n");
         }
-    } while (status == GSL_CONTINUE && iter < MAX_ITERATIONS_w_d && !ctrl_c);
+    } while (status == GSL_CONTINUE && iter < mp->max_iterations && !ctrl_c);
     signal(SIGINT, NULL);
-	if (iter==MAX_ITERATIONS_w_d) {
+	if (iter==mp->max_iterations) {
 		apopstatus	= -1;
 		if (mp->verbose) printf("No min!!\n");
 	}
@@ -495,7 +498,7 @@ Inside the infostruct, you'll find these elements:
 	gsl_multimin_fdfminimizer_free(s);
 	if (mp->starting_pt==NULL) 
 		gsl_vector_free(x);
-    auxinfo(est->parameters, i, apopstatus, s->f);
+    auxinfo(est->parameters, i, apopstatus, est->llikelihood);
 	return est;
 }
 
@@ -504,8 +507,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
   apop_model		        *est        = i->model;
   apop_mle_settings           *mp         = apop_settings_get_group(est, "apop_mle");
   assert(mp);
-  apop_data                 *p          = est->parameters;
-  Get_vmsizes(p) //get vsize, msize1, msize2, tsize
+  Get_vmsizes(est->parameters) //get vsize, msize1, msize2, tsize
   int			            status,
                             apopstatus  = 0,
 			                iter 		= 0,
@@ -542,29 +544,28 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
                 printf ("f()=%7.3f size=%.3f\n", s->fval, size);
 			}
 		}
-    } while (status == GSL_CONTINUE && iter < MAX_ITERATIONS && !ctrl_c);
+    } while (status == GSL_CONTINUE && iter < mp->max_iterations && !ctrl_c);
     signal(SIGINT, NULL);
-	if (iter == MAX_ITERATIONS && mp->verbose)
+	if (iter == mp->max_iterations && mp->verbose)
 		apop_error(1, 'c', "Optimization reached maximum number of iterations.");
     if (status == GSL_SUCCESS) 
         apopstatus	= 1;
     apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fminimizer_free(s);
-    auxinfo(est->parameters, i, apopstatus, s->fval);
+    auxinfo(est->parameters, i, apopstatus, est->llikelihood);
 	return est;
 }
 
 static apop_model * dim_cycle(apop_data *d, apop_model *est){
-    double last_ll, this_ll = GSL_NEGINF;
-    int iteration    = 0;
-    apop_mle_settings *mp = Apop_settings_get_group(est, apop_mle);
-    double tol       = mp->dim_cycle_tolerance;
-    int verbose      = mp->verbose;
-    apop_data *p     = est->parameters;
-    Get_vmsizes(p) //get vsize, msize1, msize2, tsize
-    int betasize = tsize;
-    gsl_vector *x = setup_starting_point(mp, betasize);
-
+  double last_ll, this_ll = GSL_NEGINF;
+  int iteration    = 0;
+  apop_mle_settings *mp = Apop_settings_get_group(est, apop_mle);
+  double tol       = mp->dim_cycle_tolerance;
+  int verbose      = mp->verbose;
+  apop_data *p     = est->parameters;
+  Get_vmsizes(p) //get vsize, msize1, msize2, tsize
+  int betasize  = tsize;
+  gsl_vector *x = setup_starting_point(mp, betasize);
     do {
         if (verbose){
             if (!(iteration++))
@@ -575,10 +576,10 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est){
         Apop_settings_set(est, apop_mle, dim_cycle_tolerance, 0);//so sub-estimations won't use this function.
         for (int i=0; i< betasize; i++){
             gsl_vector_set(x, i, GSL_NAN);
-            apop_data_unpack(x, est->parameters);
+            apop_data_unpack(x, p);
             apop_model *m_onedim = apop_model_fix_params(est);
             apop_maximum_likelihood(d, m_onedim);
-            apop_data_pack(m_onedim->parameters, x);
+            gsl_vector_set(x, i, m_onedim->parameters->vector->data[0]);
             if (verbose)
                 printf("(%i):%g\t", i, m_onedim->llikelihood), fflush(NULL);
             this_ll = m_onedim->llikelihood;//only used on the last iteration.
@@ -862,7 +863,7 @@ apop_model * apop_annealing(infostruct *i){
     apop_estimate_parameter_t_tests(i->model);
     if (mp->rng)
         r = NULL;
-    auxinfo(i->model->parameters, i, 0, 0);
+    auxinfo(i->model->parameters, i, 0, i->model->llikelihood);
     return i->model;
 }
 
@@ -898,11 +899,11 @@ static apop_model * find_roots (infostruct p) {
         iter++;
         status = gsl_multiroot_fsolver_iterate (s);
         if (!mlep || mlep->verbose)
-            printf ("iter = %3u x = % .3f f(x) = % .3e\n", iter, gsl_vector_get (s->x, 0), gsl_vector_get (s->f, 0));
+            printf ("iter = %3zu x = % .3f f(x) = % .3e\n", iter, gsl_vector_get (s->x, 0), gsl_vector_get (s->f, 0));
         if (status)   /* check if solver is stuck */
             break;
         status = gsl_multiroot_test_residual (s->f, mlep->tolerance);
-     } while (status == GSL_CONTINUE && iter < 1000);
+     } while (status == GSL_CONTINUE && iter < mlep->max_iterations);
      if(GSL_SUCCESS) apopstatus = 0;
     printf ("status = %s\n", gsl_strerror (status));
     //dist->parameters   = apop_data_unpack(s->x, vsize, msize1, msize2);

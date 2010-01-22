@@ -4,6 +4,7 @@
 
 #include "model.h"
 #include "mapply.h"
+#include "internal.h"
 #include "likelihoods.h"
 
 /////////  Part II: plain old probit
@@ -40,7 +41,7 @@ static void probit_prep(apop_data *d, apop_model *m){
 }
 
 static double probit_log_likelihood(apop_data *d, apop_model *p){
-  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(p); Nullcheck_p(p);
   long double	n, total_prob	= 0;
   apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
 	for(size_t i=0; i< d->matrix->size1; i++){
@@ -54,7 +55,7 @@ static double probit_log_likelihood(apop_data *d, apop_model *p){
 }
 
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(p); Nullcheck_p(p);
   long double	cdf, betax, deriv_base;
   apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
     gsl_vector_set_all(gradient,0);
@@ -80,8 +81,7 @@ apop_model apop_probit = {"Probit", .log_likelihood = probit_log_likelihood,
 /////////  Part III: Multinomial Logit (plain logit is a special case)
 
 static apop_data *multilogit_expected(apop_data *in, apop_model *m){
-  apop_assert(m->parameters, NULL, 0, 's', "You're asking me to provide expected values of an "
-                                           "un-parameterized model. Please run apop_estimate first.");
+    Nullcheck_m(m); Nullcheck_p(m);
     apop_model_prep(in, m);
     gsl_matrix *params = m->parameters->matrix;
     apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
@@ -122,7 +122,7 @@ static double unordered(double in){ return in == val; }
 
 // This is just a for loop that runs a probit on each row.
 static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
-  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(p); Nullcheck_p(p);
   static apop_model *spare_probit = NULL;
     if (!spare_probit){
         spare_probit = apop_model_copy(apop_probit);
@@ -157,7 +157,7 @@ static size_t find_index(double in, double *m, size_t max){
 }
 
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
-  apop_assert(p->parameters, 0, 0, 's', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(p); Nullcheck_p(p);
   size_t i, j, index, choicect = p->parameters->matrix->size2;
   double* factor_list = get_category_table(p->data)->vector->data;
 
