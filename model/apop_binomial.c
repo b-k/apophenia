@@ -43,16 +43,17 @@ static void make_covar(apop_model *est){
     int n = pv[0];
     pv[0] = 1 - (apop_sum(est->parameters->vector)-n);
 
-    est->covariance     = apop_data_alloc(0, size, size);
+    apop_data *cov = apop_data_alloc(0, size, size);
     for (int i=0; i < size; i++){
         double p = apop_data_get(est->parameters, i, -1);
-        apop_data_set(est->covariance, i, i, n * p *(1-p));
+        apop_data_set(cov, i, i, n * p *(1-p));
         for (int j=i+1; j < size; j++){
             double pj = apop_data_get(est->parameters, j, -1);
-            apop_data_set(est->covariance, i, j, -n*p*pj);
-            apop_data_set(est->covariance, j, i, -n*p*pj);
+            apop_data_set(cov, i, j, -n*p*pj);
+            apop_data_set(cov, j, i, -n*p*pj);
         }
     }
+    apop_data_add_page(est->parameters, cov, "Covariance");
     pv[0]=n;
 }
 

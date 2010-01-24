@@ -189,7 +189,7 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 \return         The position of \c findme. If 'c', then this may be -1, meaning the vector name. If not found, returns -2.
 \ingroup names
   */
-int  apop_name_find(apop_name *n, char *in, char type){
+int  apop_name_find(const apop_name *n,const  char *in,const  char type){
   regex_t   re;
   char      **list;
   int       listct;

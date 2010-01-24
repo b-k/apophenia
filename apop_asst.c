@@ -315,10 +315,10 @@ APOP_VAR_ENDHEAD
 
 /** \} */
 
-static int count_parens(char *string){
+static int count_parens(const char *string){
     int out = 0;
     int last_was_backslash = 0;
-    for(char *step =string; *step !='\0'; step++){
+    for(const char *step =string; *step !='\0'; step++){
         if (*step == '\\' && !last_was_backslash){
             last_was_backslash = 1;
             continue;
@@ -365,13 +365,13 @@ int main(){
 }
 \endcode
 */
-APOP_VAR_HEAD int  apop_regex(char *string, char* regex, apop_data **substrings, char use_case){
-    char * apop_varad_var(string, NULL);
+APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case){
+    const char * apop_varad_var(string, NULL);
     if (!string) return 0;
-    char * apop_varad_var(regex, NULL);
+    const char * apop_varad_var(regex, NULL);
     apop_assert(regex, 0, 0, 's', "You gave me a NULL regex.");
     apop_data **apop_varad_var(substrings, NULL);
-    char apop_varad_var(use_case, 'y');
+    const char apop_varad_var(use_case, 'y');
     return apop_regex_base(string, regex, substrings, use_case);
 APOP_VAR_ENDHEAD
   regex_t    re;

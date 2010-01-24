@@ -27,8 +27,9 @@ static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
     p   = apop_map_sum(data, nonzero)/n;
 	gsl_vector_set(est->parameters->vector, 0, p);
     est->llikelihood	= bernoulli_log_likelihood(data, est);
-    est->covariance = apop_data_alloc(0,1,1);
-    apop_data_set(est->covariance, 0,0, p*(1-p));
+    apop_data *cov = apop_data_alloc(0,1,1);
+    apop_data_set(cov, 0,0, p*(1-p));
+    apop_data_add_page(est->parameters, cov, "Covariance");
 	return est;
 }
 

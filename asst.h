@@ -20,7 +20,7 @@ apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
 
 int apop_strcmp(char *, char*);
-APOP_VAR_DECLARE int  apop_regex(char *string, char* regex, apop_data **substrings, char use_case);
+APOP_VAR_DECLARE int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case);
 
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
 apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
@@ -47,6 +47,16 @@ void apop_histogram_normalize(apop_model *m);
         if (apop_opts.verbose >= level) { fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");}   \
         if (stop == 's' || stop == 'h') assert(test);   \
         return returnval;  \
+} while (0);
+
+
+/** A simplified version of \ref Apop_assert that always stops. Therefore, you don't need
+  the \c returnval or the stop/continue options. Because a stop is inviariably a true
+  error, the verbosity level is also omitted, so just give the test and the error.*/
+#define Apop_assert_s(test, ...) do \
+    if (!(test)) {  \
+        fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");   \
+        assert(test);   \
 } while (0);
 
 #define apop_assert(test, returnval, level, stop, ...) Apop_assert(test, returnval, level, stop, __VA_ARGS__)

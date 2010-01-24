@@ -49,9 +49,10 @@ static double a_mean(gsl_vector * in){ return apop_vector_mean(in); }
 static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
   apop_model *out = p ? apop_model_copy(*p) : apop_model_copy(apop_multivariate_normal);
     out->parameters         = apop_map(data, .fn_v=a_mean, .part='c');
-    out->covariance         =  apop_data_covariance(data);
-    out->parameters->matrix =  out->covariance->matrix;
+    apop_data *cov =  apop_data_covariance(data);
+    out->parameters->matrix =  cov->matrix;
     out->llikelihood = apop_multinormal_ll(data, out);
+    apop_data_add_page(out->parameters, cov, "Covariance");
     return out;
 }
 

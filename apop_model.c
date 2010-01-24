@@ -12,7 +12,7 @@
 
 This sets up the output elements of the \c apop_model: the parameters, covarinace, and expected data sets. 
 
-At close, the input model has parameters of the correct size, the covariance and expected elements are \c NULL.
+At close, the input model has parameters of the correct size.
 
 \li This is the default action for \ref apop_model_prep. If your model
 has its own \ref prep method, then that gets used instead, but most
@@ -32,19 +32,15 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
   int msize1 = model->m1base == -1 ? data->matrix->size2 : model->m1base ;
   int msize2 = model->m2base == -1 ? data->matrix->size2 : model->m2base ;
     apop_data_free(model->parameters);
-    apop_data_free(model->covariance);
-    apop_data_free(model->expected);
     model->parameters	    = apop_data_alloc(vsize, msize1, msize2);
     model->data             = data;
     model->prepared         = 0;
-    model->covariance	    = NULL;
-    model->expected	        = NULL;
 	return model;
 }
 
 /** Free an \ref apop_model structure.
 
-The  \c parameters, \c expected, and \c covariance elements are freed.  These are all the things that are completely copied, by \c apop_model_copy, so the parent model is still safe after this is called. \c data is not freed, because the odds are you still need it.
+The  \c parameters element is freed.  These are all the things that are completely copied, by \c apop_model_copy, so the parent model is still safe after this is called. \c data is not freed, because the odds are you still need it.
 
 The system has no idea what the \c more element contains, so if they point to other things, they need to be freed before calling this function.
 
@@ -57,8 +53,6 @@ void apop_model_free (apop_model * free_me){
   int   i=0;
     if (!free_me) return;
     apop_data_free(free_me->parameters);
-    apop_data_free(free_me->covariance);
-    apop_data_free(free_me->expected);
     if (free_me->settings){
         while (free_me->settings[i].name[0]){
             if (free_me->settings[i].free)
@@ -97,9 +91,10 @@ void apop_model_show (apop_model * print_me){
     printf("\n\n");
 	if (print_me->parameters)
         apop_data_show(print_me->parameters);
-	if (print_me->covariance){
+    apop_data *cov = apop_data_get_page(print_me->parameters, "covariance");
+	if (cov){
 		printf("\nThe covariance matrix:\n");
-        apop_data_show(print_me->covariance);
+        apop_data_show(cov);
 	}
 //under the false presumption that if it is calculated it is never quite ==0.
 	if (print_me->log_likelihood)
@@ -133,8 +128,6 @@ apop_model * apop_model_copy(apop_model in){
             apop_settings_copy_group(out, &in, in.settings[i].name);
         while (strlen(in.settings[i++].name));
     out->parameters = apop_data_copy(in.parameters);
-    out->expected   = apop_data_copy(in.expected);
-    out->covariance = apop_data_copy(in.covariance);
     return out;
 }
 

@@ -29,9 +29,10 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
 	apop_data_add_named_elmt(est->parameters,"sigma", sqrt(var));
     est->llikelihood	= normal_log_likelihood(data, est);
 	if (!p || p->want_cov=='y'){
-        est->covariance   = apop_data_calloc(0, 2, 2);
-        apop_data_set(est->covariance, 0, 0, mean/tsize);
-        apop_data_set(est->covariance, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
+        apop_data *cov = apop_data_calloc(0, 2, 2);
+        apop_data_set(cov, 0, 0, mean/tsize);
+        apop_data_set(cov, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
+        apop_data_add_page(est->parameters, cov, "Covariance");
     }
     est->data = data;
 	return est;

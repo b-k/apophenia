@@ -483,47 +483,93 @@ A: It's seven characters shorter.
 
 There are a few other differences: the \ref apop_data set has names, so we can get/set elements using those names, and it has both matrix and vector elements.
 
+
 \li The versions that take a column/row name use  \ref apop_name_find
 for the search; see notes there on the name matching rules.
 \li For those that take a column number, column -1 is the vector element. 
 \li For those that take a column name, I will search the vector last---if I don't find the name among the matrix columns, but the name matches the vector name, I return -1.
+\li If you give me both a .row and a .rowname, I go with the name; similarly for .col and
+.colname.
+\li You can give me the name of a page, e.g.
+\code
+double AIC = apop_data_get(data, .rowname="AIC", .col=-1, page="Info");
+\endcode
+Each search for a page in the \ref apop_data set involves a regular expression search
+across the names of the pages, which is expensive. If you're doing one lookup, this is not
+an issue; for hundreds or thousands, you may be better off spending a line of code to get the page once:
+\code
+apop_data *d = apop_data_get_page(data, page="Indices");
+for (int i=0; i< 1e7; i++)
+    apop_data_set(d, i, 0, i);
+\endcode
 
 The \c _ptr functions return a pointer to the given cell. Those functions follow the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr, and like those functions, return a pointer to the appropriate \c double.
+
+These functions use the \ref designated syntax for inputs.
+
+\example
+\code
+apop_data *d = apop_data_alloc(10, 10, 10);
+apop_name_add(d->names, "Zeroth row", 'r');
+apop_name_add(d->names, "Zeroth col", 'c');
+
+apop_data_set(d, 8, 0, 27);
+assert(apop_data_get(d, 8, .colname="Zeroth") == 27);
+double *x = apop_data_ptr(d, .col=7, .rowname="Zeroth");
+*x = 270;
+assert(apop_data_get(d, 0, 7) == 270);
+\endcode
 */
 
 /** Get a pointer to an element of an \ref apop_data set. 
  See \ref data_set_get "the set/get page" for details. */
-double * apop_data_ptr(const apop_data *data, const int i, const int j){
-    if (j == -1){
-        apop_assert(data->vector, NULL, 0, 's', "You asked for the vector element (i=-1) but it is NULL.");
-        return gsl_vector_ptr(data->vector, i);
+APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page){
+    apop_data * apop_varad_var(data, NULL);
+    Apop_assert_s(data, "You sent me a NULL data set.");
+    const int apop_varad_var(row, 0);
+    const int apop_varad_var(col, 0);
+    const char * apop_varad_var(rowname, NULL);
+    const char * apop_varad_var(colname, NULL);
+    const char * apop_varad_var(page, NULL);
+
+    apop_data *d = page ? apop_data_get_page(data, page) : data;
+    if (rowname && colname)
+        return apop_data_ptr_tt(d, rowname,colname);
+    if (rowname && !colname)
+        return apop_data_ptr_ti(d, rowname,col);
+    if (!rowname && colname)
+        return apop_data_ptr_it(d, row,colname);
+
+    //else: row number, column number
+    if (col == -1){
+        Apop_assert_s(data->vector, "You asked for the vector element (col=-1) but it is NULL.");
+        return gsl_vector_ptr(data->vector, row);
     } else {
-        apop_assert(data->matrix, NULL, 0, 's', "You asked for the matrix element (%i, %i) but the matrix is NULL.", i, j);
-        return gsl_matrix_ptr(data->matrix, i,j);
+        Apop_assert_s(data->matrix, "You asked for the matrix element (%i, %i) but the matrix is NULL.", row, col);
+        return gsl_matrix_ptr(data->matrix, row,col);
     }
+APOP_VAR_ENDHEAD
+return NULL;//the main function is blank.
 }
 
-/** Get a pointer to an element from an \ref apop_data set, using the row name but the column number. 
- See \ref data_set_get "the set/get page" for details. */
-double *apop_data_ptr_ti(const apop_data *in, char* row, int col){
+/** \deprecated  use \ref apop_data_ptr */
+double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(rownum != -2,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
     return (col >= 0) ? gsl_matrix_ptr(in->matrix, rownum, col)
                       : gsl_vector_ptr(in->vector, rownum);
 }
 
-/** Get a pointer to an element from an \ref apop_data set, using the column name but the row number. 
- See \ref data_set_get "the set/get page" for details. */
-double *apop_data_ptr_it(const apop_data *in, size_t row, char* col){
+/** \deprecated  use \ref apop_data_ptr */
+double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert(colnum != -2,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
     return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, row, colnum)
                          : gsl_vector_ptr(in->vector, row);
 }
 
-/** Get a pointer to an element from an \ref apop_data set, using the row and column name.
- See \ref data_set_get "the set/get page" for details. */
-double *apop_data_ptr_tt(const apop_data *in, char *row, char* col){
+/** \deprecated  use \ref apop_data_ptr */
+double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(rownum != -2,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
@@ -532,39 +578,24 @@ double *apop_data_ptr_tt(const apop_data *in, char *row, char* col){
                          : gsl_vector_ptr(in->vector, rownum);
 }
 
-/** Returns the data element at the given point, using numeric indices.  
- See \ref data_set_get "the set/get page" for details. */
-double apop_data_get(const apop_data *in, size_t row, int col){
-    if (col>=0){
-        apop_assert(in->matrix, 0, 0, 's', "You asked for the matrix element (%zu, %i) but the matrix is NULL.", row, col);
-        return gsl_matrix_get(in->matrix, row, col);
-    } else {
-        apop_assert(in->vector, 0, 0, 's', "You asked for the vector element (col=-1) but it is NULL.");
-        return gsl_vector_get(in->vector, row);
-    }
-}
-
-/** Get an element from an \ref apop_data set, using the row name but the column number 
- See \ref data_set_get "the set/get page" for details. */
-double apop_data_get_ti(const apop_data *in, char* row, int col){
+/** \deprecated  use \ref apop_data_get */
+double apop_data_get_ti(const apop_data *in, const char* row, const int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(rownum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the row names.", row);
     return (col >= 0) ? gsl_matrix_get(in->matrix, rownum, col)
                       : gsl_vector_get(in->vector, rownum);
 }
 
-/** Get an element from an \ref apop_data set, using the column name but the row number 
- See \ref data_set_get "the set/get page" for details. */
-double apop_data_get_it(const apop_data *in, size_t row, char* col){
+/** \deprecated  use \ref apop_data_get */
+double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert(colnum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
     return (colnum >= 0) ? gsl_matrix_get(in->matrix, row, colnum)
                          : gsl_vector_get(in->vector, row);
 }
 
-/** Get an element from an \ref apop_data set, using the row and column name.
- See \ref data_set_get "the set/get page" for details. */
-double apop_data_get_tt(const apop_data *in, char *row, char* col){
+/** \deprecated  use \ref apop_data_get */
+double apop_data_get_tt(const apop_data *in, const char *row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(colnum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
@@ -573,19 +604,85 @@ double apop_data_get_tt(const apop_data *in, char *row, char* col){
                          : gsl_vector_get(in->vector, rownum);
 }
 
-/**  Set a data element using two numeric indices.  */
-void apop_data_set(apop_data *in, size_t row, int col, double data){
+/** Returns the data element at the given point.
+ See \ref data_set_get "the set/get page" for details. */
+APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, const int col, const char *rowname, const char *colname, const char *page){
+    const apop_data * apop_varad_var(data, NULL);
+    Apop_assert_s(data, "You sent me a NULL data set.");
+    const size_t apop_varad_var(row, 0);
+    const int apop_varad_var(col, 0);
+    const char * apop_varad_var(rowname, NULL);
+    const char * apop_varad_var(colname, NULL);
+    const char * apop_varad_var(page, NULL);
+    
+    const apop_data *d = page ? apop_data_get_page(data, page) : data;
+    if (rowname && colname)
+        return apop_data_get_tt(d, rowname,colname);
+    if (rowname && !colname)
+        return apop_data_get_ti(d, rowname,col);
+    if (!rowname && colname)
+        return apop_data_get_it(d, row,colname);
+    //else: row number, column number
     if (col>=0){
-        apop_assert_void(in->matrix, 0, 's', "You're trying to set the matrix element (%zu, %i) but the matrix is NULL.", row, col);
-        gsl_matrix_set(in->matrix, row, col, data);
+        apop_assert(d->matrix, 0, 0, 's', "You asked for the matrix element (%zu, %i) but the matrix is NULL.", row, col);
+        return gsl_matrix_get(d->matrix, row, col);
     } else {
-        apop_assert_void(in->vector, 0, 's', "You're trying to set a vector element (row=-1) but the vector is NULL.");
-        gsl_vector_set(in->vector, row, data);
+        apop_assert(d->vector, 0, 0, 's', "You asked for the vector element (col=-1) but it is NULL.");
+        return gsl_vector_get(d->vector, row);
     }
+APOP_VAR_ENDHEAD
+return 0;//the main function is blank.
+}
+
+/**  Set a data element.
+ 
+  This function uses the \ref designated syntax, so with names you don't have to worry
+  about element ordering. But the ordering of elements may still be
+  noteworthy. For compatibility with older editions of Apophenia, the order is (row, col,
+  value, rowname, colname), so the following would all set row 3, column 8, of \c d to 5:
+  \code
+  apop_data_set(d, 3, 8, 5);
+  apop_data_set(d, .row = 3, .col=8, .val=5);
+  apop_data_set(d, .row = 3, .colname="Column 8", .val=5);
+//but:
+  apop_data_set(d, .row = 3, .colname="Column 8", 5);  //invalid---the value doesn't follow the colname.
+  \endcode
+
+  This differs somewhat from the deprecated \c _tt, \c _ti, and \c _tt functions, and to
+  the some extent, the GSL.
+
+ See \ref data_set_get "the set/get page" for details. */
+APOP_VAR_HEAD void apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *colname, const char *rowname, const char *page){
+    apop_data * apop_varad_var(data, NULL);
+    Apop_assert_s(data, "You sent me a NULL data set.");
+    const size_t apop_varad_var(row, 0);
+    const int apop_varad_var(col, 0);
+    const double apop_varad_var(val, 0);
+    const char * apop_varad_var(rowname, NULL);
+    const char * apop_varad_var(colname, NULL);
+    const char * apop_varad_var(page, NULL);
+    
+    apop_data *d = page ? apop_data_get_page(data, page) : data;
+    if (rowname && colname)
+        return apop_data_set_tt(d, rowname, colname, val);
+    if (rowname && !colname)
+        return apop_data_set_ti(d, rowname, col, val);
+    if (!rowname && colname)
+        return apop_data_set_it(d, row, colname, val);
+    //else: row number, column number
+    if (col>=0){
+        Apop_assert_s(d->matrix, "You're trying to set the matrix element (%zu, %i) but the matrix is NULL.", row, col);
+        return gsl_matrix_set(d->matrix, row, col, val);
+    } else {
+        Apop_assert_s(d->vector, "You're trying to set a vector element (row=-1) but the vector is NULL.");
+        return gsl_vector_set(d->vector, row, val);
+    }
+APOP_VAR_ENDHEAD
+//the main function is blank.
 }
 
 /** Set an element from an \ref apop_data set, using the row name but the column number */
-void apop_data_set_ti(apop_data *in, char* row, int col, double data){
+void apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert_void(rownum != -2, 0,'c',"Couldn't find %s amongst the row names. Making no changes.", row);
     return (col >= 0) ? gsl_matrix_set(in->matrix, rownum, col, data)
@@ -593,7 +690,7 @@ void apop_data_set_ti(apop_data *in, char* row, int col, double data){
 }
 
 /** Set an element from an \ref apop_data set, using the column name but the row number */
-void apop_data_set_it(apop_data *in, size_t row, char* col, double data){
+void apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert_void(colnum != -2, 0,'c',"Couldn't find %s amongst the column names. Making no changes.", col);
     return (colnum >= 0) ? gsl_matrix_set(in->matrix, row, colnum, data)
@@ -601,7 +698,7 @@ void apop_data_set_it(apop_data *in, size_t row, char* col, double data){
 }
 
 /** Set an element from an \ref apop_data set, using the row and column name.  */
-void apop_data_set_tt(apop_data *in, char *row, char* col, double data){
+void apop_data_set_tt(apop_data *in, const char *row, const char* col, const double data){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert_void(colnum != -2, 0, 'c',"Couldn't find %s amongst the column names.", col);
@@ -628,7 +725,7 @@ then you'll be fine.
 
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
-    Apop_assert_void(d, 0, 's', "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc(0, 0,0) to start.");
+    Apop_assert_s(d, "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc(0, 0,0) to start.");
     apop_name_add(d->names, name, 'r');
     if (!d->vector)
         d->vector = gsl_vector_alloc(1);
@@ -791,15 +888,15 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
 
 This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD apop_data * apop_data_get_page(apop_data * data, char *title){
-    apop_data * apop_varad_var(data, NULL);
+APOP_VAR_HEAD apop_data * apop_data_get_page(const apop_data * data, const char *title){
+    const apop_data * apop_varad_var(data, NULL);
     apop_assert(data, NULL, '1', 'c', "You requested a page from a NULL data set. Returning NULL");
-    char * apop_varad_var(title, "Info");
+    const char * apop_varad_var(title, "Info");
     return apop_data_get_page_base(data, title);
 APOP_VAR_ENDHEAD
     while (data && (!data->names || !apop_regex(data->names->title, title)))
         data = data->more;
-    return data;
+    return (apop_data *) data; //de-const.
 }
 
 /** Add a page to a \ref apop_data set. It gets a name so you can find it later.
@@ -824,7 +921,7 @@ APOP_VAR_ENDHEAD
   \endcode
   \param
 */
-apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, char *title){
+apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const char *title){
     apop_assert(newpage, NULL, '1', 'c', "You are adding a NULL page to a data set. Doing nothing; returning NULL.");
     snprintf(newpage->names->title, 100, "%s", title);
     apop_assert(dataset, newpage, '1', 'c', "You are adding a page to a NULL data set. Returning the new page as its own data set.");
@@ -832,4 +929,34 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, char *ti
         dataset = dataset->more;
     dataset->more = newpage;
     return newpage;
+}
+
+/** Remove the first page from an \ref apop_data set that matches a given name.
+
+  \li I don't check the first page, so there's no concern that the head of your list of
+  pages will move. Again, the intent of the <tt>-\>more</tt> pointer in the \ref apop_data
+  set is not to fully implement a linked list, but primarily to allow you to staple auxiliary
+  information to a main data set.
+
+  \param dataset The input data set, to which a page will be added. No default. If \c
+  NULL, I return silently if <tt> apop_opts.verbose \< 1 </tt>; print an
+  error otherwise.
+  \param title The name of the page to remove Default: \c "Info"
+  \param free_p If \c 'y', then \ref apop_data_free the page. Default: \c 'y'.
+*/
+APOP_VAR_HEAD void apop_data_rm_page(apop_data * data, const char *title, const char free_p){
+    apop_data *apop_varad_var(data, NULL);
+    apop_assert_void(data, '1', 'c', "You are removing a page from a NULL a data set. Doing nothing.");
+    const char *apop_varad_var(title, "Info");
+    const char apop_varad_var(free_p, 'y');
+    return apop_data_rm_page_base(data, title, free_p);
+APOP_VAR_ENDHEAD
+    while (data->more && !apop_regex(data->more->names->title, title))
+        data = data->more;
+    if (data->more){
+        apop_data *tmp = data->more;
+        data->more = data->more->more;
+        if (free_p=='y')
+            free(tmp);
+    }
 }

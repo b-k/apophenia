@@ -9,6 +9,7 @@
  */
 
 #include "model.h"
+#include "internal.h"
 #include "settings.h"
 #include "conversions.h"
 #include <search.h> //lsearch; bsearch is in stdlib.
@@ -108,10 +109,12 @@ Returns nothing. At the end of the routine, the <tt>est->parameters->matrix</tt>
 
 */
 void apop_estimate_parameter_t_tests (apop_model *est){
+  Nullcheck_pv(est)
   double  val, var, pval, tstat, rootn, stddev, two_tail;
   if (!est->data)
       return;
-  apop_assert_void(est->covariance && est->parameters, 1,'c', "You asked me to estimate t statistics, but I'm missing either the covariance matrix or the parameters (probably the cov matrix)");
+  apop_data *cov = apop_data_get_page(est->parameters, "Covariance");
+  apop_assert_void(est->covariance, 1,'c', "You asked me to estimate t statistics, but I'm missing the covariance matrix.");
     est->parameters->matrix = gsl_matrix_alloc(est->parameters->vector->size, 7);
     apop_name_add(est->parameters->names, "p value", 'c');
     apop_name_add(est->parameters->names, "confidence", 'c');
@@ -128,7 +131,7 @@ void apop_estimate_parameter_t_tests (apop_model *est){
     rootn    = sqrt(df);
     for (size_t i=0; i< est->parameters->vector->size; i++){
         val     = apop_data_get(est->parameters, i, -1);
-        var     = apop_data_get(est->covariance, i, i);
+        var     = apop_data_get(cov, i, i);
         stddev  = sqrt(var);
         tstat   = val/stddev;
         pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
@@ -211,7 +214,7 @@ APOP_VAR_END_HEAD
     gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
     gsl_blas_ddot(qprimebeta, qprimebetaminusc_qprimexpxinvqinv, &f_stat);
 
-    Apop_col_t(est->expected, "residual", error)
+    Apop_col_t(apop_data_get_page(est->parameters, "Predicted"), "residual", error)
     gsl_blas_ddot(error, error, &variance);
     f_stat  *=  data_df / (variance * q_df);
     pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
@@ -667,23 +670,31 @@ apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd
 \li "SST"
 \li "SSR"
 
-\param in   An estimated model. I use the \c expected table (which
-gives the expected value and residual for each observation), so if you
-had explicitly set \c want_expected_value=0 when doing your estimation,
-you'll have to redo the estimation without that.
+\param in   A data set, including a page named \c "Predicted". 
+The Predicted page should include observed, expected, and residual columns, which I use to
+generate the sums of squared errors and residuals, et cetera. All generalized linear
+models produce a page with this name and of this form, as do a host of other models. Nothing 
+keeps you from finding the \f$R^2\f$ of, say, a kernel smooth; it is up to you to determine 
+whether such a thing is appropriate to your given models and situation.
+
+\li If I don't find a Predicted page, I throw an error on the screen and return \c NULL.
+\li The number of observations equals the number of rows in the Predicted page
+\li The number of independent variables, needed only for the adjusted \f$R^2\f$, is from the
+number of columns in the main data set's matrix (i.e. the first page; i.e. the set of
+parameters if this is the \c parameters output from a model estimation). 
 
 \ingroup regression
   */
-apop_data *apop_estimate_coefficient_of_determination (apop_model *in){
+apop_data *apop_estimate_coefficient_of_determination (apop_data *in){
   double          sse, sst, rsq, adjustment;
-  size_t          obs     = in->data->matrix->size1;
-  size_t          indep_ct= in->data->matrix->size2 - 1;
+  size_t          indep_ct= in->matrix->size2 - 1;
   apop_data       *out    = apop_data_alloc(0, 5,-1);
-  apop_ls_settings *p      = apop_settings_get_group(in, "apop_ls");
-    apop_assert(p->want_expected_value,  NULL, 0, 'c', "I need an estimate that used want_expected_value to calculate the correlation coefficient. returning NULL.\n");
-    Apop_col_t(in->expected, "residual", v)
+    apop_data *expected = apop_data_get_page(in->parameters, "Predicted");
+    apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"Predicted\" page in your data set. Returning NULL.\n");
+    size_t obs = expected->matrix->size1;
+    Apop_col_t(expected, "residual", v)
     gsl_blas_ddot(v, v, &sse);
-    Apop_col(in->expected, 0, vv);
+    Apop_col(expected, 0, vv);
     sst = apop_vector_var(vv) * (vv->size-1);
     rsq = 1. - (sse/sst);
     adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;

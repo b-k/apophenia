@@ -55,7 +55,7 @@ static double probit_log_likelihood(apop_data *d, apop_model *p){
 }
 
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_m(p); Nullcheck_p(p);
+  Nullcheck_mv(p); Nullcheck_pv(p);
   long double	cdf, betax, deriv_base;
   apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
     gsl_vector_set_all(gradient,0);
@@ -168,10 +168,10 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
     long double ll    = 0;
     for(i=0; i < d->vector->size; i++){
         index   = find_index(gsl_vector_get(d->vector, i), factor_list, choicect);
-        ll += (index==0) ? 1 : apop_data_get(xbeta, i, index-1);
+        ll += (index==0) ? 0 : apop_data_get(xbeta, i, index-1);
     }
 
-    //Get the denominator, using the subtract-the-max trick above.
+    //Get the denominator, using the subtract-the-max trick mentioned in the documentation.
     //Don't forget the implicit beta_0, fixed at zero (so we need to add exp(0-max)).
     for(j=0; j < xbeta->matrix->size1; j++){
         APOP_ROW(xbeta, j, thisrow);

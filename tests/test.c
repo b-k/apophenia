@@ -101,9 +101,10 @@ void test_score(){
         assert(fabs(straight_est->parameters->vector->data[1]- source->parameters->vector->data[1])<1e-1);
 
         double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;
-        assert(fabs(apop_data_get(out->covariance, 0,0)-sigsqn) < 1e-3);
-        assert(fabs(apop_data_get(out->covariance, 1,1)-sigsqn/2) < 1e-3);
-        assert(apop_data_get(out->covariance, 0,1) + apop_data_get(out->covariance, 0,1) < 1e-3);
+        apop_data *cov = apop_data_get_page(out->parameters, "cov");
+        assert(fabs(apop_data_get(cov, 0,0)-sigsqn) < 1e-3);
+        assert(fabs(apop_data_get(cov, 1,1)-sigsqn/2) < 1e-3);
+        assert(apop_data_get(cov, 0,1) + apop_data_get(cov, 0,1) < 1e-3);
         apop_model_free(out);
         printf(".");
         apop_model_free(source); 
@@ -279,12 +280,13 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     v   = gsl_matrix_column(m, 0).vector;
     gsl_vector_set_all(&v, 1);
 
-    v   = gsl_matrix_column(est->expected->matrix, apop_name_find(est->expected->names, "residual", 'c')).vector;
+    apop_data *predict_tab = apop_data_get_page(est->parameters, "predict");
+    v   = gsl_matrix_column(predict_tab->matrix, apop_name_find(predict_tab->names, "residual", 'c')).vector;
     assert(fabs(apop_mean(&v)) < tolerance);
 
-    v   = gsl_matrix_column(est->expected->matrix, apop_name_find(est->expected->names, "pred", 'c')).vector;
+    Apop_col_t(predict_tab, "pred", vv);
     gsl_blas_dgemv(CblasNoTrans, 1, m, est->parameters->vector, 0, prediction);
-    gsl_vector_sub(prediction, &v);
+    gsl_vector_sub(prediction, vv);
     assert(fabs(apop_vector_sum(prediction)) < tolerance);
 }
 
@@ -292,7 +294,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
  equals a transformation of R^2.
 */
 void test_f(apop_model *est){
-apop_data   *rsq    = apop_estimate_coefficient_of_determination(est);
+apop_data   *rsq    = apop_estimate_coefficient_of_determination(est->parameters);
 apop_data   *ftab   = apop_F_test(est, NULL);
 double      n       = est->data->matrix->size1;
 double      K       = est->parameters->vector->size;

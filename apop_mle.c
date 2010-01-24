@@ -6,7 +6,7 @@ It has (more-or-less) a single public function: \ref apop_maximum_likelihood, an
 
 At the bottom are the maximum likelihood procedures themselves. There are four: Newton-type derivative methods, the no-derivative version, the with-derivative version, and the simulated annealing routine.*/
 
-/*Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "model.h"
 #include "mapply.h"
 #include "output.h"
@@ -260,7 +260,9 @@ data. See Pawitan 2001 (who cribbed a little off of Efron and Hinkley) or Klemen
  \param data The data by which your model was estimated
  \param model A model whose parameters have been estimated.
  \param delta The differential by which to step for sampling changes.  (default currently = 1e-3)
- \return A covariance matrix for the data. Also, if <tt> model->covariance != NULL</tt>, I'll set it to the result as well.  
+ \return A covariance matrix for the data. Also, if the data does not have a
+ <tt>"Covariance"</tt> page, I'll set it to the result as well [i.e., I won't overwrite an
+ existing covar].  
 
 This function uses the \ref designated syntax for inputs.
  */
@@ -287,8 +289,8 @@ APOP_VAR_ENDHEAD
         apop_name_stack(out->names, hessian->names, 'c');
     }
     apop_data_free(hessian);
-    if (!model->covariance)
-        model->covariance = out;
+    if (!apop_data_get_page(data, "Covariance"))
+        apop_data_add_page(data, out, "Covariance");
     return out;
 }
 
@@ -413,9 +415,8 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
   apop_mle_settings          *mp    = apop_settings_get_group(est, "apop_mle");
     Get_vmsizes(i->data); //vsize, msize1, tsize
     if (mp->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
-//        apop_data_add_page(params, 
-//                apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta)), "Covariance");
-        est->covariance = apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta));
+        apop_data_add_page(params, 
+                apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta)), "Covariance");
         apop_estimate_parameter_t_tests (est);
     }
     int param_ct = (params->vector ? params->vector->size : 0)

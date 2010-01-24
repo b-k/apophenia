@@ -32,7 +32,9 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
         if (!dummy)
             Apop_model_add_group(est, apop_ls);
         Apop_settings_add(est, apop_ls, want_cov, 'n');
-        est->covariance = apop_jackknife_cov(data, *est);
+        apop_data_add_page(est->parameters, 
+                apop_jackknife_cov(data, *est), 
+                "Covariance");
     }
 	return est;
 }

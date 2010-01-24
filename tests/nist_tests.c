@@ -18,10 +18,11 @@ apop_model *est  =  apop_estimate(d, apop_ols);
     assert(fabs(apop_data_get(est->parameters, 0, -1) - 0.673565789473684E-03) < TOL3);
     assert(fabs(apop_data_get(est->parameters, 1, -1) - 0.732059160401003E-06) < TOL);
     assert(fabs(apop_data_get(est->parameters, 2, -1) - -0.316081871345029E-14)    < TOL);
-    assert(fabs(apop_data_get(est->covariance, 0, 0) - pow(0.107938612033077E-03,2))    < TOL2);
-    assert(fabs(apop_data_get(est->covariance, 1, 1) - pow(0.157817399981659E-09,2))    < TOL2);
-    assert(fabs(apop_data_get(est->covariance, 2, 2) - pow(0.486652849992036E-16,2))    < TOL2);
-apop_data *cc   = apop_estimate_coefficient_of_determination(est);
+    apop_data *cov = apop_data_get_page(est->parameters, "cov");
+    assert(fabs(apop_data_get(cov, 0, 0) - pow(0.107938612033077E-03,2))    < TOL2);
+    assert(fabs(apop_data_get(cov, 1, 1) - pow(0.157817399981659E-09,2))    < TOL2);
+    assert(fabs(apop_data_get(cov, 2, 2) - pow(0.486652849992036E-16,2))    < TOL2);
+    apop_data *cc   = apop_estimate_coefficient_of_determination(est);
     assert(fabs(apop_data_get_ti(cc, "R.sq.*", -1) - 0.999999900178537)    < TOL);
     assert(fabs(apop_data_get_ti(cc, "SSR", -1) - 15.6040343244198)    < TOL3);
 }
@@ -34,8 +35,9 @@ apop_data       *d    = apop_query_to_data("select y, x, pow(x,2) as p2, \
 apop_model   *est  =  apop_estimate(d, apop_ols);
     for (i=0; i<6; i++)
         assert(fabs(apop_data_get(est->parameters, i, -1) - 1) < TOL4*10);
+    apop_data *cov = apop_data_get_page(est->parameters, "cov");
     for (i=0; i<6; i++)
-        assert(fabs(apop_data_get(est->covariance, i, i)) < TOL2);
+        assert(fabs(apop_data_get(cov, i, i)) < TOL2);
 apop_data *cc   = apop_estimate_coefficient_of_determination(est);
     assert(fabs(apop_data_get_ti(cc, "R.sq.*", -1) - 1)    < TOL);
 }

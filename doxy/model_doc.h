@@ -532,7 +532,9 @@ enum apop_multivariate_normal{
   means, and whose matrix is the covariances.
 
   Likelihoods are set.  */
-    Estimate_results16, /**< Parameters are set in the above format.    */
+    Estimate_results16, /**< Parameters are set in the above format. 
+                      <tt> apop_data_get_page(est->parameters, "cov");</tt> gives the
+                      covariance matrix of the means.   */
     Prep_routine16, /**<  None.       */
     RNG16, /**< The RNG fills an input array whose length is based on the input parameters. */
     settings16, /**<  None.    */

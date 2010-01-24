@@ -1,5 +1,5 @@
 /** \file types.h */
-/* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
+/* Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
 #ifndef __apop_estimate__
 #define __apop_estimate__
 
@@ -62,7 +62,7 @@ struct _apop_model{
     apop_settings_type *settings;
     apop_data   *parameters; /**< The vector of coefficients or parameters estimated by the model. */
     apop_data  *expected; /**< An \ref apop_data structure with three columns. If this is a model with a single dependent and lots of independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally.  There is thus currently no way to get just the predicted but not the residuals or vice versa.*/
-    apop_data  *covariance; /**< The variance-covariance matrix. */
+    apop_data  *covariance; /**< The variance-covariance matrix for the estimated parameters. */
     double      llikelihood;
     int         prepared;
     apop_data   *data;
@@ -113,7 +113,7 @@ void  apop_name_print(apop_name * n);
 APOP_VAR_DECLARE void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd);
 void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type2);
 apop_name * apop_name_copy(apop_name *in);
-int  apop_name_find(apop_name *n, char *findme, char type);
+int  apop_name_find(const apop_name *n, const char *findme, const char type);
 
 void        apop_data_free(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
@@ -125,18 +125,9 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c);
 apop_data * apop_data_copy(const apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data *out, const apop_data *in);
-double * apop_data_ptr(const apop_data *data, const int i, const int j);
-double * apop_data_ptr_it(const apop_data *in, size_t row, char* col);
-double * apop_data_ptr_ti(const apop_data *in, char* row, int col);
-double * apop_data_ptr_tt(const apop_data *in, char *row, char* col);
-double apop_data_get(const apop_data *in, size_t row, int  col);
-double apop_data_get_it(const apop_data *in, size_t row, char* col);
-double apop_data_get_ti(const apop_data *in, char* row, int col);
-double apop_data_get_tt(const apop_data *in, char *row, char* col);
-void apop_data_set(apop_data *in, size_t row, int col, double data);
-void apop_data_set_ti(apop_data *in, char* row, int col, double data);
-void apop_data_set_it(apop_data *in, size_t row, char* col, double data);
-void apop_data_set_tt(apop_data *in, char *row, char* col, double data);
+APOP_VAR_DECLARE double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page);
+APOP_VAR_DECLARE double apop_data_get(const apop_data *data, const size_t row, const int  col, const char *rowname, const char *colname, const char *page);
+APOP_VAR_DECLARE void apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *rowname, const char * colname, const char *page);
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
@@ -145,8 +136,20 @@ apop_data *apop_data_transpose(apop_data *in);
 gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth);
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 
-APOP_VAR_DECLARE apop_data * apop_data_get_page(apop_data * data, char * title);
-apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, char *title);
+APOP_VAR_DECLARE apop_data * apop_data_get_page(const apop_data * data, const char * title);
+apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage,const char *title);
+APOP_VAR_DECLARE void apop_data_rm_page(apop_data * data, const char *title, const char free_p);
+
+//Deprecated.
+double * apop_data_ptr_it(apop_data *in, const size_t row, const char* col);
+double * apop_data_ptr_ti(apop_data *in,const  char* row,const  int col);
+double * apop_data_ptr_tt(apop_data *in,const  char *row,const  char* col);
+double apop_data_get_it(const apop_data *in,const  size_t row,const  char* col);
+double apop_data_get_ti(const apop_data *in,const  char* row,const  int col);
+double apop_data_get_tt(const apop_data *in,const  char *row,const  char* col);
+void apop_data_set_ti(apop_data *in,const  char* row,const  int col,const  double data);
+void apop_data_set_it(apop_data *in,const  size_t row,const  char* col,const  double data);
+void apop_data_set_tt(apop_data *in,const  char *row,const  char* col,const  double data);
 #ifdef	__cplusplus
 }
 #endif
