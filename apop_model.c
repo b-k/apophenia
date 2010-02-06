@@ -10,7 +10,7 @@
 
 /** Allocate an \ref apop_model.
 
-This sets up the output elements of the \c apop_model: the parameters, covarinace, and expected data sets. 
+This sets up the output elements of the \c apop_model: the parameters, covariance, and expected data sets. 
 
 At close, the input model has parameters of the correct size.
 
@@ -132,7 +132,7 @@ apop_model * apop_model_copy(apop_model in){
 }
 
 /** \def apop_model_set_parameters
- Take in an unparametrized \c apop_model and return a
+ Take in an unparameterized \c apop_model and return a
   new \c apop_model with the given parameters. This would have been
   called apop_model_parametrize, but the OED lists four acceptable
   spellings for parameterise, so it's not a great candidate for a function name.
@@ -146,7 +146,7 @@ This doesn't take in data, so it won't work with models that take the number of 
 If you have a situation where these options are out, you'll have to do something like
 <tt>apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in);</tt> and then set \c in->parameters using your data.
 
-  \param in An unparametrized model, like \ref apop_normal or \ref apop_poisson.
+  \param in An unparameterized model, like \ref apop_normal or \ref apop_poisson.
   \param ... The list of parameters.
   \return A copy of the input model, with parameters set.
 
@@ -292,7 +292,7 @@ void apop_model_prep(apop_data *d, apop_model *m){
 static double disnan(double in) {return gsl_isnan(in);}
 
 /** A prediction supplies E(a missing value | original data,
-already-estimated parameters, and other supplied data elments ).
+already-estimated parameters, and other supplied data elements ).
 
 For a regression, one would first estimate the parameters of the model,
 then supply a row of predictors <b>X</b>. The value of the dependent

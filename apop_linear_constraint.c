@@ -100,7 +100,7 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
  first row of the \c data->matrix element would be [2 4 -7].
  \param margin If zero, then this is a >= constraint, otherwise I will return a point this amount within the borders. You could try \c GSL_DBL_EPSILON, which is the smallest value a \c double can hold, or something like 1e-3. (Default = 0.)
  \return The penalty = the distance between beta and the closest point that meets the constraints.
- If the constraint is not met, this \c beta is shifted by \c margin (Euclidian distance) to meet the constraints. 
+ If the constraint is not met, this \c beta is shifted by \c margin (Euclidean distance) to meet the constraints. 
 
 This function uses the \ref designated syntax for inputs.
 \todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints.

@@ -51,7 +51,7 @@ void apop_histogram_normalize(apop_model *m);
 
 
 /** A simplified version of \ref Apop_assert that always stops. Therefore, you don't need
-  the \c returnval or the stop/continue options. Because a stop is inviariably a true
+  the \c returnval or the stop/continue options. Because a stop is invariably a true
   error, the verbosity level is also omitted, so just give the test and the error.*/
 #define Apop_assert_s(test, ...) do \
     if (!(test)) {  \
@@ -111,6 +111,10 @@ apop_model * apop_ml_impute(apop_data *d, apop_model* meanvar);
 APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng);
 
 APOP_VAR_DECLARE double apop_test(double statistic, char *distribution, double p1, double p2, char tail);
+
+
+//PMF (model/apop_pmf.c)
+apop_model *apop_crosstab_to_pmf(apop_data *d);
 
 //Sorting (apop_asst.c)
 APOP_VAR_DECLARE double * apop_vector_percentiles(gsl_vector *data, char rounding); 

@@ -123,7 +123,7 @@ As well as a pointer to the model whose parameters are to be fixed, I need two s
 
 For the fixed parameters, I need to know the values at which they'll be fixed. Send me an \ref apop_data set that has the same shape as the parameters of your model; at the positions of the fixed parameters, give the values to which they will be fixed. For the free parameters, I (mostly) don't care what value they have. This set of parameters can be either set as the <tt>model_in->parameters</tt> element, or as an argument to the model. [If you give me both, I will use the one explicitly sent in rather than the one attached to the input model.]
 
-I also need to know which parameters to fix, which requires a mask that I can hold over the paramete set. Again, the mask is an \ref apop_data set of the same size and shape as your data. Where there is a nonzero marker, I will fix the parameter.
+I also need to know which parameters to fix, which requires a mask that I can hold over the parameter set. Again, the mask is an \ref apop_data set of the same size and shape as your data. Where there is a nonzero marker, I will fix the parameter.
 
 You again have two options for giving me this information. You can use the parameter matrix as the mask: just set parameters to be left free to a nonzero value (including \c GSL_NAN). Or, you can explicitly send in a mask, with ones at params to be fixed and zero elsewhere. Again, I will try the explicit mask first.
 

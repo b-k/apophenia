@@ -29,7 +29,6 @@ extern apop_model apop_loess;
 extern apop_model apop_logit;
 extern apop_model apop_lognormal;
 extern apop_model apop_multinomial;
-extern apop_model apop_multinomial_probit;
 extern apop_model apop_multivariate_normal;
 extern apop_model apop_normal;
 extern apop_model apop_ols;

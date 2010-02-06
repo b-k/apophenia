@@ -119,7 +119,7 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
  The vector is not copied, but is pointed to by the new \ref apop_data struct.
 
 \param  v   The data vector
-\return     an allocated, ready-to-use \ref apop_data struture.
+\return     an allocated, ready-to-use \ref apop_data structure.
 */
 apop_data * apop_vector_to_data(gsl_vector *v){
   apop_assert(v, NULL, 1, 'c',"Converting a NULL vector to an apop_data structure.");
@@ -147,7 +147,7 @@ void apop_text_free(char ***freeme, int rows, int cols){
 
 /** Free an \ref apop_data structure.
  
-  As with \c free(), it is safe to send in a \c NULL pointer (in which case the funtion does nothing).
+As with \c free(), it is safe to send in a \c NULL pointer (in which case the function does nothing).
 
 If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
 If you don't want to free data sets down the chain, set <tt>more=NULL</tt> before calling this.
@@ -171,7 +171,7 @@ void apop_data_free(apop_data *freeme){
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
 
-  This function does not allocate the output structure for you for the overall structure or the vector or matrix. If you want such behavior, usr \ref apop_data_copy. Both functions do allocate memory for the text.
+  This function does not allocate the output structure for you for the overall structure or the vector or matrix. If you want such behavior, use \ref apop_data_copy. Both functions do allocate memory for the text.
 
   I don't follow the \c more pointer, though \ref apop_data_copy does.
  
@@ -260,7 +260,7 @@ twice as much memory. Plan accordingly.
 \param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
 if 'c', stack columns of m1's matrix to left of m2's<br>
 (default = 'r')
-\param  inplace If \c 'i' \c 'y' or 1, use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
+\param  inplace If \c 'i' \c 'y' or 1, use \ref apop_matrix_realloc and \ref apop_vector_reallc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
@@ -797,7 +797,7 @@ apop_data *apop_data_transpose(apop_data *in){
 
 /** This function will resize a gsl_matrix to a new height or width.
 
-Data in the matrix will be retained. If the new height or width is smaller than the old, then data in the later rows/columns will be cropped away (in a non--memory-leaking manner). If the new height or width is larger than the old, then new cells will be filled with garbage; it is your repsonsibility to zero out or otherwise fill new rows/columns before use.
+Data in the matrix will be retained. If the new height or width is smaller than the old, then data in the later rows/columns will be cropped away (in a non--memory-leaking manner). If the new height or width is larger than the old, then new cells will be filled with garbage; it is your responsibility to zero out or otherwise fill new rows/columns before use.
 
 <b>Warning I</b>: Using this function is basically bad form---especially when used in a <tt>for</tt> loop that adds a column each time. A large number of <tt>realloc</tt>s can take a noticeable amount of time. You are thus encouraged to make an effort to determine the size of your data beforehand.
 
@@ -842,7 +842,7 @@ gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidt
  Data in the vector will be retained. If the new height is
  smaller than the old, then data in the bottom of the vector will be
  cropped away (in a non--memory-leaking manner). If the new height is larger than the old,
- then new cells will be filled with garbage; it is your repsonsibility
+ then new cells will be filled with garbage; it is your responsibility
  to zero out or otherwise fill them before use.
 
  <b>Warning I</b>: Using this function is basically bad form---especially

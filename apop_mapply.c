@@ -39,7 +39,7 @@ typedef double apop_fn_di(double, int);
 
 
 /**
-  Apply a function to every elemnt of a data set, matrix or vector; or, apply a vector-taking function to every row or column of a matrix.
+  Apply a function to every element of a data set, matrix or vector; or, apply a vector-taking function to every row or column of a matrix.
 
 There are a lot of options: your function could take any combination of a \c gsl_vector/\c double, a parameter set, and the position of the element in the vector or matrix. As such, the function takes eight function inputs, one for each combination of vector/matrix, params/no params, index/no index. Fortunately, because 
 this function uses the \ref designated syntax for inputs, you need specify only one.

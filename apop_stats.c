@@ -16,7 +16,7 @@ These functions simply take in a GSL vector and return its mean, variance, or ku
 \see db_moments
 
 For \ref apop_vector_var_m<tt>(vector, mean)</tt>, <tt>mean</tt> is the mean of the
-vector. This saves the trouble of re-calcuating the mean if you've
+vector. This saves the trouble of re-calculating the mean if you've
 already done so. E.g.,
 
 \code
@@ -72,7 +72,7 @@ Returns the variance of the data in the given vector.
 \ingroup vector_moments
 */
 
-/** Returns an unbiased estmate of the sample skew (population skew times  y \f$n^2/(n^2-1)\f$) of the data in the given vector.
+/** Returns an unbiased estimate of the sample skew (population skew times  y \f$n^2/(n^2-1)\f$) of the data in the given vector.
 \ingroup vector_moments
 */
 double apop_vector_skew(const gsl_vector *in){
@@ -154,7 +154,7 @@ double apop_vector_var_m(const gsl_vector *in, const double mean){
 double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb){
 	return gsl_stats_covariance(ina->data,ina->stride,inb->data,inb->stride,inb->size); }
 
-/** Returns the correllation coefficient of two vectors. It's just
+/** Returns the correlation coefficient of two vectors. It's just
 \f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
 \ingroup vector_moments
 */
@@ -165,7 +165,7 @@ double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
 /** Returns the distance between two vectors, where distance is defined
  based on the third (optional) parameter:
 
- - 'e' or 'E' (the default): scalar distance (standard Euclidian metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
+ - 'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
 where \f$i\f$ iterates over dimensions.
 
  - 'm' or 'M'  Returns the Manhattan metric distance  between two vectors: \f$\sum_i{|a_i - b_i|},\f$
@@ -186,7 +186,7 @@ where \f$i\f$ iterates over dimensions.
  apop_vector_distance(v);
  apop_vector_distance(v, .metric = 's');
  \endcode
- gives you the standard Euclidian length of \c v and its longest element.
+ gives you the standard Euclidean length of \c v and its longest element.
 
 This function uses the \ref designated syntax for inputs.
 \ingroup convenience_fns
@@ -289,7 +289,7 @@ in = gsl_vector_calloc(3);
 gsl_vector_set(in, 1, 1);
 gsl_vector_set(in, 2, 2);
 
-printf("The orignal vector:\n");
+printf("The original vector:\n");
 apop_vector_show(in);
 
 apop_vector_normalize(in, &out, 's');

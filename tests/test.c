@@ -839,27 +839,50 @@ void test_blank_db_queries(){
     assert(gsl_isnan(h));
 }
 
-void dummies_and_factors(){
+int get_factor_index(apop_data *flist, char *findme){
+    printf("seeking %s; data\n", findme);
+    apop_data_show(flist);
+  int i;
+    for (i=0; i< flist->textsize[0]; i++)
+        if (apop_strcmp(flist->text[i][0], findme))
+            return i;
+    return -2;
+}
+
+//If the dummies are a separate matrix, offset=0;
+//If the dummies are an addendum to main, offset=original_data->matrix->size2;
+static void check_for_dummies(apop_data *d, apop_data *dum, int offset){
   int i, j, n;
+    apop_data *factorlist = apop_data_get_page(d, "Factor");
+    for(i=0; i < d->textsize[0]; i ++)
+        if ((n = get_factor_index(factorlist, d->text[i][0]))>0){
+            printf("n=%i\n", n);
+            for(j=0; j < factorlist->textsize[0]-1; j ++)
+                if (j==n-1)
+                    assert(apop_data_get(dum, i, j+offset));
+                else
+                    assert(!apop_data_get(dum, i, j+offset));
+        } else
+            for(j=0; j < factorlist->textsize[0]-1; j ++)
+                assert(!apop_data_get(dum, i, j+offset));
+}
+
+void dummies_and_factors(){
+  int i;
     apop_text_to_db("data-mixed", "genes");
     apop_data *d = apop_query_to_mixed_data("mmmt", "select aa, bb, 1, a_allele from genes");
     apop_data *dum = apop_data_to_dummies(d, 0, 't', 0);
-    for(i=0; i < d->textsize[0]; i ++)
-        if ((n = apop_name_find(dum->names, d->text[i][0], 'c'))>=0)
-            for(j=1; j < dum->names->colct; j ++){
-                if (j-1==n)
-                    assert(apop_data_get(dum, i, j-1));
-                else
-                    assert(!apop_data_get(dum, i, j-1));
-        } else
-            for(j=0; j < dum->names->colct; j ++)
-                assert(!apop_data_get(dum, i, j));
+    check_for_dummies(d, dum, 0);
     apop_text_to_factors(d, 0, 2);
     for(i=0; i < d->textsize[0]; i ++) //the set is only As and Cs.
         if (!strcmp(d->text[i][0], "A"))
             assert(apop_data_get(d, i, 2) == 0);
         else
             assert(apop_data_get(d, i, 2) == 1);
+    //test combination routines
+    apop_data *d2 = apop_query_to_mixed_data("mmmt", "select aa, bb, 1, a_allele from genes");
+    apop_data_to_dummies(d2, 0,  't', .append='y');
+    check_for_dummies(d2, d2, 3);
 }
 
 void test_vector_moving_average(){

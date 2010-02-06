@@ -34,7 +34,7 @@ In the \ref outline section on map/apply, a new \f$t\f$-test on every row, with 
 
 \include t_test_by_rows.c
 
-In the documentation for \ref apop_query_to_text, a program to list all the tables in an Sqlite database.
+In the documentation for \ref apop_query_to_text, a program to list all the tables in an SQLite database.
 \include ls_tables.c
 
 Finally, a demonstration of fixing parameters to create a marginal distribution, via \ref apop_model_fix_params
@@ -73,7 +73,7 @@ your system. You should install at least the following programs:
  \li gdb
  \li gnuplot -- for plotting data
  \li groff -- needed for the man program, below
- \li gsl -- the engine that powers apophenia
+ \li gsl -- the engine that powers Apophenia
  \li less -- to read text files
  \li libtool -- needed for compiling programs
  \li make
@@ -276,13 +276,20 @@ functional forms for the right-hand side, such as including \f$x_2\f$ in
 some cases and excluding it in others. Conversely, Apophenia works to facilitate
 trying new models in the sense of switching out a linear model for a
 hierarchical, or a Bayesian model for a simulation. 
-A formula syntax makes little sense over such a broand range of models.
+A formula syntax makes little sense over such a broad range of models.
 
 As a result, Apophenia does not put the form of the left-hand side into
 the model; the data is assumed to be correctly formatted, scaled, or logged
 before being passed to the model. This is where part (1), the database,
-comes in: when you do want to try swapping out different formula specifications,
-the database provides a proxy for the sort of formula specification langauge above:
+comes in. 
+
+Many stats packages were initially designed around data literally being
+provided in decks of punchchards, and still seem to assume that the data
+is basically to be taken as read-only.  With a database, the GSL, and the
+various tools provided by Apophenia, you have more than enough tools to
+make your data look how you want it to.
+When you do want to try swapping out different formula specifications,
+the database provides a proxy for the sort of formula specification language above:
  \code
 apop_data *testme= apop_query_to_data("select y, x1, log(x2), pow(x3,2) from data");
 apop_model *est = apop_estimate(testme, apop_ols);
@@ -321,13 +328,13 @@ Outlineheader learning  Learning C
 
 <a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages.  More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.  Some people find pointers to be especially difficult; fortunately, there's a <a href="http://cslibrary.stanford.edu/104/">claymation cartoon</a> which clarifies everything.
 
-Coding often relies on gathering together many libraries; there is a section at the bottom of this outline linking to references for some libraries upon which Apohenia builds.
+Coding often relies on gathering together many libraries; there is a section at the bottom of this outline linking to references for some libraries upon which Apophenia builds.
 
 endofdiv
 
 Outlineheader usagenotes  Usage notes
 
-Here are some notes about the technical details of using the Apophenia library in your development enviornment.
+Here are some notes about the technical details of using the Apophenia library in your development environment.
 
 <b> Header aggregation </b>
 
@@ -344,11 +351,11 @@ Several functions (but nowhere near all) use a script-like syntax for calling fu
 \code
 apop_vector_distance(v1, v2, 'L', 3);
 \endcode
-But some metrics don't need a number to be fully described, so you can leave that off. Here's the standard (Euclidian) distance:
+But some metrics don't need a number to be fully described, so you can leave that off. Here's the standard (Euclidean) distance:
 \code
 apop_vector_distance(v1, v2, 'E');
 \endcode
-Because Euclidian distance is so standard, it is assumed as the default if you don't specify a norm, so you can leave out the third input:
+Because Euclidean distance is so standard, it is assumed as the default if you don't specify a norm, so you can leave out the third input:
 \code
 apop_vector_distance(v1, v2);
 \endcode
@@ -374,7 +381,7 @@ endofdiv
 
 Outlineheader debugging  Debugging
 
-The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such as printing the query sent to the databse engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_opts.verbose =1</tt> when you want feedback and <tt>apop_opts.verbose=0</tt> when you don't.
+The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such as printing the query sent to the database engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_opts.verbose =1</tt> when you want feedback and <tt>apop_opts.verbose=0</tt> when you don't.
 
 If you use \c gdb, you can define macros to use the pretty-printing functions on your data, which can be a significant help. Add these to your \c .gdbinit:
 \code
@@ -441,13 +448,13 @@ Here is another simple example, that copies a Python-side list into a matrix usi
 
 \include fisher.py
 
-\li The focus of the work is still in C, so there will likely always be things that you can do in C that can't be done in Python, and strage Python-side errors that will only be explicable if you understand the C-side.  That said, you can still access all of the functions from Python (including those that make little sense from Python).
+\li The focus of the work is still in C, so there will likely always be things that you can do in C that can't be done in Python, and strange Python-side errors that will only be explicable if you understand the C-side.  That said, you can still access all of the functions from Python (including those that make little sense from Python).
 
 endofdiv
 
 Outlineheader About SQL, the syntax for querying databases
 
- For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.  For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.  The blog of Apophenia's author includes an <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementarities between SQL and matrix manipulation packages.
+ For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.  For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.  The blog of Apophenia's author includes an <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementaries between SQL and matrix manipulation packages.
 
 Apophenia currently supports two database engines: SQLite and mySQL. SQLite is the default, because it is simpler and generally more easygoing than mySQL, and supports in-memory databases.
 
@@ -733,7 +740,7 @@ Outlineheader  matrixmathtwo  Basic Math
         \li\ref apop_vector_exp : exponentiate every element of a vector
         \li\ref apop_vector_log : take the log of every element of a vector
         \li\ref apop_vector_log10 : take the log (base 10) of every element of a vector
-        \li\ref apop_vector_distance : find the Euclidian distance between two vectors
+        \li\ref apop_vector_distance : find the Euclidean distance between two vectors
         \li\ref apop_vector_grid_distance : find the distance via the Manhattan metric between two vectors
         \li\ref apop_vector_normalize : scale/shift a matrix to have mean zero, sum to one, et cetera
         \li\ref apop_matrix_normalize : apply apop_vector_normalize to every column or row of a matrix
@@ -854,7 +861,7 @@ Outlineheader fact   Generating factors
 
 \em Factor is jargon for a numbered category. Number-crunching programs work best on numbers, so we need a function to produce a one-to-one mapping from text categories into numeric factors. 
 
-A \em dummy is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) pefer factors.
+A \em dummy is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) prefer factors.
 
             \li\ref apop_data_to_dummies()
             \li\ref apop_text_to_factors()
@@ -1136,7 +1143,7 @@ For just using a model, that's about 100% of what you need to know.
 
 Outlineheader settingswritng  Writing new settings
 
-To store the settings for your own models, you don't necessarily need any of this. The \ref apop_model structure has a \c void pointer named \c more which you can use as you see fit. If \c more_size is larger than zero (i.e., you set it to \c sizeof(your_struct)), then it will be copied via \c memcpy as necessary. Apohenia's estimation routines will never impinge on this item, so do what you feel with it.
+To store the settings for your own models, you don't necessarily need any of this. The \ref apop_model structure has a \c void pointer named \c more which you can use as you see fit. If \c more_size is larger than zero (i.e., you set it to \c sizeof(your_struct)), then it will be copied via \c memcpy as necessary. Apophenia's estimation routines will never impinge on this item, so do what you feel with it.
 
 If you do want to set up a new model, then you will need four items.  This is the sort of boilerplate that will be familiar to users of object oriented languages in the style of C++ or Java. Let your settings group be named \c ysg; then you will need
 
@@ -1230,7 +1237,7 @@ Outlineheader Test Tests & diagnostics
 
 If the statistic is from a common form, like the parameters from an OLS regression, then the commonly-associated \f$t\f$ test is probably thrown in.
 
-Some tests, like ANOVA, produce a statistic using a specialized prodecure, so Apophenia includes some functions, like \ref apop_test_anova_independence and \ref apop_test_kolmogorov, to produce the statistic and look up its significance level.
+Some tests, like ANOVA, produce a statistic using a specialized procedure, so Apophenia includes some functions, like \ref apop_test_anova_independence and \ref apop_test_kolmogorov, to produce the statistic and look up its significance level.
 
 If you are producing a statistic that you know has a common form, like a central limit theorem tells you that your statistic is Normally distributed, then the convenience function \ref apop_test will do the final lookup step of checking where your statistic lies on your chosen distribution.
 
@@ -1299,9 +1306,9 @@ Outlineheader Histosec Histograms \anchor histograms
 
 The GSL provides a <tt>gsl_histogram</tt> structure, that produces a PDF by accumulating data into bins. Apophenia wraps this into its \ref apop_model struct, so that the model-family machinery can be applied to Bayesian updating, kernel smoothing, or other methods that output a PDF.
 
-To produce a PMF from \c your_data, use \ref apop_histogram "apop_estimate(your_data, apop_histogram)". If you would like to compare this histogram to other data (observed or theoretical),then you'll need to produce a second synce histogram using \ref apop_histogram_vector_reset or \ref apop_histogram_model_reset.  Then you can send both histograms to, say, \ref apop_test_kolmogorov.
+To produce a PMF from \c your_data, use \ref apop_histogram "apop_estimate(your_data, apop_histogram)". If you would like to compare this histogram to other data (observed or theoretical),then you'll need to produce a second synced histogram using \ref apop_histogram_vector_reset or \ref apop_histogram_model_reset.  Then you can send both histograms to, say, \ref apop_test_kolmogorov.
 
-The second structure from the GSL incrementally sums up the PMF's bins to produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1] to a draw from the PMF.  Because it can be used to draw from the PMF, the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right: the the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative sum---a CMF.
+The second structure from the GSL incrementally sums up the PMF's bins to produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1] to a draw from the PMF.  Because it can be used to draw from the PMF, the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right: the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative sum---a CMF.
 
 Anyway, here are some functions to deal with these various histograms and such; see also the GSL documentation, linked at the bottom of this outline.
 
@@ -1315,7 +1322,7 @@ endofdiv
 
 Outlineheader Maxi Maximum likelihood methods
 
-If you read the section on writing models, then you already know how to do maxium likelihood on exotic setups. Just write a model that has a \c p or \c log_likelihood function, and call \c apop_estimate(your_data,your_model).  The default estimation routine is maximum likelihood.
+If you read the section on writing models, then you already know how to do maximum likelihood on exotic setups. Just write a model that has a \c p or \c log_likelihood function, and call \c apop_estimate(your_data,your_model).  The default estimation routine is maximum likelihood.
 
 MLEs have an especially large number of parameter tweaks that could be made; see the section on MLE settings above.
 
@@ -1351,7 +1358,7 @@ static double beta_zero_greater_than_x_constraint(apop_data *data, apop_model *v
 
 endofdiv
 
-    \li\ref apop_estimate_restart : Restarting an MLE with different settings can improve resuls.
+    \li\ref apop_estimate_restart : Restarting an MLE with different settings can improve results.
     \li\ref apop_maximum_likelihood()
     \li\ref apop_model_numerical_covariance()
     \li\ref apop_numerical_gradient()
@@ -1487,7 +1494,7 @@ For your convenience, here are links to some other libraries you are probably us
 
 /** \page mingw MinGW
 
-Minimalist GNU for Windows is indeed mimimalist: it is not a full POSIX subsystem, and provides no package manager. Therefore, you will have to make some adjustments and install the dependencies yourself.
+Minimalist GNU for Windows is indeed minimalist: it is not a full POSIX subsystem, and provides no package manager. Therefore, you will have to make some adjustments and install the dependencies yourself.
 
 Matt P. Dziubinski successfully used Apophenia via MinGW; here are his instructions (with edits by BK):
 
@@ -1643,7 +1650,7 @@ which simply expands to:
 \code
     double amt = varad_in.amt ? varad_in.amt : 1;
 \endcode
-Thus, the macro declares each not-in-struct variable, and so there will need to be one such declaration line for each argument. Apart from requiring delcarations, you can be creative: include sanity checks, post-vary the variables of the inputs, unpack without the macro, and so on. That is, this parent function does all of the bookkeeping, checking, and introductory shunting, so the base function can just do the math. Finally, the introductory section has to call the base function.
+Thus, the macro declares each not-in-struct variable, and so there will need to be one such declaration line for each argument. Apart from requiring declarations, you can be creative: include sanity checks, post-vary the variables of the inputs, unpack without the macro, and so on. That is, this parent function does all of the bookkeeping, checking, and introductory shunting, so the base function can just do the math. Finally, the introductory section has to call the base function.
 
 The setup goes out of its way to leave the \c _base function in the public namespace, so that those who would prefer speed to bounds-checking can simply call that function directly, using standard notation. You could eliminate this feature by just merging the two functions.
 

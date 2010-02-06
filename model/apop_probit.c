@@ -10,17 +10,13 @@
 /////////  Part II: plain old probit
 
 static apop_data *get_category_table(apop_data *d){
-    apop_data *dbase = d;
-    //First page is data; no need to check it.
-    while (d->more)
-        if (apop_strcmp(d->more->names->title, "factors"))
-            return d->more;
-        else
-            d = d->more;
-    //If you're here, we didn't find it; make the default
-    int first_col = dbase->vector ? -1 : 0;
-    apop_data_to_factors(dbase, .intype='d', .incol=first_col, .outcol=first_col);
-    return get_category_table(dbase);
+    apop_data *out = apop_data_get_page(d, "Factors");
+    if (!out) {
+        int first_col = d->vector ? -1 : 0;
+        apop_data_to_factors(d, .intype='d', .incol=first_col, .outcol=first_col);
+        out = apop_data_get_page(d, "Factors");
+    }
+    return out;
 }
 
 static void probit_prep(apop_data *d, apop_model *m){
@@ -40,7 +36,8 @@ static void probit_prep(apop_data *d, apop_model *m){
     free(tmp);
 }
 
-static double probit_log_likelihood(apop_data *d, apop_model *p){
+//The case where outcome is a single zero/one option.
+static double biprobit_log_likelihood(apop_data *d, apop_model *p){
   Nullcheck_m(p); Nullcheck_p(p);
   long double	n, total_prob	= 0;
   apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
@@ -56,6 +53,14 @@ static double probit_log_likelihood(apop_data *d, apop_model *p){
 
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   Nullcheck_mv(p); Nullcheck_pv(p);
+
+    gsl_vector *val_vector = get_category_table(p->data)->vector;
+    if (val_vector->size!=2){
+        gsl_vector * numeric_default = apop_numerical_gradient(d, p);
+        gsl_vector_memcpy(gradient, numeric_default);
+        gsl_vector_free(numeric_default);
+    }
+
   long double	cdf, betax, deriv_base;
   apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
     gsl_vector_set_all(gradient,0);
@@ -73,9 +78,6 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 	}
 	apop_data_free(betadotx);
 }
-
-apop_model apop_probit = {"Probit", .log_likelihood = probit_log_likelihood, 
-    .score = probit_dlog_likelihood, .prep = probit_prep};
 
 
 /////////  Part III: Multinomial Logit (plain logit is a special case)
@@ -123,20 +125,24 @@ static double unordered(double in){ return in == val; }
 // This is just a for loop that runs a probit on each row.
 static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
   Nullcheck_m(p); Nullcheck_p(p);
-  static apop_model *spare_probit = NULL;
+    gsl_vector *val_vector = get_category_table(p->data)->vector;
+    if (val_vector->size==2)
+        return biprobit_log_likelihood(d, p);
+    //else, multinomial loop
+    static apop_model *spare_probit = NULL;
     if (!spare_probit){
         spare_probit = apop_model_copy(apop_probit);
         spare_probit->parameters = apop_data_alloc(0,0,0);
         spare_probit->prepared++;
     }
-  static apop_data *working_data = NULL;
-  if (!working_data)
-      working_data = apop_data_alloc(0,0,0);
+    static apop_data *working_data = NULL;
+    if (!working_data)
+        working_data = apop_data_alloc(0,0,0);
 
     working_data->matrix = d->matrix;
     gsl_vector *original_outcome = d->vector;
     double ll    = 0;
-    double *vals = get_category_table(p->data)->vector->data;
+    double *vals = val_vector->data;
     for(size_t i=0; i < p->parameters->matrix->size2; i++){
         APOP_COL(p->parameters, i, param);
         val = vals[i];
@@ -203,5 +209,5 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
 apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, 
      .predict=multilogit_expected, .prep = probit_prep};
 
-apop_model apop_multinomial_probit = {"Multinomial probit",
-     .log_likelihood = multiprobit_log_likelihood, .prep = probit_prep};
+apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, 
+    .score = probit_dlog_likelihood, .prep = probit_prep};

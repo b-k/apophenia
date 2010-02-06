@@ -89,7 +89,7 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
 
 \li It is currently the default for the \ref apop_draw function, so you can just call that if you prefer.
 
-\li There are a great number of parameters, in the \c apop_arms_settings structure.  The structure also holds a history of the points tested to date. That means that the system will be more acurate as more draws are made. It also means that if the parameters change, or you use \ref apop_model_copy, you should call <tt>Apop_settings_rm_group(your_model, apop_arms)</tt> to clear the model of points that are not valid for a different situation.
+\li There are a great number of parameters, in the \c apop_arms_settings structure.  The structure also holds a history of the points tested to date. That means that the system will be more accurate as more draws are made. It also means that if the parameters change, or you use \ref apop_model_copy, you should call <tt>Apop_settings_rm_group(your_model, apop_arms)</tt> to clear the model of points that are not valid for a different situation.
 
 \li Here are the parameters that you may want to set, via a form like <tt>apop_model_add_group(your_model, apop_arms, .model=your_model, .xl=8, .xr =14);</tt>.  The \c model element is mandatory; you'll get a run-time complaint if you forget it.
 
@@ -102,7 +102,7 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
  \c npoint       : maximum number of envelope points. I \c malloc space for this many <tt>double</tt>s at the outset default = 1e5<br>
  \c do_metro     : whether the metropolis step is required (I.e., set to
  one if you're not sure if the function is log-concave). Set  to <tt>'y'</tt>es or <tt>'n'</tt>o<br>
- \c *xprev       : previous value from markov chain <br>
+ \c *xprev       : previous value from Markov chain <br>
  \c *neval       : on exit, the number of function evaluations performed 
 
   */

@@ -111,7 +111,7 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);//deprecated
 APOP_VAR_DECLARE apop_data * apop_data_to_factors(apop_data *data, char intype, int incol, int outcol);
 
-APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first);
+APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove);
 APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize);
 
 APOP_VAR_DECLARE double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct);
@@ -119,7 +119,6 @@ APOP_VAR_DECLARE double apop_kl_divergence(apop_model *top, apop_model *bottom, 
 apop_model *apop_estimate_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 
 apop_data *apop_estimate_coefficient_of_determination (apop_data *in);
-apop_data *apop_estimate_r_squared (apop_model *in);
 void apop_estimate_parameter_t_tests (apop_model *est);
 
 //apop_testing.c

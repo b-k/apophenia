@@ -12,6 +12,15 @@
 #include <gsl/gsl_histogram.h>
  
 #define Output_vars output_file, output_pipe, output_type, output_append
+
+/** These are the typical options for an output routine.
+
+  \li \c output_file The name of the output file, if any.
+  \li \c output_pipe If you have already opened a file and have a \c FILE* on hand, use
+  this instead of giving the file name.
+  \li \c output_type \c 'p' = pipe, \c 'd' = text, \c 's' = stdout
+  \li \c output_append \c 'a' = append (default), \c 'w' = write over.
+  */
 #define Output_declares char * output_file, FILE * output_pipe, char output_type, char output_append
 
 //The output functions are all multifaceted. This function and macro handles the dispatch rules.
@@ -51,7 +60,7 @@ void apop_prep_output(char **output_file, FILE ** output_pipe, char *output_type
     char apop_varad_var(output_append, 0);                    \
     apop_prep_output(&output_file, &output_pipe, &output_type, &output_append);
 
-/** Prep for gnuplot one of those cute scatterplots with a regression line through it.
+/** Prep for Gnuplot one of those cute scatterplots with a regression line through it.
 
 Currently, you only get two dimensions.
 
@@ -65,9 +74,9 @@ you. (if \c NULL, I'll estimate an OLS model for you).
 The sample program below will pull data from a database (ridership at
 the Silver Spring, MD Metro station; get the database in the {\em Modeling
 with Data} sample code, at http://modelingwithdata.org/appendices.html), then runs OLS, and produce
-a gnuplot file to write to a file named "scatter.eps". You can run the
-result through gnuplot via <tt> gnuplot scatter.gplot</tt>, and if you
-don't like the results,  you have the gnuplot file ("scatter.gplot") on
+a Gnuplot file to write to a file named "scatter.eps". You can run the
+result through Gnuplot via <tt> gnuplot scatter.gplot</tt>, and if you
+don't like the results,  you have the Gnuplot file ("scatter.gplot") on
 hand for modifications.
 
 \include scatter.c

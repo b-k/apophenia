@@ -15,7 +15,7 @@
     double tsize = vsize + msize1*msize2; \
     if (tsize||wsize||firstcol) /*prevent unused variable complaints */;
 
-// Define a static varaible, and initialize on first use.
+// Define a static variable, and initialize on first use.
 #define Staticdef(type, name, def) static type (name) = NULL; if (!(name)) (name) = (def);
 
 // Check for NULL and complain if so.

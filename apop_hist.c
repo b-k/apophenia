@@ -8,7 +8,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 /*
 The characters:
     vectors
-    hisograms (PDFs)
+    histograms (PDFs)
     histogram_pdfs (CDFs)
     models
 
@@ -57,7 +57,7 @@ apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata
  create a new histogram with the same bins, but with data from \c draws
  random draws from the parametrized model you provide.
 
-Unlike with most other histogram-genrating functions, this one will normalize the output to integrate to one.
+Unlike with most other histogram-generating functions, this one will normalize the output to integrate to one.
 It uses the \ref designated syntax for inputs.
 
 \param base An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram). I.e. a histogram model to be used as a template. (No default)

@@ -8,7 +8,7 @@
    model needs to address the headers enumerated here. At the bottom of
    this file, you'll find the null model, which you can use as a template.
 
-   I achieve the structured documentation by lying to Doxygen and telling
+   I achieve the structured documentation by lying to (*Doxygen and telling
    it that the model, like apop_OLS, is actually an enum of elements
    including overview, name, settings, &c. It'll then use the enum
    format, which has the appropriate look, giving the full documentation
@@ -149,7 +149,7 @@ enum apop_bernoulli {
     Name5,         /**< <tt>Bernoulli distribution</tt> */
     Data_format5,  /**< 
   The matrix or vector can have any size, and I just count up zeros
-  and non-zeros. The bernoulli paramter \f$p\f$ is the percentage of non-zero
+  and non-zeros. The Bernoulli parameter \f$p\f$ is the percentage of non-zero
   values in the matrix. Its variance is \f$p(1-p)\f$.
                     */
     Estimate_results5, /**< Parameters are estimated. */
@@ -183,7 +183,7 @@ enum apop_loess{
     Data_format2,  /**< 
 The data is basically OLS-like:                     
 the first column of the data is the dependent variable to be explained;
-subsequent varaibles are the independent explanatory variables.  Thus,
+subsequent variables are the independent explanatory variables.  Thus,
 your input data can either have a dependent vector plus explanatory
 matrix, or a matrix where the first column is the dependent variable.
 
@@ -506,7 +506,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
     Parameter_format15, /**< One parameter, the zeroth element of the vector.    */
     Estimate_results15, /**<  Parameters are set. 
 
-  Model's \c llikelihood element is calcuated.
+  Model's \c llikelihood element is calculated.
 
   Unless you set
   \code
@@ -522,7 +522,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
 
 /** The Multivariate Normal distribution
 
- This is the multivarate generalization of the Normal distribution.
+ This is the multivariate generalization of the Normal distribution.
 \hideinitializer \ingroup models */
 enum apop_multivariate_normal{
     Name16,         /**< <tt>Multivariate normal distribution</tt>*/
@@ -704,13 +704,18 @@ computational overhead. */
 } ;
 
 /** The Probit model.
+
+  Apophenia makes no distinction between the bivariate probit and the multinomial probit.  Just use this one.
 \hideinitializer \ingroup models */
 enum apop_probit {
     Name21,         /**< <tt>Probit</tt>*/
     Data_format21,  /**< 
- The first column of the data matrix this model expects is ones and zeros;
- the remaining columns are values of the independent variables. Thus,
- the model will return (data columns)-1 parameters.
+ The first column of the data matrix this model expects is zeros, ones, ..., enumerating
+ the factors; to get there, try \ref apop_data_to_factors; if you  forget to run it, I'll
+ run it on the first data column for you.
+ The remaining columns are values of the independent variables. Thus,
+ the model will return [(data columns)-1]\f$\times\f$[(option count)-1] parameters. 
+ Column names are options; row names are input variables.
       */
     Parameter_format21, /**< As above */
     Estimate_results21, /**< Via MLE.    */
@@ -726,6 +731,8 @@ enum apop_probit {
 } ;
 
 /** The Logit model.
+
+  Apophenia makes no distinction between the bivariate logit and the multinomial logit.  Just use this one.
 
   The likelihood of choosing item \f$j\f$ is:
   \f$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})\f$
@@ -745,9 +752,12 @@ Minka, who implemented it in his Lightspeed Matlab toolkit.]
 enum apop_logit {
     Name22,         /**< <tt>Logit</tt>*/
     Data_format22,  /**< 
- The first column of the data matrix this model expects is ones and zeros;
- the remaining columns are values of the independent variables. Thus,
- the model will return (data columns)-1 parameters.
+ The first column of the data matrix this model expects is zeros, ones, ..., enumerating
+ the factors; to get there, try \ref apop_data_to_factors; if you  forget to run it, I'll
+ run it on the first data column for you.
+ The remaining columns are values of the independent variables. Thus,
+ the model will return [(data columns)-1]\f$\times\f$[(option count)-1] parameters. 
+ Column names are options; row names are input variables.
       */
     Parameter_format22, /**< As above.    */
     Estimate_results22, /**< Via MLE.    */
@@ -763,13 +773,15 @@ enum apop_logit {
 } ;
 
 /** The Multinomial Probit model.
+  \deprecated Just use \ref apop_probit, which handles multiple options fine.
 \hideinitializer \ingroup models */
 enum apop_multinomial_probit {
     Name23,         /**< <tt>Multinomial probit</tt>*/
     Data_format23,  /**<    
  The first column of the data matrix this model expects a number
  indicating the preferred category; the remaining columns are values of
- the independent variables. Thus, the model will return N-1 columns of
+ the independent variables. 
+ Thus, the model will return N-1 columns of
  parameters, where N is the number of categories chosen.
       */
     Parameter_format23, /**< See above.    */
@@ -813,7 +825,7 @@ enum apop_wishart  {
 Making some random draws:
 
 \code
-gsl_matrix *rmatrix = gsl_marix_alloc(10, 10);
+gsl_matrix *rmatrix = gsl_matrix_alloc(10, 10);
 gsl_rng *r = apop_rng_alloc(8765);
 for (int i=0; i< 1e8; i++){
     apop_draw(rmatrix->data, r, apop_wishart);
@@ -846,7 +858,7 @@ enum apop_t_distribution  {
 enum apop_f_distribution  {
     Name26,         /**< <tt>F distribution</tt>*/
     Data_format26,  /**<    Unordered list of scalars in the matrix and/or vector.     */
-    Parameter_format26, /**< Zeroth and first elements of the vector are the the \f$df\f$s. */
+    Parameter_format26, /**< Zeroth and first elements of the vector are the \f$df\f$s. */
     Estimate_results26, /**< If you do not set an \ref apop_mle_settings
                           group beforehand, I'll just count elements and
                           set \f$df=\f$ vector count minus one, and 
@@ -864,7 +876,7 @@ enum apop_f_distribution  {
 enum apop_chi_squared  {
     Name27,         /**< <tt>Chi squared distribution</tt>*/
     Data_format27,  /**<    Unordered list of scalars in the matrix and/or vector.     */
-    Parameter_format27, /**< Zeroth element of the vector is the the \f$df\f$. */
+    Parameter_format27, /**< Zeroth element of the vector is the \f$df\f$. */
     Estimate_results27, /**< If you do not set an \ref apop_mle_settings
                           group beforehand, I'll just count elements and
                           set \f$df = n-1\f$. Else, via MLE.    */
@@ -874,7 +886,7 @@ enum apop_chi_squared  {
     Example27 /**<   */
 } ;
 
-/** The lognormal distribution
+/** The Lognormal distribution
 
 The log likelihood function for the lognormal distribution:
 
@@ -886,7 +898,7 @@ enum apop_lognormal {
     Data_format28,  /**<    I use the elements of the matrix, without regard to their order. */
     Parameter_format28, /**< Zeroth vector element is the mean (after
                          logging); first is the std dev (after logging)    */
-    Estimate_results28, /**< Parameters are set. Log likelihood is calcuated.    */
+    Estimate_results28, /**< Parameters are set. Log likelihood is calculated.    */
     Prep_routine28, /**<  None.       */
     RNG28, /**< Yes. */
     settings28, /**<  None.    */
@@ -911,7 +923,7 @@ enum apop_normal{
     Data_format29,  /**<    I use the elements of the matrix, without regard to their order. */
     Parameter_format29, /**< 
   As is custom, the first parameter (in the vector) is the mean, the second is the standard deviation (i.e., the square root of the variance). */
-    Estimate_results29, /**< Parameters are set. Log likelihood is calcuated. Covariance of the parameters is calculated unless <tt>.want_cov='n'</tt>; see below.    */
+    Estimate_results29, /**< Parameters are set. Log likelihood is calculated. Covariance of the parameters is calculated unless <tt>.want_cov='n'</tt>; see below.    */
     Predict29, /**< Returns the expected value. The <tt>->more</tt>
                  element holds a \ref apop_data set with the title <tt>"Covariance"</tt>, whose matrix holds the covariance of the mean. Format
                  subject to change. */

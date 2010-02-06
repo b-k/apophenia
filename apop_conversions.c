@@ -94,7 +94,7 @@ static void convert_array_to_line(const double **in, double **out, const int row
 
 usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
 
-If you want to intialize on the allocation line, this isn't what you want. See \ref apop_line_to_matrix.
+If you want to initialize on the allocation line, this isn't what you want. See \ref apop_line_to_matrix.
 \ingroup conversions
 */
 gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols){
@@ -117,7 +117,7 @@ have no names. Input data is copied.
 usage: \code apop_data *d = apop_array_to_data(indata, 34, 4); \endcode
 \ingroup conversions
 
-If you want to intialize on the allocation line, this isn't what you want. See \ref apop_line_to_data.
+If you want to initialize on the allocation line, this isn't what you want. See \ref apop_line_to_data.
 */
 apop_data * apop_array_to_data(const double **in, const int rows, const int cols){
     return apop_matrix_to_data(apop_array_to_matrix(in, rows, cols));
@@ -444,7 +444,7 @@ static int prep_text_reading(char *text_file, FILE **infile, regex_t *regex, reg
 
 /**
 --If the string has zero length, then it's probably a missing value.
- --If the string isn't a number, it needs quotes, and sqlite wants 0.1,
+ --If the string isn't a number, it needs quotes, and SQLite wants 0.1,
   not just .1. 
   --It may be text with no "delimiters"
  */

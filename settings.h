@@ -33,7 +33,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__})); 
 
 /* A convenience for your settings group init functions. 
- Gives the output item either the defaut value if there is one, or the value you specify. */
+ Gives the output item either the default value if there is one, or the value you specify. */
 #define apop_varad_setting(in, out, name, value) (out)->name = (in).name ? (in).name : (value);
 
 /** Retrieves a setting from a model.  See \ref Apop_settings_get_group pull the entire group.*/
@@ -159,7 +159,7 @@ typedef struct {
 typedef struct{
     apop_data           *data;
     gsl_histogram       *pdf; /**< Where the histogram is kept */
-    gsl_histogram_pdf   *cdf; /**< If you make random draws, I need a CDF aggrgation of the main PDF. I keep it here. */
+    gsl_histogram_pdf   *cdf; /**< If you make random draws, I need a CDF aggregation of the main PDF. I keep it here. */
     apop_model          *histobase;
     apop_model          *kernelbase;
     int                 bins_in; /**< Used as input. May not equal the final number of bins (\c pdf->bins) due to the infinibins.*/
@@ -297,7 +297,7 @@ mean time.
 
     lo_s.control.statistics:	determines whether the statistical quantities are 
         computed <tt>"exactly"</tt> or approximately 
-        , whiere <tt>"approximate"</tt> is the default. The former
+        , where <tt>"approximate"</tt> is the default. The former
         should only be used for testing the approximation in 
         statistical development and is not meant for routine 
         usage because computation time can be horrendous.

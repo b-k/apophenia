@@ -27,7 +27,7 @@ int imax2(int a, int b){return (a>b) ? a : b;}
 int imin2(int a, int b){return (a<b) ? a : b;}
 float fmax2(float a, float b){return (a>b) ? a : b;}
 float fmin2(float a, float b){return (a<b) ? a : b;}
-/* end R-to-apophenia additions */
+/* end R-to-Apophenia additions */
 
 static void f2xact(int nrow, int ncol, int *table, int ldtabl,
 		   double *expect, double *percnt, double *emin,

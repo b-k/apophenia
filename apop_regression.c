@@ -504,14 +504,30 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
 
 
 /** A utility to make a matrix of dummy variables. You give me a single
-vector that lists the category number for each item, and I'll return
+vector that lists the category number for each item, and I'll produce
 a matrix with a single one in each row in the column specified.
 
-After running this, you will almost certainly want to join together the output here with your main data set. E.g.,:
+After that, you have to decide what to do with the new matrix and the original data column. 
+
+\li The <tt>.remove='y'</tt> option specifies that I should use \ref apop_data_rm_column 
+to remove the column used to generate the dummies. Implement only for <tt>type=='d'</tt>.
+
+\li You can manually join the dummy data set with your main data, e.g.:
 \code
 apop_data *dummies  = apop_data_to_dummies(main_regression_vars, .col=8, .type='t');
-apop_data_stack(main_regression_vars, dummies, 'c');
+apop_data_stack(main_regression_vars, dummies, 'c', .inplace='y');
 \endcode
+
+\li By specifying <tt>.append='y'</tt> or <tt>.append='e'</tt> I will run the above two lines for you. Your \ref apop_data pointer will not change, but its \c matrix element will be reallocated (via \ref apop_data_stack).
+
+\li By specifying <tt>.append='i'</tt>, I will place the matrix of dummies in place,
+immediately after the data column you had specified. You will probably use this with
+<tt>.remove='y'</tt> to replace the single column with the new set of dummy columns.
+Bear in mind that if there are two or more dummy columns (which there probably are if you
+are bothering to use this function), subsequent column numbers will change.
+
+\li If <tt>.append='i'</tt> and you asked for a text column, I will append to the end of
+the table, which is equivalent to <tt>append='e'</tt>.
 
 \param  d The data set with the column to be dummified (No default.)
 \param col The column number to be transformed (default = 0)
@@ -521,20 +537,25 @@ apop_data_stack(main_regression_vars, dummies, 'c');
     has an entry in column zero, et cetera. If you don't know why this
     is useful, then this is what you need. If you know what you're doing
     and need something special, set this to one and the first category won't be dropped. (default = 0)
+\param append If \c 'e' or \c 'y', append the dummy grid to the end of the original data
+matrix. If \c 'i', insert in place, immediately after the original data column. (default = \c 'n')
+\param remove If \c 'y', remove the original data or text column. (default = \c 'n')
 
 \return An \ref apop_data set whose \c matrix element is the one-zero
-matrix of dummies. 
+matrix of dummies. If you used <tt>.append</tt>, then this is the main matrix.
 Also, the <tt>more</tt> element is a reference table of names and column numbers.
 
 This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first){
+APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
     apop_data *apop_varad_var(d, NULL)
     apop_assert(d, NULL, 0, 'c', "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
     int apop_varad_var(col, 0)
     char apop_varad_var(type, 't')
     int apop_varad_var(keep_first, 0)
-    return apop_data_to_dummies_base(d, col, type, keep_first);
+    char apop_varad_var(append, 'n')
+    char apop_varad_var(remove, 'n')
+    return apop_data_to_dummies_base(d, col, type, keep_first, append, remove);
 APOP_VAR_END_HEAD
     if (type == 'd'){
         apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
@@ -545,7 +566,34 @@ APOP_VAR_END_HEAD
         apop_assert(col < d->textsize[1],  NULL, 0, 's', "You asked for the text element %i but "
                                     "the data's text element has only %i elements.", col, d->textsize[1]);
     apop_data *fdummy;
-    return dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
+    apop_data *dummies= dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
+    //Now process the append and remove options.
+    if (append =='i'){
+        apop_data **split = apop_data_split(d, col+1, 'c');
+        if (remove=='n')
+            apop_data_rm_columns(split[1], (int[]){0});
+        //stack names, then matrices
+        for (int i=0; i < d->names->colct; i++)
+            free(d->names->column[i]);
+        apop_name_stack(d->names, split[0]->names, 'c');
+        apop_name_stack(d->names, dummies->names, 'c');
+        apop_name_stack(d->names, split[1]->names, 'c');
+        gsl_matrix_free(d->matrix);
+        d->matrix = apop_matrix_stack(split[0]->matrix, dummies->matrix, 'c');
+        apop_data_free(dummies);
+        apop_data_free(split[0]);
+        apop_matrix_stack(d->matrix, split[1]->matrix, 'c', .inplace='y');
+        apop_data_free(split[1]);
+        return d;
+    }
+    if (remove!='n')
+        apop_data_rm_columns(d, (int[]){col});
+    if (append =='y' || append ==1 || (append=='i' && type=='t')){
+        apop_data_stack(d, dummies, 'c', .inplace='y');
+        apop_data_free(dummies);
+        return d;
+    }
+    return dummies;
 }
 
 
@@ -689,7 +737,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_data *in){
   double          sse, sst, rsq, adjustment;
   size_t          indep_ct= in->matrix->size2 - 1;
   apop_data       *out    = apop_data_alloc(0, 5,-1);
-    apop_data *expected = apop_data_get_page(in->parameters, "Predicted");
+    apop_data *expected = apop_data_get_page(in, "Predicted");
     apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"Predicted\" page in your data set. Returning NULL.\n");
     size_t obs = expected->matrix->size1;
     Apop_col_t(expected, "residual", v)

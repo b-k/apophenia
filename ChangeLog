@@ -14,6 +14,8 @@ probably should not do these itself. As a side-effect, apop_maximum_likelihood's
 --minor rewording of COPYING2.
 **Because the Predicted table is now part of the parameter set, not the model,
     apop_estimate_coefficient_of_determination now takes in the parameter set, not the model. Just replace est in your argument with est->parameters.
+**apop_multinomial_probit folded into apop_probit, where it should've been all along.
+    Regex for the fix: "s/apop_multinomial_probit/apop_probit/g"
 
     December 2009
 --apop_strcmp

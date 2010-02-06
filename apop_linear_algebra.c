@@ -377,7 +377,7 @@ APOP_VAR_ENDHEAD
 
 \param in   the \c gsl_matrix to be subsetted
 \return     a \c gsl_matrix with the specified columns removed. If you ask me to remove no columns, I'll return a copy of the original. If you ask me to remove all columns, I'll return \c NULL.
-\param drop an array of ints. If use[7]==1, then column seven will be cut from the output. 
+\param drop an array of <tt>int</tt>s. If use[7]==1, then column seven will be cut from the output. 
 */
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
   int        ct  = 0, 

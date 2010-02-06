@@ -104,36 +104,6 @@ int apop_db_open(char *filename){
 #endif
 }
 
-/*
-int apop_db_open(char *filename){
-    int check_env = 0;
-#ifdef HAVE_LIBSQLITE3
-    if (!db) //check the environment.
-        check_env = 1;
-#endif
-#ifdef HAVE_LIBMYSQLCLIENT
-   if(!mysql_db)  
-       check_env = 1;
-#endif
-
-
-    if (check_env && getenv("APOP_DB_ENGINE") && !strcasecmp(getenv("APOP_DB_ENGINE"), "mysql"))
-        apop_opts.db_engine = 'm';
-
-    if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_db_open(filename);
-#else
-        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.\n");
-#endif
-#ifdef HAVE_LIBSQLITE3
-    return apop_sqlite_db_open(filename);
-#else
-    apop_assert(0, 1, 0, 'c', "Apophenia was compiled without SQLite support.\n");
-#endif
-}
-*/
-
 typedef struct {
     char *name;
     int isthere;
@@ -152,7 +122,7 @@ Recreating a table which already exists can cause errors, so it is good practice
 
 \param name 	the table name (no default)
 \param remove 'd'	==>delete table so it can be recreated in main.<br>
-		'n'	==>no action. return result so program can continue. (default)
+		'n'	==>no action. Return result so program can continue. (default)
 \return
 0 = table does not exist<br>
 1 = table was found, and if whattodo==1, has been deleted
@@ -438,7 +408,7 @@ If you are querying to a matrix and maybe a name, use \c
 apop_query_to_data (and set \ref apop_opts_type "apop_opts.db_name_column" if desired). But
 if your data is a mix of text and numbers, use this.
 
-The first argument is a character string consisting of the letters \c nvmtw, one for each column of the SQL output, indicating whether the column is a name, vector, matrix colum, text column, or weight vector. You can have only one n, v, and w. 
+The first argument is a character string consisting of the letters \c nvmtw, one for each column of the SQL output, indicating whether the column is a name, vector, matrix column, text column, or weight vector. You can have only one n, v, and w. 
 
 If the query produces more columns than there are elements in the column specification, then the remainder are dumped into the text section. If there are fewer columns produced than given in the spec, the additional elements will be allocated but not filled (i.e., they are uninitialized and will have garbage).
 
@@ -736,7 +706,7 @@ APOP_VAR_ENDHEAD
                                                                                                                                
 // Some stats wrappers
 
-/** Do a t-test entirely inside the database.
+/** Do a \f$t\f$-test entirely inside the database.
   Returns only the two-tailed p-value.
 \ingroup ttest
 */
@@ -754,7 +724,7 @@ double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2){
         return	fabs(1 - (1 - gsl_cdf_tdist_P(stat, a_count+b_count-2))*2); //two-tailify a one-tailed lookup.
 }
 
-/** Do a paired t-test entirely inside the database.
+/** Do a paired \f$t\f$-test entirely inside the database.
   Returns only the two-tailed p-value.
 \ingroup ttest
 */
