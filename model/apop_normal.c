@@ -68,6 +68,15 @@ static double normal_log_likelihood(apop_data *d, apop_model *params){
 	return ll;
 }
 
+static double normal_cdf(apop_data *d, apop_model *params){
+  Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 
+  Get_vmsizes(d)  //vsize
+    double val = apop_data_get(d, 0, vsize ? -1 : 0);
+    double mu = gsl_vector_get(params->parameters->vector, 0);
+    double sd = gsl_vector_get(params->parameters->vector, 1);
+    return gsl_cdf_gaussian_P(val-mu, sd);
+}
+
 /** Gradient of the log likelihood function
 
 \f$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 \f$
@@ -115,7 +124,8 @@ static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 
 apop_model apop_normal = {"Normal distribution", 2, 0, 0,
  .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, .score = normal_dlog_likelihood, 
- .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng, .predict = normal_predict};
+ .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng, 
+ .cdf = normal_cdf, .predict = normal_predict};
 
 
 //The Lognormal distribution
@@ -157,6 +167,15 @@ static double lognormal_log_likelihood(apop_data *d, apop_model *params){
 	return ll;
 }
 
+static double lognormal_cdf(apop_data *d, apop_model *params){
+  Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 
+  Get_vmsizes(d)  //vsize
+    double val = apop_data_get(d, 0, vsize ? -1 : 0);
+    double mu = gsl_vector_get(params->parameters->vector, 0);
+    double sd = gsl_vector_get(params->parameters->vector, 1);
+    return gsl_cdf_lognormal_P(val, mu, sd);
+}
+
 /* This is copied from the Normal. The first one who needs it gets to
  * fix it. 
 static void lognormal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *params){    
@@ -191,5 +210,6 @@ static void lognormal_rng(double *out, gsl_rng *r, apop_model *p){
 
 apop_model apop_lognormal = {"Lognormal distribution", 2, 0, 0,
  .estimate = lognormal_estimate, .log_likelihood = lognormal_log_likelihood, /*.score = lognormal_dlog_likelihood,*/ 
- .constraint = beta_1_greater_than_x_constraint, .draw = lognormal_rng};
+ .constraint = beta_1_greater_than_x_constraint, .draw = lognormal_rng,
+  .cdf= lognormal_cdf};
 

@@ -5,6 +5,7 @@
 
 #include "model.h"
 #include "mapply.h"
+#include "internal.h"
 #include "likelihoods.h"
 
 static double bernie_ll(double x, void * pin){ 
@@ -48,6 +49,17 @@ static void bernoulli_rng(double *out, gsl_rng *r, apop_model* eps){
     *out = gsl_rng_uniform (r) < eps->parameters->vector->data[0]; 
 }
 
+static double bernoulli_cdf(apop_data *d, apop_model *params){
+//One of those functions that just fills out the form.
+//CDF to zero = 1-p
+//CDF to one = 1
+  Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 
+  Get_vmsizes(d)  //vsize
+    double val = apop_data_get(d, 0, vsize ? -1 : 0);
+    double p = params->parameters->vector->data[0];
+    return val ? 1 : 1-p;
+}
+
 apop_model apop_bernoulli = {"Bernoulli distribution", 1,0,0,
 	.estimate = bernoulli_estimate, .log_likelihood = bernoulli_log_likelihood, 
-   .constraint =  bernoulli_constraint, .draw = bernoulli_rng};
+   .constraint =  bernoulli_constraint, .cdf = bernoulli_cdf, .draw = bernoulli_rng};

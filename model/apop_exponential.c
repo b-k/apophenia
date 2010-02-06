@@ -5,6 +5,7 @@
 
 #include "model.h"
 #include "settings.h"
+#include "internal.h"
 #include "likelihoods.h"
 
 /** If this settings group is present, models that can take rank data
@@ -107,6 +108,14 @@ static double exponential_log_likelihood(apop_data *d, apop_model *p){
 	return llikelihood;
 }
 
+static double expo_cdf(apop_data *d, apop_model *params){
+  Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 
+  Get_vmsizes(d)  //vsize
+    double val = apop_data_get(d, 0, vsize ? -1 : 0);
+    double lambda = gsl_vector_get(params->parameters->vector, 0);
+    return gsl_cdf_exponential_P(val, lambda);
+}
+
 /* The exponential distribution. A one-parameter likelihood fn.
 
 \f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
@@ -138,4 +147,4 @@ static void exponential_rng(double *out, gsl_rng* r, apop_model *p){
 apop_model apop_exponential = {"Exponential distribution", 1,0,0,
 	 .estimate = exponential_estimate, .log_likelihood = exponential_log_likelihood, 
      .score = exponential_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
-     .draw = exponential_rng};
+     .draw = exponential_rng, .cdf = expo_cdf};

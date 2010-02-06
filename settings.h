@@ -150,6 +150,13 @@ typedef struct {
     char rank_data;
 } apop_rank_settings;
 
+/** Some CDFs use random draws; some use closed-form models. 
+ */
+typedef struct {
+    int draws;  /**< For random draw methods, how many draws? Default: 10,000.*/
+    gsl_rng *rng; /**< For random draw methods. See \ref autorng on the default. */
+    apop_model *cdf_model; /**< For use by individual models as they see fit. Default=\c NULL. */
+} apop_cdf_settings;
 
 #include <gsl/gsl_histogram.h>
 /** Settings for the histogram and kernel density structures, mostly opaque. 
@@ -382,6 +389,7 @@ Apop_settings_declarations(apop_histogram)
 Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_ls)
 Apop_settings_declarations(apop_mle)
+Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_rank)
 
 

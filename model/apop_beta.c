@@ -91,10 +91,19 @@ static double beta_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-4);
 }
 
+static double beta_cdf(apop_data *d, apop_model *params){
+  Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 
+  Get_vmsizes(d)  //vsize
+    double val = apop_data_get(d, 0, vsize ? -1 : 0);
+    double alpha = gsl_vector_get(params->parameters->vector, 0);
+    double beta = gsl_vector_get(params->parameters->vector, 1);
+    return gsl_cdf_beta_P(val, alpha, beta);
+}
+
 static void beta_rng(double *out, gsl_rng *r, apop_model* eps){
     *out = gsl_ran_beta(r, apop_data_get(eps->parameters,0,-1), apop_data_get(eps->parameters,1,-1));
 }
 
 apop_model apop_beta = {"Beta distribution", 2,0,0, .estimate = beta_estimate, 
     .log_likelihood = beta_log_likelihood, .score = beta_dlog_likelihood, 
-    .constraint = beta_constraint, .draw = beta_rng};
+    .constraint = beta_constraint, .draw = beta_rng, .cdf = beta_cdf};

@@ -5,6 +5,7 @@
 
 #include "model.h"
 #include "mapply.h"
+#include "internal.h"
 #include "likelihoods.h"
 
 static double binomial_log_likelihood(apop_data*, apop_model*);
@@ -58,7 +59,7 @@ static void make_covar(apop_model *est){
 }
 
 static apop_model * binomial_estimate(apop_data * data,  apop_model *est){
-  apop_assert(data,  0, 0,'s', "You asked me to estimate the parameters of a model but sent NULL data.");
+  Nullcheck_d(data)
   double hitcount, misscount;
   char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
     get_hits_and_misses(data, method, &hitcount, &misscount);   
@@ -66,12 +67,13 @@ static apop_model * binomial_estimate(apop_data * data,  apop_model *est){
     apop_data_add_named_elmt(est->parameters, "n", n);
     apop_data_add_named_elmt(est->parameters, "p", hitcount/(hitcount + misscount));
     est->llikelihood	= binomial_log_likelihood(data, est);
+    est->dsize	        = (method == 'b') ? 2 : n;
     make_covar(est);
     return est;
 }
 
 static double binomial_log_likelihood(apop_data *d, apop_model *params){
-  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d)
   double	  n       = apop_data_get(params->parameters, 0, -1),
               p       = apop_data_get(params->parameters, 1, -1);
   double hitcount, misscount, ll = 0;
@@ -88,13 +90,34 @@ static double binomial_log_likelihood(apop_data *d, apop_model *params){
     }
 }
 
+static double binomial_cdf(apop_data *d, apop_model *est){
+  Nullcheck_m(est) Nullcheck_p(est) Nullcheck_d(d)
+  double hitcount, misscount, psum = 0;
+  char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
+    get_hits_and_misses(d, method, &hitcount, &misscount);   
+    double n = gsl_vector_get(est->parameters->vector, 0);
+    double p = gsl_vector_get(est->parameters->vector, 1);
+    for (int i=0; i< hitcount; i++)
+        psum += gsl_ran_binomial_pdf(hitcount, p, n);
+    return psum;
+}
+
 static double multinomial_constraint(apop_data *data, apop_model *b){
   //constraint is that 0 < all elmts 
     return apop_linear_constraint(b->parameters->vector, .margin = 1e-3);
 }
 
-static void binomial_rng(double *out, gsl_rng *r, apop_model* eps){
-    *out =   gsl_ran_binomial(r, eps->parameters->vector->data[1],eps->parameters->vector->data[0]); }
+static void binomial_rng(double *out, gsl_rng *r, apop_model* est){
+  double n = gsl_vector_get(est->parameters->vector, 0);
+  double p = gsl_vector_get(est->parameters->vector, 1);
+  char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
+    if (method == 'b'){
+        out[1] =  gsl_ran_binomial(r, n ,est->parameters->vector->data[0]); 
+        out[0] =  n - out[1];
+    } else
+        for (int i=0; i < n; i++)
+            out[i] = (gsl_rng_uniform(r) <= p) ? 1 : 0; //one Bernoulli draw.
+}
 
 
 static double is_nonzero(double in){return in != 0;}
@@ -163,32 +186,40 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
         apop_name_add(est->parameters->names, name, 'c');
     }
     est->llikelihood	= multinomial_log_likelihood(data, est);
+    est->dsize	        = (method == 'b') ? count->size : n;
     make_covar(est);
     return est;
 }
 
-static void multinomial_rng(double *out, gsl_rng *r, apop_model* eps){
+static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     //After the intro, cut/pasted/modded from the GSL. Copyright them.
-    apop_assert_void(eps->parameters, 0,'s', "You're trying to draw from an un-parametrized model.");
-    double * p = eps->parameters->vector->data;
-    size_t k = eps->parameters->vector->size;
+    Nullcheck_pv(est);
+    char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
+    double * p = est->parameters->vector->data;
+    size_t k = est->parameters->vector->size;
     //the trick where we turn the params into a p-vector
     int N = p[0];
-    p[0] = 1 - (apop_sum(eps->parameters->vector)-N);
+    p[0] = 1 - (apop_sum(est->parameters->vector)-N);
     double sum_p = 0.0;
+    int draw, ctr = 0;
     unsigned int sum_n = 0;
 
   /* p[i] may contain non-negative weights that do not sum to 1.0.
    * Even a probability distribution will not exactly sum to 1.0
    * due to rounding errors. 
    */
-    double norm = apop_sum(eps->parameters->vector);
+    double norm = apop_sum(est->parameters->vector);
 
     for (int i = 0; i < k; i++) {
         if (p[i] > 0.0)
-            out[i] = gsl_ran_binomial (r, p[i] / (norm - sum_p), N - sum_n);
+            draw = gsl_ran_binomial (r, p[i] / (norm - sum_p), N - sum_n);
         else
-            out[i] = 0;
+            draw = 0;
+        if (method == 'b')
+            out[i] = draw;
+        else
+            for (int k=0; k < draw; k++)
+                out[ctr++] = i;
         sum_p += p[i];
         sum_n += out[i];
     }
@@ -197,7 +228,7 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* eps){
 
 apop_model apop_binomial = {"Binomial distribution", 2,0,0,
 	.estimate = binomial_estimate, .log_likelihood = binomial_log_likelihood, 
-   .constraint = multinomial_constraint, .draw = binomial_rng};
+   .constraint = multinomial_constraint, .draw = binomial_rng, .cdf =binomial_cdf};
 
 apop_model apop_multinomial = {"Multinomial distribution", -1,0,0,
 	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 

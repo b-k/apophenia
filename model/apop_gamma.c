@@ -108,7 +108,16 @@ static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
     *out    = gsl_ran_gamma(r, gsl_vector_get(p->parameters->vector, 0), gsl_vector_get(p->parameters->vector, 1));
 }
 
+static double gamma_cdf(apop_data *d, apop_model *params){
+  Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 
+  Get_vmsizes(d)  //vsize
+    double val = apop_data_get(d, vsize ? 0, -1 : 0);
+    double alpha = gsl_vector_get(params->parameters->vector, 0);
+    double beta = gsl_vector_get(params->parameters->vector, 1);
+    return gsl_cdf_gamma_P(val, alpha, beta);
+}
+
 apop_model apop_gamma = {"Gamma distribution", 2,0,0, //estimate method is just the default MLE.
       .log_likelihood = gamma_log_likelihood, 
      .score = gamma_dlog_likelihood, .constraint = beta_zero_and_one_greater_than_x_constraint, 
-     .draw = gamma_rng};
+     .cdf = gamma_cdf, .draw = gamma_rng};

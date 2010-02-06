@@ -6,6 +6,7 @@
 #include "mapply.h"
 #include "output.h"
 #include "internal.h"
+#include "settings.h"
 #include "likelihoods.h"
 
 /** Allocate an \ref apop_model.
@@ -355,4 +356,55 @@ apop_data *apop_predict(apop_data *d, apop_model *m){
     apop_model *f = apop_ml_imputation(d, m);
     apop_model_free(f);
     return(d);
+}
+
+/* Are all the elements of v less than or equal to the corresponding elements of the reference vector? */
+static int lte(gsl_vector *v, gsl_vector *ref){
+    for (int i=0; i< v->size; i++) 
+        if(v->data[i] > gsl_vector_get(ref, i))
+            return 0;
+    return 1;
+}
+
+apop_cdf_settings *apop_cdf_settings_init(apop_cdf_settings in){
+    apop_cdf_settings *out = malloc(sizeof(apop_cdf_settings));
+    apop_varad_setting(in, out, cdf_model, NULL);
+    apop_varad_setting(in, out, draws, 1e4);
+    apop_varad_setting(in, out, rng, apop_rng_alloc(++apop_opts.rng_seed));
+    return out;
+}
+
+void apop_cdf_settings_free(apop_cdf_settings *in){
+    gsl_rng_free(in->rng);
+    apop_model_free(in->cdf_model);
+    free(in);
+}
+
+void *apop_cdf_settings_copy(apop_cdf_settings *in){
+    apop_cdf_settings *out = malloc(sizeof(apop_cdf_settings));
+    *out = *in;
+    return out;
+}
+
+/** Input a data point in canonical form and a model; returns the area of the model's PDF beneath the given point.
+
+  By default, I just make random draws from the PDF and return the percentage of those
+  draws beneath or equal to the given point. Many models have closed-form solutions that
+  make no use of random draws. 
+  */
+double apop_cdf(apop_data *d, apop_model *m){
+    if (m->cdf)
+        return m->cdf(d, m);
+    apop_cdf_settings *cs = Apop_settings_get_group(m, apop_cdf);
+    if (!cs)
+        cs = Apop_model_add_group(m, apop_cdf);
+    int tally = 0; 
+    gsl_vector *v= gsl_vector_alloc(d->matrix->size2);
+    Apop_row(d, 0, ref);
+    for (int i=0; i< cs->draws; i++){
+        apop_draw(v->data, cs->rng, m);
+        tally += lte(v, ref);
+    }
+    gsl_vector_free(v);
+    return tally/(double)cs->draws;
 }

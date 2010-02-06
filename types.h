@@ -72,6 +72,7 @@ struct _apop_model{
     void    (*score)(apop_data *d, gsl_vector *gradient, apop_model *params);
     double  (*constraint)(apop_data *data, apop_model *params);
     apop_data*  (*predict)(apop_data *d, apop_model *params);
+    double  (*cdf)(apop_data *d, apop_model *params);
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
     void (*prep)(apop_data *data, apop_model *params);
     void (*print)(apop_model *params);

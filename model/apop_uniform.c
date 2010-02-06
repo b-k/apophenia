@@ -37,18 +37,35 @@ static double unif_p(apop_data *d, apop_model *m){
     return 0;
 }
 
+static double unif_cdf(apop_data *d, apop_model *m){
+  Get_vmsizes(d) //tsize
+  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
+    double min = GSL_MIN(msize1 ? gsl_matrix_min(d->matrix) : GSL_POSINF,
+                          vsize ? gsl_vector_min(d->vector) : GSL_POSINF);
+    double max = GSL_MAX(msize1 ? gsl_matrix_max(d->matrix) : GSL_NEGINF,
+                          vsize ? gsl_vector_max(d->vector) : GSL_NEGINF);
+    double val = apop_data_get(d, 0, vsize ? -1: 0);
+    if (val <= min)
+        return 0;
+    if (val >=max)
+        return 1;
+    return (val-min)/(max-min);
+}
+
 static void uniform_rng(double *out, gsl_rng *r, apop_model* eps){
     *out =  gsl_rng_uniform(r) *(eps->parameters->vector->data[1]- eps->parameters->vector->data[0])+ eps->parameters->vector->data[0];
 }
 
 apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,  
-    .estimate = uniform_estimate,  .p = unif_p,.log_likelihood = unif_ll,  .draw = uniform_rng};
+    .estimate = uniform_estimate,  .p = unif_p,.log_likelihood = unif_ll,   
+    .draw = uniform_rng, .cdf = unif_cdf};
 
 
 
 static apop_model * improper_uniform_estimate(apop_data * data,  apop_model *m){ return m; }
 
 static double improper_unif_ll(apop_data *d, apop_model *m){ return 0; }
+static double improper_unif_cdf(apop_data *d, apop_model *m){ return 0.5; }
 static double improper_unif_p (apop_data *d, apop_model *m){ return 1; }
 
 static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
@@ -57,4 +74,5 @@ static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
 
 apop_model apop_improper_uniform = {"Improper uniform distribution", 2, 0, 0,  
     .estimate = improper_uniform_estimate,  .p = improper_unif_p,
-    .log_likelihood = improper_unif_ll,  .draw = improper_uniform_rng};
+    .log_likelihood = improper_unif_ll,  .draw = improper_uniform_rng,
+    .cdf = improper_unif_cdf};

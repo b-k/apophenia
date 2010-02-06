@@ -12,6 +12,7 @@ s/<h2>Enumerations/<h2>Models/
     s/.*>Predict[0-9].*//
     s/.*>Prep_routine[0-9].*//
     s/.*>RNG[0-9].*//
+    s/.*>CDF[0-9].*//
     s/.*>[Ee]xample[0-9].*//
     s/.*>[Ss]ettings[0-9].*//
 }
@@ -25,5 +26,6 @@ s/Estimate_results[0-9]*/Estimate results/g
 s/Predict[0-9]*/Predict/g
 s/Prep_routine[0-9]*/Prep routine/g
 s/RNG[0-9]*/RNG/g
+s/CDF[0-9]*/CDF/g
 s/[Ee]xample[0-9]\+/Example/g
 s/[Ss]ettings[0-9]\+/Settings/g

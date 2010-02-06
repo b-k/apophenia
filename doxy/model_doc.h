@@ -272,7 +272,12 @@ And now the parameter vector is a proper list of probabilities.
                         */
     Estimate_results6, /**<   Parameters are estimated. Covariance matrix is filled.    */
     Prep_routine6, /**<    None.     */
-    RNG6, /**< Yes. */
+    RNG6, /**< Yes. If you've set this to rank-type, you get a vector of two outputs:
+            <tt>out[0]</tt>=number of zero draws, 
+            <tt>out[1]</tt>=number of one draw. If you are not using the rank option, then
+            I fill an array of length \c n, with a sequence of randomly drawn ones and
+            zeros. */
+    CDF6, /**< yes  */
     settings6, /**<  \ref apop_rank_settings    */
     Example6 /**<      */
 } ;
@@ -300,6 +305,10 @@ apop_model *estimate_me = apop_model_copy(apop_binomial);
 Apop_model_add_group(estimate_me, apop_rank);
 apop_model *estimated = apop_estimate(your_data, estimate_me);
 \endcode
+
+Rank-type data is slightly more robust, because the number of bins in free-data format is
+simply the largest number found. So if there are bins \{0, 1, 2\} and your data set
+happens to consist of <tt>0 0 1 1 0</tt>, then I won't know to generate three-bin results.
                     */
     Parameter_format7, /**< 
         The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
@@ -318,7 +327,11 @@ And now the parameter vector is a proper list of probabilities.
     Estimate_results7, /**<  Parameters are estimated. Covariance matrix
                          is filled.   */
     Prep_routine7, /**<   None.      */
-    RNG7, /**< Yes. */
+    RNG7, /**< Yes. If you've set this to rank-type, you get a vector of two outputs:
+            <tt>out[0]</tt>=number of zero draws, 
+            <tt>out[1]</tt>=number of one draw. If you are not using the rank option, then
+            I fill an array of length \c n, with a sequence of randomly drawn ones and
+            zeros. */
     settings7, /**<  \ref apop_rank_settings    */
     Example7 /**<      */
 } ;
@@ -368,7 +381,8 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Parameter_format9, /**<  \f$\mu\f$ is in the zeroth element of the vector.   */
     Estimate_results9, /**<  Parameter is set.   */
     Prep_routine9, /**<  None.   */
-    RNG9, /**< Yes. */
+    RNG9, /**< Yes. Ignores the rank settings and just prooduces a single number.*/
+    CDF9, /**< Yes. Ignores the rank settings and just prooduces a single number.*/
     settings9, /**<   \ref apop_rank_settings   */
     Example9 /**<      */
 } ;
@@ -470,6 +484,10 @@ enum apop_improper_uniform {
     Estimate_results13, /**<   The \c estimate routine is just a dummy that returns its input.  */
     Prep_routine13, /**<    None.     */
     RNG13, /**< The \c draw function makes no sense, and therefore returns an error. */
+    CDF13, /**< Half of the distribution is less than every given point, so the CDF always
+             returns 0.5. One could perhaps make an argument that this should really be
+             infinity, but a half is more in the spirit of the distribution's
+             use to represent a lack of information. */
     settings13, /**< None.     */
     Example13 /**<      */
 } ;
