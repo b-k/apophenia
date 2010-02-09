@@ -224,12 +224,13 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     gsl_matrix_free(xpx);
     gsl_vector_free(xpy);
 
-    ep->llikelihood  = ols_log_likelihood(ep->data, ep);
     if (!olp->destroy_data)
         apop_data_free(set);
     if (olp->want_cov == 'y')
         apop_estimate_parameter_t_tests(ep);
 //    ep->status       = 1;
+    apop_data *info = apop_data_add_page(ep->parameters, apop_data_alloc(1,0,0), "Info");
+    apop_data_add_named_elmt(info, "log likelihood", ols_log_likelihood(ep->data, ep));
     return ep;
 }
 

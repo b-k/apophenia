@@ -38,6 +38,7 @@ typedef struct {
     int         use_constraint;
     char        *trace_path;
     FILE        **trace_file;
+    double      best_ll;
 }   infostruct;
 
 static apop_model * find_roots (infostruct p); //see end of file.
@@ -356,8 +357,10 @@ static double negshell (const gsl_vector *beta, void * in){
         apop_data_unpack(i->beta, i->model->parameters);
     if (i->trace_path && strlen(i->trace_path))
         tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
-    //The next line is not used anywhere else here. It's just for output.
-    i->model->llikelihood = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
+    //I report the log likelihood under the assumption that the final param set 
+    //matches the best ll evaluated.
+    double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
+    i->best_ll = GSL_MAX(i->best_ll, this_ll);
     return out;
 }
 
@@ -499,7 +502,7 @@ Inside the infostruct, you'll find these elements:
 	gsl_multimin_fdfminimizer_free(s);
 	if (mp->starting_pt==NULL) 
 		gsl_vector_free(x);
-    auxinfo(est->parameters, i, apopstatus, est->llikelihood);
+    auxinfo(est->parameters, i, apopstatus, i->best_ll);
 	return est;
 }
 
@@ -553,8 +556,21 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
         apopstatus	= 1;
     apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fminimizer_free(s);
-    auxinfo(est->parameters, i, apopstatus, est->llikelihood);
+    auxinfo(est->parameters, i, apopstatus, i->best_ll);
 	return est;
+}
+
+/*There is a semi-standard location for the log likelihood. Search there, and if you don't
+find it, then recalculate it.*/
+static double get_ll(apop_data *d, apop_model *est){
+    apop_data *infop = apop_data_get_page(est->parameters, "Info");
+    if (infop){
+        int index = apop_name_find(infop->names, "log likelihood", 'r');
+        if (index)
+            return gsl_vector_get(infop->vector, index);
+    }
+    //last resort: recalculate
+    return apop_log_likelihood(d, est);
 }
 
 static apop_model * dim_cycle(apop_data *d, apop_model *est){
@@ -581,9 +597,9 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est){
             apop_model *m_onedim = apop_model_fix_params(est);
             apop_maximum_likelihood(d, m_onedim);
             gsl_vector_set(x, i, m_onedim->parameters->vector->data[0]);
+            this_ll = get_ll(d, est);//only used on the last iteration.
             if (verbose)
-                printf("(%i):%g\t", i, m_onedim->llikelihood), fflush(NULL);
-            this_ll = m_onedim->llikelihood;//only used on the last iteration.
+                printf("(%i):%g\t", i, this_ll), fflush(NULL);
             apop_model_free(m_onedim);
         }
         if (verbose) printf("\n");
@@ -717,7 +733,8 @@ APOP_VAR_ENDHEAD
     apop_model *newcopy = apop_estimate(e->data, *copy);
     apop_model_free(copy);
     //Now check whether the new output is better than the old
-    if (apop_vector_bounded(newcopy->parameters->vector, boundary) && newcopy->llikelihood > e->llikelihood){
+    if (apop_vector_bounded(newcopy->parameters->vector, boundary) 
+                        && get_ll(e->data, newcopy) > get_ll(e->data, e)){
         apop_model_free(e);
         return newcopy;
     } //else:
@@ -864,7 +881,7 @@ apop_model * apop_annealing(infostruct *i){
     apop_estimate_parameter_t_tests(i->model);
     if (mp->rng)
         r = NULL;
-    auxinfo(i->model->parameters, i, 0, i->model->llikelihood);
+    auxinfo(i->model->parameters, i, 0, i->best_ll);
     return i->model;
 }
 

@@ -24,7 +24,8 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
     if (!est->parameters) 
         est->parameters   = apop_data_alloc(1,0,0);
 	gsl_vector_set(est->parameters->vector, 0, mean);
-    est->llikelihood	= poisson_log_likelihood(data, est);
+    apop_data *info = apop_data_add_page(est->parameters, apop_data_alloc(1,0,0), "Info");
+    apop_data_add_named_elmt(info, "log likelihood", poisson_log_likelihood(data, est));
     //to prevent an infinite loop, the jackknife needs to be flagged to
     //not run itself. We free-ride of the apop_ls_settings struct to signal.
     apop_ls_settings *dummy = apop_settings_get_group(est, "apop_ls");

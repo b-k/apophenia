@@ -433,33 +433,65 @@ apop_data *d9   = apop_dot(d5, d1, .form2=1);
     gsl_vector_sub(d8->vector, d9->vector);
     assert(!apop_vector_sum(d8->vector));
 }
+ 
+
+static void fill_p(apop_data *d, int v, int m1, int m2, int w, gsl_rng *r){
+    int j, k;
+    if (v)
+        for (j=0; j< v; j++)
+            gsl_vector_set(d->vector, j, gsl_rng_uniform(r));
+    if (m2)
+        for (j=0; j< m1; j++)
+            for (k=0; k< m2; k++)
+                gsl_matrix_set(d->matrix, j, k, gsl_rng_uniform(r));
+    if (w)
+        for (j=0; j< w; j++)
+            gsl_vector_set(d->weights, j, gsl_rng_uniform(r));
+}
+
+static void check_p(apop_data *d, apop_data *dout, int v, int m1, int m2, int w){
+    int j, k;
+    if (v)
+        for (j=0; j< v; j++)
+            assert(dout->vector->data[j] == d->vector->data[j]);
+    if (w)
+        for (j=0; j< w; j++)
+            assert(dout->weights->data[j] == d->weights->data[j]);
+    if (m2)
+        for (j=0; j< m1; j++)
+            for (k=0; k< m2; k++)
+                assert(gsl_matrix_get(d->matrix, j, k) == gsl_matrix_get(dout->matrix, j, k));
+}
 
 void apop_pack_test(gsl_rng *r){
-  int i, j, k, v, m1,m2;
-  apop_data *d, *dout;
+  int i, v, m1,m2, w;
+  apop_data *d, *dout, *p2, *outp2;
   gsl_vector *mid;
     for (i=0; i< 10; i++){
         v   = gsl_rng_uniform(r) > 0.5 ? gsl_rng_uniform(r)*100 : 0;
         m1  = gsl_rng_uniform(r)*100;
         m2  = gsl_rng_uniform(r) > 0.5 ? gsl_rng_uniform(r)*100 : 0;
+        w   = gsl_rng_uniform(r) > 0.5 ? gsl_rng_uniform(r)*100 : 0;
+        if (!v && !w && (!m1 || !m2))
+            continue; //I actually get this unlucky draw.
         d   = apop_data_alloc(v, m1, m2);
-        if (v)
-            for (j=0; j< v; j++)
-                gsl_vector_set(d->vector, j, gsl_rng_uniform(r));
-        if (m2)
-            for (j=0; j< m1; j++)
-                for (k=0; k< m2; k++)
-                    gsl_matrix_set(d->matrix, j, k, gsl_rng_uniform(r));
-        mid     = apop_data_pack(d);
         dout    = apop_data_alloc(v, m1, m2);
-        apop_data_unpack(mid, dout);
-        if (v)
-            for (j=0; j< v; j++)
-                assert(dout->vector->data[j] == d->vector->data[j]);
-        if (m2)
-            for (j=0; j< m1; j++)
-                for (k=0; k< m2; k++)
-                    assert(gsl_matrix_get(d->matrix, j, k) == gsl_matrix_get(dout->matrix, j, k));
+        if (w) {d->weights = gsl_vector_alloc(w);
+                dout->weights = gsl_vector_alloc(w);}
+        fill_p(d, v, m1, m2, w, r);
+        int second_p = i %2;
+        if (second_p){
+            p2 = apop_data_add_page(d, apop_data_alloc(v, m1, m2), "second p");
+            outp2 = apop_data_add_page(dout, apop_data_alloc(v, m1, m2), "second p");
+            if (w) {p2->weights = gsl_vector_alloc(w);
+                    outp2->weights = gsl_vector_alloc(w);}
+            fill_p(p2, v, m1, m2, w, r);
+        }
+        mid     = apop_data_pack(d, .all_pages= second_p ? 'y' : 'n');
+        apop_data_unpack(mid, dout, .all_pages= second_p ? 'y' : 'n');
+        check_p(d, dout, v, m1, m2, w);
+        if (second_p)
+            check_p(d->more, dout->more, v, m1, m2, w);
         if (mid) gsl_vector_free(mid); 
         apop_data_free(d); apop_data_free(dout);
         }
@@ -1330,6 +1362,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_ls, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("apop_pack/unpack test", apop_pack_test(r));
     do_test("test regex", test_regex());
     do_test("test adaptive rejection sampling", test_arms(r));
     do_test("test PMF", test_pmf());
@@ -1373,7 +1406,6 @@ int main(int argc, char **argv){
     do_test("apop_jackknife test", test_jackknife());
     do_test("apop_matrix_summarize test", test_summarize());
     do_test("apop_linear_constraint test", test_linear_constraint());
-    do_test("apop_pack/unpack test", apop_pack_test(r));
     do_test("transposition test", test_transpose());
     do_test("test unique elements", test_unique_elements());
     if (slow_tests){

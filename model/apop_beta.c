@@ -48,7 +48,9 @@ static apop_model * beta_estimate(apop_data * data,  apop_model *est){
     beta    = alpha * (1-mean)/mean;
 	gsl_vector_set(est->parameters->vector, 0, alpha);
 	gsl_vector_set(est->parameters->vector, 1, beta);
-    est->llikelihood	= beta_log_likelihood(data, est);
+    apop_data *info = apop_data_alloc(1,0,0);
+    apop_data_add_named_elmt(info, "log likelihood", beta_log_likelihood(data, est));
+    apop_data_add_page(est->parameters, info, "Info");
     //apop_numerical_covariance_matrix(apop_beta, est, data);
 	return est;
 }

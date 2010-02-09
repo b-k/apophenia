@@ -103,8 +103,7 @@ APOP_VAR_ENDHEAD
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters->vector,0), gsl_vector_get(est->parameters->vector,1));
 	if (data->names){
 		fprintf(f, "set xlabel \"%s\"\n", data->names->column[1]);
-        if (est->expected !=NULL)
-		    fprintf(f, "set ylabel \"%s\"\n", est->expected->names->column[0]);
+		fprintf(f, "set xlabel \"%s\"\n", data->names->vector);
 	}
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");
     if (output_type == 'f') 	fclose(f);

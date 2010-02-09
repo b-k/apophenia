@@ -50,6 +50,13 @@ enum apop_ols{
     level of certainty with which we can reject the hypothesis that the given 
     coefficient is zero.
 
+    Residuals: An \ref apop_data structure with three columns. If this is a model with a single dependent and lots of independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally.
+
+    Given your estimate \c est, the zeroth element is one of <br> 
+    <tt> apop_data_get(est->parameters, .row=0, .colname="observed", .page= "Predicted"),</tt><br>
+    <tt> apop_data_get(est->parameters, .row=0, .colname="predicted", .page= "Predicted") or</tt><br>
+    <tt> apop_data_get(est->parameters, .row=0, .colname="residual", .page= "Predicted").</tt><br>
+
     Also, I'll run \f$t\f$-tests on the hypothesis that each
     parameter is different from zero, by running \ref apop_estimate_parameter_t_tests, qv.
       */
@@ -852,14 +859,16 @@ for (int i=0; i< 1e8; i++){
 \endcode    */
 } ;
 
-/** The t distribution, for descriptive purposes.
+/** The t distribution, primarily for descriptive purposes.
 
  If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.  
 \hideinitializer \ingroup models */
 enum apop_t_distribution  {
     Name25,         /**< <tt>t distribution</tt>*/
     Data_format25,  /**<    Unordered list of scalars in the matrix and/or vector.     */
-    Parameter_format25, /**< Zeroth element of the vector is the \f$df\f$.    */
+    Parameter_format25, /**< vector->data[0] = mu<br>
+                            vector->data[1] = sigma<br>
+                            vector->data[2] = df */
     Estimate_results25, /**< If you do not set an \ref apop_mle_settings
                           group beforehand, I'll just count elements and
                           set \f$df = n-1\f$. Else, via MLE.    */

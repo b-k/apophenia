@@ -3696,9 +3696,10 @@ static double onerow(gsl_vector *v, void *sd){
 
 //Assumes one gaussian, unweighted.
 static double loess_ll(apop_data *d, apop_model *m){
-    Apop_col(m->expected, 2, residuals);
+    apop_data *exp = apop_data_get_page(d, "Predicted");
+    Apop_col_t(exp, "residual", residuals);
     double sd = sqrt(apop_vector_var(residuals));
-    return apop_map_sum(m->expected, .param=&sd, .part='r', .fn_vp= onerow);
+    return apop_map_sum(exp, .param=&sd, .part='r', .fn_vp= onerow);
 }
 
 static apop_model *apop_loess_est(apop_data *d, apop_model *m){
@@ -3710,20 +3711,20 @@ static apop_model *apop_loess_est(apop_data *d, apop_model *m){
 
     //setup the expected matrix. In a perfect world, this wouldn't all be cut/pasted from apop_OLS.
     //Also, it wouldn't be 14 lines.
-    out->expected = apop_data_alloc(0, d->matrix->size1, 3);
-    apop_name_add(out->expected->names, (out->data->names->colct ? out->data->names->column[0] : "expected"), 'c');
-    apop_name_add(out->expected->names, "predicted", 'c');
-    apop_name_add(out->expected->names, "residual", 'c');
+    apop_data *expect = apop_data_add_page(d, apop_data_alloc(0, d->matrix->size1, 3), "Predicted");
+    apop_name_add(expect->names, (out->data->names->colct ? out->data->names->column[0] : "expected"), 'c');
+    apop_name_add(expect->names, "predicted", 'c');
+    apop_name_add(expect->names, "residual", 'c');
     gsl_vector *v = gsl_vector_alloc(d->matrix->size1);
     double *holding = v->data;
     v->data = Apop_settings_get(out, apop_loess, lo_s.in.y);
-    Apop_col(out->expected, 0, y_data)
+    Apop_col(expect, 0, y_data)
     gsl_vector_memcpy(y_data, v);
     v->data = Apop_settings_get(out, apop_loess, lo_s.out.fitted_values);
-    Apop_col(out->expected, 1, fitted)
+    Apop_col(expect, 1, fitted)
     gsl_vector_memcpy(fitted, v);
     v->data = Apop_settings_get(out, apop_loess, lo_s.out.fitted_residuals);
-    Apop_col(out->expected, 2, resid)
+    Apop_col(expect, 2, resid)
     gsl_vector_memcpy(resid, v);
     v->data = holding;
     gsl_vector_free(v);

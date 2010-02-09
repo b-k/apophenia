@@ -27,7 +27,6 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
     double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
 	apop_data_add_named_elmt(est->parameters,"mu", mean);
 	apop_data_add_named_elmt(est->parameters,"sigma", sqrt(var));
-    est->llikelihood	= normal_log_likelihood(data, est);
 	if (!p || p->want_cov=='y'){
         apop_data *cov = apop_data_calloc(0, 2, 2);
         apop_data_set(cov, 0, 0, mean/tsize);
@@ -35,6 +34,8 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
         apop_data_add_page(est->parameters, cov, "Covariance");
     }
     est->data = data;
+    apop_data *info = apop_data_add_page(est->parameters, apop_data_alloc(1,0,0), "Info");
+    apop_data_add_named_elmt(info, "log likelihood", normal_log_likelihood(data, est));
 	return est;
 }
 
@@ -145,8 +146,9 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
     double sigsq   = log(1+ var/gsl_pow_2(mean));
 	gsl_vector_set(est->parameters->vector, 0, log(mean)- sigsq/2);
 	gsl_vector_set(est->parameters->vector, 1, sqrt(sigsq));
-    est->llikelihood	= lognormal_log_likelihood(data, est);
     est->data           = data;
+    apop_data *info = apop_data_add_page(parameters->parameters, apop_data_alloc(1,0,0), "Info");
+    apop_data_add_named_elmt(info, "log likelihood", lognormal_log_likelihood(data, parameters));
 	return est;
 }
 

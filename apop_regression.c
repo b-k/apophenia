@@ -114,7 +114,7 @@ void apop_estimate_parameter_t_tests (apop_model *est){
   if (!est->data)
       return;
   apop_data *cov = apop_data_get_page(est->parameters, "Covariance");
-  apop_assert_void(est->covariance, 1,'c', "You asked me to estimate t statistics, but I'm missing the covariance matrix.");
+  apop_assert_void(cov, 1,'c', "You asked me to estimate t statistics, but I'm missing the covariance matrix.");
     est->parameters->matrix = gsl_matrix_alloc(est->parameters->vector->size, 7);
     apop_name_add(est->parameters->names, "p value", 'c');
     apop_name_add(est->parameters->names, "confidence", 'c');
@@ -188,7 +188,7 @@ APOP_VAR_END_HEAD
     gsl_vector      *qprimebetaminusc_qprimexpxinvqinv   = gsl_vector_calloc(contrast_ct);
     double          f_stat, variance, pval;
     int             q_df,
-                data_df     = set->size1 - est->parameters->vector->size;
+                    data_df     = set->size1 - est->parameters->vector->size;
     if (!normalize)
         gsl_matrix_memcpy(data, set);
     Apop_matrix_col(data, 0, v);

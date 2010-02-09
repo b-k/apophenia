@@ -111,7 +111,7 @@ static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
 static double gamma_cdf(apop_data *d, apop_model *params){
   Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 
   Get_vmsizes(d)  //vsize
-    double val = apop_data_get(d, vsize ? 0, -1 : 0);
+    double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double alpha = gsl_vector_get(params->parameters->vector, 0);
     double beta = gsl_vector_get(params->parameters->vector, 1);
     return gsl_cdf_gamma_P(val, alpha, beta);

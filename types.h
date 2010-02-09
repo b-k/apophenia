@@ -61,9 +61,7 @@ struct _apop_model{
                     the size of the data the RNG will return. */
     apop_settings_type *settings;
     apop_data   *parameters; /**< The vector of coefficients or parameters estimated by the model. */
-    apop_data  *expected; /**< An \ref apop_data structure with three columns. If this is a model with a single dependent and lots of independent vars, then the first column is the actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values: \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally.  There is thus currently no way to get just the predicted but not the residuals or vice versa.*/
-    apop_data  *covariance; /**< The variance-covariance matrix for the estimated parameters. */
-    double      llikelihood;
+    apop_model **param_dist;
     int         prepared;
     apop_data   *data;
     apop_model * (*estimate)(apop_data * data, apop_model *params);

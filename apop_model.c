@@ -97,9 +97,9 @@ void apop_model_show (apop_model * print_me){
 		printf("\nThe covariance matrix:\n");
         apop_data_show(cov);
 	}
-//under the false presumption that if it is calculated it is never quite ==0.
-	if (print_me->log_likelihood)
-		printf("\nlog likelihood: \t%g\n", print_me->llikelihood);
+    apop_data *info = apop_data_get_page(print_me->parameters, "info"); 
+    if (info)
+        apop_data_show(info);
 }
 
 /** Currently an alias for \ref apop_model_show, but when I get

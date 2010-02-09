@@ -4,6 +4,12 @@
 !!Big.
 ]
 
+    February 2009
+--Added CDF method to the apop_model, including apop_cdf dispatch method and default via random draws.
+**Defininitvely removed the residual, covariance, and llikelihood elements from the
+    apop_model struct. The first two will be pages appended to the data and parameters,
+    respectively, and the last will be in the Info page appended to the parameters.
+
     0.23 January 2009
 **expected_value element of the model renamed predict; made coherent across models.
 !!apop_data set now has a ->more pointer to an additional apop_data set, e.g., for data + covariances or predictions + confidence intervals.

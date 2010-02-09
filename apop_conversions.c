@@ -800,13 +800,22 @@ APOP_VAR_END_HEAD
 
 
 /** This is the complement to \c apop_data_pack, qv. It writes the \c gsl_vector produced by that function back
-    to the \c apop_data set you provide. It overwrites the data in the vector and matrix elements (and that's it, so names or text are as before).
+    to the \c apop_data set you provide. It overwrites the data in the vector and matrix elements and, if present, the \c weights (and that's it, so names or text are as before).
 
- \param in a \c gsl_vector of the form produced by \c apop_data_pack.
-\param d   that data set to be filled. Must be allocated to the correct size.
+ \param in a \c gsl_vector of the form produced by \c apop_data_pack. No default; must not be \c NULL.
+\param d   that data set to be filled. Must be allocated to the correct size. No default; must not be \c NULL.
+\param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
+pages; else fill only the first page. Default = \c 'n'.
+
+This function uses the \ref designated syntax for inputs.
 \ingroup conversions
 */
-void apop_data_unpack(const gsl_vector *in, apop_data *d){
+APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char all_pages){
+    const gsl_vector * apop_varad_var(in, NULL);
+    apop_data* apop_varad_var(d, NULL);
+    char apop_varad_var(all_pages, 'n');
+    apop_data_unpack_base(in, d, all_pages);
+APOP_VAR_ENDHEAD
   int           offset   = 0;
   gsl_vector    vin, vout;
     if(d->vector){
@@ -821,11 +830,29 @@ void apop_data_unpack(const gsl_vector *in, apop_data *d){
             gsl_vector_memcpy(&vout, &vin);
             offset  += d->matrix->size2;
         }
+    if(d->weights){
+        vin = gsl_vector_subvector((gsl_vector *)in, offset, d->weights->size).vector;
+        gsl_vector_memcpy(d->weights, &vin);
+        offset  += d->weights->size;
+    }
+    if ((all_pages == 'y' ||all_pages =='Y')&& d->more){
+        vin = gsl_vector_subvector((gsl_vector *)in, offset, in->size - offset).vector;
+        apop_data_unpack(&vin, d->more, .all_pages='y');
+    }
+}
+
+static size_t sizecount(const apop_data *in, const int all_pp){ 
+    if (!in)
+        return 0;
+    return (in->vector ? in->vector->size : 0)
+             + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0)
+             + (in->weights ? in->weights->size : 0)
+             + (all_pp ? sizecount(in->more, all_pp) : 0);
 }
 
 /** Sometimes, you need to turn an \c apop_data set into a column of
  numbers. Thus, this function, that takes in an apop_data set and outputs a \c gsl_vector.
- It is valid to use the \c out_vector->data element as an array of \c doubles of size \c out_vector->data->size.
+ It is valid to use the \c out_vector->data element as an array of \c doubles of size \c out_vector->data->size (i.e. its <tt>stride==1</tt>).
 
  The complement is \c apop_data_unpack. I.e., 
 \code
@@ -833,26 +860,30 @@ apop_data_unpack(apop_data_pack(in_data), data_copy)
 \endcode
 will return the original data set (stripped of text and names).
 
- \param in an \c apop_data set. (No default. If \c NULL, return \c NULL).
- \param out If this is not \c NULL, then put the output here. The dimensions must match exactly. If \c NULL, then allocate a new data set. 
- \return A \c gsl_vector with the vector data (if any), then each row of data (if any). If \c out is not \c NULL, then this is a pointer there.
+ \param in an \c apop_data set. No default; if \c NULL, return \c NULL.
+ \param out If this is not \c NULL, then put the output here. The dimensions must match exactly. If \c NULL, then allocate a new data set. Default = \c NULL. 
+  \param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
+pages; else fill only the first page. Default = \c 'n'.
+
+ \return A \c gsl_vector with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <tt>&& .all_pages=='y'</tt>). If \c out is not \c NULL, then this is \c out.
+
+This function uses the \ref designated syntax for inputs.
 \ingroup conversions
  */
-APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out){
+APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages){
     const apop_data * apop_varad_var(in, NULL);
     if (!in) return NULL;
     gsl_vector * apop_varad_var(out, NULL);
+    char apop_varad_var(all_pages, 'n');
     if (out) {
-        int total_size    = (in->vector ? in->vector->size : 0)
-                       + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0);
-        apop_assert(in->vector->size == total_size, NULL, 0, 's', "The input data set has %i elements,"
+        int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'));
+        apop_assert(out->size == total_size, NULL, 0, 's', "The input data set has %i elements,"
                " but the output vector you want to fill has size %zu. Please make these sizes equal."
-               , total_size, in->vector->size);
+               , total_size, out->size);
     }
-    return apop_data_pack_base(in, out);
+    return apop_data_pack_base(in, out, all_pages);
 APOP_VAR_ENDHEAD
-  int total_size    = (in->vector ? in->vector->size : 0)
-                       + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0);
+        int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'));
     if (!total_size)
         return NULL;
   int offset        = 0;
@@ -871,8 +902,26 @@ APOP_VAR_ENDHEAD
             gsl_vector_memcpy(&vout, &vin);
             offset  += in->matrix->size2;
         }
+    if (in->weights){
+        vout     = gsl_vector_subvector((gsl_vector *)out, offset, in->weights->size).vector;
+        gsl_vector_memcpy(&vout, in->weights);
+        offset  += in->weights->size;
+    }
+    if ((all_pages == 'y' ||all_pages =='Y') && in->more){
+        vout = gsl_vector_subvector((gsl_vector *)out, offset, out->size - offset).vector;
+        apop_data_pack(in->more, &vout, .all_pages='y');
+    }
     return out;
 }
+
+/* This function might give users a way to look up the location of an element in a packed
+   list. It seemes theoretically useful, but am not yet convinced. So, here's a
+   placeholder.
+APOP_VAR_HEAD apop_data_pack_order(apop_data *ref, size_t row, size_t col, char *page){
+
+APOP_VAR_ENDHEAD
+
+} */
 
 /** \def apop_data_fill (in, ap)
 Fill a pre-allocated data set with values.
