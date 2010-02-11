@@ -4,7 +4,11 @@
 
 extern apop_model apop_pmf;
 
-static apop_model *estim (apop_data *d, apop_model *out){
+/** For usage, see the documentation for the \ref apop_pmf model. 
+  \param d An input crosstab
+  \return A PMF model which has a single line for each nonzero line of the crosstab.
+ */
+apop_model *apop_crosstab_to_pmf (apop_data *d){
     Get_vmsizes(d) //tsize
     int use_matrix=0, use_vector = 0;
     size_t ctr = 0;
@@ -12,6 +16,7 @@ static apop_model *estim (apop_data *d, apop_model *out){
     if (d->matrix) use_matrix++;
     else if (d->vector) use_vector++;
     else apop_error(0, 's', "You gave me an input set with neither vector nor matrix data.\n");
+    apop_model *out = apop_model_copy(apop_pmf);
     out->parameters = apop_data_alloc(0, tsize, (use_matrix ? 2: 1));
     out->parameters->weights = gsl_vector_alloc(tsize);
     out->more = NULL;
@@ -37,6 +42,11 @@ static apop_model *estim (apop_data *d, apop_model *out){
     return out;
 }
 
+static apop_model *estim (apop_data *d, apop_model *out){
+    out->parameters = d;
+    return out;
+}
+
 /*
 //generate a CDF
 static apop_model *estim (apop_data *d, apop_model *m){
@@ -58,37 +68,44 @@ static apop_model *estim (apop_data *d, apop_model *m){
 */
 
 static void draw (double *out, gsl_rng *r, apop_model *m){
-    size_t size = m->parameters->weights->size;
-    if (!m->more){
-        m->more = gsl_vector_alloc(size);
-        gsl_vector *cdf = m->more; //alias.
-        cdf->data[0] = m->parameters->weights->data[0];
-        for (int i=1; i< size; i++)
-            cdf->data[i] = m->parameters->weights->data[i] + cdf->data[i-1];
-        //Now make sure the last entry is one.
-        gsl_vector_scale(cdf, 1./cdf->data[size-1]);
-    }
-    double draw = gsl_rng_uniform(r);
-    //do a binary search for where draw is in the CDF.
-    double *cdf = ((gsl_vector*)m->more)->data; //alias.
-    size_t top = size, bottom = 0, current = (top+bottom)/2.;
-    if (current==0){//array of size one or two
-        if (size!=0) 
-            if (cdf[0] < draw)
-                current = 1;
-    } else while (!(cdf[current]>=draw && cdf[current-1] < draw)){
-        if (cdf[current] < draw){ //step up
-            bottom = current;
-            if (current == top-1)
-                current ++;
-            else
-                current = (bottom + top)/2.;
-        } else if (cdf[current-1] >= draw){ //step down
-            top = current;
-            if (current == bottom+1)
-                current --;
-            else
-                current = (bottom + top)/2.;
+    size_t current; 
+    if (!m->parameters->weights) //all rows are equiprobable
+        current = apop_random_int(.rng = r,
+                  .max= (m->parameters->vector ? m->parameters->vector->size : m->parameters->matrix->size1));
+    else {
+        size_t size = m->parameters->weights->size;
+        if (!m->more){
+            m->more = gsl_vector_alloc(size);
+            gsl_vector *cdf = m->more; //alias.
+            cdf->data[0] = m->parameters->weights->data[0];
+            for (int i=1; i< size; i++)
+                cdf->data[i] = m->parameters->weights->data[i] + cdf->data[i-1];
+            //Now make sure the last entry is one.
+            gsl_vector_scale(cdf, 1./cdf->data[size-1]);
+        }
+        double draw = gsl_rng_uniform(r);
+        //do a binary search for where draw is in the CDF.
+        double *cdf = ((gsl_vector*)m->more)->data; //alias.
+        size_t top = size, bottom = 0; 
+        current = (top+bottom)/2.;
+        if (current==0){//array of size one or two
+            if (size!=0) 
+                if (cdf[0] < draw)
+                    current = 1;
+        } else while (!(cdf[current]>=draw && cdf[current-1] < draw)){
+            if (cdf[current] < draw){ //step up
+                bottom = current;
+                if (current == top-1)
+                    current ++;
+                else
+                    current = (bottom + top)/2.;
+            } else if (cdf[current-1] >= draw){ //step down
+                top = current;
+                if (current == bottom+1)
+                    current --;
+                else
+                    current = (bottom + top)/2.;
+            }
         }
     }
     //done searching. current should now be the right row index.
@@ -106,7 +123,9 @@ double pmf_p(apop_data *d, apop_model *m){
             if (apop_data_get(d, i,j) != apop_data_get(m->parameters, i, j))
                 break;
         if (j==msize2) //all checks passed
-            return m->parameters->weights->data[i];
+            return m->parameters->weights
+                     ? m->parameters->weights->data[i]
+                     : 1./(vsize ? vsize : msize1); //no weights means any known event is equiprobable
     }
     return 0;
 }

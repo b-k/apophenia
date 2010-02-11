@@ -9,34 +9,40 @@
 #include "stats.h"
 #include "asst.h"
 
-void * apop_ls_settings_copy(apop_ls_settings *in){
-  apop_ls_settings *out  = malloc(sizeof(*out));
+void * apop_lm_settings_copy(apop_lm_settings *in){
+  apop_lm_settings *out  = malloc(sizeof(*out));
     *out =  *in;
     out->instruments = apop_data_copy(in->instruments);
+    if (in->input_distribution)
+        out->input_distribution = apop_model_copy(*in->input_distribution);
     return out;
 }
 
-void apop_ls_settings_free(apop_ls_settings *in){ free(in); }
+void apop_lm_settings_free(apop_lm_settings *in){ 
+    apop_model_free(in->input_distribution);
+    free(in); 
+}
 
 /** Initialize the settings for a least-squares--type model. For use
-  with \ref Apop_model_add_group.  See \ref apop_ls_settings for the possible elements to set.
+  with \ref Apop_model_add_group.  See \ref apop_lm_settings for the possible elements to set.
   */
-apop_ls_settings * apop_ls_settings_init(apop_ls_settings in){
-  apop_ls_settings *out  = calloc(1, sizeof(*out));
+apop_lm_settings * apop_lm_settings_init(apop_lm_settings in){
+  apop_lm_settings *out  = calloc(1, sizeof(*out));
     apop_varad_setting(in, out, want_cov, 'y');
     apop_varad_setting(in, out, want_expected_value, 'y');
     if (out->want_cov == 1) out->want_cov = 'y';
     if (out->want_expected_value == 1) out->want_expected_value = 'y';
+    apop_varad_setting(in, out, input_distribution, apop_model_copy(apop_improper_uniform));
     return out;
 }
 
-/*apop_ls_settings * apop_ls_settings_alloc(apop_data *data){
-    return apop_ls_settings_init((apop_ls_settings){ }); }*/
+/*apop_lm_settings * apop_lm_settings_alloc(apop_data *data){
+    return apop_lm_settings_init((apop_lm_settings){ }); }*/
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
-  apop_ls_settings   *p = apop_settings_get_group(e, "apop_ls");
-    apop_data *predicted = apop_data_get_page(e->parameters, "Predicted");
+  apop_lm_settings   *p = apop_settings_get_group(e, "apop_lm");
+    apop_data *predicted = apop_data_get_page(e->data, "Predicted");
     if (predicted){
         apop_name_add(predicted->names, (e->data->names->colct ? e->data->names->column[0] : "Observed"), 'c');
         apop_name_add(predicted->names, "Predicted", 'c');
@@ -92,12 +98,12 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
   apop_assert(p->parameters, 0, 0,'s', "You asked me to evaluate an un-parametrized model. Returning zero.");
   long double	ll  = 0; 
   long double      sigma, actual, weight;
-  double expected;
-  int use_weights =  (!strcmp(p->name, "Weighted Least Squares") && d->weights);
+  double expected, x_prob;
+  apop_model *input_distribution = Apop_settings_get(p, apop_lm, input_distribution);
   gsl_matrix	*data		    = d->matrix;
   gsl_vector  *errors         = gsl_vector_alloc(data->size1);
 	for (size_t i=0;i< data->size1; i++){
-        APOP_ROW(d, i, datarow);
+        Apop_row(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
             actual       = apop_data_get(d,i, -1);
@@ -109,8 +115,12 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
     }
     sigma   = sqrt(apop_vector_var(errors));
 	for(size_t i=0;i< data->size1; i++){
-        weight       = use_weights ? gsl_vector_get(d->weights, i) : 1; 
-        ll  += log(gsl_ran_gaussian_pdf(gsl_vector_get(errors, i), sigma)* weight);
+        Apop_row(d, i, datarow);
+        gsl_matrix_view m = gsl_matrix_view_vector(datarow, 1, datarow->size);
+        apop_data justarow = {.matrix=&(m.matrix)};
+        x_prob = apop_p(&justarow, input_distribution); //probably improper uniform, and so just 1 anyway.
+        weight       = d->weights ? gsl_vector_get(d->weights, i) : 1; 
+        ll  += log(gsl_ran_gaussian_pdf(gsl_vector_get(errors, i), sigma)* weight * x_prob);
 	} 
     gsl_vector_free(errors);
     return ll;
@@ -125,7 +135,6 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
   gsl_vector  *errors         = gsl_vector_alloc(data->size1);
   gsl_vector  *normscore      = gsl_vector_alloc(2);
   apop_data  *subdata      = apop_data_alloc(0,1,1);
-  int use_weights =  (!strcmp(p->name, "Weighted Least Squares") && d->weights);
 	for(size_t i=0;i< data->size1; i++){
         APOP_ROW(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
@@ -143,7 +152,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
 	for(size_t i=0;i< data->size1; i++){
         apop_data_set(subdata, 0, 0, gsl_vector_get(errors, i));
         apop_score(subdata, normscore, norm);
-        weight       = use_weights ? gsl_vector_get(d->weights, i) : 1; 
+        weight       = d->weights ? gsl_vector_get(d->weights, i) : 1; 
         for(size_t j=0; j< data->size2; j++)
             apop_vector_increment(gradient, j, weight * apop_data_get(d, i, j) * gsl_vector_get(normscore, 0));
 	} 
@@ -153,7 +162,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
 
 
 static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_model *out){
-  apop_ls_settings   *p =  apop_settings_get_group(out, "apop_ls");
+  apop_lm_settings   *p =  apop_settings_get_group(out, "apop_lm");
 	if ((p->want_cov!='y') && (p->want_expected_value != 'y') ){	
 		//then don't calculate (X'X)^{-1}
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
@@ -171,7 +180,7 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
     s_sq    /= data->size1 - data->size2;   //\sigma^2 = e'e / df
 	gsl_matrix_scale(cov, s_sq);            //cov = \sigma^2 (X'X)^{-1}
 	if (p->want_expected_value){
-        apop_data *predicted_page = apop_data_get_page(out->parameters, "Predicted");
+        apop_data *predicted_page = apop_data_get_page(out->data, "Predicted");
         gsl_matrix_set_col(predicted_page->matrix, 0, y_data);
         gsl_matrix_set_col(predicted_page->matrix, 2, error);
         predicted   = gsl_matrix_column(predicted_page->matrix, 1).vector;
@@ -184,20 +193,36 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
     apop_data_add_page(out->parameters, apop_matrix_to_data(cov), "Covariance");
 }
 
+static void ols_rng(double *out, gsl_rng *r, apop_model *m){
+    //X is drawn from the input distribution, then Y = X\beta + epsilon
+    apop_lm_settings   *olp =  apop_settings_get_group(m, "apop_lm");
+    apop_draw(out+1, r, olp->input_distribution);
+
+    gsl_vector *tempdata = gsl_vector_alloc(m->parameters->vector->size);
+    double *ttt = tempdata->data;
+    tempdata->data = out+1;
+    gsl_blas_ddot(tempdata, m->parameters->vector, out);
+    tempdata->data = ttt;
+    gsl_vector_free(tempdata);
+
+    double sigma_sq = apop_data_get(m->parameters, .row=-1, .colname="SSE", .page="Info")/m->data->matrix->size1;
+    out[0] += gsl_ran_gaussian(r, sigma_sq);
+}
+
 static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     apop_assert(inset,  NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set;
 //    ep->status = 0;
-    apop_ls_settings   *olp =  apop_settings_get_group(ep, "apop_ls");
+    apop_lm_settings   *olp =  apop_settings_get_group(ep, "apop_lm");
     if (!olp) 
-        olp = Apop_model_add_group(ep, apop_ls);
+        olp = Apop_model_add_group(ep, apop_lm);
     ep->data = inset;
     set = olp->destroy_data ? inset : apop_data_copy(inset); 
     
     gsl_vector *weights    = olp->destroy_data      //this may be NULL.
                                 ? ep->data->weights 
                                 : apop_vector_copy(ep->data->weights);
-    if (apop_strcmp(ep->name, "Weighted Least Squares") && weights)
+    if (weights)
         for (size_t i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
@@ -205,7 +230,7 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
   gsl_vector *xpy        = gsl_vector_calloc(set->matrix->size2);
   gsl_matrix *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
     if (olp->want_expected_value)
-        apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size1, 3), "Predicted");
+        apop_data_add_page(ep->data, apop_data_alloc(0, set->matrix->size1, 3), "Predicted");
     if (olp->want_cov=='y')
         apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size2, set->matrix->size2), "Covariance");
     prep_names(ep);
@@ -231,6 +256,9 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
 //    ep->status       = 1;
     apop_data *info = apop_data_add_page(ep->parameters, apop_data_alloc(1,0,0), "Info");
     apop_data_add_named_elmt(info, "log likelihood", ols_log_likelihood(ep->data, ep));
+    apop_data *r_sq = apop_estimate_coefficient_of_determination(ep->data); //Add R^2-type info to info page.
+    apop_data_stack(info, r_sq, .inplace='y');
+    apop_data_free(r_sq);
     return ep;
 }
 
@@ -246,10 +274,7 @@ apop_data *ols_predict (apop_data *in, apop_model *m){
 }
 
 apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .estimate =apop_estimate_OLS, 
-            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep, .predict=ols_predict};
-
-apop_model apop_wls = {"Weighted Least Squares", .vbase = -1, .estimate = apop_estimate_OLS, 
-            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep= ols_prep};
+            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep, .predict=ols_predict, .draw=ols_rng};
 
 
 //Instrumental variables
@@ -281,9 +306,9 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
   apop_assert(inset, NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set, *z;
   int               i;
-    apop_ls_settings   *olp =  apop_settings_get_group(ep, "apop_ls");
+    apop_lm_settings   *olp =  apop_settings_get_group(ep, "apop_lm");
     if (!olp) 
-        olp = Apop_model_add_group(ep, apop_ls);
+        olp = Apop_model_add_group(ep, apop_lm);
     olp->want_cov       = 'n';//not working yet.
     if (!olp->instruments || !olp->instruments->matrix->size2) 
         return apop_estimate(inset, apop_ols);
@@ -303,7 +328,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
 
   apop_data    *y_data     = apop_data_alloc(set->matrix->size1, 0, 0); 
     if (olp->want_expected_value)
-        apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size1, 3), "Predicted");
+        apop_data_add_page(ep->data, apop_data_alloc(0, set->matrix->size1, 3), "Predicted");
     if (olp->want_cov=='y')
         apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size1, set->matrix->size1), "Covariance");
     prep_names(ep);

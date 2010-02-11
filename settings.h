@@ -66,6 +66,8 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
    void * ysg##_settings_copy(ysg##_settings *); \
    void ysg##_settings_free(ysg##_settings *);
 
+//see deprecated.h for the apop_settings_add_group
+
         //Part II: the details of extant settings groups.
 
 typedef enum {
@@ -118,7 +120,8 @@ typedef struct {
     apop_data *instruments; /**< Use for the \ref apop_iv regression, qv. */
     char want_cov; /**< The covariance can be computationally expensive, so if this is \c 'n' I won't bother with it. */
     char want_expected_value; /**< If 'y', fill the expected/actual/residual part of the output model. */
-} apop_ls_settings;
+    apop_model *input_distribution; /**< The distribution of \f$P(Y|X)\f$ is specified by the model, but the distribution of \f$X\f$ is not.  */
+} apop_lm_settings;
 
 #if 0
 // Find apop_category_settings routines in apop_probit.c
@@ -151,7 +154,7 @@ typedef struct {
 } apop_rank_settings;
 
 /** Some CDFs use random draws; some use closed-form models. 
- */
+  \ingroup settings */
 typedef struct {
     int draws;  /**< For random draw methods, how many draws? Default: 10,000.*/
     gsl_rng *rng; /**< For random draw methods. See \ref autorng on the default. */
@@ -382,31 +385,13 @@ typedef struct {
 
 /** \defgroup settings Settings*/
 
-//Doxygen is doing funny things right now; having these down 
-//here seems to help.
-//Apop_settings_declarations(apop_category)
+//Doxygen is doing funny things right now; having these down here seems to help.
 Apop_settings_declarations(apop_histogram)
 Apop_settings_declarations(apop_loess)
-Apop_settings_declarations(apop_ls)
+Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_mle)
 Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_rank)
-
-
-    ///All of the below is deprecated.
-
-/** Add a settings group. 
-  \deprecated{Use \ref Apop_model_add_group instead.}
-  You will need to provide arguments for the specific settings group you
-  are dealing with, such as <tt>apop_mle_settings_alloc</tt>, <tt>apop_ls_settings_alloc</tt>, <tt>apop_histogram_settings_alloc</tt>. */
-#define Apop_settings_add_group(model, type, ...)  \
-    apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_alloc (__VA_ARGS__)); 
-
-#define APOP_SETTINGS_ADD_GROUP Apop_settings_add_group
-
-apop_rank_settings *apop_rank_settings_alloc(void *ignoreme);
-apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins);
-apop_mle_settings *apop_mle_settings_alloc(apop_model *model);
 
 #ifdef	__cplusplus
 }

@@ -323,7 +323,7 @@ value.
 be predicted given the provided data.
 
 If the model has no \c predict method, the default is to use the 
-      \ref apop_ml_imputation function to do the work.
+      \ref apop_ml_impute function to do the work.
 
 \return If you gave me a non-\c NULL data set, I will return that,
 with the zeroth column or the NaNs filled in.  If \c NULL input, I

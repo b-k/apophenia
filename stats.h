@@ -76,8 +76,8 @@ double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
 APOP_VAR_DECLARE void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type);
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
-APOP_VAR_DECLARE double apop_random_double(double min, double max, gsl_rng *r);
-APOP_VAR_DECLARE int apop_random_int(double min, double max, const gsl_rng *r);
+APOP_VAR_DECLARE double apop_random_double(double min, double max, gsl_rng *rng);
+APOP_VAR_DECLARE int apop_random_int(double min, double max, const gsl_rng *rng);
 
 APOP_VAR_DECLARE gsl_matrix * apop_matrix_covariance(gsl_matrix *in, const char normalize);
 APOP_VAR_DECLARE  gsl_matrix * apop_matrix_correlation(gsl_matrix *in, const char normalize);

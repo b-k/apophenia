@@ -60,7 +60,8 @@ apop_model* apop_t_chi_estimate(apop_data *d, apop_model *m){
         Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
         apop_model *out = apop_model_copy(*m);
         out->parameters = get_df(d);
-        out->llikelihood = out->log_likelihood(d, out);
+        apop_data *info = apop_data_add_page(out->parameters, apop_data_alloc(1,0,0), "Info");
+        apop_data_add_named_elmt(info, "log likelihood", out->log_likelihood(d, out));
         return out;
     } else 
         return apop_maximum_likelihood(d, m);

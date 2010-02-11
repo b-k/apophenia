@@ -416,7 +416,6 @@ static gsl_vector * setup_starting_point(apop_mle_settings *mp, int betasize){
 static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
   apop_model		        *est    = i->model; //just an alias.
   apop_mle_settings          *mp    = apop_settings_get_group(est, "apop_mle");
-    Get_vmsizes(i->data); //vsize, msize1, tsize
     if (mp->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
         apop_data_add_page(params, 
                 apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta)), "Covariance");
@@ -434,8 +433,11 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
 
     apop_data_add_named_elmt(infopage, "status", status);
     apop_data_add_named_elmt(infopage, "AIC", 2*param_ct - 2 *ll);
-    apop_data_add_named_elmt(infopage, "BIC by row", param_ct * log(msize1 ? msize1: vsize) - 2 *ll);
-    apop_data_add_named_elmt(infopage, "BIC by item", param_ct * log(tsize) - 2 *ll);
+    if (i->data){//some models have NULL data.
+        Get_vmsizes(i->data); //vsize, msize1, tsize
+        apop_data_add_named_elmt(infopage, "BIC by row", param_ct * log(msize1 ? msize1: vsize) - 2 *ll);
+        apop_data_add_named_elmt(infopage, "BIC by item", param_ct * log(tsize) - 2 *ll);
+    }
 }
 
 static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){

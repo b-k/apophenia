@@ -346,7 +346,7 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 \return         1 == match; 0 == no match. \c substrings may be allocated and filled if needed.
 \ingroup names
 
-\example Here is the test function. Notice that the substring-pulling
+\li Here is the test function. Notice that the substring-pulling
 function call passes \c &subs, not plain \c subs. Also, the non-match
 has a zero-length blank in <tt>subs->text[1][0]</tt>.
 \code

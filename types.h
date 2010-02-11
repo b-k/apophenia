@@ -61,7 +61,7 @@ struct _apop_model{
                     the size of the data the RNG will return. */
     apop_settings_type *settings;
     apop_data   *parameters; /**< The vector of coefficients or parameters estimated by the model. */
-    apop_model **param_dist;
+    apop_model **distributions;
     int         prepared;
     apop_data   *data;
     apop_model * (*estimate)(apop_data * data, apop_model *params);
@@ -138,17 +138,6 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 APOP_VAR_DECLARE apop_data * apop_data_get_page(const apop_data * data, const char * title);
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage,const char *title);
 APOP_VAR_DECLARE void apop_data_rm_page(apop_data * data, const char *title, const char free_p);
-
-//Deprecated.
-double * apop_data_ptr_it(apop_data *in, const size_t row, const char* col);
-double * apop_data_ptr_ti(apop_data *in,const  char* row,const  int col);
-double * apop_data_ptr_tt(apop_data *in,const  char *row,const  char* col);
-double apop_data_get_it(const apop_data *in,const  size_t row,const  char* col);
-double apop_data_get_ti(const apop_data *in,const  char* row,const  int col);
-double apop_data_get_tt(const apop_data *in,const  char *row,const  char* col);
-void apop_data_set_ti(apop_data *in,const  char* row,const  int col,const  double data);
-void apop_data_set_it(apop_data *in,const  size_t row,const  char* col,const  double data);
-void apop_data_set_tt(apop_data *in,const  char *row,const  char* col,const  double data);
 #ifdef	__cplusplus
 }
 #endif

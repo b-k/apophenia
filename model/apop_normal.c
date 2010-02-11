@@ -14,9 +14,9 @@ static double normal_log_likelihood(apop_data *d, apop_model *params);
 static apop_model * normal_estimate(apop_data * data, apop_model *est){
     Get_vmsizes(data)
   double		mmean=0, mvar=0, vmean=0, vvar=0;
-  apop_ls_settings *p = apop_settings_get_group(est, "apop_ls");
+  apop_lm_settings *p = apop_settings_get_group(est, "apop_lm");
     if (!p) 
-        p = Apop_model_add_group(est, apop_ls);
+        p = Apop_model_add_group(est, apop_lm);
     if (vsize){
         vmean = apop_mean(data->vector);
         vvar = apop_var(data->vector);
@@ -137,9 +137,9 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
   apop_model 	*est = apop_model_copy(*parameters);
   double   mean    = 0,
            var     = 0; 
-  apop_ls_settings *p = apop_settings_get_group(est, "apop_ls");
+  apop_lm_settings *p = apop_settings_get_group(est, "apop_lm");
     if (!p) 
-        p = Apop_model_add_group(est, apop_ls);
+        p = Apop_model_add_group(est, apop_lm);
     apop_matrix_mean_and_var(data->matrix, &mean, &var);
     if (!est->parameters)
         est->parameters = apop_data_alloc(2, 0, 0);

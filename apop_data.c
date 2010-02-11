@@ -260,7 +260,7 @@ twice as much memory. Plan accordingly.
 \param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
 if 'c', stack columns of m1's matrix to left of m2's<br>
 (default = 'r')
-\param  inplace If \c 'i' \c 'y' or 1, use \ref apop_matrix_realloc and \ref apop_vector_reallc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
+\param  inplace If \c 'i' \c 'y' or 1, use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
@@ -521,6 +521,32 @@ assert(apop_data_get(d, 0, 7) == 270);
 \endcode
 */
 
+/** \deprecated  use \ref apop_data_ptr */
+double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
+  int rownum =  apop_name_find(in->names, row, 'r');
+    apop_assert(rownum != -2,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
+    return (col >= 0) ? gsl_matrix_ptr(in->matrix, rownum, col)
+                      : gsl_vector_ptr(in->vector, rownum);
+}
+
+/** \deprecated  use \ref apop_data_ptr */
+double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
+  int colnum =  apop_name_find(in->names, col, 'c');
+    apop_assert(colnum != -2,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
+    return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, row, colnum)
+                         : gsl_vector_ptr(in->vector, row);
+}
+
+/** \deprecated  use \ref apop_data_ptr */
+double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
+  int colnum =  apop_name_find(in->names, col, 'c');
+  int rownum =  apop_name_find(in->names, row, 'r');
+    apop_assert(rownum != -2,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
+    apop_assert(colnum != -2,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
+    return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, rownum, colnum)
+                         : gsl_vector_ptr(in->vector, rownum);
+}
+
 /** Get a pointer to an element of an \ref apop_data set. 
  See \ref data_set_get "the set/get page" for details. */
 APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page){
@@ -550,32 +576,6 @@ APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int c
     }
 APOP_VAR_ENDHEAD
 return NULL;//the main function is blank.
-}
-
-/** \deprecated  use \ref apop_data_ptr */
-double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
-  int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert(rownum != -2,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
-    return (col >= 0) ? gsl_matrix_ptr(in->matrix, rownum, col)
-                      : gsl_vector_ptr(in->vector, rownum);
-}
-
-/** \deprecated  use \ref apop_data_ptr */
-double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
-  int colnum =  apop_name_find(in->names, col, 'c');
-    apop_assert(colnum != -2,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
-    return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, row, colnum)
-                         : gsl_vector_ptr(in->vector, row);
-}
-
-/** \deprecated  use \ref apop_data_ptr */
-double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
-  int colnum =  apop_name_find(in->names, col, 'c');
-  int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert(rownum != -2,  NULL, 0,'c',"Couldn't find %s amongst the row names.", row);
-    apop_assert(colnum != -2,  NULL, 0,'c',"Couldn't find %s amongst the column names.", col);
-    return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, rownum, colnum)
-                         : gsl_vector_ptr(in->vector, rownum);
 }
 
 /** \deprecated  use \ref apop_data_get */
@@ -634,6 +634,36 @@ APOP_VAR_ENDHEAD
 return 0;//the main function is blank.
 }
 
+/** Set an element from an \ref apop_data set, using the row name but the column number 
+  \deprecated Use \ref apop_data_set. 
+ */
+void apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
+  int rownum =  apop_name_find(in->names, row, 'r');
+    apop_assert_void(rownum != -2, 0,'c',"Couldn't find %s amongst the row names. Making no changes.", row);
+    return (col >= 0) ? gsl_matrix_set(in->matrix, rownum, col, data)
+                      : gsl_vector_set(in->vector, rownum, data);
+}
+
+/** Set an element from an \ref apop_data set, using the column name but the row number
+  \deprecated Use \ref apop_data_set.  */
+void apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
+  int colnum =  apop_name_find(in->names, col, 'c');
+    apop_assert_void(colnum != -2, 0,'c',"Couldn't find %s amongst the column names. Making no changes.", col);
+    return (colnum >= 0) ? gsl_matrix_set(in->matrix, row, colnum, data)
+                         : gsl_vector_set(in->vector, row, data);
+}
+
+/** Set an element from an \ref apop_data set, using the row and column name.  
+  \deprecated Use \ref apop_data_set.  */
+void apop_data_set_tt(apop_data *in, const char *row, const char* col, const double data){
+  int colnum =  apop_name_find(in->names, col, 'c');
+  int rownum =  apop_name_find(in->names, row, 'r');
+    apop_assert_void(colnum != -2, 0, 'c',"Couldn't find %s amongst the column names.", col);
+    apop_assert_void(rownum != -2, 0, 'c',"Couldn't find %s amongst the column names.", row);
+    return (colnum >= 0) ? gsl_matrix_set(in->matrix, rownum, colnum, data)
+                         : gsl_vector_set(in->vector, rownum, data);
+}
+
 /**  Set a data element.
  
   This function uses the \ref designated syntax, so with names you don't have to worry
@@ -679,32 +709,6 @@ APOP_VAR_HEAD void apop_data_set(apop_data *data, const size_t row, const int co
     }
 APOP_VAR_ENDHEAD
 //the main function is blank.
-}
-
-/** Set an element from an \ref apop_data set, using the row name but the column number */
-void apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
-  int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert_void(rownum != -2, 0,'c',"Couldn't find %s amongst the row names. Making no changes.", row);
-    return (col >= 0) ? gsl_matrix_set(in->matrix, rownum, col, data)
-                      : gsl_vector_set(in->vector, rownum, data);
-}
-
-/** Set an element from an \ref apop_data set, using the column name but the row number */
-void apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
-  int colnum =  apop_name_find(in->names, col, 'c');
-    apop_assert_void(colnum != -2, 0,'c',"Couldn't find %s amongst the column names. Making no changes.", col);
-    return (colnum >= 0) ? gsl_matrix_set(in->matrix, row, colnum, data)
-                         : gsl_vector_set(in->vector, row, data);
-}
-
-/** Set an element from an \ref apop_data set, using the row and column name.  */
-void apop_data_set_tt(apop_data *in, const char *row, const char* col, const double data){
-  int colnum =  apop_name_find(in->names, col, 'c');
-  int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert_void(colnum != -2, 0, 'c',"Couldn't find %s amongst the column names.", col);
-    apop_assert_void(rownum != -2, 0, 'c',"Couldn't find %s amongst the column names.", row);
-    return (colnum >= 0) ? gsl_matrix_set(in->matrix, rownum, colnum, data)
-                         : gsl_vector_set(in->vector, rownum, data);
 }
 /** \} //End data_set_get group */
 
@@ -880,7 +884,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
       gives a warning if <tt>apop_opts.verbose >=1</tt> and returns \c NULL.
   \param title The name of the page to retrieve. Default=\c "Info", which
       is the name of the page of additional estimation information returned
-      by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, \dots).
+      by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, ...).
       I use \ref apop_regex, so this is really a case-insensitive regular expression.
 
     \return The page whose title matches what you gave me. If I don't
@@ -938,7 +942,7 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
   set is not to fully implement a linked list, but primarily to allow you to staple auxiliary
   information to a main data set.
 
-  \param dataset The input data set, to which a page will be added. No default. If \c
+  \param data The input data set, to which a page will be added. No default. If \c
   NULL, I return silently if <tt> apop_opts.verbose \< 1 </tt>; print an
   error otherwise.
   \param title The name of the page to remove Default: \c "Info"

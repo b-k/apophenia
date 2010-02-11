@@ -23,7 +23,7 @@ libapophenia_la_SOURCES = \
 			model/apop_loess.c          \
 			model/apop_multivariate_normal.c  \
 			model/apop_normal.c         \
-            model/apop_OLS.c 		 	\
+            model/apop_ols.c 		 	\
             model/apop_pmf.c            \
 			model/apop_poisson.c        \
 			model/apop_probit.c	        \
@@ -36,7 +36,7 @@ libapophenia_la_SOURCES = \
 pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
 				arms.h mapply.h stats.h types.h		 		\
 				output.h model.h asst.h settings.h  		\
-				variadic.h	linear_algebra.h
+				variadic.h linear_algebra.h deprecated.h
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc

@@ -1131,7 +1131,7 @@ Apop_settings_set(est, apop_ls, weights, weight_set_two);
 apop_model *est2 = apop_estimate(data, *est);
 \endcode
 
-\li  The list of elements of the settings structures included in Apophenia are on the \settings page.
+\li  The list of elements of the settings structures included in Apophenia are on the \ref settings page.
 
 \li Notice the use of a single capital to remind you that you are using a macro, so you should beware of the sort of surprising errors associated with macros. Here in the modern day, we read things like APOP_SETTINGS_ADD as yelling, but if you prefer all caps to indicate macros, those work as well.
 
@@ -1376,7 +1376,7 @@ endofdiv
 Outlineheader Miss Missing data
 
     \li\ref apop_data_listwise_delete()
-    \li\ref apop_ml_imputation()
+    \li\ref apop_ml_impute()
 
 endofdiv
 

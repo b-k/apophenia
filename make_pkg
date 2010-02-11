@@ -36,7 +36,8 @@ sed -i -f prep_variadics.sed *c *h model/*c
 	autoconf 
 	autoheader
 	automake -a
-	./configure --enable-python
+	./configure
+#	./configure --enable-python
 #    yes | dh_make -l -n -c GPL  
 #    cp ../../debian_control debian/control
 #    cp ../../debian_copyright debian/copyright
@@ -44,6 +45,7 @@ sed -i -f prep_variadics.sed *c *h model/*c
 #    rm ../$pkg-$version.tar.gz
 	make dist
     mv apophenia-$version.tar.gz ../apophenia-$version-$date.tgz 
+    exit
 
 #rm -rf $junkdir
 echo "***********tgz done; now prepping Debian package*********************"

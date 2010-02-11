@@ -3,42 +3,41 @@
 
 /* This is a hack to produce a structured list of documentation items for every model.
 
-   Right now, the priority is to get all models to have a more uniform
-   interface, and uniform documentation is a first step. Thus, every
-   model needs to address the headers enumerated here. At the bottom of
-   this file, you'll find the null model, which you can use as a template.
+   Right now, the priority is to get all models to have a more uniform interface,
+   and uniform documentation is a first step. Thus, every model needs to address the
+   headers enumerated here. At the bottom of this file, you'll find the null model,
+   which you can use as a template.
 
-   I achieve the structured documentation by lying to (*Doxygen and telling
-   it that the model, like apop_OLS, is actually an enum of elements
-   including overview, name, settings, &c. It'll then use the enum
-   format, which has the appropriate look, giving the full documentation
-   under each header.
+   I achieve the structured documentation by lying to Doxygen and telling it that
+   the model, like apop_OLS, is actually an enum of elements including overview,
+   name, settings, &c. It'll then use the enum format, which has the appropriate look,
+   giving the full documentation under each header.
 
-   There are minor problems with this lie, which are solved with a simple
-   sed script to post-process (in the Makefile).  The one this is most
-   relevant is that every enum item is global, so each needs to have a
-   number tagged on, lest Doxygen gets confused. Add the numbers here;
-   I'll strip them in sed.
+   There are minor problems with this lie, which are solved with a simple sed script
+   to post-process (in the Makefile).  The one this is most relevant is that every
+   enum item is global, so each needs to have a number tagged on, lest Doxygen gets
+   confused. Add the numbers here; I'll strip them in sed.
 */
 
-/** Ordinary least squares
+/** The Linear Model family of models
 
-\param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
+\hideinitializer \ingroup models 
+ 
+Models based on the form \f$Y = f(x_1) + f(x_2) + ... + \epsilon\f$.
 
-\param epin    An \ref apop_model object. It may have a \ref apop_ls_settings group attached.  I'll look at the \c destroy_data element; if this is NULL or \c destroy_data==0, then the entire data set is copied off, and then mangled. If \c destroy_data==1, then this doesn't copy off the data set, but destroys it in place. I also look at \c want_cov and \c want_expected_value, though I'll not produce the covariance matrix only if both are \c 'n'.
-
-
-See also the page on \ref dataprep.
-
-  \ingroup models
-  \hideinitializer  */
-enum apop_ols{
-    Name1, /**< <tt>Ordinary Least Squares</tt> */
-    Data_format1, /**< OLS-style; see \ref dataprep  */
-    Parameter_format1, /**< A vector of OLS coefficients. coeff. zero
-                         refers to the constant column, if any. */
-    Prep_routine1, /**<     */
-    Estimate_results1, /**<
+There are many customs about input formats and outputs, meaning that these models do
+things slightly differently. Also, they typically have only partially-specified
+probability/likelihood functions; the segment on RNGs here explains how Apophenia turns these into full probability models.
+ 
+ */
+enum apop_lm_family{
+    Overview32,
+        /**< You will need to provide the weights in \c yourdata->weights. 
+          Otherwise, this model will behave just like \ref apop_ols. */
+    Name32,         /**< <tt>Weighted Least Squares</tt> */
+    Data_format32,  /**< OLS-style; see above. */
+    Parameter_format32, /**< As per OLS: a vector */
+    Estimate_results32, /**< 
     \return Will return an \ref apop_model <tt>*</tt>.
     <tt>The_result->parameters</tt> will hold the coefficients; the first
     coefficient will be the coefficient on the constant term, and the
@@ -59,8 +58,58 @@ enum apop_ols{
 
     Also, I'll run \f$t\f$-tests on the hypothesis that each
     parameter is different from zero, by running \ref apop_estimate_parameter_t_tests, qv.
-      */
-    settings1, /**< \ref apop_ls_settings */
+                        */
+    Prep_routine32, /**< Focuses on the data shunting. */
+    RNG32, /**< Linear models are typically only partially defined probability
+        models. For OLS, we know that \f$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)\f$,
+        because this is an assumption about the error process, but we don't know much of
+        anything about the distribution of \f$X\f$.
+
+     The \ref apop_lm_settings group includes an \ref apop_model* element named
+     \ref input_distribution. This is the distribution of the
+     independent/predictor/X columns of the data set. 
+
+     The default is that <tt>input_distribution = apop_improper_uniform </tt>, meaning
+     that \f$P(X)=1\f$ for all \f$X\f$. So \f$P(Y, X) = P(Y|X)P(X) = P(Y|X)\f$. This
+     seems to be how many people use linear models: the \f$X\f$ values are taken as
+     certain (as with actually observed data) and the only question is the odds of
+     the dependent variable. If that's what you're looking for, just leave the default.
+
+     <em>But</em> you can't draw from an improper uniform. So if you draw from a linear
+     model with a default <tt>input_distribution</tt>, then you'll get an error.
+
+     Alternatively, you may know something about the distribution of the input data. At
+     the least, you could generate a PMF from the actual data:
+     \code
+    apop_settings_set(your_model, apop_lm, input_distribution, apop_estimate(inset, apop_pmf));
+     \endcode
+     Now, random draws are taken from the input data. Or change this to any other
+     appropriate distribution, such as a \ref apop_multivariate_normal, or an \ref
+     apop_pmf filled in with more data, or perhaps something from
+     http://en.wikipedia.org/wiki/Errors-in-variables_models , as desired.
+            */
+    settings32 /**< \ref apop_lm_settings */
+} ;
+
+/** Ordinary least squares
+
+\param inset The first column is the dependent variable, and the remaining columns the independent. Is destroyed in the process, so make a copy beforehand if you need.
+
+\param epin    An \ref apop_model object. It may have a \ref apop_lm_settings group attached.  I'll look at the \c destroy_data element; if this is NULL or \c destroy_data==0, then the entire data set is copied off, and then mangled. If \c destroy_data==1, then this doesn't copy off the data set, but destroys it in place. I also look at \c want_cov and \c want_expected_value, though I'll not produce the covariance matrix only if both are \c 'n'.
+
+
+See also the page on \ref dataprep.
+
+  \ingroup models
+  \hideinitializer  */
+enum apop_ols{
+    Name1, /**< <tt>Ordinary Least Squares</tt> */
+    Data_format1, /**< OLS-style; see \ref dataprep  */
+    Parameter_format1, /**< A vector of OLS coefficients. coeff. zero
+                         refers to the constant column, if any. */
+    Prep_routine1, /**<     */
+    Estimate_results1, /**< As per the \ref apop_lm_family.  */
+    settings1, /**< \ref apop_lm_settings */
     example1,
     /**< 
 First, you will need a file named <tt>data</tt> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent. For example:
@@ -93,42 +142,36 @@ int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols));
 */
 };
 
-/** The WLS model
+/** The Weighed Least Squares model
 \hideinitializer \ingroup models */
 enum apop_wls{
-    Overview3,
-        /**< You will need to provide the weights in \c yourdata->weights. 
-          Otherwise, this model will behave just like \ref apop_ols. */
-    Name3,         /**< <tt>Weighted Least Squares</tt> */
-    Data_format3,  /**< OLS-style; see above. */
-    Parameter_format3, /**< As per OLS: a vector */
-    Estimate_results3, /**< */
-    Prep_routine3, /**< Focuses on the data shunting. */
-    settings3 /**< \ref apop_ls_settings */
+    Overview3, /**< This is a (deprecated) synonym for \ref apop_ols, qv.  If you use the \ref
+        apop_ols model and provide weights in \c your_input_data->weights, then I will use them
+        appropriately. That is, the \ref apop_ols model really implements Weighted Least Squares,
+        but in most cases <tt>weights==NULL</tt> and the math reduces to the special case of 
+        Ordinary Least Squares.  */
 } ;
 
 /** Instrumental variable regression
 
-     Operates much like the \ref apop_ols model, but the input
-     parameters also need to have a table of substitutions (like the
-     addition of the <tt>.instruments</tt> setting in the example below). The vector
-     element of the table lists the column numbers to be substituted (the
-     dependent var is zero; first independent col is one), and then one
-     column for each item to substitute.
+Operates much like the \ref apop_ols model, but the input parameters also need to have
+a table of substitutions (like the addition of the <tt>.instruments</tt> setting in
+the example below). The vector element of the table lists the column numbers to be
+substituted (the dependent var is zero; first independent col is one), and then one
+column for each item to substitute.
 
-    If the vector of your apop_data set is \c NULL, then I will use the row
-    names to find the columns to substitute. This is generally more robust
-    and/or convenient.
+If the vector of your apop_data set is \c NULL, then I will use the row names to find
+the columns to substitute. This is generally more robust and/or convenient.
 
-    If the \c instruments data set is somehow \c NULL or empty, I'll just run OLS. 
+If the \c instruments data set is somehow \c NULL or empty, I'll just run OLS. 
 \hideinitializer \ingroup models */
 enum apop_iv{
     Name4,         /**< <tt>instrumental variables</tt> */
-    Data_format4,  /**< OLS-style; see \ref dataprep. */
-    Parameter_format4, /**< As per OLS: a vector */
+    Data_format4,  /**< See the \ref apop_lm_family; see \ref dataprep. */
+    Parameter_format4, /**< As per the \ref apop_lm_family */
+    Estimate_results4, /**< As per the \ref apop_lm_family */
     Prep_routine4, /**< Focuses on the data shunting. */
-    Estimate_results4, /**< As per OLS */
-    settings4, /**< \ref apop_ls_settings */
+    settings4, /**< \ref apop_lm_settings */
     example4,
     /**<
 \code
@@ -140,7 +183,7 @@ gsl_vector_memcpy(firstcol, your_other_data_vector);
 apop_name_add(submatrix->names, "subme_1", 'r');
 apop_name_add(submatrix->names, "subme_2", 'r');
 
-Apop_model_add_group(&apop_iv, apop_ls, .instruments = submatrix);
+Apop_model_add_group(&apop_iv, apop_lm, .instruments = submatrix);
 apop_model *est = apop_estimate(data, apop_iv);
 apop_model_show(est);
 \endcode
@@ -166,8 +209,7 @@ enum apop_bernoulli {
     settings5 /**< None. */
 } ;
 
-/** 
-Regression via loess smoothing
+/** Regression via loess smoothing
 
     This uses a somewhat black-box routine, first written by
     Chamberlain, Devlin, Grosse, and Shyu in 1988, to fit a smoothed
@@ -535,13 +577,13 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
 
   Unless you set
   \code
-  Apop_model_add_group(your_model, apop_ls, .want_cov='n')
+  Apop_model_add_group(your_model, apop_lm, .want_cov='n')
   \endcode
   I will also give you the variance of the parameter, via jackknife.
                          */
     Prep_routine15, /**<   None.      */
     RNG15, /**< Yes. */
-    settings15, /**<  \ref apop_ls_settings, for the \c .want_cov element    */
+    settings15, /**<  \ref apop_lm_settings, for the \c .want_cov element    */
     Example15 /**<      */
 } ;
 
@@ -656,16 +698,15 @@ enum apop_zipf {
 
 
 /** 
-A probability mass function is commonly known as a histogram, or still
-more commonly, a bar chart. It indicates that at a given coordinate,
-there is a given mass.
+A probability mass function is commonly known as a histogram, or still more commonly,
+a bar chart. It indicates that at a given coordinate, there is a given mass.
 
-The data format for the PMF is simple: each row holds the coordinates,
-and the <em>weights vector</em> holds the mass at the given point. This is in
-contrast to the standard format, where the location is simply given by
-the position of the data point in the grid.
+The data format for the PMF is simple: each row holds the coordinates, and the
+<em>weights vector</em> holds the mass at the given point. This is in contrast to the
+crosstab format, where the location is simply given by the position of the data point
+in the grid.
 
-For example, here is a typical data matrix:
+For example, here is a typical crosstab:
 
 <table>
 <tr>            <td></td><td> col 0</td><td> col 1</td><td> col 2</td></tr>
@@ -685,33 +726,37 @@ Here it is as a sparse listing:
 <tr> <td>1.2</td> <td>2</td> <td>2</td> </tr>
 </table>
 
-The \c apop_pmf internally represents data in this manner. The dimensions
-are held in the \c matrix element of the data set, and the values are
-held in the \c weights element (not the vector).
+The \c apop_pmf internally represents data in this manner. The dimensions are held
+in the \c matrix element of the data set, and the cell values are held in the \c weights
+element (<em>not the vector</em>).
 
-If your data is in the typical form (with entries in the matrix element
-for 2-D data or the vector for 1-D data), then
-\code
-apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
-\endcode
-will produce a PMF from your data set whose \c parameters are in the sparse listing format.
+If your data is in a crosstab (with entries in the matrix element for 2-D data or the
+vector for 1-D data), then use \ref apop_crosstab_to_pmf to make the conversion.
 
-If your data is already in the sparse listing format (which is probably
-the case for 3- or more dimensional data), then the estimation is
-inappropriate. Just point the model to your parameter set:
+If your data is already in the sparse listing format (which is probably the case for 3-
+or more dimensional data), then just point the model to your parameter set:
 
 \code
 apop_model *my_pmf = apop_model_copy(apop_pmf);
 my_pmf->parameters = in_data;
+//or equivalently:
+apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
 \endcode
 
+\li If the \c weights element is \c NULL, then I assume that all rows of the data set are
+equally probable.
 
-\li This format is ideal for holding sparse multidimensional matrices,
-drawing from them, or calculating likelihoods. However, it is not
-ideal for linear algebra operations on sparse matrices. For this,
-the column-packed format is recommended. Integration with the CSparse
-library for linear algebra on sparse matrices is forthcoming.
-\hideinitializer \ingroup models */
+\li Be careful: the weights are in the \c weights element of the \c apop_data set, not in
+the \c vector element. If you put the weights in the \c vector and have \c NULL \c
+weights, then draws are equiprobable. This will be difficult to debug.
+
+\li This format is ideal for holding sparse multidimensional matrices, drawing from them,
+or calculating likelihoods. However, it is not ideal for linear algebra operations
+on sparse matrices. For this, the column-packed format is recommended. Integration
+with the CSparse library for linear algebra on sparse matrices is forthcoming.
+
+\todo Doing MLE on this model doesn't make sense. Don't do it.
+\hideinitializer \ingroup models */ 
 enum apop_pmf {
     Name20,         /**< <tt>PDF or sparse matrix</tt>*/
     Data_format20,  /**<    As above, you can input to the \c estimate
@@ -745,13 +790,17 @@ enum apop_probit {
     Parameter_format21, /**< As above */
     Estimate_results21, /**< Via MLE.    */
     Prep_routine21, 
-/**< If we find the \ref apop_category_settings group, then you've already converted
- something to factors and, I assume, put it in your data set's vector.
+/**< You will probably want to convert some column of your data into factors, via
+    \ref apop_data_to_factors. If you do, then that adds a page of factors to your data
+    set (and of course adjusts the data itself). If I find a factor page, I will use that
+    info; if not, then I will run \ref apop_data_to_factors on the first column (the
+    vector if there is one, else the first column of the matrix.)  
 
- If we don't find the \ref apop_category_settings group, then convert the first column of the matrix to categories, put it in the vector, and add a ones column.
+    Also, if there is no vector, then I will move the first column of the matrix, and
+    replace that matrix column with a constant column of ones, just like with OLS.
  */
     RNG21, /**< No. */
-    settings21, /**<  \ref apop_category_settings    */
+    settings21, /**<  None, but see above about seeking a factor page in the input data.*/
     Example21 /**<      */
 } ;
 
@@ -787,13 +836,17 @@ enum apop_logit {
     Parameter_format22, /**< As above.    */
     Estimate_results22, /**< Via MLE.    */
     Prep_routine22, 
-/**< If we find the \ref apop_category_settings group, then you've already converted
- something to factors and, I assume, put it in your data set's vector.
+/**< You will probably want to convert some column of your data into factors, via
+    \ref apop_data_to_factors. If you do, then that adds a page of factors to your data
+    set (and of course adjusts the data itself). If I find a factor page, I will use that
+    info; if not, then I will run \ref apop_data_to_factors on the first column (the
+    vector if there is one, else the first column of the matrix.)  
 
- If we don't find the \ref apop_category_settings group, then convert the first column of the matrix to categories, put it in the vector, and add a ones column.
+    Also, if there is no vector, then I will move the first column of the matrix, and
+    replace that matrix column with a constant column of ones, just like with OLS.
  */
     RNG22, /**< No. */
-    settings22, /**<  \ref apop_category_settings    */
+    settings22, /**<  None, but see above about seeking a factor page in the input data.*/
     Example22 /**<      */
 } ;
 
@@ -812,13 +865,17 @@ enum apop_multinomial_probit {
     Parameter_format23, /**< See above.    */
     Estimate_results23, /**< Via MLE.    */
     Prep_routine23, 
-/**< If we find the \ref apop_category_settings group, then you've already converted
- something to factors and, I assume, put it in your data set's vector.
+/**< You will probably want to convert some column of your data into factors, via
+    \ref apop_data_to_factors. If you do, then that adds a page of factors to your data
+    set (and of course adjusts the data itself). If I find a factor page, I will use that
+    info; if not, then I will run \ref apop_data_to_factors on the first column (the
+    vector if there is one, else the first column of the matrix.)  
 
- If we don't find the \ref apop_category_settings group, then convert the first column of the matrix to categories, put it in the vector, and add a ones column.
+    Also, if there is no vector, then I will move the first column of the matrix, and
+    replace that matrix column with a constant column of ones, just like with OLS.
  */
     RNG23, /**< No. */
-    settings23, /**<  \ref apop_category_settings    */
+    settings23, /**<  None, but see above about seeking a factor page in the input data.*/
     Example23 /**<      */
 } ;
 
@@ -957,10 +1014,10 @@ enum apop_normal{
     Prep_routine29, /**<  None.       */
     RNG29, /**< Of course. */
     settings29, /**<  
-The \c apop_ls_settings group includes a \c want_cov element, which
+The \c apop_lm_settings group includes a \c want_cov element, which
 refers to the covariance matrix for the mean and variance. You can set
 that to \c 'n' if you are estimating millions of these and need to save
-time (i.e. <tt>Apop_model_add_group(your_model, apop_ls, .want_cov =
+time (i.e. <tt>Apop_model_add_group(your_model, apop_lm, .want_cov =
 'n');</tt>).  */
     Example29 /**<   */
 } ;

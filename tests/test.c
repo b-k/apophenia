@@ -280,7 +280,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     v   = gsl_matrix_column(m, 0).vector;
     gsl_vector_set_all(&v, 1);
 
-    apop_data *predict_tab = apop_data_get_page(est->parameters, "predict");
+    apop_data *predict_tab = apop_data_get_page(est->data, "predict");
     v   = gsl_matrix_column(predict_tab->matrix, apop_name_find(predict_tab->names, "residual", 'c')).vector;
     assert(fabs(apop_mean(&v)) < tolerance);
 
@@ -294,7 +294,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
  equals a transformation of R^2.
 */
 void test_f(apop_model *est){
-apop_data   *rsq    = apop_estimate_coefficient_of_determination(est->parameters);
+apop_data   *rsq    = apop_estimate_coefficient_of_determination(est->data);
 apop_data   *ftab   = apop_F_test(est, NULL);
 double      n       = est->data->matrix->size1;
 double      K       = est->parameters->vector->size;
@@ -872,8 +872,6 @@ void test_blank_db_queries(){
 }
 
 int get_factor_index(apop_data *flist, char *findme){
-    printf("seeking %s; data\n", findme);
-    apop_data_show(flist);
   int i;
     for (i=0; i< flist->textsize[0]; i++)
         if (apop_strcmp(flist->text[i][0], findme))
@@ -888,7 +886,6 @@ static void check_for_dummies(apop_data *d, apop_data *dum, int offset){
     apop_data *factorlist = apop_data_get_page(d, "Factor");
     for(i=0; i < d->textsize[0]; i ++)
         if ((n = get_factor_index(factorlist, d->text[i][0]))>0){
-            printf("n=%i\n", n);
             for(j=0; j < factorlist->textsize[0]-1; j ++)
                 if (j==n-1)
                     assert(apop_data_get(dum, i, j+offset));
@@ -1129,7 +1126,7 @@ void estimate_model(apop_data *data, apop_model dist, int method){
         .t_initial    = 1,      .t_min     = .5,
         .use_score    = 1,      .want_cov  = 'n'
         );
-    Apop_model_add_group(&dist, apop_ls,  .want_cov = 'n');
+    Apop_model_add_group(&dist, apop_lm,  .want_cov = 'n');
     apop_model *e    = apop_estimate(data,dist);
     for (i=0; i < e->parameters->vector->size; i++)
         if (verbose) printf("parameter estimate, which should be %g: %g\n",
@@ -1290,7 +1287,7 @@ void test_pmf(){
  	double out;
 	gsl_rng *r = apop_rng_alloc(1234);
 	d->vector = apop_array_to_vector(x, 9);
-	apop_model *m = apop_estimate(d, apop_pmf);
+	apop_model *m = apop_crosstab_to_pmf(d);
 	gsl_vector *v = gsl_vector_alloc(d->vector->size);
 	for (i=0; i< 1e5; i++){
 		apop_draw(&out, r, m);
@@ -1359,13 +1356,13 @@ int main(int argc, char **argv){
     gsl_rng       *r              = apop_rng_alloc(8); 
     apop_data     *d  = apop_text_to_data("test_data2",0,1);
     apop_model *an_ols_model = apop_model_copy(apop_ols);
-    Apop_model_add_group(an_ols_model, apop_ls, .want_cov=1, .want_expected_value= 1);
+    Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test PMF", test_pmf());
     do_test("apop_pack/unpack test", apop_pack_test(r));
     do_test("test regex", test_regex());
     do_test("test adaptive rejection sampling", test_arms(r));
-    do_test("test PMF", test_pmf());
     do_test("test listwise delete", test_listwise_delete());
     do_test("test distributions", test_distributions(r));
     //do_test("test rank distributions", test_rank_distributions(r));

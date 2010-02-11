@@ -136,13 +136,13 @@ void apop_estimate_parameter_t_tests (apop_model *est){
         tstat   = val/stddev;
         pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
         two_tail= (df > 0)? apop_test(tstat, "t", .p1=df) : GSL_NAN;
-        apop_data_set_it(est->parameters, i, "df", df);
-        apop_data_set_it(est->parameters, i, "t statistic", tstat);
-        apop_data_set_it(est->parameters, i, "standard deviation", stddev);
-        apop_data_set_it(est->parameters, i, "p value", two_tail);
-        apop_data_set_it(est->parameters, i, "confidence", 1-two_tail);
-        apop_data_set_it(est->parameters, i, "p value, 1 tail", pval);
-        apop_data_set_it(est->parameters, i, "confidence, 1 tail", 1-pval);
+        apop_data_set(est->parameters, i, .colname="df",                 .val=df);
+        apop_data_set(est->parameters, i, .colname="t statistic",        .val=tstat);
+        apop_data_set(est->parameters, i, .colname="standard deviation", .val=stddev);
+        apop_data_set(est->parameters, i, .colname="p value",            .val=two_tail);
+        apop_data_set(est->parameters, i, .colname="confidence",         .val=1-two_tail);
+        apop_data_set(est->parameters, i, .colname="p value, 1 tail",    .val=pval);
+        apop_data_set(est->parameters, i, .colname="confidence, 1 tail", .val=1-pval);
     }
 }
 
@@ -214,7 +214,7 @@ APOP_VAR_END_HEAD
     gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
     gsl_blas_ddot(qprimebeta, qprimebetaminusc_qprimexpxinvqinv, &f_stat);
 
-    Apop_col_t(apop_data_get_page(est->parameters, "Predicted"), "residual", error)
+    Apop_col_t(apop_data_get_page(est->data, "Predicted"), "residual", error)
     gsl_blas_ddot(error, error, &variance);
     f_stat  *=  data_df / (variance * q_df);
     pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
@@ -509,7 +509,7 @@ a matrix with a single one in each row in the column specified.
 
 After that, you have to decide what to do with the new matrix and the original data column. 
 
-\li The <tt>.remove='y'</tt> option specifies that I should use \ref apop_data_rm_column 
+\li The <tt>.remove='y'</tt> option specifies that I should use \ref apop_data_rm_columns 
 to remove the column used to generate the dummies. Implement only for <tt>type=='d'</tt>.
 
 \li You can manually join the dummy data set with your main data, e.g.:
@@ -725,11 +725,14 @@ models produce a page with this name and of this form, as do a host of other mod
 keeps you from finding the \f$R^2\f$ of, say, a kernel smooth; it is up to you to determine 
 whether such a thing is appropriate to your given models and situation.
 
+\li <tt>apop_estimate(yourdata, apop_ols)</tt> does this automatically
 \li If I don't find a Predicted page, I throw an error on the screen and return \c NULL.
 \li The number of observations equals the number of rows in the Predicted page
 \li The number of independent variables, needed only for the adjusted \f$R^2\f$, is from the
 number of columns in the main data set's matrix (i.e. the first page; i.e. the set of
 parameters if this is the \c parameters output from a model estimation). 
+\li If your data (first page again) has a \c weights vector, I will find weighted SSE,
+SST, and SSR (and calculate the \f$R^2\f$s using those values).
 
 \ingroup regression
   */
@@ -737,13 +740,21 @@ apop_data *apop_estimate_coefficient_of_determination (apop_data *in){
   double          sse, sst, rsq, adjustment;
   size_t          indep_ct= in->matrix->size2 - 1;
   apop_data       *out    = apop_data_alloc(0, 5,-1);
+    gsl_vector *weights = in->weights; //typically NULL.
     apop_data *expected = apop_data_get_page(in, "Predicted");
     apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"Predicted\" page in your data set. Returning NULL.\n");
     size_t obs = expected->matrix->size1;
     Apop_col_t(expected, "residual", v)
-    gsl_blas_ddot(v, v, &sse);
+    if (!weights)
+        gsl_blas_ddot(v, v, &sse);
+    else {
+        gsl_vector *v_times_w = apop_vector_copy(weights);
+        gsl_vector_mul(v_times_w, v);
+        gsl_blas_ddot(v_times_w, v, &sse);
+        gsl_vector_free(v_times_w);
+    }
     Apop_col(expected, 0, vv);
-    sst = apop_vector_var(vv) * (vv->size-1);
+    sst = apop_vector_weighted_var(vv, in->weights) * (vv->size-1);
     rsq = 1. - (sse/sst);
     adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;
     apop_data_add_named_elmt(out, "R_squared", rsq);
@@ -759,4 +770,3 @@ apop_data *apop_estimate_coefficient_of_determination (apop_data *in){
  \hideinitializer
  \ingroup regression
  */
-

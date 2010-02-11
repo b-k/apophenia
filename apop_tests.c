@@ -219,6 +219,7 @@ Here is a list of distributions you can use, and their parameters.
 \li no default
 \li One-tailed tests only
 
+This function uses the \ref designated syntax for inputs.
  */
 
 APOP_VAR_HEAD double apop_test(double statistic, char *distribution, double p1, double p2, char tail){

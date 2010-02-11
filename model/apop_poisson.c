@@ -27,12 +27,12 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
     apop_data *info = apop_data_add_page(est->parameters, apop_data_alloc(1,0,0), "Info");
     apop_data_add_named_elmt(info, "log likelihood", poisson_log_likelihood(data, est));
     //to prevent an infinite loop, the jackknife needs to be flagged to
-    //not run itself. We free-ride of the apop_ls_settings struct to signal.
-    apop_ls_settings *dummy = apop_settings_get_group(est, "apop_ls");
+    //not run itself. We free-ride of the apop_lm_settings struct to signal.
+    apop_lm_settings *dummy = apop_settings_get_group(est, "apop_lm");
     if (!dummy || dummy->want_cov=='y'){
         if (!dummy)
-            Apop_model_add_group(est, apop_ls);
-        Apop_settings_add(est, apop_ls, want_cov, 'n');
+            Apop_model_add_group(est, apop_lm);
+        Apop_settings_add(est, apop_lm, want_cov, 'n');
         apop_data_add_page(est->parameters, 
                 apop_jackknife_cov(data, *est), 
                 "Covariance");

@@ -6,6 +6,7 @@ This implements a one-d histogram representing an empirical distribution. It is 
 #include "model.h"
 #include "mapply.h"
 #include "settings.h"
+#include "deprecated.h" //The whole darn file should be here.
 #include "variadic.h"
 #include <gsl/gsl_math.h>
 
@@ -53,11 +54,13 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
     return hp;
 }
 
-/** Initialize an  \ref apop_histogram_struct. You'll probably call this via
+/** Initialize an  \ref apop_histogram_settings struct. You'll probably call this via
   \code
   int binct = 100; //or some other reasonable number of histogram bins
   Apop_model_add_group(your_model, apop_histogram, .data = your_data_set, .bins_in = binct);
   \endcode
+   
+  The \c .data input is mandatory.
 */
 apop_histogram_settings * apop_histogram_settings_init(apop_histogram_settings in){
     apop_assert(in.data && in.bins_in, NULL, 0, 's', "I need both the .data and .bins_in elements to be set.");

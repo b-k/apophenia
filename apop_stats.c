@@ -379,17 +379,17 @@ conveniently produces a number between zero and one. [To do this with less overh
 \param  max 	Default = 1
 \param r    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
 */
-APOP_VAR_HEAD double apop_random_double(double min, double max, gsl_rng *r){
+APOP_VAR_HEAD double apop_random_double(double min, double max, gsl_rng *rng){
     static gsl_rng * spare_rng = NULL;
     double apop_varad_var(min, 0);
     double apop_varad_var(max, 1);
-    gsl_rng * apop_varad_var(r, NULL);
-    if (!r && !spare_rng) 
+    gsl_rng * apop_varad_var(rng, NULL);
+    if (!rng && !spare_rng) 
         spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!r)  r = spare_rng;
-    return apop_random_double_base(min, max, r);
+    if (!rng)  rng = spare_rng;
+    return apop_random_double_base(min, max, rng);
 APOP_VAR_ENDHEAD
-  double		base = gsl_rng_uniform(r);
+  double		base = gsl_rng_uniform(rng);
 	return base * (max - min) + min;
 }
 
@@ -411,17 +411,17 @@ x = apop_random_int(.max=4)
 \endcode
 gives two draws from a five-item vector. Notice that the max is the largest index, which is one minus the dimension.
 */
-APOP_VAR_HEAD int apop_random_int(double min, double max, const gsl_rng *r){
+APOP_VAR_HEAD int apop_random_int(double min, double max, const gsl_rng *rng){
     static gsl_rng * spare_rng = NULL;
     double apop_varad_var(min, 0);
     double apop_varad_var(max, 1);
-    const gsl_rng * apop_varad_var(r, NULL);
-    if (!r && !spare_rng) 
+    const gsl_rng * apop_varad_var(rng, NULL);
+    if (!rng && !spare_rng) 
         spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!r)  r = spare_rng;
-    return apop_random_int_base(min, max, r);
+    if (!rng)  rng = spare_rng;
+    return apop_random_int_base(min, max, rng);
 APOP_VAR_ENDHEAD
-  double		base = gsl_rng_uniform(r);
+  double		base = gsl_rng_uniform(rng);
 	return (int) (base * (max - min + 1) + min);
 }
 
