@@ -1119,7 +1119,7 @@ you first use it. Here is a full example:
 5 apop_model *est = apop_estimate(data, *m);
 \endcode
 
-Line three establishes the baseline form of the model. Line four adds a settings group of type \ref apop_ls_settings to the model, and specifies that we want it initialized with the \c weights element set to the data set \c w, and the \c want_cov element set to \c 'y'.
+Line three establishes the baseline form of the model. Line four adds a settings group of type \ref apop_lm_settings to the model, and specifies that we want it initialized with the \c weights element set to the data set \c w, and the \c want_cov element set to \c 'y'.
 Unlike the single-setting macros above, \c Apop_model_add_group follows the \ref designated syntax of the form <tt>.setting=value</tt>.
 
 Having set the settings, line 5 does the weighted OLS.

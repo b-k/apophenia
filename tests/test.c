@@ -5,10 +5,19 @@
 
 //I'm using the test script an experiment to see if 
 //these macros add any value.
-#define APOP_MATRIX_ALLOC(name, r, c) gsl_matrix *name = gsl_matrix_alloc((r),(c))
 #define APOP_VECTOR_ALLOC(name, r) gsl_vector *name = gsl_vector_alloc(r)
 #define APOP_DATA_ALLOC(name, r, c) apop_data *name = apop_data_alloc(0, (r),(c))
 #define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed)
+
+//These test functions are also displayed in the documentation as examples.
+#include "../eg/test_pruning.c"     // test_prune_cols()
+#include "../eg/test_distances.c"
+#include "../eg/test_strip_dots.c"
+#include "../eg/test_harmonic.c"
+#include "../eg/test_fisher.c" 
+#include "../eg/test_updating.c" 
+#include "../eg/test_regex.c" 
+#include "../eg/test_strcmp.c" 
 
 //One-liners for mapply:
 gsl_rng *r_global;
@@ -175,7 +184,6 @@ void test_nan_data(){
     strcpy(apop_opts.db_nan, "XX");
 }
 
-
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
     assert(apop_vector_mean(v) == apop_vector_weighted_mean(v,NULL));
     assert(apop_vector_mean(av) == apop_vector_weighted_mean(v,w));
@@ -267,7 +275,6 @@ apop_data   **splits, *dv2;
     }
 }
 
-
 /** I claim that the mean residual is near zero, and that the predicted
   value is \f$X'\beta\f$.
   */
@@ -303,64 +310,24 @@ double      f       = apop_data_get_ti(ftab,"F.stat",-1);
     assert(fabs(f - r*(n-K)/ ((1-r)*K)) < tolerance);
 }
 
-
-void test_OLS(){
-int             i;
-apop_model   *out;
-apop_data       *bkup;
-APOP_DATA_ALLOC(set, len, 2);
-APOP_RNG_ALLOC(r, 23);
-
-for(i=0; i< len; i++){
-    apop_data_set(set, i, 1, 100*(gsl_rng_uniform(r)-0.5));
-    apop_data_set(set, i, 0, -1.4 + apop_data_get(set,i,1)*2.3);
-}
-    bkup    = apop_data_copy(set);
-
-    out = apop_estimate(set, apop_ols);
-//    apop_estimate_print(out);
+void test_OLS(gsl_rng *r){
+  apop_data *set = apop_data_alloc(0, len, 2);
+  int i;
+    for(i=0; i< len; i++){
+        apop_data_set(set, i, 1, 100*(gsl_rng_uniform(r)-0.5));
+        apop_data_set(set, i, 0, -1.4 + apop_data_get(set,i,1)*2.3);
+    }
+    apop_data *bkup = apop_data_copy(set);
+    apop_model *out = apop_estimate(set, apop_ols);
     assert(fabs(apop_data_get(out->parameters, 0,-1) - -1.4) < tolerance);
     assert(fabs(apop_data_get(out->parameters, 1,-1) - 2.3) < tolerance);
 
-APOP_VECTOR_ALLOC(w, set->matrix->size1);
+    gsl_vector *w = gsl_vector_alloc(set->matrix->size1);
     gsl_vector_set_all(w, 14);
     bkup->weights  = w;
     out = apop_estimate(bkup, apop_ols);
     assert(fabs(apop_data_get(out->parameters, 0,-1) - -1.4) < tolerance);
     assert(fabs(apop_data_get(out->parameters, 1,-1) - 2.3) < tolerance);
-}
-
-void test_strip_dots(void){
-    /* 0: replace all dots with _
-      1: everything before the last dot.
-      2: everything after the first dot.
-      */
-char teapot[]   = "tea.pot";
-char many_dots[]   = "tea.pot.csv";
-char *out;
-    out = apop_strip_dots(teapot, 0);
-    assert(!strcmp(out, "tea_pot"));
-    out = apop_strip_dots(teapot, 1);
-    assert(!strcmp(out, "tea"));
-    out = apop_strip_dots(teapot, 2);
-    assert(!strcmp(out, "pot"));
-    out = apop_strip_dots(many_dots, 0);
-    assert(!strcmp(out, "tea_pot_csv"));
-    out = apop_strip_dots(many_dots, 1);
-    assert(!strcmp(out, "tea.pot"));
-    out = apop_strip_dots(many_dots, 2);
-    assert(!strcmp(out, "pot.csv"));
-}
-
-/** test the generalized harmonic summing thing, \ref apop_generalized_harmonic.
-*/
-void test_harmonic(){
-double out	= apop_generalized_harmonic(270, 0.0);
-	assert (out == 270);
-	out	= apop_generalized_harmonic(370, -1.0);
-	assert (out == 370*371/2);
-	out	= apop_generalized_harmonic(12, -1.0);
-	assert (out == 12*13/2);
 }
 
 #define INVERTSIZE 100
@@ -400,25 +367,6 @@ double          t, v;
     assert (t == v) ;
 }
 
-/** Just a 3-4-5 triangle */
-void test_distances(){
-    int v = apop_opts.verbose;
-    apop_opts.verbose = -1;
-    gsl_vector *v1 = gsl_vector_alloc(2);
-    gsl_vector *v2 = gsl_vector_alloc(2);
-    gsl_vector_set(v1, 0,2);
-    gsl_vector_set(v1, 1,2);
-    gsl_vector_set(v2, 0,5);
-    gsl_vector_set(v2, 1,6);
-    assert(apop_vector_distance(v1, NULL, 'm') == 4.);
-    assert(apop_vector_distance(v1,v2) == 5.);
-    assert(apop_vector_distance(v2, NULL, 's') == 6);
-    assert(apop_vector_grid_distance(v1,v2) == 7.);
-    assert(apop_vector_distance(v1,v2, 'm') == 7.);
-    assert(apop_vector_distance(v1,v2, 'L', 2) == 5.);
-    apop_opts.verbose = v;
-}
-
 void test_dot(){
 apop_data *d1   = apop_text_to_data(.text_file="test_data2",0,1); // 100 x 2
 apop_data *d2   = apop_text_to_data("test_data2"); // 100 x 2
@@ -434,7 +382,6 @@ apop_data *d9   = apop_dot(d5, d1, .form2=1);
     assert(!apop_vector_sum(d8->vector));
 }
  
-
 static void fill_p(apop_data *d, int v, int m1, int m2, int w, gsl_rng *r){
     int j, k;
     if (v)
@@ -614,7 +561,9 @@ void test_histograms(gsl_rng *r){
 }
 
 
-void jtest(apop_model m, double *pv){
+void test_jackknife(){
+  double      pv[] = {3.09,2.8762};
+  apop_model m = apop_normal;
   APOP_DATA_ALLOC(d, len, 1);
   APOP_RNG_ALLOC(r, 8);
   apop_data  *p  = apop_data_alloc(0,0,0);
@@ -637,11 +586,6 @@ assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < lite_tolerance
     apop_data_free(d);
 }
 
-void test_jackknife(){
-  double      pv[] = {3.09,2.8762};
-    jtest(apop_normal, pv);
-}
-
 //In my inattention, I wrote two jackknife tests. So you get double the checks.
 int test_jack(gsl_rng *r){
   int i, draws     = 2000;
@@ -657,7 +601,6 @@ int test_jack(gsl_rng *r){
                 +fabs(apop_data_get(out, 0,1)) +fabs(apop_data_get(out, 1,0));//cov(mu,sigma); should be 0.
     return (error < 1e-3);
 }
-
 
 void test_lognormal(gsl_rng *r){
     int j;
@@ -788,74 +731,6 @@ void db_to_text(){
     apop_opts.output_type = oldtype;
 }
 
-/*
-void subtest_updating(apop_model prior, apop_model likelihood){
-  int i, j, reps    = 10;
-  int tsize         = 1e3;
-  gsl_rng   *r      = apop_rng_alloc(2343);
-  apop_data *tdata  = apop_data_alloc(0,tsize,1);
-  apop_model   *prior_eps = apop_model_set_parameters(prior, 1., 1.);
-  apop_model   *pbp       = apop_model_set_parameters(likelihood, 0.55);
-  apop_model   *outparamsbb;
-  apop_model *almost_bern  = apop_model_copy(likelihood);
-    strcpy(almost_bern->name, "Bernie's distribution");
-    for (j=0; j< reps; j++){
-        for (i=0; i< tsize; i++)
-            likelihood.draw(apop_data_ptr(tdata,i,0), r, pbp);
-        if (j==0)
-            outparamsbb  = apop_update(tdata, prior_eps, almost_bern, r);
-        else
-            outparamsbb  = apop_update(tdata, outparamsbb, &likelihood, r);
-        prior_eps =  apop_update(tdata, prior_eps, &likelihood, r);
-    }
-    for (i=0; i< tsize; i++)
-        apop_histogram.draw(apop_data_ptr(tdata, i, 0), r, outparamsbb);
-}
-
-void test_updating (){
-    subtest_updating(apop_gamma, apop_exponential);
-    subtest_updating(apop_beta, apop_bernoulli);
-}
-*/
-
-
-void test_updating(){
-  gsl_rng *r = apop_rng_alloc(234);
-  double binom_start = 0.6;
-  double beta_start_a = 0.3;
-  double beta_start_b = 0.5;
-  int i, draws = 800;
-  double n = 80;
-  //First, the easy estimation using the conjugate distribution table.
-  apop_model *bin = apop_model_set_parameters(apop_binomial, n, binom_start);
-  apop_model *beta = apop_model_set_parameters(apop_beta, beta_start_a, beta_start_b);
-    apop_model *updated = apop_update(.prior= beta, .likelihood=bin,.rng=r);
-    apop_model *bcopy = apop_model_set_parameters(apop_binomial, n, GSL_NAN);
-    //apop_model_show(updated);
-
-    //Now estimate via Gibbs sampling. 
-    //Requires a one-parameter binomial, with n fixed,
-    //and a data set of n data points with the right p.
-    apop_data *bin_draws = apop_data_calloc(0, n, 1);
-    for(i=0; i < n*binom_start; i ++)
-        apop_matrix_increment(bin_draws->matrix, i, 0);
-    bin = apop_model_fix_params(bcopy);
-    apop_model *out_h = apop_update(bin_draws, beta, bin, NULL);
-
-    //We now have a histogram of values for p. What's the closest beta
-    //distribution?
-    apop_data *d = apop_data_alloc(0, draws, 1);
-    for(i=0; i < draws; i ++)
-        apop_draw(apop_data_ptr(d, i, 0), r, out_h);
-    apop_model *out_beta = apop_estimate(d, apop_beta);
-    //apop_model_show(out_beta);
-
-    //Finally, we can check the error
-    double updated_size = apop_vector_sum(updated->parameters->vector);
-    double error = apop_vector_grid_distance(updated->parameters->vector, out_beta->parameters->vector);
-    Apop_assert_void(error/updated_size < 0.06, 0, 's', "The error is %g, which is too big.", error/updated_size);
-}
-
 void test_blank_db_queries(){
     apop_db_open(NULL);
     apop_query("create table t (a, b, c)");
@@ -928,7 +803,6 @@ void test_vector_moving_average(){
     for(i=0; i < 98; i ++)
         assert(gsl_vector_get(v, i+1) == gsl_vector_get(slightly_smooth, i));
 }
-
 
 void test_transpose(){
     apop_data *t = apop_text_to_data("test_data", 0, 1);
@@ -1042,15 +916,6 @@ void test_resize(){
         assert(gsl_vector_get(v, i) == i);
     apop_vector_realloc(v, 10);
     assert(apop_vector_sum(v) == 45);
-}
-
-void test_fisher() {
-    /* This test is thanks to Nick Eriksson, who sent it to me in the
-       form of a bug report. */
-    double data[] = { 30, 50, 45, 34, 12,17 };
-    apop_data * testdata = apop_line_to_data(data,0,2,3);
-    apop_data * t2 = apop_test_fisher_exact(testdata);
-    assert(fabs(apop_data_get(t2,1,-1) - 0.0001761) < 1e-6);
 }
 
 void test_crosstabbing() {
@@ -1236,18 +1101,6 @@ void test_distributions(gsl_rng *r){
     }
 }
 
-void test_regex(){
-    char string1[] = "Hello. I am a string.";
-    assert(apop_regex(string1, "hell"));
-    apop_data *subs;
-    apop_regex(string1, "(e).*I.*(xxx)*(am)", .substrings = &subs);
-    //apop_data_show(subs);
-    assert(apop_strcmp(subs->text[0][0], "e"));
-    assert(!strlen(subs->text[1][0]));
-    assert(apop_strcmp(subs->text[2][0], "am"));
-    apop_data_free(subs);
-}
-
 void test_rank_distributions(gsl_rng *r){
   int         i, j, k;
   long int        runsize             = 1000,
@@ -1297,15 +1150,6 @@ void test_pmf(){
     apop_vector_normalize(v);
     for(i=0; i < v->size; i ++)
         assert(fabs(d->vector->data[i] - v->data[i]) < 1e-2);
-}
-
-void test_apop_strcmp(){
-    assert(!apop_strcmp("23", NULL));
-    assert(!apop_strcmp("230", "23"));
-    assert(!apop_strcmp("super", " uper"));
-    assert(apop_strcmp(NULL, NULL));
-    assert(apop_strcmp("23", "23"));
-    assert(apop_strcmp("", ""));
 }
 
 void test_arms(gsl_rng *r){
@@ -1359,6 +1203,8 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("apop_distance test", test_distances());
+    do_test("test column pruning", test_prune_cols());
     do_test("test PMF", test_pmf());
     do_test("apop_pack/unpack test", apop_pack_test(r));
     do_test("test regex", test_regex());
@@ -1367,7 +1213,7 @@ int main(int argc, char **argv){
     do_test("test distributions", test_distributions(r));
     //do_test("test rank distributions", test_rank_distributions(r));
     do_test("test ML imputation", test_ml_imputation(r));
-    do_test("test apop_update", test_updating());
+    do_test("test apop_update", test_updating(r));
     do_test("test fix params", test_model_fix_parameters(r));
     do_test("positive definiteness", test_posdef(r));
     do_test("test binomial estimations", test_binomial(r));
@@ -1380,7 +1226,7 @@ int main(int argc, char **argv){
     do_test("test_vector_moving_average", test_vector_moving_average());
     do_test("apop_estimate->dependent test", test_predicted_and_residual(e));
     do_test("apop_f_test and apop_coefficient_of_determination test", test_f(e));
-    do_test("OLS test", test_OLS());
+    do_test("OLS test", test_OLS(r));
     do_test("test lognormal estimations", test_lognormal(r));
     do_test("test queries returning empty tables", test_blank_db_queries());
     do_test("test jackknife covariance", test_jack(r));
@@ -1398,7 +1244,6 @@ int main(int argc, char **argv){
     do_test("apop_generalized_harmonic test", test_harmonic());
     do_test("apop_strcmp test", test_apop_strcmp());
     do_test("apop_strip_dots test", test_strip_dots());
-    do_test("apop_distance test", test_distances());
     do_test("Inversion test", test_inversion(r));
     do_test("apop_jackknife test", test_jackknife());
     do_test("apop_matrix_summarize test", test_summarize());

@@ -1,6 +1,5 @@
-/** \file apop_OLS.c
-
-  OLS models. Much of the real work is done in apop_regression.c.*/
+/** \file 
+OLS models. Much of the real work is done in apop_regression.c.*/
 /* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"

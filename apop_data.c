@@ -474,6 +474,52 @@ void apop_data_rm_columns(apop_data *d, int *drop){
     gsl_matrix_free(freeme); 
     apop_name_rm_columns(d->names, drop);
 }
+
+/** \def apop_data_prune_columns(d, ...)
+  Keep only the columns of a data set that you name.
+
+\param keep_names A list of names to retain (i.e. the columns that shouldn't be pruned
+out). For example, if you have run \ref apop_data_summarize, you have columns for several
+statistics, but may care about only one or two; see the example.
+
+For example:
+\include eg/test_pruning.c 
+
+\li I use case-insensitive regular expressions to find your column; see \ref apop_regex for details.
+\li If your regex matches multiple columns, I'll only give you the first.
+\li If I can't find a column matching one of your strings, I throw an error to the screen and continue.
+\hideinitializer */
+void apop_data_prune_columns_base(apop_data *d, char **colnames){
+    /* In types.h, you'll find an alias that takes the input, wraps it in the cruft that is
+    C's compound literal syntax, and appends a final "" to the list of strings. Here, I
+    just find each element of the list, using that "" as a stopper, and then call apop_data_rm_columns.*/
+    int rm_list[d->matrix->size1];
+    int keep_count = 0;
+    char **name_step = colnames;
+    //to throw errors for typos (and slight efficiency gains), I need an array of whether
+    //each input colname has been used.
+    while (strlen(*name_step++))
+        keep_count++;
+    int used_field[keep_count];
+    for (int i=0; i< keep_count; i++)
+        used_field[i] = 0;
+
+    for (int i=0; i< d->names->colct; i++){
+        int keep = 0;
+        for (int j=0; j<keep_count; j++)
+            if (!used_field[j] && apop_regex(d->names->column[i], colnames[j])){
+                keep ++;
+                used_field[j]++;
+                break;
+            }
+        rm_list[i] = !keep;
+    }
+    apop_data_rm_columns(d, rm_list);
+    for (int j=0; j<keep_count; j++)
+        if (!used_field[j])
+            printf("You asked me to keep column \"%s\" but I couldn't find a match for it. Typo?", colnames[j]);
+}
+
 /** \defgroup data_set_get Set/get/point to the data element at the given point
   \{
 

@@ -188,6 +188,8 @@ where \f$i\f$ iterates over dimensions.
  \endcode
  gives you the standard Euclidean length of \c v and its longest element.
 
+\include eg/test_distances.c
+
 This function uses the \ref designated syntax for inputs.
 \ingroup convenience_fns
 */
@@ -377,7 +379,7 @@ conveniently produces a number between zero and one. [To do this with less overh
 
 \param min      Default = 0
 \param  max 	Default = 1
-\param r    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
+\param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
 */
 APOP_VAR_HEAD double apop_random_double(double min, double max, gsl_rng *rng){
     static gsl_rng * spare_rng = NULL;
@@ -397,7 +399,7 @@ APOP_VAR_ENDHEAD
 
 \param min  (default 0)
 \param max 	(default 1)
-\param r    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
+\param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
 
 Thus,
 \code
@@ -507,23 +509,26 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
     *var	= avg2 - gsl_pow_2(avg); //E[x^2] - E^2[x]
 }
 
-/** Put summary information about the columns of a table (mean, std dev, variance) in a table.
+/** Put summary information about the columns of a table (mean, std dev, variance, min, median, max) in a table.
 
 \param indata The table to be summarized. An \ref apop_data structure.
 \return     An \ref apop_data structure with one row for each column in the original table, and a column for each summary statistic. May have a <tt>weights</tt> element.
 \ingroup    output
-\todo At the moment, only gives the mean, standard deviation, and variance
-of the data in each column; should give more in the near future.
+
+\li \ref This function gives more columns than you probably want; use apop_data_prune_columns to pick the ones you want to see.
 \todo We should probably let this summarize rows as well.  */
 apop_data * apop_data_summarize(apop_data *indata){
   apop_assert(indata, NULL, 0, 'c', "You sent me a NULL apop_data set. Returning NULL.\n");
   apop_assert(indata->matrix, NULL, 0, 'c', "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
-  apop_data	*out	= apop_data_alloc(0,indata->matrix->size2, 3);
+  apop_data	*out	= apop_data_alloc(0,indata->matrix->size2, 6);
   double		mean, stddev,var;
   char		rowname[10000]; //crashes on more than 10^9995 columns.
 	apop_name_add(out->names, "mean", 'c');
 	apop_name_add(out->names, "std dev", 'c');
 	apop_name_add(out->names, "variance", 'c');
+	apop_name_add(out->names, "min", 'c');
+	apop_name_add(out->names, "median", 'c');
+	apop_name_add(out->names, "max", 'c');
 	if (indata->names !=NULL)
         apop_name_stack(out->names,indata->names, 'r', 'c');
 	else
@@ -542,9 +547,14 @@ apop_data * apop_data_summarize(apop_data *indata){
             var 	= apop_vector_weighted_var(v,indata->weights);
             stddev	= sqrt(var);
         } 
+        double *pctiles = apop_vector_percentiles(v);
 		gsl_matrix_set(out->matrix, i, 0, mean);
 		gsl_matrix_set(out->matrix, i, 1, stddev);
 		gsl_matrix_set(out->matrix, i, 2, var);
+		gsl_matrix_set(out->matrix, i, 3, pctiles[0]);
+		gsl_matrix_set(out->matrix, i, 4, pctiles[50]);
+		gsl_matrix_set(out->matrix, i, 5, pctiles[101]);
+        free(pctiles);
 	}
 	return out;
 }

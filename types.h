@@ -135,6 +135,9 @@ apop_data *apop_data_transpose(apop_data *in);
 gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth);
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 
+#define apop_data_prune_columns(in, ...) apop_data_prune_columns_base((in), (char *[]) {__VA_ARGS__, ""})
+void apop_data_prune_columns_base(apop_data *d, char **colnames);
+
 APOP_VAR_DECLARE apop_data * apop_data_get_page(const apop_data * data, const char * title);
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage,const char *title);
 APOP_VAR_DECLARE void apop_data_rm_page(apop_data * data, const char *title, const char free_p);

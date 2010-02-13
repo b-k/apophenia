@@ -148,6 +148,9 @@ estimate the posterior via MCMC, this needs to have a \c draw method. (No defaul
 \return an \ref apop_model struct representing the posterior, with updated parameters. 
 \todo The table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), is a little short, and can always be longer.
 
+Here is a test function that compares the output via conjugate gradient table and via
+Gibbs sampling: \include eg/test_update.c
+
 This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng){

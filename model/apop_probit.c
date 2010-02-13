@@ -1,4 +1,4 @@
-/** \file apop_multinomial_probit.c */
+/** \file */ //Tell Doxygen to process this.
 
 /* Copyright (c) 2005--2008, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 

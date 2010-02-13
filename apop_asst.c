@@ -7,6 +7,8 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <gsl/gsl_randist.h>
 
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
+
+For example: \include eg\test_harmonic.c
 */
 double apop_generalized_harmonic(int N, double s){
 /* There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can later just be looked up. Each row in the saved structure is an \f$s\f$, and each column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
@@ -76,6 +78,8 @@ inputs.
 
 \param one The first string to compare
 \param two The other string to compare
+
+For example: \include eg/test_strcmp.c
 */
 int apop_strcmp(char *one, char *two){
     if (!one && !two)
@@ -96,6 +100,8 @@ int apop_strcmp(char *one, char *two){
 \param  strip_type  'd': replace all '.' with '_'.<br>
                     'b': return only the string before the '.', so 'table.col' becomes 'table'. If there are multiple dots, cuts off at the first dot.
                     'a': return only the string after the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the last dot.
+
+For example: \include eg/test_strip_dots.c
 \ingroup convenience_fns
  */
 char * apop_strip_dots(char *in, char strip_type){
@@ -284,11 +290,12 @@ finished:
 }
 
 
-/** Returns a vector of size 101, where returned_vector[95] gives the value of the 95th percentile, for example. Returned_vector[100] is always the maximum value, and returned_vector[0] is always the min (regardless of rounding rule).
+/** Returns an array of size 101, where returned_vector[95] gives the value of the 95th percentile, for example. Returned_vector[100] is always the maximum value, and returned_vector[0] is always the min (regardless of rounding rule).
 
 \param data	a gsl_vector of data. (No default, must not be \c NULL.)
 \param rounding This will either be 'u', 'd', or 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If 'u', then round up (use the next highest value); if 'd' (or anything else), round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or more  of the sample is below returned_vector[5]"; if 'd' or 'a', then you can say "5% or more of the sample is above returned_vector[5]".   (Default = 'd'.)
 
+\li You may eventually want to free() the array returned by this function.
 This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
@@ -349,21 +356,7 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 \li Here is the test function. Notice that the substring-pulling
 function call passes \c &subs, not plain \c subs. Also, the non-match
 has a zero-length blank in <tt>subs->text[1][0]</tt>.
-\code
-#include <apop.h>
-
-int main(){
-    char string1[] = "Hello. I am a string.";
-    assert(apop_regex(string1, "hell"));
-    apop_data *subs;
-    apop_regex(string1, "(e).*I.*(xxx)*(am)", .substrings = &subs);
-    //apop_data_show(subs);
-    assert(apop_strcmp(subs->text[0][0], "e"));
-    assert(!strlen(subs->text[1][0]));
-    assert(apop_strcmp(subs->text[2][0], "am"));
-    apop_data_free(subs);
-}
-\endcode
+\include eg\test_regex.c
 */
 APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case){
     const char * apop_varad_var(string, NULL);

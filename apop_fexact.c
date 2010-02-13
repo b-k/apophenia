@@ -1957,6 +1957,8 @@ int rowct   = intab->matrix->size1,
     "probability of table": Probability of the observed table for fixed marginal totals.	<br>
     "p value":  Table p-value.	The probability of a more extreme table,
 	      where `extreme' is in a probabilistic sense.
+
+For example: \include eg/test_fisher.c
 */
 apop_data *apop_test_fisher_exact(apop_data *intab){
 double  prt, pre,
