@@ -148,7 +148,7 @@ static void exponential_rng(double *out, gsl_rng* r, apop_model *p){
 	*out = gsl_ran_exponential(r, p->parameters->vector->data[0]);
 }
 
-apop_model apop_exponential = {"Exponential distribution", 1,0,0,
+apop_model apop_exponential = {"Exponential distribution", 1,0,0,.dsize=1,
 	 .estimate = exponential_estimate, .log_likelihood = exponential_log_likelihood, 
      .score = exponential_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
      .draw = exponential_rng, .cdf = expo_cdf};

@@ -4,6 +4,8 @@
 #include "db.h"     //just for apop_opts
 #include "asst.h" //rng_alloc
 #include "stats.h"
+#include "model.h"
+#include "internal.h"
 #include <gsl/gsl_rng.h>
 
 
@@ -818,4 +820,79 @@ apop_data *apop_data_correlation(const apop_data *in){
         gsl_vector_scale(rvout, 1.0/std_dev);
     }
     return out;
+}
+
+static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max){
+    for (int i=min; i< max; i++)
+        apop_data_set(a_row, 0, i, apop_data_get(p, i, i));
+}
+
+/** Kullback-Leibler divergence.
+
+  This measure of the divergence of one distribution from another
+  has the form \f$ D(p,q) = \sum_i \ln(p_i/q_i) p_i \f$.
+  Notice that it is not a distance, because there is an asymmetry
+  between \f$p\f$ and \f$q\f$, so one can expect that \f$D(p, q) \neq D(q, p)\f$.
+
+  \param top the \f$p\f$ in the above formula. (No default; must not be \c NULL)
+  \param bottom the \f$q\f$ in the above formula. (No default; must not be \c NULL)
+  \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
+  \param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
+
+  This function can take empirical histogram-type models---\ref apop_pmf and \ref
+  apop_histogram---or continuous models like \ref apop_loess
+  or \apop_normal.
+
+ If there is an empirical model (I'll try \c bottom first, under the presumption that you are measuring the divergence of data from a `true' distribution), then I'll step
+through it for the points in the summation.
+
+\li If you have two empirical distributions, that they must be synced: if \f$p_i>0\f$
+but \f$q_i=0\f$, then the function returns \c GSL_NEGINF.
+
+If neither distribution is empirical, then I'll take \c draw_ct random draws from \c bottom and evaluate at those points.
+
+    \todo do it all again with histograms.
+
+This function uses the \ref designated syntax for inputs.
+ */
+APOP_VAR_HEAD double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct, gsl_rng *rng){
+    apop_model * apop_varad_var(top, NULL);
+    apop_model * apop_varad_var(bottom, NULL);
+    Apop_assert_s(top, "The first model is NULL.");
+    Apop_assert_s(bottom, "The second model is NULL.");
+    double apop_varad_var(draw_ct, 1e5);
+    static gsl_rng * spare_rng = NULL;
+    gsl_rng * apop_varad_var(rng, NULL);
+    if (!rng && !spare_rng) 
+        spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
+    if (!rng)  rng = spare_rng;
+    return apop_kl_divergence_base(top, bottom, draw_ct, rng);
+APOP_VAR_ENDHEAD
+    double div = 0;
+    if (apop_strcmp(bottom->name, "PDF or sparse matrix")){
+        apop_data *p = bottom->parameters;
+        Get_vmsizes(p);
+        apop_data *a_row = apop_data_alloc(vsize, 1, msize2);
+        for (int i=0; i < (vsize ? vsize : msize1); i++){
+            double pi = p->weights ? gsl_vector_get(p->weights, i) : 1./(vsize ? vsize : msize1);
+            get_one_row(p, a_row, i, firstcol, msize2);
+            double qi = apop_p(a_row, bottom);
+            apop_assert(qi, GSL_NEGINF, 0, 'c', "The PMFs aren't synced: bottom has a value where "
+                                                "top doesn't (which produces infinite divergence).");
+            div += pi * log(pi/qi);
+        }
+        apop_data_free(a_row);
+    } else { //the version with the RNG.
+        apop_data *a_row = apop_data_alloc(0, 1, top->dsize);
+        for (int i=0; i < draw_ct; i++){
+            apop_draw(a_row->matrix->data, rng, top);
+            double pi = apop_p(a_row, top);
+            double qi = apop_p(a_row, bottom);
+            apop_assert(qi, GSL_NEGINF, 0, 'c', "The PMFs aren't synced: bottom has a value where "
+                                                "top doesn't (which produces infinite divergence).");
+            div += pi * log(pi/qi);
+        }
+        apop_data_free(a_row);
+    }
+    return div;
 }

@@ -114,7 +114,7 @@ APOP_VAR_DECLARE apop_data * apop_data_to_factors(apop_data *data, char intype, 
 APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove);
 APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize);
 
-APOP_VAR_DECLARE double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct);
+APOP_VAR_DECLARE double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct, gsl_rng *rng);
 
 apop_model *apop_estimate_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 

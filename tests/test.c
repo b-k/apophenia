@@ -12,10 +12,11 @@
 //These test functions are also displayed in the documentation as examples.
 #include "../eg/test_pruning.c"     // test_prune_cols()
 #include "../eg/test_distances.c"
+#include "../eg/test_kl_divergence.c"
 #include "../eg/test_strip_dots.c"
 #include "../eg/test_harmonic.c"
-#include "../eg/test_fisher.c" 
 #include "../eg/test_updating.c" 
+#include "../eg/test_fisher.c" 
 #include "../eg/test_regex.c" 
 #include "../eg/test_strcmp.c" 
 
@@ -1203,6 +1204,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("Kullback-Leibler divergence test", test_kl_divergence(r));
     do_test("apop_distance test", test_distances());
     do_test("test column pruning", test_prune_cols());
     do_test("test PMF", test_pmf());
