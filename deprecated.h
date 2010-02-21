@@ -33,3 +33,4 @@ apop_mle_settings *apop_mle_settings_alloc(apop_model *model);
 #define apop_ls_settings_free apop_lm_settings_free
 
 #define apop_wls apop_ols
+#define apop_multinomial_probit apop_probit

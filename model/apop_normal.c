@@ -25,8 +25,10 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
         apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
     double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
     double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
-	apop_data_add_named_elmt(est->parameters,"mu", mean);
-	apop_data_add_named_elmt(est->parameters,"sigma", sqrt(var));
+    est->parameters->vector->data[0] = mean;
+    est->parameters->vector->data[1] = sqrt(var);
+	apop_name_add(est->parameters->names, "mu", 'r');
+	apop_name_add(est->parameters->names, "sigma",'r');
 	if (!p || p->want_cov=='y'){
         apop_data *cov = apop_data_calloc(0, 2, 2);
         apop_data_set(cov, 0, 0, mean/tsize);

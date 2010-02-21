@@ -124,7 +124,7 @@ static double one_d(double b, void *in){
 static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct* info, gsl_vector *out, double delta){
   double		result, err;
   infostruct    i;
-  gsl_vector    *beta   = apop_data_pack(info->model->parameters);
+  gsl_vector    *beta   = apop_data_pack(info->model->parameters, NULL, .all_pages='y');
   gsl_function	F = {  .function= one_d, 
                        .params	= &i  };
   grad_params 	gp = { .beta	= gsl_vector_alloc(beta->size),
@@ -290,8 +290,8 @@ APOP_VAR_ENDHEAD
         apop_name_stack(out->names, hessian->names, 'c');
     }
     apop_data_free(hessian);
-    if (!apop_data_get_page(data, "Covariance"))
-        apop_data_add_page(data, out, "Covariance");
+    if (!apop_data_get_page(model->parameters, "Covariance"))
+        apop_data_add_page(model->parameters, out, "Covariance");
     return out;
 }
 
@@ -351,7 +351,7 @@ static double negshell (const gsl_vector *beta, void * in){
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
     if(penalty)
-        apop_data_pack(i->model->parameters, (gsl_vector*) beta);
+        apop_data_pack(i->model->parameters, (gsl_vector*) beta, .all_pages='y');
     out = penalty - f(i->data, i->model); //negative llikelihood
     if (penalty)
         apop_data_unpack(i->beta, i->model->parameters);
@@ -380,7 +380,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
     apop_data_unpack(beta, i->model->parameters);
     if(i->model->constraint)
         if(i->model->constraint(i->data, i->model))
-            apop_data_pack(i->model->parameters, (gsl_vector *) beta);
+            apop_data_pack(i->model->parameters, (gsl_vector *) beta, .all_pages='y');
     if (mp->use_score=='y' && i->model->score)
         i->model->score(i->data, g, i->model);
     else {
@@ -403,40 +403,37 @@ static void fdf_shell(const gsl_vector *beta, void *i, double *f, gsl_vector *df
 static int ctrl_c;
 static void mle_sigint(){ ctrl_c ++; }
 
-static gsl_vector * setup_starting_point(apop_mle_settings *mp, int betasize){
-    gsl_vector *x;
-	if (mp->starting_pt==NULL){
-		x	= gsl_vector_alloc(betasize);
+static void setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
+    int i;
+	if (!mp->starting_pt)
   		gsl_vector_set_all (x, 1);
-	}
-	else 	x   = apop_array_to_vector(mp->starting_pt, betasize);
-    return x;
+	else 
+        for (i=0; i< x->size; i++)
+            x->data[i] = mp->starting_pt[i];
 }
 
 static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
   apop_model		        *est    = i->model; //just an alias.
   apop_mle_settings          *mp    = apop_settings_get_group(est, "apop_mle");
     if (mp->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
-        apop_data_add_page(params, 
+        apop_data_add_page(est->parameters, 
                 apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta)), "Covariance");
         apop_estimate_parameter_t_tests (est);
     }
     int param_ct = (params->vector ? params->vector->size : 0)
                    +(params->matrix ?  params->matrix->size1*params->matrix->size2 : 0);
-    apop_data *infopage = apop_data_alloc(0, 0, 0);
-    apop_data_add_page(params, infopage, "Info");
     if (!ll) //then sending function didn't save last value of f().
         ll = apop_log_likelihood(i->data, i->model);
     else 
         ll = log(ll);
     //else take ll at face value.
 
-    apop_data_add_named_elmt(infopage, "status", status);
-    apop_data_add_named_elmt(infopage, "AIC", 2*param_ct - 2 *ll);
+    apop_data_add_named_elmt(est->info, "status", status);
+    apop_data_add_named_elmt(est->info, "AIC", 2*param_ct - 2 *ll);
     if (i->data){//some models have NULL data.
         Get_vmsizes(i->data); //vsize, msize1, tsize
-        apop_data_add_named_elmt(infopage, "BIC by row", param_ct * log(msize1 ? msize1: vsize) - 2 *ll);
-        apop_data_add_named_elmt(infopage, "BIC by item", param_ct * log(tsize) - 2 *ll);
+        apop_data_add_named_elmt(est->info, "BIC by row", param_ct * log(msize1 ? msize1: vsize) - 2 *ll);
+        apop_data_add_named_elmt(est->info, "BIC by item", param_ct * log(tsize) - 2 *ll);
     }
 }
 
@@ -457,13 +454,14 @@ Inside the infostruct, you'll find these elements:
 
 */
   gsl_multimin_fdfminimizer *s;
-  apop_model		        *est    = i->model; //just an alias.
-  Get_vmsizes(est->parameters) //set vsize, msize1, msize2, tsize
+  apop_model		 *est  = i->model; //just an alias.
+  apop_mle_settings  *mp  = apop_settings_get_group(est, "apop_mle");
+  gsl_vector *x = apop_data_pack(est->parameters, NULL, .all_pages='y');
+  setup_starting_point(mp, x);
   int				        iter 	= 0, 
 				            status  = 0,
 				            apopstatus  = 0,
-				            betasize= tsize;
-  apop_mle_settings           *mp         = apop_settings_get_group(est, "apop_mle");
+				            betasize= x->size;
   assert(mp);
     if (mp->method == APOP_CG_BFGS)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
@@ -471,7 +469,6 @@ Inside the infostruct, you'll find these elements:
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_pr, betasize);
     else //Default:    APOP_CG_FR      conjugate gradient (Fletcher-Reeves)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
-    gsl_vector *x = setup_starting_point(mp, betasize);
     gsl_multimin_function_fdf minme = {
         .f		= negshell,
         .df	= (apop_df_with_void) dnegshell,
@@ -511,13 +508,14 @@ Inside the infostruct, you'll find these elements:
 /* See apop_maximum_likelihood_w_d for notes. */
 static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
   apop_model		        *est        = i->model;
-  apop_mle_settings           *mp         = apop_settings_get_group(est, "apop_mle");
+  apop_mle_settings         *mp         = apop_settings_get_group(est, "apop_mle");
   assert(mp);
-  Get_vmsizes(est->parameters) //get vsize, msize1, msize2, tsize
+  gsl_vector *x = apop_data_pack(est->parameters, NULL, .all_pages='y');
+  setup_starting_point(mp, x);
   int			            status,
                             apopstatus  = 0,
 			                iter 		= 0,
-			                betasize	= tsize; 
+				            betasize= x->size;
   size_t 			        j;
   gsl_multimin_fminimizer   *s;
   gsl_vector 		        *ss;
@@ -526,8 +524,8 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 	ss	= gsl_vector_alloc(betasize);
     ctrl_c      =
 	apopstatus	= 0;	//assume failure until we score a success.
-    gsl_vector *x = setup_starting_point(mp, betasize);
-    i->beta = gsl_vector_alloc(betasize);
+    //i->beta = gsl_vector_alloc(betasize);
+    i->beta = s->x;
   	gsl_vector_set_all (ss,  mp->step_size);
     gsl_multimin_function 	minme = {.f = negshell, .n= betasize, .params	= i};
 	gsl_multimin_fminimizer_set (s, &minme, x,  ss);
@@ -565,11 +563,10 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 /*There is a semi-standard location for the log likelihood. Search there, and if you don't
 find it, then recalculate it.*/
 static double get_ll(apop_data *d, apop_model *est){
-    apop_data *infop = apop_data_get_page(est->parameters, "Info");
-    if (infop){
-        int index = apop_name_find(infop->names, "log likelihood", 'r');
+    if (apop_name_find(est->info->names, "Info", 'r')){
+        int index = apop_name_find(est->info->names, "log likelihood", 'r');
         if (index)
-            return gsl_vector_get(infop->vector, index);
+            return gsl_vector_get(est->info->vector, index);
     }
     //last resort: recalculate
     return apop_log_likelihood(d, est);
@@ -584,7 +581,8 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est){
   apop_data *p     = est->parameters;
   Get_vmsizes(p) //get vsize, msize1, msize2, tsize
   int betasize  = tsize;
-  gsl_vector *x = setup_starting_point(mp, betasize);
+  gsl_vector *x = apop_data_pack(est->parameters, NULL, .all_pages='y');
+  setup_starting_point(mp, x);
     do {
         if (verbose){
             if (!(iteration++))
@@ -620,8 +618,7 @@ struct to it (<tt>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method
 Get auxiliary info via, e.g.:
 \code
 apop_model *est = apop_estimate(your_data, apop_probit);
-apop_data *info = apop_data_get_page(est->parameters, "Info");
-int status = apop_data_get_ti(info, "status", -1);
+int status = apop_data_get_ti(est->info, .rowname="status");
 if (status)
     //trouble
 else
@@ -720,12 +717,12 @@ APOP_VAR_ENDHEAD
         memcpy(prm0->starting_pt, prm->starting_pt, sizeof(double)*size);
     }
     else if (starting_pt && !strcmp(starting_pt, "np")){
-        v                   = apop_data_pack(copy->parameters); 
+        v                   = apop_data_pack(copy->parameters, NULL, .all_pages='y'); 
         prm->starting_pt	= malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
     else {//"ep" or default.
-        v                   = apop_data_pack(e->parameters); 
+        v                   = apop_data_pack(e->parameters, NULL, .all_pages='y'); 
         prm->starting_pt	= malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
@@ -795,7 +792,7 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
     }
     apop_data_unpack(i->beta, i->model->parameters);
     if (i->model->constraint && i->model->constraint(i->data, i->model))
-        apop_data_pack(i->model->parameters, i->beta);
+        apop_data_pack(i->model->parameters, i->beta, .all_pages='y');
 }
 
 static void annealing_print(void *xp) {

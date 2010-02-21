@@ -80,7 +80,7 @@ void apop_histogram_normalize(apop_model *m);
 #define apop_assert_void(test, level, stop, ...) Apop_assert_void(test, level, stop, __VA_ARGS__)
 #define APOP_ASSERT_VOID(test, level, stop, ...) Apop_assert_void(test, level, stop, __VA_ARGS__)
 
-/** This is obsolete. Use \ref Apop_model_add_group.
+/** \deprecated Use \ref Apop_model_add_group.
  
   For what it's worth, this is a convenience macro. Expands:
  \code

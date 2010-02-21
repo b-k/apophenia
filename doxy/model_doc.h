@@ -854,29 +854,7 @@ enum apop_logit {
   \deprecated Just use \ref apop_probit, which handles multiple options fine.
 \hideinitializer \ingroup models */
 enum apop_multinomial_probit {
-    Name23,         /**< <tt>Multinomial probit</tt>*/
-    Data_format23,  /**<    
- The first column of the data matrix this model expects a number
- indicating the preferred category; the remaining columns are values of
- the independent variables. 
- Thus, the model will return N-1 columns of
- parameters, where N is the number of categories chosen.
-      */
-    Parameter_format23, /**< See above.    */
-    Estimate_results23, /**< Via MLE.    */
-    Prep_routine23, 
-/**< You will probably want to convert some column of your data into factors, via
-    \ref apop_data_to_factors. If you do, then that adds a page of factors to your data
-    set (and of course adjusts the data itself). If I find a factor page, I will use that
-    info; if not, then I will run \ref apop_data_to_factors on the first column (the
-    vector if there is one, else the first column of the matrix.)  
-
-    Also, if there is no vector, then I will move the first column of the matrix, and
-    replace that matrix column with a constant column of ones, just like with OLS.
- */
-    RNG23, /**< No. */
-    settings23, /**<  None, but see above about seeking a factor page in the input data.*/
-    Example23 /**<      */
+    Name23,         /**< <tt>Probit</tt>*/
 } ;
 
 /** The Wishart distribution, which is currently somewhat untested. 

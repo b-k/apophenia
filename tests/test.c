@@ -288,7 +288,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     v   = gsl_matrix_column(m, 0).vector;
     gsl_vector_set_all(&v, 1);
 
-    apop_data *predict_tab = apop_data_get_page(est->data, "predict");
+    apop_data *predict_tab = apop_data_get_page(est->info, "predict");
     v   = gsl_matrix_column(predict_tab->matrix, apop_name_find(predict_tab->names, "residual", 'c')).vector;
     assert(fabs(apop_mean(&v)) < tolerance);
 
@@ -302,12 +302,12 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
  equals a transformation of R^2.
 */
 void test_f(apop_model *est){
-apop_data   *rsq    = apop_estimate_coefficient_of_determination(est->data);
+apop_data   *rsq    = apop_estimate_coefficient_of_determination(est);
 apop_data   *ftab   = apop_F_test(est, NULL);
 double      n       = est->data->matrix->size1;
 double      K       = est->parameters->vector->size;
-double      r       = apop_data_get_ti(rsq,"R.squared",-1);
-double      f       = apop_data_get_ti(ftab,"F.stat",-1);
+double      r       = apop_data_get_ti(rsq,"R.squared", 0);
+double      f       = apop_data_get(ftab, .rowname="F.stat");
     assert(fabs(f - r*(n-K)/ ((1-r)*K)) < tolerance);
 }
 
@@ -759,7 +759,7 @@ int get_factor_index(apop_data *flist, char *findme){
 //If the dummies are an addendum to main, offset=original_data->matrix->size2;
 static void check_for_dummies(apop_data *d, apop_data *dum, int offset){
   int i, j, n;
-    apop_data *factorlist = apop_data_get_page(d, "Factor");
+    apop_data *factorlist = apop_data_get_page(d, "categor");
     for(i=0; i < d->textsize[0]; i ++)
         if ((n = get_factor_index(factorlist, d->text[i][0]))>0){
             for(j=0; j < factorlist->textsize[0]-1; j ++)
@@ -1177,6 +1177,8 @@ void test_arms(gsl_rng *r){
 }
 
 
+#include "pmf_test.c"
+
 #define do_test(text, fn)   if (verbose)    \
                                 printf("%s:", text);  \
                             else printf(".");   \
@@ -1203,6 +1205,10 @@ int main(int argc, char **argv){
     apop_model *an_ols_model = apop_model_copy(apop_ols);
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
+
+
+    do_test("Kullback-Leibler divergence test", pack_test());
+    exit(8);
 
     do_test("Kullback-Leibler divergence test", test_kl_divergence(r));
     do_test("apop_distance test", test_distances());

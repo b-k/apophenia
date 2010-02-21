@@ -538,7 +538,7 @@ for the search; see notes there on the name matching rules.
 .colname.
 \li You can give me the name of a page, e.g.
 \code
-double AIC = apop_data_get(data, .rowname="AIC", .col=-1, page="Info");
+double AIC = apop_data_get(data, .rowname="AIC", .col=-1, .page="Info");
 \endcode
 Each search for a page in the \ref apop_data set involves a regular expression search
 across the names of the pages, which is expensive. If you're doing one lookup, this is not
@@ -553,7 +553,6 @@ The \c _ptr functions return a pointer to the given cell. Those functions follow
 
 These functions use the \ref designated syntax for inputs.
 
-\example
 \code
 apop_data *d = apop_data_alloc(10, 10, 10);
 apop_name_add(d->names, "Zeroth row", 'r');
@@ -777,11 +776,11 @@ then you'll be fine.
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     Apop_assert_s(d, "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc(0, 0,0) to start.");
     apop_name_add(d->names, name, 'r');
-    if (!d->vector)
-        d->vector = gsl_vector_alloc(1);
-    if (d->vector->size < d->names->rowct)
-        apop_vector_realloc(d->vector, d->names->rowct);
-    gsl_vector_set(d->vector, d->names->rowct-1, val);
+    if (!d->matrix)
+        d->matrix = gsl_matrix_alloc(1, 1);
+    if (d->matrix->size1 < d->names->rowct)
+        apop_matrix_realloc(d->matrix, d->names->rowct, d->matrix->size2);
+    gsl_matrix_set(d->matrix, d->names->rowct-1, 0, val);
 }
 
 /** Add a string to the text element of an \ref apop_data set.  If you

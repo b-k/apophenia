@@ -63,19 +63,32 @@ struct _apop_model{
     apop_data   *parameters; /**< The vector of coefficients or parameters estimated by the model. */
     apop_model **distributions;
     int         prepared;
-    apop_data   *data;
-    apop_model * (*estimate)(apop_data * data, apop_model *params);
+    apop_data   *data; /**< The input data. Typically a link to what you sent to \ref apop_estimate */
+    apop_data   *info; /**< Several pages of assorted info, perhaps including the log likelihood, AIC, BIC,
+                        covariance matrix, confidence intervals, expected score. See your
+                        specific model's documentation for what it puts here.
+                        */
+    apop_model * (*estimate)(apop_data * data, apop_model *params); 
+                /**< The estimation routine. Call via \ref apop_estimate */
     double  (*p)(apop_data *d, apop_model *params);
+                /**< Probability of the given data and parameterized model. Call via \ref apop_p */
     double  (*log_likelihood)(apop_data *d, apop_model *params);
+                /**< Log likelihood of the given data and parameterized model. Call via \ref apop_log_likelihood */
     void    (*score)(apop_data *d, gsl_vector *gradient, apop_model *params);
-    double  (*constraint)(apop_data *data, apop_model *params);
+                /**< Derivative of the log likelihood. Call via \ref apop_score */
     apop_data*  (*predict)(apop_data *d, apop_model *params);
-    double  (*cdf)(apop_data *d, apop_model *params);
+    double  (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 
+                            the integral up to the single data point you provide.  Call via \ref apop_cdf */
+    double  (*constraint)(apop_data *data, apop_model *params);
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
+                /**< Random draw from a parametrized model. Call via \ref apop_draw */
     void (*prep)(apop_data *data, apop_model *params);
     void (*print)(apop_model *params);
-    void    *more;
-    size_t  more_size;
+    void    *more; /**< This element is copied and freed as necessary by Apophenia's
+                     model-handling functions, but is otherwise untouched. Put whatever
+                     information you want here. */
+    size_t  more_size; /**< If setting \c more, set this to \c sizeof(your_more_type) so
+                         \ref apop_model_copy can do the \c memcpy as necessary. */
 } ;
 
 /** The global options.

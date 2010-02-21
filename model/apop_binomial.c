@@ -64,13 +64,13 @@ static apop_model * binomial_estimate(apop_data * data,  apop_model *est){
   char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
     get_hits_and_misses(data, method, &hitcount, &misscount);   
     int n = hitcount + misscount;
-    apop_data_add_named_elmt(est->parameters, "n", n);
-    apop_data_add_named_elmt(est->parameters, "p", hitcount/(hitcount + misscount));
+    apop_name_add(est->parameters->names, "n", 'r');
+    apop_name_add(est->parameters->names, "p", 'r');
+    apop_data_set(est->parameters, 0, -1, n);
+    apop_data_set(est->parameters, 1, -1, hitcount/(hitcount + misscount));
     est->dsize	        = (method == 'b') ? 2 : n;
+    apop_data_add_named_elmt(est->info, "log likelihood", binomial_log_likelihood(data, est));
     make_covar(est);
-    apop_data *info = apop_data_alloc(1,0,0);
-    apop_data_add_named_elmt(info, "log likelihood", binomial_log_likelihood(data, est));
-    apop_data_add_page(est->parameters, info, "Info");
     return est;
 }
 
@@ -189,9 +189,7 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     }
     est->dsize	        = (method == 'b') ? count->size : n;
     make_covar(est);
-    apop_data *info = apop_data_alloc(1,0,0);
-    apop_data_add_named_elmt(info, "log likelihood", multinomial_log_likelihood(data, est));
-    apop_data_add_page(est->parameters, info, "Info");
+    apop_data_add_named_elmt(est->info, "log likelihood", multinomial_log_likelihood(data, est));
     return est;
 }
 

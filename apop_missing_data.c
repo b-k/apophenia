@@ -17,6 +17,7 @@ The function returns a new data set with the NaNs removed, so the original data 
     twice the size of the data set in memory during the function. If
     every row has an NaN, then your \c apop_data set will have a lot of
     \c NULL elements.
+\li I only look at the first page of data (i.e. the \c more element is ignored).
 \li This function uses the \ref designated syntax for inputs.
 
     \param d    The data, with NaNs
@@ -163,6 +164,7 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     impute_me->more = mvn;
     apop_model *fixed = apop_model_fix_params(impute_me);
 //    Apop_model_add_group(fixed, apop_mle, .want_cov='n', .dim_cycle_tolerance=1);
+    Apop_settings_set(fixed, apop_mle, want_cov, 'n');
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
     apop_data_memcpy(d, m->parameters); //A bit inefficient.
     return m;

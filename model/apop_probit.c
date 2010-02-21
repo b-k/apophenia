@@ -10,11 +10,13 @@
 /////////  Part II: plain old probit
 
 static apop_data *get_category_table(apop_data *d){
-    apop_data *out = apop_data_get_page(d, "Factors");
+    int first_col = d->vector ? -1 : 0;
+    char name[101];
+    snprintf(name, 101, "categories for %s", first_col? d->names->vector : d->names->column[0]);
+    apop_data *out = apop_data_get_page(d, name);
     if (!out) {
-        int first_col = d->vector ? -1 : 0;
         apop_data_to_factors(d, .intype='d', .incol=first_col, .outcol=first_col);
-        out = apop_data_get_page(d, "Factors");
+        out = apop_data_get_page(d, name);
     }
     return out;
 }

@@ -5,11 +5,21 @@
 ]
 
     February 2009
+!!Overhauling the output from estimations; pardon our dust. 
 --Added CDF method to the apop_model, including apop_cdf dispatch method and default via random draws.
 **Defininitvely removed the residual, covariance, and llikelihood elements from the
     apop_model struct. The first two will be pages appended to the data and parameters,
     respectively, and the last will be in the Info page appended to the parameters.
 **Renamed apop_ls_settings (least square) to apop_lm_settings (linear model) "s/apop_ls/apop_lm/g" should work.
+**Sundry lists of scalars, like the R^2 table and the estimation routine's info table put the data in column zero, not column -1. In the next bullet point you'll see how this simplifies retrieval.
+**Added an info element to the apop_model--> more shuffling of auxiliary info. 
+    --Find results like the log likelihood or AIC via, e.g., apop_data_get(your_model->info, .rowname="log likelihood");
+  **Find the predicted/residuals via apop_data_get_page(your_model->info, "Predicted");
+        This means that the input data set is read-only again. 
+    --Find the parameter covariances via apop_data_get_page(your_model->parameters, "Covariance");
+    **apop_estimate_coefficient_of_determination takes in the model again. Just replace est->parameters in your argument with est. apop_ols calls this fn automatically now [apop_data_get(your_model->info, .rowname="R sq")], so you probably aren't even calling it anymore.
+**apop_data_add_named_elmt now writes to the zeroth element of the matrix, not the vector.
+So instead of apop_data_get(data, .rowname="R squared", -1), just go with apop_data_get(data, .rowname="R squared"). This affects many of the elements of the info-type matrices.
 
     0.23 January 2009
 **expected_value element of the model renamed predict; made coherent across models.

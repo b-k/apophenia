@@ -214,7 +214,7 @@ APOP_VAR_END_HEAD
     gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
     gsl_blas_ddot(qprimebeta, qprimebetaminusc_qprimexpxinvqinv, &f_stat);
 
-    Apop_col_t(apop_data_get_page(est->data, "Predicted"), "residual", error)
+    Apop_col_t(apop_data_get_page(est->info, "Predicted"), "residual", error)
     gsl_blas_ddot(error, error, &variance);
     f_stat  *=  data_df / (variance * q_df);
     pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
@@ -431,12 +431,16 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
   apop_data   *out; 
   double      val;
   gsl_vector  *delmts         = NULL;
-  char        n[1000],
+  char        n[1000], name[101],
               **telmts        = NULL;//unfortunately needed for the bsearch.
     //first, create an ordered list of unique elements.
     //Record that list for use in this function, and in a ->more page of the data set.
     if (type == 't'){
-        *factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), "factors");
+        if (d->names->textct > col)
+            snprintf(name, 100, "categories for %s", d->names->text[col]);
+        else
+            snprintf(name, 100, "categories for column %i", col);
+        *factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), name);
         elmt_ctr = (*factor_list)->textsize[0];
         //awkward format conversion:
         telmts = malloc(sizeof(char*)*elmt_ctr);
@@ -449,7 +453,11 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
         APOP_COL(d, col, to_search);
         delmts          = apop_vector_unique_elements(to_search);
         elmt_ctr = delmts->size;
-        *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr, 0, 0), "factors");
+        if (d->names->colct > col)
+            snprintf(name, 100, "categories for %s", d->names->column[col]);
+        else
+            snprintf(name, 100, "categories for column %i", col);
+        *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr, 0, 0), name);
         apop_text_alloc((*factor_list), delmts->size, 1);
         for (size_t i=0; i< (*factor_list)->vector->size; i++){
             //shift to the text, for conformity with the more common text version.
@@ -509,14 +517,14 @@ a matrix with a single one in each row in the column specified.
 
 After that, you have to decide what to do with the new matrix and the original data column. 
 
-\li The <tt>.remove='y'</tt> option specifies that I should use \ref apop_data_rm_columns 
-to remove the column used to generate the dummies. Implement only for <tt>type=='d'</tt>.
-
 \li You can manually join the dummy data set with your main data, e.g.:
 \code
 apop_data *dummies  = apop_data_to_dummies(main_regression_vars, .col=8, .type='t');
 apop_data_stack(main_regression_vars, dummies, 'c', .inplace='y');
 \endcode
+
+\li The <tt>.remove='y'</tt> option specifies that I should use \ref apop_data_rm_columns 
+to remove the column used to generate the dummies. Implemented only for <tt>type=='d'</tt>.
 
 \li By specifying <tt>.append='y'</tt> or <tt>.append='e'</tt> I will run the above two lines for you. Your \ref apop_data pointer will not change, but its \c matrix element will be reallocated (via \ref apop_data_stack).
 
@@ -530,8 +538,8 @@ are bothering to use this function), subsequent column numbers will change.
 the table, which is equivalent to <tt>append='e'</tt>.
 
 \param  d The data set with the column to be dummified (No default.)
-\param col The column number to be transformed (default = 0)
-\param type 'd'==data column (-1==vector), 't'==text column. (default = 't')
+\param col The column number to be transformed; -1==vector (default = 0)
+\param type 'd'==data column, 't'==text column. (default = 't')
 \param  keep_first  if zero, return a matrix where each row has a one in the (column specified MINUS
     ONE). That is, the zeroth category is dropped, the first category
     has an entry in column zero, et cetera. If you don't know why this
@@ -543,7 +551,7 @@ matrix. If \c 'i', insert in place, immediately after the original data column. 
 
 \return An \ref apop_data set whose \c matrix element is the one-zero
 matrix of dummies. If you used <tt>.append</tt>, then this is the main matrix.
-Also, the <tt>more</tt> element is a reference table of names and column numbers.
+Also, I add a page named <tt>"categories for your_var"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
 This function uses the \ref designated syntax for inputs.
 */
@@ -628,7 +636,7 @@ added as a second page of the \ref apop_data set, you can recover the
 original values as needed.
 
 \return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
-Also, the <tt>more</tt> element is a reference table of names and column numbers.
+Also, I add a page named <tt>"categories for your_var"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
@@ -718,7 +726,7 @@ apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd
 \li "SST"
 \li "SSR"
 
-\param in   A data set, including a page named \c "Predicted". 
+\param m    A model. I use the pointer to the data set used for estimation and the info page named \c "Predicted". 
 The Predicted page should include observed, expected, and residual columns, which I use to
 generate the sums of squared errors and residuals, et cetera. All generalized linear
 models produce a page with this name and of this form, as do a host of other models. Nothing 
@@ -736,12 +744,12 @@ SST, and SSR (and calculate the \f$R^2\f$s using those values).
 
 \ingroup regression
   */
-apop_data *apop_estimate_coefficient_of_determination (apop_data *in){
+apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   double          sse, sst, rsq, adjustment;
-  size_t          indep_ct= in->matrix->size2 - 1;
+  size_t          indep_ct= m->data->matrix->size2 - 1;
   apop_data       *out    = apop_data_alloc(0, 5,-1);
-    gsl_vector *weights = in->weights; //typically NULL.
-    apop_data *expected = apop_data_get_page(in, "Predicted");
+    gsl_vector *weights = m->data->weights; //typically NULL.
+    apop_data *expected = apop_data_get_page(m->info, "Predicted");
     apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"Predicted\" page in your data set. Returning NULL.\n");
     size_t obs = expected->matrix->size1;
     Apop_col_t(expected, "residual", v)
@@ -754,7 +762,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_data *in){
         gsl_vector_free(v_times_w);
     }
     Apop_col(expected, 0, vv);
-    sst = apop_vector_weighted_var(vv, in->weights) * (vv->size-1);
+    sst = apop_vector_weighted_var(vv, m->data->weights) * (vv->size-1);
     rsq = 1. - (sse/sst);
     adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;
     apop_data_add_named_elmt(out, "R_squared", rsq);

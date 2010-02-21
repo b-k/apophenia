@@ -295,6 +295,9 @@ apop_data *testme= apop_query_to_data("select y, x1, log(x2), pow(x3,2) from dat
 apop_model *est = apop_estimate(testme, apop_ols);
 \endcode
 
+[As an aside, there is a simple principle to the ordering of arguments to functions like
+\ref apop_estimate: the data always comes first.]
+
 Generating factors and dummies is also considered data prep, not model
 internals. See \ref apop_data_to_dummies and \ref apop_text_to_factors.
 
@@ -313,12 +316,12 @@ for (int i=0; i< matrix->size1; i++){
     Apop_matrix_col(matrix, i, one_col);
     apop_draw(one_col->data, r, est);
 }
+\endcode
 
 So that's the intended workflow: first, gather the data, probably via the
 database, pull the data in the format you want it; then, set up your model,
 estimate and interrogate it. [See also the model settings section below on optional details of model setup.] 
 
-\endcode
 
 endofdiv
 
@@ -970,7 +973,7 @@ For example, here is how one would set up a model for an MLE:
 double apop_new_log_likelihood(apop_data *data, apop_model *m)
 \endcode 
 where \c data is the input data, and \c
-m is the parametrized model (i.e., your model with a \c parameters element set by the caller). 
+m is the parametrized model (i.e. your model with a \c parameters element set by the caller). 
 This function will return the value of the log likelihood function at the given parameters.
 
 \li Is this a constrained optimization? See the \ref constraints "Constraints page" on how to set them. Otherwise, no constraints will be assumed.
@@ -1143,7 +1146,7 @@ For just using a model, that's about 100% of what you need to know.
 
 Outlineheader settingswritng  Writing new settings
 
-To store the settings for your own models, you don't necessarily need any of this. The \ref apop_model structure has a \c void pointer named \c more which you can use as you see fit. If \c more_size is larger than zero (i.e., you set it to \c sizeof(your_struct)), then it will be copied via \c memcpy as necessary. Apophenia's estimation routines will never impinge on this item, so do what you feel with it.
+To store the settings for your own models, you don't necessarily need any of this. The \ref apop_model structure has a \c void pointer named \c more which you can use to store extra information as needed. If \c more_size is larger than zero (i.e. you set it to <tt>your_model.more_size=sizeof(your_struct)</tt>), then it will be copied via \c memcpy by \ref apop_model_copy, and <tt>free</tt>d by \ref apop_model_free. Apophenia's estimation routines will never impinge on this item, so do what you feel with it.
 
 If you do want to set up a new model, then you will need four items.  This is the sort of boilerplate that will be familiar to users of object oriented languages in the style of C++ or Java. Let your settings group be named \c ysg; then you will need
 
@@ -1207,13 +1210,12 @@ As you saw above, once the typedef/alloc/copy/free machinery is written, you can
 
 endofdiv
 
+        \li\ref Apop_model_add_group
         \li\ref Apop_settings_set
-        \li\ref Apop_settings_alloc
         \li\ref apop_settings_copy_group
         \li\ref Apop_settings_get
         \li\ref apop_settings_get_group
         \li\ref Apop_settings_get_group
-        \li\ref apop_settings_group_alloc
 
         endofdiv
 
@@ -1336,7 +1338,7 @@ If you give it a likelihood function with no regard to constraints plus an array
 \ref apop_maximum_likelihood will combine them to a function that fits the above description and search accordingly.
 
 A constraint function must do three things:
-\li It must check the constraint, and if the constraint does not bind (i.e., the parameter values are OK), then it must return zero.
+\li It must check the constraint, and if the constraint does not bind (i.e. the parameter values are OK), then it must return zero.
 \li If the constraint does bind, it must return a penalty, that indicates how far off the parameter is from meeting the constraint.
 \li if the constraint does bind, it must set a return vector that the likelihood function can take as a valid input. The penalty at this returned value must be zero.
 
@@ -1474,6 +1476,7 @@ These functions will probably disappear or be replaced soon.
     \li\ref apop_kernel_density_settings_alloc()
     \li\ref apop_data_to_db()
     \li\c Apop_settings_add_group
+    \li\ref Apop_settings_alloc
 
 endofdiv
 

@@ -3711,7 +3711,7 @@ static apop_model *apop_loess_est(apop_data *d, apop_model *m){
 
     //setup the expected matrix. In a perfect world, this wouldn't all be cut/pasted from apop_OLS.
     //Also, it wouldn't be 14 lines.
-    apop_data *expect = apop_data_add_page(d, apop_data_alloc(0, d->matrix->size1, 3), "Predicted");
+    apop_data *expect = apop_data_add_page(out->info, apop_data_alloc(0, d->matrix->size1, 3), "Predicted");
     apop_name_add(expect->names, (out->data->names->colct ? out->data->names->column[0] : "expected"), 'c');
     apop_name_add(expect->names, "predicted", 'c');
     apop_name_add(expect->names, "residual", 'c');

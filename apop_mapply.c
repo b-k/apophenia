@@ -76,10 +76,12 @@ apop_map(your_data, .fn_di=cutoff, .param=&param, .inplace=1);
 Default is 'a', but notice that I'll ignore a \c NULL vector or matrix, so if your data set has only a vector (for example), that's what I'll use.
 
 \param inplace  If zero, generate a new \ref apop_data set for output, which will contain the mapped values (and the names from the original set). If one, modify in place. The \c double \f$\to\f$ \c double versions, \c 'v', \c 'm', and \c 'a', write to exactly the same location as before. The \c gsl_vector \f$\to\f$ \c double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you are writing in place and there is already a vector there, then the original vector is lost.
+\param all_pages If \c 'y', then I follow the \c more pointer to subsequent pages, else I
+handle only the first page of data. Default: \c 'n'.
 
 \ingroup mapply
 */
-APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi,    void *param, int inplace, char part){ 
+APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi,    void *param, int inplace, char part, int all_pages){ 
     apop_data * apop_varad_var(in, NULL)
     if (!in) return NULL;
     apop_fn_v * apop_varad_var(fn_v, NULL)
@@ -93,7 +95,8 @@ APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     int apop_varad_var(inplace, 0)
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, 'a')
-    return apop_map_base(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, inplace, part);
+    int apop_varad_var(all_pages, 'n')
+    return apop_map_base(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, inplace, part, all_pages);
 APOP_VAR_ENDHEAD
     int use_param = (fn_vp || fn_dp || fn_vpi || fn_dpi);
     int use_index  = (fn_vi || fn_di || fn_vpi || fn_dpi);
@@ -148,6 +151,8 @@ APOP_VAR_ENDHEAD
     }
     if (part == 'r' || part == 'c')
         mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, part);
+    if (all_pages && in->more)
+        out->more = apop_map_base(in->more, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, inplace, part, all_pages);
     return out;
 }
 
@@ -156,7 +161,7 @@ APOP_VAR_ENDHEAD
   See also the \ref mapply "map/apply page" for details.
  \ingroup mapply
  */
-APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi,    void *param, char part){ 
+APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi,    void *param, char part, int all_pages){ 
     apop_data * apop_varad_var(in, NULL)
     apop_fn_v * apop_varad_var(fn_v, NULL)
     apop_fn_d * apop_varad_var(fn_d, NULL)
@@ -168,13 +173,15 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     apop_fn_di * apop_varad_var(fn_di, NULL)
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, 'a')
-    return apop_map_sum_base(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, part);
+    int apop_varad_var(all_pages, 'n')
+    return apop_map_sum_base(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, part, all_pages);
 APOP_VAR_ENDHEAD 
     apop_data *out = apop_map(in, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, 0, part);
     double outsum = (out->vector ? apop_sum(out->vector) : 0)
                      + (out->matrix ? apop_matrix_sum(out->matrix) : 0);
     apop_data_free(out);
-    return outsum;
+    return outsum + 
+                ((all_pages && in->more) ? apop_map_sum_base(in->more, fn_d, fn_v, fn_dp, fn_vp, fn_dpi, fn_vpi, fn_di, fn_vi, param, part, all_pages) : 0);
 }
 
 
