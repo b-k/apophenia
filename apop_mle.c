@@ -290,8 +290,8 @@ APOP_VAR_ENDHEAD
         apop_name_stack(out->names, hessian->names, 'c');
     }
     apop_data_free(hessian);
-    if (!apop_data_get_page(data, "Covariance"))
-        apop_data_add_page(data, out, "Covariance");
+    if (!apop_data_get_page(model->parameters, "Covariance"))
+        apop_data_add_page(model->parameters, out, "Covariance");
     return out;
 }
 
@@ -417,26 +417,24 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
   apop_model		        *est    = i->model; //just an alias.
   apop_mle_settings          *mp    = apop_settings_get_group(est, "apop_mle");
     if (mp->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
-        apop_data_add_page(params, 
+        apop_data_add_page(est->parameters, 
                 apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta)), "Covariance");
         apop_estimate_parameter_t_tests (est);
     }
     int param_ct = (params->vector ? params->vector->size : 0)
                    +(params->matrix ?  params->matrix->size1*params->matrix->size2 : 0);
-    apop_data *infopage = apop_data_alloc(0, 0, 0);
-    apop_data_add_page(params, infopage, "Info");
     if (!ll) //then sending function didn't save last value of f().
         ll = apop_log_likelihood(i->data, i->model);
     else 
         ll = log(ll);
     //else take ll at face value.
 
-    apop_data_add_named_elmt(infopage, "status", status);
-    apop_data_add_named_elmt(infopage, "AIC", 2*param_ct - 2 *ll);
+    apop_data_add_named_elmt(est->info, "status", status);
+    apop_data_add_named_elmt(est->info, "AIC", 2*param_ct - 2 *ll);
     if (i->data){//some models have NULL data.
         Get_vmsizes(i->data); //vsize, msize1, tsize
-        apop_data_add_named_elmt(infopage, "BIC by row", param_ct * log(msize1 ? msize1: vsize) - 2 *ll);
-        apop_data_add_named_elmt(infopage, "BIC by item", param_ct * log(tsize) - 2 *ll);
+        apop_data_add_named_elmt(est->info, "BIC by row", param_ct * log(msize1 ? msize1: vsize) - 2 *ll);
+        apop_data_add_named_elmt(est->info, "BIC by item", param_ct * log(tsize) - 2 *ll);
     }
 }
 
@@ -565,11 +563,10 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 /*There is a semi-standard location for the log likelihood. Search there, and if you don't
 find it, then recalculate it.*/
 static double get_ll(apop_data *d, apop_model *est){
-    apop_data *infop = apop_data_get_page(est->parameters, "Info");
-    if (infop){
-        int index = apop_name_find(infop->names, "log likelihood", 'r');
+    if (apop_name_find(est->info->names, "Info", 'r')){
+        int index = apop_name_find(est->info->names, "log likelihood", 'r');
         if (index)
-            return gsl_vector_get(infop->vector, index);
+            return gsl_vector_get(est->info->vector, index);
     }
     //last resort: recalculate
     return apop_log_likelihood(d, est);
@@ -620,8 +617,7 @@ struct to it (<tt>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method
 Get auxiliary info via, e.g.:
 \code
 apop_model *est = apop_estimate(your_data, apop_probit);
-apop_data *info = apop_data_get_page(est->parameters, "Info");
-int status = apop_data_get_ti(info, "status", -1);
+int status = apop_data_get_ti(est->info, .rowname="status");
 if (status)
     //trouble
 else

@@ -43,7 +43,7 @@ static int find_missing(const apop_data *mask, apop_model *mc){
 }
 
 static void unpack(const apop_data *v, apop_model *m){
-apop_model_fixed_params_settings * mset = Apop_settings_get_group(m, apop_model_fixed_params);
+    apop_model_fixed_params_settings * mset = Apop_settings_get_group(m, apop_model_fixed_params);
     for (int i=0; i< mset->ct; i++)
         apop_data_set(mset->base_model->parameters, mset->row[i], mset->col[i], gsl_vector_get(v->vector,i));
 }
@@ -157,7 +157,7 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     find_missing(mask, model_out);
     if (!Apop_settings_get_group(model_out, apop_mle))
         Apop_model_add_group(model_out, apop_mle, .parent= model_out, .method=APOP_CG_PR,
-                                     .step_size=1, .tolerance=0.2);
+                                     .want_cov='n', .step_size=1, .tolerance=0.2);
     if (!model_in->p) model_out->p = NULL;
     if (!model_in->log_likelihood) model_out->log_likelihood = NULL;
     if (!model_in->score) model_out->score = NULL;

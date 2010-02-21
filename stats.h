@@ -118,7 +118,7 @@ APOP_VAR_DECLARE double apop_kl_divergence(apop_model *top, apop_model *bottom, 
 
 apop_model *apop_estimate_fixed_effects_OLS(apop_data *data, gsl_vector *categories);
 
-apop_data *apop_estimate_coefficient_of_determination (apop_data *in);
+apop_data *apop_estimate_coefficient_of_determination (apop_model *);
 void apop_estimate_parameter_t_tests (apop_model *est);
 
 //apop_testing.c

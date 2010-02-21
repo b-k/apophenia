@@ -288,7 +288,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     v   = gsl_matrix_column(m, 0).vector;
     gsl_vector_set_all(&v, 1);
 
-    apop_data *predict_tab = apop_data_get_page(est->data, "predict");
+    apop_data *predict_tab = apop_data_get_page(est->info, "predict");
     v   = gsl_matrix_column(predict_tab->matrix, apop_name_find(predict_tab->names, "residual", 'c')).vector;
     assert(fabs(apop_mean(&v)) < tolerance);
 
@@ -302,12 +302,12 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
  equals a transformation of R^2.
 */
 void test_f(apop_model *est){
-apop_data   *rsq    = apop_estimate_coefficient_of_determination(est->data);
+apop_data   *rsq    = apop_estimate_coefficient_of_determination(est);
 apop_data   *ftab   = apop_F_test(est, NULL);
 double      n       = est->data->matrix->size1;
 double      K       = est->parameters->vector->size;
-double      r       = apop_data_get_ti(rsq,"R.squared",-1);
-double      f       = apop_data_get_ti(ftab,"F.stat",-1);
+double      r       = apop_data_get_ti(rsq,"R.squared", 0);
+double      f       = apop_data_get(ftab, .rowname="F.stat");
     assert(fabs(f - r*(n-K)/ ((1-r)*K)) < tolerance);
 }
 

@@ -29,13 +29,16 @@ The above two points mean that you probably don't need to call this function dir
 
 \ingroup models  */
 apop_model * apop_model_clear(apop_data * data, apop_model *model){
-  int vsize  = model->vbase == -1 ? data->matrix->size2 : model->vbase;
+  int vsize  = model->vbase  == -1 ? data->matrix->size2 : model->vbase;
   int msize1 = model->m1base == -1 ? data->matrix->size2 : model->m1base ;
   int msize2 = model->m2base == -1 ? data->matrix->size2 : model->m2base ;
     apop_data_free(model->parameters);
-    model->parameters	    = apop_data_alloc(vsize, msize1, msize2);
-    model->data             = data;
-    model->prepared         = 0;
+    apop_data_free(model->info);
+    model->parameters	= apop_data_alloc(vsize, msize1, msize2);
+    model->info	        = apop_data_alloc(0, 0, 0);
+    snprintf(model->info->names->title, 100, "Info");
+    model->data         = data;
+    model->prepared     = 0;
 	return model;
 }
 
@@ -43,7 +46,9 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
 The  \c parameters element is freed.  These are all the things that are completely copied, by \c apop_model_copy, so the parent model is still safe after this is called. \c data is not freed, because the odds are you still need it.
 
-The system has no idea what the \c more element contains, so if they point to other things, they need to be freed before calling this function.
+The function runs \ref{free(free_me->more)}, but has no idea what the \c more element
+contains; if it points to other structures (like an \ref apop_data set), you need to
+free them before calling this function.
 
 If \c free_me is \c NULL, this does nothing.
 
@@ -97,9 +102,8 @@ void apop_model_show (apop_model * print_me){
 		printf("\nThe covariance matrix:\n");
         apop_data_show(cov);
 	}
-    apop_data *info = apop_data_get_page(print_me->parameters, "info"); 
-    if (info)
-        apop_data_show(info);
+    if (print_me->info)
+        apop_data_show(print_me->info);
 }
 
 /** Currently an alias for \ref apop_model_show, but when I get
@@ -112,6 +116,8 @@ void apop_model_print (apop_model * print_me){
 /** Outputs a copy of the \ref apop_model input.
 \param in   The model to be copied
 \return A pointer to a copy of the original, which you can mangle as you see fit. 
+
+\li If <tt>in.more_size > 0</tt> I <tt>memcpy</tt> the \c more pointer from the original data set.
 
 \ingroup models
 */
@@ -129,6 +135,7 @@ apop_model * apop_model_copy(apop_model in){
             apop_settings_copy_group(out, &in, in.settings[i].name);
         while (strlen(in.settings[i++].name));
     out->parameters = apop_data_copy(in.parameters);
+    out->info = apop_data_copy(in.info);
     return out;
 }
 

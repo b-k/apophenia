@@ -47,9 +47,7 @@ static apop_model * rank_exponential_estimate(apop_data * data, apop_model *est)
         grand_total += colsum;
     }
 	gsl_vector_set(est->parameters->vector, 0, numerator/grand_total);
-    apop_data *info = apop_data_alloc(1,0,0);
-    apop_data_add_named_elmt(info, "log likelihood", rank_exponential_log_likelihood(data, est));
-    apop_data_add_page(est->parameters, info, "Info");
+    apop_data_add_named_elmt(est->info, "log likelihood", rank_exponential_log_likelihood(data, est));
 	return est;
 }
 
@@ -89,9 +87,7 @@ static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
     if (apop_settings_get_group(est, "apop_rank"))
       return rank_exponential_estimate(data, est);
 	gsl_vector_set(est->parameters->vector, 0, apop_matrix_mean(data->matrix));
-    apop_data *info = apop_data_alloc(1,0,0);
-    apop_data_add_named_elmt(info, "log likelihood", exponential_log_likelihood(data, est));
-    apop_data_add_page(est->parameters, info, "Info");
+    apop_data_add_named_elmt(est->info, "log likelihood", exponential_log_likelihood(data, est));
 	return est;
 }
 

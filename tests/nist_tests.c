@@ -22,9 +22,8 @@ apop_model *est  =  apop_estimate(d, apop_ols);
     assert(fabs(apop_data_get(cov, 0, 0) - pow(0.107938612033077E-03,2))    < TOL2);
     assert(fabs(apop_data_get(cov, 1, 1) - pow(0.157817399981659E-09,2))    < TOL2);
     assert(fabs(apop_data_get(cov, 2, 2) - pow(0.486652849992036E-16,2))    < TOL2);
-    apop_data *cc   = apop_data_get_page(est->parameters, "Info");
-    assert(fabs(apop_data_get_ti(cc, "R.sq.*", -1) - 0.999999900178537)    < TOL);
-    assert(fabs(apop_data_get_ti(cc, "SSR", -1) - 15.6040343244198)    < TOL3);
+    assert(fabs(apop_data_get(est->info, .rowname="R.sq.*") - 0.999999900178537)    < TOL);
+    assert(fabs(apop_data_get(est->info, .rowname="SSR") - 15.6040343244198)    < TOL3);
 }
 
 void wampler1(){
@@ -38,8 +37,7 @@ apop_model   *est  =  apop_estimate(d, apop_ols);
     apop_data *cov = apop_data_get_page(est->parameters, "cov");
     for (i=0; i<6; i++)
         assert(fabs(apop_data_get(cov, i, i)) < TOL2);
-    apop_data *cc   = apop_data_get_page(est->parameters, "Info");
-    assert(fabs(apop_data_get_ti(cc, "R.sq.*", -1) - 1)    < TOL);
+    assert(fabs(apop_data_get(est->info, .rowname="R.sq.*") - 1)    < TOL);
 }
 
 void numacc4(){

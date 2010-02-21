@@ -214,7 +214,7 @@ APOP_VAR_END_HEAD
     gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
     gsl_blas_ddot(qprimebeta, qprimebetaminusc_qprimexpxinvqinv, &f_stat);
 
-    Apop_col_t(apop_data_get_page(est->data, "Predicted"), "residual", error)
+    Apop_col_t(apop_data_get_page(est->info, "Predicted"), "residual", error)
     gsl_blas_ddot(error, error, &variance);
     f_stat  *=  data_df / (variance * q_df);
     pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
@@ -718,7 +718,7 @@ apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd
 \li "SST"
 \li "SSR"
 
-\param in   A data set, including a page named \c "Predicted". 
+\param m    A model. I use the pointer to the data set used for estimation and the info page named \c "Predicted". 
 The Predicted page should include observed, expected, and residual columns, which I use to
 generate the sums of squared errors and residuals, et cetera. All generalized linear
 models produce a page with this name and of this form, as do a host of other models. Nothing 
@@ -736,12 +736,12 @@ SST, and SSR (and calculate the \f$R^2\f$s using those values).
 
 \ingroup regression
   */
-apop_data *apop_estimate_coefficient_of_determination (apop_data *in){
+apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   double          sse, sst, rsq, adjustment;
-  size_t          indep_ct= in->matrix->size2 - 1;
+  size_t          indep_ct= m->data->matrix->size2 - 1;
   apop_data       *out    = apop_data_alloc(0, 5,-1);
-    gsl_vector *weights = in->weights; //typically NULL.
-    apop_data *expected = apop_data_get_page(in, "Predicted");
+    gsl_vector *weights = m->data->weights; //typically NULL.
+    apop_data *expected = apop_data_get_page(m->info, "Predicted");
     apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"Predicted\" page in your data set. Returning NULL.\n");
     size_t obs = expected->matrix->size1;
     Apop_col_t(expected, "residual", v)
@@ -754,7 +754,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_data *in){
         gsl_vector_free(v_times_w);
     }
     Apop_col(expected, 0, vv);
-    sst = apop_vector_weighted_var(vv, in->weights) * (vv->size-1);
+    sst = apop_vector_weighted_var(vv, m->data->weights) * (vv->size-1);
     rsq = 1. - (sse/sst);
     adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;
     apop_data_add_named_elmt(out, "R_squared", rsq);
