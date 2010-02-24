@@ -807,14 +807,18 @@ APOP_VAR_END_HEAD
 \param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
 pages; else fill only the first page. Default = \c 'n'.
 
+\li If I get to the end of the first page and have more vector to unpack, and the data to
+fill has a \c more element, then I will continue into subsequent pages.
+
 This function uses the \ref designated syntax for inputs.
 \ingroup conversions
 */
-APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char all_pages){
+APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d){
     const gsl_vector * apop_varad_var(in, NULL);
     apop_data* apop_varad_var(d, NULL);
-    char apop_varad_var(all_pages, 'n');
-    apop_data_unpack_base(in, d, all_pages);
+    //char apop_varad_var(all_pages, 'n');
+    //apop_data_unpack_base(in, d, all_pages);
+    apop_data_unpack_base(in, d);
 APOP_VAR_ENDHEAD
   int           offset   = 0;
   gsl_vector    vin, vout;
@@ -835,9 +839,9 @@ APOP_VAR_ENDHEAD
         gsl_vector_memcpy(d->weights, &vin);
         offset  += d->weights->size;
     }
-    if ((all_pages == 'y' ||all_pages =='Y')&& d->more){
+    if (offset != in->size && d->more){
         vin = gsl_vector_subvector((gsl_vector *)in, offset, in->size - offset).vector;
-        apop_data_unpack(&vin, d->more, .all_pages='y');
+        apop_data_unpack(&vin, d->more);
     }
 }
 

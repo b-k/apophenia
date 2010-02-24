@@ -428,6 +428,8 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
         ll = log(ll);
     //else take ll at face value.
 
+    if (!est->info)
+        est->info = apop_data_alloc(0,0,0);
     apop_data_add_named_elmt(est->info, "status", status);
     apop_data_add_named_elmt(est->info, "AIC", 2*param_ct - 2 *ll);
     if (i->data){//some models have NULL data.
@@ -560,7 +562,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
 	return est;
 }
 
-/*There is a semi-standard location for the log likelihood. Search there, and if you don't
+/*There is a basically standard location for the log likelihood. Search there, and if you don't
 find it, then recalculate it.*/
 static double get_ll(apop_data *d, apop_model *est){
     if (apop_name_find(est->info->names, "Info", 'r')){
@@ -890,9 +892,7 @@ static apop_model * find_roots (infostruct p) {
   const gsl_multiroot_fsolver_type *T;
   gsl_multiroot_fsolver *s;
   apop_model *dist = p.model;
-  int           vsize       =(dist->parameters->vector ? dist->parameters->vector->size :0),
-                msize1      =(dist->parameters->matrix ? dist->parameters->matrix->size1 :0),
-                msize2      =(dist->parameters->matrix ? dist->parameters->matrix->size2:0);
+  Get_vmsizes(dist->parameters); //vsize, msize1, msize2
   int status, betasize      = vsize + msize1* msize2,
               apopstatus    = 1;   //assume failure until we score a success.
   size_t  iter = 0;

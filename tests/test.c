@@ -19,6 +19,7 @@
 #include "../eg/test_fisher.c" 
 #include "../eg/test_regex.c" 
 #include "../eg/test_strcmp.c" 
+#include "../eg/pmf_test.c" 
 
 //One-liners for mapply:
 gsl_rng *r_global;
@@ -436,7 +437,8 @@ void apop_pack_test(gsl_rng *r){
             fill_p(p2, v, m1, m2, w, r);
         }
         mid     = apop_data_pack(d, .all_pages= second_p ? 'y' : 'n');
-        apop_data_unpack(mid, dout, .all_pages= second_p ? 'y' : 'n');
+        apop_data_unpack(mid, dout);
+        //apop_data_unpack(mid, dout, .all_pages= second_p ? 'y' : 'n');
         check_p(d, dout, v, m1, m2, w);
         if (second_p)
             check_p(d->more, dout->more, v, m1, m2, w);
@@ -1177,8 +1179,6 @@ void test_arms(gsl_rng *r){
 }
 
 
-#include "pmf_test.c"
-
 #define do_test(text, fn)   if (verbose)    \
                                 printf("%s:", text);  \
                             else printf(".");   \
@@ -1207,9 +1207,7 @@ int main(int argc, char **argv){
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
 
-    do_test("Kullback-Leibler divergence test", pack_test());
-    exit(8);
-
+    do_test("test optimization of multi-page parameters", pack_test());
     do_test("Kullback-Leibler divergence test", test_kl_divergence(r));
     do_test("apop_distance test", test_distances());
     do_test("test column pruning", test_prune_cols());

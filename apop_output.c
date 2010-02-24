@@ -289,6 +289,8 @@ void apop_data_show(const apop_data *in){
     }
 
 //Finally, print
+    if (strlen(in->names->title))
+        printf("\t%s\n\n", in->names->title);
     for(j=0; j < outsize_r; j ++){
         for(i=0; i < outsize_c; i ++){
             white_pad(colsizes[i] - strlen(printout->text[j][i]) + 1);//one spare space.
@@ -299,6 +301,10 @@ void apop_data_show(const apop_data *in){
         printf("\n");
     }
 
+    if (in->more) {
+        printf("\n");
+        apop_data_show(in->more);
+    }
     apop_data_free(printout);
 }
 
@@ -453,6 +459,8 @@ APOP_VAR_ENDHEAD
         return;
     }
     apop_data_print_core(data,  output_pipe, output_type);
+    if (data->more) 
+        apop_data_print(data->more, Output_vars);
     if (output_file)
         fclose(output_pipe);
 }

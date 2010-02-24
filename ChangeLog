@@ -20,6 +20,7 @@
     **apop_estimate_coefficient_of_determination takes in the model again. Just replace est->parameters in your argument with est. apop_ols calls this fn automatically now [apop_data_get(your_model->info, .rowname="R sq")], so you probably aren't even calling it anymore.
 **apop_data_add_named_elmt now writes to the zeroth element of the matrix, not the vector.
 So instead of apop_data_get(data, .rowname="R squared", -1), just go with apop_data_get(data, .rowname="R squared"). This affects many of the elements of the info-type matrices.
+--apop_data_pack, apop_data_unpack, apop_ml_impute, apop_map offer an option to use all pages. 
 
     0.23 January 2009
 **expected_value element of the model renamed predict; made coherent across models.
