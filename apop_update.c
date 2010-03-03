@@ -149,7 +149,7 @@ estimate the posterior via MCMC, this needs to have a \c draw method. (No defaul
 \todo The table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), is a little short, and can always be longer.
 
 Here is a test function that compares the output via conjugate gradient table and via
-Gibbs sampling: \include eg/test_update.c
+Gibbs sampling: \include test_update.c
 
 This function uses the \ref designated syntax for inputs.
 */

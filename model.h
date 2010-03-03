@@ -62,6 +62,7 @@ apop_model * apop_estimate(apop_data *d, apop_model m);
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m);
 double apop_log_likelihood(apop_data *d, apop_model *m);
 double apop_p(apop_data *d, apop_model *m);
+double apop_cdf(apop_data *d, apop_model *m);
 void apop_draw(double *out, gsl_rng *r, apop_model *m);
 void apop_model_prep(apop_data *d, apop_model *m);
 apop_data * apop_predict(apop_data *d, apop_model *m);

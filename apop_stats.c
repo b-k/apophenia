@@ -190,7 +190,7 @@ where \f$i\f$ iterates over dimensions.
  \endcode
  gives you the standard Euclidean length of \c v and its longest element.
 
-\include eg/test_distances.c
+\include test_distances.c
 
 This function uses the \ref designated syntax for inputs.
 \ingroup convenience_fns
@@ -517,7 +517,7 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 \return     An \ref apop_data structure with one row for each column in the original table, and a column for each summary statistic. May have a <tt>weights</tt> element.
 \ingroup    output
 
-\li \ref This function gives more columns than you probably want; use apop_data_prune_columns to pick the ones you want to see.
+\li This function gives more columns than you probably want; use \ref apop_data_prune_columns to pick the ones you want to see.
 \todo We should probably let this summarize rows as well.  */
 apop_data * apop_data_summarize(apop_data *indata){
   apop_assert(indata, NULL, 0, 'c', "You sent me a NULL apop_data set. Returning NULL.\n");
@@ -841,7 +841,7 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
 
   This function can take empirical histogram-type models---\ref apop_pmf and \ref
   apop_histogram---or continuous models like \ref apop_loess
-  or \apop_normal.
+  or \ref apop_normal.
 
  If there is an empirical model (I'll try \c bottom first, under the presumption that you are measuring the divergence of data from a `true' distribution), then I'll step
 through it for the points in the summation.

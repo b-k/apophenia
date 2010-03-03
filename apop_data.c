@@ -483,7 +483,7 @@ out). For example, if you have run \ref apop_data_summarize, you have columns fo
 statistics, but may care about only one or two; see the example.
 
 For example:
-\include eg/test_pruning.c 
+\include test_pruning.c 
 
 \li I use case-insensitive regular expressions to find your column; see \ref apop_regex for details.
 \li If your regex matches multiple columns, I'll only give you the first.

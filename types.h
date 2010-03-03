@@ -60,7 +60,7 @@ struct _apop_model{
                     method. \c dsize is for the canonical form, and is
                     the size of the data the RNG will return. */
     apop_settings_type *settings;
-    apop_data   *parameters; /**< The vector of coefficients or parameters estimated by the model. */
+    apop_data   *parameters; /**< The coefficients or parameters estimated by the model. */
     apop_model **distributions;
     int         prepared;
     apop_data   *data; /**< The input data. Typically a link to what you sent to \ref apop_estimate */

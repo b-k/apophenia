@@ -148,7 +148,7 @@ The output is an \c apop_model that can be estimated, Bayesian updated, et ceter
 Here is a sample program. It produces a few thousand draws from a Multivariate Normal distribution,
 and then tries to recover the means given a var/covar matrix fixed at the correct variance.
 
-\include eg/fix_params.c
+\include fix_params.c
   
   \param model_in   The base model
  \return a model that can be used like any other, with the given params fixed or free.

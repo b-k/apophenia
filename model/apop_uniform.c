@@ -40,10 +40,8 @@ static double unif_p(apop_data *d, apop_model *m){
 static double unif_cdf(apop_data *d, apop_model *m){
   Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-    double min = GSL_MIN(msize1 ? gsl_matrix_min(d->matrix) : GSL_POSINF,
-                          vsize ? gsl_vector_min(d->vector) : GSL_POSINF);
-    double max = GSL_MAX(msize1 ? gsl_matrix_max(d->matrix) : GSL_NEGINF,
-                          vsize ? gsl_vector_max(d->vector) : GSL_NEGINF);
+    double min = m->parameters->vector->data[0];
+    double max = m->parameters->vector->data[1];
     double val = apop_data_get(d, 0, vsize ? -1: 0);
     if (val <= min)
         return 0;

@@ -8,7 +8,7 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
 
-For example: \include eg\test_harmonic.c
+For example: \include test_harmonic.c
 */
 double apop_generalized_harmonic(int N, double s){
 /* There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can later just be looked up. Each row in the saved structure is an \f$s\f$, and each column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
@@ -79,7 +79,7 @@ inputs.
 \param one The first string to compare
 \param two The other string to compare
 
-For example: \include eg/test_strcmp.c
+For example: \include test_strcmp.c
 */
 int apop_strcmp(char *one, char *two){
     if (!one && !two)
@@ -101,7 +101,7 @@ int apop_strcmp(char *one, char *two){
                     'b': return only the string before the '.', so 'table.col' becomes 'table'. If there are multiple dots, cuts off at the first dot.
                     'a': return only the string after the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the last dot.
 
-For example: \include eg/test_strip_dots.c
+For example: \include test_strip_dots.c
 \ingroup convenience_fns
  */
 char * apop_strip_dots(char *in, char strip_type){
@@ -356,7 +356,7 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 \li Here is the test function. Notice that the substring-pulling
 function call passes \c &subs, not plain \c subs. Also, the non-match
 has a zero-length blank in <tt>subs->text[1][0]</tt>.
-\include eg\test_regex.c
+\include test_regex.c
 */
 APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case){
     const char * apop_varad_var(string, NULL);
