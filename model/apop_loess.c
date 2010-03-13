@@ -3736,5 +3736,5 @@ static void apop_loess_print(apop_model *in){
     loess_summary(&(Apop_settings_get(in, apop_loess, lo_s)));
 }
 
-apop_model apop_loess = {.name="lowess smoothing", .vbase = -1, .estimate =apop_loess_est, 
+apop_model apop_loess = {.name="lowess smoothing", .vbase = -1, .dsize=1, .estimate =apop_loess_est, 
     .print=apop_loess_print, .log_likelihood = loess_ll, .predict = loess_predict};

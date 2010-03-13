@@ -77,5 +77,13 @@ static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
     gsl_matrix_free(copy);
 }
 
-apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1,
-     .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll, .draw = mvnrng};
+static void mvn_prep(apop_data *d, apop_model *m){
+    if (d && d->matrix)
+        m->dsize = d->matrix->size2; 
+    else if (m->vbase > 0)
+        m->dsize = m->vbase;
+    apop_model_clear(d, m);
+}
+
+apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1, .dsize=-2,
+     .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll, .draw = mvnrng, .prep=mvn_prep};

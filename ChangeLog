@@ -4,7 +4,15 @@
 !!Big.
 ]
 
-    February 2009
+    March 2010
+**The apop_predict special case for when all data is non-missing was a bit too special,
+    and has been eliminated---you now have to specify the first column as NaN yourself.
+    E.g., Apop_col(data, -1, to_nan); gsl_vector_set_all(to_nan, GSL_NAN);
+    This will make things more predictable, and save you if(!has_nans)... else... kind of statements.
+**Removed the prepared element of the apop_model.
+**apop_model_prep ==> apop_prep for consistency with other apop_model dispatch functions. apop_model_prep left for now as an alias in deprecated.h
+
+    February 2010
 !!Overhauling the output from estimations; pardon our dust. 
 --Added CDF method to the apop_model, including apop_cdf dispatch method and default via random draws.
 **Defininitvely removed the residual, covariance, and llikelihood elements from the
@@ -22,7 +30,7 @@
 So instead of apop_data_get(data, .rowname="R squared", -1), just go with apop_data_get(data, .rowname="R squared"). This affects many of the elements of the info-type matrices.
 --apop_data_pack, apop_data_unpack, apop_ml_impute, apop_map offer an option to use all pages. 
 
-    0.23 January 2009
+    0.23 January 2010
 **expected_value element of the model renamed predict; made coherent across models.
 !!apop_data set now has a ->more pointer to an additional apop_data set, e.g., for data + covariances or predictions + confidence intervals.
 --apop_ml_imputation renamed to apop_ml_impute. "#define apop_ml_imputation apop_ml_impute" retains noun-form name, but consider it deprecated.

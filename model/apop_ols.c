@@ -83,7 +83,7 @@ static void ols_prep(apop_data *d, apop_model *m){
     ols_shuffle(d);
     void *mpt = m->prep; //also use the defaults.
     m->prep = NULL;
-    apop_model_prep(d, m);
+    apop_prep(d, m);
     m->prep = mpt;
 }
 
@@ -271,7 +271,7 @@ apop_data *ols_predict (apop_data *in, apop_model *m){
     return in;
 }
 
-apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .estimate =apop_estimate_OLS, 
+apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .dsize=-1, .estimate =apop_estimate_OLS, 
             .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep, .predict=ols_predict, .draw=ols_rng};
 
 
@@ -357,4 +357,4 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     return ep;
 }
 
-apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .estimate =apop_estimate_IV, .log_likelihood = ols_log_likelihood};
+apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .dsize=-1, .estimate =apop_estimate_IV, .log_likelihood = ols_log_likelihood};

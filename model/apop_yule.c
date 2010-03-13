@@ -105,7 +105,7 @@ int		x;
 	*out =  x + 1;	//we rounded down to floor, but want ceil.
 }
 
-apop_model apop_yule = {"Yule", 1,0,0, .log_likelihood = yule_log_likelihood, 
+apop_model apop_yule = {"Yule", 1,0,0, .dsize=1, .log_likelihood = yule_log_likelihood, 
     .score = yule_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
     .draw = yule_rng};
 //estimate via the default MLE method

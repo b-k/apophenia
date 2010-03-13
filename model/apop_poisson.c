@@ -75,7 +75,7 @@ static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
     *out = gsl_ran_poisson(r, *p->parameters->vector->data);
 }
 
-apop_model apop_poisson = {"poisson", 1, 0,0, 
+apop_model apop_poisson = {"poisson", 1, 0,0,  .dsize=1,
      .estimate = poisson_estimate, .log_likelihood = poisson_log_likelihood, 
      .score = poisson_dlog_likelihood, .constraint = beta_zero_greater_than_x_constraint, 
      .draw = poisson_rng};

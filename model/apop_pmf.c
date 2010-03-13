@@ -130,4 +130,4 @@ double pmf_p(apop_data *d, apop_model *m){
     return 0;
 }
 
-apop_model apop_pmf = {"PDF or sparse matrix", .estimate = estim, .draw = draw, .p=pmf_p };
+apop_model apop_pmf = {"PDF or sparse matrix", .dsize=-1, .estimate = estim, .draw = draw, .p=pmf_p };

@@ -115,7 +115,7 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
     } while (!gsl_finite(*out));
 }
 
-apop_model apop_histogram = {"Histogram", .estimate = est, .log_likelihood = histogram_ll, .draw = histogram_rng};
+apop_model apop_histogram = {"Histogram", .dsize=1, .estimate = est, .log_likelihood = histogram_ll, .draw = histogram_rng};
 
 
 ////Kernel density estimation
@@ -235,6 +235,6 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
     return out;
 }
 
-apop_model apop_kernel_density = {"kernel density estimate",
+apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
 	.estimate = apop_kernel_density_estimate, .log_likelihood = histogram_ll, .draw = histogram_rng};
 

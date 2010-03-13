@@ -118,6 +118,6 @@ static double gamma_cdf(apop_data *d, apop_model *params){
 }
 
 apop_model apop_gamma = {"Gamma distribution", 2,0,0, //estimate method is just the default MLE.
-      .log_likelihood = gamma_log_likelihood, 
+      .dsize=1, .log_likelihood = gamma_log_likelihood, 
      .score = gamma_dlog_likelihood, .constraint = beta_zero_and_one_greater_than_x_constraint, 
      .cdf = gamma_cdf, .draw = gamma_rng};

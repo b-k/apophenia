@@ -228,10 +228,10 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     p[0]=N;
 }
 
-apop_model apop_binomial = {"Binomial distribution", 2,0,0,
+apop_model apop_binomial = {"Binomial distribution", 2,0,0, .dsize=1,
 	.estimate = binomial_estimate, .log_likelihood = binomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = binomial_rng, .cdf =binomial_cdf};
 
-apop_model apop_multinomial = {"Multinomial distribution", -1,0,0,
+apop_model apop_multinomial = {"Multinomial distribution", -1,0,0, .dsize=-1,
 	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = multinomial_rng};

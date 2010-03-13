@@ -22,7 +22,6 @@ static apop_data *get_category_table(apop_data *d){
 }
 
 static void probit_prep(apop_data *d, apop_model *m){
-  if (m->prepared) return;
   int       count;
   apop_data *factor_list;
     apop_ols.prep(d, m);//also runs the default apop_model_clear.
@@ -86,7 +85,7 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 
 static apop_data *multilogit_expected(apop_data *in, apop_model *m){
     Nullcheck_m(m); Nullcheck_p(m);
-    apop_model_prep(in, m);
+    apop_prep(in, m);
     gsl_matrix *params = m->parameters->matrix;
     apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
     for (size_t i=0; i < in->matrix->size1; i ++){
@@ -135,7 +134,6 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     if (!spare_probit){
         spare_probit = apop_model_copy(apop_probit);
         spare_probit->parameters = apop_data_alloc(0,0,0);
-        spare_probit->prepared++;
     }
     static apop_data *working_data = NULL;
     if (!working_data)
@@ -208,8 +206,8 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
     return out;
 }
 
-apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, 
+apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
      .predict=multilogit_expected, .prep = probit_prep};
 
-apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, 
+apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
     .score = probit_dlog_likelihood, .prep = probit_prep};

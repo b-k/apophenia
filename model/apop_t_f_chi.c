@@ -417,7 +417,7 @@ static void wishart_prep(apop_data *d, apop_model *m){
      m->parameters = apop_data_alloc(1,sqrt(d->matrix->size2),sqrt(d->matrix->size2));
  }
 
-apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .draw = apop_wishart_draw,
+apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .dsize=-1, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
 
 apop_model apop_t_distribution  = {"t distribution", 1, 0, 0, .estimate = apop_t_chi_estimate, 

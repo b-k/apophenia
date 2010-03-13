@@ -15,11 +15,11 @@ This sets up the output elements of the \c apop_model: the parameters, covarianc
 
 At close, the input model has parameters of the correct size.
 
-\li This is the default action for \ref apop_model_prep. If your model
+\li This is the default action for \ref apop_prep. If your model
 has its own \ref prep method, then that gets used instead, but most
 don't (or call \ref apop_model_clear at the end of their prep routine).
 
-\ref apop_estimate calls \ref apop_model_prep internally. 
+\ref apop_estimate calls \ref apop_prep internally. 
 
 The above two points mean that you probably don't need to call this function directly.
 
@@ -29,6 +29,7 @@ The above two points mean that you probably don't need to call this function dir
 
 \ingroup models  */
 apop_model * apop_model_clear(apop_data * data, apop_model *model){
+  model->dsize  = (model->dsize == -1 ? data->matrix->size2 : model->dsize);
   int vsize  = model->vbase  == -1 ? data->matrix->size2 : model->vbase;
   int msize1 = model->m1base == -1 ? data->matrix->size2 : model->m1base ;
   int msize2 = model->m2base == -1 ? data->matrix->size2 : model->m2base ;
@@ -38,7 +39,6 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
     model->info	        = apop_data_alloc(0, 0, 0);
     snprintf(model->info->names->title, 100, "Info");
     model->data         = data;
-    model->prepared     = 0;
 	return model;
 }
 
@@ -164,7 +164,7 @@ If you have a situation where these options are out, you'll have to do something
 apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
     apop_assert((in.vbase != -1) && (in.m1base != -1) && (in.m2base != -1),  NULL, 0, 's', "This function only works with models whose number of params does not depend on data size. You'll have to use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then set in->parameters using your data.");
     apop_model *out = apop_model_copy(in);
-    apop_model_clear(NULL, out);
+    apop_prep(NULL, out);
     apop_data_fill_base(out->parameters, ap);
     return out; 
 }
@@ -177,7 +177,7 @@ assume \c apop_maximum_likelihood(d, m), with the default MLE params.
 
 I assume that you are using this function rather than directly calling the
 model's the \c estimate method directly. For example, the \c estimate
-method may assume that \c apop_model_prep has already been called.
+method may assume that \c apop_prep has already been called.
 
 \param d    The data
 \param m    The model
@@ -187,10 +187,7 @@ method may assume that \c apop_model_prep has already been called.
 */
 apop_model *apop_estimate(apop_data *d, apop_model m){
     apop_model *out = apop_model_copy(m);
-    if (!out->prepared){
-        apop_model_prep(d, out);
-        out->prepared++;
-    }
+    apop_prep(d, out);
     if (out->estimate)
         return out->estimate(d, out); 
     return apop_maximum_likelihood(d, out);
@@ -205,11 +202,6 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
 */
 double apop_p(apop_data *d, apop_model *m){
     Nullcheck_m(m);
-/*    if (m->prep && !m->prepared){
-        m->prep(d, m);
-        m->prepared++;
-    }
-    */
     if (m->p)
         return m->p(d, m);
     else if (m->log_likelihood)
@@ -227,11 +219,6 @@ double apop_p(apop_data *d, apop_model *m){
 */
 double apop_log_likelihood(apop_data *d, apop_model *m){
     Nullcheck_mv(m); //Nullcheck_pv(m); //Too many models don't use the params.
-/*    if (m->prep && !m->prepared){
-        m->prep(d, m);
-        m->prepared++;
-    }
-    */
     if (m->log_likelihood)
         return m->log_likelihood(d, m);
     else if (m->p)
@@ -250,11 +237,6 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     Nullcheck_mv(m); // Nullcheck_pv(m);
-/*    if (m->prep && !m->prepared){
-        m->prep(d, m);
-        m->prepared++;
-    }
-    */
     if (m->score){
         m->score(d, out, m);
         return;
@@ -287,14 +269,11 @@ void apop_draw(double *out, gsl_rng *r, apop_model *m){
 
 \ingroup models
  */
-void apop_model_prep(apop_data *d, apop_model *m){
-    if (m->prepared)
-        return;
+void apop_prep(apop_data *d, apop_model *m){
     if (m->prep)
         m->prep(d, m);
     else
         apop_model_clear(d, m);
-    m->prepared++;
 }
 
 static double disnan(double in) {return gsl_isnan(in);}
@@ -319,12 +298,6 @@ the parameterized model provides the most likely value of the middle
 parameter.
 
 \li If you give me a \c NULL data set, I will assume you want all values filled in---the expected value.
-
-\li If you give me a data set with no \c NaNs, I will assume the zeroth
-element is missing---e.g., the dependent variable in your regressor.
-Send in a data set with the column for the to-be-filled-in data, and
-I will entirely ignore that column's value and fill in the predicted
-value.
 
 \li If you give me data with NaNs, I will take those as the points to
 be predicted given the provided data.
@@ -351,18 +324,11 @@ apop_data *apop_predict(apop_data *d, apop_model *m){
         prediction = m->predict(d, m);
     if (prediction)
         return prediction;
-    //default: set the first column (be it col. -1 or 0) to NaNs and do ML imputation.
-    if (!apop_map_sum(d, disnan)){
-        if (d->vector)
-            gsl_vector_set_all(d->vector, GSL_NAN);
-        else {
-            Apop_col(d, 0, ccc)
-            gsl_vector_set_all(ccc, GSL_NAN);
-        }
-    }
+    if (!apop_map_sum(d, disnan))
+        return d;
     apop_model *f = apop_ml_imputation(d, m);
     apop_model_free(f);
-    return(d);
+    return d;
 }
 
 /* Are all the elements of v less than or equal to the corresponding elements of the reference vector? */

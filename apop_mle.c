@@ -622,7 +622,7 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model *dist){
   apop_mle_settings   *mp = apop_settings_get_group(dist, "apop_mle");
     if(!mp)
         mp = Apop_model_add_group(dist, apop_mle, .parent=dist);
-    apop_model_prep(data, dist);
+    apop_prep(data, dist);
   infostruct    info    = { .data           = data,
                             .use_constraint = 1,
                             .trace_file     = malloc(sizeof(FILE *)),

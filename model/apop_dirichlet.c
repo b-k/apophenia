@@ -44,6 +44,6 @@ static void dirichlet_rng(double *out, gsl_rng *r, apop_model* eps){
     gsl_ran_dirichlet(r, eps->parameters->vector->size, eps->parameters->vector->data, out);
 }
 
-apop_model apop_dirichlet = {"Dirichlet distribution", -1,0,0,
+apop_model apop_dirichlet = {"Dirichlet distribution", -1,0,0, .dsize=-1,
     .log_likelihood = dirichlet_log_likelihood, .score = dirichlet_dlog_likelihood,
     .constraint = dirichlet_constraint, .draw = dirichlet_rng};

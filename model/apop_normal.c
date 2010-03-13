@@ -125,7 +125,7 @@ static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0];
 }
 
-apop_model apop_normal = {"Normal distribution", 2, 0, 0,
+apop_model apop_normal = {"Normal distribution", 2, 0, 0, .dsize=1,
  .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, .score = normal_dlog_likelihood, 
  .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng, 
  .cdf = normal_cdf, .predict = normal_predict};
@@ -212,7 +212,7 @@ static void lognormal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = exp(gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0]);
 }
 
-apop_model apop_lognormal = {"Lognormal distribution", 2, 0, 0,
+apop_model apop_lognormal = {"Lognormal distribution", 2, 0, 0, .dsize=1,
  .estimate = lognormal_estimate, .log_likelihood = lognormal_log_likelihood, /*.score = lognormal_dlog_likelihood,*/ 
  .constraint = beta_1_greater_than_x_constraint, .draw = lognormal_rng,
   .cdf= lognormal_cdf};

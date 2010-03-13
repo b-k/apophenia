@@ -60,6 +60,6 @@ static double bernoulli_cdf(apop_data *d, apop_model *params){
     return val ? 1 : 1-p;
 }
 
-apop_model apop_bernoulli = {"Bernoulli distribution", 1,0,0,
+apop_model apop_bernoulli = {"Bernoulli distribution", 1,0,0, .dsize=1,
 	.estimate = bernoulli_estimate, .log_likelihood = bernoulli_log_likelihood, 
    .constraint =  bernoulli_constraint, .cdf = bernoulli_cdf, .draw = bernoulli_rng};
