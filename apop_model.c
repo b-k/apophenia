@@ -246,6 +246,77 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     gsl_vector_free(numeric_default);
 }
 
+#include "settings.h"
+
+apop_pm_settings *apop_pm_settings_init(apop_pm_settings in){
+   apop_pm_settings *out = malloc(sizeof (apop_pm_settings));
+    apop_varad_setting(in, out, base, NULL);
+    apop_varad_setting(in, out, keep, out->base ? apop_data_copy(out->base->parameters) : NULL);
+    out->owner = 1;
+    apop_varad_setting(in, out, rng, apop_rng_alloc(apop_opts.rng_seed++));
+    if (in.rng)
+        out->own_rng = 0;
+    apop_varad_setting(in, out, draws, 1e4);
+    return out;
+}
+
+void *apop_pm_settings_copy(apop_pm_settings *copyme) {
+    apop_pm_settings *out = malloc(sizeof(apop_pm_settings));
+    *out = *copyme; //pointer to data was copied, not underlying data.
+    out->rng = apop_rng_alloc(apop_opts.rng_seed++);
+    out->owner = 0;
+    out->own_rng = 1;
+    return out; }
+
+void apop_pm_settings_free(apop_pm_settings *freeme) {
+    if (freeme->owner)
+        apop_data_free(freeme->keep);
+    if (freeme->own_rng)
+        gsl_rng_free(freeme->rng);
+    free(freeme);
+}
+
+/** Get a model describing the distribution of the given parameter estimates.
+
+  For many models, the parameter estimates are well-known, such as the
+  \f$t\f$-distribution of the parameters for OLS.
+
+  For models where the distribution of \f$\hat{}p\f$ is not known, if you give me data, I
+  will return a \ref apop_normal or \ref apop_multivariate_normal model, using the parameter estimates as mean and \ref apop_bootstrap_cov for the variances.
+
+  If you don't give me data, then I will assume that this is a stochastic model where 
+  re-running the model will produce different parameter estimates each time. In this case, I will
+  run the model 1e4 times and return a \ref apop_pmf model with the resulting parameter
+  distributions.
+
+  Before calling this, I expect that you have already run \ref apop_estimate to produce \f$\hat{}p\f$.
+*/ 
+apop_model *apop_parameter_model(apop_data *d, apop_model *m){
+    if (m->parameter_model)
+        return m->parameter_model(d, m);
+    apop_pm_settings *settings = Apop_settings_get_group(m, apop_pm);
+    if (!settings)
+        settings = Apop_model_add_group(m, apop_pm, .base= m);
+    if (d){
+        //then prune down to the requested items
+        Get_vmsizes(m->parameters);//vsize, msize1, msize2
+        apop_model *out = apop_model_copy(apop_multivariate_normal);
+        out->m1base = out->vbase = out->m2base = out->dsize = vsize+msize1+msize2;
+        out->parameters = apop_bootstrap_cov(d, *m, settings->rng, settings->draws);
+        out->parameters->vector = apop_data_pack(m->parameters);
+        return out;
+    }
+    //else
+    Get_vmsizes(m->parameters);//vsize, msize1, msize2
+    apop_data *param_draws = apop_data_alloc(0, settings->draws, vsize+msize1+msize2);
+    for (int i=0; i < settings->draws; i++){
+        apop_model *mm = apop_estimate (NULL, *m);//If you're here, d==NULL.
+        Apop_row(param_draws, i, onerow);
+        apop_data_pack(mm->parameters, onerow);
+        apop_model_free(mm);
+    }
+    return apop_estimate(param_draws, apop_pmf);
+}
 
 /** draw from a model. If the model has its own RNG, then you're good to
  go; if not, use \ref apop_arms_draw to generate random draws.

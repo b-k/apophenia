@@ -15,7 +15,7 @@
 #include <search.h> //lsearch; bsearch is in stdlib.
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
-  apop_data *out    = apop_data_alloc(0,7,-1);
+  apop_data *out    = apop_data_alloc(0,7,1);
   double    pval, qval, two_tail;
   if(!gsl_isnan(stat)){
         pval    = gsl_cdf_tdist_P(stat, df);
@@ -105,7 +105,7 @@ int     df      = count-1;
 
 \param est  The \ref apop_estimate, which includes pre-calculated parameter estimates, var-covar matrix, and the original data set.
 
-Returns nothing. At the end of the routine, the <tt>est->parameters->matrix</tt> includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
+Returns nothing. At the end of the routine, <tt>est->info->more</tt> includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
 
 */
 void apop_estimate_parameter_t_tests (apop_model *est){
@@ -115,14 +115,14 @@ void apop_estimate_parameter_t_tests (apop_model *est){
       return;
   apop_data *cov = apop_data_get_page(est->parameters, "Covariance");
   apop_assert_void(cov, 1,'c', "You asked me to estimate t statistics, but I'm missing the covariance matrix.");
-    est->parameters->matrix = gsl_matrix_alloc(est->parameters->vector->size, 7);
-    apop_name_add(est->parameters->names, "p value", 'c');
-    apop_name_add(est->parameters->names, "confidence", 'c');
-    apop_name_add(est->parameters->names, "t statistic", 'c');
-    apop_name_add(est->parameters->names, "standard deviation", 'c');
-    apop_name_add(est->parameters->names, "p value, 1 tail", 'c');
-    apop_name_add(est->parameters->names, "confidence, 1 tail", 'c');
-    apop_name_add(est->parameters->names, "df", 'c');
+    apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 7), "test info");
+    apop_name_add(ep->names, "p value", 'c');
+    apop_name_add(ep->names, "confidence", 'c');
+    apop_name_add(ep->names, "t statistic", 'c');
+    apop_name_add(ep->names, "standard deviation", 'c');
+    apop_name_add(ep->names, "p value, 1 tail", 'c');
+    apop_name_add(ep->names, "confidence, 1 tail", 'c');
+    apop_name_add(ep->names, "df", 'c');
     int df   = est->data->matrix   ?
                     est->data->matrix->size1:
                     est->data->vector->size;
@@ -136,13 +136,13 @@ void apop_estimate_parameter_t_tests (apop_model *est){
         tstat   = val/stddev;
         pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
         two_tail= (df > 0)? apop_test(tstat, "t", .p1=df) : GSL_NAN;
-        apop_data_set(est->parameters, i, .colname="df",                 .val=df);
-        apop_data_set(est->parameters, i, .colname="t statistic",        .val=tstat);
-        apop_data_set(est->parameters, i, .colname="standard deviation", .val=stddev);
-        apop_data_set(est->parameters, i, .colname="p value",            .val=two_tail);
-        apop_data_set(est->parameters, i, .colname="confidence",         .val=1-two_tail);
-        apop_data_set(est->parameters, i, .colname="p value, 1 tail",    .val=pval);
-        apop_data_set(est->parameters, i, .colname="confidence, 1 tail", .val=1-pval);
+        apop_data_set(ep, i, .colname="df",                 .val=df);
+        apop_data_set(ep, i, .colname="t statistic",        .val=tstat);
+        apop_data_set(ep, i, .colname="standard deviation", .val=stddev);
+        apop_data_set(ep, i, .colname="p value",            .val=two_tail);
+        apop_data_set(ep, i, .colname="confidence",         .val=1-two_tail);
+        apop_data_set(ep, i, .colname="p value, 1 tail",    .val=pval);
+        apop_data_set(ep, i, .colname="confidence, 1 tail", .val=1-pval);
     }
 }
 

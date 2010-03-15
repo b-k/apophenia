@@ -11,6 +11,8 @@
     This will make things more predictable, and save you if(!has_nans)... else... kind of statements.
 **Removed the prepared element of the apop_model.
 **apop_model_prep ==> apop_prep for consistency with other apop_model dispatch functions. apop_model_prep left for now as an alias in deprecated.h
+!!apop_parameter_model: a method for getting the distribution of a parameter.
+    **Moved OLS-family test stats (pval, qval, whatever) to a page of your_estimate->info. It won't be there for long either.
 
     February 2010
 !!Overhauling the output from estimations; pardon our dust. 

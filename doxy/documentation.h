@@ -296,7 +296,7 @@ apop_model *est = apop_estimate(testme, apop_ols);
 \endcode
 
 [As an aside, there is a simple principle to the ordering of arguments to functions like
-\ref apop_estimate: the data always comes first.]
+\ref apop_estimate : the data always comes first.]
 
 Generating factors and dummies is also considered data prep, not model
 internals. See \ref apop_data_to_dummies and \ref apop_text_to_factors.
@@ -309,8 +309,8 @@ parameters), you can interrogate it.
 apop_predict(new_data_set, est);
 apop_data_show(new_data_set)
 
- //Make random draws. The draw function needs an RNG from
- //the GNU Scientific Library, and a pointer-to-\c double.
+ //Fill a matrix with random draws. The draw function needs an RNG from
+ //the GNU Scientific Library, and a pointer-to-double.
 gsl_rng *r = apop_rng_alloc(218);
 for (int i=0; i< matrix->size1; i++){
     Apop_matrix_col(matrix, i, one_col);
@@ -1067,19 +1067,19 @@ endofdiv
         \li\ref apop_model_free()
         \li\ref apop_model_set_parameters()
         \li\ref apop_model_show()
-        \li\ref apop_model_prep()
 
     endofdiv
 
     Outlineheader mathmethods Methods for computation
 
-        \li\ref apop_draw()
         \li\ref apop_estimate()
         \li\ref apop_predict()
+        \li\ref apop_draw()
+        \li\ref apop_p()
         \li\ref apop_log_likelihood()
         \li\ref apop_score()
         \li\ref apop_model_print()
-        \li\ref apop_p()
+        \li\ref apop_prep()
 
     endofdiv
 
@@ -1102,10 +1102,11 @@ If you do need to tweak a setting, you will need its location.
 Think of each model having a row of baskets, such as the \c
 apop_mle_settings and the \c apop_histogram_settings baskets. 
 To find a single setting, like the MLE's \c tolerance setting, you would
-need to give the model, the settings group, and the setting. E.g.,
+need to give the model, which basket to look in, and the setting. E.g.,
      \code
 double tol = Apop_settings_get(your_model, apop_mle, tolerance);
 Apop_settings_set(your_model, apop_mle, tolerance, 1e-5);
+\endcode
 
 Notice that we don't need the \c _settings ending to the settings
 group's name---macros make it happen.
@@ -1144,11 +1145,11 @@ For just using a model, that's about 100% of what you need to know.
 
     endofdiv
 
-Outlineheader settingswritng  Writing new settings
+Outlineheader settingswritng  Writing new settings groups
 
 To store the settings for your own models, you don't necessarily need any of this. The \ref apop_model structure has a \c void pointer named \c more which you can use to store extra information as needed. If \c more_size is larger than zero (i.e. you set it to <tt>your_model.more_size=sizeof(your_struct)</tt>), then it will be copied via \c memcpy by \ref apop_model_copy, and <tt>free</tt>d by \ref apop_model_free. Apophenia's estimation routines will never impinge on this item, so do what you feel with it.
 
-If you do want to set up a new model, then you will need four items.  This is the sort of boilerplate that will be familiar to users of object oriented languages in the style of C++ or Java. Let your settings group be named \c ysg; then you will need
+If you do want to set up a new settings group, then you will need four items.  This is the sort of boilerplate that will be familiar to users of object oriented languages in the style of C++ or Java. Let your settings group be named \c ysg; then you will need
 
 \li The settings struct
 \code
@@ -1162,15 +1163,13 @@ typedef struct {
 \code
 ysg_settings *ysg_settings_init(ysg_settings in){ 
     ysg_settings *out = malloc(sizeof(ysg_settings));
-    // Give default values for all elements here. 
-    // There is a macro, e.g.,
-    // apop_varad_setting(in, out, want_cov,  'y');
-    // that will help you with this. It checks in
-    // for the given element (here, want_cov), and 
-    // if that element is not found, sets it to the 
-    // specified value (here, 1).
+    apop_varad_setting(in, out, want_cov,  'y');
     return out; }
 \endcode
+I included an example of the use of \ref apop_varad_setting, a convenience macro to ease
+merging the input settings group with defaults.
+It checks for the given element (here, \c want_cov), and 
+if that element is not found in the input, sets it to the specified value (here, \c 'y').
 
 \li The copy function
 \code
@@ -1206,7 +1205,39 @@ Apop_settings_get(m, ysg, an_element)
 
 As you saw above, once the typedef/alloc/copy/free machinery is written, you can declare, get, and set in a reasonably graceful manner.
 
-\li If for some reason you want to work with the now-deprecated \c Apop_settings_add_group, you'll need a \c ysg_settings_alloc(...) function instead of \c ysg_settings_init. They do the same thing, but the \c alloc version takes in a variadic list of items, wile the \c init takes a single structure.
+\li For efficiency and other reasons, you may want your copy routine to copy pointers to
+large data sets rather than copying the data itself. But
+because so much copying goes on, you will need to be careful that any allocated data
+is freed only once. The easiest way to do this is to include an \c owner element in
+your data, which is set to one in the \c init routine but to zero in the \c copy
+routine, then free pointers only if <tt>owner == 1</tt>. 
+Here is an example that either takes in a data set or defaults to initializing a new one;
+either way, copies of the model will all point to the same data set.
+
+\code
+typedef struct {
+    apop_data *dataset;
+    int owner;
+} ysg_settings;
+
+ysg_settings *ysg_settings_init(ysg_settings in){ 
+    ysg_settings *out = malloc(sizeof(ysg_settings));
+    apop_varad_setting(in, out, dataset, apop_data_alloc(100, 100, 100));
+    out->owner = 1;
+    return out; }
+
+void *ysg_settings_copy(ysg_settings *copyme) {
+    ysg_settings *out = malloc(sizeof(ysg_settings));
+    *out = *copyme; //pointer to data was copied, not underlying data.
+    out->owner = 0;
+    return out; }
+
+void ysg_settings_free(ysg_settings *freeme) {
+    if (freeme->owner)
+        apop_data_free(freeme->dataset);
+    free(freeme);
+}
+\endcode
 
 endofdiv
 

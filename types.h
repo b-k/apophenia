@@ -61,7 +61,6 @@ struct _apop_model{
                     the size of the data the RNG will return. */
     apop_settings_type *settings;
     apop_data   *parameters; /**< The coefficients or parameters estimated by the model. */
-    apop_model **distributions;
     apop_data   *data; /**< The input data. Typically a link to what you sent to \ref apop_estimate */
     apop_data   *info; /**< Several pages of assorted info, perhaps including the log likelihood, AIC, BIC,
                         covariance matrix, confidence intervals, expected score. See your
@@ -76,6 +75,7 @@ struct _apop_model{
     void    (*score)(apop_data *d, gsl_vector *gradient, apop_model *params);
                 /**< Derivative of the log likelihood. Call via \ref apop_score */
     apop_data*  (*predict)(apop_data *d, apop_model *params);
+    apop_model * (*parameter_model)(apop_data *, apop_model *);
     double  (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 
                             the integral up to the single data point you provide.  Call via \ref apop_cdf */
     double  (*constraint)(apop_data *data, apop_model *params);

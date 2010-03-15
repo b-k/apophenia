@@ -161,6 +161,16 @@ typedef struct {
     apop_model *cdf_model; /**< For use by individual models as they see fit. Default=\c NULL. */
 } apop_cdf_settings;
 
+/** Settings for getting parameter models (i.e. the distribution of parameter estimates)
+  \ingroup settings */
+typedef struct {
+    apop_model *base;
+    apop_data *keep;
+    gsl_rng *rng;
+    int draws;
+    int owner, own_rng;
+} apop_pm_settings;
+
 #include <gsl/gsl_histogram.h>
 /** Settings for the histogram and kernel density structures, mostly opaque. 
   On setup, you must set the \c .data and \c .bins_in items. 
@@ -391,6 +401,7 @@ Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_mle)
 Apop_settings_declarations(apop_cdf)
+Apop_settings_declarations(apop_pm)
 Apop_settings_declarations(apop_rank)
 
 #ifdef	__cplusplus

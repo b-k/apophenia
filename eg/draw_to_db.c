@@ -13,7 +13,7 @@ int main(){
 apop_data      *m;
 double          p1, p2;
 int             i;
-gsl_rng *       r = apop_rng_alloc();
+gsl_rng *       r = apop_rng_alloc(123);
 
         //create the database and the data table.
         apop_db_open("runs.db");
