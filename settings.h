@@ -165,10 +165,10 @@ typedef struct {
   \ingroup settings */
 typedef struct {
     apop_model *base;
-    apop_data *keep;
+    int *indices;
     gsl_rng *rng;
     int draws;
-    int owner, own_rng;
+    int own_rng;
 } apop_pm_settings;
 
 #include <gsl/gsl_histogram.h>

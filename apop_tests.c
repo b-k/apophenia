@@ -36,7 +36,7 @@ apop_data * apop_test_anova_independence(apop_data *d){
     for (row=0; row <d->matrix->size1; row++)
         for (col=0; col <d->matrix->size2; col++)
             total += one_chi_sq(d, row, col, n);
-    apop_data *out = apop_data_alloc(3,0,0);
+    apop_data *out = apop_data_alloc(0, 3,1);
     double chisq   = gsl_cdf_chisq_Q(total, df);
     apop_data_add_named_elmt(out, "chi squared statistic", total);
     apop_data_add_named_elmt(out, "df", df);

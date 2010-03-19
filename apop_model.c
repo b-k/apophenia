@@ -251,8 +251,7 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
 apop_pm_settings *apop_pm_settings_init(apop_pm_settings in){
    apop_pm_settings *out = malloc(sizeof (apop_pm_settings));
     apop_varad_setting(in, out, base, NULL);
-    apop_varad_setting(in, out, keep, out->base ? apop_data_copy(out->base->parameters) : NULL);
-    out->owner = 1;
+    apop_varad_setting(in, out, indices, NULL);
     apop_varad_setting(in, out, rng, apop_rng_alloc(apop_opts.rng_seed++));
     if (in.rng)
         out->own_rng = 0;
@@ -262,15 +261,12 @@ apop_pm_settings *apop_pm_settings_init(apop_pm_settings in){
 
 void *apop_pm_settings_copy(apop_pm_settings *copyme) {
     apop_pm_settings *out = malloc(sizeof(apop_pm_settings));
-    *out = *copyme; //pointer to data was copied, not underlying data.
+    *out = *copyme;
     out->rng = apop_rng_alloc(apop_opts.rng_seed++);
-    out->owner = 0;
     out->own_rng = 1;
     return out; }
 
 void apop_pm_settings_free(apop_pm_settings *freeme) {
-    if (freeme->owner)
-        apop_data_free(freeme->keep);
     if (freeme->own_rng)
         gsl_rng_free(freeme->rng);
     free(freeme);

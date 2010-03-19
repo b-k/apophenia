@@ -271,8 +271,38 @@ apop_data *ols_predict (apop_data *in, apop_model *m){
     return in;
 }
 
+apop_model *ols_param_models(apop_data *d, apop_model *m){
+    apop_pm_settings *settings = Apop_settings_get_group(m, apop_pm);
+    int len = 0;
+    if (settings->indices)
+        len = sizeof(settings->indices[0])/sizeof(settings->indices);
+    if (len){
+        int i = settings->indices[0];
+        double mu = apop_data_get(m->parameters, i, -1);
+        double sigma = sqrt(apop_data_get(m->parameters, i, i, .page="Covariance")/(d->vector->size-1));
+        int df = apop_data_get(m->info, .rowname="df", .page = "info");
+        return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
+    }
+    //else run the default
+        void *tmp = m->parameter_model;
+        m->parameter_model = NULL;
+        apop_model *out = apop_parameter_model(d, m);
+        m->parameter_model=tmp;
+        return out;
+}
+
+#include "output.h"
+void ols_print(apop_model *m){
+    printf("Parameters:\n");
+    apop_data_show(m->parameters);
+    apop_data *predict = apop_data_rm_page(m->info, "predict", .free_p='n');
+    apop_data_show(m->info);
+    apop_data_add_page(m->info, predict, predict->names->title);
+}
+
 apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .dsize=-1, .estimate =apop_estimate_OLS, 
-            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep, .predict=ols_predict, .draw=ols_rng};
+            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep, .predict=ols_predict, 
+            .draw=ols_rng, .parameter_model = ols_param_models, .print=ols_print};
 
 
 //Instrumental variables
@@ -357,4 +387,5 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     return ep;
 }
 
-apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .dsize=-1, .estimate =apop_estimate_IV, .log_likelihood = ols_log_likelihood};
+apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .dsize=-1, .estimate =apop_estimate_IV,
+    .log_likelihood = ols_log_likelihood, .print=ols_print};

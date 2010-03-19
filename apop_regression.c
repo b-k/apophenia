@@ -122,13 +122,13 @@ void apop_estimate_parameter_t_tests (apop_model *est){
     apop_name_add(ep->names, "standard deviation", 'c');
     apop_name_add(ep->names, "p value, 1 tail", 'c');
     apop_name_add(ep->names, "confidence, 1 tail", 'c');
-    apop_name_add(ep->names, "df", 'c');
     int df   = est->data->matrix   ?
                     est->data->matrix->size1:
                     est->data->vector->size;
     df      -= est->parameters->vector->size;
     df       = df < 1 ? 1 : df; //some models aren't data-oriented.
     rootn    = sqrt(df);
+    apop_data_add_named_elmt(est->info, "df", df);
     for (size_t i=0; i< est->parameters->vector->size; i++){
         val     = apop_data_get(est->parameters, i, -1);
         var     = apop_data_get(cov, i, i);
@@ -136,7 +136,6 @@ void apop_estimate_parameter_t_tests (apop_model *est){
         tstat   = val/stddev;
         pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
         two_tail= (df > 0)? apop_test(tstat, "t", .p1=df) : GSL_NAN;
-        apop_data_set(ep, i, .colname="df",                 .val=df);
         apop_data_set(ep, i, .colname="t statistic",        .val=tstat);
         apop_data_set(ep, i, .colname="standard deviation", .val=stddev);
         apop_data_set(ep, i, .colname="p value",            .val=two_tail);
@@ -747,7 +746,7 @@ SST, and SSR (and calculate the \f$R^2\f$s using those values).
 apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   double          sse, sst, rsq, adjustment;
   size_t          indep_ct= m->data->matrix->size2 - 1;
-  apop_data       *out    = apop_data_alloc(0, 5,-1);
+  apop_data       *out    = apop_data_alloc(0, 5,1);
     gsl_vector *weights = m->data->weights; //typically NULL.
     apop_data *expected = apop_data_get_page(m->info, "Predicted");
     apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"Predicted\" page in your data set. Returning NULL.\n");

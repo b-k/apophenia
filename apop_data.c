@@ -992,8 +992,13 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
   error otherwise.
   \param title The name of the page to remove Default: \c "Info"
   \param free_p If \c 'y', then \ref apop_data_free the page. Default: \c 'y'.
+
+  \return If not freed, a pointer to the \c apop_data page that I just pulled out. Thus,
+  you can use this to pull a single page from a data set. I set that page's \c more
+  pointer to \c NULL, to minimize any confusion about more-than-linear linked list
+  topologies. If <tt>free_p=='y'</tt> (the default) or the page is not found, return \c NULL.
 */
-APOP_VAR_HEAD void apop_data_rm_page(apop_data * data, const char *title, const char free_p){
+APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p){
     apop_data *apop_varad_var(data, NULL);
     apop_assert_void(data, '1', 'c', "You are removing a page from a NULL a data set. Doing nothing.");
     const char *apop_varad_var(title, "Info");
@@ -1005,7 +1010,13 @@ APOP_VAR_ENDHEAD
     if (data->more){
         apop_data *tmp = data->more;
         data->more = data->more->more;
-        if (free_p=='y')
+        tmp->more = NULL;
+        if (free_p=='y'){
             free(tmp);
+            return NULL;
+        } //else:
+        return tmp;
     }
+    apop_error(0, 'c', "You asked me to remove %s but I couldn't find a page matching that regex.", title);
+    return NULL;
 }
