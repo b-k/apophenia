@@ -1,5 +1,5 @@
 /** \file settings.h */ 
-/* Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2009-10 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #ifndef __apop_settings_h__
 #define __apop_settings_h__
 
@@ -12,54 +12,69 @@ extern "C" {
 
     //Part I: macros and fns for getting/setting settings groups and elements
 
-void * apop_settings_get_group(apop_model *m, char *type);
-void apop_settings_rm_group(apop_model *m, char *delme);
+void * apop_settings_get_grp(apop_model *m, char *type);
+void apop_settings_remove_group(apop_model *m, char *delme);
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme);
 void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
 
-/** Retrieves a settings group from a model.  See \ref Apop_settings_get
- to just pull a single item from within the settings group.*/
-#define Apop_settings_get_group(m, type) apop_settings_get_group(m, #type)
+/** Retrieves a settings group from a model.  See \ref apop_settings_get
+ to just pull a single item from within the settings group.
 
-/** Removes a settings group from a model's list. */
-#define Apop_settings_rm_group(m, type) apop_settings_rm_group(m, #type)
+  If it isn't found, then it returns NULL, so you can easily put it in a conditional like 
+  \code 
+  if (!apop_settings_get_group(m, "apop_ols")) ...
+  \endcode
+\hideinitializer \ingroup settings
+ */
+#define Apop_settings_get_group(m, type) apop_settings_get_grp(m, #type)
+
+/** Removes a settings group from a model's list. 
+\hideinitializer \ingroup settings
+ */
+#define Apop_settings_rm_group(m, type) apop_settings_remove_group(m, #type)
 
 /** Add a settings group. The first two arguments (the model you are
  attaching to and the settings group name) are mandatory, and then you
  can use the \ref designated syntax to specify default values (if any).
  Returns a pointer to the newly-prepped group.
+\hideinitializer \ingroup settings
  */
 #define Apop_model_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__})); 
 
 /* A convenience for your settings group init functions. 
- Gives the output item either the default value if there is one, or the value you specify. */
+ Gives the output item either the default value if there is one, or the value you specify. 
+\hideinitializer \ingroup settings
+ */
 #define apop_varad_setting(in, out, name, value) (out)->name = (in).name ? (in).name : (value);
 
-/** Retrieves a setting from a model.  See \ref Apop_settings_get_group pull the entire group.*/
+/** Retrieves a setting from a model.  See \ref Apop_settings_get_group pull the entire group.
+\hideinitializer \ingroup settings
+ */
 #define Apop_settings_get(model, type, setting)  \
-    (((type ## _settings *) apop_settings_get_group(model, #type))->setting)
+    (((type ## _settings *) apop_settings_get_grp(model, #type))->setting)
 
-/** Modifies a single element of a settings group to the given value. */
+/** Modifies a single element of a settings group to the given value. 
+\hideinitializer \ingroup settings
+ */
 #define Apop_settings_set(model, type, setting, data)  \
-    do { type ## _settings *apop_tmp_settings = apop_settings_get_group(model, #type);  \
+    do { type ## _settings *apop_tmp_settings = apop_settings_get_grp(model, #type);  \
     apop_assert_void(apop_tmp_settings, 0, 's', "You're trying to modify a setting in " \
                         #model "'s setting group of type " #type " but that model doesn't have such a group."); \
     apop_tmp_settings->setting = (data);    \
     } while (0);
-/*#define Apop_settings_set(model, type, setting, data)  \
-    do {                                                \
-    apop_assert_void(apop_settings_get_group(model, #type), 0, 's', "You're trying to modify a setting in " \
-                        #model "'s setting group of type " #type " but that model doesn't have such a group."); \
-    ((type ## _settings *) apop_settings_get_group(model, #type))->setting = (data);    \
-    } while (0);*/
 
 #define Apop_settings_add Apop_settings_set
 #define APOP_SETTINGS_ADD Apop_settings_set
+#define apop_settings_set Apop_settings_set
 #define APOP_SETTINGS_GET Apop_settings_get
+#define apop_settings_get Apop_settings_get
 #define APOP_MODEL_ADD_GROUP Apop_model_add_group
+#define apop_model_add_group Apop_model_add_group
 #define APOP_SETTINGS_GET_GROUP Apop_settings_get_group
+#define apop_settings_get_group Apop_settings_get_group
 #define APOP_SETTINGS_RM_GROUP Apop_settings_rm_group
+#define apop_settings_rm_group Apop_settings_rm_group
 
 #define Apop_settings_declarations(ysg) \
    ysg##_settings * ysg##_settings_init(ysg##_settings); \
@@ -165,7 +180,7 @@ typedef struct {
   \ingroup settings */
 typedef struct {
     apop_model *base;
-    int *indices;
+    int *indices, indices_len;
     gsl_rng *rng;
     int draws;
     int own_rng;

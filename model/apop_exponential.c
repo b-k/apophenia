@@ -84,7 +84,7 @@ static void rank_exponential_dlog_likelihood(const apop_data *d, gsl_vector *gra
 }
 
 static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
-    if (apop_settings_get_group(est, "apop_rank"))
+    if (apop_settings_get_group(est, apop_rank))
       return rank_exponential_estimate(data, est);
 	gsl_vector_set(est->parameters->vector, 0, apop_matrix_mean(data->matrix));
     apop_data_add_named_elmt(est->info, "log likelihood", exponential_log_likelihood(data, est));
@@ -98,7 +98,7 @@ static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
 
 static double exponential_log_likelihood(apop_data *d, apop_model *p){
   apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
-    if (apop_settings_get_group(p, "apop_rank"))
+    if (apop_settings_get_group(p, apop_rank))
       return rank_exponential_log_likelihood(d, p);
   gsl_matrix	*data	= d->matrix;
   double		mu		= gsl_vector_get(p->parameters->vector, 0),
@@ -122,7 +122,7 @@ static double expo_cdf(apop_data *d, apop_model *params){
 */
 static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
-    if (apop_settings_get_group(p, "apop_rank"))
+    if (apop_settings_get_group(p, apop_rank))
       return rank_exponential_dlog_likelihood(d, gradient, p);
   double		mu	    = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix	*data	= d->matrix;

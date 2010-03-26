@@ -97,7 +97,7 @@ static double apply_me(double val, void *in){
 static double waring_log_likelihood(apop_data *d, apop_model *m){
   Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-    if (apop_settings_get_group(m, "apop_rank"))
+    if (apop_settings_get_group(m, apop_rank))
       return waring_log_likelihood_rank(d, m);
   ab_type abstruct;
   abstruct.bb	= gsl_vector_get(m->parameters->vector, 0),
@@ -117,7 +117,7 @@ static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
   Nullcheck_v(d); Nullcheck_mv(m); Nullcheck_pv(m);
   int min = vsize ? -1 : 0;
   int max = msize2 ? msize2 : 0;
-    if (apop_settings_get_group(m, "apop_rank"))
+    if (apop_settings_get_group(m, apop_rank))
       return waring_dlog_likelihood_rank(d, gradient, m);
   double bb		        = gsl_vector_get(m->parameters->vector, 0);
   double a		        = gsl_vector_get(m->parameters->vector, 1);

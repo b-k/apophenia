@@ -84,7 +84,7 @@ void apop_histogram_settings_free(apop_histogram_settings *in){
 
 
 apop_model *est(apop_data *d, apop_model *est){
-    if (!(apop_settings_get_group(est, "apop_histogram") || apop_settings_get_group(est, "apop_kernel_density")))
+    if (!(apop_settings_get_group(est, apop_histogram) || apop_settings_get_group(est, apop_kernel_density)))
         Apop_settings_add_group(est, apop_histogram, d, 1000);
     return est;
 }
@@ -96,15 +96,15 @@ static double one_histo_ll(double i, void *gpdf){
 }
 
 static double histogram_ll(apop_data *d, apop_model *in){
-    apop_histogram_settings *hp = apop_settings_get_group(in, "apop_histogram");
-    if (!hp) apop_settings_get_group(in, "apop_kernel_density");
+    apop_histogram_settings *hp = apop_settings_get_group(in, apop_histogram);
+    if (!hp) apop_settings_get_group(in, apop_kernel_density);
     apop_assert(hp, 0, 0, 's', "you sent me an unparametrized model.");
     return apop_map_sum(d, .fn_dp =one_histo_ll, .param=hp->pdf);
 }
 
 static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
-  apop_histogram_settings *hp = apop_settings_get_group(in, "apop_histogram");
-  if (!hp) apop_settings_get_group(in, "apop_kernel_density");
+  apop_histogram_settings *hp = apop_settings_get_group(in, apop_histogram);
+  if (!hp) apop_settings_get_group(in, apop_kernel_density);
   apop_assert_void(hp, 0, 's', "you sent me an unparametrized model.");
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!
@@ -175,7 +175,7 @@ apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data,
   apop_model *base     = NULL;
   apop_histogram_settings *out = NULL;
     //establish and copy the base histogram
-    if(apop_settings_get_group(histobase, "apop_histogram")){
+    if(apop_settings_get_group(histobase, apop_histogram)){
         base = histobase;
     } else if (data){
         base = apop_model_copy(apop_histogram);
@@ -183,7 +183,7 @@ apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data,
     } else
         apop_error(0, 's', "I need either a histobase model with a histogram or a non-NULL data set.");
 
-    apop_histogram_settings *bh    = apop_settings_get_group(base, "apop_histogram");
+    apop_histogram_settings *bh    = apop_settings_get_group(base, apop_histogram);
     out             = apop_histogram_settings_copy(bh);
     out->pdf        = apop_alloc_wider_range(bh->pdf, padding);
     out->kernelbase = apop_model_copy(*kernelbase);
@@ -227,7 +227,7 @@ apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data,
 static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *parameters){
     apop_model *m   = apop_model_set_parameters(apop_normal, 0., 1.);
     apop_model *h   = NULL;
-    if (!(h = apop_settings_get_group(parameters, "apop_histogram")))
+    if (!(h = apop_settings_get_group(parameters, apop_histogram)))
         h = apop_estimate(data, apop_histogram);
     Apop_assert(h, NULL, 0, 's', "I need either a model with a histogram or a non-NULL data set.\n");
     apop_model *out = apop_model_copy(apop_kernel_density);

@@ -208,8 +208,8 @@ APOP_VAR_HEAD void apop_histogram_print(apop_model *h, Output_declares){
       Dispatch_output
       apop_histogram_print_base(h, Output_vars);
 APOP_VAR_ENDHEAD
-  apop_histogram_settings *hp = apop_settings_get_group(h, "apop_histogram"); 
-  if (!hp) hp = apop_settings_get_group(h, "apop_kernel_density"); 
+  apop_histogram_settings *hp = apop_settings_get_group(h, apop_histogram); 
+  if (!hp) hp = apop_settings_get_group(h, apop_kernel_density); 
   apop_assert_void(hp, 0, 's', "You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?");
     histoplot_common(hp->pdf, 0, Output_vars);
 }

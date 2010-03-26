@@ -46,7 +46,7 @@ static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_mode
 static double zipf_log_likelihood(apop_data *d, apop_model *m){
   Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-    if (apop_settings_get_group(m, "apop_rank"))
+    if (apop_settings_get_group(m, apop_rank))
         return zipf_log_likelihood_rank(d, m);
   long double   bb      = gsl_vector_get(m->parameters->vector, 0);
   double like = -apop_map_sum(d, log);
@@ -58,7 +58,7 @@ static double zipf_log_likelihood(apop_data *d, apop_model *m){
 static void zipf_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
   Get_vmsizes(d) //tsize
   Nullcheck_v(d); Nullcheck_mv(m); Nullcheck_pv(m);
-    if (apop_settings_get_group(m, "apop_rank"))
+    if (apop_settings_get_group(m, apop_rank))
         return zipf_dlog_likelihood_rank(d, gradient, m);
   double      bb        = gsl_vector_get(m->parameters->vector, 0);
   long double dlike     =  -apop_map_sum(d, log);

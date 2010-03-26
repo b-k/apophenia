@@ -252,6 +252,7 @@ apop_pm_settings *apop_pm_settings_init(apop_pm_settings in){
    apop_pm_settings *out = malloc(sizeof (apop_pm_settings));
     apop_varad_setting(in, out, base, NULL);
     apop_varad_setting(in, out, indices, NULL);
+    apop_varad_setting(in, out, indices_len, in.indices ? sizeof(in.indices)/sizeof(in.indices[0]): 0);
     apop_varad_setting(in, out, rng, apop_rng_alloc(apop_opts.rng_seed++));
     if (in.rng)
         out->own_rng = 0;
@@ -290,9 +291,9 @@ void apop_pm_settings_free(apop_pm_settings *freeme) {
 apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     if (m->parameter_model)
         return m->parameter_model(d, m);
-    apop_pm_settings *settings = Apop_settings_get_group(m, apop_pm);
+    apop_pm_settings *settings = apop_settings_get_group(m, apop_pm);
     if (!settings)
-        settings = Apop_model_add_group(m, apop_pm, .base= m);
+        settings = apop_model_add_group(m, apop_pm, .base= m);
     if (d){
         //then prune down to the requested items
         Get_vmsizes(m->parameters);//vsize, msize1, msize2
@@ -387,15 +388,18 @@ details.
   */
 apop_data *apop_predict(apop_data *d, apop_model *m){
     apop_data *prediction = NULL;
+    apop_data *out = d ? d : apop_data_alloc(0, 1, m->dsize);
+    if (!d)
+        gsl_matrix_set_all(out->matrix, GSL_NAN);
     if (m->predict)
-        prediction = m->predict(d, m);
+        prediction = m->predict(out, m);
     if (prediction)
         return prediction;
-    if (!apop_map_sum(d, disnan))
-        return d;
-    apop_model *f = apop_ml_imputation(d, m);
+    if (!apop_map_sum(out, disnan))
+        return out;
+    apop_model *f = apop_ml_imputation(out, m);
     apop_model_free(f);
-    return d;
+    return out;
 }
 
 /* Are all the elements of v less than or equal to the corresponding elements of the reference vector? */

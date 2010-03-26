@@ -167,7 +167,7 @@ APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_
 APOP_VAR_END_HEAD
   apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
     if (maybe_out) return maybe_out;
-    apop_update_settings *s = apop_settings_get_group(prior, "apop_update");
+    apop_update_settings *s = apop_settings_get_group(prior, apop_update);
     if (!s) 
         s = Apop_model_add_group(prior, apop_update);
   double        ratio, ll, cp_ll = GSL_NEGINF;

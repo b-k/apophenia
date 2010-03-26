@@ -987,8 +987,9 @@ enum apop_normal{
   As is custom, the first parameter (in the vector) is the mean, the second is the standard deviation (i.e., the square root of the variance). */
     Estimate_results29, /**< Parameters are set. Log likelihood is calculated. Covariance of the parameters is calculated unless <tt>.want_cov='n'</tt>; see below.    */
     Predict29, /**< Returns the expected value. The <tt>->more</tt>
-                 element holds a \ref apop_data set with the title <tt>"Covariance"</tt>, whose matrix holds the covariance of the mean. Format
-                 subject to change. */
+                 element holds a \ref apop_data set with the title <tt>"Covariance"</tt>, whose matrix holds the covariance of the mean. If <tt>estimated_model->data</tt> then this is going to be \f$\mu/\sqrt{n}\f$; if the model's <tt>data == NULL</tt> then cov = 0. 
+                 
+                 Format subject to change. */
     Prep_routine29, /**<  None.       */
     RNG29, /**< Of course. */
     settings29, /**<  

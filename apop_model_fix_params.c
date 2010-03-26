@@ -12,6 +12,8 @@ Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "settings.h"
 #include "likelihoods.h"
 
+static double find_nans(double in){ return !gsl_isnan(in); }
+
 typedef struct {
     apop_model *base_model;
     size_t      *row, *col, *page;
@@ -29,7 +31,7 @@ static void addin(apop_model_fixed_params_settings *m, size_t i, size_t j, size_
 
 static int find_missing(const apop_data *mask, apop_model *mc, size_t page){
     //generate a list of fixed-parameter positions, and their paramvals.
-  apop_model_fixed_params_settings  *mset = apop_settings_get_group(mc, "apop_model_fixed_params");
+  apop_model_fixed_params_settings  *mset = apop_settings_get_group(mc, apop_model_fixed_params);
     if (page==0)
         mset->ct = 0;
     //find out where the NaNs are
@@ -84,19 +86,19 @@ static apop_model_fixed_params_settings *apop_model_fixed_params_settings_init (
 }
 
 static double i_ll(apop_data *d, apop_model *fixed_model){
-  apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, "apop_model_fixed_params");
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, apop_model_fixed_params);
     unpack(fixed_model->parameters, fixed_model);
     return apop_log_likelihood(d, p->base_model);
 }
 
 static double i_p(apop_data *d, apop_model *fixed_model){
-  apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, "apop_model_fixed_params");
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, apop_model_fixed_params);
     unpack(fixed_model->parameters, fixed_model);
     return apop_p(d, p->base_model);
 }
 
 static double  i_constraint(apop_data *data, apop_model *fixed_model){
-  apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, "apop_model_fixed_params");
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, apop_model_fixed_params);
     unpack(fixed_model->parameters, fixed_model);
   double out = p->base_model->constraint(data, p->base_model);
     if (out) 
@@ -105,7 +107,7 @@ static double  i_constraint(apop_data *data, apop_model *fixed_model){
 }
 
 static void i_draw(double *out, gsl_rng* r, apop_model *eps){
-  apop_model_fixed_params_settings *p    = apop_settings_get_group(eps, "apop_model_fixed_params");
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(eps, apop_model_fixed_params);
   apop_data             *tmp    = p->base_model->parameters;
     unpack(eps->parameters, eps);
     p->base_model->draw(out, r, p->base_model);
@@ -113,7 +115,7 @@ static void i_draw(double *out, gsl_rng* r, apop_model *eps){
 }
 
 static apop_model *fixed_est(apop_data * data, apop_model *params){
-  apop_model_fixed_params_settings *p    = apop_settings_get_group(params, "apop_model_fixed_params");
+  apop_model_fixed_params_settings *p    = apop_settings_get_group(params, apop_model_fixed_params);
     if (!data)
         data    = params->data;
     apop_model *e = apop_maximum_likelihood(data, params);
@@ -122,8 +124,6 @@ static apop_model *fixed_est(apop_data * data, apop_model *params){
     e->parameters   = apop_data_copy(p->base_model->parameters);
     return e;
 }
-
-static double find_nans(double in){ return !gsl_isnan(in); }
 
 static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = i_p, .log_likelihood=i_ll, 
                                     .constraint= i_constraint, .draw=i_draw};

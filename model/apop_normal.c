@@ -14,7 +14,7 @@ static double normal_log_likelihood(apop_data *d, apop_model *params);
 static apop_model * normal_estimate(apop_data * data, apop_model *est){
     Get_vmsizes(data)
   double		mmean=0, mvar=0, vmean=0, vvar=0;
-  apop_lm_settings *p = apop_settings_get_group(est, "apop_lm");
+  apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
     if (!p) 
         p = Apop_model_add_group(est, apop_lm);
     if (vsize){
@@ -100,13 +100,15 @@ static void normal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 
 //Just the mean and the variance of the mean.
 apop_data * normal_predict(apop_data *dummy, apop_model *m){
-    Get_vmsizes(m->data) //tsize
     apop_data *out = apop_data_alloc(0,1,1);
     out->matrix->data[0] = m->parameters->vector->data[0];
 
-    out->more = apop_data_alloc(0,1,1);
-    sprintf(out->more->names->title, "Covariance");
-    out->more->matrix->data[0] = m->parameters->vector->data[1]/ sqrt(tsize);
+    apop_data *cov = apop_data_add_page(out, apop_data_alloc(0,1,1), "Covariance");
+    if (m->data){
+        Get_vmsizes(m->data) //tsize
+        cov->matrix->data[0] = m->parameters->vector->data[1]/ sqrt(tsize);
+    } else
+        cov->matrix->data[0] = 0;
     return out;
 }
 
@@ -139,7 +141,7 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
   apop_model 	*est = apop_model_copy(*parameters);
   double   mean    = 0,
            var     = 0; 
-  apop_lm_settings *p = apop_settings_get_group(est, "apop_lm");
+  apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
     if (!p) 
         p = Apop_model_add_group(est, apop_lm);
     apop_matrix_mean_and_var(data->matrix, &mean, &var);

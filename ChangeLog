@@ -13,6 +13,8 @@
 **apop_model_prep ==> apop_prep for consistency with other apop_model dispatch functions. apop_model_prep left for now as an alias in deprecated.h
 !!apop_parameter_model: a method for getting the distribution of a parameter.
     **Moved OLS-family test stats (pval, qval, whatever) to a page of your_estimate->info. It won't be there for long either.
+--settings macros let you use lowercase, thus entirely ignoring that they're macros.
+    **apop_settings_rm_group function, which you were probably not using, changed to apop_settings_remove_group; apop_settings_get_group function => apop_settings_get_grp. Having a macro and a function that differed by a question of case was a bad idea to begin with.
 
     February 2010
 !!Overhauling the output from estimations; pardon our dust. 

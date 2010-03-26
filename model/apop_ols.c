@@ -40,7 +40,7 @@ apop_lm_settings * apop_lm_settings_init(apop_lm_settings in){
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
-  apop_lm_settings   *p = apop_settings_get_group(e, "apop_lm");
+  apop_lm_settings   *p = apop_settings_get_group(e, apop_lm);
     apop_data *predicted = apop_data_get_page(e->info, "Predicted");
     if (predicted){
         apop_name_add(predicted->names, (e->data->names->colct ? e->data->names->column[0] : "Observed"), 'c');
@@ -161,7 +161,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
 
 
 static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_model *out){
-  apop_lm_settings   *p =  apop_settings_get_group(out, "apop_lm");
+  apop_lm_settings   *p =  apop_settings_get_group(out, apop_lm);
 	if ((p->want_cov!='y') && (p->want_expected_value != 'y') ){	
 		//then don't calculate (X'X)^{-1}
 		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
@@ -194,7 +194,7 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
 
 static void ols_rng(double *out, gsl_rng *r, apop_model *m){
     //X is drawn from the input distribution, then Y = X\beta + epsilon
-    apop_lm_settings   *olp =  apop_settings_get_group(m, "apop_lm");
+    apop_lm_settings   *olp =  apop_settings_get_group(m, apop_lm);
     apop_draw(out+1, r, olp->input_distribution);
 
     gsl_vector *tempdata = gsl_vector_alloc(m->parameters->vector->size);
@@ -212,7 +212,7 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     apop_assert(inset,  NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set;
 //    ep->status = 0;
-    apop_lm_settings   *olp =  apop_settings_get_group(ep, "apop_lm");
+    apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
     if (!olp) 
         olp = Apop_model_add_group(ep, apop_lm);
     ep->data = inset;
@@ -273,10 +273,7 @@ apop_data *ols_predict (apop_data *in, apop_model *m){
 
 apop_model *ols_param_models(apop_data *d, apop_model *m){
     apop_pm_settings *settings = Apop_settings_get_group(m, apop_pm);
-    int len = 0;
-    if (settings->indices)
-        len = sizeof(settings->indices[0])/sizeof(settings->indices);
-    if (len){
+    if (settings->indices_len==1){
         int i = settings->indices[0];
         double mu = apop_data_get(m->parameters, i, -1);
         double sigma = sqrt(apop_data_get(m->parameters, i, i, .page="Covariance")/(d->vector->size-1));
@@ -334,7 +331,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
   apop_assert(inset, NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
   apop_data         *set, *z;
   int               i;
-    apop_lm_settings   *olp =  apop_settings_get_group(ep, "apop_lm");
+    apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
     if (!olp) 
         olp = Apop_model_add_group(ep, apop_lm);
     olp->want_cov       = 'n';//not working yet.

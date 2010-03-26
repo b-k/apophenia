@@ -61,7 +61,7 @@ static void make_covar(apop_model *est){
 static apop_model * binomial_estimate(apop_data * data,  apop_model *est){
   Nullcheck_d(data)
   double hitcount, misscount;
-  char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
+  char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
     get_hits_and_misses(data, method, &hitcount, &misscount);   
     int n = hitcount + misscount;
     apop_name_add(est->parameters->names, "n", 'r');
@@ -79,7 +79,7 @@ static double binomial_log_likelihood(apop_data *d, apop_model *params){
   double	  n       = apop_data_get(params->parameters, 0, -1),
               p       = apop_data_get(params->parameters, 1, -1);
   double hitcount, misscount, ll = 0;
-  char method = apop_settings_get_group(params, "apop_rank") ? 'b' : 't';
+  char method = apop_settings_get_group(params, apop_rank) ? 'b' : 't';
     if (method == 't'){
         get_hits_and_misses(d, method, &hitcount, &misscount);
         return log(gsl_ran_binomial_pdf(hitcount, p, n));
@@ -95,7 +95,7 @@ static double binomial_log_likelihood(apop_data *d, apop_model *params){
 static double binomial_cdf(apop_data *d, apop_model *est){
   Nullcheck_m(est) Nullcheck_p(est) Nullcheck_d(d)
   double hitcount, misscount, psum = 0;
-  char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
+  char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
     get_hits_and_misses(d, method, &hitcount, &misscount);   
     double n = gsl_vector_get(est->parameters->vector, 0);
     double p = gsl_vector_get(est->parameters->vector, 1);
@@ -112,7 +112,7 @@ static double multinomial_constraint(apop_data *data, apop_model *b){
 static void binomial_rng(double *out, gsl_rng *r, apop_model* est){
   double n = gsl_vector_get(est->parameters->vector, 0);
   double p = gsl_vector_get(est->parameters->vector, 1);
-  char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
+  char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
     if (method == 'b'){
         out[1] =  gsl_ran_binomial(r, n ,est->parameters->vector->data[0]); 
         out[0] =  n - out[1];
@@ -151,7 +151,7 @@ static double multinomial_log_likelihood(apop_data *d, apop_model *params){
   apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
     double *pv = params->parameters->vector->data;
     size_t size = params->parameters->vector->size;
-    char method = apop_settings_get_group(params, "apop_rank") ? 'b' : 't';
+    char method = apop_settings_get_group(params, apop_rank) ? 'b' : 't';
 
     //The GSL wants our hit count in an int*.
     gsl_vector *hits = get_multinomial_hitcount(d, method);
@@ -171,7 +171,7 @@ static double multinomial_log_likelihood(apop_data *d, apop_model *params){
 
 static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     apop_assert(data,  0, 0,'s', "You asked me to estimate the parameters of a model but sent NULL data.");
-    char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
+    char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
     gsl_vector * count = get_multinomial_hitcount(data, method);
     //int n = apop_sum(count); //potential double-to-int precision issues.
     int n = 0;
@@ -196,7 +196,7 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
 static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     //After the intro, cut/pasted/modded from the GSL. Copyright them.
     Nullcheck_pv(est);
-    char method = apop_settings_get_group(est, "apop_rank") ? 'b' : 't';
+    char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
     double * p = est->parameters->vector->data;
     size_t k = est->parameters->vector->size;
     //the trick where we turn the params into a p-vector

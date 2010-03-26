@@ -39,7 +39,9 @@ gsl_vector * v = &( apop_vv_##v );
 gsl_vector * v = &( apop_vv_##v );
 
 #define Apop_col APOP_COL 
+#define apop_col APOP_COL 
 #define Apop_row APOP_ROW
+#define apop_row APOP_ROW
 #define Apop_col_t APOP_COL_T
 #define Apop_row_t APOP_ROW_T
 #define Apop_matrix_col APOP_MATRIX_COL 

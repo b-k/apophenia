@@ -65,7 +65,7 @@ static double  dapply_me(double pt, void *bb){ return -gsl_sf_psi(pt+*(double*)b
 static double yule_log_likelihood(apop_data *d, apop_model *m){
   Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-    if (apop_settings_get_group(m, "apop_rank"))
+    if (apop_settings_get_group(m, apop_rank))
         return yule_log_likelihood_rank(d, m);
     double bb = gsl_vector_get(m->parameters->vector, 0);
     long double ln_bb        = gsl_sf_lngamma(bb),
@@ -77,7 +77,7 @@ static double yule_log_likelihood(apop_data *d, apop_model *m){
 static void yule_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
   Get_vmsizes(d) //tsize
   Nullcheck_v(d); Nullcheck_mv(m); Nullcheck_pv(m);
-    if (apop_settings_get_group(m, "apop_rank"))
+    if (apop_settings_get_group(m, apop_rank))
       return yule_dlog_likelihood_rank(d, gradient, m);
 	//Psi is the derivative of the log gamma function.
     double bb  = gsl_vector_get(m->parameters->vector, 0);

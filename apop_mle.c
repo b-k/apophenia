@@ -158,7 +158,7 @@ APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *
     Nullcheck(model)
     double apop_varad_var(delta, 0);
     if (!delta){
-        apop_mle_settings *mp = apop_settings_get_group(model, "apop_mle");
+        apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
         delta = mp ? mp->delta : default_delta;
     }
     return apop_numerical_gradient_base(data, model, delta);
@@ -215,7 +215,7 @@ APOP_VAR_HEAD apop_data * apop_model_hessian(apop_data * data, apop_model *model
     Nullcheck(model)
     double apop_varad_var(delta, 0);
     if (!delta){
-        apop_mle_settings *mp = apop_settings_get_group(model, "apop_mle");
+        apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
         delta = mp ? mp->delta : default_delta;
     }
     return apop_model_hessian_base(data, model, delta);
@@ -229,7 +229,7 @@ APOP_VAR_ENDHEAD
   apop_model *m = apop_model_copy(apop_model_for_infomatrix);
   m->parameters = model->parameters;
   m->more = &ms;
-    if (apop_settings_get_group(model, "apop_mle"))
+    if (apop_settings_get_group(model, apop_mle))
         apop_settings_copy_group(m, model, "apop_mle");
     for (k=0; k< betasize; k++){
         dscore = apop_numerical_gradient(data, m, delta);
@@ -273,7 +273,7 @@ APOP_VAR_HEAD apop_data * apop_model_numerical_covariance(apop_data * data, apop
     Nullcheck(model)
     double apop_varad_var(delta, 0);
     if (!delta){
-        apop_mle_settings *mp = apop_settings_get_group(model, "apop_mle");
+        apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
         delta = mp ? mp->delta : default_delta;
     }
     return apop_model_numerical_covariance_base(data, model, delta);
@@ -376,7 +376,7 @@ If the constraint binds
 Finally, reverse the sign, since the GSL is trying to minimize instead of maximize.
 */
   infostruct    *i              = in;
-  apop_mle_settings *mp       =  apop_settings_get_group(i->model, "apop_mle");
+  apop_mle_settings *mp       =  apop_settings_get_group(i->model, apop_mle);
     apop_data_unpack(beta, i->model->parameters);
     if(i->model->constraint)
         if(i->model->constraint(i->data, i->model))
@@ -414,7 +414,7 @@ static void setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
 
 static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
   apop_model		        *est    = i->model; //just an alias.
-  apop_mle_settings          *mp    = apop_settings_get_group(est, "apop_mle");
+  apop_mle_settings          *mp    = apop_settings_get_group(est, apop_mle);
     if (mp->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
         apop_data_add_page(est->parameters, 
                 apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta)), "Covariance");
@@ -457,7 +457,7 @@ Inside the infostruct, you'll find these elements:
 */
   gsl_multimin_fdfminimizer *s;
   apop_model		 *est  = i->model; //just an alias.
-  apop_mle_settings  *mp  = apop_settings_get_group(est, "apop_mle");
+  apop_mle_settings  *mp  = apop_settings_get_group(est, apop_mle);
   int				        iter 	= 0, 
 				            status  = 0,
 				            apopstatus  = 0,
@@ -507,7 +507,7 @@ Inside the infostruct, you'll find these elements:
 /* See apop_maximum_likelihood_w_d for notes. */
 static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
   apop_model		        *est        = i->model;
-  apop_mle_settings         *mp         = apop_settings_get_group(est, "apop_mle");
+  apop_mle_settings         *mp         = apop_settings_get_group(est, apop_mle);
   assert(mp);
   int			            status,
                             apopstatus  = 0,
@@ -619,7 +619,7 @@ else
 \endcode
  \ingroup mle */
 apop_model *	apop_maximum_likelihood(apop_data * data, apop_model *dist){
-  apop_mle_settings   *mp = apop_settings_get_group(dist, "apop_mle");
+  apop_mle_settings   *mp = apop_settings_get_group(dist, apop_mle);
     if(!mp)
         mp = Apop_model_add_group(dist, apop_mle, .parent=dist);
     apop_prep(data, dist);
@@ -700,8 +700,8 @@ APOP_VAR_ENDHEAD
     gsl_vector *v;
   if (!copy)
       copy = apop_model_copy(*e);
-  apop_mle_settings* prm0 = apop_settings_get_group(e, "apop_mle");
-  apop_mle_settings* prm = apop_settings_get_group(copy, "apop_mle");
+  apop_mle_settings* prm0 = apop_settings_get_group(e, apop_mle);
+  apop_mle_settings* prm = apop_settings_get_group(copy, apop_mle);
             //copy off the old params; modify the starting pt, method, and scale
     if (starting_pt && !strcmp(starting_pt, "es"))
         v = apop_array_to_vector(prm0->starting_pt);
@@ -827,7 +827,7 @@ static void anneal_sigint(){ longjmp(anneal_jump,1); }
 
 static apop_model * apop_annealing(infostruct *i){
   apop_model            *ep = i->model;
-  apop_mle_settings     *mp = apop_settings_get_group(ep, "apop_mle");
+  apop_mle_settings     *mp = apop_settings_get_group(ep, apop_mle);
   assert(mp);
   gsl_siman_params_t    simparams = (gsl_siman_params_t) {
                             .n_tries       = mp->n_tries, 
@@ -879,7 +879,7 @@ static apop_model * find_roots (infostruct p) {
   const gsl_multiroot_fsolver_type *T;
   gsl_multiroot_fsolver *s;
   apop_model *dist = p.model;
-  apop_mle_settings *mlep   = apop_settings_get_group(dist, "apop_mle");
+  apop_mle_settings *mlep   = apop_settings_get_group(dist, apop_mle);
   int status, betasize      = p.beta->size,
               apopstatus    = 1;   //assume failure until we score a success.
   size_t  iter = 0;

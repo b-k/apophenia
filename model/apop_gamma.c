@@ -65,7 +65,7 @@ static double gamma_log_likelihood(apop_data *d, apop_model *p){
   Nullcheck_m(p) 
   Nullcheck_p(p) 
   Get_vmsizes(d)
-    if (apop_settings_get_group(p, "apop_rank"))
+    if (apop_settings_get_group(p, apop_rank))
         return gamma_rank_log_likelihood(d, p);
   abstruct ab = {
       .a    = gsl_vector_get(p->parameters->vector, 0),
@@ -85,7 +85,7 @@ static double b_callback(double x, void *ab){ return x ? -x - *(double*)ab : 0; 
 
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   Nullcheck_pv(p) 
-    if (apop_settings_get_group(p, "apop_rank"))
+    if (apop_settings_get_group(p, apop_rank))
        return gamma_rank_dlog_likelihood(d, gradient, p);
   float       	a    	= gsl_vector_get(p->parameters->vector, 0),
         		b    	= gsl_vector_get(p->parameters->vector, 1);

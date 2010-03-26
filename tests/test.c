@@ -1130,7 +1130,7 @@ void test_rank_distributions(gsl_rng *r){
         estimate_model(data, dist[i],APOP_SIMPLEX_NM);
         estimate_model(data, dist[i],APOP_CG_PR);
         apop_data_free(data);
-        Apop_settings_rm_group(dist+i, apop_rank);
+        apop_settings_rm_group(dist+i, apop_rank);
         //    estimate_model(data, model,APOP_SIMAN); //works, but takes forever.
         printf("Passed.\n");
     }

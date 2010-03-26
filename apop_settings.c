@@ -7,25 +7,17 @@
 static size_t get_settings_ct(apop_model *model){
   int ct =0;
     if (!model->settings) return 0;
-//    while (strlen(model->settings[ct].name)) ct++;
     while (model->settings[ct].name[0] !='\0') ct++;
     return ct;
 }
 
 /** Remove a settings group from a model.
 
-  There are two ways to use this, the function or the macro:
-  \code
-  apop_settings_rm_group(your_model, "apop_mle");
-  //or
-  Apop_settings_rm_group(your_model, apop_mle);
-  \endcode
-
-  The macro just calls the function, but is in line with some of the other macros that are preferred over the function.
+  But use \ref apop_settings_rm_group instead; that macro uses this function internally.
 
   If the model has no settings or your preferred settings group is not found, this function does nothing.
  */
-void apop_settings_rm_group(apop_model *m, char *delme){
+void apop_settings_remove_group(apop_model *m, char *delme){
   //apop_assert_void(m->settings, 2, 'c', "The model had no settings, so nothing was removed.");
   if (!m->settings)  
       return;
@@ -46,8 +38,8 @@ void apop_settings_rm_group(apop_model *m, char *delme){
 
 /** Don't use this function. It's what the \c Apop_model_add_group macro uses internally. Use that.  */
 void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group){
-    if(apop_settings_get_group(model, type))  
-        apop_settings_rm_group(model, type); 
+    if(apop_settings_get_grp(model, type))  
+        apop_settings_remove_group(model, type); 
     int ct = get_settings_ct(model);
     model->settings = realloc(model->settings, sizeof(apop_settings_type)*(ct+2));   
     model->settings[ct] = (apop_settings_type) {
@@ -58,19 +50,8 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
     return model->settings[ct].setting_group;
 }
 
-/** This function gets the settings group with the given name. If it
-  isn't found, then it returns NULL, so you can easily put it in a conditional like 
-  \code 
-  if (!apop_settings_get_group(m, "apop_ols")) ...
-  \endcode
-
-  The settings macros don't need quotation marks, e.g. 
-  \code 
-  if (!Apop_settings_get_group(m, apop_ols)) ...
-  \endcode
-  It is recommended that you stick with this form, because other operations on settings require this form.
-*/
-void * apop_settings_get_group(apop_model *m, char *type){
+/** This function is used internally by the macro \ref apop_settings_get_group. Use that.  */
+void * apop_settings_get_grp(apop_model *m, char *type){
   int   i = 0;
     if (!m->settings) return NULL;
     while (m->settings[i].name[0] !='\0'){
@@ -90,7 +71,7 @@ void * apop_settings_get_group(apop_model *m, char *type){
  */
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
   apop_assert_void(inm->settings, 0, 's', "The input model (i.e., the second argument to this function) has no settings.\n");
-  void *g =  apop_settings_get_group(inm, copyme);
+  void *g =  apop_settings_get_grp(inm, copyme);
   if (!copyme)
       apop_assert_void(g, 0, 's', "I couldn't find the group %s in "
                                     "the input model (i.e., the second argument to this function).\n", copyme);
