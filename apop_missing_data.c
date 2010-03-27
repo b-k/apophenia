@@ -2,9 +2,91 @@
 /* Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
+#include "mapply.h"
 #include "internal.h"
 #include "variadic.h"
 #include "likelihoods.h"
+
+
+static double find_nans(double in){ return gsl_isnan(in); }
+
+static void addin(apop_data *predict, size_t i, size_t j, size_t page){
+    int len;
+    if (!predict->matrix){
+        predict->matrix = gsl_matrix_alloc(1,5); 
+        len = 0;
+    } else 
+        len = predict->matrix->size1;
+    apop_matrix_realloc(predict->matrix, len + 1, predict->matrix->size2);
+    apop_data_set(predict, .row=len, .colname="row", .val=i);
+    apop_data_set(predict, .row=len, .colname="col", .val=j);
+    apop_data_set(predict, .row=len, .colname="page", .val=page);
+}
+
+static int find_missing(const apop_data *data, apop_data *predict, size_t page, int ct){
+    //generate a list of fixed-parameter positions, and their paramvals.
+   apop_data * mask = apop_map((apop_data*)data, find_nans, .all_pages='y');
+    //find out where the NaNs are
+    for (size_t i=0; mask->vector && i< mask->vector->size; i++)
+            if (apop_data_get(mask, i, -1))
+                addin(predict, i, -1, page);
+    for (size_t i=0; mask->matrix && i< mask->matrix->size1; i++)
+        for (int j=0; j <mask->matrix->size2; j++)
+            if (apop_data_get(mask, i, j))
+                addin(predict, i, j, page);
+//        apop_assert(mset->ct, 0, 0,'s',"You're asking me to estimate a model where every single parameter is fixed.");
+    if (mask->more)
+        ct += apop_sum(mask->vector)+ apop_matrix_sum(mask->matrix)
+                     + find_missing(mask->more, predict, page+1, ct);
+    apop_data_free(mask);
+    return ct;
+}
+
+apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
+    apop_data *out = apop_data_alloc(0, 0, 0);
+    if (in)
+        apop_data_add_page(in, out, "predict");
+    else 
+        sprintf(out->names->title, "predict");
+    apop_name_add(out->names, "row", 'c');
+    apop_name_add(out->names, "col", 'c');
+    apop_name_add(out->names, "page", 'c');
+    apop_name_add(out->names, "observed", 'c');
+    apop_name_add(out->names, "predicted", 'c');
+    if (fill_with_nans == 'y')
+        find_missing(in, out, 0, 0);
+    return out;
+}
+
+/** Take a \c predict table and set the entries in the data set to the given predicted
+  value. Functions for prediction and imputation use this internally, and append to your
+  data a \c predict table of the right form.  For example, \c apop_ml_impute uses
+  this internally.
+  
+  I assume that the ordering of elements in the \c predict table include everything on the
+  first page, then everything on the second, et cetera. 
+
+\param data The data set to be filled in. It should have a page named \c predict.
+
+*/
+void apop_data_predict_fill(apop_data *data, apop_data *predict){
+    if (!predict)
+        predict = apop_data_get_page (data, "predict");
+    if (!predict) return;
+    int this_page_ct = 0;
+    apop_data *this_page = data;
+    for (int i=0; i < predict->matrix->size1; i++){
+        int p = apop_data_get(predict, .row=i, .colname="page");
+        if (p != this_page_ct){
+            this_page_ct = p; 
+            this_page = this_page->more;
+        }
+        apop_data_set(this_page, .row= apop_data_get(predict, .row=i, .colname="row"),
+                                 .col= apop_data_get(predict, .row=i, .colname="col"),
+                                 .val= apop_data_get(predict, .row=i, .colname="predicted"));
+    }
+}
+
 
 /** If there is an NaN anywhere in the row of numeric data (including the matrix, the vector, and the weights) then delete the row from the data set.
 

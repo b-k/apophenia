@@ -2,7 +2,7 @@ void test_updating(gsl_rng *r){
   double binom_start = 0.6;
   double beta_start_a = 0.3;
   double beta_start_b = 0.5;
-  int i, draws = 700;
+  int i, draws = 1500;
   double n = 80;
   //First, the easy estimation using the conjugate distribution table.
   apop_model *bin = apop_model_set_parameters(apop_binomial, n, binom_start);
