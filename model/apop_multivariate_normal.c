@@ -85,5 +85,16 @@ static void mvn_prep(apop_data *d, apop_model *m){
     apop_model_clear(d, m);
 }
 
+
+
+
+double apop_constraint(apop_data *d, apop_model *m){
+    double val = apop_matrix_to_positive_semidefinite(m->parameters->matrix);
+    printf("M"); apop_matrix_show(m->parameters->matrix);
+}
+
+
+
+
 apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1, .dsize=-2,
      .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll, .draw = mvnrng, .prep=mvn_prep};

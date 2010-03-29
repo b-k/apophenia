@@ -18,7 +18,6 @@ typedef struct {
     apop_model *base_model;
     apop_data   *predict;
     int         ct;
-//    gsl_vector_view paramview;
 } apop_model_fixed_params_settings;
 
 static void unpack(apop_data *out, apop_model *m){
@@ -26,9 +25,8 @@ static void unpack(apop_data *out, apop_model *m){
    apop_model_fixed_params_settings *mset = Apop_settings_get_group(m, apop_model_fixed_params);
    Apop_col_t(mset->predict, "predict", p_in_tab);
    gsl_vector_memcpy(p_in_tab, m->parameters->vector);
-apop_data_show(mset->predict);
-    apop_data_predict_fill(out, mset->predict);
-    //apop_data_show(out);
+//apop_vector_show(p_in_tab);
+   apop_data_predict_fill(out, mset->predict);
 }
 
 static void pack(apop_data *out, apop_model *m){
@@ -62,19 +60,14 @@ static apop_model_fixed_params_settings *apop_model_fixed_params_settings_init (
 static double fix_params_ll(apop_data *d, apop_model *fixed_model){
   apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, apop_model_fixed_params);
     unpack(p->base_model->parameters, fixed_model);
-//    return apop_log_likelihood(d, p->base_model);
-    double x= apop_log_likelihood(d, p->base_model);
-    printf("%g\t", x);
-    return x;
+//apop_data_show(p->base_model->parameters);
+    return apop_log_likelihood(d, p->base_model);
 }
 
 static double fix_params_p(apop_data *d, apop_model *fixed_model){
   apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, apop_model_fixed_params);
     unpack(p->base_model->parameters, fixed_model);
-    //return apop_p(d, p->base_model);
-    double x= apop_p(d, p->base_model);
-    printf("%g\t", x);
-    return x;
+    return apop_p(d, p->base_model);
 }
 
 static double  fix_params_constraint(apop_data *data, apop_model *fixed_model){
@@ -139,8 +132,10 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     apop_model *model_out  = apop_model_copy(fixed_param_model);
     apop_model *base = apop_model_copy(*model_in);
     Apop_model_add_group(model_out, apop_model_fixed_params, .base_model = base);
-    apop_settings_set(model_out, apop_model_fixed_params, predict,
-                     apop_predict_table_prep(model_in->parameters, 'y'));
+    apop_data *predict_tab; //Keep the predict tab on the data set and in the settings struct
+    if (!(predict_tab = apop_data_get_page(model_in->parameters, "<predict>")))
+        predict_tab = apop_predict_table_prep(model_in->parameters, 'y');
+    apop_settings_set(model_out, apop_model_fixed_params, predict, predict_tab);
     if (!Apop_settings_get_group(model_out, apop_mle))
         Apop_model_add_group(model_out, apop_mle, .parent= model_out, .method=APOP_CG_PR,
                                      .want_cov='n', .step_size=1, .tolerance=0.2);
@@ -154,7 +149,7 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     //model_out->parameters = apop_data_alloc(0,0,0);
     //model_out->parameters->vector = &(s->paramview.vector);
     //model_out->vbase = model_out->parameters->vector->size;
-    model_out->vbase = apop_settings_get(model_out, apop_model_fixed_params, predict)->matrix->size1;
+    model_out->vbase = predict_tab->matrix->size1;
     snprintf(model_out->name, 100, "%s, with some params fixed", model_in->name);
     return model_out;
 }

@@ -213,7 +213,8 @@ APOP_VAR_ENDHEAD
     \param m On input, any matrix; on output, a positive semidefinite matrix.
     \return the distance between the original and new matrices.
 
-    See also the test function \ref apop_matrix_is_positive_semidefinite.
+    \li See also the test function \ref apop_matrix_is_positive_semidefinite.
+    \li This function can be used as (the core of) a model constraint.
 
    Adapted from the R Matrix package's nearPD, which is 
    Copyright (2007) Jens Oehlschlägel [and is GPL].

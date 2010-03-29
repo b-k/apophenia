@@ -45,9 +45,9 @@ static int find_missing(const apop_data *data, apop_data *predict, size_t page, 
 apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
     apop_data *out = apop_data_alloc(0, 0, 0);
     if (in)
-        apop_data_add_page(in, out, "predict");
+        apop_data_add_page(in, out, "<predict>");
     else 
-        sprintf(out->names->title, "predict");
+        sprintf(out->names->title, "<predict>");
     apop_name_add(out->names, "row", 'c');
     apop_name_add(out->names, "col", 'c');
     apop_name_add(out->names, "page", 'c');
@@ -71,7 +71,7 @@ apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
 */
 void apop_data_predict_fill(apop_data *data, apop_data *predict){
     if (!predict)
-        predict = apop_data_get_page (data, "predict");
+        predict = apop_data_get_page (data, "<predict>");
     if (!predict) return;
     int this_page_ct = 0;
     apop_data *this_page = data;

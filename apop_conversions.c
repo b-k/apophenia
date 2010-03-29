@@ -1017,3 +1017,17 @@ gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
             gsl_matrix_set(in, i, j, ap[k++]);
     return in;
 }
+
+apop_data_row apop_data_get_row(apop_data *d, int row_number){
+    apop_data_row out = {.vector_pt = d->vector ? gsl_vector_ptr(d->vector, row_number) : NULL,
+                    .text_row = d->text ? d->text[row_number] : NULL,
+                    .column_names = d->names->column,
+                    .textsize = d->textsize[1],
+                    .weight = d->weights ? gsl_vector_ptr(d->weights, row_number) : NULL,    
+                    .index = row_number};
+    if (d->matrix){
+        out.mrv = gsl_matrix_row(d->matrix, row_number);
+        out.matrix_row = &(out.mrv.vector);
+    }
+    return out;
+}

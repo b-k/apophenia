@@ -633,22 +633,21 @@ endofdiv
 
 Outlineheader setgetsec Set/get
 
-Let \f$t\f$ be text, and \f$i\f$ be an index. Then you can get or set an element by row title and column index, row index and column title, et cetera. The functions that have no suffix find an element by row and column index.
+The set/get functions can act on both names or indices. Sample usages:
 
-The \c apop_data_ptr_... functions return a pointer to the element.
+\code
+double twothree = apop_data_get(data, 2, 3); //just indices
+apop_data_set(data, .rowname="A row", .colname="this column", .val=13);
+double AIC = apop_data_get(data, .rowname="AIC", .col=-1, .page="Info");
+\endcode
+
+If you are new to Apophenia and reading this outline sequentially, you may be surprised
+to see that these function calls are ISO standard-compliant C. See the notes on \ref
+designated for a full explanation.
 
         \li\ref apop_data_get()
-        \li\ref apop_data_get_it()
-        \li\ref apop_data_get_ti()
-        \li\ref apop_data_get_tt()
-        \li\ref apop_data_ptr()
-        \li\ref apop_data_ptr_it()
-        \li\ref apop_data_ptr_ti()
-        \li\ref apop_data_ptr_tt()
         \li\ref apop_data_set()
-        \li\ref apop_data_set_it()
-        \li\ref apop_data_set_ti()
-        \li\ref apop_data_set_tt()
+        \li\ref apop_data_ptr() : returns a pointer to the element.
 
     See also:
 
@@ -669,7 +668,7 @@ endofdiv
 
 Outlineheader mapplysec   Map/apply
 
-\anchor outline_mapply Map/apply
+\anchor outline_mapply
 These functions allow you to send each element of a vector or matrix to a function, either producing a new matrix (map) or transforming the original (apply).  The \c ..._sum functions return the sum of the mapped output.
 
 There is an older and a newer set of functions. The older versions, which act on <tt>gsl_matrix</tt>es or <tt>gsl_vector</tt>s have more verbose names; the newer versions, which act on the elements of an \ref apop_data set, use the \ref designated syntax to ad a few options and a more brief syntax.
@@ -720,7 +719,7 @@ static double apop_mean_no_nans(apop_data *in){
 }
 \endcode
 
-This program randomly generates a data set where each row is a list of numbers with a different mean. It then finds the \f$t\f$ statistic for each row, and the confidence with which we reject the claim that the statistic is less than or equal to zero.
+The following program randomly generates a data set where each row is a list of numbers with a different mean. It then finds the \f$t\f$ statistic for each row, and the confidence with which we reject the claim that the statistic is less than or equal to zero.
 
 Notice how the older \ref apop_vector_apply uses file-global variables to pass information into the functions, while the \ref apop_map uses a pointer to the constant parameters to input to the functions.
 

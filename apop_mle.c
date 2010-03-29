@@ -290,8 +290,8 @@ APOP_VAR_ENDHEAD
         apop_name_stack(out->names, hessian->names, 'c');
     }
     apop_data_free(hessian);
-    if (!apop_data_get_page(model->parameters, "Covariance"))
-        apop_data_add_page(model->parameters, out, "Covariance");
+    if (!apop_data_get_page(model->parameters, "<Covariance>"))
+        apop_data_add_page(model->parameters, out, "<Covariance>");
     return out;
 }
 
@@ -360,6 +360,10 @@ static double negshell (const gsl_vector *beta, void * in){
     //I report the log likelihood under the assumption that the final param set 
     //matches the best ll evaluated.
     double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
+    if(gsl_isnan(this_ll)){
+        sprintf(stderr,"NaN values resulted from the following value tried by the maximum likelihood system. Tighten your constraint?\n");
+        apop_data_show(i->model->parameters);
+    }
     i->best_ll = GSL_MAX(i->best_ll, this_ll);
     return out;
 }
@@ -527,6 +531,12 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
     //i->beta = s->x;
     signal(SIGINT, mle_sigint);
     do { 	iter++;
+        if (mp->method == APOP_SIMPLEX_NMJ){
+            for (int j=0; j< betasize; j++){
+                double *v = gsl_vector_ptr(i->beta, j);
+                *v *= .01;
+            }
+        }
 		status 	= gsl_multimin_fminimizer_iterate(s);
 		if (status) 	break; 
 		size	= gsl_multimin_fminimizer_size(s);
@@ -608,7 +618,10 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est, infostruct info){
 struct to it (<tt>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method=APOP_CG_FR, and_so_on)</tt>). So, see the \c apop_mle_settings documentation for the many options, such as choice of method and tuning parameters.
 
 \return	an \ref apop_model with the parameter estimates, &c. 
-Get auxiliary info via, e.g.:
+
+\li I only look at the first page of your parameter set. If you need more, perhaps use \ref apop_data_pack .
+
+\li Get auxiliary info via, e.g.:
 \code
 apop_model *est = apop_estimate(your_data, apop_probit);
 int status = apop_data_get_ti(est->info, .rowname="status");

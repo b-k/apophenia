@@ -40,6 +40,30 @@ struct _apop_data{
     apop_data   *more;
 };
 
+/** The \ref apop_data_row is a single row from an \ref apop_data set. It is especially useful
+  in the context of \ref apop_map, which will let you write functions to act on one of
+  these at a time. Because this is a single row from the set, each element has a different
+type: one element from the vector is now a pointer-to-\c double named \c vector_pt; \c matrix_row 
+is a \c gsl_vector, et cetera.
+
+\li \c vector_pt and \c weight are pointers to the element in the original data set, so
+changes to these values affect the original data set.
+\li Similarly, \c matrix_row is a subview of the main matrix. The view \c mrv is needed to
+make this happen; consider \c mrv to be a read-only internal variable.
+\li \c column_names just points to your original data set's <tt>yourdata->names->column</tt>
+element.
+*/
+typedef struct {
+    double *vector_pt;
+    gsl_vector *matrix_row;
+    char **text_row;
+    char **column_names;
+    int textsize;
+    int index;
+    double *weight;
+    gsl_vector_view mrv;
+} apop_data_row;
+
 /** A description of a parametrized statistical model, including the input settings and the output parameters, predicted/expected values, et cetera.  The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
 */
 typedef struct _apop_model apop_model;
