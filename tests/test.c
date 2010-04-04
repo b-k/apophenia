@@ -20,6 +20,7 @@
 #include "../eg/test_regex.c" 
 #include "../eg/test_strcmp.c" 
 #include "../eg/pmf_test.c" 
+#include "../eg/apop_map_row.c" 
 
 //One-liners for mapply:
 gsl_rng *r_global;
@@ -1207,6 +1208,7 @@ int main(int argc, char **argv){
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
 
+    do_test("test apop_map on apop_data_rows", test_apop_map_row());
     do_test("test optimization of multi-page parameters", pack_test());
     do_test("Kullback-Leibler divergence test", test_kl_divergence(r));
     do_test("apop_distance test", test_distances());

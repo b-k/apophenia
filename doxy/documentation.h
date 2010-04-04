@@ -725,6 +725,9 @@ Notice how the older \ref apop_vector_apply uses file-global variables to pass i
 
 \include t_test_by_rows.c
 
+One more toy example, demonstrating the use of the \ref apop_data_row:
+\include apop_map_row.c
+
             \li\ref apop_map()
             \li\ref apop_map_sum()
             \li\ref apop_matrix_apply()

@@ -7,10 +7,9 @@
 #include "variadic.h"
 #include "likelihoods.h"
 
+static double find_nans(double in){ return isnan(in); }
 
-static double find_nans(double in){ return gsl_isnan(in); }
-
-static void addin(apop_data *predict, size_t i, size_t j, size_t page){
+static void addin(apop_data *predict, size_t i, int j, size_t page){
     int len;
     if (!predict->matrix){
         predict->matrix = gsl_matrix_alloc(1,5); 
@@ -42,6 +41,7 @@ static int find_missing(const apop_data *data, apop_data *predict, size_t page, 
     return ct;
 }
 
+#include "output.h"
 apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
     apop_data *out = apop_data_alloc(0, 0, 0);
     if (in)
@@ -87,7 +87,6 @@ void apop_data_predict_fill(apop_data *data, apop_data *predict){
     }
 }
 
-
 /** If there is an NaN anywhere in the row of numeric data (including the matrix, the vector, and the weights) then delete the row from the data set.
 
 The function returns a new data set with the NaNs removed, so the original data set is left unmolested. You may want to \c apop_data_free the original immediately after this function.
@@ -115,28 +114,27 @@ APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
     char apop_varad_var(inplace, 'n');
     return apop_data_listwise_delete_base(d, inplace);
 APOP_VAR_ENDHEAD
-    Get_vmsizes(d) //defines vsize, wsize, msize1, msize2.
-    int i, j, to_rm;
-    int max = d->matrix ? d->matrix->size2: 0;
-    int min = d->vector ? -1 : 0;
+    Get_vmsizes(d) //defines firstcol, vsize, wsize, msize1, msize2.
+    int i, to_rm;
     apop_assert(msize1 || vsize, NULL, 0, 'c', 
             "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
     //find out where the NaNs are
-  gsl_vector *marked = gsl_vector_calloc(msize1);
-    for (i=0; i< msize1; i++)
-        for (j=min; j <max; j++)
+  gsl_vector *marked = gsl_vector_calloc(vsize ? vsize : msize1);
+    for (i=0; i< (vsize ? vsize: msize1); i++)
+        for (int j=firstcol; j <msize2; j++){
             if (gsl_isnan(apop_data_get(d, i, j))){
                     gsl_vector_set(marked, i, 1);
                     break;
             }
+        }
     for (i=0; i< wsize; i++)
         if (gsl_isnan(gsl_vector_get(d->weights, i)))
-                gsl_vector_set(marked, i, 1);
+            gsl_vector_set(marked, i, 1);
     to_rm   = apop_sum(marked);
     //copy the good data.
     if (to_rm  == msize1)
         return NULL;
-  apop_data *out = apop_data_alloc(0, msize1-to_rm, msize1 ? max : -1);
+  apop_data *out = apop_data_alloc(0, msize1-to_rm, msize1 ? msize2 : -1);
     if (wsize)
         out->weights = gsl_vector_alloc(wsize - to_rm);
 
@@ -150,7 +148,7 @@ APOP_VAR_ENDHEAD
 
     if (vsize && msize1)
         out->vector = gsl_vector_alloc(msize1 - to_rm);
-    j   = 0;
+    int j   = 0;
     for (i=0; i< msize1; i++)
         if (!gsl_vector_get(marked, i)){
             if (vsize)

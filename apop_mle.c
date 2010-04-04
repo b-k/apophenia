@@ -350,19 +350,25 @@ static double negshell (const gsl_vector *beta, void * in){
     apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
-    if(penalty)
+    if(penalty){
         apop_data_pack(i->model->parameters, (gsl_vector*) beta, .all_pages='y');
-    out = penalty - f(i->data, i->model); //negative llikelihood
-    if (penalty)
-        apop_data_unpack(i->beta, i->model->parameters);
+}
+    double f_val = f(i->data, i->model);
+    out = penalty - f_val; //negative llikelihood
     if (i->trace_path && strlen(i->trace_path))
         tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
     //I report the log likelihood under the assumption that the final param set 
     //matches the best ll evaluated.
     double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
     if(gsl_isnan(this_ll)){
-        sprintf(stderr,"NaN values resulted from the following value tried by the maximum likelihood system. Tighten your constraint?\n");
+        if (!i->model->log_likelihood && penalty > f_val)
+            fprintf(stderr, "Your model's p evaluates as %g, and your penalty is %g, for an "
+                    "adjusted p of %g. Please make sure that this is positive, perhaps by "
+                    "rescaling your penalty.\n", f_val, penalty, f_val-penalty);
+        fprintf(stderr,"NaN resulted from the following value tried by the maximum likelihood system. "
+                    "Tighten your constraint? log of a negative p?\n");
         apop_data_show(i->model->parameters);
+        assert(0);
     }
     i->best_ll = GSL_MAX(i->best_ll, this_ll);
     return out;

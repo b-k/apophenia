@@ -121,9 +121,10 @@ APOP_VAR_ENDHEAD
     if (inplace)
        out = in;
     else 
-         out = part == 'v' || (in->vector && ! in->matrix) ? apop_data_alloc(vsize, 0, 0)
+         out = by_apop_rows ? apop_data_copy(in)
+             : part == 'v' || (in->vector && ! in->matrix) ? apop_data_alloc(vsize, 0, 0)
              : part == 'm' ? apop_data_alloc(0, msize1, msize2)
-             : (by_apop_rows || part == 'a') ? apop_data_alloc(vsize, msize1, msize2)
+             : part == 'a' ? apop_data_alloc(vsize, msize1, msize2)
              : part == 'r' ? apop_data_alloc(msize1, 0, 0)
              : part == 'c' ?  apop_data_alloc(msize2, 0, 0) : NULL;
     //Names:
@@ -145,28 +146,29 @@ APOP_VAR_ENDHEAD
     //Call mapply_core.
     if (by_apop_rows){
         for (int i=0; i< vsize? vsize : msize1; i++)
-            if (fn_r) fn_r(apop_data_get_row(in, i));
-            else fn_rp(apop_data_get_row(in, i), param);
-    }
-    else if (in->vector && (part == 'v' || part=='a'))
-        mapply_core(NULL, in->vector, fn, out->vector, use_index, use_param, param, 'r');
-    else if (in->matrix && (part == 'm' || part=='a')){
-        int smaller_dim = GSL_MIN(in->matrix->size1, in->matrix->size2);
-        for (int i=0; i< smaller_dim; i++){
-            if (smaller_dim == in->matrix->size1){
-                Apop_row(in, i, onevector);
-                Apop_row(out, i, twovector);
-                mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'r');
-            }else{
-                Apop_col(in, i, onevector);
-                Apop_col(out, i, twovector);
-                mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'c');
+            if (fn_r) fn_r(apop_data_get_row(out, i));
+            else fn_rp(apop_data_get_row(out, i), param);
+    } else {
+        if (in->vector && (part == 'v' || part=='a'))
+            mapply_core(NULL, in->vector, fn, out->vector, use_index, use_param, param, 'r');
+        if (in->matrix && (part == 'm' || part=='a')){
+            int smaller_dim = GSL_MIN(in->matrix->size1, in->matrix->size2);
+            for (int i=0; i< smaller_dim; i++){
+                if (smaller_dim == in->matrix->size1){
+                    Apop_row(in, i, onevector);
+                    Apop_row(out, i, twovector);
+                    mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'r');
+                }else{
+                    Apop_col(in, i, onevector);
+                    Apop_col(out, i, twovector);
+                    mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'c');
+                }
             }
         }
+        if (part == 'r' || part == 'c')
+            mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, part);
     }
-    else if (part == 'r' || part == 'c')
-        mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, part);
-    else if (all_pages && in->more)
+    if (all_pages && in->more)
         out->more = apop_map_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_di, fn_vi, param, inplace, part, all_pages);
     return out;
 }
@@ -193,6 +195,16 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     int apop_varad_var(all_pages, 'n')
     return apop_map_sum_base(in, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_di, fn_vi, param, part, all_pages);
 APOP_VAR_ENDHEAD 
+    if (fn_r || fn_rp){
+        Get_vmsizes(in);
+        apop_data *copy = apop_data_copy(in);
+        double outsum = 0;
+        for (int i = 0; i< vsize ? vsize : msize1; i++){
+            apop_data_row r = apop_data_get_row(copy, i);
+            outsum += fn_r ? fn_r(r) : fn_rp(r, param);
+        }
+        return outsum;
+    }
     apop_data *out = apop_map(in, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_di, fn_vi, param, 0, part);
     double outsum = (out->vector ? apop_sum(out->vector) : 0)
                      + (out->matrix ? apop_matrix_sum(out->matrix) : 0);
@@ -200,7 +212,6 @@ APOP_VAR_ENDHEAD
     return outsum + 
                 ((all_pages && in->more) ? apop_map_sum_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_di, fn_vi, param, part, all_pages) : 0);
 }
-
 
 typedef struct {
     size_t      *limlist;

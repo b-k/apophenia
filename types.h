@@ -150,7 +150,22 @@ void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type
 apop_name * apop_name_copy(apop_name *in);
 int  apop_name_find(const apop_name *n, const char *findme, const char type);
 
-void        apop_data_free(apop_data *freeme);
+/** Free an \ref apop_data structure.
+ 
+As with \c free(), it is safe to send in a \c NULL pointer (in which case the function does nothing).
+
+If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
+If you don't want to free data sets down the chain, set <tt>more=NULL</tt> before calling this.
+
+\li This is actually a macro (that calls \ref apop_data_free_fn to do the real work). It
+sets \c freeme to \c NULL when it's done, because there's nothing safe you can do with the
+freed location, and you can later safely test conditions like <tt>if (data) ...</tt>.
+
+ \ingroup data_struct
+  */
+#define apop_data_free(freeme) {apop_data_free_fn(freeme); (freeme)= NULL; }
+
+void        apop_data_free_fn(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
 apop_data * apop_data_alloc(const size_t, const size_t, const int);

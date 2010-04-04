@@ -225,6 +225,7 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
     double diffsize=0, dsize;
     apop_data *qdq; 
     gsl_matrix *d = apop_matrix_copy(m);
+    gsl_matrix *original = apop_matrix_copy(m);
     double orig_diag_size = diagonal_size(d);
     int size = d->size1;
     gsl_vector *diag = gsl_vector_alloc(size);
@@ -276,7 +277,7 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
         apop_data_free(eigendiag); free(mask);
         apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
         d = qdq->matrix;
-        qdq->matrix=NULL; apop_data_free(qdq);
+        qdq->matrix=NULL; apop_data_free(qdq); qdq = NULL;
     } while (diffsize/dsize > 1e-3);
 
     apop_data *eigenvecs = apop_data_alloc(0, size, size);
@@ -292,10 +293,11 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
             score += 1e-1 - v;
         }
     }
-    if (!score){
+/*    if (!score){
+        assert(apop_matrix_is_positive_semidefinite(m));
         apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
         return 0;
-    }
+    }*/
     apop_data *eigendiag = apop_data_calloc(0, size, size);
     diagonal_copy(eigenvals, eigendiag->matrix, 'i');
     double new_diag_size = diagonal_size(eigendiag->matrix);
@@ -306,7 +308,8 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
     gsl_matrix_memcpy(m, qdq->matrix);
     assert(apop_matrix_is_positive_semidefinite(m));
     apop_data_free(qdq); gsl_vector_free(diag);
-    return diffsize/origsize;
+    gsl_matrix_sub(original, m);
+    return biggest_elmt(original)/origsize;
 }
 
 /*  This is junk. Please ignore it for now. Thanks.

@@ -60,6 +60,7 @@ void apop_histogram_normalize(apop_model *m);
 } while (0);
 
 #define apop_assert(test, returnval, level, stop, ...) Apop_assert(test, returnval, level, stop, __VA_ARGS__)
+#define apop_assert_s Apop_assert_s
 #define APOP_ASSERT(test, returnval, level, stop, ...) Apop_assert(test, returnval, level, stop, __VA_ARGS__)
 
 /** Like \ref Apop_assert, but no return step. It is thus useful in void functions.

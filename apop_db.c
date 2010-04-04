@@ -316,7 +316,6 @@ apop_data * apop_query_to_data(const char * fmt, ...){
   callback_t  qinfo = {.firstcall = 1,
                        .regex = malloc(sizeof(regex_t))};
 	if (db==NULL) apop_db_open(NULL);
-	if (apop_opts.verbose)	printf("%s\n", query);
     sprintf(full_divider, "^%s$", apop_opts.db_nan);
     regcomp(qinfo.regex, full_divider, REG_EXTENDED+REG_ICASE);
     sqlite3_exec(db, query,db_to_table,&qinfo, &err); ERRCHECK

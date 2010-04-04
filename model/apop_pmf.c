@@ -1,6 +1,7 @@
 #include "asst.h"
 #include "model.h"
 #include "internal.h"
+#include "conversions.h"
 
 extern apop_model apop_pmf;
 
@@ -71,7 +72,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
     size_t current; 
     if (!m->parameters->weights) //all rows are equiprobable
         current = apop_random_int(.rng = r,
-                  .max= (m->parameters->vector ? m->parameters->vector->size : m->parameters->matrix->size1));
+                  .max= (m->parameters->vector ? m->parameters->vector->size : m->parameters->matrix->size1)-1);
     else {
         size_t size = m->parameters->weights->size;
         if (!m->more){
@@ -86,7 +87,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
         double draw = gsl_rng_uniform(r);
         //do a binary search for where draw is in the CDF.
         double *cdf = ((gsl_vector*)m->more)->data; //alias.
-        size_t top = size, bottom = 0; 
+        size_t top = size-1, bottom = 0; 
         current = (top+bottom)/2.;
         if (current==0){//array of size one or two
             if (size!=0) 
@@ -109,25 +110,31 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
         }
     }
     //done searching. current should now be the right row index.
-    Apop_row(m->parameters, current, outrow);
-    for(size_t i=0; i < outrow->size; i ++)
-        out[i] = gsl_vector_get(outrow, i);
+    apop_data_row outrow = apop_data_get_row(m->parameters, current);
+    int i = 0;
+    if (outrow.vector_pt)
+        out[i++] = *outrow.vector_pt;
+    if (outrow.matrix_row)
+        for( ; i < outrow.matrix_row->size; i ++)
+            out[i] = gsl_vector_get(outrow.matrix_row, i);
 }
 
 double pmf_p(apop_data *d, apop_model *m){
     Nullcheck_p(m) 
-    Get_vmsizes(m->parameters)//firstcol, msize2
+    Get_vmsizes(m->parameters)//firstcol, vsize, vsize1, msize2
     int j;
+    double ll = 0;
     for(int i=0; i< msize1; i++){
         for (j=firstcol; j < msize2; j++)
             if (apop_data_get(d, i,j) != apop_data_get(m->parameters, i, j))
                 break;
+        return 0; //Can't find one observation: prob=0;
         if (j==msize2) //all checks passed
-            return m->parameters->weights
+            ll *= m->parameters->weights
                      ? m->parameters->weights->data[i]
                      : 1./(vsize ? vsize : msize1); //no weights means any known event is equiprobable
     }
-    return 0;
+    return ll;
 }
 
 apop_model apop_pmf = {"PDF or sparse matrix", .dsize=-1, .estimate = estim, .draw = draw, .p=pmf_p };
