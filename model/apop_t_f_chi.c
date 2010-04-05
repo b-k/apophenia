@@ -44,41 +44,45 @@ For the Wishart, the degrees of freedom and covariance matrix are always estimat
 double df, df2; 
 int len;
 
-apop_data * get_df(apop_data *d){
-    apop_data *out = apop_data_alloc(1,0,0);
-    int df = (d->vector ? d->vector->size : 0)
-            +(d->matrix ? d->matrix->size1 * d->matrix->size2  : 0)
-            -1;
-    apop_data_add_named_elmt(out, "df", df);
+apop_model* apop_t_estimate(apop_data *d, apop_model *m){
+    Nullcheck(d); Nullcheck_m(m);
+    Get_vmsizes(d); //vsize, msize1, msize2, tsize
+    apop_mle_settings *s = Apop_settings_get_group(m, apop_mle);
+    Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
+    apop_model *out = apop_model_copy(*m);
+    out->parameters = apop_data_alloc(1,0,0);
+    double vmu = vsize ? apop_mean(d->vector) : 0;
+    double mmu = msize1 ? apop_matrix_mean(d->matrix) : 0;
+    double vsigma = vsize ? apop_var(d->vector)*(vsize-1) : 0;
+    double msigma = msize1 ? apop_matrix_var_m(d->matrix, mmu)*(msize1*msize2-1) : 0;
+    apop_data_add_named_elmt(out->parameters, "mean", (vmu *vsize + mmu * msize1*msize2)/tsize);
+    apop_data_add_named_elmt(out->parameters, "standard deviation",
+                                            (vsigma*vsize + msigma * msize1*msize2)/(tsize-1)); 
+    apop_data_add_named_elmt(out->parameters, "df", tsize-1);
+    apop_data_add_named_elmt(out->info, "log likelihood", out->log_likelihood(d, out));
     return out;
 }
 
-apop_model* apop_t_chi_estimate(apop_data *d, apop_model *m){
+apop_model* apop_chi_estimate(apop_data *d, apop_model *m){
     Nullcheck(d); Nullcheck_m(m);
-    apop_mle_settings *s = Apop_settings_get_group(m, apop_mle);
-    if (!s){
-        Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
-        apop_model *out = apop_model_copy(*m);
-        out->parameters = get_df(d);
-        apop_data_add_named_elmt(out->info, "log likelihood", out->log_likelihood(d, out));
-        return out;
-    } else 
-        return apop_maximum_likelihood(d, m);
+    Get_vmsizes(d); //vsize, msize1, msize2
+    Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
+    apop_model *out = apop_model_copy(*m);
+    out->parameters = apop_data_alloc(1,0,0);
+    apop_data_add_named_elmt(out->parameters, "df", tsize - 1);
+    apop_data_add_named_elmt(out->info, "log likelihood", out->log_likelihood(d, out));
+    return out;
 }
 
 apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
     Nullcheck(d); Nullcheck_m(m);
-    apop_mle_settings *s = Apop_settings_get_group(m, apop_mle);
-    if (!s){
-        Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
-        apop_model *out = apop_model_copy(*m);
-        out->parameters = apop_data_alloc(2,0,0);
-        apop_data_add_named_elmt(out->parameters, "df", d->vector->size -1);
-        apop_data_add_named_elmt(out->parameters, "df2", d->matrix->size1 * d->matrix->size2 -1);
-        apop_data_add_named_elmt(out->info, "log likelihood", apop_f_distribution.log_likelihood(d, out));
-        return out;
-    } else
-        return apop_maximum_likelihood(d, m);
+    Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
+    apop_model *out = apop_model_copy(*m);
+    out->parameters = apop_data_alloc(2,0,0);
+    apop_data_add_named_elmt(out->parameters, "df", d->vector->size -1);
+    apop_data_add_named_elmt(out->parameters, "df2", d->matrix->size1 * d->matrix->size2 -1);
+    apop_data_add_named_elmt(out->info, "log likelihood", apop_f_distribution.log_likelihood(d, out));
+    return out;
 }
 
 static double one_f(double in, void *df_in){ 
@@ -86,13 +90,18 @@ static double one_f(double in, void *df_in){
     return log(gsl_ran_fdist_pdf(in, df[0], df[1])); 
 }
 
-static double one_t(double in, void *df){ return log(gsl_ran_tdist_pdf(in, *(double*)df)); }
+static double one_t(double in, void *params){ 
+    double mu = ((double*)params)[0];
+    double sigma = ((double*)params)[1];
+    double df = ((double*)params)[2];
+    return log(gsl_ran_tdist_pdf((in-mu)/(sigma/sqrt(df)), df)); 
+}
 static double one_chisq(double in, void *df){ return log(gsl_ran_chisq_pdf(in, *(double*)df)); }
 
 double apop_tdist_llike(apop_data *d, apop_model *m){ 
     Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-    double df = m->parameters->vector->data[0];
-    return apop_map_sum(d, .fn_dp=one_t, .param=&df);
+    double *params = m->parameters->vector->data;
+    return apop_map_sum(d, .fn_dp=one_t, .param=&params);
 }
 
 double apop_chisq_llike(apop_data *d, apop_model *m){ 
@@ -111,7 +120,10 @@ double apop_fdist_llike(apop_data *d, apop_model *m){
 
 void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){ 
     Nullcheck_mv(m); Nullcheck_pv(m);
-    *out = gsl_ran_tdist (r, m->parameters->vector->data[0]);
+    double mu = m->parameters->vector->data[0];
+    double sigma = m->parameters->vector->data[1];
+    double df = m->parameters->vector->data[2];
+    *out = (gsl_ran_tdist (r, df)+mu)*(sigma/sqrt(df));
 }
 
 void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){
@@ -420,11 +432,11 @@ static void wishart_prep(apop_data *d, apop_model *m){
 apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .dsize=-1, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
 
-apop_model apop_t_distribution  = {"t distribution", 1, 0, 0, .estimate = apop_t_chi_estimate, 
+apop_model apop_t_distribution  = {"t distribution", 3, 0, 0, .estimate = apop_t_estimate, 
          .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw };
 
 apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .estimate = apop_fdist_estimate, 
         .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
 
-apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .estimate = apop_t_chi_estimate,  
+apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .estimate = apop_chi_estimate,  
         .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };

@@ -45,6 +45,7 @@ sed -i -f prep_variadics.sed *c *h model/*c
 #    rm ../$pkg-$version.tar.gz
 	make dist
     mv apophenia-$version.tar.gz ../apophenia-$version-$date.tgz 
+    make
     exit
 
 #rm -rf $junkdir

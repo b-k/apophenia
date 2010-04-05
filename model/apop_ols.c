@@ -41,7 +41,7 @@ apop_lm_settings * apop_lm_settings_init(apop_lm_settings in){
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
   apop_lm_settings   *p = apop_settings_get_group(e, apop_lm);
-    apop_data *predicted = apop_data_get_page(e->info, "Predicted");
+    apop_data *predicted = apop_data_get_page(e->info, "<Predicted>");
     if (predicted){
         apop_name_add(predicted->names, (e->data->names->colct ? e->data->names->column[0] : "Observed"), 'c');
         apop_name_add(predicted->names, "Predicted", 'c');
@@ -56,7 +56,7 @@ static void prep_names (apop_model *e){
         for(int i=1; i< e->data->names->colct; i++)
             apop_name_add(e->parameters->names, e->data->names->column[i], 'r');
         if (p->want_cov== 'y'){
-            apop_data *cov = apop_data_get_page(e->parameters, "Covariance");
+            apop_data *cov = apop_data_get_page(e->parameters, "<Covariance>");
             if (e->data->names){
                 apop_name_stack(cov->names, e->data->names, 'c');
                 apop_name_stack(cov->names, e->data->names, 'r', 'c');
@@ -179,7 +179,7 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
     s_sq    /= data->size1 - data->size2;   //\sigma^2 = e'e / df
 	gsl_matrix_scale(cov, s_sq);            //cov = \sigma^2 (X'X)^{-1}
 	if (p->want_expected_value){
-        apop_data *predicted_page = apop_data_get_page(out->info, "Predicted");
+        apop_data *predicted_page = apop_data_get_page(out->info, "<Predicted>");
         gsl_matrix_set_col(predicted_page->matrix, 0, y_data);
         gsl_matrix_set_col(predicted_page->matrix, 2, error);
         predicted   = gsl_matrix_column(predicted_page->matrix, 1).vector;
@@ -187,9 +187,9 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
         gsl_vector_add(&predicted, error); //pred = y_data + error
     }
     gsl_vector_free(error);
-    if (apop_data_get_page(out->parameters, "Covariance"))
-        apop_data_rm_page(out->parameters, "Covariance");
-    apop_data_add_page(out->parameters, apop_matrix_to_data(cov), "Covariance");
+    if (apop_data_get_page(out->parameters, "<Covariance>"))
+        apop_data_rm_page(out->parameters, "<Covariance>");
+    apop_data_add_page(out->parameters, apop_matrix_to_data(cov), "<Covariance>");
 }
 
 static void ols_rng(double *out, gsl_rng *r, apop_model *m){
@@ -229,9 +229,9 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
   gsl_vector *xpy        = gsl_vector_calloc(set->matrix->size2);
   gsl_matrix *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
     if (olp->want_expected_value)
-        apop_data_add_page(ep->info, apop_data_alloc(0, set->matrix->size1, 3), "Predicted");
+        apop_data_add_page(ep->info, apop_data_alloc(0, set->matrix->size1, 3), "<Predicted>");
     if (olp->want_cov=='y')
-        apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size2, set->matrix->size2), "Covariance");
+        apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size2, set->matrix->size2), "<Covariance>");
     prep_names(ep);
     if (weights){
         gsl_vector_mul(y_data, weights);
@@ -273,10 +273,10 @@ apop_data *ols_predict (apop_data *in, apop_model *m){
 
 apop_model *ols_param_models(apop_data *d, apop_model *m){
     apop_pm_settings *settings = Apop_settings_get_group(m, apop_pm);
-    if (settings->indices_len==1){
-        int i = settings->indices[0];
+    if (settings->index!=-1){
+        int i = settings->index;
         double mu = apop_data_get(m->parameters, i, -1);
-        double sigma = sqrt(apop_data_get(m->parameters, i, i, .page="Covariance")/(d->vector->size-1));
+        double sigma = sqrt(apop_data_get(m->parameters, i, i, .page="<Covariance>")/(d->vector->size-1));
         int df = apop_data_get(m->info, .rowname="df", .page = "info");
         return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
     }
@@ -353,9 +353,9 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
 
   apop_data    *y_data     = apop_data_alloc(set->matrix->size1, 0, 0); 
     if (olp->want_expected_value)
-        apop_data_add_page(ep->info, apop_data_alloc(0, set->matrix->size1, 3), "Predicted");
+        apop_data_add_page(ep->info, apop_data_alloc(0, set->matrix->size1, 3), "<Predicted>");
     if (olp->want_cov=='y')
-        apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size1, set->matrix->size1), "Covariance");
+        apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size1, set->matrix->size1), "<Covariance>");
     prep_names(ep);
     APOP_COL(set, 0, firstcol);
     gsl_vector_memcpy(y_data->vector,firstcol);

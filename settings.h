@@ -180,7 +180,7 @@ typedef struct {
   \ingroup settings */
 typedef struct {
     apop_model *base;
-    int *indices, indices_len;
+    int index;
     gsl_rng *rng;
     int draws;
     int own_rng;
