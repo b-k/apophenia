@@ -33,7 +33,7 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
         apop_data *cov = apop_data_calloc(0, 2, 2);
         apop_data_set(cov, 0, 0, mean/tsize);
         apop_data_set(cov, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
-        apop_data_add_page(est->parameters, cov, "Covariance");
+        apop_data_add_page(est->parameters, cov, "<Covariance>");
     }
     est->data = data;
     apop_data *info = apop_data_add_page(est->parameters, apop_data_alloc(1,0,0), "Info");
@@ -128,7 +128,8 @@ static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 }
 
 apop_model apop_normal = {"Normal distribution", 2, 0, 0, .dsize=1,
- .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, .score = normal_dlog_likelihood, 
+ .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, 
+ .score = normal_dlog_likelihood, 
  .constraint = beta_1_greater_than_x_constraint, .draw = normal_rng, 
  .cdf = normal_cdf, .predict = normal_predict};
 
@@ -180,6 +181,14 @@ static double lognormal_cdf(apop_data *d, apop_model *params){
     double mu = gsl_vector_get(params->parameters->vector, 0);
     double sd = gsl_vector_get(params->parameters->vector, 1);
     return gsl_cdf_lognormal_P(val, mu, sd);
+}
+
+apop_data * lognormal_predict(apop_data *dummy, apop_model *m){
+    //E(x) = e^(mu + sigma^2/2)
+    apop_data *out = apop_data_alloc(0,1,1);
+    out->matrix->data[0] = exp(m->parameters->vector->data[0] 
+                                + gsl_pow_2(m->parameters->vector->data[1])/2);
+    return out;
 }
 
 /* This is copied from the Normal. The first one who needs it gets to

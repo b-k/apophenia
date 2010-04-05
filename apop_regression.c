@@ -113,8 +113,6 @@ void apop_estimate_parameter_t_tests (apop_model *est){
   double  val, var, pval, tstat, rootn, stddev, two_tail;
   if (!est->data)
       return;
-  apop_data *cov = apop_data_get_page(est->parameters, "Covariance");
-  apop_assert_void(cov, 1,'c', "You asked me to estimate t statistics, but I'm missing the covariance matrix.");
     apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 7), "test info");
     apop_name_add(ep->names, "p value", 'c');
     apop_name_add(ep->names, "confidence", 'c');
@@ -130,14 +128,16 @@ void apop_estimate_parameter_t_tests (apop_model *est){
     rootn    = sqrt(df);
     apop_data_add_named_elmt(est->info, "df", df);
     for (size_t i=0; i< est->parameters->vector->size; i++){
-        val     = apop_data_get(est->parameters, i, -1);
-        var     = apop_data_get(cov, i, i);
-        stddev  = sqrt(var);
-        tstat   = val/stddev;
-        pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
-        two_tail= (df > 0)? apop_test(tstat, "t", .p1=df) : GSL_NAN;
+        apop_model_add_group(est, apop_pm, .index=i);
+        apop_model *m = apop_parameter_model(est->data, est);
+        apop_data *zero = apop_data_calloc(0,1,1);
+        double mu = apop_data_get(m->parameters, 0, -1);
+        double sigma = apop_data_get(m->parameters, 1, -1);
+        double df = apop_data_get(m->parameters, 2, -1);
+        double tstat = mu/(sigma/sqrt(df));
+        double uptozero = apop_cdf(zero, m);
         apop_data_set(ep, i, .colname="t statistic",        .val=tstat);
-        apop_data_set(ep, i, .colname="standard deviation", .val=stddev);
+        apop_data_set(ep, i, .colname="standard deviation", .val=sigma);
         apop_data_set(ep, i, .colname="p value",            .val=two_tail);
         apop_data_set(ep, i, .colname="confidence",         .val=1-two_tail);
         apop_data_set(ep, i, .colname="p value, 1 tail",    .val=pval);
@@ -213,7 +213,7 @@ APOP_VAR_END_HEAD
     gsl_blas_dgemv(CblasNoTrans, 1, qprimexpxinvqinv, qprimebeta, 0, qprimebetaminusc_qprimexpxinvqinv);
     gsl_blas_ddot(qprimebeta, qprimebetaminusc_qprimexpxinvqinv, &f_stat);
 
-    Apop_col_t(apop_data_get_page(est->info, "Predicted"), "residual", error)
+    Apop_col_t(apop_data_get_page(est->info, "<Predicted>"), "residual", error)
     gsl_blas_ddot(error, error, &variance);
     f_stat  *=  data_df / (variance * q_df);
     pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
@@ -436,9 +436,9 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
     //Record that list for use in this function, and in a ->more page of the data set.
     if (type == 't'){
         if (d->names->textct > col)
-            snprintf(name, 100, "categories for %s", d->names->text[col]);
+            snprintf(name, 100, "<categories for %s>", d->names->text[col]);
         else
-            snprintf(name, 100, "categories for column %i", col);
+            snprintf(name, 100, "<categories for column %i>", col);
         *factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), name);
         elmt_ctr = (*factor_list)->textsize[0];
         //awkward format conversion:
@@ -453,9 +453,9 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
         delmts          = apop_vector_unique_elements(to_search);
         elmt_ctr = delmts->size;
         if (d->names->colct > col)
-            snprintf(name, 100, "categories for %s", d->names->column[col]);
+            snprintf(name, 100, "<categories for %s>", d->names->column[col]);
         else
-            snprintf(name, 100, "categories for column %i", col);
+            snprintf(name, 100, "<categories for column %i>", col);
         *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr, 0, 0), name);
         apop_text_alloc((*factor_list), delmts->size, 1);
         for (size_t i=0; i< (*factor_list)->vector->size; i++){
@@ -550,7 +550,7 @@ matrix. If \c 'i', insert in place, immediately after the original data column. 
 
 \return An \ref apop_data set whose \c matrix element is the one-zero
 matrix of dummies. If you used <tt>.append</tt>, then this is the main matrix.
-Also, I add a page named <tt>"categories for your_var"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
+Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
 This function uses the \ref designated syntax for inputs.
 */
@@ -635,7 +635,7 @@ added as a second page of the \ref apop_data set, you can recover the
 original values as needed.
 
 \return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
-Also, I add a page named <tt>"categories for your_var"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
+Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
@@ -725,7 +725,7 @@ apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd
 \li "SST"
 \li "SSR"
 
-\param m    A model. I use the pointer to the data set used for estimation and the info page named \c "Predicted". 
+\param m    A model. I use the pointer to the data set used for estimation and the info page named \c "<Predicted>". 
 The Predicted page should include observed, expected, and residual columns, which I use to
 generate the sums of squared errors and residuals, et cetera. All generalized linear
 models produce a page with this name and of this form, as do a host of other models. Nothing 
@@ -748,7 +748,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   size_t          indep_ct= m->data->matrix->size2 - 1;
   apop_data       *out    = apop_data_alloc(0, 5,1);
     gsl_vector *weights = m->data->weights; //typically NULL.
-    apop_data *expected = apop_data_get_page(m->info, "Predicted");
+    apop_data *expected = apop_data_get_page(m->info, "<Predicted>");
     apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"Predicted\" page in your data set. Returning NULL.\n");
     size_t obs = expected->matrix->size1;
     Apop_col_t(expected, "residual", v)

@@ -97,7 +97,7 @@ void apop_model_show (apop_model * print_me){
     printf("\n\n");
 	if (print_me->parameters)
         apop_data_show(print_me->parameters);
-    apop_data *cov = apop_data_get_page(print_me->parameters, "covariance");
+    apop_data *cov = apop_data_get_page(print_me->parameters, "<Covariance>");
 	if (cov){
 		printf("\nThe covariance matrix:\n");
         apop_data_show(cov);
@@ -251,8 +251,7 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
 apop_pm_settings *apop_pm_settings_init(apop_pm_settings in){
    apop_pm_settings *out = malloc(sizeof (apop_pm_settings));
     apop_varad_setting(in, out, base, NULL);
-    apop_varad_setting(in, out, indices, NULL);
-    apop_varad_setting(in, out, indices_len, in.indices ? sizeof(in.indices)/sizeof(in.indices[0]): 0);
+    apop_varad_setting(in, out, index, 0);
     apop_varad_setting(in, out, rng, apop_rng_alloc(apop_opts.rng_seed++));
     if (in.rng)
         out->own_rng = 0;
@@ -287,21 +286,60 @@ void apop_pm_settings_free(apop_pm_settings *freeme) {
   distributions.
 
   Before calling this, I expect that you have already run \ref apop_estimate to produce \f$\hat{}p\f$.
+
+  The \ref apop_pm_settings structure dictates details of how the model is generated.
+  For example, if you want only the distribution of the third parameter, and you know the
+  distribution will be a PMF generated via random draws, then set settings and call the
+  model via:
+  \code
+    apop_model_group_add(your_model, apop_pm, .index =3, .draws=3e5);
+    apop_model *dist = apop_parameter_model(your_data, your_model);
+  \endcode
+
+  \li \c index gives the position of the parameter (in \ref apop_data_pack order)
+  in which you are interested. Thus, if this is zero or more, then you will get a
+  univariate output distribution describing a single parameter. If <tt>index == -1</tt>,
+  then I will give you the multivariate distribution across all parameters.  The default
+  is zero (i.e. the univariate distribution of the zeroth parameter).
+  
+  There is no mechansim to produce distributions across multiple but not all parameters 
+  for a few reasons. First, discussion in textbooks and academic
+  papers indicates that, on the demand side, not many people bother with multivariate distributions
+  at all. Second, on the supply side, the default method for calculating the multivariate
+  distribution requires re-estimating the full model as many times as the bootstrap or \c
+  draws variable dictate, regardless of the number of parameters in the final distribution. 
+  That is, in typical cases, asking for less than all the parameters just involves
+  throwing out data, which the user can do as easily as this function could.
+
+  \li \c rng If the method requires random draws (as the default bootstrap will), then use this.
+    If you provide \c NULL and one is needed, see the \ref autorng section on how one is provided for you.
+
+  \li \c draws If there is no closed-form solution and bootstrap is inappropriate, then
+  the last resort is a large numbr of random draws of the model, summarized into a PMF. Default: 1,000 draws.
+
 */ 
 apop_model *apop_parameter_model(apop_data *d, apop_model *m){
-    if (m->parameter_model)
-        return m->parameter_model(d, m);
     apop_pm_settings *settings = apop_settings_get_group(m, apop_pm);
     if (!settings)
         settings = apop_model_add_group(m, apop_pm, .base= m);
+    if (m->parameter_model)
+        return m->parameter_model(d, m);
     if (d){
-        //then prune down to the requested items
         Get_vmsizes(m->parameters);//vsize, msize1, msize2
         apop_model *out = apop_model_copy(apop_multivariate_normal);
         out->m1base = out->vbase = out->m2base = out->dsize = vsize+msize1+msize2;
         out->parameters = apop_bootstrap_cov(d, *m, settings->rng, settings->draws);
         out->parameters->vector = apop_data_pack(m->parameters);
-        return out;
+        if (settings->index == -1)
+            return out;
+        else {
+            apop_model *out2 = apop_model_set_parameters(apop_normal, 
+                    apop_data_get(out->parameters, settings->index, -1), //mean
+                    apop_data_get(out->parameters, settings->index, settings->index)//var
+                    );
+            apop_model_free(out);
+            return out2;
+        }
     }
     //else
     Get_vmsizes(m->parameters);//vsize, msize1, msize2
@@ -312,7 +350,15 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
         apop_data_pack(mm->parameters, onerow);
         apop_model_free(mm);
     }
-    return apop_estimate(param_draws, apop_pmf);
+    if (settings->index == -1)
+        return apop_estimate(param_draws, apop_pmf);
+    else {
+        apop_data *param_draws1 = apop_data_alloc(settings->draws, 0,0);
+        apop_col(param_draws, settings->index, the_draws);
+        gsl_vector_memcpy(param_draws1->vector, the_draws);
+        apop_data_free(param_draws);
+        return apop_estimate(param_draws1, apop_pmf);
+    }
 }
 
 /** draw from a model. If the model has its own RNG, then you're good to
