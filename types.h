@@ -40,6 +40,30 @@ struct _apop_data{
     apop_data   *more;
 };
 
+/** The \ref apop_data_row is a single row from an \ref apop_data set. It is especially useful
+  in the context of \ref apop_map, which will let you write functions to act on one of
+  these at a time. Because this is a single row from the set, each element has a different
+type: one element from the vector is now a pointer-to-\c double named \c vector_pt; \c matrix_row 
+is a \c gsl_vector, et cetera.
+
+\li \c vector_pt and \c weight are pointers to the element in the original data set, so
+changes to these values affect the original data set.
+\li Similarly, \c matrix_row is a subview of the main matrix. The view \c mrv is needed to
+make this happen; consider \c mrv to be a read-only internal variable.
+\li \c column_names just points to your original data set's <tt>yourdata->names->column</tt>
+element.
+*/
+typedef struct {
+    double *vector_pt;
+    gsl_vector *matrix_row;
+    char **text_row;
+    char **column_names;
+    int textsize;
+    int index;
+    double *weight;
+    gsl_vector_view mrv;
+} apop_data_row;
+
 /** A description of a parametrized statistical model, including the input settings and the output parameters, predicted/expected values, et cetera.  The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
 */
 typedef struct _apop_model apop_model;
@@ -126,7 +150,22 @@ void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type
 apop_name * apop_name_copy(apop_name *in);
 int  apop_name_find(const apop_name *n, const char *findme, const char type);
 
-void        apop_data_free(apop_data *freeme);
+/** Free an \ref apop_data structure.
+ 
+As with \c free(), it is safe to send in a \c NULL pointer (in which case the function does nothing).
+
+If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
+If you don't want to free data sets down the chain, set <tt>more=NULL</tt> before calling this.
+
+\li This is actually a macro (that calls \ref apop_data_free_fn to do the real work). It
+sets \c freeme to \c NULL when it's done, because there's nothing safe you can do with the
+freed location, and you can later safely test conditions like <tt>if (data) ...</tt>.
+
+ \ingroup data_struct
+  */
+#define apop_data_free(freeme) {apop_data_free_fn(freeme); (freeme)= NULL; }
+
+void        apop_data_free_fn(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
 apop_data * apop_data_alloc(const size_t, const size_t, const int);

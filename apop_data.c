@@ -145,16 +145,8 @@ void apop_text_free(char ***freeme, int rows, int cols){
     free(freeme);
 }
 
-/** Free an \ref apop_data structure.
- 
-As with \c free(), it is safe to send in a \c NULL pointer (in which case the function does nothing).
-
-If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
-If you don't want to free data sets down the chain, set <tt>more=NULL</tt> before calling this.
-
- \ingroup data_struct
-  */
-void apop_data_free(apop_data *freeme){
+//See the documentation for \ref apop_data_free in types.h.
+void apop_data_free_fn(apop_data *freeme){
     if (!freeme) return;
     if (freeme->more)
         apop_data_free(freeme->more);
@@ -955,6 +947,14 @@ APOP_VAR_ENDHEAD
   \param title The name of the new page. Remember, this is truncated at 100 characters.
 
   \return The new page.  I post a warning if I am appending or appending to a \c NULL data set and  <tt>apop_opts.verbose >=1 </tt>.
+
+  \li Some data is fundamentally multi-page; an optimization search over multi-page
+  parameters would search the space given by all pages, for example. 
+  Also, pages may be appended as output or auxiliary information, such as covariances---an
+  MLE would not search over these elements. Generally, any page with a name in HTML-ish
+  brackets, such as <tt>\<Covariance\></tt>, will be considered informational and ignored
+  by search routines, missing data routines, et cetera. This is achieved by a rule in \ref
+  apop_data_pack and \ref apop_data_unpack.
 
   \example 
   A silly example that establishes a baseline data set, adds a page,

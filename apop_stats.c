@@ -847,11 +847,10 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
 through it for the points in the summation.
 
 \li If you have two empirical distributions, that they must be synced: if \f$p_i>0\f$
-but \f$q_i=0\f$, then the function returns \c GSL_NEGINF.
+but \f$q_i=0\f$, then the function returns \c GSL_NEGINF. If <tt>apop_opts.verbose >=1<tt>
+I print a message as well.
 
 If neither distribution is empirical, then I'll take \c draw_ct random draws from \c bottom and evaluate at those points.
-
-    \todo do it all again with histograms.
 
 This function uses the \ref designated syntax for inputs.
  */
@@ -877,9 +876,10 @@ APOP_VAR_ENDHEAD
             double pi = p->weights ? gsl_vector_get(p->weights, i) : 1./(vsize ? vsize : msize1);
             get_one_row(p, a_row, i, firstcol, msize2);
             double qi = apop_p(a_row, bottom);
-            apop_assert(qi, GSL_NEGINF, 0, 'c', "The PMFs aren't synced: bottom has a value where "
+            apop_assert(qi, GSL_NEGINF, 1, 'c', "The PMFs aren't synced: bottom has a value where "
                                                 "top doesn't (which produces infinite divergence).");
-            div += pi * log(pi/qi);
+            if (pi) //else add zero.
+                div += pi * log(pi/qi);
         }
         apop_data_free(a_row);
     } else { //the version with the RNG.
@@ -888,9 +888,10 @@ APOP_VAR_ENDHEAD
             apop_draw(a_row->matrix->data, rng, top);
             double pi = apop_p(a_row, top);
             double qi = apop_p(a_row, bottom);
-            apop_assert(qi, GSL_NEGINF, 0, 'c', "The PMFs aren't synced: bottom has a value where "
+            apop_assert(qi, GSL_NEGINF, 1, 'c', "The PMFs aren't synced: bottom has a value where "
                                                 "top doesn't (which produces infinite divergence).");
-            div += pi * log(pi/qi);
+            if (pi) //else add zero.
+                div += pi * log(pi/qi);
         }
         apop_data_free(a_row);
     }

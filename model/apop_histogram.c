@@ -5,6 +5,7 @@ This implements a one-d histogram representing an empirical distribution. It is 
 
 #include "model.h"
 #include "mapply.h"
+#include "internal.h"
 #include "settings.h"
 #include "deprecated.h" //The whole darn file should be here.
 #include "variadic.h"
@@ -121,7 +122,7 @@ apop_model apop_histogram = {"Histogram", .dsize=1, .estimate = est, .log_likeli
 ////Kernel density estimation
 
 
-static void apop_set_first_params(double in, apop_model *m){
+static void apop_set_first_param(double in, apop_model *m){
     m->parameters->vector->data[0]  = in;
 }
 
@@ -158,15 +159,72 @@ You may either provide a histogram and a \c NULL data set, or a \c NULL histogra
 \param data    a data set, which, if  not \c NULL and \c !histobase , will be converted to a histogram.
   \param histobase This is the preferred format for input data. It is the histogram to be smoothed.
 \param kernelbase The kernel to use for smoothing, with all parameters set and a \c p method. Popular favorites are \ref apop_normal and \ref apop_uniform.
-\param set_params A function that takes in a single number and the model, and sets the parameters accordingly. The function will call this for every point in the data set. Below is the default, which is used if this is \c NULL. It simply sets the first element of the model's parameter vector to the input number; this is appropriate for a Normal distribution, where we want to center the distribution on each data point in turn.
+\param set_params A function that takes in a single number and the model, and sets
+the parameters accordingly. The function will call this for every point in the data
+set. Here is the default, which is used if this is \c NULL. It simply sets the first
+element of the model's parameter vector to the input number; this is appropriate for a
+Normal distribution, where we want to center the distribution on each data point in turn.
 
 \code
-void apop_set_first_params(double in, apop_model *m){
-    m->parameters->vector->data[0]  = in;
+void apop_set_first_param(double in, apop_model *m){
+    m->parameters->vector->data[0] = in;
+}
+\endcode
+
+For a Uniform[0,1] recentered around each point, you'd want to put this function in your code:
+
+\code
+void set_midpoint(double in, apop_model *m){
+    m->parameters->vector->data[0] = in-0.5;
+    m->parameters->vector->data[1] = in+0.5;
 }
 \endcode
 
 */
+
+#if 0
+typedef struct{
+    apop_data *base_data;
+    apop_model *base_pmf;
+    apop_model *kernel;
+}apop_kernel_density_settings;
+
+apop_kernel_density_settings *apop_kernel_kernel_density_settings(kernel_density_settings in){
+    //If there's a PMF associated with the model, run with it.
+    //else, generate one from the data.
+    apop_kernel_density_settings *out = malloc(sizeof(apop_kernel_density_settings));
+    apop_varad_setting(in, out, base_pmf, apop_estimate(base_data, apop_pmf));
+    apop_varad_setting(in, out, kernel, apop_estimate(base_data, apop_set_first_param));
+    return out;
+}
+
+apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
+    //Uh, nothing. Just run the init fn.
+    if (!apop_settings_get_group(m, apop_kernel_density))
+        apop_model_group_add(m, apop_kernel_density, .base_data=d);
+}
+
+
+
+kernel_ll(apop_data *d, apop_model *m){
+    Get_vmsizes(d);
+    long double ll = 0;
+    apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
+    apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->parameters;
+        for (int k = 0; k < pmf_data->weights->size1; i++){
+            apop_settings_get(m, apop_kernel_density,kernel)(d, m);
+            
+            ll += apop_ll(d, kde_model);
+        }
+    ll /= basedata->weights->size1;
+    return ll;
+}
+
+apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
+	.estimate = apop_kernel_density_estimate, .log_likelihood = histogram_ll, .draw = histogram_rng};
+
+#endif
+
 apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data, 
         apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*)){
   apop_data *smallset  = apop_data_alloc(0,1,1);
@@ -188,7 +246,7 @@ apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data,
     out->pdf        = apop_alloc_wider_range(bh->pdf, padding);
     out->kernelbase = apop_model_copy(*kernelbase);
     out->histobase  = base;
-    set_params      = set_params ? set_params : apop_set_first_params;
+    set_params      = set_params ? set_params : apop_set_first_param;
 
     //finally, the double-loop producing the density.
     for (size_t i=0; i< bh->pdf->n; i++)
@@ -231,10 +289,9 @@ static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *
         h = apop_estimate(data, apop_histogram);
     Apop_assert(h, NULL, 0, 's', "I need either a model with a histogram or a non-NULL data set.\n");
     apop_model *out = apop_model_copy(apop_kernel_density);
-    Apop_settings_add_group(out, apop_kernel_density, data, h, m, apop_set_first_params);
+    Apop_settings_add_group(out, apop_kernel_density, data, h, m, apop_set_first_param);
     return out;
 }
 
 apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
 	.estimate = apop_kernel_density_estimate, .log_likelihood = histogram_ll, .draw = histogram_rng};
-

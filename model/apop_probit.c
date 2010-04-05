@@ -37,17 +37,20 @@ static void probit_prep(apop_data *d, apop_model *m){
     free(tmp);
 }
 
+double biprobit_ll_row(apop_data_row r){
+    long double n = gsl_cdf_gaussian_P(-gsl_vector_get(r.matrix_row, 0),1);
+    n = n ? n : 1e-10; //prevent -inf in the next step.
+    n = n<1 ? n : 1-1e-10; 
+    return *r.vector_pt ?  log(1-n): log(n);
+}
+
 //The case where outcome is a single zero/one option.
 static double biprobit_log_likelihood(apop_data *d, apop_model *p){
   Nullcheck_m(p); Nullcheck_p(p);
-  long double	n, total_prob	= 0;
-  apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
-	for(size_t i=0; i< d->matrix->size1; i++){
-		n	        = gsl_cdf_gaussian_P(-apop_data_get(betadotx, i, 0),1);
-        n = n ? n : 1e-10; //prevent -inf in the next step.
-        n = n<1 ? n : 1-1e-10; 
-        total_prob += apop_data_get(d, i, -1) ?  log(1-n): log(n);
-	}
+    apop_data *betadotx = apop_dot(d, p->parameters); 
+    betadotx->vector = d->vector;
+    double total_prob = apop_map_sum(betadotx, .fn_r=biprobit_ll_row);
+    betadotx->vector = NULL;
     apop_data_free(betadotx);
 	return total_prob;
 }
@@ -63,7 +66,8 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
     }
 
   long double	cdf, betax, deriv_base;
-  apop_data *betadotx = apop_dot(d, p->parameters, 0, 0); 
+  apop_data *betadotx = apop_dot(d, p->parameters); 
+    betadotx->vector = d->vector;
     gsl_vector_set_all(gradient,0);
     for (size_t i=0; i< d->matrix->size1; i++){
         betax            = apop_data_get(betadotx, i, 0);
@@ -73,13 +77,13 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
         if (apop_data_get(d, i, -1))
             deriv_base      = gsl_ran_gaussian_pdf(-betax, 1) /(1-cdf);
         else
-            deriv_base      = -gsl_ran_gaussian_pdf(-betax, 1) /  cdf;
+            deriv_base      = -gsl_ran_gaussian_pdf(-betax, 1) / cdf;
         for (size_t j=0; j< d->matrix->size2; j++)
             apop_vector_increment(gradient, j, apop_data_get(d, i, j) * deriv_base);
 	}
+    betadotx->vector = NULL;
 	apop_data_free(betadotx);
 }
-
 
 /////////  Part III: Multinomial Logit (plain logit is a special case)
 

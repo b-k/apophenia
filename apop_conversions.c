@@ -804,8 +804,9 @@ APOP_VAR_END_HEAD
 
  \param in a \c gsl_vector of the form produced by \c apop_data_pack. No default; must not be \c NULL.
 \param d   that data set to be filled. Must be allocated to the correct size. No default; must not be \c NULL.
-\param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
-pages; else fill only the first page. Default = \c 'n'.
+\param use_info_pages Pages in HTML-style brackets, such as <tt>\<Covariance\></tt> will
+be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
+same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 
 \li If I get to the end of the first page and have more vector to unpack, and the data to
 fill has a \c more element, then I will continue into subsequent pages.
@@ -813,12 +814,11 @@ fill has a \c more element, then I will continue into subsequent pages.
 This function uses the \ref designated syntax for inputs.
 \ingroup conversions
 */
-APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d){
+APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages){
     const gsl_vector * apop_varad_var(in, NULL);
     apop_data* apop_varad_var(d, NULL);
-    //char apop_varad_var(all_pages, 'n');
-    //apop_data_unpack_base(in, d, all_pages);
-    apop_data_unpack_base(in, d);
+    char apop_varad_var(use_info_pages, 'n');
+    apop_data_unpack_base(in, d, use_info_pages);
 APOP_VAR_ENDHEAD
   int           offset   = 0;
   gsl_vector    vin, vout;
@@ -841,17 +841,23 @@ APOP_VAR_ENDHEAD
     }
     if (offset != in->size && d->more){
         vin = gsl_vector_subvector((gsl_vector *)in, offset, in->size - offset).vector;
-        apop_data_unpack(&vin, d->more);
+        d = d->more;
+        if (use_info_pages=='n')
+            while (apop_regex(d->names->title, "^<.*>$"))
+                d = d->more;
+        apop_data_unpack(&vin, d);
     }
 }
 
-static size_t sizecount(const apop_data *in, const int all_pp){ 
+static size_t sizecount(const apop_data *in, const int all_pp, const int use_info_pp){ 
     if (!in)
         return 0;
+    if (use_info_pp=='n' && apop_regex(in->names->title, "^<.*>$"))
+        return (all_pp ? sizecount(in->more, all_pp, use_info_pp) : 0);
     return (in->vector ? in->vector->size : 0)
              + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0)
              + (in->weights ? in->weights->size : 0)
-             + (all_pp ? sizecount(in->more, all_pp) : 0);
+             + (all_pp ? sizecount(in->more, all_pp, use_info_pp) : 0);
 }
 
 /** Sometimes, you need to turn an \c apop_data set into a column of
@@ -868,26 +874,30 @@ will return the original data set (stripped of text and names).
  \param out If this is not \c NULL, then put the output here. The dimensions must match exactly. If \c NULL, then allocate a new data set. Default = \c NULL. 
   \param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
 pages; else fill only the first page. Default = \c 'n'.
+\param use_info_pages Pages in HTML-style brackets, such as <tt>\<Covariance\></tt> will
+be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
+same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 
  \return A \c gsl_vector with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <tt>&& .all_pages=='y'</tt>). If \c out is not \c NULL, then this is \c out.
 
 This function uses the \ref designated syntax for inputs.
 \ingroup conversions
  */
-APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages){
+APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages){
     const apop_data * apop_varad_var(in, NULL);
     if (!in) return NULL;
     gsl_vector * apop_varad_var(out, NULL);
     char apop_varad_var(all_pages, 'n');
+    char apop_varad_var(use_info_pages, 'n');
     if (out) {
-        int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'));
+        int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
         apop_assert(out->size == total_size, NULL, 0, 's', "The input data set has %i elements,"
                " but the output vector you want to fill has size %zu. Please make these sizes equal."
                , total_size, out->size);
     }
-    return apop_data_pack_base(in, out, all_pages);
+    return apop_data_pack_base(in, out, all_pages, use_info_pages);
 APOP_VAR_ENDHEAD
-        int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'));
+        int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
     if (!total_size)
         return NULL;
   int offset        = 0;
@@ -913,6 +923,8 @@ APOP_VAR_ENDHEAD
     }
     if ((all_pages == 'y' ||all_pages =='Y') && in->more){
         vout = gsl_vector_subvector((gsl_vector *)out, offset, out->size - offset).vector;
+        while (use_info_pages=='n' && apop_regex(in->more->names->title, "^<.*>$"))
+            in = in->more;
         apop_data_pack(in->more, &vout, .all_pages='y');
     }
     return out;
@@ -1016,4 +1028,18 @@ gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
         for (int j=0; j< in->size2; j++)
             gsl_matrix_set(in, i, j, ap[k++]);
     return in;
+}
+
+apop_data_row apop_data_get_row(apop_data *d, int row_number){
+    apop_data_row out = {.vector_pt = d->vector ? gsl_vector_ptr(d->vector, row_number) : NULL,
+                    .text_row = d->text ? d->text[row_number] : NULL,
+                    .column_names = d->names->column,
+                    .textsize = d->textsize[1],
+                    .weight = d->weights ? gsl_vector_ptr(d->weights, row_number) : NULL,    
+                    .index = row_number};
+    if (d->matrix){
+        out.mrv = gsl_matrix_row(d->matrix, row_number);
+        out.matrix_row = &(out.mrv.vector);
+    }
+    return out;
 }

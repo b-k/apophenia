@@ -47,8 +47,8 @@ void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name,
 						char *col_col_name, char *data_col_name);
 
 //packing data into a vector
-APOP_VAR_DECLARE gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages);
-APOP_VAR_DECLARE void apop_data_unpack(const gsl_vector *in, apop_data *d);
+APOP_VAR_DECLARE gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages);
+APOP_VAR_DECLARE void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages);
 
 char * apop_strip_dots(char *in, char strip_type);
 
@@ -58,6 +58,8 @@ char * apop_strip_dots(char *in, char strip_type);
 apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
 gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double []);
+
+apop_data_row apop_data_get_row(apop_data *d, int row_number);
 
 #ifdef	__cplusplus
 }

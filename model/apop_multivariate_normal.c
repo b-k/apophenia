@@ -30,6 +30,9 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
         gsl_vector_free(x_minus_mu);
         return GSL_NEGINF; //tell maximizers to look elsewhere.
     }
+    apop_assert_s(determinant > 0, "The determinant of the covariance matrix you gave me "
+            "is negative, but a covariance matrix must always be positive semidefinite "
+            "(and so have nonnegative determinant). Maybe run apop_matrix_to_positive_semidefinite?");
     for (i=0; i< data->matrix->size1; i++){
         APOP_ROW(data,i, vv);
         gsl_vector_memcpy(x_minus_mu, vv);
@@ -85,5 +88,10 @@ static void mvn_prep(apop_data *d, apop_model *m){
     apop_model_clear(d, m);
 }
 
+double mvn_constraint(apop_data *d, apop_model *m){
+    return apop_matrix_to_positive_semidefinite(m->parameters->matrix);
+}
+
 apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1, .dsize=-2,
-     .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll, .draw = mvnrng, .prep=mvn_prep};
+     .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll, 
+     .draw = mvnrng, .prep=mvn_prep, .constraint = mvn_constraint};

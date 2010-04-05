@@ -86,15 +86,16 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
         //Part II: the details of extant settings groups.
 
 typedef enum {
-    APOP_SIMPLEX_NM     =0, /**< 0: Nelder-Mead simplex (gradient handling rule is irrelevant) */
-    APOP_CG_FR     =1,      /**<  1: conjugate gradient (Fletcher-Reeves) (default) */
-    APOP_CG_BFGS   =2,      /**<  2: conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno) */
-    APOP_CG_PR     =3,      /**<  3: conjugate gradient (Polak-Ribiere) */
-    APOP_SIMAN      =5,         /**<  5: \ref simanneal "simulated annealing" */
-    APOP_RF_NEWTON  =10,        /**<  10: Find a root of the derivative via Newton's method */
-//    APOP_RF_BROYDEN =11,        //  11: Find a root of the derivative via the Broyden Algorithm
-    APOP_RF_HYBRID  =12,        /**<  12: Find a root of the derivative via the Hybrid method */
-    APOP_RF_HYBRID_NOSCALE  =13 /**<  13: Find a root of the derivative via the Hybrid method; no internal scaling */
+    APOP_SIMPLEX_NM     =0, /**< Nelder-Mead simplex (gradient handling rule is irrelevant) */
+    APOP_SIMPLEX_NMJ    =20, /**< Nelder-Mead simplex with occasional jiggering (for when the plain N-M gets stuck in a loop) */
+    APOP_CG_FR     =1,      /**<  Conjugate gradient (Fletcher-Reeves) (default) */
+    APOP_CG_BFGS   =2,      /**<  Conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno) */
+    APOP_CG_PR     =3,      /**<  Conjugate gradient (Polak-Ribiere) */
+    APOP_SIMAN      =5,         /**<  \ref simanneal "simulated annealing" */
+    APOP_RF_NEWTON  =10,        /**<  Find a root of the derivative via Newton's method */
+//    APOP_RF_BROYDEN =11,        //  Find a root of the derivative via the Broyden Algorithm
+    APOP_RF_HYBRID  =12,        /**<  Find a root of the derivative via the Hybrid method */
+    APOP_RF_HYBRID_NOSCALE  =13 /**<  Find a root of the derivative via the Hybrid method; no internal scaling */
 } apop_optimization_enum;
 
 /** The settings for maximum likelihood estimation (including simulated annealing).
