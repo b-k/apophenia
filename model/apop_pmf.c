@@ -71,8 +71,8 @@ static apop_model *estim (apop_data *d, apop_model *m){
 static void draw (double *out, gsl_rng *r, apop_model *m){
     size_t current; 
     if (!m->parameters->weights) //all rows are equiprobable
-        current = apop_random_int(.rng = r,
-                  .max= (m->parameters->vector ? m->parameters->vector->size : m->parameters->matrix->size1)-1);
+        current = gsl_rng_uniform(r)*
+                  ((m->parameters->vector ? m->parameters->vector->size : m->parameters->matrix->size1)-1);
     else {
         size_t size = m->parameters->weights->size;
         if (!m->more){
@@ -90,7 +90,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
         size_t top = size-1, bottom = 0; 
         current = (top+bottom)/2.;
         if (current==0){//array of size one or two
-            if (size!=0) 
+            if (size!=1) 
                 if (cdf[0] < draw)
                     current = 1;
         } else while (!(cdf[current]>=draw && cdf[current-1] < draw)){

@@ -370,65 +370,6 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
         }
 }
 
-/** Gives a random double between min and max [inclusive].
-
-This function uses the \ref designated syntax for inputs. Notice that calling this function with no arguments, 
-
-\code
-apop_random_double()
-\endcode
-conveniently produces a number between zero and one. [To do this with less overhead, allocate your own RNG and use \c gsl_ran_uniform(r).]
-
-\param min      Default = 0
-\param  max 	Default = 1
-\param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
-*/
-APOP_VAR_HEAD double apop_random_double(double min, double max, gsl_rng *rng){
-    static gsl_rng * spare_rng = NULL;
-    double apop_varad_var(min, 0);
-    double apop_varad_var(max, 1);
-    gsl_rng * apop_varad_var(rng, NULL);
-    if (!rng && !spare_rng) 
-        spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!rng)  rng = spare_rng;
-    return apop_random_double_base(min, max, rng);
-APOP_VAR_ENDHEAD
-  double		base = gsl_rng_uniform(rng);
-	return base * (max - min) + min;
-}
-
-/** Gives a random integer between min and max [inclusive].
-
-\param min  (default 0)
-\param max 	(default 1)
-\param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
-
-Thus,
-\code
-x = apop_random_int()
-\endcode
-makes a binary zero-one draw, and
-\code
-data fivepoints[] = {1, 2, 3, 5, 7};
-y = apop_random_int(0, 4)
-x = apop_random_int(.max=4)
-\endcode
-gives two draws from a five-item vector. Notice that the max is the largest index, which is one minus the dimension.
-*/
-APOP_VAR_HEAD int apop_random_int(double min, double max, const gsl_rng *rng){
-    static gsl_rng * spare_rng = NULL;
-    double apop_varad_var(min, 0);
-    double apop_varad_var(max, 1);
-    const gsl_rng * apop_varad_var(rng, NULL);
-    if (!rng && !spare_rng) 
-        spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!rng)  rng = spare_rng;
-    return apop_random_int_base(min, max, rng);
-APOP_VAR_ENDHEAD
-  double		base = gsl_rng_uniform(rng);
-	return (int) (base * (max - min + 1) + min);
-}
-
 /** Returns the sum of the elements of a matrix. Occasionally convenient.
 
   \param m	the matrix to be summed. 

@@ -443,7 +443,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
 
 \f$d ln G/ da    =  -\psi(a) - ln b + ln(x) \f$    (also, \f$d ln \gamma = \psi\f$)
 
-\f$d ln G/ db    =  -a/b - x \f$
+\f$d ln G/ db    =  -a/b + x/(b^2) \f$
 
 apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
   
@@ -675,8 +675,6 @@ Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distributi
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
 
 \f$lnZ(a)    = -(\log(\zeta(a)) + a \log(i))    \f$
-
-\f$dlnZ(a)/da    = -{a \zeta(a)\over\log(\zeta(a-1))} -  \log(i)        \f$
 
 apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 

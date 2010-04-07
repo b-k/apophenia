@@ -22,12 +22,14 @@ apop_data *t_for_testing = apop_estimate(data, apop_t)
 
 ---will return exactly the type of \f$t\f$-distribution one would use for testing. 
 
-\li Descriptive: Just add an \ref apop_mle_settings group, and I'll find the best \f$df\f$ via maximum likelihood.
-
+\li By removing the \c estimate method---
 \code
-Apop_settings_add_group(&apop_t, apop_mle, data);
-apop_data *t_for_description = apop_estimate(data, apop_t);
+apop_model *spare_t = apop_model_copy(t);
+spare_t.estimate = NULL;
+apop_model *best_fitting_t = apop_estimate(your_data, spare_t);
 \endcode
+---I will find the best \f$df\f$ via maximum likelihood, which may be desirable for
+to find the best-fitting model for descriptive purposes.
 
 \c df works for all four distributions here; \c df2 makes sense only for the \f$F\f$, 
 
@@ -47,18 +49,19 @@ int len;
 apop_model* apop_t_estimate(apop_data *d, apop_model *m){
     Nullcheck(d); Nullcheck_m(m);
     Get_vmsizes(d); //vsize, msize1, msize2, tsize
-    apop_mle_settings *s = Apop_settings_get_group(m, apop_mle);
     Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
     apop_model *out = apop_model_copy(*m);
-    out->parameters = apop_data_alloc(1,0,0);
+    out->parameters = apop_data_alloc(3,0,0);
     double vmu = vsize ? apop_mean(d->vector) : 0;
     double mmu = msize1 ? apop_matrix_mean(d->matrix) : 0;
     double vsigma = vsize ? apop_var(d->vector)*(vsize-1) : 0;
     double msigma = msize1 ? apop_matrix_var_m(d->matrix, mmu)*(msize1*msize2-1) : 0;
-    apop_data_add_named_elmt(out->parameters, "mean", (vmu *vsize + mmu * msize1*msize2)/tsize);
-    apop_data_add_named_elmt(out->parameters, "standard deviation",
-                                            (vsigma*vsize + msigma * msize1*msize2)/(tsize-1)); 
-    apop_data_add_named_elmt(out->parameters, "df", tsize-1);
+    apop_name_add(out->parameters->names, "mean", 'r');
+    apop_name_add(out->parameters->names, "standard deviation",  'r');
+    apop_name_add(out->parameters->names, "df", 'r');
+    apop_data_set(out->parameters, 0, -1, (vmu *vsize + mmu * msize1*msize2)/tsize);
+    apop_data_set(out->parameters, 1, -1, (vsigma*vsize + msigma * msize1*msize2)/(tsize-1)); 
+    apop_data_set(out->parameters, 2, -1, tsize-1);
     apop_data_add_named_elmt(out->info, "log likelihood", out->log_likelihood(d, out));
     return out;
 }
@@ -79,8 +82,10 @@ apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
     Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
     apop_model *out = apop_model_copy(*m);
     out->parameters = apop_data_alloc(2,0,0);
-    apop_data_add_named_elmt(out->parameters, "df", d->vector->size -1);
-    apop_data_add_named_elmt(out->parameters, "df2", d->matrix->size1 * d->matrix->size2 -1);
+    apop_name_add(out->parameters->names, "df",  'r');
+    apop_name_add(out->parameters->names, "df2",  'r');
+    apop_data_set(out->parameters, 0, -1, d->vector->size -1);
+    apop_data_set(out->parameters, 1, -1, d->matrix->size1 * d->matrix->size2 -1);
     apop_data_add_named_elmt(out->info, "log likelihood", apop_f_distribution.log_likelihood(d, out));
     return out;
 }
@@ -123,7 +128,7 @@ void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){
     double mu = m->parameters->vector->data[0];
     double sigma = m->parameters->vector->data[1];
     double df = m->parameters->vector->data[2];
-    *out = (gsl_ran_tdist (r, df)+mu)*(sigma/sqrt(df));
+    *out = gsl_ran_tdist (r, df)*(sigma/sqrt(df))+mu;
 }
 
 void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){
@@ -134,6 +139,14 @@ void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){
 void apop_chisq_dist_draw(double *out, gsl_rng *r, apop_model *m){
     Nullcheck_mv(m); Nullcheck_pv(m);
     *out = gsl_ran_chisq (r, m->parameters->vector->data[0]);
+}
+
+double apop_t_dist_constraint(apop_data *beta, apop_model *m){
+    static double constr[] = { 0, 0, 1, 0,  //0 < sigma
+                              .9, 0, 0, 1}; //.9 < df
+    static apop_data *d_constr = NULL;
+    if (!d_constr) d_constr = apop_line_to_data(constr, 2, 2, 3);
+    return apop_linear_constraint(beta->vector, d_constr);
 }
 
 /** The multivariate generalization of the Gamma distribution.
@@ -217,6 +230,8 @@ APOP_VAR_ENDHEAD
     return 1;
 }
 
+void vfabs(double *x){*x = fabs(*x);}
+
 /**  First, this function passes tests, but is under development.
   
     It takes in a matrix and converts it to the `closest' positive
@@ -238,10 +253,11 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
     apop_data *qdq; 
     gsl_matrix *d = apop_matrix_copy(m);
     gsl_matrix *original = apop_matrix_copy(m);
-    double orig_diag_size = diagonal_size(d);
+    double orig_diag_size = fabs(diagonal_size(d));
     int size = d->size1;
     gsl_vector *diag = gsl_vector_alloc(size);
     diagonal_copy(diag, d, 'o');
+    apop_vector_apply(diag, vfabs);
     double origsize = biggest_elmt(d);
     do {
         //get eigenvals
@@ -305,31 +321,28 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
             score += 1e-1 - v;
         }
     }
-/*    if (!score){
-        assert(apop_matrix_is_positive_semidefinite(m));
-        apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
-        return 0;
-    }*/
-    apop_data *eigendiag = apop_data_calloc(0, size, size);
-    diagonal_copy(eigenvals, eigendiag->matrix, 'i');
-    double new_diag_size = diagonal_size(eigendiag->matrix);
-    gsl_matrix_scale(eigendiag->matrix, orig_diag_size/new_diag_size);
-    apop_data *qd = apop_dot(eigenvecs, eigendiag);
-    qdq = apop_dot(qd, eigenvecs, .form2='t');
-
-    gsl_matrix_memcpy(m, qdq->matrix);
+    for (int i=0; i< size; i++)
+        assert(eigenvals->data[i] >=0);
+    //if (score){
+        apop_data *eigendiag = apop_data_calloc(0, size, size);
+        diagonal_copy(eigenvals, eigendiag->matrix, 'i');
+        double new_diag_size = diagonal_size(eigendiag->matrix);
+        gsl_matrix_scale(eigendiag->matrix, orig_diag_size/new_diag_size);
+        apop_data *qd = apop_dot(eigenvecs, eigendiag);
+        qdq = apop_dot(qd, eigenvecs, .form2='t');
+        gsl_matrix_memcpy(m, qdq->matrix);
+        apop_data_free(qd);
+        apop_data_free(eigendiag);
+    //}
     assert(apop_matrix_is_positive_semidefinite(m));
     apop_data_free(qdq); gsl_vector_free(diag);
+    apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
     gsl_matrix_sub(original, m);
     return biggest_elmt(original)/origsize;
 }
 
-/*  This is junk. Please ignore it for now. Thanks.
-  */
 static double pos_def(apop_data *data, apop_model *candidate){
-    double penalty = fabs(candidate->parameters->vector->data[0] - (data->matrix->size1 - data->matrix->size2));
-    candidate->parameters->vector->data[0] = data->matrix->size1 - data->matrix->size2;
-    return penalty + apop_matrix_to_positive_semidefinite(candidate->parameters->matrix);
+    return apop_matrix_to_positive_semidefinite(candidate->parameters->matrix);
 }
 
 typedef struct{
@@ -436,11 +449,12 @@ static void wishart_prep(apop_data *d, apop_model *m){
 apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .dsize=-1, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
 
-apop_model apop_t_distribution  = {"t distribution", 3, 0, 0, .estimate = apop_t_estimate, 
-         .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw };
+apop_model apop_t_distribution  = {"t distribution", 3, 0, 0, .dsize=1, .estimate = apop_t_estimate, 
+         .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw,
+         .constraint=apop_t_dist_constraint };
 
-apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .estimate = apop_fdist_estimate, 
+apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .dsize=1, .estimate = apop_fdist_estimate, 
         .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
 
-apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .estimate = apop_chi_estimate,  
+apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .dsize=1, .estimate = apop_chi_estimate,  
         .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };

@@ -204,7 +204,7 @@ static void ols_rng(double *out, gsl_rng *r, apop_model *m){
     tempdata->data = ttt;
     gsl_vector_free(tempdata);
 
-    double sigma_sq = apop_data_get(m->parameters, .row=-1, .colname="SSE", .page="Info")/m->data->matrix->size1;
+    double sigma_sq = apop_data_get(m->info, .rowname="SSE")/m->data->matrix->size1;
     out[0] += gsl_ran_gaussian(r, sigma_sq);
 }
 

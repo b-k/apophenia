@@ -484,7 +484,7 @@ For example:
 void apop_data_prune_columns_base(apop_data *d, char **colnames){
     /* In types.h, you'll find an alias that takes the input, wraps it in the cruft that is
     C's compound literal syntax, and appends a final "" to the list of strings. Here, I
-    just find each element of the list, using that "" as a stopper, and then call apop_data_rm_columns.*/
+    find each element of the list, using that "" as a stopper, and then call apop_data_rm_columns.*/
     int rm_list[d->matrix->size1];
     int keep_count = 0;
     char **name_step = colnames;
@@ -493,8 +493,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     while (strlen(*name_step++))
         keep_count++;
     int used_field[keep_count];
-    for (int i=0; i< keep_count; i++)
-        used_field[i] = 0;
+    memset(used_field, 0, keep_count*sizeof(int));
 
     for (int i=0; i< d->names->colct; i++){
         int keep = 0;
@@ -508,8 +507,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     }
     apop_data_rm_columns(d, rm_list);
     for (int j=0; j<keep_count; j++)
-        if (!used_field[j])
-            printf("You asked me to keep column \"%s\" but I couldn't find a match for it. Typo?", colnames[j]);
+        apop_assert_void(used_field[j], 0, 'c', "You asked me to keep column \"%s\" but I couldn't find a match for it. Typo?", colnames[j]);
 }
 
 /** \defgroup data_set_get Set/get/point to the data element at the given point

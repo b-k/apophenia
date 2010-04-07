@@ -110,7 +110,6 @@ Returns nothing. At the end of the routine, <tt>est->info->more</tt> includes a 
 */
 void apop_estimate_parameter_t_tests (apop_model *est){
   Nullcheck_pv(est)
-  double  val, var, pval, tstat, rootn, stddev, two_tail;
   if (!est->data)
       return;
     apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 7), "test info");
@@ -125,17 +124,19 @@ void apop_estimate_parameter_t_tests (apop_model *est){
                     est->data->vector->size;
     df      -= est->parameters->vector->size;
     df       = df < 1 ? 1 : df; //some models aren't data-oriented.
-    rootn    = sqrt(df);
     apop_data_add_named_elmt(est->info, "df", df);
     for (size_t i=0; i< est->parameters->vector->size; i++){
         apop_model_add_group(est, apop_pm, .index=i);
         apop_model *m = apop_parameter_model(est->data, est);
-        apop_data *zero = apop_data_calloc(0,1,1);
         double mu = apop_data_get(m->parameters, 0, -1);
         double sigma = apop_data_get(m->parameters, 1, -1);
         double df = apop_data_get(m->parameters, 2, -1);
+        //apop_data *zero = apop_data_calloc(0,1,1);
+        //double uptozero = apop_cdf(zero, m);
+
         double tstat = mu/(sigma/sqrt(df));
-        double uptozero = apop_cdf(zero, m);
+        double pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
+        double two_tail= (df > 0)? apop_test(tstat, "t", .p1=df) : GSL_NAN;
         apop_data_set(ep, i, .colname="t statistic",        .val=tstat);
         apop_data_set(ep, i, .colname="standard deviation", .val=sigma);
         apop_data_set(ep, i, .colname="p value",            .val=two_tail);

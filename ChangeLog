@@ -6,6 +6,7 @@
 
     April 2010
 --apop_t_distribution now has three parameters: mean, std dev, df. That is, it is based on un-normalized data.
+**apop_random_int and apop_random_double removed for not being particularly useful.
 
     March 2010
 **The apop_predict special case for when all data is non-missing was a bit too special,
