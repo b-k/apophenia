@@ -55,13 +55,12 @@ element.
 */
 typedef struct {
     double *vector_pt;
-    gsl_vector *matrix_row;
+    gsl_vector matrix_row;
     char **text_row;
     char **column_names;
     int textsize;
     int index;
     double *weight;
-    gsl_vector_view mrv;
 } apop_data_row;
 
 /** A description of a parametrized statistical model, including the input settings and the output parameters, predicted/expected values, et cetera.  The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
@@ -146,7 +145,6 @@ int apop_name_add(apop_name * n, char *add_me, char type);
 void  apop_name_free(apop_name * free_me);
 void  apop_name_print(apop_name * n);
 APOP_VAR_DECLARE void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd);
-void  apop_name_cross_stack(apop_name * n1, apop_name *n2, char type1, char type2);
 apop_name * apop_name_copy(apop_name *in);
 int  apop_name_find(const apop_name *n, const char *findme, const char type);
 

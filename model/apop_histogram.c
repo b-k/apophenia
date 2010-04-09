@@ -7,7 +7,8 @@ This implements a one-d histogram representing an empirical distribution. It is 
 #include "mapply.h"
 #include "internal.h"
 #include "settings.h"
-#include "deprecated.h" //The whole darn file should be here.
+#include "conversions.h"
+#include "deprecated.h"
 #include "variadic.h"
 #include <gsl/gsl_math.h>
 
@@ -121,35 +122,9 @@ apop_model apop_histogram = {"Histogram", .dsize=1, .estimate = est, .log_likeli
 
 ////Kernel density estimation
 
-
-static void apop_set_first_param(double in, apop_model *m){
-    m->parameters->vector->data[0]  = in;
-}
-
-static double apop_getmidpt(const gsl_histogram *pdf, const size_t n){
-    if (!n) 
-        return pdf->range[1];
-    if (n== pdf->n-1) 
-        return pdf->range[n-2];
-    //else
-        return (pdf->range[n] + pdf->range[n+1])/2.;
-}
-
-static gsl_histogram *apop_alloc_wider_range(const gsl_histogram *in, const double padding){
-//put 10% more bins on either side of the original data.
-  size_t  newsize =in->n * (1+2*padding);
-  double  newrange[newsize];
-  double  diff = in->range[2] - in->range[1];
-    memcpy(&newrange[(int)(in->n * padding)], in->range, sizeof(double)*in->n);
-    for (int k = in->n *padding +1; k>=1; k--)
-        newrange[k] = newrange[k+1] - diff;
-    for (int k = in->n *(1+padding); k <newsize-1; k++)
-        newrange[k] = newrange[k-1] + diff;
-    newrange[0]          = GSL_NEGINF;
-    newrange[newsize -1] = GSL_POSINF;
-    gsl_histogram * out = gsl_histogram_alloc(newsize-1);
-    gsl_histogram_set_ranges(out, newrange, newsize);
-    return out;
+static void apop_set_first_param(apop_data_row in, apop_model *m){
+    m->parameters->vector->data[0]  = in.vector_pt ?
+            *in.vector_pt : gsl_vector_get(&in.matrix_row, 0);
 }
 
 /** Allocate and fill a kernel density, which is a smoothed histogram. 
@@ -182,116 +157,64 @@ void set_midpoint(double in, apop_model *m){
 
 */
 
-#if 0
+
 typedef struct{
     apop_data *base_data;
     apop_model *base_pmf;
     apop_model *kernel;
+    void (*set_fn)(apop_data_row, apop_model*);
+    int own_pmf, own_kernel;
 }apop_kernel_density_settings;
 
-apop_kernel_density_settings *apop_kernel_kernel_density_settings(kernel_density_settings in){
+apop_kernel_density_settings *apop_kernel_density_settings_init(apop_kernel_density_settings in){
     //If there's a PMF associated with the model, run with it.
     //else, generate one from the data.
     apop_kernel_density_settings *out = malloc(sizeof(apop_kernel_density_settings));
-    apop_varad_setting(in, out, base_pmf, apop_estimate(base_data, apop_pmf));
-    apop_varad_setting(in, out, kernel, apop_estimate(base_data, apop_set_first_param));
+    apop_varad_setting(in, out, base_pmf, apop_estimate(in.base_data, apop_pmf));
+    apop_varad_setting(in, out, kernel, apop_model_set_parameters(apop_normal, 0, 1));
+    apop_varad_setting(in, out, set_fn, apop_set_first_param);
+    out->own_pmf = !in.base_pmf;
     return out;
+}
+
+void * apop_kernel_density_settings_copy(apop_kernel_density_settings *in){
+    apop_kernel_density_settings *out = malloc(sizeof(apop_kernel_density_settings));
+    *out  = *in;
+    out->own_pmf    =
+    out->own_kernel = 0;
+    return out;
+}
+
+void apop_kernel_density_settings_free(apop_kernel_density_settings *in){
+    if (in->own_pmf)
+        apop_model_free(in->base_pmf);
+    if (in->own_kernel)
+        apop_model_free(in->kernel);
 }
 
 apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
     //Uh, nothing. Just run the init fn.
     if (!apop_settings_get_group(m, apop_kernel_density))
-        apop_model_group_add(m, apop_kernel_density, .base_data=d);
+        apop_model_add_group(m, apop_kernel_density, .base_data=d);
+    return m;
 }
 
-
-
-kernel_ll(apop_data *d, apop_model *m){
+double kernel_ll(apop_data *d, apop_model *m){
     Get_vmsizes(d);
     long double ll = 0;
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
     apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->parameters;
-        for (int k = 0; k < pmf_data->weights->size1; i++){
-            apop_settings_get(m, apop_kernel_density,kernel)(d, m);
-            
-            ll += apop_ll(d, kde_model);
-        }
-    ll /= basedata->weights->size1;
+    int len = pmf_data->weights ? pmf_data->weights->size
+                                : pmf_data->vector ? pmf_data->vector->size
+                                                   : pmf_data->matrix->size1;
+    for (int k = 0; k < len; k++){
+        apop_data_row r = apop_data_get_row(pmf_data, k);
+        (ks->set_fn)(r, ks->kernel);
+        ll += apop_log_likelihood(d, ks->kernel);
+    }
+    ll /= len;
     return ll;
 }
 
 apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
-	.estimate = apop_kernel_density_estimate, .log_likelihood = histogram_ll, .draw = histogram_rng};
-
-#endif
-
-apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data, 
-        apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*)){
-  apop_data *smallset  = apop_data_alloc(0,1,1);
-  double    padding    = 0.1;
-
-  apop_model *base     = NULL;
-  apop_histogram_settings *out = NULL;
-    //establish and copy the base histogram
-    if(apop_settings_get_group(histobase, apop_histogram)){
-        base = histobase;
-    } else if (data){
-        base = apop_model_copy(apop_histogram);
-        Apop_settings_add_group(base, apop_histogram, data, 1000);
-    } else
-        apop_error(0, 's', "I need either a histobase model with a histogram or a non-NULL data set.");
-
-    apop_histogram_settings *bh    = apop_settings_get_group(base, apop_histogram);
-    out             = apop_histogram_settings_copy(bh);
-    out->pdf        = apop_alloc_wider_range(bh->pdf, padding);
-    out->kernelbase = apop_model_copy(*kernelbase);
-    out->histobase  = base;
-    set_params      = set_params ? set_params : apop_set_first_param;
-
-    //finally, the double-loop producing the density.
-    for (size_t i=0; i< bh->pdf->n; i++)
-        if (bh->pdf->bin[i]){
-            set_params(apop_getmidpt(bh->pdf,i), out->kernelbase);
-            for (size_t j=1; j < out->pdf->n-1; j ++){
-                smallset->matrix->data[0] = apop_getmidpt(out->pdf,j);
-                out->pdf->bin[j] += bh->pdf->bin[i] * apop_p(smallset, out->kernelbase);
-            }
-        }
-
-    //set end-bins. As you can see, I've commented this part out for now.
-    out->pdf->bin[0]    = 0;
-    out->pdf->bin[out->pdf->n-1]  = 0;
-        /*
-    double ratio = out->pdf->bin[1]/(out->pdf->bin[1] + out->pdf->bin[out->pdf->n-2]);
-    if (gsl_isnan(ratio)){ //then both bins are zero.
-        out->pdf->bin[0]    = 0;
-        out->pdf->bin[out->pdf->n-1]  = 0;
-    } else {
-        out->pdf->bin[0]    = (1-sum)*ratio;
-        out->pdf->bin[out->pdf->n-1]  = (1-sum)*(1-ratio);
-    }*/
-
-    //normalize to one.
-    double sum = 0;
-    for (size_t j=1; j < out->pdf->n-1; j ++)
-        sum += out->pdf->bin[j];
-    for (size_t j=1; j < out->pdf->n-1; j ++)
-        out->pdf->bin[j]   /= sum;
-
-    apop_data_free(smallset);
-    return out;
-}
-
-static apop_model * apop_kernel_density_estimate(apop_data * data,  apop_model *parameters){
-    apop_model *m   = apop_model_set_parameters(apop_normal, 0., 1.);
-    apop_model *h   = NULL;
-    if (!(h = apop_settings_get_group(parameters, apop_histogram)))
-        h = apop_estimate(data, apop_histogram);
-    Apop_assert(h, NULL, 0, 's', "I need either a model with a histogram or a non-NULL data set.\n");
-    apop_model *out = apop_model_copy(apop_kernel_density);
-    Apop_settings_add_group(out, apop_kernel_density, data, h, m, apop_set_first_param);
-    return out;
-}
-
-apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
-	.estimate = apop_kernel_density_estimate, .log_likelihood = histogram_ll, .draw = histogram_rng};
+	.estimate = apop_kernel_estimate, .log_likelihood = kernel_ll};

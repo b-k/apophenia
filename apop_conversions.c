@@ -1036,10 +1036,7 @@ apop_data_row apop_data_get_row(apop_data *d, int row_number){
                     .column_names = d->names->column,
                     .textsize = d->textsize[1],
                     .weight = d->weights ? gsl_vector_ptr(d->weights, row_number) : NULL,    
+                    .matrix_row = d->matrix ? gsl_matrix_row(d->matrix, row_number).vector : (gsl_vector){ },
                     .index = row_number};
-    if (d->matrix){
-        out.mrv = gsl_matrix_row(d->matrix, row_number);
-        out.matrix_row = &(out.mrv.vector);
-    }
     return out;
 }

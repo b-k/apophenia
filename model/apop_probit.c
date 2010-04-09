@@ -38,7 +38,7 @@ static void probit_prep(apop_data *d, apop_model *m){
 }
 
 double biprobit_ll_row(apop_data_row r){
-    long double n = gsl_cdf_gaussian_P(-gsl_vector_get(r.matrix_row, 0),1);
+    long double n = gsl_cdf_gaussian_P(-gsl_vector_get(&r.matrix_row, 0),1);
     n = n ? n : 1e-10; //prevent -inf in the next step.
     n = n<1 ? n : 1-1e-10; 
     return *r.vector_pt ?  log(1-n): log(n);

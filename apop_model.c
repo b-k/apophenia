@@ -255,6 +255,8 @@ apop_pm_settings *apop_pm_settings_init(apop_pm_settings in){
     apop_varad_setting(in, out, rng, apop_rng_alloc(apop_opts.rng_seed++));
     if (in.rng)
         out->own_rng = 0;
+    else
+        out->own_rng = 1;
     apop_varad_setting(in, out, draws, 1e4);
     return out;
 }

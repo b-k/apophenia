@@ -52,7 +52,6 @@ That said, here is the current table of contents:
 %ignore apop_name_add;
 %ignore apop_name_copy;
 %ignore apop_name_stack;
-%ignore apop_name_cross_stack;
 %ignore apop_name_find;
 %ignore apop_name_print;
 %ignore gsl_matrix_add;

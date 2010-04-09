@@ -91,20 +91,18 @@ static void fourStep(sqlite3_context *context, int argc, sqlite3_value **argv){
 
 static void stdDevFinalizePop(sqlite3_context *context){
     StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
-    if( p && p->cnt>1 ){
-      sqlite3_result_double(context,
-         sqrt((p->avg2 - gsl_pow_2(p->avg))));
-    } else if (p->cnt == 1)
+    if( p && p->cnt>1 )
+      sqlite3_result_double(context, sqrt((p->avg2 - gsl_pow_2(p->avg))));
+    else if (p->cnt == 1)
       	sqlite3_result_double(context, 0);
 }
 
 static void varFinalizePop(sqlite3_context *context){
   StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
-    if( p && p->cnt>1 ){
-      sqlite3_result_double(context,
-         (p->avg2 - gsl_pow_2(p->avg)));
-    } else if (p->cnt == 1)
-      	sqlite3_result_double(context, 0);
+    if( p && p->cnt>1 )
+        sqlite3_result_double(context, (p->avg2 - gsl_pow_2(p->avg)));
+    else if (p->cnt == 1)
+    	sqlite3_result_double(context, 0);
 }
 
 static void stdDevFinalize(sqlite3_context *context){

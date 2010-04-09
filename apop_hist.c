@@ -105,14 +105,11 @@ double      toptail = gsl_cdf_chisq_Q(diff, bins-1);
 }
 
 /** Test the goodness-of-fit between two histograms (in \c apop_model form). I assume that the histograms are aligned.
-
   \ingroup histograms
 */
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
   gsl_histogram *h0 = Apop_settings_get(m0, apop_histogram, pdf);
   gsl_histogram *h1 = Apop_settings_get(m1, apop_histogram, pdf);
-    if (!h0) {h0 = Apop_settings_get(m0, apop_kernel_density, pdf);}
-    if (!h1) {h1 = Apop_settings_get(m1, apop_kernel_density, pdf);}
     Apop_assert(h0, NULL, 0, 's', "The first model you gave me has a NULL PDF.");
     Apop_assert(h1, NULL, 0, 's', "The second model you gave me has a NULL PDF.");
     Apop_assert(h0->n == h1->n, NULL,
@@ -133,20 +130,19 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
 /*psmirnov2x is cut/pasted/trivially modified from the R project. Copyright them. */
 static double psmirnov2x(double x, int m, int n) {
     double md, nd, q, *u, w, out;
-    int i, j;
+    int tmp, j;
 
     if(m > n) {
-        i = n; n = m; m = i;
+        tmp = n; n = m; m = tmp;
     }
     md = (double) (m);
     nd = (double) (n);
     q = floor(x * md * nd - 1e-7) / (md * nd);
     u = (double *) malloc((n + 1)* sizeof(double));
 
-    for(j = 0; j <= n; j++) {
+    for(j = 0; j <= n; j++) 
         u[j] = ((j / nd) > q) ? 0 : 1;
-    }
-    for(i = 1; i <= m; i++) {
+    for(int i = 1; i <= m; i++) {
         w = (double)(i) / ((double)(i + n));
         if((i / md) > q)
             u[0] = 0;
@@ -154,9 +150,9 @@ static double psmirnov2x(double x, int m, int n) {
             u[0] = w * u[0];
         for(j = 1; j <= n; j++) {
             if(fabs(i / md - j / nd) > q)
-            u[j] = 0;
+                u[j] = 0;
             else
-            u[j] = w * u[j] + u[j - 1];
+                u[j] = w * u[j] + u[j - 1];
         }
     }
     out = u[n];
@@ -177,8 +173,6 @@ static double psmirnov2x(double x, int m, int n) {
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
   gsl_histogram *h1 = Apop_settings_get(m1, apop_histogram, pdf);
   gsl_histogram *h2 = Apop_settings_get(m2, apop_histogram, pdf);
-    if (!h1) {h1 = Apop_settings_get(m1, apop_kernel_density, pdf);}
-    if (!h2) {h2 = Apop_settings_get(m2, apop_kernel_density, pdf);}
   double    cdf1      = 0,
             cdf2      = 0,
             sum1      = 0,
@@ -230,7 +224,6 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
 /** Scale a histogram so it integrates to one (and is thus a proper PMF). */
 void apop_histogram_normalize(apop_model *m){
   gsl_histogram *h = Apop_settings_get(m, apop_histogram, pdf);
-    if (!h) {h = Apop_settings_get(m, apop_kernel_density, pdf);}
   int           i;
   long double   sum = 0;
   apop_assert_void(h, 0, 's', "You sent me a model which is not a histogram or which is unparametrized.");

@@ -464,7 +464,7 @@ apop_data * apop_data_summarize(apop_data *indata){
   apop_assert(indata, NULL, 0, 'c', "You sent me a NULL apop_data set. Returning NULL.\n");
   apop_assert(indata->matrix, NULL, 0, 'c', "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
   apop_data	*out	= apop_data_alloc(0,indata->matrix->size2, 6);
-  double		mean, stddev,var;
+  double		mean, var;
   char		rowname[10000]; //crashes on more than 10^9995 columns.
 	apop_name_add(out->names, "mean", 'c');
 	apop_name_add(out->names, "std dev", 'c');
@@ -484,15 +484,13 @@ apop_data * apop_data_summarize(apop_data *indata){
         if (indata->weights){
             mean	= apop_vector_mean(v);
             var 	= apop_vector_var_m(v,mean);
-            stddev	= sqrt(var);
         } else{
             mean	= apop_vector_weighted_mean(v,indata->weights);
             var 	= apop_vector_weighted_var(v,indata->weights);
-            stddev	= sqrt(var);
         } 
         double *pctiles = apop_vector_percentiles(v);
 		gsl_matrix_set(out->matrix, i, 0, mean);
-		gsl_matrix_set(out->matrix, i, 1, stddev);
+		gsl_matrix_set(out->matrix, i, 1, sqrt(var));
 		gsl_matrix_set(out->matrix, i, 2, var);
 		gsl_matrix_set(out->matrix, i, 3, pctiles[0]);
 		gsl_matrix_set(out->matrix, i, 4, pctiles[50]);
@@ -569,8 +567,6 @@ static double skewkurt(const gsl_vector *v, const gsl_vector *w, const int expon
     }
     double len = wsum < 1.1 ? w->size : wsum;
     return sumcu/len;
-
-
 }
 
 /** Find the population skew of a weighted vector.

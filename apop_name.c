@@ -151,12 +151,6 @@ APOP_VAR_ENDHEAD
                                 "valid options are r t c v. Doing nothing.",type1);
 }
 
-/** Deprecated. Use \ref apop_name_stack.  \ingroup names */
-void  apop_name_cross_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
-    printf("apop_name_cross_stack is deprecated. Just use apop_name_stack, which I will run for you now.\n");
-    apop_name_stack(n1, nadd, type1, typeadd);
-}
-
 /** Copy one \ref apop_name structure to another. That is, all data is duplicated. Usage:
 
 \code

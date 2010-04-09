@@ -269,7 +269,6 @@ static void fexact(int *nrow, int *ncol, int *table, int *ldtabl,
     ikh = ldkey << 1;	i9a = iwork(iwkmax, &iwkpt, ikh, i_real);
     ikh = ldkey << 1;	i10 = iwork(iwkmax, &iwkpt, ikh, i_int);
 
-
     /* To convert to double precision, change RWRK to DWRK in the next CALL.
      */
     f2xact(*nrow,
@@ -314,8 +313,7 @@ void f2xact(int nrow, int ncol, int *table, int ldtabl,
        int *idif, int *irn, int *key, int *ldkey, int *ipoin,
        double *stp, int *ldstp, int *ifrq, double *LP, double *SP,
        double *tm, int *key2, int *iwk, double *rwk) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:		F2XACT
   Purpose:	Computes Fisher's exact test for a contingency table,
 		routine with workspace variables specified.
@@ -412,9 +410,9 @@ void f2xact(int nrow, int ncol, int *table, int ldtabl,
 
     /* Column marginals */
     for (i = 1; i <= ncol; ++i) {
-	ico[i] = 0;
-	for (j = 1; j <= nrow; ++j)
-	    ico[i] += table[j + i * ldtabl];
+        ico[i] = 0;
+        for (j = 1; j <= nrow; ++j)
+            ico[i] += table[j + i * ldtabl];
     }
 
     /* sort marginals */
@@ -428,29 +426,29 @@ void f2xact(int nrow, int ncol, int *table, int ldtabl,
 	Swap marginals if necessary to	ico[1:nco] & iro[1:nro]
      */
     if (nr_gt_nc) {
-	nro = ncol;
-	/* Swap marginals */
-	for (i = 1; i <= nco; ++i) {
-	    ii = iro[i];
-	    if (i <= nro)
-		iro[i] = ico[i];
-	    ico[i] = ii;
-	}
+        nro = ncol;
+        /* Swap marginals */
+        for (i = 1; i <= nco; ++i) {
+            ii = iro[i];
+            if (i <= nro)
+            iro[i] = ico[i];
+            ico[i] = ii;
+        }
     } else
-	nro = nrow;
+        nro = nrow;
 
     /* Get multiplers for stack */
     kyy[1] = 1;
     for (i = 1; i < nro; ++i) {
-	/* Hash table multipliers */
-	if (iro[i] + 1 <= imax / kyy[i]) {
-	    kyy[i + 1] = kyy[i] * (iro[i] + 1);
-	    j /= kyy[i];
-	}
-	else {
-	    prterr(5, ch_err_5);
-	    return;
-	}
+        /* Hash table multipliers */
+        if (iro[i] + 1 <= imax / kyy[i]) {
+            kyy[i + 1] = kyy[i] * (iro[i] + 1);
+            j /= kyy[i];
+        }
+        else {
+            prterr(5, ch_err_5);
+            return;
+        }
     }
 
     /* Check for Maximum product : */
@@ -466,28 +464,28 @@ void f2xact(int nrow, int ncol, int *table, int ldtabl,
     if(ntot >= 2) fact[2] = log(2.);
     /* MM: old code assuming log() to be SLOW */
     for (i = 3; i <= ntot; i += 2) {
-	fact[i] = fact[i - 1] + log((double) i);
-	j = i + 1;
-	if (j <= ntot)
-	    fact[j] = fact[i] + fact[2] + fact[j / 2] - fact[j / 2 - 1];
+        fact[i] = fact[i - 1] + log((double) i);
+        j = i + 1;
+        if (j <= ntot)
+            fact[j] = fact[i] + fact[2] + fact[j / 2] - fact[j / 2 - 1];
     }
     /* Compute obs := observed path length */
     obs = tol;
     ntot = 0;
     for (j = 1; j <= nco; ++j) {
-	dd = 0.;
-	if (nr_gt_nc) {
-	    for (i = 1; i <= nro; ++i) {
-		dd += fact[table[j + i * ldtabl]];
-		ntot +=    table[j + i * ldtabl];
-	    }
-	} else {
-	    for (i = 1, ii = j * ldtabl + 1; i <= nro; i++, ii++) {
-		dd += fact[table[ii]];
-		ntot +=    table[ii];
-	    }
-	}
-	obs += fact[ico[j]] - dd;
+        dd = 0.;
+        if (nr_gt_nc) {
+            for (i = 1; i <= nro; ++i) {
+            dd += fact[table[j + i * ldtabl]];
+            ntot +=    table[j + i * ldtabl];
+            }
+        } else {
+            for (i = 1, ii = j * ldtabl + 1; i <= nro; i++, ii++) {
+            dd += fact[table[ii]];
+            ntot +=    table[ii];
+            }
+        }
+        obs += fact[ico[j]] - dd;
     }
 
     /* Denominator of observed table: DRO */
@@ -547,54 +545,49 @@ Outer_Loop:
     kmax = nro;
     /* IDIF is the difference in going to the daughter */
     for (i = 1; i <= nro; ++i)
-	idif[i] = 0;
+        idif[i] = 0;
 
     /* Generate the first daughter */
     do {
-	--kd;
-	ntot = imin2(n, iro[kd]);
-	idif[kd] = ntot;
-	if (idif[kmax] == 0)
-	    --kmax;
-	n -= ntot;
-
+        --kd;
+        ntot = imin2(n, iro[kd]);
+        idif[kd] = ntot;
+        if (idif[kmax] == 0)
+            --kmax;
+        n -= ntot;
     } while (n > 0 && kd != 1);
 
     if (n != 0) /* i.e. kd == 1 */
 	goto L310;
 
-
     k1 = k - 1;
     n = ico[kb];
     ntot = 0;
     for (i = kb + 1; i <= nco; ++i)
-	ntot += ico[i];
-
+        ntot += ico[i];
 
 L150:
     /* Arc to daughter length=ICO[KB] */
     for (i = 1; i <= nro; ++i)
-	irn[i] = iro[i] - idif[i];
+        irn[i] = iro[i] - idif[i];
 
     if (k1 > 1) {
-	/* Sort irn */
-	if (nro == 2) {
-	    if (irn[1] > irn[2]) {
-		ii = irn[1]; irn[1] = irn[2]; irn[2] = ii;
-	    }
-	} else
-	    isort(&nro, &irn[1]);
+        /* Sort irn */
+        if (nro == 2) {
+            if (irn[1] > irn[2]) {
+            ii = irn[1]; irn[1] = irn[2]; irn[2] = ii;
+            }
+        } else
+            isort(&nro, &irn[1]);
 
-	/* Adjust start for zero */
-	for (i = 1; i <= nro; ++i) {
-	    if (irn[i] != 0)
-		break;
-	}
-	nrb = i;
-    }
-    else {
-	nrb = 1;
-    }
+        /* Adjust start for zero */
+        for (i = 1; i <= nro; ++i) {
+            if (irn[i] != 0)
+            break;
+        }
+        nrb = i;
+    } else 
+        nrb = 1;
     nro2 = nro - nrb + 1;
 
     /* Some table values */
@@ -625,9 +618,9 @@ L150:
 
         for (itp = 1; itp <= i - 1; ++itp) {
             ii = key2[itp];
-            if (ii == kval) {
+            if (ii == kval) 
                 goto L240;
-            } else if (ii < 0) {
+            else if (ii < 0) {
                 key2[itp] = kval;
                 LP[itp] = 1.;
                 goto L240;
@@ -1983,7 +1976,7 @@ fexact(&rowct,
        &workspace,
        &mult);
     free(intified);
-apop_data *out      = apop_data_alloc(2,0,0);
+apop_data *out      = apop_data_alloc(0,2,1);
     apop_data_add_named_elmt(out, "probability of table", prt);
     apop_data_add_named_elmt(out, "p value", pre);
     return out;

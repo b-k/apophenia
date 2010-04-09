@@ -152,9 +152,7 @@ APOP_VAR_HEAD  void apop_histogram_plot(apop_model *hist, Output_declares){
       Dispatch_output
       apop_histogram_plot_base(hist, Output_vars);
 APOP_VAR_ENDHEAD
-  gsl_histogram  *h = Apop_settings_get_group(hist, apop_histogram)
-                        ? Apop_settings_get(hist, apop_histogram, pdf)
-                        : Apop_settings_get(hist, apop_kernel_density, pdf);
+  gsl_histogram  *h = Apop_settings_get(hist, apop_histogram, pdf);
     histoplot_common(h, 1, Output_vars);
 }
 

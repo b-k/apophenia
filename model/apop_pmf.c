@@ -1,5 +1,6 @@
 #include "asst.h"
 #include "model.h"
+#include "output.h"
 #include "internal.h"
 #include "conversions.h"
 
@@ -114,9 +115,9 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
     int i = 0;
     if (outrow.vector_pt)
         out[i++] = *outrow.vector_pt;
-    if (outrow.matrix_row)
-        for( ; i < outrow.matrix_row->size; i ++)
-            out[i] = gsl_vector_get(outrow.matrix_row, i);
+    if (outrow.matrix_row.size)
+        for( ; i < outrow.matrix_row.size; i ++)
+            out[i] = gsl_vector_get(&outrow.matrix_row, i);
 }
 
 double pmf_p(apop_data *d, apop_model *m){
@@ -137,4 +138,4 @@ double pmf_p(apop_data *d, apop_model *m){
     return ll;
 }
 
-apop_model apop_pmf = {"PDF or sparse matrix", .dsize=-1, .estimate = estim, .draw = draw, .p=pmf_p };
+apop_model apop_pmf = {"PDF or sparse matrix", .dsize=-1, .estimate = estim, .draw = draw, .p=pmf_p};

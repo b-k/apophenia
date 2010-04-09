@@ -201,8 +201,6 @@ typedef struct{
     int                 bins_in; /**< Used as input. May not equal the final number of bins (\c pdf->bins) due to the infinibins.*/
 } apop_histogram_settings;
 
-#define apop_kernel_density_settings apop_histogram_settings
-
 /** Method settings for a model to be put through Bayesian updating. 
 \ingroup settings 
  */
@@ -219,13 +217,6 @@ typedef struct{
 apop_update_settings *apop_update_settings_init(apop_update_settings);
 #define apop_update_settings_copy NULL
 #define apop_update_settings_free NULL
-
-apop_histogram_settings *apop_kernel_density_settings_alloc(apop_data *data, 
-        apop_model *histobase, apop_model *kernelbase, void (*set_params)(double, apop_model*));
-
-#define apop_kernel_density_settings_copy apop_histogram_settings_copy
-#define apop_kernel_density_settings_free apop_histogram_settings_free
-
 
 //Loess, including the old FORTRAN-to-C.
 struct loess_struct {
