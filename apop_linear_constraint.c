@@ -123,8 +123,6 @@ APOP_VAR_HEAD double  apop_linear_constraint(gsl_vector *beta, apop_data * const
         }
         constraint = default_constraint;
     }
-    return apop_linear_constraint_base(beta, constraint, margin);
-
 APOP_VAR_ENDHEAD
   static gsl_vector *closest_pt = NULL;
   static gsl_vector *candidate  = NULL;

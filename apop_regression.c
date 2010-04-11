@@ -112,11 +112,11 @@ void apop_estimate_parameter_t_tests (apop_model *est){
   Nullcheck_pv(est)
   if (!est->data)
       return;
-    apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 7), "test info");
+    apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 4), "test info");
     apop_name_add(ep->names, "p value", 'c');
     apop_name_add(ep->names, "confidence", 'c');
-    apop_name_add(ep->names, "t statistic", 'c');
-    apop_name_add(ep->names, "standard deviation", 'c');
+//    apop_name_add(ep->names, "t statistic", 'c');
+//    apop_name_add(ep->names, "standard deviation", 'c');
     apop_name_add(ep->names, "p value, 1 tail", 'c');
     apop_name_add(ep->names, "confidence, 1 tail", 'c');
     int df   = est->data->matrix   ?
@@ -125,16 +125,31 @@ void apop_estimate_parameter_t_tests (apop_model *est){
     df      -= est->parameters->vector->size;
     df       = df < 1 ? 1 : df; //some models aren't data-oriented.
     apop_data_add_named_elmt(est->info, "df", df);
+
+    apop_data *one_elmt = apop_data_alloc(0, 1, 1);
+    gsl_vector *param_v = apop_data_pack(est->parameters);
     for (size_t i=0; i< est->parameters->vector->size; i++){
         apop_model_add_group(est, apop_pm, .index=i);
         apop_model *m = apop_parameter_model(est->data, est);
-        double mu = apop_data_get(m->parameters, 0, -1);
+/*        double mu = apop_data_get(m->parameters, 0, -1);
         double sigma = apop_data_get(m->parameters, 1, -1);
         double df = apop_data_get(m->parameters, 2, -1);
-        //apop_data *zero = apop_data_calloc(0,1,1);
-        //double uptozero = apop_cdf(zero, m);
+        */
 
-        double tstat = mu/(sigma/sqrt(df));
+        double val = gsl_vector_get(param_v, i);
+        apop_data_set(one_elmt, 0, 0, val);
+        double under = apop_cdf(one_elmt, m);
+        double over = 1-under;
+        apop_data_set(one_elmt, 0, 0, -val);
+        double under_neg = apop_cdf(one_elmt, m);
+        double over_neg = 1-under;
+        double pval = val > 0 ? over + under_neg : under + over_neg;
+        apop_data_set(ep, i, .colname="p value",            .val=pval);
+        apop_data_set(ep, i, .colname="confidence",         .val=1-pval);
+        apop_data_set(ep, i, .colname="p value, 1 tail",    .val= val>0 ? over: under);
+        apop_data_set(ep, i, .colname="confidence, 1 tail", .val=val > 0 ? under: over);
+
+        /*double tstat = mu/(sigma/sqrt(df));
         double pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
         double two_tail= (df > 0)? apop_test(tstat, "t", .p1=df) : GSL_NAN;
         apop_data_set(ep, i, .colname="t statistic",        .val=tstat);
@@ -143,7 +158,10 @@ void apop_estimate_parameter_t_tests (apop_model *est){
         apop_data_set(ep, i, .colname="confidence",         .val=1-two_tail);
         apop_data_set(ep, i, .colname="p value, 1 tail",    .val=pval);
         apop_data_set(ep, i, .colname="confidence, 1 tail", .val=1-pval);
+        */
     }
+    gsl_vector_free(param_v);
+    apop_data_free(one_elmt);
 }
 
 /** Runs an F-test specified by \c q and \c c. Your best bet is to see
@@ -167,7 +185,6 @@ APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int
     apop_assert(est, NULL, 0, 's', "You sent me a NULL data set. Please estimate a model, then run this on the result.")
     apop_data * apop_varad_var(contrast, NULL)
     int apop_varad_var(normalize, 0)
-    return apop_f_test_base(est, contrast, normalize);
 APOP_VAR_END_HEAD
     gsl_matrix      *set        = est->data->matrix;
     gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
@@ -563,7 +580,6 @@ APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type,
     int apop_varad_var(keep_first, 0)
     char apop_varad_var(append, 'n')
     char apop_varad_var(remove, 'n')
-    return apop_data_to_dummies_base(d, col, type, keep_first, append, remove);
 APOP_VAR_END_HEAD
     if (type == 'd'){
         apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
@@ -645,7 +661,6 @@ APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int 
     int apop_varad_var(incol, 0)
     int apop_varad_var(outcol, 0)
     char apop_varad_var(intype, 't')
-    return apop_data_to_factors_base(data, intype, incol, outcol);
 APOP_VAR_END_HEAD
     if (intype=='t'){
         apop_assert_void(incol < data->textsize[1], 0, 's', "You asked for the text column %i but the "

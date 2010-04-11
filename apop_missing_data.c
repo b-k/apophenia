@@ -112,7 +112,6 @@ APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
     apop_data * apop_varad_var(d, NULL);
     if (!d) return NULL;
     char apop_varad_var(inplace, 'n');
-    return apop_data_listwise_delete_base(d, inplace);
 APOP_VAR_ENDHEAD
     Get_vmsizes(d) //defines firstcol, vsize, wsize, msize1, msize2.
     int i, to_rm;

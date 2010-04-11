@@ -246,7 +246,6 @@ APOP_VAR_HEAD apop_data * apop_data_sort(apop_data *data, int sortby, char asc){
     apop_assert(data, NULL, 0, 's', "You gave me NULL data to sort.");
     int apop_varad_var(sortby, 0);
     char apop_varad_var(asc, 0);
-    return apop_data_sort_base(data, sortby, asc);
 APOP_VAR_ENDHEAD
   size_t            height  = (sortby==-1) ? data->vector->size: data->matrix->size1;
   size_t            sorted[height];
@@ -302,7 +301,6 @@ APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
     gsl_vector *apop_varad_var(data, NULL);
     apop_assert(data, NULL, 0, 's', "You gave me NULL data to sort.");
     char apop_varad_var(rounding, 'd');
-    return apop_vector_percentiles_base(data, rounding);
 APOP_VAR_ENDHEAD
   gsl_vector	*sorted	= gsl_vector_alloc(data->size);
   double		*pctiles= malloc(sizeof(double) * 101);
@@ -365,7 +363,6 @@ APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data *
     apop_assert(regex, 0, 0, 's', "You gave me a NULL regex.");
     apop_data **apop_varad_var(substrings, NULL);
     const char apop_varad_var(use_case, 'y');
-    return apop_regex_base(string, regex, substrings, use_case);
 APOP_VAR_ENDHEAD
   regex_t    re;
   int        matchcount=count_parens(regex);

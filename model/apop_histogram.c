@@ -157,15 +157,6 @@ void set_midpoint(double in, apop_model *m){
 
 */
 
-
-typedef struct{
-    apop_data *base_data;
-    apop_model *base_pmf;
-    apop_model *kernel;
-    void (*set_fn)(apop_data_row, apop_model*);
-    int own_pmf, own_kernel;
-}apop_kernel_density_settings;
-
 apop_kernel_density_settings *apop_kernel_density_settings_init(apop_kernel_density_settings in){
     //If there's a PMF associated with the model, run with it.
     //else, generate one from the data.
@@ -174,6 +165,8 @@ apop_kernel_density_settings *apop_kernel_density_settings_init(apop_kernel_dens
     apop_varad_setting(in, out, kernel, apop_model_set_parameters(apop_normal, 0, 1));
     apop_varad_setting(in, out, set_fn, apop_set_first_param);
     out->own_pmf = !in.base_pmf;
+    if (!out->kernel->parameters)
+        apop_prep(out->base_data, out->kernel);
     return out;
 }
 
@@ -199,9 +192,9 @@ apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
     return m;
 }
 
-double kernel_ll(apop_data *d, apop_model *m){
+double kernel_p(apop_data *d, apop_model *m){
     Get_vmsizes(d);
-    long double ll = 0;
+    long double p = 0;
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
     apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->parameters;
     int len = pmf_data->weights ? pmf_data->weights->size
@@ -210,11 +203,11 @@ double kernel_ll(apop_data *d, apop_model *m){
     for (int k = 0; k < len; k++){
         apop_data_row r = apop_data_get_row(pmf_data, k);
         (ks->set_fn)(r, ks->kernel);
-        ll += apop_log_likelihood(d, ks->kernel);
+        p += apop_p(d, ks->kernel);
     }
-    ll /= len;
-    return ll;
+    p /= len;
+    return p;
 }
 
 apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
-	.estimate = apop_kernel_estimate, .log_likelihood = kernel_ll};
+	.estimate = apop_kernel_estimate, .p = kernel_p};

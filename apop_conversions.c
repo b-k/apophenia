@@ -41,7 +41,6 @@ APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
     double * apop_varad_var(in, NULL);
     apop_assert(in, NULL, 1, 'c', "You sent me NULL data; returning NULL.");
     int apop_varad_var(size, sizeof(in)/sizeof(in[0]));
-    return apop_array_to_vector_base(in, size);
 APOP_VAR_END_HEAD
     gsl_vector      *out = gsl_vector_alloc(size);
     gsl_vector_view	v	 = gsl_vector_view_array((double*)in, size);
@@ -64,7 +63,6 @@ APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_
     const gsl_vector * apop_varad_var(in, NULL);
     apop_assert(in,  NULL, 1,'c', "Converting NULL vector to NULL matrix.");
     char apop_varad_var(row_col, 'c');
-    return apop_vector_to_matrix_base(in, row_col);
 APOP_VAR_ENDHEAD
     gsl_matrix *out = 
         (row_col == 'r' || row_col == 'R') 
@@ -575,7 +573,6 @@ APOP_VAR_HEAD apop_data * apop_text_to_data(char *text_file, int has_row_names, 
     if (has_row_names==1) has_row_names ='y';
     if (has_col_names==1) has_col_names ='y';
     int * apop_varad_var(field_ends, NULL);
-    return apop_text_to_data_base(text_file,has_row_names, has_col_names, field_ends);
 APOP_VAR_END_HEAD
   apop_data     *set = NULL;
   FILE * 		infile;
@@ -759,7 +756,6 @@ APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_na
     int apop_varad_var(has_col_names, 1)
     int *apop_varad_var(field_ends, NULL)
     char ** apop_varad_var(field_names, NULL)
-    return apop_text_to_db_base(text_file,tabname, has_row_names, has_col_names, field_names, field_ends);
 APOP_VAR_END_HEAD
   int       batch_size  = 2000,
       		ct, rows    = 0;
@@ -818,7 +814,6 @@ APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char use
     const gsl_vector * apop_varad_var(in, NULL);
     apop_data* apop_varad_var(d, NULL);
     char apop_varad_var(use_info_pages, 'n');
-    apop_data_unpack_base(in, d, use_info_pages);
 APOP_VAR_ENDHEAD
   int           offset   = 0;
   gsl_vector    vin, vout;
@@ -895,7 +890,6 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, 
                " but the output vector you want to fill has size %zu. Please make these sizes equal."
                , total_size, out->size);
     }
-    return apop_data_pack_base(in, out, all_pages, use_info_pages);
 APOP_VAR_ENDHEAD
         int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
     if (!total_size)

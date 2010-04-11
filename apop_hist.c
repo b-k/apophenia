@@ -80,7 +80,6 @@ APOP_VAR_HEAD apop_model *apop_histogram_model_reset(apop_model *base, apop_mode
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
     if (!rng)  rng = spare;
-    return apop_histogram_model_reset_base(base, m, draws, rng);
 APOP_VAR_ENDHEAD
   double d;
     apop_model *out = apop_model_copy(*base); 

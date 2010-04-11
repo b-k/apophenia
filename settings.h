@@ -201,6 +201,21 @@ typedef struct{
     int                 bins_in; /**< Used as input. May not equal the final number of bins (\c pdf->bins) due to the infinibins.*/
 } apop_histogram_settings;
 
+/** Settings for the \ref apop_kernel_density model. 
+
+  \ingroup settings */
+typedef struct{
+    apop_data *base_data; /**< The data that will be smoothed by the KDE. */
+    apop_model *base_pmf; /**< I actually need the data in a \ref apop_pmf. You can give
+                            that to me explicitly, or I can wrap the .base_data in a PMF.  */
+    apop_model *kernel; /**< The distribution to be centered over each data point. Default, 
+                                    \ref apop_normal with std dev 1. */
+    void (*set_fn)(apop_data_row, apop_model*); /**< The function I will use for each data
+                                                  point to center the kernel over each point.*/
+    int own_pmf, own_kernel; /**< For internal use only. */
+}apop_kernel_density_settings;
+
+
 /** Method settings for a model to be put through Bayesian updating. 
 \ingroup settings 
  */
@@ -404,6 +419,7 @@ typedef struct {
 
 //Doxygen is doing funny things right now; having these down here seems to help.
 Apop_settings_declarations(apop_histogram)
+Apop_settings_declarations(apop_kernel_density)
 Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_mle)

@@ -124,9 +124,9 @@ The data set's vector will be the largest eigenvalues, scaled by the total of al
 \ingroup linear_algebra */
 APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int dimensions_we_want) {
     gsl_matrix * apop_varad_var(data, NULL);
+    apop_assert_s(data, "you sent me NULL data");
+    int apop_varad_var(dimensions_we_want, data->size2);
     if (!data) return NULL;
-    int apop_varad_var(dimensions_we_want, data->size2)
-    return apop_matrix_pca_base(data, dimensions_we_want);
 APOP_VAR_ENDHEAD
   gsl_matrix * 	eigenvectors 	= gsl_matrix_alloc(data->size2, data->size2);
   gsl_vector * 	dummy_v 	    = gsl_vector_alloc(data->size2);
@@ -173,7 +173,6 @@ APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
     apop_assert_void(v, 0, 's', "You sent me a NULL vector.");
     int apop_varad_var(i, 0);
     double apop_varad_var(amt, 1);
-    apop_vector_increment_base(v, i, amt);
 APOP_VAR_END_HEAD
 	v->data[i * v->stride]	+= amt;
 }
@@ -199,7 +198,6 @@ APOP_VAR_HEAD void apop_matrix_increment(gsl_matrix * m, int i, int j, double am
     int apop_varad_var(i, 0);
     int apop_varad_var(j, 0);
     double apop_varad_var(amt, 1);
-    apop_matrix_increment_base(m, i, j, amt);
 APOP_VAR_END_HEAD
 	m->data[i * m->tda +j]	+= amt;
 }
@@ -252,7 +250,6 @@ APOP_VAR_HEAD gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2, cha
     gsl_vector * apop_varad_var(v1, NULL);
     gsl_vector * apop_varad_var(v2, NULL);
     char apop_varad_var(inplace, 0);
-    return apop_vector_stack_base(v1, v2, inplace);
 APOP_VAR_ENDHEAD
   gsl_vector      *out;
   gsl_vector      t;
@@ -312,7 +309,6 @@ APOP_VAR_HEAD gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, cha
     gsl_matrix *apop_varad_var(m2, NULL);
     char apop_varad_var(posn, 'r');
     char apop_varad_var(inplace, 0);
-    return apop_matrix_stack_base(m1, m2, posn, inplace);
 APOP_VAR_ENDHEAD
   gsl_matrix      *out;
   gsl_vector_view tmp_vector;
@@ -417,7 +413,6 @@ APOP_VAR_HEAD int apop_vector_bounded(const gsl_vector *in, long double max){
     const gsl_vector * apop_varad_var(in, NULL)
     apop_assert(in, 0, 1, 'c', "You sent in a NULL vector; returning 1.");
     long double apop_varad_var(max, GSL_POSINF)
-    return apop_vector_bounded_base(in, max);
 APOP_VAR_END_HEAD
   double x;
     for (size_t i=0; i< in->size; i++){
@@ -491,7 +486,6 @@ APOP_VAR_HEAD apop_data * apop_dot(const apop_data *d1, const apop_data *d2, cha
     apop_assert(d2, NULL, 0, 'c', "d2 is NULL; returning NULL\n");
     char apop_varad_var(form1, 0)
     char apop_varad_var(form2, 0)
-    return apop_dot_base(d1, d2, form1, form2);
 APOP_VAR_ENDHEAD
   int         uselm, userm;
   gsl_matrix  *lm = d1->matrix, 

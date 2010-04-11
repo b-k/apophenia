@@ -30,14 +30,15 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
 	apop_name_add(est->parameters->names, "mu", 'r');
 	apop_name_add(est->parameters->names, "sigma",'r');
 	if (!p || p->want_cov=='y'){
-        apop_data *cov = apop_data_calloc(0, 2, 2);
+        apop_data *cov = apop_data_get_page(est->parameters, "<Covariance>");
+        if (!cov)
+            cov = apop_data_add_page(est->parameters, apop_data_calloc(0, 2, 2), "<Covariance>");
         apop_data_set(cov, 0, 0, mean/tsize);
         apop_data_set(cov, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
-        apop_data_add_page(est->parameters, cov, "<Covariance>");
     }
     est->data = data;
-    apop_data *info = apop_data_add_page(est->parameters, apop_data_alloc(1,0,0), "Info");
-    apop_data_add_named_elmt(info, "log likelihood", normal_log_likelihood(data, est));
+    est->info = apop_data_alloc(1,0,0);
+    apop_data_add_named_elmt(est->info, "log likelihood", normal_log_likelihood(data, est));
 	return est;
 }
 
@@ -103,7 +104,9 @@ apop_data * normal_predict(apop_data *dummy, apop_model *m){
     apop_data *out = apop_data_alloc(0,1,1);
     out->matrix->data[0] = m->parameters->vector->data[0];
 
-    apop_data *cov = apop_data_add_page(out, apop_data_alloc(0,1,1), "Covariance");
+    apop_data *cov = apop_data_get_page(out, "<Covariance>");
+    if (!cov)
+        cov = apop_data_add_page(out, apop_data_alloc(0,1,1), "<Covariance>");
     if (m->data){
         Get_vmsizes(m->data) //tsize
         cov->matrix->data[0] = m->parameters->vector->data[1]/ sqrt(tsize);
@@ -152,8 +155,8 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
 	gsl_vector_set(est->parameters->vector, 0, log(mean)- sigsq/2);
 	gsl_vector_set(est->parameters->vector, 1, sqrt(sigsq));
     est->data           = data;
-    apop_data *info = apop_data_add_page(parameters->parameters, apop_data_alloc(1,0,0), "Info");
-    apop_data_add_named_elmt(info, "log likelihood", lognormal_log_likelihood(data, parameters));
+    parameters->info = apop_data_alloc(1,0,0);
+    apop_data_add_named_elmt(parameters->info, "log likelihood", lognormal_log_likelihood(data, parameters));
 	return est;
 }
 

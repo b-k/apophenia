@@ -475,15 +475,22 @@ of the point. Sum all of these distributions to form the output histogram.
 The output is a histogram that behaves exactly like the \ref apop_histogram model,
 except the histobase and kernelbase elements of the \ref
 apop_histogram_settings struct are set.
+
+The following example sets up and uses KDEs based on a Normal and a Uniform distribution.
+
+\include kernel.c
+
 \hideinitializer \ingroup models */
 enum apop_kernel_density{
     Name30,         /**< <tt>kernel density estimate,</tt>*/
-    Data_format30,  /**<         */
-    Parameter_format30, /**<     */
-    Estimate_results30, /**<     */
-    Prep_routine30, /**<         */
-    RNG30, /**< No. */
-    settings30, /**< \ref apop_histogram_settings, but see \ref apop_kernel_density_settings_alloc on setting up.    */
+    Data_format30,  /**< I'll estimate a \ref apop_pmf internally, so I
+                      follow that format, which is one observation (of any format) per line.        */
+    Parameter_format30, /**< None    */
+    Estimate_results30, /**< the estimate method basically just runs
+                          <tt>apop_model_add_group(your_data, apop_kernel_density);</tt>    */
+    Prep_routine30, /**<  None   */
+    RNG30, /**< Uses the default. */
+    settings30, /**< \ref apop_kernel_density_settings.    */
     Example30 /**<      */
 } ;
 

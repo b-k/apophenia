@@ -132,7 +132,6 @@ APOP_VAR_HEAD void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1,
     if (!nadd) return;
     char  apop_varad_var(type1, 'r');
     char  apop_varad_var(typeadd, type1);
-    apop_name_stack_base(n1, nadd, type1, typeadd);
 APOP_VAR_ENDHEAD
   int     i;
     apop_name counts = (apop_name) { .rowct=nadd->rowct, .textct = nadd->textct, .colct = nadd->colct };//Necessary when stacking onto self.;

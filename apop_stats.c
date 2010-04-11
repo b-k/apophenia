@@ -209,7 +209,6 @@ APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vecto
     }
     const char apop_varad_var(metric, 'e');
     const double apop_varad_var(norm, 2);
-    return apop_vector_distance_base(ina, inb, metric, norm);
 APOP_VAR_ENDHEAD
   apop_assert(ina->size == inb->size, 0, 0,'s', 
                 "I need equal-sized vectors, but "
@@ -317,7 +316,6 @@ APOP_VAR_HEAD void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const
       apop_assert_void(in, 1, 'c', "Input vector is NULL. Doing nothing.\n");
       gsl_vector ** apop_varad_var(out, NULL);
       const char  apop_varad_var(normalization_type, 'p');
-      return apop_vector_normalize_base(in, out, normalization_type);
 APOP_VAR_END_HEAD
   double		mu, min, max;
 	if (!out) 	
@@ -644,7 +642,6 @@ APOP_VAR_HEAD gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char norm
     gsl_matrix *apop_varad_var(in, NULL)
     apop_assert(in,  NULL, 0, 'c', "Input matrix is NULL. Returning same.");
     const char apop_varad_var(normalize, 0)
-    return apop_matrix_covariance_base(in, normalize);
 APOP_VAR_ENDHEAD
   gsl_matrix	*out;
   double		means[in->size2];
@@ -693,7 +690,6 @@ APOP_VAR_HEAD gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char nor
     gsl_matrix *apop_varad_var(in, NULL)
     apop_assert(in,  NULL, 0, 'c', "Input matrix is NULL; returning NULL.");
     const char apop_varad_var(normalize, 0)
-    return apop_matrix_correlation_base(in, normalize);
 APOP_VAR_ENDHEAD
   gsl_matrix      *out    = apop_matrix_covariance(in, normalize);
   double          std_dev;
@@ -802,7 +798,6 @@ APOP_VAR_HEAD double apop_kl_divergence(apop_model *top, apop_model *bottom, int
     if (!rng && !spare_rng) 
         spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
     if (!rng)  rng = spare_rng;
-    return apop_kl_divergence_base(top, bottom, draw_ct, rng);
 APOP_VAR_ENDHEAD
     double div = 0;
     if (apop_strcmp(bottom->name, "PDF or sparse matrix")){

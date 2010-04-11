@@ -106,7 +106,6 @@ APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, 'a')
     int apop_varad_var(all_pages, 'n')
-    return apop_map_base(in, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_di, fn_vi, param, inplace, part, all_pages);
 APOP_VAR_ENDHEAD
     int use_param = (fn_vp || fn_dp || fn_rp || fn_vpi || fn_dpi);
     int use_index  = (fn_vi || fn_di || fn_vpi || fn_dpi);
@@ -193,7 +192,6 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, 'a')
     int apop_varad_var(all_pages, 'n')
-    return apop_map_sum_base(in, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_di, fn_vi, param, part, all_pages);
 APOP_VAR_ENDHEAD 
     if (fn_r || fn_rp){
         Get_vmsizes(in);

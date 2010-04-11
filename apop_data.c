@@ -148,8 +148,11 @@ void apop_text_free(char ***freeme, int rows, int cols){
 //See the documentation for \ref apop_data_free in types.h.
 void apop_data_free_fn(apop_data *freeme){
     if (!freeme) return;
-    if (freeme->more)
+    if (freeme->more){
+        apop_assert_s(freeme != freeme->more, "the ->more element of this data set equals the "
+                                        "data set itself. This is not healthy.\n");
         apop_data_free(freeme->more);
+    }
     if (freeme->vector)
         gsl_vector_free(freeme->vector);
     if (freeme->matrix)
@@ -227,8 +230,11 @@ apop_data *apop_data_copy(const apop_data *in){
     if (!in)
         return NULL;
     apop_data *out  = apop_data_alloc(0, 0, 0);
-    if (in->more)
+    if (in->more){
+        apop_assert_s(in != in->more, "the ->more element of this data set equals the "
+                                        "data set itself. This is not healthy.\n");
         out->more = apop_data_copy(in->more);
+    }
     if (in->vector)
         out->vector = gsl_vector_alloc(in->vector->size);
     if (in->matrix)
@@ -275,7 +281,6 @@ APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char pos
     char apop_varad_var(posn, 'r')
     char apop_varad_var(inplace, 'n')
     inplace = (inplace == 'i' || inplace == 'y' || inplace == 1 || inplace == 'I' || inplace == 'Y') ? 1 : 0;
-    return apop_data_stack_base(m1, m2, posn, inplace);
 APOP_VAR_ENDHEAD
   gsl_matrix  *stacked= NULL;
   apop_data   *out    = NULL;
@@ -931,7 +936,6 @@ APOP_VAR_HEAD apop_data * apop_data_get_page(const apop_data * data, const char 
     const apop_data * apop_varad_var(data, NULL);
     apop_assert(data, NULL, '1', 'c', "You requested a page from a NULL data set. Returning NULL");
     const char * apop_varad_var(title, "Info");
-    return apop_data_get_page_base(data, title);
 APOP_VAR_ENDHEAD
     while (data && (!data->names || !apop_regex(data->names->title, title)))
         data = data->more;
@@ -1001,7 +1005,6 @@ APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, 
     apop_assert_void(data, '1', 'c', "You are removing a page from a NULL a data set. Doing nothing.");
     const char *apop_varad_var(title, "Info");
     const char apop_varad_var(free_p, 'y');
-    return apop_data_rm_page_base(data, title, free_p);
 APOP_VAR_ENDHEAD
     while (data->more && !apop_regex(data->more->names->title, title))
         data = data->more;

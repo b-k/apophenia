@@ -161,7 +161,6 @@ APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *
         apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
         delta = mp ? mp->delta : default_delta;
     }
-    return apop_numerical_gradient_base(data, model, delta);
 APOP_VAR_ENDHEAD
   Get_vmsizes(model->parameters); //tsize
   apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
@@ -218,7 +217,6 @@ APOP_VAR_HEAD apop_data * apop_model_hessian(apop_data * data, apop_model *model
         apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
         delta = mp ? mp->delta : default_delta;
     }
-    return apop_model_hessian_base(data, model, delta);
 APOP_VAR_ENDHEAD
   int    k;
   Get_vmsizes(model->parameters) //tsize
@@ -276,7 +274,6 @@ APOP_VAR_HEAD apop_data * apop_model_numerical_covariance(apop_data * data, apop
         apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
         delta = mp ? mp->delta : default_delta;
     }
-    return apop_model_numerical_covariance_base(data, model, delta);
 APOP_VAR_ENDHEAD
     apop_data *hessian = apop_model_hessian(data, model, delta);
     if (apop_opts.verbose > 1){
@@ -426,8 +423,7 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
   apop_model		        *est    = i->model; //just an alias.
   apop_mle_settings          *mp    = apop_settings_get_group(est, apop_mle);
     if (mp->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
-        apop_data_add_page(est->parameters, 
-                apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta)), "Covariance");
+        apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta));
         apop_estimate_parameter_t_tests (est);
     }
     int param_ct = (params->vector ? params->vector->size : 0)
@@ -714,7 +710,6 @@ APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *cop
     apop_model * apop_varad_var(copy, NULL);
     char * apop_varad_var(starting_pt, NULL);
     double apop_varad_var(boundary, 1e8);
-    return apop_estimate_restart_base(e, copy, starting_pt, boundary);
 APOP_VAR_ENDHEAD
     gsl_vector *v;
   if (!copy)

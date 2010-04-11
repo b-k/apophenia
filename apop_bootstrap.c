@@ -113,13 +113,13 @@ This function uses the \ref designated syntax for inputs.
 APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *rng, int iterations) {
     static gsl_rng *spare = NULL;
     apop_data * apop_varad_var(data, NULL);
+    apop_model model = varad_in.model;
     int apop_varad_var(iterations, 1000);
-    apop_assert(data, NULL, 0, 's', "The data element can't be NULL.");
+    apop_assert_s(data, "The data element can't be NULL.");
     gsl_rng * apop_varad_var(rng, NULL);
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
     if (!rng)  rng = spare;
-    return apop_bootstrap_cov_base(data, varad_in.model, rng, iterations);
 APOP_VAR_END_HEAD
   apop_model        *e              = apop_model_copy(model);
   size_t	        i, j, row;

@@ -97,6 +97,7 @@ APOP_VAR_HEAD void apop_plot_line_and_scatter(apop_data *data, apop_model *est, 
     Dispatch_output
     apop_plot_line_and_scatter_base(data, est, Output_vars);
     apop_model_free(est);
+    return;
 APOP_VAR_ENDHEAD
   char  exdelimiter[100];
   FILE *f = output_pipe;
@@ -151,6 +152,7 @@ APOP_VAR_HEAD  void apop_histogram_plot(apop_model *hist, Output_declares){
       apop_assert_void(hist, 0, 's', "Input histogram is NULL.\n");
       Dispatch_output
       apop_histogram_plot_base(hist, Output_vars);
+      return;
 APOP_VAR_ENDHEAD
   gsl_histogram  *h = Apop_settings_get(hist, apop_histogram, pdf);
     histoplot_common(h, 1, Output_vars);
@@ -178,7 +180,6 @@ APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bins, Output_dec
       apop_assert_void(data, 0, 's', "Input histogram is NULL.\n");
       size_t apop_varad_var(bins, GSL_MAX(10, data->size/20));
       Dispatch_output
-      apop_plot_histogram_base(data, bins, Output_vars);
 APOP_VAR_ENDHEAD
   double          min=GSL_POSINF, max=GSL_NEGINF, pt;
   gsl_histogram   *h      = gsl_histogram_alloc(bins);
@@ -204,7 +205,6 @@ APOP_VAR_HEAD void apop_histogram_print(apop_model *h, Output_declares){
       apop_model * apop_varad_var(h, NULL);
       apop_assert_void(h, 0, 's', "Input histogram is NULL.\n");
       Dispatch_output
-      apop_histogram_print_base(h, Output_vars);
 APOP_VAR_ENDHEAD
   apop_histogram_settings *hp = apop_settings_get_group(h, apop_histogram); 
   if (!hp) hp = apop_settings_get_group(h, apop_kernel_density); 
@@ -336,7 +336,6 @@ variables; see the legible output section of the \ref outline for details.
 APOP_VAR_HEAD void apop_vector_print(gsl_vector *data, Output_declares){
     gsl_vector *apop_varad_var(data, NULL);
     Dispatch_output
-    apop_vector_print_base(data, Output_vars);
 APOP_VAR_ENDHEAD
 	print_core_v(data, apop_opts.output_delimiter, Output_vars);
  }
@@ -450,7 +449,6 @@ variables; see the legible output section of the \ref outline for details.
 APOP_VAR_HEAD void apop_data_print(const apop_data *data, Output_declares){
     const apop_data * apop_varad_var(data, NULL);
     Dispatch_output
-    apop_data_print_base(data, Output_vars);
 APOP_VAR_ENDHEAD 
     if (output_type  == 'd'){
         apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(output_file,1),0));
@@ -472,7 +470,6 @@ variables; see the legible output section of the \ref outline for details.
 APOP_VAR_HEAD void apop_matrix_print(const gsl_matrix *data, Output_declares){
     const gsl_matrix *apop_varad_var(data, NULL);
     Dispatch_output
-    apop_matrix_print_base(data, Output_vars);
 APOP_VAR_ENDHEAD
     if (output_type   == 'd')
         apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(output_file,1),0), NULL);
@@ -554,7 +551,6 @@ APOP_VAR_HEAD void apop_plot_lattice(const apop_data *d, Output_declares){
     const apop_data * apop_varad_var(d, NULL);
     apop_assert_void(d, 0, 's', "Input data set is NULL.\n");
     Dispatch_output
-    apop_plot_lattice_base(d, Output_vars);
 APOP_VAR_ENDHEAD
   double  width   = 1.2,//these used to be options, but who's ever gonna set them to something else.
           height  = 1.2;
@@ -612,6 +608,7 @@ APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, Output_declares, s
 
     apop_plot_qq_base(v, m, Output_vars, bins, r);
     if (free_m) apop_model_free(m);
+    return;
 APOP_VAR_ENDHEAD
   FILE  *f = output_pipe;
   double *pctdata = apop_vector_percentiles(v, 'a');
@@ -652,7 +649,6 @@ APOP_VAR_HEAD void apop_plot_triangle(apop_data *in, Output_declares){
     apop_data *apop_varad_var(in, NULL);
     apop_assert_void(in, 0, 's', "You sent me a NULL data set.");
     Dispatch_output
-    apop_plot_triangle_base(in, Output_vars);
 APOP_VAR_ENDHEAD 
     FILE *f=output_pipe;
     apop_assert_void(f, 0, 's', "Error opening file %s for writing.", output_file);

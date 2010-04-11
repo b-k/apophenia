@@ -134,7 +134,6 @@ APOP_VAR_HEAD int apop_table_exists(char *name, char remove){
     char *apop_varad_var(name, NULL)
     apop_assert(name, 0, 0, 's', "You gave me a NULL table name.");
     char apop_varad_var(remove, 'n')
-    return apop_table_exists_base(name, remove);
 APOP_VAR_END_HEAD
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
@@ -169,7 +168,6 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_db_close(char vacuum){
     char apop_varad_var(vacuum, 'q')
-    return apop_db_close_base(vacuum);
 APOP_VAR_END_HEAD
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
@@ -653,7 +651,6 @@ APOP_VAR_HEAD void apop_db_merge_table(char *db_file, char *tabname, char inout)
     Apop_assert_void(tabname, 0,'s', "I need a non-NULL tabname");
     char * apop_varad_var(db_file, NULL);
     char apop_varad_var(inout, 'i');
-    apop_db_merge_table_base(db_file, tabname,inout);
 APOP_VAR_ENDHEAD
     char maine[] = "main";
     char merge_me[] = "merge_me";
@@ -690,7 +687,6 @@ APOP_VAR_HEAD void apop_db_merge(char *db_file, char inout){
     char * apop_varad_var(db_file, NULL);
     Apop_assert_void(db_file, 0, 's', "This function copies from a named database file to the currently in-memory database. You need to give me the name of that named db.")
     char apop_varad_var(inout, 'i');
-    apop_db_merge_base(db_file, inout);
 APOP_VAR_ENDHEAD
   apop_data	*tab_list;
 	apop_query("attach database \"%s\" as filedb;", db_file);

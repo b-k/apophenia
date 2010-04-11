@@ -1707,13 +1707,18 @@ APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
     apop_assert_void(v, 0, 's', "You sent me a NULL vector.");
     int apop_varad_var(i, 0);
     double apop_varad_var(amt, 1);
-    apop_vector_increment_base(v, i, amt);
 APOP_VAR_END_HEAD
 	v->data[i * v->stride]	+= amt;
 }
 \endcode
 
 It is obviously much shorter. The declaration line is actually a C-standard declaration with the \c APOP_VAR_DECLARE preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the \c APOP_VAR_END_HEAD line. Done right, drawing a line between the introductory checks or initializations and the main function can really improve readability.
+
+The sed script inserts a <tt>return function_base(...)</tt> at the end of the header
+function, so you don't have to. If you want to call the funtion before the last line, you
+can do so explicitly, as in the expansion above, and add a bare <tt>return;</tt> to
+guarantee that the call to the base function that the sed script will insert won't ever be
+reached.
 
 One final detail: it is valid to have types with commas in them---function arguments. Because commas get turned to semicolons, and sed isn't a real parser, there is an exception built in: you will have to replace commas with exclamation marks in the header file (only). E.g.,
 

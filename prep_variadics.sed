@@ -10,7 +10,6 @@
 }
 
 
-
 /APOP_VAR_DECLARE/ {
 h
 g
@@ -51,14 +50,42 @@ s/\([^* ]* *(\)/START_OF_FNAME\1/
 s/START_OF_FNAME/, / 
 s/(.*/){/
 s/APOP_VAR_HEAD/apop_varad_head(/
+}
+
+#Here we construct the tail of the header function and the beginning of the base:
+
+# return fn_base (v1, v2, v3);
+# }
+# fn_base(type1 v1, type2 *v2, type3 v3){
+# #endif
+ 
+/APOP_VAR_END_*HEAD/ {
+g
+s/APOP_VAR_HEAD//
+t clear_branches #so above substitution won't matter
+:clear_branches
+#The C standard says that we can't "return void_fn()", so test whether the type is void.  
+#(take care that it isn't void*, which does need a return)
+s/^[ \t]*void[ \t]*\([^*]\)/\t\1/
+t remove_types
+s/^[ \t]*[^ *]*[ *]*/\treturn /
+
+:remove_types
+#comma or paren, text, spaces and stars, text2, comma or endparen 
+#==> comma or paren, text2, comma or endparen
+s/\([,(]\)[ \t]*[^ *,][^ *,]*[ *][ *]*\([^,][^,]*[,)]\)/\1 \2/
+t remove_types
+
+#a favor to the output system as currently written
+s/Output_declares/Output_vars/
+
+s/\(\[^ (]\)* *( */\1_base(/
+s/[{ ]*$/;/
 p
 g
 s/APOP_VAR_HEAD//
 s/\(\[^ (]\)* *(/\1_base(/
 s/\(.*\)[;{]/}\n\n\1{\n#endif/
 h
-d
-}
-/APOP_VAR_END_*HEAD/ {
 g
 }

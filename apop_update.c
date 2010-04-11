@@ -163,7 +163,6 @@ APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_
         if (!spare_rng) spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
         rng = spare_rng;
     }
-    return apop_update_base(data, prior, likelihood, rng);
 APOP_VAR_END_HEAD
   apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
     if (maybe_out) return maybe_out;

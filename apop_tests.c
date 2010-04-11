@@ -240,7 +240,6 @@ APOP_VAR_HEAD double apop_test(double statistic, char *distribution, double p1, 
     char apop_varad_var(tail, 0);
     if (!tail) 
         tail = is_chi ? 'u' : 'a';
-    return apop_test_base(statistic, distribution, p1, p2, tail);
 APOP_VAR_ENDHEAD
     //This is a long and boring function. I am aware that there are
     //clever way to make it shorter.
