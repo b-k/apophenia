@@ -11,13 +11,9 @@
 
 static apop_data *get_category_table(apop_data *d){
     int first_col = d->vector ? -1 : 0;
-    char name[101];
-    snprintf(name, 101, "<categories for %s>", first_col? d->names->vector : d->names->column[0]);
-    apop_data *out = apop_data_get_page(d, name);
-    if (!out) {
-        apop_data_to_factors(d, .intype='d', .incol=first_col, .outcol=first_col);
-        out = apop_data_get_page(d, name);
-    }
+    apop_data *out = apop_data_get_page(d, "<categories");
+    if (!out) 
+        out = apop_data_to_factors(d, .intype='d', .incol=first_col, .outcol=first_col);
     return out;
 }
 
@@ -57,17 +53,14 @@ static double biprobit_log_likelihood(apop_data *d, apop_model *p){
 
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   Nullcheck_mv(p); Nullcheck_pv(p);
-
     gsl_vector *val_vector = get_category_table(p->data)->vector;
     if (val_vector->size!=2){
         gsl_vector * numeric_default = apop_numerical_gradient(d, p);
         gsl_vector_memcpy(gradient, numeric_default);
         gsl_vector_free(numeric_default);
     }
-
   long double	cdf, betax, deriv_base;
   apop_data *betadotx = apop_dot(d, p->parameters); 
-    betadotx->vector = d->vector;
     gsl_vector_set_all(gradient,0);
     for (size_t i=0; i< d->matrix->size1; i++){
         betax            = apop_data_get(betadotx, i, 0);
@@ -81,7 +74,6 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
         for (size_t j=0; j< d->matrix->size2; j++)
             apop_vector_increment(gradient, j, apop_data_get(d, i, j) * deriv_base);
 	}
-    betadotx->vector = NULL;
 	apop_data_free(betadotx);
 }
 

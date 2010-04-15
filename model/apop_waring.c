@@ -176,7 +176,7 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 	*out = x;
 }
 
-apop_model apop_waring = {"Waring", 2,0,0, .dsize=1,
+apop_model apop_waring = {"Waring distribution", 2,0,0, .dsize=1,
 	 .log_likelihood =  waring_log_likelihood, .score = waring_dlog_likelihood, 
      .constraint =  beta_zero_and_one_greater_than_x_constraint,  .draw = waring_rng};
 //estimate via the default MLE 

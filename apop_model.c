@@ -15,9 +15,7 @@ This sets up the output elements of the \c apop_model: the parameters, covarianc
 
 At close, the input model has parameters of the correct size.
 
-\li This is the default action for \ref apop_prep. If your model
-has its own \ref prep method, then that gets used instead, but most
-don't (or call \ref apop_model_clear at the end of their prep routine).
+\li This is the default action for \ref apop_prep. If your model has its own \ref prep method, then that gets used instead, but most don't (or call \ref apop_model_clear at the end of their prep routine).
 
 \ref apop_estimate calls \ref apop_prep internally. 
 
@@ -140,10 +138,7 @@ apop_model * apop_model_copy(apop_model in){
 }
 
 /** \def apop_model_set_parameters
- Take in an unparameterized \c apop_model and return a
-  new \c apop_model with the given parameters. This would have been
-  called apop_model_parametrize, but the OED lists four acceptable
-  spellings for parameterise, so it's not a great candidate for a function name.
+Take in an unparameterized \c apop_model and return a new \c apop_model with the given parameters. This would have been called apop_model_parametrize, but the OED lists four acceptable spellings for parameterise, so it's not a great candidate for a function name.
 
 For example, if you need a N(0,1) quickly: 
 \code
@@ -394,23 +389,13 @@ void apop_prep(apop_data *d, apop_model *m){
 
 static double disnan(double in) {return gsl_isnan(in);}
 
-/** A prediction supplies E(a missing value | original data,
-already-estimated parameters, and other supplied data elements ).
+/** A prediction supplies E(a missing value | original data, already-estimated parameters, and other supplied data elements ).
 
-For a regression, one would first estimate the parameters of the model,
-then supply a row of predictors <b>X</b>. The value of the dependent
-variable \f$y\f$ is unknown, so the system would predict that value. [In
-some models, this may not be the expected value, but is a best value
-for the missing item using some other meaning of `best'.]
+For a regression, one would first estimate the parameters of the model, then supply a row of predictors <b>X</b>. The value of the dependent variable \f$y\f$ is unknown, so the system would predict that value. [In some models, this may not be the expected value, but is a best value for the missing item using some other meaning of `best'.]
 
-For a univariate model (i.e. a model in one-dimensional data space),
-there is only one variable to omit and fill in, so the prediction
-problem reduces to the expected value: E(a missing value | original data,
-already-estimated parameters).
+For a univariate model (i.e. a model in one-dimensional data space), there is only one variable to omit and fill in, so the prediction problem reduces to the expected value: E(a missing value | original data, already-estimated parameters).
 
-In other cases, prediction is the missing data problem: for
-three-dimensional data, you may supply the input (34, \c NaN, 12), and
-the parameterized model provides the most likely value of the middle
+In other cases, prediction is the missing data problem: for three-dimensional data, you may supply the input (34, \c NaN, 12), and the parameterized model provides the most likely value of the middle
 parameter.
 
 \li If you give me a \c NULL data set, I will assume you want all values filled in---the expected value.
@@ -421,16 +406,11 @@ be predicted given the provided data.
 If the model has no \c predict method, the default is to use the 
       \ref apop_ml_impute function to do the work.
 
-\return If you gave me a non-\c NULL data set, I will return that,
-with the zeroth column or the NaNs filled in.  If \c NULL input, I
-will allocate an \ref apop_data set and fill it with the expected values.
+\return If you gave me a non-\c NULL data set, I will return that, with the zeroth column or the NaNs filled in.  If \c NULL input, I will allocate an \ref apop_data set and fill it with the expected values.
 
-There may be a second page (i.e., a \ref apop_data set attached to the
-<tt>->more</tt> pointer of the main) listing confidence and standard
-error information. See your specific model documentation for details.
+There may be a second page (i.e., a \ref apop_data set attached to the <tt>->more</tt> pointer of the main) listing confidence and standard error information. See your specific model documentation for details.
 
-This segment of the framework is in beta---subject to revision of the
-details.
+This segment of the framework is in beta---subject to revision of the details.
 
 \ingroup models
   */

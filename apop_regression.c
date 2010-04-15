@@ -115,8 +115,6 @@ void apop_estimate_parameter_t_tests (apop_model *est){
     apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 4), "test info");
     apop_name_add(ep->names, "p value", 'c');
     apop_name_add(ep->names, "confidence", 'c');
-//    apop_name_add(ep->names, "t statistic", 'c');
-//    apop_name_add(ep->names, "standard deviation", 'c');
     apop_name_add(ep->names, "p value, 1 tail", 'c');
     apop_name_add(ep->names, "confidence, 1 tail", 'c');
     int df   = est->data->matrix   ?
@@ -131,10 +129,6 @@ void apop_estimate_parameter_t_tests (apop_model *est){
     for (size_t i=0; i< est->parameters->vector->size; i++){
         apop_model_add_group(est, apop_pm, .index=i);
         apop_model *m = apop_parameter_model(est->data, est);
-/*        double mu = apop_data_get(m->parameters, 0, -1);
-        double sigma = apop_data_get(m->parameters, 1, -1);
-        double df = apop_data_get(m->parameters, 2, -1);
-        */
 
         double val = gsl_vector_get(param_v, i);
         apop_data_set(one_elmt, 0, 0, val);
@@ -148,17 +142,6 @@ void apop_estimate_parameter_t_tests (apop_model *est){
         apop_data_set(ep, i, .colname="confidence",         .val=1-pval);
         apop_data_set(ep, i, .colname="p value, 1 tail",    .val= val>0 ? over: under);
         apop_data_set(ep, i, .colname="confidence, 1 tail", .val=val > 0 ? under: over);
-
-        /*double tstat = mu/(sigma/sqrt(df));
-        double pval    = (df > 0)? gsl_cdf_tdist_Q(tstat, df): GSL_NAN;
-        double two_tail= (df > 0)? apop_test(tstat, "t", .p1=df) : GSL_NAN;
-        apop_data_set(ep, i, .colname="t statistic",        .val=tstat);
-        apop_data_set(ep, i, .colname="standard deviation", .val=sigma);
-        apop_data_set(ep, i, .colname="p value",            .val=two_tail);
-        apop_data_set(ep, i, .colname="confidence",         .val=1-two_tail);
-        apop_data_set(ep, i, .colname="p value, 1 tail",    .val=pval);
-        apop_data_set(ep, i, .colname="confidence, 1 tail", .val=1-pval);
-        */
     }
     gsl_vector_free(param_v);
     apop_data_free(one_elmt);
@@ -470,10 +453,17 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
         APOP_COL(d, col, to_search);
         delmts          = apop_vector_unique_elements(to_search);
         elmt_ctr = delmts->size;
-        if (d->names->colct > col)
-            snprintf(name, 100, "<categories for %s>", d->names->column[col]);
-        else
-            snprintf(name, 100, "<categories for column %i>", col);
+        if (col == -1){
+            if (d->names->vector)
+                snprintf(name, 100, "<categories for %s>", d->names->vector);
+            else
+                snprintf(name, 100, "<categories for vector>");
+        } else {
+            if (d->names->colct > col)
+                snprintf(name, 100, "<categories for %s>", d->names->column[col]);
+            else
+                snprintf(name, 100, "<categories for column %i>", col);
+        }
         *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr, 0, 0), name);
         apop_text_alloc((*factor_list), delmts->size, 1);
         for (size_t i=0; i< (*factor_list)->vector->size; i++){
@@ -665,7 +655,7 @@ APOP_VAR_END_HEAD
     if (intype=='t'){
         apop_assert_void(incol < data->textsize[1], 0, 's', "You asked for the text column %i but the "
                                             "data's text has only %i elements.", incol, data->textsize[1]);
-    }else{
+    } else {
         apop_assert_void((incol != -1) || data->vector, 0, 's', "You asked for the vector of the data set but there is none.");
         apop_assert_void((incol == -1) || (incol < data->matrix->size2), 0, 's', "You asked for the matrix column %i but "
                                             "the matrix has only %zu elements.", incol, data->matrix->size2);

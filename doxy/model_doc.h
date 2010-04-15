@@ -376,11 +376,27 @@ And now the parameter vector is a proper list of probabilities.
     Estimate_results7, /**<  Parameters are estimated. Covariance matrix
                          is filled.   */
     Prep_routine7, /**<   None.      */
-    RNG7, /**< Yes. If you've set this to rank-type, you get a vector of two outputs:
-            <tt>out[0]</tt>=number of zero draws, 
-            <tt>out[1]</tt>=number of one draw. If you are not using the rank option, then
-            I fill an array of length \c n, with a sequence of randomly drawn ones and
-            zeros. */
+    RNG7, /**< Yes. The result of an imaginary tossing of \f$N\f$ balls into \f$k\f$ urns, with the
+            given probabilities.
+            
+            If you've set this to rank-type, you get a vector of k outputs:
+            <tt>out[0]</tt>=number of zero draws, <br>
+            <tt>out[1]</tt>=number of one draws,<br>
+            ...<br>
+            <tt>out[k-1]</tt>=number of k-1 draws.<br>
+            The vectork will sum to \f$N\f$.
+
+            If you are not using the rank option, then
+            I fill an array of length \c N, with a sequence of draws from zero to \f$N\f$. They
+            are not randomly ordered: it'll look something like \f$[0 0 1 1 3 3 3]\f$, but
+            will still be an accurate representation of what happens when you throw
+            \f$N\f$ balls into \f$k\f$ urns and sum the results. 
+            
+            If you want the sequence of draws to be random at the per-item scale,
+            set \f$N=1\f$. and use a \c for loop to make the number of draws you
+            want. This is less efficient.
+
+            */
     settings7, /**<  \ref apop_rank_settings    */
     Example7 /**<      */
 } ;
@@ -635,7 +651,7 @@ Apop_settings_add_group(your_model, apop_rank, NULL);
 \todo This function needs better testing.
 \hideinitializer \ingroup models */
 enum apop_waring {
-    Name17,         /**< <tt>Waring</tt>*/
+    Name17,         /**< <tt>Waring distribution</tt>*/
     Data_format17,  /**<    
 Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
      */
