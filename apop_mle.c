@@ -246,15 +246,9 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-/** Produce the covariance matrix for the parameters of an estimated model
-via the derivative of the score function at the parameter. I.e., I find the 
- second derivative via \ref apop_model_hessian , and take the negation of the inverse.
+/** Produce the covariance matrix for the parameters of an estimated model via the derivative of the score function at the parameter. I.e., I find the second derivative via \ref apop_model_hessian , and take the negation of the inverse.
 
-I follow Efron and Hinkley in using the estimated information matrix---the
-value of the information matrix at the estimated value of the score---not
-the expected information matrix that is the integral over all possible
-data. See Pawitan 2001 (who cribbed a little off of Efron and Hinkley) or Klemens
-2008 (who directly cribbed off of both) for further details. 
+I follow Efron and Hinkley in using the estimated information matrix---the value of the information matrix at the estimated value of the score---not the expected information matrix that is the integral over all possible data. See Pawitan 2001 (who cribbed a little off of Efron and Hinkley) or Klemens 2008 (who directly cribbed off of both) for further details. 
 
  \param data The data by which your model was estimated
  \param model A model whose parameters have been estimated.
@@ -515,10 +509,10 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
   apop_model		        *est        = i->model;
   apop_mle_settings         *mp         = apop_settings_get_group(est, apop_mle);
   assert(mp);
-  int			            status,
+  int                       status,
                             apopstatus  = 0,
-			                iter 		= 0,
-				            betasize= i->beta->size;
+                            iter 		= 0,
+                            betasize= i->beta->size;
   size_t 			        j;
   gsl_multimin_fminimizer   *s;
   gsl_vector 		        *ss;

@@ -30,7 +30,7 @@ static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
     apop_data_add_named_elmt(est->info, "log likelihood", bernoulli_log_likelihood(data, est));
     apop_data *cov = apop_data_alloc(0,1,1);
     apop_data_set(cov, 0,0, p*(1-p));
-    apop_data_add_page(est->parameters, cov, "Covariance");
+    apop_data_add_page(est->parameters, cov, "<Covariance>");
 	return est;
 }
 
@@ -40,7 +40,7 @@ static double bernoulli_constraint(apop_data *data, apop_model *inmodel){
     if (!constraint){
         constraint= apop_data_calloc(2,2,1);
         apop_data_fill(constraint, 0., 1.,
-                                -1., -1.);
+                                  -1., -1.);
     }
     return apop_linear_constraint(inmodel->parameters->vector, constraint, 1e-3);
 }

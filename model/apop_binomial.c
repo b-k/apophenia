@@ -54,7 +54,7 @@ static void make_covar(apop_model *est){
             apop_data_set(cov, j, i, -n*p*pj);
         }
     }
-    apop_data_add_page(est->parameters, cov, "Covariance");
+    apop_data_add_page(est->parameters, cov, "<Covariance>");
     pv[0]=n;
 }
 
@@ -99,7 +99,7 @@ static double binomial_cdf(apop_data *d, apop_model *est){
     get_hits_and_misses(d, method, &hitcount, &misscount);   
     double n = gsl_vector_get(est->parameters->vector, 0);
     double p = gsl_vector_get(est->parameters->vector, 1);
-    for (int i=0; i< hitcount; i++)
+    for (int i=0; i<= hitcount; i++)
         psum += gsl_ran_binomial_pdf(hitcount, p, n);
     return psum;
 }
@@ -110,6 +110,7 @@ static double multinomial_constraint(apop_data *data, apop_model *b){
 }
 
 static void binomial_rng(double *out, gsl_rng *r, apop_model* est){
+  Nullcheck_mv(est); Nullcheck_pv(est);
   double n = gsl_vector_get(est->parameters->vector, 0);
   double p = gsl_vector_get(est->parameters->vector, 1);
   char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
@@ -148,7 +149,7 @@ static gsl_vector * get_multinomial_hitcount(const apop_data *data, char method)
 }
 
 static double multinomial_log_likelihood(apop_data *d, apop_model *params){
-  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+    Nullcheck(params); Nullcheck_p(params);
     double *pv = params->parameters->vector->data;
     size_t size = params->parameters->vector->size;
     char method = apop_settings_get_group(params, apop_rank) ? 'b' : 't';
@@ -170,7 +171,7 @@ static double multinomial_log_likelihood(apop_data *d, apop_model *params){
 }
 
 static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
-    apop_assert(data,  0, 0,'s', "You asked me to estimate the parameters of a model but sent NULL data.");
+    Nullcheck(est);
     char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
     gsl_vector * count = get_multinomial_hitcount(data, method);
     //int n = apop_sum(count); //potential double-to-int precision issues.
@@ -198,7 +199,6 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     Nullcheck_pv(est);
     char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
     double * p = est->parameters->vector->data;
-    size_t k = est->parameters->vector->size;
     //the trick where we turn the params into a p-vector
     int N = p[0];
     p[0] = 1 - (apop_sum(est->parameters->vector)-N);
@@ -206,24 +206,18 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     int draw, ctr = 0;
     unsigned int sum_n = 0;
 
-  /* p[i] may contain non-negative weights that do not sum to 1.0.
-   * Even a probability distribution will not exactly sum to 1.0
-   * due to rounding errors. 
-   */
-    double norm = apop_sum(est->parameters->vector);
-
-    for (int i = 0; i < k; i++) {
-        if (p[i] > 0.0)
-            draw = gsl_ran_binomial (r, p[i] / (norm - sum_p), N - sum_n);
+    for (int i = 0; sum_n < N; i++) {
+        if (p[i] > 0)
+            draw = gsl_ran_binomial (r, p[i] / (1 - sum_p), N - sum_n);
         else
             draw = 0;
         if (method == 'b')
             out[i] = draw;
         else
-            for (int k=0; k < draw; k++)
+            for (int j=0; j< draw; j++)
                 out[ctr++] = i;
         sum_p += p[i];
-        sum_n += out[i];
+        sum_n += draw;
     }
     p[0]=N;
 }

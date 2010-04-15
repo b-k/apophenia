@@ -197,7 +197,7 @@ APOP_VAR_ENDHEAD
         Get_vmsizes(in);
         apop_data *copy = apop_data_copy(in);
         double outsum = 0;
-        for (int i = 0; i< vsize ? vsize : msize1; i++){
+        for (int i = 0; i< (vsize ? vsize : msize1); i++){
             apop_data_row r = apop_data_get_row(copy, i);
             outsum += fn_r ? fn_r(r) : fn_rp(r, param);
         }

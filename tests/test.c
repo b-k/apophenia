@@ -27,8 +27,6 @@ gsl_rng *r_global;
 //void random_draw(double *in) { *in = gsl_rng_uniform(r_global);}
 double nan_map(double in){return gsl_isnan(in);}
 
-double  true_parameter_v[]    = {1.82,2.1};
-//double  true_parameter_v[]    = {0.8,0.2};
 double  tolerance           = 1e-5;
 double  lite_tolerance      = 1e-2;
 int     len                 = 8000;
@@ -630,7 +628,7 @@ void test_lognormal(gsl_rng *r){
 }
 
 void test_multivariate_normal(gsl_rng *r){
-  int       len = 3e5;
+  int       len = 4e5;
   size_t    i;
   apop_data *rdraws = apop_data_alloc(0, len, 2);
   double params[] = {1, 3, 0,
@@ -820,7 +818,7 @@ void test_transpose(){
 apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, apop_model *method){
   int i, j;
   double val;
-  int samples = 1e6;
+  int samples = 1e5;
   apop_data *data = apop_data_alloc(0, samples, true_params->size);
         //generate a random vector of data X, then set the outcome to one if the probit/logit condition holds
         for (i = 0; i < samples; i++){
@@ -1028,28 +1026,57 @@ void estimate_model(apop_data *data, apop_model dist, int method, apop_data *tru
     apop_data_free(data);
 }
 
+double  true_parameter_v[]    = {1.82,2.1};
+
 void test_distributions(gsl_rng *r){
   if (verbose) printf("\n");
   int         i;
   apop_model* true_params;
   apop_model  null_model      = {"the null model"};
-  apop_model  dist[]          = {apop_zipf, apop_gamma,  apop_poisson, apop_exponential, 
-                      apop_normal, apop_t_distribution, /*apop_wishart, apop_f_distribution,*/ 
-                      apop_yule, apop_uniform,  apop_dirichlet, null_model};
+  apop_model  dist[]          = {
+                apop_beta, apop_bernoulli, apop_binomial, 
+               /* apop_chi_squared,*/
+                apop_dirichlet, apop_exponential, 
+               /* apop_f_distribution,*/
+                apop_gamma, 
+                apop_lognormal, apop_multinomial, apop_multivariate_normal,
+                apop_normal, apop_poisson,
+                apop_t_distribution, apop_uniform,
+                apop_waring, /*apop_wishart,*/
+                apop_yule, apop_zipf, null_model};
 
     for (i=0; !apop_strcmp(dist[i].name, "the null model"); i++){
-        if (verbose) {printf("%s: ", dist[i].name); fflush(NULL);}
+        if (verbose) {printf("\t%s: ", dist[i].name); fflush(NULL);}
         true_params   = apop_model_copy(dist[i]);
         true_params->parameters = apop_line_to_data(true_parameter_v, dist[i].vbase==1 ? 1 : 2,0,0);
         if (apop_strcmp(dist[i].name, "Dirichlet distribution"))
             dist[i].dsize=2;
+        if (apop_strcmp(dist[i].name, "Beta distribution"))
+            true_params->parameters = apop_line_to_data((double[]){.5, .2} , 2,0,0);
+        if (apop_strcmp(dist[i].name, "Bernoulli distribution"))
+            true_params->parameters = apop_line_to_data((double[]){.1} , 1,0,0);
+        if (apop_strcmp(dist[i].name, "Binomial distribution")){
+            true_params->parameters = apop_line_to_data((double[]){15, .2} , 2,0,0);
+            dist[i].dsize=15;
+        }
+        if (apop_strcmp(dist[i].name, "Multivariate normal distribution")){
+            true_params->parameters = apop_line_to_data((double[]){15, .5, .2,
+                                                                    3, .2, .5} , 2,2,2);
+            dist[i].dsize=2;
+        }
+        if (apop_strcmp(dist[i].name, "Multinomial distribution")){
+            true_params->parameters = apop_line_to_data((double[]){15, .5, .2, .1} , 4,0,0);
+            dist[i].dsize=15;
+        }
         if (apop_strcmp(dist[i].name, "gamma distribution"))
             true_params->parameters = apop_line_to_data((double[]){1.5, 2.5} , 2,0,0);
         if (apop_strcmp(dist[i].name, "t distribution"))
             true_params->parameters = apop_line_to_data((double[]){1, 3, 996} , 3,0,0);
-        if (apop_strcmp(dist[i].name, "Wishart distribution"))
+        if (apop_strcmp(dist[i].name, "Wishart distribution")){
             true_params->parameters = apop_line_to_data((double[]){996, .2, .1,
-                                                                        .1, .9}, 1,2,2);
+                                                                     0, .1, .2}, 2,2,2);
+            apop_vector_realloc(true_params->parameters->vector, 1);
+        }
         test_one_distribution(r, dist[i], true_params);
         printf("Passed.\n");
     }
@@ -1157,7 +1184,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
-
+    do_test("test distributions", test_distributions(r));
     do_test("test apop_map on apop_data_rows", test_apop_map_row());
     do_test("test optimization of multi-page parameters", pack_test());
     do_test("Kullback-Leibler divergence test", test_kl_divergence(r));
@@ -1168,7 +1195,6 @@ int main(int argc, char **argv){
     do_test("test regex", test_regex());
     do_test("test adaptive rejection sampling", test_arms(r));
     do_test("test listwise delete", test_listwise_delete());
-    do_test("test distributions", test_distributions(r));
     //do_test("test rank distributions", test_rank_distributions(r));
     do_test("test ML imputation", test_ml_imputation(r));
     do_test("test apop_update", test_updating(r));
@@ -1209,9 +1235,9 @@ int main(int argc, char **argv){
     do_test("transposition test", test_transpose());
     do_test("test unique elements", test_unique_elements());
     if (slow_tests){
-        if (verbose) printf("Slower tests:\n");
-        do_test("Test score (dlog likelihood) calculation", test_score());
+        if (verbose) printf("\tSlower tests:\n");
         do_test("test probit and logit", test_probit_and_logit(r));
+        do_test("Test score (dlog likelihood) calculation", test_score());
     }
     printf("\nApophenia has passed all of its tests. Yay.\n");
     return 0;
