@@ -2,10 +2,6 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-/** \defgroup boot Bootstrapping
-
-*/
-
 #include "model.h"
 #include "variadic.h"
 #include "likelihoods.h"
@@ -35,7 +31,7 @@ The basic algorithm for the jackknife (with many details glossed over): create a
 sets, each with exactly one observation removed, and then produce a new set of parameter estimates 
 using that slightly shortened data set. Then, find the covariance matrix of the derived parameters.
 
-Should I use the jackknife or the bootstrap? As a broad rule of thumb, the jackknife works best on models that are closer to linear. The worse a linear approximation does (at the given data), the worse the jackknife approximates the variance.
+Jackknife or bootstrap? As a broad rule of thumb, the jackknife works best on models that are closer to linear. The worse a linear approximation does (at the given data), the worse the jackknife approximates the variance.
 
 Sample usage:
 \code
@@ -46,8 +42,7 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 \param model    An \ref apop_model, that will be used internally by \ref apop_estimate.
             
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
-
-\ingroup boot
+\see{apop_bootstrap_cov}
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
   apop_assert(in,  NULL, 0, 's', "You sent me NULL input data.");
@@ -108,7 +103,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
 This function uses the \ref designated syntax for inputs.
-\ingroup boot
+\see{apop_jackknife_cov}
  */
 APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *rng, int iterations) {
     static gsl_rng *spare = NULL;

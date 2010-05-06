@@ -1,4 +1,4 @@
-/** \file apop_model_fix_params.c 
+/** \file 
  Set some of the parameters of a model to fixed values.*/
 
 /* There's only one function here. Its header is in likelihoods.h

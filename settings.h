@@ -17,7 +17,7 @@ void apop_settings_remove_group(apop_model *m, char *delme);
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme);
 void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
 
-/** Retrieves a settings group from a model.  See \ref apop_settings_get
+/** Retrieves a settings group from a model.  See \ref Apop_settings_get
  to just pull a single item from within the settings group.
 
   If it isn't found, then it returns NULL, so you can easily put it in a conditional like 
@@ -42,13 +42,13 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 #define Apop_model_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__})); 
 
-/* A convenience for your settings group init functions. 
+/** A convenience for your settings group init functions. 
  Gives the output item either the default value if there is one, or the value you specify. 
 \hideinitializer \ingroup settings
  */
 #define apop_varad_setting(in, out, name, value) (out)->name = (in).name ? (in).name : (value);
 
-/** Retrieves a setting from a model.  See \ref Apop_settings_get_group pull the entire group.
+/** Retrieves a setting from a model.  See \ref Apop_settings_get_group to pull the entire group.
 \hideinitializer \ingroup settings
  */
 #define Apop_settings_get(model, type, setting)  \
@@ -59,7 +59,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
  */
 #define Apop_settings_set(model, type, setting, data)  \
     do { type ## _settings *apop_tmp_settings = apop_settings_get_grp(model, #type);  \
-    apop_assert_void(apop_tmp_settings, 0, 's', "You're trying to modify a setting in " \
+    apop_assert_s(apop_tmp_settings, "You're trying to modify a setting in " \
                         #model "'s setting group of type " #type " but that model doesn't have such a group."); \
     apop_tmp_settings->setting = (data);    \
     } while (0);
@@ -139,24 +139,6 @@ typedef struct {
     apop_model *input_distribution; /**< The distribution of \f$P(Y|X)\f$ is specified by the model, but the distribution of \f$X\f$ is not.  */
 } apop_lm_settings;
 
-#if 0
-// Find apop_category_settings routines in apop_probit.c
-/** For dependent-category models, send in this settings struct to specify which column is the dependent variable. 
-
- If you don't use it, these models will assume that the vector or first numeric column is already a coherent set of factors, but by sending this in, those functions have a little more information, such as names to use in the output.
-
-See also the \ref apop_category_settings_init function.
-\ingroup settings
-*/
-typedef struct {
-    apop_data *factors; 
-    char source_type; /**< source_type \c 't' = text; anything else (\c 'd' is a good choice) is  numeric data. */
-    int source_column; /**<  The number of the column to convert to factors.  As usual, the vector is -1. */
-    apop_data *source_data; /**< The input data set that you're probably about to run a regression on */
-} apop_category_settings;
-#endif
-
-
 //in apop_exponential.c
 /** If this settings group is present, models that can take rank data
   will read the input data as such.  Allocation is thus very simple, e.g.
@@ -210,7 +192,7 @@ typedef struct{
                             that to me explicitly, or I can wrap the .base_data in a PMF.  */
     apop_model *kernel; /**< The distribution to be centered over each data point. Default, 
                                     \ref apop_normal with std dev 1. */
-    void (*set_fn)(apop_data_row, apop_model*); /**< The function I will use for each data
+    void (*set_fn)(apop_data*, apop_model*); /**< The function I will use for each data
                                                   point to center the kernel over each point.*/
     int own_pmf, own_kernel; /**< For internal use only. */
 }apop_kernel_density_settings;

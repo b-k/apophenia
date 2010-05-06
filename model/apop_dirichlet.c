@@ -24,7 +24,7 @@ static double dirichlet_log_likelihood(apop_data *d, apop_model *p){
 }
 
 static void dirichlet_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
-    Nullcheck_mv(m); Nullcheck_pv(m);
+    Nullcheck_m(m); Nullcheck_p(m);
     double param_sum = apop_sum(m->parameters->vector);
     int n = d->matrix->size1;
     for(size_t i=0; i < m->parameters->vector->size; i ++){

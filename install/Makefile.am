@@ -87,16 +87,14 @@ EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/triangle.png doxy/right.png doxy/
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 
 doc: 
-	cp model/*.c .
-	mv doxy/documentation.h doxy/model_doc.h .
 	doxygen doxy/doxyconfig
 	cp doxy/flake.gif doxy/search.gif doxy/right.png doxy/down.png html/
-	sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)</p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
+	@sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)</p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
 -e 's|endofdiv</p>|</div>|' \
 -e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/index.html
-	sed -i -e '/index_x/s/- x -/ /' -e '/index_a/s/- a -/ /' -e '15,27d' -e '/Here is a list of all/d' -e '/<span>[a-z]<\/span><\/a><\/li>/d' html/globals.html
-	sed -i 's|<td width="100%"></td>||g' html/*html
-	sed -i -f doxy/edit_group html/group__models.html 
+	@sed -i -e '/index_x/s/- x -/ /' -e '/index_a/s/- a -/ /' -e '15,27d' -e '/Here is a list of all/d' -e '/<span>[a-z]<\/span><\/a><\/li>/d' html/globals.html
+	@sed -i 's|<td width="100%"></td>||g' html/*html
+	@sed -i -f doxy/edit_group html/group__models.html 
 	cp doxy/*js html/
 	mv html/index.html html/outline.html
 	sudo cp man/man3/* /usr/share/man/man3/

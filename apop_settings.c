@@ -1,5 +1,5 @@
-/** \file apop_settings.c 
-                            Specifying model characteristics and details of estimation methods. */
+/** \file 
+         Specifying model characteristics and details of estimation methods. */
 /* Copyright (c) 2008--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "types.h"
 #include "settings.h"
@@ -13,7 +13,7 @@ static size_t get_settings_ct(apop_model *model){
 
 /** Remove a settings group from a model.
 
-  But use \ref apop_settings_rm_group instead; that macro uses this function internally.
+  But use \ref Apop_settings_rm_group instead; that macro uses this function internally.
 
   If the model has no settings or your preferred settings group is not found, this function does nothing.
  */
@@ -50,7 +50,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
     return model->settings[ct].setting_group;
 }
 
-/** This function is used internally by the macro \ref apop_settings_get_group. Use that.  */
+/** This function is used internally by the macro \ref Apop_settings_get_group. Use that.  */
 void * apop_settings_get_grp(apop_model *m, char *type){
   int   i = 0;
     if (!m->settings) return NULL;

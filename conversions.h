@@ -59,8 +59,6 @@ apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
 gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double []);
 
-apop_data_row apop_data_get_row(apop_data *d, int row_number);
-
 #ifdef	__cplusplus
 }
 #endif

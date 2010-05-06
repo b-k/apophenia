@@ -102,7 +102,7 @@ double apop_vector_skew_pop(const gsl_vector *in){
 
 /** Returns the population kurtosis (\f$\sum_i (x_i - \mu)^4/n)\f$) of the data in the given vector.
  
-  Some people like to normalize the skew by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
+  Some people like to normalize the kurtosis by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
 \ingroup vector_moments
 */
 double apop_vector_kurtosis_pop(const gsl_vector *in){
@@ -780,7 +780,7 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
 through it for the points in the summation.
 
 \li If you have two empirical distributions, that they must be synced: if \f$p_i>0\f$
-but \f$q_i=0\f$, then the function returns \c GSL_NEGINF. If <tt>apop_opts.verbose >=1<tt>
+but \f$q_i=0\f$, then the function returns \c GSL_NEGINF. If <tt>apop_opts.verbose >=1</tt>
 I print a message as well.
 
 If neither distribution is empirical, then I'll take \c draw_ct random draws from \c bottom and evaluate at those points.

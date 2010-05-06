@@ -90,8 +90,8 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
     }
 }
 
-/** This is designed to be called from within your own constraint
- function. Just write the constraint vector+matrix and this will do the rest.
+/** This is designed to be called from within the constraint method of your \ref
+  apop_model. Just write the constraint vector+matrix and this will do the rest.
  
  \param beta    The proposed vector about to be tested. (No default, must not be \c NULL)
  \param constraint  The constraints. See \ref apop_f_test on writing (Default: each elements is greater than zero)

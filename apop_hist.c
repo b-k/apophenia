@@ -168,7 +168,6 @@ static double psmirnov2x(double x, int m, int n) {
 
  \ingroup histograms
  */
-//apop_data *apop_test_kolmogorov(gsl_histogram *h1, gsl_histogram *h2){
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
   gsl_histogram *h1 = Apop_settings_get(m1, apop_histogram, pdf);
   gsl_histogram *h2 = Apop_settings_get(m2, apop_histogram, pdf);

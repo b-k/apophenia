@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-/** This structure holds the names of the components of the \ref apop_data set. You may never have to worry about it directly, because most operation on \ref apop_data sets will take care of the names for you.
+/** This structure holds the names of the components of the \ref apop_data set. You may never have to worry about it directly, because most operations on \ref apop_data sets will take care of the names for you.
 \ingroup names
 */
 typedef struct{
@@ -39,29 +39,6 @@ struct _apop_data{
     gsl_vector  *weights;
     apop_data   *more;
 };
-
-/** The \ref apop_data_row is a single row from an \ref apop_data set. It is especially useful
-  in the context of \ref apop_map, which will let you write functions to act on one of
-  these at a time. Because this is a single row from the set, each element has a different
-type: one element from the vector is now a pointer-to-\c double named \c vector_pt; \c matrix_row 
-is a \c gsl_vector, et cetera.
-
-\li \c vector_pt and \c weight are pointers to the element in the original data set, so
-changes to these values affect the original data set.
-\li Similarly, \c matrix_row is a subview of the main matrix. The view \c mrv is needed to
-make this happen; consider \c mrv to be a read-only internal variable.
-\li \c column_names just points to your original data set's <tt>yourdata->names->column</tt>
-element.
-*/
-typedef struct {
-    double *vector_pt;
-    gsl_vector matrix_row;
-    char **text_row;
-    char **column_names;
-    int textsize;
-    int index;
-    double *weight;
-} apop_data_row;
 
 /** A description of a parametrized statistical model, including the input settings and the output parameters, predicted/expected values, et cetera.  The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
 */
@@ -133,7 +110,7 @@ typedef struct{
     char db_engine; /**< If this is 'm', use mySQL, else use SQLite. */
     char db_user[101]; /**< Username for database login. Max 100 chars.  */
     char db_pass[101]; /**< Password for database login. Max 100 chars.  */
-    int  thread_count; /**< Threads to use internally. See \ref apop_matrix_apply and family.  */
+    int  thread_count; /**< Threads to use internally. See \ref apop_map and family.  */
     int  rng_seed;
     float version;
 } apop_opts_type;
@@ -141,7 +118,7 @@ typedef struct{
 extern apop_opts_type apop_opts;
 
 apop_name * apop_name_alloc(void);
-int apop_name_add(apop_name * n, char *add_me, char type);
+int apop_name_add(apop_name * n, char const *add_me, char type);
 void  apop_name_free(apop_name * free_me);
 void  apop_name_print(apop_name * n);
 APOP_VAR_DECLARE void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd);
@@ -155,15 +132,15 @@ As with \c free(), it is safe to send in a \c NULL pointer (in which case the fu
 If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
 If you don't want to free data sets down the chain, set <tt>more=NULL</tt> before calling this.
 
-\li This is actually a macro (that calls \ref apop_data_free_fn to do the real work). It
+\li This is actually a macro (that calls \ref apop_data_free_base to do the real work). It
 sets \c freeme to \c NULL when it's done, because there's nothing safe you can do with the
 freed location, and you can later safely test conditions like <tt>if (data) ...</tt>.
 
  \ingroup data_struct
   */
-#define apop_data_free(freeme) {apop_data_free_fn(freeme); (freeme)= NULL; }
+#define apop_data_free(freeme) do {apop_data_free_base(freeme); (freeme)= NULL; } while (0)
 
-void        apop_data_free_fn(apop_data *freeme);
+void        apop_data_free_base(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
 apop_data * apop_data_alloc(const size_t, const size_t, const int);
@@ -184,7 +161,7 @@ apop_data *apop_data_transpose(apop_data *in);
 gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth);
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 
-#define apop_data_prune_columns(in, ...) apop_data_prune_columns_base((in), (char *[]) {__VA_ARGS__, ""})
+#define apop_data_prune_columns(in, ...) apop_data_prune_columns_base((in), (char *[]) {__VA_ARGS__, NULL})
 void apop_data_prune_columns_base(apop_data *d, char **colnames);
 
 APOP_VAR_DECLARE apop_data * apop_data_get_page(const apop_data * data, const char * title);

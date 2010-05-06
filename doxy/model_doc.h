@@ -66,7 +66,7 @@ enum apop_lm_family{
         anything about the distribution of \f$X\f$.
 
      The \ref apop_lm_settings group includes an \ref apop_model* element named
-     \ref input_distribution. This is the distribution of the
+     \c input_distribution. This is the distribution of the
      independent/predictor/X columns of the data set. 
 
      The default is that <tt>input_distribution = apop_improper_uniform </tt>, meaning
@@ -491,6 +491,32 @@ of the point. Sum all of these distributions to form the output histogram.
 The output is a histogram that behaves exactly like the \ref apop_histogram model,
 except the histobase and kernelbase elements of the \ref
 apop_histogram_settings struct are set.
+
+Elements of \ref apop_kernel_density_settings that you may want to set:
+
+\li data    a data set, which, if  not \c NULL and \c !histobase , will be converted to a histogram.
+\li histobase This is the preferred format for input data. It is the histogram to be smoothed.
+\li kernelbase The kernel to use for smoothing, with all parameters set and a \c p method. Popular favorites are \ref apop_normal and \ref apop_uniform.
+\li set_params A function that takes in a single number and the model, and sets
+the parameters accordingly. The function will call this for every point in the data
+set. Here is the default, which is used if this is \c NULL. It simply sets the first
+element of the model's parameter vector to the input number; this is appropriate for a
+Normal distribution, where we want to center the distribution on each data point in turn.
+
+\code
+void apop_set_first_param(double in, apop_model *m){
+    m->parameters->vector->data[0] = in;
+}
+\endcode
+
+For a Uniform[0,1] recentered around each point, you'd want to put this function in your code:
+
+\code
+void set_midpoint(double in, apop_model *m){
+    m->parameters->vector->data[0] = in-0.5;
+    m->parameters->vector->data[1] = in+0.5;
+}
+\endcode
 
 The following example sets up and uses KDEs based on a Normal and a Uniform distribution.
 

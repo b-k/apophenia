@@ -42,7 +42,7 @@ static void yule_dlog_likelihood_rank(apop_data *d, gsl_vector *gradient, apop_m
 }
 
 static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
-  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(m); Nullcheck_p(m);
     //constraint is 1 < beta_1
   static apop_data *constraint = NULL;
     if (!constraint){
@@ -76,7 +76,7 @@ static double yule_log_likelihood(apop_data *d, apop_model *m){
 
 static void yule_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
   Get_vmsizes(d) //tsize
-  Nullcheck_v(d); Nullcheck_mv(m); Nullcheck_pv(m);
+  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
     if (apop_settings_get_group(m, apop_rank))
       return yule_dlog_likelihood_rank(d, gradient, m);
 	//Psi is the derivative of the log gamma function.

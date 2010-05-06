@@ -13,7 +13,6 @@
 #define YCEIL 50.                /* maximum y avoiding overflow in exp(y) */
 
 /* declarations for functions defined in this file  (minus those in arms.h). */
-void sample(arms_state *env, POINT *p, gsl_rng *r);
 void invert(double prob, arms_state *env, POINT *p);
 int test(arms_state *state, POINT *p,  apop_arms_settings *params, gsl_rng *r);
 int update(arms_state *state, POINT *p,  apop_arms_settings *params);
@@ -58,11 +57,11 @@ apop_arms_settings *apop_arms_settings_init(apop_arms_settings in){
     apop_varad_setting(in, out, xprev, (out->xinit[0]+out->xinit[out->ninit-1])/2.);
     apop_varad_setting(in, out, neval, 1000);
     apop_varad_setting(in, out, model, NULL);
-    apop_assert(out->model, NULL, 0, 's', "the model input (e.g.: .model = parent_model) is mandatory.");
+    apop_assert_s(out->model, "the model input (e.g.: .model = parent_model) is mandatory.");
 
   // allocate the state 
     out->state = malloc(sizeof(arms_state));
-    apop_assert(out->state, NULL, 0, 's', "Malloc failed. Out of memory?");
+    apop_assert_s(out->state, "Malloc failed. Out of memory?");
   int err = initial(out, out->state);
   apop_assert(!err, NULL, 0, 'c', "init failed, error %i. Returning NULL", err);
 
@@ -91,19 +90,8 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
 
 \li There are a great number of parameters, in the \c apop_arms_settings structure.  The structure also holds a history of the points tested to date. That means that the system will be more accurate as more draws are made. It also means that if the parameters change, or you use \ref apop_model_copy, you should call <tt>Apop_settings_rm_group(your_model, apop_arms)</tt> to clear the model of points that are not valid for a different situation.
 
-\li Here are the parameters that you may want to set, via a form like <tt>apop_model_add_group(your_model, apop_arms, .model=your_model, .xl=8, .xr =14);</tt>.  The \c model element is mandatory; you'll get a run-time complaint if you forget it.
+\li See \ref apop_arms_settings for the list of parameters that you may want to set, via a form like <tt>apop_model_add_group(your_model, apop_arms, .model=your_model, .xl=8, .xr =14);</tt>.  The \c model element is mandatory; you'll get a run-time complaint if you forget it.
 
-\c model : the model from which I will draw. Must have either a \c log_likelihood or \c p method.<br>
- \c *xinit       : a <tt>double*</tt> giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't \c NULL, I need at least three items.<br>
- \c ninit        : number of elements in xinit<br>
- \c xl          : left bound. If you don't give me one, I'll use min[min(xinit)/10, min(xinit)*10]. <br>
- \c xr          : right bound. If you don't give me one, I'll use max[max(xinit)/10, max(xinit)*10]. <br>
- \c convex      : adjustment for convexity <br>
- \c npoint       : maximum number of envelope points. I \c malloc space for this many <tt>double</tt>s at the outset default = 1e5<br>
- \c do_metro     : whether the metropolis step is required (I.e., set to
- one if you're not sure if the function is log-concave). Set  to <tt>'y'</tt>es or <tt>'n'</tt>o<br>
- \c *xprev       : previous value from Markov chain <br>
- \c *neval       : on exit, the number of function evaluations performed 
 
   */
 void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
@@ -115,7 +103,11 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
   arms_state *state = params->state; 
   /* now do adaptive rejection */
   do {
-    sample (state,&pwork, r); // sample a new point 
+    // Sample a new point from piecewise exponential envelope 
+    double prob = gsl_rng_uniform(r);
+    /* get x-value correponding to a cumulative probability prob */
+    invert(prob,state,&pwork);
+
     /* perform rejection (and perhaps metropolis) tests */
     int i = test(state,&pwork, params, r);
     if (i == 1){ // point accepted 
@@ -124,7 +116,7 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
         assert(!gsl_isnan(pwork.x));
         return;
     } else if (i != 0) 
-      apop_assert_void(0, 0, 's', "envelope error - violation without metropolis")
+      apop_assert_s(0, "envelope error - violation without metropolis")
     msamp ++;
 //    if (apop_opts.verbose) printf(" point rejected.\n");
   } while (msamp < 1e4);
@@ -188,17 +180,6 @@ int initial (apop_arms_settings* params,  arms_state *env){
   env->cpoint = mpoint; // note number of POINTs currently in envelope
   return 0;
 }
-
-void sample(arms_state *env, POINT *p, gsl_rng *r){
-/* To sample from piecewise exponential envelope 
-   *env    : envelope attributes 
-   *p      : a working POINT to hold the sampled value */
-
-  double prob = gsl_rng_uniform(r);
-  /* get x-value correponding to a cumulative probability prob */
-  invert(prob,env,p);
-}
-
 
 void invert(double prob, arms_state *env, POINT *p){
 /* to obtain a point corresponding to a qiven cumulative probability   

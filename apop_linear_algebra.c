@@ -64,7 +64,7 @@ If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns 
 */
 
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
-  apop_assert(in->size1 == in->size2,  0, 0, 's', "You asked me to invert a %zu X %zu matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
+  apop_assert_s(in->size1 == in->size2, "You asked me to invert a %zu X %zu matrix, but inversion requires a square matrix. Halting.", in->size1, in->size2);
   int 		sign;
   double 	the_determinant = 0;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
@@ -170,7 +170,7 @@ This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
     gsl_vector * apop_varad_var(v, NULL);
-    apop_assert_void(v, 0, 's', "You sent me a NULL vector.");
+    apop_assert_s(v, "You sent me a NULL vector.");
     int apop_varad_var(i, 0);
     double apop_varad_var(amt, 1);
 APOP_VAR_END_HEAD
@@ -194,7 +194,7 @@ APOP_VAR_END_HEAD
  */
 APOP_VAR_HEAD void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
     gsl_matrix * apop_varad_var(m, NULL);
-    apop_assert_void(m, 0, 's', "You sent me a NULL matrix.");
+    apop_assert_s(m, "You sent me a NULL matrix.");
     int apop_varad_var(i, 0);
     int apop_varad_var(j, 0);
     double apop_varad_var(amt, 1);
@@ -327,7 +327,7 @@ APOP_VAR_ENDHEAD
         return NULL;
 
     if (posn == 'r'){
-        apop_assert(m1->size2 == m2->size2,  NULL, 0, 's', "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%zu and m2->size2==%zu. Halting.\n", m1->size2, m2->size2);
+        apop_assert_s(m1->size2 == m2->size2, "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%zu and m2->size2==%zu. Halting.\n", m1->size2, m2->size2);
         int m1size = m1->size1;
         if (inplace)
             out = apop_matrix_realloc(m1, m1->size1 + m2->size1, m1->size2);
@@ -344,7 +344,7 @@ APOP_VAR_ENDHEAD
         }
         return out;
     } else {
-        apop_assert(m1->size1 == m2->size1,  NULL, 0, 's', "When stacking matrices side by side, "
+        apop_assert_s(m1->size1 == m2->size1, "When stacking matrices side by side, "
                 "they have to have the same number of rows, but m1->size1==%zu and m2->size1==%zu. "
                 "Halting.\n", m1->size1, m2->size1);
         int m1size = m1->size2;
@@ -436,20 +436,20 @@ static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,cons
 static apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE_t lt, CBLAS_TRANSPOSE_t rt){
         if (lt==CblasNoTrans) {
             if (rt==CblasNoTrans) 
-                Apop_assert(lm->size2==rm->size1, NULL, 0, 's', 
+                Apop_assert_s(lm->size2==rm->size1,
                    "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows. Those "
                   "two need to be equal.", lm->size2, rm->size1)
             else
-                Apop_assert(lm->size2==rm->size2, NULL, 0, 's', 
+                Apop_assert_s(lm->size2==rm->size2,
                    "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows "
                    "(after the transposition you requested). Those two need to be equal.", lm->size2, rm->size2)
         } else {
             if (rt==CblasNoTrans) 
-                Apop_assert(lm->size1==rm->size1, NULL, 0, 's', 
+                Apop_assert_s(lm->size1==rm->size1,
                    "You sent me a matrix with %zu columns (after the transposition you requested) to "
                    "multiply against a matrix with %zu rows. Those two need to be equal.", lm->size1, rm->size1)
             else
-                Apop_assert(lm->size1==rm->size2, NULL, 0, 's', 
+                Apop_assert_s(lm->size1==rm->size2,
                    "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows "
                    "(after the two transpositions you requested). Those two need to be equal.", lm->size1, rm->size2)
         }

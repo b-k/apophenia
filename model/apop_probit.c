@@ -33,11 +33,11 @@ static void probit_prep(apop_data *d, apop_model *m){
     free(tmp);
 }
 
-double biprobit_ll_row(apop_data_row r){
-    long double n = gsl_cdf_gaussian_P(-gsl_vector_get(&r.matrix_row, 0),1);
+double biprobit_ll_row(apop_data *r){
+    long double n = gsl_cdf_gaussian_P(-gsl_matrix_get(r->matrix, 0, 0),1);
     n = n ? n : 1e-10; //prevent -inf in the next step.
     n = n<1 ? n : 1-1e-10; 
-    return *r.vector_pt ?  log(1-n): log(n);
+    return r->vector->data[0] ?  log(1-n): log(n);
 }
 
 //The case where outcome is a single zero/one option.
@@ -52,7 +52,7 @@ static double biprobit_log_likelihood(apop_data *d, apop_model *p){
 }
 
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_mv(p); Nullcheck_pv(p);
+  Nullcheck_m(p); Nullcheck_p(p);
     gsl_vector *val_vector = get_category_table(p->data)->vector;
     if (val_vector->size!=2){
         gsl_vector * numeric_default = apop_numerical_gradient(d, p);

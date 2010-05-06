@@ -29,7 +29,7 @@ static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
 }
 
 static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_pv(p) 
+  Nullcheck_p(p) 
   double          a       = gsl_vector_get(p->parameters->vector, 0),
                   b       = gsl_vector_get(p->parameters->vector, 1);
   gsl_matrix     *data    = d->matrix;
@@ -89,7 +89,7 @@ static double b_callback(double x, void *abv){
 }
 
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_pv(p) 
+  Nullcheck_p(p) 
     if (apop_settings_get_group(p, apop_rank))
        return gamma_rank_dlog_likelihood(d, gradient, p);
   double       	a    	= gsl_vector_get(p->parameters->vector, 0),

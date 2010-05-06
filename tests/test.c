@@ -1200,7 +1200,7 @@ int main(int argc, char **argv){
     do_test("test apop_update", test_updating(r));
     do_test("test fix params", test_model_fix_parameters(r));
     do_test("positive definiteness", test_posdef(r));
-    do_test("test binomial estimations", test_binomial(r));
+    //do_test("test binomial estimations", test_binomial(r));
     do_test("test data to db", test_data_to_db());
     do_test("test db to crosstab", test_crosstabbing());
     do_test("dummies and factors", dummies_and_factors());

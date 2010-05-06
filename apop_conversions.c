@@ -1,5 +1,6 @@
 /** \file apop_conversions.c	The various functions to convert from one format to another. */
-/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+#include "stats.h"
 #include "internal.h"
 #include "conversions.h"
 #include <gsl/gsl_math.h> //GSL_NAN
@@ -300,7 +301,7 @@ gsl_vector *apop_vector_copy(const gsl_vector *in){
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
     if (!in) return NULL;
   gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
-    apop_assert(out, NULL, 0, 's', "failed to allocate a gsl_matrix of size %zu x %zu. Out of memory?", in->size1, in->size2);
+    apop_assert_s(out, "failed to allocate a gsl_matrix of size %zu x %zu. Out of memory?", in->size1, in->size2);
     gsl_matrix_memcpy(out, in);
     return out;
 }
@@ -378,9 +379,6 @@ static char* read_a_line(FILE *infile, char *filename){
         }
         else return line;
     } while (!memchr(instring, '\n', strlen(instring)));//while no \n in string.
-    /*if (!line)
-            apop_error(0, 's', "Trouble reading %s, such as no data lines "\
-                    " or garbage in the file. Exiting.", filename);*/
     return line;
 }
 
@@ -550,8 +548,7 @@ static int get_field_names(int has_col_names, char **field_names, FILE
     return ct;
 }
 
-/** Read a delimited text file into the matrix element of an \ref
- apop_data set.
+/** Read a delimited text file into the matrix element of an \ref apop_data set.
 
   See \ref text_format.
 
@@ -1024,13 +1021,45 @@ gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
     return in;
 }
 
-apop_data_row apop_data_get_row(apop_data *d, int row_number){
-    apop_data_row out = {.vector_pt = d->vector ? gsl_vector_ptr(d->vector, row_number) : NULL,
-                    .text_row = d->text ? d->text[row_number] : NULL,
-                    .column_names = d->names->column,
-                    .textsize = d->textsize[1],
-                    .weight = d->weights ? gsl_vector_ptr(d->weights, row_number) : NULL,    
-                    .matrix_row = d->matrix ? gsl_matrix_row(d->matrix, row_number).vector : (gsl_vector){ },
-                    .index = row_number};
-    return out;
+
+/** Now that you've used \ref apop_data_get_row to pull a row from an \ref apop_data set,
+  this function lets you write that row to another position in the same data set or a
+  different data set entirely.  
+
+  The set written to must have the same form as the original: 
+  \li a vector element has to be present if one existed in the original, 
+  \li same for the weights vector,
+  \li the matrix in the destination has to have as many columns as in the original, and
+  \li the text has to have a row long enough to hold the original
+
+  If any of the source elements are \c NULL, I won't bother to check that element in the
+  destination.
+  */
+/*
+void apop_data_set_row(apop_data_row row, apop_data *d, int row_number){
+    if (row.vector_pt){
+        Apop_assert_s(d->vector, "You asked me to copy an apop_data_row with a vector element to "
+                "an apop_data set with no vector.");
+        gsl_vector_set(d->vector, row_number, *row.vector_pt);
+    }
+    if (row.matrix_row.size > 0){
+        Apop_assert_s(d->matrix, "You asked me to copy an apop_data_row with a matrix row to "
+                "an apop_data set with no matrix.");
+        Apop_row(d, row_number, a_row); 
+        gsl_vector_memcpy(a_row, &row.matrix_row);
+    }
+    if (row.textsize){
+        Apop_assert_s(d->matrix, "You asked me to copy an apop_data_row with text to "
+                "an apop_data set with no text element.");
+        for (int i=0; i < row.textsize; i++){
+            free(d->text[row_number][i]);
+            d->text[row_number][i]= strdup(row.text_row[i]);
+        }
+    }
+    if (row.weight){
+        Apop_assert_s(d->vector, "You asked me to copy an apop_data_row with a weight to "
+                "an apop_data set with no weights vector.");
+        gsl_vector_set(d->weights, row_number, *row.weight);
+    }
 }
+*/

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 junkdir=dists
 pkg=apophenia
 version=0.23
@@ -16,7 +18,8 @@ date=`date +%d_%b_%y`
 rm -rf $junkdir
 mkdir $junkdir
 mkdir $junkdir/$pkg-$version
-cp -rf * $junkdir/$pkg-$version
+shopt -s extglob  #makes the next line work
+cp -rf !($junkdir) $junkdir/$pkg-$version
 cd $junkdir/$pkg-$version
 cp install/* .
 mv Readme.user README
@@ -26,7 +29,7 @@ sed -i -f prep_variadics.sed *c *h model/*c
 	#add a directory with links to all headers:
 	mkdir apophenia
 	cd apophenia
-		cp ../*.h ./        #linking won't work for Windows
+		#cp ../*.h ./        #linking won't work for Windows
 		#ln -s ../*.h ./
 		cd ..
 	#let the GNU prep everything and produce a distribution pkg.

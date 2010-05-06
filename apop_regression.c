@@ -109,7 +109,7 @@ Returns nothing. At the end of the routine, <tt>est->info->more</tt> includes a 
 
 */
 void apop_estimate_parameter_t_tests (apop_model *est){
-  Nullcheck_pv(est)
+  Nullcheck_p(est)
   if (!est->data)
       return;
     apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 4), "test info");
@@ -722,7 +722,6 @@ apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd
 \li  \f$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k-1)}(1-R^2)     \f$
 
   Internally allocates (and frees) a vector the size of your data set.
-\param  in  The estimate. I need residuals to have been calculated, and the first column of in->data needs to be the dependent variable.
 
 \return: a \f$1 \times 5\f$ apop_data table with the following fields:
 \li "R_squared"

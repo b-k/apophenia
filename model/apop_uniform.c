@@ -7,39 +7,43 @@
 
 apop_model apop_uniform;
 
+static void getminmax(apop_data *d, double *min, double *max){
+    Get_vmsizes(d) //msize1, vsize
+    *min = GSL_MIN(msize1 ? gsl_matrix_min(d->matrix) : GSL_POSINF,
+                    vsize ? gsl_vector_min(d->vector) : GSL_POSINF);
+    *max = GSL_MAX(msize1 ? gsl_matrix_max(d->matrix) : GSL_NEGINF,
+                    vsize ? gsl_vector_max(d->vector) : GSL_NEGINF);
+}
+
 static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
-    est->parameters->vector->data[0]    = gsl_matrix_min(data->matrix);
-    est->parameters->vector->data[1]    = gsl_matrix_max(data->matrix);
+    Nullcheck(data);
+    getminmax(data, est->parameters->vector->data+0, est->parameters->vector->data+1);
     return est;
 }
 
 static double unif_ll(apop_data *d, apop_model *m){
-  Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-    double min = GSL_MIN(msize1 ? gsl_matrix_min(d->matrix) : GSL_POSINF,
-                          vsize ? gsl_vector_min(d->vector) : GSL_POSINF);
-    double max = GSL_MAX(msize1 ? gsl_matrix_max(d->matrix) : GSL_NEGINF,
-                          vsize ? gsl_vector_max(d->vector) : GSL_NEGINF);
+  Get_vmsizes(d) //tsize
+  double min, max;
+    getminmax(d, &min, &max);
     if (min> m->parameters->vector->data[0] && max < m->parameters->vector->data[1])
         return -log(m->parameters->vector->data[1] - m->parameters->vector->data[0]) * tsize;
     return GSL_NEGINF;
 }
 
 static double unif_p(apop_data *d, apop_model *m){
-  Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-    double min = GSL_MIN(msize1 ? gsl_matrix_min(d->matrix) : GSL_POSINF,
-                          vsize ? gsl_vector_min(d->vector) : GSL_POSINF);
-    double max = GSL_MAX(msize1 ? gsl_matrix_max(d->matrix) : GSL_NEGINF,
-                          vsize ? gsl_vector_max(d->vector) : GSL_NEGINF);
+  Get_vmsizes(d) //tsize
+  double min, max;
+    getminmax(d, &min, &max);
     if (min> m->parameters->vector->data[0] && max< m->parameters->vector->data[1])
         return pow(m->parameters->vector->data[1] - m->parameters->vector->data[0], -tsize);
     return 0;
 }
 
 static double unif_cdf(apop_data *d, apop_model *m){
-  Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
+  Get_vmsizes(d) //tsize
     double min = m->parameters->vector->data[0];
     double max = m->parameters->vector->data[1];
     double val = apop_data_get(d, 0, vsize ? -1: 0);
@@ -59,7 +63,6 @@ apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,  .dsize=1,
     .draw = uniform_rng, .cdf = unif_cdf};
 
 
-
 static apop_model * improper_uniform_estimate(apop_data * data,  apop_model *m){ return m; }
 
 static double improper_unif_ll(apop_data *d, apop_model *m){ return 0; }
@@ -67,7 +70,7 @@ static double improper_unif_cdf(apop_data *d, apop_model *m){ return 0.5; }
 static double improper_unif_p (apop_data *d, apop_model *m){ return 1; }
 
 static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
-    apop_assert_void(0, 0, 's', "It doesn't make sense to make random draws from an improper Uniform.");
+    apop_assert_s(0, "It doesn't make sense to make random draws from an improper Uniform.");
 }
 
 apop_model apop_improper_uniform = {"Improper uniform distribution", 2, 0, 0,  .dsize=1,

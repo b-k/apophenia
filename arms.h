@@ -33,17 +33,17 @@ typedef struct {  /* attributes of the entire rejection envelope */
 
 /** to perform derivative-free adaptive rejection sampling with metropolis step */
 typedef struct {
-    double *xinit;  /**< Starting values for x in ascending order */
-    double  xl;     /**< left bound */
-    double  xr;     /**< right bound */
-    double convex;  /**< adjustment for convexity */
-    int ninit;      /**< number of starting values supplied */
-    int npoint;     /**< maximum number of envelope points */
-   char do_metro;   /**< whether metropolis step is required */
-   double xprev;    /**< previous value from markov chain */
-   int neval;       /**< on exit, the number of function evaluations performed */
+    double *xinit;  /**< A <tt>double*</tt> giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't \c NULL, I need at least three items. */
+    double  xl;     /**< Left bound. If you don't give me one, I'll use min[min(xinit)/10, min(xinit)*10].*/
+    double  xr;     /**< Right bound. If you don't give me one, I'll use max[max(xinit)/10, max(xinit)*10]. */
+    double convex;  /**< Adjustment for convexity */
+    int ninit;      /**< Number of starting values supplied (i.e. number of elements in \c xinit)*/
+    int npoint;     /**< Maximum number of envelope points. I \c malloc space for this many <tt>double</tt>s at the outset. Default = 1e5. */
+   char do_metro;   /**< Whether metropolis step is required. (I.e., set to one if you're not sure if the function is log-concave). Set  to <tt>'y'</tt>es or <tt>'n'</tt>o*/
+   double xprev;    /**< Previous value from Markov chain */
+   int neval;       /**< On exit, the number of function evaluations performed */
    arms_state *state;
-   apop_model *model;
+   apop_model *model; /**< The model from which I will draw. Mandatory. Must have either a \c log_likelihood or \c p method.*/
 } apop_arms_settings;
 
 Apop_settings_declarations(apop_arms)

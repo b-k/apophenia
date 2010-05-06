@@ -25,21 +25,20 @@
 #include "conversions.h"
 static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, int use_index, int use_param,void *param, char post_22);
 
-
-//Support for apop_matrix_apply:
-
 typedef double apop_fn_v(gsl_vector*);
 typedef void apop_fn_vtov(gsl_vector*);
 typedef double apop_fn_d(double);
 typedef void apop_fn_dtov(double*);
-typedef double apop_fn_r(apop_data_row);
+typedef double apop_fn_r(apop_data*);
 typedef double apop_fn_vp(gsl_vector*, void *);
 typedef double apop_fn_dp(double, void *);
-typedef double apop_fn_rp(apop_data_row, void *);
+typedef double apop_fn_rp(apop_data*, void *);
 typedef double apop_fn_vpi(gsl_vector*, void *, int);
 typedef double apop_fn_dpi(double, void *, int);
+typedef double apop_fn_rpi(apop_data*, void *, int);
 typedef double apop_fn_vi(gsl_vector*, int);
 typedef double apop_fn_di(double, int);
+typedef double apop_fn_ri(apop_data*, int);
 
 
 /**
@@ -61,14 +60,16 @@ apop_map(your_data, .fn_di=cutoff, .param=&param, .inplace=1);
 
 \param fn_v A function of the form <tt>double your_fn(gsl_vector *in)</tt>
 \param fn_d A function of the form <tt>double your_fn(double in)</tt>
-\param fn_r A function of the form <tt>double your_fn(apop_data_row in)</tt>
+\param fn_r A function of the form <tt>double your_fn(apop_data *in)</tt>
 \param fn_vp A function of the form <tt>double your_fn(gsl_vector *in, void *param)</tt>
 \param fn_dp A function of the form <tt>double your_fn(double in, void *param)</tt>
-\param fn_rp A function of the form <tt>double your_fn(apop_data_row in, void *param)</tt>
+\param fn_rp A function of the form <tt>double your_fn(apop_data *in, void *param)</tt>
 \param fn_vpi A function of the form <tt>double your_fn(gsl_vector *in, void *param, int index)</tt>
 \param fn_dpi A function of the form <tt>double your_fn(double in, void *param, int index)</tt>
+\param fn_rpi A function of the form <tt>double your_fn(apop_data *in, void *param, int index)</tt>
 \param fn_vi A function of the form <tt>double your_fn(gsl_vector *in, int index)</tt>
 \param fn_di A function of the form <tt>double your_fn(double in, int index)</tt>
+\param fn_ri A function of the form <tt>double your_fn(apop_data *in, int index)</tt>
 
 \param in   The input data set. If \c NULL, I'll return \c NULL immediately.
 \param param   A pointer to the parameters to be passed to those function forms taking a \c *param.
@@ -81,15 +82,18 @@ apop_map(your_data, .fn_di=cutoff, .param=&param, .inplace=1);
 'c'==Apply a function \c gsl_vector \f$\to\f$ \c double to each column of the  matrix<br>
 Default is 'a', but notice that I'll ignore a \c NULL vector or matrix, so if your data set has only a vector (for example), that's what I'll use.
 
-\li If your function is based on the \ref apop_data_row, then the \c part is ignored: it only makes sense to go row-by-row.
+\li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
+\ref Apop_data_row to get each row in turn, and send it to the function. The first
+implication is that your function should be expecting a \ref apop_data set with exactly
+one row in it. The second is that \c part is ignored: it only makes sense to go row-by-row.
 
-\param inplace  If zero, generate a new \ref apop_data set for output, which will contain the mapped values (and the names from the original set). If one, modify in place. The \c double \f$\to\f$ \c double versions, \c 'v', \c 'm', and \c 'a', write to exactly the same location as before. The \c gsl_vector \f$\to\f$ \c double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you are writing in place and there is already a vector there, then the original vector is lost.
+\param inplace  If zero, generate a new \ref apop_data set for output, which will contain the mapped values (and the names from the original set). If one, modify in place. The \c double \f$\to\f$ \c double versions, \c 'v', \c 'm', and \c 'a', write to exactly the same location as before. The \c gsl_vector \f$\to\f$ \c double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you are writing in place and there is already a vector there, then the original vector is lost. (Default = 0)
 \param all_pages If \c 'y', then I follow the \c more pointer to subsequent pages, else I
 handle only the first page of data. Default: \c 'n'.
 
 \ingroup mapply
 */
-APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v,apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,   apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi, void *param, int inplace, char part, int all_pages){ 
+APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,  apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, int inplace, char part, int all_pages){ 
     apop_data * apop_varad_var(in, NULL)
     if (!in) return NULL;
     apop_fn_v * apop_varad_var(fn_v, NULL)
@@ -100,19 +104,21 @@ APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     apop_fn_rp * apop_varad_var(fn_rp, NULL)
     apop_fn_vpi * apop_varad_var(fn_vpi, NULL)
     apop_fn_dpi * apop_varad_var(fn_dpi, NULL)
+    apop_fn_rpi * apop_varad_var(fn_rpi, NULL)
     apop_fn_vi * apop_varad_var(fn_vi, NULL)
     apop_fn_di * apop_varad_var(fn_di, NULL)
+    apop_fn_ri * apop_varad_var(fn_ri, NULL)
     int apop_varad_var(inplace, 0)
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, 'a')
     int apop_varad_var(all_pages, 'n')
 APOP_VAR_ENDHEAD
-    int use_param = (fn_vp || fn_dp || fn_rp || fn_vpi || fn_dpi);
-    int use_index  = (fn_vi || fn_di || fn_vpi || fn_dpi);
+    int use_param = (fn_vp || fn_dp || fn_rp || fn_vpi || fn_rpi || fn_dpi);
+    int use_index  = (fn_vi || fn_di || fn_ri || fn_vpi || fn_rpi|| fn_dpi);
     //Give me the first non-null input function.
-    void *fn = fn_v ? (void *)fn_v : fn_d ? (void *)fn_d : fn_r ? (void *)fn_r : fn_vp ? (void *)fn_vp : fn_dp ? (void *)fn_dp :fn_rp ? (void *)fn_rp : fn_vpi ? (void *)fn_vpi : fn_dpi ? (void *)fn_dpi : fn_vi ? (void *)fn_vi : fn_di ? (void *)fn_di : NULL;
+    void *fn = fn_v ? (void *)fn_v : fn_d ? (void *)fn_d : fn_r ? (void *)fn_r : fn_vp ? (void *)fn_vp : fn_dp ? (void *)fn_dp :fn_rp ? (void *)fn_rp : fn_vpi ? (void *)fn_vpi : fn_rpi ? (void *)fn_rpi: fn_dpi ? (void *)fn_dpi : fn_vi ? (void *)fn_vi : fn_di ? (void *)fn_di : fn_ri ? (void *)fn_ri : NULL;
 
-    int by_apop_rows = fn_r || fn_rp;
+    int by_apop_rows = fn_r || fn_rp || fn_rpi || fn_ri;
 
     //Allocate output
     Get_vmsizes(in); //vsize, msize1, msize2
@@ -144,9 +150,16 @@ APOP_VAR_ENDHEAD
 
     //Call mapply_core.
     if (by_apop_rows){
-        for (int i=0; i< vsize? vsize : msize1; i++)
-            if (fn_r) fn_r(apop_data_get_row(out, i));
-            else fn_rp(apop_data_get_row(out, i), param);
+        for (int i=0; i< vsize? vsize : msize1; i++){
+            Apop_data_row(out, i, the_row);
+            if (fn_r) fn_r(the_row);
+            else if (fn_rp)
+                fn_rp(the_row, param);
+            else if (fn_rpi)
+                fn_rpi(the_row, param, i);
+            else if (fn_ri)
+                fn_ri(the_row, i);
+        }
     } else {
         if (in->vector && (part == 'v' || part=='a'))
             mapply_core(NULL, in->vector, fn, out->vector, use_index, use_param, param, 'r');
@@ -168,7 +181,7 @@ APOP_VAR_ENDHEAD
             mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, part);
     }
     if (all_pages && in->more)
-        out->more = apop_map_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_di, fn_vi, param, inplace, part, all_pages);
+        out->more = apop_map_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, inplace, part, all_pages);
     return out;
 }
 
@@ -177,7 +190,7 @@ APOP_VAR_ENDHEAD
   See also the \ref mapply "map/apply page" for details.
  \ingroup mapply
  */
-APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi,    void *param, char part, int all_pages){ 
+APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi, apop_fn_ri *fn_ri,    void *param, char part, int all_pages){ 
     apop_data * apop_varad_var(in, NULL)
     apop_fn_v * apop_varad_var(fn_v, NULL)
     apop_fn_d * apop_varad_var(fn_d, NULL)
@@ -187,8 +200,10 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     apop_fn_rp * apop_varad_var(fn_rp, NULL)
     apop_fn_vpi * apop_varad_var(fn_vpi, NULL)
     apop_fn_dpi * apop_varad_var(fn_dpi, NULL)
+    apop_fn_rpi * apop_varad_var(fn_rpi, NULL)
     apop_fn_vi * apop_varad_var(fn_vi, NULL)
     apop_fn_di * apop_varad_var(fn_di, NULL)
+    apop_fn_ri * apop_varad_var(fn_ri, NULL)
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, 'a')
     int apop_varad_var(all_pages, 'n')
@@ -198,17 +213,17 @@ APOP_VAR_ENDHEAD
         apop_data *copy = apop_data_copy(in);
         double outsum = 0;
         for (int i = 0; i< (vsize ? vsize : msize1); i++){
-            apop_data_row r = apop_data_get_row(copy, i);
+            Apop_data_row(copy, i, r);
             outsum += fn_r ? fn_r(r) : fn_rp(r, param);
         }
         return outsum;
     }
-    apop_data *out = apop_map(in, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_di, fn_vi, param, 0, part);
+    apop_data *out = apop_map(in, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, 0, part);
     double outsum = (out->vector ? apop_sum(out->vector) : 0)
                      + (out->matrix ? apop_matrix_sum(out->matrix) : 0);
     apop_data_free(out);
     return outsum + 
-                ((all_pages && in->more) ? apop_map_sum_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_di, fn_vi, param, part, all_pages) : 0);
+                ((all_pages && in->more) ? apop_map_sum_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, part, all_pages) : 0);
 }
 
 typedef struct {
@@ -333,7 +348,7 @@ These functions will pull each element of a vector or matrix, or each row of a m
 
 Here are a few technical details of usage:
 
-\li If \c apop_opts.thread_count is greater than one, then the matrix will be broken into chunks and each sent to a different thread. Notice that the GSL is generally threadsafe, and SQLite is (as of this writing) not threadsafe.
+\li If \c apop_opts.thread_count is greater than one, then the matrix will be broken into chunks and each sent to a different thread. Notice that the GSL is generally threadsafe, and SQLite is threadsafe conditional on several commonsense caveats that you'll find in the SQLite documentation.
 
 \li See also \ref apop_map and \ref apop_map_sum, which take in \ref apop_data sets and have options for sending in the index of the item or additional parameters.
 

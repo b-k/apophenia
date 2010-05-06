@@ -66,8 +66,10 @@ apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
   I assume that the ordering of elements in the \c predict table include everything on the
   first page, then everything on the second, et cetera. 
 
-\param data The data set to be filled in. It should have a page named \c predict.
-
+\param data The data set to be filled in. It should have a page named \c
+\f$<\f$predict\f$>\f$.
+\param predict If your data set doesn't have a \c \f$<\f$predict\f$>\f$ page, then just
+provide one this way; else let this be \c NULL;
 */
 void apop_data_predict_fill(apop_data *data, apop_data *predict){
     if (!predict)

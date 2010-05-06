@@ -30,7 +30,7 @@ apop_name * apop_name_alloc(void){
 \return 	Returns the number of rows/cols/depvars after you have added the new one.
 \ingroup names
 */
-int apop_name_add(apop_name * n, char *add_me, char type){
+int apop_name_add(apop_name * n, char const *add_me, char type){
     if (!add_me)
         return -1;
 	if (type == 'h'){

@@ -10,25 +10,13 @@
 
 static double binomial_log_likelihood(apop_data*, apop_model*);
 
-static void get_hits_and_misses(const apop_data *data, char method, double *hitcount, double *misscount){
+static double is_nonzero(double in){return in != 0;}
+
+static void get_hits_and_misses(apop_data *data, char method, double *hitcount, double *misscount){
+    Get_vmsizes(data); //vsize, msize1, msize2;
     if (method == 't'){
-        size_t        i, j;
-        *hitcount=0, *misscount=0;
-        if (data->vector)
-            for(i=0; i < data->vector->size; i ++){
-                if (gsl_vector_get(data->vector, i))
-                    (*hitcount)    ++;
-                else
-                    (*misscount)   ++;
-            }
-        if (data->matrix)
-            for(i=0; i < data->matrix->size1; i ++)
-                for(j=0; j < data->matrix->size2; j ++){
-                    if (gsl_matrix_get(data->matrix, i, j))
-                        (*hitcount)    ++;
-                    else
-                        (*misscount)   ++;
-                }
+        *hitcount = apop_map_sum(data, .fn_d=is_nonzero, .part='a');
+        *misscount = vsize + msize1 * msize2 - *hitcount;
     } else {
         APOP_COL(data, 0, misses);
         APOP_COL(data, 1, hits);
@@ -110,7 +98,7 @@ static double multinomial_constraint(apop_data *data, apop_model *b){
 }
 
 static void binomial_rng(double *out, gsl_rng *r, apop_model* est){
-  Nullcheck_mv(est); Nullcheck_pv(est);
+  Nullcheck_m(est); Nullcheck_p(est);
   double n = gsl_vector_get(est->parameters->vector, 0);
   double p = gsl_vector_get(est->parameters->vector, 1);
   char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
@@ -122,8 +110,6 @@ static void binomial_rng(double *out, gsl_rng *r, apop_model* est){
             out[i] = (gsl_rng_uniform(r) <= p) ? 1 : 0; //one Bernoulli draw.
 }
 
-
-static double is_nonzero(double in){return in != 0;}
 static double sum_vector_nonzeros(gsl_vector *in){return apop_vector_map_sum(in, is_nonzero); }
 
 static gsl_vector * get_multinomial_hitcount(const apop_data *data, char method){
@@ -196,7 +182,7 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
 
 static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     //After the intro, cut/pasted/modded from the GSL. Copyright them.
-    Nullcheck_pv(est);
+    Nullcheck_p(est);
     char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
     double * p = est->parameters->vector->data;
     //the trick where we turn the params into a p-vector

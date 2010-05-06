@@ -91,16 +91,12 @@ int apop_db_open(char *filename){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_db_open(filename);
 #else
-        {apop_error(0, 'c', "apop_db_open: Apophenia was compiled without mysql support.\n");
-        return 0;
-        }
+        {apop_assert(0, 0, 0, 'c', "apop_db_open: Apophenia was compiled without mysql support.");}
 #endif
 #ifdef HAVE_LIBSQLITE3
         return apop_sqlite_db_open(filename);
 #else
-        {apop_error(0, 'c', "apop_db_open: Apophenia was compiled without sqlite support.\n");
-        return 0;
-        }
+        {apop_assert(0, 0, 0, 'c', "Apophenia was compiled without sqlite support."); }
 #endif
 }
 

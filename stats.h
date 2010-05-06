@@ -1,5 +1,5 @@
 /** \file stats.h */
-/* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
+/* Copyright (c) 2005--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
 #ifndef APOP_STATS_H
 #define APOP_STATS_H
 #include <math.h>
@@ -38,6 +38,28 @@ gsl_vector * v = &( apop_vv_##v );
 #define APOP_COL(m, col, v) gsl_vector apop_vv_##v = (col < 0) ? *((m)->vector) : gsl_matrix_column((m)->matrix, (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
+#define Apop_data_rows(d, row, len, outd) \
+    gsl_vector apop_dd_##outd##_v = ((d)->vector && (d)->vector->size > (row)+(len)-1)  \
+                                    ? gsl_vector_subvector((d)->vector, (row), (len)).vector\
+                                    : (gsl_vector) { };\
+    gsl_vector apop_dd_##outd##_w = ((d)->weights && (d)->weights->size > (row)+(len)-1)  \
+                                    ? gsl_vector_subvector((d)->weights, (row), (len)).vector\
+                                    : (gsl_vector) { };\
+    gsl_matrix apop_dd_##outd##_m = ((d)->matrix && (d)->matrix->size1 > (row)+(len)-1)  \
+                                ? gsl_matrix_submatrix((d)->matrix, row, 0, (len), (d)->matrix->size2).matrix\
+                                : (gsl_matrix) { }; \
+    apop_data apop_dd_##outd = (apop_data){         \
+                .vector= apop_dd_##outd##_v.size ? &apop_dd_##outd##_v : NULL,    \
+                .weights=apop_dd_##outd##_w.size ? &apop_dd_##outd##_w : NULL ,   \
+                .matrix = apop_dd_##outd##_m.size1 ? &apop_dd_##outd##_m : NULL, \
+                .textsize[0]=(len), .textsize[1]=(d)->textsize[1],   \
+                .text = (d)->text ? &((d)->text[row]) : NULL,   \
+                .names=d->names,  \
+                };               \
+    apop_data *outd = &apop_dd_##outd;
+
+#define Apop_data_row(d, row, outd) Apop_data_rows(d, row, 1, outd)
+
 #define Apop_col APOP_COL 
 #define apop_col APOP_COL 
 #define Apop_row APOP_ROW
@@ -47,7 +69,8 @@ gsl_vector * v = &( apop_vv_##v );
 #define Apop_matrix_col APOP_MATRIX_COL 
 #define Apop_matrix_row APOP_MATRIX_ROW
 #define Apop_submatrix APOP_SUBMATRIX
-#define apop_vector_kurt(in) apop_vector_kurtosis(in)
+#define apop_data_rows Apop_data_rows
+#define apop_data_row Apop_data_row
 
 long double apop_vector_sum(const gsl_vector *in);
 double apop_var(const gsl_vector *in);
@@ -70,6 +93,7 @@ double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w);
 #define apop_mean(in) apop_vector_mean(in)
 #define apop_vector_mean(in)  gsl_stats_mean((in)->data,(in)->stride, (in)->size)
 #define apop_vector_var(in)  gsl_stats_variance((in)->data,(in)->stride, (in)->size)
+#define apop_vector_kurt(in) apop_vector_kurtosis(in)
 
 APOP_VAR_DECLARE double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm);
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
@@ -164,6 +188,22 @@ Pull a pointer to a submatrix into a \c gsl_matrix
 
 /** \def Apop_col(d, col, v)
  After this call, \c v will hold a vector view of the <tt>col</tt>th column of \ref apop_data set \c d.
+\hideinitializer */
+
+/** \def Apop_data_rows(d, row, len, outd)
+A macro to generate a temporary view of \ref apop_data set \c d, beginning at row \c row
+and having length \c len. 
+After this call, \c outd will be a pointer to this temporary
+view, that you can use as you would any \ref apop_data set. However, 
+it expires as soon as the program leaves the current scope (like with the usual statically declared vars). 
+\hideinitializer */
+
+/** \def Apop_data_row(d, row, outd)
+A macro to generate a temporary one-row view of \ref apop_data set \c d, pulling out only
+row \c row. 
+After this call, \c outd will be a pointer to this temporary
+view, that you can use as you would any \ref apop_data set. This macro expands to
+<tt>Apop_data_rows(d, row, 1, outd)</tt>.
 \hideinitializer */
 
 /** \def apop_mean(v)

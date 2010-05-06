@@ -124,7 +124,7 @@ double apop_fdist_llike(apop_data *d, apop_model *m){
 }
 
 void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){ 
-    Nullcheck_mv(m); Nullcheck_pv(m);
+    Nullcheck_m(m); Nullcheck_p(m);
     double mu = m->parameters->vector->data[0];
     double sigma = m->parameters->vector->data[1];
     double df = m->parameters->vector->data[2];
@@ -132,12 +132,12 @@ void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){
 }
 
 void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){
-    Nullcheck_mv(m); Nullcheck_pv(m);
+    Nullcheck_m(m); Nullcheck_p(m);
     *out = gsl_ran_fdist (r, m->parameters->vector->data[0], m->parameters->vector->data[1]);
 }
 
 void apop_chisq_dist_draw(double *out, gsl_rng *r, apop_model *m){
-    Nullcheck_mv(m); Nullcheck_pv(m);
+    Nullcheck_m(m); Nullcheck_p(m);
     *out = gsl_ran_chisq (r, m->parameters->vector->data[0]);
 }
 
@@ -400,7 +400,7 @@ C     Wishart variate generator.  On output, SA is an upper-triangular
 C     matrix of size NP * NP [...]
 C     whose elements have a Wishart(N, SIGMA) distribution.
 */
-    Nullcheck_mv(m); Nullcheck_pv(m);
+    Nullcheck_m(m); Nullcheck_p(m);
     int DF, np = m->parameters->matrix->size1;
     int n = m->parameters->vector->data[0];
     if (!m->more) { 

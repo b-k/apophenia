@@ -11,11 +11,11 @@
 
 /** Allocate an \ref apop_model.
 
-This sets up the output elements of the \c apop_model: the parameters, covariance, and expected data sets. 
+This sets up the output elements of the \c apop_model: the parameters and info. 
 
 At close, the input model has parameters of the correct size.
 
-\li This is the default action for \ref apop_prep. If your model has its own \ref prep method, then that gets used instead, but most don't (or call \ref apop_model_clear at the end of their prep routine).
+\li This is the default action for \ref apop_prep. If your model has its own \c prep method, then that gets used instead, but most don't (or call \ref apop_model_clear at the end of their prep routine).
 
 \ref apop_estimate calls \ref apop_prep internally. 
 
@@ -44,7 +44,7 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
 The  \c parameters element is freed.  These are all the things that are completely copied, by \c apop_model_copy, so the parent model is still safe after this is called. \c data is not freed, because the odds are you still need it.
 
-The function runs \ref{free(free_me->more)}, but has no idea what the \c more element
+The function runs <tt>free(free_me->more)</tt>, but has no idea what the \c more element
 contains; if it points to other structures (like an \ref apop_data set), you need to
 free them before calling this function.
 
@@ -213,7 +213,7 @@ double apop_p(apop_data *d, apop_model *m){
 \ingroup models
 */
 double apop_log_likelihood(apop_data *d, apop_model *m){
-    Nullcheck_mv(m); //Nullcheck_pv(m); //Too many models don't use the params.
+    Nullcheck_m(m); //Nullcheck_p(m); //Too many models don't use the params.
     if (m->log_likelihood)
         return m->log_likelihood(d, m);
     else if (m->p)
@@ -231,7 +231,7 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 \ingroup models
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
-    Nullcheck_mv(m); // Nullcheck_pv(m);
+    Nullcheck_m(m); // Nullcheck_p(m);
     if (m->score){
         m->score(d, out, m);
         return;
@@ -299,15 +299,6 @@ void apop_pm_settings_free(apop_pm_settings *freeme) {
   then I will give you the multivariate distribution across all parameters.  The default
   is zero (i.e. the univariate distribution of the zeroth parameter).
   
-  There is no mechansim to produce distributions across multiple but not all parameters 
-  for a few reasons. First, discussion in textbooks and academic
-  papers indicates that, on the demand side, not many people bother with multivariate distributions
-  at all. Second, on the supply side, the default method for calculating the multivariate
-  distribution requires re-estimating the full model as many times as the bootstrap or \c
-  draws variable dictate, regardless of the number of parameters in the final distribution. 
-  That is, in typical cases, asking for less than all the parameters just involves
-  throwing out data, which the user can do as easily as this function could.
-
   \li \c rng If the method requires random draws (as the default bootstrap will), then use this.
     If you provide \c NULL and one is needed, see the \ref autorng section on how one is provided for you.
 
@@ -403,8 +394,7 @@ parameter.
 \li If you give me data with NaNs, I will take those as the points to
 be predicted given the provided data.
 
-If the model has no \c predict method, the default is to use the 
-      \ref apop_ml_impute function to do the work.
+If the model has no \c predict method, the default is to use the \ref apop_ml_impute function to do the work.
 
 \return If you gave me a non-\c NULL data set, I will return that, with the zeroth column or the NaNs filled in.  If \c NULL input, I will allocate an \ref apop_data set and fill it with the expected values.
 

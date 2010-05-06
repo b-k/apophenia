@@ -1,4 +1,4 @@
-/** \file apop_exponential.c 
+/** \file 
         The Exponential distribution.
         */
 /* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
@@ -52,7 +52,7 @@ static apop_model * rank_exponential_estimate(apop_data * data, apop_model *est)
 }
 
 static double rank_exponential_log_likelihood(const apop_data *d, apop_model *params){
-  apop_assert(params->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(params); Nullcheck_p(params);
   double          b		    = gsl_vector_get(params->parameters->vector, 0),
 		          p,
 		          llikelihood = 0,
@@ -68,7 +68,7 @@ static double rank_exponential_log_likelihood(const apop_data *d, apop_model *pa
 }
 
 static void rank_exponential_dlog_likelihood(const apop_data *d, gsl_vector *gradient, apop_model *params){
-  apop_assert_void(params->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(params); Nullcheck_p(params);
   double		    bb		        = gsl_vector_get(params->parameters->vector, 0);
   gsl_matrix	    *data		    = d->matrix;
   double 		    d_likelihood 	= 0,
@@ -97,7 +97,7 @@ static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
 }
 
 static double exponential_log_likelihood(apop_data *d, apop_model *p){
-  apop_assert(p->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(p); Nullcheck_p(p);
     if (apop_settings_get_group(p, apop_rank))
       return rank_exponential_log_likelihood(d, p);
   gsl_matrix	*data	= d->matrix;
@@ -121,7 +121,7 @@ static double expo_cdf(apop_data *d, apop_model *params){
 \f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
 */
 static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(p); Nullcheck_p(p);
     if (apop_settings_get_group(p, apop_rank))
       return rank_exponential_dlog_likelihood(d, gradient, p);
   double		mu	    = gsl_vector_get(p->parameters->vector, 0);

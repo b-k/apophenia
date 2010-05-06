@@ -51,7 +51,7 @@ static double waring_log_likelihood_rank(const apop_data *d, apop_model *m){
 }
 
 static void waring_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient, apop_model *m){
-  Nullcheck_v(d); Nullcheck_mv(m); Nullcheck_pv(m);
+  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
   double	      bb		    = gsl_vector_get(m->parameters->vector, 0),
 	    	      a		        = gsl_vector_get(m->parameters->vector, 1);
   gsl_matrix	  *data		    = d->matrix;
@@ -114,7 +114,7 @@ static double waring_log_likelihood(apop_data *d, apop_model *m){
 static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
 	//Psi is the derivative of the log gamma function.
   Get_vmsizes(d) //tsize
-  Nullcheck_v(d); Nullcheck_mv(m); Nullcheck_pv(m);
+  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
   int min = vsize ? -1 : 0;
   int max = msize2 ? msize2 : 0;
     if (apop_settings_get_group(m, apop_rank))
@@ -164,11 +164,6 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
                 b   = gsl_vector_get(eps->parameters->vector, 0),
                 a   = gsl_vector_get(eps->parameters->vector, 1);
   double		params[]	={a+1, 1, b-1};
-/*	do{
-		x	= apop_rng_GHgB3(r, params);
-		u	= gsl_rng_uniform(r);
-	} while (u >= (x + a)/(GSL_MAX(a+1,1)*x));
-	*out = x+1;*/
 	do{
 		x	= apop_rng_GHgB3(r, params)+1;
 		u	= gsl_rng_uniform(r);

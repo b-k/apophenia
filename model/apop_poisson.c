@@ -62,7 +62,7 @@ static double poisson_log_likelihood(apop_data *d, apop_model * p){
 
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   Get_vmsizes(d) //tsize
-  Nullcheck_v(d); Nullcheck_mv(p);
+  Nullcheck(d); Nullcheck_m(p);
   double       	lambda  = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix      *data	= d->matrix;
   double           d_a  = apop_matrix_sum(data)/lambda;

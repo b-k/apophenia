@@ -133,7 +133,6 @@ char    *out    = NULL;
 
 /** Inform the user of a faux pas. See also \ref Apop_assert, which allows the function to return a value.
 
-
  \param level   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2. You can set apop_opts.verbose==-1 to turn off virtually all messages, but this is probably ill-advised.
  \param stop   Either 's' or 'c', indicating whether the program should stop or continue. If stopping, uses \c assert(0) for easy debugging. You can use 'h' (halt) as a synonym for 's'.
  \param msg The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_error(0, 's', "Beta is %g but should be greater than zero.", beta);.
@@ -151,7 +150,6 @@ void apop_error(int level, char stop, char *msg, ...){
     if (stop == 's' || stop == 'h')
         assert(0);
 }
-
 
 /** Call \c system(), but with <tt>printf</tt>-style arguments. E.g.,
   
@@ -240,7 +238,6 @@ static void shift(apop_data *d, size_t from,  size_t to){
 
 This function uses the \ref designated syntax for inputs.
 */
-
 APOP_VAR_HEAD apop_data * apop_data_sort(apop_data *data, int sortby, char asc){
     apop_data * apop_varad_var(data, NULL);
     apop_assert(data, NULL, 0, 's', "You gave me NULL data to sort.");
@@ -341,7 +338,8 @@ static int count_parens(const char *string){
 and Perl-compatible (BRE, ERE, PCRE). I use EREs, as per the specs of
 your C library, which should match POSIX's ERE specification. 
 
-For example, "p.val.*" will match "P value", "p.value", and "p values".
+For example, "p.val" will match "P value", "p.value", "p values" (and even "tempeval", so be
+careful).
 
 \param string        The string to search (no default; if \c NULL, I return 0---no match)
 \param regex       The regular expression (no default)

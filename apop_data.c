@@ -145,8 +145,11 @@ void apop_text_free(char ***freeme, int rows, int cols){
     free(freeme);
 }
 
-//See the documentation for \ref apop_data_free in types.h.
-void apop_data_free_fn(apop_data *freeme){
+/** Free the elements of the given \ref apop_data set and then the \ref apop_data set
+  itself. Intended to be used by \ref apop_data_free, a macro that calls this to free
+  elements, then sets the value to \c NULL.
+  */
+void apop_data_free_base(apop_data *freeme){
     if (!freeme) return;
     if (freeme->more){
         apop_assert_s(freeme != freeme->more, "the ->more element of this data set equals the "
@@ -164,7 +167,7 @@ void apop_data_free_fn(apop_data *freeme){
     free(freeme);
 }
 
-/** Copy one \ref apop_data structure to another. That is, all data is duplicated.
+/** Copy one \ref apop_data structure to another. That is, all data on the first page is duplicated. [To do multiple pages, call this via a \c for loop over the data set's pages.]
 
   This function does not allocate the output structure for you for the overall structure or the vector or matrix. If you want such behavior, use \ref apop_data_copy. Both functions do allocate memory for the text.
 
@@ -245,7 +248,7 @@ apop_data *apop_data_copy(const apop_data *in){
     return out;
 }
 
-/** Put the first data set either on top of or to the left of the second matrix.
+/** Put the first data set either on top of or to the left of the second data set.
 
 The fn returns a new data set, meaning that at the end of this function,
 until you apop_data_free() the original data sets, you will be taking up
@@ -262,7 +265,7 @@ if 'c', stack columns of m1's matrix to left of m2's<br>
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
-both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 back)
+both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 pointer back)
 \li Text is ignored.
 \li \c more is ignored.
 \li If stacking rows on rows, the output vector is the input
@@ -314,16 +317,16 @@ APOP_VAR_ENDHEAD
 
  For the opposite operation, see \ref apop_data_stack.
 
- The \ref apop_data->vector is taken to be the -1st element of the matrix.  
  
 \param in  The \ref apop_data structure to split 
 \param splitpoint The index of what will be the first row/column of the second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second data set; if this is the length of the matrix then the whole data set will be in the first data set. Another way to put it is that \c splitpoint will equal the number of rows/columns in the first matrix (unless it is -1, in which case the first matrix will have zero rows, or it is greater than the matrix's size, in which case it will have as many rows as the original).  
 \param r_or_c If this is 'r' or 'R', then cleave the rows; of 'c' or 'C' cleave the columns.
 
  \return An array of two \ref apop_data sets. If one is empty then a
- NULL pointer will be returned in that position. For example, for a data set of 50 rows, <tt>apop_data **out = apop_data_split(data, 100, 'r')</tt> sets <tt>out[0] = apop_data_copy(data)</tt> and <tt>out[1] = NULL</tt>.
+ \c NULL pointer will be returned in that position. For example, for a data set of 50 rows, <tt>apop_data **out = apop_data_split(data, 100, 'r')</tt> sets <tt>out[0] = apop_data_copy(data)</tt> and <tt>out[1] = NULL</tt>.
 
  \li \c more pointer is ignored.
+ \li The \ref apop_data->vector is taken to be the -1st element of the matrix.  
  \li Weights will be preserved. If splitting by rows, then the top and bottom parts of the weights vector will be assigned to the top and bottom parts of the main data set. If splitting by columns, identical copies of the weights vector will be assigned to both parts.
  */
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
@@ -430,6 +433,7 @@ allocation:
     return out;
 }
 
+
 /** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down
 \param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
@@ -472,10 +476,11 @@ void apop_data_rm_columns(apop_data *d, int *drop){
     apop_name_rm_columns(d->names, drop);
 }
 
-/** \def apop_data_prune_columns(d, ...)
+/** \def apop_data_prune_columns(in, ...)
   Keep only the columns of a data set that you name.
 
-\param keep_names A list of names to retain (i.e. the columns that shouldn't be pruned
+\param in The data set to prune.
+\param ... A list of names to retain (i.e. the columns that shouldn't be pruned
 out). For example, if you have run \ref apop_data_summarize, you have columns for several
 statistics, but may care about only one or two; see the example.
 
@@ -485,7 +490,26 @@ For example:
 \li I use case-insensitive regular expressions to find your column; see \ref apop_regex for details.
 \li If your regex matches multiple columns, I'll only give you the first.
 \li If I can't find a column matching one of your strings, I throw an error to the screen and continue.
+\li This is a macro calling \ref apop_data_prune_columns_base. It packages your list of
+columns into a list of strings, adds a \c NULL string at the end, and calls that function.
 \hideinitializer */
+ 
+/** Keep only the columns of a data set that you name.
+  This is the function called internally by the \ref apop_data_prune_columns macro. In
+  most cases, you'll want to use that macro. An example of the two uses demonstrating the
+  difference:
+
+  \code 
+    apop_data_prune_columns(d, "mean", "median");
+
+    char *list[] = {"mean", "median", NULL};
+    apop_data_prune_columns_base(d, list);
+  \endcode
+
+\param d The data set to prune.
+\param colnames A null-terminated list of names to retain (i.e. the columns that shouldn't be pruned
+out). 
+  */
 void apop_data_prune_columns_base(apop_data *d, char **colnames){
     /* In types.h, you'll find an alias that takes the input, wraps it in the cruft that is
     C's compound literal syntax, and appends a final "" to the list of strings. Here, I
@@ -495,7 +519,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     char **name_step = colnames;
     //to throw errors for typos (and slight efficiency gains), I need an array of whether
     //each input colname has been used.
-    while (strlen(*name_step++))
+    while (*name_step++)
         keep_count++;
     int used_field[keep_count];
     memset(used_field, 0, keep_count*sizeof(int));
@@ -855,8 +879,8 @@ gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidt
     if (!m)
         return (newheight && newwidth) ?  gsl_matrix_alloc(newheight, newwidth) : NULL;
     size_t i, oldoffset=0, newoffset=0, realloced = 0;
-    apop_assert((m->block->data==m->data) && m->owner & (m->tda == m->size2),
-                NULL, 0, 's', "I can't resize submatrices or other subviews.");
+    apop_assert_s((m->block->data==m->data) && m->owner & (m->tda == m->size2),
+                                    "I can't resize submatrices or other subviews.");
     m->block->size = newheight * newwidth;
     if (m->size2 > newwidth)
         for (i=1; i< GSL_MIN(m->size1, newheight); i++){
@@ -907,8 +931,8 @@ beforehand.
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
     if (!v)
         return newheight ?  gsl_vector_alloc(newheight) : NULL;
-    apop_assert((v->block->data==v->data) && v->owner & (v->stride == 1),
-                NULL, 0, 's', "I can't resize subvectors or other views.");
+    apop_assert_s((v->block->data==v->data) && v->owner & (v->stride == 1),
+                                    "I can't resize subvectors or other views.");
     v->block->size = newheight;
     v->size     = newheight;
     v->block->data = 
@@ -984,21 +1008,19 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
 
 /** Remove the first page from an \ref apop_data set that matches a given name.
 
-  \li I don't check the first page, so there's no concern that the head of your list of
-  pages will move. Again, the intent of the <tt>-\>more</tt> pointer in the \ref apop_data
-  set is not to fully implement a linked list, but primarily to allow you to staple auxiliary
-  information to a main data set.
-
-  \param data The input data set, to which a page will be added. No default. If \c
-  NULL, I return silently if <tt> apop_opts.verbose \< 1 </tt>; print an
-  error otherwise.
-  \param title The name of the page to remove Default: \c "Info"
+  \param data The input data set, to which a page will be added. No default. If \c NULL, I return silently if <tt> apop_opts.verbose < 1 </tt>; print an error otherwise.
+  \param title The name of the page to remove. Default: \c "Info"
   \param free_p If \c 'y', then \ref apop_data_free the page. Default: \c 'y'.
 
   \return If not freed, a pointer to the \c apop_data page that I just pulled out. Thus,
   you can use this to pull a single page from a data set. I set that page's \c more
   pointer to \c NULL, to minimize any confusion about more-than-linear linked list
   topologies. If <tt>free_p=='y'</tt> (the default) or the page is not found, return \c NULL.
+
+  \li I don't check the first page, so there's no concern that the head of your list of
+  pages will move. Again, the intent of the <tt>->more</tt> pointer in the \ref apop_data
+  set is not to fully implement a linked list, but primarily to allow you to staple auxiliary
+  information to a main data set.
 */
 APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p){
     apop_data *apop_varad_var(data, NULL);

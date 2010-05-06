@@ -122,41 +122,15 @@ apop_model apop_histogram = {"Histogram", .dsize=1, .estimate = est, .log_likeli
 
 ////Kernel density estimation
 
-static void apop_set_first_param(apop_data_row in, apop_model *m){
-    m->parameters->vector->data[0]  = in.vector_pt ?
-            *in.vector_pt : gsl_vector_get(&in.matrix_row, 0);
+static void apop_set_first_param(apop_data *in, apop_model *m){
+    m->parameters->vector->data[0]  = in->vector ?
+            in->vector->data[0] : gsl_matrix_get(in->matrix, 0, 0);
 }
 
 /** Allocate and fill a kernel density, which is a smoothed histogram. 
 
-You may either provide a histogram and a \c NULL data set, or a \c NULL histogram and a real data set, in which case I will convert the data set into a histogram and use the histogram thus created.
-
-\param data    a data set, which, if  not \c NULL and \c !histobase , will be converted to a histogram.
-  \param histobase This is the preferred format for input data. It is the histogram to be smoothed.
-\param kernelbase The kernel to use for smoothing, with all parameters set and a \c p method. Popular favorites are \ref apop_normal and \ref apop_uniform.
-\param set_params A function that takes in a single number and the model, and sets
-the parameters accordingly. The function will call this for every point in the data
-set. Here is the default, which is used if this is \c NULL. It simply sets the first
-element of the model's parameter vector to the input number; this is appropriate for a
-Normal distribution, where we want to center the distribution on each data point in turn.
-
-\code
-void apop_set_first_param(double in, apop_model *m){
-    m->parameters->vector->data[0] = in;
-}
-\endcode
-
-For a Uniform[0,1] recentered around each point, you'd want to put this function in your code:
-
-\code
-void set_midpoint(double in, apop_model *m){
-    m->parameters->vector->data[0] = in-0.5;
-    m->parameters->vector->data[1] = in+0.5;
-}
-\endcode
-
+  See \ref apop_kernel_density for details.
 */
-
 apop_kernel_density_settings *apop_kernel_density_settings_init(apop_kernel_density_settings in){
     //If there's a PMF associated with the model, run with it.
     //else, generate one from the data.
@@ -201,7 +175,7 @@ double kernel_p(apop_data *d, apop_model *m){
                                 : pmf_data->vector ? pmf_data->vector->size
                                                    : pmf_data->matrix->size1;
     for (int k = 0; k < len; k++){
-        apop_data_row r = apop_data_get_row(pmf_data, k);
+        Apop_data_row(pmf_data, k, r);
         (ks->set_fn)(r, ks->kernel);
         p += apop_p(d, ks->kernel);
     }

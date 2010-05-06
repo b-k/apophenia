@@ -575,7 +575,7 @@ Outlineheader datalloc Alloc/free
 
 endofdiv
 
-Outlineheader gslviews 	Using GSL Views
+Outlineheader gslviews 	Using views
 
 You may need to pull a row of a matrix as a distinct vector. The GSL makes it easy to do so, and Apophenia provides several convenience functions to save any remaining hassle. The data in the new vector will point to the base data, not copy it. Some examples:
 
@@ -608,9 +608,13 @@ double first_col_sum = apop_matrix_sum(subm);
 \li\ref Apop_matrix_col
 \li\ref Apop_matrix_row
 \li\ref Apop_submatrix
-
+\li\ref Apop_data_row
+\li\ref Apop_data_rows
 
 These macros make use of a set of GSL matrices that produce output of type <tt>gsl_matrix_view</tt> and <tt>gsl_vector_view</tt>. These types point to the source data, and add metadata to turn the data into a coherent matrix/vector. Apophenia's macros generate these views, then pull the matrix/vector from them, so you never have to deal with the <tt>_view</tt> structs directly.
+
+The \ref Apop_data_rows and  \ref Apop_data_row macros are intended to be a view of one or more rows of an \ref apop_data set.
+
 
 If the macros don't work for you, you can use the GSL's macros directly.  Here's how to get the fifth row of <tt>a_matrix</tt> into a vector view:
 
@@ -628,6 +632,36 @@ gsl_vector *a_new_vector = gsl_vector_alloc(a_matrix->size1);
 v = gsl_matrix_col(a_matrix, 4);
 gsl_vector_memcpy(a_new_vector, &(v.vector));
 \endcode
+
+What would happen if you return <tt>&(v.vector)</tt> to a calling function? The calling
+function now has a pointer to the space where <tt>v.vector</tt> had been, but because
+<tt>v</tt> is an automatically allocated variable, that address may now hold garbage.
+
+One more reminder: curly braces delimit scope. 
+These macros work by generating a number of local variables, which you may be able to see in your
+debugger. When program evaluation exits a given block, all variables in that block are
+erased. Here is some sample code that won't work:
+\code
+if (get_odd){
+    Apop_data_row(data, 1, outdata);
+} else {
+    Apop_data_row(data, 0, outdata);
+}
+apop_data_show(outdata); //breaks: no outdata in scope.
+\endcode
+
+For this if/then statement, there are two sets of local variables
+generated: one for the \c if block, and one for the \c then block. By the last line,
+neither exists. You can get around the problem here by making sure to not put the macro
+declaring new variables in a block. E.g.:
+
+\code
+Apop_data_row(data, get_odd ? 1 : 0, outdata);
+apop_data_show(outdata);
+\endcode
+
+This is a general rule about how variables declared in blocks will behave, but because the
+macros obscure the variable declarations, it is especially worth watching out for here.
 
 endofdiv
 
@@ -725,7 +759,7 @@ Notice how the older \ref apop_vector_apply uses file-global variables to pass i
 
 \include t_test_by_rows.c
 
-One more toy example, demonstrating the use of the \ref apop_data_row:
+One more toy example, demonstrating the use of the \ref Apop_data_row :
 \include apop_map_row.c
 
             \li\ref apop_map()
@@ -1247,16 +1281,17 @@ endofdiv
         \li\ref Apop_settings_set
         \li\ref apop_settings_copy_group
         \li\ref Apop_settings_get
-        \li\ref apop_settings_get_group
+        \li\ref Apop_settings_get_group
         \li\ref Apop_settings_get_group
 
         endofdiv
 
-    endofdiv
 
     Outlineheader Esti Estimation aids
 
         \li\ref apop_model_fix_params : hold some parameters constant
+
+    endofdiv
 
     endofdiv
 
@@ -1495,8 +1530,6 @@ Outlineheader Math Math utilities
     \li\ref apop_multivariate_gamma()
     \li\ref apop_multivariate_lngamma()
     \li\ref apop_rng_alloc()
-    \li\ref apop_random_double ()
-    \li\ref apop_random_int ()
 
 endofdiv
 
@@ -1505,8 +1538,6 @@ Outlineheader Prob Deprecated
 These functions will probably disappear or be replaced soon.
 
     \li\ref apop_estimate_fixed_effects_OLS()
-    \li\ref apop_name_cross_stack()
-    \li\ref apop_kernel_density_settings_alloc()
     \li\ref apop_data_to_db()
     \li\c Apop_settings_add_group
     \li\ref Apop_settings_alloc

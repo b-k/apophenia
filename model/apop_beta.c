@@ -76,7 +76,7 @@ static double dbeta_callback(double x){ return log(1-x); }
 
 static void beta_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
     Get_vmsizes(d) //tsize
-    Nullcheck_mv(m); Nullcheck_pv(m);
+    Nullcheck_m(m); Nullcheck_p(m);
   double bb	= gsl_vector_get(m->parameters->vector, 0);
   double a	= gsl_vector_get(m->parameters->vector, 1);
   double lnsum = apop_map_sum(d, log);

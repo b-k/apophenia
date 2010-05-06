@@ -24,7 +24,7 @@ static double zipf_log_likelihood_rank(const apop_data *d, apop_model *m){
 
 static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1
-  Nullcheck_mv(m); Nullcheck_pv(m);
+  Nullcheck_m(m); Nullcheck_p(m);
   static apop_data *constraint = NULL;
     if (!constraint) {
         constraint = apop_data_calloc(1,1,1);
