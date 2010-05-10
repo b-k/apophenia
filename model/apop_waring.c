@@ -101,12 +101,12 @@ static double waring_log_likelihood(apop_data *d, apop_model *m){
       return waring_log_likelihood_rank(d, m);
   ab_type abstruct;
   abstruct.bb	= gsl_vector_get(m->parameters->vector, 0),
-  abstruct.a	    = gsl_vector_get(m->parameters->vector, 1);
+  abstruct.a    = gsl_vector_get(m->parameters->vector, 1);
   double 		likelihood 	= 0,
 		        ln_bb_a		= gsl_sf_lngamma(abstruct.bb + abstruct.a),
                 ln_a_mas_1	= gsl_sf_lngamma(abstruct.a + 1),
                 ln_bb_less_1= log(abstruct.bb - 1);
-    likelihood= apop_map_sum(d, .fn_dp = apply_me, .param=&abstruct);
+    likelihood   = apop_map_sum(d, .fn_dp = apply_me, .param=&abstruct);
 	likelihood	+= (ln_bb_less_1 + ln_bb_a - ln_a_mas_1)* tsize;
 	return likelihood;
 }
@@ -171,7 +171,15 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 	*out = x;
 }
 
+static apop_model *waring_est(apop_data *d, apop_model *m){
+  apop_mle_settings *p = apop_settings_get_group(m, apop_mle);
+    if (!p) 
+        p = Apop_model_add_group(m, apop_mle, .method = APOP_CG_PR, .verbose=1);
+    return apop_maximum_likelihood(d, m);
+}
+
 apop_model apop_waring = {"Waring distribution", 2,0,0, .dsize=1,
+    .estimate = waring_est,
 	 .log_likelihood =  waring_log_likelihood, .score = waring_dlog_likelihood, 
      .constraint =  beta_zero_and_one_greater_than_x_constraint,  .draw = waring_rng};
 //estimate via the default MLE 

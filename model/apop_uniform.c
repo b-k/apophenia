@@ -5,20 +5,12 @@
 #include "internal.h"
 #include "likelihoods.h"
 
-apop_model apop_uniform;
-
 static void getminmax(apop_data *d, double *min, double *max){
     Get_vmsizes(d) //msize1, vsize
     *min = GSL_MIN(msize1 ? gsl_matrix_min(d->matrix) : GSL_POSINF,
                     vsize ? gsl_vector_min(d->vector) : GSL_POSINF);
     *max = GSL_MAX(msize1 ? gsl_matrix_max(d->matrix) : GSL_NEGINF,
                     vsize ? gsl_vector_max(d->vector) : GSL_NEGINF);
-}
-
-static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
-    Nullcheck(data);
-    getminmax(data, est->parameters->vector->data+0, est->parameters->vector->data+1);
-    return est;
 }
 
 static double unif_ll(apop_data *d, apop_model *m){
@@ -39,6 +31,13 @@ static double unif_p(apop_data *d, apop_model *m){
     if (min> m->parameters->vector->data[0] && max< m->parameters->vector->data[1])
         return pow(m->parameters->vector->data[1] - m->parameters->vector->data[0], -tsize);
     return 0;
+}
+
+static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
+    Nullcheck(data);
+    getminmax(data, est->parameters->vector->data+0, est->parameters->vector->data+1);
+    apop_data_add_named_elmt(est->info, "log likelihood", unif_ll(data, est));
+    return est;
 }
 
 static double unif_cdf(apop_data *d, apop_model *m){

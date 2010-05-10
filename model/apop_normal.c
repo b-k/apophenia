@@ -8,39 +8,6 @@ The Normal and Lognormal distributions.*/
 #include "settings.h"
 #include "internal.h"
 #include "likelihoods.h"
-static double normal_log_likelihood(apop_data *d, apop_model *params);
-
-/** The normal estimate */
-static apop_model * normal_estimate(apop_data * data, apop_model *est){
-    Get_vmsizes(data)
-  double		mmean=0, mvar=0, vmean=0, vvar=0;
-  apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
-    if (!p) 
-        p = Apop_model_add_group(est, apop_lm);
-    if (vsize){
-        vmean = apop_mean(data->vector);
-        vvar = apop_var(data->vector);
-    }
-    if (msize1)
-        apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
-    double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
-    double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
-    est->parameters->vector->data[0] = mean;
-    est->parameters->vector->data[1] = sqrt(var);
-	apop_name_add(est->parameters->names, "mu", 'r');
-	apop_name_add(est->parameters->names, "sigma",'r');
-	if (!p || p->want_cov=='y'){
-        apop_data *cov = apop_data_get_page(est->parameters, "<Covariance>");
-        if (!cov)
-            cov = apop_data_add_page(est->parameters, apop_data_calloc(0, 2, 2), "<Covariance>");
-        apop_data_set(cov, 0, 0, mean/tsize);
-        apop_data_set(cov, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
-    }
-    est->data = data;
-    est->info = apop_data_alloc(1,0,0);
-    apop_data_add_named_elmt(est->info, "log likelihood", normal_log_likelihood(data, est));
-	return est;
-}
 
 static double beta_1_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2
@@ -70,6 +37,37 @@ static double normal_log_likelihood(apop_data *d, apop_model *params){
   long double   ll  = -apop_map_sum(d, .fn_dp = apply_me2, .param = &mu)/(2*gsl_pow_2(sd));
     ll    -=  tsize*(M_LNPI+M_LN2+log(sd));
 	return ll;
+}
+
+static apop_model * normal_estimate(apop_data * data, apop_model *est){
+    Get_vmsizes(data)
+  double		mmean=0, mvar=0, vmean=0, vvar=0;
+  apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
+    if (!p) 
+        p = Apop_model_add_group(est, apop_lm);
+    if (vsize){
+        vmean = apop_mean(data->vector);
+        vvar = apop_var(data->vector);
+    }
+    if (msize1)
+        apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
+    double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
+    double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
+    est->parameters->vector->data[0] = mean;
+    est->parameters->vector->data[1] = sqrt(var);
+	apop_name_add(est->parameters->names, "mu", 'r');
+	apop_name_add(est->parameters->names, "sigma",'r');
+	if (!p || p->want_cov=='y'){
+        apop_data *cov = apop_data_get_page(est->parameters, "<Covariance>");
+        if (!cov)
+            cov = apop_data_add_page(est->parameters, apop_data_calloc(0, 2, 2), "<Covariance>");
+        apop_data_set(cov, 0, 0, mean/tsize);
+        apop_data_set(cov, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
+    }
+    est->data = data;
+    est->info = apop_data_alloc(1,0,0);
+    apop_data_add_named_elmt(est->info, "log likelihood", normal_log_likelihood(data, est));
+	return est;
 }
 
 static double normal_cdf(apop_data *d, apop_model *params){
