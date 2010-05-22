@@ -108,7 +108,8 @@ The function returns a new data set with the NaNs removed, so the original data 
     you sent in and refill with the pruned data. If \c 'n', leave the
     set alone and return a new data set.
     \return     A (potentially shorter) copy of the data set, without
-    NaNs. If <tt>inplace=='y'</tt>, redundant with the input.
+    NaNs. If <tt>inplace=='y'</tt>, redundant with the input. If the entire data set is
+    cleared out, then this will be \c NULL.
 */
 APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
     apop_data * apop_varad_var(d, NULL);
@@ -116,79 +117,33 @@ APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
     char apop_varad_var(inplace, 'n');
 APOP_VAR_ENDHEAD
     Get_vmsizes(d) //defines firstcol, vsize, wsize, msize1, msize2.
-    int i, to_rm;
     apop_assert(msize1 || vsize, NULL, 0, 'c', 
             "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
     //find out where the NaNs are
-  gsl_vector *marked = gsl_vector_calloc(vsize ? vsize : msize1);
-    for (i=0; i< (vsize ? vsize: msize1); i++)
+    int len = vsize ? vsize : msize1;
+    int marked[len], not_empty = 0;
+    memset(marked, 0, sizeof(int)*len);
+    for (int i=0; i< (vsize ? vsize: msize1); i++)
         for (int j=firstcol; j <msize2; j++){
             if (gsl_isnan(apop_data_get(d, i, j))){
-                    gsl_vector_set(marked, i, 1);
+                    marked[i] = 1;
                     break;
             }
         }
-    for (i=0; i< wsize; i++)
+    for (int i=0; i< wsize; i++)
         if (gsl_isnan(gsl_vector_get(d->weights, i)))
-            gsl_vector_set(marked, i, 1);
-    to_rm   = apop_sum(marked);
-    //copy the good data.
-    if (to_rm  == msize1)
-        return NULL;
-  apop_data *out = apop_data_alloc(0, msize1-to_rm, msize1 ? msize2 : -1);
-    if (wsize)
-        out->weights = gsl_vector_alloc(wsize - to_rm);
-
-    apop_name_free(out->names);
-    out->names  = apop_name_copy(d->names); 
-    for(size_t k=0; k < d->names->rowct; k ++)
-        free(out->names->row[k]);
-    out->names->rowct = 0;
-    free(out->names->row);
-    out->names->row   = NULL;
-
-    if (vsize && msize1)
-        out->vector = gsl_vector_alloc(msize1 - to_rm);
-    int j   = 0;
-    for (i=0; i< msize1; i++)
-        if (!gsl_vector_get(marked, i)){
-            if (vsize)
-                gsl_vector_set(out->vector, j, gsl_vector_get(d->vector, i));
-            if (msize1){
-                Apop_row(d, i, v);
-                gsl_matrix_set_row(out->matrix, j, v);
-                if (d->names->row && d->names->rowct > i)
-                    apop_name_add(out->names, d->names->row[i], 'r');
-            }
-            if (i < d->textsize[0]){
-                out->text = realloc(out->text, sizeof(char**) * (j+1));
-                out->text[j] = malloc(sizeof(char*) * d->textsize[1]);
-                out->textsize[0]++;
-                if (!out->textsize[1])
-                    out->textsize[1] = d->textsize[1];
-                for (int k=0; k< d->textsize[1]; k++)
-                    apop_text_add(out, j, k, d->text[i][k]);
-            }
-            if (wsize)
-                gsl_vector_set(out->weights, j, gsl_vector_get(d->weights, i));
-            j++;
+            marked[i] = 1;
+    //check that at least something isn't NULL.
+    for (int i=0; i< len; i++)
+        if (!marked[i]){
+            not_empty ++;
+            break;
         }
-    gsl_vector_free(marked);
-    if (inplace=='n')
-        return out;
-    if (vsize) gsl_vector_free(d->vector);
-    if (wsize) gsl_vector_free(d->weights);
-    if (msize1) gsl_matrix_free(d->matrix);
-    if (d->textsize[0]) apop_text_free(d->text, d->textsize[0], d->textsize[1]);
-    apop_name_free(d->names);
-    if (vsize) d->vector = out->vector;
-    if (wsize) d->weights = out->weights;
-    if (msize1) d->matrix = out->matrix;
-    out->names = d->names;
-    out->textsize[0] = d->textsize[0];
-    out->textsize[1] = d->textsize[1];
-    free(out);
-    return d;
+    if (!not_empty)
+        return NULL;
+    apop_data *out = (inplace=='y'|| inplace=='Y') ? d : apop_data_copy(d);
+    apop_data_rm_rows(out, marked);
+    return out;
 }
 
 //ML imputation
@@ -234,7 +189,7 @@ if \c NULL, then I'll use the Multivariate Normal that best fits the data after 
 apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     if (!mvn){
         apop_data *list_d = apop_data_listwise_delete(d);
-        apop_assert(list_d, NULL, 0, 's', "Listwise deletion returned no whole rows, "
+        apop_assert_s(list_d, "Listwise deletion returned no whole rows, "
                             "so I couldn't fit a Multivariate Normal to your data. "
                             "Please provide a pre-estimated initial model.");
         mvn = apop_estimate(list_d, apop_multivariate_normal);
@@ -249,4 +204,116 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
     apop_data_memcpy(d, m->parameters); //A bit inefficient.
     return m;
+}
+
+
+/**
+Imputation (in this context) is the process of finding fill-in values for missing data
+points. Filling in values from a single imputation and then returning the values will give
+you a single complete data set, but statistics you derive from that data set don't reflect
+the uncertainty inherent in using artifical, model-derived data rather than actual
+observations. This function uses several imputations and a statistic-calculating function
+you provide to find the total variance (see details below).
+
+
+The multiple imputation process involves two steps:
+
+\li Generating imputations via a model of your choosing, and writing down the results in a
+\c fill_ins table, described in the parameter list. You've already done this by the time
+you call this function.
+
+\li For a given complete data set, generating a summary statistic, such as the mean of a
+column, or the ratio of columns one and two; plus the variance of your statistic(s).
+
+This function takes the output from the first step (a list of fill-ins), and uses it to
+calculate a list of statistics/variances, as per the second step. After generating this
+list of statistics/variances, it ties them together to produce a single best estimate of
+the statistic and its full variance.
+
+
+\param stat A function that takes in a single \ref apop_data set, and calculates
+statistics and their covariances. The output should have two pages. The first
+will be the statistics themselves; the second will be the covariance matrix. If
+I find a page with the name <tt>\<Covariance\></tt> then I will use that; else
+the second page. This rule means you can return the \c parameters from most estimated
+models.
+
+\param base_data The data, with \c NaNs to be filled in. When calculating the statistics,
+I fill in the values in the \c base_data set directly, so it is modified, and in
+the end will have the value of the last replication.
+
+\param fill_ins This is the list of values to fill in to the base data set, and it must be
+an \ref apop_data set whose matrix includes the following two column names toward the
+beginning: \c row and \c col, with an optional \c page. Every column after those two or
+three columns is taken to be an imputation that can be used to fill in values. That is, I
+will first take the first column after the row/col/page column and plug its values
+into the corresponding row/col/pages of \c base_data, calculate the variances, then repeat
+with the second column, and so on.
+
+\return The first page is the mean of each replicate's statistics; the second page is the
+overall covariance (and will have the page title <tt>\<Covariance\></tt>).
+Let \f$S_i\f$ be the covariance for each replicate \f$i\f$; let there be \f$m\f$
+replicates; let \f$\mu(\cdot)\f$ indicate the mean; then the overall covariance is the mean of the individual variances plus 
+
+\f$\mu(S_i) + {\rm var}(S_i)/(1+1/m).\f$
+
+
+\li Multiple pages for input data are not yet implemented.
+*/
+
+apop_data * apop_multiple_imputation_variance(apop_data *(*stat)(apop_data *), apop_data *base_data, 
+                                                                               apop_data *fill_ins){
+    /*Copyright: this function is part of a larger work (C) Ben Klemens, but was partially written
+    by a government employee during work hours. Some lawyers will tell you that the code
+    is licensed via GPL v2, like the main work; others will tell you that it's public domain.*/
+
+    //Part I: call the statistic-calculating function with each filled-in replicate
+	int row_column = apop_name_find(fill_ins->names, "row", 'c');
+	int col_column = apop_name_find(fill_ins->names, "col", 'c');
+	int page_column = apop_name_find(fill_ins->names, "page", 'c');
+	int first_non_address= GSL_MAX(row_column, GSL_MAX(col_column, page_column)) + 1;
+	int replicates = fill_ins->matrix->size2 - first_non_address;
+    apop_assert_s(replicates, "I couldn't find anything besides row/col/page columns "
+            "(which I may or may not have found)")
+
+	apop_data *estimates[replicates];
+	for (int i= first_non_address; i< fill_ins->matrix->size2; i++){
+		for (int j=0; j < fill_ins->matrix->size1; j++)
+			apop_data_set(base_data, 
+				.row = apop_data_get(fill_ins, j, row_column),
+				.col = apop_data_get(fill_ins, j, col_column),
+				.val =  apop_data_get(fill_ins, j, i));
+		estimates[i-first_non_address] = stat(base_data);
+	}
+
+    //Part II: find the mean of the statistics and the total variance of the cov matrix.
+	gsl_vector *vals = gsl_vector_alloc(replicates);
+    apop_data *out = apop_data_copy(estimates[0]);
+	//take the simple mean of the main data set.
+	{ //this limits the scope of the Get_vmsizes macro.
+	 Get_vmsizes(estimates[0]); 
+     for (int j=0; j < msize2; j++)
+         for (int i=0; i < (vsize ? vsize : msize1); i++){
+            for (int k=0; k< replicates; k++)
+                gsl_vector_set(vals, k, apop_data_get(estimates[k], i, j));
+             apop_data_set(out, i, j, apop_vector_mean(vals));
+         }
+	}
+    apop_data *out_var = apop_data_get_page(estimates[0], "<Covariance>");
+    int cov_is_labelled = out_var !=NULL;
+    if (!cov_is_labelled){
+        sprintf(out->more->names->title, "<Covariance>");
+        out_var = estimates[0]->more;
+    }
+	Get_vmsizes(out_var);
+    for (int i=0; i < msize1; i++)
+        for (int j=0; j < msize2; j++){
+            for (int k=0; k< replicates; k++){
+                apop_data *this_p = cov_is_labelled ? apop_data_get_page(estimates[k], "<Covariance>")
+                                        : estimates[k]->more;
+                gsl_vector_set(vals, k, apop_data_get(this_p, i, j));
+            }
+            apop_data_set(out_var, i, j, apop_vector_mean(vals) + apop_var(vals)/(1+1./replicates));
+        }
+    return out;	
 }

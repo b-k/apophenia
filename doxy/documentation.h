@@ -231,99 +231,11 @@ Outlineheader preliminaries Overview and Preliminaries
 As well as the information in this outline, there is a separate page covering the details of 
  \ref setup "setting up a computing environment" and another page with \ref eg "some sample code" for your perusal.
 
-Outlineheader  intro A quick overview
+If you are entirely new to Apophenia, \ref gentle "have a look at the Gentle Introduction here".
 
-  A typical data analysis project using Apophenia's tools would go something like this:
-
- \li Read the raw data into the database using \ref apop_text_to_db.
- \li Use SQL queries handled by \ref apop_query to massage the data as needed.
- \li Use \ref apop_query_to_data to pull the data into an in-memory apop_data set.
- \li Call a model estimation such as \code apop_estimate (data_set, apop_OLS)\endcode  or \code apop_estimate (data_set, apop_probit)\endcode to fit parameters to the data. This will return an \ref apop_model like the original, but with parameter estimates.
- \li Interrogate the returned estimate, by dumping it to the screen with \ref apop_model_show, sending its parameters and variance-covariance matrices to a test, et cetera.
-
-Over the course of this,
-our researcher had to parse text, use a database, manipulate matrices,
-fit statistical models, and then test the results by looking up a
-summary statistic in a table of distributions. Having hooks to all of
-these things in one library makes the flow much more pleasant.
-
-For a concrete example of folding Apophenia into a project, have a look at this \ref sample_program "sample program".
-
-Of course, you may not need all this: you might just want a neat interface to SQLite, or an easy-to-use structure that holds your data 
-in a matrix and allows you to label the rows and columns. Have a look at the \ref outline "library outline" for the various categories of relatively standalone functions that you can fold into your own work.
-
-If you would like a more in-depth discussion of Apophenia's raison d'etre and logic, have a look at these
-<a href="http://apophenia.info/apop_notes.html">design notes</a>.
-
-endofdiv
-
-Outlineheader othermodels The typical stats package workflow v Apophenia's workflow
-
-From the <em>quick overview</em> section above, you saw that (1) the
-library expects you to keep your data in a database, pulling out the
-data as needed, and (2) that a great deal of statistical information,
-and the workflow, is encapsulated in \ref apop_model structures.
-
-Starting with (2), some stats packages have model structures that
-typically work very differently from those here. The key conceptual
-difference is in breadth, which implies a practical difference in how
-data is handled.
-
-If a stats package has something called a <em>model</em>, then it is
-probably of the form Y = [a function of <b>X</b>], such as \f$y = x_1 +
-\log(x_2) + x_3^2\f$. Trying new models means trying different
-functional forms for the right-hand side, such as including \f$x_2\f$ in
-some cases and excluding it in others. Conversely, Apophenia works to facilitate
-trying new models in the sense of switching out a linear model for a
-hierarchical, or a Bayesian model for a simulation. 
-A formula syntax makes little sense over such a broad range of models.
-
-As a result, Apophenia does not put the form of the left-hand side into
-the model; the data is assumed to be correctly formatted, scaled, or logged
-before being passed to the model. This is where part (1), the database,
-comes in. 
-
-Many stats packages were initially designed around data literally being
-provided in decks of punchchards, and still seem to assume that the data
-is basically to be taken as read-only.  With a database, the GSL, and the
-various tools provided by Apophenia, you have more than enough tools to
-make your data look how you want it to.
-When you do want to try swapping out different formula specifications,
-the database provides a proxy for the sort of formula specification language above:
- \code
-apop_data *testme= apop_query_to_data("select y, x1, log(x2), pow(x3,2) from data");
-apop_model *est = apop_estimate(testme, apop_ols);
-\endcode
-
-[As an aside, there is a simple principle to the ordering of arguments to functions like
-\ref apop_estimate : the data always comes first.]
-
-Generating factors and dummies is also considered data prep, not model
-internals. See \ref apop_data_to_dummies and \ref apop_text_to_factors.
-
-Now that you have an estimated model (which holds the estimated \c
-parameters), you can interrogate it.
-
- \code
- //If you have a new data set, you can fill in predicted values:
-apop_predict(new_data_set, est);
-apop_data_show(new_data_set)
-
- //Fill a matrix with random draws. The draw function needs an RNG from
- //the GNU Scientific Library, and a pointer-to-double.
-gsl_rng *r = apop_rng_alloc(218);
-for (int i=0; i< matrix->size1; i++){
-    Apop_matrix_col(matrix, i, one_col);
-    apop_draw(one_col->data, r, est);
-}
-\endcode
-
-So that's the intended workflow: first, gather the data, probably via the
-database, pull the data in the format you want it; then, set up your model,
-estimate and interrogate it. [See also the model settings section below on optional details of model setup.] 
+For another concrete example of folding Apophenia into a project, have a look at this \ref sample_program "sample program".
 
 
-endofdiv
 
 Outlineheader c Some notes on C and Apophenia's use of C utilities.
  
@@ -350,21 +262,11 @@ Bear in mind that every book on C will tell you this is bad form and you shouldn
 
 <b> Easier calling syntax</b>
 
-Several functions (but nowhere near all) use a script-like syntax for calling functions. For example, the \ref apop_vector_distance function finds the distance between two vectors using various metrics. The full function call, using an \f$L_3\f$ norm for vectors \f$v_1\f$ and \f$v_2\f$ would be 
+Several functions (but nowhere near all) allow optional named arguments to functions. For
+example:
 \code
-apop_vector_distance(v1, v2, 'L', 3);
-\endcode
-But some metrics don't need a number to be fully described, so you can leave that off. Here's the standard (Euclidean) distance:
-\code
-apop_vector_distance(v1, v2, 'E');
-\endcode
-Because Euclidean distance is so standard, it is assumed as the default if you don't specify a norm, so you can leave out the third input:
-\code
-apop_vector_distance(v1, v2);
-\endcode
-If you give only one vector, I'll assume the other is the zero vector, and thus return the length of the first vector. Here is the length of a vector using the Manhattan metric:
-\code
-apop_vector_distance(v1, .metric='M');
+apop_vector_distance(v1, v2); //assumes Euclidean distance
+apop_vector_distance(v1, .metric='M'); //assumes v2=0, uses Manhattan metric.
 \endcode
 
 See the \ref designated page for details of this syntax.
@@ -722,7 +624,7 @@ Here, we create an index vector [0, 1, 2, \f$\dots\f$].
 \code
 double index(double in, int index){return index;}
 apop_data *d = apop_data_alloc(100, 0, 0);
-apop_map(d, .fn_di=index, .inplace=1);
+apop_map(d, .fn_di=index, .inplace='y');
 \endcode
 
 Given your log likelihood function and a data set where each row of the matrix is an observation, find the total log likelihood:
@@ -962,7 +864,9 @@ Outlineheader Modesec Models
 
 Outlineheader introtomodels Introduction
 
-A model intermediates between data, parameters, and likelihoods.  [This definition readily includes "non-parametric" models.] When the parameters are fully specified, the model will give you a likelihood that an observation will occur.  Much of statistical analysis consists of writing down a model, estimating its parameters, and running hypothesis tests to determine the confidence with which we can make statements about those parameters.
+A model intermediates between data, parameters, and likelihoods.  [This definition readily includes "non-parametric" models.] 
+
+When the parameters are fully specified, the model will give you a likelihood that an observation will occur.  Much of statistical analysis consists of writing down a model, estimating its parameters, and running hypothesis tests to determine the confidence with which we can make statements about those parameters.
 
 Given data, the model can estimate the parameters that best fit the data. This is the typical model estimation.
 
@@ -970,18 +874,17 @@ Given parameters, the model can generate the expected value of the data, or rand
 
 Apophenia facilitates all this via its \ref apop_model objects. The model includes slots for \c log_likelihood, \c estimate, \c draw, \c expected_value, and other operations we expect from our models.
 
+
 For example, a model may be a probability distribution, such as the \ref apop_normal, \ref apop_poisson, or \ref apop_beta models. The data is assumed to have been drawn from a given distribution and the question is only what distributional parameters best fit; e.g., assume the data is Normally distributed and find the mean and variance: \c apop_estimate(data,apop_normal).
-
-The design of the objects hopes to make it as easy as possible for you, dear reader, to write new models. For the most part, all you need to do is write a log likelihood function, and \ref apop_maximum_likelihood does the rest; see below.
-
-The most commonly-used function in the systems below is the \ref apop_estimate function. It takes in a model and data, and outputs an apop_estimate, that includes the parameter estimates and the various auxiliary data that one may need to test the estimates, such as the variance-covariance matrix. For most users, the \c estimate function will be all one needs from a model. Just prep the data, select a model, and produce an estimate:
+Following the examples, the most commonly-used function in the systems below is the \ref apop_estimate function. It takes in data and a model without estimated parameters, and outputs an \ref apop_model with estimated parameters and the various auxiliary data that one may need to test the estimates, such as the variance-covariance matrix. For most users, the \c estimate function will be all one needs from a model. Just prep the data, select a model, and produce an estimate:
 
 \code
-apop_data 	    *data 		    = read_in_data();
-apop_model 	*the_estimate 	= apop_estimate(data, apop_probit);
+apop_data *data = read_in_data();
+apop_model *the_estimate = apop_estimate(data, apop_probit);
 apop_model_show(the_estimate);
 \endcode
 
+The design of the objects hopes to make it as easy as possible for you, dear reader, to write new models. For the most part, all you need to do is write a log likelihood function, and \ref apop_maximum_likelihood woud do the rest of the work of estimation; see below.
 
 Outlineheader internals The internals
 
@@ -1873,3 +1776,416 @@ for the -obit and -ogit models
         --If you do tell me where to find the dependent column, via the settings, I'll turn that into a list of factors.
 
  */
+
+
+
+
+/**
+\page gentle A quick overview
+
+Hi.
+
+This is the "gentle introduction" document to the Apophenia library. It is intended 
+to give you some initial bearings on what would be an overwhelming system if you took it
+all in at once.
+
+This introduction assumes you already know C, how to compile a program, and how to use a debugger.
+
+An outline of this overview:
+
+\li Apophenia fills a space between traditional C libraries and stats packages. 
+\li The \ref apop_data structure represents a data set (of course). Data sets are inherently complex,
+but there are many functions that act on \ref apop_data sets to make life easier.
+\li The \ref apop_model encapsulates the sort of actions one would take with a model, like estimating model parameters or predicting values based on new inputs.
+\li Databases are great, and a perfect fit for the sort of paradigm here. Apophenia
+provides functions to make it easy to jump between database tables and \ref apop_data sets.
+
+\par The opening example
+
+To my knowledge, Apophenia is the only open source system for doing statistical
+analysis that is not a walled-garden stats package. Its data structures, syntax, and use 
+reflect its unique position.
+
+The first type of use for Apophenia is
+simply stats-package--like fitting of models, where the user gathers data, cleans it, and
+runs a series of regressions.  The other type is as a library used as input to the design of other
+systems, like fitting a model and then using the fitted model to generate agents in a simulation, or
+designing hierarchical models built from simpler base models. 
+
+You may think that this is
+an artificial division---and that's the point of Apophenia. There is room for a package
+that provides the conveniences that stats package users are used to in simply fitting a
+model, while still being structured in a manner that allows building new types of model.
+
+A typical fitting-a-model project using Apophenia's tools would go something like this:
+
+ \li Read the raw data into the database using \ref apop_text_to_db.
+ \li Use SQL queries handled by \ref apop_query to massage the data as needed.
+ \li Use \ref apop_query_to_data to pull some of the data into an in-memory \ref apop_data set.
+ \li Call a model estimation such as \code apop_estimate (data_set, apop_ols)\endcode  or \code apop_estimate (data_set, apop_probit)\endcode to fit parameters to the data. This will return an \ref apop_model like the original, but with parameter estimates.
+ \li Interrogate the returned estimate, by dumping it to the screen with \ref apop_model_show, sending its parameters and variance-covariance matrices to a test, et cetera.
+
+Here is a concrete example of most of the above steps, which you can compile and run. By the time you get to the end
+of this introduction, you will have a good idea of what every line of code is doing and why.
+
+The program:
+\include ols1.c
+
+To run this, you
+will need a file named <tt>data</tt> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent:
+\verbatim
+Y, X_1, X_2, X_3
+2,3,4,5
+1,2,9,3
+4,7,9,0
+2,4,8,16
+1,4,2,9
+9,8,7,6
+\endverbatim
+
+If you saved the code to <tt>sample.c</tt>, then you can compile it with
+\verbatim
+gcc sample.c -std=gnu99 -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
+\endverbatim
+
+and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
+
+The results should be unremarkable---this is just an ordinary regression---but it does
+give us some lines of code to dissect. 
+
+The first two lines in \c main() make use of a database.  
+I'll discuss the value of the database step more at the end of this page, but for
+now, note that there are there are several functions, \ref apop_query, and \ref
+apop_query_to_data being the ones you will most frequently be using, that will allow you to talk to and pull data from either a SQLite or mySQL database. 
+
+\par Designated initializers
+
+If anything, this line in the above sample program---
+
+\code
+apop_text_to_db(.text_file="data", .tabname="d");
+\endcode
+
+---demonstrates Apophenia's intent to balance the traditional stats package with the C library. Most C code doesn't implement variable-length argument lists or named arguments, perhaps because it bucks tradition or requires extra lines of library code that the compiler will only optimize out anyway. But this form of function appears often in the Apophenia library. It makes coding easier, less error-prone, and more pleasant.
+
+Those of you coming from stats packages can enjoy the awesomeness of being able to omit
+arguments that will take their default value,
+and the pleasure of working in C without having to give up all the conveniences of stats packages.
+
+C traditionalists may be surprised by this unfamiliar form, but can rest assured that it is entirely standards-compliant C. 
+See the \ref designated page for details.
+
+To give another example, the \ref apop_data set has the usual row
+and column numbers, but also row and column names. So you should be able to refer to a
+cell by any combination of name or number:
+
+\code
+x = apop_data_get(your_data, 2, 3);
+x = apop_data_get(your_data, .row=2, .colname="three");
+apop_data_set(your_data, 2, 3, 18);
+apop_data_set(your_data, .colname="three", .rowname="two", .val= 18);
+\endcode
+
+See \ref apop_vector_distance for a few more useful examples of this mechanism.
+
+
+\section apop_data
+
+The \ref apop_data set naturally represents a data set. The structure basically includes six parts:
+
+\li a vector
+\li a matrix
+\li a grid of text elements
+\li a vector of weights
+\li names for everything: row names, a vector name, matrix column names, text names.
+\li a link to a second page of data
+
+
+This is not a generic and abstract ideal, but is really the sort of mess that data sets look like. For
+example, here is some dummy data for a weighted OLS regression. It includes an outcome
+variable in the vector, dependent variables in the matrix and text grid,
+replicate weights, and column names in bold labeling the variables:
+
+<table frame=box>
+<tr>
+<td>Rowname</td><td>Vector</td><td> Matrix</td><td> Text</td><td>Weights</td>
+</tr><tr valign=bottom>
+<td align=center>
+<table frame=box>
+<tr><td> </td></tr>
+<tr>
+<td>"Steven"</td>
+</tr><tr>
+<td>"Sandra"</td>
+</tr><tr>
+<td>"Joe"</td><td>
+</tr> 
+</table>
+</td><td align=center>
+<table frame=box>
+<tr>
+<th>Outcome</th>
+</tr> <tr>
+<td align=center>1</td>
+</tr><tr>
+<td align=center>0</td>
+</tr><tr>
+<td align=center>1</td>
+</tr> 
+</table>
+</td><td align=center>
+<table frame=box>
+<tr>
+<th> Age</th><th> Weight (kg)</th><th> Height (cm)</th>
+</tr> <tr>
+<td> 32</td><td> 65</td><td> 175</td>
+</tr><tr>
+<td> 41</td><td> 61</td><td> 165</td>
+</tr><tr>
+<td> 40</td><td> 73</td><td> 181</td>
+</tr> 
+</table>
+</td><td align=center>
+<table frame=box>
+<tr>
+<th> Sex</th><th> State</th>
+</tr>
+<tr>
+<td> Male</td><td> Alaska</td><td>
+</tr><tr>
+<td> Female</td><td> Alabama</td>
+</tr><tr>
+<td> Male</td><td> Alabama</td>
+</tr> 
+</table>
+</td><td align=center>
+<table frame=box>
+<tr><td> </td></tr>
+<tr>
+<td>1</td>
+</tr><tr>
+<td>3.2</td>
+</tr><tr>
+<td>2.4</td>
+</tr> 
+</table>
+</td></tr>
+</table>
+
+As per the example, Apophenia will generally assume that one row across all of these elements
+describes a single observation or data point.
+
+\par Reading in data
+
+As per the example, use \ref apop_text_to_data or \ref apop_text_to_db.
+
+\par Subsets
+
+There are many macros and functions to get subsets of the data. Each generates what is
+considered to be a disposable view: once the variable goes out of scope (by the usual C
+rules of scoping), it is no longer valid. However, these structures all include pointers
+to the base data, so all operations on the data view affect the base data.
+
+\code
+apop_data *d = apop_text_to_data("indata.txt");
+
+\\tally row zero of the matrix by viewing it as a vector:
+Apop_row(d, 0, one_row);
+double sigma = apop_vector_sum(one_row);
+
+\\view the first column of a gsl_matrix as a vector; take its mean
+Apop_matrix_col(d->matrix, 0, one_col);
+double mu = apop_vector_mean(one_col);
+
+\\get a sub-data set of rows 3 through 8; print to screen
+Apop_data_rows(d, 3, 8, six_elmts);
+apop_data_print(six_elmts);
+\endcode
+
+\par Basic manipulations
+
+The outline page (linked from the top of every page) lists a number of other manipulations of data sets, such as 
+\ref apop_data_listwise_delete for quick-and-dirty removal of observations with <tt>NaN</tt>s,
+\ref apop_data_split / \ref apop_data_stack to cleave apart or cleave together data
+sets, or \ref apop_data_sort to sort all elements by a single column.
+
+\par Apply and map
+
+If you have an operation of the form `for each element of my data set, call this
+function', then you can use \ref apop_map to do it. You could basically do everything you
+can do with an apply/map function via a \c for loop, but the apply/map approach is clearer
+and more fun. Also, if you set the global <tt>apop_opts.thread_count = n</tt> for any \c n greater than 1,
+then the work of mapping will be split across multiple threads.  See the outline \f$>\f$ data sets \f$>\f$ map/apply
+section for a number of examples.
+
+\par Text
+
+Text in C is annoying. C already treats strings as pointer-to-characters, so a grid of text data is a pointer-to-pointer-to-pointer-to-character, which is as confusing as can be.
+
+The text grid in the \ref apop_data structure actually takes this form, but functions are provided so that most or all the pointer work is handled for you.  The \ref apop_text_alloc function is really a realloc function: you can use it to resize the text grid as necessary. The \ref apop_text_add function will do the pointer work in copying a single string to the grid. Functions that act on entire data sets, like \ref apop_data_rm_rows, handle the text part as well.
+
+For reading individual elements, refer to the \f$(i,j)\f$th text element via <tt>your_data->text[i][j]</tt>.
+
+\par The whole structure
+
+In case you're wondering, here is a diagram of all of Apophenia's structures and how they
+relate. It is taken from this
+<a href="http://modelingwithdata.org/pdfs/cheatsheet.pdf">cheat sheet</a> (2 page PDF),
+which will be useful to you if only because it lists some of the functions that act on
+GSL vectors and matrices that are very useful but out of the scope of the Apophenia documentation.
+
+\image html http://apophenia.sourceforge.net/doc/structs.png
+\image latex structs.png
+
+
+All of the elements of the \ref apop_data structure are laid out at middle-left. You have
+already met the vector, matrix, and weights, which are all a \c gsl_vector or \c gsl_matrix.
+
+The diagram shows the \ref apop_name structure, which has received little mention so far because names
+basically take care of themselves. Just use \ref apop_name_add to add names to your data
+set and \ref apop_name_stack to copy from one data set to another.
+
+The \ref apop_data structure has a \c more element, for when your data is best expressed
+in more than one page of data. Use \ref apop_data_add_page, \ref apop_data_rm_page,
+and \ref apop_data_get_page. Output routines will sometimes append an extra page of
+auxiliary information to a data set, such as pages named <tt>\<Covariance\></tt> or
+<tt>\<Factors\></tt>. The angle-brackets indicate a page that describes the data set
+but is not a part of it (so an MLE search would ignore that page, for example).
+
+
+Now let us move up the structure diagram to the \ref apop_model structure. 
+
+\section apop_model
+
+There are a lot of things we expect to be able to do with a model: estimating the parameters of a 
+model (like the mean and
+variance of a Normal distribution) from data, or drawing random numbers, or showing the
+expected value, or showing the expected value of one part of the data given fixed values
+for the rest of it. The \ref apop_model is intended to encapsulate most of these desires
+into one object, so that models can easily be swapped around, modified to create new models, 
+compared, and so on.
+
+From the figure above, you can see that the \ref apop_model structure is pretty big,
+including a number of informational items, key being the \c parameters, \c data, and \c
+info elements, a list of settings to be discussed below, and a set of procedures for many
+operations.  The theoretical basis for what is and is not included in an \ref apop_model, as
+well as its overall intent, are described in this <a
+href="http://ben.klemens.org/klemens-model_objects.pdf">academic paper</a>.
+
+Recall this line from the introductory example:
+\code
+    apop_model *est = apop_estimate(data, apop_ols);
+\endcode
+
+\li Apophenia ships with a broad set of models, like \ref apop_ols, \ref apop_dirichlet,
+    \ref apop_loess, and \ref apop_pmf (probability mass function). You would estimate the
+parameters of any of them using the form above, with the appropriate model in the second
+slot of the \ref apop_estimate call.
+\li There's a simple rule of thumb for remembering the order of the arguments to most of
+Apophenia's functions: the data comes first.
+\li The models that ship with Apophenia, like \ref apop_ols, are un-parameterized (i.e., <tt>parameters == NULL</tt>). They include the procedures and some metadata, but are of course not estimated using any one data set. The line above generated a new
+model, \c est, which is identical to the base OLS model but has estimated parameters
+(and covariances, and basic hypothesis tests, a log likelihood, AIC, BIC, et cetera). 
+\li You probably won't use the models directly, but will instead use them as arguments to
+functions like \ref apop_estimate, \ref apop_draw, or \ref apop_predict; more examples below.
+After \ref apop_estimate, most require a parameterized model like \c est. After all, it doesn't make sense to
+draw from a Normal distribution until you've specified its mean and standard deviation.
+\li You can use \ref apop_model_show to print the various elements to screen.
+\li Writing your own models won't be covered in this introduction, but it can be pretty easy to
+copy and modify the procedures of an existing model to fit your needs. When in doubt, delete a procedure, because any procedures that are missing will have
+defaults filled when used by functions like \ref apop_estimate (which uses \ref
+apop_maximum_likelihood) or \ref apop_cdf (which uses integration via random draws).
+
+\par Settings
+
+Every model, and every method one would apply to a model, is prone to have a list of
+settings: how many bins in the histogram, at what tolerance does the maximum likelihood
+search end, what percent of the Gibbs sampling run should be thrown out as a burn-in period.
+These can become an overwhelming mess if not controlled.
+
+Apophenia organizes settings in settings groups, which are then attached to models. 
+In the following snippet, we specify a Beta distribution prior, and attach a settings group to it with
+information about how Bayesian updating should be done with this specific copy of the
+Beta. For a likelihood, we generate an empirical distribution---a PMF---from an input 
+data set; you will often use the \ref apop_pmf to turn a data set into an distribution.
+When we call \ref apop_update on the last line, it already has all of the above info
+on hand.
+
+\code
+apop_model *beta = apop_model_set_parameters(apop_beta, 0.5, 0.25);
+Apop_model_add_group(beta, apop_update, .burnin = 0.2, .periods =1e5);
+apop_model *m = apop_estimate(your_data, apop_pmf);
+apop_model *posterior = apop_update(.prior= beta, .likelihood = my_pmf);
+\endcode
+
+You will encounter model settings often when doing nontrivial work with models. All
+can be set using a form like above, and each settings group has a reference page to give
+you the full list of options.
+There is a full discussion of settings groups on the outline page under the Model heading.
+
+
+\par Databases and models
+
+Returning to the introductory example, you saw that (1) the
+library expects you to keep your data in a database, pulling out the
+data as needed, and (2) that the workflow is built around
+\ref apop_model structures.
+
+Starting with (2), 
+If a stats package has something called a <em>model</em>, then it is
+probably of the form Y = [an additive function of <b>X</b>], such as \f$y = x_1 +
+\log(x_2) + x_3^2\f$. Trying new models means trying different
+functional forms for the right-hand side, such as including \f$x_1\f$ in
+some cases and excluding it in others. Conversely, Apophenia is designed 
+to facilitate trying new models in the broader sense of switching out a 
+linear model for a hierarchical, or a Bayesian model for a simulation. 
+A formula syntax makes little sense over such a broad range of models.
+
+As a result, the right-hand side is not part of 
+the \ref apop_model. Instead, the data is assumed to be correctly formatted, scaled, or logged
+before being passed to the model. This is where part (1), the database,
+comes in. 
+
+The database provides a proxy for the sort of formula specification language above:
+ \code
+apop_data *testme= apop_query_to_data("select y, x1, log(x2), pow(x3,2) from data");
+apop_model *est = apop_estimate(testme, apop_ols);
+\endcode
+
+Generating factors and dummies is also considered data prep, not model
+internals. See \ref apop_data_to_dummies and \ref apop_text_to_factors.
+
+Now that you have \c est, an estimated model, you can interrogate it. This is really where Apophenia and its encapsulated
+model objects shine, because you can do more than just admire the parameter estimates on
+the screen: you can take your estimated data set and fill in or generate new data, use it
+as an input to the parent distribution of a hierarchical model, et cetera. Some simple
+examples:
+
+ \code
+ //If you have a new data set, you can fill in predicted values:
+apop_predict(new_data_set, est);
+apop_data_show(new_data_set)
+
+ //Fill a matrix with random draws. The draw function needs an RNG from
+ //the GNU Scientific Library, and a pointer-to-double.
+gsl_rng *r = apop_rng_alloc(218);
+for (int i=0; i< matrix->size1; i++){
+    Apop_matrix_col(matrix, i, one_col);
+    apop_draw(one_col->data, r, est);
+}
+\endcode
+
+OK, this introduction has shown you the \ref apop_data set and some of the functions
+associated, which might be useful even if you aren't formally doing statistical work but do have to deal with data with real-world elements like column names and mixed
+numeric/text values. You've seen how Apophenia encapsulates as many of a model's
+characteristics as possible into a single \ref apop_model object, which you can send with
+data to functions like \ref apop_estimate, \ref apop_predict, or \ref apop_draw. Once
+you've got your data in the right form, you can use this to simply estimate model
+parameters, or as an input to later analysis.
+
+*/
+
+/*<!--
+If you would like a more in-depth discussion of Apophenia's raison d'etre and logic, have a look at these
+<a href="http://apophenia.info/apop_notes.html">design notes</a>. -->
+*/

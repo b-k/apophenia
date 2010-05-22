@@ -34,7 +34,6 @@ to find the best-fitting model for descriptive purposes.
 \c df works for all four distributions here; \c df2 makes sense only for the \f$F\f$, 
 
 For the Wishart, the degrees of freedom and covariance matrix are always estimated via MLE.
-
 */
 #include "mapply.h"
 #include "variadic.h"
@@ -47,11 +46,10 @@ double df, df2;
 int len;
 
 apop_model* apop_t_estimate(apop_data *d, apop_model *m){
-    Nullcheck(d); Nullcheck_m(m);
+    Apop_assert_s(d, "No data with which to count df. (the default estimation method)");
+    Nullcheck_m(m);
     Get_vmsizes(d); //vsize, msize1, msize2, tsize
-    Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
     apop_model *out = apop_model_copy(*m);
-    out->parameters = apop_data_alloc(3,0,0);
     double vmu = vsize ? apop_mean(d->vector) : 0;
     double mmu = msize1 ? apop_matrix_mean(d->matrix) : 0;
     double vsigma = vsize ? apop_var(d->vector)*(vsize-1) : 0;
@@ -67,21 +65,19 @@ apop_model* apop_t_estimate(apop_data *d, apop_model *m){
 }
 
 apop_model* apop_chi_estimate(apop_data *d, apop_model *m){
-    Nullcheck(d); Nullcheck_m(m);
+    Apop_assert_s(d, "No data with which to count df. (the default estimation method)");
+    Nullcheck_m(m);
     Get_vmsizes(d); //vsize, msize1, msize2
-    Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
     apop_model *out = apop_model_copy(*m);
-    out->parameters = apop_data_alloc(1,0,0);
     apop_data_add_named_elmt(out->parameters, "df", tsize - 1);
     apop_data_add_named_elmt(out->info, "log likelihood", out->log_likelihood(d, out));
     return out;
 }
 
 apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
-    Nullcheck(d); Nullcheck_m(m);
-    Apop_assert(d, NULL, 0, 's', "No data with which to count df. (the default estimation method)");
+    Apop_assert_s(d, "No data with which to count df. (the default estimation method)");
+    Nullcheck_m(m);
     apop_model *out = apop_model_copy(*m);
-    out->parameters = apop_data_alloc(2,0,0);
     apop_name_add(out->parameters->names, "df",  'r');
     apop_name_add(out->parameters->names, "df2",  'r');
     apop_data_set(out->parameters, 0, -1, d->vector->size -1);
@@ -171,9 +167,8 @@ double apop_multivariate_gamma(double a, double p){
 double apop_multivariate_lngamma(double a, double p){
     double out = M_LNPI * p*(p-1.)/4.;
     double factor = 0;
-    for (int i=1; i<=p; i++){
+    for (int i=1; i<=p; i++)
         factor += gsl_sf_lngamma(a+(1-i)/2.);
-    }
     return out + factor;
 }
 

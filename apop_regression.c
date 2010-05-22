@@ -117,6 +117,7 @@ void apop_estimate_parameter_t_tests (apop_model *est){
     apop_name_add(ep->names, "confidence", 'c');
     apop_name_add(ep->names, "p value, 1 tail", 'c');
     apop_name_add(ep->names, "confidence, 1 tail", 'c');
+    apop_name_stack(ep->names, est->parameters->names, 'r', 'r');
     int df   = est->data->matrix   ?
                     est->data->matrix->size1:
                     est->data->vector->size;
@@ -165,7 +166,7 @@ This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
     apop_model *apop_varad_var(est, NULL)
-    apop_assert(est, NULL, 0, 's', "You sent me a NULL data set. Please estimate a model, then run this on the result.")
+    Nullcheck_m(est);
     apop_data * apop_varad_var(contrast, NULL)
     int apop_varad_var(normalize, 0)
 APOP_VAR_END_HEAD
@@ -236,110 +237,7 @@ apop_data       *out        = apop_data_alloc(0,5,-1);
     return out;
 }
 
-/** The partitioned regression.
-        Give me two data sets, and I'll take the steps needed to produce
-        OLS coefficients.  If you give me intermediate results, I'll
-        use them instead of calculating them myself; that way the
-        fixed-effects regression is really easy.
 
-        The partitioned regression reduces to a GLS regression where
-        the Sigma matrix (usually interpreted as the var-covar matrix)
-        for the first set is \f$M_2 = I - X_2'(X_2 X_2') X_2\f$
-        and the Sigma for for the second set is \f$M_1 = I - X_1'(X_1
-        X_1') X_1\f$.  So, calculate \f$M_1\f$ and \f$M_2\f$, run GLS
-        twice, and splice together the results.
-
-        I assume that the Y vector (the dependent variable) is the first
-        column of the _second_ matrix. The textbook custom seems to be
-        to put auxiliary dummy variables on the left, and I won't 
-        go against that here.
-
-\param set1    the first half of the data set
-\param set2    the second half of the data set
-\param  m1      If you have these, give them to me and I won't waste time calculating them.
-\param  m2      If you have these, give them to me and I won't waste time calculating them.
-
-\bug The cross-variances are assumed to be zero, which is wholeheartedly false. It's not too big a deal because nobody ever uses them for anything.
-*/
-/*
-apop_model * apop_partitioned_OLS(apop_data *set1, apop_data *set2, gsl_matrix *m1, gsl_matrix *m2){
-apop_inventory  actual_uses    = apop_inventory_filter(uses, apop_GLS.inventory_filter);
-    prep_inventory_names(set1->names);
-apop_estimate	*out1, *out2,
-                *out	= apop_params_alloc(set1->matrix->size1, set1->matrix->size2 + set2->matrix->size2, set1->names, actual_uses);
-gsl_matrix      *t1,*t2, *augmented_first_matrix, *zero1, *zero2,
-                *dependent  =gsl_matrix_alloc(set1->matrix->size1, 1);
-gsl_vector_view d;
-int             i;
-
-
-    if(m1==NULL){
-    gsl_matrix 	*xpx1 		= gsl_matrix_calloc(set1->matrix->size1, set1->matrix->size1),
-                *xpxinv1, *xxpxinv1, *xxpxinvx1;
-        m1        = gsl_matrix_alloc(set1->matrix->size2, set1->matrix->size2);
-	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set1->matrix, set1->matrix, 0, xpx1);	//(X'X)
-	    apop_det_and_inv(xpx1, &xpxinv1, 0, 1);		
-        gsl_matrix_free(xpx1);
-        xxpxinv1   = gsl_matrix_calloc(set1->matrix->size1, set1->matrix->size1);
-	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, set1->matrix, xpxinv1, 0, xxpxinv1);	//X(X'X)^{-1}
-        gsl_matrix_free(xpxinv1);
-        xxpxinvx1  = gsl_matrix_calloc(set1->matrix->size1, set1->matrix->size1);
-	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv1, set1->matrix, 0, xxpxinvx1);	//X(X'X)^{-1}X'
-        gsl_matrix_free(xxpxinv1);
-        gsl_matrix_set_identity(m1);
-        gsl_matrix_sub(m1, xxpxinvx1);   // M = I - X(X'X)^{-1}X'
-        gsl_matrix_free(xxpxinvx1);
-    }
-
-    if(m2==NULL){
-    gsl_matrix 	*xpx2 		= gsl_matrix_calloc(set2->matrix->size1, set2->matrix->size1),
-                *xpxinv2, *xxpxinv2, *xxpxinvx2;
-        m2        = gsl_matrix_alloc(set2->matrix->size2, set2->matrix->size2);
-	    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set2->matrix, set2->matrix, 0, xpx2);	//(X'X)
-	    apop_det_and_inv(xpx2, &xpxinv2, 0, 1);		
-        gsl_matrix_free(xpx2);
-        xxpxinv2   = gsl_matrix_calloc(set2->matrix->size1, set2->matrix->size1), 
-	    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, set2->matrix, xpxinv2, 0, xxpxinv2);	//X(X'X)^{-1}
-        gsl_matrix_free(xpxinv2);
-        xxpxinvx2  = gsl_matrix_calloc(set2->matrix->size1, set2->matrix->size1);
-	    gsl_blas_dgemm(CblasNoTrans,CblasTrans, 1, xxpxinv2, set2->matrix, 0, xxpxinvx2);	//X(X'X)^{-1}X'
-        gsl_matrix_free(xxpxinv2);
-        gsl_matrix_set_identity(m2);
-        gsl_matrix_sub(m2, xxpxinvx2);   // M = I - X(X'X)^{-1}X'
-        gsl_matrix_free(xxpxinvx2);
-    }
-
-
-        //the first matrix needs a dependent variable column, then we
-        //can regress.
-    d                       = gsl_matrix_column(set2->matrix, 0);
-    gsl_matrix_set_col(dependent, 0, &(d.vector));
-    augmented_first_matrix  = apop_matrix_stack(dependent, set1->matrix, 'c');
-apop_data *newfirst = malloc(sizeof(apop_data));
-    newfirst->matrix  = augmented_first_matrix;
-    newfirst->names = set1->names;
-    out1    = apop_estimate_GLS(newfirst, &actual_uses, m2);
-    out2    = apop_estimate_GLS(set2, &actual_uses, m1);
-    for (i=0; i< out1->parameters->vector->size; i++)
-        gsl_vector_set(out->parameters->vector, i, gsl_vector_get(out1->parameters->vector, i));
-    for (   ; i< out2->parameters->vector->size; i++)
-        gsl_vector_set(out->parameters->vector, i, gsl_vector_get(out2->parameters->vector, i - out1->parameters->vector->size));
-
-    //The covariance matrix is a stacking-up of the above matrices. I
-    //cheat here: the cross-variances are assumed zero, which is
-    //blatantly false.
-    zero1           = gsl_matrix_calloc(out1->covariance->size1, out2->covariance->size2);
-    t1              = apop_matrix_stack(out1->covariance, zero1, 'c');
-    gsl_matrix_free(zero1);
-    zero2           = gsl_matrix_calloc(out2->covariance->size1, out1->covariance->size2);
-    t2              = apop_matrix_stack(zero2, out2->covariance, 'c');
-    gsl_matrix_free(zero1);
-    out->covariance = apop_matrix_stack(t1,t2,'r');
-    return out;
-}
-*/
-//
-//
 //Cut and pasted from the GNU std library documentation:
 static int compare_doubles (const void *a, const void *b) {
     const double *da = (const double *) a;
@@ -698,21 +596,6 @@ apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
     return out;
 }
 
-/** A fixed-effects regression.
-    The input is a data matrix for a regression, plus a single vector giving the fixed effect vectors.
-
-    The solution of a fixed-effects regression is via a partitioned
-    regression. Given that the data set is divided into columns
-    \f$\beta_1\f$ and \f$\beta_2\f$, then the reader may 
-
-\todo finish this documentation. [Was in a rush today.]
-*/
-apop_model *apop_estimate_fixed_effects_OLS(apop_data *data,  gsl_vector *categories){
-apop_data *dummies = apop_data_to_dummies(apop_vector_to_data(categories),-1, 'd', 0);
-    apop_data_stack(data, dummies, 'c');
-    return apop_OLS.estimate(dummies, NULL);
-}
-
 /** Good ol' \f$R^2\f$.  Let \f$Y\f$ be the dependent variable,
 \f$\epsilon\f$ the residual,  \f$n\f$ the number of data points, and \f$k\f$ the number of independent vars (including the constant). Returns an \ref apop_data set with the following entries (in the vector element):
 
@@ -754,7 +637,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   apop_data       *out    = apop_data_alloc(0, 5,1);
     gsl_vector *weights = m->data->weights; //typically NULL.
     apop_data *expected = apop_data_get_page(m->info, "<Predicted>");
-    apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"Predicted\" page in your data set. Returning NULL.\n");
+    apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"<Predicted>\" page in your data set. Returning NULL.\n");
     size_t obs = expected->matrix->size1;
     Apop_col_t(expected, "residual", v)
     if (!weights)

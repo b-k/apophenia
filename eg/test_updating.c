@@ -2,8 +2,8 @@ void test_updating(gsl_rng *r){
   double binom_start = 0.6;
   double beta_start_a = 0.3;
   double beta_start_b = 0.5;
-  int i, draws = 1500;
-  double n = 80;
+  int i, draws = 15000;
+  double n = 800;
   //First, the easy estimation using the conjugate distribution table.
   apop_model *bin = apop_model_set_parameters(apop_binomial, n, binom_start);
   apop_model *beta = apop_model_set_parameters(apop_beta, beta_start_a, beta_start_b);
@@ -29,5 +29,5 @@ void test_updating(gsl_rng *r){
     //Finally, we can compare the conjugate and Gibbs results:
     double updated_size = apop_vector_sum(updated->parameters->vector);
     double error = apop_vector_grid_distance(updated->parameters->vector, out_beta->parameters->vector);
-    Apop_assert_void(error/updated_size < 0.08, 0, 's', "The error is %g, which is too big.", error/updated_size);
+    Apop_assert_s(error/updated_size < 0.1, "The error is %g, which is too big.", error/updated_size);
 }

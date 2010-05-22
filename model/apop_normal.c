@@ -137,7 +137,22 @@ apop_model apop_normal = {"Normal distribution", 2, 0, 0, .dsize=1,
 
 //The Lognormal distribution
 
-static double lognormal_log_likelihood(apop_data *d, apop_model *params);
+static double lnx_minus_mu_squared(double x, void *mu_in){
+	return gsl_pow_2(log(x) - *(double *)mu_in);
+}
+
+static double lognormal_log_likelihood(apop_data *d, apop_model *params){
+    Get_vmsizes(d) //tsize
+    Nullcheck(params)
+    Nullcheck_p(params)
+    double mu	   = gsl_vector_get(params->parameters->vector, 0);
+    double sd      = gsl_vector_get(params->parameters->vector, 1);
+    long double ll = -apop_map_sum(d, .fn_dp=lnx_minus_mu_squared, .param=&mu);
+      ll /= (2*gsl_pow_2(sd));
+      ll -= apop_map_sum(d, log, .part='m');
+      ll -= tsize*(M_LNPI+M_LN2+log(sd));
+	return ll;
+}
 
 static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters){
   apop_model 	*est = apop_model_copy(*parameters);
@@ -158,22 +173,6 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
 	return est;
 }
 
-static double lnx_minus_mu_squared(double x, void *mu_in){
-	return gsl_pow_2(log(x) - *(double *)mu_in);
-}
-
-static double lognormal_log_likelihood(apop_data *d, apop_model *params){
-    Get_vmsizes(d)
-    Nullcheck(params)
-    Nullcheck_p(params)
-    double mu	   = gsl_vector_get(params->parameters->vector,0);
-    double sd      = gsl_vector_get(params->parameters->vector,1);
-    long double ll = -apop_map_sum(d, .fn_dp=lnx_minus_mu_squared, .param=&mu);
-      ll /= (2*gsl_pow_2(sd));
-      ll -= apop_map_sum(d, log, .part='m');
-      ll -= tsize*(M_LNPI+M_LN2+log(sd));
-	return ll;
-}
 
 static double lognormal_cdf(apop_data *d, apop_model *params){
   Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 

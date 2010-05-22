@@ -391,12 +391,12 @@ parameter.
 
 \li If you give me a \c NULL data set, I will assume you want all values filled in---the expected value.
 
-\li If you give me data with NaNs, I will take those as the points to
+\li If you give me data with \c NaNs, I will take those as the points to
 be predicted given the provided data.
 
 If the model has no \c predict method, the default is to use the \ref apop_ml_impute function to do the work.
 
-\return If you gave me a non-\c NULL data set, I will return that, with the zeroth column or the NaNs filled in.  If \c NULL input, I will allocate an \ref apop_data set and fill it with the expected values.
+\return If you gave me a non-\c NULL data set, I will return that, with the zeroth column or the \c NaNs filled in.  If \c NULL input, I will allocate an \ref apop_data set and fill it with the expected values.
 
 There may be a second page (i.e., a \ref apop_data set attached to the <tt>->more</tt> pointer of the main) listing confidence and standard error information. See your specific model documentation for details.
 

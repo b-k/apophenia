@@ -4,6 +4,7 @@ The apop_data structure joins together a gsl_matrix, apop_name, and a table of s
 
 #include "types.h"
 #include "output.h"
+#include "internal.h"
 #include "conversions.h"
 #include "linear_algebra.h"
 
@@ -326,7 +327,7 @@ APOP_VAR_ENDHEAD
  \c NULL pointer will be returned in that position. For example, for a data set of 50 rows, <tt>apop_data **out = apop_data_split(data, 100, 'r')</tt> sets <tt>out[0] = apop_data_copy(data)</tt> and <tt>out[1] = NULL</tt>.
 
  \li \c more pointer is ignored.
- \li The \ref apop_data->vector is taken to be the -1st element of the matrix.  
+ \li The <tt>apop_data->vector</tt> is taken to be the -1st element of the matrix.  
  \li Weights will be preserved. If splitting by rows, then the top and bottom parts of the weights vector will be assigned to the top and bottom parts of the main data set. If splitting by columns, identical copies of the weights vector will be assigned to both parts.
  */
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
@@ -810,6 +811,21 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val){
 \param col  The col
 \param fmt The text to write.
 \param ... You can use a printf-style fmt and follow it with the usual variables to fill in.
+
+\li Apophenia follows a general rule of not reallocating behind your back: if your text
+matrix is currently of size (3,3) and you try to put an item in slot (4,4), then I display
+an error rather than reallocating the text matrix.
+\li Resizing a text matrix is annoying in C, so note that \ref apop_text_alloc will
+reallocate to a new size if you need. For example, this code will fill the diagonals of
+the text array with a message, resizing as it goes:
+
+\code
+apop_data *list = (something already allocated.);
+for (int n=0; n < 10; n++){
+    apop_text_alloc(list, n+1, n+1);
+    apop_text_add(list, n, n, "This is cell (%i, %i)", n, n);
+}
+\endcode
 */
 void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
   va_list   argp;
@@ -824,22 +840,57 @@ void apop_text_add(apop_data *in, const size_t row, const size_t col, const char
 	va_end(argp);
 }
 
-/** This allocates an array of strings and puts it in the \c text element
-  of an \ref apop_data set. 
+/** This allocates an array of strings and puts it in the \c text element of an \ref apop_data set. 
+
+  If the \c text element already exists, then this is effectively a \c realloc function,
+  reshaping to the size you specify.
 
   \param in An \ref apop_data set. It's OK to send in \c NULL, in which case an apop_data set with \c NULL \c matrix and \c vector elements is returned.
   \param row    the number of rows of text.
   \param col     the number of columns of text.
   \return       A pointer to the relevant \ref apop_data set. If the input was not \c NULL, then this is a repeat of the input pointer.
+
   */
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
     if (!in)
         in  = apop_data_alloc(0,0,0);
-    in->text = malloc(sizeof(char**) * row);
-    for (size_t i=0; i< row; i++){
-        in->text[i] = malloc(sizeof(char*) * col);
-        for (size_t j=0; j< col; j++)
-            in->text[i][j] = NULL;
+    if (!in->text){
+        if (row && col)
+            in->text = malloc(sizeof(char**) * row);
+        for (size_t i=0; i< row; i++){
+            in->text[i] = malloc(sizeof(char*) * col);
+            for (size_t j=0; j< col; j++)
+                in->text[i][j] = NULL;
+        }
+    } else { //realloc
+        int rows_now = in->textsize[0];
+        int cols_now = in->textsize[1];
+        if (rows_now > row){
+            for (int i=rows_now; i < row; i++){
+                for (int j=0; j < cols_now; j++)
+                    free(in->text[i][j]);
+                free(in->text[i]);
+            }
+        }
+        if (rows_now != row)
+            in->text = realloc(in->text, sizeof(char**)*row);
+        if (rows_now < row){
+            for (int i=rows_now; i < row; i++){
+                in->text[i] = malloc(sizeof(char*) * col);
+                for (int j=0; j < cols_now; j++)
+                    in->text[i][j] = strdup("");
+            }
+        }
+        if (cols_now > col)
+            for (int i=0; i < row; i++)
+                for (int j=cols_now; j < col; j++)
+                    free(in->text[i][j]);
+        if (cols_now != col)
+            for (int i=0; i < row; i++){
+                in->text[i] = realloc(in->text[i], sizeof(char*)*col);
+                for (int j=cols_now; j < col; j++) //happens iff cols_now < col
+                    in->text[i][j] = strdup("");
+            }
     }
     in->textsize[0] = row;
     in->textsize[1] = col;
@@ -982,8 +1033,7 @@ APOP_VAR_ENDHEAD
   by search routines, missing data routines, et cetera. This is achieved by a rule in \ref
   apop_data_pack and \ref apop_data_unpack.
 
-  \example 
-  A silly example that establishes a baseline data set, adds a page,
+  Here is a silly example that establishes a baseline data set, adds a page,
   modifies it, and then later retrieves it.
   \code
   apop_data *d = apop_data_alloc(10, 10, 10); //the base data set.
@@ -1042,4 +1092,42 @@ APOP_VAR_ENDHEAD
     }
     apop_error(0, 'c', "You asked me to remove %s but I couldn't find a page matching that regex.", title);
     return NULL;
+}
+
+/** Remove the columns set to one in the \c drop vector.  
+  \param in the \ref apop_name structure to be pared down
+  \param drop  a vector with as many elements as the max of the vector, matrix, or text
+  parts of \c in, with a one marking those columns to be removed.       \ingroup names
+  */  
+
+void apop_data_rm_rows(apop_data *in, int *drop){
+    //First, shift columns down to the nearest not-freed row.
+    int outlength = 0;
+    Get_vmsizes(in); //vsize, msize1;
+    for (int i=0 ; i < GSL_MAX(GSL_MAX(vsize, msize1), in->textsize[0]); i++){
+        if (!drop[i]){
+            if (outlength == i)
+                outlength++;
+            else {
+                Apop_data_row(in, i, thisrow);
+                apop_data_set_row(in, thisrow, outlength++);
+            }
+        }
+    }
+    if (!outlength){
+        return;
+    }
+
+    //now trim excess memory:
+    if (in->vector)
+        apop_vector_realloc(in->vector, GSL_MIN(in->vector->size, outlength));
+    if (in->weights)
+        apop_vector_realloc(in->weights, GSL_MIN(in->weights->size, outlength));
+    if (in->matrix)
+        apop_matrix_realloc(in->matrix, GSL_MIN(in->matrix->size1, outlength), in->matrix->size2);
+    if (in->text)
+        apop_text_alloc(in, GSL_MIN(outlength, in->textsize[0]), in->textsize[1]);
+    if (in->names->rowct > outlength)
+        for (int k=outlength; k< in->names->rowct; k++)
+            free(in->names->row[k]);
 }

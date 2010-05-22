@@ -932,20 +932,20 @@ LoopNode: /* Generate a node */
     --nr[lev];
 
     while(1) {
-	alen[lev] = alen[lev - 1] + fact[lb[lev]];
-	if (lev >= nc1s)
-	    break;
+        alen[lev] = alen[lev - 1] + fact[lb[lev]];
+        if (lev >= nc1s)
+            break;
 
-	nn1 = nt[lev];
-	nrt = nr[lev];
-	++lev;
-	nc1 = nco - lev;
-	nct = ico[lev];
-	lb[lev] = (int) ((((double) nrt + 1) * (nct + 1)) /
-			  (double) (nn1 + nr1 * nc1 + 1) - *tol);
-	nu[lev] = (int) ((((double) nrt + nc1) * (nct + nr1)) /
-			  (double) (nn1 + nr1 + nc1) - lb[lev] + 1);
-	nr[lev] = nrt - lb[lev];
+        nn1 = nt[lev];
+        nrt = nr[lev];
+        ++lev;
+        nc1 = nco - lev;
+        nct = ico[lev];
+        lb[lev] = (int) ((((double) nrt + 1) * (nct + 1)) /
+                  (double) (nn1 + nr1 * nc1 + 1) - *tol);
+        nu[lev] = (int) ((((double) nrt + nc1) * (nct + nr1)) /
+                  (double) (nn1 + nr1 + nc1) - lb[lev] + 1);
+        nr[lev] = nrt - lb[lev];
     }
     alen[nco] = alen[lev] + fact[nr[lev]];
     lb[nco] = nr[lev];
@@ -953,13 +953,12 @@ LoopNode: /* Generate a node */
     v = val + alen[nco];
 
     if (nro == 2) { /* Only 1 row left */
-	v += fact[ico[1] - lb[1]] + fact[ico[2] - lb[2]];
-	for (i = 3; i <= nco; ++i)
-	    v += fact[ico[i] - lb[i]];
+        v += fact[ico[1] - lb[1]] + fact[ico[2] - lb[2]];
+        for (i = 3; i <= nco; ++i)
+            v += fact[ico[i] - lb[i]];
 
-	if (v < vmn)
-	    vmn = v;
-
+        if (v < vmn)
+            vmn = v;
     } else if (nro == 3 && nco == 2) { /* 3 rows and 2 columns */
 	nn1 = nn - iro[irl] + 2;
 	ic1 = ico[1] - lb[1];

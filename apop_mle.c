@@ -321,14 +321,16 @@ static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
     }
 }
 
-/* The next few functions bridge between the GSL's setup and Apophenia.
+/* Every actual evaluation of the function go through the negshell and dnegshell fns,
+   because there are several things that have to be done beyond just getting
+   model.log_likelihood:
 
 --Negate, because statisticians and social scientists like to maximize; physicists like to minimize.
+--Work out if the model provides log_likelihood or p.
 --Call \ref trace_path if needed.
 --Go from a single vector to a full apop_data set and back (via apop_data_pack/unpack)
 --Check the derivative function if available.
-
-The negshell and dnegshell fns also take care of checking constraints, if any, and are otherwise the primary point of contact between the apop_models' methods and the GSL's MLE routines.
+--Check constraints.
 */
 
 static double negshell (const gsl_vector *beta, void * in){

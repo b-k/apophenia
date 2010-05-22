@@ -4,6 +4,7 @@ OLS models. Much of the real work is done in apop_regression.c.*/
 
 #include "model.h"
 #include "conversions.h"
+#include "internal.h"
 #include "settings.h"
 #include "stats.h"
 #include "asst.h"
@@ -47,10 +48,9 @@ static void prep_names (apop_model *e){
         apop_name_add(predicted->names, "Predicted", 'c');
         apop_name_add(predicted->names, "Residual", 'c');
     }
-	if (e->data->names->colct > 0) {		
+	if (e->data->names->vector) { //this is post ols shuffle.
         if (e->parameters)
-            snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->column[0]);
-		sprintf(e->data->names->column[0], "1");
+            snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->vector);
         apop_name_add(e->parameters->names, "1", 'r');
         apop_name_add(e->parameters->names, "parameters", 'v');
         for(int i=1; i< e->data->names->colct; i++)
@@ -232,7 +232,6 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
         apop_data_add_page(ep->info, apop_data_alloc(0, set->matrix->size1, 3), "<Predicted>");
     if (olp->want_cov=='y')
         apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size2, set->matrix->size2), "<Covariance>");
-    prep_names(ep);
     if (weights){
         gsl_vector_mul(y_data, weights);
         for (size_t i = 0; i < set->matrix->size2; i++){
@@ -244,6 +243,7 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   //(X'X)
     gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)
     xpxinvxpy(set->matrix, y_data, xpx, xpy, ep);
+    prep_names(ep);
     gsl_vector_free(y_data); 
     gsl_matrix_free(xpx);
     gsl_vector_free(xpy);
@@ -316,19 +316,19 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
     else if (instruments->names->rowct)
         for (i=0; i< instruments->names->rowct; i++){
             int rownumber = apop_name_find(x->names, instruments->names->row[i], 'c');
-            apop_assert(rownumber != -1,  NULL, 0, 's', "You asked me to substitute instrument column %i for the data column named %s, but I could find no such name.",  i, instruments->names->row[i]);
+            apop_assert_s(rownumber != -1, "You asked me to substitute instrument column %i for the data column named %s, but I could find no such name.",  i, instruments->names->row[i]);
             APOP_COL(instruments, i, inv);
             APOP_COL(out, rownumber, outv);
             gsl_vector_memcpy(outv, inv);
         }
     else 
-        apop_assert(0, 0,  0, 's', "Your instrument matrix has data, but neither a vector element nor row names indicating what columns in the original data should be replaced.");
+        apop_assert_s(0, "Your instrument matrix has data, but neither a vector element nor row names indicating what columns in the original data should be replaced.");
     return out;
 }
 
 
 static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
-  apop_assert(inset, NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
+  Nullcheck_d(inset);
   apop_data         *set, *z;
   int               i;
     apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);

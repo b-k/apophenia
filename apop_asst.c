@@ -188,45 +188,6 @@ static int find_min_unsorted(size_t *sorted, size_t height, size_t min){
     return -1;
 }
 
-static void temp_in_out(apop_data *d, gsl_vector *tv, double *tvd, size_t i, char **namein, char inout){
-    if (inout == 'i'){
-        if (d->matrix){
-            APOP_ROW(d, i, row);
-            gsl_vector_memcpy(tv, row);
-        }
-        if (d->vector)
-            *tvd    = apop_data_get(d, i, -1);
-        if (d->names && d->names->rowct > i){
-            *namein = realloc(*namein, strlen(d->names->row[i])+1);
-            strcpy(*namein, d->names->row[i]);
-        }
-        return;
-    }//else writing out
-    if (d->matrix){
-        APOP_ROW(d, i, row);
-        gsl_vector_memcpy(row, tv);
-    }
-    if (d->vector){
-        double *j   = apop_data_ptr(d, i, -1);
-        *j          = *tvd;
-    }
-    if (d->names && d->names->rowct > i){
-        d->names->row[i] = realloc(d->names->row[i], strlen(*namein)+1);
-        strcpy(d->names->row[i], *namein);
-    }
-}
-
-static void shift(apop_data *d, size_t from,  size_t to){
-  double *dp    = d->vector ? apop_data_ptr(d, to, -1): 0;
-  char *namep  = d->names && d->names->rowct > to ? d->names->row[to] : NULL;
-    if (d->matrix){
-        APOP_ROW(d, to, tov);
-        temp_in_out(d, tov, dp, from, &namep, 'i');
-        return;
-    }
-    temp_in_out(d, NULL, dp , from, &namep, 'i');
-}
-
 /** This function sorts the whole of a \c apop_data set based on one column. Sorts in place, with little additional memory used.
 
  Uses the \c gsl_sort_vector_index function internally, and that function just ignores NaNs; therefore this function just leaves NaNs exactly where they lay.
@@ -240,7 +201,7 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data * apop_data_sort(apop_data *data, int sortby, char asc){
     apop_data * apop_varad_var(data, NULL);
-    apop_assert(data, NULL, 0, 's', "You gave me NULL data to sort.");
+    apop_assert_s(data, "You gave me NULL data to sort.");
     int apop_varad_var(sortby, 0);
     char apop_varad_var(asc, 0);
 APOP_VAR_ENDHEAD
@@ -248,9 +209,6 @@ APOP_VAR_ENDHEAD
   size_t            sorted[height];
   size_t            i, *perm, start=0;
   gsl_permutation   *p  = gsl_permutation_alloc(height);
-  gsl_vector        *tv = data->matrix ? gsl_vector_alloc(data->matrix->size2) : NULL;
-  double            tvd;
-  char              *nametmp = malloc(1);
     memset(sorted, 0, sizeof(size_t)*height);
     if (sortby == -1)
         gsl_sort_vector_index (p, data->vector);
@@ -259,28 +217,30 @@ APOP_VAR_ENDHEAD
         gsl_sort_vector_index (p, v);
     }
     perm    = p->data;
-    if (asc=='d' || asc=='D')
+    if (asc=='d' || asc=='D') //reverse the perm matrix.
         for (size_t j=0; j< height/2; j++){
-            tvd            = perm[j];
-            perm[j]        = perm[height-1-j];
-            perm[height-1-j] = tvd;
+            double t         = perm[j];
+            perm[j]          = perm[height-1-j];
+            perm[height-1-j] = t;
         }
     while (1){
         i           =
         start       = find_min_unsorted(sorted, height, start);
-        if (i==-1) goto finished;
-        temp_in_out(data, tv, &tvd, start, &nametmp, 'i');
+        if (i==-1) 
+            break;
+        Apop_data_row(data, start, firstrow);
+        apop_data *first_row_storage = apop_data_copy(firstrow);
         sorted[start]++;
         while (perm[i]!=start){
-            shift(data, perm[i], i);
+            //copy from perm[i] to i
+            Apop_data_row(data, perm[i], onerow);
+            apop_data_set_row(data, onerow, i);
             sorted[perm[i]]++;
             i   = perm[i];
         }
-        temp_in_out(data, tv, &tvd, i, &nametmp, 'o');
+        apop_data_set_row(data, first_row_storage, i);
+        apop_data_free(first_row_storage);
     }
-finished:
-    if (tv) gsl_vector_free(tv);
-    if (nametmp) free(nametmp);
     gsl_permutation_free(p);
     return data;
 }

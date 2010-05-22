@@ -4,9 +4,8 @@
 #include "asst.h"
 #include "model.h"
 #include "stats.h"
+#include "internal.h"
 #include "conversions.h"
-
-apop_model apop_multivariate_normal;
 
 static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
   gsl_vector *  sigma_dot_x = gsl_vector_calloc(x->size);
@@ -18,7 +17,7 @@ static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
 }
 
 static double apop_multinormal_ll(apop_data *data, apop_model * m){
-  apop_assert(m->parameters,  0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+  Nullcheck_m(m); Nullcheck_p(m);
   double    determinant = 0;
   gsl_matrix* inverse   = NULL;
   int       i, dimensions  = data->matrix->size2;
@@ -50,13 +49,12 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
 static double a_mean(gsl_vector * in){ return apop_vector_mean(in); }
 
 static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
-  apop_model *out = p ? apop_model_copy(*p) : apop_model_copy(apop_multivariate_normal);
-    out->parameters         = apop_map(data, .fn_v=a_mean, .part='c');
+    p->parameters         = apop_map(data, .fn_v=a_mean, .part='c');
     apop_data *cov =  apop_data_covariance(data);
-    out->parameters->matrix =  cov->matrix;
-    apop_data_add_named_elmt(out->info, "log likelihood", apop_multinormal_ll(data, out));
-    apop_data_add_page(out->parameters, cov, "Covariance");
-    return out;
+    p->parameters->matrix =  cov->matrix;
+    apop_data_add_named_elmt(p->info, "log likelihood", apop_multinormal_ll(data, p));
+    apop_data_add_page(p->parameters, cov, "<Covariance>");
+    return p;
 }
 
 /** The nice, easy method from Devroye, p 565 */

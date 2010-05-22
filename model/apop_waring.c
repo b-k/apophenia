@@ -13,10 +13,7 @@
  distribution-generators, including the Waring.
 */  //Header in stats.h
 double apop_rng_GHgB3(gsl_rng * r, double* a){
-if ((a[0]<=0) || (a[1] <= 0) || (a[2] <=0)){
-	printf("apop_GHgB3_rng took a zero parameter; bad.\n");
-	return 0;
-	}
+    apop_assert_s((a[0]>0) && (a[1] > 0) && (a[2] > 0), "apop_GHgB3_rng took a zero parameter; bad.");
 double		aa	= gsl_ran_gamma(r, a[0], 1),
 		b	= gsl_ran_gamma(r, a[1], 1),
 		c	= gsl_ran_gamma(r, a[2], 1);
@@ -25,7 +22,7 @@ int		p	= gsl_ran_poisson(r, aa*b/c);
 }
 
 typedef struct {
-double a, bb;
+    double a, bb;
 } ab_type;
 
 static double waring_apply(double in, void *param, int k){
@@ -171,15 +168,7 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 	*out = x;
 }
 
-static apop_model *waring_est(apop_data *d, apop_model *m){
-  apop_mle_settings *p = apop_settings_get_group(m, apop_mle);
-    if (!p) 
-        p = Apop_model_add_group(m, apop_mle, .method = APOP_CG_PR, .verbose=1);
-    return apop_maximum_likelihood(d, m);
-}
-
 apop_model apop_waring = {"Waring distribution", 2,0,0, .dsize=1,
-    .estimate = waring_est,
 	 .log_likelihood =  waring_log_likelihood, .score = waring_dlog_likelihood, 
      .constraint =  beta_zero_and_one_greater_than_x_constraint,  .draw = waring_rng};
 //estimate via the default MLE 

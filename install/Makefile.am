@@ -77,7 +77,7 @@ apop_plot_query_LDADD = libapophenia.la
 apop_lookup_LDADD = libapophenia.la
 
 EXTRA_DIST = apophenia.pc doxy/doxyconfig doxy/triangle.png doxy/right.png doxy/down.png \
-        doxy/flake.gif doxy/foot.html \
+        doxy/flake.gif doxy/foot.html doxy/structs.png \
 		doxy/head.html doxy/search.gif doxy/typical.css	doxy/model_doc.h doxy/documentation.h \
 		tests/Makefile tests/test.py tests/Readme tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \

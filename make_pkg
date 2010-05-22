@@ -33,6 +33,7 @@ sed -i -f prep_variadics.sed *c *h model/*c
 		#ln -s ../*.h ./
 		cd ..
 	#let the GNU prep everything and produce a distribution pkg.
+    dot -Tpng < doxy/structs.dot | pngtopnm | pnmscale .5 | pnmtopng > doxy/structs.png
     echo "Ben Klemens (fluffmail@f-m.fm)" > AUTHORS
 	libtoolize
     	aclocal

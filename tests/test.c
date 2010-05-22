@@ -525,6 +525,12 @@ void test_data_sort(){
         assert(apop_data_get(d, i,0) >= apop_data_get(d, i-1,0));
     }
     assert(apop_data_get(d, 0,1)== 32 || apop_data_get(d, 0,1)== 9);
+
+    apop_data_sort(d, 0, 'd');
+    for (i=1; i< d->matrix->size2; i++){
+        assert(apop_data_get(d, i,0) <= apop_data_get(d, i-1,0));
+    }
+    assert(apop_data_get(d, 0,1)== 55);
 }
 
 void test_histograms(gsl_rng *r){
@@ -981,6 +987,26 @@ void test_posdef(gsl_rng *r){
     }
 }
 
+static double set_to_index(double in, int index){ return index;}
+static double is_even(double in){ return !((int)in%2);}
+static double is_odd(double in){ return (int)in%2;}
+static double nan_even(double in){ return is_even(in) ? GSL_NAN : in; }
+
+void row_manipulations(){
+    apop_data *test= apop_data_alloc(10,0,0);
+    apop_map(test, .fn_di=set_to_index, .part='v', .inplace='y');
+    int rm[10] = {0,1,0,1,0,1,0,1,0,1};
+    apop_data_rm_rows(test, rm);
+    assert (!apop_map_sum(test, .fn_d=is_odd, .part='v'));
+
+    apop_data *test2= apop_data_alloc(10,0,0);
+    apop_map(test2, .fn_di=set_to_index, .part='v', .inplace='y');
+    apop_map(test2, .fn_d=nan_even, .part='v', .inplace='y');
+    apop_data_listwise_delete(test2, 'y');
+    assert (5== apop_map_sum(test2, .fn_d=is_odd, .part='v'));
+    assert (!apop_map_sum(test2, .fn_d=is_even, .part='v'));
+}
+
 void estimate_model(apop_data *data, apop_model dist, int method, apop_data *true_params){
   double                  starting_pt[] =  {1.6, 1.4};//{3.2, 1.4}; //{1.82,2.1};
 
@@ -1184,6 +1210,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test row set and remove", row_manipulations(r));
     do_test("test distributions", test_distributions(r));
     do_test("test apop_map on apop_data_rows", test_apop_map_row());
     do_test("test optimization of multi-page parameters", pack_test());

@@ -9,7 +9,7 @@
 #include "likelihoods.h"
 
 static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
-  Nullcheck_p(p) 
+  Nullcheck_m(p); Nullcheck_p(p);
   float           a           = gsl_vector_get(p->parameters->vector, 0),
                   b           = gsl_vector_get(p->parameters->vector, 1);
     apop_assert(a>0 && b>0, 0, 0,'c', "The Gamma's log likelihood needs positive params, and you gave me %g and %g. Returning zero.", a, b);
@@ -29,7 +29,7 @@ static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
 }
 
 static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_p(p) 
+  Nullcheck_m(p); Nullcheck_p(p);
   double          a       = gsl_vector_get(p->parameters->vector, 0),
                   b       = gsl_vector_get(p->parameters->vector, 1);
   gsl_matrix     *data    = d->matrix;

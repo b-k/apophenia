@@ -21,10 +21,8 @@ static double data_mean(apop_data *d){
 static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
   Nullcheck(data); Nullcheck_m(est);
   double		mean = data_mean(data);
-    if (!est->parameters) 
-        est->parameters   = apop_data_alloc(1,0,0);
 	gsl_vector_set(est->parameters->vector, 0, mean);
-    apop_data *info = apop_data_add_page(est->info, apop_data_alloc(1,0,0), "Info");
+    apop_data *info = apop_data_alloc(1,0,0);
     apop_data_add_named_elmt(info, "log likelihood", poisson_log_likelihood(data, est));
     //to prevent an infinite loop, the jackknife needs to be flagged to
     //not run itself. We free-ride of the apop_lm_settings struct to signal.
@@ -35,7 +33,7 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
         Apop_settings_add(est, apop_lm, want_cov, 'n');
         apop_data_add_page(est->parameters, 
                 apop_jackknife_cov(data, *est), 
-                "Covariance");
+                "<Covariance>");
     }
 	return est;
 }
@@ -54,9 +52,9 @@ static double apply_me(double x, void *in){
 static double poisson_log_likelihood(apop_data *d, apop_model * p){
   Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(p);
-  double        lambda      = gsl_vector_get(p->parameters->vector, 0);
-  double  ln_l 	= log(lambda);
-  double  ll    = apop_map_sum(d, .fn_dp = apply_me, .param=&ln_l);
+  double lambda = gsl_vector_get(p->parameters->vector, 0);
+  double ln_l 	= log(lambda);
+  double ll     = apop_map_sum(d, .fn_dp = apply_me, .param=&ln_l);
     return ll - tsize*lambda;
 }
 
@@ -75,7 +73,7 @@ static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
     *out = gsl_ran_poisson(r, *p->parameters->vector->data);
 }
 
-apop_model apop_poisson = {"poisson", 1, 0,0,  .dsize=1,
+apop_model apop_poisson = {"poisson", 1, 0, 0, .dsize=1,
      .estimate = poisson_estimate, .log_likelihood = poisson_log_likelihood, 
      .score = poisson_dlog_likelihood, .constraint = beta_zero_greater_than_x_constraint, 
      .draw = poisson_rng};

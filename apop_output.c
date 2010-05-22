@@ -13,19 +13,33 @@
  
 #define Output_vars output_file, output_pipe, output_type, output_append
 
-/** These are the typical options for an output routine.
-
-  \li \c output_file The name of the output file, if any.
-  \li \c output_pipe If you have already opened a file and have a \c FILE* on hand, use
-  this instead of giving the file name.
-  \li \c output_type \c 'p' = pipe, \c 'd' = text, \c 's' = stdout
-  \li \c output_append \c 'a' = append (default), \c 'w' = write over.
-  */
 #define Output_declares char * output_file, FILE * output_pipe, char output_type, char output_append
 
-//The output functions are all multifaceted. This function and macro handles the dispatch rules.
-//At the end, output_file, output_pipe, and output_type are all set.
-//Notably, output_pipe will have the correct location for you to fprintf to.
+/** If you're reading this, it is probably because you were referred by another function
+  that uses this internally. You should never call this function directly, but do read
+  this documentation.
+
+  There are four settings that affect how output happens, and they can be set globally,
+  via, e.g., <tt>apop_opts.output_type = 'f'</tt>, 
+  <tt>apop_opts.output_append = 'w'</tt>, et cetera, or they can be set when you call the
+  function that sent you to this documentation, e.g:
+
+  \code
+  apop_data_print(your_data, .output_type ='f', .output_append = 'w');
+  \endcode
+
+  \param output_file The name of the output file, if any.
+  \param output_pipe If you have already opened a file and have a \c FILE* on hand, use
+  this instead of giving the file name.
+  \param output_type \c 'p' = pipe, \c 'f'= file, \c 'd' = database, \c 's' = stdout
+  \param output_append \c 'a' = append (default), \c 'w' = write over.
+
+This function merges the global and specific rules. It tries to do what you mean in
+ambiguous cases. Any function-specific option you send always overrules the global option.
+
+At the end, \c output_file, \c output_pipe, and \c output_type are all set.
+Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
+*/
 void apop_prep_output(char **output_file, FILE ** output_pipe, char *output_type, char *output_append){
     *output_append = *output_append ? *output_append :
         ((apop_opts.output_append==1 || apop_opts.output_append== 'a') ? 'a' : 'w');
@@ -81,6 +95,7 @@ hand for modifications.
 
 \include scatter.c
 
+\li See \ref apop_prep_output for more on how settings are set.
 \li This function uses the \ref designated syntax for inputs.
 \li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
 variables; see the legible output section of the \ref outline for details.
@@ -144,7 +159,9 @@ will print directly to Gnuplot.
 
 \param hist A parametrized \ref apop_model holding the histogram.  (No default. Must not be \c NULL.)
 
-This function uses the \ref designated syntax for inputs.
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
+\li This function uses the \ref designated syntax for inputs.
   \ingroup output
 */
 APOP_VAR_HEAD  void apop_histogram_plot(apop_model *hist, Output_declares){
@@ -172,7 +189,9 @@ will print directly to Gnuplot.
 \param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be \c NULL)
 \param bins   The number of bins in the output histogram (default = MAX(10, data->size/20); denominator subject to future adjustment)
 
-This function uses the \ref designated syntax for inputs.
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
+\li This function uses the \ref designated syntax for inputs.
   \ingroup output
 */
 APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bins, Output_declares){
@@ -199,7 +218,9 @@ APOP_VAR_ENDHEAD
  
 \param h The input histogram (no default, must not be \c NULL.)
  
-This function uses the \ref designated syntax for inputs.
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
+\li This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD void apop_histogram_print(apop_model *h, Output_declares){
       apop_model * apop_varad_var(h, NULL);
@@ -329,9 +350,10 @@ FILE * 		f = output_pipe;
 
 /** Print a vector in float format.
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
 APOP_VAR_HEAD void apop_vector_print(gsl_vector *data, Output_declares){
     gsl_vector *apop_varad_var(data, NULL);
@@ -342,9 +364,10 @@ APOP_VAR_ENDHEAD
 
 /** Dump a <tt>gsl_vector</tt> to the screen. 
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
 void apop_vector_show(const gsl_vector *data){
 	print_core_v(data, apop_opts.output_delimiter, NULL, stdout, 's', 0); 
@@ -428,8 +451,9 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         if (data->text){
             if (data->vector || data->matrix)
                 a_pipe(f, displaytype);
-            for(i=0; i< data->textsize[1]; i++)
-                fprintf(f, "%s%s", data->text[j][i], apop_opts.output_delimiter);
+            if (j < data->textsize[0])
+                for(i=0; i< data->textsize[1]; i++)
+                    fprintf(f, "%s%s", data->text[j][i], apop_opts.output_delimiter);
         }
         if (data->weights && j < data->weights->size){
             a_pipe(f, displaytype);
@@ -442,9 +466,9 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
 /** Print an \ref apop_data set to a file, the database, or the screen,
   as determined by the \ref apop_opts_type "apop_opts.output_delimiter".
 
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
 APOP_VAR_HEAD void apop_data_print(const apop_data *data, Output_declares){
     const apop_data * apop_varad_var(data, NULL);
@@ -463,9 +487,10 @@ APOP_VAR_ENDHEAD
 
 /** Print a matrix in float format.
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
 APOP_VAR_HEAD void apop_matrix_print(const gsl_matrix *data, Output_declares){
     const gsl_matrix *apop_varad_var(data, NULL);
@@ -542,9 +567,9 @@ static void printone(FILE *f, double width, double height, double margin, int xp
 \image latex "lattice.png" "A lattice showing three variables graphed against each other."
 \image html "lattice.png" "A lattice showing three variables graphed against each other."
 
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 \ingroup output
 */
 APOP_VAR_HEAD void apop_plot_lattice(const apop_data *d, Output_declares){
@@ -585,6 +610,10 @@ It uses the \ref designated syntax for inputs.
 \param m    The distribution, such as apop_normal. I'll be using the \c draw method. (Default = best-fitting Normal)
 \param bins The number of bins in the histogram. The number of points on the plot will always be 101 (i.e. percentiles). (default = MAX(10, data->size/10); denominator subject to future adjustment)
 \param r    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
+
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, Output_declares, size_t bins, gsl_rng *r){
     static gsl_rng *spare = NULL;
@@ -641,9 +670,9 @@ APOP_VAR_ENDHEAD
 \image html "triangle.png" "A triangle plot with a smattering of data points."
 
 \li Gnuplot will rescale for you, so you don't need to worry about whether the row sums to one. 
+\li See \ref apop_prep_output for more on how printing settings are set.
+\li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 */
 APOP_VAR_HEAD void apop_plot_triangle(apop_data *in, Output_declares){
     apop_data *apop_varad_var(in, NULL);

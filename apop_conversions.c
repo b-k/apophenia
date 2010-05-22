@@ -1022,7 +1022,7 @@ gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
 }
 
 
-/** Now that you've used \ref apop_data_get_row to pull a row from an \ref apop_data set,
+/** Now that you've used \ref apop_data_row to pull a row from an \ref apop_data set,
   this function lets you write that row to another position in the same data set or a
   different data set entirely.  
 
@@ -1035,31 +1035,30 @@ gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
   If any of the source elements are \c NULL, I won't bother to check that element in the
   destination.
   */
-/*
-void apop_data_set_row(apop_data_row row, apop_data *d, int row_number){
-    if (row.vector_pt){
+void apop_data_set_row(apop_data * d, apop_data *row, int row_number){
+    if (row->vector){
         Apop_assert_s(d->vector, "You asked me to copy an apop_data_row with a vector element to "
                 "an apop_data set with no vector.");
-        gsl_vector_set(d->vector, row_number, *row.vector_pt);
+        gsl_vector_set(d->vector, row_number, row->vector->data[0]);
     }
-    if (row.matrix_row.size > 0){
+    if (row->matrix && row->matrix->size2 > 0){
         Apop_assert_s(d->matrix, "You asked me to copy an apop_data_row with a matrix row to "
                 "an apop_data set with no matrix.");
         Apop_row(d, row_number, a_row); 
-        gsl_vector_memcpy(a_row, &row.matrix_row);
+        Apop_row(row, 0, row_to_copy); 
+        gsl_vector_memcpy(a_row, row_to_copy);
     }
-    if (row.textsize){
+    if (row->textsize[1]){
         Apop_assert_s(d->matrix, "You asked me to copy an apop_data_row with text to "
                 "an apop_data set with no text element.");
-        for (int i=0; i < row.textsize; i++){
+        for (int i=0; i < row->textsize[1]; i++){
             free(d->text[row_number][i]);
-            d->text[row_number][i]= strdup(row.text_row[i]);
+            d->text[row_number][i]= strdup(row->text[0][i]);
         }
     }
-    if (row.weight){
+    if (row->weights){
         Apop_assert_s(d->vector, "You asked me to copy an apop_data_row with a weight to "
                 "an apop_data set with no weights vector.");
-        gsl_vector_set(d->weights, row_number, *row.weight);
+        gsl_vector_set(d->weights, row_number, row->weights->data[0]);
     }
 }
-*/

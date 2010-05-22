@@ -1,0 +1,135 @@
+
+digraph {
+    node [shape="rect"];
+
+
+    "model" [
+        label = <
+        <table border="0" cellborder="0">
+        <tr>
+        <td align="center" colspan="3"> <font color="blue">apop_model</font> </td></tr>
+   <tr><td>
+        <table border="1" cellborder="0">
+        <tr><td colspan ="2" align="center"> [Info] </td></tr>
+        <tr><td colspan ="2"><font color="blue"> int</font> vbase, mbase1, mbase2, dsize </td></tr>
+        <tr>
+                <td><font color="blue"> char</font> name[101]</td>
+        <td><font color="blue"> int</font> status</td>
+        </tr>
+        <tr><td port="dd"><font color="blue"> apop_data</font> * data </td>
+        <td port="params">*info, *parameters</td>
+        </tr>
+        </table>
+    </td><td>
+        <table align="left" border="1" cellborder="0">
+        <tr><td colspan ="2" align="center"> [Functions] </td></tr>
+        <tr><td colspan ="2">estimate (<font color="blue">apop_data * </font> data, <font color="blue">apop_model * </font> model) </td></tr>
+        <tr><td> log_likelihood(data, model) </td><td>cdf (data, model) </td></tr>
+        <tr><td>p(data, model) </td><td>constraint(data, model) </td></tr>
+        <tr><td>predict(data, model) </td><td> print (data, model) </td></tr>
+        <tr><td>draw(<font color="blue">double *</font> out, <font
+                color="blue">gsl_rng *</font> r, model)</td><td>prep(data, model) </td></tr>
+        <tr><td>score(data, <font color="blue">gsl_vector *</font>gradient, model) </td></tr>
+        </table>
+    </td><td>
+        <table border="1" cellborder="0">
+        <tr><td align="center"> [Settings] </td></tr>
+        <tr><td> <font color="blue">void * </font> more </td></tr>
+        <tr><td > <font color="blue">int  </font> more_size </td></tr>
+        <tr><td port="ls"> *settings</td></tr>
+        </table>
+    </td></tr></table>
+>
+style="rounded"
+];
+
+"settings" [ label  = <
+        <table border="0" cellborder="0">
+        <tr><td align="center"><font color="blue"> apop_settings_type </font></td></tr>
+            <tr><td> <font color="blue">char* </font> name </td></tr> 
+            <tr><td><font color="blue">void * </font> asst </td></tr>
+            <tr><td> free(settings) </td></tr>
+            <tr><td> copy(settings) </td></tr>
+</table>>
+style="rounded"
+];
+
+    subgraph {rank="same"
+"data" [
+        label  = <
+        <table border="0" cellborder="0">
+        <tr><td colspan ="2" align="center"><font color="blue"> apop_data </font></td></tr>
+        <tr><td port="vv"> <font color="blue">gsl_vector *</font> vector</td>
+                <td port="dm"> <font color="blue">apop_data *</font> more</td>                
+                </tr>
+        <tr><td port="ww"> <font color="blue">gsl_vector *</font> weights</td>
+                <td port="mm"> <font color="blue">gsl_matrix</font> *matrix</td>
+                </tr>
+        <tr>        <td > <font color="blue">char</font> ***text</td>
+            <td > <font color="blue">int</font> text_size[2]</td>
+            </tr>
+        <tr><td port="nn"> <font color="blue">apop_name *</font> names </td> <td> </td> </tr>
+</table>>
+style="rounded"
+];
+
+"info" [ label  = < <table border="0" cellborder="0"> 
+    <tr><td  colspan ="2" align="center"> <font color="blue">apop_data </font> </td></tr>
+    <tr><td  colspan ="2" align="center"> ... </td></tr> 
+    <tr><td  colspan ="2" align="center" port="more1"> more </td></tr> 
+    </table>>
+style="rounded"
+        ];
+
+"infonext" [ label  = < <table border="0" cellborder="0"> 
+    <tr><td  colspan ="2" align="center"> <font color="blue">apop_data </font> </td></tr>
+    <tr><td  colspan ="2" align="center"> ... </td></tr> 
+    <tr><td  colspan ="2" align="center" port="more1"> more </td></tr> 
+    </table>>
+style="rounded"
+        ];
+    }
+
+
+"gsl_matrix" [ label  = < <table border="0" cellborder="0"> 
+    <tr><td  colspan ="2" align="center"> <font color="blue">gsl_matrix </font> </td></tr>
+    <tr><td  colspan ="2" align="center"> <font color="blue">double *</font> data</td></tr> 
+    <tr><td> <font color="blue">int</font> size1 </td><td><font color="blue">int</font> size2</td></tr>
+        <tr><td colspan ="2" align="center"> ... </td></tr>
+    </table>>
+style="rounded"
+        ];
+
+"names" [ label  = < <table border="0" cellborder="0"> 
+    <tr><td align="center"> <font color="blue">apop_name</font> </td></tr>
+    <tr><td align="left"> <font color="blue">char</font> title[101]</td></tr>
+    <tr><td align="left"> <font color="blue">int</font> colct, rowct, textct</td></tr>
+    <tr><td align="left"> <font color="blue">char *</font> vector</td></tr>
+    <tr><td align="left"> <font color="blue">char **</font> column, <font color="blue">**</font>row, <font color="blue">**</font>text</td></tr>
+    </table>>
+style="rounded"
+        ];
+
+
+"gsl_vector" [ label  = < <table border="0" cellborder="0"> 
+    <tr><td> <font color="blue">gsl_vector </font> </td></tr>
+    <tr><td> <font color="blue">double* </font> data</td></tr> 
+    <tr><td> <font color="blue">int </font> size </td></tr>
+        <tr><td colspan ="2" align="center"> ... </td></tr>
+    </table>>
+style="rounded"
+        ];
+
+
+model:params:s -> data;
+    model:dd:s -> data;
+    model:ls -> settings;
+data:mm:se->gsl_matrix;
+data:vv:sw->gsl_vector;
+data:ww:sw->gsl_vector;
+data:nn->names;
+#data:dm->data:n;
+data:dm:e->info:nw [len=0.2];
+info:more1:ne->infonext:nw;
+}
+

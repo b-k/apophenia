@@ -128,7 +128,7 @@ The program:
 
 If you saved this code to <tt>sample.c</tt>, then you can compile it with
 \verbatim
-gcc sample.c -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
+gcc sample.c -std=gnu99 -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
 \endverbatim
 
 and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
