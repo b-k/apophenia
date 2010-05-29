@@ -14,93 +14,6 @@
 #include "conversions.h"
 #include <search.h> //lsearch; bsearch is in stdlib.
 
-static apop_data * produce_t_test_output(int df, double stat, double diff){
-  apop_data *out    = apop_data_alloc(0,7,1);
-  double    pval, qval, two_tail;
-  if(!gsl_isnan(stat)){
-        pval    = gsl_cdf_tdist_P(stat, df);
-        qval    = 1-pval;
-        two_tail= 2*GSL_MIN(pval,qval);
-  } else {
-        pval    = GSL_NAN;
-        qval    = GSL_NAN;
-        two_tail= GSL_NAN;
-}
-    apop_data_add_named_elmt(out, "mean left - right", diff);
-    apop_data_add_named_elmt(out, "t statistic", stat);
-    apop_data_add_named_elmt(out, "df", df);
-    apop_data_add_named_elmt(out, "p value, 1 tail", GSL_MIN(pval,qval));
-    apop_data_add_named_elmt(out, "confidence, 1 tail", 1 - GSL_MIN(pval,qval));
-    apop_data_add_named_elmt(out, "p value, 2 tail", two_tail);
-    apop_data_add_named_elmt(out, "confidence, 2 tail", 1 - two_tail);
-    return out;
-}
-
-/** Answers the question: with what confidence can I say that the means of these two columns of data are different?
-<tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
-
-If \c apop_opts.verbose is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to STDOUT.
-
-\ingroup ttest
-\param {a, b} two columns of data
-\return an \ref apop_data set with the following elements:
-    mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
-    t statistic:    used for the test<br>
-    df:             degrees of freedom<br>
-    p value, 1 tail: the p-value for a one-tailed test that one vector mean is greater than the other.
-    confidence, 1 tail: 1- p value.
-    p value, 2 tail: the p-value for the two-tailed test that left mean = right mean.
-    confidence, 2 tail: 1-p value
-*/
-apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
-  int	a_count	= a->size,
-		b_count	= b->size;
-  double a_avg	= apop_vector_mean(a);
-double		a_var	= (a_count > 1) ? apop_vector_var(a) : 0,
-            b_avg	= apop_vector_mean(b),
-		    b_var	= b_count > 1 ? apop_vector_var(b): 0,
-            stat	= (a_avg - b_avg)/ sqrt(
-                        (b_count > 1 ? b_var/(b_count-1) : 0) 
-                        + (a_count > 1 ? a_var/(a_count-1) : 0) 
-                        );
-	if (apop_opts.verbose){
-		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
-		printf("2st avg: %g; 2st std dev: %g; 2nd count: %i.\n", b_avg, sqrt(b_var), b_count);
-		printf("t-statistic: %g.\n", stat);
-	}
-    int df      = a_count+b_count-2;
-    return produce_t_test_output(df, stat, a_avg - b_avg);
-}
-
-/** Answers the question: with what confidence can I say that the mean difference between the two columns is zero?
-
-\ingroup ttest
-\param {a, b} two columns of data
-\return an \ref apop_data set with the following elements:
-    mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
-    t statistic:    used for the test<br>
-    df:             degrees of freedom<br>
-    p value, 1 tail: the p-value for a one-tailed test that one vector mean is greater than the other.
-    confidence, 1 tail: 1- p value.
-    p value, 2 tail: the p-value for the two-tailed test that left mean = right mean.
-    confidence, 2 tail: 1-p value
-*/
-apop_data * apop_paired_t_test(gsl_vector *a, gsl_vector *b){
-gsl_vector	*diff	= gsl_vector_alloc(a->size);
-	gsl_vector_memcpy(diff, a);
-	gsl_vector_sub(diff, b);
-int		count	= a->size; 
-double		avg	= apop_vector_mean(diff),
-		var	= apop_vector_var(diff),
-		stat	= avg/ sqrt(var/(count-1));
-	gsl_vector_free(diff);
-	if (apop_opts.verbose){
-		printf("avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
-	}
-int     df      = count-1;
-    return produce_t_test_output(df, stat, avg);
-}
-
 /** For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.
 
 \param est  The \ref apop_estimate, which includes pre-calculated parameter estimates, var-covar matrix, and the original data set.
@@ -108,15 +21,13 @@ int     df      = count-1;
 Returns nothing. At the end of the routine, <tt>est->info->more</tt> includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
 
 */
-void apop_estimate_parameter_t_tests (apop_model *est){
+void apop_estimate_parameter_tests (apop_model *est){
   Nullcheck_p(est)
   if (!est->data)
       return;
-    apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 4), "test info");
+    apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 2), "test info");
     apop_name_add(ep->names, "p value", 'c');
     apop_name_add(ep->names, "confidence", 'c');
-    apop_name_add(ep->names, "p value, 1 tail", 'c');
-    apop_name_add(ep->names, "confidence, 1 tail", 'c');
     apop_name_stack(ep->names, est->parameters->names, 'r', 'r');
     int df   = est->data->matrix   ?
                     est->data->matrix->size1:
@@ -125,24 +36,17 @@ void apop_estimate_parameter_t_tests (apop_model *est){
     df       = df < 1 ? 1 : df; //some models aren't data-oriented.
     apop_data_add_named_elmt(est->info, "df", df);
 
-    apop_data *one_elmt = apop_data_alloc(0, 1, 1);
+    apop_data *one_elmt = apop_data_calloc(0, 1, 1);
     gsl_vector *param_v = apop_data_pack(est->parameters);
     for (size_t i=0; i< est->parameters->vector->size; i++){
         apop_model_add_group(est, apop_pm, .index=i);
         apop_model *m = apop_parameter_model(est->data, est);
 
-        double val = gsl_vector_get(param_v, i);
-        apop_data_set(one_elmt, 0, 0, val);
-        double under = apop_cdf(one_elmt, m);
-        double over = 1-under;
-        apop_data_set(one_elmt, 0, 0, -val);
-        double under_neg = apop_cdf(one_elmt, m);
-        double over_neg = 1-under;
-        double pval = val > 0 ? over + under_neg : under + over_neg;
-        apop_data_set(ep, i, .colname="p value",            .val=pval);
-        apop_data_set(ep, i, .colname="confidence",         .val=1-pval);
-        apop_data_set(ep, i, .colname="p value, 1 tail",    .val= val>0 ? over: under);
-        apop_data_set(ep, i, .colname="confidence, 1 tail", .val=val > 0 ? under: over);
+        apop_data_set(one_elmt, 0, 0, 0);
+        double zero = apop_cdf(one_elmt, m);
+        double conf = 2*fabs(0.5-zero); //parameter is always at 0.5 along a symmetric CDF
+        apop_data_set(ep, i, .colname="confidence", .val=conf);
+        apop_data_set(ep, i, .colname="p value",            .val=1-conf);
     }
     gsl_vector_free(param_v);
     apop_data_free(one_elmt);
@@ -164,12 +68,19 @@ void apop_estimate_parameter_t_tests (apop_model *est){
 
 This function uses the \ref designated syntax for inputs.
  */
-APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
+#ifdef APOP_NO_VARIADIC 
+ apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
+#else
+apop_varad_head( apop_data * , apop_f_test ){
     apop_model *apop_varad_var(est, NULL)
     Nullcheck_m(est);
     apop_data * apop_varad_var(contrast, NULL)
     int apop_varad_var(normalize, 0)
-APOP_VAR_END_HEAD
+	return apop_f_test_base(est, contrast, normalize);
+}
+
+ apop_data * apop_f_test_base(apop_model *est, apop_data *contrast, int normalize){
+#endif
     gsl_matrix      *set        = est->data->matrix;
     gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
     gsl_vector      *c          = contrast ? contrast->vector: NULL;
@@ -460,7 +371,10 @@ Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a referen
 
 This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
+#ifdef APOP_NO_VARIADIC 
+ apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
+#else
+apop_varad_head( apop_data * , apop_data_to_dummies){
     apop_data *apop_varad_var(d, NULL)
     apop_assert(d, NULL, 0, 'c', "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
     int apop_varad_var(col, 0)
@@ -468,7 +382,11 @@ APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type,
     int apop_varad_var(keep_first, 0)
     char apop_varad_var(append, 'n')
     char apop_varad_var(remove, 'n')
-APOP_VAR_END_HEAD
+	return apop_data_to_dummies_base(d, col, type, keep_first, append, remove);
+}
+
+ apop_data * apop_data_to_dummies_base(apop_data *d, int col, char type, int keep_first, char append, char remove){
+#endif
     if (type == 'd'){
         apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
                                                     "(col==-1) but the data's vector element is NULL.");
@@ -543,13 +461,20 @@ original values as needed.
 Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
 */
-APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
+#ifdef APOP_NO_VARIADIC 
+ apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
+#else
+apop_varad_head( apop_data *, apop_data_to_factors){
     apop_data *apop_varad_var(data, NULL)
     apop_assert(data, NULL, 0, 'c', "You sent me a NULL data set. Returning NULL.")
     int apop_varad_var(incol, 0)
     int apop_varad_var(outcol, 0)
     char apop_varad_var(intype, 't')
-APOP_VAR_END_HEAD
+	return apop_data_to_factors_base(data, intype, incol, outcol);
+}
+
+ apop_data *apop_data_to_factors_base(apop_data *data, char intype, int incol, int outcol){
+#endif
     if (intype=='t'){
         apop_assert_void(incol < data->textsize[1], 0, 's', "You asked for the text column %i but the "
                                             "data's text has only %i elements.", incol, data->textsize[1]);

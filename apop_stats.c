@@ -772,8 +772,7 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
   \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
   \param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
 
-  This function can take empirical histogram-type models---\ref apop_pmf and \ref
-  apop_histogram---or continuous models like \ref apop_loess
+  This function can take empirical histogram-type models---\ref apop_pmf and \ref apop_histogram ---or continuous models like \ref apop_loess
   or \ref apop_normal.
 
  If there is an empirical model (I'll try \c bottom first, under the presumption that you are measuring the divergence of data from a `true' distribution), then I'll step

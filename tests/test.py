@@ -3,7 +3,7 @@ from apop import *
 from pdb import set_trace
 
 def test_percentiles():
-    v = gsl_vector_alloc(307)
+    v = gsl_vector(307)
     for i in range(307):
           v.set(i, i)
     pcts_up    = v.percentiles('u')
@@ -29,7 +29,7 @@ def test_listwise_delete():
     t1.set(4,-1, NaN)
     t1.set(7,-1, NaN)
     t3c = t1.listwise_delete()
-    assert t3c.matrix.size1==8
+    assert t3c.matrix.size1==7
     vive = apop_col(t1, 7)
     vive.set_all(NaN)
     assert t1.listwise_delete() == None
@@ -51,13 +51,15 @@ def test_nan_data():
     avar.apop_opts.db_name_column = "head"
     avar.apop_opts.db_nan =  "\\."
     d  = apop_query_to_data("select * from nandata")
-    avar.apop_opts.output_type ='d'
-#apop_data_print(d, "nantest", 0, 0, 's')
-    d2  = apop_query_to_data("select * from nantest")
+##avar.apop_opts.output_type ='d'
+#    apop_data_print(d, "nantest", 0, 0, 's')
+#    apop_text_to_db("nantest", "nantest", 0,1, None)
+#    d2  = apop_query_to_data("select * from nantest")
+    d2  = apop_query_to_data("select * from nandata")
     assert(isNaN(d2.get("second", "c")))
     assert(isNaN(d2.get("third", "b")))
     assert(not d2.get("fourth", "b"))
-    apop_data_free(d2)
+    del(d2)
     avar.apop_opts.db_nan == "XX"
 
 def wmt(v, v2, w, av, av2, mean):
@@ -108,12 +110,13 @@ def pontius():
     assert(abs(est.parameters.get(0, -1) - 0.673565789473684E-03) < TOL)
     assert(abs(est.parameters.get( 1, -1) - 0.732059160401003E-06) < TOL)
     assert(abs(est.parameters.get( 2, -1) - -0.316081871345029E-14)    < TOL)
-    assert(abs(est.covariance.get( 0, 0) - pow(0.107938612033077E-03,2))    < TOL2)
-    assert(abs(est.covariance.get( 1, 1) - pow(0.157817399981659E-09,2))    < TOL2)
-    assert(abs(est.covariance.get( 2, 2) - pow(0.486652849992036E-16,2))    < TOL2)
+    cov = est.parameters.more
+    assert(abs(cov.get(0, 0) - pow(0.107938612033077E-03,2))    < TOL2)
+    assert(abs(cov.get(1, 1) - pow(0.157817399981659E-09,2))    < TOL2)
+    assert(abs(cov.get(2, 2) - pow(0.486652849992036E-16,2))    < TOL2)
     cc   = apop_estimate_coefficient_of_determination(est)
-    assert(abs(cc.get( "R.sq.*", -1) - 0.999999900178537)    < TOL)
-    assert(abs(cc.get( "SSR", -1) - 15.6040343244198)    < TOL3)
+    assert(abs(cc.get( "R.sq.*", 0) - 0.999999900178537)    < TOL)
+    assert(abs(cc.get( "SSR", 0) - 15.6040343244198)    < TOL3)
 
 def wampler1():
     apop_text_to_db("wampler1.dat","w1", 0,1, None)
@@ -122,10 +125,11 @@ def wampler1():
     est  =  apop_estimate(d, avar.apop_ols)
     for i in range(6):
         assert(abs(est.parameters.get(i, -1) - 1) < TOL4)
+    cov = est.parameters.more
     for i in range(6):
-        assert(abs(est.covariance.get(i, i)) < TOL2)
+        assert(abs(cov.get(i, i)) < TOL2)
     cc   = apop_estimate_coefficient_of_determination(est)
-    assert(abs(cc.get( "R.sq.*", -1) - 1)    < TOL)
+    assert(abs(cc.get( "R.sq.*", 0) - 1)    < TOL)
 
 def numacc4():
     d  = apop_text_to_data("numacc4.dat", 0, 0)
@@ -133,10 +137,12 @@ def numacc4():
     assert(v.mean() == 10000000.2)
     assert(v.var()*(v.size -1)/v.size - 0.01 < TOL3)
 
-test_percentiles()
+print "Testing Python interface",
 test_skew_and_kurt()
-test_listwise_delete()
-test_nan_data()
+test_percentiles()
 pontius()
 wampler1()
 numacc4()
+test_listwise_delete()
+test_nan_data()
+print "Done."

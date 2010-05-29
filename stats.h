@@ -52,7 +52,7 @@ gsl_vector * v = &( apop_vv_##v );
                 .vector= apop_dd_##outd##_v.size ? &apop_dd_##outd##_v : NULL,    \
                 .weights=apop_dd_##outd##_w.size ? &apop_dd_##outd##_w : NULL ,   \
                 .matrix = apop_dd_##outd##_m.size1 ? &apop_dd_##outd##_m : NULL, \
-                .textsize[0]=(len), .textsize[1]=(d)->textsize[1],   \
+                .textsize[0]=(d)->textsize[0] ? (len) : 0, .textsize[1]=(d)->textsize[1],   \
                 .text = (d)->text ? &((d)->text[row]) : NULL,   \
                 .names=d->names,  \
                 };               \
@@ -140,7 +140,7 @@ APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast, 
 APOP_VAR_DECLARE double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct, gsl_rng *rng);
 
 apop_data *apop_estimate_coefficient_of_determination (apop_model *);
-void apop_estimate_parameter_t_tests (apop_model *est);
+void apop_estimate_parameter_tests (apop_model *est);
 
 //apop_testing.c
 apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2);

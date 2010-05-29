@@ -251,7 +251,7 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     if (!olp->destroy_data)
         apop_data_free(set);
     if (olp->want_cov == 'y')
-        apop_estimate_parameter_t_tests(ep);
+        apop_estimate_parameter_tests(ep);
 //    ep->status       = 1;
     apop_data_add_named_elmt(ep->info, "log likelihood", ols_log_likelihood(ep->data, ep));
     apop_data *r_sq = apop_estimate_coefficient_of_determination(ep); //Add R^2-type info to info page.

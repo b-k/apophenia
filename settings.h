@@ -157,6 +157,7 @@ typedef struct {
     int draws;  /**< For random draw methods, how many draws? Default: 10,000.*/
     gsl_rng *rng; /**< For random draw methods. See \ref autorng on the default. */
     apop_model *cdf_model; /**< For use by individual models as they see fit. Default=\c NULL. */
+    int rng_owner; /**< For internal use. */
 } apop_cdf_settings;
 
 /** Settings for getting parameter models (i.e. the distribution of parameter estimates)

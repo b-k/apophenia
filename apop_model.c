@@ -433,11 +433,13 @@ apop_cdf_settings *apop_cdf_settings_init(apop_cdf_settings in){
     apop_varad_setting(in, out, cdf_model, NULL);
     apop_varad_setting(in, out, draws, 1e4);
     apop_varad_setting(in, out, rng, apop_rng_alloc(++apop_opts.rng_seed));
+    out->rng_owner = !(in.rng);
     return out;
 }
 
 void apop_cdf_settings_free(apop_cdf_settings *in){
-    gsl_rng_free(in->rng);
+    if (in->rng_owner)
+        gsl_rng_free(in->rng);
     apop_model_free(in->cdf_model);
     free(in);
 }
@@ -445,6 +447,7 @@ void apop_cdf_settings_free(apop_cdf_settings *in){
 void *apop_cdf_settings_copy(apop_cdf_settings *in){
     apop_cdf_settings *out = malloc(sizeof(apop_cdf_settings));
     *out = *in;
+    out->rng_owner = 0;
     return out;
 }
 
@@ -453,6 +456,8 @@ void *apop_cdf_settings_copy(apop_cdf_settings *in){
   By default, I just make random draws from the PDF and return the percentage of those
   draws beneath or equal to the given point. Many models have closed-form solutions that
   make no use of random draws. 
+
+  See also \ref apop_cdf_settings
   */
 double apop_cdf(apop_data *d, apop_model *m){
     if (m->cdf)
@@ -460,9 +465,23 @@ double apop_cdf(apop_data *d, apop_model *m){
     apop_cdf_settings *cs = Apop_settings_get_group(m, apop_cdf);
     if (!cs)
         cs = Apop_model_add_group(m, apop_cdf);
+    Get_vmsizes(d); //vsize, msize2
     int tally = 0; 
-    gsl_vector *v= gsl_vector_alloc(d->matrix->size2);
-    Apop_row(d, 0, ref);
+    gsl_vector *ref = NULL;
+    if (vsize &&!msize2)
+        ref = apop_vector_copy(d->vector);
+    else if (msize2 && !vsize){
+        Apop_row(d, 0, refrow);
+        ref = apop_vector_copy(refrow);
+    } else if (msize2 && vsize){
+        ref = gsl_vector_alloc(msize2+1);
+        gsl_vector_set(ref, 0, d->vector->data[0]);
+        gsl_vector_view subv = gsl_vector_subvector(ref, 1, msize2);
+        Apop_row(d, 0, subm);
+        gsl_vector_memcpy(&(subv.vector), subm);
+    } else
+        apop_assert_s(msize2 || vsize, "The data point you sent me had neither vector nor matrix parts.");
+    gsl_vector *v   = apop_vector_copy(ref);//allocate same-sized vector.
     for (int i=0; i< cs->draws; i++){
         apop_draw(v->data, cs->rng, m);
         tally += lte(v, ref);

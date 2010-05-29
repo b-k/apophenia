@@ -1,4 +1,4 @@
-//apop.i   Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+//apop.i   Copyright (c) 2009-10 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 
 /* This is the interface file for SWIG, and unfortunately, it is
 a mess. There are two systematic difficulties, whose solutions are
@@ -29,7 +29,7 @@ That said, here is the current table of contents:
 --declarations with Swig/c++-style defaults for (B)
 --%extend elements that link appropriate functions to objects, so you can use the familiar forms like yourdata.copy() instead of apop_data_copy(yourdata).
 --Apophenia's headers, to be parsed by Swig to produce the interfaces
---A sample from the GSL's vector and matrix headers, so Swig will produce wrappers for various GSL functions as well (primarily those that have methods declared in the vector and matrix objects)
+--A subset of the GSL's vector and matrix headers, so Swig will produce wrappers for various GSL functions as well (primarily those that have methods declared in the vector and matrix objects)
 
 */
 
@@ -46,66 +46,23 @@ That said, here is the current table of contents:
 %ignore apop_data_set;
 %ignore apop_data_sort;
 %ignore apop_data_split;
+%ignore apop_data_stack;
 %ignore apop_data_summarize;
 %ignore apop_data_transpose;
 %ignore apop_model_clear;
+%ignore apop_model_show;
 %ignore apop_name_add;
 %ignore apop_name_copy;
 %ignore apop_name_stack;
 %ignore apop_name_find;
 %ignore apop_name_print;
-%ignore gsl_matrix_add;
-%ignore gsl_matrix_add_constant;
-%ignore gsl_matrix_add_diagonal;
-%ignore gsl_matrix_column;
-%ignore gsl_matrix_div_elements;
-%ignore gsl_matrix_get;
-%ignore gsl_matrix_isnull;
-%ignore gsl_matrix_max;
-%ignore gsl_matrix_min;
-%ignore gsl_matrix_mul_elements;
-%ignore gsl_matrix_ptr;
-%ignore gsl_matrix_row;
-%ignore gsl_matrix_scale;
-%ignore gsl_matrix_set;
-%ignore gsl_matrix_sub;
-%ignore gsl_matrix_swap_columns;
-%ignore gsl_matrix_swap_rowcol;
-%ignore gsl_matrix_swap_rows;
-%ignore gsl_matrix_transpose;
-%ignore gsl_matrix_transpose_memcpy;
-%ignore gsl_vector_add;
-%ignore gsl_vector_add_constant;
-%ignore gsl_vector_div;
-%ignore gsl_vector_get;
-%ignore gsl_vector_isnull;
-%ignore gsl_vector_mul;
-%ignore gsl_vector_ptr;
-%ignore gsl_vector_scale;
-%ignore gsl_vector_set;
-%ignore gsl_vector_set_all;
-%ignore gsl_vector_set_basis;
-%ignore gsl_vector_set_zero;
-%ignore gsl_vector_sub;
-%ignore apop_data_stack;
 
 #define APOP_NO_VARIADIC
 %module apop
-%{
-#include "asst.h"
-#include "stats.h"
-#include "apop.h"
-#include "model.h"
-#include "conversions.h"
-#include "db.h"
-#include "likelihoods.h"
-#include "linear_algebra.h"
-#include "mapply.h"
-#include "output.h"
-#include "settings.h"
-#include "variadic.h"
-#include "types.h"
 
+/*Put all the headers in the C code: */
+%{
+#include "apop.h"
 %}
 
 %include "carrays.i"
@@ -193,13 +150,26 @@ def apop_pylist_to_data(inlist):
 %rename(transpose_memcpy) __transpose_memcpy;
 %rename(transpose) __transpose;
 
-%ignore apop_data;
 %rename(apop_data) _apop_data;
-%ignore apop_model;
 %rename(apop_model) _apop_model;
 
 #  define __attribute__(Spec) /* empty */
+
+/* Now declare everything that will be included */
 %include "types.h"
+%include "db.h"
+%include "asst.h"
+%include "model.h"
+%include "stats.h"
+%include "output.h"
+%include "mapply.h"
+%include "variadic.h"
+%include "settings.h"
+%include "arms.h"
+%include "deprecated.h"
+%include "conversions.h"
+%include "likelihoods.h"
+%include "linear_algebra.h"
 
 /* Variadics: */
 int apop_db_close(char vacuum='q');
@@ -221,7 +191,6 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
 //will require a wrapper function
 %rename(test) apop_test;
 %rename(plot_qq) apop_plot_qq;
-%rename(random_int) apop_random_int;
 %rename(histogram_plot) apop_histogram_plot;
 %rename(apop_bootstrap_cov) apop_bootstrap_cov_base;
 %rename(apop_plot_histogram) apop_plot_histogram_base;
@@ -230,10 +199,11 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
 %rename(apop_histogram_model_reset) apop_histogram_model_reset_base;
 */
 
-
-%extend apop_data {
-    apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
-    ~apop_data()    {apop_data_free($self);}
+%extend _apop_data {
+    _apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
+    _apop_data(const size_t s1, const int s2){ return  apop_data_alloc(s1, s2); }//just the vector
+    _apop_data(const size_t s1){ return  apop_data_alloc(s1); } //just the matrix
+    ~_apop_data()    {apop_data_free($self);}
     char* __str__() {apop_data_show($self); return " ";}
     void __show()   {apop_data_show($self);}
     double __get(size_t row, int  col)              { return apop_data_get($self, row, col); }
@@ -423,20 +393,6 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
     int __isnull () {return gsl_vector_isnull ($self);}
 };
 
-/* Now declare everything that will be included */
-
-%include "asst.h"
-%include "stats.h"
-%include "apop.h"
-%include "model.h"
-%include "conversions.h"
-%include "db.h"
-%include "likelihoods.h"
-%include "linear_algebra.h"
-%include "mapply.h"
-%include "settings.h"
-%include "variadic.h"
-%include "output.h"
 
 /* matrix/gsl_matrix_double.h
  * 
@@ -456,7 +412,7 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-//Tightened up a bit by BK because you're not going to read this anyway.
+//Tightened up a bit by BK because you are not going to read this anyway.
 
 typedef struct 
 { size_t size1;
@@ -480,20 +436,14 @@ typedef struct
 typedef const _gsl_matrix_const_view gsl_matrix_const_view;
 
 /* Allocation */
-
-gsl_matrix * gsl_matrix_alloc (const size_t n1, const size_t n2);
 gsl_matrix * gsl_matrix_calloc (const size_t n1, const size_t n2);
 gsl_matrix * gsl_matrix_alloc_from_block (gsl_block * b, const size_t offset, const size_t n1, const size_t n2, const size_t d2);
 gsl_matrix * gsl_matrix_alloc_from_matrix (gsl_matrix * m, const size_t k1, const size_t k2, const size_t n1, const size_t n2);
 gsl_vector * gsl_vector_alloc_row_from_matrix (gsl_matrix * m, const size_t i); 
 gsl_vector * gsl_vector_alloc_col_from_matrix (gsl_matrix * m, const size_t j);
-void gsl_matrix_free (gsl_matrix * m);
 
 /* Views */
-
 _gsl_matrix_view gsl_matrix_submatrix (gsl_matrix * m, const size_t i, const size_t j, const size_t n1, const size_t n2);
-_gsl_vector_view gsl_matrix_row (gsl_matrix * m, const size_t i);
-_gsl_vector_view gsl_matrix_column (gsl_matrix * m, const size_t j);
 _gsl_vector_view gsl_matrix_diagonal (gsl_matrix * m);
 _gsl_vector_view gsl_matrix_subdiagonal (gsl_matrix * m, const size_t k);
 _gsl_vector_view gsl_matrix_superdiagonal (gsl_matrix * m, const size_t k);
@@ -513,11 +463,6 @@ _gsl_matrix_const_view gsl_matrix_const_view_vector (const gsl_vector * v, const
 _gsl_matrix_const_view gsl_matrix_const_view_vector_with_tda (const gsl_vector * v, const size_t n1, const size_t n2, const size_t tda);
 
 /* Operations */
-
-double   gsl_matrix_get(const gsl_matrix * m, const size_t i, const size_t j);
-void    gsl_matrix_set(gsl_matrix * m, const size_t i, const size_t j, const double x);
-
-double * gsl_matrix_ptr(gsl_matrix * m, const size_t i, const size_t j);
 const double * gsl_matrix_const_ptr(const gsl_matrix * m, const size_t i, const size_t j);
 
 void gsl_matrix_set_zero (gsl_matrix * m);
@@ -532,30 +477,11 @@ int gsl_matrix_fprintf (FILE * stream, const gsl_matrix * m, const char * format
 int gsl_matrix_memcpy(gsl_matrix * dest, const gsl_matrix * src);
 int gsl_matrix_swap(gsl_matrix * m1, gsl_matrix * m2);
 
-int gsl_matrix_swap_rows(gsl_matrix * m, const size_t i, const size_t j);
-int gsl_matrix_swap_columns(gsl_matrix * m, const size_t i, const size_t j);
-int gsl_matrix_swap_rowcol(gsl_matrix * m, const size_t i, const size_t j);
-int gsl_matrix_transpose (gsl_matrix * m);
-int gsl_matrix_transpose_memcpy (gsl_matrix * dest, const gsl_matrix * src);
-
-double gsl_matrix_max (const gsl_matrix * m);
-double gsl_matrix_min (const gsl_matrix * m);
 void gsl_matrix_minmax (const gsl_matrix * m, double * min_out, double * max_out);
 
 void gsl_matrix_max_index (const gsl_matrix * m, size_t * imax, size_t *jmax);
 void gsl_matrix_min_index (const gsl_matrix * m, size_t * imin, size_t *jmin);
 void gsl_matrix_minmax_index (const gsl_matrix * m, size_t * imin, size_t * jmin, size_t * imax, size_t * jmax);
-int gsl_matrix_isnull (const gsl_matrix * m);
-int gsl_matrix_add (gsl_matrix * a, const gsl_matrix * b);
-int gsl_matrix_sub (gsl_matrix * a, const gsl_matrix * b);
-int gsl_matrix_mul_elements (gsl_matrix * a, const gsl_matrix * b);
-int gsl_matrix_div_elements (gsl_matrix * a, const gsl_matrix * b);
-int gsl_matrix_scale (gsl_matrix * a, const double x);
-int gsl_matrix_add_constant (gsl_matrix * a, const double x);
-int gsl_matrix_add_diagonal (gsl_matrix * a, const double x);
-double gsl_matrix_get(const gsl_matrix * m, const size_t i, const size_t j);
-void gsl_matrix_set(gsl_matrix * m, const size_t i, const size_t j, const double x):
-double * gsl_matrix_ptr(gsl_matrix * m, const size_t i, const size_t j);
 const double * gsl_matrix_const_ptr(const gsl_matrix * m, const size_t i, const size_t j);
 
 /* vector/gsl_vector_double.h
@@ -584,15 +510,11 @@ typedef struct
 typedef const _gsl_vector_const_view gsl_vector_const_view;
 
 /* Allocation */
-
-gsl_vector *gsl_vector_alloc (const size_t n);
 gsl_vector *gsl_vector_calloc (const size_t n); 
 gsl_vector *gsl_vector_alloc_from_block (gsl_block * b, const size_t offset, const size_t n, const size_t stride); 
 gsl_vector *gsl_vector_alloc_from_vector (gsl_vector * v, const size_t offset, const size_t n, const size_t stride); 
-void gsl_vector_free (gsl_vector * v);
 
 /* Views */
-
 _gsl_vector_view gsl_vector_view_array (double *v, size_t n); 
 _gsl_vector_view gsl_vector_view_array_with_stride (double *base, size_t stride, size_t n); 
 _gsl_vector_const_view gsl_vector_const_view_array (const double *v, size_t n); 
@@ -603,16 +525,7 @@ _gsl_vector_const_view gsl_vector_const_subvector (const gsl_vector *v, size_t i
 _gsl_vector_const_view gsl_vector_const_subvector_with_stride (const gsl_vector *v, size_t i, size_t stride, size_t n);
 
 /* Operations */
-
-double gsl_vector_get (const gsl_vector * v, const size_t i);
-void gsl_vector_set (gsl_vector * v, const size_t i, double x);
-
-double *gsl_vector_ptr (gsl_vector * v, const size_t i);
 const double *gsl_vector_const_ptr (const gsl_vector * v, const size_t i);
-
-void gsl_vector_set_zero (gsl_vector * v);
-void gsl_vector_set_all (gsl_vector * v, double x);
-int gsl_vector_set_basis (gsl_vector * v, size_t i);
 
 int gsl_vector_fread (FILE * stream, gsl_vector * v);
 int gsl_vector_fwrite (FILE * stream, const gsl_vector * v);
@@ -629,15 +542,5 @@ void gsl_vector_minmax (const gsl_vector * v, double * min_out, double * max_out
 size_t gsl_vector_max_index (const gsl_vector * v);
 size_t gsl_vector_min_index (const gsl_vector * v);
 void gsl_vector_minmax_index (const gsl_vector * v, size_t * imin, size_t * imax);
-int gsl_vector_add (gsl_vector * a, const gsl_vector * b);
-int gsl_vector_sub (gsl_vector * a, const gsl_vector * b);
-int gsl_vector_mul (gsl_vector * a, const gsl_vector * b);
-int gsl_vector_div (gsl_vector * a, const gsl_vector * b);
-int gsl_vector_scale (gsl_vector * a, const double x);
-int gsl_vector_add_constant (gsl_vector * a, const double x);
-int gsl_vector_isnull (const gsl_vector * v);
-double gsl_vector_get (const gsl_vector * v, const size_t i);
-void gsl_vector_set (gsl_vector * v, const size_t i, double x);
-double * gsl_vector_ptr (gsl_vector * v, const size_t i);
 const double * gsl_vector_const_ptr (const gsl_vector * v, const size_t i);
 double gsl_rng_uniform (const gsl_rng * r);

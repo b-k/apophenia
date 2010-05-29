@@ -127,6 +127,15 @@ void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){
     *out = gsl_ran_tdist (r, df)*(sigma/sqrt(df))+mu;
 }
 
+double apop_t_dist_cdf(apop_data *in, apop_model *m){
+    Nullcheck_m(m); Nullcheck_p(m);
+    double val = in->vector ? apop_data_get(in, 0, -1) : apop_data_get(in, 0, 0);
+    double mu = m->parameters->vector->data[0];
+    double sigma = m->parameters->vector->data[1];
+    double df = m->parameters->vector->data[2];
+    return gsl_cdf_tdist_P ((val-mu)/(sigma/sqrt(df)), df);
+}
+
 void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){
     Nullcheck_m(m); Nullcheck_p(m);
     *out = gsl_ran_fdist (r, m->parameters->vector->data[0], m->parameters->vector->data[1]);
@@ -445,7 +454,7 @@ apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .dsize=-1, .draw 
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
 
 apop_model apop_t_distribution  = {"t distribution", 3, 0, 0, .dsize=1, .estimate = apop_t_estimate, 
-         .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw,
+         .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw, .cdf=apop_t_dist_cdf,
          .constraint=apop_t_dist_constraint };
 
 apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .dsize=1, .estimate = apop_fdist_estimate, 

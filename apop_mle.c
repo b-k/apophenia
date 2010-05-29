@@ -420,7 +420,7 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
   apop_mle_settings          *mp    = apop_settings_get_group(est, apop_mle);
     if (mp->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
         apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta));
-        apop_estimate_parameter_t_tests (est);
+        apop_estimate_parameter_tests (est);
     }
     int param_ct = (params->vector ? params->vector->size : 0)
                    +(params->matrix ?  params->matrix->size1*params->matrix->size2 : 0);
@@ -876,7 +876,7 @@ static apop_model * apop_annealing(infostruct *i){
     }
     signal(SIGINT, NULL);
     apop_data_unpack(i->beta, i->model->parameters); 
-    apop_estimate_parameter_t_tests(i->model);
+    apop_estimate_parameter_tests(i->model);
     if (mp->rng)
         r = NULL;
     auxinfo(i->model->parameters, i, 0, i->best_ll);

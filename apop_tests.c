@@ -8,6 +8,94 @@ At the moment, the header for  apop_test_anova is in \c asst.h.
 #include "stats.h"
 #include "conversions.h"
 
+
+static apop_data * produce_t_test_output(int df, double stat, double diff){
+  apop_data *out    = apop_data_alloc(0,7,1);
+  double    pval, qval, two_tail;
+  if(!gsl_isnan(stat)){
+        pval    = gsl_cdf_tdist_P(stat, df);
+        qval    = 1-pval;
+        two_tail= 2*GSL_MIN(fabs(pval-.5),fabs(qval-0.5));
+  } else {
+        pval    = GSL_NAN;
+        qval    = GSL_NAN;
+        two_tail= GSL_NAN;
+}
+    apop_data_add_named_elmt(out, "mean left - right", diff);
+    apop_data_add_named_elmt(out, "t statistic", stat);
+    apop_data_add_named_elmt(out, "df", df);
+    apop_data_add_named_elmt(out, "p value, 1 tail", GSL_MIN(pval,qval));
+    apop_data_add_named_elmt(out, "confidence, 1 tail", 1 - GSL_MIN(pval,qval));
+    apop_data_add_named_elmt(out, "p value, 2 tail", 1- two_tail);
+    apop_data_add_named_elmt(out, "confidence, 2 tail", two_tail);
+    return out;
+}
+
+/** Answers the question: with what confidence can I say that the means of these two columns of data are different?
+<tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
+
+If \c apop_opts.verbose is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to STDOUT.
+
+\ingroup ttest
+\param {a, b} two columns of data
+\return an \ref apop_data set with the following elements:
+    mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
+    t statistic:    used for the test<br>
+    df:             degrees of freedom<br>
+    p value, 1 tail: the p-value for a one-tailed test that one vector mean is greater than the other.
+    confidence, 1 tail: 1- p value.
+    p value, 2 tail: the p-value for the two-tailed test that left mean = right mean.
+    confidence, 2 tail: 1-p value
+*/
+apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
+  int	a_count	= a->size,
+		b_count	= b->size;
+  double a_avg	= apop_vector_mean(a);
+double		a_var	= (a_count > 1) ? apop_vector_var(a) : 0,
+            b_avg	= apop_vector_mean(b),
+		    b_var	= b_count > 1 ? apop_vector_var(b): 0,
+            stat	= (a_avg - b_avg)/ sqrt(
+                        (b_count > 1 ? b_var/(b_count-1) : 0) 
+                        + (a_count > 1 ? a_var/(a_count-1) : 0) 
+                        );
+	if (apop_opts.verbose){
+		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
+		printf("2st avg: %g; 2st std dev: %g; 2nd count: %i.\n", b_avg, sqrt(b_var), b_count);
+		printf("t-statistic: %g.\n", stat);
+	}
+    int df      = a_count+b_count-2;
+    return produce_t_test_output(df, stat, a_avg - b_avg);
+}
+
+/** Answers the question: with what confidence can I say that the mean difference between the two columns is zero?
+
+\ingroup ttest
+\param {a, b} two columns of data
+\return an \ref apop_data set with the following elements:
+    mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
+    t statistic:    used for the test<br>
+    df:             degrees of freedom<br>
+    p value, 1 tail: the p-value for a one-tailed test that one vector mean is greater than the other.
+    confidence, 1 tail: 1- p value.
+    p value, 2 tail: the p-value for the two-tailed test that left mean = right mean.
+    confidence, 2 tail: 1-p value
+*/
+apop_data * apop_paired_t_test(gsl_vector *a, gsl_vector *b){
+gsl_vector	*diff	= gsl_vector_alloc(a->size);
+	gsl_vector_memcpy(diff, a);
+	gsl_vector_sub(diff, b);
+int		count	= a->size; 
+double		avg	= apop_vector_mean(diff),
+		var	= apop_vector_var(diff),
+		stat	= avg/ sqrt(var/(count-1));
+	gsl_vector_free(diff);
+	if (apop_opts.verbose){
+		printf("avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
+	}
+int     df      = count-1;
+    return produce_t_test_output(df, stat, avg);
+}
+
 static double one_chi_sq(apop_data *d, int row, int col, int n){
     APOP_ROW(d, row, vr);
     APOP_COL(d, col, vc);

@@ -1224,7 +1224,7 @@ int main(int argc, char **argv){
     do_test("test listwise delete", test_listwise_delete());
     //do_test("test rank distributions", test_rank_distributions(r));
     do_test("test ML imputation", test_ml_imputation(r));
-    do_test("test apop_update", test_updating(r));
+    //do_test("test apop_update", test_updating(r));
     do_test("test fix params", test_model_fix_parameters(r));
     do_test("positive definiteness", test_posdef(r));
     //do_test("test binomial estimations", test_binomial(r));
