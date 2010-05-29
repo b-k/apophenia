@@ -41,7 +41,7 @@ static void compare_mvn_estimates(apop_model *L, apop_model *R, double tolerance
 void test_ml_imputation(gsl_rng *r){
     size_t len = 2e4;
     int i,j;
-    apop_data *fillme = apop_data_alloc(0, len, 3);
+    apop_data *fillme = apop_data_alloc(len, 3);
     apop_model *mvn = apop_model_copy(apop_multivariate_normal);
     mvn->parameters = apop_data_alloc(3, 3, 3);
     for(i=0; i < 3; i ++)
@@ -96,7 +96,7 @@ void test_percentiles(){
 void test_score(){
   int         i, j, len = 1e5;
   gsl_rng     *r        = apop_rng_alloc(123);
-  apop_data   *data     = apop_data_alloc(0, len,1);
+  apop_data   *data     = apop_data_alloc(len,1);
     for (i=0; i<10; i++){
         apop_model  *source   = apop_model_set_parameters(apop_normal, 
                                     gsl_ran_flat(r, -5, 5), gsl_ran_flat(r, .01, 5));
@@ -338,7 +338,7 @@ void test_inversion(gsl_rng *r){
   gsl_matrix  *inved_back;
   int         i,j;
   double      error   = 0;
-  apop_data *four     = apop_data_alloc(1,0,0);
+  apop_data *four     = apop_data_alloc(1);
     apop_data_set(four, 0, -1, 4);
   apop_model *fourp    = apop_model_copy(apop_zipf);
     fourp->parameters  = four;
@@ -383,31 +383,31 @@ apop_data *d9   = apop_dot(d5, d1, .form2=1);
     assert(!apop_vector_sum(d8->vector));
 }
  
-static void fill_p(apop_data *d, int v, int m1, int m2, int w, gsl_rng *r){
+static void fill_p(apop_data *d, gsl_rng *r){
     int j, k;
-    if (v)
-        for (j=0; j< v; j++)
+    if (d->vector)
+        for (j=0; j< d->vector->size; j++)
             gsl_vector_set(d->vector, j, gsl_rng_uniform(r));
-    if (m2)
-        for (j=0; j< m1; j++)
-            for (k=0; k< m2; k++)
+    if (d->matrix)
+        for (j=0; j< d->matrix->size1; j++)
+            for (k=0; k< d->matrix->size2; k++)
                 gsl_matrix_set(d->matrix, j, k, gsl_rng_uniform(r));
-    if (w)
-        for (j=0; j< w; j++)
+    if (d->weights)
+        for (j=0; j< d->weights->size; j++)
             gsl_vector_set(d->weights, j, gsl_rng_uniform(r));
 }
 
-static void check_p(apop_data *d, apop_data *dout, int v, int m1, int m2, int w){
+static void check_p(apop_data *d, apop_data *dout){
     int j, k;
-    if (v)
-        for (j=0; j< v; j++)
+    if (d->vector)
+        for (j=0; j< d->vector->size; j++)
             assert(dout->vector->data[j] == d->vector->data[j]);
-    if (w)
-        for (j=0; j< w; j++)
+    if (d->weights)
+        for (j=0; j< d->weights->size; j++)
             assert(dout->weights->data[j] == d->weights->data[j]);
-    if (m2)
-        for (j=0; j< m1; j++)
-            for (k=0; k< m2; k++)
+    if (d->matrix)
+        for (j=0; j< d->matrix->size1; j++)
+            for (k=0; k< d->matrix->size2; k++)
                 assert(gsl_matrix_get(d->matrix, j, k) == gsl_matrix_get(dout->matrix, j, k));
 }
 
@@ -426,21 +426,21 @@ void apop_pack_test(gsl_rng *r){
         dout    = apop_data_alloc(v, m1, m2);
         if (w) {d->weights = gsl_vector_alloc(w);
                 dout->weights = gsl_vector_alloc(w);}
-        fill_p(d, v, m1, m2, w, r);
+        fill_p(d, r);
         int second_p = i %2;
         if (second_p){
             p2 = apop_data_add_page(d, apop_data_alloc(v, m1, m2), "second p");
             outp2 = apop_data_add_page(dout, apop_data_alloc(v, m1, m2), "second p");
             if (w) {p2->weights = gsl_vector_alloc(w);
                     outp2->weights = gsl_vector_alloc(w);}
-            fill_p(p2, v, m1, m2, w, r);
+            fill_p(p2, r);
         }
         mid     = apop_data_pack(d, .all_pages= second_p ? 'y' : 'n');
         apop_data_unpack(mid, dout);
         //apop_data_unpack(mid, dout, .all_pages= second_p ? 'y' : 'n');
-        check_p(d, dout, v, m1, m2, w);
+        check_p(d, dout);
         if (second_p)
-            check_p(d->more, dout->more, v, m1, m2, w);
+            check_p(d->more, dout->more);
         if (mid) gsl_vector_free(mid); 
         apop_data_free(d); apop_data_free(dout);
         }
@@ -574,7 +574,7 @@ void test_jackknife(){
   apop_model m = apop_normal;
   APOP_DATA_ALLOC(d, len, 1);
   APOP_RNG_ALLOC(r, 8);
-  apop_data  *p  = apop_data_alloc(0,0,0);
+  apop_data  *p  = apop_data_alloc();
   p->vector      = apop_array_to_vector(pv, 2);
   apop_model*pp = apop_model_copy(m);
       pp->parameters    = p;
@@ -668,7 +668,7 @@ void test_binomial(gsl_rng *r){
     size_t  i;
     double p = gsl_rng_uniform(r);
     int n     = gsl_ran_flat(r,1,1e5);
-    apop_data *d = apop_data_alloc(0,1,n);
+    apop_data *d = apop_data_alloc(1,n);
     for(i=0; i < n; i ++)
         apop_data_set(d, 0,i,(gsl_rng_uniform(r) < p));
     apop_model *out = apop_estimate(d, apop_binomial);
@@ -825,7 +825,7 @@ apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, ap
   int i, j;
   double val;
   int samples = 1e5;
-  apop_data *data = apop_data_alloc(0, samples, true_params->size);
+  apop_data *data = apop_data_alloc(samples, true_params->size);
         //generate a random vector of data X, then set the outcome to one if the probit/logit condition holds
         for (i = 0; i < samples; i++){
             apop_data_set(data, i, 0, 1);
@@ -980,7 +980,7 @@ void test_posdef(gsl_rng *r){
     size_t j;
     for(j=0; j < 30; j ++){
         int size = gsl_rng_uniform(r) *10+1;
-        apop_data *d = apop_data_alloc(0, size, size);
+        apop_data *d = apop_data_alloc( size, size);
         apop_map(d, .fn_dp=ran_uniform, .param=r, .inplace=1, .part='m');
         apop_matrix_to_positive_semidefinite(d->matrix);
         assert(apop_matrix_is_positive_semidefinite(d->matrix));
@@ -993,7 +993,7 @@ static double is_odd(double in){ return (int)in%2;}
 static double nan_even(double in){ return is_even(in) ? GSL_NAN : in; }
 
 void row_manipulations(){
-    apop_data *test= apop_data_alloc(10,0,0);
+    apop_data *test= apop_data_alloc(10);
     apop_map(test, .fn_di=set_to_index, .part='v', .inplace='y');
     int rm[10] = {0,1,0,1,0,1,0,1,0,1};
     apop_data_rm_rows(test, rm);

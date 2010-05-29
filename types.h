@@ -143,8 +143,8 @@ freed location, and you can later safely test conditions like <tt>if (data) ...<
 void        apop_data_free_base(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
-apop_data * apop_data_alloc(const size_t, const size_t, const int);
-apop_data * apop_data_calloc(const size_t, const size_t, const int);
+APOP_VAR_DECLARE apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3);
+APOP_VAR_DECLARE apop_data * apop_data_calloc(const size_t size1, const size_t size2, const int size3);
 APOP_VAR_DECLARE apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace);
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c);
 apop_data * apop_data_copy(const apop_data *in);

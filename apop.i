@@ -89,6 +89,7 @@ That said, here is the current table of contents:
 %ignore gsl_vector_sub;
 %ignore apop_data_stack;
 
+#define APOP_NO_VARIADIC
 %module apop
 %{
 #include "asst.h"
@@ -102,8 +103,9 @@ That said, here is the current table of contents:
 #include "mapply.h"
 #include "output.h"
 #include "settings.h"
-#include "types.h"
 #include "variadic.h"
+#include "types.h"
+
 %}
 
 %include "carrays.i"
@@ -191,6 +193,14 @@ def apop_pylist_to_data(inlist):
 %rename(transpose_memcpy) __transpose_memcpy;
 %rename(transpose) __transpose;
 
+%ignore apop_data;
+%rename(apop_data) _apop_data;
+%ignore apop_model;
+%rename(apop_model) _apop_model;
+
+#  define __attribute__(Spec) /* empty */
+%include "types.h"
+
 /* Variadics: */
 int apop_db_close(char vacuum='q');
 void apop_db_merge(char *db_file, char inout='i');
@@ -220,6 +230,7 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
 %rename(apop_histogram_model_reset) apop_histogram_model_reset_base;
 */
 
+
 %extend apop_data {
     apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
     ~apop_data()    {apop_data_free($self);}
@@ -242,7 +253,7 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
     apop_data*  __rm_columns(int *drop)             { apop_data_rm_columns($self, drop); return $self; }
     void __memcpy(apop_data *out)                   { return apop_data_memcpy(out, $self);}
     void __add_named_elmt(char *name, double val)   { apop_data_add_named_elmt($self, name, val); }
-    apop_data* __listwise_delete()                  { return apop_data_listwise_delete($self); }
+    apop_data* __listwise_delete()                  { return apop_data_listwise_delete_base($self, 'y'); }
     apop_data* __transpose()                        { return apop_data_transpose($self);}
     apop_data* __covariance()                       { return apop_data_covariance($self);}
     apop_data* __correlation()                      { return apop_data_correlation($self);}
@@ -360,14 +371,6 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
     double      kurt()                  { return apop_vector_kurt($self) ; }
     double      cov(const gsl_vector *inb)   { return apop_vector_cov($self, inb) ; }
 
-    double var_m( const double mean) {
-        return apop_vector_var_m($self, mean) ; }
-
-    gsl_vector * moving_average(size_t window){
-        return  apop_vector_moving_average($self, window);}
-
-    double cov(const gsl_vector *inb) { return apop_vector_cov($self, inb) ; }
-
     double correlation(const gsl_vector *inb) { return apop_vector_correlation($self, inb) ; }
     gsl_vector * moving_average(size_t window){ return  apop_vector_moving_average($self, window);}
 
@@ -421,8 +424,6 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
 };
 
 /* Now declare everything that will be included */
-#define APOP_NO_VARIADIC
-#  define __attribute__(Spec) /* empty */
 
 %include "asst.h"
 %include "stats.h"
@@ -434,7 +435,6 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
 %include "linear_algebra.h"
 %include "mapply.h"
 %include "settings.h"
-%include "types.h"
 %include "variadic.h"
 %include "output.h"
 

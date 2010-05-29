@@ -307,13 +307,16 @@ apop_data * apop_multiple_imputation_variance(apop_data *(*stat)(apop_data *), a
     }
 	Get_vmsizes(out_var);
     for (int i=0; i < msize1; i++)
-        for (int j=0; j < msize2; j++){
+        for (int j=i; j < msize2; j++){
             for (int k=0; k< replicates; k++){
                 apop_data *this_p = cov_is_labelled ? apop_data_get_page(estimates[k], "<Covariance>")
                                         : estimates[k]->more;
                 gsl_vector_set(vals, k, apop_data_get(this_p, i, j));
             }
-            apop_data_set(out_var, i, j, apop_vector_mean(vals) + apop_var(vals)/(1+1./replicates));
+            double total_var = apop_vector_mean(vals) + apop_var(vals)/(1+1./replicates);
+            apop_data_set(out_var, i, j, total_var);
+            if (j != i)
+                apop_data_set(out_var, j, i, total_var);
         }
     return out;	
 }

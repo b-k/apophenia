@@ -5,6 +5,7 @@ The apop_data structure joins together a gsl_matrix, apop_name, and a table of s
 #include "types.h"
 #include "output.h"
 #include "internal.h"
+#include "variadic.h"
 #include "conversions.h"
 #include "linear_algebra.h"
 
@@ -28,43 +29,57 @@ We're generally assuming that the data vector and data matrix have the same row 
   \ingroup types
   */
 
-/** Allocate a \ref apop_data structure, to be filled with data. The
-  three arguments are: vector size, matrix rows, matrix cols. Any and
-  all of these may be zero, in which case the vector or matrix will not be allocated, as appropriate.
+/** Allocate a \ref apop_data structure, to be filled with data.
+ 
+\li The typical case is  three arguments, like <tt>apop_data_alloc(2,3,4)</tt>: vector size, matrix rows, matrix cols. If the first argument is zero, you get a \c NULL vector.
+\li Two arguments, <tt>apop_data_alloc(2,3)</tt>,  would allocate just a matrix, leaving the vector \c NULL.
+\li One argument, <tt>apop_data_alloc(2)</tt>,  would allocate just a vector, leaving the matrix \c NULL.
+\li Zero arguments, <tt>apop_data_alloc()</tt>,  will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
 
-    Your best bet for allocating the categories is to produce
-them elsewhere, such as \ref apop_query_to_text and then point an
-apop_data structure with a zero-sized vector to your matrix of strings.
+For allocating the text part, see \ref apop_text_alloc.
 
 The \c weights vector is set to \c NULL. If you need it, allocate it via
 \code d->weights   = gsl_vector_alloc(row_ct); \endcode.
 
 \see{apop_data_calloc}
 
-  \param vsize              vector size, if any. 
-  \param msize1, msize2     Row and column size for the matrix. 
-  
-  \c apop_data_alloc(0,0,0) will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
-
  \return    The \ref apop_data structure, allocated and ready.
+
+ This function uses the \ref designated syntax for inputs.
  \ingroup data_struct
-  */
-apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int msize2){
+*/
+APOP_VAR_HEAD apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3){
+    const size_t apop_varad_var(size1, 0);
+    const size_t apop_varad_var(size2, 0);
+    const int apop_varad_var(size3, 0);
+APOP_VAR_ENDHEAD
+    size_t vsize=0, msize1=0; int msize2=0;
+    if (size3){
+        vsize = size1;
+        msize1 = size2;
+        msize2 = size3;
+    }
+    else if (size2) {
+        msize1 = size1;
+        msize2 = size2;
+    }
+    else 
+        vsize = size1;
   apop_data  *setme       = malloc(sizeof(apop_data));
-    apop_assert(setme, NULL, 0, 's', "malloc failed. Probably out of memory.");
+    apop_assert_s(setme, "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 > 0  && msize1 > 0){
         setme->matrix   = gsl_matrix_alloc(msize1,msize2);
-        apop_assert(setme->matrix, NULL, 0, 's', "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
+        apop_assert_s(setme->matrix, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
         setme->vector   = gsl_vector_alloc(vsize);
-        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
+        apop_assert_s(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     //I allocate a vector of msize2==-1. This is deprecated, and will one day be deleted.
     else if (msize2==-1 && msize1>0){
         setme->vector   = gsl_vector_alloc(msize1);
-        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
+        apop_assert_s(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
     }
     setme->names        = apop_name_alloc();
     return setme;
@@ -72,32 +87,42 @@ apop_data * apop_data_alloc(const size_t vsize, const size_t msize1, const int m
 
 /** Allocate a \ref apop_data structure, to be filled with data; set everything in the allocated portion to zero. See \ref apop_data_alloc for details.
 
-  \param vsize              vector size, if any. 
-  \param msize1, msize2     Row and column size for the matrix. If \c size2>0
-  this exactly follows the format of \c gsl_matrix_calloc. If \c size2==-1,
-  then allocate a vector. 
-  
-  \c apop_data_calloc(0, 0,0) will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
-
 \return    The \ref apop_data structure, allocated and zeroed out.
 \see apop_data_alloc 
 \ingroup data_struct
+ This function uses the \ref designated syntax for inputs.
   */
-apop_data * apop_data_calloc(const size_t vsize, const size_t msize1, const int msize2){
+APOP_VAR_HEAD apop_data * apop_data_calloc(const size_t size1, const size_t size2, const int size3){
+    const size_t apop_varad_var(size1, 0);
+    const size_t apop_varad_var(size2, 0);
+    const int apop_varad_var(size3, 0);
+APOP_VAR_ENDHEAD
+    size_t vsize=0, msize1=0; int msize2=0;
+    if (size3){
+        vsize = size1;
+        msize1 = size2;
+        msize2 = size3;
+    }
+    else if (size2) {
+        msize1 = size1;
+        msize2 = size2;
+    }
+    else 
+        vsize = size1;
   apop_data  *setme       = malloc(sizeof(apop_data));
-    apop_assert(setme, NULL, 0, 's', "malloc failed. Probably out of memory.");
+    apop_assert_s(setme, "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 >0 && msize1 > 0){
         setme->matrix   = gsl_matrix_calloc(msize1,msize2);
-        apop_assert(setme->matrix, NULL, 0, 's', "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
+        apop_assert_s(setme->matrix, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
         setme->vector   = gsl_vector_calloc(vsize);
-        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
+        apop_assert_s(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     else if (msize2==-1 && msize1>0){
         setme->vector   = gsl_vector_calloc(msize1);
-        apop_assert(setme->vector, NULL, 0, 's', "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
+        apop_assert_s(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
     }
     setme->names        = apop_name_alloc();
     return setme;

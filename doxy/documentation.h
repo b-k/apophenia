@@ -2175,6 +2175,34 @@ for (int i=0; i< matrix->size1; i++){
 }
 \endcode
 
+\par Testing
+
+Here is the model for all testing within Apophenia:
+
+\li Calculate a statistic.
+\li Describe the distribution of that statistic.
+\li Work out how much of the distribution is (above|below|closer to zero than) the statistic.
+
+There are a handful of named tests that produce a known distribution and then compare to a
+known distribution, like \ref apop_test_kolmogorov or \ref apop_test_fisher_exact. For
+traditional distributions (Normal, \f$t\f$, \f$\chi^2\f$), use the \ref apop_test convenience
+function.
+
+But if you've gotten this far with your models, then you'll want to apply the above
+three-step process to your model parameters. First I'll give an overview of the three steps, then
+another working example.
+
+\li Model parameters are a statistic, and you know that <tt> apop_estimate(your_data,
+        your_model)</tt> will output a model with <tt>parameters</tt> element.
+\li Now, the distribution of a parameter is also a model, so <tt>
+apop_parameter_model</tt> will also return an \ref apop_model
+\li \ref apop_cdf takes in a model and a data point, and returns the area under the data
+point.
+
+Defaults for the parameter models are filled in via bootstrapping or resampling.
+
+
+
 OK, this introduction has shown you the \ref apop_data set and some of the functions
 associated, which might be useful even if you aren't formally doing statistical work but do have to deal with data with real-world elements like column names and mixed
 numeric/text values. You've seen how Apophenia encapsulates as many of a model's
