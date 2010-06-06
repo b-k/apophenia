@@ -1815,7 +1815,7 @@ You will see below that Apophenia provides many of the conveniences that stats p
 users are used to in simply fitting a
 model, while still being structured in a manner that facilitates and encourages building new types of model.
 
-The workflow of a typical fitting-a-model project using Apophenia's tools goeses something like this:
+The workflow of a typical fitting-a-model project using Apophenia's tools goes something like this:
 
  \li Read the raw data into the database using \ref apop_text_to_db.
  \li Use SQL queries handled by \ref apop_query to massage the data as needed.
@@ -1981,7 +1981,7 @@ As per the example, use \ref apop_text_to_data or \ref apop_text_to_db.
 
 \par Subsets
 
-There are many macros and functions to get subsets of the data. Each generates what is
+There are many macros to get subsets of the data. Each generates what is
 considered to be a disposable view: once the variable goes out of scope (by the usual C
 rules of scoping), it is no longer valid. However, these structures all wrappers for pointers
 to the base data, so all operations on the data view affect the base data.
@@ -2001,6 +2001,17 @@ double mu = apop_vector_mean(one_col);
 Apop_data_rows(d, 3, 8, six_elmts);
 apop_data_print(six_elmts);
 \endcode
+
+As noted, all of these slicing routines are macros, because they generate several
+background variables in the current scope (something a function can't do). Traditional
+custom is to put macro names in all caps, like \c APOP_DATA_ROWS, which to modern
+sensibilities looks like yelling. The custom has a logic: there are ways to hang
+yourself with macros, so it is worth distinguishing them typographically. Apophenia
+lets you choose the level of careful/pedantic you prefer, any of \c
+APOP_ROW, \c Apop_row, or \c apop_row are valid. The documentation always uses a single capital.
+
+Notice that all of the slicing macros return nothing, so there is nothing to do with one
+but put it on a line by itself; this limits the number of misuses.
 
 \par Basic manipulations
 
@@ -2207,7 +2218,7 @@ via the general \ref apop_parameter_model mechanism. The results here will of co
 identical, but the more general mechanism can be used in situations where the standard
 models don't apply.
 
-Here is the extended program; the first part is idential to the program above. The second
+Here is the extended program; the first part is identical to the program above. The second
 half uses many of the above tricks: one of the inputs to \ref apop_parameter_model (which
 row of the parameter set to use) is sent by adding a settings group, we pull that row
 into a separate data set using \ref Apop_data_row, and we set its vector value by

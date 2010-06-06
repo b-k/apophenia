@@ -1,0 +1,19 @@
+    2	    4	    6	    8
+    3	    7	    0	    6
+    3	  nan	    1	    7
+    9	    0	    8	    1
+
+and a full vector+matrix+text+weights data set, formatted for computer reading:
+chr  	| aa	| ab	| rsid	| a_allele	| b_allele	| treatment
+    1	| 	|     0	|    37	| rs1933024	| A	| G	| cases	| 	|  1830
+    1	| 	|     0	|    39	| rs11497407	| A	| G	| cases	| 	|  1828
+    1	| 	|     2	|   190	| rs12565286	| C	| G	| cases	| 	|  1674
+    1	| 	|     1	|   179	| rs11804171	| A	| T	| cases	| 	|  1686
+    1	| 	|  1836	|    31	| rs2977656	| C	| T	| cases	| 	|     0
+    1	| 	|     0	|   201	| rs12138618	| A	| G	| cases	| 	|  1660
+    1	| 	|  1230	|   570	| rs3094315	| A	| G	| cases	| 	|    60
+    1	| 	|    33	|   437	| rs17160906	| A	| G	| cases	| 	|  1396
+    1	| 	|     0	|   133	| rs2519016	| C	| T	| cases	| 	|  1731
+
+and just the weights vector:
+ 1830	 1828	 1674	 1686	    0	 1660	   60	 1396	 1731

@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.60)
-AC_INIT(FULL-PACKAGE-NAME, VERSION, BUG-REPORT-ADDRESS)
+AC_INIT([Apophenia], [X.XX], [fluffmail@f-m.fm])
 AM_INIT_AUTOMAKE(apophenia, X.XX)
 AC_CONFIG_SRCDIR([db.h])
 AC_CONFIG_HEADER([config.h])
@@ -77,8 +77,28 @@ ACX_PTHREAD
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
+echo \
+"-------------------------------------------------
 
-#The default is to produce line noise. Kill it.
+ ${PACKAGE_NAME} version ${PACKAGE_VERSION}
+
+ Prefix: '${prefix}'.
+ Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
+
+ Package features:
+   Python: ${enable_python}
+
+ Now type 'make @<:@<target>@:>@'
+   where the optional <target> is:
+     all                - build all binaries
+     install            - install everything
+     test               - test the installation
+     doc                - generate doxygen documentation
+
+--------------------------------------------------"
+
+
+#The default is to produce line noise. Clean it so that errors stand out.
 #Delete this if you want to see the full compilation commands
 sed -e 's/if $(\(COMPILE\|LIBTOOL\|LTCOMPILE\))/@echo "compiling $<"\n\t@if $(\1)/'  \
     -e 's/^\t\($(LINK)\)/\t@echo "compiling $<"\n\t@\1/'  \
