@@ -42,6 +42,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc
 
 #SWIG
+
 if HAVE_PYTHON
 python_PYTHON = apop.py
 

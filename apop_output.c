@@ -63,7 +63,7 @@ void apop_prep_output(char **output_file, FILE ** output_pipe, char *output_type
         *output_pipe = stdout; 
     else       
         *output_pipe = *output_file
-                        ? fopen(*output_file, output_append ? "a" : "w") 
+                        ? fopen(*output_file, *output_append == 'a' ? "a" : "w") 
                         : stdout;
 }
 
