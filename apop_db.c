@@ -384,11 +384,7 @@ double apop_query_to_float(const char * fmt, ...){
   double		out;
 	if (db==NULL) apop_db_open(NULL);
 	m	= apop_query_to_matrix("%s", query);
-	if (m==NULL){
-        if (apop_opts.verbose)
-		    printf("apop, %s, %i: Query turned up a blank table. Returning NAN.\n", __FILE__, __LINE__);
-		return GSL_NAN;
-	} //else
+    apop_assert(m, GSL_NAN, 1, 'c', "Query turned up a blank table. Returning NULL.");
 	out	= gsl_matrix_get(m, 0, 0);
 	gsl_matrix_free(m);
 	return out;

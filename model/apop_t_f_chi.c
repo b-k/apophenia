@@ -52,13 +52,13 @@ apop_model* apop_t_estimate(apop_data *d, apop_model *m){
     apop_model *out = apop_model_copy(*m);
     double vmu = vsize ? apop_mean(d->vector) : 0;
     double mmu = msize1 ? apop_matrix_mean(d->matrix) : 0;
-    double vsigma = vsize ? apop_var(d->vector)*(vsize-1) : 0;
-    double msigma = msize1 ? apop_matrix_var_m(d->matrix, mmu)*(msize1*msize2-1) : 0;
+    double v_sum_sq = vsize ? apop_var(d->vector)*(vsize-1) : 0;
+    double m_sum_sq = msize1 ? apop_matrix_var_m(d->matrix, mmu)*(msize1*msize2-1) : 0;
     apop_name_add(out->parameters->names, "mean", 'r');
     apop_name_add(out->parameters->names, "standard deviation",  'r');
     apop_name_add(out->parameters->names, "df", 'r');
     apop_data_set(out->parameters, 0, -1, (vmu *vsize + mmu * msize1*msize2)/tsize);
-    apop_data_set(out->parameters, 1, -1, (vsigma*vsize + msigma * msize1*msize2)/(tsize-1)); 
+    apop_data_set(out->parameters, 1, -1, sqrt((v_sum_sq*vsize + m_sum_sq * msize1*msize2)/(tsize-1))); 
     apop_data_set(out->parameters, 2, -1, tsize-1);
     apop_data_add_named_elmt(out->info, "log likelihood", out->log_likelihood(d, out));
     return out;

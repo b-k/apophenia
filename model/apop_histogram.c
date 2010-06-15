@@ -179,9 +179,28 @@ double kernel_p(apop_data *d, apop_model *m){
         (ks->set_fn)(r, ks->kernel);
         p += apop_p(d, ks->kernel);
     }
-    p /= len;
+    double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : len;
+    p /= weight;
     return p;
 }
 
+double kernel_cdf(apop_data *d, apop_model *m){
+    Get_vmsizes(d);
+    long double total = 0;
+    apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
+    apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->parameters;
+    int len = pmf_data->weights ? pmf_data->weights->size
+                                : pmf_data->vector ? pmf_data->vector->size
+                                                   : pmf_data->matrix->size1;
+    for (int k = 0; k < len; k++){
+        Apop_data_row(pmf_data, k, r);
+        (ks->set_fn)(r, ks->kernel);
+        total += apop_cdf(d, ks->kernel); //about the only line that differs from kernel_p
+    }
+    double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : len;
+    total /= weight;
+    return total;
+}
+
 apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
-	.estimate = apop_kernel_estimate, .p = kernel_p};
+	.estimate = apop_kernel_estimate, .p = kernel_p, .cdf=kernel_cdf};

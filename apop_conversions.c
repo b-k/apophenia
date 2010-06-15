@@ -422,10 +422,10 @@ If there are row names and column names, then the input will not be perfectly sq
 
 static int prep_text_reading(char *text_file, FILE **infile, regex_t *regex, regex_t *nan_regex){
   char		full_divider[1000], nan_string[500];
-    if (strcmp(text_file,"-"))
-	    *infile	= fopen(text_file,"r");
-    else
+    if (apop_strcmp(text_file, "-"))
         *infile  = stdin;
+    else
+	    *infile	= fopen(text_file, "r");
     apop_assert(infile, 0,  0, 'c', "Trouble opening %s. Returning NULL.\n", text_file);
 
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
@@ -459,7 +459,7 @@ static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
         asprintf(&out, "NULL");
     else if (strlen(tail)){	//then it's not a number.
 #ifdef HAVE_LIBSQLITE3 
-        char *out = sqlite3_mprintf("%Q", stripped);//extra checks for odd chars.
+        out = sqlite3_mprintf("%Q", stripped);//extra checks for odd chars.
 #else
         asprintf(&out, "\"%s\"",stripped);
 #endif

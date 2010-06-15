@@ -44,6 +44,7 @@ void apop_estimate_parameter_tests (apop_model *est){
 
         apop_data_set(one_elmt, 0, 0, 0);
         double zero = apop_cdf(one_elmt, m);
+        apop_model_free(m);
         double conf = 2*fabs(0.5-zero); //parameter is always at 0.5 along a symmetric CDF
         apop_data_set(ep, i, .colname="confidence", .val=conf);
         apop_data_set(ep, i, .colname="p value",            .val=1-conf);
@@ -138,7 +139,7 @@ apop_varad_head( apop_data * , apop_f_test ){
     gsl_matrix_free(qprimexpxinvq);
     gsl_vector_free(qprimebeta);
     gsl_vector_free(qprimebetaminusc_qprimexpxinvqinv);
-apop_data       *out        = apop_data_alloc(0,5,-1);
+apop_data       *out        = apop_data_alloc(5,1);
     sprintf(out->names->title, "F test");
     apop_data_add_named_elmt(out, "F statistic", f_stat);
     apop_data_add_named_elmt(out, "p value", pval);

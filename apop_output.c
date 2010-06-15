@@ -503,6 +503,8 @@ APOP_VAR_ENDHEAD
         apop_data_print_core(dtmp,  output_pipe, output_type);
         dtmp->matrix = NULL;
         apop_data_free(dtmp);
+        if (output_file)
+            fclose(output_pipe);
     }
 }
 

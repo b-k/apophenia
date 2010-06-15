@@ -488,10 +488,6 @@ A Kernel density is simply a smoothing of a histogram. At each point
 along the histogram, put a distribution (default: Normal(0,1)) on top
 of the point. Sum all of these distributions to form the output histogram.
 
-The output is a histogram that behaves exactly like the \ref apop_histogram model,
-except the histobase and kernelbase elements of the \ref
-apop_histogram_settings struct are set.
-
 Elements of \ref apop_kernel_density_settings that you may want to set:
 
 \li data    a data set, which, if  not \c NULL and \c !histobase , will be converted to a histogram.

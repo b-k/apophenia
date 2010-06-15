@@ -27,12 +27,12 @@ void apop_lm_settings_free(apop_lm_settings *in){
   with \ref Apop_model_add_group.  See \ref apop_lm_settings for the possible elements to set.
   */
 apop_lm_settings * apop_lm_settings_init(apop_lm_settings in){
-  apop_lm_settings *out  = calloc(1, sizeof(*out));
-    apop_varad_setting(in, out, want_cov, 'y');
-    apop_varad_setting(in, out, want_expected_value, 'y');
-    if (out->want_cov == 1) out->want_cov = 'y';
-    if (out->want_expected_value == 1) out->want_expected_value = 'y';
-    apop_varad_setting(in, out, input_distribution, apop_model_copy(apop_improper_uniform));
+  apop_lm_settings *out  = malloc(sizeof(*out));
+    *out = in;
+    if (out->want_cov == 1 || !out->want_cov) out->want_cov = 'y';
+    if (out->want_expected_value == 1 || !out->want_expected_value) out->want_expected_value = 'y';
+    if (!out->input_distribution) 
+       out->input_distribution = apop_model_copy(apop_improper_uniform);
     return out;
 }
 
@@ -94,7 +94,7 @@ This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.
  */
 static double ols_log_likelihood (apop_data *d, apop_model *p){ 
-  apop_assert(p->parameters, 0, 0,'s', "You asked me to evaluate an un-parametrized model. Returning zero.");
+  apop_assert_s(p->parameters, "You asked me to evaluate an un-parametrized model. Returning zero.");
   long double	ll  = 0; 
   long double      sigma, actual, weight;
   double expected, x_prob;
@@ -276,7 +276,7 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
     if (settings->index!=-1){
         int i = settings->index;
         double mu = apop_data_get(m->parameters, i, -1);
-        double sigma = sqrt(apop_data_get(m->parameters, i, i, .page="<Covariance>")/(d->vector->size-1));
+        double sigma = sqrt(apop_data_get(m->parameters, i, i, .page="<Covariance>"));
         int df = apop_data_get(m->info, .rowname="df", .page = "info");
         return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
     }

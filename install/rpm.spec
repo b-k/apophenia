@@ -8,7 +8,7 @@ Requires:     gsl, gsl-devel, sqlite3, sqlite3-devel
 Packager:     fluffmail@f-m.fm
 Summary:      A library of functions and models for scientific computing.
 Source:       PKGNAME
-BuildRoot:    /var/tmp/%{name}-buildroot
+BuildRoot:    %{buildroot}
 URL:          http://apophenia.info
 %description
  Apophenia is a library of functions and models for scientific computing.
@@ -25,6 +25,7 @@ make
 
 %install
 %makeinstall
+#DESTDIR={%buildroot} %makeinstall
 
 %files
 %defattr(-,root,root)

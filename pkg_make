@@ -26,6 +26,7 @@ auto:
 	mkdir $(workdir)
 	cp -rf `ls -I $(distdir)` $(workdir)
 	cd $(workdir) && cp install/* .
+	sed "s/PKGNAME/apophenia-$(version)-$(date).tgz/" < install/rpm.spec > $(workdir)/rpm.spec
 	cd $(workdir) && mv Readme.user README
 	cd $(workdir) && cp ChangeLog NEWS
 	cd $(workdir) && sed -i "s/X\.XX/$(version)/" README apop_db.c configure.ac

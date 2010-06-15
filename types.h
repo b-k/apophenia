@@ -99,7 +99,7 @@ typedef struct{
                 'f'   = to file
                 'd'   = to db. 
                 'p'   = to pipe (specifically, apop_opts.output_pipe). 
-             If 1 or 2, then you'll need to set output_name in the apop_..._print fn. default = 0. */
+             If 'f' or 'd', then you'll need to set output_name in the apop_..._print fn. default = 's'. */
     FILE *output_pipe; /**< If printing to a pipe or FILE, set it here.  */
     char output_delimiter[100]; /**< The separator between elements of output tables. The default is "\t", but 
                                 for LaTeX, use "&\t", or use "|" to get pipe-delimited output. */

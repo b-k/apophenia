@@ -672,16 +672,26 @@ return NULL;//the main function is blank.
 double apop_data_get_ti(const apop_data *in, const char* row, const int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(rownum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the row names.", row);
-    return (col >= 0) ? gsl_matrix_get(in->matrix, rownum, col)
-                      : gsl_vector_get(in->vector, rownum);
+    if (col >= 0){
+        apop_assert_s(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, col);
+        return gsl_matrix_get(in->matrix, rownum, col);
+    } else {
+        apop_assert_s(in->vector, "You asked me to get the %ith element of a NULL vector.", rownum);
+        return gsl_vector_get(in->vector, rownum);
+    }
 }
 
 /** \deprecated  use \ref apop_data_get */
 double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert(colnum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
-    return (colnum >= 0) ? gsl_matrix_get(in->matrix, row, colnum)
-                         : gsl_vector_get(in->vector, row);
+    if (colnum >= 0){
+        apop_assert_s(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", row, colnum);
+        return gsl_matrix_get(in->matrix, row, colnum);
+    } else {
+        apop_assert_s(in->vector, "You asked me to get the %ith element of a NULL vector.", row);
+        return gsl_vector_get(in->vector, row);
+    }
 }
 
 /** \deprecated  use \ref apop_data_get */
@@ -690,8 +700,13 @@ double apop_data_get_tt(const apop_data *in, const char *row, const char* col){
   int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert(colnum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
     apop_assert(rownum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the row names.", row);
-    return (colnum >= 0) ? gsl_matrix_get(in->matrix, rownum, colnum)
-                         : gsl_vector_get(in->vector, rownum);
+    if (colnum >= 0){
+        apop_assert_s(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, colnum);
+        return gsl_matrix_get(in->matrix, rownum, colnum);
+    } else {
+        apop_assert_s(in->vector, "You asked me to get the %ith element of a NULL vector.", rownum);
+        return gsl_vector_get(in->vector, rownum);
+    }
 }
 
 /** Returns the data element at the given point.

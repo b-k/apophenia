@@ -6,6 +6,8 @@ void test_distances(){
     gsl_vector_set(v1, 1,2);
     gsl_vector_set(v2, 0,5);
     gsl_vector_set(v2, 1,6);
+    assert(apop_vector_distance(v1, v1, 'd') == 0);     //discrete: if vectors are equal d==0;
+    assert(apop_vector_distance(v1, v2, 'd') == 1);     //          if vectors differ d ==1
     assert(apop_vector_distance(v1, NULL, 'm') == 4.);  //length of v1, Manhattan metric
     assert(apop_vector_distance(v1,v2) == 5.);          //the hypotenuse of the 3-4-5 triangle
     assert(apop_vector_distance(v2, NULL, 's') == 6);   //length of v2, sup norm

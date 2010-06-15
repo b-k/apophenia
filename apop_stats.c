@@ -478,11 +478,11 @@ apop_data * apop_data_summarize(apop_data *indata){
 			apop_name_add(out->names, rowname, 'r');
 		}
 	for (size_t i=0; i< indata->matrix->size2; i++){
-        APOP_MATRIX_COL(indata->matrix, i, v);
-        if (indata->weights){
+        Apop_matrix_col(indata->matrix, i, v);
+        if (!indata->weights){
             mean	= apop_vector_mean(v);
             var 	= apop_vector_var_m(v,mean);
-        } else{
+        } else {
             mean	= apop_vector_weighted_mean(v,indata->weights);
             var 	= apop_vector_weighted_var(v,indata->weights);
         } 
@@ -547,11 +547,9 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
     return (sumsq/len - gsl_pow_2(sum/len)) * len/(len -1.);
 }
 
-static double skewkurt(const gsl_vector *v, const gsl_vector *w, const int exponent, const char *fn_name){
+static double wskewkurt(const gsl_vector *v, const gsl_vector *w, const int exponent, const char *fn_name){
   int           i;
   long double   wsum = 0, sumcu = 0, vv, ww, mu;
-    if (!w)
-        return exponent ==3 ? apop_vector_skew(v) : apop_vector_kurtosis(v);
     apop_assert(v,  0, 0, 'c', "%s: data vector is NULL. Returning zero.\n", fn_name);
     apop_assert(v->size,  0, 1, 'c',"%s: data vector has size 0. Returning zero.\n", fn_name);
     apop_assert(w->size == v->size,  0, 1, 'c',"%s: data vector has size %zu; weighting vector has size %zu. Returning zero.\n", fn_name, v->size, w->size);
@@ -581,7 +579,7 @@ as standard weightings or to represent elements that appear repeatedly.
 \todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
 */
 double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w){
-    return skewkurt(v,w,3, "apop_vector_weighted_skew");
+    return wskewkurt(v,w,3, "apop_vector_weighted_skew");
 }
 
 /** Find the population kurtosis of a weighted vector.
@@ -592,7 +590,7 @@ double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w){
 \todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
 */
 double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w){
-    return skewkurt(v,w,4, "apop_vector_weighted_kurt");
+    return wskewkurt(v,w,4, "apop_vector_weighted_kurt");
 }
 
 /** Find the sample covariance of a pair of weighted vectors. This only

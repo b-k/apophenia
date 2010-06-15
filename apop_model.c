@@ -349,7 +349,7 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     }
 }
 
-/** draw from a model. If the model has its own RNG, then you're good to
+/** Draw from a model. If the model has its own RNG, then you're good to
  go; if not, use \ref apop_arms_draw to generate random draws.
 
 That function has a lot of caveats: most notably, the input data will
