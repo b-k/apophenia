@@ -6,7 +6,7 @@ features like a variance, skew, and kurtosis aggregator for SQL. */
 #include "stats.h"	    //t_dist
 #include "conversions.h"	//apop_strip_dots
 #include "variadic.h"
-#include <config.h>
+#include "config.h"
 
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= 
@@ -24,9 +24,7 @@ apop_opts_type apop_opts	=
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
-#ifdef HAVE_LIBSQLITE3 
 #include "apop_db_sqlite.c"
-#endif
 
 //This macro declares the query string and fills it from the printf part of the call.
 #define Fillin(query, fmt)          \
@@ -78,9 +76,7 @@ don't need to bother).
 \ingroup db
 */
 int apop_db_open(char *filename){
-#ifdef HAVE_LIBSQLITE3
     if (!db) //check the environment.
-#endif
 #ifdef HAVE_LIBMYSQLCLIENT
        if(!mysql_db)  
 #endif
@@ -93,11 +89,7 @@ int apop_db_open(char *filename){
 #else
         {apop_assert(0, 0, 0, 'c', "apop_db_open: Apophenia was compiled without mysql support.");}
 #endif
-#ifdef HAVE_LIBSQLITE3
         return apop_sqlite_db_open(filename);
-#else
-        {apop_assert(0, 0, 0, 'c', "Apophenia was compiled without sqlite support."); }
-#endif
 }
 
 typedef struct {
@@ -137,7 +129,6 @@ APOP_VAR_END_HEAD
 #else
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
 #endif
-#ifdef HAVE_LIBSQLITE3
   char 		*err, *q2;
   tab_exists_t te = { .name = name };
 	if (db==NULL) return 0;
@@ -150,7 +141,6 @@ APOP_VAR_END_HEAD
         free(q2);
     }
 	return te.isthere;
-#endif
 }
 
 /**
@@ -173,7 +163,6 @@ APOP_VAR_END_HEAD
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
     else{
-#ifdef HAVE_LIBSQLITE3
       char		*err;
         if (vacuum==1 || vacuum=='v') 
             sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
@@ -181,9 +170,6 @@ APOP_VAR_END_HEAD
         sqlite3_close(db);
         db  = NULL;
         return 0;
-#else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without SQLite support.")
-#endif
     }
 }
 
@@ -219,14 +205,10 @@ int apop_query(const char *fmt, ...){
         apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
     else 
-#ifdef HAVE_LIBSQLITE3
         {if (!db) apop_db_open(NULL);
         sqlite3_exec(db, q, NULL,NULL, &err);
 	    ERRCHECK
         }
-#else
-        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without SQLite support.")
-#endif
 	free(q);
 	return 1;
 }
@@ -248,14 +230,10 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 #else
         apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
-#ifdef HAVE_LIBSQLITE3
     return apop_sqlite_query_to_text(query);
-#else
-    apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without SQLite support.")
-#endif
 }
 
-//apop_query_to_matrix callback.
+//apop_query_to_data callback.
 static int db_to_table(void *qinfo, int argc, char **argv, char **column){
   int		i, ncfound = 0;
   callback_t *qi= qinfo ;
@@ -279,7 +257,7 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 		for (int jj=0;jj<argc;jj++)
             if (jj != namecol){
                 double valor = 
-                    !argv[jj] || !regexec(qi->regex, argv[jj], 1, qi->result, 0)
+                    !argv[jj] || apop_strcmp(argv[jj], "NULL")|| !regexec(qi->regex, argv[jj], 1, qi->result, 0)
 				     ? GSL_NAN : atof(argv[jj]);
                 gsl_matrix_set(qi->outdata->matrix,qi->currentrow,jj-ncfound, valor);
             } else {
@@ -304,20 +282,19 @@ apop_data * apop_query_to_data(const char * fmt, ...){
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
 
-#ifdef HAVE_LIBSQLITE3
+    //else
   char		    *err=NULL;
   char        full_divider[103];
   callback_t  qinfo = {.firstcall = 1,
                        .regex = malloc(sizeof(regex_t))};
 	if (db==NULL) apop_db_open(NULL);
     sprintf(full_divider, "^%s$", apop_opts.db_nan);
-    regcomp(qinfo.regex, full_divider, REG_EXTENDED+REG_ICASE);
+    regcomp(qinfo.regex, full_divider, REG_EXTENDED+REG_ICASE+REG_NOSUB);
     sqlite3_exec(db, query,db_to_table,&qinfo, &err); ERRCHECK
     regfree(qinfo.regex);
     free(qinfo.regex);
     free (query);
 	return qinfo.outdata;
-#endif
 }
 
 /** Queries the database, and dumps the result into a matrix.  */
@@ -379,7 +356,7 @@ double apop_query_to_float(const char * fmt, ...){
 #else
         apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
-#ifdef HAVE_LIBSQLITE3
+    //else
   gsl_matrix	*m=NULL;
   double		out;
 	if (db==NULL) apop_db_open(NULL);
@@ -388,7 +365,6 @@ double apop_query_to_float(const char * fmt, ...){
 	out	= gsl_matrix_get(m, 0, 0);
 	gsl_matrix_free(m);
 	return out;
-#endif
 }
 
 /** Query data to an \c apop_data set, but a mix of names, vectors, matrix elements, and text.
@@ -417,11 +393,8 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
         apop_error(0, 'c', "%s: Also, this function has only been written for SQLITE so far.\n", __func__);
         return 0;}
 #endif
-#ifdef HAVE_LIBSQLITE3
+    //else
     return apop_sqlite_multiquery(typelist, query);
-#else
-    apop_assert(0, 0, 0, 'c', "Apophenia was compiled without SQLite support.")
-#endif
 }
 
 /** \} end query group. */
@@ -547,9 +520,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
 #else 
         apop_assert_void(0, 0, 'c', "Apophenia was compiled without mysql support.")
 #endif
-    else
-#ifdef HAVE_LIBSQLITE3
-    {
+    else {
         if (db==NULL) apop_db_open(NULL);
         asprintf(&q, "create table %s (", tabname);
         if (use_row) {
@@ -576,9 +547,6 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
         }
         qxprintf(&q,"%s);  begin;",q);
     }
-#else
-        apop_assert(1, 0, 0, 'c', "Apophenia was compiled without SQLite support.")
-#endif
     int lim = set->vector ? set->vector->size : set->matrix->size1;
 	for(i=0; i< lim; i++){
         comma = ' ';
@@ -725,3 +693,5 @@ double	apop_db_paired_t_test(char * tab1, char *col1, char *col2){
 		        stat	= avg/ sqrt(var/(count-1));
 	return 2*GSL_MIN(gsl_cdf_tdist_P(stat, count-1),gsl_cdf_tdist_Q(stat, count-1));
 }
+
+

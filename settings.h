@@ -112,8 +112,7 @@ delta;
                                  they do this many iterations without finding an optimum. */
     int         verbose; /**<	Give status updates as we go.  This is orthogonal to the 
                                 <tt>apop_opts.verbose</tt> setting. */
-    char        want_cov; /**< Should I calculate a covariance matrix?  Default: 'y', but this can be the most 
-                                time-consuming part of the process. */
+    char        want_cov; /**< Deprecated. Please use \ref apop_parts_wanted_settings. */
     double      dim_cycle_tolerance; /**< If zero (the default), the usual procedure.
                              If \f$>0\f$, cycle across dimensions: fix all but the first dimension at the starting
                              point, optimize only the first dim. Then fix the all but the second dim, and optimize the
@@ -134,8 +133,8 @@ delta;
 typedef struct {
     int destroy_data; /**< If 'y', then the input data set may be normalized or otherwise mangled */
     apop_data *instruments; /**< Use for the \ref apop_iv regression, qv. */
-    char want_cov; /**< The covariance can be computationally expensive, so if this is \c 'n' I won't bother with it. */
-    char want_expected_value; /**< If 'y', fill the expected/actual/residual part of the output model. */
+    char want_cov; /**< Deprecated. Please use \ref apop_parts_wanted_settings. */
+    char want_expected_value; /**< Deprecated. Please use \ref apop_parts_wanted_settings. */
     apop_model *input_distribution; /**< The distribution of \f$P(Y|X)\f$ is specified by the model, but the distribution of \f$X\f$ is not.  */
 } apop_lm_settings;
 
@@ -150,6 +149,39 @@ typedef struct {
 typedef struct {
     char rank_data;
 } apop_rank_settings;
+
+/** The default is for the estimation routine to give some auxiliary information,
+  such as a covariance matrix, predicted values, and common hypothesis tests.
+  Some uses of a model depend on these items, but if they are a waste
+  of time for your purposes, this settings group gives a quick way to bypass them all.
+
+  Simply adding this settings group to your model without changing any default values---
+  \code
+  Apop_model_add_group(your_model, apop_parts_wanted);
+  \endcode
+  ---will turn off all of the auxiliary calculations covered, because the default value
+  for all the switches is <tt>'n'</tt>, indicating that all elements are not wanted.
+
+  From there, you can change some of the default <tt>'n'</tt>s to <tt>'y'</tt>s to retain some but not all auxiliary elements.  If you just want the parameters themselves and the covariance matrix:
+  \code
+  Apop_model_add_group(your_model, apop_parts_wanted, .covariance='y');
+  \endcode
+
+  \li Not all models support this, although the models with especially compute-intensive
+  auxiliary info do (e.g., the maximum likelihood estimation system). Check the model's documentation. 
+
+  \li Tests may depend on covariance, so <tt>.covariance='n', .tests='y'</tt> may be 
+  treated as <tt>.covariance='y', .tests='y'</tt>.
+
+*/
+typedef struct {
+    //init/copy/free are in apop_mle.c
+    char covariance;    /*< If 'y', calculate the covariance matrix. Default 'n'. */
+    char predicted;/*< If 'y', calculate the predicted values. This is typically as many
+                     items as rows in your data set. Default 'n'. */
+    char tests;/*< If 'y', run any hypothesis tests offered by the model's estimation routine. Default 'n'. */
+    char info;/*< If 'y', add an info table with elements such as log likelihood or AIC. Default 'n'. */
+} apop_parts_wanted_settings;
 
 /** Some CDFs use random draws; some use closed-form models. 
   \ingroup settings */
@@ -409,6 +441,7 @@ Apop_settings_declarations(apop_mle)
 Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_pm)
 Apop_settings_declarations(apop_rank)
+Apop_settings_declarations(apop_parts_wanted)
 
 #ifdef	__cplusplus
 }

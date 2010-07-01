@@ -10,6 +10,10 @@ a zero-length string.
 --apop_data_get_row lets you pull a view from a data set. [this was briefly the apop_data_row]
     ==>apop_data_set_rows, apop_data_rm_rows
         ==> apop_data_listwise_delete is fifty lines shorter.
+--apop_parts_wanted_settings: fixes some infinite loops (est needs parameter models ->
+    p.m. bootstraps for variances -> bootstrap runs estimate -> repeat) and allows
+    just-the-parameters estimation when you want it.
+--cleaned up build system, including an added RPM spec file
 
     April 2010
 --apop_t_distribution now has three parameters: mean, std dev, df. That is, it is based on un-normalized data.

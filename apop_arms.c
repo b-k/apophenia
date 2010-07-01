@@ -182,7 +182,7 @@ int initial (apop_arms_settings* params,  arms_state *env){
 }
 
 void invert(double prob, arms_state *env, POINT *p){
-/* to obtain a point corresponding to a qiven cumulative probability   
+/* to obtain a point corresponding to a given cumulative probability   
    prob    : cumulative probability under envelope   
    *env    : envelope attributes   
    *p      : a working POINT to hold the sampled value */
@@ -514,7 +514,7 @@ double area(POINT *q){
 
 double expshift(double y, double y0) {
 /* to exponentiate shifted y without underflow */
-  if(y - y0 > -2.0 * YCEIL)
+  if (y - y0 > -2.0 * YCEIL)
       return exp(y - y0 + YCEIL);
   else
       return 0.0;
@@ -527,7 +527,7 @@ double logshift(double y, double y0){
 
 double perfunc(apop_arms_settings *params, double x){
 // to evaluate log density and increment count of evaluations 
-    Staticdef( apop_data *, d , apop_data_alloc(1, 0, 0));
+    Staticdef( apop_data *, d , apop_data_alloc(1));
     d->vector->data[0] = x;
   double y = apop_log_likelihood(d, params->model);
   (params->neval)++; // increment count of function evaluations

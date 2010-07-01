@@ -132,21 +132,22 @@ APOP_VAR_ENDHEAD
              : part == 'a' ? apop_data_alloc(vsize, msize1, msize2)
              : part == 'r' ? apop_data_alloc(msize1, 0, 0)
              : part == 'c' ?  apop_data_alloc(msize2, 0, 0) : NULL;
-    //Names:
-    if (part == 'v'  || (in->vector && ! in->matrix)) {
-         apop_name_stack(out->names, in->names, 'v');
-         apop_name_stack(out->names, in->names, 'r');
+    if (in->names){
+        if (part == 'v'  || (in->vector && ! in->matrix)) {
+             apop_name_stack(out->names, in->names, 'v');
+             apop_name_stack(out->names, in->names, 'r');
+        }
+        else if (part == 'm'){
+             apop_name_stack(out->names, in->names, 'r');
+             apop_name_stack(out->names, in->names, 'c');
+        }
+        else if (by_apop_rows || part == 'a')
+             out->names = apop_name_copy(in->names);
+        else if (part == 'r')
+             apop_name_stack(out->names, in->names, 'r');
+        else if (part == 'c')
+            apop_name_stack(in->names, out->names, 'r', 'c');
     }
-    else if (part == 'm'){
-         apop_name_stack(out->names, in->names, 'r');
-         apop_name_stack(out->names, in->names, 'c');
-    }
-    else if (by_apop_rows || part == 'a')
-         out->names = apop_name_copy(in->names);
-    else if (part == 'r')
-         apop_name_stack(out->names, in->names, 'r');
-    else if (part == 'c')
-        apop_name_stack(in->names, out->names, 'r', 'c');
 
     //Call mapply_core.
     if (by_apop_rows){

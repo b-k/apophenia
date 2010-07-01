@@ -151,7 +151,7 @@ double apop_t_dist_constraint(apop_data *beta, apop_model *m){
                               .9, 0, 0, 1}; //.9 < df
     static apop_data *d_constr = NULL;
     if (!d_constr) d_constr = apop_line_to_data(constr, 2, 2, 3);
-    return apop_linear_constraint(beta->vector, d_constr);
+    return apop_linear_constraint(m->parameters->vector, d_constr);
 }
 
 /** The multivariate generalization of the Gamma distribution.

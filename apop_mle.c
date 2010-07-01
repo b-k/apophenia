@@ -39,6 +39,7 @@ typedef struct {
     char        *trace_path;
     FILE        **trace_file;
     double      best_ll;
+    char        want_cov, want_predicted, want_tests, want_info;
 }   infostruct;
 
 static apop_model * find_roots (infostruct p); //see end of file.
@@ -63,6 +64,23 @@ Below is a sample of the sort of output one would get:<br>
 */
 
 double default_delta = 1e-3;
+
+apop_parts_wanted_settings *apop_parts_wanted_settings_init(apop_parts_wanted_settings in){
+  apop_parts_wanted_settings *setme = malloc(sizeof(apop_parts_wanted_settings));
+    apop_varad_setting(in, setme, covariance, 'n');
+    apop_varad_setting(in, setme, predicted, 'n');
+    apop_varad_setting(in, setme, tests, 'n');
+    apop_varad_setting(in, setme, info, 'n');
+    return setme;
+}
+
+void *apop_parts_wanted_settings_copy(apop_parts_wanted_settings * in){
+    apop_parts_wanted_settings *setme = malloc(sizeof(apop_parts_wanted_settings));
+    *setme = *in;
+    return setme;
+}
+
+void apop_parts_wanted_settings_free(apop_parts_wanted_settings *in){ free(in); }
 
 /** Initialize an \ref apop_mle_settings struct. */
 apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
@@ -95,8 +113,8 @@ apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
     return apop_mle_settings_init((apop_mle_settings){.parent=parent}); }
 
 void *apop_mle_settings_copy(apop_mle_settings * in){
-  apop_mle_settings *setme = malloc(sizeof(apop_mle_settings));
-    memmove(setme, in, sizeof(apop_mle_settings));
+    apop_mle_settings *setme = malloc(sizeof(apop_mle_settings));
+    *setme = *in;
     return setme;
 }
 
@@ -339,7 +357,7 @@ static double negshell (const gsl_vector *beta, void * in){
                 out             = 0; 
   double 	(*f)(apop_data *, apop_model *);
     f   = i->model->log_likelihood? i->model->log_likelihood : i->model->p;
-    apop_assert(f, 0, 0, 's', "The model you sent to the MLE function has neither log_likelihood element nor p element.");
+    apop_assert_s(f, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
     apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
@@ -416,28 +434,31 @@ static void setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
 }
 
 static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
+  Get_vmsizes(params); //tsize = total # of parameters
   apop_model		        *est    = i->model; //just an alias.
-  apop_mle_settings          *mp    = apop_settings_get_group(est, apop_mle);
-    if (mp->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
+    if (i->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
         apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta));
-        apop_estimate_parameter_tests (est);
+        if (i->want_tests=='y')
+            apop_estimate_parameter_tests (est);
     }
-    int param_ct = (params->vector ? params->vector->size : 0)
-                   +(params->matrix ?  params->matrix->size1*params->matrix->size2 : 0);
-    if (!ll) //then sending function didn't save last value of f().
-        ll = apop_log_likelihood(i->data, i->model);
-    else 
-        ll = log(ll);
-    //else take ll at face value.
+    int param_ct = tsize;
+    if (i->want_info){
+        if (!ll) //then sending function didn't save last value of f().
+            ll = apop_log_likelihood(i->data, i->model);
+        else 
+            ll = log(ll);
+        //else take ll at face value.
 
-    if (!est->info)
-        est->info = apop_data_alloc(0,0,0);
-    apop_data_add_named_elmt(est->info, "status", status);
-    apop_data_add_named_elmt(est->info, "AIC", 2*param_ct - 2 *ll);
-    if (i->data){//some models have NULL data.
-        Get_vmsizes(i->data); //vsize, msize1, tsize
-        apop_data_add_named_elmt(est->info, "BIC by row", param_ct * log(msize1 ? msize1: vsize) - 2 *ll);
-        apop_data_add_named_elmt(est->info, "BIC by item", param_ct * log(tsize) - 2 *ll);
+        if (!est->info)
+            est->info = apop_data_alloc();
+        apop_data_add_named_elmt(est->info, "status", status);
+        apop_data_add_named_elmt(est->info, "log likelihood", ll);
+        apop_data_add_named_elmt(est->info, "AIC", 2*param_ct - 2 *ll);
+        if (i->data){//some models have NULL data.
+            Get_vmsizes(i->data); //vsize, msize1, tsize
+            apop_data_add_named_elmt(est->info, "BIC by row", param_ct * log(msize1 ? msize1: vsize) - 2 *ll);
+            apop_data_add_named_elmt(est->info, "BIC by item", param_ct * log(tsize) - 2 *ll);
+        }
     }
 }
 
@@ -609,6 +630,20 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est, infostruct info){
     return est;
 }
 
+void get_desires(apop_model *m, infostruct *info){
+    apop_parts_wanted_settings *want = apop_settings_get_group(m, apop_parts_wanted);
+    apop_mle_settings *ms = apop_settings_get_group(m, apop_mle);
+
+    info->want_tests = (want && want->tests =='y') ? 'y' : 'n';
+    info->want_cov = (info->want_tests || (want && want->covariance =='y') 
+            || (!want && ms && ms->want_cov =='y'))  //mle settings' want_cov only valid w/o parts_wanted
+            ? 'y' : 'n';
+    info->want_info = (want && want->info =='y') ? 'y' : 'n';
+
+    //doesn't do anything at the moment.
+    info->want_predicted = (want && want->predicted =='y') ? 'y' : 'n';
+}
+
 /** The maximum likelihood calculations
 
 \param data	The data matrix (an \ref apop_data set).
@@ -638,6 +673,7 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model *dist){
                             .use_constraint = 1,
                             .trace_file     = malloc(sizeof(FILE *)),
                             .model          = dist};
+    get_desires(dist, &info);
     info.beta = apop_data_pack(dist->parameters, NULL, .all_pages='y');
     setup_starting_point(mp, info.beta);
     *info.trace_file = NULL;

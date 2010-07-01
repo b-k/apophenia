@@ -1,5 +1,5 @@
 /** \file apop_db_sqlite.c
-This file is included directly into \ref apop_db.c. It is read only if APOP_USE_SQLITE is defined.
+This file is included directly into \ref apop_db.c.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
  */

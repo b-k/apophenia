@@ -4,6 +4,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 #include "model.h"
 #include "variadic.h"
+#include "internal.h"
 #include "likelihoods.h"
 
 /** Initialize a \c gsl_rng.
@@ -45,7 +46,7 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 \see{apop_bootstrap_cov}
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
-  apop_assert(in,  NULL, 0, 's', "You sent me NULL input data.");
+    Nullcheck_d(in)
   apop_model   *e              = apop_model_copy(model);
   int           i, n            = in->matrix->size1;
   apop_data     *subset         = apop_data_alloc(in->vector ? in->vector->size -1 : 0, n - 1, in->matrix->size2);
@@ -116,12 +117,15 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
         spare = apop_rng_alloc(++apop_opts.rng_seed);
     if (!rng)  rng = spare;
 APOP_VAR_END_HEAD
+    Get_vmsizes(data); //vsize, msize1, msize2
   apop_model        *e              = apop_model_copy(model);
   size_t	        i, j, row;
-  apop_data     *subset         = apop_data_alloc(data->vector ? data->vector->size : 0
-                                                    , data->matrix->size1, data->matrix->size2);
+  apop_data     *subset         = apop_data_alloc(vsize, msize1, msize2);
   apop_data         *array_of_boots = NULL,
                     *summary;
+    //prevent and infinite regression of covariance calculation.
+    Apop_model_add_group(e, apop_parts_wanted); //default wants for nothing.
+
 	for (i=0; i<iterations; i++){
 		//create the data set
 		for (j=0; j< data->matrix->size1; j++){

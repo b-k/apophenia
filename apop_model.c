@@ -95,11 +95,6 @@ void apop_model_show (apop_model * print_me){
     printf("\n\n");
 	if (print_me->parameters)
         apop_data_show(print_me->parameters);
-    apop_data *cov = apop_data_get_page(print_me->parameters, "<Covariance>");
-	if (cov){
-		printf("\nThe covariance matrix:\n");
-        apop_data_show(cov);
-	}
     if (print_me->info)
         apop_data_show(print_me->info);
 }

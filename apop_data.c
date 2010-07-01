@@ -227,11 +227,13 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                                  in->weights->size, out->weights->size);
         gsl_vector_memcpy(out->weights, in->weights);
     }
-    apop_name_free(out->names);
-    out->names = apop_name_alloc();
-    apop_name_stack(out->names, in->names, 'r');
-    apop_name_stack(out->names, in->names, 'c');
-    apop_name_stack(out->names, in->names, 't');
+    if (in->names){
+        apop_name_free(out->names);
+        out->names = apop_name_alloc();
+        apop_name_stack(out->names, in->names, 'r');
+        apop_name_stack(out->names, in->names, 'c');
+        apop_name_stack(out->names, in->names, 't');
+    }
     out->textsize[0] = in->textsize[0]; 
     out->textsize[1] = in->textsize[1]; 
     if (in->textsize[0] && in->textsize[1]){
@@ -686,10 +688,10 @@ double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert(colnum != -2,  GSL_NAN, 0,'c',"Couldn't find %s amongst the column names.", col);
     if (colnum >= 0){
-        apop_assert_s(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", row, colnum);
+        apop_assert_s(in->matrix, "You asked me to get the (%zu, %i) element of a NULL matrix.", row, colnum);
         return gsl_matrix_get(in->matrix, row, colnum);
     } else {
-        apop_assert_s(in->vector, "You asked me to get the %ith element of a NULL vector.", row);
+        apop_assert_s(in->vector, "You asked me to get the %zuth element of a NULL vector.", row);
         return gsl_vector_get(in->vector, row);
     }
 }
@@ -1073,7 +1075,7 @@ APOP_VAR_ENDHEAD
   by search routines, missing data routines, et cetera. This is achieved by a rule in \ref
   apop_data_pack and \ref apop_data_unpack.
 
-  Here is a silly example that establishes a baseline data set, adds a page,
+  Here is a toy example that establishes a baseline data set, adds a page,
   modifies it, and then later retrieves it.
   \code
   apop_data *d = apop_data_alloc(10, 10, 10); //the base data set.
@@ -1084,7 +1086,6 @@ APOP_VAR_ENDHEAD
   apop_data *retrieved = apop_data_get_page(d, "new"); //uses regexes, not literal match.
   apop_data_show(retrieved); //print a 2x2 grid of 3s.
   \endcode
-  \param
 */
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const char *title){
     apop_assert(newpage, NULL, '1', 'c', "You are adding a NULL page to a data set. Doing nothing; returning NULL.");

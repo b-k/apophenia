@@ -1,6 +1,6 @@
 /** \file 
 OLS models. Much of the real work is done in apop_regression.c.*/
-/* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "conversions.h"
@@ -35,9 +35,6 @@ apop_lm_settings * apop_lm_settings_init(apop_lm_settings in){
        out->input_distribution = apop_model_copy(apop_improper_uniform);
     return out;
 }
-
-/*apop_lm_settings * apop_lm_settings_alloc(apop_data *data){
-    return apop_lm_settings_init((apop_lm_settings){ }); }*/
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){

@@ -57,7 +57,7 @@ enum apop_lm_family{
     <tt> apop_data_get(est->parameters, .row=0, .colname="residual", .page= "Predicted").</tt><br>
 
     Also, I'll run \f$t\f$-tests on the hypothesis that each
-    parameter is different from zero, by running \ref apop_estimate_parameter_t_tests, qv.
+    parameter is different from zero, by running \ref apop_estimate_parameter_tests, qv.
                         */
     Prep_routine32, /**< Focuses on the data shunting. */
     RNG32, /**< Linear models are typically only partially defined probability

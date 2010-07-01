@@ -234,7 +234,7 @@ void test_listwise_delete(){
 void test_nan_data(){
     apop_text_to_db("test_data_nans", "nandata");
     strcpy(apop_opts.db_name_column, "head");
-    strcpy(apop_opts.db_nan, "\\.");
+    strcpy(apop_opts.db_nan, "(nan|\\.)");
   apop_data *d  = apop_query_to_data("select * from nandata");
     apop_opts.output_type ='d';//check that rownames come in OK, and NaNs written right.
     apop_data_print(d, "nantest");
@@ -244,7 +244,7 @@ void test_nan_data(){
     assert(gsl_isnan(apop_data_get_tt(d2,"third", "b")));
     assert(!apop_data_get_tt(d2,"fourth", "b"));
     apop_data_free(d2);
-    strcpy(apop_opts.db_nan, "XX");
+    strcpy(apop_opts.db_nan, "NaN");
 }
 
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){

@@ -5,6 +5,7 @@
 #include "conversions.h"
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <assert.h>
+#include <sqlite3.h>
 
 /** \defgroup conversions Conversion functions
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
@@ -395,18 +396,22 @@ point. E.g., try: \code
 		perl -pi.bak -e 's/,,/,NaN,/g' data_file
 \endcode
 
-If you have missing data delimiters, you will need to set \ref apop_opts_type "apop_opts.db_nan" to a regular expression that matches the given format. Some examples:
+If you have missing data delimiters, you will need to set \ref apop_opts_type "apop_opts.db_nan" to a regular expression that matches the given format. This will be a case insensitive ERE. Some examples:
 
 \code
-//Apophenia's default NaN string, matching NaN, nan, or NAN:
-strcpy(apop_opts.db_nan, "\\(NaN\\|nan\\|NAN\\)");
+//Apophenia's default NaN string, matching NaN, nan, or NAN, but not Nancy:
+strcpy(apop_opts.db_nan, "NaN");
 //Literal text:
 strcpy(apop_opts.db_nan, "Missing");
-//Literal text, capitalized or not:
-strcpy(apop_opts.db_nan, "[mM]issing");
 //Matches two periods. Periods are special in regexes, so they need backslashes.
+//If you forget the backslashes, this will match any two-character item.
 strcpy(apop_opts.db_nan, "\\.\\.");
+//Matches a period or NaN:
+strcpy(apop_opts.db_nan, "(NaN|\\.\\.)");
 \endcode
+
+SQLite stores these NaN-type values internally as \c NULL; that means that functions like
+\ref apop_query_to_data will convert both your db_nan regex and \c NULL to an \c NaN value.
 
 The system also uses the standards for C's atof() function for
 floating-point numbers: INFINITY, -INFINITY, and NaN work as expected.
@@ -433,51 +438,9 @@ static int prep_text_reading(char *text_file, FILE **infile, regex_t *regex, reg
 
     if (strlen(apop_opts.db_nan)){
         sprintf(nan_string, "^%s$", apop_opts.db_nan);
-        regcomp(nan_regex, nan_string, 0);
+        regcomp(nan_regex, nan_string, REG_ICASE+REG_EXTENDED+REG_NOSUB);
     }
     return 1;
-}
-
-/**
---If the string has zero length, then it's probably a missing value.
- --If the string isn't a number, it needs quotes, and SQLite wants 0.1,
-  not just .1. 
-  --It may be text with no "delimiters"
- */
-static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
-  regmatch_t  result[2];
-  char  *out	    = NULL,
-		*tail	    = NULL,
-		*stripped	= strip(astring);
-	if(strtod(stripped, &tail)) /*do nothing.*/;
-
-    if (!strlen(astring)){ //it's empty
-        out = malloc(1); 
-        out[0] ='\0';
-    } else if (!regexec(nan_regex, stripped, 1, result, 0) 
-                    || !strlen (stripped)) //nan_regex match or blank field = NaN.
-        asprintf(&out, "NULL");
-    else if (strlen(tail)){	//then it's not a number.
-#ifdef HAVE_LIBSQLITE3 
-        out = sqlite3_mprintf("%Q", stripped);//extra checks for odd chars.
-#else
-        asprintf(&out, "\"%s\"",stripped);
-#endif
-	} else {	    //number, but sqlite wants 0.1, not .1
-		assert(strlen (stripped)!=0);
-        if (isinf(atof(stripped))==1)
-			asprintf(&out, "9e9999999");
-        else if (isinf(atof(stripped))==-1)
-			asprintf(&out, "-9e9999999");
-        else if (gsl_isnan(atof(stripped)))
-			asprintf(&out, "0.0/0.0");
-        else if (stripped[0]=='.')
-			asprintf(&out, "0%s",stripped);
-		else
-            asprintf(&out, "%s", stripped);
-	}
-    free(stripped);
-    return out;
 }
 
 static int count_cols_in_row(char *instr, regex_t *regex, int *field_ends){
@@ -638,157 +601,6 @@ APOP_VAR_END_HEAD
         fclose(infile);
     regfree(&regex); regfree(&nan_regex);
 	return set;
-}
-
-static void tab_create_mysql(char *tabname, int ct, int has_row_names){
-  char  *q = NULL;
-    asprintf(&q, "CREATE TABLE %s", tabname);
-    for (int i=0; i<ct; i++){
-        if (i==0) 	{
-            if (has_row_names)
-                asprintf(&q, "%s (row_names varchar(100), ", q);
-            else
-                asprintf(&q, "%s (", q);
-        } else		asprintf(&q, "%s varchar(100) , ", q);
-        asprintf(&q, "%s %s", q, fn[i]);
-    }
-    asprintf(&q, "%s varchar(100) );", q);
-    apop_query("%s", q);
-    apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s\" failed.\n", q);
-    if (use_names_in_file){
-        for (int i=0; i<ct; i++)
-            free(fn[i]);
-        free(fn);
-        fn  = NULL;
-    }
-}
-
-static void tab_create(char *tabname, int ct, int has_row_names){
-  char  *r, *q = NULL;
-    asprintf(&q, "create table %s", tabname);
-    for (int i=0; i<ct; i++){
-        r = q;
-        if (i==0) 	{
-            if (has_row_names)
-                asprintf(&q, "%s (row_names, ", q);
-            else
-                asprintf(&q, "%s (", q);
-        } else		asprintf(&q, "%s' numeric, ", q);
-        free(r); r=q;
-        asprintf(&q, "%s '%s", q, fn[i]);
-        free(r);
-    }
-    apop_query("%s' numeric); begin;", q);
-    apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s' ); begin;\" failed.\n", q);
-    if (use_names_in_file){
-        for (int i=0; i<ct; i++)
-            free(fn[i]);
-        free(fn);
-        fn  = NULL;
-    }
-}
-
-static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t *nan_regex, int * field_ends){
-  int       length_of_string= strlen(instr),
-            prev_end    = 0, last_end    = 0, ctr = 0;
-  size_t    last_match  = 0;
-  char	    *prepped, comma = ' ';
-  char      *r, *q  = malloc(100+ strlen(tabname));
-  regmatch_t  result[2];
-    sprintf(q, "INSERT INTO %s VALUES (", tabname);
-    char outstr[length_of_string+1];
-    while (last_match < length_of_string 
-            && last_end < length_of_string-1
-            && !regexec(regex, instr+last_match, 2, result, 0)){
-        prev_end = last_end;
-        last_end = field_ends ? field_ends[ctr++] : 0;
-        pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
-        prepped	= prep_string_for_sqlite(outstr, nan_regex);
-        if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
-            r = q;
-            asprintf(&q, "%s%c %s", r, comma,  prepped);
-            free(r);
-            comma = ',';
-        } else {
-            char d = instr[last_match-1];
-            if (d!='\t' && d!='\r' && d!='\n' && d!=' '){
-                r = q;
-                asprintf(&q, "%s%cNULL", r, comma);
-                free(r);
-                comma = ',';
-            }
-        }
-        free(prepped);
-    }
-    apop_query("%s);",q); 
-    free (q);
-}
-
-/** Read a text file into a database table.
-
-  See \ref text_format.
-
-Using the data set from the example on the \ref apop_ols page, here's another way to do the regression:
-
-\include ols.c
-
-By the way, there is a begin/commit wrapper that bundles the process into bundles of 2000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.
-
-\param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
-\param tabname      The name to give the table in the database (default
-= <tt> apop_strip_dots (text_file, 'd')</tt>; default in Python/R interfaces="t")
-\param has_row_names Does the lines of data have row names? (default = 0)
-\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1)
-\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
-\param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
-
-\return Returns the number of rows.
-This function uses the \ref designated syntax for inputs.
-\ingroup conversions
-*/
-APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends){
-    char *apop_varad_var(text_file, "-")
-    char *apop_varad_var(tabname, apop_strip_dots(text_file, 'd'))
-    int apop_varad_var(has_row_names, 0)
-    int apop_varad_var(has_col_names, 1)
-    int *apop_varad_var(field_ends, NULL)
-    char ** apop_varad_var(field_names, NULL)
-APOP_VAR_END_HEAD
-  int       batch_size  = 2000,
-      		ct, rows    = 0;
-  FILE * 	infile;
-  char		*q  = NULL, *instr, *add_this_line=NULL;
-  regex_t   regex, nan_regex;
-
-    if(!prep_text_reading(text_file, &infile, &regex, &nan_regex))
-        return 0;
-	use_names_in_file   = 0;    //file-global.
-
-	apop_assert(!apop_table_exists(tabname,0), 0, 0, 'c', "table %s exists; not recreating it.", tabname);
-    ct  = get_field_names(has_col_names, field_names, infile, text_file, &regex, &add_this_line, field_ends);
-    if (apop_opts.db_engine=='m')
-        tab_create_mysql(tabname, ct, has_row_names);
-    else
-        tab_create(tabname, ct, has_row_names);
-    //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
-    ct  = 0;
-	while((instr=add_this_line) || (instr= read_a_line(infile, text_file))!=NULL){
-		if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
-			rows ++;
-            line_to_insert(instr, tabname, &regex, &nan_regex, field_ends);
-            if (!(ct++ % batch_size)){
-                if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
-                if (apop_opts.verbose >= 0) {printf(".");fflush(NULL);}
-            }
-		}
-        add_this_line = NULL;
-	}
-	if (apop_opts.db_engine != 'm') apop_query("commit;");
-    if (strcmp(text_file,"-"))
-	    fclose(infile);
-    free(q);
-    regfree(&regex); regfree(&nan_regex);
-	return rows;
 }
 
 
@@ -1022,7 +834,7 @@ gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
 }
 
 
-/** Now that you've used \ref apop_data_row to pull a row from an \ref apop_data set,
+/** Now that you've used \ref Apop_data_row to pull a row from an \ref apop_data set,
   this function lets you write that row to another position in the same data set or a
   different data set entirely.  
 
@@ -1061,4 +873,232 @@ void apop_data_set_row(apop_data * d, apop_data *row, int row_number){
                 "an apop_data set with no weights vector.");
         gsl_vector_set(d->weights, row_number, row->weights->data[0]);
     }
+}
+
+
+
+///////The rest of this file is for apop_text_to_db
+extern sqlite3 *db;
+
+static void tab_create_mysql(char *tabname, int ct, int has_row_names){
+  char  *q = NULL;
+    asprintf(&q, "CREATE TABLE %s", tabname);
+    for (int i=0; i<ct; i++){
+        if (i==0) 	{
+            if (has_row_names)
+                asprintf(&q, "%s (row_names varchar(100), ", q);
+            else
+                asprintf(&q, "%s (", q);
+        } else		asprintf(&q, "%s varchar(100) , ", q);
+        asprintf(&q, "%s %s", q, fn[i]);
+    }
+    asprintf(&q, "%s varchar(100) );", q);
+    apop_query("%s", q);
+    apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s\" failed.\n", q);
+    if (use_names_in_file){
+        for (int i=0; i<ct; i++)
+            free(fn[i]);
+        free(fn);
+        fn  = NULL;
+    }
+}
+
+static void tab_create(char *tabname, int ct, int has_row_names){
+  char  *r, *q = NULL;
+    asprintf(&q, "create table %s", tabname);
+    for (int i=0; i<ct; i++){
+        r = q;
+        if (i==0) 	{
+            if (has_row_names)
+                asprintf(&q, "%s (row_names, ", q);
+            else
+                asprintf(&q, "%s (", q);
+        } else		asprintf(&q, "%s' numeric, ", q);
+        free(r); r=q;
+        asprintf(&q, "%s '%s", q, fn[i]);
+        free(r);
+    }
+    apop_query("%s' numeric); begin;", q);
+    apop_assert_s(apop_table_exists(tabname, 0), "query \"%s' ); begin;\" failed.\n", q);
+    if (use_names_in_file){
+        for (int i=0; i<ct; i++)
+            free(fn[i]);
+        free(fn);
+        fn  = NULL;
+    }
+}
+
+/**
+--If the string has zero length, then it's probably a missing value.
+ --If the string isn't a number, it needs quotes, and SQLite wants 0.1,
+  not just .1. 
+  --It may be text with no "delimiters"
+ */
+static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
+  regmatch_t  result[2];
+  char  *out	    = NULL,
+		*tail	    = NULL,
+		*stripped	= strip(astring);
+	if(strtod(stripped, &tail)) /*do nothing.*/;
+
+    if (!strlen(astring)){ //it's empty
+        out = malloc(1); 
+        out[0] ='\0';
+    } else if (!regexec(nan_regex, stripped, 1, result, 0) 
+                    || !strlen (stripped)) //nan_regex match or blank field = NaN.
+        asprintf(&out, "NULL");
+    else if (strlen(tail)){	//then it's not a number.
+/*        char *sqlout = sqlite3_mprintf("%Q", stripped);//extra checks for odd chars.
+        out = strdup(sqlout);
+        sqlite3_free(sqlout);*/
+        out = strdup(astring);
+	} else {	    //number, but sqlite wants 0.1, not .1
+		assert(strlen (stripped)!=0);
+        if (isinf(atof(stripped))==1)
+			asprintf(&out, "9e9999999");
+        else if (isinf(atof(stripped))==-1)
+			asprintf(&out, "-9e9999999");
+        else if (gsl_isnan(atof(stripped)))
+			asprintf(&out, "0.0/0.0");
+        else if (stripped[0]=='.')
+			asprintf(&out, "0%s",stripped);
+		else
+            asprintf(&out, "%s", stripped);
+	}
+    free(stripped);
+    return out;
+}
+
+static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t *nan_regex, int * field_ends,
+                            sqlite3_stmt *p_stmt, int row){
+  int       length_of_string= strlen(instr),
+            prev_end    = 0, last_end    = 0, ctr = 0, field = 1;
+  size_t    last_match  = 0;
+  char	    *prepped, comma = ' ';
+  char      *r, *q  = malloc(100+ strlen(tabname));
+  regmatch_t  result[2];
+    sprintf(q, "INSERT INTO %s VALUES (", tabname);
+    char outstr[length_of_string+1];
+    while (last_match < length_of_string 
+            && last_end < length_of_string-1
+            && !regexec(regex, instr+last_match, 2, result, 0)){
+        prev_end = last_end;
+        last_end = field_ends ? field_ends[ctr++] : 0;
+        pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
+        prepped	= prep_string_for_sqlite(outstr, nan_regex);
+        if (p_stmt){
+            if (sqlite3_bind_text(p_stmt, field++, prepped,-1, SQLITE_TRANSIENT))
+                printf("Something wrong on line %i.\n", row);
+        } else {
+            if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
+                r = q;
+                asprintf(&q, "%s%c %s", r, comma,  prepped);
+                free(r);
+                comma = ',';
+            } else {
+                char d = instr[last_match-1];
+                if (d!='\t' && d!='\r' && d!='\n' && d!=' '){
+                    r = q;
+                    asprintf(&q, "%s%cNULL", r, comma);
+                    free(r);
+                    comma = ',';
+                }
+            }
+        }
+        free(prepped);
+    }
+    if (!p_stmt){
+        apop_query("%s);",q); 
+        free (q);
+    }
+}
+
+/** Read a text file into a database table.
+
+  See \ref text_format.
+
+Using the data set from the example on the \ref apop_ols page, here's another way to do the regression:
+
+\include ols.c
+
+By the way, there is a begin/commit wrapper that bundles the process into bundles of 5000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code. 
+
+\param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
+\param tabname      The name to give the table in the database (default
+= <tt> apop_strip_dots (text_file, 'd')</tt>; default in Python/R interfaces="t")
+\param has_row_names Does the lines of data have row names? (default = 0)
+\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1)
+\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
+\param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
+
+\return Returns the number of rows.
+This function uses the \ref designated syntax for inputs.
+\ingroup conversions
+*/
+APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends){
+    char *apop_varad_var(text_file, "-")
+    char *apop_varad_var(tabname, apop_strip_dots(text_file, 'd'))
+    int apop_varad_var(has_row_names, 0)
+    int apop_varad_var(has_col_names, 1)
+    int *apop_varad_var(field_ends, NULL)
+    char ** apop_varad_var(field_names, NULL)
+APOP_VAR_END_HEAD
+  int       batch_size  = 5000,
+      		col_ct, ct = 0, rows    = 0;
+  FILE * 	infile;
+  char		*q  = NULL, *instr, *add_this_line=NULL;
+  sqlite3_stmt * statement = NULL;
+  regex_t   regex, nan_regex;
+
+    if(!prep_text_reading(text_file, &infile, &regex, &nan_regex))
+        return 0;
+	use_names_in_file   = 0;    //file-global.
+
+	apop_assert(!apop_table_exists(tabname,0), 0, 0, 'c', "table %s exists; not recreating it.", tabname);
+    col_ct  = get_field_names(has_col_names, field_names, infile, text_file, &regex, &add_this_line, field_ends);
+    if (apop_opts.db_engine=='m')
+        tab_create_mysql(tabname, col_ct, has_row_names);
+    else
+        tab_create(tabname, col_ct, has_row_names);
+    int use_sqlite_prepared_statements = !(apop_opts.db_engine == 'm' || col_ct > 999); //There's an arbitrary SQLite limit on blanks in prepared statements.
+    if (use_sqlite_prepared_statements){
+        asprintf(&q, "INSERT INTO %s VALUES (?", tabname);
+        for (int i = 1; i < col_ct; i++){
+            char *r = q;
+            asprintf(&q, "%s, ?", r);
+            free(r);
+        }
+        char *r = q;
+        asprintf(&q, "%s)", r);
+        free(r);
+        sqlite3_prepare_v2(db, q, -1, &statement, NULL);
+    }
+
+    //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
+	while((instr=add_this_line) || (instr= read_a_line(infile, text_file))!=NULL){
+		if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
+			rows ++;
+            line_to_insert(instr, tabname, &regex, &nan_regex, field_ends, statement, rows);
+            if (!(ct++ % batch_size)){
+                if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
+                if (apop_opts.verbose >= 0) {printf(".");fflush(NULL);}
+            }
+            if (use_sqlite_prepared_statements) {
+                int err;
+                err=sqlite3_step(statement);
+                if (err!=0 && err != 101) //0=ok, 101=done
+                    printf("sqlite insert query gave error code %i. Go look that up.\n", err);
+                sqlite3_reset(statement);
+            }
+		}
+        add_this_line = NULL;
+	}
+    apop_query("commit;");
+	if (use_sqlite_prepared_statements) 
+        sqlite3_finalize(statement);
+    if (strcmp(text_file,"-"))
+	    fclose(infile);
+    free(q);
+    regfree(&regex); regfree(&nan_regex);
+	return rows;
 }
