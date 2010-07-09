@@ -8,6 +8,7 @@
  See also the goodness of fit tests in \ref histograms.
  */
 
+#include "output.h"
 #include "model.h"
 #include "internal.h"
 #include "settings.h"
@@ -42,7 +43,6 @@ void apop_estimate_parameter_tests (apop_model *est){
         apop_model_add_group(est, apop_pm, .index=i);
         apop_model *m = apop_parameter_model(est->data, est);
 
-        apop_data_set(one_elmt, 0, 0, 0);
         double zero = apop_cdf(one_elmt, m);
         apop_model_free(m);
         double conf = 2*fabs(0.5-zero); //parameter is always at 0.5 along a symmetric CDF
@@ -69,19 +69,92 @@ void apop_estimate_parameter_tests (apop_model *est){
 
 This function uses the \ref designated syntax for inputs.
  */
-#ifdef APOP_NO_VARIADIC 
- apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
-#else
-apop_varad_head( apop_data * , apop_f_test ){
+
+APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
     apop_model *apop_varad_var(est, NULL)
     Nullcheck_m(est);
     apop_data * apop_varad_var(contrast, NULL)
     int apop_varad_var(normalize, 0)
-	return apop_f_test_base(est, contrast, normalize);
+APOP_VAR_ENDHEAD
+    apop_data      *set        = est->data;
+    gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
+    apop_data      *data       = normalize ?  set : apop_data_copy(set);
+    apop_data      *xpxinv     = apop_data_alloc();
+    size_t          contrast_ct;
+    if (contrast)
+        contrast_ct =  contrast->vector ? contrast->vector->size 
+                                        : contrast->matrix->size1;
+    else contrast_ct = est->parameters->vector->size;
+    apop_data       *qprimebeta;
+    apop_data       *qprimexpxinvqinv = apop_data_alloc();
+    double          f_stat, variance, pval;
+    int             q_df,
+                    data_df     = set->matrix->size1 - est->parameters->vector->size;
+
+    /*if (set->matrix->size2 > 1){
+        Apop_submatrix(set->matrix, 0, 1, data->matrix->size1, data->matrix->size2-1, allbutones);
+        apop_matrix_normalize(allbutones, 'c', 'm');
+    }
+    */
+    apop_matrix_normalize(data->matrix, 'c', 'm');
+    apop_data *xpx2 = apop_dot(data, data, .form1='t');
+    apop_data_show(est->parameters);
+    apop_data_show(xpx2);
+    //if (q){
+    //    Apop_col(data, 0, v);
+    //    gsl_vector_set_all(v, 1);
+    //}
+    apop_data *xpx = apop_dot(data, data, .form1='t');
+    apop_data_show(xpx);
+    if (!normalize)
+        apop_data_free(data);
+    if (q != NULL){
+        q_df    = q->size1;
+        xpxinv->matrix = apop_matrix_inverse(xpx->matrix);
+        apop_data *qprimexpxinv = apop_dot(contrast, xpxinv, 'm', 'm');
+        apop_data *qprimexpxinvq = apop_dot(qprimexpxinv, contrast, 'm', 't');
+	    qprimexpxinvqinv->matrix = apop_matrix_inverse(qprimexpxinvq->matrix);		
+        apop_data_free(qprimexpxinvq);
+        apop_data_free(qprimexpxinv);
+        qprimebeta = apop_dot(contrast, est->parameters, 'm', 'v');
+    } else {
+        q_df    = est->parameters->vector->size;
+        qprimexpxinvqinv->matrix = apop_matrix_copy(xpx->matrix);
+        qprimebeta = apop_data_copy(est->parameters);
+    }
+    if (contrast && contrast->vector)
+        gsl_vector_sub(qprimebeta->vector, contrast->vector);  //else, c=0, so this is a no-op.
+     apop_data *qprimebetaminusc_qprimexpxinvqinv = apop_dot(qprimexpxinvqinv, qprimebeta, .form2='v');
+    gsl_blas_ddot(qprimebeta->vector, qprimebetaminusc_qprimexpxinvqinv->vector, &f_stat);
+    apop_data_free(xpx); apop_data_free(xpxinv);
+    apop_data_free(qprimexpxinvqinv); apop_data_free(qprimebeta);
+    apop_data_free(qprimebetaminusc_qprimexpxinvqinv);
+
+    Apop_col_t(apop_data_get_page(est->info, "<Predicted>"), "residual", error)
+    gsl_blas_ddot(error, error, &variance);
+    f_stat  *=  data_df / (variance * q_df);
+    pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
+
+apop_data       *out        = apop_data_alloc(5,1);
+    sprintf(out->names->title, "F test");
+    apop_data_add_named_elmt(out, "F statistic", f_stat);
+    apop_data_add_named_elmt(out, "p value", pval);
+    apop_data_add_named_elmt(out, "confidence", 1- pval);
+    apop_data_add_named_elmt(out, "df1", q_df);
+    apop_data_add_named_elmt(out, "df2", data_df);
+    return out;
 }
 
- apop_data * apop_f_test_base(apop_model *est, apop_data *contrast, int normalize){
-#endif
+/*
+  65  234 3297
+  61  221 2988
+  59  215 2862
+APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
+    apop_model *apop_varad_var(est, NULL)
+    Nullcheck_m(est);
+    apop_data * apop_varad_var(contrast, NULL)
+    int apop_varad_var(normalize, 0)
+APOP_VAR_ENDHEAD
     gsl_matrix      *set        = est->data->matrix;
     gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
     gsl_vector      *c          = contrast ? contrast->vector: NULL;
@@ -148,6 +221,7 @@ apop_data       *out        = apop_data_alloc(5,1);
     apop_data_add_named_elmt(out, "df2", data_df);
     return out;
 }
+*/
 
 
 //Cut and pasted from the GNU std library documentation:
@@ -372,10 +446,7 @@ Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a referen
 
 This function uses the \ref designated syntax for inputs.
 */
-#ifdef APOP_NO_VARIADIC 
- apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
-#else
-apop_varad_head( apop_data * , apop_data_to_dummies){
+APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
     apop_data *apop_varad_var(d, NULL)
     apop_assert(d, NULL, 0, 'c', "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
     int apop_varad_var(col, 0)
@@ -383,11 +454,7 @@ apop_varad_head( apop_data * , apop_data_to_dummies){
     int apop_varad_var(keep_first, 0)
     char apop_varad_var(append, 'n')
     char apop_varad_var(remove, 'n')
-	return apop_data_to_dummies_base(d, col, type, keep_first, append, remove);
-}
-
- apop_data * apop_data_to_dummies_base(apop_data *d, int col, char type, int keep_first, char append, char remove){
-#endif
+APOP_VAR_ENDHEAD
     if (type == 'd'){
         apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
                                                     "(col==-1) but the data's vector element is NULL.");
@@ -462,26 +529,19 @@ original values as needed.
 Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
 */
-#ifdef APOP_NO_VARIADIC 
- apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
-#else
-apop_varad_head( apop_data *, apop_data_to_factors){
+APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
     apop_data *apop_varad_var(data, NULL)
     apop_assert(data, NULL, 0, 'c', "You sent me a NULL data set. Returning NULL.")
     int apop_varad_var(incol, 0)
     int apop_varad_var(outcol, 0)
     char apop_varad_var(intype, 't')
-	return apop_data_to_factors_base(data, intype, incol, outcol);
-}
-
- apop_data *apop_data_to_factors_base(apop_data *data, char intype, int incol, int outcol){
-#endif
+APOP_VAR_ENDHEAD
     if (intype=='t'){
-        apop_assert_void(incol < data->textsize[1], 0, 's', "You asked for the text column %i but the "
+        apop_assert_s(incol < data->textsize[1], "You asked for the text column %i but the "
                                             "data's text has only %i elements.", incol, data->textsize[1]);
     } else {
-        apop_assert_void((incol != -1) || data->vector, 0, 's', "You asked for the vector of the data set but there is none.");
-        apop_assert_void((incol == -1) || (incol < data->matrix->size2), 0, 's', "You asked for the matrix column %i but "
+        apop_assert_s((incol != -1) || data->vector, "You asked for the vector of the data set but there is none.");
+        apop_assert_s((incol == -1) || (incol < data->matrix->size2), "You asked for the matrix column %i but "
                                             "the matrix has only %zu elements.", incol, data->matrix->size2);
     }
     if (!data->vector && outcol == -1) //allocate a vector for the user.

@@ -10,18 +10,6 @@
 #include <gsl/gsl_sf_zeta.h>
 #include "internal.h"
 
-static double zrank_apply(double in, int k) { return in * log(k+1); }
-
-//There are two versions: the rank version and the non-rank. Here's
-//Rank's fns:
-static double zipf_log_likelihood_rank(const apop_data *d, apop_model *m){
-  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-  long double  a       = gsl_vector_get(m->parameters->vector, 0);
-  long double like = -a * apop_map_sum((apop_data *)d, .fn_di=zrank_apply, .part ='c');
-    like    -= log(gsl_sf_zeta(a)) * d->matrix->size1 * d->matrix->size2;
-    return like;
-}    
-
 static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1
   Nullcheck_m(m); Nullcheck_p(m);
@@ -37,8 +25,6 @@ static double beta_greater_than_x_constraint(apop_data *returned_beta, apop_mode
 static double zipf_log_likelihood(apop_data *d, apop_model *m){
   Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-    if (apop_settings_get_group(m, apop_rank))
-        return zipf_log_likelihood_rank(d, m);
   long double   bb      = gsl_vector_get(m->parameters->vector, 0);
   double like = -apop_map_sum(d, log);
     like    *= bb;

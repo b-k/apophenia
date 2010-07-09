@@ -741,6 +741,7 @@ void test_binomial(gsl_rng *r){
     common_binomial_bit(outm, n, p);
     apop_data_free(d);
 
+    /*
     p = gsl_rng_uniform(r);
     n  = gsl_ran_flat(r,1,4e4);
     d = apop_data_calloc(0,n,2);
@@ -760,6 +761,7 @@ void test_binomial(gsl_rng *r){
     Apop_settings_add_group(mint, apop_rank, NULL);
     out = apop_estimate(d, *mint);
     common_binomial_bit(out, n, p);
+    */
     apop_data_free(d);
 }
 
@@ -1173,38 +1175,6 @@ void test_distributions(gsl_rng *r){
     }
 }
 
-void test_rank_distributions(gsl_rng *r){
-  int         i, j, k;
-  long int        runsize             = 1000,
-                  rowsize             = 100;
-  double          index;
-  apop_model* true_params;
-  apop_model  null_model      = {"the null model"};
-  apop_model  dist[]          = {apop_gamma, apop_zipf, apop_yule, null_model};
-
-    for (i=0; strcmp(dist[i].name, "the null model"); i++){
-        if (verbose) {printf("%s: ", dist[i].name); fflush(NULL);}
-        true_params   = apop_model_copy(dist[i]);
-        true_params->parameters = apop_line_to_data(true_parameter_v, dist[i].vbase==1 ? 1 : 2,0,0);
-        //generate.
-        apop_data *data = apop_data_calloc(0,runsize,rowsize);
-            for (k=0; k< runsize; k++)
-                for (j=0; j< 1e3; j++){ 
-                    apop_draw(&index, r, true_params);
-                    if (index <= rowsize)
-                        apop_matrix_increment(data->matrix,k,index);
-                }
-        //estimate.
-        Apop_model_add_group(dist+i, apop_rank)
-        estimate_model(data, dist+i,APOP_SIMPLEX_NM, true_params->parameters);
-        estimate_model(data, dist+i,APOP_CG_PR, true_params->parameters);
-        apop_data_free(data);
-        apop_settings_rm_group(dist+i, apop_rank);
-        //    estimate_model(data, model,APOP_SIMAN); //works, but takes forever.
-        printf("Passed.\n");
-    }
-}
-
 void test_pmf(){
    double x[] = {0, 0.2, 0 , 0.4, 1, .7, 0 , 0, 0};
    size_t i;
@@ -1283,7 +1253,6 @@ int main(int argc, char **argv){
     do_test("test distributions", test_distributions(r));
     do_test("default RNG", test_default_rng(r));
     do_test("log and exponent", log_and_exp(r));
-    do_test("test rank distributions", test_rank_distributions(r));
     do_test("test printing", test_printing());
     do_test("test row set and remove", row_manipulations(r));
     do_test("test apop_map on apop_data_rows", test_apop_map_row());

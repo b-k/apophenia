@@ -8,47 +8,6 @@
 #include "internal.h"
 #include "likelihoods.h"
 
-static double gamma_rank_log_likelihood(apop_data *d, apop_model *p){
-  Nullcheck_m(p); Nullcheck_p(p);
-  float           a           = gsl_vector_get(p->parameters->vector, 0),
-                  b           = gsl_vector_get(p->parameters->vector, 1);
-    apop_assert(a>0 && b>0, 0, 0,'c', "The Gamma's log likelihood needs positive params, and you gave me %g and %g. Returning zero.", a, b);
-    if (gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
-  gsl_matrix      *data       = d->matrix;
-  double          llikelihood = 0,
-                  ln_ga       = gsl_sf_lngamma(a),
-                  a_ln_b      = a * log(b),
-                  ln_k;
-  gsl_vector      v;
-    for (size_t k=0; k< data->size2; k++){
-            ln_k            = log(k+1);
-            v               = gsl_matrix_column(data, k).vector;
-            llikelihood    += apop_sum(&v) * (-ln_ga - a_ln_b + (a-1) * ln_k  - (k+1)/b);
-        }
-    return llikelihood;
-}
-
-static void gamma_rank_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_m(p); Nullcheck_p(p);
-  double          a       = gsl_vector_get(p->parameters->vector, 0),
-                  b       = gsl_vector_get(p->parameters->vector, 1);
-  gsl_matrix     *data    = d->matrix;
-  double          d_a     = 0,
-                  d_b     = 0,
-                  psi_a   = gsl_sf_psi(a),
-                  ln_b    = log(b),
-                  x, ln_k;
-    for (size_t k=0; k< data->size2; k++){
-        ln_k    = log(k +1);
-        Apop_col(d, k, v);
-        x       = apop_sum(v);
-        d_a    += x * (-psi_a - ln_b + ln_k);
-        d_b    += x * (a/b - (k+1)/gsl_pow_2(b));
-    }
-    gsl_vector_set(gradient,0, d_a);
-    gsl_vector_set(gradient,1, d_b);
-}
-
 static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-5);
@@ -65,8 +24,6 @@ static double gamma_log_likelihood(apop_data *d, apop_model *p){
   Nullcheck_m(p) 
   Nullcheck_p(p) 
   Get_vmsizes(d)
-    if (apop_settings_get_group(p, apop_rank))
-        return gamma_rank_log_likelihood(d, p);
   abstruct ab = {
       .a    = gsl_vector_get(p->parameters->vector, 0),
       .b    = gsl_vector_get(p->parameters->vector, 1)
@@ -90,8 +47,6 @@ static double b_callback(double x, void *abv){
 
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   Nullcheck_p(p) 
-    if (apop_settings_get_group(p, apop_rank))
-       return gamma_rank_dlog_likelihood(d, gradient, p);
   double       	a    	= gsl_vector_get(p->parameters->vector, 0),
         		b    	= gsl_vector_get(p->parameters->vector, 1);
     //if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    

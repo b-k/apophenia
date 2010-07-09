@@ -4,6 +4,13 @@
 !!Big.
 ]
 
+    June 2010
+** Removed the apop_rank settings group, and thus all the code related to it. It was just
+    the wrong place to do this. Added apop_data_rank_expand to convert rank data to
+    what the various models typically expect. This is another step for some users and
+    could be a problem if the counts get into the billions, but it still makes more sense
+    than rewriting every model twice.
+
     May 2010
 **apop_data_prune_columns_base now takes in a list of strings terminated by a NULL, not by
 a zero-length string.

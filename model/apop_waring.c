@@ -25,54 +25,6 @@ typedef struct {
     double a, bb;
 } ab_type;
 
-static double waring_apply(double in, void *param, int k){
-    ab_type *ab = param;
-	double ln_bb_a_k	 = gsl_sf_lngamma(k +1 + ab->a + ab->bb);
-	double ln_a_k		 = gsl_sf_lngamma(k +1 + ab->a);
-	return in * (ln_a_k - ln_bb_a_k);
-}
-
-//First the rank versions
-static double waring_log_likelihood_rank(const apop_data *d, apop_model *m){
-  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-  ab_type ab;
-  ab.bb	= gsl_vector_get(m->parameters->vector, 0),
-  ab.a	= gsl_vector_get(m->parameters->vector, 1);
-  double 		  likelihood,
-		          ln_bb_a		= gsl_sf_lngamma(ab.bb + ab.a),
-		          ln_a_mas_1	= gsl_sf_lngamma(ab.a + 1),
-		          ln_bb_less_1= log(ab.bb - 1);
-        likelihood = apop_map_sum((apop_data*)d, .fn_dpi = waring_apply, .part='c');
-    likelihood   +=  (ln_bb_less_1 + ln_bb_a - ln_a_mas_1) * d->matrix->size1 * d->matrix->size2;
-	return likelihood;
-}
-
-static void waring_dlog_likelihood_rank(const apop_data *d, gsl_vector *gradient, apop_model *m){
-  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-  double	      bb		    = gsl_vector_get(m->parameters->vector, 0),
-	    	      a		        = gsl_vector_get(m->parameters->vector, 1);
-  gsl_matrix	  *data		    = d->matrix;
-  double		  bb_minus_one_inv= 1/(bb-1),
-    		      psi_a_bb	        = gsl_sf_psi(bb + a),
-		          psi_a_mas_one	    = gsl_sf_psi(a+1),
-		          psi_a_k,
-		          psi_bb_a_k,
-		          d_bb		        = 0,
-		          d_a		            = 0;
-	for (size_t k=0; k< data->size2; k++){	//more efficient to go column-by-column
-		psi_bb_a_k	 = gsl_sf_psi(k +1 + a + bb);
-		psi_a_k		 = gsl_sf_psi(k +1 + a);
-        APOP_COL(d, k, v);
-		d_bb	    += apop_sum(v) * -psi_bb_a_k;
-		d_a		    += apop_sum(v) * (psi_a_k - psi_bb_a_k);
-	}
-    d_bb	    += (bb_minus_one_inv + psi_a_bb) * d->matrix->size1 * d->matrix->size2;
-    d_a		    += (psi_a_bb - psi_a_mas_one) * d->matrix->size1 * d->matrix->size2;
-	gsl_vector_set(gradient, 0, d_bb);
-	gsl_vector_set(gradient, 1, d_a);
-}
-
-
 static double beta_zero_and_one_greater_than_x_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1 and  0 < beta_2
   static apop_data *constraint = NULL;
@@ -94,8 +46,6 @@ static double apply_me(double val, void *in){
 static double waring_log_likelihood(apop_data *d, apop_model *m){
   Get_vmsizes(d) //tsize
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
-    if (apop_settings_get_group(m, apop_rank))
-      return waring_log_likelihood_rank(d, m);
   ab_type abstruct;
   abstruct.bb	= gsl_vector_get(m->parameters->vector, 0),
   abstruct.a    = gsl_vector_get(m->parameters->vector, 1);
@@ -114,8 +64,6 @@ static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
   Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
   int min = vsize ? -1 : 0;
   int max = msize2 ? msize2 : 0;
-    if (apop_settings_get_group(m, apop_rank))
-      return waring_dlog_likelihood_rank(d, gradient, m);
   double bb		        = gsl_vector_get(m->parameters->vector, 0);
   double a		        = gsl_vector_get(m->parameters->vector, 1);
   double		bb_minus_one_inv= 1/(bb-1), val,
@@ -165,7 +113,7 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 		x	= apop_rng_GHgB3(r, params)+1;
 		u	= gsl_rng_uniform(r);
 	} while (u >= (x + a)/(GSL_MAX(a+1,1)*x));
-	*out = x;
+    *out = x;
 }
 
 apop_model apop_waring = {"Waring distribution", 2,0,0, .dsize=1,

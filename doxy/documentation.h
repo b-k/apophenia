@@ -994,7 +994,7 @@ endofdiv
 
     Outlineheader modellist  Models that ship with Apophenia
 
-        A partial list---the full list is on the \ref models page.
+        This is a partial list---the full list is on the \ref models page.
 
         Outlineheader Dist Distributions
 

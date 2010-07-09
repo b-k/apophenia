@@ -206,7 +206,7 @@ static void ols_rng(double *out, gsl_rng *r, apop_model *m){
 }
 
 static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
-    apop_assert(inset,  NULL, 0,'s', "You asked me to estimate a regression with NULL data.");
+    Nullcheck_d(inset)
   apop_data         *set;
 //    ep->status = 0;
     apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
@@ -236,6 +236,13 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
             gsl_vector_mul(v, weights);
         }
     }
+     /*
+    if (set->matrix->size2 > 1){
+        Apop_submatrix(set->matrix, 0, 1, set->matrix->size1, set->matrix->size2-1, allbutones);
+        apop_matrix_normalize(allbutones, 'c', 'm');
+    }
+    */
+
 
     gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   //(X'X)
     gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)

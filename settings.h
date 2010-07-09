@@ -138,18 +138,6 @@ typedef struct {
     apop_model *input_distribution; /**< The distribution of \f$P(Y|X)\f$ is specified by the model, but the distribution of \f$X\f$ is not.  */
 } apop_lm_settings;
 
-//in apop_exponential.c
-/** If this settings group is present, models that can take rank data
-  will read the input data as such.  Allocation is thus very simple, e.g.
-  \code
-  Apop_model_group_add(your_model, apop_rank);
-  \endcode 
-\ingroup settings
- */
-typedef struct {
-    char rank_data;
-} apop_rank_settings;
-
 /** The default is for the estimation routine to give some auxiliary information,
   such as a covariance matrix, predicted values, and common hypothesis tests.
   Some uses of a model depend on these items, but if they are a waste
@@ -430,6 +418,36 @@ typedef struct {
 } apop_loess_settings;
 
 
+/** For the multinomial model. The primary item of interest is the \c bin_ct. For the
+  special case of the binomial distribution, you would need:
+\code
+apop_model *bi = apop_model_copy(apop_multinomial);
+apop_model_add_group(bi, apop_multinomial, .bin_ct=2);
+apop_estimate(yourdata, bi);
+\endcode
+
+The default is to use the maximum value in your data set plus one as the bin count
+[the plus one is because there is always a zero bin.]
+  */
+typedef struct {
+    int bin_ct; /**< may be \c 0, meaning autodetect; otherwise, the number of bins. The
+          default is \c 0, but you are strongly encouraged to set this to a
+          positive integer giving a firm bin count.
+          You are so encouraged because your data may simply lack observations
+          from the top bin. If your data actually has five bins, but your data
+          has draws of <tt> 0 0 2 1 3 2 3</tt>, then I would autodetect a four-bin model,
+          because luck gave us no draws of \c 4.
+         */
+    int compress; /**< default = \c 'y': say there are two bins, zero and one. Say that an
+        observation = \c 3. If this is \c 'y', then the observation is placed in the
+        one bin. If this is \c 'n', then I emit an error and stop. For a binomial
+        model, this means that zeros are put in the zero bin, and everything else
+        is put in the one bin, which is probably what you want. */
+} apop_multinomial_settings;
+
+
+
+
 /** \defgroup settings Settings*/
 
 //Doxygen is doing funny things right now; having these down here seems to help.
@@ -440,8 +458,8 @@ Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_mle)
 Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_pm)
-Apop_settings_declarations(apop_rank)
 Apop_settings_declarations(apop_parts_wanted)
+Apop_settings_declarations(apop_multinomial)
 
 #ifdef	__cplusplus
 }

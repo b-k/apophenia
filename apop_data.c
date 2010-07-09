@@ -819,24 +819,33 @@ APOP_VAR_ENDHEAD
 }
 /** \} //End data_set_get group */
 
-/** A convenience function to add a named element to a data vector. For example, 
+/** A convenience function to add a named element to a data set. For example, 
 many of the testing procedures use this to easily produce a column of named parameters.
 
-\param d    The \ref apop_data structure. Must not be \c NULL.
+\param d    The \ref apop_data structure. Must not be \c NULL, but may be blank (as per
+allocation via \ref apop_data_alloc(0, 0, 0) ).
 \param name The name to add
-\param val  the value to add to the vector.
+\param val  the value to add to the set.
 
 \li I use the position of the name to know where to put the value. If
 there are two names in the data set, then I will put the new name in
-the third name slot and the data in the third slot in the vector. If
-you use this function from start to finish in building your vector,
-then you'll be fine.
+the third name slot and the data in the third slot in the zeroth column of the matrix. If
+you use this function from start to finish in building your list, then you'll be fine.
+\li If the matrix is too short (or \c NULL), I will call \ref apop_matrix_realloc internally to make space.
+\li The list is in the zeroth column of the matrix, because that fits well with the
+defaults for \ref apop_data_get. An example:
 
-\li If the vector is too short (or \c NULL), I will call \ref apop_vector_realloc internally to make space in the vector.
+\code
+apop_data *list = apop_data_alloc();
+apop_data_add_named_elmt(list, "height", 165);
+apop_data_add_named_elmt(list, "weight", 60);
+
+double height = apop_data_get(list, .rowname="height");
+\endcode
 
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
-    Apop_assert_s(d, "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc(0, 0,0) to start.");
+    Apop_assert_s(d, "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc() to start.");
     apop_name_add(d->names, name, 'r');
     if (!d->matrix)
         d->matrix = gsl_matrix_alloc(1, 1);
@@ -1089,7 +1098,8 @@ APOP_VAR_ENDHEAD
 */
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const char *title){
     apop_assert(newpage, NULL, '1', 'c', "You are adding a NULL page to a data set. Doing nothing; returning NULL.");
-    snprintf(newpage->names->title, 100, "%s", title);
+    if (title && !(newpage->names->title == title))//has title, is not just pointint to existing title
+        snprintf(newpage->names->title, 100, "%s", title);
     apop_assert(dataset, newpage, '1', 'c', "You are adding a page to a NULL data set. Returning the new page as its own data set.");
     while (dataset->more)
         dataset = dataset->more;

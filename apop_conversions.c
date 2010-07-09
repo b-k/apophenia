@@ -261,6 +261,22 @@ void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
 	apop_query("commit;");
 }
 
+
+apop_data *apop_data_rank_expand (apop_data *in){
+
+    int total_ct = in->matrix ? apop_matrix_sum(in->matrix) : 0
+                 + in->vector ? apop_vector_sum(in->vector) : 0;
+    if (total_ct == 0)
+        return NULL;
+    apop_data *out = apop_data_alloc(total_ct);
+    int posn = 0;
+    for (int i=0; i< in->matrix->size2; i++)
+        for (int k=0; k< in->matrix->size2; k++)
+            for (int j=0; j< gsl_matrix_get(in->matrix, i, k); j++)
+                gsl_vector_set(out, posn++, k); 
+    return out;
+}
+
 /** \page dbtomatrix Converting from database table to <tt>gsl_matrix</tt> or \ref apop_data
 
 Use <tt>fill_me = apop_query_to_matrix("select * from table_name;");</tt>
@@ -952,7 +968,7 @@ static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
         out = strdup(sqlout);
         sqlite3_free(sqlout);*/
         out = strdup(astring);
-	} else {	    //number, but sqlite wants 0.1, not .1
+	} else {	    //number, maybe INF or NAN. Also, sqlite wants 0.1, not .1
 		assert(strlen (stripped)!=0);
         if (isinf(atof(stripped))==1)
 			asprintf(&out, "9e9999999");
@@ -1021,7 +1037,7 @@ Using the data set from the example on the \ref apop_ols page, here's another wa
 
 \include ols.c
 
-By the way, there is a begin/commit wrapper that bundles the process into bundles of 5000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code. 
+By the way, there is a begin/commit wrapper that bundles the process into bundles of 10000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code. 
 
 \param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
 \param tabname      The name to give the table in the database (default
@@ -1043,7 +1059,7 @@ APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_na
     int *apop_varad_var(field_ends, NULL)
     char ** apop_varad_var(field_names, NULL)
 APOP_VAR_END_HEAD
-  int       batch_size  = 5000,
+  int       batch_size  = 10000,
       		col_ct, ct = 0, rows    = 0;
   FILE * 	infile;
   char		*q  = NULL, *instr, *add_this_line=NULL;

@@ -1,28 +1,36 @@
 /** \file apop_binomial.c 
  
   The binomial distribution as an \c apop_model.*/
-/*Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/*Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "mapply.h"
 #include "internal.h"
 #include "likelihoods.h"
 
-static double binomial_log_likelihood(apop_data*, apop_model*);
+void * apop_multinomial_settings_copy(apop_multinomial_settings *in){
+  apop_multinomial_settings *out  = malloc(sizeof(*out));
+    *out =  *in;
+    return out;
+}
+
+void apop_multinomial_settings_free(apop_multinomial_settings *in){ free(in); }
+
+apop_multinomial_settings * apop_multinomial_settings_init(apop_multinomial_settings in){
+  apop_multinomial_settings *out  = malloc(sizeof(*out));
+    *out = in;
+    if (!out->compress) out->compress = 'y';
+    return out;
+}
+
 
 static double is_nonzero(double in){return in != 0;}
+static double is_over_zero(double in){return in > 0;}
 
-static void get_hits_and_misses(apop_data *data, char method, double *hitcount, double *misscount){
+static void get_hits_and_misses(apop_data *data, double *hitcount, double *misscount){
     Get_vmsizes(data); //vsize, msize1, msize2;
-    if (method == 't'){
-        *hitcount = apop_map_sum(data, .fn_d=is_nonzero, .part='a');
-        *misscount = vsize + msize1 * msize2 - *hitcount;
-    } else {
-        APOP_COL(data, 0, misses);
-        APOP_COL(data, 1, hits);
-        *hitcount = apop_vector_sum(hits);
-        *misscount = apop_vector_sum(misses);
-    }
+    *hitcount = apop_map_sum(data, .fn_d=is_over_zero, .part='a');
+    *misscount = vsize + msize1 * msize2 - *hitcount;
 }
 
 static void make_covar(apop_model *est){
@@ -46,45 +54,34 @@ static void make_covar(apop_model *est){
     pv[0]=n;
 }
 
-static apop_model * binomial_estimate(apop_data * data,  apop_model *est){
-  Nullcheck_d(data)
-  double hitcount, misscount;
-  char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
-    get_hits_and_misses(data, method, &hitcount, &misscount);   
-    int n = hitcount + misscount;
-    apop_name_add(est->parameters->names, "n", 'r');
-    apop_name_add(est->parameters->names, "p", 'r');
-    apop_data_set(est->parameters, 0, -1, n);
-    apop_data_set(est->parameters, 1, -1, hitcount/(hitcount + misscount));
-    est->dsize	        = (method == 'b') ? 2 : n;
-    apop_data_add_named_elmt(est->info, "log likelihood", binomial_log_likelihood(data, est));
-    make_covar(est);
-    return est;
-}
-
 static double binomial_log_likelihood(apop_data *d, apop_model *params){
   Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d)
   double	  n       = apop_data_get(params->parameters, 0, -1),
               p       = apop_data_get(params->parameters, 1, -1);
   double hitcount, misscount, ll = 0;
-  char method = apop_settings_get_group(params, apop_rank) ? 'b' : 't';
-    if (method == 't'){
-        get_hits_and_misses(d, method, &hitcount, &misscount);
-        return log(gsl_ran_binomial_pdf(hitcount, p, n));
-    } else {
-        for (size_t i=0; i< d->matrix->size1; i++){
-            hitcount = gsl_matrix_get(d->matrix, i, 1);
-            ll += log(gsl_ran_binomial_pdf(hitcount, p, n));
-        }
-        return ll;
-    }
+    get_hits_and_misses(d, &hitcount, &misscount);
+    return log(gsl_ran_binomial_pdf(hitcount, p, n));
+}
+
+static apop_model * binomial_estimate(apop_data * data,  apop_model *est){
+  Nullcheck_d(data)
+  double hitcount, misscount;
+    get_hits_and_misses(data, &hitcount, &misscount);   
+    int n = hitcount + misscount;
+    apop_name_add(est->parameters->names, "n", 'r');
+    apop_name_add(est->parameters->names, "p", 'r');
+    apop_data_set(est->parameters, 0, -1, n);
+    apop_data_set(est->parameters, 1, -1, hitcount/(hitcount + misscount));
+    est->dsize = n;
+    apop_data_add_named_elmt(est->info, "log likelihood", binomial_log_likelihood(data, est));
+    make_covar(est);
+    return est;
 }
 
 static double binomial_cdf(apop_data *d, apop_model *est){
   Nullcheck_m(est) Nullcheck_p(est) Nullcheck_d(d)
   double hitcount, misscount, psum = 0;
-  char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
-    get_hits_and_misses(d, method, &hitcount, &misscount);   
+    get_hits_and_misses(d, &hitcount, &misscount);   
     double n = gsl_vector_get(est->parameters->vector, 0);
     double p = gsl_vector_get(est->parameters->vector, 1);
     for (int i=0; i<= hitcount; i++)
@@ -101,36 +98,26 @@ static void binomial_rng(double *out, gsl_rng *r, apop_model* est){
   Nullcheck_m(est); Nullcheck_p(est);
   double n = gsl_vector_get(est->parameters->vector, 0);
   double p = gsl_vector_get(est->parameters->vector, 1);
-  char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
-    if (method == 'b'){
-        out[1] =  gsl_ran_binomial(r, n ,est->parameters->vector->data[0]); 
-        out[0] =  n - out[1];
-    } else
-        for (int i=0; i < n; i++)
-            out[i] = (gsl_rng_uniform(r) <= p) ? 1 : 0; //one Bernoulli draw.
+  return gsl_ran_binomial_knuth(r, p, n);
+  /*  for (int i=0; i < n; i++)  //naive version. Knuth first uses a beta approximation, then finishes off with this.
+        out[i] = (gsl_rng_uniform(r) <= p) ? 1 : 0; //one Bernoulli draw.
+   */
 }
 
 static double sum_vector_nonzeros(gsl_vector *in){return apop_vector_map_sum(in, is_nonzero); }
 
-static gsl_vector * get_multinomial_hitcount(const apop_data *data, char method){
+static gsl_vector * get_multinomial_hitcount(const apop_data *data){
     size_t        i, j;
     gsl_vector *out;
-    if (method == 't'){
-        out = gsl_vector_alloc(1+GSL_MAX(data->vector ? gsl_vector_max(data->vector) : 0,
-                                       data->matrix ? gsl_matrix_max(data->matrix) : 0));
-        if (data->vector)
-            for(i=0; i < data->vector->size; i ++)
-                (*gsl_vector_ptr(out, apop_data_get(data, i, -1)))++;
-        if (data->matrix)
-            for(i=0; i < data->matrix->size1; i ++)
-                for(j=0; j < data->matrix->size2; j ++)
-                    (*gsl_vector_ptr(out, apop_data_get(data, i, j)))++;
-    } else {//just count nozeros in each column
-        apop_data *outd = apop_map((apop_data *)data, .fn_v=sum_vector_nonzeros, .part='c');
-        out = outd->vector;
-        outd->vector=NULL;
-        apop_data_free(outd);
-    }
+    out = gsl_vector_alloc(1+GSL_MAX(data->vector ? gsl_vector_max(data->vector) : 0,
+                                   data->matrix ? gsl_matrix_max(data->matrix) : 0));
+    if (data->vector)
+        for(i=0; i < data->vector->size; i ++)
+            (*gsl_vector_ptr(out, apop_data_get(data, i, -1)))++;
+    if (data->matrix)
+        for(i=0; i < data->matrix->size1; i ++)
+            for(j=0; j < data->matrix->size2; j ++)
+                (*gsl_vector_ptr(out, apop_data_get(data, i, j)))++;
     return out;
 }
 
@@ -138,10 +125,9 @@ static double multinomial_log_likelihood(apop_data *d, apop_model *params){
     Nullcheck(params); Nullcheck_p(params);
     double *pv = params->parameters->vector->data;
     size_t size = params->parameters->vector->size;
-    char method = apop_settings_get_group(params, apop_rank) ? 'b' : 't';
 
     //The GSL wants our hit count in an int*.
-    gsl_vector *hits = get_multinomial_hitcount(d, method);
+    gsl_vector *hits = get_multinomial_hitcount(d);
     unsigned int *hv = malloc(hits->size * sizeof(unsigned int));
     for(size_t i=0; i < hits->size; i ++)
         hv[i] = hits->data[i];
@@ -158,8 +144,7 @@ static double multinomial_log_likelihood(apop_data *d, apop_model *params){
 
 static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     Nullcheck(est);
-    char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
-    gsl_vector * count = get_multinomial_hitcount(data, method);
+    gsl_vector * count = get_multinomial_hitcount(data);
     //int n = apop_sum(count); //potential double-to-int precision issues.
     int n = 0;
     for (int i=0; i< count->size; i++)
@@ -174,7 +159,7 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
         sprintf(name, "p%i", i);
         apop_name_add(est->parameters->names, name, 'c');
     }
-    est->dsize	        = (method == 'b') ? count->size : n;
+    est->dsize = n;
     make_covar(est);
     apop_data_add_named_elmt(est->info, "log likelihood", multinomial_log_likelihood(data, est));
     return est;
@@ -183,7 +168,6 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
 static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     //After the intro, cut/pasted/modded from the GSL. Copyright them.
     Nullcheck_p(est);
-    char method = apop_settings_get_group(est, apop_rank) ? 'b' : 't';
     double * p = est->parameters->vector->data;
     //the trick where we turn the params into a p-vector
     int N = p[0];
@@ -197,11 +181,8 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
             draw = gsl_ran_binomial (r, p[i] / (1 - sum_p), N - sum_n);
         else
             draw = 0;
-        if (method == 'b')
-            out[i] = draw;
-        else
-            for (int j=0; j< draw; j++)
-                out[ctr++] = i;
+        for (int j=0; j< draw; j++)
+            out[ctr++] = i;
         sum_p += p[i];
         sum_n += draw;
     }

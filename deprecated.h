@@ -22,7 +22,6 @@ void apop_data_set_tt(apop_data *in,const  char *row,const  char* col,const  dou
 
 #define APOP_SETTINGS_ADD_GROUP Apop_settings_add_group
 
-apop_rank_settings *apop_rank_settings_alloc(void *ignoreme);
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins);
 apop_mle_settings *apop_mle_settings_alloc(apop_model *model);
 
