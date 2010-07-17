@@ -301,6 +301,9 @@ your C library, which should match POSIX's ERE specification.
 For example, "p.val" will match "P value", "p.value", "p values" (and even "tempeval", so be
 careful).
 
+If you give a non-\c NULL address in which to place a table of paren-delimited substrings, I'll return them as a row in the text element of the returned \ref apop_data set. I'll return <em>all</em> the matches, filling the first row with substrings from the first application of your regex, then filling the next row with another set of matches (if any), and so on to the end of the string. Useful when parsing a list of items, for example.
+
+
 \param string        The string to search (no default; if \c NULL, I return 0---no match)
 \param regex       The regular expression (no default)
 \param substrings   Parens in the regex indicate that I should return matching substrings. Give me the _address_ of an \ref apop_data* set, and I will allocate and fill the text portion with matches. Default= \c NULL, meaning do not return substrings (even if parens exist in the regex).
@@ -311,14 +314,14 @@ careful).
 
 \li Here is the test function. Notice that the substring-pulling
 function call passes \c &subs, not plain \c subs. Also, the non-match
-has a zero-length blank in <tt>subs->text[1][0]</tt>.
+has a zero-length blank in <tt>subs->text[0][1]</tt>.
 \include test_regex.c
 */
 APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case){
     const char * apop_varad_var(string, NULL);
     if (!string) return 0;
     const char * apop_varad_var(regex, NULL);
-    apop_assert(regex, 0, 0, 's', "You gave me a NULL regex.");
+    apop_assert_s(regex, "You gave me a NULL regex.");
     apop_data **apop_varad_var(substrings, NULL);
     const char apop_varad_var(use_case, 'y');
 APOP_VAR_ENDHEAD
@@ -329,24 +332,29 @@ APOP_VAR_ENDHEAD
     int compiled_ok = !regcomp(&re, regex, REG_EXTENDED 
                                             + (use_case=='y' ? REG_ICASE : 0)
                                             + (substrings ? 0 : REG_NOSUB) );
-    apop_assert(compiled_ok, 0, 0, 's', "This regular expression didn't compile: \"%s\"", regex)
+    apop_assert_s(compiled_ok, "This regular expression didn't compile: \"%s\"", regex)
 
-    found = !regexec(&re, string, matchcount+1, result, 0);
-    if (substrings){
-        *substrings = apop_text_alloc(NULL, matchcount, 1);
-        //match zero is the whole string; ignore.
-        for (int i=0; i< matchcount; i++){
-            if (result[i+1].rm_eo > 0){//GNU peculiarity: match-to-empty marked with -1.
-                int length_of_match = result[i+1].rm_eo - result[i+1].rm_so;
-                (*substrings)->text[i][0] = malloc(strlen(string)+1);
-                memcpy((*substrings)->text[i][0], string + result[i+1].rm_so, length_of_match);
-                (*substrings)->text[i][0][length_of_match] = '\0';
-            } else{ //matches nothing
-                (*substrings)->text[i][0] = malloc(1);
-                (*substrings)->text[i][0][0]='\0';
+    int matchrow = 0;
+    do {
+        found = !regexec(&re, string, matchcount+1, result, matchrow ? REG_NOTBOL : 0);
+        if (substrings && found){
+            *substrings = apop_text_alloc(matchrow ? *substrings : NULL, matchrow+1, matchcount);
+            //match zero is the whole string; ignore.
+            for (int i=0; i< matchcount; i++){
+                if (result[i+1].rm_eo > 0){//GNU peculiarity: match-to-empty marked with -1.
+                    int length_of_match = result[i+1].rm_eo - result[i+1].rm_so;
+                    (*substrings)->text[matchrow][i] = malloc(strlen(string)+1);
+                    memcpy((*substrings)->text[matchrow][i], string + result[i+1].rm_so, length_of_match);
+                    (*substrings)->text[matchrow][i][length_of_match] = '\0';
+                } else{ //matches nothing
+                    (*substrings)->text[matchrow][i] = malloc(1);
+                    (*substrings)->text[matchrow][i][0]='\0';
+                }
             }
+            string += result[0].rm_eo; //end of whole match;
+            matchrow++;
         }
-    }
+    } while (substrings && found && string[0]!='\0');
     regfree(&re);
     return found;
 }

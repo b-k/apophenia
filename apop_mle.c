@@ -124,8 +124,7 @@ void apop_mle_settings_free(apop_mle_settings *in){ free(in); }
 //Including numerical differentiation and a couple of functions to
 //negate the likelihood fns without bothering the user.
 
-static apop_model * apop_annealing(infostruct*);                         //below.
-static int dnegshell (const gsl_vector *, void * , gsl_vector * g); //below.
+static apop_model * apop_annealing(infostruct*);                    //below.
 
 static double one_d(double b, void *in){
   infostruct    *i   =in;
@@ -377,7 +376,7 @@ static double negshell (const gsl_vector *beta, void * in){
                     "adjusted p of %g. Please make sure that this is positive, perhaps by "
                     "rescaling your penalty.\n", f_val, penalty, f_val-penalty);
         fprintf(stderr,"NaN resulted from the following value tried by the maximum likelihood system. "
-                    "Tighten your constraint? log of a negative p?\n");
+                    "Tighten your constraint? Log of a negative p?\n");
         apop_data_show(i->model->parameters);
         assert(0);
     }

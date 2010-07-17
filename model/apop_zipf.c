@@ -53,7 +53,7 @@ apop_zipf.draw(r, 1.4, NULL);
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
 static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
   double a  = gsl_vector_get(param->parameters->vector, 0);
-  apop_assert_void(a >= 1, 0, 's', "Zipf needs a parameter >=1. Stopping."); 
+  apop_assert_s(a >= 1, "Zipf needs a parameter >=1. Stopping."); 
   int     x;
   double  u, v, t, 
           b       = pow(2, a-1), 
@@ -61,9 +61,10 @@ static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
     do {
         u    = gsl_rng_uniform(r);
         v    = gsl_rng_uniform(r);
-        x    = pow(u,ainv); //GSL_MIN(pow(u, ainv), 1e8); //prevent overflows.
+        x    = pow(u,ainv);
         t    = pow((1.0 + 1.0/x), (a-1));
     } while (v * x * (t-1.0)/(b-1) > t/b);
+    assert(x < 1e5);
     *out = x;
 }
 

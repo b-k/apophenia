@@ -4,6 +4,12 @@
 !!Big.
 ]
 
+    July 2010
+** apop_regex now gets all matches when you pull substrings. Each row of the text grid
+    is a match, and if you have multiple substrings, each match's substrings will be
+    along the columns.  May require recoding because the substrings used to be along
+    the rows; just switch the indices.
+
     June 2010
 ** Removed the apop_rank settings group, and thus all the code related to it. It was just
     the wrong place to do this. Added apop_data_rank_expand to convert rank data to

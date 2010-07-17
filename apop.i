@@ -47,6 +47,8 @@ That said, here is the current table of contents:
 %ignore apop_data_sort;
 %ignore apop_data_split;
 %ignore apop_data_stack;
+%ignore apop_data_rank_expand;
+%ignore apop_data_rank_compress;
 %ignore apop_data_summarize;
 %ignore apop_data_transpose;
 %ignore apop_model_clear;
@@ -149,6 +151,8 @@ def apop_pylist_to_data(inlist):
 %rename(swap_rows) __swap_rows;
 %rename(transpose_memcpy) __transpose_memcpy;
 %rename(transpose) __transpose;
+%rename(rank_expand) __rank_expand;
+%rename(rank_compress) __rank_compress;
 
 %rename(apop_data) _apop_data;
 %rename(apop_model) _apop_model;
@@ -228,6 +232,8 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
     apop_data* __covariance()                       { return apop_data_covariance($self);}
     apop_data* __correlation()                      { return apop_data_correlation($self);}
     apop_data* __summarize()                        { return apop_data_summarize($self);}
+    apop_data* __rank_expand()                      { return apop_data_rank_expand($self);}
+    apop_data* __rank_compress()                    { return apop_data_rank_compress($self);}
     apop_data * __stack(apop_data * m2=NULL, char posn='r', char inplace ='n'){
                                      return apop_data_stack_base($self, m2, posn,inplace); }
     apop_data * __sort(int sortby=0, char asc='a'){

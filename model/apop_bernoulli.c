@@ -14,7 +14,7 @@ static double bernie_ll(double x, void * pin){
 }
 
 static double bernoulli_log_likelihood(apop_data *d, apop_model *params){
-    apop_assert(params->parameters, 0, 0,'s', "You asked me to evaluate an un-parametrized model.");
+    Nullcheck_m(params); Nullcheck_p(params);
     double p   = apop_data_get(params->parameters,0,-1);
 	return apop_map_sum(d, .fn_dp = bernie_ll, .param=&p);
 }

@@ -262,18 +262,63 @@ void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
 }
 
 
-apop_data *apop_data_rank_expand (apop_data *in){
+/** One often finds data where the column indicates the value of the data point. There may
+be two columns, and a mark in the first indicates a miss while a mark in the second is a
+hit. Or say that we have the following list of observations:
 
+\code
+2 3 3 2 1 1 2 1 1 2 1 1
+\endcode
+Then we could write this as:
+\code
+0  1  2  3
+----------
+0  6  4  2
+\endcode
+because there are six 1s observed, four 2s observed, and two 3s observed. We call this
+rank format, because 1 (or zero) is typically the most common, 2 is second most common, et
+cetera.
+
+This function takes in a list of observations, and aggregates them into a single row of
+in rank format.
+
+\li For the complement, see \ref apop_data_rank_expand.
+
+\include test_rank.c
+*/
+apop_data *apop_data_rank_compress (apop_data *in){
+    int upper_bound = GSL_MAX(in->matrix ? gsl_matrix_max(in->matrix) : 0, 
+                              in->vector ? gsl_vector_max(in->vector) : 0);
+    apop_data *out = apop_data_calloc(1, upper_bound+1);
+    if (in->matrix)
+        for (int i=0; i< in->matrix->size1; i++)
+            for (int j=0; j< in->matrix->size2; j++)
+                apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, j));
+    if (in->vector)
+        for (int i=0; i< in->vector->size; i++)
+            apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, -1));
+    return out;
+}
+
+/** The complement to this is \ref apop_data_rank_compress; see that function's
+  documentation for the story and an example.
+
+  This function takes in a data set where the zeroth column includes the count(s)
+  of times that zero was observed, the first gives the count(s) of times that one was
+  observed, et cetera. It outputs a data set whose vector element includes a list that
+  has exactly the given frequency of zeros, ones, et cetera.
+*/
+apop_data *apop_data_rank_expand (apop_data *in){
     int total_ct = in->matrix ? apop_matrix_sum(in->matrix) : 0
                  + in->vector ? apop_vector_sum(in->vector) : 0;
     if (total_ct == 0)
         return NULL;
     apop_data *out = apop_data_alloc(total_ct);
     int posn = 0;
-    for (int i=0; i< in->matrix->size2; i++)
+    for (int i=0; i< in->matrix->size1; i++)
         for (int k=0; k< in->matrix->size2; k++)
             for (int j=0; j< gsl_matrix_get(in->matrix, i, k); j++)
-                gsl_vector_set(out, posn++, k); 
+                gsl_vector_set(out->vector, posn++, k); 
     return out;
 }
 

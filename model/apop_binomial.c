@@ -107,7 +107,7 @@ static void binomial_rng(double *out, gsl_rng *r, apop_model* est){
 static double sum_vector_nonzeros(gsl_vector *in){return apop_vector_map_sum(in, is_nonzero); }
 
 static gsl_vector * get_multinomial_hitcount(const apop_data *data){
-    size_t        i, j;
+    size_t     i, j;
     gsl_vector *out;
     out = gsl_vector_alloc(1+GSL_MAX(data->vector ? gsl_vector_max(data->vector) : 0,
                                    data->matrix ? gsl_matrix_max(data->matrix) : 0));
