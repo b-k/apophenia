@@ -23,8 +23,6 @@ apop_multinomial_settings * apop_multinomial_settings_init(apop_multinomial_sett
     return out;
 }
 
-
-static double is_nonzero(double in){return in != 0;}
 static double is_over_zero(double in){return in > 0;}
 
 static void get_hits_and_misses(apop_data *data, double *hitcount, double *misscount){
@@ -58,7 +56,7 @@ static double binomial_log_likelihood(apop_data *d, apop_model *params){
   Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d)
   double	  n       = apop_data_get(params->parameters, 0, -1),
               p       = apop_data_get(params->parameters, 1, -1);
-  double hitcount, misscount, ll = 0;
+  double hitcount, misscount;
     get_hits_and_misses(d, &hitcount, &misscount);
     return log(gsl_ran_binomial_pdf(hitcount, p, n));
 }
@@ -98,13 +96,11 @@ static void binomial_rng(double *out, gsl_rng *r, apop_model* est){
   Nullcheck_m(est); Nullcheck_p(est);
   double n = gsl_vector_get(est->parameters->vector, 0);
   double p = gsl_vector_get(est->parameters->vector, 1);
-  return gsl_ran_binomial_knuth(r, p, n);
+  *out = gsl_ran_binomial_knuth(r, p, n);
   /*  for (int i=0; i < n; i++)  //naive version. Knuth first uses a beta approximation, then finishes off with this.
         out[i] = (gsl_rng_uniform(r) <= p) ? 1 : 0; //one Bernoulli draw.
    */
 }
-
-static double sum_vector_nonzeros(gsl_vector *in){return apop_vector_map_sum(in, is_nonzero); }
 
 static gsl_vector * get_multinomial_hitcount(const apop_data *data){
     size_t     i, j;

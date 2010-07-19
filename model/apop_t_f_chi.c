@@ -133,7 +133,7 @@ double apop_t_dist_cdf(apop_data *in, apop_model *m){
     double mu = m->parameters->vector->data[0];
     double sigma = m->parameters->vector->data[1];
     double df = m->parameters->vector->data[2];
-    return gsl_cdf_tdist_P ((val-mu)/(sigma/sqrt(df)), df);
+    return gsl_cdf_tdist_P ((val-mu)/sigma, df);
 }
 
 void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){

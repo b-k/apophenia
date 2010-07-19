@@ -64,7 +64,6 @@ static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
         x    = pow(u,ainv);
         t    = pow((1.0 + 1.0/x), (a-1));
     } while (v * x * (t-1.0)/(b-1) > t/b);
-    assert(x < 1e5);
     *out = x;
 }
 

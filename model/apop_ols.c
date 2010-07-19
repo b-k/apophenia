@@ -91,11 +91,12 @@ This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.
  */
 static double ols_log_likelihood (apop_data *d, apop_model *p){ 
-  apop_assert_s(p->parameters, "You asked me to evaluate an un-parametrized model. Returning zero.");
+    Nullcheck_m(p); Nullcheck_p(p);
   long double	ll  = 0; 
   long double      sigma, actual, weight;
   double expected, x_prob;
-  apop_model *input_distribution = Apop_settings_get(p, apop_lm, input_distribution);
+  apop_lm_settings *lms = Apop_settings_get_group(p, apop_lm);
+  apop_model *input_distribution = lms ? lms->input_distribution : NULL;
   gsl_matrix	*data		    = d->matrix;
   gsl_vector  *errors         = gsl_vector_alloc(data->size1);
 	for (size_t i=0;i< data->size1; i++){
@@ -114,7 +115,10 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
         Apop_row(d, i, datarow);
         gsl_matrix_view m = gsl_matrix_view_vector(datarow, 1, datarow->size);
         apop_data justarow = {.matrix=&(m.matrix)};
-        x_prob = apop_p(&justarow, input_distribution); //probably improper uniform, and so just 1 anyway.
+        if (input_distribution)
+            x_prob = apop_p(&justarow, input_distribution); //probably improper uniform, and so just 1 anyway.
+        else
+            x_prob = 1;
         weight       = d->weights ? gsl_vector_get(d->weights, i) : 1; 
         ll  += log(gsl_ran_gaussian_pdf(gsl_vector_get(errors, i), sigma)* weight * x_prob);
 	} 

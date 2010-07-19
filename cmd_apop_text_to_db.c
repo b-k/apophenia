@@ -28,6 +28,8 @@ int     colnames            = 1,
 	sprintf(msg, "%s [-d delimiters] text_file table_name dbname\n\
 e.g.: %s -d\",|\" infile.txt a_table info.db\n\
 If the input text file name is a single dash, -, then read from STDIN.\n\
+-d\t\tThe single-character delimiters to use, e.g., -d \" ,\" or -d \"\\t\" (which you \n"
+"\t\t\twill almost certainly have to write as -d \"\\\\t\")\n\
 -nc\t\tData does not include column names\n\
 -n regex\t\tCase-insensitive regular expression indicating Null values. Default: NaN \n\
 -m\t\tUse a mysql database (default: SQLite)\n\

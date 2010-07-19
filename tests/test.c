@@ -1,7 +1,7 @@
 #include <apop.h>
 #include "nist_tests.c"
 
-#define Diff(L, R, eps) apop_assert_void(fabs((L)-(R)<(eps)), 0, 's', "%g is too different from %g.", L, R);
+#define Diff(L, R, eps) apop_assert_s(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 //I'm using the test script an experiment to see if 
 //these macros add any value.
@@ -10,25 +10,72 @@
 #define APOP_RNG_ALLOC(name, seed) gsl_rng *name = apop_rng_alloc(seed)
 
 //These test functions are also displayed in the documentation as examples.
-#include "../eg/test_pruning.c"     // test_prune_cols()
-#include "../eg/test_distances.c"
 #include "../eg/test_kl_divergence.c"
 #include "../eg/test_strip_dots.c"
+#include "../eg/test_distances.c"
 #include "../eg/test_harmonic.c"
 #include "../eg/test_updating.c" 
-#include "../eg/test_fisher.c" 
-#include "../eg/test_regex.c" 
-#include "../eg/test_strcmp.c" 
-#include "../eg/pmf_test.c" 
+#include "../eg/test_pruning.c"     // test_prune_cols()
 #include "../eg/apop_map_row.c" 
+#include "../eg/test_strcmp.c" 
+#include "../eg/test_fisher.c" 
+#include "../eg/test_ranks.c" 
+#include "../eg/test_regex.c" 
+#include "../eg/pmf_test.c" 
+
+
+/*
+Some of these tests are mechanical tests that data gets shunted to the right place and
+that nothing segfaults. Those are not very conceptually difficult.
+
+Many of these tests are much more computationally-intensive than the norm, both in
+terms of compute time, and in terms of the expectations of the algorithm. For example,
+let us say that we wish to verify the results of a regression. Some systems have a
+canned screenshot of the 'correct' regression results that ships with the test suite,
+and compare a screenshot of the run to the canned version. I don't get much confidence
+from this---what if the canned screenshot is wrong? Better would be to know something
+about the regression results (like the relation between the common F statistic, SSR,
+and SSE) and check that the fact always holds.
+
+Some other examples: given a set of parameters for a distribution, make a million
+draws from the distribution given those parameters, then estimate the parameters of
+the distribution; the "before" and "after" parameters should match. Or, if there are
+multiple methods of doing Bayesian updating, the output distributions should match.
+
+Those claims are true as N goes to infinity; for finite N the routines have to strike
+a balance. How many draws should I make, and how much user time should I waste, before
+measuring the error, and what error tolerance should I set? This is a difficult balance,
+and is to some extent the key problem behind all of numeric computing.
+
+There are two types of error bounds here. One is tighter, and therefore more prone
+to false alarms, but really forces us to write better numeric code. The other is
+much more permissive, and just tells us whether the computation failed to go in the
+right direction.  Users who run 'make test' will be running the second type of test,
+because I (BK) just got sick of people sending me bug reports that a test failed
+because it reported an error of 1e-5 when it should have been 1e-8. There is always
+room for better numeric precision; we all know this with or without reminders from
+the post-install tests.
+*/
 
 //One-liners for mapply:
 gsl_rng *r_global;
 //void random_draw(double *in) { *in = gsl_rng_uniform(r_global);}
 double nan_map(double in){return gsl_isnan(in);}
 
-double  tolerance           = 1e-5;
-double  lite_tolerance      = 1e-2;
+#ifdef FULL_TOLERANCE
+double tol6 = 1e-6;
+double tol5 = 1e-5;
+double tol3 = 1e-3;
+double tol2 = 1e-2;
+double tol1 = 1e-1;
+#else
+double tol6 = 1e-1;
+double tol5 = 1e-1;
+double tol3 = 1e-1;
+double tol2 = 1e-1;
+double tol1 = 1e-1;
+#endif
+
 int     len                 = 8000;
 int     verbose             = 1;
 
@@ -100,7 +147,7 @@ static void compare_mvn_estimates(apop_model *L, apop_model *R, double tolerance
 }
 
 void test_ml_imputation(gsl_rng *r){
-    size_t len = 2e4;
+    size_t len = 4e4;
     int i,j;
     apop_data *fillme = apop_data_alloc(len, 3);
     apop_model *mvn = apop_model_copy(apop_multivariate_normal);
@@ -168,14 +215,14 @@ void test_score(){
         apop_model *out = apop_maximum_likelihood(data, estme);
 
         apop_model *straight_est = apop_estimate(data, apop_normal);
-        assert(fabs(straight_est->parameters->vector->data[0]- source->parameters->vector->data[0])<1e-1);//rough, I know.
-        assert(fabs(straight_est->parameters->vector->data[1]- source->parameters->vector->data[1])<1e-1);
+        Diff (straight_est->parameters->vector->data[0], source->parameters->vector->data[0], tol1);
+        Diff (straight_est->parameters->vector->data[1], source->parameters->vector->data[1], tol1);
 
         double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;
         apop_data *cov = apop_data_get_page(out->parameters, "cov");
-        assert(fabs(apop_data_get(cov, 0,0)-sigsqn) < 1e-3);
-        assert(fabs(apop_data_get(cov, 1,1)-sigsqn/2) < 1e-3);
-        assert(apop_data_get(cov, 0,1) + apop_data_get(cov, 0,1) < 1e-3);
+        Diff (apop_data_get(cov, 0,0),sigsqn , tol3);
+        Diff (apop_data_get(cov, 1,1),sigsqn/2 , tol3);
+        assert(apop_data_get(cov, 0,1) + apop_data_get(cov, 0,1) < tol3);
         apop_model_free(out);
         printf(".");
         apop_model_free(source); 
@@ -193,12 +240,9 @@ void test_skew_and_kurt(){
         apop_query("insert into t values(%g)", gsl_rng_uniform(r));
     }
   gsl_vector  *v    = apop_query_to_vector("select * from t");
-/*    printf ("var %g %g\n", apop_var(v) ,apop_query_to_float("select var(vals) from t"));
-    printf ("skew %g %g\n", apop_vector_skew(v) ,apop_query_to_float("select skew(vals) from t"));
-    printf ("kurt %g %g\n", apop_vector_kurt(v) ,apop_query_to_float("select kurt(vals) from t"));*/
-    assert (fabs(apop_var(v) -apop_query_to_float("select var(vals) from t"))<1e-6);
-    assert (fabs(apop_vector_skew(v) -apop_query_to_float("select skew(vals) from t"))<1e-6);
-    assert (fabs(apop_vector_kurt(v) -apop_query_to_float("select kurt(vals) from t"))<1e-5);
+    Diff (apop_var(v) ,apop_query_to_float("select var(vals) from t"),tol6);
+    Diff (apop_vector_skew(v) ,apop_query_to_float("select skew(vals) from t"),tol6);
+    Diff (apop_vector_kurt(v) ,apop_query_to_float("select kurt(vals) from t"),tol5);
     apop_table_exists("t",1);
 }
 
@@ -251,12 +295,12 @@ static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gs
     assert(apop_vector_mean(v) == apop_vector_weighted_mean(v,NULL));
     assert(apop_vector_mean(av) == apop_vector_weighted_mean(v,w));
     assert(apop_vector_weighted_mean(v,w) == mean);
-    assert(fabs(apop_vector_var(v) - apop_vector_weighted_var(v,NULL))<1e-5);
-    assert(fabs(apop_vector_cov(v,v2) - apop_vector_weighted_cov(v,v2,NULL))<1e-5);
-    assert(fabs(apop_vector_var(av) - apop_vector_weighted_var(v,w))<1e-5);
-    assert(fabs(apop_vector_cov(av,av2) - apop_vector_weighted_cov(v,v2,w))<1e-5);
-    assert(fabs(apop_vector_skew_pop(av) - apop_vector_weighted_skew(v,w))<1e-5);
-    assert(fabs(apop_vector_kurtosis_pop(av) - apop_vector_weighted_kurt(v,w))<1e-5);
+    Diff (apop_vector_var(v), apop_vector_weighted_var(v,NULL), tol5);
+    Diff (apop_vector_cov(v,v2), apop_vector_weighted_cov(v,v2,NULL), tol5);
+    Diff (apop_vector_var(av), apop_vector_weighted_var(v,w), tol5);
+    Diff (apop_vector_cov(av,av2), apop_vector_weighted_cov(v,v2,w), tol5);
+    Diff (apop_vector_skew_pop(av), apop_vector_weighted_skew(v,w), tol5);
+    Diff (apop_vector_kurtosis_pop(av), apop_vector_weighted_kurt(v,w), tol5);
 }
 
 void test_weigted_moments(){
@@ -354,25 +398,25 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
 
     apop_data *predict_tab = apop_data_get_page(est->info, "predict");
     v   = gsl_matrix_column(predict_tab->matrix, apop_name_find(predict_tab->names, "residual", 'c')).vector;
-    assert(fabs(apop_mean(&v)) < tolerance);
+    assert(fabs(apop_mean(&v)) < tol5);
 
     Apop_col_t(predict_tab, "pred", vv);
     gsl_blas_dgemv(CblasNoTrans, 1, m, est->parameters->vector, 0, prediction);
     gsl_vector_sub(prediction, vv);
-    assert(fabs(apop_vector_sum(prediction)) < tolerance);
+    assert(fabs(apop_vector_sum(prediction)) < tol5);
 }
 
 /** I claim that the F test calculated via apop_F_test(est, NULL, NULL)
  equals a transformation of R^2.
 */
 void test_f(apop_model *est){
-apop_data   *rsq    = apop_estimate_coefficient_of_determination(est);
-apop_data   *ftab   = apop_F_test(est, NULL);
-double      n       = est->data->matrix->size1;
-double      K       = est->parameters->vector->size;
-double      r       = apop_data_get_ti(rsq,"R.squared", 0);
-double      f       = apop_data_get(ftab, .rowname="F.stat");
-    assert(fabs(f - r*(n-K)/ ((1-r)*K)) < tolerance);
+apop_data *rsq  = apop_estimate_coefficient_of_determination(est);
+apop_data *ftab = apop_F_test(est, NULL);
+double    n     = est->data->matrix->size1;
+double    K     = est->parameters->vector->size;
+double    r     = apop_data_get_ti(rsq, "R.squared", 0);
+double    f     = apop_data_get(ftab, .rowname="F.stat");
+    Diff (f , r*(n-K)/((1-r)*K) , tol5);
 }
 
 void test_OLS(gsl_rng *r){
@@ -384,15 +428,15 @@ void test_OLS(gsl_rng *r){
     }
     apop_data *bkup = apop_data_copy(set);
     apop_model *out = apop_estimate(set, apop_ols);
-    assert(fabs(apop_data_get(out->parameters, 0,-1) - -1.4) < tolerance);
-    assert(fabs(apop_data_get(out->parameters, 1,-1) - 2.3) < tolerance);
+    Diff (apop_data_get(out->parameters, 0,-1) , -1.4 , tol5);
+    Diff (apop_data_get(out->parameters, 1,-1) , 2.3 , tol5);
 
     gsl_vector *w = gsl_vector_alloc(set->matrix->size1);
     gsl_vector_set_all(w, 14);
     bkup->weights  = w;
     out = apop_estimate(bkup, apop_ols);
-    assert(fabs(apop_data_get(out->parameters, 0,-1) - -1.4) < tolerance);
-    assert(fabs(apop_data_get(out->parameters, 1,-1) - 2.3) < tolerance);
+    Diff (apop_data_get(out->parameters, 0,-1) , -1.4 , tol5);
+    Diff (apop_data_get(out->parameters, 1,-1) , 2.3 , tol5);
 }
 
 #define INVERTSIZE 100
@@ -552,11 +596,11 @@ void test_linear_constraint(){
   apop_data *contrasts  = apop_data_calloc(1,1,2);
     apop_data_set(contrasts, 0, 0, -1);
     apop_data_set(contrasts, 0, 1, -1);
-    assert(fabs(apop_linear_constraint(beta, contrasts, 0) - sqrt(2*49)) < tolerance);
+    Diff (apop_linear_constraint(beta, contrasts, 0) , sqrt(2*49) , tol5);
     assert(!apop_vector_sum(beta));
     gsl_vector_set(beta, 0, 0);
     gsl_vector_set(beta, 1, 7);
-    assert(fabs(apop_linear_constraint(beta, contrasts, 0) - sqrt(49/2.)) < tolerance);
+    Diff (apop_linear_constraint(beta, contrasts, 0) , sqrt(49/2.) , tol5);
     assert(!apop_vector_sum(beta));
     assert(gsl_vector_get(beta,0)==-7/2.);
     //inside corner: find the corner
@@ -568,14 +612,14 @@ void test_linear_constraint(){
     apop_data_set(contrasts2, 0, 0, -1);
     apop_data_set(contrasts2, 1, 1, -1);
     apop_data_set(contrasts2, 2, 2, -1);
-    assert(fabs(apop_linear_constraint(beta2, contrasts2, 0) - sqrt(3*49)) < tolerance);
+    Diff (apop_linear_constraint(beta2, contrasts2, 0) , sqrt(3*49) , tol5);
     assert(apop_vector_sum(beta2)==0);
     //sharp corner: go to one wall.
     gsl_vector_set(beta2, 0, 7);
     gsl_vector_set(beta2, 1, 7);
     gsl_vector_set(beta2, 2, 7);
     apop_data_set(contrasts2, 0, 1, 1);
-    assert(fabs(apop_linear_constraint(beta2, contrasts2, 0) - sqrt(2*49)) < tolerance);
+    Diff(apop_linear_constraint(beta2, contrasts2, 0) , sqrt(2*49), tol5);
     assert(gsl_vector_get(beta2,0)==7);
     assert(gsl_vector_get(beta2,1)==0);
     assert(gsl_vector_get(beta2,2)==0);
@@ -650,11 +694,11 @@ void test_jackknife(){
     //printf("%g\n",  2*gsl_pow_2(pv[1])/(len-1));
     //fflush(NULL);
     //Notice that the jackknife just ain't a great estimator here.
-assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < lite_tolerance 
-            && fabs(apop_data_get(out, 1,1) - gsl_pow_2(pv[1])/(2*len)) < lite_tolerance*100);
+assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2 
+            && fabs(apop_data_get(out, 1,1) - gsl_pow_2(pv[1])/(2*len)) < tol2*100);
     apop_data *out2 = apop_bootstrap_cov(d, m);
-    assert (fabs(apop_data_get(out2, 0,0) - gsl_pow_2(pv[1])/len) < lite_tolerance
-                && fabs(apop_data_get(out2, 1,1) - gsl_pow_2(pv[1])/(2*len)) < lite_tolerance);
+    assert (fabs(apop_data_get(out2, 0,0) - gsl_pow_2(pv[1])/len) < tol2
+                && fabs(apop_data_get(out2, 1,1) - gsl_pow_2(pv[1])/(2*len)) < tol2);
     apop_data_free(d);
 }
 
@@ -721,9 +765,9 @@ void test_multivariate_normal(gsl_rng *r){
 }
 
 static void common_binomial_bit(apop_model *out, int n, double p){
-    double phat = apop_data_get(out->parameters, 1,-1);
+    /*double phat = apop_data_get(out->parameters, 1,-1);
     double nhat = apop_data_get(out->parameters, 0,-1);
-    if (verbose) printf("n: %i, p: %g, nhat: %g, phat: %g\n", n, p, phat, nhat);
+    if (verbose) printf("n: %i, p: %g, nhat: %g, phat: %g\n", n, p, phat, nhat);*/
     assert(apop_data_get(out->parameters, 0,-1) == n);
     assert(apop_data_get(out->parameters, 1,-1) - p < 1e-2);
 }
@@ -982,7 +1026,7 @@ void test_resize(){
     apop_matrix_realloc(m, 11, 17);
     assert(gsl_matrix_get(m, 3, 5) == 4*6+.6);
     apop_matrix_realloc(m, 10, 10);
-    assert (fabs(apop_matrix_sum(m) - 55 * 56 )<1e-6);
+    Diff (apop_matrix_sum(m) , 55 * 56 , tol6);
     gsl_vector *v = gsl_vector_alloc(20);
     for (i=0; i< 20; i++)
         gsl_vector_set(v, i, i);
@@ -1035,8 +1079,8 @@ void test_default_rng(gsl_rng *r) {
     for(i=0; i < 2e5; i ++)
         apop_draw(o->data+i, r, ncut);
     apop_model *back_out = apop_estimate(apop_vector_to_data(o), apop_normal);
-    assert(fabs(back_out->parameters->vector->data[0] - 1.1) < 1e-2);
-    assert(fabs(back_out->parameters->vector->data[1] - 1.23) < 1e-2);
+    Diff(back_out->parameters->vector->data[0] , 1.1 , tol2);
+    Diff(back_out->parameters->vector->data[1] , 1.23 , tol2);
     gsl_vector_free(o);
 }
 
@@ -1134,7 +1178,7 @@ void test_distributions(gsl_rng *r){
                 apop_gamma, 
                 apop_lognormal, apop_multinomial, apop_multivariate_normal,
                 apop_normal, apop_poisson,
-                apop_t_distribution, apop_uniform,
+                /*apop_t_distribution, */ apop_uniform,
                 apop_waring, /*apop_wishart,*/
                 apop_yule, apop_zipf, null_model};
 
@@ -1191,7 +1235,7 @@ void test_pmf(){
     apop_vector_normalize(d->vector);
     apop_vector_normalize(v);
     for(i=0; i < v->size; i ++)
-        assert(fabs(d->vector->data[i] - v->data[i]) < 1e-2);
+        Diff(d->vector->data[i], v->data[i], tol2);
 }
 
 void test_arms(gsl_rng *r){
@@ -1254,6 +1298,7 @@ int main(int argc, char **argv){
     do_test("default RNG", test_default_rng(r));
     do_test("log and exponent", log_and_exp(r));
     do_test("test printing", test_printing());
+    do_test("test rank expand/compress", rank_round_trip(r));
     do_test("test row set and remove", row_manipulations(r));
     do_test("test apop_map on apop_data_rows", test_apop_map_row());
     do_test("test optimization of multi-page parameters", pack_test());
@@ -1265,9 +1310,7 @@ int main(int argc, char **argv){
     do_test("test regex", test_regex());
     do_test("test adaptive rejection sampling", test_arms(r));
     do_test("test listwise delete", test_listwise_delete());
-    do_test("test ML imputation", test_ml_imputation(r));
-    //do_test("test apop_update", test_updating(r));
-    do_test("test fix params", test_model_fix_parameters(r));
+    //do_test("test fix params", test_model_fix_parameters(r));
     do_test("positive definiteness", test_posdef(r));
     //do_test("test binomial estimations", test_binomial(r));
     do_test("test data to db", test_data_to_db());
@@ -1305,6 +1348,8 @@ int main(int argc, char **argv){
     do_test("test unique elements", test_unique_elements());
     if (slow_tests){
         if (verbose) printf("\tSlower tests:\n");
+        do_test("test ML imputation", test_ml_imputation(r));
+        //do_test("test apop_update", test_updating(r));
         do_test("test probit and logit", test_probit_and_logit(r));
         do_test("Test score (dlog likelihood) calculation", test_score());
     }

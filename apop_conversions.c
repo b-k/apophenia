@@ -344,7 +344,7 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
 gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
   gsl_vector *out = gsl_vector_alloc(in->size);
-    apop_assert(out, NULL, 0, 's', "failed to allocate a gsl_vector of size %zu. Out of memory?", in->size);
+    apop_assert_s(out, "failed to allocate a gsl_vector of size %zu. Out of memory?", in->size);
     gsl_vector_memcpy(out, in);
     return out;
 }
@@ -955,7 +955,7 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
     }
     asprintf(&q, "%s varchar(100) );", q);
     apop_query("%s", q);
-    apop_assert_void(apop_table_exists(tabname, 0), 0, 's', "query \"%s\" failed.\n", q);
+    apop_assert_s(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
     if (use_names_in_file){
         for (int i=0; i<ct; i++)
             free(fn[i]);
@@ -1002,7 +1002,7 @@ static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
 		*stripped	= strip(astring);
 	if(strtod(stripped, &tail)) /*do nothing.*/;
 
-    if (!strlen(astring)){ //it's empty
+    if (!strlen(stripped)){ //it's empty
         out = malloc(1); 
         out[0] ='\0';
     } else if (!regexec(nan_regex, stripped, 1, result, 0) 
@@ -1012,7 +1012,13 @@ static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
 /*        char *sqlout = sqlite3_mprintf("%Q", stripped);//extra checks for odd chars.
         out = strdup(sqlout);
         sqlite3_free(sqlout);*/
-        out = strdup(astring);
+        //out = strdup(astring);
+        if (!out 
+                || (out[0]=='\'' && out[strlen(out)-1]=='\'')
+                || (out[0]!='"' && out[strlen(out)-1]!='"'))
+            asprintf(&out,"%s", stripped);
+        else
+            asprintf(&out,"'%s'", stripped);
 	} else {	    //number, maybe INF or NAN. Also, sqlite wants 0.1, not .1
 		assert(strlen (stripped)!=0);
         if (isinf(atof(stripped))==1)
@@ -1049,7 +1055,7 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
         prepped	= prep_string_for_sqlite(outstr, nan_regex);
         if (p_stmt){
             if (sqlite3_bind_text(p_stmt, field++, prepped,-1, SQLITE_TRANSIENT))
-                printf("Something wrong on line %i.\n", row);
+                printf("Something wrong on line %i, field %i.\n", row, field-1);
         } else {
             if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
                 r = q;
@@ -1148,7 +1154,7 @@ APOP_VAR_END_HEAD
                 int err;
                 err=sqlite3_step(statement);
                 if (err!=0 && err != 101) //0=ok, 101=done
-                    printf("sqlite insert query gave error code %i. Go look that up.\n", err);
+                    printf("sqlite insert query gave error code %i.\n", err);
                 sqlite3_reset(statement);
             }
 		}

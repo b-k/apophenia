@@ -2065,7 +2065,7 @@ sets, or \ref apop_data_sort to sort all elements by a single column.
 \par Apply and map
 
 If you have an operation of the form <em>for each element of my data set, call this
-function</em</em>, then you can use \ref apop_map to do it. You could basically do everything you
+function</em>, then you can use \ref apop_map to do it. You could basically do everything you
 can do with an apply/map function via a \c for loop, but the apply/map approach is clearer
 and more fun. Also, if you set the global <tt>apop_opts.thread_count = n</tt> for any \c n greater than 1,
 then the work of mapping will be split across multiple CPU threads.  See the outline \f$>\f$ data sets \f$>\f$ map/apply

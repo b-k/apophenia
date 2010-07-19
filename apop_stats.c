@@ -492,7 +492,7 @@ apop_data * apop_data_summarize(apop_data *indata){
 		gsl_matrix_set(out->matrix, i, 2, var);
 		gsl_matrix_set(out->matrix, i, 3, pctiles[0]);
 		gsl_matrix_set(out->matrix, i, 4, pctiles[50]);
-		gsl_matrix_set(out->matrix, i, 5, pctiles[101]);
+		gsl_matrix_set(out->matrix, i, 5, pctiles[100]);
         free(pctiles);
 	}
 	return out;

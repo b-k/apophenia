@@ -256,7 +256,7 @@ This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
     gsl_vector *apop_varad_var(data, NULL);
-    apop_assert(data, NULL, 0, 's', "You gave me NULL data to sort.");
+    apop_assert_s(data, "You gave me NULL data.");
     char apop_varad_var(rounding, 'd');
 APOP_VAR_ENDHEAD
   gsl_vector	*sorted	= gsl_vector_alloc(data->size);

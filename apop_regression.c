@@ -97,15 +97,15 @@ APOP_VAR_ENDHEAD
     }
     */
     apop_matrix_normalize(data->matrix, 'c', 'm');
-    apop_data *xpx2 = apop_dot(data, data, .form1='t');
-    apop_data_show(est->parameters);
-    apop_data_show(xpx2);
-    //if (q){
-    //    Apop_col(data, 0, v);
-    //    gsl_vector_set_all(v, 1);
-    //}
+    apop_vector_normalize(data->vector, NULL, 'v');
+    //As you can see, trying a few things in this neighborhood.
+//    apop_data *xpx2 = apop_dot(data, data, .form1='t');
+//    apop_data_show(est->parameters);
+//    apop_data_show(xpx2);
+//    Apop_col(data, 0, v);
+//    gsl_vector_set_all(v, 1);
     apop_data *xpx = apop_dot(data, data, .form1='t');
-    apop_data_show(xpx);
+//    apop_data_show(xpx);
     if (!normalize)
         apop_data_free(data);
     if (q != NULL){
@@ -146,9 +146,6 @@ apop_data       *out        = apop_data_alloc(5,1);
 }
 
 /*
-  65  234 3297
-  61  221 2988
-  59  215 2862
 APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
     apop_model *apop_varad_var(est, NULL)
     Nullcheck_m(est);

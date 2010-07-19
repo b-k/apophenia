@@ -38,7 +38,7 @@ void apop_settings_remove_group(apop_model *m, char *delme){
 
 /** Don't use this function. It's what the \c Apop_model_add_group macro uses internally. Use that.  */
 void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group){
-    if(apop_settings_get_grp(model, type))  
+    if(apop_settings_get_grp(model, type, 'c'))  
         apop_settings_remove_group(model, type); 
     int ct = get_settings_ct(model);
     model->settings = realloc(model->settings, sizeof(apop_settings_type)*(ct+2));   
@@ -51,7 +51,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 }
 
 /** This function is used internally by the macro \ref Apop_settings_get_group. Use that.  */
-void * apop_settings_get_grp(apop_model *m, char *type){
+void * apop_settings_get_grp(apop_model *m, char *type, char fail){
   int   i = 0;
     if (!m->settings) return NULL;
     while (m->settings[i].name[0] !='\0'){
@@ -61,7 +61,8 @@ void * apop_settings_get_grp(apop_model *m, char *type){
     }
     if (!strlen(type)) //requesting the blank sentinel.
        return m->settings[i].setting_group;
-    return NULL;
+    apop_assert_s(fail != 'f', "I couldn't find the settings group %s in the given model.", type);
+    return NULL; //else, just return NULL and let the caller sort it out.
 }
 
 /** Copy a settings group with the given name from the second model to
@@ -70,11 +71,8 @@ void * apop_settings_get_grp(apop_model *m, char *type){
  You probably won't need this often---just use \ref apop_model_copy.
  */
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
-  apop_assert_void(inm->settings, 0, 's', "The input model (i.e., the second argument to this function) has no settings.\n");
-  void *g =  apop_settings_get_grp(inm, copyme);
-  if (!copyme)
-      apop_assert_void(g, 0, 's', "I couldn't find the group %s in "
-                                    "the input model (i.e., the second argument to this function).\n", copyme);
+  apop_assert_s(inm->settings, "The input model (i.e., the second argument to this function) has no settings.");
+  void *g =  apop_settings_get_grp(inm, copyme, 'f');
   int i=0;
     while (inm->settings[i].name[0] !='\0'){
        if (apop_strcmp(copyme, inm->settings[i].name))

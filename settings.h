@@ -12,7 +12,7 @@ extern "C" {
 
     //Part I: macros and fns for getting/setting settings groups and elements
 
-void * apop_settings_get_grp(apop_model *m, char *type);
+void * apop_settings_get_grp(apop_model *m, char *type, char fail);
 void apop_settings_remove_group(apop_model *m, char *delme);
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme);
 void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
@@ -26,7 +26,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
   \endcode
 \hideinitializer \ingroup settings
  */
-#define Apop_settings_get_group(m, type) apop_settings_get_grp(m, #type)
+#define Apop_settings_get_group(m, type) apop_settings_get_grp(m, #type, 'c')
 
 /** Removes a settings group from a model's list. 
 \hideinitializer \ingroup settings
@@ -52,13 +52,13 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 \hideinitializer \ingroup settings
  */
 #define Apop_settings_get(model, type, setting)  \
-    (((type ## _settings *) apop_settings_get_grp(model, #type))->setting)
+    (((type ## _settings *) apop_settings_get_grp(model, #type, 'f'))->setting)
 
 /** Modifies a single element of a settings group to the given value. 
 \hideinitializer \ingroup settings
  */
 #define Apop_settings_set(model, type, setting, data)  \
-    do { type ## _settings *apop_tmp_settings = apop_settings_get_grp(model, #type);  \
+    do { type ## _settings *apop_tmp_settings = apop_settings_get_grp(model, #type, 'c');  \
     apop_assert_s(apop_tmp_settings, "You're trying to modify a setting in " \
                         #model "'s setting group of type " #type " but that model doesn't have such a group."); \
     apop_tmp_settings->setting = (data);    \
