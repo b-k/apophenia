@@ -221,7 +221,7 @@ This function uses the \ref designated syntax for inputs.
     */
 APOP_VAR_HEAD int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi){
     gsl_matrix * apop_varad_var(m, NULL);
-    apop_assert(m, 0, 1, 'c', "You gave me a NULL matrix. I will take this as not positive semidefinite.");
+    apop_assert_c(m, 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite.");
     char apop_varad_var(semi, 's');
     return apop_matrix_is_positive_semidefinite_base(m, semi);
 APOP_VAR_ENDHEAD

@@ -8,12 +8,13 @@ Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
 
+\li There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can just be looked up should you request the same calculation. 
+
 For example: \include test_harmonic.c
 */
 double apop_generalized_harmonic(int N, double s){
-/* There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can later just be looked up. Each row in the saved structure is an \f$s\f$, and each column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
-
-\todo Look up the tricks for calculating this.
+/* 
+Each row in the saved-results structure is an \f$s\f$, and each column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
 
 When reading the code, remember that the zeroth element holds the value for N=1, and so on.
 */
@@ -50,10 +51,10 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 
 /** Are two strings equal?
  
-  <tt>strcmp()</tt> is a distance function, but its most common use, by
-  far, is just to ask whether two strings are equal. This function directly addresses
-  that question. It differs from <tt>strcmp()</tt> in three ways, one
-  especially important.
+<tt>strcmp()</tt> is a distance function, but its most common use, by
+far, is just to ask whether two strings are equal. This function directly addresses
+that question. It differs from <tt>strcmp()</tt> in three ways, one
+especially important.
 
 Tests for equality: I answer the question {\em Is string one == string
 two?}, so if two strings are identical, I return 1; if they differ, I
@@ -61,7 +62,7 @@ return 0. {\em This is the opposite of strcmp}, which returns zero when
 two strings are identical (and are thus zero distance apart). It is common for
 people to think strcmp answers the equality question, and then wind up writing the wrong
 thing. If that's you, consider using this function (or one like it) and
-never touching strcmp. If you think the fact that it's confusing that apop_strcmp and strcmp return opposite
+never touching strcmp. If you think the fact that it's confusing that \c apop_strcmp and \c strcmp return opposite
 outputs, feel free to never use this function.
 
 Faster: as soon as I determine a difference, I leave. That is, I'll step

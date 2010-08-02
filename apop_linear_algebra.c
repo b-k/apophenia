@@ -36,6 +36,7 @@ function.
 */
 
 #include "stats.h"
+#include "internal.h"
 #include "conversions.h" //apop_matrix_copy
 
 /**
@@ -124,7 +125,7 @@ The data set's vector will be the largest eigenvalues, scaled by the total of al
 \ingroup linear_algebra */
 APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int dimensions_we_want) {
     gsl_matrix * apop_varad_var(data, NULL);
-    apop_assert_s(data, "you sent me NULL data");
+    Nullcheck_d(data);
     int apop_varad_var(dimensions_we_want, data->size2);
     if (!data) return NULL;
 APOP_VAR_ENDHEAD
@@ -411,7 +412,7 @@ This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD int apop_vector_bounded(const gsl_vector *in, long double max){
     const gsl_vector * apop_varad_var(in, NULL)
-    apop_assert(in, 0, 1, 'c', "You sent in a NULL vector; returning 1.");
+    apop_assert_c(in, 0, 1, "You sent in a NULL vector; returning 1.");
     long double apop_varad_var(max, GSL_POSINF)
 APOP_VAR_END_HEAD
   double x;
@@ -482,8 +483,8 @@ the designated initializer syntax for function calls. Notably, in the case where
 APOP_VAR_HEAD apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2){
     const apop_data * apop_varad_var(d1, NULL)
     const apop_data * apop_varad_var(d2, NULL)
-    apop_assert(d1, NULL, 0, 'c', "d1 is NULL; returning NULL\n");
-    apop_assert(d2, NULL, 0, 'c', "d2 is NULL; returning NULL\n");
+    apop_assert_c(d1, NULL, 0, "d1 is NULL; returning NULL\n");
+    apop_assert_c(d2, NULL, 0, "d2 is NULL; returning NULL\n");
     char apop_varad_var(form1, 0)
     char apop_varad_var(form2, 0)
 APOP_VAR_ENDHEAD
@@ -500,9 +501,9 @@ CBLAS_TRANSPOSE_t   lt, rt;
     else if (d1->vector)
         uselm   = 0;
     else {
-        apop_assert (form1 != 'v',  NULL, 0, 'c', 
+        apop_assert_c(form1 != 'v',  NULL, 0,
                     "You asked for a vector from the right data set, but its vector==NULL. Returning NULL.");
-        apop_assert(0, NULL, 0, 'c', 
+        apop_assert_c(0, NULL, 0,
                     "The right data set has neither non-NULL matrix nor vector. Returning NULL.");
     }
     if (d2->matrix && form2 != 'v')
@@ -510,9 +511,9 @@ CBLAS_TRANSPOSE_t   lt, rt;
     else if (d2->vector)
         userm   = 0;
     else {
-        apop_assert (form2 != 'v',  NULL, 0, 'c', 
+        apop_assert_c (form2 != 'v',  NULL, 0, 
                     "You asked for a vector from the right data set, but its vector==NULL. Returning NULL.");
-        apop_assert(0, NULL, 0, 'c', 
+        apop_assert_c(0, NULL, 0, 
                     "The right data set has neither non-NULL matrix nor vector. Returning NULL.");
     }
 

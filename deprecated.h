@@ -13,6 +13,23 @@ void apop_data_set_tt(apop_data *in,const  char *row,const  char* col,const  dou
 
 
 
+/** \deprecated Use \ref Apop_model_add_group.
+ 
+  For what it's worth, this is a convenience macro. Expands:
+ \code
+ Apop_settings_alloc(mle, ms, data, model);
+ \endcode
+to:
+ \code
+ apop_mle_settings *ms = apop_mle_settings_alloc(data, model);
+ \endcode
+ As of this writing, options for the first argument include \ref apop_mle_settings_init "mle", \ref apop_histogram_settings_init "histogram", and \ref apop_update_settings_init "update". See the respective documentations for the arguments to be sent to the respective allocation functions. Because this is an obsolete function, that list may shrink.
+
+ */
+#define Apop_settings_alloc(type, out, ...) apop_ ##type ##_settings *out = apop_ ##type ##_settings_alloc(__VA_ARGS__);
+
+#define APOP_SETTINGS_ALLOC(type, out, ...) Apop_settings_alloc(type, out, __VA_ARGS__)
+
 /** Add a settings group. 
   \deprecated{Use \ref Apop_model_add_group instead.}
   You will need to provide arguments for the specific settings group you

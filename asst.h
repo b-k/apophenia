@@ -31,72 +31,45 @@ apop_data * apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1)
 apop_data * apop_test_kolmogorov(apop_model *m1, apop_model *m2);
 void apop_histogram_normalize(apop_model *m);
 
-/** A convenient front for \ref apop_error, that tests the first element and
- basically runs \ref apop_error if it is false. See also \ref Apop_assert_void and \ref apop_error.
+/** Tests whether a condition is true, and if it is not, prints an error to \c stderr and 
+  exits the function. 
  
- Following the tradition regarding assert functions, this is a macro but is not in all caps.
-
  \param test The expression that you are asserting is nonzero.
- \param returnval If the assertion fails, return this. If you want to halt on error, this is irrelevant, but still has to match your function's return type.
+ \param returnval If the assertion fails, return this. If your assertion is inside a function that returns nothing, then leave this blank, as in <tt>apop_assert_c(a==b, , 0, "a should equal b");</tt>
  \param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one.
- \param stop If 's', halt the program (using the standard C \c assert); if 'c', continue by returning the return value and printing an error message if appropriate.
  \param ... The error message in printf form, plus any arguments to be inserted into the printf string. I'll provide the function name and a carriage return.
+
+ \seealso \ref Apop_assert, which halts on error.
  */
-#define Apop_assert(test, returnval, level, stop, ...) do \
+#define Apop_assert_c(test, returnval, level, ...) do \
     if (!(test)) {  \
         if (apop_opts.verbose >= level) { fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");}   \
-        if (stop == 's' || stop == 'h') assert(test);   \
         return returnval;  \
 } while (0);
 
+/** This is just a slightly more user-friendly version of the C-standard \c assert(). The
+  program halts if the first argument evaluates to false, and the remaining arguments are
+  a printf-style message to display to \c stderr in such an event.
 
-/** A simplified version of \ref Apop_assert that always stops. Therefore, you don't need
-  the \c returnval or the stop/continue options. Because a stop is invariably a true
-  error, the verbosity level is also omitted, so just give the test and the error.*/
-#define Apop_assert_s(test, ...) do \
+  This is how Apophenia does (almost) all of its assertions, and is made public as a
+  convenience to you. You can see that it isn't hard to re-implement.
+
+\param test An expression that, if false, halts the program
+\param ... A printf-style message to display on \c stderr on halt. I'll provide the function name and a carriage return.
+
+\seealso \ref Apop_assert_c, which continues with a message rather than shutting down.
+
+  */
+#define Apop_assert(test, ...) do \
     if (!(test)) {  \
         fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");   \
-        assert(test);   \
+        abort();   \
 } while (0);
 
-#define apop_assert(test, returnval, level, stop, ...) Apop_assert(test, returnval, level, stop, __VA_ARGS__)
-#define apop_assert_s Apop_assert_s
-#define APOP_ASSERT(test, returnval, level, stop, ...) Apop_assert(test, returnval, level, stop, __VA_ARGS__)
-
-/** Like \ref Apop_assert, but no return step. It is thus useful in void functions.
-
- Following the tradition regarding assert functions, this is a macro but is not in all caps.
-
- \param test The expression that you are asserting is nonzero.
- \param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one.
- \param stop If 's', halt the program (using the standard C \c assert); if 'c', continue by returning the return value and printing an error message if appropriate.
- \param ... The error message in printf form, plus any arguments to be inserted into the printf string. I'll provide the function name and a carriage return.
- */
-#define Apop_assert_void(test,  level, stop, ...) do \
-    if (!(test)) {  \
-        if (apop_opts.verbose >= level) { fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");}   \
-        if (stop == 's' || stop == 'h') assert(test);   \
-} while (0);
-
-#define apop_assert_void(test, level, stop, ...) Apop_assert_void(test, level, stop, __VA_ARGS__)
-#define APOP_ASSERT_VOID(test, level, stop, ...) Apop_assert_void(test, level, stop, __VA_ARGS__)
-
-/** \deprecated Use \ref Apop_model_add_group.
- 
-  For what it's worth, this is a convenience macro. Expands:
- \code
- Apop_settings_alloc(mle, ms, data, model);
- \endcode
-to:
- \code
- apop_mle_settings *ms = apop_mle_settings_alloc(data, model);
- \endcode
- As of this writing, options for the first argument include \ref apop_mle_settings_init "mle", \ref apop_histogram_settings_init "histogram", and \ref apop_update_settings_init "update". See the respective documentations for the arguments to be sent to the respective allocation functions. Because this is an obsolete function, that list may shrink.
-
- */
-#define Apop_settings_alloc(type, out, ...) apop_ ##type ##_settings *out = apop_ ##type ##_settings_alloc(__VA_ARGS__);
-
-#define APOP_SETTINGS_ALLOC(type, out, ...) Apop_settings_alloc(type, out, __VA_ARGS__)
+#define apop_assert_s Apop_assert
+#define apop_assert Apop_assert
+#define Apop_assert_s Apop_assert
+#define apop_assert_c Apop_assert_c
 
 //Bootstrapping & RNG
 apop_data * apop_jackknife_cov(apop_data *data, apop_model model);

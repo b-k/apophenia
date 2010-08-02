@@ -22,7 +22,7 @@ Returns an \c apop_beta model with its parameters appropriately set.
 
 */
 apop_model *apop_beta_from_mean_var(double m, double v){
-    apop_assert(m<1&&m > 0, NULL, 0, 's', "You asked for a beta distribution "
+    apop_assert_s(m<1&&m > 0, "You asked for a beta distribution "
                         "with mean %g, but the mean of the beta will always "
                         "be strictly between zero and one.", m);
     double k     = (m * (1- m)/ v) -1 ;

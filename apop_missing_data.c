@@ -33,7 +33,6 @@ static int find_missing(const apop_data *data, apop_data *predict, size_t page, 
         for (int j=0; j <mask->matrix->size2; j++)
             if (apop_data_get(mask, i, j))
                 addin(predict, i, j, page);
-//        apop_assert(mset->ct, 0, 0,'s',"You're asking me to estimate a model where every single parameter is fixed.");
     if (mask->more)
         ct += apop_sum(mask->vector)+ apop_matrix_sum(mask->matrix)
                      + find_missing(mask->more, predict, page+1, ct);
@@ -117,7 +116,7 @@ APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
     char apop_varad_var(inplace, 'n');
 APOP_VAR_ENDHEAD
     Get_vmsizes(d) //defines firstcol, vsize, wsize, msize1, msize2.
-    apop_assert(msize1 || vsize, NULL, 0, 'c', 
+    apop_assert_c(msize1 || vsize, NULL, 0, 
             "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
     //find out where the NaNs are
     int len = vsize ? vsize : msize1;

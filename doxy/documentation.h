@@ -1823,8 +1823,6 @@ for the -obit and -ogit models
 /**
 \page gentle A quick overview
 
-Hi.
-
 This is a "gentle introduction" to the Apophenia library. It is intended 
 to give you some initial bearings on the typical workflow and the concepts and tricks that
 the manual pages assume you have met.
@@ -1916,14 +1914,14 @@ doesn't have row names but does have column names, all of the following work:
 x = apop_data_get(data, 2, 3); //x == 0
 x = apop_data_get(data, .row=2, .colname="X_3"); // x == 0
 apop_data_set(data, 2, 3, 18);
-apop_data_set(data, .colname="three", .row=2, .val= 18);
+apop_data_set(data, .colname="X_3", .row=2, .val= 18);
 \endcode
 
 See \ref apop_vector_distance for a few more useful examples of this mechanism.
 
-Those of you coming from stats packages can enjoy the awesomeness of being able to omit
-arguments that will take their default value,
-and the pleasure of working in C without having to give up all the conveniences of stats packages.
+Those of you coming from stats packages will enjoy 
+working in C without having to give up all the conveniences of stats packages, such as
+the awesomeness of being able to omit arguments that will take their default value.
 C traditionalists may be surprised by this unfamiliar form, but can rest assured that it is entirely standards-compliant C. 
 Everybody can see the \ref designated page for details.
 
@@ -2011,7 +2009,7 @@ replicate weights, and column names in bold labeling the variables:
 </td></tr>
 </table>
 
-As per the example, Apophenia will generally assume that one row across all of these elements
+As per the example above, Apophenia will generally assume that one row across all of these elements
 describes a single observation or data point.
 
 Also, \ref apop_data_get and \ref apop_data_set consider the vector to be the -1st column,
@@ -2049,11 +2047,11 @@ background variables in the current scope (something a function can't do). Tradi
 custom is to put macro names in all caps, like \c APOP_DATA_ROWS, which to modern
 sensibilities looks like yelling. The custom has a logic: there are ways to hang
 yourself with macros, so it is worth distinguishing them typographically. Apophenia
-lets you choose the level of careful/pedantic you prefer, any of \c
+lets you choose the level of careful/pedantic you prefer: any of \c
 APOP_ROW, \c Apop_row, or \c apop_row are valid. The documentation always uses a single capital.
 
 Notice that all of the slicing macros return nothing, so there is nothing to do with one
-but put it on a line by itself; this limits the number of misuses.
+but put it on a line by itself. This limits the number of misuses.
 
 \par Basic manipulations
 
@@ -2272,7 +2270,7 @@ more than sufficient to test the hypothesis.
 
 \include ols2.c
 
-The thing to note about this exercise is that it made no assumptions about the model. It
+Note that the procedure did not assume the model parameters had a certain form. It
 queried the model for the distribution of parameter \c x_1, and if the model didn't have
 a closed-form answer then a distribution via bootstrap would be provided. Then that model
 was queried for its CDF. [The procedure does assume a symmetric distribution. Fixing this

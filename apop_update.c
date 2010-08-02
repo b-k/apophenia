@@ -10,7 +10,7 @@
 /** Allocate an \ref apop_update_settings struct.  */
 apop_update_settings *apop_update_settings_init(apop_update_settings in){
    apop_update_settings *out = malloc(sizeof(apop_update_settings));
-   Apop_assert(out, NULL, 0, 's', "malloc failed. Out of memory?");
+   Apop_assert_s(out, "malloc failed. Out of memory?");
    apop_varad_setting(in, out, periods, 6e3);
    apop_varad_setting(in, out, histosegments, 5e2);
    apop_varad_setting(in, out, burnin, 0.05);
@@ -189,7 +189,7 @@ APOP_VAR_END_HEAD
         write_double(draw, likelihood->parameters);
         ll    = apop_log_likelihood(data,likelihood);
         ratio = ll - cp_ll;
-        apop_assert(!gsl_isnan(ratio),  NULL, 0, 'c',"Trouble evaluating the "
+        apop_assert_c(!gsl_isnan(ratio),  NULL, 0,"Trouble evaluating the "
                 "likelihood function at vector beginning with %g or %g. "
                 "Maybe offer a new starting point.\n"
                 , current_param->vector->data[0], likelihood->parameters->vector->data[0]);

@@ -87,7 +87,7 @@ int apop_db_open(char *filename){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_db_open(filename);
 #else
-        {apop_assert(0, 0, 0, 'c', "apop_db_open: Apophenia was compiled without mysql support.");}
+        {apop_assert_c(0, 0, 0, "apop_db_open: Apophenia was compiled without mysql support.");}
 #endif
         return apop_sqlite_db_open(filename);
 }
@@ -120,14 +120,14 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_table_exists(char *name, char remove){
     char *apop_varad_var(name, NULL)
-    apop_assert(name, 0, 0, 's', "You gave me a NULL table name.");
+    apop_assert_s(name, "You gave me a NULL table name.");
     char apop_varad_var(remove, 'n')
 APOP_VAR_END_HEAD
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_table_exists(name, remove);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.\n");
+        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.\n");
 #endif
   char 		*err, *q2;
   tab_exists_t te = { .name = name };
@@ -160,7 +160,7 @@ APOP_VAR_END_HEAD
         {apop_mysql_db_close(0);
         return 0;}
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
+        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
     else{
       char		*err;
@@ -199,10 +199,10 @@ int apop_query(const char *fmt, ...){
   Fillin(q, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        {apop_assert(mysql_db, 1, 0, 'c', "No mySQL database is open.");
+        {apop_assert_c(mysql_db, 1, 0, "No mySQL database is open.");
         apop_mysql_query(q);}
 #else
-        apop_assert(0, 1, 0, 'c', "Apophenia was compiled without mysql support.")
+        apop_assert_c(0, 1, 0, "Apophenia was compiled without mysql support.")
 #endif
     else 
         {if (!db) apop_db_open(NULL);
@@ -228,7 +228,7 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_chars);
 #else
-        apop_assert(0, NULL, 0, 'c', "Apophenia was compiled without mysql support.")
+        apop_assert_c(0, NULL, 0, "Apophenia was compiled without mysql support.")
 #endif
     return apop_sqlite_query_to_text(query);
 }
@@ -279,7 +279,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_data);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
+        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
 
     //else
@@ -304,7 +304,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_matrix);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
+        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
     apop_data * outd = apop_query_to_data("%s", query);
     gsl_matrix *outm = NULL;
@@ -328,13 +328,13 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_vector);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
+        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
   apop_data	*d=NULL;
   gsl_vector  *out;
 	if (db==NULL) apop_db_open(NULL);
 	d	= apop_query_to_data("%s", query);
-    apop_assert(d, NULL, 1, 'c', "Query turned up a blank table. Returning NULL.");
+    apop_assert_c(d, NULL, 1, "Query turned up a blank table. Returning NULL.");
     //else:
     out = gsl_vector_alloc(d->matrix->size1);
 	gsl_matrix_get_col(out, d->matrix, 0);
@@ -354,14 +354,14 @@ double apop_query_to_float(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_to_float(query);
 #else
-        apop_assert(0, 0, 0, 'c', "Apophenia was compiled without mysql support.")
+        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
     //else
   gsl_matrix	*m=NULL;
   double		out;
 	if (db==NULL) apop_db_open(NULL);
 	m	= apop_query_to_matrix("%s", query);
-    apop_assert(m, GSL_NAN, 1, 'c', "Query turned up a blank table. Returning NULL.");
+    apop_assert_c(m, GSL_NAN, 1, "Query turned up a blank table. Returning NULL.");
 	out	= gsl_matrix_get(m, 0, 0);
 	gsl_matrix_free(m);
 	return out;
@@ -518,7 +518,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
         sprintf(q, " ");
     }
 #else 
-        apop_assert_void(0, 0, 'c', "Apophenia was compiled without mysql support.")
+        apop_assert_c(0, , 0, "Apophenia was compiled without mysql support.")
 #endif
     else {
         if (db==NULL) apop_db_open(NULL);
@@ -608,7 +608,7 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD void apop_db_merge_table(char *db_file, char *tabname, char inout){
     char * apop_varad_var(tabname, NULL);
-    Apop_assert_void(tabname, 0,'s', "I need a non-NULL tabname");
+    Apop_assert_s(tabname, "I need a non-NULL tabname");
     char * apop_varad_var(db_file, NULL);
     char apop_varad_var(inout, 'i');
 APOP_VAR_ENDHEAD
@@ -645,7 +645,7 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD void apop_db_merge(char *db_file, char inout){
     char * apop_varad_var(db_file, NULL);
-    Apop_assert_void(db_file, 0, 's', "This function copies from a named database file to the currently in-memory database. You need to give me the name of that named db.")
+    Apop_assert_s(db_file, "This function copies from a named database file to the currently in-memory database. You need to give me the name of that named db.")
     char apop_varad_var(inout, 'i');
 APOP_VAR_ENDHEAD
   apop_data	*tab_list;

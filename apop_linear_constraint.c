@@ -110,7 +110,7 @@ APOP_VAR_HEAD double  apop_linear_constraint(gsl_vector *beta, apop_data * const
     gsl_vector * apop_varad_var(beta, NULL);
     double apop_varad_var(margin, 0);
     apop_data * apop_varad_var(constraint, NULL);
-    apop_assert(beta, 0, 0, 's', "The vector to be checked is NULL.");
+    apop_assert_s(beta, "The vector to be checked is NULL.");
     if (!constraint){
         if (default_constraint && beta->size != default_constraint->vector->size){
             apop_data_free(default_constraint);

@@ -1294,7 +1294,6 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
-    do_test("test distributions", test_distributions(r));
     do_test("default RNG", test_default_rng(r));
     do_test("log and exponent", log_and_exp(r));
     do_test("test printing", test_printing());
@@ -1347,6 +1346,7 @@ int main(int argc, char **argv){
     do_test("transposition test", test_transpose());
     do_test("test unique elements", test_unique_elements());
     if (slow_tests){
+        do_test("test distributions", test_distributions(r));
         if (verbose) printf("\tSlower tests:\n");
         do_test("test ML imputation", test_ml_imputation(r));
         //do_test("test apop_update", test_updating(r));

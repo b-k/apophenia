@@ -152,7 +152,7 @@ If you have a situation where these options are out, you'll have to do something
   */
 
 apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
-    apop_assert((in.vbase != -1) && (in.m1base != -1) && (in.m2base != -1),  NULL, 0, 's', "This function only works with models whose number of params does not depend on data size. You'll have to use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then set in->parameters using your data.");
+    apop_assert_s((in.vbase != -1) && (in.m1base != -1) && (in.m2base != -1), "This function only works with models whose number of params does not depend on data size. You'll have to use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then set in->parameters using your data.");
     apop_model *out = apop_model_copy(in);
     apop_prep(NULL, out);
     apop_data_fill_base(out->parameters, ap);

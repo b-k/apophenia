@@ -20,7 +20,7 @@ The functions to shunt data between text files, database tables, GSL matrices, a
 */
 double * apop_vector_to_array(const gsl_vector *in){
 //Does not use memcpy, because we don't know the stride of the vector.
-  apop_assert(in, NULL, 1, 'c', "You sent me a NULL vector; returning NULL");
+  apop_assert_c(in, NULL, 1, "You sent me a NULL vector; returning NULL");
   double	*out	= malloc(sizeof(double) * in->size);
 	for (size_t i=0; i < in->size; i++)
 		out[i]	= gsl_vector_get(in, i);
@@ -41,7 +41,7 @@ This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
     double * apop_varad_var(in, NULL);
-    apop_assert(in, NULL, 1, 'c', "You sent me NULL data; returning NULL.");
+    apop_assert_c(in, NULL, 1, "You sent me NULL data; returning NULL.");
     int apop_varad_var(size, sizeof(in)/sizeof(in[0]));
 APOP_VAR_END_HEAD
     gsl_vector      *out = gsl_vector_alloc(size);
@@ -63,14 +63,14 @@ This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){
     const gsl_vector * apop_varad_var(in, NULL);
-    apop_assert(in,  NULL, 1,'c', "Converting NULL vector to NULL matrix.");
+    apop_assert_c(in,  NULL, 1, "Converting NULL vector to NULL matrix.");
     char apop_varad_var(row_col, 'c');
 APOP_VAR_ENDHEAD
     gsl_matrix *out = 
         (row_col == 'r' || row_col == 'R') 
            ? gsl_matrix_alloc(1, in->size)
            : gsl_matrix_alloc(in->size, 1);
-    apop_assert(out,  NULL, 0,'s', "gsl_matrix_alloc failed; probably out of memory.");
+    apop_assert_s(out, "gsl_matrix_alloc failed; probably out of memory.");
     if (row_col == 'r' || row_col == 'R') 
         gsl_matrix_set_row(out, 0, in);
     else
@@ -163,7 +163,7 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
       return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
     if ((rows==0 || cols==0) && vsize>0)
       return apop_vector_to_data(apop_array_to_vector(in, vsize));
-    apop_assert(vsize==rows,  NULL, 0,'c',"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
+    apop_assert_c(vsize==rows,  NULL, 0,"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
   int ctr = 0;
   apop_data *out  = apop_data_alloc(vsize, rows, cols);
     for (size_t i=0; i< rows; i++)
@@ -181,7 +181,7 @@ static int find_cat_index(char **d, char * r, int start_from, int size){
 		i	++;
 		i	%= size;	//loop around as necessary.
 	} while(i!=start_from); 
-    Apop_assert(0, 0, 0, 'c', "Something went wrong in the crosstabbing; couldn't find %s.", r);
+    Apop_assert_c(0, 0, 0, "Something went wrong in the crosstabbing; couldn't find %s.", r);
 }
 
 /**Give the name of a table in the database, and names of three of its
@@ -205,17 +205,17 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
     datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
-    apop_assert(datachars,  NULL, 0, 's', "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
+    apop_assert_s(datachars, "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
     pre_d1	    = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
-    apop_assert(pre_d1,  NULL, 0, 's', "selecting %s from %s returned an empty table.", r1, tabname);
+    apop_assert_s(pre_d1, "selecting %s from %s returned an empty table.", r1, tabname);
     for (i=0; i < pre_d1->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d1->text[i][0], 'r');
 
 	pre_d2	= apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
-	apop_assert(pre_d2,  NULL, 0, 's', "selecting %s from %s returned an empty table.", r2, tabname);
+	apop_assert_s(pre_d2, "selecting %s from %s returned an empty table.", r2, tabname);
     for (i=0; i < pre_d2->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
@@ -492,7 +492,7 @@ static int prep_text_reading(char *text_file, FILE **infile, regex_t *regex, reg
         *infile  = stdin;
     else
 	    *infile	= fopen(text_file, "r");
-    apop_assert(infile, 0,  0, 'c', "Trouble opening %s. Returning NULL.\n", text_file);
+    apop_assert_c(infile, 0,  0, "Trouble opening %s. Returning NULL.\n", text_file);
 
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, REG_EXTENDED);
@@ -756,7 +756,7 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, 
     char apop_varad_var(use_info_pages, 'n');
     if (out) {
         int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
-        apop_assert(out->size == total_size, NULL, 0, 's', "The input data set has %i elements,"
+        apop_assert_s(out->size == total_size, "The input data set has %i elements,"
                " but the output vector you want to fill has size %zu. Please make these sizes equal."
                , total_size, out->size);
     }
@@ -1121,7 +1121,7 @@ APOP_VAR_END_HEAD
         return 0;
 	use_names_in_file   = 0;    //file-global.
 
-	apop_assert(!apop_table_exists(tabname,0), 0, 0, 'c', "table %s exists; not recreating it.", tabname);
+	apop_assert_c(!apop_table_exists(tabname,0), 0, 0, "table %s exists; not recreating it.", tabname);
     col_ct  = get_field_names(has_col_names, field_names, infile, text_file, &regex, &add_this_line, field_ends);
     if (apop_opts.db_engine=='m')
         tab_create_mysql(tabname, col_ct, has_row_names);

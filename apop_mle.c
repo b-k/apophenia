@@ -181,7 +181,7 @@ APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *
 APOP_VAR_ENDHEAD
   Get_vmsizes(model->parameters); //tsize
   apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
-  apop_assert(ll, 0, 0, 'c', "Input model has neither p nor log_likelihood method. Returning zero.");
+  apop_assert_c(ll, 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
   gsl_vector        *out= gsl_vector_alloc(tsize);
   infostruct    i = (infostruct) {.model = model, .data = data};
     apop_internal_numerical_gradient(ll, &i, out, delta);
@@ -484,7 +484,7 @@ Inside the infostruct, you'll find these elements:
 				            status  = 0,
 				            apopstatus  = 0,
 				            betasize= i->beta->size;
-  assert(mp);
+  apop_assert_s(mp, "No apop_mle settings group in the working model");
     if (mp->method == APOP_CG_BFGS)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
     else if (mp->method == APOP_CG_PR)
@@ -530,7 +530,7 @@ Inside the infostruct, you'll find these elements:
 static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
   apop_model		        *est        = i->model;
   apop_mle_settings         *mp         = apop_settings_get_group(est, apop_mle);
-  assert(mp);
+  apop_assert_s(mp, "No apop_mle settings group in the working model");
   int                       status,
                             apopstatus  = 0,
                             iter 		= 0,
@@ -737,7 +737,7 @@ This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary){
     apop_model * apop_varad_var(e, NULL);
-    assert(e);
+    Nullcheck_m(e);
     apop_model * apop_varad_var(copy, NULL);
     char * apop_varad_var(starting_pt, NULL);
     double apop_varad_var(boundary, 1e8);
@@ -766,7 +766,7 @@ APOP_VAR_ENDHEAD
         prm->starting_pt	= malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
-    apop_assert(apop_vector_bounded(v, boundary), e, 0, 'c', "Your model has diverged (element(s) > %g); returning your original model without restarting.", boundary);
+    apop_assert_c(apop_vector_bounded(v, boundary), e, 0, "Your model has diverged (element(s) > %g); returning your original model without restarting.", boundary);
     gsl_vector_free(v);
         
     apop_model *newcopy = apop_estimate(e->data, *copy);
@@ -873,7 +873,7 @@ static void anneal_sigint(){ longjmp(anneal_jump,1); }
 static apop_model * apop_annealing(infostruct *i){
   apop_model            *ep = i->model;
   apop_mle_settings     *mp = apop_settings_get_group(ep, apop_mle);
-  assert(mp);
+  apop_assert_s(mp, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
   gsl_siman_params_t    simparams = (gsl_siman_params_t) {
                             .n_tries       = mp->n_tries, 
                             .iters_fixed_T = mp->iters_fixed_T,

@@ -4,6 +4,16 @@
 !!Big.
 ]
 
+    August 2010
+** What was apop_assert => apop_assert_c; what was apop_assert_s => apop_assert. Their
+    arguments are slightly different, and the thing that was asserted no longer prints along
+    with the message you chose.
+
+**apop_text_add now frees the contents of cell in the text grid that you are about to
+    overwrite, thus preventing memory leaks without effort from the user. If your existing
+    code has other pointers to the string in that text cell, you'll have to replace the now
+    string-freeing apop_text_add with asprintf(&(your_dataset->text[row][col]), "your string").
+
     July 2010
 ** apop_regex now gets all matches when you pull substrings. Each row of the text grid
     is a match, and if you have multiple substrings, each match's substrings will be

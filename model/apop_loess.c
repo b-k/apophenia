@@ -3211,11 +3211,11 @@ static void loess_(double *y, double *x_, long *size_info, double *weights,
         for(j = 0; j < N; j++)
             x[k + j] = x_tmp[p + j];
     }
-    apop_assert_void(!((*degree) == 1 && sum_drop_sqr), 0, 's', 
+    apop_assert_s(!((*degree) == 1 && sum_drop_sqr), 
                 "Specified the square of a factor predictor to be dropped when degree = 1");
-	apop_assert_void(!(D == 1 && sum_drop_sqr), 0, 's', 
+	apop_assert_s(!(D == 1 && sum_drop_sqr), 
                 "Specified the square of a predictor to be dropped with only one numeric predictor");
-	apop_assert_void(sum_parametric != D, 0, 's', "Specified parametric for all predictors");
+	apop_assert_s(sum_parametric != D, "Specified parametric for all predictors");
 	for(j = 0; j <= (*iterations); j++) {
 		new_stat = j ? "none" : *statistics;
 		for(i = 0; i < N; i++)
@@ -3587,7 +3587,7 @@ void matrix_to_FORTRAN(gsl_matrix *inmatrix, double *outFORTRAN, int start_col){
 
 apop_loess_settings * apop_loess_settings_init(apop_loess_settings in){
   apop_loess_settings *out  = calloc(1, sizeof(*out));
-    apop_assert(in.data, NULL, 0, 's', "I need a .data element to allocate apop_loess_settings.");
+    apop_assert_s(in.data, "I need a .data element to allocate apop_loess_settings.");
     int n = in.data->matrix->size1;
 	int	max_kd = n > 200 ? n : 200;
     int p =  (in.data->vector)
@@ -3628,7 +3628,7 @@ apop_loess_settings * apop_loess_settings_init(apop_loess_settings in){
     };
     apop_varad_setting(in, out, ci_level, 0.95);
     apop_varad_setting(in, out, data, NULL);
-    apop_assert(out->data, NULL, 0, 's', "You gave me a NULL data set for lowess smooting.");
+    apop_assert_s(out->data, "You gave me a NULL data set for lowess smooting.");
     struct loess_struct *lo = &(out->lo_s);
     if (in.data->weights)
         lo->in.weights = in.data->weights->data;

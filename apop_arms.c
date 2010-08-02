@@ -63,7 +63,7 @@ apop_arms_settings *apop_arms_settings_init(apop_arms_settings in){
     out->state = malloc(sizeof(arms_state));
     apop_assert_s(out->state, "Malloc failed. Out of memory?");
   int err = initial(out, out->state);
-  apop_assert(!err, NULL, 0, 'c', "init failed, error %i. Returning NULL", err);
+  apop_assert_c(!err, NULL, 0, "init failed, error %i. Returning NULL", err);
 
   /* finish setting up metropolis struct (can only do this after setting up env) */
   if(out->do_metro=='y'){
@@ -130,13 +130,13 @@ int initial (apop_arms_settings* params,  arms_state *env){
   POINT *q;
   int mpoint = 2*params->ninit + 1;
 
-  apop_assert(params->ninit>=3, 1001, 0, 'c', "too few initial points");
-  apop_assert(params->npoint >= mpoint, 1002, 0, 'c', "too many initial points");
-  apop_assert((params->xinit[0] >= params->xl) && (params->xinit[params->ninit-1] <= params->xr),
-                     1003, 0, 'c', "initial points do not satisfy bounds");
+  apop_assert_c(params->ninit>=3, 1001, 0, "too few initial points");
+  apop_assert_c(params->npoint >= mpoint, 1002, 0, "too many initial points");
+  apop_assert_c((params->xinit[0] >= params->xl) && (params->xinit[params->ninit-1] <= params->xr),
+                     1003, 0, "initial points do not satisfy bounds");
   for(int i=1; i<params->ninit; i++)
-      apop_assert(params->xinit[i] > params->xinit[i-1], 1004, 0, 'c', "data not ordered");
-  apop_assert(params->convex >= 0.0, 1008, 0, 'c', "negative convexity parameter");
+      apop_assert_c(params->xinit[i] > params->xinit[i-1], 1004, 0, "data not ordered");
+  apop_assert_c(params->convex >= 0.0, 1008, 0, "negative convexity parameter");
 
   env->convex = &params->convex; // copy convexity address to env
   params->neval = 0; // initialise current number of function evaluations
@@ -144,7 +144,7 @@ int initial (apop_arms_settings* params,  arms_state *env){
   /* set up space for envelope POINTs */
   env->npoint = params->npoint;
   env->p = malloc(params->npoint*sizeof(POINT));
-  apop_assert(env->p, 1006, 0, 's', "malloc of env->p failed. Out of space?");
+  apop_assert_s(env->p, "malloc of env->p failed. Out of space?");
 
   /* set up envelope POINTs */
   q = env->p;
@@ -174,7 +174,7 @@ int initial (apop_arms_settings* params,  arms_state *env){
   /* calculate intersection points */
   q = env->p;
   for (int j=0; j<mpoint; j=j+2, q=q+2)
-    apop_assert(!meet(q,env, params), 2000, 0, 'c', "envelope violation without metropolis");
+    apop_assert_c(!meet(q,env, params), 2000, 0, "envelope violation without metropolis");
 
   cumulate(env); // exponentiate and integrate envelope
   env->cpoint = mpoint; // note number of POINTs currently in envelope
@@ -278,7 +278,7 @@ assert(p->pl && p->pr);
     p->ey = expshift(p->y,env->ymax);
     p->f = 1;
     if(update(env,p, params)) 
-        apop_assert(0, -1, 0, 'c', "envelope violation without metropolis");
+        apop_assert_c(0, -1, 0, "envelope violation without metropolis");
     /* perform rejection test: accept iff y < ynew */
     return (y < ynew);
   }

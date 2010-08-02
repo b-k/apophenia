@@ -201,7 +201,6 @@ static int apop_sqlite_db_open(char *filename){
 }
 
 //these are global for the apop_db_to_... callbacks.
-int		currentrow;
 int     namecol;
 static int firstcall;
 
@@ -223,27 +222,24 @@ static int db_to_chars(void *o,int argc, char **argv, char **column){
                 break;
             }
     }
-    if (!d->textsize[1])
-        d->textsize[1] = argc - ncfound;
-    d->text  = realloc(d->text, sizeof(char*) * ++(d->textsize[0]));
-    d->text[currentrow]	= malloc(sizeof(char**) * argc);
+    int rows = d ? d->textsize[0] : 0;
+    int cols = argc - (namecol >= 0);
+    apop_text_alloc(d, rows+1, cols);
     for (size_t jj=0; jj<argc; jj++)
         if (jj == namecol){
             apop_name_add(d->names, argv[jj], 'r'); 
             ncshift ++;
         } else {
-            asprintf(&(d->text[currentrow][jj-ncshift]), "%s", (argv[jj]==NULL)? "NaN": argv[jj]);
+            asprintf(&(d->text[rows][jj-ncshift]), "%s", (argv[jj]==NULL)? "NaN": argv[jj]);
             if(addnames)
                 apop_name_add(d->names, column[jj], 't'); 
         }
-    currentrow++;
     return 0;
 }
 
 apop_data * apop_sqlite_query_to_text(char *query){
   char		*err        = NULL;
-  apop_data *out        = apop_data_alloc(0, 0, 0);
-    currentrow  =0;
+  apop_data *out        = apop_data_alloc();
     firstcall = 1;
     if (db==NULL) apop_db_open(NULL);
     sqlite3_exec(db, query, db_to_chars, out, &err); ERRCHECK
@@ -341,7 +337,7 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
         colct++;
     }
     int requested = in->intypes[0]+in->intypes[1]+in->intypes[2]+in->intypes[3]+in->intypes[4];
-      apop_assert(colct == requested, 1, 0, 'c', 
+      apop_assert_c(colct == requested, 1, 0, 
       "you asked for %i rows in your list of types, but your query produced %u columns. \
       The remainder will be placed in the text section." , requested, colct);
     return 0;

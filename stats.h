@@ -91,7 +91,12 @@ double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w);
 #define apop_var(in) apop_vector_var(in) 
 #define apop_vector_covar(in) apop_vector_cov(in) 
 #define apop_mean(in) apop_vector_mean(in)
+
+/** Find the mean of the input vector.
+
+*/
 #define apop_vector_mean(in)  gsl_stats_mean((in)->data,(in)->stride, (in)->size)
+
 #define apop_vector_var(in)  gsl_stats_variance((in)->data,(in)->stride, (in)->size)
 #define apop_vector_kurt(in) apop_vector_kurtosis(in)
 

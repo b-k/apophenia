@@ -128,7 +128,7 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
 
 /* $\partial {\cal N}(x\beta - y)/\partial \beta_i = \sum{x_i} \partial {\cal N}(K)/\partial K$ (at $K=x\beta -y$) */
 static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){ 
-  apop_assert_void(p->parameters, 0,'s', "You asked me to evaluate an un-parametrized model. Not changing the gradient");
+  apop_assert_s(p->parameters, "You asked me to evaluate an un-parametrized model. Not changing the gradient");
   long double      sigma, actual, weight;
   double expected;
   gsl_matrix	*data		    = d->matrix;

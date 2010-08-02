@@ -445,7 +445,7 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
     apop_data *apop_varad_var(d, NULL)
-    apop_assert(d, NULL, 0, 'c', "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
+    apop_assert_c(d, NULL, 0, "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
     int apop_varad_var(col, 0)
     char apop_varad_var(type, 't')
     int apop_varad_var(keep_first, 0)
@@ -453,12 +453,12 @@ APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type,
     char apop_varad_var(remove, 'n')
 APOP_VAR_ENDHEAD
     if (type == 'd'){
-        apop_assert((col != -1) || d->vector,  NULL, 0, 's', "You asked for the vector element "
+        apop_assert_s((col != -1) || d->vector, "You asked for the vector element "
                                                     "(col==-1) but the data's vector element is NULL.");
-        apop_assert((col == -1) || (col < d->matrix->size2),  NULL, 0, 's', "You asked for the matrix element %i "
+        apop_assert_s((col == -1) || (col < d->matrix->size2), "You asked for the matrix element %i "
                                "but the data's matrix element has only %zu columns.", col, d->matrix->size2);
     } else
-        apop_assert(col < d->textsize[1],  NULL, 0, 's', "You asked for the text element %i but "
+        apop_assert_s(col < d->textsize[1], "You asked for the text element %i but "
                                     "the data's text element has only %i elements.", col, d->textsize[1]);
     apop_data *fdummy;
     apop_data *dummies= dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
@@ -528,7 +528,7 @@ Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a referen
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
     apop_data *apop_varad_var(data, NULL)
-    apop_assert(data, NULL, 0, 'c', "You sent me a NULL data set. Returning NULL.")
+    apop_assert_c(data, NULL, 0, "You sent me a NULL data set. Returning NULL.")
     int apop_varad_var(incol, 0)
     int apop_varad_var(outcol, 0)
     char apop_varad_var(intype, 't')
@@ -570,7 +570,7 @@ Also, the <tt>more</tt> element is a reference table of names and column numbers
 
 */
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
-    apop_assert_void(textcol < d->textsize[1], 0, 's', "You asked for the text element %i but the data's "
+    apop_assert_s(textcol < d->textsize[1], "You asked for the text element %i but the data's "
                                             "text has only %i elements.", datacol, d->textsize[1]);
     if (!d->vector && datacol == -1) //allocate a vector for the user.
         d->vector = gsl_vector_alloc(d->textsize[0]);
@@ -620,7 +620,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   apop_data       *out    = apop_data_alloc(0, 5,1);
     gsl_vector *weights = m->data->weights; //typically NULL.
     apop_data *expected = apop_data_get_page(m->info, "<Predicted>");
-    apop_assert(expected,  NULL, 0, 'c', "I couldn't find a \"<Predicted>\" page in your data set. Returning NULL.\n");
+    apop_assert_c(expected,  NULL, 0, "I couldn't find a \"<Predicted>\" page in your data set. Returning NULL.\n");
     size_t obs = expected->matrix->size1;
     Apop_col_t(expected, "residual", v)
     if (!weights)

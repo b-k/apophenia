@@ -200,7 +200,6 @@ typedef struct{
     gsl_histogram       *pdf; /**< Where the histogram is kept */
     gsl_histogram_pdf   *cdf; /**< If you make random draws, I need a CDF aggregation of the main PDF. I keep it here. */
     apop_model          *histobase;
-    apop_model          *kernelbase;
     int                 bins_in; /**< Used as input. May not equal the final number of bins (\c pdf->bins) due to the infinibins.*/
 } apop_histogram_settings;
 

@@ -21,7 +21,7 @@ apop_model apop_histogram;
  */
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins){
     //header is in model.h.
-  Apop_assert(data, NULL, 0, 'c', "You asked me to set up a histogram with NULL data. Returning a NULL settings group.");
+  Apop_assert_c(data, NULL, 0, "You asked me to set up a histogram with NULL data. Returning a NULL settings group.");
   apop_histogram_settings *hp  = malloc(sizeof(apop_histogram_settings));
   size_t              i, j;
   double              minv    = GSL_POSINF,
@@ -52,7 +52,6 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
                 gsl_histogram_increment(hp->pdf, apop_data_get(data, i, j));
     hp->cdf        = NULL;
     hp->histobase  = NULL;
-    hp->kernelbase = NULL;
     return hp;
 }
 
@@ -65,7 +64,7 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
   The \c .data input is mandatory.
 */
 apop_histogram_settings * apop_histogram_settings_init(apop_histogram_settings in){
-    apop_assert(in.data && in.bins_in, NULL, 0, 's', "I need both the .data and .bins_in elements to be set.");
+    Apop_assert(in.data && in.bins_in, "I need both the .data and .bins_in elements to be set.");
     return apop_histogram_settings_alloc(in.data, in.bins_in);
 }
 
@@ -74,14 +73,13 @@ void * apop_histogram_settings_copy(apop_histogram_settings *in){
     out->pdf = gsl_histogram_clone(in->pdf);
     out->cdf = NULL; //the GSL doesn't provide a copy function, so screw it---just regenerate.
     out->histobase  = in->histobase  ? apop_model_copy(*in->histobase)  : NULL;
-    out->kernelbase = in->kernelbase ? apop_model_copy(*in->kernelbase) : NULL;
     return out;
 }
 
 void apop_histogram_settings_free(apop_histogram_settings *in){
     gsl_histogram_free(in->pdf);
     gsl_histogram_pdf_free(in->cdf);
-    //Assume kernel base and histogram base are freed elsewhere.
+    //Assume histogram base is freed elsewhere.
 }
 
 
@@ -100,14 +98,14 @@ static double one_histo_ll(double i, void *gpdf){
 static double histogram_ll(apop_data *d, apop_model *in){
     apop_histogram_settings *hp = apop_settings_get_group(in, apop_histogram);
     if (!hp) apop_settings_get_group(in, apop_kernel_density);
-    apop_assert(hp, 0, 0, 's', "you sent me an unparametrized model.");
+    Apop_assert(hp, "you sent me an unparametrized model.");
     return apop_map_sum(d, .fn_dp =one_histo_ll, .param=hp->pdf);
 }
 
 static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
   apop_histogram_settings *hp = apop_settings_get_group(in, apop_histogram);
   if (!hp) apop_settings_get_group(in, apop_kernel_density);
-  apop_assert_void(hp, 0, 's', "you sent me an unparametrized model.");
+  Apop_assert(hp, "you sent me an unparametrized model.");
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!
         gsl_histogram_pdf_init(hp->cdf, hp->pdf);
@@ -160,31 +158,14 @@ void apop_kernel_density_settings_free(apop_kernel_density_settings *in){
 }
 
 apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
-    //Uh, nothing. Just run the init fn.
+    //Just run the init fn.
     if (!apop_settings_get_group(m, apop_kernel_density))
         apop_model_add_group(m, apop_kernel_density, .base_data=d);
     return m;
 }
 
-double kernel_p(apop_data *d, apop_model *m){
-    Get_vmsizes(d);
-    long double p = 0;
-    apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
-    apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->parameters;
-    int len = pmf_data->weights ? pmf_data->weights->size
-                                : pmf_data->vector ? pmf_data->vector->size
-                                                   : pmf_data->matrix->size1;
-    for (int k = 0; k < len; k++){
-        Apop_data_row(pmf_data, k, r);
-        (ks->set_fn)(r, ks->kernel);
-        p += apop_p(d, ks->kernel);
-    }
-    double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : len;
-    p /= weight;
-    return p;
-}
-
-double kernel_cdf(apop_data *d, apop_model *m){
+static double kernel_p_cdf_base(apop_data *d, apop_model *m,
+        double (*fn)(apop_data*,apop_model*)){
     Get_vmsizes(d);
     long double total = 0;
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
@@ -195,11 +176,19 @@ double kernel_cdf(apop_data *d, apop_model *m){
     for (int k = 0; k < len; k++){
         Apop_data_row(pmf_data, k, r);
         (ks->set_fn)(r, ks->kernel);
-        total += apop_cdf(d, ks->kernel); //about the only line that differs from kernel_p
+        total += fn(d, ks->kernel);
     }
     double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : len;
     total /= weight;
     return total;
+}
+
+double kernel_p(apop_data *d, apop_model *m){
+    return kernel_p_cdf_base(d, m, apop_p);
+}
+
+double kernel_cdf(apop_data *d, apop_model *m){
+    return kernel_p_cdf_base(d, m, apop_cdf);
 }
 
 apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,

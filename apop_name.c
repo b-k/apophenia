@@ -12,7 +12,7 @@
 */
 apop_name * apop_name_alloc(void){
     apop_name	* init_me = malloc(sizeof(apop_name));
-    apop_assert(init_me, NULL, 0, 's', "malloc failed. Probably out of memory.");
+    apop_assert_s(init_me, "malloc failed. Probably out of memory.");
     *init_me = (apop_name){ };
 	init_me->title[0]   = '\0';
 	return init_me;
@@ -127,7 +127,7 @@ Notice that if the first list is \c NULL, then this is a copy function. If the s
 \ingroup names */
 APOP_VAR_HEAD void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
     apop_name * apop_varad_var(n1, NULL);
-    apop_assert_void(n1, 0, 'c', "Can't stack onto a NULL set of names (which n1 is).");
+    apop_assert_c(n1, , 0, "Can't stack onto a NULL set of names (which n1 is).");
     apop_name * apop_varad_var(nadd, NULL); 
     if (!nadd) return;
     char  apop_varad_var(type1, 'r');
@@ -146,7 +146,7 @@ APOP_VAR_ENDHEAD
     else if (typeadd == 'c')
         for (i=0; i< counts.colct; i++)
             apop_name_add(n1, nadd->column[i], type1);
-    else apop_assert_void(0, 1, 'c', ">%c< sent to apop_name_stack, but the only "
+    else apop_assert_c(0, , 1, ">%c< sent to apop_name_stack, but the only "
                                 "valid options are r t c v. Doing nothing.",type1);
 }
 

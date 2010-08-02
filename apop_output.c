@@ -166,7 +166,7 @@ will print directly to Gnuplot.
 */
 APOP_VAR_HEAD  void apop_histogram_plot(apop_model *hist, Output_declares){
       apop_model * apop_varad_var(hist, NULL);
-      apop_assert_void(hist, 0, 's', "Input histogram is NULL.\n");
+      apop_assert_s(hist, "Input histogram is NULL.");
       Dispatch_output
       apop_histogram_plot_base(hist, Output_vars);
       return;
@@ -196,7 +196,7 @@ will print directly to Gnuplot.
 */
 APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bins, Output_declares){
       gsl_vector * apop_varad_var(data, NULL);
-      apop_assert_void(data, 0, 's', "Input histogram is NULL.\n");
+      apop_assert_s(data, "Input histogram is NULL.\n");
       size_t apop_varad_var(bins, GSL_MAX(10, data->size/20));
       Dispatch_output
 APOP_VAR_ENDHEAD
@@ -224,12 +224,12 @@ APOP_VAR_ENDHEAD
  */
 APOP_VAR_HEAD void apop_histogram_print(apop_model *h, Output_declares){
       apop_model * apop_varad_var(h, NULL);
-      apop_assert_void(h, 0, 's', "Input histogram is NULL.\n");
+      apop_assert_s(h, "Input histogram is NULL.\n");
       Dispatch_output
 APOP_VAR_ENDHEAD
   apop_histogram_settings *hp = apop_settings_get_group(h, apop_histogram); 
   if (!hp) hp = apop_settings_get_group(h, apop_kernel_density); 
-  apop_assert_void(hp, 0, 's', "You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?");
+  apop_assert_s(hp, "You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?");
     histoplot_common(hp->pdf, 0, Output_vars);
 }
 
@@ -576,7 +576,7 @@ static void printone(FILE *f, double width, double height, double margin, int xp
 */
 APOP_VAR_HEAD void apop_plot_lattice(const apop_data *d, Output_declares){
     const apop_data * apop_varad_var(d, NULL);
-    apop_assert_void(d, 0, 's', "Input data set is NULL.\n");
+    apop_assert_s(d, "Input data set is NULL.\n");
     Dispatch_output
 APOP_VAR_ENDHEAD
   double  width   = 1.2,//these used to be options, but who's ever gonna set them to something else.
@@ -621,7 +621,7 @@ APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, Output_declares, s
     static gsl_rng *spare = NULL;
     int free_m = 0;
     gsl_vector * apop_varad_var(v, NULL);
-    apop_assert_void(v, 0, 's', "Input vector is NULL.\n");
+    apop_assert_s(v, "Input vector is NULL.\n");
     apop_model  *apop_varad_var(m, NULL);
     if (!m){
         free_m++;
@@ -678,11 +678,11 @@ APOP_VAR_ENDHEAD
 */
 APOP_VAR_HEAD void apop_plot_triangle(apop_data *in, Output_declares){
     apop_data *apop_varad_var(in, NULL);
-    apop_assert_void(in, 0, 's', "You sent me a NULL data set.");
+    apop_assert_s(in, "You sent me a NULL data set.");
     Dispatch_output
 APOP_VAR_ENDHEAD 
     FILE *f=output_pipe;
-    apop_assert_void(f, 0, 's', "Error opening file %s for writing.", output_file);
+    apop_assert_s(f, "Error opening file %s for writing.", output_file);
     if (in->names && in->names->colct>=3){
         fprintf(f, "set label '%s' at -0.03, 0 right; \n", in->names->column[0]);
         fprintf(f, "set label '%s' at 1.03, 0 left; \n", in->names->column[1]);
