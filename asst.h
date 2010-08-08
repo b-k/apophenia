@@ -95,6 +95,9 @@ apop_model *apop_crosstab_to_pmf(apop_data *d);
 APOP_VAR_DECLARE double * apop_vector_percentiles(gsl_vector *data, char rounding); 
 APOP_VAR_DECLARE apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
 
+//raking
+APOP_VAR_DECLARE apop_data* apop_rake(char *table_name, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, int run_number);
+
 //asprintf, vararg, &c
 #include <stdarg.h>
 extern int asprintf (char **res, const char *format, ...)

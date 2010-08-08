@@ -16,7 +16,7 @@ apop_opts_type apop_opts	=
             .db_name_column = "row_names", .db_nan = "NaN", 
             .db_engine = '\0',             .db_user = "\0", 
             .db_pass = "\0",               .thread_count = 1,
-            .rng_seed = 479901,            .version = X.XX };
+            .rng_seed = 479901,            .version = 2.22 };
 
 #ifdef HAVE_LIBMYSQLCLIENT
 #include "apop_db_mysql.c"
@@ -458,6 +458,17 @@ void apop_matrix_to_db(const gsl_matrix *data, const char *tabname, const char *
 	free(q);
 }
 
+static void add_a_number (char **q, char *comma, double v){
+    if (gsl_isnan(v))
+        qxprintf(q,"%s%c NULL ", *q, *comma);
+    else if (isinf(v)==1)
+        qxprintf(q,"%s%c  'inf'", *q, *comma);
+    else if (isinf(v)==-1)
+        qxprintf(q,"%s%c  '-inf' ", *q, *comma);
+    else
+        qxprintf(q,"%s%c %g ",*q ,*comma, v);
+    *comma = ',';
+}
 
 /** Dump an \ref apop_data set into the database.
 
@@ -465,19 +476,19 @@ This function is basically preempted by \ref apop_data_print. Use that one; this
 
 Column names are inserted if there are any. If there are, all dots are converted to underscores.  Otherwise, the columns will be named \c c1, \c c2, \c c3, &c.
 
-If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is "row_name"), then a so-named column is created, and the row names are placed there.
+\li If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is "row_name"), then a so-named column is created, and the row names are placed there.
+
+\li If there are weights, they will be the last column of the table, and the column will be named "weights".
 
 \param set 	    The name of the matrix
 \param tabname	The name of the db table to be created
 \ingroup apop_data
-\todo add text names.
- \ingroup conversions
+\ingroup conversions
 */
 void apop_data_to_db(const apop_data *set, const char *tabname){
   int		i,j; 
   int		ctr		    = 0;
   int		batch_size	= 100;
-  double    v;
   char		*q 		    = malloc(1000);
   char      comma       = ' ';
   int       use_row= strlen(apop_opts.db_name_column) 
@@ -545,6 +556,8 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
             else			qxprintf(&q, "%s%c\n %s ", q, comma, apop_strip_dots(set->names->text[i],'d'));
             comma = ',';
         }
+        if (set->weights)
+            qxprintf(&q, "%s%c\n \"weights\" numeric", q, comma);
         qxprintf(&q,"%s);  begin;",q);
     }
     int lim = set->vector ? set->vector->size : set->matrix->size1;
@@ -555,31 +568,17 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
 			qxprintf(&q,"%s \'%s\' ",q, set->names->row[i]);
             comma = ',';
         }
-        if (set->vector){
-            v   =gsl_vector_get(set->vector,i);
-            if (gsl_isnan(v))
-                qxprintf(&q,"%s%c NULL ", q, comma);
-            else
-                qxprintf(&q,"%s%c %g ", q, comma, v);
-            comma = ',';
-        }
+        if (set->vector)
+           add_a_number (&q, &comma, gsl_vector_get(set->vector,i));
         if (set->matrix)
-            for(j=0;j< set->matrix->size2; j++){
-                v   =gsl_matrix_get(set->matrix,i,j);
-                if (gsl_isnan(v))
-                    qxprintf(&q,"%s%c NULL ", q, comma);
-                else if (isinf(v)==1)
-                    qxprintf(&q,"%s%c  'inf'", q, comma);
-                else if (isinf(v)==-1)
-                    qxprintf(&q,"%s%c  '-inf' ", q, comma);
-                else
-                    qxprintf(&q,"%s%c %g ",q ,comma, v);
-                comma = ',';
-            }
+            for(j=0;j< set->matrix->size2; j++)
+               add_a_number (&q, &comma, gsl_matrix_get(set->matrix,i,j));
 		for(j=0;j< set->textsize[1]; j++){
 			qxprintf(&q,"%s%c \'%s\' ",q, comma,set->text[i][j]);
             comma = ',';
         }
+        if (set->weights)
+           add_a_number (&q, &comma, gsl_vector_get(set->weights,i));
         qxprintf(&q,"%s);",q);
 		ctr++;
 		if(ctr==batch_size || apop_opts.db_engine == 'm') {
@@ -693,5 +692,3 @@ double	apop_db_paired_t_test(char * tab1, char *col1, char *col2){
 		        stat	= avg/ sqrt(var/(count-1));
 	return 2*GSL_MIN(gsl_cdf_tdist_P(stat, count-1),gsl_cdf_tdist_Q(stat, count-1));
 }
-
-

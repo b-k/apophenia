@@ -8,6 +8,8 @@
 ** What was apop_assert => apop_assert_c; what was apop_assert_s => apop_assert. Their
     arguments are slightly different, and the thing that was asserted no longer prints along
     with the message you chose.
+--apop_data_to_db writes the weights.
+--Iterative proportional fitting, aka raking. 
 
 **apop_text_add now frees the contents of cell in the text grid that you are about to
     overwrite, thus preventing memory leaks without effort from the user. If your existing
