@@ -10,7 +10,7 @@ features like a variance, skew, and kurtosis aggregator for SQL. */
 
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= 
-          { .verbose=0,                    .output_type = 'f',
+          { .verbose=1,                    .output_type = 'f',
             .output_pipe = NULL,           .output_delimiter ="\t", 
             .output_append = 0,            .input_delimiters = "| ,\t", 
             .db_name_column = "row_names", .db_nan = "NaN", 
@@ -21,6 +21,9 @@ apop_opts_type apop_opts	=
 #ifdef HAVE_LIBMYSQLCLIENT
 #include "apop_db_mysql.c"
 #endif
+
+//#define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
+#define ERRCHECK {apop_assert_c(err!=NULL, 0, 0, err);}}
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
@@ -33,7 +36,7 @@ static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 	va_start(argp, fmt);            \
 	vasprintf(&query, fmt, argp);   \
 	va_end(argp);                   \
-	if (apop_opts.verbose) {printf("\n%s\n",query);} 
+	if (apop_opts.verbose >= 2) {printf("\n%s\n",query);} 
 
 typedef struct {
     int         firstcall;
@@ -385,12 +388,12 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
     Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        {apop_error(0, 'c', "%s: Sorry, this function has only been written for SQLITE so far.\n", __func__);
+        {Apop_notify(0, "Sorry, this function has only been written for SQLITE so far.");
         return 0;}
         //return apop_mysql_query_to_text(query);
 #else
-        {apop_error(0, 'c', "%s: Apophenia was compiled without mysql support.\n", __func__);
-        apop_error(0, 'c', "%s: Also, this function has only been written for SQLITE so far.\n", __func__);
+        {Apop_notify(0, "Apophenia was compiled without mysql support.");
+        Apop_notify(0, "Also, this function has only been written for SQLITE so far.");
         return 0;}
 #endif
     //else
@@ -619,11 +622,11 @@ APOP_VAR_ENDHEAD
 		apop_query("attach database \"%s\" as merge_me;", db_file);
 	int d = apop_query_to_float("select count(*) from %s.sqlite_master where name == \"%s\";", to, tabname);
 	if (!d){	//just import table
-		if (apop_opts.verbose)	printf("adding in %s\n", tabname);
+		Apop_notify(2, "adding in %s", tabname);
 		apop_query("create table %s.%s as select * from %s.%s;", to, tabname, from, tabname);
 	}
 	else	{			//merge tables.
-		if (apop_opts.verbose)	printf("merging in %s\n", tabname);
+		Apop_notify(2, "merging in %s", tabname);
 		apop_query("insert into %s.%s select * from %s.%s;", to, tabname, from, tabname);
 	}
 	if (db_file !=NULL)

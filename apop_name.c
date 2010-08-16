@@ -57,9 +57,9 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 		return n->textct;
 	}
 	//else assume (type == 'c')
-        if (type != 'c' && apop_opts.verbose)
-            apop_error(2,'c',"%s: You gave me >%c<, I'm assuming you meant c; "
-                             " copying column names.\n", __func__, type);
+        if (type != 'c')
+            Apop_notify(2,"You gave me >%c<, I'm assuming you meant c; "
+                             " copying column names.", type);
 		n->colct++;
 		n->column	= realloc(n->column, sizeof(char*) * n->colct);
 		n->column[n->colct -1]	= malloc(strlen(add_me) + 1);

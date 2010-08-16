@@ -35,8 +35,8 @@ typedef long int integer;
 typedef float real;
 
 #define Calloc(n,t)	(t *)calloc((unsigned)(n),sizeof(t))   // From #include "S.h"
-#define Recover(msg) apop_error(0, 's', msg)
-#define Warning(msg) apop_error(0, 'c', msg)
+#define Recover(msg) Apop_assert(0, msg)
+#define Warning(msg) Apop_assert_c(0, , 0 , msg)
 
 static double c_b44 = -1.;
 static integer c__0 = 0;

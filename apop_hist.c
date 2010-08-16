@@ -86,7 +86,7 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
   double  diff    = 0;
     for (int i=0; i< bins; i++)
         if (h0->bin[i]==0){
-            apop_error(1, 'c', "element %i of the first vector is zero. Skipping it.\n", i);
+            Apop_notify(1, "element %i of the first vector is zero. Skipping it.", i);
             df --;
         } else 
             diff    += gsl_pow_2(h0->bin[i] - h1->bin[i])/h0->bin[i];

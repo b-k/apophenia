@@ -103,7 +103,6 @@ double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w);
 APOP_VAR_DECLARE double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm);
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb);
 
-
 APOP_VAR_DECLARE void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type);
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
@@ -126,13 +125,14 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m);
 double apop_multivariate_gamma(double a, double p);
 double apop_multivariate_lngamma(double a, double p);
 
-//from the regression code:
-#define apop_F_test apop_f_test
-#define apop_estimate_r_squared(in) apop_estimate_coefficient_of_determination(in)
-
+//apop_test.c
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
+APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize);
+#define apop_F_test apop_f_test
 
+//from the regression code:
+#define apop_estimate_r_squared(in) apop_estimate_coefficient_of_determination(in)
 
 apop_data * apop_text_unique_elements(const apop_data *d, size_t col);
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
@@ -140,7 +140,6 @@ apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);//dep
 APOP_VAR_DECLARE apop_data * apop_data_to_factors(apop_data *data, char intype, int incol, int outcol);
 
 APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove);
-APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize);
 
 APOP_VAR_DECLARE double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct, gsl_rng *rng);
 
@@ -149,6 +148,11 @@ void apop_estimate_parameter_tests (apop_model *est);
 
 //apop_testing.c
 apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2);
+
+//Bootstrapping & RNG
+apop_data * apop_jackknife_cov(apop_data *data, apop_model model);
+APOP_VAR_DECLARE apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, gsl_rng* rng, int iterations);
+gsl_rng *apop_rng_alloc(int seed);
 
 #define apop_ANOVA(table, data, grouping1, grouping2) apop_anova(table, data, grouping1, grouping2)
 

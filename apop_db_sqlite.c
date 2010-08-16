@@ -173,10 +173,7 @@ sqfn(cos) sqfn(tan) sqfn(asin) sqfn(acos) sqfn(atan)
 static int apop_sqlite_db_open(char *filename){
 	if (!filename) 	sqlite3_open(":memory:",&db);
 	else			sqlite3_open(filename,&db);
-	if (!db)	
-		{if (apop_opts.verbose)
-            printf("Not sure why, but the database didn't open.\n");
-		return 1; }
+    apop_assert(db, "Not sure why, but the database didn't open.");
 	sqlite3_create_function(db, "stddev", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalize);
 	sqlite3_create_function(db, "std", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalizePop);
 	sqlite3_create_function(db, "stddev_samp", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalize);
@@ -273,11 +270,11 @@ static void count_types(apop_qt *in, const char *intypes){
         else if (c=='w'||c=='W')
             in->intypes[4]++;
     if (in->intypes[0]>1)
-        apop_error(1, 'c', "You asked apop_query_to_mixed data for multiple row names. I'll ignore all but the last one.\n");
+        Apop_notify(1, "You asked apop_query_to_mixed data for multiple row names. I'll ignore all but the last one.");
     if (in->intypes[1]>1)
-        apop_error(1, 'c', "You asked apop_query_to_mixed for multiple vectors. I'll ignore all but the last one.\n");
+        Apop_notify(1, "You asked apop_query_to_mixed for multiple vectors. I'll ignore all but the last one.");
     if (in->intypes[4]>1)
-        apop_error(1, 'c', "You asked apop_query_to_mixed for multiple weighting vectors. I'll ignore all but the last one.\n");
+        Apop_notify(1, "You asked apop_query_to_mixed for multiple weighting vectors. I'll ignore all but the last one.");
 }
 
 static int multiquery_callback(void *instruct, int argc, char **argv, char **column){

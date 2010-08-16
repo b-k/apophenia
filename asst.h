@@ -14,7 +14,6 @@ extern "C" {
 #endif
 
 double apop_generalized_harmonic(int N, double s);
-void apop_error(int level, char stop, char *message, ...);
 
 apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
@@ -25,11 +24,23 @@ APOP_VAR_DECLARE int  apop_regex(const char *string, const char* regex, apop_dat
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
 apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
 
+int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
+
 apop_model * apop_histogram_vector_reset(apop_model *, gsl_vector *);
 APOP_VAR_DECLARE apop_model * apop_histogram_model_reset(apop_model *base, apop_model *m, long int draws, gsl_rng *rng);
 apop_data * apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1);
 apop_data * apop_test_kolmogorov(apop_model *m1, apop_model *m2);
 void apop_histogram_normalize(apop_model *m);
+
+/** Notify the user of errors, warning, or debug info. 
+
+ \param level   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2.
+ \param msg The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_notify(0, "Beta is %g but should be greater than zero.", beta);.
+*/
+#define Apop_notify(verbosity, ...) \
+    if (apop_opts.verbose >= verbosity) {  \
+        fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");   \
+}
 
 /** Tests whether a condition is true, and if it is not, prints an error to \c stderr and 
   exits the function. 
@@ -41,10 +52,11 @@ void apop_histogram_normalize(apop_model *m);
 
  \seealso \ref Apop_assert, which halts on error.
  */
-#define Apop_assert_c(test, returnval, level, ...) do \
+#define Apop_assert_c(test, returnval, level, ...) do {\
     if (!(test)) {  \
-        if (apop_opts.verbose >= level) { fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");}   \
+        Apop_notify(level,  __VA_ARGS__);   \
         return returnval;  \
+    }   \
 } while (0);
 
 /** This is just a slightly more user-friendly version of the C-standard \c assert(). The
@@ -66,15 +78,11 @@ void apop_histogram_normalize(apop_model *m);
         abort();   \
 } while (0);
 
+
 #define apop_assert_s Apop_assert
 #define apop_assert Apop_assert
 #define Apop_assert_s Apop_assert
 #define apop_assert_c Apop_assert_c
-
-//Bootstrapping & RNG
-apop_data * apop_jackknife_cov(apop_data *data, apop_model model);
-APOP_VAR_DECLARE apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, gsl_rng* rng, int iterations);
-gsl_rng *apop_rng_alloc(int seed);
 
 //Missing data
 APOP_VAR_DECLARE apop_data * apop_data_listwise_delete(apop_data *d, char inplace);

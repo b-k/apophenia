@@ -6,8 +6,8 @@ At the moment, the header for  apop_test_anova is in \c asst.h.
 #include "asst.h"
 #include "types.h"
 #include "stats.h"
+#include "internal.h"
 #include "conversions.h"
-
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
   apop_data *out    = apop_data_alloc(0,7,1);
@@ -34,7 +34,7 @@ static apop_data * produce_t_test_output(int df, double stat, double diff){
 /** Answers the question: with what confidence can I say that the means of these two columns of data are different?
 <tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
-If \c apop_opts.verbose is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to STDOUT.
+If \c apop_opts.verbose is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to stderr.
 
 \ingroup ttest
 \param {a, b} two columns of data
@@ -69,6 +69,8 @@ double		a_var	= (a_count > 1) ? apop_vector_var(a) : 0,
 
 /** Answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
+If \c apop_opts.verbose is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to stderr.
+
 \ingroup ttest
 \param {a, b} two columns of data
 \return an \ref apop_data set with the following elements:
@@ -89,11 +91,101 @@ double		avg	= apop_vector_mean(diff),
 		var	= apop_vector_var(diff),
 		stat	= avg/ sqrt(var/(count-1));
 	gsl_vector_free(diff);
-	if (apop_opts.verbose){
-		printf("avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
-	}
+    Apop_notify(1, "avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
 int     df      = count-1;
     return produce_t_test_output(df, stat, avg);
+}
+
+/** Runs an F-test specified by \c q and \c c. Your best bet is to see
+ the chapter on hypothesis testing in  <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309. It will tell you that:
+ \f[{N-K\over q}
+ {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c})
+ \over {\bf u}' {\bf u} } \sim F_{q,N-K},\f]
+ and that's what this function is based on.
+
+
+ \param est     an \ref apop_model that you have already calculated. (No default)
+ \param contrast       The matrix \f${\bf Q}\f$ and the vector \f${\bf c}\f$, where each row represents a hypothesis. (Defaults: if matrix is \c NULL, it is set to the identity matrix; if the vector is \c NULL, it is set to zero; if the entire \c apop_data set is NULL or omitted, both of these settings are made.)
+ \param normalize If 1, then I will normalize the data set at <tt>est->data</tt> so that each column has mean zero (that is, I run \ref apop_matrix_normalize <tt>(data, 'c', 'm');</tt>).If zero, then I will copy off the entire dataset and do the normalization on my copy, leaving the input data as-is. (Default: 0)
+ \return An \c apop_data set with a few variants on the confidence with which we can reject the joint hypothesis.
+ \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
+
+This function uses the \ref designated syntax for inputs.
+ */
+
+APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
+    apop_model *apop_varad_var(est, NULL)
+    Nullcheck_m(est);
+    apop_data * apop_varad_var(contrast, NULL)
+    int apop_varad_var(normalize, 0)
+APOP_VAR_ENDHEAD
+    apop_data      *set        = est->data;
+    gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
+    apop_data      *data       = normalize ?  set : apop_data_copy(set);
+    apop_data      *xpxinv     = apop_data_alloc();
+    size_t          contrast_ct;
+    if (contrast)
+        contrast_ct =  contrast->vector ? contrast->vector->size 
+                                        : contrast->matrix->size1;
+    else contrast_ct = est->parameters->vector->size;
+    apop_data       *qprimebeta;
+    apop_data       *qprimexpxinvqinv = apop_data_alloc();
+    double          f_stat, pval;
+    int             q_df,
+                    data_df     = set->matrix->size1 - est->parameters->vector->size;
+
+    /*if (set->matrix->size2 > 1){
+        Apop_submatrix(set->matrix, 0, 1, data->matrix->size1, data->matrix->size2-1, allbutones);
+        apop_matrix_normalize(allbutones, 'c', 'm');
+    }
+    */
+    apop_matrix_normalize(data->matrix, 'c', 'm');
+    //As you can see, trying a few things in this neighborhood.
+//    apop_data *xpx2 = apop_dot(data, data, .form1='t');
+//    apop_data_show(est->parameters);
+//    apop_data_show(xpx2);
+//    Apop_col(data, 0, v);
+//    gsl_vector_set_all(v, 1);
+    apop_data *xpx = apop_dot(data, data, .form1='t');
+//    apop_data_show(xpx);
+    if (!normalize)
+        apop_data_free(data);
+    if (q != NULL){
+        q_df    = q->size1;
+        xpxinv->matrix = apop_matrix_inverse(xpx->matrix);
+        apop_data *qprimexpxinv = apop_dot(contrast, xpxinv, 'm', 'm');
+        apop_data *qprimexpxinvq = apop_dot(qprimexpxinv, contrast, 'm', 't');
+	    qprimexpxinvqinv->matrix = apop_matrix_inverse(qprimexpxinvq->matrix);		
+        apop_data_free(qprimexpxinvq);
+        apop_data_free(qprimexpxinv);
+        qprimebeta = apop_dot(contrast, est->parameters, 'm', 'v');
+    } else {
+        q_df    = est->parameters->vector->size;
+        qprimexpxinvqinv->matrix = apop_matrix_copy(xpx->matrix);
+        qprimebeta = apop_data_copy(est->parameters);
+    }
+    if (contrast && contrast->vector)
+        gsl_vector_sub(qprimebeta->vector, contrast->vector);  //else, c=0, so this is a no-op.
+     apop_data *qprimebetaminusc_qprimexpxinvqinv = apop_dot(qprimexpxinvqinv, qprimebeta, .form2='v');
+    gsl_blas_ddot(qprimebeta->vector, qprimebetaminusc_qprimexpxinvqinv->vector, &f_stat);
+    apop_data_free(xpx); apop_data_free(xpxinv);
+    apop_data_free(qprimexpxinvqinv); apop_data_free(qprimebeta);
+    apop_data_free(qprimebetaminusc_qprimexpxinvqinv);
+    if(normalize) apop_data_free(data);
+
+    apop_data *r_sq_list = apop_estimate_coefficient_of_determination (est);
+    double variance = apop_data_get(r_sq_list, .rowname="sse");
+    f_stat  *=  data_df / (variance * q_df);
+    pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
+
+apop_data       *out        = apop_data_alloc(5,1);
+    sprintf(out->names->title, "F test");
+    apop_data_add_named_elmt(out, "F statistic", f_stat);
+    apop_data_add_named_elmt(out, "p value", pval);
+    apop_data_add_named_elmt(out, "confidence", 1- pval);
+    apop_data_add_named_elmt(out, "df1", q_df);
+    apop_data_add_named_elmt(out, "df2", data_df);
+    return out;
 }
 
 static double one_chi_sq(apop_data *d, int row, int col, int n){
@@ -344,7 +436,7 @@ APOP_VAR_ENDHEAD
          else if (tail == 'l')
              return gsl_cdf_lognormal_P(statistic, p1, p2);
          else
-             apop_error(0, 's', "A two-tailed test doesn't really make sense for the lognormal. Please specify either tail= 'u' or tail= 'l'.");
+             Apop_assert(0, "A two-tailed test doesn't really make sense for the lognormal. Please specify either tail= 'u' or tail= 'l'.");
      }
     else if (!strcasecmp(distribution, "t")){
          if (tail == 'u')
@@ -360,7 +452,7 @@ APOP_VAR_ENDHEAD
          else if (tail == 'l')
              return gsl_cdf_fdist_P(statistic, p1, p2);
          else
-             apop_error(0, 's', "A two-tailed test doesn't really make sense for the %s. Please specify either tail= 'u' or tail= 'l'.", distribution);
+             Apop_assert(0, "A two-tailed test doesn't really make sense for the %s. Please specify either tail= 'u' or tail= 'l'.", distribution);
      }
     else if (!strcasecmp(distribution, "chi squared")|| !strcasecmp(distribution, "chi")
                                                 || !strcasecmp(distribution, "chisq")){
@@ -369,7 +461,7 @@ APOP_VAR_ENDHEAD
          else if (tail == 'l')
              return gsl_cdf_chisq_P(statistic, p1);
          else
-             apop_error(0, 's', "A two-tailed test doesn't really make sense for the %s. Please specify either tail= 'u' or tail= 'l'.", distribution);
+             Apop_assert(0, "A two-tailed test doesn't really make sense for the %s. Please specify either tail= 'u' or tail= 'l'.", distribution);
      }
     else if (!strcasecmp(distribution, "uniform")){
          if (tail == 'u')
@@ -379,6 +471,5 @@ APOP_VAR_ENDHEAD
          else
              return 2 * gsl_cdf_flat_Q(fabs(statistic - (p1+p2)/2.), p1, p2);
      }
-    apop_error(0,'s', "Sorry, but I don't recognize %s as a distribution", distribution);
-    return 0; //shutting up the compiler.
+    Apop_assert(0, "Sorry, but I don't recognize %s as a distribution", distribution);
 }

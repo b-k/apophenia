@@ -84,7 +84,7 @@ void apop_histogram_settings_free(apop_histogram_settings *in){
 
 
 apop_model *est(apop_data *d, apop_model *est){
-    if (!(apop_settings_get_group(est, apop_histogram) || apop_settings_get_group(est, apop_kernel_density)))
+    if (!(apop_settings_get_group(est, apop_histogram)))
         Apop_settings_add_group(est, apop_histogram, d, 1000);
     return est;
 }

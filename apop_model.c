@@ -196,8 +196,7 @@ double apop_p(apop_data *d, apop_model *m){
         return m->p(d, m);
     else if (m->log_likelihood)
         return exp(m->log_likelihood(d, m));
-    apop_error(0, 's', "You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n");
-    return 0;
+    Apop_assert(0, "You asked for the log likelihood of a model that has neither p nor log_likelihood methods.");
 }
 
 /** Find the log likelihood of a data/parametrized model pair.
@@ -213,8 +212,7 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
         return m->log_likelihood(d, m);
     else if (m->p)
         return log(m->p(d, m));
-    apop_error(0, 's', "You asked for the log likelihood of a model that has neither p nor log_likelihood methods.\n");
-    return 0;
+    Apop_assert(0, "You asked for the log likelihood of a model that has neither p nor log_likelihood methods.");
 }
 
 /** Find the vector of derivatives of the log likelihood of a data/parametrized model pair.

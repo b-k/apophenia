@@ -227,34 +227,23 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
   gsl_vector *y_data     = apop_vector_copy(set->vector);
-  gsl_vector *xpy        = gsl_vector_calloc(set->matrix->size2);
-  gsl_matrix *xpx        = gsl_matrix_calloc(set->matrix->size2, set->matrix->size2);
     if (olp->want_expected_value)
         apop_data_add_page(ep->info, apop_data_alloc(0, set->matrix->size1, 3), "<Predicted>");
     if (olp->want_cov=='y')
         apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size2, set->matrix->size2), "<Covariance>");
-    if (weights){
-        gsl_vector_mul(y_data, weights);
-        for (size_t i = 0; i < set->matrix->size2; i++){
+    if (weights)
+        for (int i = -1; i < set->matrix->size2; i++){
             APOP_COL(set, i, v);
             gsl_vector_mul(v, weights);
         }
-    }
-     /*
-    if (set->matrix->size2 > 1){
-        Apop_submatrix(set->matrix, 0, 1, set->matrix->size1, set->matrix->size2-1, allbutones);
-        apop_matrix_normalize(allbutones, 'c', 'm');
-    }
-    */
 
-
-    gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, set->matrix, set->matrix, 0, xpx);   //(X'X)
-    gsl_blas_dgemv(CblasTrans, 1, set->matrix, y_data, 0, xpy);       //(X'y)
-    xpxinvxpy(set->matrix, y_data, xpx, xpy, ep);
+    apop_data *xpx_d = apop_dot(set, set, .form1='t'); //(X'X)
+    apop_data *xpy_d = apop_dot(set, set, .form1='t', .form2='v'); //(X'y)
+    xpxinvxpy(set->matrix, y_data, xpx_d->matrix, xpy_d->vector, ep);
     prep_names(ep);
     gsl_vector_free(y_data); 
-    gsl_matrix_free(xpx);
-    gsl_vector_free(xpy);
+    apop_data_free(xpx_d);
+    apop_data_free(xpy_d);
 
     if (!olp->destroy_data)
         apop_data_free(set);
