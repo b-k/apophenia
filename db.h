@@ -6,7 +6,6 @@
 #include "variadic.h"
 #include "asst.h"
 #include <gsl/gsl_matrix.h>
-#define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +25,6 @@ apop_data * apop_query_to_data(const char * fmt, ...) __attribute__ ((format (pr
 apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...) __attribute__ ((format (printf,2,3)));
 gsl_vector * apop_query_to_vector(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 double apop_query_to_float(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
-int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 
 void apop_matrix_to_db(const gsl_matrix *data, const char *tabname, const char **headers);
 void apop_data_to_db(const apop_data *set, const char *tabname);

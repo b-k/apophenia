@@ -286,7 +286,17 @@ endofdiv
 
 Outlineheader debugging  Debugging
 
-The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such as printing the query sent to the database engine (which is useful if you are substituting in many <tt>\%s</tt>es). Just set <tt>apop_opts.verbose =1</tt> when you want feedback and <tt>apop_opts.verbose=0</tt> when you don't.
+The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such as printing the query sent to the database engine (which is useful if you are substituting in many <tt>\%s</tt>es). There are several levels to the verbosity:
+
+-1: silent <br>
+0: notify only of failures and clear danger <br>
+1: warn of odd situations that might indicate, e.g., numeric instability <br>
+2: debugging-type information; print queries  <br>
+3: give me everything
+
+These levels are of course subjective, but should give you some idea of where to place the
+verbosity level. The default is 1.
+
 
 If you use \c gdb, you can define macros to use the pretty-printing functions on your data, which can be a significant help. Add these to your \c .gdbinit:
 \code
@@ -387,6 +397,40 @@ publisher="Princeton University Press"<br>
 
 endofdiv
 
+Outlineheader status What is the status of the code?
+
+[This section last updated 18 August.]
+
+A library for scientific computing, or even for that small subset that is statistics, will
+never be complete. What we can hope for, however, is a complete framework such that new
+methods and models can easily be plugged in. Apophenia is close to complete in that sense.
+
+The \ref apop_data structure is where it's going to be, and there are enough functions
+there that you could use it as a subpackage by itself (along with the database functions) 
+for nontrivial dealings with data.
+
+The \ref apop_model structure is much more ambitious, and has a few more steps to go
+before it is done. The promise underlying the structure is that you can provide just one
+item, such as an RNG or a likelihood function, and the structure will do all of the
+work to fill in computationally-intensive methods for everything else. Some directions
+aren't quite there yet (such as RNG -> most other things); the likelihood -> RNG function
+only works for models mapping from unidimensional reals; empirical distributions are
+central to the setup, but the PMF model doesn't have enough supporting utilities and
+needs an internal index for faster lookups.
+
+Also, the interface could still use a few tweaks, primiarily with handling the list
+of settings groups.
+
+Which parts of the code are most reliable? [There's no point asking {\em are there bugs?}
+because the answer to that will always be {\em yes}.] There are tests on the code
+base, which currently cover circa 65% of the lines of code; most of the untested part is
+in methods of some of the more obscure models. A broad rule of thumb for any code base is
+that the well-worn parts, like \ref apop_data_get and \ref apop_normal.log_likelihood,
+are likely to be entirely reliable, while the out-of-the-way functions (maybe the RNG for
+the Yule distribution) are worth a bit of caution. Almost all of the code has been used in
+production, so all of it was at least initially tested.
+
+endofdiv
 
 endofdiv
 
@@ -1436,6 +1480,17 @@ I will first look to the input file name, then the input pipe, then the
 global \c output_pipe, in that order, to determine to where I should
 write.  Some combinations (like output type = \c 'd' and only a pipe) don't
 make sense, and I'll try to warn you about those. 
+
+What if you have too much output and would like to use a pager, like \c less or \c more?
+In C and POSIX terminology, you're asking to pipe your output to a paging program. Here is
+the form:
+\code
+FILE *lesspipe = popen("less", "w");
+assert(lesspipe);
+apop_data_print(your_data_set, .output_pipe=lesspipe);
+pclose(lesspipe);
+\endcode
+\c popen will search your usual program path for \c less, so you don't have to give a full path.
 
 The plot functions produce output for Gnuplot (so output type = \c 'd'
 again does not make sense). As above, you can pipe directly to Gnuplot or write to a file.

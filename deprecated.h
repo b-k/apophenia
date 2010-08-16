@@ -11,7 +11,7 @@ void apop_data_set_ti(apop_data *in,const  char* row,const  int col,const  doubl
 void apop_data_set_it(apop_data *in,const  size_t row,const  char* col,const  double data);
 void apop_data_set_tt(apop_data *in,const  char *row,const  char* col,const  double data);
 
-
+void apop_error(int level, char stop, char *message, ...);
 
 /** \deprecated Use \ref Apop_model_add_group.
  

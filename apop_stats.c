@@ -242,8 +242,7 @@ APOP_VAR_ENDHEAD
         }
         return pow(dist, 1./norm); 
     }
-  apop_error(0,'s', "I couldn't find the metric type you gave, %c, in my list of supported types.", metric);
-  return 0; //just to keep the compiler quiet.
+  Apop_assert(0, "I couldn't find the metric type you gave, %c, in my list of supported types.", metric);
 }
 
 /** Returns the scalar Manhattan metric distance  between two vectors. Simply \f$\sum_i{|a_i - b_i|},\f$
@@ -711,8 +710,8 @@ This is the \ref apop_data version of \ref apop_matrix_covariance; if you don't 
 
 \ingroup matrix_moments */
 apop_data *apop_data_covariance(const apop_data *in){
-  apop_assert_c(in,  NULL, 0, "You sent me a NULL apop_data set. Returning NULL.\n");
-  apop_assert_c(in->matrix,  NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
+  apop_assert_c(in,  NULL, 1, "You sent me a NULL apop_data set. Returning NULL.\n");
+  apop_assert_c(in->matrix,  NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
   apop_data   *out = apop_data_alloc(0,in->matrix->size2, in->matrix->size2);
   double      var;
     for (size_t i=0; i < in->matrix->size2; i++){
@@ -786,8 +785,8 @@ This function uses the \ref designated syntax for inputs.
 APOP_VAR_HEAD double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct, gsl_rng *rng){
     apop_model * apop_varad_var(top, NULL);
     apop_model * apop_varad_var(bottom, NULL);
-    Apop_assert_s(top, "The first model is NULL.");
-    Apop_assert_s(bottom, "The second model is NULL.");
+    Apop_assert(top, "The first model is NULL.");
+    Apop_assert(bottom, "The second model is NULL.");
     double apop_varad_var(draw_ct, 1e5);
     static gsl_rng * spare_rng = NULL;
     gsl_rng * apop_varad_var(rng, NULL);
@@ -796,6 +795,7 @@ APOP_VAR_HEAD double apop_kl_divergence(apop_model *top, apop_model *bottom, int
     if (!rng)  rng = spare_rng;
 APOP_VAR_ENDHEAD
     double div = 0;
+    Apop_notify(3, "p(top)\tp(bot)\ttop*log(top/bot)\n");
     if (apop_strcmp(bottom->name, "PDF or sparse matrix")){
         apop_data *p = bottom->parameters;
         Get_vmsizes(p);
@@ -806,6 +806,7 @@ APOP_VAR_ENDHEAD
             double qi = apop_p(a_row, bottom);
             apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: bottom has a value where "
                                                 "top doesn't (which produces infinite divergence).");
+            Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
             if (pi) //else add zero.
                 div += pi * log(pi/qi);
         }
@@ -818,6 +819,7 @@ APOP_VAR_ENDHEAD
             double qi = apop_p(a_row, bottom);
             apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: bottom has a value where "
                                                 "top doesn't (which produces infinite divergence).");
+            Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
             if (pi) //else add zero.
                 div += pi * log(pi/qi);
         }

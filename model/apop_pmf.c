@@ -17,7 +17,7 @@ apop_model *apop_crosstab_to_pmf (apop_data *d){
     double x;
     if (d->matrix) use_matrix++;
     else if (d->vector) use_vector++;
-    else apop_error(0, 's', "You gave me an input set with neither vector nor matrix data.\n");
+    else Apop_assert(0, "You gave me an input set with neither vector nor matrix data.");
     apop_model *out = apop_model_copy(apop_pmf);
     out->parameters = apop_data_alloc(0, tsize, (use_matrix ? 2: 1));
     out->parameters->weights = gsl_vector_alloc(tsize);

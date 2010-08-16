@@ -8,6 +8,7 @@
 ** What was apop_assert => apop_assert_c; what was apop_assert_s => apop_assert. Their
     arguments are slightly different, and the thing that was asserted no longer prints along
     with the message you chose.
+--verbosity defaults to 1. Queries print at verbosity >=2.
 --apop_data_to_db writes the weights.
 --Iterative proportional fitting, aka raking. 
 

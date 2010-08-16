@@ -326,10 +326,8 @@ static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
             if (apop_opts.output_type == 's' && !strcmp(tp, "NULL"))
                 *tf = stdout;
             else
-                if (!(*tf = fopen(tp, "a"))) {
-                    apop_error(0, 'c', "%s: couldn't open %s for writing. Continuing without the path trace.\n", __func__, tp);
-                    return;
-                }
+                if (!(*tf = fopen(tp, "a")))
+                    Apop_assert_c(0, , 0, "couldn't open %s for writing. Continuing without the path trace.", tp);
         }
         if (beta->size == 1)
             fprintf(*tf, "%g\t %g\n",  gsl_vector_get(beta,0), out);
@@ -575,7 +573,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
     } while (status == GSL_CONTINUE && iter < mp->max_iterations && !ctrl_c);
     signal(SIGINT, NULL);
 	if (iter == mp->max_iterations && mp->verbose)
-		apop_error(1, 'c', "Optimization reached maximum number of iterations.");
+		Apop_notify(1, "Optimization reached maximum number of iterations.");
     if (status == GSL_SUCCESS) 
         apopstatus	= 1;
     apop_data_unpack(s->x, est->parameters);
@@ -656,7 +654,7 @@ struct to it (<tt>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method
 \li Get auxiliary info via, e.g.:
 \code
 apop_model *est = apop_estimate(your_data, apop_probit);
-int status = apop_data_get_ti(est->info, .rowname="status");
+int status = apop_data_get(est->info, .rowname="status");
 if (status)
     //trouble
 else

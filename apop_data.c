@@ -446,7 +446,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             goto allocation;
         }
     } else 
-        apop_error(0, 'c',"%s: Please set r_or_c == 'r' or == 'c'. Returning two NULLs.\n", __func__);
+        Apop_assert_c(0, out, 0, "Please set r_or_c == 'r' or == 'c'. Returning two NULLs.");
     return out;
 
 allocation:
@@ -1130,6 +1130,9 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
   pages will move. Again, the intent of the <tt>->more</tt> pointer in the \ref apop_data
   set is not to fully implement a linked list, but primarily to allow you to staple auxiliary
   information to a main data set.
+
+  \li If I don't find the page you want, I return NULL, and print a message if
+  <tt>apop_opts.verbose >= 1</tt>.
 */
 APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p){
     apop_data *apop_varad_var(data, NULL);
@@ -1139,6 +1142,7 @@ APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, 
 APOP_VAR_ENDHEAD
     while (data->more && !apop_regex(data->more->names->title, title))
         data = data->more;
+    Apop_assert_c(data->more, NULL, 1, "You asked me to remove %s but I couldn't find a page matching that regex.", title);
     if (data->more){
         apop_data *tmp = data->more;
         data->more = data->more->more;
@@ -1148,9 +1152,8 @@ APOP_VAR_ENDHEAD
             return NULL;
         } //else:
         return tmp;
-    }
-    apop_error(0, 'c', "You asked me to remove %s but I couldn't find a page matching that regex.", title);
-    return NULL;
+    } else 
+        return NULL;
 }
 
 /** Remove the columns set to one in the \c drop vector.  

@@ -111,16 +111,16 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
     /* perform rejection (and perhaps metropolis) tests */
     int i = test(state,&pwork, params, r);
     if (i == 1){ // point accepted 
-//        if (apop_opts.verbose) printf(" point accepted.\n");
+        Apop_notify(3, " point accepted.");
         *out = pwork.x;
         assert(!gsl_isnan(pwork.x));
         return;
     } else if (i != 0) 
       apop_assert_s(0, "envelope error - violation without metropolis")
     msamp ++;
-//    if (apop_opts.verbose) printf(" point rejected.\n");
+    Apop_notify(3, " point rejected.");
   } while (msamp < 1e4);
-  printf ("I just rejected 1,000 samples. Something is wrong.\n");
+  Apop_notify(1, "I just rejected 1,000 samples. Something is wrong.");
   return;
 }
 
@@ -269,7 +269,7 @@ assert(p->pl && p->pr);
   ynew = perfunc(params,p->x);
 assert(!gsl_isnan(p->x));
 assert(p->pl && p->pr);
-//if (apop_opts.verbose) printf("tested (%g, %g); ", p->x, ynew);
+Apop_notify(3, "tested (%g, %g); ", p->x, ynew);
   
   /* perform rejection test */
   if(params->do_metro != 'y' || (params->do_metro == 'y' && (y >= ynew))){
@@ -305,8 +305,8 @@ assert(p->pl && p->pr);
       /* markov chain iterate */
       p->x = env->metro_xprev;
       p->y = env->metro_yprev;
-        //if (apop_opts.verbose) printf("metro step (%g) rejected with w=%g, "
-        //"ynew=%g, yold=%g, znew = %g, zold=%g; ", p->x, w, ynew, yold, znew, zold);
+      Apop_notify(3, "metro step (%g) rejected with w=%g, "
+                "ynew=%g, yold=%g, znew = %g, zold=%g; ", p->x, w, ynew, yold, znew, zold);
       p->ey = expshift(p->y,env->ymax);
 assert(!gsl_isnan(p->x));
 assert(!gsl_isnan(p->y));
@@ -423,8 +423,7 @@ int meet (POINT *q, arms_state *env, apop_arms_settings *params){
   double gl=0,gr=0,grl=0,dl=0,dr=0;
   int il=0,ir=0,irl=0;
 
-  if(q->f) 
-     apop_error(0, 's', "error 30: this is not an intersection point.");
+  apop_assert(!(q->f), "error 30: this is not an intersection point.");
 
   /* calculate coordinates of point of intersection */
   if ((q->pl != NULL) && (q->pl->pl->pl != NULL)){
@@ -491,10 +490,10 @@ int meet (POINT *q, arms_state *env, apop_arms_settings *params){
   else if (ir)
     q->y = q->pr->y - gr * (q->pr->x - q->x); // left hand bound 
   else 
-     apop_error(0, 's', "error 31: gradient on neither side - should be impossible.");
+     Apop_assert(0, "error 31: gradient on neither side - should be impossible.");
   if(((q->pl != NULL) && (q->x < q->pl->x)) ||
      ((q->pr != NULL) && (q->x > q->pr->x))){
-     apop_error(0, 's', "error 32: intersection point outside interval (through imprecision)");
+     Apop_assert(0, "error 32: intersection point outside interval (through imprecision)");
   }
   return 0; // successful exit : intersection has been calculated
 }

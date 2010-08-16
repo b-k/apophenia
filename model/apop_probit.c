@@ -1,4 +1,5 @@
-/** \file */ //Tell Doxygen to process this.
+/** \file 
+ Probit and Logit. */
 
 /* Copyright (c) 2005--2008, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -7,13 +8,13 @@
 #include "internal.h"
 #include "likelihoods.h"
 
-/////////  Part II: plain old probit
-
 static apop_data *get_category_table(apop_data *d){
     int first_col = d->vector ? -1 : 0;
     apop_data *out = apop_data_get_page(d, "<categories");
-    if (!out) 
-        out = apop_data_to_factors(d, .intype='d', .incol=first_col, .outcol=first_col);
+    if (!out) {
+        apop_data_to_factors(d, .intype='d', .incol=first_col, .outcol=first_col);
+        out = apop_data_get_page(d, "<categories");
+    }
     return out;
 }
 
@@ -51,6 +52,41 @@ static double biprobit_log_likelihood(apop_data *d, apop_model *p){
 	return total_prob;
 }
 
+static double val;
+static double unordered(double in){ return in == val; }
+
+// This is just a for loop that runs a probit on each row.
+static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
+  Nullcheck_m(p); Nullcheck_p(p);
+    gsl_vector *val_vector = get_category_table(p->data)->vector;
+    if (val_vector->size==2)
+        return biprobit_log_likelihood(d, p);
+    //else, multinomial loop
+    static apop_model *spare_probit = NULL;
+    if (!spare_probit){
+        spare_probit = apop_model_copy(apop_probit);
+        spare_probit->parameters = apop_data_alloc();
+    }
+    static apop_data *working_data = NULL;
+    if (!working_data)
+        working_data = apop_data_alloc();
+
+    working_data->matrix = d->matrix;
+    gsl_vector *original_outcome = d->vector;
+    double ll    = 0;
+    double *vals = val_vector->data;
+    for(size_t i=0; i < p->parameters->matrix->size2; i++){
+        APOP_COL(p->parameters, i, param);
+        val = vals[i];
+        working_data->vector = apop_vector_map(original_outcome, unordered);
+        spare_probit->parameters->matrix = apop_vector_to_matrix(param);
+        ll  += apop_log_likelihood(working_data, spare_probit);
+        gsl_vector_free(working_data->vector); //yup. It's inefficient.
+        gsl_matrix_free(spare_probit->parameters->matrix);
+    }
+	return ll;
+}
+
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   Nullcheck_m(p); Nullcheck_p(p);
     gsl_vector *val_vector = get_category_table(p->data)->vector;
@@ -77,7 +113,7 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 	apop_data_free(betadotx);
 }
 
-/////////  Part III: Multinomial Logit (plain logit is a special case)
+/////////  Multinomial Logit (plain logit is a special case)
 
 static apop_data *multilogit_expected(apop_data *in, apop_model *m){
     Nullcheck_m(m); Nullcheck_p(m);
@@ -114,44 +150,6 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
     return out;
 }
 
-
-static double val;
-static double unordered(double in){ return in == val; }
-//static double ordered(double in){ return in >= val; }
-
-// This is just a for loop that runs a probit on each row.
-static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
-  Nullcheck_m(p); Nullcheck_p(p);
-    gsl_vector *val_vector = get_category_table(p->data)->vector;
-    if (val_vector->size==2)
-        return biprobit_log_likelihood(d, p);
-    //else, multinomial loop
-    static apop_model *spare_probit = NULL;
-    if (!spare_probit){
-        spare_probit = apop_model_copy(apop_probit);
-        spare_probit->parameters = apop_data_alloc(0,0,0);
-    }
-    static apop_data *working_data = NULL;
-    if (!working_data)
-        working_data = apop_data_alloc(0,0,0);
-
-    working_data->matrix = d->matrix;
-    gsl_vector *original_outcome = d->vector;
-    double ll    = 0;
-    double *vals = val_vector->data;
-    for(size_t i=0; i < p->parameters->matrix->size2; i++){
-        APOP_COL(p->parameters, i, param);
-        val = vals[i];
-        working_data->vector = apop_vector_map(original_outcome, unordered);
-        //gsl_matrix_set_col(spare_probit->parameters->matrix, 0, param);
-        spare_probit->parameters->matrix = apop_vector_to_matrix(param);
-        ll  += apop_log_likelihood(working_data, spare_probit);
-        gsl_vector_free(working_data->vector); //yup. It's inefficient.
-        gsl_matrix_free(spare_probit->parameters->matrix);
-    }
-	return ll;
-}
-
 static size_t find_index(double in, double *m, size_t max){
   size_t i = 0;
     while (in !=m[i] && i<max) i++;
@@ -186,6 +184,50 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
 	return ll;
 }
 
+static double logit_foreach(gsl_vector *x, void *gin){
+    //\beta_this = choice for the row.
+    // dLL/d\beta_ij =  [(\beta_i==\beta_this) ? x_j : 0] + x_j e^(x\beta_i)/\sum_k e^(x\beta_k)
+    //that last term simplifies: x / \sum_k e^(x(\beta_k - \beta_i))
+  apop_data *gmat = (apop_data*) gin;
+  gsl_matrix *beta = gmat->more->matrix;
+  apop_data* factor_list = gmat->more->more;
+    for (int i=1; i< beta->size2; i++) {
+        Apop_matrix_col(beta, i, thisbeta);
+        int choice  = find_index(gsl_vector_get(x, 0), factor_list->vector->data, beta->size2);
+        long double denom = 0;
+        for (int other=0; other < beta->size2+1; other++){
+            gsl_vector *diff = apop_vector_copy(thisbeta);
+            if (other > 0) {
+                Apop_matrix_col(beta, other-1, otherbeta);
+                gsl_vector_sub(diff, otherbeta);
+            } else
+                gsl_vector_scale(diff, -1); // 0 - diff;
+            double x_dot_diff;
+            gsl_blas_ddot(diff, x, &x_dot_diff);
+            denom += exp(x_dot_diff);
+            gsl_vector_free(diff);
+        }
+        for (int j=0; j< x->size; j++){
+            double pick = (i == choice) ? gsl_vector_get(x,j) : 0;
+            apop_matrix_increment(gmat->matrix, i, j, pick - gsl_vector_get(x, j)/denom);
+        }
+    }
+    return 0;
+}
+
+static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
+  Nullcheck_m(p); Nullcheck_p(p);
+    apop_data *gradient_matrix = NULL;
+    apop_data_unpack(gradient, gradient_matrix);
+    gsl_matrix_set_all(gradient_matrix->matrix, 0);
+    gradient_matrix->more = p->parameters;  // facilitate passing to logit_foreach.
+    gradient_matrix->more->more = get_category_table(d);
+    apop_data_free_base( //return from apop_map is useless.
+        apop_map(d, .fn_vp=logit_foreach, .param=gradient_matrix, .part='r')
+    );
+    apop_data_pack(gradient_matrix, gradient, .all_pages='n');
+}
+
 apop_model *logit_estimate(apop_data *d, apop_model *m){
   apop_model *out = apop_maximum_likelihood(d, m);
 
@@ -203,7 +245,7 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
 }
 
 apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-     .predict=multilogit_expected, .prep = probit_prep};
+    /* .score = logit_dlog_likelihood,*/ .predict=multilogit_expected, .prep = probit_prep};
 
 apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
     .score = probit_dlog_likelihood, .prep = probit_prep};

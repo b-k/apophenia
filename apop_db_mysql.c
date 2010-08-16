@@ -19,6 +19,8 @@ static unsigned int opt_flags = 0;      /* connection flags (none) */
 _MySQL (Third Edition)_, Paul DuBois, Sams Developer's Library, March, 2005
 */
 static void print_error (MYSQL *conn, char *message) {
+    if (apop_opts.verbose < 0) 
+        return;
     fprintf (stderr, "%s\n", message);
     if (conn != NULL) {
 #if MYSQL_VERSION_ID >= 40101
@@ -31,15 +33,13 @@ static void print_error (MYSQL *conn, char *message) {
 }
 
 static int apop_mysql_db_open(char *in){
-    if (!in)
-        apop_error(0, 's', "MySQL needs a non-NULL db name.");
+    Apop_assert(in, "MySQL needs a non-NULL db name.");
     mysql_db = mysql_init (NULL);
-    if (!mysql_db) 
-        apop_error(0, 's', "mysql_init() failed (probably out of memory)\n");
+    Apop_assert(mysql_db, "mysql_init() failed (probably out of memory)");
     /* connect to server */
     if (!mysql_real_connect (mysql_db, opt_host_name, apop_opts.db_user, apop_opts.db_pass,
             in, opt_port_num, opt_socket_name, CLIENT_MULTI_STATEMENTS+opt_flags)) {
-                apop_error(0, 'c', "mysql_real_connect() to %s failed\n", in);
+                Apop_notify(0, "mysql_real_connect() to %s failed", in);
                 mysql_close (mysql_db);
                 return 1;
             }
@@ -57,8 +57,8 @@ static void process_results(void){
     if (result) 
         mysql_free_result(result);
     else                // mysql_store_result() returned nothing; should it have?
-        if (mysql_field_count(mysql_db) != 0) 
-            apop_error(0, 's', "apop_query error: %s\n", mysql_error(mysql_db));
+        Apop_assert (mysql_field_count(mysql_db) == 0, 
+                            "apop_query error: %s", mysql_error(mysql_db));
         //else query wasn't a select & just didn't return data.
 }
 

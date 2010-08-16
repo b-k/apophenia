@@ -1267,6 +1267,43 @@ void test_arms(gsl_rng *r){
 }
 
 
+void test_weighted_regression(apop_data *d,apop_model *e){
+    //pretty rudimentary: set all weights to equal and see if we get the same result.
+    apop_data *cp = apop_data_copy(d);
+    cp->weights = gsl_vector_alloc(d->matrix->size1);
+    gsl_vector_set_all(cp->weights, 3);
+    apop_model *e2 = apop_estimate(cp, apop_ols);
+    assert( apop_vector_distance(e2->parameters->vector, e->parameters->vector) < tol5);
+}
+
+void test_ols_offset(gsl_rng *r){
+    //A thing we know about OLS: an offset in the variables should make almost no
+    //difference. Here we fit OLS with data that is of the form Y = 3*Y+eps
+    //and then fit with the same data but offset: Y=3*(Y+20)+eps
+    //The coefficient of the constant term moves to absorb the shift;
+    //The p-value for that coefficient changes;
+    //everything else should remain constant.
+    int i, size1 = 1000;
+    apop_data *useme = apop_data_alloc(size1, 2);
+    for (i =0; i< size1; i++){
+        apop_data_set(useme, i, 0, i);
+        apop_data_set(useme, i, 1, 3*i+gsl_ran_gaussian(r, 2));
+    }
+    apop_data *cp = apop_data_copy(useme);
+    apop_model *zero_off = apop_estimate(useme, apop_ols);
+    Apop_col(cp, 1, off);
+    gsl_vector_add_constant(off, 20);
+    apop_model *way_off = apop_estimate(cp, apop_ols);
+    Apop_col(zero_off->info, 0, zinfo);
+    Apop_col(way_off->info, 0, winfo);
+    assert(apop_vector_distance(zinfo, winfo) < 1e-4);
+    gsl_vector *zcov = apop_data_pack(apop_data_get_page(zero_off->parameters, "<covariance>"));
+    gsl_vector *wcov = apop_data_pack(apop_data_get_page( way_off->parameters, "<covariance>"));
+    assert(apop_vector_distance(zcov, wcov) < 1e-4);
+    assert(apop_data_get(zero_off->parameters, 0, -1) - (apop_data_get(way_off->parameters, 0, -1)+20./3)  < 1e-3);
+    assert(apop_data_get(zero_off->parameters, 1, -1) - apop_data_get(way_off->parameters, 1, -1)  < 1e-4);
+}
+
 #define do_test(text, fn)   if (verbose)    \
                                 printf("%s:", text);  \
                             else printf(".");   \
@@ -1294,6 +1331,8 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("weighted regression", test_weighted_regression(d,e));
+    do_test("offset OLS", test_ols_offset(r));
     do_test("default RNG", test_default_rng(r));
     do_test("log and exponent", log_and_exp(r));
     do_test("test printing", test_printing());

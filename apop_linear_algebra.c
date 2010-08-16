@@ -494,7 +494,7 @@ APOP_VAR_ENDHEAD
   gsl_vector  *lv = d1->vector, 
               *rv = d2->vector;
 CBLAS_TRANSPOSE_t   lt, rt;
-  apop_data   *out    = apop_data_alloc(0,0,0);
+  apop_data   *out    = apop_data_alloc();
 
     if (d1->matrix && form1 != 'v')
         uselm   = 1;
