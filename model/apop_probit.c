@@ -245,7 +245,7 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
 }
 
 apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-    /* .score = logit_dlog_likelihood,*/ .predict=multilogit_expected, .prep = probit_prep};
+     .score = logit_dlog_likelihood, .predict=multilogit_expected, .prep = probit_prep};
 
 apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
     .score = probit_dlog_likelihood, .prep = probit_prep};
