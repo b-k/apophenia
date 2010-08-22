@@ -654,7 +654,7 @@ struct to it (<tt>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method
 \li Get auxiliary info via, e.g.:
 \code
 apop_model *est = apop_estimate(your_data, apop_probit);
-int status = apop_data_get_ti(est->info, .rowname="status");
+int status = apop_data_get(est->info, .rowname="status");
 if (status)
     //trouble
 else

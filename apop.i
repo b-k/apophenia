@@ -204,9 +204,9 @@ void apop_histogram_print(apop_model *h, char *outfile=NULL);
 */
 
 %extend _apop_data {
-    _apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
-    _apop_data(const size_t s1, const int s2){ return  apop_data_alloc(s1, s2); }//just the vector
-    _apop_data(const size_t s1){ return  apop_data_alloc(s1); } //just the matrix
+    apop_data* _apop_data(const size_t v, const size_t m1, const int m2){ return  apop_data_alloc(v, m1, m2); }
+    apop_data* _apop_data(const size_t s1, const int s2){ return  apop_data_alloc(s1, s2); }//just the matrix
+    apop_data* _apop_data(const size_t s1){ return  apop_data_alloc(s1); } //just the vector
     ~_apop_data()    {apop_data_free($self);}
     char* __str__() {apop_data_show($self); return " ";}
     void __show()   {apop_data_show($self);}
