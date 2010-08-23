@@ -103,25 +103,20 @@ int     df      = count-1;
  \over {\bf u}' {\bf u} } \sim F_{q,N-K},\f]
  and that's what this function is based on.
 
-
  \param est     an \ref apop_model that you have already calculated. (No default)
  \param contrast       The matrix \f${\bf Q}\f$ and the vector \f${\bf c}\f$, where each row represents a hypothesis. (Defaults: if matrix is \c NULL, it is set to the identity matrix; if the vector is \c NULL, it is set to zero; if the entire \c apop_data set is NULL or omitted, both of these settings are made.)
- \param normalize If 1, then I will normalize the data set at <tt>est->data</tt> so that each column has mean zero (that is, I run \ref apop_matrix_normalize <tt>(data, 'c', 'm');</tt>).If zero, then I will copy off the entire dataset and do the normalization on my copy, leaving the input data as-is. (Default: 0)
  \return An \c apop_data set with a few variants on the confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
 
 This function uses the \ref designated syntax for inputs.
  */
 
-APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize){
+APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     apop_model *apop_varad_var(est, NULL)
     Nullcheck_m(est);
     apop_data * apop_varad_var(contrast, NULL)
-    int apop_varad_var(normalize, 0)
 APOP_VAR_ENDHEAD
-    apop_data      *set        = est->data;
     gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
-    apop_data      *data       = normalize ?  set : apop_data_copy(set);
     apop_data      *xpxinv     = apop_data_alloc();
     size_t          contrast_ct;
     if (contrast)
@@ -132,24 +127,9 @@ APOP_VAR_ENDHEAD
     apop_data       *qprimexpxinvqinv = apop_data_alloc();
     double          f_stat, pval;
     int             q_df,
-                    data_df     = set->matrix->size1 - est->parameters->vector->size;
+                    data_df     = est->data->matrix->size1 - est->parameters->vector->size;
 
-    /*if (set->matrix->size2 > 1){
-        Apop_submatrix(set->matrix, 0, 1, data->matrix->size1, data->matrix->size2-1, allbutones);
-        apop_matrix_normalize(allbutones, 'c', 'm');
-    }
-    */
-    apop_matrix_normalize(data->matrix, 'c', 'm');
-    //As you can see, trying a few things in this neighborhood.
-//    apop_data *xpx2 = apop_dot(data, data, .form1='t');
-//    apop_data_show(est->parameters);
-//    apop_data_show(xpx2);
-//    Apop_col(data, 0, v);
-//    gsl_vector_set_all(v, 1);
-    apop_data *xpx = apop_dot(data, data, .form1='t');
-//    apop_data_show(xpx);
-    if (!normalize)
-        apop_data_free(data);
+    apop_data *xpx = apop_dot(est->data, est->data, .form1='t');
     if (q != NULL){
         q_df    = q->size1;
         xpxinv->matrix = apop_matrix_inverse(xpx->matrix);
@@ -171,7 +151,6 @@ APOP_VAR_ENDHEAD
     apop_data_free(xpx); apop_data_free(xpxinv);
     apop_data_free(qprimexpxinvqinv); apop_data_free(qprimebeta);
     apop_data_free(qprimebetaminusc_qprimexpxinvqinv);
-    if(normalize) apop_data_free(data);
 
     apop_data *r_sq_list = apop_estimate_coefficient_of_determination (est);
     double variance = apop_data_get(r_sq_list, .rowname="sse");

@@ -518,7 +518,6 @@ APOP_VAR_ENDHEAD
     //an apop_data set and start doing the raking.
     apop_data *fit, *contrast_grid;
     fit = apop_query_to_mixed_data(format, "select * from apop_contrasts_%i", run_number);
-    //apop_data_print(fit);
 
     contrast_grid = apop_data_calloc(0,var_ct, contrast_ct);
 	for (int i=0; i< contrast_ct; i++)
@@ -533,7 +532,6 @@ APOP_VAR_ENDHEAD
     apop_data *d =apop_data_copy(fit);
     c_loglin(contrast_grid, d, fit, tolerance, max_iterations);
     apop_data_free(d);
-	//apop_data_show(fit);
     
 	apop_query("drop table apop_zerocontrasts_%i", run_number);
 	apop_query("drop table apop_contrasts_%i", run_number);

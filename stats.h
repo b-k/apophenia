@@ -128,7 +128,7 @@ double apop_multivariate_lngamma(double a, double p);
 //apop_test.c
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
-APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast, int normalize);
+APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast);
 #define apop_F_test apop_f_test
 
 //from the regression code:

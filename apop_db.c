@@ -23,7 +23,7 @@ apop_opts_type apop_opts	=
 #endif
 
 //#define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
-#define ERRCHECK {apop_assert_c(err!=NULL, 0, 0, err);}
+#define ERRCHECK {apop_assert_c(err==NULL, 1, 0, "%s", err);}
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
@@ -116,7 +116,7 @@ Recreating a table which already exists can cause errors, so it is good practice
 		'n'	==>no action. Return result so program can continue. (default)
 \return
 0 = table does not exist<br>
-1 = table was found, and if whattodo==1, has been deleted
+1 = table was found, and if remove=='d', has been deleted
 
 This function uses the \ref designated syntax for inputs.
 \ingroup db
@@ -132,7 +132,7 @@ APOP_VAR_END_HEAD
 #else
         apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.\n");
 #endif
-  char 		*err, *q2;
+  char 		*err=NULL, *q2;
   tab_exists_t te = { .name = name };
 	if (db==NULL) return 0;
 	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,&te, &err); 
@@ -198,7 +198,7 @@ are filled with <tt>NAN</tt>s in the matrix.
 \param fmt A <tt>printf</tt>-style SQL query.
 */
 int apop_query(const char *fmt, ...){
-  char 		*err;
+  char 		*err=NULL;
   Fillin(q, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT

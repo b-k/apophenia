@@ -407,9 +407,10 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
 }
 
 /** I claim that the F test calculated via apop_F_test(est, NULL, NULL)
- equals a transformation of R^2.
+ equals a transformation of R^2 (after a normalization step).
 */
 void test_f(apop_model *est){
+apop_matrix_normalize(est->data->matrix, 'c', 'm');
 apop_data *rsq  = apop_estimate_coefficient_of_determination(est);
 apop_data *ftab = apop_F_test(est, NULL);
 double    n     = est->data->matrix->size1;

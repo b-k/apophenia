@@ -955,7 +955,7 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
     }
     asprintf(&q, "%s varchar(100) );", q);
     apop_query("%s", q);
-    apop_assert_s(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
+    apop_assert(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
     if (use_names_in_file){
         for (int i=0; i<ct; i++)
             free(fn[i]);
@@ -979,8 +979,9 @@ static void tab_create(char *tabname, int ct, int has_row_names){
         asprintf(&q, "%s '%s", q, fn[i]);
         free(r);
     }
-    apop_query("%s' numeric); begin;", q);
-    apop_assert_s(apop_table_exists(tabname, 0), "query \"%s' ); begin;\" failed.\n", q);
+    apop_query("%s' numeric);", q);
+    apop_assert(apop_table_exists(tabname), "query \"%s' numeric);\" failed.\n", q);
+    apop_query("begin;");
     if (use_names_in_file){
         for (int i=0; i<ct; i++)
             free(fn[i]);
