@@ -12,7 +12,6 @@ apop_update_settings *apop_update_settings_init(apop_update_settings in){
    apop_update_settings *out = malloc(sizeof(apop_update_settings));
    Apop_assert_s(out, "malloc failed. Out of memory?");
    apop_varad_setting(in, out, periods, 6e3);
-   apop_varad_setting(in, out, histosegments, 5e2);
    apop_varad_setting(in, out, burnin, 0.05);
    apop_varad_setting(in, out, method, 'd'); //default
    apop_varad_setting(in, out, starting_pt, NULL);
@@ -164,7 +163,7 @@ APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_
         rng = spare_rng;
     }
 APOP_VAR_END_HEAD
-  apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
+    apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
     if (maybe_out) return maybe_out;
     apop_update_settings *s = apop_settings_get_group(prior, apop_update);
     if (!s) 
@@ -185,14 +184,18 @@ APOP_VAR_END_HEAD
     if (!likelihood->parameters)
         likelihood->parameters = apop_data_alloc(vs, ms1, ms2);
     for (int i=0; i< s->periods; i++){     //main loop
+        newdraw:
         apop_draw(draw, rng, prior);
         write_double(draw, likelihood->parameters);
         ll    = apop_log_likelihood(data,likelihood);
+        if (gsl_isnan(ll)){
+            Apop_notify(1,"Trouble evaluating the "
+                "likelihood function at vector beginning with %g. "
+                "Throwing it out and trying again.\n"
+                , likelihood->parameters->vector->data[0]);
+            goto newdraw;
+        }
         ratio = ll - cp_ll;
-        apop_assert_c(!gsl_isnan(ratio),  NULL, 0,"Trouble evaluating the "
-                "likelihood function at vector beginning with %g or %g. "
-                "Maybe offer a new starting point.\n"
-                , current_param->vector->data[0], likelihood->parameters->vector->data[0]);
         if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio){
             apop_data_memcpy(current_param, likelihood->parameters);
             cp_ll = ll;

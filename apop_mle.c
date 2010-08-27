@@ -181,7 +181,7 @@ APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *
 APOP_VAR_ENDHEAD
   Get_vmsizes(model->parameters); //tsize
   apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
-  apop_assert_c(ll, 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
+  Apop_assert_c(ll, 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
   gsl_vector        *out= gsl_vector_alloc(tsize);
   infostruct    i = (infostruct) {.model = model, .data = data};
     apop_internal_numerical_gradient(ll, &i, out, delta);
@@ -354,7 +354,7 @@ static double negshell (const gsl_vector *beta, void * in){
                 out             = 0; 
   double 	(*f)(apop_data *, apop_model *);
     f   = i->model->log_likelihood? i->model->log_likelihood : i->model->p;
-    apop_assert_s(f, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
+    Apop_assert(f, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
     apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
@@ -422,11 +422,11 @@ static int ctrl_c;
 static void mle_sigint(){ ctrl_c ++; }
 
 static void setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
-    int i;
+    Apop_assert(x, "The vector I'm trying to optimize over is NULL.");
 	if (!mp->starting_pt)
   		gsl_vector_set_all (x, 1);
 	else 
-        for (i=0; i< x->size; i++)
+        for (int i=0; i< x->size; i++)
             x->data[i] = mp->starting_pt[i];
 }
 
@@ -482,7 +482,7 @@ Inside the infostruct, you'll find these elements:
 				            status  = 0,
 				            apopstatus  = 0,
 				            betasize= i->beta->size;
-  apop_assert_s(mp, "No apop_mle settings group in the working model");
+  Apop_assert(mp, "No apop_mle settings group in the working model");
     if (mp->method == APOP_CG_BFGS)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
     else if (mp->method == APOP_CG_PR)
@@ -528,7 +528,7 @@ Inside the infostruct, you'll find these elements:
 static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
   apop_model		        *est        = i->model;
   apop_mle_settings         *mp         = apop_settings_get_group(est, apop_mle);
-  apop_assert_s(mp, "No apop_mle settings group in the working model");
+  Apop_assert(mp, "No apop_mle settings group in the working model");
   int                       status,
                             apopstatus  = 0,
                             iter 		= 0,
@@ -662,14 +662,15 @@ else
 \endcode
  \ingroup mle */
 apop_model *	apop_maximum_likelihood(apop_data * data, apop_model *dist){
-  apop_mle_settings   *mp = apop_settings_get_group(dist, apop_mle);
+    apop_mle_settings   *mp = apop_settings_get_group(dist, apop_mle);
     if(!mp)
         mp = Apop_model_add_group(dist, apop_mle, .parent=dist);
     apop_prep(data, dist);
-  infostruct    info    = { .data           = data,
-                            .use_constraint = 1,
-                            .trace_file     = malloc(sizeof(FILE *)),
-                            .model          = dist};
+    Apop_assert(dist->parameters, "Not enough information to allocate parameters over which to optimize.")
+    infostruct    info    = { .data           = data,
+                              .use_constraint = 1,
+                              .trace_file     = malloc(sizeof(FILE *)),
+                              .model          = dist};
     get_desires(dist, &info);
     info.beta = apop_data_pack(dist->parameters, NULL, .all_pages='y');
     setup_starting_point(mp, info.beta);
@@ -764,7 +765,7 @@ APOP_VAR_ENDHEAD
         prm->starting_pt	= malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
-    apop_assert_c(apop_vector_bounded(v, boundary), e, 0, "Your model has diverged (element(s) > %g); returning your original model without restarting.", boundary);
+    Apop_assert_c(apop_vector_bounded(v, boundary), e, 0, "Your model has diverged (element(s) > %g); returning your original model without restarting.", boundary);
     gsl_vector_free(v);
         
     apop_model *newcopy = apop_estimate(e->data, *copy);
@@ -871,7 +872,7 @@ static void anneal_sigint(){ longjmp(anneal_jump,1); }
 static apop_model * apop_annealing(infostruct *i){
   apop_model            *ep = i->model;
   apop_mle_settings     *mp = apop_settings_get_group(ep, apop_mle);
-  apop_assert_s(mp, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
+  Apop_assert(mp, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
   gsl_siman_params_t    simparams = (gsl_siman_params_t) {
                             .n_tries       = mp->n_tries, 
                             .iters_fixed_T = mp->iters_fixed_T,

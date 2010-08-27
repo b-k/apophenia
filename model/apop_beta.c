@@ -104,6 +104,11 @@ static void beta_rng(double *out, gsl_rng *r, apop_model* eps){
     *out = gsl_ran_beta(r, apop_data_get(eps->parameters,0,-1), apop_data_get(eps->parameters,1,-1));
 }
 
+static void beta_print(apop_model *m){
+    printf("Beta distribution with alpha = %g and beta = %g.\n", apop_data_get(m->parameters,0,-1)
+                                                               , apop_data_get(m->parameters,1,-1));
+}
+
 apop_model apop_beta = {"Beta distribution", 2,0,0, .dsize=1, .estimate = beta_estimate, 
     .log_likelihood = beta_log_likelihood, .score = beta_dlog_likelihood, 
-    .constraint = beta_constraint, .draw = beta_rng, .cdf = beta_cdf};
+    .constraint = beta_constraint, .draw = beta_rng, .cdf = beta_cdf, .print=beta_print};

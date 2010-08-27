@@ -139,8 +139,8 @@ and then tries to recover the means given a var/covar matrix fixed at the correc
  \return a model that can be used like any other, with the given params fixed or free.
   */
 apop_model * apop_model_fix_params(apop_model *model_in){
-   apop_assert_s(model_in, "You sent me a NULL model.");
-   apop_assert_s(model_in->parameters, "I need parameters passed in either via the model->parameters or as an argument to the function");
+   apop_assert(model_in, "You sent me a NULL model.");
+   apop_assert(model_in->parameters, "I need parameters passed in either via the model->parameters or as an argument to the function");
     apop_model *model_out  = apop_model_copy(fixed_param_model);
     apop_model *base = apop_model_copy(*model_in);
     Apop_model_add_group(model_out, apop_model_fixed_params, .base_model = base);

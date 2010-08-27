@@ -221,7 +221,7 @@ static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
  
     //total sum of squares:
     apop_data* tss = apop_query_to_data("select var_pop(%s), count(*) from %s", data, table);
-    apop_assert_s(tss, "Query 'select var_pop(%s), count(*) from %s' returned NULL. Does that look right to you?", data, table);
+    apop_assert(tss, "Query 'select var_pop(%s), count(*) from %s' returned NULL. Does that look right to you?", data, table);
     apop_data_set(out, 2, 0, apop_data_get(tss, 0, 0)*apop_data_get(tss, 0, 1)); //total sum of squares
     double total_df = apop_data_get(tss, 0, 1);
     apop_data_set(out, 2, 1, apop_data_get(tss, 0, 1)); //total df.
@@ -387,8 +387,8 @@ APOP_VAR_HEAD double apop_test(double statistic, char *distribution, double p1, 
     double apop_varad_var(p2, 0);
     int is_chi = strcasecmp(distribution, "chi squared")|| strcasecmp(distribution, "chi")
                      || strcasecmp(distribution, "chisq");
-     apop_assert_s(strcasecmp(distribution, "f") || p1, "I need both a p1 and p2 parameter specifying the degrees of freedom.")
-     apop_assert_s(strcasecmp(distribution, "t") || strcasecmp(distribution, "f") || is_chi
+     apop_assert(strcasecmp(distribution, "f") || p1, "I need both a p1 and p2 parameter specifying the degrees of freedom.")
+     apop_assert(strcasecmp(distribution, "t") || strcasecmp(distribution, "f") || is_chi
              || p1, "I need a p1 parameter specifying the degrees of freedom.")
      if (!p2 && (!distribution || !strcasecmp(distribution, "normal") || !strcasecmp(distribution, "gaussian") ))
          p2 = 1;

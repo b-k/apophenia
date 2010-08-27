@@ -54,7 +54,7 @@ extern apop_model apop_zipf;
 
 
 void apop_model_free (apop_model * free_me);
-void apop_model_show (apop_model * print_me);
+void apop_model_print (apop_model * print_me);
 apop_model * apop_model_copy(apop_model in); //in apop_model.c
 apop_model * apop_model_clear(apop_data * data, apop_model *model);
 

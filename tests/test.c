@@ -1332,6 +1332,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test apop_update", test_updating(r));
     do_test("weighted regression", test_weighted_regression(d,e));
     do_test("offset OLS", test_ols_offset(r));
     do_test("default RNG", test_default_rng(r));
@@ -1389,7 +1390,6 @@ int main(int argc, char **argv){
         do_test("test distributions", test_distributions(r));
         if (verbose) printf("\tSlower tests:\n");
         do_test("test ML imputation", test_ml_imputation(r));
-        //do_test("test apop_update", test_updating(r));
         do_test("test probit and logit", test_probit_and_logit(r));
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
