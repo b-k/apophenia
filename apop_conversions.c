@@ -70,7 +70,7 @@ APOP_VAR_ENDHEAD
         (row_col == 'r' || row_col == 'R') 
            ? gsl_matrix_alloc(1, in->size)
            : gsl_matrix_alloc(in->size, 1);
-    apop_assert_s(out, "gsl_matrix_alloc failed; probably out of memory.");
+    apop_assert(out, "gsl_matrix_alloc failed; probably out of memory.");
     if (row_col == 'r' || row_col == 'R') 
         gsl_matrix_set_row(out, 0, in);
     else
@@ -205,7 +205,7 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
     datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
-    apop_assert_s(datachars, "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
+    Apop_assert(datachars, "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
@@ -955,7 +955,7 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
     }
     asprintf(&q, "%s varchar(100) );", q);
     apop_query("%s", q);
-    apop_assert(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
+    Apop_assert(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
     if (use_names_in_file){
         for (int i=0; i<ct; i++)
             free(fn[i]);

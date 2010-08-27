@@ -34,15 +34,16 @@ static int find_missing(const apop_data *data, apop_data *predict, size_t page, 
             if (apop_data_get(mask, i, j))
                 addin(predict, i, j, page);
     if (mask->more)
-        ct += apop_sum(mask->vector)+ apop_matrix_sum(mask->matrix)
-                     + find_missing(mask->more, predict, page+1, ct);
+        ct += mask->vector ? apop_sum(mask->vector) : 0
+              + mask->matrix ? apop_matrix_sum(mask->matrix) : 0
+              + find_missing(mask->more, predict, page+1, ct);
     apop_data_free(mask);
     return ct;
 }
 
 #include "output.h"
 apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
-    apop_data *out = apop_data_alloc(0, 0, 0);
+    apop_data *out = apop_data_alloc( );
     if (in)
         apop_data_add_page(in, out, "<predict>");
     else 
