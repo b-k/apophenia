@@ -1,7 +1,7 @@
 #include <apop.h>
 #include "nist_tests.c"
 
-#define Diff(L, R, eps) apop_assert_s(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
+#define Diff(L, R, eps) Apop_assert(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 //I'm using the test script an experiment to see if 
 //these macros add any value.
@@ -1164,6 +1164,30 @@ void estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tr
     apop_data_free(data);
 }
 
+void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
+    //Make random draws from the dist, then find the CDF at that draw
+    //That should generate a uniform distribution.
+    if (!m->cdf || apop_strcmp(m->name, "Bernoulli distribution")
+                || apop_strcmp(m->name, "Binomial distribution"))
+        return;
+    int i, drawct = 1e5;
+    apop_data *draws = apop_data_alloc(drawct, m->dsize);
+    apop_data *cdfs = apop_data_alloc(drawct);
+    for (i=0; i< drawct; i++){
+        Apop_row(draws, i, onerow);
+        apop_draw(onerow->data, r, m);
+        Apop_data_row(draws, i, one_data_pt);
+        apop_data_set(cdfs, i, -1, apop_cdf(one_data_pt, m));
+    }
+    apop_model *h = apop_estimate(cdfs, apop_histogram);
+    gsl_histogram *histo = Apop_settings_get(h, apop_histogram, pdf);
+    for (i=0; i< histo->n; i++)
+        if(fabs(histo->bin[i]- (drawct+0.0)/histo->n)> drawct/1000.)
+        printf("%g %g %g\n", histo->bin[i], (drawct+0.0)/histo->n, drawct/1000.);
+        //Diff(histo->bin[i], (drawct+0.0)/histo->n, drawct/100.);
+}
+
+
 double  true_parameter_v[]    = {1.82,2.1};
 
 void test_distributions(gsl_rng *r){
@@ -1216,6 +1240,7 @@ void test_distributions(gsl_rng *r){
             apop_vector_realloc(true_params->parameters->vector, 1);
         }
         test_one_distribution(r, dist+i, true_params);
+        test_cdf(r, true_params);
         printf("Passed.\n");
     }
 }

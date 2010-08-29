@@ -284,7 +284,7 @@ in rank format.
 
 \li For the complement, see \ref apop_data_rank_expand.
 
-\include test_rank.c
+\include test_ranks.c
 */
 apop_data *apop_data_rank_compress (apop_data *in){
     int upper_bound = GSL_MAX(in->matrix ? gsl_matrix_max(in->matrix) : 0, 

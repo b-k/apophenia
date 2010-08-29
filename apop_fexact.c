@@ -307,7 +307,7 @@ static void fexact(int *nrow, int *ncol, int *table, int *ldtabl,
 #undef iwrk
 #undef dwrk
 
-void f2xact(int nrow, int ncol, int *table, int ldtabl,
+static void f2xact(int nrow, int ncol, int *table, int ldtabl,
        double *expect, double *percnt, double *emin, double *prt,
        double *pre, double *fact, int *ico, int *iro, int *kyy,
        int *idif, int *irn, int *key, int *ldkey, int *ipoin,
@@ -767,7 +767,7 @@ L310:
 
 }/* f2xact() */
 
-double f3xact(int nrow, int *irow, int ncol, int *icol,
+static double f3xact(int nrow, int *irow, int ncol, int *icol,
        int ntot, double *fact, int *ico, int *iro, int *it,
        int *lb, int *nr, int *nt, int *nu, int *itc, int *ist,
        double *stv, double *alen, const double *tol) {
@@ -1078,7 +1078,7 @@ L200: /* Pop item from stack */
     return  - vmn;
 }
 
-double f4xact(int nrow, int *irow, int ncol, int *icol, double dspt,
+static double f4xact(int nrow, int *irow, int ncol, int *icol, double dspt,
        double *fact, int *icstk, int *ncstk, int *lstk, int *mstk,
        int *nstk, int *nrstk, int *irstk, double *ystk, const double *tol) {
 /*
@@ -1627,7 +1627,7 @@ void f8xact(int *irow, int is, int i1, int izero, int *new) {
     }
 }
 
-double f9xact(int n, int ntot, int *ir, double *fact) {
+static double f9xact(int n, int ntot, int *ir, double *fact) {
 /*
   -----------------------------------------------------------------------
   Name:	      F9XACT
@@ -1749,7 +1749,7 @@ void prterr(int icode, const char *mes) {
     return;
 }
 
-int iwork(int iwkmax, int *iwkpt, int number, int itype) {
+static int iwork(int iwkmax, int *iwkpt, int number, int itype) {
 /*
   -----------------------------------------------------------------------
   Name:	      iwork
@@ -1867,7 +1867,7 @@ L40:
     goto L10;
 }
 
-double gammds(double *y, double *p, int *ifault) {
+static double gammds(double *y, double *p, int *ifault) {
 /*
   -----------------------------------------------------------------------
   Name:	      GAMMDS

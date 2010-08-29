@@ -24,12 +24,11 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
   gsl_vector* x_minus_mu= gsl_vector_alloc(data->matrix->size2);
   double        ll      = 0;
     determinant = apop_det_and_inv(m->parameters->matrix, &inverse, 1,1);
-    if (determinant == 0) {
-        fprintf(stderr, "apop_multivariate_normal.p: the determinant of the given covariance is zero. Returning GSL_NEGINF.  \n"); 
+    if (determinant == 0) { //tell maximizers to look elsewhere.
         gsl_vector_free(x_minus_mu);
-        return GSL_NEGINF; //tell maximizers to look elsewhere.
+        Apop_assert_c(0, GSL_NEGINF, 1, "the determinant of the given covariance is zero. Returning GSL_NEGINF."); 
     }
-    apop_assert_s(determinant > 0, "The determinant of the covariance matrix you gave me "
+    apop_assert(determinant > 0, "The determinant of the covariance matrix you gave me "
             "is negative, but a covariance matrix must always be positive semidefinite "
             "(and so have nonnegative determinant). Maybe run apop_matrix_to_positive_semidefinite?");
     for (i=0; i< data->matrix->size1; i++){

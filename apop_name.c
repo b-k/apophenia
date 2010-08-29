@@ -12,7 +12,7 @@
 */
 apop_name * apop_name_alloc(void){
     apop_name	* init_me = malloc(sizeof(apop_name));
-    apop_assert_s(init_me, "malloc failed. Probably out of memory.");
+    apop_assert(init_me, "malloc failed. Probably out of memory.");
     *init_me = (apop_name){ };
 	init_me->title[0]   = '\0';
 	return init_me;

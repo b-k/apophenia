@@ -127,10 +127,13 @@ void apop_mle_settings_free(apop_mle_settings *in){ free(in); }
 static apop_model * apop_annealing(infostruct*);                    //below.
 
 static double one_d(double b, void *in){
-  infostruct    *i   =in;
+  infostruct *i   = in;
+  double penalty  = 0;
     gsl_vector_set(i->gp->beta, i->gp->dimension, b);
     apop_data_unpack(i->gp->beta, i->model->parameters);
-	double out= (*(i->f))(i->gp->d, i->model);
+	if (i->model->constraint)
+		penalty	= i->model->constraint(i->data, i->model);
+	double out= (*(i->f))(i->gp->d, i->model) + penalty;
     return out;
 }
 
@@ -431,8 +434,12 @@ static void setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
 }
 
 static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
-  Get_vmsizes(params); //tsize = total # of parameters
-  apop_model		        *est    = i->model; //just an alias.
+    Get_vmsizes(params); //tsize = total # of parameters
+    apop_model	*est    = i->model; //just an alias.
+    /* This catches too many near-misses
+       if(est->constraint)
+        apop_assert(!est->constraint(i->data, est), "the maximum likelihood search ended "
+                                            "at a point that doesn't satisfy the model's constraints.");*/
     if (i->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
         apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta));
         if (i->want_tests=='y')
@@ -884,8 +891,9 @@ static apop_model * apop_annealing(infostruct *i){
   static const gsl_rng   * r    = NULL;
     if (!r)
         r = mp->rng ? mp->rng : apop_rng_alloc(apop_opts.rng_seed++);
-  i->beta = apop_data_pack(ep->parameters, NULL, .all_pages='y');
-  setup_starting_point(mp, i->beta);
+    //these two are done at apop_maximum_likelihood:
+  //i->beta = apop_data_pack(ep->parameters, NULL, .all_pages='y');
+  //setup_starting_point(mp, i->beta);
   int betasize      = i->beta->size;
   i->starting_pt    = apop_vector_map(i->beta, set_start);
   i->use_constraint = 0; //negshell doesn't check it; annealing_step does.

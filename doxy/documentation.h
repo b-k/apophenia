@@ -402,10 +402,11 @@ Outlineheader status What is the status of the code?
 [This section last updated 18 August.]
 
 A library for scientific computing, or even for that small subset that is statistics, will
-never be complete. What we can hope for, however, is a complete framework such that new
+never be complete. What we can hope for, however, is a framework that is sufficiently
+complete that new
 methods and models can easily be plugged in. Apophenia is close to complete in that sense.
 
-The \ref apop_data structure is where it's going to be, and there are enough functions
+The \ref apop_data structure is set, and there are enough functions
 there that you could use it as a subpackage by itself (along with the database functions) 
 for nontrivial dealings with data.
 
@@ -414,21 +415,22 @@ before it is done. The promise underlying the structure is that you can provide 
 item, such as an RNG or a likelihood function, and the structure will do all of the
 work to fill in computationally-intensive methods for everything else. Some directions
 aren't quite there yet (such as RNG -> most other things); the likelihood -> RNG function
-only works for models mapping from unidimensional reals; empirical distributions are
+only works for models with a domain of unidimensional reals; empirical distributions are
 central to the setup, but the PMF model doesn't have enough supporting utilities and
 needs an internal index for faster lookups.
 
 Also, the interface could still use a few tweaks, primiarily with handling the list
 of settings groups.
 
-Which parts of the code are most reliable? [There's no point asking {\em are there bugs?}
-because the answer to that will always be {\em yes}.] There are tests on the code
-base, which currently cover circa 65% of the lines of code; most of the untested part is
+Which parts of the code are most reliable? [There's no point asking <em>are there
+bugs?</em>
+because the answer to that will always be <em>yes</em>.] There are vigorous tests on the code
+base, which currently cover about 73% of the lines of code; most of the untested part is
 in methods of some of the more obscure models. A broad rule of thumb for any code base is
-that the well-worn parts, like \ref apop_data_get and \ref apop_normal.log_likelihood,
+that the well-worn parts, in this case functions like \ref apop_data_get and \ref apop_normal's <tt>log_likelihood</tt>,
 are likely to be entirely reliable, while the out-of-the-way functions (maybe the RNG for
-the Yule distribution) are worth a bit of caution. Almost all of the code has been used in
-production, so all of it was at least initially tested.
+the Yule distribution) are worth a bit of caution. Close to all of the code has been used in
+production, so all of it was at least initially tested against real-world data.
 
 endofdiv
 
@@ -1002,7 +1004,7 @@ where \c data is the input data, and \c
 m is the parametrized model (i.e. your model with a \c parameters element set by the caller). 
 This function will return the value of the log likelihood function at the given parameters.
 
-\li Is this a constrained optimization? See the \ref constraints "Constraints page" on how to set them. Otherwise, no constraints will be assumed.
+\li Is this a constrained optimization? See below under Maximum likelihood methods \f$->\f$ Setting constraints on how to set them. Otherwise, no constraints will be assumed.
 
 \li Write the object. In your header file, include 
 \code
@@ -1513,8 +1515,7 @@ Outlineheader moreasst Assorted
 Outlineheader Gene General utilities
 
     \li\ref Apop_assert
-    \li\ref Apop_assert_void
-    \li\ref apop_error()
+    \li\ref Apop_assert_c
     \li\ref apop_opts
     \li\ref apop_strip_dots()
     \li\ref apop_strcmp()

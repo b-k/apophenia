@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 test.c is the main test, but is intended to run through without any failure anywhere along
 the way. This script is intented to test the steps that catch failures and warn the user
@@ -13,6 +14,28 @@ that their output is as promised.
 from subprocess import *
 
 array_of_failures = [
+["""apop_data *d1 = apop_data_alloc(10,9);
+    apop_data *d2 = apop_data_alloc(10,9);
+    apop_dot(d1, d2);"""
+    , "apop_check_dimensions: You sent me a matrix with 9 columns to multiply against a matrix with 10 rows. Those two need to be equal."],
+["""apop_data *d1 = apop_data_alloc(10,9);
+    apop_data *d2 = apop_data_alloc(9,10);
+    apop_dot(d1, d2, .form2='t');"""
+    , "apop_check_dimensions: You sent me a matrix with 9 columns to multiply against a matrix with 10 rows (after the transposition you requested). Those two need to be equal."],
+["""apop_data *d1 = apop_data_alloc(10,9);
+    apop_data *d2 = apop_data_alloc(9,10);
+    apop_dot(d1, d2, .form1='t');"""
+    , "apop_check_dimensions: You sent me a matrix with 10 columns (after the transposition you requested) to multiply against a matrix with 9 rows. Those two need to be equal."],
+["""apop_data *d1 = apop_data_alloc(10,9);
+    apop_data *d2 = apop_data_alloc(10,9);
+    apop_dot(d1, d2, .form1='t', .form2='t');"""
+    , "apop_check_dimensions: You sent me a matrix with 10 columns to multiply against a matrix with 9 rows (after the two transpositions you requested). Those two need to be equal."],
+['apop_data *d = apop_data_alloc(10,9); apop_matrix_inverse(d->matrix);'
+    , "apop_det_and_inv: You asked me to invert a 10 X 9 matrix, but inversion requires a square matrix."],
+['apop_data *d = apop_data_alloc(); apop_vector_increment(d->vector, 3, 3);'
+    , "variadic_apop_vector_increment: You sent me a NULL vector."],
+['apop_data *d = apop_data_alloc(); apop_matrix_increment(d->matrix, 3, 3);'
+    , "variadic_apop_matrix_increment: You sent me a NULL matrix."],
 ["""
 apop_data *d = apop_data_alloc(2,2);
 Apop_row(d, 0, r);

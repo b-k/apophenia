@@ -134,7 +134,7 @@ char    *out    = NULL;
 
 /** Inform the user of a faux pas. See also \ref Apop_assert, which allows the function to return a value.
 
-  Deprecated. Use \ref Apop_assert, \ref Apop_assert_c, or \ref apop_notify.
+  Deprecated. Use \ref Apop_assert, \ref Apop_assert_c, or \ref Apop_notify.
 
  \param level   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2. You can set apop_opts.verbose==-1 to turn off virtually all messages, but this is probably ill-advised.
  \param stop   Either 's' or 'c', indicating whether the program should stop or continue. If stopping, uses \c assert(0) for easy debugging. You can use 'h' (halt) as a synonym for 's'.

@@ -49,26 +49,6 @@ static apop_model *estim (apop_data *d, apop_model *out){
     return out;
 }
 
-/*
-//generate a CDF
-static apop_model *estim (apop_data *d, apop_model *m){
-    apop_model *out = apop_model_copy(apop_pmf);
-    apop_assert(d->weights, NULL, 0, 's', "I expect the input to estimation of "
-               "an apop_pmf to have a weights vector.\n");
-    int size = d->weights->size;
-    apop_assert(size, NULL, 0, 's', "I expect the input to estimation of "
-               "an apop_pmf to have a weights vector with positive length.\n");
-    gsl_vector *cdf = gsl_vector_alloc(size);
-    out->more = cdf;
-    cdf->data[0] = d->weights->data[0];
-    for (int i=1; i< d->weights->size; i++)
-        cdf->data[i] = d->weights->data[i] + cdf->data[i-1];
-    //Now make sure the last entry is one.
-    gsl_vector_scale(cdf, 1./cdf->data[cdf->size-1]);
-    return out;
-}
-*/
-
 static void draw (double *out, gsl_rng *r, apop_model *m){
     size_t current; 
     if (!m->parameters->weights) //all rows are equiprobable

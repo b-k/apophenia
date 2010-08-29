@@ -120,7 +120,7 @@ APOP_VAR_ENDHEAD
 
     int by_apop_rows = fn_r || fn_rp || fn_rpi || fn_ri;
 
-    apop_assert_s(!((part=='c' || part=='r') && (fn_d || fn_dp || fn_dpi || fn_di)), 
+    Apop_assert(!((part=='c' || part=='r') && (fn_d || fn_dp || fn_dpi || fn_di)), 
         "You asked for a vector-oriented operation (.part='r' or .part='c'), but gave me a "
         "scalar-oriented function. Did you mean part=='a'?");
 

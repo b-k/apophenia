@@ -285,12 +285,12 @@ APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type,
     char apop_varad_var(remove, 'n')
 APOP_VAR_ENDHEAD
     if (type == 'd'){
-        apop_assert_s((col != -1) || d->vector, "You asked for the vector element "
+        Apop_assert((col != -1) || d->vector, "You asked for the vector element "
                                                     "(col==-1) but the data's vector element is NULL.");
-        apop_assert_s((col == -1) || (col < d->matrix->size2), "You asked for the matrix element %i "
+        Apop_assert((col == -1) || (col < d->matrix->size2), "You asked for the matrix element %i "
                                "but the data's matrix element has only %zu columns.", col, d->matrix->size2);
     } else
-        apop_assert_s(col < d->textsize[1], "You asked for the text element %i but "
+        Apop_assert(col < d->textsize[1], "You asked for the text element %i but "
                                     "the data's text element has only %i elements.", col, d->textsize[1]);
     apop_data *fdummy;
     apop_data *dummies= dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
@@ -366,11 +366,11 @@ APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int 
     char apop_varad_var(intype, 't')
 APOP_VAR_ENDHEAD
     if (intype=='t'){
-        apop_assert_s(incol < data->textsize[1], "You asked for the text column %i but the "
+        Apop_assert(incol < data->textsize[1], "You asked for the text column %i but the "
                                             "data's text has only %i elements.", incol, data->textsize[1]);
     } else {
-        apop_assert_s((incol != -1) || data->vector, "You asked for the vector of the data set but there is none.");
-        apop_assert_s((incol == -1) || (incol < data->matrix->size2), "You asked for the matrix column %i but "
+        Apop_assert((incol != -1) || data->vector, "You asked for the vector of the data set but there is none.");
+        Apop_assert((incol == -1) || (incol < data->matrix->size2), "You asked for the matrix column %i but "
                                             "the matrix has only %zu elements.", incol, data->matrix->size2);
     }
     if (!data->vector && outcol == -1) //allocate a vector for the user.
@@ -402,7 +402,7 @@ Also, the <tt>more</tt> element is a reference table of names and column numbers
 
 */
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
-    apop_assert_s(textcol < d->textsize[1], "You asked for the text element %i but the data's "
+    Apop_assert(textcol < d->textsize[1], "You asked for the text element %i but the data's "
                                             "text has only %i elements.", datacol, d->textsize[1]);
     if (!d->vector && datacol == -1) //allocate a vector for the user.
         d->vector = gsl_vector_alloc(d->textsize[0]);
