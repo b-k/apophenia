@@ -23,7 +23,7 @@ apop_opts_type apop_opts	=
 #endif
 
 //#define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
-#define ERRCHECK {apop_assert_c(err==NULL, 1, 0, "%s", err);}
+#define ERRCHECK {apop_assert_c(err==NULL, 0, 0, "%s", err);}
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 

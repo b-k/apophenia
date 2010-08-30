@@ -4,7 +4,6 @@
 #define __apop_models_h__
 
 #include "types.h"
-#include "variadic.h"
 #include "stats.h"
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>

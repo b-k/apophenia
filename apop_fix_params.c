@@ -106,7 +106,7 @@ static void fixed_param_show(apop_model *m){
     apop_data_show(mset->predict);
     printf("The base model, after unpacking:\n");
     unpack(mset->base_model->parameters, m);
-    apop_model_show(mset->base_model);
+    apop_model_print(mset->base_model);
 }
 
 static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = fix_params_p, 

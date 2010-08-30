@@ -5,6 +5,7 @@
 
 #include "model.h"
 #include "mapply.h"
+#include "output.h"
 #include "internal.h"
 #include "likelihoods.h"
 

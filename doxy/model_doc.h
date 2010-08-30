@@ -283,7 +283,7 @@ enum apop_beta{
 
 /** The Binomial model.
 
-The multi-draw generalization of the Bernoulli.
+The multi-draw generalization of the Bernoulli; the two-bin special case of the Multinomial.
 \hideinitializer \ingroup models
 */
 enum apop_binomial {
@@ -292,18 +292,12 @@ enum apop_binomial {
 The default is to take the data to have a binary form, meaning that
 the system counts zeros as failures and non-zeros as successes. \f$N\f$
 is the size of the matrix, vector, or both (whichever is not \c NULL).
+So \f$p\f$ represents the odds of a success==1; the odds of a zero is \f$1-p\f$.
 
-In rank-type format, the data is taken to be the two-column miss-hit
-format: a nonzero value in column zero of the matrix represents a failure
-and a nonzero value in column one represents successes. Set this using,
-e.g., 
-\code
-apop_model *estimate_me = apop_model_copy(apop_binomial);
-Apop_model_add_group(estimate_me, apop_rank);
-apop_model *estimated = apop_estimate(your_data, estimate_me);
-\endcode
+\li You may be interested in \ref apop_data_to_factors to convert real numbers or text into a
+vector of categories.
 
-In both cases, \f$p\f$ represents the odds of a success==1; the odds of a zero is \f$1-p\f$.
+\li See also \ref apop_rank_compress for means of dealing with one more input data format.
                     */
     Parameter_format6, /**< 
         The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
@@ -321,13 +315,10 @@ And now the parameter vector is a proper list of probabilities.
                         */
     Estimate_results6, /**<   Parameters are estimated. Covariance matrix is filled.    */
     Prep_routine6, /**<    None.     */
-    RNG6, /**< Yes. If you've set this to rank-type, you get a vector of two outputs:
-            <tt>out[0]</tt>=number of zero draws, 
-            <tt>out[1]</tt>=number of one draw. If you are not using the rank option, then
-            I fill an array of length \c n, with a sequence of randomly drawn ones and
-            zeros. */
+    RNG6, /**< Yes. 
+            I fill an array of length \c n, with a sequence of randomly drawn ones and zeros. */
     CDF6, /**< yes  */
-    settings6, /**<  \ref apop_rank_settings    */
+    settings6, /**<  */
     Example6 /**<      */
 } ;
 
@@ -346,18 +337,14 @@ The default is simply a listing of bins, without regard to whether items are in 
 matrix of the \ref apop_data struct, or the dimensions. Here, data like <tt>0, 1, 2, 1, 1</tt>
 represents one draw of zero, three draws of 1, and one draw of 2.
 
-In rank-type format, the bins are defined by the columns: a nonzero value in column zero of the
-matrix represents a draw of zero, a nonzero value in column seven a draw of seven, et cetera.
-Set this form using, e.g.,
-\code
-apop_model *estimate_me = apop_model_copy(apop_binomial);
-Apop_model_add_group(estimate_me, apop_rank);
-apop_model *estimated = apop_estimate(your_data, estimate_me);
-\endcode
+\li You may be interested in \ref apop_data_to_factors to convert real numbers or text into a
+vector of categories.
 
-Rank-type data is slightly more robust, because the number of bins in free-data format is
-simply the largest number found. So if there are bins \{0, 1, 2\} and your data set
-happens to consist of <tt>0 0 1 1 0</tt>, then I won't know to generate three-bin results.
+\li See also \ref apop_rank_compress for means of dealing with one more input data format.
+
+\li Please note that the number of bins is simply the largest number found. So if there
+are bins \{0, 1, 2\} and your data set happens to consist of <tt>0 0 1 1 0</tt>, then
+I won't know to generate results with three bins where the last bin has probability zero.
                     */
     Parameter_format7, /**< 
         The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
@@ -376,17 +363,9 @@ And now the parameter vector is a proper list of probabilities.
     Estimate_results7, /**<  Parameters are estimated. Covariance matrix
                          is filled.   */
     Prep_routine7, /**<   None.      */
-    RNG7, /**< Yes. The result of an imaginary tossing of \f$N\f$ balls into \f$k\f$ urns, with the
+    RNG7, /**< The result of an imaginary tossing of \f$N\f$ balls into \f$k\f$ urns, with the
             given probabilities.
             
-            If you've set this to rank-type, you get a vector of k outputs:
-            <tt>out[0]</tt>=number of zero draws, <br>
-            <tt>out[1]</tt>=number of one draws,<br>
-            ...<br>
-            <tt>out[k-1]</tt>=number of k-1 draws.<br>
-            The vectork will sum to \f$N\f$.
-
-            If you are not using the rank option, then
             I fill an array of length \c N, with a sequence of draws from zero to \f$N\f$. They
             are not randomly ordered: it'll look something like \f$[0 0 1 1 3 3 3]\f$, but
             will still be an accurate representation of what happens when you throw
@@ -395,9 +374,8 @@ And now the parameter vector is a proper list of probabilities.
             If you want the sequence of draws to be random at the per-item scale,
             set \f$N=1\f$. and use a \c for loop to make the number of draws you
             want. This is less efficient.
-
             */
-    settings7, /**<  \ref apop_rank_settings    */
+    settings7, /**<  */
     Example7 /**<      */
 } ;
 
@@ -433,10 +411,7 @@ If you prefer this form, just convert your parameter via \f$\mu = {1\over
 \ln C}\f$ (and convert back from the parameters this function gives you
 via \f$C=\exp(1/\mu)\f$.
 
-To specify that you have frequency or ranking data, use 
-\code
-Apop_model_add_group(your_model, apop_rank);
-\endcode
+\li See also \ref apop_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_exponential {
     Name9,         /**< <tt>Exponential distribution</tt>*/
@@ -446,10 +421,10 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Parameter_format9, /**<  \f$\mu\f$ is in the zeroth element of the vector.   */
     Estimate_results9, /**<  Parameter is set.   */
     Prep_routine9, /**<  None.   */
-    RNG9, /**< Yes. Ignores the rank settings and just prooduces a single number.*/
-    CDF9, /**< Yes. Ignores the rank settings and just prooduces a single number.*/
-    settings9, /**<   \ref apop_rank_settings   */
-    Example9 /**<      */
+    RNG9, /**< Yes. Produces a single number.*/
+    CDF9, /**< Yes. Produces a single number.*/
+    settings9, /**<  */
+    Example9 /**<   */
 } ;
 /** The Gamma distribution
 
@@ -463,12 +438,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
 
 apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
   
-To specify that you have frequency or ranking data, use 
-\code
-apop_data *my_copy = apop_model_copy(apop_gamma);
-Apop_model_add_group(my_copy, apop_rank);
-apop_model *out = apop_estimate(my_rank_data, my_copy);
-\endcode
+\li See also \ref apop_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_gamma{
     Name10,         /**< <tt>Gamma distribution</tt>*/
@@ -478,7 +448,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
     Estimate_results10, /**<  Parameters are estimated, using MLE.   */
     Prep_routine10, /**<    None.     */
     RNG10, /**< Yes. */
-    settings10, /**<   \ref apop_rank_settings, \ref apop_mle_settings */
+    settings10, /**<   \ref apop_mle_settings */
     Example10 /**<      */
 } ;
 
@@ -665,12 +635,8 @@ enum apop_multivariate_normal{
 
 apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
-To specify that you have frequency or ranking data, use 
-\code
-Apop_settings_add_group(your_model, apop_rank, NULL);
-\endcode
+See also \ref apop_rank_compress for means of dealing with one more input data format.
 
-\todo This function needs better testing.
 \hideinitializer \ingroup models */
 enum apop_waring {
     Name17,         /**< <tt>Waring distribution</tt>*/
@@ -680,8 +646,8 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Parameter_format17, /**< Two elements in the parameter set's vector.    */
     Estimate_results17, /**< Estimated via MLE.    */
     Prep_routine17, /**<  None.       */
-    RNG17, /**< Yes. Um, it may be buggy. */
-    settings17, /**<  \ref apop_mle_settings, \ref apop_rank_settings    */
+    RNG17, /**< Yes. */
+    settings17, /**<  \ref apop_mle_settings    */
     Example17 /**<      */
 } ;
 
@@ -697,10 +663,7 @@ The special case of the \ref apop_waring "Waring" where \f$ \alpha = 0.	\f$<br>
 
 apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
-To specify that you have frequency or ranking data, use 
-\code
-Apop_settings_add_group(your_model, apop_rank, NULL);
-\endcode
+See also \ref apop_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_yule {
     Name18,         /**< <tt>Yule</tt>*/
@@ -710,7 +673,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Estimate_results18, /**< Estimated via MLE.    */
     Prep_routine18, /**<  None.       */
     RNG18, /**< Yes. */
-    settings18, /**<  \ref apop_mle_settings, \ref apop_rank_settings    */
+    settings18, /**<  \ref apop_mle_settings*/
     Example18 /**<      */
 } ;
 
@@ -723,10 +686,7 @@ Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distributi
 
 apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
-To specify that you have frequency or ranking data, use 
-\code
-Apop_settings_add_group(your_model, apop_rank, NULL);
-\endcode
+See also \ref apop_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_zipf {
     Name19,         /**< <tt>Zipf</tt>*/
@@ -735,7 +695,7 @@ enum apop_zipf {
     Estimate_results19, /**< Estimates the parameter.    */
     Prep_routine19, /**<  None.       */
     RNG19, /**< Yes. */
-    settings19, /**<  \ref apop_mle_settings, \ref apop_rank_settings    */
+    settings19, /**<  \ref apop_mle_settings    */
     Example19 /**<      */
 } ;
 

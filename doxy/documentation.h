@@ -2162,9 +2162,10 @@ but is not a part of it (so an MLE search would ignore that page, for example).
 
 Now let us move up the structure diagram to the \ref apop_model structure. 
 
-\section apop_model
+\section gentle_model apop_model
 
-There are a lot of things we expect to be able to do with a model: estimating the parameters of a 
+Even restricting ourselves to the most basic operations, there are a lot of things that 
+we want to do with our models: estimating the parameters of a 
 model (like the mean and
 variance of a Normal distribution) from data, or drawing random numbers, or showing the
 expected value, or showing the expected value of one part of the data given fixed values

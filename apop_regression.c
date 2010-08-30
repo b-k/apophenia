@@ -355,7 +355,7 @@ added as a second page of the \ref apop_data set, you can recover the
 original values as needed.
 
 \return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
-Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
+Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
