@@ -3316,13 +3316,14 @@ void loess_free_mem(struct loess_struct *lo) {
 }
 
 void loess_summary(struct loess_struct *lo) {
-        printf("Number of Observations: %ld\n", lo->in.n);
-    printf("Equivalent Number of Parameters: %.1f\n", lo->out.enp);
+    FILE *ap =apop_opts.output_pipe;
+    fprintf(ap, "Number of Observations: %ld\n", lo->in.n);
+    fprintf(ap, "Equivalent Number of Parameters: %.1f\n", lo->out.enp);
     if(!strcmp(lo->model.family, "gaussian"))
-        printf("Residual Standard Error: ");
+        fprintf(ap, "Residual Standard Error: ");
     else
-        printf("Residual Scale Estimate: ");
-    printf("%.4f\n", lo->out.s);
+        fprintf(ap, "Residual Scale Estimate: ");
+    fprintf(ap, "%.4f\n", lo->out.s);
 }
 
 //misc.c ---anova and support fns

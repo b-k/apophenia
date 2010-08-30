@@ -387,8 +387,6 @@ static double wishart_ll(apop_data *in, apop_model *m){
         };
     if (ws.paramdet < 1e-3) return GSL_NEGINF;
     double ll =  apop_map_sum(in, .fn_vp = one_wishart_row, .param=&ws, .part='r');
-    //return apop_matrix_map_sum(in->matrix, one_wishart_row);
-    printf("------------%g\n", ll);
     return ll;
 }
 

@@ -84,26 +84,47 @@ void print_method(apop_model *in){
 }
  \endcode
 
+I always print to the file/pipe connected to {\ref apop_opts.output_pipe}. The default is
+{\tt stdout}, but if you'd like something else, use fopen. E.g.:
+ \code
+apop_opts.output_pipe=fopen("outfile.txt", "w"); //or "a" to append.
+apop_model_print(the_model);
+ \endcode
 \ingroup output */
-void apop_model_show (apop_model * print_me){
+void apop_model_print (apop_model * print_me){
+/*    FILE *original_pipe = NULL;
+    if (apop_opts.output_type !='f' && !apop_opts.output_pipe)
+        apop_opts.output_pipe = stdout;
+    if (apop_opts.output_type =='f'){
+        FILE *original_pipe = apop_opts.output_pipe;
+        if (apop_opts.output_file)
+            apop_opts.output_pipe = fopen(apop_opts.output_file, 
+                                      apop_opts.output_append ? "a" : "w");
+        else
+            apop_opts.output_pipe = stdout;
+        Apop_assert(apop_opts.output_pipe, "Trouble opening file %s.", apop_opts.output_file);
+    }*/
+    FILE *ap = apop_opts.output_pipe;
     if (print_me->print){
         print_me->print(print_me);
         return;
     }
     if (strlen(print_me->name))
-        printf ("%s", print_me->name);
-    printf("\n\n");
+        fprintf (ap, "%s", print_me->name);
+    fprintf(ap, "\n\n");
 	if (print_me->parameters)
-        apop_data_show(print_me->parameters);
+        apop_data_print(print_me->parameters, .output_pipe=ap);
     if (print_me->info)
-        apop_data_show(print_me->info);
+        apop_data_print(print_me->info, .output_pipe=ap);
+/*    if (original_pipe){
+        fclose(apop_opts.output_pipe);
+        apop_opts.output_pipe = original_pipe;
+    }*/
 }
 
-/** Currently an alias for \ref apop_model_show, but when I get
-  around to it, it will conform better with the other apop_..._print
-  fns.*/
-void apop_model_print (apop_model * print_me){
-    apop_model_show(print_me);
+/** Alias for \ref apop_model_print. Use that one. */
+void apop_model_show (apop_model * print_me){
+    apop_model_print(print_me);
 }
 
 /** Outputs a copy of the \ref apop_model input.

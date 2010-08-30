@@ -287,10 +287,11 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
 
 #include "output.h"
 void ols_print(apop_model *m){
-    printf("Parameters:\n");
-    apop_data_show(m->parameters);
+    FILE *ap = apop_opts.output_pipe;
+    fprintf(ap, "Parameters:\n");
+    apop_data_print(m->parameters, .output_pipe=ap);
     apop_data *predict = apop_data_rm_page(m->info, "predict", .free_p='n');
-    apop_data_show(m->info);
+    apop_data_print(m->info, .output_pipe=ap);
     apop_data_add_page(m->info, predict, predict->names->title);
 }
 

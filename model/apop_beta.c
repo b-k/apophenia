@@ -105,7 +105,8 @@ static void beta_rng(double *out, gsl_rng *r, apop_model* eps){
 }
 
 static void beta_print(apop_model *m){
-    printf("Beta distribution with alpha = %g and beta = %g.\n", apop_data_get(m->parameters,0,-1)
+    fprintf(apop_opts.output_pipe,
+            "Beta distribution with alpha = %g and beta = %g.\n", apop_data_get(m->parameters,0,-1)
                                                                , apop_data_get(m->parameters,1,-1));
 }
 

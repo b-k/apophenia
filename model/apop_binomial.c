@@ -190,8 +190,8 @@ static void multinomial_show(apop_model *est){
     double * p = est->parameters->vector->data;
     int N=p[0];
     p[0] = 1 - (apop_sum(est->parameters->vector)-N);
-    printf("Multinomial distribution, with %i draws.\nBin odds:\n", N);
-    apop_vector_print(est->parameters->vector);
+    fprintf(apop_opts.output_pipe, "%s, with %i draws.\nBin odds:\n", est->name, N);
+    apop_vector_print(est->parameters->vector, .output_pipe=apop_opts.output_pipe);
 }
 
 apop_model apop_binomial = {"Binomial distribution", 2,0,0, .dsize=1,
