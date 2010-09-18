@@ -1,7 +1,7 @@
 /** \file apop_poisson.c
 
   The Poisson distribution.*/
-/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "mapply.h"
@@ -22,18 +22,21 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
   Nullcheck(data); Nullcheck_m(est);
   double		mean = data_mean(data);
 	gsl_vector_set(est->parameters->vector, 0, mean);
-    apop_data *info = apop_data_alloc(1,0,0);
+    apop_data *info = apop_data_alloc(1);
     apop_data_add_named_elmt(info, "log likelihood", poisson_log_likelihood(data, est));
-    //to prevent an infinite loop, the jackknife needs to be flagged to
-    //not run itself. We free-ride of the apop_lm_settings struct to signal.
-    apop_lm_settings *dummy = apop_settings_get_group(est, apop_lm);
-    if (!dummy || dummy->want_cov=='y'){
-        if (!dummy)
-            Apop_model_add_group(est, apop_lm);
-        Apop_settings_add(est, apop_lm, want_cov, 'n');
+    //to prevent an infinite loop, the jackknife needs to be flagged to not run itself. 
+    apop_parts_wanted_settings *p = apop_settings_get_group(est, apop_parts_wanted);
+    if (!p || p->covariance=='y'){
+        if (!p) Apop_model_add_group(est, apop_parts_wanted);
+        else    p->covariance='n';
+
         apop_data_add_page(est->parameters, 
-                apop_jackknife_cov(data, *est), 
+                //apop_jackknife_cov(data, *est), 
+                apop_bootstrap_cov(data, *est), 
                 "<Covariance>");
+
+        if (!p) Apop_settings_rm_group(est, apop_parts_wanted);
+        else    p->covariance='y';
     }
 	return est;
 }

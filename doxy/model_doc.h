@@ -448,7 +448,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
     Estimate_results10, /**<  Parameters are estimated, using MLE.   */
     Prep_routine10, /**<    None.     */
     RNG10, /**< Yes. */
-    settings10, /**<   \ref apop_mle_settings */
+    settings10, /**<   \ref apop_mle_settings, \ref apop_parts_wanted_settings */
     Example10 /**<      */
 } ;
 
@@ -647,7 +647,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Estimate_results17, /**< Estimated via MLE.    */
     Prep_routine17, /**<  None.       */
     RNG17, /**< Yes. */
-    settings17, /**<  \ref apop_mle_settings    */
+    settings17, /**<  \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
     Example17 /**<      */
 } ;
 
@@ -673,7 +673,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Estimate_results18, /**< Estimated via MLE.    */
     Prep_routine18, /**<  None.       */
     RNG18, /**< Yes. */
-    settings18, /**<  \ref apop_mle_settings*/
+    settings18, /**<  \ref apop_mle_settings, \ref apop_parts_wanted_settings*/
     Example18 /**<      */
 } ;
 
@@ -695,7 +695,7 @@ enum apop_zipf {
     Estimate_results19, /**< Estimates the parameter.    */
     Prep_routine19, /**<  None.       */
     RNG19, /**< Yes. */
-    settings19, /**<  \ref apop_mle_settings    */
+    settings19, /**<  \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
     Example19 /**<      */
 } ;
 
@@ -883,7 +883,7 @@ enum apop_wishart  {
     Estimate_results24, /**< Via MLE.    */
     Prep_routine24, /**<  Just allocates the parameters based on the size of the input data.       */
     RNG24, /**< Yes. You can use this to generate random covariance matrices, should you need them. See example below. */
-    settings24, /**<  \ref apop_mle_settings    */
+    settings24, /**<  \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
     Example24 /**<  
 Making some random draws:
 
@@ -912,7 +912,7 @@ enum apop_t_distribution  {
                           set \f$df = n-1\f$. Else, via MLE.    */
     Prep_routine25, /**<  None.       */
     RNG25, /**< Yes. */
-    settings25, /**<  \ref apop_mle_settings    */
+    settings25, /**<  \ref apop_mle_settings, \ref apop_parts_wanted_settings   */
     Example25 /**<   */
 } ;
 
