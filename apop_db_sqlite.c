@@ -286,7 +286,9 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
             i, addnames = 0;
     in->thisrow ++;
     if (!in->d) {
-        in->d             = apop_data_alloc(in->intypes[1], 1, in->intypes[2]);
+        in->d             = in->intypes[2]
+                            ? apop_data_alloc(in->intypes[1], 1, in->intypes[2])
+                            : apop_data_alloc(in->intypes[1]);
         if (in->intypes[4])
             in->d->weights  = gsl_vector_alloc(1);
         if (in->intypes[3]){

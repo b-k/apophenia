@@ -423,6 +423,7 @@ void qxprintf(char **q, char *format, ...){
  \ingroup conversions
 */
 void apop_matrix_to_db(const gsl_matrix *data, const char *tabname, const char **headers){
+    apop_assert_c(data, , 1, "you sent me a NULL matrix. Database table %s will not be created.", tabname);
   int		i,j; 
   double    v;
   int		ctr		= 0;
@@ -489,6 +490,7 @@ Column names are inserted if there are any. If there are, all dots are converted
 \ingroup conversions
 */
 void apop_data_to_db(const apop_data *set, const char *tabname){
+    apop_assert_c(set, , 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
   int		i,j; 
   int		ctr		    = 0;
   int		batch_size	= 100;

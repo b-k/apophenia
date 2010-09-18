@@ -1130,7 +1130,7 @@ void estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tr
         .t_initial    = 1,      .t_min     = .5,
         .use_score    = 1,      .want_cov  = 'n'
         );
-    Apop_model_add_group(dist, apop_lm,  .want_cov = 'n');
+    Apop_model_add_group(dist, apop_parts_wanted);
     apop_model *e    = apop_estimate(data,*dist);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
 }

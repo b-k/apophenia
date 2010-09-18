@@ -136,7 +136,7 @@ APOP_VAR_ENDHEAD
   */
 apop_data * apop_matrix_to_data(gsl_matrix *m){
   apop_assert_c(m, 0,1, "Converting a NULL matrix to an apop_data structure.");
-  apop_data  *setme   = apop_data_alloc(0,0,0);
+  apop_data  *setme   = apop_data_alloc();
     setme->matrix = m;
     return setme;
 }
@@ -149,7 +149,7 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 */
 apop_data * apop_vector_to_data(gsl_vector *v){
   apop_assert_c(v, NULL, 1,"Converting a NULL vector to an apop_data structure.");
-  apop_data  *setme   = apop_data_alloc(0,0,0);
+  apop_data  *setme   = apop_data_alloc();
     setme->vector = v;
     return setme;
 }
@@ -260,7 +260,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
 apop_data *apop_data_copy(const apop_data *in){
     if (!in)
         return NULL;
-    apop_data *out  = apop_data_alloc(0, 0, 0);
+    apop_data *out  = apop_data_alloc();
     if (in->more){
         apop_assert(in != in->more, "the ->more element of this data set equals the "
                                         "data set itself. This is not healthy.\n");
@@ -361,6 +361,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
     //A long, dull series of contingencies. Bonus: a reasonable use of goto.
   apop_data   **out   = malloc(2*sizeof(apop_data *));
   out[0] = out[1] = NULL;
+  Apop_assert_c(in, out, 1, "input was NULL; output will be an array of two NULLs.");
   gsl_vector  v1, v2, w1, w2;
   gsl_matrix  m1, m2;
   int       set_v1  = 1,
@@ -450,8 +451,8 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
     return out;
 
 allocation:
-    out[0]  = apop_data_alloc(0, 0,0);
-    out[1]  = apop_data_alloc(0, 0,0);
+    out[0]  = apop_data_alloc();
+    out[1]  = apop_data_alloc();
     if (set_v1) out[0]->vector  = apop_vector_copy(&v1);
     if (set_v2) out[1]->vector  = apop_vector_copy(&v2);
     if (set_m1) out[0]->matrix  = apop_matrix_copy(&m1);

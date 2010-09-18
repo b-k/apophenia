@@ -40,7 +40,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 \hideinitializer \ingroup settings
  */
 #define Apop_model_add_group(model, type, ...)  \
-    apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__})); 
+    apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** A convenience for your settings group init functions. 
  Gives the output item either the default value if there is one, or the value you specify. 
