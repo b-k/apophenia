@@ -47,11 +47,11 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
     Nullcheck_d(in)
-  apop_model   *e              = apop_model_copy(model);
+  apop_model   *e               = apop_model_copy(model);
   int           i, n            = in->matrix->size1;
   apop_data     *subset         = apop_data_alloc(in->vector ? in->vector->size -1 : 0, n - 1, in->matrix->size2);
   apop_data     *array_of_boots = NULL;
-  apop_model *overall_est       = apop_estimate(in, *e);
+  apop_model *overall_est       = e->parameters ? e : apop_estimate(in, *e);//if not estimated, do so
   gsl_vector *overall_params    = apop_data_pack(overall_est->parameters);
     gsl_vector_scale(overall_params, n); //do it just once.
   int           paramct         = overall_params->size;
@@ -88,9 +88,10 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
     gsl_matrix_scale(out->matrix, 1./(n-1.));
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
-    apop_model_free(overall_est);
-    gsl_vector_free(overall_params);
+    if (e!=overall_est)
+        apop_model_free(overall_est);
     apop_model_free(e);
+    gsl_vector_free(overall_params);
     return out;
 }
 

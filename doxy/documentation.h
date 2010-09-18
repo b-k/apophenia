@@ -1384,9 +1384,85 @@ endofdiv
 
 Outlineheader Maxi Maximum likelihood methods
 
-If you read the section on writing models, then you already know how to do maximum likelihood on exotic setups. Just write a model that has a \c p or \c log_likelihood function, and call \c apop_estimate(your_data,your_model).  The default estimation routine is maximum likelihood.
+This section includes some notes on the maximum likelihood routine, but 
+if you read the section on writing models, then you already know how to do maximum likelihood on exotic setups. Just write a model that has a \c p or \c log_likelihood function, and call \c apop_estimate(your_data,your_model).  The default estimation routine is maximum likelihood.
 
-MLEs have an especially large number of parameter tweaks that could be made; see the section on MLE settings above.
+If you are a not a statistician, then there are a few things you will need to keep in
+mind:
+
+\li Physicists, pure mathematicians, and the GSL minimize; economists, statisticians, and
+Apophenia maximize. If you are doing a minimization, be sure that your function returns minus the objective
+function's value.
+
+\li The overall setup is about estimating the parameters of a model with data. The user
+provides a data set and an unparameterized model, and the system tries parameterized
+models until one of them is found to be optimal. The data is fixed---it was observed
+before the statistician sat down to the computer. The parameters make sense only in the
+context of a model, so the optimization sends around a series of parameterized models,
+searching for the one that is most likely.
+In a non-stats setting, you will probably have \c NULL data, and will be optimizing the
+parameters internal to the model. 
+
+\li Because the unit of analysis is a parameterized model,
+not just parameters, you need to have an \ref apop_model
+wrapping your objective function. Here is a typical sort of function that one would
+maximize; it is Rosenbrock's banana function, \f$(1-x)^2+ s(y - x^2)^2\f$, where the
+scaling factor \f$s\f$ is fixed ahead of time, say at 100.
+\code
+typedef struct {
+        double scaling;
+} coeff_struct;
+
+double banana (double *params, coeff_struct *in){
+        return (gsl_pow_2(1-params[0]) +
+                in->scaling*gsl_pow_2(params[1]-gsl_pow_2(params[0])));
+}
+\endcode
+The function returns a single number, which you are attempting to miniminze.
+You will need to write an \ref apop_model, which you will send to the optimizer, which is
+a two step process: write a log likelihood function wrapping the real objective function,
+and a model that uses that log likelihood. Here they are:
+\code
+double ll (apop_data *d, apop_model *in){
+    return - banana(in->parameters->vector->data, in->more);
+}
+
+int main(){
+    coeff_struct co = {.scaling=100};
+    apop_model b = {"Bananas!", .log_likelihood= ll, .vbase=2,
+                                .more = &co, .more_size=sizeof(coeff_struct)};
+\endcode
+The <tt>.vbase=2</tt> specified that your parameters are a vector of size two, which
+means that <tt>in->parameters->vector->data</tt> is the list of <tt>double</tt>s that you
+should send to \c banana. The \c more element of the structure is designed to hold any
+arbitrary structure; if you use it, you will also need to use the \c more_size element, as
+above. Notice that \c main in this example makes heavy use of standard C designated initializers, because
+they are wonderful; you may need to tell your compiler to make use of them, such as using
+the <tt>--std=gnu99</tt> flag on the \c gcc command line.
+
+\li The function is named <em>maximum likelihood</em>, and for computational reasons, it
+maximizes the log of the likelihood function. You can define your objective function to be
+either the \c .p or the \c .log_likelihood element of your model, and there is really only one difference: if you give me a \c .p function, I may take its log somewhere along the way. Thus, the value of a \c .p function must always be non-negative. 
+
+\li Statisticians want the covariance and basic tests about the parameters. If you just
+want the optimal value, then adding this line will shut off all auxiliary calculations:
+\code
+Apop_model_add_group(your_model, apop_parts_wanted);
+\endcode
+See the documentation for \ref apop_parts_wanted_settings for details about how this works. 
+It can also offer quite the speedup: finding the covariance matrix without any information can 
+take maybe 70 evaluations of the objective funtion for each evaluation that is part of the
+search itself, and thus produce an order-of-magnitude speedup.
+
+\li MLEs have an especially large number of parameter tweaks that could be made; see the section on MLE settings above.
+
+\li Putting it all together, here is a full program to minimize Rosenbrock's banana
+function. There are some extras: it uses two methods (notice how easy it is to re-run an
+estimation with an alternate method, but the syntax for modifying a setting differs from
+the initialization syntax) and checks that the results are accurate (because this, like
+most of the code in the documentation, is part of Apophenia's test suite).
+
+\include ../eg/banana.c
 
 Outlineheader constr Setting Constraints \anchor constraints
 

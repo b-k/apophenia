@@ -50,6 +50,7 @@ typedef struct {
     void *free;
 } apop_settings_type;
 
+/** A statistical model. */
 typedef struct _apop_model apop_model;
 
 /** The elements of the \ref apop_model type. */

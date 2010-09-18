@@ -175,13 +175,13 @@ static apop_model apop_ml_impute_model = {"Internal ML imputation model", .estim
 /** Impute the most likely data points to replace NaNs in the data, and insert them into 
 the given data. That is, the data set is modified in place.
 
-How it works: this uses the machinery for \c apop_model_fix_params. The only difference is 
+How it works: this uses the machinery for \ref apop_model_fix_params. The only difference is 
 that this searches over the data space and takes the parameter space as fixed, while basic 
 fix params model searches parameters and takes data as fixed. So this function just does the
 necessary data-parameter switching to make that happen.
 
 \param  d       The data set. It comes in with NaNs and leaves entirely filled in.
-\param  mvn A parametrized \c apop_model from which you expect the data was derived.
+\param  mvn A parametrized \ref apop_model from which you expect the data was derived.
 if \c NULL, then I'll use the Multivariate Normal that best fits the data after listwise deletion.
 
 \return An estimated <tt>apop_ml_impute_model</tt>. Also, the data input will be filled in and ready to use.
