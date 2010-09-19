@@ -50,7 +50,7 @@ void apop_histogram_normalize(apop_model *m);
  \param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one.
  \param ... The error message in printf form, plus any arguments to be inserted into the printf string. I'll provide the function name and a carriage return.
 
- \seealso \ref Apop_assert, which halts on error.
+ \see \ref Apop_assert, which halts on error.
  */
 #define Apop_assert_c(test, returnval, level, ...) do {\
     if (!(test)) {  \
@@ -69,7 +69,7 @@ void apop_histogram_normalize(apop_model *m);
 \param test An expression that, if false, halts the program
 \param ... A printf-style message to display on \c stderr on halt. I'll provide the function name and a carriage return.
 
-\seealso \ref Apop_assert_c, which continues with a message rather than shutting down.
+\see \ref Apop_assert_c, which continues with a message rather than shutting down.
 
   */
 #define Apop_assert(test, ...) do \

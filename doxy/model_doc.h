@@ -297,7 +297,7 @@ So \f$p\f$ represents the odds of a success==1; the odds of a zero is \f$1-p\f$.
 \li You may be interested in \ref apop_data_to_factors to convert real numbers or text into a
 vector of categories.
 
-\li See also \ref apop_rank_compress for means of dealing with one more input data format.
+\li See also \ref apop_data_rank_compress for means of dealing with one more input data format.
                     */
     Parameter_format6, /**< 
         The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
@@ -340,7 +340,7 @@ represents one draw of zero, three draws of 1, and one draw of 2.
 \li You may be interested in \ref apop_data_to_factors to convert real numbers or text into a
 vector of categories.
 
-\li See also \ref apop_rank_compress for means of dealing with one more input data format.
+\li See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 
 \li Please note that the number of bins is simply the largest number found. So if there
 are bins \{0, 1, 2\} and your data set happens to consist of <tt>0 0 1 1 0</tt>, then
@@ -411,7 +411,7 @@ If you prefer this form, just convert your parameter via \f$\mu = {1\over
 \ln C}\f$ (and convert back from the parameters this function gives you
 via \f$C=\exp(1/\mu)\f$.
 
-\li See also \ref apop_rank_compress for means of dealing with one more input data format.
+\li See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_exponential {
     Name9,         /**< <tt>Exponential distribution</tt>*/
@@ -438,7 +438,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
 
 apop_gamma.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
   
-\li See also \ref apop_rank_compress for means of dealing with one more input data format.
+\li See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_gamma{
     Name10,         /**< <tt>Gamma distribution</tt>*/
@@ -635,7 +635,7 @@ enum apop_multivariate_normal{
 
 apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
-See also \ref apop_rank_compress for means of dealing with one more input data format.
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 
 \hideinitializer \ingroup models */
 enum apop_waring {
@@ -663,7 +663,7 @@ The special case of the \ref apop_waring "Waring" where \f$ \alpha = 0.	\f$<br>
 
 apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
-See also \ref apop_rank_compress for means of dealing with one more input data format.
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_yule {
     Name18,         /**< <tt>Yule</tt>*/
@@ -686,7 +686,7 @@ Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distributi
 
 apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
-See also \ref apop_rank_compress for means of dealing with one more input data format.
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_zipf {
     Name19,         /**< <tt>Zipf</tt>*/
