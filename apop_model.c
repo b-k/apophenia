@@ -104,6 +104,7 @@ void apop_model_print (apop_model * print_me){
             apop_opts.output_pipe = stdout;
         Apop_assert(apop_opts.output_pipe, "Trouble opening file %s.", apop_opts.output_file);
     }*/
+    apop_opts.output_pipe = apop_opts.output_pipe ? apop_opts.output_pipe : stdout;
     FILE *ap = apop_opts.output_pipe;
     if (print_me->print){
         print_me->print(print_me);

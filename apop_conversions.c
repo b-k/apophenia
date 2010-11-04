@@ -822,12 +822,18 @@ int main(){
 
 Warning: I need as many arguments as the size of the data set, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
 
-I assume that <tt>vector->size==matrix->size1</tt>; otherwise I just use
-\c matrix->size1.
 
 \param in   An \c apop_data set (that you have already allocated).
 \param ...  A series of at least as many floating-point values as there are blanks in the data set.
 \return     A pointer to the same data set that was input.
+
+\li I assume that <tt>vector->size==matrix->size1</tt>; otherwise I just use \c matrix->size1.
+
+\li to allocate and fill on one line, because the allocated pointer is returned, and so
+there is no leak or loss to a form like this example, which generates a unit vector for three dimensions:
+\code
+apop_data *unit_vector = apop_data_fill(apop_data_alloc(3), 1, 1, 1);
+\endcode
 */
 
 apop_data *apop_data_fill_base(apop_data *in, double ap[]){

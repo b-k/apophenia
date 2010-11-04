@@ -253,12 +253,20 @@ void test_listwise_delete(){
   for (i=0; i< 10; i++)
       for (j=0; j< 10; j++)
           apop_text_add(t1, i, j, "%i", i*j);
+  //no NaNs yet
   apop_data *t1c = apop_data_listwise_delete(t1);
   assert(t1c->matrix->size1==10);
   assert(t1c->matrix->size2==10);
   assert(atoi(t1c->text[3][4])==12);
-
-  apop_data *t2 = apop_data_calloc(10); //check in on this form.
+  //Now kill two rows
+  asprintf(&(t1c->text[3][4]), "nan");
+  asprintf(&(t1c->text[9][9]), "NaN");
+  t1c = apop_data_listwise_delete(t1c);
+  assert(t1c->matrix->size1==8);
+  assert(t1c->matrix->size2==10);
+  assert(atoi(t1c->text[3][4])==16);
+  //check the vector
+  apop_data *t2 = apop_data_calloc(10); //check on this form of calloc.
   t1->vector    = t2->vector;
   apop_data_set(t1, 4,-1, GSL_NAN);
   apop_data *t2c = apop_data_listwise_delete(t1);
@@ -270,6 +278,7 @@ void test_listwise_delete(){
   assert(atoi(t3c->text[4][4])==20);
   assert(atoi(t3c->text[7][4])==36);
   assert(t3c->matrix->size1==8);
+  //return NULL if every row has missing data.
   APOP_COL(t1, 7, v)
   gsl_vector_set_all(v, GSL_NAN);
   assert(!apop_data_listwise_delete(t1));
@@ -309,8 +318,7 @@ void test_weigted_moments(){
   double        data3[]     = {3,2,1};
   double        alldata3[]  = {3,2,1};
   double        weights[]   = {1,1,1};
-  gsl_vector    *v          = gsl_vector_alloc(3);
-  apop_vector_fill(v, 1, 2, 3);
+  gsl_vector    *v          = apop_vector_fill(gsl_vector_alloc(3), 1, 2, 3);
   gsl_vector    *v2         = apop_array_to_vector(data3, 3);
   gsl_vector    *w          = apop_array_to_vector(weights, 3);
   gsl_vector    *av         = apop_array_to_vector(alldata, 3);

@@ -326,16 +326,16 @@ APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data *
     const char * apop_varad_var(regex, NULL);
     apop_assert_s(regex, "You gave me a NULL regex.");
     apop_data **apop_varad_var(substrings, NULL);
-    const char apop_varad_var(use_case, 'y');
+    const char apop_varad_var(use_case, 'n');
 APOP_VAR_ENDHEAD
   regex_t    re;
   int        matchcount=count_parens(regex);
   int        found;
   regmatch_t result[matchcount];
     int compiled_ok = !regcomp(&re, regex, REG_EXTENDED 
-                                            + (use_case=='y' ? REG_ICASE : 0)
+                                            + (use_case=='y' ? 0 : REG_ICASE)
                                             + (substrings ? 0 : REG_NOSUB) );
-    apop_assert_s(compiled_ok, "This regular expression didn't compile: \"%s\"", regex)
+    apop_assert(compiled_ok, "This regular expression didn't compile: \"%s\"", regex)
 
     int matchrow = 0;
     do {

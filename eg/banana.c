@@ -25,8 +25,7 @@ int main(){
     apop_model *e2=apop_estimate(NULL, b);
     apop_model_print(e2);
 
-    assert(e1->parameters->vector->data[0] == 1);
-    assert(e1->parameters->vector->data[1] == 1);
-    assert(e2->parameters->vector->data[0] == 1);
-    assert(e2->parameters->vector->data[1] == 1);
+    gsl_vector *one = apop_vector_fill(gsl_vector_alloc(2), 1, 1);
+    assert(apop_vector_distance(e1->parameters->vector, one) < 1e-2);
+    assert(apop_vector_distance(e2->parameters->vector, one) < 1e-2);
 }

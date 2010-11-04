@@ -404,7 +404,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
     if (data->names->rowct)
         fprintf(f, "%*s  ", L+2, " ");
     if (data->vector && data->names->vector){
-        fprintf(f, "%*s", L+2, data->names->vector);
+        fprintf(f, "%s", data->names->vector);
     }
     if (data->matrix){
         if (data->vector && data->names->colct){
@@ -427,8 +427,9 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
             else
                 fprintf(f, "%s", data->names->text[i]);
         }
-        fprintf(f, "\n");
     }
+    if(data->names->vector || data->names->colct || data->names->textct)
+        fprintf(f, "\n");
     for(j=0; j< rowend; j++){
         if (data->names->rowct > j)
             fprintf(f, "%*s%s", L+2, data->names->row[j], apop_opts.output_delimiter);

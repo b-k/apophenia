@@ -94,7 +94,7 @@ void apop_data_predict_fill(apop_data *data, apop_data *predict){
 The function returns a new data set with the NaNs removed, so the original data set is left unmolested. You may want to \c apop_data_free the original immediately after this function.
 
 \li If every row has an NaN, then this returns \c NULL.
-\li If there is text, it gets pruned as well.
+\li If there is text, it gets pruned as well. If \c apop_opts.db_nan is not \c NULL, then I will use that as a regular expression to check the text elements for bad data as well.
 \li If \c inplace = 'y', then I'll free each element of the input data
     set and refill it with the pruned elements. Again, I'll take up (up to)
     twice the size of the data set in memory during the function. If
@@ -118,7 +118,7 @@ APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
 APOP_VAR_ENDHEAD
     Get_vmsizes(d) //defines firstcol, vsize, wsize, msize1, msize2.
     apop_assert_c(msize1 || vsize, NULL, 0, 
-            "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.\n");
+            "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.");
     //find out where the NaNs are
     int len = vsize ? vsize : msize1;
     int marked[len], not_empty = 0;
@@ -133,6 +133,22 @@ APOP_VAR_ENDHEAD
     for (int i=0; i< wsize; i++)
         if (gsl_isnan(gsl_vector_get(d->weights, i)))
             marked[i] = 1;
+    if (d->textsize[0] && apop_opts.db_nan){
+        regex_t    rex;
+        int compiled_ok = !regcomp(&rex, apop_opts.db_nan, REG_EXTENDED +  REG_ICASE + REG_NOSUB);
+        apop_assert(compiled_ok, "apop_opts.db_nan needs to be a regular expression that "
+                                "I can use to check the text element of your data set for "
+                                "NaNs, But compiling %s into a regex failed. Or, set "
+                                "apop_opts.db_nan=NULL to bypass text checking.", apop_opts.db_nan);
+        for(int i=0; i< d->textsize[0]; i++)
+            if (!marked[i])
+                for(int j=0; j< d->textsize[1]; j++)
+                    if (!regexec(&rex, d->text[i][j], 0, 0, 0)){
+                        marked[i] ++;
+                        break;
+                    }
+        regfree(&rex);
+    }
     //check that at least something isn't NULL.
     for (int i=0; i< len; i++)
         if (!marked[i]){

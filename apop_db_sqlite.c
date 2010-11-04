@@ -250,7 +250,7 @@ apop_data * apop_sqlite_query_to_text(char *query){
 typedef struct {
     apop_data   *d;
     int         intypes[5];//names, vectors, mcols, textcols, weights.
-    int         current, thisrow;
+    int         current, thisrow, error_thrown;
     const char  *instring;
 } apop_qt;
 
@@ -336,13 +336,15 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
         colct++;
     }
     int requested = in->intypes[0]+in->intypes[1]+in->intypes[2]+in->intypes[3]+in->intypes[4];
-      apop_assert_c(colct == requested, 1, 0, 
-      "you asked for %i rows in your list of types, but your query produced %u columns. \
-      The remainder will be placed in the text section." , requested, colct);
+      apop_assert_c(in->error_thrown++ || colct == requested, 0, 0, 
+      "you asked for %i columns in your list of types(%s), but your query produced %u columns. \
+      The remainder will be placed in the text section." , requested, in->instring, colct);
     return 0;
 }
 
 apop_data *apop_sqlite_multiquery(const char *intypes, char *query){
+    apop_assert(intypes, "You gave me NULL for the list of input types. I can't work with that.");
+    apop_assert(query, "You gave me a NULL query. I can't work with that.");
   char		*err = NULL;
   apop_qt   info = { };
     count_types(&info, intypes);

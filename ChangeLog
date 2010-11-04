@@ -4,6 +4,9 @@
 !!Big.
 ]
 
+	November 2010
+--apop_listwise_delete uses apop_opts.db_nan to check for missin data in the text part of the input data.
+
     August 2010
 ** What was apop_assert => apop_assert_c; what was apop_assert_s => apop_assert. Their
     arguments are slightly different, and the thing that was asserted no longer prints along
