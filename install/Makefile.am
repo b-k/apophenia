@@ -94,6 +94,7 @@ doc:
 -e 's|endofdiv</p>|</div>|' \
 -e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/index.html
 	@sed -i -e '/index_x/s/- x -/ /' -e '/index_a/s/- a -/ /' -e '15,27d' -e '/Here is a list of all/d' -e '/<span>[a-z]<\/span><\/a><\/li>/d' html/globals.html
+	@sed -i -e '/div class="contents"/aSee also the <a class="el" href="group__models.html">models</a> and <a class="el" href="group__settings.html">settings</a> pages.' html/globals.html
 	@sed -i 's|<td width="100%"></td>||g' html/*html
 	@sed -i -f doxy/edit_group html/group__models.html 
 	cp doxy/*js html/

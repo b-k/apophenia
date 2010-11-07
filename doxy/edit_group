@@ -29,3 +29,6 @@ s/RNG[0-9]*/RNG/g
 s/CDF[0-9]*/CDF/g
 s/[Ee]xample[0-9]\+/Example/g
 s/[Ss]ettings[0-9]\+/Settings/g
+#delete all between the two markers, but not the second marker
+/name="enum-members"/,/name="func-members"/{/name="func-members"/!d}
+/<div class="summary">/,/\#func-members/d

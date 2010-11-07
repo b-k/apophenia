@@ -118,6 +118,8 @@ Recreating a table which already exists can cause errors, so it is good practice
 0 = table does not exist<br>
 1 = table was found, and if remove=='d', has been deleted
 
+\li In the SQLite engine, this function considers table views to be tables.
+
 This function uses the \ref designated syntax for inputs.
 \ingroup db
 */
@@ -130,20 +132,25 @@ APOP_VAR_END_HEAD
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_table_exists(name, remove);
 #else
-        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.\n");
+        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.");
 #endif
   char 		*err=NULL, *q2;
   tab_exists_t te = { .name = name };
+  tab_exists_t tev = { .name = name };
 	if (db==NULL) return 0;
-	sqlite3_exec(db, "select name from sqlite_master where type='table'",tab_exists_callback,&te, &err); 
+	sqlite3_exec(db, "select name from sqlite_master where type='table'", tab_exists_callback, &te, &err); 
+	sqlite3_exec(db, "select name from sqlite_master where type='view'", tab_exists_callback, &tev, &err); 
 	ERRCHECK
-	if ((remove==1|| remove=='d') && te.isthere){
-        asprintf(&q2, "drop table %s;", name);
+	if ((remove==1|| remove=='d') && (te.isthere||tev.isthere)){
+        if (te.isthere)
+            asprintf(&q2, "drop table %s;", name);
+        else
+            asprintf(&q2, "drop view %s;", name);
 		sqlite3_exec(db, q2, NULL, NULL, &err); 
         ERRCHECK
         free(q2);
     }
-	return te.isthere;
+	return (te.isthere||tev.isthere);
 }
 
 /**
@@ -489,6 +496,7 @@ Column names are inserted if there are any. If there are, all dots are converted
 \ingroup conversions
 */
 void apop_data_to_db(const apop_data *set, const char *tabname){
+    apop_assert_c(set, , 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
   int		i,j; 
   int		ctr		    = 0;
   int		batch_size	= 100;

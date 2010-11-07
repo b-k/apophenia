@@ -427,8 +427,8 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
             else
                 fprintf(f, "%s", data->names->text[i]);
         }
-        fprintf(f, "\n");
     }
+    fprintf(f, "\n");
     for(j=0; j< rowend; j++){
         if (data->names->rowct > j)
             fprintf(f, "%*s%s", L+2, data->names->row[j], apop_opts.output_delimiter);
@@ -479,7 +479,7 @@ APOP_VAR_ENDHEAD
         return;
     }
     apop_data_print_core(data,  output_pipe, output_type);
-    if (data->more) 
+    if (data && data->more) 
         apop_data_print(data->more, Output_vars);
     if (output_file)
         fclose(output_pipe);

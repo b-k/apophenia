@@ -189,7 +189,7 @@ APOP_VAR_END_HEAD
         write_double(draw, likelihood->parameters);
         ll    = apop_log_likelihood(data,likelihood);
         if (gsl_isnan(ll)){
-            Apop_notify(1,"Trouble evaluating the "
+            Apop_notify(1, "Trouble evaluating the "
                 "likelihood function at vector beginning with %g. "
                 "Throwing it out and trying again.\n"
                 , likelihood->parameters->vector->data[0]);

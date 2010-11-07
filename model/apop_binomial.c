@@ -106,7 +106,7 @@ static void binomial_rng(double *out, gsl_rng *r, apop_model* est){
 static gsl_vector * get_multinomial_hitcount(const apop_data *data){
     size_t     i, j;
     gsl_vector *out;
-    out = gsl_vector_alloc(1+GSL_MAX(data->vector ? gsl_vector_max(data->vector) : 0,
+    out = gsl_vector_calloc(1+GSL_MAX(data->vector ? gsl_vector_max(data->vector) : 0,
                                    data->matrix ? gsl_matrix_max(data->matrix) : 0));
     if (data->vector)
         for(i=0; i < data->vector->size; i ++)
@@ -140,12 +140,13 @@ static double multinomial_log_likelihood(apop_data *d, apop_model *params){
 }
 
 static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
+    Get_vmsizes(data); //vsize, msize1
     Nullcheck(est);
     gsl_vector * count = get_multinomial_hitcount(data);
-    //int n = apop_sum(count); //potential double-to-int precision issues.
-    int n = 0;
+    int n = vsize + msize1; //size of one row
+/*    int n = 0;
     for (int i=0; i< count->size; i++)
-        n += gsl_vector_get(count, i);
+        n += gsl_vector_get(count, i); */
     apop_vector_normalize(count);
     gsl_vector_set(count, 0, n);
     est->parameters=apop_data_alloc(0,0,0);
@@ -161,6 +162,20 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     apop_data_add_named_elmt(est->info, "log likelihood", multinomial_log_likelihood(data, est));
     return est;
 }
+
+/*
+static apop_model *multinomial_paramdist(apop_data *d, apop_model *m){
+    apop_pm_settings *settings = Apop_settings_get_group(m, apop_pm);
+    if (settings->index!=-1){
+        int i = settings->index;
+        double mu = apop_data_get(m->parameters, i, -1);
+        double sigma = sqrt(apop_data_get(m->parameters, i, i, .page="<Covariance>"));
+        int df = apop_data_get(m->info, .rowname="df", .page = "info");
+        return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
+    }
+
+}
+*/
 
 static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     //After the intro, cut/pasted/modded from the GSL. Copyright them.
@@ -183,7 +198,7 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
         sum_p += p[i];
         sum_n += draw;
     }
-    p[0]=N;
+    p[0] = N;
 }
 
 static void multinomial_show(apop_model *est){

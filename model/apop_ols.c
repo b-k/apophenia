@@ -206,7 +206,7 @@ static void ols_rng(double *out, gsl_rng *r, apop_model *m){
     gsl_vector_free(tempdata);
 
     double sigma_sq = apop_data_get(m->info, .rowname="SSE")/m->data->matrix->size1;
-    out[0] += gsl_ran_gaussian(r, sigma_sq);
+    out[0] += gsl_ran_gaussian(r, sqrt(sigma_sq));
 }
 
 static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){

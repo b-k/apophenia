@@ -666,7 +666,7 @@ void test_histograms(gsl_rng *r){
     apop_model   *hp2 = apop_model_copy(apop_histogram);
     Apop_model_add_group(hp2, apop_histogram, .data=d, .bins_in=100);
     for (i=0; i< n; i++){
-        apop_draw(gsl_matrix_ptr(out, i,0), r, hp);
+        apop_draw(gsl_matrix_ptr(out, i,0), r, hp2);
         assert(gsl_finite(gsl_matrix_get(out, i,0)));
     }
     apop_model *outparams2   = apop_estimate(apop_matrix_to_data(out), apop_normal);

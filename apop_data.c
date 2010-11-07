@@ -369,7 +369,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             set_m2  = 1,
             set_w1  = 1,
             set_w2  = 1;
-     if (r_or_c == 'r' || r_or_c == 'r') {
+     if (r_or_c == 'r' || r_or_c == 'R') {
         if (splitpoint <=0)
             out[1]  = apop_data_copy(in);
         else if (splitpoint >= in->matrix->size1)
