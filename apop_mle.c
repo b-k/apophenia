@@ -88,7 +88,7 @@ apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
     apop_varad_setting(in, setme, starting_pt, NULL);
     apop_varad_setting(in, setme, tolerance, 1e-2);
     apop_varad_setting(in, setme, max_iterations, 5000);
-    setme->method = (in.parent && in.parent->score) ? APOP_CG_PR : APOP_SIMPLEX_NM;
+    apop_varad_setting(in, setme, method, (in.parent && in.parent->score) ? APOP_CG_PR : APOP_SIMPLEX_NM);
     apop_varad_setting(in, setme, verbose, 0);
     apop_varad_setting(in, setme, use_score, 'y');
     if (in.use_score == 1) setme->use_score = 'y';
@@ -606,11 +606,10 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est, infostruct info){
   int iteration    = 0;
   apop_mle_settings *mp = Apop_settings_get_group(est, apop_mle);
   double tol       = mp->dim_cycle_tolerance;
-  int verbose      = mp->verbose;
   apop_data *p     = est->parameters;
   int betasize     = info.beta->size;
     do {
-        if (verbose){
+        if (mp->verbose){
             if (!(iteration++))
                 printf("Cycling toward an optimum. Listing (dim):log likelihood.\n");
             printf("Iteration %i:\n", iteration);
@@ -624,11 +623,11 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est, infostruct info){
             apop_maximum_likelihood(d, m_onedim);
             gsl_vector_set(info.beta, i, m_onedim->parameters->vector->data[0]);
             this_ll = get_ll(d, est);//only used on the last iteration.
-            if (verbose)
+            if (mp->verbose)
                 printf("(%i):%g\t", i, this_ll), fflush(NULL);
             apop_model_free(m_onedim);
         }
-        if (verbose) printf("\n");
+        if (mp->verbose) printf("\n");
     } while (fabs(this_ll - last_ll) < tol);
     Apop_settings_set(est, apop_mle, dim_cycle_tolerance, tol);
     return est;
@@ -639,7 +638,7 @@ void get_desires(apop_model *m, infostruct *info){
     apop_mle_settings *ms = apop_settings_get_group(m, apop_mle);
 
     info->want_tests = (want && want->tests =='y') ? 'y' : 'n';
-    info->want_cov = (info->want_tests || (want && want->covariance =='y') 
+    info->want_cov = (info->want_tests=='y' || (want && want->covariance =='y') 
             || (!want && ms && ms->want_cov =='y'))  //mle settings' want_cov only valid w/o parts_wanted
             ? 'y' : 'n';
     info->want_info = (want && want->info =='y') ? 'y' : 'n';
@@ -711,11 +710,11 @@ apop_data_show(m);
 
 By adding a line to reduce the tolerance each round [e.g., <tt>Apop_settings_add(m, apop_mle, tolerance, pow(10,-i))</tt>], you can hone in on a precise optimum.
  
-You may have a new estimation method, such as first doing a simulated annealing search, then honing in via a conjugate gradient method:
+You may have a new estimation method, such as first doing a simulated annealing search, then honing in via a conjugate gradient method. Notice that the form for adding a new settings group differs from the form for modifying existing settings:
   \code
-Apop_settings_set(your_base_model, apop_mle, APOP_SIMAN);
+Apop_model_add_settings(your_base_model, apop_mle, .method=APOP_SIMAN);
 apop_model *m = apop_estimate(data, your_base_model);
-Apop_settings_set(m, apop_mle, APOP_CG_PR);
+Apop_settings_set(m, apop_mle, method, APOP_CG_PR);
 m = apop_estimate_restart(data, m);
 apop_data_show(m);
   \endcode

@@ -160,7 +160,7 @@ typedef struct {
 
   \li Tests may depend on covariance, so <tt>.covariance='n', .tests='y'</tt> may be 
   treated as <tt>.covariance='y', .tests='y'</tt>.
-
+\ingroup settings
 */
 typedef struct {
     //init/copy/free are in apop_mle.c

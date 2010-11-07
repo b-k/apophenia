@@ -115,6 +115,7 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
     } while (!gsl_finite(*out));
 }
 
+/** \hideinitializer */
 apop_model apop_histogram = {"Histogram", .dsize=1, .estimate = est, .log_likelihood = histogram_ll, .draw = histogram_rng};
 
 

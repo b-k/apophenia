@@ -480,7 +480,7 @@ APOP_VAR_ENDHEAD
         return;
     }
     apop_data_print_core(data,  output_pipe, output_type);
-    if (data->more) 
+    if (data && data->more) 
         apop_data_print(data->more, Output_vars);
     if (output_file)
         fclose(output_pipe);

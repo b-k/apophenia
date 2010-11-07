@@ -5,7 +5,12 @@
 ]
 
 	November 2010
---apop_listwise_delete uses apop_opts.db_nan to check for missin data in the text part of the input data.
+--apop_listwise_delete uses apop_opts.db_nan to check for missing data in the text part of the input data.
+
+    September 2010
+**Multinomial distribution sets N to be the length of the row (a single observation)
+    rather than the size of the full data set. Added apop_multinomial.parameter_model method
+    for testing purposes.
 
     August 2010
 ** What was apop_assert => apop_assert_c; what was apop_assert_s => apop_assert. Their

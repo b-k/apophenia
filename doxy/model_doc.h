@@ -192,7 +192,7 @@ apop_model_show(est);
 
 /** The Bernoulli model.
 
-The Bernoulli model, of a single random draw with probability \f$p\f$.
+A single random draw with probability \f$p\f$.
   \hideinitializer \ingroup models
 */
 enum apop_bernoulli {
@@ -204,7 +204,7 @@ enum apop_bernoulli {
                     */
     Estimate_results5, /**< Parameters are estimated. */
     Parameter_format5, /**< A vector of length one */
-    Prep_routine5, /**<  */
+    Prep_routine5, /**<  None. */
     RNG5, /**< Yes. Returns a single zero or one. */
     settings5 /**< None. */
 } ;
@@ -281,16 +281,14 @@ enum apop_beta{
     settings31 /**<  None. */
 } ;
 
-/** The Binomial model.
-
+/** 
 The multi-draw generalization of the Bernoulli; the two-bin special case of the Multinomial.
 \hideinitializer \ingroup models
 */
 enum apop_binomial {
     Name6,         /**< <tt> Binomial distribution</tt>*/
     Data_format6,  /**< 
-The default is to take the data to have a binary form, meaning that
-the system counts zeros as failures and non-zeros as successes. \f$N\f$
+Zeros are failures and non-zeros successes. \f$N\f$
 is the size of the matrix, vector, or both (whichever is not \c NULL).
 So \f$p\f$ represents the odds of a success==1; the odds of a zero is \f$1-p\f$.
 
@@ -322,9 +320,7 @@ And now the parameter vector is a proper list of probabilities.
     Example6 /**<      */
 } ;
 
-/** The Multinomial model.
-
-The \f$n\f$--option generalization of the Binomial distribution.
+/** The \f$n\f$--option generalization of the Binomial distribution.
     See also the \ref apop_binomial model.
 
 \hideinitializer
@@ -359,6 +355,12 @@ int n = apop_data_get(estimated->parameters, 0, -1);
 apop_data_set(estimated->parameters, 0, 1 - (apop_sum(estimated->parameters)-n)); 
 \endcode
 And now the parameter vector is a proper list of probabilities.
+
+\li Because an observation is typically a single row, the value of \f$N\f$ is set to equal the length of
+the first row (counting both vector and matrix elements, as appropriate). Thus, if your
+data is entirely in the vector or a one-column matrix, then the \f$p\f$s are estimated
+using all data, but \f$N=1\f$. The covariances are calculated accordingly, and a random
+draw would return a single bin. 
                         */
     Estimate_results7, /**<  Parameters are estimated. Covariance matrix
                          is filled.   */
@@ -372,16 +374,15 @@ And now the parameter vector is a proper list of probabilities.
             \f$N\f$ balls into \f$k\f$ urns and sum the results. 
             
             If you want the sequence of draws to be random at the per-item scale,
-            set \f$N=1\f$. and use a \c for loop to make the number of draws you
-            want. This is less efficient.
+            set \f$N=1\f$ (i.e., <tt>apop_data_set(estimated->parameters, 0, 1);</tt>),
+            and use a \c for loop to make the number of draws you want. This is less efficient.
             */
     settings7, /**<  */
     Example7 /**<      */
 } ;
 
-/** The Dirichlet distribution.
-
- A multivariate generalization of the \ref apop_beta "Beta distribution".
+/** 
+A multivariate generalization of the \ref apop_beta "Beta distribution".
 \hideinitializer \ingroup models
 */
 enum apop_dirichlet {
@@ -393,12 +394,11 @@ The estimated parameters are in the output model's <tt>parameters->vector</tt>.
     Estimate_results8, /**<  Found via maximum likelihood.   */
     Prep_routine8, /**<   None.      */
     RNG8, /**< Yes. */
-    settings8, /**< None.     */
+    settings8, /**<  MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings   */
     Example8 /**<      */
 } ;
 
-/** The Exponential distribution
-
+/** 
 A one-parameter likelihood function.
 
 \f$Z(\mu,k) 	= \sum_k 1/\mu e^{-k/\mu} 			\f$ <br>
@@ -423,7 +423,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Prep_routine9, /**<  None.   */
     RNG9, /**< Yes. Produces a single number.*/
     CDF9, /**< Yes. Produces a single number.*/
-    settings9, /**<  */
+    settings9, /**<  None. */
     Example9 /**<   */
 } ;
 /** The Gamma distribution
@@ -448,11 +448,11 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
     Estimate_results10, /**<  Parameters are estimated, using MLE.   */
     Prep_routine10, /**<    None.     */
     RNG10, /**< Yes. */
-    settings10, /**<   \ref apop_mle_settings, \ref apop_parts_wanted_settings */
+    settings10, /**<   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings  */
     Example10 /**<      */
 } ;
 
-/** The kernel density smoothing of a histogram
+/** The kernel density smoothing of a PMF
 
 A Kernel density is simply a smoothing of a histogram. At each point
 along the histogram, put a distribution (default: Normal(0,1)) on top
@@ -484,10 +484,6 @@ void set_midpoint(double in, apop_model *m){
 }
 \endcode
 
-The following example sets up and uses KDEs based on a Normal and a Uniform distribution.
-
-\include kernel.c
-
 \hideinitializer \ingroup models */
 enum apop_kernel_density{
     Name30,         /**< <tt>kernel density estimate,</tt>*/
@@ -499,7 +495,11 @@ enum apop_kernel_density{
     Prep_routine30, /**<  None   */
     RNG30, /**< Uses the default. */
     settings30, /**< \ref apop_kernel_density_settings.    */
-    Example30 /**<      */
+    Example30 /**<    
+This example sets up and uses KDEs based on a Normal and a Uniform distribution.
+
+\include kernel.c
+               */
 } ;
 
 /** A one-dimensional histogram.
@@ -534,9 +534,7 @@ enum apop_histogram{
     Example11 /**<      */
 };
 
-/** The improper uniform distribution.
-
- The improper uniform returns \f$P(x) = 1\f$ for every value of x, all the
+/** The improper uniform returns \f$P(x) = 1\f$ for every value of x, all the
 time (and thus, log likelihood(x)=0).  It has zero parameters. It is
 useful, for example, as an input to Bayesian updating, to represent a
 fully neutral prior.
@@ -556,9 +554,7 @@ enum apop_improper_uniform {
     Example13 /**<      */
 } ;
 
-/** The Uniform distribution.
-
-This is the two-parameter version of the Uniform, expressing a uniform distribution over [a, b].
+/** This is the two-parameter version of the Uniform, expressing a uniform distribution over [a, b].
 
 The MLE of this distribution is simply a = min(your data); b = max(your data).
 Primarily useful for the RNG, such as when you have a Uniform prior model.
@@ -576,8 +572,9 @@ enum apop_uniform {
     Example14 /**<      */
 } ;
 
-/** The Poisson distribution
-
+/** 
+  
+  For the Poisson distribution: 
 \f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
 \hideinitializer \ingroup models */
 enum apop_poisson {
@@ -602,9 +599,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
     Example15 /**<      */
 } ;
 
-/** The Multivariate Normal distribution
-
- This is the multivariate generalization of the Normal distribution.
+/** This is the multivariate generalization of the Normal distribution.
 \hideinitializer \ingroup models */
 enum apop_multivariate_normal{
     Name16,         /**< <tt>Multivariate normal distribution</tt>*/
@@ -633,7 +628,6 @@ enum apop_multivariate_normal{
 
 \f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
 
-apop_waring.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
 See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 
@@ -647,12 +641,11 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
     Estimate_results17, /**< Estimated via MLE.    */
     Prep_routine17, /**<  None.       */
     RNG17, /**< Yes. */
-    settings17, /**<  \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
+    settings17, /**<  MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
     Example17 /**<      */
 } ;
 
-/** The Yule distribution
-
+/** 
 The special case of the \ref apop_waring "Waring" where \f$ \alpha = 0.	\f$<br>
 
 \f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$
@@ -666,19 +659,18 @@ apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_yule {
-    Name18,         /**< <tt>Yule</tt>*/
+    Name18,         /**< <tt>Yule distribution</tt>*/
     Data_format18,  /**<    
 Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.*/
     Parameter_format18, /**< One element at the top of the parameter set's vector.*/
     Estimate_results18, /**< Estimated via MLE.    */
     Prep_routine18, /**<  None.       */
     RNG18, /**< Yes. */
-    settings18, /**<  \ref apop_mle_settings, \ref apop_parts_wanted_settings*/
+    settings18, /**<  MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
     Example18 /**<      */
 } ;
 
-/** The Zipf distribution.
-
+/** 
 Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. 
 \f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
 
@@ -689,7 +681,7 @@ apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 \hideinitializer \ingroup models */
 enum apop_zipf {
-    Name19,         /**< <tt>Zipf</tt>*/
+    Name19,         /**< <tt>Zipf distribution</tt>*/
     Data_format19,  /**<    Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.*/
     Parameter_format19, /**< One item at the top of the parameter set's vector.    */
     Estimate_results19, /**< Estimates the parameter.    */
