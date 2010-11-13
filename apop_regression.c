@@ -295,10 +295,12 @@ APOP_VAR_ENDHEAD
     apop_data *fdummy;
     apop_data *dummies= dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
     //Now process the append and remove options.
+    int rm_list[col+1];
+    memset (rm_list, 0,(col+1)*sizeof(int)); 
     if (append =='i'){
         apop_data **split = apop_data_split(d, col+1, 'c');
         if (remove=='n')
-            apop_data_rm_columns(split[1], (int[]){0});
+            apop_data_rm_columns(split[1], rm_list);
         //stack names, then matrices
         for (int i=0; i < d->names->colct; i++)
             free(d->names->column[i]);
@@ -313,8 +315,10 @@ APOP_VAR_ENDHEAD
         apop_data_free(split[1]);
         return d;
     }
-    if (remove!='n')
-        apop_data_rm_columns(d, (int[]){col});
+    if (remove!='n' && type!='t'){
+        rm_list[col]=1;
+        apop_data_rm_columns(d, rm_list);
+    }
     if (append =='y' || append ==1 || (append=='i' && type=='t')){
         apop_data_stack(d, dummies, 'c', .inplace='y');
         apop_data_free(dummies);

@@ -1,12 +1,10 @@
 #include <apop.h>
 
 void print_table_list(char *db_file){
-apop_data   *tab_list;
-int         i;
-        apop_db_open(db_file);
-        tab_list= apop_query_to_text("select name from sqlite_master where type==\"table\";");
-        for(i=0; i< tab_list->textsize[0]; i++)
-                printf("%s\n", tab_list->text[i][0]);
+    apop_db_open(db_file);
+    apop_data *tab_list= apop_query_to_text("select name from sqlite_master where type==\"table\";");
+    for(int i=0; i< tab_list->textsize[0]; i++)
+        printf("%s\n", tab_list->text[i][0]);
 }
 
 int main(int argc, char **argv){

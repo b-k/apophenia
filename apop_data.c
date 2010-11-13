@@ -364,18 +364,23 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
   Apop_assert_c(in, out, 1, "input was NULL; output will be an array of two NULLs.");
   gsl_vector  v1, v2, w1, w2;
   gsl_matrix  m1, m2;
-  int       set_v1  = 1,
-            set_v2  = 1,
-            set_m1  = 1,
-            set_m2  = 1,
-            set_w1  = 1,
-            set_w2  = 1;
+  int       set_v1  = 1, set_v2  = 1,
+            set_m1  = 1, set_m2  = 1,
+            set_w1  = 1, set_w2  = 1,
+            namev0  = 0, namev1  = 0,
+            namer0  = 0, namer1  = 0,
+            namec0  = 0, namec1  = 0,
+            namersplit = -1, namecsplit = -1;
      if (r_or_c == 'r' || r_or_c == 'R') {
         if (splitpoint <=0)
             out[1]  = apop_data_copy(in);
         else if (splitpoint >= in->matrix->size1)
             out[0]  = apop_data_copy(in);
         else {
+            namev0  =
+            namev1  = 
+            namec0  =
+            namec1  = 1;
             if (in->vector){
                 v1 = gsl_vector_subvector(in->vector, 0, splitpoint).vector;
                 v2 = gsl_vector_subvector(in->vector, splitpoint, in->vector->size - splitpoint).vector;
@@ -396,6 +401,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             } else
                 set_m1  = 
                 set_m2  = 0;
+            namersplit=splitpoint;
             goto allocation;
         }
     } else if (r_or_c == 'c' || r_or_c == 'C') {
@@ -405,43 +411,56 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
         } else 
             set_w1 = 
             set_w2 = 0;
+        namer0 = 1;
+        namer1 = 1;
 
         if (splitpoint <= -1)
             out[1]  = apop_data_copy(in);
         else if (splitpoint >= in->matrix->size2)
             out[0]  = apop_data_copy(in);
         else if (splitpoint == 0){
-            if (in->vector)
+            if (in->vector){
                 v1      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
-            else set_v1 = 0;
+                namev0  = 1;
+            } else 
+                set_v1 = 0;
             set_v2  = 0;
             set_m1  = 0;
-            if (in->matrix)
+            if (in->matrix){
                 m2      = gsl_matrix_submatrix (in->matrix, 0, 0, 
                                     in->matrix->size1,  in->matrix->size2).matrix;
-            else set_m2 = 0;
+                namec1  = 1;
+            } else 
+                set_m2 = 0;
             goto allocation;
         } else if (splitpoint > 0 && splitpoint < in->matrix->size2){
-            if (in->vector)
-                v1      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
-            else set_v1 = 0;
+            if (in->vector){
+                v2      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
+                namev0  = 1;
+            } else 
+                set_v1 = 0;
             set_v2  = 0;
             if (in->matrix){
                 m1      = gsl_matrix_submatrix (in->matrix, 0, 0, in->matrix->size1, splitpoint).matrix;
                 m2      = gsl_matrix_submatrix (in->matrix, 0, splitpoint, 
                                     in->matrix->size1,  in->matrix->size2-splitpoint).matrix;
+                namecsplit = splitpoint;
             } else
                 set_m1  = 
                 set_m2  = 0;
             goto allocation;
         } else { //splitpoint >= in->matrix->size2
-            if (in->vector)
+            if (in->vector){
                 v1      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
-            else set_v1 = 0;
+                namev0  = 1;
+            } else 
+                set_v1 = 0;
             set_v2  = 0;
-            if (in->matrix)
+            if (in->matrix){
                 m1      = gsl_matrix_submatrix (in->matrix, 0, 0, 
                             in->matrix->size1, in->matrix->size2).matrix;
+                namec0 = 1;
+            }
             else set_m1 = 0;
             set_m2  = 0;
             goto allocation;
@@ -459,6 +478,28 @@ allocation:
     if (set_m2) out[1]->matrix  = apop_matrix_copy(&m2);
     if (set_w1) out[0]->weights  = apop_vector_copy(&w1);
     if (set_w2) out[1]->weights  = apop_vector_copy(&w2);
+    if (namev0 && out[0]) apop_name_stack(out[0]->names, in->names, 'v');
+    if (namev1 && out[1]) apop_name_stack(out[1]->names, in->names, 'v');
+    if (namersplit >=0)
+        for (int k=0; k< namersplit; k++){
+            int which = (k >= splitpoint);
+            assert(out[which]);
+            apop_name_add(out[which]->names, in->names->row[k], 'r');
+        }
+    else {
+        if (namer0 && out[0]) apop_name_stack(out[0]->names, in->names, 'r');
+        if (namer1 && out[1]) apop_name_stack(out[1]->names, in->names, 'r');
+    }
+    if (namecsplit >=0)
+        for (int k=0; k< in->names->colct; k++){
+            int which = (k >= namecsplit);
+            assert(out[which]);
+            apop_name_add(out[which]->names, in->names->column[k], 'c');
+        }
+    else {
+        if (namec0 && out[0]) apop_name_stack(out[0]->names, in->names, 'c');
+        if (namec1 && out[1]) apop_name_stack(out[1]->names, in->names, 'c');
+    }
     return out;
 }
 

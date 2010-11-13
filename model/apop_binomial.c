@@ -151,11 +151,11 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     gsl_vector_set(count, 0, n);
     est->parameters=apop_data_alloc(0,0,0);
     est->parameters->vector = count;
-    apop_name_add(est->parameters->names, "n", 'c');
+    apop_name_add(est->parameters->names, "n", 'r');
     char name[100];
     for(int i=1; i < count->size; i ++){
         sprintf(name, "p%i", i);
-        apop_name_add(est->parameters->names, name, 'c');
+        apop_name_add(est->parameters->names, name, 'r');
     }
     est->dsize = n;
     make_covar(est);

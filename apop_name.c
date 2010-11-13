@@ -72,7 +72,11 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 \ingroup names
 */
 void  apop_name_print(apop_name * n){
-int		i;
+    int		i;
+    if (!n) {
+        printf("NULL");
+        return;
+    }
 	if (n->vector){
 		printf("\t\t\tvector:");
 			printf("\t%s", n->vector);
@@ -118,7 +122,7 @@ int		i;
 
 /** Append one list of names to another.
 
-Notice that if the first list is \c NULL, then this is a copy function. If the second is \c NULL, it is a no-op.
+Notice that if the first list is empty, then this is a copy function. If the second is \c NULL, it is a no-op.
 
 \param  n1      The first set of names (no default, must not be \c NULL)
 \param  nadd      The second set of names, which will be appended after the first. (no default, if \c NULL, a no-op)

@@ -105,7 +105,11 @@ void apop_model_print (apop_model * print_me){
             apop_opts.output_pipe = stdout;
         Apop_assert(apop_opts.output_pipe, "Trouble opening file %s.", apop_opts.output_file);
     }*/
-    apop_opts.output_pipe = apop_opts.output_pipe ? apop_opts.output_pipe : stdout;
+    int nullout = 0;
+    if (!apop_opts.output_pipe){
+        nullout++;
+        apop_opts.output_pipe = stdout;
+    }
     FILE *ap = apop_opts.output_pipe; //abbreviation
     if (print_me->print){
         print_me->print(print_me);
@@ -120,10 +124,6 @@ void apop_model_print (apop_model * print_me){
         apop_data_print(print_me->info, .output_pipe=ap);
     if (nullout)
         apop_opts.output_pipe = NULL; //return to the default. Probably not worth it.
-/*    if (original_pipe){
-        fclose(apop_opts.output_pipe);
-        apop_opts.output_pipe = original_pipe;
-    }*/
 }
 
 /** Alias for \ref apop_model_print. Use that one. */
