@@ -233,14 +233,18 @@ the following function will list the tables in a database (much like you could d
 \include ls_tables.c
 */
 apop_data * apop_query_to_text(const char * fmt, ...){
-  Fillin(query, fmt)
-    if (apop_opts.db_engine == 'm')
+    apop_data *out = NULL;
+    Fillin(query, fmt)
+    if (apop_opts.db_engine == 'm'){
 #ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_query_core(query, process_result_set_chars);
+        out = apop_mysql_query_core(query, process_result_set_chars);
 #else
-        apop_assert_c(0, NULL, 0, "Apophenia was compiled without mysql support.")
+        apop_assert_c(0, NULL, 0, "Apophenia was compiled without mysql support.");
 #endif
-    return apop_sqlite_query_to_text(query);
+    } else
+        out = apop_sqlite_query_to_text(query);
+    free(query);
+    return out;
 }
 
 //apop_query_to_data callback.
@@ -359,21 +363,23 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 
 If the query returns no rows at all, the function returns <tt>NAN</tt>.  */
 double apop_query_to_float(const char * fmt, ...){
+    double out;
     Fillin(query, fmt)
-    if (apop_opts.db_engine == 'm')
+    if (apop_opts.db_engine == 'm'){
 #ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_query_to_float(query);
+        out = apop_mysql_query_to_float(query);
 #else
         apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
-    //else
-  gsl_matrix	*m=NULL;
-  double		out;
-	if (db==NULL) apop_db_open(NULL);
-	m	= apop_query_to_matrix("%s", query);
-    apop_assert_c(m, GSL_NAN, 1, "Query turned up a blank table. Returning NULL.");
-	out	= gsl_matrix_get(m, 0, 0);
-	gsl_matrix_free(m);
+    } else {
+        gsl_matrix	*m=NULL;
+        if (db==NULL) apop_db_open(NULL);
+        m	= apop_query_to_matrix("%s", query);
+        apop_assert_c(m, GSL_NAN, 1, "Query turned up a blank table. Returning NULL.");
+        out	= gsl_matrix_get(m, 0, 0);
+        gsl_matrix_free(m);
+    }
+    free(query);
 	return out;
 }
 
@@ -404,7 +410,9 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
         return 0;}
 #endif
     //else
-    return apop_sqlite_multiquery(typelist, query);
+    apop_data *out = apop_sqlite_multiquery(typelist, query);
+    free(query);
+    return out;
 }
 
 /** \} end query group. */

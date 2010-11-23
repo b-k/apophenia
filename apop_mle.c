@@ -699,7 +699,7 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model *dist){
 }
 
 /** 
-  The simplest use of this function is to restart a model at the current parameter estimates.
+  The simplest use of this function is to restart a model at the latest parameter estimates.
 
   \code
 apop_model *m = apop_estimate(data, model_using_an_MLE_search);
@@ -708,14 +708,14 @@ for (int i=0; i< 10; i++)
 apop_data_show(m);
   \endcode
 
-By adding a line to reduce the tolerance each round [e.g., <tt>Apop_settings_add(m, apop_mle, tolerance, pow(10,-i))</tt>], you can hone in on a precise optimum.
+By adding a line to reduce the tolerance each round [e.g., <tt>Apop_settings_set(m, apop_mle, tolerance, pow(10,-i))</tt>], you can start broad and hone in on a precise optimum.
  
-You may have a new estimation method, such as first doing a simulated annealing search, then honing in via a conjugate gradient method. Notice that the form for adding a new settings group differs from the form for modifying existing settings:
+You may have a new estimation method, such as first doing a coarse simulated annealing search, then a fine conjugate gradient search. When reading this example, recall that the form for adding a new settings group differs from the form for modifying existing settings:
   \code
 Apop_model_add_settings(your_base_model, apop_mle, .method=APOP_SIMAN);
 apop_model *m = apop_estimate(data, your_base_model);
 Apop_settings_set(m, apop_mle, method, APOP_CG_PR);
-m = apop_estimate_restart(data, m);
+m = apop_estimate_restart(m);
 apop_data_show(m);
   \endcode
 
@@ -736,40 +736,41 @@ there is no memory leak in the above loop.
     NaNs/Infs). Otherwise, the estimate with the largest log likelihood
     is returned.
 
+\li This function uses the \ref designated syntax for inputs.
 \ingroup mle
-
-This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary){
     apop_model * apop_varad_var(e, NULL);
     Nullcheck_m(e);
     apop_model * apop_varad_var(copy, NULL);
-    char * apop_varad_var(starting_pt, NULL);
+    char * apop_varad_var(starting_pt, "ep");
     double apop_varad_var(boundary, 1e8);
 APOP_VAR_ENDHEAD
-    gsl_vector *v;
+    gsl_vector *v = NULL;
   if (!copy)
       copy = apop_model_copy(*e);
   apop_mle_settings* prm0 = apop_settings_get_group(e, apop_mle);
   apop_mle_settings* prm = apop_settings_get_group(copy, apop_mle);
             //copy off the old params; modify the starting pt, method, and scale
-    if (starting_pt && !strcmp(starting_pt, "es"))
+    if (apop_strcmp(starting_pt, "es"))
         v = apop_array_to_vector(prm0->starting_pt);
-    else if (starting_pt && !strcmp(starting_pt, "ns")){
+    else if (apop_strcmp(starting_pt, "ns")){
         int size =sizeof(prm->starting_pt)/sizeof(double);
         v = apop_array_to_vector(prm->starting_pt, size);
         prm0->starting_pt	= malloc(sizeof(double)*size);
         memcpy(prm0->starting_pt, prm->starting_pt, sizeof(double)*size);
     }
-    else if (starting_pt && !strcmp(starting_pt, "np")){
+    else if (apop_strcmp(starting_pt, "np")){
         v                   = apop_data_pack(copy->parameters, NULL, .all_pages='y'); 
         prm->starting_pt	= malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
     else {//"ep" or default.
-        v                   = apop_data_pack(e->parameters, NULL, .all_pages='y'); 
-        prm->starting_pt	= malloc(sizeof(double)*v->size);
-        memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
+        if (e->parameters){
+            v                   = apop_data_pack(e->parameters, NULL, .all_pages='y'); 
+            prm->starting_pt	= malloc(sizeof(double)*v->size);
+            memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
+        }
     }
     Apop_assert_c(apop_vector_bounded(v, boundary), e, 0, "Your model has diverged (element(s) > %g); returning your original model without restarting.", boundary);
     gsl_vector_free(v);

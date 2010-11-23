@@ -1140,6 +1140,7 @@ void estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tr
         );
     Apop_model_add_group(dist, apop_parts_wanted);
     apop_model *e    = apop_estimate(data,*dist);
+    e = apop_estimate_restart(e);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
 }
 
@@ -1420,8 +1421,8 @@ int main(int argc, char **argv){
     do_test("transposition test", test_transpose());
     do_test("test unique elements", test_unique_elements());
     if (slow_tests){
-        do_test("test distributions", test_distributions(r));
         if (verbose) printf("\tSlower tests:\n");
+        do_test("test distributions", test_distributions(r));
         do_test("test ML imputation", test_ml_imputation(r));
         do_test("test probit and logit", test_probit_and_logit(r));
         do_test("Test score (dlog likelihood) calculation", test_score());

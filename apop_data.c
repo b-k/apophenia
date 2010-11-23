@@ -435,7 +435,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             goto allocation;
         } else if (splitpoint > 0 && splitpoint < in->matrix->size2){
             if (in->vector){
-                v2      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
+                v1      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
                 namev0  = 1;
             } else 
                 set_v1 = 0;
@@ -481,8 +481,8 @@ allocation:
     if (namev0 && out[0]) apop_name_stack(out[0]->names, in->names, 'v');
     if (namev1 && out[1]) apop_name_stack(out[1]->names, in->names, 'v');
     if (namersplit >=0)
-        for (int k=0; k< namersplit; k++){
-            int which = (k >= splitpoint);
+        for (int k=0; k< in->names->rowct; k++){
+            int which = (k >= namersplit);
             assert(out[which]);
             apop_name_add(out[which]->names, in->names->row[k], 'r');
         }
@@ -956,13 +956,14 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
     if (!in)
         in  = apop_data_alloc(0,0,0);
     if (!in->text){
-        if (row && col)
+        if (row)
             in->text = malloc(sizeof(char**) * row);
-        for (size_t i=0; i< row; i++){
-            in->text[i] = malloc(sizeof(char*) * col);
-            for (size_t j=0; j< col; j++)
-                in->text[i][j] = strdup("");
-        }
+        if (row && col)
+            for (size_t i=0; i< row; i++){
+                in->text[i] = malloc(sizeof(char*) * col);
+                for (size_t j=0; j< col; j++)
+                    in->text[i][j] = strdup("");
+            }
     } else { //realloc
         int rows_now = in->textsize[0];
         int cols_now = in->textsize[1];

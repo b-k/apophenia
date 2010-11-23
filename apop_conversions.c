@@ -492,7 +492,7 @@ static int prep_text_reading(char *text_file, FILE **infile, regex_t *regex, reg
         *infile  = stdin;
     else
 	    *infile	= fopen(text_file, "r");
-    apop_assert_c(infile, 0,  0, "Trouble opening %s. Returning NULL.\n", text_file);
+    apop_assert_c(*infile, 0,  0, "Trouble opening %s. Returning NULL.\n", text_file);
 
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, REG_EXTENDED);
@@ -596,7 +596,7 @@ APOP_VAR_HEAD apop_data * apop_text_to_data(char *text_file, int has_row_names, 
     int * apop_varad_var(field_ends, NULL);
 APOP_VAR_END_HEAD
   apop_data     *set = NULL;
-  FILE * 		infile;
+  FILE  		*infile = NULL;
   char		    *instr, *str, *add_this_line= NULL;
   int 		    i	        = 0,
                 length_of_string, colno,
@@ -787,7 +787,7 @@ APOP_VAR_ENDHEAD
     }
     if ((all_pages == 'y' ||all_pages =='Y') && in->more){
         vout = gsl_vector_subvector((gsl_vector *)out, offset, out->size - offset).vector;
-        while (use_info_pages=='n' && apop_regex(in->more->names->title, "^<.*>$"))
+        while (use_info_pages=='n' && in->more && apop_regex(in->more->names->title, "^<.*>$"))
             in = in->more;
         apop_data_pack(in->more, &vout, .all_pages='y');
     }
