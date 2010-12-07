@@ -349,7 +349,7 @@ FILE * 		f = output_pipe;
 }
 
 /** Print a vector in float format.
-    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+You may want to set \ref apop_opts_type "apop_opts.output_delimiter"; the default is a tab, which puts the vector on one line, but a newline would print the vector vertically.
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.

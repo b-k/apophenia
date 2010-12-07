@@ -9,25 +9,6 @@ The apop_data structure joins together a gsl_matrix, apop_name, and a table of s
 #include "conversions.h"
 #include "linear_algebra.h"
 
-/** \defgroup data_struct apop_data
-
-  The \c apop_data structure represents a data set.  It joins together a gsl_vector, a gsl_matrix, an apop_name, and a table of strings. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
-
- For example, let us say that you are running a regression: there is a vector for the dependent variable, and a matrix for the dependent variables. Think of them as a partitioned matrix, where the vector is column -1, and the first column of the matrix is column zero. Here is some code to print the entire matrix. Notice that the column counter \c i starts counting at -1.
-
-  \code
-  for (j = 0; j< data->matrix->size1; j++){
-    printf("%s\t", data->names->row[j]);
-    for (i = -1; i< data->matrix->size2; i++)
-        printf("%g\t", apop_data_get(data, j, i));
-    printf("\n");
-    }
-    \endcode
-
-We're generally assuming that the data vector and data matrix have the same row count: \c data->vector->size==data->matrix->size1 . This means that the \ref apop_name structure doesn't have separate vector_names and row_names elements: the rownames are assumed to apply for both.
-
-  \ingroup types
-  */
 
 /** Allocate a \ref apop_data structure, to be filled with data.
  
@@ -135,7 +116,7 @@ APOP_VAR_ENDHEAD
 \return      The \ref apop_data structure whose \c matrix pointer points to the input matrix. The rest of the struct is basically blank.
   */
 apop_data * apop_matrix_to_data(gsl_matrix *m){
-  apop_assert_c(m, 0,1, "Converting a NULL matrix to an apop_data structure.");
+  apop_assert_c(m, apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
   apop_data  *setme   = apop_data_alloc();
     setme->matrix = m;
     return setme;
@@ -148,7 +129,7 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 \return     an allocated, ready-to-use \ref apop_data structure.
 */
 apop_data * apop_vector_to_data(gsl_vector *v){
-  apop_assert_c(v, NULL, 1,"Converting a NULL vector to an apop_data structure.");
+  apop_assert_c(v, apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
   apop_data  *setme   = apop_data_alloc();
     setme->vector = v;
     return setme;
@@ -294,7 +275,7 @@ if 'c', stack columns of m1's matrix to left of m2's<br>
 
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
 both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 pointer back)
-\li Text is ignored.
+\li Text is handled as you'd expect: If 'r', one set of text is stacked on top of the other [number of columns must match]; if 'c', one set of text is set next to the other [number of rows must match].
 \li \c more is ignored.
 \li If stacking rows on rows, the output vector is the input
 vectors stacked accordingly. If stacking columns by columns, the output
@@ -313,7 +294,6 @@ APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char pos
     char apop_varad_var(inplace, 'n')
     inplace = (inplace == 'i' || inplace == 'y' || inplace == 1 || inplace == 'I' || inplace == 'Y') ? 1 : 0;
 APOP_VAR_ENDHEAD
-  gsl_matrix  *stacked= NULL;
   apop_data   *out    = NULL;
     if (!m1)
         return apop_data_copy(m2);
@@ -321,22 +301,42 @@ APOP_VAR_ENDHEAD
         return (inplace == 'i' || inplace == 'y') ? m1 : apop_data_copy(m1);
     apop_assert_c((posn == 'r' || posn == 'c'), NULL, 0, "Valid positions are 'r' or 'c'"
                              " you gave me '%c'. Returning NULL.", posn);
-    if (inplace){
+    if (inplace)
         out = m1;
-        apop_matrix_stack(m1->matrix, m2->matrix, posn, inplace);
-    } else {
-        stacked = apop_matrix_stack(m1->matrix, m2->matrix, posn);
-        out     = apop_matrix_to_data(stacked);
+    else {
+        apop_data *m = m1->more; //not following the more pointer.
+        m1->more =NULL;
+        out = apop_data_copy(m1);
+        m1->more = m;
     }
+    apop_matrix_stack(out->matrix, m2->matrix, posn, .inplace='y');
     if (posn == 'r'){
-        out->vector = apop_vector_stack(m1->vector, m2->vector, inplace);
-        out->weights = apop_vector_stack(m1->weights, m2->weights, inplace);
-    } else if (!inplace){
-        out->vector = apop_vector_copy(m1->vector);
-        out->weights = apop_vector_copy(m1->weights);
+        apop_vector_stack(out->vector, m2->vector, .inplace='y');
+        apop_vector_stack(out->weights, m2->weights, .inplace='y');
+    } 
+
+    if (m2->text){ //we've already copied m1->text, if any, so if m2->text is NULL, we're done.
+        if (posn=='r'){
+            apop_assert(!out->text || m2->textsize[1]==out->textsize[1], 
+                            "The first data set has %i columns of text and the second has %i columns. "
+                            "I can't stack that.", out->textsize[1], m2->textsize[1]);
+            int basetextsize = out->textsize[0];
+            apop_text_alloc(out, basetextsize+m2->textsize[0], out->textsize[1]);
+            for(int i=0; i< m2->textsize[0]; i++)
+                for(int j=0; j< m2->textsize[1]; j++)
+                    apop_text_add(out, i+basetextsize, j, m2->text[i][j]);
+        } else {
+            apop_assert(!out->text || m2->textsize[0]==out->textsize[0], 
+                            "The first data set has %i rows of text and the second has %i rows. "
+                            "I can't stack that.", out->textsize[0], m2->textsize[0]);
+            int basetextsize = out->textsize[1];
+            apop_text_alloc(out, out->textsize[0], basetextsize+m2->textsize[1]);
+            for(int i=0; i< m2->textsize[0]; i++)
+                for(int j=0; j< m2->textsize[1]; j++)
+                    apop_text_add(out, i, j+basetextsize, m2->text[i][j]);
+            apop_name_stack(out->names, m2->names, 't');
+        }
     }
-    if (!inplace)
-        out->names  = apop_name_copy(m1->names);
     apop_name_stack(out->names, m2->names, posn);
     return out;
 }
@@ -861,8 +861,9 @@ APOP_VAR_ENDHEAD
 }
 /** \} //End data_set_get group */
 
-/** A convenience function to add a named element to a data set. For example, 
-many of the testing procedures use this to easily produce a column of named parameters.
+/** A convenience function to add a named element to a data set.  Many of Apophenia's
+testing procedures use this to easily produce a column of named parameters. It is public
+as a convenience.
 
 \param d    The \ref apop_data structure. Must not be \c NULL, but may be blank (as per
 allocation via \ref apop_data_alloc <tt>( )</tt> ).
@@ -1200,7 +1201,7 @@ APOP_VAR_ENDHEAD
 }
 
 /** Remove the columns set to one in the \c drop vector.  
-  \param in the \ref apop_name structure to be pared down
+  \param in the \ref apop_data structure to be pared down
   \param drop  a vector with as many elements as the max of the vector, matrix, or text
   parts of \c in, with a one marking those columns to be removed.       \ingroup names
   */  

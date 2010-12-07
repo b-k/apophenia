@@ -1,5 +1,5 @@
 /** \file asst.h  */
-/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #ifndef __apop_asst__
 #define __apop_asst__
 
@@ -31,6 +31,8 @@ APOP_VAR_DECLARE apop_model * apop_histogram_model_reset(apop_model *base, apop_
 apop_data * apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1);
 apop_data * apop_test_kolmogorov(apop_model *m1, apop_model *m2);
 void apop_histogram_normalize(apop_model *m);
+
+char * apop_strip_dots(char *in, char strip_type);
 
 /** Notify the user of errors, warning, or debug info. 
 

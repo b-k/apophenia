@@ -31,10 +31,10 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
   int vsize  = model->vbase  == -1 ? data->matrix->size2 : model->vbase;
   int msize1 = model->m1base == -1 ? data->matrix->size2 : model->m1base ;
   int msize2 = model->m2base == -1 ? data->matrix->size2 : model->m2base ;
-    apop_data_free(model->parameters);
-    apop_data_free(model->info);
-    model->parameters	= apop_data_alloc(vsize, msize1, msize2);
-    model->info	        = apop_data_alloc(0, 0, 0);
+    if (!model->parameters)
+        model->parameters = apop_data_alloc(vsize, msize1, msize2);
+    if (!model->info)
+        model->info = apop_data_alloc();
     snprintf(model->info->names->title, 100, "Info");
     model->data         = data;
 	return model;

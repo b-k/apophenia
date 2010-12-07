@@ -531,8 +531,10 @@ static int get_field_names(int has_col_names, char **field_names, FILE
   size_t    last_match;
   regmatch_t  result[2];
     instr =  read_a_line(infile, filename);
-    while(instr[0]=='#' || instr[0]=='\n')	//burn off comment lines
+    while(instr[0]=='#' || instr[0]=='\n'){	//burn off comment lines
+        free(instr);
         instr =  read_a_line(infile, filename);
+    }
     ct   = count_cols_in_row(instr, regex, field_ends);
 
     if (has_col_names && field_names == NULL){
@@ -569,6 +571,7 @@ static int get_field_names(int has_col_names, char **field_names, FILE
             }
         }
     }
+    free(instr);
     return ct;
 }
 
@@ -668,8 +671,8 @@ APOP_VAR_END_HEAD
 /** This is the complement to \c apop_data_pack, qv. It writes the \c gsl_vector produced by that function back
     to the \c apop_data set you provide. It overwrites the data in the vector and matrix elements and, if present, the \c weights (and that's it, so names or text are as before).
 
- \param in a \c gsl_vector of the form produced by \c apop_data_pack. No default; must not be \c NULL.
-\param d   that data set to be filled. Must be allocated to the correct size. No default; must not be \c NULL.
+\param in A \c gsl_vector of the form produced by \c apop_data_pack. No default; must not be \c NULL.
+\param d  That data set to be filled. Must be allocated to the correct size. No default; must not be \c NULL.
 \param use_info_pages Pages in HTML-style brackets, such as <tt>\<Covariance\></tt> will
 be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
 same thing when you both pack and unpack. Default: <tt>'n'</tt>.
@@ -683,6 +686,7 @@ This function uses the \ref designated syntax for inputs.
 APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages){
     const gsl_vector * apop_varad_var(in, NULL);
     apop_data* apop_varad_var(d, NULL);
+    Apop_assert(d, "the data set to be filled, d, must not be NULL");
     char apop_varad_var(use_info_pages, 'n');
 APOP_VAR_ENDHEAD
   int           offset   = 0;
@@ -1083,8 +1087,8 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
     }
     if (!p_stmt){
         apop_query("%s);",q); 
-        free (q);
     }
+    free (q);
 }
 
 /** Read a text file into a database table.

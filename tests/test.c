@@ -212,6 +212,7 @@ void test_score(){
             apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
         apop_model *estme = apop_model_copy(apop_normal);
         Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN,.parent= estme);
+        apop_prep(data, estme);
         apop_model *out = apop_maximum_likelihood(data, estme);
 
         apop_model *straight_est = apop_estimate(data, apop_normal);
@@ -1140,7 +1141,7 @@ void estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tr
         );
     Apop_model_add_group(dist, apop_parts_wanted);
     apop_model *e    = apop_estimate(data,*dist);
-    e = apop_estimate_restart(e);
+    //e = apop_estimate_restart(e);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
 }
 

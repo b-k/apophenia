@@ -58,7 +58,7 @@ static double unordered(double in){ return in == val; }
 // This is just a for loop that runs a probit on each row.
 static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
   Nullcheck_m(p); Nullcheck_p(p);
-    gsl_vector *val_vector = get_category_table(p->data)->vector;
+    gsl_vector *val_vector = get_category_table(d)->vector;
     if (val_vector->size==2)
         return biprobit_log_likelihood(d, p);
     //else, multinomial loop
@@ -117,7 +117,6 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 
 static apop_data *multilogit_expected(apop_data *in, apop_model *m){
     Nullcheck_m(m); Nullcheck_p(m);
-    apop_prep(in, m);
     gsl_matrix *params = m->parameters->matrix;
     apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
     for (size_t i=0; i < in->matrix->size1; i ++){
@@ -128,9 +127,10 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
         double bestscore  = 0;
         gsl_vector_set(outrow, 0, 1);
         for (size_t j=0; j < params->size2+1; j ++){
-            if (j == 0)
+            if (j == 0){
                 oneterm = 0;
-            else {
+                gsl_vector_set(outrow, j, 1);
+            } else {
                 Apop_matrix_col(params, j-1, p);
                 gsl_blas_ddot(observation, p, &oneterm);
                 gsl_vector_set(outrow, j, exp(oneterm));
@@ -151,81 +151,91 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
 }
 
 static size_t find_index(double in, double *m, size_t max){
-  size_t i = 0;
+    size_t i = 0;
     while (in !=m[i] && i<max) i++;
     return i;
 }
 
+double one_logit_row(apop_data *thisobservation, void *factor_list){
+    //numerator: x*beta_choice
+    //get the $x\beta_j$ numerator for the appropriate choice:
+    size_t index   = find_index(gsl_vector_get(thisobservation->vector, 0), 
+                                (double*)factor_list, thisobservation->matrix->size2);
+    Apop_row(thisobservation, 0, thisrow);
+    double num = (index==0) ? 0 : gsl_vector_get(thisrow, index-1);
+
+    //denominator: ln(sum_all(x*beta))
+    /* Get the denominator, ln(sum(exp(xbeta))) using the subtract-the-max trick 
+     mentioned in the documentation.  Don't forget the implicit beta_0, fixed at 
+     zero (so we need to add exp(0-max)). */
+    double max = gsl_vector_max(thisrow);
+    gsl_vector_add_constant(thisrow, -max);
+    apop_vector_exp(thisrow);
+    return num - (max + log(apop_vector_sum(thisrow) +exp(-max)));
+}
+
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
   Nullcheck_m(p); Nullcheck_p(p);
-  size_t i, j, index, choicect = p->parameters->matrix->size2;
-  double* factor_list = get_category_table(p->data)->vector->data;
-
     //Find X\beta_i for each row of X and each column of \beta.
-    apop_data  *xbeta = apop_dot(d, p->parameters, 0, 0);
-
-    //get the $x\beta_j$ numerator for the appropriate choice:
-    long double ll    = 0;
-    for(i=0; i < d->vector->size; i++){
-        index   = find_index(gsl_vector_get(d->vector, i), factor_list, choicect);
-        ll += (index==0) ? 0 : apop_data_get(xbeta, i, index-1);
-    }
-
-    //Get the denominator, using the subtract-the-max trick mentioned in the documentation.
-    //Don't forget the implicit beta_0, fixed at zero (so we need to add exp(0-max)).
-    for(j=0; j < xbeta->matrix->size1; j++){
-        APOP_ROW(xbeta, j, thisrow);
-        double max = gsl_vector_max(thisrow);
-        gsl_vector_add_constant(thisrow, -max);
-        apop_vector_exp(thisrow);
-        ll -= max + log(apop_vector_sum(thisrow) +exp(-max)) ;
-    }
+    apop_data  *xbeta = apop_dot(d, p->parameters);
+    double* factor_list = get_category_table(p->data)->vector->data;
+    xbeta->vector = d->vector; //we'll need this in one_logit_row
+    long double ll = apop_map_sum(xbeta, .fn_rp = one_logit_row, .param=factor_list);
+    xbeta->vector = NULL;
     apop_data_free(xbeta);
 	return ll;
 }
 
-static double logit_foreach(gsl_vector *x, void *gin){
-    //\beta_this = choice for the row.
-    // dLL/d\beta_ij =  [(\beta_i==\beta_this) ? x_j : 0] + x_j e^(x\beta_i)/\sum_k e^(x\beta_k)
-    //that last term simplifies: x / \sum_k e^(x(\beta_k - \beta_i))
+/*static*/ double dlogit_foreach(gsl_vector *x, void *gin){
+  //\beta_this = choice for the row.
+  //dLL/d\beta_ij = [(\beta_i==\beta_this) ? x_j : 0] - x_j e^(x\beta_i)/\sum_k e^(x\beta_k)
+  //that last term simplifies: x / \sum_k e^(x(\beta_k - \beta_i))
   apop_data *gmat = (apop_data*) gin;
   gsl_matrix *beta = gmat->more->matrix;
   apop_data* factor_list = gmat->more->more;
+    assert(gmat->matrix->size1 == x->size); //the j index---input vars
+    assert(gmat->matrix->size2 == beta->size2); //the i index---choices
+    assert(x->size == beta->size1);//cols of data=variables; rows of output=var.s (cols=choices)
     for (int i=1; i< beta->size2; i++) {
+        gsl_vector *denom = gsl_vector_calloc(beta->size1);
+        //calloc means that column/row zero is already correctly set to zero.
         Apop_matrix_col(beta, i, thisbeta);
-        int choice  = find_index(gsl_vector_get(x, 0), factor_list->vector->data, beta->size2);
-        long double denom = 0;
         for (int other=0; other < beta->size2+1; other++){
             gsl_vector *diff = apop_vector_copy(thisbeta);
-            if (other > 0) {
+            if (other-1 == i)
+                gsl_vector_set_all(diff, 0);
+            else if (other > 0) {
                 Apop_matrix_col(beta, other-1, otherbeta);
                 gsl_vector_sub(diff, otherbeta);
-            } else
-                gsl_vector_scale(diff, -1); // 0 - diff;
-            double x_dot_diff;
-            gsl_blas_ddot(diff, x, &x_dot_diff);
-            denom += exp(x_dot_diff);
+            } //else: diff - 0 = diff.
+            gsl_vector_mul(diff, x);
+            apop_vector_exp(diff);
+            gsl_vector_sub(denom, diff);
             gsl_vector_free(diff);
         }
-        for (int j=0; j< x->size; j++){
+        int choice  = find_index(gsl_vector_get(x, 0), factor_list->vector->data, beta->size2);
+        for (int j=0; j< x->size; j++){ 
             double pick = (i == choice) ? gsl_vector_get(x,j) : 0;
-            apop_matrix_increment(gmat->matrix, i, j, pick - gsl_vector_get(x, j)/denom);
+            apop_matrix_increment(gmat->matrix, j, i, 
+                                    pick - gsl_vector_get(x, j)/gsl_vector_get(denom, j));
         }
+        gsl_vector_free(denom);
     }
     return 0;
 }
 
-static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
+/*static*/ void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
   Nullcheck_m(p); Nullcheck_p(p);
-    apop_data *gradient_matrix = NULL;
+    apop_data *gradient_matrix = apop_data_calloc(p->parameters->matrix->size1, p->parameters->matrix->size2);
     apop_data_unpack(gradient, gradient_matrix);
-    gsl_matrix_set_all(gradient_matrix->matrix, 0);
     gradient_matrix->more = p->parameters;  // facilitate passing to logit_foreach.
     gradient_matrix->more->more = get_category_table(d);
     apop_data_free_base( //return from apop_map is useless.
-        apop_map(d, .fn_vp=logit_foreach, .param=gradient_matrix, .part='r')
+        apop_map(d, .fn_vp=dlogit_foreach, .param=gradient_matrix, .part='r', .all_pages='n')
     );
     apop_data_pack(gradient_matrix, gradient, .all_pages='n');
+    gradient_matrix->more=NULL;
+    apop_data_free(gradient_matrix);
 }
 
 apop_model *logit_estimate(apop_data *d, apop_model *m){
@@ -234,18 +244,17 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
     //That's the whole estimation. But now we need to add a row of zeros
     //for the numeraire. This is just tedious matrix-shunting.
     apop_data *p = out->parameters;
-    apop_data *zeros = apop_data_calloc(0, p->matrix->size1, 1);
-    apop_data *newparams = apop_data_stack(zeros, p, 'c');
+    apop_data *newparams = apop_data_calloc(p->matrix->size1, 1);//top row of zeros...
+    apop_data_stack(newparams, p, 'c', .inplace='y');            //...followed by the rest
     apop_name_stack(newparams->names, p->names, 'r');
 
     apop_data_free(p);
-    apop_data_free(zeros);
     out->parameters = newparams;
     return out;
 }
 
 apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-     .score = logit_dlog_likelihood, .predict=multilogit_expected, .prep = probit_prep};
+     /*.score = logit_dlog_likelihood,*/ .predict=multilogit_expected, .prep = probit_prep};
 
 apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
     .score = probit_dlog_likelihood, .prep = probit_prep};

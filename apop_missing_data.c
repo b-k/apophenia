@@ -89,17 +89,15 @@ void apop_data_predict_fill(apop_data *data, apop_data *predict){
     }
 }
 
-/** If there is an NaN anywhere in the row of numeric data (including the matrix, the vector, and the weights) then delete the row from the data set.
-
-The function returns a new data set with the NaNs removed, so the original data set is left unmolested. You may want to \c apop_data_free the original immediately after this function.
+/** If there is an NaN anywhere in the row of data (including the matrix, the vector, the weights, and the text) then delete the row from the data set.
 
 \li If every row has an NaN, then this returns \c NULL.
-\li If there is text, it gets pruned as well. If \c apop_opts.db_nan is not \c NULL, then I will use that as a regular expression to check the text elements for bad data as well.
+\li If \c apop_opts.db_nan is not \c NULL, then I will use that as a regular expression to check the text elements for bad data as well.
 \li If \c inplace = 'y', then I'll free each element of the input data
-    set and refill it with the pruned elements. Again, I'll take up (up to)
+    set and refill it with the pruned elements. I'll still take up (up to)
     twice the size of the data set in memory during the function. If
     every row has an NaN, then your \c apop_data set will have a lot of
-    \c NULL elements.
+    \c NULL elements. if \c inplace = 'n', then the original data set is left unmolested.
 \li I only look at the first page of data (i.e. the \c more element is ignored).
 \li This function uses the \ref designated syntax for inputs.
 
@@ -117,12 +115,13 @@ APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
     char apop_varad_var(inplace, 'n');
 APOP_VAR_ENDHEAD
     Get_vmsizes(d) //defines firstcol, vsize, wsize, msize1, msize2.
-    apop_assert_c(msize1 || vsize, NULL, 0, 
-            "You sent to apop_data_listwise_delete a data set with void matrix and vector. Confused, it is returning NULL.");
+    apop_assert_c(msize1 || vsize || d->textsize[0], NULL, 0, 
+            "You sent to apop_data_listwise_delete a data set with NULL matrix, NULL vector, and no text. "
+            "Confused, it is returning NULL.");
     //find out where the NaNs are
-    int len = vsize ? vsize : msize1;
+    int len = GSL_MAX(vsize ? vsize : msize1, d->textsize[0]); //still some size assumptions here.
     int marked[len], not_empty = 0;
-    memset(marked, 0, sizeof(int)*len);
+    memset(marked, 0, len*sizeof(int));
     for (int i=0; i< (vsize ? vsize: msize1); i++)
         for (int j=firstcol; j <msize2; j++){
             if (gsl_isnan(apop_data_get(d, i, j))){
@@ -149,6 +148,7 @@ APOP_VAR_ENDHEAD
                     }
         regfree(&rex);
     }
+
     //check that at least something isn't NULL.
     for (int i=0; i< len; i++)
         if (!marked[i]){

@@ -554,12 +554,6 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
     //i->beta = s->x;
     signal(SIGINT, mle_sigint);
     do { 	iter++;
-        if (mp->method == APOP_SIMPLEX_NMJ){
-            for (int j=0; j< betasize; j++){
-                double *v = gsl_vector_ptr(i->beta, j);
-                *v *= .01;
-            }
-        }
 		status 	= gsl_multimin_fminimizer_iterate(s);
 		if (status) 	break; 
 		size	= gsl_multimin_fminimizer_size(s);
@@ -671,7 +665,7 @@ apop_model *	apop_maximum_likelihood(apop_data * data, apop_model *dist){
     apop_mle_settings   *mp = apop_settings_get_group(dist, apop_mle);
     if(!mp)
         mp = Apop_model_add_group(dist, apop_mle, .parent=dist);
-    apop_prep(data, dist);
+    //apop_prep(data, dist);
     Apop_assert(dist->parameters, "Not enough information to allocate parameters over which to optimize.")
     infostruct    info    = { .data           = data,
                               .use_constraint = 1,

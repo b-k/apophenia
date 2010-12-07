@@ -182,10 +182,12 @@ APOP_VAR_ENDHEAD
                 }
             }
         }
-        if (part == 'r' || part == 'c')
+        if (part == 'r' || part == 'c'){
+            apop_assert(in->matrix, "You asked for me to operate on the %cs of the matrix, but the matrix is NULL.", part);
             mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, part);
+        }
     }
-    if (all_pages && in->more)
+    if ((all_pages=='y' || all_pages=='Y') && in->more)
         out->more = apop_map_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, inplace, part, all_pages);
     return out;
 }
@@ -221,6 +223,7 @@ APOP_VAR_ENDHEAD
             Apop_data_row(copy, i, r);
             outsum += fn_r ? fn_r(r) : fn_rp(r, param);
         }
+        apop_data_free(copy);
         return outsum;
     }
     apop_data *out = apop_map(in, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, 0, part);
@@ -228,7 +231,7 @@ APOP_VAR_ENDHEAD
                      + (out->matrix ? apop_matrix_sum(out->matrix) : 0);
     apop_data_free(out);
     return outsum + 
-                ((all_pages && in->more) ? apop_map_sum_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, part, all_pages) : 0);
+                (((all_pages=='y' || all_pages=='Y') && in->more) ? apop_map_sum_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, part, all_pages) : 0);
 }
 
 typedef struct {

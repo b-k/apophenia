@@ -87,7 +87,6 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 
 typedef enum {
     APOP_SIMPLEX_NM     =0, /**< Nelder-Mead simplex (gradient handling rule is irrelevant) */
-    APOP_SIMPLEX_NMJ    =20, /**< Nelder-Mead simplex with occasional jiggering (for when the plain N-M gets stuck in a loop) */
     APOP_CG_FR     =1,      /**<  Conjugate gradient (Fletcher-Reeves) (default) */
     APOP_CG_BFGS   =2,      /**<  Conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno) */
     APOP_CG_PR     =3,      /**<  Conjugate gradient (Polak-Ribiere) */
