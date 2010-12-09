@@ -192,48 +192,6 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-/** A convenience function to call \ref apop_map, and return the sum of the resulting elements. Thus, this function returns a single \c double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always internally allocate a temp data set and free it before returning.
-
-  See also the \ref mapply "map/apply page" for details.
- \ingroup mapply
- */
-APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi, apop_fn_ri *fn_ri,    void *param, char part, int all_pages){ 
-    apop_data * apop_varad_var(in, NULL)
-    apop_fn_v * apop_varad_var(fn_v, NULL)
-    apop_fn_d * apop_varad_var(fn_d, NULL)
-    apop_fn_r * apop_varad_var(fn_r, NULL)
-    apop_fn_vp * apop_varad_var(fn_vp, NULL)
-    apop_fn_dp * apop_varad_var(fn_dp, NULL)
-    apop_fn_rp * apop_varad_var(fn_rp, NULL)
-    apop_fn_vpi * apop_varad_var(fn_vpi, NULL)
-    apop_fn_dpi * apop_varad_var(fn_dpi, NULL)
-    apop_fn_rpi * apop_varad_var(fn_rpi, NULL)
-    apop_fn_vi * apop_varad_var(fn_vi, NULL)
-    apop_fn_di * apop_varad_var(fn_di, NULL)
-    apop_fn_ri * apop_varad_var(fn_ri, NULL)
-    void * apop_varad_var(param, NULL)
-    char apop_varad_var(part, 'a')
-    int apop_varad_var(all_pages, 'n')
-APOP_VAR_ENDHEAD 
-    if (fn_r || fn_rp){
-        Get_vmsizes(in);
-        apop_data *copy = apop_data_copy(in);
-        double outsum = 0;
-        for (int i = 0; i< (vsize ? vsize : msize1); i++){
-            Apop_data_row(copy, i, r);
-            outsum += fn_r ? fn_r(r) : fn_rp(r, param);
-        }
-        apop_data_free(copy);
-        return outsum;
-    }
-    apop_data *out = apop_map(in, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, 0, part);
-    double outsum = (out->vector ? apop_sum(out->vector) : 0)
-                     + (out->matrix ? apop_matrix_sum(out->matrix) : 0);
-    apop_data_free(out);
-    return outsum + 
-                (((all_pages=='y' || all_pages=='Y') && in->more) ? apop_map_sum_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, part, all_pages) : 0);
-}
-
 typedef struct {
     size_t      *limlist;
     void        *fn;
@@ -478,4 +436,78 @@ double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*)){
     gsl_vector_free(v);
     return out;
 }
+
+
+
+
+
+
+/** A convenience function to call \ref apop_map, and return the sum of the resulting elements. Thus, this function returns a single \c double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always internally allocate a temp data set and free it before returning.
+
+  See also the \ref mapply "map/apply page" for details.
+
+\li At the moment, this function does not thread if <tt>apop_opts.thread_count > 0</tt>
+\li I don't copy your input to send to your function. Therefore, if your function modifies its inputs, your original data set will indeed be modified as a side-effect.
+ \ingroup mapply
+ */
+APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi, apop_fn_ri *fn_ri,    void *param, char part, int all_pages){ 
+    apop_data * apop_varad_var(in, NULL)
+    apop_fn_v * apop_varad_var(fn_v, NULL)
+    apop_fn_d * apop_varad_var(fn_d, NULL)
+    apop_fn_r * apop_varad_var(fn_r, NULL)
+    apop_fn_vp * apop_varad_var(fn_vp, NULL)
+    apop_fn_dp * apop_varad_var(fn_dp, NULL)
+    apop_fn_rp * apop_varad_var(fn_rp, NULL)
+    apop_fn_vpi * apop_varad_var(fn_vpi, NULL)
+    apop_fn_dpi * apop_varad_var(fn_dpi, NULL)
+    apop_fn_rpi * apop_varad_var(fn_rpi, NULL)
+    apop_fn_vi * apop_varad_var(fn_vi, NULL)
+    apop_fn_di * apop_varad_var(fn_di, NULL)
+    apop_fn_ri * apop_varad_var(fn_ri, NULL)
+    void * apop_varad_var(param, NULL)
+    char apop_varad_var(part, 'a')
+    int apop_varad_var(all_pages, 'n')
+APOP_VAR_ENDHEAD 
+                    //This needs to be threaded again. 
+    Get_vmsizes(in);
+    double outsum = 0;
+    if (fn_r || fn_ri || fn_rpi || fn_rp)
+        for (int i=0; i < GSL_MAX(vsize, GSL_MAX(msize1, in->textsize[0])); i++){
+            Apop_data_row(in, i, arow);
+            if (fn_r) outsum += fn_r(arow);
+            else if (fn_rp) outsum += fn_rp(arow, param);
+            else if (fn_ri) outsum += fn_ri(arow, i);
+            else            outsum += fn_rpi(arow, param, i);
+        }
+    else {
+        if (part =='m' || part == 'v' || part == 'a'){
+        apop_assert(fn_d || fn_dp || fn_di || fn_dpi, "You specified .part='a', which means I need one of .fn_d, .fn_dp, .fn_di, or .fn_dpi specified");
+        if (part =='m') firstcol= 0; //don't traverse vector, even if present
+        if (part =='v') msize2= 0; //don't traverse matrix, even if present
+        for (int i=0; i < GSL_MAX(vsize, msize1); i++)
+            for (int j=firstcol; j < msize2; j++){
+                double val = apop_data_get(in, i, j);
+                if (fn_d) outsum += fn_d(val);
+                else if (fn_dp) outsum += fn_dp(val, param);
+                else if (fn_di) outsum += fn_di(val, i);
+                else            outsum += fn_dpi(val, param, i);
+            }
+        } else if (part =='r' ||part =='c'){
+            apop_assert(fn_v || fn_vp || fn_vi || fn_vpi, "You specified .part='a', which means I need one of .fn_v, .fn_vp, .fn_vi, or .fn_vpi specified");
+            long int max = (part=='r') ? msize1 : msize2;
+            gsl_vector_view v;
+            for (int i=0; i < max; i++){
+                v = (part=='r')
+                    ? gsl_matrix_row(in->matrix, i)
+                    : gsl_matrix_column(in->matrix, i);
+                if       (fn_v)  outsum += fn_v(&v.vector);
+                else if (fn_vp)  outsum += fn_vp(&v.vector, param);
+                else if (fn_vi)  outsum += fn_vi(&v.vector, i);
+                else             outsum += fn_vpi(&v.vector, param, i);
+            }
+        }
+    }
+        return outsum + 
+                    (((all_pages=='y' || all_pages=='Y') && in->more) ? apop_map_sum_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, part, all_pages) : 0);
+    }
 /** \} */

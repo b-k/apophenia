@@ -9,6 +9,7 @@
 
 	November 2010
 --apop_listwise_delete uses apop_opts.db_nan to check for missing data in the text part of the input data.
+--apop_data_split handles names
 
     September 2010
 **Multinomial distribution sets N to be the length of the row (a single observation)

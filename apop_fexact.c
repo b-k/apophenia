@@ -20,6 +20,7 @@ Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 #include "types.h"
 #include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
+#include <apophenia/asst.h> //Apop_assert
 
 /* These are the R-specific items. */
 typedef enum { FALSE = 0, TRUE /*, MAYBE */ } Rboolean;
@@ -152,8 +153,6 @@ static void fexact(int *nrow, int *ncol, int *table, int *ldtabl,
   -----------------------------------------------------------------------
   */
 
-    /* CONSTANT Parameters : */
-
     /* To increase the length of the table of past path lengths relative
        to the length of the hash table, increase MULT.
     */
@@ -185,11 +184,9 @@ static void fexact(int *nrow, int *ncol, int *table, int *ldtabl,
 #define iwrk ((int *)equiv)
 #define rwrk ((float *)equiv)
 
-    /* Function Body */
     iwkpt = 0;
 
-    if (*nrow > *ldtabl)
-        prterr(1, "NROW must be less than or equal to LDTABL.");
+    Apop_assert(*nrow <= *ldtabl, "NROW must be less than or equal to LDTABL.");
 
     ntot = 0;
     for (i = 0; i < *nrow; ++i) {
@@ -370,12 +367,9 @@ static void f2xact(int nrow, int ncol, int *table, int ldtabl,
     --iwk;
     --rwk;
 
-
     /* Check table dimensions */
-    if (nrow > ldtabl)
-        prterr(1, "NROW must be less than or equal to LDTABL.");
-    if (ncol <= 1)
-        prterr(4, "NCOL must be at least 2");
+    Apop_assert(nrow <= ldtabl, "NROW must be less than or equal to LDTABL.");
+    Apop_assert(ncol > 1, "NCOL must be at least 2");
 
     /* Initialize KEY array */
     for (i = 1; i <= *ldkey << 1; ++i) {
@@ -394,8 +388,7 @@ static void f2xact(int nrow, int ncol, int *table, int ldtabl,
     for (i = 1; i <= nrow; ++i) {
 	iro[i] = 0;
 	for (j = 1; j <= ncol; ++j) {
-	    if (table[i + j * ldtabl] < 0.)
-		prterr(2, "All elements of TABLE may not be negative.");
+	    Apop_assert(table[i + j * ldtabl] >= 0., "All elements of TABLE must be non-negative.");
 	    iro[i] += table[i + j * ldtabl];
 	}
 	ntot += iro[i];
@@ -1012,8 +1005,7 @@ LoopNode: /* Generate a node */
 	}
 
 	/* this happens less, now that we check for negative key above: */
-	prterr(30, "Stack length exceeded in f3xact.\n"
-	       "This problem should not occur.");
+	Apop_assert(0, "Stack length exceeded in f3xact. This problem should not occur.");
 
 L180: /* Push onto stack */
 	ist[ii] = key;
@@ -1750,8 +1742,7 @@ void prterr(int icode, const char *mes) {
 }
 
 static int iwork(int iwkmax, int *iwkpt, int number, int itype) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      iwork
   Purpose:    Routine for allocating workspace.
 
@@ -1772,22 +1763,19 @@ static int iwork(int iwkmax, int *iwkpt, int number, int itype) {
     if (itype == 2 || itype == 3)
 	*iwkpt += number;
     else { /* double */
-	if (i % 2 != 0)
-	    ++i;
-	*iwkpt += (number << 1);
-	i /= 2;
+        if (i % 2 != 0)
+            ++i;
+        *iwkpt += (number << 1);
+        i /= 2;
     }
-    if (*iwkpt > iwkmax)
-	prterr(40, "Out of workspace.");
-
+    Apop_assert_c(*iwkpt <=iwkmax, i, 0, "Out of workspace: %i > %i", *iwkpt, iwkmax);
     return i;
 }
 
 #ifndef USING_R
 
 void isort(int *n, int *ix) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      ISORT
   Purpose:    Shell sort for an int vector.
 
@@ -1807,9 +1795,8 @@ void isort(int *n, int *ix) {
     j = *n;
 
 L10:
-    if (i >= j) {
-	goto L40;
-    }
+    if (i >= j) 
+        goto L40;
     kl = i;
     ku = j;
     ikey = i;
@@ -1817,51 +1804,47 @@ L10:
     /* Find element in first half */
 L20:
     ++i;
-    if (i < j) {
-	if (ix[ikey] > ix[i]) {
-	    goto L20;
-	}
-    }
+    if (i < j) 
+        if (ix[ikey] > ix[i]) 
+            goto L20;
     /* Find element in second half */
 L30:
     --j;
     if (ix[j] > ix[ikey]) {
-	goto L30;
+        goto L30;
     }
     /* Interchange */
     if (i < j) {
-	it = ix[i];
-	ix[i] = ix[j];
-	ix[j] = it;
-	goto L20;
+        it = ix[i];
+        ix[i] = ix[j];
+        ix[j] = it;
+        goto L20;
     }
     it = ix[ikey];
     ix[ikey] = ix[j];
     ix[j] = it;
     /* Save upper and lower subscripts of the array yet to be sorted */
     if (m < 11) {
-	if (j - kl < ku - j) {
-	    il[m - 1] = j + 1;
-	    iu[m - 1] = ku;
-	    i = kl;
-	    --j;
-	} else {
-	    il[m - 1] = kl;
-	    iu[m - 1] = j - 1;
-	    i = j + 1;
-	    j = ku;
-	}
-	++m;
-	goto L10;
-    } else {
-	prterr(20, "This should never occur.");
-    }
+        if (j - kl < ku - j) {
+            il[m - 1] = j + 1;
+            iu[m - 1] = ku;
+            i = kl;
+            --j;
+        } else {
+            il[m - 1] = kl;
+            iu[m - 1] = j - 1;
+            i = j + 1;
+            j = ku;
+        }
+        ++m;
+        goto L10;
+    } else 
+        Apop_assert(0, "This should never occur.");
     /* Use another segment */
 L40:
     --m;
-    if (m == 0) {
-	return;
-    }
+    if (m == 0) 
+        return;
     i = il[m - 1];
     j = iu[m - 1];
     goto L10;
