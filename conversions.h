@@ -40,7 +40,7 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
 
 //From text
 APOP_VAR_DECLARE apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names, int *field_ends);
-APOP_VAR_DECLARE int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends);
+APOP_VAR_DECLARE int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends, apop_data *field_params, char *table_params);
 
 //rank data
 apop_data *apop_data_rank_expand (apop_data *in);

@@ -6,6 +6,7 @@
 
 	December 2010
 **apop_maximum_likelihood no longer calls apop_prep. If you want that, use apop_estimate.
+--apop_text_to_db lets users specify types and keys.
 
 	November 2010
 --apop_listwise_delete uses apop_opts.db_nan to check for missing data in the text part of the input data.

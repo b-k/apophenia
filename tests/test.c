@@ -821,8 +821,14 @@ void test_binomial(gsl_rng *r){
 
 void db_to_text(){
     apop_db_open(NULL);
-    if (!apop_table_exists("d"))
-        apop_text_to_db("data-mixed", "d", 0, 1, NULL);
+    if (!apop_table_exists("d")){
+        apop_data *field_params = apop_text_alloc(NULL,2,2);
+        apop_text_add(field_params,0, 0, "[ab][ab]");
+        apop_text_add(field_params,0, 1, "numeric");
+        apop_text_add(field_params,1, 0, ".*");
+        apop_text_add(field_params,1, 1, "character");
+        apop_text_to_db("data-mixed", "d", 0, 1, NULL, .field_params=field_params);
+    }
     apop_data *d = apop_query_to_mixed_data ("tmttmmmt", "select * from d");
     int b_allele_col = apop_name_find(d->names, "b_all.*", 't');
     assert(!strcmp("T",  d->text[3][b_allele_col]));

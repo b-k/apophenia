@@ -1273,14 +1273,16 @@ endofdiv
 
         endofdiv
 
-
-    Outlineheader Esti Estimation aids
-
-        \li\ref apop_model_fix_params : hold some parameters constant
-
     endofdiv
 
-    endofdiv
+endofdiv
+
+Outlineheader Update Filtering & updating
+
+It's easy to generate new models that are variants of prior models. Bayesian updating, for example, takes in one \ref apop_model that we call the prior, one \ref apop_model that we call a likelihood, and outputs an \ref apop_model that we call the posterior. 
+
+    \li\ref apop_update : Bayesian updating
+    \li\ref apop_model_fix_params : hold some parameters constant
 
 endofdiv
 
@@ -1498,13 +1500,6 @@ endofdiv
 
 endofdiv
 
-Outlineheader Asst More descriptive methods
-
-    \li\ref apop_matrix_pca : Principal component analysis
-    \li\ref apop_anova : One-way or two-way ANOVA tables
-    \li\ref apop_update : Bayesian updating
-
-endofdiv
 
 Outlineheader Miss Missing data
 
@@ -1583,7 +1578,13 @@ endofdiv
 
 Outlineheader moreasst Assorted
 
-Outlineheader Gene General utilities
+Some more descriptive methods:
+
+    \li\ref apop_matrix_pca : Principal component analysis
+    \li\ref apop_anova : One-way or two-way ANOVA tables
+
+
+General utilities:
 
     \li\ref Apop_assert
     \li\ref Apop_assert_c
@@ -1593,9 +1594,7 @@ Outlineheader Gene General utilities
     \li\ref apop_regex()
     \li\ref apop_system()
 
-endofdiv
-
-Outlineheader Math Math utilities
+Math utilities:
 
     \li\ref apop_matrix_is_positive_semidefinite()
     \li\ref apop_matrix_to_positive_semidefinite()
@@ -1604,15 +1603,13 @@ Outlineheader Math Math utilities
     \li\ref apop_multivariate_lngamma()
     \li\ref apop_rng_alloc()
 
-endofdiv
-
 Outlineheader Prob Deprecated
 
 These functions will probably disappear or be replaced soon.
 
-    \li\ref apop_data_to_db()
-    \li\c Apop_settings_add_group
-    \li\ref Apop_settings_alloc
+    \li\ref apop_data_to_db() Use \ref apop_data_print with <tt>.output_type='d'</tt>
+    \li\c Apop_settings_add_group Use \ref Apop_model_add_group
+    \li\ref Apop_settings_alloc Use the \c apop_settings_init macro
 
 endofdiv
 

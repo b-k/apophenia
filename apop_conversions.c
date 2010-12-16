@@ -7,6 +7,27 @@
 #include <assert.h>
 #include <sqlite3.h>
 
+
+/*extend a string. this prevents a minor leak you'd get if you did
+ asprintf(&q, "%s is a teapot.", q);
+ q may be NULL, which prints the string "null", so use the little XN macro below when using this function.
+
+ This is internal to apop. right now. 
+*/
+void xprintf(char **q, char *format, ...){ 
+    va_list ap; 
+    char *r = *q; 
+    va_start(ap, format); 
+    vasprintf(q, format, ap);
+    va_end(ap);
+    free(r);
+}
+
+#define XN(in) ((in) ? (in) : "")
+
+
+
+
 /** \defgroup conversions Conversion functions
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
 
@@ -951,19 +972,31 @@ void apop_data_set_row(apop_data * d, apop_data *row, int row_number){
 ///////The rest of this file is for apop_text_to_db
 extern sqlite3 *db;
 
-static void tab_create_mysql(char *tabname, int ct, int has_row_names){
+static char *get_field_conditions(char *var, apop_data *field_params){
+    if (field_params)
+        for(int i=0; i<field_params->textsize[0]; i++)
+            if (apop_regex(var, field_params->text[i][0]))
+                return field_params->text[i][1];
+    if (apop_opts.db_engine == 'm')
+        return "varchar(100)";
+    else
+        return "numeric";
+}
+
+static void tab_create_mysql(char *tabname, int ct, int has_row_names, apop_data *field_params, char *table_params){
   char  *q = NULL;
     asprintf(&q, "CREATE TABLE %s", tabname);
     for (int i=0; i<ct; i++){
         if (i==0) 	{
             if (has_row_names)
-                asprintf(&q, "%s (row_names varchar(100), ", q);
+                xprintf(&q, "%s (row_names varchar(100), ", q);
             else
-                asprintf(&q, "%s (", q);
-        } else		asprintf(&q, "%s varchar(100) , ", q);
-        asprintf(&q, "%s %s", q, fn[i]);
+                xprintf(&q, "%s (", q);
+        } else		xprintf(&q, "%s %s, ", q, get_field_conditions(fn[i-1], field_params));
+        xprintf(&q, "%s %s", q, fn[i]);
     }
-    asprintf(&q, "%s varchar(100) );", q);
+    xprintf(&q, "%s %s%s%s);", q, get_field_conditions(fn[ct-1], field_params)
+                                , table_params? ", ": "", XN(table_params));
     apop_query("%s", q);
     Apop_assert(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
     if (use_names_in_file){
@@ -974,23 +1007,24 @@ static void tab_create_mysql(char *tabname, int ct, int has_row_names){
     }
 }
 
-static void tab_create(char *tabname, int ct, int has_row_names){
-  char  *r, *q = NULL;
+static void tab_create_sqlite(char *tabname, int ct, int has_row_names, apop_data *field_params, char *table_params){
+  char  *q = NULL;
     asprintf(&q, "create table %s", tabname);
     for (int i=0; i<ct; i++){
-        r = q;
-        if (i==0) 	{
+        if (i==0){
             if (has_row_names)
-                asprintf(&q, "%s (row_names, ", q);
+                xprintf(&q, "%s (row_names, ", q);
             else
-                asprintf(&q, "%s (", q);
-        } else		asprintf(&q, "%s' numeric, ", q);
-        free(r); r=q;
-        asprintf(&q, "%s '%s", q, fn[i]);
-        free(r);
+                xprintf(&q, "%s (", q);
+        } else	
+            xprintf(&q, "%s' %s, ", q, get_field_conditions(fn[i-1], field_params));
+        xprintf(&q, "%s '%s", q, fn[i]);
     }
-    apop_query("%s' numeric);", q);
-    apop_assert(apop_table_exists(tabname), "query \"%s' numeric);\" failed.\n", q);
+    xprintf(&q, "%s' %s%s%s);", q, get_field_conditions(fn[ct-1], field_params)
+                                , table_params? ", ": "", XN(table_params));
+    apop_query("%s", q);
+    apop_assert(apop_table_exists(tabname), "query \"%s\" failed.\n", q);
+    free(q);
     apop_query("begin;");
     if (use_names_in_file){
         for (int i=0; i<ct; i++)
@@ -1053,7 +1087,7 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
             prev_end    = 0, last_end    = 0, ctr = 0, field = 1;
   size_t    last_match  = 0;
   char	    *prepped, comma = ' ';
-  char      *r, *q  = malloc(100+ strlen(tabname));
+  char      *q  = malloc(100+ strlen(tabname));
   regmatch_t  result[2];
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
     char outstr[length_of_string+1];
@@ -1069,16 +1103,12 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
                 printf("Something wrong on line %i, field %i.\n", row, field-1);
         } else {
             if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
-                r = q;
-                asprintf(&q, "%s%c %s", r, comma,  prepped);
-                free(r);
+                xprintf(&q, "%s%c %s", q, comma,  prepped);
                 comma = ',';
             } else {
                 char d = instr[last_match-1];
                 if (d!='\t' && d!='\r' && d!='\n' && d!=' '){
-                    r = q;
-                    asprintf(&q, "%s%cNULL", r, comma);
-                    free(r);
+                    xprintf(&q, "%s%cNULL", q, comma);
                     comma = ',';
                 }
             }
@@ -1108,18 +1138,22 @@ By the way, there is a begin/commit wrapper that bundles the process into bundle
 \param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1)
 \param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
 \param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
+\param field_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input \ref apop_data set is the \c text grid, which should be \f$N \times 2\f$. The first item in each row (<tt>your_params->text[n][0]</tt>, for each \f$n\f$) is a regular expression to match against the variable names; the second item (<tt>your_params->text[n][1]</tt>) is the type, constraint, and/or key (i.e., what comes after the name in the \c create query). Not all variables need be mentioned; the default type if nothing matches is <tt>numeric</tt>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <tt>.*</tt>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See \ref apop_regex on details of matching.
+\param table_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a table constraint or key, such as <tt>not null primary key (age, sex)</tt>, put that here.
 
 \return Returns the number of rows.
 This function uses the \ref designated syntax for inputs.
 \ingroup conversions
 */
-APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends){
+APOP_VAR_HEAD int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends, apop_data *field_params, char *table_params){
     char *apop_varad_var(text_file, "-")
     char *apop_varad_var(tabname, apop_strip_dots(text_file, 'd'))
     int apop_varad_var(has_row_names, 0)
     int apop_varad_var(has_col_names, 1)
     int *apop_varad_var(field_ends, NULL)
     char ** apop_varad_var(field_names, NULL)
+    apop_data * apop_varad_var(field_params, NULL)
+    char * apop_varad_var(table_params, NULL)
 APOP_VAR_END_HEAD
   int       batch_size  = 10000,
       		col_ct, ct = 0, rows    = 0;
@@ -1135,20 +1169,15 @@ APOP_VAR_END_HEAD
 	apop_assert_c(!apop_table_exists(tabname,0), 0, 0, "table %s exists; not recreating it.", tabname);
     col_ct  = get_field_names(has_col_names, field_names, infile, text_file, &regex, &add_this_line, field_ends);
     if (apop_opts.db_engine=='m')
-        tab_create_mysql(tabname, col_ct, has_row_names);
+        tab_create_mysql(tabname, col_ct, has_row_names, field_params, table_params);
     else
-        tab_create(tabname, col_ct, has_row_names);
+        tab_create_sqlite(tabname, col_ct, has_row_names, field_params, table_params);
     int use_sqlite_prepared_statements = !(apop_opts.db_engine == 'm' || col_ct > 999); //There's an arbitrary SQLite limit on blanks in prepared statements.
     if (use_sqlite_prepared_statements){
         asprintf(&q, "INSERT INTO %s VALUES (?", tabname);
-        for (int i = 1; i < col_ct; i++){
-            char *r = q;
-            asprintf(&q, "%s, ?", r);
-            free(r);
-        }
-        char *r = q;
-        asprintf(&q, "%s)", r);
-        free(r);
+        for (int i = 1; i < col_ct; i++)
+            xprintf(&q, "%s, ?", q);
+        xprintf(&q, "%s)", q);
         sqlite3_prepare_v2(db, q, -1, &statement, NULL);
     }
 
