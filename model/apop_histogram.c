@@ -138,6 +138,7 @@ apop_kernel_density_settings *apop_kernel_density_settings_init(apop_kernel_dens
     apop_varad_setting(in, out, kernel, apop_model_set_parameters(apop_normal, 0, 1));
     apop_varad_setting(in, out, set_fn, apop_set_first_param);
     out->own_pmf = !in.base_pmf;
+    out->own_kernel = 1;
     if (!out->kernel->parameters)
         apop_prep(out->base_data, out->kernel);
     return out;
@@ -170,7 +171,7 @@ static double kernel_p_cdf_base(apop_data *d, apop_model *m,
     Get_vmsizes(d);
     long double total = 0;
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
-    apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->parameters;
+    apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->data;
     int len = pmf_data->weights ? pmf_data->weights->size
                                 : pmf_data->vector ? pmf_data->vector->size
                                                    : pmf_data->matrix->size1;

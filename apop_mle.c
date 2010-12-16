@@ -65,60 +65,44 @@ Below is a sample of the sort of output one would get:<br>
 
 double default_delta = 1e-3;
 
-apop_parts_wanted_settings *apop_parts_wanted_settings_init(apop_parts_wanted_settings in){
-  apop_parts_wanted_settings *setme = malloc(sizeof(apop_parts_wanted_settings));
-    apop_varad_setting(in, setme, covariance, 'n');
-    apop_varad_setting(in, setme, predicted, 'n');
-    apop_varad_setting(in, setme, tests, 'n');
-    apop_varad_setting(in, setme, info, 'n');
-    return setme;
-}
+/* Generate support fns (esp. initializers) for apop_mle_settings and apop_parts_wanted structs. */
+Apop_settings_copy(apop_parts_wanted, )
+Apop_settings_free(apop_parts_wanted, )
+Apop_settings_init(apop_parts_wanted,
+    Apop_varad_set(covariance, 'n');
+    Apop_varad_set(predicted, 'n');
+    Apop_varad_set(tests, 'n');
+    Apop_varad_set(info, 'n');
+)
 
-void *apop_parts_wanted_settings_copy(apop_parts_wanted_settings * in){
-    apop_parts_wanted_settings *setme = malloc(sizeof(apop_parts_wanted_settings));
-    *setme = *in;
-    return setme;
-}
-
-void apop_parts_wanted_settings_free(apop_parts_wanted_settings *in){ free(in); }
-
-/** Initialize an \ref apop_mle_settings struct. */
-apop_mle_settings *apop_mle_settings_init(apop_mle_settings in){
-  apop_mle_settings *setme =   calloc(1,sizeof(apop_mle_settings));
-    apop_varad_setting(in, setme, starting_pt, NULL);
-    apop_varad_setting(in, setme, tolerance, 1e-2);
-    apop_varad_setting(in, setme, max_iterations, 5000);
-    apop_varad_setting(in, setme, method, (in.parent && in.parent->score) ? APOP_CG_PR : APOP_SIMPLEX_NM);
-    apop_varad_setting(in, setme, verbose, 0);
-    apop_varad_setting(in, setme, use_score, 'y');
-    if (in.use_score == 1) setme->use_score = 'y';
-    apop_varad_setting(in, setme, step_size, 0.05);
-    apop_varad_setting(in, setme, delta, default_delta);
-    apop_varad_setting(in, setme, want_cov, 'y');
-    if (in.want_cov == 1) setme->want_cov = 'y';
-    apop_varad_setting(in, setme, dim_cycle_tolerance, 0);
+Apop_settings_copy(apop_mle, )
+Apop_settings_free(apop_mle, )
+Apop_settings_init(apop_mle,
+    Apop_varad_set(starting_pt, NULL);
+    Apop_varad_set(tolerance, 1e-2);
+    Apop_varad_set(max_iterations, 5000);
+    Apop_varad_set(method, (in.parent && in.parent->score) ? APOP_CG_PR : APOP_SIMPLEX_NM);
+    Apop_varad_set(verbose, 0);
+    Apop_varad_set(use_score, 'y');
+    if (in.use_score == 1) out->use_score = 'y';
+    Apop_varad_set(step_size, 0.05);
+    Apop_varad_set(delta, default_delta);
+    Apop_varad_set(want_cov, 'y');
+    if (in.want_cov == 1) out->want_cov = 'y';
+    Apop_varad_set(dim_cycle_tolerance, 0);
 //siman:
     //siman also uses step_size  = 1.;  
-    apop_varad_setting(in, setme, n_tries, 200);  //The number of points to try for each step. 
-    apop_varad_setting(in, setme, iters_fixed_T, 200);   //The number of iterations at each temperature. 
-    apop_varad_setting(in, setme, k, 1.0);  //The maximum step size in the random walk. 
-    apop_varad_setting(in, setme, t_initial, 50);   //cooling schedule data
-    apop_varad_setting(in, setme, mu_t, 1.002); 
-    apop_varad_setting(in, setme, t_min, 5.0e-1);
-    apop_varad_setting(in, setme, rng, NULL);
-    return setme;
-}
+    Apop_varad_set(n_tries, 200);  //The number of points to try for each step. 
+    Apop_varad_set(iters_fixed_T, 200);   //The number of iterations at each temperature. 
+    Apop_varad_set(k, 1.0);  //The maximum step size in the random walk. 
+    Apop_varad_set(t_initial, 50);   //cooling schedule data
+    Apop_varad_set(mu_t, 1.002); 
+    Apop_varad_set(t_min, 5.0e-1);
+    Apop_varad_set(rng, NULL);
+)
 
 apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
     return apop_mle_settings_init((apop_mle_settings){.parent=parent}); }
-
-void *apop_mle_settings_copy(apop_mle_settings * in){
-    apop_mle_settings *setme = malloc(sizeof(apop_mle_settings));
-    *setme = *in;
-    return setme;
-}
-
-void apop_mle_settings_free(apop_mle_settings *in){ free(in); }
 
 //      MLE support functions
 //Including numerical differentiation and a couple of functions to

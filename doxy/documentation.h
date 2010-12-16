@@ -1147,7 +1147,7 @@ you first use it. Here is a full example:
 2 apop_data *w = your_weights_here;
 
 3 apop_model *m = apop_model_copy(apop_wls);
-4 Apop_model_add_group(m, apop_ls, .weights=w, .want_cov='y');
+4 Apop_model_add_group(m, apop_lm, .weights=w, .want_cov='y');
 5 apop_model *est = apop_estimate(data, *m);
 \endcode
 
@@ -1165,107 +1165,102 @@ apop_model *est2 = apop_estimate(data, *est);
 
 \li  The list of elements of the settings structures included in Apophenia are on the \ref settings page.
 
-\li Notice the use of a single capital to remind you that you are using a macro, so you should beware of the sort of surprising errors associated with macros. Here in the modern day, we read things like APOP_SETTINGS_ADD as yelling, but if you prefer all caps to indicate macros, those work as well.
+\li Notice the use of a single capital to remind you that you are using a macro, so you should beware of the sort of surprising errors associated with macros.
 
-\li There are two additional macros which are now deprecated: \c Apop_settings_add_group and \c Apop_settings_alloc_add. They made sense at the time. That's why the \c Apop_model_add_group macro doesn't have \c settings in the name. The \c Apop_settings_add macro is equivalent to \c Apop_settings_set.
+\li  \c Apop_settings_add_group and \c Apop_settings_alloc_add are now deprecated.
 
-For just using a model, that's about 100% of what you need to know.
+For just using a model, that's all of what you need to know.
 
     endofdiv
 
 Outlineheader settingswritng  Writing new settings groups
 
-To store the settings for your own models, you don't necessarily need any of this. The \ref apop_model structure has a \c void pointer named \c more which you can use to store extra information as needed. If \c more_size is larger than zero (i.e. you set it to <tt>your_model.more_size=sizeof(your_struct)</tt>), then it will be copied via \c memcpy by \ref apop_model_copy, and <tt>free</tt>d by \ref apop_model_free. Apophenia's estimation routines will never impinge on this item, so do what you feel with it.
+First, there's a lightweight method of storing sundry settings, so in many cases you can bypass all of the following.
+The \ref apop_model structure has a \c void pointer named \c more which you can use to store extra information as needed. If \c more_size is larger than zero (i.e. you set it to <tt>your_model.more_size=sizeof(your_struct)</tt>), then it will be copied via \c memcpy by \ref apop_model_copy, and <tt>free</tt>d by \ref apop_model_free. Apophenia's estimation routines will never impinge on this item, so do what you feel with it.
 
-If you do want to set up a new settings group, then you will need four items.  This is the sort of boilerplate that will be familiar to users of object oriented languages in the style of C++ or Java. Let your settings group be named \c ysg; then you will need
+The remainder of this section describes the information you'll have to provide to make
+use of the conveniences described to this point: initialization of defaults, smarter
+copying and freeing, and adding to an arbitrariy long list of settings groups attached
+to a model.  You will need four items: the structure itself, plus init, copy, and
+free functions.  This is the sort of boilerplate that will be familiar to users of
+object oriented languages in the style of C++ or Java, but it's really a list of
+arbitrarily-typed elements, which makes this feel more like LISP (especially because
+it will be macro-heavy). 
 
-\li The settings struct
+\li The settings struct will likely go into a header file, so 
+here is a sample header for a new settings group named \c ysg_settings (Your Settings Group), with a dataset, its two sizes, and an owner-of-data marker:
 \code
 typedef struct {
-...
-} ysg_settings
-\endcode
-
-
-\li The allocate function
-\code
-ysg_settings *ysg_settings_init(ysg_settings in){ 
-    ysg_settings *out = malloc(sizeof(ysg_settings));
-    apop_varad_setting(in, out, want_cov,  'y');
-    return out; }
-\endcode
-I included an example of the use of \ref apop_varad_setting, a convenience macro to ease
-merging the input settings group with defaults.
-It checks for the given element (here, \c want_cov), and 
-if that element is not found in the input, sets it to the specified value (here, \c 'y').
-
-\li The copy function
-\code
-void *ysg_settings_copy(ysg_settings *copyme) {
-    ysg_settings *out = malloc(sizeof(ysg_settings));
-    //copy elements here. If you have no pointers or other trickery, just use:
-    *out = *copyme
-    return out; }
-\endcode
-
-\li The free function, which can be as brief as:
-\code
-void ysg_settings_free(ysg_settings *freeme) {
-    free(freeme);
-}
-\endcode
-but may include a freeing of pointed-to subelements as necessary.
-
-The names are not negotiable: when you call
-\code
-Apop_model_add_group(m, ysg)
-\endcode
-the macro will look for \c ysg_settings, \c ysg_settings_init, et cetera.
-
-The lines-of-code averse will cringe at having to write such boilerplate code (I do), but after spending a year resisting it, I have to concede that it's the least of all evils.
-
-You can retrieve the whole group or individual elements via:
-\code
-Apop_settings_get_group(m, ysg)
-//as well as the one-element macro mentioned above,
-Apop_settings_get(m, ysg, an_element)
-\endcode
-
-As you saw above, once the typedef/alloc/copy/free machinery is written, you can declare, get, and set in a reasonably graceful manner.
-
-\li For efficiency and other reasons, you may want your copy routine to copy pointers to
-large data sets rather than copying the data itself. But
-because so much copying goes on, you will need to be careful that any allocated data
-is freed only once. The easiest way to do this is to include an \c owner element in
-your data, which is set to one in the \c init routine but to zero in the \c copy
-routine, then free pointers only if <tt>owner == 1</tt>. 
-Here is an example that either takes in a data set or defaults to initializing a new one;
-either way, copies of the model will all point to the same data set.
-
-\code
-typedef struct {
+    int size1, size2, owner;
     apop_data *dataset;
-    int owner;
 } ysg_settings;
 
-ysg_settings *ysg_settings_init(ysg_settings in){ 
-    ysg_settings *out = malloc(sizeof(ysg_settings));
-    apop_varad_setting(in, out, dataset, apop_data_alloc(100, 100, 100));
-    out->owner = 1;
-    return out; }
-
-void *ysg_settings_copy(ysg_settings *copyme) {
-    ysg_settings *out = malloc(sizeof(ysg_settings));
-    *out = *copyme; //pointer to data was copied, not underlying data.
-    out->owner = 0;
-    return out; }
-
-void ysg_settings_free(ysg_settings *freeme) {
-    if (freeme->owner)
-        apop_data_free(freeme->dataset);
-    free(freeme);
-}
+Apop_settings_declarations(ysg)
 \endcode
+The first item is a familiar structure definition. The last line is a macro that declares the
+three functions below. This is everything you would
+need in a header file, should this structure be needed across multiple .c files.
+
+The structure itself gets the full name, \c ysg_settings. Everything else is a macro, and so you need only specify \c ysg, and the \c _settings part is implied. Because of these macros, your \c struct name must end in \c _settings.
+
+If you have an especially simple structure, then you can declare the three functions with these three macros in a .c file:
+
+\code
+Apop_settings_init(ysg, )
+Apop_settings_copy(ysg, )
+Apop_settings_free(ysg, )
+\endcode
+
+These macros generate appropriate functions to do what you'd expect: allocating the
+main structure, copying in appropraite data, freeing the main structure.  
+The spaces after the commas indicate that no special code gets added to
+the functions that these macros generate. Now that initializing/copying/freeing of
+the structure itself is handled, the remainder of this section will be about how to
+add instructions for the struture internals, most notably init/copy/free of data that
+is pointed to by the structure elements.
+
+You'll never call these funtions directly; they are called by \ref Apop_model_add_group, \ref apop_model_free, and other model or settings-group handling functions.
+
+\li For the allocate function, use the above form if everything in your code defaults to zero/\c NULL.  
+In most cases, though, you will need a new line declaring a default for every element in your structure. There is a macro to help with this too. 
+These macros will define for your use a structure named \c in, and the output a pointer-to-struct named \c out.
+Continuing the above example:
+\code 
+Apop_settings_init (ysg, 
+      Apop_assert(in.size1, "I need you to give me a value for size1. Stopping.");
+      Apop_varad_set(size2, 10);
+      Apop_varad_set(dataset, apop_data_alloc(out->size1, out->size2));
+      Apop_varad_set(owner, 1);
+)
+\endcode 
+
+Now, <tt>Apop_settings_add(a_model, ysg, .size1=100)</tt> would set up a group with a 100-by-10 data set, and set the owner bit to one. 
+
+\li Some functions do extensive internal copying, so you will need a copy function even if you don't do any explicit calls to \ref apop_model_copy. The default above simply copies every element in the structure. Pointers are copied, giving you two pointers pointing to the same data. From here there are a few alternatives:
+\code
+//alternative one: mark that the copy doesn't own the data.
+//From the defaults, out->dataset is a copy of the in->dataset pointer.
+Apop_settings_copy (ysg,
+        out->owner = 0;
+)
+
+//alternative two: just copy the data. 
+//owner will be 1, as copied from the original.
+Apop_settings_copy (ysg,
+        out->dataset = apop_data_copy(in->dataset);
+)
+\endcode
+
+\li Additions to the free function are typically to free data pointed to by pointers in the main struture. The macro defines a pointer-to-struct named \c in for your use. Continuing the example (for either copying alternative):
+\code
+Apop_settings_free (ysg,
+    if (in->owner)
+        free(in->dataset);
+)
+\endcode
+
+
+With those three macros in place, Apophenia will treat your settings group like the others.
 
 endofdiv
 

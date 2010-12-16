@@ -44,21 +44,12 @@ static void pack(apop_data *in, apop_model *m){
    gsl_vector_memcpy(m->parameters->vector, p_in_tab);
 }
 
-static void *apop_model_fixed_params_settings_copy (apop_model_fixed_params_settings *in ){ 
-    apop_model_fixed_params_settings *out = malloc(sizeof(apop_model_fixed_params_settings));
-    *out = *in;
-    return out;
-} 
-
-static void apop_model_fixed_params_settings_free (apop_model_fixed_params_settings *in ){ 
-    free(in); }
-
-static apop_model_fixed_params_settings *apop_model_fixed_params_settings_init (apop_model_fixed_params_settings in){
-    apop_model_fixed_params_settings *out = malloc(sizeof(apop_model_fixed_params_settings));
-    *out = (apop_model_fixed_params_settings){ };
-    apop_varad_setting(in, out, base_model, NULL);
-    return out;
-}
+//The macros generating the fixed_param_settings group's init/copy/free functions:
+Apop_settings_init(apop_model_fixed_params, 
+    Apop_assert(in.base_model, "I can't fix a NULL model's parameters.");
+)
+Apop_settings_copy(apop_model_fixed_params, )
+Apop_settings_free(apop_model_fixed_params, )
 
 static double fix_params_ll(apop_data *d, apop_model *fixed_model){
   apop_model_fixed_params_settings *p    = apop_settings_get_group(fixed_model, apop_model_fixed_params);

@@ -21,7 +21,7 @@ apop_model *apop_crosstab_to_pmf (apop_data *d){
     apop_model *out = apop_model_copy(apop_pmf);
     out->parameters = apop_data_alloc(0, tsize, (use_matrix ? 2: 1));
     out->parameters->weights = gsl_vector_alloc(tsize);
-    out->more = NULL;
+    out->data = out->parameters;
     if (use_matrix){
         for(size_t i=0; i < d->matrix->size1; i ++)
             for(size_t j=0; j < d->matrix->size2; j ++)
@@ -45,23 +45,25 @@ apop_model *apop_crosstab_to_pmf (apop_data *d){
 }
 
 static apop_model *estim (apop_data *d, apop_model *out){
-    out->parameters = d;
+    out->data = d;
+    apop_data_free(out->parameters); //may have been auto-alloced by prep.
+    out->parameters = apop_data_copy(d);
     return out;
 }
 
 static void draw (double *out, gsl_rng *r, apop_model *m){
     size_t current; 
-    if (!m->parameters->weights) //all rows are equiprobable
+    if (!m->data->weights) //all rows are equiprobable
         current = gsl_rng_uniform(r)*
-                  ((m->parameters->vector ? m->parameters->vector->size : m->parameters->matrix->size1)-1);
+                  ((m->data->vector ? m->data->vector->size : m->data->matrix->size1)-1);
     else {
-        size_t size = m->parameters->weights->size;
+        size_t size = m->data->weights->size;
         if (!m->more){
             m->more = gsl_vector_alloc(size);
             gsl_vector *cdf = m->more; //alias.
-            cdf->data[0] = m->parameters->weights->data[0];
+            cdf->data[0] = m->data->weights->data[0];
             for (int i=1; i< size; i++)
-                cdf->data[i] = m->parameters->weights->data[i] + cdf->data[i-1];
+                cdf->data[i] = m->data->weights->data[i] + cdf->data[i-1];
             //Now make sure the last entry is one.
             gsl_vector_scale(cdf, 1./cdf->data[size-1]);
         }
@@ -91,7 +93,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
         }
     }
     //done searching. current should now be the right row index.
-    Apop_data_row(m->parameters, current, outrow);
+    Apop_data_row(m->data, current, outrow);
     int i = 0;
     if (outrow->vector)
         out[i++] = outrow->vector->data[0];
@@ -102,17 +104,17 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
 
 double pmf_p(apop_data *d, apop_model *m){
     Nullcheck_p(m) 
-    Get_vmsizes(m->parameters)//firstcol, vsize, vsize1, msize2
+    Get_vmsizes(m->data)//firstcol, vsize, vsize1, msize2
     int j;
     double ll = 0;
     for(int i=0; i< msize1; i++){
         for (j=firstcol; j < msize2; j++)
-            if (apop_data_get(d, i,j) != apop_data_get(m->parameters, i, j))
+            if (apop_data_get(d, i,j) != apop_data_get(m->data, i, j))
                 break;
         return 0; //Can't find one observation: prob=0;
         if (j==msize2) //all checks passed
-            ll *= m->parameters->weights
-                     ? m->parameters->weights->data[i]
+            ll *= m->data->weights
+                     ? m->data->weights->data[i]
                      : 1./(vsize ? vsize : msize1); //no weights means any known event is equiprobable
     }
     return ll;

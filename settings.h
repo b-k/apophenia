@@ -81,7 +81,84 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
    void * ysg##_settings_copy(ysg##_settings *); \
    void ysg##_settings_free(ysg##_settings *);
 
+/** A convenience macro for declaring the initialization function for a new settings group.
+ See the documentation outline -> models -> model settings -> writing new settings group for details.
+
+  This sets the defaults for every element in the structure, so you will want a line for every element of your structure.
+
+  \code
+  Apop_settings_init (ysg, 
+        Apop_varad_set(size1, 99);
+        Apop_varad_set(size2, 2.3);
+        Apop_varad_set(dataset, apop_data_alloc(out->size1, out->size2));
+    )
+  \endcode
+  If you need them, the input is a structure named \c in, and the output a pointer-to-struct named \c out.
+*/
+#define Apop_settings_init(name, ...)   \
+    name##_settings *name##_settings_init(name##_settings in) {       \
+        name##_settings *out = malloc(sizeof(name##_settings));     \
+        *out = in; \
+        __VA_ARGS__;            \
+        return out; \
+    }
+
+#define Apop_varad_set(var, value) (out)->var = (in).var ? (in).var : (value);
+
+/** A convenience macro for declaring the copy function for a new settings group.
+ See the documentation outline -> models -> model settings -> writing new settings group for details.
+
+  To just do a direct copy, the default works; let your settings group be named \c ysg:
+  \code
+Apop_settings_copy (ysg, )
+  \endcode
+  generates a function that allocates space for a new settings group and copies all elements from the input group to the output group.
+
+  The space after the comma indicates that there is no new procedural code. If you want to add some, feel free. E.g.,
+  \code
+Apop_settings_copy (ysg, 
+    if (!in->score)
+        out->score = 1;
+    out->data_owner = 0;
+)
+  \endcode
+  The names \c in and \c out are built into the macro.
+*/
+#define Apop_settings_copy(name, ...) \
+    void * name##_settings_copy(name##_settings *in) {\
+        name##_settings *out = malloc(sizeof(name##_settings)); \
+        *out = *in; \
+        __VA_ARGS__;    \
+        return out;     \
+    }
+
+/** A convenience macro for declaring the delete function for a new settings group.
+ See the documentation outline -> models -> model settings -> writing new settings group for details.
+
+
+    If you don't have internal structure elements to free, let your settings group be named \c ysg:
+  \code
+  Apop_settings_free (ysg, )
+  \endcode
+  generates a function that simply frees the input settings group.
+
+  If your structure is pointing to other structures that need to be freed first, then add them after that comma:
+  \code
+Apop_settings_copy (ysg, 
+    apop_data_free(in->dataset);
+)
+  \endcode
+  The name \c in is built into the macro.
+*/
+#define Apop_settings_free(name, ...) \
+    void name##_settings_free(name##_settings *in) {\
+        __VA_ARGS__;    \
+        free(in);  \
+    }
+
 //see deprecated.h for the apop_settings_add_group
+
+
 
         //Part II: the details of extant settings groups.
 
@@ -229,10 +306,6 @@ typedef struct{
     int histosegments; /**< If outputting a \ref apop_histogram, how many segments should it have? */
     char method;
 } apop_update_settings;
-
-apop_update_settings *apop_update_settings_init(apop_update_settings);
-#define apop_update_settings_copy NULL
-#define apop_update_settings_free NULL
 
 //Loess, including the old FORTRAN-to-C.
 struct loess_struct {
@@ -458,6 +531,7 @@ Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_pm)
 Apop_settings_declarations(apop_parts_wanted)
 Apop_settings_declarations(apop_multinomial)
+Apop_settings_declarations(apop_update)
 
 #ifdef	__cplusplus
 }

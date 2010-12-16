@@ -44,9 +44,10 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
 The  \c parameters element is freed.  These are all the things that are completely copied, by \c apop_model_copy, so the parent model is still safe after this is called. \c data is not freed, because the odds are you still need it.
 
-The function runs <tt>free(free_me->more)</tt>, but has no idea what the \c more element
-contains; if it points to other structures (like an \ref apop_data set), you need to
-free them before calling this function.
+If <tt>free_me->more_size</tt> is positive, the function runs
+<tt>free(free_me->more)</tt>. But it has no idea what the \c more element contains;
+if it points to other structures (like an \ref apop_data set), you need to free them
+before calling this function.
 
 If \c free_me is \c NULL, this does nothing.
 
@@ -65,6 +66,8 @@ void apop_model_free (apop_model * free_me){
         }
         free(free_me->settings);
     }
+    if (free_me->more_size)
+        free(free_me->more);
 	free(free_me);
 }
 
@@ -261,31 +264,23 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
 
 #include "settings.h"
 
-apop_pm_settings *apop_pm_settings_init(apop_pm_settings in){
-   apop_pm_settings *out = malloc(sizeof (apop_pm_settings));
-    apop_varad_setting(in, out, base, NULL);
-    apop_varad_setting(in, out, index, 0);
-    apop_varad_setting(in, out, rng, apop_rng_alloc(apop_opts.rng_seed++));
-    if (in.rng)
-        out->own_rng = 0;
-    else
+Apop_settings_init(apop_pm,
+    //defaults include base=NULL, index=0, own_rng=0
+    Apop_varad_set(rng, apop_rng_alloc(apop_opts.rng_seed++));
+    if (!in.rng)
         out->own_rng = 1;
-    apop_varad_setting(in, out, draws, 1e4);
-    return out;
-}
+    Apop_varad_set(draws, 1e4);
+)
 
-void *apop_pm_settings_copy(apop_pm_settings *copyme) {
-    apop_pm_settings *out = malloc(sizeof(apop_pm_settings));
-    *out = *copyme;
+Apop_settings_copy(apop_pm,
     out->rng = apop_rng_alloc(apop_opts.rng_seed++);
     out->own_rng = 1;
-    return out; }
+)
 
-void apop_pm_settings_free(apop_pm_settings *freeme) {
-    if (freeme->own_rng)
-        gsl_rng_free(freeme->rng);
-    free(freeme);
-}
+Apop_settings_free(apop_pm, 
+    if (in->own_rng)
+        gsl_rng_free(in->rng);
+)
 
 /** Get a model describing the distribution of the given parameter estimates.
 
@@ -446,28 +441,22 @@ static int lte(gsl_vector *v, gsl_vector *ref){
     return 1;
 }
 
-apop_cdf_settings *apop_cdf_settings_init(apop_cdf_settings in){
-    apop_cdf_settings *out = malloc(sizeof(apop_cdf_settings));
-    apop_varad_setting(in, out, cdf_model, NULL);
-    apop_varad_setting(in, out, draws, 1e4);
-    apop_varad_setting(in, out, rng, apop_rng_alloc(++apop_opts.rng_seed));
+Apop_settings_init(apop_cdf,
+    Apop_varad_set(cdf_model, NULL);
+    Apop_varad_set(draws, 1e4);
+    Apop_varad_set(rng, apop_rng_alloc(++apop_opts.rng_seed));
     out->rng_owner = !(in.rng);
-    return out;
-}
+)
 
-void apop_cdf_settings_free(apop_cdf_settings *in){
+Apop_settings_free(apop_cdf,
     if (in->rng_owner)
         gsl_rng_free(in->rng);
     apop_model_free(in->cdf_model);
-    free(in);
-}
+)
 
-void *apop_cdf_settings_copy(apop_cdf_settings *in){
-    apop_cdf_settings *out = malloc(sizeof(apop_cdf_settings));
-    *out = *in;
+Apop_settings_copy(apop_cdf,
     out->rng_owner = 0;
-    return out;
-}
+)
 
 /** Input a data point in canonical form and a model; returns the area of the model's PDF beneath the given point.
 

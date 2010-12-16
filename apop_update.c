@@ -7,16 +7,15 @@
 #include "settings.h"
 #include "conversions.h"
 
-/** Allocate an \ref apop_update_settings struct.  */
-apop_update_settings *apop_update_settings_init(apop_update_settings in){
-   apop_update_settings *out = malloc(sizeof(apop_update_settings));
-   Apop_assert_s(out, "malloc failed. Out of memory?");
-   apop_varad_setting(in, out, periods, 6e3);
-   apop_varad_setting(in, out, burnin, 0.05);
-   apop_varad_setting(in, out, method, 'd'); //default
-   apop_varad_setting(in, out, starting_pt, NULL);
-   return out;
-}
+Apop_settings_init(apop_update,
+   Apop_varad_set(periods, 6e3);
+   Apop_varad_set(burnin, 0.05);
+   Apop_varad_set(method, 'd'); //default
+   //all else defaults to zero/NULL
+)
+
+Apop_settings_copy(apop_update, )
+Apop_settings_free(apop_update, )
 
 static void write_double(const double *draw, apop_data *params){
   static apop_data *v = NULL;
@@ -205,10 +204,9 @@ APOP_VAR_END_HEAD
             apop_data_pack(current_param, v);
         }
     }
-    apop_model *outp   = apop_model_copy(apop_pmf);
     out->weights = gsl_vector_alloc(s->periods*(1-s->burnin));
     gsl_vector_set_all(out->weights, 1);
-    outp->parameters = out;
+    apop_model *outp   = apop_estimate(out, apop_pmf);
     free(draw);
     return outp;
 }

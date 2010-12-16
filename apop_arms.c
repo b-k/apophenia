@@ -25,45 +25,40 @@ double perfunc(apop_arms_settings*, double x);
 void display(FILE *f, arms_state *env, apop_arms_settings *);
 int initial (apop_arms_settings* params, arms_state *state);
 
-void *apop_arms_settings_copy(apop_arms_settings *copyme){
-    apop_arms_settings *out = malloc(sizeof(apop_arms_settings));
-    *out = *copyme;
+Apop_settings_copy(apop_arms,
     out->state = malloc(sizeof(arms_state));
-    out->state = copyme->state;
-    return out;
-}
+    out->state = in->state;
+)
 
-void apop_arms_settings_free(apop_arms_settings *freeme) {
-    if (freeme->state){
-        free(freeme->state->p);
-        free(freeme->state);
-        free(freeme);
+Apop_settings_free(apop_arms,
+    if (in->state){
+        free(in->state->p);
+        free(in->state);
 	}
-}
+)
 
-apop_arms_settings *apop_arms_settings_init(apop_arms_settings in){ 
-    apop_arms_settings *out = malloc(sizeof(apop_arms_settings));
+Apop_settings_init(apop_arms,
     if ((in.xl || in.xr) && !in.xinit)
         out->xinit = (double []) {in.xl+GSL_DBL_EPSILON, (in.xl+in.xr)/2., in.xr-GSL_DBL_EPSILON};
     else{
-        apop_varad_setting(in, out, xinit, ((double []) {-1, 0, 1}));
+        Apop_varad_set(xinit, ((double []) {-1, 0, 1}));
     }
-    apop_varad_setting(in, out, ninit, 3);
-    apop_varad_setting(in, out, xl, GSL_MIN(out->xinit[0]/10., out->xinit[0]*10)-.1);
-    apop_varad_setting(in, out, xr, GSL_MAX(out->xinit[out->ninit-1]/10., out->xinit[out->ninit-1]*10)+.1);
-    apop_varad_setting(in, out, convex, 0);
-    apop_varad_setting(in, out, npoint, 100);
-    apop_varad_setting(in, out, do_metro, 'y');
-    apop_varad_setting(in, out, xprev, (out->xinit[0]+out->xinit[out->ninit-1])/2.);
-    apop_varad_setting(in, out, neval, 1000);
-    apop_varad_setting(in, out, model, NULL);
-    apop_assert_s(out->model, "the model input (e.g.: .model = parent_model) is mandatory.");
+    Apop_varad_set(ninit, 3);
+    Apop_varad_set(xl, GSL_MIN(out->xinit[0]/10., out->xinit[0]*10)-.1);
+    Apop_varad_set(xr, GSL_MAX(out->xinit[out->ninit-1]/10., out->xinit[out->ninit-1]*10)+.1);
+    Apop_varad_set(convex, 0);
+    Apop_varad_set(npoint, 100);
+    Apop_varad_set(do_metro, 'y');
+    Apop_varad_set(xprev, (out->xinit[0]+out->xinit[out->ninit-1])/2.);
+    Apop_varad_set(neval, 1000);
+    Apop_varad_set(model, NULL);
+    Apop_assert(out->model, "the model input (e.g.: .model = parent_model) is mandatory.");
 
   // allocate the state 
     out->state = malloc(sizeof(arms_state));
-    apop_assert_s(out->state, "Malloc failed. Out of memory?");
+    Apop_assert(out->state, "Malloc failed. Out of memory?");
   int err = initial(out, out->state);
-  apop_assert_c(!err, NULL, 0, "init failed, error %i. Returning NULL", err);
+  Apop_assert_c(!err, NULL, 0, "init failed, error %i. Returning NULL", err);
 
   /* finish setting up metropolis struct (can only do this after setting up env) */
   if(out->do_metro=='y'){
@@ -73,8 +68,7 @@ apop_arms_settings *apop_arms_settings_init(apop_arms_settings in){
     out->state->metro_xprev = out->xprev;
     out->state->metro_yprev = perfunc(out,out->xprev);
   }
-  return out; 
-}
+)
 
 /** \brief Adaptive rejection metropolis sampling.
 
@@ -116,7 +110,7 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
         assert(!gsl_isnan(pwork.x));
         return;
     } else if (i != 0) 
-      apop_assert_s(0, "envelope error - violation without metropolis")
+      Apop_assert(0, "envelope error - violation without metropolis")
     msamp ++;
     Apop_notify(3, " point rejected.");
   } while (msamp < 1e4);
@@ -130,13 +124,13 @@ int initial (apop_arms_settings* params,  arms_state *env){
   POINT *q;
   int mpoint = 2*params->ninit + 1;
 
-  apop_assert_c(params->ninit>=3, 1001, 0, "too few initial points");
-  apop_assert_c(params->npoint >= mpoint, 1002, 0, "too many initial points");
-  apop_assert_c((params->xinit[0] >= params->xl) && (params->xinit[params->ninit-1] <= params->xr),
+  Apop_assert_c(params->ninit>=3, 1001, 0, "too few initial points");
+  Apop_assert_c(params->npoint >= mpoint, 1002, 0, "too many initial points");
+  Apop_assert_c((params->xinit[0] >= params->xl) && (params->xinit[params->ninit-1] <= params->xr),
                      1003, 0, "initial points do not satisfy bounds");
   for(int i=1; i<params->ninit; i++)
-      apop_assert_c(params->xinit[i] > params->xinit[i-1], 1004, 0, "data not ordered");
-  apop_assert_c(params->convex >= 0.0, 1008, 0, "negative convexity parameter");
+      Apop_assert_c(params->xinit[i] > params->xinit[i-1], 1004, 0, "data not ordered");
+  Apop_assert_c(params->convex >= 0.0, 1008, 0, "negative convexity parameter");
 
   env->convex = &params->convex; // copy convexity address to env
   params->neval = 0; // initialise current number of function evaluations
@@ -144,7 +138,7 @@ int initial (apop_arms_settings* params,  arms_state *env){
   /* set up space for envelope POINTs */
   env->npoint = params->npoint;
   env->p = malloc(params->npoint*sizeof(POINT));
-  apop_assert_s(env->p, "malloc of env->p failed. Out of space?");
+  Apop_assert(env->p, "malloc of env->p failed. Out of space?");
 
   /* set up envelope POINTs */
   q = env->p;
@@ -158,6 +152,8 @@ int initial (apop_arms_settings* params,  arms_state *env){
         /* point on log density */
         q->x = params->xinit[k++];
         q->y = perfunc(params,q->x);
+        Apop_assert(!isnan(q->x), "NaN in the initial params");
+        Apop_assert(!isnan(q->y), "NaN in f(an initial parameter)");
         q->f = 1;
     } else // intersection point
         q->f = 0;
@@ -174,7 +170,7 @@ int initial (apop_arms_settings* params,  arms_state *env){
   /* calculate intersection points */
   q = env->p;
   for (int j=0; j<mpoint; j=j+2, q=q+2)
-    apop_assert_c(!meet(q,env, params), 2000, 0, "envelope violation without metropolis");
+    Apop_assert_c(!meet(q,env, params), 2000, 0, "envelope violation without metropolis");
 
   cumulate(env); // exponentiate and integrate envelope
   env->cpoint = mpoint; // note number of POINTs currently in envelope
@@ -278,7 +274,7 @@ Apop_notify(3, "tested (%g, %g); ", p->x, ynew);
     p->ey = expshift(p->y,env->ymax);
     p->f = 1;
     if(update(env,p, params)) 
-        apop_assert_c(0, -1, 0, "envelope violation without metropolis");
+        Apop_assert_c(0, -1, 0, "envelope violation without metropolis");
     /* perform rejection test: accept iff y < ynew */
     return (y < ynew);
   }
@@ -423,7 +419,7 @@ int meet (POINT *q, arms_state *env, apop_arms_settings *params){
   double gl=0,gr=0,grl=0,dl=0,dr=0;
   int il=0,ir=0,irl=0;
 
-  apop_assert(!(q->f), "error 30: this is not an intersection point.");
+  Apop_assert(!(q->f), "error 30: this is not an intersection point.");
 
   /* calculate coordinates of point of intersection */
   if ((q->pl != NULL) && (q->pl->pl->pl != NULL)){
