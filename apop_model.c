@@ -27,10 +27,17 @@ The above two points mean that you probably don't need to call this function dir
 
 \ingroup models  */
 apop_model * apop_model_clear(apop_data * data, apop_model *model){
-  model->dsize  = (model->dsize == -1 ? data->matrix->size2 : model->dsize);
-  int vsize  = model->vbase  == -1 ? data->matrix->size2 : model->vbase;
-  int msize1 = model->m1base == -1 ? data->matrix->size2 : model->m1base ;
-  int msize2 = model->m2base == -1 ? data->matrix->size2 : model->m2base ;
+    Get_vmsizes(data)
+    int width = msize2 + vsize;
+    Apop_assert(model->dsize!=-1 || width, "The model's dsize==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_assert(model->vbase!=-1 || width, "The model's vbase==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_assert(model->m1base!=-1 || width, "The model's m1base==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_assert(model->m2base!=-1 || width, "The model's m2base==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+
+    model->dsize  = (model->dsize == -1 ? width : model->dsize);
+    vsize  = model->vbase  == -1 ? width : model->vbase;
+    msize1 = model->m1base == -1 ? width : model->m1base ;
+    msize2 = model->m2base == -1 ? width : model->m2base ;
     if (!model->parameters)
         model->parameters = apop_data_alloc(vsize, msize1, msize2);
     if (!model->info)

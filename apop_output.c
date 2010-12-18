@@ -28,7 +28,7 @@
   apop_data_print(your_data, .output_type ='f', .output_append = 'w');
   \endcode
 
-  \param output_file The name of the output file, if any.
+  \param output_file The name of the output file, if any. For a database, the table to write.
   \param output_pipe If you have already opened a file and have a \c FILE* on hand, use
   this instead of giving the file name.
   \param output_type \c 'p' = pipe, \c 'f'= file, \c 'd' = database, \c 's' = stdout

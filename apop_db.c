@@ -22,8 +22,7 @@ apop_opts_type apop_opts	=
 #include "apop_db_mysql.c"
 #endif
 
-//#define ERRCHECK {if (err!=NULL) {printf("%s\n",err);  return 0;}}
-#define ERRCHECK {apop_assert_c(err==NULL, 0, 0, "%s", err);}
+#define ERRCHECK {apop_assert_c(err==NULL, 0, 0, "%s: %s",query, err);}
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
@@ -36,7 +35,7 @@ static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 	va_start(argp, fmt);            \
 	vasprintf(&query, fmt, argp);   \
 	va_end(argp);                   \
-	if (apop_opts.verbose >= 2) {printf("\n%s\n",query);} 
+	Apop_notify(2, "%s", query);
 
 typedef struct {
     int         firstcall;
@@ -140,6 +139,7 @@ APOP_VAR_END_HEAD
 	if (db==NULL) return 0;
 	sqlite3_exec(db, "select name from sqlite_master where type='table'", tab_exists_callback, &te, &err); 
 	sqlite3_exec(db, "select name from sqlite_master where type='view'", tab_exists_callback, &tev, &err); 
+    char query[]="Selecting names from sqlite_master";//for ERRCHECK.
 	ERRCHECK
 	if ((remove==1|| remove=='d') && (te.isthere||tev.isthere)){
         if (te.isthere)
@@ -206,20 +206,20 @@ are filled with <tt>NAN</tt>s in the matrix.
 */
 int apop_query(const char *fmt, ...){
   char 		*err=NULL;
-  Fillin(q, fmt)
+  Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         {apop_assert_c(mysql_db, 1, 0, "No mySQL database is open.");
-        apop_mysql_query(q);}
+        apop_mysql_query(query);}
 #else
         apop_assert_c(0, 1, 0, "Apophenia was compiled without mysql support.")
 #endif
     else 
         {if (!db) apop_db_open(NULL);
-        sqlite3_exec(db, q, NULL,NULL, &err);
+        sqlite3_exec(db, query, NULL,NULL, &err);
 	    ERRCHECK
         }
-	free(q);
+	free(query);
 	return 1;
 }
 
@@ -320,7 +320,9 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 #else
         apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
+    int v = apop_opts.verbose; apop_opts.verbose=0;//hack to prevent double-printing.
     apop_data * outd = apop_query_to_data("%s", query);
+    apop_opts.verbose=v;
     gsl_matrix *outm = NULL;
     if (outd){
         outm = outd->matrix;
@@ -347,7 +349,9 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
   apop_data	*d=NULL;
   gsl_vector  *out;
 	if (db==NULL) apop_db_open(NULL);
+    int v = apop_opts.verbose; apop_opts.verbose=0;//hack to prevent double-printing.
 	d	= apop_query_to_data("%s", query);
+    apop_opts.verbose=v;
     apop_assert_c(d, NULL, 1, "Query turned up a blank table. Returning NULL.");
     //else:
     out = gsl_vector_alloc(d->matrix->size1);
@@ -372,12 +376,14 @@ double apop_query_to_float(const char * fmt, ...){
         apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
     } else {
-        gsl_matrix	*m=NULL;
+        apop_data	*d=NULL;
         if (db==NULL) apop_db_open(NULL);
-        m	= apop_query_to_matrix("%s", query);
-        apop_assert_c(m, GSL_NAN, 1, "Query turned up a blank table. Returning NULL.");
-        out	= gsl_matrix_get(m, 0, 0);
-        gsl_matrix_free(m);
+        int v = apop_opts.verbose; apop_opts.verbose=0;//hack to prevent double-printing.
+        d	= apop_query_to_data("%s", query);
+        apop_opts.verbose=v;
+        apop_assert_c(d, GSL_NAN, 1, "Query [%s] turned up a blank table. Returning NaN.", query);
+        out	= apop_data_get(d, 0, 0);
+        apop_data_free(d);
     }
     free(query);
 	return out;
@@ -438,43 +444,15 @@ void qxprintf(char **q, char *format, ...){
  \ingroup conversions
 */
 void apop_matrix_to_db(const gsl_matrix *data, const char *tabname, const char **headers){
-    apop_assert_c(data, , 1, "you sent me a NULL matrix. Database table %s will not be created.", tabname);
-  int		i,j; 
-  double    v;
-  int		ctr		= 0;
-  int		batch_size	= 100;
-  char		*q 		= malloc(1000);
-	if (db==NULL) apop_db_open(NULL);
-	asprintf(&q, "create table %s (", tabname);
-	for(i=0;i< data->size2; i++){
-		if(!headers) 	qxprintf(&q, "%s\n c%i", q,i);
-		else			qxprintf(&q, "%s\n %s ", q,headers[i]);
-		if (i< data->size2-1) 	qxprintf(&q, "%s,",q);
-		else			qxprintf(&q,"%s);  begin;",q);
-	}
-	for(i=0;i< data->size1; i++){
-		qxprintf(&q,"%s \n insert into %s values(",q,tabname);
-		for(j=0;j< data->size2; j++){
-            v   =gsl_matrix_get(data,i,j);
-            if (gsl_isnan(v))
-			    qxprintf(&q,"%s NULL%s ",
-                    q, 
-                    j < data->size2 -1 ? "," : ");");
-            else
-			    qxprintf(&q,"%s %g%s ",
-                    q, v,
-                    j < data->size2 -1 ? "," : ");");
-        }
-	ctr++;
-	if(ctr==batch_size) {
-			apop_query("%s commit;",q);
-			ctr = 0;
-			qxprintf(&q,"begin; \n insert into %s values(",tabname);
-		}
-	}
-    if (ctr>0) 
-        apop_query("%s commit;",q);
-	free(q);
+    apop_assert_c(data, , 1, "You sent me a NULL matrix. Database table %s will not be created.", tabname);
+    apop_data *d = apop_data_alloc();
+    d->matrix=(gsl_matrix *) data; //cheating on the const qualifier
+    if(headers)
+        for(int i=0; i< data->size2; i++)
+            apop_name_add(d->names, headers[i], 'c');
+    apop_data_to_db(d, tabname);
+    d->matrix=NULL;
+    apop_data_free(d);
 }
 
 static void add_a_number (char **q, char *comma, double v){
@@ -601,12 +579,12 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
            add_a_number (&q, &comma, gsl_vector_get(set->weights,i));
         qxprintf(&q,"%s);",q);
 		ctr++;
-		if(ctr==batch_size || apop_opts.db_engine == 'm') {
-		    if(apop_opts.db_engine == 'm')   apop_query("%s", q);
-            else                                apop_query("%s commit;",q);
+        apop_query("%s", q); 
+        q[0]='\0';
+		if(ctr==batch_size && apop_opts.db_engine != 'm') {
             ctr = 0;
-		    if(apop_opts.db_engine != 'm')   
-                qxprintf(&q,"begin; \n");
+            apop_query("commit;");
+            qxprintf(&q,"begin; \n");
         }
 	}
     if ( !(apop_opts.db_engine == 'm') && ctr>0) 

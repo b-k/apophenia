@@ -3,6 +3,7 @@
 This implements a one-d histogram representing an empirical distribution. It is primarily a wrapper for the GSL's comparable functions in the standard \c apop_model form, for easy comparison with other models.*/
 /* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
+#include "arms.h"
 #include "model.h"
 #include "mapply.h"
 #include "internal.h"
@@ -68,19 +69,17 @@ apop_histogram_settings * apop_histogram_settings_init(apop_histogram_settings i
     return apop_histogram_settings_alloc(in.data, in.bins_in);
 }
 
-void * apop_histogram_settings_copy(apop_histogram_settings *in){
-    apop_histogram_settings *out = malloc(sizeof(apop_histogram_settings));
+Apop_settings_copy(apop_histogram,
     out->pdf = gsl_histogram_clone(in->pdf);
     out->cdf = NULL; //the GSL doesn't provide a copy function, so screw it---just regenerate.
     out->histobase  = in->histobase  ? apop_model_copy(*in->histobase)  : NULL;
-    return out;
-}
+)
 
-void apop_histogram_settings_free(apop_histogram_settings *in){
+Apop_settings_free(apop_histogram,
     gsl_histogram_free(in->pdf);
     gsl_histogram_pdf_free(in->cdf);
     //Assume histogram base is freed elsewhere.
-}
+)
 
 
 apop_model *est(apop_data *d, apop_model *est){
@@ -126,40 +125,31 @@ static void apop_set_first_param(apop_data *in, apop_model *m){
             in->vector->data[0] : gsl_matrix_get(in->matrix, 0, 0);
 }
 
-/** Allocate and fill a kernel density, which is a smoothed histogram. 
-
-  See \ref apop_kernel_density for details.
-*/
-apop_kernel_density_settings *apop_kernel_density_settings_init(apop_kernel_density_settings in){
+Apop_settings_init(apop_kernel_density, 
     //If there's a PMF associated with the model, run with it.
     //else, generate one from the data.
-    apop_kernel_density_settings *out = malloc(sizeof(apop_kernel_density_settings));
-    apop_varad_setting(in, out, base_pmf, apop_estimate(in.base_data, apop_pmf));
-    apop_varad_setting(in, out, kernel, apop_model_set_parameters(apop_normal, 0, 1));
-    apop_varad_setting(in, out, set_fn, apop_set_first_param);
+    Apop_varad_set(base_pmf, apop_estimate(in.base_data, apop_pmf));
+    Apop_varad_set(kernel, apop_model_set_parameters(apop_normal, 0, 1));
+    Apop_varad_set(set_fn, apop_set_first_param);
     out->own_pmf = !in.base_pmf;
     out->own_kernel = 1;
     if (!out->kernel->parameters)
         apop_prep(out->base_data, out->kernel);
-    return out;
-}
+)
 
-void * apop_kernel_density_settings_copy(apop_kernel_density_settings *in){
-    apop_kernel_density_settings *out = malloc(sizeof(apop_kernel_density_settings));
-    *out  = *in;
+Apop_settings_copy(apop_kernel_density,
     out->own_pmf    =
     out->own_kernel = 0;
-    return out;
-}
+)
 
-void apop_kernel_density_settings_free(apop_kernel_density_settings *in){
+Apop_settings_free(apop_kernel_density,
     if (in->own_pmf)
         apop_model_free(in->base_pmf);
     if (in->own_kernel)
         apop_model_free(in->kernel);
-}
+)
 
-apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
+static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
     //Just run the init fn.
     if (!apop_settings_get_group(m, apop_kernel_density))
         apop_model_add_group(m, apop_kernel_density, .base_data=d);
@@ -185,13 +175,38 @@ static double kernel_p_cdf_base(apop_data *d, apop_model *m,
     return total;
 }
 
-double kernel_p(apop_data *d, apop_model *m){
+static double kernel_p(apop_data *d, apop_model *m){
     return kernel_p_cdf_base(d, m, apop_p);
 }
 
-double kernel_cdf(apop_data *d, apop_model *m){
+static double kernel_cdf(apop_data *d, apop_model *m){
     return kernel_p_cdf_base(d, m, apop_cdf);
 }
 
+static void kernel_draw(double *d, gsl_rng *r, apop_model *m){
+    //randomly select a point, using the weights.
+    apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
+    apop_model *pmf = apop_settings_get(m, apop_kernel_density, base_pmf);
+    apop_data *point = apop_data_alloc(1, pmf->dsize);
+    Apop_row(point, 0, draw_here);
+    apop_draw(draw_here->data, r, pmf);
+    (ks->set_fn)(point, ks->kernel);
+    //Now draw from the distribution around that point.
+    apop_draw(d, r, ks->kernel);
+    apop_data_free(point);
+    
+/*
+    if (!Apop_settings_get_group(m, apop_arms)){
+        double min = GSL_MIN(m->data->vector ? gsl_vector_min(m->data->vector) : INFINITY,
+                            m->data->matrix ? gsl_matrix_min(m->data->matrix) : INFINITY);
+        double max = GSL_MAX(m->data->vector ? gsl_vector_max(m->data->vector) : -INFINITY,
+                            m->data->matrix ? gsl_matrix_max(m->data->matrix) : -INFINITY);
+        Apop_model_add_group(m, apop_arms, .model=m, .xl=min, .xr=max);
+    }
+    apop_arms_draw(d, r, m);
+    */
+}
+
+
 apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
-	.estimate = apop_kernel_estimate, .p = kernel_p, .cdf=kernel_cdf};
+	.estimate = apop_kernel_estimate, .p = kernel_p, .cdf=kernel_cdf, .draw=kernel_draw};

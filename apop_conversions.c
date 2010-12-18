@@ -41,7 +41,7 @@ The functions to shunt data between text files, database tables, GSL matrices, a
 */
 double * apop_vector_to_array(const gsl_vector *in){
 //Does not use memcpy, because we don't know the stride of the vector.
-  apop_assert_c(in, NULL, 1, "You sent me a NULL vector; returning NULL");
+  Apop_assert_c(in, NULL, 1, "You sent me a NULL vector; returning NULL");
   double	*out	= malloc(sizeof(double) * in->size);
 	for (size_t i=0; i < in->size; i++)
 		out[i]	= gsl_vector_get(in, i);
@@ -62,7 +62,7 @@ This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
     double * apop_varad_var(in, NULL);
-    apop_assert_c(in, NULL, 1, "You sent me NULL data; returning NULL.");
+    Apop_assert_c(in, NULL, 1, "You sent me NULL data; returning NULL.");
     int apop_varad_var(size, sizeof(in)/sizeof(in[0]));
 APOP_VAR_END_HEAD
     gsl_vector      *out = gsl_vector_alloc(size);
@@ -84,7 +84,7 @@ This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){
     const gsl_vector * apop_varad_var(in, NULL);
-    apop_assert_c(in,  NULL, 1, "Converting NULL vector to NULL matrix.");
+    Apop_assert_c(in,  NULL, 1, "Converting NULL vector to NULL matrix.");
     char apop_varad_var(row_col, 'c');
 APOP_VAR_ENDHEAD
     gsl_matrix *out = 
@@ -184,7 +184,7 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
       return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
     if ((rows==0 || cols==0) && vsize>0)
       return apop_vector_to_data(apop_array_to_vector(in, vsize));
-    apop_assert_c(vsize==rows,  NULL, 0,"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
+    Apop_assert_c(vsize==rows,  NULL, 0,"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
   int ctr = 0;
   apop_data *out  = apop_data_alloc(vsize, rows, cols);
     for (size_t i=0; i< rows; i++)
@@ -215,6 +215,7 @@ r2.
 \param r2 The column of the data set that will indicate the columns of the output crosstab
 \param datacol The column of the data set holding the data for the cells of the crosstab
 
+\item If the query to get data to fill the table (select r1, r2, datacol from tabname) returns an empty data set, then I will return a \c NULL data set and if <tt>apop_opts.verbosity >= 1</tt> print a warning.
 \ingroup db
 */
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
@@ -226,17 +227,17 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
     datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
-    Apop_assert(datachars, "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
+    Apop_assert_c(datachars, NULL, 1, "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
     pre_d1	    = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
-    apop_assert_s(pre_d1, "selecting %s from %s returned an empty table.", r1, tabname);
+    Apop_assert(pre_d1, "selecting %s from %s returned an empty table.", r1, tabname);
     for (i=0; i < pre_d1->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d1->text[i][0], 'r');
 
 	pre_d2	= apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
-	apop_assert_s(pre_d2, "selecting %s from %s returned an empty table.", r2, tabname);
+	Apop_assert(pre_d2, "selecting %s from %s returned an empty table.", r2, tabname);
     for (i=0; i < pre_d2->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
@@ -365,7 +366,7 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
 gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
   gsl_vector *out = gsl_vector_alloc(in->size);
-    apop_assert_s(out, "failed to allocate a gsl_vector of size %zu. Out of memory?", in->size);
+    Apop_assert(out, "failed to allocate a gsl_vector of size %zu. Out of memory?", in->size);
     gsl_vector_memcpy(out, in);
     return out;
 }
@@ -384,7 +385,7 @@ gsl_vector *apop_vector_copy(const gsl_vector *in){
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
     if (!in) return NULL;
   gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
-    apop_assert_s(out, "failed to allocate a gsl_matrix of size %zu x %zu. Out of memory?", in->size1, in->size2);
+    Apop_assert(out, "failed to allocate a gsl_matrix of size %zu x %zu. Out of memory?", in->size1, in->size2);
     gsl_matrix_memcpy(out, in);
     return out;
 }
@@ -405,7 +406,8 @@ Without backslashes and spaced out in Perl's /x style, it would look like this:
 [[:space:]]*    has all the spaces you can eat,
 [%s\n]          and ends with a delimiter or the end of line.
 */
-static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")+\"|[^\"%s]+)[[:space:]]*[%s\n]";
+static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")+\"|[^\"%s]*)[[:space:]]*[%s\n]";
+//static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")+\"|[^\"%s]+)[[:space:]]*[%s\n]";
 
 //in: the line being read, the allocated outstring, the result from the regexp search, the offset
 //out: the outstring is filled with a bit of match, last_match is updated.
@@ -513,7 +515,7 @@ static int prep_text_reading(char *text_file, FILE **infile, regex_t *regex, reg
         *infile  = stdin;
     else
 	    *infile	= fopen(text_file, "r");
-    apop_assert_c(*infile, 0,  0, "Trouble opening %s. Returning NULL.\n", text_file);
+    Apop_assert_c(*infile, 0,  0, "Trouble opening %s. Returning NULL.\n", text_file);
 
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, REG_EXTENDED);
@@ -781,7 +783,7 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, 
     char apop_varad_var(use_info_pages, 'n');
     if (out) {
         int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
-        apop_assert_s(out->size == total_size, "The input data set has %i elements,"
+        Apop_assert(out->size == total_size, "The input data set has %i elements,"
                " but the output vector you want to fill has size %zu. Please make these sizes equal."
                , total_size, out->size);
     }
@@ -941,19 +943,19 @@ gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
   */
 void apop_data_set_row(apop_data * d, apop_data *row, int row_number){
     if (row->vector){
-        Apop_assert_s(d->vector, "You asked me to copy an apop_data_row with a vector element to "
+        Apop_assert(d->vector, "You asked me to copy an apop_data_row with a vector element to "
                 "an apop_data set with no vector.");
         gsl_vector_set(d->vector, row_number, row->vector->data[0]);
     }
     if (row->matrix && row->matrix->size2 > 0){
-        Apop_assert_s(d->matrix, "You asked me to copy an apop_data_row with a matrix row to "
+        Apop_assert(d->matrix, "You asked me to copy an apop_data_row with a matrix row to "
                 "an apop_data set with no matrix.");
         Apop_row(d, row_number, a_row); 
         Apop_row(row, 0, row_to_copy); 
         gsl_vector_memcpy(a_row, row_to_copy);
     }
     if (row->textsize[1]){
-        Apop_assert_s(d->matrix, "You asked me to copy an apop_data_row with text to "
+        Apop_assert(d->matrix, "You asked me to copy an apop_data_row with text to "
                 "an apop_data set with no text element.");
         for (int i=0; i < row->textsize[1]; i++){
             free(d->text[row_number][i]);
@@ -961,7 +963,7 @@ void apop_data_set_row(apop_data * d, apop_data *row, int row_number){
         }
     }
     if (row->weights){
-        Apop_assert_s(d->vector, "You asked me to copy an apop_data_row with a weight to "
+        Apop_assert(d->vector, "You asked me to copy an apop_data_row with a weight to "
                 "an apop_data set with no weights vector.");
         gsl_vector_set(d->weights, row_number, row->weights->data[0]);
     }
@@ -1057,10 +1059,8 @@ static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
 /*        char *sqlout = sqlite3_mprintf("%Q", stripped);//extra checks for odd chars.
         out = strdup(sqlout);
         sqlite3_free(sqlout);*/
-        //out = strdup(astring);
-        if (!out 
-                || (out[0]=='\'' && out[strlen(out)-1]=='\'')
-                || (out[0]!='"' && out[strlen(out)-1]!='"'))
+        if ((stripped[0]=='\'' && stripped[strlen(stripped)-1]=='\'')
+             || (stripped[0]=='"' && stripped[strlen(stripped)-1]=='"'))
             asprintf(&out,"%s", stripped);
         else
             asprintf(&out,"'%s'", stripped);
@@ -1120,6 +1120,11 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
     }
     free (q);
 }
+#if SQLITE_VERSION_NUMBER < 3003009
+    //If you have an old version of sqlite (before v3.3.9, Jan 2007),
+    //then this dummy declaration will placate the compiler.
+    void sqlite3_prepare_v2(void*, void*, int, void*, void*);
+#endif
 
 /** Read a text file into a database table.
 
@@ -1166,13 +1171,15 @@ APOP_VAR_END_HEAD
         return 0;
 	use_names_in_file   = 0;    //file-global.
 
-	apop_assert_c(!apop_table_exists(tabname,0), 0, 0, "table %s exists; not recreating it.", tabname);
+	Apop_assert_c(!apop_table_exists(tabname,0), 0, 0, "table %s exists; not recreating it.", tabname);
     col_ct  = get_field_names(has_col_names, field_names, infile, text_file, &regex, &add_this_line, field_ends);
     if (apop_opts.db_engine=='m')
         tab_create_mysql(tabname, col_ct, has_row_names, field_params, table_params);
     else
         tab_create_sqlite(tabname, col_ct, has_row_names, field_params, table_params);
-    int use_sqlite_prepared_statements = !(apop_opts.db_engine == 'm' || col_ct > 999); //There's an arbitrary SQLite limit on blanks in prepared statements.
+    int use_sqlite_prepared_statements = (SQLITE_VERSION_NUMBER >=3003009
+                    && !apop_opts.db_engine == 'm' 
+                    &&  col_ct <= 999); //Arbitrary SQLite limit on blanks in prepared statements.
     if (use_sqlite_prepared_statements){
         asprintf(&q, "INSERT INTO %s VALUES (?", tabname);
         for (int i = 1; i < col_ct; i++)

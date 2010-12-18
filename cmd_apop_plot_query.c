@@ -54,7 +54,7 @@ gsl_matrix *query(char *d, char *q, int no_plot){
 	apop_db_open(d);
 apop_data *result 	= apop_query_to_data("%s", q);
 	apop_db_close(0);
-    apop_assert_s(result, "Your query returned a blank table. Quitting.");
+    Apop_assert(result, "Your query returned a blank table. Quitting.");
     if (no_plot){
         apop_data_show(result);
         exit(0);

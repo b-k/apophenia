@@ -355,7 +355,7 @@ typedef struct{
     int len;
 } wishartstruct_t;
 
-double one_wishart_row(gsl_vector *in, void *ws_in){
+static double one_wishart_row(gsl_vector *in, void *ws_in){
     wishartstruct_t *ws = ws_in;
     gsl_matrix *inv;
     gsl_matrix *inv_dot_params = gsl_matrix_alloc(ws->len, ws->len);

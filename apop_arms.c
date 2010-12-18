@@ -27,7 +27,7 @@ int initial (apop_arms_settings* params, arms_state *state);
 
 Apop_settings_copy(apop_arms,
     out->state = malloc(sizeof(arms_state));
-    out->state = in->state;
+    *out->state = *in->state;
 )
 
 Apop_settings_free(apop_arms,
@@ -51,12 +51,12 @@ Apop_settings_init(apop_arms,
     Apop_varad_set(do_metro, 'y');
     Apop_varad_set(xprev, (out->xinit[0]+out->xinit[out->ninit-1])/2.);
     Apop_varad_set(neval, 1000);
-    Apop_varad_set(model, NULL);
     Apop_assert(out->model, "the model input (e.g.: .model = parent_model) is mandatory.");
 
   // allocate the state 
     out->state = malloc(sizeof(arms_state));
     Apop_assert(out->state, "Malloc failed. Out of memory?");
+    *out->state = (arms_state) { };
   int err = initial(out, out->state);
   Apop_assert_c(!err, NULL, 0, "init failed, error %i. Returning NULL", err);
 
@@ -67,6 +67,8 @@ Apop_settings_init(apop_arms,
         apop_assert(0, 1007, 0, 's', "previous Markov chain iterate out of range")*/
     out->state->metro_xprev = out->xprev;
     out->state->metro_yprev = perfunc(out,out->xprev);
+    assert(isfinite(out->state->metro_xprev));
+    assert(isfinite(out->state->metro_yprev));
   }
 )
 
@@ -100,6 +102,8 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
     // Sample a new point from piecewise exponential envelope 
     double prob = gsl_rng_uniform(r);
     /* get x-value correponding to a cumulative probability prob */
+    assert(isfinite(state->p->x));
+    assert(isfinite(state->p->y));
     invert(prob,state,&pwork);
 
     /* perform rejection (and perhaps metropolis) tests */
@@ -107,15 +111,14 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
     if (i == 1){ // point accepted 
         Apop_notify(3, " point accepted.");
         *out = pwork.x;
-        assert(!gsl_isnan(pwork.x));
+        assert(isfinite(pwork.x));
         return;
-    } else if (i != 0) 
-      Apop_assert(0, "envelope error - violation without metropolis")
+    } else 
+      Apop_assert(i==0, "envelope error - violation without metropolis")
     msamp ++;
     Apop_notify(3, " point rejected.");
   } while (msamp < 1e4);
   Apop_notify(1, "I just rejected 1,000 samples. Something is wrong.");
-  return;
 }
 
 int initial (apop_arms_settings* params,  arms_state *env){
@@ -152,8 +155,8 @@ int initial (apop_arms_settings* params,  arms_state *env){
         /* point on log density */
         q->x = params->xinit[k++];
         q->y = perfunc(params,q->x);
-        Apop_assert(!isnan(q->x), "NaN in the initial params");
-        Apop_assert(!isnan(q->y), "NaN in f(an initial parameter)");
+        Apop_assert(isfinite(q->x), "the initial param is %g", q->x);
+        Apop_assert(isfinite(q->y), "f(an initial parameter)= %g", q->y);
         q->f = 1;
     } else // intersection point
         q->f = 0;
@@ -167,6 +170,8 @@ int initial (apop_arms_settings* params,  arms_state *env){
   q->pl = q-1;
   q->pr = NULL;
 
+  assert(isfinite(q->x));
+  assert(isfinite(q->y));
   /* calculate intersection points */
   q = env->p;
   for (int j=0; j<mpoint; j=j+2, q=q+2)
@@ -217,12 +222,10 @@ void invert(double prob, arms_state *env, POINT *p){
     eyr = q->ey;
     if(fabs(yr - yl) < YEPS){
       /* linear approximation was used in integration in function cumulate */
-      if(fabs(eyr - eyl) > EYEPS*fabs(eyr + eyl)){
-	p->x = xl + ((xr - xl)/(eyr - eyl))
-	       * (-eyl + sqrt((1. - prop)*eyl*eyl + prop*eyr*eyr));
-      } else {
-	p->x = xl + (xr - xl)*prop;
-      }
+      if(fabs(eyr - eyl) > EYEPS*fabs(eyr + eyl))
+        p->x = xl + ((xr - xl)/(eyr - eyl)) * (-eyl + sqrt((1. - prop)*eyl*eyl + prop*eyr*eyr));
+      else 
+        p->x = xl + (xr - xl)*prop;
       p->ey = ((p->x - xl)/(xr - xl)) * (eyr - eyl) + eyl;
       p->y = logshift(p->ey, env->ymax);
     } else {
@@ -233,6 +236,10 @@ void invert(double prob, arms_state *env, POINT *p){
       p->ey = expshift(p->y, env->ymax);
     }
   }
+  assert(isfinite(p->x));
+  assert(isfinite(p->y));
+  assert(isfinite(q->x));
+  assert(isfinite(q->y));
 
   /* guard against imprecision yielding point outside interval */
   if ((p->x < xl) || (p->x > xr)) exit(1);
@@ -263,7 +270,7 @@ assert(p->pl && p->pr);
 
   /* evaluate log density at point to be tested */
   ynew = perfunc(params,p->x);
-assert(!gsl_isnan(p->x));
+assert(isfinite(p->x));
 assert(p->pl && p->pr);
 Apop_notify(3, "tested (%g, %g); ", p->x, ynew);
   
@@ -304,9 +311,9 @@ Apop_notify(3, "tested (%g, %g); ", p->x, ynew);
       Apop_notify(3, "metro step (%g) rejected with w=%g, "
                 "ynew=%g, yold=%g, znew = %g, zold=%g; ", p->x, w, ynew, yold, znew, zold);
       p->ey = expshift(p->y,env->ymax);
-assert(!gsl_isnan(p->x));
-assert(!gsl_isnan(p->y));
-assert(!gsl_isnan(p->ey));
+assert(isfinite(p->x));
+assert(isfinite(p->y));
+assert(isfinite(p->ey));
       p->f = 1;
       p->pl = ql;
       p->pr = qr;
@@ -525,6 +532,7 @@ double perfunc(apop_arms_settings *params, double x){
     Staticdef( apop_data *, d , apop_data_alloc(1));
     d->vector->data[0] = x;
   double y = apop_log_likelihood(d, params->model);
+  Apop_assert(isfinite(y), "Evaluating the log likelihood of %g returned %g.", x, y);
   (params->neval)++; // increment count of function evaluations
   return y;
 }
