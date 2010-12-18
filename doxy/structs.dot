@@ -11,11 +11,8 @@ digraph {
    <tr><td>
         <table border="1" cellborder="0">
         <tr><td colspan ="2" align="center"> [Info] </td></tr>
+        <tr> <td colspan ="2"><font color="blue"> char</font> name[101]</td> </tr>
         <tr><td colspan ="2"><font color="blue"> int</font> vbase, mbase1, mbase2, dsize </td></tr>
-        <tr>
-                <td><font color="blue"> char</font> name[101]</td>
-        <td><font color="blue"> int</font> status</td>
-        </tr>
         <tr><td port="dd"><font color="blue"> apop_data</font> * data </td>
         <td port="params">*info, *parameters</td>
         </tr>

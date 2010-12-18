@@ -438,43 +438,15 @@ void qxprintf(char **q, char *format, ...){
  \ingroup conversions
 */
 void apop_matrix_to_db(const gsl_matrix *data, const char *tabname, const char **headers){
-    apop_assert_c(data, , 1, "you sent me a NULL matrix. Database table %s will not be created.", tabname);
-  int		i,j; 
-  double    v;
-  int		ctr		= 0;
-  int		batch_size	= 100;
-  char		*q 		= malloc(1000);
-	if (db==NULL) apop_db_open(NULL);
-	asprintf(&q, "create table %s (", tabname);
-	for(i=0;i< data->size2; i++){
-		if(!headers) 	qxprintf(&q, "%s\n c%i", q,i);
-		else			qxprintf(&q, "%s\n %s ", q,headers[i]);
-		if (i< data->size2-1) 	qxprintf(&q, "%s,",q);
-		else			qxprintf(&q,"%s);  begin;",q);
-	}
-	for(i=0;i< data->size1; i++){
-		qxprintf(&q,"%s \n insert into %s values(",q,tabname);
-		for(j=0;j< data->size2; j++){
-            v   =gsl_matrix_get(data,i,j);
-            if (gsl_isnan(v))
-			    qxprintf(&q,"%s NULL%s ",
-                    q, 
-                    j < data->size2 -1 ? "," : ");");
-            else
-			    qxprintf(&q,"%s %g%s ",
-                    q, v,
-                    j < data->size2 -1 ? "," : ");");
-        }
-	ctr++;
-	if(ctr==batch_size) {
-			apop_query("%s commit;",q);
-			ctr = 0;
-			qxprintf(&q,"begin; \n insert into %s values(",tabname);
-		}
-	}
-    if (ctr>0) 
-        apop_query("%s commit;",q);
-	free(q);
+    apop_assert_c(data, , 1, "You sent me a NULL matrix. Database table %s will not be created.", tabname);
+    apop_data *d = apop_data_alloc();
+    d->matrix=(gsl_matrix *) data; //cheating on the const qualifier
+    if(headers)
+        for(int i=0; i< data->size2; i++)
+            apop_name_add(d->names, headers[i], 'c');
+    apop_data_to_db(d, tabname);
+    d->matrix=NULL;
+    apop_data_free(d);
 }
 
 static void add_a_number (char **q, char *comma, double v){

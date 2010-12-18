@@ -12,5 +12,6 @@ int main(void){
     double area_under_p = apop_cdf(param, first_param_distribution);
     apop_data_set(param, 0, -1, 0);
     double area_under_zero = apop_cdf(param, first_param_distribution);
-    printf("reject the null for x_1 with %g percent confidence.\n", 2*fabs(area_under_p-area_under_zero));
+    printf("reject the null for x_1 with %g percent confidence.\n",
+                                 2*fabs(area_under_p-area_under_zero));
 }

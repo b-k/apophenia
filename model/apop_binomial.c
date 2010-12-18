@@ -9,21 +9,6 @@
 #include "internal.h"
 #include "likelihoods.h"
 
-void * apop_multinomial_settings_copy(apop_multinomial_settings *in){
-  apop_multinomial_settings *out  = malloc(sizeof(*out));
-    *out =  *in;
-    return out;
-}
-
-void apop_multinomial_settings_free(apop_multinomial_settings *in){ free(in); }
-
-apop_multinomial_settings * apop_multinomial_settings_init(apop_multinomial_settings in){
-  apop_multinomial_settings *out  = malloc(sizeof(*out));
-    *out = in;
-    if (!out->compress) out->compress = 'y';
-    return out;
-}
-
 static double is_over_zero(double in){return in > 0;}
 
 static void get_hits_and_misses(apop_data *data, double *hitcount, double *misscount){
