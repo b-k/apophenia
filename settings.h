@@ -494,15 +494,15 @@ typedef struct {
 /** \defgroup settings Settings*/
 
 //Doxygen is doing funny things right now; having these down here seems to help.
-Apop_settings_declarations(apop_histogram)
-Apop_settings_declarations(apop_kernel_density)
-Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_lm)
+Apop_settings_declarations(apop_pm)
 Apop_settings_declarations(apop_mle)
 Apop_settings_declarations(apop_cdf)
-Apop_settings_declarations(apop_pm)
-Apop_settings_declarations(apop_parts_wanted)
+Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_update)
+Apop_settings_declarations(apop_histogram)
+Apop_settings_declarations(apop_parts_wanted)
+Apop_settings_declarations(apop_kernel_density)
 
 #ifdef	__cplusplus
 }

@@ -348,14 +348,16 @@ APOP_VAR_ENDHEAD
  
 \param in  The \ref apop_data structure to split 
 \param splitpoint The index of what will be the first row/column of the second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second data set; if this is the length of the matrix then the whole data set will be in the first data set. Another way to put it is that \c splitpoint will equal the number of rows/columns in the first matrix (unless it is -1, in which case the first matrix will have zero rows, or it is greater than the matrix's size, in which case it will have as many rows as the original).  
-\param r_or_c If this is 'r' or 'R', then cleave the rows; of 'c' or 'C' cleave the columns.
+\param r_or_c If this is 'r' or 'R', then put some rows in the first data set and some in the second; of 'c' or 'C', split columns into first and second data sets.
 
  \return An array of two \ref apop_data sets. If one is empty then a
  \c NULL pointer will be returned in that position. For example, for a data set of 50 rows, <tt>apop_data **out = apop_data_split(data, 100, 'r')</tt> sets <tt>out[0] = apop_data_copy(data)</tt> and <tt>out[1] = NULL</tt>.
 
+ \li When splitting at a row, the text is also split.
  \li \c more pointer is ignored.
  \li The <tt>apop_data->vector</tt> is taken to be the -1st element of the matrix.  
  \li Weights will be preserved. If splitting by rows, then the top and bottom parts of the weights vector will be assigned to the top and bottom parts of the main data set. If splitting by columns, identical copies of the weights vector will be assigned to both parts.
+ \li Data is copied, so you may want to call <tt>apop_data_free(in)</tt> after this.
  */
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
     //A long, dull series of contingencies. Bonus: a reasonable use of goto.
@@ -499,6 +501,20 @@ allocation:
     else {
         if (namec0 && out[0]) apop_name_stack(out[0]->names, in->names, 'c');
         if (namec1 && out[1]) apop_name_stack(out[1]->names, in->names, 'c');
+    }
+    //finally, the text [split by rows only]
+    if (r_or_c=='r' && in->textsize[0] && in->textsize[1]){
+        apop_name_stack(out[1]->names, in->names, 't');
+        apop_text_alloc(out[0], splitpoint, in->textsize[1]);
+        if (in->textsize[0] > splitpoint){
+            apop_name_stack(out[0]->names, in->names, 't');
+            apop_text_alloc(out[1], in->textsize[0]-splitpoint, in->textsize[1]);
+        }
+        for (int i=0; i< in->textsize[0]; i++)
+            for (int j=0; j< in->textsize[1]; j++){
+                int whichtext = (i >= splitpoint);
+                asprintf(&(out[whichtext]->text[i][j]), "%s", in->text[i][j]);
+            }
     }
     return out;
 }
@@ -955,7 +971,7 @@ void apop_text_add(apop_data *in, const size_t row, const size_t col, const char
   */
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
     if (!in)
-        in  = apop_data_alloc(0,0,0);
+        in  = apop_data_alloc();
     if (!in->text){
         if (row)
             in->text = malloc(sizeof(char**) * row);

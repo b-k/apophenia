@@ -215,6 +215,7 @@ r2.
 \param r2 The column of the data set that will indicate the columns of the output crosstab
 \param datacol The column of the data set holding the data for the cells of the crosstab
 
+\item If the query to get data to fill the table (select r1, r2, datacol from tabname) returns an empty data set, then I will return a \c NULL data set and if <tt>apop_opts.verbosity >= 1</tt> print a warning.
 \ingroup db
 */
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
@@ -226,7 +227,7 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
     datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
-    Apop_assert(datachars, "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
+    Apop_assert_c(datachars, NULL, 1, "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
@@ -405,7 +406,8 @@ Without backslashes and spaced out in Perl's /x style, it would look like this:
 [[:space:]]*    has all the spaces you can eat,
 [%s\n]          and ends with a delimiter or the end of line.
 */
-static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")+\"|[^\"%s]+)[[:space:]]*[%s\n]";
+static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")+\"|[^\"%s]*)[[:space:]]*[%s\n]";
+//static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")+\"|[^\"%s]+)[[:space:]]*[%s\n]";
 
 //in: the line being read, the allocated outstring, the result from the regexp search, the offset
 //out: the outstring is filled with a bit of match, last_match is updated.

@@ -290,7 +290,7 @@ The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such a
 
 -1: silent <br>
 0: notify only of failures and clear danger <br>
-1: warn of odd situations that might indicate, e.g., numeric instability <br>
+1: warn of technically correct but odd situations that might indicate, e.g., numeric instability <br>
 2: debugging-type information; print queries  <br>
 3: give me everything
 
@@ -1183,7 +1183,25 @@ apop_model *est2 = apop_estimate(data, *est);
 
 \li  The \ref settings page lists the settings structures included in Apophenia and their use.
 
-\li Notice the use of a single capital to remind you that you are using a macro, so you should beware of the sort of surprising errors associated with macros.
+\li Because the settings groups are buried within the model, debugging them can be a
+pain. Here is a documented macro for \c gdb that will help you pull a settings group out of a 
+model for your inspection; it shouldn't be too difficult to modify this macro for other debuggers.
+
+\code
+define get_group
+    set $group = ($arg1_settings *) apop_settings_get_grp( $arg0, "$arg1", 0 )
+    p *$group
+end
+document get_group 
+Gets a settings group from a model.
+Give the model name and the name of the group, like
+get_group my_model apop_mle 
+and I will set a gdb variable named $group that points to that model, which you can use
+like any other pointer. For example, print the contents with
+p *$group
+The contents of $group are printed to the screen as visible output to this macro.
+end 
+\endcode
 
 For just using a model, that's all of what you need to know.
 
