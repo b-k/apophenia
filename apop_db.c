@@ -77,7 +77,7 @@ don't need to bother).
 
 \ingroup db
 */
-int apop_db_open(char *filename){
+int apop_db_open(char const *filename){
     if (!db) //check the environment.
 #ifdef HAVE_LIBMYSQLCLIENT
        if(!mysql_db)  
@@ -95,7 +95,7 @@ int apop_db_open(char *filename){
 }
 
 typedef struct {
-    char *name;
+    char const *name;
     int isthere;
 } tab_exists_t;
 
@@ -122,8 +122,8 @@ Recreating a table which already exists can cause errors, so it is good practice
 This function uses the \ref designated syntax for inputs.
 \ingroup db
 */
-APOP_VAR_HEAD int apop_table_exists(char *name, char remove){
-    char *apop_varad_var(name, NULL)
+APOP_VAR_HEAD int apop_table_exists(char const *name, char remove){
+    char const *apop_varad_var(name, NULL)
     apop_assert_s(name, "You gave me a NULL table name.");
     char apop_varad_var(remove, 'n')
 APOP_VAR_END_HEAD
@@ -260,12 +260,13 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
                 ncfound = 1;
                 break;
             }
-	    qi->outdata		= apop_data_alloc(0, 1, argc-ncfound);
+	    qi->outdata		= argc-ncfound ? apop_data_alloc(1, argc-ncfound) : apop_data_alloc( );
         for(i=0; i<argc; i++)
             if (namecol != i)
                 apop_name_add(qi->outdata->names, column[i], 'c');
     } else 
-        apop_matrix_realloc(qi->outdata->matrix, qi->currentrow+1, qi->outdata->matrix->size2);
+        if (qi->outdata->matrix)
+            apop_matrix_realloc(qi->outdata->matrix, qi->currentrow+1, qi->outdata->matrix->size2);
 	if (argv !=NULL){
         ncfound =0;
 		for (int jj=0;jj<argc;jj++)

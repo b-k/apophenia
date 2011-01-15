@@ -82,7 +82,7 @@ inputs.
 
 For example: \include test_strcmp.c
 */
-int apop_strcmp(char *one, char *two){
+int apop_strcmp(char const *one, char const *two){
     if (!one && !two)
         return 1;
     if ((!one && two) || (one && !two))
@@ -287,7 +287,7 @@ If you give a non-\c NULL address in which to place a table of paren-delimited s
 
 \param string        The string to search (no default; if \c NULL, I return 0---no match)
 \param regex       The regular expression (no default)
-\param substrings   Parens in the regex indicate that I should return matching substrings. Give me the _address_ of an \ref apop_data* set, and I will allocate and fill the text portion with matches. Default= \c NULL, meaning do not return substrings (even if parens exist in the regex).
+\param substrings   Parens in the regex indicate that I should return matching substrings. Give me the _address_ of an \ref apop_data* set, and I will allocate and fill the text portion with matches. Default= \c NULL, meaning do not return substrings (even if parens exist in the regex). If no match, return an empty \ref apop_data set, so <tt>output->textsize[0]==0</tt>.
 \param use_case         Should I be case sensitive, \c 'y' or \c 'n'? (default = \c 'n', which is not the POSIX default.)
 
 \return         1 == match; 0 == no match. \c substrings may be allocated and filled if needed.
@@ -316,10 +316,11 @@ APOP_VAR_ENDHEAD
     apop_assert(compiled_ok, "This regular expression didn't compile: \"%s\"", regex)
 
     int matchrow = 0;
+    if (substrings) *substrings = apop_data_alloc();
     do {
         found = !regexec(&re, string, matchcount+1, result, matchrow ? REG_NOTBOL : 0);
         if (substrings && found){
-            *substrings = apop_text_alloc(matchrow ? *substrings : NULL, matchrow+1, matchcount);
+            *substrings = apop_text_alloc(*substrings, matchrow+1, matchcount);
             //match zero is the whole string; ignore.
             for (int i=0; i< matchcount; i++){
                 if (result[i+1].rm_eo > 0){//GNU peculiarity: match-to-empty marked with -1.

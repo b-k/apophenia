@@ -17,7 +17,7 @@ At close, the input model has parameters of the correct size.
 
 \li This is the default action for \ref apop_prep. If your model has its own \c prep method, then that gets used instead, but most don't (or call \ref apop_model_clear at the end of their prep routine).
 
-\ref apop_estimate calls \ref apop_prep internally. 
+\li \ref apop_estimate calls \ref apop_prep internally. 
 
 The above two points mean that you probably don't need to call this function directly.
 
@@ -28,7 +28,7 @@ The above two points mean that you probably don't need to call this function dir
 \ingroup models  */
 apop_model * apop_model_clear(apop_data * data, apop_model *model){
     Get_vmsizes(data)
-    int width = msize2 + vsize;
+    int width = msize2 ? msize2 : -firstcol;//use the vector only if there's no matrix.
     Apop_assert(model->dsize!=-1 || width, "The model's dsize==-1, meaning size=data width, but the input data has NULL vector and matrix.");
     Apop_assert(model->vbase!=-1 || width, "The model's vbase==-1, meaning size=data width, but the input data has NULL vector and matrix.");
     Apop_assert(model->m1base!=-1 || width, "The model's m1base==-1, meaning size=data width, but the input data has NULL vector and matrix.");

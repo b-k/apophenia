@@ -182,5 +182,6 @@ add_margin:
             gsl_vector_add(beta, fix);
         }
     }
+    if (candidate) gsl_vector_free(candidate);
     return apop_vector_distance(base_beta, beta);
 }

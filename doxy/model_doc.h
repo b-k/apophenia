@@ -160,10 +160,15 @@ the example below). The vector element of the table lists the column numbers to 
 substituted (the dependent var is zero; first independent col is one), and then one
 column for each item to substitute.
 
-If the vector of your apop_data set is \c NULL, then I will use the row names to find
+\li If the vector of your apop_data set is \c NULL, then I will use the row names to find
 the columns to substitute. This is generally more robust and/or convenient.
 
-If the \c instruments data set is somehow \c NULL or empty, I'll just run OLS. 
+\li If the \c instruments data set is somehow \c NULL or empty, I'll just run OLS. 
+
+\li Don't forget that the \ref apop_lm_settings group has a \c destroy_data setting. If
+you set that to \c 'y', I will overwrite the column in place, saving the trouble of
+copying the entire data set.
+
 \hideinitializer \ingroup models */
 enum apop_iv{
     Name4,         /**< <tt>instrumental variables</tt> */

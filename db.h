@@ -11,11 +11,11 @@
 extern "C" {
 #endif
 
-APOP_VAR_DECLARE int apop_table_exists(char *name, char remove);
+APOP_VAR_DECLARE int apop_table_exists(char const *name, char remove);
 
 void apop_db_rng_init(int seed);
 
-int apop_db_open(char *filename);
+int apop_db_open(char const *filename);
 APOP_VAR_DECLARE int apop_db_close(char vacuum);
 
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));

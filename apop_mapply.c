@@ -87,9 +87,13 @@ Default is 'a', but notice that I'll ignore a \c NULL vector or matrix, so if yo
 implication is that your function should be expecting a \ref apop_data set with exactly
 one row in it. The second is that \c part is ignored: it only makes sense to go row-by-row.
 
+\li If you set <tt>apop_opts.thread_count</tt> to a value greater than one, I will split the data set into as many chunks as you specify, and process them simultaneously. You need to watch out for the usual hang-ups about multithreaded programming, but if your data is iid, and each row's processing is independent of the others, you should have no problems. Bear in mind that generating threads takes some small overhead, so simple cases like adding a few hundred numbers will actually be slower when threading.
+
 \param inplace  If zero, generate a new \ref apop_data set for output, which will contain the mapped values (and the names from the original set). If one, modify in place. The \c double \f$\to\f$ \c double versions, \c 'v', \c 'm', and \c 'a', write to exactly the same location as before. The \c gsl_vector \f$\to\f$ \c double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you are writing in place and there is already a vector there, then the original vector is lost. (Default = 0)
+
 \param all_pages If \c 'y', then I follow the \c more pointer to subsequent pages, else I
-handle only the first page of data. Default: \c 'n'.
+handle only the first page of data. [I abuse this for an internal semaphore, by the way, so your input must always be nonnegative and  less than 1,000. Of course, 'y' and 'n' fit these rules fine.]
+Default: \c 'n'. 
 
 \ingroup mapply
 */
@@ -273,7 +277,7 @@ static size_t *threadminmax(const int threadno, const int totalct, const int thr
   int       segment_size        = totalct/threadct;
   size_t    *out                = malloc(sizeof(int)*3);
         out[0]  = threadno*segment_size;
-        out[1]  = (threadno==threadct-1) ? totalct : 1+(threadno+1)*segment_size;
+        out[1]  = (threadno==threadct-1) ? totalct : (threadno+1)*segment_size;
         out[2]  = threadno;
         return out;
 }
@@ -312,13 +316,13 @@ static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vect
 
 These functions will pull each element of a vector or matrix, or each row of a matrix, and apply a function to the given element. See the data->map/apply section of the \ref outline_mapply "outline" for many examples. 
 
+There are two types, which were developed at different times. The \ref apop_map and \ref apop_map_sum functions use variadic function inputs to cover a lot of different types of process depending on the inputs. Other functions with types in their names, like \ref apop_matrix_map and \ref apop_vector_apply, may be easier to use in some cases. With one exception, they use the same guts, so use whichever type is convenient.
+
 Here are a few technical details of usage:
 
 \li If \c apop_opts.thread_count is greater than one, then the matrix will be broken into chunks and each sent to a different thread. Notice that the GSL is generally threadsafe, and SQLite is threadsafe conditional on several commonsense caveats that you'll find in the SQLite documentation.
 
-\li See also \ref apop_map and \ref apop_map_sum, which take in \ref apop_data sets and have options for sending in the index of the item or additional parameters.
-
-\li The \c ...sum functions are convenience functions that just call \c ...map and then add up the contents. Thus, you will need to have adequate memory for the allocation of the temp matrix/vector.
+\li Apart from \ref apop_map_sum (which does minimal internal allocation), the \c ...sum functions are convenience functions that just call \c ...map and then add up the contents. Thus, you will need to have adequate memory for the allocation of the temp matrix/vector.
 \{ */
 
 /** Map a function onto every row of a matrix.  The function that you input takes in a gsl_vector and returns a \c double. \c apop_matrix_map will produce a vector view of each row, and send each row to your function. It will output a \c gsl_vector holding your function's output for each row.
@@ -437,20 +441,78 @@ double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*)){
     return out;
 }
 
+/*I abuse the macro system to do threading, because the variadic function takes
+     exactly one input, which is what the pthread_create function needs. The alternative,
+     writing a function to handle every argument to apop_map_sum to re-generate the
+     variadic_apop_map_sum_type struct, would be an uglier hack.
 
+     This function wraps variadic_apop_map_sum so that we're of the form pthread wants, void *(*)(void*),
+     instead of double (*)(variadic_type_apop_map_sum).  The main of
+     variadic_apop_map_sum just uses Apop_data_rows (and some abuse of that macro's
+     internals) to generate the subsets, then each thread calls this function to do the work.
 
+     How does apop_map_sum know if it's in the middle of a thread? I add 1000 to the all_pages integer. 
+     If threadct =0 or all_pages >=1000, then process as normal.
+*/
+void *apop_map_sum_for_threading(void *in){
+    double *val = malloc(sizeof(double));
+    *val = variadic_apop_map_sum(*(variadic_type_apop_map_sum*)in);
+    return val;
+}
 
-
-
-/** A convenience function to call \ref apop_map, and return the sum of the resulting elements. Thus, this function returns a single \c double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always internally allocate a temp data set and free it before returning.
+/** A function that effectively calls \ref apop_map and returns the sum of the resulting elements. Thus, this function returns a single \c double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always just add up the input function outputs.
 
   See also the \ref mapply "map/apply page" for details.
 
-\li At the moment, this function does not thread if <tt>apop_opts.thread_count > 0</tt>
-\li I don't copy your input to send to your function. Therefore, if your function modifies its inputs, your original data set will indeed be modified as a side-effect.
+\li I don't copy the input data to send to your input function. Therefore, if your function modifies its inputs as a side-effect, your data set will be modified as this function runs.
  \ingroup mapply
  */
-APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,   apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi, apop_fn_ri *fn_ri,    void *param, char part, int all_pages){ 
+APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, char part, int all_pages){ 
+
+    //The first half of the wrapper function is about threading. See notes attached to apop_map_sum_for_threading.
+    int threadct = apop_opts.thread_count;
+    if (threadct > 1 && varad_in.all_pages <1000){
+        pthread_t     thread_id[threadct];
+        variadic_type_apop_map_sum inputs[threadct];
+        apop_data slices[threadct];
+        gsl_vector v[threadct], w[threadct];
+        gsl_matrix m[threadct];
+        Get_vmsizes(varad_in.in);
+        int totalct = GSL_MAX(vsize, GSL_MAX(msize1, varad_in.in->textsize[0]));
+        int segment_size  = totalct/threadct;
+        for (int i=0 ; i<threadct; i++){
+            inputs[i] = varad_in;
+            /*Copy the inputs, use Apop_data_rows to get slices, use all_pages to mark that this is
+            in-thread processing, then run this function on the subsetted copy of the inputs.  
+            The tedium is in copying the substructures (but not data) so they persist past the loop. */
+            int bottom=i*segment_size;
+            Apop_data_rows(varad_in.in, bottom, i==threadct-1 ? totalct-bottom : segment_size, somerows);
+            slices[i] = *somerows; //copy the struct, because on the next loop it'll be different.
+            v[i] = somerows->vector ? *(somerows->vector): (gsl_vector){};
+            w[i] = somerows->weights ? *(somerows->weights): (gsl_vector){};
+            m[i] = somerows->matrix ? *(somerows->matrix): (gsl_matrix){};
+            slices[i].vector = somerows->vector ? &v[i] : 0;
+            slices[i].weights = somerows->weights ? &w[i] : 0;
+            slices[i].matrix = somerows->matrix ?&m[i] : 0;
+            inputs[i].in = slices+i;
+            inputs[i].all_pages = varad_in.all_pages+1000;
+            pthread_create(&thread_id[i], NULL, apop_map_sum_for_threading, inputs+i);
+        }
+        double sum = 0;
+        void *partsum;
+        for (int i=0 ; i<threadct; i++){
+            pthread_join(thread_id[i], &partsum);
+//printf("part %i: %g\n", i, *(double*)partsum);
+//apop_data_show(slices+i);
+            sum+= *(double*)partsum;
+            free(partsum);
+        }
+
+        inputs[0].in = varad_in.in->more;
+        inputs[0].all_pages -= 1000;
+        return sum + (((varad_in.all_pages=='y' || varad_in.all_pages=='Y') && varad_in.in->more) ? variadic_apop_map_sum(inputs[0]): 0);
+    }
+
     apop_data * apop_varad_var(in, NULL)
     apop_fn_v * apop_varad_var(fn_v, NULL)
     apop_fn_d * apop_varad_var(fn_d, NULL)
@@ -466,9 +528,9 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     apop_fn_ri * apop_varad_var(fn_ri, NULL)
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, 'a')
+    if (varad_in.all_pages >= 1000) varad_in.all_pages -= 1000;
     int apop_varad_var(all_pages, 'n')
 APOP_VAR_ENDHEAD 
-                    //This needs to be threaded again. 
     Get_vmsizes(in);
     double outsum = 0;
     if (fn_r || fn_ri || fn_rpi || fn_rp)

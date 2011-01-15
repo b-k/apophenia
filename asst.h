@@ -18,7 +18,7 @@ double apop_generalized_harmonic(int N, double s);
 apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
 
-int apop_strcmp(char *, char*);
+int apop_strcmp(char const *, char const *);
 APOP_VAR_DECLARE int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case);
 
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);

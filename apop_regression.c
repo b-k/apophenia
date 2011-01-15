@@ -140,12 +140,12 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
 static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_first, 
                                     int datacol, char dummyfactor, apop_data **factor_list){
   size_t      i, j, index,
-              elmt_ctr        = 0;
+              elmt_ctr = 0;
   apop_data   *out; 
   double      val;
-  gsl_vector  *delmts         = NULL;
+  gsl_vector  *delmts  = NULL;
   char        n[1000], name[101],
-              **telmts        = NULL;//unfortunately needed for the bsearch.
+              **telmts = NULL;//unfortunately needed for the bsearch.
     //first, create an ordered list of unique elements.
     //Record that list for use in this function, and in a ->more page of the data set.
     if (type == 't'){
@@ -305,6 +305,8 @@ APOP_VAR_ENDHEAD
         for (int i=0; i < d->names->colct; i++)
             free(d->names->column[i]);
         apop_name_stack(d->names, split[0]->names, 'c');
+        for (int k = d->names->colct; k < (split[0]->matrix ? split[0]->matrix->size2 : 0); k++)//pad so the name stacking 
+            apop_name_add(d->names, "", 'c');                                                  //is aligned (if needed)
         apop_name_stack(d->names, dummies->names, 'c');
         apop_name_stack(d->names, split[1]->names, 'c');
         gsl_matrix_free(d->matrix);

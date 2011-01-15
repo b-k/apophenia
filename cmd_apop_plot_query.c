@@ -87,14 +87,14 @@ int main(int argc, char **argv){
                 no_plot     = 0;
 
 	sprintf(msg, "%s [opts] dbname query\n\n\
-Runs a query, and pipes the output directly to gnuplot. Use -f to dump to STDOUT or a file.\n\
+Runs a query, and pipes the output directly to gnuplot. Use -f to dump to stdout or a file.\n\
 -d\tdatabase to use\t\t\t\t\tmandatory \n\
 -q\tquery to run\t\t\t\t\tmandatory (or use -Q)\n\
 -Q\tfile from which to read the query\t\t\n\
--n\tno plot: just run the query and display results to STDOUT\t\t\n\
+-n\tno plot: just run the query and display results to stdout\t\t\n\
 -t\tplot type (points, bars, ...)\t\t\tdefault=\"lines\"\n\
 -H\tplot histogram with this many bins (e.g., -H100)\n\
--f\tfile to dump to. If -f- then use STDOUT.\tdefault=pipe to Gnuplot\n", argv[0]); 
+-f\tfile to dump to. If -f- then use stdout.\tdefault=pipe to Gnuplot\n", argv[0]); 
 
 	if(argc<2){
 		printf("%s", msg);

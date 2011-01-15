@@ -299,6 +299,12 @@ void test_nan_data(){
     assert(!apop_data_get_tt(d2,"fourth", "b"));
     apop_data_free(d2);
     strcpy(apop_opts.db_nan, "NaN");
+    
+    //while we're here, test querying just names & no data.
+    apop_data *justnames = apop_query_to_data("select head from nandata");
+    assert(justnames->names->rowct == 4);
+    assert(!justnames->vector && !justnames->matrix);
+    apop_data_free(justnames);
 }
 
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
@@ -1177,6 +1183,7 @@ void estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tr
     //model.score =NULL;
     estimate_model(data, model,APOP_SIMPLEX_NM, true_params->parameters);
     estimate_model(data, model,APOP_CG_PR, true_params->parameters);
+    estimate_model(data, model,APOP_RF_HYBRID, true_params->parameters);
     apop_data_free(data);
 }
 
@@ -1269,7 +1276,7 @@ void test_pmf(){
 	gsl_rng *r = apop_rng_alloc(1234);
 	d->vector = apop_array_to_vector(x, 9);
 	apop_model *m = apop_crosstab_to_pmf(d);
-	gsl_vector *v = gsl_vector_alloc(d->vector->size);
+	gsl_vector *v = gsl_vector_calloc(d->vector->size);
 	for (i=0; i< 1e5; i++){
 		apop_draw(&out, r, m);
 		apop_vector_increment(v, out);

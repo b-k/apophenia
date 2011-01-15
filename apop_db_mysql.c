@@ -32,7 +32,7 @@ static void print_error (MYSQL *conn, char *message) {
     }
 }
 
-static int apop_mysql_db_open(char *in){
+static int apop_mysql_db_open(char const *in){
     Apop_assert(in, "MySQL needs a non-NULL db name.");
     mysql_db = mysql_init (NULL);
     Apop_assert(mysql_db, "mysql_init() failed (probably out of memory)");

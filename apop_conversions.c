@@ -515,7 +515,7 @@ static int prep_text_reading(char *text_file, FILE **infile, regex_t *regex, reg
         *infile  = stdin;
     else
 	    *infile	= fopen(text_file, "r");
-    Apop_assert_c(*infile, 0,  0, "Trouble opening %s. Returning NULL.\n", text_file);
+    Apop_assert_c(*infile, 0,  0, "Trouble opening %s. Returning NULL.", text_file);
 
     sprintf(full_divider, divider, apop_opts.input_delimiters, apop_opts.input_delimiters);
     regcomp(regex, full_divider, REG_EXTENDED);

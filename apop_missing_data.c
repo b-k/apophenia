@@ -120,8 +120,8 @@ APOP_VAR_ENDHEAD
             "Confused, it is returning NULL.");
     //find out where the NaNs are
     int len = GSL_MAX(vsize ? vsize : msize1, d->textsize[0]); //still some size assumptions here.
-    int marked[len], not_empty = 0;
-    memset(marked, 0, len*sizeof(int));
+    int not_empty = 0;
+    int *marked = calloc(len, sizeof(int));
     for (int i=0; i< (vsize ? vsize: msize1); i++)
         for (int j=firstcol; j <msize2; j++){
             if (gsl_isnan(apop_data_get(d, i, j))){
@@ -155,10 +155,13 @@ APOP_VAR_ENDHEAD
             not_empty ++;
             break;
         }
-    if (!not_empty)
+    if (!not_empty){
+        free(marked);
         return NULL;
+    }
     apop_data *out = (inplace=='y'|| inplace=='Y') ? d : apop_data_copy(d);
     apop_data_rm_rows(out, marked);
+    free(marked);
     return out;
 }
 

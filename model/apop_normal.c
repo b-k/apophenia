@@ -163,12 +163,12 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
         p = Apop_model_add_group(est, apop_lm);
     apop_matrix_mean_and_var(data->matrix, &mean, &var);
     if (!est->parameters)
-        est->parameters = apop_data_alloc(2, 0, 0);
+        est->parameters = apop_data_alloc(2);
     double sigsq   = log(1+ var/gsl_pow_2(mean));
 	gsl_vector_set(est->parameters->vector, 0, log(mean)- sigsq/2);
 	gsl_vector_set(est->parameters->vector, 1, sqrt(sigsq));
     est->data           = data;
-    parameters->info = apop_data_alloc(1,0,0);
+    parameters->info = apop_data_alloc();
     apop_data_add_named_elmt(parameters->info, "log likelihood", lognormal_log_likelihood(data, parameters));
 	return est;
 }
@@ -185,7 +185,7 @@ static double lognormal_cdf(apop_data *d, apop_model *params){
 
 apop_data * lognormal_predict(apop_data *dummy, apop_model *m){
     //E(x) = e^(mu + sigma^2/2)
-    apop_data *out = apop_data_alloc(0,1,1);
+    apop_data *out = apop_data_alloc(1,1);
     out->matrix->data[0] = exp(m->parameters->vector->data[0] 
                                 + gsl_pow_2(m->parameters->vector->data[1])/2);
     return out;

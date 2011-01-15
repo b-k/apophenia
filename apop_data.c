@@ -309,6 +309,7 @@ APOP_VAR_ENDHEAD
         out = apop_data_copy(m1);
         m1->more = m;
     }
+    Get_vmsizes(m1); //original sizes of vsize, msize1, msize2.
     apop_matrix_stack(out->matrix, m2->matrix, posn, .inplace='y');
     if (posn == 'r'){
         apop_vector_stack(out->vector, m2->vector, .inplace='y');
@@ -337,7 +338,13 @@ APOP_VAR_ENDHEAD
             apop_name_stack(out->names, m2->names, 't');
         }
     }
-    apop_name_stack(out->names, m2->names, posn);
+    if ((posn=='r' && m2->names->rowct) || (posn=='c' && m2->names->colct)){
+        int min = posn =='r' ? m1->names->rowct : m1->names->colct;
+        int max = posn =='r' ? GSL_MAX(vsize, msize1) : msize2;
+        for (int k = min; k < max; k++)          //pad so the name stacking is aligned (if needed)
+            apop_name_add(out->names, "", posn); 
+        apop_name_stack(out->names, m2->names, posn);
+    }
     return out;
 }
 

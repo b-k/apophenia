@@ -171,7 +171,6 @@ int initial (apop_arms_settings* params,  arms_state *env){
   q->pr = NULL;
 
   assert(isfinite(q->x));
-  assert(isfinite(q->y));
   /* calculate intersection points */
   q = env->p;
   for (int j=0; j<mpoint; j=j+2, q=q+2)

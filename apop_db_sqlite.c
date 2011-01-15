@@ -170,7 +170,7 @@ sqfn(sqrt) sqfn(exp) sqfn(log) sqfn(log10) sqfn(sin)
 sqfn(cos) sqfn(tan) sqfn(asin) sqfn(acos) sqfn(atan)
 
 
-static int apop_sqlite_db_open(char *filename){
+static int apop_sqlite_db_open(char const *filename){
 	if (!filename) 	sqlite3_open(":memory:",&db);
 	else			sqlite3_open(filename,&db);
     apop_assert(db, "Not sure why, but the database didn't open.");

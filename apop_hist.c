@@ -138,7 +138,7 @@ static double psmirnov2x(double x, int m, int n) {
 
  \param m1, m2  Two matching \ref apop_histogram "apop_histograms", probably produced via \ref apop_histogram_vector_reset or \ref apop_histogram_model_reset.
 
- \return The \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
+ \return An \ref apop_data set including the \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
 
  \ingroup histograms
  */
@@ -185,7 +185,7 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
         diff     = GSL_MAX(diff, fabs(cdf1-cdf2));
     }
 
-    apop_data   *out    = apop_data_alloc(0,3,-1);
+    apop_data   *out    = apop_data_alloc();
     apop_data_add_named_elmt(out, "max distance", diff);
     apop_data_add_named_elmt(out, "p value, 2 tail", 1-psmirnov2x(diff, first->n, second->n));
     apop_data_add_named_elmt(out, "confidence, 2 tail", psmirnov2x(diff, first->n, second->n));
