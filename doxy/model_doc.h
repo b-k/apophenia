@@ -256,15 +256,22 @@ obsolete internal format.
     Parameter_format2, /**< The parameter vector is unused. */
     Estimate_results2, /**< 
         The \ref apop_loess_settings is filled with results (and internal 
-        processing cruft). The \c expected data set has the \c actual, 
-        \c predicted, and \c residual columns, which is probably what you
-        were looking for.*/
+        processing cruft). The \c out_model->info data set has a table giving
+        the actual, \c predicted, and \c residual columns, which is probably what you
+        were looking for.  Try: 
+        \code
+        apop_data_show(apop_data_get_page(output_model->info, "<Predicted>"));
+        \endcode
+        */
     Predict2, /**<
 Fills in the zeroth column (ignoring and overwriting any data there), and at the data's <tt>->more</tt> pointer, adds an \ref
 apop_data set named "Confidence" (i.e., 
 \code
 apop_strcmp(outdata->more->names->title, "Confidence") == 1.
-\endcode */
+\endcode 
+
+This routine is in beta testing.
+*/
     Prep_routine2, /**< None. */
     RNG2, /**< No. */
     settings2 /**< \ref apop_loess_settings */

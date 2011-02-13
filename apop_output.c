@@ -258,6 +258,7 @@ void apop_data_show(const apop_data *in){
 //Take inventory and get sizes
   size_t hasrownames = in->names->rowct ? 1 : 0;
   size_t hascolnames = (in->names->vector || in->names->colct || in->names->textct);
+  size_t hasweights = (in->weights != NULL);
 
     size_t outsize_r = GSL_MAX(in->matrix ? in->matrix->size1 : 0, in->vector ? in->vector->size: 0);
     outsize_r   = GSL_MAX(outsize_r, in->textsize[0]);
@@ -266,14 +267,10 @@ void apop_data_show(const apop_data *in){
     size_t outsize_c = msize2;
     outsize_c   += in->textsize[1];
     outsize_c   += (vsize>0);
-    outsize_c   += hasrownames;
+    outsize_c   += hasrownames + hasweights;
 
 //Write to the printout data set.
     apop_data *printout = apop_text_alloc(NULL , outsize_r, outsize_c);
-    for(i= 0; i< outsize_r; i ++)
-        for(j= 0; j < outsize_c; j ++)
-            apop_text_add(printout, i, j, "");
-
     if (hasrownames)
         for(i=0; i < in->names->rowct; i ++)
             apop_text_add(printout, i + hascolnames, 0, in->names->row[i]);
@@ -286,17 +283,22 @@ void apop_data_show(const apop_data *in){
         for(i=0; i < in->textsize[0]; i ++)
             for(j=0; j < in->textsize[1]; j ++)
                 apop_text_add(printout, i + hascolnames, hasrownames + (vsize>0)+ msize2 + j, in->text[i][j]);
+    if (hasweights)
+        for(i=0; i < in->weights->size; i ++)
+            apop_text_add(printout, i + hascolnames, outsize_c-1, "%g", gsl_vector_get(in->weights, i));
 
 //column names
     if (hascolnames){
         if (vsize && in->names->vector)
-                apop_text_add(printout, 0 , hasrownames,  in->names->vector);
+            apop_text_add(printout, 0 , hasrownames,  in->names->vector);
         if (msize2)
             for(i=0; i < in->names->colct; i ++)
                 apop_text_add(printout, 0 , hasrownames + (vsize>0) + i,  in->names->column[i]);
         if (in->textsize[1])
             for(i=0; i < in->names->textct; i ++)
                 apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, in->names->text[i]);
+        if (hasweights)
+            apop_text_add(printout, 0 , outsize_c-1, "Weights");
     }
 
 //get column sizes

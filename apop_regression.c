@@ -8,6 +8,7 @@
  See also the goodness of fit tests in \ref histograms.
  */
 
+#include "asst.h"
 #include "output.h"
 #include "model.h"
 #include "internal.h"
@@ -283,6 +284,7 @@ APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type,
     int apop_varad_var(keep_first, 0)
     char apop_varad_var(append, 'n')
     char apop_varad_var(remove, 'n')
+    if (remove =='y' && type == 't') apop_notify(1, "Remove isn't implemented for text source columns yet.");
 APOP_VAR_ENDHEAD
     if (type == 'd'){
         Apop_assert((col != -1) || d->vector, "You asked for the vector element "
@@ -321,7 +323,7 @@ APOP_VAR_ENDHEAD
         rm_list[col]=1;
         apop_data_rm_columns(d, rm_list);
     }
-    if (append =='y' || append ==1 || (append=='i' && type=='t')){
+    if (append =='y' || append == 'e' || append ==1 || (append=='i' && type=='t')){
         apop_data_stack(d, dummies, 'c', .inplace='y');
         apop_data_free(dummies);
         return d;

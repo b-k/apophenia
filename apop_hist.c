@@ -36,7 +36,6 @@ apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata
  random draws from the parametrized model you provide.
 
 Unlike with most other histogram-generating functions, this one will normalize the output to integrate to one.
-It uses the \ref designated syntax for inputs.
 
 \param base An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram). I.e. a histogram model to be used as a template. (No default)
 \param m The model to be drawn from. Because this function works via random draws, the model needs to have a 
@@ -44,6 +43,7 @@ It uses the \ref designated syntax for inputs.
 \param draws The number of random draws to make. (arbitrary default = 1e5)
 \param rng The \c gsl_rng used to make random draws. (default: see note on \ref autorng)
 
+\li This function uses the \ref designated syntax for inputs.
 
 \ingroup histograms
 */
@@ -52,14 +52,14 @@ APOP_VAR_HEAD apop_model *apop_histogram_model_reset(apop_model *base, apop_mode
     apop_model* apop_varad_var(base, NULL);
     apop_model* apop_varad_var(m, NULL);
     long int apop_varad_var(draws, 1e5);
-  apop_assert_s(base && !strcmp(base->name, "Histogram"), "The first argument needs to be a model with appropriate apop_histogram settings.");
-  apop_assert_s(m && m->draw, "The second argument needs to be an apop_model with a 'draw' function that I can use to make random draws.");
+  Apop_assert(base && !strcmp(base->name, "Histogram"), "The first argument needs to be a model with appropriate apop_histogram settings.");
+  Apop_assert(m && m->draw, "The second argument needs to be an apop_model with a 'draw' function that I can use to make random draws.");
     gsl_rng *apop_varad_var(rng, NULL)
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
     if (!rng)  rng = spare;
 APOP_VAR_ENDHEAD
-  double d;
+    double d;
     apop_model *out = apop_model_copy(*base); 
     gsl_histogram *hout  = Apop_settings_get(out, apop_histogram, pdf);
     gsl_histogram_reset(hout);
@@ -77,9 +77,9 @@ APOP_VAR_ENDHEAD
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *m0, apop_model *m1){
   gsl_histogram *h0 = Apop_settings_get(m0, apop_histogram, pdf);
   gsl_histogram *h1 = Apop_settings_get(m1, apop_histogram, pdf);
-    Apop_assert_s(h0, "The first model you gave me has a NULL PDF.");
-    Apop_assert_s(h1, "The second model you gave me has a NULL PDF.");
-    Apop_assert_s(h0->n == h1->n, "Sorry, I haven't implemented the case where the bin counts of the two histograms are unequal.");
+    Apop_assert(h0, "The first model you gave me has a NULL PDF.");
+    Apop_assert(h1, "The second model you gave me has a NULL PDF.");
+    Apop_assert(h0->n == h1->n, "Sorry, I haven't implemented the case where the bin counts of the two histograms are unequal.");
 
   int     df      = h0->n,
           bins    = h0->n;
@@ -169,7 +169,7 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
         second  = h1;
         cdf1    = first->bin[0];
     } else 
-        apop_assert_c(0, NULL, 0, "I need matching histograms.  Produce them via apop_histogram_vector_reset "
+        Apop_assert_c(0, NULL, 0, "I need matching histograms.  Produce them via apop_histogram_vector_reset "
                        "or apop_histogram_model_reset. Returning NULL.");
     //Scaling step. 
     for (i=0; i< first->n; i++)
@@ -197,10 +197,10 @@ void apop_histogram_normalize(apop_model *m){
   gsl_histogram *h = Apop_settings_get(m, apop_histogram, pdf);
   int           i;
   long double   sum = 0;
-  apop_assert_s(h, "You sent me a model which is not a histogram or which is unparametrized.");
+  Apop_assert(h, "You sent me a model which is not a histogram or which is unparametrized.");
     for (i=0; i< h->n; i++)
         sum       += h->bin[i];
-    apop_assert_c(sum, ,0, "You sent me a histogram with a total density of zero. Returning same.");
+    Apop_assert_c(sum, ,0, "You sent me a histogram with a total density of zero. Returning same.");
     for (i=0; i< h->n; i++)
         h->bin[i] /= sum;
 }

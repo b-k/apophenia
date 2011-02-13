@@ -113,7 +113,7 @@ APOP_VAR_HEAD double  apop_linear_constraint(gsl_vector *beta, apop_data * const
     gsl_vector * apop_varad_var(beta, NULL);
     double apop_varad_var(margin, 0);
     apop_data * apop_varad_var(constraint, NULL);
-    apop_assert_s(beta, "The vector to be checked is NULL.");
+    Apop_assert(beta, "The vector to be checked is NULL.");
     if (!constraint){
         if (default_constraint && beta->size != default_constraint->vector->size){
             apop_data_free(default_constraint);
@@ -153,7 +153,7 @@ APOP_VAR_ENDHEAD
     /* With only one constraint, it's easy. */
     if (constraint->vector->size==1){
         APOP_ROW(constraint, 0, c);
-        find_nearest_point(base_beta, constraint->vector->data[0],c, beta);
+        find_nearest_point(base_beta, constraint->vector->data[0], c, beta);
         goto add_margin;
     }
     /* Finally, multiple constraints, at least one binding.
@@ -182,6 +182,5 @@ add_margin:
             gsl_vector_add(beta, fix);
         }
     }
-    if (candidate) gsl_vector_free(candidate);
     return apop_vector_distance(base_beta, beta);
 }

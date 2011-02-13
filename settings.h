@@ -84,7 +84,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 /** A convenience macro for declaring the initialization function for a new settings group.
  See the documentation outline -> models -> model settings -> writing new settings group for details.
 
-  This sets the defaults for every element in the structure, so you will want a line for every element of your structure.
+  This sets the defaults for every element in the structure, so you will want a line for every element of your structure (except the ones that default to NULL, which have already been set as such).
 
   \code
   Apop_settings_init (ysg, 
@@ -276,6 +276,7 @@ typedef struct{
     gsl_histogram       *pdf; /**< Where the histogram is kept */
     gsl_histogram_pdf   *cdf; /**< If you make random draws, I need a CDF aggregation of the main PDF. I keep it here. */
     apop_model          *histobase;
+    int                 ownerbase; 
     int                 bins_in; /**< Used as input. May not equal the final number of bins (\c pdf->bins) due to the infinibins.*/
 } apop_histogram_settings;
 
@@ -366,66 +367,59 @@ settings init function will copy your preferences into the working struct.
 The documentation for the elements is cut/pasted/modified from Cleveland,
 Grosse, and Shyu.
 
-Because it's a cut and paste job, doxygen turns this into word salad. 
-If you're reading this, my apologies, and it'll stay this way for a few
-more days. see the source of \c settings.h for a legible version in the
-mean time.
+<tt>.data</tt>: Mandatory. Your input data set.
 
-.data: mandatory: your input data set.
+	<tt>.lo_s.model.span</tt>:		smoothing parameter. Default is 0.75.
 
-	.lo_s.model.span:		smoothing parameter. Default is 0.75.
-
-	.lo_s.model.degree:		overall degree of locally-fitted polynomial. 1 is 
+	<tt>.lo_s.model.degree</tt>:		overall degree of locally-fitted polynomial. 1 is 
 			locally-linear fitting and 2 is locally-quadratic 
 			fitting.  Default is 2.
 
-	.lo_s.normalize:	Should numeric predictors 
+	<tt>.lo_s.normalize</tt>:	Should numeric predictors 
 			be normalized?  If 'y' - the default - the 
 			standard normalization is used. If 'n', no
 			normalization is carried out.
 
-            TO DO
-	parametric:	for two or more numeric predictors, this argument
+	\c .lo_s.model.parametric:	for two or more numeric predictors, this argument
 			specifies those variables that should be 
 			conditionally-parametric. The argument should be a 
 			logical vector of length p, specified in the order 
 			of the predictor group ordered in x.
 			Default is a vector of 0's of length p.
 
-            TO DO
-	drop_square:	for cases with degree = 2, and with two or more 
+	\c .lo_s.model.drop_square:	for cases with degree = 2, and with two or more 
 			numeric predictors, this argument specifies those 
 			numeric predictors whose squares should be dropped 
 			from the set of fitting variables. The method of 
 			specification is the same as for parametric.
 			Default is a vector of 0's of length p.
 
-	.lo_s.model.family:		the assumed distribution of the errors. The values 
+	\c .lo_s.model.family:		the assumed distribution of the errors. The values 
 			are <tt>"gaussian"</tt> or <tt>"symmetric"</tt>. The first value is 
 			the default.  If the second value is specified, 
 			a robust fitting procedure is used.
 
-	lo_s.control.surface:	determines whether the fitted surface is computed 
+	\c lo_s.control.surface:	determines whether the fitted surface is computed 
         <tt>"directly"</tt> at all points  or whether an 
         <tt>"interpolation"</tt> method is used. 
 			The default, interpolation, is what most users should 
 			use unless special circumstances warrant.
 
-    lo_s.control.statistics:	determines whether the statistical quantities are 
+    \c lo_s.control.statistics:	determines whether the statistical quantities are 
         computed <tt>"exactly"</tt> or approximately 
         , where <tt>"approximate"</tt> is the default. The former
         should only be used for testing the approximation in 
         statistical development and is not meant for routine 
         usage because computation time can be horrendous.
 
-        lo_s.control.cell:		if interpolation is used to compute the surface, this
+        \c lo_s.control.cell:		if interpolation is used to compute the surface, this
         argument specifies the maximum cell size of the k-d 
         tree.  Suppose k = floor(n*cell*span) where n is the 
         number of observations.  Then a cell is further 
         divided if the number of observations within it
         is greater than or equal to k. default=0.2
 
-	lo_s.control.trace_hat: Options are <tt>"approximate"</tt>, <tt>"exact"</tt>, and <tt>"wait.to.decide"</tt>.	
+	\c lo_s.control.trace_hat: Options are <tt>"approximate"</tt>, <tt>"exact"</tt>, and <tt>"wait.to.decide"</tt>.	
         When lo_s.control.surface is <tt>"approximate"</tt>, determines
         the computational method used to compute the trace of the hat
         matrix, which is used in the computation of the statistical
@@ -439,42 +433,33 @@ mean time.
         "approximate" for large dataset will substantially reduce the
         computation time.
 
-	lo_s.model.iterations:	if family is <tt>"symmetric"</tt>, the number of iterations 
+	\c lo_s.model.iterations:	if family is <tt>"symmetric"</tt>, the number of iterations 
         of the robust fitting method.  Default is 0 for
         lo_s.model.family = gaussian; 4 for family=symmetric.
 
         That's all you can set. Here are some output parameters:
 
-out	
-	fitted_values:	fitted values of the local regression model
+	\c fitted_values:	fitted values of the local regression model
 
-	fitted_residuals:	residuals of the local regression fit
+	\c fitted_residuals:	residuals of the local regression fit
 
-        enp:		equivalent number of parameters.
+       \c  enp:		equivalent number of parameters.
 
-        s:		estimate of the scale of the residuals.
+       \c  s:		estimate of the scale of the residuals.
 
-        one_delta:	a statistical parameter used in the computation of standard errors.
+       \c  one_delta:	a statistical parameter used in the computation of standard errors.
 
-        two_delta:	a statistical parameter used in the computation of standard errors.
+       \c  two_delta:	a statistical parameter used in the computation of standard errors.
 
-        pseudovalues:	adjusted values of the response when robust estimation is used.
+       \c  pseudovalues:	adjusted values of the response when robust estimation is used.
 
-	trace_hat:	trace of the operator hat matrix.
+	\c trace_hat:	trace of the operator hat matrix.
 
-        diagonal:	diagonal of the operator hat matrix.
+       \c  diagonal:	diagonal of the operator hat matrix.
 
-        robust:		robustness weights for robust fitting.
+       \c  robust:		robustness weights for robust fitting.
 
-        divisor:	normalization divisor for numeric predictors.
-
-
-struct  anova_struct	*aov;
-	
-	dfn:		degrees of freedom of the numerator.
-	dfd:		degrees of freedom of the denominator.
-	F_values:	F statistic.
-	Pr_F:		probability F_value is exceeded if null hypothesis is true.
+       \c  divisor:	normalization divisor for numeric predictors.
 
     \ingroup settings
 */

@@ -225,7 +225,7 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     return m;
 }
 
-
+#if 0
 /**
 Imputation (in this context) is the process of finding fill-in values for missing data
 points. Filling in values from a single imputation and then returning the values will give
@@ -280,30 +280,81 @@ replicates; let \f$\mu(\cdot)\f$ indicate the mean; then the overall covariance 
 \li Multiple pages for input data are not yet implemented.
 */
 
-apop_data * apop_multiple_imputation_variance(apop_data *(*stat)(apop_data *), apop_data *base_data, 
-                                                                               apop_data *fill_ins){
+
+/*
+\param row_name Which column in the fill-in table should I check for the row id to fill in. This could be an integer or text. If this name refers to a numeric column, then it indicates the row number in the main data to which this row of the fill-in table refers. If it refers to text, then this is the name of the row of the main data to fill in. Default: \c row .
+\param col_name As with \c row_name, the name of the column in the fill-in table holding the names or numbers of the column in the main data set to be filled in. Default: \c col .
+\param value_name The name of the column in the fill-in table holding the values to be written to the main data set. Default: \c value .
+\param imputation_name The column of the fill-in table holding the name or number of the imputation. Default: imputation .
+*/
+
+APOP_VAR_HEAD apop_data * apop_multiple_imputation_variance(apop_data *base_data, apop_data *fill_ins, char row_name, char col_name, char value_name, char imputation_name){
     /*Copyright: this function is part of a larger work (C) Ben Klemens, but was partially written
-    by a government employee during work hours. Some lawyers will tell you that the code
-    is licensed via GPL v2, like the main work; others will tell you that it's public domain.*/
+    by a government employee (BK) during work hours. Some lawyers will tell you that this function
+    is licensed via GPL v2, as a part of a larger work; others will tell you that it's public domain.*/
+    char apop_varad_var(row_name, "row");
+    char apop_varad_var(col_name, "col");
+    char apop_varad_var(value_name, "value");
+    char apop_varad_var(imputation_name, "imputation");
+    apop_data* pop_varad_var(base_data, NULL);
+    Apop_assert(base_data, "It doesn't make sense to impute over a NULL data set.");
+    apop_data* apop_varad_var(fill_ins, NULL);
+    if (!fill_ins)
+        Apop_notify(1,  "Didn't recieve a fill-in table; will find means, but the Cov matrix will be NULL.");
+APOP_VAR_ENDHEAD 
+    /*The first half of this is filling in the values. In an attempt at versatility, I allow users to 
+      give any named column, be it numeric or text, for every piece of input info. That means a whole lot 
+      of checking around to determine what goes where---and a macro.  */
 
-    //Part I: call the statistic-calculating function with each filled-in replicate
-	int row_column = apop_name_find(fill_ins->names, "row", 'c');
-	int col_column = apop_name_find(fill_ins->names, "col", 'c');
-	int page_column = apop_name_find(fill_ins->names, "page", 'c');
-	int first_non_address= GSL_MAX(row_column, GSL_MAX(col_column, page_column)) + 1;
-	int replicates = fill_ins->matrix->size2 - first_non_address;
-    apop_assert_s(replicates, "I couldn't find anything besides row/col/page columns "
-            "(which I may or may not have found)")
+//At the end of this macro, you've got rowcol and rowtype, valuecol and valuetype, &c.
+#define apop_setup_one_colthing(c) \
+    int c##col = apop_name_find(fill_ins->names, c##_name, 'c');   \
+    int c##type = 'd';         \
+    if (c##col==-2){           \
+        c##col = apop_name_find(fill_ins->names, c##_name, 't');   \
+        c##type = 't';         \
+       Apop_assert(c##col!=-2, "I couldn't find the c##_name %s in the column/text names of your fill_in table.");    \
+    }
 
+    apop_setup_one_colthing(row)
+    apop_setup_one_colthing(col)
+    apop_setup_one_colthing(value)
+    apop_setup_one_colthing(imputation)
+
+    //get a list of unique imputation markers.
+    gsl_vector *imps = NULL;
+    apop_data *impt = NULL; 
+    if (imputationtype == 'd'){
+        Apop_col(fill_ins, imputationcol, ic);
+        imps = apop_vector_unique_elements(ic);
+    } else impt = apop_text_unique_elements(fill_ins, imputationcol);
+
+    int len = imps ? imps->size : impt->textsize[0];
+    int thisimp=-2; char *thisimpt=NULL;
 	apop_data *estimates[replicates];
-	for (int i= first_non_address; i< fill_ins->matrix->size2; i++){
-		for (int j=0; j < fill_ins->matrix->size1; j++)
-			apop_data_set(base_data, 
-				.row = apop_data_get(fill_ins, j, row_column),
-				.col = apop_data_get(fill_ins, j, col_column),
-				.val =  apop_data_get(fill_ins, j, i));
+    for (int impct=0; impct< len; impct++){
+        if (imps)
+            thisimp=gsl_vector_get(imps, impct);
+        else
+            thisimpt=impt->text[i][0];
+        for (int i=0; i< fill_ins; i++){
+            if (!(thisimpt && apop_strcmp(fill_ins->text[i][imputationcol], thisimpt))
+                && !(imps && thisimp==apop_data_get(fill_ins, i, imputationcol)))
+                continue;
+            int thisrow = (rowtype=='d') ? 
+                                apop_data_get(fill_ins, i, rowcol)
+                               :apop_name_get(base_data->names, rowcol);
+            int thiscol = (coltype=='d') ? 
+                                apop_data_get(fill_ins, i, colcol)
+                               :apop_name_get(base_data->names, colcol);
+            if (valuetype=='d') apop_data_set(base_data, thisrow, thiscol, 
+                                            apop_data_get(fill_ins, i, valuecol));
+            else apop_text_add(base_data, rowcol, colcol, fill_ins->text[i][valuecol]);
+        }
+        //OK, base_data is now filled in. Estimate the statistic for it.
 		estimates[i-first_non_address] = stat(base_data);
-	}
+    }
+
 
     //Part II: find the mean of the statistics and the total variance of the cov matrix.
 	gsl_vector *vals = gsl_vector_alloc(replicates);
@@ -339,3 +390,4 @@ apop_data * apop_multiple_imputation_variance(apop_data *(*stat)(apop_data *), a
         }
     return out;	
 }
+#endif

@@ -72,13 +72,15 @@ apop_histogram_settings * apop_histogram_settings_init(apop_histogram_settings i
 Apop_settings_copy(apop_histogram,
     out->pdf = gsl_histogram_clone(in->pdf);
     out->cdf = NULL; //the GSL doesn't provide a copy function, so screw it---just regenerate.
-    out->histobase  = in->histobase  ? apop_model_copy(*in->histobase)  : NULL;
+    out->histobase = in->histobase ? apop_model_copy(*in->histobase) : NULL;
+    out->ownerbase = in->histobase ? 1 : 0;
 )
 
 Apop_settings_free(apop_histogram,
     gsl_histogram_free(in->pdf);
     gsl_histogram_pdf_free(in->cdf);
-    //Assume histogram base is freed elsewhere.
+    if (in->histobase && in->ownerbase)
+        apop_model_free(in->histobase);
 )
 
 

@@ -607,6 +607,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     /* In types.h, you'll find an alias that takes the input, wraps it in the cruft that is
     C's compound literal syntax, and appends a final "" to the list of strings. Here, I
     find each element of the list, using that "" as a stopper, and then call apop_data_rm_columns.*/
+    Apop_assert_c(d, , 1, "You're asking me to prune a NULL data set; returning NULL.");
     int rm_list[d->matrix->size1];
     int keep_count = 0;
     char **name_step = colnames;
@@ -629,7 +630,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     }
     apop_data_rm_columns(d, rm_list);
     for (int j=0; j<keep_count; j++)
-        apop_assert_c(used_field[j], , 0, "You asked me to keep column \"%s\" but I couldn't find a match for it. Typo?", colnames[j]);
+        apop_assert_c(used_field[j], , 1, "You asked me to keep column \"%s\" but I couldn't find a match for it. Typo?", colnames[j]);
 }
 
 /** \defgroup data_set_get Set/get/point to the data element at the given point

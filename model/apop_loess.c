@@ -3,7 +3,7 @@
 Provenance:
    * Originally written in FORTRAN `77 by Cleveland, Devlin, Grosse, and Shyu, 1988
    * Some C wrapper written by Cleveland, Grosse, and Shyu, 1992
-   * Punched through f2c, munged into one file, and heavily edited by Klemens, 2009
+   * Punched through f2c, munged into one file, and heavily edited by Klemens, 2009, 2011
    * Legal & ref.s: Documentation from CG&S state that their code is
             public domain. See http://netlib.org/a/cloess.pdf (esp. if
             you hope to modify the below). You can still get the `92
@@ -32,17 +32,13 @@ Provenance:
 
 typedef long int logical;
 typedef long int integer;
-typedef float real;
 
 #define Calloc(n,t)	(t *)calloc((unsigned)(n),sizeof(t))   // From #include "S.h"
 #define Recover(msg) Apop_assert(0, "%s", msg)
 #define Warning(msg) Apop_assert_c(0, , 0 , "%s", msg)
 
-static double c_b44 = -1.;
 static integer c__0 = 0;
 static integer c__1 = 1;
-static integer c__1000 = 1000;
-static integer c__10000 = 10000;
 static integer c__15 = 15;
 static integer c__2 = 2;
 static integer c__21 = 21;
@@ -50,7 +46,7 @@ double doublepluszero = 0;
 
 //I'm using the GSL's blas system. These are pass-through functions that
 //save me the trouble of slogging through the code and making substitutions.
-void dswap(integer *N, double *x, double *y){ cblas_dswap(*N, x, 1, y, 1);}
+void dswap(const integer N, double *x, double *y){ cblas_dswap(N, x, 1, y, 1);}
 
 double dnrm2(const integer *N, const double *x){ return cblas_dnrm2(*N, x, 1); }
 
@@ -63,7 +59,7 @@ void daxpy_(integer *N, const double *alpha, const double *x, integer *incx, dou
 void dcopy_(const integer *N, const double *x, const integer incx, double *y, const integer incy){
 		cblas_dcopy(*N, x, incx, y, incy); }
 
-void dscal(integer *N, const double *alpha, double *x){ cblas_dscal(*N, *alpha, x, 1);}
+void dscal(integer *N, const double alpha, double *x){ cblas_dscal(*N, alpha, x, 1);}
 
 static void drotg_(double *a,double *b, double *c, double *s){ cblas_drotg(a,b,c,s);}
 
@@ -78,144 +74,120 @@ static double d_sign(double *a, double *b) {
     return( *b >= 0 ? x : -x);
 }
 
-////// misc.c
-static double d1mach(integer i) {
-	switch(i){
-	case 1: return DBL_MIN;
-	case 2: return DBL_MAX;
-	case 3: return DBL_EPSILON/FLT_RADIX;
-	case 4: return DBL_EPSILON;
-	case 5: return log10(FLT_RADIX);
-        default: Recover("Invalid argument to d1mach()");
-        }
-    return GSL_NAN; //If you're here, you sent a bad input.
-}
+/*//// dqrsl.f -- translated by f2c (version 20061008).
 
-////// dqrsl.f -- translated by f2c (version 20061008).
+     dqrsl applies the output of dqrdc to compute coordinate transformations,
+     projections, and least squares solutions.  for k .le. min(n,p), let xk be the matrix
 
-/*     dqrsl applies the output of dqrdc to compute coordinate */
-/*     transformations, projections, and least squares solutions. */
-/*     for k .le. min(n,p), let xk be the matrix */
+            xk = (x(jpvt(1)),x(jpvt(2)), ... ,x(jpvt(k))) 
 
-/*            xk = (x(jpvt(1)),x(jpvt(2)), ... ,x(jpvt(k))) */
+     formed from columns jpvt(1), ... ,jpvt(k) of the original n x p matrix x that was
+     input to dqrdc (if no pivoting was done, xk consists of the first k columns of x
+     in their original order).  dqrdc produces a factored orthogonal matrix q and an
+     upper triangular matrix r such that
 
-/*     formed from columnns jpvt(1), ... ,jpvt(k) of the original */
-/*     n x p matrix x that was input to dqrdc (if no pivoting was */
-/*     done, xk consists of the first k columns of x in their */
-/*     original order).  dqrdc produces a factored orthogonal matrix q */
-/*     and an upper triangular matrix r such that */
+              xk = q * (r)
+                         (0)             
 
-/*              xk = q * (r)
-                         (0)             */
+     this information is contained in coded form in the arrays x and qraux. 
 
-/*     this information is contained in coded form in the arrays x and qraux. */
+     on entry 
 
-/*     on entry */
+        x      double precision(ldx,p). 
+               x contains the output of dqrdc. 
 
-/*        x      double precision(ldx,p). */
-/*               x contains the output of dqrdc. */
+        ldx    integer. 
+               ldx is the leading dimension of the array x. 
 
-/*        ldx    integer. */
-/*               ldx is the leading dimension of the array x. */
+        n      integer. 
+               n is the number of rows of the matrix xk.  it must have the same value
+               as n in dqrdc.
 
-/*        n      integer. */
-/*               n is the number of rows of the matrix xk.  it must */
-/*               have the same value as n in dqrdc. */
+        k      integer. 
+               k is the number of columns of the matrix xk.  k must nnot be greater
+               than min(n,p), where p is the same as in the calling sequence to dqrdc.
 
-/*        k      integer. */
-/*               k is the number of columns of the matrix xk.  k */
-/*               must nnot be greater than min(n,p), where p is the */
-/*               same as in the calling sequence to dqrdc. */
+        qraux  double precision(p). 
+               qraux contains the auxiliary output from dqrdc. 
 
-/*        qraux  double precision(p). */
-/*               qraux contains the auxiliary output from dqrdc. */
+        y      double precision(n) 
+               y contains an n-vector that is to be manipulated by dqrsl. 
 
-/*        y      double precision(n) */
-/*               y contains an n-vector that is to be manipulated by dqrsl. */
+        job    integer. 
+               job specifies what is to be computed.  job has the decimal expansion
+               abcde, with the following meaning.
 
-/*        job    integer. */
-/*               job specifies what is to be computed.  job has */
-/*               the decimal expansion abcde, with the following meaning. */
-
-/*                    if a.ne.0, compute qy.
+                    if a.ne.0, compute qy.
                       if b,c,d, or e .ne. 0, compute qty.
                       if c.ne.0, compute b.
                       if d.ne.0, compute rsd.
-                      if e.ne.0, compute xb. */
+                      if e.ne.0, compute xb. 
 
-/*               note that a request to compute b, rsd, or xb */
-/*               automatically triggers the computation of qty, for */
-/*               which an array must be provided in the calling sequence. */
+               note that a request to compute b, rsd, or xb automatically triggers
+               the computation of qty, for which an array must be provided in the
+               calling sequence.
 
-/*     on return */
+     on return 
 
-/*        qy     double precision(n). */
-/*               qy conntains q*y, if its computation has been requested. */
+        qy     double precision(n). 
+               qy conntains q*y, if its computation has been requested. 
 
-/*        qty    double precision(n). */
-/*               qty contains trans(q)*y, if its computation has */
-/*               been requested.  here trans(q) is the */
-/*               transpose of the matrix q. */
+        qty    double precision(n). 
+               qty contains trans(q)*y, if its computation has been requested.
+               here trans(q) is the transpose of the matrix q.
 
-/*        b      double precision(k) */
-/*               b contains the solution of the least squares problem */
+        b      double precision(k) 
+               b contains the solution of the least squares problem 
 
-/*                    minimize norm2(y - xk*b), */
+                    minimize norm2(y - xk*b), 
 
-/*               if its computation has been requested.  (note that */
-/*               if pivoting was requested in dqrdc, the j-th */
-/*               component of b will be associated with column jpvt(j) */
-/*               of the original matrix x that was input into dqrdc.) */
+               if its computation has been requested.  (note that if pivoting was
+               requested in dqrdc, the j-th component of b will be associated with
+               column jpvt(j) of the original matrix x that was input into dqrdc.)
 
-/*        rsd    double precision(n). */
-/*               rsd contains the least squares residual y - xk*b, */
-/*               if its computation has been requested.  rsd is */
-/*               also the orthogonal projection of y onto the */
-/*               orthogonal complement of the column space of xk. */
+        rsd    double precision(n). 
+               rsd contains the least squares residual y - xk*b, if its computation
+               has been requested.  rsd is also the orthogonal projection of y onto
+               the orthogonal complement of the column space of xk.
 
-/*        xb     double precision(n). */
-/*               xb contains the least squares approximation xk*b, */
-/*               if its computation has been requested.  xb is also */
-/*               the orthogonal projection of y onto the column space of x. */
+        xb     double precision(n). 
+               xb contains the least squares approximation xk*b, if its computation
+               has been requested.  xb is also the orthogonal projection of y onto
+               the column space of x.
 
-/*        info   integer. */
-/*               info is zero unless the computation of b has */
-/*               been requested and r is exactly singular.  in */
-/*               this case, info is the index of the first zero */
-/*               diagonal element of r and b is left unaltered. */
+        info   integer. 
+               info is zero unless the computation of b has been requested and r is
+               exactly singular.  in this case, info is the index of the first zero
+               diagonal element of r and b is left unaltered.
 
-/*     the parameters qy, qty, b, rsd, and xb are not referenced */
-/*     if their computation is not requested and in this case */
-/*     can be replaced by dummy variables in the calling program. */
-/*     to save storage, the user may in some cases use the same */
-/*     array for different parameters in the calling sequence.  a */
-/*     frequently occuring example is when one wishes to compute */
-/*     any of b, rsd, or xb and does not need y or qty.  in this */
-/*     case one may identify y, qty, and one of b, rsd, or xb, while */
-/*     providing separate arrays for anything else that is to be */
-/*     computed.  thus the calling sequence */
+     The parameters qy, qty, b, rsd, and xb are not referenced if their computation
+     is not requested and in this case can be replaced by dummy variables in the
+     calling program.  to save storage, the user may in some cases use the same array
+     for different parameters in the calling sequence.  a frequently occuring example
+     is when one wishes to compute any of b, rsd, or xb and does not need y or qty.
+     in this case one may identify y, qty, and one of b, rsd, or xb, while providing
+     separate arrays for anything else that is to be computed.  thus the calling sequence
 
-/*          call dqrsl(x,ldx,n,k,qraux,y,dum,y,b,y,dum,110,info) */
+          call dqrsl(x,ldx,n,k,qraux,y,dum,y,b,y,dum,110,info) 
 
-/*     will result in the computation of b and rsd, with rsd */
-/*     overwriting y.  more generally, each item in the following */
-/*     list contains groups of permissible identifications for */
-/*     a single calling sequence. */
+     will result in the computation of b and rsd, with rsd overwriting y.  more
+     generally, each item in the following list contains groups of permissible
+     identifications for a single calling sequence.
 
-/*          1. (y,qty,b) (rsd) (xb) (qy)
+          1. (y,qty,b) (rsd) (xb) (qy)
             2. (y,qty,rsd) (b) (xb) (qy)
             3. (y,qty,xb) (b) (rsd) (qy)
             4. (y,qy) (qty,b) (rsd) (xb)
             5. (y,qy) (qty,rsd) (b) (xb)
-            6. (y,qy) (qty,xb) (b) (rsd) */
+            6. (y,qy) (qty,xb) (b) (rsd) 
 
-/*     in any group the value returned in the array allocated to 
-       the group corresponds to the last member of the group. */
+     in any group the value returned in the array allocated to the group corresponds
+     to the last member of the group.
 
-/*     linpack. this version dated 08/14/78 . */
-/*     g.w. stewart, university of maryland, argonne national lab. */
+     linpack. this version dated 08/14/78 . 
+     g.w. stewart, university of maryland, argonne national lab. */
 static void dqrsl_(double *x, integer *ldx, integer *n, integer * k, double *qraux, double *y, 
-        double *qy, double *qty, double *b, double *rsd, double *xb, integer *job, integer *info) {
+        double *qy, double *qty, double *b, double *rsd, double *xb, integer job, integer *info) {
 
     integer x_dim1, i__1, i__2;
     static integer i__, j;
@@ -236,11 +208,11 @@ static void dqrsl_(double *x, integer *ldx, integer *n, integer * k, double *qra
     *info = 0; /*     set info flag. */
 
     /*     determine what is to be computed. */
-    cqy = *job / 10000 != 0;
-    cqty = *job % 10000 != 0;
-    cb = *job % 1000 / 100 != 0;
-    cr = *job % 100 / 10 != 0;
-    cxb = *job % 10 != 0;
+    cqy = job / 10000 != 0;
+    cqty = job % 10000 != 0;
+    cb = job % 1000 / 100 != 0;
+    cr = job % 100 / 10 != 0;
+    cxb = job % 10 != 0;
     ju = min(*k,*n - 1);
 
     /*     special action when n=1. */
@@ -364,96 +336,86 @@ L190:
     }
 } /* dqrsl_ */
 
-////// dsvdc.f -- translated by f2c (version 20061008).  */
+/*//// dsvdc.f -- translated by f2c (version 20061008).  
 
-/*     dsvdc is a subroutine to reduce a double precision nxp matrix x */
-/*     by orthogonal transformations u and v to diagonal form.  the */
-/*     diagonal elements s(i) are the singular values of x.  the */
-/*     columns of u are the corresponding left singular vectors, */
-/*     and the columns of v the right singular vectors. */
+     dsvdc is a subroutine to reduce a double precision nxp matrix x by orthogonal
+     transformations u and v to diagonal form.  the diagonal elements s(i) are the
+     singular values of x.  the columns of u are the corresponding left singular vectors,
+     and the columns of v the right singular vectors.
 
-/*     on entry */
+     on entry 
 
-/*         x         double precision(ldx,p), where ldx.ge.n. */
-/*                   x contains the matrix whose singular value */
-/*                   decomposition is to be computed.  x is */
-/*                   destroyed by dsvdc. */
+         x         double precision(ldx,p), where ldx.ge.n. 
+                   x contains the matrix whose singular value decomposition is to
+                   be computed.  x is destroyed by dsvdc.
 
-/*         ldx       integer. */
-/*                   ldx is the leading dimension of the array x. */
+         ldx       integer. 
+                   ldx is the leading dimension of the array x. 
 
-/*         n         integer. */
-/*                   n is the number of rows of the matrix x. */
+         n         integer. 
+                   n is the number of rows of the matrix x. 
 
-/*         p         integer. */
-/*                   p is the number of columns of the matrix x. */
+         p         integer. 
+                   p is the number of columns of the matrix x. 
 
-/*         ldu       integer. */
-/*                   ldu is the leading dimension of the array u. */
-/*                   (see below). */
+         ldu       integer. 
+                   ldu is the leading dimension of the array u.  (see below).
 
-/*         ldv       integer. */
-/*                   ldv is the leading dimension of the array v. */
-/*                   (see below). */
+         ldv       integer. 
+                   ldv is the leading dimension of the array v.  (see below).
 
-/*         work      double precision(n). */
-/*                   work is a scratch array. */
+         work      double precision(n). 
+                   work is a scratch array. 
 
-/*         job       integer. */
-/*                   job controls the computation of the singular vectors.*/
-/*                   It has the decimal expansion ab with the following meaning */
+         job       integer. 
+                   job controls the computation of the singular vectors.  It has the
+                   decimal expansion ab with the following meaning
 
-/*                    a.eq.0    do not compute the left singular vectors.
+                    a.eq.0    do not compute the left singular vectors.
                       a.eq.1    return the n left singular vectors in u.
                       a.ge.2    return the first min(n,p) singular vectors in u. 
                       b.eq.0    do not compute the right singular vectors. 
-                      b.eq.1    return the right singular vectors in v. */
+                      b.eq.1    return the right singular vectors in v. 
 
-/*     on return */
+     on return 
 
-/*         s         double precision(mm), where mm=min(n+1,p). */
-/*                   the first min(n,p) entries of s contain the */
-/*                   singular values of x arranged in descending */
-/*                   order of magnitude. */
+         s         double precision(mm), where mm=min(n+1,p).
+                   the first min(n,p) entries of s contain the singular values of x
+                   arranged in descending order of magnitude.
 
-/*         e         double precision(p), */
-/*                   e ordinarily contains zeros.  however see the */
-/*                   discussion of info for exceptions. */
+         e         double precision(p), 
+                   e ordinarily contains zeros.  however see the discussion of info
+                   for exceptions.
 
-/*         u         double precision(ldu,k), where ldu.ge.n.  if */
-/*                                   joba.eq.1 then k.eq.n, if joba.ge.2 */
-/*                                   then k.eq.min(n,p). */
-/*                   u contains the matrix of left singular vectors. */
-/*                   u is not referenced if joba.eq.0.  if n.le.p */
-/*                   or if joba.eq.2, then u may be identified with x */
-/*                   in the subroutine call. */
+         u         double precision(ldu,k), where ldu.ge.n.  if 
+                                   joba.eq.1 then k.eq.n, if joba.ge.2 
+                                   then k.eq.min(n,p). 
+                   u contains the matrix of left singular vectors.  u is not referenced
+                   if joba.eq.0.  if n.le.p or if joba.eq.2, then u may be identified
+                   with x in the subroutine call.
 
-/*         v         double precision(ldv,p), where ldv.ge.p. */
-/*                   v contains the matrix of right singular vectors. */
-/*                   v is not referenced if job.eq.0.  if p.le.n, */
-/*                   then v may be identified with x in the */
-/*                   subroutine call. */
+         v         double precision(ldv,p), where ldv.ge.p. 
+                   v contains the matrix of right singular vectors.  v is not referenced
+                   if job.eq.0.  if p.le.n, then v may be identified with x in the
+                   subroutine call.
 
-/*         info      integer. */
-/*                   the singular values (and their corresponding */
-/*                   singular vectors) s(info+1),s(info+2),...,s(m) */
-/*                   are correct (here m=min(n,p)).  thus if */
-/*                   info.eq.0, all the singular values and their */
-/*                   vectors are correct.  in any event, the matrix */
-/*                   b = trans(u)*x*v is the bidiagonal matrix */
-/*                   with the elements of s on its diagonal and the */
-/*                   elements of e on its super-diagonal (trans(u) */
-/*                   is the transpose of u).  thus the singular */
-/*                   values of x and b are the same. */
+         info      integer. 
+                   the singular values (and their corresponding singular vectors)
+                   s(info+1),s(info+2),...,s(m) are correct (here m=min(n,p)).  thus if
+                   info.eq.0, all the singular values and their vectors are correct.
+                   in any event, the matrix b = trans(u)*x*v is the bidiagonal matrix
+                   with the elements of s on its diagonal and the elements of e on its
+                   super-diagonal (trans(u) is the transpose of u).  thus the singular
+                   values of x and b are the same.
 
-/*     linpack. this version dated 08/14/78 . */
-/*              correction made to shift 2/84. */
-/*     g.w. stewart, university of maryland, argonne national lab. */
+     linpack. this version dated 08/14/78 . 
+              correction made to shift 2/84. 
+     g.w. stewart, university of maryland, argonne national lab. 
 
-/*     Modified 2000-12-28 to use a relative convergence test, */
-/*     as this was infinite-looping on ix86. */
+     Modified 2000-12-28 to use a relative convergence test, 
+     as this was infinite-looping on ix86. 
 
-/*     dsvdc uses the following functions and subprograms. */
+     dsvdc uses the following functions and subprograms. */
 
 static void dsvdc_(double *x, integer *ldx, integer *n, integer * p, double *s,
         double *e, double *u, integer *ldu,
@@ -511,8 +473,7 @@ static void dsvdc_(double *x, integer *ldx, integer *n, integer * p, double *s,
                     s[l] = d_sign(&s[l], &x[l + l * x_dim1]);
                 }
                 i__2 = *n - l + 1;
-                d__1 = 1. / s[l];
-                dscal(&i__2, &d__1, &x[l + l * x_dim1]);
+                dscal(&i__2, 1./s[l], &x[l + l * x_dim1]);
                 x[l + l * x_dim1] += 1.;
             }
             s[l] = -s[l];
@@ -544,8 +505,7 @@ static void dsvdc_(double *x, integer *ldx, integer *n, integer * p, double *s,
             if (e[lp1] != 0.)
                 e[l] = d_sign(&e[l], &e[lp1]);
             i__2 = *p - l;
-            d__1 = 1. / e[l];
-            dscal(&i__2, &d__1, &e[lp1]);
+            dscal(&i__2, 1./e[l], &e[lp1]);
             e[lp1] += 1.;
         }
         e[l] = -e[l];
@@ -605,7 +565,7 @@ L170:
                             daxpy_(&i__3, &t, &u[l + l * u_dim1], &c__1, &u[l + j * u_dim1], & c__1);
                         }
                     i__2 = *n - l + 1;
-                    dscal(&i__2, &c_b44, &u[l + l * u_dim1]);
+                    dscal(&i__2, -1., &u[l + l * u_dim1]);
                     u[l + l * u_dim1] += 1.;
                     lm1 = l - 1;
                     if (lm1 >= 1)
@@ -649,15 +609,14 @@ L360:
     return;
 L370:
 
-/*        this section of the program inspects for */
-/*        negligible elements in the s and e arrays.  on */
-/*        completion the variables kase and l are set as follows. */
+/*      This section of the program inspects for negligible elements in the s and
+        e arrays.  On completion the variables kase and l are set as follows.
 
-/*           kase = 1     if s(m) and e(l-1) are negligible and l.lt.m */
-/*           kase = 2     if s(l) is negligible and l.lt.m */
-/*           kase = 3     if e(l-1) is negligible, l.lt.m, and */
-/*                        s(l), ..., s(m) are not negligible (qr step). */
-/*           kase = 4     if e(m-1) is negligible (convergence). */
+           kase = 1     if s(m) and e(l-1) are negligible and l.lt.m 
+           kase = 2     if s(l) is negligible and l.lt.m 
+           kase = 3     if e(l-1) is negligible, l.lt.m, and 
+                        s(l), ..., s(m) are not negligible (qr step). 
+           kase = 4     if e(m-1) is negligible (convergence). */
 
     for (ll = 1; ll <= m; ++ll) {
         l = m - ll;
@@ -814,7 +773,7 @@ L570:
     if (s[l] < 0.) {
         s[l] = -s[l];
         if (wantv)
-            dscal(p, &c_b44, &v[l * v_dim1 + 1]);
+            dscal(p, -1., &v[l * v_dim1 + 1]);
     }
 /*           order the singular value. */
 
@@ -823,9 +782,9 @@ L570:
         s[l] = s[l + 1];
         s[l + 1] = t;
         if (wantv && l < *p)
-            dswap(p, &v[l * v_dim1 + 1], &v[(l + 1) * v_dim1 + 1]);
+            dswap(*p, &v[l * v_dim1 + 1], &v[(l + 1) * v_dim1 + 1]);
         if (wantu && l < *n)
-            dswap(n, &u[l * u_dim1 + 1], &u[(l + 1) * u_dim1 + 1]);
+            dswap(*n, &u[l * u_dim1 + 1], &u[(l + 1) * u_dim1 + 1]);
         ++l;
     }
     iter = 0;
@@ -839,27 +798,22 @@ L610:
 #define SYMMETRIC	0
 
 static long	*iv, liv, lv, tau;
-static double	*v;
+static double *v;
 
 /* begin ehg's FORTRAN-callable C-codes */
 
 static void loess_error(int i){ //used to be ehg182.
   char *mess, mess2[50];
     switch(i){
-case 100: mess="wrong version number in lowesd.  Probably typo in caller."; break;
 case 101: mess="d>dMAX in ehg131.  Need to recompile with increased dimensions."; break;
 case 102: mess="liv too small.   (Discovered by lowesd)"; break;
 case 103: mess="lv too small.    (Discovered by lowesd)"; break;
 case 104: mess="span too small.  fewer data values than degrees of freedom."; break;
 case 105: mess="k>d2MAX in ehg136.  Need to recompile with increased dimensions."; break;
 case 106: mess="lwork too small"; break;
-case 107: mess="invalid value for kernel"; break;
-case 108: mess="invalid value for ideg"; break;
-case 109: mess="lowstt only applies when kernel=1."; break;
 case 110: mess="not enough extra workspace for robustness calculation"; break;
 case 120: mess="zero-width neighborhood. make span bigger"; break;
 case 121: mess="all data on boundary of neighborhood. make span bigger"; break;
-case 122: mess="extrapolation not allowed with blending"; break;
 case 123: mess="ihat=1 (diag L) in l2fit only makes sense if z=x (eval=data)."; break;
 case 171: mess="lowesd must be called first."; break;
 case 172: mess="lowesf must not come between lowesb and lowese, lowesr, or lowesl."; break;
@@ -867,21 +821,14 @@ case 173: mess="lowesb must come before lowese, lowesr, or lowesl."; break;
 case 174: mess="lowesb need not be called twice."; break;
 case 175: mess="need setLf=.true. for lowesl."; break;
 case 180: mess="nv>nvmax in cpvert."; break;
-case 181: mess="nt>20 in eval."; break;
 case 182: mess="svddc failed in l2fit."; break;
-case 183: mess="didnt find edge in vleaf."; break;
-case 184: mess="zero-width cell found in vleaf."; break;
 case 185: mess="trouble descending to leaf in vleaf."; break;
 case 186: mess="insufficient workspace for lowesf."; break;
 case 187: mess="insufficient stack space"; break;
-case 188: mess="lv too small for computing explicit L"; break;
-case 191: mess="computed trace L was negative; something is wrong!"; break;
-case 192: mess="computed delta was negative; something is wrong!"; break;
 case 193: mess="workspace in loread appears to be corrupted"; break;
 case 194: mess="trouble in l2fit/l2tr"; break;
 case 195: mess="only constant, linear, or quadratic local models allowed"; break;
 case 196: mess="degree must be at least 1 for vertex influence matrix"; break;
-case 999: mess="not yet implemented"; break;
 default: sprintf(mess=mess2,"Assert failed; error code %d\n",i); break;
     }
     Recover(mess); 
@@ -897,7 +844,7 @@ static void ehg183_(char *s, integer *i, integer n, integer inc) {
   Warning(mess);
 }
 
-static void ehg184_( char *s, double *x, integer n, integer inc) {
+static void ehg184_(char *s, double *x, integer n, integer inc) {
   char mess[4000], num[30];
   strcpy(mess,s);
   for (int j=0; j< n; j++) {
@@ -910,17 +857,17 @@ static void ehg184_( char *s, double *x, integer n, integer inc) {
 ////// loessf.f -- translated by f2c (version 20061008). 
 
 static void dqrdc_(double *x, integer *ldx, integer *n, integer *p, double *qraux, 
-        integer *jpvt, double *work, integer *job) ;
+        integer *jpvt, double *work, integer job) ;
 static double ehg128_(double *, integer *, integer *, integer *, integer *, 
         double *, integer *, integer *, integer *, double *, integer *, double *);
-static void ehg129_(integer *, integer *, integer *, double *, integer *, integer *, double *),
+static void ehg129_(integer *, integer *, integer *, double *, integer *, integer, double *),
 ehg139_(double *, integer *, integer *, integer *, integer *, integer *, double *, double *,
         integer *, integer *, double *, double *, double *, integer *, integer *,
 	    double *, double *, double *, double *, integer *, double *, double *,
         double *, integer *, integer *, integer *, double *, integer *, integer *, integer *,
         integer *, double *, integer *, integer *, integer *, integer *, integer *, double *,
         logical *, double *),
-ehg197(integer deg, integer *tau, integer *d__, double *f, integer *dk, double *trl);
+ehg197(integer deg, integer d__, double f, integer *dk, double *trl);
 static double ehg176_(double *);
 
 static integer ifloor(double x) {
@@ -942,7 +889,7 @@ static void ehg126_(integer *d__, integer *n, integer *vc, double *x, double *v,
 
     ++execnt;
     if (execnt == 1)
-        machin = d1mach(2); //   MachInf -> machin 
+        machin = DBL_MAX;
 /*     fill in vertices for bounding box of $x$ */
 /*     lower left, upper right */
     for (k = 1; k <= *d__; ++k) {
@@ -971,15 +918,15 @@ static void ehg126_(integer *d__, integer *n, integer *vc, double *x, double *v,
     }
 } /* ehg126_ */
 
-static void ehg125_(integer *p, integer *nv, double *v, integer *vhit, integer *nvmax, integer *d__,
-       integer *k, double *t, integer *r__, integer *s, integer *f, integer *l, integer *u) {
+static void ehg125_(integer *p, integer *nv, double *v, integer *vhit, integer nvmax, integer d__,
+       integer k, double *t, integer *r__, integer *s, integer *f, integer *l, integer *u) {
 
     integer f_dim1, l_dim1, u_dim1, v_dim1;
     static integer h__, i__, j, m, i3, mm, execnt = 0;
     static logical match;
 
     --vhit;
-    v_dim1 = *nvmax;
+    v_dim1 = nvmax;
     v -= 1 + v_dim1;
     u_dim1 = *r__;
     u -= 1 + (u_dim1 << 1);
@@ -993,15 +940,15 @@ static void ehg125_(integer *p, integer *nv, double *v, integer *vhit, integer *
     for (i__ = 1; i__ <= *r__; ++i__)
         for (j = 1; j <= *s; ++j) {
             ++h__;
-            for (i3 = 1; i3 <= *d__; ++i3)
+            for (i3 = 1; i3 <= d__; ++i3)
                 v[h__ + i3 * v_dim1] = v[f[i__ + (j << 1) * f_dim1] + i3 * v_dim1];
-            v[h__ + *k * v_dim1] = *t;
+            v[h__ + k * v_dim1] = *t;
     /*           check for redundant vertex */
             match = FALSE_;
             m = 1;
             while (!match && (m <=*nv)){
                 match = v[m + v_dim1] == v[h__ + v_dim1];
-                for (mm = 2 ;match && ( mm <= *d__); mm++)
+                for (mm = 2 ;match && ( mm <= d__); mm++)
                     match = v[m + mm * v_dim1] == v[h__ + mm * v_dim1];
                 ++m;
                 }
@@ -1019,7 +966,7 @@ static void ehg125_(integer *p, integer *nv, double *v, integer *vhit, integer *
             u[i__ + ((j << 1) + 1) * u_dim1] = f[i__ + ((j << 1) + 1) * f_dim1];
         }
     *nv = h__;
-    if (! (*nv <= *nvmax))
+    if (! (*nv <= nvmax))
         loess_error(180);
 } /* ehg125_ */
 
@@ -1112,9 +1059,9 @@ static integer idamax(integer n, double *dx, integer incx) {
     return ret_val;
 } /* idamax */
 
-static void ehg124_(integer *ll, integer *uu, integer *d__, integer *n, integer *nv, integer *nc,
+static void ehg124_(integer *ll, integer *uu, integer d__, integer n, integer *nv, integer *nc,
         integer *ncmax, integer *vc, double * x, integer *pi, integer *a, double *xi,
-        integer *lo, integer *hi, integer *c__, double *v, integer *vhit, integer *nvmax, integer *
+        integer *lo, integer *hi, integer *c__, double *v, integer *vhit, integer nvmax, integer *
         fc, double *fd, integer *dd) {
     integer c_dim1, v_dim1, v_offset, x_dim1, x_offset, i__1, i__3;
     static integer execnt = 0, k, l, m, p, u, i4, check, lower, upper, inorm2, offset;
@@ -1122,11 +1069,11 @@ static void ehg124_(integer *ll, integer *uu, integer *d__, integer *n, integer 
     static double diag[8], diam, sigma[8];
 
     --pi; --hi; --lo; --xi; --a; --vhit;
-    x_dim1 = *n;
+    x_dim1 = n;
     x -= x_offset = 1 + x_dim1;
     c_dim1 = *vc;
     c__ -= 1 + c_dim1;
-    v_dim1 = *nvmax;
+    v_dim1 = nvmax;
     v -= v_offset = 1 + v_dim1;
 
     ++execnt;
@@ -1151,7 +1098,7 @@ static void ehg124_(integer *ll, integer *uu, integer *d__, integer *n, integer 
             if (*ncmax < *nc + 2)
                 i2 = TRUE_;
             else
-                i2 = (double) (*nvmax) < *nv + (double) (*vc) / 2.;
+                i2 = (double) (nvmax) < *nv + (double) (*vc) / 2.;
             leaf = i2;
         }
         if (! leaf) {
@@ -1202,8 +1149,8 @@ static void ehg124_(integer *ll, integer *uu, integer *d__, integer *n, integer 
             lo[*nc] = m + 1;
             hi[*nc] = u;
             i__1 = pow_ii(2, k - 1);
-            i__3 = pow_ii(2, *d__ - k);
-            ehg125_(&p, nv, &v[v_offset], &vhit[1], nvmax, d__, &k, &xi[p], &i__1,
+            i__3 = pow_ii(2, d__ - k);
+            ehg125_(&p, nv, &v[v_offset], &vhit[1], nvmax, d__, k, &xi[p], &i__1,
                  &i__3, &c__[p * c_dim1 + 1], &c__[lo[p] * c_dim1 + 1], &c__[hi[p] * c_dim1 + 1]);
         }
         ++p;
@@ -1223,7 +1170,7 @@ static void ehg127_(double *q, integer *n, integer *d__, integer *nf, double *f,
     static integer execnt = 0, i__, j, i3, i9, jj, info, jpvt, inorm2, column;
     static double g[15], i2, rho, scal, machep, colnor[15];
 
-    --dist; --rw; --y; --psi;
+    --rw; --y; --psi;
     x_dim1 = *n;
     x -= 1 + x_dim1;
     --q;
@@ -1238,7 +1185,7 @@ static void ehg127_(double *q, integer *n, integer *d__, integer *nf, double *f,
 
     ++execnt;
     if (execnt == 1)
-        machep = d1mach(4);
+        machep = DBL_EPSILON;
     /*     sort by distance */
     for (i3 = 1; i3 <= *n; ++i3)
         dist[i3] = 0.;
@@ -1311,8 +1258,8 @@ static void ehg127_(double *q, integer *n, integer *d__, integer *nf, double *f,
             colnor[j - 1] = 1.;
     }
 /*     singular value decomposition */
-    dqrdc_(&b[b_offset], nf, nf, k, &qraux[1], &jpvt, &work[1], &c__0);
-    dqrsl_(&b[b_offset], nf, nf, k, &qraux[1], &eta[1], &work[1], &eta[1], & eta[1], &work[1], &work[1], &c__1000, &info);
+    dqrdc_(&b[b_offset], nf, nf, k, &qraux[1], &jpvt, &work[1], 0);
+    dqrsl_(&b[b_offset], nf, nf, k, &qraux[1], &eta[1], &work[1], &eta[1], & eta[1], &work[1], &work[1], 1000, &info);
     for (i9 = 1; i9 <= *k; ++i9)
         for (i3 = 1; i3 <= *k; ++i3)
             u[i3 + i9 * 15] = 0.;
@@ -1353,21 +1300,21 @@ static void ehg127_(double *q, integer *n, integer *d__, integer *nf, double *f,
             s[j] = 0.;
 } /* ehg127_ */
 
-static void ehg129_(integer *l, integer *u, integer *d__, double *x, integer *pi, integer *n, double *sigma) {
+static void ehg129_(integer *l, integer *u, integer *d__, double *x, integer *pi, integer n, double *sigma) {
     integer x_dim1;
-    static integer execnt = 0, i__, k;
+    static integer execnt = 0;
     static double t, beta, alpha, machin;
     --sigma;
     --pi;
-    x_dim1 = *n;
+    x_dim1 = n;
     x -= 1 + x_dim1;
     ++execnt;
     if (execnt == 1)
-        machin = d1mach(2);
-    for (k = 1; k <= *d__; ++k) {
+        machin = DBL_MAX;
+    for (integer k = 1; k <= *d__; ++k) {
         alpha = machin;
         beta = -machin;
-        for (i__ = *l; i__ <= *u; ++i__) {
+        for (integer i__ = *l; i__ <= *u; ++i__) {
             t = x[pi[i__] + k * x_dim1];
             alpha = GSL_MIN(alpha, x[pi[i__] + k * x_dim1]);
             beta = max(beta,t);
@@ -1392,7 +1339,7 @@ static void ehg131_(double *x, double *y, double *rw, double *trl,
     static double delta[8];
     static integer identi;
 
-    --dist; --psi; --pi; --diagl; --rw; --y;
+    --psi; --pi; 
     x_dim1 = *n;
     x -= x_offset = 1 + x_dim1;
     --xi;
@@ -1431,22 +1378,22 @@ static void ehg131_(double *x, double *y, double *rw, double *trl,
     *fd *= dnrm2(d__, delta);
     for (identi = 1; identi <= *n; ++identi)
         pi[identi] = identi;
-    ehg124_(&c__1, n, d__, n, nv, nc, ncmax, vc, &x[x_offset], &pi[1], &a[1],
-	    &xi[1], &lo[1], &hi[1], &c__[c_offset], &v[v_offset], &vhit[1], nvmax, ntol, fd, dd);
+    ehg124_(&c__1, n, *d__, *n, nv, nc, ncmax, vc, &x[x_offset], &pi[1], &a[1],
+	    &xi[1], &lo[1], &hi[1], &c__[c_offset], &v[v_offset], &vhit[1], *nvmax, ntol, fd, dd);
     // Smooth
     if (*trl != 0.)
         for (i2 = 1; i2 <= *nv; ++i2)
             for (i1 = 0; i1 <= *d__; ++i1)
                 vval2[i1 + i2 * vval2_dim1] = 0.;
-    ehg139_(&v[v_offset], nvmax, nv, n, d__, nf, f, &x[x_offset], &pi[1], &psi[1], &y[1],
-            &rw[1], trl, kernel, k, &dist[1], &dist[1], &eta[1], &b[1], d__, &w[1], &diagl[1],
+    ehg139_(&v[v_offset], nvmax, nv, n, d__, nf, f, &x[x_offset], &pi[1], &psi[1], y,
+            rw, trl, kernel, k, dist, dist, &eta[1], &b[1], d__, &w[1], diagl,
             &vval2[vval2_offset], nc, vc, &a[1], &xi[1], &lo[1], &hi[1], &c__[c_offset], &vhit[1], rcond, sing,
             dd, tdeg, &cdeg[1], &lq[lq_offset], &lf[lf_offset], setlf, &vval[vval_offset]);
 } /* ehg131_ */
 
 static void ehg133_(integer *n, integer *d__, integer *vc, integer *nvmax, integer *nc, 
         integer *ncmax, integer *a, integer *c__, integer *hi, integer *lo, double *v, 
-        double *vval, double *xi, integer *m, double *z__, double *s) {
+        double *vval, double *xi, integer m, double *z__, double *s) {
     integer c_dim1, c_offset, v_dim1, v_offset, vval_dim1, vval_offset, z_dim1, z_offset;
 
     static integer execnt = 0, i__, i1;
@@ -1454,26 +1401,22 @@ static void ehg133_(integer *n, integer *d__, integer *vc, integer *nvmax, integ
 
     vval_dim1 = *d__ - 0 + 1;
     vval -= vval_offset = 0 + vval_dim1;
-    --xi;
-    --lo;
-    --hi;
-    --a;
     --s;
     v_dim1 = *nvmax;
     v -= v_offset = 1 + v_dim1;
     c_dim1 = *vc;
     c__ -= c_offset = 1 + c_dim1;
-    z_dim1 = *m;
+    z_dim1 = m;
     z__ -= z_offset = 1 + z_dim1;
 
     ++execnt;
-    for (i__ = 1; i__ <= *m; ++i__) {
+    for (i__ = 1; i__ <= m; ++i__) {
         for (i1 = 1; i1 <= *d__; ++i1)
             delta[i1 - 1] = z__[i__ + i1 * z_dim1];
-        s[i__] = ehg128_(delta, d__, ncmax, vc, &a[1], &xi[1], &lo[1], &hi[1],
+        s[i__] = ehg128_(delta, d__, ncmax, vc, a, xi, lo, hi,
              &c__[c_offset], &v[v_offset], nvmax, &vval[vval_offset]);
     }
-} /* ehg133_ */
+}
 
 static void set_cs(integer d, integer i, double *c1, double *c2, double *c3){
     static double c[48] = { .297162,.380266,.5886043,.4263766,.3346498,
@@ -1556,8 +1499,8 @@ static void lowesc_(integer *n, double *l, double *ll, double *trl, double *delt
         *delta2 += ddot_(n, &ll[i__ + ll_dim1], n, &ll[i__ * ll_dim1 + 1], & c__1);
 } /* lowesc_ */
 
-static void ehg169_(integer *d__, integer *vc, integer *nc, integer *ncmax, integer *nv, 
-        integer *nvmax, double *v, integer *a, double *xi, integer *c__, integer *hi, integer *lo) {
+static void ehg169_(integer d__, integer *vc, integer *nc, integer *ncmax, integer *nv, 
+        integer nvmax, double *v, integer *a, double *xi, integer *c__, integer *hi, integer *lo) {
     integer c_dim1, v_dim1, v_offset, i__1, i__3;
     static integer execnt = 0, i__, j, k, p, mc, mv, novhit[1];
 
@@ -1567,7 +1510,7 @@ static void ehg169_(integer *d__, integer *vc, integer *nc, integer *ncmax, inte
     c__ -= 1 + c_dim1;
     --xi;
     --a;
-    v_dim1 = *nvmax;
+    v_dim1 = nvmax;
     v -= v_offset = 1 + v_dim1;
 
     ++execnt;
@@ -1575,7 +1518,7 @@ static void ehg169_(integer *d__, integer *vc, integer *nc, integer *ncmax, inte
     /*     remaining vertices */
     for (i__ = 2; i__ <= *vc - 1; ++i__) {
         j = i__ - 1;
-        for (k = 1; k <= *d__; ++k) {
+        for (k = 1; k <= d__; ++k) {
             v[i__ + k * v_dim1] = v[j % 2 * (*vc - 1) + 1 + k * v_dim1];
             j = ifloor((double)j / 2.);
         }
@@ -1597,15 +1540,15 @@ static void ehg169_(integer *d__, integer *vc, integer *nc, integer *ncmax, inte
             ++mc;
             hi[p] = mc;
             i__1 = pow_ii(2, k-1);
-            i__3 = pow_ii(2, *d__ - k);
-            ehg125_(&p, &mv, &v[v_offset], novhit, nvmax, d__, &k, &xi[p], &i__1,
+            i__3 = pow_ii(2, d__ - k);
+            ehg125_(&p, &mv, &v[v_offset], novhit, nvmax, d__, k, &xi[p], &i__1,
                 &i__3, &c__[p * c_dim1 + 1], &c__[lo[p] * c_dim1 + 1], &c__[hi[p] * c_dim1 + 1]);
         }
     if (! (mc == *nc) || ! (mv == *nv))
         loess_error(193);
-} /* ehg169_ */
+}
 
-static double ehg176_(double *z__) {
+static double ehg176_(double *z) {
     static integer d__ = 1;
     static integer vc = 2;
     static integer nv = 10;
@@ -1647,9 +1590,8 @@ static double ehg176_(double *z__) {
     static double v[10]	/* was [10][1] */ = { -.005,1.005,.3705,.2017,
 	    .5591,.1204,.2815,.4536,.7132,.8751 };
 
-    --z__;
-    return ehg128_(&z__[1], &d__, &nc, &vc, a, xi, lo, hi, c__, v, &nv, vval);
-} /* ehg176_ */
+    return ehg128_(z, &d__, &nc, &vc, a, xi, lo, hi, c__, v, &nv, vval);
+}
 
 #undef xi
 #undef lo
@@ -1719,26 +1661,26 @@ static void ehg191_(integer *m, double *z__, double *l, integer *d__, integer *n
     }
 } /* ehg191_ */
 
-static void ehg196_(integer *tau, integer *d__, double *f, double *trl) {
+static void ehg196_(integer tau, integer d__, double f, double *trl) {
     static integer execnt = 0, dka, dkb;
     static double trla, trlb, alpha;
 
     ++execnt;
-    ehg197(1, tau, d__, f, &dka, &trla);
-    ehg197(2, tau, d__, f, &dkb, &trlb);
-    alpha = (double) (*tau - dka) / (double) (dkb - dka);
+    ehg197(1, d__, f, &dka, &trla);
+    ehg197(2, d__, f, &dkb, &trlb);
+    alpha = (double) (tau - dka) / (double) (dkb - dka);
     *trl = (1 - alpha) * trla + alpha * trlb;
-} /* ehg196_ */
+}
 
-static void ehg197(integer deg, integer *tau, integer *d__, double *f, integer *dk, double *trl) {
+static void ehg197(integer deg, integer d__, double f, integer *dk, double *trl) {
     *dk = 0;
     if (deg == 1)
-        *dk = *d__ + 1;
+        *dk = d__ + 1;
     if (deg == 2)
-        *dk = (integer) ((double) ((*d__ + 2) * (*d__ + 1)) / 2.);
-    real g1 = (*d__ * -.08125 + .13) * *d__ + 1.05;
-    *trl = *dk * (GSL_MAX( 0., (g1 - *f) / *f) + 1);
-} /* ehg197_ */
+        *dk = (integer) ((double) ((d__ + 2) * (d__ + 1)) / 2.);
+    float g1 = (d__ * -.08125 + .13) * d__ + 1.05;
+    *trl = *dk * (GSL_MAX( 0., (g1 - f) / f) + 1);
+}
 
 void hermite_prep(double h, double *phi0, double *phi1, double *psi0, double *psi1){
     *phi0 = (1-h)*(1-h)* (h * 2 + 1);
@@ -1768,7 +1710,7 @@ int xibar_search(const integer *a, const integer t[], const double* xi, const do
 static double ehg128_(double *z__, integer *d__, integer *ncmax, integer *vc,
         integer *a, double *xi, integer *lo, integer *hi, integer *c__,
         double *v, integer *nvmax, double *vval) {
-    integer c_dim1, v_dim1, vval_dim1, i__1;
+    integer c_dim1, v_dim1, vval_dim1;
     static double g[2304]	/* was [9][256] */, h__;
     static logical i2;
     static integer execnt = 0, t[20], i__, j, m, i1, i11, i12, ig, ii, lg, ll, nt, ur;
@@ -1796,8 +1738,7 @@ static double ehg128_(double *z__, integer *d__, integer *ncmax, integer *vc,
         else
             i1 = hi[j];
         t[nt - 1] = i1;
-        if (! (nt < 20))
-            loess_error(181);
+        Apop_assert(nt < 20, "nt>=20 in eval.");
         j = t[nt - 1];
     }
     /*     tensor */
@@ -1820,11 +1761,9 @@ static double ehg128_(double *z__, integer *d__, integer *ncmax, integer *vc,
             i2 = h__ <= 1.001;
         else
             i2 = FALSE_;
-        if (! i2)
-            loess_error(122);
+        Apop_assert(i2, "extrapolation not allowed with blending.");
         lg = (integer) ((double) lg / 2.);
-        i__1 = lg;
-        for (ig = 1; ig <= i__1; ++ig) {
+        for (ig = 1; ig <= lg; ++ig) {
             // Hermite basis
             hermite_prep(h__, &phi0, &phi1, &psi0, &psi1);
             g[ig * 9 - 9] = phi0 * g[ig * 9 - 9] + phi1 * g[(ig + lg) * 9 - 9]
@@ -1980,7 +1919,7 @@ static double ehg128_(double *z__, integer *d__, integer *ncmax, integer *vc,
         s = sns + sew - s;
     }
     return s;
-} /* ehg128_ */
+}
 
 static void ehg136_(double *u, integer *lm, integer *m, integer *n, integer *d__, integer *nf, 
         double *f, double *x, integer *psi, double *y, double *rw, integer *kernel, integer *k, 
@@ -1997,7 +1936,6 @@ static void ehg136_(double *u, integer *lm, integer *m, integer *n, integer *d__
     o -= 1 + o_dim1;
     --dist;
     --rw;
-    --y;
     --psi;
     x_dim1 = *n;
     x -= x_offset = 1 + x_dim1;
@@ -2021,7 +1959,7 @@ static void ehg136_(double *u, integer *lm, integer *m, integer *n, integer *d__
     for (l = 1; l <= *m; ++l) {
         for (i1 = 1; i1 <= *d__; ++i1)
             q[i1 - 1] = u[l + i1 * u_dim1];
-        ehg127_(q, n, d__, nf, f, &x[x_offset], &psi[1], &y[1], &rw[1],
+        ehg127_(q, n, d__, nf, f, &x[x_offset], &psi[1], y, &rw[1],
             kernel, k, &dist[1], &eta[1], &b[b_offset], od, &w[1], rcond,
             sing, sigma, e, g, dgamma, qraux, work, &tol, dd, tdeg, &cdeg[1], &s[l * s_dim1]);
         if (*ihat == 1) {
@@ -2042,7 +1980,7 @@ static void ehg136_(double *u, integer *lm, integer *m, integer *n, integer *d__
             eta[i__] = w[i__];
     /*           $eta = Q sup T W e sub i$ */
             dqrsl_(&b[b_offset], nf, nf, k, qraux, &eta[1], &eta[1], &eta[1],
-                &eta[1], &eta[1], &eta[1], &c__1000, &info);
+                &eta[1], &eta[1], &eta[1], 1000, &info);
     /*           $gamma = U sup T eta sub {1:k}$ */
             for (i1 = 1; i1 <= *k; ++i1)
                 dgamma[i1 - 1] = 0.;
@@ -2068,7 +2006,7 @@ static void ehg136_(double *u, integer *lm, integer *m, integer *n, integer *d__
                 for (i1 = 1; i1 <=  *k; ++i1)
                     eta[i1] = e[i1 + j * 15 - 16];
                 dqrsl_(&b[b_offset], nf, nf, k, qraux, &eta[1], &eta[1],
-                    work, work, work, work, &c__10000, &info);
+                    work, work, work, work, 10000, &info);
                 if (tol < sigma[j - 1])
                     scale = 1. / sigma[j - 1];
                 else
@@ -2149,7 +2087,7 @@ static void ehg139_(double *v, integer *nvmax, integer *nv, integer *n, integer 
     static double term, work[15], scale, sigma[15], qraux[15], dgamma[15];
 
     --vhit; --diagl; --phi; --dist; --rw; --y;
-    --psi; --pi; --w; --eta; --hi; --lo; --xi; --a; --cdeg;
+    --psi; --pi; --w; --eta; --hi; --lo; --xi; --cdeg;
     vval2_dim1 = *d__ - 0 + 1;
     vval2 -= vval2_offset = 0 + vval2_dim1;
     x_dim1 = *n;
@@ -2188,7 +2126,7 @@ static void ehg139_(double *v, integer *nvmax, integer *nv, integer *n, integer 
         for (i5 = 1; i5 <= *d__; ++i5)
             q[i5 - 1] = v[l + i5 * v_dim1];
         ehg127_(q, n, d__, nf, f, &x[x_offset], &psi[1], &y[1], &rw[1],
-            kernel, k, &dist[1], &eta[1], &b[b_offset], od, &w[1], rcond,
+            kernel, k, dist, &eta[1], &b[b_offset], od, &w[1], rcond,
             sing, sigma, u, e, dgamma, qraux, work, &tol, dd, tdeg, &cdeg[1], &s[l * s_dim1]);
         if (*trl != 0.) { // invert $psi$
             for (i5 = 1; i5 <= *n; ++i5)
@@ -2197,7 +2135,7 @@ static void ehg139_(double *v, integer *nvmax, integer *nv, integer *n, integer 
                 phi[psi[i__]] = i__;
             for (i5 = 1; i5 <= *d__; ++i5)
                 z__[i5 - 1] = v[l + i5 * v_dim1];
-            ehg137_(z__, &vhit[l], leaf, &nleaf, d__, nv, nvmax, ncmax, &a[1], &xi[1], &lo[1], &hi[1]);
+            ehg137_(z__, &vhit[l], leaf, &nleaf, d__, nv, nvmax, ncmax, a, &xi[1], &lo[1], &hi[1]);
             for (ileaf = 1; ileaf <= nleaf; ++ileaf) {
                 i__3 = hi[leaf[ileaf - 1]];
                 for (ii = lo[leaf[ileaf - 1]]; ii <= i__3; ++ii) {
@@ -2210,7 +2148,7 @@ static void ehg139_(double *v, integer *nvmax, integer *nv, integer *n, integer 
                         eta[i__] = w[i__];
                         /*                    $eta = Q sup T W e sub i$ */
                         dqrsl_(&b[b_offset], nf, nf, k, qraux, &eta[1], work,
-                            &eta[1], &eta[1], work, work, &c__1000, &info);
+                            &eta[1], &eta[1], work, work, 1000, &info);
                         for (j = 1; j <= *k; ++j) {
                             i4 = (tol < sigma[j - 1])
                                 ? ddot_(k, &u[j * 15 - 15], &c__1, &eta[1], &c__1) / sigma[j - 1]
@@ -2223,7 +2161,7 @@ static void ehg139_(double *v, integer *nvmax, integer *nv, integer *n, integer 
                                         : 0.;
                         for (i5 = 1; i5 <= *d__; ++i5)
                             z__[i5 - 1] = x[pi[ii] + i5 * x_dim1];
-                        term = ehg128_(z__, d__, ncmax, vc, &a[1], &xi[1], &
+                        term = ehg128_(z__, d__, ncmax, vc, a, &xi[1], &
                             lo[1], &hi[1], &c__[c_offset], &v[v_offset],
                             nvmax, &vval2[vval2_offset]);
                         diagl[pi[ii]] += term;
@@ -2247,7 +2185,7 @@ static void ehg139_(double *v, integer *nvmax, integer *nv, integer *n, integer 
                     eta[i5] = 0.;
                 for (i5 = 1; i5 <= *k; ++i5)
                     eta[i5] = u[i5 + j * 15 - 16];
-                dqrsl_(&b[b_offset], nf, nf, k, qraux, &eta[1], &eta[1], work, work, work, work, &c__10000, &info);
+                dqrsl_(&b[b_offset], nf, nf, k, qraux, &eta[1], &eta[1], work, work, work, work, 10000, &info);
                 scale = (tol < sigma[j - 1])
                         ? 1. / sigma[j - 1]
                         : 0.;
@@ -2273,95 +2211,95 @@ static void ehg139_(double *v, integer *nvmax, integer *nv, integer *n, integer 
                 *trl += diagl[i2];
         }
     }
-} /* ehg139_ */
+}
 
 static void dqrdc_(double *x, integer *ldx, integer *n, integer *p, double *qraux, 
-        integer *jpvt, double *work, integer *job) {
+        integer *jpvt, double *work, integer job) {
     integer x_dim1, i__2, i__3;
-    double d__1, d__2;
+    double d__2;
 
     static integer j, l, jj, jp, pl, pu, lp1, lup, maxj;
     static logical negj, swapj;
     static double t, tt, nrmxl, maxnrm;
 
-/*     dqrdc uses householder transformations to compute the qr */
-/*     factorization of an n by p matrix x.  column pivoting */
-/*     based on the 2-norms of the reduced columns may be */
-/*     performed at the users option. */
+/*     dqrdc uses householder transformations to compute the qr 
+     factorization of an n by p matrix x.  column pivoting 
+     based on the 2-norms of the reduced columns may be 
+     performed at the users option. 
 
-/*     on entry */
+     on entry 
 
-/*        x       double precision(ldx,p), where ldx .ge. n. */
-/*                x contains the matrix whose decomposition is to be */
-/*                computed. */
+        x       double precision(ldx,p), where ldx .ge. n. 
+                x contains the matrix whose decomposition is to be 
+                computed. 
 
-/*        ldx     integer. */
-/*                ldx is the leading dimension of the array x. */
+        ldx     integer. 
+                ldx is the leading dimension of the array x. 
 
-/*        n       integer. */
-/*                n is the number of rows of the matrix x. */
+        n       integer. 
+                n is the number of rows of the matrix x. 
 
-/*        p       integer. */
-/*                p is the number of columns of the matrix x. */
+        p       integer. 
+                p is the number of columns of the matrix x. 
 
-/*        jpvt    integer(p). */
-/*                jpvt contains integers that control the selection */
-/*                of the pivot columns.  the k-th column x(k) of x */
-/*                is placed in one of three classes according to the */
-/*                value of jpvt(k). */
+        jpvt    integer(p). 
+                jpvt contains integers that control the selection 
+                of the pivot columns.  the k-th column x(k) of x 
+                is placed in one of three classes according to the 
+                value of jpvt(k). 
 
-/*                   if jpvt(k) .gt. 0, then x(k) is an initial */
-/*                                      column. */
+                   if jpvt(k) .gt. 0, then x(k) is an initial 
+                                      column. 
 
-/*                   if jpvt(k) .eq. 0, then x(k) is a free column. */
+                   if jpvt(k) .eq. 0, then x(k) is a free column. 
 
-/*                   if jpvt(k) .lt. 0, then x(k) is a final column. */
+                   if jpvt(k) .lt. 0, then x(k) is a final column. 
 
-/*                before the decomposition is computed, initial columns */
-/*                are moved to the beginning of the array x and final */
-/*                columns to the end.  both initial and final columns */
-/*                are frozen in place during the computation and only */
-/*                free columns are moved.  at the k-th stage of the */
-/*                reduction, if x(k) is occupied by a free column */
-/*                it is interchanged with the free column of largest */
-/*                reduced norm.  jpvt is not referenced if */
-/*                job .eq. 0. */
+                before the decomposition is computed, initial columns 
+                are moved to the beginning of the array x and final 
+                columns to the end.  both initial and final columns 
+                are frozen in place during the computation and only 
+                free columns are moved.  at the k-th stage of the 
+                reduction, if x(k) is occupied by a free column 
+                it is interchanged with the free column of largest 
+                reduced norm.  jpvt is not referenced if 
+                job .eq. 0. 
 
-/*        work    double precision(p). */
-/*                work is a work array.  work is not referenced if */
-/*                job .eq. 0. */
+        work    double precision(p). 
+                work is a work array.  work is not referenced if 
+                job .eq. 0. 
 
-/*        job     integer. */
-/*                job is an integer that initiates column pivoting. */
-/*                if job .eq. 0, no pivoting is done. */
-/*                if job .ne. 0, pivoting is done. */
+        job     integer. 
+                job is an integer that initiates column pivoting. 
+                if job .eq. 0, no pivoting is done. 
+                if job .ne. 0, pivoting is done. 
 
-/*     on return */
+     on return 
 
-/*        x       x contains in its upper triangle the upper */
-/*                triangular matrix r of the qr factorization. */
-/*                below its diagonal x contains information from */
-/*                which the orthogonal part of the decomposition */
-/*                can be recovered.  note that if pivoting has */
-/*                been requested, the decomposition is not that */
-/*                of the original matrix x but that of x */
-/*                with its columns permuted as described by jpvt. */
+        x       x contains in its upper triangle the upper 
+                triangular matrix r of the qr factorization. 
+                below its diagonal x contains information from 
+                which the orthogonal part of the decomposition 
+                can be recovered.  note that if pivoting has 
+                been requested, the decomposition is not that 
+                of the original matrix x but that of x 
+                with its columns permuted as described by jpvt. 
 
-/*        qraux   double precision(p). */
-/*                qraux contains further information required to recover */
-/*                the orthogonal part of the decomposition. */
+        qraux   double precision(p). 
+                qraux contains further information required to recover 
+                the orthogonal part of the decomposition. 
 
-/*        jpvt    jpvt(k) contains the index of the column of the */
-/*                original matrix that has been interchanged into */
-/*                the k-th column, if pivoting was requested. */
+        jpvt    jpvt(k) contains the index of the column of the 
+                original matrix that has been interchanged into 
+                the k-th column, if pivoting was requested. 
 
-/*     linpack. this version dated 08/14/78 . */
-/*     g.w. stewart, university of maryland, argonne national lab. */
+     linpack. this version dated 08/14/78 . 
+     g.w. stewart, university of maryland, argonne national lab. 
 
-/*     dqrdc uses the following functions and subprograms. */
+     dqrdc uses the following functions and subprograms. 
 
-/*     blas daxpy,ddot,dscal,dswap,dnrm2 */
-/*     fortran dabs,dmax1,min0,dsqrt */
+     blas daxpy,ddot,dscal,dswap,dnrm2 
+     fortran dabs,dmax1,min0,dsqrt */
 
 /*     internal variables */
 
@@ -2373,7 +2311,7 @@ static void dqrdc_(double *x, integer *ldx, integer *n, integer *p, double *qrau
 
     pl = 1;
     pu = 0;
-    if (*job == 0)
+    if (job == 0)
         goto L60;
 
     /*        pivoting has been requested.  rearrange the columns */
@@ -2387,7 +2325,7 @@ static void dqrdc_(double *x, integer *ldx, integer *n, integer *p, double *qrau
         if (! swapj)
             goto L10;
         if (j != pl)
-            dswap(n, &x[pl * x_dim1 + 1], &x[j * x_dim1 + 1]);
+            dswap(*n, &x[pl * x_dim1 + 1], &x[j * x_dim1 + 1]);
         jpvt[j] = jpvt[pl];
         jpvt[pl] = j;
         ++pl;
@@ -2402,7 +2340,7 @@ static void dqrdc_(double *x, integer *ldx, integer *n, integer *p, double *qrau
         jpvt[j] = -jpvt[j];
         if (j == pu)
             goto L30;
-        dswap(n, &x[pu * x_dim1 + 1], &x[j * x_dim1 + 1]);
+        dswap(*n, &x[pu * x_dim1 + 1], &x[j * x_dim1 + 1]);
         jp = jpvt[pu];
         jpvt[pu] = jpvt[j];
         jpvt[j] = jp;
@@ -2435,7 +2373,7 @@ L60:
             maxj = j;
         }
         if (maxj != l) {
-            dswap(n, &x[l * x_dim1 + 1], &x[maxj * x_dim1 + 1]);
+            dswap(*n, &x[l * x_dim1 + 1], &x[maxj * x_dim1 + 1]);
             qraux[maxj] = qraux[l];
             work[maxj] = work[l];
             jp = jpvt[maxj];
@@ -2455,8 +2393,7 @@ L60:
         if (x[l + l * x_dim1] != 0.)
             nrmxl = d_sign(&nrmxl, &x[l + l * x_dim1]);
         i__2 = *n - l + 1;
-        d__1 = 1. / nrmxl;
-        dscal(&i__2, &d__1, &x[l + l * x_dim1]);
+        dscal(&i__2, 1./nrmxl, &x[l + l * x_dim1]);
         x[l + l * x_dim1] += 1.;
 
         /*  apply the transformation to the remaining columns,  updating the norms. */
@@ -2491,15 +2428,11 @@ L60:
     }
 } /* dqrdc_ */
 
-static void lowesb_(double *xx, double *yy, double *ww, double *diagl, logical *infl, 
+static void lowesb_(double *xx, double *yy, double *ww, double *diagl, double trl,
         integer *iv, integer *liv, integer * lv, double *wv) {
     static integer execnt = 0, setlf;
     --wv;
     --iv;
-    --diagl;
-    --ww;
-    --yy;
-    --xx;
 
     ++execnt;
     if (! (iv[28] != 173))
@@ -2508,9 +2441,8 @@ static void lowesb_(double *xx, double *yy, double *ww, double *diagl, logical *
 	    loess_error(171);
     iv[28] = 173;
     setlf = iv[27] != iv[25];
-    double  trl  = (*infl) ? 1 : 0;
     integer     i__1 = ifloor(iv[3] * wv[2]);
-    ehg131_(&xx[1], &yy[1], &ww[1], &trl, &diagl[1], &iv[20], &iv[29], &iv[3], &iv[2], &iv[5], &iv[17], 
+    ehg131_(xx, yy, ww, &trl, diagl, &iv[20], &iv[29], &iv[3], &iv[2], &iv[5], &iv[17], 
             &iv[4], &iv[6], &iv[14], &iv[19], &wv[1] , &iv[iv[7]], &iv[iv[8]], &iv[iv[9]], &iv[iv[10]], 
             &iv[iv[22]], & iv[iv[27]], &wv[iv[11]], &iv[iv[23]], &wv[iv[13]], &wv[iv[12]], & wv[iv[15]], 
             &wv[iv[16]], &wv[iv[18]], &i__1, &wv[3], &wv[iv[26]], &wv[iv[24]], &wv[4], &iv[30], &iv[33], 
@@ -2521,34 +2453,31 @@ static void lowesb_(double *xx, double *yy, double *ww, double *diagl, logical *
 	    ehg183_("Warning. k-d tree limited by memory. ncmax=", &iv[17], 1, 1);
 } /* lowesb_ */
 
-static void lowesd_(integer *versio, integer *iv, integer *liv, integer *lv, double *v, 
-        integer *d__, integer *n, double *f, integer *ideg, integer *nvmax, logical *setlf) {
+static void lowesd_(integer *iv, integer *liv, integer *lv, double *v, 
+        integer d__, integer n, double f, integer ideg, integer *nvmax, logical *setlf) {
     static integer execnt = 0, i__, j, i1, i2, nf, vc, ncmax, bound;
     --iv;
     --v;
 
-/*     version -> versio */
     ++execnt;
-    if (! (*versio == 106))
-        loess_error(100);
     iv[28] = 171;
-    iv[2] = *d__;
-    iv[3] = *n;
-    vc = pow_ii(2, *d__);
+    iv[2] = d__;
+    iv[3] = n;
+    vc = pow_ii(2, d__);
     iv[4] = vc;
-    if (! (0. < *f))
+    if (! (0. < f))
         loess_error(120);
 /* Computing MIN */
-    nf = GSL_MIN(*n, ifloor(*n * *f));
+    nf = GSL_MIN(n, ifloor(n * f));
     iv[19] = nf;
     iv[20] = 1;
-    if (*ideg == 0)
+    if (ideg == 0)
         i1 = 1;
     else {
-        if (*ideg == 1)
-            i1 = *d__ + 1;
-        else if (*ideg == 2)
-            i1 = (integer) ((double) ((*d__ + 2) * (*d__ + 1)) / 2.);
+        if (ideg == 1)
+            i1 = d__ + 1;
+        else if (ideg == 2)
+            i1 = (integer) ((double) ((d__ + 2) * (d__ + 1)) / 2.);
     }
     iv[29] = i1;
     iv[21] = 1;
@@ -2556,12 +2485,12 @@ static void lowesd_(integer *versio, integer *iv, integer *liv, integer *lv, dou
     ncmax = *nvmax;
     iv[17] = ncmax;
     iv[30] = 0;
-    iv[32] = *ideg;
-    if (! (*ideg >= 0) || (! (*ideg <= 2)))
+    iv[32] = ideg;
+    if (! (ideg >= 0) || (! (ideg <= 2)))
         loess_error(195);
-    iv[33] = *d__;
+    iv[33] = d__;
     for (i2 = 41; i2 <= 49; ++i2)
-        iv[i2] = *ideg;
+        iv[i2] = ideg;
     iv[7] = 50;
     iv[8] = iv[7] + ncmax;
     iv[9] = iv[8] + vc * ncmax;
@@ -2569,56 +2498,52 @@ static void lowesd_(integer *versio, integer *iv, integer *liv, integer *lv, dou
     iv[22] = iv[10] + ncmax;
 /*     initialize permutation */
     j = iv[22] - 1;
-    for (i__ = 1; i__ <= *n; ++i__)
+    for (i__ = 1; i__ <= n; ++i__)
         iv[j + i__] = i__;
-    iv[23] = iv[22] + *n;
+    iv[23] = iv[22] + n;
     iv[25] = iv[23] + *nvmax;
     if (*setlf)
         iv[27] = iv[25] + *nvmax * nf;
     else
         iv[27] = iv[25];
-    bound = iv[27] + *n;
+    bound = iv[27] + n;
     if (! (bound - 1 <= *liv))
         loess_error(102);
     iv[11] = 50;
-    iv[13] = iv[11] + *nvmax * *d__;
-    iv[12] = iv[13] + (*d__ + 1) * *nvmax;
+    iv[13] = iv[11] + *nvmax * d__;
+    iv[12] = iv[13] + (d__ + 1) * *nvmax;
     iv[15] = iv[12] + ncmax;
-    iv[16] = iv[15] + *n;
+    iv[16] = iv[15] + n;
     iv[18] = iv[16] + nf;
     iv[24] = iv[18] + iv[29] * nf;
-    iv[34] = iv[24] + (*d__ + 1) * *nvmax;
+    iv[34] = iv[24] + (d__ + 1) * *nvmax;
     if (*setlf)
-        iv[26] = iv[34] + (*d__ + 1) * *nvmax * nf;
+        iv[26] = iv[34] + (d__ + 1) * *nvmax * nf;
     else
         iv[26] = iv[34];
     bound = iv[26] + nf;
     if (! (bound - 1 <= *lv))
        loess_error(103);
 
-    v[1] = *f;
+    v[1] = f;
     v[2] = .05;
     v[3] = 0.;
     v[4] = 1.;
 } /* lowesd_ */
 
-static void lowese_(integer *iv, integer *liv, integer *lv, double *wv, integer *m, double *z__, double *s) {
+static void lowese_(integer *iv, integer *liv, integer *lv, double *wv, integer m, double *z, double *s) {
     static integer execnt = 0;
     ++execnt;
-    integer z_dim1, z_offset;
     --iv;
     --wv;
-    --s;
-    z_dim1 = *m;
-    z__ -= z_offset = 1 + z_dim1;
 
     if (! (iv[28] != 172))
         loess_error(172);
     if (! (iv[28] == 173))
         loess_error(173);
     ehg133_(&iv[3], &iv[2], &iv[4], &iv[14], &iv[5], &iv[17], &iv[iv[7]], &iv[iv[8]], &iv[iv[9]],
-            &iv[iv[10]], &wv[iv[11]], &wv[iv[13]], &wv[iv[12]], m, &z__[z_offset], &s[1]);
-} /* lowese_ */
+            &iv[iv[10]], &wv[iv[11]], &wv[iv[13]], &wv[iv[12]], m, z, s);
+}
 
 static void lowesf_(double *xx, double *yy, double *ww, integer *iv, integer *liv, 
         integer *lv, double *wv, integer *m, double *z__, double *l, integer ihat, double *s) {
@@ -2630,7 +2555,6 @@ static void lowesf_(double *xx, double *yy, double *ww, integer *iv, integer *li
     --ww;
     --iv;
     --wv;
-    --s;
     l_dim1 = *m;
     l -= l_offset = 1 + l_dim1;
     z_dim1 = *m;
@@ -2647,7 +2571,7 @@ static void lowesf_(double *xx, double *yy, double *ww, integer *iv, integer *li
         loess_error(186);
     ehg136_(&z__[z_offset], m, m, &iv[3], &iv[2], &iv[19], &wv[1], &xx[1], &iv[iv[22]], &yy[1],
             &ww[1], &iv[20], &iv[29], &wv[iv[15]], &wv[iv[16]], &wv[iv[18]], &c__0, &l[l_offset],
-            &ihat, &wv[iv[26]], &wv[4], &iv[30], &iv[33], &iv[32], &iv[41], &s[1]);
+            &ihat, &wv[iv[26]], &wv[4], &iv[30], &iv[33], &iv[32], &iv[41], s);
 } /* lowesf_ */
 
 static void lowesl_(integer *iv, integer *liv, integer *lv, double *wv, integer *m, double *z__, double *l) {
@@ -2697,7 +2621,7 @@ static void lowesw_(double *res, integer *n, double *rw, integer *pi) {
         cmad = (rw[pi[nh]] + rw[pi[nh - 1]]) * 3;
     } else
         cmad = rw[pi[nh]] * 6;
-    rsmall = d1mach(1);
+    rsmall = DBL_MIN;
     if (cmad < rsmall)
         for (i1 = 1; i1 <= *n; ++i1)
             rw[i1] = 1.;
@@ -2709,12 +2633,12 @@ static void lowesw_(double *res, integer *n, double *rw, integer *pi) {
                 rw[i__] = (cmad * .001 < rw[i__])
                             ? gsl_pow_2(1 - gsl_pow_2(rw[i__] / cmad))
                             : 1.;
-} /* lowesw_ */
+}
 
-static void pseudovals(integer *n, double *y, double *yhat, double *pwgts,  //formerly lowesp
+static void pseudovals(integer n, double *y, double *yhat, double *pwgts,  //formerly lowesp
                 double *rwgts, integer *pi, double *ytilde) {
-    static integer m, i2, i3, i5, identi, execnt = 0;
-    static double i1, i4, mad;
+    static integer m, i5, identi, execnt = 0;
+    static double i4, mad;
 
     --ytilde;
     --pi;
@@ -2725,42 +2649,41 @@ static void pseudovals(integer *n, double *y, double *yhat, double *pwgts,  //fo
 
     ++execnt;
     /*     median absolute deviation */
-    for (i5 = 1; i5 <= *n; ++i5)
+    for (i5 = 1; i5 <= n; ++i5)
         ytilde[i5] = abs(y[i5] - yhat[i5]) * sqrt(pwgts[i5]);
-    for (identi = 1; identi <= *n; ++identi)
+    for (identi = 1; identi <= n; ++identi)
         pi[identi] = identi;
-    m = ifloor((double) (*n) / 2.) + 1;
-    find_kth_smallest(1, *n, m, 1, &ytilde[1], &pi[1]);
-    if (*n - m + 1 < m) {
+    m = ifloor((double) (n) / 2.) + 1;
+    find_kth_smallest(1, n, m, 1, &ytilde[1], &pi[1]);
+    if (n - m + 1 < m) {
         find_kth_smallest(1, m-1, m-1, 1, &ytilde[1], &pi[1]);
         mad = (ytilde[pi[m - 1]] + ytilde[pi[m]]) / 2;
     } else
         mad = ytilde[pi[m]];
-    for (i5 = 1; i5 <= *n; ++i5)
+    for (i5 = 1; i5 <= n; ++i5)
         ytilde[i5] = 1 - gsl_pow_2(y[i5] - yhat[i5]) * pwgts[i5] / (gsl_pow_2(mad * 6)/ 5);
-    for (i5 = 1; i5 <= *n; ++i5)
+    for (i5 = 1; i5 <= n; ++i5)
         ytilde[i5] *= sqrt(rwgts[i5]);
-    if (*n <= 0)
+    if (n <= 0)
         i4 = 0.;
     else {
-        i3 = *n;
-        i1 = ytilde[i3];
-        for (i2 = i3 - 1; i2 >= 1; --i2)
-            i1 = ytilde[i2] + i1;
+        double i1 = ytilde[n];
+        for (integer i2 = n - 1; i2 >= 1; --i2)
+            i1 += ytilde[i2];
         i4 = i1;
     }
     //     pseudovalues
-    for (i5 = 1; i5 <= *n; ++i5)
-        ytilde[i5] = yhat[i5] + (*n / i4) * rwgts[i5] * (y[i5] - yhat[i5]);
-} /* pseudovals */
+    for (i5 = 1; i5 <= n; ++i5)
+        ytilde[i5] = yhat[i5] + (n / i4) * rwgts[i5] * (y[i5] - yhat[i5]);
+}
 
 ////// Back to loessc.c
-static void loess_workspace( long	*d, long *n, double	*span, long *degree,
+static void loess_workspace(long D, long N, double	span, long degree,
 			long *nonparametric, long *drop_square, long *sum_drop_sqr, long setLf){
-	long D=*d, N=*n, tau0, nvmax, nf, version = 106, i;
+	long tau0, nvmax, nf, i;
 	nvmax = max(200, N);
-        nf = min(N, floor(N * (*span)));
-        tau0 = ((*degree) > 1) ? ((D + 2) * (D + 1) * 0.5) : (D + 1);
+        nf = min(N, floor(N * span));
+        tau0 = (degree > 1) ? ((D + 2) * (D + 1) * 0.5) : (D + 1);
         tau = tau0 - (*sum_drop_sqr);
         lv = 50 + (3 * D + 3) * nvmax + N + (tau0 + 2) * nf;
 	liv = 50 + ((long)pow((double)2, (double)D) + 4) * nvmax + 2 * N;
@@ -2771,7 +2694,7 @@ static void loess_workspace( long	*d, long *n, double	*span, long *degree,
     iv = Calloc(liv, long);
     v = Calloc(lv, double);
 
-    lowesd_(&version, iv, &liv, &lv, v, d, n, span, degree, &nvmax, &setLf);
+    lowesd_(iv, &liv, &lv, v, D, N, span, degree, &nvmax, &setLf);
     iv[32] = *nonparametric;
     for(i = 0; i < D; i++)
         iv[i + 40] = drop_square[i];
@@ -2783,16 +2706,16 @@ static void loess_free() {
 }
 
 static void loess_dfit( double	*y, double *x, double *x_evaluate, double *weights,
-			double *span, long	*degree, long *nonparametric, long *drop_square,
-			long *sum_drop_sqr, long *d, long *n, long *m, double *fit) {
+			double span, long degree, long *nonparametric, long *drop_square,
+			long *sum_drop_sqr, long d, long n, long *m, double *fit) {
     loess_workspace(d, n, span, degree, nonparametric, drop_square, sum_drop_sqr, 0);
 	lowesf_(x, y, weights, iv, &liv, &lv, v, m, x_evaluate, &doublepluszero, 0, fit);
 	loess_free();
 }
 
 static void loess_dfitse( double	*y, double *x, double *x_evaluate, double *weights, double *robust,
-        int	family, double *span, long *degree, long *nonparametric, long *drop_square,
-         long *sum_drop_sqr, long *d, long *n, long *m, double *fit, double *L) {
+        int	family, double span, long degree, long *nonparametric, long *drop_square,
+         long *sum_drop_sqr, long d, long n, long *m, double *fit, double *L) {
     loess_workspace(d, n, span, degree, nonparametric, drop_square, sum_drop_sqr, 0);
 	if(family == GAUSSIAN)
 		lowesf_(x, y, weights, iv, &liv, &lv, v, m, x_evaluate, L, 2, fit);
@@ -2803,7 +2726,9 @@ static void loess_dfitse( double	*y, double *x, double *x_evaluate, double *weig
 	loess_free();
 }
 
-static void loess_grow(long	*parameter,long *a,double	*xi, double *vert, double *vval) {
+static void loess_grow(long	const * restrict parameter,long const*restrict a,
+                       double	const *restrict xi, double const *restrict vert, 
+                       const double *restrict vval) {
 	long	d, vc, nc, nv, a1, v1, xi1, vv1, i, k;
 	d = parameter[0];
 	vc = parameter[2];
@@ -2845,23 +2770,23 @@ static void loess_grow(long	*parameter,long *a,double	*xi, double *vert, double 
 	k = (d + 1) * nv;
 	for(i = 0; i < k; i++)
 		v[vv1 + i] = vval[i];
-	ehg169_(&d, &vc, &nc, &nc, &nv, &nv, v+v1, iv+a1, v+xi1, iv+iv[7]-1, iv+iv[8]-1, iv+iv[9]-1);
+	ehg169_(d, &vc, &nc, &nc, &nv, nv, v+v1, iv+a1, v+xi1, iv+iv[7]-1, iv+iv[8]-1, iv+iv[9]-1);
 }
 
-static void loess_ifit(long *parameter, long *a, double *xi, double *vert,
-                 double *vval, long *m, double *x_evaluate, double *fit) {
+static void loess_ifit(long const * restrict parameter, long const *restrict a, 
+                double const *restrict xi, double const *restrict vert,
+                 const double *restrict vval, long m, double *x_evaluate, double *fit) {
 	loess_grow(parameter, a, xi, vert, vval);
 	lowese_(iv, &liv, &lv, v, m, x_evaluate, fit);
 	loess_free();
 }
 
-static void loess_ise( double	*y, double *x, double *x_evaluate, double *weights, double *span, long	*degree,
-             long int *nonparametric, long int *drop_square, long int *sum_drop_sqr, double *cell, long int *d,
-             long int *n, long int *m, double *fit, double *L) {
-	long	zero = 0;
+static void loess_ise( double	*y, double *x, double *x_evaluate, double *weights, double span, long degree,
+             long int *nonparametric, long int *drop_square, long int *sum_drop_sqr, double *cell, long int d,
+             long int n, long int *m, double *fit, double *L) {
     loess_workspace(d, n, span, degree, nonparametric, drop_square, sum_drop_sqr, 1);
 	v[1] = *cell;
-	lowesb_(x, y, weights, &doublepluszero, &zero, iv, &liv, &lv, v);
+	lowesb_(x, y, weights, &doublepluszero, 0, iv, &liv, &lv, v);
 	lowesl_(iv, &liv, &lv, v, m, x_evaluate, L);
 	loess_free();
 }
@@ -2898,63 +2823,52 @@ static void loess_prune( long	*parameter, long *a, double	*xi, double *vert, dou
 }
 
 ////// predict.c
-/*
-struct  pred_struct	*pre;
 
-	fit: 		the evaluated loess surface at eval.
-	se_fit:		estimates of the standard errors of the surface values.
-	residual_scale: estimate of the scale of the residuals.
-	df:    		the degrees of freedom of the t-distribution used to
-		        compute pointwise confidence intervals for the evaluated surface. 
-*/
 struct pred_struct {
-	double	*fit;
-	double	*se_fit;
-	double  residual_scale;
-	double  df;
+	double	*fit;           //The evaluated loess surface at eval.
+	double	*se_fit;        //Estimates of the standard errors of the surface values.
+	double  residual_scale; //Estimate of the scale of the residuals.
+	double  df;             //The degrees of freedom of the t-distribution used to compute pointwise 
+                            //   confidence intervals for the evaluated surface. 
 };
 
-static void pred_( double  *y, double *x_, double *new_x, long    *size_info, double *s, double *weights, double *robust,
-         double *span, long *degree, long *normalize, long *parametric, long *drop_square, char    **surface, double *cell,
-         char **family, long  *parameter, long *a, double *xi, double *vert, double *vval, double *divisor, long *se,
-         double *fit, double *se_fit) {
-    double  new_cell, tmp;
-    long    D = size_info[0],
-            N = size_info[1],
-            M = size_info[2],
-            sum_drop_sqr = 0, sum_parametric = 0, nonparametric = 0;
+void predict(double  *new_x, long M, struct loess_struct *lo, struct pred_struct *pre, int want_cov) {
+	
+    long D = lo->in.p;//Aliases for the purposes of merging some fn.s
+    long N = lo->in.n;
+            
 	int     i, j, k, p;
-	double x[N * D], x_tmp[N * D], x_evaluate[M * D], L[N * M];
-    long order_parametric[D], order_drop_sqr[D];
+	double x[N * D], x_tmp[N * D], x_evaluate[M * D];
 
-	for(i = 0; i < (N * D); i++)
-		x_tmp[i] = x_[i];
 	for(i = 0; i < D; i++) {
 		k = i * M;
 		for(j = 0; j < M; j++) {
 			p = k + j;
-			new_x[p] = new_x[p] / divisor[i];
+			new_x[p] /= lo->out.divisor[i];
 		}
 	}
-	if(!strcmp(*surface, "direct") || se)
+    memcpy(x_tmp, lo->in.x, N * D * sizeof(double));
+	if(!strcmp(lo->control.surface, "direct") || want_cov)
         for(i = 0; i < D; i++) {
 			k = i * N;
 			for(j = 0; j < N; j++) {
                 p = k + j;
-                x_tmp[p] = x_[p] / divisor[i];
+                x_tmp[p] = lo->in.x[p] / lo->out.divisor[i];
             }
 		}
 	j = D - 1;
+    long sum_drop_sqr = 0, sum_parametric = 0, nonparametric = 0;
+    long order_parametric[D], order_drop_sqr[D];
 	for(i = 0; i < D; i++) {
-        sum_drop_sqr = sum_drop_sqr + drop_square[i];
-        sum_parametric = sum_parametric + parametric[i];
-        if(parametric[i])
+        sum_drop_sqr += lo->model.drop_square[i];
+        sum_parametric += lo->model.parametric[i];
+        if(lo->model.parametric[i])
             order_parametric[j--] = i;
         else
             order_parametric[nonparametric++] = i;
 	}
     for(i = 0; i < D; i++) {
-        order_drop_sqr[i] = 2 - drop_square[order_parametric[i]];
+        order_drop_sqr[i] = 2 - lo->model.drop_square[order_parametric[i]];
         k = i * M;
         p = order_parametric[i] * M;
         for(j = 0; j < M; j++)
@@ -2965,69 +2879,46 @@ static void pred_( double  *y, double *x_, double *new_x, long    *size_info, do
             x[k + j] = x_tmp[p + j];
     }
 	for(i = 0; i < N; i++)
-		robust[i] = weights[i] * robust[i];
+		lo->out.robust[i] *= lo->in.weights[i];
 
-	if(!strcmp(*surface, "direct")) {
-        if(*se)
-            loess_dfitse(y, x, x_evaluate, weights, robust, !strcmp(*family, "gaussian"), 
-                span, degree, &nonparametric, order_drop_sqr, &sum_drop_sqr, &D, &N, &M, fit, L);
+    pre->fit = malloc(M * sizeof(double));
+	pre->residual_scale = lo->out.s;
+	pre->df = (lo->out.one_delta * lo->out.one_delta) / lo->out.two_delta;
+    double L[N * M];
+	if(!strcmp(lo->control.surface, "direct")) {
+        if(want_cov)
+            loess_dfitse(lo->in.y, x, x_evaluate, lo->in.weights, lo->out.robust, !strcmp(lo->model.family, "gaussian"), 
+                lo->model.span, lo->model.degree, &nonparametric, order_drop_sqr, &sum_drop_sqr, D, N, &M, pre->fit, L);
         else
-            loess_dfit(y, x, x_evaluate, robust, span, degree, &nonparametric,
-                order_drop_sqr, &sum_drop_sqr, &D, &N, &M, fit);
+            loess_dfit(lo->in.y, x, x_evaluate, lo->out.robust, lo->model.span, lo->model.degree, &nonparametric,
+                order_drop_sqr, &sum_drop_sqr, D, N, &M, pre->fit);
     } else {
-        loess_ifit(parameter, a, xi, vert, vval, &M, x_evaluate, fit);
-        if(*se) {
-            new_cell = (*span) * (*cell);
+        loess_ifit(lo->kd_tree.parameter, lo->kd_tree.a, lo->kd_tree.xi, lo->kd_tree.vert, 
+                        lo->kd_tree.vval, M, x_evaluate, pre->fit);
+        if(want_cov) {
+            double new_cell = lo->model.span * lo->control.cell;
             double fit_tmp[M];
-            loess_ise(y, x, x_evaluate, weights, span, degree, &nonparametric, 
-                    order_drop_sqr, &sum_drop_sqr, &new_cell, &D, &N, &M, fit_tmp, L);
+            loess_ise(lo->in.y, x, x_evaluate, lo->in.weights, lo->model.span, lo->model.degree, &nonparametric, 
+                    order_drop_sqr, &sum_drop_sqr, &new_cell, D, N, &M, fit_tmp, L);
         }
     }
-	if(*se) {
+	if (want_cov) {
+        pre->se_fit = malloc(M * sizeof(double));
         for(i = 0; i < N; i++) {
             k = i * M;
             for(j = 0; j < M; j++) {
                 p = k + j;
-                L[p] = L[p] / weights[i];
-                L[p] = L[p] * L[p];
+                L[p] /= lo->in.weights[i];
+                L[p] *= L[p]; //i.e., square
             }
 		}
 		for(i = 0; i < M; i++) {
-            tmp = 0;
+            double tmp = 0;
 			for(j = 0; j < N; j++)
-                tmp = tmp + L[i + j * M];
-			se_fit[i] = (*s) * sqrt(tmp);
+                tmp += L[i + j * M];
+			pre->se_fit[i] = lo->out.s * sqrt(tmp);
 		}
 	}
-}
-
-void predict(double  *eval, long m, struct loess_struct	*lo, struct	pred_struct	*pre, long se) {
-    pre->fit = malloc(m * sizeof(double));
-    pre->se_fit = malloc(m * sizeof(double));
-	pre->residual_scale = lo->out.s;
-	pre->df = (lo->out.one_delta * lo->out.one_delta) / lo->out.two_delta;
-	long	size_info[3] = {lo->in.p, lo->in.n, m};
-	
-	pred_(lo->in.y, lo->in.x, eval, size_info, &lo->out.s,
-		lo->in.weights,
-		lo->out.robust,
-		&lo->model.span,
-		&lo->model.degree,
-		&lo->model.normalize,
-		lo->model.parametric,
-		lo->model.drop_square,
-		&lo->control.surface,
-		&lo->control.cell,
-		&lo->model.family,
-		lo->kd_tree.parameter,
-		lo->kd_tree.a,
-		lo->kd_tree.xi,
-		lo->kd_tree.vert,
-		lo->kd_tree.vval,
-		lo->out.divisor,
-		&se,
-		pre->fit,
-		pre->se_fit);
 }
 
 void pred_free_mem(struct	pred_struct	*pre){
@@ -3078,31 +2969,31 @@ static void loess_raw( double	*y, double *x, double *weights, double *robust, lo
             long *sum_drop_sqr, double *cell, char	**surf_stat, double *surface, long	*parameter, 
             long *a, double *xi, double *vert, double	*vval,double *diagonal, double*trL, 
             double*one_delta, double*two_delta, long *setLf) {
-	long zero = 0, one = 1, nsing, i, k;
+	long nsing, i, k;
 	double	*hat_matrix, *LL;
 	*trL = 0;
-	loess_workspace(d, n, span, degree, nonparametric, drop_square, sum_drop_sqr, *setLf);
+	loess_workspace(*d, *n, *span, *degree, nonparametric, drop_square, sum_drop_sqr, *setLf);
         v[1] = *cell;
 	if(!strcmp(*surf_stat, "interpolate/none")) {
-		lowesb_(x, y, robust, &doublepluszero, &zero, iv, &liv, &lv, v);
-		lowese_(iv, &liv, &lv, v, n, x, surface);
+		lowesb_(x, y, robust, &doublepluszero, 0, iv, &liv, &lv, v);
+		lowese_(iv, &liv, &lv, v, *n, x, surface);
 		loess_prune(parameter, a, xi, vert, vval);
 	}			
 	else if (!strcmp(*surf_stat, "direct/none"))
 		lowesf_(x, y, robust, iv, &liv, &lv, v, n, x, &doublepluszero, 0, surface);
 	else if (!strcmp(*surf_stat, "interpolate/1.approx")) {
-		lowesb_(x, y, weights, diagonal, &one, iv, &liv, &lv, v);
-		lowese_(iv, &liv, &lv, v, n, x, surface);
+		lowesb_(x, y, weights, diagonal, 1, iv, &liv, &lv, v);
+		lowese_(iv, &liv, &lv, v, *n, x, surface);
 		nsing = iv[29];
-		for(i = 0; i < (*n); i++) *trL = *trL + diagonal[i];
+		for(i = 0; i < *n; i++) *trL = *trL + diagonal[i];
 		lowesa_(trL, n, d, &tau, &nsing, one_delta, two_delta);
 		loess_prune(parameter, a, xi, vert, vval);
 	}
     else if (!strcmp(*surf_stat, "interpolate/2.approx")) {
-		lowesb_(x, y, robust, &doublepluszero, &zero, iv, &liv, &lv, v);
-		lowese_(iv, &liv, &lv, v, n, x, surface);
+		lowesb_(x, y, robust, &doublepluszero, 0, iv, &liv, &lv, v);
+		lowese_(iv, &liv, &lv, v, *n, x, surface);
 		nsing = iv[29];
-		ehg196_(&tau, d, span, trL);
+		ehg196_(tau, *d, *span, trL);
 		lowesa_(trL, n, d, &tau, &nsing, one_delta, two_delta);
 		loess_prune(parameter, a, xi, vert, vval);
 	}
@@ -3115,10 +3006,10 @@ static void loess_raw( double	*y, double *x, double *weights, double *robust, lo
 	else if (!strcmp(*surf_stat, "interpolate/exact")) {
 		hat_matrix = Calloc((*n)*(*n), double);
 		LL = Calloc((*n)*(*n), double);
-		lowesb_(x, y, weights, diagonal, &one, iv, &liv, &lv, v);
+		lowesb_(x, y, weights, diagonal, 1, iv, &liv, &lv, v);
 		lowesl_(iv, &liv, &lv, v, n, x, hat_matrix);
 		lowesc_(n, hat_matrix, LL, trL, one_delta, two_delta);
-		lowese_(iv, &liv, &lv, v, n, x, surface);
+		lowese_(iv, &liv, &lv, v, *n, x, surface);
 		loess_prune(parameter, a, xi, vert, vval);
 		free(hat_matrix);
 		free(LL);
@@ -3211,11 +3102,11 @@ static void loess_(double *y, double *x_, long *size_info, double *weights,
         for(j = 0; j < N; j++)
             x[k + j] = x_tmp[p + j];
     }
-    apop_assert_s(!((*degree) == 1 && sum_drop_sqr), 
+    Apop_assert(!((*degree) == 1 && sum_drop_sqr), 
                 "Specified the square of a factor predictor to be dropped when degree = 1");
-	apop_assert_s(!(D == 1 && sum_drop_sqr), 
+	Apop_assert(!(D == 1 && sum_drop_sqr), 
                 "Specified the square of a predictor to be dropped with only one numeric predictor");
-	apop_assert_s(sum_parametric != D, "Specified parametric for all predictors");
+	Apop_assert(sum_parametric != D, "Specified parametric for all predictors");
 	for(j = 0; j <= (*iterations); j++) {
 		new_stat = j ? "none" : *statistics;
 		for(i = 0; i < N; i++)
@@ -3236,7 +3127,7 @@ static void loess_(double *y, double *x_, long *size_info, double *weights,
 			lowesw_(fitted_residuals, &N, robust, int_temp);
 	}
 	if((*iterations) > 0) {
-		pseudovals(&N, y, fitted_values, weights, robust, int_temp, pseudovalues);
+		pseudovals(N, y, fitted_values, weights, robust, int_temp, pseudovalues);
 		
         //BK: I believe that temp here does not rely on prior temp
 		loess_raw(pseudovalues, x, weights, weights, &D, &N, span, degree, &nonparametric, 
@@ -3315,15 +3206,15 @@ void loess_free_mem(struct loess_struct *lo) {
     free(lo->kd_tree.vval);
 }
 
-void loess_summary(struct loess_struct *lo) {
+void loess_summary(struct loess_struct lo) {
     FILE *ap =apop_opts.output_pipe;
-    fprintf(ap, "Number of Observations: %ld\n", lo->in.n);
-    fprintf(ap, "Equivalent Number of Parameters: %.1f\n", lo->out.enp);
-    if(!strcmp(lo->model.family, "gaussian"))
+    fprintf(ap, "Number of Observations: %ld\n", lo.in.n);
+    fprintf(ap, "Equivalent Number of Parameters: %.1f\n", lo.out.enp);
+    if(!strcmp(lo.model.family, "gaussian"))
         fprintf(ap, "Residual Standard Error: ");
     else
         fprintf(ap, "Residual Scale Estimate: ");
-    fprintf(ap, "%.4f\n", lo->out.s);
+    fprintf(ap, "%.4f\n", lo.out.s);
 }
 
 //misc.c ---anova and support fns
@@ -3386,11 +3277,11 @@ double ibeta(double x, double a, double b) {
     return(flipped ? 1-I : I);
 }
 
+/* For comparing two loess models, which is not as useful as one would hope...
 double pf(double q, double df1, double df2) {
 	return ibeta(q*df1/(df2+q*df1), df1/2, df2/2);
 }
 
-/* For comparing two loess models, which is not as useful as one would hope...
 void anova(struct loess_struct *one, struct loess_struct *two, struct anova_struct *out){
 	double	one_d1, one_d2, one_s, two_d1, two_d2, two_s, rssdiff, d1diff, tmp;
 	int     max_enp;
@@ -3558,21 +3449,11 @@ static double qt(double p, double df) {
 ////The apop_model front end.
 
 void loess(struct loess_struct *lo) ;
-void loess_free_mem(struct  loess_struct    *lo) ;
 void loess_setup( double  *x, double *y, long n, long p, struct  loess_struct *lo) ;
-void loess_summary(struct loess_struct *lo) ;
 
 
-void * apop_loess_settings_copy(apop_loess_settings *in){
-  apop_loess_settings *out  = malloc(sizeof(*out));
-    *out =  *in;
-    return out;
-}
-
-void apop_loess_settings_free(apop_loess_settings *in){ 
-    loess_free_mem(&(in->lo_s));
-    free(in); 
-}
+Apop_settings_copy(apop_loess, )
+Apop_settings_free(apop_loess, loess_free_mem(&(in->lo_s));)
 
 void matrix_to_FORTRAN(gsl_matrix *inmatrix, double *outFORTRAN, int start_col){
     double *current_outcol = outFORTRAN; 
@@ -3586,9 +3467,8 @@ void matrix_to_FORTRAN(gsl_matrix *inmatrix, double *outFORTRAN, int start_col){
 
 #define lo_set(var, dflt) .var = in.lo_s.var ? in.lo_s.var : dflt
 
-apop_loess_settings * apop_loess_settings_init(apop_loess_settings in){
-  apop_loess_settings *out  = calloc(1, sizeof(*out));
-    apop_assert_s(in.data, "I need a .data element to allocate apop_loess_settings.");
+Apop_settings_init(apop_loess,
+    Apop_assert(in.data, "I need a .data element to allocate apop_loess_settings.");
     int n = in.data->matrix->size1;
 	int	max_kd = n > 200 ? n : 200;
     int p =  (in.data->vector)
@@ -3602,7 +3482,7 @@ apop_loess_settings * apop_loess_settings_init(apop_loess_settings in){
 
 	    lo_set(model.degree , 2),
 	    lo_set(model.normalize , 'y'),
-        .model.family = apop_strcmp(in.lo_s.model.family , "symmetric") ? "symmetric": "gaussian" ,
+        .model.family = apop_strcmp(in.lo_s.model.family , "symmetric") ? "symmetric": "gaussian",
         lo_set(model.span , 0.75),
         //.model.span = in.span ? in.span : 0.75,
 
@@ -3627,9 +3507,7 @@ apop_loess_settings * apop_loess_settings_init(apop_loess_settings in){
         .kd_tree.vert =  malloc(p * 2 * sizeof(double)),
         .kd_tree.vval =  malloc((p + 1) * max_kd * sizeof(double)),
     };
-    apop_varad_setting(in, out, ci_level, 0.95);
-    apop_varad_setting(in, out, data, NULL);
-    apop_assert_s(out->data, "You gave me a NULL data set for lowess smooting.");
+    Apop_varad_set(ci_level, 0.95);
     struct loess_struct *lo = &(out->lo_s);
     if (in.data->weights)
         lo->in.weights = in.data->weights->data;
@@ -3649,42 +3527,38 @@ apop_loess_settings * apop_loess_settings_init(apop_loess_settings in){
     }
     matrix_to_FORTRAN(in.data->matrix, lo->in.x, startat);
 	for(int i = 0; i < 8; i++)
-	        lo->model.parametric[i] = lo->model.drop_square[i] = 0;
-    return out;
-}
+        lo->model.parametric[i] = lo->model.drop_square[i] = 0;
+)
 
 apop_data * loess_predict (apop_data *in, apop_model *m){
     //Massage inputs to FORTRAN's format
     double *eval_here = malloc(sizeof(double)*in->matrix->size1*(in->matrix->size2-1));
     matrix_to_FORTRAN(in->matrix, eval_here, 1);
     int want_cov = Apop_settings_get(m, apop_loess, want_predict_ci)=='y';
-    struct pred_struct pred;
-    struct loess_struct lo_s = Apop_settings_get(m, apop_loess, lo_s);
+    struct pred_struct pred = (struct pred_struct){ };
 
-    predict(eval_here, in->matrix->size1, &lo_s, &pred, want_cov);
+    predict(eval_here, in->matrix->size1, &(Apop_settings_get(m, apop_loess, lo_s)), &pred, want_cov);
 
     //Massage FORTRAN's output to Apophenia's formats
     Apop_col(in, 0, firstcol)
     gsl_vector_view v = gsl_vector_view_array(pred.fit, firstcol->size);
     gsl_vector_memcpy(firstcol, &(v.vector));
-    apop_data *ci, *tmp = in->more;
-    ci       =  
-    in->more = apop_data_alloc(0, sizeof(double)*in->matrix->size1 ,3);
-    ci->more = tmp;
-    sprintf(ci->names->title, "Confidence");
-
-    //Find confidence intervals. Used to be in loess's pointwise().
-    int coverage = Apop_settings_get(m, apop_loess, ci_level);
-	double t_dist = qt(1 - (1 - coverage)/2, pred.df);
-	for(int i = 0; i < in->matrix->size1; i++) {
-		double limit = pred.se_fit[i] * t_dist;
-        apop_data_set(ci, i, 0, limit);
-        apop_data_set(ci, i, 1, pred.fit[i] + limit);
-        apop_data_set(ci, i, 2, pred.fit[i] - limit);
-	}	
+    apop_data *ci =  apop_data_add_page(in, apop_data_alloc(in->matrix->size1, 3), "<Confidence>");
     apop_name_add(ci->names, "standard error", 'c');
     apop_name_add(ci->names, "lower CI", 'c');
     apop_name_add(ci->names, "upper CI", 'c');
+
+    if (want_cov){
+        //Find confidence intervals. Used to be in loess's pointwise().
+        double coverage = Apop_settings_get(m, apop_loess, ci_level);
+        double t_dist = qt(1 - (1 - coverage)/2, pred.df);
+        for(int i = 0; i < in->matrix->size1; i++) {
+            double limit = pred.se_fit[i] * t_dist;
+            apop_data_set(ci, i, 0, limit);
+            apop_data_set(ci, i, 1, pred.fit[i] + limit);
+            apop_data_set(ci, i, 2, pred.fit[i] - limit);
+        }	
+    }
 
     free(eval_here);
     pred_free_mem(&pred);
@@ -3712,10 +3586,11 @@ static apop_model *apop_loess_est(apop_data *d, apop_model *m){
 
     //setup the expected matrix. In a perfect world, this wouldn't all be cut/pasted from apop_OLS.
     //Also, it wouldn't be 14 lines.
-    apop_data *expect = apop_data_add_page(out->info, apop_data_alloc(0, d->matrix->size1, 3), "Predicted");
+    apop_data *expect = apop_data_add_page(out->info, apop_data_alloc(d->matrix->size1, 3), "<Predicted>");
+    if (!out->info) out->info = expect;
     apop_name_add(expect->names, (out->data->names->colct ? out->data->names->column[0] : "expected"), 'c');
-    apop_name_add(expect->names, "predicted", 'c');
-    apop_name_add(expect->names, "residual", 'c');
+    apop_name_add(expect->names, "Predicted", 'c');
+    apop_name_add(expect->names, "Residual", 'c');
     gsl_vector *v = gsl_vector_alloc(d->matrix->size1);
     double *holding = v->data;
     v->data = Apop_settings_get(out, apop_loess, lo_s.in.y);
@@ -3734,8 +3609,8 @@ static apop_model *apop_loess_est(apop_data *d, apop_model *m){
 }
 
 static void apop_loess_print(apop_model *in){
-    loess_summary(&(Apop_settings_get(in, apop_loess, lo_s)));
+    loess_summary(Apop_settings_get(in, apop_loess, lo_s));
 }
 
-apop_model apop_loess = {.name="lowess smoothing", .vbase = -1, .dsize=1, .estimate =apop_loess_est, 
+apop_model apop_loess = {.name="Loess smoothing", .vbase = -1, .dsize=1, .estimate =apop_loess_est, 
     .print=apop_loess_print, .log_likelihood = loess_ll, .predict = loess_predict};
