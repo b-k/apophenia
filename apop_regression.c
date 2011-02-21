@@ -284,7 +284,7 @@ APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type,
     int apop_varad_var(keep_first, 0)
     char apop_varad_var(append, 'n')
     char apop_varad_var(remove, 'n')
-    if (remove =='y' && type == 't') apop_notify(1, "Remove isn't implemented for text source columns yet.");
+    if (remove =='y' && type == 't') Apop_notify(1, "Remove isn't implemented for text source columns yet.");
 APOP_VAR_ENDHEAD
     if (type == 'd'){
         Apop_assert((col != -1) || d->vector, "You asked for the vector element "

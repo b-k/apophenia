@@ -64,7 +64,37 @@ That said, here is the current table of contents:
 
 /*Put all the headers in the C code: */
 %{
-#include "apop.h"
+#include "types.h"
+#include "db.h"
+#include "asst.h"
+#include "model.h"
+#include "stats.h"
+#include "output.h"
+#include "mapply.h"
+#include "variadic.h"
+#include "settings.h"
+#include "arms.h"
+#include "deprecated.h"
+#include "conversions.h"
+#include "likelihoods.h"
+#include "linear_algebra.h"
+
+//Part of the intent of a convenience header like this is that you
+//don't have to remember what else you're including. So here are 
+//some other common GSL headers:
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_sort.h>
+#include <gsl/gsl_eigen.h>
+#include <gsl/gsl_histogram.h>
+#include <gsl/gsl_sort_vector.h>
+#include <gsl/gsl_permutation.h>
+#include <gsl/gsl_integration.h>
+
+//And common headers for other uses (such as seeding an RNG):
+#include <time.h>
+#include <unistd.h>
+
+
 %}
 
 %include "carrays.i"
@@ -188,14 +218,12 @@ double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb=NULL, c
 apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1=0, char form2=0);
 apop_data * apop_data_to_dummies(apop_data *d, int col=0, char type='t', int keep_first=0);
 void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
-void apop_histogram_print(apop_model *h, char *outfile=NULL);
 
 
 /*
 //will require a wrapper function
 %rename(test) apop_test;
 %rename(plot_qq) apop_plot_qq;
-%rename(histogram_plot) apop_histogram_plot;
 %rename(apop_bootstrap_cov) apop_bootstrap_cov_base;
 %rename(apop_plot_histogram) apop_plot_histogram_base;
 %rename(apop_linear_constraint) apop_linear_constraint_base;

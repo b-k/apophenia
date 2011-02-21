@@ -2,7 +2,7 @@
 
 distdir=dists
 pkg=apophenia
-version=0.23
+version=0.99
 date=`date +%d_%b_%y`
 workdir=$(distdir)/$(pkg)-$(version)
 
@@ -30,11 +30,11 @@ auto:
 	cd $(workdir) && mv Readme.user README
 	cd $(workdir) && cp ChangeLog NEWS
 	cd $(workdir) && sed -i "s/X\.XX/$(version)/" README apop_db.c configure.ac
-	cd $(workdir) && sed -i -f prep_variadics.sed *c *h model/*c
+	cd $(workdir) && sed -i -f prep_variadics.sed *.c *h model/*.c
 	#add a directory with links to all headers:
 	mkdir $(workdir)/apophenia
 	#let the GNU prep everything and produce a distribution pkg.
-	cd $(workdir) && dot -Tpng < doxy/structs.dot | pngtopnm | pnmscale .5 | pnmtopng > doxy/structs.png
+	cd $(workdir) && dot -Tpng < doc/structs.dot | pngtopnm | pnmscale .5 | pnmtopng > doc/structs.png
 	cd $(workdir) && echo "Ben Klemens (fluffmail@f-m.fm)" > AUTHORS
 	cd $(workdir) && libtoolize
 	cd $(workdir) && aclocal

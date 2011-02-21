@@ -131,106 +131,46 @@ APOP_VAR_ENDHEAD
     strcpy(apop_opts.output_delimiter, exdelimiter);
 }
 
-static void histoplot_common(gsl_histogram *h, int for_gnuplot, Output_declares){
-    FILE *f = output_pipe;
-    if (for_gnuplot)
-        fprintf(f, "set key off	;\n"
-               "plot '-' with lines\n");
-	for (int i=1; i < h->n-1; i++)
-	    fprintf(f, "%4f\t %g\n", h->range[i], gsl_histogram_get(h, i));
-    if (for_gnuplot)
-        fprintf(f, "e\n");
-    if (output_type == 'p')
-        fflush(f);
-    else if (output_file)    
-        fclose(f);
-}
-
-/** This function will plot a histogram model. Compare with \ref apop_plot_histogram, which is a convenience function to plot a \c gsl_vector as a histogram.
-
-The function respects the <tt>output_type</tt> option, so code like:
-\code
-apop_opts.output_type = 'p';
-apop_opts.output_pipe = popen("/usr/bin/gnuplot", "w");
-apop_model *m = apop_estimate(data, apop_histogram);
-apop_plot_histogram(m);
-\endcode
-will print directly to Gnuplot.
-
-\param hist A parametrized \ref apop_model holding the histogram.  (No default. Must not be \c NULL.)
-
-\li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
-\li This function uses the \ref designated syntax for inputs.
-  \ingroup output
-*/
-APOP_VAR_HEAD  void apop_histogram_plot(apop_model *hist, Output_declares){
-      apop_model * apop_varad_var(hist, NULL);
-      apop_assert_s(hist, "Input histogram is NULL.");
-      Dispatch_output
-      apop_histogram_plot_base(hist, Output_vars);
-      return;
-APOP_VAR_ENDHEAD
-  gsl_histogram  *h = Apop_settings_get(hist, apop_histogram, pdf);
-    histoplot_common(h, 1, Output_vars);
-}
-
-/** This function will take in a \c gsl_vector of data and put out a histogram. Compare with \ref apop_histogram_plot, which plots an estimated \ref apop_histogram model.
+/** This convenience function will take in a \c gsl_vector of data and put out a histogram, ready to pipe to Gnuplot.
 
 The function respects the <tt>output_type</tt> option, so code like:
 \code
 f   = popen("/usr/bin/gnuplot", "w");
-apop_opts.output_type = 'p';
-apop_opts.output_pipe = f;
-apop_plot_histogram(data, 100, NULL);
+apop_plot_histogram(data, .bins=100, .output_pipe = f);
 \endcode
 will print directly to Gnuplot.
 
 \param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be \c NULL)
-\param bins   The number of bins in the output histogram (default = MAX(10, data->size/20); denominator subject to future adjustment)
+\param bins   The number of bins in the output histogram (default = \f$\sqrt(N)\f$, where \f$N\f$ is the length of the vector.)
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
   \ingroup output
 */
-APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bins, Output_declares){
+APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bin_count, Output_declares){
       gsl_vector * apop_varad_var(data, NULL);
-      apop_assert_s(data, "Input histogram is NULL.\n");
-      size_t apop_varad_var(bins, GSL_MAX(10, data->size/20));
+      Apop_assert(data, "Input vector is NULL.");
+      size_t apop_varad_var(bin_count, 0);
       Dispatch_output
 APOP_VAR_ENDHEAD
-  double          min=GSL_POSINF, max=GSL_NEGINF, pt;
-  gsl_histogram   *h      = gsl_histogram_alloc(bins);
-    gsl_vector_minmax(data, &min, &max);
-        gsl_histogram_set_ranges_uniform(h, min-GSL_DBL_EPSILON, max+GSL_DBL_EPSILON);
-    for (size_t i=0; i < data->size; i++){
-        pt  = gsl_vector_get(data, i);
-        if (!gsl_isnan(pt))
-           gsl_histogram_increment(h, pt);
-        }
-    histoplot_common(h, 1, Output_vars);
-    gsl_histogram_free(h);
-}
-	
-/** Print an \c apop_histogram. Put a "plot '-'\n" before this, and
- you can send it straight to Gnuplot. The -inf and +inf elements are not printed. 
- 
-\param h The input histogram (no default, must not be \c NULL.)
- 
-\li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
-\li This function uses the \ref designated syntax for inputs.
- */
-APOP_VAR_HEAD void apop_histogram_print(apop_model *h, Output_declares){
-      apop_model * apop_varad_var(h, NULL);
-      apop_assert_s(h, "Input histogram is NULL.\n");
-      Dispatch_output
-APOP_VAR_ENDHEAD
-  apop_histogram_settings *hp = apop_settings_get_group(h, apop_histogram); 
-  if (!hp) hp = apop_settings_get_group(h, apop_kernel_density); 
-  apop_assert_s(hp, "You sent me an apop_model with no histogram settings. Have you estimated this histogram with data yet?");
-    histoplot_common(hp->pdf, 0, Output_vars);
+    apop_data *histodata = apop_data_alloc();
+    histodata->vector = apop_vector_copy(data);
+    apop_data_to_bins(histodata, .bin_count=bin_count);
+    apop_data_sort(histodata);
+    apop_data_free(histodata->more); //the binspec.
+
+    fprintf(output_pipe, "set key off	;\n"
+               "plot '-' with boxes\n");
+    apop_data_print(histodata, .output_pipe=output_pipe);
+    fprintf(output_pipe, "e\n");
+
+    if (output_type == 'p')
+        fflush(output_pipe);
+    else if (output_file)    
+        fclose(output_pipe);
+    histodata->vector=NULL;
+    apop_data_free(histodata);
 }
 
 /////The printing functions.
@@ -467,7 +407,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
 }
 
 /** Print an \ref apop_data set to a file, the database, or the screen,
-  as determined by the \ref apop_opts_type "apop_opts.output_delimiter".
+  as determined by the \ref apop_opts_type "apop_opts.output_type".
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.

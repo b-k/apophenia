@@ -216,6 +216,20 @@ r2.
 \param datacol The column of the data set holding the data for the cells of the crosstab
 
 \item If the query to get data to fill the table (select r1, r2, datacol from tabname) returns an empty data set, then I will return a \c NULL data set and if <tt>apop_opts.verbosity >= 1</tt> print a warning.
+
+\item This setup presumes that there is one value for each (row, col) coordinate in the data. You may want an aggregate instead. There are two ways to do this, both of which hack the fact that this function runs a simple \c select query to generate the data. One is to specify an ad hoc table to pull from:
+
+\code
+apop_data * out = apop_db_to_crosstab("(select row, col, count(*) ct from base_data group by row, col)", "row", "col",  "ct");
+\endcode
+
+The other is to use the fact that the table name will be at the end of the query, so you can add conditions to the table:
+
+\code
+apop_data * out = apop_db_to_crosstab("base_data group by row, col", "row", "col", "count(*)");
+//which will expand to "select row, col, count(*) from base_data group by row, col"
+\endcode
+
 \ingroup db
 */
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
@@ -963,7 +977,7 @@ void apop_data_set_row(apop_data * d, apop_data *row, int row_number){
         }
     }
     if (row->weights){
-        Apop_assert(d->vector, "You asked me to copy an apop_data_row with a weight to "
+        Apop_assert(d->weights, "You asked me to copy an apop_data_row with a weight to "
                 "an apop_data set with no weights vector.");
         gsl_vector_set(d->weights, row_number, row->weights->data[0]);
     }

@@ -4,6 +4,23 @@
 !!Big.
 ]
 
+	0.99 February 2010
+!!The apop_PMF model has more support:
+	--New supporting functions: apop_data_pmf_compress, apop_model_to_pmf
+	--functions that took apop_histogram models now take apop_pmfs as well:
+		apop_test_chi_squared_goodness_of_fit, apop_test_kolmogorov
+	--Consider the apop_histogram to be deprecated. Only two associated functions were removed; see below.
+	**apop_histogram_plot is removed. Replace with:
+	    fprintf(apop_opts.output_pipe, "plot '-' using 1:3 with boxes\n");
+		apop_model_print(hist);
+		fprintf(apop_opts.output_pipe, "e\n");
+	**apop_histogram_print was a bad idea to begin with, because it basically replicates
+	    gsl_histogram_fprintf. Use apop_model_print(your_histogram), which calls gsl_histogram_fprintf, 
+		or call that function directly. The only difference: the GSL function prints 
+		[start of bin] [end of bin] [value]
+		and apop_histogram print showed
+		[start of bin] [value]
+
 	December 2010
 **apop_maximum_likelihood no longer calls apop_prep. If you want that, use apop_estimate.
 --apop_text_to_db lets users specify types and keys.

@@ -21,16 +21,19 @@ apop_data * apop_test_anova_independence(apop_data *d);
 int apop_strcmp(char const *, char const *);
 APOP_VAR_DECLARE int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case);
 
-gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
-apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
-
 int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 
+//Histograms and PMFs
+gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
+apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
 apop_model * apop_histogram_vector_reset(apop_model *, gsl_vector *);
 APOP_VAR_DECLARE apop_model * apop_histogram_model_reset(apop_model *base, apop_model *m, long int draws, gsl_rng *rng);
 apop_data * apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1);
 apop_data * apop_test_kolmogorov(apop_model *m1, apop_model *m2);
 void apop_histogram_normalize(apop_model *m);
+apop_data *apop_data_pmf_compress(apop_data *in);
+APOP_VAR_DECLARE apop_data * apop_data_to_bins(apop_data *indata, apop_data *binspec, int bin_count, char close_top_bin);
+APOP_VAR_DECLARE apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng);
 
 char * apop_strip_dots(char *in, char strip_type);
 
@@ -90,7 +93,9 @@ char * apop_strip_dots(char *in, char strip_type);
 APOP_VAR_DECLARE apop_data * apop_data_listwise_delete(apop_data *d, char inplace);
 apop_model * apop_ml_impute(apop_data *d, apop_model* meanvar);
 #define apop_ml_imputation(d, m) apop_ml_impute(d, m)
+/*
 APOP_VAR_DECLARE apop_data * apop_multiple_imputation_variance(apop_data *base_data, apop_data *fill_ins, char row_name, char col_name, char value_name, char imputation_name);
+*/
 
 
 APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng);

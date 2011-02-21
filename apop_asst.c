@@ -174,7 +174,7 @@ static int find_min_unsorted(size_t *sorted, size_t height, size_t min){
  Uses the \c gsl_sort_vector_index function internally, and that function just ignores NaNs; therefore this function just leaves NaNs exactly where they lay.
 
  \param data    The input set to be modified. (No default, must not be \c NULL.)
- \param sortby  The column of data by which the sorting will take place. As usual, -1 indicates the vector element. (default: column zero of the matrix)
+ \param sortby  The column of data by which the sorting will take place. As usual, -1 indicates the vector element. (default: column zero of the matrix if there is a matrix; if there's a vector but no matrix, then -1).
  \param asc   If 'd' or 'D', sort in descending order; else sort in ascending order. (Default: ascending)
  \return A pointer to the data set, so you can do things like \c apop_data_show(apop_data_sort(d, -1)).
 
@@ -184,6 +184,8 @@ APOP_VAR_HEAD apop_data * apop_data_sort(apop_data *data, int sortby, char asc){
     apop_data * apop_varad_var(data, NULL);
     apop_assert_s(data, "You gave me NULL data to sort.");
     int apop_varad_var(sortby, 0);
+    if (sortby==0 && !data->matrix && data->vector) //you meant sort the vector
+        sortby = -1;
     char apop_varad_var(asc, 0);
 APOP_VAR_ENDHEAD
   size_t            height  = (sortby==-1) ? data->vector->size: data->matrix->size1;

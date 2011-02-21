@@ -253,7 +253,9 @@ typedef struct {
     int draws;  /**< For random draw methods, how many draws? Default: 10,000.*/
     gsl_rng *rng; /**< For random draw methods. See \ref autorng on the default. */
     apop_model *cdf_model; /**< For use by individual models as they see fit. Default=\c NULL. */
-    int rng_owner; /**< For internal use. */
+    gsl_matrix *draws_made; /**< A store of random draws that I will count up to report the CDF. Need only be generated once, and so stored here. */
+    int rng_owner; /**< For internal use. Should I free the RNG when this copy of the settings group is freed? */
+    int draws_owner; /**< For internal use.  Should I free \c draws_made when this copy of the settings group is freed?*/
 } apop_cdf_settings;
 
 /** Settings for getting parameter models (i.e. the distribution of parameter estimates)

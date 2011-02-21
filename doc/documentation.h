@@ -228,10 +228,10 @@ ALLBUTTON
 
 Outlineheader preliminaries Getting started
 
+If you are entirely new to Apophenia, \ref gentle "have a look at the Gentle Introduction here".
+
 As well as the information in this outline, there is a separate page covering the details of 
  \ref setup "setting up a computing environment" and another page with \ref eg "some sample code" for your perusal.
-
-If you are entirely new to Apophenia, \ref gentle "have a look at the Gentle Introduction here".
 
 For another concrete example of folding Apophenia into a project, have a look at this \ref sample_program "sample program".
 
@@ -399,32 +399,32 @@ endofdiv
 
 Outlineheader status What is the status of the code?
 
-[This section last updated 17 December 2010.]
+[This section last updated 21 February 2011.]
 
-Apophenia was first posted to SourceForge in February 2005, which means that we've
-had several years to develop and test the code in real-world applications.
+Apophenia was first posted to SourceForge in February 2005, which means that we've had
+several years to develop and test the code in real-world applications. 
+    
 
-But a library for scientific computing, or even for that small subset that is statistics, will
-never be complete. What we can hope for is a framework that is sufficiently complete that new
-methods and models can easily be plugged in. Apophenia is close to complete in that sense.
+It is currently at version 0.99, which is intended to indicate that it is substantially complete. Of course,
+a library for scientific computing, or even for that small subset that is statistics, will
+never cover all needs and all methods. But as it stands Apophenia's framework, based on the \ref apop_data and
+\ref apop_model, is basicaly internally consistent, has enough tools that you can get common work done quickly, 
+and is reasonably fleshed out with a good number of models out of the box.
 
 The \ref apop_data structure is set, and there are enough functions there that you could
 use it as a subpackage by itself (along with the database functions) for nontrivial
 dealings with data.
 
-The \ref apop_model structure is much more ambitious, and has a few more steps to go
-before it is done. The promise underlying the structure is that you can provide just one
-item, such as an RNG or a likelihood function, and the structure will do all of the
-work to fill in computationally-intensive methods for everything else. Some directions
-aren't quite there yet (such as RNG -> most other things); the likelihood -> RNG function
-only works for models with a domain of unidimensional reals; empirical distributions are
-central to the setup, but the PMF model doesn't have enough supporting utilities and
-needs an internal index for faster lookups.
+The \ref apop_model structure is much more ambitious, and although its interface is
+set (pending your comments and feedback), its internal system can still be improved.
+The promise underlying the structure is that you can provide just one item, such as
+an RNG or a likelihood function, and the structure will do all of the work to fill in
+computationally-intensive methods for everything else. Some directions aren't quite
+there yet (such as RNG -> most other things); the default likelihood -> RNG function
+only works for models with a domain of unidimensional reals; the PMF model (the essential
+bridge from data sets to empirical models) needs an internal index for faster lookups.
 
-Also, the model's interface could still use a few tweaks.
-
-Which parts of the code are most reliable? [There's no point asking <em>are there bugs?</em>
-because the answer to that will always be <em>yes</em>.] There are vigorous tests on the code
+Which parts of the code are most reliable? There are vigorous tests on the code
 base, which currently cover about 73% of the lines of code; most of the untested part is
 in methods of some of the more obscure models. A broad rule of thumb for any code base is
 that the well-worn parts, in this case functions like \ref apop_data_get and \ref apop_normal's <tt>log_likelihood</tt>,
@@ -1395,21 +1395,66 @@ apop_data * stat    = apop_dot(apop_dot(score, infoinv), score);
 
 endofdiv
 
-Outlineheader Histosec Histograms \anchor histograms
+Outlineheader Histosec Histograms and PMFs (probability mass functions) \anchor histograms
 
-The GSL provides a <tt>gsl_histogram</tt> structure, that produces a PDF by accumulating data into bins. Apophenia wraps this into its \ref apop_model struct, so that the model-family machinery can be applied to Bayesian updating, kernel smoothing, or other methods that output a PDF.
+A data set can be read as an empirical model, where each row of the data set has some odds of being drawn. The \ref apop_pmf model wraps a \ref apop_data set so that it can be used as a model in this manner. In fact, when you call \ref apop_estimate(\c your_data, \ref apop_pmf), all that really happens is that the data set is attached to the returned copy of the model (plus some minor details). 
 
-To produce a PMF from \c your_data, use \ref apop_histogram "apop_estimate(your_data, apop_histogram)". If you would like to compare this histogram to other data (observed or theoretical),then you'll need to produce a second synced histogram using \ref apop_histogram_vector_reset or \ref apop_histogram_model_reset.  Then you can send both histograms to, say, \ref apop_test_kolmogorov.
+You might want to clean up the data before turning it into a PMF. For example...
 
-The second structure from the GSL incrementally sums up the PMF's bins to produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1] to a draw from the PMF.  Because it can be used to draw from the PMF, the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right: the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative sum---a CMF.
+\code 
+apop_data_pmf_compress(your_data);
+apop_data_sort(your_data);
+apop_vector_normalize(your_data->weights);
+apop_model *a_pmf = apop_estimate(your_data, apop_pmf);
+\endcode
 
-Anyway, here are some functions to deal with these various histograms and such; see also the GSL documentation, linked at the bottom of this outline.
+...would remove all duplicates, and set the weights column to reflect the original number of copies for each observation, then sort the data, then turn it into a PMF. Compression produces a corresponding improvement in efficiency when calculating CDFs or making draws. Sorting is not necessary for making draws or getting a likelihood or log likelihood.
 
-    \li\ref apop_histogram_model_reset()
-    \li\ref apop_histogram_moving_average()
-    \li\ref apop_histogram_normalize()
-    \li\ref apop_histogram_vector_reset()
-    \li\ref apop_histograms_test_goodness_of_fit()
+It is the weights vector that holds the density represented by each row; the rest of the row represents the coordinates of that density. If the input data set has no \c weights segment, then I assume that all rows have equal weight. So, for example, if you find a need to normalize the data into a sums-to-one PMF, then you can use \ref apop_vector_normalize on the \c weights vector to implement that. [But notice that even the PMF's \c draw function doesn't need this.]
+
+Using \ref apop_data_pmf_compress puts the data into one bin for each unique value in the data set. You may instead want bins of fixed with, in the style of a histogram. A binspec has as many columns as the data set being binned, and has one or two rows. The first row gives a bin width for the given column, so each column may have a different bin width. The second row, if present, gives the offset from zero for the bins. All bins, both above and below zero, are shifted accordingly. If there is no second row, the offset is zero.
+
+Send this binspec to \ref apop_data_to_bins. If you send a \c NULL binspec, then the offset is zero and the bin size is big enough to ensure that there are \f$\sqrt(N)\f$ bins from minimum to maximum. There are other preferred formul\ae for bin widths that minimize MSE, which might be added as a future extension.  The binspec will be added as a page to the data set, named <tt>"<binspec>"</tt>
+
+There are a few ways of testing the claim that one distribution equals another, typically an empirical PMF versus a smooth theoretical distribution. In both cases, you will need two distributions based on the same binspec. 
+
+For example, if you do not have a prior binspec in mind, then you can use the one generaged by the first call to the histogram binning function to make sure that the second data set is in sync:
+
+\code
+apop_data_to_bins(first_set, NULL);
+apop_data_to_bins(second_set, apop_data_get_page(first_set, "<binspec>"));
+\endcode
+
+If you have a model and data, use the \ref apop_histogram_model_reset convenience function to make random draws and bin them appropriately.
+Once you have two distributions so formed, you can use \ref apop_test_kolmogorov or \ref apop_histograms_test_goodness_of_fit to generate the appropriate statistics from the pairs of bins.
+
+Kernel density estimation will produce a smoothed PDF. See \ref apop_kernel_density for details.
+Or, use \ref apop_histogram_moving_average for a simpler smoothing method.
+
+Outlineheader gslhistos GSL histograms
+
+The GSL provides a <tt>gsl_histogram</tt> structure, that produces a PDF by accumulating data into bins. Apophenia wraps this into its \ref apop_model struct, so that the model-family machinery can be applied to Bayesian updating, kernel smoothing, or other methods that could take in a PDF.
+To produce a GSL histogram-based PMF from \c your_data, use \ref apop_estimate(\c your_data, \ref apop_histogram). 
+
+The GSL histogram is one-dimensional. The GSL also provides a two-dimensional version, but this is still short of the \f$N\f$ dimensions of the typical data set. Also, especially for larger dimensions, we need a sparse representation, while the GSL histogram structure choses the speed of a complete representation over the scalability of a sparse representation. For these and a few technical reasons, the \ref apop_histogram model is considered to be deprecated---for most purposes, you are better off using the \ref apop_pmf, which is at this point better supported. 
+
+
+As an aside, the GSL provides a closely-related 
+second structure that incrementally sums up the PMF's bins to produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1] to a draw from the PMF.  Because it can be used to draw from the PMF, the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right: the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative sum---a CMF. This is handled internally by the \ref apop_histogram, but you can retrieve it if need be.
+
+As with the \ref apop_pmf, if you want to compare this histogram to other data (observed or theoretical), then you'll need to produce a second synced histogram. You can use \ref apop_histogram_model_reset to make random draws from a model and bin them. Producing a second histogram with matching bins is not as easy as just re-calling \ref apop_data_to_bins with the same binspec, so there is the \ref apop_histogram_vector_reset function to produce a second synced \ref apop_histogram.
+
+
+endofdiv
+
+Here are some functions to deal with both the \ref apop_pmf and \ref apop_histogram (most handle both). See also the GSL documentation, linked at the bottom of this outline, for other uses of the GSL's histogram structure.
+
+    \li\ref apop_histogram_moving_average(): generate a model that is a moving average of an input pmf/histogram
+    \li\ref apop_histogram_normalize(): reweight a \ref apop_histogram to weight one. For the \ref apop_pmf, use \ref apop_vector_normalize(your_pmf->data->weights)
+    \li\ref apop_histogram_model_reset(): bin random draws from a continuous model into an existing pmf/histogram binspec.
+    \li\ref apop_histogram_vector_reset(): For the \ref apop_histogram only.
+    \li\ref apop_histograms_test_goodness_of_fit(): goodness-of-fit via \f$\chi^2\f$ statistic
+    \li\ref apop_test_kolmogorov(): goodness-of-fit via Kolmogorov-Smirnov statistic
 
 endofdiv
 
@@ -1602,7 +1647,6 @@ again does not make sense). As above, you can pipe directly to Gnuplot or write 
     \li\ref apop_plot_lattice()
     \li\ref apop_data_print()  
     \li\ref apop_data_show()
-    \li\ref apop_histogram_print()
     \li\ref apop_matrix_print()
     \li\ref apop_matrix_show()
     \li\ref apop_vector_print()
@@ -1756,6 +1800,7 @@ We'll begin with the C-standard header file:
  void apop_vector_increment_base(gsl_vector * v, int i, double amt);
  apop_varad_declare(void, apop_vector_increment, gsl_vector * v; int i; double amt);
 #define apop_vector_increment(...) apop_varad_link(apop_vector_increment, __VA_ARGS__)
+#endif
 \endcode
 
 First, there is an if/else that allows the system to degrade gracefully
@@ -1820,7 +1865,7 @@ which simply expands to:
 \code
     double amt = varad_in.amt ? varad_in.amt : 1;
 \endcode
-Thus, the macro declares each not-in-struct variable, and so there will need to be one such declaration line for each argument. Apart from requiring declarations, you can be creative: include sanity checks, post-vary the variables of the inputs, unpack without the macro, and so on. That is, this parent function does all of the bookkeeping, checking, and introductory shunting, so the base function can just do the math. Finally, the introductory section has to call the base function.
+Thus, the macro declares each not-in-struct variable, and so there will need to be one such declaration line for each argument. Apart from requiring declarations, you can be creative: include sanity checks, post-vary the variables of the inputs, unpack without the macro, and so on. That is, this parent function does all of the bookkeeping, checking, and introductory shunting, so the base function can just do the math. Finally, the introductory section will call the base function.
 
 The setup goes out of its way to leave the \c _base function in the public namespace, so that those who would prefer speed to bounds-checking can simply call that function directly, using standard notation. You could eliminate this feature by just merging the two functions.
 
@@ -1829,7 +1874,7 @@ The setup goes out of its way to leave the \c _base function in the public names
 
 The above is all you need to make this work: the varad.h file, and the above structures. But there is still a lot of redundancy, which can't be eliminated by the plain C preprocessor.
 
-Thus, below is another preprocessor that converts a few markers to the above form. Here is the code that will expand to the above C-standard code:
+Thus, in Apophenia's code base (the one you'll get from checking out the git repository, not the gzipped distribution that has already been post-processed) you will find a pre-preprocessing script that converts a few markers to the above form. Here is the code that will expand to the above C-standard code:
 
 \code
 //header file
@@ -1838,7 +1883,7 @@ APOP_VAR_DECLARE void apop_vector_increment(gsl_vector * v, int i, double amt);
 //code file
 APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
     gsl_vector * apop_varad_var(v, NULL);
-    apop_assert_void(v, 0, 's', "You sent me a NULL vector.");
+    Apop_assert(v, "You sent me a NULL vector.");
     int apop_varad_var(i, 0);
     double apop_varad_var(amt, 1);
 APOP_VAR_END_HEAD
@@ -1860,47 +1905,12 @@ One final detail: it is valid to have types with commas in them---function argum
 APOP_VAR_DECLARE apop_data * f_of_f(apop_data *in, void *param, int n, double (*fn_d)(double ! void * !int));
 \endcode
 
-Sed is POSIX standard, so even if you can't read the script (included in the git directory), you have the program needed to run it. For example, if you name it \c prep_variadics.sed, then run
+Sed is POSIX standard, so even if you can't read the script, you have the program needed to run it. For example, if you name it \c prep_variadics.sed, then run
 \code
 ./prep_variadics.sed < myfile.pre.c > myfile.c
 \endcode
 
 */
-
- 
-
-/* I should do something with this:
- *
- *
- *
- *
- * This function can be used to temporarily modify the global options,
- to facilitate better encapsulation of code. Usage:
-
-  \code
-  apop_opts_type tmp_opts;
-  apop_opts_memcpy(&tmp_opts, &apop_opts, sizeof(apop_opts_type));
-  strcpy(apop_opts.output_name, "ad_hoc_temp_file");
-  [do things here]
-  apop_opts_memcpy(&apop_opts, &tmp_opts, sizeof(apop_opts_type));
-  \endcode
-
-If you just need a little more verbosity for a procedure, you probably
-don't need to use this function. Just try: 
-  \code
-  apop_opts.verbose ++;
-  [do things here]
-  apop_opts.verbose --;
-  \endcode
-
-The philosophy is that the global variables are generally not going
-to change over the course of a program: either you are working on the
-screen, in the database, or piping out of STDOUT, and you likely won't
-change mid-stream. Thus, it is easier to set these globally at the top of
-the program but less convenient to switch frequently throughout the code.
-\ingroup global_vars
- */
-
 
 /** \page dataprep Data prep rules 
 

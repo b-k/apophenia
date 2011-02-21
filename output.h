@@ -12,9 +12,7 @@ extern "C" {
 #endif
 
 APOP_VAR_DECLARE void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * output_file, FILE *output_pipe, char output_type, char output_append);
-APOP_VAR_DECLARE void apop_histogram_plot(apop_model *hist,char *output_file, FILE *output_pipe, char output_type, char output_append);
-APOP_VAR_DECLARE void apop_plot_histogram(gsl_vector *data, size_t bins, char *output_file, FILE *output_pipe, char output_type, char output_append);
-APOP_VAR_DECLARE void apop_histogram_print(apop_model *h, char *output_file, FILE *output_pipe, char output_type, char output_append);
+APOP_VAR_DECLARE void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *output_file, FILE *output_pipe, char output_type, char output_append);
 APOP_VAR_DECLARE  void apop_plot_lattice(const apop_data *d, char *output_file, FILE *output_pipe, char output_type, char output_append);
 APOP_VAR_DECLARE void apop_plot_qq(gsl_vector *v, apop_model *m, char *output_file, FILE *output_pipe, char output_type, char output_append, size_t bins, gsl_rng *r);
 APOP_VAR_DECLARE void apop_plot_triangle(apop_data *in, char *output_file, FILE *output_pipe, char output_type, char output_append);

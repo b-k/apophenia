@@ -1316,6 +1316,57 @@ void test_arms(gsl_rng *r){
 }
 
 
+void test_pmf_compress(gsl_rng *r){
+    apop_data *d = apop_data_alloc();
+    apop_text_alloc(d, 8, 1);
+    d->vector = apop_array_to_vector((double []){12., 1., 2., 2., 1., 1., 2., 2.}, 8);
+    apop_text_add(d, 0, 0, "Dozen");
+    apop_text_add(d, 1, 0, "Single");
+    apop_text_add(d, 4, 0, "Single");
+    apop_text_add(d, 5, 0, "Single");
+    apop_text_add(d, 2, 0, "Pair");
+    apop_text_add(d, 3, 0, "Pair");
+    apop_text_add(d, 6, 0, "Pair");
+    apop_text_add(d, 7, 0, "Pair");
+    apop_data_pmf_compress(d);
+
+    assert(d->vector->data[0]==12);
+    assert(d->vector->data[1]==1);
+    assert(d->vector->data[2]==2);
+    assert(d->weights->data[0]==1);
+    assert(d->weights->data[1]==3);
+    assert(d->weights->data[2]==4);
+    assert(apop_strcmp(d->text[0][0], "Dozen"));
+    assert(apop_strcmp(d->text[1][0], "Single"));
+    assert(apop_strcmp(d->text[2][0], "Pair"));
+
+    apop_data *b = apop_data_alloc();
+    b->vector = apop_array_to_vector((double []){0., -1.1, 2., -2}, 4);
+    apop_data_to_bins(b, .close_top_bin='y');
+    assert(b->vector->data[0]==0);
+    assert(b->vector->data[1]==-2);
+    assert(b->weights->data[0]==2);
+    assert(b->weights->data[1]==2);
+    
+
+    //I assert that if I use the default binspec returned by a call to apop_data_to_bins,
+    //then re-binning with the binspec explicitly stated will give identical results.
+    int i, dcount = 10000;
+    apop_data *draws = apop_data_alloc(dcount);
+    apop_model *norm = apop_model_set_parameters(apop_normal, 0, 1);
+    for (i=0 ; i<dcount; i++)
+        apop_draw(draws->vector->data+i, r, norm);
+    apop_data_sort(draws);
+    apop_data *drawcopy = apop_data_copy(draws);
+    apop_data *binned = apop_data_to_bins(draws);
+    apop_data *binnedc = apop_data_to_bins(drawcopy, .binspec=apop_data_get_page(draws, "<binspec>"));
+    assert(binned->weights->size == binnedc->weights->size);
+    for (i=0; i< binned->weights->size; i++){
+        assert(binned->vector->data[i] == binnedc->vector->data[i]);
+        assert(binned->weights->data[i] == binnedc->weights->data[i]);
+    }
+}
+
 void test_weighted_regression(apop_data *d,apop_model *e){
     //pretty rudimentary: set all weights to equal and see if we get the same result.
     apop_data *cp = apop_data_copy(d);
@@ -1380,6 +1431,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test data compressing", test_pmf_compress(r));
     do_test("test apop_update", test_updating(r));
     do_test("weighted regression", test_weighted_regression(d,e));
     do_test("offset OLS", test_ols_offset(r));

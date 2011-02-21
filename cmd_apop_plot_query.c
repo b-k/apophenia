@@ -11,6 +11,7 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 char *plot_type = NULL;
 int histobins   = 0;
+int histoplotting   = 0;
 
 FILE *open_output(char *outfile, int sf){
   FILE  *f;
@@ -65,13 +66,13 @@ apop_data *result 	= apop_query_to_data("%s", q);
 void print_out(FILE *f, char *outfile, gsl_matrix *m){
     apop_opts.output_type = 'p';
     apop_opts.output_pipe = f;
-    if (!histobins){
+    if (!histoplotting){
         fprintf(f,"plot '-' with %s\n", plot_type);
 	    apop_matrix_print(m, NULL);
     }
     else {
         APOP_MATRIX_COL(m, 0, v);
-        apop_plot_histogram(v, histobins, NULL);
+        apop_plot_histogram(v, histobins);
     }
     if (outfile) fclose(f);
 }
@@ -93,7 +94,7 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to stdout
 -Q\tfile from which to read the query\t\t\n\
 -n\tno plot: just run the query and display results to stdout\t\t\n\
 -t\tplot type (points, bars, ...)\t\t\tdefault=\"lines\"\n\
--H\tplot histogram with this many bins (e.g., -H100)\n\
+-H\tplot histogram with this many bins (e.g., -H100). To let the system auto-select bin sizes, use -H0 .\n\
 -f\tfile to dump to. If -f- then use stdout.\tdefault=pipe to Gnuplot\n", argv[0]); 
 
 	if(argc<2){
@@ -113,6 +114,7 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to stdout
               sf  ++;
 			  break;
           case 'H':
+              histoplotting = 1;
               histobins = atoi(optarg);
               break;
 		  case 'n':

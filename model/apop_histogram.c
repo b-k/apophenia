@@ -116,8 +116,15 @@ static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
     } while (!gsl_finite(*out));
 }
 
+static void histogram_print(apop_model *est){
+    gsl_histogram *h = Apop_settings_get(est, apop_histogram, pdf);
+    gsl_histogram_fprintf (apop_opts.output_pipe, h, "%g", "%g");
+}
+
+
 /** \hideinitializer */
-apop_model apop_histogram = {"Histogram", .dsize=1, .estimate = est, .log_likelihood = histogram_ll, .draw = histogram_rng};
+apop_model apop_histogram = {"Histogram", .dsize=1, .estimate = est, .log_likelihood = histogram_ll, 
+                    .draw = histogram_rng, .print=histogram_print};
 
 
 ////Kernel density estimation
@@ -196,17 +203,6 @@ static void kernel_draw(double *d, gsl_rng *r, apop_model *m){
     //Now draw from the distribution around that point.
     apop_draw(d, r, ks->kernel);
     apop_data_free(point);
-    
-/*
-    if (!Apop_settings_get_group(m, apop_arms)){
-        double min = GSL_MIN(m->data->vector ? gsl_vector_min(m->data->vector) : INFINITY,
-                            m->data->matrix ? gsl_matrix_min(m->data->matrix) : INFINITY);
-        double max = GSL_MAX(m->data->vector ? gsl_vector_max(m->data->vector) : -INFINITY,
-                            m->data->matrix ? gsl_matrix_max(m->data->matrix) : -INFINITY);
-        Apop_model_add_group(m, apop_arms, .model=m, .xl=min, .xr=max);
-    }
-    apop_arms_draw(d, r, m);
-    */
 }
 
 
