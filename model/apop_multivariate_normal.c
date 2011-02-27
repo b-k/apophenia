@@ -1,5 +1,14 @@
-/** \file apop_multivariate_normal.c  The multivariate Normal distribution.*/
-/* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* apop_multivariate_normal.c  The multivariate Normal distribution.
+ Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+
+\amodel apop_multivariate_normal This is the multivariate generalization of the Normal distribution.
+
+\adoc    Input_format     Each row of the matrix is an observation.
+\adoc    Parameter_format  An \c apop_data set whose vector element is the vector of
+                            means, and whose matrix is the covariances.
+
+If you had only one dimension, the mean would be a vector of size one, and the covariance matrix a \f$1\times 1\f$ matrix. This differs from the setup for \ref apop_normal, which outputs a single vector with \f$\mu\f$ in element zero and \f$\sigma\f$ in element one.
+\adoc    Settings   None.    */
  
 #include "asst.h"
 #include "model.h"
@@ -17,7 +26,7 @@ static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
 }
 
 static double apop_multinormal_ll(apop_data *data, apop_model * m){
-  Nullcheck_m(m); Nullcheck_p(m);
+  Nullcheck_mpd(data, m);
   double    determinant = 0;
   gsl_matrix* inverse   = NULL;
   int       i, dimensions  = data->matrix->size2;
@@ -47,8 +56,12 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
 #include "stats.h"
 static double a_mean(gsl_vector * in){ return apop_vector_mean(in); }
 
+/*\adoc  estimated_parameters  Format as above. The <tt>\<Covariance\></tt> page gives
+the covariance matrix of the means.
+
+\adoc estimated_info   Reports <tt>log likelihood</tt>.  */ 
 static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
-    p->parameters         = apop_map(data, .fn_v=a_mean, .part='c');
+    p->parameters = apop_map(data, .fn_v=a_mean, .part='c'); 
     apop_data *cov =  apop_data_covariance(data);
     p->parameters->matrix =  cov->matrix;
     apop_data_add_named_elmt(p->info, "log likelihood", apop_multinormal_ll(data, p));
@@ -56,7 +69,9 @@ static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p
     return p;
 }
 
-/** The nice, easy method from Devroye, p 565 */
+/* \adoc    RNG  The RNG fills an input array whose length is based on the input parameters.
+
+ The nice, easy method from Devroye, p 565 */
 static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
   apop_data *params = eps->parameters;
   int i, j;

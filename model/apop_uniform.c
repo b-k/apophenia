@@ -1,9 +1,21 @@
-/** \file apop_uniform.c  */
-/* Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* apop_uniform.c 
+ Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "model.h"
 #include "internal.h"
 #include "likelihoods.h"
+
+/* \amodel apop_uniform  This is the two-parameter version of the Uniform,
+expressing a uniform distribution over [a, b].
+
+The MLE of this distribution is simply a = min(your data); b = max(your data).
+Primarily useful for the RNG, such as when you have a Uniform prior model.
+
+\adoc    Input_format  An unordered set of numbers in the data set's vector, matrix, or both.
+\adoc    Parameter_format  Zeroth vector element is \f$a\f$, the min;
+                          element one is \f$b\f$, the max. 
+\adoc    settings  None.    
+      */
 
 static void getminmax(apop_data *d, double *min, double *max){
     Get_vmsizes(d) //msize1, vsize
@@ -14,7 +26,7 @@ static void getminmax(apop_data *d, double *min, double *max){
 }
 
 static double unif_ll(apop_data *d, apop_model *m){
-  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
+  Nullcheck_mpd(d, m);
   Get_vmsizes(d) //tsize
   double min, max;
     getminmax(d, &min, &max);
@@ -24,7 +36,7 @@ static double unif_ll(apop_data *d, apop_model *m){
 }
 
 static double unif_p(apop_data *d, apop_model *m){
-  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
+  Nullcheck_mpd(d, m);
   Get_vmsizes(d) //tsize
   double min, max;
     getminmax(d, &min, &max);
@@ -33,15 +45,18 @@ static double unif_p(apop_data *d, apop_model *m){
     return 0;
 }
 
+/* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
-    Nullcheck(data);
+    Nullcheck_d(data);
+    apop_name_add(est->parameters->names, "min", 'r');
+    apop_name_add(est->parameters->names, "max", 'r');
     getminmax(data, est->parameters->vector->data+0, est->parameters->vector->data+1);
     apop_data_add_named_elmt(est->info, "log likelihood", unif_ll(data, est));
     return est;
 }
 
 static double unif_cdf(apop_data *d, apop_model *m){
-  Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
+  Nullcheck_mpd(d, m);
   Get_vmsizes(d) //tsize
     double min = m->parameters->vector->data[0];
     double max = m->parameters->vector->data[1];
@@ -61,6 +76,21 @@ apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,  .dsize=1,
     .estimate = uniform_estimate,  .p = unif_p,.log_likelihood = unif_ll,   
     .draw = uniform_rng, .cdf = unif_cdf};
 
+/* \amodel apop_improper_uniform The improper uniform returns \f$P(x) = 1\f$ for every value of x, all the
+time (and thus, log likelihood(x)=0).  It has zero parameters. It is
+useful, for example, as an input to Bayesian updating, to represent a
+fully neutral prior.
+
+\adoc    Input_format      Ignored.
+\adoc    Parameter_format  \c NULL 
+\adoc    estimated_parameters   \c NULL
+\adoc    RNG The \c draw function makes no sense, and therefore halts if you call it.
+\adoc    CDF Half of the distribution is less than every given point, so the CDF always
+             returns 0.5. One could perhaps make an argument that this should really be
+             infinity, but a half is more in the spirit of the distribution's
+             use to represent a lack of information. 
+\adoc    settings None. 
+          */
 
 static apop_model * improper_uniform_estimate(apop_data * data,  apop_model *m){ return m; }
 

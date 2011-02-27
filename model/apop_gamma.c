@@ -1,14 +1,30 @@
-/** \file apop_gamma.c
+/* The gamma distribution.
+Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 
-  The gamma distribution.*/
-/*Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+\amodel apop_gamma The Gamma distribution
+
+\f$G(x, a, b)     = {1\over (\Gamma(a) b^a)}  x^{a-1} e^{-x/b}\f$
+
+\f$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b\f$
+
+\f$d ln G/ da    =  -\psi(a) - ln b + ln(x) \f$    (also, \f$d ln \gamma = \psi\f$)
+
+\f$d ln G/ db    =  -a/b + x/(b^2) \f$
+
+\adoc    Input_format     
+Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.     
+
+\li See also \ref apop_data_rank_compress for means of dealing with one more input data format.
+\adoc    Parameter_format   First two elements of the vector.   
+\adoc    settings    MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings  
+  */
 
 #include "types.h"
 #include "mapply.h"
 #include "internal.h"
 #include "likelihoods.h"
 
-static double beta_zero_and_one_greater_than_x_constraint(apop_data *data, apop_model *v){
+static double gamma_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-5);
 }
@@ -21,8 +37,7 @@ static double apply_for_gamma(double x, void *abin) {
 }
 
 static double gamma_log_likelihood(apop_data *d, apop_model *p){
-  Nullcheck_m(p) 
-  Nullcheck_p(p) 
+  Nullcheck_mpd(d, p) 
   Get_vmsizes(d)
   abstruct ab = {
       .a    = gsl_vector_get(p->parameters->vector, 0),
@@ -37,8 +52,6 @@ static double gamma_log_likelihood(apop_data *d, apop_model *p){
     return llikelihood;
 }
 
-//static double a_callback(double x, void *ab){ return x ? log(x)- *(double*)ab : 0; }
-//static double b_callback(double x, void *ab){ return x ? -x - *(double*)ab : 0; }
 static double a_callback(double x, void *ab){ return log(x)- *(double*)ab; }
 static double b_callback(double x, void *abv){ 
     double *ab = abv;
@@ -46,30 +59,24 @@ static double b_callback(double x, void *abv){
 }
 
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_p(p) 
+  Nullcheck_mp(p) 
   double       	a    	= gsl_vector_get(p->parameters->vector, 0),
         		b    	= gsl_vector_get(p->parameters->vector, 1);
-    //if (a <= 0 || b <= 0 || gsl_isnan(a) || gsl_isnan(b)) return GSL_POSINF;    
-                        //a sign to the minimizer to look elsewhere.
   double psi_a_ln_b	= gsl_sf_psi(a) + log(b);
   double b_and_ab[2]    = {b, a/b};
     gsl_vector_set(gradient, 0, apop_map_sum(d, .fn_dp = a_callback, .param=&psi_a_ln_b));
     gsl_vector_set(gradient, 1, apop_map_sum(d, .fn_dp = b_callback, .param=&b_and_ab));
 }
 
-/* Just a wrapper for gsl_ran_gamma.
+/* \adoc RNG Just a wrapper for \c gsl_ran_gamma.
 
-   cut & pasted from the GSL documentation:
-\f$          p(x) dx = {1 \over \Gamma(a) b^a} x^{a-1} e^{-x/b} dx \f$
-
-See the notes for \ref apop_exponential on a popular alternate form.
-*/
+See the notes for \ref apop_exponential on a popular alternate form.  */
 static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
     *out    = gsl_ran_gamma(r, gsl_vector_get(p->parameters->vector, 0), gsl_vector_get(p->parameters->vector, 1));
 }
 
 static double gamma_cdf(apop_data *d, apop_model *params){
-  Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 
+  Nullcheck_mpd(d, params)
   Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double alpha = gsl_vector_get(params->parameters->vector, 0);
@@ -77,7 +84,6 @@ static double gamma_cdf(apop_data *d, apop_model *params){
     return gsl_cdf_gamma_P(val, alpha, beta);
 }
 
-apop_model apop_gamma = {"Gamma distribution", 2,0,0, //estimate method is just the default MLE.
-      .dsize=1, .log_likelihood = gamma_log_likelihood, 
-     .score = gamma_dlog_likelihood, .constraint = beta_zero_and_one_greater_than_x_constraint, 
-     .cdf = gamma_cdf, .draw = gamma_rng};
+apop_model apop_gamma = {"Gamma distribution", 2,0,0, .dsize=1, 
+      .log_likelihood = gamma_log_likelihood, .score = gamma_dlog_likelihood, 
+      .constraint = gamma_constraint, .cdf = gamma_cdf, .draw = gamma_rng};

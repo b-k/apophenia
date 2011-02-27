@@ -1,53 +1,13 @@
-/** \file apop_t_f_chi.c	t, F, chi squared, and Wishart distributions. */
-/* Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-
-/** \defgroup tfchi t-, chi-squared, F-, Wishart distributions
-
-Most of these distributions are typically used for testing purposes.  For such a situation, you don't need the models here.
-Given a statistic of the right properties, you can find the odds that the statistic is above or below a cutoff on the t-, F, or chi-squared distribution using the \ref apop_test function. 
-
-In that world, those three distributions are actually parameter free. The data is assumed to be normalized to be based on a mean zero, variance one process, you get the degrees of freedom from the size of the data, and the distribution is fixed.
-
-For modeling purposes, more could be done. For example, the t-distribution is a favorite proxy for Normal-like situations where there are fat tails relative to the Normal (i.e., high kurtosis). Or, you may just prefer not to take the step of normalizing your data---one could easily rewrite the theorems underlying the t-distribution without the normalizations.
-
-In such a case, the researcher would not want to fix the \f$df\f$, because \f$df\f$ indicates the fatness of the tails, which has some optimal value given the data. 
-Thus, there are two modes of use for these distributions: 
-
-\li Parameterized, testing style: the degrees of freedom are determined
-from the data, and all necessary normalizations are assumed. Thus, this code---
-
-\code
-apop_data *t_for_testing = apop_estimate(data, apop_t)
-\endcode
-
----will return exactly the type of \f$t\f$-distribution one would use for testing. 
-
-\li By removing the \c estimate method---
-\code
-apop_model *spare_t = apop_model_copy(t);
-spare_t.estimate = NULL;
-apop_model *best_fitting_t = apop_estimate(your_data, spare_t);
-\endcode
----I will find the best \f$df\f$ via maximum likelihood, which may be desirable for
-to find the best-fitting model for descriptive purposes.
-
-\c df works for all four distributions here; \c df2 makes sense only for the \f$F\f$, 
-
-For the Wishart, the degrees of freedom and covariance matrix are always estimated via MLE.
-*/
+/* \file apop_t_f_chi.c	t, F, chi squared, and Wishart distributions.
+Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+#include "model.h"
 #include "mapply.h"
+#include "internal.h"
 #include "variadic.h"
 #include "likelihoods.h"
-#include "model.h"
-#include "internal.h"
-#include <gsl/gsl_eigen.h>
-
-double df, df2; 
-int len;
 
 apop_model* apop_t_estimate(apop_data *d, apop_model *m){
-    Apop_assert_s(d, "No data with which to count df. (the default estimation method)");
-    Nullcheck_m(m);
+    Apop_assert(d, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2, tsize
     apop_model *out = apop_model_copy(*m);
     double vmu = vsize ? apop_mean(d->vector) : 0;
@@ -65,8 +25,7 @@ apop_model* apop_t_estimate(apop_data *d, apop_model *m){
 }
 
 apop_model* apop_chi_estimate(apop_data *d, apop_model *m){
-    Apop_assert_s(d, "No data with which to count df. (the default estimation method)");
-    Nullcheck_m(m);
+    Apop_assert(d, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2
     apop_model *out = apop_model_copy(*m);
     apop_data_add_named_elmt(out->parameters, "df", tsize - 1);
@@ -75,15 +34,13 @@ apop_model* apop_chi_estimate(apop_data *d, apop_model *m){
 }
 
 apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
-    Apop_assert_s(d, "No data with which to count df. (the default estimation method)");
-    Nullcheck_m(m);
-    apop_model *out = apop_model_copy(*m);
-    apop_name_add(out->parameters->names, "df",  'r');
-    apop_name_add(out->parameters->names, "df2",  'r');
-    apop_data_set(out->parameters, 0, -1, d->vector->size -1);
-    apop_data_set(out->parameters, 1, -1, d->matrix->size1 * d->matrix->size2 -1);
-    apop_data_add_named_elmt(out->info, "log likelihood", apop_f_distribution.log_likelihood(d, out));
-    return out;
+    Apop_assert(d, "No data with which to count df. (the default estimation method)");
+    apop_name_add(m->parameters->names, "df",  'r');
+    apop_name_add(m->parameters->names, "df2",  'r');
+    apop_data_set(m->parameters, 0, -1, d->vector->size -1);
+    apop_data_set(m->parameters, 1, -1, d->matrix->size1 * d->matrix->size2 -1);
+    apop_data_add_named_elmt(m->info, "log likelihood", apop_f_distribution.log_likelihood(d, m));
+    return m;
 }
 
 static double one_f(double in, void *df_in){ 
@@ -100,19 +57,19 @@ static double one_t(double in, void *params){
 static double one_chisq(double in, void *df){ return log(gsl_ran_chisq_pdf(in, *(double*)df)); }
 
 double apop_tdist_llike(apop_data *d, apop_model *m){ 
-    Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
+    Nullcheck_mpd(d, m);
     double *params = m->parameters->vector->data;
     return apop_map_sum(d, .fn_dp=one_t, .param=&params);
 }
 
 double apop_chisq_llike(apop_data *d, apop_model *m){ 
-    Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
+    Nullcheck_mpd(d, m);
     double df = m->parameters->vector->data[0];
     return apop_map_sum(d, .fn_dp=one_chisq, .param =&df);
 }
 
 double apop_fdist_llike(apop_data *d, apop_model *m){ 
-    Nullcheck(d); Nullcheck_m(m); Nullcheck_p(m);
+    Nullcheck_mpd(d, m);
     double df[2];
     df[0] = m->parameters->vector->data[0];
     df[1] = m->parameters->vector->data[1];
@@ -120,7 +77,7 @@ double apop_fdist_llike(apop_data *d, apop_model *m){
 }
 
 void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){ 
-    Nullcheck_m(m); Nullcheck_p(m);
+    Nullcheck_mp(m);
     double mu = m->parameters->vector->data[0];
     double sigma = m->parameters->vector->data[1];
     double df = m->parameters->vector->data[2];
@@ -128,7 +85,7 @@ void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){
 }
 
 double apop_t_dist_cdf(apop_data *in, apop_model *m){
-    Nullcheck_m(m); Nullcheck_p(m);
+    Nullcheck_mp(m);
     double val = in->vector ? apop_data_get(in, 0, -1) : apop_data_get(in, 0, 0);
     double mu = m->parameters->vector->data[0];
     double sigma = m->parameters->vector->data[1];
@@ -137,213 +94,22 @@ double apop_t_dist_cdf(apop_data *in, apop_model *m){
 }
 
 void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){
-    Nullcheck_m(m); Nullcheck_p(m);
+    Nullcheck_mp(m);
     *out = gsl_ran_fdist (r, m->parameters->vector->data[0], m->parameters->vector->data[1]);
 }
 
 void apop_chisq_dist_draw(double *out, gsl_rng *r, apop_model *m){
-    Nullcheck_m(m); Nullcheck_p(m);
+    Nullcheck_mp(m);
     *out = gsl_ran_chisq (r, m->parameters->vector->data[0]);
 }
 
 double apop_t_dist_constraint(apop_data *beta, apop_model *m){
-    static double constr[] = { 0, 0, 1, 0,  //0 < sigma
-                              .9, 0, 0, 1}; //.9 < df
-    static apop_data *d_constr = NULL;
-    if (!d_constr) d_constr = apop_line_to_data(constr, 2, 2, 3);
+    Staticdef(apop_data *, d_constr, apop_data_fill(apop_data_alloc(2,2,3),
+                             0, 0, 1, 0,  //0 < sigma
+                            .9, 0, 0, 1)); //.9 < df
     return apop_linear_constraint(m->parameters->vector, d_constr);
 }
 
-/** The multivariate generalization of the Gamma distribution.
-\f$
-\Gamma_p(a)=
-\pi^{p(p-1)/4}\prod_{j=1}^p
-\Gamma\left[ a+(1-j)/2\right]. \f$
-
-See also \ref apop_multivariate_lngamma, which is more numerically stable in most cases.
-*/
-double apop_multivariate_gamma(double a, double p){
-    double out = pow(M_PI, p*(p-1.)/4.);
-    double factor = 1;
-    for (int i=1; i<=p; i++)
-        factor *= gsl_sf_gamma(a+(1-i)/2.);
-    return out * factor;
-}
-
-/** The log of the multivariate generalization of the Gamma; see also
- \ref apop_multivariate_gamma.
-*/
-double apop_multivariate_lngamma(double a, double p){
-    double out = M_LNPI * p*(p-1.)/4.;
-    double factor = 0;
-    for (int i=1; i<=p; i++)
-        factor += gsl_sf_lngamma(a+(1-i)/2.);
-    return out + factor;
-}
-
-static void find_eigens(gsl_matrix **subject, gsl_vector *eigenvals, gsl_matrix *eigenvecs){
-   gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc((*subject)->size1);
-   gsl_eigen_symmv(*subject, eigenvals, eigenvecs, w);
-   gsl_eigen_symmv_free (w);
-   gsl_matrix_free(*subject); *subject  = NULL;
-}
-
-static void diagonal_copy(gsl_vector *v, gsl_matrix *m, char in_or_out){
-    gsl_vector_view dv = gsl_matrix_diagonal(m);
-    if (in_or_out == 'i') 
-        gsl_vector_memcpy(&(dv.vector), v);
-    else  
-        gsl_vector_memcpy(v, &(dv.vector));
-}
-
-static double diagonal_size(gsl_matrix *m){
-    gsl_vector_view dv = gsl_matrix_diagonal(m);
-    return apop_sum(&dv.vector);
-}
-
-static double biggest_elmt(gsl_matrix *d){ 
-    return  GSL_MAX(fabs(gsl_matrix_max(d)), fabs(gsl_matrix_min(d)));
-}
-
-/** Test whether the input matrix is positive semidefinite.
-
-A covariance matrix will always be PSD, so this function can tell you whether your matrix is a valid covariance matrix.
-
-Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in the upper left, on up to the full matrix. If the matrix is PSD, then each of these has a positive determinant. This function thus calculates \f$N\f$ determinants for an \f$N\f$x\f$N\f$ matrix.
-
-\param m The matrix to test. If \c NULL, I will return zero---not PSD.
-\param semi If anything but 's', check for positive definite, not semidefinite. (default 's')
-
-See also \ref apop_matrix_to_positive_semidefinite, which will change the input to something PSD.
-
-This function uses the \ref designated syntax for inputs.
-
-    */
-APOP_VAR_HEAD int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi){
-    gsl_matrix * apop_varad_var(m, NULL);
-    apop_assert_c(m, 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite.");
-    char apop_varad_var(semi, 's');
-    return apop_matrix_is_positive_semidefinite_base(m, semi);
-APOP_VAR_ENDHEAD
-    for (int i=1; i<= m->size1; i++){
-        gsl_matrix mv =gsl_matrix_submatrix (m, 0, 0, i, i).matrix;
-        double det = apop_matrix_determinant(&mv);
-        if ((semi == 'd' && det <0) || det <=0)
-            return 0;
-    }
-    return 1;
-}
-
-void vfabs(double *x){*x = fabs(*x);}
-
-/**  First, this function passes tests, but is under development.
-  
-    It takes in a matrix and converts it to the `closest' positive
-    semidefinite matrix.
-
-    \param m On input, any matrix; on output, a positive semidefinite matrix.
-    \return the distance between the original and new matrices.
-
-    \li See also the test function \ref apop_matrix_is_positive_semidefinite.
-    \li This function can be used as (the core of) a model constraint.
-
-   Adapted from the R Matrix package's nearPD, which is 
-   Copyright (2007) Jens Oehlschlägel [and is GPL].
- */
-double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
-    if (apop_matrix_is_positive_semidefinite(m)) 
-        return 0; 
-    double diffsize=0, dsize;
-    apop_data *qdq; 
-    gsl_matrix *d = apop_matrix_copy(m);
-    gsl_matrix *original = apop_matrix_copy(m);
-    double orig_diag_size = fabs(diagonal_size(d));
-    int size = d->size1;
-    gsl_vector *diag = gsl_vector_alloc(size);
-    diagonal_copy(diag, d, 'o');
-    apop_vector_apply(diag, vfabs);
-    double origsize = biggest_elmt(d);
-    do {
-        //get eigenvals
-        apop_data *eigenvecs = apop_data_alloc(0, size, size);
-        gsl_vector *eigenvals = gsl_vector_calloc(size);
-        gsl_matrix *junk_copy = apop_matrix_copy(d);
-        find_eigens(&junk_copy, eigenvals, eigenvecs->matrix);
-        
-        //prune positive only
-        int j=0;
-        int plussize = eigenvecs->matrix->size1;
-        int *mask = calloc(eigenvals->size , sizeof(int));
-        for (int i=0; i< eigenvals->size; i++)
-            plussize -= 
-            mask[i] = (gsl_vector_get(eigenvals, i) <= 0);
-        
-        //construct Q = pruned eigenvals
-        apop_data_rm_columns(eigenvecs, mask);
-        if (!eigenvecs->matrix) break;
-        
-        //construct D = positive eigen diagonal
-        apop_data *eigendiag = apop_data_calloc(0, plussize, plussize);
-        for (int i=0; i< eigenvals->size; i++)
-            if (!mask[i]) {
-                apop_data_set(eigendiag, j, j, eigenvals->data[i]);
-                j++;
-            }
-
-        // Our candidate is QDQ', symmetrized, with the old diagonal subbed in.
-        apop_data *qd = apop_dot(eigenvecs, eigendiag);
-        qdq = apop_dot(qd, eigenvecs, .form2='t');
-        for (int i=0; i< qdq->matrix->size1; i++)
-            for (int j=i+1; j< qdq->matrix->size1; j++){
-                double avg = (apop_data_get(qdq, i, j) +apop_data_get(qdq, j, i)) /2.;
-                apop_data_set(qdq, i, j, avg);
-                apop_data_set(qdq, j, i, avg);
-            }
-        diagonal_copy(diag, qdq->matrix, 'i');
-        
-        // Evaluate progress, clean up.
-        dsize = biggest_elmt(d);
-        gsl_matrix_sub(d, qdq->matrix);
-        diffsize = biggest_elmt(d);
-        apop_data_free(qd); gsl_matrix_free(d);
-        apop_data_free(eigendiag); free(mask);
-        apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
-        d = qdq->matrix;
-        qdq->matrix=NULL; apop_data_free(qdq); qdq = NULL;
-    } while (diffsize/dsize > 1e-3);
-
-    apop_data *eigenvecs = apop_data_alloc(0, size, size);
-    gsl_vector *eigenvals = gsl_vector_calloc(size);
-    gsl_matrix *junk_copy = apop_matrix_copy(d);
-    find_eigens(&junk_copy, eigenvals, eigenvecs->matrix);
-    //make eigenvalues more positive
-    double score =0;
-    for (int i=0; i< eigenvals->size; i++){
-        double v = gsl_vector_get(eigenvals, i);
-        if (v < 1e-1){
-            gsl_vector_set(eigenvals, i, 1e-1);
-            score += 1e-1 - v;
-        }
-    }
-    for (int i=0; i< size; i++)
-        assert(eigenvals->data[i] >=0);
-    //if (score){
-        apop_data *eigendiag = apop_data_calloc(0, size, size);
-        diagonal_copy(eigenvals, eigendiag->matrix, 'i');
-        double new_diag_size = diagonal_size(eigendiag->matrix);
-        gsl_matrix_scale(eigendiag->matrix, orig_diag_size/new_diag_size);
-        apop_data *qd = apop_dot(eigenvecs, eigendiag);
-        qdq = apop_dot(qd, eigenvecs, .form2='t');
-        gsl_matrix_memcpy(m, qdq->matrix);
-        apop_data_free(qd);
-        apop_data_free(eigendiag);
-    //}
-    assert(apop_matrix_is_positive_semidefinite(m));
-    apop_data_free(qdq); gsl_vector_free(diag);
-    apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
-    gsl_matrix_sub(original, m);
-    return biggest_elmt(original)/origsize;
-}
 
 static double pos_def(apop_data *data, apop_model *candidate){
     return apop_matrix_to_positive_semidefinite(candidate->parameters->matrix);
@@ -352,7 +118,7 @@ static double pos_def(apop_data *data, apop_model *candidate){
 typedef struct{
     double paramdet;
     gsl_matrix *wparams;
-    int len;
+    int len, df;
 } wishartstruct_t;
 
 static double one_wishart_row(gsl_vector *in, void *ws_in){
@@ -362,15 +128,15 @@ static double one_wishart_row(gsl_vector *in, void *ws_in){
     apop_data *square= apop_data_alloc(0, ws->len, ws->len);
     apop_data_unpack(in, square);
     double datadet = apop_det_and_inv(square->matrix, &inv, 1, 1);
-    double out = log(datadet) * ((df - len -1.)/2.);
+    double out = log(datadet) * ((ws->df - ws->len -1.)/2.);
     gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, inv, ws->wparams, 0, inv_dot_params);   
     assert(datadet);
     gsl_vector_view diag = gsl_matrix_diagonal(inv_dot_params);
     double trace = apop_sum(&diag.vector);
     out += -0.5 * trace;
-    out -= log(2) * len*df/2.;
-    out -= log(ws->paramdet) * df/2.;
-    out -= apop_multivariate_lngamma(df/2, len);
+    out -= log(2) * ws->len* ws->df/2.;
+    out -= log(ws->paramdet) * ws->df/2.;
+    out -= apop_multivariate_lngamma(ws->df/2, ws->len);
     gsl_matrix_free(inv);
     apop_data_free(square);
     assert(isfinite(out));
@@ -378,12 +144,12 @@ static double one_wishart_row(gsl_vector *in, void *ws_in){
 }
 
 static double wishart_ll(apop_data *in, apop_model *m){
-    Nullcheck(in); Nullcheck_m(m); Nullcheck_p(m);
-    df = m->parameters->vector->data[0];
+    Nullcheck_mpd(in, m);
     wishartstruct_t ws = {
             .paramdet = apop_matrix_determinant(m->parameters->matrix),
             .wparams = m->parameters->matrix,
-            .len = sqrt(in->matrix->size2)
+            .len = sqrt(in->matrix->size2),
+            .df = m->parameters->vector->data[0]
         };
     if (ws.paramdet < 1e-3) return GSL_NEGINF;
     double ll =  apop_map_sum(in, .fn_vp = one_wishart_row, .param=&ws, .part='r');
@@ -402,7 +168,7 @@ C     Wishart variate generator.  On output, SA is an upper-triangular
 C     matrix of size NP * NP [...]
 C     whose elements have a Wishart(N, SIGMA) distribution.
 */
-    Nullcheck_m(m); Nullcheck_p(m);
+    Nullcheck_mp(m);
     int DF, np = m->parameters->matrix->size1;
     int n = m->parameters->vector->data[0];
     if (!m->more) { 
@@ -412,12 +178,11 @@ C     whose elements have a Wishart(N, SIGMA) distribution.
             for (int j=i+1; j < ccc->size2; j++)
                 gsl_matrix_set(ccc, i, j, 0);
         m->more = apop_matrix_to_data(ccc);
+        m->more_size = sizeof(apop_data);
     }
     apop_data *Chol = m->more;
-    m->more_size = sizeof(apop_data);
-    apop_data *rmatrix = apop_data_calloc(0, np, np);
-    static apop_model *std_normal = NULL;
-    if (!std_normal) std_normal = apop_model_set_parameters(apop_normal, 0.0, 1.0);
+    apop_data *rmatrix = apop_data_calloc(np, np);
+    Staticdef(apop_model *, std_normal, apop_model_set_parameters(apop_normal, 0, 1));
 
 //C     Load diagonal elements with square root of chi-square variates
     for(int i = 0; i< np; i++){
@@ -448,15 +213,80 @@ static void wishart_prep(apop_data *d, apop_model *m){
      m->parameters = apop_data_alloc(1,sqrt(d->matrix->size2),sqrt(d->matrix->size2));
  }
 
+/*\amodel apop_wishart The Wishart distribution, which is currently somewhat untested. 
+
+Here's the likelihood function. \f$p\f$ is the dimension of the data and covariance
+matrix, \f$n\f$ is the degrees of freedom, \f$\mathbf{V}\f$ is the \f$p\times p\f$
+matrix of Wishart parameters, and \f${\mathbf{W}}\f$ is the \f$p\times p\f$ matrix whose
+likelihood is being evaluated.  \f$\Gamma_p(\cdot)\f$ is the \ref apop_multivariate_gamma
+"multivariate gamma function".
+
+\f$
+P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}}
+                         {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\f$
+
+See also notes in \ref tfchi.
+
+\adoc    Input_format     Each row of the input matrix is a single square matrix,
+                      flattened; use \ref apop_data_pack to convert your
+                      sequence of matrices into rows.     
+\adoc    Parameter_format  \f$N\f$ (the degrees of freedom) is the zeroth element of the vector. The matrix holds the matrix of parameters.
+\adoc    Estimate_results  Via MLE.    
+\adoc    Prep_routine   Just allocates the parameters based on the size of the input data.       
+\adoc    RNG  You can use this to generate random covariance matrices, should you need them. See example below. 
+\adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings    
+\adoc    Examples Making some random draws:
+
+\code
+gsl_matrix *rmatrix = gsl_matrix_alloc(10, 10);
+gsl_rng *r = apop_rng_alloc(8765);
+for (int i=0; i< 1e8; i++){
+    apop_draw(rmatrix->data, r, apop_wishart);
+    do_math_with_matrix(rmatrix);
+}
+\endcode */
 apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .dsize=-1, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
+
+/*\amodel apop_t_distribution The t distribution, primarily for descriptive purposes.
+
+If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.  
+
+\adoc    Input_format     Unordered list of scalars in the matrix and/or vector.     
+\adoc    Parameter_format  vector->data[0] = mu<br>
+                            vector->data[1] = sigma<br>
+                            vector->data[2] = df 
+\adoc    Estimate_results  I'll just count elements and set \f$df = n-1\f$. If you set the \c estimate method to \c NULL, via MLE.
+\adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings   
+*/
 
 apop_model apop_t_distribution  = {"t distribution", 3, 0, 0, .dsize=1, .estimate = apop_t_estimate, 
          .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw, .cdf=apop_t_dist_cdf,
          .constraint=apop_t_dist_constraint };
 
+/*\amodel apop_f_distribution The F distribution, for descriptive purposes.
+
+ If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.  
+
+\adoc    Input_format     Unordered list of scalars in the matrix and/or vector.     
+\adoc    Parameter_format  Zeroth and first elements of the vector are the \f$df\f$s. 
+\adoc    Estimate_results  Count elements and set \f$df=\f$ vector count minus one, and 
+                          \f$df2=\f$ matrix count minus one. If you set the \c estimate method to \c NULL, via MLE.    
+\adoc    settings   \ref apop_mle_settings    
+*/
 apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .dsize=1, .estimate = apop_fdist_estimate, 
         .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
+
+/*\amodel apop_chi_squared The \f$\chi^2\f$ distribution, for descriptive purposes.
+
+ If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.  
+
+\adoc    Input_format     Unordered list of scalars in the matrix and/or vector.     
+\adoc    Parameter_format  Zeroth element of the vector is the \f$df\f$. 
+\adoc    Estimate_results  If you do not set an \ref apop_mle_settings group beforehand, I'll just count elements and
+                          set \f$df = n-1\f$. Else, via MLE.    
+\adoc    settings   \ref apop_mle_settings    
+*/
 
 apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .dsize=1, .estimate = apop_chi_estimate,  
         .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };

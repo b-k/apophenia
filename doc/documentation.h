@@ -434,6 +434,15 @@ production, so all of it was at least initially tested against real-world data.
 
 endofdiv
 
+Outlineheader status How do I write extensions?
+
+It's not a package, so you don't need an API---write your code and #include it like any other C code. The system is explicity written to not require a registration or initialization step to add a new model or other such parts.  You can read the notes below on generating new models, which have to conform to some rules if they are to play well with \ref apop_estimate, \ref apop_draw, and so forth.
+
+You are encouraged to send new models or functions to the maintainer, or send the maintainer a URL if you prefer to host the code yourself; I'm happy to add references in the appropriate places.
+
+
+endofdiv
+
 endofdiv
 
 Outlineheader dataoverview Data sets
@@ -1048,7 +1057,7 @@ endofdiv
         Outlineheader moremodels More
 
             \li\ref apop_histogram  (see the histogram section below)
-            \li\ref apop_pdf  (see the histogram section below)
+            \li\ref apop_pmf  (see the histogram section below)
             \li\ref apop_kernel_density
 
         endofdiv
@@ -1111,7 +1120,7 @@ apop_model your_new_model = {"The Me distribution",
 If there are constraints, add an element for those too.
 
 The parameter counts are needed for procedures that auto-allocate the parameters; for the above example, they will call <tt>newest->parameters = apop_data_alloc(n0, n1, n2)</tt>. The \c dbase is the size of a data element, and is needed to let those methods that make random draws internally know how much space to allocate.
-It's common to have [(the number of columns in your data set) -1] parameters; this count will be filled in if you specify \c -1 for \c vbase or <tt>mbase(1|2)</tt>. If the allocation is exceptional in a different way, then you will need to allocate parameters via a \ref prep method. 
+It's common to have [(the number of columns in your data set) -1] parameters; this count will be filled in if you specify \c -1 for \c vbase or <tt>mbase(1|2)</tt>. If the allocation is exceptional in a different way, then you will need to allocate parameters via a \c prep method. 
 
 You already have enough that something like
 \code
@@ -1414,7 +1423,7 @@ It is the weights vector that holds the density represented by each row; the res
 
 Using \ref apop_data_pmf_compress puts the data into one bin for each unique value in the data set. You may instead want bins of fixed with, in the style of a histogram. A binspec has as many columns as the data set being binned, and has one or two rows. The first row gives a bin width for the given column, so each column may have a different bin width. The second row, if present, gives the offset from zero for the bins. All bins, both above and below zero, are shifted accordingly. If there is no second row, the offset is zero.
 
-Send this binspec to \ref apop_data_to_bins. If you send a \c NULL binspec, then the offset is zero and the bin size is big enough to ensure that there are \f$\sqrt(N)\f$ bins from minimum to maximum. There are other preferred formul\ae for bin widths that minimize MSE, which might be added as a future extension.  The binspec will be added as a page to the data set, named <tt>"<binspec>"</tt>
+Send this binspec to \ref apop_data_to_bins. If you send a \c NULL binspec, then the offset is zero and the bin size is big enough to ensure that there are \f$\sqrt(N)\f$ bins from minimum to maximum. There are other preferred formulae for bin widths that minimize MSE, which might be added as a future extension.  The binspec will be added as a page to the data set, named <tt>"<binspec>"</tt>
 
 There are a few ways of testing the claim that one distribution equals another, typically an empirical PMF versus a smooth theoretical distribution. In both cases, you will need two distributions based on the same binspec. 
 

@@ -24,6 +24,7 @@ APOP_VAR_DECLARE int  apop_regex(const char *string, const char* regex, apop_dat
 int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 
 //Histograms and PMFs
+apop_model *apop_crosstab_to_pmf(apop_data *d);
 gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
 apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth);
 apop_model * apop_histogram_vector_reset(apop_model *, gsl_vector *);
@@ -39,8 +40,8 @@ char * apop_strip_dots(char *in, char strip_type);
 
 /** Notify the user of errors, warning, or debug info. 
 
- \param level   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2.
- \param msg The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_notify(0, "Beta is %g but should be greater than zero.", beta);.
+ \param verbosity   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2.
+ \param ... The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_notify(0, "Beta is %g but should be greater than zero.", beta);.
 */
 #define Apop_notify(verbosity, ...) \
     if (apop_opts.verbose >= verbosity) {  \
@@ -83,7 +84,6 @@ char * apop_strip_dots(char *in, char strip_type);
         abort();   \
 } while (0);
 
-
 #define apop_assert_s Apop_assert
 #define apop_assert Apop_assert
 #define Apop_assert_s Apop_assert
@@ -101,10 +101,6 @@ APOP_VAR_DECLARE apop_data * apop_multiple_imputation_variance(apop_data *base_d
 APOP_VAR_DECLARE apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng);
 
 APOP_VAR_DECLARE double apop_test(double statistic, char *distribution, double p1, double p2, char tail);
-
-
-//PMF (model/apop_pmf.c)
-apop_model *apop_crosstab_to_pmf(apop_data *d);
 
 //Sorting (apop_asst.c)
 APOP_VAR_DECLARE double * apop_vector_percentiles(gsl_vector *data, char rounding); 

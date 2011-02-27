@@ -78,7 +78,7 @@ AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 echo \
-"-------------------------------------------------
+"-----------------------------------------------------------
 
  ${PACKAGE_NAME} version ${PACKAGE_VERSION}
 
@@ -93,9 +93,9 @@ echo \
      all                - build all binaries
      install            - install everything
      test               - test the installation
-     doc                - generate doxygen documentation
+     docs               - generate documentation via doxygen 
 
---------------------------------------------------"
+------------------------------------------------------------"
 
 
 #The default is to produce line noise. Clean it so that errors stand out.

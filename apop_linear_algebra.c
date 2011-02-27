@@ -16,25 +16,6 @@ See also the printing functions, \ref apop_print, and the
 /** \defgroup convenience_fns 	Things to make life easier with the GSL
  */
 
-/** \defgroup output		Printing to the screen or a text file
-
-Most functions print only to the screen, but the 
-\ref apop_print "matrix and vector printing functions" will let you print to a text file as
-well. The presumption is that statistic estimates are for your own
-consumption, while you are printing a matrix for import into another program.
-
-*/
-/** \defgroup apop_print 	Assorted printing functions		
-
-The <tt>apop_*_print</tt> functions will print to screen, text file,
-or database, depending on how you set \ref apop_opts_type "apop_opts.output_type".
-The <tt>apop_*_show</tt> functions print only to screen, and are basically
-just a convenience shell to the corresponding <tt>apop_*_print</tt>
-function.
-
-\ingroup output
-*/
-
 #include "stats.h"
 #include "internal.h"
 #include "conversions.h" //apop_matrix_copy

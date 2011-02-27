@@ -955,8 +955,9 @@ for (int n=0; n < 10; n++){
 */
 void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
   va_list   argp;
-  Apop_assert_c((in->textsize[0] >= (int)row-1) && (in->textsize[1] >= (int)col-1), ,0, "You asked me to put the text "
-                            " '%s' at (%zu, %zu), but the text array has size (%i, %i)\n", fmt, row, col, in->textsize[0], in->textsize[1]);
+  Apop_assert((in->textsize[0] >= (int)row+1) && (in->textsize[1] >= (int)col+1), "You asked me to put the text "
+                            " '%s' at position (%zu, %zu), but the text array has size (%i, %i)\n", 
+                               fmt,             row, col,                  in->textsize[0], in->textsize[1]);
     free (in->text[row][col]);
     if (!fmt){
         asprintf(&(in->text[row][col]), "NaN");

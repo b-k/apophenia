@@ -14,7 +14,7 @@ Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 
-/** Give me an existing histogram (i.e., an \c apop_model) and I'll
+/** Give me an existing histogram (as a filled-in copy of the \c apop_histogram model) and I'll
  create a new histogram with the same bins, but with data from the vector you provide 
 
 \param template An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram).
@@ -22,7 +22,7 @@ Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU 
 \ingroup histograms
 */
 apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata){
-  apop_assert_s(template && !strcmp(template->name, "Histogram"), "The first argument needs to be a model with appropriate apop_histogram settings.");
+  Apop_assert(template && !strcmp(template->name, "Histogram"), "The first argument needs to be a model with appropriate apop_histogram settings.");
   apop_model *out = apop_model_copy(*template); 
   gsl_histogram *hout  = Apop_settings_get(out, apop_histogram, pdf);
     gsl_histogram_reset(hout);
@@ -35,7 +35,7 @@ apop_model *apop_histogram_vector_reset(apop_model *template, gsl_vector *indata
  create a new histogram with the same bins, but with data from \c draws
  random draws from the parametrized model you provide.
 
-Unlike with most other histogram-generating functions, this one will normalize the output to integrate to one.
+This function will normalize the output histogram to integrate to one.
 
 \param base An \c apop_model produced using a form like \c apop_estimate(yourdata, apop_histogram). I.e. a histogram model to be used as a template. (No default)
 \param m The model to be drawn from. Because this function works via random draws, the model needs to have a 
@@ -74,10 +74,10 @@ APOP_VAR_ENDHEAD
 /** Make random draws from an \ref apop_model, and bin them using a binspec in the style
  of \ref apop_data_to_bins. If you have a data set that used the same binspec, you now have synced histograms, which you can plot or sensibly test hypotheses about.
 
-Unlike with most other histogram-generating functions, this one will normalize the output to integrate to one.
+The output is normalized to integrate to one.
 
 \param binspec A description of the bins in which to place the draws; see \ref apop_data_to_bins. (default: as in \ref apop_data_to_bins.)
-\param m The model to be drawn from. Because this function works via random draws, the model needs to have a 
+\param model The model to be drawn from. Because this function works via random draws, the model needs to have a 
 \c draw method. (No default)
 \param draws The number of random draws to make. (arbitrary default = 10,000)
 \param bin_count If no bin spec, the number of bins to use (default: as per \ref apop_data_to_bins, \f$\sqrt(N)\f$)
@@ -109,12 +109,12 @@ APOP_VAR_ENDHEAD
         apop_draw(ach->data, rng, model);
     }
     apop_data_to_bins(outd, binspec, .bin_count=bin_count);
+    apop_vector_normalize(outd->weights);
     return apop_estimate(outd, apop_pmf);
 } 
 
-
 static int are_equal(apop_data *left, apop_data *right){
-    /* Intended by use for apop_data_to_histogram_or_something, below.
+    /* Intended by use for apop_data_pmf_compress and family, below.
       That means we aren't bothering with comparing names, and weights are likely to be
       different, because we're using those to tally data elements. If the data set has
       a longer matrix than vector, say, then one side may have the vector element and
@@ -132,8 +132,8 @@ static int are_equal(apop_data *left, apop_data *right){
     }
     else if (right->matrix) return 0;
 
-    if (right->textsize[1]){
-        if (right->textsize[1] != right->textsize[1]) return 0;
+    if (left->textsize[1]){
+        if (left->textsize[1] != right->textsize[1]) return 0;
         for (int i=0; i< left->textsize[1]; i++)
             if (!apop_strcmp(left->text[0][i], right->text[0][i])) return 0;
     }
@@ -161,7 +161,6 @@ In any case, you are confident that all values in the \c observed set appear in 
 
   \ingroup histograms
 */
-#include <apop.h>
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model *expected){
     int df; 
     double diff;
@@ -246,7 +245,7 @@ static double psmirnov2x(double x, int m, int n) {
 
 /** Run the Kolmogorov-Smirnov test to determine whether two distributions are identical.
 
- \param m1, m2  Two models, most likely of \ref apop_pmf type. I will ue the cdf method, so if your function doesn't have one, expect this to run the slow default; I run it for each row of each data set, so if your model has a \c NULL at the data, I won't know what to do. 
+ \param m1, m2  Two models, most likely of \ref apop_pmf type. I will ue the cdf method, so if your function doesn't have one, expect this to run the slow default. I run it for each row of each data set, so if your model has a \c NULL at the data, I won't know what to do. 
  
 I will also give special handling to two synced \ref apop_histogram "apop_histograms" (probably produced via \ref apop_histogram_vector_reset or \ref apop_histogram_model_reset), using the histogram bins to define how the CDF is built.
 
@@ -298,7 +297,7 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
             second  = h1;
             cdf1    = first->bin[0];
         } else 
-            Apop_assert_c(0, NULL, 0, "I need matching histograms.  Produce them via apop_histogram_vector_reset "
+            Apop_assert(0, "I need matching histograms. Produce them via apop_histogram_vector_reset "
                            "or apop_histogram_model_reset. Returning NULL.");
         //Scaling step. 
         for (i=0; i< first->n; i++)
@@ -353,8 +352,6 @@ void apop_histogram_normalize(apop_model *m){
     for (i=0; i< h->n; i++)
         h->bin[i] /= sum;
 }
-
-
 
 /** Say that you have added a long list of observations to a single \ref apop_data set,
   meaning that each row has weight one. There are a huge number of duplicates, perhaps because there are a handful of 
@@ -429,8 +426,8 @@ the minimum plus the width.  if \c 'y', then the top bin includes points less th
 \param binspec This is an \ref apop_data set with the same number of columns as \c indata. 
 If you want a fixed size for the bins, then the first row of the bin spec is the bin width for each column.
 This allows you to specify a width for each dimension, or specify the same size for all with something like:
-\param bin_count If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: \f$\sqrt(N)\f$.
-\code
+
+\param bin_count If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: \f$\sqrt(N)\f$.  \code
 Apop_data_row(indata, 0, firstrow);
 apop_data *binspec = apop_data_copy(firstrow);
 gsl_matrix_set_all(binspec->matrix, 10); //bins of size 10 for all dim.s
@@ -439,7 +436,7 @@ apop_data_to_bins(indata, binspec);
 The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension.  Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes \f$\sqrt{N}\f$ bins to cover the range to the max element. 
 
 
-\return A pointer to \c indata, now properly binned.  If you didn't give me a binspec, then I attach one to your data set as a page named \c <binspec>, so you can snap a second data set to the same grid using 
+\return A pointer to \c indata, now properly binned.  If you didn't give me a binspec, then I attach one to your data set as a page named \c \<binspec\>, so you can snap a second data set to the same grid using 
 \code
 apop_data_to_bins(first_set, NULL);
 apop_data_to_bins(second_set, apop_data_get_page(first_set, "<binspec>"));
@@ -447,7 +444,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "<binspec>"));
 
 
   The text segment, if any, is not binned. I use \ref apop_data_pmf_compress as the final step in the binning, 
-  and that does respect the text segment. So if you have data like:
+  and that does respect the text segment. So given the standard one-unit grid, the data:
 
 <table frame=box>
 <tr>
@@ -458,10 +455,11 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "<binspec>"));
 <tr><td>1.1</td><td>Type 1</td><td>1</td></tr>
 <tr><td>2.1</td><td>Type 1</td><td>1</td></tr>
 <tr><td>2</td><td>Type 1</td><td>1</td></tr>
+<tr><td>1</td><td>Type 1</td><td>1</td></tr>
 <tr><td>1</td><td>Type 2</td><td>1</td></tr>
 </table>
 
-you will wind up with a histogram like:
+will bin into a histogram like:
 
 <table frame=box>
 <tr>
@@ -471,9 +469,9 @@ you will wind up with a histogram like:
 </td></tr>
 <tr><td>1</td><td>Type 1</td><td>1</td></tr>
 <tr><td>2</td><td>Type 1</td><td>2</td></tr>
+<tr><td>1</td><td>Type 1</td><td>1</td></tr>
 <tr><td>1</td><td>Type 2</td><td>1</td></tr>
 </table>
-
 */
 APOP_VAR_HEAD apop_data *apop_data_to_bins(apop_data *indata, apop_data *binspec, int bin_count, char close_top_bin){
     apop_data *apop_varad_var(indata, NULL);
@@ -482,11 +480,11 @@ APOP_VAR_HEAD apop_data *apop_data_to_bins(apop_data *indata, apop_data *binspec
     char apop_varad_var(close_top_bin, 'n');
     int apop_varad_var(bin_count, 0);
 APOP_VAR_ENDHEAD
-    Get_vmsizes(indata);
+    Get_vmsizes(indata); //firstcol, vsize, msize1, msize2
     double binwidth, offset, max=0;
     apop_data *bs = binspec ? binspec
                     : apop_data_add_page(indata, 
-                        apop_data_alloc(indata->vector?2:0, indata->matrix?2:0, indata->matrix ? indata->matrix->size2: 0),
+                        apop_data_alloc(vsize? 2: 0, msize1? 2: 0, indata->matrix ? msize2: 0),
                         "<binspec>");
     for (int j= firstcol; j< msize2; j++){
         Apop_col(indata, j, onecol);
@@ -495,7 +493,7 @@ APOP_VAR_ENDHEAD
            offset = ((binspec->vector && binspec->vector->size==2 )
                    ||(binspec->matrix && binspec->matrix->size1==2)) ? apop_data_get(binspec, 1, j) : 0;
         } else {
-            Apop_col(bs, j,abin);
+            Apop_col(bs, j, abin);
             max = gsl_vector_max(onecol);
             offset = abin->data[1] = gsl_vector_min(onecol);
             binwidth = abin->data[0] = (max - offset)/(bin_count ? bin_count : sqrt(onecol->size));
@@ -510,3 +508,44 @@ APOP_VAR_ENDHEAD
     apop_data_pmf_compress(indata);
     return indata;
 }
+
+/** For usage, see the documentation for the \ref apop_pmf model. 
+  \param d An input crosstab
+  \return A PMF model which has a single line for each nonzero line of the crosstab.
+
+\li  The \ref apop_pmf really keeps its information in the \c data element, where the list of observations and their weights are held. When an \ref apop_model is freed, the \c data element is untouched, but the \c parameters element is freed. This function generates a new data set that is basically internal to the model and should be freed with the model, and this is achieved by pointing both the \c data and \c parameters elements to the same data set. You probably won't ever touch the \c data set inside the model returned by this function, but bear in mind that, unlike the typical case, it will disappear after you free the model.
+ */
+apop_model *apop_crosstab_to_pmf (apop_data *d){
+    Get_vmsizes(d) //tsize
+    int use_matrix=0, use_vector = 0;
+    size_t ctr = 0;
+    double x;
+    if (d->matrix) use_matrix++;
+    else if (d->vector) use_vector++;
+    else Apop_assert(0, "You gave me an input set with neither vector nor matrix data.");
+    apop_model *out = apop_model_copy(apop_pmf);
+    out->parameters = apop_data_alloc(0, tsize, (use_matrix ? 2: 1));
+    out->parameters->weights = gsl_vector_alloc(tsize);
+    out->data = out->parameters;
+    if (use_matrix){
+        for(size_t i=0; i < d->matrix->size1; i ++)
+            for(size_t j=0; j < d->matrix->size2; j ++)
+                if ((x = gsl_matrix_get(d->matrix, i, j))) {
+                    apop_data_set(out->parameters, ctr, 0, i);
+                    apop_data_set(out->parameters, ctr, 1, j);
+                    gsl_vector_set(out->parameters->weights, ctr++, x);
+                }
+    }
+    else if (use_vector)
+        for(size_t i=0; i < d->vector->size; i++)
+            if ((x = gsl_vector_get(d->vector, i))){
+                apop_data_set(out->parameters, ctr, 0, i);
+                gsl_vector_set(out->parameters->weights, ctr++, x);
+            }
+    if (ctr){
+        apop_vector_realloc(out->parameters->weights, ctr);
+        apop_matrix_realloc(out->parameters->matrix, ctr, (use_matrix ? 2: 1));
+    }
+    return out;
+}
+

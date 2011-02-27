@@ -72,6 +72,8 @@ Apop_settings_init(apop_arms,
   }
 )
 
+void distract_doxygen_arms(){/*Doxygen gets thrown by the settings macros. This decoy function is a workaround. */}
+
 /** \brief Adaptive rejection metropolis sampling.
 
 This is a function to make random draws from any univariate distribution (more or less).

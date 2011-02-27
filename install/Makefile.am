@@ -79,7 +79,7 @@ apop_lookup_LDADD = libapophenia.la
 
 EXTRA_DIST = apophenia.pc doc/doxyconfig doc/triangle.png doc/right.png doc/down.png \
         doc/flake.gif doc/foot.html doc/structs.png rpm.spec \
-		doc/head.html doc/search.gif doc/typical.css	doc/model_doc.h doc/documentation.h \
+		doc/head.html doc/search.gif doc/typical.css doc/make_model_doc.awk doc/documentation.h \
 		tests/Makefile tests/test.py tests/Readme tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \
 		tests/data-mixed tests/test_data_nans tests/wampler1.dat tests/printing_sample eg/* \
@@ -87,7 +87,8 @@ EXTRA_DIST = apophenia.pc doc/doxyconfig doc/triangle.png doc/right.png doc/down
 
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 
-doc: 
+docs: 
+	cat model/*.c | awk -f doc/make_model_doc.awk > doc/model_doc.h
 	doxygen doc/doxyconfig
 	cp doc/flake.gif doc/search.gif doc/right.png doc/down.png html/
 	@sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)</p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \

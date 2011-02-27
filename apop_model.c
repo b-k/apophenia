@@ -1,5 +1,5 @@
 /** \file apop_model.c	 sets up the estimate structure which outputs from the various regressions and MLEs.*/
-/* Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "arms.h"
 #include "types.h"
@@ -56,16 +56,16 @@ If <tt>free_me->more_size</tt> is positive, the function runs
 if it points to other structures (like an \ref apop_data set), you need to free them
 before calling this function.
 
-If \c free_me is \c NULL, this does nothing.
+\li If \c free_me is \c NULL, this does nothing.
 
 \param free_me A pointer to the model to be freed.
 
 \ingroup models */
 void apop_model_free (apop_model * free_me){
-  int   i=0;
     if (!free_me) return;
     apop_data_free(free_me->parameters);
     if (free_me->settings){
+        int   i=0;
         while (free_me->settings[i].name[0]){
             if (free_me->settings[i].free)
                 ((void (*)(void*))(free_me->settings[i].free))(free_me->settings[i].setting_group);
@@ -95,7 +95,7 @@ void print_method(apop_model *in){
  \endcode
 
 I always print to the file/pipe connected to {\ref apop_opts.output_pipe}. The default is
-{\tt stdout}, but if you'd like something else, use fopen. E.g.:
+\c stdout, but if you'd like something else, use fopen. E.g.:
  \code
 apop_opts.output_pipe=fopen("outfile.txt", "w"); //or "a" to append.
 apop_model_print(the_model);
@@ -289,6 +289,8 @@ Apop_settings_free(apop_pm,
         gsl_rng_free(in->rng);
 )
 
+void distract_doxygen(){/*Doxygen gets thrown by the settings macros. This decoy function is a workaround. */}
+
 /** Get a model describing the distribution of the given parameter estimates.
 
   For many models, the parameter estimates are well-known, such as the
@@ -324,7 +326,7 @@ Apop_settings_free(apop_pm,
 
   \li \c draws If there is no closed-form solution and bootstrap is inappropriate, then
   the last resort is a large numbr of random draws of the model, summarized into a PMF. Default: 1,000 draws.
-
+\ingroup models
 */ 
 apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     apop_pm_settings *settings = apop_settings_get_group(m, apop_pm);
@@ -448,38 +450,19 @@ static int lte(gsl_vector *v, gsl_vector *ref){
     return 1;
 }
 
-Apop_settings_init(apop_cdf,
-    Apop_varad_set(draws, 1e4);
-    Apop_varad_set(rng, apop_rng_alloc(++apop_opts.rng_seed));
-    out->rng_owner = !(in.rng);
-    out->draws_owner = !(in.draws_made);
-)
-
-Apop_settings_free(apop_cdf,
-    if (in->rng_owner)
-        gsl_rng_free(in->rng);
-    if (in->draws_made && in->draws_owner)
-        gsl_matrix_free(in->draws_made);
-    apop_model_free(in->cdf_model);
-)
-
-Apop_settings_copy(apop_cdf,
-    out->draws_owner =
-    out->rng_owner   = 0;
-)
-
 /** Input a data point in canonical form and a model; returns the area of the model's PDF beneath the given point.
 
   By default, I just make random draws from the PDF and return the percentage of those
   draws beneath or equal to the given point. Many models have closed-form solutions that
   make no use of random draws. 
 
-See also \ref apop_cdf_settings, which is the structure I use to store draws already made (which means the second, third, ... calls to this function will take much less time than the first), the \c gsl_rng, and the number of draws to be made. These are handled without your involvement, but if you would like to change the number of draws from the default, add this group before calling \ref apop_cdf:
+See also \ref apop_cdf_settings, which is the structure I use to store draws already made (which means the second, third, ... calls to this function will take much less time than the first), the \c gsl_rng, and the number of draws to be made. These are handled without your involvement, but if you would like to change the number of draws from the default, add this group before calling \ref apop_cdf :
 
 \code
 Apop_model_add_group(your_model, apop_cdf, .draws=1e5, .rng=my_rng);
 double *cdf_value = apop_cdf(your_data_point, your_model);
 \endcode
+\ingroup models
   */
 double apop_cdf(apop_data *d, apop_model *m){
     if (m->cdf)
@@ -502,3 +485,23 @@ double apop_cdf(apop_data *d, apop_model *m){
     }
     return tally/(double)cs->draws_made->size1;
 }
+
+Apop_settings_init(apop_cdf,
+    Apop_varad_set(draws, 1e4);
+    Apop_varad_set(rng, apop_rng_alloc(++apop_opts.rng_seed));
+    out->rng_owner = !(in.rng);
+    out->draws_owner = !(in.draws_made);
+)
+
+Apop_settings_free(apop_cdf,
+    if (in->rng_owner)
+        gsl_rng_free(in->rng);
+    if (in->draws_made && in->draws_owner)
+        gsl_matrix_free(in->draws_made);
+    apop_model_free(in->cdf_model);
+)
+
+Apop_settings_copy(apop_cdf,
+    out->draws_owner =
+    out->rng_owner   = 0;
+)

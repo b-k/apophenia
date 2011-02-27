@@ -1,6 +1,51 @@
-/** \file 
-OLS models. Much of the real work is done in apop_regression.c.*/
-/* Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* OLS models. Much of the real work is done in apop_regression.c.
+Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+
+\amodel apop_wls The Weighed Least Squares model
+This is a (deprecated) synonym for \ref apop_ols, qv.  If you use the \ref apop_ols
+model and provide weights in \c your_input_data->weights, then I will use them
+appropriately. That is, the \ref apop_ols model really implements Weighted Least Squares,
+but in most cases <tt>weights==NULL</tt> and the math reduces to the special case of
+Ordinary Least Squares.
+
+\amodel apop_ols Ordinary least squares. Weighted least squares is also handled by this model.
+You can also use it for a lot of not-entirely linear models based on the form \f$Y = f(x_1) + f(x_2) + ... + \epsilon\f$.
+
+\adoc    Input_format  See \ref dataprep.
+\adoc    Parameter_format  A vector of OLS coefficients. coeff. zero
+                         refers to the constant column, if any. 
+\adoc    Prep_routine      Focuses on the data shunting. 
+
+\adoc    settings  \ref apop_lm_settings 
+\adoc    Examples
+First, you will need a file named <tt>data</tt> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent. For example:
+\verbatim
+Y, X_1, X_2, X_3
+2,3,4,5
+1,2,9,3
+4,7,9,0
+2,4,8,16
+1,4,2,9
+9,8,7,6
+\endverbatim
+
+The program:
+\include ols1.c
+
+If you saved this code to <tt>sample.c</tt>, then you can compile it with
+\verbatim
+gcc sample.c -std=gnu99 -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
+\endverbatim
+
+and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
+
+Feeling lazy? The program above was good form and demonstrated useful features, but the code below will do the same thing in two lines:
+
+\code
+#include <apop.h>
+int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols)); }
+\endcode
+*/
 
 #include "model.h"
 #include "conversions.h"
@@ -9,32 +54,22 @@ OLS models. Much of the real work is done in apop_regression.c.*/
 #include "stats.h"
 #include "asst.h"
 
-void * apop_lm_settings_copy(apop_lm_settings *in){
-  apop_lm_settings *out  = malloc(sizeof(*out));
-    *out =  *in;
+Apop_settings_copy(apop_lm,
     out->instruments = apop_data_copy(in->instruments);
     if (in->input_distribution)
         out->input_distribution = apop_model_copy(*in->input_distribution);
-    return out;
-}
+)
 
-void apop_lm_settings_free(apop_lm_settings *in){ 
+Apop_settings_free(apop_lm,
     apop_model_free(in->input_distribution);
-    free(in); 
-}
+) 
 
-/** Initialize the settings for a least-squares--type model. For use
-  with \ref Apop_model_add_group.  See \ref apop_lm_settings for the possible elements to set.
-  */
-apop_lm_settings * apop_lm_settings_init(apop_lm_settings in){
-  apop_lm_settings *out  = malloc(sizeof(*out));
-    *out = in;
+Apop_settings_init(apop_lm,
     if (out->want_cov == 1 || !out->want_cov) out->want_cov = 'y';
     if (out->want_expected_value == 1 || !out->want_expected_value) out->want_expected_value = 'y';
     if (!out->input_distribution) 
        out->input_distribution = apop_model_copy(apop_improper_uniform);
-    return out;
-}
+)
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
@@ -85,29 +120,28 @@ static void ols_prep(apop_data *d, apop_model *m){
     m->prep = mpt;
 }
 
-/** The assumption that makes a log likelihood possible is that the
+/* The assumption that makes a log likelihood possible is that the
 errors are normally distributed.
 
 This function is a bit inefficient, in that it calculates the error terms,
-which you may have already done in the OLS estimation.
- */
+which you may have already done in the OLS estimation.  */
 static double ols_log_likelihood (apop_data *d, apop_model *p){ 
-    Nullcheck_m(p); Nullcheck_p(p);
-  long double	ll  = 0; 
-  long double      sigma, actual, weight;
+    Nullcheck_mpd(d, p); Nullcheck(d->matrix);
+  long double ll  = 0; 
+  long double sigma, actual, weight;
   double expected, x_prob;
   apop_lm_settings *lms = Apop_settings_get_group(p, apop_lm);
   apop_model *input_distribution = lms ? lms->input_distribution : NULL;
-  gsl_matrix	*data		    = d->matrix;
-  gsl_vector  *errors         = gsl_vector_alloc(data->size1);
+  gsl_matrix *data	 = d->matrix;
+  gsl_vector *errors = gsl_vector_alloc(data->size1);
 	for (size_t i=0;i< data->size1; i++){
         Apop_row(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
-            actual       = apop_data_get(d,i, -1);
+            actual    = apop_data_get(d,i, -1);
         } else {
-            actual       = gsl_matrix_get(data,i, 0);
-            expected    += gsl_vector_get(p->parameters->vector,0) * (1 - actual); //data isn't affine.
+            actual    = gsl_matrix_get(data,i, 0);
+            expected += gsl_vector_get(p->parameters->vector,0) * (1 - actual); //data isn't affine.
         }
         gsl_vector_set(errors, i, expected-actual);
     }
@@ -129,13 +163,13 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
 
 /* $\partial {\cal N}(x\beta - y)/\partial \beta_i = \sum{x_i} \partial {\cal N}(K)/\partial K$ (at $K=x\beta -y$) */
 static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){ 
-  apop_assert_s(p->parameters, "You asked me to evaluate an un-parametrized model. Not changing the gradient");
-  long double      sigma, actual, weight;
+    Nullcheck_mpd(d, p); Nullcheck(d->matrix);
+  long double sigma, actual, weight;
   double expected;
-  gsl_matrix	*data		    = d->matrix;
-  gsl_vector  *errors         = gsl_vector_alloc(data->size1);
-  gsl_vector  *normscore      = gsl_vector_alloc(2);
-  apop_data  *subdata      = apop_data_alloc(0,1,1);
+  gsl_matrix *data	= d->matrix;
+  gsl_vector *errors = gsl_vector_alloc(data->size1);
+  gsl_vector *normscore = gsl_vector_alloc(2);
+  apop_data  *subdata  = apop_data_alloc(1,1);
 	for(size_t i=0;i< data->size1; i++){
         APOP_ROW(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
@@ -153,7 +187,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
 	for(size_t i=0;i< data->size1; i++){
         apop_data_set(subdata, 0, 0, gsl_vector_get(errors, i));
         apop_score(subdata, normscore, norm);
-        weight       = d->weights ? gsl_vector_get(d->weights, i) : 1; 
+        weight = d->weights ? gsl_vector_get(d->weights, i) : 1; 
         for(size_t j=0; j< data->size2; j++)
             apop_vector_increment(gradient, j, weight * apop_data_get(d, i, j) * gsl_vector_get(normscore, 0));
 	} 
@@ -195,6 +229,34 @@ static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl
     apop_data_add_page(out->parameters, apop_matrix_to_data(cov), "<Covariance>");
 }
 
+/* \adoc    RNG  Linear models are typically only partially defined probability models. For
+OLS, we know that \f$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)\f$, because this is
+an assumption about the error process, but we don't know much of anything about the
+distribution of \f$X\f$.
+
+The \ref apop_lm_settings group includes an \ref apop_model* element named \c
+input_distribution. This is the distribution of the independent/predictor/X columns
+of the data set.
+
+The default is that <tt>input_distribution = apop_improper_uniform </tt>, meaning that
+\f$P(X)=1\f$ for all \f$X\f$. So \f$P(Y, X) = P(Y|X)P(X) = P(Y|X)\f$. This seems to
+be how many people use linear models: the \f$X\f$ values are taken as certain (as with
+actually observed data) and the only question is the odds of the dependent variable. If
+that's what you're looking for, just leave the default. This is sufficient for getting
+log likelihoods under the typical assumption that the observed data has probability one.
+
+<em>But</em> you can't draw from an improper uniform. So if you draw from a linear
+model with a default <tt>input_distribution</tt>, then you'll get an error.
+
+Alternatively, you may know something about the distribution of the input data. At
+     the least, you could generate a PMF from the actual data:
+     \code
+    apop_settings_set(your_model, apop_lm, input_distribution, apop_estimate(inset, apop_pmf));
+     \endcode
+Now, random draws are taken from the input data, and the dependent variable value calculated via \f$X\beta+\epsilon\f$, where \f$X\f$ is the drawn value, \f$\beta\f$ the previously-estimated parameters and \f$\epsilon\f$ is a Normally-distributed random draw. Or change the PMF to any
+other appropriate distribution, such as a \ref apop_multivariate_normal,
+or an \ref apop_pmf filled in with more data, or perhaps something from
+http://en.wikipedia.org/wiki/Errors-in-variables_models , as desired.  */
 static void ols_rng(double *out, gsl_rng *r, apop_model *m){
     //X is drawn from the input distribution, then Y = X\beta + epsilon
     apop_lm_settings   *olp =  apop_settings_get_group(m, apop_lm);
@@ -211,25 +273,49 @@ static void ols_rng(double *out, gsl_rng *r, apop_model *m){
     out[0] += gsl_ran_gaussian(r, sqrt(sigma_sq));
 }
 
+/* \adoc estimated_data You can specify whether the data is modified with an \ref apop_lm_settings group. If so, see \ref dataprep for details. Else, left unchanged.
+
+\adoc estimated_parameters
+The \c parameters set will hold the coefficients; the first coefficient will be the
+coefficient on the constant term, and the remaining will correspond to the independent
+variables. It will therefore be of size <tt>(data->size2)</tt>.
+
+I add a page named <tt>\<Covariance\></tt>, which gives the covariance matrix for the
+estimated parameters (not the data itself).
+
+\adoc estimated_info Reports log likelihood, and runs \ref apop_estimate_coefficient_of_determination 
+to add \f$R^2\f$-type information (SSE, SSR, \&c) to the info page.
+
+Residuals: I add a page named <tt>\<Predicted\></tt>, with three columns. If this is a model
+with a single dependent and lots of independent vars, then the first column is the
+actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column
+is the predicted values: \f$\beta X\f$, and the third column is the residuals:
+\f$\epsilon\f$. The third column is therefore always the first minus the second,
+and this is probably how that column was calculated internally.
+
+Given your estimate \c est, the zeroth element is one of <br> 
+<tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="observed"),</tt><br>
+<tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="predicted") or</tt><br>
+<tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="residual").</tt><br>
+*/
 static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
-    Nullcheck_d(inset)
-    apop_data         *set;
-//    ep->status = 0;
-    apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
+    Nullcheck_mpd(inset, ep);
+    apop_data *set;
+    apop_lm_settings *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
     if (!olp) 
         olp = Apop_model_add_group(ep, apop_lm);
     ep->data = inset;
     set = olp->destroy_data ? inset : apop_data_copy(inset); 
     
-    gsl_vector *weights    = olp->destroy_data      //this may be NULL.
-                                ? ep->data->weights 
-                                : apop_vector_copy(ep->data->weights);
+    gsl_vector *weights = olp->destroy_data      //this may be NULL.
+                           ? ep->data->weights 
+                           : apop_vector_copy(ep->data->weights);
     if (weights)
         for (size_t i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
-  gsl_vector *y_data     = apop_vector_copy(set->vector);
+    gsl_vector *y_data     = apop_vector_copy(set->vector);
     if ((pwant &&pwant->predicted) || (!pwant && olp && olp->want_expected_value=='y'))
         apop_data_add_page(ep->info, apop_data_alloc(0, set->matrix->size1, 3), "<Predicted>");
     if ((pwant &&pwant->covariance) || (!pwant && olp && olp->want_cov=='y'))
@@ -252,7 +338,6 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
         apop_data_free(set);
     if ((pwant &&pwant->covariance) || (!pwant && olp && olp->want_cov=='y'))
         apop_estimate_parameter_tests(ep);
-//    ep->status       = 1;
     apop_data_add_named_elmt(ep->info, "log likelihood", ols_log_likelihood(ep->data, ep));
     apop_data *r_sq = apop_estimate_coefficient_of_determination(ep); //Add R^2-type info to info page.
     apop_data_stack(ep->info, r_sq, .inplace='y');
@@ -260,10 +345,17 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     return ep;
 }
 
-apop_data *ols_predict (apop_data *in, apop_model *m){
+/* \adoc predict This function is limited to taking in a data set with a matrix, and
+filling the vector with \f$X\beta\f$. The OLS estimation will shuffle a matrix around
+to insert a column of ones (see \ref dataprep), but this function will not: if you want
+ones, put them there yourself, and be sure to not put the dependent variable in the input data set at all.
 
-    if (!in->vector) //in->vector = gsl_vector_alloc(in->matrix->size1);
-        ols_shuffle(in);
+If the vector of your data set is allocated, it gets filled (and its contents overwritten); if not, I will allocate it for you.
+ */
+apop_data *ols_predict (apop_data *in, apop_model *m){
+    Nullcheck_mpd(in, m);
+    if (!in->vector) // ols_shuffle(in);  
+        in->vector = gsl_vector_alloc(in->matrix->size1);
 
     //OK, data is now in the right form.
     //find x dot y
@@ -272,6 +364,7 @@ apop_data *ols_predict (apop_data *in, apop_model *m){
 }
 
 apop_model *ols_param_models(apop_data *d, apop_model *m){
+    Nullcheck_mpd(d, m);
     apop_pm_settings *settings = Apop_settings_get_group(m, apop_pm);
     if (settings->index!=-1){
         int i = settings->index;
@@ -303,7 +396,41 @@ apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .dsize=-1, .
             .draw=ols_rng, .parameter_model = ols_param_models, .print=ols_print};
 
 
-//Instrumental variables
+/*\amodel apop_iv Instrumental variable regression
+
+Operates much like the \ref apop_ols model, but the input parameters also need to have
+a table of substitutions (like the addition of the <tt>.instruments</tt> setting in
+the example below). The vector element of the table lists the column numbers to be
+substituted (the dependent var is zero; first independent col is one), and then one
+column for each item to substitute.
+
+\li If the vector of your apop_data set is \c NULL, then I will use the row names to find
+the columns to substitute. This is generally more robust and/or convenient.
+
+\li If the \c instruments data set is somehow \c NULL or empty, I'll just run OLS. 
+
+\li Don't forget that the \ref apop_lm_settings group has a \c destroy_data setting. If
+you set that to \c 'y', I will overwrite the column in place, saving the trouble of
+copying the entire data set.
+
+\adoc    Input_format  See \ref apop_ols; see \ref dataprep. 
+\adoc    Parameter_format  As per \ref apop_ols 
+\adoc    Estimate_results  As per \ref apop_ols 
+\adoc    Prep_routine  Focuses on the data shunting. 
+\adoc    settings  \ref apop_lm_settings 
+\adoc Examples \code
+apop_data *submatrix =apop_data_alloc(0, data->matrix->size1, 2);
+APOP_COL(submatrix, 0, firstcol);
+gsl_vector_memcpy(firstcol, your_data_vector);
+APOP_COL(submatrix, 1, secondcol);
+gsl_vector_memcpy(firstcol, your_other_data_vector);
+apop_name_add(submatrix->names, "subme_1", 'r');
+apop_name_add(submatrix->names, "subme_2", 'r');
+
+Apop_model_add_group(&apop_iv, apop_lm, .instruments = submatrix);
+apop_model *est = apop_estimate(data, apop_iv);
+apop_model_show(est);
+\endcode */
 
 static apop_data *prep_z(apop_data *x, apop_data *instruments){
   apop_data *out    = apop_data_copy(x);
@@ -316,7 +443,7 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
     else if (instruments->names->rowct)
         for (int i=0; i< instruments->names->rowct; i++){
             int rownumber = apop_name_find(x->names, instruments->names->row[i], 'c');
-            Apop_assert(rownumber != -1, "You asked me to substitute instrument column %i "
+            Apop_assert(rownumber != -2, "You asked me to substitute instrument column %i "
                     "for the data column named %s, but I could find no such name.",  i, instruments->names->row[i]);
             APOP_COL(instruments, i, inv);
             APOP_COL(out, rownumber, outv);
@@ -329,7 +456,7 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
 }
 
 static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
-  Nullcheck_d(inset);
+  Nullcheck_mpd(inset, ep);
     apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
     if (!olp) 
@@ -380,7 +507,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
 
     if (!olp->destroy_data)
         apop_data_free(set);
-//    apop_estimate_parameter_t_tests(epout);
+//    apop_estimate_parameter_t_tests(epout); //the user can do this if s/he wants.
     return ep;
 }
 

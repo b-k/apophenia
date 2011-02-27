@@ -1,7 +1,36 @@
-/** \file apop_histogram.c 
+/* Histograms via the GSL histogram.
+This implements a one-d histogram representing an empirical distribution. It is primarily a wrapper for the GSL's comparable functions in the standard \c apop_model form, for easy comparison with other models.
 
-This implements a one-d histogram representing an empirical distribution. It is primarily a wrapper for the GSL's comparable functions in the standard \c apop_model form, for easy comparison with other models.*/
-/* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+
+\amodel apop_histogram A one-dimensional histogram.
+
+  This is an empirical distribution. If you have a data set from which you want to make random draws, this is overkill; instead just use something like \code 
+  gsl_rng *r = apop_rng_alloc(27);
+  gsl_vector *my_data = [gather data here.];
+  gsl_vector_get(my_data, gsl_rng_uniform(r)*my_data->size);
+  \endcode
+
+In fact, this is the core of the \ref apop_pmf model, which also works for multidimensional or text data; do consider using that model instead of this one.
+
+But this can be used anywhere a model is needed, such as the inputs and outputs to \c apop_update.
+
+\adoc    Name  <tt>Histogram</tt>
+\adoc    Input_format  A free-format pile of scalars, in vector, matrix, or both.        
+\adoc    Parameter_format  No parameters; all information is kept in the \ref apop_histogram_settings struct.   
+\adoc    estimated_parameters None.  
+\adoc    estimated_settings Really just initializes an  \ref apop_histogram_settings struct using some default values. Instead of  calling the \c estimate method, you could also do a call like:
+  \code
+  int binct = 100; //or some other reasonable number of histogram bins
+  Apop_model_add_group(your_model, apop_histogram, .data = your_data_set, .bins_in = binct);
+  \endcode
+   
+  When adding a settings group, the \c .data and \c .bins_in inputs are mandatory.
+
+\adoc    RNG  The first call produces a cumulative density tally,
+            and so will take several microseconds longer than later calls.  
+\adoc    settings    \ref apop_histogram_settings   
+*/
 
 #include "arms.h"
 #include "model.h"
@@ -13,22 +42,15 @@ This implements a one-d histogram representing an empirical distribution. It is 
 #include "variadic.h"
 #include <gsl/gsl_math.h>
 
-apop_model apop_histogram;
-
-/** Allocate the parameters for the \c apop_histogram model.
-
-  \param    data The input data. I'll use all data in both the the matrix and vector element of the \c apop_data set, and the matrix can have any dimensions (\f$1\times 10000\f$, \f$10000\times 1\f$, \f$100\times 100\f$...).
-  \param bins How many bins should the PDF have?
- */
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins){
     //header is in model.h.
   Apop_assert_c(data, NULL, 0, "You asked me to set up a histogram with NULL data. Returning a NULL settings group.");
   apop_histogram_settings *hp  = malloc(sizeof(apop_histogram_settings));
-  size_t              i, j;
-  double              minv    = GSL_POSINF,
-                      maxv    = GSL_NEGINF,
-                      minm    = GSL_POSINF,
-                      maxm    = GSL_NEGINF;
+    size_t i, j;
+    double minv    = GSL_POSINF,
+           maxv    = GSL_NEGINF,
+           minm    = GSL_POSINF,
+           maxm    = GSL_NEGINF;
     if (data->vector) gsl_vector_minmax(data->vector, &minv, &maxv);
     if (data->matrix) gsl_matrix_minmax(data->matrix, &minm, &maxm);
     hp->data = data;
@@ -56,14 +78,6 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
     return hp;
 }
 
-/** Initialize an  \ref apop_histogram_settings struct. You'll probably call this via
-  \code
-  int binct = 100; //or some other reasonable number of histogram bins
-  Apop_model_add_group(your_model, apop_histogram, .data = your_data_set, .bins_in = binct);
-  \endcode
-   
-  The \c .data input is mandatory.
-*/
 apop_histogram_settings * apop_histogram_settings_init(apop_histogram_settings in){
     Apop_assert(in.data && in.bins_in, "I need both the .data and .bins_in elements to be set.");
     return apop_histogram_settings_alloc(in.data, in.bins_in);
@@ -79,7 +93,7 @@ Apop_settings_copy(apop_histogram,
 Apop_settings_free(apop_histogram,
     gsl_histogram_free(in->pdf);
     gsl_histogram_pdf_free(in->cdf);
-    if (in->histobase && in->ownerbase)
+    if (in->ownerbase)
         apop_model_free(in->histobase);
 )
 
@@ -91,12 +105,13 @@ apop_model *est(apop_data *d, apop_model *est){
 }
 
 static double one_histo_ll(double i, void *gpdf){
-  size_t    k;
+    size_t k;
     gsl_histogram_find(gpdf, i, &k);
     return log(gsl_histogram_get (gpdf, k));
 }
 
 static double histogram_ll(apop_data *d, apop_model *in){
+    Nullcheck_mpd(d, in);
     apop_histogram_settings *hp = apop_settings_get_group(in, apop_histogram);
     if (!hp) apop_settings_get_group(in, apop_kernel_density);
     Apop_assert(hp, "you sent me an unparametrized model.");
@@ -104,9 +119,10 @@ static double histogram_ll(apop_data *d, apop_model *in){
 }
 
 static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
-  apop_histogram_settings *hp = apop_settings_get_group(in, apop_histogram);
-  if (!hp) apop_settings_get_group(in, apop_kernel_density);
-  Apop_assert(hp, "you sent me an unparametrized model.");
+    Nullcheck_m(in);
+    apop_histogram_settings *hp = apop_settings_get_group(in, apop_histogram);
+    if (!hp) apop_settings_get_group(in, apop_kernel_density);
+    Apop_assert(hp, "you sent me an unparametrized model.");
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!
         gsl_histogram_pdf_init(hp->cdf, hp->pdf);
@@ -121,13 +137,53 @@ static void histogram_print(apop_model *est){
     gsl_histogram_fprintf (apop_opts.output_pipe, h, "%g", "%g");
 }
 
-
-/** \hideinitializer */
 apop_model apop_histogram = {"Histogram", .dsize=1, .estimate = est, .log_likelihood = histogram_ll, 
                     .draw = histogram_rng, .print=histogram_print};
 
+/*\amodel apop_kernel_density The kernel density smoothing of a PMF
 
-////Kernel density estimation
+A Kernel density is simply a smoothing of a histogram. At each point
+along the histogram, put a distribution (default: Normal(0,1)) on top
+of the point. Sum all of these distributions to form the output histogram.
+
+Elements of \ref apop_kernel_density_settings that you may want to set:
+
+\li data a data set, which, if  not \c NULL and \c !base_pmf , will be converted to an \ref apop_pmf model.
+\li base_pmf This is the preferred format for input data. It is the histogram to be smoothed.
+\li kernelbase The kernel to use for smoothing, with all parameters set and a \c p method. Popular favorites are \ref apop_normal and \ref apop_uniform.
+\li set_params A function that takes in a single number and the model, and sets
+the parameters accordingly. The function will call this for every point in the data
+set. Here is the default, which is used if this is \c NULL. It simply sets the first
+element of the model's parameter vector to the input number; this is appropriate for a
+Normal distribution, where we want to center the distribution on each data point in turn.
+
+\code
+void apop_set_first_param(double in, apop_model *m){
+    m->parameters->vector->data[0] = in;
+}
+\endcode
+
+For a Uniform[0,1] recentered around each point, you'd want to put this function in your code:
+
+\code
+void set_midpoint(double in, apop_model *m){
+    m->parameters->vector->data[0] = in-0.5;
+    m->parameters->vector->data[1] = in+0.5;
+}
+\endcode
+
+\adoc    Input_format  I'll estimate a \ref apop_pmf internally, so I
+                      follow that format, which is one observation (of any format) per line.        
+\adoc    Parameter_format  None    
+\adoc    Estimated_parameters None
+\adoc    Estimated_settings  The estimate method basically just runs
+                             <tt>apop_model_add_group(your_data, apop_kernel_density);</tt>    
+\adoc    settings  \ref apop_kernel_density_settings.    
+\adoc    Examples
+This example sets up and uses KDEs based on a Normal and a Uniform distribution.
+
+\include kernel.c
+*/
 
 static void apop_set_first_param(apop_data *in, apop_model *m){
     m->parameters->vector->data[0]  = in->vector ?
@@ -159,7 +215,7 @@ Apop_settings_free(apop_kernel_density,
 )
 
 static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
-    //Just run the init fn.
+    Nullcheck_d(d);
     if (!apop_settings_get_group(m, apop_kernel_density))
         apop_model_add_group(m, apop_kernel_density, .base_data=d);
     return m;
@@ -167,6 +223,7 @@ static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
 
 static double kernel_p_cdf_base(apop_data *d, apop_model *m,
         double (*fn)(apop_data*,apop_model*)){
+    Nullcheck_mpd(d, m);
     Get_vmsizes(d);
     long double total = 0;
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
@@ -188,10 +245,12 @@ static double kernel_p(apop_data *d, apop_model *m){
     return kernel_p_cdf_base(d, m, apop_p);
 }
 
+/* \adoc    CDF Sums the CDF to the given point of all the sub-distributions.*/
 static double kernel_cdf(apop_data *d, apop_model *m){
     return kernel_p_cdf_base(d, m, apop_cdf);
 }
 
+/* \adoc    RNG  Randomly selects a data point, then randomly draws from that sub-distribution.*/
 static void kernel_draw(double *d, gsl_rng *r, apop_model *m){
     //randomly select a point, using the weights.
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
@@ -204,7 +263,6 @@ static void kernel_draw(double *d, gsl_rng *r, apop_model *m){
     apop_draw(d, r, ks->kernel);
     apop_data_free(point);
 }
-
 
 apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
 	.estimate = apop_kernel_estimate, .p = kernel_p, .cdf=kernel_cdf, .draw=kernel_draw};

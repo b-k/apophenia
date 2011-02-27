@@ -752,9 +752,17 @@ void test_lognormal(gsl_rng *r){
     apop_model *out = apop_estimate(data, apop_lognormal);
     double muhat = apop_data_get(out->parameters, 0,-1);
     double sigmahat = apop_data_get(out->parameters, 1,-1);
-    if (verbose) printf("mu: %g, muhat: %g, var: %g, varhat: %g\n", mu, muhat,  sigma,sigmahat);
-    assert(fabs(mu-muhat)<1e-2);
-    assert(fabs(sigma-sigmahat)<1e-2);
+    //if (verbose) printf("mu: %g, muhat: %g, var: %g, varhat: %g\n", mu, muhat,  sigma,sigmahat);
+    Diff(mu, muhat, 1e-2);
+    Diff(sigma, sigmahat, 1e-2);
+
+    apop_model *for_mle= apop_model_copy(apop_lognormal);
+    for_mle->estimate=NULL;
+    apop_model *out2 = apop_estimate(data, *for_mle);
+    muhat = apop_data_get(out2->parameters, 0,-1);
+    sigmahat = apop_data_get(out2->parameters, 1,-1);
+    Diff(mu, muhat, 1e-2);
+    Diff(sigma, sigmahat, 1e-2);
 }
 
 void test_multivariate_normal(gsl_rng *r){
@@ -1341,12 +1349,23 @@ void test_pmf_compress(gsl_rng *r){
     assert(apop_strcmp(d->text[2][0], "Pair"));
 
     apop_data *b = apop_data_alloc();
-    b->vector = apop_array_to_vector((double []){0., -1.1, 2., -2}, 4);
-    apop_data_to_bins(b, .close_top_bin='y');
-    assert(b->vector->data[0]==0);
-    assert(b->vector->data[1]==-2);
+    b->vector = apop_array_to_vector((double []){1.1, 2.1, 2, 1, 1}, 5);
+    apop_text_alloc(b, 5, 1);
+    apop_text_add(b, 0, 0, "Type 1");
+    apop_text_add(b, 1, 0, "Type 1");
+    apop_text_add(b, 2, 0, "Type 1");
+    apop_text_add(b, 3, 0, "Type 1");
+    apop_text_add(b, 4, 0, "Type 2");
+    Apop_data_row(b, 0, arow);
+    apop_data *spec = apop_data_copy(arow);
+    gsl_vector_set_all(spec->vector, 1);
+    apop_data_to_bins(b, .binspec=spec);
+    assert(apop_strcmp(b->text[0][0], "Type 1"));
+    assert(apop_strcmp(b->text[1][0], "Type 1"));
+    assert(apop_strcmp(b->text[2][0], "Type 2"));
     assert(b->weights->data[0]==2);
     assert(b->weights->data[1]==2);
+    assert(b->weights->data[2]==1);
     
 
     //I assert that if I use the default binspec returned by a call to apop_data_to_bins,

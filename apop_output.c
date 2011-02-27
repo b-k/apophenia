@@ -2,7 +2,7 @@
   Some printing and output interface functions. */
 /* Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-//The reader will find three function headers for this file in asst.h
+//The reader will find a few function headers for this file in asst.h
 #include "asst.h"
 #include "output.h"
 #include "internal.h"
@@ -10,6 +10,26 @@
 #include "conversions.h"
 #include "model.h"
 #include <gsl/gsl_histogram.h>
+
+/** \defgroup output		Printing to the screen or a text file
+
+Most functions print only to the screen, but the 
+\ref apop_print "matrix and vector printing functions" will let you print to a text file as
+well. The presumption is that statistic estimates are for your own
+consumption, while you are printing a matrix for import into another program.
+
+*/
+/** \defgroup apop_print 	Assorted printing functions		
+
+The <tt>apop_*_print</tt> functions will print to screen, text file,
+or database, depending on how you set \ref apop_opts_type "apop_opts.output_type".
+The <tt>apop_*_show</tt> functions print only to screen, and are basically
+just a convenience shell to the corresponding <tt>apop_*_print</tt>
+function.
+
+\ingroup output
+*/
+
  
 #define Output_vars output_file, output_pipe, output_type, output_append
 
@@ -141,7 +161,7 @@ apop_plot_histogram(data, .bins=100, .output_pipe = f);
 will print directly to Gnuplot.
 
 \param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be \c NULL)
-\param bins   The number of bins in the output histogram (default = \f$\sqrt(N)\f$, where \f$N\f$ is the length of the vector.)
+\param bin_count   The number of bins in the output histogram (default = \f$\sqrt(N)\f$, where \f$N\f$ is the length of the vector.)
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.

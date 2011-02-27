@@ -5,8 +5,11 @@
 #include "asst.h" //rng_alloc
 #include "stats.h"
 #include "model.h"
+#include "mapply.h"
 #include "internal.h"
+#include "likelihoods.h"
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_eigen.h>
 
 
 /** \defgroup vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
@@ -671,7 +674,7 @@ APOP_VAR_ENDHEAD
 
 /** Returns the matrix of correlation coefficients \f$(\sigma^2_{xy}/(\sigma_x\sigma_y))\f$ relating each column with each other.
 
-This is the \c gsl_matrix  version of \ref apop_data_covariance; if you have column names, use that one.
+This is the \c gsl_matrix  version of \ref apop_data_correlation; if you have column names, use that one.
 
 \param in 	A data matrix: rows are observations, columns are variables. (No default, must not be \c NULL)
 \param normalize
@@ -826,4 +829,230 @@ APOP_VAR_ENDHEAD
         apop_data_free(a_row);
     }
     return div;
+}
+
+
+
+
+/** \defgroup tfchi t-, chi-squared, F-, Wishart distributions
+
+Most of these distributions are typically used for testing purposes.  For such a situation, you don't need the models here.
+Given a statistic of the right properties, you can find the odds that the statistic is above or below a cutoff on the t-, F, or chi-squared distribution using the \ref apop_test function. 
+
+In that world, those three distributions are actually parameter free. The data is assumed to be normalized to be based on a mean zero, variance one process, you get the degrees of freedom from the size of the data, and the distribution is fixed.
+
+For modeling purposes, more could be done. For example, the t-distribution is a favorite proxy for Normal-like situations where there are fat tails relative to the Normal (i.e., high kurtosis). Or, you may just prefer not to take the step of normalizing your data---one could easily rewrite the theorems underlying the t-distribution without the normalizations.
+
+In such a case, the researcher would not want to fix the \f$df\f$, because \f$df\f$ indicates the fatness of the tails, which has some optimal value given the data. 
+Thus, there are two modes of use for these distributions: 
+
+\li Parameterized, testing style: the degrees of freedom are determined
+from the data, and all necessary normalizations are assumed. Thus, this code---
+
+\code
+apop_data *t_for_testing = apop_estimate(data, apop_t)
+\endcode
+
+---will return exactly the type of \f$t\f$-distribution one would use for testing. 
+
+\li By removing the \c estimate method---
+\code
+apop_model *spare_t = apop_model_copy(t);
+spare_t.estimate = NULL;
+apop_model *best_fitting_t = apop_estimate(your_data, spare_t);
+\endcode
+---I will find the best \f$df\f$ via maximum likelihood, which may be desirable for
+to find the best-fitting model for descriptive purposes.
+
+\c df works for all four distributions here; \c df2 makes sense only for the \f$F\f$, 
+
+For the Wishart, the degrees of freedom and covariance matrix are always estimated via MLE.
+*/
+
+/** The multivariate generalization of the Gamma distribution.
+\f$
+\Gamma_p(a)=
+\pi^{p(p-1)/4}\prod_{j=1}^p
+\Gamma\left[ a+(1-j)/2\right]. \f$
+
+See also \ref apop_multivariate_lngamma, which is more numerically stable in most cases.
+*/
+double apop_multivariate_gamma(double a, double p){
+    double out = pow(M_PI, p*(p-1.)/4.);
+    double factor = 1;
+    for (int i=1; i<=p; i++)
+        factor *= gsl_sf_gamma(a+(1-i)/2.);
+    return out * factor;
+}
+
+/** The log of the multivariate generalization of the Gamma; see also
+ \ref apop_multivariate_gamma.
+*/
+double apop_multivariate_lngamma(double a, double p){
+    double out = M_LNPI * p*(p-1.)/4.;
+    double factor = 0;
+    for (int i=1; i<=p; i++)
+        factor += gsl_sf_lngamma(a+(1-i)/2.);
+    return out + factor;
+}
+
+static void find_eigens(gsl_matrix **subject, gsl_vector *eigenvals, gsl_matrix *eigenvecs){
+   gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc((*subject)->size1);
+   gsl_eigen_symmv(*subject, eigenvals, eigenvecs, w);
+   gsl_eigen_symmv_free (w);
+   gsl_matrix_free(*subject); *subject  = NULL;
+}
+
+static void diagonal_copy(gsl_vector *v, gsl_matrix *m, char in_or_out){
+    gsl_vector_view dv = gsl_matrix_diagonal(m);
+    if (in_or_out == 'i') 
+        gsl_vector_memcpy(&(dv.vector), v);
+    else  
+        gsl_vector_memcpy(v, &(dv.vector));
+}
+
+static double diagonal_size(gsl_matrix *m){
+    gsl_vector_view dv = gsl_matrix_diagonal(m);
+    return apop_sum(&dv.vector);
+}
+
+static double biggest_elmt(gsl_matrix *d){ 
+    return  GSL_MAX(fabs(gsl_matrix_max(d)), fabs(gsl_matrix_min(d)));
+}
+
+/** Test whether the input matrix is positive semidefinite.
+
+A covariance matrix will always be PSD, so this function can tell you whether your matrix is a valid covariance matrix.
+
+Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in the upper left, on up to the full matrix. If the matrix is PSD, then each of these has a positive determinant. This function thus calculates \f$N\f$ determinants for an \f$N\f$x\f$N\f$ matrix.
+
+\param m The matrix to test. If \c NULL, I will return zero---not PSD.
+\param semi If anything but 's', check for positive definite, not semidefinite. (default 's')
+
+See also \ref apop_matrix_to_positive_semidefinite, which will change the input to something PSD.
+
+This function uses the \ref designated syntax for inputs.
+*/
+APOP_VAR_HEAD int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi){
+    gsl_matrix * apop_varad_var(m, NULL);
+    apop_assert_c(m, 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite.");
+    char apop_varad_var(semi, 's');
+APOP_VAR_ENDHEAD
+    for (int i=1; i<= m->size1; i++){
+        gsl_matrix mv =gsl_matrix_submatrix (m, 0, 0, i, i).matrix;
+        double det = apop_matrix_determinant(&mv);
+        if ((semi == 'd' && det <0) || det <=0)
+            return 0;
+    }
+    return 1;
+}
+
+void vfabs(double *x){*x = fabs(*x);}
+
+/**  First, this function passes tests, but is under development.
+  
+It takes in a matrix and converts it to the `closest' positive semidefinite matrix.
+
+\param m On input, any matrix; on output, a positive semidefinite matrix.
+\return the distance between the original and new matrices.
+
+\li See also the test function \ref apop_matrix_is_positive_semidefinite.
+\li This function can be used as (the core of) a model constraint.
+
+Adapted from the R Matrix package's nearPD, which is 
+Copyright (2007) Jens Oehlschlägel [and is GPL].
+*/
+double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
+    if (apop_matrix_is_positive_semidefinite(m)) 
+        return 0; 
+    double diffsize=0, dsize;
+    apop_data *qdq; 
+    gsl_matrix *d = apop_matrix_copy(m);
+    gsl_matrix *original = apop_matrix_copy(m);
+    double orig_diag_size = fabs(diagonal_size(d));
+    int size = d->size1;
+    gsl_vector *diag = gsl_vector_alloc(size);
+    diagonal_copy(diag, d, 'o');
+    apop_vector_apply(diag, vfabs);
+    double origsize = biggest_elmt(d);
+    do {
+        //get eigenvals
+        apop_data *eigenvecs = apop_data_alloc(size, size);
+        gsl_vector *eigenvals = gsl_vector_calloc(size);
+        gsl_matrix *junk_copy = apop_matrix_copy(d);
+        find_eigens(&junk_copy, eigenvals, eigenvecs->matrix);//junk freed here.
+        
+        //prune positive only
+        int j=0;
+        int plussize = eigenvecs->matrix->size1;
+        int *mask = calloc(eigenvals->size , sizeof(int));
+        for (int i=0; i< eigenvals->size; i++)
+            plussize -= 
+            mask[i] = (gsl_vector_get(eigenvals, i) <= 0);
+        
+        //construct Q = pruned eigenvals
+        apop_data_rm_columns(eigenvecs, mask);
+        if (!eigenvecs->matrix) break;
+        
+        //construct D = positive eigen diagonal
+        apop_data *eigendiag = apop_data_calloc(0, plussize, plussize);
+        for (int i=0; i< eigenvals->size; i++)
+            if (!mask[i]) {
+                apop_data_set(eigendiag, j, j, eigenvals->data[i]);
+                j++;
+            }
+
+        // Our candidate is QDQ', symmetrized, with the old diagonal subbed in.
+        apop_data *qd = apop_dot(eigenvecs, eigendiag);
+        qdq = apop_dot(qd, eigenvecs, .form2='t');
+        for (int i=0; i< qdq->matrix->size1; i++)
+            for (int j=i+1; j< qdq->matrix->size1; j++){
+                double avg = (apop_data_get(qdq, i, j) +apop_data_get(qdq, j, i)) /2.;
+                apop_data_set(qdq, i, j, avg);
+                apop_data_set(qdq, j, i, avg);
+            }
+        diagonal_copy(diag, qdq->matrix, 'i');
+        
+        // Evaluate progress, clean up.
+        dsize = biggest_elmt(d);
+        gsl_matrix_sub(d, qdq->matrix);
+        diffsize = biggest_elmt(d);
+        apop_data_free(qd); gsl_matrix_free(d);
+        apop_data_free(eigendiag); free(mask);
+        apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
+        d = qdq->matrix;
+        qdq->matrix=NULL; apop_data_free(qdq); qdq = NULL;
+    } while (diffsize/dsize > 1e-3);
+
+    apop_data *eigenvecs = apop_data_alloc(0, size, size);
+    gsl_vector *eigenvals = gsl_vector_calloc(size);
+    gsl_matrix *junk_copy = apop_matrix_copy(d);
+    find_eigens(&junk_copy, eigenvals, eigenvecs->matrix);
+    //make eigenvalues more positive
+    double score =0;
+    for (int i=0; i< eigenvals->size; i++){
+        double v = gsl_vector_get(eigenvals, i);
+        if (v < 1e-1){
+            gsl_vector_set(eigenvals, i, 1e-1);
+            score += 1e-1 - v;
+        }
+    }
+    for (int i=0; i< size; i++)
+        assert(eigenvals->data[i] >=0);
+    //if (score){
+        apop_data *eigendiag = apop_data_calloc(0, size, size);
+        diagonal_copy(eigenvals, eigendiag->matrix, 'i');
+        double new_diag_size = diagonal_size(eigendiag->matrix);
+        gsl_matrix_scale(eigendiag->matrix, orig_diag_size/new_diag_size);
+        apop_data *qd = apop_dot(eigenvecs, eigendiag);
+        qdq = apop_dot(qd, eigenvecs, .form2='t');
+        gsl_matrix_memcpy(m, qdq->matrix);
+        apop_data_free(qd);
+        apop_data_free(eigendiag);
+    //}
+    assert(apop_matrix_is_positive_semidefinite(m));
+    apop_data_free(qdq); gsl_vector_free(diag);
+    apop_data_free(eigenvecs); gsl_vector_free(eigenvals);
+    gsl_matrix_sub(original, m);
+    return biggest_elmt(original)/origsize;
 }

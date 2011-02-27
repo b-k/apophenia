@@ -1,7 +1,29 @@
-/** \file 
- Probit and Logit. */
+/* Probit and Logit. 
+Copyright (c) 2005--2008, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
 
-/* Copyright (c) 2005--2008, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+\amodel apop_probit The Probit model.
+
+  Apophenia makes no distinction between the bivariate probit and the multinomial probit. This one does both.
+
+\adoc    Input_format  
+The first column of the data matrix this model expects is zeros, ones, ..., enumerating
+the factors; to get there, try \ref apop_data_to_factors; if you  forget to run it,
+I'll run it on the first data column for you.  The remaining columns are values of the
+independent variables. Thus, the model will return [(data columns)-1]\f$\times\f$[(option
+count)-1] parameters.  Column names are options; row names are input variables.
+
+\adoc    Parameter_format  As above 
+\adoc    Prep_routine You will probably want to convert some column of your data into
+factors, via \ref apop_data_to_factors. If you do, then that adds a page of factors
+to your data set (and of course adjusts the data itself). If I find a factor page,
+I will use that info; if not, then I will run \ref apop_data_to_factors on the first
+column (the vector if there is one, else the first column of the matrix.)
+
+Also, if there is no vector, then I will move the first column of the matrix, and
+replace that matrix column with a constant column of ones, just like with OLS.
+
+\adoc    settings   None, but see above about seeking a factor page in the input data.
+*/
 
 #include "model.h"
 #include "mapply.h"
@@ -24,7 +46,7 @@ static void probit_prep(apop_data *d, apop_model *m){
     apop_ols.prep(d, m);//also runs the default apop_model_clear.
     factor_list = get_category_table(d);
     count = factor_list->textsize[0];
-    m->parameters = apop_data_alloc(0, d->matrix->size2, count-1);
+    m->parameters = apop_data_alloc(d->matrix->size2, count-1);
     apop_name_stack(m->parameters->names, d->names, 'r', 'c');
     for (int i=1; i< count; i++) 
         apop_name_add(m->parameters->names, factor_list->text[i][0], 'c');
@@ -43,7 +65,6 @@ double biprobit_ll_row(apop_data *r){
 
 //The case where outcome is a single zero/one option.
 static double biprobit_log_likelihood(apop_data *d, apop_model *p){
-  Nullcheck_m(p); Nullcheck_p(p);
     apop_data *betadotx = apop_dot(d, p->parameters); 
     betadotx->vector = d->vector;
     double total_prob = apop_map_sum(betadotx, .fn_r=biprobit_ll_row);
@@ -55,9 +76,9 @@ static double biprobit_log_likelihood(apop_data *d, apop_model *p){
 static double val;
 static double unordered(double in){ return in == val; }
 
-// This is just a for loop that runs a probit on each row.
+// This is just a for loop that runs a probit on each column.
 static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
-  Nullcheck_m(p); Nullcheck_p(p);
+    Nullcheck_mpd(d, p)
     gsl_vector *val_vector = get_category_table(d)->vector;
     if (val_vector->size==2)
         return biprobit_log_likelihood(d, p);
@@ -67,16 +88,13 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
         spare_probit = apop_model_copy(apop_probit);
         spare_probit->parameters = apop_data_alloc();
     }
-    static apop_data *working_data = NULL;
-    if (!working_data)
-        working_data = apop_data_alloc();
-
+    Staticdef(apop_data *, working_data, apop_data_alloc());
     working_data->matrix = d->matrix;
     gsl_vector *original_outcome = d->vector;
     double ll    = 0;
     double *vals = val_vector->data;
     for(size_t i=0; i < p->parameters->matrix->size2; i++){
-        APOP_COL(p->parameters, i, param);
+        Apop_col(p->parameters, i, param);
         val = vals[i];
         working_data->vector = apop_vector_map(original_outcome, unordered);
         spare_probit->parameters->matrix = apop_vector_to_matrix(param);
@@ -88,15 +106,15 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
 }
 
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_m(p); Nullcheck_p(p);
+    Nullcheck_mp(p)
     gsl_vector *val_vector = get_category_table(p->data)->vector;
     if (val_vector->size!=2){
         gsl_vector * numeric_default = apop_numerical_gradient(d, p);
         gsl_vector_memcpy(gradient, numeric_default);
         gsl_vector_free(numeric_default);
     }
-  long double	cdf, betax, deriv_base;
-  apop_data *betadotx = apop_dot(d, p->parameters); 
+    long double	cdf, betax, deriv_base;
+    apop_data *betadotx = apop_dot(d, p->parameters); 
     gsl_vector_set_all(gradient,0);
     for (size_t i=0; i< d->matrix->size1; i++){
         betax            = apop_data_get(betadotx, i, 0);
@@ -113,10 +131,18 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 	apop_data_free(betadotx);
 }
 
+apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
+    .score = probit_dlog_likelihood, .prep = probit_prep};
+
+
+/* \amodel apop_multinomial_probit The Multinomial Probit model.
+
+  \deprecated Just use \ref apop_probit, which handles multiple options fine.*/
+
 /////////  Multinomial Logit (plain logit is a special case)
 
 static apop_data *multilogit_expected(apop_data *in, apop_model *m){
-    Nullcheck_m(m); Nullcheck_p(m);
+    Nullcheck_mpd(in, m)
     gsl_matrix *params = m->parameters->matrix;
     apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
     for (size_t i=0; i < in->matrix->size1; i ++){
@@ -157,14 +183,12 @@ static size_t find_index(double in, double *m, size_t max){
 }
 
 double one_logit_row(apop_data *thisobservation, void *factor_list){
-    //numerator: x*beta_choice
     //get the $x\beta_j$ numerator for the appropriate choice:
     size_t index   = find_index(gsl_vector_get(thisobservation->vector, 0), 
                                 (double*)factor_list, thisobservation->matrix->size2);
     Apop_row(thisobservation, 0, thisrow);
     double num = (index==0) ? 0 : gsl_vector_get(thisrow, index-1);
 
-    //denominator: ln(sum_all(x*beta))
     /* Get the denominator, ln(sum(exp(xbeta))) using the subtract-the-max trick 
      mentioned in the documentation.  Don't forget the implicit beta_0, fixed at 
      zero (so we need to add exp(0-max)). */
@@ -175,7 +199,7 @@ double one_logit_row(apop_data *thisobservation, void *factor_list){
 }
 
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
-  Nullcheck_m(p); Nullcheck_p(p);
+    Nullcheck_mpd(d, p)
     //Find X\beta_i for each row of X and each column of \beta.
     apop_data  *xbeta = apop_dot(d, p->parameters);
     double* factor_list = get_category_table(p->data)->vector->data;
@@ -186,7 +210,7 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
 	return ll;
 }
 
-/*static*/ double dlogit_foreach(gsl_vector *x, void *gin){
+static double dlogit_foreach(gsl_vector *x, void *gin){
   //\beta_this = choice for the row.
   //dLL/d\beta_ij = [(\beta_i==\beta_this) ? x_j : 0] - x_j e^(x\beta_i)/\sum_k e^(x\beta_k)
   //that last term simplifies: x / \sum_k e^(x(\beta_k - \beta_i))
@@ -224,8 +248,8 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
     return 0;
 }
 
-/*static*/ void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_m(p); Nullcheck_p(p);
+static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
+    Nullcheck_mpd(d, p);
     apop_data *gradient_matrix = apop_data_calloc(p->parameters->matrix->size1, p->parameters->matrix->size2);
     apop_data_unpack(gradient, gradient_matrix);
     gradient_matrix->more = p->parameters;  // facilitate passing to logit_foreach.
@@ -233,7 +257,7 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
     apop_data_free_base( //return from apop_map is useless.
         apop_map(d, .fn_vp=dlogit_foreach, .param=gradient_matrix, .part='r', .all_pages='n')
     );
-    apop_data_pack(gradient_matrix, gradient, .all_pages='n');
+    apop_data_pack(gradient_matrix, gradient);
     gradient_matrix->more=NULL;
     apop_data_free(gradient_matrix);
 }
@@ -253,8 +277,44 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
     return out;
 }
 
-apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-     /*.score = logit_dlog_likelihood,*/ .predict=multilogit_expected, .prep = probit_prep};
+/* \amodel apop_logit The Logit model.
 
-apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
-    .score = probit_dlog_likelihood, .prep = probit_prep};
+Apophenia makes no distinction between the bivariate logit and the multinomial logit. This does both.
+
+  The likelihood of choosing item \f$j\f$ is:
+  \f$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})\f$
+
+  so the log likelihood is 
+  \f$x\beta_j  - ln(\sum_i{e^{x\beta_i}})\f$
+
+  A nice trick used in the implementation: let \f$y_i = x\beta_i\f$.
+  Then
+\f[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f]
+
+The elements of the sum are all now exp(something negative), so 
+overflow won't happen, and if there's underflow, then that term
+must not have been very important. [This trick is attributed to Tom
+Minka, who implemented it in his Lightspeed Matlab toolkit.]
+
+\adoc    Input_format  The first column of the data matrix this model expects is zeros,
+ones, ..., enumerating the factors; to get there, try \ref apop_data_to_factors; if
+you  forget to run it, I'll run it on the first data column for you.  The remaining
+columns are values of the independent variables. Thus, the model will return [(data
+columns)-1]\f$\times\f$[(option count)-1] parameters.  Column names are options;
+row names are input variables.
+
+\adoc    Parameter_format  As above.    
+\adoc    Prep_routine You will probably want to convert some column of your data into
+factors, via \ref apop_data_to_factors. If you do, then that adds a page of factors
+to your data set (and of course adjusts the data itself). If I find a factor page,
+I will use that info; if not, then I will run \ref apop_data_to_factors on the first
+column (the vector if there is one, else the first column of the matrix.)
+
+Also, if there is no vector, then I will move the first column of the matrix, and
+replace that matrix column with a constant column of ones, just like with OLS.
+
+\adoc    settings   None, but see above about seeking a factor page in the input data.
+*/
+apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
+.score = logit_dlog_likelihood, .predict=multilogit_expected, .prep = probit_prep
+};
