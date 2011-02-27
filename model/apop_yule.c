@@ -1,7 +1,24 @@
-/** \file apop_yule.c
+/* The Yule distribution. A special case of the Waring.
 
-  The Yule distribution. A special case of the Waring.*/ 
-/*Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
+
+\amodel apop_yule
+The special case of the \ref apop_waring "Waring" where \f$ \alpha = 0.	\f$<br>
+
+\f$ Y(x, b) 	= (b-1) \gamma(b) \gamma(k) / \gamma(k+b)			\f$
+
+\f$ \ln Y(x, b)	= \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b)	\f$
+
+\f$ d\ln Y/db	= 1/(b-1)  + \psi(b) - \psi(k+b)				\f$
+
+apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
+
+\adoc    Input_format     
+Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
+
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
+\adoc    Parameter_format  One element at the top of the parameter set's vector.
+\adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
 
 #include "types.h"
 #include "mapply.h"
@@ -51,14 +68,7 @@ static void yule_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model 
 	gsl_vector_set(gradient, 0, d_bb);
 }
 
-/** Draw from a Yule distribution with parameter a
-
-Call this fn using <tt> apop_draw(*out, r, apop_yule)</tt>.
-
-\param	a	The parameter.
-\param	r	A gsl_rng that you've already set up.
-
-Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
+/* \adoc RNG Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
 static void yule_rng( double *out, gsl_rng * r, apop_model *a){
 double 	e1, e2;
 int		x;
@@ -69,6 +79,4 @@ int		x;
 }
 
 apop_model apop_yule = {"Yule distribution", 1,0,0, .dsize=1, .log_likelihood = yule_log_likelihood, 
-    .score = yule_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
-    .draw = yule_rng};
-//estimate via the default MLE method
+    .score = yule_dlog_likelihood, .constraint = beta_greater_than_x_constraint, .draw = yule_rng};

@@ -1,7 +1,29 @@
-/** \file 
- Probit and Logit. */
+/* Probit and Logit. 
+Copyright (c) 2005--2008, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
 
-/* Copyright (c) 2005--2008, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+\amodel apop_probit The Probit model.
+
+  Apophenia makes no distinction between the bivariate probit and the multinomial probit. This one does both.
+
+\adoc    Input_format  
+The first column of the data matrix this model expects is zeros, ones, ..., enumerating
+the factors; to get there, try \ref apop_data_to_factors; if you  forget to run it,
+I'll run it on the first data column for you.  The remaining columns are values of the
+independent variables. Thus, the model will return [(data columns)-1]\f$\times\f$[(option
+count)-1] parameters.  Column names are options; row names are input variables.
+
+\adoc    Parameter_format  As above 
+\adoc    Prep_routine You will probably want to convert some column of your data into
+factors, via \ref apop_data_to_factors. If you do, then that adds a page of factors
+to your data set (and of course adjusts the data itself). If I find a factor page,
+I will use that info; if not, then I will run \ref apop_data_to_factors on the first
+column (the vector if there is one, else the first column of the matrix.)
+
+Also, if there is no vector, then I will move the first column of the matrix, and
+replace that matrix column with a constant column of ones, just like with OLS.
+
+\adoc    settings   None, but see above about seeking a factor page in the input data.
+*/
 
 #include "model.h"
 #include "mapply.h"
@@ -112,6 +134,14 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 	}
 	apop_data_free(betadotx);
 }
+
+apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
+    .score = probit_dlog_likelihood, .prep = probit_prep};
+
+
+/* \amodel apop_multinomial_probit The Multinomial Probit model.
+
+  \deprecated Just use \ref apop_probit, which handles multiple options fine.*/
 
 /////////  Multinomial Logit (plain logit is a special case)
 
@@ -253,8 +283,44 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
     return out;
 }
 
-apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-     /*.score = logit_dlog_likelihood,*/ .predict=multilogit_expected, .prep = probit_prep};
+/* \amodel apop_logit The Logit model.
 
-apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
-    .score = probit_dlog_likelihood, .prep = probit_prep};
+Apophenia makes no distinction between the bivariate logit and the multinomial logit. This does both.
+
+  The likelihood of choosing item \f$j\f$ is:
+  \f$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})\f$
+
+  so the log likelihood is 
+  \f$x\beta_j  - ln(\sum_i{e^{x\beta_i}})\f$
+
+  A nice trick used in the implementation: let \f$y_i = x\beta_i\f$.
+  Then
+\f[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f]
+
+The elements of the sum are all now exp(something negative), so 
+overflow won't happen, and if there's underflow, then that term
+must not have been very important. [This trick is attributed to Tom
+Minka, who implemented it in his Lightspeed Matlab toolkit.]
+
+\adoc    Input_format  The first column of the data matrix this model expects is zeros,
+ones, ..., enumerating the factors; to get there, try \ref apop_data_to_factors; if
+you  forget to run it, I'll run it on the first data column for you.  The remaining
+columns are values of the independent variables. Thus, the model will return [(data
+columns)-1]\f$\times\f$[(option count)-1] parameters.  Column names are options;
+row names are input variables.
+
+\adoc    Parameter_format  As above.    
+\adoc    Prep_routine You will probably want to convert some column of your data into
+factors, via \ref apop_data_to_factors. If you do, then that adds a page of factors
+to your data set (and of course adjusts the data itself). If I find a factor page,
+I will use that info; if not, then I will run \ref apop_data_to_factors on the first
+column (the vector if there is one, else the first column of the matrix.)
+
+Also, if there is no vector, then I will move the first column of the matrix, and
+replace that matrix column with a constant column of ones, just like with OLS.
+
+\adoc    settings   None, but see above about seeking a factor page in the input data.
+*/
+apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
+      .predict=multilogit_expected, .prep = probit_prep};
+/*.score = logit_dlog_likelihood,*/

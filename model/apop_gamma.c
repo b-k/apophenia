@@ -1,7 +1,23 @@
-/** \file apop_gamma.c
+/* The gamma distribution.
+Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 
-  The gamma distribution.*/
-/*Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+\amodel apop_gamma The Gamma distribution
+
+\f$G(x, a, b)     = 1/(\Gamma(a) b^a)  x^{a-1} e^{-x/b}\f$
+
+\f$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b\f$
+
+\f$d ln G/ da    =  -\psi(a) - ln b + ln(x) \f$    (also, \f$d ln \gamma = \psi\f$)
+
+\f$d ln G/ db    =  -a/b + x/(b^2) \f$
+
+\adoc    Input_format     
+Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.     
+
+\li See also \ref apop_data_rank_compress for means of dealing with one more input data format.
+\adoc    Parameter_format   First two elements of the vector.   
+\adoc    settings    MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings  
+  */
 
 #include "types.h"
 #include "mapply.h"
@@ -57,7 +73,7 @@ static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model
     gsl_vector_set(gradient, 1, apop_map_sum(d, .fn_dp = b_callback, .param=&b_and_ab));
 }
 
-/* Just a wrapper for gsl_ran_gamma.
+/* \adoc RNG Just a wrapper for \c gsl_ran_gamma.
 
    cut & pasted from the GSL documentation:
 \f$          p(x) dx = {1 \over \Gamma(a) b^a} x^{a-1} e^{-x/b} dx \f$

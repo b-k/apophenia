@@ -1,25 +1,29 @@
-/** \file apop_waring.c
+/* The Waring distribution.  
+Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 
-  The Waring distribution.  */
-/* Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+\amodel apop_waring  The Waring distribution
 
+\f$W(x,k, b,a) 	= (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]\f$
+
+\f$\ln W(x, b, a) = \ln(b-1) + \ln\gamma(b+a) + \ln\gamma(k+a) - \ln\gamma(a+1) - \ln\gamma(k+a+b)\f$
+
+\f$dlnW/db	= 1/(b-1)  + \psi(b+a) - \psi(k+a+b)\f$
+
+\f$dlnW/da	= \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)\f$
+
+\adoc    Input_format     
+Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
+
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
+     
+\adoc    Parameter_format  Two elements in the parameter set's vector.    
+\adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    
+*/
+
+#include "asst.h"
 #include "mapply.h"
 #include "internal.h"
 #include "likelihoods.h"
-
-/** RNG from a Generalized Hypergeometric type B3.
-
- Devroye uses this as the base for many of his
- distribution-generators, including the Waring.
-*/  //Header in stats.h
-double apop_rng_GHgB3(gsl_rng * r, double* a){
-    apop_assert_s((a[0]>0) && (a[1] > 0) && (a[2] > 0), "apop_GHgB3_rng took a zero parameter; bad.");
-double		aa	= gsl_ran_gamma(r, a[0], 1),
-		b	= gsl_ran_gamma(r, a[1], 1),
-		c	= gsl_ran_gamma(r, a[2], 1);
-int		p	= gsl_ran_poisson(r, aa*b/c);
-	return p;
-}
 
 typedef struct {
     double a, bb;
@@ -88,11 +92,11 @@ static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 	gsl_vector_set(gradient, 1, d_a);
 }
 
-/** Give me parameters, and I'll draw a ranking from the appropriate
+/* \adoc RNG Give me parameters, and I'll draw a ranking from the appropriate
 Waring distribution. [I.e., if I randomly draw from a Waring-distributed
 population, return the ranking of the item I just drew.]
 
-Page seven of:
+Source: page seven of
 L. Devroye, <a href="http://cgm.cs.mcgill.ca/~luc/digammapaper.ps">Random
 variate generation for the digamma and trigamma distributions</a>, Journal
 of Statistical Computation and Simulation, vol. 43, pp. 197-216, 1992.
@@ -119,4 +123,3 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 apop_model apop_waring = {"Waring distribution", 2,0,0, .dsize=1,
 	 .log_likelihood =  waring_log_likelihood, .score = waring_dlog_likelihood, 
      .constraint =  beta_zero_and_one_greater_than_x_constraint,  .draw = waring_rng};
-//estimate via the default MLE 

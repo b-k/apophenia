@@ -1,5 +1,16 @@
 /** \file apop_beta.c  The Beta distribution */
-/*Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/*Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+
+\amodel apop_beta The Beta distribution.
+
+The beta distribution has two parameters and is restricted between zero and one. You may also find \ref
+apop_beta_from_mean_var to be useful. 
+
+\adoc    Input_format  Any arrangement of scalar values. 
+\adoc    Parameter_format   a vector, v[0]=\f$\alpha\f$; v[1]=\f$\beta\f$    
+\adoc    RNG  Produces a scalar \f$\in[0,1]\f$. 
+\adoc    settings None. 
+*/
 
 #include "model.h"
 #include "mapply.h"
@@ -33,6 +44,7 @@ apop_model *apop_beta_from_mean_var(double m, double v){
 
 static double beta_log_likelihood(apop_data *d, apop_model *p);
 
+/* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * beta_estimate(apop_data * data,  apop_model *est){
   Get_vmsizes(data) //vsize, msize1,...
   double		mmean=0, mvar=0, vmean=0, vvar=0, alpha, beta;

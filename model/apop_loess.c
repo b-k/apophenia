@@ -15,7 +15,62 @@ Provenance:
 
     By the way, search the code for execnt: many functions will let you
     query how many times they have been hit, which you might find to be useful.
-*/
+
+\amodel apop_loess Regression via loess smoothing
+
+This uses a somewhat black-box routine, first written by Chamberlain, Devlin, Grosse,
+and Shyu in 1988, to fit a smoothed series of quadratic curves to the input data,
+thus producing a curve more closely fitting than a simple regression would.
+
+The curve is basically impossible to describe using a short list of parameters, so the
+representation is in the form of the \c predicted vector of the \c expected data set;
+see below.
+
+From the 1992 manual for the package:
+``The method we will use to fit local regression models is called {\em loess}, which
+is short for local regression, and was chosen as the name since a loess is a deposit
+of fine clay or silt along a river valley, and thus is a surface of sorts. The word
+comes from the German löss, and is pronounced löíss.''
+
+\adoc    Input_format  
+The data is basically OLS-like:                     
+the first column of the data is the dependent variable to be explained; subsequent
+variables are the independent explanatory variables.  Thus, your input data can either
+have a dependent vector plus explanatory matrix, or a matrix where the first column
+is the dependent variable.
+
+Unlike with OLS, I won't move your original data, and I won't add a <b>1</b>, because
+that's not really the loess custom. You can of course set up your data that way if
+you like.
+
+If your data set has a weights vector, I'll use it.
+
+In any case, all data is copied into the model's \ref apop_loess_settings. The code
+is primarily FORTRAN code from 1988 converted to C; the data thus has to be converted
+into a relatively obsolete internal format.
+
+
+\adoc    Parameter_format  The parameter vector is unused. 
+\adoc    estimated_parameters None.  
+\adoc    estimated_settings
+The \ref apop_loess_settings is filled with results (and internal processing cruft). The
+\c out_model->info data set has a table giving the actual, \c predicted, and \c residual
+columns, which is probably what you were looking for.  Try:
+        \code
+        apop_data_show(apop_data_get_page(output_model->info, "<Predicted>"));
+        \endcode
+        
+\adoc    Predict 
+Fills in the zeroth column (ignoring and overwriting any data there), and at the data's <tt>->more</tt> pointer, adds an \ref
+apop_data set named "Confidence" (i.e., 
+\code
+apop_strcmp(outdata->more->names->title, "Confidence") == 1.
+\endcode 
+
+This routine is in beta testing.
+
+\adoc    settings \ref apop_loess_settings */
+
 #include "model.h"
 #include "output.h"
 #include "mapply.h"
@@ -130,7 +185,7 @@ static double d_sign(double *a, double *b) {
      on return 
 
         qy     double precision(n). 
-               qy conntains q*y, if its computation has been requested. 
+               qy contains q*y, if its computation has been requested. 
 
         qty    double precision(n). 
                qty contains trans(q)*y, if its computation has been requested.
@@ -163,14 +218,14 @@ static double d_sign(double *a, double *b) {
      The parameters qy, qty, b, rsd, and xb are not referenced if their computation
      is not requested and in this case can be replaced by dummy variables in the
      calling program.  to save storage, the user may in some cases use the same array
-     for different parameters in the calling sequence.  a frequently occuring example
+     for different parameters in the calling sequence.  a frequently occurring example
      is when one wishes to compute any of b, rsd, or xb and does not need y or qty.
      in this case one may identify y, qty, and one of b, rsd, or xb, while providing
      separate arrays for anything else that is to be computed.  thus the calling sequence
 
           call dqrsl(x,ldx,n,k,qraux,y,dum,y,b,y,dum,110,info) 
 
-     will result in the computation of b and rsd, with rsd overwriting y.  more
+     will result in the computation of b and rsd, with rsd overwriting y.  More
      generally, each item in the following list contains groups of permissible
      identifications for a single calling sequence.
 

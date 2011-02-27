@@ -1,7 +1,14 @@
-/** \file apop_poisson.c
+/* The Poisson distribution.
+ Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+  
+\amodel apop_poisson The Poisson distribution.
 
-  The Poisson distribution.*/
-/* Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+\f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
+
+\adoc    Input_format  Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
+\adoc    Parameter_format  One parameter, the zeroth element of the vector.    
+\adoc    settings   \ref apop_parts_wanted_settings, for the \c .want_cov element    
+*/
 
 #include "model.h"
 #include "mapply.h"
@@ -18,6 +25,10 @@ static double data_mean(apop_data *d){
                + apop_vector_mean(d->vector)*vsize/tsize;
 }
 
+/* \adoc estimated_parameters 
+Unless you decline it by adding the \ref apop_parts_wanted_settings group, I will also give you the variance of the parameter, via bootstrap, stored in a page named <tt>\<Covariance\></tt>.
+
+\adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
   Nullcheck(data); Nullcheck_m(est);
   double		mean = data_mean(data);
@@ -71,12 +82,12 @@ static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mod
     gsl_vector_set(gradient,0, d_a);
 }
 
-/* Just a wrapper for gsl_ran_poisson.  */
+/* \adoc RNG Just a wrapper for \c gsl_ran_poisson.  */
 static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
     *out = gsl_ran_poisson(r, *p->parameters->vector->data);
 }
 
-apop_model apop_poisson = {"poisson", 1, 0, 0, .dsize=1,
+apop_model apop_poisson = {"Poisson distribution", 1, 0, 0, .dsize=1,
      .estimate = poisson_estimate, .log_likelihood = poisson_log_likelihood, 
      .score = poisson_dlog_likelihood, .constraint = beta_zero_greater_than_x_constraint, 
      .draw = poisson_rng};

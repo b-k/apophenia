@@ -4,31 +4,15 @@ s/<h2>Enumerations/<h2>Models/
     s/[{}]//
     s/<br\/>$//
     s/<li>enum/<li>apop_model/
-    s/.*>Overview[0-9].*//
-    s/.*>Name[0-9].*//
-    s/.*>Data_format[0-9].*//
-    s/.*>Parameter_format[0-9].*//
-    s/.*>Estimate_results[0-9].*//
-    s/.*>Predict[0-9].*//
-    s/.*>Prep_routine[0-9].*//
-    s/.*>RNG[0-9].*//
-    s/.*>CDF[0-9].*//
-    s/.*>[Ee]xample[0-9].*//
-    s/.*>[Ss]ettings[0-9].*//
+    s/.*>(Overview|Name|Input_format|Estimate_results|Predict|RNG|CDF|Exampe|Settings)_x[0-9].*x_//
 }
 s/<b>Enumerator: <\/b>//
 s/<td class="memname">enum <a class="el"/<td class="memname">apop_model <a class="el"/
-s/Overview[0-9]*/Overview/g
-s/Name[0-9]*/Name/g
-s/Data_format[0-9]*/Data format/g
-s/Parameter_format[0-9]*/Parameter format/g
-s/Estimate_results[0-9]*/Estimate results/g
-s/Predict[0-9]*/Predict/g
-s/Prep_routine[0-9]*/Prep routine/g
-s/RNG[0-9]*/RNG/g
-s/CDF[0-9]*/CDF/g
-s/[Ee]xample[0-9]\+/Example/g
-s/[Ss]ettings[0-9]\+/Settings/g
+s/_x[0-9]*x_//g
+s/model_specific/Non-default methods/g
+s/[eE]stimate_results/Post-estimate/g
+s/[iI]nput_format/Input format/g
+s/[pP]arameter_format/Parameter format/g
 #delete all between the two markers, but not the second marker
 /name="enum-members"/,/name="func-members"/{/name="func-members"/!d}
 /<div class="summary">/,/\#func-members/d

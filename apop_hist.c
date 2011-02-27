@@ -161,7 +161,6 @@ In any case, you are confident that all values in the \c observed set appear in 
 
   \ingroup histograms
 */
-#include <apop.h>
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model *expected){
     int df; 
     double diff;
@@ -510,3 +509,42 @@ APOP_VAR_ENDHEAD
     apop_data_pmf_compress(indata);
     return indata;
 }
+
+/** For usage, see the documentation for the \ref apop_pmf model. 
+  \param d An input crosstab
+  \return A PMF model which has a single line for each nonzero line of the crosstab.
+ */
+apop_model *apop_crosstab_to_pmf (apop_data *d){
+    Get_vmsizes(d) //tsize
+    int use_matrix=0, use_vector = 0;
+    size_t ctr = 0;
+    double x;
+    if (d->matrix) use_matrix++;
+    else if (d->vector) use_vector++;
+    else Apop_assert(0, "You gave me an input set with neither vector nor matrix data.");
+    apop_model *out = apop_model_copy(apop_pmf);
+    out->parameters = apop_data_alloc(0, tsize, (use_matrix ? 2: 1));
+    out->parameters->weights = gsl_vector_alloc(tsize);
+    out->data = out->parameters;
+    if (use_matrix){
+        for(size_t i=0; i < d->matrix->size1; i ++)
+            for(size_t j=0; j < d->matrix->size2; j ++)
+                if ((x = gsl_matrix_get(d->matrix, i, j))) {
+                    apop_data_set(out->parameters, ctr, 0, i);
+                    apop_data_set(out->parameters, ctr, 1, j);
+                    gsl_vector_set(out->parameters->weights, ctr++, x);
+                }
+    }
+    else if (use_vector)
+        for(size_t i=0; i < d->vector->size; i++)
+            if ((x = gsl_vector_get(d->vector, i))){
+                apop_data_set(out->parameters, ctr, 0, i);
+                gsl_vector_set(out->parameters->weights, ctr++, x);
+            }
+    if (ctr){
+        apop_vector_realloc(out->parameters->weights, ctr);
+        apop_matrix_realloc(out->parameters->matrix, ctr, (use_matrix ? 2: 1));
+    }
+    return out;
+}
+

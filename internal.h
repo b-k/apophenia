@@ -13,7 +13,7 @@
     int msize1 = d && (d)->matrix ? (d)->matrix->size1 : 0; \
     int msize2 = d && (d)->matrix ? (d)->matrix->size2 : 0; \
     int tsize = vsize + msize1*msize2; \
-    int maxsize = GSL_MAX(vsize, GSL_MAX(msize1, d->textsize[0]));\
+    int maxsize = GSL_MAX(vsize, GSL_MAX(msize1, d?d->textsize[0]:0));\
     if (tsize||wsize||firstcol||maxsize) /*prevent unused variable complaints */;
 
 // Define a static variable, and initialize on first use.

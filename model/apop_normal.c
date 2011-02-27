@@ -1,7 +1,30 @@
-/** \file apop_normal.c
+/* The Normal and Lognormal distributions.
+ Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 
-The Normal and Lognormal distributions.*/
-/* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+\amodel apop_normal The Normal (Gaussian) distribution
+
+You know it, it's your attractor in the limit, it's the Gaussian distribution.
+
+\f$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)\f$
+
+\f$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 \f$
+
+\f$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 \f$
+
+\f$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 \f$
+
+\adoc    Input_format     I use the elements of the matrix, without regard to their order. 
+\adoc    Parameter_format  
+  As is custom, the first parameter (in the vector) is the mean, the second is the standard deviation (i.e., the square root of the variance). 
+
+\adoc    Predict  Returns the expected value. The <tt>->more</tt>
+                 element holds a \ref apop_data set with the title <tt>"Covariance"</tt>, whose matrix holds the covariance of the mean. If <tt>estimated_model->data</tt> then this is going to be \f$\mu/\sqrt{n}\f$; if the model's <tt>data == NULL</tt> then cov = 0. 
+                 
+                 Format subject to change. 
+\adoc    settings   \ref apop_parts_wanted ; notably the \c want_cov element,
+which refers to the covariance matrix for the mean and variance. You can set
+that to \c 'n' if you are estimating millions of these and need to save time.
+*/
 
 #include "model.h"
 #include "mapply.h"
@@ -39,6 +62,9 @@ static double normal_log_likelihood(apop_data *d, apop_model *params){
 	return ll;
 }
 
+/*\adoc estimated_parameters Zeroth vector element is \f$\mu\f$, element 1 is \f$\sigma\f$.
+ A page is added named <tt>\<Covariance\></tt> with the 2 \f$\times\f$ 2 covariance matrix for these two parameters
+ \adoc estimated_info Reports the log likelihood.*/
 static apop_model * normal_estimate(apop_data * data, apop_model *est){
     Get_vmsizes(data)
   double		mmean=0, mvar=0, vmean=0, vvar=0;
@@ -65,7 +91,7 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
         apop_data_set(cov, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
     }
     est->data = data;
-    est->info = apop_data_alloc(1,0,0);
+    est->info = apop_data_alloc();
     apop_data_add_named_elmt(est->info, "log likelihood", normal_log_likelihood(data, est));
 	return est;
 }
@@ -113,17 +139,11 @@ apop_data * normal_predict(apop_data *dummy, apop_model *m){
     return out;
 }
 
-/** An apophenia wrapper for the GSL's Normal RNG.
+/*\adoc RNG An apophenia wrapper for the GSL's Normal RNG.
 
-Two differences: this one asks explicitly for a mean, and the GSL
-assumes zero and makes you add the mean yourself; Apophenia tends to
-prefer the variance (\f$\sigma^2\f$) wherever possible, while the GSL
-uses the standard deviation here (\f$\sigma\f$)
-
-\param r	a gsl_rng already allocated
-\param *out	To where I will write the drawn number
-\param *p   A pointer to the model.
- */
+Two differences: this one asks explicitly for a mean, and the GSL assumes zero and
+makes you add the mean yourself; Apophenia tends to prefer the variance (\f$\sigma^2\f$)
+wherever possible, while the GSL uses the standard deviation here (\f$\sigma\f$) */
 static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0];
 }
@@ -135,7 +155,18 @@ apop_model apop_normal = {"Normal distribution", 2, 0, 0, .dsize=1,
  .cdf = normal_cdf, .predict = normal_predict};
 
 
-//The Lognormal distribution
+/*\amodel apop_lognormal The Lognormal distribution
+
+The log likelihood function for the lognormal distribution:
+
+\f$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})\f$
+\f$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})\f$
+
+\adoc    Input_format     I use the all elements of the matrix and vector, without regard to their order. 
+\adoc    Parameter_format  Zeroth vector element is the mean (after logging); first is the std dev (after logging)    
+\adoc    Estimate_results  Parameters are set. Log likelihood is calculated.    
+\adoc    settings   None.    
+*/
 
 static double lnx_minus_mu_squared(double x, void *mu_in){
 	return gsl_pow_2(log(x) - *(double *)mu_in);
@@ -154,6 +185,7 @@ static double lognormal_log_likelihood(apop_data *d, apop_model *params){
 	return ll;
 }
 
+/* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters){
   apop_model 	*est = apop_model_copy(*parameters);
   double   mean    = 0,
@@ -174,6 +206,7 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *parameters)
 }
 
 
+/*\adoc CDF Yes. */
 static double lognormal_cdf(apop_data *d, apop_model *params){
   Nullcheck_m(params) Nullcheck_p(params) Nullcheck_d(d) 
   Get_vmsizes(d)  //vsize
@@ -213,7 +246,7 @@ static void lognormal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_m
 }
 */
 
-/** An Apophenia wrapper for the GSL's Normal RNG, logged.
+/* \adoc RNG An Apophenia wrapper for the GSL's Normal RNG, logged.
 
 \param r	a gsl_rng already allocated
 \param *out	To where I will write the drawn number
@@ -227,4 +260,3 @@ apop_model apop_lognormal = {"Lognormal distribution", 2, 0, 0, .dsize=1,
  .estimate = lognormal_estimate, .log_likelihood = lognormal_log_likelihood, /*.score = lognormal_dlog_likelihood,*/ 
  .constraint = beta_1_greater_than_x_constraint, .draw = lognormal_rng,
   .cdf= lognormal_cdf};
-

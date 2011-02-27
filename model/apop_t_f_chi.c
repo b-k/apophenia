@@ -217,8 +217,7 @@ Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in t
 See also \ref apop_matrix_to_positive_semidefinite, which will change the input to something PSD.
 
 This function uses the \ref designated syntax for inputs.
-
-    */
+*/
 APOP_VAR_HEAD int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi){
     gsl_matrix * apop_varad_var(m, NULL);
     apop_assert_c(m, 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite.");
@@ -448,15 +447,83 @@ static void wishart_prep(apop_data *d, apop_model *m){
      m->parameters = apop_data_alloc(1,sqrt(d->matrix->size2),sqrt(d->matrix->size2));
  }
 
+/*\amodel apop_wishart The Wishart distribution, which is currently somewhat untested. 
+
+Here's the likelihood function. \f$p\f$ is the dimension of the data and covariance
+matrix, \f$n\f$ is the degrees of freedom, \f$\mathbf{V}\f$ is the \f$p\times p\f$
+matrix of Wishart parameters, and \f${\mathbf{W}}\f$ is the \f$p\times p\f$ matrix whose
+likelihood is being evaluated.  \f$\Gamma_p(\cdot)\f$ is the \ref apop_multivariate_gamma
+"multivariate gamma function".
+
+\f$
+P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}}
+                         {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\f$
+
+See also notes in \ref tfchi.
+
+\adoc    Input_format     Each row of the input matrix is a single square matrix,
+                      flattened; use \ref apop_data_pack to convert your
+                      sequence of matrices into rows.     
+\adoc    Parameter_format  \f$N\f$ (the degrees of freedom) is the zeroth element of the vector. The matrix holds the matrix of parameters.
+\adoc    Estimate_results  Via MLE.    
+\adoc    Prep_routine   Just allocates the parameters based on the size of the input data.       
+\adoc    RNG  You can use this to generate random covariance matrices, should you need them. See example below. 
+\adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings    
+\adoc    Examples Making some random draws:
+
+\code
+gsl_matrix *rmatrix = gsl_matrix_alloc(10, 10);
+gsl_rng *r = apop_rng_alloc(8765);
+for (int i=0; i< 1e8; i++){
+    apop_draw(rmatrix->data, r, apop_wishart);
+    do_math_with_matrix(rmatrix);
+}
+\endcode */
 apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .dsize=-1, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
+
+/*\amodel apop_t_distribution The t distribution, primarily for descriptive purposes.
+
+If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.  
+
+\adoc    Input_format     Unordered list of scalars in the matrix and/or vector.     
+\adoc    Parameter_format  vector->data[0] = mu<br>
+                            vector->data[1] = sigma<br>
+                            vector->data[2] = df 
+\adoc    Estimate_results  If you do not set an \ref apop_mle_settings group beforehand, I'll just count elements and
+                          set \f$df = n-1\f$. Else, via MLE.    
+\adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings   
+*/
 
 apop_model apop_t_distribution  = {"t distribution", 3, 0, 0, .dsize=1, .estimate = apop_t_estimate, 
          .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw, .cdf=apop_t_dist_cdf,
          .constraint=apop_t_dist_constraint };
 
+/*\amodel apop_f_distribution The F distribution, for descriptive purposes.
+
+ If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.  
+
+\adoc    Input_format     Unordered list of scalars in the matrix and/or vector.     
+\adoc    Parameter_format  Zeroth and first elements of the vector are the \f$df\f$s. 
+\adoc    Estimate_results  If you do not set an \ref apop_mle_settings
+                          group beforehand, I'll just count elements and
+                          set \f$df=\f$ vector count minus one, and 
+                          \f$df2=\f$ matrix count minus one. Else, via MLE.    
+\adoc    settings   \ref apop_mle_settings    
+*/
 apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .dsize=1, .estimate = apop_fdist_estimate, 
         .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
+
+/*\amodel apop_chi_squared The \f$\chi^2\f$ distribution, for descriptive purposes.
+
+ If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.  
+
+\adoc    Input_format     Unordered list of scalars in the matrix and/or vector.     
+\adoc    Parameter_format  Zeroth element of the vector is the \f$df\f$. 
+\adoc    Estimate_results  If you do not set an \ref apop_mle_settings group beforehand, I'll just count elements and
+                          set \f$df = n-1\f$. Else, via MLE.    
+\adoc    settings   \ref apop_mle_settings    
+*/
 
 apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .dsize=1, .estimate = apop_chi_estimate,  
         .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };

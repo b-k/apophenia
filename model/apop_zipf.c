@@ -1,9 +1,22 @@
-/** \file apop_zipf.c
+/* The Zipf distribution.
 
-  The Zipf distribution.
+ Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 
-\f$Z(a)        = {1\over \zeta(a) * i^a}        \f$<br>
-*/ /* Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+\amodel apop_zipf
+Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. 
+\f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
+
+\f$lnZ(a)    = -(\log(\zeta(a)) + a \log(i))    \f$
+
+apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
+
+\adoc    Input_format    Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
+
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
+
+\adoc    Parameter_format One item at the top of the parameter set's vector.    
+\adoc    settings  \ref apop_mle_settings, \ref apop_parts_wanted_settings    
+*/
 
 #include "mapply.h"
 #include "likelihoods.h"
@@ -32,11 +45,7 @@ static double zipf_log_likelihood(apop_data *d, apop_model *m){
     return like;
 }    
 
-/** Draw from a Zipf distribution with parameter \f$ a \f$
-
-Call this fn using \ref apop_zipf.rng().
-
-Returns a ranking: If the population were Zipf distributed, you're most
+/*  \adoc RNG Returns a ranking: If the population were Zipf distributed, you're most
 likely to get the 1st most common item, so this produces a lot of ones,
 a great deal of twos, and so on.
 

@@ -1,6 +1,12 @@
-/** \file 
-        The Dirichlet distribution */
-/*Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* The Dirichlet distribution 
+Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+
+\amodel apop_dirichlet A multivariate generalization of the \ref apop_beta "Beta distribution".
+
+\adoc    Input_format      Each row of your data is a single observation.  
+\adoc    Parameter_format   The estimated parameters are in the output model's <tt>parameters->vector</tt>. The size of the model is determined by the width of your input data set, so later RNG draws, \&c will match in size.
+\adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings   
+*/
 
 #include "model.h"
 #include "mapply.h"
@@ -40,6 +46,7 @@ static double dirichlet_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-4);
 }
 
+/*\adoc    RNG  A call to \c gsl_ran_dirichlet.*/
 static void dirichlet_rng(double *out, gsl_rng *r, apop_model* eps){
     gsl_ran_dirichlet(r, eps->parameters->vector->size, eps->parameters->vector->data, out);
 }

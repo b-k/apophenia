@@ -95,7 +95,7 @@ void print_method(apop_model *in){
  \endcode
 
 I always print to the file/pipe connected to {\ref apop_opts.output_pipe}. The default is
-{\tt stdout}, but if you'd like something else, use fopen. E.g.:
+\c stdout, but if you'd like something else, use fopen. E.g.:
  \code
 apop_opts.output_pipe=fopen("outfile.txt", "w"); //or "a" to append.
 apop_model_print(the_model);

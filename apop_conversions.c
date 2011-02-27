@@ -215,9 +215,9 @@ r2.
 \param r2 The column of the data set that will indicate the columns of the output crosstab
 \param datacol The column of the data set holding the data for the cells of the crosstab
 
-\item If the query to get data to fill the table (select r1, r2, datacol from tabname) returns an empty data set, then I will return a \c NULL data set and if <tt>apop_opts.verbosity >= 1</tt> print a warning.
+\li  If the query to get data to fill the table (select r1, r2, datacol from tabname) returns an empty data set, then I will return a \c NULL data set and if <tt>apop_opts.verbosity >= 1</tt> print a warning.
 
-\item This setup presumes that there is one value for each (row, col) coordinate in the data. You may want an aggregate instead. There are two ways to do this, both of which hack the fact that this function runs a simple \c select query to generate the data. One is to specify an ad hoc table to pull from:
+\li This setup presumes that there is one value for each (row, col) coordinate in the data. You may want an aggregate instead. There are two ways to do this, both of which hack the fact that this function runs a simple \c select query to generate the data. One is to specify an ad hoc table to pull from:
 
 \code
 apop_data * out = apop_db_to_crosstab("(select row, col, count(*) ct from base_data group by row, col)", "row", "col",  "ct");
@@ -1076,8 +1076,12 @@ static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
         if ((stripped[0]=='\'' && stripped[strlen(stripped)-1]=='\'')
              || (stripped[0]=='"' && stripped[strlen(stripped)-1]=='"'))
             asprintf(&out,"%s", stripped);
-        else
-            asprintf(&out,"'%s'", stripped);
+        else {
+            if strchr(stripped, '\'')
+                asprintf(&out,"'%s'", stripped);
+            else
+                asprintf(&out,"\"%s\"", stripped);
+        }
 	} else {	    //number, maybe INF or NAN. Also, sqlite wants 0.1, not .1
 		assert(strlen (stripped)!=0);
         if (isinf(atof(stripped))==1)

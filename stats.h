@@ -153,6 +153,7 @@ apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2)
 apop_data * apop_jackknife_cov(apop_data *data, apop_model model);
 APOP_VAR_DECLARE apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, gsl_rng* rng, int iterations);
 gsl_rng *apop_rng_alloc(int seed);
+double apop_rng_GHgB3(gsl_rng * r, double* a); //in apop_asst.c
 
 #define apop_ANOVA(table, data, grouping1, grouping2) apop_anova(table, data, grouping1, grouping2)
 

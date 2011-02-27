@@ -47,13 +47,15 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
 #include "stats.h"
 static double a_mean(gsl_vector * in){ return apop_vector_mean(in); }
 
-static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
-    p->parameters         = apop_map(data, .fn_v=a_mean, .part='c');
-    apop_data *cov =  apop_data_covariance(data);
-    p->parameters->matrix =  cov->matrix;
+/*\adoc  estimated_parameters  Format as above. The <tt>\<Covariance\></tt> page gives
+the covariance matrix of the means.
+
+\adoc estimated_info   Reports <tt>log likelihood</tt>.  */ static apop_model *
+multivariate_normal_estimate(apop_data * data, apop_model *p){
+    p->parameters         = apop_map(data, .fn_v=a_mean, .part='c'); apop_data
+    *cov =  apop_data_covariance(data); p->parameters->matrix =  cov->matrix;
     apop_data_add_named_elmt(p->info, "log likelihood", apop_multinormal_ll(data, p));
-    apop_data_add_page(p->parameters, cov, "<Covariance>");
-    return p;
+    apop_data_add_page(p->parameters, cov, "<Covariance>"); return p;
 }
 
 /** The nice, easy method from Devroye, p 565 */
@@ -88,6 +90,15 @@ static void mvn_prep(apop_data *d, apop_model *m){
 double mvn_constraint(apop_data *d, apop_model *m){
     return apop_matrix_to_positive_semidefinite(m->parameters->matrix);
 }
+
+/* \amodel apop_multivariate_normal This is the multivariate generalization of the Normal distribution.
+
+\adoc    Input_format     Each row of the matrix is an observation.     
+\adoc    Parameter_format  An \c apop_data set whose vector element is the vector of
+means, and whose matrix is the covariances.
+
+\adoc    RNG  The RNG fills an input array whose length is based on the input parameters. 
+\adoc    Settings   None.    */
 
 apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1, .dsize=-2,
      .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll, 

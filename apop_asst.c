@@ -342,3 +342,17 @@ APOP_VAR_ENDHEAD
     regfree(&re);
     return found;
 }
+
+/** RNG from a Generalized Hypergeometric type B3.
+
+ Devroye uses this as the base for many of his
+ distribution-generators, including the Waring.
+*/  //Header in stats.h
+double apop_rng_GHgB3(gsl_rng * r, double* a){
+    apop_assert_s((a[0]>0) && (a[1] > 0) && (a[2] > 0), "apop_GHgB3_rng took a zero parameter; bad.");
+double		aa	= gsl_ran_gamma(r, a[0], 1),
+		b	= gsl_ran_gamma(r, a[1], 1),
+		c	= gsl_ran_gamma(r, a[2], 1);
+int		p	= gsl_ran_poisson(r, aa*b/c);
+	return p;
+}
