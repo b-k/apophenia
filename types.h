@@ -184,6 +184,156 @@ APOP_VAR_DECLARE apop_data * apop_data_get_page(const apop_data * data, const ch
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage,const char *title);
 APOP_VAR_DECLARE apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p);
 void apop_data_rm_rows(apop_data *in, int *drop);
+
+
+/* Convenience functions to convert among vectors (gsl_vector), matrices (gsl_matrix), 
+  arrays (double **), and database tables */
+
+//From vector
+gsl_vector *apop_vector_copy(const gsl_vector *in);
+double * apop_vector_to_array(const gsl_vector *in);
+APOP_VAR_DECLARE gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col);
+
+//From matrix
+gsl_matrix *apop_matrix_copy(const gsl_matrix *in);
+apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol);
+
+//From array
+APOP_VAR_DECLARE gsl_vector * apop_array_to_vector(double *in, int size);
+#define apop_line_to_vector apop_array_to_vector
+gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols);
+apop_data * apop_array_to_data(const double **in, const int rows, const int cols);
+
+//From line
+gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
+apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
+
+//From text
+APOP_VAR_DECLARE apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names, int *field_ends);
+APOP_VAR_DECLARE int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends, apop_data *field_params, char *table_params);
+
+//rank data
+apop_data *apop_data_rank_expand (apop_data *in);
+apop_data *apop_data_rank_compress (apop_data *in);
+
+//From crosstabs
+void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name, 
+						char *col_col_name, char *data_col_name);
+
+//packing data into a vector
+APOP_VAR_DECLARE gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages);
+APOP_VAR_DECLARE void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages);
+
+#define apop_vector_fill(in, ...) apop_vector_fill_base((in), (double []) {__VA_ARGS__})
+#define apop_data_fill(in, ...) apop_data_fill_base((in), (double []) {__VA_ARGS__})
+#define apop_matrix_fill(in, ...) apop_matrix_fill_base((in), (double []) {__VA_ARGS__})
+apop_data *apop_data_fill_base(apop_data *in, double []);
+gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
+gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double []);
+
+void apop_data_set_row(apop_data * row, apop_data *d, int row_number);
+
+
+    // Models and model support functions
+
+extern apop_model apop_beta;
+extern apop_model apop_bernoulli;
+extern apop_model apop_binomial;
+extern apop_model apop_chi_squared;
+extern apop_model apop_dirichlet;
+extern apop_model apop_exponential;
+extern apop_model apop_f_distribution;
+extern apop_model apop_gamma;
+extern apop_model apop_histogram;
+extern apop_model apop_improper_uniform;
+extern apop_model apop_iv;
+extern apop_model apop_kernel_density;
+extern apop_model apop_loess;
+extern apop_model apop_logit;
+extern apop_model apop_lognormal;
+extern apop_model apop_multinomial;
+extern apop_model apop_multivariate_normal;
+extern apop_model apop_normal;
+extern apop_model apop_ols;
+extern apop_model apop_pmf;
+extern apop_model apop_poisson;
+extern apop_model apop_probit;
+extern apop_model apop_t_distribution;
+extern apop_model apop_uniform;
+extern apop_model apop_waring;
+extern apop_model apop_wishart;
+extern apop_model apop_wls;
+extern apop_model apop_yule;
+extern apop_model apop_zipf;
+
+/** Alias for the \ref apop_normal distribution, qv.
+\hideinitializer */
+#define apop_gaussian apop_normal
+#define apop_OLS apop_ols
+#define apop_PMF apop_pmf
+#define apop_F_distribution apop_f_distribution
+#define apop_WLS apop_wls
+#define apop_IV apop_iv
+
+
+void apop_model_free (apop_model * free_me);
+void apop_model_print (apop_model * print_me);
+apop_model * apop_model_copy(apop_model in); //in apop_model.c
+apop_model * apop_model_clear(apop_data * data, apop_model *model);
+
+apop_model * apop_estimate(apop_data *d, apop_model m);
+void apop_score(apop_data *d, gsl_vector *out, apop_model *m);
+double apop_log_likelihood(apop_data *d, apop_model *m);
+double apop_p(apop_data *d, apop_model *m);
+double apop_cdf(apop_data *d, apop_model *m);
+void apop_draw(double *out, gsl_rng *r, apop_model *m);
+void apop_prep(apop_data *d, apop_model *m);
+apop_model *apop_parameter_model(apop_data *d, apop_model *m);
+apop_data * apop_predict(apop_data *d, apop_model *m);
+
+apop_model *apop_beta_from_mean_var(double m, double v); //in apop_beta.c
+
+#define apop_model_set_parameters(in, ...) apop_model_set_parameters_base((in), (double []) {__VA_ARGS__})
+apop_model *apop_model_set_parameters_base(apop_model in, double ap[]);
+
+
+        // Map and apply
+#include <pthread.h>
+
+    //The variadic versions, with lots of options to input extra parameters to the
+    //function being mapped/applied
+APOP_VAR_DECLARE apop_data * apop_map(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*), double (*fn_r)(apop_data *), double (*fn_dp)(double! void *), double (*fn_vp)(gsl_vector*! void *), double (*fn_rp)(apop_data *! void *), double (*fn_dpi)(double! void *! int), double (*fn_vpi)(gsl_vector*! void *! int), double (*fn_rpi)(apop_data*! void *! int), double (*fn_di)(double! int), double (*fn_vi)(gsl_vector*! int), double (*fn_ri)(apop_data*! int), void *param, int inplace, char part, int all_pages);
+APOP_VAR_DECLARE double apop_map_sum(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*), double (*fn_r)(apop_data *), double (*fn_dp)(double! void *), double (*fn_vp)(gsl_vector*! void *), double (*fn_rp)(apop_data *! void *), double (*fn_dpi)(double! void *! int), double (*fn_vpi)(gsl_vector*! void *! int), double (*fn_rpi)(apop_data*! void *! int), double (*fn_di)(double! int), double (*fn_vi)(gsl_vector*! int), double (*fn_ri)(apop_data*! int), void *param, char part, int all_pages);
+
+    //the specific-to-a-type versions, quicker and easier when appropriate.
+gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*));
+gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double));
+void apop_matrix_apply(gsl_matrix *m, void (*fn)(gsl_vector*));
+void apop_vector_apply(gsl_vector *v, void (*fn)(double*));
+gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double));
+void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *));
+
+double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double));
+double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*));
+double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double));
+
+
+        // Some output routines
+
+APOP_VAR_DECLARE void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char * output_file, FILE *output_pipe, char output_type, char output_append);
+APOP_VAR_DECLARE void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *output_file, FILE *output_pipe, char output_type, char output_append);
+APOP_VAR_DECLARE  void apop_plot_lattice(const apop_data *d, char *output_file, FILE *output_pipe, char output_type, char output_append);
+APOP_VAR_DECLARE void apop_plot_qq(gsl_vector *v, apop_model *m, char *output_file, FILE *output_pipe, char output_type, char output_append, size_t bins, gsl_rng *r);
+APOP_VAR_DECLARE void apop_plot_triangle(apop_data *in, char *output_file, FILE *output_pipe, char output_type, char output_append);
+
+APOP_VAR_DECLARE void apop_matrix_print(const gsl_matrix *data, char *output_file, FILE *output_pipe, char output_type, char output_append);
+APOP_VAR_DECLARE void apop_vector_print(gsl_vector *data, char *output_file, FILE *output_pipe, char output_type, char output_append);
+APOP_VAR_DECLARE void apop_data_print(const apop_data *data, char *output_file, FILE *output_pipe, char output_type, char output_append);
+
+void apop_matrix_show(const gsl_matrix *data);
+void apop_vector_show(const gsl_vector *data);
+void apop_data_show(const apop_data *data);
+
 #ifdef	__cplusplus
 }
 #endif

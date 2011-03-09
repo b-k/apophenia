@@ -2,12 +2,8 @@
 
 /*Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "db.h"
-#include "output.h"
-#include "conversions.h"
-#include "linear_algebra.h"
+#include "apop_internal.h"
 #include <unistd.h>
-
 
 int main(int argc, char **argv){
 char		c, 

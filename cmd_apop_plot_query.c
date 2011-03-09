@@ -2,11 +2,7 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "db.h"
-#include "model.h"
-#include "output.h"
-#include "conversions.h"
-#include "linear_algebra.h"
+#include "apop_internal.h"
 #include <unistd.h>
 
 char *plot_type = NULL;

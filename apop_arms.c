@@ -4,8 +4,7 @@
 /** (C) Wally Gilks; see documentation below for details.
   Adaptations for Apophenia (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "arms.h"
-#include "internal.h"
+#include "apop_internal.h"
 
 #define XEPS  0.00001            /* critical relative x-value difference */
 #define YEPS  0.1                /* critical y-value difference */

@@ -1,9 +1,8 @@
 /** \file apop_conversions.c	The various functions to convert from one format to another. */
 /* Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-#include "stats.h"
-#include "internal.h"
-#include "conversions.h"
+#include "apop_internal.h"
 #include <gsl/gsl_math.h> //GSL_NAN
+#include <regex.h>
 #include <assert.h>
 #include <sqlite3.h>
 
@@ -24,8 +23,6 @@ void xprintf(char **q, char *format, ...){
 }
 
 #define XN(in) ((in) ? (in) : "")
-
-
 
 
 /** \defgroup conversions Conversion functions
@@ -91,7 +88,7 @@ APOP_VAR_ENDHEAD
         (row_col == 'r' || row_col == 'R') 
            ? gsl_matrix_alloc(1, in->size)
            : gsl_matrix_alloc(in->size, 1);
-    apop_assert(out, "gsl_matrix_alloc failed; probably out of memory.");
+    Apop_assert(out, "gsl_matrix_alloc failed; probably out of memory.");
     if (row_col == 'r' || row_col == 'R') 
         gsl_matrix_set_row(out, 0, in);
     else
@@ -119,7 +116,7 @@ If you want to initialize on the allocation line, this isn't what you want. See 
 \ingroup conversions
 */
 gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols){
-  double		    *line;
+    double *line;
     gsl_matrix  *out = gsl_matrix_alloc(rows, cols);
 	convert_array_to_line(in, &line, rows, cols);
     gsl_matrix_view   m = gsl_matrix_view_array(line, rows,cols);
@@ -185,12 +182,7 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
     if ((rows==0 || cols==0) && vsize>0)
       return apop_vector_to_data(apop_array_to_vector(in, vsize));
     Apop_assert_c(vsize==rows,  NULL, 0,"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
-  int ctr = 0;
-  apop_data *out  = apop_data_alloc(vsize, rows, cols);
-    for (size_t i=0; i< rows; i++)
-        for (int j=-1; j< cols; j++)
-            apop_data_set(out, i, j, in[ctr++]);
-    return out;
+  return apop_data_fill_base(apop_data_alloc(vsize, rows, cols), in);
 }
 
 static int find_cat_index(char **d, char * r, int start_from, int size){
@@ -312,27 +304,24 @@ Then we could write this as:
 0  6  4  2
 \endcode
 because there are six 1s observed, four 2s observed, and two 3s observed. We call this
-rank format, because 1 (or zero) is typically the most common, 2 is second most common, et
-cetera.
+rank format, because 1 (or zero) is typically the most common, 2 is second most common, et cetera.
 
-This function takes in a list of observations, and aggregates them into a single row of
-in rank format.
+This function takes in a list of observations, and aggregates them into a single row in rank format.
 
 \li For the complement, see \ref apop_data_rank_expand.
 
 \include test_ranks.c
 */
 apop_data *apop_data_rank_compress (apop_data *in){
+    Get_vmsizes(in);
     int upper_bound = GSL_MAX(in->matrix ? gsl_matrix_max(in->matrix) : 0, 
                               in->vector ? gsl_vector_max(in->vector) : 0);
     apop_data *out = apop_data_calloc(1, upper_bound+1);
-    if (in->matrix)
-        for (int i=0; i< in->matrix->size1; i++)
-            for (int j=0; j< in->matrix->size2; j++)
-                apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, j));
-    if (in->vector)
-        for (int i=0; i< in->vector->size; i++)
-            apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, -1));
+    for (int i=0; i< msize1; i++)
+        for (int j=0; j< msize2; j++)
+            apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, j));
+    for (int i=0; i< vsize; i++)
+        apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, -1));
     return out;
 }
 
@@ -414,14 +403,13 @@ Much of the magic below is due to the following regular expression, which breaks
 
 Without backslashes and spaced out in Perl's /x style, it would look like this:
 [[:space:]]*    all the spaces you can eat.
-("([^"]|[\]")+" (starts with a ", has no "" in between (may have a \"), ends with a "., at least one char.
+("([^"]|[\]")+" (starts with a ", has no "" in between (may have a \"), ends with a ".; may be zero chars long, because people sometimes use that to indicate missing data.
 |               or
-[^%s"]+)        anything but a "" or the user-specified delimiters. At least 1 char long.)
+[^%s"]+)        anything but a "" or the user-specified delimiters. May be 0 chars long.
 [[:space:]]*    has all the spaces you can eat,
 [%s\n]          and ends with a delimiter or the end of line.
 */
-static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")+\"|[^\"%s]*)[[:space:]]*[%s\n]";
-//static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")+\"|[^\"%s]+)[[:space:]]*[%s\n]";
+static const char      divider[]="[[:space:]]*(\"([^\"]|[\\]\")*\"|[^\"%s]*)[[:space:]]*[%s\n]";
 
 //in: the line being read, the allocated outstring, the result from the regexp search, the offset
 //out: the outstring is filled with a bit of match, last_match is updated.
@@ -485,7 +473,7 @@ static char* read_a_line(FILE *infile, char *filename){
 
 If you are reading into an array or <tt>gsl_matrix</tt> or \ref apop_data set, all text fields are taken as zeros. You will be warned of such substitutions unless you set \code apop_opts.verbose==0\endcode beforehand.
 
-You will also be interested in \c apop_opts.input_delimiters. By default, it is set to "| ,\t", meaning that a pipe, comma, space, or tab will delimit separate entries. Try \code strcpy(apop_opts.input_delimiters, ";")\endcode to set the delimiter to a semicolon, for example.
+You will also be interested in \c apop_opts.input_delimiters. By default, it is set to "| ,\t", meaning that a pipe, space, comma, or tab will delimit separate entries. Try <tt>strcpy(apop_opts.input_delimiters, ";")</tt> to set the delimiter to a semicolon, for example.
 
 There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, Apophenia checks whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then an NAN is inserted.
 
@@ -511,7 +499,7 @@ strcpy(apop_opts.db_nan, "(NaN|\\.\\.)");
 SQLite stores these NaN-type values internally as \c NULL; that means that functions like
 \ref apop_query_to_data will convert both your db_nan regex and \c NULL to an \c NaN value.
 
-The system also uses the standards for C's atof() function for
+The system also uses the standards for C's \c atof() function for
 floating-point numbers: INFINITY, -INFINITY, and NaN work as expected.
 I use some tricks to get SQLite to accept these values, but they work.
 
@@ -835,15 +823,6 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-/* This function might give users a way to look up the location of an element in a packed
-   list. It seemes theoretically useful, but am not yet convinced. So, here's a
-   placeholder.
-APOP_VAR_HEAD apop_data_pack_order(apop_data *ref, size_t row, size_t col, char *page){
-
-APOP_VAR_ENDHEAD
-
-} */
-
 /** \def apop_data_fill (in, ap)
 Fill a pre-allocated data set with values.
 
@@ -863,6 +842,20 @@ int main(){
 
 Warning: I need as many arguments as the size of the data set, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
 
+Underlying this function is a base function that takes a single list, as opposed to a set of unassociated numbers as above:
+
+\code
+#include <apop.h>
+
+int main(){
+  apop_data *a =apop_data_alloc(2,2,2);
+  double    eight   = 8.0;
+  double list[] = {8, 2.2, eight/2, 
+                   0, 6.0, eight};
+    apop_data_fill_base(a, list);
+    apop_data_show(a);
+}
+\endcode
 
 \param in   An \c apop_data set (that you have already allocated).
 \param ...  A series of at least as many floating-point values as there are blanks in the data set.
@@ -875,6 +868,8 @@ there is no leak or loss to a form like this example, which generates a unit vec
 \code
 apop_data *unit_vector = apop_data_fill(apop_data_alloc(3), 1, 1, 1);
 \endcode
+
+\see apop_line_to_data
 */
 
 apop_data *apop_data_fill_base(apop_data *in, double ap[]){
@@ -932,12 +927,9 @@ The values should be in row-major order (i.e., list the entire first row, follow
 \return     A pointer to the same matrix that was input.
 */
 gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
-    if (!in) 
-        return NULL;
-  int       k = 0;
-    for (int i=0; i< in->size1; i++)
-        for (int j=0; j< in->size2; j++)
-            gsl_matrix_set(in, i, j, ap[k++]);
+    if (!in) return NULL;
+    gsl_matrix_view	m = gsl_matrix_view_array(ap, in->size1, in->size2);
+	gsl_matrix_memcpy(in,&(m.matrix));
     return in;
 }
 
@@ -1077,7 +1069,7 @@ static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
              || (stripped[0]=='"' && stripped[strlen(stripped)-1]=='"'))
             asprintf(&out,"%s", stripped);
         else {
-            if strchr(stripped, '\'')
+            if (strchr(stripped, '\''))
                 asprintf(&out,"'%s'", stripped);
             else
                 asprintf(&out,"\"%s\"", stripped);
@@ -1109,7 +1101,7 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
   regmatch_t  result[2];
     sprintf(q, "INSERT INTO %s VALUES (", tabname);
     char outstr[length_of_string+1];
-    while (last_match < length_of_string 
+    while (last_match < length_of_string -1
             && last_end < length_of_string-1
             && !regexec(regex, instr+last_match, 2, result, 0)){
         prev_end = last_end;
@@ -1120,16 +1112,11 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
             if (sqlite3_bind_text(p_stmt, field++, prepped,-1, SQLITE_TRANSIENT))
                 printf("Something wrong on line %i, field %i.\n", row, field-1);
         } else {
-            if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r'))){
+            if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r')))
                 xprintf(&q, "%s%c %s", q, comma,  prepped);
-                comma = ',';
-            } else {
-                char d = instr[last_match-1];
-                if (d!='\t' && d!='\r' && d!='\n' && d!=' '){
-                    xprintf(&q, "%s%cNULL", q, comma);
-                    comma = ',';
-                }
-            }
+            else
+                xprintf(&q, "%s%cNULL", q, comma);
+            comma = ',';
         }
         free(prepped);
     }

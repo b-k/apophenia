@@ -1,7 +1,10 @@
-/** \file variadic.h
- A means of providing more script-like means of sending arguments to a text file.
+/* A means of providing more script-like means of sending arguments to a function.
 
-    Copyright (c) 2009 Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+These macros are intended as internal, so this file is not #included from apop.h,
+which is what the user is iexpected to use. See the documentation if you're interested
+in using this mechanism in out-of-Apophenia work.
+
+Copyright (c) 2009 Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 */
 
 #define apop_varad_head(type, name) type variadic_##name(variadic_type_##name varad_in)

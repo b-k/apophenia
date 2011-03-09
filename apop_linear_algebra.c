@@ -16,9 +16,7 @@ See also the printing functions, \ref apop_print, and the
 /** \defgroup convenience_fns 	Things to make life easier with the GSL
  */
 
-#include "stats.h"
-#include "internal.h"
-#include "conversions.h" //apop_matrix_copy
+#include "apop_internal.h"
 
 /**
 Calculate the determinant of a matrix, its inverse, or both, via LU decomposition. The \c in matrix is not destroyed in the process.

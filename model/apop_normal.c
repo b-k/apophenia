@@ -25,11 +25,7 @@ See also the \ref apop_multivariate_normal.
                  matrix holds the covariance of the mean.
 */
 
-#include "model.h"
-#include "mapply.h"
-#include "settings.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double positive_sigma_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2

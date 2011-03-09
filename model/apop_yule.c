@@ -20,10 +20,7 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 \adoc    Parameter_format  One element at the top of the parameter set's vector.
 \adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
 
-#include "types.h"
-#include "mapply.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double yule_constraint(apop_data *returned_beta, apop_model *m){
   Nullcheck_mp(m);

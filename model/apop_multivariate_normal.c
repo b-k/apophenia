@@ -10,11 +10,7 @@
 If you had only one dimension, the mean would be a vector of size one, and the covariance matrix a \f$1\times 1\f$ matrix. This differs from the setup for \ref apop_normal, which outputs a single vector with \f$\mu\f$ in element zero and \f$\sigma\f$ in element one.
 \adoc    Settings   None.    */
  
-#include "asst.h"
-#include "model.h"
-#include "stats.h"
-#include "internal.h"
-#include "conversions.h"
+#include "apop_internal.h"
 
 static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
   gsl_vector *  sigma_dot_x = gsl_vector_calloc(x->size);
@@ -52,8 +48,6 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
     return ll;
 }
 
-#include "mapply.h"
-#include "stats.h"
 static double a_mean(gsl_vector * in){ return apop_vector_mean(in); }
 
 /*\adoc  estimated_parameters  Format as above. The <tt>\<Covariance\></tt> page gives

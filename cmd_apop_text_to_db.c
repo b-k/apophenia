@@ -2,8 +2,7 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "db.h"
-#include "conversions.h"
+#include "apop_internal.h"
 #include <unistd.h>
 
 int *break_down(char *in){

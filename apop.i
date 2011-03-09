@@ -67,17 +67,10 @@ That said, here is the current table of contents:
 #include "types.h"
 #include "db.h"
 #include "asst.h"
-#include "model.h"
 #include "stats.h"
-#include "output.h"
-#include "mapply.h"
 #include "variadic.h"
 #include "settings.h"
-#include "arms.h"
 #include "deprecated.h"
-#include "conversions.h"
-#include "likelihoods.h"
-#include "linear_algebra.h"
 
 //Part of the intent of a convenience header like this is that you
 //don't have to remember what else you're including. So here are 
@@ -193,17 +186,10 @@ def apop_pylist_to_data(inlist):
 %include "types.h"
 %include "db.h"
 %include "asst.h"
-%include "model.h"
 %include "stats.h"
-%include "output.h"
-%include "mapply.h"
 %include "variadic.h"
 %include "settings.h"
-%include "arms.h"
 %include "deprecated.h"
-%include "conversions.h"
-%include "likelihoods.h"
-%include "linear_algebra.h"
 
 /* Variadics: */
 int apop_db_close(char vacuum='q');

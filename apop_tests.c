@@ -3,11 +3,7 @@
  
 At the moment, the header for  apop_test_anova is in \c asst.h.
  */
-#include "asst.h"
-#include "types.h"
-#include "stats.h"
-#include "internal.h"
-#include "conversions.h"
+#include "apop_internal.h"
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
   apop_data *out    = apop_data_alloc(0,7,1);

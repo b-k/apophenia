@@ -3,12 +3,7 @@
 /* Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 //The reader will find a few function headers for this file in asst.h
-#include "asst.h"
-#include "output.h"
-#include "internal.h"
-#include "settings.h"
-#include "conversions.h"
-#include "model.h"
+#include "apop_internal.h"
 #include <gsl/gsl_histogram.h>
 
 /** \defgroup output		Printing to the screen or a text file

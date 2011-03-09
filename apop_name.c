@@ -1,8 +1,7 @@
 /** \file apop_name.c */
 /* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "db.h" //just for apop_opts.verbose.
-#include "types.h"
+#include "apop_internal.h"
 #include <stdio.h>
 #include <regex.h>
 

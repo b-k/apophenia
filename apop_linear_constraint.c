@@ -3,9 +3,7 @@
 
 Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
 */
-#include "types.h"
-#include "variadic.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double magnitude(gsl_vector *v){
  double out;

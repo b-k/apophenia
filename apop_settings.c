@@ -1,8 +1,7 @@
 /** \file 
          Specifying model characteristics and details of estimation methods. */
 /* Copyright (c) 2008--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-#include "types.h"
-#include "settings.h"
+#include "apop_internal.h"
 
 static size_t get_settings_ct(apop_model *model){
   int ct =0;

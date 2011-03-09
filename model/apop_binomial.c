@@ -29,11 +29,7 @@ And now the parameter vector is a proper list of probabilities.
 \adoc    RNG I fill an array of length \c n, with a sequence of randomly drawn ones and zeros. 
 */
 
-#include "model.h"
-#include "mapply.h"
-#include "output.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double is_over_zero(double in){return in > 0;}
 

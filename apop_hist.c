@@ -5,12 +5,7 @@ Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU 
  (Except psmirnov2x, Copyright R Project, but also licensed under the GPL.)
 */
 
-#include "db.h"     //just for apop_opts
-#include "asst.h" //rng_alloc
-#include "stats.h"
-#include "model.h"
-#include "internal.h"
-#include "settings.h"
+#include "apop_internal.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 

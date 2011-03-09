@@ -11,10 +11,7 @@ may also find \ref apop_beta_from_mean_var to be useful.
 \adoc    RNG  Produces a scalar \f$\in[0,1]\f$. 
 \adoc    settings None.  */
 
-#include "model.h"
-#include "mapply.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double beta_log_likelihood(apop_data *d, apop_model *p);
 

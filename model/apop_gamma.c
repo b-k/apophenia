@@ -19,10 +19,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
 \adoc    settings    MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings  
   */
 
-#include "types.h"
-#include "mapply.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double gamma_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2

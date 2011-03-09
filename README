@@ -1,52 +1,52 @@
-This is the sample code and data for the book _Modeling with Data_.
+This is a library of statistical functions and models in C, plus some command-line
+utilities that make use of those functions.
 
-It is not organized into chapters or subjects, because I expect that you
-have a paper or electronic copy of the book on hand. The index
-has a sample code section, for example.
+The directory you are in right now, however, is the development side---backstage,
+so to speak. Although the files here are the ones you'd modify if you wanted to hack
+the package, they won't compile until you send them through one of the various build
+processes. This readme lists the options you currently have. The makefile is named
+pkg_make, and here are some key targets:
 
-Also, the code here was included in the text of the book verbatim. I
-considered mechanishms for having sections of the code that do not appear
-in the text, but decided that it introduced more chance for error than
-it was worth.
+make -f pkg_make auto
+    --Copy everything into a temp directory, so GNU autotools can make a mess.
+    --run a few sed scripts to turn some notes in the C code into proper ISO C.
+    --generate apop_internal.h, which is a variant of <apop.h> that will work even 
+      though Apophenia isn't installed yet.
+    --Make some minor fixes, like update version numbers and overwrite this
+    readme to you with readme.user.
+    --Run GNU autotools, which will produce the familiar configure script.
+At the end of this, dists/apophenia-(version)-(date).tgz is what the end-user would
+download. It is basically a gzipped version of the directory you will find in dists/.
 
-This means that I cheated a bit on style here and there for the sake of
-saving paper. Most notably, because the book documents these programs
-very well, there are almost no comments in the source code presented here.
-This is terrible form for any code that does not have a book attached.
-Nor are there nearly the number of error-checks that one would normally
-include.
+make -f pkg_make auto-install
+    --run the above
+    --make
+    --sudo make install
 
-All told, writing the examples was a pretty fun exercise. One page of
-the book can hold about 35 lines of code comfortably, and can be pushed
-to 42. Even I was pleasantly surprised by how much 40 lines of C code
-can do. The Game of Life (life.c), the animated model of firm growth
-(normalgrowth.c), the SVD and graphing of state-level data (eigenbox.c +
-eigeneasy.c) are all very nontrivial processes, that are easily
-expressed in under a single page of C code. 
+make -f pkg_make rpm
+    --run the autotools build
+    --use rpmbuild to generate an RPM packge
 
--------------
-All code (C) 2007, 2008 Ben Klemens.
-However, permission is granted to cut/paste, modify, and include this code
-in your own research. If you do use the code, please cite the book. For
-your convenience, here's the entry for a Bibtex/EndNote database:
+make -f pkg_make deb
+    --make an RPM as above
+    --use alien to generate a .deb package
 
-@book{klemens:modeling,
-author={Ben Klemens},
-title={Modeling with Data},
-year={2008},
-publisher={Princeton University Press}
-}
+make -f pkg_make deb-install
+    --generate a .deb pkg as above
+    --sudo dpkg -i (that pkg)
 
-------------
-All of the data sets are from actual data gathering projects; none is
-made up.
+Each of these procedures deposits a package of some sort (tgz,rpm,deb) in the dists/
+directory, and you've got the configured and ready-to-rebuild source in a directory there
+as well. 
 
-In the USA, raw data can not be copyrighted, but see the end of the book's
-introduction for sources. Note also that almost all of the data sets
-here are abridged. They are thus good data sets for homework exercises,
-but are missing much additional data and important caveats.
+The Apophenia end-distribution attempts to be standards-compliant, but the package-making
+is a little looser. E.g., it uses sed -i, which is common but not POSIX-standard. You
+absolutely need GNU autotools, and if you want to make an RPM then you of course need
+rpmbuild, et cetera.
 
-In short, have fun with the data, but don't expect to get
-publication-quality results without contacting the original author of
-the data set.
+Thanks for your interest. I do hope that Apophenia helps you learn more from your data.
 
+--BK
+
+PS: Lawyers, please note that COPYING and COPYING2 files can be found in
+the install/ directory.

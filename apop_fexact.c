@@ -17,10 +17,9 @@ Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 
 /* <UTF8> chars are handled as whole strings */
 
-#include "types.h"
+#include "apop_internal.h"
 #include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
-#include "asst.h" //Apop_assert
 
 /* These are the R-specific items. */
 typedef enum { FALSE = 0, TRUE /*, MAYBE */ } Rboolean;

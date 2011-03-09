@@ -2,10 +2,7 @@
   The \c apop_update function.  The header is in asst.h. */ 
 /* Copyright (c) 2006--2009 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "model.h"
-#include "internal.h"
-#include "settings.h"
-#include "conversions.h"
+#include "apop_internal.h"
 
 Apop_settings_init(apop_update,
    Apop_varad_set(periods, 6e3);

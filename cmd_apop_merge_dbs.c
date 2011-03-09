@@ -3,7 +3,7 @@
 
 /* Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "db.h"
+#include "apop_internal.h"
 #include <unistd.h>
 
 int main(int argc, char **argv){

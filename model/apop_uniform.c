@@ -1,9 +1,7 @@
 /* apop_uniform.c 
  Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "model.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 /* \amodel apop_uniform  This is the two-parameter version of the Uniform,
 expressing a uniform distribution over [a, b].

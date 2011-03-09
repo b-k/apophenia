@@ -18,10 +18,8 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 \adoc    settings  \ref apop_mle_settings, \ref apop_parts_wanted_settings    
 */
 
-#include "mapply.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 #include <gsl/gsl_sf_zeta.h>
-#include "internal.h"
 
 static double zipf_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1

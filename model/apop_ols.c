@@ -47,12 +47,7 @@ int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols));
 \endcode
 */
 
-#include "model.h"
-#include "conversions.h"
-#include "internal.h"
-#include "settings.h"
-#include "stats.h"
-#include "asst.h"
+#include "apop_internal.h"
 
 Apop_settings_copy(apop_lm,
     out->instruments = apop_data_copy(in->instruments);
@@ -381,7 +376,6 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
         return out;
 }
 
-#include "output.h"
 void ols_print(apop_model *m){
     FILE *ap = apop_opts.output_pipe;
     fprintf(ap, "Parameters:\n");

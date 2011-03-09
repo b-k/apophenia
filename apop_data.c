@@ -2,13 +2,7 @@
 The apop_data structure joins together a gsl_matrix, apop_name, and a table of strings. */
 /* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "types.h"
-#include "output.h"
-#include "internal.h"
-#include "variadic.h"
-#include "conversions.h"
-#include "linear_algebra.h"
-
+#include "apop_internal.h"
 
 /** Allocate a \ref apop_data structure, to be filled with data.
  

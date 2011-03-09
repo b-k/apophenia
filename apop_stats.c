@@ -1,13 +1,7 @@
 /** \file apop_stats.c	Basic moments and some distributions. */
 /* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "db.h"     //just for apop_opts
-#include "asst.h" //rng_alloc
-#include "stats.h"
-#include "model.h"
-#include "mapply.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_eigen.h>
 

@@ -1,7 +1,5 @@
 //#define __USE_POSIX //for strtok_r
-#include "asst.h"
-#include "stats.h"
-#include "output.h"
+#include "apop_internal.h"
 #include <gsl/gsl_sort_vector.h>
 
 /* This is the internal documentation for apop_rake(). I assume you've read the usage

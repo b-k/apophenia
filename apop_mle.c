@@ -7,13 +7,15 @@ It has (more-or-less) a single public function: \ref apop_maximum_likelihood, an
 At the bottom are the maximum likelihood procedures themselves. There are four: Newton-type derivative methods, the no-derivative version, the with-derivative version, and the simulated annealing routine.*/
 
 /*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-#include "model.h"
-#include "mapply.h"
-#include "output.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 #include <setjmp.h>
 #include <signal.h>
+#include <gsl/gsl_cdf.h>
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_siman.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_multimin.h>
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_multiroots.h>
 

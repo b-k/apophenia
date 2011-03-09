@@ -8,12 +8,7 @@
  See also the goodness of fit tests in \ref histograms.
  */
 
-#include "asst.h"
-#include "output.h"
-#include "model.h"
-#include "internal.h"
-#include "settings.h"
-#include "conversions.h"
+#include "apop_internal.h"
 #include <search.h> //lsearch; bsearch is in stdlib.
 
 /** For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.

@@ -9,10 +9,7 @@
 \adoc    Parameter_format  One parameter, the zeroth element of the vector.    
 \adoc    settings   \ref apop_parts_wanted_settings, for the \c .want_cov element.  */
 
-#include "model.h"
-#include "mapply.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double apply_me(double x, void *in){
   double    *ln_l = in;

@@ -10,10 +10,7 @@ Copyright (c) 2007--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 \adoc    Parameter_format A vector of length one */
 
-#include "model.h"
-#include "mapply.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double bernie_ll(double x, void * pin){ 
     double *p = pin; 

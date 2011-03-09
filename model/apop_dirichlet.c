@@ -8,10 +8,7 @@ Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 \adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings   
 */
 
-#include "model.h"
-#include "mapply.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double dirichletlnmap(gsl_vector *v, void *pin) {
     gsl_vector *params = pin;

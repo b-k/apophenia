@@ -59,11 +59,7 @@ weights, then draws are equiprobable. This will be difficult to debug.
 \adoc    Settings   None.    
 */
 
-#include "asst.h"
-#include "model.h"
-#include "output.h"
-#include "internal.h"
-#include "conversions.h"
+#include "apop_internal.h"
 
 /* \adoc    estimated_data  The data you sent in is linked to (not copied).
 \adoc    estimated_parameters  Still \c NULL.    */

@@ -33,10 +33,7 @@ libapophenia_la_SOURCES = \
             model/apop_yule.c 	 		\
             model/apop_zipf.c 
 
-pkginclude_HEADERS = 	conversions.h db.h likelihoods.h 	\
-				arms.h mapply.h stats.h types.h		 		\
-				output.h model.h asst.h settings.h  		\
-				variadic.h linear_algebra.h deprecated.h
+pkginclude_HEADERS = db.h stats.h types.h asst.h settings.h deprecated.h variadic.h 
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc
@@ -83,7 +80,7 @@ EXTRA_DIST = apophenia.pc doc/doxyconfig doc/triangle.png doc/right.png doc/down
 		tests/Makefile tests/test.py tests/Readme tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/test_data_mixed tests/test_data tests/test_data2 \
 		tests/data-mixed tests/test_data_nans tests/wampler1.dat tests/printing_sample eg/* \
-		apop_db_mysql.c apop_db_sqlite.c apop.h apop.i internal.h COPYING2
+		apop_db_mysql.c apop_db_sqlite.c apop.h apop.i apop_internal.h internal.h COPYING2
 
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 

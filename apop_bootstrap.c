@@ -2,10 +2,7 @@
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "model.h"
-#include "variadic.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 /** Initialize a \c gsl_rng.
  
@@ -16,12 +13,12 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 \ingroup convenience_fns
 */
 gsl_rng *apop_rng_alloc(int seed){
-  static int first_use    = 1;
+    static int first_use    = 1;
     if (first_use){
        first_use = 0;
        gsl_rng_env_setup();
     }
-  gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus2);
+    gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus2);
     gsl_rng_set(setme, seed);
     return setme;
 }
@@ -43,22 +40,22 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 \param model    An \ref apop_model, that will be used internally by \ref apop_estimate.
             
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
-\see{apop_bootstrap_cov}
+\see apop_bootstrap_cov
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
     Nullcheck_d(in)
-  apop_model   *e               = apop_model_copy(model);
-  int           i, n            = in->matrix->size1;
-  apop_data     *subset         = apop_data_alloc(in->vector ? in->vector->size -1 : 0, n - 1, in->matrix->size2);
-  apop_data     *array_of_boots = NULL;
-  apop_model *overall_est       = e->parameters ? e : apop_estimate(in, *e);//if not estimated, do so
-  gsl_vector *overall_params    = apop_data_pack(overall_est->parameters);
+    apop_model   *e               = apop_model_copy(model);
+    int           i, n            = in->matrix->size1;
+    apop_data     *subset         = apop_data_alloc(in->vector ? in->vector->size -1 : 0, n - 1, in->matrix->size2);
+    apop_data     *array_of_boots = NULL;
+    apop_model *overall_est       = e->parameters ? e : apop_estimate(in, *e);//if not estimated, do so
+    gsl_vector *overall_params    = apop_data_pack(overall_est->parameters);
     gsl_vector_scale(overall_params, n); //do it just once.
-  int           paramct         = overall_params->size;
-  gsl_vector    *pseudoval      = gsl_vector_alloc(paramct);
+    int           paramct         = overall_params->size;
+    gsl_vector    *pseudoval      = gsl_vector_alloc(paramct);
 
-//Allocate a matrix, get a reduced view of the original, and copy.
-  gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, n-1, in->matrix->size2).matrix;
+        //Allocate a matrix, get a reduced view of the original, and copy.
+    gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, n-1, in->matrix->size2).matrix;
     gsl_matrix_memcpy(subset->matrix, &mv);
     if (in->vector){
         gsl_vector v = gsl_vector_subvector(in->vector, 1, n-1).vector;
@@ -105,7 +102,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
 This function uses the \ref designated syntax for inputs.
-\see{apop_jackknife_cov}
+\see apop_jackknife_cov
  */
 APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *rng, int iterations) {
     static gsl_rng *spare = NULL;
@@ -119,11 +116,11 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
     if (!rng)  rng = spare;
 APOP_VAR_END_HEAD
     Get_vmsizes(data); //vsize, msize1, msize2
-  apop_model        *e              = apop_model_copy(model);
-  size_t	        i, j, row;
-  apop_data     *subset         = apop_data_alloc(vsize, msize1, msize2);
-  apop_data         *array_of_boots = NULL,
-                    *summary;
+    apop_model *e         = apop_model_copy(model);
+    size_t	   i, j, row;
+    apop_data  *subset    = apop_data_alloc(vsize, msize1, msize2);
+    apop_data  *array_of_boots = NULL,
+               *summary;
     //prevent and infinite regression of covariance calculation.
     Apop_model_add_group(e, apop_parts_wanted); //default wants for nothing.
 
@@ -140,7 +137,7 @@ APOP_VAR_END_HEAD
 		apop_model *est = apop_estimate(subset, *e);
         gsl_vector *estp = apop_data_pack(est->parameters);
         if (i==0){
-            array_of_boots	        = apop_data_alloc(0,iterations, estp->size);
+            array_of_boots	        = apop_data_alloc(iterations, estp->size);
             array_of_boots->names   = apop_name_copy(data->names);
         }
         gsl_matrix_set_row(array_of_boots->matrix, i, estp);

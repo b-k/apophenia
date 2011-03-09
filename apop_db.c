@@ -2,11 +2,8 @@
 features like a variance, skew, and kurtosis aggregator for SQL. */
 /* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "db.h"
-#include "stats.h"	    //t_dist
-#include "conversions.h"	//apop_strip_dots
-#include "variadic.h"
-#include "config.h"
+#include "apop_internal.h"
+#include <regex.h>
 
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= 

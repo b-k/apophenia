@@ -1,11 +1,10 @@
 /** \file apop_asst.c  The odds and ends bin. 
 Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "asst.h"
-#include "types.h"
-#include "model.h"
+#include "apop_internal.h"
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
+#include <regex.h>
 
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
 
@@ -19,11 +18,11 @@ Each row in the saved-results structure is an \f$s\f$, and each column is \f$1\d
 
 When reading the code, remember that the zeroth element holds the value for N=1, and so on.
 */
-  static double * 	eses	= NULL;
-  static int * 		lengths	= NULL;
-  static int		  count	= 0;
-  static double **	precalced=NULL;
-  int			        j, old_len, i;
+    static double *  eses	= NULL;
+    static int * 	 lengths= NULL;
+    static int		 count	= 0;
+    static double ** precalced=NULL;
+    int			     j, old_len, i;
 	for (i=0; i< count; i++)
 		if (eses == NULL || eses[i] == s) 	
             break;
@@ -107,8 +106,8 @@ For example: \include test_strip_dots.c
 \ingroup convenience_fns
  */
 char * apop_strip_dots(char *in, char strip_type){
-int     i;
-char    *out    = NULL;
+    int  i;
+    char *out    = NULL;
     if ((strip_type ==0) || (strip_type == 'd') || (strip_type == 'D')){
         out    = malloc(strlen(in)+1);
         for (i=0; i< strlen(in)+1; i++)   //will copy over the '/0' too.
@@ -143,8 +142,8 @@ apop_system("ls -l %s", filenames);
 \return The return value of the \c system() call.
  */
 int apop_system(const char *fmt, ...){
-  char 		*q;
-  va_list   argp;
+    char *q;
+    va_list argp;
 	va_start(argp, fmt);
 	vasprintf(&q, fmt, argp);
 	va_end(argp);
@@ -159,8 +158,6 @@ int apop_system(const char *fmt, ...){
  A few functions to sort data. One sorts an \c apop_data set in place, and one returns percentiles for a sorted vector.
   \{ */
 
-#include "variadic.h"
-#include "likelihoods.h"
 #include <gsl/gsl_sort_vector.h>
 
 static int find_min_unsorted(size_t *sorted, size_t height, size_t min){
@@ -189,10 +186,10 @@ APOP_VAR_HEAD apop_data * apop_data_sort(apop_data *data, int sortby, char asc){
         sortby = -1;
     char apop_varad_var(asc, 0);
 APOP_VAR_ENDHEAD
-  size_t            height  = (sortby==-1) ? data->vector->size: data->matrix->size1;
-  size_t            sorted[height];
-  size_t            i, *perm, start=0;
-  gsl_permutation   *p  = gsl_permutation_alloc(height);
+    size_t height  = (sortby==-1) ? data->vector->size: data->matrix->size1;
+    size_t sorted[height];
+    size_t i, *perm, start=0;
+    gsl_permutation   *p  = gsl_permutation_alloc(height);
     memset(sorted, 0, sizeof(size_t)*height);
     if (sortby == -1)
         gsl_sort_vector_index (p, data->vector);
@@ -208,8 +205,8 @@ APOP_VAR_ENDHEAD
             perm[height-1-j] = t;
         }
     while (1){
-        i           =
-        start       = find_min_unsorted(sorted, height, start);
+        i     =
+        start = find_min_unsorted(sorted, height, start);
         if (i==-1) 
             break;
         Apop_data_row(data, start, firstrow);
@@ -230,21 +227,21 @@ APOP_VAR_ENDHEAD
 }
 
 
-/** Returns an array of size 101, where returned_vector[95] gives the value of the 95th percentile, for example. Returned_vector[100] is always the maximum value, and returned_vector[0] is always the min (regardless of rounding rule).
+/** Returns an array of size 101, where \c returned_vector[95] gives the value of the 95th percentile, for example. \c Returned_vector[100] is always the maximum value, and \c returned_vector[0] is always the min (regardless of rounding rule).
 
 \param data	a gsl_vector of data. (No default, must not be \c NULL.)
-\param rounding This will either be 'u', 'd', or 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If 'u', then round up (use the next highest value); if 'd' (or anything else), round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or more  of the sample is below returned_vector[5]"; if 'd' or 'a', then you can say "5% or more of the sample is above returned_vector[5]".   (Default = 'd'.)
+\param rounding This will either be 'u', 'd', or 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If 'u', then round up (use the next highest value); if 'd' (or anything else), round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or more  of the sample is below \c returned_vector[5]"; if 'd' or 'a', then you can say "5% or more of the sample is above returned_vector[5]".   (Default = 'd'.)
 
-\li You may eventually want to free() the array returned by this function.
-This function uses the \ref designated syntax for inputs.
+\li You may eventually want to \c free() the array returned by this function.
+\li This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
     gsl_vector *apop_varad_var(data, NULL);
-    apop_assert_s(data, "You gave me NULL data.");
+    Apop_assert(data, "You gave me NULL data.");
     char apop_varad_var(rounding, 'd');
 APOP_VAR_ENDHEAD
-  gsl_vector	*sorted	= gsl_vector_alloc(data->size);
-  double		*pctiles= malloc(sizeof(double) * 101);
+    gsl_vector *sorted	= gsl_vector_alloc(data->size);
+    double     *pctiles = malloc(sizeof(double) * 101);
 	gsl_vector_memcpy(sorted,data);
 	gsl_sort_vector(sorted);
 	for(int i=0; i<101; i++){
@@ -305,18 +302,18 @@ APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data *
     const char * apop_varad_var(string, NULL);
     if (!string) return 0;
     const char * apop_varad_var(regex, NULL);
-    apop_assert_s(regex, "You gave me a NULL regex.");
+    Apop_assert(regex, "You gave me a NULL regex.");
     apop_data **apop_varad_var(substrings, NULL);
     const char apop_varad_var(use_case, 'n');
 APOP_VAR_ENDHEAD
-  regex_t    re;
-  int        matchcount=count_parens(regex);
-  int        found;
-  regmatch_t result[matchcount];
+    regex_t    re;
+    int        matchcount=count_parens(regex);
+    int        found;
+    regmatch_t result[matchcount];
     int compiled_ok = !regcomp(&re, regex, REG_EXTENDED 
                                             + (use_case=='y' ? 0 : REG_ICASE)
                                             + (substrings ? 0 : REG_NOSUB) );
-    apop_assert(compiled_ok, "This regular expression didn't compile: \"%s\"", regex)
+    Apop_assert(compiled_ok, "This regular expression didn't compile: \"%s\"", regex)
 
     int matchrow = 0;
     if (substrings) *substrings = apop_data_alloc();

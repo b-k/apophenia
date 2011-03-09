@@ -5,12 +5,7 @@
  
 Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "asst.h"
-#include "model.h"
-#include "mapply.h"
-#include "output.h"
-#include "settings.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 void apop_data_predict_fill(apop_data *data, apop_data *predict);
 apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans);
 

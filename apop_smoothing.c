@@ -2,11 +2,7 @@
 
 /* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "asst.h" //The headers are currently here.
-#include "types.h"
-#include "model.h"
-#include "settings.h"
-#include "conversions.h"
+#include "apop_internal.h"
 
 /** Return a new vector that is the moving average of the input vector.
  \param v The input vector, unsmoothed

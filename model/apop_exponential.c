@@ -20,9 +20,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
 \adoc    CDF  Produces a single number.
 \adoc    settings   None.  */
 
-#include "model.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1

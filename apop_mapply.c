@@ -18,11 +18,7 @@
    actual math.
 
  */
-#include "stats.h"
-#include "mapply.h"
-#include "types.h"
-#include "internal.h"
-#include "conversions.h"
+#include "apop_internal.h"
 static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, int use_index, int use_param,void *param, char post_22);
 
 typedef double apop_fn_v(gsl_vector*);

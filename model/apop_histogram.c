@@ -32,18 +32,10 @@ But this can be used anywhere a model is needed, such as the inputs and outputs 
 \adoc    settings    \ref apop_histogram_settings   
 */
 
-#include "arms.h"
-#include "model.h"
-#include "mapply.h"
-#include "internal.h"
-#include "settings.h"
-#include "conversions.h"
-#include "deprecated.h"
-#include "variadic.h"
+#include "apop_internal.h"
 #include <gsl/gsl_math.h>
 
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins){
-    //header is in model.h.
   Apop_assert_c(data, NULL, 0, "You asked me to set up a histogram with NULL data. Returning a NULL settings group.");
   apop_histogram_settings *hp  = malloc(sizeof(apop_histogram_settings));
     size_t i, j;

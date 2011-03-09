@@ -20,10 +20,7 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 \adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    
 */
 
-#include "asst.h"
-#include "mapply.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 typedef struct {
     double bb, a;
@@ -71,7 +68,7 @@ static double dapply_b(double val, void *in){
     return -psi_bb_a_k;
 }
 
-static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
+/*static*/ void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
 	//Psi is the derivative of the log gamma function.
     Nullcheck_mpd(d, m);
     Get_vmsizes(d) //tsize
@@ -83,11 +80,8 @@ static void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
     double	bb_minus_one_inv= 1./(ab.bb-1),
       	    psi_a_bb	    = gsl_sf_psi(ab.bb + ab.a),
       	    psi_a_mas_one	= gsl_sf_psi(ab.a+1);
-    printf("bb-1: %g\t ab: %g\t a+1: %g\t d_bb: %g\t d_a: %g\n",
-            bb_minus_one_inv, psi_a_bb, psi_a_mas_one, d_bb, d_a);
 	d_bb += (bb_minus_one_inv + psi_a_bb) *tsize;
 	d_a	 += (psi_a_bb- psi_a_mas_one) * tsize;
-    printf("\t\t   d_bb2: %g\t d_a2: %g\n", d_bb, d_a);
 	gsl_vector_set(gradient, 0, d_bb);
 	gsl_vector_set(gradient, 1, d_a);
     apop_vector_show(gradient);

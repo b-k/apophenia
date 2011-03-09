@@ -1,13 +1,7 @@
 /** \file apop_model.c	 sets up the estimate structure which outputs from the various regressions and MLEs.*/
 /* Copyright (c) 2006--2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "arms.h"
-#include "types.h"
-#include "mapply.h"
-#include "output.h"
-#include "internal.h"
-#include "settings.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 /** Allocate an \ref apop_model.
 

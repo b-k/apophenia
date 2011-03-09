@@ -71,12 +71,7 @@ This routine is in beta testing.
 
 \adoc    settings \ref apop_loess_settings */
 
-#include "model.h"
-#include "output.h"
-#include "mapply.h"
-#include "settings.h"
-#include "conversions.h"
-
+#include "apop_internal.h"
 
 ////////////a few lines from f2c.h
 #define TRUE_ (1)

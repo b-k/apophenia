@@ -25,10 +25,7 @@ replace that matrix column with a constant column of ones, just like with OLS.
 \adoc    settings   None, but see above about seeking a factor page in the input data.
 */
 
-#include "model.h"
-#include "mapply.h"
-#include "internal.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 static apop_data *get_category_table(apop_data *d){
     int first_col = d->vector ? -1 : 0;

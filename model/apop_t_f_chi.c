@@ -1,10 +1,6 @@
 /* \file apop_t_f_chi.c	t, F, chi squared, and Wishart distributions.
 Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
-#include "model.h"
-#include "mapply.h"
-#include "internal.h"
-#include "variadic.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
 
 apop_model* apop_t_estimate(apop_data *d, apop_model *m){
     Apop_assert(d, "No data with which to count df. (the default estimation method)");

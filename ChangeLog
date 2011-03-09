@@ -4,7 +4,12 @@
 !!Big.
 ]
 
-	0.99 February 2010
+	March 2011
+--Header files have been merged. A few long files is as easy to grep as a multitude of
+	nearly one-line files. If you #include <apop.h> instead of the individual headers,
+	then this shouldn't affect you. Due to redundancy, compilation with gcc takes 3% longer.
+
+	0.99 February 2011
 !!The apop_PMF model has more support:
 	--New supporting functions: apop_data_pmf_compress, apop_model_to_pmf
 	--functions that took apop_histogram models now take apop_pmfs as well:

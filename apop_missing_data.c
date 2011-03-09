@@ -1,11 +1,8 @@
 /** \file apop_missing_data.c Some missing data handlers. */
 /* Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
-#include "model.h"
-#include "mapply.h"
-#include "internal.h"
-#include "variadic.h"
-#include "likelihoods.h"
+#include "apop_internal.h"
+#include <regex.h>
 
 static double find_nans(double in){ return isnan(in); }
 
@@ -41,7 +38,6 @@ static int find_missing(const apop_data *data, apop_data *predict, size_t page, 
     return ct;
 }
 
-#include "output.h"
 apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
     apop_data *out = apop_data_alloc( );
     if (in)
@@ -178,7 +174,6 @@ static apop_model * i_est(apop_data *d, apop_model *ml_model){
     return apop_estimate(real_data, *actual_base);
 }
 
-#include "mapply.h"
 static double i_ll(apop_data *d, apop_model *ml_model){
     Switch_back
     return apop_log_likelihood(real_data, actual_base);
