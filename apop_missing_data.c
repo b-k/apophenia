@@ -220,7 +220,6 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     return m;
 }
 
-#if 0
 /**
 Imputation (in this context) is the process of finding fill-in values for missing data
 points. Filling in values from a single imputation and then returning the values will give
@@ -250,7 +249,7 @@ statistics and their covariances. The output should have two pages. The first
 will be the statistics themselves; the second will be the covariance matrix. If
 I find a page with the name <tt>\<Covariance\></tt> then I will use that; else
 the second page. This rule means you can return the \c parameters from most estimated
-models.
+models. Default: a function to find the per-column mean and the sample covariance matrix.
 
 \param base_data The data, with \c NaNs to be filled in. When calculating the statistics,
 I fill in the values in the \c base_data set directly, so it is modified, and in
@@ -275,6 +274,20 @@ replicates; let \f$\mu(\cdot)\f$ indicate the mean; then the overall covariance 
 \li Multiple pages for input data are not yet implemented.
 */
 
+typedef apop_data *(*data_to_data)(apop_data*);
+
+
+static apop_data *colmeans(apop_data *in){
+    Get_vmsizes(in); //maxsize
+    apop_data *sums = apop_data_summarize(in);
+    Apop_col_t(sums, "mean", means);
+    apop_data *out = apop_matrix_to_data(apop_vector_to_matrix(means, 'r'));
+    apop_name_stack(out->names, in->names, 'c', 'c');
+    apop_data *cov = apop_data_add_page(out, apop_data_covariance(in), "<Covariance>");
+    gsl_matrix_scale(cov->matrix, 1/sqrt(maxsize));
+    return out;
+}
+
 
 /*
 \param row_name Which column in the fill-in table should I check for the row id to fill in. This could be an integer or text. If this name refers to a numeric column, then it indicates the row number in the main data to which this row of the fill-in table refers. If it refers to text, then this is the name of the row of the main data to fill in. Default: \c row .
@@ -283,19 +296,19 @@ replicates; let \f$\mu(\cdot)\f$ indicate the mean; then the overall covariance 
 \param imputation_name The column of the fill-in table holding the name or number of the imputation. Default: imputation .
 */
 
-APOP_VAR_HEAD apop_data * apop_multiple_imputation_variance(apop_data *base_data, apop_data *fill_ins, char row_name, char col_name, char value_name, char imputation_name){
+APOP_VAR_HEAD apop_data* apop_multiple_imputation_variance(apop_data *base_data, apop_data *fill_ins, data_to_data stat, char *row_name, char *col_name, char *value_name, char *imputation_name){
     /*Copyright: this function is part of a larger work (C) Ben Klemens, but was partially written
     by a government employee (BK) during work hours. Some lawyers will tell you that this function
     is licensed via GPL v2, as a part of a larger work; others will tell you that it's public domain.*/
-    char apop_varad_var(row_name, "row");
-    char apop_varad_var(col_name, "col");
-    char apop_varad_var(value_name, "value");
-    char apop_varad_var(imputation_name, "imputation");
-    apop_data* pop_varad_var(base_data, NULL);
+    char * apop_varad_var(row_name, "row");
+    char * apop_varad_var(col_name, "col");
+    char * apop_varad_var(value_name, "value");
+    char * apop_varad_var(imputation_name, "imputation");
+    apop_data* apop_varad_var(base_data, NULL);
     Apop_assert(base_data, "It doesn't make sense to impute over a NULL data set.");
     apop_data* apop_varad_var(fill_ins, NULL);
-    if (!fill_ins)
-        Apop_notify(1,  "Didn't recieve a fill-in table; will find means, but the Cov matrix will be NULL.");
+    Apop_assert_c(fill_ins, NULL, 1,  "Didn't receive a fill-in table. Returning NULL.");
+    data_to_data apop_varad_var(stat, colmeans);
 APOP_VAR_ENDHEAD 
     /*The first half of this is filling in the values. In an attempt at versatility, I allow users to 
       give any named column, be it numeric or text, for every piece of input info. That means a whole lot 
@@ -308,7 +321,7 @@ APOP_VAR_ENDHEAD
     if (c##col==-2){           \
         c##col = apop_name_find(fill_ins->names, c##_name, 't');   \
         c##type = 't';         \
-       Apop_assert(c##col!=-2, "I couldn't find the c##_name %s in the column/text names of your fill_in table.");    \
+       Apop_assert(c##col!=-2, "I couldn't find the c##_name %s in the column/text names of your fill_in table.", c##_name);    \
     }
 
     apop_setup_one_colthing(row)
@@ -326,40 +339,42 @@ APOP_VAR_ENDHEAD
 
     int len = imps ? imps->size : impt->textsize[0];
     int thisimp=-2; char *thisimpt=NULL;
-	apop_data *estimates[replicates];
-    for (int impct=0; impct< len; impct++){
+	apop_data *estimates[len];
+    for (int impctr=0; impctr< len; impctr++){
         if (imps)
-            thisimp=gsl_vector_get(imps, impct);
+            thisimp=gsl_vector_get(imps, impctr);
         else
-            thisimpt=impt->text[i][0];
-        for (int i=0; i< fill_ins; i++){
+            thisimpt=impt->text[impctr][0];
+        Get_vmsizes(fill_ins); //masxize
+        int fillsize = maxsize ? maxsize : fill_ins->textsize[0];
+        for (int i=0; i< fillsize; i++){
             if (!(thisimpt && apop_strcmp(fill_ins->text[i][imputationcol], thisimpt))
                 && !(imps && thisimp==apop_data_get(fill_ins, i, imputationcol)))
                 continue;
             int thisrow = (rowtype=='d') ? 
                                 apop_data_get(fill_ins, i, rowcol)
-                               :apop_name_get(base_data->names, rowcol);
+                               :apop_name_find(base_data->names, fill_ins->text[i][rowcol], 'r');
             int thiscol = (coltype=='d') ? 
                                 apop_data_get(fill_ins, i, colcol)
-                               :apop_name_get(base_data->names, colcol);
+                               :apop_name_find(base_data->names, fill_ins->text[i][colcol], 'c');
             if (valuetype=='d') apop_data_set(base_data, thisrow, thiscol, 
                                             apop_data_get(fill_ins, i, valuecol));
             else apop_text_add(base_data, rowcol, colcol, fill_ins->text[i][valuecol]);
         }
         //OK, base_data is now filled in. Estimate the statistic for it.
-		estimates[i-first_non_address] = stat(base_data);
+		estimates[impctr] = stat(base_data);
     }
 
 
     //Part II: find the mean of the statistics and the total variance of the cov matrix.
-	gsl_vector *vals = gsl_vector_alloc(replicates);
+	gsl_vector *vals = gsl_vector_alloc(len);
     apop_data *out = apop_data_copy(estimates[0]);
 	//take the simple mean of the main data set.
 	{ //this limits the scope of the Get_vmsizes macro.
 	 Get_vmsizes(estimates[0]); 
      for (int j=0; j < msize2; j++)
          for (int i=0; i < (vsize ? vsize : msize1); i++){
-            for (int k=0; k< replicates; k++)
+            for (int k=0; k< len; k++)
                 gsl_vector_set(vals, k, apop_data_get(estimates[k], i, j));
              apop_data_set(out, i, j, apop_vector_mean(vals));
          }
@@ -373,16 +388,15 @@ APOP_VAR_ENDHEAD
 	Get_vmsizes(out_var);
     for (int i=0; i < msize1; i++)
         for (int j=i; j < msize2; j++){
-            for (int k=0; k< replicates; k++){
+            for (int k=0; k< len; k++){
                 apop_data *this_p = cov_is_labelled ? apop_data_get_page(estimates[k], "<Covariance>")
                                         : estimates[k]->more;
                 gsl_vector_set(vals, k, apop_data_get(this_p, i, j));
             }
-            double total_var = apop_vector_mean(vals) + apop_var(vals)/(1+1./replicates);
+            double total_var = apop_vector_mean(vals) + apop_var(vals)/(1+1./len);
             apop_data_set(out_var, i, j, total_var);
             if (j != i)
                 apop_data_set(out_var, j, i, total_var);
         }
     return out;	
 }
-#endif

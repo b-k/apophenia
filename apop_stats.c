@@ -83,9 +83,8 @@ double apop_vector_skew(const gsl_vector *in){
 \ingroup vector_moments
 */
 double apop_vector_skew_pop(const gsl_vector *in){
-  //I reimplement the skew calculation here without the division by var^3/2
-  //that the GSL does. 
-  //Lawyers may want to know that this code is cut/pasted/modified from the GSL. 
+  //This code is cut/pasted/modified from the GSL. 
+  //I reimplement the skew calculation here without the division by var^3/2 that the GSL does. 
 
   size_t n = in->size;
   long double avg = 0;
@@ -103,9 +102,8 @@ double apop_vector_skew_pop(const gsl_vector *in){
 \ingroup vector_moments
 */
 double apop_vector_kurtosis_pop(const gsl_vector *in){
-  //I reimplement the kurtosis calculation here without the division by var^2
-  //that the GSL does. 
-  //Lawyers may want to know that this code is cut/pasted/modified from the GSL. 
+  //This code is cut/pasted/modified from the GSL. 
+  //I reimplement the kurtosis calculation here without the division by var^2 that the GSL does. 
 
   size_t n = in->size;
   long double avg  = 0;

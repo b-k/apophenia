@@ -710,7 +710,11 @@ APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int c
     const char * apop_varad_var(colname, NULL);
     const char * apop_varad_var(page, NULL);
 
-    apop_data *d = page ? apop_data_get_page(data, page) : data;
+    apop_data *d;
+    if (page){
+        d = apop_data_get_page(data, page);
+        Apop_assert(d, "I couldn't find a page with label %s", page);
+    } else d = data;
     if (rowname && colname)
         return apop_data_ptr_tt(d, rowname,colname);
     if (rowname && !colname)
@@ -782,7 +786,11 @@ APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, cons
     const char * apop_varad_var(colname, NULL);
     const char * apop_varad_var(page, NULL);
     
-    const apop_data *d = page ? apop_data_get_page(data, page) : data;
+    const apop_data *d;
+    if (page){
+        d = apop_data_get_page(data, page);
+        Apop_assert(d, "I couldn't find a page with label %s", page);
+    } else d = data;
     if (rowname && colname)
         return apop_data_get_tt(d, rowname,colname);
     if (rowname && !colname)
@@ -859,7 +867,11 @@ APOP_VAR_HEAD void apop_data_set(apop_data *data, const size_t row, const int co
     const char * apop_varad_var(colname, NULL);
     const char * apop_varad_var(page, NULL);
     
-    apop_data *d = page ? apop_data_get_page(data, page) : data;
+    apop_data *d;
+    if (page){
+        d = apop_data_get_page((apop_data*)data, page);
+        Apop_assert(d, "I couldn't find a page with label %s", page);
+    } else d = data;
     if (rowname && colname)
         return apop_data_set_tt(d, rowname, colname, val);
     if (rowname && !colname)

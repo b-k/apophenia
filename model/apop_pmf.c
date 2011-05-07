@@ -127,7 +127,8 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
 }
 
 double pmf_p(apop_data *d, apop_model *m){
-    Nullcheck_mpd(d, m) 
+    Nullcheck_d(d) 
+    Nullcheck_m(m) 
     Get_vmsizes(m->data)//firstcol, vsize, vsize1, msize2
     int j;
     long double ll = 0;

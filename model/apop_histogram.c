@@ -132,18 +132,17 @@ static void histogram_print(apop_model *est){
 apop_model apop_histogram = {"Histogram", .dsize=1, .estimate = est, .log_likelihood = histogram_ll, 
                     .draw = histogram_rng, .print=histogram_print};
 
-/*\amodel apop_kernel_density The kernel density smoothing of a PMF
+/*\amodel apop_kernel_density The kernel density smoothing of a PMF or histogram.
 
-A Kernel density is simply a smoothing of a histogram. At each point
-along the histogram, put a distribution (default: Normal(0,1)) on top
-of the point. Sum all of these distributions to form the output histogram.
+At each point along the histogram, put a distribution (default: Normal(0,1)) on top
+of the point. Sum all of these distributions to form the output distribution.
 
 Elements of \ref apop_kernel_density_settings that you may want to set:
 
-\li data a data set, which, if  not \c NULL and \c !base_pmf , will be converted to an \ref apop_pmf model.
-\li base_pmf This is the preferred format for input data. It is the histogram to be smoothed.
-\li kernelbase The kernel to use for smoothing, with all parameters set and a \c p method. Popular favorites are \ref apop_normal and \ref apop_uniform.
-\li set_params A function that takes in a single number and the model, and sets
+\li \c data a data set, which, if  not \c NULL and \c !base_pmf , will be converted to an \ref apop_pmf model.
+\li \c base_pmf This is the preferred format for input data. It is the histogram to be smoothed.
+\li \c kernelbase The kernel to use for smoothing, with all parameters set and a \c p method. Popular favorites are \ref apop_normal and \ref apop_uniform.
+\li \c set_params A function that takes in a single number and the model, and sets
 the parameters accordingly. The function will call this for every point in the data
 set. Here is the default, which is used if this is \c NULL. It simply sets the first
 element of the model's parameter vector to the input number; this is appropriate for a
@@ -215,20 +214,19 @@ static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
 
 static double kernel_p_cdf_base(apop_data *d, apop_model *m,
         double (*fn)(apop_data*,apop_model*)){
-    Nullcheck_mpd(d, m);
-    Get_vmsizes(d);
+    Nullcheck_d(d);
+    Nullcheck_m(m);
     long double total = 0;
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
     apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->data;
-    int len = pmf_data->weights ? pmf_data->weights->size
-                                : pmf_data->vector ? pmf_data->vector->size
-                                                   : pmf_data->matrix->size1;
-    for (int k = 0; k < len; k++){
+    Get_vmsizes(pmf_data); //maxsize
+    for (size_t k = 0; k < maxsize; k++){
         Apop_data_row(pmf_data, k, r);
+        double wt = r->weights ? r->weights->data[0] : 1;
         (ks->set_fn)(r, ks->kernel);
-        total += fn(d, ks->kernel);
+        total += fn(d, ks->kernel)*wt;
     }
-    double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : len;
+    double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : maxsize;
     total /= weight;
     return total;
 }

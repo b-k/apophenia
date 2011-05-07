@@ -241,7 +241,7 @@ Outlineheader c Some notes on C and Apophenia's use of C utilities.
  
 Outlineheader learning  Learning C
 
-<a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages.  More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.  Some people find pointers to be especially difficult; fortunately, there's a <a href="http://cslibrary.stanford.edu/104/">claymation cartoon</a> which clarifies everything.
+<a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages.  More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.  Some people find pointers to be especially difficult; fortunately, there's a <a href="http://www.youtube.com/watch?v=6pmWojisM_E">claymation cartoon</a> which clarifies everything.
 
 Coding often relies on gathering together many libraries; there is a section at the bottom of this outline linking to references for some libraries upon which Apophenia builds.
 
@@ -2352,7 +2352,7 @@ on hand.
 \code
 apop_model *beta = apop_model_set_parameters(apop_beta, 0.5, 0.25);
 Apop_model_add_group(beta, apop_update, .burnin = 0.2, .periods =1e5);
-apop_model *m = apop_estimate(your_data, apop_pmf);
+apop_model *my_pmf = apop_estimate(your_data, apop_pmf);
 apop_model *posterior = apop_update(.prior= beta, .likelihood = my_pmf);
 \endcode
 
@@ -2419,7 +2419,7 @@ Here is the model for all testing within Apophenia:
 \li Describe the distribution of that statistic.
 \li Work out how much of the distribution is (above|below|closer to zero than) the statistic.
 
-There are a handful of named tests that produce a known distribution and then compare to a
+There are a handful of named tests that produce a known statistic and then compare to a
 known distribution, like \ref apop_test_kolmogorov or \ref apop_test_fisher_exact. For
 traditional distributions (Normal, \f$t\f$, \f$\chi^2\f$), use the \ref apop_test convenience
 function.
@@ -2465,7 +2465,7 @@ is left as an exercise for the reader.] For a model like OLS, this is entirely o
 which is why OLS provides the basic hypothesis tests automatically. But for more advanced models where the distribution of parameters is unknown or has no closed-form solution, this may be the only recourse.
 
 
-OK, this introduction has shown you the \ref apop_data set and some of the functions
+This introduction has shown you the \ref apop_data set and some of the functions
 associated, which might be useful even if you aren't formally doing statistical work but do have to deal with data with real-world elements like column names and mixed
 numeric/text values. You've seen how Apophenia encapsulates as many of a model's
 characteristics as possible into a single \ref apop_model object, which you can send with

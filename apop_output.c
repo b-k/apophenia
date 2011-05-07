@@ -157,16 +157,18 @@ will print directly to Gnuplot.
 
 \param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be \c NULL)
 \param bin_count   The number of bins in the output histogram (default = \f$\sqrt(N)\f$, where \f$N\f$ is the length of the vector.)
+\param with The method for Gnuplot's plotting routine. Default is \c "boxes", so the gnuplot call will read <tt>plot '-' with boxes</tt>. The \c "lines" option is also popular, and you can add extra terms if desired, like <tt> "boxes linetype 3"</tt>.
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
   \ingroup output
 */
-APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bin_count, Output_declares){
+APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *with, Output_declares){
       gsl_vector * apop_varad_var(data, NULL);
       Apop_assert(data, "Input vector is NULL.");
       size_t apop_varad_var(bin_count, 0);
+      char * apop_varad_var(with, "boxes");
       Dispatch_output
 APOP_VAR_ENDHEAD
     apop_data *histodata = apop_data_alloc();
@@ -176,7 +178,7 @@ APOP_VAR_ENDHEAD
     apop_data_free(histodata->more); //the binspec.
 
     fprintf(output_pipe, "set key off	;\n"
-               "plot '-' with boxes\n");
+               "plot '-' with %s\n", with);
     apop_data_print(histodata, .output_pipe=output_pipe);
     fprintf(output_pipe, "e\n");
 
@@ -184,7 +186,6 @@ APOP_VAR_ENDHEAD
         fflush(output_pipe);
     else if (output_file)    
         fclose(output_pipe);
-    histodata->vector=NULL;
     apop_data_free(histodata);
 }
 

@@ -959,6 +959,7 @@ void test_transpose(){
     assert(apop_data_get(tt, 0, 3) == 9);
     assert(apop_data_get(tt, 1, 0) == 4);
     assert(!strcmp(tt->names->row[2], "c"));
+    assert(!strcmp(tt->names->row[3], "d"));
     assert(!tt->names->colct);
 }
 

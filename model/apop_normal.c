@@ -193,7 +193,7 @@ static double lognormal_cdf(apop_data *d, apop_model *params){
 }
 
 /* \adoc predict Returns the expeced value, \f$E(x) = e^(mu + sigma^2/2)\f$
-  regardless of the input data you give (including \c NULL). */ 
+  in the (0, 0)th element of the matrix, regardless of the input data you give (including \c NULL). */ 
 apop_data * lognormal_predict(apop_data *dummy, apop_model *m){
     apop_data *out = apop_data_alloc(1,1);
     out->matrix->data[0] = exp(m->parameters->vector->data[0] 

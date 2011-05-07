@@ -62,32 +62,8 @@ That said, here is the current table of contents:
 #define APOP_NO_VARIADIC
 %module apop
 
-/*Put all the headers in the C code: */
 %{
-#include "types.h"
-#include "db.h"
-#include "asst.h"
-#include "stats.h"
-#include "variadic.h"
-#include "settings.h"
-#include "deprecated.h"
-
-//Part of the intent of a convenience header like this is that you
-//don't have to remember what else you're including. So here are 
-//some other common GSL headers:
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_eigen.h>
-#include <gsl/gsl_histogram.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_permutation.h>
-#include <gsl/gsl_integration.h>
-
-//And common headers for other uses (such as seeding an RNG):
-#include <time.h>
-#include <unistd.h>
-
-
+#include "apop.h"
 %}
 
 %include "carrays.i"

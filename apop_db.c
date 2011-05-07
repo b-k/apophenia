@@ -4,6 +4,7 @@ features like a variance, skew, and kurtosis aggregator for SQL. */
 
 #include "apop_internal.h"
 #include <regex.h>
+char * prep_string_for_sqlite(char *astring, regex_t *nan_regex, int prepped_statements); //apop_conversions.c
 
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= 
@@ -491,6 +492,18 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
 
+    regex_t nan_regex;
+    int used_nan_regex=0;
+    if (set->text||(set->names && set->names->row)){
+        used_nan_regex++;
+        char	nan_string[500];
+        if (strlen(apop_opts.db_nan)){
+            sprintf(nan_string, "^%s$", apop_opts.db_nan);
+            regcomp(&nan_regex, nan_string, REG_ICASE+REG_EXTENDED+REG_NOSUB);
+        }
+    }
+
+
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
     {
@@ -525,7 +538,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
         sprintf(q, " ");
     }
 #else 
-        apop_assert_c(0, , 0, "Apophenia was compiled without mysql support.")
+        Apop_assert_c(0, , 0, "Apophenia was compiled without mysql support.")
 #endif
     else {
         if (db==NULL) apop_db_open(NULL);
@@ -556,21 +569,27 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
             qxprintf(&q, "%s%c\n \"weights\" numeric", q, comma);
         qxprintf(&q,"%s);  begin;",q);
     }
-    int lim = set->vector ? set->vector->size : set->matrix->size1;
+    int lim = GSL_MAX(set->vector ? set->vector->size : 0,
+                GSL_MAX(set->matrix ? set->matrix->size1 : 0, 
+                        set->textsize[0]));
 	for(i=0; i< lim; i++){
         comma = ' ';
 		qxprintf(&q, "%s \n insert into %s values(",q, tabname);
         if (use_row){
-			qxprintf(&q,"%s \'%s\' ",q, set->names->row[i]);
+            char *fixed= prep_string_for_sqlite(set->names->row[i], &nan_regex, 0);
+			qxprintf(&q, "%s %s ",q, fixed);
+            free(fixed);
             comma = ',';
         }
         if (set->vector)
            add_a_number (&q, &comma, gsl_vector_get(set->vector,i));
         if (set->matrix)
-            for(j=0;j< set->matrix->size2; j++)
+            for(j=0; j< set->matrix->size2; j++)
                add_a_number (&q, &comma, gsl_matrix_get(set->matrix,i,j));
-		for(j=0;j< set->textsize[1]; j++){
-			qxprintf(&q,"%s%c \'%s\' ",q, comma,set->text[i][j]);
+		for(j=0; j< set->textsize[1]; j++){
+            char *fixed= prep_string_for_sqlite(set->text[i][j], &nan_regex, 0);
+			qxprintf(&q, "%s%c %s ",q, comma,fixed);
+            free(fixed);
             comma = ',';
         }
         if (set->weights)
@@ -587,6 +606,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
 	}
     if ( !(apop_opts.db_engine == 'm') && ctr>0) 
         apop_query("%s commit;",q);
+    if (used_nan_regex) regfree(&nan_regex);
 	free(q);
 }
 

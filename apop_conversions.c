@@ -1048,7 +1048,7 @@ static void tab_create_sqlite(char *tabname, int ct, int has_row_names, apop_dat
   not just .1. 
   --It may be text with no "delimiters"
  */
-static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
+char * prep_string_for_sqlite(char *astring, regex_t *nan_regex, int prepped_statements){
   regmatch_t  result[2];
   char  *out	    = NULL,
 		*tail	    = NULL,
@@ -1068,11 +1068,20 @@ static char * prep_string_for_sqlite(char *astring, regex_t *nan_regex){
         if ((stripped[0]=='\'' && stripped[strlen(stripped)-1]=='\'')
              || (stripped[0]=='"' && stripped[strlen(stripped)-1]=='"'))
             asprintf(&out,"%s", stripped);
-        else {
+        else if (!prepped_statements){
             if (strchr(stripped, '\''))
-                asprintf(&out,"'%s'", stripped);
-            else
                 asprintf(&out,"\"%s\"", stripped);
+            else
+                asprintf(&out,"'%s'", stripped);
+        } else {
+            char *tick;
+            while ((tick=strchr(stripped, '\''))){ //backslash-escape ticks
+                int posn = tick-stripped;
+                stripped = realloc(stripped, strlen(stripped)+1);
+                memcpy(stripped+posn+1, stripped+posn, strlen(stripped)-posn);
+                stripped[posn]='\\';
+            }
+            asprintf(&out,"%s", stripped);
         }
 	} else {	    //number, maybe INF or NAN. Also, sqlite wants 0.1, not .1
 		assert(strlen (stripped)!=0);
@@ -1107,7 +1116,7 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
         prev_end = last_end;
         last_end = field_ends ? field_ends[ctr++] : 0;
         pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
-        prepped	= prep_string_for_sqlite(outstr, nan_regex);
+        prepped	= prep_string_for_sqlite(outstr, nan_regex, !!p_stmt);
         if (p_stmt){
             if (sqlite3_bind_text(p_stmt, field++, prepped,-1, SQLITE_TRANSIENT))
                 printf("Something wrong on line %i, field %i.\n", row, field-1);
@@ -1182,8 +1191,8 @@ APOP_VAR_END_HEAD
         tab_create_mysql(tabname, col_ct, has_row_names, field_params, table_params);
     else
         tab_create_sqlite(tabname, col_ct, has_row_names, field_params, table_params);
-    int use_sqlite_prepared_statements = (SQLITE_VERSION_NUMBER >=3003009
-                    && !apop_opts.db_engine == 'm' 
+    int use_sqlite_prepared_statements = (sqlite3_libversion_number() >=3003009
+                    && !(apop_opts.db_engine == 'm') 
                     &&  col_ct <= 999); //Arbitrary SQLite limit on blanks in prepared statements.
     if (use_sqlite_prepared_statements){
         asprintf(&q, "INSERT INTO %s VALUES (?", tabname);
