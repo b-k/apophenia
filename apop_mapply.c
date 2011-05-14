@@ -40,8 +40,8 @@ typedef double apop_fn_ri(apop_data*, int);
 /**
   Apply a function to every element of a data set, matrix or vector; or, apply a vector-taking function to every row or column of a matrix.
 
-There are a lot of options: your function could take any combination of a \c gsl_vector/\c double, a parameter set, and the position of the element in the vector or matrix. As such, the function takes eight function inputs, one for each combination of vector/matrix, params/no params, index/no index. Fortunately, because 
-this function uses the \ref designated syntax for inputs, you need specify only one.
+There are a lot of options: your function could take any combination of a \c gsl_vector/\c double/\ref apop_data, a parameter set, and the position of the element in the vector or matrix. As such, the function takes twelve function inputs, one for each combination of vector/matrix, params/no params, index/no index. Fortunately, because 
+this function uses the \ref designated syntax for inputs, you will specify only one.
 
 For example, here is a function that will cut off each element of the input data to between \f$(-1, +1)\f$.
 \code
@@ -51,7 +51,7 @@ double cutoff(double in, void *limit_in){
 }
 
 double param = 1;
-apop_map(your_data, .fn_di=cutoff, .param=&param, .inplace=1);
+apop_map(your_data, .fn_dp=cutoff, .param=&param, .inplace=1);
 \endcode
 
 \param fn_v A function of the form <tt>double your_fn(gsl_vector *in)</tt>
@@ -80,8 +80,12 @@ Default is 'a', but notice that I'll ignore a \c NULL vector or matrix, so if yo
 
 \li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
 \ref Apop_data_row to get each row in turn, and send it to the function. The first
-implication is that your function should be expecting a \ref apop_data set with exactly
-one row in it. The second is that \c part is ignored: it only makes sense to go row-by-row.
+implication is that your function should be expecting a \ref apop_data set with
+exactly one row in it. The second is that \c part is ignored: it only makes sense to go
+row-by-row. If you set \c inplace='y', then you will be modifying your input data set, row by row;
+if you set \c inplace='n', then I will return an \ref apop_data set whose \c vector
+element is as long as your data set (i.e., as long as the longest of your text, vector,
+or matrix parts).
 
 \li If you set <tt>apop_opts.thread_count</tt> to a value greater than one, I will split the data set into as many chunks as you specify, and process them simultaneously. You need to watch out for the usual hang-ups about multithreaded programming, but if your data is iid, and each row's processing is independent of the others, you should have no problems. Bear in mind that generating threads takes some small overhead, so simple cases like adding a few hundred numbers will actually be slower when threading.
 
@@ -125,17 +129,17 @@ APOP_VAR_ENDHEAD
         "scalar-oriented function. Did you mean part=='a'?");
 
     //Allocate output
-    Get_vmsizes(in); //vsize, msize1, msize2
+    Get_vmsizes(in); //vsize, msize1, msize2, maxsize
     apop_data *out;
     if (inplace)
        out = in;
     else 
-         out = by_apop_rows ? apop_data_copy(in)
-             : part == 'v' || (in->vector && ! in->matrix) ? apop_data_alloc(vsize, 0, 0)
-             : part == 'm' ? apop_data_alloc(0, msize1, msize2)
+         out = by_apop_rows ? apop_data_alloc(GSL_MAX(in->textsize[0], maxsize))
+             : part == 'v' || (in->vector && ! in->matrix) ? apop_data_alloc(vsize)
+             : part == 'm' ? apop_data_alloc(msize1, msize2)
              : part == 'a' ? apop_data_alloc(vsize, msize1, msize2)
-             : part == 'r' ? apop_data_alloc(msize1, 0, 0)
-             : part == 'c' ?  apop_data_alloc(msize2, 0, 0) : NULL;
+             : part == 'r' ? apop_data_alloc(msize1)
+             : part == 'c' ?  apop_data_alloc(msize2) : NULL;
     if (in->names){
         if (part == 'v'  || (in->vector && ! in->matrix)) {
              apop_name_stack(out->names, in->names, 'v');
@@ -153,17 +157,19 @@ APOP_VAR_ENDHEAD
             apop_name_stack(in->names, out->names, 'r', 'c');
     }
 
+#define PLACE(fn) {if (inplace == 'y') fn; else gsl_vector_set(out->vector, i, fn);}
+
     //Call mapply_core.
     if (by_apop_rows){
-        for (int i=0; i< vsize? vsize : msize1; i++){
-            Apop_data_row(out, i, the_row);
-            if (fn_r) fn_r(the_row);
+        for (size_t i=0; i<GSL_MAX(in->textsize[0], maxsize); i++){
+            Apop_data_row(in, i, the_row);
+            if (fn_r) PLACE(fn_r(the_row))
             else if (fn_rp)
-                fn_rp(the_row, param);
+                PLACE(fn_rp(the_row, param))
             else if (fn_rpi)
-                fn_rpi(the_row, param, i);
+                PLACE(fn_rpi(the_row, param, i))
             else if (fn_ri)
-                fn_ri(the_row, i);
+                PLACE(fn_ri(the_row, i))
         }
     } else {
         if (in->vector && (part == 'v' || part=='a'))
@@ -279,10 +285,10 @@ static size_t *threadminmax(const int threadno, const int totalct, const int thr
 }
 
 static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, int use_index, int use_param,void *param, char post_22){
-  int           threadct    = apop_opts.thread_count;
-  pthread_t     thread_id[threadct];
-  int           i;
-  threadpass    tp[threadct];
+    int           threadct    = apop_opts.thread_count;
+    pthread_t     thread_id[threadct];
+    int           i;
+    threadpass    tp[threadct];
     for (i=0 ; i<threadct; i++)
         tp[i] = (threadpass) {
             .limlist   = threadminmax(i, 

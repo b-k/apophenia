@@ -23,7 +23,7 @@ void test_apop_map_row(){
     apop_data *d = apop_data_alloc(100, 0, 0);
     d->weights = gsl_vector_alloc(100);
     apop_map(d, .fn_ri=set_vector_to_even, .inplace='y');
-    apop_data *copy = apop_map(d, .fn_ri=set_weight_to_index);
+    apop_data *copy = apop_map(d, .fn_ri=set_weight_to_index, .inplace='y');
     double sum = apop_map_sum(copy, .fn_r = weight_given_even);
     assert(sum == 49*25*2);
 }

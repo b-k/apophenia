@@ -4,6 +4,9 @@
 !!Big.
 ]
 
+	May 2011
+**apop_map returns a data set with an allocated/filled vector when not called with .inplace='y'.  Before, it had been making a full copy, which is idiosyncratic.
+
 	March 2011
 --Header files have been merged. A few long files is as easy to grep as a multitude of
 	nearly one-line files. If you #include <apop.h> instead of the individual headers,

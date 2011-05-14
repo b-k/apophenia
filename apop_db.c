@@ -253,7 +253,7 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
         qi->firstcall   --;
         namecol     = -1;
         for(i=0; i<argc; i++)
-            if (!strcmp(column[i], apop_opts.db_name_column)){
+            if (!strcasecmp(column[i], apop_opts.db_name_column)){
                 namecol = i;
                 ncfound = 1;
                 break;
@@ -292,7 +292,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_data);
 #else
-        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
+        Apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
 
     //else

@@ -14,7 +14,7 @@
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_psi.h>
 #include <gsl/gsl_randist.h>
-#include <gsl/gsl_multimin.h>
+//#include <gsl/gsl_multimin.h>
 #include <gsl/gsl_histogram.h>
 #include <gsl/gsl_statistics_double.h>
 

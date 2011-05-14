@@ -10,13 +10,10 @@ At the bottom are the maximum likelihood procedures themselves. There are four: 
 #include "apop_internal.h"
 #include <setjmp.h>
 #include <signal.h>
-#include <gsl/gsl_cdf.h>
-#include <gsl/gsl_blas.h>
+#include <gsl/gsl_deriv.h>
 #include <gsl/gsl_siman.h>
-#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_multimin.h>
-#include <gsl/gsl_deriv.h>
 #include <gsl/gsl_multiroots.h>
 
 typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
@@ -103,6 +100,7 @@ Apop_settings_init(apop_mle,
     Apop_varad_set(rng, NULL);
 )
 
+//deprecated; left to make some examples in Modeling with Data coherent.
 apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
     return apop_mle_settings_init((apop_mle_settings){.parent=parent}); }
 
@@ -149,19 +147,22 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct*
 
 /**The GSL provides one-dimensional numerical differentiation; here's the multidimensional extension.
 
-  If you explicitly give me a \c delta, I'll use that for the differential. If \c delta is not specified,
+\param data The data set to use for all evaluations. It remains constant throughout.
+\param model The model, expressing the function whose derivative is sought. The gradient is taken via small changes along the model parameters.
+\param delta The size of the differential. If you explicitly give me a \c delta, I'll use it. If \c delta is not specified,
  but \c model has \c method_settings of type \c apop_ml_params, then the \c delta element is used for the differential. Else, I use 1e-3.
  
  \code
  gsl_vector *gradient = apop_numerical_gradient(data, your_parametrized_model);
  \endcode
 
- \ingroup linear_algebra
+\li This function uses the \ref designated syntax for inputs.
+\ingroup linear_algebra
  */
 APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *model, double delta){
     apop_data * apop_varad_var(data, NULL);
     apop_model * apop_varad_var(model, NULL);
-    Nullcheck(model)
+    Nullcheck(model) Nullcheck_p(model)
     double apop_varad_var(delta, 0);
     if (!delta){
         apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
@@ -212,7 +213,7 @@ parameter values. The math is
 \param delta the step size for the differentials. The current default is around 1e-3.
 \return The matrix of estimated second derivatives at the given data and parameter values.
  
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta){
     apop_data * apop_varad_var(data, NULL);
@@ -354,20 +355,22 @@ static double negshell (const gsl_vector *beta, void * in){
     out = penalty - f_val; //negative llikelihood
     if (i->trace_path && strlen(i->trace_path))
         tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
-    //I report the log likelihood under the assumption that the final param set 
-    //matches the best ll evaluated.
-    double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
-    if(gsl_isnan(this_ll)){
-        if (!i->model->log_likelihood && penalty > f_val)
-            fprintf(stderr, "Your model's p evaluates as %g, and your penalty is %g, for an "
-                    "adjusted p of %g. Please make sure that this is positive, perhaps by "
-                    "rescaling your penalty.\n", f_val, penalty, f_val-penalty);
-        fprintf(stderr,"NaN resulted from the following value tried by the maximum likelihood system. "
-                    "Tighten your constraint? Log of a negative p?\n");
-        apop_data_show(i->model->parameters);
-        assert(0);
+    if (i->want_info =='y'){
+        //I report the log likelihood under the assumption that the final param set 
+        //matches the best ll evaluated.
+        double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
+        if(gsl_isnan(this_ll)){
+            if (!i->model->log_likelihood && penalty > f_val)
+                fprintf(stderr, "Your model's p evaluates as %g, and your penalty is %g, for an "
+                        "adjusted p of %g. Please make sure that this is positive, perhaps by "
+                        "rescaling your penalty.\n", f_val, penalty, f_val-penalty);
+            fprintf(stderr, "NaN resulted from the following value tried by the maximum likelihood system. "
+                        "Tighten your constraint? Log of a negative p?\n");
+            apop_data_show(i->model->parameters);
+            assert(0);
+        }
+        i->best_ll = GSL_MAX(i->best_ll, this_ll);
     }
-    i->best_ll = GSL_MAX(i->best_ll, this_ll);
     return out;
 }
 

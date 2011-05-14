@@ -173,7 +173,7 @@ APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bin_count, char 
 APOP_VAR_ENDHEAD
     apop_data *histodata = apop_data_alloc();
     histodata->vector = apop_vector_copy(data);
-    apop_data_to_bins(histodata, .bin_count=bin_count);
+    apop_data_to_bins(histodata, .bin_count=bin_count, .close_top_bin='y');
     apop_data_sort(histodata);
     apop_data_free(histodata->more); //the binspec.
 
