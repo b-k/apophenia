@@ -105,7 +105,7 @@ APOP_VAR_DECLARE double * apop_vector_percentiles(gsl_vector *data, char roundin
 APOP_VAR_DECLARE apop_data * apop_data_sort(apop_data *data, int sortby, char asc);
 
 //raking
-APOP_VAR_DECLARE apop_data* apop_rake(char *table_name, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, int run_number);
+APOP_VAR_DECLARE apop_data* apop_rake(char *table_name, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, char *weights_col, int run_number);
 
 //asprintf, vararg, &c
 #include <stdarg.h>

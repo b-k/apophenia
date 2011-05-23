@@ -77,7 +77,8 @@ deb-raw:
 #mv apophenia_* dists
 #	./configure --enable-python
 #    yes | dh_make -l -n -c GPL  
-#    cp ../../debian_control debian/control
-#    cp ../../debian_copyright debian/copyright
+#    cp ../../install/deb.control debian/control
+#    cp ../../install/deb.copyright debian/copyright
 #    debuild -us -uc 
 #    rm ../$pkg-$version.tar.gz
+# or: sudo apt-get install build-essential autoconf automake autotools-dev dh-make debhelper devscripts fakeroot xutils lintian pbuilder

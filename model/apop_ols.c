@@ -79,9 +79,8 @@ static void prep_names (apop_model *e){
 	if (e->data->names->vector) { //this is post ols shuffle.
         if (e->parameters)
             snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->vector);
-        apop_name_add(e->parameters->names, "1", 'r');
         apop_name_add(e->parameters->names, "parameters", 'v');
-        for(int i=1; i< e->data->names->colct; i++)
+        for(int i=0; i< e->data->names->colct; i++)
             apop_name_add(e->parameters->names, e->data->names->column[i], 'r');
         if ((pwant && pwant->covariance) || (!pwant && p && p->want_cov== 'y')){
             apop_data *cov = apop_data_get_page(e->parameters, "<Covariance>");
@@ -89,8 +88,6 @@ static void prep_names (apop_model *e){
                 apop_name_stack(cov->names, e->data->names, 'c');
                 apop_name_stack(cov->names, e->data->names, 'r', 'c');
             }
-		    sprintf(cov->names->column[0], "1");
-		    sprintf(cov->names->row[0], "1");
         }
 	}
 }

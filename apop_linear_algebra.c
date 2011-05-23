@@ -356,14 +356,14 @@ APOP_VAR_ENDHEAD
 \param drop an array of <tt>int</tt>s. If use[7]==1, then column seven will be cut from the output. 
 */
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
-  int        ct  = 0, 
+  int        ct  = 0,  //how many columns will not be dropped?
              j   = 0;
     for (size_t i=0; i < in->size2; i++)
         if (drop[i]==0)
             ct++;
-    if (ct == 0)
-        return apop_matrix_copy(in);
     if (ct == in->size2)
+        return apop_matrix_copy(in);
+    if (ct == 0)
         return NULL;
     gsl_matrix *out = gsl_matrix_alloc(in->size1, ct);
     for (size_t i=0; i < in->size2; i++){

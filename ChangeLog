@@ -6,6 +6,9 @@
 
 	May 2011
 **apop_map returns a data set with an allocated/filled vector when not called with .inplace='y'.  Before, it had been making a full copy, which is idiosyncratic.
+--apop_rake accepts a weights column.
+--apop_anova uses variadic arguments for a marginally nicer interface (and better argument checking).
+**apop_data_to_dummies tries to give nicer labels. You may have to recode things if you relied on the old labels.
 
 	March 2011
 --Header files have been merged. A few long files is as easy to grep as a multitude of

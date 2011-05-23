@@ -152,7 +152,7 @@ double apop_multivariate_lngamma(double a, double p);
 //apop_tests.c
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
-apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2);
+APOP_VAR_DECLARE apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2);
 #define apop_ANOVA apop_anova
 APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast);
 #define apop_F_test apop_f_test

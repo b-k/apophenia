@@ -144,10 +144,16 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
               **telmts = NULL;//unfortunately needed for the bsearch.
     //first, create an ordered list of unique elements.
     //Record that list for use in this function, and in a ->more page of the data set.
+
+    char *catname =   d->names == NULL ? NULL
+                    : type == 't' && d->names->textct > col ? d->names->text[col]
+                    : col == -1 && d->names->vector         ? d->names->vector
+                    : d->names->colct > col                 ? d->names->column[col]
+                    : NULL;
+    if (catname)
+        snprintf(name, 100, "<categories for %s>", catname);
     if (type == 't'){
-        if (d->names->textct > col)
-            snprintf(name, 100, "<categories for %s>", d->names->text[col]);
-        else
+        if (!catname)
             snprintf(name, 100, "<categories for column %i>", col);
         *factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), name);
         elmt_ctr = (*factor_list)->textsize[0];
@@ -162,16 +168,9 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
         APOP_COL(d, col, to_search);
         delmts          = apop_vector_unique_elements(to_search);
         elmt_ctr = delmts->size;
-        if (col == -1){
-            if (d->names->vector)
-                snprintf(name, 100, "<categories for %s>", d->names->vector);
-            else
-                snprintf(name, 100, "<categories for vector>");
-        } else {
-            if (d->names->colct > col)
-                snprintf(name, 100, "<categories for %s>", d->names->column[col]);
-            else
-                snprintf(name, 100, "<categories for column %i>", col);
+        if (!catname){
+            if (col == -1)  snprintf(name, 100, "<categories for vector>");
+            else            snprintf(name, 100, "<categories for column %i>", col);
         }
         *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr, 0, 0), name);
         apop_text_alloc((*factor_list), delmts->size, 1);
@@ -208,9 +207,10 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
     //Add names:
     if (dummyfactor == 'd'){
         for (i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
-            if (type =='d')
-                sprintf(n,"dummy %g", gsl_vector_get(delmts,i));
-            else
+            if (type =='d'){
+                if (catname) sprintf(n, "%s dummy %g", catname, gsl_vector_get(delmts,i));
+                else         sprintf(n, "dummy %g", gsl_vector_get(delmts,i));
+            } else
                 sprintf(n, "%s", telmts[i]);
             apop_name_add(out->names, n, 'c');
         }
@@ -296,14 +296,12 @@ APOP_VAR_ENDHEAD
     memset (rm_list, 0,(col+1)*sizeof(int)); 
     if (append =='i'){
         apop_data **split = apop_data_split(d, col+1, 'c');
-        if (remove=='n')
-            apop_data_rm_columns(split[1], rm_list);
         //stack names, then matrices
         for (int i=0; i < d->names->colct; i++)
             free(d->names->column[i]);
         apop_name_stack(d->names, split[0]->names, 'c');
         for (int k = d->names->colct; k < (split[0]->matrix ? split[0]->matrix->size2 : 0); k++)//pad so the name stacking 
-            apop_name_add(d->names, "", 'c');                                                  //is aligned (if needed)
+            apop_name_add(d->names, "", 'c');                                                   //is aligned (if needed)
         apop_name_stack(d->names, dummies->names, 'c');
         apop_name_stack(d->names, split[1]->names, 'c');
         gsl_matrix_free(d->matrix);
@@ -319,7 +317,7 @@ APOP_VAR_ENDHEAD
         apop_data_rm_columns(d, rm_list);
     }
     if (append =='y' || append == 'e' || append ==1 || (append=='i' && type=='t')){
-        apop_data_stack(d, dummies, 'c', .inplace='y');
+        d = apop_data_stack(d, dummies, 'c', .inplace='y');
         apop_data_free(dummies);
         return d;
     }

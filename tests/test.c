@@ -1,5 +1,6 @@
 #include <apop.h>
 #include "nist_tests.c"
+#include "rake_tests.c"
 
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 

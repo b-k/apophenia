@@ -268,7 +268,7 @@ if 'c', stack columns of m1's matrix to left of m2's<br>
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
-both are NULL, you get NULL back (except if \c m1 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 pointer back)
+both are NULL, you get NULL back (except if \c m2 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 pointer back)
 \li Text is handled as you'd expect: If 'r', one set of text is stacked on top of the other [number of columns must match]; if 'c', one set of text is set next to the other [number of rows must match].
 \li \c more is ignored.
 \li If stacking rows on rows, the output vector is the input
@@ -285,16 +285,16 @@ APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char pos
     apop_data * apop_varad_var(m1, NULL)
     apop_data * apop_varad_var(m2, NULL)
     char apop_varad_var(posn, 'r')
+    Apop_assert_c((posn == 'r' || posn == 'c'), NULL, 0, "Valid positions are 'r' or 'c'"
+                                                         " you gave me '%c'. Returning NULL.", posn);
     char apop_varad_var(inplace, 'n')
     inplace = (inplace == 'i' || inplace == 'y' || inplace == 1 || inplace == 'I' || inplace == 'Y') ? 1 : 0;
 APOP_VAR_ENDHEAD
-  apop_data   *out    = NULL;
     if (!m1)
         return apop_data_copy(m2);
     if (!m2)
-        return (inplace == 'i' || inplace == 'y') ? m1 : apop_data_copy(m1);
-    Apop_assert_c((posn == 'r' || posn == 'c'), NULL, 0, "Valid positions are 'r' or 'c'"
-                             " you gave me '%c'. Returning NULL.", posn);
+        return inplace ? m1 : apop_data_copy(m1);
+    apop_data   *out    = NULL;
     if (inplace)
         out = m1;
     else {
@@ -304,10 +304,10 @@ APOP_VAR_ENDHEAD
         m1->more = m;
     }
     Get_vmsizes(m1); //original sizes of vsize, msize1, msize2.
-    apop_matrix_stack(out->matrix, m2->matrix, posn, .inplace='y');
+    out->matrix = apop_matrix_stack(out->matrix, m2->matrix, posn, .inplace='y');
     if (posn == 'r'){
-        apop_vector_stack(out->vector, m2->vector, .inplace='y');
-        apop_vector_stack(out->weights, m2->weights, .inplace='y');
+        out->vector  = apop_vector_stack(out->vector, m2->vector, .inplace='y');
+        out->weights = apop_vector_stack(out->weights, m2->weights, .inplace='y');
     } 
 
     if (m2->text){ //we've already copied m1->text, if any, so if m2->text is NULL, we're done.
