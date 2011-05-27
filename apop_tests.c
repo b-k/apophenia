@@ -249,7 +249,7 @@ static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
   works from data in an SQL table, using queries of the form <tt>select
   data from table group by grouping1, grouping2</tt>.
 
-  \param table The table to be queried. 
+  \param table The table to be queried. Anything that can go in an SQL <tt>from</tt> clause is OK, so this can be a plain table name or a temp table specification like <tt>(select ... )</tt>, with parens.
   \param data The name of the column holding the count or other such data
   \param grouping1 The name of the first column by which to group data
   \param grouping2 If this is \c NULL, then the function will return a one-way ANOVA. Otherwise, the name of the second column by which to group data in a two-way ANOVA.
@@ -257,7 +257,8 @@ static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
 APOP_VAR_HEAD apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2){
     char *apop_varad_var(table, NULL)
     Apop_assert(table, "I need the name of a table in the SQL database.")
-    Apop_assert(apop_table_exists(table), "I couldn't find the table %s in the database.", table)
+    if (!strchr(table, ')')) //if you found ()s, then it is a temp table spec.
+        Apop_assert(apop_table_exists(table), "I couldn't find the table %s in the database.", table)
     char *apop_varad_var(data, NULL)
     Apop_assert(data, "I need the name of the column in the %s table with the count or other data.", table)
     char *apop_varad_var(grouping1, NULL)

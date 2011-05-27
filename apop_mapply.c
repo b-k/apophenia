@@ -536,7 +536,7 @@ APOP_VAR_ENDHEAD
     Get_vmsizes(in);
     double outsum = 0;
     if (fn_r || fn_ri || fn_rpi || fn_rp)
-        for (int i=0; i < GSL_MAX(vsize, GSL_MAX(msize1, in->textsize[0])); i++){
+        for (int i=0; i < GSL_MAX(maxsize, in->textsize[0]); i++){
             Apop_data_row(in, i, arow);
             if (fn_r) outsum += fn_r(arow);
             else if (fn_rp) outsum += fn_rp(arow, param);

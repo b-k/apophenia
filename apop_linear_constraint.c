@@ -25,10 +25,10 @@ assert(!gsl_isnan(S));
 assert(!gsl_isnan(gsl_vector_get(out,0)));
 }
 
-static int binds(gsl_vector *v, int k, gsl_vector *b){
+static int binds(gsl_vector *v, double k, gsl_vector *b, double margin){
   double d;
     gsl_blas_ddot(v, b, &d);
-    return d < k;
+    return d < k + margin;
 }
 
 static double trig_bit(gsl_vector *dimv, gsl_vector *otherv, double off_by){
@@ -48,7 +48,7 @@ static double trig_bit(gsl_vector *dimv, gsl_vector *otherv, double off_by){
    projection of the translated beta onto the new surface now also touches the old
    surface.
    */
-static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, gsl_vector *candidate){
+static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, gsl_vector *candidate, double margin){
   double    k, ck, off_by, s;
   gsl_vector *pseudobeta        = NULL;
   gsl_vector *pseudocandidate   = NULL;
@@ -61,7 +61,7 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
         if (i!=current){
             APOP_ROW(constraint, i, other);
             k   =apop_data_get(constraint, i, -1);
-            if (binds(candidate, k, other)){
+            if (binds(candidate, k, other, margin)){
                 if (!pseudobeta){
                     pseudobeta          = gsl_vector_alloc(beta->size);
                     gsl_vector_memcpy(pseudobeta, beta);
@@ -144,7 +144,7 @@ APOP_VAR_ENDHEAD
     for (i=0; i< constraint_ct; i++){
         APOP_ROW(constraint, i, c);
         bound           +=
-        bindlist[i]      = binds(beta, apop_data_get(constraint, i, -1), c);
+        bindlist[i]      = binds(beta, apop_data_get(constraint, i, -1), c, margin);
     }
     if (!bound)    //All constraints met.
         return 0;
@@ -165,7 +165,7 @@ APOP_VAR_ENDHEAD
      */
     for (i=0; i< constraint_ct; i++){
         if (bindlist[i])
-            get_candiate(base_beta, constraint, i, candidate);
+            get_candiate(base_beta, constraint, i, candidate, margin);
         if(apop_vector_distance(base_beta, candidate) < apop_vector_distance(base_beta, closest_pt))
             gsl_vector_memcpy(closest_pt, candidate);
     }

@@ -17,12 +17,13 @@ double compare_results(apop_data *in, void *other, int index){
     return 0;
 }
     
-int test_raking(){
+void test_raking(){
     //trivial case: if all margins are equal, MLE is to give equal weights.
+    int a, b, c;
     apop_query("create table equals (a,b,c)");
-    for (int a=0; a < 10; a++)
-        for (int b=0; b < 10; b++)
-            for (int c=0; c < 10; c++)
+    for (a=0; a < 10; a++)
+        for (b=0; b < 10; b++)
+            for (c=0; c < 10; c++)
                 apop_query("insert into equals values (%i, %i, %i)", a,b,c);
     apop_data *equal_weights = apop_rake("equals");
     apop_map(equal_weights, .fn_r=weights_are_one);
@@ -36,9 +37,9 @@ int test_raking(){
     //Regression parameters on the inequal weights should match regression parameters on the raw data.
     apop_query("create table inequals (a,b,c, weights)");
     gsl_rng *r = apop_rng_alloc(25);
-    for (int a=0; a < 3; a++)
-        for (int b=0; b < 4; b++)
-            for (int c=0; c < 10; c++)
+    for (a=0; a < 3; a++)
+        for (b=0; b < 4; b++)
+            for (c=0; c < 10; c++)
                 apop_query("insert into inequals values (%i, %i, %i, %g)", a,b,c, a/2.+gsl_rng_uniform(r));
     char *contrasts[] ={"a|b"};
     apop_data *inequal_weights = apop_rake("inequals", .all_vars="a|b|c",.contrasts=contrasts, .weights_col="weights");
@@ -52,7 +53,7 @@ int test_raking(){
                                           .type='d', .append='y', .remove='y');
     inequal_weights->vector = inequal_weights->weights;
     inequal_weights->weights = NULL;
-    apop_data_show(inequal_weights);
+    //apop_data_show(inequal_weights);
     apop_model *raked_ols = apop_estimate(inequal_weights, apop_ols);  
 
    
@@ -62,7 +63,7 @@ int test_raking(){
     apop_data_to_dummies(t, .col=apop_name_find(t->names, "b", 'c'), .type='d', .append='y', .remove='y');
 //    apop_data_to_dummies(t, .col=1, .type='d', .append='y', .remove='y'); //affine version.
     apop_model *ols_out = apop_estimate(t, apop_ols);  
-    apop_data_show(t);
+    //apop_data_show(t);
 //    apop_data_show(ols_out->parameters);
 
     apop_map(ols_out->parameters, .fn_rpi=compare_results, .param= raked_ols->parameters);
