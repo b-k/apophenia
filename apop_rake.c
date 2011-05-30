@@ -167,14 +167,14 @@ typedef struct {
     size_t ct, al;
 } rake_t;
 
-void grow(rake_t *r){
+static void grow(rake_t *r){
     r->al = (r->al+1)*2;
     r->elmtlist = realloc(r->elmtlist , sizeof(size_t*) * r->al);
     r->elmtlist_sizes = realloc(r->elmtlist_sizes, sizeof(size_t) * r->al);
     r->indata_values = apop_vector_realloc(r->indata_values, r->al);
 }
 
-void rakeinfo_free(rake_t r){
+static void rakeinfo_free(rake_t r){
     for (int i=0; i < r.ct; i++){
         free(r.elmtlist[i]);
         r.elmtlist[i] = NULL;
@@ -191,7 +191,7 @@ void rakeinfo_free(rake_t r){
 
 double overall_max_dev;
 
-void scaling(const size_t *elmts, size_t n,  gsl_vector *weights, double in_sum){
+static void scaling(const size_t *elmts, size_t n,  gsl_vector *weights, double in_sum){
     double fit_sum = 0;
     for(size_t i=0; i < n; i ++)
         fit_sum += weights->data[elmts[i]];

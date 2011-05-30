@@ -22,7 +22,7 @@ void apop_estimate_parameter_tests (apop_model *est){
   Nullcheck_p(est)
   if (!est->data)
       return;
-    apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(0, est->parameters->vector->size, 2), "test info");
+    apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(est->parameters->vector->size, 2), "<test info>");
     apop_name_add(ep->names, "p value", 'c');
     apop_name_add(ep->names, "confidence", 'c');
     apop_name_stack(ep->names, est->parameters->names, 'r', 'r');
@@ -33,7 +33,7 @@ void apop_estimate_parameter_tests (apop_model *est){
     df       = df < 1 ? 1 : df; //some models aren't data-oriented.
     apop_data_add_named_elmt(est->info, "df", df);
 
-    apop_data *one_elmt = apop_data_calloc(0, 1, 1);
+    apop_data *one_elmt = apop_data_calloc(1, 1);
     gsl_vector *param_v = apop_data_pack(est->parameters);
     for (size_t i=0; i< est->parameters->vector->size; i++){
         apop_model_add_group(est, apop_pm, .index=i);
@@ -43,7 +43,7 @@ void apop_estimate_parameter_tests (apop_model *est){
         apop_model_free(m);
         double conf = 2*fabs(0.5-zero); //parameter is always at 0.5 along a symmetric CDF
         apop_data_set(ep, i, .colname="confidence", .val=conf);
-        apop_data_set(ep, i, .colname="p value",            .val=1-conf);
+        apop_data_set(ep, i, .colname="p value",    .val=1-conf);
     }
     gsl_vector_free(param_v);
     apop_data_free(one_elmt);
@@ -73,7 +73,7 @@ static int strcmpwrap(const void *a, const void *b){
 */
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
   double val;
-  size_t prior_elmt_ctr  = 107;
+  size_t prior_elmt_ctr = 107;
   size_t elmt_ctr = 0;
   double *elmts   = NULL;
   gsl_vector *out = NULL;
@@ -148,7 +148,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
     char *catname =   d->names == NULL ? NULL
                     : type == 't' && d->names->textct > col ? d->names->text[col]
                     : col == -1 && d->names->vector         ? d->names->vector
-                    : d->names->colct > col                 ? d->names->column[col]
+                    : col >=0 && d->names->colct > col      ? d->names->column[col]
                     : NULL;
     if (catname)
         snprintf(name, 100, "<categories for %s>", catname);

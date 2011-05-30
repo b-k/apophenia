@@ -580,7 +580,7 @@ APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, Output_declares, s
     static gsl_rng *spare = NULL;
     int free_m = 0;
     gsl_vector * apop_varad_var(v, NULL);
-    apop_assert_s(v, "Input vector is NULL.\n");
+    Apop_assert(v, "Input vector is NULL.");
     apop_model  *apop_varad_var(m, NULL);
     if (!m){
         free_m++;
@@ -600,27 +600,25 @@ APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, Output_declares, s
     if (free_m) apop_model_free(m);
     return;
 APOP_VAR_ENDHEAD
-  FILE  *f = output_pipe;
-  double *pctdata = apop_vector_percentiles(v, 'a');
+    double *pctdata = apop_vector_percentiles(v, 'a');
 
     //produce percentiles from the model via RNG.
-  gsl_vector  *vd  = gsl_vector_alloc(bins);
+    gsl_vector  *vd  = gsl_vector_alloc(bins);
     for(int i=0; i< bins; i++)
         m->draw(gsl_vector_ptr(vd, i), r, m);
     double *pctdist = apop_vector_percentiles(vd, 'a');
 
-    fprintf(f, "set key off; set size square;\n"
+    fprintf(output_pipe, "set key off; set size square;\n"
                "plot x;\n"
                "replot '-' with points\n");
     for (int i=0; i < 101; i++)
-        fprintf(f, "%g\t %g\n", pctdist[i], pctdata[i]);
-    fprintf(f, "e\n");
+        fprintf(output_pipe, "%g\t %g\n", pctdist[i], pctdata[i]);
+    fprintf(output_pipe, "e\n");
     if (output_type == 'p')
-        fflush(f);
+        fflush(output_pipe);
     else if (output_file)
-        fclose(f);
+        fclose(output_pipe);
     gsl_vector_free(vd);
-    gsl_rng_free(r);
 }
 
 /** This produces a nifty triangle plot from an input matrix with three

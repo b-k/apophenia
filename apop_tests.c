@@ -110,22 +110,39 @@ This function uses the \ref designated syntax for inputs.
 APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     apop_model *apop_varad_var(est, NULL)
     Nullcheck_m(est);
+    Nullcheck_d(est->data);
     apop_data * apop_varad_var(contrast, NULL)
 APOP_VAR_ENDHEAD
-    gsl_matrix      *q          = contrast ? contrast->matrix: NULL;
-    apop_data      *xpxinv     = apop_data_alloc();
-    size_t          contrast_ct;
+    gsl_matrix *q      = contrast ? contrast->matrix: NULL;
+    apop_data  *xpxinv = apop_data_alloc();
+    size_t     contrast_ct;
     if (contrast)
         contrast_ct =  contrast->vector ? contrast->vector->size 
                                         : contrast->matrix->size1;
     else contrast_ct = est->parameters->vector->size;
-    apop_data       *qprimebeta;
-    apop_data       *qprimexpxinvqinv = apop_data_alloc();
-    double          f_stat, pval;
-    int             q_df,
-                    data_df     = est->data->matrix->size1 - est->parameters->vector->size;
+    apop_data *qprimebeta;
+    apop_data *qprimexpxinvqinv = apop_data_alloc();
+    double    f_stat, pval;
+    int       q_df,
+              data_df = est->data->matrix->size1 - est->parameters->vector->size;
 
-    apop_data *xpx = apop_dot(est->data, est->data, .form1='t');
+    Get_vmsizes(est->data); //msize1, msize2
+    //Find (\underbar x)'(\underbar x), where (\underbar x) = the data with means removed
+    long double means[msize2];
+    for (int i=0; i< msize2; i++){
+        Apop_col(est->data, i, onecol)
+        means[i] = apop_vector_mean(onecol);
+    }
+    apop_data *xpx = apop_data_alloc(msize2, msize2);
+    for (int i=0; i< msize2; i++)
+        for (int j=0; j< msize2; j++){ //at this loop, we calculate one cell in the dot prouct
+            long double total = 0;
+            for (int c=0; c<msize1; c++)
+                total +=  (gsl_matrix_get(est->data->matrix, c, i) - means[i])
+                         *(gsl_matrix_get(est->data->matrix, c, j) - means[j]);
+            apop_data_set(xpx, i, j, total);
+        }
+
     if (q != NULL){
         q_df    = q->size1;
         xpxinv->matrix = apop_matrix_inverse(xpx->matrix);
@@ -153,7 +170,7 @@ APOP_VAR_ENDHEAD
     f_stat  *=  data_df / (variance * q_df);
     pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
 
-apop_data       *out        = apop_data_alloc(5,1);
+apop_data       *out        = apop_data_alloc();
     sprintf(out->names->title, "F test");
     apop_data_add_named_elmt(out, "F statistic", f_stat);
     apop_data_add_named_elmt(out, "p value", pval);
