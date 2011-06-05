@@ -16,11 +16,11 @@ double set_weight_to_index(apop_data * r, int index){
 }
 
 double weight_given_even(apop_data *r){ 
-    return apop_data_get(r, 0, -1) ? gsl_vector_get(r->weights, 0) : 0; 
+    return gsl_vector_get(r->vector, 0) ? gsl_vector_get(r->weights, 0) : 0; 
 }
 
 void test_apop_map_row(){
-    apop_data *d = apop_data_alloc(100, 0, 0);
+    apop_data *d = apop_data_alloc(100);
     d->weights = gsl_vector_alloc(100);
     apop_map(d, .fn_ri=set_vector_to_even, .inplace='y');
     apop_map(d, .fn_ri=set_weight_to_index, .inplace='y');

@@ -333,6 +333,12 @@ int get_var_index(apop_data *all_vars, char *findme){
 	Apop_assert_c(0, -1, 0, "I couldn't find %s in the full list of variables. Returning -1.", findme);
 }
 
+double nudge_zeros(apop_data *in, void *nudge){
+    if (!in->weights->data[0])
+        in->weights->data[0] = *(double*)nudge;
+    return 0;
+}
+
 /** Fit a log-linear model via iterative proportional fitting, aka raking.
 
 See Wikipedia for an overview of Log linear models, aka
@@ -367,7 +373,7 @@ This function uses the database to resolve the sparseness problem. It constructs
 requesting all combinations of categories the could possibly be non-zero after raking,
 given all of the above constraints. Then, raking is done using only that subset. 
 This means that the work is done on a number of cells proportional to the number of data
-points, not to the full cross of all categories.
+points, not to the full cross of all categories. Set <tt>apop_opts.verbose</tt> to 2 or greater to show the query on \c stderr.
 
 \param table_name The name of the table in the database.  The table should have one
 observation per row.
@@ -375,7 +381,7 @@ No default.
 
 \param all_vars The full list of variables to search. Provide these as a single,
 pipe-delimited string: e.g., "age | sex |income". Spaces are ignored. Default: if you are using SQLite, I
-will use all columns in the table; if you are using mySQL, I haven't implemented this yet
+will use all columns in the table (but the <tt>.weights_col</tt> if any); if you are using mySQL, I haven't implemented this yet
 and you will have to provide a list.
 
 \param contrasts The contrasts describing your model. Like the \c all_vars input, each
@@ -399,6 +405,17 @@ distinguish distinct runs should you be threading several runs at once. If you a
 running several instances simultaneously, don't worry about this; if you are, do supply a
 value, since it's hard for the function to supply one in a race-proof manner. Default:
 internally-maintained values.
+
+\param nudge There is a common hack of adding a small value to every zero entry, because
+a zero entry will always scale to zero, while a small value could eventually scale
+to anything.  Recall that this function works on sparse sets, so I fisrt filter out
+those cells that could possibly have a nonzero value given the observations, then I
+add <tt>nudge</tt> to any zero cells within that subset.
+
+If you want all cells to have nonzero value, then you can do that via pre-processing:
+\code
+apop_query("update data_table set weights_col = 1e-3 where weights_col = 0");
+\endcode
 
 \return An \ref apop_data set where every row is a single combination of variable values
 and the \c weights vector gives the most likely value for each cell.
@@ -425,6 +442,7 @@ APOP_VAR_HEAD apop_data * apop_rake(char *table_name, char *all_vars, char **con
     int apop_varad_var(max_iterations, 1e3);
     double apop_varad_var(tolerance, 1e-5);
     int apop_varad_var(run_number, defaultrun++);
+    double apop_varad_var(nudge, 0);
 APOP_VAR_ENDHEAD
 	apop_data **contras = generate_list_of_contrasts(contrasts, contrast_ct);
     apop_data *all_vars_d;
@@ -433,8 +451,11 @@ APOP_VAR_ENDHEAD
                                             "names sent as .all_vars=\"var1 | var2 |...\"");
         //use SQLite's table_info, then shift the second col to the first.
         all_vars_d = apop_query_to_text("PRAGMA table_info(%s)", table_name);
+        int ctr=0;
         for (int i=0; i< all_vars_d->textsize[0]; i++)
-            apop_text_add(all_vars_d, i, 0, all_vars_d->text[i][1]);
+            if (!apop_strcmp(all_vars_d->text[i][1], weights_col))
+                apop_text_add(all_vars_d, ctr++, 0, all_vars_d->text[i][1]);
+        apop_text_alloc(all_vars_d, ctr, 1);
     }
     apop_regex(all_vars, pipe_parse, &all_vars_d);
     int var_ct = all_vars_d->textsize[0];
@@ -518,8 +539,11 @@ APOP_VAR_ENDHEAD
 		asprintf(&q, "%s %s%c ", q, all_vars_d->text[i][0], i+1<var_ct ? ',' : ' '); 
 	asprintf(&q, "%s\n  union\nselect * from apop_zerocontrasts_%i ", q, run_number);
 	apop_query("%s", q);
-	if (structural_zeros)
+    Apop_notify(2, "Querying possible nonzero cells (before structural zeros are removed):\n%s", q);
+	if (structural_zeros){
+        Apop_notify(2, "\nRemoving structural zeros via:\n%s", q);
 		 apop_query("delete from apop_contrasts_%i where\n %s", run_number, structural_zeros);
+    }
 
     //apop_contrasts... holds the cells of the grid we actually need. Query them to 
     //an apop_data set and start doing the raking.
@@ -527,10 +551,10 @@ APOP_VAR_ENDHEAD
     fit = apop_query_to_mixed_data(format, "select * from apop_contrasts_%i", run_number);
     Apop_assert(fit, "This query:\n%s\ngenerated a blank table.", q);
 
-    contrast_grid = apop_data_calloc(0,var_ct, contrast_ct);
+    contrast_grid = apop_data_calloc(var_ct, contrast_ct);
 	for (int i=0; i< contrast_ct; i++)
 		for (int j=0; j< contras[i]->textsize[0]; j++)
-			apop_data_set(contrast_grid,  get_var_index(all_vars_d, contras[i]->text[j][0]), i, 1);
+			apop_data_set(contrast_grid, get_var_index(all_vars_d, contras[i]->text[j][0]), i, 1);
 	//clean up
 	for (int i=0; i< contrast_ct; i++){
 		apop_query("drop table apop_m%i_%i", i, run_number);
@@ -538,6 +562,9 @@ APOP_VAR_ENDHEAD
 	}
 
     apop_data *d =apop_data_copy(fit);
+apop_data_print(d, "internalfit");
+    if (nudge)
+        apop_map(fit, .fn_rp=nudge_zeros, .param=&nudge);
     c_loglin(contrast_grid, d, fit, tolerance, max_iterations);
     apop_data_free(d);
     

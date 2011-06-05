@@ -292,8 +292,8 @@ APOP_VAR_ENDHEAD
     apop_data *fdummy;
     apop_data *dummies= dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
     //Now process the append and remove options.
-    int rm_list[col+1];
-    memset (rm_list, 0,(col+1)*sizeof(int)); 
+    int rm_list[d->matrix->size1+1];
+    memset (rm_list, 0,(d->matrix->size1+1)*sizeof(int)); 
     if (append =='i'){
         apop_data **split = apop_data_split(d, col+1, 'c');
         //stack names, then matrices

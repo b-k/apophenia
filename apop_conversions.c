@@ -222,6 +222,8 @@ apop_data * out = apop_db_to_crosstab("base_data group by row, col", "row", "col
 //which will expand to "select row, col, count(*) from base_data group by row, col"
 \endcode
 
+\see \ref apop_crosstab_to_db
+
 \ingroup db
 */
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
@@ -261,31 +263,66 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 	return outdata;
 }
 
-/** See \ref apop_db_to_crosstab for the storyline; this is the complement.
+/** See \ref apop_db_to_crosstab for the storyline; this is the complement, which takes a
+  crosstab and writes its values to the database.
+
+For example, I would take
+<table frame=box>                                                                                                              
+<tr>                                                                                                                           
+<td> </td><td> c0</td><td>c1</td>
+</tr><tr valign=bottom>
+<td align=center> </td></tr> 
+<tr><td>r0</td><td>2</td><td>3</td></tr> 
+<tr><td>r1</td><td>0</td><td>4</td></tr> 
+</table> 
+
+and do the following writes to the database:
+
+\code
+insert into your_table values ('r0', 'c0', 2);
+insert into your_table values ('r0', 'c1', 3);
+insert into your_table values ('r1', 'c0', 3);
+insert into your_table values ('r1', 'c1', 4);
+\endcode
+
+
+\li If your data set does not have names (or not enough names), I will use the scheme above, filling in names of the form <tt>r0</tt>, <tt>r1</tt>, ... <tt>c0</tt>, <tt>c1</tt>, .... Text columns get their own numbering system, <tt>t0</tt>, <tt>t1</tt>, ..., which is a little more robust than continuing the column count from the matrix.
+
+\li I handle only the matrix and text. 
  \ingroup db
  */
 void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name){
-  int		    i,j;
-  apop_name   *n = in->names;
+    apop_name *n = in->names;
+    char *colname, *rowname;
+    Get_vmsizes(in); //msize1, msize2
+    int maxcol= GSL_MAX(msize2, in->textsize[1]);
+    char sparerow[msize1 > 0 ? (int)log10(msize1)+1 : 0];
+    char sparecol[maxcol > 0 ? (int)log10(maxcol)+1 : 0];
 	apop_query("CREATE TABLE %s (%s , %s , %s);", tabname, 
             apop_strip_dots(row_col_name, 'd'), 
             apop_strip_dots(col_col_name, 'd'), 
             apop_strip_dots(data_col_name, 'd'));
 	apop_query("begin;");
-	if (in->matrix)
-		for (i=0; i< n->colct; i++)
-			for (j=0; j< n->rowct; j++){
-                double x = gsl_matrix_get(in->matrix, j, i); 
-                if (!isnan(x))
-                    apop_query("INSERT INTO %s VALUES ('%s', '%s',%g);", tabname, 
-                        n->row[j], n->column[i], x);
-            }
-	if (in->text)
-		for (i=0; i< n->textct; i++)
-			for (j=0; j< n->rowct; j++)
-				apop_query("INSERT INTO %s VALUES ('%s', '%s','%s');", tabname, 
-					n->row[j], n->text[i], in->text[j][i]);
+    for (int i=0; i< msize1; i++){
+        rowname = (n->rowct > i) ?  n->row[i] : (sprintf(sparerow, "r%i", i), sparerow);
+        for (int j=0; j< msize2; j++){
+            colname = (n->colct > j) ? n->column[j] : (sprintf(sparecol, "c%i", j), sparecol);
+            double x = gsl_matrix_get(in->matrix, i, j); 
+            if (!isnan(x)) apop_query("INSERT INTO %s VALUES ('%s', '%s', %g);", 
+                                                tabname, rowname, colname, x);
+            else apop_query("INSERT INTO %s VALUES ('%s', '%s', 0/0);", 
+                                        tabname, rowname, colname);
+        }
+    }
+    for (int i=0; i< in->textsize[0]; i++){
+        rowname = (n->rowct > i) ? n->row[i] : (sprintf(sparerow, "r%i", i), sparerow);
+        for (int j=0; j< in->textsize[1]; j++){
+            colname = (n->textct > j) ? n->text[j] : (sprintf(sparecol, "t%i", j), sparecol);
+            apop_query("INSERT INTO %s VALUES ('%s', '%s', '%s');", tabname, 
+                rowname, colname, in->text[i][j]);
+        }
+    }
 	apop_query("commit;");
 }
 
@@ -1191,6 +1228,9 @@ APOP_VAR_END_HEAD
         tab_create_mysql(tabname, col_ct, has_row_names, field_params, table_params);
     else
         tab_create_sqlite(tabname, col_ct, has_row_names, field_params, table_params);
+#if SQLITE_VERSION_NUMBER < 3003009
+    int use_sqlite_prepared_statements = 0;
+#else
     int use_sqlite_prepared_statements = (sqlite3_libversion_number() >=3003009
                     && !(apop_opts.db_engine == 'm') 
                     &&  col_ct <= 999); //Arbitrary SQLite limit on blanks in prepared statements.
@@ -1201,7 +1241,7 @@ APOP_VAR_END_HEAD
         xprintf(&q, "%s)", q);
         sqlite3_prepare_v2(db, q, -1, &statement, NULL);
     }
-
+#endif
     //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
 	while((instr=add_this_line) || (instr= read_a_line(infile, text_file))!=NULL){
 		if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.

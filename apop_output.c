@@ -434,12 +434,18 @@ APOP_VAR_HEAD void apop_data_print(const apop_data *data, Output_declares){
     Dispatch_output
 APOP_VAR_ENDHEAD 
     if (output_type  == 'd'){
-        apop_data_to_db(data,  apop_strip_dots(apop_strip_dots(output_file,1),0));
+        char *undotted = apop_strip_dots(apop_strip_dots(output_file,1),0);
+        if (output_append == 'w')
+            apop_table_exists(undotted, 'd');
+        apop_data_to_db(data, undotted);
+        free(undotted);
         return;
     }
-    apop_data_print_core(data,  output_pipe, output_type);
-    if (data && data->more) 
+    apop_data_print_core(data, output_pipe, output_type);
+    if (data && data->more) {
+        output_append='a';
         apop_data_print(data->more, Output_vars);
+    }
     if (output_file)
         fclose(output_pipe);
 }

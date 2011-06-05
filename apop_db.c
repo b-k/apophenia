@@ -476,13 +476,17 @@ Column names are inserted if there are any. If there are, all dots are converted
 
 \li If there are weights, they will be the last column of the table, and the column will be named "weights".
 
+\li If the table exists; append to. If the table does not exist, create. So perhaps call \ref apop_table_exists <tt>("tabname", 'd')</tt> to ensure that the table is removed ahead of time.
+
+\li You can also call this via \ref apop_data_print <tt>(data, "tabname", .output_type='d', .output_append='w')</tt> to overwrite a new table or with <tt>.output_append='a'</tt> to append.
+
 \param set 	    The name of the matrix
 \param tabname	The name of the db table to be created
 \ingroup apop_data
 \ingroup conversions
 */
 void apop_data_to_db(const apop_data *set, const char *tabname){
-    apop_assert_c(set, , 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
+    Apop_assert_c(set, , 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
   int		i,j; 
   int		ctr		    = 0;
   int		batch_size	= 100;
@@ -491,6 +495,8 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
   int       use_row= strlen(apop_opts.db_name_column) 
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
+
+    int tab_exists = apop_table_exists(tabname);
 
     regex_t nan_regex;
     int used_nan_regex=0;
@@ -504,7 +510,13 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
     }
 
 
-    if (apop_opts.db_engine == 'm')
+//To start, q will either be "begin;" if the table exists or "create table ... ; begin;" if it doesn't.
+//Except mysql doesn't like transactions like this, so elide the "begin;" in that case.
+    if (tab_exists && !apop_opts.db_engine == 'm')
+        asprintf(&q, "begin;");
+    else if (tab_exists && apop_opts.db_engine == 'm')
+        asprintf(&q, "");
+    else if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
     {
         asprintf(&q, "create table %s (", tabname);
@@ -569,6 +581,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
             qxprintf(&q, "%s%c\n \"weights\" numeric", q, comma);
         qxprintf(&q,"%s);  begin;",q);
     }
+
     int lim = GSL_MAX(set->vector ? set->vector->size : 0,
                 GSL_MAX(set->matrix ? set->matrix->size1 : 0, 
                         set->textsize[0]));

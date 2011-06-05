@@ -4,6 +4,9 @@
 !!Big.
 ]
 
+	June 2011
+--apop_crosstab_to_db handles missing labels and NaNs better.
+
 	May 2011
 **apop_map returns a data set with an allocated/filled vector when not called with .inplace='y'.  Before, it had been making a full copy, which is idiosyncratic.
 --apop_rake accepts a weights column.
