@@ -33,8 +33,8 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 \ingroup convenience_fns
 */
 long double apop_vector_sum(const gsl_vector *in){
-  apop_assert_c(in, 0, 1, "You just asked me to sum a NULL. Returning zero.")
-  double  out = 0;
+    Apop_assert_c(in, 0, 1, "You just asked me to sum a NULL. Returning zero.")
+    double  out = 0;
     for (size_t i=0; i< in->size; i++)
         out += gsl_vector_get(in, i);
 	return out; 
@@ -193,7 +193,7 @@ This function uses the \ref designated syntax for inputs.
 APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm){
     static gsl_vector *zero = NULL;
     const gsl_vector * apop_varad_var(ina, NULL);
-    apop_assert_s(ina, "The first vector has to be non-NULL.");
+    Apop_assert(ina, "The first vector has to be non-NULL.");
     const gsl_vector * apop_varad_var(inb, NULL);
     if (!inb){
         if (!zero || zero->size !=ina->size){
@@ -205,10 +205,10 @@ APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vecto
     const char apop_varad_var(metric, 'e');
     const double apop_varad_var(norm, 2);
 APOP_VAR_ENDHEAD
-  apop_assert_s(ina->size == inb->size, "I need equal-sized vectors, but "
+    Apop_assert(ina->size == inb->size, "I need equal-sized vectors, but "
                 "you sent a vector of size %zu and a vector of size %zu. ", ina->size, inb->size);
-  double  dist    = 0;
-  size_t  i;
+    double  dist    = 0;
+    size_t  i;
     if (metric == 'e' || metric == 'E'){
         for (i=0; i< ina->size; i++){
             dist    += gsl_pow_2(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
@@ -248,9 +248,9 @@ Equivalent to \ref apop_vector_distance<tt>(ina, inb, .metric='M')</tt>.
 \ingroup convenience_fns
 */
 double apop_vector_grid_distance(const gsl_vector *ina, const gsl_vector *inb){
-  apop_assert_c(ina, 0, 0, "first input vector is NULL. Returning 0.");
-  apop_assert_c(inb, 0, 0, "second input vector is NULL. Returning 0.");
-  apop_assert_s(ina->size == inb->size, 
+  Apop_assert_c(ina, 0, 0, "first input vector is NULL. Returning 0.");
+  Apop_assert_c(inb, 0, 0, "second input vector is NULL. Returning 0.");
+  Apop_assert(ina->size == inb->size, 
                 "You sent a vector of size %zu and a vector of size %zu.", ina->size, inb->size);
   double  dist    = 0;
     for (size_t i=0; i< ina->size; i++)
@@ -306,11 +306,11 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type){
       gsl_vector * apop_varad_var(in, NULL);
-      apop_assert_c(in,  , 1, "Input vector is NULL. Doing nothing.\n");
+      Apop_assert_c(in,  , 1, "Input vector is NULL. Doing nothing.");
       gsl_vector ** apop_varad_var(out, NULL);
       const char  apop_varad_var(normalization_type, 'p');
 APOP_VAR_END_HEAD
-  double		mu, min, max;
+    double		mu, min, max;
 	if (!out) 	
 		out	= &in;
 	else {
@@ -348,7 +348,7 @@ APOP_VAR_END_HEAD
 \param normalization     see \ref apop_vector_normalize.
 */
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization){
-    apop_assert_c(data, , 1, "input matrix is NULL. Doing nothing.");
+    Apop_assert_c(data, , 1, "input matrix is NULL. Doing nothing.");
     if (row_or_col == 'r')
         for (size_t j = 0; j < data->size1; j++){
             Apop_matrix_row(data, j, v);
@@ -366,8 +366,8 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
   \param m	the matrix to be summed. 
 \ingroup convenience_fns*/
 long double apop_matrix_sum(const gsl_matrix *m){
-  apop_assert_c(m, 0, 1, "You just asked me to sum a NULL. Returning zero.")
-  long double	sum	= 0;
+    Apop_assert_c(m, 0, 1, "You just asked me to sum a NULL. Returning zero.")
+    long double	sum	= 0;
 	for (size_t j=0; j< m->size1; j++)
 		for (size_t i=0; i< m->size2; i++)
 			sum     += gsl_matrix_get(m, j, i);
@@ -403,9 +403,9 @@ apop_matrix_mean_and_var.
 \param mean	the pre-calculated mean
 \ingroup convenience_fns*/
 double apop_matrix_var_m(const gsl_matrix *data, double mean){
-  double     avg2    = 0;
-  int        cnt= 0;
-  double     x, ratio;
+    double avg2 = 0;
+    int    cnt = 0;
+    double x, ratio;
     for(size_t i=0; i < data->size1; i++)
         for(size_t j=0; j < data->size2; j++){
             x       = gsl_matrix_get(data, i,j);
@@ -452,8 +452,8 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 \li This function gives more columns than you probably want; use \ref apop_data_prune_columns to pick the ones you want to see.
 \todo We should probably let this summarize rows as well.  */
 apop_data * apop_data_summarize(apop_data *indata){
-  apop_assert_c(indata, NULL, 0, "You sent me a NULL apop_data set. Returning NULL.\n");
-  apop_assert_c(indata->matrix, NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
+  Apop_assert_c(indata, NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
+  Apop_assert_c(indata->matrix, NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
   apop_data	*out	= apop_data_alloc(0,indata->matrix->size2, 6);
   double		mean, var;
   char		rowname[10000]; //crashes on more than 10^9995 columns.
@@ -497,12 +497,12 @@ apop_data * apop_data_summarize(apop_data *indata){
 \param  w   the weight vector. If NULL, assume equal weights.
 \return     The weighted mean */
 double apop_vector_weighted_mean(const gsl_vector *v,const  gsl_vector *w){
-  long double   sum = 0, wsum = 0;
+    long double   sum = 0, wsum = 0;
     if (!w)
         return apop_vector_mean(v);
-    apop_assert_c(v,  0, 1, "data vector is NULL. Returning zero.\n");
-    apop_assert_c(v->size,  0, 1, "data vector has size 0. Returning zero.\n");
-    apop_assert_c(w->size == v->size,  0, 0, "data vector has size %zu; weighting vector has size %zu. Returning zero.\n", v->size, w->size);
+    Apop_assert_c(v,  0, 1, "data vector is NULL. Returning zero.");
+    Apop_assert_c(v->size,  0, 1, "data vector has size 0. Returning zero.");
+    Apop_assert_c(w->size == v->size,  0, 0, "data vector has size %zu; weighting vector has size %zu. Returning zero.", v->size, w->size);
     for (size_t i=0; i< w->size; i++){
         sum  += gsl_vector_get(w, i) * gsl_vector_get(v,i); 
         wsum += gsl_vector_get(w, i); 
@@ -541,14 +541,13 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
 }
 
 static double wskewkurt(const gsl_vector *v, const gsl_vector *w, const int exponent, const char *fn_name){
-  int           i;
-  long double   wsum = 0, sumcu = 0, vv, ww, mu;
-    apop_assert_c(v,  0, 1, "%s: data vector is NULL. Returning zero.\n", fn_name);
-    apop_assert_c(v->size,  0, 1,"%s: data vector has size 0. Returning zero.\n", fn_name);
-    apop_assert_c(w->size == v->size,  0, 1,"%s: data vector has size %zu; weighting vector has size %zu. Returning zero.\n", fn_name, v->size, w->size);
+    long double   wsum = 0, sumcu = 0, vv, ww, mu;
+    Apop_assert_c(v,  0, 1, "%s: data vector is NULL. Returning zero.", fn_name);
+    Apop_assert_c(v->size,  0, 1,"%s: data vector has size 0. Returning zero.", fn_name);
+    Apop_assert_c(w->size == v->size,  0, 1,"%s: data vector has size %zu; weighting vector has size %zu. Returning zero.", fn_name, v->size, w->size);
     //Using the E(x - \bar x)^3 form, which is lazy.
     mu  = apop_vector_weighted_mean(v, w);
-    for (i=0; i< w->size; i++){
+    for (size_t i=0; i< w->size; i++){
         vv    = gsl_vector_get(v,i);
         ww    = gsl_vector_get(w,i);
         sumcu+= ww * gsl_pow_int(vv - mu, exponent); 
@@ -594,13 +593,13 @@ makes sense if the weightings are identical, so the function takes only one weig
 \return     The weighted sample covariance
 */
 double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *w){
-  long double   sum1 = 0, sum2 = 0, wsum = 0, sumsq = 0, vv1, vv2, ww;
+    long double   sum1 = 0, sum2 = 0, wsum = 0, sumsq = 0, vv1, vv2, ww;
     if (!w)
         return apop_vector_cov(v1,v2);
-    apop_assert_c(v1,  0, 1, "first data vector is NULL. Returning zero.\n");
-    apop_assert_c(v2,  0, 1, "second data vector is NULL. Returning zero.\n");
-    apop_assert_c(v1->size,  0, 1, "apop_vector_weighted_variance: data vector has size 0. Returning zero.\n");
-    apop_assert_c((w->size == v1->size) && (w->size == v2->size),  0, 0, "apop_vector_weighted_variance: data vectors have sizes %zu and %zu; weighting vector has size %zu. Returning zero.\n", v1->size, v2->size, w->size);
+    Apop_assert_c(v1,  0, 1, "first data vector is NULL. Returning zero.");
+    Apop_assert_c(v2,  0, 1, "second data vector is NULL. Returning zero.");
+    Apop_assert_c(v1->size,  0, 1, "apop_vector_weighted_variance: data vector has size 0. Returning zero.");
+    Apop_assert_c((w->size == v1->size) && (w->size == v2->size),  0, 0, "apop_vector_weighted_variance: data vectors have sizes %zu and %zu; weighting vector has size %zu. Returning zero.", v1->size, v2->size, w->size);
     //Using the E(x^2) - E^2(x) form.
     for (size_t i=0; i< w->size; i++){
         vv1   = gsl_vector_get(v1,i);
@@ -631,12 +630,12 @@ It uses the \ref designated syntax for inputs.
 \ingroup matrix_moments */
 APOP_VAR_HEAD gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize){
     gsl_matrix *apop_varad_var(in, NULL)
-    apop_assert_c(in,  NULL, 0, "Input matrix is NULL. Returning same.");
+    Apop_assert_c(in,  NULL, 0, "Input matrix is NULL. Returning same.");
     const char apop_varad_var(normalize, 0)
 APOP_VAR_ENDHEAD
-  gsl_matrix	*out;
-  double		means[in->size2];
-  gsl_vector_view	v1, v2;
+    gsl_matrix	*out;
+    double		means[in->size2];
+    gsl_vector_view	v1, v2;
 	if (normalize == 1 || normalize=='n' || normalize == 'N'){
 		out	= gsl_matrix_alloc(in->size2, in->size2);
 		apop_matrix_normalize(in,'c', 0);
@@ -705,14 +704,14 @@ This is the \ref apop_data version of \ref apop_matrix_covariance; if you don't 
 
 \ingroup matrix_moments */
 apop_data *apop_data_covariance(const apop_data *in){
-  apop_assert_c(in,  NULL, 1, "You sent me a NULL apop_data set. Returning NULL.\n");
-  apop_assert_c(in->matrix,  NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.\n");
-  apop_data   *out = apop_data_alloc(0,in->matrix->size2, in->matrix->size2);
-  double      var;
+    Apop_assert_c(in,  NULL, 1, "You sent me a NULL apop_data set. Returning NULL.");
+    Apop_assert_c(in->matrix,  NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
+    apop_data   *out = apop_data_alloc(in->matrix->size2, in->matrix->size2);
+    double      var;
     for (size_t i=0; i < in->matrix->size2; i++){
         for (size_t j=i; j < in->matrix->size2; j++){
-            APOP_COL(in, i, v1);
-            APOP_COL(in, j, v2);
+            Apop_col(in, i, v1);
+            Apop_col(in, j, v2);
             var = apop_vector_weighted_cov(v1, v2, in->weights);
             gsl_matrix_set(out->matrix, i,j, var);
             if (i!=j)
@@ -733,13 +732,12 @@ This is the \ref apop_data version of \ref apop_matrix_correlation; if you don't
 \return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
 \ingroup matrix_moments */
 apop_data *apop_data_correlation(const apop_data *in){
-  apop_data *out = apop_data_covariance(in);
-  double    std_dev;
+    apop_data *out = apop_data_covariance(in);
     for(size_t i=0; i< in->matrix->size2; i++){
-        APOP_COL(in, i, cvin);
-        APOP_COL(out, i, cvout);
-        APOP_ROW(out, i, rvout);
-        std_dev     = sqrt(apop_vector_weighted_var(cvin,in->weights));
+        Apop_col(in, i, cvin);
+        Apop_col(out, i, cvout);
+        Apop_row(out, i, rvout);
+        double std_dev = sqrt(apop_vector_weighted_var(cvin,in->weights));
         gsl_vector_scale(cvout, 1.0/std_dev);
         gsl_vector_scale(rvout, 1.0/std_dev);
     }
@@ -927,7 +925,7 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi){
     gsl_matrix * apop_varad_var(m, NULL);
-    apop_assert_c(m, 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite.");
+    Apop_assert_c(m, 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite.");
     char apop_varad_var(semi, 's');
 APOP_VAR_ENDHEAD
     for (int i=1; i<= m->size1; i++){

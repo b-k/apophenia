@@ -461,16 +461,17 @@ APOP_VAR_HEAD void apop_matrix_print(const gsl_matrix *data, Output_declares){
     const gsl_matrix *apop_varad_var(data, NULL);
     Dispatch_output
 APOP_VAR_ENDHEAD
-    if (output_type   == 'd')
-        apop_matrix_to_db(data, apop_strip_dots(apop_strip_dots(output_file,1),0), NULL);
-    else{
-        apop_data *dtmp = apop_matrix_to_data((gsl_matrix*)data);
-        apop_data_print_core(dtmp,  output_pipe, output_type);
-        dtmp->matrix = NULL;
-        apop_data_free(dtmp);
-        if (output_file)
-            fclose(output_pipe);
+    if (output_type == 'd'){
+        Apop_assert_c(data, , 1, "You sent me a NULL matrix. No database table will be created.");
+    } else if (!data){
+        fprintf(output_pipe, "NULL\n");
+        return;
     }
+    apop_data *d = apop_data_alloc();
+    d->matrix=(gsl_matrix *) data; //cheating on the const qualifier
+    apop_data_print(d, Output_vars);
+    d->matrix=NULL;
+    apop_data_free(d);
 }
 
 /** Dump a <tt>gsl_matrix</tt> to the screen.

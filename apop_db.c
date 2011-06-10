@@ -435,25 +435,6 @@ void qxprintf(char **q, char *format, ...){
     free(r);
 }
 
-/** Dump a <tt>gsl_matrix</tt> into the database. This function is basically preempted by \ref apop_matrix_print. Use that one; this may soon no longer be available.
-
-\param data 	The name of the matrix
-\param tabname	The name of the db table to be created
-\param headers	A list of column names. If <tt>NULL</tt>, then the columns will be named <tt>c1</tt>, <tt>c2</tt>, <tt>c3</tt>, &c.
- \ingroup conversions
-*/
-void apop_matrix_to_db(const gsl_matrix *data, const char *tabname, const char **headers){
-    apop_assert_c(data, , 1, "You sent me a NULL matrix. Database table %s will not be created.", tabname);
-    apop_data *d = apop_data_alloc();
-    d->matrix=(gsl_matrix *) data; //cheating on the const qualifier
-    if(headers)
-        for(int i=0; i< data->size2; i++)
-            apop_name_add(d->names, headers[i], 'c');
-    apop_data_to_db(d, tabname);
-    d->matrix=NULL;
-    apop_data_free(d);
-}
-
 static void add_a_number (char **q, char *comma, double v){
     if (gsl_isnan(v))
         qxprintf(q,"%s%c NULL ", *q, *comma);
@@ -487,12 +468,12 @@ Column names are inserted if there are any. If there are, all dots are converted
 */
 void apop_data_to_db(const apop_data *set, const char *tabname){
     Apop_assert_c(set, , 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
-  int		i,j; 
-  int		ctr		    = 0;
-  int		batch_size	= 100;
-  char		*q 		    = malloc(1000);
-  char      comma       = ' ';
-  int       use_row= strlen(apop_opts.db_name_column) 
+    int	i,j; 
+    int	ctr		    = 0;
+    int	batch_size	= 100;
+    char	*q 		    = malloc(1000);
+    char  comma       = ' ';
+    int   use_row= strlen(apop_opts.db_name_column) 
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
 

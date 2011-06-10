@@ -100,9 +100,11 @@ int     df      = count-1;
  and that's what this function is based on.
 
  \param est     an \ref apop_model that you have already calculated. (No default)
- \param contrast       The matrix \f${\bf Q}\f$ and the vector \f${\bf c}\f$, where each row represents a hypothesis. (Defaults: if matrix is \c NULL, it is set to the identity matrix; if the vector is \c NULL, it is set to zero; if the entire \c apop_data set is NULL or omitted, both of these settings are made.)
+ \param contrast       The matrix \f${\bf Q}\f$ and the vector \f${\bf c}\f$, where each row represents a hypothesis. (Defaults: if matrix is \c NULL, it is set to the identity matrix with the top row missing. If the vector is \c NULL, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire \c apop_data set is NULL or omitted, we are testing the hypothesis that all but \f$\beta_1\f$ are zero.)
  \return An \c apop_data set with a few variants on the confidence with which we can reject the joint hypothesis.
  \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
+
+\li There are two approaches to an \f$F\f$-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a \c NULL contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {\em Modeling with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.
 
 This function uses the \ref designated syntax for inputs.
  */
@@ -111,28 +113,40 @@ APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     apop_model *apop_varad_var(est, NULL)
     Nullcheck_m(est);
     Nullcheck_d(est->data);
-    apop_data * apop_varad_var(contrast, NULL)
+    apop_data * apop_varad_var(contrast, NULL);
+    int free_data=0, free_matrix=0, free_vector=0;
+    if (!contrast) contrast = apop_data_alloc(), free_data=1;
+    if (!contrast->matrix) {
+        int size = est->parameters->vector->size;
+        contrast->matrix= gsl_matrix_calloc(size - 1, size);
+        for (int i=1; i< size; i++)
+            apop_data_set(contrast, i-1, i, 1);
+    }
+    if (!contrast->vector) contrast->vector = gsl_vector_calloc(contrast->matrix->size1), free_vector=1;
+
+    apop_data *out = apop_f_test_base(est, contrast);
+    if (free_data) {apop_data_free(contrast); return out;}
+    if (free_matrix) gsl_matrix_free(contrast->matrix);
+    if (free_vector) gsl_vector_free(contrast->vector);
+    return out;
 APOP_VAR_ENDHEAD
-    gsl_matrix *q      = contrast ? contrast->matrix: NULL;
-    apop_data  *xpxinv = apop_data_alloc();
-    size_t     contrast_ct;
-    if (contrast)
-        contrast_ct =  contrast->vector ? contrast->vector->size 
-                                        : contrast->matrix->size1;
-    else contrast_ct = est->parameters->vector->size;
-    apop_data *qprimebeta;
-    apop_data *qprimexpxinvqinv = apop_data_alloc();
-    double    f_stat, pval;
-    int       q_df,
-              data_df = est->data->matrix->size1 - est->parameters->vector->size;
+    size_t contrast_ct = contrast->vector->size;
+    Apop_assert(contrast->matrix->size1 == contrast_ct,
+            "I counted %i contrasts by the size of either contrast->vector or "
+            "est->parameters->vector->size, but you gave me a matrix with %i rows. Those should match."
+            , contrast_ct, contrast->matrix->size1);
+    double f_stat, pval;
 
     Get_vmsizes(est->data); //msize1, msize2
+    int data_df = msize1 - contrast_ct;
+
     //Find (\underbar x)'(\underbar x), where (\underbar x) = the data with means removed
     long double means[msize2];
-    for (int i=0; i< msize2; i++){
+    for (int i=1; i< msize2; i++){
         Apop_col(est->data, i, onecol)
         means[i] = apop_vector_mean(onecol);
     }
+    means[0]=0;// don't screw with the ones column.
     apop_data *xpx = apop_data_alloc(msize2, msize2);
     for (int i=0; i< msize2; i++)
         for (int j=0; j< msize2; j++){ //at this loop, we calculate one cell in the dot prouct
@@ -143,39 +157,31 @@ APOP_VAR_ENDHEAD
             apop_data_set(xpx, i, j, total);
         }
 
-    if (q != NULL){
-        q_df    = q->size1;
-        xpxinv->matrix = apop_matrix_inverse(xpx->matrix);
-        apop_data *qprimexpxinv = apop_dot(contrast, xpxinv, 'm', 'm');
-        apop_data *qprimexpxinvq = apop_dot(qprimexpxinv, contrast, 'm', 't');
-	    qprimexpxinvqinv->matrix = apop_matrix_inverse(qprimexpxinvq->matrix);		
-        apop_data_free(qprimexpxinvq);
-        apop_data_free(qprimexpxinv);
-        qprimebeta = apop_dot(contrast, est->parameters, 'm', 'v');
-    } else {
-        q_df    = est->parameters->vector->size;
-        qprimexpxinvqinv->matrix = apop_matrix_copy(xpx->matrix);
-        qprimebeta = apop_data_copy(est->parameters);
-    }
-    if (contrast && contrast->vector)
-        gsl_vector_sub(qprimebeta->vector, contrast->vector);  //else, c=0, so this is a no-op.
-     apop_data *qprimebetaminusc_qprimexpxinvqinv = apop_dot(qprimexpxinvqinv, qprimebeta, .form2='v');
+    apop_data xpxinv = (apop_data){.matrix=apop_matrix_inverse(xpx->matrix)};
+    apop_data *qprimexpxinv = apop_dot(contrast, &xpxinv, 'm', 'm');
+    apop_data *qprimexpxinvq = apop_dot(qprimexpxinv, contrast, 'm', 't');
+    apop_data qprimexpxinvqinv = (apop_data){.matrix=apop_matrix_inverse(qprimexpxinvq->matrix)};
+    apop_data_free(qprimexpxinvq);
+    apop_data_free(qprimexpxinv);
+    apop_data *qprimebeta = apop_dot(contrast, est->parameters, 'm', 'v');
+    gsl_vector_sub(qprimebeta->vector, contrast->vector);
+    apop_data *qprimebetaminusc_qprimexpxinvqinv = apop_dot(&qprimexpxinvqinv, qprimebeta, .form2='v');
     gsl_blas_ddot(qprimebeta->vector, qprimebetaminusc_qprimexpxinvqinv->vector, &f_stat);
-    apop_data_free(xpx); apop_data_free(xpxinv);
-    apop_data_free(qprimexpxinvqinv); apop_data_free(qprimebeta);
+    apop_data_free(xpx);
+    apop_data_free(qprimebeta);
     apop_data_free(qprimebetaminusc_qprimexpxinvqinv);
 
     apop_data *r_sq_list = apop_estimate_coefficient_of_determination (est);
     double variance = apop_data_get(r_sq_list, .rowname="sse");
-    f_stat  *=  data_df / (variance * q_df);
-    pval    = (q_df > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, q_df, data_df): GSL_NAN; 
+    f_stat *=  data_df / (variance * contrast_ct);
+    pval    = (contrast_ct > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, contrast_ct, data_df): GSL_NAN; 
 
-apop_data       *out        = apop_data_alloc();
+    apop_data *out = apop_data_alloc();
     sprintf(out->names->title, "F test");
     apop_data_add_named_elmt(out, "F statistic", f_stat);
     apop_data_add_named_elmt(out, "p value", pval);
     apop_data_add_named_elmt(out, "confidence", 1- pval);
-    apop_data_add_named_elmt(out, "df1", q_df);
+    apop_data_add_named_elmt(out, "df1", contrast_ct);
     apop_data_add_named_elmt(out, "df2", data_df);
     return out;
 }

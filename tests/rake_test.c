@@ -42,7 +42,7 @@ void test_raking(){
             for (c=0; c < 10; c++)
                 apop_query("insert into inequals values (%i, %i, %i, %g)", a,b,c, a/2.+gsl_rng_uniform(r));
     char *contrasts[] ={"a|b"};
-    apop_data *inequal_weights = apop_rake("inequals", .all_vars="a|b|c",.contrasts=contrasts, .weights_col="weights");
+    apop_data *inequal_weights = apop_rake("inequals", .all_vars="a|b|c",.contrasts=contrasts, .count_col="weights");
 
 
     //regress using the estimates from the raking

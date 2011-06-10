@@ -426,15 +426,25 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
  equals a transformation of R^2 (after a normalization step).
 */
 void test_f(apop_model *est){
-apop_matrix_normalize(est->data->matrix, 'c', 'm');
-apop_data *rsq  = apop_estimate_coefficient_of_determination(est);
-apop_data *ftab = apop_F_test(est, NULL);
-double    n     = est->data->matrix->size1;
-double    K     = est->parameters->vector->size;
-double    r     = apop_data_get_ti(rsq, "R.squared", 0);
-double    f     = apop_data_get(ftab, .rowname="F.stat");
+    apop_data *rsq  = apop_estimate_coefficient_of_determination(est);
+    apop_data *constr= apop_data_alloc(est->parameters->vector->size-1, est->parameters->vector->size);
+    int i;
+    for (i=1; i< est->parameters->vector->size; i++)
+        apop_data_set(constr, i-1, i, 1);
+    apop_data *ftab = apop_F_test(est, constr);
+    apop_data *ftab2 = apop_F_test(est, NULL);
+    //apop_data_show(ftab);
+    //apop_data_show(ftab2);
+    double n = est->data->matrix->size1;
+    double K = est->parameters->vector->size-1;
+    double r = apop_data_get_ti(rsq, "R.squared", 0);
+    double f = apop_data_get(ftab, .rowname="F.stat");
+    double f2 = apop_data_get(ftab2, .rowname="F.stat");
     Diff (f , r*(n-K)/((1-r)*K) , tol5);
+    Diff (f2 , r*(n-K)/((1-r)*K) , tol5);
 }
+
+
 
 void test_OLS(gsl_rng *r){
   apop_data *set = apop_data_alloc(0, len, 2);

@@ -104,7 +104,8 @@ void  apop_name_print(apop_name * n){
 /** Erases an \ref apop_name structure.
 \ingroup names 	*/
 void  apop_name_free(apop_name * free_me){
-int		i;
+    if (!free_me) return; //only needed if users are doing tricky things like newdata = (apop_data){.matrix=...};
+    int	i;
 	for (i=0; i < free_me->colct; i++)
 		free(free_me->column[i]);
 	for (i=0; i < free_me->textct; i++)

@@ -6,6 +6,8 @@
 
 	June 2011
 --apop_crosstab_to_db handles missing labels and NaNs better.
+**apop_matrix_to_db removed (as promised a few years ago). Use apop_matrix_print(yourdata, "tabname", .output_type='d').
+**F-test defaults now match ANOVA tradition.
 
 	May 2011
 **apop_map returns a data set with an allocated/filled vector when not called with .inplace='y'.  Before, it had been making a full copy, which is idiosyncratic.

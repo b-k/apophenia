@@ -1,6 +1,7 @@
 //#define __USE_POSIX //for strtok_r
 #include "apop_internal.h"
 #include <gsl/gsl_sort_vector.h>
+void xprintf(char **q, char *format, ...); //in apop_conversions.c
 
 /* This is the internal documentation for apop_rake(). I assume you've read the usage
    documentation already (if you haven't, it's below, just above apop_rake).
@@ -287,7 +288,7 @@ static void c_loglin(const apop_data *config, const apop_data *indata, apop_data
     mnode_t ** index = index_generate(indata);
 
     /* Make a preliminary adjustment to obtain the fit to an empty configuration list */
-    //fit->weights is either all 1 (if no weights_col) or the initial counts from the db.
+    //fit->weights is either all 1 (if no count_col) or the initial counts from the db.
     double x = apop_vector_sum(indata->weights);
     double y = apop_sum(fit->weights);
     gsl_vector_scale(fit->weights, x/y);
@@ -381,7 +382,7 @@ No default.
 
 \param all_vars The full list of variables to search. Provide these as a single,
 pipe-delimited string: e.g., "age | sex |income". Spaces are ignored. Default: if you are using SQLite, I
-will use all columns in the table (but the <tt>.weights_col</tt> if any); if you are using mySQL, I haven't implemented this yet
+will use all columns in the table (but the <tt>.count_col</tt> if any); if you are using mySQL, I haven't implemented this yet
 and you will have to provide a list.
 
 \param contrasts The contrasts describing your model. Like the \c all_vars input, each
@@ -397,7 +398,7 @@ value. This will go into a \c where clause, so anything you could put there is O
 \param tolerance I calculate the change for each cell from round to round;
 if the largest cell change is smaller than this, I stop. Default: 1e-5.
 
-\param weights_col This column gives the count of how many observations are represented
+\param count_col This column gives the count of how many observations are represented
 by each row. If \c NULL, ech row represents one person. Default: \c NULL.
 
 \param run_number Because I write intermediate tables to the database, I need a way to
@@ -405,6 +406,11 @@ distinguish distinct runs should you be threading several runs at once. If you a
 running several instances simultaneously, don't worry about this; if you are, do supply a
 value, since it's hard for the function to supply one in a race-proof manner. Default:
 internally-maintained values.
+
+\param init_table The default is to initially set all table elements to one and then rake from there. If you specify an \c init_table, then I will get the initial cell counts from it.  
+Default: if you specify \c init_count_col, the default is \c table_name; if you do not the default is \c NULL. The use of a separate table for initial values is currently inadequately tested and use-at-your-own-risk.
+
+\param init_count_col The column in \c init_table with the cell counts.
 
 \param nudge There is a common hack of adding a small value to every zero entry, because
 a zero entry will always scale to zero, while a small value could eventually scale
@@ -414,7 +420,7 @@ add <tt>nudge</tt> to any zero cells within that subset.
 
 If you want all cells to have nonzero value, then you can do that via pre-processing:
 \code
-apop_query("update data_table set weights_col = 1e-3 where weights_col = 0");
+apop_query("update data_table set count_col = 1e-3 where count_col = 0");
 \endcode
 
 \return An \ref apop_data set where every row is a single combination of variable values
@@ -430,7 +436,7 @@ written by a U.S. government employee during work hours. Some lawyers will tell 
 the code is licensed via the same modified GPL v2 as the main work; others will tell
 you that it is public domain.
 */
-APOP_VAR_HEAD apop_data * apop_rake(char *table_name, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, char *weights_col, int run_number){
+APOP_VAR_HEAD apop_data * apop_rake(char *table_name, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, char *count_col, int run_number, char *init_table, char *init_count_col, double nudge){
     static int defaultrun = 0;
     char * apop_varad_var(table_name, NULL);
     Apop_assert(table_name, "I need the name of a table in the database that will be the data source.");
@@ -438,10 +444,14 @@ APOP_VAR_HEAD apop_data * apop_rake(char *table_name, char *all_vars, char **con
     char ** apop_varad_var(contrasts, NULL); //default to all vars?
     int apop_varad_var(contrast_ct, 0);
     char * apop_varad_var(structural_zeros, NULL);
-    char * apop_varad_var(weights_col, NULL);
+    char * apop_varad_var(count_col, NULL);
     int apop_varad_var(max_iterations, 1e3);
     double apop_varad_var(tolerance, 1e-5);
     int apop_varad_var(run_number, defaultrun++);
+    char * apop_varad_var(init_count_col, NULL);
+    char * apop_varad_var(init_table, NULL);
+    if (init_count_col && !init_table)
+        init_table = table_name;
     double apop_varad_var(nudge, 0);
 APOP_VAR_ENDHEAD
 	apop_data **contras = generate_list_of_contrasts(contrasts, contrast_ct);
@@ -453,8 +463,9 @@ APOP_VAR_ENDHEAD
         all_vars_d = apop_query_to_text("PRAGMA table_info(%s)", table_name);
         int ctr=0;
         for (int i=0; i< all_vars_d->textsize[0]; i++)
-            if (!apop_strcmp(all_vars_d->text[i][1], weights_col))
-                apop_text_add(all_vars_d, ctr++, 0, all_vars_d->text[i][1]);
+            if (!apop_strcmp(all_vars_d->text[i][1], count_col)
+                 &&!apop_strcmp(all_vars_d->text[i][1], init_count_col))
+                    apop_text_add(all_vars_d, ctr++, 0, all_vars_d->text[i][1]);
         apop_text_alloc(all_vars_d, ctr, 1);
     }
     apop_regex(all_vars, pipe_parse, &all_vars_d);
@@ -464,18 +475,17 @@ APOP_VAR_ENDHEAD
 	apop_query("drop table if exists apop_zerocontrasts_%i", run_number);
 	apop_query("drop table if exists apop_contrasts_%i", run_number);
 	asprintf(&q, "create table apop_zerocontrasts_%i as select ", run_number);
-	//the asprintf(&q, "...", q) leaks; I don't care.
      /*Start with every possible combination:
          " select distinct b.block, qa.qageshort, qs.qsex, r.racep, hi.qspanq, 0"
          " from "
  		" (select distinct block as block from d) as b, "
  		" (select distinct qageshort from d) qa, " ...*/
 	for (int i=0; i < var_ct; i++)
-		asprintf(&q, "%s t%i.%s, ", q, i, all_vars_d->text[i][0]); 
-	asprintf(&q, "%s 0\n from\n", q); 
+		xprintf(&q, "%s t%i.%s, ", q, i, all_vars_d->text[i][0]); 
+	xprintf(&q, "%s 0\n from\n", q); 
 	char comma = ' ';
 	for (int i=0; i < var_ct; i++){
-	  	asprintf(&q, "%s %c (select distinct %s as %s from %s) as t%i\n", 
+	  	xprintf(&q, "%s %c (select distinct %s as %s from %s) as t%i\n", 
 					  q, comma, all_vars_d->text[i][0], all_vars_d->text[i][0], table_name, i);
 		comma = ',';
 	}
@@ -483,24 +493,24 @@ APOP_VAR_ENDHEAD
  		 where b.block||'.'||qa.qageshort||'.' || qs.qsex ||'.'|| r.racep in 
  		 (select block ||'.'|| qageshort ||'.'|| qsex ||'.'|| racep from d) and ...*/
     if (contrast_ct){
-        asprintf(&q, "%s\nwhere\n", q);
+        xprintf(&q, "%s\nwhere\n", q);
         char joiner[] = "||'.'||";
         char space[] = " ";
         for (int i=0; i< contrast_ct; i++){
             char *merge = strdup(" ");
             for (int j=0; j< contras[i]->textsize[0]; j++){
-                asprintf(&merge, "%s t%i.%s %s", 
+                xprintf(&merge, "%s t%i.%s %s", 
                     merge, get_var_index(all_vars_d, contras[i]->text[j][0]),
                     contras[i]->text[j][0], j+1!=contras[i]->textsize[0]? joiner : space);
             }
-            asprintf(&q, "%s %s in apop_m%i_%i\n ", q, merge, i, run_number);
+            xprintf(&q, "%s %s in apop_m%i_%i\n ", q, merge, i, run_number);
             if (i+1 < contrast_ct)
-                asprintf(&q, "%s and ", q);
+                xprintf(&q, "%s and ", q);
 
             //While we're here, we should create these mi tables:
             merge = strdup(" ");
             for (int j=0; j< contras[i]->textsize[0]; j++){
-                asprintf(&merge, "%s %s %s", 
+                xprintf(&merge, "%s %s %s", 
                     merge, 
                     contras[i]->text[j][0], j+1!=contras[i]->textsize[0]? joiner : space);
             }
@@ -512,14 +522,14 @@ APOP_VAR_ENDHEAD
     }
 /* Keep out margins with values for now; join them in below.
  	    except  select block, qageshort, qsex, racep, qspanq, 0 from d"; */
-	asprintf(&q, "%s except\nselect ", q);
+	xprintf(&q, "%s except\nselect ", q);
 	for (int i=0; i < var_ct; i++)
-		asprintf(&q, "%s %s, ", q, all_vars_d->text[i][0]); 
+		xprintf(&q, "%s %s, ", q, all_vars_d->text[i][0]); 
 	apop_query("%s 0 from %s", q, table_name);
 
     char *format=strdup("w");
     for (int i =0 ; i< var_ct; i++)
-        asprintf(&format, "m%s", format);
+        xprintf(&format, "m%s", format);
     /*create table contrasts as 
 			  select block, qageshort, qsex, racep, qspanq, count(*) from d
               group by block, qageshort, qsex, racep, qspanq
@@ -528,21 +538,25 @@ APOP_VAR_ENDHEAD
 		  Then,
               delete from contrasts where [structural_zeros]
      */
-	asprintf(&q, "create table apop_contrasts_%i as select ", run_number);
-	for (int i=0; i < var_ct; i++)
-		asprintf(&q, "%s %s, ", q, all_vars_d->text[i][0]); 
-    if (weights_col)
-        asprintf(&q, "%s sum(%s) from %s\ngroup by ", q, weights_col, table_name);
-    else
-        asprintf(&q, "%s count(*) from %s\ngroup by ", q, table_name);
-	for (int i=0; i < var_ct; i++)
-		asprintf(&q, "%s %s%c ", q, all_vars_d->text[i][0], i+1<var_ct ? ',' : ' '); 
-	asprintf(&q, "%s\n  union\nselect * from apop_zerocontrasts_%i ", q, run_number);
+    char *list_of_fields = strdup("");
+    char *init_q = strdup("select ");
+    asprintf(&list_of_fields, "%s", all_vars_d->text[0][0]);
+	for (int i=1; i < var_ct; i++)
+		xprintf(&list_of_fields, "%s, %s ", list_of_fields, all_vars_d->text[i][0]); 
+	asprintf(&q, "create table apop_contrasts_%i as select %s ", run_number, list_of_fields);
+    if (count_col){
+        xprintf(&q, "%s, sum(%s) from %s\ngroup by %s", q, count_col, table_name, list_of_fields);
+        if (init_table) xprintf(&init_q, "%s %s, sum(%s) from %s\ngroup by %s", init_q, list_of_fields, init_count_col, init_table, list_of_fields);
+    } else {
+        xprintf(&q, "%s, count(*) from %s\ngroup by %s", q, table_name, list_of_fields);
+        if (init_table) xprintf(&init_q, "%s %s, count(*) from %s\ngroup by %s", init_q, list_of_fields, init_table, list_of_fields);
+    }
+	xprintf(&q, "%s\n  union\nselect * from apop_zerocontrasts_%i ", q, run_number);
 	apop_query("%s", q);
     Apop_notify(2, "Querying possible nonzero cells (before structural zeros are removed):\n%s", q);
 	if (structural_zeros){
         Apop_notify(2, "\nRemoving structural zeros via:\n%s", q);
-		 apop_query("delete from apop_contrasts_%i where\n %s", run_number, structural_zeros);
+        apop_query("delete from apop_contrasts_%i where\n %s", run_number, structural_zeros);
     }
 
     //apop_contrasts... holds the cells of the grid we actually need. Query them to 
@@ -561,8 +575,8 @@ APOP_VAR_ENDHEAD
 		apop_data_free(contras[i]);
 	}
 
-    apop_data *d =apop_data_copy(fit);
-apop_data_print(d, "internalfit");
+    apop_data *d = (init_table) ? apop_query_to_mixed_data(format, "%s", init_q)
+                                : apop_data_copy(fit);
     if (nudge)
         apop_map(fit, .fn_rp=nudge_zeros, .param=&nudge);
     c_loglin(contrast_grid, d, fit, tolerance, max_iterations);
