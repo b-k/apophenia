@@ -55,6 +55,7 @@ BEGIN {
     doc_parts[9]="Settings"
     doc_parts[10]="Examples"
     doc_part_count=10
+    model_count = 0
        #print > "missing"
 }
 
@@ -70,7 +71,10 @@ in_doc==1 && !/\\a[model|doc]/ {
     current_model = $1
     in_doc=1
     oh = $0
-    if (!models[current_model]) models[current_model]=current_model
+    if (!models[current_model]) {
+        models[current_model]=current_model
+        model_count ++
+    }
     sub(current_model,"", oh)
     sub("\\*/","", oh)
     sub("^[ \\t]","", oh)
@@ -92,16 +96,21 @@ in_doc==1 && !/\\a[model|doc]/ {
 /\*\// { in_doc = 0 }
 
 
-
-/apop_model[[:space:]]*[^ \t]*[[:space:]]*=/ { in_decl=1; }
+#the declaration [like apop_model new_model = {"new model", .p=prob, .score=deriv}; ] tells us which struct elements are actually used.
+/apop_model[ \t]*[^ \t]*[ \t]*=/ { in_decl=1 }
 
 in_decl == 1 { cp = $0;
-    if (match(cp, "\"([^\"]*)\"", a))
-        items[current_model ":" "Name"] = "<tt>" substr(cp, a[1, "start"], a[1, "length"]) "</tt>" 
+    if (match(cp, "\"([^\"]*)\"")){
+        title= substr(cp,RSTART, RLENGTH)
+        gsub( "\"","",title)
+        items[current_model ":" "Name"] = "<tt>" title "</tt>" 
+    }
 
-    while (match(cp, "\\.([^[:space:]=]+)[[:space:]]*=", a) && a[1,"length"]){
-        items[current_model ":has" substr(cp, a[1, "start"], a[1, "length"])] = 1
-        cp = substr(cp, a[1, "start"]+a[1, "length"]+1) #drop the string, keep processing.
+    while (match(cp, "\\.[^ \\t=]+[ \\t]*=")){
+        cp = substr(cp, RSTART+1, length(cp)-RSTART)
+        match(cp, "[ \\t=]")
+        items[current_model ":has" substr(cp, 0, RSTART)] = 1
+        cp = substr(cp, RSTART+1) #cut at the =, keep processing.
     }
 }
 
@@ -124,9 +133,10 @@ function onedot(name, isdefault){
 }
 
 END {print "/** \\file */ /**\\defgroup models */"
-    modelct=asorti(models,sorted_models)
-    for (model_no=1; model_no<=modelct; model_no++){
-        m = sorted_models[model_no];
+    model_no=0
+    for (m in models){
+        model_no++
+        #m = sorted_models[model_no];
         print "\n/** "
         if (items[m ":intro"])
             print items[m ":intro"]
