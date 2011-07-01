@@ -927,6 +927,14 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     gsl_matrix_set(d->matrix, d->names->rowct-1, 0, val);
 }
 
+//See apop_data_add_names in types.h.
+void apop_data_add_names_base(apop_data *d, const char type, char const ** names){
+    if (!d->names) d->names = apop_name_alloc();
+    for(char const** name = names; *name !=NULL; name++)
+        apop_name_add(d->names, *name, type);
+}
+
+
 /** Add a string to the text element of an \ref apop_data set.  If you
  send me a \c NULL string, I will write the string <tt>"NaN"</tt> in the given slot.
  If there is already something in that slot, that string is freed (preventing memory
@@ -1092,22 +1100,22 @@ gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidt
 
 /** This function will resize a gsl_vector to a new length.
 
- Data in the vector will be retained. If the new height is
- smaller than the old, then data in the bottom of the vector will be
- cropped away (in a non--memory-leaking manner). If the new height is larger than the old,
- then new cells will be filled with garbage; it is your responsibility
- to zero out or otherwise fill them before use.
+Data in the vector will be retained. If the new height is
+smaller than the old, then data at the end of the vector will be
+cropped away (in a non--memory-leaking manner). If the new height is larger than the old,
+then new cells will be filled with garbage; it is your responsibility
+to zero out or otherwise fill them before use.
 
- <b>Warning I</b>: Using this function is basically bad form---especially
- when used in a <tt>for</tt> loop that adds an element each time. A large
- number of <tt>realloc</tt>s can take a noticeable amount of time. You are
+<b>Warning I</b>: Using this function is basically bad form---especially
+when used in a <tt>for</tt> loop that adds an element each time. A large
+number of <tt>realloc</tt>s can take a noticeable amount of time. You are
 thus encouraged to make an effort to determine the size of your data
 beforehand.
 
- <b>Warning II</b>: The <tt>gsl_vector</tt> is a versatile struct that
- can represent subvectors, matrix columns and other cuts from parent data. I can't
- deal with those, and check for such situations beforehand. [Besides,
- resizing a portion of a parent matrix makes no sense.]
+<b>Warning II</b>: The <tt>gsl_vector</tt> is a versatile struct that
+can represent subvectors, matrix columns and other cuts from parent data. I can't
+deal with those, and check for such situations beforehand. [Besides,
+resizing a portion of a parent matrix makes no sense.]
 
 \param v The already-allocated vector to resize.  If you give me \c NULL, this is equivalent to \c gsl_vector_alloc
 \param newheight The height you'd like the vector to be.

@@ -196,6 +196,7 @@ static void scaling(const size_t *elmts, size_t n,  gsl_vector *weights, double 
     double fit_sum = 0;
     for(size_t i=0; i < n; i ++)
         fit_sum += weights->data[elmts[i]];
+if (!fit_sum) return; //can happen if init table is very different from margins.
     for(size_t i=0; i < n; i ++){
         weights->data[elmts[i]] *= in_sum/fit_sum;
 	}
@@ -443,6 +444,7 @@ APOP_VAR_HEAD apop_data * apop_rake(char *table_name, char *all_vars, char **con
     char * apop_varad_var(all_vars, NULL);
     char ** apop_varad_var(contrasts, NULL); //default to all vars?
     int apop_varad_var(contrast_ct, 0);
+    Apop_assert(!(contrasts&&!contrast_ct), "you gave me a list of contrasts but not the count. It's C--I can't count them myself. Please provide the count and re-run.");
     char * apop_varad_var(structural_zeros, NULL);
     char * apop_varad_var(count_col, NULL);
     int apop_varad_var(max_iterations, 1e3);
@@ -561,9 +563,15 @@ APOP_VAR_ENDHEAD
 
     //apop_contrasts... holds the cells of the grid we actually need. Query them to 
     //an apop_data set and start doing the raking.
-    apop_data *fit, *contrast_grid;
-    fit = apop_query_to_mixed_data(format, "select * from apop_contrasts_%i", run_number);
-    Apop_assert(fit, "This query:\n%s\ngenerated a blank table.", q);
+    apop_data *d, *contrast_grid;
+    d = apop_query_to_mixed_data(format, "select * from apop_contrasts_%i", run_number);
+    Apop_assert(d, "This query:\n%s\ngenerated a blank table.", q);
+
+    apop_data *fit = (init_table) ? apop_query_to_mixed_data(format, "%s", init_q)
+                                : apop_data_copy(d);
+    Apop_assert(fit, "Query \"%s\" returned a blank table.", init_q);
+    if (!init_table) gsl_vector_set_all(fit->weights, 1);
+    if (nudge) apop_map(fit, .fn_rp=nudge_zeros, .param=&nudge);
 
     contrast_grid = apop_data_calloc(var_ct, contrast_ct);
 	for (int i=0; i< contrast_ct; i++)
@@ -575,10 +583,6 @@ APOP_VAR_ENDHEAD
 		apop_data_free(contras[i]);
 	}
 
-    apop_data *d = (init_table) ? apop_query_to_mixed_data(format, "%s", init_q)
-                                : apop_data_copy(fit);
-    if (nudge)
-        apop_map(fit, .fn_rp=nudge_zeros, .param=&nudge);
     c_loglin(contrast_grid, d, fit, tolerance, max_iterations);
     apop_data_free(d);
     
@@ -587,7 +591,3 @@ APOP_VAR_ENDHEAD
 	apop_data_free(contrast_grid);
 	return fit;
 }
-
-/*  
-    handle strings
-    */

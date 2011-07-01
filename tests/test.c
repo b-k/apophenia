@@ -120,8 +120,7 @@ void v_pow10(double *in){ *in = pow(10,*in);}
 static void log_and_exp(gsl_rng *r){
     int i;
     apop_data *d = apop_data_alloc(100,2);
-    apop_name_add(d->names, "10", 'c');
-    apop_name_add(d->names, "e", 'c');
+    apop_data_add_names(d, 'c', "10", "e");
     for (i=0; i< 100; i++){
         apop_data_set(d, i, .colname="10", .val=gsl_rng_uniform(r)*10);
         apop_data_set(d, i, .colname="e", .val=gsl_rng_uniform(r)*10);
@@ -1338,8 +1337,8 @@ void test_arms(gsl_rng *r){
 
 void test_pmf_compress(gsl_rng *r){
     apop_data *d = apop_data_alloc();
-    apop_text_alloc(d, 8, 1);
-    d->vector = apop_array_to_vector((double []){12., 1., 2., 2., 1., 1., 2., 2.}, 8);
+    apop_text_alloc(d, 9, 1);
+    d->vector = apop_array_to_vector((double []){12., 1., 2., 2., 1., 1., 2., 2., NAN}, 9);
     apop_text_add(d, 0, 0, "Dozen");
     apop_text_add(d, 1, 0, "Single");
     apop_text_add(d, 4, 0, "Single");
@@ -1348,17 +1347,21 @@ void test_pmf_compress(gsl_rng *r){
     apop_text_add(d, 3, 0, "Pair");
     apop_text_add(d, 6, 0, "Pair");
     apop_text_add(d, 7, 0, "Pair");
+    apop_text_add(d, 8, 0, "Nada");
     apop_data_pmf_compress(d);
 
     assert(d->vector->data[0]==12);
     assert(d->vector->data[1]==1);
     assert(d->vector->data[2]==2);
+    assert(gsl_isnan(d->vector->data[3]));
     assert(d->weights->data[0]==1);
     assert(d->weights->data[1]==3);
     assert(d->weights->data[2]==4);
+    assert(d->weights->data[3]==1);
     assert(apop_strcmp(d->text[0][0], "Dozen"));
     assert(apop_strcmp(d->text[1][0], "Single"));
     assert(apop_strcmp(d->text[2][0], "Pair"));
+    assert(apop_strcmp(d->text[3][0], "Nada"));
 
     apop_data *b = apop_data_alloc();
     b->vector = apop_array_to_vector((double []){1.1, 2.1, 2, 1, 1}, 5);

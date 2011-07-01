@@ -150,7 +150,7 @@ APOP_VAR_ENDHEAD
 
 The function respects the <tt>output_type</tt> option, so code like:
 \code
-f   = popen("/usr/bin/gnuplot", "w");
+FILE* f = popen("/usr/bin/gnuplot", "w");
 apop_plot_histogram(data, .bins=100, .output_pipe = f);
 \endcode
 will print directly to Gnuplot.

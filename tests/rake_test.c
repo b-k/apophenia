@@ -30,7 +30,6 @@ void test_raking(){
 
     //structural zeros should be missing from the output table.
     apop_data *with_zeros = apop_rake("equals", .structural_zeros="a+0.0==3 or b+0.0==7");
-    //apop_data_show(with_zeros);
     apop_map(with_zeros, .fn_r=equal_or_absent);
 
     //Not-trivial case.
@@ -42,7 +41,7 @@ void test_raking(){
             for (c=0; c < 10; c++)
                 apop_query("insert into inequals values (%i, %i, %i, %g)", a,b,c, a/2.+gsl_rng_uniform(r));
     char *contrasts[] ={"a|b"};
-    apop_data *inequal_weights = apop_rake("inequals", .all_vars="a|b|c",.contrasts=contrasts, .count_col="weights");
+    apop_data *inequal_weights = apop_rake("inequals", .all_vars="a|b|c",.contrasts=contrasts, .count_col="weights", .contrast_ct=1);
 
 
     //regress using the estimates from the raking
@@ -53,7 +52,6 @@ void test_raking(){
                                           .type='d', .append='y', .remove='y');
     inequal_weights->vector = inequal_weights->weights;
     inequal_weights->weights = NULL;
-    //apop_data_show(inequal_weights);
     apop_model *raked_ols = apop_estimate(inequal_weights, apop_ols);  
 
    
@@ -63,8 +61,6 @@ void test_raking(){
     apop_data_to_dummies(t, .col=apop_name_find(t->names, "b", 'c'), .type='d', .append='y', .remove='y');
 //    apop_data_to_dummies(t, .col=1, .type='d', .append='y', .remove='y'); //affine version.
     apop_model *ols_out = apop_estimate(t, apop_ols);  
-    //apop_data_show(t);
-//    apop_data_show(ols_out->parameters);
 
     apop_map(ols_out->parameters, .fn_rpi=compare_results, .param= raked_ols->parameters);
 

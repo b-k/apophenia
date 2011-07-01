@@ -108,44 +108,6 @@ APOP_VAR_ENDHEAD
     return apop_estimate(outd, apop_pmf);
 } 
 
-static int are_equal(apop_data *left, apop_data *right){
-    /* Intended by use for apop_data_pmf_compress and family, below.
-      That means we aren't bothering with comparing names, and weights are likely to be
-      different, because we're using those to tally data elements. If the data set has
-      a longer matrix than vector, say, then one side may have the vector element and
-      the other not, so we still check that there's a match in presence of each element.
-
-     */
-    if (left->vector)
-        {if (left->vector->data[0] != right->vector->data[0]) return 0;}
-    else if (right->vector) return 0;
-
-    if (left->matrix){
-        if (left->matrix->size2 != right->matrix->size2) return 0;
-        for (int i=0; i< left->matrix->size2; i++)
-            if (apop_data_get(left, 0, i) != apop_data_get(right, 0, i)) return 0;
-    }
-    else if (right->matrix) return 0;
-
-    if (left->textsize[1]){
-        if (left->textsize[1] != right->textsize[1]) return 0;
-        for (int i=0; i< left->textsize[1]; i++)
-            if (!apop_strcmp(left->text[0][i], right->text[0][i])) return 0;
-    }
-    else if (right->textsize[1]) return 0;
-    return 1;
-}
-
-static int find_in_data(apop_data *searchme, apop_data *findme){//findme is one row tall.
-    Get_vmsizes(searchme)
-    for(int i=0; i < GSL_MAX(vsize, GSL_MAX(searchme->textsize[0], msize1)); i++){
-        Apop_data_row(searchme, i, onerow);
-        if (are_equal(findme, onerow))
-            return i;
-    }
-    return -1;
-}
-
 /** Test the goodness-of-fit between either two \ref apop_pmf models or two \ref apop_histogram models. 
 
 I assume that the histograms are synced: for PMFs, you've used \ref apop_data_to_bins to generate two histograms using the same binspec, or you've used \ref apop_data_pmf_compress to guarantee that each observation value appears exactly once in each data set.  For histograms, you've use \ref apop_histogram_vector_reset or \ref apop_histogram_model_reset to ensure histograms in sync.
@@ -180,13 +142,12 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model
         diff    = 0;
         for (int i=0; i< observed->data->weights->size; i++){
             Apop_data_row(observed->data, i, one_obs);
-            int expected_index = find_in_data(expected->data, one_obs);
-            if (expected_index < 0){
+            double obs_val = gsl_vector_get(observed->data->weights, i);
+            double exp_val = apop_p(one_obs, expected);
+            if (exp_val == 0){
                 diff = GSL_POSINF; 
                 break;
             }
-            double obs_val = gsl_vector_get(observed->data->weights, i);
-            double exp_val = gsl_vector_get(expected->data->weights, expected_index);
             if (obs_val==0){
                 Apop_notify(1, "element %i of the observed data has weight zero. Skipping it.", i);
                 df --;
@@ -348,70 +309,6 @@ void apop_histogram_normalize(apop_model *m){
         h->bin[i] /= sum;
 }
 
-/** Say that you have added a long list of observations to a single \ref apop_data set,
-  meaning that each row has weight one. There are a huge number of duplicates, perhaps because there are a handful of 
-  types that keep repeating:
-
-<table frame=box>
-<tr>
-<td>Vector value</td><td> Text name</td><td>Weights</td>
-</tr><tr valign=bottom>
-<td align=center>
-</td></tr>
-<tr><td>12</td><td>Dozen</td><td>1</td></tr>
-<tr><td>1</td><td>Single</td><td>1</td></tr>
-<tr><td>2</td><td>Pair</td><td>1</td></tr>
-<tr><td>2</td><td>Pair</td><td>1</td></tr>
-<tr><td>1</td><td>Single</td><td>1</td></tr>
-<tr><td>1</td><td>Single</td><td>1</td></tr>
-<tr><td>2</td><td>Pair</td><td>1</td></tr>
-<tr><td>2</td><td>Pair</td><td>1</td></tr>
-</table>
-
-You would like to reduce this to a set of distinct values, with their weights adjusted accordingly:
-
-<table frame=box>
-<tr>
-<td>Vector value</td><td> Text name</td><td>Weights</td>
-</tr><tr valign=bottom>
-<td align=center>
-</td></tr>
-<tr><td>12</td><td>Dozen</td><td>1</td></tr>
-<tr><td>1</td><td>Single</td><td>3</td></tr>
-<tr><td>2</td><td>Pair</td><td>4</td></tr>
-</table>
-
-
-\param in An \ref apop_data set that may have duplicate rows. As above, the data may be in text and/or numeric formats. If there is a \c weights vector, I will add those weights together as duplicates are merged. If there is no \c weights vector, I will create one, which is initially set to one for all values, and then aggregated as above.
-
-\return Your input is changed in place, via \ref apop_data_rm_rows, so use \ref apop_data_copy before copying this function if you need to retain the original format. For your convenience, this function returns a pointer to your original data, which has now been pruned.
-
-*/
-apop_data *apop_data_pmf_compress(apop_data *in){
-    Apop_assert_c(in, NULL, 1,  "You sent me a NULL input data set; returning NULL output.");
-    Get_vmsizes(in);
-    size_t max = GSL_MAX(vsize, GSL_MAX(msize1, in->textsize[0]));
-    if (!in->weights){
-        in->weights=gsl_vector_alloc(max);
-        gsl_vector_set_all(in->weights, 1);
-    }
-    int *cutme = calloc(max, sizeof(int));
-    for (int i=0; i< max;i++){
-        Apop_data_row(in, i, subject);
-        for (int j=0; j< i; j++){
-            Apop_data_row(in, j, compare_me);
-            if (are_equal(subject, compare_me)){
-                apop_vector_increment(compare_me->weights, 0,
-                                    gsl_vector_get(subject->weights, 0));
-                cutme[i]=1;
-                break; //j-loop only
-            }
-        }
-    }
-    apop_data_rm_rows(in, cutme);
-    free(cutme);
-    return in;
-}
 
 /** Create a histogram from data by putting data into bins of fixed width. 
 
