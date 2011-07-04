@@ -61,7 +61,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
         gsl_vector v = gsl_vector_subvector(in->vector, 1, n-1).vector;
         gsl_vector_memcpy(subset->vector, &v);
     }
-	array_of_boots          = apop_data_alloc(0, n, overall_params->size);
+	array_of_boots          = apop_data_alloc(n, overall_params->size);
     array_of_boots->names   = apop_name_copy(in->names);
 
     for(i = -1; i< (int) subset->matrix->size1; i++){
@@ -71,6 +71,10 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
             gsl_matrix_set_row(subset->matrix, i, v);
             if (subset->vector)
                 gsl_vector_set(subset->vector, i, apop_data_get(in, i, -1));
+            if (subset->weights)
+                gsl_vector_set(subset->weights, i, gsl_vector_get(in->weights, i));
+            if (subset->text)
+                subset->text[i] = in->text[i];
         }
         apop_model *est = apop_estimate(subset, *e);
         gsl_vector *estp = apop_data_pack(est->parameters);
@@ -83,6 +87,13 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
     }
     apop_data   *out    = apop_data_covariance(array_of_boots);
     gsl_matrix_scale(out->matrix, 1./(n-1.));
+    if (subset->text){ //don't free the original text.
+        for (int i=0; i< subset->textsize[0]; i++)
+            subset->text[i] = NULL;
+        free(subset->text); subset->text=NULL;
+        subset->textsize[0] = 0;
+        subset->textsize[1] = 0;
+    }
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
     if (e!=overall_est)
@@ -119,6 +130,12 @@ APOP_VAR_END_HEAD
     apop_model *e         = apop_model_copy(model);
     size_t	   i, j, row;
     apop_data  *subset    = apop_data_alloc(vsize, msize1, msize2);
+    if (data->weights) subset->weights = gsl_vector_alloc(vsize);
+    if (data->text){
+        subset->text = malloc(sizeof(char**)*data->textsize[0]);
+        subset->textsize[0]= data->textsize[0];
+        subset->textsize[1]= data->textsize[1];
+    }
     apop_data  *array_of_boots = NULL,
                *summary;
     //prevent and infinite regression of covariance calculation.
@@ -128,10 +145,14 @@ APOP_VAR_END_HEAD
 		//create the data set
 		for (j=0; j< data->matrix->size1; j++){
 			row	= gsl_rng_uniform_int(rng, data->matrix->size1);
-			APOP_ROW(data, row,v);
+			Apop_row(data, row, v);
 			gsl_matrix_set_row(subset->matrix, j, v);
             if (subset->vector)
                 gsl_vector_set(subset->vector, j, apop_data_get(data, row, -1));
+            if (subset->weights)
+                gsl_vector_set(subset->weights, j, gsl_vector_get(data->weights, row));
+            if (subset->text)
+                subset->text[j] = data->text[row];
 		}
 		//get the parameter estimates.
 		apop_model *est = apop_estimate(subset, *e);
@@ -147,6 +168,13 @@ APOP_VAR_END_HEAD
 	summary	= apop_data_covariance(array_of_boots);
     gsl_matrix_scale(summary->matrix, 1./iterations);
     apop_data_free(array_of_boots);
+    if (subset->text){ //don't free the original text.
+        for (int i=0; i< subset->textsize[0]; i++)
+            subset->text[i] = NULL;
+        free(subset->text); subset->text=NULL;
+        subset->textsize[0] = 0;
+        subset->textsize[1] = 0;
+    }
     apop_data_free(subset);
     apop_model_free(e);
 	return summary;
