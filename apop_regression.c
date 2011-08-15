@@ -172,7 +172,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
             if (col == -1)  snprintf(name, 100, "<categories for vector>");
             else            snprintf(name, 100, "<categories for column %i>", col);
         }
-        *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr, 0, 0), name);
+        *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr), name);
         apop_text_alloc((*factor_list), delmts->size, 1);
         for (size_t i=0; i< (*factor_list)->vector->size; i++){
             //shift to the text, for conformity with the more common text version.
@@ -450,7 +450,7 @@ SST, and SSR (and calculate the \f$R^2\f$s using those values).
 apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   double          sse, sst, rsq, adjustment;
   size_t          indep_ct= m->data->matrix->size2 - 1;
-  apop_data       *out    = apop_data_alloc(0, 5,1);
+  apop_data       *out    = apop_data_alloc();
     gsl_vector *weights = m->data->weights; //typically NULL.
     apop_data *expected = apop_data_get_page(m->info, "<Predicted>");
     apop_assert_c(expected,  NULL, 0, "I couldn't find a \"<Predicted>\" page in your data set. Returning NULL.\n");

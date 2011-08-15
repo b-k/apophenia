@@ -314,7 +314,7 @@ APOP_VAR_END_HEAD
 	if (!out) 	
 		out	= &in;
 	else {
-		*out 	= gsl_vector_alloc (in->size);
+		*out = gsl_vector_alloc (in->size);
 		gsl_vector_memcpy(*out,in);
 	}
         //the numbers are deprecated and will go away.
@@ -455,9 +455,9 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 apop_data * apop_data_summarize(apop_data *indata){
   Apop_assert_c(indata, NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
   Apop_assert_c(indata->matrix, NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
-  apop_data	*out	= apop_data_alloc(0,indata->matrix->size2, 6);
-  double		mean, var;
-  char		rowname[10000]; //crashes on more than 10^9995 columns.
+  apop_data	*out = apop_data_alloc(indata->matrix->size2, 6);
+  double mean, var;
+  char	 rowname[10000]; //crashes on more than 10^9995 columns.
 	apop_name_add(out->names, "mean", 'c');
 	apop_name_add(out->names, "std dev", 'c');
 	apop_name_add(out->names, "variance", 'c');
@@ -707,8 +707,8 @@ This is the \ref apop_data version of \ref apop_matrix_covariance; if you don't 
 apop_data *apop_data_covariance(const apop_data *in){
     Apop_assert_c(in,  NULL, 1, "You sent me a NULL apop_data set. Returning NULL.");
     Apop_assert_c(in->matrix,  NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
-    apop_data   *out = apop_data_alloc(in->matrix->size2, in->matrix->size2);
-    double      var;
+    apop_data *out = apop_data_alloc(in->matrix->size2, in->matrix->size2);
+    double var;
     for (size_t i=0; i < in->matrix->size2; i++){
         for (size_t j=i; j < in->matrix->size2; j++){
             Apop_col(in, i, v1);
@@ -806,7 +806,7 @@ APOP_VAR_ENDHEAD
         }
         apop_data_free(a_row);
     } else { //the version with the RNG.
-        apop_data *a_row = apop_data_alloc(0, 1, top->dsize);
+        apop_data *a_row = apop_data_alloc(1, top->dsize);
         for (int i=0; i < draw_ct; i++){
             apop_draw(a_row->matrix->data, rng, top);
             double pi = apop_p(a_row, top);
@@ -1015,7 +1015,7 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
         qdq->matrix=NULL; apop_data_free(qdq); qdq = NULL;
     } while (diffsize/dsize > 1e-3);
 
-    apop_data *eigenvecs = apop_data_alloc(0, size, size);
+    apop_data *eigenvecs = apop_data_alloc(size, size);
     gsl_vector *eigenvals = gsl_vector_calloc(size);
     gsl_matrix *junk_copy = apop_matrix_copy(d);
     find_eigens(&junk_copy, eigenvals, eigenvecs->matrix);

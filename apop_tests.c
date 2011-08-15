@@ -6,7 +6,7 @@ At the moment, the header for  apop_test_anova is in \c asst.h.
 #include "apop_internal.h"
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
-  apop_data *out    = apop_data_alloc(0,7,1);
+  apop_data *out    = apop_data_alloc();
   double    pval, qval, two_tail;
   if(!gsl_isnan(stat)){
         pval    = gsl_cdf_tdist_P(stat, df);
@@ -82,8 +82,8 @@ apop_data * apop_paired_t_test(gsl_vector *a, gsl_vector *b){
 gsl_vector	*diff	= gsl_vector_alloc(a->size);
 	gsl_vector_memcpy(diff, a);
 	gsl_vector_sub(diff, b);
-int		count	= a->size; 
-double		avg	= apop_vector_mean(diff),
+int	   count	= a->size; 
+double avg	= apop_vector_mean(diff),
 		var	= apop_vector_var(diff),
 		stat	= avg/ sqrt(var/(count-1));
 	gsl_vector_free(diff);
@@ -214,7 +214,7 @@ apop_data * apop_test_anova_independence(apop_data *d){
     for (row=0; row <d->matrix->size1; row++)
         for (col=0; col <d->matrix->size2; col++)
             total += one_chi_sq(d, row, col, n);
-    apop_data *out = apop_data_alloc(0, 3,1);
+    apop_data *out = apop_data_alloc();
     double chisq   = gsl_cdf_chisq_Q(total, df);
     apop_data_add_named_elmt(out, "chi squared statistic", total);
     apop_data_add_named_elmt(out, "df", df);

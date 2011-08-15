@@ -19,7 +19,7 @@ static void write_double(const double *draw, apop_data *params){
   Get_vmsizes(params); //tsize
   if (!v || v->vector->size != tsize){
       apop_data_free(v);
-      v = apop_data_alloc(tsize, 0, 0);
+      v = apop_data_alloc(tsize);
   }
     for (size_t i=0; i< tsize; i++)
         gsl_vector_set(v->vector, i, draw[i]);
@@ -64,7 +64,7 @@ static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model
     /* Posterior alpha = alpha_0 + sum x; posterior beta = beta_0/(beta_0*n + 1) */
     if (!strcmp(prior.name, "Gamma distribution") && !strcmp(likelihood.name, "Poisson distribution")){
         outp = apop_model_copy(prior);
-        Get_vmsizes(data); //tsize
+        Get_vmsizes(data); //vsize, msize1
         double sum = 0;
         if (vsize)  sum = apop_sum(data->vector);
         if (msize1) sum += apop_matrix_sum(data->matrix);
@@ -163,15 +163,14 @@ APOP_VAR_END_HEAD
     apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
     if (maybe_out) return maybe_out;
     apop_update_settings *s = apop_settings_get_group(prior, apop_update);
-    if (!s) 
-        s = Apop_model_add_group(prior, apop_update);
-  double        ratio, ll, cp_ll = GSL_NEGINF;
-  int           vs  = likelihood->vbase  >= 0 ? likelihood->vbase  : data->matrix->size2;
-  int           ms1 = likelihood->m1base >= 0 ? likelihood->m1base : data->matrix->size2;
-  int           ms2 = likelihood->m2base >= 0 ? likelihood->m2base : data->matrix->size2;
-  double        *draw               = malloc(sizeof(double)* (vs+ms1*ms2));
-  apop_data     *current_param      = apop_data_alloc(vs , ms1 , ms2);
-  apop_data     *out                = apop_data_alloc(0, s->periods*(1-s->burnin), vs+ms1*ms2);
+    if (!s) s = Apop_model_add_group(prior, apop_update);
+  double    ratio, ll, cp_ll = GSL_NEGINF;
+  int       vs  = likelihood->vbase  >= 0 ? likelihood->vbase  : data->matrix->size2;
+  int       ms1 = likelihood->m1base >= 0 ? likelihood->m1base : data->matrix->size2;
+  int       ms2 = likelihood->m2base >= 0 ? likelihood->m2base : data->matrix->size2;
+  double    *draw          = malloc(sizeof(double)* (vs+ms1*ms2));
+  apop_data *current_param = apop_data_alloc(vs , ms1 , ms2);
+  apop_data *out           = apop_data_alloc(s->periods*(1-s->burnin), vs+ms1*ms2);
     if (s->starting_pt)
         apop_data_memcpy(current_param, s->starting_pt);
     else {

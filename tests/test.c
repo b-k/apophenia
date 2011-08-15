@@ -426,7 +426,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
 */
 void test_f(apop_model *est){
     apop_data *rsq  = apop_estimate_coefficient_of_determination(est);
-    apop_data *constr= apop_data_alloc(est->parameters->vector->size-1, est->parameters->vector->size);
+    apop_data *constr= apop_data_calloc(est->parameters->vector->size-1, est->parameters->vector->size);
     int i;
     for (i=1; i< est->parameters->vector->size; i++)
         apop_data_set(constr, i-1, i, 1);
