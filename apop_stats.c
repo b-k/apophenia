@@ -123,9 +123,9 @@ double apop_vector_kurtosis_pop(const gsl_vector *in){
 \ingroup vector_moments
 */
 double apop_vector_kurtosis(const gsl_vector *in){
-  size_t n = in->size;
-  double coeff1 = gsl_pow_3(n)/(n-1)/(gsl_pow_2(n)-3*n+3);
-  double coeff2 = (6*n-9)/(gsl_pow_2(n)-3*n+3);
+    size_t n = in->size;
+    long double coeff1 = gsl_pow_3(n)/(n-1)/(gsl_pow_2(n)-3*n+3);
+    long double coeff2 = (6*n-9)/(gsl_pow_2(n)-3*n+3);
     return  coeff1 * apop_vector_kurtosis_pop(in) + coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n);
 }
 
@@ -330,8 +330,9 @@ APOP_VAR_END_HEAD
 
 	}
 	else if ((normalization_type == 'p')){
-		mu	= apop_vector_mean(in);
-		gsl_vector_scale(*out, 1/(mu * in->size));	
+		long double sum	= apop_sum(in);
+        Apop_assert(sum, "The vector sums to zero, so I can't normalize it to sum to one.");
+		gsl_vector_scale(*out, 1/sum);	
 	}
 	else if ((normalization_type == 'm')){
 		mu	= apop_vector_mean(in);

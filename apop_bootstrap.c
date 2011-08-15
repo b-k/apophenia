@@ -110,12 +110,25 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
 \param model    An \ref apop_model, whose \c estimate method will be used here. (No default)
 \param iterations How many bootstrap draws should I make? (default: 1,000) 
 \param rng        An RNG that you have initialized, probably with \c apop_rng_alloc. (Default: see \ref autorng)
+\param keep_boots  If 'y', then add a page to the output \ref apop_data set with the statistics calculated for each bootstrap iteration.
+They are packed via \ref apop_data_pack, so use \ref apop_data_unpack if needed. (Default: 'n')
+\code
+apop_data *boot_output = apop_bootstrap_cov(your_data, your_model, .keep_boots='y');
+apop_data *boot_stats = apop_data_get_page(boot_output, "<bootstrapped statistics>");
+
+Apop_row(boot_stats, 27, row_27)
+//If the output statistic is not just a vector, you'll need to use apop_data_unpack to put
+//it into the right shape. Let's assume for now that it's just a vector:
+printf("The statistics calculated on the 28th iteration:\n");
+apop_vector_print(row_27);
+\endcode
+\param ignore_nans If \c 'y' and any of the elements in the estimation return \c NaN, then I will throw out that draw and try again. If \c 'n', then I will write that set of statistics to the list, \c NaN and all. I keep count of throw-aways; if there are more than \c iterations elements thrown out, then I throw an error and return with estimates using data I have so far. That is, I assume that \c NaNs are rare edge cases; if they are as common as good data, you might want to rethink how you are using the bootstrap mechanism. (Default: 'n')
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 
 This function uses the \ref designated syntax for inputs.
 \see apop_jackknife_cov
  */
-APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *rng, int iterations) {
+APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans) {
     static gsl_rng *spare = NULL;
     apop_data * apop_varad_var(data, NULL);
     apop_model model = varad_in.model;
@@ -125,10 +138,12 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
     if (!rng)  rng = spare;
+    char apop_varad_var(keep_boots, 'n');
+    char apop_varad_var(ignore_nans, 'n');
 APOP_VAR_END_HEAD
     Get_vmsizes(data); //vsize, msize1, msize2
     apop_model *e         = apop_model_copy(model);
-    size_t	   i, j, row;
+    size_t	   i, j, row, nan_draws=0;
     apop_data  *subset    = apop_data_alloc(vsize, msize1, msize2);
     if (data->weights) subset->weights = gsl_vector_alloc(vsize);
     if (data->text){
@@ -141,7 +156,7 @@ APOP_VAR_END_HEAD
     //prevent and infinite regression of covariance calculation.
     Apop_model_add_group(e, apop_parts_wanted); //default wants for nothing.
 
-	for (i=0; i<iterations; i++){
+	for (i=0; i<iterations && nan_draws < iterations; i++){
 		//create the data set
 		for (j=0; j< data->matrix->size1; j++){
 			row	= gsl_rng_uniform_int(rng, data->matrix->size1);
@@ -157,17 +172,29 @@ APOP_VAR_END_HEAD
 		//get the parameter estimates.
 		apop_model *est = apop_estimate(subset, *e);
         gsl_vector *estp = apop_data_pack(est->parameters);
-        if (i==0){
-            array_of_boots	        = apop_data_alloc(iterations, estp->size);
-            array_of_boots->names   = apop_name_copy(data->names);
+        if (!gsl_isnan(apop_sum(estp))){
+            if (i==0){
+                array_of_boots	        = apop_data_alloc(iterations, estp->size);
+                array_of_boots->names   = apop_name_copy(data->names);
+            }
+            gsl_matrix_set_row(array_of_boots->matrix, i, estp);
+        } else {
+            i--; 
+            nan_draws++;
         }
-        gsl_matrix_set_row(array_of_boots->matrix, i, estp);
         apop_model_free(est);
         gsl_vector_free(estp);
 	}
+    if (i < iterations){
+        Apop_notify(1, "I ran into %i NaNs, and so stopped. Returning results based on %i bootstrap iterations.", iterations, i);
+        apop_matrix_realloc(array_of_boots->matrix, i, array_of_boots->matrix->size2);
+    }
 	summary	= apop_data_covariance(array_of_boots);
-    gsl_matrix_scale(summary->matrix, 1./iterations);
-    apop_data_free(array_of_boots);
+    gsl_matrix_scale(summary->matrix, 1./i); //if too many NaNs, i < iterations.
+    if (keep_boots == 'n' || keep_boots == 'N')
+        apop_data_free(array_of_boots);
+    else
+        apop_data_add_page(summary, array_of_boots, "<Bootstrapped statistics>");
     if (subset->text){ //don't free the original text.
         for (int i=0; i< subset->textsize[0]; i++)
             subset->text[i] = NULL;

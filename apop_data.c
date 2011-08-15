@@ -629,13 +629,25 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
 
 /** \defgroup data_set_get Set/get/point to the data element at the given point
   \{
+First, some examples:
+
+\code
+apop_data *d = apop_data_alloc(10, 10, 10);
+apop_name_add(d->names, "Zeroth row", 'r');
+apop_name_add(d->names, "Zeroth col", 'c');
+
+apop_data_set(d, 8, 0, 27);
+assert(apop_data_get(d, 8, .colname="Zeroth") == 27);
+double *x = apop_data_ptr(d, .col=7, .rowname="Zeroth");
+*x = 270;
+assert(apop_data_get(d, 0, 7) == 270);
+\endcode
 
 Q: How does <tt> apop_data_set(in, row, col, data)</tt> differ from
  <tt>gsl_matrix_set(in->matrix, row, col, data)</tt>?<br>
 A: It's seven characters shorter.
 
-There are a few other differences: the \ref apop_data set has names, so we can get/set elements using those names, and it has both matrix and vector elements.
-
+OK, there are a few other differences: the \ref apop_data set has names, so we can get/set elements using those names, and it has both matrix and vector elements.
 
 \li The versions that take a column/row name use  \ref apop_name_find
 for the search; see notes there on the name matching rules.
@@ -659,18 +671,6 @@ for (int i=0; i< 1e7; i++)
 The \c _ptr functions return a pointer to the given cell. Those functions follow the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr, and like those functions, return a pointer to the appropriate \c double.
 
 These functions use the \ref designated syntax for inputs.
-
-\code
-apop_data *d = apop_data_alloc(10, 10, 10);
-apop_name_add(d->names, "Zeroth row", 'r');
-apop_name_add(d->names, "Zeroth col", 'c');
-
-apop_data_set(d, 8, 0, 27);
-assert(apop_data_get(d, 8, .colname="Zeroth") == 27);
-double *x = apop_data_ptr(d, .col=7, .rowname="Zeroth");
-*x = 270;
-assert(apop_data_get(d, 0, 7) == 270);
-\endcode
 */
 
 /* \deprecated  use \ref apop_data_ptr */
@@ -1239,18 +1239,41 @@ APOP_VAR_ENDHEAD
         return NULL;
 }
 
+typedef int (*apop_fn_ir)(apop_data*, void*);
+
 /** Remove the columns set to one in the \c drop vector.  
   \param in the \ref apop_data structure to be pared down
   \param drop  a vector with as many elements as the max of the vector, matrix, or text
   parts of \c in, with a one marking those columns to be removed.       \ingroup names
-  */  
-
-void apop_data_rm_rows(apop_data *in, int *drop){
+  \param do_drop A function that returns one for rows to drop and zero for rows to not drop. A sample function:
+  \code
+  int your_drop_function(apop_data *onerow, void *extra_param){
+    return gsl_isnan(apop_data_get(onerow)) || apop_strcmp(onerow->text[0][0], "Uninteresting data point");
+  }
+  \endcode
+  \param drop_parameter If your \c do_drop function requires additional input, put it here and it iwll be passed through.
+  \ref apop_data_rm_rows uses \ref Apop_data_row to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
+*/  
+APOP_VAR_HEAD void apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_drop, void *drop_parameter ){
+    apop_data* apop_varad_var(in, NULL);
+    Apop_assert_c(in, , 1, "Input data set was NULL; no changes made.");
+    int* apop_varad_var(drop, NULL);
+    apop_fn_ir apop_varad_var(do_drop, NULL);
+    void* apop_varad_var(drop_parameter, NULL);
+    Apop_assert(drop || do_drop, "I need either a list of ints indicating which rows to drop, or a drop_fn I can use to test each row.");
+APOP_VAR_ENDHEAD
     //First, shift columns down to the nearest not-freed row.
     int outlength = 0;
     Get_vmsizes(in); //vsize, msize1, maxsize
     for (int i=0 ; i < maxsize; i++){
-        if (!drop[i]){
+        int drop_row=0;
+        if (drop && drop[i]) 
+            drop_row = 1;
+        else if (do_drop){
+            Apop_data_row(in, i, onerow); 
+            drop_row = do_drop(onerow, drop_parameter);
+        }
+        if (!drop_row){
             if (outlength == i)
                 outlength++;
             else {

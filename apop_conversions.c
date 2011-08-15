@@ -1086,10 +1086,10 @@ static void tab_create_sqlite(char *tabname, int ct, int has_row_names, apop_dat
   --It may be text with no "delimiters"
  */
 char * prep_string_for_sqlite(char *astring, regex_t *nan_regex, int prepped_statements){
-  regmatch_t  result[2];
-  char  *out	    = NULL,
-		*tail	    = NULL,
-		*stripped	= strip(astring);
+    regmatch_t  result[2];
+    char  *out	    = NULL,
+		  *tail	    = NULL,
+		  *stripped	= strip(astring);
 	if(strtod(stripped, &tail)) /*do nothing.*/;
 
     if (!strlen(stripped)){ //it's empty
@@ -1111,13 +1111,13 @@ char * prep_string_for_sqlite(char *astring, regex_t *nan_regex, int prepped_sta
             else
                 asprintf(&out,"'%s'", stripped);
         } else {
-            char *tick;
-            while ((tick=strchr(stripped, '\''))){ //backslash-escape ticks
-                int posn = tick-stripped;
-                stripped = realloc(stripped, strlen(stripped)+1);
-                memcpy(stripped+posn+1, stripped+posn, strlen(stripped)-posn);
-                stripped[posn]='\\';
-            }
+          /*  if (strchr(stripped, '\'')) //backslash-escape ticks. Why the C std lib needs search/replace.
+                for (int posn=0; posn < strlen(stripped); posn++)
+                    if (stripped[posn] == '\''){
+                        stripped = realloc(stripped, strlen(stripped)+2);
+                        memcpy(stripped+posn+1, stripped+posn, strlen(stripped)-posn+1);
+                        stripped[posn++]='\\';
+                    } */
             asprintf(&out,"%s", stripped);
         }
 	} else {	    //number, maybe INF or NAN. Also, sqlite wants 0.1, not .1

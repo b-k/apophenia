@@ -24,22 +24,23 @@ int     colnames            = 1,
         rownames            = 0,
         tab_exists_check    = 0;
 
-	sprintf(msg, "%s [-d delimiters] text_file table_name dbname\n\
-e.g.: %s -d\",|\" infile.txt a_table info.db\n\
-If the input text file name is a single dash, -, then read from STDIN.\n\
--d\t\tThe single-character delimiters to use, e.g., -d \" ,\" or -d \"\\t\" (which you \n"
-"\t\t\twill almost certainly have to write as -d \"\\\\t\")\n\
--nc\t\tData does not include column names\n\
--n regex\t\tCase-insensitive regular expression indicating Null values. Default: NaN \n\
--m\t\tUse a mysql database (default: SQLite)\n\
--f\t\tfixed width field ends: -f\"3,8,12,17\" (first char is one, not zero)\n\
--u\t\tmysql username\n\
--p\t\tmysql password\n\
--r\t\tData includes row names\n\
--v\t\tVerbose\n\
--O\t\tIf table exists, erase it and write from scratch (i.e., Overwrite)\n\
--h\t\tPrint this help\n\
-\n", argv[0], argv[0]); 
+	sprintf(msg, "%s [-d delimiters] text_file table_name dbname\n"
+e.g.: %s -d\",|\" infile.txt a_table info.db\n"
+If the input text file name is a single dash, -, then read from STDIN.\n"
+"-d\t\tThe single-character delimiters to use, e.g., -d \" ,\" or -d \"\\t\" (which you \n"
+"\t\t\twill almost certainly have to write as -d \"\\\\t\"). Default: \"| ,\\t\", meaning \n"
+"\t\t\tthat any of a pipe, space, comma, or tab will delimit separate entries\n"
+"-nc\t\tData does not include column names\n"
+"-n regex\t\tCase-insensitive regular expression indicating Null values. Default: NaN \n"
+"-m\t\tUse a mysql database (default: SQLite)\n"
+"-f\t\tfixed width field ends: -f\"3,8,12,17\" (first char is one, not zero)\n"
+"-u\t\tmysql username\n"
+"-p\t\tmysql password\n"
+"-r\t\tData includes row names\n"
+"-v\t\tVerbose\n"
+"-O\t\tIf table exists, erase it and write from scratch (i.e., Overwrite)\n"
+"-h\t\tPrint this help\n\n"
+, argv[0], argv[0]); 
     int * field_list = NULL;
 
 	if(argc<3){

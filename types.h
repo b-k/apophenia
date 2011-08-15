@@ -209,7 +209,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames);
 APOP_VAR_DECLARE apop_data * apop_data_get_page(const apop_data * data, const char * title);
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage,const char *title);
 APOP_VAR_DECLARE apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p);
-void apop_data_rm_rows(apop_data *in, int *drop);
+APOP_VAR_DECLARE void apop_data_rm_rows(apop_data *in, int *drop, int (*do_drop)(apop_data* ! void*), void* drop_parameter);
 
 
 /* Convenience functions to convert among vectors (gsl_vector), matrices (gsl_matrix), 

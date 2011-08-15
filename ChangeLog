@@ -3,6 +3,8 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+	July 2011
+--Apop_data_rm_rows now accepts a test function as well as a fixed list of rows to drop.
 
 	June 2011
 --apop_crosstab_to_db handles missing labels and NaNs better.
