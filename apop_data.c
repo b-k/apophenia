@@ -1253,6 +1253,8 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
   \endcode
   \param drop_parameter If your \c do_drop function requires additional input, put it here and it iwll be passed through.
   \ref apop_data_rm_rows uses \ref Apop_data_row to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
+
+  \li If all the rows are to be removed, then you will wind up with the same \ref apop_data set, with \c NULL \c vector, \c matrix, \c weight, and text. Therefore, you may wish to check for \c NULL elements after use. I remove rownames, but leave the other names, in case you want to add new data rows.
 */  
 APOP_VAR_HEAD void apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_drop, void *drop_parameter ){
     apop_data* apop_varad_var(in, NULL);
@@ -1282,7 +1284,13 @@ APOP_VAR_ENDHEAD
             }
         }
     }
-    if (!outlength) return;
+    if (!outlength){
+        gsl_vector_free(in->vector);  in->vector = NULL;
+        gsl_vector_free(in->weights); in->weights = NULL;
+        gsl_matrix_free(in->matrix);  in->matrix = NULL;
+        apop_text_alloc(in, 0, 0);
+        //leave colnames intact, remove rownames below.
+    }
 
     //now trim excess memory:
     if (in->vector)
