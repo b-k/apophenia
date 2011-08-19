@@ -3,6 +3,11 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+
+	August 2011
+--Bootstrap/Jackknife are better with text
+**apop_data_memcpy used to reallocate memory for the text and names elements; use apop_data_copy if you want allocation done for you.
+
 	July 2011
 --Apop_data_rm_rows now accepts a test function as well as a fixed list of rows to drop.
 

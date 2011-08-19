@@ -44,37 +44,29 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
     Nullcheck_d(in)
-    apop_model   *e               = apop_model_copy(model);
-    int           i, n            = in->matrix->size1;
-    apop_data     *subset         = apop_data_alloc(in->vector ? in->vector->size -1 : 0, n - 1, in->matrix->size2);
-    apop_data     *array_of_boots = NULL;
-    apop_model *overall_est       = e->parameters ? e : apop_estimate(in, *e);//if not estimated, do so
-    gsl_vector *overall_params    = apop_data_pack(overall_est->parameters);
+    Get_vmsizes(in); //msize1, msize2, vsize
+    apop_model *e              = apop_model_copy(model);
+    int         i, n           = GSL_MAX(msize1, GSL_MAX(vsize, in->textsize[0]));
+    apop_model *overall_est    = e->parameters ? e : apop_estimate(in, *e);//if not estimated, do so
+    gsl_vector *overall_params = apop_data_pack(overall_est->parameters);
     gsl_vector_scale(overall_params, n); //do it just once.
-    int           paramct         = overall_params->size;
-    gsl_vector    *pseudoval      = gsl_vector_alloc(paramct);
+    int         paramct        = overall_params->size;
+    gsl_vector  *pseudoval     = gsl_vector_alloc(paramct);
 
-        //Allocate a matrix, get a reduced view of the original, and copy.
-    gsl_matrix  mv      = gsl_matrix_submatrix(in->matrix, 1,0, n-1, in->matrix->size2).matrix;
-    gsl_matrix_memcpy(subset->matrix, &mv);
-    if (in->vector){
-        gsl_vector v = gsl_vector_subvector(in->vector, 1, n-1).vector;
-        gsl_vector_memcpy(subset->vector, &v);
-    }
-	array_of_boots          = apop_data_alloc(n, overall_params->size);
-    array_of_boots->names   = apop_name_copy(in->names);
+    //Copy the original, minus the first row.
+    Apop_data_rows(in, 1, n-1, allbutfirst);
+    apop_data *subset = apop_data_copy(allbutfirst);
+    apop_name *tmpnames = in->names; 
+    in->names = NULL;  //save on some copying below.
 
-    for(i = -1; i< (int) subset->matrix->size1; i++){
+    apop_data *array_of_boots = apop_data_alloc(n, paramct);
+
+    for(i = -1; i< n-1; i++){
         //Get a view of row i, and copy it to position i-1 in the short matrix.
         if (i >= 0){
-            Apop_row(in, i, v);
-            gsl_matrix_set_row(subset->matrix, i, v);
-            if (subset->vector)
-                gsl_vector_set(subset->vector, i, apop_data_get(in, i, -1));
-            if (subset->weights)
-                gsl_vector_set(subset->weights, i, gsl_vector_get(in->weights, i));
-            if (subset->text)
-                subset->text[i] = in->text[i];
+            Apop_data_row(in, i, onerow);
+            Apop_data_row(subset, i, subsetrow);
+            apop_data_memcpy(subsetrow, onerow);
         }
         apop_model *est = apop_estimate(subset, *e);
         gsl_vector *estp = apop_data_pack(est->parameters);
@@ -85,15 +77,9 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
         apop_model_free(est);
         gsl_vector_free(estp);
     }
+    in->names = tmpnames;
     apop_data   *out    = apop_data_covariance(array_of_boots);
     gsl_matrix_scale(out->matrix, 1./(n-1.));
-    if (subset->text){ //don't free the original text.
-        for (int i=0; i< subset->textsize[0]; i++)
-            subset->text[i] = NULL;
-        free(subset->text); subset->text=NULL;
-        subset->textsize[0] = 0;
-        subset->textsize[1] = 0;
-    }
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
     if (e!=overall_est)
@@ -133,7 +119,7 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
     apop_data * apop_varad_var(data, NULL);
     apop_model model = varad_in.model;
     int apop_varad_var(iterations, 1000);
-    apop_assert_s(data, "The data element can't be NULL.");
+    Apop_assert(data, "The data input can't be NULL.");
     gsl_rng * apop_varad_var(rng, NULL);
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
@@ -142,40 +128,33 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
     char apop_varad_var(ignore_nans, 'n');
 APOP_VAR_END_HEAD
     Get_vmsizes(data); //vsize, msize1, msize2
-    apop_model *e         = apop_model_copy(model);
-    size_t	   i, j, row, nan_draws=0;
-    apop_data  *subset    = apop_data_alloc(vsize, msize1, msize2);
-    if (data->weights) subset->weights = gsl_vector_alloc(vsize);
-    if (data->text){
-        subset->text = malloc(sizeof(char**)*data->textsize[0]);
-        subset->textsize[0]= data->textsize[0];
-        subset->textsize[1]= data->textsize[1];
-    }
+    apop_model *e       = apop_model_copy(model);
+    apop_data  *subset  = apop_data_copy(data);
     apop_data  *array_of_boots = NULL,
                *summary;
     //prevent and infinite regression of covariance calculation.
     Apop_model_add_group(e, apop_parts_wanted); //default wants for nothing.
+    size_t	   i, nan_draws=0;
+    apop_name *tmpnames = data->names; //save on some copying below.
+    data->names = NULL;  
 
+    int height = GSL_MAX(msize1, GSL_MAX(vsize, data->textsize[0]));
 	for (i=0; i<iterations && nan_draws < iterations; i++){
-		//create the data set
-		for (j=0; j< data->matrix->size1; j++){
-			row	= gsl_rng_uniform_int(rng, data->matrix->size1);
-			Apop_row(data, row, v);
-			gsl_matrix_set_row(subset->matrix, j, v);
-            if (subset->vector)
-                gsl_vector_set(subset->vector, j, apop_data_get(data, row, -1));
-            if (subset->weights)
-                gsl_vector_set(subset->weights, j, gsl_vector_get(data->weights, row));
-            if (subset->text)
-                subset->text[j] = data->text[row];
+		for (size_t j=0; j< height; j++){       //create the data set
+			size_t row	= gsl_rng_uniform_int(rng, height);
+			Apop_data_row(data, row, random_data_row);
+			Apop_data_row(subset, j, subset_row_j);
+            apop_data_memcpy(subset_row_j, random_data_row);
 		}
 		//get the parameter estimates.
 		apop_model *est = apop_estimate(subset, *e);
         gsl_vector *estp = apop_data_pack(est->parameters);
         if (!gsl_isnan(apop_sum(estp))){
             if (i==0){
-                array_of_boots	        = apop_data_alloc(iterations, estp->size);
-                array_of_boots->names   = apop_name_copy(data->names);
+                array_of_boots	      = apop_data_alloc(iterations, estp->size);
+                apop_name_stack(array_of_boots->names, est->parameters->names, 'c', 'v');
+                apop_name_stack(array_of_boots->names, est->parameters->names, 'c', 'c');
+                apop_name_stack(array_of_boots->names, est->parameters->names, 'c', 'r');
             }
             gsl_matrix_set_row(array_of_boots->matrix, i, estp);
         } else {
@@ -185,24 +164,19 @@ APOP_VAR_END_HEAD
         apop_model_free(est);
         gsl_vector_free(estp);
 	}
-    if (i < iterations){
-        Apop_notify(1, "I ran into %i NaNs, and so stopped. Returning results based on %i bootstrap iterations.", iterations, i);
+    data->names = tmpnames;
+    apop_data_free(subset);
+    apop_model_free(e);
+    if (nan_draws == iterations){
+        Apop_notify(1, "I ran into %i NaNs, and so stopped. Returning results based "
+                       "on %i bootstrap iterations.", iterations, i);
         apop_matrix_realloc(array_of_boots->matrix, i, array_of_boots->matrix->size2);
     }
 	summary	= apop_data_covariance(array_of_boots);
-    gsl_matrix_scale(summary->matrix, 1./i); //if too many NaNs, i < iterations.
+    gsl_matrix_scale(summary->matrix, 1./i);
     if (keep_boots == 'n' || keep_boots == 'N')
         apop_data_free(array_of_boots);
     else
         apop_data_add_page(summary, array_of_boots, "<Bootstrapped statistics>");
-    if (subset->text){ //don't free the original text.
-        for (int i=0; i< subset->textsize[0]; i++)
-            subset->text[i] = NULL;
-        free(subset->text); subset->text=NULL;
-        subset->textsize[0] = 0;
-        subset->textsize[1] = 0;
-    }
-    apop_data_free(subset);
-    apop_model_free(e);
 	return summary;
 }

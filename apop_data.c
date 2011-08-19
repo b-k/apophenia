@@ -170,9 +170,19 @@ void apop_data_free_base(apop_data *freeme){
 
 /** Copy one \ref apop_data structure to another. That is, all data on the first page is duplicated. [To do multiple pages, call this via a \c for loop over the data set's pages.]
 
-  This function does not allocate the output structure for you for the overall structure or the vector or matrix. If you want such behavior, use \ref apop_data_copy. Both functions do allocate memory for the text.
+  This function does not allocate the output structure or the vector, matrix, text, or weights elements---I assume you have already done this and got the dimensions right. I will assert that there is at least enough room in the destination for your data, and fail if the copy would write more elements than there are bins.
 
-  I don't follow the \c more pointer, though \ref apop_data_copy does.
+
+  \li If you want space allocated, use \ref apop_data_copy.
+  \li I don't follow the \c more pointer, though \ref apop_data_copy does.
+  \li You can use the subsetting macros, \ref Apop_data_row or \ref Apop_data_rows, to copy within a data set:
+
+\code
+//Copy the contents of row i of mydata to row j.
+Apop_data_row(mydata, i, fromrow);
+Apop_data_row(mydata, j, torow);
+apop_data_memcpy(torow, fromrow);
+\endcode
  
   \param out    a structure that this function will fill. Must be preallocated
   \param in    the input data
@@ -180,25 +190,21 @@ void apop_data_free_base(apop_data *freeme){
  \ingroup data_struct
   */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
-    Apop_assert_c(out, , 1, "you are copying to a NULL vector. "
-                                  "Do you mean to use apop_data_copy instead?");
+    Apop_assert_c(out, , 1, "you are copying to a NULL vector. Do you mean to use apop_data_copy instead?");
     if (in->matrix){
-        apop_assert_c(in->matrix->size1 == out->matrix->size1 && in->matrix->size2 == out->matrix->size2, ,
-                1,"You're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix. Returning w/o any copying.", 
+        Apop_assert(in->matrix->size1 == out->matrix->size1 && in->matrix->size2 == out->matrix->size2, 
+                "you're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix.", 
                         in->matrix->size1, in->matrix->size2, out->matrix->size1, out->matrix->size2);
         gsl_matrix_memcpy(out->matrix, in->matrix);
     }
     if (in->vector){
-        apop_assert_c(in->vector->size == out->vector->size, ,
-                1, "You're trying to copy a %zu-elmt vector into a %zu-elmt vector. Returning w/o any copying.", 
-                                 in->vector->size, out->vector->size);
+        Apop_assert(in->vector->size == out->vector->size, "You're trying to copy a %zu-elmt "
+                        "vector into a %zu-elmt vector.", in->vector->size, out->vector->size);
         gsl_vector_memcpy(out->vector, in->vector);
     }
     if (in->weights){
-        apop_assert_c(in->weights->size == out->weights->size, ,
-                1, "Weight vector sizes don't match: you're trying "
-                        "to copy a %zu-elmt vector into a %zu-elmt vector. "
-                        "Weights not copied.", 
+        Apop_assert(in->weights->size == out->weights->size, "Weight vector sizes don't match: "
+                    "you're trying to copy a %zu-elmt vector into a %zu-elmt vector.", 
                                  in->weights->size, out->weights->size);
         gsl_vector_memcpy(out->weights, in->weights);
     }
@@ -212,12 +218,13 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
     out->textsize[0] = in->textsize[0]; 
     out->textsize[1] = in->textsize[1]; 
     if (in->textsize[0] && in->textsize[1]){
-        out->text  = malloc(sizeof(char ***) * in->textsize[0] * in->textsize[1]);
-        for (size_t i=0; i< in->textsize[0]; i++){
-            out->text[i]  = malloc(sizeof(char **) * in->textsize[1]);
+        Apop_assert(out->textsize[0] >= in->textsize[0] && out->textsize[1] >= in->textsize[1],
+                    "I am trying to copy a grid of (%zu, %zu) text elements into a grid of (%zu, %zu), and that won't work. "
+                    "Please use apop_text_alloc to reallocate the right amount of data, or use apop_data_copy for automatic allocation.",
+                    in->textsize[0] , in->textsize[1] , out->textsize[0] , out->textsize[1]);
+        for (size_t i=0; i< in->textsize[0]; i++)
             for(size_t j=0; j < in->textsize[1]; j ++)
 				asprintf(&(out->text[i][j]), "%s", in->text[i][j]);
-        }
     }
 }
 
@@ -247,6 +254,11 @@ apop_data *apop_data_copy(const apop_data *in){
         out->matrix = gsl_matrix_alloc(in->matrix->size1, in->matrix->size2);
     if (in->weights)
         out->weights = gsl_vector_alloc(in->weights->size);
+    if (in->textsize[0] && in->textsize[1]){
+        out->text = malloc(sizeof(char ***) * in->textsize[0] * in->textsize[1]);
+        for (size_t i=0; i< in->textsize[0]; i++)
+            out->text[i] = malloc(sizeof(char **) * in->textsize[1]);
+    }
     apop_data_memcpy(out, in);
     return out;
 }
@@ -676,7 +688,7 @@ These functions use the \ref designated syntax for inputs.
 /* \deprecated  use \ref apop_data_ptr */
 double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
   int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find %s amongst the row names.", row);
+    apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find '%s' amongst the row names.", row);
     return (col >= 0) ? gsl_matrix_ptr(in->matrix, rownum, col)
                       : gsl_vector_ptr(in->vector, rownum);
 }
@@ -684,7 +696,7 @@ double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
 /* \deprecated  use \ref apop_data_ptr */
 double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
-    apop_assert_c(colnum != -2,  NULL, 0,"Couldn't find %s amongst the column names.", col);
+    apop_assert_c(colnum != -2,  NULL, 0,"Couldn't find '%s' amongst the column names.", col);
     return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, row, colnum)
                          : gsl_vector_ptr(in->vector, row);
 }
@@ -693,8 +705,8 @@ double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
 double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find %s amongst the row names.", row);
-    apop_assert_c(colnum != -2,  NULL, 0,"Couldn't find %s amongst the column names.", col);
+    apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find '%s' amongst the row names.", row);
+    apop_assert_c(colnum != -2,  NULL, 0,"Couldn't find '%s' amongst the column names.", col);
     return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, rownum, colnum)
                          : gsl_vector_ptr(in->vector, rownum);
 }
@@ -713,7 +725,7 @@ APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int c
     apop_data *d;
     if (page){
         d = apop_data_get_page(data, page);
-        Apop_assert(d, "I couldn't find a page with label %s", page);
+        Apop_assert(d, "I couldn't find a page with label '%s'.", page);
     } else d = data;
     if (rowname && colname)
         return apop_data_ptr_tt(d, rowname,colname);
@@ -737,7 +749,7 @@ return NULL;//the main function is blank.
 /* \deprecated  use \ref apop_data_get */
 double apop_data_get_ti(const apop_data *in, const char* row, const int col){
   int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find %s amongst the row names.", row);
+    Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
     if (col >= 0){
         apop_assert(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, col);
         return gsl_matrix_get(in->matrix, rownum, col);
@@ -750,7 +762,7 @@ double apop_data_get_ti(const apop_data *in, const char* row, const int col){
 /* \deprecated  use \ref apop_data_get */
 double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
-    Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find %s amongst the column names.", col);
+    Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
     if (colnum >= 0){
         apop_assert(in->matrix, "You asked me to get the (%zu, %i) element of a NULL matrix.", row, colnum);
         return gsl_matrix_get(in->matrix, row, colnum);
@@ -764,8 +776,8 @@ double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
 double apop_data_get_tt(const apop_data *in, const char *row, const char* col){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find %s amongst the column names.", col);
-    Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find %s amongst the row names.", row);
+    Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
+    Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
     if (colnum >= 0){
         apop_assert(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, colnum);
         return gsl_matrix_get(in->matrix, rownum, colnum);
@@ -789,7 +801,7 @@ APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, cons
     const apop_data *d;
     if (page){
         d = apop_data_get_page(data, page);
-        Apop_assert(d, "I couldn't find a page with label %s", page);
+        Apop_assert(d, "I couldn't find a page with label '%s'.", page);
     } else d = data;
     if (rowname && colname)
         return apop_data_get_tt(d, rowname,colname);
@@ -814,7 +826,7 @@ return 0;//the main function is blank.
  */
 void apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
   int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(rownum != -2, , 0, "Couldn't find %s amongst the row names. Making no changes.", row);
+    Apop_assert_c(rownum != -2, , 0, "Couldn't find '%s' amongst the row names. Making no changes.", row);
     return (col >= 0) ? gsl_matrix_set(in->matrix, rownum, col, data)
                       : gsl_vector_set(in->vector, rownum, data);
 }
@@ -823,7 +835,7 @@ void apop_data_set_ti(apop_data *in, const char* row, const int col, const doubl
   \deprecated Use \ref apop_data_set.  */
 void apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
   int colnum =  apop_name_find(in->names, col, 'c');
-    Apop_assert_c(colnum != -2, , 0, "Couldn't find %s amongst the column names. Making no changes.", col);
+    Apop_assert_c(colnum != -2, , 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
     return (colnum >= 0) ? gsl_matrix_set(in->matrix, row, colnum, data)
                          : gsl_vector_set(in->vector, row, data);
 }
@@ -833,8 +845,8 @@ void apop_data_set_it(apop_data *in, const size_t row, const char* col, const do
 void apop_data_set_tt(apop_data *in, const char *row, const char* col, const double data){
   int colnum =  apop_name_find(in->names, col, 'c');
   int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(colnum != -2, , 0, "Couldn't find %s amongst the column names.", col);
-    Apop_assert_c(rownum != -2, , 0, "Couldn't find %s amongst the column names.", row);
+    Apop_assert_c(colnum != -2, , 0, "Couldn't find '%s' amongst the column names.", col);
+    Apop_assert_c(rownum != -2, , 0, "Couldn't find '%s' amongst the column names.", row);
     return (colnum >= 0) ? gsl_matrix_set(in->matrix, rownum, colnum, data)
                          : gsl_vector_set(in->vector, rownum, data);
 }
@@ -870,7 +882,7 @@ APOP_VAR_HEAD void apop_data_set(apop_data *data, const size_t row, const int co
     apop_data *d;
     if (page){
         d = apop_data_get_page((apop_data*)data, page);
-        Apop_assert(d, "I couldn't find a page with label %s", page);
+        Apop_assert(d, "I couldn't find a page with label '%s'.", page);
     } else d = data;
     if (rowname && colname)
         return apop_data_set_tt(d, rowname, colname, val);
@@ -1225,7 +1237,7 @@ APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, 
 APOP_VAR_ENDHEAD
     while (data->more && !apop_regex(data->more->names->title, title))
         data = data->more;
-    Apop_assert_c(data->more, NULL, 1, "You asked me to remove %s but I couldn't find a page matching that regex.", title);
+    Apop_assert_c(data->more, NULL, 1, "You asked me to remove '%s' but I couldn't find a page matching that regex.", title);
     if (data->more){
         apop_data *tmp = data->more;
         data->more = data->more->more;

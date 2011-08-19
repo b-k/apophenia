@@ -151,7 +151,7 @@ APOP_VAR_ENDHEAD
         for (i=0; i< counts.colct; i++)
             apop_name_add(n1, nadd->column[i], type1);
     else apop_assert_c(0, , 1, ">%c< sent to apop_name_stack, but the only "
-                                "valid options are r t c v. Doing nothing.",type1);
+                                "valid options are r t c v. Doing nothing.",typeadd);
 }
 
 /** Copy one \ref apop_name structure to another. That is, all data is duplicated. Usage:

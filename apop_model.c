@@ -69,6 +69,8 @@ void apop_model_free (apop_model * free_me){
     }
     if (free_me->more_size)
         free(free_me->more);
+    if (free_me->info)
+        apop_data_free(free_me->info);
 	free(free_me);
 }
 
