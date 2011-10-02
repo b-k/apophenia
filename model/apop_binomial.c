@@ -1,32 +1,7 @@
 /* The binomial distribution as an \c apop_model.
 Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
 
- \amodel apop_binomial The multi-draw generalization of the Bernoulli; the two-bin special case of the Multinomal.
-
- \adoc Input_format Zeros are failures and non-zeros successes. \f$N\f$
-is the size of the matrix, vector, or both (whichever is not \c NULL).
-So \f$p\f$ represents the odds of a success==1; the odds of a zero is \f$1-p\f$.
-
-\li You may be interested in \ref apop_data_to_factors to convert real numbers or text into a
-vector of categories.
-
-\li See also \ref apop_data_rank_compress for means of dealing with one more input data format.
-
- \adoc  Parameter_format
-        The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
-        \c parameters->vector->data[1...]==p_1....
-
-The numeraire is zero, meaning that \f$p_0\f$ is not explicitly listed, but is
-\f$p_0=1-\sum_{i=1}^{k-1} p_i\f$, where \f$k\f$ is the number of bins. Conveniently enough,
-the zeroth element of the parameters vector holds \f$n\f$, and so a full probability vector can
-easily be produced by overwriting that first element. Continuing the above example: 
-\code 
-int n = apop_data_get(estimated->parameters, 0, -1); 
-apop_data_set(estimated->parameters, 0, 1 - (apop_sum(estimated->parameters)-n)); 
-\endcode
-And now the parameter vector is a proper list of probabilities.
-
-\adoc    RNG I fill an array of length \c n, with a sequence of randomly drawn ones and zeros. 
+ \amodel apop_binomial The multi-draw generalization of the Bernoulli; the two-bin special case of the \ref apop_multinomial "Multinomial distribution".
 */
 
 #include "apop_internal.h"
@@ -53,8 +28,9 @@ static void make_covar(apop_model *est){
         apop_data_set(cov, i, i, n * p *(1-p));
         for (int j=i+1; j < size; j++){
             double pj = apop_data_get(est->parameters, j, -1);
-            apop_data_set(cov, i, j, -n*p*pj);
-            apop_data_set(cov, j, i, -n*p*pj);
+            double thiscell = -n*p*pj;
+            apop_data_set(cov, i, j, thiscell);
+            apop_data_set(cov, j, i, thiscell);
         }
     }
     pv[0]=n;
@@ -72,12 +48,11 @@ static double binomial_log_likelihood(apop_data *d, apop_model *params){
 /* \adoc estimated_parameters  As per the parameter format. Has a <tt>\<Covariance\></tt> page with the covariance matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).  */
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * binomial_estimate(apop_data * data,  apop_model *est){
-  Nullcheck_mpd(data, est)
-  double hitcount, misscount;
+    Nullcheck_mpd(data, est)
+    double hitcount, misscount;
     get_hits_and_misses(data, &hitcount, &misscount);   
     int n = hitcount + misscount;
-    apop_name_add(est->parameters->names, "n", 'r');
-    apop_name_add(est->parameters->names, "p", 'r');
+    apop_data_add_names(est->parameters, 'r', "n", "p");
     apop_data_set(est->parameters, 0, -1, n);
     apop_data_set(est->parameters, 1, -1, hitcount/(hitcount + misscount));
     est->dsize = n;
@@ -86,15 +61,16 @@ static apop_model * binomial_estimate(apop_data * data,  apop_model *est){
     return est;
 }
 
+/* \adoc cdf Let the first element of the data set (top of the vector or point (0,0) in the
+  matrix, your pick) be $L$; then I return the sum of the odds of a draw from the given
+  Binomial distribution returning $0, 1, \dots, L$ hits.  */
 static double binomial_cdf(apop_data *d, apop_model *est){
-  Nullcheck_mpd(d, est)
-  double hitcount, misscount, psum = 0;
-    get_hits_and_misses(d, &hitcount, &misscount);   
+    Nullcheck_mpd(d, est)
+    Get_vmsizes(d); //firstcol
+    double hitcount = apop_data_get(d, .col=firstcol);
     double n = gsl_vector_get(est->parameters->vector, 0);
     double p = gsl_vector_get(est->parameters->vector, 1);
-    for (int i=0; i<= hitcount; i++)
-        psum += gsl_ran_binomial_pdf(hitcount, p, n);
-    return psum;
+    return gsl_cdf_binomial_P(hitcount, p, n);
 }
 
 static double multinomial_constraint(apop_data *data, apop_model *b){
@@ -186,6 +162,7 @@ static void multinomial_show(apop_model *est){
     p[0] = 1 - (apop_sum(est->parameters->vector)-N);
     fprintf(apop_opts.output_pipe, "%s, with %i draws.\nBin odds:\n", est->name, N);
     apop_vector_print(est->parameters->vector, .output_pipe=apop_opts.output_pipe);
+    p[0]=N;
 }
 
 apop_model apop_binomial = {"Binomial distribution", 2,0,0, .dsize=1,
@@ -195,7 +172,6 @@ apop_model apop_binomial = {"Binomial distribution", 2,0,0, .dsize=1,
 
 
 /* \amodel apop_multinomial The \f$n\f$--option generalization of the \ref apop_binomial "Binomial distribution".
-    See also the \ref apop_binomial model. 
 
 \adoc estimated_parameters  As per the parameter format. Has a <tt>\<Covariance\></tt> page with the covariance matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).  */
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
@@ -206,8 +182,7 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     int n = vsize + msize1; //size of one row
     apop_vector_normalize(count);
     gsl_vector_set(count, 0, n);
-    est->parameters=apop_data_alloc();
-    est->parameters->vector = count;
+    est->parameters=apop_vector_to_data(count);
     apop_name_add(est->parameters->names, "n", 'r');
     char name[100];
     for(int i=1; i < count->size; i ++){

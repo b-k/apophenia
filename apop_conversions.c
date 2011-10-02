@@ -22,8 +22,6 @@ void xprintf(char **q, char *format, ...){
     free(r);
 }
 
-#define XN(in) ((in) ? (in) : "")
-
 
 /** \defgroup conversions Conversion functions
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
@@ -791,9 +789,10 @@ static size_t sizecount(const apop_data *in, const int all_pp, const int use_inf
              + (all_pp ? sizecount(in->more, all_pp, use_info_pp) : 0);
 }
 
-/** Sometimes, you need to turn an \c apop_data set into a column of
- numbers. Thus, this function, that takes in an apop_data set and outputs a \c gsl_vector.
- It is valid to use the \c out_vector->data element as an array of \c doubles of size \c out_vector->data->size (i.e. its <tt>stride==1</tt>).
+/** This function takes in an \ref apop_data set and writes it as a single column of
+numbers, outputting a \c gsl_vector.
+ It is valid to use the \c out_vector->data element as an array of \c doubles of size
+ \c out_vector->data->size (i.e. its <tt>stride==1</tt>).
 
  The complement is \c apop_data_unpack. I.e., 
 \code
@@ -804,7 +803,7 @@ will return the original data set (stripped of text and names).
  \param in an \c apop_data set. No default; if \c NULL, return \c NULL.
  \param out If this is not \c NULL, then put the output here. The dimensions must match exactly. If \c NULL, then allocate a new data set. Default = \c NULL. 
   \param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
-pages; else fill only the first page. Default = \c 'n'.
+pages; else fill only the first page. Informational pages will still be ignored, unless you set <tt>.use_info_pages='y'</tt> as well.  Default = \c 'n'. 
 \param use_info_pages Pages in HTML-style brackets, such as <tt>\<Covariance\></tt> will
 be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
 same thing when you both pack and unpack. Default: <tt>'n'</tt>.
@@ -1093,11 +1092,12 @@ char * prep_string_for_sqlite(char *astring, regex_t *nan_regex, int prepped_sta
 	if(strtod(stripped, &tail)) /*do nothing.*/;
 
     if (!strlen(stripped)){ //it's empty
-        out = malloc(1); 
-        out[0] ='\0';
+        free(out); out=NULL;
     } else if (!regexec(nan_regex, stripped, 1, result, 0) 
-                    || !strlen (stripped)) //nan_regex match or blank field = NaN.
-        asprintf(&out, "NULL");
+                    || !strlen (stripped)){ //nan_regex match or blank field = NaN.
+        free(out); out=NULL;
+        //asprintf(&out, "NULL");
+    }
     else if (strlen(tail)){	//then it's not a number.
 /*        char *sqlout = sqlite3_mprintf("%Q", stripped);//extra checks for odd chars.
         out = strdup(sqlout);
@@ -1155,10 +1155,15 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
         pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
         prepped	= prep_string_for_sqlite(outstr, nan_regex, !!p_stmt);
         if (p_stmt){
-            if (sqlite3_bind_text(p_stmt, field++, prepped,-1, SQLITE_TRANSIENT))
+            if (!prepped || !strlen(prepped)){
+                field++; //leave NULL and cleared
+                /*if (sqlite3_bind_null(p_stmt, field++))
+                    printf("Something wrong on line %i, field %i.\n", row, field-1);*/
+            } else if (sqlite3_bind_text(p_stmt, field++, prepped, -1, SQLITE_TRANSIENT))
                 printf("Something wrong on line %i, field %i.\n", row, field-1);
         } else {
-            if (strlen(prepped) > 0 && !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r')))
+            if (prepped && strlen(prepped) > 0 && 
+                    !(strlen(outstr) < 2 && (outstr[0]=='\n' || outstr[0]=='\r')))
                 xprintf(&q, "%s%c %s", q, comma,  prepped);
             else
                 xprintf(&q, "%s%cNULL", q, comma);
@@ -1252,11 +1257,11 @@ APOP_VAR_END_HEAD
                 if (apop_opts.verbose >= 0) {printf(".");fflush(NULL);}
             }
             if (use_sqlite_prepared_statements) {
-                int err;
-                err=sqlite3_step(statement);
+                int err = sqlite3_step(statement);
                 if (err!=0 && err != 101) //0=ok, 101=done
                     printf("sqlite insert query gave error code %i.\n", err);
                 sqlite3_reset(statement);
+                sqlite3_clear_bindings(statement); //needed for NULLs
             }
 		}
         add_this_line = NULL;

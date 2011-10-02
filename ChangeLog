@@ -4,6 +4,14 @@
 !!Big.
 ]
 
+	October 2011
+--apop_text_paste added.
+
+	September 2011
+--`query turned up a blank table' warning turns up when apop_opts.verbose >=2. (used to be >=1)
+--apop_t_test and apop_paired_t_test are quieter---no intermediate results until apop_opts.verbose >=2.
+**apop_opts.db_name_column now has a blank default (instead of the SQL-specific and potentially surprise-inducing "rowname").
+
 	August 2011
 --Bootstrap/Jackknife are better with text
 **apop_data_memcpy used to reallocate memory for the text and names elements; use apop_data_copy if you want allocation done for you.

@@ -292,16 +292,17 @@ APOP_VAR_ENDHEAD
     apop_data *fdummy;
     apop_data *dummies= dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
     //Now process the append and remove options.
-    int rm_list[d->matrix->size1+1];
-    memset (rm_list, 0,(d->matrix->size1+1)*sizeof(int)); 
+    size_t orig_size = d->matrix ? d->matrix->size1 : 0;
+    int rm_list[orig_size+1];
+    memset (rm_list, 0, (orig_size+1)*sizeof(int)); 
     if (append =='i'){
         apop_data **split = apop_data_split(d, col+1, 'c');
         //stack names, then matrices
         for (int i=0; i < d->names->colct; i++)
             free(d->names->column[i]);
         apop_name_stack(d->names, split[0]->names, 'c');
-        for (int k = d->names->colct; k < (split[0]->matrix ? split[0]->matrix->size2 : 0); k++)//pad so the name stacking 
-            apop_name_add(d->names, "", 'c');                                                   //is aligned (if needed)
+        for (int k = d->names->colct; k < (split[0]->matrix ? split[0]->matrix->size2 : 0); k++)
+            apop_name_add(d->names, "", 'c'); //pad so the name stacking is aligned (if needed)
         apop_name_stack(d->names, dummies->names, 'c');
         apop_name_stack(d->names, split[1]->names, 'c');
         gsl_matrix_free(d->matrix);

@@ -95,6 +95,8 @@ or matrix parts).
 handle only the first page of data. [I abuse this for an internal semaphore, by the way, so your input must always be nonnegative and  less than 1,000. Of course, 'y' and 'n' fit these rules fine.]
 Default: \c 'n'. 
 
+\return if <tt>.inplace='n'</tt> (the default), a newly allocated \ref apop_data set representing the result of mapping your function onto the input data set. if <tt>.inplace='y'</tt>, a pointer to your original data set, modified in place.
+
 \ingroup mapply
 */
 APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,  apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, int inplace, char part, int all_pages){ 

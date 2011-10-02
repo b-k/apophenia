@@ -110,6 +110,7 @@ struct _apop_model{
   \ingroup global_vars */
 typedef struct{
     int verbose; /**< Set this to zero for silent mode, one for errors and warnings. default = 0. */
+    char stop_on_warning; /**< If nonzero, warnings become errors. Useful when running via debugger. */
     char output_type;
            /**< 's'   = to screen
                 'f'   = to file

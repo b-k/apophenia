@@ -1100,7 +1100,8 @@ void test_data_to_db() {
     if (!apop_table_exists("snps"))
         apop_text_to_db("test_data_mixed", "snps");
     apop_data *d = apop_query_to_mixed_data("tvttmmmt", "select * from snps");
-    apop_data_to_db(d, "snps2");
+    //apop_data_to_db(d, "snps2");
+    apop_data_print(d, "snps2", .output_type='d');
     apop_data *d2 = apop_query_to_mixed_data("vmmmtttt", "select * from snps2");
     for (i=0; i< d2->vector->size; i++)
         assert(d->vector->data[i] == d2->vector->data[i]);
@@ -1172,7 +1173,7 @@ void estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tr
         );
     Apop_model_add_group(dist, apop_parts_wanted);
     apop_model *e    = apop_estimate(data,*dist);
-    //e = apop_estimate_restart(e);
+    e = apop_estimate_restart(e);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
 }
 

@@ -6,6 +6,67 @@ Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU 
 #include <gsl/gsl_randist.h>
 #include <regex.h>
 
+
+//more efficient than xprintf, but a little less versatile.
+static void apop_tack_on(char **in, char *addme){
+    if (!addme) return;
+    size_t inlen = *in? strlen(*in): 0;
+    size_t total_len= inlen + strlen(addme);
+    *in = realloc(*in, total_len+1);
+    strcpy(*in+inlen, addme);
+}
+
+typedef int (*apop_fn_riip)(apop_data*, int, int, void*);
+
+/** Join together a list or array of strings, with optional separators between the strings.
+
+\param strings  An \ref apop_data set with a grid of text to be combined into a single string
+\param between  The text to put in between the rows of the table, such as ", ". (Default is a single space: " ")
+\param before   The text to put at the head of the string. For the query example, this would be <tt>.before="select "</tt>. (Default: NULL)
+\param after   The text to put at the tail of the string. For the query example, <tt>.after=" from data_table"</tt>. (Default: NULL)
+\param between_cols The text to insert between columns of text. See below for an example (Default is set to equal <tt>.between</tt>)
+
+\return A single string with the elements of the \c strings table joined as per your specification. Allocated by the function, to be freed by you if desired.
+
+\li If the table of strings is \c NULL or has no text, I will print only the <tt>.before</tt> and <tt>.after</tt> parts with nothing in between.
+\li if <tt> apop_opts.verbose >=2</tt>, then print the pasted text to stderr.
+\li This function uses the \ref designated syntax for inputs.
+
+The sample snippet generates the SQL for a query using a list of column names (where
+the query begins with <tt>select </tt>, ends with <tt>from datatab</tt>, and has commas
+in between each element), re-processes the same list to produce the head of an HTML
+table, then produces the body of the table with the query result (pasting the
+<tt>tr</tt>s and <tt> td</tt>s into the right places).
+
+\include sql_to_html.c
+
+ */
+APOP_VAR_HEAD char *apop_text_paste(apop_data *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter){
+    apop_data *apop_varad_var(strings, NULL);
+    char *apop_varad_var(between, " ");
+    char *apop_varad_var(before, NULL);
+    char *apop_varad_var(after, NULL);
+    char *apop_varad_var(between_cols, between);
+    apop_fn_riip apop_varad_var(prune, NULL);
+    void *apop_varad_var(prune_parameter, NULL);
+APOP_VAR_ENDHEAD
+    char *out = before ? strdup(before) : NULL;
+    for (int i=0; i< strings->textsize[0]; i++){
+         char *oneline = NULL;
+        for (int j=0; j< strings->textsize[1]; j++){
+            if (prune && !prune(strings, i, j, prune_parameter)) continue;
+            apop_tack_on(&oneline, strings->text[i][j]);
+            if (j <strings->textsize[1]-1)  apop_tack_on(&oneline, between_cols);
+        }
+        if (oneline)  apop_tack_on(&out, oneline);
+        free(oneline);
+        if (i <strings->textsize[0]-1)  apop_tack_on(&out, between);
+    }
+    apop_tack_on(&out, after);
+    apop_notify(2, "%s", out);
+    return out;
+}
+
 /** Calculate \f$\sum_{n=1}^N {1\over n^s}\f$
 
 \li There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can just be looked up should you request the same calculation. 

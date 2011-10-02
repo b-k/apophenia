@@ -36,34 +36,41 @@ apop_data *apop_data_pmf_compress(apop_data *in);
 APOP_VAR_DECLARE apop_data * apop_data_to_bins(apop_data *indata, apop_data *binspec, int bin_count, char close_top_bin);
 APOP_VAR_DECLARE apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng);
 
+//text conveniences
 char * apop_strip_dots(char *in, char strip_type);
-
+APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *before, char *after, char *between_cols, int (*prune)(apop_data* ! int ! int ! void*), void* prune_parameter);
 /** Notify the user of errors, warning, or debug info. 
 
  \param verbosity   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2.
  \param ... The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_notify(0, "Beta is %g but should be greater than zero.", beta);.
 */
-#define Apop_notify(verbosity, ...) \
+#define Apop_notify(verbosity, ...) {\
     if (apop_opts.verbose >= verbosity) {  \
         fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");   \
-}
+        fflush(stderr); \
+} }
 
 /** Tests whether a condition is true, and if it is not, prints an error to \c stderr and 
   exits the function. 
  
- \param test The expression that you are asserting is nonzero.
- \param returnval If the assertion fails, return this. If your assertion is inside a function that returns nothing, then leave this blank, as in <tt>apop_assert_c(a==b, , 0, "a should equal b");</tt>
- \param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one.
- \param ... The error message in printf form, plus any arguments to be inserted into the printf string. I'll provide the function name and a carriage return.
+\param test The expression that you are asserting is nonzero.
+\param returnval If the assertion fails, return this. If your assertion is inside a function that returns nothing, then leave this blank, as in <tt>apop_assert_c(a==b, , 0, "a should equal b");</tt>
+\param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one.
+\param ... The error message in printf form, plus any arguments to be inserted into the printf string. I'll provide the function name and a carriage return.
 
- \see \ref Apop_assert, which halts on error.
+\li If \ref apop_opts.stop_on_warning is nonzero and not <tt>'v'</tt>, then a failed test halts via \c abort(), even if the <tt>apop_opts.verbose</tt> level is set so that the warning message doesn't print to screen. Use this when running via debugger.
+\li If \ref apop_opts.stop_on_warning is <tt>'v'</tt>, then a failed test halts via \c abort() iff the verbosity level is high enough to print the error.
+
+\see \ref Apop_assert, which always halts on error.
  */
-#define Apop_assert_c(test, returnval, level, ...) do {\
-    if (!(test)) {  \
+#define Apop_assert_c(test, returnval, level, ...) {\
+     if (!(test)) {  \
         Apop_notify(level,  __VA_ARGS__);   \
+        if ((apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
+            || (apop_opts.verbose < level && apop_opts.stop_on_warning && apop_opts.stop_on_warning !='v') ) \
+                abort(); \
         return returnval;  \
-    }   \
-} while (0);
+    } }
 
 /** This is just a slightly more user-friendly version of the C-standard \c assert(). The
   program halts if the first argument evaluates to false, and the remaining arguments are
@@ -78,11 +85,11 @@ char * apop_strip_dots(char *in, char strip_type);
 \see \ref Apop_assert_c, which continues with a message rather than shutting down.
 
   */
-#define Apop_assert(test, ...) do \
+#define Apop_assert(test, ...)  {\
     if (!(test)) {  \
         fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");   \
         abort();   \
-} while (0);
+} }
 
 #define apop_assert_s Apop_assert
 #define apop_assert Apop_assert

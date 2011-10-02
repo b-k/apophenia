@@ -134,7 +134,7 @@ apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood
 
 /* \amodel apop_multinomial_probit The Multinomial Probit model.
 
-  \deprecated Just use \ref apop_probit, which handles multiple options fine.*/
+  \deprecated  Use \ref apop_probit, which handles multiple options.*/
 
 /////////  Multinomial Logit (plain logit is a special case)
 

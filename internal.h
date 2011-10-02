@@ -28,3 +28,8 @@
 #define Nullcheck_mpd(data, model) Nullcheck_m(model); Nullcheck_p(model); Nullcheck_d(data);
 //deprecated:
 #define Nullcheck_p(in) Nullcheck_mp(in) 
+
+//in apop_conversions.c Extend a string.
+void xprintf(char **q, char *format, ...);
+#define XN(in) ((in) ? (in) : "")
+

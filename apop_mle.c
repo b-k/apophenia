@@ -577,8 +577,7 @@ find it, then recalculate it.*/
 static double get_ll(apop_data *d, apop_model *est){
     if (apop_name_find(est->info->names, "Info", 'r')){
         int index = apop_name_find(est->info->names, "log likelihood", 'r');
-        if (index)
-            return gsl_vector_get(est->info->vector, index);
+        if (index) return apop_data_get(est->info, index);
     }
     //last resort: recalculate
     return apop_log_likelihood(d, est);
@@ -708,7 +707,7 @@ there is no memory leak in the above loop.
 
  \param e   An \ref apop_model that is the output from a prior MLE estimation. (No default, must not be \c NULL.)
  \param copy  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> as per the next setting (probably
- to the parameters of <tt>e</tt>). If this is <tt>NULL</tt>, then copy off <tt>e</tt>. (Default = \c NULL)
+ to the parameters of <tt>e</tt>). If this is <tt>NULL</tt>, then copy <tt>e</tt>. (Default = \c NULL)
  \param starting_pt "ep"=last estimate of the first model (i.e., its current parameter estimates); "es"= starting point originally used by the first model; "np"=current parameters of the new (second) model; "ns"=starting point specified by the new model's MLE settings. (default = "ep")
  \param boundary I test whether the starting point you give me is outside this certain bound, so I can warn you if there's divergence in your sequence of re-estimations. (default: 1e8)
 

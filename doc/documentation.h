@@ -298,6 +298,9 @@ These levels are of course subjective, but should give you some idea of where to
 verbosity level. The default is 1.
 
 
+The global variable <tt>apop_opts.stop_on_warning</tt> turns any warning into a halt via \c abort(). Use this to get your debugger to stop on the warning. If the verbosity level is too low to show the warning, the halt happens anyway.
+
+
 If you use \c gdb, you can define macros to use the pretty-printing functions on your data, which can be a significant help. Add these to your \c .gdbinit:
 \code
 
@@ -493,6 +496,7 @@ Easy data manipulation is essential for enjoying life as a researcher.  Thus, th
     \li\ref apop_matrix_rm_columns()
     \li\ref apop_matrix_stack()
     \li\ref apop_text_add()
+    \li\ref apop_text_paste()
     \li\ref apop_vector_bounded()
     \li\ref apop_vector_copy()
     \li\ref apop_vector_fill()
@@ -832,7 +836,6 @@ Outlineheader convsec   Conversion among types
             \li\ref apop_line_to_data()
             \li\ref apop_line_to_matrix()
             \li\ref apop_matrix_to_data()
-            \li\ref apop_matrix_to_db()
             \li\ref apop_text_to_data()
             \li\ref apop_text_to_db()
             \li\ref apop_vector_to_array()
@@ -853,14 +856,29 @@ Outlineheader names   Name handling
 
 endofdiv
 
+Outlineheader textsec   Text data
+
+The \ref apop_data set includes a grid of strings, {\tt text}, for holding text data. 
+
+\include text_demo.c
+
+            \li\ref apop_query_to_tex()
+            \li\ref apop_text_alloc()
+            \li\ref apop_text_add()
+            \li\ref apop_text_free()
+            \li\ref apop_text_paste()
+            \li\ref apop_text_unique_elements()
+
+endofdiv
+
 Outlineheader fact   Generating factors
 
 \em Factor is jargon for a numbered category. Number-crunching programs work best on numbers, so we need a function to produce a one-to-one mapping from text categories into numeric factors. 
 
-A \em dummy is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) prefer factors.
+A \em dummy is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) prefer factors. The functions that generate factors and dummies will add an informational page to your \ref apop_data set with a name like {\tt <categories for your_column>} listing the conversion from the artificial numeric factor to the original data.
 
             \li\ref apop_data_to_dummies()
-            \li\ref apop_text_to_factors()
+            \li\ref apop_data_to_factors()
             \li\ref apop_text_unique_elements()
             \li\ref apop_vector_unique_elements()
 
@@ -1373,7 +1391,7 @@ If you are producing a statistic that you know has a common form, like a central
 // hypothesis that the variance of my data is zero?"
 
 double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
-  apop_assert(in, 0, 0, 'c', "input vector is NULL. Doing nothing.\n");
+  Apop_assert_c(in, 0, 0, "input vector is NULL. Doing nothing.");
   gsl_vector	*normed;
   double 		sum=0;
 	apop_vector_normalize((gsl_vector *)in,&normed, 1);
@@ -1679,6 +1697,7 @@ General utilities:
     \li\ref apop_strip_dots()
     \li\ref apop_strcmp()
     \li\ref apop_regex()
+    \li\ref apop_text_paste()
     \li\ref apop_system()
 
 Math utilities:
@@ -1848,7 +1867,7 @@ Now for the code file where the function is declared. Again, there is is an \c A
 \#else
 apop_varad_head( void , apop_vector_increment){
     gsl_vector * apop_varad_var(v, NULL);
-    apop_assert_void(v, 0, 's', "You sent me a NULL vector.");
+    Apop_assert(v, "You sent me a NULL vector.");
     int apop_varad_var(i, 0);
     double apop_varad_var(amt, 1);
     apop_vector_increment_base(v, i, amt);

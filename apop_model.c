@@ -456,7 +456,7 @@ See also \ref apop_cdf_settings, which is the structure I use to store draws alr
 
 \code
 Apop_model_add_group(your_model, apop_cdf, .draws=1e5, .rng=my_rng);
-double *cdf_value = apop_cdf(your_data_point, your_model);
+double cdf_value = apop_cdf(your_data_point, your_model);
 \endcode
 \ingroup models
   */

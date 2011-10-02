@@ -437,7 +437,7 @@ APOP_VAR_ENDHEAD
         char *undotted = apop_strip_dots(apop_strip_dots(output_file,1),0);
         if (output_append == 'w')
             apop_table_exists(undotted, 'd');
-        apop_data_to_db(data, undotted);
+        apop_data_to_db(data, undotted, output_append);
         free(undotted);
         return;
     }

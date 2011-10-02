@@ -30,7 +30,7 @@ static apop_data * produce_t_test_output(int df, double stat, double diff){
 /** Answers the question: with what confidence can I say that the means of these two columns of data are different?
 <tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
-If \c apop_opts.verbose is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to stderr.
+If \c apop_opts.verbose is >=1, then display some information to stdout, like the mean/var/count for both vectors and the t statistic.
 
 \ingroup ttest
 \param {a, b} two columns of data
@@ -54,7 +54,7 @@ double		a_var	= (a_count > 1) ? apop_vector_var(a) : 0,
                         (b_count > 1 ? b_var/(b_count-1) : 0) 
                         + (a_count > 1 ? a_var/(a_count-1) : 0) 
                         );
-	if (apop_opts.verbose){
+	if (apop_opts.verbose >=1){
 		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
 		printf("2st avg: %g; 2st std dev: %g; 2nd count: %i.\n", b_avg, sqrt(b_var), b_count);
 		printf("t-statistic: %g.\n", stat);
@@ -65,7 +65,7 @@ double		a_var	= (a_count > 1) ? apop_vector_var(a) : 0,
 
 /** Answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
-If \c apop_opts.verbose is nonzero, then display some information, like the mean/var/count for both vectors and the t statistic, to stderr.
+If \c apop_opts.verbose is >=2, then display some information, like the mean/var/count for both vectors and the t statistic, to stderr.
 
 \ingroup ttest
 \param {a, b} two columns of data
@@ -87,7 +87,7 @@ double avg	= apop_vector_mean(diff),
 		var	= apop_vector_var(diff),
 		stat	= avg/ sqrt(var/(count-1));
 	gsl_vector_free(diff);
-    Apop_notify(1, "avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
+    Apop_notify(2, "avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
 int     df      = count-1;
     return produce_t_test_output(df, stat, avg);
 }

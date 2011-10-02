@@ -20,7 +20,7 @@ apop_opts_type apop_opts	=
 #include "apop_db_mysql.c"
 #endif
 
-#define ERRCHECK {apop_assert_c(err==NULL, 0, 0, "%s: %s",query, err);}
+#define ERRCHECK {Apop_assert_c(err==NULL, 0, 0, "%s: %s",query, err);}
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
@@ -87,7 +87,7 @@ int apop_db_open(char const *filename){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_db_open(filename);
 #else
-        {apop_assert_c(0, 0, 0, "apop_db_open: Apophenia was compiled without mysql support.");}
+        {Apop_assert_c(0, 0, 0, "apop_db_open: Apophenia was compiled without mysql support.");}
 #endif
         return apop_sqlite_db_open(filename);
 }
@@ -122,14 +122,14 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_table_exists(char const *name, char remove){
     char const *apop_varad_var(name, NULL)
-    apop_assert_s(name, "You gave me a NULL table name.");
+    Apop_assert(name, "You gave me a NULL table name.");
     char apop_varad_var(remove, 'n')
 APOP_VAR_END_HEAD
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_table_exists(name, remove);
 #else
-        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.");
+        Apop_assert(0, "Apophenia was compiled without mysql support.");
 #endif
   char 		*err=NULL, *q2;
   tab_exists_t te = { .name = name };
@@ -168,7 +168,7 @@ APOP_VAR_END_HEAD
         {apop_mysql_db_close(0);
         return 0;}
 #else
-        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
+        Apop_assert(0, "Apophenia was compiled without mysql support.")
 #endif
     else{
       char		*err;
@@ -207,10 +207,10 @@ int apop_query(const char *fmt, ...){
   Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        {apop_assert_c(mysql_db, 1, 0, "No mySQL database is open.");
+        {Apop_assert_c(mysql_db, 1, 0, "No mySQL database is open.");
         apop_mysql_query(query);}
 #else
-        apop_assert_c(0, 1, 0, "Apophenia was compiled without mysql support.")
+        Apop_assert_c(0, 1, 0, "Apophenia was compiled without mysql support.")
 #endif
     else 
         {if (!db) apop_db_open(NULL);
@@ -237,7 +237,7 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         out = apop_mysql_query_core(query, process_result_set_chars);
 #else
-        apop_assert_c(0, NULL, 0, "Apophenia was compiled without mysql support.");
+        Apop_assert_c(0, NULL, 0, "Apophenia was compiled without mysql support.");
 #endif
     } else
         out = apop_sqlite_query_to_text(query);
@@ -310,18 +310,33 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 	return qinfo.outdata;
 }
 
-/** Queries the database, and dumps the result into a matrix.  */
+//These used to do more, but I'll leave them as a macro anyway in case of future expansion.
+#define Store_settings  \
+    int v = apop_opts.verbose; apop_opts.verbose=0;/*hack to prevent double-printing.*/ \
+
+#define Restore_settings  \
+    apop_opts.verbose=v;
+
+/** Queries the database, and dumps the result into a matrix.
+
+  Uses \ref apop_query_to_data and returns just the matrix part; see that function for notes.
+
+  \li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I return only the \c gsl_matrix part of that set. 
+ 
+  \return A \c gsl_matrix.
+
+ */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
     Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_matrix);
 #else
-        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
+        Apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
-    int v = apop_opts.verbose; apop_opts.verbose=0;//hack to prevent double-printing.
+    Store_settings
     apop_data * outd = apop_query_to_data("%s", query);
-    apop_opts.verbose=v;
+    Restore_settings
     gsl_matrix *outm = NULL;
     if (outd){
         outm = outd->matrix;
@@ -336,6 +351,9 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 
 \return		A <tt>gsl_vector</tt> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.
 
+\li Uses \ref apop_query_to_data internally, then throws away all but the first column of the matrix.
+  \li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I look at only the \c gsl_matrix part of that set. 
+
 If the query returns no columns at all, the function returns \c NULL.  */
 gsl_vector * apop_query_to_vector(const char * fmt, ...){
     Fillin(query, fmt)
@@ -343,15 +361,15 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_vector);
 #else
-        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
+        Apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
   apop_data	*d=NULL;
   gsl_vector  *out;
 	if (db==NULL) apop_db_open(NULL);
-    int v = apop_opts.verbose; apop_opts.verbose=0;//hack to prevent double-printing.
+    Store_settings
 	d	= apop_query_to_data("%s", query);
-    apop_opts.verbose=v;
-    apop_assert_c(d, NULL, 1, "Query turned up a blank table. Returning NULL.");
+    Restore_settings
+    Apop_assert_c(d, NULL, 2, "Query [%s] turned up a blank table. Returning NULL.", query);
     //else:
     out = gsl_vector_alloc(d->matrix->size1);
 	gsl_matrix_get_col(out, d->matrix, 0);
@@ -362,7 +380,11 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 }
 
 /** Queries the database, and dumps the result into a single double-precision floating point number.
-\return		A double, actually. This calls \ref apop_query_to_matrix and returns the (0,0)th element of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list (which is not always well-defined).
+\return		A double, actually.
+
+\li This calls \ref apop_query_to_data and returns the (0,0)th element of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list (which is not always well-defined; maybe use an {\em order by} clause in your query if you expect multiple lines).
+
+  \li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I look at only the \c gsl_matrix element of that set. 
 
 If the query returns no rows at all, the function returns <tt>NAN</tt>.  */
 double apop_query_to_float(const char * fmt, ...){
@@ -377,10 +399,10 @@ double apop_query_to_float(const char * fmt, ...){
     } else {
         apop_data	*d=NULL;
         if (db==NULL) apop_db_open(NULL);
-        int v = apop_opts.verbose; apop_opts.verbose=0;//hack to prevent double-printing.
+        Store_settings
         d	= apop_query_to_data("%s", query);
-        apop_opts.verbose=v;
-        apop_assert_c(d, GSL_NAN, 1, "Query [%s] turned up a blank table. Returning NaN.", query);
+        Restore_settings
+        Apop_assert_c(d, GSL_NAN, 2, "Query [%s] turned up a blank table. Returning NaN.", query);
         out	= apop_data_get(d, 0, 0);
         apop_data_free(d);
     }
@@ -466,7 +488,7 @@ Column names are inserted if there are any. If there are, all dots are converted
 \ingroup apop_data
 \ingroup conversions
 */
-void apop_data_to_db(const apop_data *set, const char *tabname){
+void apop_data_to_db(const apop_data *set, const char *tabname, const char output_append){
     Apop_assert_c(set, , 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
     int	i,j; 
     int	ctr		    = 0;
@@ -496,10 +518,12 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
     if (tab_exists && !apop_opts.db_engine == 'm')
         asprintf(&q, "begin;");
     else if (tab_exists && apop_opts.db_engine == 'm')
-        asprintf(&q, "");
+        asprintf(&q, " ");
     else if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-    {
+    if (((output_append =='a' || output_append =='A') && apop_table_exists(tabname))){
+        asprintf(&q, " ");
+    else {
         asprintf(&q, "create table %s (", tabname);
         if (use_row) {
             qxprintf(&q, "%s\n %s varchar(1000)", q, apop_opts.db_name_column);
@@ -535,32 +559,36 @@ void apop_data_to_db(const apop_data *set, const char *tabname){
 #endif
     else {
         if (db==NULL) apop_db_open(NULL);
-        asprintf(&q, "create table %s (", tabname);
-        if (use_row) {
-            qxprintf(&q, "%s\n %s", q, apop_opts.db_name_column);
-            comma = ',';
-        }
-        if (set->vector){
-            if(!set->names->vector) 	qxprintf(&q, "%s%c\n vector numeric", q, comma);
-            else			qxprintf(&q, "%s%c\n \"%s\"", q, comma,apop_strip_dots(set->names->vector,'d'));
-            comma = ',';
-        }
-        if (set->matrix)
-            for(i=0;i< set->matrix->size2; i++){
-                if(set->names->colct <= i) 	
-                    qxprintf(&q, "%s%c\n c%i numeric", q, comma,i);
-                else			
-                    qxprintf(&q, "%s%c\n \"%s\" numeric", q, comma,apop_strip_dots(set->names->column[i],'d'));
+        if (((output_append =='a' || output_append =='A') && apop_table_exists(tabname)) )
+            asprintf(&q, " ");
+        else {
+            asprintf(&q, "create table %s (", tabname);
+            if (use_row) {
+                qxprintf(&q, "%s\n %s", q, apop_opts.db_name_column);
                 comma = ',';
             }
-        for(i=0; i< set->textsize[1]; i++){
-            if(set->names->textct <= i) 	qxprintf(&q, "%s%c\n tc%i ", q,comma,i);
-            else			qxprintf(&q, "%s%c\n %s ", q, comma, apop_strip_dots(set->names->text[i],'d'));
-            comma = ',';
+            if (set->vector){
+                if(!set->names->vector) 	qxprintf(&q, "%s%c\n vector numeric", q, comma);
+                else			qxprintf(&q, "%s%c\n \"%s\"", q, comma,apop_strip_dots(set->names->vector,'d'));
+                comma = ',';
+            }
+            if (set->matrix)
+                for(i=0;i< set->matrix->size2; i++){
+                    if(set->names->colct <= i) 	
+                        qxprintf(&q, "%s%c\n c%i numeric", q, comma,i);
+                    else			
+                        qxprintf(&q, "%s%c\n \"%s\" numeric", q, comma,apop_strip_dots(set->names->column[i],'d'));
+                    comma = ',';
+                }
+            for(i=0; i< set->textsize[1]; i++){
+                if(set->names->textct <= i) 	qxprintf(&q, "%s%c\n tc%i ", q,comma,i);
+                else			qxprintf(&q, "%s%c\n %s ", q, comma, apop_strip_dots(set->names->text[i],'d'));
+                comma = ',';
+            }
+            if (set->weights)
+                qxprintf(&q, "%s%c\n \"weights\" numeric", q, comma);
+            qxprintf(&q,"%s);  begin;",q);
         }
-        if (set->weights)
-            qxprintf(&q, "%s%c\n \"weights\" numeric", q, comma);
-        qxprintf(&q,"%s);  begin;",q);
     }
 
     int lim = GSL_MAX(set->vector ? set->vector->size : 0,

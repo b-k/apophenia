@@ -525,9 +525,11 @@ APOP_VAR_ENDHEAD
 /* Keep out margins with values for now; join them in below.
  	    except  select block, qageshort, qsex, racep, qspanq, 0 from d"; */
 	xprintf(&q, "%s except\nselect ", q);
-	for (int i=0; i < var_ct; i++)
-		xprintf(&q, "%s %s, ", q, all_vars_d->text[i][0]); 
-	apop_query("%s 0 from %s", q, table_name);
+    int tt = all_vars_d->textsize[1]; all_vars_d->textsize[1] = 1; //mask all but the first col
+    char *list_of_fields = apop_text_paste(all_vars_d, .between=", ");
+    all_vars_d->textsize[1] = tt;
+	apop_query("%s %s, 0 from %s", q, list_of_fields, table_name);
+    free(q);
 
     char *format=strdup("w");
     for (int i =0 ; i< var_ct; i++)
@@ -540,11 +542,7 @@ APOP_VAR_ENDHEAD
 		  Then,
               delete from contrasts where [structural_zeros]
      */
-    char *list_of_fields = strdup("");
     char *init_q = strdup("select ");
-    asprintf(&list_of_fields, "%s", all_vars_d->text[0][0]);
-	for (int i=1; i < var_ct; i++)
-		xprintf(&list_of_fields, "%s, %s ", list_of_fields, all_vars_d->text[i][0]); 
 	asprintf(&q, "create table apop_contrasts_%i as select %s ", run_number, list_of_fields);
     if (count_col){
         xprintf(&q, "%s, sum(%s) from %s\ngroup by %s", q, count_col, table_name, list_of_fields);
