@@ -936,7 +936,7 @@ static apop_model * find_roots (infostruct p) {
         status = gsl_multiroot_test_residual (s->f, mlep->tolerance);
     } while (status == GSL_CONTINUE && iter < mlep->max_iterations);
     if(GSL_SUCCESS) apopstatus = 0;
-    printf ("status = %s\n", gsl_strerror (status));
+    Apop_notify(2, "status = %s\n", gsl_strerror (status));
     apop_data_unpack(s->x, dist->parameters);
     gsl_multiroot_fsolver_free (s);
     gsl_vector_free (p.beta);

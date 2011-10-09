@@ -6,6 +6,7 @@
 
 	October 2011
 --apop_text_paste added.
+**apop_multinomial and apop_binomial overhauled. No longer accepting Bernoulli draws as input.
 
 	September 2011
 --`query turned up a blank table' warning turns up when apop_opts.verbose >=2. (used to be >=1)

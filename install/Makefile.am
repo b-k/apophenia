@@ -15,7 +15,7 @@ libapophenia_la_SOURCES = \
 			asprintf.c \
 			model/apop_bernoulli.c      \
             model/apop_beta.c			\
-            model/apop_binomial.c 	    \
+            model/apop_multinomial.c 	\
 			model/apop_dirichlet.c      \
 			model/apop_exponential.c    \
 			model/apop_gamma.c          \

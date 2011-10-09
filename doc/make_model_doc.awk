@@ -170,7 +170,6 @@ END {print "/** \\file */ /**\\defgroup models */"
         for (i=1; i<=doc_part_count;i++){
             part=doc_parts[i]
             #print "processing", m, part, "\n" >> "/dev/stderr"
-            if (items[m ":" part]) print part "_x" model_no "x_, /**< " items[m ":" part] "*/"
             if (doc_parts[i]=="Estimate_results"){
                 print part "_x" model_no "x_, /**< <table>"
                 print "<tr><td style=\"vertical-align:top\"><tt>data</tt></td><td style=\"vertical-align:top\">"
@@ -195,6 +194,7 @@ END {print "/** \\file */ /**\\defgroup models */"
                 }
                 print "</table> */"
             }
+            else if (items[m ":" part]) print part "_x" model_no "x_, /**< " items[m ":" part] "*/"
             #else print m, part >> "missing"  #not at the moment important.
         }
         print "};"

@@ -13,9 +13,7 @@ void test_updating(gsl_rng *r){
     //Requires a one-parameter binomial, with n fixed,
     //and a data set of n data points with the right p.
     apop_model *bcopy = apop_model_set_parameters(apop_binomial, n, GSL_NAN);
-    apop_data *bin_draws = apop_data_calloc(n);
-    for(i=0; i < n*binom_start; i ++)
-        apop_vector_increment(bin_draws->vector, i);
+    apop_data *bin_draws = apop_data_fill(apop_data_alloc(1,2), n*(1-binom_start), n*binom_start);
     bin = apop_model_fix_params(bcopy);
     apop_model_add_group(beta, apop_update, .burnin=.1, .periods=1e4);
     apop_model *out_h = apop_update(bin_draws, beta, bin, NULL);

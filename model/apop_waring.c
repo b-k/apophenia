@@ -51,7 +51,7 @@ static double waring_log_likelihood(apop_data *d, apop_model *m){
          ln_bb_less_1= log(abstruct.bb - 1);
     double likelihood  = apop_map_sum(d, .fn_dp = apply_me, .param=&abstruct);
 	likelihood += (ln_bb_less_1 + ln_bb_a - ln_a_mas_1)* tsize;
-    printf("..%g\t %g\n", abstruct.bb, abstruct.a);
+    Apop_notify(3, "a=%g\t b=%g", abstruct.a, abstruct.bb);
 	return likelihood;
 }
 

@@ -858,9 +858,9 @@ endofdiv
 
 Outlineheader textsec   Text data
 
-The \ref apop_data set includes a grid of strings, {\tt text}, for holding text data. 
+The \ref apop_data set includes a grid of strings, <tt>text</tt>, for holding text data. 
 
-\include text_demo.c
+\include eg/text_demo.c
 
             \li\ref apop_query_to_tex()
             \li\ref apop_text_alloc()
@@ -875,7 +875,7 @@ Outlineheader fact   Generating factors
 
 \em Factor is jargon for a numbered category. Number-crunching programs work best on numbers, so we need a function to produce a one-to-one mapping from text categories into numeric factors. 
 
-A \em dummy is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) prefer factors. The functions that generate factors and dummies will add an informational page to your \ref apop_data set with a name like {\tt <categories for your_column>} listing the conversion from the artificial numeric factor to the original data.
+A \em dummy is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) prefer factors. The functions that generate factors and dummies will add an informational page to your \ref apop_data set with a name like <tt><categories for your_column></tt> listing the conversion from the artificial numeric factor to the original data.
 
             \li\ref apop_data_to_dummies()
             \li\ref apop_data_to_factors()

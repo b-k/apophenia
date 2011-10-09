@@ -63,7 +63,7 @@ APOP_VAR_ENDHEAD
         if (i <strings->textsize[0]-1)  apop_tack_on(&out, between);
     }
     apop_tack_on(&out, after);
-    apop_notify(2, "%s", out);
+    Apop_notify(2, "%s", out);
     return out;
 }
 

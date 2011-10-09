@@ -807,39 +807,13 @@ static void common_binomial_bit(apop_model *out, int n, double p){
 }
 
 void test_binomial(gsl_rng *r){
-    size_t  i;
     double p = gsl_rng_uniform(r);
     int n     = gsl_ran_flat(r,1,1e5);
-    apop_data *d = apop_data_alloc(1,n);
-    for(i=0; i < n; i ++)
-        apop_data_set(d, 0,i,(gsl_rng_uniform(r) < p));
+    apop_data *d = apop_data_fill(apop_data_alloc(1,2), n*(1-p), n*p);
     apop_model *out = apop_estimate(d, apop_binomial);
     apop_model *outm = apop_estimate(d, apop_multinomial);
     common_binomial_bit(out, n, p);
     common_binomial_bit(outm, n, p);
-    apop_data_free(d);
-
-    /*
-    p = gsl_rng_uniform(r);
-    n  = gsl_ran_flat(r,1,4e4);
-    d = apop_data_calloc(0,n,2);
-    for(i=0; i < n; i ++){
-        if (gsl_rng_uniform(r) < p)
-            apop_matrix_increment(d->matrix, i,1);
-            //apop_matrix_increment(d->matrix, (int)gsl_ran_flat(r,0, n),1,1);
-        else
-            apop_matrix_increment(d->matrix, i,0);
-            //apop_matrix_increment(d->matrix, (int)gsl_ran_flat(r,0, n),0,1);
-    }
-    apop_model *bint = apop_model_copy(apop_binomial);
-    Apop_settings_add_group(bint, apop_rank, NULL);
-    out = apop_estimate(d, *bint);
-    common_binomial_bit(out, n, p);
-    apop_model *mint = apop_model_copy(apop_multinomial);
-    Apop_settings_add_group(mint, apop_rank, NULL);
-    out = apop_estimate(d, *mint);
-    common_binomial_bit(out, n, p);
-    */
     apop_data_free(d);
 }
 
@@ -1192,6 +1166,18 @@ void estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tr
             true_params->draw(v->data, r, true_params);
             assert(!apop_vector_map_sum(v, nan_map));
         }
+    } else if (apop_strcmp(model->name, "Binomial distribution") || apop_strcmp(model->name, "Multinomial distribution")){
+        int n = gsl_rng_uniform(r)* 1e5;
+        data = apop_data_calloc(runsize,true_params->parameters->vector->size);
+        for (i=0; i< runsize; i++){
+            Apop_row(data, i, v)
+            if (apop_strcmp(model->name, "Binomial distribution")){
+                true_params->draw(gsl_vector_ptr(v, 1), r, true_params);
+                v->data[0] = n - v->data[1];
+            }
+            true_params->draw(gsl_vector_ptr(v, 0), r, true_params);
+            assert(!apop_vector_map_sum(v, nan_map));
+        }
     } else {
         data = apop_data_calloc(runsize,model->dsize);
         for (i=0; i< runsize; i++){
@@ -1488,7 +1474,7 @@ int main(int argc, char **argv){
     do_test("test listwise delete", test_listwise_delete());
     //do_test("test fix params", test_model_fix_parameters(r));
     do_test("positive definiteness", test_posdef(r));
-    //do_test("test binomial estimations", test_binomial(r));
+    do_test("test binomial estimations", test_binomial(r));
     do_test("test data to db", test_data_to_db());
     do_test("test db to crosstab", test_crosstabbing());
     do_test("dummies and factors", dummies_and_factors());

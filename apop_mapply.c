@@ -40,7 +40,7 @@ typedef double apop_fn_ri(apop_data*, int);
 /**
   Apply a function to every element of a data set, matrix or vector; or, apply a vector-taking function to every row or column of a matrix.
 
-There are a lot of options: your function could take any combination of a \c gsl_vector/\c double/\ref apop_data, a parameter set, and the position of the element in the vector or matrix. As such, the function takes twelve function inputs, one for each combination of vector/matrix, params/no params, index/no index. Fortunately, because 
+There are a lot of options: your function could take any combination of a \c gsl_vector, a \c double, an \ref apop_data, a parameter set, and the position of the element in the vector or matrix. As such, the function takes twelve function inputs, one for each combination of vector/matrix, params/no params, index/no index. Fortunately, because 
 this function uses the \ref designated syntax for inputs, you will specify only one.
 
 For example, here is a function that will cut off each element of the input data to between \f$(-1, +1)\f$.
@@ -531,7 +531,7 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     apop_fn_di * apop_varad_var(fn_di, NULL)
     apop_fn_ri * apop_varad_var(fn_ri, NULL)
     void * apop_varad_var(param, NULL)
-    char apop_varad_var(part, 'a')
+    char apop_varad_var(part, ((fn_v||fn_vp||fn_vpi||fn_vi) ? 'r' : 'a'));
     if (varad_in.all_pages >= 1000) varad_in.all_pages -= 1000;
     int apop_varad_var(all_pages, 'n')
 APOP_VAR_ENDHEAD 

@@ -345,6 +345,13 @@ This function takes in a list of observations, and aggregates them into a single
 
 \li For the complement, see \ref apop_data_rank_expand.
 
+\li You may be interested in \ref apop_data_to_factors to convert real numbers or text into a
+matrix of categories.
+
+\li The number of bins is simply the largest number found. So if there
+are bins {0, 1, 2} and your data set happens to consist of <tt>0 0 1 1 0</tt>, then
+I won't know to generate results with three bins where the last bin has probability zero.
+
 \include test_ranks.c
 */
 apop_data *apop_data_rank_compress (apop_data *in){
