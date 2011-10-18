@@ -50,18 +50,22 @@ APOP_VAR_HEAD char *apop_text_paste(apop_data *strings, char *between, char *bef
     apop_fn_riip apop_varad_var(prune, NULL);
     void *apop_varad_var(prune_parameter, NULL);
 APOP_VAR_ENDHEAD
-    char *out = before ? strdup(before) : NULL;
+    char *prior_line=NULL, *oneline=NULL, *out = before ? strdup(before) : NULL;
     for (int i=0; i< strings->textsize[0]; i++){
-         char *oneline = NULL;
+        free(oneline); oneline = NULL;
         for (int j=0; j< strings->textsize[1]; j++){
             if (prune && !prune(strings, i, j, prune_parameter)) continue;
             apop_tack_on(&oneline, strings->text[i][j]);
             if (j <strings->textsize[1]-1)  apop_tack_on(&oneline, between_cols);
         }
-        if (oneline)  apop_tack_on(&out, oneline);
-        free(oneline);
-        if (i <strings->textsize[0]-1)  apop_tack_on(&out, between);
+        apop_tack_on(&out, prior_line);
+        if (prior_line && oneline) apop_tack_on(&out, between);
+        free(prior_line);
+        prior_line=oneline ? strdup(oneline): NULL;
+        //if (i <strings->textsize[0]-1)  apop_tack_on(&out, between);
+        //if (oneline)  apop_tack_on(&out, oneline);
     }
+    apop_tack_on(&out, oneline); //the final one never got a chance to be prior_line
     apop_tack_on(&out, after);
     Apop_notify(2, "%s", out);
     return out;

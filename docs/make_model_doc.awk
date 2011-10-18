@@ -184,6 +184,10 @@ END {print "/** \\file */ /**\\defgroup models */"
                 else
                     print "See parameter format."
                 print "</td></tr>"
+                if (items[m ":estimated_parameter_model"]){
+                    print "<tr><td style=\"vertical-align:top\"><tt>parameter models</tt></td><td style=\"vertical-align:top\">"
+                    print items[m ":estimated_parameter_model"] "</td></tr>"
+                }
                 if (items[m ":estimated_info"]){
                     print "<tr><td style=\"vertical-align:top\"><tt>info</tt></td><td style=\"vertical-align:top\">"
                     print items[m ":estimated_info"] "</td></tr>"
@@ -195,7 +199,7 @@ END {print "/** \\file */ /**\\defgroup models */"
                 print "</table> */"
             }
             else if (items[m ":" part]) print part "_x" model_no "x_, /**< " items[m ":" part] "*/"
-            #else print m, part >> "missing"  #not at the moment important.
+            else print m, part >> "missing_model_parts"  #not at the moment important.
         }
         print "};"
     }

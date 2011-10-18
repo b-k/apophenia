@@ -37,7 +37,7 @@ auto:
 	#mkdir $(workdir)/apophenia
 	#cp $(workdir)/*.h $(workdir)/apophenia
 	#let the GNU prep everything and produce a distribution pkg.
-	cd $(workdir) && dot -Tpng < doc/structs.dot | pngtopnm | pnmscale .5 | pnmtopng > doc/structs.png
+	cd $(workdir) && dot -Tpng < docs/structs.dot | pngtopnm | pnmscale .5 | pnmtopng > docs/structs.png
 	cd $(workdir) && echo "Ben Klemens (fluffmail@f-m.fm)" > AUTHORS
 	cd $(workdir) && libtoolize
 	cd $(workdir) && aclocal

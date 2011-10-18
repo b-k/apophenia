@@ -862,7 +862,7 @@ The \ref apop_data set includes a grid of strings, <tt>text</tt>, for holding te
 
 \include eg/text_demo.c
 
-            \li\ref apop_query_to_tex()
+            \li\ref apop_query_to_text()
             \li\ref apop_text_alloc()
             \li\ref apop_text_add()
             \li\ref apop_text_free()
@@ -2298,7 +2298,7 @@ All of the elements of the \ref apop_data structure are laid out at middle-left.
 already met the vector, matrix, and weights, which are all a \c gsl_vector or \c gsl_matrix.
 
 The diagram shows the \ref apop_name structure, which has received little mention so far because names
-basically take care of themselves. Just use \ref apop_name_add to add names to your data
+basically take care of themselves. Just use \ref apop_data_add_names to add names to your data
 set and \ref apop_name_stack to copy from one data set to another.
 
 The \ref apop_data structure has a \c more element, for when your data is best expressed
@@ -2338,7 +2338,7 @@ But now that you've seen the internals, note that there are helper functions tha
     \ref apop_loess, and \ref apop_pmf (probability mass function). You would estimate the
 parameters of any of them using the form above, with the appropriate model in the second
 slot of the \ref apop_estimate call.
-\li The models that ship with Apophenia, like \ref apop_ols, include the procedures and some metadata, but are of course not estimated using any one data set (i.e., <tt>parameters == NULL</tt>). The line above generated a new
+\li The models that ship with Apophenia, like \ref apop_ols, include the procedures and some metadata, but are of course not yet estimated using a one data set (i.e., <tt>parameters == NULL</tt>). The line above generated a new
 model, \c est, which is identical to the base OLS model but has estimated parameters
 (and covariances, and basic hypothesis tests, a log likelihood, AIC, BIC, et cetera). 
 \li You will mostly use the models by passing them as inputs to 

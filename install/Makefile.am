@@ -74,9 +74,9 @@ apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
 apop_lookup_LDADD = libapophenia.la
 
-EXTRA_DIST = apophenia.pc doc/doxyconfig doc/triangle.png doc/right.png doc/down.png \
-        doc/flake.gif doc/edit_group doc/foot.html doc/structs.png rpm.spec \
-		doc/head.html doc/search.gif doc/typical.css doc/make_model_doc.awk doc/documentation.h \
+EXTRA_DIST = apophenia.pc docs/doxyconfig docs/triangle.png docs/right.png docs/down.png \
+        docs/flake.gif docs/edit_group docs/foot.html docs/structs.png rpm.spec \
+		docs/head.html docs/search.gif docs/typical.css docs/make_model_doc.awk docs/documentation.h \
 		tests/Makefile tests/test.py tests/Readme tests/nist_tests.c tests/numacc4.dat \
 		tests/pontius.dat tests/test.c tests/rake_test.c tests/test_data_mixed tests/test_data tests/test_data2 \
 		tests/data-mixed tests/test_data_nans tests/wampler1.dat tests/printing_sample \
@@ -85,18 +85,18 @@ EXTRA_DIST = apophenia.pc doc/doxyconfig doc/triangle.png doc/right.png doc/down
 
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 
-docs: 
-	cat model/*.c | awk -f doc/make_model_doc.awk > doc/model_doc.h
-	doxygen doc/doxyconfig
-	cp doc/flake.gif doc/search.gif doc/right.png doc/down.png html/
+doc: 
+	cat model/*.c | awk -f docs/make_model_doc.awk > docs/model_doc.h
+	doxygen docs/doxyconfig
+	cp docs/flake.gif docs/search.gif docs/right.png docs/down.png html/
 	@sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)</p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
 -e 's|endofdiv</p>|</div>|' \
 -e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/index.html
 	@sed -i -e '/index_x/s/- x -/ /' -e '/index_a/s/- a -/ /' -e '15,27d' -e '/Here is a list of all/d' -e '/<span>[a-z]<\/span><\/a><\/li>/d' html/globals.html
 	@sed -i -e '/div class="contents"/aSee also the <a class="el" href="group__models.html">models</a> and <a class="el" href="group__settings.html">settings</a> pages.' html/globals.html
 	@sed -i 's|<td width="100%"></td>||g' html/*html
-	@sed -i -f doc/edit_group html/group__models.html 
-	cp doc/*js html/
+	@sed -i -f docs/edit_group html/group__models.html 
+	cp docs/*js html/
 	mv html/index.html html/outline.html
 	sudo cp man/man3/* /usr/share/man/man3/
 

@@ -56,11 +56,11 @@ static double b_callback(double x, void *abv){
 }
 
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_mp(p) 
-  double       	a    	= gsl_vector_get(p->parameters->vector, 0),
-        		b    	= gsl_vector_get(p->parameters->vector, 1);
-  double psi_a_ln_b	= gsl_sf_psi(a) + log(b);
-  double b_and_ab[2]    = {b, a/b};
+    Nullcheck_mp(p) 
+    double  a = gsl_vector_get(p->parameters->vector, 0),
+        	b = gsl_vector_get(p->parameters->vector, 1);
+    double psi_a_ln_b  = gsl_sf_psi(a) + log(b);
+    double b_and_ab[2] = {b, a/b};
     gsl_vector_set(gradient, 0, apop_map_sum(d, .fn_dp = a_callback, .param=&psi_a_ln_b));
     gsl_vector_set(gradient, 1, apop_map_sum(d, .fn_dp = b_callback, .param=&b_and_ab));
 }

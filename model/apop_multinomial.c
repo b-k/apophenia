@@ -10,6 +10,12 @@ It is implemented as an alias of the \ref apop_multinomial model, except that it
 \adoc    Input_format Each row of the matrix is one observation, consisting of two elements.
   The number of draws of type zero (sometimes read as `misses' or `failures') are in column zero, 
   the number of draws of type one (`hits', `successes') in column one.
+
+\adoc    RNG The RNG returns a single number representing the success count, not a
+    vector of length two giving both the failure bin and success bin. This is notable
+    because it differs from the input data format, but it tends to be what people expect
+    from a Binomial RNG. For draws with both dimensions, use a \ref apop_multinomial model
+    with <tt>.vbase =2</tt>.
 */
 
 #include "apop_internal.h"

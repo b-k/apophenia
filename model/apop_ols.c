@@ -14,6 +14,7 @@ You can also use it for a lot of not-entirely linear models based on the form \f
 \adoc    Input_format  See \ref dataprep.
 \adoc    Parameter_format  A vector of OLS coefficients. coeff. zero
                          refers to the constant column, if any. 
+\adoc    estimated_parameter_model  For the mean, a noncentral \f$t\f$ distribution (\ref apop_t_distribution).
 \adoc    Prep_routine      Focuses on the data shunting. 
 
 \adoc    settings  \ref apop_lm_settings 

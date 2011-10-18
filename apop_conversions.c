@@ -1241,6 +1241,9 @@ APOP_VAR_END_HEAD
     else
         tab_create_sqlite(tabname, col_ct, has_row_names, field_params, table_params);
 #if SQLITE_VERSION_NUMBER < 3003009
+    apop_notify(1, "Apophenia was compiled using a version of SQLite from mid-2007 or earlier. "
+                    "The code for reading in text files using such an old version is no longer supported, "
+                    "so if errors crop up please see about installing a more recent version of SQLite's library.");
     int use_sqlite_prepared_statements = 0;
 #else
     int use_sqlite_prepared_statements = (sqlite3_libversion_number() >=3003009

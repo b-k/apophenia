@@ -93,7 +93,7 @@ echo \
      all                - build all binaries
      install            - install everything
      test               - test the installation
-     docs               - generate documentation via doxygen 
+     doc                - generate documentation via doxygen 
 
 ------------------------------------------------------------"
 
