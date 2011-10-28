@@ -1,5 +1,85 @@
 /* Apophenia's documentation
-Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2005--2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+
+/**  \mainpage Apophenia
+
+Apophenia is an open statistical library for working with data sets and statistical
+models. It provides functions on the same level as those of the typical stats package
+(such as OLS, probit, or singular value decomposition) but gives the user more
+flexibility to be creative in model-building.  The core functions are written in C,
+but bindings exist for Python (and they should be easy to bind to in Perl/Ruby/&amp;c.)
+
+It is written to scale well, to comfortably work with gigabyte data sets, million-step simulations, or
+computationally-intensive agent-based models. If you have tried using other open source
+tools for computationally demanding work and found that those tools weren't up to the
+task, then Apophenia is the library for you.
+
+<h5>The goods</h5> 
+
+To date, the library has over two hundred functions to facilitate scientific computing, such as:
+
+\li OLS and family, discrete choice models like probit and logit, kernel density estimators, and other common models
+\li database querying and maintenance utilities
+\li moments, percentiles, and other basic stats utilities
+\li t-tests, F-tests, et cetera
+\li Several optimization methods available for your own new models
+\li It does <em>not</em> re-implement basic matrix operations or build yet another database
+engine. Instead, it builds upon the excellent <a href="http://sources.redhat.com/gsl/">GNU
+Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL is also supported.
+
+For the full list, click the <a href="globals.html">index</a> link from the header.
+
+<h5><a href="http://sourceforge.net/projects/apophenia/">Download Apophenia here</a>.</h5>
+
+Most users will just want to download the packaged version using the giant green button at the
+SourceForge page linked from the
+<a href="http://sourceforge.net/projects/apophenia/">Download Apophenia here</a> header.
+
+Those who would like to work on a cutting-edge copy of the source code
+can get the latest version (and six years of project history) by cutting and pasting the following onto
+the command line. If you follow this route, be sure to read the development README in the
+<tt>apophenia</tt> directory this command will create.
+
+\code
+git clone https://github.com/b-k/Apophenia.git
+\endcode
+<!--git clone git://apophenia.git.sourceforge.net/gitroot/apophenia/apophenia
+cvs -z3 -d:ext:<i>(your sourceforge login)</i>@cvs.sourceforge.net:/cvsroot/apophenia co -P apophenia
+cvs -z3 -d:pserver:anonymous@cvs.sf.net:/cvsroot/apophenia checkout -P apophenia
+svn co https://apophenia.svn.sourceforge.net/svnroot/apophenia/trunk/apophenia --> 
+
+
+<h5>The documentation</h5>
+
+To start off, have a look at this <a href="gentle.html">Gentle Introduction</a> to the
+library.
+
+<a href="outline.html">The outline</a> gives a more detailed narrative.
+
+The <a href="globals.html">index</a> lists every function in the
+library, with detailed reference
+information. Notice that the header to every page has a link to the outline and the index.
+
+To really go in depth, download or pick up a copy of
+<a href="http://modelingwithdata.org">Modeling with Data</a>,
+which discusses general methods for doing statistics in C with the GSL 
+and SQLite, as well as Apophenia itself.
+
+<h5>Contribute!</h5> 
+
+\li Develop a new model object.
+\li Contribute your favorite statistical routine.
+\li Package Apophenia into an RPM, apt, portage, cygwin package.
+\li Report bugs or suggest features.
+\li Write bindings for your preferred language, which may just mean modifying the existing SWIG interface file.
+
+If you're interested,  <a href="mailto:fluffmail@f-m.fm">write to the maintainer</a> (Ben Klemens), or join the
+<a href="https://github.com/b-k/Apophenia">GitHub</a> project.
+
+      <a href="http://validator.w3.org/check?uri=referer"><img
+          src="http://www.w3.org/Icons/valid-xhtml10"
+          alt="Valid XHTML 1.0!" height="31" width="88" /></a>
+*/
 
 /** \page eg Some examples
  Here are a few pieces of sample code, gathered from elsewhere in the documentation, for testing your installation or to give you a sense of what code with Apophenia's tools looks like. If you'd like more context or explanation, please click through to the page from which the example was taken.
@@ -221,7 +301,7 @@ Just a few page links:
 */
 
 
-/**  \mainpage An outline of the library
+/** \page outline An outline of the library
   \anchor outline
 
 ALLBUTTON

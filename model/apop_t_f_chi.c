@@ -112,9 +112,9 @@ static double pos_def(apop_data *data, apop_model *candidate){
 }
 
 typedef struct{
-    double paramdet;
+    double paramdet, df;
     gsl_matrix *wparams;
-    int len, df;
+    int len;
 } wishartstruct_t;
 
 static double one_wishart_row(gsl_vector *in, void *ws_in){
@@ -132,7 +132,7 @@ static double one_wishart_row(gsl_vector *in, void *ws_in){
     out += -0.5 * trace;
     out -= log(2) * ws->len* ws->df/2.;
     out -= log(ws->paramdet) * ws->df/2.;
-    out -= apop_multivariate_lngamma(ws->df/2, ws->len);
+    out -= apop_multivariate_lngamma(ws->df/2., ws->len);
     gsl_matrix_free(inv);
     apop_data_free(square);
     assert(isfinite(out));
@@ -186,15 +186,15 @@ C     whose elements have a Wishart(N, SIGMA) distribution.
         apop_data_set(rmatrix, i, i, gsl_ran_chisq(r, DF));
     }
     
-    double ndraw;
     for(int i = 0; i< np; i++) //off-diagonal triangles: Normals.
           for(int j = 0; j< i; j++){
+            double ndraw;
             apop_draw(&ndraw, r, std_normal);
             assert (!gsl_isnan(ndraw));
             apop_data_set(rmatrix, i, j, ndraw);
-            apop_data_set(rmatrix, j, i, ndraw);
+//            apop_draw(&ndraw, r, std_normal);
+//            apop_data_set(rmatrix, j, i, ndraw);
           }
-
     //Now find C * rand * rand' * C'
     apop_data *cr = apop_dot(Chol, rmatrix);
     apop_data *crr = apop_dot(cr, rmatrix, .form2='t');
@@ -205,9 +205,33 @@ C     whose elements have a Wishart(N, SIGMA) distribution.
     apop_data_free(crrc);    apop_data_free(crr);
 }
 
+double wishart_constraint(apop_data *d, apop_model *m){
+    double out= apop_matrix_to_positive_semidefinite(m->parameters->matrix);
+    double df_minus_dim = m->parameters->vector->data[0] - (m->parameters->matrix->size1-2)-1e-4;
+    if (df_minus_dim <= 0){
+        out += df_minus_dim;
+        m->parameters->vector->data[0] = m->parameters->matrix->size1+2+1e-4;
+    }
+    return out;
+}
+
 static void wishart_prep(apop_data *d, apop_model *m){
      m->parameters = apop_data_alloc(1,sqrt(d->matrix->size2),sqrt(d->matrix->size2));
  }
+
+apop_model *wishart_estimate(apop_data *d, apop_model *m){
+    Nullcheck_m(m);
+    apop_data_set(m->parameters, 0, -1, d->matrix->size1);
+    apop_data *summ=apop_data_summarize(d);
+    Apop_col_t(summ, "mean", means);
+    gsl_vector *t = m->parameters->vector; //mask this while unpacking
+    m->parameters->vector=NULL;
+    apop_data_unpack(means, m->parameters);
+    gsl_matrix_scale(m->parameters->matrix, 1./t->data[0]);
+    m->parameters->vector=t;
+    apop_data_free(summ);
+    return m;
+}
 
 /*\amodel apop_wishart The Wishart distribution, which is currently somewhat untested. 
 
@@ -234,15 +258,16 @@ See also notes in \ref tfchi.
 \adoc    Examples Making some random draws:
 
 \code
+apop_model *m = apop_estimate(yr_data, apop_wishart);
 gsl_matrix *rmatrix = gsl_matrix_alloc(10, 10);
 gsl_rng *r = apop_rng_alloc(8765);
 for (int i=0; i< 1e8; i++){
-    apop_draw(rmatrix->data, r, apop_wishart);
+    apop_draw(rmatrix->data, r, m);
     do_math_with_matrix(rmatrix);
 }
 \endcode */
-apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .dsize=-1, .draw = apop_wishart_draw,
-         .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep};
+apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .dsize=-1, .estimate=wishart_estimate, .draw = apop_wishart_draw,
+         .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep, .constraint=wishart_constraint};
 
 /*\amodel apop_t_distribution The t distribution, primarily for descriptive purposes.
 
