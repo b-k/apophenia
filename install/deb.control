@@ -1,0 +1,19 @@
+Source: apophenia
+Priority: extra
+Maintainer: Ben Klemens <bklemens@gmail.com>
+Build-Depends: debhelper (>= 7), autotools-dev
+Standards-Version: 3.8.1
+Section: libs
+Homepage: http://apophenia.info
+
+Package: apophenia-dev
+Section: libdevel
+Architecture: any
+Depends: apophenia0
+Description: A library of functions and models for scientific and statistical computing
+
+Package: apophenia0
+Section: libs
+Architecture: any
+Depends: libgsl0-dev, gsl-bin, sqlite3
+Description: A library of functions and models for scientific and statistical computing

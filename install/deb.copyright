@@ -1,0 +1,20 @@
+This package was debianized by Ben Klemens <bklemens@gmail.com>.
+
+Upstream Author(s):
+
+     Ben Klemens <bklemens@gmail.com>
+
+Copyright:
+
+    Copyright (C) 2005-2009 Ben Klemens
+
+License:
+
+    modified GPLv2; see COPYING and COPYING2.
+
+The Debian packaging is:
+
+    Copyright (C) 2010 Ben Klemens <bklemens@gmail.com>
+
+and is licensed under the GPL version 2, 
+see `/usr/share/common-licenses/GPL-2'.
