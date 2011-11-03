@@ -339,18 +339,13 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
 }
 
 /* \adoc predict This function is limited to taking in a data set with a matrix, and
-filling the vector with \f$X\beta\f$. The OLS estimation will shuffle a matrix around
-to insert a column of ones (see \ref dataprep), but this function will not: if you want
-ones, put them there yourself, and be sure to not put the dependent variable in the input data set at all.
-
-If the vector of your data set is allocated, it gets filled (and its contents overwritten); if not, I will allocate it for you.
+filling the vector with \f$X\beta\f$. Like, the OLS estimation will shuffle a matrix around
+to insert a column of ones (see \ref dataprep).
  */
 apop_data *ols_predict (apop_data *in, apop_model *m){
     Nullcheck_mpd(in, m);
-    if (!in->vector) // ols_shuffle(in);  
-        in->vector = gsl_vector_alloc(in->matrix->size1);
+    if (!in->vector)  ols_shuffle(in);  
 
-    //OK, data is now in the right form.
     //find x dot y
     gsl_blas_dgemv (CblasNoTrans, 1, in->matrix, m->parameters->vector, 0, in->vector);
     return in;

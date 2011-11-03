@@ -4,6 +4,10 @@
 !!Big.
 ]
 
+	November 2011
+--moved to Github; some changes to structure and documentation to accommodate. 
+**apop_ols.predict didn't do the OLS shuffle if the input has no vector; this was anomalous.
+
 	October 2011
 --apop_text_paste added.
 **apop_multinomial and apop_binomial overhauled. No longer accepting Bernoulli draws as input.
