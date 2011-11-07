@@ -29,16 +29,16 @@ Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL 
 
 For the full list, click the <a href="globals.html">index</a> link from the header.
 
-<h5><a href="http://sourceforge.net/projects/apophenia/">Download Apophenia here</a>.</h5>
+<h5><a href="https://github.com/b-k/Apophenia/downloads">Download Apophenia here</a>.</h5>
 
-Most users will just want to download the packaged version using the giant green button at the
-SourceForge page linked from the
-<a href="http://sourceforge.net/projects/apophenia/">Download Apophenia here</a> header.
+Most users will just want to download the packaged version in one of the forms linked from
+the
+<a href="https://github.com/b-k/Apophenia/downloads">Download Apophenia here</a> header.
 
 Those who would like to work on a cutting-edge copy of the source code
-can get the latest version (and six years of project history) by cutting and pasting the following onto
+can get the latest version by cutting and pasting the following onto
 the command line. If you follow this route, be sure to read the development README in the
-<tt>apophenia</tt> directory this command will create.
+<tt>Apophenia</tt> directory this command will create.
 
 \code
 git clone https://github.com/b-k/Apophenia.git
@@ -47,7 +47,6 @@ git clone https://github.com/b-k/Apophenia.git
 cvs -z3 -d:ext:<i>(your sourceforge login)</i>@cvs.sourceforge.net:/cvsroot/apophenia co -P apophenia
 cvs -z3 -d:pserver:anonymous@cvs.sf.net:/cvsroot/apophenia checkout -P apophenia
 svn co https://apophenia.svn.sourceforge.net/svnroot/apophenia/trunk/apophenia --> 
-
 
 <h5>The documentation</h5>
 
@@ -2372,7 +2371,7 @@ relate. It is taken from this
 which will be useful to you if only because it lists some of the functions that act on
 GSL vectors and matrices that are useful (in fact, essential) but out of the scope of the Apophenia documentation.
 
-\image html http://apophenia.sourceforge.net/doc/structs.png
+\image html http://apophenia.info/doc/structs.png
 \image latex structs.png
 
 

@@ -28,7 +28,7 @@ auto:
 	cd $(workdir) && cp install/* .
 	sed "s/PKGNAME/apophenia-$(version)-$(date).tgz/" < install/rpm.spec > $(workdir)/rpm.spec
 	cd $(workdir) && cp ChangeLog NEWS
-	cd $(workdir) && sed -i "s/X\.XX/$(version)/" README apop_db.c configure.ac
+	cd $(workdir) && sed -i "s/X\.XX/$(version)/" README apop_db.c configure.ac upload
 	cd $(workdir) && sed -i -f prep_variadics.sed *.c *h model/*.c
 	#generate the internal header based on the public apop.h
 	sed -e 's/[<>]/"/g' -e 's/apophenia\///' -e '1i#include "variadic.h"' -e '1i#include "internal.h"\n' <apop.h > $(workdir)/apop_internal.h
@@ -60,6 +60,10 @@ rpm: auto
 deb: rpm
 	cd $(distdir) && mkdir alien_tmp && cd alien_tmp && fakeroot alien -d ~/rpmbuild/RPMS/*/apophenia*rpm \
 	&& mv apop*deb .. && cd .. && rm -rf alien_tmp
+
+upload: deb
+	sed -e "s/VERSION/$(version)/" -e "s/DATE/$(date)/" < install/upload > dists/upload
+	cd dists && chmod +x upload && ./upload
 
 deb-install: deb
 	sudo dpkg -i $(distdir)/apophenia*deb
