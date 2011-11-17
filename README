@@ -27,7 +27,7 @@ certainly a package for all of these. Be sure to include both the main
 package and the lib-, -dev, or -devel package. On my Ubuntu system,
 I'd run this package-install command:
 
-apt-get install gsl-bin libgsl0-bin libblas3gf liblapack3gf sqlite3 libsqlite3-0 libsqlite3-dev
+apt-get install gsl-bin libgsl0-dev libblas-dev libblas3gf liblapack3gf sqlite3 libsqlite3-0 libsqlite3-dev
 
 --There is an optional Python interface, which will require all of the above plus the
 swig and Python-dev packages.

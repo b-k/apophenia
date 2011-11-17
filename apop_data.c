@@ -224,7 +224,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                     in->textsize[0] , in->textsize[1] , out->textsize[0] , out->textsize[1]);
         for (size_t i=0; i< in->textsize[0]; i++)
             for(size_t j=0; j < in->textsize[1]; j ++)
-				asprintf(&(out->text[i][j]), "%s", in->text[i][j]);
+				apop_text_add(out, i, j, "%s", in->text[i][j]);
     }
 }
 
@@ -254,11 +254,8 @@ apop_data *apop_data_copy(const apop_data *in){
         out->matrix = gsl_matrix_alloc(in->matrix->size1, in->matrix->size2);
     if (in->weights)
         out->weights = gsl_vector_alloc(in->weights->size);
-    if (in->textsize[0] && in->textsize[1]){
-        out->text = malloc(sizeof(char ***) * in->textsize[0] * in->textsize[1]);
-        for (size_t i=0; i< in->textsize[0]; i++)
-            out->text[i] = malloc(sizeof(char **) * in->textsize[1]);
-    }
+    if (in->textsize[0] && in->textsize[1])
+        apop_text_alloc(out, in->textsize[0], in->textsize[1]);
     apop_data_memcpy(out, in);
     return out;
 }

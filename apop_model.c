@@ -384,7 +384,7 @@ void apop_draw(double *out, gsl_rng *r, apop_model *m){
         apop_arms_draw(out, r, m);
 }
 
-/** The default prep is to simply call \c apop_model_clear. If the
+/** The default prep is to simply call \ref apop_model_clear. If the
  function has a prep method, then that gets called instead.
 
 \ingroup models

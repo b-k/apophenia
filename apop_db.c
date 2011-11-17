@@ -610,7 +610,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname, const char outpu
                add_a_number (&q, &comma, gsl_matrix_get(set->matrix,i,j));
 		for(j=0; j< set->textsize[1]; j++){
             char *fixed= prep_string_for_sqlite(set->text[i][j], &nan_regex, 0);
-			qxprintf(&q, "%s%c %s ",q, comma,fixed);
+			qxprintf(&q, "%s%c %s ",q, comma,fixed ? fixed : "''");
             free(fixed);
             comma = ',';
         }
