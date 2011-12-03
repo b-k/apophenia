@@ -627,10 +627,10 @@ static int get_field_names(int has_col_names, char **field_names, FILE
             }
         }
     } else	{
+        asprintf(add_this_line, "%s", instr); //save this line for later.
         if (field_names)
             fn	= field_names;
         else{
-            asprintf(add_this_line, "%s", instr); //save this line for later.
             fn	= malloc(ct * sizeof(char*));
             for (i =0; i < ct; i++){
                 fn[i]	= malloc(1000);
