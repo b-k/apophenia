@@ -312,6 +312,6 @@ replace that matrix column with a constant column of ones, just like with OLS.
 
 \adoc    settings   None, but see above about seeking a factor page in the input data.
 */
-apop_model apop_logit = {"Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
+apop_model apop_logit = {.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
 .score = logit_dlog_likelihood, .predict=multilogit_expected, .prep = probit_prep
 };

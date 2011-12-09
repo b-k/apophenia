@@ -137,7 +137,7 @@ strings.
 
 Accepts <tt>NULL</tt>s: 
 If one string is <tt>NULL</tt> and the other isn't I return 0 (because a
-<tt>NULL</tt> string surely differs from a non-<tt>NULL</tt>. If both strings
+<tt>NULL</tt> string surely differs from a non-<tt>NULL</tt>). If both strings
 are <tt>NULL</tt>, that's equality, and I return 1. If you're looking for
 different behavior on <tt>NULL</tt>s, you're best off just testing your
 inputs.

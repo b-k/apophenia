@@ -14,18 +14,6 @@ Apop_settings_init(apop_update,
 Apop_settings_copy(apop_update, )
 Apop_settings_free(apop_update, )
 
-static void write_double(const double *draw, apop_data *params){
-  static apop_data *v = NULL;
-  Get_vmsizes(params); //tsize
-  if (!v || v->vector->size != tsize){
-      apop_data_free(v);
-      v = apop_data_alloc(tsize);
-  }
-    for (size_t i=0; i< tsize; i++)
-        gsl_vector_set(v->vector, i, draw[i]);
-    apop_data_unpack(v->vector, params);
-}
-
 static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model likelihood){
   apop_model   *outp;
     if (!strcmp(prior.name, "Gamma distribution") && !strcmp(likelihood.name, "Exponential distribution")){
@@ -117,6 +105,14 @@ the input to this function, so you can chain Bayesian updating procedures.
 To change the default settings (MCMC starting point, periods, burnin...),
 add an \ref apop_update_settings struct to the prior.
 
+\li If the likelihood model no parameters, I will allocate them. That means you can use
+one of the stock models that ship with Apophenia. If I need to run the model's prep
+routine to get the size of the parameters, then I'll make a copy of the likelihood
+model, run prep, and then allocate parameters for that copy of a model.
+
+\li Consider the state of the \c parameters element of your likelihood model to be
+undefined when this exits. This may be settled at a later date.
+
 Here are the conjugate distributions currently defined:
 
 <table>
@@ -164,25 +160,32 @@ APOP_VAR_END_HEAD
     if (maybe_out) return maybe_out;
     apop_update_settings *s = apop_settings_get_group(prior, apop_update);
     if (!s) s = Apop_model_add_group(prior, apop_update);
-  double    ratio, ll, cp_ll = GSL_NEGINF;
-  int       vs  = likelihood->vbase  >= 0 ? likelihood->vbase  : data->matrix->size2;
-  int       ms1 = likelihood->m1base >= 0 ? likelihood->m1base : data->matrix->size2;
-  int       ms2 = likelihood->m2base >= 0 ? likelihood->m2base : data->matrix->size2;
-  double    *draw          = malloc(sizeof(double)* (vs+ms1*ms2));
-  apop_data *current_param = apop_data_alloc(vs , ms1 , ms2);
-  apop_data *out           = apop_data_alloc(s->periods*(1-s->burnin), vs+ms1*ms2);
+    int ll_is_a_copy=0;
+    if (!likelihood->parameters){
+        if ( likelihood->vbase  >= 0 &&     // A hackish indication that
+             likelihood->m1base >= 0 &&     // there is still prep to do.
+             likelihood->m2base >= 0 && likelihood->prep){
+                ll_is_a_copy++;
+                likelihood =apop_model_copy(*likelihood);
+                apop_prep(data, likelihood);
+        }
+        likelihood->parameters = apop_data_alloc(likelihood->vbase, likelihood->m1base, likelihood->m2base);
+    }
+    Get_vmsizes(likelihood->parameters) //vsize, msize1, msize2
+    double    ratio, ll, cp_ll = GSL_NEGINF;
+    double    *draw          = malloc(sizeof(double)* (vsize+msize1*msize2));
+    apop_data *current_param = apop_data_alloc(vsize , msize1, msize2);
+    apop_data *out           = apop_data_alloc(s->periods*(1-s->burnin), vsize+msize1*msize2);
     if (s->starting_pt)
         apop_data_memcpy(current_param, s->starting_pt);
     else {
         if (current_param->vector) gsl_vector_set_all(current_param->vector, 1);
         if (current_param->matrix) gsl_matrix_set_all(current_param->matrix, 1);
     }
-    if (!likelihood->parameters)
-        likelihood->parameters = apop_data_alloc(vs, ms1, ms2);
     for (int i=0; i< s->periods; i++){     //main loop
         newdraw:
         apop_draw(draw, rng, prior);
-        write_double(draw, likelihood->parameters);
+        apop_data_fill_base(likelihood->parameters, draw);
         ll    = apop_log_likelihood(data,likelihood);
         if (gsl_isnan(ll)){
             Apop_notify(1, "Trouble evaluating the "
@@ -205,5 +208,6 @@ APOP_VAR_END_HEAD
     gsl_vector_set_all(out->weights, 1);
     apop_model *outp   = apop_estimate(out, apop_pmf);
     free(draw);
+    if (ll_is_a_copy) apop_model_free(likelihood);
     return outp;
 }
