@@ -7,7 +7,7 @@ AC_CONFIG_SRCDIR([db.h])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
-# The normal /usr/local default just confused too many people
+# The normal /usr/local default confused too many people
 AC_PREFIX_DEFAULT([/usr])
 
 # Windows:
@@ -24,8 +24,6 @@ AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
 AC_CHECK_LIB([mysqlclient], [mysql_query], , , [-L/usr/lib/mysql -lz])
 AC_CHECK_LIB([sqlite3], [sqlite3_exec])
-# FIXME: Replace `main' with a function in `-lz':
-#AC_CHECK_LIB([z], [main])
 
 # Checks for header files.
 AC_FUNC_ALLOCA
@@ -101,6 +99,8 @@ echo \
 #The default is to produce line noise. Clean it so that errors stand out.
 #Delete this if you want to see the full compilation commands
 sed -e 's/if $(\(COMPILE\|LIBTOOL\|LTCOMPILE\))/@echo "compiling $<"\n\t@if $(\1)/'  \
+    -e 's/^\t$(\(COMPILE\|LIBTOOL\|LTCOMPILE\))/\t@echo "compiling $<"\n\t@$(\1)/'  \
+    -e 's/^\t$(am__mv)/\t@$(am__mv)/'  \
     -e 's/^\t\($(LINK)\)/\t@echo "compiling $<"\n\t@\1/'  \
     -e 's/^\(LIBTOOL.*\)/\1 --quiet/' < Makefile >maketmp
 mv maketmp Makefile
