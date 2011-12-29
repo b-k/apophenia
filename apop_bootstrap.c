@@ -169,7 +169,7 @@ APOP_VAR_END_HEAD
     apop_model_free(e);
     if (nan_draws == iterations){
         Apop_notify(1, "I ran into %i NaNs, and so stopped. Returning results based "
-                       "on %i bootstrap iterations.", iterations, i);
+                       "on %zu bootstrap iterations.", iterations, i);
         apop_matrix_realloc(array_of_boots->matrix, i, array_of_boots->matrix->size2);
     }
 	summary	= apop_data_covariance(array_of_boots);

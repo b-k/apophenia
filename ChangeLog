@@ -3,6 +3,9 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+	December 2011
+--apop_model.textsize is now a size_t instead of an int.
+--apop_update accepts likelihoods with no pre-set parameters 
 
 	November 2011
 --moved to Github; some changes to structure and documentation to accommodate. 

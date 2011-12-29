@@ -49,7 +49,7 @@ typedef struct _apop_data{
     gsl_matrix  *matrix;
     apop_name   *names;
     char        ***text;
-    int         textsize[2];
+    size_t      textsize[2];
     gsl_vector  *weights;
     struct _apop_data   *more;
 } apop_data;

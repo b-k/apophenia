@@ -72,7 +72,7 @@ apop_text_to_db_LDADD = libapophenia.la
 apop_db_to_crosstab_LDADD = libapophenia.la
 apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
-apop_lookup_LDADD = libapophenia.la
+#apop_lookup_LDADD =
 
 EXTRA_DIST = apophenia.pc docs/doxyconfig docs/triangle.png docs/right.png docs/down.png \
         docs/flake.gif docs/edit_group docs/foot.html docs/structs.png rpm.spec \
