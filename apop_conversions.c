@@ -1183,11 +1183,6 @@ static void line_to_insert(char instr[], char *tabname, regex_t *regex, regex_t 
     }
     free (q);
 }
-#if SQLITE_VERSION_NUMBER < 3003009
-    //If you have an old version of sqlite (before v3.3.9, Jan 2007),
-    //then this dummy declaration will placate the compiler.
-    void sqlite3_prepare_v2(void*, void*, int, void*, void*);
-#endif
 
 /** Read a text file into a database table.
 
@@ -1254,7 +1249,9 @@ APOP_VAR_END_HEAD
         for (int i = 1; i < col_ct; i++)
             xprintf(&q, "%s, ?", q);
         xprintf(&q, "%s)", q);
+#if SQLITE_VERSION_NUMBER >= 3003009
         sqlite3_prepare_v2(db, q, -1, &statement, NULL);
+#endif
     }
 #endif
     //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
@@ -1271,7 +1268,9 @@ APOP_VAR_END_HEAD
                 if (err!=0 && err != 101) //0=ok, 101=done
                     printf("sqlite insert query gave error code %i.\n", err);
                 sqlite3_reset(statement);
+#if SQLITE_VERSION_NUMBER >= 3003009
                 sqlite3_clear_bindings(statement); //needed for NULLs
+#endif
             }
 		}
         add_this_line = NULL;
