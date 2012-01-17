@@ -3,6 +3,9 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+	January 2011
+**Removed apop_matrix_var_m, which nobody was using.
+--bug fix in apop_vector_distance for Ln norms where n is odd.
 
 	November 2011
 --moved to Github; some changes to structure and documentation to accommodate. 

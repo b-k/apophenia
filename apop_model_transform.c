@@ -120,14 +120,22 @@ static void transform_draw(double *out, gsl_rng* r, apop_model *shell_model){
 
 static apop_model *transform_est(apop_data * data, apop_model *shell_model){
     apop_model *base_model = Apop_settings_get(shell_model, apop_model_transform, base_model);
-    //if (!data) data = params->data;
-    apop_model *e = apop_maximum_likelihood(data, shell_model);
-    Apop_settings_get(shell_model, apop_model_transform, shell_to_base)(shell_model, base_model);
+    if (base_model->estimate){
+        apop_model *ebase = apop_estimate(data, *base_model);
+        Apop_settings_get(shell_model, apop_model_transform, base_to_shell)(ebase, shell_model);
+        Apop_settings_get(shell_model, apop_model_transform, shell_to_base)(shell_model, base_model);
+        apop_model_free(ebase);
+        return shell_model;
+    } else {
+        apop_prep(data, shell_model);
+        apop_model *e = apop_maximum_likelihood(data, shell_model);
+        Apop_settings_get(shell_model, apop_model_transform, shell_to_base)(e, base_model);
+        return e;
+    }
     //unpack(base_model->parameters, e);
     /*apop_data_free(e->parameters);                        //Again, why?
     e->parameters   = apop_data_copy(base_model->parameters);
     */
-    return e;
 }
 
 static void transform_show(apop_model *m){
@@ -160,38 +168,6 @@ apop_model * apop_model_transform(apop_model model_in, model_transform_fn shell_
     //model_out->vbase = predict_tab->matrix->size1;
     snprintf(model_out->name, 100, "%s, transformed", model_in.name);
     return model_out;
-}
-
-#include <gsl/gsl_const_mksa.h>
-void to_cm(apop_model *i, apop_model *m){
-    if (!i || !i->parameters) return;
-    if (!m->parameters) m->parameters = apop_data_copy(i->parameters);
-    else apop_data_memcpy(m->parameters, i->parameters);
-    if (m->parameters->vector) gsl_vector_scale(m->parameters->vector, 1*GSL_CONST_MKSA_INCH);
-    if (m->parameters->matrix) gsl_matrix_scale(m->parameters->matrix, 1*GSL_CONST_MKSA_INCH);
-    //data
-    if (i->data && !m->data) m->data = i->data;
-}
-
-void from_cm(apop_model *i, apop_model *m){
-    if (!i || !i->parameters) return;
-    if (!m->parameters) m->parameters = apop_data_copy(i->parameters);
-    else apop_data_memcpy(m->parameters, i->parameters);
-    if (m->parameters->vector) gsl_vector_scale(m->parameters->vector, 1*GSL_CONST_MKSA_INCH);
-    if (m->parameters->matrix) gsl_matrix_scale(m->parameters->matrix, 1*GSL_CONST_MKSA_INCH);
-}
-
-//If the base model has no data but the parent model does, then set the base model's
-//pointer.
-void test_transform(){
-    apop_model *mm = apop_model_transform(apop_normal, to_cm, from_cm);
-    apop_data *test_data=apop_data_fill(apop_data_alloc(5,2),
-                                36, 12,
-                                32, 16,
-                                41, 10,
-                                34, 14,
-                                30, 10);
-    apop_estimate(test_data, *mm);
 }
 
 

@@ -232,9 +232,8 @@ APOP_VAR_ENDHEAD
         return dist;
     }
     if (metric == 'l' || metric == 'L'){
-        for (i=0; i< ina->size; i++){
-            dist    += pow(gsl_vector_get(ina, i) - gsl_vector_get(inb, i), norm);
-        }
+        for (i=0; i< ina->size; i++)
+            dist += pow(fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i)), norm);
         return pow(dist, 1./norm); 
     }
   Apop_assert(0, "I couldn't find the metric type you gave, %c, in my list of supported types.", metric);
@@ -394,28 +393,6 @@ double apop_matrix_mean(const gsl_matrix *data){
                 avg     += x/(cnt +0.0);
             }
 	return avg;
-}
-
-/** Returns the variance of all elements of a matrix, given the
-mean. If you want to calculate both the mean and the variance, use \ref
-apop_matrix_mean_and_var.
-
-\param data	the matrix to be averaged. 
-\param mean	the pre-calculated mean
-\ingroup convenience_fns*/
-double apop_matrix_var_m(const gsl_matrix *data, double mean){
-    double avg2 = 0;
-    int    cnt = 0;
-    double x, ratio;
-    for(size_t i=0; i < data->size1; i++)
-        for(size_t j=0; j < data->size2; j++){
-            x       = gsl_matrix_get(data, i,j);
-            ratio   = cnt/(cnt+1.0);
-            cnt     ++;
-            avg2    *= ratio;
-            avg2    += gsl_pow_2(x)/(cnt +0.0);
-        }
-    return mean - gsl_pow_2(mean); //E[x^2] - E^2[x]
 }
 
 /** Returns the mean and variance of all elements of a matrix.

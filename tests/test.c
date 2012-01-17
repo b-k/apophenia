@@ -83,6 +83,82 @@ int     verbose             = 1;
 void test_nan_data();
 void db_to_text();
 
+
+void apop_data_scale (apop_data *d, double scale){
+    if (d->vector) gsl_vector_scale(d->vector, scale);
+    if (d->matrix) gsl_matrix_scale(d->matrix, scale);
+}
+
+
+#include <gsl/gsl_const_mksa.h>
+typedef void (*model_transform_fn)(apop_model *, apop_model *);
+apop_model * apop_model_transform(apop_model model_in, model_transform_fn shell_to_base, model_transform_fn base_to_shell);
+/*
+void to_cm(apop_model *i, apop_model *m){
+    if (!m->data && i->data){
+        m->data = apop_data_copy(i->data);
+        apop_data_scale(m->data, 1*GSL_CONST_MKSA_INCH*100);
+    }
+    if (!i || !i->parameters) return;
+    apop_data_free(m->parameters);
+     m->parameters = apop_data_copy(i->parameters);
+    apop_data_scale(m->parameters, 1*GSL_CONST_MKSA_INCH*100);
+}
+
+void from_cm(apop_model *m, apop_model *i){
+    if (!i->data && m->data){
+        i->data = apop_data_copy(m->data);
+        apop_data_scale(i->data, 1/GSL_CONST_MKSA_INCH/100);
+    }
+    if (!m || !m->parameters) return;
+    apop_data_free(i->parameters);
+    i->parameters = apop_data_copy(m->parameters);
+    apop_data_scale(i->parameters, 1/GSL_CONST_MKSA_INCH/100);
+}
+*/
+
+void to_cm(apop_model *i, apop_model *m){
+    if (!m->data && i->data){
+        m->data = apop_data_copy(i->data);
+        apop_data_scale(m->data, 1*GSL_CONST_MKSA_INCH*100);
+    }
+}
+
+void from_cm(apop_model *m, apop_model *i){
+    if (!i->data && m->data){
+        i->data = apop_data_copy(m->data);
+        apop_data_scale(i->data, 1/GSL_CONST_MKSA_INCH/100);
+    }
+}
+
+//If the base model has no data but the parent model does, then set the base model's
+//pointer.
+
+typedef struct {
+        apop_model *base_model;
+            model_transform_fn base_to_shell, shell_to_base;
+} apop_model_transform_settings;
+
+
+void test_transform(){
+    apop_model *mm = apop_model_transform(apop_multivariate_normal, to_cm, from_cm);
+    apop_data *test_data=apop_data_fill(apop_data_alloc(5,2),
+                                36, 12,
+                                32, 16,
+                                41, 10,
+                                34, 14,
+                                30, 10);
+    apop_model *out = apop_estimate(test_data, *mm);
+    printf("pre-transform: inches\n");
+    apop_model_show(Apop_settings_get(out, apop_model_transform, base_model));
+    printf("post-transform: meters\n");
+    apop_model_show(out);
+}
+
+
+
+
+
 static void test_printing(){
     //This compares printed output to the printed output in the attached file. 
     char outfile[] = "print_test.out";
@@ -1452,6 +1528,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test model transformation: scaling", test_transform());
     do_test("test raking", test_raking());
     do_test("test data compressing", test_pmf_compress(r));
     do_test("test apop_update", test_updating(r));

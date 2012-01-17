@@ -7,12 +7,14 @@ apop_model* apop_t_estimate(apop_data *d, apop_model *m){
     Get_vmsizes(d); //vsize, msize1, msize2, tsize
     apop_model *out = apop_model_copy(*m);
     double vmu = vsize ? apop_mean(d->vector) : 0;
-    double mmu = msize1 ? apop_matrix_mean(d->matrix) : 0;
     double v_sum_sq = vsize ? apop_var(d->vector)*(vsize-1) : 0;
-    double m_sum_sq = msize1 ? apop_matrix_var_m(d->matrix, mmu)*(msize1*msize2-1) : 0;
-    apop_name_add(out->parameters->names, "mean", 'r');
-    apop_name_add(out->parameters->names, "standard deviation",  'r');
-    apop_name_add(out->parameters->names, "df", 'r');
+    double m_sum_sq = 0;
+    double mmu = 0;
+   if (msize1) {
+       apop_matrix_mean_and_var(d->matrix, &mmu, &m_sum_sq);
+       m_sum_sq *= msize1*msize2-1;
+   }
+    apop_data_add_names(out->parameters, 'r', "mean", "standard deviation", "df");
     apop_data_set(out->parameters, 0, -1, (vmu *vsize + mmu * msize1*msize2)/tsize);
     apop_data_set(out->parameters, 1, -1, sqrt((v_sum_sq*vsize + m_sum_sq * msize1*msize2)/(tsize-1))); 
     apop_data_set(out->parameters, 2, -1, tsize-1);
