@@ -188,38 +188,39 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
     apop_model_free(norm);
 }
 
-static void xpxinvxpy(gsl_matrix *data, gsl_vector *y_data, gsl_matrix *xpx, gsl_vector* xpy, apop_model *out){
+static void xpxinvxpy(apop_data *data, gsl_vector *y_data, gsl_matrix *xpx, apop_data* xpy, apop_model *out){
     apop_lm_settings   *p =  apop_settings_get_group(out, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(out, apop_parts_wanted);
 	if ( (pwant && pwant->covariance!='y' && pwant->predicted != 'y') 
        ||(!pwant && p && p->want_cov!='y' && p->want_expected_value != 'y')){	
 		//then don't calculate (X'X)^{-1}
-		gsl_linalg_HH_solve (xpx, xpy, out->parameters->vector);
+		gsl_linalg_HH_solve (xpx, xpy->vector, out->parameters->vector);
 		return;
 	} //else:
-    gsl_vector 	*error = gsl_vector_alloc(data->size1);
-    gsl_vector 	predicted;
-    gsl_matrix	*cov;
-    double      s_sq;
-	cov	= apop_matrix_inverse(xpx);	    //not yet cov, just (X'X)^-1.
-	gsl_blas_dgemv(CblasNoTrans, 1, cov, xpy, 0, out->parameters->vector);      // \beta=(X'X)^{-1}X'Y
-	gsl_blas_dgemv(CblasNoTrans, 1, data, out->parameters->vector, 0, error);   // X'\beta ==predicted
-	gsl_vector_sub(error,y_data);           //X'\beta - Y == error
-    gsl_blas_ddot(error, error, &s_sq);   // e'e
-    s_sq    /= data->size1 - data->size2;   //\sigma^2 = e'e / df
-	gsl_matrix_scale(cov, s_sq);            //cov = \sigma^2 (X'X)^{-1}
+    double s_sq;
+    apop_data	*cov = apop_data_alloc();
+    double det = apop_det_and_inv(xpx, &cov->matrix, 1, 1);// not yet cov, just (X'X)^-1.
+    if (det < 1e-4) Apop_notify(1, "Determinant of X'X is small (%g), so matrix is near singular. "
+                        "Expect the covariance matrix [based on (X'X)^-1] to be garbage.", det);
+    apop_data_free(out->parameters);
+    out->parameters = apop_dot(cov, xpy);               // \beta=(X'X)^{-1}X'Y
+    apop_data *error = apop_dot(data, out->parameters); // X\beta ==predicted (not yet error)
+	gsl_vector_sub(error->vector, y_data);              // X'\beta - Y == error
+    gsl_blas_ddot(error->vector, error->vector, &s_sq); // e'e
+    s_sq /= data->matrix->size1 - data->matrix->size2;  // \sigma^2 = e'e / df
+	gsl_matrix_scale(cov->matrix, s_sq);                // cov = \sigma^2 (X'X)^{-1}
 	if ((pwant && pwant->predicted) || (!pwant && p && p->want_expected_value)){
-        apop_data *predicted_page = apop_data_get_page(out->info, "<Predicted>");
-        gsl_matrix_set_col(predicted_page->matrix, 0, y_data);
-        gsl_matrix_set_col(predicted_page->matrix, 2, error);
-        predicted   = gsl_matrix_column(predicted_page->matrix, 1).vector;
-        gsl_vector_memcpy(&predicted, y_data);
-        gsl_vector_add(&predicted, error); //pred = y_data + error
+        gsl_matrix *predicted_page = apop_data_get_page(out->info, "<Predicted>")->matrix;
+        gsl_matrix_set_col(predicted_page, 0, y_data);
+        gsl_matrix_set_col(predicted_page, 2, error->vector);
+        Apop_matrix_col(predicted_page, 1, predicted);
+        gsl_vector_memcpy(predicted, y_data);
+        gsl_vector_add(predicted, error->vector); //pred = y_data + error
     }
-    gsl_vector_free(error);
+    apop_data_free(error);
     if (apop_data_get_page(out->parameters, "<Covariance>"))
         apop_data_rm_page(out->parameters, "<Covariance>");
-    apop_data_add_page(out->parameters, apop_matrix_to_data(cov), "<Covariance>");
+    apop_data_add_page(out->parameters, cov, "<Covariance>");
 }
 
 /* \adoc    RNG  Linear models are typically only partially defined probability models. For
@@ -321,7 +322,7 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
 
     apop_data *xpx_d = apop_dot(set, set, .form1='t'); //(X'X)
     apop_data *xpy_d = apop_dot(set, set, .form1='t', .form2='v'); //(X'y)
-    xpxinvxpy(set->matrix, y_data, xpx_d->matrix, xpy_d->vector, ep);
+    xpxinvxpy(set, y_data, xpx_d->matrix, xpy_d, ep);
     prep_names(ep);
     gsl_vector_free(y_data); 
     apop_data_free(xpx_d);

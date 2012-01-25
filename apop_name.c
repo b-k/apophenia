@@ -112,7 +112,7 @@ void  apop_name_free(apop_name * free_me){
 		free(free_me->text[i]);
 	for (i=0; i < free_me->rowct; i++)
 		free(free_me->row[i]);
-    if (free_me->vector);
+    if (free_me->vector)
         free(free_me->vector);
 	free(free_me->column);
 	free(free_me->text);

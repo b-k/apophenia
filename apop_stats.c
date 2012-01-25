@@ -232,9 +232,8 @@ APOP_VAR_ENDHEAD
         return dist;
     }
     if (metric == 'l' || metric == 'L'){
-        for (i=0; i< ina->size; i++){
-            dist    += pow(gsl_vector_get(ina, i) - gsl_vector_get(inb, i), norm);
-        }
+        for (i=0; i< ina->size; i++)
+            dist += pow(fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i)), norm);
         return pow(dist, 1./norm); 
     }
   Apop_assert(0, "I couldn't find the metric type you gave, %c, in my list of supported types.", metric);
@@ -394,28 +393,6 @@ double apop_matrix_mean(const gsl_matrix *data){
                 avg     += x/(cnt +0.0);
             }
 	return avg;
-}
-
-/** Returns the variance of all elements of a matrix, given the
-mean. If you want to calculate both the mean and the variance, use \ref
-apop_matrix_mean_and_var.
-
-\param data	the matrix to be averaged. 
-\param mean	the pre-calculated mean
-\ingroup convenience_fns*/
-double apop_matrix_var_m(const gsl_matrix *data, double mean){
-    double avg2 = 0;
-    int    cnt = 0;
-    double x, ratio;
-    for(size_t i=0; i < data->size1; i++)
-        for(size_t j=0; j < data->size2; j++){
-            x       = gsl_matrix_get(data, i,j);
-            ratio   = cnt/(cnt+1.0);
-            cnt     ++;
-            avg2    *= ratio;
-            avg2    += gsl_pow_2(x)/(cnt +0.0);
-        }
-    return mean - gsl_pow_2(mean); //E[x^2] - E^2[x]
 }
 
 /** Returns the mean and variance of all elements of a matrix.
@@ -746,8 +723,8 @@ apop_data *apop_data_correlation(const apop_data *in){
 }
 
 static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max){
-    for (int i=min; i< max; i++)
-        apop_data_set(a_row, 0, i, apop_data_get(p, i, i));
+    for (int j=min; j< max; j++)
+        apop_data_set(a_row, 0, j-min, apop_data_get(p, i, j));
 }
 
 /** Kullback-Leibler divergence.
@@ -774,6 +751,8 @@ I print a message as well.
 
 If neither distribution is empirical, then I'll take \c draw_ct random draws from \c bottom and evaluate at those points.
 
+\li Set <tt>apop_opts.verbose = 3</tt> for observation-by-observation info.
+
 This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct, gsl_rng *rng){
@@ -792,13 +771,13 @@ APOP_VAR_ENDHEAD
     Apop_notify(3, "p(top)\tp(bot)\ttop*log(top/bot)\n");
     if (apop_strcmp(bottom->name, "PDF or sparse matrix")){
         apop_data *p = bottom->parameters;
-        Get_vmsizes(p);
-        apop_data *a_row = apop_data_alloc(vsize, 1, msize2);
+        Get_vmsizes(p); //firstcol, vsize, msize1, msize2
+        apop_data *a_row = apop_data_alloc(vsize, (msize1 ? 1 : 0), msize2);
         for (int i=0; i < (vsize ? vsize : msize1); i++){
             double pi = p->weights ? gsl_vector_get(p->weights, i) : 1./(vsize ? vsize : msize1);
             get_one_row(p, a_row, i, firstcol, msize2);
             double qi = apop_p(a_row, bottom);
-            apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: bottom has a value where "
+            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: bottom has a value where "
                                                 "top doesn't (which produces infinite divergence).");
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
             if (pi) //else add zero.
@@ -811,7 +790,7 @@ APOP_VAR_ENDHEAD
             apop_draw(a_row->matrix->data, rng, top);
             double pi = apop_p(a_row, top);
             double qi = apop_p(a_row, bottom);
-            apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: bottom has a value where "
+            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: bottom has a value where "
                                                 "top doesn't (which produces infinite divergence).");
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
             if (pi) //else add zero.

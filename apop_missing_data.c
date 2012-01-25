@@ -329,6 +329,13 @@ APOP_VAR_ENDHEAD
     apop_setup_one_colthing(value)
     apop_setup_one_colthing(imputation)
 
+    Apop_assert(!(rowtype=='t' && !base_data->names->rowct),
+            "the rowname you gave refers to text, so I will be searching for a row name in the base data."
+            " But the base_data set has no row names.");
+    Apop_assert(!(coltype=='t' && !base_data->names->colct),
+            "the colname you gave refers to text, so I will be searching for a column name in the base data."
+            " But the base_data set has no column names.");
+
     //get a list of unique imputation markers.
     gsl_vector *imps = NULL;
     apop_data *impt = NULL; 
@@ -341,10 +348,8 @@ APOP_VAR_ENDHEAD
     int thisimp=-2; char *thisimpt=NULL;
 	apop_data *estimates[len];
     for (int impctr=0; impctr< len; impctr++){
-        if (imps)
-            thisimp=gsl_vector_get(imps, impctr);
-        else
-            thisimpt=impt->text[impctr][0];
+        if (imps) thisimp  = gsl_vector_get(imps, impctr);
+        else      thisimpt = impt->text[impctr][0];
         Get_vmsizes(fill_ins); //masxize
         int fillsize = maxsize ? maxsize : fill_ins->textsize[0];
         for (int i=0; i< fillsize; i++){

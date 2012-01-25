@@ -3,9 +3,15 @@
 **Change that could require recoding existing code.
 !!Big.
 ]
+<<<<<<< HEAD
 	December 2011
 --apop_model.textsize is now a size_t instead of an int.
 --apop_update accepts likelihoods with no pre-set parameters 
+=======
+	January 2011
+**Removed apop_matrix_var_m, which nobody was using.
+--bug fix in apop_vector_distance for Ln norms where n is odd.
+>>>>>>> error
 
 	November 2011
 --moved to Github; some changes to structure and documentation to accommodate. 

@@ -59,7 +59,7 @@ end
   )
   direct_link = gh.replace(
     :repos => repos,
-    :file  => 'apophenia-VERSION-2_i386.deb',
+    :file  => 'apophenia_VERSION-2_i386.deb',
     :description => "The Apophenia library as a Debian package (Experimental---please report install glitches)"
   )
 

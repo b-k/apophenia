@@ -245,6 +245,7 @@ static double dlogit_foreach(gsl_vector *x, void *gin){
     return 0;
 }
 
+//buggy!
 static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
     Nullcheck_mpd(d, p);
     apop_data *gradient_matrix = apop_data_calloc(p->parameters->matrix->size1, p->parameters->matrix->size2);
@@ -313,5 +314,5 @@ replace that matrix column with a constant column of ones, just like with OLS.
 \adoc    settings   None, but see above about seeking a factor page in the input data.
 */
 apop_model apop_logit = {.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-.score = logit_dlog_likelihood, .predict=multilogit_expected, .prep = probit_prep
+/*.score = logit_dlog_likelihood,*/ .predict=multilogit_expected, .prep = probit_prep
 };

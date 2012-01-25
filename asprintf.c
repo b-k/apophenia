@@ -1101,10 +1101,8 @@ CHAR_T * VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, v
 	    if (!(dp->arg_index != ARG_NONE))
 	      abort ();
 
-	    if (dp->conversion == 'n')
-	      {
-		switch (a.arg[dp->arg_index].type)
-		  {
+	    if (dp->conversion == 'n') {
+		switch (a.arg[dp->arg_index].type) {
 		  case TYPE_COUNT_SCHAR_POINTER:
 		    *a.arg[dp->arg_index].a.a_count_schar_pointer = length;
 		    break;
@@ -1126,8 +1124,7 @@ CHAR_T * VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, v
 		    abort ();
 		  }
 	      }
-	    else
-	      {
+	    else {
 		arg_type type = a.arg[dp->arg_index].type;
 		CHAR_T *p;
 		unsigned int prefix_count;
@@ -1305,8 +1302,7 @@ CHAR_T * VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, v
 
 		    case 's':
 # ifdef HAVE_WCHAR_T
-		      if (type == TYPE_WIDE_STRING)
-			{
+		      if (type == TYPE_WIDE_STRING) {
 			  tmp_length =
 			    local_wcslen (a.arg[dp->arg_index].a.a_wide_string);
 
@@ -1380,8 +1376,7 @@ CHAR_T * VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, v
 		    p += n;
 		}
 
-		switch (type)
-		  {
+		switch (type) {
 #ifdef HAVE_LONG_LONG
 		  case TYPE_LONGLONGINT:
 		  case TYPE_ULONGLONGINT:
@@ -1436,13 +1431,9 @@ CHAR_T * VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, v
 #endif
 
 		for (;;) {
-		    size_t maxlen;
-		    int count;
-		    int retcount;
-
-		    maxlen = allocated - length;
-		    count = -1;
-		    retcount = 0;
+		    size_t maxlen = allocated - length;
+		    int count = -1;
+		    int retcount = 0;
 
 #if USE_SNPRINTF
 # define SNPRINTF_BUF(arg) \

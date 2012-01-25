@@ -9,10 +9,11 @@ libapophenia_la_SOURCES = \
             apop_data.c apop_db.c apop_fexact.c apop_hist.c 	        \
 			apop_linear_algebra.c apop_linear_constraint.c              \
 			apop_mapply.c apop_missing_data.c apop_mle.c apop_model.c   \
-			apop_fix_params.c apop_name.c apop_output.c apop_rake.c   \
+			apop_fix_params.c apop_name.c apop_output.c apop_rake.c     \
             apop_regression.c apop_settings.c apop_smoothing.c          \
-            apop_stats.c apop_tests.c apop_update.c	                    \
-			asprintf.c \
+            apop_stats.c apop_tests.c apop_model_transform.c 		    \
+			apop_update.c	            \
+			asprintf.c 					\
 			model/apop_bernoulli.c      \
             model/apop_beta.c			\
             model/apop_multinomial.c 	\
@@ -72,7 +73,6 @@ apop_text_to_db_LDADD = libapophenia.la
 apop_db_to_crosstab_LDADD = libapophenia.la
 apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
-#apop_lookup_LDADD =
 
 EXTRA_DIST = apophenia.pc docs/doxyconfig docs/triangle.png docs/right.png docs/down.png \
         docs/flake.gif docs/edit_group docs/foot.html docs/structs.png rpm.spec \

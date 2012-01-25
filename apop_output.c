@@ -351,7 +351,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         fprintf(f, "NULL\n");
         return;
     }
-  int     i, j, L = 0, Lc = 6,
+  int     i, j, L = 0, Lc /*defaults to 6 below*/,
           start   = (data->vector)? -1 : 0,
           end     = (data->matrix)? data->matrix->size2 : 0,
           rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
