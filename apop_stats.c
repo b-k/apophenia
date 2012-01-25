@@ -723,8 +723,8 @@ apop_data *apop_data_correlation(const apop_data *in){
 }
 
 static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max){
-    for (int i=min; i< max; i++)
-        apop_data_set(a_row, 0, i, apop_data_get(p, i, i));
+    for (int j=min; j< max; j++)
+        apop_data_set(a_row, 0, j, apop_data_get(p, i, j));
 }
 
 /** Kullback-Leibler divergence.
@@ -769,7 +769,7 @@ APOP_VAR_ENDHEAD
     Apop_notify(3, "p(top)\tp(bot)\ttop*log(top/bot)\n");
     if (apop_strcmp(bottom->name, "PDF or sparse matrix")){
         apop_data *p = bottom->parameters;
-        Get_vmsizes(p);
+        Get_vmsizes(p); //firstcol, vsize, msize1, msize2
         apop_data *a_row = apop_data_alloc(vsize, 1, msize2);
         for (int i=0; i < (vsize ? vsize : msize1); i++){
             double pi = p->weights ? gsl_vector_get(p->weights, i) : 1./(vsize ? vsize : msize1);
