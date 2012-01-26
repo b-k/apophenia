@@ -28,14 +28,33 @@ urchinTracker();
 <div class="title">Notes on input text file formatting </div>  </div>
 </div>
 <div class="contents">
-<div class="textblock"><p>If you are reading into an array or <code>gsl_matrix</code> or <a class="el" href="gentle.html#apop_data">apop_data</a> set, all text fields are taken as zeros. You will be warned of such substitutions unless you set </p>
-<div class="fragment"><pre class="fragment"> <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>==0
-</pre></div><p> beforehand.</p>
-<p>You will also be interested in <code>apop_opts.input_delimiters</code>. By default, it is set to "| ,\t", meaning that a pipe, space, comma, or tab will delimit separate entries. Try <code>strcpy(apop_opts.input_delimiters, ";")</code> to set the delimiter to a semicolon, for example.</p>
-<p>There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, Apophenia checks whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then an NAN is inserted.</p>
+<div class="textblock"><p>Each row of the file will be converted to one record in the database or one row in the matrix. Values on one row are separated by delimiters.</p>
+<p>By default, the delimiters are set to "| ,\t", meaning that a pipe, space, comma, or tab will delimit separate entries. Please use an argument to <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> or <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> like <code>.delimiters=" \t"</code> or <code>.delimiters="|"</code>. <code>apop_opts.input_delimiters</code> is deprecated.</p>
+<ul>
+<li>The character after a backslash is read as a normal character, even if it is a delimiter, <code>#</code>, <code>'</code>, or <code>"</code>.</li>
+</ul>
+<ul>
+<li>If a field contains several such special characters, surround it by <code>'s</code> or <code>"s</code>. The surrounding marks are stripped and the text read verbatim.</li>
+</ul>
+<ul>
+<li>Text does not need to be delimited by quotes (unless there are special characters). If a text field is quote-delimited, I'll strip them. E.g., "Males, 30-40", is an OK column name, as is "Males named \\"Joe\"".</li>
+</ul>
+<ul>
+<li>Everything after a # is taken to be comments and ignored.</li>
+</ul>
+<ul>
+<li>Blank lines (empty or consisting only of white space) are also ignored.</li>
+</ul>
+<ul>
+<li>If you are reading into an array or <code>gsl_matrix</code> or <a class="el" href="gentle.html#apop_data">apop_data</a> set, all text fields are taken as zeros. You will be warned of such substitutions unless you set <div class="fragment"><pre class="fragment"> <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>==0
+</pre></div> beforehand.</li>
+</ul>
+<ul>
+<li>There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, I check whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then an NAN is inserted.</li>
+</ul>
 <p>If this rule doesn't work for your situation, you can explicitly insert a note that there is a missing data point. E.g., try: </p>
 <div class="fragment"><pre class="fragment">          perl -pi.bak -e <span class="stringliteral">&#39;s/,,/,NaN,/g&#39;</span> data_file
-</pre></div><p>If you have missing data delimiters, you will need to set <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> to a regular expression that matches the given format. This will be a case insensitive ERE. Some examples:</p>
+</pre></div><p>If you have missing data delimiters, you will need to set <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> to a regular expression that matches the given format. This will be a case insensitive ERE (extended regular expression). Some examples:</p>
 <div class="fragment"><pre class="fragment"><span class="comment">//Apophenia&#39;s default NaN string, matching NaN, nan, or NAN, but not Nancy:</span>
 strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;NaN&quot;</span>);
 <span class="comment">//Literal text:</span>
@@ -46,10 +65,18 @@ strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc"
 <span class="comment">//Matches a period or NaN:</span>
 strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;(NaN|\\.\\.)&quot;</span>);
 </pre></div><p>SQLite stores these NaN-type values internally as <code>NULL</code>; that means that functions like <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> will convert both your db_nan regex and <code>NULL</code> to an <code>NaN</code> value.</p>
-<p>The system also uses the standards for C's <code>atof()</code> function for floating-point numbers: INFINITY, -INFINITY, and NaN work as expected. I use some tricks to get SQLite to accept these values, but they work.</p>
-<p>Text is always delimited by quotes. Delimiters inside quotes are perfectly OK, e.g., "Males, 30-40", is an OK column name, as is "Males named \\"Joe\"".</p>
-<p>Lines beginning with # (i.e. in the first column) are taken to be comments and ignored. Blank lines are also ignored.</p>
-<p>If there are row names and column names, then the input will not be perfectly square: there should be no first entry in the row with column names like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points). </p>
+<ul>
+<li>The system uses the standards for C's <code>atof()</code> function for floating-point numbers: INFINITY, -INFINITY, and NaN work as expected. I use some tricks to get SQLite to accept these values, but they work.</li>
+</ul>
+<ul>
+<li>If there are row names and column names, then the input will not be perfectly square: there should be no first entry in the row with column names like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).</li>
+</ul>
+<ul>
+<li>Fixed-width formats are supported, but you have to provide a list of field ending positions. For example, given <div class="fragment"><pre class="fragment">NUMLEOL
+123AABB
+456CCDD
+</pre></div> we have three colums, named NUL, LE, and OL. The names can be read from the first row if you so specify. You will have to provide a list of integers giving the end of each field: 3, 5, 7. </li>
+</ul>
 </div></div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Jan 26 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jan 27 2012.</div></body></html>

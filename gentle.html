@@ -42,7 +42,7 @@ urchinTracker();
 <p>You could use Apophenia for simple stats-package--like fitting of models, where the user gathers data, cleans it, and runs a series of regressions. Or you could use the library as input to the design of other systems, like fitting a model and then using the fitted model to generate agents in your simulation, or designing hierarchical models built from simpler base models. You will see below that Apophenia provides many of the conveniences that stats package users are used to in simply fitting a model, while still being structured in a manner that facilitates and encourages building new types of model.</p>
 <p>The workflow of a typical fitting-a-model project using Apophenia's tools goes something like this:</p>
 <ul>
-<li>Read the raw data into the database using <a class="el" href="group__conversions.html#ga054d7123f2c801c06a2d1f00f35e7fe2">apop_text_to_db</a>. </li>
+<li>Read the raw data into the database using <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>. </li>
 <li>Use SQL queries handled by <a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a> to massage the data as needed. </li>
 <li>Use <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> to pull some of the data into an in-memory <a class="el" href="gentle.html#apop_data">apop_data</a> set. </li>
 <li>Call a model estimation such as <div class="fragment"><pre class="fragment"> <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> (data_set, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>)
@@ -55,7 +55,7 @@ urchinTracker();
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(<span class="keywordtype">void</span>){
-    <a class="code" href="group__conversions.html#ga054d7123f2c801c06a2d1f00f35e7fe2">apop_text_to_db</a>(.text_file=<span class="stringliteral">&quot;data&quot;</span>, .tabname=<span class="stringliteral">&quot;d&quot;</span>);
+    <a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(.text_file=<span class="stringliteral">&quot;data&quot;</span>, .tabname=<span class="stringliteral">&quot;d&quot;</span>);
     <a class="code" href="struct__apop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>);
     <a class="code" href="struct__apop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>);
     <a class="code" href="apop__model_8c.html#a4fa08e29db38e8dcc111899c942022d9">apop_model_show</a>(est);
@@ -77,7 +77,7 @@ gcc sample.c -std=gnu99 -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
 <p>The first two lines in <code>main()</code> make use of a database. I'll discuss the value of the database step more at the end of this page, but for now, note that there are there are several functions, <a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>, and <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> being the ones you will most frequently be using, that will allow you to talk to and pull data from either an SQLite or mySQL database.</p>
 <dl class="user"><dt><b>Designated initializers</b></dt><dd></dd></dl>
 <p>If anything, this line in the above sample program---</p>
-<div class="fragment"><pre class="fragment"><a class="code" href="group__conversions.html#ga054d7123f2c801c06a2d1f00f35e7fe2">apop_text_to_db</a>(.text_file=<span class="stringliteral">&quot;data&quot;</span>, .tabname=<span class="stringliteral">&quot;d&quot;</span>);
+<div class="fragment"><pre class="fragment"><a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(.text_file=<span class="stringliteral">&quot;data&quot;</span>, .tabname=<span class="stringliteral">&quot;d&quot;</span>);
 </pre></div><p>---demonstrates Apophenia's intent to balance the traditional stats package with the C library. Most C code doesn't implement variable-length argument lists or named arguments, though its only real drawback is that it bucks tradition. But this form of function appears often in the Apophenia library. It makes coding easier, less error-prone, and more pleasant.</p>
 <p>To give another example, the <a class="el" href="gentle.html#apop_data">apop_data</a> set has the usual row and column numbers, but also row and column names. So you should be able to refer to a cell by any combination of name or number; for the data set you read in above, which doesn't have row names but does have column names, all of the following work:</p>
 <div class="fragment"><pre class="fragment">x = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(data, 2, 3); <span class="comment">//x == 0</span>
@@ -158,13 +158,13 @@ apop_data</h2>
 <p>As per the example above, Apophenia will generally assume that one row across all of these elements describes a single observation or data point.</p>
 <p>Also, <a class="el" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a> and <a class="el" href="group__data__set__get.html#gaef6b2716da81f7d35765dc4ace8a6759">apop_data_set</a> consider the vector to be the -1st column, so using the data set in the figure, <a class="el" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a><code>(sample_set, .row=0, .col=-1) == 1</code>.</p>
 <dl class="user"><dt><b>Reading in data</b></dt><dd></dd></dl>
-<p>As per the example, use <a class="el" href="group__conversions.html#gab733686e945987662318425d2e158191">apop_text_to_data</a> or <a class="el" href="group__conversions.html#ga054d7123f2c801c06a2d1f00f35e7fe2">apop_text_to_db</a> and then <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>.</p>
+<p>As per the example, use <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> or <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> and then <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>.</p>
 <dl class="user"><dt><b>Subsets</b></dt><dd></dd></dl>
 <p>There are many macros to get subsets of the data. Each generates what is considered to be a disposable view: once the variable goes out of scope (by the usual C rules of scoping), it is no longer valid. However, these structures are all wrappers for pointers to the base data, so all operations on the data view affect the base data.</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
-  <a class="code" href="struct__apop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#gab733686e945987662318425d2e158191">apop_text_to_data</a>(<span class="stringliteral">&quot;data&quot;</span>);
+  <a class="code" href="struct__apop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;data&quot;</span>);
 
   <span class="comment">//tally row zero of the data set&#39;s matrix by viewing it as a vector:</span>
   <a class="code" href="stats_8h.html#a74dd4339556eb22240d21d19f1ad6dc8">Apop_row</a>(d, 0, one_row);
@@ -261,7 +261,7 @@ for (<span class="keywordtype">int</span> i=0; i&lt; matrix-&gt;size1; i++){
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(<span class="keywordtype">void</span>){
-    <a class="code" href="group__conversions.html#ga054d7123f2c801c06a2d1f00f35e7fe2">apop_text_to_db</a>(.text_file=<span class="stringliteral">&quot;data&quot;</span>, .tabname=<span class="stringliteral">&quot;d&quot;</span>);
+    <a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(.text_file=<span class="stringliteral">&quot;data&quot;</span>, .tabname=<span class="stringliteral">&quot;d&quot;</span>);
     <a class="code" href="struct__apop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>);
     <a class="code" href="struct__apop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>);
     <a class="code" href="apop__model_8c.html#a4fa08e29db38e8dcc111899c942022d9">apop_model_show</a>(est);
@@ -279,4 +279,4 @@ for (<span class="keywordtype">int</span> i=0; i&lt; matrix-&gt;size1; i++){
 <p>This introduction has shown you the <a class="el" href="gentle.html#apop_data">apop_data</a> set and some of the functions associated, which might be useful even if you aren't formally doing statistical work but do have to deal with data with real-world elements like column names and mixed numeric/text values. You've seen how Apophenia encapsulates as many of a model's characteristics as possible into a single <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a> object, which you can send with data to functions like <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>, <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a>, or <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>. Once you've got your data in the right form, you can use this to simply estimate model parameters, or as an input to later analysis. </p>
 </div></div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Jan 26 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jan 27 2012.</div></body></html>
