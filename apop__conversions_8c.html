@@ -56,8 +56,6 @@ void <b>xprintf</b> (char **q, char *format,...)
 <li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__conversions_8c.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *in)
 <li>gsl_vector * <a class="el" href="group__convenience__fns.html#ga5baf0e8717a30fdcfba350da904c1825">apop_vector_copy</a> (const gsl_vector *in)
 <li>gsl_matrix * <a class="el" href="group__convenience__fns.html#ga45bb322b9f491c46feb1e24025b6301f">apop_matrix_copy</a> (const gsl_matrix *in)
-<li><a class="anchor" id="abb5b4d13c082bfa9fffbf6e02ee96ede"></a><!-- doxytag: member="apop_conversions.c::parse_next_char" ref="abb5b4d13c082bfa9fffbf6e02ee96ede" args="(FILE *f, char const *delimiters)" -->
-<a class="el" href="structapop__char__info.html">apop_char_info</a> <b>parse_next_char</b> (FILE *f, char const *delimiters)
 <li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
 <li>void <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="struct__apop__data.html">apop_data</a> *d, char use_info_pages)
 <li>gsl_vector * <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)
@@ -68,7 +66,7 @@ gsl_vector * <b>apop_vector_fill_base</b> (gsl_vector *in, double ap[])
 <li><a class="anchor" id="a30fca967b854f3c5a47e3f8aff2726fb"></a><!-- doxytag: member="apop_conversions.c::apop_matrix_fill_base" ref="a30fca967b854f3c5a47e3f8aff2726fb" args="(gsl_matrix *in, double ap[])" -->
 gsl_matrix * <b>apop_matrix_fill_base</b> (gsl_matrix *in, double ap[])
 <li>void <a class="el" href="apop__conversions_8c.html#ae8eca5bb4fb4ebf7e384d47b585b9484">apop_data_set_row</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *d, <a class="el" href="struct__apop__data.html">apop_data</a> *row, int row_number)
-<li>char * <a class="el" href="apop__conversions_8c.html#ab75d31ba309f436d11d7f8cc70658f46">prep_string_for_sqlite</a> (char const *astring, regex_t *nan_regex, int prepped_statements)
+<li>char * <a class="el" href="apop__conversions_8c.html#ac6114b6a2be902c83a75d4367db4371f">prep_string_for_sqlite</a> (int prepped_statements, char const *astring)
 <li>int <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="struct__apop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters)
 </ul>
 <h2><a name="var-members"></a>
@@ -323,27 +321,21 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 
 </div>
 </div>
-<a class="anchor" id="ab75d31ba309f436d11d7f8cc70658f46"></a><!-- doxytag: member="apop_conversions.c::prep_string_for_sqlite" ref="ab75d31ba309f436d11d7f8cc70658f46" args="(char const *astring, regex_t *nan_regex, int prepped_statements)" -->
+<a class="anchor" id="ac6114b6a2be902c83a75d4367db4371f"></a><!-- doxytag: member="apop_conversions.c::prep_string_for_sqlite" ref="ac6114b6a2be902c83a75d4367db4371f" args="(int prepped_statements, char const *astring)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">char* prep_string_for_sqlite </td>
           <td>(</td>
-          <td class="paramtype">char const *&#160;</td>
-          <td class="paramname"><em>astring</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">regex_t *&#160;</td>
-          <td class="paramname"><em>nan_regex</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>prepped_statements</em>&#160;</td>
+          <td class="paramname"><em>prepped_statements</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char const *&#160;</td>
+          <td class="paramname"><em>astring</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -353,10 +345,10 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
       </table>
 </div>
 <div class="memdoc">
-<p>--If the string has zero length, then it's probably a missing value. --If the string isn't a number, it needs quotes, and SQLite wants 0.1, not just .1. --It may be text with no "delimiters" </p>
+<p>--If the string has zero length, then it's probably a missing value. --If the string isn't a number, it needs quotes </p>
 
 </div>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 27 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Mar 2 2012.</div></body></html>

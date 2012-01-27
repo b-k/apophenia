@@ -23,6 +23,10 @@ border: 1px solid black; /* Change to suit your preferences */ } =
 .memdoc table td {
 border: 1px solid black; /* Change to suit your preferences */ }
 
+.params td{
+    border: 1px solid #a6cb5e;
+}
+
 .altcolor {
 border: 1px solid #262b5e;
 -moz-border-radius: 8px;
