@@ -16,7 +16,7 @@ task, then Apophenia is the library for you.
 
 <h5>The goods</h5> 
 
-To date, the library has over two hundred functions to facilitate scientific computing, such as:
+The library has been growing and improving since 2005, and has been downloaded over 10,000 times. To date, it has over two hundred functions to facilitate scientific computing, such as:
 
 \li OLS and family, discrete choice models like probit and logit, kernel density estimators, and other common models
 \li database querying and maintenance utilities

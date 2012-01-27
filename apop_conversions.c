@@ -1,5 +1,5 @@
 /** \file apop_conversions.c	The various functions to convert from one format to another. */
-/* Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2010, 2012 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "apop_internal.h"
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <regex.h>
@@ -571,26 +571,149 @@ static int prep_text_reading(char *text_file, FILE **infile, regex_t *regex, reg
     return 1;
 }
 
-static int count_cols_in_row(char *instr, regex_t *regex, int *field_ends){
-  int       length_of_string    = strlen(instr);
-  int       ct                  = 0;
-  size_t    last_match          = 0;
-  char	    outstr[strlen(instr+1)];
-  regmatch_t result[3];
-    if (field_ends){
-        int ct = 0;
-        int len = strlen(instr);
-        while (field_ends[ct++] < len-1)//minus the newline
-            ;
-        return ct;
-    } else while (last_match < length_of_string && !regexec(regex, (instr+last_match), 2, result, 0)){
-        pull_string(instr,  outstr, result,  &last_match, 0, 0);
-        if (strlen(outstr))
-            ct++;
-	}
-	return ct;
+
+/////New text file reading
+
+typedef struct{
+    char c, type;
+} apop_char_info;
+
+apop_char_info parse_next_char(FILE *f){
+    char c = fgetc(f);
+    int is_delimiter = !!strchr(apop_opts.input_delimiters, c);
+    return (apop_char_info){.c=c, 
+            .type = strchr(" \t", c) ? (is_delimiter ? 'W'  : 'w')
+                    :is_delimiter    ? 'd'
+                    :(c == '"')      ? '"'
+                    :(c == '\'')     ? '\''
+                    :(c == '\\')     ? '\\'
+                    :(c == '\n')     ? 'n'
+                    :(c == EOF)      ? 'E'
+                    :(c == '#')      ? '#'
+                                     : 'r'
+            };
 }
 
+typedef struct {int ct; int eof;} line_parse_t;
+
+//fills **fn with a list of strings.
+//returns the count of elements. Negate the count if we're at EOF.
+static line_parse_t parse_a_line(FILE *infile, char ***fn){
+    int ct=0, thisflen, inq=0, inqq=0, infield=0,
+            lastwhite=0, lastnonwhite=0; 
+    apop_char_info ci;
+    do {
+        ci = parse_next_char(infile);
+        //comments are to end of line, so they're basically a newline.
+        if (ci.type=='#' && !(inq||inqq)){
+            for(char c='x'; (c!='\n' && c!=EOF); )
+                c = fgetc(infile);
+            ci.type='n';
+        }
+
+        //First the escape-type cases: \\ and '' and "".
+        //If one applies, set the type to regular
+        if (ci.type=='\\'){
+            ci=parse_next_char(infile);
+            if (ci.type!='E')
+                ci.type='r';
+        }
+        if (((inq && ci.type !='\'') ||(inqq && ci.type !='"')) && ci.type !='E')
+            ci.type='r';
+        if (ci.type=='\'') inq = !inq;
+        else if (ci.type=='"') inqq = !inqq;
+
+        if (ci.type=='W' && lastwhite==1) 
+            continue; //compress these.
+        lastwhite=(ci.type=='W');
+
+        if (strchr("dnEW", ci.type)){ //delimiter
+            if (infield){ //close off this field.
+                (*fn)[ct-1] = realloc((*fn)[ct-1], lastnonwhite+1);
+                (*fn)[ct-1][lastnonwhite] = '\0';
+                infield =
+                thisflen =
+                lastnonwhite = 0;
+            } 
+        } else if (strchr("wr", ci.type)){
+            if (!infield){ //start a new one
+                ct ++;
+                *fn = realloc(*fn, ct* sizeof(char**));
+                (*fn)[ct-1] = malloc(1);
+                thisflen = 0;
+                infield=1;
+            }
+            //extend field:
+            (*fn)[ct-1] = realloc((*fn)[ct-1], ++thisflen);
+            (*fn)[ct-1][thisflen-1] = ci.c;
+            if (ci.type!='w')
+                lastnonwhite = thisflen;
+        }
+    } while (ci.type != 'n'&& ci.type != 'E');
+    return (line_parse_t) {.ct=ct, .eof= (ci.type == 'E')};
+}
+
+/*everything that could happen:
+  a backslash
+    get next character, print as regular char.
+  a newline or EOF
+    --if in state f, end the field.
+    --return
+  a '
+    --if in state ', leave it
+    --if not in state ', enter it
+  a "
+    --if in state ", leave it
+    --if not in state ", enter it
+
+  a delimiter
+    --if white space && last char was white
+        --eat it
+    else
+        --close off open field
+        --enter open state 
+ 
+  whitespace (not a delimiter)
+    --if in open state
+        eat it
+    --if in field state
+        --save last_nonwhite spot
+        --extend the field
+            
+  a #
+    --enter comment state 
+  a regular char
+    --if in field state, extend the field
+    --if in open state, start a new field
+
+*/
+
+//To do: field_ends---i.e., fixed-width input.
+
+static int get_field_names(int has_col_names, char **field_names, FILE *infile, 
+                                char ***add_this_line, int *field_ends){
+    line_parse_t L={ };
+    if (has_col_names && field_names == NULL){
+        use_names_in_file++;
+        while (L.ct ==0) L=parse_a_line(infile, &fn);
+    } else	{
+        *add_this_line = fn; //save this line for later.
+        L.ct -= !!has_col_names;
+        if (field_names)
+            fn	= field_names;
+        else{
+            fn	= malloc(L.ct * sizeof(char*));
+            for (int i =0; i < L.ct; i++){
+                fn[i]	= malloc(1000);
+                sprintf(fn[i], "col_%i", i);
+            }
+        }
+    }
+    return L.ct;
+}
+
+
+/*
 static int get_field_names(int has_col_names, char **field_names, FILE
         *infile, char *filename, regex_t *regex, char **add_this_line, int *field_ends){
   char		*instr;
@@ -641,6 +764,7 @@ static int get_field_names(int has_col_names, char **field_names, FILE
     free(instr);
     return ct;
 }
+*/
 
 /** Read a delimited text file into the matrix element of an \ref apop_data set.
 
@@ -667,70 +791,53 @@ APOP_VAR_HEAD apop_data * apop_text_to_data(char *text_file, int has_row_names, 
 APOP_VAR_END_HEAD
   apop_data     *set = NULL;
   FILE  		*infile = NULL;
-  char		    *instr, *str, *add_this_line= NULL;
+  char		    *str, **add_this_line= NULL;
   int 		    i	        = 0,
-                length_of_string, colno,
-                prev_end, last_end=0, 
                 hasrows = (has_row_names == 'y');
-  size_t        last_match;
-  regmatch_t    result[2];
   regex_t       regex, nan_regex;
     if (!prep_text_reading(text_file, &infile, &regex, &nan_regex)) 
         return NULL;
 
+    line_parse_t L={1,0};
     //First, handle the top line, if we're told that it has column names.
     if (has_col_names=='y'){
-        int col_ct  = get_field_names(1, NULL, infile, text_file, &regex, &add_this_line, field_ends);
-        set = apop_data_alloc(0,1, col_ct);
+        L.ct = get_field_names(1, NULL, infile, &add_this_line, field_ends);
+        set = apop_data_alloc(0,1, L.ct);
 	    set->names->colct   = 0;
 	    set->names->column	= malloc(sizeof(char*));
-        for (int j=0; j< col_ct; j++)
+        for (int j=0; j< L.ct; j++)
             apop_name_add(set->names, fn[j], 'c');
     }
 
+    if (!add_this_line) L=parse_a_line(infile, &add_this_line);
+
     //Now do the body. First elmt may be a row name.
-	while((instr= add_this_line) || (instr= read_a_line(infile, text_file))!=NULL){
-		colno	= 0;
-		if(instr[0]!='#') {
-            if (!set)
-                set = apop_data_alloc(0,1, count_cols_in_row(instr, &regex, field_ends));
-			i ++;
-            set->matrix = apop_matrix_realloc(set->matrix, i, set->matrix->size2);
-            last_match      = 0;
-            length_of_string= strlen(instr);
-            char outstr[length_of_string+1];
-            regexec(&regex, (instr+last_match), 2, result, 0);   //one for the headers.
-            prev_end = last_end;
-            last_end = field_ends ? field_ends[colno] : 0;
-			if (hasrows){
-                pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
-                apop_name_add(set->names, outstr, 'r');
-			}
-            while (last_match < length_of_string 
-                    && last_end < length_of_string -1
-                    && !regexec(&regex, (instr+last_match), 2, result, 0)){
-                prev_end = last_end;
-                last_end = field_ends ? field_ends[hasrows+colno] : 0;
-                pull_string(instr,  outstr, result,  &last_match, prev_end, last_end);
-                if (strlen(outstr)){
-                    colno++;
-                    gsl_matrix_set(set->matrix, i-1, colno-1,	 strtod(outstr, &str));
-                    if (apop_opts.verbose && !strcmp(outstr, str))
-                        printf("trouble converting item %i on line %i; using zero.\n", colno, i);
-                } else{
-                    char d = instr[last_match-1];
-                    if (d!='\t' && d!=' '){
-                        colno++;
-                        gsl_matrix_set(set->matrix, i-1, colno-1, GSL_NAN);
-                    }
-                }
-            }
-		}
-        add_this_line = NULL;
+	while(L.ct || !L.eof){
+        if (!L.ct) { //skip blank lines
+            L=parse_a_line(infile, &add_this_line);
+            continue;
+        }
+        if (!set) set = apop_data_alloc(0,1, L.ct);
+        i ++;
+        set->matrix = apop_matrix_realloc(set->matrix, i, set->matrix->size2);
+        if (hasrows)
+            apop_name_add(set->names, add_this_line[0], 'r');
+        for (int col=hasrows; col < L.ct; col++){
+            char *thisstr = add_this_line[col];
+            if (strlen(thisstr)){
+                gsl_matrix_set(set->matrix, i-1, col-hasrows, strtod(thisstr, &str));
+                if (apop_opts.verbose && (thisstr== str))
+                    printf("trouble converting item %i on line %i; using zero.\n", col, i); //XXX a lie. and col or col-has_rows?
+            } else gsl_matrix_set(set->matrix, i-1, col-hasrows, GSL_NAN);
+        }
+        //free add_this_line.
+        for (int j=0; j< L.ct; j++)
+            free(add_this_line[j]);
+        free(add_this_line); add_this_line=NULL;
+        L=parse_a_line(infile, &add_this_line);
 	}
     if (strcmp(text_file,"-"))
         fclose(infile);
-    regfree(&regex); regfree(&nan_regex);
 	return set;
 }
 
@@ -1205,6 +1312,7 @@ By the way, there is a begin/commit wrapper that bundles the process into bundle
 \param table_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a table constraint or key, such as <tt>not null primary key (age, sex)</tt>, put that here.
 
 \return Returns the number of rows.
+
 This function uses the \ref designated syntax for inputs.
 \ingroup conversions
 */
@@ -1221,7 +1329,7 @@ APOP_VAR_END_HEAD
   int       batch_size  = 10000,
       		col_ct, ct = 0, rows    = 0;
   FILE * 	infile;
-  char		*q  = NULL, *instr, *add_this_line=NULL;
+  char		*q  = NULL, *instr, **add_this_line=NULL;
   sqlite3_stmt * statement = NULL;
   regex_t   regex, nan_regex;
 
@@ -1230,7 +1338,7 @@ APOP_VAR_END_HEAD
 	use_names_in_file   = 0;    //file-global.
 
 	Apop_assert_c(!apop_table_exists(tabname,0), 0, 0, "table %s exists; not recreating it.", tabname);
-    col_ct  = get_field_names(has_col_names, field_names, infile, text_file, &regex, &add_this_line, field_ends);
+    col_ct  = get_field_names(has_col_names, field_names, infile, &add_this_line, field_ends);
     if (apop_opts.db_engine=='m')
         tab_create_mysql(tabname, col_ct, has_row_names, field_params, table_params);
     else
@@ -1255,7 +1363,7 @@ APOP_VAR_END_HEAD
     }
 #endif
     //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
-	while((instr=add_this_line) || (instr= read_a_line(infile, text_file))!=NULL){
+	while((instr=*add_this_line) || (instr= read_a_line(infile, text_file))!=NULL){
 		if((instr[0]!='#') && (instr[0]!='\n')) {	//comments and blank lines.
 			rows ++;
             line_to_insert(instr, tabname, &regex, &nan_regex, field_ends, statement, rows);
