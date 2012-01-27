@@ -10,7 +10,7 @@ char * prep_string_for_sqlite(char *astring, regex_t *nan_regex, int prepped_sta
 apop_opts_type apop_opts	= 
           { .verbose=1,                    .output_type = 'f',
             .output_pipe = NULL,           .output_delimiter ="\t", 
-            .output_append = 0,            .input_delimiters = "| ,\t", 
+            .output_append = 0,            .input_delimiters = "|,\t", 
             .db_name_column = "row_names", .db_nan = "NaN", 
             .db_engine = '\0',             .db_user = "\0", 
             .db_pass = "\0",               .thread_count = 1,

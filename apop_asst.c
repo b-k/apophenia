@@ -170,7 +170,7 @@ int apop_strcmp(char const *one, char const *two){
 For example: \include test_strip_dots.c
 \ingroup convenience_fns
  */
-char * apop_strip_dots(char *in, char strip_type){
+char * apop_strip_dots(char const *in, char strip_type){
     int  i;
     char *out    = NULL;
     if ((strip_type ==0) || (strip_type == 'd') || (strip_type == 'D')){

@@ -11,7 +11,7 @@ of the relative accuracies of various operations. */
 #define TOL4 1e-4
 
 void pontius(){
-    apop_text_to_db("pontius.dat","d", 0,1, NULL);
+    apop_text_to_db("pontius.dat","d", .delimiters=" ");
 apop_data *d        = apop_query_to_data("select y, x, pow(x,2) as p from d");
 apop_model *est  =  apop_estimate(d, apop_ols);
 
@@ -27,7 +27,7 @@ apop_model *est  =  apop_estimate(d, apop_ols);
 }
 
 void wampler1(){
-    apop_text_to_db("wampler1.dat","w1", 0,1, NULL);
+    apop_text_to_db("wampler1.dat","w1", .delimiters=" ");
 int             i;
 apop_data       *d    = apop_query_to_data("select y, x, pow(x,2) as p2, \
                                 pow(x,3) as p3, pow(x,4) as p4, pow(x,5) as p5 from w1");

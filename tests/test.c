@@ -381,6 +381,16 @@ void test_nan_data(){
     assert(justnames->names->rowct == 4);
     assert(!justnames->vector && !justnames->matrix);
     apop_data_free(justnames);
+
+    //Oh, and let's test fixed-width inputs.
+    apop_text_to_db("test_data_fixed_width", .tabname="fw", .has_col_names='n', .field_ends=(int[]){3,6});
+    assert(apop_query_to_float("select col_2 from fw")==3.14159);
+    apop_data *t=apop_query_to_text("select col_1 from fw");
+    assert(apop_strcmp(*t->text[0],"A#C"));
+    assert(apop_strcmp(*t->text[1]," BC"));
+    apop_text_to_db("test_data_fixed_width", .tabname="fww", .field_names=(char*[]){"number", "text", "float"}, .field_ends=(int[]){3,6});
+    assert(apop_query_to_float("select number from fww where number<0")==-21);
+    assert(apop_query_to_float("select float from fww where text=' BC'")==2.71828);
 }
 
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
@@ -1528,6 +1538,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("NaN handling", test_nan_data());
     do_test("test model transformation: scaling", test_transform());
     do_test("test raking", test_raking());
     do_test("test data compressing", test_pmf_compress(r));
@@ -1569,7 +1580,6 @@ int main(int argc, char **argv){
     do_test("test apop_data sort", test_data_sort());
     do_test("test multivariate_normal", test_multivariate_normal(r));
     do_test("nist_tests", nist_tests());
-    do_test("NaN handling", test_nan_data());
     do_test("database skew and kurtosis", test_skew_and_kurt());
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());

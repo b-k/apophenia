@@ -2648,8 +2648,7 @@ static void lowesl_(integer *iv, integer *liv, integer *lv, double *wv, integer 
 } /* lowesl_ */
 
 static void lowesw_(double *res, integer *n, double *rw, integer *pi) {
-    integer i__1, i__2;
-    static integer i__, i1, nh, execnt = 0, identi;
+    static integer i1, nh, execnt = 0, identi;
     static double cmad, rsmall;
     --pi;
     --rw;
@@ -2665,8 +2664,6 @@ static void lowesw_(double *res, integer *n, double *rw, integer *pi) {
 /*     partial sort to find 6*mad */
     find_kth_smallest(1, *n, nh, 1, &rw[1], &pi[1]);
     if (*n - nh + 1 < nh) {
-        i__1 = nh - 1;
-        i__2 = nh - 1;
         find_kth_smallest(1, 1, 2, 1, &rw[1], &pi[1]);
         cmad = (rw[pi[nh]] + rw[pi[nh - 1]]) * 3;
     } else
@@ -2676,7 +2673,7 @@ static void lowesw_(double *res, integer *n, double *rw, integer *pi) {
         for (i1 = 1; i1 <= *n; ++i1)
             rw[i1] = 1.;
     else
-        for (i__ = 1; i__ <= *n; ++i__)
+        for (int i__ = 1; i__ <= *n; ++i__)
             if (cmad * .999 < rw[i__])
                 rw[i__] = 0.;
             else

@@ -121,7 +121,7 @@ typedef struct{
     char output_delimiter[100]; /**< The separator between elements of output tables. The default is "\t", but 
                                 for LaTeX, use "&\t", or use "|" to get pipe-delimited output. */
     int output_append; /**< Append to output files(1), or overwrite(0)?  default = 0 */
-    char input_delimiters[100]; /**< What other people have put between your columns. Default = "|,\t" */
+    char input_delimiters[100]; /**< Deprecated. Please use per-function inputs to \ref apop_text_to_db and \ref apop_text_to_data. Default = "|,\t" */
     char db_name_column[300]; /**< If set, the name of the column in your tables that holds row names. */
     char db_nan[100]; /**< The string that the database takes to indicate NaN. May be a regex. */
     char db_engine; /**< If this is 'm', use mySQL, else use SQLite. */
@@ -236,8 +236,8 @@ gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
 apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
 
 //From text
-APOP_VAR_DECLARE apop_data * apop_text_to_data(char *text_file, int has_row_names, int has_col_names, int *field_ends);
-APOP_VAR_DECLARE int apop_text_to_db(char *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int *field_ends, apop_data *field_params, char *table_params);
+APOP_VAR_DECLARE apop_data * apop_text_to_data(char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters);
+APOP_VAR_DECLARE int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters);
 
 //rank data
 apop_data *apop_data_rank_expand (apop_data *in);

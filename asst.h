@@ -37,7 +37,7 @@ APOP_VAR_DECLARE apop_data * apop_data_to_bins(apop_data *indata, apop_data *bin
 APOP_VAR_DECLARE apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng);
 
 //text conveniences
-char * apop_strip_dots(char *in, char strip_type);
+char * apop_strip_dots(char const *in, char strip_type);
 APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *before, char *after, char *between_cols, int (*prune)(apop_data* ! int ! int ! void*), void* prune_parameter);
 /** Notify the user of errors, warning, or debug info. 
 
@@ -67,7 +67,7 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
      if (!(test)) {  \
         Apop_notify(level,  __VA_ARGS__);   \
         if ((apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
-            || (apop_opts.verbose < level && apop_opts.stop_on_warning && apop_opts.stop_on_warning !='v') ) \
+            || (apop_opts.stop_on_warning && apop_opts.stop_on_warning !='v') ) \
                 abort(); \
         return returnval;  \
     } }

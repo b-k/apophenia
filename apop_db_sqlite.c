@@ -203,19 +203,16 @@ static int firstcall;
 
 //This is the callback for apop_query_to_text.
 static int db_to_chars(void *o,int argc, char **argv, char **column){
-  static int	ncfound;
   int		addnames = 0, ncshift=0;
   apop_data* d  = o;
     if (!d->names->textct)
         addnames    ++;
     if (firstcall){
         namecol   = -1;
-        ncfound   = 0;
         firstcall = 0;
         for(int i=0; i<argc; i++)
             if (!strcmp(column[i], apop_opts.db_name_column)){
                 namecol = i;
-                ncfound = 1;
                 break;
             }
     }
