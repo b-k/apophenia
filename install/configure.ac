@@ -3,6 +3,7 @@
 AC_PREREQ(2.60)
 AC_INIT([Apophenia], [X.XX], [fluffmail@f-m.fm])
 AM_INIT_AUTOMAKE(apophenia, X.XX)
+AM_SILENT_RULES([yes])
 AC_CONFIG_SRCDIR([db.h])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -78,9 +79,9 @@ AC_OUTPUT
 echo \
 "-----------------------------------------------------------
 
- ${PACKAGE_NAME} version ${PACKAGE_VERSION}
+Thanks for trying ${PACKAGE_NAME} v.${PACKAGE_VERSION}.
 
- Prefix: '${prefix}'.
+ Root for the install: '${prefix}'.
  Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
 
  Package features:
@@ -94,18 +95,6 @@ echo \
      doc                - generate documentation via doxygen 
 
 ------------------------------------------------------------"
-
-
-#The default is to produce line noise. Clean it so that errors stand out.
-#Delete this if you want to see the full compilation commands
-sed -e 's/if $(\(COMPILE\|LIBTOOL\|LTCOMPILE\))/@echo "compiling $<"\n\t@if $(\1)/'  \
-    -e 's/^\t$(\(COMPILE\|LIBTOOL\|LTCOMPILE\))/\t@echo "compiling $<"\n\t@$(\1)/'  \
-    -e 's/^\t$(am__mv)/\t@$(am__mv)/'  \
-    -e 's/^\t\($(LINK)\)/\t@echo "compiling $<"\n\t@\1/'  \
-    -e 's/^\(LIBTOOL.*\)/\1 --quiet/' < Makefile >maketmp
-mv maketmp Makefile
-
-
 
 #mySQL claims these vars as its own.
 sed '$a\

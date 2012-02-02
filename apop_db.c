@@ -4,7 +4,6 @@ features like a variance, skew, and kurtosis aggregator for SQL. */
 
 #include "apop_internal.h"
 #include <regex.h>
-char * prep_string_for_sqlite(char *astring, regex_t *nan_regex, int prepped_statements); //apop_conversions.c
 
 /** Here are where the options are initially set. */
 apop_opts_type apop_opts	= 
@@ -501,18 +500,6 @@ void apop_data_to_db(const apop_data *set, const char *tabname, const char outpu
 
     int tab_exists = apop_table_exists(tabname);
 
-    regex_t nan_regex;
-    int used_nan_regex=0;
-    if (set->text||(set->names && set->names->row)){
-        used_nan_regex++;
-        char	nan_string[500];
-        if (strlen(apop_opts.db_nan)){
-            sprintf(nan_string, "^%s$", apop_opts.db_nan);
-            regcomp(&nan_regex, nan_string, REG_ICASE+REG_EXTENDED+REG_NOSUB);
-        }
-    }
-
-
 //To start, q will either be "begin;" if the table exists or "create table ... ; begin;" if it doesn't.
 //Except mysql doesn't like transactions like this, so elide the "begin;" in that case.
     if (tab_exists && !apop_opts.db_engine == 'm')
@@ -598,7 +585,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname, const char outpu
         comma = ' ';
 		qxprintf(&q, "%s \n insert into %s values(",q, tabname);
         if (use_row){
-            char *fixed= prep_string_for_sqlite(set->names->row[i], &nan_regex, 0);
+            char *fixed= prep_string_for_sqlite(0, set->names->row[i]);
 			qxprintf(&q, "%s %s ",q, fixed);
             free(fixed);
             comma = ',';
@@ -609,7 +596,7 @@ void apop_data_to_db(const apop_data *set, const char *tabname, const char outpu
             for(j=0; j< set->matrix->size2; j++)
                add_a_number (&q, &comma, gsl_matrix_get(set->matrix,i,j));
 		for(j=0; j< set->textsize[1]; j++){
-            char *fixed= prep_string_for_sqlite(set->text[i][j], &nan_regex, 0);
+            char *fixed= prep_string_for_sqlite(0, set->text[i][j]);
 			qxprintf(&q, "%s%c %s ",q, comma,fixed ? fixed : "''");
             free(fixed);
             comma = ',';
@@ -628,7 +615,6 @@ void apop_data_to_db(const apop_data *set, const char *tabname, const char outpu
 	}
     if ( !(apop_opts.db_engine == 'm') && ctr>0) 
         apop_query("%s commit;",q);
-    if (used_nan_regex) regfree(&nan_regex);
 	free(q);
 }
 

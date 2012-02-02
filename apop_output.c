@@ -351,7 +351,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         fprintf(f, "NULL\n");
         return;
     }
-  int     i, j, L = 0, Lc /*defaults to 6 below*/,
+  int     i, j, L = 0, 
           start   = (data->vector)? -1 : 0,
           end     = (data->matrix)? data->matrix->size2 : 0,
           rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
@@ -392,12 +392,6 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         if (data->names->rowct > j)
             fprintf(f, "%*s%s", L+2, data->names->row[j], apop_opts.output_delimiter);
         for(i=start; i< end; i++){
-            if (i==-1 && data->names->vector) 
-                Lc  =  strlen(data->names->vector);
-            else if (i>=0 && data->names->colct > i) 
-                Lc  =  strlen(data->names->column[i]);
-            else
-                Lc  =  6;
             if ((i < 0 && j < data->vector->size) || (i>= 0 && j < data->matrix->size1 && i < data->matrix->size2))
                 p_fn(f,  apop_data_get(data, j, i));
             else

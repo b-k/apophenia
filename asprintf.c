@@ -1433,9 +1433,9 @@ CHAR_T * VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, v
 		for (;;) {
 		    size_t maxlen = allocated - length;
 		    int count = -1;
-		    int retcount = 0;
 
 #if USE_SNPRINTF
+		    int retcount = 0;
 # define SNPRINTF_BUF(arg) \
 		    switch (prefix_count)				    \
 		      {							    \

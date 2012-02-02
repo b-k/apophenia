@@ -33,3 +33,4 @@
 void xprintf(char **q, char *format, ...);
 #define XN(in) ((in) ? (in) : "")
 
+char *prep_string_for_sqlite(int prepped_statements, char const *astring);//apop_conversions.c

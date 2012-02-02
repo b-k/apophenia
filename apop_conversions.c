@@ -6,7 +6,6 @@
 #include <assert.h>
 #include <sqlite3.h>
 
-
 /*extend a string. this prevents a minor leak you'd get if you did
  asprintf(&q, "%s is a teapot.", q);
  q may be NULL, which prints the string "null", so use the little XN macro below when using this function.
@@ -21,7 +20,6 @@ void xprintf(char **q, char *format, ...){
     va_end(ap);
     free(r);
 }
-
 
 /** \defgroup conversions Conversion functions
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
@@ -498,20 +496,11 @@ NUMLEOL
 we have three colums, named NUL, LE, and OL. The names can be read from the first row if you so specify. You will have to provide a list of integers giving the end of each field: 3, 5, 7.
 */
 
-static int prep_text_reading(char const *text_file, FILE **infile, regex_t *nan_regex){
+static int prep_text_reading(char const *text_file, FILE **infile){
     *infile = apop_strcmp(text_file, "-")
                     ? stdin
 	                : fopen(text_file, "r");
     Apop_assert_c(*infile, 1,  0, "Trouble opening %s. Returning NULL.", text_file);
-    if (nan_regex && strlen(apop_opts.db_nan)){
-        char nan_string[10000];
-        sprintf(nan_string, "^%s$", apop_opts.db_nan);
-        if (regcomp(nan_regex, nan_string, REG_ICASE+REG_EXTENDED+REG_NOSUB)){
-            Apop_notify(1, "Trouble compiling %s as a regex---using NaN (case-insensitive) "
-                           "as the missing marker.", apop_opts.db_nan);
-            regcomp(nan_regex, nan_string, REG_ICASE+REG_EXTENDED+REG_NOSUB);
-        }
-    }
     return 0;
 }
 
@@ -519,26 +508,25 @@ static int prep_text_reading(char const *text_file, FILE **infile, regex_t *nan_
 
 typedef struct {int ct; int eof;} line_parse_t;
 
-static line_parse_t parse_a_fixed_line(FILE *infile, char ***fn, int const *field_ends){
+static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *field_ends){
     char c = fgetc(infile);
     int ct = 0, posn=0, thisflen, needfield=1;
     while(c!='\n' && c !=EOF){
         posn++;
         if (needfield){//start a new field
-            ct ++;
-            *fn = realloc(*fn, ct* sizeof(char**));
-            (*fn)[ct-1] = malloc(1);
+            if (++ct > fn->textsize[0])
+                apop_text_alloc(fn, ct, 1);//realloc text portion.
             thisflen = 
             needfield = 0;
         }
 
         //extend field:
-        (*fn)[ct-1] = realloc((*fn)[ct-1], ++thisflen);
-        (*fn)[ct-1][thisflen-1] = c;
+        *fn->text[ct-1] = realloc(*fn->text[ct-1], ++thisflen);
+        fn->text[ct-1][0][thisflen-1] = c;
 
         if (posn==*field_ends){ //close off this field.
-            (*fn)[ct-1] = realloc((*fn)[ct-1], thisflen+1);
-            (*fn)[ct-1][thisflen] = '\0';
+            *fn->text[ct-1] = realloc(*fn->text[ct-1], thisflen+1);
+            fn->text[ct-1][0][thisflen] = '\0';
             thisflen = 0;
             field_ends++;
             needfield=1;
@@ -546,38 +534,38 @@ static line_parse_t parse_a_fixed_line(FILE *infile, char ***fn, int const *fiel
         c = fgetc(infile);
     }
     if (needfield==0){//user didn't give last field end.
-        (*fn)[ct-1] = realloc((*fn)[ct-1], thisflen+1);
-        (*fn)[ct-1][thisflen] = '\0';
+        *fn->text[ct-1] = realloc(*fn->text[ct-1], thisflen+1);
+        fn->text[ct-1][0][thisflen] = '\0';
     }
     return (line_parse_t) {.ct=ct, .eof= (c == EOF)};
 
 }
 
-
 typedef struct{
     char c, type;
 } apop_char_info;
 
-apop_char_info parse_next_char(FILE *f, char const *delimiters){
+static apop_char_info parse_next_char(FILE *f, char const *delimiters){
     char c = fgetc(f);
     int is_delimiter = !!strchr(delimiters, c);
     return (apop_char_info){.c=c, 
-            .type = strchr(" \t", c) ? (is_delimiter ? 'W'  : 'w')
+            .type = (c==' '||c=='\t')? (is_delimiter ? 'W'  : 'w')
                     :is_delimiter    ? 'd'
+                    :(c == '\n')     ? 'n'
                     :(c == '"')      ? '"'
                     :(c == '\'')     ? '\''
                     :(c == '\\')     ? '\\'
-                    :(c == '\n')     ? 'n'
                     :(c == EOF)      ? 'E'
                     :(c == '#')      ? '#'
                                      : 'r'
             };
 }
 
-//fills **fn with a list of strings.
+//fills fn with a list of strings.
 //returns the count of elements. Negate the count if we're at EOF.
-static line_parse_t parse_a_line(FILE *infile, char ***fn, int const *field_ends, char const *delimiters){
-    int ct=0, thisflen, inq=0, inqq=0, infield=0,
+//fn must already be allocated via apop_data_alloc() [no args].
+static line_parse_t parse_a_line(FILE *infile, apop_data *fn, int const *field_ends, char const *delimiters){
+    int ct=0, thisflen=0, inq=0, inqq=0, infield=0, mlen=5,
             lastwhite=0, lastnonwhite=0; 
     if (field_ends) return parse_a_fixed_line(infile, fn, field_ends);
     apop_char_info ci;
@@ -590,7 +578,7 @@ static line_parse_t parse_a_line(FILE *infile, char ***fn, int const *field_ends
             ci.type='n';
         }
 
-        //First the escape-type cases: \\ and '' and "".
+        //The escape-type cases: \\ and '' and "".
         //If one applies, set the type to regular
         if (ci.type=='\\'){
             ci=parse_next_char(infile, delimiters);
@@ -606,53 +594,54 @@ static line_parse_t parse_a_line(FILE *infile, char ***fn, int const *field_ends
             continue; //compress these.
         lastwhite=(ci.type=='W');
 
-        if (strchr("dnEW", ci.type)){ //delimiter
-            if (infield){ //close off this field.
-                (*fn)[ct-1] = realloc((*fn)[ct-1], lastnonwhite+1);
-                (*fn)[ct-1][lastnonwhite] = '\0';
+        if (!infield){
+            if (ci.type=='w') continue; //eat leading spaces.
+            if (strchr("rd", ci.type)){ //new field; if 'd', blank field.
+                if (++ct > fn->textsize[0])
+                    apop_text_alloc(fn, ct, 1);//realloc text portion.
+                *fn->text[ct-1] = realloc(*fn->text[ct-1], 5);
+                thisflen = 0;
+                mlen=5;
+                infield=1;
+            } 
+        } 
+        if (infield){
+            if (ci.type=='d'||ci.type=='n' || ci.type=='E' || ci.type=='W'){
+                //delimiter; close off this field.
+                fn->text[ct-1][0][lastnonwhite] = '\0';
                 infield =
                 thisflen =
                 lastnonwhite = 0;
-            } 
-        } else if (strchr("wr", ci.type)){
-            if (!infield && ci.type=='w') continue; //eat leading spaces.
-            if (!infield){ //start a new one
-                ct ++;
-                *fn = realloc(*fn, ct* sizeof(char**));
-                (*fn)[ct-1] = malloc(1);
-                thisflen = 0;
-                infield=1;
+            } else if (ci.type=='w' || ci.type=='r'){ //extend field
+                thisflen++; //length of string
+                if (thisflen+2 > mlen){
+                    mlen *=2; //length of allocated memory
+                    *fn->text[ct-1] = realloc(*fn->text[ct-1], mlen);
+                }
+                fn->text[ct-1][0][thisflen-1] = ci.c;
+                if (ci.type!='w')
+                    lastnonwhite = thisflen;
             }
-            //extend field:
-            (*fn)[ct-1] = realloc((*fn)[ct-1], ++thisflen);
-            (*fn)[ct-1][thisflen-1] = ci.c;
-            if (ci.type!='w')
-                lastnonwhite = thisflen;
         }
-    } while (ci.type != 'n'&& ci.type != 'E');
+    } while (ci.type != 'n' && ci.type != 'E');
     return (line_parse_t) {.ct=ct, .eof= (ci.type == 'E')};
 }
 
-static int get_field_names(int has_col_names, char **field_names, FILE *infile, 
-                                char ***add_this_line, char ***fn, int const *field_ends, char const *delimiters){
-    line_parse_t L={ };
+//On return, fn has copies of the field names, and add_this_line has the first data line.
+static void get_field_names(int has_col_names, char **field_names, FILE *infile, 
+                                apop_data *add_this_line, apop_data *fn, int const *field_ends, char const *delimiters){
     if (has_col_names && field_names == NULL){
         use_names_in_file++;
-        while (L.ct ==0) L=parse_a_line(infile, fn, field_ends, delimiters);
+        while (fn->textsize[0] ==0) parse_a_line(infile, fn, field_ends, delimiters);
+        parse_a_line(infile, add_this_line, field_ends, delimiters);
     } else{
-        while (L.ct ==0) L=parse_a_line(infile, fn, field_ends, delimiters);
-        *add_this_line = *fn; //save this line for later.
-        if (field_names)
-            *fn	= field_names;
-        else{
-            *fn	= malloc(L.ct * sizeof(char*));
-            for (int i =0; i < L.ct; i++){
-                (*fn)[i]	= malloc(1000);
-                sprintf((*fn)[i], "col_%i", i);
-            }
-        }
+        while (add_this_line->textsize[0] ==0) 
+            parse_a_line(infile, add_this_line, field_ends, delimiters);
+        fn	= apop_text_alloc(fn, add_this_line->textsize[0], 1);
+        for (int i=0; i< fn->textsize[0]; i++)
+            if (field_names) apop_text_add(fn, i, 0, field_names[i]);
+            else             apop_text_add(fn, i, 0, "col_%i", i);
     }
-    return L.ct;
 }
 
 /** Read a delimited text file into the matrix element of an \ref apop_data set.
@@ -682,34 +671,36 @@ APOP_VAR_HEAD apop_data * apop_text_to_data(char const*text_file, int has_row_na
 APOP_VAR_END_HEAD
     apop_data *set = NULL;
     FILE  	  *infile = NULL;
-    char	  *str, **add_this_line= NULL;
+    char	  *str;
+    apop_data *add_this_line= apop_data_alloc();
     int 	  row = 0,
               hasrows = (has_row_names == 'y');
-    if (prep_text_reading(text_file, &infile, NULL)) return NULL;
+    if (prep_text_reading(text_file, &infile)) return NULL;
 
     line_parse_t L={ };
     //First, handle the top line, if we're told that it has column names.
     if (has_col_names=='y'){
-        char **fn=NULL;
-        L.ct = get_field_names(1, NULL, infile, &add_this_line, &fn, field_ends, delimiters);
+        apop_data *field_names = apop_data_alloc();
+        get_field_names(1, NULL, infile, add_this_line, field_names, field_ends, delimiters);
+        L.ct = add_this_line->textsize[0];
         set = apop_data_alloc(0,1, L.ct);
 	    set->names->colct   = 0;
 	    set->names->column	= malloc(sizeof(char*));
         for (int j=0; j< L.ct; j++)
-            apop_name_add(set->names, fn[j], 'c');
+            apop_name_add(set->names, *field_names->text[j], 'c');
+        apop_data_free(field_names);
     }
-    if (!add_this_line) L=parse_a_line(infile, &add_this_line, field_ends, delimiters);
-        if(!set) set = apop_data_alloc(0,1, L.ct);
+    if(!set) set = apop_data_alloc(0,1, L.ct);
 
     //Now do the body.
 	while(L.ct || !L.eof){
         if (!L.ct) { //skip blank lines
-            L=parse_a_line(infile, &add_this_line, field_ends, delimiters);
+            L=parse_a_line(infile, add_this_line, field_ends, delimiters);
             continue;
         }
         row++;
         set->matrix = apop_matrix_realloc(set->matrix, row, set->matrix->size2);
-        if (hasrows) apop_name_add(set->names, add_this_line[0], 'r');
+        if (hasrows) apop_name_add(set->names, *add_this_line->text[0], 'r');
         if (hasrows) {Apop_assert_c(L.ct-1 <= set->matrix->size2, set, 1,
                  "row %i (not counting rownames) has %i elements (not counting the rowname), "
                  "but I thought this was a data set with %i elements per row. "
@@ -719,7 +710,7 @@ APOP_VAR_END_HEAD
                  "but I thought this was a data set with %i elements per row. "
                  "Stopping the file read; returning what I have so far. Set has_row_names?", row, L.ct-1, set->matrix->size2);}
         for (int col=hasrows; col < L.ct; col++){
-            char *thisstr = add_this_line[col];
+            char *thisstr = *add_this_line->text[col];
             if (strlen(thisstr)){
                 double val = strtod(thisstr, &str);
                 if (thisstr != str)
@@ -730,12 +721,9 @@ APOP_VAR_END_HEAD
                 }
             } else gsl_matrix_set(set->matrix, row-1, col-hasrows, GSL_NAN);
         }
-        //free add_this_line.
-        for (int j=0; j< L.ct; j++)
-            free(add_this_line[j]);
-        free(add_this_line); add_this_line=NULL;
-        L=parse_a_line(infile, &add_this_line, field_ends, delimiters);
+        L=parse_a_line(infile, add_this_line, field_ends, delimiters);
 	}
+    apop_data_free(add_this_line);
     if (strcmp(text_file,"-")) fclose(infile);
 	return set;
 }
@@ -762,8 +750,8 @@ APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char use
     Apop_assert(d, "the data set to be filled, d, must not be NULL");
     char apop_varad_var(use_info_pages, 'n');
 APOP_VAR_ENDHEAD
-  int           offset   = 0;
-  gsl_vector    vin, vout;
+    int offset = 0;
+    gsl_vector vin, vout;
     if(d->vector){
         vin = gsl_vector_subvector((gsl_vector *)in, 0, d->vector->size).vector;
         gsl_vector_memcpy(d->vector, &vin);
@@ -1040,114 +1028,90 @@ static char *get_field_conditions(char *var, apop_data *field_params){
         return "numeric";
 }
 
-static void tab_create_mysql(char *tabname, int ct, int has_row_names, apop_data *field_params, char *table_params, char **fn){
+static void tab_create_mysql(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data const *fn){
   char  *q = NULL;
     asprintf(&q, "CREATE TABLE %s", tabname);
-    for (int i=0; i<ct; i++){
+    for (int i=0; i<fn->textsize[0]; i++){
         if (i==0) 	{
             if (has_row_names) xprintf(&q, "%s (row_names varchar(100), ", q);
             else               xprintf(&q, "%s (", q);
-        } else xprintf(&q, "%s %s, ", q, get_field_conditions(fn[i-1], field_params));
+        } else xprintf(&q, "%s %s, ", q, get_field_conditions(*fn->text[i-1], field_params));
         xprintf(&q, "%s %s", q, fn[i]);
     }
-    xprintf(&q, "%s %s%s%s);", q, get_field_conditions(fn[ct-1], field_params)
+    xprintf(&q, "%s %s%s%s);", q, get_field_conditions(*fn->text[fn->textsize[0]-1], field_params)
                                 , table_params? ", ": "", XN(table_params));
+apop_opts.verbose=2;
     apop_query("%s", q);
     Apop_assert(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
     free(q);
-    if (use_names_in_file){
-        for (int i=0; i<ct; i++)
-            free(fn[i]);
-        free(fn);
-    }
 }
 
-static void tab_create_sqlite(char *tabname, int ct, int has_row_names, apop_data *field_params, char *table_params, char **fn){
+static void tab_create_sqlite(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data *fn){
   char  *q = NULL;
     asprintf(&q, "create table %s", tabname);
-    for (int i=0; i<ct; i++){
+    for (int i=0; i<fn->textsize[0]; i++){
         if (i==0){
-            if (has_row_names) xprintf(&q, "%s (row_names, ", q);
+            if (has_row_names) xprintf(&q, "%s ('row_names', ", q);
             else               xprintf(&q, "%s (", q);
-        } else xprintf(&q, "%s' %s, ", q, get_field_conditions(fn[i-1], field_params));
-        xprintf(&q, "%s '%s", q, fn[i]);
+        } else xprintf(&q, "%s' %s, ", q, get_field_conditions(*fn->text[i-1], field_params));
+        xprintf(&q, "%s '%s", q, *fn->text[i]);
     }
-    xprintf(&q, "%s' %s%s%s);", q, get_field_conditions(fn[ct-1], field_params)
+    xprintf(&q, "%s' %s%s%s);", q, get_field_conditions(*fn->text[fn->textsize[0]-1], field_params)
                                 , table_params? ", ": "", XN(table_params));
     apop_query("%s", q);
     apop_assert(apop_table_exists(tabname), "query \"%s\" failed.\n", q);
     free(q);
     apop_query("begin;");
-    if (use_names_in_file){
-        for (int i=0; i<ct; i++)
-            free(fn[i]);
-        free(fn);
-    }
 }
 
 /**
 --If the string has zero length, then it's probably a missing value.
- --If the string isn't a number, it needs quotes, and SQLite wants 0.1,
-  not just .1. 
-  --It may be text with no "delimiters"
+ --If the string isn't a number, it needs quotes
  */
-char * prep_string_for_sqlite(char const *astring, regex_t *nan_regex, int prepped_statements){
-    regmatch_t  result[2];
-    char  *out	    = NULL,
-		  *tail	    = NULL;
-	if(strtod(astring, &tail)) /*do nothing.*/;
+char *prep_string_for_sqlite(int prepped_statements, char const *astring){
+    if (!astring || astring[0]=='\0' || !strcasecmp(apop_opts.db_nan, astring))
+        return NULL;
 
-    if (!strlen(astring)){ //it's empty
-        free(out); out=NULL;
-    } else if (!regexec(nan_regex, astring, 1, result, 0) 
-                    || !strlen (astring)){ //nan_regex match or blank field = NaN.
-        free(out); out=NULL;
-        //asprintf(&out, "NULL");
-    }
-    else if (strlen(tail)){	//then it's not a number.
-/*        char *sqlout = sqlite3_mprintf("%Q", astring);//extra checks for odd chars.
-        out = strdup(sqlout);
-        sqlite3_free(sqlout);*/
-        if ((astring[0]=='\'' && astring[strlen(astring)-1]=='\'')
-             || (astring[0]=='"' && astring[strlen(astring)-1]=='"'))
-            asprintf(&out,"%s", astring);
-        else if (!prepped_statements){
+    char *out  = NULL,
+		 *tail = NULL;
+	if(strtod(astring, &tail)) /*do nothing.*/;
+    if (*tail!='\0'){	//then it's not a number.
+        if (!prepped_statements){
             if (strchr(astring, '\''))
                 asprintf(&out,"\"%s\"", astring);
             else
                 asprintf(&out,"'%s'", astring);
-        } else asprintf(&out,"%s", astring);
+        } else  out = strdup(astring);
 	} else {	    //number, maybe INF or NAN. Also, sqlite wants 0.1, not .1
-		assert(strlen (astring)!=0);
+		assert(*astring!='\0');
         if (isinf(atof(astring))==1)
-			asprintf(&out, "9e9999999");
+			out = strdup("9e9999999");
         else if (isinf(atof(astring))==-1)
-			asprintf(&out, "-9e9999999");
+			out = strdup("-9e9999999");
         else if (gsl_isnan(atof(astring)))
-			asprintf(&out, "0.0/0.0");
+			out = strdup("0.0/0.0");
         else if (astring[0]=='.')
 			asprintf(&out, "0%s",astring);
 		else
-            asprintf(&out, "%s", astring);
+            out = strdup(astring);
 	}
     return out;
 }
 
-static void line_to_insert(line_parse_t L, char * const*addme, char const *tabname, 
-                            regex_t *nan_regex, sqlite3_stmt *p_stmt, int row){
+static void line_to_insert(line_parse_t L, apop_data const*addme, char const *tabname, 
+                             sqlite3_stmt *p_stmt, int row){
     int  field = 1;
     char comma = ' ';
     char *q  = NULL;
     if (!p_stmt) asprintf(&q, "INSERT INTO %s VALUES (", tabname);
-
     for (int col=0; col < L.ct; col++){
-        char *prepped = prep_string_for_sqlite(addme[col], nan_regex, !!p_stmt);
+        char *prepped = prep_string_for_sqlite(!!p_stmt, *addme->text[col]);
         if (p_stmt){
             if (!prepped || !strlen(prepped))
                 field++; //leave NULL and cleared
             else if (sqlite3_bind_text(p_stmt, field++, prepped, -1, SQLITE_TRANSIENT))
-                printf("Something wrong on line %i, field %i [%s].\n"
-                                            , row, field-1, addme[col]);
+                Apop_notify(0, "Something wrong on line %i, field %i [%s].\n"
+                                            , row, field-1, *addme->text[col]);
         } else {
             if (prepped && strlen(prepped)) 
                  xprintf(&q, "%s%c %s", q, comma,  prepped);
@@ -1204,25 +1168,23 @@ APOP_VAR_END_HEAD
     int  batch_size  = 10000,
       	 col_ct, ct = 0, rows = 0;
     FILE *infile;
-    char **add_this_line=NULL;
+    apop_data *add_this_line = apop_data_alloc();
     sqlite3_stmt * statement = NULL;
-    regex_t nan_regex;
     line_parse_t L={1,0};
 
-	Apop_assert_c(!apop_table_exists(tabname,0), 0, 0, "table %s exists; not recreating it.", tabname);
+	Apop_assert_c(!apop_table_exists(tabname), 0, 0, "table %s exists; not recreating it.", tabname);
 
     //get names and the first row.
-    if (prep_text_reading(text_file, &infile, &nan_regex)) return 0;
+    if (prep_text_reading(text_file, &infile)) return 0;
 	use_names_in_file   = 0;    //file-global.
-    char **fn=NULL;
-    col_ct = L.ct = get_field_names(has_col_names=='y', field_names, infile, 
-                                        &add_this_line, &fn, field_ends, delimiters);
-    if (!add_this_line) L=parse_a_line(infile, &add_this_line, field_ends, delimiters);
-
+    apop_data *fn = apop_data_alloc();
+    get_field_names(has_col_names=='y', field_names, infile, 
+                                    add_this_line, fn, field_ends, delimiters);
+    col_ct = L.ct = add_this_line->textsize[0];
     if (apop_opts.db_engine=='m')
-        tab_create_mysql(tabname, col_ct, has_row_names=='y', field_params, table_params, fn);
+        tab_create_mysql(tabname, has_row_names=='y', field_params, table_params, fn);
     else
-        tab_create_sqlite(tabname, col_ct, has_row_names=='y', field_params, table_params, fn);
+        tab_create_sqlite(tabname, has_row_names=='y', field_params, table_params, fn);
 #if SQLITE_VERSION_NUMBER < 3003009
     apop_notify(1, "Apophenia was compiled using a version of SQLite from mid-2007 or earlier. "
                     "The code for reading in text files using such an old version is no longer supported, "
@@ -1239,44 +1201,36 @@ APOP_VAR_END_HEAD
             xprintf(&q, "%s, ?", q);
         xprintf(&q, "%s)", q);
         Apop_assert_c(db, 0, 0, "Trouble opening the database; inserting no data.");
-        Apop_assert_c(!sqlite3_prepare_v2(db, q, -1, &statement, NULL), 0, 0, 
-                        "trouble preparing SQLite query; inserting no rows of data.");
+        sqlite3_prepare_v2(db, q, -1, &statement, NULL);
         free(q);
     }
 #endif
-
+    //done with table & query setup.
     //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
 	while(L.ct || !L.eof){
-        if (!L.ct) { //skip blank lines
-            L=parse_a_line(infile, &add_this_line, field_ends, delimiters);
-            continue;
-        }
         rows ++;
-        line_to_insert(L, add_this_line, tabname, &nan_regex, statement, rows);
+        line_to_insert(L, add_this_line, tabname, statement, rows);
         if (!(ct++ % batch_size)){
             if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
-            if (apop_opts.verbose >= 0) {printf(".");fflush(NULL);}
+            if (apop_opts.verbose > 0) {printf(".");fflush(NULL);}
         }
-        if (use_sqlite_prepared_statements) {
+        if (statement){
             int err = sqlite3_step(statement);
             if (err!=0 && err != 101) //0=ok, 101=done
                 printf("sqlite insert query gave error code %i.\n", err);
-            sqlite3_reset(statement);
+            Apop_assert(!sqlite3_reset(statement), "SQLite error.");
 #if SQLITE_VERSION_NUMBER >= 3003009
-            sqlite3_clear_bindings(statement); //needed for NULLs
+            Apop_assert(!sqlite3_clear_bindings(statement), "SQLite error."); //needed for NULLs
 #endif
         }
-        //free add_this_line.
-        for (int j=0; j< L.ct; j++)
-            free(add_this_line[j]);
-        free(add_this_line); add_this_line=NULL;
-        L=parse_a_line(infile, &add_this_line, field_ends, delimiters);
+        L = parse_a_line(infile, add_this_line, field_ends, delimiters);
 	}
+    apop_data_free(add_this_line);
     apop_query("commit;");
-	if (use_sqlite_prepared_statements) 
-        sqlite3_finalize(statement);
+	if (use_sqlite_prepared_statements){
+        Apop_assert(sqlite3_finalize(statement) ==SQLITE_OK, "SQLite error.");
+    }
     if (strcmp(text_file,"-"))
 	    fclose(infile);
-    regfree(&nan_regex);
 	return rows;
 }

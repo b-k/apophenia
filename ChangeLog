@@ -7,7 +7,9 @@
 	January 2012
 **Removed apop_matrix_var_m, which nobody was using.
 --bug fix in apop_vector_distance for Ln norms where n is odd.
-**reading data from text files rewritten; much more robust. A space is no long a default delimiter. Use apop_opts.input_delimiters="| ,\t" to restore old default.
+--reading data from text files rewritten; much more robust. 
+   **A space is no long a default delimiter.  Use apop_opts.input_delimiters="| ,\t" to restore old default.
+   **apop_opts.db_nan is no longer a regex; I just do a case-insensitive comparison.
 
 	December 2011
 --apop_model.textsize is now a size_t instead of an int.

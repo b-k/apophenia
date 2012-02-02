@@ -123,7 +123,7 @@ typedef struct{
     int output_append; /**< Append to output files(1), or overwrite(0)?  default = 0 */
     char input_delimiters[100]; /**< Deprecated. Please use per-function inputs to \ref apop_text_to_db and \ref apop_text_to_data. Default = "|,\t" */
     char db_name_column[300]; /**< If set, the name of the column in your tables that holds row names. */
-    char db_nan[100]; /**< The string that the database takes to indicate NaN. May be a regex. */
+    char db_nan[100]; /**< The string that the database takes to indicate NaN. */
     char db_engine; /**< If this is 'm', use mySQL, else use SQLite. */
     char db_user[101]; /**< Username for database login. Max 100 chars.  */
     char db_pass[101]; /**< Password for database login. Max 100 chars.  */
