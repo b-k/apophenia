@@ -27,6 +27,7 @@ int     colnames            = 1,
 	sprintf(msg, "%s [-d delimiters] text_file table_name dbname\n"
                 "e.g.: %s -d\",|\" infile.txt a_table info.db\n"
 "If the input text file name is a single dash, -, then read from STDIN.\n"
+"Input must be plain ASCII or UTF-8.\n"
 "-d\t\tThe single-character delimiters to use, e.g., -d \" ,\" or -d \"\\t\" (which you \n"
 "\t\t\twill almost certainly have to write as -d \"\\\\t\"). Default: \"| ,\\t\", meaning \n"
 "\t\t\tthat any of a pipe, space, comma, or tab will delimit separate entries\n"

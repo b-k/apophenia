@@ -322,7 +322,7 @@ APOP_VAR_ENDHEAD
     if (m2->text){ //we've already copied m1->text, if any, so if m2->text is NULL, we're done.
         if (posn=='r'){
             apop_assert(!out->text || m2->textsize[1]==out->textsize[1], 
-                            "The first data set has %i columns of text and the second has %i columns. "
+                            "The first data set has %zu columns of text and the second has %zu columns. "
                             "I can't stack that.", out->textsize[1], m2->textsize[1]);
             int basetextsize = out->textsize[0];
             apop_text_alloc(out, basetextsize+m2->textsize[0], out->textsize[1]);
@@ -331,7 +331,7 @@ APOP_VAR_ENDHEAD
                     apop_text_add(out, i+basetextsize, j, m2->text[i][j]);
         } else {
             apop_assert(!out->text || m2->textsize[0]==out->textsize[0], 
-                            "The first data set has %i rows of text and the second has %i rows. "
+                            "The first data set has %zu rows of text and the second has %zu rows. "
                             "I can't stack that.", out->textsize[0], m2->textsize[0]);
             int basetextsize = out->textsize[1];
             apop_text_alloc(out, out->textsize[0], basetextsize+m2->textsize[1]);
@@ -955,6 +955,7 @@ void apop_data_add_names_base(apop_data *d, const char type, char const ** names
 \param fmt The text to write.
 \param ... You can use a printf-style fmt and follow it with the usual variables to fill in.
 
+\li UTF-8 or ASCII text is correctly handled.
 \li Apophenia follows a general rule of not reallocating behind your back: if your text
 matrix is currently of size (3,3) and you try to put an item in slot (4,4), then I display
 an error rather than reallocating the text matrix.
@@ -979,7 +980,7 @@ for (int n=0; n < 10; n++){
 void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
   va_list   argp;
   Apop_assert((in->textsize[0] >= (int)row+1) && (in->textsize[1] >= (int)col+1), "You asked me to put the text "
-                            " '%s' at position (%zu, %zu), but the text array has size (%i, %i)\n", 
+                            " '%s' at position (%zu, %zu), but the text array has size (%zu, %zu)\n", 
                                fmt,             row, col,                  in->textsize[0], in->textsize[1]);
     free (in->text[row][col]);
     if (!fmt){
@@ -1017,15 +1018,15 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
         int rows_now = in->textsize[0];
         int cols_now = in->textsize[1];
         if (rows_now > row){
-            for (int i=rows_now; i < row; i++){
+            for (int i=row; i < rows_now; i++){
                 for (int j=0; j < cols_now; j++)
                     free(in->text[i][j]);
                 free(in->text[i]);
             }
-        }
-        if (rows_now != row)
             in->text = realloc(in->text, sizeof(char**)*row);
+        }
         if (rows_now < row){
+            in->text = realloc(in->text, sizeof(char**)*row);
             for (int i=rows_now; i < row; i++){
                 in->text[i] = malloc(sizeof(char*) * col);
                 for (int j=0; j < cols_now; j++)
@@ -1034,7 +1035,7 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
         }
         if (cols_now > col)
             for (int i=0; i < row; i++)
-                for (int j=cols_now; j < col; j++)
+                for (int j=col; j < cols_now; j++)
                     free(in->text[i][j]);
         if (cols_now != col)
             for (int i=0; i < row; i++){
@@ -1278,15 +1279,13 @@ APOP_VAR_ENDHEAD
     Get_vmsizes(in); //vsize, msize1, maxsize
     for (int i=0 ; i < maxsize; i++){
         int drop_row=0;
-        if (drop && drop[i]) 
-            drop_row = 1;
+        if (drop && drop[i]) drop_row = 1;
         else if (do_drop){
             Apop_data_row(in, i, onerow); 
             drop_row = do_drop(onerow, drop_parameter);
         }
         if (!drop_row){
-            if (outlength == i)
-                outlength++;
+            if (outlength == i) outlength++;
             else {
                 Apop_data_row(in, i, thisrow);
                 apop_data_set_row(in, thisrow, outlength++);

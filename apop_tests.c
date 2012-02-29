@@ -132,8 +132,8 @@ APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
 APOP_VAR_ENDHEAD
     size_t contrast_ct = contrast->vector->size;
     Apop_assert(contrast->matrix->size1 == contrast_ct,
-            "I counted %i contrasts by the size of either contrast->vector or "
-            "est->parameters->vector->size, but you gave me a matrix with %i rows. Those should match."
+            "I counted %zu contrasts by the size of either contrast->vector or "
+            "est->parameters->vector->size, but you gave me a matrix with %zu rows. Those should match."
             , contrast_ct, contrast->matrix->size1);
     double f_stat, pval;
 

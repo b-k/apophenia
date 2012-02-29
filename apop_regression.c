@@ -288,7 +288,7 @@ APOP_VAR_ENDHEAD
                                "but the data's matrix element has only %zu columns.", col, d->matrix->size2);
     } else
         Apop_assert(col < d->textsize[1], "You asked for the text element %i but "
-                                    "the data's text element has only %i elements.", col, d->textsize[1]);
+                                    "the data's text element has only %zu elements.", col, d->textsize[1]);
     apop_data *fdummy;
     apop_data *dummies= dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
     //Now process the append and remove options.
@@ -405,7 +405,7 @@ Also, the <tt>more</tt> element is a reference table of names and column numbers
 */
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
     Apop_assert(textcol < d->textsize[1], "You asked for the text element %i but the data's "
-                                            "text has only %i elements.", datacol, d->textsize[1]);
+                                            "text has only %zu elements.", datacol, d->textsize[1]);
     if (!d->vector && datacol == -1) //allocate a vector for the user.
         d->vector = gsl_vector_alloc(d->textsize[0]);
     apop_data *out;

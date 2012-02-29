@@ -12,12 +12,11 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PREFIX_DEFAULT([/usr])
 
 # Windows:
-AC_LIBTOOL_WIN32_DLL
+LT_INIT
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CC_C99
-AC_PROG_LIBTOOL
 
 # Checks for libraries.
 AC_CHECK_LIB([m],[cos])
@@ -25,6 +24,16 @@ AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
 AC_CHECK_LIB([mysqlclient], [mysql_query], , , [-L/usr/lib/mysql -lz])
 AC_CHECK_LIB([sqlite3], [sqlite3_exec])
+
+AC_CHECK_HEADER([gsl/gsl_matrix.h], , [AC_MSG_ERROR(
+    [Couldn't find the GSL header files (I searched for <gsl/gsl_matrix.h> on the include path). \
+If you are using a package manager, don't forget to install the libgsl-devel package, as well as \
+libgsl itself (and the same for SQLite3).])])
+
+AC_CHECK_HEADER([sqlite3.h], , [AC_MSG_ERROR(
+    [Couldn't find the SQLite3 header file, sqlite3.h, on the include path. \
+If you are using a package manager, don't forget to install the libsqlite3-devel \
+package, as well as libsqlite3 itself.])])
 
 # Checks for header files.
 AC_FUNC_ALLOCA

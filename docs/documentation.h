@@ -939,6 +939,8 @@ Outlineheader textsec   Text data
 
 The \ref apop_data set includes a grid of strings, <tt>text</tt>, for holding text data. 
 
+UTF-8 strings are correctly handled. 
+
 \include eg/text_demo.c
 
             \li\ref apop_query_to_text()

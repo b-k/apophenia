@@ -444,6 +444,8 @@ Each row of the file will be converted to one record in the database or one row 
 By default, the delimiters are set to "| ,\t", meaning that a pipe, space, comma, or tab will delimit separate entries. 
 Please use an argument to \ref apop_text_to_db or \ref apop_text_to_data like <tt>.delimiters=" \t"</tt> or  <tt>.delimiters="|"</tt>. \c apop_opts.input_delimiters is deprecated. 
 
+The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must be ASCII characters.
+
 \li The character after a backslash is read as a normal character, even if it is a delimiter, \c #, \c ', or \c ".
 
 \li If a field contains several such special characters, surround it by \c 's or \c "s. The surrounding marks are stripped and the text read verbatim.
@@ -487,7 +489,7 @@ I use some tricks to get SQLite to accept these values, but they work.
 
 \li If there are row names and column names, then the input will not be perfectly square: there should be no first entry in the row with column names like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
 
-\li Fixed-width formats are supported, but you have to provide a list of field ending positions. For example, given
+\li Fixed-width formats are supported (for plain ASCII encoding only), but you have to provide a list of field ending positions. For example, given
 \code
 NUMLEOL
 123AABB
@@ -510,7 +512,7 @@ typedef struct {int ct; int eof;} line_parse_t;
 
 static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *field_ends){
     char c = fgetc(infile);
-    int ct = 0, posn=0, thisflen, needfield=1;
+    int ct = 0, posn=0, thisflen=0, needfield=1;
     while(c!='\n' && c !=EOF){
         posn++;
         if (needfield){//start a new field
@@ -703,11 +705,11 @@ APOP_VAR_END_HEAD
         if (hasrows) apop_name_add(set->names, *add_this_line->text[0], 'r');
         if (hasrows) {Apop_assert_c(L.ct-1 <= set->matrix->size2, set, 1,
                  "row %i (not counting rownames) has %i elements (not counting the rowname), "
-                 "but I thought this was a data set with %i elements per row. "
+                 "but I thought this was a data set with %zu elements per row. "
                  "Stopping the file read; returning what I have so far.", row, L.ct-1, set->matrix->size2);}
         if (!hasrows) {Apop_assert_c(L.ct <= set->matrix->size2, set, 1,
                  "row %i has %i elements, "
-                 "but I thought this was a data set with %i elements per row. "
+                 "but I thought this was a data set with %zu elements per row. "
                  "Stopping the file read; returning what I have so far. Set has_row_names?", row, L.ct-1, set->matrix->size2);}
         for (int col=hasrows; col < L.ct; col++){
             char *thisstr = *add_this_line->text[col];
