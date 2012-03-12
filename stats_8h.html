@@ -130,6 +130,7 @@ double <b>apop_var</b> (const gsl_vector *in)
 <li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="stats_8h.html#a77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *d, size_t col)
 <li>gsl_vector * <a class="el" href="stats_8h.html#a6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements</a> (const gsl_vector *v)
 <li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, char intype, int incol, int outcol)
+<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="stats_8h.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, int col, char type)
 <li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="stats_8h.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *d, int col, char type, int keep_first, char append, char remove)
 <li>double <a class="el" href="stats_8h.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a> (<a class="el" href="struct__apop__model.html">apop_model</a> *top, <a class="el" href="struct__apop__model.html">apop_model</a> *bottom, int draw_ct, gsl_rng *rng)
 <li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> (<a class="el" href="struct__apop__model.html">apop_model</a> *)
@@ -819,6 +820,52 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
 
 </div>
 </div>
+<a class="anchor" id="adec9170cf1382f6cd549a5819472eb51"></a><!-- doxytag: member="stats.h::apop_data_get_factor_names" ref="adec9170cf1382f6cd549a5819472eb51" args="(apop_data *data, int col, char type)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_data_get_factor_names </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>col</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>type</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Factor names are stored in an auxiliary table with a name like <code>"&lt;categories for your_var&gt;"</code>. Producing this name is annoying (and prevents us from eventually making it human-language independent), so use this function to get the list of factor names.</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>The data set. (No default, must not be <code>NULL</code>) </td></tr>
+    <tr><td class="paramname">col</td><td>The column whose name I'll use to check for the factor name list. Vector==-1. (default=0) </td></tr>
+    <tr><td class="paramname">type</td><td>If you are referring to a text column, use 't'. (default='d')</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to the page in the data set with the given factor names.</dd></dl>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
+
+</div>
+</div>
 <a class="anchor" id="ae0c28224e10f8aacdaa2d130f96f6ba2"></a><!-- doxytag: member="stats.h::apop_data_to_dummies" ref="ae0c28224e10f8aacdaa2d130f96f6ba2" args="(apop_data *d, int col, char type, int keep_first, char append, char remove)" -->
 <div class="memitem">
 <div class="memproto">
@@ -898,7 +945,9 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set whose <code>matrix</code> element is the one-zero matrix of dummies. If you used <code>.append</code>, then this is the main matrix. Also, I add a page named <code>"\&lt;categories for your_var\&gt;"</code> giving a reference table of names and column numbers (where <code>your_var</code> is the appropriate column heading).</dd></dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -957,7 +1006,10 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
 <div class="fragment"><pre class="fragment"><a class="code" href="struct__apop__data.html">apop_data</a> *d  = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;mmt&quot;</span>, <span class="stringliteral">&quot;select type, year from data&quot;</span>);
 <a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(d, .intype=<span class="charliteral">&#39;d&#39;</span>, .incol=0, .outcol=0);
 </pre></div><p> Here, the <code>type</code> column is converted to sequential integer factors and those factors overwrite the original data. Since a reference table is added as a second page of the <a class="el" href="gentle.html#apop_data">apop_data</a> set, you can recover the original values as needed.</p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A table of the factors used in the code. This is an <code>apop_data</code> set with only one column of text. Also, I add a page named <code>"&lt;categories for your_var&gt;"</code> giving a reference table of names and column numbers (where <code>your_var</code> is the appropriate column heading). </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A table of the factors used in the code. This is an <code>apop_data</code> set with only one column of text. Also, I add a page named <code>"&lt;categories for your_var&gt;"</code> giving a reference table of names and column numbers (where <code>your_var</code> is the appropriate column heading).</dd></dl>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -1604,7 +1656,7 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
 <p class="formulaDsp">
 <img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_73.png"/>
 </p>
-<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_74.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_75.png"/>, this function returns { GSL_NAN} when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_76.png"/> takes on one of those values.</p>
+<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_74.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_75.png"/>, this function returns <code>GSL_NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_76.png"/> takes on one of those values.</p>
 <p>See also <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
 
 </div>
@@ -2022,4 +2074,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Mar 12 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>

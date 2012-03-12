@@ -192,6 +192,7 @@ result = apop_test_fisher_exact(adata)
 <li><a class="el" href="group__convenience__fns.html#gae50bc918e0d8b6ee913596f68ab731a8">apop_matrix_stack()</a> </li>
 <li><a class="el" href="apop__data_8c.html#a40ccb3d6e5ee93b0300d92784e3d9a6a">apop_text_add()</a> </li>
 <li><a class="el" href="apop__asst_8c.html#a98e7d8ea0621e231298d5ceee61a5dc1">apop_text_paste()</a> </li>
+<li><a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data()</a> </li>
 <li><a class="el" href="group__convenience__fns.html#ga136ded2b6d190739deca064701cf5ca1">apop_vector_bounded()</a> </li>
 <li><a class="el" href="group__convenience__fns.html#ga5baf0e8717a30fdcfba350da904c1825">apop_vector_copy()</a> </li>
 <li><a class="el" href="types_8h.html#a66a9ddae5814beb8ff3be06bdd6d78ac">apop_vector_fill()</a> </li>
@@ -214,6 +215,10 @@ result = apop_test_fisher_exact(adata)
 <li><code>int gsl_vector_set_basis (gsl_vector * v, size_t i)</code>: set all elements to zero, but set item <img class="formulaInl" alt="$i$" src="form_29.png"/> to one. </li>
 <li><code>gsl_vector_reverse (gsl_vector * v)</code>: reverse the order of your vector's elements</li>
 </ul>
+<p><h2><a class="anchor" name="readin"><div class="trigger" onClick="showBranch('readind');swapFolder('readinf')"><img src="right.png" border="0" id="readinf" alt="pip"> Reading from text files</div></a></h2><div class="branch" id="readind">
+<p>The <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data()</a> function takes in the name of a text file with a grid of data in (comma|tab|pipe|whatever)-delimited format and reads it to a matrix. If there are names in the text file, they are copied in to the data set. See <a class="el" href="text_format.html">Notes on input text file formatting</a> for the full range and details of what can be read in.</p>
+<p>If you have any columns of text, then you will need to go through the database: use <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db()</a> to convert your text file to a database table, do any database-appropriate cleaning of the input data, then use <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data()</a> or <a class="el" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data()</a> to pull the data to a <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
+<p></div>
 <p><h2><a class="anchor" name="datalloc"><div class="trigger" onClick="showBranch('datallocd');swapFolder('datallocf')"><img src="right.png" border="0" id="datallocf" alt="pip"> Alloc/free</div></a></h2><div class="branch" id="datallocd">
 <ul>
 <li><a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc()</a> </li>
@@ -569,10 +574,11 @@ gsl_rng *r;
 <p></div>
 <p><h2><a class="anchor" name="fact"><div class="trigger" onClick="showBranch('factd');swapFolder('factf')"><img src="right.png" border="0" id="factf" alt="pip"> Generating factors</div></a></h2><div class="branch" id="factd">
 <p><em>Factor</em> is jargon for a numbered category. Number-crunching programs work best on numbers, so we need a function to produce a one-to-one mapping from text categories into numeric factors.</p>
-<p>A <em>dummy</em> is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) prefer factors. The functions that generate factors and dummies will add an informational page to your <a class="el" href="gentle.html#apop_data">apop_data</a> set with a name like <code>&lt;categories for="" your_column&gt;=""&gt;</code> listing the conversion from the artificial numeric factor to the original data.</p>
+<p>A <em>dummy</em> is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) prefer factors. The functions that generate factors and dummies will add an informational page to your <a class="el" href="gentle.html#apop_data">apop_data</a> set with a name like <code>&lt;categories for="" your_column&gt;=""&gt;</code> listing the conversion from the artificial numeric factor to the original data. Use <a class="el" href="stats_8h.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a> to get a pointer to that page.</p>
 <ul>
 <li><a class="el" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies()</a> </li>
 <li><a class="el" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors()</a> </li>
+<li><a class="el" href="apop__regression_8c.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names()</a> </li>
 <li><a class="el" href="apop__regression_8c.html#a77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements()</a> </li>
 <li><a class="el" href="apop__regression_8c.html#a6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements()</a></li>
 </ul>
@@ -933,7 +939,7 @@ Apop_settings_declarations(ysg)
 <p><h2><a class="anchor" name="Histosec"><div class="trigger" onClick="showBranch('Histosecd');swapFolder('Histosecf')"><img src="right.png" border="0" id="Histosecf" alt="pip"> Histograms and PMFs (probability mass functions) <a class="anchor" id="histograms"></a></div></a></h2><div class="branch" id="Histosecd">
 <p>A data set can be read as an empirical model, where each row of the data set has some odds of being drawn. The <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model wraps a <a class="el" href="gentle.html#apop_data">apop_data</a> set so that it can be used as a model in this manner. In fact, when you call <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(<code>your_data</code>, <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>), all that really happens is that the data set is attached to the returned copy of the model (plus some minor details).</p>
 <p>You might want to clean up the data before turning it into a PMF. For example...</p>
-<div class="fragment"><pre class="fragment">apop_data_pmf_compress(your_data);
+<div class="fragment"><pre class="fragment"><a class="code" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a>(your_data);
 <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(your_data);
 <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(your_data-&gt;weights);
 <a class="code" href="struct__apop__model.html">apop_model</a> *a_pmf = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(your_data, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
@@ -1156,4 +1162,4 @@ pclose(lesspipe);
 </ul>
 </div></div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Mar 12 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>

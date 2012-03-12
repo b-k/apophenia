@@ -278,95 +278,102 @@ urchinTracker();
 <a name="l00252"></a>00252  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>, <a class="code" href="struct__apop__data.html">apop_data</a> *data; <span class="keywordtype">char</span> intype; <span class="keywordtype">int</span> incol; <span class="keywordtype">int</span> outcol);
 <a name="l00253"></a>00253 <span class="preprocessor">#define apop_data_to_factors(...) apop_varad_link(apop_data_to_factors, __VA_ARGS__)</span>
 <a name="l00254"></a>00254 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00255"></a>00255 <span class="preprocessor"></span>
-<a name="l00256"></a>00256 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00257"></a>00257 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>(<a class="code" href="struct__apop__data.html">apop_data</a> *d, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type, <span class="keywordtype">int</span> keep_first, <span class="keywordtype">char</span> append, <span class="keywordtype">char</span> <span class="keyword">remove</span>);
-<a name="l00258"></a>00258 <span class="preprocessor">#else</span>
-<a name="l00259"></a>00259 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * apop_data_to_dummies_base(<a class="code" href="struct__apop__data.html">apop_data</a> *d, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type, <span class="keywordtype">int</span> keep_first, <span class="keywordtype">char</span> append, <span class="keywordtype">char</span> <span class="keyword">remove</span>);
-<a name="l00260"></a>00260  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>, <a class="code" href="struct__apop__data.html">apop_data</a> *d; <span class="keywordtype">int</span> col; <span class="keywordtype">char</span> type; <span class="keywordtype">int</span> keep_first; <span class="keywordtype">char</span> append; <span class="keywordtype">char</span> <span class="keyword">remove</span>);
-<a name="l00261"></a>00261 <span class="preprocessor">#define apop_data_to_dummies(...) apop_varad_link(apop_data_to_dummies, __VA_ARGS__)</span>
-<a name="l00262"></a>00262 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00263"></a>00263 <span class="preprocessor"></span>
-<a name="l00264"></a>00264 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00265"></a>00265 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a>(<a class="code" href="struct__apop__model.html">apop_model</a> *top, <a class="code" href="struct__apop__model.html">apop_model</a> *bottom, <span class="keywordtype">int</span> draw_ct, gsl_rng *rng);
-<a name="l00266"></a>00266 <span class="preprocessor">#else</span>
-<a name="l00267"></a>00267 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_kl_divergence_base(<a class="code" href="struct__apop__model.html">apop_model</a> *top, <a class="code" href="struct__apop__model.html">apop_model</a> *bottom, <span class="keywordtype">int</span> draw_ct, gsl_rng *rng);
-<a name="l00268"></a>00268  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a>, <a class="code" href="struct__apop__model.html">apop_model</a> *top; <a class="code" href="struct__apop__model.html">apop_model</a> *bottom; <span class="keywordtype">int</span> draw_ct; gsl_rng *rng);
-<a name="l00269"></a>00269 <span class="preprocessor">#define apop_kl_divergence(...) apop_varad_link(apop_kl_divergence, __VA_ARGS__)</span>
-<a name="l00270"></a>00270 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00271"></a>00271 <span class="preprocessor"></span>
-<a name="l00272"></a>00272 <a class="code" href="struct__apop__data.html">apop_data</a> *<a class="code" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> (<a class="code" href="struct__apop__model.html">apop_model</a> *);
-<a name="l00273"></a>00273 <span class="keywordtype">void</span> <a class="code" href="apop__regression_8c.html#ae165633525c5272ab83794b60076eddc">apop_estimate_parameter_tests</a> (<a class="code" href="struct__apop__model.html">apop_model</a> *est);
-<a name="l00274"></a>00274 
-<a name="l00275"></a>00275 
-<a name="l00276"></a>00276 <span class="comment">//Bootstrapping &amp; RNG</span>
-<a name="l00277"></a>00277 <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a00aea2894284560e88b5fcce9f100242">apop_jackknife_cov</a>(<a class="code" href="struct__apop__data.html">apop_data</a> *data, <a class="code" href="struct__apop__model.html">apop_model</a> model);
-<a name="l00278"></a>00278 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00279"></a>00279 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>(<a class="code" href="struct__apop__data.html">apop_data</a> *data, <a class="code" href="struct__apop__model.html">apop_model</a> model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans);
-<a name="l00280"></a>00280 <span class="preprocessor">#else</span>
-<a name="l00281"></a>00281 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * apop_bootstrap_cov_base(<a class="code" href="struct__apop__data.html">apop_data</a> *data, <a class="code" href="struct__apop__model.html">apop_model</a> model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans);
-<a name="l00282"></a>00282  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>, <a class="code" href="struct__apop__data.html">apop_data</a> *data; <a class="code" href="struct__apop__model.html">apop_model</a> model; gsl_rng* rng; <span class="keywordtype">int</span> iterations; <span class="keywordtype">char</span> keep_boots; <span class="keywordtype">char</span> ignore_nans);
-<a name="l00283"></a>00283 <span class="preprocessor">#define apop_bootstrap_cov(...) apop_varad_link(apop_bootstrap_cov, __VA_ARGS__)</span>
-<a name="l00284"></a>00284 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00285"></a>00285 <span class="preprocessor"></span>gsl_rng *<a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(<span class="keywordtype">int</span> seed);
-<a name="l00286"></a>00286 <span class="keywordtype">double</span> <a class="code" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a>(gsl_rng * r, <span class="keywordtype">double</span>* a); <span class="comment">//in apop_asst.c</span>
-<a name="l00287"></a>00287 
-<a name="l00288"></a>00288 
-<a name="l00289"></a>00289 <span class="keywordtype">void</span> <a class="code" href="apop__arms_8c.html#ad422a97e52c70bacb585a9f27a987d23" title="Adaptive rejection metropolis sampling.">apop_arms_draw</a> (<span class="keywordtype">double</span> *out, gsl_rng *r, <a class="code" href="struct__apop__model.html">apop_model</a> *m); <span class="comment">//apop_arms.h</span>
-<a name="l00290"></a>00290 
-<a name="l00291"></a>00291 
-<a name="l00292"></a>00292     <span class="comment">// maximum likelihod estimation related functions</span>
-<a name="l00293"></a>00293 
-<a name="l00294"></a>00294 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00295"></a>00295 <span class="preprocessor"></span> gsl_vector * <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta);
-<a name="l00296"></a>00296 <span class="preprocessor">#else</span>
-<a name="l00297"></a>00297 <span class="preprocessor"></span> gsl_vector * apop_numerical_gradient_base(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta);
-<a name="l00298"></a>00298  apop_varad_declare(gsl_vector *, <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>, <a class="code" href="struct__apop__data.html">apop_data</a> * data; <a class="code" href="struct__apop__model.html">apop_model</a>* model; <span class="keywordtype">double</span> delta);
-<a name="l00299"></a>00299 <span class="preprocessor">#define apop_numerical_gradient(...) apop_varad_link(apop_numerical_gradient, __VA_ARGS__)</span>
-<a name="l00300"></a>00300 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00301"></a>00301 <span class="preprocessor"></span><span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00302"></a>00302 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a>(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta);
+<a name="l00255"></a>00255 <span class="preprocessor"></span><span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00256"></a>00256 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a>(<a class="code" href="struct__apop__data.html">apop_data</a> *data, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type);
+<a name="l00257"></a>00257 <span class="preprocessor">#else</span>
+<a name="l00258"></a>00258 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * apop_data_get_factor_names_base(<a class="code" href="struct__apop__data.html">apop_data</a> *data, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type);
+<a name="l00259"></a>00259  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a>, <a class="code" href="struct__apop__data.html">apop_data</a> *data; <span class="keywordtype">int</span> col; <span class="keywordtype">char</span> type);
+<a name="l00260"></a>00260 <span class="preprocessor">#define apop_data_get_factor_names(...) apop_varad_link(apop_data_get_factor_names, __VA_ARGS__)</span>
+<a name="l00261"></a>00261 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00262"></a>00262 <span class="preprocessor"></span>
+<a name="l00263"></a>00263 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00264"></a>00264 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>(<a class="code" href="struct__apop__data.html">apop_data</a> *d, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type, <span class="keywordtype">int</span> keep_first, <span class="keywordtype">char</span> append, <span class="keywordtype">char</span> <span class="keyword">remove</span>);
+<a name="l00265"></a>00265 <span class="preprocessor">#else</span>
+<a name="l00266"></a>00266 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * apop_data_to_dummies_base(<a class="code" href="struct__apop__data.html">apop_data</a> *d, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type, <span class="keywordtype">int</span> keep_first, <span class="keywordtype">char</span> append, <span class="keywordtype">char</span> <span class="keyword">remove</span>);
+<a name="l00267"></a>00267  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>, <a class="code" href="struct__apop__data.html">apop_data</a> *d; <span class="keywordtype">int</span> col; <span class="keywordtype">char</span> type; <span class="keywordtype">int</span> keep_first; <span class="keywordtype">char</span> append; <span class="keywordtype">char</span> <span class="keyword">remove</span>);
+<a name="l00268"></a>00268 <span class="preprocessor">#define apop_data_to_dummies(...) apop_varad_link(apop_data_to_dummies, __VA_ARGS__)</span>
+<a name="l00269"></a>00269 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00270"></a>00270 <span class="preprocessor"></span>
+<a name="l00271"></a>00271 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00272"></a>00272 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a>(<a class="code" href="struct__apop__model.html">apop_model</a> *top, <a class="code" href="struct__apop__model.html">apop_model</a> *bottom, <span class="keywordtype">int</span> draw_ct, gsl_rng *rng);
+<a name="l00273"></a>00273 <span class="preprocessor">#else</span>
+<a name="l00274"></a>00274 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_kl_divergence_base(<a class="code" href="struct__apop__model.html">apop_model</a> *top, <a class="code" href="struct__apop__model.html">apop_model</a> *bottom, <span class="keywordtype">int</span> draw_ct, gsl_rng *rng);
+<a name="l00275"></a>00275  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a>, <a class="code" href="struct__apop__model.html">apop_model</a> *top; <a class="code" href="struct__apop__model.html">apop_model</a> *bottom; <span class="keywordtype">int</span> draw_ct; gsl_rng *rng);
+<a name="l00276"></a>00276 <span class="preprocessor">#define apop_kl_divergence(...) apop_varad_link(apop_kl_divergence, __VA_ARGS__)</span>
+<a name="l00277"></a>00277 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00278"></a>00278 <span class="preprocessor"></span>
+<a name="l00279"></a>00279 <a class="code" href="struct__apop__data.html">apop_data</a> *<a class="code" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> (<a class="code" href="struct__apop__model.html">apop_model</a> *);
+<a name="l00280"></a>00280 <span class="keywordtype">void</span> <a class="code" href="apop__regression_8c.html#ae165633525c5272ab83794b60076eddc">apop_estimate_parameter_tests</a> (<a class="code" href="struct__apop__model.html">apop_model</a> *est);
+<a name="l00281"></a>00281 
+<a name="l00282"></a>00282 
+<a name="l00283"></a>00283 <span class="comment">//Bootstrapping &amp; RNG</span>
+<a name="l00284"></a>00284 <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a00aea2894284560e88b5fcce9f100242">apop_jackknife_cov</a>(<a class="code" href="struct__apop__data.html">apop_data</a> *data, <a class="code" href="struct__apop__model.html">apop_model</a> model);
+<a name="l00285"></a>00285 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00286"></a>00286 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>(<a class="code" href="struct__apop__data.html">apop_data</a> *data, <a class="code" href="struct__apop__model.html">apop_model</a> model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans);
+<a name="l00287"></a>00287 <span class="preprocessor">#else</span>
+<a name="l00288"></a>00288 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * apop_bootstrap_cov_base(<a class="code" href="struct__apop__data.html">apop_data</a> *data, <a class="code" href="struct__apop__model.html">apop_model</a> model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans);
+<a name="l00289"></a>00289  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>, <a class="code" href="struct__apop__data.html">apop_data</a> *data; <a class="code" href="struct__apop__model.html">apop_model</a> model; gsl_rng* rng; <span class="keywordtype">int</span> iterations; <span class="keywordtype">char</span> keep_boots; <span class="keywordtype">char</span> ignore_nans);
+<a name="l00290"></a>00290 <span class="preprocessor">#define apop_bootstrap_cov(...) apop_varad_link(apop_bootstrap_cov, __VA_ARGS__)</span>
+<a name="l00291"></a>00291 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00292"></a>00292 <span class="preprocessor"></span>gsl_rng *<a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(<span class="keywordtype">int</span> seed);
+<a name="l00293"></a>00293 <span class="keywordtype">double</span> <a class="code" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a>(gsl_rng * r, <span class="keywordtype">double</span>* a); <span class="comment">//in apop_asst.c</span>
+<a name="l00294"></a>00294 
+<a name="l00295"></a>00295 
+<a name="l00296"></a>00296 <span class="keywordtype">void</span> <a class="code" href="apop__arms_8c.html#ad422a97e52c70bacb585a9f27a987d23" title="Adaptive rejection metropolis sampling.">apop_arms_draw</a> (<span class="keywordtype">double</span> *out, gsl_rng *r, <a class="code" href="struct__apop__model.html">apop_model</a> *m); <span class="comment">//apop_arms.h</span>
+<a name="l00297"></a>00297 
+<a name="l00298"></a>00298 
+<a name="l00299"></a>00299     <span class="comment">// maximum likelihod estimation related functions</span>
+<a name="l00300"></a>00300 
+<a name="l00301"></a>00301 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00302"></a>00302 <span class="preprocessor"></span> gsl_vector * <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta);
 <a name="l00303"></a>00303 <span class="preprocessor">#else</span>
-<a name="l00304"></a>00304 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * apop_model_hessian_base(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta);
-<a name="l00305"></a>00305  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a>, <a class="code" href="struct__apop__data.html">apop_data</a> * data; <a class="code" href="struct__apop__model.html">apop_model</a> *model; <span class="keywordtype">double</span> delta);
-<a name="l00306"></a>00306 <span class="preprocessor">#define apop_model_hessian(...) apop_varad_link(apop_model_hessian, __VA_ARGS__)</span>
+<a name="l00304"></a>00304 <span class="preprocessor"></span> gsl_vector * apop_numerical_gradient_base(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta);
+<a name="l00305"></a>00305  apop_varad_declare(gsl_vector *, <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>, <a class="code" href="struct__apop__data.html">apop_data</a> * data; <a class="code" href="struct__apop__model.html">apop_model</a>* model; <span class="keywordtype">double</span> delta);
+<a name="l00306"></a>00306 <span class="preprocessor">#define apop_numerical_gradient(...) apop_varad_link(apop_numerical_gradient, __VA_ARGS__)</span>
 <a name="l00307"></a>00307 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 <a name="l00308"></a>00308 <span class="preprocessor"></span><span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00309"></a>00309 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta);
+<a name="l00309"></a>00309 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a>(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta);
 <a name="l00310"></a>00310 <span class="preprocessor">#else</span>
-<a name="l00311"></a>00311 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * apop_model_numerical_covariance_base(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta);
-<a name="l00312"></a>00312  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>, <a class="code" href="struct__apop__data.html">apop_data</a> * data; <a class="code" href="struct__apop__model.html">apop_model</a> *model; <span class="keywordtype">double</span> delta);
-<a name="l00313"></a>00313 <span class="preprocessor">#define apop_model_numerical_covariance(...) apop_varad_link(apop_model_numerical_covariance, __VA_ARGS__)</span>
+<a name="l00311"></a>00311 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * apop_model_hessian_base(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta);
+<a name="l00312"></a>00312  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a>, <a class="code" href="struct__apop__data.html">apop_data</a> * data; <a class="code" href="struct__apop__model.html">apop_model</a> *model; <span class="keywordtype">double</span> delta);
+<a name="l00313"></a>00313 <span class="preprocessor">#define apop_model_hessian(...) apop_varad_link(apop_model_hessian, __VA_ARGS__)</span>
 <a name="l00314"></a>00314 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00315"></a>00315 <span class="preprocessor"></span>
-<a name="l00316"></a>00316 <a class="code" href="struct__apop__model.html">apop_model</a> * <a class="code" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a>(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *dist);
-<a name="l00317"></a>00317 
-<a name="l00318"></a>00318 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00319"></a>00319 <span class="preprocessor"></span> <a class="code" href="struct__apop__model.html">apop_model</a> * <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="code" href="struct__apop__model.html">apop_model</a> *e, <a class="code" href="struct__apop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary);
-<a name="l00320"></a>00320 <span class="preprocessor">#else</span>
-<a name="l00321"></a>00321 <span class="preprocessor"></span> <a class="code" href="struct__apop__model.html">apop_model</a> * apop_estimate_restart_base(<a class="code" href="struct__apop__model.html">apop_model</a> *e, <a class="code" href="struct__apop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary);
-<a name="l00322"></a>00322  apop_varad_declare(<a class="code" href="struct__apop__model.html">apop_model</a> *, <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>, <a class="code" href="struct__apop__model.html">apop_model</a> *e; <a class="code" href="struct__apop__model.html">apop_model</a> *copy; <span class="keywordtype">char</span> * starting_pt; <span class="keywordtype">double</span> boundary);
-<a name="l00323"></a>00323 <span class="preprocessor">#define apop_estimate_restart(...) apop_varad_link(apop_estimate_restart , __VA_ARGS__)</span>
-<a name="l00324"></a>00324 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00325"></a>00325 <span class="preprocessor"></span>
-<a name="l00326"></a>00326 <span class="comment">//in apop_linear_constraint.c</span>
-<a name="l00327"></a>00327 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00328"></a>00328 <span class="preprocessor"></span> <span class="keywordtype">double</span>  <a class="code" href="apop__linear__constraint_8c.html#a1db15d25579048bcc36b5aabdf9dfd65">apop_linear_constraint</a>(gsl_vector *beta, <a class="code" href="struct__apop__data.html">apop_data</a> * constraint, <span class="keywordtype">double</span> margin);
-<a name="l00329"></a>00329 <span class="preprocessor">#else</span>
-<a name="l00330"></a>00330 <span class="preprocessor"></span> <span class="keywordtype">double</span>  apop_linear_constraint_base(gsl_vector *beta, <a class="code" href="struct__apop__data.html">apop_data</a> * constraint, <span class="keywordtype">double</span> margin);
-<a name="l00331"></a>00331  apop_varad_declare(<span class="keywordtype">double</span> , <a class="code" href="apop__linear__constraint_8c.html#a1db15d25579048bcc36b5aabdf9dfd65">apop_linear_constraint</a>, gsl_vector *beta; <a class="code" href="struct__apop__data.html">apop_data</a> * constraint; <span class="keywordtype">double</span> margin);
-<a name="l00332"></a>00332 <span class="preprocessor">#define apop_linear_constraint(...) apop_varad_link(apop_linear_constraint, __VA_ARGS__)</span>
-<a name="l00333"></a>00333 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00334"></a>00334 <span class="preprocessor"></span>
-<a name="l00335"></a>00335 <span class="comment">//in apop_model_fix_params.c</span>
-<a name="l00336"></a>00336 <a class="code" href="struct__apop__model.html">apop_model</a> * <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="struct__apop__model.html">apop_model</a> *model_in);
-<a name="l00337"></a>00337 
-<a name="l00338"></a>00338 <span class="preprocessor">#ifdef    __cplusplus</span>
-<a name="l00339"></a>00339 <span class="preprocessor"></span>}
-<a name="l00340"></a>00340 <span class="preprocessor">#endif</span>
-<a name="l00341"></a>00341 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00342"></a>00342 <span class="preprocessor"></span>
+<a name="l00315"></a>00315 <span class="preprocessor"></span><span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00316"></a>00316 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta);
+<a name="l00317"></a>00317 <span class="preprocessor">#else</span>
+<a name="l00318"></a>00318 <span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * apop_model_numerical_covariance_base(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta);
+<a name="l00319"></a>00319  apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>, <a class="code" href="struct__apop__data.html">apop_data</a> * data; <a class="code" href="struct__apop__model.html">apop_model</a> *model; <span class="keywordtype">double</span> delta);
+<a name="l00320"></a>00320 <span class="preprocessor">#define apop_model_numerical_covariance(...) apop_varad_link(apop_model_numerical_covariance, __VA_ARGS__)</span>
+<a name="l00321"></a>00321 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00322"></a>00322 <span class="preprocessor"></span>
+<a name="l00323"></a>00323 <a class="code" href="struct__apop__model.html">apop_model</a> * <a class="code" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a>(<a class="code" href="struct__apop__data.html">apop_data</a> * data, <a class="code" href="struct__apop__model.html">apop_model</a> *dist);
+<a name="l00324"></a>00324 
+<a name="l00325"></a>00325 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00326"></a>00326 <span class="preprocessor"></span> <a class="code" href="struct__apop__model.html">apop_model</a> * <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="code" href="struct__apop__model.html">apop_model</a> *e, <a class="code" href="struct__apop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary);
+<a name="l00327"></a>00327 <span class="preprocessor">#else</span>
+<a name="l00328"></a>00328 <span class="preprocessor"></span> <a class="code" href="struct__apop__model.html">apop_model</a> * apop_estimate_restart_base(<a class="code" href="struct__apop__model.html">apop_model</a> *e, <a class="code" href="struct__apop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary);
+<a name="l00329"></a>00329  apop_varad_declare(<a class="code" href="struct__apop__model.html">apop_model</a> *, <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>, <a class="code" href="struct__apop__model.html">apop_model</a> *e; <a class="code" href="struct__apop__model.html">apop_model</a> *copy; <span class="keywordtype">char</span> * starting_pt; <span class="keywordtype">double</span> boundary);
+<a name="l00330"></a>00330 <span class="preprocessor">#define apop_estimate_restart(...) apop_varad_link(apop_estimate_restart , __VA_ARGS__)</span>
+<a name="l00331"></a>00331 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00332"></a>00332 <span class="preprocessor"></span>
+<a name="l00333"></a>00333 <span class="comment">//in apop_linear_constraint.c</span>
+<a name="l00334"></a>00334 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00335"></a>00335 <span class="preprocessor"></span> <span class="keywordtype">double</span>  <a class="code" href="apop__linear__constraint_8c.html#a1db15d25579048bcc36b5aabdf9dfd65">apop_linear_constraint</a>(gsl_vector *beta, <a class="code" href="struct__apop__data.html">apop_data</a> * constraint, <span class="keywordtype">double</span> margin);
+<a name="l00336"></a>00336 <span class="preprocessor">#else</span>
+<a name="l00337"></a>00337 <span class="preprocessor"></span> <span class="keywordtype">double</span>  apop_linear_constraint_base(gsl_vector *beta, <a class="code" href="struct__apop__data.html">apop_data</a> * constraint, <span class="keywordtype">double</span> margin);
+<a name="l00338"></a>00338  apop_varad_declare(<span class="keywordtype">double</span> , <a class="code" href="apop__linear__constraint_8c.html#a1db15d25579048bcc36b5aabdf9dfd65">apop_linear_constraint</a>, gsl_vector *beta; <a class="code" href="struct__apop__data.html">apop_data</a> * constraint; <span class="keywordtype">double</span> margin);
+<a name="l00339"></a>00339 <span class="preprocessor">#define apop_linear_constraint(...) apop_varad_link(apop_linear_constraint, __VA_ARGS__)</span>
+<a name="l00340"></a>00340 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00341"></a>00341 <span class="preprocessor"></span>
+<a name="l00342"></a>00342 <span class="comment">//in apop_model_fix_params.c</span>
+<a name="l00343"></a>00343 <a class="code" href="struct__apop__model.html">apop_model</a> * <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="struct__apop__model.html">apop_model</a> *model_in);
+<a name="l00344"></a>00344 
+<a name="l00345"></a>00345 <span class="preprocessor">#ifdef    __cplusplus</span>
+<a name="l00346"></a>00346 <span class="preprocessor"></span>}
+<a name="l00347"></a>00347 <span class="preprocessor">#endif</span>
+<a name="l00348"></a>00348 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00349"></a>00349 <span class="preprocessor"></span>
 </pre></div></div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Mar 12 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>

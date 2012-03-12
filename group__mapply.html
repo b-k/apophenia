@@ -373,7 +373,10 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
   </table>
   </dd>
 </dl>
-<p>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </p>
+<ul>
+<li>If the matrix is <code>NULL</code>, this is a no-op and returns immediately. </li>
+<li>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </li>
+</ul>
 
 </div>
 </div>
@@ -405,10 +408,14 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>The matrix whose elements will be inputs to the function </td></tr>
-    <tr><td class="paramname">fn</td><td>A function with a form like <code>void f(double *in)</code> which will modify the data at the in-pointer in place. See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </td></tr>
+    <tr><td class="paramname">fn</td><td>A function with a form like <code>void f(double *in)</code> which will modify the data at the in-pointer in place.</td></tr>
   </table>
   </dd>
 </dl>
+<ul>
+<li>If the matrix is <code>NULL</code>, this is a no-op and returns immediately. </li>
+<li>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </li>
+</ul>
 
 </div>
 </div>
@@ -445,7 +452,10 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A <code>gsl_vector</code> with the corresponding value for each row.</dd></dl>
-<p>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </p>
+<ul>
+<li>If you input a <code>NULL</code> matrix, I return <code>NULL</code>. </li>
+<li>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </li>
+</ul>
 
 </div>
 </div>
@@ -482,7 +492,10 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>a matrix of the same size as the original, with the function applied.</dd></dl>
-<p>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </p>
+<ul>
+<li>If you input a <code>NULL</code> matrix, I return <code>NULL</code>. </li>
+<li>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </li>
+</ul>
 
 </div>
 </div>
@@ -511,7 +524,10 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
 </div>
 <div class="memdoc">
 <p>Like <code>apop_matrix_map_all</code>, but returns the sum of the resulting mapped function. For example, <code>apop_matrix_map_all_sum(v, isnan)</code> returns the number of elements of <code>m</code> that are <code>NaN</code>.</p>
-<p>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </p>
+<ul>
+<li>If you input a <code>NULL</code> matrix, I return the sum of zero items: zero. </li>
+<li>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </li>
+</ul>
 
 </div>
 </div>
@@ -540,7 +556,10 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
 </div>
 <div class="memdoc">
 <p>Like <code>apop_matrix_map</code>, but returns the sum of the resulting mapped vector. For example, let <code>log_like</code> be a function that returns the log likelihood of an input vector; then <code>apop_matrix_map_sum(m, log_like)</code> returns the total log likelihood of the rows of <code>m</code>.</p>
-<p>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </p>
+<ul>
+<li>If you input a <code>NULL</code> matrix, I return the sum of zero items: zero. </li>
+<li>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </li>
+</ul>
 
 </div>
 </div>
@@ -576,7 +595,10 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
   </table>
   </dd>
 </dl>
-<p>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </p>
+<ul>
+<li>If the vector is <code>NULL</code>, this is a no-op and returns immediately. </li>
+<li>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </li>
+</ul>
 
 </div>
 </div>
@@ -613,7 +635,10 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A <code>gsl_vector</code> (allocated by this function) with the corresponding value for each row.</dd></dl>
-<p>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </p>
+<ul>
+<li>If you input a <code>NULL</code> vector, I return <code>NULL</code>. </li>
+<li>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </li>
+</ul>
 
 </div>
 </div>
@@ -642,10 +667,13 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
 </div>
 <div class="memdoc">
 <p>Like <code>apop_vector_map</code>, but returns the sum of the resulting mapped function. For example, <code>apop_vector_map_sum(v, isnan)</code> returns the number of elements of <code>v</code> that are <code>NaN</code>.</p>
-<p>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </p>
+<ul>
+<li>If you input a <code>NULL</code> vector, I return the sum of zero items: zero. </li>
+<li>See <a class="el" href="group__mapply.html">the map/apply page</a> for details. </li>
+</ul>
 
 </div>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Mar 12 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
