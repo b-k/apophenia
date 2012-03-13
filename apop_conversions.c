@@ -701,7 +701,8 @@ APOP_VAR_END_HEAD
             continue;
         }
         row++;
-        set->matrix = apop_matrix_realloc(set->matrix, row, set->matrix->size2);
+        int cols = set->matrix  ? set->matrix->size2 : L.ct - hasrows;
+        set->matrix = apop_matrix_realloc(set->matrix, row, cols);
         if (hasrows) apop_name_add(set->names, *add_this_line->text[0], 'r');
         if (hasrows) {Apop_assert_c(L.ct-1 <= set->matrix->size2, set, 1,
                  "row %i (not counting rownames) has %i elements (not counting the rowname), "

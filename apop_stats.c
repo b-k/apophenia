@@ -395,7 +395,9 @@ double apop_matrix_mean(const gsl_matrix *data){
 	return avg;
 }
 
-/** Returns the mean and variance of all elements of a matrix.
+/** Returns the mean and population variance of all elements of a matrix.
+ 
+  \li If you want sample variance, multiply the result returned by <tt>(data->size1*data->size2)/(data->size1*data->size2-1.0)</tt>.
 
   \param data	the matrix to be averaged. 
 \param	mean	where to put the mean to be calculated

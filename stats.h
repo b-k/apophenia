@@ -162,6 +162,7 @@ APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast);
 apop_data * apop_text_unique_elements(const apop_data *d, size_t col);
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
 APOP_VAR_DECLARE apop_data * apop_data_to_factors(apop_data *data, char intype, int incol, int outcol);
+APOP_VAR_DECLARE apop_data * apop_data_get_factor_names(apop_data *data, int col, char type);
 
 APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove);
 

@@ -127,6 +127,33 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
     return out;
 }
 
+static char *apop_get_factor_basename(apop_data *d, int col, char type){
+    char *name;
+    char *catname =   d->names == NULL ? NULL
+                    : type == 't' && d->names && d->names->textct > col ? d->names->text[col]
+                    : col == -1 && d->names && d->names->vector         ? d->names->vector
+                    : col >=0 && d->names && d->names->colct > col      ? d->names->column[col]
+                    : NULL;
+    if (catname){
+        asprintf(&name, "%s", catname);
+        return name;
+    }
+    if (type == 't'){
+        asprintf(&name, "text column %i", col);
+        return name;
+    }
+    if (col == -1)  asprintf(&name, "vector");
+    else            asprintf(&name, "column %i", col);
+    return name;
+}
+
+static char *make_catname (apop_data *d, int col, char type){
+    char *name, *subname = apop_get_factor_basename(d, col, type);
+    asprintf(&name, "<categories for %s>", subname);
+    free(subname);
+    return name;
+}
+
 /* Producing dummies consists of finding the index of element i, for all i, then
  setting (i, index) to one.
  Producing factors consists of finding the index and then setting (i, datacol) to index.
@@ -140,22 +167,14 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
   apop_data   *out; 
   double      val;
   gsl_vector  *delmts  = NULL;
-  char        n[1000], name[101],
+  char        n[1000],
               **telmts = NULL;//unfortunately needed for the bsearch.
     //first, create an ordered list of unique elements.
     //Record that list for use in this function, and in a ->more page of the data set.
 
-    char *catname =   d->names == NULL ? NULL
-                    : type == 't' && d->names->textct > col ? d->names->text[col]
-                    : col == -1 && d->names->vector         ? d->names->vector
-                    : col >=0 && d->names->colct > col      ? d->names->column[col]
-                    : NULL;
-    if (catname)
-        snprintf(name, 100, "<categories for %s>", catname);
+    char *catname =  make_catname(d, col, type);
     if (type == 't'){
-        if (!catname)
-            snprintf(name, 100, "<categories for column %i>", col);
-        *factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), name);
+        *factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), catname);
         elmt_ctr = (*factor_list)->textsize[0];
         //awkward format conversion:
         telmts = malloc(sizeof(char*)*elmt_ctr);
@@ -168,11 +187,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
         APOP_COL(d, col, to_search);
         delmts          = apop_vector_unique_elements(to_search);
         elmt_ctr = delmts->size;
-        if (!catname){
-            if (col == -1)  snprintf(name, 100, "<categories for vector>");
-            else            snprintf(name, 100, "<categories for column %i>", col);
-        }
-        *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr), name);
+        *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr), catname);
         apop_text_alloc((*factor_list), delmts->size, 1);
         for (size_t i=0; i< (*factor_list)->vector->size; i++){
             //shift to the text, for conformity with the more common text version.
@@ -206,10 +221,10 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
     }
     //Add names:
     if (dummyfactor == 'd'){
+        char *basename = apop_get_factor_basename(d, col, type);
         for (i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
             if (type =='d'){
-                if (catname) sprintf(n, "%s dummy %g", catname, gsl_vector_get(delmts,i));
-                else         sprintf(n, "dummy %g", gsl_vector_get(delmts,i));
+                sprintf(n, "%s dummy %g", basename, gsl_vector_get(delmts,i));
             } else
                 sprintf(n, "%s", telmts[i]);
             apop_name_add(out->names, n, 'c');
@@ -222,6 +237,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
             free(telmts[j]);
         free(telmts);
     }
+    free(catname);
     return out;
 }
 
@@ -269,7 +285,7 @@ matrix. If \c 'i', insert in place, immediately after the original data column. 
 matrix of dummies. If you used <tt>.append</tt>, then this is the main matrix.
 Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
     apop_data *apop_varad_var(d, NULL)
@@ -359,6 +375,7 @@ original values as needed.
 \return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
 Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
     apop_data *apop_varad_var(data, NULL)
@@ -379,6 +396,29 @@ APOP_VAR_ENDHEAD
         data->vector = gsl_vector_alloc(intype=='t' ? data->textsize[0] : data->matrix->size2);
     apop_data *out;
     dummies_and_factors_core(data, incol, intype, 1, outcol, 'f', &out);
+    return out;
+}
+
+/** Factor names are stored in an auxiliary table with a name like 
+<tt>"<categories for your_var>"</tt>. Producing this name is annoying (and prevents us from eventually making it human-language independent), so use this function to get the list of factor names.
+
+\param data The data set. (No default, must not be \c NULL)
+\param col The column whose name I'll use to check for the factor name list. Vector==-1. (default=0)
+\param type If you are referring to a text column, use 't'. (default='d')
+
+\return A pointer to the page in the data set with the given factor names.
+
+\li This function uses the \ref designated syntax for inputs.
+*/
+APOP_VAR_HEAD apop_data *apop_data_get_factor_names(apop_data *data, int col, char type){
+    apop_data *apop_varad_var(data, NULL)
+    apop_assert_c(data, NULL, 0, "You sent me a NULL data set. Returning NULL.")
+    int apop_varad_var(col, 0)
+    char apop_varad_var(type, 'd')
+APOP_VAR_ENDHEAD
+    char *name = make_catname (data, col, type);
+    apop_data *out = apop_data_get_page(data, name);
+    free(name);
     return out;
 }
 

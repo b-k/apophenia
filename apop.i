@@ -172,7 +172,8 @@ int apop_db_close(char vacuum='q');
 void apop_db_merge(char *db_file, char inout='i');
 void apop_db_merge_table(char *db_file, char *tabname, char inout='i');
 apop_data * apop_text_to_data(char *text_file="-", int has_row_names=0, int has_col_names=1);
-int apop_text_to_db(char *text_file="-", char *tabname="t", int has_row_names =0, int has_col_names=1, char **field_names=NULL);
+int apop_text_to_db(char *text_file="-", char *tabname="t", int has_row_names =0, int has_col_names=1, char **field_names=NULL,
+        int *field_ends=NULL, apop_data *field_params=NULL, char* table_params=NULL, char *delimiters = "|,\t");
 int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi='s');
 apop_data * apop_f_test (apop_model *est, apop_data *contrast=NULL, int normalize=0);
 int apop_table_exists(char *name, char remove='n');

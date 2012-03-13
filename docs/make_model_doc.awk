@@ -109,7 +109,7 @@ in_decl == 1 { cp = $0;
     while (match(cp, "\\.[^ \\t=]+[ \\t]*=")){
         cp = substr(cp, RSTART+1, length(cp)-RSTART)
         match(cp, "[ \\t=]")
-        items[current_model ":has" substr(cp, 0, RSTART)] = 1
+        items[current_model ":has" substr(cp, 0, RSTART-1)] = 1
         cp = substr(cp, RSTART+1) #cut at the =, keep processing.
     }
 }

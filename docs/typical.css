@@ -30,6 +30,10 @@ border: 1px solid #262b5e;
 padding: 2px;
 }
 
+.params td{
+        border: 1px solid #a6cb5e;
+}
+
 .memdoc { padding-left: 40px; padding-right: 40px; }
 
 h6{ display: inline; font-size:100%; font-style:italic; }

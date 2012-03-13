@@ -956,10 +956,11 @@ Outlineheader fact   Generating factors
 
 \em Factor is jargon for a numbered category. Number-crunching programs work best on numbers, so we need a function to produce a one-to-one mapping from text categories into numeric factors. 
 
-A \em dummy is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) prefer factors. The functions that generate factors and dummies will add an informational page to your \ref apop_data set with a name like <tt><categories for your_column></tt> listing the conversion from the artificial numeric factor to the original data.
+A \em dummy is a variable that is either one or zero, depending on membership in a given group. Some methods (typically when the variable is an input or independent variable) prefer dummies; some methods (typically for outcome or dependent variables) prefer factors. The functions that generate factors and dummies will add an informational page to your \ref apop_data set with a name like <tt><categories for your_column></tt> listing the conversion from the artificial numeric factor to the original data. Use \ref apop_data_get_factor_names to get a pointer to that page.
 
             \li\ref apop_data_to_dummies()
             \li\ref apop_data_to_factors()
+            \li\ref apop_data_get_factor_names()
             \li\ref apop_text_unique_elements()
             \li\ref apop_vector_unique_elements()
 

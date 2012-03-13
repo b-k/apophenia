@@ -29,25 +29,25 @@ replace that matrix column with a constant column of ones, just like with OLS.
 
 static apop_data *get_category_table(apop_data *d){
     int first_col = d->vector ? -1 : 0;
-    apop_data *out = apop_data_get_page(d, "<categories");
+    apop_data *out = apop_data_get_factor_names(d, .col=first_col);
     if (!out) {
         apop_data_to_factors(d, .intype='d', .incol=first_col, .outcol=first_col);
-        out = apop_data_get_page(d, "<categories");
+        out = apop_data_get_factor_names(d, .col=first_col);
     }
     return out;
 }
 
 static void probit_prep(apop_data *d, apop_model *m){
-  int       count;
-  apop_data *factor_list;
     apop_ols.prep(d, m);//also runs the default apop_model_clear.
-    factor_list = get_category_table(d);
-    count = factor_list->textsize[0];
+    apop_data *factor_list = get_category_table(d);
+    int count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(d->matrix->size2, count-1);
     apop_name_stack(m->parameters->names, d->names, 'r', 'c');
     for (int i=1; i< count; i++) 
         apop_name_add(m->parameters->names, factor_list->text[i][0], 'c');
     gsl_matrix_set_all(m->parameters->matrix, 1);
+    //haven't yet implemented the score for probit && $N>2$
+    if (apop_strcmp(m->name, apop_probit.name) && count > 2) m->score = NULL;
     char *tmp = strdup(m->name);
     snprintf(m->name, 100, "%s with %s as numeraire", tmp, factor_list->text[0][0]);
     free(tmp);
@@ -114,8 +114,8 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
     apop_data *betadotx = apop_dot(d, p->parameters); 
     gsl_vector_set_all(gradient,0);
     for (size_t i=0; i< d->matrix->size1; i++){
-        betax            = apop_data_get(betadotx, i, 0);
-        cdf              = gsl_cdf_gaussian_P(-betax, 1);
+        betax = apop_data_get(betadotx, i, 0);
+        cdf   = gsl_cdf_gaussian_P(-betax, 1);
         cdf = cdf ? cdf : 1e-10; //prevent -inf in the next step.
         cdf = cdf<1 ? cdf : 1-1e-10; 
         if (apop_data_get(d, i, -1))
